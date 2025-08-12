@@ -30,7 +30,7 @@ Lemma wp_runtime_Semacquire (sema : loc) γ N :
   ∀ Φ,
   is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP @@ sync.runtime_Semacquire #sema {{ Φ }}.
+  WP @! sync.runtime_Semacquire #sema {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_for.
@@ -90,7 +90,7 @@ Lemma wp_runtime_SemacquireWaitGroup (sema : loc) γ N :
   ∀ Φ,
   is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP @@ sync.runtime_SemacquireWaitGroup #sema {{ Φ }}.
+  WP @! sync.runtime_SemacquireWaitGroup #sema {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_apply (wp_runtime_Semacquire with "[$]").
@@ -101,7 +101,7 @@ Lemma wp_runtime_SemacquireRWMutexR (sema : loc) γ N (lifo : bool) (skipframes 
   ∀ Φ,
   is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP @@ sync.runtime_SemacquireRWMutexR #sema #lifo #skipframes {{ Φ }}.
+  WP @! sync.runtime_SemacquireRWMutexR #sema #lifo #skipframes {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_apply (wp_runtime_Semacquire with "[$]").
@@ -112,7 +112,7 @@ Lemma wp_runtime_SemacquireRWMutex (sema : loc) γ N (lifo : bool) (skipframes :
   ∀ Φ,
   is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP @@ sync.runtime_SemacquireRWMutex #sema #lifo #skipframes {{ Φ }}.
+  WP @! sync.runtime_SemacquireRWMutex #sema #lifo #skipframes {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_apply (wp_runtime_Semacquire with "[$]").
@@ -123,7 +123,7 @@ Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   ∀ Φ,
   is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (own_sema γ (word.add v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP @@ sync.runtime_Semrelease #sema #_u1 #_u2 {{ Φ }}.
+  WP @! sync.runtime_Semrelease #sema #_u1 #_u2 {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_bind (AtomicOp _ _ _).

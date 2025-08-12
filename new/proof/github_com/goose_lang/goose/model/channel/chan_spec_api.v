@@ -149,7 +149,7 @@ Lemma wp_NewChannelRef_base
   0 ≤ size ->
   size + 1 < 2 ^ 63 ->
   {{{ is_pkg_init channel }}}
-    @@ channel.NewChannelRef #t #(W64 size)
+    @! channel.NewChannelRef #t #(W64 size)
   {{{ (ch_ref_ptr ch_mu_loc: loc) (ch_buff_slice: slice.t) (ch_γ_names: chan_names) (params: chan V),
       RET #ch_ref_ptr;
         "Hparams" ∷ ⌜params = {| ch_t := t;
@@ -284,7 +284,7 @@ Lemma wp_NewChannelRef_simple_unbuffered_sync
 (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t} 
 (Psingle: Z -> V -> iProp Σ):
   {{{ is_pkg_init channel }}}
-    @@ channel.NewChannelRef #t #(W64 0)
+    @! channel.NewChannelRef #t #(W64 0)
   {{{ (ch_ref_ptr: loc) (ch_mu_loc: loc) (ch_buff_slice: slice.t) (ch_γ_names: chan_names)  (params: chan V), RET #ch_ref_ptr;
           "%Hparams" ∷ ⌜params = {|
       ch_t := t;
@@ -478,7 +478,7 @@ Lemma wp_Select2
     own_select_case V1 params1 dir1 case1_ptr false i1 q1 #v1 Ri1 ∗
     own_select_case V2 params2 dir2 case2_ptr false i2 q2 #v2 Ri2
 }}}
-  @@ channel.Select2 #t1 #t2 #case1_ptr #case2_ptr #blocking
+  @! channel.Select2 #t1 #t2 #case1_ptr #case2_ptr #blocking
 {{{ (selected_idx: Z), RET #(W64 selected_idx);
     ⌜selected_idx ≤ 2⌝ ∗
     match selected_idx with 

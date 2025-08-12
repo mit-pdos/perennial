@@ -53,7 +53,7 @@ Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ. Proof. Admitted.
 
 Lemma wp_NewHasher :
   {{{ is_pkg_init cryptoffi }}}
-  @@ cryptoffi.NewHasher #()
+  @! cryptoffi.NewHasher #()
   {{{
     ptr_hr, RET #ptr_hr;
     "Hown_hr" ∷ own_Hasher ptr_hr []

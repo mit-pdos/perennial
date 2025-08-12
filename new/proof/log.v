@@ -15,7 +15,7 @@ Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'log).
 
 Theorem wp_Printf (msg: go_string) (arg: slice.t) :
   {{{ is_pkg_init log }}}
-    @@ log.Printf #msg #arg
+    @! log.Printf #msg #arg
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_". iApply "HΦ". done.

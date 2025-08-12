@@ -69,7 +69,7 @@ Definition useBoxGetⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := #(W64 42) in
     ((func_call #makeGenericBox) #uint64T) "$a0") in
     do:  ("x" <-[Box #uint64T] "$r0");;;
-    return: ((method_call #Boxⁱᵈ #"Get"%go (![Box #uint64T] "x")) #())).
+    return: ((method_call #Boxⁱᵈ #"Get"%go (![Box #uint64T] "x") #uint64T) #())).
 
 Definition Containerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go.
 

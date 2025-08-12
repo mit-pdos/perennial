@@ -17,7 +17,7 @@ Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
 Theorem wp_NewCond (m : interface.t) :
   {{{ is_pkg_init sync }}}
-    @@ sync.NewCond #m
+    @! sync.NewCond #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
   wp_start as "_".

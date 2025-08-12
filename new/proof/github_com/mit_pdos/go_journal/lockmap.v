@@ -71,7 +71,7 @@ Proof. apply _. Qed.
 Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       [∗ set] a ∈ covered, P a }}}
-    @@ lockmap.mkLockShard #()
+    @! lockmap.mkLockShard #()
   {{{ ls gh, RET #ls; is_lockShard ls gh covered P }}}.
 Proof.
   wp_start as "Hinit".
@@ -393,7 +393,7 @@ Definition Locked (ghs : list gname) (addr : u64) : iProp Σ :=
 Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       [∗ set] a ∈ covered, P a }}}
-    @@ lockmap.MkLockMap #()
+    @! lockmap.MkLockMap #()
   {{{ l ghs, RET #l; is_lockMap l ghs covered P }}}.
 Proof.
   wp_start as "Hcovered".

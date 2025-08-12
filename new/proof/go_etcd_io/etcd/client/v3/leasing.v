@@ -374,7 +374,7 @@ Definition own_leaseCache (lc : loc) γ : iProp Σ :=
 (* 1.23 model: chan is unbuffered. *)
 Lemma wp_After (d : time.Duration.t) :
   {{{ is_pkg_init time }}}
-    @@ time.After #d
+    @! time.After #d
   {{{
         ch, RET #ch;
         is_chan time.Time.t ch ∗
@@ -664,7 +664,7 @@ Lemma wp_NewKV cl γetcd (pfx : go_string) :
       is_pkg_init leasing ∗
       "#Hcl" ∷ is_Client cl γetcd
   }}}
-    @@ leasing.NewKV #cl #pfx #slice.nil
+    @! leasing.NewKV #cl #pfx #slice.nil
   {{{ kv (close : func.t) err, RET (#kv, #close, #err);
       if decide (err = interface.nil) then
         [∗] replicate (Z.to_nat num_lkvs) (own_KV kv γetcd)

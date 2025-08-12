@@ -40,7 +40,7 @@ Definition ghost_pt_pred (γ: gname) (val1_ptr val2_ptr val3_ptr: loc) (i: Z) (l
 
 Lemma wp_DoubleValues :
   {{{ is_pkg_init chan_spec_raw_examples }}}
-    @@ chan_spec_raw_examples.DoubleValues #()
+    @! chan_spec_raw_examples.DoubleValues #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
@@ -446,7 +446,7 @@ Qed.
 
 Lemma wp_CoordinatedChannelClose (γ: chan_names):
   {{{ is_pkg_init chan_spec_raw_examples }}}
-    @@ chan_spec_raw_examples.CoordinatedChannelClose #()
+    @! chan_spec_raw_examples.CoordinatedChannelClose #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start; wp_auto.
@@ -636,7 +636,7 @@ Definition hello_world_pred
 
 Lemma wp_SendMessage:
   {{{ is_pkg_init chan_spec_raw_examples }}}
-    @@ chan_spec_raw_examples.SendMessage #()
+    @! chan_spec_raw_examples.SendMessage #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start; wp_auto.

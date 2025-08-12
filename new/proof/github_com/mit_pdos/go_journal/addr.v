@@ -798,7 +798,7 @@ Theorem wp_Addr__Flatid a :
     is_pkg_init New.code.github_com.mit_pdos.go_journal.addr.addr ∗
     ⌜ valid_addr a ⌝
   }}}
-    (addr2val a) @ N@@ ew.code.github_com.mit_pdos.go_journal.addr.addr.Addr.Flatid #()
+    (addr2val a) @ N@! ew.code.github_com.mit_pdos.go_journal.addr.addr.Addr.Flatid #()
   {{{
     v, RET #v; ⌜ v = addr2flat a ⌝
   }}}.

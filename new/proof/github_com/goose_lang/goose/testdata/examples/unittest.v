@@ -23,7 +23,7 @@ Context `{hG: !heapGS Σ} `{!globalsGS Σ} `{!GoContext}.
 
 Lemma wp_BasicNamedReturn :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.BasicNamedReturn #()
+    @! unittest.BasicNamedReturn #()
   {{{ RET #"ok"; True }}}.
 Proof.
   wp_start. wp_auto. by iApply "HΦ".
@@ -31,7 +31,7 @@ Qed.
 
 Lemma wp_VoidButEndsWithReturn :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.VoidButEndsWithReturn #()
+    @! unittest.VoidButEndsWithReturn #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start.
@@ -41,7 +41,7 @@ Qed.
 
 Lemma wp_VoidImplicitReturnInBranch (b: bool) :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.VoidImplicitReturnInBranch #b
+    @! unittest.VoidImplicitReturnInBranch #b
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
@@ -53,7 +53,7 @@ Qed.
 
 Lemma wp_typeAssertInt (x: interface.t) (v: w64) :
   {{{ is_pkg_init unittest ∗ ⌜x = interface.mk (""%go, "int"%go) #v⌝ }}}
-    @@ unittest.typeAssertInt #x
+    @! unittest.typeAssertInt #x
   {{{ RET #v; True }}}.
 Proof.
   wp_start as "->". wp_auto.
@@ -64,7 +64,7 @@ Qed.
 
 Lemma wp_wrapUnwrapInt :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.wrapUnwrapInt #()
+    @! unittest.wrapUnwrapInt #()
   {{{ RET #(W64 1); True }}}.
 Proof.
   wp_start as "_".
@@ -85,7 +85,7 @@ Lemma wp_checkedTypeAssert (x: interface.t) :
         |  interface.nil => True
         end⌝
   }}}
-    @@ unittest.checkedTypeAssert #x
+    @! unittest.checkedTypeAssert #x
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
@@ -110,7 +110,7 @@ Lemma wp_basicTypeSwitch (x: interface.t) :
       | _ => True
       end⌝
   }}}
-    @@ unittest.basicTypeSwitch #x
+    @! unittest.basicTypeSwitch #x
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
@@ -144,7 +144,7 @@ Lemma wp_fancyTypeSwitch (x: interface.t) :
       | _ => True
       end⌝
   }}}
-    @@ unittest.fancyTypeSwitch #x
+    @! unittest.fancyTypeSwitch #x
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
@@ -177,7 +177,7 @@ Lemma wp_multiTypeSwitch x :
       | _ => True
       end⌝
   }}}
-    @@ unittest.multiTypeSwitch #x
+    @! unittest.multiTypeSwitch #x
   {{{ (x : w64), RET #x; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
@@ -194,7 +194,7 @@ Qed.
 
 Lemma wp_testSwitchMultiple (x: w64) :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.testSwitchMultiple #x
+    @! unittest.testSwitchMultiple #x
   {{{ (y:w64), RET #y;
       ⌜(uint.Z x = 10 → sint.Z y = 1) ∧
        (uint.Z x = 1 → sint.Z y = 1) ∧
@@ -223,7 +223,7 @@ Qed.
 
 Lemma wp_mapGetCall :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.mapGetCall #()
+    @! unittest.mapGetCall #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto. unshelve wp_apply (wp_map_make (K:=w64) (V:=func.t)); try tc_solve.
@@ -236,7 +236,7 @@ Qed.
 
 Lemma wp_useNilField :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.useNilField #()
+    @! unittest.useNilField #()
   {{{ l, RET #l; l ↦ (unittest.containsPointer.mk null) }}}.
 Proof.
   wp_start. wp_alloc x as "Hx". wp_auto. iApply "HΦ". iFrame.
@@ -244,7 +244,7 @@ Qed.
 
 Lemma wp_testU32NewtypeLen :
   {{{ is_pkg_init unittest }}}
-    @@ unittest.testU32NewtypeLen #()
+    @! unittest.testU32NewtypeLen #()
   {{{ RET #true; True }}}.
 Proof.
   wp_start. wp_auto. wp_apply (wp_slice_make2 (V:=w8)) as "* [? ?]".

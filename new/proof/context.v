@@ -93,7 +93,7 @@ Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
   {{{
         is_Context ctx ctx_desc
   }}}
-    @@ context.WithCancel #ctx
+    @! context.WithCancel #ctx
   {{{
         ctx' done' (cancel : func.t), RET (#ctx', #cancel);
         {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗

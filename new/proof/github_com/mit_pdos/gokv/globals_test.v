@@ -71,7 +71,7 @@ Qed.
     conjunct in its precondition. *)
 Lemma wp_main :
   {{{ is_pkg_init globals_test.main ∗ own_initialized }}}
-  @@ main.main #()
+  @! main.main #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_func_call. wp_call.
@@ -102,7 +102,7 @@ Lemma globals_test_boot σ (g : goose_lang.global_state) (go_ctx : GoContext) :
   is_init σ →
   is_pkg_defined_pure globals_test.main →
   dist_adequate_failstop [
-      ((main.initialize' #() ;; @@ main.main #())%E, σ) ] g (λ _, True).
+      ((main.initialize' #() ;; @! main.main #())%E, σ) ] g (λ _, True).
 Proof.
   simpl.
   intros ? ? Hginit Hdef_main.

@@ -6,18 +6,18 @@ Context `{!globalsGS Σ} `{!GoContext}.
 (* FIXME: don't want to list out ALL dependent package global addrs *)
 
 (* FIXME: move these *)
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'mvccpb).
+Local Definition deps_mvccpb : iProp Σ := ltac2:(build_pkg_init_deps 'mvccpb).
 #[global] Program Instance : IsPkgInit mvccpb :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_mvccpb;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'etcdserverpb).
+Local Definition deps_etcdserverpb : iProp Σ := ltac2:(build_pkg_init_deps 'etcdserverpb).
 #[global] Program Instance : IsPkgInit etcdserverpb :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_etcdserverpb;
   |}.
 
 Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'clientv3).

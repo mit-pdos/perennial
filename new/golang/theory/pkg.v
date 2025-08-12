@@ -260,8 +260,8 @@ Tactic Notation "wp_method_call_core" :=
    [| | (tc_solve || fail "could not find mapping from method to val") | |]).
 
 #[global]
-Notation "@@ func" :=
-  #(func_callv func) (at level 1, no associativity, format "@@ func") : expr_scope.
+Notation "@! func" :=
+  #(func_callv func) (at level 1, no associativity, format "@! func") : expr_scope.
 
 #[global]
 Notation "rcvr @ type @ method" :=
@@ -307,7 +307,7 @@ Definition is_pkg_init (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit 
 Proof. apply _. Qed.
 
 Lemma is_pkg_init_unfold (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} :
-  is_pkg_init pkg_name ⊣⊢
+  is_pkg_init pkg_name =
   ("#Hdefined" ∷ is_pkg_defined pkg_name ∗
   "#Hdeps" ∷ □ is_pkg_init_deps pkg_name ∗
   "#Hinit" ∷ □ is_pkg_init_def pkg_name)%I.

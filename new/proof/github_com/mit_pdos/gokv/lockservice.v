@@ -64,7 +64,7 @@ Lemma wp_MakeLockClerk kv kvptsto E :
        is_KvCput kv kvptsto E ∗
        ⌜ E ## ↑N ⌝
   }}}
-    @@ lockservice.MakeLockClerk #kv
+    @! lockservice.MakeLockClerk #kv
   {{{
        (ck:loc), RET #ck; is_LockClerk ck (mk_lockservice_params kvptsto)
   }}}

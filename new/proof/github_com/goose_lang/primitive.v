@@ -15,7 +15,7 @@ Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'primitive).
 
 Lemma wp_Assume (cond : bool) :
   {{{ is_pkg_init primitive }}}
-    @@ primitive.Assume #cond
+    @! primitive.Assume #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .
 Proof.
@@ -28,7 +28,7 @@ Qed.
 
 Lemma wp_RandomUint64 :
   {{{ is_pkg_init primitive }}}
-    @@ primitive.RandomUint64 #()
+    @! primitive.RandomUint64 #()
   {{{ (x: w64), RET #x; True }}}
 .
 Proof.
@@ -41,7 +41,7 @@ Qed.
 
 Lemma wp_AssumeNoStringOverflow (s: byte_string) :
   {{{ is_pkg_init primitive }}}
-    @@ primitive.AssumeNoStringOverflow #s
+    @! primitive.AssumeNoStringOverflow #s
   {{{ RET #(); ⌜Z.of_nat (length s) < 2^64⌝ }}}.
 Proof.
   wp_start as "_".

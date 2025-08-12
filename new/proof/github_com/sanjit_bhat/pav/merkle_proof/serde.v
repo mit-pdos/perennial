@@ -62,7 +62,7 @@ Lemma wp_dec sl_b d b :
     is_pkg_init merkle ∗
     "Hsl_b" ∷ sl_b ↦*{d} b
   }}}
-  @@ merkle.MerkleProofDecode #sl_b
+  @! merkle.MerkleProofDecode #sl_b
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     let wish := (λ enc obj tail,

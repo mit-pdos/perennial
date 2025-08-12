@@ -20,7 +20,7 @@ Definition Mutex__Lockⁱᵐᵖˡ : val :=
     if: Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true) then
       #()
     else
-      method_call #"sync" #"Mutex'ptr" #"Lock" "m" #().
+      method_call #(ptrTⁱᵈ Mutexⁱᵈ) #"Lock" "m" #().
 
 Definition Mutex__Unlockⁱᵐᵖˡ : val :=
   λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref #Mutex #"state"%go "m") #true #false ;;; return: #())

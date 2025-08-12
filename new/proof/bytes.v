@@ -17,7 +17,7 @@ Lemma wp_Clone sl_b dq (b : list w8) :
     is_pkg_init bytes ∗
     "Hsl_b" ∷ sl_b ↦*{dq} b
   }}}
-  @@ bytes.Clone #sl_b
+  @! bytes.Clone #sl_b
   {{{
     sl_b', RET #sl_b';
     "Hsl_b" ∷ sl_b ↦*{dq} b ∗
@@ -45,7 +45,7 @@ Lemma wp_Equal sl_b0 sl_b1 d0 d1 (b0 b1 : list w8) :
     "Hsl_b0" ∷ sl_b0 ↦*{d0} b0 ∗
     "Hsl_b1" ∷ sl_b1 ↦*{d1} b1
   }}}
-  @@ bytes.Equal #sl_b0 #sl_b1
+  @! bytes.Equal #sl_b0 #sl_b1
   {{{
     RET #(bool_decide (b0 = b1));
     "Hsl_b0" ∷ sl_b0 ↦*{d0} b0 ∗

@@ -20,7 +20,7 @@ Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (v : w64), addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
-  WP @@ atomic.LoadUint64 #addr {{ Φ }}.
+  WP @! atomic.LoadUint64 #addr {{ Φ }}.
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
@@ -31,7 +31,7 @@ Lemma wp_StoreUint64 (addr : loc) (v : w64) :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
-  WP @@ atomic.StoreUint64 #addr #v {{ Φ }}.
+  WP @! atomic.StoreUint64 #addr #v {{ Φ }}.
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
@@ -42,7 +42,7 @@ Lemma wp_AddUint64 (addr : loc) (v : w64) :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ (word.add oldv v) ={∅,⊤}=∗ Φ #(word.add oldv v))) -∗
-  WP @@ atomic.AddUint64 #addr #v {{ Φ }}.
+  WP @! atomic.AddUint64 #addr #v {{ Φ }}.
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
@@ -61,7 +61,7 @@ Lemma wp_CompareAndSwapUint64 (addr : loc) (old : w64) (new : w64) :
      ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
      (addr ↦{dq} (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))
   ) -∗
-  WP @@ atomic.CompareAndSwapUint64 #addr #old #new {{ Φ }}.
+  WP @! atomic.CompareAndSwapUint64 #addr #old #new {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_bind (CmpXchg _ _ _).
@@ -86,7 +86,7 @@ Lemma wp_LoadInt32 (addr : loc) dq :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (v : w32), addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
-  WP @@ atomic.LoadInt32 #addr {{ Φ }}.
+  WP @! atomic.LoadInt32 #addr {{ Φ }}.
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
@@ -97,7 +97,7 @@ Lemma wp_StoreInt32 (addr : loc) (v : w32) :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (oldv : w32), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
-  WP @@ atomic.StoreInt32 #addr #v {{ Φ }}.
+  WP @! atomic.StoreInt32 #addr #v {{ Φ }}.
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
@@ -108,7 +108,7 @@ Lemma wp_AddInt32 (addr : loc) (v : w32) :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (oldv : w32), addr ↦ oldv ∗ (addr ↦ (word.add oldv v) ={∅,⊤}=∗ Φ #(word.add oldv v))) -∗
-  WP @@ atomic.AddInt32 #addr #v {{ Φ }}.
+  WP @! atomic.AddInt32 #addr #v {{ Φ }}.
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
@@ -127,7 +127,7 @@ Lemma wp_CompareAndSwapInt32 (addr : loc) (old : w32) (new : w32) :
      ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
      (addr ↦{dq} (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))
   ) -∗
-  WP @@ atomic.CompareAndSwapInt32 #addr #old #new {{ Φ }}.
+  WP @! atomic.CompareAndSwapInt32 #addr #old #new {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_bind (CmpXchg _ _ _).

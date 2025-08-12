@@ -98,7 +98,7 @@ Lemma wp_NewSession (client : loc) γetcd :
         is_pkg_init concurrency ∗
         "#His_client" ∷ is_Client client γetcd
   }}}
-    @@ concurrency.NewSession #client #slice.nil
+    @! concurrency.NewSession #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
         ∃ lease, is_Session s γetcd lease

@@ -113,7 +113,7 @@ Qed.
 
 Lemma wp_GetEmptyLink :
   {{{ is_pkg_init hashchain }}}
-  @@ hashchain.GetEmptyLink #()
+  @! hashchain.GetEmptyLink #()
   {{{
     sl h, RET #sl;
     "Hsl_hash" ∷ sl ↦* h ∗
@@ -134,7 +134,7 @@ Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal b l :
     "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal ∗
     "#His_chain" ∷ is_chain_aux b l prevLink
   }}}
-  @@ hashchain.GetNextLink #sl_prevLink #sl_nextVal
+  @! hashchain.GetNextLink #sl_prevLink #sl_nextVal
   {{{
     sl_nextLink nextLink, RET #sl_nextLink;
     "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
@@ -262,7 +262,7 @@ Qed.
 
 Lemma wp_New :
   {{{ is_pkg_init hashchain }}}
-  @@ hashchain.New #()
+  @! hashchain.New #()
   {{{ l, RET #l; "Hown_HashChain" ∷ own l [] 1 }}}.
 Proof.
   wp_start.
@@ -409,7 +409,7 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
     "#Hsl_proof" ∷ sl_proof ↦*□ proof ∗
     "#His_chain" ∷ is_chain_boot l prevLink
   }}}
-  @@ hashchain.Verify #sl_prevLink #sl_proof
+  @! hashchain.Verify #sl_prevLink #sl_proof
   {{{
     (extLen : w64) sl_newVal newVal sl_newLink newLink err,
     RET (#extLen, #sl_newVal, #sl_newLink, #err);

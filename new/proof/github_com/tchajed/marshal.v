@@ -50,7 +50,7 @@ Qed.
 
 Theorem wp_ReadInt tail (s: slice.t) q x :
   {{{ is_pkg_init marshal ∗ own_slice s q (u64_le x ++ tail) }}}
-    @@ marshal.ReadInt #s
+    @! marshal.ReadInt #s
   {{{ s', RET (#x, #s'); own_slice s' q tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
@@ -68,7 +68,7 @@ Admitted.
 
 Theorem wp_ReadInt32 tail s q (x: u32) :
   {{{ is_pkg_init marshal ∗ own_slice s q (u32_le x ++ tail) }}}
-    @@ marshal.ReadInt32 #s
+    @! marshal.ReadInt32 #s
   {{{ s', RET (#x, #s'); own_slice s' q tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
@@ -87,7 +87,7 @@ Admitted.
 Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
   length head = uint.nat len →
   {{{ is_pkg_init marshal ∗ own_slice s q (head ++ tail) }}}
-    @@ marshal.ReadBytes #s #len
+    @! marshal.ReadBytes #s #len
   {{{ b s', RET (#b, #s'); own_slice b q head ∗ own_slice s' q tail }}}.
 Proof.
   iIntros (Hlen). wp_start as "Hs". wp_auto.
@@ -114,7 +114,7 @@ Admitted.
 Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
   length head = uint.nat len →
   {{{ is_pkg_init marshal ∗ own_slice s q (head ++ tail) }}}
-    @@ marshal.ReadBytesCopy #s #len
+    @! marshal.ReadBytesCopy #s #len
   {{{ b s', RET (#b, #s'); own_slice b (DfracOwn 1) head ∗ own_slice s' q tail }}}.
 Proof.
   iIntros (Hlen). wp_start as "Hs". wp_auto.
@@ -150,7 +150,7 @@ Theorem wp_ReadLenPrefixedBytes s q (len: u64) (head tail : list u8):
         is_pkg_init marshal ∗
         own_slice s q ((u64_le len) ++ head ++ tail)
   }}}
-    @@ marshal.ReadLenPrefixedBytes #s
+    @! marshal.ReadLenPrefixedBytes #s
   {{{
         b s', RET (#b, #s'); own_slice b q head ∗ own_slice s' q tail
   }}}.
@@ -166,7 +166,7 @@ Qed.
 
 Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
   {{{ is_pkg_init marshal ∗ own_slice s q (bit :: tail) }}}
-    @@ marshal.ReadBool (#s)
+    @! marshal.ReadBool (#s)
   {{{ (b: bool) s', RET (#b, #s');
       ⌜b = bool_decide (uint.Z bit ≠ 0)⌝ ∗
       own_slice s' q tail }}}.
@@ -230,7 +230,7 @@ Theorem wp_ReadSlice {X : Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X g
           own_slice suff_sl dq suffix'
       }}}
   }}}
-    @@ marshal.ReadSlice #goT #enc_sl #count #readOne
+    @! marshal.ReadSlice #goT #enc_sl #count #readOne
   {{{ vals xs b2, RET (#vals, #b2);
        own_slice vals (DfracOwn 1) xs ∗
        ([∗ list] x;s ∈ xs;cs, own x s (DfracOwn 1)) ∗
@@ -316,7 +316,7 @@ Admitted.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ is_pkg_init marshal }}}
-    @@ marshal.compute_new_cap #old_cap #min_cap
+    @! marshal.compute_new_cap #old_cap #min_cap
   {{{ (new_cap : u64), RET #new_cap; ⌜uint.Z min_cap ≤ uint.Z new_cap⌝ }}}.
 Proof.
   wp_start as "_". wp_auto.
@@ -327,7 +327,7 @@ Qed.
 
 Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
   {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
-    @@ marshal.reserve (#s) #extra
+    @! marshal.reserve (#s) #extra
   {{{ s', RET #s';
       ⌜uint.Z extra ≤ uint.Z (slice.cap_f s') - uint.Z (slice.len_f s')⌝ ∗
       own_slice s' (DfracOwn 1) vs ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
@@ -362,7 +362,7 @@ Admitted.
 
 Theorem wp_WriteInt s x (vs : list u8) :
   {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
-    @@ marshal.WriteInt (#s) #x
+    @! marshal.WriteInt (#s) #x
   {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u64_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
@@ -394,7 +394,7 @@ Admitted.
 
 Theorem wp_WriteInt32 s x (vs : list u8) :
   {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
-    @@ marshal.WriteInt32 (#s) #x
+    @! marshal.WriteInt32 (#s) #x
   {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u32_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
@@ -426,7 +426,7 @@ Admitted.
 
 Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
   {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice data_sl q data ∗ own_slice_cap w8 s (DfracOwn 1) }}}
-    @@ marshal.WriteBytes (#s) (#data_sl)
+    @! marshal.WriteBytes (#s) (#data_sl)
   {{{ s', RET #s';
     own_slice s' (DfracOwn 1) (vs ++ data) ∗
     own_slice_cap w8 s' (DfracOwn 1) ∗
@@ -449,7 +449,7 @@ Theorem wp_WriteLenPrefixedBytes s (vs : list u8) data_sl q (data : list u8) :
         own_slice data_sl q data ∗
         own_slice_cap w8 s (DfracOwn 1)
   }}}
-    @@ marshal.WriteLenPrefixedBytes #s #data_sl
+    @! marshal.WriteLenPrefixedBytes #s #data_sl
   {{{
         s', RET #s';
         own_slice s' (DfracOwn 1) (vs ++ (u64_le $ length data) ++ data) ∗
@@ -472,7 +472,7 @@ Qed.
 
 Theorem wp_WriteBool s (vs: list u8) (b: bool) :
   {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
-    @@ marshal.WriteBool #s #b
+    @! marshal.WriteBool #s #b
   {{{ s', RET (#s');
       own_slice s' (DfracOwn 1) (vs ++ [if b then W8 1 else W8 0]) ∗
       own_slice_cap w8 s' (DfracOwn 1)
@@ -510,7 +510,7 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
                 own_slice_cap w8 enc_sl (DfracOwn 1)
           }}}
   }}}
-    @@ marshal.WriteSlice #goT #pre_sl #xsl #writeOne
+    @! marshal.WriteSlice #goT #pre_sl #xsl #writeOne
   {{{
         enc enc_sl, RET #enc_sl;
         own_slice xsl dq xs ∗

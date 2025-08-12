@@ -18,7 +18,7 @@ Context `{!IntoVal T'} `{!IntoValTyped T' T} `{Hbounded: BoundedTypeSize T}.
 
 Lemma wp_BoxGet (b: generics.Box.t T') :
   {{{ is_pkg_init generics }}}
-    @@ generics.BoxGet #T #b
+    @! generics.BoxGet #T #b
   {{{ RET #(generics.Box.Value' b); True }}}.
 Proof using Hbounded.
   wp_start as "_"; try wp_auto.
@@ -40,7 +40,7 @@ Qed.
 
 Lemma wp_makeGenericBox (value: T') :
   {{{ is_pkg_init generics }}}
-    @@ generics.makeGenericBox #T #value
+    @! generics.makeGenericBox #T #value
   {{{ RET #(generics.Box.mk value); True }}}.
 Proof.
   wp_start as "_"; try wp_auto.
@@ -50,7 +50,7 @@ End generic_proofs.
 
 Lemma wp_BoxGet2 (b: generics.Box.t w64) :
   {{{ is_pkg_init generics }}}
-    @@ generics.BoxGet2 #b
+    @! generics.BoxGet2 #b
   {{{ RET #(generics.Box.Value' b); True }}}.
 Proof.
   wp_start as "_"; try wp_auto.
@@ -61,7 +61,7 @@ Qed.
 
 Lemma wp_makeBox :
   {{{ is_pkg_init generics }}}
-    @@ generics.makeBox #()
+    @! generics.makeBox #()
   {{{ RET #(generics.Box.mk (W64 42)); True }}}.
 Proof.
   wp_start as "_"; try wp_auto.
@@ -70,7 +70,7 @@ Qed.
 
 Lemma wp_useBoxGet :
   {{{ is_pkg_init generics }}}
-    @@ generics.useBoxGet #()
+    @! generics.useBoxGet #()
   {{{ RET #(W64 42); True }}}.
 Proof.
   wp_start as "_"; try wp_auto.
@@ -89,7 +89,7 @@ Qed.
 
 Lemma wp_useContainer :
   {{{ is_pkg_init generics }}}
-    @@ generics.useContainer #()
+    @! generics.useContainer #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_"; try wp_auto.
@@ -101,7 +101,7 @@ Abort.
 
 Lemma wp_useMultiParam :
   {{{ is_pkg_init generics }}}
-    @@ generics.useMultiParam #()
+    @! generics.useMultiParam #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_"; try wp_auto.
@@ -117,7 +117,7 @@ Lemma wp_multiParamFunc `{!IntoVal A'} `{!IntoValTyped A' A}
 `{!IntoVal B'} `{!IntoValTyped B' B}
   (x: A') (y: B') :
   {{{ is_pkg_init generics }}}
-    @@ generics.multiParamFunc #A #B #x #y
+    @! generics.multiParamFunc #A #B #x #y
   {{{ s, RET #s; s ↦* [y] }}}.
 Proof.
   wp_start as "_"; try wp_auto.
@@ -130,7 +130,7 @@ Qed.
 
 Lemma wp_useMultiParamFunc :
   {{{ is_pkg_init generics }}}
-    @@ generics.useMultiParamFunc #()
+    @! generics.useMultiParamFunc #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_"; try wp_auto.

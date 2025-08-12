@@ -613,7 +613,7 @@ Lemma wp_MakeAsyncFile fname N P data :
         is_pkg_init asyncfile ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    @@ asyncfile.MakeAsyncFile #fname
+    @! asyncfile.MakeAsyncFile #fname
   {{{
         γ sl f, RET (#sl, #f); sl ↦*□ data ∗ own_AsyncFile N f γ P data
   }}}

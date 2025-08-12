@@ -36,11 +36,11 @@ Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!syncG Σ}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'race).
+Local Definition race_deps : iProp Σ := ltac2:(build_pkg_init_deps 'race).
 #[global] Program Instance : IsPkgInit race :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := race_deps;
   |}.
 
 Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'sync).

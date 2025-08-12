@@ -18,7 +18,7 @@ Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'std).
 
 Lemma wp_Assert (cond : bool) :
   {{{ is_pkg_init std ∗ ⌜cond = true⌝ }}}
-    @@ std.Assert #cond
+    @! std.Assert #cond
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "%". subst.
@@ -28,7 +28,7 @@ Qed.
 
 Lemma wp_BytesEqual s1 s2 (xs1 xs2: list w8) dq1 dq2 :
   {{{ is_pkg_init std ∗ s1 ↦*{dq1} xs1 ∗ s2 ↦*{dq2} xs2 }}}
-    @@ std.BytesEqual #s1 #s2
+    @! std.BytesEqual #s1 #s2
   {{{ RET #(bool_decide (xs1 = xs2)); s1 ↦*{dq1} xs1 ∗ s2 ↦*{dq2} xs2 }}}.
 Proof.
   wp_start as "[Hs1 Hs2]".
@@ -78,7 +78,7 @@ Qed.
 
 Lemma wp_BytesClone (b:slice.t) (xs:list u8) (dq:dfrac) :
   {{{ is_pkg_init std ∗ own_slice b dq xs }}}
-    @@ std.BytesClone #b
+    @! std.BytesClone #b
   {{{ b', RET #b'; own_slice b' (DfracOwn 1) xs ∗ own_slice_cap w8 b' (DfracOwn 1) }}}.
 Proof.
   wp_start as "Hb". wp_auto.
@@ -101,7 +101,7 @@ Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_pkg_init std }}}
-    @@ std.SumNoOverflow #x #y
+    @! std.SumNoOverflow #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
   wp_start as "_"; wp_auto.
@@ -111,7 +111,7 @@ Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
   {{{ is_pkg_init std }}}
-    @@ std.SumAssumeNoOverflow #x #y
+    @! std.SumAssumeNoOverflow #x #y
   {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
   wp_start as "_"; wp_auto.
@@ -132,7 +132,7 @@ Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
 
 Lemma wp_newJoinHandle (P: iProp Σ) :
   {{{ is_pkg_init std }}}
-    @@ std.newJoinHandle #()
+    @! std.newJoinHandle #()
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
   wp_start as "_".
@@ -174,7 +174,7 @@ Qed.
 Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
   {{{ is_pkg_init std ∗
         (∀ Φ, ▷(P -∗ Φ #()) -∗ WP #f #() {{ Φ }}) }}}
-  @@ std.Spawn #f
+  @! std.Spawn #f
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
   wp_start as "Hwp".

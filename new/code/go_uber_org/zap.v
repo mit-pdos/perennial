@@ -243,6 +243,10 @@ Definition NewAtomicLevelAt : go_string := "go.uber.org/zap.NewAtomicLevelAt"%go
 
 Definition ParseAtomicLevel : go_string := "go.uber.org/zap.ParseAtomicLevel"%go.
 
+Definition Loggerⁱᵈ : go_string := "go.uber.org/zap.Logger"%go.
+
+Axiom Logger : go_type.
+
 Definition New : go_string := "go.uber.org/zap.New"%go.
 
 Definition NewNop : go_string := "go.uber.org/zap.NewNop"%go.
@@ -311,7 +315,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Loggerⁱᵈ, []); (ptrTⁱᵈ Loggerⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo zap.zap :=
   {|

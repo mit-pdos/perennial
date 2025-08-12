@@ -23,7 +23,7 @@ Lemma wp_Hash sl_b d0 b :
     is_pkg_init cryptoutil ∗
     "Hsl_b" ∷ sl_b ↦*{d0} b
   }}}
-  @@ cryptoutil.Hash #sl_b
+  @! cryptoutil.Hash #sl_b
   {{{
     sl_hash hash, RET #sl_hash;
     "Hsl_b" ∷ sl_b ↦*{d0} b ∗
