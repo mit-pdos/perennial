@@ -14,6 +14,8 @@ Definition Errorf : go_string := "fmt.Errorf"%go.
 
 Definition FormatString : go_string := "fmt.FormatString"%go.
 
+Definition ppFree : go_string := "fmt.ppFree"%go.
+
 Axiom ppFree'init : val.
 
 Definition newPrinter : go_string := "fmt.newPrinter"%go.
@@ -70,17 +72,25 @@ Definition Fscanln : go_string := "fmt.Fscanln"%go.
 
 Definition Fscanf : go_string := "fmt.Fscanf"%go.
 
+Definition space : go_string := "fmt.space"%go.
+
 Axiom space'init : val.
 
 Definition isSpace : go_string := "fmt.isSpace"%go.
 
 Definition notSpace : go_string := "fmt.notSpace"%go.
 
+Definition ssFree : go_string := "fmt.ssFree"%go.
+
 Axiom ssFree'init : val.
 
 Definition newScanState : go_string := "fmt.newScanState"%go.
 
+Definition errComplex : go_string := "fmt.errComplex"%go.
+
 Axiom errComplex'init : val.
+
+Definition errBool : go_string := "fmt.errBool"%go.
 
 Axiom errBool'init : val.
 

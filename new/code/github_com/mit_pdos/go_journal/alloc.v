@@ -110,7 +110,7 @@ Definition Alloc__allocBitⁱᵐᵖˡ : val :=
     let: "start" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] "num") in
     do:  ("start" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "bit" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := ((![#uint64T] "num") `rem` #(W64 8)) in
       do:  ("bit" <-[#uint64T] "$r0");;;

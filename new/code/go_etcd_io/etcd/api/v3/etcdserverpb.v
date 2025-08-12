@@ -8,7 +8,13 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition xxx_messageInfo_Request : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Request"%go.
+
+Definition xxx_messageInfo_Metadata : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Metadata"%go.
+
 Definition init : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.init"%go.
+
+Definition fileDescriptor_09ffbeb3bebbce7e : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.fileDescriptor_09ffbeb3bebbce7e"%go.
 
 Axiom fileDescriptor_09ffbeb3bebbce7e'init : val.
 
@@ -20,11 +26,27 @@ Definition sozEtcdserver : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.soz
 
 Definition skipEtcdserver : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.skipEtcdserver"%go.
 
+Definition ErrInvalidLengthEtcdserver : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrInvalidLengthEtcdserver"%go.
+
 Axiom ErrInvalidLengthEtcdserver'init : val.
+
+Definition ErrIntOverflowEtcdserver : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrIntOverflowEtcdserver"%go.
 
 Axiom ErrIntOverflowEtcdserver'init : val.
 
+Definition ErrUnexpectedEndOfGroupEtcdserver : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrUnexpectedEndOfGroupEtcdserver"%go.
+
 Axiom ErrUnexpectedEndOfGroupEtcdserver'init : val.
+
+Definition xxx_messageInfo_RequestHeader : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestHeader"%go.
+
+Definition xxx_messageInfo_InternalRaftRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_InternalRaftRequest"%go.
+
+Definition xxx_messageInfo_EmptyResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_EmptyResponse"%go.
+
+Definition xxx_messageInfo_InternalAuthenticateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_InternalAuthenticateRequest"%go.
+
+Definition fileDescriptor_b4c9a9be0cfca103 : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.fileDescriptor_b4c9a9be0cfca103"%go.
 
 Axiom fileDescriptor_b4c9a9be0cfca103'init : val.
 
@@ -36,9 +58,15 @@ Definition sozRaftInternal : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.s
 
 Definition skipRaftInternal : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.skipRaftInternal"%go.
 
+Definition ErrInvalidLengthRaftInternal : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrInvalidLengthRaftInternal"%go.
+
 Axiom ErrInvalidLengthRaftInternal'init : val.
 
+Definition ErrIntOverflowRaftInternal : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrIntOverflowRaftInternal"%go.
+
 Axiom ErrIntOverflowRaftInternal'init : val.
+
+Definition ErrUnexpectedEndOfGroupRaftInternal : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrUnexpectedEndOfGroupRaftInternal"%go.
 
 Axiom ErrUnexpectedEndOfGroupRaftInternal'init : val.
 
@@ -50,11 +78,17 @@ Definition newLoggableValueCompare : go_string := "go.etcd.io/etcd/api/v3/etcdse
 
 Definition NewLoggablePutRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewLoggablePutRequest"%go.
 
+Definition AlarmType_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType_name"%go.
+
 Axiom AlarmType_name'init : val.
+
+Definition AlarmType_value : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType_value"%go.
 
 Axiom AlarmType_value'init : val.
 
 Definition RangeRequest_SortOrder : go_type := int32T.
+
+Definition RangeRequest_SortOrderⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortOrder"%go.
 
 Definition RangeRequest_NONE : expr := #(W32 0).
 
@@ -66,6 +100,8 @@ Definition RangeRequest_SortOrder_name : go_string := "go.etcd.io/etcd/api/v3/et
 
 Definition RangeRequest_SortOrder_value : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortOrder_value"%go.
 
+Definition fileDescriptor_77a6da22d6a3feb1 : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.fileDescriptor_77a6da22d6a3feb1"%go.
+
 (* go: rpc.pb.go:88:31 *)
 Definition RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ : val :=
   λ: <> <>,
@@ -74,6 +110,8 @@ Definition RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ : val :=
      slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Definition RangeRequest_SortTarget : go_type := int32T.
+
+Definition RangeRequest_SortTargetⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortTarget"%go.
 
 Definition RangeRequest_KEY : expr := #(W32 0).
 
@@ -98,6 +136,8 @@ Definition RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ : val :=
 
 Definition Compare_CompareResult : go_type := int32T.
 
+Definition Compare_CompareResultⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareResult"%go.
+
 Definition Compare_EQUAL : expr := #(W32 0).
 
 Definition Compare_GREATER : expr := #(W32 1).
@@ -118,6 +158,8 @@ Definition Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ : val :=
      slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Definition Compare_CompareTarget : go_type := int32T.
+
+Definition Compare_CompareTargetⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareTarget"%go.
 
 Definition Compare_VERSION : expr := #(W32 0).
 
@@ -140,15 +182,27 @@ Definition Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ : val :=
      let: "$sl1" := #(W64 1) in
      slice.literal #intT ["$sl0"; "$sl1"]))).
 
+Definition WatchCreateRequest_FilterType_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType_name"%go.
+
 Axiom WatchCreateRequest_FilterType_name'init : val.
+
+Definition WatchCreateRequest_FilterType_value : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType_value"%go.
 
 Axiom WatchCreateRequest_FilterType_value'init : val.
 
+Definition AlarmRequest_AlarmAction_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction_name"%go.
+
 Axiom AlarmRequest_AlarmAction_name'init : val.
+
+Definition AlarmRequest_AlarmAction_value : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction_value"%go.
 
 Axiom AlarmRequest_AlarmAction_value'init : val.
 
+Definition DowngradeRequest_DowngradeAction_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction_name"%go.
+
 Axiom DowngradeRequest_DowngradeAction_name'init : val.
+
+Definition DowngradeRequest_DowngradeAction_value : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction_value"%go.
 
 Axiom DowngradeRequest_DowngradeAction_value'init : val.
 
@@ -162,6 +216,10 @@ Definition ResponseHeader : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+
+Definition ResponseHeaderⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseHeader"%go.
+
+Definition xxx_messageInfo_ResponseHeader : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_ResponseHeader"%go.
 
 Definition RangeRequest : go_type := structT [
   "Key" :: sliceT;
@@ -183,6 +241,10 @@ Definition RangeRequest : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition RangeRequestⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest"%go.
+
+Definition xxx_messageInfo_RangeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RangeRequest"%go.
+
 Definition RangeResponse : go_type := structT [
   "Header" :: ptrT;
   "Kvs" :: sliceT;
@@ -193,6 +255,10 @@ Definition RangeResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+
+Definition RangeResponseⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeResponse"%go.
+
+Definition xxx_messageInfo_RangeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RangeResponse"%go.
 
 Definition PutRequest : go_type := structT [
   "Key" :: sliceT;
@@ -207,6 +273,10 @@ Definition PutRequest : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition PutRequestⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.PutRequest"%go.
+
+Definition xxx_messageInfo_PutRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_PutRequest"%go.
+
 Definition PutResponse : go_type := structT [
   "Header" :: ptrT;
   "PrevKv" :: ptrT;
@@ -215,6 +285,10 @@ Definition PutResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+
+Definition PutResponseⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.PutResponse"%go.
+
+Definition xxx_messageInfo_PutResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_PutResponse"%go.
 
 Definition DeleteRangeRequest : go_type := structT [
   "Key" :: sliceT;
@@ -226,6 +300,10 @@ Definition DeleteRangeRequest : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition DeleteRangeRequestⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DeleteRangeRequest"%go.
+
+Definition xxx_messageInfo_DeleteRangeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DeleteRangeRequest"%go.
+
 Definition DeleteRangeResponse : go_type := structT [
   "Header" :: ptrT;
   "Deleted" :: int64T;
@@ -235,6 +313,10 @@ Definition DeleteRangeResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+
+Definition DeleteRangeResponseⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DeleteRangeResponse"%go.
+
+Definition xxx_messageInfo_DeleteRangeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DeleteRangeResponse"%go.
 
 Definition isRequestOp_Request : go_type := interfaceT.
 
@@ -246,21 +328,35 @@ Definition RequestOp : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition RequestOpⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp"%go.
+
+Definition xxx_messageInfo_RequestOp : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestOp"%go.
+
+Definition isRequestOp_Requestⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.isRequestOp_Request"%go.
+
 Definition RequestOp_RequestRange : go_type := structT [
   "RequestRange" :: ptrT
 ].
+
+Definition RequestOp_RequestRangeⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestRange"%go.
 
 Definition RequestOp_RequestPut : go_type := structT [
   "RequestPut" :: ptrT
 ].
 
+Definition RequestOp_RequestPutⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestPut"%go.
+
 Definition RequestOp_RequestDeleteRange : go_type := structT [
   "RequestDeleteRange" :: ptrT
 ].
 
+Definition RequestOp_RequestDeleteRangeⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestDeleteRange"%go.
+
 Definition RequestOp_RequestTxn : go_type := structT [
   "RequestTxn" :: ptrT
 ].
+
+Definition RequestOp_RequestTxnⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestTxn"%go.
 
 (* go: rpc.pb.go:955:32 *)
 Definition RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ : val :=
@@ -292,21 +388,35 @@ Definition ResponseOp : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition ResponseOpⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp"%go.
+
+Definition xxx_messageInfo_ResponseOp : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_ResponseOp"%go.
+
+Definition isResponseOp_Responseⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.isResponseOp_Response"%go.
+
 Definition ResponseOp_ResponseRange : go_type := structT [
   "ResponseRange" :: ptrT
 ].
+
+Definition ResponseOp_ResponseRangeⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponseRange"%go.
 
 Definition ResponseOp_ResponsePut : go_type := structT [
   "ResponsePut" :: ptrT
 ].
 
+Definition ResponseOp_ResponsePutⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponsePut"%go.
+
 Definition ResponseOp_ResponseDeleteRange : go_type := structT [
   "ResponseDeleteRange" :: ptrT
 ].
 
+Definition ResponseOp_ResponseDeleteRangeⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponseDeleteRange"%go.
+
 Definition ResponseOp_ResponseTxn : go_type := structT [
   "ResponseTxn" :: ptrT
 ].
+
+Definition ResponseOp_ResponseTxnⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponseTxn"%go.
 
 (* go: rpc.pb.go:1071:34 *)
 Definition ResponseOp_ResponseRange__isResponseOp_Responseⁱᵐᵖˡ : val :=
@@ -342,25 +452,41 @@ Definition Compare : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition Compareⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare"%go.
+
+Definition xxx_messageInfo_Compare : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Compare"%go.
+
+Definition isCompare_TargetUnionⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.isCompare_TargetUnion"%go.
+
 Definition Compare_Version : go_type := structT [
   "Version" :: int64T
 ].
+
+Definition Compare_Versionⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_Version"%go.
 
 Definition Compare_CreateRevision : go_type := structT [
   "CreateRevision" :: int64T
 ].
 
+Definition Compare_CreateRevisionⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CreateRevision"%go.
+
 Definition Compare_ModRevision : go_type := structT [
   "ModRevision" :: int64T
 ].
+
+Definition Compare_ModRevisionⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_ModRevision"%go.
 
 Definition Compare_Value : go_type := structT [
   "Value" :: sliceT
 ].
 
+Definition Compare_Valueⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_Value"%go.
+
 Definition Compare_Lease : go_type := structT [
   "Lease" :: int64T
 ].
+
+Definition Compare_Leaseⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_Lease"%go.
 
 (* go: rpc.pb.go:1198:25 *)
 Definition Compare_Version__isCompare_TargetUnionⁱᵐᵖˡ : val :=
@@ -397,6 +523,10 @@ Definition TxnRequest : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition TxnRequestⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.TxnRequest"%go.
+
+Definition xxx_messageInfo_TxnRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_TxnRequest"%go.
+
 Definition TxnResponse : go_type := structT [
   "Header" :: ptrT;
   "Succeeded" :: boolT;
@@ -406,6 +536,176 @@ Definition TxnResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+
+Definition TxnResponseⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.TxnResponse"%go.
+
+Definition xxx_messageInfo_TxnResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_TxnResponse"%go.
+
+Definition xxx_messageInfo_CompactionRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_CompactionRequest"%go.
+
+Definition xxx_messageInfo_CompactionResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_CompactionResponse"%go.
+
+Definition xxx_messageInfo_HashRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashRequest"%go.
+
+Definition xxx_messageInfo_HashKVRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashKVRequest"%go.
+
+Definition xxx_messageInfo_HashKVResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashKVResponse"%go.
+
+Definition xxx_messageInfo_HashResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashResponse"%go.
+
+Definition xxx_messageInfo_SnapshotRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_SnapshotRequest"%go.
+
+Definition xxx_messageInfo_SnapshotResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_SnapshotResponse"%go.
+
+Definition xxx_messageInfo_WatchRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchRequest"%go.
+
+Definition xxx_messageInfo_WatchCreateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchCreateRequest"%go.
+
+Definition xxx_messageInfo_WatchCancelRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchCancelRequest"%go.
+
+Definition xxx_messageInfo_WatchProgressRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchProgressRequest"%go.
+
+Definition xxx_messageInfo_WatchResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchResponse"%go.
+
+Definition xxx_messageInfo_LeaseGrantRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseGrantRequest"%go.
+
+Definition xxx_messageInfo_LeaseGrantResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseGrantResponse"%go.
+
+Definition xxx_messageInfo_LeaseRevokeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseRevokeRequest"%go.
+
+Definition xxx_messageInfo_LeaseRevokeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseRevokeResponse"%go.
+
+Definition xxx_messageInfo_LeaseCheckpoint : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpoint"%go.
+
+Definition xxx_messageInfo_LeaseCheckpointRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpointRequest"%go.
+
+Definition xxx_messageInfo_LeaseCheckpointResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpointResponse"%go.
+
+Definition xxx_messageInfo_LeaseKeepAliveRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseKeepAliveRequest"%go.
+
+Definition xxx_messageInfo_LeaseKeepAliveResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseKeepAliveResponse"%go.
+
+Definition xxx_messageInfo_LeaseTimeToLiveRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseTimeToLiveRequest"%go.
+
+Definition xxx_messageInfo_LeaseTimeToLiveResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseTimeToLiveResponse"%go.
+
+Definition xxx_messageInfo_LeaseLeasesRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseLeasesRequest"%go.
+
+Definition xxx_messageInfo_LeaseStatus : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseStatus"%go.
+
+Definition xxx_messageInfo_LeaseLeasesResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseLeasesResponse"%go.
+
+Definition xxx_messageInfo_Member : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Member"%go.
+
+Definition xxx_messageInfo_MemberAddRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberAddRequest"%go.
+
+Definition xxx_messageInfo_MemberAddResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberAddResponse"%go.
+
+Definition xxx_messageInfo_MemberRemoveRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberRemoveRequest"%go.
+
+Definition xxx_messageInfo_MemberRemoveResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberRemoveResponse"%go.
+
+Definition xxx_messageInfo_MemberUpdateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberUpdateRequest"%go.
+
+Definition xxx_messageInfo_MemberUpdateResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberUpdateResponse"%go.
+
+Definition xxx_messageInfo_MemberListRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberListRequest"%go.
+
+Definition xxx_messageInfo_MemberListResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberListResponse"%go.
+
+Definition xxx_messageInfo_MemberPromoteRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberPromoteRequest"%go.
+
+Definition xxx_messageInfo_MemberPromoteResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberPromoteResponse"%go.
+
+Definition xxx_messageInfo_DefragmentRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DefragmentRequest"%go.
+
+Definition xxx_messageInfo_DefragmentResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DefragmentResponse"%go.
+
+Definition xxx_messageInfo_MoveLeaderRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MoveLeaderRequest"%go.
+
+Definition xxx_messageInfo_MoveLeaderResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MoveLeaderResponse"%go.
+
+Definition xxx_messageInfo_AlarmRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmRequest"%go.
+
+Definition xxx_messageInfo_AlarmMember : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmMember"%go.
+
+Definition xxx_messageInfo_AlarmResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmResponse"%go.
+
+Definition xxx_messageInfo_DowngradeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeRequest"%go.
+
+Definition xxx_messageInfo_DowngradeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeResponse"%go.
+
+Definition xxx_messageInfo_StatusRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_StatusRequest"%go.
+
+Definition xxx_messageInfo_StatusResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_StatusResponse"%go.
+
+Definition xxx_messageInfo_AuthEnableRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthEnableRequest"%go.
+
+Definition xxx_messageInfo_AuthDisableRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthDisableRequest"%go.
+
+Definition xxx_messageInfo_AuthStatusRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthStatusRequest"%go.
+
+Definition xxx_messageInfo_AuthenticateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthenticateRequest"%go.
+
+Definition xxx_messageInfo_AuthUserAddRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserAddRequest"%go.
+
+Definition xxx_messageInfo_AuthUserGetRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGetRequest"%go.
+
+Definition xxx_messageInfo_AuthUserDeleteRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserDeleteRequest"%go.
+
+Definition xxx_messageInfo_AuthUserChangePasswordRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserChangePasswordRequest"%go.
+
+Definition xxx_messageInfo_AuthUserGrantRoleRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGrantRoleRequest"%go.
+
+Definition xxx_messageInfo_AuthUserRevokeRoleRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserRevokeRoleRequest"%go.
+
+Definition xxx_messageInfo_AuthRoleAddRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleAddRequest"%go.
+
+Definition xxx_messageInfo_AuthRoleGetRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGetRequest"%go.
+
+Definition xxx_messageInfo_AuthUserListRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserListRequest"%go.
+
+Definition xxx_messageInfo_AuthRoleListRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleListRequest"%go.
+
+Definition xxx_messageInfo_AuthRoleDeleteRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleDeleteRequest"%go.
+
+Definition xxx_messageInfo_AuthRoleGrantPermissionRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGrantPermissionRequest"%go.
+
+Definition xxx_messageInfo_AuthRoleRevokePermissionRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleRevokePermissionRequest"%go.
+
+Definition xxx_messageInfo_AuthEnableResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthEnableResponse"%go.
+
+Definition xxx_messageInfo_AuthDisableResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthDisableResponse"%go.
+
+Definition xxx_messageInfo_AuthStatusResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthStatusResponse"%go.
+
+Definition xxx_messageInfo_AuthenticateResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthenticateResponse"%go.
+
+Definition xxx_messageInfo_AuthUserAddResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserAddResponse"%go.
+
+Definition xxx_messageInfo_AuthUserGetResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGetResponse"%go.
+
+Definition xxx_messageInfo_AuthUserDeleteResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserDeleteResponse"%go.
+
+Definition xxx_messageInfo_AuthUserChangePasswordResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserChangePasswordResponse"%go.
+
+Definition xxx_messageInfo_AuthUserGrantRoleResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGrantRoleResponse"%go.
+
+Definition xxx_messageInfo_AuthUserRevokeRoleResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserRevokeRoleResponse"%go.
+
+Definition xxx_messageInfo_AuthRoleAddResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleAddResponse"%go.
+
+Definition xxx_messageInfo_AuthRoleGetResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGetResponse"%go.
+
+Definition xxx_messageInfo_AuthRoleListResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleListResponse"%go.
+
+Definition xxx_messageInfo_AuthUserListResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserListResponse"%go.
+
+Definition xxx_messageInfo_AuthRoleDeleteResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleDeleteResponse"%go.
+
+Definition xxx_messageInfo_AuthRoleGrantPermissionResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGrantPermissionResponse"%go.
+
+Definition xxx_messageInfo_AuthRoleRevokePermissionResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleRevokePermissionResponse"%go.
 
 Axiom fileDescriptor_77a6da22d6a3feb1'init : val.
 
@@ -423,6 +723,8 @@ Definition _KV_Txn_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._
 
 Definition _KV_Compact_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._KV_Compact_Handler"%go.
 
+Definition _KV_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._KV_serviceDesc"%go.
+
 Axiom _KV_serviceDesc'init : val.
 
 Definition NewWatchClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewWatchClient"%go.
@@ -430,6 +732,8 @@ Definition NewWatchClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Ne
 Definition RegisterWatchServer : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RegisterWatchServer"%go.
 
 Definition _Watch_Watch_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Watch_Watch_Handler"%go.
+
+Definition _Watch_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Watch_serviceDesc"%go.
 
 Axiom _Watch_serviceDesc'init : val.
 
@@ -447,6 +751,8 @@ Definition _Lease_LeaseTimeToLive_Handler : go_string := "go.etcd.io/etcd/api/v3
 
 Definition _Lease_LeaseLeases_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseLeases_Handler"%go.
 
+Definition _Lease_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Lease_serviceDesc"%go.
+
 Axiom _Lease_serviceDesc'init : val.
 
 Definition NewClusterClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewClusterClient"%go.
@@ -462,6 +768,8 @@ Definition _Cluster_MemberUpdate_Handler : go_string := "go.etcd.io/etcd/api/v3/
 Definition _Cluster_MemberList_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_MemberList_Handler"%go.
 
 Definition _Cluster_MemberPromote_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_MemberPromote_Handler"%go.
+
+Definition _Cluster_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Cluster_serviceDesc"%go.
 
 Axiom _Cluster_serviceDesc'init : val.
 
@@ -484,6 +792,8 @@ Definition _Maintenance_Snapshot_Handler : go_string := "go.etcd.io/etcd/api/v3/
 Definition _Maintenance_MoveLeader_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_MoveLeader_Handler"%go.
 
 Definition _Maintenance_Downgrade_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Downgrade_Handler"%go.
+
+Definition _Maintenance_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_serviceDesc"%go.
 
 Axiom _Maintenance_serviceDesc'init : val.
 
@@ -524,6 +834,8 @@ Definition _Auth_RoleDelete_Handler : go_string := "go.etcd.io/etcd/api/v3/etcds
 Definition _Auth_RoleGrantPermission_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleGrantPermission_Handler"%go.
 
 Definition _Auth_RoleRevokePermission_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Auth_RoleRevokePermission_Handler"%go.
+
+Definition _Auth_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Auth_serviceDesc"%go.
 
 Axiom _Auth_serviceDesc'init : val.
 
@@ -1343,9 +1655,15 @@ Definition sozRpc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.sozRpc"%go
 
 Definition skipRpc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.skipRpc"%go.
 
+Definition ErrInvalidLengthRpc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrInvalidLengthRpc"%go.
+
 Axiom ErrInvalidLengthRpc'init : val.
 
+Definition ErrIntOverflowRpc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrIntOverflowRpc"%go.
+
 Axiom ErrIntOverflowRpc'init : val.
+
+Definition ErrUnexpectedEndOfGroupRpc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ErrUnexpectedEndOfGroupRpc"%go.
 
 Axiom ErrUnexpectedEndOfGroupRpc'init : val.
 

@@ -193,7 +193,7 @@ Definition bank_transferer_mainⁱᵐᵖˡ : val :=
     exception_do (let: "bck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((func_call #makeBankClerk) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((method_call #bank #"BankClerk'ptr" #"SimpleTransfer" (![#ptrT] "bck")) #()));;;
     return: #()).
 
@@ -205,7 +205,7 @@ Definition bank_auditor_mainⁱᵐᵖˡ : val :=
     exception_do (let: "bck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((func_call #makeBankClerk) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((method_call #bank #"BankClerk'ptr" #"SimpleAudit" (![#ptrT] "bck")) #()));;;
     return: #()).
 

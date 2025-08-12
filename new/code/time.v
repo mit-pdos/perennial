@@ -10,25 +10,37 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition std0x : go_string := "time.std0x"%go.
+
 Axiom std0x'init : val.
 
 Definition startsWithLowerCase : go_string := "time.startsWithLowerCase"%go.
 
 Definition nextStdChunk : go_string := "time.nextStdChunk"%go.
 
+Definition longDayNames : go_string := "time.longDayNames"%go.
+
 Axiom longDayNames'init : val.
+
+Definition shortDayNames : go_string := "time.shortDayNames"%go.
 
 Axiom shortDayNames'init : val.
 
+Definition shortMonthNames : go_string := "time.shortMonthNames"%go.
+
 Axiom shortMonthNames'init : val.
+
+Definition longMonthNames : go_string := "time.longMonthNames"%go.
 
 Axiom longMonthNames'init : val.
 
-Definition match : go_string := "time.match"%go.
+Definition match' : go_string := "time.match"%go.
 
-Definition lookup : go_string := "time.lookup"%go.
+Definition lookup' : go_string := "time.lookup"%go.
 
 Definition appendInt : go_string := "time.appendInt"%go.
+
+Definition errAtoi : go_string := "time.errAtoi"%go.
 
 Axiom errAtoi'init : val.
 
@@ -41,6 +53,8 @@ Definition digitsLen : go_string := "time.digitsLen"%go.
 Definition separator : go_string := "time.separator"%go.
 
 Definition appendNano : go_string := "time.appendNano"%go.
+
+Definition errBad : go_string := "time.errBad"%go.
 
 Axiom errBad'init : val.
 
@@ -74,11 +88,15 @@ Definition commaOrPeriod : go_string := "time.commaOrPeriod"%go.
 
 Definition parseNanoseconds : go_string := "time.parseNanoseconds"%go.
 
+Definition errLeadingInt : go_string := "time.errLeadingInt"%go.
+
 Axiom errLeadingInt'init : val.
 
 Definition leadingInt : go_string := "time.leadingInt"%go.
 
 Definition leadingFraction : go_string := "time.leadingFraction"%go.
+
+Definition unitMap : go_string := "time.unitMap"%go.
 
 Axiom unitMap'init : val.
 
@@ -89,6 +107,8 @@ Definition parseRFC3339 : go_string := "time.parseRFC3339"%go.
 Definition parseStrictRFC3339 : go_string := "time.parseStrictRFC3339"%go.
 
 Definition Sleep : go_string := "time.Sleep"%go.
+
+Definition asynctimerchan : go_string := "time.asynctimerchan"%go.
 
 Axiom asynctimerchan'init : val.
 
@@ -112,6 +132,8 @@ Definition Timer : go_type := structT [
   "C" :: chanT Time;
   "initTimer" :: boolT
 ].
+
+Definition Timerⁱᵈ : go_string := "time.Timer"%go.
 
 Definition NewTimer : go_string := "time.NewTimer"%go.
 
@@ -137,9 +159,13 @@ Definition NewTicker : go_string := "time.NewTicker"%go.
 
 Definition Tick : go_string := "time.Tick"%go.
 
+Definition Timeⁱᵈ : go_string := "time.Time"%go.
+
 Definition dateToAbsDays : go_string := "time.dateToAbsDays"%go.
 
 Definition Duration : go_type := int64T.
+
+Definition Durationⁱᵈ : go_string := "time.Duration"%go.
 
 Definition Nanosecond : expr := #(W64 1).
 
@@ -171,6 +197,8 @@ Definition runtimeNow : go_string := "time.runtimeNow"%go.
 
 Definition runtimeNano : go_string := "time.runtimeNano"%go.
 
+Definition startNano : go_string := "time.startNano"%go.
+
 Axiom startNano'init : val.
 
 Definition Now : go_string := "time.Now"%go.
@@ -197,11 +225,25 @@ Definition legacyAbsClock : go_string := "time.legacyAbsClock"%go.
 
 Definition legacyAbsDate : go_string := "time.legacyAbsDate"%go.
 
+Definition UTC : go_string := "time.UTC"%go.
+
 Axiom UTC'init : val.
+
+Definition utcLoc : go_string := "time.utcLoc"%go.
 
 Axiom utcLoc'init : val.
 
+Definition Local : go_string := "time.Local"%go.
+
 Axiom Local'init : val.
+
+Definition localLoc : go_string := "time.localLoc"%go.
+
+Definition localOnce : go_string := "time.localOnce"%go.
+
+Definition unnamedFixedZones : go_string := "time.unnamedFixedZones"%go.
+
+Definition unnamedFixedZonesOnce : go_string := "time.unnamedFixedZonesOnce"%go.
 
 Definition FixedZone : go_string := "time.FixedZone"%go.
 
@@ -219,7 +261,13 @@ Definition tzsetNum : go_string := "time.tzsetNum"%go.
 
 Definition tzruleTime : go_string := "time.tzruleTime"%go.
 
+Definition errLocation : go_string := "time.errLocation"%go.
+
 Axiom errLocation'init : val.
+
+Definition zoneinfo : go_string := "time.zoneinfo"%go.
+
+Definition zoneinfoOnce : go_string := "time.zoneinfoOnce"%go.
 
 Definition LoadLocation : go_string := "time.LoadLocation"%go.
 
@@ -229,7 +277,11 @@ Definition gorootZoneSource : go_string := "time.gorootZoneSource"%go.
 
 Definition registerLoadFromEmbeddedTZData : go_string := "time.registerLoadFromEmbeddedTZData"%go.
 
+Definition loadFromEmbeddedTZData : go_string := "time.loadFromEmbeddedTZData"%go.
+
 Definition byteString : go_string := "time.byteString"%go.
+
+Definition errBadData : go_string := "time.errBadData"%go.
 
 Axiom errBadData'init : val.
 
@@ -245,11 +297,15 @@ Definition get2 : go_string := "time.get2"%go.
 
 Definition loadTzinfoFromZip : go_string := "time.loadTzinfoFromZip"%go.
 
+Definition loadTzinfoFromTzdata : go_string := "time.loadTzinfoFromTzdata"%go.
+
 Definition loadTzinfo : go_string := "time.loadTzinfo"%go.
 
 Definition loadLocation : go_string := "time.loadLocation"%go.
 
 Definition readFile : go_string := "time.readFile"%go.
+
+Definition platformZoneSources : go_string := "time.platformZoneSources"%go.
 
 Axiom platformZoneSources'init : val.
 

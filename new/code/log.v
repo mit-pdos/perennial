@@ -21,6 +21,8 @@ Definition LstdFlags : Z := 3.
 
 Definition New : go_string := "log.New"%go.
 
+Definition std : go_string := "log.std"%go.
+
 Axiom std'init : val.
 
 Definition Default : go_string := "log.Default"%go.
@@ -28,6 +30,8 @@ Definition Default : go_string := "log.Default"%go.
 Definition itoa : go_string := "log.itoa"%go.
 
 Definition formatHeader : go_string := "log.formatHeader"%go.
+
+Definition bufferPool : go_string := "log.bufferPool"%go.
 
 Axiom bufferPool'init : val.
 

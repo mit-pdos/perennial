@@ -283,7 +283,7 @@ Definition recoverStateMachineⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#sliceT] "snap") in
     let: "$a1" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
     (![#funcT] (struct.field_ref #InMemoryStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: int_gt (let: "$a0" := (![#sliceT] "enc") in
       slice.len "$a0") #(W64 1)
       then

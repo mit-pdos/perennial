@@ -23,7 +23,7 @@ Definition LockClerk__Lockⁱᵐᵖˡ : val :=
     (for: (λ: <>, (let: "$a0" := (![#stringT] "key") in
     let: "$a1" := #""%go in
     let: "$a2" := #"1"%go in
-    (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1" "$a2") ≠ #"ok"%go); (λ: <>, Skip) := λ: <>,
+    (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1" "$a2") ≠ #"ok"%go); (λ: <>, #()) := λ: <>,
       do:  #());;;
     return: #()).
 

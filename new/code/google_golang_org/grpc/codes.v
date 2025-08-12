@@ -14,6 +14,8 @@ Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonica
 
 Definition Code : go_type := uint32T.
 
+Definition Codeⁱᵈ : go_string := "google.golang.org/grpc/codes.Code"%go.
+
 Definition Canceled : expr := #(W32 1).
 
 Definition InvalidArgument : expr := #(W32 3).
@@ -35,6 +37,8 @@ Definition Unavailable : expr := #(W32 14).
 Definition DataLoss : expr := #(W32 15).
 
 Definition Unauthenticated : expr := #(W32 16).
+
+Definition strToCode : go_string := "google.golang.org/grpc/codes.strToCode"%go.
 
 Axiom strToCode'init : val.
 

@@ -8,9 +8,13 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition testingForceReadDirLstat : go_string := "os.testingForceReadDirLstat"%go.
+
 Definition ReadDir : go_string := "os.ReadDir"%go.
 
 Definition CopyFS : go_string := "os.CopyFS"%go.
+
+Definition dirBufPool : go_string := "os.dirBufPool"%go.
 
 Axiom dirBufPool'init : val.
 
@@ -52,17 +56,31 @@ Definition Clearenv : go_string := "os.Clearenv"%go.
 
 Definition Environ : go_string := "os.Environ"%go.
 
+Definition ErrInvalid : go_string := "os.ErrInvalid"%go.
+
 Axiom ErrInvalid'init : val.
+
+Definition ErrPermission : go_string := "os.ErrPermission"%go.
 
 Axiom ErrPermission'init : val.
 
+Definition ErrExist : go_string := "os.ErrExist"%go.
+
 Axiom ErrExist'init : val.
+
+Definition ErrNotExist : go_string := "os.ErrNotExist"%go.
 
 Axiom ErrNotExist'init : val.
 
+Definition ErrClosed : go_string := "os.ErrClosed"%go.
+
 Axiom ErrClosed'init : val.
 
+Definition ErrNoDeadline : go_string := "os.ErrNoDeadline"%go.
+
 Axiom ErrNoDeadline'init : val.
+
+Definition ErrDeadlineExceeded : go_string := "os.ErrDeadlineExceeded"%go.
 
 Axiom ErrDeadlineExceeded'init : val.
 
@@ -84,6 +102,8 @@ Definition underlyingErrorIs : go_string := "os.underlyingErrorIs"%go.
 
 Definition underlyingError : go_string := "os.underlyingError"%go.
 
+Definition ErrProcessDone : go_string := "os.ErrProcessDone"%go.
+
 Axiom ErrProcessDone'init : val.
 
 Definition newPIDProcess : go_string := "os.newPIDProcess"%go.
@@ -100,7 +120,11 @@ Definition FindProcess : go_string := "os.FindProcess"%go.
 
 Definition StartProcess : go_string := "os.StartProcess"%go.
 
+Definition Interrupt : go_string := "os.Interrupt"%go.
+
 Axiom Interrupt'init : val.
+
+Definition Kill : go_string := "os.Kill"%go.
 
 Axiom Kill'init : val.
 
@@ -114,13 +138,21 @@ Definition Executable : go_string := "os.Executable"%go.
 
 Definition executable : go_string := "os.executable"%go.
 
+Definition Stdin : go_string := "os.Stdin"%go.
+
 Axiom Stdin'init : val.
 
+Definition Stdout : go_string := "os.Stdout"%go.
+
 Axiom Stdout'init : val.
+
+Definition Stderr : go_string := "os.Stderr"%go.
 
 Axiom Stderr'init : val.
 
 Definition genericReadFrom : go_string := "os.genericReadFrom"%go.
+
+Definition errWriteAtInAppendMode : go_string := "os.errWriteAtInAppendMode"%go.
 
 Axiom errWriteAtInAppendMode'init : val.
 
@@ -138,9 +170,13 @@ Definition Create : go_string := "os.Create"%go.
 
 Definition OpenFile : go_string := "os.OpenFile"%go.
 
+Definition errPathEscapes : go_string := "os.errPathEscapes"%go.
+
 Axiom errPathEscapes'init : val.
 
 Definition openDir : go_string := "os.openDir"%go.
+
+Definition lstat : go_string := "os.lstat"%go.
 
 Axiom lstat'init : val.
 
@@ -149,6 +185,8 @@ Definition Rename : go_string := "os.Rename"%go.
 Definition Readlink : go_string := "os.Readlink"%go.
 
 Definition fixCount : go_string := "os.fixCount"%go.
+
+Definition checkWrapErr : go_string := "os.checkWrapErr"%go.
 
 Axiom checkWrapErr'init : val.
 
@@ -218,6 +256,8 @@ Definition readlink : go_string := "os.readlink"%go.
 
 Definition newUnixDirent : go_string := "os.newUnixDirent"%go.
 
+Definition getwdCache : go_string := "os.getwdCache"%go.
+
 Definition Getwd : go_string := "os.Getwd"%go.
 
 Definition MkdirAll : go_string := "os.MkdirAll"%go.
@@ -238,6 +278,8 @@ Definition pidfdFind : go_string := "os.pidfdFind"%go.
 
 Definition pidfdWorks : go_string := "os.pidfdWorks"%go.
 
+Definition checkPidfdOnce : go_string := "os.checkPidfdOnce"%go.
+
 Axiom checkPidfdOnce'init : val.
 
 Definition checkPidfd : go_string := "os.checkPidfd"%go.
@@ -249,6 +291,8 @@ Definition ignoreSIGSYS : go_string := "os.ignoreSIGSYS"%go.
 Definition restoreSIGSYS : go_string := "os.restoreSIGSYS"%go.
 
 Definition Pipe : go_string := "os.Pipe"%go.
+
+Definition Args : go_string := "os.Args"%go.
 
 Definition init : go_string := "os.init"%go.
 
@@ -334,6 +378,8 @@ Definition nextRandom : go_string := "os.nextRandom"%go.
 
 Definition CreateTemp : go_string := "os.CreateTemp"%go.
 
+Definition errPatternHasSeparator : go_string := "os.errPatternHasSeparator"%go.
+
 Axiom errPatternHasSeparator'init : val.
 
 Definition prefixAndSuffix : go_string := "os.prefixAndSuffix"%go.
@@ -348,7 +394,11 @@ Definition SameFile : go_string := "os.SameFile"%go.
 
 Definition sameFile : go_string := "os.sameFile"%go.
 
+Definition pollCopyFileRange : go_string := "os.pollCopyFileRange"%go.
+
 Axiom pollCopyFileRange'init : val.
+
+Definition pollSplice : go_string := "os.pollSplice"%go.
 
 Axiom pollSplice'init : val.
 

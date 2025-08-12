@@ -703,7 +703,7 @@ Definition Server__ApplyRoWaitForCommitⁱᵐᵖˡ : val :=
       do:  ((struct.field_ref #ApplyReply #"Err"%go (![#ptrT] "reply")) <-[#uint64T] "$r0");;;
       return: (![#ptrT] "reply")
     else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s"))) ≠ (![#uint64T] "epoch")
       then
         let: "$r0" := e.Stale in
@@ -829,7 +829,7 @@ Definition Server__Applyⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := #(W64 1) in
       (method_call #sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0");;;
       let: "$go" := (λ: <>,
-        exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+        exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
           let: "err" := (mem.alloc (type.zero_val #uint64T)) in
           let: "$r0" := (let: "$a0" := (![#ptrT] "args") in
           (method_call #replica.replica #"Clerk'ptr" #"ApplyAsBackup" (![#ptrT] "clerk")) "$a0") in
@@ -853,7 +853,7 @@ Definition Server__Applyⁱᵐᵖˡ : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks_inner") in
-    slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "errs") (![#uint64T] "i"))) in
       do:  ("err2" <-[#uint64T] "$r0");;;
@@ -884,7 +884,7 @@ Definition Server__leaseRenewalThreadⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "latestEpoch" := (mem.alloc (type.zero_val #uint64T)) in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "leaseExpiration" := (mem.alloc (type.zero_val #uint64T)) in
       let: "leaseErr" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "latestEpoch") in
@@ -919,10 +919,10 @@ Definition Server__leaseRenewalThreadⁱᵐᵖˡ : val :=
 Definition Server__sendIncreaseCommitThreadⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       (for: (λ: <>, (~ (![#boolT] (struct.field_ref #Server #"isPrimary"%go (![#ptrT] "s")))) || ((let: "$a0" := (![#sliceT] (slice.elem_ref #sliceT (![#sliceT] (struct.field_ref #Server #"clerks"%go (![#ptrT] "s"))) #(W64 0))) in
-      slice.len "$a0") = #(W64 0))); (λ: <>, Skip) := λ: <>,
+      slice.len "$a0") = #(W64 0))); (λ: <>, #()) := λ: <>,
         do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Server #"isPrimary_cond"%go (![#ptrT] "s")))) #()));;;
       let: "newCommittedNextIndex" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s"))) in
@@ -949,7 +949,7 @@ Definition Server__sendIncreaseCommitThreadⁱᵐᵖˡ : val :=
         do:  (let: "$a0" := #(W64 1) in
         (method_call #sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0");;;
         let: "$go" := (λ: <>,
-          exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+          exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
             let: "err" := (mem.alloc (type.zero_val #uint64T)) in
             let: "$r0" := (let: "$a0" := (![#uint64T] "newCommittedNextIndex") in
             (method_call #replica.replica #"Clerk'ptr" #"IncreaseCommitIndex" (![#ptrT] "clerk")) "$a0") in
@@ -985,7 +985,7 @@ Definition Server__ApplyAsBackupⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
-    (for: (λ: <>, (((![#uint64T] (struct.field_ref #ApplyAsBackupArgs #"index"%go (![#ptrT] "args"))) > (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) && ((![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s"))) = (![#uint64T] (struct.field_ref #ApplyAsBackupArgs #"epoch"%go (![#ptrT] "args"))))) && (~ (![#boolT] (struct.field_ref #Server #"sealed"%go (![#ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (((![#uint64T] (struct.field_ref #ApplyAsBackupArgs #"index"%go (![#ptrT] "args"))) > (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) && ((![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s"))) = (![#uint64T] (struct.field_ref #ApplyAsBackupArgs #"epoch"%go (![#ptrT] "args"))))) && (~ (![#boolT] (struct.field_ref #Server #"sealed"%go (![#ptrT] "s"))))); (λ: <>, #()) := λ: <>,
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #Server #"opAppliedConds"%go (![#ptrT] "s"))) (![#uint64T] (struct.field_ref #ApplyAsBackupArgs #"index"%go (![#ptrT] "args")))) in
@@ -1177,7 +1177,7 @@ Definition Server__BecomePrimaryⁱᵐᵖˡ : val :=
     let: "j" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("j" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "j") < (![#uint64T] "numClerks")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "j") < (![#uint64T] "numClerks")); (λ: <>, #()) := λ: <>,
       let: "clerks" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (slice.make2 #ptrT ((let: "$a0" := (![#sliceT] (struct.field_ref #BecomePrimaryArgs #"Replicas"%go (![#ptrT] "args"))) in
       slice.len "$a0") - #(W64 1))) in
@@ -1186,7 +1186,7 @@ Definition Server__BecomePrimaryⁱᵐᵖˡ : val :=
       let: "$r0" := #(W64 0) in
       do:  ("i" <-[#uint64T] "$r0");;;
       (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
-      slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+      slice.len "$a0"))); (λ: <>, #()) := λ: <>,
         let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #BecomePrimaryArgs #"Replicas"%go (![#ptrT] "args"))) ((![#uint64T] "i") + #(W64 1)))) in
         (func_call #MakeClerk) "$a0") in
         do:  ((slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i")) <-[#ptrT] "$r0");;;

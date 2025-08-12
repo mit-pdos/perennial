@@ -51,7 +51,7 @@ Definition lockShard__acquireⁱᵐᵖˡ : val :=
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "addr" := (mem.alloc "addr") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "state" := (mem.alloc (type.zero_val #ptrT)) in
       let: "ok1" := (mem.alloc (type.zero_val #boolT)) in
       let: "state1" := (mem.alloc (type.zero_val #ptrT)) in

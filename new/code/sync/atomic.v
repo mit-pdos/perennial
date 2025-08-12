@@ -209,6 +209,8 @@ Definition noCopyⁱᵈ : go_string := "sync/atomic.noCopy"%go.
 
 Definition align64ⁱᵈ : go_string := "sync/atomic.align64"%go.
 
+Definition firstStoreInProgress : go_string := "sync/atomic.firstStoreInProgress"%go.
+
 Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
 
 Definition runtime_procUnpin : go_string := "sync/atomic.runtime_procUnpin"%go.

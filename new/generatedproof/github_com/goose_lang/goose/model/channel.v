@@ -274,75 +274,60 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined channel :=
-{|
-  is_pkg_defined := is_global_definitions channel var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewChannelRef :
-  WpFuncCall channel "NewChannelRef" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.NewChannelRef _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSendCase :
-  WpFuncCall channel "NewSendCase" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.NewSendCase _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewRecvCase :
-  WpFuncCall channel "NewRecvCase" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.NewRecvCase _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelect :
-  WpFuncCall channel "TrySelect" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelect _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select1 :
-  WpFuncCall channel "Select1" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select1 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase2 :
-  WpFuncCall channel "TrySelectCase2" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase2 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select2 :
-  WpFuncCall channel "Select2" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select2 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase3 :
-  WpFuncCall channel "TrySelectCase3" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase3 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select3 :
-  WpFuncCall channel "Select3" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select3 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase4 :
-  WpFuncCall channel "TrySelectCase4" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase4 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select4 :
-  WpFuncCall channel "Select4" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select4 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase5 :
-  WpFuncCall channel "TrySelectCase5" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase5 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select5 :
-  WpFuncCall channel "Select5" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select5 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_BufferedTryReceive :

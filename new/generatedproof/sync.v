@@ -141,6 +141,14 @@ Qed.
 
 End instances.
 
+(* type sync.rlocker *)
+Module rlocker.
+Section def.
+Context `{ffi_syntax}.
+Definition t := RWMutex.t.
+End def.
+End rlocker.
+
 (* type sync.WaitGroup *)
 Module WaitGroup.
 Section def.

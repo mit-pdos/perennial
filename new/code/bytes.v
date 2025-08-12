@@ -10,11 +10,17 @@ Context `{ffi_syntax}.
 
 Axiom Buffer : go_type.
 
+Definition ErrTooLarge : go_string := "bytes.ErrTooLarge"%go.
+
 Axiom ErrTooLarge'init : val.
+
+Definition errNegativeRead : go_string := "bytes.errNegativeRead"%go.
 
 Axiom errNegativeRead'init : val.
 
 Definition growSlice : go_string := "bytes.growSlice"%go.
+
+Definition errUnreadByte : go_string := "bytes.errUnreadByte"%go.
 
 Axiom errUnreadByte'init : val.
 
@@ -72,6 +78,8 @@ Definition SplitAfterN : go_string := "bytes.SplitAfterN"%go.
 Definition Split : go_string := "bytes.Split"%go.
 
 Definition SplitAfter : go_string := "bytes.SplitAfter"%go.
+
+Definition asciiSpace : go_string := "bytes.asciiSpace"%go.
 
 Axiom asciiSpace'init : val.
 

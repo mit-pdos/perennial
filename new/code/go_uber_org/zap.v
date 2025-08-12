@@ -67,13 +67,21 @@ Definition NewDevelopmentEncoderConfig : go_string := "go.uber.org/zap.NewDevelo
 
 Definition NewDevelopmentConfig : go_string := "go.uber.org/zap.NewDevelopmentConfig"%go.
 
+Definition errNoEncoderNameSpecified : go_string := "go.uber.org/zap.errNoEncoderNameSpecified"%go.
+
 Axiom errNoEncoderNameSpecified'init : val.
 
+Definition _encoderNameToConstructor : go_string := "go.uber.org/zap._encoderNameToConstructor"%go.
+
 Axiom _encoderNameToConstructor'init : val.
+
+Definition _encoderMutex : go_string := "go.uber.org/zap._encoderMutex"%go.
 
 Definition RegisterEncoder : go_string := "go.uber.org/zap.RegisterEncoder"%go.
 
 Definition newEncoder : go_string := "go.uber.org/zap.newEncoder"%go.
+
+Definition _errArrayElemPool : go_string := "go.uber.org/zap._errArrayElemPool"%go.
 
 Axiom _errArrayElemPool'init : val.
 
@@ -81,7 +89,11 @@ Definition Error : go_string := "go.uber.org/zap.Error"%go.
 
 Definition NamedError : go_string := "go.uber.org/zap.NamedError"%go.
 
+Definition _minTimeInt64 : go_string := "go.uber.org/zap._minTimeInt64"%go.
+
 Axiom _minTimeInt64'init : val.
+
+Definition _maxTimeInt64 : go_string := "go.uber.org/zap._maxTimeInt64"%go.
 
 Axiom _maxTimeInt64'init : val.
 
@@ -191,7 +203,13 @@ Definition Any : go_string := "go.uber.org/zap.Any"%go.
 
 Definition LevelFlag : go_string := "go.uber.org/zap.LevelFlag"%go.
 
+Definition _globalMu : go_string := "go.uber.org/zap._globalMu"%go.
+
+Definition _globalL : go_string := "go.uber.org/zap._globalL"%go.
+
 Axiom _globalL'init : val.
+
+Definition _globalS : go_string := "go.uber.org/zap._globalS"%go.
 
 Axiom _globalS'init : val.
 
@@ -266,6 +284,8 @@ Definition OnFatal : go_string := "go.uber.org/zap.OnFatal"%go.
 Definition WithFatalHook : go_string := "go.uber.org/zap.WithFatalHook"%go.
 
 Definition WithClock : go_string := "go.uber.org/zap.WithClock"%go.
+
+Definition _sinkRegistry : go_string := "go.uber.org/zap._sinkRegistry"%go.
 
 Axiom _sinkRegistry'init : val.
 

@@ -72,7 +72,6 @@ projs = [
     create_proj(
         repo="upamanyus/etcd",
         pkgs=[
-            "time",
             "math",
             "google.golang.org/grpc",
             "go.etcd.io/etcd/api/v3/etcdserverpb",
@@ -314,6 +313,7 @@ def main():
             "sync",
             "sync/atomic",
             "internal/race",
+            "time",
             "fmt",
             "log",
         )

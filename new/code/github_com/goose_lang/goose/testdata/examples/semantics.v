@@ -175,11 +175,11 @@ Definition testMaxUint64ⁱᵐᵖˡ : val :=
 
 Definition AdderType : go_type := funcT.
 
-Definition AdderTypeⁱᵈ : go_string := funcTⁱᵈ [uint64Tⁱᵈ] [uint64Tⁱᵈ] #false.
+Definition AdderTypeⁱᵈ : go_string := funcTⁱᵈ [uint64Tⁱᵈ] [uint64Tⁱᵈ] false.
 
 Definition MultipleArgsType : go_type := funcT.
 
-Definition MultipleArgsTypeⁱᵈ : go_string := funcTⁱᵈ [uint64Tⁱᵈ; boolTⁱᵈ] [uint64Tⁱᵈ] #false.
+Definition MultipleArgsTypeⁱᵈ : go_string := funcTⁱᵈ [uint64Tⁱᵈ; boolTⁱᵈ] [uint64Tⁱᵈ] false.
 
 Definition adder : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.adder"%go.
 
@@ -1115,7 +1115,7 @@ Definition standardForLoopⁱᵐᵖˡ : val :=
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "s") in
       slice.len "$a0"))
       then
@@ -1148,7 +1148,7 @@ Definition LoopStruct__forLoopWaitⁱᵐᵖˡ : val :=
   λ: "ls" "i",
     exception_do (let: "ls" := (mem.alloc "ls") in
     let: "i" := (mem.alloc "i") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "nxt" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) in
       do:  ("nxt" <-[#ptrT] "$r0");;;
@@ -1200,7 +1200,7 @@ Definition testBreakFromLoopWithContinueⁱᵐᵖˡ : val :=
     exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: #true
       then
         let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
@@ -1218,7 +1218,7 @@ Definition testBreakFromLoopNoContinueⁱᵐᵖˡ : val :=
     exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
       (if: #true
       then
         let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
@@ -1237,7 +1237,7 @@ Definition testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ : val :=
     exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") = #(W64 1)
       then
         let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
@@ -1258,7 +1258,7 @@ Definition testBreakFromLoopForOnlyⁱᵐᵖˡ : val :=
     exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
       let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
       do:  ("i" <-[#uint64T] "$r0"));;;
     return: ((![#uint64T] "i") = #(W64 4))).
@@ -1271,7 +1271,7 @@ Definition testBreakFromLoopAssignAndContinueⁱᵐᵖˡ : val :=
     exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
       (if: #true
       then
         let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
@@ -1297,11 +1297,11 @@ Definition testNestedLoopsⁱᵐᵖˡ : val :=
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (let: "j" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[#uint64T] "$r0");;;
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         (if: (![#uint64T] "j") > #(W64 5)
         then break: #()
         else do:  #());;;
@@ -3078,7 +3078,7 @@ Definition applyLogⁱᵐᵖˡ : val :=
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") < (![#uint64T] "length")
       then
         let: "v" := (mem.alloc (type.zero_val #sliceT)) in

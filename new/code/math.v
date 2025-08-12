@@ -102,6 +102,8 @@ Definition expmulti : go_string := "math.expmulti"%go.
 
 Definition archExp2 : go_string := "math.archExp2"%go.
 
+Definition useFMA : go_string := "math.useFMA"%go.
+
 Axiom useFMA'init : val.
 
 Definition archExp : go_string := "math.archExp"%go.
@@ -152,9 +154,15 @@ Definition Frexp : go_string := "math.Frexp"%go.
 
 Definition frexp : go_string := "math.frexp"%go.
 
+Definition _gamP : go_string := "math._gamP"%go.
+
 Axiom _gamP'init : val.
 
+Definition _gamQ : go_string := "math._gamQ"%go.
+
 Axiom _gamQ'init : val.
+
+Definition _gamS : go_string := "math._gamS"%go.
 
 Axiom _gamS'init : val.
 
@@ -174,37 +182,69 @@ Definition J0 : go_string := "math.J0"%go.
 
 Definition Y0 : go_string := "math.Y0"%go.
 
+Definition p0R8 : go_string := "math.p0R8"%go.
+
 Axiom p0R8'init : val.
+
+Definition p0S8 : go_string := "math.p0S8"%go.
 
 Axiom p0S8'init : val.
 
+Definition p0R5 : go_string := "math.p0R5"%go.
+
 Axiom p0R5'init : val.
+
+Definition p0S5 : go_string := "math.p0S5"%go.
 
 Axiom p0S5'init : val.
 
+Definition p0R3 : go_string := "math.p0R3"%go.
+
 Axiom p0R3'init : val.
+
+Definition p0S3 : go_string := "math.p0S3"%go.
 
 Axiom p0S3'init : val.
 
+Definition p0R2 : go_string := "math.p0R2"%go.
+
 Axiom p0R2'init : val.
+
+Definition p0S2 : go_string := "math.p0S2"%go.
 
 Axiom p0S2'init : val.
 
 Definition pzero : go_string := "math.pzero"%go.
 
+Definition q0R8 : go_string := "math.q0R8"%go.
+
 Axiom q0R8'init : val.
+
+Definition q0S8 : go_string := "math.q0S8"%go.
 
 Axiom q0S8'init : val.
 
+Definition q0R5 : go_string := "math.q0R5"%go.
+
 Axiom q0R5'init : val.
+
+Definition q0S5 : go_string := "math.q0S5"%go.
 
 Axiom q0S5'init : val.
 
+Definition q0R3 : go_string := "math.q0R3"%go.
+
 Axiom q0R3'init : val.
+
+Definition q0S3 : go_string := "math.q0S3"%go.
 
 Axiom q0S3'init : val.
 
+Definition q0R2 : go_string := "math.q0R2"%go.
+
 Axiom q0R2'init : val.
+
+Definition q0S2 : go_string := "math.q0S2"%go.
 
 Axiom q0S2'init : val.
 
@@ -214,37 +254,69 @@ Definition J1 : go_string := "math.J1"%go.
 
 Definition Y1 : go_string := "math.Y1"%go.
 
+Definition p1R8 : go_string := "math.p1R8"%go.
+
 Axiom p1R8'init : val.
+
+Definition p1S8 : go_string := "math.p1S8"%go.
 
 Axiom p1S8'init : val.
 
+Definition p1R5 : go_string := "math.p1R5"%go.
+
 Axiom p1R5'init : val.
+
+Definition p1S5 : go_string := "math.p1S5"%go.
 
 Axiom p1S5'init : val.
 
+Definition p1R3 : go_string := "math.p1R3"%go.
+
 Axiom p1R3'init : val.
+
+Definition p1S3 : go_string := "math.p1S3"%go.
 
 Axiom p1S3'init : val.
 
+Definition p1R2 : go_string := "math.p1R2"%go.
+
 Axiom p1R2'init : val.
+
+Definition p1S2 : go_string := "math.p1S2"%go.
 
 Axiom p1S2'init : val.
 
 Definition pone : go_string := "math.pone"%go.
 
+Definition q1R8 : go_string := "math.q1R8"%go.
+
 Axiom q1R8'init : val.
+
+Definition q1S8 : go_string := "math.q1S8"%go.
 
 Axiom q1S8'init : val.
 
+Definition q1R5 : go_string := "math.q1R5"%go.
+
 Axiom q1R5'init : val.
+
+Definition q1S5 : go_string := "math.q1S5"%go.
 
 Axiom q1S5'init : val.
 
+Definition q1R3 : go_string := "math.q1R3"%go.
+
 Axiom q1R3'init : val.
+
+Definition q1S3 : go_string := "math.q1S3"%go.
 
 Axiom q1S3'init : val.
 
+Definition q1R2 : go_string := "math.q1R2"%go.
+
 Axiom q1R2'init : val.
+
+Definition q1S2 : go_string := "math.q1S2"%go.
 
 Axiom q1S2'init : val.
 
@@ -258,17 +330,31 @@ Definition Ldexp : go_string := "math.Ldexp"%go.
 
 Definition ldexp : go_string := "math.ldexp"%go.
 
+Definition _lgamA : go_string := "math._lgamA"%go.
+
 Axiom _lgamA'init : val.
+
+Definition _lgamR : go_string := "math._lgamR"%go.
 
 Axiom _lgamR'init : val.
 
+Definition _lgamS : go_string := "math._lgamS"%go.
+
 Axiom _lgamS'init : val.
+
+Definition _lgamT : go_string := "math._lgamT"%go.
 
 Axiom _lgamT'init : val.
 
+Definition _lgamU : go_string := "math._lgamU"%go.
+
 Axiom _lgamU'init : val.
 
+Definition _lgamV : go_string := "math._lgamV"%go.
+
 Axiom _lgamV'init : val.
+
+Definition _lgamW : go_string := "math._lgamW"%go.
 
 Axiom _lgamW'init : val.
 
@@ -302,7 +388,7 @@ Definition ilogb : go_string := "math.ilogb"%go.
 
 Definition Mod : go_string := "math.Mod"%go.
 
-Definition mod : go_string := "math.mod"%go.
+Definition mod' : go_string := "math.mod"%go.
 
 Definition Modf : go_string := "math.Modf"%go.
 
@@ -320,9 +406,15 @@ Definition Pow : go_string := "math.Pow"%go.
 
 Definition pow : go_string := "math.pow"%go.
 
+Definition pow10tab : go_string := "math.pow10tab"%go.
+
 Axiom pow10tab'init : val.
 
+Definition pow10postab32 : go_string := "math.pow10postab32"%go.
+
 Axiom pow10postab32'init : val.
+
+Definition pow10negtab32 : go_string := "math.pow10negtab32"%go.
 
 Axiom pow10negtab32'init : val.
 
@@ -334,7 +426,11 @@ Definition remainder : go_string := "math.remainder"%go.
 
 Definition Signbit : go_string := "math.Signbit"%go.
 
+Definition _sin : go_string := "math._sin"%go.
+
 Axiom _sin'init : val.
+
+Definition _cos : go_string := "math._cos"%go.
 
 Axiom _cos'init : val.
 
@@ -410,7 +506,11 @@ Definition archTan : go_string := "math.archTan"%go.
 
 Definition archTanh : go_string := "math.archTanh"%go.
 
+Definition _tanP : go_string := "math._tanP"%go.
+
 Axiom _tanP'init : val.
+
+Definition _tanQ : go_string := "math._tanQ"%go.
 
 Axiom _tanQ'init : val.
 
@@ -418,7 +518,11 @@ Definition Tan : go_string := "math.Tan"%go.
 
 Definition tan : go_string := "math.tan"%go.
 
+Definition tanhP : go_string := "math.tanhP"%go.
+
 Axiom tanhP'init : val.
+
+Definition tanhQ : go_string := "math.tanhQ"%go.
 
 Axiom tanhQ'init : val.
 
@@ -427,6 +531,8 @@ Definition Tanh : go_string := "math.Tanh"%go.
 Definition tanh : go_string := "math.tanh"%go.
 
 Definition trigReduce : go_string := "math.trigReduce"%go.
+
+Definition mPi4 : go_string := "math.mPi4"%go.
 
 Axiom mPi4'init : val.
 

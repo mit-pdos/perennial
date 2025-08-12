@@ -5,7 +5,7 @@ Definition chanTⁱᵈ (t : go_string) : go_string := "chan "%go ++ t.
 Definition sliceTⁱᵈ (t : go_string) : go_string := "[]"%go ++ t.
 Definition sendchanTⁱᵈ (t : go_string) : go_string := "chan<- "%go ++ t.
 Definition recvchanTⁱᵈ (t : go_string) : go_string := "<-chan "%go ++ t.
-Definition funcTⁱᵈ (params : list go_string) (results: list go_string) (variadic : go_string) : go_string
+Definition funcTⁱᵈ (params : list go_string) (results: list go_string) (variadic : bool) : go_string
   := ("func(" ++
         (foldl (λ a paramTypeId, a ++ "," ++ paramTypeId) "" params) ++ (* has a leading comma *)
         (if variadic then "..." else "") ++

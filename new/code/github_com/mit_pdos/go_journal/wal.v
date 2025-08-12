@@ -713,7 +713,7 @@ Definition Walog__installerⁱᵐᵖˡ : val :=
     exception_do (let: "l" := (mem.alloc "l") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #());;;
     do:  ((struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))) <-[#uint64T] ((![#uint64T] (struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))) + #(W64 1)));;;
-    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #WalogState #"shutdown"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #WalogState #"shutdown"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))))); (λ: <>, #()) := λ: <>,
       let: "txn" := (mem.alloc (type.zero_val #LogPosition)) in
       let: "blkcount" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := ((method_call #wal.wal #"Walog'ptr" #"logInstall" (![#ptrT] "l")) #()) in
@@ -750,7 +750,7 @@ Definition Walog__waitForSpaceⁱᵐᵖˡ : val :=
   λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
     (for: (λ: <>, (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #sliding #"log"%go (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))))) in
-    slice.len "$a0")) > LOGSZ); (λ: <>, Skip) := λ: <>,
+    slice.len "$a0")) > LOGSZ); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Walog #"condInstall"%go (![#ptrT] "l")))) #()));;;
     return: #()).
 
@@ -820,7 +820,7 @@ Definition Walog__loggerⁱᵐᵖˡ : val :=
     let: "circ" := (mem.alloc "circ") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #());;;
     do:  ((struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))) <-[#uint64T] ((![#uint64T] (struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))) + #(W64 1)));;;
-    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #WalogState #"shutdown"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #WalogState #"shutdown"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))))); (λ: <>, #()) := λ: <>,
       let: "progress" := (mem.alloc (type.zero_val #boolT)) in
       let: "$r0" := (let: "$a0" := (![#ptrT] "circ") in
       (method_call #wal.wal #"Walog'ptr" #"logAppend" (![#ptrT] "l")) "$a0") in
@@ -1115,7 +1115,7 @@ Definition Walog__MemAppendⁱᵐᵖˡ : val :=
     let: "st" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))) in
     do:  ("st" <-[#ptrT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: let: "$a0" := (s_to_w64 (let: "$a0" := (![#sliceT] "bufs") in
       slice.len "$a0")) in
       (method_call #wal.wal #"WalogState'ptr" #"updatesOverflowU64" (![#ptrT] "st")) "$a0"
@@ -1167,7 +1167,7 @@ Definition Walog__Flushⁱᵐᵖˡ : val :=
     (if: (![#LogPosition] "pos") > (![#LogPosition] (struct.field_ref #sliding #"mutable"%go (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))))))
     then do:  ((method_call #wal.wal #"WalogState'ptr" #"endGroupTxn" (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))) #())
     else do:  #());;;
-    (for: (λ: <>, (~ ((![#LogPosition] "pos") ≤ (![#LogPosition] (struct.field_ref #WalogState #"diskEnd"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))))))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ ((![#LogPosition] "pos") ≤ (![#LogPosition] (struct.field_ref #WalogState #"diskEnd"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))))))); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Walog #"condLogger"%go (![#ptrT] "l")))) #()));;;
     do:  ((func_call #primitive.Linearize) #());;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #());;;
@@ -1189,7 +1189,7 @@ Definition Walog__Shutdownⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #WalogState #"shutdown"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))) <-[#boolT] "$r0");;;
     do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #Walog #"condLogger"%go (![#ptrT] "l")))) #());;;
     do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #Walog #"condInstall"%go (![#ptrT] "l")))) #());;;
-    (for: (λ: <>, (![#uint64T] (struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))) > #(W64 0)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] (struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))) > #(W64 0)); (λ: <>, #()) := λ: <>,
       do:  (let: "$a0" := #(W64 1) in
       let: "$a1" := #"wait for logger/installer"%go in
       let: "$a2" := #slice.nil in

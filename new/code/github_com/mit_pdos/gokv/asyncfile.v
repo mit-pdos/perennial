@@ -66,7 +66,7 @@ Definition AsyncFile__waitⁱᵐᵖˡ : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    (for: (λ: <>, (![#uint64T] (struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s"))) < (![#uint64T] "index")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] (struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s"))) < (![#uint64T] "index")); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #()));;;
     return: #()).
 
@@ -75,7 +75,7 @@ Definition AsyncFile__flushThreadⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: ![#boolT] (struct.field_ref #AsyncFile #"closeRequested"%go (![#ptrT] "s"))
       then
         do:  (let: "$a0" := (![#stringT] (struct.field_ref #AsyncFile #"filename"%go (![#ptrT] "s"))) in
@@ -125,7 +125,7 @@ Definition AsyncFile__Closeⁱᵐᵖˡ : val :=
     let: "$r0" := #true in
     do:  ((struct.field_ref #AsyncFile #"closeRequested"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
-    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #AsyncFile #"closed"%go (![#ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #AsyncFile #"closed"%go (![#ptrT] "s"))))); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"closedCond"%go (![#ptrT] "s")))) #()));;;
     return: #()).
 

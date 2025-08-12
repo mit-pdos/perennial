@@ -135,7 +135,7 @@ Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
     exception_do (let: "k" := (mem.alloc "k") in
     let: "cachetime" := (mem.alloc "cachetime") in
     let: "key" := (mem.alloc "key") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "enc" := (mem.alloc (type.zero_val #stringT)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
       (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0") in
@@ -191,7 +191,7 @@ Definition CacheKv__Putⁱᵐᵖˡ : val :=
     exception_do (let: "k" := (mem.alloc "k") in
     let: "val" := (mem.alloc "val") in
     let: "key" := (mem.alloc "key") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "enc" := (mem.alloc (type.zero_val #stringT)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
       (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0") in

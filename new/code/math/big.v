@@ -8,6 +8,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition _Accuracy_index : go_string := "math/big._Accuracy_index"%go.
+
 Axiom _Accuracy_index'init : val.
 
 Definition mulWW : go_string := "math/big.mulWW"%go.
@@ -39,6 +41,8 @@ Definition addMulVVW_g : go_string := "math/big.addMulVVW_g"%go.
 Definition divWW : go_string := "math/big.divWW"%go.
 
 Definition reciprocalWord : go_string := "math/big.reciprocalWord"%go.
+
+Definition support_adx : go_string := "math/big.support_adx"%go.
 
 Axiom support_adx'init : val.
 
@@ -80,6 +84,10 @@ Definition validateBinaryOperands : go_string := "math/big.validateBinaryOperand
 
 Definition umax32 : go_string := "math/big.umax32"%go.
 
+Definition floatZero : go_string := "math/big.floatZero"%go.
+
+Definition pow5tab : go_string := "math/big.pow5tab"%go.
+
 Axiom pow5tab'init : val.
 
 Definition ParseFloat : go_string := "math/big.ParseFloat"%go.
@@ -89,6 +97,8 @@ Definition roundShortest : go_string := "math/big.roundShortest"%go.
 Definition fmtE : go_string := "math/big.fmtE"%go.
 
 Definition fmtF : go_string := "math/big.fmtF"%go.
+
+Definition intOne : go_string := "math/big.intOne"%go.
 
 Axiom intOne'init : val.
 
@@ -110,11 +120,19 @@ Definition writeMultiple : go_string := "math/big.writeMultiple"%go.
 
 Definition scanSign : go_string := "math/big.scanSign"%go.
 
+Definition natOne : go_string := "math/big.natOne"%go.
+
 Axiom natOne'init : val.
+
+Definition natTwo : go_string := "math/big.natTwo"%go.
 
 Axiom natTwo'init : val.
 
+Definition natFive : go_string := "math/big.natFive"%go.
+
 Axiom natFive'init : val.
+
+Definition natTen : go_string := "math/big.natTen"%go.
 
 Axiom natTen'init : val.
 
@@ -123,6 +141,8 @@ Definition basicMul : go_string := "math/big.basicMul"%go.
 Definition karatsubaAdd : go_string := "math/big.karatsubaAdd"%go.
 
 Definition karatsubaSub : go_string := "math/big.karatsubaSub"%go.
+
+Definition karatsubaThreshold : go_string := "math/big.karatsubaThreshold"%go.
 
 Axiom karatsubaThreshold'init : val.
 
@@ -138,13 +158,19 @@ Definition basicSqr : go_string := "math/big.basicSqr"%go.
 
 Definition karatsubaSqr : go_string := "math/big.karatsubaSqr"%go.
 
+Definition basicSqrThreshold : go_string := "math/big.basicSqrThreshold"%go.
+
 Axiom basicSqrThreshold'init : val.
+
+Definition karatsubaSqrThreshold : go_string := "math/big.karatsubaSqrThreshold"%go.
 
 Axiom karatsubaSqrThreshold'init : val.
 
 Definition getNat : go_string := "math/big.getNat"%go.
 
 Definition putNat : go_string := "math/big.putNat"%go.
+
+Definition natPool : go_string := "math/big.natPool"%go.
 
 Definition same : go_string := "math/big.same"%go.
 
@@ -154,11 +180,19 @@ Definition maxPow : go_string := "math/big.maxPow"%go.
 
 Definition pow : go_string := "math/big.pow"%go.
 
+Definition errNoDigits : go_string := "math/big.errNoDigits"%go.
+
 Axiom errNoDigits'init : val.
+
+Definition errInvalSep : go_string := "math/big.errInvalSep"%go.
 
 Axiom errInvalSep'init : val.
 
+Definition leafSize : go_string := "math/big.leafSize"%go.
+
 Axiom leafSize'init : val.
+
+Definition cacheBase10 : go_string := "math/big.cacheBase10"%go.
 
 Definition divisors : go_string := "math/big.divisors"%go.
 
@@ -176,9 +210,15 @@ Definition mulDenom : go_string := "math/big.mulDenom"%go.
 
 Definition ratTok : go_string := "math/big.ratTok"%go.
 
+Definition ratZero : go_string := "math/big.ratZero"%go.
+
 Definition scanExponent : go_string := "math/big.scanExponent"%go.
 
+Definition _RoundingMode_index : go_string := "math/big._RoundingMode_index"%go.
+
 Axiom _RoundingMode_index'init : val.
+
+Definition threeOnce : go_string := "math/big.threeOnce"%go.
 
 Definition three : go_string := "math/big.three"%go.
 

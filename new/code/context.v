@@ -12,7 +12,11 @@ Definition Context : go_type := interfaceT.
 
 Definition Contextⁱᵈ : go_string := "context.Context"%go.
 
+Definition Canceled : go_string := "context.Canceled"%go.
+
 Axiom Canceled'init : val.
+
+Definition DeadlineExceeded : go_string := "context.DeadlineExceeded"%go.
 
 Axiom DeadlineExceeded'init : val.
 
@@ -34,9 +38,15 @@ Definition Cause : go_string := "context.Cause"%go.
 
 Definition AfterFunc : go_string := "context.AfterFunc"%go.
 
+Definition goroutines : go_string := "context.goroutines"%go.
+
+Definition cancelCtxKey : go_string := "context.cancelCtxKey"%go.
+
 Definition parentCancelCtx : go_string := "context.parentCancelCtx"%go.
 
 Definition removeChild : go_string := "context.removeChild"%go.
+
+Definition closedchan : go_string := "context.closedchan"%go.
 
 Axiom closedchan'init : val.
 

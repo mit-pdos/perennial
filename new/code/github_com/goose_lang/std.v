@@ -76,7 +76,7 @@ Definition BytesEqualⁱᵐᵖˡ : val :=
     let: "retval" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
     do:  ("retval" <-[#boolT] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (![#intT] "xlen"))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (![#intT] "xlen"))); (λ: <>, #()) := λ: <>,
       (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "x") (![#uint64T] "i"))) ≠ (![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") (![#uint64T] "i")))
       then
         let: "$r0" := #false in
@@ -190,7 +190,7 @@ Definition JoinHandle__Joinⁱᵐᵖˡ : val :=
   λ: "h" <>,
     exception_do (let: "h" := (mem.alloc "h") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: ![#boolT] (struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h"))
       then
         let: "$r0" := #false in
@@ -242,7 +242,7 @@ Definition Multiparⁱᵐᵖˡ : val :=
         ) in
       do:  (Fork ("$go" #()))));;;
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "num_left_mu")) #());;;
-    (for: (λ: <>, (![#uint64T] "num_left") > #(W64 0)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "num_left") > #(W64 0)); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "num_left_cond")) #()));;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "num_left_mu")) #());;;
     return: #()).

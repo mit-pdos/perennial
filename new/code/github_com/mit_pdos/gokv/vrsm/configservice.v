@@ -67,7 +67,7 @@ Definition DecodeConfigⁱᵐᵖˡ : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "config") in
-    slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
       (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
@@ -128,7 +128,7 @@ Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ("reply" <-[#ptrT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
       let: "l" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"leader"%go (![#ptrT] "ck"))) in
@@ -186,7 +186,7 @@ Definition Clerk__GetConfigⁱᵐᵖˡ : val :=
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ("reply" <-[#ptrT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "i" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"cls"%go (![#ptrT] "ck"))) in
       slice.len "$a0"))) in
@@ -230,7 +230,7 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
     (func_call #EncodeConfig) "$a0") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("args" <-[#sliceT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
       let: "l" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"leader"%go (![#ptrT] "ck"))) in
@@ -292,7 +292,7 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
     let: "$a1" := (![#uint64T] "epoch") in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("args" <-[#sliceT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
       let: "l" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"leader"%go (![#ptrT] "ck"))) in
@@ -568,7 +568,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     (func_call #DecodeConfig) "$a0") in
     do:  ("config" <-[#sliceT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "tryReleaseFn" := (mem.alloc (type.zero_val #funcT)) in
       let: "st" := (mem.alloc (type.zero_val #ptrT)) in
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in

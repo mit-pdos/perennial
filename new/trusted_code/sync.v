@@ -10,6 +10,8 @@ Definition Mutex : go_type := structT [
     "state" :: boolT
   ].
 
+Definition Mutexⁱᵈ : go_string := "sync.Mutex".
+
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
   λ: "m" <>, Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true).
 
@@ -27,6 +29,8 @@ Definition Mutex__Unlockⁱᵐᵖˡ : val :=
 Definition Cond : go_type := structT [
     "L" :: interfaceT
   ].
+
+Definition Condⁱᵈ : go_string := "sync.Cond".
 
 Definition NewCondⁱᵐᵖˡ : val := λ: "m", alloc (struct.make #Cond [{ (#"L", "m") }]).
 Definition Cond__Waitⁱᵐᵖˡ : val := λ: "c" <>, exception_do (

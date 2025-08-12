@@ -665,7 +665,7 @@ Definition Server__TryBecomeLeaderⁱᵐᵖˡ : val :=
         ) in
       do:  (Fork ("$go" #()))));;;
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "mu")) #());;;
-    (for: (λ: <>, (#(W64 2) * (![#uint64T] "numReplies")) ≤ (![#uint64T] "n")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (#(W64 2) * (![#uint64T] "numReplies")) ≤ (![#uint64T] "n")); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "numReplies_cond")) #()));;;
     let: "latestReply" := (mem.alloc (type.zero_val #ptrT)) in
     let: "numSuccesses" := (mem.alloc (type.zero_val #uint64T)) in
@@ -816,7 +816,7 @@ Definition Server__TryAcquireⁱᵐᵖˡ : val :=
           ) in
         do:  (Fork ("$go" #()))));;;
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "mu")) #());;;
-      (for: (λ: <>, (#(W64 2) * (![#uint64T] "numReplies")) ≤ (![#uint64T] "n")); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (#(W64 2) * (![#uint64T] "numReplies")) ≤ (![#uint64T] "n")); (λ: <>, #()) := λ: <>,
         do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "numReplies_cond")) #()));;;
       let: "numSuccesses" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in

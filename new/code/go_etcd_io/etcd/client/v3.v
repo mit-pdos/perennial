@@ -16,7 +16,11 @@ Definition NewAuthFromAuthClient : go_string := "go.etcd.io/etcd/client/v3.NewAu
 
 Definition StrToPermissionType : go_string := "go.etcd.io/etcd/client/v3.StrToPermissionType"%go.
 
+Definition ErrNoAvailableEndpoints : go_string := "go.etcd.io/etcd/client/v3.ErrNoAvailableEndpoints"%go.
+
 Axiom ErrNoAvailableEndpoints'init : val.
+
+Definition ErrOldCluster : go_string := "go.etcd.io/etcd/client/v3.ErrOldCluster"%go.
 
 Axiom ErrOldCluster'init : val.
 
@@ -63,6 +67,8 @@ Definition IsConnCanceled : go_string := "go.etcd.io/etcd/client/v3.IsConnCancel
 
 Definition Cluster : go_type := interfaceT.
 
+Definition Clusterⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Cluster"%go.
+
 Definition NewCluster : go_string := "go.etcd.io/etcd/client/v3.NewCluster"%go.
 
 Definition NewClusterFromClusterClient : go_string := "go.etcd.io/etcd/client/v3.NewClusterFromClusterClient"%go.
@@ -72,6 +78,8 @@ Definition OpCompact : go_string := "go.etcd.io/etcd/client/v3.OpCompact"%go.
 Definition WithCompactPhysical : go_string := "go.etcd.io/etcd/client/v3.WithCompactPhysical"%go.
 
 Definition Cmp : go_type := etcdserverpb.Compare.
+
+Definition Cmpⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Cmp"%go.
 
 Definition Compare : go_string := "go.etcd.io/etcd/client/v3.Compare"%go.
 
@@ -99,13 +107,23 @@ Definition withVersion : go_string := "go.etcd.io/etcd/client/v3.withVersion"%go
 
 Definition PutResponse : go_type := etcdserverpb.PutResponse.
 
+Definition PutResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.PutResponse"%go.
+
 Definition GetResponse : go_type := etcdserverpb.RangeResponse.
+
+Definition GetResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.GetResponse"%go.
 
 Definition DeleteResponse : go_type := etcdserverpb.DeleteRangeResponse.
 
+Definition DeleteResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.DeleteResponse"%go.
+
 Definition TxnResponse : go_type := etcdserverpb.TxnResponse.
 
+Definition TxnResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.TxnResponse"%go.
+
 Definition KV : go_type := interfaceT.
+
+Definition KVⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.KV"%go.
 
 Definition OpResponse : go_type := structT [
   "put" :: ptrT;
@@ -114,11 +132,15 @@ Definition OpResponse : go_type := structT [
   "txn" :: ptrT
 ].
 
+Definition OpResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.OpResponse"%go.
+
 Definition NewKV : go_string := "go.etcd.io/etcd/client/v3.NewKV"%go.
 
 Definition NewKVFromKVClient : go_string := "go.etcd.io/etcd/client/v3.NewKVFromKVClient"%go.
 
 Definition LeaseID : go_type := int64T.
+
+Definition LeaseIDⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseID"%go.
 
 Definition LeaseGrantResponse : go_type := structT [
   "ResponseHeader" :: ptrT;
@@ -127,11 +149,17 @@ Definition LeaseGrantResponse : go_type := structT [
   "Error" :: stringT
 ].
 
+Definition LeaseGrantResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseGrantResponse"%go.
+
 Definition NoLease : expr := #(W64 0).
+
+Definition LeaseResponseChSize : go_string := "go.etcd.io/etcd/client/v3.LeaseResponseChSize"%go.
 
 Axiom LeaseResponseChSize'init : val.
 
 Definition Lease : go_type := interfaceT.
+
+Definition Leaseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Lease"%go.
 
 Definition NewLease : go_string := "go.etcd.io/etcd/client/v3.NewLease"%go.
 
@@ -149,6 +177,8 @@ Definition NewMaintenanceFromMaintenanceClient : go_string := "go.etcd.io/etcd/c
 
 Definition opType : go_type := intT.
 
+Definition opTypeⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.opType"%go.
+
 Definition tRange : expr := #(W64 1).
 
 Definition tPut : expr := #(W64 2).
@@ -156,6 +186,8 @@ Definition tPut : expr := #(W64 2).
 Definition tDeleteRange : expr := #(W64 3).
 
 Definition tTxn : expr := #(W64 4).
+
+Definition noPrefixEnd : go_string := "go.etcd.io/etcd/client/v3.noPrefixEnd"%go.
 
 Axiom noPrefixEnd'init : val.
 
@@ -189,6 +221,8 @@ Definition Op : go_type := structT [
   "isOptsWithFromKey" :: boolT;
   "isOptsWithPrefix" :: boolT
 ].
+
+Definition Opⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Op"%go.
 
 (* IsTxn returns true if the "Op" type is transaction.
 
@@ -378,7 +412,7 @@ Definition Op__toRangeRequestⁱᵐᵖˡ : val :=
     exception_do (let: "op" := (mem.alloc "op") in
     (if: (![#opType] (struct.field_ref #Op #"t"%go "op")) ≠ tRange
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"op.t != tRange"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"op.t != tRange"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "r" := (mem.alloc (type.zero_val #ptrT)) in
@@ -480,7 +514,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
     let: "$sw" := (![#opType] (struct.field_ref #Op #"t"%go "op")) in
     (if: "$sw" = tRange
     then
-      return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestRange'ptr") (mem.alloc (let: "$RequestRange" := ((method_call #v3.clientv3 #"Op" #"toRangeRequest" (![#Op] "op")) #()) in
+      return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestRangeⁱᵈ) (mem.alloc (let: "$RequestRange" := ((method_call #v3.clientv3 #"Op" #"toRangeRequest" (![#Op] "op")) #()) in
        struct.make #etcdserverpb.RequestOp_RequestRange [{
          "RequestRange" ::= "$RequestRange"
        }]))) in
@@ -514,7 +548,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
           "XXX_sizecache" ::= type.zero_val #int32T
         }])) in
         do:  ("r" <-[#ptrT] "$r0");;;
-        return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestPut'ptr") (mem.alloc (let: "$RequestPut" := (![#ptrT] "r") in
+        return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestPutⁱᵈ) (mem.alloc (let: "$RequestPut" := (![#ptrT] "r") in
          struct.make #etcdserverpb.RequestOp_RequestPut [{
            "RequestPut" ::= "$RequestPut"
          }]))) in
@@ -542,7 +576,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
             "XXX_sizecache" ::= type.zero_val #int32T
           }])) in
           do:  ("r" <-[#ptrT] "$r0");;;
-          return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestDeleteRange'ptr") (mem.alloc (let: "$RequestDeleteRange" := (![#ptrT] "r") in
+          return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestDeleteRangeⁱᵈ) (mem.alloc (let: "$RequestDeleteRange" := (![#ptrT] "r") in
            struct.make #etcdserverpb.RequestOp_RequestDeleteRange [{
              "RequestDeleteRange" ::= "$RequestDeleteRange"
            }]))) in
@@ -556,7 +590,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
         else
           (if: "$sw" = tTxn
           then
-            return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestTxn'ptr") (mem.alloc (let: "$RequestTxn" := ((method_call #v3.clientv3 #"Op" #"toTxnRequest" (![#Op] "op")) #()) in
+            return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestTxnⁱᵈ) (mem.alloc (let: "$RequestTxn" := ((method_call #v3.clientv3 #"Op" #"toTxnRequest" (![#Op] "op")) #()) in
              struct.make #etcdserverpb.RequestOp_RequestTxn [{
                "RequestTxn" ::= "$RequestTxn"
              }]))) in
@@ -568,7 +602,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
                "XXX_sizecache" ::= type.zero_val #int32T
              }]))
           else
-            do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Unknown Op"%go) in
+            do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Unknown Op"%go) in
             Panic "$a0")))))).
 
 (* go: op.go:209:14 *)
@@ -616,7 +650,7 @@ Definition OpGetⁱᵐᵖˡ : val :=
     (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
     (func_call #IsOptsWithFromKey) "$a0")
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "ret" := (mem.alloc (type.zero_val #Op)) in
@@ -670,7 +704,7 @@ Definition OpDeleteⁱᵐᵖˡ : val :=
     (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
     (func_call #IsOptsWithFromKey) "$a0")
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "ret" := (mem.alloc (type.zero_val #Op)) in
@@ -712,52 +746,52 @@ Definition OpDeleteⁱᵐᵖˡ : val :=
     let: "$sw" := #true in
     (if: "$sw" = ((![#LeaseID] (struct.field_ref #Op #"leaseID"%go "ret")) ≠ #(W64 0))
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected lease in delete"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected lease in delete"%go) in
       Panic "$a0")
     else
       (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"limit"%go "ret")) ≠ #(W64 0))
       then
-        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected limit in delete"%go) in
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected limit in delete"%go) in
         Panic "$a0")
       else
         (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"rev"%go "ret")) ≠ #(W64 0))
         then
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected revision in delete"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected revision in delete"%go) in
           Panic "$a0")
         else
           (if: "$sw" = ((![#ptrT] (struct.field_ref #Op #"sort"%go "ret")) ≠ #null)
           then
-            do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected sort in delete"%go) in
+            do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected sort in delete"%go) in
             Panic "$a0")
           else
             (if: "$sw" = (![#boolT] (struct.field_ref #Op #"serializable"%go "ret"))
             then
-              do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected serializable in delete"%go) in
+              do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected serializable in delete"%go) in
               Panic "$a0")
             else
               (if: "$sw" = (![#boolT] (struct.field_ref #Op #"countOnly"%go "ret"))
               then
-                do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected countOnly in delete"%go) in
+                do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected countOnly in delete"%go) in
                 Panic "$a0")
               else
                 (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minModRev"%go "ret")) ≠ #(W64 0)))
                 then
-                  do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected mod revision filter in delete"%go) in
+                  do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected mod revision filter in delete"%go) in
                   Panic "$a0")
                 else
                   (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
                   then
-                    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected create revision filter in delete"%go) in
+                    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected create revision filter in delete"%go) in
                     Panic "$a0")
                   else
                     (if: ("$sw" = (![#boolT] (struct.field_ref #Op #"filterPut"%go "ret"))) || ("$sw" = (![#boolT] (struct.field_ref #Op #"filterDelete"%go "ret")))
                     then
-                      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected filter in delete"%go) in
+                      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected filter in delete"%go) in
                       Panic "$a0")
                     else
                       (if: "$sw" = (![#boolT] (struct.field_ref #Op #"createdNotify"%go "ret"))
                       then
-                        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected createdNotify in delete"%go) in
+                        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected createdNotify in delete"%go) in
                         Panic "$a0")
                       else do:  #()))))))))));;;
     return: (![#Op] "ret")).
@@ -812,52 +846,52 @@ Definition OpPutⁱᵐᵖˡ : val :=
     let: "$sw" := #true in
     (if: "$sw" = ((![#sliceT] (struct.field_ref #Op #"end"%go "ret")) ≠ #slice.nil)
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected range in put"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected range in put"%go) in
       Panic "$a0")
     else
       (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"limit"%go "ret")) ≠ #(W64 0))
       then
-        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected limit in put"%go) in
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected limit in put"%go) in
         Panic "$a0")
       else
         (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"rev"%go "ret")) ≠ #(W64 0))
         then
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected revision in put"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected revision in put"%go) in
           Panic "$a0")
         else
           (if: "$sw" = ((![#ptrT] (struct.field_ref #Op #"sort"%go "ret")) ≠ #null)
           then
-            do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected sort in put"%go) in
+            do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected sort in put"%go) in
             Panic "$a0")
           else
             (if: "$sw" = (![#boolT] (struct.field_ref #Op #"serializable"%go "ret"))
             then
-              do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected serializable in put"%go) in
+              do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected serializable in put"%go) in
               Panic "$a0")
             else
               (if: "$sw" = (![#boolT] (struct.field_ref #Op #"countOnly"%go "ret"))
               then
-                do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected countOnly in put"%go) in
+                do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected countOnly in put"%go) in
                 Panic "$a0")
               else
                 (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minModRev"%go "ret")) ≠ #(W64 0)))
                 then
-                  do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected mod revision filter in put"%go) in
+                  do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected mod revision filter in put"%go) in
                   Panic "$a0")
                 else
                   (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
                   then
-                    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected create revision filter in put"%go) in
+                    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected create revision filter in put"%go) in
                     Panic "$a0")
                   else
                     (if: ("$sw" = (![#boolT] (struct.field_ref #Op #"filterPut"%go "ret"))) || ("$sw" = (![#boolT] (struct.field_ref #Op #"filterDelete"%go "ret")))
                     then
-                      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected filter in put"%go) in
+                      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected filter in put"%go) in
                       Panic "$a0")
                     else
                       (if: "$sw" = (![#boolT] (struct.field_ref #Op #"createdNotify"%go "ret"))
                       then
-                        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected createdNotify in put"%go) in
+                        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected createdNotify in put"%go) in
                         Panic "$a0")
                       else do:  #()))))))))));;;
     return: (![#Op] "ret")).
@@ -924,6 +958,8 @@ Definition Op__applyOptsⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := (![#ptrT] "op") in
       (![#OpOption] "opt") "$a0")));;;
     return: #()).
+
+Definition OpOptionⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.OpOption"%go.
 
 Definition WithLease : go_string := "go.etcd.io/etcd/client/v3.WithLease"%go.
 
@@ -1396,7 +1432,11 @@ Definition LeaseOp : go_type := structT [
   "attachedKeys" :: boolT
 ].
 
+Definition LeaseOpⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseOp"%go.
+
 Definition LeaseOption : go_type := funcT.
+
+Definition LeaseOptionⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseOption"%go.
 
 Definition WithAttachedKeys : go_string := "go.etcd.io/etcd/client/v3.WithAttachedKeys"%go.
 
@@ -1447,19 +1487,35 @@ Definition Op__IsSortOptionValidⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (#true)).
 
+Definition defaultWaitForReady : go_string := "go.etcd.io/etcd/client/v3.defaultWaitForReady"%go.
+
 Axiom defaultWaitForReady'init : val.
+
+Definition defaultMaxCallSendMsgSize : go_string := "go.etcd.io/etcd/client/v3.defaultMaxCallSendMsgSize"%go.
 
 Axiom defaultMaxCallSendMsgSize'init : val.
 
+Definition defaultMaxCallRecvMsgSize : go_string := "go.etcd.io/etcd/client/v3.defaultMaxCallRecvMsgSize"%go.
+
 Axiom defaultMaxCallRecvMsgSize'init : val.
+
+Definition defaultUnaryMaxRetries : go_string := "go.etcd.io/etcd/client/v3.defaultUnaryMaxRetries"%go.
 
 Axiom defaultUnaryMaxRetries'init : val.
 
+Definition defaultStreamMaxRetries : go_string := "go.etcd.io/etcd/client/v3.defaultStreamMaxRetries"%go.
+
 Axiom defaultStreamMaxRetries'init : val.
+
+Definition defaultBackoffWaitBetween : go_string := "go.etcd.io/etcd/client/v3.defaultBackoffWaitBetween"%go.
 
 Axiom defaultBackoffWaitBetween'init : val.
 
+Definition defaultBackoffJitterFraction : go_string := "go.etcd.io/etcd/client/v3.defaultBackoffJitterFraction"%go.
+
 Axiom defaultBackoffJitterFraction'init : val.
+
+Definition defaultCallOpts : go_string := "go.etcd.io/etcd/client/v3.defaultCallOpts"%go.
 
 Axiom defaultCallOpts'init : val.
 
@@ -1485,6 +1541,8 @@ Definition isContextError : go_string := "go.etcd.io/etcd/client/v3.isContextErr
 
 Definition contextErrToGRPCErr : go_string := "go.etcd.io/etcd/client/v3.contextErrToGRPCErr"%go.
 
+Definition defaultOptions : go_string := "go.etcd.io/etcd/client/v3.defaultOptions"%go.
+
 Axiom defaultOptions'init : val.
 
 Definition withRepeatablePolicy : go_string := "go.etcd.io/etcd/client/v3.withRepeatablePolicy"%go.
@@ -1499,17 +1557,27 @@ Definition filterCallOptions : go_string := "go.etcd.io/etcd/client/v3.filterCal
 
 Definition backoffLinearWithJitter : go_string := "go.etcd.io/etcd/client/v3.backoffLinearWithJitter"%go.
 
+Definition SortTargetⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.SortTarget"%go.
+
+Definition SortOrderⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.SortOrder"%go.
+
 Definition SortByVersion : expr := #(W64 1).
 
 Definition SortByValue : expr := #(W64 4).
 
+Definition SortOptionⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.SortOption"%go.
+
 Definition Txn : go_type := interfaceT.
+
+Definition Txnⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Txn"%go.
 
 Definition jitterUp : go_string := "go.etcd.io/etcd/client/v3.jitterUp"%go.
 
 Definition EventTypeDelete : expr := #(W32 1).
 
 Definition Event : go_type := mvccpb.Event.
+
+Definition Eventⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Event"%go.
 
 Definition WatchResponse : go_type := structT [
   "Header" :: etcdserverpb.ResponseHeader;
@@ -1523,15 +1591,27 @@ Definition WatchResponse : go_type := structT [
 
 Definition WatchChan : go_type := chanT WatchResponse.
 
+Definition WatchChanⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.WatchChan"%go.
+
 Definition Watcher : go_type := interfaceT.
+
+Definition Watcherⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Watcher"%go.
+
+Definition WatchResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.WatchResponse"%go.
 
 Definition NewWatcher : go_string := "go.etcd.io/etcd/client/v3.NewWatcher"%go.
 
 Definition NewWatchFromWatchClient : go_string := "go.etcd.io/etcd/client/v3.NewWatchFromWatchClient"%go.
 
+Definition valCtxCh : go_string := "go.etcd.io/etcd/client/v3.valCtxCh"%go.
+
 Axiom valCtxCh'init : val.
 
+Definition zeroTime : go_string := "go.etcd.io/etcd/client/v3.zeroTime"%go.
+
 Axiom zeroTime'init : val.
+
+Definition maxBackoff : go_string := "go.etcd.io/etcd/client/v3.maxBackoff"%go.
 
 Axiom maxBackoff'init : val.
 

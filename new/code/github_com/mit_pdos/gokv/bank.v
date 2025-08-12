@@ -141,7 +141,7 @@ Definition BankClerk__transfer_internalⁱᵐᵖˡ : val :=
 Definition BankClerk__SimpleTransferⁱᵐᵖˡ : val :=
   λ: "bck" <>,
     exception_do (let: "bck" := (mem.alloc "bck") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "src" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := ((func_call #primitive.RandomUint64) #()) in
       do:  ("src" <-[#uint64T] "$r0");;;
@@ -191,7 +191,7 @@ Definition BankClerk__get_totalⁱᵐᵖˡ : val :=
 Definition BankClerk__SimpleAuditⁱᵐᵖˡ : val :=
   λ: "bck" <>,
     exception_do (let: "bck" := (mem.alloc "bck") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: ((method_call #bank.bank #"BankClerk'ptr" #"get_total" (![#ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
         do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Balance total invariant violated"%go) in

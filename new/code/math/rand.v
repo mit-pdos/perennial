@@ -8,17 +8,29 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition ke : go_string := "math/rand.ke"%go.
+
 Axiom ke'init : val.
 
+Definition we : go_string := "math/rand.we"%go.
+
 Axiom we'init : val.
+
+Definition fe : go_string := "math/rand.fe"%go.
 
 Axiom fe'init : val.
 
 Definition absInt32 : go_string := "math/rand.absInt32"%go.
 
+Definition kn : go_string := "math/rand.kn"%go.
+
 Axiom kn'init : val.
 
+Definition wn : go_string := "math/rand.wn"%go.
+
 Axiom wn'init : val.
+
+Definition fn : go_string := "math/rand.fn"%go.
 
 Axiom fn'init : val.
 
@@ -30,7 +42,13 @@ Definition New : go_string := "math/rand.New"%go.
 
 Definition read : go_string := "math/rand.read"%go.
 
+Definition globalRandGenerator : go_string := "math/rand.globalRandGenerator"%go.
+
+Definition randautoseed : go_string := "math/rand.randautoseed"%go.
+
 Axiom randautoseed'init : val.
+
+Definition randseednop : go_string := "math/rand.randseednop"%go.
 
 Axiom randseednop'init : val.
 
@@ -69,6 +87,8 @@ Definition Read : go_string := "math/rand.Read"%go.
 Definition NormFloat64 : go_string := "math/rand.NormFloat64"%go.
 
 Definition ExpFloat64 : go_string := "math/rand.ExpFloat64"%go.
+
+Definition rngCooked : go_string := "math/rand.rngCooked"%go.
 
 Axiom rngCooked'init : val.
 

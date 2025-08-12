@@ -8,7 +8,11 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition DefaultBackoffConfig : go_string := "google.golang.org/grpc.DefaultBackoffConfig"%go.
+
 Axiom DefaultBackoffConfig'init : val.
+
+Definition setConnectedAddress : go_string := "google.golang.org/grpc.setConnectedAddress"%go.
 
 Axiom setConnectedAddress'init : val.
 
@@ -20,27 +24,49 @@ Definition combine : go_string := "google.golang.org/grpc.combine"%go.
 
 Definition Invoke : go_string := "google.golang.org/grpc.Invoke"%go.
 
+Definition unaryStreamDesc : go_string := "google.golang.org/grpc.unaryStreamDesc"%go.
+
 Axiom unaryStreamDesc'init : val.
 
 Definition invoke : go_string := "google.golang.org/grpc.invoke"%go.
 
+Definition ErrClientConnClosing : go_string := "google.golang.org/grpc.ErrClientConnClosing"%go.
+
 Axiom ErrClientConnClosing'init : val.
+
+Definition errConnDrain : go_string := "google.golang.org/grpc.errConnDrain"%go.
 
 Axiom errConnDrain'init : val.
 
+Definition errConnClosing : go_string := "google.golang.org/grpc.errConnClosing"%go.
+
 Axiom errConnClosing'init : val.
+
+Definition errConnIdling : go_string := "google.golang.org/grpc.errConnIdling"%go.
 
 Axiom errConnIdling'init : val.
 
+Definition invalidDefaultServiceConfigErrPrefix : go_string := "google.golang.org/grpc.invalidDefaultServiceConfigErrPrefix"%go.
+
 Axiom invalidDefaultServiceConfigErrPrefix'init : val.
+
+Definition PickFirstBalancerName : go_string := "google.golang.org/grpc.PickFirstBalancerName"%go.
 
 Axiom PickFirstBalancerName'init : val.
 
+Definition errNoTransportSecurity : go_string := "google.golang.org/grpc.errNoTransportSecurity"%go.
+
 Axiom errNoTransportSecurity'init : val.
+
+Definition errTransportCredsAndBundle : go_string := "google.golang.org/grpc.errTransportCredsAndBundle"%go.
 
 Axiom errTransportCredsAndBundle'init : val.
 
+Definition errNoTransportCredsInBundle : go_string := "google.golang.org/grpc.errNoTransportCredsInBundle"%go.
+
 Axiom errNoTransportCredsInBundle'init : val.
+
+Definition errTransportCredentialsMissing : go_string := "google.golang.org/grpc.errTransportCredentialsMissing"%go.
 
 Axiom errTransportCredentialsMissing'init : val.
 
@@ -60,6 +86,8 @@ Definition getChainStreamer : go_string := "google.golang.org/grpc.getChainStrea
 
 Definition newConnectivityStateManager : go_string := "google.golang.org/grpc.newConnectivityStateManager"%go.
 
+Definition emptyServiceConfig : go_string := "google.golang.org/grpc.emptyServiceConfig"%go.
+
 Definition init : go_string := "google.golang.org/grpc.init"%go.
 
 Definition copyAddresses : go_string := "google.golang.org/grpc.copyAddresses"%go.
@@ -69,6 +97,8 @@ Definition equalAddressIgnoringBalAttributes : go_string := "google.golang.org/g
 Definition equalAddressesIgnoringBalAttributes : go_string := "google.golang.org/grpc.equalAddressesIgnoringBalAttributes"%go.
 
 Definition getMethodConfig : go_string := "google.golang.org/grpc.getMethodConfig"%go.
+
+Definition ErrClientConnTimeout : go_string := "google.golang.org/grpc.ErrClientConnTimeout"%go.
 
 Axiom ErrClientConnTimeout'init : val.
 
@@ -81,6 +111,10 @@ Definition getCodec : go_string := "google.golang.org/grpc.getCodec"%go.
 Definition newCodecV0Bridge : go_string := "google.golang.org/grpc.newCodecV0Bridge"%go.
 
 Definition newCodecV1Bridge : go_string := "google.golang.org/grpc.newCodecV1Bridge"%go.
+
+Definition globalDialOptions : go_string := "google.golang.org/grpc.globalDialOptions"%go.
+
+Definition globalPerTargetDialOptions : go_string := "google.golang.org/grpc.globalPerTargetDialOptions"%go.
 
 Definition newDisableGlobalDialOptions : go_string := "google.golang.org/grpc.newDisableGlobalDialOptions"%go.
 
@@ -254,7 +288,11 @@ Definition ErrorDesc : go_string := "google.golang.org/grpc.ErrorDesc"%go.
 
 Definition Errorf : go_string := "google.golang.org/grpc.Errorf"%go.
 
+Definition errContextCanceled : go_string := "google.golang.org/grpc.errContextCanceled"%go.
+
 Axiom errContextCanceled'init : val.
+
+Definition errContextDeadline : go_string := "google.golang.org/grpc.errContextDeadline"%go.
 
 Axiom errContextDeadline'init : val.
 
@@ -262,11 +300,19 @@ Definition toRPCErr : go_string := "google.golang.org/grpc.toRPCErr"%go.
 
 Definition setCallInfoCodec : go_string := "google.golang.org/grpc.setCallInfoCodec"%go.
 
+Definition statusOK : go_string := "google.golang.org/grpc.statusOK"%go.
+
 Axiom statusOK'init : val.
+
+Definition logger : go_string := "google.golang.org/grpc.logger"%go.
 
 Axiom logger'init : val.
 
+Definition defaultServerOptions : go_string := "google.golang.org/grpc.defaultServerOptions"%go.
+
 Axiom defaultServerOptions'init : val.
+
+Definition globalServerOptions : go_string := "google.golang.org/grpc.globalServerOptions"%go.
 
 Definition newFuncServerOption : go_string := "google.golang.org/grpc.newFuncServerOption"%go.
 
@@ -336,6 +382,8 @@ Definition bufferPool : go_string := "google.golang.org/grpc.bufferPool"%go.
 
 Definition NewServer : go_string := "google.golang.org/grpc.NewServer"%go.
 
+Definition ErrServerStopped : go_string := "google.golang.org/grpc.ErrServerStopped"%go.
+
 Axiom ErrServerStopped'init : val.
 
 Definition chainUnaryServerInterceptors : go_string := "google.golang.org/grpc.chainUnaryServerInterceptors"%go.
@@ -374,7 +422,11 @@ Definition validateSendCompressor : go_string := "google.golang.org/grpc.validat
 
 Definition newHandlerQuota : go_string := "google.golang.org/grpc.newHandlerQuota"%go.
 
+Definition errDuplicatedName : go_string := "google.golang.org/grpc.errDuplicatedName"%go.
+
 Axiom errDuplicatedName'init : val.
+
+Definition errEmptyServiceNonEmptyMethod : go_string := "google.golang.org/grpc.errEmptyServiceNonEmptyMethod"%go.
 
 Axiom errEmptyServiceNonEmptyMethod'init : val.
 
@@ -390,6 +442,8 @@ Definition newInt : go_string := "google.golang.org/grpc.newInt"%go.
 
 Definition equalServiceConfig : go_string := "google.golang.org/grpc.equalServiceConfig"%go.
 
+Definition metadataFromOutgoingContextRaw : go_string := "google.golang.org/grpc.metadataFromOutgoingContextRaw"%go.
+
 Axiom metadataFromOutgoingContextRaw'init : val.
 
 Definition NewClientStream : go_string := "google.golang.org/grpc.NewClientStream"%go.
@@ -403,6 +457,8 @@ Definition newNonRetryClientStream : go_string := "google.golang.org/grpc.newNon
 Definition MethodFromServerStream : go_string := "google.golang.org/grpc.MethodFromServerStream"%go.
 
 Definition prepareMsg : go_string := "google.golang.org/grpc.prepareMsg"%go.
+
+Definition EnableTracing : go_string := "google.golang.org/grpc.EnableTracing"%go.
 
 Definition methodFamily : go_string := "google.golang.org/grpc.methodFamily"%go.
 

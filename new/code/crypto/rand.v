@@ -8,6 +8,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Reader : go_string := "crypto/rand.Reader"%go.
+
 Definition init : go_string := "crypto/rand.init"%go.
 
 Definition fatal : go_string := "crypto/rand.fatal"%go.

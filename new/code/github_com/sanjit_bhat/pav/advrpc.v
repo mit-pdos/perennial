@@ -49,7 +49,7 @@ Definition Server__readⁱᵐᵖˡ : val :=
   λ: "s" "conn",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "conn" := (mem.alloc "conn") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "err0" := (mem.alloc (type.zero_val #boolT)) in
       let: "req" := (mem.alloc (type.zero_val #sliceT)) in
       let: ("$ret0", "$ret1") := ((method_call #netffi #"Conn'ptr" #"Receive" (![#ptrT] "conn")) #()) in
@@ -94,7 +94,7 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
     (func_call #netffi.Listen) "$a0") in
     do:  ("l" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         let: "conn" := (mem.alloc (type.zero_val #ptrT)) in
         let: "$r0" := ((method_call #netffi #"Listener'ptr" #"Accept" (![#ptrT] "l")) #()) in
         do:  ("conn" <-[#ptrT] "$r0");;;

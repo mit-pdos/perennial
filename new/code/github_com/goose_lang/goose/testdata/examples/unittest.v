@@ -215,7 +215,7 @@ Definition chanSelectⁱᵐᵖˡ : val :=
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")
       ));;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       chan.select [chan.select_send #(W64 0) (![type.chanT #intT] "c") (λ: <>,
          do:  #()
          ); chan.select_send #(W64 1) (![type.chanT #intT] "c") (λ: <>,
@@ -1561,7 +1561,7 @@ Definition standardForLoopⁱᵐᵖˡ : val :=
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "s") in
       slice.len "$a0"))
       then
@@ -1591,7 +1591,7 @@ Definition conditionalInLoopⁱᵐᵖˡ : val :=
     exception_do ((let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") < #(W64 3)
       then
         do:  (let: "$a0" := #"i is small"%go in
@@ -1613,7 +1613,7 @@ Definition conditionalInLoopElseⁱᵐᵖˡ : val :=
     exception_do ((let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") > #(W64 5)
       then break: #()
       else
@@ -1630,7 +1630,7 @@ Definition nestedConditionalInLoopImplicitContinueⁱᵐᵖˡ : val :=
     exception_do ((let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") > #(W64 5)
       then
         (if: (![#uint64T] "i") > #(W64 10)
@@ -1650,7 +1650,7 @@ Definition ImplicitLoopContinueⁱᵐᵖˡ : val :=
     exception_do ((let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") < #(W64 4)
       then
         let: "$r0" := #(W64 0) in
@@ -1666,7 +1666,7 @@ Definition ImplicitLoopContinue2ⁱᵐᵖˡ : val :=
     exception_do ((let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") < #(W64 4)
       then
         let: "$r0" := #(W64 0) in
@@ -1681,7 +1681,7 @@ Definition ImplicitLoopContinueAfterIfBreak : go_string := "github.com/goose-lan
 Definition ImplicitLoopContinueAfterIfBreakⁱᵐᵖˡ : val :=
   λ: "i",
     exception_do (let: "i" := (mem.alloc "i") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "i") > #(W64 0)
       then break: #()
       else do:  #()));;;
@@ -1695,11 +1695,11 @@ Definition nestedLoopsⁱᵐᵖˡ : val :=
     exception_do ((let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (let: "j" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[#uint64T] "$r0");;;
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         (if: #true
         then break: #()
         else do:  #());;;
@@ -1750,7 +1750,7 @@ Definition breakFromLoop : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: loops.go:121:6 *)
 Definition breakFromLoopⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: #true
       then break: #()
       else do:  #());;;
@@ -2296,7 +2296,7 @@ Definition ReplicatedDiskRecoverⁱᵐᵖˡ : val :=
     exception_do ((let: "a" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("a" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![#uint64T] "a") > DiskSize
       then break: #()
       else do:  #());;;
@@ -2368,7 +2368,7 @@ Definition NamedReturnOverrideⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "y" := (mem.alloc (type.zero_val #stringT)) in
     let: "x" := (mem.alloc (type.zero_val #stringT)) in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "x" := (mem.alloc (type.zero_val #stringT)) in
       let: "$r0" := #"unused"%go in
       do:  ("x" <-[#stringT] "$r0");;;
@@ -2529,7 +2529,7 @@ Definition loopSpawnⁱᵐᵖˡ : val :=
     (let: "dummy" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
     do:  ("dummy" <-[#boolT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "$r0" := (~ (![#boolT] "dummy")) in
       do:  ("dummy" <-[#boolT] "$r0");;;
       continue: #()));;;
@@ -2842,7 +2842,7 @@ Definition typeAssertInt : go_string := "github.com/goose-lang/goose/testdata/ex
 Definition typeAssertIntⁱᵐᵖˡ : val :=
   λ: "x",
     exception_do (let: "x" := (mem.alloc "x") in
-    return: (interface.type_assert (![#interfaceT] "x") intTⁱᵈ)).
+    return: (interface.type_assert (![#interfaceT] "x") #intTⁱᵈ)).
 
 Definition wrapUnwrapInt : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.wrapUnwrapInt"%go.
 
@@ -2860,7 +2860,7 @@ Definition checkedTypeAssertⁱᵐᵖˡ : val :=
     exception_do (let: "x" := (mem.alloc "x") in
     (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "v" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (interface.checked_type_assert #uint64T (![#interfaceT] "x") uint64Tⁱᵈ) in
+    let: ("$ret0", "$ret1") := (interface.checked_type_assert #uint64T (![#interfaceT] "x") #uint64Tⁱᵈ) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[#uint64T] "$r0");;;
@@ -2877,11 +2877,11 @@ Definition basicTypeSwitchⁱᵐᵖˡ : val :=
   λ: "x",
     exception_do (let: "x" := (mem.alloc "x") in
     let: "$y" := (![#interfaceT] "x") in
-    let: ("$x", "$ok") := (interface.checked_type_assert #intT "$y" intTⁱᵈ) in
+    let: ("$x", "$ok") := (interface.checked_type_assert #intT "$y" #intTⁱᵈ) in
     (if: "$ok"
     then return: (#(W64 1))
     else
-      let: ("$x", "$ok") := (interface.checked_type_assert #stringT "$y" stringTⁱᵈ) in
+      let: ("$x", "$ok") := (interface.checked_type_assert #stringT "$y" #stringTⁱᵈ) in
       (if: "$ok"
       then return: (#(W64 2))
       else do:  #()));;;
@@ -2898,13 +2898,13 @@ Definition fancyTypeSwitchⁱᵐᵖˡ : val :=
     (let: "z" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 0) in
     do:  ("z" <-[#intT] "$r0");;;
-    let: ("$x", "$ok") := (interface.checked_type_assert #intT "$y" intTⁱᵈ) in
+    let: ("$x", "$ok") := (interface.checked_type_assert #intT "$y" #intTⁱᵈ) in
     (if: "$ok"
     then
       let: "y" := (mem.alloc "$x") in
       return: (![#intT] "y")
     else
-      let: ("$x", "$ok") := (interface.checked_type_assert #stringT "$y" stringTⁱᵈ) in
+      let: ("$x", "$ok") := (interface.checked_type_assert #stringT "$y" #stringTⁱᵈ) in
       (if: "$ok"
       then
         let: "y" := (mem.alloc "$x") in
@@ -2930,7 +2930,7 @@ Definition multiTypeSwitchⁱᵐᵖˡ : val :=
   λ: "x",
     exception_do (let: "x" := (mem.alloc "x") in
     let: "$y" := (![#interfaceT] "x") in
-    let: "$ok" := ((Snd (interface.checked_type_assert #intT "$y" intTⁱᵈ)) || (Snd (interface.checked_type_assert #intT "$y" intTⁱᵈ))) in
+    let: "$ok" := ((Snd (interface.checked_type_assert #intT "$y" #intTⁱᵈ)) || (Snd (interface.checked_type_assert #intT "$y" #intTⁱᵈ))) in
     let: "$x" := "$y" in
     (if: "$ok"
     then return: (#(W64 1))

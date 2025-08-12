@@ -10,6 +10,8 @@ Context `{ffi_syntax}.
 
 Definition New : go_string := "errors.New"%go.
 
+Definition ErrUnsupported : go_string := "errors.ErrUnsupported"%go.
+
 Axiom ErrUnsupported'init : val.
 
 Definition Join : go_string := "errors.Join"%go.
@@ -23,6 +25,8 @@ Definition is' : go_string := "errors.is"%go.
 Definition As : go_string := "errors.As"%go.
 
 Definition as' : go_string := "errors.as"%go.
+
+Definition errorType : go_string := "errors.errorType"%go.
 
 Axiom errorType'init : val.
 

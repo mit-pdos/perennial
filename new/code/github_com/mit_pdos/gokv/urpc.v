@@ -72,7 +72,7 @@ Definition Server__readThreadⁱᵐᵖˡ : val :=
   λ: "srv" "conn",
     exception_do (let: "srv" := (mem.alloc "srv") in
     let: "conn" := (mem.alloc "conn") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "r" := (mem.alloc (type.zero_val #grove_ffi.ReceiveRet)) in
       let: "$r0" := (let: "$a0" := (![#grove_ffi.Connection] "conn") in
       (func_call #grove_ffi.Receive) "$a0") in
@@ -122,7 +122,7 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
     (func_call #grove_ffi.Listen) "$a0") in
     do:  ("listener" <-[#grove_ffi.Listener] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         let: "conn" := (mem.alloc (type.zero_val #grove_ffi.Connection)) in
         let: "$r0" := (let: "$a0" := (![#grove_ffi.Listener] "listener") in
         (func_call #grove_ffi.Accept) "$a0") in
@@ -165,7 +165,7 @@ Definition Clientⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Client"%go
 Definition Client__replyThreadⁱᵐᵖˡ : val :=
   λ: "cl" <>,
     exception_do (let: "cl" := (mem.alloc "cl") in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "r" := (mem.alloc (type.zero_val #grove_ffi.ReceiveRet)) in
       let: "$r0" := (let: "$a0" := (![#grove_ffi.Connection] (struct.field_ref #Client #"conn"%go (![#ptrT] "cl"))) in
       (func_call #grove_ffi.Receive) "$a0") in

@@ -1335,7 +1335,7 @@ Definition Newⁱᵐᵖˡ : val :=
     (slice.append #ptrT) "$a0" "$a1") in
     do:  ((struct.field_ref #history #"audits"%go (![#ptrT] (struct.field_ref #Server #"hist"%go (![#ptrT] "s")))) <-[#sliceT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  ((method_call #server.server #"Server'ptr" #"Worker" (![#ptrT] "s")) #()));;;
       return: #())
       ) in
@@ -1740,7 +1740,7 @@ Definition WorkQ__Doⁱᵐᵖˡ : val :=
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #WorkQ #"cond"%go (![#ptrT] "wq")))) #());;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #WorkQ #"mu"%go (![#ptrT] "wq")))) #());;;
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Work #"mu"%go (![#ptrT] "w")))) #());;;
-    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #Work #"done"%go (![#ptrT] "w"))))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #Work #"done"%go (![#ptrT] "w"))))); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Work #"cond"%go (![#ptrT] "w")))) #()));;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Work #"mu"%go (![#ptrT] "w")))) #());;;
     return: (![#ptrT] (struct.field_ref #Work #"Resp"%go (![#ptrT] "w")))).
@@ -1785,7 +1785,7 @@ Definition WorkQ__DoBatchⁱᵐᵖˡ : val :=
       let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "works") (((![#uint64T] "n") - #(W64 1)) - (![#uint64T] "i")))) in
       do:  ("w" <-[#ptrT] "$r0");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Work #"mu"%go (![#ptrT] "w")))) #());;;
-      (for: (λ: <>, (~ (![#boolT] (struct.field_ref #Work #"done"%go (![#ptrT] "w"))))); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (~ (![#boolT] (struct.field_ref #Work #"done"%go (![#ptrT] "w"))))); (λ: <>, #()) := λ: <>,
         do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Work #"cond"%go (![#ptrT] "w")))) #()));;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Work #"mu"%go (![#ptrT] "w")))) #())));;;
     return: #()).
@@ -1795,7 +1795,7 @@ Definition WorkQ__Getⁱᵐᵖˡ : val :=
   λ: "wq" <>,
     exception_do (let: "wq" := (mem.alloc "wq") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #WorkQ #"mu"%go (![#ptrT] "wq")))) #());;;
-    (for: (λ: <>, (![#sliceT] (struct.field_ref #WorkQ #"work"%go (![#ptrT] "wq"))) = #slice.nil); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#sliceT] (struct.field_ref #WorkQ #"work"%go (![#ptrT] "wq"))) = #slice.nil); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #WorkQ #"cond"%go (![#ptrT] "wq")))) #()));;;
     let: "work" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #WorkQ #"work"%go (![#ptrT] "wq"))) in

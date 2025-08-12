@@ -76,7 +76,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
-    slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "servers") (![#uint64T] "i"))) in
       (func_call #replica.MakeClerk) "$a0") in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i")) <-[#ptrT] "$r0");;;
@@ -91,7 +91,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
-    slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       do:  (let: "$a0" := #(W64 1) in
       (method_call #sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0");;;
       let: "clerk" := (mem.alloc (type.zero_val #ptrT)) in
@@ -125,7 +125,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "errs") in
-    slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "errs") (![#uint64T] "i"))) in
       do:  ("err2" <-[#uint64T] "$r0");;;

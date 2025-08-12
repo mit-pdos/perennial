@@ -40,7 +40,7 @@ Definition makeClerksⁱᵐᵖˡ : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
-    slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "servers") (![#uint64T] "i"))) in
       (func_call #replica.MakeClerk) "$a0") in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i")) <-[#ptrT] "$r0");;;
@@ -59,7 +59,7 @@ Definition Makeⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
     (func_call #configservice.MakeClerk) "$a0") in
     do:  ((struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")) <-[#ptrT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "config" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := ((method_call #configservice #"Clerk'ptr" #"GetConfig" (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
       do:  ("config" <-[#sliceT] "$r0");;;
@@ -89,7 +89,7 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "err" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "op") in
       (method_call #replica #"Clerk'ptr" #"Apply" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) #(W64 0)))) "$a0") in
@@ -145,14 +145,14 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ((method_call #clerk.clerk #"Clerk'ptr" #"maybeRefreshPreference" (![#ptrT] "ck")) #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck"))) in
       do:  ("offset" <-[#uint64T] "$r0");;;
       let: "err" := (mem.alloc (type.zero_val #uint64T)) in
       let: "i" := (mem.alloc (type.zero_val #uint64T)) in
       (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
-      slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
+      slice.len "$a0"))); (λ: <>, #()) := λ: <>,
         let: "k" := (mem.alloc (type.zero_val #uint64T)) in
         let: "$r0" := (((![#uint64T] "i") + (![#uint64T] "offset")) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
         slice.len "$a0"))) in

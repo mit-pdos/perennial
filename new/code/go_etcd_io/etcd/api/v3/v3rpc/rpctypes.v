@@ -261,6 +261,8 @@ Definition EtcdError : go_type := structT [
   "desc" :: stringT
 ].
 
+Definition EtcdErrorⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/v3rpc/rpctypes.EtcdError"%go.
+
 (* Code returns grpc/codes.Code.
    TODO: define clientv3/codes.Code.
 
@@ -313,7 +315,7 @@ Definition Errorⁱᵐᵖˡ : val :=
     else
       let: "$r0" := ((interface.get #"Error"%go (![#error] "verr")) #()) in
       do:  ("desc" <-[#stringT] "$r0"));;;
-    return: (interface.make (#rpctypes.rpctypes, #"EtcdError") (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![#ptrT] "ev")) #()) in
+    return: (interface.make #EtcdErrorⁱᵈ (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![#ptrT] "ev")) #()) in
      let: "$desc" := (![#stringT] "desc") in
      struct.make #EtcdError [{
        "code" ::= "$code";
@@ -349,6 +351,8 @@ Definition TokenFieldNameSwagger : go_string := "go.etcd.io/etcd/api/v3/v3rpc/rp
 
 Definition TokenFieldNameGRPCKey : go_type := structT [
 ].
+
+Definition TokenFieldNameGRPCKeyⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/v3rpc/rpctypes.TokenFieldNameGRPCKey"%go.
 
 Definition vars' : list (go_string * go_type) := [(ErrGRPCEmptyKey, error); (ErrGRPCKeyNotFound, error); (ErrGRPCValueProvided, error); (ErrGRPCLeaseProvided, error); (ErrGRPCTooManyOps, error); (ErrGRPCDuplicateKey, error); (ErrGRPCInvalidClientAPIVersion, error); (ErrGRPCInvalidSortOption, error); (ErrGRPCCompacted, error); (ErrGRPCFutureRev, error); (ErrGRPCNoSpace, error); (ErrGRPCLeaseNotFound, error); (ErrGRPCLeaseExist, error); (ErrGRPCLeaseTTLTooLarge, error); (ErrGRPCWatchCanceled, error); (ErrGRPCMemberExist, error); (ErrGRPCPeerURLExist, error); (ErrGRPCMemberNotEnoughStarted, error); (ErrGRPCMemberBadURLs, error); (ErrGRPCMemberNotFound, error); (ErrGRPCMemberNotLearner, error); (ErrGRPCLearnerNotReady, error); (ErrGRPCTooManyLearners, error); (ErrGRPCClusterIDMismatch, error); (ErrGRPCClusterIdMismatch, error); (ErrGRPCRequestTooLarge, error); (ErrGRPCRequestTooManyRequests, error); (ErrGRPCRootUserNotExist, error); (ErrGRPCRootRoleNotExist, error); (ErrGRPCUserAlreadyExist, error); (ErrGRPCUserEmpty, error); (ErrGRPCUserNotFound, error); (ErrGRPCRoleAlreadyExist, error); (ErrGRPCRoleNotFound, error); (ErrGRPCRoleEmpty, error); (ErrGRPCAuthFailed, error); (ErrGRPCPermissionNotGiven, error); (ErrGRPCPermissionDenied, error); (ErrGRPCRoleNotGranted, error); (ErrGRPCPermissionNotGranted, error); (ErrGRPCAuthNotEnabled, error); (ErrGRPCInvalidAuthToken, error); (ErrGRPCInvalidAuthMgmt, error); (ErrGRPCAuthOldRevision, error); (ErrGRPCNoLeader, error); (ErrGRPCNotLeader, error); (ErrGRPCLeaderChanged, error); (ErrGRPCNotCapable, error); (ErrGRPCStopped, error); (ErrGRPCTimeout, error); (ErrGRPCTimeoutDueToLeaderFail, error); (ErrGRPCTimeoutDueToConnectionLost, error); (ErrGRPCTimeoutWaitAppliedIndex, error); (ErrGRPCUnhealthy, error); (ErrGRPCCorrupt, error); (ErrGRPCNotSupportedForLearner, error); (ErrGRPCBadLeaderTransferee, error); (ErrGRPCWrongDowngradeVersionFormat, error); (ErrGRPCInvalidDowngradeTargetVersion, error); (ErrGRPCClusterVersionUnavailable, error); (ErrGRPCDowngradeInProcess, error); (ErrGRPCNoInflightDowngrade, error); (ErrGRPCCanceled, error); (ErrGRPCDeadlineExceeded, error); (errStringToError, mapT stringT error); (ErrEmptyKey, error); (ErrKeyNotFound, error); (ErrValueProvided, error); (ErrLeaseProvided, error); (ErrTooManyOps, error); (ErrDuplicateKey, error); (ErrInvalidSortOption, error); (ErrCompacted, error); (ErrFutureRev, error); (ErrNoSpace, error); (ErrLeaseNotFound, error); (ErrLeaseExist, error); (ErrLeaseTTLTooLarge, error); (ErrMemberExist, error); (ErrPeerURLExist, error); (ErrMemberNotEnoughStarted, error); (ErrMemberBadURLs, error); (ErrMemberNotFound, error); (ErrMemberNotLearner, error); (ErrMemberLearnerNotReady, error); (ErrTooManyLearners, error); (ErrRequestTooLarge, error); (ErrTooManyRequests, error); (ErrRootUserNotExist, error); (ErrRootRoleNotExist, error); (ErrUserAlreadyExist, error); (ErrUserEmpty, error); (ErrUserNotFound, error); (ErrRoleAlreadyExist, error); (ErrRoleNotFound, error); (ErrRoleEmpty, error); (ErrAuthFailed, error); (ErrPermissionDenied, error); (ErrRoleNotGranted, error); (ErrPermissionNotGranted, error); (ErrAuthNotEnabled, error); (ErrInvalidAuthToken, error); (ErrAuthOldRevision, error); (ErrInvalidAuthMgmt, error); (ErrClusterIDMismatch, error); (ErrClusterIdMismatch, error); (ErrNoLeader, error); (ErrNotLeader, error); (ErrLeaderChanged, error); (ErrNotCapable, error); (ErrStopped, error); (ErrTimeout, error); (ErrTimeoutDueToLeaderFail, error); (ErrTimeoutDueToConnectionLost, error); (ErrTimeoutWaitAppliedIndex, error); (ErrUnhealthy, error); (ErrCorrupt, error); (ErrBadLeaderTransferee, error); (ErrClusterVersionUnavailable, error); (ErrWrongDowngradeVersionFormat, error); (ErrInvalidDowngradeTargetVersion, error); (ErrDowngradeInProcess, error); (ErrNoInflightDowngrade, error); (MetadataRequireLeaderKey, stringT); (MetadataHasLeader, stringT); (MetadataClientAPIVersionKey, stringT); (TokenFieldNameGRPC, stringT); (TokenFieldNameSwagger, stringT)].
 

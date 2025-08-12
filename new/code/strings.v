@@ -81,6 +81,8 @@ Definition Split : go_string := "strings.Split"%go.
 
 Definition SplitAfter : go_string := "strings.SplitAfter"%go.
 
+Definition asciiSpace : go_string := "strings.asciiSpace"%go.
+
 Axiom asciiSpace'init : val.
 
 Definition Fields : go_string := "strings.Fields"%go.

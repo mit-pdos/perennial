@@ -7,6 +7,7 @@ translate = [
   "WaitGroup",
   "WaitGroup.*",
   "noCopy",
+  "rlocker",
 ]
 
 imports = [

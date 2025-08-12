@@ -307,7 +307,7 @@ Definition DoubleValuesⁱᵐᵖˡ : val :=
     (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("done" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         let: "ok" := (mem.alloc (type.zero_val #boolT)) in
         let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
         let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "ch") #ptrT) #()) in

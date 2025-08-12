@@ -8,35 +8,67 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition intType : go_string := "github.com/stretchr/testify/assert.intType"%go.
+
 Axiom intType'init : val.
+
+Definition int8Type : go_string := "github.com/stretchr/testify/assert.int8Type"%go.
 
 Axiom int8Type'init : val.
 
+Definition int16Type : go_string := "github.com/stretchr/testify/assert.int16Type"%go.
+
 Axiom int16Type'init : val.
+
+Definition int32Type : go_string := "github.com/stretchr/testify/assert.int32Type"%go.
 
 Axiom int32Type'init : val.
 
+Definition int64Type : go_string := "github.com/stretchr/testify/assert.int64Type"%go.
+
 Axiom int64Type'init : val.
+
+Definition uintType : go_string := "github.com/stretchr/testify/assert.uintType"%go.
 
 Axiom uintType'init : val.
 
+Definition uint8Type : go_string := "github.com/stretchr/testify/assert.uint8Type"%go.
+
 Axiom uint8Type'init : val.
+
+Definition uint16Type : go_string := "github.com/stretchr/testify/assert.uint16Type"%go.
 
 Axiom uint16Type'init : val.
 
+Definition uint32Type : go_string := "github.com/stretchr/testify/assert.uint32Type"%go.
+
 Axiom uint32Type'init : val.
+
+Definition uint64Type : go_string := "github.com/stretchr/testify/assert.uint64Type"%go.
 
 Axiom uint64Type'init : val.
 
+Definition uintptrType : go_string := "github.com/stretchr/testify/assert.uintptrType"%go.
+
 Axiom uintptrType'init : val.
+
+Definition float32Type : go_string := "github.com/stretchr/testify/assert.float32Type"%go.
 
 Axiom float32Type'init : val.
 
+Definition float64Type : go_string := "github.com/stretchr/testify/assert.float64Type"%go.
+
 Axiom float64Type'init : val.
+
+Definition stringType : go_string := "github.com/stretchr/testify/assert.stringType"%go.
 
 Axiom stringType'init : val.
 
+Definition timeType : go_string := "github.com/stretchr/testify/assert.timeType"%go.
+
 Axiom timeType'init : val.
+
+Definition bytesType : go_string := "github.com/stretchr/testify/assert.bytesType"%go.
 
 Axiom bytesType'init : val.
 
@@ -378,7 +410,11 @@ Definition diff : go_string := "github.com/stretchr/testify/assert.diff"%go.
 
 Definition isFunction : go_string := "github.com/stretchr/testify/assert.isFunction"%go.
 
+Definition spewConfig : go_string := "github.com/stretchr/testify/assert.spewConfig"%go.
+
 Axiom spewConfig'init : val.
+
+Definition spewConfigStringerEnabled : go_string := "github.com/stretchr/testify/assert.spewConfigStringerEnabled"%go.
 
 Axiom spewConfigStringerEnabled'init : val.
 
@@ -397,6 +433,8 @@ Definition ErrorAs : go_string := "github.com/stretchr/testify/assert.ErrorAs"%g
 Definition NotErrorAs : go_string := "github.com/stretchr/testify/assert.NotErrorAs"%go.
 
 Definition buildErrorChainString : go_string := "github.com/stretchr/testify/assert.buildErrorChainString"%go.
+
+Definition AnError : go_string := "github.com/stretchr/testify/assert.AnError"%go.
 
 Axiom AnError'init : val.
 

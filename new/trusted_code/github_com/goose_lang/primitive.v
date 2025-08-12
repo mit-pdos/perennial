@@ -4,6 +4,10 @@ From New.golang Require Import defn.
 Section code.
   Context `{ffi_syntax}.
 
+  (* FIXME: this shouldn't be exposed, but it is because of the alias `ProphId =
+   *prophId`. *)
+  Definition prophIdⁱᵈ : go_string := "github.com/goose-lang/goose.prophId".
+
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)
   Definition Assumeⁱᵐᵖˡ : val :=

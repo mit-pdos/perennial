@@ -12,6 +12,8 @@ Context `{ffi_syntax}.
 
 Definition ChannelState : go_type := uint64T.
 
+Definition ChannelStateⁱᵈ : go_string := "github.com/goose-lang/goose/model/channel.ChannelState"%go.
+
 Definition start : expr := #(W64 0).
 
 Definition receiver_ready : expr := #(W64 1).
@@ -34,11 +36,15 @@ Definition Channel : val :=
     (#"v"%go, "T")
   ].
 
+Definition Channelⁱᵈ : go_string := "github.com/goose-lang/goose/model/channel.Channel"%go.
+
+Definition NewChannelRef : go_string := "github.com/goose-lang/goose/model/channel.NewChannelRef"%go.
+
 (* buffer_size = 0 is an unbuffered channel
 
    go: channel.go:36:6 *)
-Definition NewChannelRef : val :=
-  rec: "NewChannelRef" "T" "buffer_size" :=
+Definition NewChannelRefⁱᵐᵖˡ : val :=
+  λ: "T" "buffer_size",
     exception_do (let: "buffer_size" := (mem.alloc "buffer_size") in
     return: (mem.alloc (let: "$buffer" := (slice.make2 "T" (![#uint64T] "buffer_size")) in
      let: "$lock" := (mem.alloc (type.zero_val #sync.Mutex)) in
@@ -54,6 +60,10 @@ Definition NewChannelRef : val :=
        "v" ::= type.zero_val "T"
      }]))).
 
+Definition Select1 : go_string := "github.com/goose-lang/goose/model/channel.Select1"%go.
+
+Definition NewSendCase : go_string := "github.com/goose-lang/goose/model/channel.NewSendCase"%go.
+
 (* c.Send(val)
 
    is equivalent to:
@@ -61,23 +71,23 @@ Definition NewChannelRef : val :=
    c <- val
 
    go: channel.go:51:22 *)
-Definition Channel__Send : val :=
-  rec: "Channel__Send" "c" "T" "val" :=
+Definition Channel__Sendⁱᵐᵖˡ : val :=
+  λ: "c" "T" "val",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "val" := (mem.alloc "val") in
     (if: (![#ptrT] "c") = #null
     then
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
     else do:  #());;;
     let: "sendCase" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "c") in
     let: "$a1" := (!["T"] "val") in
-    ((func_call #channel.channel #"NewSendCase"%go) "T") "$a0" "$a1") in
+    ((func_call #NewSendCase) "T") "$a0" "$a1") in
     do:  ("sendCase" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#ptrT] "sendCase") in
     let: "$a1" := #true in
-    ((func_call #channel.channel #"Select1"%go) "T") "$a0" "$a1");;;
+    ((func_call #Select1) "T") "$a0" "$a1");;;
     return: (#());;;
     return: #()).
 
@@ -91,6 +101,8 @@ Definition SelectCase : val :=
     (#"Ok"%go, #boolT)
   ].
 
+Definition NewRecvCase : go_string := "github.com/goose-lang/goose/model/channel.NewRecvCase"%go.
+
 (* Equivalent to:
    value, ok := <-c
    Notably, this requires the user to consume the ok bool which is not actually required with Go
@@ -98,21 +110,21 @@ Definition SelectCase : val :=
    bool.
 
    go: channel.go:72:22 *)
-Definition Channel__Receive : val :=
-  rec: "Channel__Receive" "c" "T" <> :=
+Definition Channel__Receiveⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ptrT] "c") = #null
     then
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
     else do:  #());;;
     let: "recvCase" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "c") in
-    ((func_call #channel.channel #"NewRecvCase"%go) "T") "$a0") in
+    ((func_call #NewRecvCase) "T") "$a0") in
     do:  ("recvCase" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#ptrT] "recvCase") in
     let: "$a1" := #true in
-    ((func_call #channel.channel #"Select1"%go) "T") "$a0" "$a1");;;
+    ((func_call #Select1) "T") "$a0" "$a1");;;
     return: (!["T"] (struct.field_ref (SelectCase "T") #"Value"%go (![#ptrT] "recvCase")), ![#boolT] (struct.field_ref (SelectCase "T") #"Ok"%go (![#ptrT] "recvCase")))).
 
 (* This is a non-blocking attempt at closing. The only reason close blocks ever is because there
@@ -120,12 +132,12 @@ Definition Channel__Receive : val :=
    the closer must still obtain the channel's lock
 
    go: channel.go:92:22 *)
-Definition Channel__TryClose : val :=
-  rec: "Channel__TryClose" "c" "T" <> :=
+Definition Channel__TryCloseⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"close of closed channel"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"close of closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: ((![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) ≠ receiver_done) && ((![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) ≠ sender_done)
@@ -143,18 +155,18 @@ Definition Channel__TryClose : val :=
    close(c)
 
    go: channel.go:110:22 *)
-Definition Channel__Close : val :=
-  rec: "Channel__Close" "c" "T" <> :=
+Definition Channel__Closeⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ptrT] "c") = #null
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"close of nil channel"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"close of nil channel"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "done" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
     do:  ("done" <-[#boolT] "$r0");;;
-    (for: (λ: <>, (~ (![#boolT] "done"))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (![#boolT] "done"))); (λ: <>, #()) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
       let: "$r0" := ((method_call #channel.channel #"Channel'ptr" #"TryClose" (![#ptrT] "c") "T") #()) in
       do:  ("done" <-[#boolT] "$r0");;;
@@ -169,8 +181,8 @@ Definition Channel__Close : val :=
    require this so this will need to be translated.
 
    go: channel.go:128:22 *)
-Definition Channel__ReceiveDiscardOk : val :=
-  rec: "Channel__ReceiveDiscardOk" "c" "T" <> :=
+Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     let: "return_val" := (mem.alloc (type.zero_val "T")) in
     let: ("$ret0", "$ret1") := ((method_call #channel.channel #"Channel'ptr" #"Receive" (![#ptrT] "c") "T") #()) in
@@ -183,8 +195,8 @@ Definition Channel__ReceiveDiscardOk : val :=
 (* If there is a value available in the buffer, consume it, otherwise, don't select.
 
    go: channel.go:135:22 *)
-Definition Channel__BufferedTryReceiveLocked : val :=
-  rec: "Channel__BufferedTryReceiveLocked" "c" "T" <> :=
+Definition Channel__BufferedTryReceiveLockedⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     let: "v" := (mem.alloc (type.zero_val "T")) in
     (if: (![#uint64T] (struct.field_ref (Channel "T") #"count"%go (![#ptrT] "c"))) > #(W64 0)
@@ -203,8 +215,8 @@ Definition Channel__BufferedTryReceiveLocked : val :=
     return: (#false, !["T"] "v", #true)).
 
 (* go: channel.go:149:22 *)
-Definition Channel__BufferedTryReceive : val :=
-  rec: "Channel__BufferedTryReceive" "c" "T" <> :=
+Definition Channel__BufferedTryReceiveⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
@@ -222,6 +234,8 @@ Definition Channel__BufferedTryReceive : val :=
 
 Definition OfferResult : go_type := uint64T.
 
+Definition OfferResultⁱᵈ : go_string := "github.com/goose-lang/goose/model/channel.OfferResult"%go.
+
 (* Offer was rescinded (other party didn't arrive in time) *)
 Definition OfferRescinded : expr := #(W64 0).
 
@@ -232,8 +246,8 @@ Definition CompletedExchange : expr := #(W64 1).
 Definition CloseInterruptedOffer : expr := #(W64 2).
 
 (* go: channel.go:164:22 *)
-Definition Channel__UnbufferedTryReceive : val :=
-  rec: "Channel__UnbufferedTryReceive" "c" "T" <> :=
+Definition Channel__UnbufferedTryReceiveⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     let: "local_val" := (mem.alloc (type.zero_val "T")) in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
@@ -283,18 +297,18 @@ Definition Channel__UnbufferedTryReceive : val :=
         do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
         return: (#true, !["T"] "local_val", #true)
       else do:  #());;;
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"not supposed to be here!"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"not supposed to be here!"%go) in
       Panic "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"not supposed to be here!"%go) in
+    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"not supposed to be here!"%go) in
     Panic "$a0")).
 
 (* Non-blocking receive function used for select statements. Blocking receive is modeled as
    a single blocking select statement which amounts to a for loop until selected.
 
    go: channel.go:215:22 *)
-Definition Channel__TryReceive : val :=
-  rec: "Channel__TryReceive" "c" "T" <> :=
+Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
     slice.len "$a0")) > #(W64 0)
@@ -307,6 +321,8 @@ Definition Channel__TryReceive : val :=
 
 Definition SenderState : go_type := uint64T.
 
+Definition SenderStateⁱᵈ : go_string := "github.com/goose-lang/goose/model/channel.SenderState"%go.
+
 (* Sender found a waiting receiver *)
 Definition SenderCompletedWithReceiver : expr := #(W64 0).
 
@@ -317,13 +333,13 @@ Definition SenderMadeOffer : expr := #(W64 1).
 Definition SenderCannotProceed : expr := #(W64 2).
 
 (* go: channel.go:231:22 *)
-Definition Channel__SenderCompleteOrOffer : val :=
-  rec: "Channel__SenderCompleteOrOffer" "c" "T" "val" :=
+Definition Channel__SenderCompleteOrOfferⁱᵐᵖˡ : val :=
+  λ: "c" "T" "val",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "val" := (mem.alloc "val") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"send on closed channel"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"send on closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = receiver_ready
@@ -345,12 +361,12 @@ Definition Channel__SenderCompleteOrOffer : val :=
     return: (SenderCannotProceed)).
 
 (* go: channel.go:252:22 *)
-Definition Channel__SenderCheckOfferResult : val :=
-  rec: "Channel__SenderCheckOfferResult" "c" "T" <> :=
+Definition Channel__SenderCheckOfferResultⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"send on closed channel"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"send on closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = receiver_done
@@ -365,19 +381,19 @@ Definition Channel__SenderCheckOfferResult : val :=
       do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#ChannelState] "$r0");;;
       return: (OfferRescinded)
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Invalid state transition with open receive offer"%go) in
+    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Invalid state transition with open receive offer"%go) in
     Panic "$a0")).
 
 (* If the buffer has free space, push our value.
 
    go: channel.go:270:22 *)
-Definition Channel__BufferedTrySend : val :=
-  rec: "Channel__BufferedTrySend" "c" "T" "val" :=
+Definition Channel__BufferedTrySendⁱᵐᵖˡ : val :=
+  λ: "c" "T" "val",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "val" := (mem.alloc "val") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"send on closed channel"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"send on closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (![#uint64T] (struct.field_ref (Channel "T") #"count"%go (![#ptrT] "c"))) < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
@@ -398,8 +414,8 @@ Definition Channel__BufferedTrySend : val :=
    statements simply call this in a for loop until it returns true.
 
    go: channel.go:287:22 *)
-Definition Channel__TrySend : val :=
-  rec: "Channel__TrySend" "c" "T" "val" :=
+Definition Channel__TrySendⁱᵐᵖˡ : val :=
+  λ: "c" "T" "val",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "val" := (mem.alloc "val") in
     let: "buffer_size" := (mem.alloc (type.zero_val #uint64T)) in
@@ -442,8 +458,8 @@ Definition Channel__TrySend : val :=
    semantics.
 
    go: channel.go:323:22 *)
-Definition Channel__Len : val :=
-  rec: "Channel__Len" "c" "T" <> :=
+Definition Channel__Lenⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ptrT] "c") = #null
     then return: (#(W64 0))
@@ -463,8 +479,8 @@ Definition Channel__Len : val :=
    cap(c)
 
    go: channel.go:338:22 *)
-Definition Channel__Cap : val :=
-  rec: "Channel__Cap" "c" "T" <> :=
+Definition Channel__Capⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ptrT] "c") = #null
     then return: (#(W64 0))
@@ -472,15 +488,19 @@ Definition Channel__Cap : val :=
     return: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
      slice.len "$a0"))).
 
+Definition SelectDirⁱᵈ : go_string := "github.com/goose-lang/goose/model/channel.SelectDir"%go.
+
 (* case Chan <- Send *)
 Definition SelectSend : expr := #(W64 0).
 
 (* case <-Chan: *)
 Definition SelectRecv : expr := #(W64 1).
 
+Definition SelectCaseⁱᵈ : go_string := "github.com/goose-lang/goose/model/channel.SelectCase"%go.
+
 (* go: channel.go:364:6 *)
-Definition NewSendCase : val :=
-  rec: "NewSendCase" "T" "channel" "value" :=
+Definition NewSendCaseⁱᵐᵖˡ : val :=
+  λ: "T" "channel" "value",
     exception_do (let: "value" := (mem.alloc "value") in
     let: "channel" := (mem.alloc "channel") in
     return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
@@ -494,8 +514,8 @@ Definition NewSendCase : val :=
      }]))).
 
 (* go: channel.go:372:6 *)
-Definition NewRecvCase : val :=
-  rec: "NewRecvCase" "T" "channel" :=
+Definition NewRecvCaseⁱᵐᵖˡ : val :=
+  λ: "T" "channel",
     exception_do (let: "channel" := (mem.alloc "channel") in
     return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
      let: "$dir" := SelectRecv in
@@ -506,12 +526,14 @@ Definition NewRecvCase : val :=
        "Ok" ::= type.zero_val #boolT
      }]))).
 
+Definition TrySelect : go_string := "github.com/goose-lang/goose/model/channel.TrySelect"%go.
+
 (* Uses the applicable Try<Operation> function on the select case's channel. Default is always
    selectable so simply returns true.
 
    go: channel.go:381:6 *)
-Definition TrySelect : val :=
-  rec: "TrySelect" "T" "select_case" :=
+Definition TrySelectⁱᵐᵖˡ : val :=
+  λ: "T" "select_case",
     exception_do (let: "select_case" := (mem.alloc "select_case") in
     let: "channel" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref (SelectCase "T") #"channel"%go (![#ptrT] "select_case"))) in
@@ -549,70 +571,76 @@ Definition TrySelect : val :=
    a single case select statement with no default.
 
    go: channel.go:408:6 *)
-Definition Select1 : val :=
-  rec: "Select1" "T1" "case1" "blocking" :=
+Definition Select1ⁱᵐᵖˡ : val :=
+  λ: "T1" "case1" "blocking",
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "case1" := (mem.alloc "case1") in
     let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "$r0" := (let: "$a0" := (![#ptrT] "case1") in
-      ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0") in
+      ((func_call #TrySelect) "T1") "$a0") in
       do:  ("selected" <-[#boolT] "$r0");;;
       (if: (![#boolT] "selected") || (~ (![#boolT] "blocking"))
       then break: #()
       else do:  #()));;;
     return: (![#boolT] "selected")).
 
+Definition TrySelectCase2 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase2"%go.
+
 (* go: channel.go:421:6 *)
-Definition TrySelectCase2 : val :=
-  rec: "TrySelectCase2" "T1" "T2" "index" "case1" "case2" :=
+Definition TrySelectCase2ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "index" "case1" "case2",
     exception_do (let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "index" := (mem.alloc "index") in
     (if: (![#uint64T] "index") = #(W64 0)
     then
       return: (let: "$a0" := (![#ptrT] "case1") in
-       ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0")
+       ((func_call #TrySelect) "T1") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 1)
     then
       return: (let: "$a0" := (![#ptrT] "case2") in
-       ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0")
+       ((func_call #TrySelect) "T2") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0 or 1"%go) in
+    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"index needs to be 0 or 1"%go) in
     Panic "$a0")).
 
+Definition Select2 : go_string := "github.com/goose-lang/goose/model/channel.Select2"%go.
+
 (* go: channel.go:434:6 *)
-Definition Select2 : val :=
-  rec: "Select2" "T1" "T2" "case1" "case2" "blocking" :=
+Definition Select2ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "case1" "case2" "blocking",
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` #(W64 2)) in
+    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 2)) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (if: let: "$a0" := (![#uint64T] "i") in
     let: "$a1" := (![#ptrT] "case1") in
     let: "$a2" := (![#ptrT] "case2") in
-    ((func_call #channel.channel #"TrySelectCase2"%go) "T1" "T2") "$a0" "$a1" "$a2"
+    ((func_call #TrySelectCase2) "T1" "T2") "$a0" "$a1" "$a2"
     then return: (![#uint64T] "i")
     else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: let: "$a0" := (![#ptrT] "case1") in
-      ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0"
+      ((func_call #TrySelect) "T1") "$a0"
       then return: (#(W64 0))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case2") in
-      ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0"
+      ((func_call #TrySelect) "T2") "$a0"
       then return: (#(W64 1))
       else do:  #());;;
       (if: (~ (![#boolT] "blocking"))
       then return: (#(W64 2))
       else do:  #()))).
 
+Definition TrySelectCase3 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase3"%go.
+
 (* go: channel.go:458:6 *)
-Definition TrySelectCase3 : val :=
-  rec: "TrySelectCase3" "T1" "T2" "T3" "index" "case1" "case2" "case3" :=
+Definition TrySelectCase3ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "index" "case1" "case2" "case3",
     exception_do (let: "case3" := (mem.alloc "case3") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
@@ -620,58 +648,62 @@ Definition TrySelectCase3 : val :=
     (if: (![#uint64T] "index") = #(W64 0)
     then
       return: (let: "$a0" := (![#ptrT] "case1") in
-       ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0")
+       ((func_call #TrySelect) "T1") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 1)
     then
       return: (let: "$a0" := (![#ptrT] "case2") in
-       ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0")
+       ((func_call #TrySelect) "T2") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 2)
     then
       return: (let: "$a0" := (![#ptrT] "case3") in
-       ((func_call #channel.channel #"TrySelect"%go) "T3") "$a0")
+       ((func_call #TrySelect) "T3") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0, 1 or 2"%go) in
+    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"index needs to be 0, 1 or 2"%go) in
     Panic "$a0")).
 
+Definition Select3 : go_string := "github.com/goose-lang/goose/model/channel.Select3"%go.
+
 (* go: channel.go:475:6 *)
-Definition Select3 : val :=
-  rec: "Select3" "T1" "T2" "T3" "case1" "case2" "case3" "blocking" :=
+Definition Select3ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "case1" "case2" "case3" "blocking",
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "case3" := (mem.alloc "case3") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` #(W64 3)) in
+    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 3)) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (if: let: "$a0" := (![#uint64T] "i") in
     let: "$a1" := (![#ptrT] "case1") in
     let: "$a2" := (![#ptrT] "case2") in
     let: "$a3" := (![#ptrT] "case3") in
-    ((func_call #channel.channel #"TrySelectCase3"%go) "T1" "T2" "T3") "$a0" "$a1" "$a2" "$a3"
+    ((func_call #TrySelectCase3) "T1" "T2" "T3") "$a0" "$a1" "$a2" "$a3"
     then return: (![#uint64T] "i")
     else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: let: "$a0" := (![#ptrT] "case1") in
-      ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0"
+      ((func_call #TrySelect) "T1") "$a0"
       then return: (#(W64 0))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case2") in
-      ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0"
+      ((func_call #TrySelect) "T2") "$a0"
       then return: (#(W64 1))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case3") in
-      ((func_call #channel.channel #"TrySelect"%go) "T3") "$a0"
+      ((func_call #TrySelect) "T3") "$a0"
       then return: (#(W64 2))
       else do:  #());;;
       (if: (~ (![#boolT] "blocking"))
       then return: (#(W64 3))
       else do:  #()))).
 
+Definition TrySelectCase4 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase4"%go.
+
 (* go: channel.go:502:6 *)
-Definition TrySelectCase4 : val :=
-  rec: "TrySelectCase4" "T1" "T2" "T3" "T4" "index" "case1" "case2" "case3" "case4" :=
+Definition TrySelectCase4ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "T4" "index" "case1" "case2" "case3" "case4",
     exception_do (let: "case4" := (mem.alloc "case4") in
     let: "case3" := (mem.alloc "case3") in
     let: "case2" := (mem.alloc "case2") in
@@ -680,69 +712,73 @@ Definition TrySelectCase4 : val :=
     (if: (![#uint64T] "index") = #(W64 0)
     then
       return: (let: "$a0" := (![#ptrT] "case1") in
-       ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0")
+       ((func_call #TrySelect) "T1") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 1)
     then
       return: (let: "$a0" := (![#ptrT] "case2") in
-       ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0")
+       ((func_call #TrySelect) "T2") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 2)
     then
       return: (let: "$a0" := (![#ptrT] "case3") in
-       ((func_call #channel.channel #"TrySelect"%go) "T3") "$a0")
+       ((func_call #TrySelect) "T3") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 3)
     then
       return: (let: "$a0" := (![#ptrT] "case4") in
-       ((func_call #channel.channel #"TrySelect"%go) "T4") "$a0")
+       ((func_call #TrySelect) "T4") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0, 1, 2 or 3"%go) in
+    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"index needs to be 0, 1, 2 or 3"%go) in
     Panic "$a0")).
 
+Definition Select4 : go_string := "github.com/goose-lang/goose/model/channel.Select4"%go.
+
 (* go: channel.go:523:6 *)
-Definition Select4 : val :=
-  rec: "Select4" "T1" "T2" "T3" "T4" "case1" "case2" "case3" "case4" "blocking" :=
+Definition Select4ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "T4" "case1" "case2" "case3" "case4" "blocking",
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "case4" := (mem.alloc "case4") in
     let: "case3" := (mem.alloc "case3") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` #(W64 4)) in
+    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 4)) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (if: let: "$a0" := (![#uint64T] "i") in
     let: "$a1" := (![#ptrT] "case1") in
     let: "$a2" := (![#ptrT] "case2") in
     let: "$a3" := (![#ptrT] "case3") in
     let: "$a4" := (![#ptrT] "case4") in
-    ((func_call #channel.channel #"TrySelectCase4"%go) "T1" "T2" "T3" "T4") "$a0" "$a1" "$a2" "$a3" "$a4"
+    ((func_call #TrySelectCase4) "T1" "T2" "T3" "T4") "$a0" "$a1" "$a2" "$a3" "$a4"
     then return: (![#uint64T] "i")
     else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: let: "$a0" := (![#ptrT] "case1") in
-      ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0"
+      ((func_call #TrySelect) "T1") "$a0"
       then return: (#(W64 0))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case2") in
-      ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0"
+      ((func_call #TrySelect) "T2") "$a0"
       then return: (#(W64 1))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case3") in
-      ((func_call #channel.channel #"TrySelect"%go) "T3") "$a0"
+      ((func_call #TrySelect) "T3") "$a0"
       then return: (#(W64 2))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case4") in
-      ((func_call #channel.channel #"TrySelect"%go) "T4") "$a0"
+      ((func_call #TrySelect) "T4") "$a0"
       then return: (#(W64 3))
       else do:  #());;;
       (if: (~ (![#boolT] "blocking"))
       then return: (#(W64 4))
       else do:  #()))).
 
+Definition TrySelectCase5 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase5"%go.
+
 (* go: channel.go:554:6 *)
-Definition TrySelectCase5 : val :=
-  rec: "TrySelectCase5" "T1" "T2" "T3" "T4" "T5" "index" "case1" "case2" "case3" "case4" "case5" :=
+Definition TrySelectCase5ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "T4" "T5" "index" "case1" "case2" "case3" "case4" "case5",
     exception_do (let: "case5" := (mem.alloc "case5") in
     let: "case4" := (mem.alloc "case4") in
     let: "case3" := (mem.alloc "case3") in
@@ -752,34 +788,36 @@ Definition TrySelectCase5 : val :=
     (if: (![#uint64T] "index") = #(W64 0)
     then
       return: (let: "$a0" := (![#ptrT] "case1") in
-       ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0")
+       ((func_call #TrySelect) "T1") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 1)
     then
       return: (let: "$a0" := (![#ptrT] "case2") in
-       ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0")
+       ((func_call #TrySelect) "T2") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 2)
     then
       return: (let: "$a0" := (![#ptrT] "case3") in
-       ((func_call #channel.channel #"TrySelect"%go) "T3") "$a0")
+       ((func_call #TrySelect) "T3") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 3)
     then
       return: (let: "$a0" := (![#ptrT] "case4") in
-       ((func_call #channel.channel #"TrySelect"%go) "T4") "$a0")
+       ((func_call #TrySelect) "T4") "$a0")
     else do:  #());;;
     (if: (![#uint64T] "index") = #(W64 4)
     then
       return: (let: "$a0" := (![#ptrT] "case5") in
-       ((func_call #channel.channel #"TrySelect"%go) "T5") "$a0")
+       ((func_call #TrySelect) "T5") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0, 1, 2, 3 or 4"%go) in
+    do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"index needs to be 0, 1, 2, 3 or 4"%go) in
     Panic "$a0")).
 
+Definition Select5 : go_string := "github.com/goose-lang/goose/model/channel.Select5"%go.
+
 (* go: channel.go:579:6 *)
-Definition Select5 : val :=
-  rec: "Select5" "T1" "T2" "T3" "T4" "T5" "case1" "case2" "case3" "case4" "case5" "blocking" :=
+Definition Select5ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "T4" "T5" "case1" "case2" "case3" "case4" "case5" "blocking",
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "case5" := (mem.alloc "case5") in
     let: "case4" := (mem.alloc "case4") in
@@ -787,7 +825,7 @@ Definition Select5 : val :=
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` #(W64 5)) in
+    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 5)) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (if: let: "$a0" := (![#uint64T] "i") in
     let: "$a1" := (![#ptrT] "case1") in
@@ -795,28 +833,28 @@ Definition Select5 : val :=
     let: "$a3" := (![#ptrT] "case3") in
     let: "$a4" := (![#ptrT] "case4") in
     let: "$a5" := (![#ptrT] "case5") in
-    ((func_call #channel.channel #"TrySelectCase5"%go) "T1" "T2" "T3" "T4" "T5") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5"
+    ((func_call #TrySelectCase5) "T1" "T2" "T3" "T4" "T5") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5"
     then return: (![#uint64T] "i")
     else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: let: "$a0" := (![#ptrT] "case1") in
-      ((func_call #channel.channel #"TrySelect"%go) "T1") "$a0"
+      ((func_call #TrySelect) "T1") "$a0"
       then return: (#(W64 0))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case2") in
-      ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0"
+      ((func_call #TrySelect) "T2") "$a0"
       then return: (#(W64 1))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case3") in
-      ((func_call #channel.channel #"TrySelect"%go) "T3") "$a0"
+      ((func_call #TrySelect) "T3") "$a0"
       then return: (#(W64 2))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case4") in
-      ((func_call #channel.channel #"TrySelect"%go) "T4") "$a0"
+      ((func_call #TrySelect) "T4") "$a0"
       then return: (#(W64 3))
       else do:  #());;;
       (if: let: "$a0" := (![#ptrT] "case5") in
-      ((func_call #channel.channel #"TrySelect"%go) "T5") "$a0"
+      ((func_call #TrySelect) "T5") "$a0"
       then return: (#(W64 4))
       else do:  #());;;
       (if: (~ (![#boolT] "blocking"))
@@ -825,9 +863,9 @@ Definition Select5 : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewChannelRef"%go, NewChannelRef); ("NewSendCase"%go, NewSendCase); ("NewRecvCase"%go, NewRecvCase); ("TrySelect"%go, TrySelect); ("Select1"%go, Select1); ("TrySelectCase2"%go, TrySelectCase2); ("Select2"%go, Select2); ("TrySelectCase3"%go, TrySelectCase3); ("Select3"%go, Select3); ("TrySelectCase4"%go, TrySelectCase4); ("Select4"%go, Select4); ("TrySelectCase5"%go, TrySelectCase5); ("Select5"%go, Select5)].
+Definition functions' : list (go_string * val) := [(NewChannelRef, NewChannelRefⁱᵐᵖˡ); (NewSendCase, NewSendCaseⁱᵐᵖˡ); (NewRecvCase, NewRecvCaseⁱᵐᵖˡ); (TrySelect, TrySelectⁱᵐᵖˡ); (Select1, Select1ⁱᵐᵖˡ); (TrySelectCase2, TrySelectCase2ⁱᵐᵖˡ); (Select2, Select2ⁱᵐᵖˡ); (TrySelectCase3, TrySelectCase3ⁱᵐᵖˡ); (Select3, Select3ⁱᵐᵖˡ); (TrySelectCase4, TrySelectCase4ⁱᵐᵖˡ); (Select4, Select4ⁱᵐᵖˡ); (TrySelectCase5, TrySelectCase5ⁱᵐᵖˡ); (Select5, Select5ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("ChannelState"%go, []); ("ChannelState'ptr"%go, []); ("Channel"%go, []); ("Channel'ptr"%go, [("BufferedTryReceive"%go, Channel__BufferedTryReceive); ("BufferedTryReceiveLocked"%go, Channel__BufferedTryReceiveLocked); ("BufferedTrySend"%go, Channel__BufferedTrySend); ("Cap"%go, Channel__Cap); ("Close"%go, Channel__Close); ("Len"%go, Channel__Len); ("Receive"%go, Channel__Receive); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOk); ("Send"%go, Channel__Send); ("SenderCheckOfferResult"%go, Channel__SenderCheckOfferResult); ("SenderCompleteOrOffer"%go, Channel__SenderCompleteOrOffer); ("TryClose"%go, Channel__TryClose); ("TryReceive"%go, Channel__TryReceive); ("TrySend"%go, Channel__TrySend); ("UnbufferedTryReceive"%go, Channel__UnbufferedTryReceive)]); ("OfferResult"%go, []); ("OfferResult'ptr"%go, []); ("SenderState"%go, []); ("SenderState'ptr"%go, []); ("SelectDir"%go, []); ("SelectDir'ptr"%go, []); ("SelectCase"%go, []); ("SelectCase'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("ChannelState"%go, []); ("ChannelState'ptr"%go, []); ("Channel"%go, []); ("Channel'ptr"%go, [("BufferedTryReceive"%go, Channel__BufferedTryReceiveⁱᵐᵖˡ); ("BufferedTryReceiveLocked"%go, Channel__BufferedTryReceiveLockedⁱᵐᵖˡ); ("BufferedTrySend"%go, Channel__BufferedTrySendⁱᵐᵖˡ); ("Cap"%go, Channel__Capⁱᵐᵖˡ); ("Close"%go, Channel__Closeⁱᵐᵖˡ); ("Len"%go, Channel__Lenⁱᵐᵖˡ); ("Receive"%go, Channel__Receiveⁱᵐᵖˡ); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOkⁱᵐᵖˡ); ("Send"%go, Channel__Sendⁱᵐᵖˡ); ("SenderCheckOfferResult"%go, Channel__SenderCheckOfferResultⁱᵐᵖˡ); ("SenderCompleteOrOffer"%go, Channel__SenderCompleteOrOfferⁱᵐᵖˡ); ("TryClose"%go, Channel__TryCloseⁱᵐᵖˡ); ("TryReceive"%go, Channel__TryReceiveⁱᵐᵖˡ); ("TrySend"%go, Channel__TrySendⁱᵐᵖˡ); ("UnbufferedTryReceive"%go, Channel__UnbufferedTryReceiveⁱᵐᵖˡ)]); ("OfferResult"%go, []); ("OfferResult'ptr"%go, []); ("SenderState"%go, []); ("SenderState'ptr"%go, []); ("SelectDir"%go, []); ("SelectDir'ptr"%go, []); ("SelectCase"%go, []); ("SelectCase'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo channel.channel :=
   {|
@@ -838,10 +876,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("ChannelSta
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init channel.channel (λ: <>,
-      exception_do (do:  primitive.initialize';;;
-      do:  sync.initialize')
+  λ: <>,
+    package.init #channel.channel (λ: <>,
+      exception_do (do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (package.alloc channel.channel #()))
       ).
 
 End code.

@@ -27,9 +27,17 @@ Definition OnceValues : go_string := "sync.OnceValues"%go.
 
 Definition runtime_randn : go_string := "sync.runtime_randn"%go.
 
+Definition poolRaceHash : go_string := "sync.poolRaceHash"%go.
+
 Definition poolRaceAddr : go_string := "sync.poolRaceAddr"%go.
 
 Definition poolCleanup : go_string := "sync.poolCleanup"%go.
+
+Definition allPoolsMu : go_string := "sync.allPoolsMu"%go.
+
+Definition allPools : go_string := "sync.allPools"%go.
+
+Definition oldPools : go_string := "sync.oldPools"%go.
 
 Definition init : go_string := "sync.init"%go.
 
@@ -129,7 +137,7 @@ Definition RWMutex__TryRLockⁱᵐᵖˡ : val :=
       (func_call #race.Read) "$a0");;;
       do:  ((func_call #race.Disable) #())
     else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "c" := (mem.alloc (type.zero_val #int32T)) in
       let: "$r0" := ((method_call #atomic #"Int32'ptr" #"Load" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) #()) in
       do:  ("c" <-[#int32T] "$r0");;;
@@ -330,6 +338,8 @@ Definition RWMutex__Unlockⁱᵐᵖˡ : val :=
 
 Definition syscall_hasWaitingReaders : go_string := "sync.syscall_hasWaitingReaders"%go.
 
+Definition rlockerⁱᵈ : go_string := "sync.rlocker"%go.
+
 (* RLocker returns a [Locker] interface that implements
    the [Locker.Lock] and [Locker.Unlock] methods by calling rw.RLock and rw.RUnlock.
 
@@ -338,6 +348,8 @@ Definition RWMutex__RLockerⁱᵐᵖˡ : val :=
   λ: "rw" <>,
     exception_do (let: "rw" := (mem.alloc "rw") in
     return: (interface.make #(ptrTⁱᵈ rlockerⁱᵈ) (![#ptrT] "rw"))).
+
+Definition rlocker : go_type := RWMutex.
 
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
@@ -442,7 +454,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
     (if: race.Enabled
     then do:  ((func_call #race.Disable) #())
     else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "state" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) in
       do:  ("state" <-[#uint64T] "$r0");;;
@@ -492,7 +504,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(NewCond, NewCondⁱᵐᵖˡ); (runtime_Semacquire, runtime_Semacquireⁱᵐᵖˡ); (runtime_SemacquireWaitGroup, runtime_SemacquireWaitGroupⁱᵐᵖˡ); (runtime_SemacquireRWMutexR, runtime_SemacquireRWMutexRⁱᵐᵖˡ); (runtime_SemacquireRWMutex, runtime_SemacquireRWMutexⁱᵐᵖˡ); (runtime_Semrelease, runtime_Semreleaseⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcastⁱᵐᵖˡ); ("Signal"%go, Cond__Signalⁱᵐᵖˡ); ("Wait"%go, Cond__Waitⁱᵐᵖˡ)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lockⁱᵐᵖˡ); ("RLock"%go, RWMutex__RLockⁱᵐᵖˡ); ("RLocker"%go, RWMutex__RLockerⁱᵐᵖˡ); ("RUnlock"%go, RWMutex__RUnlockⁱᵐᵖˡ); ("TryLock"%go, RWMutex__TryLockⁱᵐᵖˡ); ("TryRLock"%go, RWMutex__TryRLockⁱᵐᵖˡ); ("Unlock"%go, RWMutex__Unlockⁱᵐᵖˡ); ("rUnlockSlow"%go, RWMutex__rUnlockSlowⁱᵐᵖˡ)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Addⁱᵐᵖˡ); ("Done"%go, WaitGroup__Doneⁱᵐᵖˡ); ("Wait"%go, WaitGroup__Waitⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcastⁱᵐᵖˡ); ("Signal"%go, Cond__Signalⁱᵐᵖˡ); ("Wait"%go, Cond__Waitⁱᵐᵖˡ)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lockⁱᵐᵖˡ); ("RLock"%go, RWMutex__RLockⁱᵐᵖˡ); ("RLocker"%go, RWMutex__RLockerⁱᵐᵖˡ); ("RUnlock"%go, RWMutex__RUnlockⁱᵐᵖˡ); ("TryLock"%go, RWMutex__TryLockⁱᵐᵖˡ); ("TryRLock"%go, RWMutex__TryRLockⁱᵐᵖˡ); ("Unlock"%go, RWMutex__Unlockⁱᵐᵖˡ); ("rUnlockSlow"%go, RWMutex__rUnlockSlowⁱᵐᵖˡ)]); ("rlocker"%go, []); ("rlocker'ptr"%go, []); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Addⁱᵐᵖˡ); ("Done"%go, WaitGroup__Doneⁱᵐᵖˡ); ("Wait"%go, WaitGroup__Waitⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo sync.sync :=
   {|

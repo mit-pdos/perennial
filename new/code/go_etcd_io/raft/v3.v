@@ -110,6 +110,8 @@ Definition raftLog : go_type := structT [
 
 Definition None : expr := #(W64 0).
 
+Definition emptyState : go_string := "go.etcd.io/raft/v3.emptyState"%go.
+
 (* Bootstrap initializes the RawNode for first use by appending configuration
    changes for the supplied peers. This method returns an error if the Storage
    is nonempty.
@@ -848,6 +850,10 @@ Definition raftLog__lastEntryIDⁱᵐᵖˡ : val :=
        "index" ::= "$index"
      }])).
 
+Definition ErrCompacted : go_string := "go.etcd.io/raft/v3.ErrCompacted"%go.
+
+Definition ErrUnavailable : go_string := "go.etcd.io/raft/v3.ErrUnavailable"%go.
+
 (* go: log.go:385:19 *)
 Definition raftLog__termⁱᵐᵖˡ : val :=
   λ: "l" "i",
@@ -1012,7 +1018,7 @@ Definition raftLog__scanⁱᵐᵖˡ : val :=
     let: "pageSize" := (mem.alloc "pageSize") in
     let: "hi" := (mem.alloc "hi") in
     let: "lo" := (mem.alloc "lo") in
-    (for: (λ: <>, (![#uint64T] "lo") < (![#uint64T] "hi")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![#uint64T] "lo") < (![#uint64T] "hi")); (λ: <>, #()) := λ: <>,
       let: "err" := (mem.alloc (type.zero_val #error)) in
       let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "lo") in
@@ -1545,6 +1551,10 @@ Definition Loggerⁱᵈ : go_string := "go.etcd.io/raft/v3.Logger"%go.
 
 Definition SetLogger : go_string := "go.etcd.io/raft/v3.SetLogger"%go.
 
+Definition raftLoggerMu : go_string := "go.etcd.io/raft/v3.raftLoggerMu"%go.
+
+Definition raftLogger : go_string := "go.etcd.io/raft/v3.raftLogger"%go.
+
 (* go: logger.go:45:6 *)
 Definition SetLoggerⁱᵐᵖˡ : val :=
   λ: "l",
@@ -1556,6 +1566,8 @@ Definition SetLoggerⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition ResetDefaultLogger : go_string := "go.etcd.io/raft/v3.ResetDefaultLogger"%go.
+
+Definition defaultLogger : go_string := "go.etcd.io/raft/v3.defaultLogger"%go.
 
 Definition DefaultLoggerⁱᵈ : go_string := "go.etcd.io/raft/v3.DefaultLogger"%go.
 
@@ -1580,13 +1592,7 @@ Definition getLoggerⁱᵐᵖˡ : val :=
       )));;;
     return: (![#Logger] (globals.get #raftLogger))).
 
-Definition defaultLogger : go_string := "go.etcd.io/raft/v3.defaultLogger"%go.
-
 Definition discardLogger : go_string := "go.etcd.io/raft/v3.discardLogger"%go.
-
-Definition raftLoggerMu : go_string := "go.etcd.io/raft/v3.raftLoggerMu"%go.
-
-Definition raftLogger : go_string := "go.etcd.io/raft/v3.raftLogger"%go.
 
 Definition calldepth : Z := 2.
 
@@ -1801,8 +1807,6 @@ Definition SnapshotStatusⁱᵈ : go_string := "go.etcd.io/raft/v3.SnapshotStatu
 Definition SnapshotFinish : expr := #(W64 1).
 
 Definition SnapshotFailure : expr := #(W64 2).
-
-Definition emptyState : go_string := "go.etcd.io/raft/v3.emptyState"%go.
 
 Definition ErrStopped : go_string := "go.etcd.io/raft/v3.ErrStopped"%go.
 
@@ -2105,7 +2109,7 @@ Definition node__runⁱᵐᵖˡ : val :=
     let: "lead" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := None in
     do:  ("lead" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: ((![type.chanT (type.structT [
       ])] "advancec") = #null) && ((method_call #v3.raft #"RawNode'ptr" #"HasReady" (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n")))) #())
       then
@@ -3296,6 +3300,8 @@ Definition raft__maybeSendAppendⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
     (method_call #tracker #"Progress'ptr" #"SentCommit" (![#ptrT] "pr")) "$a0");;;
     return: (#true)).
+
+Definition ErrSnapshotTemporarilyUnavailable : go_string := "go.etcd.io/raft/v3.ErrSnapshotTemporarilyUnavailable"%go.
 
 (* maybeSendSnapshot fetches a snapshot from Storage, and sends it to the given
    node. Returns true iff the snapshot message has been emitted successfully.
@@ -4836,7 +4842,7 @@ Definition stepLeaderⁱᵐᵖˡ : val :=
           then
             (for: (λ: <>, let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) in
             let: "$a1" := #false in
-            (method_call #v3.raft #"raft'ptr" #"maybeSendAppend" (![#ptrT] "r")) "$a0" "$a1"); (λ: <>, Skip) := λ: <>,
+            (method_call #v3.raft #"raft'ptr" #"maybeSendAppend" (![#ptrT] "r")) "$a0" "$a1"); (λ: <>, #()) := λ: <>,
               do:  #())
           else do:  #());;;
           (if: ((![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) = (![#uint64T] (struct.field_ref #raft #"leadTransferee"%go (![#ptrT] "r")))) && ((![#uint64T] (struct.field_ref #tracker.Progress #"Match"%go (![#ptrT] "pr"))) = ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()))
@@ -7394,13 +7400,7 @@ Definition Status__Stringⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (string.from_bytes (![#sliceT] "b"))).
 
-Definition ErrCompacted : go_string := "go.etcd.io/raft/v3.ErrCompacted"%go.
-
 Definition ErrSnapOutOfDate : go_string := "go.etcd.io/raft/v3.ErrSnapOutOfDate"%go.
-
-Definition ErrUnavailable : go_string := "go.etcd.io/raft/v3.ErrUnavailable"%go.
-
-Definition ErrSnapshotTemporarilyUnavailable : go_string := "go.etcd.io/raft/v3.ErrSnapshotTemporarilyUnavailable"%go.
 
 Definition Storageⁱᵈ : go_string := "go.etcd.io/raft/v3.Storage"%go.
 

@@ -12,7 +12,19 @@ Definition AllocsPerRun : go_string := "testing.AllocsPerRun"%go.
 
 Definition initBenchmarkFlags : go_string := "testing.initBenchmarkFlags"%go.
 
+Definition matchBenchmarks : go_string := "testing.matchBenchmarks"%go.
+
+Definition benchmarkMemory : go_string := "testing.benchmarkMemory"%go.
+
+Definition benchTime : go_string := "testing.benchTime"%go.
+
 Axiom benchTime'init : val.
+
+Definition benchmarkLock : go_string := "testing.benchmarkLock"%go.
+
+Definition memStats : go_string := "testing.memStats"%go.
+
+Definition labelsOnce : go_string := "testing.labelsOnce"%go.
 
 Definition predictN : go_string := "testing.predictN"%go.
 
@@ -24,9 +36,13 @@ Definition RunBenchmarks : go_string := "testing.RunBenchmarks"%go.
 
 Definition runBenchmarks : go_string := "testing.runBenchmarks"%go.
 
+Definition hideStdoutForTesting : go_string := "testing.hideStdoutForTesting"%go.
+
 Axiom hideStdoutForTesting'init : val.
 
 Definition Benchmark : go_string := "testing.Benchmark"%go.
+
+Definition cover : go_string := "testing.cover"%go.
 
 Definition Coverage : go_string := "testing.Coverage"%go.
 
@@ -44,9 +60,23 @@ Definition sortLines : go_string := "testing.sortLines"%go.
 
 Definition initFuzzFlags : go_string := "testing.initFuzzFlags"%go.
 
+Definition matchFuzz : go_string := "testing.matchFuzz"%go.
+
+Definition fuzzDuration : go_string := "testing.fuzzDuration"%go.
+
+Definition minimizeDuration : go_string := "testing.minimizeDuration"%go.
+
 Axiom minimizeDuration'init : val.
 
+Definition fuzzCacheDir : go_string := "testing.fuzzCacheDir"%go.
+
+Definition isFuzzWorker : go_string := "testing.isFuzzWorker"%go.
+
+Definition corpusDir : go_string := "testing.corpusDir"%go.
+
 Axiom corpusDir'init : val.
+
+Definition supportedTypes : go_string := "testing.supportedTypes"%go.
 
 Axiom supportedTypes'init : val.
 
@@ -55,6 +85,8 @@ Definition runFuzzTests : go_string := "testing.runFuzzTests"%go.
 Definition runFuzzing : go_string := "testing.runFuzzing"%go.
 
 Definition fRunner : go_string := "testing.fRunner"%go.
+
+Definition matchMutex : go_string := "testing.matchMutex"%go.
 
 Definition allMatcher : go_string := "testing.allMatcher"%go.
 
@@ -68,6 +100,8 @@ Definition rewrite : go_string := "testing.rewrite"%go.
 
 Definition isSpace : go_string := "testing.isSpace"%go.
 
+Definition cover2 : go_string := "testing.cover2"%go.
+
 Definition registerCover2 : go_string := "testing.registerCover2"%go.
 
 Definition coverReport2 : go_string := "testing.coverReport2"%go.
@@ -76,11 +110,75 @@ Definition coverage2 : go_string := "testing.coverage2"%go.
 
 Definition runExample : go_string := "testing.runExample"%go.
 
+Definition initRan : go_string := "testing.initRan"%go.
+
 Definition Init : go_string := "testing.Init"%go.
+
+Definition short : go_string := "testing.short"%go.
+
+Definition failFast : go_string := "testing.failFast"%go.
+
+Definition outputDir : go_string := "testing.outputDir"%go.
+
+Definition chatty : go_string := "testing.chatty"%go.
+
+Definition count : go_string := "testing.count"%go.
+
+Definition coverProfile : go_string := "testing.coverProfile"%go.
+
+Definition gocoverdir : go_string := "testing.gocoverdir"%go.
+
+Definition matchList : go_string := "testing.matchList"%go.
+
+Definition match' : go_string := "testing.match"%go.
+
+Definition skip : go_string := "testing.skip"%go.
+
+Definition memProfile : go_string := "testing.memProfile"%go.
+
+Definition memProfileRate : go_string := "testing.memProfileRate"%go.
+
+Definition cpuProfile : go_string := "testing.cpuProfile"%go.
+
+Definition blockProfile : go_string := "testing.blockProfile"%go.
+
+Definition blockProfileRate : go_string := "testing.blockProfileRate"%go.
+
+Definition mutexProfile : go_string := "testing.mutexProfile"%go.
+
+Definition mutexProfileFraction : go_string := "testing.mutexProfileFraction"%go.
+
+Definition panicOnExit0 : go_string := "testing.panicOnExit0"%go.
+
+Definition traceFile : go_string := "testing.traceFile"%go.
+
+Definition timeout : go_string := "testing.timeout"%go.
+
+Definition cpuListStr : go_string := "testing.cpuListStr"%go.
+
+Definition parallel : go_string := "testing.parallel"%go.
+
+Definition shuffle : go_string := "testing.shuffle"%go.
+
+Definition testlog : go_string := "testing.testlog"%go.
+
+Definition fullPath : go_string := "testing.fullPath"%go.
+
+Definition haveExamples : go_string := "testing.haveExamples"%go.
+
+Definition cpuList : go_string := "testing.cpuList"%go.
+
+Definition testlogFile : go_string := "testing.testlogFile"%go.
+
+Definition numFailed : go_string := "testing.numFailed"%go.
+
+Definition running : go_string := "testing.running"%go.
 
 Definition newChattyPrinter : go_string := "testing.newChattyPrinter"%go.
 
 Definition Short : go_string := "testing.Short"%go.
+
+Definition testBinary : go_string := "testing.testBinary"%go.
 
 Axiom testBinary'init : val.
 
@@ -100,17 +198,25 @@ Definition callerName : go_string := "testing.callerName"%go.
 
 Definition pcToName : go_string := "testing.pcToName"%go.
 
+Definition errNilPanicOrGoexit : go_string := "testing.errNilPanicOrGoexit"%go.
+
 Axiom errNilPanicOrGoexit'init : val.
 
 Definition tRunner : go_string := "testing.tRunner"%go.
 
 Definition newTestState : go_string := "testing.newTestState"%go.
 
+Definition errMain : go_string := "testing.errMain"%go.
+
 Axiom errMain'init : val.
 
 Definition Main : go_string := "testing.Main"%go.
 
 Definition MainStart : go_string := "testing.MainStart"%go.
+
+Definition testingTesting : go_string := "testing.testingTesting"%go.
+
+Definition realStderr : go_string := "testing.realStderr"%go.
 
 Definition listTests : go_string := "testing.listTests"%go.
 

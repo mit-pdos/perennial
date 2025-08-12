@@ -18,6 +18,8 @@ Definition convErr : go_string := "strconv.convErr"%go.
 
 Definition ParseComplex : go_string := "strconv.ParseComplex"%go.
 
+Definition optimize : go_string := "strconv.optimize"%go.
+
 Axiom optimize'init : val.
 
 Definition commonPrefixLenIgnoreCase : go_string := "strconv.commonPrefixLenIgnoreCase"%go.
@@ -26,9 +28,15 @@ Definition special : go_string := "strconv.special"%go.
 
 Definition readFloat : go_string := "strconv.readFloat"%go.
 
+Definition powtab : go_string := "strconv.powtab"%go.
+
 Axiom powtab'init : val.
 
+Definition float64pow10 : go_string := "strconv.float64pow10"%go.
+
 Axiom float64pow10'init : val.
+
+Definition float32pow10 : go_string := "strconv.float32pow10"%go.
 
 Axiom float32pow10'init : val.
 
@@ -48,7 +56,11 @@ Definition parseFloatPrefix : go_string := "strconv.parseFloatPrefix"%go.
 
 Definition lower : go_string := "strconv.lower"%go.
 
+Definition ErrRange : go_string := "strconv.ErrRange"%go.
+
 Axiom ErrRange'init : val.
+
+Definition ErrSyntax : go_string := "strconv.ErrSyntax"%go.
 
 Axiom ErrSyntax'init : val.
 
@@ -78,6 +90,8 @@ Definition trim : go_string := "strconv.trim"%go.
 
 Definition rightShift : go_string := "strconv.rightShift"%go.
 
+Definition leftcheats : go_string := "strconv.leftcheats"%go.
+
 Axiom leftcheats'init : val.
 
 Definition prefixIsLessThan : go_string := "strconv.prefixIsLessThan"%go.
@@ -90,9 +104,15 @@ Definition eiselLemire64 : go_string := "strconv.eiselLemire64"%go.
 
 Definition eiselLemire32 : go_string := "strconv.eiselLemire32"%go.
 
+Definition detailedPowersOfTen : go_string := "strconv.detailedPowersOfTen"%go.
+
 Axiom detailedPowersOfTen'init : val.
 
+Definition float32info : go_string := "strconv.float32info"%go.
+
 Axiom float32info'init : val.
+
+Definition float64info : go_string := "strconv.float64info"%go.
 
 Axiom float64info'init : val.
 
@@ -120,6 +140,8 @@ Definition ryuFtoaFixed32 : go_string := "strconv.ryuFtoaFixed32"%go.
 
 Definition ryuFtoaFixed64 : go_string := "strconv.ryuFtoaFixed64"%go.
 
+Definition uint64pow10 : go_string := "strconv.uint64pow10"%go.
+
 Axiom uint64pow10'init : val.
 
 Definition formatDecimal : go_string := "strconv.formatDecimal"%go.
@@ -144,13 +166,23 @@ Definition divisibleByPower5 : go_string := "strconv.divisibleByPower5"%go.
 
 Definition divmod1e9 : go_string := "strconv.divmod1e9"%go.
 
+Definition isPrint16 : go_string := "strconv.isPrint16"%go.
+
 Axiom isPrint16'init : val.
+
+Definition isNotPrint16 : go_string := "strconv.isNotPrint16"%go.
 
 Axiom isNotPrint16'init : val.
 
+Definition isPrint32 : go_string := "strconv.isPrint32"%go.
+
 Axiom isPrint32'init : val.
 
+Definition isNotPrint32 : go_string := "strconv.isNotPrint32"%go.
+
 Axiom isNotPrint32'init : val.
+
+Definition isGraphic : go_string := "strconv.isGraphic"%go.
 
 Axiom isGraphic'init : val.
 
