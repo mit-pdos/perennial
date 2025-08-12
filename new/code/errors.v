@@ -18,11 +18,11 @@ Definition Unwrap : go_string := "errors.Unwrap"%go.
 
 Definition Is : go_string := "errors.Is"%go.
 
-Definition is : go_string := "errors.is"%go.
+Definition is' : go_string := "errors.is"%go.
 
 Definition As : go_string := "errors.As"%go.
 
-Definition as : go_string := "errors.as"%go.
+Definition as' : go_string := "errors.as"%go.
 
 Axiom errorType'init : val.
 
