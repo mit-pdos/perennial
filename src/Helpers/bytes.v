@@ -1,6 +1,6 @@
 From Coq Require Import ZArith.
 From Coq Require Import ssreflect.
-From Perennial.Helpers Require Import Integers byte_explode.
+From Perennial.Helpers Require Import Integers byte_explode List.
 From stdpp Require Import base numbers list_numbers.
 Open Scope Z.
 
@@ -121,4 +121,17 @@ Proof.
   intros.
   rewrite H // in H0.
   congruence.
+Qed.
+
+Definition bytes_to_bits l := mjoin (byte_to_bits <$> l).
+
+Instance bytes_to_bits_inj : Inj (=) (=) bytes_to_bits.
+Proof.
+  rewrite /bytes_to_bits.
+  intros ?? Heq.
+  eapply list_join_inj in Heq.
+  3: { apply Forall_fmap, Forall_true. naive_solver. }
+  3: { apply Forall_fmap, Forall_true. naive_solver. }
+  2: lia.
+  by apply (inj _) in Heq.
 Qed.

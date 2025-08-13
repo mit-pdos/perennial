@@ -10,19 +10,6 @@ From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Definition bytes_to_bits l := mjoin (byte_to_bits <$> l).
-
-Instance bytes_to_bits_inj : Inj (=) (=) bytes_to_bits.
-Proof.
-  rewrite /bytes_to_bits.
-  intros ?? Heq.
-  eapply list_join_inj in Heq.
-  3: { apply Forall_fmap, Forall_true. naive_solver. }
-  3: { apply Forall_fmap, Forall_true. naive_solver. }
-  2: lia.
-  by apply (inj _) in Heq.
-Qed.
-
 (* get_bit returns false if bit n of l is 0 (or the bit is past the length of l). *)
 Definition get_bit l n : bool :=
   match bytes_to_bits l !! n with
