@@ -35,7 +35,8 @@ jobs:
               sudo apt-get update
               sudo apt-get install -y python3 python3-pandas sqlite3
             endGroup
-          # for permissions issue, see: https://github.com/coq-community/docker-coq-action#permissions.
+          # for permissions issue, see:
+          # https://github.com/coq-community/docker-coq-action#permissions.
           before_script: |
             sudo chown -R 1000:1000 .
           script: |
@@ -45,44 +46,6 @@ jobs:
           after_script: |
             startGroup Create timing report
               ./etc/timing-report.py --max-files 50
-            endGroup
-          uninstall: |
-            make clean
-      - name: Revert permissions
-        if: ${{ always() }}
-        run: sudo chown -R 1001:116 .
-
-  build-vos:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        coq_version:
-          - dev
-      max-parallel: 4
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - uses: coq-community/docker-coq-action@v1
-        with:
-          coq_version: ${{ matrix.coq_version }}
-          ocaml_version: "default"
-          install: |
-            startGroup Install dependencies
-              sudo apt-get update
-              sudo apt-get install -y python3 python3-pandas sqlite3
-            endGroup
-          before_script: |
-            sudo chown -R 1000:1000 .
-          script: |
-            startGroup Build
-              make -j4 -k vos
-            endGroup
-          after_script: |
-            startGroup Create timing report
-              ./etc/timing-report.py --vos --max-files 50
             endGroup
           uninstall: |
             make clean
