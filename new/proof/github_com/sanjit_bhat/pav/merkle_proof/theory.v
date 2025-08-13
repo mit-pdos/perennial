@@ -1,5 +1,4 @@
 From Corelib.Program Require Import Wf.
-From Stdlib.Logic Require Import Classical.
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.proof Require Import proof_prelude.
 From Perennial.Helpers Require Import bytes NamedProps.
@@ -174,36 +173,6 @@ Ltac exact_eq H :=
       assert (x = y) as <-; [f_equal|assumption]
     end
   end.
-
-Lemma prefix_snoc {A} l0 l1 (x : A) :
-  l0 `prefix_of` l1 →
-  l1 !! length l0 = Some x →
-  l0 ++ [x] `prefix_of` l1.
-Proof.
-  rewrite /prefix.
-  intros [x0 ->] Hlook.
-  assert (∃ k, x0 = x :: k) as [? ->].
-  { destruct x0;
-      (rewrite lookup_app_r in Hlook; [|lia]); [done|].
-    replace (_ - _)%nat with (0)%nat in Hlook by lia.
-    naive_solver. }
-  eexists _.
-  by list_simplifier.
-Qed.
-
-Lemma prefix_snoc_inv {A} l0 l1 (x : A) :
-  l0 ++ [x] `prefix_of` l1 →
-  l0 `prefix_of` l1 ∧ l1 !! length l0 = Some x.
-Proof.
-  rewrite /prefix.
-  intros [? ->].
-  split.
-  - eexists _.
-    by list_simplifier.
-  - list_simplifier.
-    by rewrite list_lookup_middle.
-Qed.
-
 Lemma to_map_pref_Some t pref label :
   is_Some (to_map_aux t pref !! label) →
   pref `prefix_of` bytes_to_bits label.
@@ -222,16 +191,6 @@ Proof.
     + apply IHt2 in Hsome.
       by eapply prefix_app_l.
   - by simpl_map.
-Qed.
-
-Lemma prefix_neq {A} (l0 l1 p : list A) :
-  p `prefix_of` l0 →
-  ¬ p `prefix_of` l1 →
-  l0 ≠ l1.
-Proof.
-  rewrite /prefix.
-  intros [? ->] Hpref ?.
-  by eapply not_ex_all_not in Hpref.
 Qed.
 
 Lemma to_map_pref_None t pref label :

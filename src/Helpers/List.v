@@ -1,3 +1,4 @@
+From Stdlib.Logic Require Import Classical.
 From stdpp Require Import list ssreflect.
 
 Set Default Proof Using "Type".
@@ -28,6 +29,45 @@ End list_misc.
 Section list.
   Context {A : Type}.
   Implicit Types l : (list A).
+
+  Lemma prefix_neq (l0 l1 p : list A) :
+    p `prefix_of` l0 →
+    ¬ p `prefix_of` l1 →
+    l0 ≠ l1.
+  Proof.
+    rewrite /prefix.
+    intros [? ->] Hpref ?.
+    by eapply not_ex_all_not in Hpref.
+  Qed.
+
+  Lemma prefix_snoc l0 l1 (x : A) :
+    l0 `prefix_of` l1 →
+    l1 !! length l0 = Some x →
+    l0 ++ [x] `prefix_of` l1.
+  Proof.
+    rewrite /prefix.
+    intros [x0 ->] Hlook.
+    assert (∃ k, x0 = x :: k) as [? ->].
+    { destruct x0;
+        (rewrite lookup_app_r in Hlook; [|lia]); [done|].
+      replace (_ - _) with (0) in Hlook by lia.
+      naive_solver. }
+    eexists _.
+    by list_simplifier.
+  Qed.
+
+  Lemma prefix_snoc_inv l0 l1 (x : A) :
+    l0 ++ [x] `prefix_of` l1 →
+    l0 `prefix_of` l1 ∧ l1 !! length l0 = Some x.
+  Proof.
+    rewrite /prefix.
+    intros [? ->].
+    split.
+    - eexists _.
+      by list_simplifier.
+    - list_simplifier.
+      by rewrite list_lookup_middle.
+  Qed.
 
   Lemma take_0' n l :
     n = 0 →
