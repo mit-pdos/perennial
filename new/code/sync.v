@@ -23,6 +23,72 @@ Definition noCopy : go_type := structT [
 
 Definition Mutexⁱᵈ : go_string := "sync.Mutex"%go.
 
+Definition Onceⁱᵈ : go_string := "sync.Once"%go.
+
+Definition Once : go_type := structT [
+  "_0" :: noCopy;
+  "done" :: atomic.Uint32;
+  "m" :: Mutex
+].
+
+(* Do calls the function f if and only if Do is being called for the
+   first time for this instance of [Once]. In other words, given
+
+   	var once Once
+
+   if once.Do(f) is called multiple times, only the first call will invoke f,
+   even if f has a different value in each invocation. A new instance of
+   Once is required for each function to execute.
+
+   Do is intended for initialization that must be run exactly once. Since f
+   is niladic, it may be necessary to use a function literal to capture the
+   arguments to a function to be invoked by Do:
+
+   	config.once.Do(func() { config.init(filename) })
+
+   Because no call to Do returns until the one call to f returns, if f causes
+   Do to be called, it will deadlock.
+
+   If f panics, Do considers it to have returned; future calls of Do return
+   without calling f.
+
+   go: once.go:52:16 *)
+Definition Once__Doⁱᵐᵖˡ : val :=
+  λ: "o" "f",
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "f" := (mem.alloc "f") in
+    (if: ((method_call #(ptrTⁱᵈ atomic.Uint32ⁱᵈ) #"Load"%go (struct.field_ref #Once #"done"%go (![#ptrT] "o"))) #()) = #(W32 0)
+    then
+      do:  (let: "$a0" := (![#funcT] "f") in
+      (method_call #(ptrTⁱᵈ Onceⁱᵈ) #"doSlow"%go (![#ptrT] "o")) "$a0")
+    else do:  #());;;
+    return: #()).
+
+(* go: once.go:73:16 *)
+Definition Once__doSlowⁱᵐᵖˡ : val :=
+  λ: "o" "f",
+    with_defer: (let: "o" := (mem.alloc "o") in
+    let: "f" := (mem.alloc "f") in
+    do:  ((method_call #(ptrTⁱᵈ Mutexⁱᵈ) #"Lock"%go (struct.field_ref #Once #"m"%go (![#ptrT] "o"))) #());;;
+    do:  (let: "$f" := (method_call #(ptrTⁱᵈ Mutexⁱᵈ) #"Unlock"%go (struct.field_ref #Once #"m"%go (![#ptrT] "o"))) in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    (λ: <>,
+      "$f" #();;
+      "$oldf" #()
+      )));;;
+    (if: ((method_call #(ptrTⁱᵈ atomic.Uint32ⁱᵈ) #"Load"%go (struct.field_ref #Once #"done"%go (![#ptrT] "o"))) #()) = #(W32 0)
+    then
+      do:  (let: "$a0" := #(W32 1) in
+      let: "$f" := (method_call #(ptrTⁱᵈ atomic.Uint32ⁱᵈ) #"Store"%go (struct.field_ref #Once #"done"%go (![#ptrT] "o"))) in
+      "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+      (λ: <>,
+        "$f" "$a0";;
+        "$oldf" #()
+        )));;;
+      do:  ((![#funcT] "f") #())
+    else do:  #());;;
+    return: #()).
+
 Definition OnceFunc : go_string := "sync.OnceFunc"%go.
 
 Definition OnceValue : go_string := "sync.OnceValue"%go.
@@ -508,7 +574,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(NewCond, NewCondⁱᵐᵖˡ); (runtime_Semacquire, runtime_Semacquireⁱᵐᵖˡ); (runtime_SemacquireWaitGroup, runtime_SemacquireWaitGroupⁱᵐᵖˡ); (runtime_SemacquireRWMutexR, runtime_SemacquireRWMutexRⁱᵐᵖˡ); (runtime_SemacquireRWMutex, runtime_SemacquireRWMutexⁱᵐᵖˡ); (runtime_Semrelease, runtime_Semreleaseⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Condⁱᵈ, []); (ptrTⁱᵈ Condⁱᵈ, [("Broadcast"%go, Cond__Broadcastⁱᵐᵖˡ); ("Signal"%go, Cond__Signalⁱᵐᵖˡ); ("Wait"%go, Cond__Waitⁱᵐᵖˡ)]); (noCopyⁱᵈ, []); (ptrTⁱᵈ noCopyⁱᵈ, []); (Mutexⁱᵈ, []); (ptrTⁱᵈ Mutexⁱᵈ, [("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ)]); (RWMutexⁱᵈ, []); (ptrTⁱᵈ RWMutexⁱᵈ, [("Lock"%go, RWMutex__Lockⁱᵐᵖˡ); ("RLock"%go, RWMutex__RLockⁱᵐᵖˡ); ("RLocker"%go, RWMutex__RLockerⁱᵐᵖˡ); ("RUnlock"%go, RWMutex__RUnlockⁱᵐᵖˡ); ("TryLock"%go, RWMutex__TryLockⁱᵐᵖˡ); ("TryRLock"%go, RWMutex__TryRLockⁱᵐᵖˡ); ("Unlock"%go, RWMutex__Unlockⁱᵐᵖˡ); ("rUnlockSlow"%go, RWMutex__rUnlockSlowⁱᵐᵖˡ)]); (rlockerⁱᵈ, []); (ptrTⁱᵈ rlockerⁱᵈ, []); (WaitGroupⁱᵈ, []); (ptrTⁱᵈ WaitGroupⁱᵈ, [("Add"%go, WaitGroup__Addⁱᵐᵖˡ); ("Done"%go, WaitGroup__Doneⁱᵐᵖˡ); ("Wait"%go, WaitGroup__Waitⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Condⁱᵈ, []); (ptrTⁱᵈ Condⁱᵈ, [("Broadcast"%go, Cond__Broadcastⁱᵐᵖˡ); ("Signal"%go, Cond__Signalⁱᵐᵖˡ); ("Wait"%go, Cond__Waitⁱᵐᵖˡ)]); (noCopyⁱᵈ, []); (ptrTⁱᵈ noCopyⁱᵈ, []); (Mutexⁱᵈ, []); (ptrTⁱᵈ Mutexⁱᵈ, [("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ)]); (Onceⁱᵈ, []); (ptrTⁱᵈ Onceⁱᵈ, [("Do"%go, Once__Doⁱᵐᵖˡ); ("doSlow"%go, Once__doSlowⁱᵐᵖˡ)]); (RWMutexⁱᵈ, []); (ptrTⁱᵈ RWMutexⁱᵈ, [("Lock"%go, RWMutex__Lockⁱᵐᵖˡ); ("RLock"%go, RWMutex__RLockⁱᵐᵖˡ); ("RLocker"%go, RWMutex__RLockerⁱᵐᵖˡ); ("RUnlock"%go, RWMutex__RUnlockⁱᵐᵖˡ); ("TryLock"%go, RWMutex__TryLockⁱᵐᵖˡ); ("TryRLock"%go, RWMutex__TryRLockⁱᵐᵖˡ); ("Unlock"%go, RWMutex__Unlockⁱᵐᵖˡ); ("rUnlockSlow"%go, RWMutex__rUnlockSlowⁱᵐᵖˡ)]); (rlockerⁱᵈ, []); (ptrTⁱᵈ rlockerⁱᵈ, []); (WaitGroupⁱᵈ, []); (ptrTⁱᵈ WaitGroupⁱᵈ, [("Add"%go, WaitGroup__Addⁱᵐᵖˡ); ("Done"%go, WaitGroup__Doneⁱᵐᵖˡ); ("Wait"%go, WaitGroup__Waitⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo sync.sync :=
   {|

@@ -121,6 +121,18 @@ Definition Int32__Storeⁱᵐᵖˡ : val :=
     (func_call #StoreInt32) "$a0" "$a1");;;
     return: #()).
 
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:80:17 *)
+Definition Int32__Swapⁱᵐᵖˡ : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int32T] "new") in
+     (func_call #SwapInt32) "$a0" "$a1")).
+
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:83:17 *)
@@ -146,6 +158,124 @@ Definition Int32__Addⁱᵐᵖˡ : val :=
     return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#int32T] "delta") in
      (func_call #AddInt32) "$a0" "$a1")).
+
+(* And atomically performs a bitwise AND operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:92:17 *)
+Definition Int32__Andⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int32T] "mask") in
+     (func_call #AndInt32) "$a0" "$a1")).
+
+(* Or atomically performs a bitwise OR operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:96:17 *)
+Definition Int32__Orⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int32T] "mask") in
+     (func_call #OrInt32) "$a0" "$a1")).
+
+Definition Uint32ⁱᵈ : go_string := "sync/atomic.Uint32"%go.
+
+Definition Uint32 : go_type := structT [
+  "_0" :: noCopy;
+  "v" :: uint32T
+].
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:137:18 *)
+Definition Uint32__Loadⁱᵐᵖˡ : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (mem.alloc "x") in
+    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
+     (func_call #LoadUint32) "$a0")).
+
+(* Store atomically stores val into x.
+
+   go: type.go:140:18 *)
+Definition Uint32__Storeⁱᵐᵖˡ : val :=
+  λ: "x" "val",
+    exception_do (let: "x" := (mem.alloc "x") in
+    let: "val" := (mem.alloc "val") in
+    do:  (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
+    let: "$a1" := (![#uint32T] "val") in
+    (func_call #StoreUint32) "$a0" "$a1");;;
+    return: #()).
+
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:143:18 *)
+Definition Uint32__Swapⁱᵐᵖˡ : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint32T] "new") in
+     (func_call #SwapUint32) "$a0" "$a1")).
+
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:146:18 *)
+Definition Uint32__CompareAndSwapⁱᵐᵖˡ : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    let: "old" := (mem.alloc "old") in
+    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint32T] "old") in
+     let: "$a2" := (![#uint32T] "new") in
+     (func_call #CompareAndSwapUint32) "$a0" "$a1" "$a2")).
+
+(* Add atomically adds delta to x and returns the new value.
+
+   go: type.go:151:18 *)
+Definition Uint32__Addⁱᵐᵖˡ : val :=
+  λ: "x" "delta",
+    exception_do (let: "new" := (mem.alloc (type.zero_val #uint32T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "delta" := (mem.alloc "delta") in
+    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint32T] "delta") in
+     (func_call #AddUint32) "$a0" "$a1")).
+
+(* And atomically performs a bitwise AND operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:155:18 *)
+Definition Uint32__Andⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint32T] "mask") in
+     (func_call #AndUint32) "$a0" "$a1")).
+
+(* Or atomically performs a bitwise OR operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:159:18 *)
+Definition Uint32__Orⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint32T] "mask") in
+     (func_call #OrUint32) "$a0" "$a1")).
 
 Definition Uint64ⁱᵈ : go_string := "sync/atomic.Uint64"%go.
 
@@ -179,6 +309,18 @@ Definition Uint64__Storeⁱᵐᵖˡ : val :=
     (func_call #StoreUint64) "$a0" "$a1");;;
     return: #()).
 
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:175:18 *)
+Definition Uint64__Swapⁱᵐᵖˡ : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint64T] "new") in
+     (func_call #SwapUint64) "$a0" "$a1")).
+
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:178:18 *)
@@ -205,21 +347,302 @@ Definition Uint64__Addⁱᵐᵖˡ : val :=
      let: "$a1" := (![#uint64T] "delta") in
      (func_call #AddUint64) "$a0" "$a1")).
 
+(* And atomically performs a bitwise AND operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:187:18 *)
+Definition Uint64__Andⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint64T] "mask") in
+     (func_call #AndUint64) "$a0" "$a1")).
+
+(* Or atomically performs a bitwise OR operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:191:18 *)
+Definition Uint64__Orⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint64T] "mask") in
+     (func_call #OrUint64) "$a0" "$a1")).
+
 Definition noCopyⁱᵈ : go_string := "sync/atomic.noCopy"%go.
 
 Definition align64ⁱᵈ : go_string := "sync/atomic.align64"%go.
 
+Definition Valueⁱᵈ : go_string := "sync/atomic.Value"%go.
+
+Definition Value : go_type := structT [
+  "v" :: interfaceT
+].
+
+Definition efaceWordsⁱᵈ : go_string := "sync/atomic.efaceWords"%go.
+
+Definition efaceWords : go_type := structT [
+  "typ" :: ptrT;
+  "data" :: ptrT
+].
+
 Definition firstStoreInProgress : go_string := "sync/atomic.firstStoreInProgress"%go.
 
-Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
+(* Load returns the value set by the most recent Store.
+   It returns nil if there has been no call to Store for this Value.
+
+   go: value.go:28:17 *)
+Definition Value__Loadⁱᵐᵖˡ : val :=
+  λ: "v" <>,
+    exception_do (let: "val" := (mem.alloc (type.zero_val #interfaceT)) in
+    let: "v" := (mem.alloc "v") in
+    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (![#ptrT] "v") in
+    do:  ("vp" <-[#ptrT] "$r0");;;
+    let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+    (func_call #LoadPointer) "$a0") in
+    do:  ("typ" <-[#ptrT] "$r0");;;
+    (if: ((![#ptrT] "typ") = #null) || ((![#ptrT] "typ") = (globals.get #firstStoreInProgress))
+    then return: (#interface.nil)
+    else do:  #());;;
+    let: "data" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+    (func_call #LoadPointer) "$a0") in
+    do:  ("data" <-[#ptrT] "$r0");;;
+    let: "vlp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := "val" in
+    do:  ("vlp" <-[#ptrT] "$r0");;;
+    let: "$r0" := (![#ptrT] "typ") in
+    do:  ((struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vlp")) <-[#ptrT] "$r0");;;
+    let: "$r0" := (![#ptrT] "data") in
+    do:  ((struct.field_ref #efaceWords #"data"%go (![#ptrT] "vlp")) <-[#ptrT] "$r0");;;
+    return: (![#interfaceT] "val")).
 
 Definition runtime_procUnpin : go_string := "sync/atomic.runtime_procUnpin"%go.
 
+Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
+
+(* Store sets the value of the [Value] v to val.
+   All calls to Store for a given Value must use values of the same concrete type.
+   Store of an inconsistent type panics, as does Store(nil).
+
+   go: value.go:47:17 *)
+Definition Value__Storeⁱᵐᵖˡ : val :=
+  λ: "v" "val",
+    exception_do (let: "v" := (mem.alloc "v") in
+    let: "val" := (mem.alloc "val") in
+    (if: interface.eq (![#interfaceT] "val") #interface.nil
+    then
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync/atomic: store of nil value into Value"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (![#ptrT] "v") in
+    do:  ("vp" <-[#ptrT] "$r0");;;
+    let: "vlp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := "val" in
+    do:  ("vlp" <-[#ptrT] "$r0");;;
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+      (func_call #LoadPointer) "$a0") in
+      do:  ("typ" <-[#ptrT] "$r0");;;
+      (if: (![#ptrT] "typ") = #null
+      then
+        do:  ((func_call #runtime_procPin) #());;;
+        (if: (~ (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        let: "$a1" := #null in
+        let: "$a2" := (globals.get #firstStoreInProgress) in
+        (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))
+        then
+          do:  ((func_call #runtime_procUnpin) #());;;
+          continue: #()
+        else do:  #());;;
+        do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vlp"))) in
+        (func_call #StorePointer) "$a0" "$a1");;;
+        do:  (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vlp"))) in
+        (func_call #StorePointer) "$a0" "$a1");;;
+        do:  ((func_call #runtime_procUnpin) #());;;
+        return: (#())
+      else do:  #());;;
+      (if: (![#ptrT] "typ") = (globals.get #firstStoreInProgress)
+      then continue: #()
+      else do:  #());;;
+      (if: (![#ptrT] "typ") ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vlp")))
+      then
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync/atomic: store of inconsistently typed value into Value"%go) in
+        Panic "$a0")
+      else do:  #());;;
+      do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+      let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vlp"))) in
+      (func_call #StorePointer) "$a0" "$a1");;;
+      return: (#()));;;
+    return: #()).
+
+(* Swap stores new into Value and returns the previous value. It returns nil if
+   the Value is empty.
+
+   All calls to Swap for a given Value must use values of the same concrete
+   type. Swap of an inconsistent type panics, as does Swap(nil).
+
+   go: value.go:90:17 *)
+Definition Value__Swapⁱᵐᵖˡ : val :=
+  λ: "v" "new",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #interfaceT)) in
+    let: "v" := (mem.alloc "v") in
+    let: "new" := (mem.alloc "new") in
+    (if: interface.eq (![#interfaceT] "new") #interface.nil
+    then
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync/atomic: swap of nil value into Value"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (![#ptrT] "v") in
+    do:  ("vp" <-[#ptrT] "$r0");;;
+    let: "np" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := "new" in
+    do:  ("np" <-[#ptrT] "$r0");;;
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+      (func_call #LoadPointer) "$a0") in
+      do:  ("typ" <-[#ptrT] "$r0");;;
+      (if: (![#ptrT] "typ") = #null
+      then
+        do:  ((func_call #runtime_procPin) #());;;
+        (if: (~ (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        let: "$a1" := #null in
+        let: "$a2" := (globals.get #firstStoreInProgress) in
+        (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))
+        then
+          do:  ((func_call #runtime_procUnpin) #());;;
+          continue: #()
+        else do:  #());;;
+        do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
+        (func_call #StorePointer) "$a0" "$a1");;;
+        do:  (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) in
+        (func_call #StorePointer) "$a0" "$a1");;;
+        do:  ((func_call #runtime_procUnpin) #());;;
+        return: (#interface.nil)
+      else do:  #());;;
+      (if: (![#ptrT] "typ") = (globals.get #firstStoreInProgress)
+      then continue: #()
+      else do:  #());;;
+      (if: (![#ptrT] "typ") ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np")))
+      then
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync/atomic: swap of inconsistently typed value into Value"%go) in
+        Panic "$a0")
+      else do:  #());;;
+      let: "op" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := "old" in
+      do:  ("op" <-[#ptrT] "$r0");;;
+      let: "$r0" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) in
+      let: "$r1" := (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+      let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
+      (func_call #SwapPointer) "$a0" "$a1") in
+      do:  ((struct.field_ref #efaceWords #"typ"%go (![#ptrT] "op")) <-[#ptrT] "$r0");;;
+      do:  ((struct.field_ref #efaceWords #"data"%go (![#ptrT] "op")) <-[#ptrT] "$r1");;;
+      return: (![#interfaceT] "old"))).
+
+(* CompareAndSwap executes the compare-and-swap operation for the [Value].
+
+   All calls to CompareAndSwap for a given Value must use values of the same
+   concrete type. CompareAndSwap of an inconsistent type panics, as does
+   CompareAndSwap(old, nil).
+
+   go: value.go:135:17 *)
+Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
+  λ: "v" "old" "new",
+    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
+    let: "v" := (mem.alloc "v") in
+    let: "new" := (mem.alloc "new") in
+    let: "old" := (mem.alloc "old") in
+    (if: interface.eq (![#interfaceT] "new") #interface.nil
+    then
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync/atomic: compare and swap of nil value into Value"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (![#ptrT] "v") in
+    do:  ("vp" <-[#ptrT] "$r0");;;
+    let: "np" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := "new" in
+    do:  ("np" <-[#ptrT] "$r0");;;
+    let: "op" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := "old" in
+    do:  ("op" <-[#ptrT] "$r0");;;
+    (if: ((![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "op"))) ≠ #null) && ((![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "op"))))
+    then
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync/atomic: compare and swap of inconsistently typed values"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+      (func_call #LoadPointer) "$a0") in
+      do:  ("typ" <-[#ptrT] "$r0");;;
+      (if: (![#ptrT] "typ") = #null
+      then
+        (if: (~ (interface.eq (![#interfaceT] "old") #interface.nil))
+        then return: (#false)
+        else do:  #());;;
+        do:  ((func_call #runtime_procPin) #());;;
+        (if: (~ (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        let: "$a1" := #null in
+        let: "$a2" := (globals.get #firstStoreInProgress) in
+        (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))
+        then
+          do:  ((func_call #runtime_procUnpin) #());;;
+          continue: #()
+        else do:  #());;;
+        do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
+        (func_call #StorePointer) "$a0" "$a1");;;
+        do:  (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) in
+        (func_call #StorePointer) "$a0" "$a1");;;
+        do:  ((func_call #runtime_procUnpin) #());;;
+        return: (#true)
+      else do:  #());;;
+      (if: (![#ptrT] "typ") = (globals.get #firstStoreInProgress)
+      then continue: #()
+      else do:  #());;;
+      (if: (![#ptrT] "typ") ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np")))
+      then
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync/atomic: compare and swap of inconsistently typed value into Value"%go) in
+        Panic "$a0")
+      else do:  #());;;
+      let: "data" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+      (func_call #LoadPointer) "$a0") in
+      do:  ("data" <-[#ptrT] "$r0");;;
+      let: "i" := (mem.alloc (type.zero_val #interfaceT)) in
+      let: "$r0" := (![#ptrT] "typ") in
+      do:  ((struct.field_ref #efaceWords #"typ"%go "i") <-[#ptrT] "$r0");;;
+      let: "$r0" := (![#ptrT] "data") in
+      do:  ((struct.field_ref #efaceWords #"data"%go "i") <-[#ptrT] "$r0");;;
+      (if: (~ (interface.eq (![#interfaceT] "i") (![#interfaceT] "old")))
+      then return: (#false)
+      else do:  #());;;
+      return: (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
+       let: "$a1" := (![#ptrT] "data") in
+       let: "$a2" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
+       (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))).
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (CompareAndSwapUint32, CompareAndSwapUint32ⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (AddUint32, AddUint32ⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (LoadUint32, LoadUint32ⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (StoreUint32, StoreUint32ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Int32ⁱᵈ, []); (ptrTⁱᵈ Int32ⁱᵈ, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ)]); (Uint64ⁱᵈ, []); (ptrTⁱᵈ Uint64ⁱᵈ, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ)]); (noCopyⁱᵈ, []); (ptrTⁱᵈ noCopyⁱᵈ, []); (align64ⁱᵈ, []); (ptrTⁱᵈ align64ⁱᵈ, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Int32ⁱᵈ, []); (ptrTⁱᵈ Int32ⁱᵈ, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("And"%go, Int32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Or"%go, Int32__Orⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ); ("Swap"%go, Int32__Swapⁱᵐᵖˡ)]); (Uint32ⁱᵈ, []); (ptrTⁱᵈ Uint32ⁱᵈ, [("Add"%go, Uint32__Addⁱᵐᵖˡ); ("And"%go, Uint32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint32__Loadⁱᵐᵖˡ); ("Or"%go, Uint32__Orⁱᵐᵖˡ); ("Store"%go, Uint32__Storeⁱᵐᵖˡ); ("Swap"%go, Uint32__Swapⁱᵐᵖˡ)]); (Uint64ⁱᵈ, []); (ptrTⁱᵈ Uint64ⁱᵈ, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("And"%go, Uint64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Or"%go, Uint64__Orⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ); ("Swap"%go, Uint64__Swapⁱᵐᵖˡ)]); (noCopyⁱᵈ, []); (ptrTⁱᵈ noCopyⁱᵈ, []); (align64ⁱᵈ, []); (ptrTⁱᵈ align64ⁱᵈ, []); (Valueⁱᵈ, []); (ptrTⁱᵈ Valueⁱᵈ, [("CompareAndSwap"%go, Value__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Value__Loadⁱᵐᵖˡ); ("Store"%go, Value__Storeⁱᵐᵖˡ); ("Swap"%go, Value__Swapⁱᵐᵖˡ)]); (efaceWordsⁱᵈ, []); (ptrTⁱᵈ efaceWordsⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|

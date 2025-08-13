@@ -30,5 +30,18 @@ Definition CompareAndSwapInt32ⁱᵐᵖˡ : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new").
 
+Definition LoadUint32ⁱᵐᵖˡ : val :=
+  λ: "addr", Load "addr".
+
+Definition StoreUint32ⁱᵐᵖˡ : val :=
+  λ: "addr" "val", AtomicStore "addr" "val".
+
+Definition AddUint32ⁱᵐᵖˡ : val :=
+  λ: "addr" "val", AtomicOp PlusOp "addr" "val".
+
+Definition CompareAndSwapUint32ⁱᵐᵖˡ : val :=
+  λ: "addr" "old" "new",
+    Snd (CmpXchg "addr" "old" "new").
+
 End code.
 End atomic.

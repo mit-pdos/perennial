@@ -48,6 +48,83 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type sync.Once *)
+Module Once.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  _0' : noCopy.t;
+  done' : atomic.Uint32.t;
+  m' : Mutex.t;
+}.
+End def.
+End Once.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Once : Settable Once.t :=
+  settable! Once.mk < Once._0'; Once.done'; Once.m' >.
+Global Instance into_val_Once : IntoVal Once.t :=
+  {| to_val_def v :=
+    struct.val_aux sync.Once [
+    "_0" ::= #(Once._0' v);
+    "done" ::= #(Once.done' v);
+    "m" ::= #(Once.m' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Once : IntoValTyped Once.t sync.Once :=
+{|
+  default_val := Once.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Once__0 : IntoValStructField "_0" sync.Once Once._0'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Once_done : IntoValStructField "done" sync.Once Once.done'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Once_m : IntoValStructField "m" sync.Once Once.m'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Once _0' done' m':
+  PureWp True
+    (struct.make #sync.Once (alist_val [
+      "_0" ::= #_0';
+      "done" ::= #done';
+      "m" ::= #m'
+    ]))%struct
+    #(Once.mk _0' done' m').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Once_struct_fields_split dq l (v : Once.t) :
+  StructFieldsSplit dq l v (
+    "H_0" ∷ l ↦s[sync.Once :: "_0"]{dq} v.(Once._0') ∗
+    "Hdone" ∷ l ↦s[sync.Once :: "done"]{dq} v.(Once.done') ∗
+    "Hm" ∷ l ↦s[sync.Once :: "m"]{dq} v.(Once.m')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Once._0' v)) sync.Once "_0"%go.
+  simpl_one_flatten_struct (# (Once.done' v)) sync.Once "done"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 (* type sync.RWMutex *)
 Module RWMutex.
 Section def.
@@ -278,6 +355,14 @@ Global Instance wp_method_call_Mutex'ptr_TryLock :
 
 Global Instance wp_method_call_Mutex'ptr_Unlock :
   WpMethodCall (ptrTⁱᵈ sync.Mutexⁱᵈ) "Unlock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Once'ptr_Do :
+  WpMethodCall (ptrTⁱᵈ sync.Onceⁱᵈ) "Do" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Once'ptr_doSlow :
+  WpMethodCall (ptrTⁱᵈ sync.Onceⁱᵈ) "doSlow" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_Lock :

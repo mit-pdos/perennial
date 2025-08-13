@@ -300,6 +300,8 @@ def main():
             "testing",
             "bytes",
             "context",
+            "internal/reflectlite",
+            "unsafe",
             "crypto/rand",
             "errors",
             "io",
