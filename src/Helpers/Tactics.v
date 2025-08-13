@@ -24,3 +24,12 @@ Tactic Notation "fmap_Some" "in" hyp(H) "as" simple_intropattern(x) :=
   end.
 
 Tactic Notation "fmap_Some" "in" hyp(H) := fmap_Some in H as ?.
+
+Ltac exact_eq H :=
+  match type of H with
+  | ?x =>
+    match goal with
+    | |- ?y =>
+      assert (x = y) as <-; [f_equal|assumption]
+    end
+  end.

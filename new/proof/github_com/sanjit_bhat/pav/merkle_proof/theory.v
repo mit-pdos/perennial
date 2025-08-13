@@ -152,14 +152,6 @@ Fixpoint to_map_aux t pref : gmap (list w8) (list w8) :=
   end.
 Definition to_map t := to_map_aux t [].
 
-Ltac exact_eq H :=
-  match type of H with
-  | ?x =>
-    match goal with
-    | |- ?y =>
-      assert (x = y) as <-; [f_equal|assumption]
-    end
-  end.
 Lemma to_map_pref_Some t pref label :
   is_Some (to_map_aux t pref !! label) →
   pref `prefix_of` bytes_to_bits label.
