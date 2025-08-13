@@ -907,15 +907,28 @@ Proof.
     + by iApply "IHt0_1".
 Qed.
 
-(* TODO: overall plan for full-map Verify reasoning:
-- user shows up with is_full_map m (hash:=comp proof) from merkle inversion.
-- Verify checks path down cut tree (hash:=comp proof),
-explicitly bounding depth.
-- path down cut tree impl path down full tree, if both have same hash.
-- path down full tree impl full map entry.
-
-func VerifyMemb(label, val, proof []byte) (dig []byte, err bool) {
-*)
+Lemma cutless_impl_full t h l :
+  is_cut_tree t h -∗
+  ⌜ cutless_tree t ⌝ -∗
+  ⌜ is_limit t l ⌝ -∗
+  is_full_tree t h l.
+Proof.
+  iInduction t as [] forall (h l); destruct l; simpl;
+    iIntros "@ % %"; try done;
+    iFrame "His_hash".
+  - by rewrite decode_empty_det.
+  - by rewrite decode_empty_det.
+  - by rewrite decode_leaf_det.
+  - by rewrite decode_leaf_det.
+  - intuition.
+    iDestruct (is_cut_tree_len with "Hchild0") as %?.
+    iDestruct (is_cut_tree_len with "Hchild1") as %?.
+    rewrite decode_inner_det; [|done..].
+    iExists _, _.
+    repeat iSplit; [..|done].
+    + by iApply "IHt1".
+    + by iApply "IHt2".
+Qed.
 
 (** tree proofs. *)
 
