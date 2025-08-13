@@ -238,9 +238,9 @@ Lemma wp_mapLiteralTest :
   {{{
         is_pkg_init unittest
   }}}
-    unittest @ "mapLiteralTest" #()
+    @! unittest.mapLiteralTest #()
   {{{
-        l, RET #l; l ↦$ (list_to_map [("a"%go, (W64 97)); ("b"%go, (W64 98)); ("c"%go, (W64 99))])
+        l, RET #l; l ↦$ {["a"%go := (W64 97); "b"%go := (W64 98); "c"%go := (W64 99)]}
   }}}.
 Proof.
   wp_start. wp_auto.
