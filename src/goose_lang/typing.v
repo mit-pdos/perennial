@@ -1,6 +1,6 @@
 From stdpp Require Import gmap.
 From Perennial.goose_lang Require Import lang notation.
-From Perennial.goose_lang.lib Require Import lock.impl channel.impl map.impl list.impl.
+From Perennial.goose_lang.lib Require Import lock.impl map.impl list.impl.
 
 Set Default Proof Using "Type".
 
@@ -87,13 +87,14 @@ Section goose_lang.
     | baseT unitBT => #()
     | baseT stringBT => #(str"")
     | mapValT kt vt => MapNilV (zero_val vt)
-    | chanValT vt => ChannelClosedV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | listT t => InjLV (LitV LitUnit)
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => (λ: <>, Val (zero_val t2))%V
     | arrayT t => #null
     | structRefT _ | ptrT => #null
+    (* dummy value *)
+    | chanValT vt => #()
     | extT _ | prophT => #() (* dummy value of wrong type *)
     end.
 
@@ -574,12 +575,9 @@ Section goose_lang.
 
   Definition chanT (vt:ty) : ty := (prodT ptrT ptrT).
 
+  (* TODO: delete *)
   Definition NewChan (t:ty) : val :=
-  λ: "cap",
-    let: "chanref" := Alloc (InjR (Var "cap", Var "cap", ChannelNilV (zero_val t))) in
-    let: "lock" := lock.new #() in
-    (InjR (Var "chanref", Var "lock"))
-  .
+  λ: "cap", #().
 End goose_lang.
 
 Declare Scope heap_types.

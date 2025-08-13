@@ -79,7 +79,7 @@ Proof.
     by iApply "HΦ".
   - iDestruct "HR" as "[Hl2 HR]".
     iCombine "Hl Hl2" as "Hl".
-    rewrite dfrac_op_own Qp.quarter_three_quarter.
+    rewrite Qp.quarter_three_quarter.
     wp_bind (CmpXchg _ _ _).
     iApply (wp_typed_cmpxchg_suc (V:=bool) with "[$]").
     { constructor. }
@@ -114,7 +114,7 @@ Proof.
     wp_apply "IH"; [iFrame "#" | iFrame].
   - iDestruct "HR" as "[Hl2 HR]".
     iCombine "Hl Hl2" as "Hl".
-    rewrite dfrac_op_own Qp.quarter_three_quarter.
+    rewrite Qp.quarter_three_quarter.
     wp_bind (CmpXchg _ _ _).
     iApply (wp_typed_cmpxchg_suc (V:=bool) with "[$]").
     { constructor. }
@@ -143,7 +143,7 @@ Proof.
   unfold own_Mutex.
   iCombine "Hl Hlocked" gives %[_ [=]]. subst.
   iCombine "Hl Hlocked" as "Hl".
-  rewrite dfrac_op_own Qp.quarter_three_quarter.
+  rewrite Qp.quarter_three_quarter.
   iApply (wp_typed_cmpxchg_suc (V:=bool) with "[$]").
   { econstructor. }
   { econstructor. }

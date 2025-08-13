@@ -3,7 +3,8 @@ From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 From iris.algebra Require Import mono_list.
-From Perennial.program_proof Require Import proof_prelude.
+
+Set Default Proof Using "Type".
 
 Section definitions.
 Class fmlist_mapG Σ K V `{Countable K} :=

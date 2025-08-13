@@ -47,7 +47,7 @@ Qed.
 
 Global Instance own_tok_auth_combine_as γ dq dq' n :
   CombineSepAs (own_tok_auth_dfrac γ dq n) (own_tok_auth_dfrac γ dq' n)
-    (own_tok_auth_dfrac γ (dq ⋅ dq') n).
+    (own_tok_auth_dfrac γ (dq ⋅ dq') n) | 60.
 Proof. rewrite /CombineSepAs. unseal. rewrite -own_op auth_auth_dfrac_op //. Qed.
 
 Global Instance own_tok_auth_combine_gives_as γ dq dq' n n' :

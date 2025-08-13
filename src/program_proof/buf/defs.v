@@ -1,9 +1,12 @@
+From stdpp Require Import base vector.
 Require Import Coq.Program.Equality.
+From Stdlib Require Import ZArith.
+From Perennial.Helpers Require Import Integers.
+From Perennial.goose_lang Require Import lang notation.
+From Perennial.goose_lang.ffi Require Import disk_ffi.impl.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-
-From Perennial.program_proof Require Import disk_prelude.
 
 Definition inode_bytes := Z.to_nat 128.
 Definition inode_buf := vec u8 inode_bytes.
@@ -58,7 +61,7 @@ Proof.
   auto.
 Qed.
 
-Theorem list_to_inode_buf_to_vals l :
+Theorem list_to_inode_buf_to_vals `{ffi: ffi_syntax} l :
   length l = inode_bytes ->
   inode_to_vals (list_to_inode_buf l) = b2val <$> l.
 Proof.

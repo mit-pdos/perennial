@@ -100,7 +100,7 @@ Definition zero_val_def: val :=
             if: "n" = #(W64 0) then
               #false
             else if: "n" = #(W64 1) then
-                 #"000"%go_byte
+                 #(W8 0)
             else if: "n" = #(W64 2) then
                 #null (* uint16 *)
             else if: "n" = #(W64 3) then

@@ -60,7 +60,7 @@ Proof.
   rewrite HPP' HQ.
   iIntros "[HP HQ]".
   iApply elim_modal; [ eassumption | done | ].
-  iFrame "HP HQ".
+  iFrame "HP". iFrame "HQ".
 Qed.
 
 Tactic Notation "iPersist_hyp" constr(H) constr(H') :=

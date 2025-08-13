@@ -107,7 +107,7 @@ Proof.
   intros H. iIntros "[_ #Hinv] H".
   iInv "Hinv" as ">Hi". iNamed "Hi".
   iCombine "Hwaiters_bounded H" gives %[_ ->].
-  iCombine "Hwaiters_bounded H" as "H". rewrite dfrac_op_own Qp.half_half.
+  iCombine "Hwaiters_bounded H" as "H".
   iMod (own_tok_auth_add 1 with "H") as "[H Htok]".
   iModIntro. rewrite <- (Z2Nat.inj_add _ 1) by word. rewrite -H.
   iDestruct "H" as "[H1 H2]". iSplitR "Htok H2"; by iFrame.

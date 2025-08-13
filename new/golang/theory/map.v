@@ -50,17 +50,27 @@ Context `{!IntoValTyped K kt} `{!IntoValTyped V vt}.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
+Global Instance wp_kv_entry_pure_wp {A B:Type} `{!IntoVal A} `{!IntoVal B} (a: A) (b: B) :
+  PureWp True ((map.kv_entry #a #b)%E) (#(a, b)).
+Proof.
+  pure_wp_start.
+  rewrite map.kv_entry_unseal.
+  unfold map.kv_entry_def.
+  wp_pure_lc "?".
+  wp_pures.
+  rewrite [in #(_, _)]to_val_unseal /=.
+  iApply "HΦ".
+  done.
+Qed.
+
 Lemma wp_map_literal_val (l:list (K * V)):
   {{{ True }}}
-    map.literal_val #kt #vt (map_list_val l)
+    map.literal_val #kt #vt #l
   {{{ v, RET v; ⌜ is_map_val v (list_to_map l) ⌝ }}}.
 Proof. 
-  iIntros (?) "_ HΦ".
+  iIntros (?) "% HΦ".
   iInduction l as [| h tl] "IH" forall (Φ).
   + wp_call.
-    rewrite map_list_val_unseal /=.
-    rewrite list.Match_unseal /=.
-    wp_call_lc "?".
     iApply "HΦ".
     iPureIntro.
     unfold is_map_val. 
@@ -68,17 +78,16 @@ Proof.
     - done.
     - symmetry. apply default_val_eq_zero_val.
   + wp_call.
-    rewrite map_list_val_unseal /=.
-    rewrite list.Match_unseal /=.
-    wp_call_lc "?".
     wp_bind (map.literal_val _ _ _)%E. 
     iApply ("IH" with "[HΦ]"). iNext.
     iIntros (?) "%Htl_map".
     wp_pures.
     iApply "HΦ".
     iPureIntro.
-    unfold is_map_val.
-    exists (fst h), (snd h), (list_to_map tl).
+    destruct h as [hk hv].
+    rewrite to_val_unseal.
+    simpl.
+    exists hk, hv, (list_to_map tl).
     split; first reflexivity.
     split; first reflexivity.
     split.
@@ -90,10 +99,8 @@ Qed.
      
 Lemma wp_map_literal (l:list (K * V)):
   {{{ ⌜ is_comparable_go_type kt = true ⌝ }}}
-    map.literal #kt #vt (map_list_val l)
-    (* Should the return be LitV l or #l? I tend to think #l but I changed it to
-       match wp_alloc_untyped's return structure *)
-  {{{ l_ptr, RET (LitV l_ptr); l_ptr ↦$ (list_to_map l) }}}.
+    map.literal #kt #vt #l
+  {{{ (l_ptr : loc), RET #l_ptr; l_ptr ↦$ (list_to_map l) }}}.
 Proof.
   iIntros (?) "%Hcomp HΦ".
   wp_call.
@@ -103,6 +110,7 @@ Proof.
   { instantiate (1:=v). by destruct v. }
   iNext.
   iIntros (?) "Hm".
+  rewrite to_val_unseal.
   iApply "HΦ".
   rewrite own_map_unseal.
   iUnfold own_map_def.

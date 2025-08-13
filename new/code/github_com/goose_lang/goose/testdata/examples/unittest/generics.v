@@ -90,7 +90,7 @@ Definition useContainerⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$X" := #(W64 1) in
     let: "$Y" := ((let: "$v0" := #(W64 2) in
     let: "$k0" := #(W64 1) in
-    map.literal #intT #uint64T [("$k0", "$v0")])) in
+    map.literal #intT #uint64T [map.kv_entry "$k0" "$v0"])) in
     let: "$Z" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$W" := #(W64 3) in
     struct.make (Container #uint64T) [{

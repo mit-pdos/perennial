@@ -17,6 +17,9 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'cryptoffi) : iProp Σ) (only
 
 (* Hashes. *)
 
+Definition pure_hash (data : list w8) : list w8.
+Proof. Admitted.
+
 (* is_hash says that [data] will hash to [hash].
 relative to the crypto model, it says the inputs are in the set of hashes. *)
 Definition is_hash (data : option (list w8)) (hash : list w8) : iProp Σ.
@@ -49,7 +52,13 @@ Lemma is_hash_invert hash :
   ∃ data, is_hash data hash.
 Proof. Admitted.
 
-Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ. Proof. Admitted.
+Lemma is_hash_pure data hash :
+  is_hash (Some data) hash -∗
+  ⌜ hash = pure_hash data ⌝.
+Proof. Admitted.
+
+Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ.
+Proof. Admitted.
 
 Lemma wp_NewHasher :
   {{{ is_pkg_init cryptoffi }}}
