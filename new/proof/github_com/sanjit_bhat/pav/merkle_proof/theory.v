@@ -1,4 +1,5 @@
 From Corelib.Program Require Import Wf.
+From Stdlib.Logic Require Import Classical.
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.proof Require Import proof_prelude.
 From Perennial.Helpers Require Import bytes NamedProps.
@@ -10,7 +11,18 @@ From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Definition bytes_to_bits l := concat (byte_to_bits <$> l).
+Definition bytes_to_bits l := mjoin (byte_to_bits <$> l).
+
+Instance bytes_to_bits_inj : Inj (=) (=) bytes_to_bits.
+Proof.
+  rewrite /bytes_to_bits.
+  intros ?? Heq.
+  eapply list_join_inj in Heq.
+  3: { apply Forall_fmap, Forall_true. naive_solver. }
+  3: { apply Forall_fmap, Forall_true. naive_solver. }
+  2: lia.
+  by apply (inj _) in Heq.
+Qed.
 
 (* get_bit returns false if bit n of l is 0 (or the bit is past the length of l). *)
 Definition get_bit l n : bool :=
@@ -115,9 +127,10 @@ Fixpoint is_path t depth label found :=
   | Leaf found_label found_val =>
     found = Some (found_label, found_val)
   | Inner child0 child1 =>
-    match get_bit label depth with
-    | false => is_path child0 (S depth) label found
-    | true  => is_path child1 (S depth) label found
+    match bytes_to_bits label !! depth with
+    | None => False
+    | Some false => is_path child0 (S depth) label found
+    | Some true => is_path child1 (S depth) label found
     end
   | Cut _ => False
   end.
@@ -128,25 +141,168 @@ Definition found_nonmemb label (found : option $ (list w8 * list w8)%type) :=
   | Some (found_label, _) => label ≠ found_label
   end.
 
-Definition is_entry t label val :=
-  match val with
-  | Some v => is_path t 0 label (Some (label, v))
-  | None =>
-    ∃ found,
-    is_path t 0 label found ∧
-    found_nonmemb label found
+Definition is_entry t label oval :=
+  ∃ f,
+  is_path t 0 label f ∧
+  match oval with
+  | Some v => f = Some (label, v)
+  | None => found_nonmemb label f
   end.
 
 (** relation between trees and maps. *)
 
-Fixpoint to_map t : gmap (list w8) (list w8) :=
+(* [to_map_aux] only collects leaves located in the right place. *)
+Fixpoint to_map_aux t pref : gmap (list w8) (list w8) :=
   match t with
   | Empty => ∅
-  | Leaf label val => {[label := val]}
-  | Inner child0 child1 => (to_map child0) ∪ (to_map child1)
+  | Leaf label val =>
+    if decide (pref `prefix_of` bytes_to_bits label)
+    then {[label := val]}
+    else ∅
+  | Inner child0 child1 =>
+    to_map_aux child0 (pref ++ [false]) ∪
+    to_map_aux child1 (pref ++ [true])
   | Cut _ => ∅
   end.
+Definition to_map t := to_map_aux t [].
 
+Ltac exact_eq H :=
+  match type of H with
+  | ?x =>
+    match goal with
+    | |- ?y =>
+      assert (x = y) as <-; [f_equal|assumption]
+    end
+  end.
+
+Lemma prefix_snoc {A} l0 l1 (x : A) :
+  l0 `prefix_of` l1 →
+  l1 !! length l0 = Some x →
+  l0 ++ [x] `prefix_of` l1.
+Proof.
+  rewrite /prefix.
+  intros [x0 ->] Hlook.
+  assert (∃ k, x0 = x :: k) as [? ->].
+  { destruct x0;
+      (rewrite lookup_app_r in Hlook; [|lia]); [done|].
+    replace (_ - _)%nat with (0)%nat in Hlook by lia.
+    naive_solver. }
+  eexists _.
+  by list_simplifier.
+Qed.
+
+Lemma prefix_snoc_inv {A} l0 l1 (x : A) :
+  l0 ++ [x] `prefix_of` l1 →
+  l0 `prefix_of` l1 ∧ l1 !! length l0 = Some x.
+Proof.
+  rewrite /prefix.
+  intros [? ->].
+  split.
+  - eexists _.
+    by list_simplifier.
+  - list_simplifier.
+    by rewrite list_lookup_middle.
+Qed.
+
+Lemma to_map_pref_Some t pref label :
+  is_Some (to_map_aux t pref !! label) →
+  pref `prefix_of` bytes_to_bits label.
+Proof.
+  revert pref.
+  induction t; simpl; intros ? Hsome.
+  - by simpl_map.
+  - case_decide; [|by simpl_map].
+    destruct (decide (label0 = label)).
+    + by subst.
+    + by simpl_map.
+  - apply lookup_union_is_Some in Hsome.
+    destruct_or!.
+    + apply IHt1 in Hsome.
+      by eapply prefix_app_l.
+    + apply IHt2 in Hsome.
+      by eapply prefix_app_l.
+  - by simpl_map.
+Qed.
+
+Lemma prefix_neq {A} (l0 l1 p : list A) :
+  p `prefix_of` l0 →
+  ¬ p `prefix_of` l1 →
+  l0 ≠ l1.
+Proof.
+  rewrite /prefix.
+  intros [? ->] Hpref ?.
+  by eapply not_ex_all_not in Hpref.
+Qed.
+
+Lemma to_map_pref_None t pref label :
+  ¬ pref `prefix_of` bytes_to_bits label →
+  to_map_aux t pref !! label = None.
+Proof.
+  revert pref.
+  induction t; simpl; intros; [done|idtac..|done].
+  - case_decide; [|by simpl_map].
+    opose proof (prefix_neq _ _ _ _ _); [done..|].
+    destruct (decide (label = label0)) as [Heq|?].
+    + by apply (f_equal bytes_to_bits) in Heq.
+    + by simpl_map.
+  - apply lookup_union_None_2.
+    + apply IHt1.
+      by intros Hpref%prefix_app_l.
+    + apply IHt2.
+      by intros Hpref%prefix_app_l.
+Qed.
+
+Lemma to_map_disj t0 t1 pref :
+  to_map_aux t0 (pref ++ [false]) ##ₘ to_map_aux t1 (pref ++ [true]).
+Proof.
+  apply map_disjoint_spec.
+  intros **.
+  opose proof (to_map_pref_Some _ _ _ _) as [? Hp0]; [done|].
+  assert (¬ pref ++ [false] `prefix_of` bytes_to_bits i).
+  { rewrite /prefix.
+    intros [? Hp1].
+    rewrite Hp1 in Hp0.
+    list_simplifier. }
+  opose proof (to_map_pref_None t0 _ _ _); [done|].
+  by simplify_eq/=.
+Qed.
+
+Lemma entry_impl_lookup t label oval :
+  is_entry t label oval →
+  to_map t !! label = oval.
+Proof.
+  rewrite /is_entry /to_map.
+  remember ([]) as pref.
+  replace (0%nat) with (length pref) by (by subst).
+  assert (pref `prefix_of` bytes_to_bits label).
+  { subst. apply prefix_nil. }
+  clear Heqpref.
+  intros (?&?&?).
+  generalize dependent pref.
+
+  induction t; simpl; intros ?? Hpath; [..|done].
+  - simpl_map. case_match; by subst.
+  - case_match; simplify_eq/=; case_decide; by simpl_map.
+  - opose proof (to_map_disj t1 t2 pref).
+    case_match; [|done].
+    case_match.
+    + opose proof (IHt2 (pref ++ [true]) _ _) as Hl0.
+      { by apply prefix_snoc. }
+      { exact_eq Hpath. len. }
+      opose proof (to_map_pref_None t1 (pref ++ [false]) label _) as Hl1.
+      { intros ?%prefix_snoc_inv. naive_solver. }
+      rewrite lookup_union Hl0 Hl1.
+      by simplify_option_eq.
+    + opose proof (IHt1 (pref ++ [false]) _ _) as Hl0.
+      { by apply prefix_snoc. }
+      { exact_eq Hpath. len. }
+      opose proof (to_map_pref_None t2 (pref ++ [true]) label _) as Hl1.
+      { intros ?%prefix_snoc_inv. naive_solver. }
+      rewrite lookup_union Hl0 Hl1.
+      by simplify_option_eq.
+Qed.
+
+(*
 Definition labels_have_bit t n bit :=
   ∀ l,
   l ∈ dom (to_map t) →
@@ -276,6 +432,7 @@ Lemma sorted_impl_sorted_prefix t :
   is_sorted t 0 →
   is_sorted_prefix t [].
 Proof. Admitted.
+*)
 
 (** full trees / maps. *)
 
@@ -529,16 +686,14 @@ a few consequences:
 this allows proving [is_full_tree_inj].
 
 [limit] prevents infinite recursion. *)
-Fixpoint is_full_tree t h limit pref : iProp Σ :=
+Fixpoint is_full_tree t h limit : iProp Σ :=
   ∃ d,
   "#His_hash" ∷ cryptoffi.is_hash d h ∗
   "#Hdecode" ∷ match decode_node d with
   | DecEmpty =>
     "%" ∷ ⌜ t = Empty ⌝
   | DecLeaf l v =>
-    if decide (pref `prefix_of` (bytes_to_bits l))
-    then "%" ∷ ⌜ t = Leaf l v ⌝
-    else "%" ∷ ⌜ t = Cut h ⌝
+    "%" ∷ ⌜ t = Leaf l v ⌝
   | DecInvalid =>
     "%" ∷ ⌜ t = Cut h ⌝
   | DecInner h0 h1 =>
@@ -547,26 +702,26 @@ Fixpoint is_full_tree t h limit pref : iProp Σ :=
       "%" ∷ ⌜ t = Cut h ⌝
     | S limit' =>
       ∃ t0 t1,
-      "#Hrecur0" ∷ is_full_tree t0 h0 limit' (pref ++ [false]) ∗
-      "#Hrecur1" ∷ is_full_tree t1 h1 limit' (pref ++ [true]) ∗
+      "#Hrecur0" ∷ is_full_tree t0 h0 limit' ∗
+      "#Hrecur1" ∷ is_full_tree t1 h1 limit' ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end
   end.
 
-#[global] Instance is_full_tree_pers t h l p : Persistent (is_full_tree t h l p).
+#[global] Instance is_full_tree_pers t h l : Persistent (is_full_tree t h l).
 Proof.
-  revert t h p. induction l.
+  revert t h. induction l.
   - intros. apply exist_persistent. intros.
     repeat case_match; apply _.
   - intros. apply exist_persistent. intros.
     repeat case_match; apply _.
 Qed.
 
-Lemma is_full_tree_invert h l p :
+Lemma is_full_tree_invert h l :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
-  ∃ t, is_full_tree t h l p.
+  ∃ t, is_full_tree t h l.
 Proof.
-  revert h p. induction l; intros.
+  revert h. induction l; intros.
   - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
     repeat case_match; naive_solver.
   - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
@@ -581,12 +736,12 @@ Qed.
 (* if [Cut], carries the hash, so hashes must be equal.
 otherwise, [decode_node_inj] says that Some preimg's are equal,
 which implies the hashes are equal. *)
-Lemma is_full_tree_det t h0 h1 l0 l1 p0 p1 :
-  is_full_tree t h0 l0 p0 -∗
-  is_full_tree t h1 l1 p1 -∗
+Lemma is_full_tree_det t h0 h1 l0 l1 :
+  is_full_tree t h0 l0 -∗
+  is_full_tree t h1 l1 -∗
   ⌜ h0 = h1 ⌝.
 Proof.
-  iInduction (l0) as [] forall (t h0 h1 l1 p0 p1); destruct l1; simpl;
+  iInduction (l0) as [] forall (t h0 h1 l1); destruct l1; simpl;
     iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
     case_match; try case_decide;
     case_match; try case_decide;
@@ -608,12 +763,12 @@ in practice, this limit is the hash length,
 which was anyways required for liveness, and now is required for safety.
 another approach is defining a predicate for limit validity.
 however, the inversion lemma can't always guarantee this. *)
-Lemma is_full_tree_inj t0 t1 h limit prefix :
-  is_full_tree t0 h limit prefix -∗
-  is_full_tree t1 h limit prefix -∗
+Lemma is_full_tree_inj t0 t1 h limit :
+  is_full_tree t0 h limit -∗
+  is_full_tree t1 h limit -∗
   ⌜ t0 = t1 ⌝.
 Proof.
-  iInduction (limit) as [] forall (t0 t1 h prefix); simpl;
+  iInduction (limit) as [] forall (t0 t1 h); simpl;
     iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
     iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %->;
     repeat case_match;
@@ -623,6 +778,7 @@ Proof.
   by iDestruct ("IHlimit" with "Hrecur10 Hrecur11") as %->.
 Qed.
 
+(*
 Lemma is_full_tree_sorted_aux t h l p :
   is_full_tree t h l p -∗
   ⌜ is_sorted_prefix t p ⌝.
@@ -643,6 +799,7 @@ Proof.
   iDestruct (is_full_tree_sorted_aux with "H") as "%".
   iPureIntro. by apply sorted_prefix_impl_sorted.
 Qed.
+*)
 
 (* to prevent reducing [max_depth]. *)
 #[local] Opaque is_full_tree.
@@ -650,7 +807,7 @@ Qed.
 Definition is_full_map m h : iProp Σ :=
   ∃ t,
   "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
-  "#His_tree" ∷ is_full_tree t h max_depth [].
+  "#His_tree" ∷ is_full_tree t h max_depth.
 
 Lemma is_full_map_invert h :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
@@ -768,14 +925,14 @@ Fixpoint is_limit t limit :=
 
 #[local] Transparent is_full_tree.
 
-Lemma path_txfer t0 t1 h l pref label found :
+Lemma path_txfer t0 t1 h l d label found :
   is_cut_tree t0 h -∗
-  is_full_tree t1 h l pref -∗
-  ⌜ is_path t0 (length pref) label found ⌝ -∗
+  is_full_tree t1 h l -∗
+  ⌜ is_path t0 d label found ⌝ -∗
   ⌜ is_limit t0 l ⌝ -∗
-  ⌜ is_path t1 (length pref) label found ⌝.
+  ⌜ is_path t1 d label found ⌝.
 Proof.
-  revert t1 h l pref label found.
+  revert t1 h l d label found.
   induction t0; destruct l; simpl; intros;
     iNamedSuffix 1 "0";
     iNamedSuffix 1 "1";
@@ -794,9 +951,10 @@ Proof.
     naive_solver.
   - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
     rewrite decode_leaf_det; [|done..].
+    (*
     case_decide; iNamed "Hdecode1".
     + naive_solver.
-    + iPureIntro. subst. simpl.
+    + iPureIntro. subst. simpl. *)
       (* stuck: case when full tree has bad prefix, which turns leaf into cut.
       we need sorted_prefix assumption to contradict this;
       otherwise, can't establish path.
