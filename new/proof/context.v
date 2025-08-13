@@ -2,6 +2,7 @@ Require Import New.code.context.
 Require Export New.generatedproof.context.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.chan.
+Require Import New.proof.sync.atomic New.proof.sync.
 
 Require Import Perennial.Helpers.CountableTactics.
 
@@ -39,6 +40,27 @@ Section definitions.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 Context `{contextG Σ}.
+
+Local Notation deps_time := (ltac2:(build_pkg_init_deps 'time) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit time :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_time;
+  |}.
+
+Local Notation deps_reflectlite := (ltac2:(build_pkg_init_deps 'reflectlite) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit reflectlite :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_reflectlite;
+  |}.
+
+Local Notation deps_errors := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit errors :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_errors;
+  |}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'context) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit context :=
