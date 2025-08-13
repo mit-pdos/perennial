@@ -10,7 +10,7 @@ From New.proof.sync_proof Require Import base mutex sema.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.  
 Context  `{!chanGhostStateG Σ}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Arguments ch_loc: default implicits.
 Arguments ch_mu: default implicits.

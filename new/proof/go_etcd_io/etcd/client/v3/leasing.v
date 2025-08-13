@@ -28,39 +28,48 @@ Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
+Local Notation deps_bytes := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit bytes :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_bytes;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'status.status).
+Local Definition deps_rpc_status : iProp Σ := ltac2:(build_pkg_init_deps 'rpc.status.status).
+#[global] Program Instance : IsPkgInit rpc.status.status :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_rpc_status;
+  |}.
+
+(* FIXME: status.info' refers to its own [status.status] because `grpc/status` imports
+   `genproto/googleapis/rpc/status *)
+(* Local Definition deps_status : iProp Σ := ltac2:(build_pkg_init_deps 'status.status). *)
 #[global] Program Instance : IsPkgInit status.status :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := True : iProp Σ;
   |}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'codes) : iProp Σ) (only parsing).
+Local Notation deps_codes := (ltac2:(build_pkg_init_deps 'codes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit codes :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_codes;
   |}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'rpctypes) : iProp Σ) (only parsing).
+Local Notation deps_rpctypes := (ltac2:(build_pkg_init_deps 'rpctypes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit rpctypes :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_rpctypes;
   |}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
+Local Notation deps_strings := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit strings :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_strings;
   |}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'leasing) : iProp Σ) (only parsing).
@@ -346,7 +355,6 @@ Proof.
     iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
     wp_auto.
     wp_apply (wp_closeable_chan_close with "[$Hsessionc]").
-    { done. }
     iIntros "#Hclosed".
     wp_auto.
     iDestruct "session" as "[session session_lock]".
@@ -522,7 +530,7 @@ Definition own_KV (kv : interface.t) (γetcd : clientv3_names) : iProp Σ :=
 
 Lemma wp_leasingKV__Put lkv ctx ctx_desc (key v : go_string) γ :
   {{{ is_pkg_init leasing ∗ is_Context ctx ctx_desc ∗ own_leasingKV lkv γ }}}
-    lkv@leasing@"leasingKV'ptr"@"Put" #ctx #key #v #slice.nil
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "Put" #ctx #key #v #slice.nil
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[#Hctx Hlkv]". wp_auto.
@@ -540,7 +548,7 @@ Lemma wp_leasingKV__put ctx ctx_desc lkv γ op put_req :
       "Hlkv" ∷ own_leasingKV lkv γ ∗
       "#Hop" ∷ is_Op op (Op.Put put_req)
   }}}
-    lkv@leasing@"leasingKV'ptr"@"put" #ctx #op
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "put" #ctx #op
   {{{
       (pr_ptr : loc) (err : error.t), RET (#pr_ptr, #err);
         if decide (err = interface.nil) then
@@ -565,7 +573,6 @@ Proof.
   iPoseProof "Hctx" as "Hctx2".
   iNamedSuffix "Hctx2" "_ctx".
   wp_apply "HErr_ctx".
-  { iFrame "#". }
   iIntros (?) "Herr".
   wp_auto.
   wp_if_destruct.
@@ -630,7 +637,7 @@ Lemma wp_leasingKV__tryModifyOp ctx ctx_desc op req lkv γ :
       "#Hop" ∷ is_Op op (Op.Put req) ∗
       "Hlkv" ∷ own_leasingKV lkv γ
   }}}
-    lkv@leasing@"leasingKV'ptr"@"tryModifyOp" #ctx #op
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "tryModifyOp" #ctx #op
   {{{
       (resp_ptr : loc) (wc : chan.t) err, RET (#resp_ptr, #wc, #err);
         if decide (err = interface.nil) then
@@ -654,7 +661,7 @@ Admitted.
 Lemma own_leasingKV_own_KV lkv γ :
   is_entries_ready γ -∗
   own_leasingKV lkv γ -∗
-  own_KV (interface.mk (leasing, "leasingKV'ptr"%go) #lkv) γ.(etcd_gn).
+  own_KV (interface.mk (ptrTⁱᵈ leasing.leasingKVⁱᵈ) #lkv) γ.(etcd_gn).
 Proof.
 Admitted.
 
