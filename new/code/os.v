@@ -390,6 +390,10 @@ Definition joinPath : go_string := "os.joinPath"%go.
 
 Definition Getpagesize : go_string := "os.Getpagesize"%go.
 
+Definition Fileⁱᵈ : go_string := "os.File"%go.
+
+Axiom File : go_type.
+
 Definition SameFile : go_string := "os.SameFile"%go.
 
 Definition sameFile : go_string := "os.sameFile"%go.
@@ -414,7 +418,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Fileⁱᵈ, []); (ptrTⁱᵈ Fileⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo os.os :=
   {|
