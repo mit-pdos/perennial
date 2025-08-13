@@ -349,22 +349,26 @@ Ltac2 build_pkg_init_deps name :=
        end
     ).
 
+(* FIXME: better implementation using PkgInfo to direct the search. Could try lithium even. *)
 (* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)
 Ltac solve_pkg_init :=
   unfold named;
+  try iAssumption;
   lazymatch goal with
   | |- environments.envs_entails ?env (is_pkg_init _) => idtac
   | |- environments.envs_entails ?env (is_pkg_defined _) => idtac
   | _ => fail "not a is_pkg_init or is_pkg_defined goal"
   end;
   iClear "∗";
-  rewrite ?is_pkg_init_unfold;
+  iEval (rewrite ?is_pkg_init_unfold; simpl is_pkg_init_deps; unfold named) in "#";
   repeat
     lazymatch goal with
     | |- environments.envs_entails ?env _ =>
         lazymatch env with
         | context[environments.Esnoc _ ?i (_ ∗ _)%I] =>
             iDestruct i as "[? ?]"
+        | context[environments.Esnoc _ ?i (□ _)%I] =>
+            iDestruct i as "#?"
         end
     end;
   solve [ iFrame "#" ].

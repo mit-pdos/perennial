@@ -806,21 +806,21 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
     }]) in
     do:  ("e2" <-[#Editor] "$r0");;;
     (if: ((let: "$a0" := #(W64 2) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e1") "$a0") + (let: "$a0" := #(W64 102) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e2") "$a0")) ≠ #(W64 102)
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e1") "$a0") + (let: "$a0" := #(W64 102) in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e2") "$a0")) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
     (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) ≠ #(W64 101)
     then return: (#false)
     else do:  #());;;
     (if: (let: "$a0" := (let: "$a0" := #(W64 3) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e1") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e1") "$a0") in
     let: "$a1" := (let: "$a0" := #(W64 103) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e2") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e2") "$a0") in
     let: "$a2" := (let: "$a0" := #(W64 104) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e2") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e2") "$a0") in
     let: "$a3" := (let: "$a0" := #(W64 4) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e1") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e1") "$a0") in
     (func_call #addFour64) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
     then return: (#false)
     else do:  #());;;
@@ -832,9 +832,9 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "p" := (mem.alloc (type.zero_val #Pair)) in
     let: "$r0" := (let: "$x" := (let: "$a0" := #(W64 5) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e1") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e1") "$a0") in
     let: "$y" := (let: "$a0" := #(W64 105) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e2") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e2") "$a0") in
     struct.make #Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
@@ -845,9 +845,9 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "q" := (mem.alloc (type.zero_val #Pair)) in
     let: "$r0" := (let: "$y" := (let: "$a0" := #(W64 6) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e1") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e1") "$a0") in
     let: "$x" := (let: "$a0" := #(W64 106) in
-    (method_call #Editorⁱᵈ #"AdvanceReturn"%go "e2") "$a0") in
+    (method_call #(ptrTⁱᵈ Editorⁱᵈ) #"AdvanceReturn"%go "e2") "$a0") in
     struct.make #Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
@@ -2375,7 +2375,7 @@ Definition Bar__mutateⁱᵐᵖˡ : val :=
 Definition Foo__mutateBarⁱᵐᵖˡ : val :=
   λ: "foo" <>,
     exception_do (let: "foo" := (mem.alloc "foo") in
-    do:  ((method_call #Barⁱᵈ #"mutate"%go (struct.field_ref #Foo #"bar"%go (![#ptrT] "foo"))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Barⁱᵈ) #"mutate"%go (struct.field_ref #Foo #"bar"%go (![#ptrT] "foo"))) #());;;
     return: #()).
 
 Definition testFooBarMutation : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFooBarMutation"%go.
@@ -2394,7 +2394,7 @@ Definition testFooBarMutationⁱᵐᵖˡ : val :=
       "bar" ::= "$bar"
     }]) in
     do:  ("x" <-[#Foo] "$r0");;;
-    do:  ((method_call #Fooⁱᵈ #"mutateBar"%go "x") #());;;
+    do:  ((method_call #(ptrTⁱᵈ Fooⁱᵈ) #"mutateBar"%go "x") #());;;
     return: ((![#uint64T] (struct.field_ref #Bar #"a"%go (struct.field_ref #Foo #"bar"%go "x"))) = #(W64 2))).
 
 Definition TwoIntsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.TwoInts"%go.

@@ -18,7 +18,7 @@ Proof.
   wp_pures. by iApply "Hwp".
 Qed.
 
-Global Instance wp_interface_make (v : val) (pkg_name type_id : go_string) :
+Global Instance wp_interface_make (v : val) (type_id : go_string) :
   PureWp (True) (interface.make #type_id v) #(interface.mk type_id v).
 Proof.
   iIntros (?????) "Hwp".

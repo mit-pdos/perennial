@@ -155,7 +155,7 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ : val :=
     (func_call #slices.SortUint64) "$a0");;;
     let: "buf" := (mem.alloc (type.zero_val #strings.Builder)) in
     do:  (let: "$a0" := #(W8 40) in
-    (method_call #strings.Builderⁱᵈ #"WriteByte"%go "buf") "$a0");;;
+    (method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"WriteByte"%go "buf") "$a0");;;
     let: "$range" := (![#sliceT] "sl") in
     (let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
@@ -163,15 +163,15 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ : val :=
       (if: int_gt (![#intT] "i") #(W64 0)
       then
         do:  (let: "$a0" := #(W8 32) in
-        (method_call #strings.Builderⁱᵈ #"WriteByte"%go "buf") "$a0")
+        (method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"WriteByte"%go "buf") "$a0")
       else do:  #());;;
       do:  (let: "$a0" := (interface.make #(ptrTⁱᵈ strings.Builderⁱᵈ) "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #uint64Tⁱᵈ (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "sl") (![#intT] "i")))) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Fprint) "$a0" "$a1")));;;
     do:  (let: "$a0" := #(W8 41) in
-    (method_call #strings.Builderⁱᵈ #"WriteByte"%go "buf") "$a0");;;
-    return: ((method_call #strings.Builderⁱᵈ #"String"%go "buf") #())).
+    (method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"WriteByte"%go "buf") "$a0");;;
+    return: ((method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"String"%go "buf") #())).
 
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
@@ -291,7 +291,7 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ : val :=
       let: "$sl1" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #slices.Tup #"ID"%go (slice.elem_ref #slices.Tup (![#sliceT] "info") (![#intT] "i"))))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #fmt.Fprintf) "$a0" "$a1" "$a2")));;;
-    return: ((method_call #strings.Builderⁱᵈ #"String"%go "buf") #())).
+    return: ((method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"String"%go "buf") #())).
 
 (* Slice returns the MajorityConfig as a sorted slice.
 

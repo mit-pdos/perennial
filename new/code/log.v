@@ -19,6 +19,10 @@ Definition Ltime : Z := 2.
 (* initial values for the standard logger *)
 Definition LstdFlags : Z := 3.
 
+Definition Loggerⁱᵈ : go_string := "log.Logger"%go.
+
+Axiom Logger : go_type.
+
 Definition New : go_string := "log.New"%go.
 
 Definition std : go_string := "log.std"%go.
@@ -77,7 +81,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Printf, Printfⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Loggerⁱᵈ, []); (ptrTⁱᵈ Loggerⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo log.log :=
   {|

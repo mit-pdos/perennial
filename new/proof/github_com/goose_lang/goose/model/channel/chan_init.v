@@ -10,7 +10,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.  
 Context `{!globalsGS Σ} `{!GoContext}.
 Context  `{!chanGhostStateG Σ}.
-#[global] Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'channel).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'channel).
 #[global] Program Instance : IsPkgInit channel :=
   {|
     is_pkg_init_def := True;

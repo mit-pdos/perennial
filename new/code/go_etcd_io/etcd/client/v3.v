@@ -690,7 +690,7 @@ Definition OpGetⁱᵐᵖˡ : val :=
     }]) in
     do:  ("ret" <-[#Op] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "opts") in
-    (method_call #Opⁱᵈ #"applyOpts"%go "ret") "$a0");;;
+    (method_call #(ptrTⁱᵈ Opⁱᵈ) #"applyOpts"%go "ret") "$a0");;;
     return: (![#Op] "ret")).
 
 Definition OpDelete : go_string := "go.etcd.io/etcd/client/v3.OpDelete"%go.
@@ -744,7 +744,7 @@ Definition OpDeleteⁱᵐᵖˡ : val :=
     }]) in
     do:  ("ret" <-[#Op] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "opts") in
-    (method_call #Opⁱᵈ #"applyOpts"%go "ret") "$a0");;;
+    (method_call #(ptrTⁱᵈ Opⁱᵈ) #"applyOpts"%go "ret") "$a0");;;
     let: "$sw" := #true in
     (if: "$sw" = ((![#LeaseID] (struct.field_ref #Op #"leaseID"%go "ret")) ≠ #(W64 0))
     then
@@ -844,7 +844,7 @@ Definition OpPutⁱᵐᵖˡ : val :=
     }]) in
     do:  ("ret" <-[#Op] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "opts") in
-    (method_call #Opⁱᵈ #"applyOpts"%go "ret") "$a0");;;
+    (method_call #(ptrTⁱᵈ Opⁱᵈ) #"applyOpts"%go "ret") "$a0");;;
     let: "$sw" := #true in
     (if: "$sw" = ((![#sliceT] (struct.field_ref #Op #"end"%go "ret")) ≠ #slice.nil)
     then

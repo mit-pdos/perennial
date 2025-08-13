@@ -1,6 +1,5 @@
 From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base definitions.
 
-
 Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
 (* abstraction of an etcd [Op] *)
@@ -71,7 +70,7 @@ Admitted.
 
 Lemma wp_Op__applyOpts (op : loc) :
   {{{ is_pkg_init clientv3 }}}
-    op@clientv3@"Op'ptr"@"applyOpts" #slice.nil
+    op @ (ptrTⁱᵈ clientv3.Opⁱᵈ) @ "applyOpts" #slice.nil
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto. wp_apply wp_slice_for_range.
@@ -103,7 +102,7 @@ Qed.
 
 Lemma wp_Op__KeyBytes op req :
   {{{ is_pkg_init clientv3 ∗ is_Op op (Op.Put req) }}}
-    op@clientv3@"Op"@"KeyBytes" #()
+    op @ clientv3.Opⁱᵈ @ "KeyBytes" #()
   {{{ key_sl, RET #key_sl; key_sl ↦*□ req.(PutRequest.key) }}}.
 Proof.
   wp_start. wp_auto. iApply "HΦ". iNamed "Hpre". iFrame "#".

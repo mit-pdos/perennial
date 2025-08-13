@@ -9,6 +9,23 @@ Set Default Proof Using "Type".
 
 Module log.
 
+(* type log.Logger *)
+Module Logger.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Logger.
+
+Global Instance bounded_size_Logger : BoundedTypeSize log.Logger.
+Admitted.
+
+Global Instance into_val_Logger `{ffi_syntax} : IntoVal Logger.t.
+Admitted.
+
+Global Instance into_val_typed_Logger `{ffi_syntax} : IntoValTyped Logger.t log.Logger.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

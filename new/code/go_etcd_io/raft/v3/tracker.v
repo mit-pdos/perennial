@@ -526,7 +526,7 @@ Definition Progress__Stringⁱᵐᵖˡ : val :=
         (func_call #fmt.Fprint) "$a0" "$a1")
       else do:  #())
     else do:  #()));;;
-    return: ((method_call #strings.Builderⁱᵈ #"String"%go "buf") #())).
+    return: ((method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"String"%go "buf") #())).
 
 Definition ProgressMapⁱᵈ : go_string := "go.etcd.io/raft/v3/tracker.ProgressMap"%go.
 
@@ -566,7 +566,7 @@ Definition ProgressMap__Stringⁱᵐᵖˡ : val :=
       let: "$sl1" := (interface.make #(ptrTⁱᵈ Progressⁱᵈ) (Fst (map.get (![#ProgressMap] "m") (![#uint64T] "id")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #fmt.Fprintf) "$a0" "$a1" "$a2")));;;
-    return: ((method_call #strings.Builderⁱᵈ #"String"%go "buf") #())).
+    return: ((method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"String"%go "buf") #())).
 
 Definition prstmap : go_string := "go.etcd.io/raft/v3/tracker.prstmap"%go.
 
@@ -624,7 +624,7 @@ Definition Config__Stringⁱᵐᵖˡ : val :=
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Fprint) "$a0" "$a1")
     else do:  #());;;
-    return: ((method_call #strings.Builderⁱᵈ #"String"%go "buf") #())).
+    return: ((method_call #(ptrTⁱᵈ strings.Builderⁱᵈ) #"String"%go "buf") #())).
 
 (* Clone returns a copy of the Config that shares no memory with the original.
 

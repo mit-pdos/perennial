@@ -8,8 +8,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 
-#[global]
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'std).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'std) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit std :=
   {|
     is_pkg_init_def := True;
@@ -123,7 +122,7 @@ Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
   ∃ (mu_l cond_l: loc),
   "#mu" ∷ l ↦s[std.JoinHandle :: "mu"]□ mu_l ∗
   "#cond" ∷ l ↦s[std.JoinHandle :: "cond"]□ cond_l ∗
-  "#Hcond" ∷ is_Cond cond_l (interface.mk Mutex_type_id #mu_l) ∗
+  "#Hcond" ∷ is_Cond cond_l (interface.mk (ptrTⁱᵈ sync.Mutexⁱᵈ) #mu_l) ∗
   "#Hlock" ∷ is_Mutex mu_l
      (∃ (done_b: bool),
          "done_b" ∷ l ↦s[std.JoinHandle :: "done"] done_b ∗

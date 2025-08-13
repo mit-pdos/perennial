@@ -411,7 +411,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
           let: "$r1" := "$ret1" in
           do:  ("wr" <-[#clientv3.WatchResponse] "$r0");;;
           do:  ("ok" <-[#boolT] "$r1");;;
-          (if: (~ (![#boolT] "ok")) || (~ (interface.eq ((method_call #clientv3.WatchResponseⁱᵈ #"Err"%go "wr") #()) #interface.nil))
+          (if: (~ (![#boolT] "ok")) || (~ (interface.eq ((method_call #(ptrTⁱᵈ clientv3.WatchResponseⁱᵈ) #"Err"%go "wr") #()) #interface.nil))
           then
             do:  ((![#context.CancelFunc] "cancel") #());;;
             return: (#())
@@ -579,7 +579,7 @@ Definition waitDeleteⁱᵐᵖˡ : val :=
         then return: (#interface.nil)
         else do:  #()))));;;
     (let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: "$r0" := ((method_call #clientv3.WatchResponseⁱᵈ #"Err"%go "wr") #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ clientv3.WatchResponseⁱᵈ) #"Err"%go "wr") #()) in
     do:  ("err" <-[#error] "$r0");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then return: (![#error] "err")
@@ -1938,7 +1938,7 @@ Definition stmSerializable__Getⁱᵐᵖˡ : val :=
       else do:  #()))));;;
     let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
-    (method_call #stmⁱᵈ #"fetch"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) "$a0") in
+    (method_call #(ptrTⁱᵈ stmⁱᵈ) #"fetch"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) "$a0") in
     do:  ("resp" <-[#ptrT] "$r0");;;
     (if: ![#boolT] "firstRead"
     then
@@ -1960,7 +1960,7 @@ Definition stmSerializable__Revⁱᵐᵖˡ : val :=
     slice.literal #stringT ["$sl0"])) in
     (method_call #(ptrTⁱᵈ stmSerializableⁱᵈ) #"Get"%go (![#ptrT] "s")) "$a0");;;
     return: (let: "$a0" := (![#stringT] "key") in
-     (method_call #stmⁱᵈ #"Rev"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) "$a0")).
+     (method_call #(ptrTⁱᵈ stmⁱᵈ) #"Rev"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) "$a0")).
 
 (* go: stm.go:336:27 *)
 Definition stmSerializable__getsⁱᵐᵖˡ : val :=
