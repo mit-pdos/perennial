@@ -248,7 +248,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Editor.s' v)) semantics.Editor "s"%go.
+  simpl_one_flatten_struct (# (Editor.s' v)) (semantics.Editor) "s"%go.
 
   solve_field_ref_f.
 Qed.
@@ -317,7 +317,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Pair.x' v)) semantics.Pair "x"%go.
+  simpl_one_flatten_struct (# (Pair.x' v)) (semantics.Pair) "x"%go.
 
   solve_field_ref_f.
 Qed.
@@ -538,9 +538,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (BoolTest.t' v)) semantics.BoolTest "t"%go.
-  simpl_one_flatten_struct (# (BoolTest.f' v)) semantics.BoolTest "f"%go.
-  simpl_one_flatten_struct (# (BoolTest.tc' v)) semantics.BoolTest "tc"%go.
+  simpl_one_flatten_struct (# (BoolTest.t' v)) (semantics.BoolTest) "t"%go.
+  simpl_one_flatten_struct (# (BoolTest.f' v)) (semantics.BoolTest) "f"%go.
+  simpl_one_flatten_struct (# (BoolTest.tc' v)) (semantics.BoolTest) "tc"%go.
 
   solve_field_ref_f.
 Qed.
@@ -609,7 +609,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ArrayEditor.s' v)) semantics.ArrayEditor "s"%go.
+  simpl_one_flatten_struct (# (ArrayEditor.s' v)) (semantics.ArrayEditor) "s"%go.
 
   solve_field_ref_f.
 Qed.
@@ -678,7 +678,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Bar.a' v)) semantics.Bar "a"%go.
+  simpl_one_flatten_struct (# (Bar.a' v)) (semantics.Bar) "a"%go.
 
   solve_field_ref_f.
 Qed.
@@ -808,7 +808,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (TwoInts.x' v)) semantics.TwoInts "x"%go.
+  simpl_one_flatten_struct (# (TwoInts.x' v)) (semantics.TwoInts) "x"%go.
 
   solve_field_ref_f.
 Qed.
@@ -884,8 +884,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.a' v)) semantics.S "a"%go.
-  simpl_one_flatten_struct (# (S.b' v)) semantics.S "b"%go.
+  simpl_one_flatten_struct (# (S.a' v)) (semantics.S) "a"%go.
+  simpl_one_flatten_struct (# (S.b' v)) (semantics.S) "b"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1135,9 +1135,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Log.d' v)) semantics.Log "d"%go.
-  simpl_one_flatten_struct (# (Log.l' v)) semantics.Log "l"%go.
-  simpl_one_flatten_struct (# (Log.cache' v)) semantics.Log "cache"%go.
+  simpl_one_flatten_struct (# (Log.d' v)) (semantics.Log) "d"%go.
+  simpl_one_flatten_struct (# (Log.l' v)) (semantics.Log) "l"%go.
+  simpl_one_flatten_struct (# (Log.cache' v)) (semantics.Log) "cache"%go.
 
   solve_field_ref_f.
 Qed.

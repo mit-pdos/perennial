@@ -97,10 +97,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (eStateMachine.lastSeq' v)) exactlyonce.eStateMachine "lastSeq"%go.
-  simpl_one_flatten_struct (# (eStateMachine.lastReply' v)) exactlyonce.eStateMachine "lastReply"%go.
-  simpl_one_flatten_struct (# (eStateMachine.nextCID' v)) exactlyonce.eStateMachine "nextCID"%go.
-  simpl_one_flatten_struct (# (eStateMachine.sm' v)) exactlyonce.eStateMachine "sm"%go.
+  simpl_one_flatten_struct (# (eStateMachine.lastSeq' v)) (exactlyonce.eStateMachine) "lastSeq"%go.
+  simpl_one_flatten_struct (# (eStateMachine.lastReply' v)) (exactlyonce.eStateMachine) "lastReply"%go.
+  simpl_one_flatten_struct (# (eStateMachine.nextCID' v)) (exactlyonce.eStateMachine) "nextCID"%go.
+  simpl_one_flatten_struct (# (eStateMachine.sm' v)) (exactlyonce.eStateMachine) "sm"%go.
 
   solve_field_ref_f.
 Qed.
@@ -176,8 +176,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Clerk.ck' v)) exactlyonce.Clerk "ck"%go.
-  simpl_one_flatten_struct (# (Clerk.cid' v)) exactlyonce.Clerk "cid"%go.
+  simpl_one_flatten_struct (# (Clerk.ck' v)) (exactlyonce.Clerk) "ck"%go.
+  simpl_one_flatten_struct (# (Clerk.cid' v)) (exactlyonce.Clerk) "cid"%go.
 
   solve_field_ref_f.
 Qed.
@@ -260,9 +260,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyVolatile' v)) exactlyonce.VersionedStateMachine "ApplyVolatile"%go.
-  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyReadonly' v)) exactlyonce.VersionedStateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (VersionedStateMachine.SetState' v)) exactlyonce.VersionedStateMachine "SetState"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyVolatile' v)) (exactlyonce.VersionedStateMachine) "ApplyVolatile"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyReadonly' v)) (exactlyonce.VersionedStateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.SetState' v)) (exactlyonce.VersionedStateMachine) "SetState"%go.
 
   solve_field_ref_f.
 Qed.

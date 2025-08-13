@@ -75,7 +75,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (inflight.index' v)) tracker.inflight "index"%go.
+  simpl_one_flatten_struct (# (inflight.index' v)) (tracker.inflight) "index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -172,11 +172,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Inflights.start' v)) tracker.Inflights "start"%go.
-  simpl_one_flatten_struct (# (Inflights.count' v)) tracker.Inflights "count"%go.
-  simpl_one_flatten_struct (# (Inflights.bytes' v)) tracker.Inflights "bytes"%go.
-  simpl_one_flatten_struct (# (Inflights.size' v)) tracker.Inflights "size"%go.
-  simpl_one_flatten_struct (# (Inflights.maxBytes' v)) tracker.Inflights "maxBytes"%go.
+  simpl_one_flatten_struct (# (Inflights.start' v)) (tracker.Inflights) "start"%go.
+  simpl_one_flatten_struct (# (Inflights.count' v)) (tracker.Inflights) "count"%go.
+  simpl_one_flatten_struct (# (Inflights.bytes' v)) (tracker.Inflights) "bytes"%go.
+  simpl_one_flatten_struct (# (Inflights.size' v)) (tracker.Inflights) "size"%go.
+  simpl_one_flatten_struct (# (Inflights.maxBytes' v)) (tracker.Inflights) "maxBytes"%go.
 
   solve_field_ref_f.
 Qed.
@@ -302,14 +302,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Progress.Match' v)) tracker.Progress "Match"%go.
-  simpl_one_flatten_struct (# (Progress.Next' v)) tracker.Progress "Next"%go.
-  simpl_one_flatten_struct (# (Progress.sentCommit' v)) tracker.Progress "sentCommit"%go.
-  simpl_one_flatten_struct (# (Progress.State' v)) tracker.Progress "State"%go.
-  simpl_one_flatten_struct (# (Progress.PendingSnapshot' v)) tracker.Progress "PendingSnapshot"%go.
-  simpl_one_flatten_struct (# (Progress.RecentActive' v)) tracker.Progress "RecentActive"%go.
-  simpl_one_flatten_struct (# (Progress.MsgAppFlowPaused' v)) tracker.Progress "MsgAppFlowPaused"%go.
-  simpl_one_flatten_struct (# (Progress.Inflights' v)) tracker.Progress "Inflights"%go.
+  simpl_one_flatten_struct (# (Progress.Match' v)) (tracker.Progress) "Match"%go.
+  simpl_one_flatten_struct (# (Progress.Next' v)) (tracker.Progress) "Next"%go.
+  simpl_one_flatten_struct (# (Progress.sentCommit' v)) (tracker.Progress) "sentCommit"%go.
+  simpl_one_flatten_struct (# (Progress.State' v)) (tracker.Progress) "State"%go.
+  simpl_one_flatten_struct (# (Progress.PendingSnapshot' v)) (tracker.Progress) "PendingSnapshot"%go.
+  simpl_one_flatten_struct (# (Progress.RecentActive' v)) (tracker.Progress) "RecentActive"%go.
+  simpl_one_flatten_struct (# (Progress.MsgAppFlowPaused' v)) (tracker.Progress) "MsgAppFlowPaused"%go.
+  simpl_one_flatten_struct (# (Progress.Inflights' v)) (tracker.Progress) "Inflights"%go.
 
   solve_field_ref_f.
 Qed.
@@ -400,9 +400,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Config.Voters' v)) tracker.Config "Voters"%go.
-  simpl_one_flatten_struct (# (Config.AutoLeave' v)) tracker.Config "AutoLeave"%go.
-  simpl_one_flatten_struct (# (Config.Learners' v)) tracker.Config "Learners"%go.
+  simpl_one_flatten_struct (# (Config.Voters' v)) (tracker.Config) "Voters"%go.
+  simpl_one_flatten_struct (# (Config.AutoLeave' v)) (tracker.Config) "AutoLeave"%go.
+  simpl_one_flatten_struct (# (Config.Learners' v)) (tracker.Config) "Learners"%go.
 
   solve_field_ref_f.
 Qed.
@@ -492,10 +492,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ProgressTracker.Config' v)) tracker.ProgressTracker "Config"%go.
-  simpl_one_flatten_struct (# (ProgressTracker.Progress' v)) tracker.ProgressTracker "Progress"%go.
-  simpl_one_flatten_struct (# (ProgressTracker.Votes' v)) tracker.ProgressTracker "Votes"%go.
-  simpl_one_flatten_struct (# (ProgressTracker.MaxInflight' v)) tracker.ProgressTracker "MaxInflight"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.Config' v)) (tracker.ProgressTracker) "Config"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.Progress' v)) (tracker.ProgressTracker) "Progress"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.Votes' v)) (tracker.ProgressTracker) "Votes"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.MaxInflight' v)) (tracker.ProgressTracker) "MaxInflight"%go.
 
   solve_field_ref_f.
 Qed.

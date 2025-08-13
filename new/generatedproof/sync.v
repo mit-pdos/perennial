@@ -117,8 +117,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Once._0' v)) sync.Once "_0"%go.
-  simpl_one_flatten_struct (# (Once.done' v)) sync.Once "done"%go.
+  simpl_one_flatten_struct (# (Once._0' v)) (sync.Once) "_0"%go.
+  simpl_one_flatten_struct (# (Once.done' v)) (sync.Once) "done"%go.
 
   solve_field_ref_f.
 Qed.
@@ -208,10 +208,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RWMutex.w' v)) sync.RWMutex "w"%go.
-  simpl_one_flatten_struct (# (RWMutex.writerSem' v)) sync.RWMutex "writerSem"%go.
-  simpl_one_flatten_struct (# (RWMutex.readerSem' v)) sync.RWMutex "readerSem"%go.
-  simpl_one_flatten_struct (# (RWMutex.readerCount' v)) sync.RWMutex "readerCount"%go.
+  simpl_one_flatten_struct (# (RWMutex.w' v)) (sync.RWMutex) "w"%go.
+  simpl_one_flatten_struct (# (RWMutex.writerSem' v)) (sync.RWMutex) "writerSem"%go.
+  simpl_one_flatten_struct (# (RWMutex.readerSem' v)) (sync.RWMutex) "readerSem"%go.
+  simpl_one_flatten_struct (# (RWMutex.readerCount' v)) (sync.RWMutex) "readerCount"%go.
 
   solve_field_ref_f.
 Qed.
@@ -295,8 +295,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WaitGroup.noCopy' v)) sync.WaitGroup "noCopy"%go.
-  simpl_one_flatten_struct (# (WaitGroup.state' v)) sync.WaitGroup "state"%go.
+  simpl_one_flatten_struct (# (WaitGroup.noCopy' v)) (sync.WaitGroup) "noCopy"%go.
+  simpl_one_flatten_struct (# (WaitGroup.state' v)) (sync.WaitGroup) "state"%go.
 
   solve_field_ref_f.
 Qed.

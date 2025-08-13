@@ -78,8 +78,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (lockState.held' v)) lockmap.lockState "held"%go.
-  simpl_one_flatten_struct (# (lockState.cond' v)) lockmap.lockState "cond"%go.
+  simpl_one_flatten_struct (# (lockState.held' v)) (lockmap.lockState) "held"%go.
+  simpl_one_flatten_struct (# (lockState.cond' v)) (lockmap.lockState) "cond"%go.
 
   solve_field_ref_f.
 Qed.
@@ -148,7 +148,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (lockShard.mu' v)) lockmap.lockShard "mu"%go.
+  simpl_one_flatten_struct (# (lockShard.mu' v)) (lockmap.lockShard) "mu"%go.
 
   solve_field_ref_f.
 Qed.

@@ -87,8 +87,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Clerk.mu' v)) configservice.Clerk "mu"%go.
-  simpl_one_flatten_struct (# (Clerk.cls' v)) configservice.Clerk "cls"%go.
+  simpl_one_flatten_struct (# (Clerk.mu' v)) (configservice.Clerk) "mu"%go.
+  simpl_one_flatten_struct (# (Clerk.cls' v)) (configservice.Clerk) "cls"%go.
 
   solve_field_ref_f.
 Qed.
@@ -178,10 +178,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (state.epoch' v)) configservice.state "epoch"%go.
-  simpl_one_flatten_struct (# (state.reservedEpoch' v)) configservice.state "reservedEpoch"%go.
-  simpl_one_flatten_struct (# (state.leaseExpiration' v)) configservice.state "leaseExpiration"%go.
-  simpl_one_flatten_struct (# (state.wantLeaseToExpire' v)) configservice.state "wantLeaseToExpire"%go.
+  simpl_one_flatten_struct (# (state.epoch' v)) (configservice.state) "epoch"%go.
+  simpl_one_flatten_struct (# (state.reservedEpoch' v)) (configservice.state) "reservedEpoch"%go.
+  simpl_one_flatten_struct (# (state.leaseExpiration' v)) (configservice.state) "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (state.wantLeaseToExpire' v)) (configservice.state) "wantLeaseToExpire"%go.
 
   solve_field_ref_f.
 Qed.

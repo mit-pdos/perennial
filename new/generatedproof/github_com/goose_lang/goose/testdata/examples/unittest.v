@@ -778,8 +778,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (allTheLiterals.int' v)) unittest.allTheLiterals "int"%go.
-  simpl_one_flatten_struct (# (allTheLiterals.s' v)) unittest.allTheLiterals "s"%go.
+  simpl_one_flatten_struct (# (allTheLiterals.int' v)) (unittest.allTheLiterals) "int"%go.
+  simpl_one_flatten_struct (# (allTheLiterals.s' v)) (unittest.allTheLiterals) "s"%go.
 
   solve_field_ref_f.
 Qed.
@@ -925,7 +925,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (mapElem.a' v)) unittest.mapElem "a"%go.
+  simpl_one_flatten_struct (# (mapElem.a' v)) (unittest.mapElem) "a"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1177,7 +1177,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (composite.a' v)) unittest.composite "a"%go.
+  simpl_one_flatten_struct (# (composite.a' v)) (unittest.composite) "a"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1596,7 +1596,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Point.x' v)) unittest.Point "x"%go.
+  simpl_one_flatten_struct (# (Point.x' v)) (unittest.Point) "x"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1665,7 +1665,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (TwoInts.x' v)) unittest.TwoInts "x"%go.
+  simpl_one_flatten_struct (# (TwoInts.x' v)) (unittest.TwoInts) "x"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1741,8 +1741,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.a' v)) unittest.S "a"%go.
-  simpl_one_flatten_struct (# (S.b' v)) unittest.S "b"%go.
+  simpl_one_flatten_struct (# (S.a' v)) (unittest.S) "a"%go.
+  simpl_one_flatten_struct (# (S.b' v)) (unittest.S) "b"%go.
 
   solve_field_ref_f.
 Qed.

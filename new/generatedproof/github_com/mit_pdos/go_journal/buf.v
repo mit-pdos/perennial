@@ -89,9 +89,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Buf.Addr' v)) buf.Buf "Addr"%go.
-  simpl_one_flatten_struct (# (Buf.Sz' v)) buf.Buf "Sz"%go.
-  simpl_one_flatten_struct (# (Buf.Data' v)) buf.Buf "Data"%go.
+  simpl_one_flatten_struct (# (Buf.Addr' v)) (buf.Buf) "Addr"%go.
+  simpl_one_flatten_struct (# (Buf.Sz' v)) (buf.Buf) "Sz"%go.
+  simpl_one_flatten_struct (# (Buf.Data' v)) (buf.Buf) "Data"%go.
 
   solve_field_ref_f.
 Qed.

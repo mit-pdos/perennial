@@ -137,12 +137,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ResponseHeader.ClusterId' v)) etcdserverpb.ResponseHeader "ClusterId"%go.
-  simpl_one_flatten_struct (# (ResponseHeader.MemberId' v)) etcdserverpb.ResponseHeader "MemberId"%go.
-  simpl_one_flatten_struct (# (ResponseHeader.Revision' v)) etcdserverpb.ResponseHeader "Revision"%go.
-  simpl_one_flatten_struct (# (ResponseHeader.RaftTerm' v)) etcdserverpb.ResponseHeader "RaftTerm"%go.
-  simpl_one_flatten_struct (# (ResponseHeader.XXX_NoUnkeyedLiteral' v)) etcdserverpb.ResponseHeader "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (ResponseHeader.XXX_unrecognized' v)) etcdserverpb.ResponseHeader "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.ClusterId' v)) (etcdserverpb.ResponseHeader) "ClusterId"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.MemberId' v)) (etcdserverpb.ResponseHeader) "MemberId"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.Revision' v)) (etcdserverpb.ResponseHeader) "Revision"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.RaftTerm' v)) (etcdserverpb.ResponseHeader) "RaftTerm"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.ResponseHeader) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.XXX_unrecognized' v)) (etcdserverpb.ResponseHeader) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -309,21 +309,21 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RangeRequest.Key' v)) etcdserverpb.RangeRequest "Key"%go.
-  simpl_one_flatten_struct (# (RangeRequest.RangeEnd' v)) etcdserverpb.RangeRequest "RangeEnd"%go.
-  simpl_one_flatten_struct (# (RangeRequest.Limit' v)) etcdserverpb.RangeRequest "Limit"%go.
-  simpl_one_flatten_struct (# (RangeRequest.Revision' v)) etcdserverpb.RangeRequest "Revision"%go.
-  simpl_one_flatten_struct (# (RangeRequest.SortOrder' v)) etcdserverpb.RangeRequest "SortOrder"%go.
-  simpl_one_flatten_struct (# (RangeRequest.SortTarget' v)) etcdserverpb.RangeRequest "SortTarget"%go.
-  simpl_one_flatten_struct (# (RangeRequest.Serializable' v)) etcdserverpb.RangeRequest "Serializable"%go.
-  simpl_one_flatten_struct (# (RangeRequest.KeysOnly' v)) etcdserverpb.RangeRequest "KeysOnly"%go.
-  simpl_one_flatten_struct (# (RangeRequest.CountOnly' v)) etcdserverpb.RangeRequest "CountOnly"%go.
-  simpl_one_flatten_struct (# (RangeRequest.MinModRevision' v)) etcdserverpb.RangeRequest "MinModRevision"%go.
-  simpl_one_flatten_struct (# (RangeRequest.MaxModRevision' v)) etcdserverpb.RangeRequest "MaxModRevision"%go.
-  simpl_one_flatten_struct (# (RangeRequest.MinCreateRevision' v)) etcdserverpb.RangeRequest "MinCreateRevision"%go.
-  simpl_one_flatten_struct (# (RangeRequest.MaxCreateRevision' v)) etcdserverpb.RangeRequest "MaxCreateRevision"%go.
-  simpl_one_flatten_struct (# (RangeRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.RangeRequest "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (RangeRequest.XXX_unrecognized' v)) etcdserverpb.RangeRequest "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (RangeRequest.Key' v)) (etcdserverpb.RangeRequest) "Key"%go.
+  simpl_one_flatten_struct (# (RangeRequest.RangeEnd' v)) (etcdserverpb.RangeRequest) "RangeEnd"%go.
+  simpl_one_flatten_struct (# (RangeRequest.Limit' v)) (etcdserverpb.RangeRequest) "Limit"%go.
+  simpl_one_flatten_struct (# (RangeRequest.Revision' v)) (etcdserverpb.RangeRequest) "Revision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.SortOrder' v)) (etcdserverpb.RangeRequest) "SortOrder"%go.
+  simpl_one_flatten_struct (# (RangeRequest.SortTarget' v)) (etcdserverpb.RangeRequest) "SortTarget"%go.
+  simpl_one_flatten_struct (# (RangeRequest.Serializable' v)) (etcdserverpb.RangeRequest) "Serializable"%go.
+  simpl_one_flatten_struct (# (RangeRequest.KeysOnly' v)) (etcdserverpb.RangeRequest) "KeysOnly"%go.
+  simpl_one_flatten_struct (# (RangeRequest.CountOnly' v)) (etcdserverpb.RangeRequest) "CountOnly"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MinModRevision' v)) (etcdserverpb.RangeRequest) "MinModRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MaxModRevision' v)) (etcdserverpb.RangeRequest) "MaxModRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MinCreateRevision' v)) (etcdserverpb.RangeRequest) "MinCreateRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MaxCreateRevision' v)) (etcdserverpb.RangeRequest) "MaxCreateRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.RangeRequest) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (RangeRequest.XXX_unrecognized' v)) (etcdserverpb.RangeRequest) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -427,12 +427,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RangeResponse.Header' v)) etcdserverpb.RangeResponse "Header"%go.
-  simpl_one_flatten_struct (# (RangeResponse.Kvs' v)) etcdserverpb.RangeResponse "Kvs"%go.
-  simpl_one_flatten_struct (# (RangeResponse.More' v)) etcdserverpb.RangeResponse "More"%go.
-  simpl_one_flatten_struct (# (RangeResponse.Count' v)) etcdserverpb.RangeResponse "Count"%go.
-  simpl_one_flatten_struct (# (RangeResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.RangeResponse "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (RangeResponse.XXX_unrecognized' v)) etcdserverpb.RangeResponse "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (RangeResponse.Header' v)) (etcdserverpb.RangeResponse) "Header"%go.
+  simpl_one_flatten_struct (# (RangeResponse.Kvs' v)) (etcdserverpb.RangeResponse) "Kvs"%go.
+  simpl_one_flatten_struct (# (RangeResponse.More' v)) (etcdserverpb.RangeResponse) "More"%go.
+  simpl_one_flatten_struct (# (RangeResponse.Count' v)) (etcdserverpb.RangeResponse) "Count"%go.
+  simpl_one_flatten_struct (# (RangeResponse.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.RangeResponse) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (RangeResponse.XXX_unrecognized' v)) (etcdserverpb.RangeResponse) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -550,14 +550,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (PutRequest.Key' v)) etcdserverpb.PutRequest "Key"%go.
-  simpl_one_flatten_struct (# (PutRequest.Value' v)) etcdserverpb.PutRequest "Value"%go.
-  simpl_one_flatten_struct (# (PutRequest.Lease' v)) etcdserverpb.PutRequest "Lease"%go.
-  simpl_one_flatten_struct (# (PutRequest.PrevKv' v)) etcdserverpb.PutRequest "PrevKv"%go.
-  simpl_one_flatten_struct (# (PutRequest.IgnoreValue' v)) etcdserverpb.PutRequest "IgnoreValue"%go.
-  simpl_one_flatten_struct (# (PutRequest.IgnoreLease' v)) etcdserverpb.PutRequest "IgnoreLease"%go.
-  simpl_one_flatten_struct (# (PutRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.PutRequest "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (PutRequest.XXX_unrecognized' v)) etcdserverpb.PutRequest "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (PutRequest.Key' v)) (etcdserverpb.PutRequest) "Key"%go.
+  simpl_one_flatten_struct (# (PutRequest.Value' v)) (etcdserverpb.PutRequest) "Value"%go.
+  simpl_one_flatten_struct (# (PutRequest.Lease' v)) (etcdserverpb.PutRequest) "Lease"%go.
+  simpl_one_flatten_struct (# (PutRequest.PrevKv' v)) (etcdserverpb.PutRequest) "PrevKv"%go.
+  simpl_one_flatten_struct (# (PutRequest.IgnoreValue' v)) (etcdserverpb.PutRequest) "IgnoreValue"%go.
+  simpl_one_flatten_struct (# (PutRequest.IgnoreLease' v)) (etcdserverpb.PutRequest) "IgnoreLease"%go.
+  simpl_one_flatten_struct (# (PutRequest.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.PutRequest) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (PutRequest.XXX_unrecognized' v)) (etcdserverpb.PutRequest) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -647,10 +647,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (PutResponse.Header' v)) etcdserverpb.PutResponse "Header"%go.
-  simpl_one_flatten_struct (# (PutResponse.PrevKv' v)) etcdserverpb.PutResponse "PrevKv"%go.
-  simpl_one_flatten_struct (# (PutResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.PutResponse "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (PutResponse.XXX_unrecognized' v)) etcdserverpb.PutResponse "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (PutResponse.Header' v)) (etcdserverpb.PutResponse) "Header"%go.
+  simpl_one_flatten_struct (# (PutResponse.PrevKv' v)) (etcdserverpb.PutResponse) "PrevKv"%go.
+  simpl_one_flatten_struct (# (PutResponse.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.PutResponse) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (PutResponse.XXX_unrecognized' v)) (etcdserverpb.PutResponse) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -747,11 +747,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (DeleteRangeRequest.Key' v)) etcdserverpb.DeleteRangeRequest "Key"%go.
-  simpl_one_flatten_struct (# (DeleteRangeRequest.RangeEnd' v)) etcdserverpb.DeleteRangeRequest "RangeEnd"%go.
-  simpl_one_flatten_struct (# (DeleteRangeRequest.PrevKv' v)) etcdserverpb.DeleteRangeRequest "PrevKv"%go.
-  simpl_one_flatten_struct (# (DeleteRangeRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.DeleteRangeRequest "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (DeleteRangeRequest.XXX_unrecognized' v)) etcdserverpb.DeleteRangeRequest "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.Key' v)) (etcdserverpb.DeleteRangeRequest) "Key"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.RangeEnd' v)) (etcdserverpb.DeleteRangeRequest) "RangeEnd"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.PrevKv' v)) (etcdserverpb.DeleteRangeRequest) "PrevKv"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.DeleteRangeRequest) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.XXX_unrecognized' v)) (etcdserverpb.DeleteRangeRequest) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -848,11 +848,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (DeleteRangeResponse.Header' v)) etcdserverpb.DeleteRangeResponse "Header"%go.
-  simpl_one_flatten_struct (# (DeleteRangeResponse.Deleted' v)) etcdserverpb.DeleteRangeResponse "Deleted"%go.
-  simpl_one_flatten_struct (# (DeleteRangeResponse.PrevKvs' v)) etcdserverpb.DeleteRangeResponse "PrevKvs"%go.
-  simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.DeleteRangeResponse "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_unrecognized' v)) etcdserverpb.DeleteRangeResponse "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.Header' v)) (etcdserverpb.DeleteRangeResponse) "Header"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.Deleted' v)) (etcdserverpb.DeleteRangeResponse) "Deleted"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.PrevKvs' v)) (etcdserverpb.DeleteRangeResponse) "PrevKvs"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.DeleteRangeResponse) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_unrecognized' v)) (etcdserverpb.DeleteRangeResponse) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -943,9 +943,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RequestOp.Request' v)) etcdserverpb.RequestOp "Request"%go.
-  simpl_one_flatten_struct (# (RequestOp.XXX_NoUnkeyedLiteral' v)) etcdserverpb.RequestOp "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (RequestOp.XXX_unrecognized' v)) etcdserverpb.RequestOp "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (RequestOp.Request' v)) (etcdserverpb.RequestOp) "Request"%go.
+  simpl_one_flatten_struct (# (RequestOp.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.RequestOp) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (RequestOp.XXX_unrecognized' v)) (etcdserverpb.RequestOp) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1280,9 +1280,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ResponseOp.Response' v)) etcdserverpb.ResponseOp "Response"%go.
-  simpl_one_flatten_struct (# (ResponseOp.XXX_NoUnkeyedLiteral' v)) etcdserverpb.ResponseOp "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (ResponseOp.XXX_unrecognized' v)) etcdserverpb.ResponseOp "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (ResponseOp.Response' v)) (etcdserverpb.ResponseOp) "Response"%go.
+  simpl_one_flatten_struct (# (ResponseOp.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.ResponseOp) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (ResponseOp.XXX_unrecognized' v)) (etcdserverpb.ResponseOp) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1645,13 +1645,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Compare.Result' v)) etcdserverpb.Compare "Result"%go.
-  simpl_one_flatten_struct (# (Compare.Target' v)) etcdserverpb.Compare "Target"%go.
-  simpl_one_flatten_struct (# (Compare.Key' v)) etcdserverpb.Compare "Key"%go.
-  simpl_one_flatten_struct (# (Compare.TargetUnion' v)) etcdserverpb.Compare "TargetUnion"%go.
-  simpl_one_flatten_struct (# (Compare.RangeEnd' v)) etcdserverpb.Compare "RangeEnd"%go.
-  simpl_one_flatten_struct (# (Compare.XXX_NoUnkeyedLiteral' v)) etcdserverpb.Compare "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (Compare.XXX_unrecognized' v)) etcdserverpb.Compare "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (Compare.Result' v)) (etcdserverpb.Compare) "Result"%go.
+  simpl_one_flatten_struct (# (Compare.Target' v)) (etcdserverpb.Compare) "Target"%go.
+  simpl_one_flatten_struct (# (Compare.Key' v)) (etcdserverpb.Compare) "Key"%go.
+  simpl_one_flatten_struct (# (Compare.TargetUnion' v)) (etcdserverpb.Compare) "TargetUnion"%go.
+  simpl_one_flatten_struct (# (Compare.RangeEnd' v)) (etcdserverpb.Compare) "RangeEnd"%go.
+  simpl_one_flatten_struct (# (Compare.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.Compare) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (Compare.XXX_unrecognized' v)) (etcdserverpb.Compare) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2053,11 +2053,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (TxnRequest.Compare' v)) etcdserverpb.TxnRequest "Compare"%go.
-  simpl_one_flatten_struct (# (TxnRequest.Success' v)) etcdserverpb.TxnRequest "Success"%go.
-  simpl_one_flatten_struct (# (TxnRequest.Failure' v)) etcdserverpb.TxnRequest "Failure"%go.
-  simpl_one_flatten_struct (# (TxnRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.TxnRequest "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (TxnRequest.XXX_unrecognized' v)) etcdserverpb.TxnRequest "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (TxnRequest.Compare' v)) (etcdserverpb.TxnRequest) "Compare"%go.
+  simpl_one_flatten_struct (# (TxnRequest.Success' v)) (etcdserverpb.TxnRequest) "Success"%go.
+  simpl_one_flatten_struct (# (TxnRequest.Failure' v)) (etcdserverpb.TxnRequest) "Failure"%go.
+  simpl_one_flatten_struct (# (TxnRequest.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.TxnRequest) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (TxnRequest.XXX_unrecognized' v)) (etcdserverpb.TxnRequest) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2154,11 +2154,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (TxnResponse.Header' v)) etcdserverpb.TxnResponse "Header"%go.
-  simpl_one_flatten_struct (# (TxnResponse.Succeeded' v)) etcdserverpb.TxnResponse "Succeeded"%go.
-  simpl_one_flatten_struct (# (TxnResponse.Responses' v)) etcdserverpb.TxnResponse "Responses"%go.
-  simpl_one_flatten_struct (# (TxnResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.TxnResponse "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (TxnResponse.XXX_unrecognized' v)) etcdserverpb.TxnResponse "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (TxnResponse.Header' v)) (etcdserverpb.TxnResponse) "Header"%go.
+  simpl_one_flatten_struct (# (TxnResponse.Succeeded' v)) (etcdserverpb.TxnResponse) "Succeeded"%go.
+  simpl_one_flatten_struct (# (TxnResponse.Responses' v)) (etcdserverpb.TxnResponse) "Responses"%go.
+  simpl_one_flatten_struct (# (TxnResponse.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.TxnResponse) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (TxnResponse.XXX_unrecognized' v)) (etcdserverpb.TxnResponse) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.

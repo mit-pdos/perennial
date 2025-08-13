@@ -127,14 +127,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (KeyValue.Key' v)) mvccpb.KeyValue "Key"%go.
-  simpl_one_flatten_struct (# (KeyValue.CreateRevision' v)) mvccpb.KeyValue "CreateRevision"%go.
-  simpl_one_flatten_struct (# (KeyValue.ModRevision' v)) mvccpb.KeyValue "ModRevision"%go.
-  simpl_one_flatten_struct (# (KeyValue.Version' v)) mvccpb.KeyValue "Version"%go.
-  simpl_one_flatten_struct (# (KeyValue.Value' v)) mvccpb.KeyValue "Value"%go.
-  simpl_one_flatten_struct (# (KeyValue.Lease' v)) mvccpb.KeyValue "Lease"%go.
-  simpl_one_flatten_struct (# (KeyValue.XXX_NoUnkeyedLiteral' v)) mvccpb.KeyValue "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (KeyValue.XXX_unrecognized' v)) mvccpb.KeyValue "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (KeyValue.Key' v)) (mvccpb.KeyValue) "Key"%go.
+  simpl_one_flatten_struct (# (KeyValue.CreateRevision' v)) (mvccpb.KeyValue) "CreateRevision"%go.
+  simpl_one_flatten_struct (# (KeyValue.ModRevision' v)) (mvccpb.KeyValue) "ModRevision"%go.
+  simpl_one_flatten_struct (# (KeyValue.Version' v)) (mvccpb.KeyValue) "Version"%go.
+  simpl_one_flatten_struct (# (KeyValue.Value' v)) (mvccpb.KeyValue) "Value"%go.
+  simpl_one_flatten_struct (# (KeyValue.Lease' v)) (mvccpb.KeyValue) "Lease"%go.
+  simpl_one_flatten_struct (# (KeyValue.XXX_NoUnkeyedLiteral' v)) (mvccpb.KeyValue) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (KeyValue.XXX_unrecognized' v)) (mvccpb.KeyValue) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -231,11 +231,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Event.Type' v)) mvccpb.Event "Type"%go.
-  simpl_one_flatten_struct (# (Event.Kv' v)) mvccpb.Event "Kv"%go.
-  simpl_one_flatten_struct (# (Event.PrevKv' v)) mvccpb.Event "PrevKv"%go.
-  simpl_one_flatten_struct (# (Event.XXX_NoUnkeyedLiteral' v)) mvccpb.Event "XXX_NoUnkeyedLiteral"%go.
-  simpl_one_flatten_struct (# (Event.XXX_unrecognized' v)) mvccpb.Event "XXX_unrecognized"%go.
+  simpl_one_flatten_struct (# (Event.Type' v)) (mvccpb.Event) "Type"%go.
+  simpl_one_flatten_struct (# (Event.Kv' v)) (mvccpb.Event) "Kv"%go.
+  simpl_one_flatten_struct (# (Event.PrevKv' v)) (mvccpb.Event) "PrevKv"%go.
+  simpl_one_flatten_struct (# (Event.XXX_NoUnkeyedLiteral' v)) (mvccpb.Event) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (Event.XXX_unrecognized' v)) (mvccpb.Event) "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.

@@ -71,7 +71,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Timer.C' v)) time.Timer "C"%go.
+  simpl_one_flatten_struct (# (Timer.C' v)) (time.Timer) "C"%go.
 
   solve_field_ref_f.
 Qed.
@@ -147,8 +147,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Time.wall' v)) time.Time "wall"%go.
-  simpl_one_flatten_struct (# (Time.ext' v)) time.Time "ext"%go.
+  simpl_one_flatten_struct (# (Time.wall' v)) (time.Time) "wall"%go.
+  simpl_one_flatten_struct (# (Time.ext' v)) (time.Time) "ext"%go.
 
   solve_field_ref_f.
 Qed.

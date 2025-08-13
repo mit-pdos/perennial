@@ -109,11 +109,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Election.session' v)) concurrency.Election "session"%go.
-  simpl_one_flatten_struct (# (Election.keyPrefix' v)) concurrency.Election "keyPrefix"%go.
-  simpl_one_flatten_struct (# (Election.leaderKey' v)) concurrency.Election "leaderKey"%go.
-  simpl_one_flatten_struct (# (Election.leaderRev' v)) concurrency.Election "leaderRev"%go.
-  simpl_one_flatten_struct (# (Election.leaderSession' v)) concurrency.Election "leaderSession"%go.
+  simpl_one_flatten_struct (# (Election.session' v)) (concurrency.Election) "session"%go.
+  simpl_one_flatten_struct (# (Election.keyPrefix' v)) (concurrency.Election) "keyPrefix"%go.
+  simpl_one_flatten_struct (# (Election.leaderKey' v)) (concurrency.Election) "leaderKey"%go.
+  simpl_one_flatten_struct (# (Election.leaderRev' v)) (concurrency.Election) "leaderRev"%go.
+  simpl_one_flatten_struct (# (Election.leaderSession' v)) (concurrency.Election) "leaderSession"%go.
 
   solve_field_ref_f.
 Qed.
@@ -203,10 +203,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Mutex.s' v)) concurrency.Mutex "s"%go.
-  simpl_one_flatten_struct (# (Mutex.pfx' v)) concurrency.Mutex "pfx"%go.
-  simpl_one_flatten_struct (# (Mutex.myKey' v)) concurrency.Mutex "myKey"%go.
-  simpl_one_flatten_struct (# (Mutex.myRev' v)) concurrency.Mutex "myRev"%go.
+  simpl_one_flatten_struct (# (Mutex.s' v)) (concurrency.Mutex) "s"%go.
+  simpl_one_flatten_struct (# (Mutex.pfx' v)) (concurrency.Mutex) "pfx"%go.
+  simpl_one_flatten_struct (# (Mutex.myKey' v)) (concurrency.Mutex) "myKey"%go.
+  simpl_one_flatten_struct (# (Mutex.myRev' v)) (concurrency.Mutex) "myRev"%go.
 
   solve_field_ref_f.
 Qed.
@@ -364,11 +364,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Session.client' v)) concurrency.Session "client"%go.
-  simpl_one_flatten_struct (# (Session.opts' v)) concurrency.Session "opts"%go.
-  simpl_one_flatten_struct (# (Session.id' v)) concurrency.Session "id"%go.
-  simpl_one_flatten_struct (# (Session.ctx' v)) concurrency.Session "ctx"%go.
-  simpl_one_flatten_struct (# (Session.cancel' v)) concurrency.Session "cancel"%go.
+  simpl_one_flatten_struct (# (Session.client' v)) (concurrency.Session) "client"%go.
+  simpl_one_flatten_struct (# (Session.opts' v)) (concurrency.Session) "opts"%go.
+  simpl_one_flatten_struct (# (Session.id' v)) (concurrency.Session) "id"%go.
+  simpl_one_flatten_struct (# (Session.ctx' v)) (concurrency.Session) "ctx"%go.
+  simpl_one_flatten_struct (# (Session.cancel' v)) (concurrency.Session) "cancel"%go.
 
   solve_field_ref_f.
 Qed.
@@ -444,8 +444,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (sessionOptions.ttl' v)) concurrency.sessionOptions "ttl"%go.
-  simpl_one_flatten_struct (# (sessionOptions.leaseID' v)) concurrency.sessionOptions "leaseID"%go.
+  simpl_one_flatten_struct (# (sessionOptions.ttl' v)) (concurrency.sessionOptions) "ttl"%go.
+  simpl_one_flatten_struct (# (sessionOptions.leaseID' v)) (concurrency.sessionOptions) "leaseID"%go.
 
   solve_field_ref_f.
 Qed.
@@ -606,8 +606,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmOptions.iso' v)) concurrency.stmOptions "iso"%go.
-  simpl_one_flatten_struct (# (stmOptions.ctx' v)) concurrency.stmOptions "ctx"%go.
+  simpl_one_flatten_struct (# (stmOptions.iso' v)) (concurrency.stmOptions) "iso"%go.
+  simpl_one_flatten_struct (# (stmOptions.ctx' v)) (concurrency.stmOptions) "ctx"%go.
 
   solve_field_ref_f.
 Qed.
@@ -684,7 +684,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmResponse.resp' v)) concurrency.stmResponse "resp"%go.
+  simpl_one_flatten_struct (# (stmResponse.resp' v)) (concurrency.stmResponse) "resp"%go.
 
   solve_field_ref_f.
 Qed.
@@ -797,11 +797,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stm.client' v)) concurrency.stm "client"%go.
-  simpl_one_flatten_struct (# (stm.ctx' v)) concurrency.stm "ctx"%go.
-  simpl_one_flatten_struct (# (stm.rset' v)) concurrency.stm "rset"%go.
-  simpl_one_flatten_struct (# (stm.wset' v)) concurrency.stm "wset"%go.
-  simpl_one_flatten_struct (# (stm.getOpts' v)) concurrency.stm "getOpts"%go.
+  simpl_one_flatten_struct (# (stm.client' v)) (concurrency.stm) "client"%go.
+  simpl_one_flatten_struct (# (stm.ctx' v)) (concurrency.stm) "ctx"%go.
+  simpl_one_flatten_struct (# (stm.rset' v)) (concurrency.stm) "rset"%go.
+  simpl_one_flatten_struct (# (stm.wset' v)) (concurrency.stm) "wset"%go.
+  simpl_one_flatten_struct (# (stm.getOpts' v)) (concurrency.stm) "getOpts"%go.
 
   solve_field_ref_f.
 Qed.
@@ -870,7 +870,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmPut.val' v)) concurrency.stmPut "val"%go.
+  simpl_one_flatten_struct (# (stmPut.val' v)) (concurrency.stmPut) "val"%go.
 
   solve_field_ref_f.
 Qed.
@@ -939,7 +939,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmSerializable.stm' v)) concurrency.stmSerializable "stm"%go.
+  simpl_one_flatten_struct (# (stmSerializable.stm' v)) (concurrency.stmSerializable) "stm"%go.
 
   solve_field_ref_f.
 Qed.

@@ -84,7 +84,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Update.Addr' v)) wal.Update "Addr"%go.
+  simpl_one_flatten_struct (# (Update.Addr' v)) (wal.Update) "Addr"%go.
 
   solve_field_ref_f.
 Qed.
@@ -235,10 +235,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (sliding.log' v)) wal.sliding "log"%go.
-  simpl_one_flatten_struct (# (sliding.start' v)) wal.sliding "start"%go.
-  simpl_one_flatten_struct (# (sliding.mutable' v)) wal.sliding "mutable"%go.
-  simpl_one_flatten_struct (# (sliding.needFlush' v)) wal.sliding "needFlush"%go.
+  simpl_one_flatten_struct (# (sliding.log' v)) (wal.sliding) "log"%go.
+  simpl_one_flatten_struct (# (sliding.start' v)) (wal.sliding) "start"%go.
+  simpl_one_flatten_struct (# (sliding.mutable' v)) (wal.sliding) "mutable"%go.
+  simpl_one_flatten_struct (# (sliding.needFlush' v)) (wal.sliding) "needFlush"%go.
 
   solve_field_ref_f.
 Qed.
@@ -321,9 +321,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WalogState.memLog' v)) wal.WalogState "memLog"%go.
-  simpl_one_flatten_struct (# (WalogState.diskEnd' v)) wal.WalogState "diskEnd"%go.
-  simpl_one_flatten_struct (# (WalogState.shutdown' v)) wal.WalogState "shutdown"%go.
+  simpl_one_flatten_struct (# (WalogState.memLog' v)) (wal.WalogState) "memLog"%go.
+  simpl_one_flatten_struct (# (WalogState.diskEnd' v)) (wal.WalogState) "diskEnd"%go.
+  simpl_one_flatten_struct (# (WalogState.shutdown' v)) (wal.WalogState) "shutdown"%go.
 
   solve_field_ref_f.
 Qed.
@@ -427,12 +427,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Walog.memLock' v)) wal.Walog "memLock"%go.
-  simpl_one_flatten_struct (# (Walog.d' v)) wal.Walog "d"%go.
-  simpl_one_flatten_struct (# (Walog.circ' v)) wal.Walog "circ"%go.
-  simpl_one_flatten_struct (# (Walog.st' v)) wal.Walog "st"%go.
-  simpl_one_flatten_struct (# (Walog.condLogger' v)) wal.Walog "condLogger"%go.
-  simpl_one_flatten_struct (# (Walog.condInstall' v)) wal.Walog "condInstall"%go.
+  simpl_one_flatten_struct (# (Walog.memLock' v)) (wal.Walog) "memLock"%go.
+  simpl_one_flatten_struct (# (Walog.d' v)) (wal.Walog) "d"%go.
+  simpl_one_flatten_struct (# (Walog.circ' v)) (wal.Walog) "circ"%go.
+  simpl_one_flatten_struct (# (Walog.st' v)) (wal.Walog) "st"%go.
+  simpl_one_flatten_struct (# (Walog.condLogger' v)) (wal.Walog) "condLogger"%go.
+  simpl_one_flatten_struct (# (Walog.condInstall' v)) (wal.Walog) "condInstall"%go.
 
   solve_field_ref_f.
 Qed.

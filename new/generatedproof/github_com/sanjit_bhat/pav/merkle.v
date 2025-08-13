@@ -166,11 +166,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (node.nodeTy' v)) merkle.node "nodeTy"%go.
-  simpl_one_flatten_struct (# (node.hash' v)) merkle.node "hash"%go.
-  simpl_one_flatten_struct (# (node.child0' v)) merkle.node "child0"%go.
-  simpl_one_flatten_struct (# (node.child1' v)) merkle.node "child1"%go.
-  simpl_one_flatten_struct (# (node.label' v)) merkle.node "label"%go.
+  simpl_one_flatten_struct (# (node.nodeTy' v)) (merkle.node) "nodeTy"%go.
+  simpl_one_flatten_struct (# (node.hash' v)) (merkle.node) "hash"%go.
+  simpl_one_flatten_struct (# (node.child0' v)) (merkle.node) "child0"%go.
+  simpl_one_flatten_struct (# (node.child1' v)) (merkle.node) "child1"%go.
+  simpl_one_flatten_struct (# (node.label' v)) (merkle.node) "label"%go.
 
   solve_field_ref_f.
 Qed.
@@ -253,9 +253,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MerkleProof.Siblings' v)) merkle.MerkleProof "Siblings"%go.
-  simpl_one_flatten_struct (# (MerkleProof.IsOtherLeaf' v)) merkle.MerkleProof "IsOtherLeaf"%go.
-  simpl_one_flatten_struct (# (MerkleProof.LeafLabel' v)) merkle.MerkleProof "LeafLabel"%go.
+  simpl_one_flatten_struct (# (MerkleProof.Siblings' v)) (merkle.MerkleProof) "Siblings"%go.
+  simpl_one_flatten_struct (# (MerkleProof.IsOtherLeaf' v)) (merkle.MerkleProof) "IsOtherLeaf"%go.
+  simpl_one_flatten_struct (# (MerkleProof.LeafLabel' v)) (merkle.MerkleProof) "LeafLabel"%go.
 
   solve_field_ref_f.
 Qed.

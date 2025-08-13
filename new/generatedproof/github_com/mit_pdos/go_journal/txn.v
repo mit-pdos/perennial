@@ -76,7 +76,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Log.log' v)) txn.Log "log"%go.
+  simpl_one_flatten_struct (# (Log.log' v)) (txn.Log) "log"%go.
 
   solve_field_ref_f.
 Qed.
@@ -152,8 +152,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Txn.buftxn' v)) txn.Txn "buftxn"%go.
-  simpl_one_flatten_struct (# (Txn.locks' v)) txn.Txn "locks"%go.
+  simpl_one_flatten_struct (# (Txn.buftxn' v)) (txn.Txn) "buftxn"%go.
+  simpl_one_flatten_struct (# (Txn.locks' v)) (txn.Txn) "locks"%go.
 
   solve_field_ref_f.
 Qed.

@@ -84,9 +84,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Tup.ID' v)) slices.Tup "ID"%go.
-  simpl_one_flatten_struct (# (Tup.Idx' v)) slices.Tup "Idx"%go.
-  simpl_one_flatten_struct (# (Tup.Ok' v)) slices.Tup "Ok"%go.
+  simpl_one_flatten_struct (# (Tup.ID' v)) (slices.Tup) "ID"%go.
+  simpl_one_flatten_struct (# (Tup.Idx' v)) (slices.Tup) "Idx"%go.
+  simpl_one_flatten_struct (# (Tup.Ok' v)) (slices.Tup) "Ok"%go.
 
   solve_field_ref_f.
 Qed.

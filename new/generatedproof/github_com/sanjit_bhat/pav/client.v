@@ -93,9 +93,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Client.uid' v)) client.Client "uid"%go.
-  simpl_one_flatten_struct (# (Client.pend' v)) client.Client "pend"%go.
-  simpl_one_flatten_struct (# (Client.last' v)) client.Client "last"%go.
+  simpl_one_flatten_struct (# (Client.uid' v)) (client.Client) "uid"%go.
+  simpl_one_flatten_struct (# (Client.pend' v)) (client.Client) "pend"%go.
+  simpl_one_flatten_struct (# (Client.last' v)) (client.Client) "last"%go.
 
   solve_field_ref_f.
 Qed.
@@ -171,8 +171,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (pending.nextVer' v)) client.pending "nextVer"%go.
-  simpl_one_flatten_struct (# (pending.isPending' v)) client.pending "isPending"%go.
+  simpl_one_flatten_struct (# (pending.nextVer' v)) (client.pending) "nextVer"%go.
+  simpl_one_flatten_struct (# (pending.isPending' v)) (client.pending) "isPending"%go.
 
   solve_field_ref_f.
 Qed.
@@ -255,9 +255,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (epoch.epoch' v)) client.epoch "epoch"%go.
-  simpl_one_flatten_struct (# (epoch.dig' v)) client.epoch "dig"%go.
-  simpl_one_flatten_struct (# (epoch.link' v)) client.epoch "link"%go.
+  simpl_one_flatten_struct (# (epoch.epoch' v)) (client.epoch) "epoch"%go.
+  simpl_one_flatten_struct (# (epoch.dig' v)) (client.epoch) "dig"%go.
+  simpl_one_flatten_struct (# (epoch.link' v)) (client.epoch) "link"%go.
 
   solve_field_ref_f.
 Qed.
@@ -340,9 +340,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (serv.cli' v)) client.serv "cli"%go.
-  simpl_one_flatten_struct (# (serv.sigPk' v)) client.serv "sigPk"%go.
-  simpl_one_flatten_struct (# (serv.vrfPk' v)) client.serv "vrfPk"%go.
+  simpl_one_flatten_struct (# (serv.cli' v)) (client.serv) "cli"%go.
+  simpl_one_flatten_struct (# (serv.sigPk' v)) (client.serv) "sigPk"%go.
+  simpl_one_flatten_struct (# (serv.vrfPk' v)) (client.serv) "vrfPk"%go.
 
   solve_field_ref_f.
 Qed.
@@ -411,7 +411,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Evid.vrf' v)) client.Evid "vrf"%go.
+  simpl_one_flatten_struct (# (Evid.vrf' v)) (client.Evid) "vrf"%go.
 
   solve_field_ref_f.
 Qed.
@@ -494,9 +494,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (evidVrf.vrfPk0' v)) client.evidVrf "vrfPk0"%go.
-  simpl_one_flatten_struct (# (evidVrf.sig0' v)) client.evidVrf "sig0"%go.
-  simpl_one_flatten_struct (# (evidVrf.vrfPk1' v)) client.evidVrf "vrfPk1"%go.
+  simpl_one_flatten_struct (# (evidVrf.vrfPk0' v)) (client.evidVrf) "vrfPk0"%go.
+  simpl_one_flatten_struct (# (evidVrf.sig0' v)) (client.evidVrf) "sig0"%go.
+  simpl_one_flatten_struct (# (evidVrf.vrfPk1' v)) (client.evidVrf) "vrfPk1"%go.
 
   solve_field_ref_f.
 Qed.
@@ -586,10 +586,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (evidLink.epoch' v)) client.evidLink "epoch"%go.
-  simpl_one_flatten_struct (# (evidLink.link0' v)) client.evidLink "link0"%go.
-  simpl_one_flatten_struct (# (evidLink.sig0' v)) client.evidLink "sig0"%go.
-  simpl_one_flatten_struct (# (evidLink.link1' v)) client.evidLink "link1"%go.
+  simpl_one_flatten_struct (# (evidLink.epoch' v)) (client.evidLink) "epoch"%go.
+  simpl_one_flatten_struct (# (evidLink.link0' v)) (client.evidLink) "link0"%go.
+  simpl_one_flatten_struct (# (evidLink.sig0' v)) (client.evidLink) "sig0"%go.
+  simpl_one_flatten_struct (# (evidLink.link1' v)) (client.evidLink) "link1"%go.
 
   solve_field_ref_f.
 Qed.

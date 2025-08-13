@@ -145,8 +145,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ClerkPool.mu' v)) vkv.ClerkPool "mu"%go.
-  simpl_one_flatten_struct (# (ClerkPool.cls' v)) vkv.ClerkPool "cls"%go.
+  simpl_one_flatten_struct (# (ClerkPool.mu' v)) (vkv.ClerkPool) "mu"%go.
+  simpl_one_flatten_struct (# (ClerkPool.cls' v)) (vkv.ClerkPool) "cls"%go.
 
   solve_field_ref_f.
 Qed.
@@ -222,8 +222,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (KVState.kvs' v)) vkv.KVState "kvs"%go.
-  simpl_one_flatten_struct (# (KVState.vnums' v)) vkv.KVState "vnums"%go.
+  simpl_one_flatten_struct (# (KVState.kvs' v)) (vkv.KVState) "kvs"%go.
+  simpl_one_flatten_struct (# (KVState.vnums' v)) (vkv.KVState) "vnums"%go.
 
   solve_field_ref_f.
 Qed.
@@ -292,7 +292,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (PutArgs.Key' v)) vkv.PutArgs "Key"%go.
+  simpl_one_flatten_struct (# (PutArgs.Key' v)) (vkv.PutArgs) "Key"%go.
 
   solve_field_ref_f.
 Qed.
@@ -376,8 +376,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (CondPutArgs.Key' v)) vkv.CondPutArgs "Key"%go.
-  simpl_one_flatten_struct (# (CondPutArgs.Expect' v)) vkv.CondPutArgs "Expect"%go.
+  simpl_one_flatten_struct (# (CondPutArgs.Key' v)) (vkv.CondPutArgs) "Key"%go.
+  simpl_one_flatten_struct (# (CondPutArgs.Expect' v)) (vkv.CondPutArgs) "Expect"%go.
 
   solve_field_ref_f.
 Qed.

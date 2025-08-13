@@ -81,8 +81,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (HashChain.predLastLink' v)) hashchain.HashChain "predLastLink"%go.
-  simpl_one_flatten_struct (# (HashChain.lastLink' v)) hashchain.HashChain "lastLink"%go.
+  simpl_one_flatten_struct (# (HashChain.predLastLink' v)) (hashchain.HashChain) "predLastLink"%go.
+  simpl_one_flatten_struct (# (HashChain.lastLink' v)) (hashchain.HashChain) "lastLink"%go.
 
   solve_field_ref_f.
 Qed.

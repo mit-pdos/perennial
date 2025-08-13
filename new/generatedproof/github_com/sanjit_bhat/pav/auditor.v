@@ -101,10 +101,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Auditor.mu' v)) auditor.Auditor "mu"%go.
-  simpl_one_flatten_struct (# (Auditor.sk' v)) auditor.Auditor "sk"%go.
-  simpl_one_flatten_struct (# (Auditor.lastDig' v)) auditor.Auditor "lastDig"%go.
-  simpl_one_flatten_struct (# (Auditor.hist' v)) auditor.Auditor "hist"%go.
+  simpl_one_flatten_struct (# (Auditor.mu' v)) (auditor.Auditor) "mu"%go.
+  simpl_one_flatten_struct (# (Auditor.sk' v)) (auditor.Auditor) "sk"%go.
+  simpl_one_flatten_struct (# (Auditor.lastDig' v)) (auditor.Auditor) "lastDig"%go.
+  simpl_one_flatten_struct (# (Auditor.hist' v)) (auditor.Auditor) "hist"%go.
 
   solve_field_ref_f.
 Qed.
@@ -180,8 +180,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (history.link' v)) auditor.history "link"%go.
-  simpl_one_flatten_struct (# (history.servSig' v)) auditor.history "servSig"%go.
+  simpl_one_flatten_struct (# (history.link' v)) (auditor.history) "link"%go.
+  simpl_one_flatten_struct (# (history.servSig' v)) (auditor.history) "servSig"%go.
 
   solve_field_ref_f.
 Qed.
@@ -271,10 +271,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (serv.cli' v)) auditor.serv "cli"%go.
-  simpl_one_flatten_struct (# (serv.sigPk' v)) auditor.serv "sigPk"%go.
-  simpl_one_flatten_struct (# (serv.vrfPk' v)) auditor.serv "vrfPk"%go.
-  simpl_one_flatten_struct (# (serv.servVrfSig' v)) auditor.serv "servVrfSig"%go.
+  simpl_one_flatten_struct (# (serv.cli' v)) (auditor.serv) "cli"%go.
+  simpl_one_flatten_struct (# (serv.sigPk' v)) (auditor.serv) "sigPk"%go.
+  simpl_one_flatten_struct (# (serv.vrfPk' v)) (auditor.serv) "vrfPk"%go.
+  simpl_one_flatten_struct (# (serv.servVrfSig' v)) (auditor.serv) "servVrfSig"%go.
 
   solve_field_ref_f.
 Qed.
@@ -500,12 +500,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (GetReply.Link' v)) auditor.GetReply "Link"%go.
-  simpl_one_flatten_struct (# (GetReply.ServLinkSig' v)) auditor.GetReply "ServLinkSig"%go.
-  simpl_one_flatten_struct (# (GetReply.AdtrLinkSig' v)) auditor.GetReply "AdtrLinkSig"%go.
-  simpl_one_flatten_struct (# (GetReply.VrfPk' v)) auditor.GetReply "VrfPk"%go.
-  simpl_one_flatten_struct (# (GetReply.ServVrfSig' v)) auditor.GetReply "ServVrfSig"%go.
-  simpl_one_flatten_struct (# (GetReply.AdtrVrfSig' v)) auditor.GetReply "AdtrVrfSig"%go.
+  simpl_one_flatten_struct (# (GetReply.Link' v)) (auditor.GetReply) "Link"%go.
+  simpl_one_flatten_struct (# (GetReply.ServLinkSig' v)) (auditor.GetReply) "ServLinkSig"%go.
+  simpl_one_flatten_struct (# (GetReply.AdtrLinkSig' v)) (auditor.GetReply) "AdtrLinkSig"%go.
+  simpl_one_flatten_struct (# (GetReply.VrfPk' v)) (auditor.GetReply) "VrfPk"%go.
+  simpl_one_flatten_struct (# (GetReply.ServVrfSig' v)) (auditor.GetReply) "ServVrfSig"%go.
+  simpl_one_flatten_struct (# (GetReply.AdtrVrfSig' v)) (auditor.GetReply) "AdtrVrfSig"%go.
 
   solve_field_ref_f.
 Qed.

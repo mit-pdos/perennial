@@ -91,9 +91,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RepBlock.txn' v)) replicated_block.RepBlock "txn"%go.
-  simpl_one_flatten_struct (# (RepBlock.m' v)) replicated_block.RepBlock "m"%go.
-  simpl_one_flatten_struct (# (RepBlock.a0' v)) replicated_block.RepBlock "a0"%go.
+  simpl_one_flatten_struct (# (RepBlock.txn' v)) (replicated_block.RepBlock) "txn"%go.
+  simpl_one_flatten_struct (# (RepBlock.m' v)) (replicated_block.RepBlock) "m"%go.
+  simpl_one_flatten_struct (# (RepBlock.a0' v)) (replicated_block.RepBlock) "a0"%go.
 
   solve_field_ref_f.
 Qed.

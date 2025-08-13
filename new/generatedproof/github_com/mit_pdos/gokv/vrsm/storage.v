@@ -89,9 +89,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyReadonly' v)) storage.InMemoryStateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyVolatile' v)) storage.InMemoryStateMachine "ApplyVolatile"%go.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.GetState' v)) storage.InMemoryStateMachine "GetState"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyReadonly' v)) (storage.InMemoryStateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyVolatile' v)) (storage.InMemoryStateMachine) "ApplyVolatile"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.GetState' v)) (storage.InMemoryStateMachine) "GetState"%go.
 
   solve_field_ref_f.
 Qed.
@@ -195,12 +195,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StateMachine.fname' v)) storage.StateMachine "fname"%go.
-  simpl_one_flatten_struct (# (StateMachine.logFile' v)) storage.StateMachine "logFile"%go.
-  simpl_one_flatten_struct (# (StateMachine.logsize' v)) storage.StateMachine "logsize"%go.
-  simpl_one_flatten_struct (# (StateMachine.sealed' v)) storage.StateMachine "sealed"%go.
-  simpl_one_flatten_struct (# (StateMachine.epoch' v)) storage.StateMachine "epoch"%go.
-  simpl_one_flatten_struct (# (StateMachine.nextIndex' v)) storage.StateMachine "nextIndex"%go.
+  simpl_one_flatten_struct (# (StateMachine.fname' v)) (storage.StateMachine) "fname"%go.
+  simpl_one_flatten_struct (# (StateMachine.logFile' v)) (storage.StateMachine) "logFile"%go.
+  simpl_one_flatten_struct (# (StateMachine.logsize' v)) (storage.StateMachine) "logsize"%go.
+  simpl_one_flatten_struct (# (StateMachine.sealed' v)) (storage.StateMachine) "sealed"%go.
+  simpl_one_flatten_struct (# (StateMachine.epoch' v)) (storage.StateMachine) "epoch"%go.
+  simpl_one_flatten_struct (# (StateMachine.nextIndex' v)) (storage.StateMachine) "nextIndex"%go.
 
   solve_field_ref_f.
 Qed.

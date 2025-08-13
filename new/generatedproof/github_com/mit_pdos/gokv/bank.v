@@ -81,8 +81,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (BankClerk.lck' v)) bank.BankClerk "lck"%go.
-  simpl_one_flatten_struct (# (BankClerk.kvck' v)) bank.BankClerk "kvck"%go.
+  simpl_one_flatten_struct (# (BankClerk.lck' v)) (bank.BankClerk) "lck"%go.
+  simpl_one_flatten_struct (# (BankClerk.kvck' v)) (bank.BankClerk) "kvck"%go.
 
   solve_field_ref_f.
 Qed.

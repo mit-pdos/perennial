@@ -159,9 +159,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (OpResponse.put' v)) clientv3.OpResponse "put"%go.
-  simpl_one_flatten_struct (# (OpResponse.get' v)) clientv3.OpResponse "get"%go.
-  simpl_one_flatten_struct (# (OpResponse.del' v)) clientv3.OpResponse "del"%go.
+  simpl_one_flatten_struct (# (OpResponse.put' v)) (clientv3.OpResponse) "put"%go.
+  simpl_one_flatten_struct (# (OpResponse.get' v)) (clientv3.OpResponse) "get"%go.
+  simpl_one_flatten_struct (# (OpResponse.del' v)) (clientv3.OpResponse) "del"%go.
 
   solve_field_ref_f.
 Qed.
@@ -252,9 +252,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (LeaseGrantResponse.ResponseHeader' v)) clientv3.LeaseGrantResponse "ResponseHeader"%go.
-  simpl_one_flatten_struct (# (LeaseGrantResponse.ID' v)) clientv3.LeaseGrantResponse "ID"%go.
-  simpl_one_flatten_struct (# (LeaseGrantResponse.TTL' v)) clientv3.LeaseGrantResponse "TTL"%go.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.ResponseHeader' v)) (clientv3.LeaseGrantResponse) "ResponseHeader"%go.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.ID' v)) (clientv3.LeaseGrantResponse) "ID"%go.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.TTL' v)) (clientv3.LeaseGrantResponse) "TTL"%go.
 
   solve_field_ref_f.
 Qed.
@@ -521,33 +521,33 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Op.t' v)) clientv3.Op "t"%go.
-  simpl_one_flatten_struct (# (Op.key' v)) clientv3.Op "key"%go.
-  simpl_one_flatten_struct (# (Op.end' v)) clientv3.Op "end"%go.
-  simpl_one_flatten_struct (# (Op.limit' v)) clientv3.Op "limit"%go.
-  simpl_one_flatten_struct (# (Op.sort' v)) clientv3.Op "sort"%go.
-  simpl_one_flatten_struct (# (Op.serializable' v)) clientv3.Op "serializable"%go.
-  simpl_one_flatten_struct (# (Op.keysOnly' v)) clientv3.Op "keysOnly"%go.
-  simpl_one_flatten_struct (# (Op.countOnly' v)) clientv3.Op "countOnly"%go.
-  simpl_one_flatten_struct (# (Op.minModRev' v)) clientv3.Op "minModRev"%go.
-  simpl_one_flatten_struct (# (Op.maxModRev' v)) clientv3.Op "maxModRev"%go.
-  simpl_one_flatten_struct (# (Op.minCreateRev' v)) clientv3.Op "minCreateRev"%go.
-  simpl_one_flatten_struct (# (Op.maxCreateRev' v)) clientv3.Op "maxCreateRev"%go.
-  simpl_one_flatten_struct (# (Op.rev' v)) clientv3.Op "rev"%go.
-  simpl_one_flatten_struct (# (Op.prevKV' v)) clientv3.Op "prevKV"%go.
-  simpl_one_flatten_struct (# (Op.fragment' v)) clientv3.Op "fragment"%go.
-  simpl_one_flatten_struct (# (Op.ignoreValue' v)) clientv3.Op "ignoreValue"%go.
-  simpl_one_flatten_struct (# (Op.ignoreLease' v)) clientv3.Op "ignoreLease"%go.
-  simpl_one_flatten_struct (# (Op.progressNotify' v)) clientv3.Op "progressNotify"%go.
-  simpl_one_flatten_struct (# (Op.createdNotify' v)) clientv3.Op "createdNotify"%go.
-  simpl_one_flatten_struct (# (Op.filterPut' v)) clientv3.Op "filterPut"%go.
-  simpl_one_flatten_struct (# (Op.filterDelete' v)) clientv3.Op "filterDelete"%go.
-  simpl_one_flatten_struct (# (Op.val' v)) clientv3.Op "val"%go.
-  simpl_one_flatten_struct (# (Op.leaseID' v)) clientv3.Op "leaseID"%go.
-  simpl_one_flatten_struct (# (Op.cmps' v)) clientv3.Op "cmps"%go.
-  simpl_one_flatten_struct (# (Op.thenOps' v)) clientv3.Op "thenOps"%go.
-  simpl_one_flatten_struct (# (Op.elseOps' v)) clientv3.Op "elseOps"%go.
-  simpl_one_flatten_struct (# (Op.isOptsWithFromKey' v)) clientv3.Op "isOptsWithFromKey"%go.
+  simpl_one_flatten_struct (# (Op.t' v)) (clientv3.Op) "t"%go.
+  simpl_one_flatten_struct (# (Op.key' v)) (clientv3.Op) "key"%go.
+  simpl_one_flatten_struct (# (Op.end' v)) (clientv3.Op) "end"%go.
+  simpl_one_flatten_struct (# (Op.limit' v)) (clientv3.Op) "limit"%go.
+  simpl_one_flatten_struct (# (Op.sort' v)) (clientv3.Op) "sort"%go.
+  simpl_one_flatten_struct (# (Op.serializable' v)) (clientv3.Op) "serializable"%go.
+  simpl_one_flatten_struct (# (Op.keysOnly' v)) (clientv3.Op) "keysOnly"%go.
+  simpl_one_flatten_struct (# (Op.countOnly' v)) (clientv3.Op) "countOnly"%go.
+  simpl_one_flatten_struct (# (Op.minModRev' v)) (clientv3.Op) "minModRev"%go.
+  simpl_one_flatten_struct (# (Op.maxModRev' v)) (clientv3.Op) "maxModRev"%go.
+  simpl_one_flatten_struct (# (Op.minCreateRev' v)) (clientv3.Op) "minCreateRev"%go.
+  simpl_one_flatten_struct (# (Op.maxCreateRev' v)) (clientv3.Op) "maxCreateRev"%go.
+  simpl_one_flatten_struct (# (Op.rev' v)) (clientv3.Op) "rev"%go.
+  simpl_one_flatten_struct (# (Op.prevKV' v)) (clientv3.Op) "prevKV"%go.
+  simpl_one_flatten_struct (# (Op.fragment' v)) (clientv3.Op) "fragment"%go.
+  simpl_one_flatten_struct (# (Op.ignoreValue' v)) (clientv3.Op) "ignoreValue"%go.
+  simpl_one_flatten_struct (# (Op.ignoreLease' v)) (clientv3.Op) "ignoreLease"%go.
+  simpl_one_flatten_struct (# (Op.progressNotify' v)) (clientv3.Op) "progressNotify"%go.
+  simpl_one_flatten_struct (# (Op.createdNotify' v)) (clientv3.Op) "createdNotify"%go.
+  simpl_one_flatten_struct (# (Op.filterPut' v)) (clientv3.Op) "filterPut"%go.
+  simpl_one_flatten_struct (# (Op.filterDelete' v)) (clientv3.Op) "filterDelete"%go.
+  simpl_one_flatten_struct (# (Op.val' v)) (clientv3.Op) "val"%go.
+  simpl_one_flatten_struct (# (Op.leaseID' v)) (clientv3.Op) "leaseID"%go.
+  simpl_one_flatten_struct (# (Op.cmps' v)) (clientv3.Op) "cmps"%go.
+  simpl_one_flatten_struct (# (Op.thenOps' v)) (clientv3.Op) "thenOps"%go.
+  simpl_one_flatten_struct (# (Op.elseOps' v)) (clientv3.Op) "elseOps"%go.
+  simpl_one_flatten_struct (# (Op.isOptsWithFromKey' v)) (clientv3.Op) "isOptsWithFromKey"%go.
 
   solve_field_ref_f.
 Qed.
@@ -624,7 +624,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (LeaseOp.id' v)) clientv3.LeaseOp "id"%go.
+  simpl_one_flatten_struct (# (LeaseOp.id' v)) (clientv3.LeaseOp) "id"%go.
 
   solve_field_ref_f.
 Qed.
@@ -717,7 +717,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SortOption.Target' v)) clientv3.SortOption "Target"%go.
+  simpl_one_flatten_struct (# (SortOption.Target' v)) (clientv3.SortOption) "Target"%go.
 
   solve_field_ref_f.
 Qed.
@@ -853,12 +853,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WatchResponse.Header' v)) clientv3.WatchResponse "Header"%go.
-  simpl_one_flatten_struct (# (WatchResponse.Events' v)) clientv3.WatchResponse "Events"%go.
-  simpl_one_flatten_struct (# (WatchResponse.CompactRevision' v)) clientv3.WatchResponse "CompactRevision"%go.
-  simpl_one_flatten_struct (# (WatchResponse.Canceled' v)) clientv3.WatchResponse "Canceled"%go.
-  simpl_one_flatten_struct (# (WatchResponse.Created' v)) clientv3.WatchResponse "Created"%go.
-  simpl_one_flatten_struct (# (WatchResponse.closeErr' v)) clientv3.WatchResponse "closeErr"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Header' v)) (clientv3.WatchResponse) "Header"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Events' v)) (clientv3.WatchResponse) "Events"%go.
+  simpl_one_flatten_struct (# (WatchResponse.CompactRevision' v)) (clientv3.WatchResponse) "CompactRevision"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Canceled' v)) (clientv3.WatchResponse) "Canceled"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Created' v)) (clientv3.WatchResponse) "Created"%go.
+  simpl_one_flatten_struct (# (WatchResponse.closeErr' v)) (clientv3.WatchResponse) "closeErr"%go.
 
   solve_field_ref_f.
 Qed.

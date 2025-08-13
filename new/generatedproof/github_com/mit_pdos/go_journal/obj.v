@@ -84,8 +84,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Log.mu' v)) obj.Log "mu"%go.
-  simpl_one_flatten_struct (# (Log.log' v)) obj.Log "log"%go.
+  simpl_one_flatten_struct (# (Log.mu' v)) (obj.Log) "mu"%go.
+  simpl_one_flatten_struct (# (Log.log' v)) (obj.Log) "log"%go.
 
   solve_field_ref_f.
 Qed.

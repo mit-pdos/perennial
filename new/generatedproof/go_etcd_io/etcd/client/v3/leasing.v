@@ -97,9 +97,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (leaseCache.mu' v)) leasing.leaseCache "mu"%go.
-  simpl_one_flatten_struct (# (leaseCache.entries' v)) leasing.leaseCache "entries"%go.
-  simpl_one_flatten_struct (# (leaseCache.revokes' v)) leasing.leaseCache "revokes"%go.
+  simpl_one_flatten_struct (# (leaseCache.mu' v)) (leasing.leaseCache) "mu"%go.
+  simpl_one_flatten_struct (# (leaseCache.entries' v)) (leasing.leaseCache) "entries"%go.
+  simpl_one_flatten_struct (# (leaseCache.revokes' v)) (leasing.leaseCache) "revokes"%go.
 
   solve_field_ref_f.
 Qed.
@@ -175,8 +175,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (leaseKey.response' v)) leasing.leaseKey "response"%go.
-  simpl_one_flatten_struct (# (leaseKey.rev' v)) leasing.leaseKey "rev"%go.
+  simpl_one_flatten_struct (# (leaseKey.response' v)) (leasing.leaseKey) "response"%go.
+  simpl_one_flatten_struct (# (leaseKey.rev' v)) (leasing.leaseKey) "rev"%go.
 
   solve_field_ref_f.
 Qed.
@@ -301,15 +301,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (leasingKV.cl' v)) leasing.leasingKV "cl"%go.
-  simpl_one_flatten_struct (# (leasingKV.kv' v)) leasing.leasingKV "kv"%go.
-  simpl_one_flatten_struct (# (leasingKV.pfx' v)) leasing.leasingKV "pfx"%go.
-  simpl_one_flatten_struct (# (leasingKV.leases' v)) leasing.leasingKV "leases"%go.
-  simpl_one_flatten_struct (# (leasingKV.ctx' v)) leasing.leasingKV "ctx"%go.
-  simpl_one_flatten_struct (# (leasingKV.cancel' v)) leasing.leasingKV "cancel"%go.
-  simpl_one_flatten_struct (# (leasingKV.wg' v)) leasing.leasingKV "wg"%go.
-  simpl_one_flatten_struct (# (leasingKV.sessionOpts' v)) leasing.leasingKV "sessionOpts"%go.
-  simpl_one_flatten_struct (# (leasingKV.session' v)) leasing.leasingKV "session"%go.
+  simpl_one_flatten_struct (# (leasingKV.cl' v)) (leasing.leasingKV) "cl"%go.
+  simpl_one_flatten_struct (# (leasingKV.kv' v)) (leasing.leasingKV) "kv"%go.
+  simpl_one_flatten_struct (# (leasingKV.pfx' v)) (leasing.leasingKV) "pfx"%go.
+  simpl_one_flatten_struct (# (leasingKV.leases' v)) (leasing.leasingKV) "leases"%go.
+  simpl_one_flatten_struct (# (leasingKV.ctx' v)) (leasing.leasingKV) "ctx"%go.
+  simpl_one_flatten_struct (# (leasingKV.cancel' v)) (leasing.leasingKV) "cancel"%go.
+  simpl_one_flatten_struct (# (leasingKV.wg' v)) (leasing.leasingKV) "wg"%go.
+  simpl_one_flatten_struct (# (leasingKV.sessionOpts' v)) (leasing.leasingKV) "sessionOpts"%go.
+  simpl_one_flatten_struct (# (leasingKV.session' v)) (leasing.leasingKV) "session"%go.
 
   solve_field_ref_f.
 Qed.
@@ -406,11 +406,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (txnLeasing.Txn' v)) leasing.txnLeasing "Txn"%go.
-  simpl_one_flatten_struct (# (txnLeasing.lkv' v)) leasing.txnLeasing "lkv"%go.
-  simpl_one_flatten_struct (# (txnLeasing.ctx' v)) leasing.txnLeasing "ctx"%go.
-  simpl_one_flatten_struct (# (txnLeasing.cs' v)) leasing.txnLeasing "cs"%go.
-  simpl_one_flatten_struct (# (txnLeasing.opst' v)) leasing.txnLeasing "opst"%go.
+  simpl_one_flatten_struct (# (txnLeasing.Txn' v)) (leasing.txnLeasing) "Txn"%go.
+  simpl_one_flatten_struct (# (txnLeasing.lkv' v)) (leasing.txnLeasing) "lkv"%go.
+  simpl_one_flatten_struct (# (txnLeasing.ctx' v)) (leasing.txnLeasing) "ctx"%go.
+  simpl_one_flatten_struct (# (txnLeasing.cs' v)) (leasing.txnLeasing) "cs"%go.
+  simpl_one_flatten_struct (# (txnLeasing.opst' v)) (leasing.txnLeasing) "opst"%go.
 
   solve_field_ref_f.
 Qed.

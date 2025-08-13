@@ -108,7 +108,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Int32._0' v)) atomic.Int32 "_0"%go.
+  simpl_one_flatten_struct (# (Int32._0' v)) (atomic.Int32) "_0"%go.
 
   solve_field_ref_f.
 Qed.
@@ -177,7 +177,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Uint32._0' v)) atomic.Uint32 "_0"%go.
+  simpl_one_flatten_struct (# (Uint32._0' v)) (atomic.Uint32) "_0"%go.
 
   solve_field_ref_f.
 Qed.
@@ -290,8 +290,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Uint64._0' v)) atomic.Uint64 "_0"%go.
-  simpl_one_flatten_struct (# (Uint64._1' v)) atomic.Uint64 "_1"%go.
+  simpl_one_flatten_struct (# (Uint64._0' v)) (atomic.Uint64) "_0"%go.
+  simpl_one_flatten_struct (# (Uint64._1' v)) (atomic.Uint64) "_1"%go.
 
   solve_field_ref_f.
 Qed.
@@ -421,7 +421,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (efaceWords.typ' v)) atomic.efaceWords "typ"%go.
+  simpl_one_flatten_struct (# (efaceWords.typ' v)) (atomic.efaceWords) "typ"%go.
 
   solve_field_ref_f.
 Qed.

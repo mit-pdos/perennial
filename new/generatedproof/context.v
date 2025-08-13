@@ -331,11 +331,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (cancelCtx.Context' v)) context.cancelCtx "Context"%go.
-  simpl_one_flatten_struct (# (cancelCtx.mu' v)) context.cancelCtx "mu"%go.
-  simpl_one_flatten_struct (# (cancelCtx.done' v)) context.cancelCtx "done"%go.
-  simpl_one_flatten_struct (# (cancelCtx.children' v)) context.cancelCtx "children"%go.
-  simpl_one_flatten_struct (# (cancelCtx.err' v)) context.cancelCtx "err"%go.
+  simpl_one_flatten_struct (# (cancelCtx.Context' v)) (context.cancelCtx) "Context"%go.
+  simpl_one_flatten_struct (# (cancelCtx.mu' v)) (context.cancelCtx) "mu"%go.
+  simpl_one_flatten_struct (# (cancelCtx.done' v)) (context.cancelCtx) "done"%go.
+  simpl_one_flatten_struct (# (cancelCtx.children' v)) (context.cancelCtx) "children"%go.
+  simpl_one_flatten_struct (# (cancelCtx.err' v)) (context.cancelCtx) "err"%go.
 
   solve_field_ref_f.
 Qed.
@@ -411,8 +411,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (afterFuncCtx.cancelCtx' v)) context.afterFuncCtx "cancelCtx"%go.
-  simpl_one_flatten_struct (# (afterFuncCtx.once' v)) context.afterFuncCtx "once"%go.
+  simpl_one_flatten_struct (# (afterFuncCtx.cancelCtx' v)) (context.afterFuncCtx) "cancelCtx"%go.
+  simpl_one_flatten_struct (# (afterFuncCtx.once' v)) (context.afterFuncCtx) "once"%go.
 
   solve_field_ref_f.
 Qed.
@@ -481,7 +481,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stopCtx.Context' v)) context.stopCtx "Context"%go.
+  simpl_one_flatten_struct (# (stopCtx.Context' v)) (context.stopCtx) "Context"%go.
 
   solve_field_ref_f.
 Qed.
@@ -634,8 +634,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (timerCtx.cancelCtx' v)) context.timerCtx "cancelCtx"%go.
-  simpl_one_flatten_struct (# (timerCtx.timer' v)) context.timerCtx "timer"%go.
+  simpl_one_flatten_struct (# (timerCtx.cancelCtx' v)) (context.timerCtx) "cancelCtx"%go.
+  simpl_one_flatten_struct (# (timerCtx.timer' v)) (context.timerCtx) "timer"%go.
 
   solve_field_ref_f.
 Qed.
@@ -711,8 +711,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (valueCtx.Context' v)) context.valueCtx "Context"%go.
-  simpl_one_flatten_struct (# (valueCtx.key' v)) context.valueCtx "key"%go.
+  simpl_one_flatten_struct (# (valueCtx.Context' v)) (context.valueCtx) "Context"%go.
+  simpl_one_flatten_struct (# (valueCtx.key' v)) (context.valueCtx) "key"%go.
 
   solve_field_ref_f.
 Qed.

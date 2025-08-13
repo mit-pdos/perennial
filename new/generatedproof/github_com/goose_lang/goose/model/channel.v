@@ -131,11 +131,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Channel.lock' v)) (Channel.ty T) "lock"%go.
-  simpl_one_flatten_struct (# (Channel.state' v)) (Channel.ty T) "state"%go.
-  simpl_one_flatten_struct (# (Channel.buffer' v)) (Channel.ty T) "buffer"%go.
-  simpl_one_flatten_struct (# (Channel.first' v)) (Channel.ty T) "first"%go.
-  simpl_one_flatten_struct (# (Channel.count' v)) (Channel.ty T) "count"%go.
+  simpl_one_flatten_struct (# (Channel.lock' v)) ((Channel.ty T)) "lock"%go.
+  simpl_one_flatten_struct (# (Channel.state' v)) ((Channel.ty T)) "state"%go.
+  simpl_one_flatten_struct (# (Channel.buffer' v)) ((Channel.ty T)) "buffer"%go.
+  simpl_one_flatten_struct (# (Channel.first' v)) ((Channel.ty T)) "first"%go.
+  simpl_one_flatten_struct (# (Channel.count' v)) ((Channel.ty T)) "count"%go.
 
   solve_field_ref_f.
 Qed.
@@ -263,9 +263,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SelectCase.channel' v)) (SelectCase.ty T) "channel"%go.
-  simpl_one_flatten_struct (# (SelectCase.dir' v)) (SelectCase.ty T) "dir"%go.
-  simpl_one_flatten_struct (# (SelectCase.Value' v)) (SelectCase.ty T) "Value"%go.
+  simpl_one_flatten_struct (# (SelectCase.channel' v)) ((SelectCase.ty T)) "channel"%go.
+  simpl_one_flatten_struct (# (SelectCase.dir' v)) ((SelectCase.ty T)) "dir"%go.
+  simpl_one_flatten_struct (# (SelectCase.Value' v)) ((SelectCase.ty T)) "Value"%go.
 
   solve_field_ref_f.
 Qed.

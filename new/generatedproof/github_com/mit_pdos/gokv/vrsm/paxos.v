@@ -154,8 +154,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (applyAsFollowerArgs.epoch' v)) paxos.applyAsFollowerArgs "epoch"%go.
-  simpl_one_flatten_struct (# (applyAsFollowerArgs.nextIndex' v)) paxos.applyAsFollowerArgs "nextIndex"%go.
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.epoch' v)) (paxos.applyAsFollowerArgs) "epoch"%go.
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.nextIndex' v)) (paxos.applyAsFollowerArgs) "nextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -360,9 +360,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (enterNewEpochReply.err' v)) paxos.enterNewEpochReply "err"%go.
-  simpl_one_flatten_struct (# (enterNewEpochReply.acceptedEpoch' v)) paxos.enterNewEpochReply "acceptedEpoch"%go.
-  simpl_one_flatten_struct (# (enterNewEpochReply.nextIndex' v)) paxos.enterNewEpochReply "nextIndex"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.err' v)) (paxos.enterNewEpochReply) "err"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.acceptedEpoch' v)) (paxos.enterNewEpochReply) "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.nextIndex' v)) (paxos.enterNewEpochReply) "nextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -431,7 +431,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (applyReply.err' v)) paxos.applyReply "err"%go.
+  simpl_one_flatten_struct (# (applyReply.err' v)) (paxos.applyReply) "err"%go.
 
   solve_field_ref_f.
 Qed.
@@ -521,10 +521,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (paxosState.epoch' v)) paxos.paxosState "epoch"%go.
-  simpl_one_flatten_struct (# (paxosState.acceptedEpoch' v)) paxos.paxosState "acceptedEpoch"%go.
-  simpl_one_flatten_struct (# (paxosState.nextIndex' v)) paxos.paxosState "nextIndex"%go.
-  simpl_one_flatten_struct (# (paxosState.state' v)) paxos.paxosState "state"%go.
+  simpl_one_flatten_struct (# (paxosState.epoch' v)) (paxos.paxosState) "epoch"%go.
+  simpl_one_flatten_struct (# (paxosState.acceptedEpoch' v)) (paxos.paxosState) "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (paxosState.nextIndex' v)) (paxos.paxosState) "nextIndex"%go.
+  simpl_one_flatten_struct (# (paxosState.state' v)) (paxos.paxosState) "state"%go.
 
   solve_field_ref_f.
 Qed.
@@ -607,9 +607,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Server.mu' v)) paxos.Server "mu"%go.
-  simpl_one_flatten_struct (# (Server.ps' v)) paxos.Server "ps"%go.
-  simpl_one_flatten_struct (# (Server.storage' v)) paxos.Server "storage"%go.
+  simpl_one_flatten_struct (# (Server.mu' v)) (paxos.Server) "mu"%go.
+  simpl_one_flatten_struct (# (Server.ps' v)) (paxos.Server) "ps"%go.
+  simpl_one_flatten_struct (# (Server.storage' v)) (paxos.Server) "storage"%go.
 
   solve_field_ref_f.
 Qed.

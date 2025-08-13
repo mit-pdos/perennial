@@ -144,8 +144,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Callback.reply' v)) urpc.Callback "reply"%go.
-  simpl_one_flatten_struct (# (Callback.state' v)) urpc.Callback "state"%go.
+  simpl_one_flatten_struct (# (Callback.reply' v)) (urpc.Callback) "reply"%go.
+  simpl_one_flatten_struct (# (Callback.state' v)) (urpc.Callback) "state"%go.
 
   solve_field_ref_f.
 Qed.
@@ -228,9 +228,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Client.mu' v)) urpc.Client "mu"%go.
-  simpl_one_flatten_struct (# (Client.conn' v)) urpc.Client "conn"%go.
-  simpl_one_flatten_struct (# (Client.seq' v)) urpc.Client "seq"%go.
+  simpl_one_flatten_struct (# (Client.mu' v)) (urpc.Client) "mu"%go.
+  simpl_one_flatten_struct (# (Client.conn' v)) (urpc.Client) "conn"%go.
+  simpl_one_flatten_struct (# (Client.seq' v)) (urpc.Client) "seq"%go.
 
   solve_field_ref_f.
 Qed.

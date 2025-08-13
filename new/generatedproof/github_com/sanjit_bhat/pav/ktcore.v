@@ -82,7 +82,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (VrfSig.SigTag' v)) ktcore.VrfSig "SigTag"%go.
+  simpl_one_flatten_struct (# (VrfSig.SigTag' v)) (ktcore.VrfSig) "SigTag"%go.
 
   solve_field_ref_f.
 Qed.
@@ -158,8 +158,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (LinkSig.SigTag' v)) ktcore.LinkSig "SigTag"%go.
-  simpl_one_flatten_struct (# (LinkSig.Epoch' v)) ktcore.LinkSig "Epoch"%go.
+  simpl_one_flatten_struct (# (LinkSig.SigTag' v)) (ktcore.LinkSig) "SigTag"%go.
+  simpl_one_flatten_struct (# (LinkSig.Epoch' v)) (ktcore.LinkSig) "Epoch"%go.
 
   solve_field_ref_f.
 Qed.
@@ -228,7 +228,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MapLabel.Uid' v)) ktcore.MapLabel "Uid"%go.
+  simpl_one_flatten_struct (# (MapLabel.Uid' v)) (ktcore.MapLabel) "Uid"%go.
 
   solve_field_ref_f.
 Qed.
@@ -297,7 +297,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (CommitOpen.Val' v)) ktcore.CommitOpen "Val"%go.
+  simpl_one_flatten_struct (# (CommitOpen.Val' v)) (ktcore.CommitOpen) "Val"%go.
 
   solve_field_ref_f.
 Qed.
@@ -373,8 +373,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Memb.LabelProof' v)) ktcore.Memb "LabelProof"%go.
-  simpl_one_flatten_struct (# (Memb.PkOpen' v)) ktcore.Memb "PkOpen"%go.
+  simpl_one_flatten_struct (# (Memb.LabelProof' v)) (ktcore.Memb) "LabelProof"%go.
+  simpl_one_flatten_struct (# (Memb.PkOpen' v)) (ktcore.Memb) "PkOpen"%go.
 
   solve_field_ref_f.
 Qed.
@@ -443,7 +443,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (NonMemb.LabelProof' v)) ktcore.NonMemb "LabelProof"%go.
+  simpl_one_flatten_struct (# (NonMemb.LabelProof' v)) (ktcore.NonMemb) "LabelProof"%go.
 
   solve_field_ref_f.
 Qed.
@@ -512,7 +512,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (AuditProof.Updates' v)) ktcore.AuditProof "Updates"%go.
+  simpl_one_flatten_struct (# (AuditProof.Updates' v)) (ktcore.AuditProof) "Updates"%go.
 
   solve_field_ref_f.
 Qed.
@@ -588,8 +588,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (UpdateProof.MapLabel' v)) ktcore.UpdateProof "MapLabel"%go.
-  simpl_one_flatten_struct (# (UpdateProof.MapVal' v)) ktcore.UpdateProof "MapVal"%go.
+  simpl_one_flatten_struct (# (UpdateProof.MapLabel' v)) (ktcore.UpdateProof) "MapLabel"%go.
+  simpl_one_flatten_struct (# (UpdateProof.MapVal' v)) (ktcore.UpdateProof) "MapVal"%go.
 
   solve_field_ref_f.
 Qed.

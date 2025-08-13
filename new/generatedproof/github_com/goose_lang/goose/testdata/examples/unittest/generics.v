@@ -184,9 +184,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Container.X' v)) (Container.ty T) "X"%go.
-  simpl_one_flatten_struct (# (Container.Y' v)) (Container.ty T) "Y"%go.
-  simpl_one_flatten_struct (# (Container.Z' v)) (Container.ty T) "Z"%go.
+  simpl_one_flatten_struct (# (Container.X' v)) ((Container.ty T)) "X"%go.
+  simpl_one_flatten_struct (# (Container.Y' v)) ((Container.ty T)) "Y"%go.
+  simpl_one_flatten_struct (# (Container.Z' v)) ((Container.ty T)) "Z"%go.
 
   solve_field_ref_f.
 Qed.
@@ -346,7 +346,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (OnlyIndirect.X' v)) (OnlyIndirect.ty T) "X"%go.
+  simpl_one_flatten_struct (# (OnlyIndirect.X' v)) ((OnlyIndirect.ty T)) "X"%go.
 
   solve_field_ref_f.
 Qed.
@@ -434,7 +434,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MultiParam.Y' v)) (MultiParam.ty A B) "Y"%go.
+  simpl_one_flatten_struct (# (MultiParam.Y' v)) ((MultiParam.ty A B)) "Y"%go.
 
   solve_field_ref_f.
 Qed.

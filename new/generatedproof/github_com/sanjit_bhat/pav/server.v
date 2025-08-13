@@ -107,11 +107,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StartReply.StartEpochLen' v)) server.StartReply "StartEpochLen"%go.
-  simpl_one_flatten_struct (# (StartReply.StartLink' v)) server.StartReply "StartLink"%go.
-  simpl_one_flatten_struct (# (StartReply.ChainProof' v)) server.StartReply "ChainProof"%go.
-  simpl_one_flatten_struct (# (StartReply.LinkSig' v)) server.StartReply "LinkSig"%go.
-  simpl_one_flatten_struct (# (StartReply.VrfPk' v)) server.StartReply "VrfPk"%go.
+  simpl_one_flatten_struct (# (StartReply.StartEpochLen' v)) (server.StartReply) "StartEpochLen"%go.
+  simpl_one_flatten_struct (# (StartReply.StartLink' v)) (server.StartReply) "StartLink"%go.
+  simpl_one_flatten_struct (# (StartReply.ChainProof' v)) (server.StartReply) "ChainProof"%go.
+  simpl_one_flatten_struct (# (StartReply.LinkSig' v)) (server.StartReply) "LinkSig"%go.
+  simpl_one_flatten_struct (# (StartReply.VrfPk' v)) (server.StartReply) "VrfPk"%go.
 
   solve_field_ref_f.
 Qed.
@@ -187,8 +187,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (PutArg.Uid' v)) server.PutArg "Uid"%go.
-  simpl_one_flatten_struct (# (PutArg.Pk' v)) server.PutArg "Pk"%go.
+  simpl_one_flatten_struct (# (PutArg.Uid' v)) (server.PutArg) "Uid"%go.
+  simpl_one_flatten_struct (# (PutArg.Pk' v)) (server.PutArg) "Pk"%go.
 
   solve_field_ref_f.
 Qed.
@@ -264,8 +264,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (HistoryArg.Uid' v)) server.HistoryArg "Uid"%go.
-  simpl_one_flatten_struct (# (HistoryArg.PrevEpoch' v)) server.HistoryArg "PrevEpoch"%go.
+  simpl_one_flatten_struct (# (HistoryArg.Uid' v)) (server.HistoryArg) "Uid"%go.
+  simpl_one_flatten_struct (# (HistoryArg.PrevEpoch' v)) (server.HistoryArg) "PrevEpoch"%go.
 
   solve_field_ref_f.
 Qed.
@@ -355,10 +355,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (HistoryReply.ChainProof' v)) server.HistoryReply "ChainProof"%go.
-  simpl_one_flatten_struct (# (HistoryReply.LinkSig' v)) server.HistoryReply "LinkSig"%go.
-  simpl_one_flatten_struct (# (HistoryReply.Hist' v)) server.HistoryReply "Hist"%go.
-  simpl_one_flatten_struct (# (HistoryReply.Bound' v)) server.HistoryReply "Bound"%go.
+  simpl_one_flatten_struct (# (HistoryReply.ChainProof' v)) (server.HistoryReply) "ChainProof"%go.
+  simpl_one_flatten_struct (# (HistoryReply.LinkSig' v)) (server.HistoryReply) "LinkSig"%go.
+  simpl_one_flatten_struct (# (HistoryReply.Hist' v)) (server.HistoryReply) "Hist"%go.
+  simpl_one_flatten_struct (# (HistoryReply.Bound' v)) (server.HistoryReply) "Bound"%go.
 
   solve_field_ref_f.
 Qed.
@@ -488,7 +488,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (AuditReply.P' v)) server.AuditReply "P"%go.
+  simpl_one_flatten_struct (# (AuditReply.P' v)) (server.AuditReply) "P"%go.
 
   solve_field_ref_f.
 Qed.
@@ -578,10 +578,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Server.mu' v)) server.Server "mu"%go.
-  simpl_one_flatten_struct (# (Server.secs' v)) server.Server "secs"%go.
-  simpl_one_flatten_struct (# (Server.keys' v)) server.Server "keys"%go.
-  simpl_one_flatten_struct (# (Server.hist' v)) server.Server "hist"%go.
+  simpl_one_flatten_struct (# (Server.mu' v)) (server.Server) "mu"%go.
+  simpl_one_flatten_struct (# (Server.secs' v)) (server.Server) "secs"%go.
+  simpl_one_flatten_struct (# (Server.keys' v)) (server.Server) "keys"%go.
+  simpl_one_flatten_struct (# (Server.hist' v)) (server.Server) "hist"%go.
 
   solve_field_ref_f.
 Qed.
@@ -657,8 +657,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (secrets.sig' v)) server.secrets "sig"%go.
-  simpl_one_flatten_struct (# (secrets.vrf' v)) server.secrets "vrf"%go.
+  simpl_one_flatten_struct (# (secrets.sig' v)) (server.secrets) "sig"%go.
+  simpl_one_flatten_struct (# (secrets.vrf' v)) (server.secrets) "vrf"%go.
 
   solve_field_ref_f.
 Qed.
@@ -727,7 +727,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (keyStore.hidden' v)) server.keyStore "hidden"%go.
+  simpl_one_flatten_struct (# (keyStore.hidden' v)) (server.keyStore) "hidden"%go.
 
   solve_field_ref_f.
 Qed.
@@ -803,8 +803,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (history.chain' v)) server.history "chain"%go.
-  simpl_one_flatten_struct (# (history.audits' v)) server.history "audits"%go.
+  simpl_one_flatten_struct (# (history.chain' v)) (server.history) "chain"%go.
+  simpl_one_flatten_struct (# (history.audits' v)) (server.history) "audits"%go.
 
   solve_field_ref_f.
 Qed.
@@ -880,8 +880,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WQReq.Uid' v)) server.WQReq "Uid"%go.
-  simpl_one_flatten_struct (# (WQReq.Pk' v)) server.WQReq "Pk"%go.
+  simpl_one_flatten_struct (# (WQReq.Uid' v)) (server.WQReq) "Uid"%go.
+  simpl_one_flatten_struct (# (WQReq.Pk' v)) (server.WQReq) "Pk"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1011,7 +1011,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (mapEntry.label' v)) server.mapEntry "label"%go.
+  simpl_one_flatten_struct (# (mapEntry.label' v)) (server.mapEntry) "label"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1101,10 +1101,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Work.mu' v)) server.Work "mu"%go.
-  simpl_one_flatten_struct (# (Work.cond' v)) server.Work "cond"%go.
-  simpl_one_flatten_struct (# (Work.done' v)) server.Work "done"%go.
-  simpl_one_flatten_struct (# (Work.Req' v)) server.Work "Req"%go.
+  simpl_one_flatten_struct (# (Work.mu' v)) (server.Work) "mu"%go.
+  simpl_one_flatten_struct (# (Work.cond' v)) (server.Work) "cond"%go.
+  simpl_one_flatten_struct (# (Work.done' v)) (server.Work) "done"%go.
+  simpl_one_flatten_struct (# (Work.Req' v)) (server.Work) "Req"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1180,8 +1180,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WorkQ.mu' v)) server.WorkQ "mu"%go.
-  simpl_one_flatten_struct (# (WorkQ.work' v)) server.WorkQ "work"%go.
+  simpl_one_flatten_struct (# (WorkQ.mu' v)) (server.WorkQ) "mu"%go.
+  simpl_one_flatten_struct (# (WorkQ.work' v)) (server.WorkQ) "work"%go.
 
   solve_field_ref_f.
 Qed.

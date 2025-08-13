@@ -131,11 +131,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (unstable.snapshot' v)) raft.unstable "snapshot"%go.
-  simpl_one_flatten_struct (# (unstable.entries' v)) raft.unstable "entries"%go.
-  simpl_one_flatten_struct (# (unstable.offset' v)) raft.unstable "offset"%go.
-  simpl_one_flatten_struct (# (unstable.snapshotInProgress' v)) raft.unstable "snapshotInProgress"%go.
-  simpl_one_flatten_struct (# (unstable.offsetInProgress' v)) raft.unstable "offsetInProgress"%go.
+  simpl_one_flatten_struct (# (unstable.snapshot' v)) (raft.unstable) "snapshot"%go.
+  simpl_one_flatten_struct (# (unstable.entries' v)) (raft.unstable) "entries"%go.
+  simpl_one_flatten_struct (# (unstable.offset' v)) (raft.unstable) "offset"%go.
+  simpl_one_flatten_struct (# (unstable.snapshotInProgress' v)) (raft.unstable) "snapshotInProgress"%go.
+  simpl_one_flatten_struct (# (unstable.offsetInProgress' v)) (raft.unstable) "offsetInProgress"%go.
 
   solve_field_ref_f.
 Qed.
@@ -261,14 +261,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (raftLog.storage' v)) raft.raftLog "storage"%go.
-  simpl_one_flatten_struct (# (raftLog.unstable' v)) raft.raftLog "unstable"%go.
-  simpl_one_flatten_struct (# (raftLog.committed' v)) raft.raftLog "committed"%go.
-  simpl_one_flatten_struct (# (raftLog.applying' v)) raft.raftLog "applying"%go.
-  simpl_one_flatten_struct (# (raftLog.applied' v)) raft.raftLog "applied"%go.
-  simpl_one_flatten_struct (# (raftLog.logger' v)) raft.raftLog "logger"%go.
-  simpl_one_flatten_struct (# (raftLog.maxApplyingEntsSize' v)) raft.raftLog "maxApplyingEntsSize"%go.
-  simpl_one_flatten_struct (# (raftLog.applyingEntsSize' v)) raft.raftLog "applyingEntsSize"%go.
+  simpl_one_flatten_struct (# (raftLog.storage' v)) (raft.raftLog) "storage"%go.
+  simpl_one_flatten_struct (# (raftLog.unstable' v)) (raft.raftLog) "unstable"%go.
+  simpl_one_flatten_struct (# (raftLog.committed' v)) (raft.raftLog) "committed"%go.
+  simpl_one_flatten_struct (# (raftLog.applying' v)) (raft.raftLog) "applying"%go.
+  simpl_one_flatten_struct (# (raftLog.applied' v)) (raft.raftLog) "applied"%go.
+  simpl_one_flatten_struct (# (raftLog.logger' v)) (raft.raftLog) "logger"%go.
+  simpl_one_flatten_struct (# (raftLog.maxApplyingEntsSize' v)) (raft.raftLog) "maxApplyingEntsSize"%go.
+  simpl_one_flatten_struct (# (raftLog.applyingEntsSize' v)) (raft.raftLog) "applyingEntsSize"%go.
 
   solve_field_ref_f.
 Qed.
@@ -337,7 +337,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (DefaultLogger.Logger' v)) raft.DefaultLogger "Logger"%go.
+  simpl_one_flatten_struct (# (DefaultLogger.Logger' v)) (raft.DefaultLogger) "Logger"%go.
 
   solve_field_ref_f.
 Qed.
@@ -422,7 +422,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SoftState.Lead' v)) raft.SoftState "Lead"%go.
+  simpl_one_flatten_struct (# (SoftState.Lead' v)) (raft.SoftState) "Lead"%go.
 
   solve_field_ref_f.
 Qed.
@@ -533,13 +533,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Ready.SoftState' v)) raft.Ready "SoftState"%go.
-  simpl_one_flatten_struct (# (Ready.HardState' v)) raft.Ready "HardState"%go.
-  simpl_one_flatten_struct (# (Ready.ReadStates' v)) raft.Ready "ReadStates"%go.
-  simpl_one_flatten_struct (# (Ready.Entries' v)) raft.Ready "Entries"%go.
-  simpl_one_flatten_struct (# (Ready.Snapshot' v)) raft.Ready "Snapshot"%go.
-  simpl_one_flatten_struct (# (Ready.CommittedEntries' v)) raft.Ready "CommittedEntries"%go.
-  simpl_one_flatten_struct (# (Ready.Messages' v)) raft.Ready "Messages"%go.
+  simpl_one_flatten_struct (# (Ready.SoftState' v)) (raft.Ready) "SoftState"%go.
+  simpl_one_flatten_struct (# (Ready.HardState' v)) (raft.Ready) "HardState"%go.
+  simpl_one_flatten_struct (# (Ready.ReadStates' v)) (raft.Ready) "ReadStates"%go.
+  simpl_one_flatten_struct (# (Ready.Entries' v)) (raft.Ready) "Entries"%go.
+  simpl_one_flatten_struct (# (Ready.Snapshot' v)) (raft.Ready) "Snapshot"%go.
+  simpl_one_flatten_struct (# (Ready.CommittedEntries' v)) (raft.Ready) "CommittedEntries"%go.
+  simpl_one_flatten_struct (# (Ready.Messages' v)) (raft.Ready) "Messages"%go.
 
   solve_field_ref_f.
 Qed.
@@ -616,7 +616,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Peer.ID' v)) raft.Peer "ID"%go.
+  simpl_one_flatten_struct (# (Peer.ID' v)) (raft.Peer) "ID"%go.
 
   solve_field_ref_f.
 Qed.
@@ -685,7 +685,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (msgWithResult.m' v)) raft.msgWithResult "m"%go.
+  simpl_one_flatten_struct (# (msgWithResult.m' v)) (raft.msgWithResult) "m"%go.
 
   solve_field_ref_f.
 Qed.
@@ -817,16 +817,16 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (node.propc' v)) raft.node "propc"%go.
-  simpl_one_flatten_struct (# (node.recvc' v)) raft.node "recvc"%go.
-  simpl_one_flatten_struct (# (node.confc' v)) raft.node "confc"%go.
-  simpl_one_flatten_struct (# (node.confstatec' v)) raft.node "confstatec"%go.
-  simpl_one_flatten_struct (# (node.readyc' v)) raft.node "readyc"%go.
-  simpl_one_flatten_struct (# (node.advancec' v)) raft.node "advancec"%go.
-  simpl_one_flatten_struct (# (node.tickc' v)) raft.node "tickc"%go.
-  simpl_one_flatten_struct (# (node.done' v)) raft.node "done"%go.
-  simpl_one_flatten_struct (# (node.stop' v)) raft.node "stop"%go.
-  simpl_one_flatten_struct (# (node.status' v)) raft.node "status"%go.
+  simpl_one_flatten_struct (# (node.propc' v)) (raft.node) "propc"%go.
+  simpl_one_flatten_struct (# (node.recvc' v)) (raft.node) "recvc"%go.
+  simpl_one_flatten_struct (# (node.confc' v)) (raft.node) "confc"%go.
+  simpl_one_flatten_struct (# (node.confstatec' v)) (raft.node) "confstatec"%go.
+  simpl_one_flatten_struct (# (node.readyc' v)) (raft.node) "readyc"%go.
+  simpl_one_flatten_struct (# (node.advancec' v)) (raft.node) "advancec"%go.
+  simpl_one_flatten_struct (# (node.tickc' v)) (raft.node) "tickc"%go.
+  simpl_one_flatten_struct (# (node.done' v)) (raft.node) "done"%go.
+  simpl_one_flatten_struct (# (node.stop' v)) (raft.node) "stop"%go.
+  simpl_one_flatten_struct (# (node.status' v)) (raft.node) "status"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1099,24 +1099,24 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Config.ID' v)) raft.Config "ID"%go.
-  simpl_one_flatten_struct (# (Config.ElectionTick' v)) raft.Config "ElectionTick"%go.
-  simpl_one_flatten_struct (# (Config.HeartbeatTick' v)) raft.Config "HeartbeatTick"%go.
-  simpl_one_flatten_struct (# (Config.Storage' v)) raft.Config "Storage"%go.
-  simpl_one_flatten_struct (# (Config.Applied' v)) raft.Config "Applied"%go.
-  simpl_one_flatten_struct (# (Config.AsyncStorageWrites' v)) raft.Config "AsyncStorageWrites"%go.
-  simpl_one_flatten_struct (# (Config.MaxSizePerMsg' v)) raft.Config "MaxSizePerMsg"%go.
-  simpl_one_flatten_struct (# (Config.MaxCommittedSizePerReady' v)) raft.Config "MaxCommittedSizePerReady"%go.
-  simpl_one_flatten_struct (# (Config.MaxUncommittedEntriesSize' v)) raft.Config "MaxUncommittedEntriesSize"%go.
-  simpl_one_flatten_struct (# (Config.MaxInflightMsgs' v)) raft.Config "MaxInflightMsgs"%go.
-  simpl_one_flatten_struct (# (Config.MaxInflightBytes' v)) raft.Config "MaxInflightBytes"%go.
-  simpl_one_flatten_struct (# (Config.CheckQuorum' v)) raft.Config "CheckQuorum"%go.
-  simpl_one_flatten_struct (# (Config.PreVote' v)) raft.Config "PreVote"%go.
-  simpl_one_flatten_struct (# (Config.ReadOnlyOption' v)) raft.Config "ReadOnlyOption"%go.
-  simpl_one_flatten_struct (# (Config.Logger' v)) raft.Config "Logger"%go.
-  simpl_one_flatten_struct (# (Config.DisableProposalForwarding' v)) raft.Config "DisableProposalForwarding"%go.
-  simpl_one_flatten_struct (# (Config.DisableConfChangeValidation' v)) raft.Config "DisableConfChangeValidation"%go.
-  simpl_one_flatten_struct (# (Config.StepDownOnRemoval' v)) raft.Config "StepDownOnRemoval"%go.
+  simpl_one_flatten_struct (# (Config.ID' v)) (raft.Config) "ID"%go.
+  simpl_one_flatten_struct (# (Config.ElectionTick' v)) (raft.Config) "ElectionTick"%go.
+  simpl_one_flatten_struct (# (Config.HeartbeatTick' v)) (raft.Config) "HeartbeatTick"%go.
+  simpl_one_flatten_struct (# (Config.Storage' v)) (raft.Config) "Storage"%go.
+  simpl_one_flatten_struct (# (Config.Applied' v)) (raft.Config) "Applied"%go.
+  simpl_one_flatten_struct (# (Config.AsyncStorageWrites' v)) (raft.Config) "AsyncStorageWrites"%go.
+  simpl_one_flatten_struct (# (Config.MaxSizePerMsg' v)) (raft.Config) "MaxSizePerMsg"%go.
+  simpl_one_flatten_struct (# (Config.MaxCommittedSizePerReady' v)) (raft.Config) "MaxCommittedSizePerReady"%go.
+  simpl_one_flatten_struct (# (Config.MaxUncommittedEntriesSize' v)) (raft.Config) "MaxUncommittedEntriesSize"%go.
+  simpl_one_flatten_struct (# (Config.MaxInflightMsgs' v)) (raft.Config) "MaxInflightMsgs"%go.
+  simpl_one_flatten_struct (# (Config.MaxInflightBytes' v)) (raft.Config) "MaxInflightBytes"%go.
+  simpl_one_flatten_struct (# (Config.CheckQuorum' v)) (raft.Config) "CheckQuorum"%go.
+  simpl_one_flatten_struct (# (Config.PreVote' v)) (raft.Config) "PreVote"%go.
+  simpl_one_flatten_struct (# (Config.ReadOnlyOption' v)) (raft.Config) "ReadOnlyOption"%go.
+  simpl_one_flatten_struct (# (Config.Logger' v)) (raft.Config) "Logger"%go.
+  simpl_one_flatten_struct (# (Config.DisableProposalForwarding' v)) (raft.Config) "DisableProposalForwarding"%go.
+  simpl_one_flatten_struct (# (Config.DisableConfChangeValidation' v)) (raft.Config) "DisableConfChangeValidation"%go.
+  simpl_one_flatten_struct (# (Config.StepDownOnRemoval' v)) (raft.Config) "StepDownOnRemoval"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1411,37 +1411,37 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (raft.id' v)) raft.raft "id"%go.
-  simpl_one_flatten_struct (# (raft.Term' v)) raft.raft "Term"%go.
-  simpl_one_flatten_struct (# (raft.Vote' v)) raft.raft "Vote"%go.
-  simpl_one_flatten_struct (# (raft.readStates' v)) raft.raft "readStates"%go.
-  simpl_one_flatten_struct (# (raft.raftLog' v)) raft.raft "raftLog"%go.
-  simpl_one_flatten_struct (# (raft.maxMsgSize' v)) raft.raft "maxMsgSize"%go.
-  simpl_one_flatten_struct (# (raft.maxUncommittedSize' v)) raft.raft "maxUncommittedSize"%go.
-  simpl_one_flatten_struct (# (raft.trk' v)) raft.raft "trk"%go.
-  simpl_one_flatten_struct (# (raft.state' v)) raft.raft "state"%go.
-  simpl_one_flatten_struct (# (raft.isLearner' v)) raft.raft "isLearner"%go.
-  simpl_one_flatten_struct (# (raft.msgs' v)) raft.raft "msgs"%go.
-  simpl_one_flatten_struct (# (raft.msgsAfterAppend' v)) raft.raft "msgsAfterAppend"%go.
-  simpl_one_flatten_struct (# (raft.lead' v)) raft.raft "lead"%go.
-  simpl_one_flatten_struct (# (raft.leadTransferee' v)) raft.raft "leadTransferee"%go.
-  simpl_one_flatten_struct (# (raft.pendingConfIndex' v)) raft.raft "pendingConfIndex"%go.
-  simpl_one_flatten_struct (# (raft.disableConfChangeValidation' v)) raft.raft "disableConfChangeValidation"%go.
-  simpl_one_flatten_struct (# (raft.uncommittedSize' v)) raft.raft "uncommittedSize"%go.
-  simpl_one_flatten_struct (# (raft.readOnly' v)) raft.raft "readOnly"%go.
-  simpl_one_flatten_struct (# (raft.electionElapsed' v)) raft.raft "electionElapsed"%go.
-  simpl_one_flatten_struct (# (raft.heartbeatElapsed' v)) raft.raft "heartbeatElapsed"%go.
-  simpl_one_flatten_struct (# (raft.checkQuorum' v)) raft.raft "checkQuorum"%go.
-  simpl_one_flatten_struct (# (raft.preVote' v)) raft.raft "preVote"%go.
-  simpl_one_flatten_struct (# (raft.heartbeatTimeout' v)) raft.raft "heartbeatTimeout"%go.
-  simpl_one_flatten_struct (# (raft.electionTimeout' v)) raft.raft "electionTimeout"%go.
-  simpl_one_flatten_struct (# (raft.randomizedElectionTimeout' v)) raft.raft "randomizedElectionTimeout"%go.
-  simpl_one_flatten_struct (# (raft.disableProposalForwarding' v)) raft.raft "disableProposalForwarding"%go.
-  simpl_one_flatten_struct (# (raft.stepDownOnRemoval' v)) raft.raft "stepDownOnRemoval"%go.
-  simpl_one_flatten_struct (# (raft.tick' v)) raft.raft "tick"%go.
-  simpl_one_flatten_struct (# (raft.step' v)) raft.raft "step"%go.
-  simpl_one_flatten_struct (# (raft.logger' v)) raft.raft "logger"%go.
-  simpl_one_flatten_struct (# (raft.pendingReadIndexMessages' v)) raft.raft "pendingReadIndexMessages"%go.
+  simpl_one_flatten_struct (# (raft.id' v)) (raft.raft) "id"%go.
+  simpl_one_flatten_struct (# (raft.Term' v)) (raft.raft) "Term"%go.
+  simpl_one_flatten_struct (# (raft.Vote' v)) (raft.raft) "Vote"%go.
+  simpl_one_flatten_struct (# (raft.readStates' v)) (raft.raft) "readStates"%go.
+  simpl_one_flatten_struct (# (raft.raftLog' v)) (raft.raft) "raftLog"%go.
+  simpl_one_flatten_struct (# (raft.maxMsgSize' v)) (raft.raft) "maxMsgSize"%go.
+  simpl_one_flatten_struct (# (raft.maxUncommittedSize' v)) (raft.raft) "maxUncommittedSize"%go.
+  simpl_one_flatten_struct (# (raft.trk' v)) (raft.raft) "trk"%go.
+  simpl_one_flatten_struct (# (raft.state' v)) (raft.raft) "state"%go.
+  simpl_one_flatten_struct (# (raft.isLearner' v)) (raft.raft) "isLearner"%go.
+  simpl_one_flatten_struct (# (raft.msgs' v)) (raft.raft) "msgs"%go.
+  simpl_one_flatten_struct (# (raft.msgsAfterAppend' v)) (raft.raft) "msgsAfterAppend"%go.
+  simpl_one_flatten_struct (# (raft.lead' v)) (raft.raft) "lead"%go.
+  simpl_one_flatten_struct (# (raft.leadTransferee' v)) (raft.raft) "leadTransferee"%go.
+  simpl_one_flatten_struct (# (raft.pendingConfIndex' v)) (raft.raft) "pendingConfIndex"%go.
+  simpl_one_flatten_struct (# (raft.disableConfChangeValidation' v)) (raft.raft) "disableConfChangeValidation"%go.
+  simpl_one_flatten_struct (# (raft.uncommittedSize' v)) (raft.raft) "uncommittedSize"%go.
+  simpl_one_flatten_struct (# (raft.readOnly' v)) (raft.raft) "readOnly"%go.
+  simpl_one_flatten_struct (# (raft.electionElapsed' v)) (raft.raft) "electionElapsed"%go.
+  simpl_one_flatten_struct (# (raft.heartbeatElapsed' v)) (raft.raft) "heartbeatElapsed"%go.
+  simpl_one_flatten_struct (# (raft.checkQuorum' v)) (raft.raft) "checkQuorum"%go.
+  simpl_one_flatten_struct (# (raft.preVote' v)) (raft.raft) "preVote"%go.
+  simpl_one_flatten_struct (# (raft.heartbeatTimeout' v)) (raft.raft) "heartbeatTimeout"%go.
+  simpl_one_flatten_struct (# (raft.electionTimeout' v)) (raft.raft) "electionTimeout"%go.
+  simpl_one_flatten_struct (# (raft.randomizedElectionTimeout' v)) (raft.raft) "randomizedElectionTimeout"%go.
+  simpl_one_flatten_struct (# (raft.disableProposalForwarding' v)) (raft.raft) "disableProposalForwarding"%go.
+  simpl_one_flatten_struct (# (raft.stepDownOnRemoval' v)) (raft.raft) "stepDownOnRemoval"%go.
+  simpl_one_flatten_struct (# (raft.tick' v)) (raft.raft) "tick"%go.
+  simpl_one_flatten_struct (# (raft.step' v)) (raft.raft) "step"%go.
+  simpl_one_flatten_struct (# (raft.logger' v)) (raft.raft) "logger"%go.
+  simpl_one_flatten_struct (# (raft.pendingReadIndexMessages' v)) (raft.raft) "pendingReadIndexMessages"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1531,10 +1531,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RawNode.raft' v)) raft.RawNode "raft"%go.
-  simpl_one_flatten_struct (# (RawNode.asyncStorageWrites' v)) raft.RawNode "asyncStorageWrites"%go.
-  simpl_one_flatten_struct (# (RawNode.prevSoftSt' v)) raft.RawNode "prevSoftSt"%go.
-  simpl_one_flatten_struct (# (RawNode.prevHardSt' v)) raft.RawNode "prevHardSt"%go.
+  simpl_one_flatten_struct (# (RawNode.raft' v)) (raft.RawNode) "raft"%go.
+  simpl_one_flatten_struct (# (RawNode.asyncStorageWrites' v)) (raft.RawNode) "asyncStorageWrites"%go.
+  simpl_one_flatten_struct (# (RawNode.prevSoftSt' v)) (raft.RawNode) "prevSoftSt"%go.
+  simpl_one_flatten_struct (# (RawNode.prevHardSt' v)) (raft.RawNode) "prevHardSt"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1611,7 +1611,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ReadState.Index' v)) raft.ReadState "Index"%go.
+  simpl_one_flatten_struct (# (ReadState.Index' v)) (raft.ReadState) "Index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1687,8 +1687,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (readIndexStatus.req' v)) raft.readIndexStatus "req"%go.
-  simpl_one_flatten_struct (# (readIndexStatus.index' v)) raft.readIndexStatus "index"%go.
+  simpl_one_flatten_struct (# (readIndexStatus.req' v)) (raft.readIndexStatus) "req"%go.
+  simpl_one_flatten_struct (# (readIndexStatus.index' v)) (raft.readIndexStatus) "index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1764,8 +1764,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (readOnly.option' v)) raft.readOnly "option"%go.
-  simpl_one_flatten_struct (# (readOnly.pendingReadIndex' v)) raft.readOnly "pendingReadIndex"%go.
+  simpl_one_flatten_struct (# (readOnly.option' v)) (raft.readOnly) "option"%go.
+  simpl_one_flatten_struct (# (readOnly.pendingReadIndex' v)) (raft.readOnly) "pendingReadIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1892,10 +1892,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (BasicStatus.ID' v)) raft.BasicStatus "ID"%go.
-  simpl_one_flatten_struct (# (BasicStatus.HardState' v)) raft.BasicStatus "HardState"%go.
-  simpl_one_flatten_struct (# (BasicStatus.SoftState' v)) raft.BasicStatus "SoftState"%go.
-  simpl_one_flatten_struct (# (BasicStatus.Applied' v)) raft.BasicStatus "Applied"%go.
+  simpl_one_flatten_struct (# (BasicStatus.ID' v)) (raft.BasicStatus) "ID"%go.
+  simpl_one_flatten_struct (# (BasicStatus.HardState' v)) (raft.BasicStatus) "HardState"%go.
+  simpl_one_flatten_struct (# (BasicStatus.SoftState' v)) (raft.BasicStatus) "SoftState"%go.
+  simpl_one_flatten_struct (# (BasicStatus.Applied' v)) (raft.BasicStatus) "Applied"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1971,8 +1971,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Status.BasicStatus' v)) raft.Status "BasicStatus"%go.
-  simpl_one_flatten_struct (# (Status.Config' v)) raft.Status "Config"%go.
+  simpl_one_flatten_struct (# (Status.BasicStatus' v)) (raft.Status) "BasicStatus"%go.
+  simpl_one_flatten_struct (# (Status.Config' v)) (raft.Status) "Config"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2069,11 +2069,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.initialState' v)) raft.inMemStorageCallStats "initialState"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.firstIndex' v)) raft.inMemStorageCallStats "firstIndex"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.lastIndex' v)) raft.inMemStorageCallStats "lastIndex"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.entries' v)) raft.inMemStorageCallStats "entries"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.term' v)) raft.inMemStorageCallStats "term"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.initialState' v)) (raft.inMemStorageCallStats) "initialState"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.firstIndex' v)) (raft.inMemStorageCallStats) "firstIndex"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.lastIndex' v)) (raft.inMemStorageCallStats) "lastIndex"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.entries' v)) (raft.inMemStorageCallStats) "entries"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.term' v)) (raft.inMemStorageCallStats) "term"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2163,10 +2163,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MemoryStorage.Mutex' v)) raft.MemoryStorage "Mutex"%go.
-  simpl_one_flatten_struct (# (MemoryStorage.hardState' v)) raft.MemoryStorage "hardState"%go.
-  simpl_one_flatten_struct (# (MemoryStorage.snapshot' v)) raft.MemoryStorage "snapshot"%go.
-  simpl_one_flatten_struct (# (MemoryStorage.ents' v)) raft.MemoryStorage "ents"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.Mutex' v)) (raft.MemoryStorage) "Mutex"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.hardState' v)) (raft.MemoryStorage) "hardState"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.snapshot' v)) (raft.MemoryStorage) "snapshot"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.ents' v)) (raft.MemoryStorage) "ents"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2235,7 +2235,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (entryID.term' v)) raft.entryID "term"%go.
+  simpl_one_flatten_struct (# (entryID.term' v)) (raft.entryID) "term"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2311,8 +2311,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (logSlice.term' v)) raft.logSlice "term"%go.
-  simpl_one_flatten_struct (# (logSlice.prev' v)) raft.logSlice "prev"%go.
+  simpl_one_flatten_struct (# (logSlice.term' v)) (raft.logSlice) "term"%go.
+  simpl_one_flatten_struct (# (logSlice.prev' v)) (raft.logSlice) "prev"%go.
 
   solve_field_ref_f.
 Qed.

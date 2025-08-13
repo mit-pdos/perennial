@@ -130,15 +130,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (AppendOnlyFile.mu' v)) aof.AppendOnlyFile "mu"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.oldDurableCond' v)) aof.AppendOnlyFile "oldDurableCond"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.durableCond' v)) aof.AppendOnlyFile "durableCond"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.lengthCond' v)) aof.AppendOnlyFile "lengthCond"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.membuf' v)) aof.AppendOnlyFile "membuf"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.length' v)) aof.AppendOnlyFile "length"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.durableLength' v)) aof.AppendOnlyFile "durableLength"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.closeRequested' v)) aof.AppendOnlyFile "closeRequested"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.closed' v)) aof.AppendOnlyFile "closed"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.mu' v)) (aof.AppendOnlyFile) "mu"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.oldDurableCond' v)) (aof.AppendOnlyFile) "oldDurableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableCond' v)) (aof.AppendOnlyFile) "durableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.lengthCond' v)) (aof.AppendOnlyFile) "lengthCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.membuf' v)) (aof.AppendOnlyFile) "membuf"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.length' v)) (aof.AppendOnlyFile) "length"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableLength' v)) (aof.AppendOnlyFile) "durableLength"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closeRequested' v)) (aof.AppendOnlyFile) "closeRequested"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closed' v)) (aof.AppendOnlyFile) "closed"%go.
 
   solve_field_ref_f.
 Qed.

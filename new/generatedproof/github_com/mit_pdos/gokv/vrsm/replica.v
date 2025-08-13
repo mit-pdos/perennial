@@ -95,8 +95,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ApplyAsBackupArgs.epoch' v)) replica.ApplyAsBackupArgs "epoch"%go.
-  simpl_one_flatten_struct (# (ApplyAsBackupArgs.index' v)) replica.ApplyAsBackupArgs "index"%go.
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.epoch' v)) (replica.ApplyAsBackupArgs) "epoch"%go.
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.index' v)) (replica.ApplyAsBackupArgs) "index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -179,9 +179,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SetStateArgs.Epoch' v)) replica.SetStateArgs "Epoch"%go.
-  simpl_one_flatten_struct (# (SetStateArgs.NextIndex' v)) replica.SetStateArgs "NextIndex"%go.
-  simpl_one_flatten_struct (# (SetStateArgs.CommittedNextIndex' v)) replica.SetStateArgs "CommittedNextIndex"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.Epoch' v)) (replica.SetStateArgs) "Epoch"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.NextIndex' v)) (replica.SetStateArgs) "NextIndex"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.CommittedNextIndex' v)) (replica.SetStateArgs) "CommittedNextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -325,9 +325,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (GetStateReply.Err' v)) replica.GetStateReply "Err"%go.
-  simpl_one_flatten_struct (# (GetStateReply.NextIndex' v)) replica.GetStateReply "NextIndex"%go.
-  simpl_one_flatten_struct (# (GetStateReply.CommittedNextIndex' v)) replica.GetStateReply "CommittedNextIndex"%go.
+  simpl_one_flatten_struct (# (GetStateReply.Err' v)) (replica.GetStateReply) "Err"%go.
+  simpl_one_flatten_struct (# (GetStateReply.NextIndex' v)) (replica.GetStateReply) "NextIndex"%go.
+  simpl_one_flatten_struct (# (GetStateReply.CommittedNextIndex' v)) (replica.GetStateReply) "CommittedNextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -396,7 +396,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (BecomePrimaryArgs.Epoch' v)) replica.BecomePrimaryArgs "Epoch"%go.
+  simpl_one_flatten_struct (# (BecomePrimaryArgs.Epoch' v)) (replica.BecomePrimaryArgs) "Epoch"%go.
 
   solve_field_ref_f.
 Qed.
@@ -465,7 +465,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ApplyReply.Err' v)) replica.ApplyReply "Err"%go.
+  simpl_one_flatten_struct (# (ApplyReply.Err' v)) (replica.ApplyReply) "Err"%go.
 
   solve_field_ref_f.
 Qed.
@@ -556,9 +556,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StateMachine.StartApply' v)) replica.StateMachine "StartApply"%go.
-  simpl_one_flatten_struct (# (StateMachine.ApplyReadonly' v)) replica.StateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (StateMachine.SetStateAndUnseal' v)) replica.StateMachine "SetStateAndUnseal"%go.
+  simpl_one_flatten_struct (# (StateMachine.StartApply' v)) (replica.StateMachine) "StartApply"%go.
+  simpl_one_flatten_struct (# (StateMachine.ApplyReadonly' v)) (replica.StateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (StateMachine.SetStateAndUnseal' v)) (replica.StateMachine) "SetStateAndUnseal"%go.
 
   solve_field_ref_f.
 Qed.
@@ -641,9 +641,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SyncStateMachine.Apply' v)) replica.SyncStateMachine "Apply"%go.
-  simpl_one_flatten_struct (# (SyncStateMachine.ApplyReadonly' v)) replica.SyncStateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (SyncStateMachine.SetStateAndUnseal' v)) replica.SyncStateMachine "SetStateAndUnseal"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.Apply' v)) (replica.SyncStateMachine) "Apply"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.ApplyReadonly' v)) (replica.SyncStateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.SetStateAndUnseal' v)) (replica.SyncStateMachine) "SetStateAndUnseal"%go.
 
   solve_field_ref_f.
 Qed.
@@ -864,20 +864,20 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Server.mu' v)) replica.Server "mu"%go.
-  simpl_one_flatten_struct (# (Server.epoch' v)) replica.Server "epoch"%go.
-  simpl_one_flatten_struct (# (Server.sealed' v)) replica.Server "sealed"%go.
-  simpl_one_flatten_struct (# (Server.sm' v)) replica.Server "sm"%go.
-  simpl_one_flatten_struct (# (Server.nextIndex' v)) replica.Server "nextIndex"%go.
-  simpl_one_flatten_struct (# (Server.canBecomePrimary' v)) replica.Server "canBecomePrimary"%go.
-  simpl_one_flatten_struct (# (Server.isPrimary' v)) replica.Server "isPrimary"%go.
-  simpl_one_flatten_struct (# (Server.clerks' v)) replica.Server "clerks"%go.
-  simpl_one_flatten_struct (# (Server.isPrimary_cond' v)) replica.Server "isPrimary_cond"%go.
-  simpl_one_flatten_struct (# (Server.opAppliedConds' v)) replica.Server "opAppliedConds"%go.
-  simpl_one_flatten_struct (# (Server.leaseExpiration' v)) replica.Server "leaseExpiration"%go.
-  simpl_one_flatten_struct (# (Server.leaseValid' v)) replica.Server "leaseValid"%go.
-  simpl_one_flatten_struct (# (Server.committedNextIndex' v)) replica.Server "committedNextIndex"%go.
-  simpl_one_flatten_struct (# (Server.committedNextIndex_cond' v)) replica.Server "committedNextIndex_cond"%go.
+  simpl_one_flatten_struct (# (Server.mu' v)) (replica.Server) "mu"%go.
+  simpl_one_flatten_struct (# (Server.epoch' v)) (replica.Server) "epoch"%go.
+  simpl_one_flatten_struct (# (Server.sealed' v)) (replica.Server) "sealed"%go.
+  simpl_one_flatten_struct (# (Server.sm' v)) (replica.Server) "sm"%go.
+  simpl_one_flatten_struct (# (Server.nextIndex' v)) (replica.Server) "nextIndex"%go.
+  simpl_one_flatten_struct (# (Server.canBecomePrimary' v)) (replica.Server) "canBecomePrimary"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary' v)) (replica.Server) "isPrimary"%go.
+  simpl_one_flatten_struct (# (Server.clerks' v)) (replica.Server) "clerks"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary_cond' v)) (replica.Server) "isPrimary_cond"%go.
+  simpl_one_flatten_struct (# (Server.opAppliedConds' v)) (replica.Server) "opAppliedConds"%go.
+  simpl_one_flatten_struct (# (Server.leaseExpiration' v)) (replica.Server) "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (Server.leaseValid' v)) (replica.Server) "leaseValid"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex' v)) (replica.Server) "committedNextIndex"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex_cond' v)) (replica.Server) "committedNextIndex_cond"%go.
 
   solve_field_ref_f.
 Qed.
