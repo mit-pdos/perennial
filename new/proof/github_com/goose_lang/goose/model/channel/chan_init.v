@@ -8,7 +8,7 @@ From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.  
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context  `{!chanGhostStateG Σ}.
 Local Notation deps := (ltac2:(build_pkg_init_deps 'channel) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit channel :=

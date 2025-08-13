@@ -23,7 +23,7 @@ End astate.
 
 Section raft.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!closeable_chanG Σ}.
 Context `{!contextG Σ}.
 

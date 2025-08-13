@@ -6,7 +6,7 @@ Require Export New.generatedproof.sync.atomic.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'atomic) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit atomic :=

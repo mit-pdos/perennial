@@ -14,7 +14,7 @@ End Op.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!clientv3G Σ}.
 Implicit Types (γ : clientv3_names).
 

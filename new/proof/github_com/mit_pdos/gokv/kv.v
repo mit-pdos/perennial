@@ -4,7 +4,7 @@ Require Import New.generatedproof.github_com.mit_pdos.gokv.kv.
 
 Section definitions.
 Context `{!heapGS Σ}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 (* KV points-to for the internal kv service *)
 Implicit Types (kvptsto: go_string → go_string → iProp Σ).

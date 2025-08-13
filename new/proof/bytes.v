@@ -3,7 +3,7 @@ From New.generatedproof Require Import bytes.
 
 Module bytes.
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit bytes :=

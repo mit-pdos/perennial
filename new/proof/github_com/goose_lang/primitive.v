@@ -4,7 +4,7 @@ Require Import New.generatedproof.github_com.goose_lang.primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'primitive) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit primitive :=

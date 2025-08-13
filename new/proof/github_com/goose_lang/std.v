@@ -6,7 +6,7 @@ Set Default Proof Using "Type".
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'std) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit std :=

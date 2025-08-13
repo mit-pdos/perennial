@@ -18,7 +18,7 @@ Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
@@ -136,6 +136,7 @@ Proof.
   iClear "err". clear err_ptr.
   iDestruct "Hl" as "#Hlease0".
   wp_apply (wp_WithCancel True) as "* (Hcancel & Hctx)".
+  { iFrame "#". }
   wp_auto.
 
   wp_apply (wp_Client__KeepAlive with "[$]") as "* #Hkch".

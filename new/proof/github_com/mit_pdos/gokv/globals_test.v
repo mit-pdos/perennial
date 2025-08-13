@@ -12,7 +12,7 @@ Section proof.
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
 Context `{!ghost_varG Σ ()}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
 
 (** A proof can refer to global variable addresses as [global_addr
     PKG_NAME.VAR_NAME], as in this package-specific helper definition. *)

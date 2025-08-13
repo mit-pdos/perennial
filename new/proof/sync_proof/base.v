@@ -33,7 +33,7 @@ Proof. solve_inG. Qed.
 
 Section defns.
 Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
 Local Definition race_deps : iProp Σ := ltac2:(build_pkg_init_deps 'race).

@@ -3,7 +3,7 @@ From New.proof.sync_proof Require Import base.
 
 Section proof.
 Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
 Definition is_sema (x : loc) γ N : iProp Σ :=

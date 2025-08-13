@@ -6,7 +6,7 @@ Module cryptoffi.
 Notation hash_len := 32 (only parsing).
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'cryptoffi) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit cryptoffi :=

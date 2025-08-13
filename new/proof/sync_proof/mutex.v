@@ -2,7 +2,7 @@ From New.proof.sync_proof Require Import base.
 
 Section proof.
 Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
 (** This means [m] is a valid mutex with invariant [R]. *)

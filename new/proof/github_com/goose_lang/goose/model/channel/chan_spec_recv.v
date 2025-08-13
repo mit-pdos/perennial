@@ -10,7 +10,7 @@ From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context  `{!chanGhostStateG Σ}.
 
 Notation "vs1 =?= vs2" := (valid_chan_state_eq vs1 vs2) (at level 70).

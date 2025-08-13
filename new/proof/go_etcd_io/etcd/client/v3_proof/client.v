@@ -2,7 +2,7 @@ From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base op definition
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!clientv3G Σ}.
 Implicit Types (γ : clientv3_names).
 

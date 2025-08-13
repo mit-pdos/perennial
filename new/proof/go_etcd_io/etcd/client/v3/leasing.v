@@ -23,7 +23,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 (* FIXME: come up with a plan for global addrs of imported packages. *)
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{leasingG Σ}.
 
 (* FIXME: move these *)
@@ -355,6 +355,7 @@ Proof.
     iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
     wp_auto.
     wp_apply (wp_closeable_chan_close with "[$Hsessionc]").
+    { iFrame "#". }
     iIntros "#Hclosed".
     wp_auto.
     iDestruct "session" as "[session session_lock]".
@@ -573,6 +574,7 @@ Proof.
   iPoseProof "Hctx" as "Hctx2".
   iNamedSuffix "Hctx2" "_ctx".
   wp_apply "HErr_ctx".
+  { iFrame "#". }
   iIntros (?) "Herr".
   wp_auto.
   wp_if_destruct.

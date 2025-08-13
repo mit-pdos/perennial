@@ -38,7 +38,7 @@ End Context_desc.
 Section definitions.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{contextG Σ}.
 
 Local Notation deps_time := (ltac2:(build_pkg_init_deps 'time) : iProp Σ) (only parsing).

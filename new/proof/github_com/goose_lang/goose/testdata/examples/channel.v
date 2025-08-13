@@ -14,7 +14,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
 Context  `{!chanGhostStateG Σ}.
 Context `{!ghost_varG Σ (w64)}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{ ghost_mapG Σ Z w64 }.
 Local Notation deps := (ltac2:(build_pkg_init_deps 'chan_spec_raw_examples) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit chan_spec_raw_examples :=

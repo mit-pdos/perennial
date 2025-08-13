@@ -46,7 +46,7 @@ Proof.
 Qed.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition own ptr obj d : iProp Σ :=
   ∃ sl_Siblings sl_LeafLabel sl_LeafVal,

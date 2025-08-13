@@ -26,7 +26,7 @@ End defns.
 
 Section proof.
 Context `{!heapGS Σ}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Context (N: namespace).
 

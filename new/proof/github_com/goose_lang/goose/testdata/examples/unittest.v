@@ -12,7 +12,7 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples
 From New.proof Require Import proof_prelude.
 
 Section proof.
-Context `{hG: !heapGS Σ} `{!globalsGS Σ} `{!GoContext}.
+Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'unittest) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit unittest :=
@@ -249,7 +249,7 @@ Lemma wp_testU32NewtypeLen :
 Proof.
   wp_start. wp_auto. wp_apply (wp_slice_make2 (V:=w8)) as "* [? ?]".
   iDestruct (own_slice_len with "[$]") as "%". rewrite bool_decide_true.
-  2:{ revert H0. len. }
+  2:{ revert H. len. }
   by iApply "HΦ".
 Qed.
 

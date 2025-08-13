@@ -16,7 +16,7 @@ Notation leafNodeTy := (W8 1) (only parsing).
 Notation innerNodeTy := (W8 2) (only parsing).
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_varG Σ ()}.
 
 Definition is_initialized : iProp Σ :=

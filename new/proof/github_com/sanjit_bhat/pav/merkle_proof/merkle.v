@@ -9,7 +9,7 @@ From New.proof.github_com.tchajed Require Import marshal.
 From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base serde theory.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition wish_Verify (in_tree : bool) label val proof dig : iProp Σ :=
   ∃ found proof_obj proof' tail,

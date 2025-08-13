@@ -5,7 +5,7 @@ From New.proof.sync_proof Require Import base mutex sema.
 Section proof.
 
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 Section protocol.
 Record RWMutex_protocol_names :=

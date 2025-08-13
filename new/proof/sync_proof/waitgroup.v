@@ -4,7 +4,7 @@ From New.experiments Require Import glob.
 
 Section proof.
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
 Local Definition enc (low high : w32) : w64 :=

@@ -40,7 +40,7 @@ Proof. solve_inG. Qed.
 Section asyncfile_proof.
 
 Context `{!heapGS Σ}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!asyncfileG Σ}.
 Implicit Types (P: list u8 → iProp Σ).
 
@@ -155,7 +155,7 @@ Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
-                             (interface.mk sync.Mutexⁱᵈ #mu))
+                             (interface.mk (ptrTⁱᵈ sync.Mutexⁱᵈ) #mu))
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=

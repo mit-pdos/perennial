@@ -6,7 +6,7 @@ From New.proof.sync_proof Require rwmutex.
 Section proof.
 
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} `{!GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
 Definition rfrac_def : Qp := / pos_to_Qp (Z.to_pos (rwmutex.actualMaxReaders + 1)).
