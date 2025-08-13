@@ -10,11 +10,51 @@ Module grove_ffi.
 Section code.
 
 
+Definition panic_if_err : go_string := "github.com/mit-pdos/gokv/grove_ffi.panic_if_err"%go.
+
+Definition FileWrite : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileWrite"%go.
+
+Definition FileRead : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileRead"%go.
+
+Definition FileAppend : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileAppend"%go.
+
+Definition U64ToString : go_string := "github.com/mit-pdos/gokv/grove_ffi.U64ToString"%go.
+
+Definition Addressⁱᵈ : go_string := uint64Tⁱᵈ.
+
+Definition MakeAddress : go_string := "github.com/mit-pdos/gokv/grove_ffi.MakeAddress"%go.
+
+Definition AddressToStr : go_string := "github.com/mit-pdos/gokv/grove_ffi.AddressToStr"%go.
+
+Definition Listenerⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.Listener"%go.
+
+Definition Listen : go_string := "github.com/mit-pdos/gokv/grove_ffi.Listen"%go.
+
+Definition Accept : go_string := "github.com/mit-pdos/gokv/grove_ffi.Accept"%go.
+
+Definition makeConnection : go_string := "github.com/mit-pdos/gokv/grove_ffi.makeConnection"%go.
+
+Definition Connectionⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connection"%go.
+
+Definition ConnectRetⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.ConnectRet"%go.
+
+Definition Connect : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connect"%go.
+
+Definition Send : go_string := "github.com/mit-pdos/gokv/grove_ffi.Send"%go.
+
+Definition ReceiveRetⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.ReceiveRet"%go.
+
+Definition Receive : go_string := "github.com/mit-pdos/gokv/grove_ffi.Receive"%go.
+
+Definition GetTimeRange : go_string := "github.com/mit-pdos/gokv/grove_ffi.GetTimeRange"%go.
+
+Definition GetTSC : go_string := "github.com/mit-pdos/gokv/grove_ffi.GetTSC"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("FileWrite"%go, FileWrite); ("FileRead"%go, FileRead); ("FileAppend"%go, FileAppend); ("Listen"%go, Listen); ("Accept"%go, Accept); ("Connect"%go, Connect); ("Send"%go, Send); ("Receive"%go, Receive); ("GetTimeRange"%go, GetTimeRange); ("GetTSC"%go, GetTSC)].
+Definition functions' : list (go_string * val) := [(FileWrite, FileWriteⁱᵐᵖˡ); (FileRead, FileReadⁱᵐᵖˡ); (FileAppend, FileAppendⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ); (Accept, Acceptⁱᵐᵖˡ); (Connect, Connectⁱᵐᵖˡ); (Send, Sendⁱᵐᵖˡ); (Receive, Receiveⁱᵐᵖˡ); (GetTimeRange, GetTimeRangeⁱᵐᵖˡ); (GetTSC, GetTSCⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Listener"%go, []); ("Listener'ptr"%go, []); ("Connection"%go, []); ("Connection'ptr"%go, []); ("ConnectRet"%go, []); ("ConnectRet'ptr"%go, []); ("ReceiveRet"%go, []); ("ReceiveRet'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Listenerⁱᵈ, []); (ptrTⁱᵈ Listenerⁱᵈ, []); (Connectionⁱᵈ, []); (ptrTⁱᵈ Connectionⁱᵈ, []); (ConnectRetⁱᵈ, []); (ptrTⁱᵈ ConnectRetⁱᵈ, []); (ReceiveRetⁱᵈ, []); (ptrTⁱᵈ ReceiveRetⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo grove_ffi.grove_ffi :=
   {|
@@ -27,9 +67,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Listener"%
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init grove_ffi.grove_ffi (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #grove_ffi.grove_ffi (λ: <>,
+      exception_do (do:  (package.alloc grove_ffi.grove_ffi #()))
       ).
 
 End code.

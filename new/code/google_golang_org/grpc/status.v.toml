@@ -1,6 +1,13 @@
 translate = [
   "!*",
+  "Status",
 ]
+
+axiomatize = [
+  "*",
+]
+
 imports = [
   "!*",
+  "google.golang.org/genproto/googleapis/rpc/status",
 ]

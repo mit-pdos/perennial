@@ -18,52 +18,65 @@ Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-Context `{!etcdserverpb.GlobalAddrs}.
-Context `{!concurrency.GlobalAddrs}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-#[global]
-Program Instance is_pkg_init_math : IsPkgInit math :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_math.
+Local Notation deps_math := (ltac2:(build_pkg_init_deps 'math) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit math :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_math;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_zapcore : IsPkgInit zapcore :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_zapcore.
+Local Notation deps_zapcore := (ltac2:(build_pkg_init_deps 'zapcore) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit zapcore :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_zapcore;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_zap : IsPkgInit zap :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_zap.
+Local Notation deps_zap := (ltac2:(build_pkg_init_deps 'zap) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit zap :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_zap;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_time : IsPkgInit time :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_time.
+Local Notation deps_time := (ltac2:(build_pkg_init_deps 'time) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit time :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_time;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_strings : IsPkgInit strings :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_strings.
+Local Notation deps_strings := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit strings :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_strings;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_fmt : IsPkgInit fmt :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_fmt.
+Local Notation deps_fmt := (ltac2:(build_pkg_init_deps 'fmt) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit fmt :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_fmt;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_errors : IsPkgInit errors :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_errors.
+Local Notation deps_errors := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit errors :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_errors;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_concurrency : IsPkgInit concurrency :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_concurrency.
-#[local] Transparent is_pkg_init_concurrency.
+Local Notation deps_concurrency := (ltac2:(build_pkg_init_deps 'concurrency) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit concurrency :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_concurrency;
+  |}.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl donec,
@@ -85,7 +98,7 @@ Lemma wp_NewSession (client : loc) γetcd :
         is_pkg_init concurrency ∗
         "#His_client" ∷ is_Client client γetcd
   }}}
-    concurrency @ "NewSession" #client #slice.nil
+    @! concurrency.NewSession #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
         ∃ lease, is_Session s γetcd lease
@@ -196,7 +209,7 @@ Qed.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ concurrency @ "Session'ptr" @ "Lease" #()
+    s @ (ptrTⁱᵈ concurrency.Sessionⁱᵈ) @ "Lease" #()
   {{{ RET #lease; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
@@ -204,7 +217,7 @@ Qed.
 
 Lemma wp_Session__Done s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ concurrency @ "Session'ptr" @ "Done" #()
+    s @ (ptrTⁱᵈ concurrency.Sessionⁱᵈ) @ "Done" #()
   {{{ ch, RET #ch; own_closeable_chan ch True closeable.Unknown }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".

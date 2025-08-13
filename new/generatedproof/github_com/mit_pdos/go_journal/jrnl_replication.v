@@ -91,9 +91,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RepBlock.txn' v)) replicated_block.RepBlock "txn"%go.
-  simpl_one_flatten_struct (# (RepBlock.m' v)) replicated_block.RepBlock "m"%go.
-  simpl_one_flatten_struct (# (RepBlock.a0' v)) replicated_block.RepBlock "a0"%go.
+  simpl_one_flatten_struct (# (RepBlock.txn' v)) (replicated_block.RepBlock) "txn"%go.
+  simpl_one_flatten_struct (# (RepBlock.m' v)) (replicated_block.RepBlock) "m"%go.
+  simpl_one_flatten_struct (# (RepBlock.a0' v)) (replicated_block.RepBlock) "a0"%go.
 
   solve_field_ref_f.
 Qed.
@@ -102,35 +102,20 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined replicated_block :=
-{|
-  is_pkg_defined := is_global_definitions replicated_block var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Open :
-  WpFuncCall replicated_block "Open" _ (is_pkg_defined replicated_block) :=
+  WpFuncCall replicated_block.Open _ (is_pkg_defined replicated_block) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_RepBlock'ptr_Read :
-  WpMethodCall replicated_block "RepBlock'ptr" "Read" _ (is_pkg_defined replicated_block) :=
+  WpMethodCall (ptrTⁱᵈ replicated_block.RepBlockⁱᵈ) "Read" _ (is_pkg_defined replicated_block) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RepBlock'ptr_Write :
-  WpMethodCall replicated_block "RepBlock'ptr" "Write" _ (is_pkg_defined replicated_block) :=
+  WpMethodCall (ptrTⁱᵈ replicated_block.RepBlockⁱᵈ) "Write" _ (is_pkg_defined replicated_block) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

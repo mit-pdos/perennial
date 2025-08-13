@@ -21,9 +21,14 @@ Proof.
 Qed.
 
 Section proof.
-Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Program Instance : IsPkgInit alloc.alloc := ltac2:(build_pkg_init ()).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'alloc.alloc) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit alloc.alloc :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
   ∃ (next: u64) (bitmap_s: slice.t) (bits: list u8),
@@ -47,7 +52,7 @@ Lemma wp_MkAlloc (bitmap_s: slice.t) (data: list u8) :
   8 * Z.of_nat (length data) < 2^64 →
   {{{ is_pkg_init alloc.alloc ∗
       own_slice bitmap_s (DfracOwn 1) data }}}
-    alloc.alloc@"MkAlloc" #bitmap_s
+    @! alloc.alloc.MkAlloc #bitmap_s
   {{{ l, RET #l; is_alloc (W64 (8 * length data)) l }}}.
 Proof.
   set (max := W64 (8 * length data)).
@@ -90,7 +95,7 @@ Lemma wp_MarkUsed max l (bn: u64) :
   uint.Z bn < uint.Z max →
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l@alloc.alloc@"Alloc'ptr"@"MarkUsed" #bn
+    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "MarkUsed" #bn
   {{{ RET #(); True }}}.
 Proof.
   intros Hbound.
@@ -137,7 +142,7 @@ Lemma wp_MkMaxAlloc (max: u64) :
   0 < uint.Z max →
   uint.Z max `mod` 8 = 0 →
   {{{ is_pkg_init alloc.alloc }}}
-    alloc.alloc@"MkMaxAlloc" #max
+    @! alloc.alloc.MkMaxAlloc #max
   {{{ l, RET #l; is_alloc max l }}}.
 Proof.
   intros Hbound Hmod.
@@ -168,7 +173,7 @@ Lemma wp_incNext (max: u64) (l: loc) :
   0 < uint.Z max →
   {{{ is_pkg_init alloc.alloc ∗
       alloc_linv max l }}}
-    l@alloc.alloc@"Alloc'ptr"@"incNext" #()
+    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @"incNext" #()
   {{{ (next': u64), RET #next'; ⌜uint.Z next' < uint.Z max⌝ ∗
                                 alloc_linv max l }}}.
 Proof.
@@ -200,7 +205,7 @@ Qed.
 Lemma wp_allocBit (max: u64) (l: loc) :
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l@alloc.alloc@"Alloc'ptr"@"allocBit" #()
+    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "allocBit" #()
   {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
   wp_start as "Hpre".
@@ -260,7 +265,7 @@ Lemma wp_freeBit max l (bn: u64) :
   uint.Z bn < uint.Z max →
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l@alloc.alloc@"Alloc'ptr"@"freeBit" #bn
+    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "freeBit" #bn
   {{{ RET #(); True }}}.
 Proof.
   intros Hbound.
@@ -288,7 +293,7 @@ Qed.
 Lemma wp_AllocNum max l :
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l@alloc.alloc@"Alloc'ptr"@"AllocNum" #()
+    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "AllocNum" #()
   {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
   wp_start as "H".
@@ -304,7 +309,7 @@ Lemma wp_FreeNum max l (num: u64) :
   uint.Z num ≠ 0 →
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l@alloc.alloc@"Alloc'ptr"@"FreeNum" #num
+    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @"FreeNum" #num
   {{{ RET #(); True }}}.
 Proof.
   intros Hnum Hnonzero.
@@ -318,7 +323,7 @@ Qed.
 
 Lemma wp_popCnt (b: u8) :
   {{{ is_pkg_init alloc.alloc }}}
-    alloc.alloc@"popCnt" #b
+    @! alloc.alloc.popCnt #b
   {{{ (n: u64), RET #n; ⌜uint.Z n ≤ 8⌝ }}}.
 Proof.
   wp_start as "_".
@@ -351,7 +356,7 @@ Qed.
 Lemma wp_NumFree max l :
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l@alloc.alloc@"Alloc'ptr"@"NumFree" #()
+    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "NumFree" #()
   {{{ (n:u64), RET #n; ⌜0 ≤ uint.Z n ≤ uint.Z max⌝}}}.
 Proof.
   wp_start as "H". iNamed "H".

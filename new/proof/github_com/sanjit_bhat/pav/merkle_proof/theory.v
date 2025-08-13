@@ -8,7 +8,7 @@ From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition bytes_to_bits l := concat (byte_to_bits <$> l).
 

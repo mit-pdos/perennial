@@ -124,9 +124,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Entry.Term' v)) raftpb.Entry "Term"%go.
-  simpl_one_flatten_struct (# (Entry.Index' v)) raftpb.Entry "Index"%go.
-  simpl_one_flatten_struct (# (Entry.Type' v)) raftpb.Entry "Type"%go.
+  simpl_one_flatten_struct (# (Entry.Term' v)) (raftpb.Entry) "Term"%go.
+  simpl_one_flatten_struct (# (Entry.Index' v)) (raftpb.Entry) "Index"%go.
+  simpl_one_flatten_struct (# (Entry.Type' v)) (raftpb.Entry) "Type"%go.
 
   solve_field_ref_f.
 Qed.
@@ -216,10 +216,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ConfState.Voters' v)) raftpb.ConfState "Voters"%go.
-  simpl_one_flatten_struct (# (ConfState.Learners' v)) raftpb.ConfState "Learners"%go.
-  simpl_one_flatten_struct (# (ConfState.VotersOutgoing' v)) raftpb.ConfState "VotersOutgoing"%go.
-  simpl_one_flatten_struct (# (ConfState.LearnersNext' v)) raftpb.ConfState "LearnersNext"%go.
+  simpl_one_flatten_struct (# (ConfState.Voters' v)) (raftpb.ConfState) "Voters"%go.
+  simpl_one_flatten_struct (# (ConfState.Learners' v)) (raftpb.ConfState) "Learners"%go.
+  simpl_one_flatten_struct (# (ConfState.VotersOutgoing' v)) (raftpb.ConfState) "VotersOutgoing"%go.
+  simpl_one_flatten_struct (# (ConfState.LearnersNext' v)) (raftpb.ConfState) "LearnersNext"%go.
 
   solve_field_ref_f.
 Qed.
@@ -295,8 +295,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SnapshotMetadata.ConfState' v)) raftpb.SnapshotMetadata "ConfState"%go.
-  simpl_one_flatten_struct (# (SnapshotMetadata.Index' v)) raftpb.SnapshotMetadata "Index"%go.
+  simpl_one_flatten_struct (# (SnapshotMetadata.ConfState' v)) (raftpb.SnapshotMetadata) "ConfState"%go.
+  simpl_one_flatten_struct (# (SnapshotMetadata.Index' v)) (raftpb.SnapshotMetadata) "Index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -365,7 +365,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Snapshot.Data' v)) raftpb.Snapshot "Data"%go.
+  simpl_one_flatten_struct (# (Snapshot.Data' v)) (raftpb.Snapshot) "Data"%go.
 
   solve_field_ref_f.
 Qed.
@@ -518,19 +518,19 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Message.Type' v)) raftpb.Message "Type"%go.
-  simpl_one_flatten_struct (# (Message.To' v)) raftpb.Message "To"%go.
-  simpl_one_flatten_struct (# (Message.From' v)) raftpb.Message "From"%go.
-  simpl_one_flatten_struct (# (Message.Term' v)) raftpb.Message "Term"%go.
-  simpl_one_flatten_struct (# (Message.LogTerm' v)) raftpb.Message "LogTerm"%go.
-  simpl_one_flatten_struct (# (Message.Index' v)) raftpb.Message "Index"%go.
-  simpl_one_flatten_struct (# (Message.Entries' v)) raftpb.Message "Entries"%go.
-  simpl_one_flatten_struct (# (Message.Commit' v)) raftpb.Message "Commit"%go.
-  simpl_one_flatten_struct (# (Message.Vote' v)) raftpb.Message "Vote"%go.
-  simpl_one_flatten_struct (# (Message.Snapshot' v)) raftpb.Message "Snapshot"%go.
-  simpl_one_flatten_struct (# (Message.Reject' v)) raftpb.Message "Reject"%go.
-  simpl_one_flatten_struct (# (Message.RejectHint' v)) raftpb.Message "RejectHint"%go.
-  simpl_one_flatten_struct (# (Message.Context' v)) raftpb.Message "Context"%go.
+  simpl_one_flatten_struct (# (Message.Type' v)) (raftpb.Message) "Type"%go.
+  simpl_one_flatten_struct (# (Message.To' v)) (raftpb.Message) "To"%go.
+  simpl_one_flatten_struct (# (Message.From' v)) (raftpb.Message) "From"%go.
+  simpl_one_flatten_struct (# (Message.Term' v)) (raftpb.Message) "Term"%go.
+  simpl_one_flatten_struct (# (Message.LogTerm' v)) (raftpb.Message) "LogTerm"%go.
+  simpl_one_flatten_struct (# (Message.Index' v)) (raftpb.Message) "Index"%go.
+  simpl_one_flatten_struct (# (Message.Entries' v)) (raftpb.Message) "Entries"%go.
+  simpl_one_flatten_struct (# (Message.Commit' v)) (raftpb.Message) "Commit"%go.
+  simpl_one_flatten_struct (# (Message.Vote' v)) (raftpb.Message) "Vote"%go.
+  simpl_one_flatten_struct (# (Message.Snapshot' v)) (raftpb.Message) "Snapshot"%go.
+  simpl_one_flatten_struct (# (Message.Reject' v)) (raftpb.Message) "Reject"%go.
+  simpl_one_flatten_struct (# (Message.RejectHint' v)) (raftpb.Message) "RejectHint"%go.
+  simpl_one_flatten_struct (# (Message.Context' v)) (raftpb.Message) "Context"%go.
 
   solve_field_ref_f.
 Qed.
@@ -606,8 +606,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (HardState.Term' v)) raftpb.HardState "Term"%go.
-  simpl_one_flatten_struct (# (HardState.Vote' v)) raftpb.HardState "Vote"%go.
+  simpl_one_flatten_struct (# (HardState.Term' v)) (raftpb.HardState) "Term"%go.
+  simpl_one_flatten_struct (# (HardState.Vote' v)) (raftpb.HardState) "Vote"%go.
 
   solve_field_ref_f.
 Qed.
@@ -690,9 +690,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ConfChange.Type' v)) raftpb.ConfChange "Type"%go.
-  simpl_one_flatten_struct (# (ConfChange.NodeID' v)) raftpb.ConfChange "NodeID"%go.
-  simpl_one_flatten_struct (# (ConfChange.Context' v)) raftpb.ConfChange "Context"%go.
+  simpl_one_flatten_struct (# (ConfChange.Type' v)) (raftpb.ConfChange) "Type"%go.
+  simpl_one_flatten_struct (# (ConfChange.NodeID' v)) (raftpb.ConfChange) "NodeID"%go.
+  simpl_one_flatten_struct (# (ConfChange.Context' v)) (raftpb.ConfChange) "Context"%go.
 
   solve_field_ref_f.
 Qed.
@@ -768,8 +768,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ConfChangeV2.Transition' v)) raftpb.ConfChangeV2 "Transition"%go.
-  simpl_one_flatten_struct (# (ConfChangeV2.Changes' v)) raftpb.ConfChangeV2 "Changes"%go.
+  simpl_one_flatten_struct (# (ConfChangeV2.Transition' v)) (raftpb.ConfChangeV2) "Transition"%go.
+  simpl_one_flatten_struct (# (ConfChangeV2.Changes' v)) (raftpb.ConfChangeV2) "Changes"%go.
 
   solve_field_ref_f.
 Qed.
@@ -778,24 +778,9 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined raftpb :=
-{|
-  is_pkg_defined := is_global_definitions raftpb var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 End names.
 End raftpb.

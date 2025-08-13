@@ -71,7 +71,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Timer.C' v)) time.Timer "C"%go.
+  simpl_one_flatten_struct (# (Timer.C' v)) (time.Timer) "C"%go.
 
   solve_field_ref_f.
 Qed.
@@ -147,8 +147,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Time.wall' v)) time.Time "wall"%go.
-  simpl_one_flatten_struct (# (Time.ext' v)) time.Time "ext"%go.
+  simpl_one_flatten_struct (# (Time.wall' v)) (time.Time) "wall"%go.
+  simpl_one_flatten_struct (# (Time.ext' v)) (time.Time) "ext"%go.
 
   solve_field_ref_f.
 Qed.
@@ -165,39 +165,24 @@ End Duration.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined time :=
-{|
-  is_pkg_defined := is_global_definitions time var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_syncTimer :
-  WpFuncCall time "syncTimer" _ (is_pkg_defined time) :=
+  WpFuncCall time.syncTimer _ (is_pkg_defined time) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newTimer :
-  WpFuncCall time "newTimer" _ (is_pkg_defined time) :=
+  WpFuncCall time.newTimer _ (is_pkg_defined time) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_After :
-  WpFuncCall time "After" _ (is_pkg_defined time) :=
+  WpFuncCall time.After _ (is_pkg_defined time) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtimeNano :
-  WpFuncCall time "runtimeNano" _ (is_pkg_defined time) :=
+  WpFuncCall time.runtimeNano _ (is_pkg_defined time) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

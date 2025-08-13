@@ -8,7 +8,17 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition ConfChangeIⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeI"%go.
+
 Definition ConfChangeI : go_type := interfaceT.
+
+Definition MarshalConfChange : go_string := "go.etcd.io/raft/v3/raftpb.MarshalConfChange"%go.
+
+Definition ConfChangesFromString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesFromString"%go.
+
+Definition ConfChangesToString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesToString"%go.
+
+Definition EntryTypeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.EntryType"%go.
 
 Definition EntryType : go_type := int32T.
 
@@ -18,9 +28,15 @@ Definition EntryConfChange : expr := #(W32 1).
 
 Definition EntryConfChangeV2 : expr := #(W32 2).
 
+Definition EntryType_name : go_string := "go.etcd.io/raft/v3/raftpb.EntryType_name"%go.
+
 Axiom EntryType_name'init : val.
 
+Definition EntryType_value : go_string := "go.etcd.io/raft/v3/raftpb.EntryType_value"%go.
+
 Axiom EntryType_value'init : val.
+
+Definition MessageTypeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.MessageType"%go.
 
 Definition MessageType : go_type := int32T.
 
@@ -72,15 +88,27 @@ Definition MsgStorageApplyResp : expr := #(W32 22).
 
 Definition MsgForgetLeader : expr := #(W32 23).
 
+Definition MessageType_name : go_string := "go.etcd.io/raft/v3/raftpb.MessageType_name"%go.
+
 Axiom MessageType_name'init : val.
+
+Definition MessageType_value : go_string := "go.etcd.io/raft/v3/raftpb.MessageType_value"%go.
 
 Axiom MessageType_value'init : val.
 
+Definition ConfChangeTransitionⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition"%go.
+
 Definition ConfChangeTransition : go_type := int32T.
+
+Definition ConfChangeTransition_name : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition_name"%go.
 
 Axiom ConfChangeTransition_name'init : val.
 
+Definition ConfChangeTransition_value : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition_value"%go.
+
 Axiom ConfChangeTransition_value'init : val.
+
+Definition ConfChangeTypeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeType"%go.
 
 Definition ConfChangeType : go_type := int32T.
 
@@ -92,9 +120,15 @@ Definition ConfChangeUpdateNode : expr := #(W32 2).
 
 Definition ConfChangeAddLearnerNode : expr := #(W32 3).
 
+Definition ConfChangeType_name : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeType_name"%go.
+
 Axiom ConfChangeType_name'init : val.
 
+Definition ConfChangeType_value : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeType_value"%go.
+
 Axiom ConfChangeType_value'init : val.
+
+Definition Entryⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Entry"%go.
 
 Definition Entry : go_type := structT [
   "Term" :: uint64T;
@@ -102,6 +136,10 @@ Definition Entry : go_type := structT [
   "Type" :: EntryType;
   "Data" :: sliceT
 ].
+
+Definition xxx_messageInfo_Entry : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Entry"%go.
+
+Definition SnapshotMetadataⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.SnapshotMetadata"%go.
 
 Definition ConfState : go_type := structT [
   "Voters" :: sliceT;
@@ -117,10 +155,18 @@ Definition SnapshotMetadata : go_type := structT [
   "Term" :: uint64T
 ].
 
+Definition xxx_messageInfo_SnapshotMetadata : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_SnapshotMetadata"%go.
+
+Definition Snapshotⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Snapshot"%go.
+
 Definition Snapshot : go_type := structT [
   "Data" :: sliceT;
   "Metadata" :: SnapshotMetadata
 ].
+
+Definition xxx_messageInfo_Snapshot : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Snapshot"%go.
+
+Definition Messageⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Message"%go.
 
 Definition Message : go_type := structT [
   "Type" :: MessageType;
@@ -139,11 +185,23 @@ Definition Message : go_type := structT [
   "Responses" :: sliceT
 ].
 
+Definition xxx_messageInfo_Message : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Message"%go.
+
+Definition HardStateⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.HardState"%go.
+
 Definition HardState : go_type := structT [
   "Term" :: uint64T;
   "Vote" :: uint64T;
   "Commit" :: uint64T
 ].
+
+Definition xxx_messageInfo_HardState : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_HardState"%go.
+
+Definition ConfStateⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfState"%go.
+
+Definition xxx_messageInfo_ConfState : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfState"%go.
+
+Definition ConfChangeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChange"%go.
 
 Definition ConfChange : go_type := structT [
   "Type" :: ConfChangeType;
@@ -152,17 +210,43 @@ Definition ConfChange : go_type := structT [
   "ID" :: uint64T
 ].
 
+Definition xxx_messageInfo_ConfChange : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChange"%go.
+
+Definition xxx_messageInfo_ConfChangeSingle : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeSingle"%go.
+
+Definition ConfChangeV2ⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeV2"%go.
+
 Definition ConfChangeV2 : go_type := structT [
   "Transition" :: ConfChangeTransition;
   "Changes" :: sliceT;
   "Context" :: sliceT
 ].
 
+Definition xxx_messageInfo_ConfChangeV2 : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeV2"%go.
+
+Definition init : go_string := "go.etcd.io/raft/v3/raftpb.init"%go.
+
+Definition fileDescriptor_b042552c306ae59b : go_string := "go.etcd.io/raft/v3/raftpb.fileDescriptor_b042552c306ae59b"%go.
+
 Axiom fileDescriptor_b042552c306ae59b'init : val.
+
+Definition encodeVarintRaft : go_string := "go.etcd.io/raft/v3/raftpb.encodeVarintRaft"%go.
+
+Definition sovRaft : go_string := "go.etcd.io/raft/v3/raftpb.sovRaft"%go.
+
+Definition sozRaft : go_string := "go.etcd.io/raft/v3/raftpb.sozRaft"%go.
+
+Definition skipRaft : go_string := "go.etcd.io/raft/v3/raftpb.skipRaft"%go.
+
+Definition ErrInvalidLengthRaft : go_string := "go.etcd.io/raft/v3/raftpb.ErrInvalidLengthRaft"%go.
 
 Axiom ErrInvalidLengthRaft'init : val.
 
+Definition ErrIntOverflowRaft : go_string := "go.etcd.io/raft/v3/raftpb.ErrIntOverflowRaft"%go.
+
 Axiom ErrIntOverflowRaft'init : val.
+
+Definition ErrUnexpectedEndOfGroupRaft : go_string := "go.etcd.io/raft/v3/raftpb.ErrUnexpectedEndOfGroupRaft"%go.
 
 Axiom ErrUnexpectedEndOfGroupRaft'init : val.
 
@@ -170,7 +254,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("EntryType"%go, []); ("EntryType'ptr"%go, []); ("MessageType"%go, []); ("MessageType'ptr"%go, []); ("ConfChangeTransition"%go, []); ("ConfChangeTransition'ptr"%go, []); ("ConfChangeType"%go, []); ("ConfChangeType'ptr"%go, []); ("Entry"%go, []); ("Entry'ptr"%go, []); ("SnapshotMetadata"%go, []); ("SnapshotMetadata'ptr"%go, []); ("Snapshot"%go, []); ("Snapshot'ptr"%go, []); ("Message"%go, []); ("Message'ptr"%go, []); ("HardState"%go, []); ("HardState'ptr"%go, []); ("ConfState"%go, []); ("ConfState'ptr"%go, []); ("ConfChange"%go, []); ("ConfChange'ptr"%go, []); ("ConfChangeV2"%go, []); ("ConfChangeV2'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(EntryTypeⁱᵈ, []); (ptrTⁱᵈ EntryTypeⁱᵈ, []); (MessageTypeⁱᵈ, []); (ptrTⁱᵈ MessageTypeⁱᵈ, []); (ConfChangeTransitionⁱᵈ, []); (ptrTⁱᵈ ConfChangeTransitionⁱᵈ, []); (ConfChangeTypeⁱᵈ, []); (ptrTⁱᵈ ConfChangeTypeⁱᵈ, []); (Entryⁱᵈ, []); (ptrTⁱᵈ Entryⁱᵈ, []); (SnapshotMetadataⁱᵈ, []); (ptrTⁱᵈ SnapshotMetadataⁱᵈ, []); (Snapshotⁱᵈ, []); (ptrTⁱᵈ Snapshotⁱᵈ, []); (Messageⁱᵈ, []); (ptrTⁱᵈ Messageⁱᵈ, []); (HardStateⁱᵈ, []); (ptrTⁱᵈ HardStateⁱᵈ, []); (ConfStateⁱᵈ, []); (ptrTⁱᵈ ConfStateⁱᵈ, []); (ConfChangeⁱᵈ, []); (ptrTⁱᵈ ConfChangeⁱᵈ, []); (ConfChangeV2ⁱᵈ, []); (ptrTⁱᵈ ConfChangeV2ⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo raftpb.raftpb :=
   {|
@@ -183,9 +267,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("EntryType"
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init raftpb.raftpb (λ: <>,
-      exception_do (do:  (_'init #());;;
+  λ: <>,
+    package.init #raftpb.raftpb (λ: <>,
+      exception_do (do:  (package.alloc raftpb.raftpb #());;;
+      do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (EntryType_name'init #());;;

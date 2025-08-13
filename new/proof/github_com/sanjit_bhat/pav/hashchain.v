@@ -8,12 +8,14 @@ From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil.
 
 Module hashchain.
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
-Program Instance is_pkg_init_hashchain : IsPkgInit hashchain := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_hashchain.
-#[local] Transparent is_pkg_init_hashchain.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'hashchain) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit hashchain :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Local Fixpoint is_chain_rev (boot : list w8) (l : list $ list w8) (h : list w8) : iProp Σ :=
   match l with
@@ -111,7 +113,7 @@ Qed.
 
 Lemma wp_GetEmptyLink :
   {{{ is_pkg_init hashchain }}}
-  hashchain @ "GetEmptyLink" #()
+  @! hashchain.GetEmptyLink #()
   {{{
     sl h, RET #sl;
     "Hsl_hash" ∷ sl ↦* h ∗
@@ -132,7 +134,7 @@ Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal b l :
     "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal ∗
     "#His_chain" ∷ is_chain_aux b l prevLink
   }}}
-  hashchain @ "GetNextLink" #sl_prevLink #sl_nextVal
+  @! hashchain.GetNextLink #sl_prevLink #sl_nextVal
   {{{
     sl_nextLink nextLink, RET #sl_nextLink;
     "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
@@ -260,7 +262,7 @@ Qed.
 
 Lemma wp_New :
   {{{ is_pkg_init hashchain }}}
-  hashchain @ "New" #()
+  @! hashchain.New #()
   {{{ l, RET #l; "Hown_HashChain" ∷ own l [] 1 }}}.
 Proof.
   wp_start.
@@ -286,7 +288,7 @@ Lemma wp_HashChain_Append c vals sl_val d0 val :
     "Hsl_val" ∷ sl_val ↦*{d0} val ∗
     "%Hlen_val" ∷ ⌜ Z.of_nat $ length val = cryptoffi.hash_len ⌝
   }}}
-  c @ hashchain @ "HashChain'ptr" @ "Append" #sl_val
+  c @ (ptrTⁱᵈ hashchain.HashChainⁱᵈ) @ "Append" #sl_val
   {{{
     sl_newLink newLink, RET #sl_newLink;
     "Hown_HashChain" ∷ own c (vals ++ [val]) 1 ∗
@@ -324,7 +326,7 @@ Lemma wp_HashChain_Prove c vals d (prevLen : w64) :
     "Hown_HashChain" ∷ own c vals d ∗
     "%Hlt_prevLen" ∷ ⌜ uint.Z prevLen <= length vals ⌝
   }}}
-  c @ hashchain @ "HashChain'ptr" @ "Prove" #prevLen
+  c @ (ptrTⁱᵈ hashchain.HashChainⁱᵈ) @ "Prove" #prevLen
   {{{
     sl_proof proof, RET #sl_proof;
     "Hown_HashChain" ∷ own c vals d ∗
@@ -360,7 +362,7 @@ Lemma wp_HashChain_Bootstrap c vals d pred_vals lastVal :
     "Hown_HashChain" ∷ own c vals d ∗
     "->" ∷ ⌜ vals = pred_vals ++ [lastVal] ⌝
   }}}
-  c @ hashchain @ "HashChain'ptr" @ "Bootstrap" #()
+  c @ (ptrTⁱᵈ hashchain.HashChainⁱᵈ) @ "Bootstrap" #()
   {{{
     sl_bootLink bootLink sl_proof, RET (#sl_bootLink, #sl_proof);
     "Hown_HashChain" ∷ own c vals d ∗
@@ -407,7 +409,7 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
     "#Hsl_proof" ∷ sl_proof ↦*□ proof ∗
     "#His_chain" ∷ is_chain_boot l prevLink
   }}}
-  hashchain @ "Verify" #sl_prevLink #sl_proof
+  @! hashchain.Verify #sl_prevLink #sl_proof
   {{{
     (extLen : w64) sl_newVal newVal sl_newLink newLink err,
     RET (#extLen, #sl_newVal, #sl_newLink, #err);

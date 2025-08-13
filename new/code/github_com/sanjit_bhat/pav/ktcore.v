@@ -12,6 +12,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Blameⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.Blame"%go.
+
 Definition Blame : go_type := uint64T.
 
 Definition BlameNone : expr := #(W64 0).
@@ -28,11 +30,13 @@ Definition BlameClients : expr := #(W64 16).
 
 Definition BlameUnknown : expr := #(W64 32).
 
+Definition CheckBlame : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckBlame"%go.
+
 (* CheckBlame prevents bad parties from giving bad [Blame] codes.
 
    go: ktcore.go:32:6 *)
-Definition CheckBlame : val :=
-  rec: "CheckBlame" "b" "allowed" :=
+Definition CheckBlameⁱᵐᵖˡ : val :=
+  λ: "b" "allowed",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "allowed" := (mem.alloc "allowed") in
     let: "b" := (mem.alloc "b") in
@@ -45,6 +49,10 @@ Definition CheckBlame : val :=
       do:  ("all" <-[#Blame] ((![#Blame] "all") `or` (![#Blame] "x")))));;;
     return: (((![#Blame] "b") `and` (~ (![#Blame] "all"))) ≠ #(W64 0))).
 
+Definition SignVrf : go_string := "github.com/sanjit-bhat/pav/ktcore.SignVrf"%go.
+
+Definition VrfSigEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSigEncode"%go.
+
 Definition VrfSig : go_type := structT [
   "SigTag" :: byteT;
   "VrfPk" :: sliceT
@@ -53,8 +61,8 @@ Definition VrfSig : go_type := structT [
 Definition VrfSigTag : expr := #(W8 0).
 
 (* go: ktcore.go:40:6 *)
-Definition SignVrf : val :=
-  rec: "SignVrf" "sk" "vrfPk" :=
+Definition SignVrfⁱᵐᵖˡ : val :=
+  λ: "sk" "vrfPk",
     exception_do (let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "vrfPk" := (mem.alloc "vrfPk") in
     let: "sk" := (mem.alloc "sk") in
@@ -68,16 +76,18 @@ Definition SignVrf : val :=
       "SigTag" ::= "$SigTag";
       "VrfPk" ::= "$VrfPk"
     }])) in
-    (func_call #ktcore.ktcore #"VrfSigEncode"%go) "$a0" "$a1") in
+    (func_call #VrfSigEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    (method_call #cryptoffi #"SigPrivateKey'ptr" #"Sign" (![#ptrT] "sk")) "$a0") in
+    (method_call #(ptrTⁱᵈ cryptoffi.SigPrivateKeyⁱᵈ) #"Sign"%go (![#ptrT] "sk")) "$a0") in
     do:  ("sig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "sig")).
 
+Definition VerifyVrfSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyVrfSig"%go.
+
 (* go: ktcore.go:48:6 *)
-Definition VerifyVrfSig : val :=
-  rec: "VerifyVrfSig" "pk" "vrfPk" "sig" :=
+Definition VerifyVrfSigⁱᵐᵖˡ : val :=
+  λ: "pk" "vrfPk" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "sig" := (mem.alloc "sig") in
     let: "vrfPk" := (mem.alloc "vrfPk") in
@@ -92,11 +102,15 @@ Definition VerifyVrfSig : val :=
       "SigTag" ::= "$SigTag";
       "VrfPk" ::= "$VrfPk"
     }])) in
-    (func_call #ktcore.ktcore #"VrfSigEncode"%go) "$a0" "$a1") in
+    (func_call #VrfSigEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
      let: "$a1" := (![#sliceT] "sig") in
-     (method_call #cryptoffi #"SigPublicKey" #"Verify" (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+     (method_call #cryptoffi.SigPublicKeyⁱᵈ #"Verify"%go (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+
+Definition SignLink : go_string := "github.com/sanjit-bhat/pav/ktcore.SignLink"%go.
+
+Definition LinkSigEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.LinkSigEncode"%go.
 
 Definition LinkSig : go_type := structT [
   "SigTag" :: byteT;
@@ -107,8 +121,8 @@ Definition LinkSig : go_type := structT [
 Definition LinkSigTag : expr := #(W8 1).
 
 (* go: ktcore.go:54:6 *)
-Definition SignLink : val :=
-  rec: "SignLink" "sk" "epoch" "link" :=
+Definition SignLinkⁱᵐᵖˡ : val :=
+  λ: "sk" "epoch" "link",
     exception_do (let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "link" := (mem.alloc "link") in
     let: "epoch" := (mem.alloc "epoch") in
@@ -125,16 +139,18 @@ Definition SignLink : val :=
       "Epoch" ::= "$Epoch";
       "Link" ::= "$Link"
     }])) in
-    (func_call #ktcore.ktcore #"LinkSigEncode"%go) "$a0" "$a1") in
+    (func_call #LinkSigEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    (method_call #cryptoffi #"SigPrivateKey'ptr" #"Sign" (![#ptrT] "sk")) "$a0") in
+    (method_call #(ptrTⁱᵈ cryptoffi.SigPrivateKeyⁱᵈ) #"Sign"%go (![#ptrT] "sk")) "$a0") in
     do:  ("sig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "sig")).
 
+Definition VerifyLinkSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyLinkSig"%go.
+
 (* go: ktcore.go:62:6 *)
-Definition VerifyLinkSig : val :=
-  rec: "VerifyLinkSig" "pk" "epoch" "link" "sig" :=
+Definition VerifyLinkSigⁱᵐᵖˡ : val :=
+  λ: "pk" "epoch" "link" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "sig" := (mem.alloc "sig") in
     let: "link" := (mem.alloc "link") in
@@ -152,11 +168,15 @@ Definition VerifyLinkSig : val :=
       "Epoch" ::= "$Epoch";
       "Link" ::= "$Link"
     }])) in
-    (func_call #ktcore.ktcore #"LinkSigEncode"%go) "$a0" "$a1") in
+    (func_call #LinkSigEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
      let: "$a1" := (![#sliceT] "sig") in
-     (method_call #cryptoffi #"SigPublicKey" #"Verify" (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+     (method_call #cryptoffi.SigPublicKeyⁱᵈ #"Verify"%go (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+
+Definition ProveMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.ProveMapLabel"%go.
+
+Definition MapLabelEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.MapLabelEncode"%go.
 
 Definition MapLabel : go_type := structT [
   "Uid" :: uint64T;
@@ -164,8 +184,8 @@ Definition MapLabel : go_type := structT [
 ].
 
 (* go: ktcore.go:68:6 *)
-Definition ProveMapLabel : val :=
-  rec: "ProveMapLabel" "uid" "ver" "sk" :=
+Definition ProveMapLabelⁱᵐᵖˡ : val :=
+  λ: "uid" "ver" "sk",
     exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
     let: "label" := (mem.alloc (type.zero_val #sliceT)) in
     let: "sk" := (mem.alloc "sk") in
@@ -181,15 +201,17 @@ Definition ProveMapLabel : val :=
       "Uid" ::= "$Uid";
       "Ver" ::= "$Ver"
     }])) in
-    (func_call #ktcore.ktcore #"MapLabelEncode"%go) "$a0" "$a1") in
+    (func_call #MapLabelEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "b") in
-    (method_call #cryptoffi #"VrfPrivateKey'ptr" #"Prove" (![#ptrT] "sk")) "$a0")) in
+    (method_call #(ptrTⁱᵈ cryptoffi.VrfPrivateKeyⁱᵈ) #"Prove"%go (![#ptrT] "sk")) "$a0")) in
     return: ("$ret0", "$ret1")).
 
+Definition EvalMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.EvalMapLabel"%go.
+
 (* go: ktcore.go:74:6 *)
-Definition EvalMapLabel : val :=
-  rec: "EvalMapLabel" "uid" "ver" "sk" :=
+Definition EvalMapLabelⁱᵐᵖˡ : val :=
+  λ: "uid" "ver" "sk",
     exception_do (let: "label" := (mem.alloc (type.zero_val #sliceT)) in
     let: "sk" := (mem.alloc "sk") in
     let: "ver" := (mem.alloc "ver") in
@@ -204,14 +226,16 @@ Definition EvalMapLabel : val :=
       "Uid" ::= "$Uid";
       "Ver" ::= "$Ver"
     }])) in
-    (func_call #ktcore.ktcore #"MapLabelEncode"%go) "$a0" "$a1") in
+    (func_call #MapLabelEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
-     (method_call #cryptoffi #"VrfPrivateKey'ptr" #"Evaluate" (![#ptrT] "sk")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.VrfPrivateKeyⁱᵈ) #"Evaluate"%go (![#ptrT] "sk")) "$a0")).
+
+Definition CheckMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckMapLabel"%go.
 
 (* go: ktcore.go:80:6 *)
-Definition CheckMapLabel : val :=
-  rec: "CheckMapLabel" "pk" "uid" "ver" "proof" :=
+Definition CheckMapLabelⁱᵐᵖˡ : val :=
+  λ: "pk" "uid" "ver" "proof",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "label" := (mem.alloc (type.zero_val #sliceT)) in
     let: "proof" := (mem.alloc "proof") in
@@ -228,12 +252,16 @@ Definition CheckMapLabel : val :=
       "Uid" ::= "$Uid";
       "Ver" ::= "$Ver"
     }])) in
-    (func_call #ktcore.ktcore #"MapLabelEncode"%go) "$a0" "$a1") in
+    (func_call #MapLabelEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] "proof") in
-    (method_call #cryptoffi #"VrfPublicKey'ptr" #"Verify" (![#ptrT] "pk")) "$a0" "$a1")) in
+    (method_call #(ptrTⁱᵈ cryptoffi.VrfPublicKeyⁱᵈ) #"Verify"%go (![#ptrT] "pk")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
+
+Definition GetMapVal : go_string := "github.com/sanjit-bhat/pav/ktcore.GetMapVal"%go.
+
+Definition CommitOpenEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpenEncode"%go.
 
 Definition CommitOpen : go_type := structT [
   "Val" :: sliceT;
@@ -241,8 +269,8 @@ Definition CommitOpen : go_type := structT [
 ].
 
 (* go: ktcore.go:86:6 *)
-Definition GetMapVal : val :=
-  rec: "GetMapVal" "pkOpen" :=
+Definition GetMapValⁱᵐᵖˡ : val :=
+  λ: "pkOpen",
     exception_do (let: "val" := (mem.alloc (type.zero_val #sliceT)) in
     let: "pkOpen" := (mem.alloc "pkOpen") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -251,29 +279,41 @@ Definition GetMapVal : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#ptrT] "pkOpen") in
-    (func_call #ktcore.ktcore #"CommitOpenEncode"%go) "$a0" "$a1") in
+    (func_call #CommitOpenEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
-     (func_call #cryptoutil.cryptoutil #"Hash"%go) "$a0")).
+     (func_call #cryptoutil.Hash) "$a0")).
+
+Definition GetCommitRand : go_string := "github.com/sanjit-bhat/pav/ktcore.GetCommitRand"%go.
 
 (* GetCommitRand computes the psuedo-random (wrt commitSecret) bits
    used in a mapVal commitment.
 
    go: ktcore.go:94:6 *)
-Definition GetCommitRand : val :=
-  rec: "GetCommitRand" "commitSecret" "label" :=
+Definition GetCommitRandⁱᵐᵖˡ : val :=
+  λ: "commitSecret" "label",
     exception_do (let: "rand" := (mem.alloc (type.zero_val #sliceT)) in
     let: "label" := (mem.alloc "label") in
     let: "commitSecret" := (mem.alloc "commitSecret") in
     let: "hr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #cryptoffi.cryptoffi #"NewHasher"%go) #()) in
+    let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
     do:  ("hr" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "commitSecret") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "label") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #cryptoffi #"Hasher'ptr" #"Sum" (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Sum"%go (![#ptrT] "hr")) "$a0")).
+
+Definition VrfSigⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSig"%go.
+
+Definition LinkSigⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.LinkSig"%go.
+
+Definition MapLabelⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.MapLabel"%go.
+
+Definition CommitOpenⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpen"%go.
+
+Definition Membⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.Memb"%go.
 
 Definition Memb : go_type := structT [
   "LabelProof" :: sliceT;
@@ -281,15 +321,21 @@ Definition Memb : go_type := structT [
   "MerkleProof" :: sliceT
 ].
 
+Definition NonMembⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMemb"%go.
+
 Definition NonMemb : go_type := structT [
   "LabelProof" :: sliceT;
   "MerkleProof" :: sliceT
 ].
 
+Definition AuditProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProof"%go.
+
 Definition AuditProof : go_type := structT [
   "Updates" :: sliceT;
   "LinkSig" :: sliceT
 ].
+
+Definition UpdateProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProof"%go.
 
 Definition UpdateProof : go_type := structT [
   "MapLabel" :: sliceT;
@@ -298,8 +344,8 @@ Definition UpdateProof : go_type := structT [
 ].
 
 (* go: serde.out.go:10:6 *)
-Definition VrfSigEncode : val :=
-  rec: "VrfSigEncode" "b0" "o" :=
+Definition VrfSigEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -307,23 +353,25 @@ Definition VrfSigEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#byteT] (struct.field_ref #VrfSig #"SigTag"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteByte"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteByte) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #VrfSig #"VrfPk"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition VrfSigDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSigDecode"%go.
+
 (* go: serde.out.go:16:6 *)
-Definition VrfSigDecode : val :=
-  rec: "VrfSigDecode" "b0" :=
+Definition VrfSigDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #byteT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadByte"%go) "$a0") in
+    (func_call #safemarshal.ReadByte) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -337,7 +385,7 @@ Definition VrfSigDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -355,8 +403,8 @@ Definition VrfSigDecode : val :=
      }]), ![#sliceT] "b2", #false)).
 
 (* go: serde.out.go:27:6 *)
-Definition LinkSigEncode : val :=
-  rec: "LinkSigEncode" "b0" "o" :=
+Definition LinkSigEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -364,27 +412,29 @@ Definition LinkSigEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#byteT] (struct.field_ref #LinkSig #"SigTag"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteByte"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteByte) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#uint64T] (struct.field_ref #LinkSig #"Epoch"%go (![#ptrT] "o"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #LinkSig #"Link"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition LinkSigDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.LinkSigDecode"%go.
+
 (* go: serde.out.go:34:6 *)
-Definition LinkSigDecode : val :=
-  rec: "LinkSigDecode" "b0" :=
+Definition LinkSigDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #byteT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadByte"%go) "$a0") in
+    (func_call #safemarshal.ReadByte) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -398,7 +448,7 @@ Definition LinkSigDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #uint64T)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #safemarshal.safemarshal #"ReadInt"%go) "$a0") in
+    (func_call #safemarshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -412,7 +462,7 @@ Definition LinkSigDecode : val :=
     let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a3" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b2") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -432,8 +482,8 @@ Definition LinkSigDecode : val :=
      }]), ![#sliceT] "b3", #false)).
 
 (* go: serde.out.go:49:6 *)
-Definition MapLabelEncode : val :=
-  rec: "MapLabelEncode" "b0" "o" :=
+Definition MapLabelEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -441,23 +491,25 @@ Definition MapLabelEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#uint64T] (struct.field_ref #MapLabel #"Uid"%go (![#ptrT] "o"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#uint64T] (struct.field_ref #MapLabel #"Ver"%go (![#ptrT] "o"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition MapLabelDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.MapLabelDecode"%go.
+
 (* go: serde.out.go:55:6 *)
-Definition MapLabelDecode : val :=
-  rec: "MapLabelDecode" "b0" :=
+Definition MapLabelDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #uint64T)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadInt"%go) "$a0") in
+    (func_call #safemarshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -471,7 +523,7 @@ Definition MapLabelDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #uint64T)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #safemarshal.safemarshal #"ReadInt"%go) "$a0") in
+    (func_call #safemarshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -489,8 +541,8 @@ Definition MapLabelDecode : val :=
      }]), ![#sliceT] "b2", #false)).
 
 (* go: serde.out.go:66:6 *)
-Definition CommitOpenEncode : val :=
-  rec: "CommitOpenEncode" "b0" "o" :=
+Definition CommitOpenEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -498,23 +550,25 @@ Definition CommitOpenEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #CommitOpen #"Val"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #CommitOpen #"Rand"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition CommitOpenDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpenDecode"%go.
+
 (* go: serde.out.go:72:6 *)
-Definition CommitOpenDecode : val :=
-  rec: "CommitOpenDecode" "b0" :=
+Definition CommitOpenDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -528,7 +582,7 @@ Definition CommitOpenDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -545,9 +599,11 @@ Definition CommitOpenDecode : val :=
        "Rand" ::= "$Rand"
      }]), ![#sliceT] "b2", #false)).
 
+Definition MembEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembEncode"%go.
+
 (* go: serde.out.go:83:6 *)
-Definition MembEncode : val :=
-  rec: "MembEncode" "b0" "o" :=
+Definition MembEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -555,27 +611,29 @@ Definition MembEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #Memb #"LabelProof"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#ptrT] (struct.field_ref #Memb #"PkOpen"%go (![#ptrT] "o"))) in
-    (func_call #ktcore.ktcore #"CommitOpenEncode"%go) "$a0" "$a1") in
+    (func_call #CommitOpenEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #Memb #"MerkleProof"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition MembDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembDecode"%go.
+
 (* go: serde.out.go:90:6 *)
-Definition MembDecode : val :=
-  rec: "MembDecode" "b0" :=
+Definition MembDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -589,7 +647,7 @@ Definition MembDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #ptrT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #ktcore.ktcore #"CommitOpenDecode"%go) "$a0") in
+    (func_call #CommitOpenDecode) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -603,7 +661,7 @@ Definition MembDecode : val :=
     let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a3" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b2") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -622,9 +680,11 @@ Definition MembDecode : val :=
        "MerkleProof" ::= "$MerkleProof"
      }]), ![#sliceT] "b3", #false)).
 
+Definition NonMembEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMembEncode"%go.
+
 (* go: serde.out.go:105:6 *)
-Definition NonMembEncode : val :=
-  rec: "NonMembEncode" "b0" "o" :=
+Definition NonMembEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -632,23 +692,25 @@ Definition NonMembEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #NonMemb #"LabelProof"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #NonMemb #"MerkleProof"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition NonMembDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMembDecode"%go.
+
 (* go: serde.out.go:111:6 *)
-Definition NonMembDecode : val :=
-  rec: "NonMembDecode" "b0" :=
+Definition NonMembDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -662,7 +724,7 @@ Definition NonMembDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -679,9 +741,13 @@ Definition NonMembDecode : val :=
        "MerkleProof" ::= "$MerkleProof"
      }]), ![#sliceT] "b2", #false)).
 
+Definition AuditProofEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofEncode"%go.
+
+Definition UpdateProofSlice1DEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProofSlice1DEncode"%go.
+
 (* go: serde.out.go:122:6 *)
-Definition AuditProofEncode : val :=
-  rec: "AuditProofEncode" "b0" "o" :=
+Definition AuditProofEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -689,23 +755,27 @@ Definition AuditProofEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #AuditProof #"Updates"%go (![#ptrT] "o"))) in
-    (func_call #ktcore.ktcore #"UpdateProofSlice1DEncode"%go) "$a0" "$a1") in
+    (func_call #UpdateProofSlice1DEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #AuditProof #"LinkSig"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition AuditProofDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofDecode"%go.
+
+Definition UpdateProofSlice1DDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProofSlice1DDecode"%go.
+
 (* go: serde.out.go:128:6 *)
-Definition AuditProofDecode : val :=
-  rec: "AuditProofDecode" "b0" :=
+Definition AuditProofDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #ktcore.ktcore #"UpdateProofSlice1DDecode"%go) "$a0") in
+    (func_call #UpdateProofSlice1DDecode) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -719,7 +789,7 @@ Definition AuditProofDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -736,9 +806,11 @@ Definition AuditProofDecode : val :=
        "LinkSig" ::= "$LinkSig"
      }]), ![#sliceT] "b2", #false)).
 
+Definition UpdateProofEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProofEncode"%go.
+
 (* go: serde.out.go:139:6 *)
-Definition UpdateProofEncode : val :=
-  rec: "UpdateProofEncode" "b0" "o" :=
+Definition UpdateProofEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -746,27 +818,29 @@ Definition UpdateProofEncode : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #UpdateProof #"MapLabel"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #UpdateProof #"MapVal"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] (struct.field_ref #UpdateProof #"NonMembProof"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.safemarshal #"WriteSlice1D"%go) "$a0" "$a1") in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
+Definition UpdateProofDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProofDecode"%go.
+
 (* go: serde.out.go:146:6 *)
-Definition UpdateProofDecode : val :=
-  rec: "UpdateProofDecode" "b0" :=
+Definition UpdateProofDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a1" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -780,7 +854,7 @@ Definition UpdateProofDecode : val :=
     let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a2" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -794,7 +868,7 @@ Definition UpdateProofDecode : val :=
     let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
     let: "a3" := (mem.alloc (type.zero_val #sliceT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b2") in
-    (func_call #safemarshal.safemarshal #"ReadSlice1D"%go) "$a0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -814,8 +888,8 @@ Definition UpdateProofDecode : val :=
      }]), ![#sliceT] "b3", #false)).
 
 (* go: serde_misc.go:8:6 *)
-Definition UpdateProofSlice1DEncode : val :=
-  rec: "UpdateProofSlice1DEncode" "b0" "o" :=
+Definition UpdateProofSlice1DEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -824,7 +898,7 @@ Definition UpdateProofSlice1DEncode : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "o") in
     slice.len "$a0")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "o") in
     (let: "e" := (mem.alloc (type.zero_val #ptrT)) in
@@ -833,19 +907,19 @@ Definition UpdateProofSlice1DEncode : val :=
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
       let: "$a1" := (![#ptrT] "e") in
-      (func_call #ktcore.ktcore #"UpdateProofEncode"%go) "$a0" "$a1") in
+      (func_call #UpdateProofEncode) "$a0" "$a1") in
       do:  ("b" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "b")).
 
 (* go: serde_misc.go:17:6 *)
-Definition UpdateProofSlice1DDecode : val :=
-  rec: "UpdateProofSlice1DDecode" "b0" :=
+Definition UpdateProofSlice1DDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadInt"%go) "$a0") in
+    (func_call #safemarshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -870,7 +944,7 @@ Definition UpdateProofSlice1DDecode : val :=
       let: "loopB1" := (mem.alloc (type.zero_val #sliceT)) in
       let: "a2" := (mem.alloc (type.zero_val #ptrT)) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "loopB") in
-      (func_call #ktcore.ktcore #"UpdateProofDecode"%go) "$a0") in
+      (func_call #UpdateProofDecode) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
@@ -894,10 +968,12 @@ Definition UpdateProofSlice1DDecode : val :=
     then return: (#slice.nil, #slice.nil, #true)
     else do:  #());;;
     return: (![#sliceT] "loopO", ![#sliceT] "loopB", #false)).
+
+Definition MembSlice1DEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembSlice1DEncode"%go.
 
 (* go: serde_misc.go:40:6 *)
-Definition MembSlice1DEncode : val :=
-  rec: "MembSlice1DEncode" "b0" "o" :=
+Definition MembSlice1DEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -906,7 +982,7 @@ Definition MembSlice1DEncode : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "o") in
     slice.len "$a0")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "o") in
     (let: "e" := (mem.alloc (type.zero_val #ptrT)) in
@@ -915,19 +991,21 @@ Definition MembSlice1DEncode : val :=
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
       let: "$a1" := (![#ptrT] "e") in
-      (func_call #ktcore.ktcore #"MembEncode"%go) "$a0" "$a1") in
+      (func_call #MembEncode) "$a0" "$a1") in
       do:  ("b" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "b")).
 
+Definition MembSlice1DDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembSlice1DDecode"%go.
+
 (* go: serde_misc.go:49:6 *)
-Definition MembSlice1DDecode : val :=
-  rec: "MembSlice1DDecode" "b0" :=
+Definition MembSlice1DDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadInt"%go) "$a0") in
+    (func_call #safemarshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -952,7 +1030,7 @@ Definition MembSlice1DDecode : val :=
       let: "loopB1" := (mem.alloc (type.zero_val #sliceT)) in
       let: "a2" := (mem.alloc (type.zero_val #ptrT)) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "loopB") in
-      (func_call #ktcore.ktcore #"MembDecode"%go) "$a0") in
+      (func_call #MembDecode) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
@@ -977,9 +1055,11 @@ Definition MembSlice1DDecode : val :=
     else do:  #());;;
     return: (![#sliceT] "loopO", ![#sliceT] "loopB", #false)).
 
+Definition AuditProofSlice1DEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofSlice1DEncode"%go.
+
 (* go: serde_misc.go:72:6 *)
-Definition AuditProofSlice1DEncode : val :=
-  rec: "AuditProofSlice1DEncode" "b0" "o" :=
+Definition AuditProofSlice1DEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
@@ -988,7 +1068,7 @@ Definition AuditProofSlice1DEncode : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "o") in
     slice.len "$a0")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "o") in
     (let: "e" := (mem.alloc (type.zero_val #ptrT)) in
@@ -997,19 +1077,21 @@ Definition AuditProofSlice1DEncode : val :=
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
       let: "$a1" := (![#ptrT] "e") in
-      (func_call #ktcore.ktcore #"AuditProofEncode"%go) "$a0" "$a1") in
+      (func_call #AuditProofEncode) "$a0" "$a1") in
       do:  ("b" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "b")).
 
+Definition AuditProofSlice1DDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofSlice1DDecode"%go.
+
 (* go: serde_misc.go:81:6 *)
-Definition AuditProofSlice1DDecode : val :=
-  rec: "AuditProofSlice1DDecode" "b0" :=
+Definition AuditProofSlice1DDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
     let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.safemarshal #"ReadInt"%go) "$a0") in
+    (func_call #safemarshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -1034,7 +1116,7 @@ Definition AuditProofSlice1DDecode : val :=
       let: "loopB1" := (mem.alloc (type.zero_val #sliceT)) in
       let: "a2" := (mem.alloc (type.zero_val #ptrT)) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "loopB") in
-      (func_call #ktcore.ktcore #"AuditProofDecode"%go) "$a0") in
+      (func_call #AuditProofDecode) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
@@ -1061,9 +1143,9 @@ Definition AuditProofSlice1DDecode : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("CheckBlame"%go, CheckBlame); ("SignVrf"%go, SignVrf); ("VerifyVrfSig"%go, VerifyVrfSig); ("SignLink"%go, SignLink); ("VerifyLinkSig"%go, VerifyLinkSig); ("ProveMapLabel"%go, ProveMapLabel); ("EvalMapLabel"%go, EvalMapLabel); ("CheckMapLabel"%go, CheckMapLabel); ("GetMapVal"%go, GetMapVal); ("GetCommitRand"%go, GetCommitRand); ("VrfSigEncode"%go, VrfSigEncode); ("VrfSigDecode"%go, VrfSigDecode); ("LinkSigEncode"%go, LinkSigEncode); ("LinkSigDecode"%go, LinkSigDecode); ("MapLabelEncode"%go, MapLabelEncode); ("MapLabelDecode"%go, MapLabelDecode); ("CommitOpenEncode"%go, CommitOpenEncode); ("CommitOpenDecode"%go, CommitOpenDecode); ("MembEncode"%go, MembEncode); ("MembDecode"%go, MembDecode); ("NonMembEncode"%go, NonMembEncode); ("NonMembDecode"%go, NonMembDecode); ("AuditProofEncode"%go, AuditProofEncode); ("AuditProofDecode"%go, AuditProofDecode); ("UpdateProofEncode"%go, UpdateProofEncode); ("UpdateProofDecode"%go, UpdateProofDecode); ("UpdateProofSlice1DEncode"%go, UpdateProofSlice1DEncode); ("UpdateProofSlice1DDecode"%go, UpdateProofSlice1DDecode); ("MembSlice1DEncode"%go, MembSlice1DEncode); ("MembSlice1DDecode"%go, MembSlice1DDecode); ("AuditProofSlice1DEncode"%go, AuditProofSlice1DEncode); ("AuditProofSlice1DDecode"%go, AuditProofSlice1DDecode)].
+Definition functions' : list (go_string * val) := [(CheckBlame, CheckBlameⁱᵐᵖˡ); (SignVrf, SignVrfⁱᵐᵖˡ); (VerifyVrfSig, VerifyVrfSigⁱᵐᵖˡ); (SignLink, SignLinkⁱᵐᵖˡ); (VerifyLinkSig, VerifyLinkSigⁱᵐᵖˡ); (ProveMapLabel, ProveMapLabelⁱᵐᵖˡ); (EvalMapLabel, EvalMapLabelⁱᵐᵖˡ); (CheckMapLabel, CheckMapLabelⁱᵐᵖˡ); (GetMapVal, GetMapValⁱᵐᵖˡ); (GetCommitRand, GetCommitRandⁱᵐᵖˡ); (VrfSigEncode, VrfSigEncodeⁱᵐᵖˡ); (VrfSigDecode, VrfSigDecodeⁱᵐᵖˡ); (LinkSigEncode, LinkSigEncodeⁱᵐᵖˡ); (LinkSigDecode, LinkSigDecodeⁱᵐᵖˡ); (MapLabelEncode, MapLabelEncodeⁱᵐᵖˡ); (MapLabelDecode, MapLabelDecodeⁱᵐᵖˡ); (CommitOpenEncode, CommitOpenEncodeⁱᵐᵖˡ); (CommitOpenDecode, CommitOpenDecodeⁱᵐᵖˡ); (MembEncode, MembEncodeⁱᵐᵖˡ); (MembDecode, MembDecodeⁱᵐᵖˡ); (NonMembEncode, NonMembEncodeⁱᵐᵖˡ); (NonMembDecode, NonMembDecodeⁱᵐᵖˡ); (AuditProofEncode, AuditProofEncodeⁱᵐᵖˡ); (AuditProofDecode, AuditProofDecodeⁱᵐᵖˡ); (UpdateProofEncode, UpdateProofEncodeⁱᵐᵖˡ); (UpdateProofDecode, UpdateProofDecodeⁱᵐᵖˡ); (UpdateProofSlice1DEncode, UpdateProofSlice1DEncodeⁱᵐᵖˡ); (UpdateProofSlice1DDecode, UpdateProofSlice1DDecodeⁱᵐᵖˡ); (MembSlice1DEncode, MembSlice1DEncodeⁱᵐᵖˡ); (MembSlice1DDecode, MembSlice1DDecodeⁱᵐᵖˡ); (AuditProofSlice1DEncode, AuditProofSlice1DEncodeⁱᵐᵖˡ); (AuditProofSlice1DDecode, AuditProofSlice1DDecodeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Blame"%go, []); ("Blame'ptr"%go, []); ("VrfSig"%go, []); ("VrfSig'ptr"%go, []); ("LinkSig"%go, []); ("LinkSig'ptr"%go, []); ("MapLabel"%go, []); ("MapLabel'ptr"%go, []); ("CommitOpen"%go, []); ("CommitOpen'ptr"%go, []); ("Memb"%go, []); ("Memb'ptr"%go, []); ("NonMemb"%go, []); ("NonMemb'ptr"%go, []); ("AuditProof"%go, []); ("AuditProof'ptr"%go, []); ("UpdateProof"%go, []); ("UpdateProof'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Blameⁱᵈ, []); (ptrTⁱᵈ Blameⁱᵈ, []); (VrfSigⁱᵈ, []); (ptrTⁱᵈ VrfSigⁱᵈ, []); (LinkSigⁱᵈ, []); (ptrTⁱᵈ LinkSigⁱᵈ, []); (MapLabelⁱᵈ, []); (ptrTⁱᵈ MapLabelⁱᵈ, []); (CommitOpenⁱᵈ, []); (ptrTⁱᵈ CommitOpenⁱᵈ, []); (Membⁱᵈ, []); (ptrTⁱᵈ Membⁱᵈ, []); (NonMembⁱᵈ, []); (ptrTⁱᵈ NonMembⁱᵈ, []); (AuditProofⁱᵈ, []); (ptrTⁱᵈ AuditProofⁱᵈ, []); (UpdateProofⁱᵈ, []); (ptrTⁱᵈ UpdateProofⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo ktcore.ktcore :=
   {|
@@ -1074,12 +1156,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Blame"%go,
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init ktcore.ktcore (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  safemarshal.initialize';;;
-      do:  cryptoutil.initialize';;;
-      do:  cryptoffi.initialize')
+  λ: <>,
+    package.init #ktcore.ktcore (λ: <>,
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (safemarshal.initialize' #());;;
+      do:  (cryptoutil.initialize' #());;;
+      do:  (cryptoffi.initialize' #());;;
+      do:  (package.alloc ktcore.ktcore #()))
       ).
 
 End code.

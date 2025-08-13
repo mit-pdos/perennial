@@ -129,15 +129,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (AsyncFile.mu' v)) asyncfile.AsyncFile "mu"%go.
-  simpl_one_flatten_struct (# (AsyncFile.data' v)) asyncfile.AsyncFile "data"%go.
-  simpl_one_flatten_struct (# (AsyncFile.filename' v)) asyncfile.AsyncFile "filename"%go.
-  simpl_one_flatten_struct (# (AsyncFile.index' v)) asyncfile.AsyncFile "index"%go.
-  simpl_one_flatten_struct (# (AsyncFile.indexCond' v)) asyncfile.AsyncFile "indexCond"%go.
-  simpl_one_flatten_struct (# (AsyncFile.durableIndex' v)) asyncfile.AsyncFile "durableIndex"%go.
-  simpl_one_flatten_struct (# (AsyncFile.durableIndexCond' v)) asyncfile.AsyncFile "durableIndexCond"%go.
-  simpl_one_flatten_struct (# (AsyncFile.closeRequested' v)) asyncfile.AsyncFile "closeRequested"%go.
-  simpl_one_flatten_struct (# (AsyncFile.closed' v)) asyncfile.AsyncFile "closed"%go.
+  simpl_one_flatten_struct (# (AsyncFile.mu' v)) (asyncfile.AsyncFile) "mu"%go.
+  simpl_one_flatten_struct (# (AsyncFile.data' v)) (asyncfile.AsyncFile) "data"%go.
+  simpl_one_flatten_struct (# (AsyncFile.filename' v)) (asyncfile.AsyncFile) "filename"%go.
+  simpl_one_flatten_struct (# (AsyncFile.index' v)) (asyncfile.AsyncFile) "index"%go.
+  simpl_one_flatten_struct (# (AsyncFile.indexCond' v)) (asyncfile.AsyncFile) "indexCond"%go.
+  simpl_one_flatten_struct (# (AsyncFile.durableIndex' v)) (asyncfile.AsyncFile) "durableIndex"%go.
+  simpl_one_flatten_struct (# (AsyncFile.durableIndexCond' v)) (asyncfile.AsyncFile) "durableIndexCond"%go.
+  simpl_one_flatten_struct (# (AsyncFile.closeRequested' v)) (asyncfile.AsyncFile) "closeRequested"%go.
+  simpl_one_flatten_struct (# (AsyncFile.closed' v)) (asyncfile.AsyncFile) "closed"%go.
 
   solve_field_ref_f.
 Qed.
@@ -146,43 +146,28 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined asyncfile :=
-{|
-  is_pkg_defined := is_global_definitions asyncfile var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeAsyncFile :
-  WpFuncCall asyncfile "MakeAsyncFile" _ (is_pkg_defined asyncfile) :=
+  WpFuncCall asyncfile.MakeAsyncFile _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Close :
-  WpMethodCall asyncfile "AsyncFile'ptr" "Close" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "Close" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Write :
-  WpMethodCall asyncfile "AsyncFile'ptr" "Write" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "Write" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_flushThread :
-  WpMethodCall asyncfile "AsyncFile'ptr" "flushThread" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "flushThread" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_wait :
-  WpMethodCall asyncfile "AsyncFile'ptr" "wait" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "wait" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

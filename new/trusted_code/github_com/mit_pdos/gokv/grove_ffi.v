@@ -22,11 +22,11 @@ Section grove.
                              ].
 
   (** Type: func(uint64) Listener *)
-  Definition Listen : val :=
+  Definition Listenⁱᵐᵖˡ : val :=
     λ: "e", ref (ExternalOp ListenOp "e").
 
   (** Type: func(uint64) (bool, Connection) *)
-  Definition Connect : val :=
+  Definition Connectⁱᵐᵖˡ : val :=
     λ: "e",
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
@@ -37,15 +37,15 @@ Section grove.
       }].
 
   (** Type: func(Listener) Connection *)
-  Definition Accept : val :=
+  Definition Acceptⁱᵐᵖˡ : val :=
     λ: "e", ref (ExternalOp AcceptOp (!"e")).
 
   (** Type: func(Connection, []byte) *)
-  Definition Send : val :=
+  Definition Sendⁱᵐᵖˡ : val :=
     λ: "e" "m", ExternalOp SendOp (!"e", (slice.ptr "m", slice.len "m")).
 
   (** Type: func(Connection) (bool, []byte) *)
-  Definition Receive : val :=
+  Definition Receiveⁱᵐᵖˡ : val :=
     λ: "e",
       let: "r" := ExternalOp RecvOp (!"e") in
       let: "err" := Fst "r" in
@@ -60,7 +60,7 @@ Section grove.
 
   (** FileRead pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
-  Definition FileRead : val :=
+  Definition FileReadⁱᵐᵖˡ : val :=
     λ: "f",
       let: "ret" := ExternalOp FileReadOp "f" in
       let: "err" := Fst "ret" in
@@ -72,7 +72,7 @@ Section grove.
 
   (** FileWrite pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
-  Definition FileWrite : val :=
+  Definition FileWriteⁱᵐᵖˡ : val :=
     λ: "f" "c",
       let: "err" := ExternalOp FileWriteOp ("f", (slice.ptr "c", slice.len "c")) in
       if: "err" then control.impl.Exit #() else
@@ -80,18 +80,18 @@ Section grove.
 
   (** FileAppend pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
-  Definition FileAppend : val :=
+  Definition FileAppendⁱᵐᵖˡ : val :=
     λ: "f" "c",
       let: "err" := ExternalOp FileAppendOp ("f", (slice.ptr "c", slice.len "c")) in
       if: "err" then control.impl.Exit #() else
       #().
 
   (** Type: func() uint64 *)
-  Definition GetTSC : val :=
+  Definition GetTSCⁱᵐᵖˡ : val :=
     λ: <>, ExternalOp GetTscOp #().
 
   (** Type: func() (uint64, uint64) *)
-  Definition GetTimeRange : val :=
+  Definition GetTimeRangeⁱᵐᵖˡ : val :=
     λ: <>, ExternalOp GetTimeRangeOp #().
 
 End grove.

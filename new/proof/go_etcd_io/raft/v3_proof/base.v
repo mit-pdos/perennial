@@ -6,96 +6,127 @@ Require Export New.proof.context New.proof.sync.
 
 Section init.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-Context  `{!quorum.GlobalAddrs}.
-Context  `{!tracker.GlobalAddrs}.
-Context  `{!raft.GlobalAddrs}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
-Program Instance is_pkg_init_raftpb : IsPkgInit raftpb :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_raftpb.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'raftpb) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit raftpb :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_strconv : IsPkgInit strconv :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_strconv.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'strconv) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit strconv :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_slices : IsPkgInit slices :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_slices.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'slices) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit slices :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_strings : IsPkgInit strings :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_strings.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit strings :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_math : IsPkgInit math :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_math.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'math) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit math :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_fmt : IsPkgInit fmt :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_fmt.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'fmt) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit fmt :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_quorum : IsPkgInit quorum :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_quorum.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'quorum) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit quorum :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_tracker : IsPkgInit tracker :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_tracker.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'tracker) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit tracker :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_confchange : IsPkgInit confchange :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_confchange.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'confchange) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit confchange :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_big : IsPkgInit big :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_big.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'big) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit big :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_rand : IsPkgInit rand :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_rand.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'rand) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit rand :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_bytes : IsPkgInit bytes :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_bytes.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit bytes :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_os : IsPkgInit os :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_os.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'os) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit os :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_log : IsPkgInit log :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_log.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'log) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit log :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_io : IsPkgInit io :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_io.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'io) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit io :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_errors : IsPkgInit errors :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_errors.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit errors :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Definition foo := ltac2:(build_pkg_init ()).
 
-#[global]
-Program Instance is_pkg_init_raft : IsPkgInit raft :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_raft.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'raft) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit raft :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 End init.

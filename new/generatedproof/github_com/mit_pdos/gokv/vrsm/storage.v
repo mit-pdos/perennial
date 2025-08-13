@@ -89,9 +89,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyReadonly' v)) storage.InMemoryStateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyVolatile' v)) storage.InMemoryStateMachine "ApplyVolatile"%go.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.GetState' v)) storage.InMemoryStateMachine "GetState"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyReadonly' v)) (storage.InMemoryStateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyVolatile' v)) (storage.InMemoryStateMachine) "ApplyVolatile"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.GetState' v)) (storage.InMemoryStateMachine) "GetState"%go.
 
   solve_field_ref_f.
 Qed.
@@ -195,12 +195,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StateMachine.fname' v)) storage.StateMachine "fname"%go.
-  simpl_one_flatten_struct (# (StateMachine.logFile' v)) storage.StateMachine "logFile"%go.
-  simpl_one_flatten_struct (# (StateMachine.logsize' v)) storage.StateMachine "logsize"%go.
-  simpl_one_flatten_struct (# (StateMachine.sealed' v)) storage.StateMachine "sealed"%go.
-  simpl_one_flatten_struct (# (StateMachine.epoch' v)) storage.StateMachine "epoch"%go.
-  simpl_one_flatten_struct (# (StateMachine.nextIndex' v)) storage.StateMachine "nextIndex"%go.
+  simpl_one_flatten_struct (# (StateMachine.fname' v)) (storage.StateMachine) "fname"%go.
+  simpl_one_flatten_struct (# (StateMachine.logFile' v)) (storage.StateMachine) "logFile"%go.
+  simpl_one_flatten_struct (# (StateMachine.logsize' v)) (storage.StateMachine) "logsize"%go.
+  simpl_one_flatten_struct (# (StateMachine.sealed' v)) (storage.StateMachine) "sealed"%go.
+  simpl_one_flatten_struct (# (StateMachine.epoch' v)) (storage.StateMachine) "epoch"%go.
+  simpl_one_flatten_struct (# (StateMachine.nextIndex' v)) (storage.StateMachine) "nextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -209,55 +209,40 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined storage :=
-{|
-  is_pkg_defined := is_global_definitions storage var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_recoverStateMachine :
-  WpFuncCall storage "recoverStateMachine" _ (is_pkg_defined storage) :=
+  WpFuncCall storage.recoverStateMachine _ (is_pkg_defined storage) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakePbServer :
-  WpFuncCall storage "MakePbServer" _ (is_pkg_defined storage) :=
+  WpFuncCall storage.MakePbServer _ (is_pkg_defined storage) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_StateMachine'ptr_apply :
-  WpMethodCall storage "StateMachine'ptr" "apply" _ (is_pkg_defined storage) :=
+  WpMethodCall (ptrTⁱᵈ storage.StateMachineⁱᵈ) "apply" _ (is_pkg_defined storage) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateMachine'ptr_applyReadonly :
-  WpMethodCall storage "StateMachine'ptr" "applyReadonly" _ (is_pkg_defined storage) :=
+  WpMethodCall (ptrTⁱᵈ storage.StateMachineⁱᵈ) "applyReadonly" _ (is_pkg_defined storage) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateMachine'ptr_getStateAndSeal :
-  WpMethodCall storage "StateMachine'ptr" "getStateAndSeal" _ (is_pkg_defined storage) :=
+  WpMethodCall (ptrTⁱᵈ storage.StateMachineⁱᵈ) "getStateAndSeal" _ (is_pkg_defined storage) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateMachine'ptr_makeDurableWithSnap :
-  WpMethodCall storage "StateMachine'ptr" "makeDurableWithSnap" _ (is_pkg_defined storage) :=
+  WpMethodCall (ptrTⁱᵈ storage.StateMachineⁱᵈ) "makeDurableWithSnap" _ (is_pkg_defined storage) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateMachine'ptr_setStateAndUnseal :
-  WpMethodCall storage "StateMachine'ptr" "setStateAndUnseal" _ (is_pkg_defined storage) :=
+  WpMethodCall (ptrTⁱᵈ storage.StateMachineⁱᵈ) "setStateAndUnseal" _ (is_pkg_defined storage) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateMachine'ptr_truncateAndMakeDurable :
-  WpMethodCall storage "StateMachine'ptr" "truncateAndMakeDurable" _ (is_pkg_defined storage) :=
+  WpMethodCall (ptrTⁱᵈ storage.StateMachineⁱᵈ) "truncateAndMakeDurable" _ (is_pkg_defined storage) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

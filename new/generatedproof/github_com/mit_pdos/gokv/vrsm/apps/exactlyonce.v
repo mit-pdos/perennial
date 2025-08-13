@@ -97,10 +97,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (eStateMachine.lastSeq' v)) exactlyonce.eStateMachine "lastSeq"%go.
-  simpl_one_flatten_struct (# (eStateMachine.lastReply' v)) exactlyonce.eStateMachine "lastReply"%go.
-  simpl_one_flatten_struct (# (eStateMachine.nextCID' v)) exactlyonce.eStateMachine "nextCID"%go.
-  simpl_one_flatten_struct (# (eStateMachine.sm' v)) exactlyonce.eStateMachine "sm"%go.
+  simpl_one_flatten_struct (# (eStateMachine.lastSeq' v)) (exactlyonce.eStateMachine) "lastSeq"%go.
+  simpl_one_flatten_struct (# (eStateMachine.lastReply' v)) (exactlyonce.eStateMachine) "lastReply"%go.
+  simpl_one_flatten_struct (# (eStateMachine.nextCID' v)) (exactlyonce.eStateMachine) "nextCID"%go.
+  simpl_one_flatten_struct (# (eStateMachine.sm' v)) (exactlyonce.eStateMachine) "sm"%go.
 
   solve_field_ref_f.
 Qed.
@@ -176,8 +176,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Clerk.ck' v)) exactlyonce.Clerk "ck"%go.
-  simpl_one_flatten_struct (# (Clerk.cid' v)) exactlyonce.Clerk "cid"%go.
+  simpl_one_flatten_struct (# (Clerk.ck' v)) (exactlyonce.Clerk) "ck"%go.
+  simpl_one_flatten_struct (# (Clerk.cid' v)) (exactlyonce.Clerk) "cid"%go.
 
   solve_field_ref_f.
 Qed.
@@ -260,9 +260,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyVolatile' v)) exactlyonce.VersionedStateMachine "ApplyVolatile"%go.
-  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyReadonly' v)) exactlyonce.VersionedStateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (VersionedStateMachine.SetState' v)) exactlyonce.VersionedStateMachine "SetState"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyVolatile' v)) (exactlyonce.VersionedStateMachine) "ApplyVolatile"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyReadonly' v)) (exactlyonce.VersionedStateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.SetState' v)) (exactlyonce.VersionedStateMachine) "SetState"%go.
 
   solve_field_ref_f.
 Qed.
@@ -271,55 +271,40 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined exactlyonce :=
-{|
-  is_pkg_defined := is_global_definitions exactlyonce var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeExactlyOnceStateMachine :
-  WpFuncCall exactlyonce "MakeExactlyOnceStateMachine" _ (is_pkg_defined exactlyonce) :=
+  WpFuncCall exactlyonce.MakeExactlyOnceStateMachine _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall exactlyonce "MakeClerk" _ (is_pkg_defined exactlyonce) :=
+  WpFuncCall exactlyonce.MakeClerk _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_applyReadonly :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "applyReadonly" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "applyReadonly" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_applyVolatile :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "applyVolatile" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "applyVolatile" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_getState :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "getState" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "getState" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_setState :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "setState" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "setState" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyExactlyOnce :
-  WpMethodCall exactlyonce "Clerk'ptr" "ApplyExactlyOnce" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.Clerkⁱᵈ) "ApplyExactlyOnce" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyReadonly :
-  WpMethodCall exactlyonce "Clerk'ptr" "ApplyReadonly" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.Clerkⁱᵈ) "ApplyReadonly" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

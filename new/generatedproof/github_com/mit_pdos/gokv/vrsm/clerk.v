@@ -90,9 +90,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Clerk.confCk' v)) clerk.Clerk "confCk"%go.
-  simpl_one_flatten_struct (# (Clerk.replicaClerks' v)) clerk.Clerk "replicaClerks"%go.
-  simpl_one_flatten_struct (# (Clerk.preferredReplica' v)) clerk.Clerk "preferredReplica"%go.
+  simpl_one_flatten_struct (# (Clerk.confCk' v)) (clerk.Clerk) "confCk"%go.
+  simpl_one_flatten_struct (# (Clerk.replicaClerks' v)) (clerk.Clerk) "replicaClerks"%go.
+  simpl_one_flatten_struct (# (Clerk.preferredReplica' v)) (clerk.Clerk) "preferredReplica"%go.
 
   solve_field_ref_f.
 Qed.
@@ -101,47 +101,32 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined clerk :=
-{|
-  is_pkg_defined := is_global_definitions clerk var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_makeClerks :
-  WpFuncCall clerk "makeClerks" _ (is_pkg_defined clerk) :=
+  WpFuncCall clerk.makeClerks _ (is_pkg_defined clerk) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Make :
-  WpFuncCall clerk "Make" _ (is_pkg_defined clerk) :=
+  WpFuncCall clerk.Make _ (is_pkg_defined clerk) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_Apply :
-  WpMethodCall clerk "Clerk'ptr" "Apply" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "Apply" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo :
-  WpMethodCall clerk "Clerk'ptr" "ApplyRo" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "ApplyRo" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo2 :
-  WpMethodCall clerk "Clerk'ptr" "ApplyRo2" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "ApplyRo2" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_maybeRefreshPreference :
-  WpMethodCall clerk "Clerk'ptr" "maybeRefreshPreference" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "maybeRefreshPreference" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

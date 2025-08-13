@@ -26,7 +26,11 @@ Definition HDRADDRS : expr := #(W64 511).
 (* 2 for log header *)
 Definition LOGSIZE : expr := #(W64 513).
 
+Definition Inumⁱᵈ : go_string := uint64Tⁱᵈ.
+
 Definition Inum : go_type := uint64T.
+
+Definition Bnumⁱᵈ : go_string := uint64Tⁱᵈ.
 
 Definition Bnum : go_type := uint64T.
 
@@ -51,9 +55,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init common.common (λ: <>,
-      exception_do (do:  disk.initialize')
+  λ: <>,
+    package.init #common.common (λ: <>,
+      exception_do (do:  (disk.initialize' #());;;
+      do:  (package.alloc common.common #()))
       ).
 
 End code.

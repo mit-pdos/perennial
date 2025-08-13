@@ -6,12 +6,14 @@ From New.proof.github_com.tchajed Require Import marshal.
 
 Module safemarshal.
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
-Program Instance is_pkg_init_safemarshal : IsPkgInit safemarshal := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_safemarshal.
-#[local] Transparent is_pkg_init_safemarshal.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'safemarshal) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit safemarshal :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 End proof.
 End safemarshal.

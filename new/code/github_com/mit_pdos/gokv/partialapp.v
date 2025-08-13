@@ -8,43 +8,49 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition partiallyApplyMe : go_string := "github.com/mit-pdos/gokv/partialapp.partiallyApplyMe"%go.
+
 (* go: examples.go:3:6 *)
-Definition partiallyApplyMe : val :=
-  rec: "partiallyApplyMe" "x" "y" :=
+Definition partiallyApplyMeⁱᵐᵖˡ : val :=
+  λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
     (if: (let: "$a0" := (![#stringT] "x") in
     StringLength "$a0") ≠ (![#intT] "y")
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"not allowed"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"not allowed"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
 
+Definition Fooⁱᵈ : go_string := "github.com/mit-pdos/gokv/partialapp.Foo"%go.
+
 Definition Foo : go_type := stringT.
 
 (* go: examples.go:11:14 *)
-Definition Foo__someMethod : val :=
-  rec: "Foo__someMethod" "f" <> :=
+Definition Foo__someMethodⁱᵐᵖˡ : val :=
+  λ: "f" <>,
     exception_do (let: "f" := (mem.alloc "f") in
     do:  #()).
 
 (* go: examples.go:14:14 *)
-Definition Foo__someMethodWithArgs : val :=
-  rec: "Foo__someMethodWithArgs" "f" "y" "z" :=
+Definition Foo__someMethodWithArgsⁱᵐᵖˡ : val :=
+  λ: "f" "y" "z",
     exception_do (let: "f" := (mem.alloc "f") in
     let: "z" := (mem.alloc "z") in
     let: "y" := (mem.alloc "y") in
     do:  (let: "$a0" := ((![#Foo] "f") + (![#stringT] "y")) in
     let: "$a1" := (![#intT] "z") in
-    (func_call #partialapp.main #"partiallyApplyMe"%go) "$a0" "$a1");;;
+    (func_call #partiallyApplyMe) "$a0" "$a1");;;
     return: #()).
 
+Definition main : go_string := "github.com/mit-pdos/gokv/partialapp.main"%go.
+
 (* go: examples.go:18:6 *)
-Definition main : val :=
-  rec: "main" <> :=
+Definition mainⁱᵐᵖˡ : val :=
+  λ: <>,
     with_defer: (let: "x" := (mem.alloc (type.zero_val #funcT)) in
-    let: "$r0" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
+    let: "$r0" := (func_call #partiallyApplyMe) in
     do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"blah"%go in
     let: "$a1" := #(W64 4) in
@@ -59,7 +65,7 @@ Definition main : val :=
       )));;;
     do:  (let: "$a0" := #"abc"%go in
     let: "$a1" := #(W64 3) in
-    let: "$f" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
+    let: "$f" := (func_call #partiallyApplyMe) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" "$a0" "$a1";;
@@ -68,22 +74,22 @@ Definition main : val :=
     let: "f" := (mem.alloc (type.zero_val #Foo)) in
     let: "$r0" := #"a"%go in
     do:  ("f" <-[#Foo] "$r0");;;
-    do:  ((method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "f")) #());;;
-    let: "$r0" := (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) in
+    do:  ((method_call #Fooⁱᵈ #"someMethod"%go (![#Foo] "f")) #());;;
+    let: "$r0" := (method_call #Fooⁱᵈ #"someMethodWithArgs"%go (![#Foo] "f")) in
     do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"b"%go in
     let: "$a1" := #(W64 2) in
     (![#funcT] "x") "$a0" "$a1");;;
     do:  (let: "$a0" := #"bc"%go in
     let: "$a1" := #(W64 3) in
-    (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) "$a0" "$a1");;;
+    (method_call #Fooⁱᵈ #"someMethodWithArgs"%go (![#Foo] "f")) "$a0" "$a1");;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("partiallyApplyMe"%go, partiallyApplyMe); ("main"%go, main)].
+Definition functions' : list (go_string * val) := [(partiallyApplyMe, partiallyApplyMeⁱᵐᵖˡ); (main, mainⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [("someMethod"%go, Foo__someMethod); ("someMethodWithArgs"%go, Foo__someMethodWithArgs)]); ("Foo'ptr"%go, [("someMethod"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Fooⁱᵈ, [("someMethod"%go, Foo__someMethodⁱᵐᵖˡ); ("someMethodWithArgs"%go, Foo__someMethodWithArgsⁱᵐᵖˡ)]); (ptrTⁱᵈ Fooⁱᵈ, [("someMethod"%go, (λ: "$recvAddr",
                  method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "$recvAddr")
                  )%V); ("someMethodWithArgs"%go, (λ: "$recvAddr",
                  method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "$recvAddr")
@@ -98,9 +104,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init partialapp.main (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #partialapp.main (λ: <>,
+      exception_do (do:  (package.alloc partialapp.main #()))
       ).
 
 End code.

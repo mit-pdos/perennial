@@ -8,37 +8,255 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition ParseBool : go_string := "strconv.ParseBool"%go.
+
+Definition FormatBool : go_string := "strconv.FormatBool"%go.
+
+Definition AppendBool : go_string := "strconv.AppendBool"%go.
+
+Definition convErr : go_string := "strconv.convErr"%go.
+
+Definition ParseComplex : go_string := "strconv.ParseComplex"%go.
+
+Definition optimize : go_string := "strconv.optimize"%go.
+
 Axiom optimize'init : val.
+
+Definition commonPrefixLenIgnoreCase : go_string := "strconv.commonPrefixLenIgnoreCase"%go.
+
+Definition special : go_string := "strconv.special"%go.
+
+Definition readFloat : go_string := "strconv.readFloat"%go.
+
+Definition powtab : go_string := "strconv.powtab"%go.
 
 Axiom powtab'init : val.
 
+Definition float64pow10 : go_string := "strconv.float64pow10"%go.
+
 Axiom float64pow10'init : val.
+
+Definition float32pow10 : go_string := "strconv.float32pow10"%go.
 
 Axiom float32pow10'init : val.
 
+Definition atof64exact : go_string := "strconv.atof64exact"%go.
+
+Definition atof32exact : go_string := "strconv.atof32exact"%go.
+
+Definition atofHex : go_string := "strconv.atofHex"%go.
+
+Definition atof32 : go_string := "strconv.atof32"%go.
+
+Definition atof64 : go_string := "strconv.atof64"%go.
+
+Definition ParseFloat : go_string := "strconv.ParseFloat"%go.
+
+Definition parseFloatPrefix : go_string := "strconv.parseFloatPrefix"%go.
+
+Definition lower : go_string := "strconv.lower"%go.
+
+Definition ErrRange : go_string := "strconv.ErrRange"%go.
+
 Axiom ErrRange'init : val.
+
+Definition ErrSyntax : go_string := "strconv.ErrSyntax"%go.
 
 Axiom ErrSyntax'init : val.
 
+Definition syntaxError : go_string := "strconv.syntaxError"%go.
+
+Definition rangeError : go_string := "strconv.rangeError"%go.
+
+Definition baseError : go_string := "strconv.baseError"%go.
+
+Definition bitSizeError : go_string := "strconv.bitSizeError"%go.
+
+Definition ParseUint : go_string := "strconv.ParseUint"%go.
+
+Definition ParseInt : go_string := "strconv.ParseInt"%go.
+
+Definition Atoi : go_string := "strconv.Atoi"%go.
+
+Definition underscoreOK : go_string := "strconv.underscoreOK"%go.
+
+Definition index : go_string := "strconv.index"%go.
+
+Definition FormatComplex : go_string := "strconv.FormatComplex"%go.
+
+Definition digitZero : go_string := "strconv.digitZero"%go.
+
+Definition trim : go_string := "strconv.trim"%go.
+
+Definition rightShift : go_string := "strconv.rightShift"%go.
+
+Definition leftcheats : go_string := "strconv.leftcheats"%go.
+
 Axiom leftcheats'init : val.
+
+Definition prefixIsLessThan : go_string := "strconv.prefixIsLessThan"%go.
+
+Definition leftShift : go_string := "strconv.leftShift"%go.
+
+Definition shouldRoundUp : go_string := "strconv.shouldRoundUp"%go.
+
+Definition eiselLemire64 : go_string := "strconv.eiselLemire64"%go.
+
+Definition eiselLemire32 : go_string := "strconv.eiselLemire32"%go.
+
+Definition detailedPowersOfTen : go_string := "strconv.detailedPowersOfTen"%go.
 
 Axiom detailedPowersOfTen'init : val.
 
+Definition float32info : go_string := "strconv.float32info"%go.
+
 Axiom float32info'init : val.
+
+Definition float64info : go_string := "strconv.float64info"%go.
 
 Axiom float64info'init : val.
 
+Definition FormatFloat : go_string := "strconv.FormatFloat"%go.
+
+Definition AppendFloat : go_string := "strconv.AppendFloat"%go.
+
+Definition genericFtoa : go_string := "strconv.genericFtoa"%go.
+
+Definition bigFtoa : go_string := "strconv.bigFtoa"%go.
+
+Definition formatDigits : go_string := "strconv.formatDigits"%go.
+
+Definition roundShortest : go_string := "strconv.roundShortest"%go.
+
+Definition fmtE : go_string := "strconv.fmtE"%go.
+
+Definition fmtF : go_string := "strconv.fmtF"%go.
+
+Definition fmtB : go_string := "strconv.fmtB"%go.
+
+Definition fmtX : go_string := "strconv.fmtX"%go.
+
+Definition ryuFtoaFixed32 : go_string := "strconv.ryuFtoaFixed32"%go.
+
+Definition ryuFtoaFixed64 : go_string := "strconv.ryuFtoaFixed64"%go.
+
+Definition uint64pow10 : go_string := "strconv.uint64pow10"%go.
+
 Axiom uint64pow10'init : val.
+
+Definition formatDecimal : go_string := "strconv.formatDecimal"%go.
+
+Definition ryuFtoaShortest : go_string := "strconv.ryuFtoaShortest"%go.
+
+Definition mulByLog2Log10 : go_string := "strconv.mulByLog2Log10"%go.
+
+Definition mulByLog10Log2 : go_string := "strconv.mulByLog10Log2"%go.
+
+Definition computeBounds : go_string := "strconv.computeBounds"%go.
+
+Definition ryuDigits : go_string := "strconv.ryuDigits"%go.
+
+Definition ryuDigits32 : go_string := "strconv.ryuDigits32"%go.
+
+Definition mult64bitPow10 : go_string := "strconv.mult64bitPow10"%go.
+
+Definition mult128bitPow10 : go_string := "strconv.mult128bitPow10"%go.
+
+Definition divisibleByPower5 : go_string := "strconv.divisibleByPower5"%go.
+
+Definition divmod1e9 : go_string := "strconv.divmod1e9"%go.
+
+Definition isPrint16 : go_string := "strconv.isPrint16"%go.
 
 Axiom isPrint16'init : val.
 
+Definition isNotPrint16 : go_string := "strconv.isNotPrint16"%go.
+
 Axiom isNotPrint16'init : val.
+
+Definition isPrint32 : go_string := "strconv.isPrint32"%go.
 
 Axiom isPrint32'init : val.
 
+Definition isNotPrint32 : go_string := "strconv.isNotPrint32"%go.
+
 Axiom isNotPrint32'init : val.
 
+Definition isGraphic : go_string := "strconv.isGraphic"%go.
+
 Axiom isGraphic'init : val.
+
+Definition FormatUint : go_string := "strconv.FormatUint"%go.
+
+Definition FormatInt : go_string := "strconv.FormatInt"%go.
+
+Definition Itoa : go_string := "strconv.Itoa"%go.
+
+Definition AppendInt : go_string := "strconv.AppendInt"%go.
+
+Definition AppendUint : go_string := "strconv.AppendUint"%go.
+
+Definition small : go_string := "strconv.small"%go.
+
+Definition formatBits : go_string := "strconv.formatBits"%go.
+
+Definition isPowerOfTwo : go_string := "strconv.isPowerOfTwo"%go.
+
+Definition contains : go_string := "strconv.contains"%go.
+
+Definition quoteWith : go_string := "strconv.quoteWith"%go.
+
+Definition quoteRuneWith : go_string := "strconv.quoteRuneWith"%go.
+
+Definition appendQuotedWith : go_string := "strconv.appendQuotedWith"%go.
+
+Definition appendQuotedRuneWith : go_string := "strconv.appendQuotedRuneWith"%go.
+
+Definition appendEscapedRune : go_string := "strconv.appendEscapedRune"%go.
+
+Definition Quote : go_string := "strconv.Quote"%go.
+
+Definition AppendQuote : go_string := "strconv.AppendQuote"%go.
+
+Definition QuoteToASCII : go_string := "strconv.QuoteToASCII"%go.
+
+Definition AppendQuoteToASCII : go_string := "strconv.AppendQuoteToASCII"%go.
+
+Definition QuoteToGraphic : go_string := "strconv.QuoteToGraphic"%go.
+
+Definition AppendQuoteToGraphic : go_string := "strconv.AppendQuoteToGraphic"%go.
+
+Definition QuoteRune : go_string := "strconv.QuoteRune"%go.
+
+Definition AppendQuoteRune : go_string := "strconv.AppendQuoteRune"%go.
+
+Definition QuoteRuneToASCII : go_string := "strconv.QuoteRuneToASCII"%go.
+
+Definition AppendQuoteRuneToASCII : go_string := "strconv.AppendQuoteRuneToASCII"%go.
+
+Definition QuoteRuneToGraphic : go_string := "strconv.QuoteRuneToGraphic"%go.
+
+Definition AppendQuoteRuneToGraphic : go_string := "strconv.AppendQuoteRuneToGraphic"%go.
+
+Definition CanBackquote : go_string := "strconv.CanBackquote"%go.
+
+Definition unhex : go_string := "strconv.unhex"%go.
+
+Definition UnquoteChar : go_string := "strconv.UnquoteChar"%go.
+
+Definition QuotedPrefix : go_string := "strconv.QuotedPrefix"%go.
+
+Definition Unquote : go_string := "strconv.Unquote"%go.
+
+Definition unquote : go_string := "strconv.unquote"%go.
+
+Definition bsearch : go_string := "strconv.bsearch"%go.
+
+Definition IsPrint : go_string := "strconv.IsPrint"%go.
+
+Definition IsGraphic : go_string := "strconv.IsGraphic"%go.
+
+Definition isInGraphicList : go_string := "strconv.isInGraphicList"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -57,9 +275,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init strconv.strconv (λ: <>,
-      exception_do (do:  (optimize'init #());;;
+  λ: <>,
+    package.init #strconv.strconv (λ: <>,
+      exception_do (do:  (package.alloc strconv.strconv #());;;
+      do:  (optimize'init #());;;
       do:  (powtab'init #());;;
       do:  (float64pow10'init #());;;
       do:  (float32pow10'init #());;;

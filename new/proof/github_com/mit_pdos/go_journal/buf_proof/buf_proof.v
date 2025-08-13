@@ -33,12 +33,14 @@ Notation object := ({K & bufDataT K}).
 Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 
 Section heap.
-Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-(* XXX cumbersome that package [buf] has to mention global addrs of package [util] *)
-Context `{Huga: !util.GlobalAddrs}.
-
-Program Instance : IsPkgInit buf.buf := ltac2:(build_pkg_init ()).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'buf.buf).
+#[global] Program Instance : IsPkgInit buf.buf :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Implicit Types s : slice.t.
 
@@ -346,7 +348,7 @@ Theorem wp_MkBuf K a data (bufdata : bufDataT K) :
     is_buf_data data bufdata a ∗
     ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝
   }}}
-    buf.buf@"MkBuf" #(addr2val a) #(W64 (bufSz K)) #(data)
+    @! buf.buf.MkBuf #(addr2val a) #(W64 (bufSz K)) #(data)
   {{{
     (bufptr : loc), RET #bufptr;
     is_buf bufptr a (Build_buf _ bufdata false)
@@ -375,7 +377,7 @@ Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) :
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
-    buf.buf@"MkBufLoad" #(addr2val a) #(W64 (bufSz K)) #(s)
+    @! buf.buf.MkBufLoad #(addr2val a) #(W64 (bufSz K)) #(s)
   {{{
     (bufptr : loc), RET #bufptr;
     is_buf bufptr a (Build_buf _ bufdata false)
@@ -775,7 +777,7 @@ Qed.
 Theorem wp_installOneBit (src dst: u8) (bit: u64) :
   uint.Z bit < 8 →
   {{{ is_pkg_init buf.buf }}}
-    buf.buf@"installOneBit" #src #dst #bit
+    @! buf.buf.installOneBit #src #dst #bit
   {{{ RET #(install_one_bit src dst (uint.nat bit)); True }}}.
 Proof.
   intros Hbit_bounded.
@@ -833,7 +835,7 @@ Theorem wp_installBit
   (uint.Z dstoff < 8 * Z.of_nat (length dst_bs)) →
   {{{ is_pkg_init buf.buf ∗
       own_slice src_s q [src_b] ∗ own_slice dst_s (DfracOwn 1) dst_bs  }}}
-    buf.buf@"installBit" #(src_s) #(dst_s) #dstoff
+    @! buf.buf.installBit #(src_s) #(dst_s) #dstoff
   {{{ RET #();
       let dst_bs' :=
           alter
@@ -889,7 +891,7 @@ Theorem wp_installBytes
       own_slice src_s q src_bs ∗
       own_slice dst_s (DfracOwn 1) dst_bs
   }}}
-    buf.buf@"installBytes" #(src_s) #(dst_s) #dstoff #nbit
+    @! buf.buf.installBytes #(src_s) #(dst_s) #dstoff #nbit
   {{{ RET #(); own_slice src_s q src_bs ∗
                let src_bs' := take (Z.to_nat $ uint.Z nbit `div` 8) src_bs in
                let dst_bs' := list_inserts (Z.to_nat $ uint.Z dstoff `div` 8) src_bs' dst_bs in

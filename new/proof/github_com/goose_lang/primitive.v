@@ -4,15 +4,18 @@ Require Import New.generatedproof.github_com.goose_lang.primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
-Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) primitive :=
-  ltac2:(build_pkg_init ()).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'primitive) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit primitive :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Lemma wp_Assume (cond : bool) :
   {{{ is_pkg_init primitive }}}
-    primitive@"Assume" #cond
+    @! primitive.Assume #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .
 Proof.
@@ -25,7 +28,7 @@ Qed.
 
 Lemma wp_RandomUint64 :
   {{{ is_pkg_init primitive }}}
-    primitive@"RandomUint64" #()
+    @! primitive.RandomUint64 #()
   {{{ (x: w64), RET #x; True }}}
 .
 Proof.
@@ -38,7 +41,7 @@ Qed.
 
 Lemma wp_AssumeNoStringOverflow (s: byte_string) :
   {{{ is_pkg_init primitive }}}
-    primitive@"AssumeNoStringOverflow" #s
+    @! primitive.AssumeNoStringOverflow #s
   {{{ RET #(); ⌜Z.of_nat (length s) < 2^64⌝ }}}.
 Proof.
   wp_start as "_".

@@ -11,47 +11,32 @@ Module std_core.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined std_core :=
-{|
-  is_pkg_defined := is_global_definitions std_core var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_SumNoOverflow :
-  WpFuncCall std_core "SumNoOverflow" _ (is_pkg_defined std_core) :=
+  WpFuncCall std_core.SumNoOverflow _ (is_pkg_defined std_core) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SumAssumeNoOverflow :
-  WpFuncCall std_core "SumAssumeNoOverflow" _ (is_pkg_defined std_core) :=
+  WpFuncCall std_core.SumAssumeNoOverflow _ (is_pkg_defined std_core) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MulNoOverflow :
-  WpFuncCall std_core "MulNoOverflow" _ (is_pkg_defined std_core) :=
+  WpFuncCall std_core.MulNoOverflow _ (is_pkg_defined std_core) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MulAssumeNoOverflow :
-  WpFuncCall std_core "MulAssumeNoOverflow" _ (is_pkg_defined std_core) :=
+  WpFuncCall std_core.MulAssumeNoOverflow _ (is_pkg_defined std_core) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Shuffle :
-  WpFuncCall std_core "Shuffle" _ (is_pkg_defined std_core) :=
+  WpFuncCall std_core.Shuffle _ (is_pkg_defined std_core) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Permutation :
-  WpFuncCall std_core "Permutation" _ (is_pkg_defined std_core) :=
+  WpFuncCall std_core.Permutation _ (is_pkg_defined std_core) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

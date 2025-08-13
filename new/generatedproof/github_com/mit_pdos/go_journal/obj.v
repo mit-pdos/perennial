@@ -84,8 +84,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Log.mu' v)) obj.Log "mu"%go.
-  simpl_one_flatten_struct (# (Log.log' v)) obj.Log "log"%go.
+  simpl_one_flatten_struct (# (Log.mu' v)) (obj.Log) "mu"%go.
+  simpl_one_flatten_struct (# (Log.log' v)) (obj.Log) "log"%go.
 
   solve_field_ref_f.
 Qed.
@@ -94,59 +94,44 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined obj :=
-{|
-  is_pkg_defined := is_global_definitions obj var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MkLog :
-  WpFuncCall obj "MkLog" _ (is_pkg_defined obj) :=
+  WpFuncCall obj.MkLog _ (is_pkg_defined obj) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_CommitWait :
-  WpMethodCall obj "Log'ptr" "CommitWait" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "CommitWait" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Flush :
-  WpMethodCall obj "Log'ptr" "Flush" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Flush" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Load :
-  WpMethodCall obj "Log'ptr" "Load" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Load" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_LogSz :
-  WpMethodCall obj "Log'ptr" "LogSz" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "LogSz" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Shutdown :
-  WpMethodCall obj "Log'ptr" "Shutdown" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Shutdown" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_doCommit :
-  WpMethodCall obj "Log'ptr" "doCommit" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "doCommit" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_installBufs :
-  WpMethodCall obj "Log'ptr" "installBufs" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "installBufs" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_installBufsMap :
-  WpMethodCall obj "Log'ptr" "installBufsMap" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "installBufsMap" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

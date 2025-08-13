@@ -8,25 +8,37 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition addrToStr : go_string := "github.com/sanjit-bhat/pav/netffi.addrToStr"%go.
+
+Definition Connⁱᵈ : go_string := "github.com/sanjit-bhat/pav/netffi.Conn"%go.
+
 Axiom Conn : go_type.
 
-Axiom Dial : val.
+Definition Dial : go_string := "github.com/sanjit-bhat/pav/netffi.Dial"%go.
 
-Axiom Conn__Send : val.
+Axiom Dialⁱᵐᵖˡ : val.
 
-Axiom Conn__Receive : val.
+Axiom Conn__Sendⁱᵐᵖˡ : val.
+
+Definition newConn : go_string := "github.com/sanjit-bhat/pav/netffi.newConn"%go.
+
+Axiom Conn__Receiveⁱᵐᵖˡ : val.
+
+Definition Listenerⁱᵈ : go_string := "github.com/sanjit-bhat/pav/netffi.Listener"%go.
 
 Axiom Listener : go_type.
 
-Axiom Listen : val.
+Definition Listen : go_string := "github.com/sanjit-bhat/pav/netffi.Listen"%go.
 
-Axiom Listener__Accept : val.
+Axiom Listenⁱᵐᵖˡ : val.
+
+Axiom Listener__Acceptⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Dial"%go, Dial); ("Listen"%go, Listen)].
+Definition functions' : list (go_string * val) := [(Dial, Dialⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Conn"%go, []); ("Conn'ptr"%go, [("Receive"%go, Conn__Receive); ("Send"%go, Conn__Send)]); ("Listener"%go, []); ("Listener'ptr"%go, [("Accept"%go, Listener__Accept)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Connⁱᵈ, []); (ptrTⁱᵈ Connⁱᵈ, [("Receive"%go, Conn__Receiveⁱᵐᵖˡ); ("Send"%go, Conn__Sendⁱᵐᵖˡ)]); (Listenerⁱᵈ, []); (ptrTⁱᵈ Listenerⁱᵈ, [("Accept"%go, Listener__Acceptⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo netffi.netffi :=
   {|
@@ -39,9 +51,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Conn"%go, 
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init netffi.netffi (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #netffi.netffi (λ: <>,
+      exception_do (do:  (package.alloc netffi.netffi #()))
       ).
 
 End code.

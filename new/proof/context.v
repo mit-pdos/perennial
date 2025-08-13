@@ -2,6 +2,7 @@ Require Import New.code.context.
 Require Export New.generatedproof.context.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.chan.
+Require Import New.proof.sync.atomic New.proof.sync.
 
 Require Import Perennial.Helpers.CountableTactics.
 
@@ -37,14 +38,36 @@ End Context_desc.
 Section definitions.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{contextG Σ}.
 
-#[global]
-Program Instance is_pkg_init_context : IsPkgInit context :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_context.
-#[local] Transparent is_pkg_init_context.
+Local Notation deps_time := (ltac2:(build_pkg_init_deps 'time) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit time :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_time;
+  |}.
+
+Local Notation deps_reflectlite := (ltac2:(build_pkg_init_deps 'reflectlite) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit reflectlite :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_reflectlite;
+  |}.
+
+Local Notation deps_errors := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit errors :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_errors;
+  |}.
+
+Local Notation deps := (ltac2:(build_pkg_init_deps 'context) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit context :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Import Context_desc.
 Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
@@ -92,7 +115,7 @@ Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
   {{{
         is_Context ctx ctx_desc
   }}}
-    context @ "WithCancel" #ctx
+    @! context.WithCancel #ctx
   {{{
         ctx' done' (cancel : func.t), RET (#ctx', #cancel);
         {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗

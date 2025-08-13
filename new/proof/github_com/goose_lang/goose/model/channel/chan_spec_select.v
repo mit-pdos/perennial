@@ -9,7 +9,7 @@ From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context  `{!chanGhostStateG Σ}.
 
 Arguments ch_loc: default implicits.
@@ -63,7 +63,7 @@ Definition own_select_case
 Lemma wp_TrySelect (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)  (dir: select_dir) (case_ptr: loc) 
       (i: nat) (q: Qp) (v: V) (Ri: nat -> iProp Σ):
       {{{ is_pkg_init channel ∗ own_select_case V params dir case_ptr false i q #v Ri }}}
-        channel @ "TrySelect" #t #case_ptr
+        @! channel.TrySelect #t #case_ptr
       {{{ (selected: bool), RET #selected;
           own_select_case V params dir case_ptr selected i q #v Ri
       }}}.
@@ -151,7 +151,7 @@ Lemma wp_TrySelect (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params:
     (blocking : bool) (Ri: nat -> iProp Σ) :
     params.(ch_loc) ≠ null ->
     {{{ is_pkg_init channel ∗ own_select_case V params dir1 case1 false i1 q1 #v1 Ri }}}
-      channel @ "Select1" #t #case1 #blocking
+      @! channel.Select1 #t #case1 #blocking
     {{{ (selected : bool), RET #selected;
        "Hb" ∷ ⌜if blocking then selected else true⌝%I ∗ 
        if selected then 
@@ -227,7 +227,7 @@ Lemma wp_TrySelect (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params:
        "Hc1pre" ∷ own_select_case V1 params1 dir1  case1_ptr false i1 q1 #v1 Ri1 ∗
        "Hc2pre" ∷ own_select_case V2 params2 dir2  case2_ptr false i2 q2 #v2 Ri2
     }}}
-      channel @ "TrySelectCase2" #t1 #t2 #index #case1_ptr #case2_ptr
+      @! channel.TrySelectCase2 #t1 #t2 #index #case1_ptr #case2_ptr
     {{{ (selected: bool), RET #selected;
         if decide (index = W64 0) then
           own_select_case V1 params1 dir1 case1_ptr selected i1 q1 #v1 Ri1 ∗
@@ -285,7 +285,7 @@ Definition null_Ri: Z->iProp Σ :=
   {{{ is_pkg_init channel ∗ 
   if bool_decide(params.(ch_loc) ≠ null) then send_pre V params q i v else True%I
    }}}
-    channel @ "NewSendCase" #t #l #v
+    @! channel.NewSendCase #t #l #v
   {{{ (case_ptr: loc), RET #case_ptr;
     if bool_decide(params.(ch_loc) ≠ null) then  own_select_case V params SelectSend case_ptr false i q #v null_Ri else True%I
   }}}.
@@ -322,7 +322,7 @@ Lemma wp_NewRecvCase
   (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V)  (i: nat) (q: Qp) (Ri: nat -> iProp Σ):
   
   {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-    channel @ "NewRecvCase" #t #params.(ch_loc)
+    @! channel.NewRecvCase #t #params.(ch_loc)
   {{{ (case_ptr: loc), RET #case_ptr;
       own_select_case V params SelectRecv case_ptr false i q (#(default_val V)) Ri
   }}}.

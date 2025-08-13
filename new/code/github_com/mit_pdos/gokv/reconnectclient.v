@@ -12,6 +12,8 @@ Module reconnectclient.
 Section code.
 
 
+Definition ReconnectingClientⁱᵈ : go_string := "github.com/mit-pdos/gokv/reconnectclient.ReconnectingClient"%go.
+
 Definition ReconnectingClient : go_type := structT [
   "mu" :: ptrT;
   "valid" :: boolT;
@@ -19,9 +21,11 @@ Definition ReconnectingClient : go_type := structT [
   "addr" :: uint64T
 ].
 
+Definition MakeReconnectingClient : go_string := "github.com/mit-pdos/gokv/reconnectclient.MakeReconnectingClient"%go.
+
 (* go: client.go:20:6 *)
-Definition MakeReconnectingClient : val :=
-  rec: "MakeReconnectingClient" "addr" :=
+Definition MakeReconnectingClientⁱᵐᵖˡ : val :=
+  λ: "addr",
     exception_do (let: "addr" := (mem.alloc "addr") in
     let: "r" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #ReconnectingClient)) in
@@ -35,23 +39,23 @@ Definition MakeReconnectingClient : val :=
     return: (![#ptrT] "r")).
 
 (* go: client.go:30:31 *)
-Definition ReconnectingClient__getClient : val :=
-  rec: "ReconnectingClient__getClient" "cl" <> :=
+Definition ReconnectingClient__getClientⁱᵐᵖˡ : val :=
+  λ: "cl" <>,
     exception_do (let: "cl" := (mem.alloc "cl") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
     (if: ![#boolT] (struct.field_ref #ReconnectingClient #"valid"%go (![#ptrT] "cl"))
     then
       let: "ret" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (![#ptrT] (struct.field_ref #ReconnectingClient #"urpcCl"%go (![#ptrT] "cl"))) in
       do:  ("ret" <-[#ptrT] "$r0");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
       return: (#(W64 0), ![#ptrT] "ret")
     else do:  #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
     let: "newRpcCl" := (mem.alloc (type.zero_val #ptrT)) in
     let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] (struct.field_ref #ReconnectingClient #"addr"%go (![#ptrT] "cl"))) in
-    (func_call #urpc.urpc #"TryMakeClient"%go) "$a0") in
+    (func_call #urpc.TryMakeClient) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err" <-[#uint64T] "$r0");;;
@@ -59,9 +63,9 @@ Definition ReconnectingClient__getClient : val :=
     (if: (![#uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #(W64 10000000) in
-      (func_call #primitive.primitive #"Sleep"%go) "$a0")
+      (func_call #primitive.Sleep) "$a0")
     else do:  #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
     (if: (![#uint64T] "err") = #(W64 0)
     then
       let: "$r0" := (![#ptrT] "newRpcCl") in
@@ -69,12 +73,12 @@ Definition ReconnectingClient__getClient : val :=
       let: "$r0" := #true in
       do:  ((struct.field_ref #ReconnectingClient #"valid"%go (![#ptrT] "cl")) <-[#boolT] "$r0")
     else do:  #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
     return: (![#uint64T] "err", ![#ptrT] "newRpcCl")).
 
 (* go: client.go:63:31 *)
-Definition ReconnectingClient__Call : val :=
-  rec: "ReconnectingClient__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
+Definition ReconnectingClient__Callⁱᵐᵖˡ : val :=
+  λ: "cl" "rpcid" "args" "reply" "timeout_ms",
     exception_do (let: "cl" := (mem.alloc "cl") in
     let: "timeout_ms" := (mem.alloc "timeout_ms") in
     let: "reply" := (mem.alloc "reply") in
@@ -82,7 +86,7 @@ Definition ReconnectingClient__Call : val :=
     let: "rpcid" := (mem.alloc "rpcid") in
     let: "urpcCl" := (mem.alloc (type.zero_val #ptrT)) in
     let: "err1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #reconnectclient.reconnectclient #"ReconnectingClient'ptr" #"getClient" (![#ptrT] "cl")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ ReconnectingClientⁱᵈ) #"getClient"%go (![#ptrT] "cl")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err1" <-[#uint64T] "$r0");;;
@@ -95,22 +99,22 @@ Definition ReconnectingClient__Call : val :=
     let: "$a1" := (![#sliceT] "args") in
     let: "$a2" := (![#ptrT] "reply") in
     let: "$a3" := (![#uint64T] "timeout_ms") in
-    (method_call #urpc #"Client'ptr" #"Call" (![#ptrT] "urpcCl")) "$a0" "$a1" "$a2" "$a3") in
+    (method_call #(ptrTⁱᵈ urpc.Clientⁱᵈ) #"Call"%go (![#ptrT] "urpcCl")) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "err") = urpc.ErrDisconnect
     then
-      do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
       let: "$r0" := #false in
       do:  ((struct.field_ref #ReconnectingClient #"valid"%go (![#ptrT] "cl")) <-[#boolT] "$r0");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #())
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #())
     else do:  #());;;
     return: (![#uint64T] "err")).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeReconnectingClient"%go, MakeReconnectingClient)].
+Definition functions' : list (go_string * val) := [(MakeReconnectingClient, MakeReconnectingClientⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("ReconnectingClient"%go, []); ("ReconnectingClient'ptr"%go, [("Call"%go, ReconnectingClient__Call); ("getClient"%go, ReconnectingClient__getClient)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(ReconnectingClientⁱᵈ, []); (ptrTⁱᵈ ReconnectingClientⁱᵈ, [("Call"%go, ReconnectingClient__Callⁱᵐᵖˡ); ("getClient"%go, ReconnectingClient__getClientⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo reconnectclient.reconnectclient :=
   {|
@@ -121,12 +125,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Reconnecti
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init reconnectclient.reconnectclient (λ: <>,
-      exception_do (do:  urpc.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize')
+  λ: <>,
+    package.init #reconnectclient.reconnectclient (λ: <>,
+      exception_do (do:  (urpc.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (package.alloc reconnectclient.reconnectclient #()))
       ).
 
 End code.

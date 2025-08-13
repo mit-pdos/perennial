@@ -9,22 +9,24 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Hash : go_string := "github.com/sanjit-bhat/pav/cryptoutil.Hash"%go.
+
 (* go: cryptoutil.go:7:6 *)
-Definition Hash : val :=
-  rec: "Hash" "b" :=
+Definition Hashⁱᵐᵖˡ : val :=
+  λ: "b",
     exception_do (let: "hash" := (mem.alloc (type.zero_val #sliceT)) in
     let: "b" := (mem.alloc "b") in
     let: "hr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #cryptoffi.cryptoffi #"NewHasher"%go) #()) in
+    let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
     do:  ("hr" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "b") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #cryptoffi #"Hasher'ptr" #"Sum" (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Sum"%go (![#ptrT] "hr")) "$a0")).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Hash"%go, Hash)].
+Definition functions' : list (go_string * val) := [(Hash, Hashⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -37,9 +39,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init cryptoutil.cryptoutil (λ: <>,
-      exception_do (do:  cryptoffi.initialize')
+  λ: <>,
+    package.init #cryptoutil.cryptoutil (λ: <>,
+      exception_do (do:  (cryptoffi.initialize' #());;;
+      do:  (package.alloc cryptoutil.cryptoutil #()))
       ).
 
 End code.

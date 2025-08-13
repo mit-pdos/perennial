@@ -130,15 +130,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (AppendOnlyFile.mu' v)) aof.AppendOnlyFile "mu"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.oldDurableCond' v)) aof.AppendOnlyFile "oldDurableCond"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.durableCond' v)) aof.AppendOnlyFile "durableCond"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.lengthCond' v)) aof.AppendOnlyFile "lengthCond"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.membuf' v)) aof.AppendOnlyFile "membuf"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.length' v)) aof.AppendOnlyFile "length"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.durableLength' v)) aof.AppendOnlyFile "durableLength"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.closeRequested' v)) aof.AppendOnlyFile "closeRequested"%go.
-  simpl_one_flatten_struct (# (AppendOnlyFile.closed' v)) aof.AppendOnlyFile "closed"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.mu' v)) (aof.AppendOnlyFile) "mu"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.oldDurableCond' v)) (aof.AppendOnlyFile) "oldDurableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableCond' v)) (aof.AppendOnlyFile) "durableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.lengthCond' v)) (aof.AppendOnlyFile) "lengthCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.membuf' v)) (aof.AppendOnlyFile) "membuf"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.length' v)) (aof.AppendOnlyFile) "length"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableLength' v)) (aof.AppendOnlyFile) "durableLength"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closeRequested' v)) (aof.AppendOnlyFile) "closeRequested"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closed' v)) (aof.AppendOnlyFile) "closed"%go.
 
   solve_field_ref_f.
 Qed.
@@ -147,39 +147,24 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined aof :=
-{|
-  is_pkg_defined := is_global_definitions aof var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_CreateAppendOnlyFile :
-  WpFuncCall aof "CreateAppendOnlyFile" _ (is_pkg_defined aof) :=
+  WpFuncCall aof.CreateAppendOnlyFile _ (is_pkg_defined aof) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_Append :
-  WpMethodCall aof "AppendOnlyFile'ptr" "Append" _ (is_pkg_defined aof) :=
+  WpMethodCall (ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) "Append" _ (is_pkg_defined aof) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_Close :
-  WpMethodCall aof "AppendOnlyFile'ptr" "Close" _ (is_pkg_defined aof) :=
+  WpMethodCall (ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) "Close" _ (is_pkg_defined aof) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_WaitAppend :
-  WpMethodCall aof "AppendOnlyFile'ptr" "WaitAppend" _ (is_pkg_defined aof) :=
+  WpMethodCall (ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) "WaitAppend" _ (is_pkg_defined aof) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

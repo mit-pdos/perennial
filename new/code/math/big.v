@@ -8,41 +8,231 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition _Accuracy_index : go_string := "math/big._Accuracy_index"%go.
+
 Axiom _Accuracy_index'init : val.
+
+Definition mulWW : go_string := "math/big.mulWW"%go.
+
+Definition mulAddWWW_g : go_string := "math/big.mulAddWWW_g"%go.
+
+Definition nlz : go_string := "math/big.nlz"%go.
+
+Definition addVV_g : go_string := "math/big.addVV_g"%go.
+
+Definition subVV_g : go_string := "math/big.subVV_g"%go.
+
+Definition addVW_g : go_string := "math/big.addVW_g"%go.
+
+Definition addVWlarge : go_string := "math/big.addVWlarge"%go.
+
+Definition subVW_g : go_string := "math/big.subVW_g"%go.
+
+Definition subVWlarge : go_string := "math/big.subVWlarge"%go.
+
+Definition shlVU_g : go_string := "math/big.shlVU_g"%go.
+
+Definition shrVU_g : go_string := "math/big.shrVU_g"%go.
+
+Definition mulAddVWW_g : go_string := "math/big.mulAddVWW_g"%go.
+
+Definition addMulVVW_g : go_string := "math/big.addMulVVW_g"%go.
+
+Definition divWW : go_string := "math/big.divWW"%go.
+
+Definition reciprocalWord : go_string := "math/big.reciprocalWord"%go.
+
+Definition support_adx : go_string := "math/big.support_adx"%go.
 
 Axiom support_adx'init : val.
 
+Definition addVV : go_string := "math/big.addVV"%go.
+
+Definition subVV : go_string := "math/big.subVV"%go.
+
+Definition addVW : go_string := "math/big.addVW"%go.
+
+Definition subVW : go_string := "math/big.subVW"%go.
+
+Definition shlVU : go_string := "math/big.shlVU"%go.
+
+Definition shrVU : go_string := "math/big.shrVU"%go.
+
+Definition mulAddVWW : go_string := "math/big.mulAddVWW"%go.
+
+Definition addMulVVW : go_string := "math/big.addMulVVW"%go.
+
+Definition shr : go_string := "math/big.shr"%go.
+
+Definition appendZeros : go_string := "math/big.appendZeros"%go.
+
+Definition shouldRoundUp : go_string := "math/big.shouldRoundUp"%go.
+
+Definition trim : go_string := "math/big.trim"%go.
+
+Definition NewFloat : go_string := "math/big.NewFloat"%go.
+
+Definition makeAcc : go_string := "math/big.makeAcc"%go.
+
+Definition fnorm : go_string := "math/big.fnorm"%go.
+
+Definition msb32 : go_string := "math/big.msb32"%go.
+
+Definition msb64 : go_string := "math/big.msb64"%go.
+
+Definition validateBinaryOperands : go_string := "math/big.validateBinaryOperands"%go.
+
+Definition umax32 : go_string := "math/big.umax32"%go.
+
+Definition floatZero : go_string := "math/big.floatZero"%go.
+
+Definition pow5tab : go_string := "math/big.pow5tab"%go.
+
 Axiom pow5tab'init : val.
+
+Definition ParseFloat : go_string := "math/big.ParseFloat"%go.
+
+Definition roundShortest : go_string := "math/big.roundShortest"%go.
+
+Definition fmtE : go_string := "math/big.fmtE"%go.
+
+Definition fmtF : go_string := "math/big.fmtF"%go.
+
+Definition Intⁱᵈ : go_string := "math/big.Int"%go.
+
+Axiom Int : go_type.
+
+Definition intOne : go_string := "math/big.intOne"%go.
 
 Axiom intOne'init : val.
 
+Definition NewInt : go_string := "math/big.NewInt"%go.
+
+Definition low32 : go_string := "math/big.low32"%go.
+
+Definition low64 : go_string := "math/big.low64"%go.
+
+Definition lehmerSimulate : go_string := "math/big.lehmerSimulate"%go.
+
+Definition lehmerUpdate : go_string := "math/big.lehmerUpdate"%go.
+
+Definition euclidUpdate : go_string := "math/big.euclidUpdate"%go.
+
+Definition Jacobi : go_string := "math/big.Jacobi"%go.
+
+Definition writeMultiple : go_string := "math/big.writeMultiple"%go.
+
+Definition scanSign : go_string := "math/big.scanSign"%go.
+
+Definition natOne : go_string := "math/big.natOne"%go.
+
 Axiom natOne'init : val.
+
+Definition natTwo : go_string := "math/big.natTwo"%go.
 
 Axiom natTwo'init : val.
 
+Definition natFive : go_string := "math/big.natFive"%go.
+
 Axiom natFive'init : val.
+
+Definition natTen : go_string := "math/big.natTen"%go.
 
 Axiom natTen'init : val.
 
+Definition basicMul : go_string := "math/big.basicMul"%go.
+
+Definition karatsubaAdd : go_string := "math/big.karatsubaAdd"%go.
+
+Definition karatsubaSub : go_string := "math/big.karatsubaSub"%go.
+
+Definition karatsubaThreshold : go_string := "math/big.karatsubaThreshold"%go.
+
 Axiom karatsubaThreshold'init : val.
+
+Definition karatsuba : go_string := "math/big.karatsuba"%go.
+
+Definition alias : go_string := "math/big.alias"%go.
+
+Definition addAt : go_string := "math/big.addAt"%go.
+
+Definition karatsubaLen : go_string := "math/big.karatsubaLen"%go.
+
+Definition basicSqr : go_string := "math/big.basicSqr"%go.
+
+Definition karatsubaSqr : go_string := "math/big.karatsubaSqr"%go.
+
+Definition basicSqrThreshold : go_string := "math/big.basicSqrThreshold"%go.
 
 Axiom basicSqrThreshold'init : val.
 
+Definition karatsubaSqrThreshold : go_string := "math/big.karatsubaSqrThreshold"%go.
+
 Axiom karatsubaSqrThreshold'init : val.
+
+Definition getNat : go_string := "math/big.getNat"%go.
+
+Definition putNat : go_string := "math/big.putNat"%go.
+
+Definition natPool : go_string := "math/big.natPool"%go.
+
+Definition same : go_string := "math/big.same"%go.
+
+Definition bigEndianWord : go_string := "math/big.bigEndianWord"%go.
+
+Definition maxPow : go_string := "math/big.maxPow"%go.
+
+Definition pow : go_string := "math/big.pow"%go.
+
+Definition errNoDigits : go_string := "math/big.errNoDigits"%go.
 
 Axiom errNoDigits'init : val.
 
+Definition errInvalSep : go_string := "math/big.errInvalSep"%go.
+
 Axiom errInvalSep'init : val.
+
+Definition leafSize : go_string := "math/big.leafSize"%go.
 
 Axiom leafSize'init : val.
 
+Definition cacheBase10 : go_string := "math/big.cacheBase10"%go.
+
+Definition divisors : go_string := "math/big.divisors"%go.
+
+Definition divWVW : go_string := "math/big.divWVW"%go.
+
+Definition greaterThan : go_string := "math/big.greaterThan"%go.
+
+Definition NewRat : go_string := "math/big.NewRat"%go.
+
+Definition quotToFloat32 : go_string := "math/big.quotToFloat32"%go.
+
+Definition quotToFloat64 : go_string := "math/big.quotToFloat64"%go.
+
+Definition mulDenom : go_string := "math/big.mulDenom"%go.
+
+Definition ratTok : go_string := "math/big.ratTok"%go.
+
+Definition ratZero : go_string := "math/big.ratZero"%go.
+
+Definition scanExponent : go_string := "math/big.scanExponent"%go.
+
+Definition _RoundingMode_index : go_string := "math/big._RoundingMode_index"%go.
+
 Axiom _RoundingMode_index'init : val.
+
+Definition threeOnce : go_string := "math/big.threeOnce"%go.
+
+Definition three : go_string := "math/big.three"%go.
+
+Definition newFloat : go_string := "math/big.newFloat"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Intⁱᵈ, []); (ptrTⁱᵈ Intⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo big.big :=
   {|
@@ -55,9 +245,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init big.big (λ: <>,
-      exception_do (do:  (_Accuracy_index'init #());;;
+  λ: <>,
+    package.init #big.big (λ: <>,
+      exception_do (do:  (package.alloc big.big #());;;
+      do:  (_Accuracy_index'init #());;;
       do:  (support_adx'init #());;;
       do:  (pow5tab'init #());;;
       do:  (_'init #());;;

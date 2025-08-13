@@ -84,7 +84,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Update.Addr' v)) wal.Update "Addr"%go.
+  simpl_one_flatten_struct (# (Update.Addr' v)) (wal.Update) "Addr"%go.
 
   solve_field_ref_f.
 Qed.
@@ -235,10 +235,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (sliding.log' v)) wal.sliding "log"%go.
-  simpl_one_flatten_struct (# (sliding.start' v)) wal.sliding "start"%go.
-  simpl_one_flatten_struct (# (sliding.mutable' v)) wal.sliding "mutable"%go.
-  simpl_one_flatten_struct (# (sliding.needFlush' v)) wal.sliding "needFlush"%go.
+  simpl_one_flatten_struct (# (sliding.log' v)) (wal.sliding) "log"%go.
+  simpl_one_flatten_struct (# (sliding.start' v)) (wal.sliding) "start"%go.
+  simpl_one_flatten_struct (# (sliding.mutable' v)) (wal.sliding) "mutable"%go.
+  simpl_one_flatten_struct (# (sliding.needFlush' v)) (wal.sliding) "needFlush"%go.
 
   solve_field_ref_f.
 Qed.
@@ -321,9 +321,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WalogState.memLog' v)) wal.WalogState "memLog"%go.
-  simpl_one_flatten_struct (# (WalogState.diskEnd' v)) wal.WalogState "diskEnd"%go.
-  simpl_one_flatten_struct (# (WalogState.shutdown' v)) wal.WalogState "shutdown"%go.
+  simpl_one_flatten_struct (# (WalogState.memLog' v)) (wal.WalogState) "memLog"%go.
+  simpl_one_flatten_struct (# (WalogState.diskEnd' v)) (wal.WalogState) "diskEnd"%go.
+  simpl_one_flatten_struct (# (WalogState.shutdown' v)) (wal.WalogState) "shutdown"%go.
 
   solve_field_ref_f.
 Qed.
@@ -427,12 +427,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Walog.memLock' v)) wal.Walog "memLock"%go.
-  simpl_one_flatten_struct (# (Walog.d' v)) wal.Walog "d"%go.
-  simpl_one_flatten_struct (# (Walog.circ' v)) wal.Walog "circ"%go.
-  simpl_one_flatten_struct (# (Walog.st' v)) wal.Walog "st"%go.
-  simpl_one_flatten_struct (# (Walog.condLogger' v)) wal.Walog "condLogger"%go.
-  simpl_one_flatten_struct (# (Walog.condInstall' v)) wal.Walog "condInstall"%go.
+  simpl_one_flatten_struct (# (Walog.memLock' v)) (wal.Walog) "memLock"%go.
+  simpl_one_flatten_struct (# (Walog.d' v)) (wal.Walog) "d"%go.
+  simpl_one_flatten_struct (# (Walog.circ' v)) (wal.Walog) "circ"%go.
+  simpl_one_flatten_struct (# (Walog.st' v)) (wal.Walog) "st"%go.
+  simpl_one_flatten_struct (# (Walog.condLogger' v)) (wal.Walog) "condLogger"%go.
+  simpl_one_flatten_struct (# (Walog.condInstall' v)) (wal.Walog) "condInstall"%go.
 
   solve_field_ref_f.
 Qed.
@@ -441,215 +441,200 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined wal :=
-{|
-  is_pkg_defined := is_global_definitions wal var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MkBlockData :
-  WpFuncCall wal "MkBlockData" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.MkBlockData _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_initCircular :
-  WpFuncCall wal "initCircular" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.initCircular _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeHdr1 :
-  WpFuncCall wal "decodeHdr1" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.decodeHdr1 _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeHdr2 :
-  WpFuncCall wal "decodeHdr2" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.decodeHdr2 _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_recoverCircular :
-  WpFuncCall wal "recoverCircular" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.recoverCircular _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_hdr2 :
-  WpFuncCall wal "hdr2" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.hdr2 _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Advance :
-  WpFuncCall wal "Advance" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.Advance _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_mkSliding :
-  WpFuncCall wal "mkSliding" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.mkSliding _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_absorbBufs :
-  WpFuncCall wal "absorbBufs" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.absorbBufs _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_installBlocks :
-  WpFuncCall wal "installBlocks" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.installBlocks _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_mkLog :
-  WpFuncCall wal "mkLog" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.mkLog _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MkLog :
-  WpFuncCall wal "MkLog" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.MkLog _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_doMemAppend :
-  WpFuncCall wal "doMemAppend" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.doMemAppend _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_copyUpdateBlock :
-  WpFuncCall wal "copyUpdateBlock" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.copyUpdateBlock _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_circularAppender'ptr_Append :
-  WpMethodCall wal "circularAppender'ptr" "Append" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.circularAppenderⁱᵈ) "Append" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_circularAppender'ptr_hdr1 :
-  WpMethodCall wal "circularAppender'ptr" "hdr1" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.circularAppenderⁱᵈ) "hdr1" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_circularAppender'ptr_logBlocks :
-  WpMethodCall wal "circularAppender'ptr" "logBlocks" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.circularAppenderⁱᵈ) "logBlocks" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_append :
-  WpMethodCall wal "sliding'ptr" "append" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "append" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_clearMutable :
-  WpMethodCall wal "sliding'ptr" "clearMutable" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "clearMutable" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_deleteFrom :
-  WpMethodCall wal "sliding'ptr" "deleteFrom" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "deleteFrom" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_end :
-  WpMethodCall wal "sliding'ptr" "end" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "end" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_get :
-  WpMethodCall wal "sliding'ptr" "get" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "get" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_intoMutable :
-  WpMethodCall wal "sliding'ptr" "intoMutable" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "intoMutable" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_memWrite :
-  WpMethodCall wal "sliding'ptr" "memWrite" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "memWrite" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_posForAddr :
-  WpMethodCall wal "sliding'ptr" "posForAddr" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "posForAddr" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_takeFrom :
-  WpMethodCall wal "sliding'ptr" "takeFrom" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "takeFrom" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_takeTill :
-  WpMethodCall wal "sliding'ptr" "takeTill" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "takeTill" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliding'ptr_update :
-  WpMethodCall wal "sliding'ptr" "update" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.slidingⁱᵈ) "update" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WalogState'ptr_cutMemLog :
-  WpMethodCall wal "WalogState'ptr" "cutMemLog" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.WalogStateⁱᵈ) "cutMemLog" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WalogState'ptr_endGroupTxn :
-  WpMethodCall wal "WalogState'ptr" "endGroupTxn" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.WalogStateⁱᵈ) "endGroupTxn" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WalogState'ptr_memEnd :
-  WpMethodCall wal "WalogState'ptr" "memEnd" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.WalogStateⁱᵈ) "memEnd" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WalogState'ptr_memLogHasSpace :
-  WpMethodCall wal "WalogState'ptr" "memLogHasSpace" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.WalogStateⁱᵈ) "memLogHasSpace" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WalogState'ptr_readMem :
-  WpMethodCall wal "WalogState'ptr" "readMem" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.WalogStateⁱᵈ) "readMem" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WalogState'ptr_updatesOverflowU64 :
-  WpMethodCall wal "WalogState'ptr" "updatesOverflowU64" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.WalogStateⁱᵈ) "updatesOverflowU64" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_Flush :
-  WpMethodCall wal "Walog'ptr" "Flush" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "Flush" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_LogSz :
-  WpMethodCall wal "Walog'ptr" "LogSz" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "LogSz" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_MemAppend :
-  WpMethodCall wal "Walog'ptr" "MemAppend" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "MemAppend" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_Read :
-  WpMethodCall wal "Walog'ptr" "Read" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "Read" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_ReadInstalled :
-  WpMethodCall wal "Walog'ptr" "ReadInstalled" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "ReadInstalled" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_ReadMem :
-  WpMethodCall wal "Walog'ptr" "ReadMem" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "ReadMem" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_Shutdown :
-  WpMethodCall wal "Walog'ptr" "Shutdown" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "Shutdown" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_flushIfNeeded :
-  WpMethodCall wal "Walog'ptr" "flushIfNeeded" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "flushIfNeeded" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_installer :
-  WpMethodCall wal "Walog'ptr" "installer" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "installer" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_logAppend :
-  WpMethodCall wal "Walog'ptr" "logAppend" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "logAppend" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_logInstall :
-  WpMethodCall wal "Walog'ptr" "logInstall" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "logInstall" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_logger :
-  WpMethodCall wal "Walog'ptr" "logger" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "logger" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_startBackgroundThreads :
-  WpMethodCall wal "Walog'ptr" "startBackgroundThreads" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "startBackgroundThreads" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Walog'ptr_waitForSpace :
-  WpMethodCall wal "Walog'ptr" "waitForSpace" _ (is_pkg_defined wal) :=
+  WpMethodCall (ptrTⁱᵈ wal.Walogⁱᵈ) "waitForSpace" _ (is_pkg_defined wal) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

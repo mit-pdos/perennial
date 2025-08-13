@@ -17,6 +17,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Clientⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.Client"%go.
+
 Definition Client : go_type := structT [
   "uid" :: uint64T;
   "pend" :: ptrT;
@@ -24,11 +26,15 @@ Definition Client : go_type := structT [
   "serv" :: ptrT
 ].
 
+Definition pendingⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.pending"%go.
+
 Definition pending : go_type := structT [
   "nextVer" :: uint64T;
   "isPending" :: boolT;
   "pk" :: sliceT
 ].
+
+Definition epochⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.epoch"%go.
 
 Definition epoch : go_type := structT [
   "epoch" :: uint64T;
@@ -36,6 +42,8 @@ Definition epoch : go_type := structT [
   "link" :: sliceT;
   "sig" :: sliceT
 ].
+
+Definition servⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.serv"%go.
 
 Definition serv : go_type := structT [
   "cli" :: ptrT;
@@ -48,16 +56,16 @@ Definition serv : go_type := structT [
    if we have a pending Put, it requires the pk to be the same.
 
    go: client.go:45:18 *)
-Definition Client__Put : val :=
-  rec: "Client__Put" "c" "pk" :=
+Definition Client__Putⁱᵐᵖˡ : val :=
+  λ: "c" "pk",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "pk" := (mem.alloc "pk") in
     (if: ![#boolT] (struct.field_ref #pending #"isPending"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))
     then
       do:  (let: "$a0" := (let: "$a0" := (![#sliceT] (struct.field_ref #pending #"pk"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
       let: "$a1" := (![#sliceT] "pk") in
-      (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1") in
-      (func_call #std.std #"Assert"%go) "$a0")
+      (func_call #bytes.Equal) "$a0" "$a1") in
+      (func_call #std.Assert) "$a0")
     else
       let: "$r0" := #true in
       do:  ((struct.field_ref #pending #"isPending"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c")))) <-[#boolT] "$r0");;;
@@ -67,14 +75,18 @@ Definition Client__Put : val :=
     let: "$a1" := (![#uint64T] (struct.field_ref #Client #"uid"%go (![#ptrT] "c"))) in
     let: "$a2" := (![#sliceT] "pk") in
     let: "$a3" := (![#uint64T] (struct.field_ref #pending #"nextVer"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
-    (func_call #server.server #"CallPut"%go) "$a0" "$a1" "$a2" "$a3");;;
+    (func_call #server.CallPut) "$a0" "$a1" "$a2" "$a3");;;
     return: #()).
+
+Definition CheckNonMemb : go_string := "github.com/sanjit-bhat/pav/client.CheckNonMemb"%go.
+
+Definition CheckHist : go_string := "github.com/sanjit-bhat/pav/client.CheckHist"%go.
 
 (* Get a uid's pk.
 
    go: client.go:56:18 *)
-Definition Client__Get : val :=
-  rec: "Client__Get" "c" "uid" :=
+Definition Client__Getⁱᵐᵖˡ : val :=
+  λ: "c" "uid",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
     let: "isReg" := (mem.alloc (type.zero_val #boolT)) in
@@ -89,7 +101,7 @@ Definition Client__Get : val :=
     let: "$a1" := (![#uint64T] "uid") in
     let: "$a2" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))))) in
     let: "$a3" := #(W64 0) in
-    (func_call #server.server #"CallHistory"%go) "$a0" "$a1" "$a2" "$a3") in
+    (func_call #server.CallHistory) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -107,7 +119,7 @@ Definition Client__Get : val :=
     let: "last" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "chainProof") in
     let: "$a1" := (![#sliceT] "sig") in
-    (method_call #client.client #"Client'ptr" #"getChainExt" (![#ptrT] "c")) "$a0" "$a1") in
+    (method_call #(ptrTⁱᵈ Clientⁱᵈ) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("last" <-[#ptrT] "$r0");;;
@@ -123,7 +135,7 @@ Definition Client__Get : val :=
     let: "$a2" := #(W64 0) in
     let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
     let: "$a4" := (![#sliceT] "hist") in
-    (func_call #client.client #"CheckHist"%go) "$a0" "$a1" "$a2" "$a3" "$a4"
+    (func_call #CheckHist) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
       let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -138,7 +150,7 @@ Definition Client__Get : val :=
     let: "$a2" := (![#uint64T] "boundVer") in
     let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
     let: "$a4" := (![#ptrT] "bound") in
-    (func_call #client.client #"CheckNonMemb"%go) "$a0" "$a1" "$a2" "$a3" "$a4"
+    (func_call #CheckNonMemb) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
       let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -158,8 +170,8 @@ Definition Client__Get : val :=
    if isChanged, the key was added sometime from the last SelfMon.
 
    go: client.go:89:18 *)
-Definition Client__SelfMon : val :=
-  rec: "Client__SelfMon" "c" <> :=
+Definition Client__SelfMonⁱᵐᵖˡ : val :=
+  λ: "c" <>,
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "isChanged" := (mem.alloc (type.zero_val #boolT)) in
     let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
@@ -172,7 +184,7 @@ Definition Client__SelfMon : val :=
     let: "$a1" := (![#uint64T] (struct.field_ref #Client #"uid"%go (![#ptrT] "c"))) in
     let: "$a2" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))))) in
     let: "$a3" := (![#uint64T] (struct.field_ref #pending #"nextVer"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
-    (func_call #server.server #"CallHistory"%go) "$a0" "$a1" "$a2" "$a3") in
+    (func_call #server.CallHistory) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -190,7 +202,7 @@ Definition Client__SelfMon : val :=
     let: "last" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "chainProof") in
     let: "$a1" := (![#sliceT] "sig") in
-    (method_call #client.client #"Client'ptr" #"getChainExt" (![#ptrT] "c")) "$a0" "$a1") in
+    (method_call #(ptrTⁱᵈ Clientⁱᵈ) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("last" <-[#ptrT] "$r0");;;
@@ -206,7 +218,7 @@ Definition Client__SelfMon : val :=
     let: "$a2" := (![#uint64T] (struct.field_ref #pending #"nextVer"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
     let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
     let: "$a4" := (![#sliceT] "hist") in
-    (func_call #client.client #"CheckHist"%go) "$a0" "$a1" "$a2" "$a3" "$a4"
+    (func_call #CheckHist) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
       let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -224,7 +236,7 @@ Definition Client__SelfMon : val :=
     let: "$a2" := (![#uint64T] "boundVer") in
     let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
     let: "$a4" := (![#ptrT] "bound") in
-    (func_call #client.client #"CheckNonMemb"%go) "$a0" "$a1" "$a2" "$a3" "$a4"
+    (func_call #CheckNonMemb) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
       let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -259,7 +271,7 @@ Definition Client__SelfMon : val :=
     do:  ("newKey" <-[#ptrT] "$r0");;;
     (if: (~ (let: "$a0" := (![#sliceT] (struct.field_ref #ktcore.CommitOpen #"Val"%go (![#ptrT] (struct.field_ref #ktcore.Memb #"PkOpen"%go (![#ptrT] "newKey"))))) in
     let: "$a1" := (![#sliceT] (struct.field_ref #pending #"pk"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
-    (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1"))
+    (func_call #bytes.Equal) "$a0" "$a1"))
     then
       let: "$r0" := (ktcore.BlameServFull `or` ktcore.BlameClients) in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -273,7 +285,7 @@ Definition Client__SelfMon : val :=
     do:  ((struct.field_ref #pending #"pk"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c")))) <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #pending #"nextVer"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #pending #"nextVer"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c")))) <-[#uint64T] "$r0");;;
     return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last")), #true, ktcore.BlameNone)).
 
@@ -298,8 +310,8 @@ Definition evidVrf : go_type := structT [
 ].
 
 (* go: client.go:148:18 *)
-Definition Client__Audit : val :=
-  rec: "Client__Audit" "c" "adtrAddr" "adtrPk" :=
+Definition Client__Auditⁱᵐᵖˡ : val :=
+  λ: "c" "adtrAddr" "adtrPk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "evid" := (mem.alloc (type.zero_val #ptrT)) in
     let: "c" := (mem.alloc "c") in
@@ -307,7 +319,7 @@ Definition Client__Audit : val :=
     let: "adtrAddr" := (mem.alloc "adtrAddr") in
     let: "cli" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "adtrAddr") in
-    (func_call #advrpc.advrpc #"Dial"%go) "$a0") in
+    (func_call #advrpc.Dial) "$a0") in
     do:  ("cli" <-[#ptrT] "$r0");;;
     let: "last" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))) in
@@ -315,7 +327,7 @@ Definition Client__Audit : val :=
     let: "audit" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "cli") in
     let: "$a1" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last"))) in
-    (func_call #auditor.auditor #"CallGet"%go) "$a0" "$a1") in
+    (func_call #auditor.CallGet) "$a0" "$a1") in
     do:  ("audit" <-[#ptrT] "$r0");;;
     (if: (![#ktcore.Blame] (struct.field_ref #auditor.GetReply #"Err"%go (![#ptrT] "audit"))) ≠ ktcore.BlameNone
     then
@@ -326,7 +338,7 @@ Definition Client__Audit : val :=
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "adtrPk") in
     let: "$a1" := (![#sliceT] (struct.field_ref #auditor.GetReply #"VrfPk"%go (![#ptrT] "audit"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #auditor.GetReply #"AdtrVrfSig"%go (![#ptrT] "audit"))) in
-    (func_call #ktcore.ktcore #"VerifyVrfSig"%go) "$a0" "$a1" "$a2"
+    (func_call #ktcore.VerifyVrfSig) "$a0" "$a1" "$a2"
     then
       let: "$r0" := ktcore.BlameAdtrFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -335,7 +347,7 @@ Definition Client__Audit : val :=
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] (struct.field_ref #serv #"sigPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
     let: "$a1" := (![#sliceT] (struct.field_ref #auditor.GetReply #"VrfPk"%go (![#ptrT] "audit"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #auditor.GetReply #"ServVrfSig"%go (![#ptrT] "audit"))) in
-    (func_call #ktcore.ktcore #"VerifyVrfSig"%go) "$a0" "$a1" "$a2"
+    (func_call #ktcore.VerifyVrfSig) "$a0" "$a1" "$a2"
     then
       let: "$r0" := ktcore.BlameAdtrFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -343,11 +355,11 @@ Definition Client__Audit : val :=
     else do:  #());;;
     let: "vrfPkB" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #serv #"vrfPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
-    (func_call #cryptoffi.cryptoffi #"VrfPublicKeyEncode"%go) "$a0") in
+    (func_call #cryptoffi.VrfPublicKeyEncode) "$a0") in
     do:  ("vrfPkB" <-[#sliceT] "$r0");;;
     (if: (~ (let: "$a0" := (![#sliceT] "vrfPkB") in
     let: "$a1" := (![#sliceT] (struct.field_ref #auditor.GetReply #"VrfPk"%go (![#ptrT] "audit"))) in
-    (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1"))
+    (func_call #bytes.Equal) "$a0" "$a1"))
     then
       let: "$r0" := (mem.alloc (let: "$vrf" := (mem.alloc (let: "$vrfPk0" := (![#sliceT] "vrfPkB") in
       let: "$sig0" := (![#sliceT] (struct.field_ref #serv #"vrfSig"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
@@ -372,7 +384,7 @@ Definition Client__Audit : val :=
     let: "$a1" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #auditor.GetReply #"Link"%go (![#ptrT] "audit"))) in
     let: "$a3" := (![#sliceT] (struct.field_ref #auditor.GetReply #"AdtrLinkSig"%go (![#ptrT] "audit"))) in
-    (func_call #ktcore.ktcore #"VerifyLinkSig"%go) "$a0" "$a1" "$a2" "$a3"
+    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then
       let: "$r0" := ktcore.BlameAdtrFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -382,7 +394,7 @@ Definition Client__Audit : val :=
     let: "$a1" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #auditor.GetReply #"Link"%go (![#ptrT] "audit"))) in
     let: "$a3" := (![#sliceT] (struct.field_ref #auditor.GetReply #"ServLinkSig"%go (![#ptrT] "audit"))) in
-    (func_call #ktcore.ktcore #"VerifyLinkSig"%go) "$a0" "$a1" "$a2" "$a3"
+    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then
       let: "$r0" := ktcore.BlameAdtrFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -390,7 +402,7 @@ Definition Client__Audit : val :=
     else do:  #());;;
     (if: (~ (let: "$a0" := (![#sliceT] (struct.field_ref #epoch #"link"%go (![#ptrT] "last"))) in
     let: "$a1" := (![#sliceT] (struct.field_ref #auditor.GetReply #"Link"%go (![#ptrT] "audit"))) in
-    (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1"))
+    (func_call #bytes.Equal) "$a0" "$a1"))
     then
       let: "$r0" := (mem.alloc (let: "$link" := (mem.alloc (let: "$epoch" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last"))) in
       let: "$link0" := (![#sliceT] (struct.field_ref #epoch #"link"%go (![#ptrT] "last"))) in
@@ -415,9 +427,11 @@ Definition Client__Audit : val :=
     else do:  #());;;
     return: (![#ptrT] "evid", ![#ktcore.Blame] "err")).
 
+Definition New : go_string := "github.com/sanjit-bhat/pav/client.New"%go.
+
 (* go: client.go:193:6 *)
-Definition New : val :=
-  rec: "New" "uid" "servAddr" "servPk" :=
+Definition Newⁱᵐᵖˡ : val :=
+  λ: "uid" "servAddr" "servPk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "c" := (mem.alloc (type.zero_val #ptrT)) in
     let: "servPk" := (mem.alloc "servPk") in
@@ -425,11 +439,11 @@ Definition New : val :=
     let: "uid" := (mem.alloc "uid") in
     let: "cli" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "servAddr") in
-    (func_call #advrpc.advrpc #"Dial"%go) "$a0") in
+    (func_call #advrpc.Dial) "$a0") in
     do:  ("cli" <-[#ptrT] "$r0");;;
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] "cli") in
-    (func_call #server.server #"CallStart"%go) "$a0") in
+    (func_call #server.CallStart) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("reply" <-[#ptrT] "$r0");;;
@@ -450,7 +464,7 @@ Definition New : val :=
     let: "extLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartReply #"StartLink"%go (![#ptrT] "reply"))) in
     let: "$a1" := (![#sliceT] (struct.field_ref #server.StartReply #"ChainProof"%go (![#ptrT] "reply"))) in
-    (func_call #hashchain.hashchain #"Verify"%go) "$a0" "$a1") in
+    (func_call #hashchain.Verify) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -473,7 +487,7 @@ Definition New : val :=
     else do:  #());;;
     (if: (~ (let: "$a0" := (![#uint64T] (struct.field_ref #server.StartReply #"StartEpochLen"%go (![#ptrT] "reply"))) in
     let: "$a1" := ((![#uint64T] "extLen") - #(W64 1)) in
-    (func_call #std.std #"SumNoOverflow"%go) "$a0" "$a1"))
+    (func_call #std.SumNoOverflow) "$a0" "$a1"))
     then
       let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -486,7 +500,7 @@ Definition New : val :=
     let: "$a1" := (![#uint64T] "lastEp") in
     let: "$a2" := (![#sliceT] "newLink") in
     let: "$a3" := (![#sliceT] (struct.field_ref #server.StartReply #"LinkSig"%go (![#ptrT] "reply"))) in
-    (func_call #ktcore.ktcore #"VerifyLinkSig"%go) "$a0" "$a1" "$a2" "$a3"
+    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then
       let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -494,7 +508,7 @@ Definition New : val :=
     else do:  #());;;
     let: "vrfPk" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfPk"%go (![#ptrT] "reply"))) in
-    (func_call #cryptoffi.cryptoffi #"VrfPublicKeyDecode"%go) "$a0") in
+    (func_call #cryptoffi.VrfPublicKeyDecode) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("vrfPk" <-[#ptrT] "$r0");;;
@@ -508,7 +522,7 @@ Definition New : val :=
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "servPk") in
     let: "$a1" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfPk"%go (![#ptrT] "reply"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfSig"%go (![#ptrT] "reply"))) in
-    (func_call #ktcore.ktcore #"VerifyVrfSig"%go) "$a0" "$a1" "$a2"
+    (func_call #ktcore.VerifyVrfSig) "$a0" "$a1" "$a2"
     then
       let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -559,8 +573,8 @@ Definition New : val :=
     return: (![#ptrT] "c", ![#ktcore.Blame] "err")).
 
 (* go: client.go:239:18 *)
-Definition Client__getChainExt : val :=
-  rec: "Client__getChainExt" "c" "chainProof" "sig" :=
+Definition Client__getChainExtⁱᵐᵖˡ : val :=
+  λ: "c" "chainProof" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "ep" := (mem.alloc (type.zero_val #ptrT)) in
     let: "c" := (mem.alloc "c") in
@@ -571,7 +585,7 @@ Definition Client__getChainExt : val :=
     let: "extLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] (struct.field_ref #epoch #"link"%go (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))))) in
     let: "$a1" := (![#sliceT] "chainProof") in
-    (func_call #hashchain.hashchain #"Verify"%go) "$a0" "$a1") in
+    (func_call #hashchain.Verify) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -591,7 +605,7 @@ Definition Client__getChainExt : val :=
     else do:  #());;;
     (if: (~ (let: "$a0" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))))) in
     let: "$a1" := (![#uint64T] "extLen") in
-    (func_call #std.std #"SumNoOverflow"%go) "$a0" "$a1"))
+    (func_call #std.SumNoOverflow) "$a0" "$a1"))
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
@@ -604,7 +618,7 @@ Definition Client__getChainExt : val :=
     let: "$a1" := (![#uint64T] "newEp") in
     let: "$a2" := (![#sliceT] "newLink") in
     let: "$a3" := (![#sliceT] "sig") in
-    (func_call #ktcore.ktcore #"VerifyLinkSig"%go) "$a0" "$a1" "$a2" "$a3"
+    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
@@ -623,9 +637,11 @@ Definition Client__getChainExt : val :=
     do:  ("ep" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "ep", ![#boolT] "err")).
 
+Definition CheckMemb : go_string := "github.com/sanjit-bhat/pav/client.CheckMemb"%go.
+
 (* go: client.go:261:6 *)
-Definition CheckMemb : val :=
-  rec: "CheckMemb" "vrfPk" "uid" "ver" "dig" "memb" :=
+Definition CheckMembⁱᵐᵖˡ : val :=
+  λ: "vrfPk" "uid" "ver" "dig" "memb",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "memb" := (mem.alloc "memb") in
     let: "dig" := (mem.alloc "dig") in
@@ -637,7 +653,7 @@ Definition CheckMemb : val :=
     let: "$a1" := (![#uint64T] "uid") in
     let: "$a2" := (![#uint64T] "ver") in
     let: "$a3" := (![#sliceT] (struct.field_ref #ktcore.Memb #"LabelProof"%go (![#ptrT] "memb"))) in
-    (func_call #ktcore.ktcore #"CheckMapLabel"%go) "$a0" "$a1" "$a2" "$a3") in
+    (func_call #ktcore.CheckMapLabel) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("label" <-[#sliceT] "$r0");;;
@@ -647,13 +663,13 @@ Definition CheckMemb : val :=
     else do:  #());;;
     let: "mapVal" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #ktcore.Memb #"PkOpen"%go (![#ptrT] "memb"))) in
-    (func_call #ktcore.ktcore #"GetMapVal"%go) "$a0") in
+    (func_call #ktcore.GetMapVal) "$a0") in
     do:  ("mapVal" <-[#sliceT] "$r0");;;
     let: "dig0" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
     let: "$a1" := (![#sliceT] "mapVal") in
     let: "$a2" := (![#sliceT] (struct.field_ref #ktcore.Memb #"MerkleProof"%go (![#ptrT] "memb"))) in
-    (func_call #merkle.merkle #"VerifyMemb"%go) "$a0" "$a1" "$a2") in
+    (func_call #merkle.VerifyMemb) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("dig0" <-[#sliceT] "$r0");;;
@@ -663,7 +679,7 @@ Definition CheckMemb : val :=
     else do:  #());;;
     (if: (~ (let: "$a0" := (![#sliceT] "dig") in
     let: "$a1" := (![#sliceT] "dig0") in
-    (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1"))
+    (func_call #bytes.Equal) "$a0" "$a1"))
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
@@ -672,8 +688,8 @@ Definition CheckMemb : val :=
     return: (![#boolT] "err")).
 
 (* go: client.go:278:6 *)
-Definition CheckHist : val :=
-  rec: "CheckHist" "vrfPk" "uid" "prefixLen" "dig" "hist" :=
+Definition CheckHistⁱᵐᵖˡ : val :=
+  λ: "vrfPk" "uid" "prefixLen" "dig" "hist",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "hist" := (mem.alloc "hist") in
     let: "dig" := (mem.alloc "dig") in
@@ -691,7 +707,7 @@ Definition CheckHist : val :=
       let: "$a2" := ((![#uint64T] "prefixLen") + (s_to_w64 (![#intT] "ver"))) in
       let: "$a3" := (![#sliceT] "dig") in
       let: "$a4" := (![#ptrT] "memb") in
-      (func_call #client.client #"CheckMemb"%go) "$a0" "$a1" "$a2" "$a3" "$a4") in
+      (func_call #CheckMemb) "$a0" "$a1" "$a2" "$a3" "$a4") in
       do:  ("err" <-[#boolT] "$r0");;;
       (if: ![#boolT] "err"
       then return: (![#boolT] "err")
@@ -699,8 +715,8 @@ Definition CheckHist : val :=
     return: (![#boolT] "err")).
 
 (* go: client.go:287:6 *)
-Definition CheckNonMemb : val :=
-  rec: "CheckNonMemb" "vrfPk" "uid" "ver" "dig" "nonMemb" :=
+Definition CheckNonMembⁱᵐᵖˡ : val :=
+  λ: "vrfPk" "uid" "ver" "dig" "nonMemb",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "nonMemb" := (mem.alloc "nonMemb") in
     let: "dig" := (mem.alloc "dig") in
@@ -712,7 +728,7 @@ Definition CheckNonMemb : val :=
     let: "$a1" := (![#uint64T] "uid") in
     let: "$a2" := (![#uint64T] "ver") in
     let: "$a3" := (![#sliceT] (struct.field_ref #ktcore.NonMemb #"LabelProof"%go (![#ptrT] "nonMemb"))) in
-    (func_call #ktcore.ktcore #"CheckMapLabel"%go) "$a0" "$a1" "$a2" "$a3") in
+    (func_call #ktcore.CheckMapLabel) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("label" <-[#sliceT] "$r0");;;
@@ -723,7 +739,7 @@ Definition CheckNonMemb : val :=
     let: "dig0" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
     let: "$a1" := (![#sliceT] (struct.field_ref #ktcore.NonMemb #"MerkleProof"%go (![#ptrT] "nonMemb"))) in
-    (func_call #merkle.merkle #"VerifyNonMemb"%go) "$a0" "$a1") in
+    (func_call #merkle.VerifyNonMemb) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("dig0" <-[#sliceT] "$r0");;;
@@ -733,7 +749,7 @@ Definition CheckNonMemb : val :=
     else do:  #());;;
     (if: (~ (let: "$a0" := (![#sliceT] "dig") in
     let: "$a1" := (![#sliceT] "dig0") in
-    (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1"))
+    (func_call #bytes.Equal) "$a0" "$a1"))
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
@@ -741,31 +757,37 @@ Definition CheckNonMemb : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
+Definition Evidⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.Evid"%go.
+
+Definition evidVrfⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.evidVrf"%go.
+
+Definition evidLinkⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.evidLink"%go.
+
 (* go: evidence.go:31:19 *)
-Definition evidVrf__Check : val :=
-  rec: "evidVrf__Check" "e" "pk" :=
+Definition evidVrf__Checkⁱᵐᵖˡ : val :=
+  λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "e" := (mem.alloc "e") in
     let: "pk" := (mem.alloc "pk") in
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
     let: "$a1" := (![#sliceT] (struct.field_ref #evidVrf #"vrfPk0"%go (![#ptrT] "e"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #evidVrf #"sig0"%go (![#ptrT] "e"))) in
-    (func_call #ktcore.ktcore #"VerifyVrfSig"%go) "$a0" "$a1" "$a2"
+    (func_call #ktcore.VerifyVrfSig) "$a0" "$a1" "$a2"
     then return: (#true)
     else do:  #());;;
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
     let: "$a1" := (![#sliceT] (struct.field_ref #evidVrf #"vrfPk1"%go (![#ptrT] "e"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #evidVrf #"sig1"%go (![#ptrT] "e"))) in
-    (func_call #ktcore.ktcore #"VerifyVrfSig"%go) "$a0" "$a1" "$a2"
+    (func_call #ktcore.VerifyVrfSig) "$a0" "$a1" "$a2"
     then return: (#true)
     else do:  #());;;
     return: (let: "$a0" := (![#sliceT] (struct.field_ref #evidVrf #"vrfPk0"%go (![#ptrT] "e"))) in
      let: "$a1" := (![#sliceT] (struct.field_ref #evidVrf #"vrfPk1"%go (![#ptrT] "e"))) in
-     (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1")).
+     (func_call #bytes.Equal) "$a0" "$a1")).
 
 (* go: evidence.go:41:20 *)
-Definition evidLink__Check : val :=
-  rec: "evidLink__Check" "e" "pk" :=
+Definition evidLink__Checkⁱᵐᵖˡ : val :=
+  λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "e" := (mem.alloc "e") in
     let: "pk" := (mem.alloc "pk") in
@@ -773,45 +795,45 @@ Definition evidLink__Check : val :=
     let: "$a1" := (![#uint64T] (struct.field_ref #evidLink #"epoch"%go (![#ptrT] "e"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #evidLink #"link0"%go (![#ptrT] "e"))) in
     let: "$a3" := (![#sliceT] (struct.field_ref #evidLink #"sig0"%go (![#ptrT] "e"))) in
-    (func_call #ktcore.ktcore #"VerifyLinkSig"%go) "$a0" "$a1" "$a2" "$a3"
+    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then return: (#true)
     else do:  #());;;
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
     let: "$a1" := (![#uint64T] (struct.field_ref #evidLink #"epoch"%go (![#ptrT] "e"))) in
     let: "$a2" := (![#sliceT] (struct.field_ref #evidLink #"link1"%go (![#ptrT] "e"))) in
     let: "$a3" := (![#sliceT] (struct.field_ref #evidLink #"sig1"%go (![#ptrT] "e"))) in
-    (func_call #ktcore.ktcore #"VerifyLinkSig"%go) "$a0" "$a1" "$a2" "$a3"
+    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then return: (#true)
     else do:  #());;;
     return: (let: "$a0" := (![#sliceT] (struct.field_ref #evidLink #"link0"%go (![#ptrT] "e"))) in
      let: "$a1" := (![#sliceT] (struct.field_ref #evidLink #"link1"%go (![#ptrT] "e"))) in
-     (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1")).
+     (func_call #bytes.Equal) "$a0" "$a1")).
 
 (* Check returns an error if the evidence does not check out.
    otherwise, it proves that the server was dishonest.
 
    go: evidence.go:53:16 *)
-Definition Evid__Check : val :=
-  rec: "Evid__Check" "e" "pk" :=
+Definition Evid__Checkⁱᵐᵖˡ : val :=
+  λ: "e" "pk",
     exception_do (let: "e" := (mem.alloc "e") in
     let: "pk" := (mem.alloc "pk") in
     (if: (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e"))) ≠ #null
     then
       return: (let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
-       (method_call #client.client #"evidVrf'ptr" #"Check" (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e")))) "$a0")
+       (method_call #(ptrTⁱᵈ evidVrfⁱᵈ) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e")))) "$a0")
     else do:  #());;;
     (if: (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e"))) ≠ #null
     then
       return: (let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
-       (method_call #client.client #"evidLink'ptr" #"Check" (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e")))) "$a0")
+       (method_call #(ptrTⁱᵈ evidLinkⁱᵈ) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e")))) "$a0")
     else do:  #());;;
     return: (#true)).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("New"%go, New); ("CheckMemb"%go, CheckMemb); ("CheckHist"%go, CheckHist); ("CheckNonMemb"%go, CheckNonMemb)].
+Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (CheckMemb, CheckMembⁱᵐᵖˡ); (CheckHist, CheckHistⁱᵐᵖˡ); (CheckNonMemb, CheckNonMembⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Client"%go, []); ("Client'ptr"%go, [("Audit"%go, Client__Audit); ("Get"%go, Client__Get); ("Put"%go, Client__Put); ("SelfMon"%go, Client__SelfMon); ("getChainExt"%go, Client__getChainExt)]); ("pending"%go, []); ("pending'ptr"%go, []); ("epoch"%go, []); ("epoch'ptr"%go, []); ("serv"%go, []); ("serv'ptr"%go, []); ("Evid"%go, []); ("Evid'ptr"%go, [("Check"%go, Evid__Check)]); ("evidVrf"%go, []); ("evidVrf'ptr"%go, [("Check"%go, evidVrf__Check)]); ("evidLink"%go, []); ("evidLink'ptr"%go, [("Check"%go, evidLink__Check)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Clientⁱᵈ, []); (ptrTⁱᵈ Clientⁱᵈ, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); (pendingⁱᵈ, []); (ptrTⁱᵈ pendingⁱᵈ, []); (epochⁱᵈ, []); (ptrTⁱᵈ epochⁱᵈ, []); (servⁱᵈ, []); (ptrTⁱᵈ servⁱᵈ, []); (Evidⁱᵈ, []); (ptrTⁱᵈ Evidⁱᵈ, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrfⁱᵈ, []); (ptrTⁱᵈ evidVrfⁱᵈ, [("Check"%go, evidVrf__Checkⁱᵐᵖˡ)]); (evidLinkⁱᵈ, []); (ptrTⁱᵈ evidLinkⁱᵈ, [("Check"%go, evidLink__Checkⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo client.client :=
   {|
@@ -822,17 +844,18 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Client"%go
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init client.client (λ: <>,
-      exception_do (do:  server.initialize';;;
-      do:  merkle.initialize';;;
-      do:  ktcore.initialize';;;
-      do:  hashchain.initialize';;;
-      do:  cryptoffi.initialize';;;
-      do:  auditor.initialize';;;
-      do:  advrpc.initialize';;;
-      do:  std.initialize';;;
-      do:  bytes.initialize')
+  λ: <>,
+    package.init #client.client (λ: <>,
+      exception_do (do:  (server.initialize' #());;;
+      do:  (merkle.initialize' #());;;
+      do:  (ktcore.initialize' #());;;
+      do:  (hashchain.initialize' #());;;
+      do:  (cryptoffi.initialize' #());;;
+      do:  (auditor.initialize' #());;;
+      do:  (advrpc.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (bytes.initialize' #());;;
+      do:  (package.alloc client.client #()))
       ).
 
 End code.

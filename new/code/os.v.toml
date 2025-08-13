@@ -1,6 +1,9 @@
 translate = [
   "!*",
 ]
+axiomatize = [
+  "File",
+]
 imports = [
   "!*",
 ]

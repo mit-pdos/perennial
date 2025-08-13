@@ -15,23 +15,27 @@ Module obj.
 Section code.
 
 
+Definition Logⁱᵈ : go_string := "github.com/mit-pdos/go-journal/obj.Log"%go.
+
 Definition Log : go_type := structT [
   "mu" :: ptrT;
   "log" :: ptrT;
   "pos" :: wal.LogPosition
 ].
 
+Definition MkLog : go_string := "github.com/mit-pdos/go-journal/obj.MkLog"%go.
+
 (* MkLog recovers the object logging system
    (or initializes from an all-zero disk).
 
    go: obj.go:29:6 *)
-Definition MkLog : val :=
-  rec: "MkLog" "d" :=
+Definition MkLogⁱᵐᵖˡ : val :=
+  λ: "d",
     exception_do (let: "d" := (mem.alloc "d") in
     let: "log" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
     let: "$log" := (let: "$a0" := (![#disk.Disk] "d") in
-    (func_call #wal.wal #"MkLog"%go) "$a0") in
+    (func_call #wal.MkLog) "$a0") in
     let: "$pos" := #(W64 0) in
     struct.make #Log [{
       "mu" ::= "$mu";
@@ -44,20 +48,20 @@ Definition MkLog : val :=
 (* Read a disk object into buf
 
    go: obj.go:39:15 *)
-Definition Log__Load : val :=
-  rec: "Log__Load" "l" "addr" "sz" :=
+Definition Log__Loadⁱᵐᵖˡ : val :=
+  λ: "l" "addr" "sz",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
     let: "blk" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go "addr")) in
-    (method_call #wal #"Walog'ptr" #"Read" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
+    (method_call #(ptrTⁱᵈ wal.Walogⁱᵈ) #"Read"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
     do:  ("blk" <-[#sliceT] "$r0");;;
     let: "b" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
     let: "$a1" := (![#uint64T] "sz") in
     let: "$a2" := (![#sliceT] "blk") in
-    (func_call #buf.buf #"MkBufLoad"%go) "$a0" "$a1" "$a2") in
+    (func_call #buf.MkBufLoad) "$a0" "$a1" "$a2") in
     do:  ("b" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "b")).
 
@@ -66,8 +70,8 @@ Definition Log__Load : val :=
    apply to the same disk block. Assume caller holds commit lock.
 
    go: obj.go:48:15 *)
-Definition Log__installBufsMap : val :=
-  rec: "Log__installBufsMap" "l" "bufs" :=
+Definition Log__installBufsMapⁱᵐᵖˡ : val :=
+  λ: "l" "bufs",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
     let: "blks" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
@@ -97,22 +101,22 @@ Definition Log__installBufsMap : val :=
           do:  ("blk" <-[#sliceT] "$r0")
         else
           let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) in
-          (method_call #wal #"Walog'ptr" #"Read" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
+          (method_call #(ptrTⁱᵈ wal.Walogⁱᵈ) #"Read"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
           do:  ("blk" <-[#sliceT] "$r0");;;
           let: "$r0" := (![#sliceT] "blk") in
           do:  (map.insert (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0"));;;
         do:  (let: "$a0" := (![#sliceT] "blk") in
-        (method_call #buf #"Buf'ptr" #"Install" (![#ptrT] "b")) "$a0"))));;;
+        (method_call #(ptrTⁱᵈ buf.Bufⁱᵈ) #"Install"%go (![#ptrT] "b")) "$a0"))));;;
     return: (![type.mapT #uint64T #sliceT] "blks")).
 
 (* go: obj.go:70:15 *)
-Definition Log__installBufs : val :=
-  rec: "Log__installBufs" "l" "bufs" :=
+Definition Log__installBufsⁱᵐᵖˡ : val :=
+  λ: "l" "bufs",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
     let: "bufmap" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
-    (method_call #obj.obj #"Log'ptr" #"installBufsMap" (![#ptrT] "l")) "$a0") in
+    (method_call #(ptrTⁱᵈ Logⁱᵈ) #"installBufsMap"%go (![#ptrT] "l")) "$a0") in
     do:  ("bufmap" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "blks" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #wal.Update #(W64 0) (let: "$a0" := (![type.mapT #uint64T #sliceT] "bufmap") in
@@ -127,7 +131,7 @@ Definition Log__installBufs : val :=
       let: "$r0" := (let: "$a0" := (![#sliceT] "blks") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#uint64T] "blkno") in
       let: "$a1" := (![#sliceT] "data") in
-      (func_call #wal.wal #"MkBlockData"%go) "$a0" "$a1") in
+      (func_call #wal.MkBlockData) "$a0" "$a1") in
       slice.literal #wal.Update ["$sl0"])) in
       (slice.append #wal.Update) "$a0" "$a1") in
       do:  ("blks" <-[#sliceT] "$r0")));;;
@@ -137,40 +141,40 @@ Definition Log__installBufs : val :=
    blocks, and appends the blocks to the in-memory log.
 
    go: obj.go:81:15 *)
-Definition Log__doCommit : val :=
-  rec: "Log__doCommit" "l" "bufs" :=
+Definition Log__doCommitⁱᵐᵖˡ : val :=
+  λ: "l" "bufs",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
     let: "blks" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
-    (method_call #obj.obj #"Log'ptr" #"installBufs" (![#ptrT] "l")) "$a0") in
+    (method_call #(ptrTⁱᵈ Logⁱᵈ) #"installBufs"%go (![#ptrT] "l")) "$a0") in
     do:  ("blks" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"doCommit: %v bufs
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"int"%go) (let: "$a0" := (![#sliceT] "blks") in
+    let: "$a2" := ((let: "$sl0" := (interface.make #intTⁱᵈ (let: "$a0" := (![#sliceT] "blks") in
     slice.len "$a0")) in
     slice.literal #interfaceT ["$sl0"])) in
-    (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
+    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "n" := (mem.alloc (type.zero_val #wal.LogPosition)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "blks") in
-    (method_call #wal #"Walog'ptr" #"MemAppend" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
+    (method_call #(ptrTⁱᵈ wal.Walogⁱᵈ) #"MemAppend"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("n" <-[#wal.LogPosition] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
     let: "$r0" := (![#wal.LogPosition] "n") in
     do:  ((struct.field_ref #Log #"pos"%go (![#ptrT] "l")) <-[#wal.LogPosition] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
     return: (![#wal.LogPosition] "n", ![#boolT] "ok")).
 
 (* Commit dirty bufs of the transaction into the log, and perhaps wait.
 
    go: obj.go:98:15 *)
-Definition Log__CommitWait : val :=
-  rec: "Log__CommitWait" "l" "bufs" "wait" :=
+Definition Log__CommitWaitⁱᵐᵖˡ : val :=
+  λ: "l" "bufs" "wait",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "wait" := (mem.alloc "wait") in
     let: "bufs" := (mem.alloc "bufs") in
@@ -183,7 +187,7 @@ Definition Log__CommitWait : val :=
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "n" := (mem.alloc (type.zero_val #wal.LogPosition)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "bufs") in
-      (method_call #obj.obj #"Log'ptr" #"doCommit" (![#ptrT] "l")) "$a0") in
+      (method_call #(ptrTⁱᵈ Logⁱᵈ) #"doCommit"%go (![#ptrT] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("n" <-[#wal.LogPosition] "$r0");;;
@@ -194,58 +198,58 @@ Definition Log__CommitWait : val :=
         let: "$a1" := #"memappend failed; log is too small
         "%go in
         let: "$a2" := #slice.nil in
-        (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
+        (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
         let: "$r0" := #false in
         do:  ("commit" <-[#boolT] "$r0")
       else
         (if: ![#boolT] "wait"
         then
           do:  (let: "$a0" := (![#wal.LogPosition] "n") in
-          (method_call #wal #"Walog'ptr" #"Flush" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0")
+          (method_call #(ptrTⁱᵈ wal.Walogⁱᵈ) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0")
         else do:  #()))
     else
       do:  (let: "$a0" := #(W64 5) in
       let: "$a1" := #"commit read-only trans
       "%go in
       let: "$a2" := #slice.nil in
-      (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2"));;;
+      (func_call #util.DPrintf) "$a0" "$a1" "$a2"));;;
     return: (![#boolT] "commit")).
 
 (* NOTE: this is coarse-grained and unattached to the transaction ID
 
    go: obj.go:117:15 *)
-Definition Log__Flush : val :=
-  rec: "Log__Flush" "l" <> :=
+Definition Log__Flushⁱᵐᵖˡ : val :=
+  λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
     let: "pos" := (mem.alloc (type.zero_val #wal.LogPosition)) in
     let: "$r0" := (![#wal.LogPosition] (struct.field_ref #Log #"pos"%go (![#ptrT] "l"))) in
     do:  ("pos" <-[#wal.LogPosition] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
     do:  (let: "$a0" := (![#wal.LogPosition] "pos") in
-    (method_call #wal #"Walog'ptr" #"Flush" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0");;;
+    (method_call #(ptrTⁱᵈ wal.Walogⁱᵈ) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0");;;
     return: (#true)).
 
 (* LogSz returns 511 (the size of the wal log)
 
    go: obj.go:127:15 *)
-Definition Log__LogSz : val :=
-  rec: "Log__LogSz" "l" <> :=
+Definition Log__LogSzⁱᵐᵖˡ : val :=
+  λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
     return: (wal.LOGSZ)).
 
 (* go: obj.go:131:15 *)
-Definition Log__Shutdown : val :=
-  rec: "Log__Shutdown" "l" <> :=
+Definition Log__Shutdownⁱᵐᵖˡ : val :=
+  λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #wal #"Walog'ptr" #"Shutdown" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ wal.Walogⁱᵈ) #"Shutdown"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) #());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MkLog"%go, MkLog)].
+Definition functions' : list (go_string * val) := [(MkLog, MkLogⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Log"%go, []); ("Log'ptr"%go, [("CommitWait"%go, Log__CommitWait); ("Flush"%go, Log__Flush); ("Load"%go, Log__Load); ("LogSz"%go, Log__LogSz); ("Shutdown"%go, Log__Shutdown); ("doCommit"%go, Log__doCommit); ("installBufs"%go, Log__installBufs); ("installBufsMap"%go, Log__installBufsMap)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Logⁱᵈ, []); (ptrTⁱᵈ Logⁱᵈ, [("CommitWait"%go, Log__CommitWaitⁱᵐᵖˡ); ("Flush"%go, Log__Flushⁱᵐᵖˡ); ("Load"%go, Log__Loadⁱᵐᵖˡ); ("LogSz"%go, Log__LogSzⁱᵐᵖˡ); ("Shutdown"%go, Log__Shutdownⁱᵐᵖˡ); ("doCommit"%go, Log__doCommitⁱᵐᵖˡ); ("installBufs"%go, Log__installBufsⁱᵐᵖˡ); ("installBufsMap"%go, Log__installBufsMapⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo obj.obj :=
   {|
@@ -256,15 +260,16 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Log"%go, [
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init obj.obj (λ: <>,
-      exception_do (do:  sync.initialize';;;
-      do:  wal.initialize';;;
-      do:  util.initialize';;;
-      do:  common.initialize';;;
-      do:  buf.initialize';;;
-      do:  addr.initialize';;;
-      do:  disk.initialize')
+  λ: <>,
+    package.init #obj.obj (λ: <>,
+      exception_do (do:  (sync.initialize' #());;;
+      do:  (wal.initialize' #());;;
+      do:  (util.initialize' #());;;
+      do:  (common.initialize' #());;;
+      do:  (buf.initialize' #());;;
+      do:  (addr.initialize' #());;;
+      do:  (disk.initialize' #());;;
+      do:  (package.alloc obj.obj #()))
       ).
 
 End code.

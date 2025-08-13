@@ -9,16 +9,18 @@ Module externalglobals.
 Section code.
 
 
+Definition f : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/externalglobals.f"%go.
+
 (* go: g.go:7:6 *)
-Definition f : val :=
-  rec: "f" <> :=
+Definition fⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "$r0" := #(W64 11) in
-    do:  ((globals.get #unittest.unittest #"GlobalX"%go) <-[#uint64T] "$r0");;;
+    do:  ((globals.get #unittest.GlobalX) <-[#uint64T] "$r0");;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("f"%go, f)].
+Definition functions' : list (go_string * val) := [(f, fⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -31,9 +33,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init externalglobals.externalglobals (λ: <>,
-      exception_do (do:  unittest.initialize')
+  λ: <>,
+    package.init #externalglobals.externalglobals (λ: <>,
+      exception_do (do:  (unittest.initialize' #());;;
+      do:  (package.alloc externalglobals.externalglobals #()))
       ).
 
 End code.

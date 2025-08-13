@@ -74,7 +74,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Op.log' v)) jrnl.Op "log"%go.
+  simpl_one_flatten_struct (# (Op.log' v)) (jrnl.Op) "log"%go.
 
   solve_field_ref_f.
 Qed.
@@ -83,43 +83,28 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined jrnl :=
-{|
-  is_pkg_defined := is_global_definitions jrnl var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Begin :
-  WpFuncCall jrnl "Begin" _ (is_pkg_defined jrnl) :=
+  WpFuncCall jrnl.Begin _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_CommitWait :
-  WpMethodCall jrnl "Op'ptr" "CommitWait" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "CommitWait" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_NDirty :
-  WpMethodCall jrnl "Op'ptr" "NDirty" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "NDirty" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_OverWrite :
-  WpMethodCall jrnl "Op'ptr" "OverWrite" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "OverWrite" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_ReadBuf :
-  WpMethodCall jrnl "Op'ptr" "ReadBuf" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "ReadBuf" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

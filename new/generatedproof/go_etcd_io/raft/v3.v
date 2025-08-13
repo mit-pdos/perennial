@@ -131,11 +131,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (unstable.snapshot' v)) raft.unstable "snapshot"%go.
-  simpl_one_flatten_struct (# (unstable.entries' v)) raft.unstable "entries"%go.
-  simpl_one_flatten_struct (# (unstable.offset' v)) raft.unstable "offset"%go.
-  simpl_one_flatten_struct (# (unstable.snapshotInProgress' v)) raft.unstable "snapshotInProgress"%go.
-  simpl_one_flatten_struct (# (unstable.offsetInProgress' v)) raft.unstable "offsetInProgress"%go.
+  simpl_one_flatten_struct (# (unstable.snapshot' v)) (raft.unstable) "snapshot"%go.
+  simpl_one_flatten_struct (# (unstable.entries' v)) (raft.unstable) "entries"%go.
+  simpl_one_flatten_struct (# (unstable.offset' v)) (raft.unstable) "offset"%go.
+  simpl_one_flatten_struct (# (unstable.snapshotInProgress' v)) (raft.unstable) "snapshotInProgress"%go.
+  simpl_one_flatten_struct (# (unstable.offsetInProgress' v)) (raft.unstable) "offsetInProgress"%go.
 
   solve_field_ref_f.
 Qed.
@@ -261,14 +261,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (raftLog.storage' v)) raft.raftLog "storage"%go.
-  simpl_one_flatten_struct (# (raftLog.unstable' v)) raft.raftLog "unstable"%go.
-  simpl_one_flatten_struct (# (raftLog.committed' v)) raft.raftLog "committed"%go.
-  simpl_one_flatten_struct (# (raftLog.applying' v)) raft.raftLog "applying"%go.
-  simpl_one_flatten_struct (# (raftLog.applied' v)) raft.raftLog "applied"%go.
-  simpl_one_flatten_struct (# (raftLog.logger' v)) raft.raftLog "logger"%go.
-  simpl_one_flatten_struct (# (raftLog.maxApplyingEntsSize' v)) raft.raftLog "maxApplyingEntsSize"%go.
-  simpl_one_flatten_struct (# (raftLog.applyingEntsSize' v)) raft.raftLog "applyingEntsSize"%go.
+  simpl_one_flatten_struct (# (raftLog.storage' v)) (raft.raftLog) "storage"%go.
+  simpl_one_flatten_struct (# (raftLog.unstable' v)) (raft.raftLog) "unstable"%go.
+  simpl_one_flatten_struct (# (raftLog.committed' v)) (raft.raftLog) "committed"%go.
+  simpl_one_flatten_struct (# (raftLog.applying' v)) (raft.raftLog) "applying"%go.
+  simpl_one_flatten_struct (# (raftLog.applied' v)) (raft.raftLog) "applied"%go.
+  simpl_one_flatten_struct (# (raftLog.logger' v)) (raft.raftLog) "logger"%go.
+  simpl_one_flatten_struct (# (raftLog.maxApplyingEntsSize' v)) (raft.raftLog) "maxApplyingEntsSize"%go.
+  simpl_one_flatten_struct (# (raftLog.applyingEntsSize' v)) (raft.raftLog) "applyingEntsSize"%go.
 
   solve_field_ref_f.
 Qed.
@@ -337,7 +337,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (DefaultLogger.Logger' v)) raft.DefaultLogger "Logger"%go.
+  simpl_one_flatten_struct (# (DefaultLogger.Logger' v)) (raft.DefaultLogger) "Logger"%go.
 
   solve_field_ref_f.
 Qed.
@@ -422,7 +422,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SoftState.Lead' v)) raft.SoftState "Lead"%go.
+  simpl_one_flatten_struct (# (SoftState.Lead' v)) (raft.SoftState) "Lead"%go.
 
   solve_field_ref_f.
 Qed.
@@ -533,13 +533,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Ready.SoftState' v)) raft.Ready "SoftState"%go.
-  simpl_one_flatten_struct (# (Ready.HardState' v)) raft.Ready "HardState"%go.
-  simpl_one_flatten_struct (# (Ready.ReadStates' v)) raft.Ready "ReadStates"%go.
-  simpl_one_flatten_struct (# (Ready.Entries' v)) raft.Ready "Entries"%go.
-  simpl_one_flatten_struct (# (Ready.Snapshot' v)) raft.Ready "Snapshot"%go.
-  simpl_one_flatten_struct (# (Ready.CommittedEntries' v)) raft.Ready "CommittedEntries"%go.
-  simpl_one_flatten_struct (# (Ready.Messages' v)) raft.Ready "Messages"%go.
+  simpl_one_flatten_struct (# (Ready.SoftState' v)) (raft.Ready) "SoftState"%go.
+  simpl_one_flatten_struct (# (Ready.HardState' v)) (raft.Ready) "HardState"%go.
+  simpl_one_flatten_struct (# (Ready.ReadStates' v)) (raft.Ready) "ReadStates"%go.
+  simpl_one_flatten_struct (# (Ready.Entries' v)) (raft.Ready) "Entries"%go.
+  simpl_one_flatten_struct (# (Ready.Snapshot' v)) (raft.Ready) "Snapshot"%go.
+  simpl_one_flatten_struct (# (Ready.CommittedEntries' v)) (raft.Ready) "CommittedEntries"%go.
+  simpl_one_flatten_struct (# (Ready.Messages' v)) (raft.Ready) "Messages"%go.
 
   solve_field_ref_f.
 Qed.
@@ -616,7 +616,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Peer.ID' v)) raft.Peer "ID"%go.
+  simpl_one_flatten_struct (# (Peer.ID' v)) (raft.Peer) "ID"%go.
 
   solve_field_ref_f.
 Qed.
@@ -685,7 +685,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (msgWithResult.m' v)) raft.msgWithResult "m"%go.
+  simpl_one_flatten_struct (# (msgWithResult.m' v)) (raft.msgWithResult) "m"%go.
 
   solve_field_ref_f.
 Qed.
@@ -817,16 +817,16 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (node.propc' v)) raft.node "propc"%go.
-  simpl_one_flatten_struct (# (node.recvc' v)) raft.node "recvc"%go.
-  simpl_one_flatten_struct (# (node.confc' v)) raft.node "confc"%go.
-  simpl_one_flatten_struct (# (node.confstatec' v)) raft.node "confstatec"%go.
-  simpl_one_flatten_struct (# (node.readyc' v)) raft.node "readyc"%go.
-  simpl_one_flatten_struct (# (node.advancec' v)) raft.node "advancec"%go.
-  simpl_one_flatten_struct (# (node.tickc' v)) raft.node "tickc"%go.
-  simpl_one_flatten_struct (# (node.done' v)) raft.node "done"%go.
-  simpl_one_flatten_struct (# (node.stop' v)) raft.node "stop"%go.
-  simpl_one_flatten_struct (# (node.status' v)) raft.node "status"%go.
+  simpl_one_flatten_struct (# (node.propc' v)) (raft.node) "propc"%go.
+  simpl_one_flatten_struct (# (node.recvc' v)) (raft.node) "recvc"%go.
+  simpl_one_flatten_struct (# (node.confc' v)) (raft.node) "confc"%go.
+  simpl_one_flatten_struct (# (node.confstatec' v)) (raft.node) "confstatec"%go.
+  simpl_one_flatten_struct (# (node.readyc' v)) (raft.node) "readyc"%go.
+  simpl_one_flatten_struct (# (node.advancec' v)) (raft.node) "advancec"%go.
+  simpl_one_flatten_struct (# (node.tickc' v)) (raft.node) "tickc"%go.
+  simpl_one_flatten_struct (# (node.done' v)) (raft.node) "done"%go.
+  simpl_one_flatten_struct (# (node.stop' v)) (raft.node) "stop"%go.
+  simpl_one_flatten_struct (# (node.status' v)) (raft.node) "status"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1099,24 +1099,24 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Config.ID' v)) raft.Config "ID"%go.
-  simpl_one_flatten_struct (# (Config.ElectionTick' v)) raft.Config "ElectionTick"%go.
-  simpl_one_flatten_struct (# (Config.HeartbeatTick' v)) raft.Config "HeartbeatTick"%go.
-  simpl_one_flatten_struct (# (Config.Storage' v)) raft.Config "Storage"%go.
-  simpl_one_flatten_struct (# (Config.Applied' v)) raft.Config "Applied"%go.
-  simpl_one_flatten_struct (# (Config.AsyncStorageWrites' v)) raft.Config "AsyncStorageWrites"%go.
-  simpl_one_flatten_struct (# (Config.MaxSizePerMsg' v)) raft.Config "MaxSizePerMsg"%go.
-  simpl_one_flatten_struct (# (Config.MaxCommittedSizePerReady' v)) raft.Config "MaxCommittedSizePerReady"%go.
-  simpl_one_flatten_struct (# (Config.MaxUncommittedEntriesSize' v)) raft.Config "MaxUncommittedEntriesSize"%go.
-  simpl_one_flatten_struct (# (Config.MaxInflightMsgs' v)) raft.Config "MaxInflightMsgs"%go.
-  simpl_one_flatten_struct (# (Config.MaxInflightBytes' v)) raft.Config "MaxInflightBytes"%go.
-  simpl_one_flatten_struct (# (Config.CheckQuorum' v)) raft.Config "CheckQuorum"%go.
-  simpl_one_flatten_struct (# (Config.PreVote' v)) raft.Config "PreVote"%go.
-  simpl_one_flatten_struct (# (Config.ReadOnlyOption' v)) raft.Config "ReadOnlyOption"%go.
-  simpl_one_flatten_struct (# (Config.Logger' v)) raft.Config "Logger"%go.
-  simpl_one_flatten_struct (# (Config.DisableProposalForwarding' v)) raft.Config "DisableProposalForwarding"%go.
-  simpl_one_flatten_struct (# (Config.DisableConfChangeValidation' v)) raft.Config "DisableConfChangeValidation"%go.
-  simpl_one_flatten_struct (# (Config.StepDownOnRemoval' v)) raft.Config "StepDownOnRemoval"%go.
+  simpl_one_flatten_struct (# (Config.ID' v)) (raft.Config) "ID"%go.
+  simpl_one_flatten_struct (# (Config.ElectionTick' v)) (raft.Config) "ElectionTick"%go.
+  simpl_one_flatten_struct (# (Config.HeartbeatTick' v)) (raft.Config) "HeartbeatTick"%go.
+  simpl_one_flatten_struct (# (Config.Storage' v)) (raft.Config) "Storage"%go.
+  simpl_one_flatten_struct (# (Config.Applied' v)) (raft.Config) "Applied"%go.
+  simpl_one_flatten_struct (# (Config.AsyncStorageWrites' v)) (raft.Config) "AsyncStorageWrites"%go.
+  simpl_one_flatten_struct (# (Config.MaxSizePerMsg' v)) (raft.Config) "MaxSizePerMsg"%go.
+  simpl_one_flatten_struct (# (Config.MaxCommittedSizePerReady' v)) (raft.Config) "MaxCommittedSizePerReady"%go.
+  simpl_one_flatten_struct (# (Config.MaxUncommittedEntriesSize' v)) (raft.Config) "MaxUncommittedEntriesSize"%go.
+  simpl_one_flatten_struct (# (Config.MaxInflightMsgs' v)) (raft.Config) "MaxInflightMsgs"%go.
+  simpl_one_flatten_struct (# (Config.MaxInflightBytes' v)) (raft.Config) "MaxInflightBytes"%go.
+  simpl_one_flatten_struct (# (Config.CheckQuorum' v)) (raft.Config) "CheckQuorum"%go.
+  simpl_one_flatten_struct (# (Config.PreVote' v)) (raft.Config) "PreVote"%go.
+  simpl_one_flatten_struct (# (Config.ReadOnlyOption' v)) (raft.Config) "ReadOnlyOption"%go.
+  simpl_one_flatten_struct (# (Config.Logger' v)) (raft.Config) "Logger"%go.
+  simpl_one_flatten_struct (# (Config.DisableProposalForwarding' v)) (raft.Config) "DisableProposalForwarding"%go.
+  simpl_one_flatten_struct (# (Config.DisableConfChangeValidation' v)) (raft.Config) "DisableConfChangeValidation"%go.
+  simpl_one_flatten_struct (# (Config.StepDownOnRemoval' v)) (raft.Config) "StepDownOnRemoval"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1411,37 +1411,37 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (raft.id' v)) raft.raft "id"%go.
-  simpl_one_flatten_struct (# (raft.Term' v)) raft.raft "Term"%go.
-  simpl_one_flatten_struct (# (raft.Vote' v)) raft.raft "Vote"%go.
-  simpl_one_flatten_struct (# (raft.readStates' v)) raft.raft "readStates"%go.
-  simpl_one_flatten_struct (# (raft.raftLog' v)) raft.raft "raftLog"%go.
-  simpl_one_flatten_struct (# (raft.maxMsgSize' v)) raft.raft "maxMsgSize"%go.
-  simpl_one_flatten_struct (# (raft.maxUncommittedSize' v)) raft.raft "maxUncommittedSize"%go.
-  simpl_one_flatten_struct (# (raft.trk' v)) raft.raft "trk"%go.
-  simpl_one_flatten_struct (# (raft.state' v)) raft.raft "state"%go.
-  simpl_one_flatten_struct (# (raft.isLearner' v)) raft.raft "isLearner"%go.
-  simpl_one_flatten_struct (# (raft.msgs' v)) raft.raft "msgs"%go.
-  simpl_one_flatten_struct (# (raft.msgsAfterAppend' v)) raft.raft "msgsAfterAppend"%go.
-  simpl_one_flatten_struct (# (raft.lead' v)) raft.raft "lead"%go.
-  simpl_one_flatten_struct (# (raft.leadTransferee' v)) raft.raft "leadTransferee"%go.
-  simpl_one_flatten_struct (# (raft.pendingConfIndex' v)) raft.raft "pendingConfIndex"%go.
-  simpl_one_flatten_struct (# (raft.disableConfChangeValidation' v)) raft.raft "disableConfChangeValidation"%go.
-  simpl_one_flatten_struct (# (raft.uncommittedSize' v)) raft.raft "uncommittedSize"%go.
-  simpl_one_flatten_struct (# (raft.readOnly' v)) raft.raft "readOnly"%go.
-  simpl_one_flatten_struct (# (raft.electionElapsed' v)) raft.raft "electionElapsed"%go.
-  simpl_one_flatten_struct (# (raft.heartbeatElapsed' v)) raft.raft "heartbeatElapsed"%go.
-  simpl_one_flatten_struct (# (raft.checkQuorum' v)) raft.raft "checkQuorum"%go.
-  simpl_one_flatten_struct (# (raft.preVote' v)) raft.raft "preVote"%go.
-  simpl_one_flatten_struct (# (raft.heartbeatTimeout' v)) raft.raft "heartbeatTimeout"%go.
-  simpl_one_flatten_struct (# (raft.electionTimeout' v)) raft.raft "electionTimeout"%go.
-  simpl_one_flatten_struct (# (raft.randomizedElectionTimeout' v)) raft.raft "randomizedElectionTimeout"%go.
-  simpl_one_flatten_struct (# (raft.disableProposalForwarding' v)) raft.raft "disableProposalForwarding"%go.
-  simpl_one_flatten_struct (# (raft.stepDownOnRemoval' v)) raft.raft "stepDownOnRemoval"%go.
-  simpl_one_flatten_struct (# (raft.tick' v)) raft.raft "tick"%go.
-  simpl_one_flatten_struct (# (raft.step' v)) raft.raft "step"%go.
-  simpl_one_flatten_struct (# (raft.logger' v)) raft.raft "logger"%go.
-  simpl_one_flatten_struct (# (raft.pendingReadIndexMessages' v)) raft.raft "pendingReadIndexMessages"%go.
+  simpl_one_flatten_struct (# (raft.id' v)) (raft.raft) "id"%go.
+  simpl_one_flatten_struct (# (raft.Term' v)) (raft.raft) "Term"%go.
+  simpl_one_flatten_struct (# (raft.Vote' v)) (raft.raft) "Vote"%go.
+  simpl_one_flatten_struct (# (raft.readStates' v)) (raft.raft) "readStates"%go.
+  simpl_one_flatten_struct (# (raft.raftLog' v)) (raft.raft) "raftLog"%go.
+  simpl_one_flatten_struct (# (raft.maxMsgSize' v)) (raft.raft) "maxMsgSize"%go.
+  simpl_one_flatten_struct (# (raft.maxUncommittedSize' v)) (raft.raft) "maxUncommittedSize"%go.
+  simpl_one_flatten_struct (# (raft.trk' v)) (raft.raft) "trk"%go.
+  simpl_one_flatten_struct (# (raft.state' v)) (raft.raft) "state"%go.
+  simpl_one_flatten_struct (# (raft.isLearner' v)) (raft.raft) "isLearner"%go.
+  simpl_one_flatten_struct (# (raft.msgs' v)) (raft.raft) "msgs"%go.
+  simpl_one_flatten_struct (# (raft.msgsAfterAppend' v)) (raft.raft) "msgsAfterAppend"%go.
+  simpl_one_flatten_struct (# (raft.lead' v)) (raft.raft) "lead"%go.
+  simpl_one_flatten_struct (# (raft.leadTransferee' v)) (raft.raft) "leadTransferee"%go.
+  simpl_one_flatten_struct (# (raft.pendingConfIndex' v)) (raft.raft) "pendingConfIndex"%go.
+  simpl_one_flatten_struct (# (raft.disableConfChangeValidation' v)) (raft.raft) "disableConfChangeValidation"%go.
+  simpl_one_flatten_struct (# (raft.uncommittedSize' v)) (raft.raft) "uncommittedSize"%go.
+  simpl_one_flatten_struct (# (raft.readOnly' v)) (raft.raft) "readOnly"%go.
+  simpl_one_flatten_struct (# (raft.electionElapsed' v)) (raft.raft) "electionElapsed"%go.
+  simpl_one_flatten_struct (# (raft.heartbeatElapsed' v)) (raft.raft) "heartbeatElapsed"%go.
+  simpl_one_flatten_struct (# (raft.checkQuorum' v)) (raft.raft) "checkQuorum"%go.
+  simpl_one_flatten_struct (# (raft.preVote' v)) (raft.raft) "preVote"%go.
+  simpl_one_flatten_struct (# (raft.heartbeatTimeout' v)) (raft.raft) "heartbeatTimeout"%go.
+  simpl_one_flatten_struct (# (raft.electionTimeout' v)) (raft.raft) "electionTimeout"%go.
+  simpl_one_flatten_struct (# (raft.randomizedElectionTimeout' v)) (raft.raft) "randomizedElectionTimeout"%go.
+  simpl_one_flatten_struct (# (raft.disableProposalForwarding' v)) (raft.raft) "disableProposalForwarding"%go.
+  simpl_one_flatten_struct (# (raft.stepDownOnRemoval' v)) (raft.raft) "stepDownOnRemoval"%go.
+  simpl_one_flatten_struct (# (raft.tick' v)) (raft.raft) "tick"%go.
+  simpl_one_flatten_struct (# (raft.step' v)) (raft.raft) "step"%go.
+  simpl_one_flatten_struct (# (raft.logger' v)) (raft.raft) "logger"%go.
+  simpl_one_flatten_struct (# (raft.pendingReadIndexMessages' v)) (raft.raft) "pendingReadIndexMessages"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1531,10 +1531,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (RawNode.raft' v)) raft.RawNode "raft"%go.
-  simpl_one_flatten_struct (# (RawNode.asyncStorageWrites' v)) raft.RawNode "asyncStorageWrites"%go.
-  simpl_one_flatten_struct (# (RawNode.prevSoftSt' v)) raft.RawNode "prevSoftSt"%go.
-  simpl_one_flatten_struct (# (RawNode.prevHardSt' v)) raft.RawNode "prevHardSt"%go.
+  simpl_one_flatten_struct (# (RawNode.raft' v)) (raft.RawNode) "raft"%go.
+  simpl_one_flatten_struct (# (RawNode.asyncStorageWrites' v)) (raft.RawNode) "asyncStorageWrites"%go.
+  simpl_one_flatten_struct (# (RawNode.prevSoftSt' v)) (raft.RawNode) "prevSoftSt"%go.
+  simpl_one_flatten_struct (# (RawNode.prevHardSt' v)) (raft.RawNode) "prevHardSt"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1611,7 +1611,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ReadState.Index' v)) raft.ReadState "Index"%go.
+  simpl_one_flatten_struct (# (ReadState.Index' v)) (raft.ReadState) "Index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1687,8 +1687,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (readIndexStatus.req' v)) raft.readIndexStatus "req"%go.
-  simpl_one_flatten_struct (# (readIndexStatus.index' v)) raft.readIndexStatus "index"%go.
+  simpl_one_flatten_struct (# (readIndexStatus.req' v)) (raft.readIndexStatus) "req"%go.
+  simpl_one_flatten_struct (# (readIndexStatus.index' v)) (raft.readIndexStatus) "index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1764,8 +1764,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (readOnly.option' v)) raft.readOnly "option"%go.
-  simpl_one_flatten_struct (# (readOnly.pendingReadIndex' v)) raft.readOnly "pendingReadIndex"%go.
+  simpl_one_flatten_struct (# (readOnly.option' v)) (raft.readOnly) "option"%go.
+  simpl_one_flatten_struct (# (readOnly.pendingReadIndex' v)) (raft.readOnly) "pendingReadIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1892,10 +1892,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (BasicStatus.ID' v)) raft.BasicStatus "ID"%go.
-  simpl_one_flatten_struct (# (BasicStatus.HardState' v)) raft.BasicStatus "HardState"%go.
-  simpl_one_flatten_struct (# (BasicStatus.SoftState' v)) raft.BasicStatus "SoftState"%go.
-  simpl_one_flatten_struct (# (BasicStatus.Applied' v)) raft.BasicStatus "Applied"%go.
+  simpl_one_flatten_struct (# (BasicStatus.ID' v)) (raft.BasicStatus) "ID"%go.
+  simpl_one_flatten_struct (# (BasicStatus.HardState' v)) (raft.BasicStatus) "HardState"%go.
+  simpl_one_flatten_struct (# (BasicStatus.SoftState' v)) (raft.BasicStatus) "SoftState"%go.
+  simpl_one_flatten_struct (# (BasicStatus.Applied' v)) (raft.BasicStatus) "Applied"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1971,8 +1971,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Status.BasicStatus' v)) raft.Status "BasicStatus"%go.
-  simpl_one_flatten_struct (# (Status.Config' v)) raft.Status "Config"%go.
+  simpl_one_flatten_struct (# (Status.BasicStatus' v)) (raft.Status) "BasicStatus"%go.
+  simpl_one_flatten_struct (# (Status.Config' v)) (raft.Status) "Config"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2069,11 +2069,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.initialState' v)) raft.inMemStorageCallStats "initialState"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.firstIndex' v)) raft.inMemStorageCallStats "firstIndex"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.lastIndex' v)) raft.inMemStorageCallStats "lastIndex"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.entries' v)) raft.inMemStorageCallStats "entries"%go.
-  simpl_one_flatten_struct (# (inMemStorageCallStats.term' v)) raft.inMemStorageCallStats "term"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.initialState' v)) (raft.inMemStorageCallStats) "initialState"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.firstIndex' v)) (raft.inMemStorageCallStats) "firstIndex"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.lastIndex' v)) (raft.inMemStorageCallStats) "lastIndex"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.entries' v)) (raft.inMemStorageCallStats) "entries"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.term' v)) (raft.inMemStorageCallStats) "term"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2163,10 +2163,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MemoryStorage.Mutex' v)) raft.MemoryStorage "Mutex"%go.
-  simpl_one_flatten_struct (# (MemoryStorage.hardState' v)) raft.MemoryStorage "hardState"%go.
-  simpl_one_flatten_struct (# (MemoryStorage.snapshot' v)) raft.MemoryStorage "snapshot"%go.
-  simpl_one_flatten_struct (# (MemoryStorage.ents' v)) raft.MemoryStorage "ents"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.Mutex' v)) (raft.MemoryStorage) "Mutex"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.hardState' v)) (raft.MemoryStorage) "hardState"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.snapshot' v)) (raft.MemoryStorage) "snapshot"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.ents' v)) (raft.MemoryStorage) "ents"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2235,7 +2235,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (entryID.term' v)) raft.entryID "term"%go.
+  simpl_one_flatten_struct (# (entryID.term' v)) (raft.entryID) "term"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2311,8 +2311,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (logSlice.term' v)) raft.logSlice "term"%go.
-  simpl_one_flatten_struct (# (logSlice.prev' v)) raft.logSlice "prev"%go.
+  simpl_one_flatten_struct (# (logSlice.term' v)) (raft.logSlice) "term"%go.
+  simpl_one_flatten_struct (# (logSlice.prev' v)) (raft.logSlice) "prev"%go.
 
   solve_field_ref_f.
 Qed.
@@ -2329,1446 +2329,1301 @@ End EntryFormatter.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  defaultLogger : loc;
-  discardLogger : loc;
-  raftLoggerMu : loc;
-  raftLogger : loc;
-  emptyState : loc;
-  ErrStopped : loc;
-  ErrProposalDropped : loc;
-  globalRand : loc;
-  stmap : loc;
-  errBreak : loc;
-  ErrStepLocalMsg : loc;
-  ErrStepPeerNotFound : loc;
-  ErrCompacted : loc;
-  ErrSnapOutOfDate : loc;
-  ErrUnavailable : loc;
-  ErrSnapshotTemporarilyUnavailable : loc;
-  isLocalMsg : loc;
-  isResponseMsg : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("defaultLogger"%go, defaultLogger);
-    ("discardLogger"%go, discardLogger);
-    ("raftLoggerMu"%go, raftLoggerMu);
-    ("raftLogger"%go, raftLogger);
-    ("emptyState"%go, emptyState);
-    ("ErrStopped"%go, ErrStopped);
-    ("ErrProposalDropped"%go, ErrProposalDropped);
-    ("globalRand"%go, globalRand);
-    ("stmap"%go, stmap);
-    ("errBreak"%go, errBreak);
-    ("ErrStepLocalMsg"%go, ErrStepLocalMsg);
-    ("ErrStepPeerNotFound"%go, ErrStepPeerNotFound);
-    ("ErrCompacted"%go, ErrCompacted);
-    ("ErrSnapOutOfDate"%go, ErrSnapOutOfDate);
-    ("ErrUnavailable"%go, ErrUnavailable);
-    ("ErrSnapshotTemporarilyUnavailable"%go, ErrSnapshotTemporarilyUnavailable);
-    ("isLocalMsg"%go, isLocalMsg);
-    ("isResponseMsg"%go, isResponseMsg)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined raft :=
-{|
-  is_pkg_defined := is_global_definitions raft var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HdefaultLogger" ∷ defaultLogger ↦ (default_val loc) ∗
-  "HdiscardLogger" ∷ discardLogger ↦ (default_val loc) ∗
-  "HraftLoggerMu" ∷ raftLoggerMu ↦ (default_val sync.Mutex.t) ∗
-  "HraftLogger" ∷ raftLogger ↦ (default_val Logger.t) ∗
-  "HemptyState" ∷ emptyState ↦ (default_val raftpb.HardState.t) ∗
-  "HErrStopped" ∷ ErrStopped ↦ (default_val error.t) ∗
-  "HErrProposalDropped" ∷ ErrProposalDropped ↦ (default_val error.t) ∗
-  "HglobalRand" ∷ globalRand ↦ (default_val loc) ∗
-  "Hstmap" ∷ stmap ↦ (default_val (vec go_string (uint.nat (W64 4)))) ∗
-  "HerrBreak" ∷ errBreak ↦ (default_val error.t) ∗
-  "HErrStepLocalMsg" ∷ ErrStepLocalMsg ↦ (default_val error.t) ∗
-  "HErrStepPeerNotFound" ∷ ErrStepPeerNotFound ↦ (default_val error.t) ∗
-  "HErrCompacted" ∷ ErrCompacted ↦ (default_val error.t) ∗
-  "HErrSnapOutOfDate" ∷ ErrSnapOutOfDate ↦ (default_val error.t) ∗
-  "HErrUnavailable" ∷ ErrUnavailable ↦ (default_val error.t) ∗
-  "HErrSnapshotTemporarilyUnavailable" ∷ ErrSnapshotTemporarilyUnavailable ↦ (default_val error.t) ∗
-  "HisLocalMsg" ∷ isLocalMsg ↦ (default_val (vec bool (uint.nat (W64 23)))) ∗
-  "HisResponseMsg" ∷ isResponseMsg ↦ (default_val (vec bool (uint.nat (W64 23)))).
-
-Global Instance wp_globals_get_defaultLogger : 
-  WpGlobalsGet raft "defaultLogger" defaultLogger (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_discardLogger : 
-  WpGlobalsGet raft "discardLogger" discardLogger (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_raftLoggerMu : 
-  WpGlobalsGet raft "raftLoggerMu" raftLoggerMu (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_raftLogger : 
-  WpGlobalsGet raft "raftLogger" raftLogger (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_emptyState : 
-  WpGlobalsGet raft "emptyState" emptyState (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrStopped : 
-  WpGlobalsGet raft "ErrStopped" ErrStopped (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrProposalDropped : 
-  WpGlobalsGet raft "ErrProposalDropped" ErrProposalDropped (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_globalRand : 
-  WpGlobalsGet raft "globalRand" globalRand (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_stmap : 
-  WpGlobalsGet raft "stmap" stmap (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_errBreak : 
-  WpGlobalsGet raft "errBreak" errBreak (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrStepLocalMsg : 
-  WpGlobalsGet raft "ErrStepLocalMsg" ErrStepLocalMsg (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrStepPeerNotFound : 
-  WpGlobalsGet raft "ErrStepPeerNotFound" ErrStepPeerNotFound (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrCompacted : 
-  WpGlobalsGet raft "ErrCompacted" ErrCompacted (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrSnapOutOfDate : 
-  WpGlobalsGet raft "ErrSnapOutOfDate" ErrSnapOutOfDate (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrUnavailable : 
-  WpGlobalsGet raft "ErrUnavailable" ErrUnavailable (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrSnapshotTemporarilyUnavailable : 
-  WpGlobalsGet raft "ErrSnapshotTemporarilyUnavailable" ErrSnapshotTemporarilyUnavailable (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_isLocalMsg : 
-  WpGlobalsGet raft "isLocalMsg" isLocalMsg (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_isResponseMsg : 
-  WpGlobalsGet raft "isResponseMsg" isResponseMsg (is_pkg_defined raft).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_newLog :
-  WpFuncCall raft "newLog" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newLog _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newLogWithSize :
-  WpFuncCall raft "newLogWithSize" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newLogWithSize _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SetLogger :
-  WpFuncCall raft "SetLogger" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.SetLogger _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ResetDefaultLogger :
-  WpFuncCall raft "ResetDefaultLogger" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.ResetDefaultLogger _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getLogger :
-  WpFuncCall raft "getLogger" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.getLogger _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_header :
-  WpFuncCall raft "header" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.header _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_isHardStateEqual :
-  WpFuncCall raft "isHardStateEqual" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.isHardStateEqual _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_IsEmptyHardState :
-  WpFuncCall raft "IsEmptyHardState" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.IsEmptyHardState _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_IsEmptySnap :
-  WpFuncCall raft "IsEmptySnap" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.IsEmptySnap _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_setupNode :
-  WpFuncCall raft "setupNode" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.setupNode _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StartNode :
-  WpFuncCall raft "StartNode" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.StartNode _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_RestartNode :
-  WpFuncCall raft "RestartNode" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.RestartNode _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newNode :
-  WpFuncCall raft "newNode" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newNode _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_confChangeToMsg :
-  WpFuncCall raft "confChangeToMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.confChangeToMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newRaft :
-  WpFuncCall raft "newRaft" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newRaft _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_stepLeader :
-  WpFuncCall raft "stepLeader" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.stepLeader _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_stepCandidate :
-  WpFuncCall raft "stepCandidate" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.stepCandidate _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_stepFollower :
-  WpFuncCall raft "stepFollower" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.stepFollower _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_logSliceFromMsgApp :
-  WpFuncCall raft "logSliceFromMsgApp" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.logSliceFromMsgApp _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_releasePendingReadIndexMessages :
-  WpFuncCall raft "releasePendingReadIndexMessages" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.releasePendingReadIndexMessages _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_sendMsgReadIndexResponse :
-  WpFuncCall raft "sendMsgReadIndexResponse" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.sendMsgReadIndexResponse _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewRawNode :
-  WpFuncCall raft "NewRawNode" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.NewRawNode _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MustSync :
-  WpFuncCall raft "MustSync" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.MustSync _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_needStorageAppendMsg :
-  WpFuncCall raft "needStorageAppendMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.needStorageAppendMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_needStorageAppendRespMsg :
-  WpFuncCall raft "needStorageAppendRespMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.needStorageAppendRespMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newStorageAppendMsg :
-  WpFuncCall raft "newStorageAppendMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newStorageAppendMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newStorageAppendRespMsg :
-  WpFuncCall raft "newStorageAppendRespMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newStorageAppendRespMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_needStorageApplyMsg :
-  WpFuncCall raft "needStorageApplyMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.needStorageApplyMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_needStorageApplyRespMsg :
-  WpFuncCall raft "needStorageApplyRespMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.needStorageApplyRespMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newStorageApplyMsg :
-  WpFuncCall raft "newStorageApplyMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newStorageApplyMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newStorageApplyRespMsg :
-  WpFuncCall raft "newStorageApplyRespMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newStorageApplyRespMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newReadOnly :
-  WpFuncCall raft "newReadOnly" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.newReadOnly _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceInitState :
-  WpFuncCall raft "traceInitState" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceInitState _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceReady :
-  WpFuncCall raft "traceReady" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceReady _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceCommit :
-  WpFuncCall raft "traceCommit" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceCommit _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceReplicate :
-  WpFuncCall raft "traceReplicate" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceReplicate _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceBecomeFollower :
-  WpFuncCall raft "traceBecomeFollower" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceBecomeFollower _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceBecomeCandidate :
-  WpFuncCall raft "traceBecomeCandidate" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceBecomeCandidate _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceBecomeLeader :
-  WpFuncCall raft "traceBecomeLeader" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceBecomeLeader _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceChangeConfEvent :
-  WpFuncCall raft "traceChangeConfEvent" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceChangeConfEvent _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceConfChangeEvent :
-  WpFuncCall raft "traceConfChangeEvent" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceConfChangeEvent _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceSendMessage :
-  WpFuncCall raft "traceSendMessage" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceSendMessage _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_traceReceiveMessage :
-  WpFuncCall raft "traceReceiveMessage" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.traceReceiveMessage _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getProgressCopy :
-  WpFuncCall raft "getProgressCopy" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.getProgressCopy _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getBasicStatus :
-  WpFuncCall raft "getBasicStatus" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.getBasicStatus _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getStatus :
-  WpFuncCall raft "getStatus" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.getStatus _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewMemoryStorage :
-  WpFuncCall raft "NewMemoryStorage" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.NewMemoryStorage _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_pbEntryID :
-  WpFuncCall raft "pbEntryID" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.pbEntryID _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_isMsgInArray :
-  WpFuncCall raft "isMsgInArray" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.isMsgInArray _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_IsLocalMsg :
-  WpFuncCall raft "IsLocalMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.IsLocalMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_IsResponseMsg :
-  WpFuncCall raft "IsResponseMsg" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.IsResponseMsg _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_IsLocalMsgTarget :
-  WpFuncCall raft "IsLocalMsgTarget" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.IsLocalMsgTarget _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_voteRespMsgType :
-  WpFuncCall raft "voteRespMsgType" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.voteRespMsgType _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeHardState :
-  WpFuncCall raft "DescribeHardState" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeHardState _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeSoftState :
-  WpFuncCall raft "DescribeSoftState" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeSoftState _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeConfState :
-  WpFuncCall raft "DescribeConfState" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeConfState _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeSnapshot :
-  WpFuncCall raft "DescribeSnapshot" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeSnapshot _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeReady :
-  WpFuncCall raft "DescribeReady" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeReady _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeMessage :
-  WpFuncCall raft "DescribeMessage" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeMessage _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_describeMessageWithIndent :
-  WpFuncCall raft "describeMessageWithIndent" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.describeMessageWithIndent _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_describeTarget :
-  WpFuncCall raft "describeTarget" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.describeTarget _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeEntry :
-  WpFuncCall raft "DescribeEntry" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeEntry _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DescribeEntries :
-  WpFuncCall raft "DescribeEntries" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.DescribeEntries _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_entsSize :
-  WpFuncCall raft "entsSize" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.entsSize _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_limitSize :
-  WpFuncCall raft "limitSize" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.limitSize _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_payloadSize :
-  WpFuncCall raft "payloadSize" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.payloadSize _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_payloadsSize :
-  WpFuncCall raft "payloadsSize" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.payloadsSize _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_assertConfStatesEquivalent :
-  WpFuncCall raft "assertConfStatesEquivalent" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.assertConfStatesEquivalent _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_extend :
-  WpFuncCall raft "extend" _ (is_pkg_defined raft) :=
+  WpFuncCall raft.extend _ (is_pkg_defined raft) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_String :
-  WpMethodCall raft "raftLog'ptr" "String" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "String" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_acceptApplying :
-  WpMethodCall raft "raftLog'ptr" "acceptApplying" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "acceptApplying" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_acceptUnstable :
-  WpMethodCall raft "raftLog'ptr" "acceptUnstable" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "acceptUnstable" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_allEntries :
-  WpMethodCall raft "raftLog'ptr" "allEntries" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "allEntries" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_append :
-  WpMethodCall raft "raftLog'ptr" "append" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "append" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_appliedTo :
-  WpMethodCall raft "raftLog'ptr" "appliedTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "appliedTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_commitTo :
-  WpMethodCall raft "raftLog'ptr" "commitTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "commitTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_entries :
-  WpMethodCall raft "raftLog'ptr" "entries" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "entries" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_findConflict :
-  WpMethodCall raft "raftLog'ptr" "findConflict" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "findConflict" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_findConflictByTerm :
-  WpMethodCall raft "raftLog'ptr" "findConflictByTerm" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "findConflictByTerm" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_firstIndex :
-  WpMethodCall raft "raftLog'ptr" "firstIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "firstIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_hasNextCommittedEnts :
-  WpMethodCall raft "raftLog'ptr" "hasNextCommittedEnts" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "hasNextCommittedEnts" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_hasNextOrInProgressSnapshot :
-  WpMethodCall raft "raftLog'ptr" "hasNextOrInProgressSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "hasNextOrInProgressSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_hasNextOrInProgressUnstableEnts :
-  WpMethodCall raft "raftLog'ptr" "hasNextOrInProgressUnstableEnts" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "hasNextOrInProgressUnstableEnts" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_hasNextUnstableEnts :
-  WpMethodCall raft "raftLog'ptr" "hasNextUnstableEnts" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "hasNextUnstableEnts" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_hasNextUnstableSnapshot :
-  WpMethodCall raft "raftLog'ptr" "hasNextUnstableSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "hasNextUnstableSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_isUpToDate :
-  WpMethodCall raft "raftLog'ptr" "isUpToDate" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "isUpToDate" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_lastEntryID :
-  WpMethodCall raft "raftLog'ptr" "lastEntryID" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "lastEntryID" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_lastIndex :
-  WpMethodCall raft "raftLog'ptr" "lastIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "lastIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_matchTerm :
-  WpMethodCall raft "raftLog'ptr" "matchTerm" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "matchTerm" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_maxAppliableIndex :
-  WpMethodCall raft "raftLog'ptr" "maxAppliableIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "maxAppliableIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_maybeAppend :
-  WpMethodCall raft "raftLog'ptr" "maybeAppend" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "maybeAppend" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_maybeCommit :
-  WpMethodCall raft "raftLog'ptr" "maybeCommit" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "maybeCommit" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_mustCheckOutOfBounds :
-  WpMethodCall raft "raftLog'ptr" "mustCheckOutOfBounds" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "mustCheckOutOfBounds" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_nextCommittedEnts :
-  WpMethodCall raft "raftLog'ptr" "nextCommittedEnts" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "nextCommittedEnts" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_nextUnstableEnts :
-  WpMethodCall raft "raftLog'ptr" "nextUnstableEnts" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "nextUnstableEnts" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_nextUnstableSnapshot :
-  WpMethodCall raft "raftLog'ptr" "nextUnstableSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "nextUnstableSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_restore :
-  WpMethodCall raft "raftLog'ptr" "restore" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "restore" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_scan :
-  WpMethodCall raft "raftLog'ptr" "scan" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "scan" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_slice :
-  WpMethodCall raft "raftLog'ptr" "slice" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "slice" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_snapshot :
-  WpMethodCall raft "raftLog'ptr" "snapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "snapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_stableSnapTo :
-  WpMethodCall raft "raftLog'ptr" "stableSnapTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "stableSnapTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_stableTo :
-  WpMethodCall raft "raftLog'ptr" "stableTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "stableTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_term :
-  WpMethodCall raft "raftLog'ptr" "term" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "term" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raftLog'ptr_zeroTermOnOutOfBounds :
-  WpMethodCall raft "raftLog'ptr" "zeroTermOnOutOfBounds" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftLogⁱᵈ) "zeroTermOnOutOfBounds" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_acceptInProgress :
-  WpMethodCall raft "unstable'ptr" "acceptInProgress" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "acceptInProgress" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_maybeFirstIndex :
-  WpMethodCall raft "unstable'ptr" "maybeFirstIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "maybeFirstIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_maybeLastIndex :
-  WpMethodCall raft "unstable'ptr" "maybeLastIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "maybeLastIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_maybeTerm :
-  WpMethodCall raft "unstable'ptr" "maybeTerm" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "maybeTerm" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_mustCheckOutOfBounds :
-  WpMethodCall raft "unstable'ptr" "mustCheckOutOfBounds" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "mustCheckOutOfBounds" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_nextEntries :
-  WpMethodCall raft "unstable'ptr" "nextEntries" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "nextEntries" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_nextSnapshot :
-  WpMethodCall raft "unstable'ptr" "nextSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "nextSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_restore :
-  WpMethodCall raft "unstable'ptr" "restore" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "restore" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_shrinkEntriesArray :
-  WpMethodCall raft "unstable'ptr" "shrinkEntriesArray" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "shrinkEntriesArray" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_slice :
-  WpMethodCall raft "unstable'ptr" "slice" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "slice" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_stableSnapTo :
-  WpMethodCall raft "unstable'ptr" "stableSnapTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "stableSnapTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_stableTo :
-  WpMethodCall raft "unstable'ptr" "stableTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "stableTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_unstable'ptr_truncateAndAppend :
-  WpMethodCall raft "unstable'ptr" "truncateAndAppend" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.unstableⁱᵈ) "truncateAndAppend" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Fatalln :
-  WpMethodCall raft "DefaultLogger" "Fatalln" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Fatalln" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Flags :
-  WpMethodCall raft "DefaultLogger" "Flags" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Flags" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Output :
-  WpMethodCall raft "DefaultLogger" "Output" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Output" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Panicln :
-  WpMethodCall raft "DefaultLogger" "Panicln" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Panicln" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Prefix :
-  WpMethodCall raft "DefaultLogger" "Prefix" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Prefix" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Print :
-  WpMethodCall raft "DefaultLogger" "Print" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Print" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Printf :
-  WpMethodCall raft "DefaultLogger" "Printf" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Printf" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Println :
-  WpMethodCall raft "DefaultLogger" "Println" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Println" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_SetFlags :
-  WpMethodCall raft "DefaultLogger" "SetFlags" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "SetFlags" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_SetOutput :
-  WpMethodCall raft "DefaultLogger" "SetOutput" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "SetOutput" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_SetPrefix :
-  WpMethodCall raft "DefaultLogger" "SetPrefix" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "SetPrefix" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_Writer :
-  WpMethodCall raft "DefaultLogger" "Writer" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "Writer" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger_output :
-  WpMethodCall raft "DefaultLogger" "output" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.DefaultLoggerⁱᵈ "output" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Debug :
-  WpMethodCall raft "DefaultLogger'ptr" "Debug" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Debug" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Debugf :
-  WpMethodCall raft "DefaultLogger'ptr" "Debugf" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Debugf" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_EnableDebug :
-  WpMethodCall raft "DefaultLogger'ptr" "EnableDebug" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "EnableDebug" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_EnableTimestamps :
-  WpMethodCall raft "DefaultLogger'ptr" "EnableTimestamps" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "EnableTimestamps" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Error :
-  WpMethodCall raft "DefaultLogger'ptr" "Error" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Error" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Errorf :
-  WpMethodCall raft "DefaultLogger'ptr" "Errorf" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Errorf" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Fatal :
-  WpMethodCall raft "DefaultLogger'ptr" "Fatal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Fatal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Fatalf :
-  WpMethodCall raft "DefaultLogger'ptr" "Fatalf" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Fatalf" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Fatalln :
-  WpMethodCall raft "DefaultLogger'ptr" "Fatalln" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Fatalln" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Flags :
-  WpMethodCall raft "DefaultLogger'ptr" "Flags" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Flags" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Info :
-  WpMethodCall raft "DefaultLogger'ptr" "Info" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Info" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Infof :
-  WpMethodCall raft "DefaultLogger'ptr" "Infof" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Infof" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Output :
-  WpMethodCall raft "DefaultLogger'ptr" "Output" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Output" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Panic :
-  WpMethodCall raft "DefaultLogger'ptr" "Panic" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Panic" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Panicf :
-  WpMethodCall raft "DefaultLogger'ptr" "Panicf" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Panicf" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Panicln :
-  WpMethodCall raft "DefaultLogger'ptr" "Panicln" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Panicln" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Prefix :
-  WpMethodCall raft "DefaultLogger'ptr" "Prefix" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Prefix" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Print :
-  WpMethodCall raft "DefaultLogger'ptr" "Print" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Print" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Printf :
-  WpMethodCall raft "DefaultLogger'ptr" "Printf" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Printf" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Println :
-  WpMethodCall raft "DefaultLogger'ptr" "Println" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Println" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_SetFlags :
-  WpMethodCall raft "DefaultLogger'ptr" "SetFlags" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "SetFlags" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_SetOutput :
-  WpMethodCall raft "DefaultLogger'ptr" "SetOutput" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "SetOutput" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_SetPrefix :
-  WpMethodCall raft "DefaultLogger'ptr" "SetPrefix" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "SetPrefix" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Warning :
-  WpMethodCall raft "DefaultLogger'ptr" "Warning" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Warning" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Warningf :
-  WpMethodCall raft "DefaultLogger'ptr" "Warningf" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Warningf" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_Writer :
-  WpMethodCall raft "DefaultLogger'ptr" "Writer" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "Writer" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_DefaultLogger'ptr_output :
-  WpMethodCall raft "DefaultLogger'ptr" "output" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.DefaultLoggerⁱᵈ) "output" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SoftState'ptr_equal :
-  WpMethodCall raft "SoftState'ptr" "equal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.SoftStateⁱᵈ) "equal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready_equal :
-  WpMethodCall raft "Ready" "equal" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.Readyⁱᵈ "equal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_Descriptor :
-  WpMethodCall raft "Ready'ptr" "Descriptor" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "Descriptor" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_Marshal :
-  WpMethodCall raft "Ready'ptr" "Marshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "Marshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_MarshalTo :
-  WpMethodCall raft "Ready'ptr" "MarshalTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "MarshalTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_MarshalToSizedBuffer :
-  WpMethodCall raft "Ready'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_ProtoMessage :
-  WpMethodCall raft "Ready'ptr" "ProtoMessage" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "ProtoMessage" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_Reset :
-  WpMethodCall raft "Ready'ptr" "Reset" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "Reset" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_Size :
-  WpMethodCall raft "Ready'ptr" "Size" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "Size" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_String :
-  WpMethodCall raft "Ready'ptr" "String" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "String" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_Unmarshal :
-  WpMethodCall raft "Ready'ptr" "Unmarshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "Unmarshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_XXX_DiscardUnknown :
-  WpMethodCall raft "Ready'ptr" "XXX_DiscardUnknown" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "XXX_DiscardUnknown" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_XXX_Marshal :
-  WpMethodCall raft "Ready'ptr" "XXX_Marshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "XXX_Marshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_XXX_Merge :
-  WpMethodCall raft "Ready'ptr" "XXX_Merge" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "XXX_Merge" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_XXX_Size :
-  WpMethodCall raft "Ready'ptr" "XXX_Size" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "XXX_Size" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_XXX_Unmarshal :
-  WpMethodCall raft "Ready'ptr" "XXX_Unmarshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "XXX_Unmarshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Ready'ptr_equal :
-  WpMethodCall raft "Ready'ptr" "equal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Readyⁱᵈ) "equal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Advance :
-  WpMethodCall raft "node'ptr" "Advance" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Advance" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_ApplyConfChange :
-  WpMethodCall raft "node'ptr" "ApplyConfChange" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "ApplyConfChange" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Campaign :
-  WpMethodCall raft "node'ptr" "Campaign" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Campaign" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_ForgetLeader :
-  WpMethodCall raft "node'ptr" "ForgetLeader" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "ForgetLeader" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Propose :
-  WpMethodCall raft "node'ptr" "Propose" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Propose" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_ProposeConfChange :
-  WpMethodCall raft "node'ptr" "ProposeConfChange" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "ProposeConfChange" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_ReadIndex :
-  WpMethodCall raft "node'ptr" "ReadIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "ReadIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Ready :
-  WpMethodCall raft "node'ptr" "Ready" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Ready" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_ReportSnapshot :
-  WpMethodCall raft "node'ptr" "ReportSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "ReportSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_ReportUnreachable :
-  WpMethodCall raft "node'ptr" "ReportUnreachable" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "ReportUnreachable" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Status :
-  WpMethodCall raft "node'ptr" "Status" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Status" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Step :
-  WpMethodCall raft "node'ptr" "Step" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Step" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Stop :
-  WpMethodCall raft "node'ptr" "Stop" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Stop" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_Tick :
-  WpMethodCall raft "node'ptr" "Tick" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "Tick" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_TransferLeadership :
-  WpMethodCall raft "node'ptr" "TransferLeadership" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "TransferLeadership" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_run :
-  WpMethodCall raft "node'ptr" "run" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "run" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_step :
-  WpMethodCall raft "node'ptr" "step" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "step" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_stepWait :
-  WpMethodCall raft "node'ptr" "stepWait" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "stepWait" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_stepWithWaitOption :
-  WpMethodCall raft "node'ptr" "stepWithWaitOption" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.nodeⁱᵈ) "stepWithWaitOption" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockedRand'ptr_Intn :
-  WpMethodCall raft "lockedRand'ptr" "Intn" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.lockedRandⁱᵈ) "Intn" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateType_MarshalJSON :
-  WpMethodCall raft "StateType" "MarshalJSON" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.StateTypeⁱᵈ "MarshalJSON" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateType_String :
-  WpMethodCall raft "StateType" "String" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.StateTypeⁱᵈ "String" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateType'ptr_MarshalJSON :
-  WpMethodCall raft "StateType'ptr" "MarshalJSON" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.StateTypeⁱᵈ) "MarshalJSON" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateType'ptr_String :
-  WpMethodCall raft "StateType'ptr" "String" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.StateTypeⁱᵈ) "String" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Config'ptr_validate :
-  WpMethodCall raft "Config'ptr" "validate" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Configⁱᵈ) "validate" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_Step :
-  WpMethodCall raft "raft'ptr" "Step" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "Step" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_abortLeaderTransfer :
-  WpMethodCall raft "raft'ptr" "abortLeaderTransfer" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "abortLeaderTransfer" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_appendEntry :
-  WpMethodCall raft "raft'ptr" "appendEntry" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "appendEntry" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_appliedSnap :
-  WpMethodCall raft "raft'ptr" "appliedSnap" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "appliedSnap" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_appliedTo :
-  WpMethodCall raft "raft'ptr" "appliedTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "appliedTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_applyConfChange :
-  WpMethodCall raft "raft'ptr" "applyConfChange" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "applyConfChange" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_bcastAppend :
-  WpMethodCall raft "raft'ptr" "bcastAppend" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "bcastAppend" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_bcastHeartbeat :
-  WpMethodCall raft "raft'ptr" "bcastHeartbeat" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "bcastHeartbeat" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_bcastHeartbeatWithCtx :
-  WpMethodCall raft "raft'ptr" "bcastHeartbeatWithCtx" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "bcastHeartbeatWithCtx" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_becomeCandidate :
-  WpMethodCall raft "raft'ptr" "becomeCandidate" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "becomeCandidate" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_becomeFollower :
-  WpMethodCall raft "raft'ptr" "becomeFollower" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "becomeFollower" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_becomeLeader :
-  WpMethodCall raft "raft'ptr" "becomeLeader" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "becomeLeader" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_becomePreCandidate :
-  WpMethodCall raft "raft'ptr" "becomePreCandidate" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "becomePreCandidate" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_campaign :
-  WpMethodCall raft "raft'ptr" "campaign" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "campaign" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_committedEntryInCurrentTerm :
-  WpMethodCall raft "raft'ptr" "committedEntryInCurrentTerm" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "committedEntryInCurrentTerm" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_handleAppendEntries :
-  WpMethodCall raft "raft'ptr" "handleAppendEntries" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "handleAppendEntries" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_handleHeartbeat :
-  WpMethodCall raft "raft'ptr" "handleHeartbeat" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "handleHeartbeat" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_handleSnapshot :
-  WpMethodCall raft "raft'ptr" "handleSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "handleSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_hardState :
-  WpMethodCall raft "raft'ptr" "hardState" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "hardState" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_hasLeader :
-  WpMethodCall raft "raft'ptr" "hasLeader" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "hasLeader" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_hasUnappliedConfChanges :
-  WpMethodCall raft "raft'ptr" "hasUnappliedConfChanges" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "hasUnappliedConfChanges" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_hup :
-  WpMethodCall raft "raft'ptr" "hup" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "hup" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_increaseUncommittedSize :
-  WpMethodCall raft "raft'ptr" "increaseUncommittedSize" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "increaseUncommittedSize" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_loadState :
-  WpMethodCall raft "raft'ptr" "loadState" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "loadState" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_maybeCommit :
-  WpMethodCall raft "raft'ptr" "maybeCommit" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "maybeCommit" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_maybeSendAppend :
-  WpMethodCall raft "raft'ptr" "maybeSendAppend" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "maybeSendAppend" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_maybeSendSnapshot :
-  WpMethodCall raft "raft'ptr" "maybeSendSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "maybeSendSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_pastElectionTimeout :
-  WpMethodCall raft "raft'ptr" "pastElectionTimeout" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "pastElectionTimeout" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_poll :
-  WpMethodCall raft "raft'ptr" "poll" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "poll" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_promotable :
-  WpMethodCall raft "raft'ptr" "promotable" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "promotable" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_reduceUncommittedSize :
-  WpMethodCall raft "raft'ptr" "reduceUncommittedSize" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "reduceUncommittedSize" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_reset :
-  WpMethodCall raft "raft'ptr" "reset" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "reset" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_resetRandomizedElectionTimeout :
-  WpMethodCall raft "raft'ptr" "resetRandomizedElectionTimeout" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "resetRandomizedElectionTimeout" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_responseToReadIndexReq :
-  WpMethodCall raft "raft'ptr" "responseToReadIndexReq" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "responseToReadIndexReq" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_restore :
-  WpMethodCall raft "raft'ptr" "restore" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "restore" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_send :
-  WpMethodCall raft "raft'ptr" "send" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "send" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_sendAppend :
-  WpMethodCall raft "raft'ptr" "sendAppend" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "sendAppend" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_sendHeartbeat :
-  WpMethodCall raft "raft'ptr" "sendHeartbeat" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "sendHeartbeat" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_sendTimeoutNow :
-  WpMethodCall raft "raft'ptr" "sendTimeoutNow" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "sendTimeoutNow" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_softState :
-  WpMethodCall raft "raft'ptr" "softState" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "softState" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_switchToConfig :
-  WpMethodCall raft "raft'ptr" "switchToConfig" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "switchToConfig" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_tickElection :
-  WpMethodCall raft "raft'ptr" "tickElection" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "tickElection" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_tickHeartbeat :
-  WpMethodCall raft "raft'ptr" "tickHeartbeat" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.raftⁱᵈ) "tickHeartbeat" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Advance :
-  WpMethodCall raft "RawNode'ptr" "Advance" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Advance" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_ApplyConfChange :
-  WpMethodCall raft "RawNode'ptr" "ApplyConfChange" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "ApplyConfChange" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_BasicStatus :
-  WpMethodCall raft "RawNode'ptr" "BasicStatus" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "BasicStatus" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Bootstrap :
-  WpMethodCall raft "RawNode'ptr" "Bootstrap" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Bootstrap" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Campaign :
-  WpMethodCall raft "RawNode'ptr" "Campaign" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Campaign" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_ForgetLeader :
-  WpMethodCall raft "RawNode'ptr" "ForgetLeader" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "ForgetLeader" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_HasReady :
-  WpMethodCall raft "RawNode'ptr" "HasReady" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "HasReady" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Propose :
-  WpMethodCall raft "RawNode'ptr" "Propose" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Propose" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_ProposeConfChange :
-  WpMethodCall raft "RawNode'ptr" "ProposeConfChange" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "ProposeConfChange" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_ReadIndex :
-  WpMethodCall raft "RawNode'ptr" "ReadIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "ReadIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Ready :
-  WpMethodCall raft "RawNode'ptr" "Ready" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Ready" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_ReportSnapshot :
-  WpMethodCall raft "RawNode'ptr" "ReportSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "ReportSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_ReportUnreachable :
-  WpMethodCall raft "RawNode'ptr" "ReportUnreachable" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "ReportUnreachable" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Status :
-  WpMethodCall raft "RawNode'ptr" "Status" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Status" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Step :
-  WpMethodCall raft "RawNode'ptr" "Step" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Step" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Tick :
-  WpMethodCall raft "RawNode'ptr" "Tick" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "Tick" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_TickQuiesced :
-  WpMethodCall raft "RawNode'ptr" "TickQuiesced" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "TickQuiesced" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_TransferLeader :
-  WpMethodCall raft "RawNode'ptr" "TransferLeader" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "TransferLeader" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_WithProgress :
-  WpMethodCall raft "RawNode'ptr" "WithProgress" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "WithProgress" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_acceptReady :
-  WpMethodCall raft "RawNode'ptr" "acceptReady" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "acceptReady" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_applyUnstableEntries :
-  WpMethodCall raft "RawNode'ptr" "applyUnstableEntries" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "applyUnstableEntries" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_readyWithoutAccept :
-  WpMethodCall raft "RawNode'ptr" "readyWithoutAccept" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.RawNodeⁱᵈ) "readyWithoutAccept" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readOnly'ptr_addRequest :
-  WpMethodCall raft "readOnly'ptr" "addRequest" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.readOnlyⁱᵈ) "addRequest" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readOnly'ptr_advance :
-  WpMethodCall raft "readOnly'ptr" "advance" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.readOnlyⁱᵈ) "advance" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readOnly'ptr_lastPendingRequestCtx :
-  WpMethodCall raft "readOnly'ptr" "lastPendingRequestCtx" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.readOnlyⁱᵈ) "lastPendingRequestCtx" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readOnly'ptr_recvAck :
-  WpMethodCall raft "readOnly'ptr" "recvAck" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.readOnlyⁱᵈ) "recvAck" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status_MarshalJSON :
-  WpMethodCall raft "Status" "MarshalJSON" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.Statusⁱᵈ "MarshalJSON" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status_String :
-  WpMethodCall raft "Status" "String" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.Statusⁱᵈ "String" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_Descriptor :
-  WpMethodCall raft "Status'ptr" "Descriptor" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "Descriptor" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_Marshal :
-  WpMethodCall raft "Status'ptr" "Marshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "Marshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_MarshalJSON :
-  WpMethodCall raft "Status'ptr" "MarshalJSON" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "MarshalJSON" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_MarshalTo :
-  WpMethodCall raft "Status'ptr" "MarshalTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "MarshalTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_MarshalToSizedBuffer :
-  WpMethodCall raft "Status'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_ProtoMessage :
-  WpMethodCall raft "Status'ptr" "ProtoMessage" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "ProtoMessage" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_Reset :
-  WpMethodCall raft "Status'ptr" "Reset" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "Reset" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_Size :
-  WpMethodCall raft "Status'ptr" "Size" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "Size" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_String :
-  WpMethodCall raft "Status'ptr" "String" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "String" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_Unmarshal :
-  WpMethodCall raft "Status'ptr" "Unmarshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "Unmarshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_XXX_DiscardUnknown :
-  WpMethodCall raft "Status'ptr" "XXX_DiscardUnknown" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "XXX_DiscardUnknown" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_XXX_Marshal :
-  WpMethodCall raft "Status'ptr" "XXX_Marshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "XXX_Marshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_XXX_Merge :
-  WpMethodCall raft "Status'ptr" "XXX_Merge" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "XXX_Merge" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_XXX_Size :
-  WpMethodCall raft "Status'ptr" "XXX_Size" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "XXX_Size" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_XXX_Unmarshal :
-  WpMethodCall raft "Status'ptr" "XXX_Unmarshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "XXX_Unmarshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_equal :
-  WpMethodCall raft "Status'ptr" "equal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.Statusⁱᵈ) "equal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_Descriptor :
-  WpMethodCall raft "BasicStatus'ptr" "Descriptor" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "Descriptor" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_Marshal :
-  WpMethodCall raft "BasicStatus'ptr" "Marshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "Marshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_MarshalTo :
-  WpMethodCall raft "BasicStatus'ptr" "MarshalTo" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "MarshalTo" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_MarshalToSizedBuffer :
-  WpMethodCall raft "BasicStatus'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_ProtoMessage :
-  WpMethodCall raft "BasicStatus'ptr" "ProtoMessage" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "ProtoMessage" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_Reset :
-  WpMethodCall raft "BasicStatus'ptr" "Reset" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "Reset" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_Size :
-  WpMethodCall raft "BasicStatus'ptr" "Size" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "Size" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_String :
-  WpMethodCall raft "BasicStatus'ptr" "String" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "String" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_Unmarshal :
-  WpMethodCall raft "BasicStatus'ptr" "Unmarshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "Unmarshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_XXX_DiscardUnknown :
-  WpMethodCall raft "BasicStatus'ptr" "XXX_DiscardUnknown" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "XXX_DiscardUnknown" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_XXX_Marshal :
-  WpMethodCall raft "BasicStatus'ptr" "XXX_Marshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "XXX_Marshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_XXX_Merge :
-  WpMethodCall raft "BasicStatus'ptr" "XXX_Merge" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "XXX_Merge" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_XXX_Size :
-  WpMethodCall raft "BasicStatus'ptr" "XXX_Size" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "XXX_Size" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_XXX_Unmarshal :
-  WpMethodCall raft "BasicStatus'ptr" "XXX_Unmarshal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "XXX_Unmarshal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BasicStatus'ptr_equal :
-  WpMethodCall raft "BasicStatus'ptr" "equal" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.BasicStatusⁱᵈ) "equal" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_Append :
-  WpMethodCall raft "MemoryStorage'ptr" "Append" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "Append" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_ApplySnapshot :
-  WpMethodCall raft "MemoryStorage'ptr" "ApplySnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "ApplySnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_Compact :
-  WpMethodCall raft "MemoryStorage'ptr" "Compact" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "Compact" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_CreateSnapshot :
-  WpMethodCall raft "MemoryStorage'ptr" "CreateSnapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "CreateSnapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_Entries :
-  WpMethodCall raft "MemoryStorage'ptr" "Entries" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "Entries" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_FirstIndex :
-  WpMethodCall raft "MemoryStorage'ptr" "FirstIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "FirstIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_InitialState :
-  WpMethodCall raft "MemoryStorage'ptr" "InitialState" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "InitialState" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_LastIndex :
-  WpMethodCall raft "MemoryStorage'ptr" "LastIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "LastIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_Lock :
-  WpMethodCall raft "MemoryStorage'ptr" "Lock" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "Lock" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_SetHardState :
-  WpMethodCall raft "MemoryStorage'ptr" "SetHardState" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "SetHardState" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_Snapshot :
-  WpMethodCall raft "MemoryStorage'ptr" "Snapshot" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "Snapshot" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_Term :
-  WpMethodCall raft "MemoryStorage'ptr" "Term" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "Term" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_TryLock :
-  WpMethodCall raft "MemoryStorage'ptr" "TryLock" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "TryLock" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_Unlock :
-  WpMethodCall raft "MemoryStorage'ptr" "Unlock" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "Unlock" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_firstIndex :
-  WpMethodCall raft "MemoryStorage'ptr" "firstIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "firstIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_MemoryStorage'ptr_lastIndex :
-  WpMethodCall raft "MemoryStorage'ptr" "lastIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.MemoryStorageⁱᵈ) "lastIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_logSlice_lastEntryID :
-  WpMethodCall raft "logSlice" "lastEntryID" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.logSliceⁱᵈ "lastEntryID" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_logSlice_lastIndex :
-  WpMethodCall raft "logSlice" "lastIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.logSliceⁱᵈ "lastIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_logSlice_valid :
-  WpMethodCall raft "logSlice" "valid" _ (is_pkg_defined raft) :=
+  WpMethodCall raft.logSliceⁱᵈ "valid" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_logSlice'ptr_lastEntryID :
-  WpMethodCall raft "logSlice'ptr" "lastEntryID" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.logSliceⁱᵈ) "lastEntryID" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_logSlice'ptr_lastIndex :
-  WpMethodCall raft "logSlice'ptr" "lastIndex" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.logSliceⁱᵈ) "lastIndex" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_logSlice'ptr_valid :
-  WpMethodCall raft "logSlice'ptr" "valid" _ (is_pkg_defined raft) :=
+  WpMethodCall (ptrTⁱᵈ raft.logSliceⁱᵈ) "valid" _ (is_pkg_defined raft) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc raft.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End raft.

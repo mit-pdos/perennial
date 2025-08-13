@@ -9,6 +9,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Errorⁱᵈ : go_string := uint64Tⁱᵈ.
+
 Definition Error : go_type := uint64T.
 
 Definition None : expr := #(W64 0).
@@ -29,21 +31,25 @@ Definition LeaseExpired : expr := #(W64 7).
 
 Definition Leased : expr := #(W64 8).
 
+Definition EncodeError : go_string := "github.com/mit-pdos/gokv/vrsm/e.EncodeError"%go.
+
 (* go: error.go:21:6 *)
-Definition EncodeError : val :=
-  rec: "EncodeError" "err" :=
+Definition EncodeErrorⁱᵐᵖˡ : val :=
+  λ: "err",
     exception_do (let: "err" := (mem.alloc "err") in
     return: (let: "$a0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
      let: "$a1" := (![#uint64T] "err") in
-     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1")).
+     (func_call #marshal.WriteInt) "$a0" "$a1")).
+
+Definition DecodeError : go_string := "github.com/mit-pdos/gokv/vrsm/e.DecodeError"%go.
 
 (* go: error.go:25:6 *)
-Definition DecodeError : val :=
-  rec: "DecodeError" "enc" :=
+Definition DecodeErrorⁱᵐᵖˡ : val :=
+  λ: "enc",
     exception_do (let: "enc" := (mem.alloc "enc") in
     let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err" <-[#uint64T] "$r0");;;
@@ -52,7 +58,7 @@ Definition DecodeError : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("EncodeError"%go, EncodeError); ("DecodeError"%go, DecodeError)].
+Definition functions' : list (go_string * val) := [(EncodeError, EncodeErrorⁱᵐᵖˡ); (DecodeError, DecodeErrorⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -65,9 +71,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init e.e (λ: <>,
-      exception_do (do:  marshal.initialize')
+  λ: <>,
+    package.init #e.e (λ: <>,
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (package.alloc e.e #()))
       ).
 
 End code.

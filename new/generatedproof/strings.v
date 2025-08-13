@@ -70,7 +70,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Builder.addr' v)) strings.Builder "addr"%go.
+  simpl_one_flatten_struct (# (Builder.addr' v)) (strings.Builder) "addr"%go.
 
   solve_field_ref_f.
 Qed.
@@ -79,24 +79,9 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined strings :=
-{|
-  is_pkg_defined := is_global_definitions strings var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 End names.
 End strings.

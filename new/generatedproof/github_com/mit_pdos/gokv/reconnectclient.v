@@ -88,9 +88,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ReconnectingClient.mu' v)) reconnectclient.ReconnectingClient "mu"%go.
-  simpl_one_flatten_struct (# (ReconnectingClient.valid' v)) reconnectclient.ReconnectingClient "valid"%go.
-  simpl_one_flatten_struct (# (ReconnectingClient.urpcCl' v)) reconnectclient.ReconnectingClient "urpcCl"%go.
+  simpl_one_flatten_struct (# (ReconnectingClient.mu' v)) (reconnectclient.ReconnectingClient) "mu"%go.
+  simpl_one_flatten_struct (# (ReconnectingClient.valid' v)) (reconnectclient.ReconnectingClient) "valid"%go.
+  simpl_one_flatten_struct (# (ReconnectingClient.urpcCl' v)) (reconnectclient.ReconnectingClient) "urpcCl"%go.
 
   solve_field_ref_f.
 Qed.
@@ -99,35 +99,20 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined reconnectclient :=
-{|
-  is_pkg_defined := is_global_definitions reconnectclient var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeReconnectingClient :
-  WpFuncCall reconnectclient "MakeReconnectingClient" _ (is_pkg_defined reconnectclient) :=
+  WpFuncCall reconnectclient.MakeReconnectingClient _ (is_pkg_defined reconnectclient) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_Call :
-  WpMethodCall reconnectclient "ReconnectingClient'ptr" "Call" _ (is_pkg_defined reconnectclient) :=
+  WpMethodCall (ptrTⁱᵈ reconnectclient.ReconnectingClientⁱᵈ) "Call" _ (is_pkg_defined reconnectclient) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_getClient :
-  WpMethodCall reconnectclient "ReconnectingClient'ptr" "getClient" _ (is_pkg_defined reconnectclient) :=
+  WpMethodCall (ptrTⁱᵈ reconnectclient.ReconnectingClientⁱᵈ) "getClient" _ (is_pkg_defined reconnectclient) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

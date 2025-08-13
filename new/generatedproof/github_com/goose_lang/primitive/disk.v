@@ -11,43 +11,28 @@ Module disk.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined disk :=
-{|
-  is_pkg_defined := is_global_definitions disk var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Get :
-  WpFuncCall disk "Get" _ (is_pkg_defined disk) :=
+  WpFuncCall disk.Get _ (is_pkg_defined disk) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Read :
-  WpFuncCall disk "Read" _ (is_pkg_defined disk) :=
+  WpFuncCall disk.Read _ (is_pkg_defined disk) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Write :
-  WpFuncCall disk "Write" _ (is_pkg_defined disk) :=
+  WpFuncCall disk.Write _ (is_pkg_defined disk) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Size :
-  WpFuncCall disk "Size" _ (is_pkg_defined disk) :=
+  WpFuncCall disk.Size _ (is_pkg_defined disk) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Barrier :
-  WpFuncCall disk "Barrier" _ (is_pkg_defined disk) :=
+  WpFuncCall disk.Barrier _ (is_pkg_defined disk) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

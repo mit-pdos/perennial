@@ -8,56 +8,70 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Boxⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go.
+
 Definition Box : val :=
   λ: "T", type.structT [
     (#"Value"%go, "T")
   ].
 
+Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
+
 (* BoxGet is a function getter (rather than a method)
 
    go: generics.go:9:6 *)
-Definition BoxGet : val :=
-  rec: "BoxGet" "T" "b" :=
+Definition BoxGetⁱᵐᵖˡ : val :=
+  λ: "T" "b",
     exception_do (let: "b" := (mem.alloc "b") in
     return: (!["T"] (struct.field_ref (Box "T") #"Value"%go "b"))).
 
+Definition BoxGet2 : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet2"%go.
+
 (* go: generics.go:13:6 *)
-Definition BoxGet2 : val :=
-  rec: "BoxGet2" "b" :=
+Definition BoxGet2ⁱᵐᵖˡ : val :=
+  λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
     return: (![#uint64T] (struct.field_ref (Box #uint64T) #"Value"%go "b"))).
 
 (* go: generics.go:17:17 *)
-Definition Box__Get : val :=
-  rec: "Box__Get" "b" "T" <> :=
+Definition Box__Getⁱᵐᵖˡ : val :=
+  λ: "b" "T" <>,
     exception_do (let: "b" := (mem.alloc "b") in
     return: (!["T"] (struct.field_ref (Box "T") #"Value"%go "b"))).
 
+Definition makeGenericBox : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeGenericBox"%go.
+
 (* go: generics.go:21:6 *)
-Definition makeGenericBox : val :=
-  rec: "makeGenericBox" "T" "value" :=
+Definition makeGenericBoxⁱᵐᵖˡ : val :=
+  λ: "T" "value",
     exception_do (let: "value" := (mem.alloc "value") in
     return: (let: "$Value" := (!["T"] "value") in
      struct.make (Box "T") [{
        "Value" ::= "$Value"
      }])).
 
+Definition makeBox : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeBox"%go.
+
 (* go: generics.go:25:6 *)
-Definition makeBox : val :=
-  rec: "makeBox" <> :=
+Definition makeBoxⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (let: "$Value" := #(W64 42) in
      struct.make (Box #uint64T) [{
        "Value" ::= "$Value"
      }])).
 
+Definition useBoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useBoxGet"%go.
+
 (* go: generics.go:30:6 *)
-Definition useBoxGet : val :=
-  rec: "useBoxGet" <> :=
+Definition useBoxGetⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "x" := (mem.alloc (type.zero_val (Box #uint64T))) in
     let: "$r0" := (let: "$a0" := #(W64 42) in
-    ((func_call #generics.generics #"makeGenericBox"%go) #uint64T) "$a0") in
+    ((func_call #makeGenericBox) #uint64T) "$a0") in
     do:  ("x" <-[Box #uint64T] "$r0");;;
-    return: ((method_call #generics.generics #"Box" #"Get" (![Box #uint64T] "x") #uint64T) #())).
+    return: ((method_call #Boxⁱᵈ #"Get"%go (![Box #uint64T] "x") #uint64T) #())).
+
+Definition Containerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go.
 
 Definition Container : val :=
   λ: "T", type.structT [
@@ -67,9 +81,11 @@ Definition Container : val :=
     (#"W"%go, #uint64T)
   ].
 
+Definition useContainer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
+
 (* go: generics.go:43:6 *)
-Definition useContainer : val :=
-  rec: "useContainer" <> :=
+Definition useContainerⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "container" := (mem.alloc (type.zero_val (Container #uint64T))) in
     let: "$r0" := (let: "$X" := #(W64 1) in
     let: "$Y" := ((let: "$v0" := #(W64 2) in
@@ -94,10 +110,14 @@ Definition useContainer : val :=
     do:  ((struct.field_ref (Container #uint64T) #"W"%go "container") <-[#uint64T] "$r0");;;
     return: #()).
 
+Definition UseContainerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go.
+
 Definition UseContainer : val :=
   λ: <>, type.structT [
     (#"X"%go, Container #uint64T)
   ].
+
+Definition OnlyIndirectⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go.
 
 Definition OnlyIndirect : val :=
   λ: "T", type.structT [
@@ -105,15 +125,19 @@ Definition OnlyIndirect : val :=
     (#"Y"%go, #ptrT)
   ].
 
+Definition MultiParamⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go.
+
 Definition MultiParam : val :=
   λ: "A" "B", type.structT [
     (#"Y"%go, "B");
     (#"X"%go, "A")
   ].
 
+Definition useMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
+
 (* go: generics.go:71:6 *)
-Definition useMultiParam : val :=
-  rec: "useMultiParam" <> :=
+Definition useMultiParamⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "mp" := (mem.alloc (type.zero_val (MultiParam #uint64T #boolT))) in
     let: "$r0" := (let: "$Y" := #true in
     let: "$X" := #(W64 1) in
@@ -126,9 +150,11 @@ Definition useMultiParam : val :=
     do:  ((struct.field_ref (MultiParam #uint64T #boolT) #"X"%go "mp") <-[#uint64T] "$r0");;;
     return: #()).
 
+Definition swapMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.swapMultiParam"%go.
+
 (* go: generics.go:76:6 *)
-Definition swapMultiParam : val :=
-  rec: "swapMultiParam" "A" "p" :=
+Definition swapMultiParamⁱᵐᵖˡ : val :=
+  λ: "A" "p",
     exception_do (let: "p" := (mem.alloc "p") in
     let: "temp" := (mem.alloc (type.zero_val "A")) in
     let: "$r0" := (!["A"] (struct.field_ref (MultiParam "A" "A") #"X"%go (![#ptrT] "p"))) in
@@ -139,30 +165,34 @@ Definition swapMultiParam : val :=
     do:  ((struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p")) <-["A"] "$r0");;;
     return: #()).
 
+Definition multiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.multiParamFunc"%go.
+
 (* go: generics.go:82:6 *)
-Definition multiParamFunc : val :=
-  rec: "multiParamFunc" "A" "B" "x" "b" :=
+Definition multiParamFuncⁱᵐᵖˡ : val :=
+  λ: "A" "B" "x" "b",
     exception_do (let: "b" := (mem.alloc "b") in
     let: "x" := (mem.alloc "x") in
     return: ((let: "$sl0" := (!["B"] "b") in
      slice.literal "B" ["$sl0"]))).
 
+Definition useMultiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParamFunc"%go.
+
 (* go: generics.go:86:6 *)
-Definition useMultiParamFunc : val :=
-  rec: "useMultiParamFunc" <> :=
+Definition useMultiParamFuncⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := #true in
-    ((func_call #generics.generics #"multiParamFunc"%go) #uint64T #boolT) "$a0" "$a1");;;
+    ((func_call #multiParamFunc) #uint64T #boolT) "$a0" "$a1");;;
     return: (#());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("BoxGet"%go, BoxGet); ("BoxGet2"%go, BoxGet2); ("makeGenericBox"%go, makeGenericBox); ("makeBox"%go, makeBox); ("useBoxGet"%go, useBoxGet); ("useContainer"%go, useContainer); ("useMultiParam"%go, useMultiParam); ("swapMultiParam"%go, swapMultiParam); ("multiParamFunc"%go, multiParamFunc); ("useMultiParamFunc"%go, useMultiParamFunc)].
+Definition functions' : list (go_string * val) := [(BoxGet, BoxGetⁱᵐᵖˡ); (BoxGet2, BoxGet2ⁱᵐᵖˡ); (makeGenericBox, makeGenericBoxⁱᵐᵖˡ); (makeBox, makeBoxⁱᵐᵖˡ); (useBoxGet, useBoxGetⁱᵐᵖˡ); (useContainer, useContainerⁱᵐᵖˡ); (useMultiParam, useMultiParamⁱᵐᵖˡ); (swapMultiParam, swapMultiParamⁱᵐᵖˡ); (multiParamFunc, multiParamFuncⁱᵐᵖˡ); (useMultiParamFunc, useMultiParamFuncⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Box"%go, [("Get"%go, Box__Get)]); ("Box'ptr"%go, [("Get"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Boxⁱᵈ, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (ptrTⁱᵈ Boxⁱᵈ, [("Get"%go, (λ: "$recvAddr",
                  method_call #generics.generics #"Box" #"Get" (![Box #()] "$recvAddr")
-                 )%V)]); ("Container"%go, []); ("Container'ptr"%go, []); ("UseContainer"%go, []); ("UseContainer'ptr"%go, []); ("OnlyIndirect"%go, []); ("OnlyIndirect'ptr"%go, []); ("MultiParam"%go, []); ("MultiParam'ptr"%go, [])].
+                 )%V)]); (Containerⁱᵈ, []); (ptrTⁱᵈ Containerⁱᵈ, []); (UseContainerⁱᵈ, []); (ptrTⁱᵈ UseContainerⁱᵈ, []); (OnlyIndirectⁱᵈ, []); (ptrTⁱᵈ OnlyIndirectⁱᵈ, []); (MultiParamⁱᵈ, []); (ptrTⁱᵈ MultiParamⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo generics.generics :=
   {|
@@ -173,9 +203,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Box"%go, [
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init generics.generics (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #generics.generics (λ: <>,
+      exception_do (do:  (package.alloc generics.generics #()))
       ).
 
 End code.

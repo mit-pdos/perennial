@@ -8,6 +8,114 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Search : go_string := "sort.Search"%go.
+
+Definition Find : go_string := "sort.Find"%go.
+
+Definition SearchInts : go_string := "sort.SearchInts"%go.
+
+Definition SearchFloat64s : go_string := "sort.SearchFloat64s"%go.
+
+Definition SearchStrings : go_string := "sort.SearchStrings"%go.
+
+Definition Slice : go_string := "sort.Slice"%go.
+
+Definition SliceStable : go_string := "sort.SliceStable"%go.
+
+Definition SliceIsSorted : go_string := "sort.SliceIsSorted"%go.
+
+Definition Sort : go_string := "sort.Sort"%go.
+
+Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
+
+Definition Reverse : go_string := "sort.Reverse"%go.
+
+Definition IsSorted : go_string := "sort.IsSorted"%go.
+
+Definition isNaN : go_string := "sort.isNaN"%go.
+
+Definition Ints : go_string := "sort.Ints"%go.
+
+Definition Float64s : go_string := "sort.Float64s"%go.
+
+Definition Strings : go_string := "sort.Strings"%go.
+
+Definition IntsAreSorted : go_string := "sort.IntsAreSorted"%go.
+
+Definition Float64sAreSorted : go_string := "sort.Float64sAreSorted"%go.
+
+Definition StringsAreSorted : go_string := "sort.StringsAreSorted"%go.
+
+Definition Stable : go_string := "sort.Stable"%go.
+
+Definition insertionSort_func : go_string := "sort.insertionSort_func"%go.
+
+Definition siftDown_func : go_string := "sort.siftDown_func"%go.
+
+Definition heapSort_func : go_string := "sort.heapSort_func"%go.
+
+Definition pdqsort_func : go_string := "sort.pdqsort_func"%go.
+
+Definition partition_func : go_string := "sort.partition_func"%go.
+
+Definition partitionEqual_func : go_string := "sort.partitionEqual_func"%go.
+
+Definition partialInsertionSort_func : go_string := "sort.partialInsertionSort_func"%go.
+
+Definition breakPatterns_func : go_string := "sort.breakPatterns_func"%go.
+
+Definition choosePivot_func : go_string := "sort.choosePivot_func"%go.
+
+Definition order2_func : go_string := "sort.order2_func"%go.
+
+Definition median_func : go_string := "sort.median_func"%go.
+
+Definition medianAdjacent_func : go_string := "sort.medianAdjacent_func"%go.
+
+Definition reverseRange_func : go_string := "sort.reverseRange_func"%go.
+
+Definition swapRange_func : go_string := "sort.swapRange_func"%go.
+
+Definition stable_func : go_string := "sort.stable_func"%go.
+
+Definition symMerge_func : go_string := "sort.symMerge_func"%go.
+
+Definition rotate_func : go_string := "sort.rotate_func"%go.
+
+Definition insertionSort : go_string := "sort.insertionSort"%go.
+
+Definition siftDown : go_string := "sort.siftDown"%go.
+
+Definition heapSort : go_string := "sort.heapSort"%go.
+
+Definition pdqsort : go_string := "sort.pdqsort"%go.
+
+Definition partition : go_string := "sort.partition"%go.
+
+Definition partitionEqual : go_string := "sort.partitionEqual"%go.
+
+Definition partialInsertionSort : go_string := "sort.partialInsertionSort"%go.
+
+Definition breakPatterns : go_string := "sort.breakPatterns"%go.
+
+Definition choosePivot : go_string := "sort.choosePivot"%go.
+
+Definition order2 : go_string := "sort.order2"%go.
+
+Definition median : go_string := "sort.median"%go.
+
+Definition medianAdjacent : go_string := "sort.medianAdjacent"%go.
+
+Definition reverseRange : go_string := "sort.reverseRange"%go.
+
+Definition swapRange : go_string := "sort.swapRange"%go.
+
+Definition stable : go_string := "sort.stable"%go.
+
+Definition symMerge : go_string := "sort.symMerge"%go.
+
+Definition rotate : go_string := "sort.rotate"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
@@ -25,9 +133,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init sort.sort (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #sort.sort (λ: <>,
+      exception_do (do:  (package.alloc sort.sort #()))
       ).
 
 End code.

@@ -11,47 +11,32 @@ Module chan_spec_raw_examples.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined chan_spec_raw_examples :=
-{|
-  is_pkg_defined := is_global_definitions chan_spec_raw_examples var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_SendMessage :
-  WpFuncCall chan_spec_raw_examples "SendMessage" _ (is_pkg_defined chan_spec_raw_examples) :=
+  WpFuncCall chan_spec_raw_examples.SendMessage _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_JoinWithReceive :
-  WpFuncCall chan_spec_raw_examples "JoinWithReceive" _ (is_pkg_defined chan_spec_raw_examples) :=
+  WpFuncCall chan_spec_raw_examples.JoinWithReceive _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_JoinWithSend :
-  WpFuncCall chan_spec_raw_examples "JoinWithSend" _ (is_pkg_defined chan_spec_raw_examples) :=
+  WpFuncCall chan_spec_raw_examples.JoinWithSend _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_BroadcastNotification :
-  WpFuncCall chan_spec_raw_examples "BroadcastNotification" _ (is_pkg_defined chan_spec_raw_examples) :=
+  WpFuncCall chan_spec_raw_examples.BroadcastNotification _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CoordinatedChannelClose :
-  WpFuncCall chan_spec_raw_examples "CoordinatedChannelClose" _ (is_pkg_defined chan_spec_raw_examples) :=
+  WpFuncCall chan_spec_raw_examples.CoordinatedChannelClose _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DoubleValues :
-  WpFuncCall chan_spec_raw_examples "DoubleValues" _ (is_pkg_defined chan_spec_raw_examples) :=
+  WpFuncCall chan_spec_raw_examples.DoubleValues _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

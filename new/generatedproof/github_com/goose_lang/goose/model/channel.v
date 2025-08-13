@@ -131,11 +131,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Channel.lock' v)) (Channel.ty T) "lock"%go.
-  simpl_one_flatten_struct (# (Channel.state' v)) (Channel.ty T) "state"%go.
-  simpl_one_flatten_struct (# (Channel.buffer' v)) (Channel.ty T) "buffer"%go.
-  simpl_one_flatten_struct (# (Channel.first' v)) (Channel.ty T) "first"%go.
-  simpl_one_flatten_struct (# (Channel.count' v)) (Channel.ty T) "count"%go.
+  simpl_one_flatten_struct (# (Channel.lock' v)) ((Channel.ty T)) "lock"%go.
+  simpl_one_flatten_struct (# (Channel.state' v)) ((Channel.ty T)) "state"%go.
+  simpl_one_flatten_struct (# (Channel.buffer' v)) ((Channel.ty T)) "buffer"%go.
+  simpl_one_flatten_struct (# (Channel.first' v)) ((Channel.ty T)) "first"%go.
+  simpl_one_flatten_struct (# (Channel.count' v)) ((Channel.ty T)) "count"%go.
 
   solve_field_ref_f.
 Qed.
@@ -263,9 +263,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SelectCase.channel' v)) (SelectCase.ty T) "channel"%go.
-  simpl_one_flatten_struct (# (SelectCase.dir' v)) (SelectCase.ty T) "dir"%go.
-  simpl_one_flatten_struct (# (SelectCase.Value' v)) (SelectCase.ty T) "Value"%go.
+  simpl_one_flatten_struct (# (SelectCase.channel' v)) ((SelectCase.ty T)) "channel"%go.
+  simpl_one_flatten_struct (# (SelectCase.dir' v)) ((SelectCase.ty T)) "dir"%go.
+  simpl_one_flatten_struct (# (SelectCase.Value' v)) ((SelectCase.ty T)) "Value"%go.
 
   solve_field_ref_f.
 Qed.
@@ -274,135 +274,120 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined channel :=
-{|
-  is_pkg_defined := is_global_definitions channel var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewChannelRef :
-  WpFuncCall channel "NewChannelRef" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.NewChannelRef _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSendCase :
-  WpFuncCall channel "NewSendCase" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.NewSendCase _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewRecvCase :
-  WpFuncCall channel "NewRecvCase" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.NewRecvCase _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelect :
-  WpFuncCall channel "TrySelect" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelect _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select1 :
-  WpFuncCall channel "Select1" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select1 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase2 :
-  WpFuncCall channel "TrySelectCase2" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase2 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select2 :
-  WpFuncCall channel "Select2" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select2 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase3 :
-  WpFuncCall channel "TrySelectCase3" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase3 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select3 :
-  WpFuncCall channel "Select3" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select3 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase4 :
-  WpFuncCall channel "TrySelectCase4" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase4 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select4 :
-  WpFuncCall channel "Select4" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select4 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TrySelectCase5 :
-  WpFuncCall channel "TrySelectCase5" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.TrySelectCase5 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Select5 :
-  WpFuncCall channel "Select5" _ (is_pkg_defined channel) :=
+  WpFuncCall channel.Select5 _ (is_pkg_defined channel) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_BufferedTryReceive :
-  WpMethodCall channel "Channel'ptr" "BufferedTryReceive" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "BufferedTryReceive" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_BufferedTryReceiveLocked :
-  WpMethodCall channel "Channel'ptr" "BufferedTryReceiveLocked" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "BufferedTryReceiveLocked" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_BufferedTrySend :
-  WpMethodCall channel "Channel'ptr" "BufferedTrySend" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "BufferedTrySend" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_Cap :
-  WpMethodCall channel "Channel'ptr" "Cap" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "Cap" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_Close :
-  WpMethodCall channel "Channel'ptr" "Close" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "Close" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_Len :
-  WpMethodCall channel "Channel'ptr" "Len" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "Len" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_Receive :
-  WpMethodCall channel "Channel'ptr" "Receive" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "Receive" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_ReceiveDiscardOk :
-  WpMethodCall channel "Channel'ptr" "ReceiveDiscardOk" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "ReceiveDiscardOk" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_Send :
-  WpMethodCall channel "Channel'ptr" "Send" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "Send" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_SenderCheckOfferResult :
-  WpMethodCall channel "Channel'ptr" "SenderCheckOfferResult" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "SenderCheckOfferResult" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_SenderCompleteOrOffer :
-  WpMethodCall channel "Channel'ptr" "SenderCompleteOrOffer" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "SenderCompleteOrOffer" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_TryClose :
-  WpMethodCall channel "Channel'ptr" "TryClose" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "TryClose" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_TryReceive :
-  WpMethodCall channel "Channel'ptr" "TryReceive" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "TryReceive" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_TrySend :
-  WpMethodCall channel "Channel'ptr" "TrySend" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "TrySend" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Channel'ptr_UnbufferedTryReceive :
-  WpMethodCall channel "Channel'ptr" "UnbufferedTryReceive" _ (is_pkg_defined channel) :=
+  WpMethodCall (ptrTⁱᵈ channel.Channelⁱᵈ) "UnbufferedTryReceive" _ (is_pkg_defined channel) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -184,9 +184,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Container.X' v)) (Container.ty T) "X"%go.
-  simpl_one_flatten_struct (# (Container.Y' v)) (Container.ty T) "Y"%go.
-  simpl_one_flatten_struct (# (Container.Z' v)) (Container.ty T) "Z"%go.
+  simpl_one_flatten_struct (# (Container.X' v)) ((Container.ty T)) "X"%go.
+  simpl_one_flatten_struct (# (Container.Y' v)) ((Container.ty T)) "Y"%go.
+  simpl_one_flatten_struct (# (Container.Z' v)) ((Container.ty T)) "Z"%go.
 
   solve_field_ref_f.
 Qed.
@@ -346,7 +346,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (OnlyIndirect.X' v)) (OnlyIndirect.ty T) "X"%go.
+  simpl_one_flatten_struct (# (OnlyIndirect.X' v)) ((OnlyIndirect.ty T)) "X"%go.
 
   solve_field_ref_f.
 Qed.
@@ -434,7 +434,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MultiParam.Y' v)) (MultiParam.ty A B) "Y"%go.
+  simpl_one_flatten_struct (# (MultiParam.Y' v)) ((MultiParam.ty A B)) "Y"%go.
 
   solve_field_ref_f.
 Qed.
@@ -443,71 +443,56 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined generics :=
-{|
-  is_pkg_defined := is_global_definitions generics var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_BoxGet :
-  WpFuncCall generics "BoxGet" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.BoxGet _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_BoxGet2 :
-  WpFuncCall generics "BoxGet2" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.BoxGet2 _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_makeGenericBox :
-  WpFuncCall generics "makeGenericBox" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.makeGenericBox _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_makeBox :
-  WpFuncCall generics "makeBox" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.makeBox _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useBoxGet :
-  WpFuncCall generics "useBoxGet" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.useBoxGet _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useContainer :
-  WpFuncCall generics "useContainer" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.useContainer _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useMultiParam :
-  WpFuncCall generics "useMultiParam" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.useMultiParam _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_swapMultiParam :
-  WpFuncCall generics "swapMultiParam" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.swapMultiParam _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_multiParamFunc :
-  WpFuncCall generics "multiParamFunc" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.multiParamFunc _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useMultiParamFunc :
-  WpFuncCall generics "useMultiParamFunc" _ (is_pkg_defined generics) :=
+  WpFuncCall generics.useMultiParamFunc _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Box_Get :
-  WpMethodCall generics "Box" "Get" _ (is_pkg_defined generics) :=
+  WpMethodCall generics.Boxⁱᵈ "Get" _ (is_pkg_defined generics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Box'ptr_Get :
-  WpMethodCall generics "Box'ptr" "Get" _ (is_pkg_defined generics) :=
+  WpMethodCall (ptrTⁱᵈ generics.Boxⁱᵈ) "Get" _ (is_pkg_defined generics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -10,6 +10,34 @@ Context `{ffi_syntax}.
 
 Definition Enabled : expr := #false.
 
+Definition Acquire : go_string := "internal/race.Acquire"%go.
+
+Definition Release : go_string := "internal/race.Release"%go.
+
+Definition ReleaseMerge : go_string := "internal/race.ReleaseMerge"%go.
+
+Definition Disable : go_string := "internal/race.Disable"%go.
+
+Definition Enable : go_string := "internal/race.Enable"%go.
+
+Definition Read : go_string := "internal/race.Read"%go.
+
+Definition ReadPC : go_string := "internal/race.ReadPC"%go.
+
+Definition ReadObjectPC : go_string := "internal/race.ReadObjectPC"%go.
+
+Definition Write : go_string := "internal/race.Write"%go.
+
+Definition WritePC : go_string := "internal/race.WritePC"%go.
+
+Definition WriteObjectPC : go_string := "internal/race.WriteObjectPC"%go.
+
+Definition ReadRange : go_string := "internal/race.ReadRange"%go.
+
+Definition WriteRange : go_string := "internal/race.WriteRange"%go.
+
+Definition Errors : go_string := "internal/race.Errors"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
@@ -27,9 +55,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init race.race (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #race.race (λ: <>,
+      exception_do (do:  (package.alloc race.race #()))
       ).
 
 End code.

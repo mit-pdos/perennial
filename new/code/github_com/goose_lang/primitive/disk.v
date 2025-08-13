@@ -10,9 +10,29 @@ Module disk.
 Section code.
 
 
+Definition Diskⁱᵈ : go_string := "github.com/goose-lang/primitive/disk.Disk"%go.
+
+Definition implicitDisk : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.
+
+Definition Init : go_string := "github.com/goose-lang/primitive/disk.Init"%go.
+
+Definition Get : go_string := "github.com/goose-lang/primitive/disk.Get"%go.
+
+Definition Read : go_string := "github.com/goose-lang/primitive/disk.Read"%go.
+
+Definition Write : go_string := "github.com/goose-lang/primitive/disk.Write"%go.
+
+Definition Size : go_string := "github.com/goose-lang/primitive/disk.Size"%go.
+
+Definition Barrier : go_string := "github.com/goose-lang/primitive/disk.Barrier"%go.
+
+Definition NewFileDisk : go_string := "github.com/goose-lang/primitive/disk.NewFileDisk"%go.
+
+Definition NewMemDisk : go_string := "github.com/goose-lang/primitive/disk.NewMemDisk"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Get"%go, Get); ("Read"%go, Read); ("Write"%go, Write); ("Size"%go, Size); ("Barrier"%go, Barrier)].
+Definition functions' : list (go_string * val) := [(Get, Getⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Write, Writeⁱᵐᵖˡ); (Size, Sizeⁱᵐᵖˡ); (Barrier, Barrierⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -27,9 +47,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init disk.disk (λ: <>,
-      exception_do (do:  (_'init #());;;
+  λ: <>,
+    package.init #disk.disk (λ: <>,
+      exception_do (do:  (package.alloc disk.disk #());;;
+      do:  (_'init #());;;
       do:  (_'init #()))
       ).
 

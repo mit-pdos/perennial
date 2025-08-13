@@ -9,33 +9,35 @@ Set Default Proof Using "Type".
 
 Module log.
 
+(* type log.Logger *)
+Module Logger.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Logger.
+
+Global Instance bounded_size_Logger : BoundedTypeSize log.Logger.
+Admitted.
+
+Global Instance into_val_Logger `{ffi_syntax} : IntoVal Logger.t.
+Admitted.
+
+Global Instance into_val_typed_Logger `{ffi_syntax} : IntoValTyped Logger.t log.Logger.
+Admitted.
+
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined log :=
-{|
-  is_pkg_defined := is_global_definitions log var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Printf :
-  WpFuncCall log "Printf" _ (is_pkg_defined log) :=
+  WpFuncCall log.Printf _ (is_pkg_defined log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Println :
-  WpFuncCall log "Println" _ (is_pkg_defined log) :=
+  WpFuncCall log.Println _ (is_pkg_defined log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

@@ -8,5 +8,5 @@ trusted = [
 ]
 
 imports = [
-  "!*",
+  "*",
 ]

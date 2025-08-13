@@ -87,8 +87,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Clerk.mu' v)) configservice.Clerk "mu"%go.
-  simpl_one_flatten_struct (# (Clerk.cls' v)) configservice.Clerk "cls"%go.
+  simpl_one_flatten_struct (# (Clerk.mu' v)) (configservice.Clerk) "mu"%go.
+  simpl_one_flatten_struct (# (Clerk.cls' v)) (configservice.Clerk) "cls"%go.
 
   solve_field_ref_f.
 Qed.
@@ -178,10 +178,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (state.epoch' v)) configservice.state "epoch"%go.
-  simpl_one_flatten_struct (# (state.reservedEpoch' v)) configservice.state "reservedEpoch"%go.
-  simpl_one_flatten_struct (# (state.leaseExpiration' v)) configservice.state "leaseExpiration"%go.
-  simpl_one_flatten_struct (# (state.wantLeaseToExpire' v)) configservice.state "wantLeaseToExpire"%go.
+  simpl_one_flatten_struct (# (state.epoch' v)) (configservice.state) "epoch"%go.
+  simpl_one_flatten_struct (# (state.reservedEpoch' v)) (configservice.state) "reservedEpoch"%go.
+  simpl_one_flatten_struct (# (state.leaseExpiration' v)) (configservice.state) "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (state.wantLeaseToExpire' v)) (configservice.state) "wantLeaseToExpire"%go.
 
   solve_field_ref_f.
 Qed.
@@ -251,87 +251,72 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined configservice :=
-{|
-  is_pkg_defined := is_global_definitions configservice var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_EncodeConfig :
-  WpFuncCall configservice "EncodeConfig" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.EncodeConfig _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeConfig :
-  WpFuncCall configservice "DecodeConfig" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.DecodeConfig _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall configservice "MakeClerk" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.MakeClerk _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeState :
-  WpFuncCall configservice "encodeState" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.encodeState _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeState :
-  WpFuncCall configservice "decodeState" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.decodeState _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_makeServer :
-  WpFuncCall configservice "makeServer" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.makeServer _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StartServer :
-  WpFuncCall configservice "StartServer" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.StartServer _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_GetConfig :
-  WpMethodCall configservice "Clerk'ptr" "GetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "GetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_GetLease :
-  WpMethodCall configservice "Clerk'ptr" "GetLease" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "GetLease" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ReserveEpochAndGetConfig :
-  WpMethodCall configservice "Clerk'ptr" "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_TryWriteConfig :
-  WpMethodCall configservice "Clerk'ptr" "TryWriteConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "TryWriteConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_GetConfig :
-  WpMethodCall configservice "Server'ptr" "GetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "GetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_GetLease :
-  WpMethodCall configservice "Server'ptr" "GetLease" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "GetLease" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_ReserveEpochAndGetConfig :
-  WpMethodCall configservice "Server'ptr" "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_TryWriteConfig :
-  WpMethodCall configservice "Server'ptr" "TryWriteConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "TryWriteConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_tryAcquire :
-  WpMethodCall configservice "Server'ptr" "tryAcquire" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "tryAcquire" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

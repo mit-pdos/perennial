@@ -144,8 +144,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Callback.reply' v)) urpc.Callback "reply"%go.
-  simpl_one_flatten_struct (# (Callback.state' v)) urpc.Callback "state"%go.
+  simpl_one_flatten_struct (# (Callback.reply' v)) (urpc.Callback) "reply"%go.
+  simpl_one_flatten_struct (# (Callback.state' v)) (urpc.Callback) "state"%go.
 
   solve_field_ref_f.
 Qed.
@@ -228,9 +228,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Client.mu' v)) urpc.Client "mu"%go.
-  simpl_one_flatten_struct (# (Client.conn' v)) urpc.Client "conn"%go.
-  simpl_one_flatten_struct (# (Client.seq' v)) urpc.Client "seq"%go.
+  simpl_one_flatten_struct (# (Client.mu' v)) (urpc.Client) "mu"%go.
+  simpl_one_flatten_struct (# (Client.conn' v)) (urpc.Client) "conn"%go.
+  simpl_one_flatten_struct (# (Client.seq' v)) (urpc.Client) "seq"%go.
 
   solve_field_ref_f.
 Qed.
@@ -247,63 +247,48 @@ End Error.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined urpc :=
-{|
-  is_pkg_defined := is_global_definitions urpc var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeServer :
-  WpFuncCall urpc "MakeServer" _ (is_pkg_defined urpc) :=
+  WpFuncCall urpc.MakeServer _ (is_pkg_defined urpc) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TryMakeClient :
-  WpFuncCall urpc "TryMakeClient" _ (is_pkg_defined urpc) :=
+  WpFuncCall urpc.TryMakeClient _ (is_pkg_defined urpc) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClient :
-  WpFuncCall urpc "MakeClient" _ (is_pkg_defined urpc) :=
+  WpFuncCall urpc.MakeClient _ (is_pkg_defined urpc) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Serve :
-  WpMethodCall urpc "Server'ptr" "Serve" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Serverⁱᵈ) "Serve" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_readThread :
-  WpMethodCall urpc "Server'ptr" "readThread" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Serverⁱᵈ) "readThread" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_rpcHandle :
-  WpMethodCall urpc "Server'ptr" "rpcHandle" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Serverⁱᵈ) "rpcHandle" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Call :
-  WpMethodCall urpc "Client'ptr" "Call" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "Call" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_CallComplete :
-  WpMethodCall urpc "Client'ptr" "CallComplete" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "CallComplete" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_CallStart :
-  WpMethodCall urpc "Client'ptr" "CallStart" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "CallStart" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_replyThread :
-  WpMethodCall urpc "Client'ptr" "replyThread" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "replyThread" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

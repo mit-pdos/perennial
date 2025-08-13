@@ -93,9 +93,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Client.uid' v)) client.Client "uid"%go.
-  simpl_one_flatten_struct (# (Client.pend' v)) client.Client "pend"%go.
-  simpl_one_flatten_struct (# (Client.last' v)) client.Client "last"%go.
+  simpl_one_flatten_struct (# (Client.uid' v)) (client.Client) "uid"%go.
+  simpl_one_flatten_struct (# (Client.pend' v)) (client.Client) "pend"%go.
+  simpl_one_flatten_struct (# (Client.last' v)) (client.Client) "last"%go.
 
   solve_field_ref_f.
 Qed.
@@ -171,8 +171,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (pending.nextVer' v)) client.pending "nextVer"%go.
-  simpl_one_flatten_struct (# (pending.isPending' v)) client.pending "isPending"%go.
+  simpl_one_flatten_struct (# (pending.nextVer' v)) (client.pending) "nextVer"%go.
+  simpl_one_flatten_struct (# (pending.isPending' v)) (client.pending) "isPending"%go.
 
   solve_field_ref_f.
 Qed.
@@ -255,9 +255,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (epoch.epoch' v)) client.epoch "epoch"%go.
-  simpl_one_flatten_struct (# (epoch.dig' v)) client.epoch "dig"%go.
-  simpl_one_flatten_struct (# (epoch.link' v)) client.epoch "link"%go.
+  simpl_one_flatten_struct (# (epoch.epoch' v)) (client.epoch) "epoch"%go.
+  simpl_one_flatten_struct (# (epoch.dig' v)) (client.epoch) "dig"%go.
+  simpl_one_flatten_struct (# (epoch.link' v)) (client.epoch) "link"%go.
 
   solve_field_ref_f.
 Qed.
@@ -340,9 +340,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (serv.cli' v)) client.serv "cli"%go.
-  simpl_one_flatten_struct (# (serv.sigPk' v)) client.serv "sigPk"%go.
-  simpl_one_flatten_struct (# (serv.vrfPk' v)) client.serv "vrfPk"%go.
+  simpl_one_flatten_struct (# (serv.cli' v)) (client.serv) "cli"%go.
+  simpl_one_flatten_struct (# (serv.sigPk' v)) (client.serv) "sigPk"%go.
+  simpl_one_flatten_struct (# (serv.vrfPk' v)) (client.serv) "vrfPk"%go.
 
   solve_field_ref_f.
 Qed.
@@ -411,7 +411,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Evid.vrf' v)) client.Evid "vrf"%go.
+  simpl_one_flatten_struct (# (Evid.vrf' v)) (client.Evid) "vrf"%go.
 
   solve_field_ref_f.
 Qed.
@@ -494,9 +494,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (evidVrf.vrfPk0' v)) client.evidVrf "vrfPk0"%go.
-  simpl_one_flatten_struct (# (evidVrf.sig0' v)) client.evidVrf "sig0"%go.
-  simpl_one_flatten_struct (# (evidVrf.vrfPk1' v)) client.evidVrf "vrfPk1"%go.
+  simpl_one_flatten_struct (# (evidVrf.vrfPk0' v)) (client.evidVrf) "vrfPk0"%go.
+  simpl_one_flatten_struct (# (evidVrf.sig0' v)) (client.evidVrf) "sig0"%go.
+  simpl_one_flatten_struct (# (evidVrf.vrfPk1' v)) (client.evidVrf) "vrfPk1"%go.
 
   solve_field_ref_f.
 Qed.
@@ -586,10 +586,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (evidLink.epoch' v)) client.evidLink "epoch"%go.
-  simpl_one_flatten_struct (# (evidLink.link0' v)) client.evidLink "link0"%go.
-  simpl_one_flatten_struct (# (evidLink.sig0' v)) client.evidLink "sig0"%go.
-  simpl_one_flatten_struct (# (evidLink.link1' v)) client.evidLink "link1"%go.
+  simpl_one_flatten_struct (# (evidLink.epoch' v)) (client.evidLink) "epoch"%go.
+  simpl_one_flatten_struct (# (evidLink.link0' v)) (client.evidLink) "link0"%go.
+  simpl_one_flatten_struct (# (evidLink.sig0' v)) (client.evidLink) "sig0"%go.
+  simpl_one_flatten_struct (# (evidLink.link1' v)) (client.evidLink) "link1"%go.
 
   solve_field_ref_f.
 Qed.
@@ -598,71 +598,56 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined client :=
-{|
-  is_pkg_defined := is_global_definitions client var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_New :
-  WpFuncCall client "New" _ (is_pkg_defined client) :=
+  WpFuncCall client.New _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckMemb :
-  WpFuncCall client "CheckMemb" _ (is_pkg_defined client) :=
+  WpFuncCall client.CheckMemb _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckHist :
-  WpFuncCall client "CheckHist" _ (is_pkg_defined client) :=
+  WpFuncCall client.CheckHist _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckNonMemb :
-  WpFuncCall client "CheckNonMemb" _ (is_pkg_defined client) :=
+  WpFuncCall client.CheckNonMemb _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Audit :
-  WpMethodCall client "Client'ptr" "Audit" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Audit" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Get :
-  WpMethodCall client "Client'ptr" "Get" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Get" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Put :
-  WpMethodCall client "Client'ptr" "Put" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Put" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_SelfMon :
-  WpMethodCall client "Client'ptr" "SelfMon" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "SelfMon" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_getChainExt :
-  WpMethodCall client "Client'ptr" "getChainExt" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "getChainExt" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Evid'ptr_Check :
-  WpMethodCall client "Evid'ptr" "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Evidⁱᵈ) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidVrf'ptr_Check :
-  WpMethodCall client "evidVrf'ptr" "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.evidVrfⁱᵈ) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidLink'ptr_Check :
-  WpMethodCall client "evidLink'ptr" "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.evidLinkⁱᵈ) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

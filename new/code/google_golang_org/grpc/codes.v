@@ -8,6 +8,12 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition init : go_string := "google.golang.org/grpc/codes.init"%go.
+
+Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonicalString"%go.
+
+Definition Codeⁱᵈ : go_string := "google.golang.org/grpc/codes.Code"%go.
+
 Definition Code : go_type := uint32T.
 
 Definition Canceled : expr := #(W32 1).
@@ -32,13 +38,15 @@ Definition DataLoss : expr := #(W32 15).
 
 Definition Unauthenticated : expr := #(W32 16).
 
+Definition strToCode : go_string := "google.golang.org/grpc/codes.strToCode"%go.
+
 Axiom strToCode'init : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Code"%go, []); ("Code'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Codeⁱᵈ, []); (ptrTⁱᵈ Codeⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo codes.codes :=
   {|
@@ -51,9 +59,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Code"%go, 
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init codes.codes (λ: <>,
-      exception_do (do:  (strToCode'init #()))
+  λ: <>,
+    package.init #codes.codes (λ: <>,
+      exception_do (do:  (package.alloc codes.codes #());;;
+      do:  (strToCode'init #()))
       ).
 
 End code.

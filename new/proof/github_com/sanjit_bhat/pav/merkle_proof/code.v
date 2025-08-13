@@ -9,8 +9,7 @@ From New.proof.github_com.tchajed Require Import marshal.
 From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base serde theory.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
-Context `{!merkle.GlobalAddrs}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 (** ownership preds. *)
 

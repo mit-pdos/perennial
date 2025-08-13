@@ -18,60 +18,33 @@ Notation innerNodeTy := (W8 2) (only parsing).
 Notation max_depth := 256%nat.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_varG Σ ()}.
 
-Definition own_initialized `{!merkle.GlobalAddrs} : iProp Σ :=
+Definition is_initialized : iProp Σ :=
   ∃ sl_emptyHash emptyHash,
-  "#HemptyHash" ∷ merkle.emptyHash ↦□ sl_emptyHash ∗
+  "#HemptyHash" ∷ (global_addr merkle.emptyHash) ↦□ sl_emptyHash ∗
   "#Hsl_emptyHash" ∷ sl_emptyHash ↦*□ emptyHash ∗
   "#His_hash" ∷ cryptoffi.cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
 
-Definition is_initialized (γtok : gname) `{!merkle.GlobalAddrs} : iProp Σ :=
-  inv nroot (ghost_var γtok 1 () ∨ own_initialized).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'merkle).
+#[global] Instance is_pkg_init_globals_test : IsPkgInit merkle :=
+  {|
+    is_pkg_init_def := is_initialized;
+    is_pkg_init_deps := deps;
+  |}.
 
-Lemma wp_initialize' pending postconds γtok :
-  merkle ∉ pending →
-  postconds !! merkle = Some (∃ (d : merkle.GlobalAddrs), is_pkg_defined merkle ∗ is_initialized γtok)%I →
-  {{{ own_globals_tok pending postconds }}}
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init merkle = (is_pkg_init merkle) →
+  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined merkle }}}
     merkle.initialize' #()
-  {{{ (_ : merkle.GlobalAddrs), RET #();
-      is_pkg_defined merkle ∗ is_initialized γtok ∗ own_globals_tok pending postconds
-  }}}.
+  {{{ RET #(); own_initializing ∗ is_pkg_init merkle }}}.
 Proof.
-  intros ??. wp_start as "Hunused".
-  wp_call.
-  wp_apply (wp_package_init with "[$]").
-  { rewrite H0 //. }
-  { set_solver. }
-  { iIntros "* #Hdefs Hvars Htok".
-    wp_auto.
-    wp_func_call.
-    wp_call.
-    wp_apply wp_slice_literal as "* Hsl_b".
-    wp_apply (cryptoutil.wp_Hash with "[$Hsl_b]") as "* @".
-    { (* TODO(goose): merkle init fn doesn't yet have is_pkg_init merkle,
-    but still needs way to provide init for deps. *)
-      admit. }
-    iApply wp_fupd.
-    wp_globals_get.
-    wp_auto.
-    iPersist "Hvars Hsl_b Hsl_hash".
-    iFrame "Htok".
-    iSplitR; [done|].
-    rewrite /is_initialized.
-    iMod (inv_alloc with "[-]") as "#?".
-    2: { repeat iModIntro. iFrame "#". }
-    iNext. iRight.
-    iFrame "#". }
-  iApply "HΦ".
+  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
+  2:{ rewrite Hinit //. }
+  iIntros "Hown". wp_auto.
+  (* TODO: initialize specs for all these other packages. *)
 Admitted.
-
-Context `{!merkle.GlobalAddrs}.
-
-#[global]
-Program Instance is_pkg_init_merkle : IsPkgInit merkle := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_merkle.
-#[local] Transparent is_pkg_init_merkle.
 
 End proof.

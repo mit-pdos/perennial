@@ -78,8 +78,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (lockState.held' v)) lockmap.lockState "held"%go.
-  simpl_one_flatten_struct (# (lockState.cond' v)) lockmap.lockState "cond"%go.
+  simpl_one_flatten_struct (# (lockState.held' v)) (lockmap.lockState) "held"%go.
+  simpl_one_flatten_struct (# (lockState.cond' v)) (lockmap.lockState) "cond"%go.
 
   solve_field_ref_f.
 Qed.
@@ -148,7 +148,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (lockShard.mu' v)) lockmap.lockShard "mu"%go.
+  simpl_one_flatten_struct (# (lockShard.mu' v)) (lockmap.lockShard) "mu"%go.
 
   solve_field_ref_f.
 Qed.
@@ -218,47 +218,32 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined lockmap :=
-{|
-  is_pkg_defined := is_global_definitions lockmap var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_mkLockShard :
-  WpFuncCall lockmap "mkLockShard" _ (is_pkg_defined lockmap) :=
+  WpFuncCall lockmap.mkLockShard _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MkLockMap :
-  WpFuncCall lockmap "MkLockMap" _ (is_pkg_defined lockmap) :=
+  WpFuncCall lockmap.MkLockMap _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_lockShard'ptr_acquire :
-  WpMethodCall lockmap "lockShard'ptr" "acquire" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrTⁱᵈ lockmap.lockShardⁱᵈ) "acquire" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockShard'ptr_release :
-  WpMethodCall lockmap "lockShard'ptr" "release" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrTⁱᵈ lockmap.lockShardⁱᵈ) "release" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockMap'ptr_Acquire :
-  WpMethodCall lockmap "LockMap'ptr" "Acquire" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrTⁱᵈ lockmap.LockMapⁱᵈ) "Acquire" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockMap'ptr_Release :
-  WpMethodCall lockmap "LockMap'ptr" "Release" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrTⁱᵈ lockmap.LockMapⁱᵈ) "Release" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

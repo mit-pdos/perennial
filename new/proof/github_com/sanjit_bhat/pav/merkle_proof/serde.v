@@ -46,8 +46,7 @@ Proof.
 Qed.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
-Context `{!merkle.GlobalAddrs}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition own ptr obj d : iProp Σ :=
   ∃ sl_Siblings sl_LeafLabel sl_LeafVal,
@@ -63,7 +62,7 @@ Lemma wp_dec sl_b d b :
     is_pkg_init merkle ∗
     "Hsl_b" ∷ sl_b ↦*{d} b
   }}}
-  merkle @ "MerkleProofDecode" #sl_b
+  @! merkle.MerkleProofDecode #sl_b
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     let wish := (λ enc obj tail,

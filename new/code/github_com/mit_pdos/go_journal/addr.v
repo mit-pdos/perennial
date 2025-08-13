@@ -10,20 +10,24 @@ Module addr.
 Section code.
 
 
+Definition Addrⁱᵈ : go_string := "github.com/mit-pdos/go-journal/addr.Addr"%go.
+
 Definition Addr : go_type := structT [
   "Blkno" :: uint64T;
   "Off" :: uint64T
 ].
 
 (* go: addr.go:19:15 *)
-Definition Addr__Flatid : val :=
-  rec: "Addr__Flatid" "a" <> :=
+Definition Addr__Flatidⁱᵐᵖˡ : val :=
+  λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
     return: (((![#uint64T] (struct.field_ref #Addr #"Blkno"%go "a")) * (disk.BlockSize * #(W64 8))) + (![#uint64T] (struct.field_ref #Addr #"Off"%go "a")))).
 
+Definition MkAddr : go_string := "github.com/mit-pdos/go-journal/addr.MkAddr"%go.
+
 (* go: addr.go:23:6 *)
-Definition MkAddr : val :=
-  rec: "MkAddr" "blkno" "off" :=
+Definition MkAddrⁱᵐᵖˡ : val :=
+  λ: "blkno" "off",
     exception_do (let: "off" := (mem.alloc "off") in
     let: "blkno" := (mem.alloc "blkno") in
     return: (let: "$Blkno" := (![#uint64T] "blkno") in
@@ -33,9 +37,11 @@ Definition MkAddr : val :=
        "Off" ::= "$Off"
      }])).
 
+Definition MkBitAddr : go_string := "github.com/mit-pdos/go-journal/addr.MkBitAddr"%go.
+
 (* go: addr.go:27:6 *)
-Definition MkBitAddr : val :=
-  rec: "MkBitAddr" "start" "n" :=
+Definition MkBitAddrⁱᵐᵖˡ : val :=
+  λ: "start" "n",
     exception_do (let: "n" := (mem.alloc "n") in
     let: "start" := (mem.alloc "start") in
     let: "bit" := (mem.alloc (type.zero_val #uint64T)) in
@@ -47,15 +53,15 @@ Definition MkBitAddr : val :=
     let: "addr" := (mem.alloc (type.zero_val #Addr)) in
     let: "$r0" := (let: "$a0" := ((![#uint64T] "start") + (![#uint64T] "i")) in
     let: "$a1" := (![#uint64T] "bit") in
-    (func_call #addr.addr #"MkAddr"%go) "$a0" "$a1") in
+    (func_call #MkAddr) "$a0" "$a1") in
     do:  ("addr" <-[#Addr] "$r0");;;
     return: (![#Addr] "addr")).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MkAddr"%go, MkAddr); ("MkBitAddr"%go, MkBitAddr)].
+Definition functions' : list (go_string * val) := [(MkAddr, MkAddrⁱᵐᵖˡ); (MkBitAddr, MkBitAddrⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Addr"%go, [("Flatid"%go, Addr__Flatid)]); ("Addr'ptr"%go, [("Flatid"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Addrⁱᵈ, [("Flatid"%go, Addr__Flatidⁱᵐᵖˡ)]); (ptrTⁱᵈ Addrⁱᵈ, [("Flatid"%go, (λ: "$recvAddr",
                  method_call #addr.addr #"Addr" #"Flatid" (![#Addr] "$recvAddr")
                  )%V)])].
 
@@ -68,10 +74,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Addr"%go, 
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init addr.addr (λ: <>,
-      exception_do (do:  common.initialize';;;
-      do:  disk.initialize')
+  λ: <>,
+    package.init #addr.addr (λ: <>,
+      exception_do (do:  (common.initialize' #());;;
+      do:  (disk.initialize' #());;;
+      do:  (package.alloc addr.addr #()))
       ).
 
 End code.

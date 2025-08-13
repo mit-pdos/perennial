@@ -8,15 +8,23 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Event_EventTypeⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event_EventType"%go.
+
 Definition Event_EventType : go_type := int32T.
 
 Definition PUT : expr := #(W32 0).
 
 Definition DELETE : expr := #(W32 1).
 
+Definition Event_EventType_name : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_name"%go.
+
 Axiom Event_EventType_name'init : val.
 
+Definition Event_EventType_value : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_value"%go.
+
 Axiom Event_EventType_value'init : val.
+
+Definition KeyValueⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.KeyValue"%go.
 
 Definition KeyValue : go_type := structT [
   "Key" :: sliceT;
@@ -31,6 +39,10 @@ Definition KeyValue : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition xxx_messageInfo_KeyValue : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_KeyValue"%go.
+
+Definition Eventⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event"%go.
+
 Definition Event : go_type := structT [
   "Type" :: Event_EventType;
   "Kv" :: ptrT;
@@ -41,11 +53,31 @@ Definition Event : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition xxx_messageInfo_Event : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_Event"%go.
+
+Definition init : go_string := "go.etcd.io/etcd/api/v3/mvccpb.init"%go.
+
+Definition fileDescriptor_2216fe83c9c12408 : go_string := "go.etcd.io/etcd/api/v3/mvccpb.fileDescriptor_2216fe83c9c12408"%go.
+
 Axiom fileDescriptor_2216fe83c9c12408'init : val.
+
+Definition encodeVarintKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.encodeVarintKv"%go.
+
+Definition sovKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.sovKv"%go.
+
+Definition sozKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.sozKv"%go.
+
+Definition skipKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.skipKv"%go.
+
+Definition ErrInvalidLengthKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.ErrInvalidLengthKv"%go.
 
 Axiom ErrInvalidLengthKv'init : val.
 
+Definition ErrIntOverflowKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.ErrIntOverflowKv"%go.
+
 Axiom ErrIntOverflowKv'init : val.
+
+Definition ErrUnexpectedEndOfGroupKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.ErrUnexpectedEndOfGroupKv"%go.
 
 Axiom ErrUnexpectedEndOfGroupKv'init : val.
 
@@ -53,7 +85,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Event_EventType"%go, []); ("Event_EventType'ptr"%go, []); ("KeyValue"%go, []); ("KeyValue'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Event_EventTypeⁱᵈ, []); (ptrTⁱᵈ Event_EventTypeⁱᵈ, []); (KeyValueⁱᵈ, []); (ptrTⁱᵈ KeyValueⁱᵈ, []); (Eventⁱᵈ, []); (ptrTⁱᵈ Eventⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo mvccpb.mvccpb :=
   {|
@@ -66,9 +98,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Event_Even
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init mvccpb.mvccpb (λ: <>,
-      exception_do (do:  (_'init #());;;
+  λ: <>,
+    package.init #mvccpb.mvccpb (λ: <>,
+      exception_do (do:  (package.alloc mvccpb.mvccpb #());;;
+      do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (Event_EventType_name'init #());;;

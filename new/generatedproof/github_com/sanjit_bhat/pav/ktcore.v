@@ -82,7 +82,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (VrfSig.SigTag' v)) ktcore.VrfSig "SigTag"%go.
+  simpl_one_flatten_struct (# (VrfSig.SigTag' v)) (ktcore.VrfSig) "SigTag"%go.
 
   solve_field_ref_f.
 Qed.
@@ -158,8 +158,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (LinkSig.SigTag' v)) ktcore.LinkSig "SigTag"%go.
-  simpl_one_flatten_struct (# (LinkSig.Epoch' v)) ktcore.LinkSig "Epoch"%go.
+  simpl_one_flatten_struct (# (LinkSig.SigTag' v)) (ktcore.LinkSig) "SigTag"%go.
+  simpl_one_flatten_struct (# (LinkSig.Epoch' v)) (ktcore.LinkSig) "Epoch"%go.
 
   solve_field_ref_f.
 Qed.
@@ -228,7 +228,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MapLabel.Uid' v)) ktcore.MapLabel "Uid"%go.
+  simpl_one_flatten_struct (# (MapLabel.Uid' v)) (ktcore.MapLabel) "Uid"%go.
 
   solve_field_ref_f.
 Qed.
@@ -297,7 +297,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (CommitOpen.Val' v)) ktcore.CommitOpen "Val"%go.
+  simpl_one_flatten_struct (# (CommitOpen.Val' v)) (ktcore.CommitOpen) "Val"%go.
 
   solve_field_ref_f.
 Qed.
@@ -373,8 +373,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Memb.LabelProof' v)) ktcore.Memb "LabelProof"%go.
-  simpl_one_flatten_struct (# (Memb.PkOpen' v)) ktcore.Memb "PkOpen"%go.
+  simpl_one_flatten_struct (# (Memb.LabelProof' v)) (ktcore.Memb) "LabelProof"%go.
+  simpl_one_flatten_struct (# (Memb.PkOpen' v)) (ktcore.Memb) "PkOpen"%go.
 
   solve_field_ref_f.
 Qed.
@@ -443,7 +443,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (NonMemb.LabelProof' v)) ktcore.NonMemb "LabelProof"%go.
+  simpl_one_flatten_struct (# (NonMemb.LabelProof' v)) (ktcore.NonMemb) "LabelProof"%go.
 
   solve_field_ref_f.
 Qed.
@@ -512,7 +512,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (AuditProof.Updates' v)) ktcore.AuditProof "Updates"%go.
+  simpl_one_flatten_struct (# (AuditProof.Updates' v)) (ktcore.AuditProof) "Updates"%go.
 
   solve_field_ref_f.
 Qed.
@@ -588,8 +588,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (UpdateProof.MapLabel' v)) ktcore.UpdateProof "MapLabel"%go.
-  simpl_one_flatten_struct (# (UpdateProof.MapVal' v)) ktcore.UpdateProof "MapVal"%go.
+  simpl_one_flatten_struct (# (UpdateProof.MapLabel' v)) (ktcore.UpdateProof) "MapLabel"%go.
+  simpl_one_flatten_struct (# (UpdateProof.MapVal' v)) (ktcore.UpdateProof) "MapVal"%go.
 
   solve_field_ref_f.
 Qed.
@@ -598,151 +598,136 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined ktcore :=
-{|
-  is_pkg_defined := is_global_definitions ktcore var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_CheckBlame :
-  WpFuncCall ktcore "CheckBlame" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.CheckBlame _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SignVrf :
-  WpFuncCall ktcore "SignVrf" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.SignVrf _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VerifyVrfSig :
-  WpFuncCall ktcore "VerifyVrfSig" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.VerifyVrfSig _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SignLink :
-  WpFuncCall ktcore "SignLink" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.SignLink _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VerifyLinkSig :
-  WpFuncCall ktcore "VerifyLinkSig" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.VerifyLinkSig _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ProveMapLabel :
-  WpFuncCall ktcore "ProveMapLabel" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.ProveMapLabel _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EvalMapLabel :
-  WpFuncCall ktcore "EvalMapLabel" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.EvalMapLabel _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckMapLabel :
-  WpFuncCall ktcore "CheckMapLabel" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.CheckMapLabel _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetMapVal :
-  WpFuncCall ktcore "GetMapVal" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.GetMapVal _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetCommitRand :
-  WpFuncCall ktcore "GetCommitRand" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.GetCommitRand _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VrfSigEncode :
-  WpFuncCall ktcore "VrfSigEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.VrfSigEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VrfSigDecode :
-  WpFuncCall ktcore "VrfSigDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.VrfSigDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LinkSigEncode :
-  WpFuncCall ktcore "LinkSigEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.LinkSigEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LinkSigDecode :
-  WpFuncCall ktcore "LinkSigDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.LinkSigDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MapLabelEncode :
-  WpFuncCall ktcore "MapLabelEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.MapLabelEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MapLabelDecode :
-  WpFuncCall ktcore "MapLabelDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.MapLabelDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CommitOpenEncode :
-  WpFuncCall ktcore "CommitOpenEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.CommitOpenEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CommitOpenDecode :
-  WpFuncCall ktcore "CommitOpenDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.CommitOpenDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembEncode :
-  WpFuncCall ktcore "MembEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.MembEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembDecode :
-  WpFuncCall ktcore "MembDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.MembDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NonMembEncode :
-  WpFuncCall ktcore "NonMembEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.NonMembEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NonMembDecode :
-  WpFuncCall ktcore "NonMembDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.NonMembDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofEncode :
-  WpFuncCall ktcore "AuditProofEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.AuditProofEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofDecode :
-  WpFuncCall ktcore "AuditProofDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.AuditProofDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofEncode :
-  WpFuncCall ktcore "UpdateProofEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.UpdateProofEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofDecode :
-  WpFuncCall ktcore "UpdateProofDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.UpdateProofDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofSlice1DEncode :
-  WpFuncCall ktcore "UpdateProofSlice1DEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.UpdateProofSlice1DEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofSlice1DDecode :
-  WpFuncCall ktcore "UpdateProofSlice1DDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.UpdateProofSlice1DDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembSlice1DEncode :
-  WpFuncCall ktcore "MembSlice1DEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.MembSlice1DEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembSlice1DDecode :
-  WpFuncCall ktcore "MembSlice1DDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.MembSlice1DDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofSlice1DEncode :
-  WpFuncCall ktcore "AuditProofSlice1DEncode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.AuditProofSlice1DEncode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofSlice1DDecode :
-  WpFuncCall ktcore "AuditProofSlice1DDecode" _ (is_pkg_defined ktcore) :=
+  WpFuncCall ktcore.AuditProofSlice1DDecode _ (is_pkg_defined ktcore) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

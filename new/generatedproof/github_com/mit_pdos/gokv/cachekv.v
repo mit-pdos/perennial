@@ -74,7 +74,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (cacheValue.v' v)) cachekv.cacheValue "v"%go.
+  simpl_one_flatten_struct (# (cacheValue.v' v)) (cachekv.cacheValue) "v"%go.
 
   solve_field_ref_f.
 Qed.
@@ -150,8 +150,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (CacheKv.kv' v)) cachekv.CacheKv "kv"%go.
-  simpl_one_flatten_struct (# (CacheKv.mu' v)) cachekv.CacheKv "mu"%go.
+  simpl_one_flatten_struct (# (CacheKv.kv' v)) (cachekv.CacheKv) "kv"%go.
+  simpl_one_flatten_struct (# (CacheKv.mu' v)) (cachekv.CacheKv) "mu"%go.
 
   solve_field_ref_f.
 Qed.
@@ -160,51 +160,36 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined cachekv :=
-{|
-  is_pkg_defined := is_global_definitions cachekv var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_DecodeValue :
-  WpFuncCall cachekv "DecodeValue" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.DecodeValue _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeValue :
-  WpFuncCall cachekv "EncodeValue" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.EncodeValue _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_max :
-  WpFuncCall cachekv "max" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.max _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Make :
-  WpFuncCall cachekv "Make" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.Make _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_Get :
-  WpMethodCall cachekv "CacheKv'ptr" "Get" _ (is_pkg_defined cachekv) :=
+  WpMethodCall (ptrTⁱᵈ cachekv.CacheKvⁱᵈ) "Get" _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_GetAndCache :
-  WpMethodCall cachekv "CacheKv'ptr" "GetAndCache" _ (is_pkg_defined cachekv) :=
+  WpMethodCall (ptrTⁱᵈ cachekv.CacheKvⁱᵈ) "GetAndCache" _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_Put :
-  WpMethodCall cachekv "CacheKv'ptr" "Put" _ (is_pkg_defined cachekv) :=
+  WpMethodCall (ptrTⁱᵈ cachekv.CacheKvⁱᵈ) "Put" _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

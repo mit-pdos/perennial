@@ -2,25 +2,30 @@ From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base.
 
 Section init.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 (* FIXME: don't want to list out ALL dependent package global addrs *)
-Context `{!etcdserverpb.GlobalAddrs}.
 
 (* FIXME: move these *)
-#[global]
-Program Instance is_pkg_init_mvccpb : IsPkgInit mvccpb :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_mvccpb.
+Local Definition deps_mvccpb : iProp Σ := ltac2:(build_pkg_init_deps 'mvccpb).
+#[global] Program Instance : IsPkgInit mvccpb :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_mvccpb;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_etcdserverpb : IsPkgInit etcdserverpb :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_etcdserverpb.
+Local Definition deps_etcdserverpb : iProp Σ := ltac2:(build_pkg_init_deps 'etcdserverpb).
+#[global] Program Instance : IsPkgInit etcdserverpb :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_etcdserverpb;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_clientv3 : IsPkgInit clientv3 :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_clientv3.
+Local Notation deps := (ltac2:(build_pkg_init_deps 'clientv3) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit clientv3 :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 End init.
 

@@ -154,8 +154,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (applyAsFollowerArgs.epoch' v)) paxos.applyAsFollowerArgs "epoch"%go.
-  simpl_one_flatten_struct (# (applyAsFollowerArgs.nextIndex' v)) paxos.applyAsFollowerArgs "nextIndex"%go.
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.epoch' v)) (paxos.applyAsFollowerArgs) "epoch"%go.
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.nextIndex' v)) (paxos.applyAsFollowerArgs) "nextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -360,9 +360,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (enterNewEpochReply.err' v)) paxos.enterNewEpochReply "err"%go.
-  simpl_one_flatten_struct (# (enterNewEpochReply.acceptedEpoch' v)) paxos.enterNewEpochReply "acceptedEpoch"%go.
-  simpl_one_flatten_struct (# (enterNewEpochReply.nextIndex' v)) paxos.enterNewEpochReply "nextIndex"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.err' v)) (paxos.enterNewEpochReply) "err"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.acceptedEpoch' v)) (paxos.enterNewEpochReply) "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.nextIndex' v)) (paxos.enterNewEpochReply) "nextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -431,7 +431,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (applyReply.err' v)) paxos.applyReply "err"%go.
+  simpl_one_flatten_struct (# (applyReply.err' v)) (paxos.applyReply) "err"%go.
 
   solve_field_ref_f.
 Qed.
@@ -521,10 +521,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (paxosState.epoch' v)) paxos.paxosState "epoch"%go.
-  simpl_one_flatten_struct (# (paxosState.acceptedEpoch' v)) paxos.paxosState "acceptedEpoch"%go.
-  simpl_one_flatten_struct (# (paxosState.nextIndex' v)) paxos.paxosState "nextIndex"%go.
-  simpl_one_flatten_struct (# (paxosState.state' v)) paxos.paxosState "state"%go.
+  simpl_one_flatten_struct (# (paxosState.epoch' v)) (paxos.paxosState) "epoch"%go.
+  simpl_one_flatten_struct (# (paxosState.acceptedEpoch' v)) (paxos.paxosState) "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (paxosState.nextIndex' v)) (paxos.paxosState) "nextIndex"%go.
+  simpl_one_flatten_struct (# (paxosState.state' v)) (paxos.paxosState) "state"%go.
 
   solve_field_ref_f.
 Qed.
@@ -607,9 +607,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Server.mu' v)) paxos.Server "mu"%go.
-  simpl_one_flatten_struct (# (Server.ps' v)) paxos.Server "ps"%go.
-  simpl_one_flatten_struct (# (Server.storage' v)) paxos.Server "storage"%go.
+  simpl_one_flatten_struct (# (Server.mu' v)) (paxos.Server) "mu"%go.
+  simpl_one_flatten_struct (# (Server.ps' v)) (paxos.Server) "ps"%go.
+  simpl_one_flatten_struct (# (Server.storage' v)) (paxos.Server) "storage"%go.
 
   solve_field_ref_f.
 Qed.
@@ -618,123 +618,108 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined paxos :=
-{|
-  is_pkg_defined := is_global_definitions paxos var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeSingleClerk :
-  WpFuncCall paxos "MakeSingleClerk" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.MakeSingleClerk _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeApplyAsFollowerArgs :
-  WpFuncCall paxos "encodeApplyAsFollowerArgs" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.encodeApplyAsFollowerArgs _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeApplyAsFollowerArgs :
-  WpFuncCall paxos "decodeApplyAsFollowerArgs" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.decodeApplyAsFollowerArgs _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeApplyAsFollowerReply :
-  WpFuncCall paxos "decodeApplyAsFollowerReply" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.decodeApplyAsFollowerReply _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeApplyAsFollowerReply :
-  WpFuncCall paxos "encodeApplyAsFollowerReply" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.encodeApplyAsFollowerReply _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeEnterNewEpochArgs :
-  WpFuncCall paxos "encodeEnterNewEpochArgs" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.encodeEnterNewEpochArgs _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeEnterNewEpochArgs :
-  WpFuncCall paxos "decodeEnterNewEpochArgs" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.decodeEnterNewEpochArgs _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeEnterNewEpochReply :
-  WpFuncCall paxos "decodeEnterNewEpochReply" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.decodeEnterNewEpochReply _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeEnterNewEpochReply :
-  WpFuncCall paxos "encodeEnterNewEpochReply" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.encodeEnterNewEpochReply _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeApplyReply :
-  WpFuncCall paxos "encodeApplyReply" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.encodeApplyReply _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeApplyReply :
-  WpFuncCall paxos "decodeApplyReply" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.decodeApplyReply _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_boolToU64 :
-  WpFuncCall paxos "boolToU64" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.boolToU64 _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodePaxosState :
-  WpFuncCall paxos "encodePaxosState" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.encodePaxosState _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodePaxosState :
-  WpFuncCall paxos "decodePaxosState" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.decodePaxosState _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_makeServer :
-  WpFuncCall paxos "makeServer" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.makeServer _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StartServer :
-  WpFuncCall paxos "StartServer" _ (is_pkg_defined paxos) :=
+  WpFuncCall paxos.StartServer _ (is_pkg_defined paxos) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_singleClerk'ptr_TryBecomeLeader :
-  WpMethodCall paxos "singleClerk'ptr" "TryBecomeLeader" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.singleClerkⁱᵈ) "TryBecomeLeader" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_singleClerk'ptr_applyAsFollower :
-  WpMethodCall paxos "singleClerk'ptr" "applyAsFollower" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.singleClerkⁱᵈ) "applyAsFollower" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_singleClerk'ptr_enterNewEpoch :
-  WpMethodCall paxos "singleClerk'ptr" "enterNewEpoch" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.singleClerkⁱᵈ) "enterNewEpoch" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_TryAcquire :
-  WpMethodCall paxos "Server'ptr" "TryAcquire" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.Serverⁱᵈ) "TryAcquire" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_TryBecomeLeader :
-  WpMethodCall paxos "Server'ptr" "TryBecomeLeader" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.Serverⁱᵈ) "TryBecomeLeader" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_WeakRead :
-  WpMethodCall paxos "Server'ptr" "WeakRead" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.Serverⁱᵈ) "WeakRead" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_applyAsFollower :
-  WpMethodCall paxos "Server'ptr" "applyAsFollower" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.Serverⁱᵈ) "applyAsFollower" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_enterNewEpoch :
-  WpMethodCall paxos "Server'ptr" "enterNewEpoch" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.Serverⁱᵈ) "enterNewEpoch" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_withLock :
-  WpMethodCall paxos "Server'ptr" "withLock" _ (is_pkg_defined paxos) :=
+  WpMethodCall (ptrTⁱᵈ paxos.Serverⁱᵈ) "withLock" _ (is_pkg_defined paxos) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

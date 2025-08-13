@@ -109,11 +109,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Election.session' v)) concurrency.Election "session"%go.
-  simpl_one_flatten_struct (# (Election.keyPrefix' v)) concurrency.Election "keyPrefix"%go.
-  simpl_one_flatten_struct (# (Election.leaderKey' v)) concurrency.Election "leaderKey"%go.
-  simpl_one_flatten_struct (# (Election.leaderRev' v)) concurrency.Election "leaderRev"%go.
-  simpl_one_flatten_struct (# (Election.leaderSession' v)) concurrency.Election "leaderSession"%go.
+  simpl_one_flatten_struct (# (Election.session' v)) (concurrency.Election) "session"%go.
+  simpl_one_flatten_struct (# (Election.keyPrefix' v)) (concurrency.Election) "keyPrefix"%go.
+  simpl_one_flatten_struct (# (Election.leaderKey' v)) (concurrency.Election) "leaderKey"%go.
+  simpl_one_flatten_struct (# (Election.leaderRev' v)) (concurrency.Election) "leaderRev"%go.
+  simpl_one_flatten_struct (# (Election.leaderSession' v)) (concurrency.Election) "leaderSession"%go.
 
   solve_field_ref_f.
 Qed.
@@ -203,10 +203,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Mutex.s' v)) concurrency.Mutex "s"%go.
-  simpl_one_flatten_struct (# (Mutex.pfx' v)) concurrency.Mutex "pfx"%go.
-  simpl_one_flatten_struct (# (Mutex.myKey' v)) concurrency.Mutex "myKey"%go.
-  simpl_one_flatten_struct (# (Mutex.myRev' v)) concurrency.Mutex "myRev"%go.
+  simpl_one_flatten_struct (# (Mutex.s' v)) (concurrency.Mutex) "s"%go.
+  simpl_one_flatten_struct (# (Mutex.pfx' v)) (concurrency.Mutex) "pfx"%go.
+  simpl_one_flatten_struct (# (Mutex.myKey' v)) (concurrency.Mutex) "myKey"%go.
+  simpl_one_flatten_struct (# (Mutex.myRev' v)) (concurrency.Mutex) "myRev"%go.
 
   solve_field_ref_f.
 Qed.
@@ -364,11 +364,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Session.client' v)) concurrency.Session "client"%go.
-  simpl_one_flatten_struct (# (Session.opts' v)) concurrency.Session "opts"%go.
-  simpl_one_flatten_struct (# (Session.id' v)) concurrency.Session "id"%go.
-  simpl_one_flatten_struct (# (Session.ctx' v)) concurrency.Session "ctx"%go.
-  simpl_one_flatten_struct (# (Session.cancel' v)) concurrency.Session "cancel"%go.
+  simpl_one_flatten_struct (# (Session.client' v)) (concurrency.Session) "client"%go.
+  simpl_one_flatten_struct (# (Session.opts' v)) (concurrency.Session) "opts"%go.
+  simpl_one_flatten_struct (# (Session.id' v)) (concurrency.Session) "id"%go.
+  simpl_one_flatten_struct (# (Session.ctx' v)) (concurrency.Session) "ctx"%go.
+  simpl_one_flatten_struct (# (Session.cancel' v)) (concurrency.Session) "cancel"%go.
 
   solve_field_ref_f.
 Qed.
@@ -444,8 +444,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (sessionOptions.ttl' v)) concurrency.sessionOptions "ttl"%go.
-  simpl_one_flatten_struct (# (sessionOptions.leaseID' v)) concurrency.sessionOptions "leaseID"%go.
+  simpl_one_flatten_struct (# (sessionOptions.ttl' v)) (concurrency.sessionOptions) "ttl"%go.
+  simpl_one_flatten_struct (# (sessionOptions.leaseID' v)) (concurrency.sessionOptions) "leaseID"%go.
 
   solve_field_ref_f.
 Qed.
@@ -606,8 +606,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmOptions.iso' v)) concurrency.stmOptions "iso"%go.
-  simpl_one_flatten_struct (# (stmOptions.ctx' v)) concurrency.stmOptions "ctx"%go.
+  simpl_one_flatten_struct (# (stmOptions.iso' v)) (concurrency.stmOptions) "iso"%go.
+  simpl_one_flatten_struct (# (stmOptions.ctx' v)) (concurrency.stmOptions) "ctx"%go.
 
   solve_field_ref_f.
 Qed.
@@ -684,7 +684,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmResponse.resp' v)) concurrency.stmResponse "resp"%go.
+  simpl_one_flatten_struct (# (stmResponse.resp' v)) (concurrency.stmResponse) "resp"%go.
 
   solve_field_ref_f.
 Qed.
@@ -797,11 +797,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stm.client' v)) concurrency.stm "client"%go.
-  simpl_one_flatten_struct (# (stm.ctx' v)) concurrency.stm "ctx"%go.
-  simpl_one_flatten_struct (# (stm.rset' v)) concurrency.stm "rset"%go.
-  simpl_one_flatten_struct (# (stm.wset' v)) concurrency.stm "wset"%go.
-  simpl_one_flatten_struct (# (stm.getOpts' v)) concurrency.stm "getOpts"%go.
+  simpl_one_flatten_struct (# (stm.client' v)) (concurrency.stm) "client"%go.
+  simpl_one_flatten_struct (# (stm.ctx' v)) (concurrency.stm) "ctx"%go.
+  simpl_one_flatten_struct (# (stm.rset' v)) (concurrency.stm) "rset"%go.
+  simpl_one_flatten_struct (# (stm.wset' v)) (concurrency.stm) "wset"%go.
+  simpl_one_flatten_struct (# (stm.getOpts' v)) (concurrency.stm) "getOpts"%go.
 
   solve_field_ref_f.
 Qed.
@@ -870,7 +870,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmPut.val' v)) concurrency.stmPut "val"%go.
+  simpl_one_flatten_struct (# (stmPut.val' v)) (concurrency.stmPut) "val"%go.
 
   solve_field_ref_f.
 Qed.
@@ -939,7 +939,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmSerializable.stm' v)) concurrency.stmSerializable "stm"%go.
+  simpl_one_flatten_struct (# (stmSerializable.stm' v)) (concurrency.stmSerializable) "stm"%go.
 
   solve_field_ref_f.
 Qed.
@@ -948,391 +948,337 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  ErrElectionNotLeader : loc;
-  ErrElectionNoLeader : loc;
-  ErrLocked : loc;
-  ErrSessionExpired : loc;
-  ErrLockReleased : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("ErrElectionNotLeader"%go, ErrElectionNotLeader);
-    ("ErrElectionNoLeader"%go, ErrElectionNoLeader);
-    ("ErrLocked"%go, ErrLocked);
-    ("ErrSessionExpired"%go, ErrSessionExpired);
-    ("ErrLockReleased"%go, ErrLockReleased)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined concurrency :=
-{|
-  is_pkg_defined := is_global_definitions concurrency var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HErrElectionNotLeader" ∷ ErrElectionNotLeader ↦ (default_val error.t) ∗
-  "HErrElectionNoLeader" ∷ ErrElectionNoLeader ↦ (default_val error.t) ∗
-  "HErrLocked" ∷ ErrLocked ↦ (default_val error.t) ∗
-  "HErrSessionExpired" ∷ ErrSessionExpired ↦ (default_val error.t) ∗
-  "HErrLockReleased" ∷ ErrLockReleased ↦ (default_val error.t).
-
-Global Instance wp_globals_get_ErrElectionNotLeader : 
-  WpGlobalsGet concurrency "ErrElectionNotLeader" ErrElectionNotLeader (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrElectionNoLeader : 
-  WpGlobalsGet concurrency "ErrElectionNoLeader" ErrElectionNoLeader (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrLocked : 
-  WpGlobalsGet concurrency "ErrLocked" ErrLocked (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrSessionExpired : 
-  WpGlobalsGet concurrency "ErrSessionExpired" ErrSessionExpired (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrLockReleased : 
-  WpGlobalsGet concurrency "ErrLockReleased" ErrLockReleased (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewElection :
-  WpFuncCall concurrency "NewElection" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewElection _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ResumeElection :
-  WpFuncCall concurrency "ResumeElection" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.ResumeElection _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_waitDelete :
-  WpFuncCall concurrency "waitDelete" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.waitDelete _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_waitDeletes :
-  WpFuncCall concurrency "waitDeletes" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.waitDeletes _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewMutex :
-  WpFuncCall concurrency "NewMutex" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewMutex _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewLocker :
-  WpFuncCall concurrency "NewLocker" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewLocker _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSession :
-  WpFuncCall concurrency "NewSession" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSession _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithTTL :
-  WpFuncCall concurrency "WithTTL" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithTTL _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithLease :
-  WpFuncCall concurrency "WithLease" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithLease _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithContext :
-  WpFuncCall concurrency "WithContext" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithContext _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithIsolation :
-  WpFuncCall concurrency "WithIsolation" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithIsolation _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithAbortContext :
-  WpFuncCall concurrency "WithAbortContext" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithAbortContext _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithPrefetch :
-  WpFuncCall concurrency "WithPrefetch" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithPrefetch _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTM :
-  WpFuncCall concurrency "NewSTM" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTM _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_mkSTM :
-  WpFuncCall concurrency "mkSTM" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.mkSTM _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runSTM :
-  WpFuncCall concurrency "runSTM" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.runSTM _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_isKeyCurrent :
-  WpFuncCall concurrency "isKeyCurrent" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.isKeyCurrent _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_respToValue :
-  WpFuncCall concurrency "respToValue" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.respToValue _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTMRepeatable :
-  WpFuncCall concurrency "NewSTMRepeatable" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTMRepeatable _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTMSerializable :
-  WpFuncCall concurrency "NewSTMSerializable" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTMSerializable _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTMReadCommitted :
-  WpFuncCall concurrency "NewSTMReadCommitted" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTMReadCommitted _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Campaign :
-  WpMethodCall concurrency "Election'ptr" "Campaign" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Campaign" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Header :
-  WpMethodCall concurrency "Election'ptr" "Header" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Header" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Key :
-  WpMethodCall concurrency "Election'ptr" "Key" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Key" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Leader :
-  WpMethodCall concurrency "Election'ptr" "Leader" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Leader" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Observe :
-  WpMethodCall concurrency "Election'ptr" "Observe" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Observe" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Proclaim :
-  WpMethodCall concurrency "Election'ptr" "Proclaim" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Proclaim" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Resign :
-  WpMethodCall concurrency "Election'ptr" "Resign" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Resign" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Rev :
-  WpMethodCall concurrency "Election'ptr" "Rev" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "Rev" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_observe :
-  WpMethodCall concurrency "Election'ptr" "observe" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Electionⁱᵈ) "observe" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_Header :
-  WpMethodCall concurrency "Mutex'ptr" "Header" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Mutexⁱᵈ) "Header" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_IsOwner :
-  WpMethodCall concurrency "Mutex'ptr" "IsOwner" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Mutexⁱᵈ) "IsOwner" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_Key :
-  WpMethodCall concurrency "Mutex'ptr" "Key" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Mutexⁱᵈ) "Key" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_Lock :
-  WpMethodCall concurrency "Mutex'ptr" "Lock" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Mutexⁱᵈ) "Lock" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_TryLock :
-  WpMethodCall concurrency "Mutex'ptr" "TryLock" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Mutexⁱᵈ) "TryLock" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_Unlock :
-  WpMethodCall concurrency "Mutex'ptr" "Unlock" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Mutexⁱᵈ) "Unlock" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_tryAcquire :
-  WpMethodCall concurrency "Mutex'ptr" "tryAcquire" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Mutexⁱᵈ) "tryAcquire" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex_Header :
-  WpMethodCall concurrency "lockerMutex" "Header" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.lockerMutexⁱᵈ "Header" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex_IsOwner :
-  WpMethodCall concurrency "lockerMutex" "IsOwner" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.lockerMutexⁱᵈ "IsOwner" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex_Key :
-  WpMethodCall concurrency "lockerMutex" "Key" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.lockerMutexⁱᵈ "Key" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex_TryLock :
-  WpMethodCall concurrency "lockerMutex" "TryLock" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.lockerMutexⁱᵈ "TryLock" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex_tryAcquire :
-  WpMethodCall concurrency "lockerMutex" "tryAcquire" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.lockerMutexⁱᵈ "tryAcquire" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex'ptr_Header :
-  WpMethodCall concurrency "lockerMutex'ptr" "Header" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.lockerMutexⁱᵈ) "Header" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex'ptr_IsOwner :
-  WpMethodCall concurrency "lockerMutex'ptr" "IsOwner" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.lockerMutexⁱᵈ) "IsOwner" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex'ptr_Key :
-  WpMethodCall concurrency "lockerMutex'ptr" "Key" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.lockerMutexⁱᵈ) "Key" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex'ptr_Lock :
-  WpMethodCall concurrency "lockerMutex'ptr" "Lock" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.lockerMutexⁱᵈ) "Lock" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex'ptr_TryLock :
-  WpMethodCall concurrency "lockerMutex'ptr" "TryLock" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.lockerMutexⁱᵈ) "TryLock" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex'ptr_Unlock :
-  WpMethodCall concurrency "lockerMutex'ptr" "Unlock" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.lockerMutexⁱᵈ) "Unlock" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockerMutex'ptr_tryAcquire :
-  WpMethodCall concurrency "lockerMutex'ptr" "tryAcquire" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.lockerMutexⁱᵈ) "tryAcquire" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Session'ptr_Client :
-  WpMethodCall concurrency "Session'ptr" "Client" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Sessionⁱᵈ) "Client" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Session'ptr_Close :
-  WpMethodCall concurrency "Session'ptr" "Close" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Sessionⁱᵈ) "Close" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Session'ptr_Ctx :
-  WpMethodCall concurrency "Session'ptr" "Ctx" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Sessionⁱᵈ) "Ctx" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Session'ptr_Done :
-  WpMethodCall concurrency "Session'ptr" "Done" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Sessionⁱᵈ) "Done" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Session'ptr_Lease :
-  WpMethodCall concurrency "Session'ptr" "Lease" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Sessionⁱᵈ) "Lease" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Session'ptr_Orphan :
-  WpMethodCall concurrency "Session'ptr" "Orphan" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.Sessionⁱᵈ) "Orphan" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stm'ptr_Del :
-  WpMethodCall concurrency "stm'ptr" "Del" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmⁱᵈ) "Del" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stm'ptr_Get :
-  WpMethodCall concurrency "stm'ptr" "Get" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmⁱᵈ) "Get" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stm'ptr_Put :
-  WpMethodCall concurrency "stm'ptr" "Put" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmⁱᵈ) "Put" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stm'ptr_Rev :
-  WpMethodCall concurrency "stm'ptr" "Rev" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmⁱᵈ) "Rev" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stm'ptr_commit :
-  WpMethodCall concurrency "stm'ptr" "commit" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmⁱᵈ) "commit" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stm'ptr_fetch :
-  WpMethodCall concurrency "stm'ptr" "fetch" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmⁱᵈ) "fetch" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stm'ptr_reset :
-  WpMethodCall concurrency "stm'ptr" "reset" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmⁱᵈ) "reset" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readSet_add :
-  WpMethodCall concurrency "readSet" "add" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.readSetⁱᵈ "add" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readSet_cmps :
-  WpMethodCall concurrency "readSet" "cmps" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.readSetⁱᵈ "cmps" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readSet_first :
-  WpMethodCall concurrency "readSet" "first" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.readSetⁱᵈ "first" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readSet'ptr_add :
-  WpMethodCall concurrency "readSet'ptr" "add" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.readSetⁱᵈ) "add" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readSet'ptr_cmps :
-  WpMethodCall concurrency "readSet'ptr" "cmps" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.readSetⁱᵈ) "cmps" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_readSet'ptr_first :
-  WpMethodCall concurrency "readSet'ptr" "first" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.readSetⁱᵈ) "first" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_writeSet_cmps :
-  WpMethodCall concurrency "writeSet" "cmps" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.writeSetⁱᵈ "cmps" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_writeSet_get :
-  WpMethodCall concurrency "writeSet" "get" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.writeSetⁱᵈ "get" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_writeSet_puts :
-  WpMethodCall concurrency "writeSet" "puts" _ (is_pkg_defined concurrency) :=
+  WpMethodCall concurrency.writeSetⁱᵈ "puts" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_writeSet'ptr_cmps :
-  WpMethodCall concurrency "writeSet'ptr" "cmps" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.writeSetⁱᵈ) "cmps" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_writeSet'ptr_get :
-  WpMethodCall concurrency "writeSet'ptr" "get" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.writeSetⁱᵈ) "get" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_writeSet'ptr_puts :
-  WpMethodCall concurrency "writeSet'ptr" "puts" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.writeSetⁱᵈ) "puts" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_Del :
-  WpMethodCall concurrency "stmSerializable'ptr" "Del" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "Del" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_Get :
-  WpMethodCall concurrency "stmSerializable'ptr" "Get" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "Get" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_Put :
-  WpMethodCall concurrency "stmSerializable'ptr" "Put" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "Put" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_Rev :
-  WpMethodCall concurrency "stmSerializable'ptr" "Rev" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "Rev" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_commit :
-  WpMethodCall concurrency "stmSerializable'ptr" "commit" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "commit" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_fetch :
-  WpMethodCall concurrency "stmSerializable'ptr" "fetch" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "fetch" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_gets :
-  WpMethodCall concurrency "stmSerializable'ptr" "gets" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "gets" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stmSerializable'ptr_reset :
-  WpMethodCall concurrency "stmSerializable'ptr" "reset" _ (is_pkg_defined concurrency) :=
+  WpMethodCall (ptrTⁱᵈ concurrency.stmSerializableⁱᵈ) "reset" _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc concurrency.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End concurrency.

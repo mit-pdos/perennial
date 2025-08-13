@@ -8,6 +8,12 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition CompareUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.CompareUint64"%go.
+
+Definition SortUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.SortUint64"%go.
+
+Definition Tupⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum/slices.Tup"%go.
+
 Definition Tup : go_type := structT [
   "ID" :: uint64T;
   "Idx" :: uint64T;
@@ -15,11 +21,13 @@ Definition Tup : go_type := structT [
   "Bar" :: intT
 ].
 
+Definition SortFuncTup : go_string := "go.etcd.io/raft/v3/quorum/slices.SortFuncTup"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Tup"%go, []); ("Tup'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Tupⁱᵈ, []); (ptrTⁱᵈ Tupⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo slices.slices :=
   {|
@@ -32,9 +40,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Tup"%go, [
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init slices.slices (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #slices.slices (λ: <>,
+      exception_do (do:  (package.alloc slices.slices #()))
       ).
 
 End code.

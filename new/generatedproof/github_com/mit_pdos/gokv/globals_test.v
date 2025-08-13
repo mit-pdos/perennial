@@ -10,72 +10,25 @@ Module main.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  GlobalX : loc;
-  globalY : loc;
-  globalA : loc;
-  globalB : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("GlobalX"%go, GlobalX);
-    ("globalY"%go, globalY);
-    ("globalA"%go, globalA);
-    ("globalB"%go, globalB)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined main :=
-{|
-  is_pkg_defined := is_global_definitions main var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HGlobalX" ∷ GlobalX ↦ (default_val w64) ∗
-  "HglobalY" ∷ globalY ↦ (default_val go_string) ∗
-  "HglobalA" ∷ globalA ↦ (default_val go_string) ∗
-  "HglobalB" ∷ globalB ↦ (default_val go_string).
-
-Global Instance wp_globals_get_GlobalX : 
-  WpGlobalsGet main "GlobalX" GlobalX (is_pkg_defined main).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_globalY : 
-  WpGlobalsGet main "globalY" globalY (is_pkg_defined main).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_globalA : 
-  WpGlobalsGet main "globalA" globalA (is_pkg_defined main).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_globalB : 
-  WpGlobalsGet main "globalB" globalB (is_pkg_defined main).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_foo :
-  WpFuncCall main "foo" _ (is_pkg_defined main) :=
+  WpFuncCall main.foo _ (is_pkg_defined main) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_other :
-  WpFuncCall main "other" _ (is_pkg_defined main) :=
+  WpFuncCall main.other _ (is_pkg_defined main) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_bar :
-  WpFuncCall main "bar" _ (is_pkg_defined main) :=
+  WpFuncCall main.bar _ (is_pkg_defined main) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_main :
-  WpFuncCall main "main" _ (is_pkg_defined main) :=
+  WpFuncCall main.main _ (is_pkg_defined main) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc main.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End main.

@@ -8,7 +8,11 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Kvⁱᵈ : go_string := "github.com/mit-pdos/gokv/kv.Kv"%go.
+
 Definition Kv : go_type := interfaceT.
+
+Definition KvCputⁱᵈ : go_string := "github.com/mit-pdos/gokv/kv.KvCput"%go.
 
 Definition KvCput : go_type := interfaceT.
 
@@ -27,9 +31,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init kv.kv (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #kv.kv (λ: <>,
+      exception_do (do:  (package.alloc kv.kv #()))
       ).
 
 End code.

@@ -80,8 +80,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Log.m' v)) append_log.Log "m"%go.
-  simpl_one_flatten_struct (# (Log.sz' v)) append_log.Log "sz"%go.
+  simpl_one_flatten_struct (# (Log.m' v)) (append_log.Log) "m"%go.
+  simpl_one_flatten_struct (# (Log.sz' v)) (append_log.Log) "sz"%go.
 
   solve_field_ref_f.
 Qed.
@@ -90,67 +90,52 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined append_log :=
-{|
-  is_pkg_defined := is_global_definitions append_log var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Init :
-  WpFuncCall append_log "Init" _ (is_pkg_defined append_log) :=
+  WpFuncCall append_log.Init _ (is_pkg_defined append_log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Open :
-  WpFuncCall append_log "Open" _ (is_pkg_defined append_log) :=
+  WpFuncCall append_log.Open _ (is_pkg_defined append_log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_writeAll :
-  WpFuncCall append_log "writeAll" _ (is_pkg_defined append_log) :=
+  WpFuncCall append_log.writeAll _ (is_pkg_defined append_log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Append :
-  WpMethodCall append_log "Log'ptr" "Append" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "Append" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Get :
-  WpMethodCall append_log "Log'ptr" "Get" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "Get" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Reset :
-  WpMethodCall append_log "Log'ptr" "Reset" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "Reset" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_append :
-  WpMethodCall append_log "Log'ptr" "append" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "append" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_get :
-  WpMethodCall append_log "Log'ptr" "get" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "get" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_mkHdr :
-  WpMethodCall append_log "Log'ptr" "mkHdr" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "mkHdr" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_reset :
-  WpMethodCall append_log "Log'ptr" "reset" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "reset" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_writeHdr :
-  WpMethodCall append_log "Log'ptr" "writeHdr" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "writeHdr" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

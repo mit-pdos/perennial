@@ -116,7 +116,7 @@ Section goose_lang.
   Context `{ffi_syntax}.
 
   Inductive t :=
-  | mk (type_id : go_string * go_string) (v : val) : t
+  | mk (type_id : go_string) (v : val) : t
   | nil : t.
 
 End goose_lang.
@@ -146,7 +146,7 @@ Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
     to_val_def (i: interface.t) :=
       match i with
       | interface.nil => NONEV
-      | interface.mk type_id v => SOMEV ((#type_id.1, #type_id.2), v)%V
+      | interface.mk type_id v => SOMEV (#type_id, v)%V
       end
   |}.
 

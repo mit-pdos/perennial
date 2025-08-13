@@ -9,16 +9,44 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Changerⁱᵈ : go_string := "go.etcd.io/raft/v3/confchange.Changer"%go.
+
 Definition Changer : go_type := structT [
   "Tracker" :: tracker.ProgressTracker;
   "LastIndex" :: uint64T
 ].
 
+Definition checkInvariants : go_string := "go.etcd.io/raft/v3/confchange.checkInvariants"%go.
+
+Definition checkAndReturn : go_string := "go.etcd.io/raft/v3/confchange.checkAndReturn"%go.
+
+Definition nilAwareAdd : go_string := "go.etcd.io/raft/v3/confchange.nilAwareAdd"%go.
+
+Definition nilAwareDelete : go_string := "go.etcd.io/raft/v3/confchange.nilAwareDelete"%go.
+
+Definition symdiff : go_string := "go.etcd.io/raft/v3/confchange.symdiff"%go.
+
+Definition joint : go_string := "go.etcd.io/raft/v3/confchange.joint"%go.
+
+Definition incoming : go_string := "go.etcd.io/raft/v3/confchange.incoming"%go.
+
+Definition outgoing : go_string := "go.etcd.io/raft/v3/confchange.outgoing"%go.
+
+Definition outgoingPtr : go_string := "go.etcd.io/raft/v3/confchange.outgoingPtr"%go.
+
+Definition Describe : go_string := "go.etcd.io/raft/v3/confchange.Describe"%go.
+
+Definition toConfChangeSingle : go_string := "go.etcd.io/raft/v3/confchange.toConfChangeSingle"%go.
+
+Definition chain : go_string := "go.etcd.io/raft/v3/confchange.chain"%go.
+
+Definition Restore : go_string := "go.etcd.io/raft/v3/confchange.Restore"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Changer"%go, []); ("Changer'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Changerⁱᵈ, []); (ptrTⁱᵈ Changerⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo confchange.confchange :=
   {|
@@ -31,9 +59,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Changer"%g
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init confchange.confchange (λ: <>,
-      exception_do (do:  tracker.initialize')
+  λ: <>,
+    package.init #confchange.confchange (λ: <>,
+      exception_do (do:  (tracker.initialize' #());;;
+      do:  (package.alloc confchange.confchange #()))
       ).
 
 End code.

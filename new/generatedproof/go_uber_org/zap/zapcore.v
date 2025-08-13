@@ -99,10 +99,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Field.Key' v)) zapcore.Field "Key"%go.
-  simpl_one_flatten_struct (# (Field.Type' v)) zapcore.Field "Type"%go.
-  simpl_one_flatten_struct (# (Field.Integer' v)) zapcore.Field "Integer"%go.
-  simpl_one_flatten_struct (# (Field.String' v)) zapcore.Field "String"%go.
+  simpl_one_flatten_struct (# (Field.Key' v)) (zapcore.Field) "Key"%go.
+  simpl_one_flatten_struct (# (Field.Type' v)) (zapcore.Field) "Type"%go.
+  simpl_one_flatten_struct (# (Field.Integer' v)) (zapcore.Field) "Integer"%go.
+  simpl_one_flatten_struct (# (Field.String' v)) (zapcore.Field) "String"%go.
 
   solve_field_ref_f.
 Qed.
@@ -111,24 +111,9 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined zapcore :=
-{|
-  is_pkg_defined := is_global_definitions zapcore var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 End names.
 End zapcore.

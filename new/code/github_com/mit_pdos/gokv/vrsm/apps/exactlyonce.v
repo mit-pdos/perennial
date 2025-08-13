@@ -14,6 +14,8 @@ Module exactlyonce.
 Section code.
 
 
+Definition eStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.eStateMachine"%go.
+
 Definition eStateMachine : go_type := structT [
   "lastSeq" :: mapT uint64T uint64T;
   "lastReply" :: mapT uint64T sliceT;
@@ -36,14 +38,14 @@ Definition VersionedStateMachine : go_type := structT [
 ].
 
 (* go: sm.go:26:25 *)
-Definition eStateMachine__applyVolatile : val :=
-  rec: "eStateMachine__applyVolatile" "s" "op" :=
+Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
@@ -51,11 +53,11 @@ Definition eStateMachine__applyVolatile : val :=
       do:  ("ret" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "ret") in
       let: "$a1" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("ret" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
       let: "$a1" := #(W64 1) in
-      (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+      (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
       do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0")
     else
       (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
@@ -71,7 +73,7 @@ Definition eStateMachine__applyVolatile : val :=
         let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
         let: "cid" := (mem.alloc (type.zero_val #uint64T)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-        (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+        (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("cid" <-[#uint64T] "$r0");;;
@@ -79,7 +81,7 @@ Definition eStateMachine__applyVolatile : val :=
         let: "realOp" := (mem.alloc (type.zero_val #sliceT)) in
         let: "seq" := (mem.alloc (type.zero_val #uint64T)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc2") in
-        (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+        (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("seq" <-[#uint64T] "$r0");;;
@@ -115,28 +117,28 @@ Definition eStateMachine__applyVolatile : val :=
           do:  "$r0";;;
           do:  ("ret" <-[#sliceT] "$r1")
         else
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected ee op type"%go) in
           Panic "$a0"))));;;
     return: (![#sliceT] "ret")).
 
 (* go: sm.go:58:25 *)
-Definition eStateMachine__applyReadonly : val :=
-  rec: "eStateMachine__applyReadonly" "s" "op" :=
+Definition eStateMachine__applyReadonlyⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got GETFRESHCID as a read-only op"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Got GETFRESHCID as a read-only op"%go) in
       Panic "$a0")
     else
       (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
       then
-        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got RW as a read-only op"%go) in
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Got RW as a read-only op"%go) in
         Panic "$a0")
       else
         (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) ≠ OPTYPE_RO
         then
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected ee op type"%go) in
           Panic "$a0")
         else do:  #())));;;
     let: "n" := (mem.alloc (type.zero_val #intT)) in
@@ -152,8 +154,8 @@ Definition eStateMachine__applyReadonly : val :=
     return: ("$ret0", "$ret1")).
 
 (* go: sm.go:72:25 *)
-Definition eStateMachine__getState : val :=
-  rec: "eStateMachine__getState" "s" <> :=
+Definition eStateMachine__getStateⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "appState" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((![#funcT] (struct.field_ref #VersionedStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) #()) in
@@ -163,27 +165,27 @@ Definition eStateMachine__getState : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) in
-    (func_call #map_marshal.map_marshal #"EncodeMapU64ToU64"%go) "$a0") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #map_marshal.EncodeMapU64ToU64) "$a0") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) in
-    (func_call #map_marshal.map_marshal #"EncodeMapU64ToBytes"%go) "$a0") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #map_marshal.EncodeMapU64ToBytes) "$a0") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "appState") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
 (* go: sm.go:85:25 *)
-Definition eStateMachine__setState : val :=
-  rec: "eStateMachine__setState" "s" "state" "nextIndex" :=
+Definition eStateMachine__setStateⁱᵐᵖˡ : val :=
+  λ: "s" "state" "nextIndex",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "nextIndex" := (mem.alloc "nextIndex") in
     let: "state" := (mem.alloc "state") in
@@ -191,19 +193,19 @@ Definition eStateMachine__setState : val :=
     let: "$r0" := (![#sliceT] "state") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #map_marshal.map_marshal #"DecodeMapU64ToU64"%go) "$a0") in
+    (func_call #map_marshal.DecodeMapU64ToU64) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[type.mapT #uint64T #uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #map_marshal.map_marshal #"DecodeMapU64ToBytes"%go) "$a0") in
+    (func_call #map_marshal.DecodeMapU64ToBytes) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[type.mapT #uint64T #sliceT] "$r0");;;
@@ -215,9 +217,11 @@ Definition eStateMachine__setState : val :=
     do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     return: #()).
 
+Definition MakeExactlyOnceStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeExactlyOnceStateMachine"%go.
+
 (* go: sm.go:94:6 *)
-Definition MakeExactlyOnceStateMachine : val :=
-  rec: "MakeExactlyOnceStateMachine" "sm" :=
+Definition MakeExactlyOnceStateMachineⁱᵐᵖˡ : val :=
+  λ: "sm",
     exception_do (let: "sm" := (mem.alloc "sm") in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #eStateMachine)) in
@@ -230,12 +234,12 @@ Definition MakeExactlyOnceStateMachine : val :=
     do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#ptrT] "sm") in
     do:  ((struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    return: (mem.alloc (let: "$ApplyReadonly" := (method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"applyReadonly" (![#ptrT] "s")) in
-     let: "$ApplyVolatile" := (method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"applyVolatile" (![#ptrT] "s")) in
+    return: (mem.alloc (let: "$ApplyReadonly" := (method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"applyReadonly"%go (![#ptrT] "s")) in
+     let: "$ApplyVolatile" := (method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"applyVolatile"%go (![#ptrT] "s")) in
      let: "$GetState" := (λ: <>,
-       exception_do (return: ((method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"getState" (![#ptrT] "s")) #()))
+       exception_do (return: ((method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"getState"%go (![#ptrT] "s")) #()))
        ) in
-     let: "$SetState" := (method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"setState" (![#ptrT] "s")) in
+     let: "$SetState" := (method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"setState"%go (![#ptrT] "s")) in
      struct.make #storage.InMemoryStateMachine [{
        "ApplyReadonly" ::= "$ApplyReadonly";
        "ApplyVolatile" ::= "$ApplyVolatile";
@@ -243,21 +247,25 @@ Definition MakeExactlyOnceStateMachine : val :=
        "SetState" ::= "$SetState"
      }]))).
 
+Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.Clerk"%go.
+
 Definition Clerk : go_type := structT [
   "ck" :: ptrT;
   "cid" :: uint64T;
   "seq" :: uint64T
 ].
 
+Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeClerk"%go.
+
 (* go: sm.go:115:6 *)
-Definition MakeClerk : val :=
-  rec: "MakeClerk" "confHosts" :=
+Definition MakeClerkⁱᵐᵖˡ : val :=
+  λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
     let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #Clerk)) in
     do:  ("ck" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
-    (func_call #clerk.clerk #"Make"%go) "$a0") in
+    (func_call #clerk.Make) "$a0") in
     do:  ((struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")) <-[#ptrT] "$r0");;;
     let: "v" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 1)) in
@@ -266,10 +274,10 @@ Definition MakeClerk : val :=
     do:  ((slice.elem_ref #byteT (![#sliceT] "v") #(W64 0)) <-[#byteT] "$r0");;;
     let: "cidEnc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "v") in
-    (method_call #clerk #"Clerk'ptr" #"Apply" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0") in
+    (method_call #(ptrTⁱᵈ clerk.Clerkⁱᵈ) #"Apply"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0") in
     do:  ("cidEnc" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "cidEnc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #Clerk #"cid"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
@@ -279,8 +287,8 @@ Definition MakeClerk : val :=
     return: (![#ptrT] "ck")).
 
 (* go: sm.go:127:18 *)
-Definition Clerk__ApplyExactlyOnce : val :=
-  rec: "Clerk__ApplyExactlyOnce" "ck" "req" :=
+Definition Clerk__ApplyExactlyOnceⁱᵐᵖˡ : val :=
+  λ: "ck" "req",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "req" := (mem.alloc "req") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
@@ -290,26 +298,26 @@ Definition Clerk__ApplyExactlyOnce : val :=
     do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #Clerk #"cid"%go (![#ptrT] "ck"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "req") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "enc") in
-     (method_call #clerk #"Clerk'ptr" #"Apply" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+     (method_call #(ptrTⁱᵈ clerk.Clerkⁱᵈ) #"Apply"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
 
 (* go: sm.go:138:18 *)
-Definition Clerk__ApplyReadonly : val :=
-  rec: "Clerk__ApplyReadonly" "ck" "req" :=
+Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
+  λ: "ck" "req",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "req" := (mem.alloc "req") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
@@ -319,16 +327,18 @@ Definition Clerk__ApplyReadonly : val :=
     do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "req") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "enc") in
-     (method_call #clerk #"Clerk'ptr" #"ApplyRo" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+     (method_call #(ptrTⁱᵈ clerk.Clerkⁱᵈ) #"ApplyRo"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+
+Definition VersionedStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.VersionedStateMachine"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeExactlyOnceStateMachine"%go, MakeExactlyOnceStateMachine); ("MakeClerk"%go, MakeClerk)].
+Definition functions' : list (go_string * val) := [(MakeExactlyOnceStateMachine, MakeExactlyOnceStateMachineⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("eStateMachine"%go, []); ("eStateMachine'ptr"%go, [("applyReadonly"%go, eStateMachine__applyReadonly); ("applyVolatile"%go, eStateMachine__applyVolatile); ("getState"%go, eStateMachine__getState); ("setState"%go, eStateMachine__setState)]); ("Clerk"%go, []); ("Clerk'ptr"%go, [("ApplyExactlyOnce"%go, Clerk__ApplyExactlyOnce); ("ApplyReadonly"%go, Clerk__ApplyReadonly)]); ("VersionedStateMachine"%go, []); ("VersionedStateMachine'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(eStateMachineⁱᵈ, []); (ptrTⁱᵈ eStateMachineⁱᵈ, [("applyReadonly"%go, eStateMachine__applyReadonlyⁱᵐᵖˡ); ("applyVolatile"%go, eStateMachine__applyVolatileⁱᵐᵖˡ); ("getState"%go, eStateMachine__getStateⁱᵐᵖˡ); ("setState"%go, eStateMachine__setStateⁱᵐᵖˡ)]); (Clerkⁱᵈ, []); (ptrTⁱᵈ Clerkⁱᵈ, [("ApplyExactlyOnce"%go, Clerk__ApplyExactlyOnceⁱᵐᵖˡ); ("ApplyReadonly"%go, Clerk__ApplyReadonlyⁱᵐᵖˡ)]); (VersionedStateMachineⁱᵈ, []); (ptrTⁱᵈ VersionedStateMachineⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo exactlyonce.exactlyonce :=
   {|
@@ -339,14 +349,15 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("eStateMach
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init exactlyonce.exactlyonce (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  storage.initialize';;;
-      do:  clerk.initialize';;;
-      do:  map_marshal.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  std.initialize')
+  λ: <>,
+    package.init #exactlyonce.exactlyonce (λ: <>,
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (storage.initialize' #());;;
+      do:  (clerk.initialize' #());;;
+      do:  (map_marshal.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (package.alloc exactlyonce.exactlyonce #()))
       ).
 
 End code.

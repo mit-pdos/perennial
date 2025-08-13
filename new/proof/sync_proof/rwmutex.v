@@ -1,12 +1,11 @@
 From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 
-#[local] Transparent is_pkg_init_sync.
 
 Section proof.
 
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 Section protocol.
 Record RWMutex_protocol_names :=
@@ -418,7 +417,7 @@ Lemma wp_RWMutex__RLock γ rw N :
   is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
   ▷(|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
      (∀ num_readers, ⌜ state = RLocked num_readers ⌝ → own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP rw @ sync @ "RWMutex'ptr" @ "RLock" #() {{ Φ }}.
+  WP rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "RLock" #() {{ Φ }}.
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
@@ -443,7 +442,7 @@ Lemma wp_RWMutex__TryRLock γ rw N :
                       own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #true)) ∧
    Φ #false)
   -∗
-  WP rw @ sync @ "RWMutex'ptr" @ "TryRLock" #() {{ Φ }}.
+  WP rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "TryRLock" #() {{ Φ }}.
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_for. wp_apply wp_Int32__Load.
@@ -471,7 +470,7 @@ Lemma wp_RWMutex__RUnlock γ rw N :
      own_RWMutex γ (RLocked (S num_readers)) ∗
      (own_RWMutex γ (RLocked num_readers) ∗ own_RLock_token γ ={∅,⊤∖↑N}=∗
       Φ #())) -∗
-  WP rw @ sync @ "RWMutex'ptr" @ "RUnlock" #() {{ Φ }}.
+  WP rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "RUnlock" #() {{ Φ }}.
 Proof.
   wp_start as "#His". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
@@ -503,7 +502,7 @@ Lemma wp_RWMutex__Lock γ rw N :
   is_pkg_init sync ∗ is_RWMutex rw γ N -∗
   ▷(|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
      (⌜ state = RLocked 0 ⌝ → own_RWMutex γ Locked ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP rw @ sync @ "RWMutex'ptr" @ "Lock" #() {{ Φ }}.
+  WP rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "Lock" #() {{ Φ }}.
 Proof.
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Mutex__Lock.
@@ -539,7 +538,7 @@ Lemma wp_RWMutex__TryLock γ rw N :
   ▷((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
     (⌜ state = RLocked 0 ⌝ → own_RWMutex γ Locked ={∅,⊤∖↑N}=∗ Φ #true)) ∧
      Φ #false) -∗
-  WP rw @ sync @ "RWMutex'ptr" @ "TryLock" #() {{ Φ }}.
+  WP rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "TryLock" #() {{ Φ }}.
 Proof.
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Mutex__TryLock.
@@ -570,7 +569,7 @@ Lemma wp_RWMutex__Unlock γ rw N :
   ▷(|={⊤∖↑N,∅}=> own_RWMutex γ Locked ∗
     (own_RWMutex γ (RLocked 0) ={∅,⊤∖↑N}=∗ Φ #())
   ) -∗
-  WP rw @ sync @ "RWMutex'ptr" @ "Unlock" #() {{ Φ }}.
+  WP rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "Unlock" #() {{ Φ }}.
 Proof.
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.

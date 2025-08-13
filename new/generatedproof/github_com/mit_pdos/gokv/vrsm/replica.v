@@ -95,8 +95,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ApplyAsBackupArgs.epoch' v)) replica.ApplyAsBackupArgs "epoch"%go.
-  simpl_one_flatten_struct (# (ApplyAsBackupArgs.index' v)) replica.ApplyAsBackupArgs "index"%go.
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.epoch' v)) (replica.ApplyAsBackupArgs) "epoch"%go.
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.index' v)) (replica.ApplyAsBackupArgs) "index"%go.
 
   solve_field_ref_f.
 Qed.
@@ -179,9 +179,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SetStateArgs.Epoch' v)) replica.SetStateArgs "Epoch"%go.
-  simpl_one_flatten_struct (# (SetStateArgs.NextIndex' v)) replica.SetStateArgs "NextIndex"%go.
-  simpl_one_flatten_struct (# (SetStateArgs.CommittedNextIndex' v)) replica.SetStateArgs "CommittedNextIndex"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.Epoch' v)) (replica.SetStateArgs) "Epoch"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.NextIndex' v)) (replica.SetStateArgs) "NextIndex"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.CommittedNextIndex' v)) (replica.SetStateArgs) "CommittedNextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -325,9 +325,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (GetStateReply.Err' v)) replica.GetStateReply "Err"%go.
-  simpl_one_flatten_struct (# (GetStateReply.NextIndex' v)) replica.GetStateReply "NextIndex"%go.
-  simpl_one_flatten_struct (# (GetStateReply.CommittedNextIndex' v)) replica.GetStateReply "CommittedNextIndex"%go.
+  simpl_one_flatten_struct (# (GetStateReply.Err' v)) (replica.GetStateReply) "Err"%go.
+  simpl_one_flatten_struct (# (GetStateReply.NextIndex' v)) (replica.GetStateReply) "NextIndex"%go.
+  simpl_one_flatten_struct (# (GetStateReply.CommittedNextIndex' v)) (replica.GetStateReply) "CommittedNextIndex"%go.
 
   solve_field_ref_f.
 Qed.
@@ -396,7 +396,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (BecomePrimaryArgs.Epoch' v)) replica.BecomePrimaryArgs "Epoch"%go.
+  simpl_one_flatten_struct (# (BecomePrimaryArgs.Epoch' v)) (replica.BecomePrimaryArgs) "Epoch"%go.
 
   solve_field_ref_f.
 Qed.
@@ -465,7 +465,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (ApplyReply.Err' v)) replica.ApplyReply "Err"%go.
+  simpl_one_flatten_struct (# (ApplyReply.Err' v)) (replica.ApplyReply) "Err"%go.
 
   solve_field_ref_f.
 Qed.
@@ -556,9 +556,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StateMachine.StartApply' v)) replica.StateMachine "StartApply"%go.
-  simpl_one_flatten_struct (# (StateMachine.ApplyReadonly' v)) replica.StateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (StateMachine.SetStateAndUnseal' v)) replica.StateMachine "SetStateAndUnseal"%go.
+  simpl_one_flatten_struct (# (StateMachine.StartApply' v)) (replica.StateMachine) "StartApply"%go.
+  simpl_one_flatten_struct (# (StateMachine.ApplyReadonly' v)) (replica.StateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (StateMachine.SetStateAndUnseal' v)) (replica.StateMachine) "SetStateAndUnseal"%go.
 
   solve_field_ref_f.
 Qed.
@@ -641,9 +641,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SyncStateMachine.Apply' v)) replica.SyncStateMachine "Apply"%go.
-  simpl_one_flatten_struct (# (SyncStateMachine.ApplyReadonly' v)) replica.SyncStateMachine "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (SyncStateMachine.SetStateAndUnseal' v)) replica.SyncStateMachine "SetStateAndUnseal"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.Apply' v)) (replica.SyncStateMachine) "Apply"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.ApplyReadonly' v)) (replica.SyncStateMachine) "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.SetStateAndUnseal' v)) (replica.SyncStateMachine) "SetStateAndUnseal"%go.
 
   solve_field_ref_f.
 Qed.
@@ -864,20 +864,20 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Server.mu' v)) replica.Server "mu"%go.
-  simpl_one_flatten_struct (# (Server.epoch' v)) replica.Server "epoch"%go.
-  simpl_one_flatten_struct (# (Server.sealed' v)) replica.Server "sealed"%go.
-  simpl_one_flatten_struct (# (Server.sm' v)) replica.Server "sm"%go.
-  simpl_one_flatten_struct (# (Server.nextIndex' v)) replica.Server "nextIndex"%go.
-  simpl_one_flatten_struct (# (Server.canBecomePrimary' v)) replica.Server "canBecomePrimary"%go.
-  simpl_one_flatten_struct (# (Server.isPrimary' v)) replica.Server "isPrimary"%go.
-  simpl_one_flatten_struct (# (Server.clerks' v)) replica.Server "clerks"%go.
-  simpl_one_flatten_struct (# (Server.isPrimary_cond' v)) replica.Server "isPrimary_cond"%go.
-  simpl_one_flatten_struct (# (Server.opAppliedConds' v)) replica.Server "opAppliedConds"%go.
-  simpl_one_flatten_struct (# (Server.leaseExpiration' v)) replica.Server "leaseExpiration"%go.
-  simpl_one_flatten_struct (# (Server.leaseValid' v)) replica.Server "leaseValid"%go.
-  simpl_one_flatten_struct (# (Server.committedNextIndex' v)) replica.Server "committedNextIndex"%go.
-  simpl_one_flatten_struct (# (Server.committedNextIndex_cond' v)) replica.Server "committedNextIndex_cond"%go.
+  simpl_one_flatten_struct (# (Server.mu' v)) (replica.Server) "mu"%go.
+  simpl_one_flatten_struct (# (Server.epoch' v)) (replica.Server) "epoch"%go.
+  simpl_one_flatten_struct (# (Server.sealed' v)) (replica.Server) "sealed"%go.
+  simpl_one_flatten_struct (# (Server.sm' v)) (replica.Server) "sm"%go.
+  simpl_one_flatten_struct (# (Server.nextIndex' v)) (replica.Server) "nextIndex"%go.
+  simpl_one_flatten_struct (# (Server.canBecomePrimary' v)) (replica.Server) "canBecomePrimary"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary' v)) (replica.Server) "isPrimary"%go.
+  simpl_one_flatten_struct (# (Server.clerks' v)) (replica.Server) "clerks"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary_cond' v)) (replica.Server) "isPrimary_cond"%go.
+  simpl_one_flatten_struct (# (Server.opAppliedConds' v)) (replica.Server) "opAppliedConds"%go.
+  simpl_one_flatten_struct (# (Server.leaseExpiration' v)) (replica.Server) "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (Server.leaseValid' v)) (replica.Server) "leaseValid"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex' v)) (replica.Server) "committedNextIndex"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex_cond' v)) (replica.Server) "committedNextIndex_cond"%go.
 
   solve_field_ref_f.
 Qed.
@@ -886,159 +886,144 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined replica :=
-{|
-  is_pkg_defined := is_global_definitions replica var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_EncodeApplyAsBackupArgs :
-  WpFuncCall replica "EncodeApplyAsBackupArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeApplyAsBackupArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeApplyAsBackupArgs :
-  WpFuncCall replica "DecodeApplyAsBackupArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeApplyAsBackupArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeSetStateArgs :
-  WpFuncCall replica "EncodeSetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeSetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeSetStateArgs :
-  WpFuncCall replica "DecodeSetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeSetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeGetStateArgs :
-  WpFuncCall replica "EncodeGetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeGetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeGetStateArgs :
-  WpFuncCall replica "DecodeGetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeGetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeGetStateReply :
-  WpFuncCall replica "EncodeGetStateReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeGetStateReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeGetStateReply :
-  WpFuncCall replica "DecodeGetStateReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeGetStateReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeBecomePrimaryArgs :
-  WpFuncCall replica "EncodeBecomePrimaryArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeBecomePrimaryArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeBecomePrimaryArgs :
-  WpFuncCall replica "DecodeBecomePrimaryArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeBecomePrimaryArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeApplyReply :
-  WpFuncCall replica "EncodeApplyReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeApplyReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeApplyReply :
-  WpFuncCall replica "DecodeApplyReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeApplyReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeIncreaseCommitArgs :
-  WpFuncCall replica "EncodeIncreaseCommitArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeIncreaseCommitArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeIncreaseCommitArgs :
-  WpFuncCall replica "DecodeIncreaseCommitArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeIncreaseCommitArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall replica "MakeClerk" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.MakeClerk _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeServer :
-  WpFuncCall replica "MakeServer" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.MakeServer _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_Apply :
-  WpMethodCall replica "Clerk'ptr" "Apply" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Clerkⁱᵈ) "Apply" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyAsBackup :
-  WpMethodCall replica "Clerk'ptr" "ApplyAsBackup" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Clerkⁱᵈ) "ApplyAsBackup" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo :
-  WpMethodCall replica "Clerk'ptr" "ApplyRo" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Clerkⁱᵈ) "ApplyRo" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_BecomePrimary :
-  WpMethodCall replica "Clerk'ptr" "BecomePrimary" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Clerkⁱᵈ) "BecomePrimary" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_GetState :
-  WpMethodCall replica "Clerk'ptr" "GetState" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Clerkⁱᵈ) "GetState" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_IncreaseCommitIndex :
-  WpMethodCall replica "Clerk'ptr" "IncreaseCommitIndex" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Clerkⁱᵈ) "IncreaseCommitIndex" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_SetState :
-  WpMethodCall replica "Clerk'ptr" "SetState" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Clerkⁱᵈ) "SetState" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Apply :
-  WpMethodCall replica "Server'ptr" "Apply" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "Apply" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_ApplyAsBackup :
-  WpMethodCall replica "Server'ptr" "ApplyAsBackup" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "ApplyAsBackup" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_ApplyRoWaitForCommit :
-  WpMethodCall replica "Server'ptr" "ApplyRoWaitForCommit" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "ApplyRoWaitForCommit" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_BecomePrimary :
-  WpMethodCall replica "Server'ptr" "BecomePrimary" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "BecomePrimary" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_GetState :
-  WpMethodCall replica "Server'ptr" "GetState" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "GetState" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_IncreaseCommitIndex :
-  WpMethodCall replica "Server'ptr" "IncreaseCommitIndex" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "IncreaseCommitIndex" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Serve :
-  WpMethodCall replica "Server'ptr" "Serve" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "Serve" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_SetState :
-  WpMethodCall replica "Server'ptr" "SetState" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "SetState" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_isEpochStale :
-  WpMethodCall replica "Server'ptr" "isEpochStale" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "isEpochStale" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_leaseRenewalThread :
-  WpMethodCall replica "Server'ptr" "leaseRenewalThread" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "leaseRenewalThread" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_sendIncreaseCommitThread :
-  WpMethodCall replica "Server'ptr" "sendIncreaseCommitThread" _ (is_pkg_defined replica) :=
+  WpMethodCall (ptrTⁱᵈ replica.Serverⁱᵈ) "sendIncreaseCommitThread" _ (is_pkg_defined replica) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -23,39 +23,61 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 (* FIXME: come up with a plan for global addrs of imported packages. *)
-Context `{!etcdserverpb.GlobalAddrs}.
-Context `{!concurrency.GlobalAddrs}.
-Context `{!rpctypes.GlobalAddrs}.
-Context `{!leasing.GlobalAddrs}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 
-#[global]
-Program Instance is_pkg_init_bytes : IsPkgInit bytes := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_bytes.
+Local Notation deps_bytes := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit bytes :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_bytes;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_status : IsPkgInit status.status := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_status.
+Local Definition deps_rpc_status : iProp Σ := ltac2:(build_pkg_init_deps 'rpc.status.status).
+#[global] Program Instance : IsPkgInit rpc.status.status :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_rpc_status;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_codes : IsPkgInit codes := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_codes.
+(* FIXME: status.info' refers to its own [status.status] because `grpc/status` imports
+   `genproto/googleapis/rpc/status *)
+(* Local Definition deps_status : iProp Σ := ltac2:(build_pkg_init_deps 'status.status). *)
+#[global] Program Instance : IsPkgInit status.status :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := True : iProp Σ;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_rpctypes : IsPkgInit rpctypes := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_rpctypes.
+Local Notation deps_codes := (ltac2:(build_pkg_init_deps 'codes) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit codes :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_codes;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_strings : IsPkgInit strings := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_strings.
+Local Notation deps_rpctypes := (ltac2:(build_pkg_init_deps 'rpctypes) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit rpctypes :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_rpctypes;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_leasing : IsPkgInit leasing := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_leasing.
-#[local] Transparent is_pkg_init_leasing.
+Local Notation deps_strings := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit strings :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps_strings;
+  |}.
+
+Local Notation deps := (ltac2:(build_pkg_init_deps 'leasing) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit leasing :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Context `{!syncG Σ}.
 
@@ -65,7 +87,7 @@ Lemma trivial_WaitGroup_start_done N' wg_ptr γ (N : namespace) ctr :
   (↑N' : coPset) ## ↑N →
   is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ ctr ={⊤}=∗
   [∗] (replicate (Z.to_nat (sint.Z ctr))
-         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @ sync @ "WaitGroup'ptr" @ "Done" #() {{ Φ }})).
+         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Done" #() {{ Φ }})).
 Proof using ghost_mapG0.
   intros HN.
   iIntros "(#His & Hctr)".
@@ -203,7 +225,7 @@ Lemma wp_leasingKV__monitorSession lkv γ :
       "Hown_kv" ∷ own_leasingKV lkv γ ∗
       "Hown" ∷ own_leasingKV_monitorSession lkv γ
   }}}
-    lkv @ leasing @ "leasingKV'ptr" @ "monitorSession" #()
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "monitorSession" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "Hpre". iNamed "Hpre". wp_auto.
@@ -331,7 +353,7 @@ Proof.
     iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
     wp_auto.
     wp_apply (wp_closeable_chan_close with "[$Hsessionc]").
-    { done. }
+    { iFrame "#". }
     iIntros "#Hclosed".
     wp_auto.
     iDestruct "session" as "[session session_lock]".
@@ -359,7 +381,7 @@ Definition own_leaseCache (lc : loc) γ : iProp Σ :=
 (* 1.23 model: chan is unbuffered. *)
 Lemma wp_After (d : time.Duration.t) :
   {{{ is_pkg_init time }}}
-    time @ "After" #d
+    @! time.After #d
   {{{
         ch, RET #ch;
         is_chan time.Time.t ch ∗
@@ -374,7 +396,7 @@ Admitted.
 
 Lemma wp_leaseCache__clearOldRevokes lc γ ctx ctx_desc :
   {{{ is_pkg_init leasing ∗ own_leaseCache lc γ ∗ is_Context ctx ctx_desc }}}
-    lc @ leasing @ "leaseCache'ptr" @ "clearOldRevokes" #ctx
+    lc @ (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) @ "clearOldRevokes" #ctx
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[Hlc #Hctx]". wp_auto.
@@ -442,7 +464,7 @@ Proof. unfold named. done. Qed.
 
 Lemma wp_leasingKV__waitSession lkv ctx ctx_desc γ :
   {{{ is_pkg_init leasing ∗ own_leasingKV lkv γ ∗ is_Context ctx ctx_desc }}}
-    lkv @ leasing @ "leasingKV'ptr" @ "waitSession" #ctx
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "waitSession" #ctx
   {{{ err, RET #err;
       own_leasingKV lkv γ ∗
       if decide (err = interface.nil) then ghost_var γ.(entries_ready_gn) DfracDiscarded true
@@ -507,7 +529,7 @@ Definition own_KV (kv : interface.t) (γetcd : clientv3_names) : iProp Σ :=
 
 Lemma wp_leasingKV__Put lkv ctx ctx_desc (key v : go_string) γ :
   {{{ is_pkg_init leasing ∗ is_Context ctx ctx_desc ∗ own_leasingKV lkv γ }}}
-    lkv@leasing@"leasingKV'ptr"@"Put" #ctx #key #v #slice.nil
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "Put" #ctx #key #v #slice.nil
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[#Hctx Hlkv]". wp_auto.
@@ -525,7 +547,7 @@ Lemma wp_leasingKV__put ctx ctx_desc lkv γ op put_req :
       "Hlkv" ∷ own_leasingKV lkv γ ∗
       "#Hop" ∷ is_Op op (Op.Put put_req)
   }}}
-    lkv@leasing@"leasingKV'ptr"@"put" #ctx #op
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "put" #ctx #op
   {{{
       (pr_ptr : loc) (err : error.t), RET (#pr_ptr, #err);
         if decide (err = interface.nil) then
@@ -567,7 +589,7 @@ Admitted.
 
 Lemma wp_leaseCache__Lock lc (key : go_string) γ :
   {{{ is_pkg_init leasing ∗ "Hown" ∷ own_leaseCache lc γ ∗ "#Hready" ∷ is_entries_ready γ }}}
-    lc @ leasing @ "leaseCache'ptr" @ "Lock" #key
+    lc @ (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) @ "Lock" #key
   {{{ wc (rev : w64), RET (#wc, #rev);
       own_leaseCache lc γ ∗ (if decide (wc = null) then True else own_closeable_chan wc True closeable.Open)
   }}}.
@@ -615,7 +637,7 @@ Lemma wp_leasingKV__tryModifyOp ctx ctx_desc op req lkv γ :
       "#Hop" ∷ is_Op op (Op.Put req) ∗
       "Hlkv" ∷ own_leasingKV lkv γ
   }}}
-    lkv@leasing@"leasingKV'ptr"@"tryModifyOp" #ctx #op
+    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "tryModifyOp" #ctx #op
   {{{
       (resp_ptr : loc) (wc : chan.t) err, RET (#resp_ptr, #wc, #err);
         if decide (err = interface.nil) then
@@ -639,7 +661,7 @@ Admitted.
 Lemma own_leasingKV_own_KV lkv γ :
   is_entries_ready γ -∗
   own_leasingKV lkv γ -∗
-  own_KV (interface.mk (leasing, "leasingKV'ptr"%go) #lkv) γ.(etcd_gn).
+  own_KV (interface.mk (ptrTⁱᵈ leasing.leasingKVⁱᵈ) #lkv) γ.(etcd_gn).
 Proof.
 Admitted.
 
@@ -649,7 +671,7 @@ Lemma wp_NewKV cl γetcd (pfx : go_string) :
       is_pkg_init leasing ∗
       "#Hcl" ∷ is_Client cl γetcd
   }}}
-    leasing @ "NewKV" #cl #pfx #slice.nil
+    @! leasing.NewKV #cl #pfx #slice.nil
   {{{ kv (close : func.t) err, RET (#kv, #close, #err);
       if decide (err = interface.nil) then
         [∗] replicate (Z.to_nat num_lkvs) (own_KV kv γetcd)

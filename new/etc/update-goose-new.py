@@ -54,6 +54,7 @@ projs = [
             "./cachekv",
             "./trusted_proph",
             "./globals_test",
+            "./grove_ffi",
         ],
     ),
     create_proj(
@@ -71,7 +72,6 @@ projs = [
     create_proj(
         repo="upamanyus/etcd",
         pkgs=[
-            "time",
             "math",
             "google.golang.org/grpc",
             "go.etcd.io/etcd/api/v3/etcdserverpb",
@@ -82,11 +82,12 @@ projs = [
             "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
             "google.golang.org/grpc/codes",
             "google.golang.org/grpc/status",
+            "google.golang.org/genproto/googleapis/rpc/status",
             "go.uber.org/zap",
             "go.uber.org/zap/zapcore",
-            "go.etcd.io/etcd/server/v3/etcdserver",
-            "go.etcd.io/etcd/server/v3/etcdserver/cindex",
-            "go.etcd.io/etcd/server/v3/storage/backend",
+            # "go.etcd.io/etcd/server/v3/etcdserver",
+            # "go.etcd.io/etcd/server/v3/etcdserver/cindex",
+            # "go.etcd.io/etcd/server/v3/storage/backend",
         ],
     ),
     create_proj(repo="mit-pdos/go-journal"),
@@ -299,6 +300,8 @@ def main():
             "testing",
             "bytes",
             "context",
+            "internal/reflectlite",
+            "unsafe",
             "crypto/rand",
             "errors",
             "io",
@@ -313,6 +316,7 @@ def main():
             "sync",
             "sync/atomic",
             "internal/race",
+            "time",
             "fmt",
             "log",
         )

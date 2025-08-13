@@ -11,27 +11,12 @@ Module cryptoutil.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined cryptoutil :=
-{|
-  is_pkg_defined := is_global_definitions cryptoutil var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Hash :
-  WpFuncCall cryptoutil "Hash" _ (is_pkg_defined cryptoutil) :=
+  WpFuncCall cryptoutil.Hash _ (is_pkg_defined cryptoutil) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

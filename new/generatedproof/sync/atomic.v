@@ -108,7 +108,76 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Int32._0' v)) atomic.Int32 "_0"%go.
+  simpl_one_flatten_struct (# (Int32._0' v)) (atomic.Int32) "_0"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type atomic.Uint32 *)
+Module Uint32.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  _0' : noCopy.t;
+  v' : w32;
+}.
+End def.
+End Uint32.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Uint32 : Settable Uint32.t :=
+  settable! Uint32.mk < Uint32._0'; Uint32.v' >.
+Global Instance into_val_Uint32 : IntoVal Uint32.t :=
+  {| to_val_def v :=
+    struct.val_aux atomic.Uint32 [
+    "_0" ::= #(Uint32._0' v);
+    "v" ::= #(Uint32.v' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Uint32 : IntoValTyped Uint32.t atomic.Uint32 :=
+{|
+  default_val := Uint32.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Uint32__0 : IntoValStructField "_0" atomic.Uint32 Uint32._0'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Uint32_v : IntoValStructField "v" atomic.Uint32 Uint32.v'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Uint32 _0' v':
+  PureWp True
+    (struct.make #atomic.Uint32 (alist_val [
+      "_0" ::= #_0';
+      "v" ::= #v'
+    ]))%struct
+    #(Uint32.mk _0' v').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Uint32_struct_fields_split dq l (v : Uint32.t) :
+  StructFieldsSplit dq l v (
+    "H_0" ∷ l ↦s[atomic.Uint32 :: "_0"]{dq} v.(Uint32._0') ∗
+    "Hv" ∷ l ↦s[atomic.Uint32 :: "v"]{dq} v.(Uint32.v')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Uint32._0' v)) (atomic.Uint32) "_0"%go.
 
   solve_field_ref_f.
 Qed.
@@ -221,8 +290,138 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Uint64._0' v)) atomic.Uint64 "_0"%go.
-  simpl_one_flatten_struct (# (Uint64._1' v)) atomic.Uint64 "_1"%go.
+  simpl_one_flatten_struct (# (Uint64._0' v)) (atomic.Uint64) "_0"%go.
+  simpl_one_flatten_struct (# (Uint64._1' v)) (atomic.Uint64) "_1"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type atomic.Value *)
+Module Value.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  v' : interface.t;
+}.
+End def.
+End Value.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Value : Settable Value.t :=
+  settable! Value.mk < Value.v' >.
+Global Instance into_val_Value : IntoVal Value.t :=
+  {| to_val_def v :=
+    struct.val_aux atomic.Value [
+    "v" ::= #(Value.v' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Value : IntoValTyped Value.t atomic.Value :=
+{|
+  default_val := Value.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Value_v : IntoValStructField "v" atomic.Value Value.v'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Value v':
+  PureWp True
+    (struct.make #atomic.Value (alist_val [
+      "v" ::= #v'
+    ]))%struct
+    #(Value.mk v').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Value_struct_fields_split dq l (v : Value.t) :
+  StructFieldsSplit dq l v (
+    "Hv" ∷ l ↦s[atomic.Value :: "v"]{dq} v.(Value.v')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type atomic.efaceWords *)
+Module efaceWords.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  typ' : loc;
+  data' : loc;
+}.
+End def.
+End efaceWords.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_efaceWords : Settable efaceWords.t :=
+  settable! efaceWords.mk < efaceWords.typ'; efaceWords.data' >.
+Global Instance into_val_efaceWords : IntoVal efaceWords.t :=
+  {| to_val_def v :=
+    struct.val_aux atomic.efaceWords [
+    "typ" ::= #(efaceWords.typ' v);
+    "data" ::= #(efaceWords.data' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_efaceWords : IntoValTyped efaceWords.t atomic.efaceWords :=
+{|
+  default_val := efaceWords.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_efaceWords_typ : IntoValStructField "typ" atomic.efaceWords efaceWords.typ'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_efaceWords_data : IntoValStructField "data" atomic.efaceWords efaceWords.data'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_efaceWords typ' data':
+  PureWp True
+    (struct.make #atomic.efaceWords (alist_val [
+      "typ" ::= #typ';
+      "data" ::= #data'
+    ]))%struct
+    #(efaceWords.mk typ' data').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance efaceWords_struct_fields_split dq l (v : efaceWords.t) :
+  StructFieldsSplit dq l v (
+    "Htyp" ∷ l ↦s[atomic.efaceWords :: "typ"]{dq} v.(efaceWords.typ') ∗
+    "Hdata" ∷ l ↦s[atomic.efaceWords :: "data"]{dq} v.(efaceWords.data')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (efaceWords.typ' v)) (atomic.efaceWords) "typ"%go.
 
   solve_field_ref_f.
 Qed.
@@ -231,87 +430,156 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined atomic :=
-{|
-  is_pkg_defined := is_global_definitions atomic var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_CompareAndSwapInt32 :
-  WpFuncCall atomic "CompareAndSwapInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.CompareAndSwapInt32 _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_CompareAndSwapUint32 :
+  WpFuncCall atomic.CompareAndSwapUint32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AddInt32 :
-  WpFuncCall atomic "AddInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.AddInt32 _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_AddUint32 :
+  WpFuncCall atomic.AddUint32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LoadInt32 :
-  WpFuncCall atomic "LoadInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.LoadInt32 _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_LoadUint32 :
+  WpFuncCall atomic.LoadUint32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StoreInt32 :
-  WpFuncCall atomic "StoreInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.StoreInt32 _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_StoreUint32 :
+  WpFuncCall atomic.StoreUint32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CompareAndSwapUint64 :
-  WpFuncCall atomic "CompareAndSwapUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.CompareAndSwapUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AddUint64 :
-  WpFuncCall atomic "AddUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.AddUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LoadUint64 :
-  WpFuncCall atomic "LoadUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.LoadUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StoreUint64 :
-  WpFuncCall atomic "StoreUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.StoreUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Add :
-  WpMethodCall atomic "Int32'ptr" "Add" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Add" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Int32'ptr_And :
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "And" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_CompareAndSwap :
-  WpMethodCall atomic "Int32'ptr" "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "CompareAndSwap" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Load :
-  WpMethodCall atomic "Int32'ptr" "Load" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Int32'ptr_Or :
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Or" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Store :
-  WpMethodCall atomic "Int32'ptr" "Store" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Int32'ptr_Swap :
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint32'ptr_Add :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint32ⁱᵈ) "Add" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint32'ptr_And :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint32ⁱᵈ) "And" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint32'ptr_CompareAndSwap :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint32ⁱᵈ) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint32'ptr_Load :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint32ⁱᵈ) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint32'ptr_Or :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint32ⁱᵈ) "Or" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint32'ptr_Store :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint32ⁱᵈ) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint32'ptr_Swap :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint32ⁱᵈ) "Swap" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Add :
-  WpMethodCall atomic "Uint64'ptr" "Add" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Add" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint64'ptr_And :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "And" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_CompareAndSwap :
-  WpMethodCall atomic "Uint64'ptr" "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "CompareAndSwap" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Load :
-  WpMethodCall atomic "Uint64'ptr" "Load" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint64'ptr_Or :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Or" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Store :
-  WpMethodCall atomic "Uint64'ptr" "Store" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint64'ptr_Swap :
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Value'ptr_CompareAndSwap :
+  WpMethodCall (ptrTⁱᵈ atomic.Valueⁱᵈ) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Value'ptr_Load :
+  WpMethodCall (ptrTⁱᵈ atomic.Valueⁱᵈ) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Value'ptr_Store :
+  WpMethodCall (ptrTⁱᵈ atomic.Valueⁱᵈ) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Value'ptr_Swap :
+  WpMethodCall (ptrTⁱᵈ atomic.Valueⁱᵈ) "Swap" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

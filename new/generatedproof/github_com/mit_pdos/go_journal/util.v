@@ -11,59 +11,33 @@ Module util.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  Debug : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("Debug"%go, Debug)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined util :=
-{|
-  is_pkg_defined := is_global_definitions util var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HDebug" ∷ Debug ↦ (default_val w64).
-
-Global Instance wp_globals_get_Debug : 
-  WpGlobalsGet util "Debug" Debug (is_pkg_defined util).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_DPrintf :
-  WpFuncCall util "DPrintf" _ (is_pkg_defined util) :=
+  WpFuncCall util.DPrintf _ (is_pkg_defined util) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_RoundUp :
-  WpFuncCall util "RoundUp" _ (is_pkg_defined util) :=
+  WpFuncCall util.RoundUp _ (is_pkg_defined util) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Min :
-  WpFuncCall util "Min" _ (is_pkg_defined util) :=
+  WpFuncCall util.Min _ (is_pkg_defined util) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SumOverflows :
-  WpFuncCall util "SumOverflows" _ (is_pkg_defined util) :=
+  WpFuncCall util.SumOverflows _ (is_pkg_defined util) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SumOverflows32 :
-  WpFuncCall util "SumOverflows32" _ (is_pkg_defined util) :=
+  WpFuncCall util.SumOverflows32 _ (is_pkg_defined util) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CloneByteSlice :
-  WpFuncCall util "CloneByteSlice" _ (is_pkg_defined util) :=
+  WpFuncCall util.CloneByteSlice _ (is_pkg_defined util) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc util.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End util.

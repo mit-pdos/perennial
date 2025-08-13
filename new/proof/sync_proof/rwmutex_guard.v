@@ -6,7 +6,7 @@ From New.proof.sync_proof Require rwmutex.
 Section proof.
 
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
 Definition rfrac_def : Qp := / pos_to_Qp (Z.to_pos (rwmutex.actualMaxReaders + 1)).
@@ -64,7 +64,7 @@ Instance : Inhabited rwmutex := {| inhabitant := Locked |}.
 
 Lemma wp_RWMutex__RLock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex rw P }}}
-    rw @ sync @ "RWMutex'ptr" @ "RLock" #()
+    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "RLock" #()
   {{{ RET #(); own_RWMutex_RLocked rw P ∗ ▷ P rfrac }}}.
 Proof.
   wp_start_folded as "Hpre". iNamed "Hpre".
@@ -96,7 +96,7 @@ Qed.
 
 Lemma wp_RWMutex__RUnlock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex_RLocked rw P ∗ ▷ P rfrac }}}
-    rw @ sync @ "RWMutex'ptr" @ "RUnlock" #()
+    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "RUnlock" #()
   {{{ RET #(); own_RWMutex rw P }}}.
 Proof.
   wp_start_folded as "[Ho HP_in]". iNamed "Ho".
@@ -130,7 +130,7 @@ Qed.
 
 Lemma wp_RWMutex__Lock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex rw P }}}
-    rw @ sync @ "RWMutex'ptr" @ "Lock" #()
+    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "Lock" #()
   {{{ RET #(); own_RWMutex_Locked rw P ∗ ▷ P 1%Qp }}}.
 Proof.
   wp_start_folded as "Ho". iNamed "Ho".
@@ -148,7 +148,7 @@ Qed.
 
 Lemma wp_RWMutex__Unlock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex_Locked rw P ∗ ▷ P 1%Qp }}}
-    rw @ sync @ "RWMutex'ptr" @ "Unlock" #()
+    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "Unlock" #()
   {{{ RET #(); own_RWMutex rw P }}}.
 Proof.
   wp_start_folded as "[Ho HP_in]". iNamed "Ho".

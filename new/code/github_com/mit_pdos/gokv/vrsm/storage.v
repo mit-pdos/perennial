@@ -13,6 +13,8 @@ Module storage.
 Section code.
 
 
+Definition InMemoryStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.InMemoryStateMachine"%go.
+
 Definition InMemoryStateMachine : go_type := structT [
   "ApplyReadonly" :: funcT;
   "ApplyVolatile" :: funcT;
@@ -21,6 +23,8 @@ Definition InMemoryStateMachine : go_type := structT [
 ].
 
 Definition MAX_LOG_SIZE : expr := #(W64 68719476736).
+
+Definition StateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.StateMachine"%go.
 
 Definition StateMachine : go_type := structT [
   "fname" :: stringT;
@@ -35,8 +39,8 @@ Definition StateMachine : go_type := structT [
 (* FIXME: better name; this isn't the same as "MakeDurable"
 
    go: durlog.go:40:24 *)
-Definition StateMachine__makeDurableWithSnap : val :=
-  rec: "StateMachine__makeDurableWithSnap" "s" "snap" :=
+Definition StateMachine__makeDurableWithSnapⁱᵐᵖˡ : val :=
+  λ: "s" "snap",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "snap" := (mem.alloc "snap") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
@@ -46,32 +50,32 @@ Definition StateMachine__makeDurableWithSnap : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "snap") in
     slice.len "$a0")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "snap") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #StateMachine #"epoch"%go (![#ptrT] "s"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     (if: ![#boolT] (struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s"))
     then
       do:  (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (slice.make2 #byteT #(W64 1)) in
-      (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1")
+      (func_call #marshal.WriteBytes) "$a0" "$a1")
     else do:  #());;;
-    do:  ((method_call #aof #"AppendOnlyFile'ptr" #"Close" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"Close"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
     let: "$a1" := (![#sliceT] "enc") in
-    (func_call #grove_ffi.grove_ffi #"FileWrite"%go) "$a0" "$a1");;;
+    (func_call #grove_ffi.FileWrite) "$a0" "$a1");;;
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
-    (func_call #aof.aof #"CreateAppendOnlyFile"%go) "$a0") in
+    (func_call #aof.CreateAppendOnlyFile) "$a0") in
     do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     return: #()).
 
@@ -79,19 +83,19 @@ Definition StateMachine__makeDurableWithSnap : val :=
    requires that the state machine is not sealed
 
    go: durlog.go:61:24 *)
-Definition StateMachine__truncateAndMakeDurable : val :=
-  rec: "StateMachine__truncateAndMakeDurable" "s" <> :=
+Definition StateMachine__truncateAndMakeDurableⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "snap" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((![#funcT] (struct.field_ref #InMemoryStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) #()) in
     do:  ("snap" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "snap") in
-    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0");;;
+    (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"makeDurableWithSnap"%go (![#ptrT] "s")) "$a0");;;
     return: #()).
 
 (* go: durlog.go:66:24 *)
-Definition StateMachine__apply : val :=
-  rec: "StateMachine__apply" "s" "op" :=
+Definition StateMachine__applyⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
@@ -100,7 +104,7 @@ Definition StateMachine__apply : val :=
     do:  ("ret" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     do:  ((struct.field_ref #StateMachine #"logsize"%go (![#ptrT] "s")) <-[#uint64T] ((![#uint64T] (struct.field_ref #StateMachine #"logsize"%go (![#ptrT] "s"))) + (s_to_w64 (let: "$a0" := (![#sliceT] "op") in
     slice.len "$a0"))));;;
@@ -111,15 +115,15 @@ Definition StateMachine__apply : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "opWithLen") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "op") in
     slice.len "$a0")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("opWithLen" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "opWithLen") in
     let: "$a1" := (![#sliceT] "op") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("opWithLen" <-[#sliceT] "$r0");;;
     let: "l" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "opWithLen") in
-    (method_call #aof #"AppendOnlyFile'ptr" #"Append" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
+    (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"Append"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
     do:  ("l" <-[#uint64T] "$r0");;;
     let: "f" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s"))) in
@@ -127,15 +131,15 @@ Definition StateMachine__apply : val :=
     let: "waitFn" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: <>,
       exception_do (do:  (let: "$a0" := (![#uint64T] "l") in
-      (method_call #aof #"AppendOnlyFile'ptr" #"WaitAppend" (![#ptrT] "f")) "$a0");;;
+      (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"WaitAppend"%go (![#ptrT] "f")) "$a0");;;
       return: #())
       ) in
     do:  ("waitFn" <-[#funcT] "$r0");;;
     return: (![#sliceT] "ret", ![#funcT] "waitFn")).
 
 (* go: durlog.go:92:24 *)
-Definition StateMachine__applyReadonly : val :=
-  rec: "StateMachine__applyReadonly" "s" "op" :=
+Definition StateMachine__applyReadonlyⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "op") in
@@ -145,8 +149,8 @@ Definition StateMachine__applyReadonly : val :=
 (* TODO: make the nextIndex and epoch argument order consistent with replica.StateMachine
 
    go: durlog.go:97:24 *)
-Definition StateMachine__setStateAndUnseal : val :=
-  rec: "StateMachine__setStateAndUnseal" "s" "snap" "nextIndex" "epoch" :=
+Definition StateMachine__setStateAndUnsealⁱᵐᵖˡ : val :=
+  λ: "s" "snap" "nextIndex" "epoch",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "epoch" := (mem.alloc "epoch") in
     let: "nextIndex" := (mem.alloc "nextIndex") in
@@ -161,12 +165,12 @@ Definition StateMachine__setStateAndUnseal : val :=
     let: "$a1" := (![#uint64T] "nextIndex") in
     (![#funcT] (struct.field_ref #InMemoryStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![#sliceT] "snap") in
-    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0");;;
+    (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"makeDurableWithSnap"%go (![#ptrT] "s")) "$a0");;;
     return: #()).
 
 (* go: durlog.go:105:24 *)
-Definition StateMachine__getStateAndSeal : val :=
-  rec: "StateMachine__getStateAndSeal" "s" <> :=
+Definition StateMachine__getStateAndSealⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     (if: (~ (![#boolT] (struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s"))))
     then
@@ -174,19 +178,21 @@ Definition StateMachine__getStateAndSeal : val :=
       do:  ((struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
       let: "l" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 1)) in
-      (method_call #aof #"AppendOnlyFile'ptr" #"Append" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
+      (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"Append"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
       do:  ("l" <-[#uint64T] "$r0");;;
       do:  (let: "$a0" := (![#uint64T] "l") in
-      (method_call #aof #"AppendOnlyFile'ptr" #"WaitAppend" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0")
+      (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"WaitAppend"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0")
     else do:  #());;;
     let: "snap" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((![#funcT] (struct.field_ref #InMemoryStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) #()) in
     do:  ("snap" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "snap")).
 
+Definition recoverStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/storage.recoverStateMachine"%go.
+
 (* go: durlog.go:118:6 *)
-Definition recoverStateMachine : val :=
-  rec: "recoverStateMachine" "smMem" "fname" :=
+Definition recoverStateMachineⁱᵐᵖˡ : val :=
+  λ: "smMem" "fname",
     exception_do (let: "fname" := (mem.alloc "fname") in
     let: "smMem" := (mem.alloc "smMem") in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
@@ -204,7 +210,7 @@ Definition recoverStateMachine : val :=
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
-    (func_call #grove_ffi.grove_ffi #"FileRead"%go) "$a0") in
+    (func_call #grove_ffi.FileRead) "$a0") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     (if: (let: "$a0" := (![#sliceT] "enc") in
     slice.len "$a0") = #(W64 0)
@@ -219,35 +225,35 @@ Definition recoverStateMachine : val :=
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "initState") in
       slice.len "$a0")) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := (![#sliceT] "initState") in
-      (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+      (func_call #marshal.WriteBytes) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := #(W64 0) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := #(W64 0) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       do:  (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
       let: "$a1" := (![#sliceT] "initialContents") in
-      (func_call #grove_ffi.grove_ffi #"FileWrite"%go) "$a0" "$a1");;;
+      (func_call #grove_ffi.FileWrite) "$a0" "$a1");;;
       let: "$r0" := (let: "$a0" := (![#stringT] "fname") in
-      (func_call #aof.aof #"CreateAppendOnlyFile"%go) "$a0") in
+      (func_call #aof.CreateAppendOnlyFile) "$a0") in
       do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
       return: (![#ptrT] "s")
     else do:  #());;;
     let: "$r0" := (let: "$a0" := (![#stringT] "fname") in
-    (func_call #aof.aof #"CreateAppendOnlyFile"%go) "$a0") in
+    (func_call #aof.CreateAppendOnlyFile) "$a0") in
     do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     let: "snapLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: "snap" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("snapLen" <-[#uint64T] "$r0");;;
@@ -263,13 +269,13 @@ Definition recoverStateMachine : val :=
     slice.slice #byteT "$s" (![#uint64T] "snapLen") (![#intT] "n")) in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #StateMachine #"epoch"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
@@ -277,13 +283,13 @@ Definition recoverStateMachine : val :=
     do:  (let: "$a0" := (![#sliceT] "snap") in
     let: "$a1" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
     (![#funcT] (struct.field_ref #InMemoryStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: int_gt (let: "$a0" := (![#sliceT] "enc") in
       slice.len "$a0") #(W64 1)
       then
         let: "opLen" := (mem.alloc (type.zero_val #uint64T)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-        (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+        (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("opLen" <-[#uint64T] "$r0");;;
@@ -303,7 +309,7 @@ Definition recoverStateMachine : val :=
         (![#funcT] (struct.field_ref #InMemoryStateMachine #"ApplyVolatile"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) "$a0");;;
         let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
         let: "$a1" := #(W64 1) in
-        (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+        (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
         do:  ((struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0")
       else break: #()));;;
     (if: int_gt (let: "$a0" := (![#sliceT] "enc") in
@@ -314,6 +320,8 @@ Definition recoverStateMachine : val :=
     else do:  #());;;
     return: (![#ptrT] "s")).
 
+Definition MakePbServer : go_string := "github.com/mit-pdos/gokv/vrsm/storage.MakePbServer"%go.
+
 (* XXX: putting this here because MakeServer takes nextIndex, epoch, and sealed
    as input, and the user of simplelog won't have access to the private fields
    index, epoch, etc.
@@ -321,27 +329,27 @@ Definition recoverStateMachine : val :=
    Maybe we should make those be a part of replica.StateMachine
 
    go: durlog.go:190:6 *)
-Definition MakePbServer : val :=
-  rec: "MakePbServer" "smMem" "fname" "confHosts" :=
+Definition MakePbServerⁱᵐᵖˡ : val :=
+  λ: "smMem" "fname" "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
     let: "fname" := (mem.alloc "fname") in
     let: "smMem" := (mem.alloc "smMem") in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "smMem") in
     let: "$a1" := (![#stringT] "fname") in
-    (func_call #storage.storage #"recoverStateMachine"%go) "$a0" "$a1") in
+    (func_call #recoverStateMachine) "$a0" "$a1") in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "sm" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$StartApply" := (λ: "op",
       exception_do (let: "op" := (mem.alloc "op") in
       let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "op") in
-      (method_call #storage.storage #"StateMachine'ptr" #"apply" (![#ptrT] "s")) "$a0")) in
+      (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"apply"%go (![#ptrT] "s")) "$a0")) in
       return: ("$ret0", "$ret1"))
       ) in
     let: "$ApplyReadonly" := (λ: "op",
       exception_do (let: "op" := (mem.alloc "op") in
       let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "op") in
-      (method_call #storage.storage #"StateMachine'ptr" #"applyReadonly" (![#ptrT] "s")) "$a0")) in
+      (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"applyReadonly"%go (![#ptrT] "s")) "$a0")) in
       return: ("$ret0", "$ret1"))
       ) in
     let: "$SetStateAndUnseal" := (λ: "snap" "nextIndex" "epoch",
@@ -351,11 +359,11 @@ Definition MakePbServer : val :=
       do:  (let: "$a0" := (![#sliceT] "snap") in
       let: "$a1" := (![#uint64T] "nextIndex") in
       let: "$a2" := (![#uint64T] "epoch") in
-      (method_call #storage.storage #"StateMachine'ptr" #"setStateAndUnseal" (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
+      (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"setStateAndUnseal"%go (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
       return: #())
       ) in
     let: "$GetStateAndSeal" := (λ: <>,
-      exception_do (return: ((method_call #storage.storage #"StateMachine'ptr" #"getStateAndSeal" (![#ptrT] "s")) #()))
+      exception_do (return: ((method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"getStateAndSeal"%go (![#ptrT] "s")) #()))
       ) in
     struct.make #replica.StateMachine [{
       "StartApply" ::= "$StartApply";
@@ -369,13 +377,13 @@ Definition MakePbServer : val :=
      let: "$a2" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
      let: "$a3" := (![#uint64T] (struct.field_ref #StateMachine #"epoch"%go (![#ptrT] "s"))) in
      let: "$a4" := (![#boolT] (struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s"))) in
-     (func_call #replica.replica #"MakeServer"%go) "$a0" "$a1" "$a2" "$a3" "$a4")).
+     (func_call #replica.MakeServer) "$a0" "$a1" "$a2" "$a3" "$a4")).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("recoverStateMachine"%go, recoverStateMachine); ("MakePbServer"%go, MakePbServer)].
+Definition functions' : list (go_string * val) := [(recoverStateMachine, recoverStateMachineⁱᵐᵖˡ); (MakePbServer, MakePbServerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("InMemoryStateMachine"%go, []); ("InMemoryStateMachine'ptr"%go, []); ("StateMachine"%go, []); ("StateMachine'ptr"%go, [("apply"%go, StateMachine__apply); ("applyReadonly"%go, StateMachine__applyReadonly); ("getStateAndSeal"%go, StateMachine__getStateAndSeal); ("makeDurableWithSnap"%go, StateMachine__makeDurableWithSnap); ("setStateAndUnseal"%go, StateMachine__setStateAndUnseal); ("truncateAndMakeDurable"%go, StateMachine__truncateAndMakeDurable)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(InMemoryStateMachineⁱᵈ, []); (ptrTⁱᵈ InMemoryStateMachineⁱᵈ, []); (StateMachineⁱᵈ, []); (ptrTⁱᵈ StateMachineⁱᵈ, [("apply"%go, StateMachine__applyⁱᵐᵖˡ); ("applyReadonly"%go, StateMachine__applyReadonlyⁱᵐᵖˡ); ("getStateAndSeal"%go, StateMachine__getStateAndSealⁱᵐᵖˡ); ("makeDurableWithSnap"%go, StateMachine__makeDurableWithSnapⁱᵐᵖˡ); ("setStateAndUnseal"%go, StateMachine__setStateAndUnsealⁱᵐᵖˡ); ("truncateAndMakeDurable"%go, StateMachine__truncateAndMakeDurableⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo storage.storage :=
   {|
@@ -386,13 +394,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("InMemorySt
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init storage.storage (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  replica.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  aof.initialize';;;
-      do:  std.initialize')
+  λ: <>,
+    package.init #storage.storage (λ: <>,
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (replica.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (aof.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (package.alloc storage.storage #()))
       ).
 
 End code.

@@ -4,15 +4,18 @@ From New.proof Require Import github_com.goose_lang.primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
-Program Instance : IsPkgInit std_core :=
-  ltac2:(build_pkg_init ()).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'std_core) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit std_core :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_pkg_init std_core }}}
-    std_core @ "SumNoOverflow" #x #y
+    @! std_core.SumNoOverflow #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
   wp_start as "_".
@@ -27,7 +30,7 @@ Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
   {{{ is_pkg_init std_core }}}
-    std_core @ "SumAssumeNoOverflow" #x #y
+    @! std_core.SumAssumeNoOverflow #x #y
   {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
   wp_start as "_".
@@ -40,7 +43,7 @@ Qed.
 
 Lemma wp_MulNoOverflow (x y : u64) :
   {{{ is_pkg_init std_core }}}
-    std_core @ "MulNoOverflow" #x #y
+    @! std_core.MulNoOverflow #x #y
   {{{ RET #(bool_decide (uint.Z (word.mul x y) = (uint.Z x * uint.Z y)%Z)); True }}}.
 Proof.
   wp_start as "_".
@@ -61,7 +64,7 @@ Qed.
 
 Lemma wp_MulAssumeNoOverflow (x y : u64) :
   {{{ is_pkg_init std_core }}}
-    std_core @ "MulAssumeNoOverflow" #x #y
+    @! std_core.MulAssumeNoOverflow #x #y
   {{{ RET #(word.mul x y); ⌜uint.Z (word.mul x y) = (uint.Z x * uint.Z y)%Z⌝ }}}.
 Proof.
   wp_start as "_".
@@ -76,7 +79,7 @@ Qed.
 
 Lemma wp_Shuffle s (xs: list w64) :
   {{{ is_pkg_init std_core ∗ s ↦* xs }}}
-    std_core @ "Shuffle" #s
+    @! std_core.Shuffle #s
   {{{ xs', RET #(); ⌜Permutation xs xs'⌝ ∗
                       s ↦* xs' }}}.
 Proof.
@@ -157,7 +160,7 @@ Qed.
 
 Lemma wp_Permutation (n: w64) :
   {{{ is_pkg_init std_core }}}
-    std_core @ "Permutation" #n
+    @! std_core.Permutation #n
   {{{ xs s, RET #s;
       ⌜xs ≡ₚ (W64 <$> seqZ 0 (uint.Z n))⌝ ∗
       s ↦* xs

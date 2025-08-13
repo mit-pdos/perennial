@@ -8,31 +8,89 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition ErrShortWrite : go_string := "io.ErrShortWrite"%go.
+
 Axiom ErrShortWrite'init : val.
+
+Definition errInvalidWrite : go_string := "io.errInvalidWrite"%go.
 
 Axiom errInvalidWrite'init : val.
 
+Definition ErrShortBuffer : go_string := "io.ErrShortBuffer"%go.
+
 Axiom ErrShortBuffer'init : val.
+
+Definition EOF : go_string := "io.EOF"%go.
 
 Axiom EOF'init : val.
 
+Definition ErrUnexpectedEOF : go_string := "io.ErrUnexpectedEOF"%go.
+
 Axiom ErrUnexpectedEOF'init : val.
+
+Definition ErrNoProgress : go_string := "io.ErrNoProgress"%go.
 
 Axiom ErrNoProgress'init : val.
 
+Definition Readerⁱᵈ : go_string := "io.Reader"%go.
+
 Definition Reader : go_type := interfaceT.
+
+Definition Writerⁱᵈ : go_string := "io.Writer"%go.
 
 Definition Writer : go_type := interfaceT.
 
+Definition WriteString : go_string := "io.WriteString"%go.
+
+Definition ReadAtLeast : go_string := "io.ReadAtLeast"%go.
+
+Definition ReadFull : go_string := "io.ReadFull"%go.
+
+Definition CopyN : go_string := "io.CopyN"%go.
+
+Definition Copy : go_string := "io.Copy"%go.
+
+Definition CopyBuffer : go_string := "io.CopyBuffer"%go.
+
+Definition copyBuffer : go_string := "io.copyBuffer"%go.
+
+Definition LimitReader : go_string := "io.LimitReader"%go.
+
+Definition NewSectionReader : go_string := "io.NewSectionReader"%go.
+
+Definition errWhence : go_string := "io.errWhence"%go.
+
 Axiom errWhence'init : val.
+
+Definition errOffset : go_string := "io.errOffset"%go.
 
 Axiom errOffset'init : val.
 
+Definition NewOffsetWriter : go_string := "io.NewOffsetWriter"%go.
+
+Definition TeeReader : go_string := "io.TeeReader"%go.
+
+Definition Discard : go_string := "io.Discard"%go.
+
 Axiom Discard'init : val.
+
+Definition blackHolePool : go_string := "io.blackHolePool"%go.
 
 Axiom blackHolePool'init : val.
 
+Definition NopCloser : go_string := "io.NopCloser"%go.
+
+Definition ReadAll : go_string := "io.ReadAll"%go.
+
+Definition MultiReader : go_string := "io.MultiReader"%go.
+
+Definition MultiWriter : go_string := "io.MultiWriter"%go.
+
+Definition ErrClosedPipe : go_string := "io.ErrClosedPipe"%go.
+
 Axiom ErrClosedPipe'init : val.
+
+Definition Pipe : go_string := "io.Pipe"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -51,9 +109,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init io.io (λ: <>,
-      exception_do (do:  (ErrShortWrite'init #());;;
+  λ: <>,
+    package.init #io.io (λ: <>,
+      exception_do (do:  (package.alloc io.io #());;;
+      do:  (ErrShortWrite'init #());;;
       do:  (errInvalidWrite'init #());;;
       do:  (ErrShortBuffer'init #());;;
       do:  (EOF'init #());;;

@@ -101,10 +101,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Auditor.mu' v)) auditor.Auditor "mu"%go.
-  simpl_one_flatten_struct (# (Auditor.sk' v)) auditor.Auditor "sk"%go.
-  simpl_one_flatten_struct (# (Auditor.lastDig' v)) auditor.Auditor "lastDig"%go.
-  simpl_one_flatten_struct (# (Auditor.hist' v)) auditor.Auditor "hist"%go.
+  simpl_one_flatten_struct (# (Auditor.mu' v)) (auditor.Auditor) "mu"%go.
+  simpl_one_flatten_struct (# (Auditor.sk' v)) (auditor.Auditor) "sk"%go.
+  simpl_one_flatten_struct (# (Auditor.lastDig' v)) (auditor.Auditor) "lastDig"%go.
+  simpl_one_flatten_struct (# (Auditor.hist' v)) (auditor.Auditor) "hist"%go.
 
   solve_field_ref_f.
 Qed.
@@ -180,8 +180,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (history.link' v)) auditor.history "link"%go.
-  simpl_one_flatten_struct (# (history.servSig' v)) auditor.history "servSig"%go.
+  simpl_one_flatten_struct (# (history.link' v)) (auditor.history) "link"%go.
+  simpl_one_flatten_struct (# (history.servSig' v)) (auditor.history) "servSig"%go.
 
   solve_field_ref_f.
 Qed.
@@ -271,10 +271,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (serv.cli' v)) auditor.serv "cli"%go.
-  simpl_one_flatten_struct (# (serv.sigPk' v)) auditor.serv "sigPk"%go.
-  simpl_one_flatten_struct (# (serv.vrfPk' v)) auditor.serv "vrfPk"%go.
-  simpl_one_flatten_struct (# (serv.servVrfSig' v)) auditor.serv "servVrfSig"%go.
+  simpl_one_flatten_struct (# (serv.cli' v)) (auditor.serv) "cli"%go.
+  simpl_one_flatten_struct (# (serv.sigPk' v)) (auditor.serv) "sigPk"%go.
+  simpl_one_flatten_struct (# (serv.vrfPk' v)) (auditor.serv) "vrfPk"%go.
+  simpl_one_flatten_struct (# (serv.servVrfSig' v)) (auditor.serv) "servVrfSig"%go.
 
   solve_field_ref_f.
 Qed.
@@ -500,12 +500,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (GetReply.Link' v)) auditor.GetReply "Link"%go.
-  simpl_one_flatten_struct (# (GetReply.ServLinkSig' v)) auditor.GetReply "ServLinkSig"%go.
-  simpl_one_flatten_struct (# (GetReply.AdtrLinkSig' v)) auditor.GetReply "AdtrLinkSig"%go.
-  simpl_one_flatten_struct (# (GetReply.VrfPk' v)) auditor.GetReply "VrfPk"%go.
-  simpl_one_flatten_struct (# (GetReply.ServVrfSig' v)) auditor.GetReply "ServVrfSig"%go.
-  simpl_one_flatten_struct (# (GetReply.AdtrVrfSig' v)) auditor.GetReply "AdtrVrfSig"%go.
+  simpl_one_flatten_struct (# (GetReply.Link' v)) (auditor.GetReply) "Link"%go.
+  simpl_one_flatten_struct (# (GetReply.ServLinkSig' v)) (auditor.GetReply) "ServLinkSig"%go.
+  simpl_one_flatten_struct (# (GetReply.AdtrLinkSig' v)) (auditor.GetReply) "AdtrLinkSig"%go.
+  simpl_one_flatten_struct (# (GetReply.VrfPk' v)) (auditor.GetReply) "VrfPk"%go.
+  simpl_one_flatten_struct (# (GetReply.ServVrfSig' v)) (auditor.GetReply) "ServVrfSig"%go.
+  simpl_one_flatten_struct (# (GetReply.AdtrVrfSig' v)) (auditor.GetReply) "AdtrVrfSig"%go.
 
   solve_field_ref_f.
 Qed.
@@ -514,79 +514,64 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined auditor :=
-{|
-  is_pkg_defined := is_global_definitions auditor var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_New :
-  WpFuncCall auditor "New" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.New _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getNextDig :
-  WpFuncCall auditor "getNextDig" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewRpcAuditor :
-  WpFuncCall auditor "NewRpcAuditor" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.NewRpcAuditor _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallUpdate :
-  WpFuncCall auditor "CallUpdate" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.CallUpdate _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallGet :
-  WpFuncCall auditor "CallGet" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.CallGet _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateReplyEncode :
-  WpFuncCall auditor "UpdateReplyEncode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.UpdateReplyEncode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateReplyDecode :
-  WpFuncCall auditor "UpdateReplyDecode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.UpdateReplyDecode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetArgEncode :
-  WpFuncCall auditor "GetArgEncode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetArgEncode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetArgDecode :
-  WpFuncCall auditor "GetArgDecode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetArgDecode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetReplyEncode :
-  WpFuncCall auditor "GetReplyEncode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetReplyEncode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetReplyDecode :
-  WpFuncCall auditor "GetReplyDecode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetReplyDecode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_Get :
-  WpMethodCall auditor "Auditor'ptr" "Get" _ (is_pkg_defined auditor) :=
+  WpMethodCall (ptrTⁱᵈ auditor.Auditorⁱᵈ) "Get" _ (is_pkg_defined auditor) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_Update :
-  WpMethodCall auditor "Auditor'ptr" "Update" _ (is_pkg_defined auditor) :=
+  WpMethodCall (ptrTⁱᵈ auditor.Auditorⁱᵈ) "Update" _ (is_pkg_defined auditor) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_updOnce :
-  WpMethodCall auditor "Auditor'ptr" "updOnce" _ (is_pkg_defined auditor) :=
+  WpMethodCall (ptrTⁱᵈ auditor.Auditorⁱᵈ) "updOnce" _ (is_pkg_defined auditor) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

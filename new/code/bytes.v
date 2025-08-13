@@ -8,34 +8,178 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Bufferⁱᵈ : go_string := "bytes.Buffer"%go.
+
 Axiom Buffer : go_type.
+
+Definition ErrTooLarge : go_string := "bytes.ErrTooLarge"%go.
 
 Axiom ErrTooLarge'init : val.
 
+Definition errNegativeRead : go_string := "bytes.errNegativeRead"%go.
+
 Axiom errNegativeRead'init : val.
 
+Definition growSlice : go_string := "bytes.growSlice"%go.
+
+Definition errUnreadByte : go_string := "bytes.errUnreadByte"%go.
+
 Axiom errUnreadByte'init : val.
+
+Definition NewBuffer : go_string := "bytes.NewBuffer"%go.
+
+Definition NewBufferString : go_string := "bytes.NewBufferString"%go.
+
+Definition Equal : go_string := "bytes.Equal"%go.
 
 (* Equal reports whether a and b
    are the same length and contain the same bytes.
    A nil argument is equivalent to an empty slice.
 
    go: bytes.go:20:6 *)
-Definition Equal : val :=
-  rec: "Equal" "a" "b" :=
+Definition Equalⁱᵐᵖˡ : val :=
+  λ: "a" "b",
     exception_do (let: "b" := (mem.alloc "b") in
     let: "a" := (mem.alloc "a") in
     return: ((string.from_bytes (![#sliceT] "a")) = (string.from_bytes (![#sliceT] "b")))).
 
+Definition Compare : go_string := "bytes.Compare"%go.
+
+Definition explode : go_string := "bytes.explode"%go.
+
+Definition Count : go_string := "bytes.Count"%go.
+
+Definition Contains : go_string := "bytes.Contains"%go.
+
+Definition ContainsAny : go_string := "bytes.ContainsAny"%go.
+
+Definition ContainsRune : go_string := "bytes.ContainsRune"%go.
+
+Definition ContainsFunc : go_string := "bytes.ContainsFunc"%go.
+
+Definition IndexByte : go_string := "bytes.IndexByte"%go.
+
+Definition indexBytePortable : go_string := "bytes.indexBytePortable"%go.
+
+Definition LastIndex : go_string := "bytes.LastIndex"%go.
+
+Definition LastIndexByte : go_string := "bytes.LastIndexByte"%go.
+
+Definition IndexRune : go_string := "bytes.IndexRune"%go.
+
+Definition IndexAny : go_string := "bytes.IndexAny"%go.
+
+Definition LastIndexAny : go_string := "bytes.LastIndexAny"%go.
+
+Definition genSplit : go_string := "bytes.genSplit"%go.
+
+Definition SplitN : go_string := "bytes.SplitN"%go.
+
+Definition SplitAfterN : go_string := "bytes.SplitAfterN"%go.
+
+Definition Split : go_string := "bytes.Split"%go.
+
+Definition SplitAfter : go_string := "bytes.SplitAfter"%go.
+
+Definition asciiSpace : go_string := "bytes.asciiSpace"%go.
+
 Axiom asciiSpace'init : val.
+
+Definition Fields : go_string := "bytes.Fields"%go.
+
+Definition FieldsFunc : go_string := "bytes.FieldsFunc"%go.
+
+Definition Join : go_string := "bytes.Join"%go.
+
+Definition HasPrefix : go_string := "bytes.HasPrefix"%go.
+
+Definition HasSuffix : go_string := "bytes.HasSuffix"%go.
+
+Definition Map : go_string := "bytes.Map"%go.
+
+Definition Repeat : go_string := "bytes.Repeat"%go.
+
+Definition ToUpper : go_string := "bytes.ToUpper"%go.
+
+Definition ToLower : go_string := "bytes.ToLower"%go.
+
+Definition ToTitle : go_string := "bytes.ToTitle"%go.
+
+Definition ToUpperSpecial : go_string := "bytes.ToUpperSpecial"%go.
+
+Definition ToLowerSpecial : go_string := "bytes.ToLowerSpecial"%go.
+
+Definition ToTitleSpecial : go_string := "bytes.ToTitleSpecial"%go.
+
+Definition ToValidUTF8 : go_string := "bytes.ToValidUTF8"%go.
+
+Definition isSeparator : go_string := "bytes.isSeparator"%go.
+
+Definition Title : go_string := "bytes.Title"%go.
+
+Definition TrimLeftFunc : go_string := "bytes.TrimLeftFunc"%go.
+
+Definition TrimRightFunc : go_string := "bytes.TrimRightFunc"%go.
+
+Definition TrimFunc : go_string := "bytes.TrimFunc"%go.
+
+Definition TrimPrefix : go_string := "bytes.TrimPrefix"%go.
+
+Definition TrimSuffix : go_string := "bytes.TrimSuffix"%go.
+
+Definition IndexFunc : go_string := "bytes.IndexFunc"%go.
+
+Definition LastIndexFunc : go_string := "bytes.LastIndexFunc"%go.
+
+Definition indexFunc : go_string := "bytes.indexFunc"%go.
+
+Definition lastIndexFunc : go_string := "bytes.lastIndexFunc"%go.
+
+Definition makeASCIISet : go_string := "bytes.makeASCIISet"%go.
+
+Definition containsRune : go_string := "bytes.containsRune"%go.
+
+Definition Trim : go_string := "bytes.Trim"%go.
+
+Definition TrimLeft : go_string := "bytes.TrimLeft"%go.
+
+Definition trimLeftByte : go_string := "bytes.trimLeftByte"%go.
+
+Definition trimLeftASCII : go_string := "bytes.trimLeftASCII"%go.
+
+Definition trimLeftUnicode : go_string := "bytes.trimLeftUnicode"%go.
+
+Definition TrimRight : go_string := "bytes.TrimRight"%go.
+
+Definition trimRightByte : go_string := "bytes.trimRightByte"%go.
+
+Definition trimRightASCII : go_string := "bytes.trimRightASCII"%go.
+
+Definition trimRightUnicode : go_string := "bytes.trimRightUnicode"%go.
+
+Definition TrimSpace : go_string := "bytes.TrimSpace"%go.
+
+Definition Runes : go_string := "bytes.Runes"%go.
+
+Definition Replace : go_string := "bytes.Replace"%go.
+
+Definition ReplaceAll : go_string := "bytes.ReplaceAll"%go.
+
+Definition EqualFold : go_string := "bytes.EqualFold"%go.
+
+Definition Index : go_string := "bytes.Index"%go.
+
+Definition Cut : go_string := "bytes.Cut"%go.
+
+Definition Clone : go_string := "bytes.Clone"%go.
 
 (* Clone returns a copy of b[:len(b)].
    The result may have additional unused capacity.
    Clone(nil) returns nil.
 
    go: bytes.go:1408:6 *)
-Definition Clone : val :=
-  rec: "Clone" "b" :=
+Definition Cloneⁱᵐᵖˡ : val :=
+  λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
     (if: (![#sliceT] "b") = #slice.nil
     then return: (#slice.nil)
@@ -44,11 +188,31 @@ Definition Clone : val :=
      let: "$a1" := (![#sliceT] "b") in
      (slice.append #byteT) "$a0" "$a1")).
 
+Definition CutPrefix : go_string := "bytes.CutPrefix"%go.
+
+Definition CutSuffix : go_string := "bytes.CutSuffix"%go.
+
+Definition Lines : go_string := "bytes.Lines"%go.
+
+Definition explodeSeq : go_string := "bytes.explodeSeq"%go.
+
+Definition splitSeq : go_string := "bytes.splitSeq"%go.
+
+Definition SplitSeq : go_string := "bytes.SplitSeq"%go.
+
+Definition SplitAfterSeq : go_string := "bytes.SplitAfterSeq"%go.
+
+Definition FieldsSeq : go_string := "bytes.FieldsSeq"%go.
+
+Definition FieldsFuncSeq : go_string := "bytes.FieldsFuncSeq"%go.
+
+Definition NewReader : go_string := "bytes.NewReader"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Equal"%go, Equal); ("Clone"%go, Clone)].
+Definition functions' : list (go_string * val) := [(Equal, Equalⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Buffer"%go, []); ("Buffer'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Bufferⁱᵈ, []); (ptrTⁱᵈ Bufferⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo bytes.bytes :=
   {|
@@ -61,9 +225,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Buffer"%go
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init bytes.bytes (λ: <>,
-      exception_do (do:  (ErrTooLarge'init #());;;
+  λ: <>,
+    package.init #bytes.bytes (λ: <>,
+      exception_do (do:  (package.alloc bytes.bytes #());;;
+      do:  (ErrTooLarge'init #());;;
       do:  (errNegativeRead'init #());;;
       do:  (errUnreadByte'init #());;;
       do:  (asciiSpace'init #()))

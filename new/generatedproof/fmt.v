@@ -11,31 +11,16 @@ Module fmt.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined fmt :=
-{|
-  is_pkg_defined := is_global_definitions fmt var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Printf :
-  WpFuncCall fmt "Printf" _ (is_pkg_defined fmt) :=
+  WpFuncCall fmt.Printf _ (is_pkg_defined fmt) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Print :
-  WpFuncCall fmt "Print" _ (is_pkg_defined fmt) :=
+  WpFuncCall fmt.Print _ (is_pkg_defined fmt) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

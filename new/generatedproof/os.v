@@ -8,26 +8,28 @@ Set Default Proof Using "Type".
 
 Module os.
 
+(* type os.File *)
+Module File.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End File.
+
+Global Instance bounded_size_File : BoundedTypeSize os.File.
+Admitted.
+
+Global Instance into_val_File `{ffi_syntax} : IntoVal File.t.
+Admitted.
+
+Global Instance into_val_typed_File `{ffi_syntax} : IntoValTyped File.t os.File.
+Admitted.
+
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined os :=
-{|
-  is_pkg_defined := is_global_definitions os var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 End names.
 End os.

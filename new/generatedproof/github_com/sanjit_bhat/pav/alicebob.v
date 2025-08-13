@@ -80,7 +80,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (histEntry.isReg' v)) alicebob.histEntry "isReg"%go.
+  simpl_one_flatten_struct (# (histEntry.isReg' v)) (alicebob.histEntry) "isReg"%go.
 
   solve_field_ref_f.
 Qed.
@@ -89,43 +89,28 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined alicebob :=
-{|
-  is_pkg_defined := is_global_definitions alicebob var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_testAliceBob :
-  WpFuncCall alicebob "testAliceBob" _ (is_pkg_defined alicebob) :=
+  WpFuncCall alicebob.testAliceBob _ (is_pkg_defined alicebob) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_equal :
-  WpFuncCall alicebob "equal" _ (is_pkg_defined alicebob) :=
+  WpFuncCall alicebob.equal _ (is_pkg_defined alicebob) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runAlice :
-  WpFuncCall alicebob "runAlice" _ (is_pkg_defined alicebob) :=
+  WpFuncCall alicebob.runAlice _ (is_pkg_defined alicebob) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_loopPending :
-  WpFuncCall alicebob "loopPending" _ (is_pkg_defined alicebob) :=
+  WpFuncCall alicebob.loopPending _ (is_pkg_defined alicebob) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runBob :
-  WpFuncCall alicebob "runBob" _ (is_pkg_defined alicebob) :=
+  WpFuncCall alicebob.runBob _ (is_pkg_defined alicebob) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

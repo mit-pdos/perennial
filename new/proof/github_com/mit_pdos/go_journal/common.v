@@ -3,9 +3,13 @@ Require Import New.proof.proof_prelude.
 Require Import New.proof.github_com.goose_lang.primitive.disk.
 
 Section proof.
-Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
-Program Instance : IsPkgInit common := ltac2:(build_pkg_init ()).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'common) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit common :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 End proof.

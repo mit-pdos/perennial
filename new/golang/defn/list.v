@@ -41,7 +41,7 @@ Context `{ffi_syntax}.
 Definition alist_lookup : val :=
   rec: "alist_lookup" "f" "fvs" :=
     list.Match "fvs"
-              (λ: <>, InjLV #())
+              (λ: <>, NONEV)
               (λ: "fv" "fvs",
                  let: ("f'", "v") := "fv" in
                  if: "f" = "f'" then SOME "v" else "alist_lookup" "f" "fvs").

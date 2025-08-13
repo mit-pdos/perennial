@@ -7,15 +7,19 @@ Section proof.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
-Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
-Program Instance : IsPkgInit main := ltac2:(build_pkg_init ()).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'main) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit main :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Lemma wp_partiallyApplyMe (s : go_string) (x : w64):
   Z.of_nat (length s) = sint.Z x →
   {{{ is_pkg_init main }}}
-    main@"partiallyApplyMe" #s #x
+    @! main.partiallyApplyMe #s #x
   {{{ RET #(); True }}}.
 Proof.
   intros ?. wp_start as "_".
@@ -26,7 +30,7 @@ Qed.
 
 Lemma wp_Foo__someMethod (f : main.Foo.t) :
   {{{ is_pkg_init main }}}
-    f @ main @ "Foo" @ "someMethod" #()
+    f @ main.Fooⁱᵈ @ "someMethod" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_".
@@ -36,7 +40,7 @@ Qed.
 Lemma wp_Foo__someMethodWithArgs (f : main.Foo.t) (y : go_string) (z : w64) :
   Z.of_nat (length (f ++ y)) = sint.Z z →
   {{{ is_pkg_init main }}}
-    f @ main @ "Foo" @ "someMethodWithArgs" #y #z
+    f @ main.Fooⁱᵈ @ "someMethodWithArgs" #y #z
   {{{ RET #(); True }}}.
 Proof.
   intros ?. wp_start as "_".
@@ -46,7 +50,7 @@ Qed.
 
 Lemma wp_main :
   {{{ is_pkg_init main }}}
-    main@"main" #()
+    @! main.main #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_".
