@@ -1,6 +1,5 @@
 Require Import New.proof.go_etcd_io.raft.v3_proof.base.
 Require Import New.proof.chan.
-Local Transparent is_pkg_init_raft.
 
 Module node.
 Axiom t : Type.
@@ -43,30 +42,37 @@ Definition is_Node (n : loc) : iProp Σ :=
 
 Lemma wp_node__Ready (n : loc) :
   {{{ is_pkg_init raft ∗ is_Node n }}}
-    n@raft@"node'ptr"@"Ready" #()
+    n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Ready" #()
   {{{ (ready : chan.t), RET #ready; True }}}.
 Proof.
   wp_start. wp_auto. (* need repr predicate for node *)
 Admitted.
 
+(* FIXME: anonymous struct{} *)
+Global Instance wp_struct_make_unit:
+  PureWp True
+    (struct.make #(structT []) (alist_val []))%struct
+    #().
+Proof.
+  erewrite <- struct_val_aux_nil.
+  apply wp_struct_make; cbn; auto.
+Qed.
+
 Lemma wp_node__Advance (n : loc) :
   {{{ is_pkg_init raft ∗ is_Node n }}}
-    n@raft@"node'ptr"@"Advance" #()
+    n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Advance" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
-  iNamed "Hpre".
-  wp_auto.
-  (* FIXME: want unit, but ending up with raft.TracingEvent.t *)
+  iNamed "Hpre". wp_auto.
   wp_apply wp_chan_select_blocking.
   rewrite big_andL_cons big_andL_singleton.
   iSplit.
   - (* able to send on advancec *)
-    repeat iExists _. instantiate (1:=(tt : unit)). iSplitR.
-    { iPureIntro. admit. }
-    Unshelve. 2: tc_solve.
+    iExists unit; repeat iExists _. iSplitR.
+    { iPureIntro. done. }
     admit. (* just prove the send atomic update then trivial postcondition *)
-  - repeat iExists _. iNamed "Hinner". Search own_closeable_chan.
+  - repeat iExists _. iNamed "Hinner".
     iApply (closeable_chan_receive with "Hdone").
     iIntros "[_ _]". wp_auto. iApply "HΦ". done.
 Admitted.
@@ -76,7 +82,7 @@ Lemma wp_node__Propose n (ctx : context.Context.t) ctx_desc (data_sl : slice.t) 
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
       "#Hnode" ∷ is_Node n ∗
       "data_sl" ∷ data_sl ↦* data }}}
-    n@raft@"node'ptr"@"Propose" #ctx #data_sl
+    n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Propose" #ctx #data_sl
   {{{ (err : error.t), RET #err; if decide (err = interface.nil) then False else True }}}.
 Proof.
   (* Inlining proofs of [stepWait] and [stepWithWaitOption (wait:=true)] here. *)
@@ -103,17 +109,17 @@ Proof.
     - (* case: raft is done *)
       repeat iExists _. iNamed "Hinner".
       iApply (closeable_chan_receive with "Hdone").
-      iIntros "[_ #HDone_closed]". wp_auto. wp_globals_get.
-      (* FIXME: global variable holding an error *)
-      admit.
+      iIntros "[_ #HDone_closed]". wp_auto. wp_apply wp_globals_get.
+      iDestruct (is_pkg_init_def_unfold with "[]") as "#Hpkg".
+      { iFrame "#". }
+      simpl is_pkg_init_def. iNamed "Hpkg".
+      wp_auto.
+      iApply "HΦ". rewrite decide_False //.
   }
   repeat iExists _.
   iSplitR; first done.
-Qed.
+  (* case: send proposeMessage on propc *)
+  (* TODO *)
+Admitted.
 
 End raft.
-
-Section proof.
-Context `{!heapGS Σ}.
-
-End proof.
