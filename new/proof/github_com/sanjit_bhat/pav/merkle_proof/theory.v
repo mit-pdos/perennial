@@ -640,8 +640,8 @@ Fixpoint is_full_tree t h limit : iProp Σ :=
       "%" ∷ ⌜ t = Cut h ⌝
     | S limit' =>
       ∃ t0 t1,
-      "#Hrecur0" ∷ is_full_tree t0 h0 limit' ∗
-      "#Hrecur1" ∷ is_full_tree t1 h1 limit' ∗
+      "#Hchild0" ∷ is_full_tree t0 h0 limit' ∗
+      "#Hchild1" ∷ is_full_tree t1 h1 limit' ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end
   end.
@@ -688,8 +688,8 @@ Proof.
   1-8:
     opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|];
     by iApply cryptoffi.is_hash_det.
-  iDestruct ("IHl0" with "Hrecur00 Hrecur01") as %->.
-  iDestruct ("IHl0" with "Hrecur10 Hrecur11") as %->.
+  iDestruct ("IHl0" with "Hchild00 Hchild01") as %->.
+  iDestruct ("IHl0" with "Hchild10 Hchild11") as %->.
   opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
   by iApply cryptoffi.is_hash_det.
 Qed.
@@ -712,8 +712,8 @@ Proof.
     repeat case_match;
     iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
     simplify_eq/=; try done.
-  iDestruct ("IHlimit" with "Hrecur00 Hrecur01") as %->.
-  by iDestruct ("IHlimit" with "Hrecur10 Hrecur11") as %->.
+  iDestruct ("IHlimit" with "Hchild00 Hchild01") as %->.
+  by iDestruct ("IHlimit" with "Hchild10 Hchild11") as %->.
 Qed.
 
 (*
@@ -788,8 +788,8 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
         (u64_le $ length val) ++ val) h
   | Inner child0 child1 =>
     ∃ h0 h1,
-    "#Hleft_hash" ∷ is_cut_tree child0 h0 ∗
-    "#Hright_hash" ∷ is_cut_tree child1 h1 ∗
+    "#Hchild0" ∷ is_cut_tree child0 h0 ∗
+    "#Hchild1" ∷ is_cut_tree child1 h1 ∗
     "#His_hash" ∷ cryptoffi.is_hash (Some $ [innerNodeTag] ++ h0 ++ h1) h
   | Cut ch =>
     "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
@@ -841,8 +841,8 @@ Proof.
     simpl; iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
   - by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
   - by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
-  - iDestruct ("IH0" with "Hleft_hash0 Hleft_hash1") as %->.
-    iDestruct ("IH1" with "Hright_hash0 Hright_hash1") as %->.
+  - iDestruct ("IH0" with "Hchild00 Hchild01") as %->.
+    iDestruct ("IH1" with "Hchild10 Hchild11") as %->.
     by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
   - naive_solver.
 Qed.
@@ -854,12 +854,24 @@ Fixpoint is_limit t limit :=
   | Inner c0 c1 =>
     match limit with
     | 0%nat => False
-    | S l =>
-      is_limit c0 l ∧
-      is_limit c1 l
+    | S limit' =>
+      is_limit c0 limit' ∧
+      is_limit c1 limit'
     end
   | _ => True
   end.
+
+Lemma is_limit_inc t (l0 l1 : nat) :
+  is_limit t l0 →
+  l0 ≤ l1 →
+  is_limit t l1.
+Proof.
+  revert l0 l1.
+  induction t; try done.
+  simpl. intros.
+  repeat (case_match; [done|]).
+  naive_solver lia.
+Qed.
 
 #[local] Transparent is_full_tree.
 
@@ -870,36 +882,30 @@ Lemma path_txfer t0 t1 h l d label found :
   ⌜ is_limit t0 l ⌝ -∗
   ⌜ is_path t1 d label found ⌝.
 Proof.
-  revert t1 h l d label found.
-  induction t0; destruct l; simpl; intros;
+  iInduction t0 as [] forall (t1 h l d); destruct l; simpl;
     iNamedSuffix 1 "0";
     iNamedSuffix 1 "1";
-    iIntros (??).
+    iIntros (??); try done;
+    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
   (* TODO: duplication from destruct [limit]. *)
   (* TODO: could make smth like an induction principle for
   proving inductive properties across cut tree and full tree,
   which takes care of "unifying trees" for us. *)
-  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
-    rewrite decode_empty_det.
-    iNamed "Hdecode1".
-    naive_solver.
-  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
-    rewrite decode_empty_det.
-    iNamed "Hdecode1".
-    naive_solver.
-  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
-    rewrite decode_leaf_det; [|done..].
-    (*
-    case_decide; iNamed "Hdecode1".
-    + naive_solver.
-    + iPureIntro. subst. simpl. *)
-      (* stuck: case when full tree has bad prefix, which turns leaf into cut.
-      we need sorted_prefix assumption to contradict this;
-      otherwise, can't establish path.
-      let's push on alternate plan where to_map has prefix filtering.
-      that would remove sorted reasoning from here,
-      tho it might bring other complications. *)
-Admitted.
+  - rewrite decode_empty_det. iNamed "Hdecode1". naive_solver.
+  - rewrite decode_empty_det. iNamed "Hdecode1". naive_solver.
+  - rewrite decode_leaf_det; [|done..]. iNamed "Hdecode1". naive_solver.
+  - rewrite decode_leaf_det; [|done..]. iNamed "Hdecode1". naive_solver.
+  - intuition.
+    iDestruct (is_cut_tree_len with "Hchild00") as %?.
+    iDestruct (is_cut_tree_len with "Hchild10") as %?.
+    rewrite decode_inner_det; [|done..].
+    iNamedSuffix "Hdecode1" "1".
+    subst. simpl.
+    case_match; [|done].
+    case_match.
+    + by iApply "IHt0_2".
+    + by iApply "IHt0_1".
+Qed.
 
 (* TODO: overall plan for full-map Verify reasoning:
 - user shows up with is_full_map m (hash:=comp proof) from merkle inversion.
