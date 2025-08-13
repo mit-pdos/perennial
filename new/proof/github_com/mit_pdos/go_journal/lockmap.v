@@ -15,20 +15,15 @@ Instance subG_lockmapΣ Σ : subG lockmapΣ Σ → lockmapG Σ.
 Proof. solve_inG. Qed.
 
 Section heap.
-Context `{!heapGS Σ} `{!globalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!lockmapG Σ}.
 
-#[global]
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'lockmap).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'lockmap) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit lockmap :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
-Next Obligation.
-  (* XXX why isn't this automatic? *)
-  refine _.
-Qed.
 
 Implicit Types s : slice.t.
 
@@ -53,7 +48,7 @@ Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
       "Hmptr" ∷ own_map mptr (DfracOwn 1) m ∗
       "Hghctx" ∷ ghost_map_auth ghostHeap 1 ghostMap ∗
       "Haddrs" ∷ ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
-          lockShard_addr ghostHeap (interface.mk Mutex_type_id #shardlock) addr gheld lockStatePtrV covered P ) ∗
+          lockShard_addr ghostHeap (interface.mk (ptrTⁱᵈ sync.Mutexⁱᵈ) #shardlock) addr gheld lockStatePtrV covered P ) ∗
       "Hcovered" ∷ ( [∗ set] addr ∈ covered,
           ⌜m !! addr = None⌝ → P addr )
   )%I.
@@ -110,7 +105,7 @@ Theorem wp_lockShard__acquire ls gh covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       is_lockShard ls gh covered P ∗
       ⌜addr ∈ covered⌝ }}}
-    ls@lockmap@"lockShard'ptr"@"acquire" #addr
+    ls @ (ptrTⁱᵈ lockmap.lockShardⁱᵈ) @ "acquire" #addr
   {{{ RET #(); P addr ∗ locked gh addr }}}.
 Proof.
   wp_start as "[@ %]".
@@ -215,7 +210,7 @@ Qed.
 Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
   {{{ is_pkg_init lockmap ∗
       is_lockShard ls gh covered P ∗ P addr ∗ locked gh addr }}}
-    ls@lockmap@"lockShard'ptr"@"release" #addr
+    ls @ (ptrTⁱᵈ lockmap.lockShardⁱᵈ) @ "release" #addr
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(Hls & Hp & Haddrlocked)".
@@ -476,7 +471,7 @@ Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       is_lockMap l ghs covered P ∗
       ⌜addr ∈ covered⌝ }}}
-    l@lockmap@"LockMap'ptr"@"Acquire" #addr
+    l @ (ptrTⁱᵈ lockmap.LockMapⁱᵈ) @"Acquire" #addr
   {{{ RET #(); P addr ∗ Locked ghs addr }}}.
 Proof.
   wp_start as "[@ %]".
@@ -517,7 +512,7 @@ Qed.
 Theorem wp_LockMap__Release l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       is_lockMap l ghs covered P ∗ P addr ∗ Locked ghs addr }}}
-    l@lockmap@"LockMap'ptr"@"Release" #addr
+    l @ (ptrTⁱᵈ lockmap.LockMapⁱᵈ) @ "Release" #addr
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[@ [HP Hlocked]]".

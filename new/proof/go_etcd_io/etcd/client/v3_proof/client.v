@@ -37,7 +37,7 @@ Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clie
   (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
                         (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
   (* TODO: return value. *)
-  WP client @ c@! lientv3.Client.Do #ctx #op {{ Φ }}.
+  WP client @ clientv3.Clientⁱᵈ @ "Do" #ctx #op {{ Φ }}.
 
 Axiom wp_Client__GetLogger :
   ∀ (client : loc) γ,

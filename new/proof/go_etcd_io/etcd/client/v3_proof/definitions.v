@@ -20,7 +20,7 @@ Local Definition deps_etcdserverpb : iProp Σ := ltac2:(build_pkg_init_deps 'etc
     is_pkg_init_deps := deps_etcdserverpb;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'clientv3).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'clientv3) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit clientv3 :=
   {|
     is_pkg_init_def := True;

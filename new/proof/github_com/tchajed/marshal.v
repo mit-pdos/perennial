@@ -9,9 +9,9 @@ From New.proof Require Import proof_prelude.
 From New.generatedproof.github_com.tchajed Require Import marshal.
 
 Section goose_lang.
-Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global] Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'marshal).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'marshal) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit marshal :=
   {|
     is_pkg_init_def := True;

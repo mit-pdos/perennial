@@ -783,9 +783,8 @@ Qed.
 
 
 Section proof.
-Context `{!heapGS Σ} `{!globalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global]
 Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'New.code.github_com.mit_pdos.go_journal.addr.addr).
 #[global] Program Instance : IsPkgInit New.code.github_com.mit_pdos.go_journal.addr.addr :=
   {|
@@ -798,7 +797,7 @@ Theorem wp_Addr__Flatid a :
     is_pkg_init New.code.github_com.mit_pdos.go_journal.addr.addr ∗
     ⌜ valid_addr a ⌝
   }}}
-    (addr2val a) @ N@! ew.code.github_com.mit_pdos.go_journal.addr.addr.Addr.Flatid #()
+    (addr2val a) @ addr.Addrⁱᵈ @ "Flatid" #()
   {{{
     v, RET #v; ⌜ v = addr2flat a ⌝
   }}}.

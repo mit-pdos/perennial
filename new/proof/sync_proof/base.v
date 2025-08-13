@@ -43,7 +43,7 @@ Local Definition race_deps : iProp Σ := ltac2:(build_pkg_init_deps 'race).
     is_pkg_init_deps := race_deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'sync).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'sync) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit sync :=
   {|
     is_pkg_init_def := True;

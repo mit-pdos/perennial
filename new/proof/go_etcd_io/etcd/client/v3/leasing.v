@@ -28,7 +28,7 @@ Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'bytes).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit bytes :=
   {|
     is_pkg_init_def := True;
@@ -42,28 +42,28 @@ Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'status.status).
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'codes).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'codes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit codes :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'rpctypes).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'rpctypes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit rpctypes :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'strings).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit strings :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'leasing).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'leasing) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit leasing :=
   {|
     is_pkg_init_def := True;

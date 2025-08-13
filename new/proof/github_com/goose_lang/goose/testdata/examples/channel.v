@@ -16,7 +16,7 @@ Context  `{!chanGhostStateG Σ}.
 Context `{!ghost_varG Σ (w64)}.
 Context `{!globalsGS Σ} `{!GoContext}.
 Context `{ ghost_mapG Σ Z w64 }.
-#[global] Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'chan_spec_raw_examples).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'chan_spec_raw_examples) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit chan_spec_raw_examples :=
   {|
     is_pkg_init_def := True;

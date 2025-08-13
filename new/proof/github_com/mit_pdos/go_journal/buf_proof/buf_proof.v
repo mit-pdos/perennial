@@ -33,7 +33,7 @@ Notation object := ({K & bufDataT K}).
 Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 
 Section heap.
-Context `{!heapGS Σ} `{!globalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'buf.buf).
 #[global] Program Instance : IsPkgInit buf.buf :=

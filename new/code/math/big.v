@@ -98,6 +98,10 @@ Definition fmtE : go_string := "math/big.fmtE"%go.
 
 Definition fmtF : go_string := "math/big.fmtF"%go.
 
+Definition Intⁱᵈ : go_string := "math/big.Int"%go.
+
+Axiom Int : go_type.
+
 Definition intOne : go_string := "math/big.intOne"%go.
 
 Axiom intOne'init : val.
@@ -228,7 +232,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Intⁱᵈ, []); (ptrTⁱᵈ Intⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo big.big :=
   {|

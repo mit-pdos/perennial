@@ -6,7 +6,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'generics).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'generics) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit generics :=
   {|
     is_pkg_init_def := True;
@@ -78,7 +78,7 @@ Proof.
   rewrite <- (default_val_eq_zero_val (V:=generics.Box.t w64)).
   wp_auto.
   (* TODO: why does this get shelved? *)
-  About IntoValTyped.
+  (* About IntoValTyped. *)
   Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
   unshelve wp_apply wp_makeGenericBox --no-auto. { apply _. }
   (* TODO: it's a [wp_load] inside the auto causing the typeclass goal. *)

@@ -8,7 +8,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'atomic).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'atomic) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit atomic :=
   {|
     is_pkg_init_def := True;

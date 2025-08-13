@@ -8,6 +8,23 @@ Set Default Proof Using "Type".
 
 Module big.
 
+(* type big.Int *)
+Module Int.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Int.
+
+Global Instance bounded_size_Int : BoundedTypeSize big.Int.
+Admitted.
+
+Global Instance into_val_Int `{ffi_syntax} : IntoVal Int.t.
+Admitted.
+
+Global Instance into_val_typed_Int `{ffi_syntax} : IntoValTyped Int.t big.Int.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

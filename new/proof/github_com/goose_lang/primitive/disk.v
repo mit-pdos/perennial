@@ -1,15 +1,15 @@
 From New.proof Require Import proof_prelude.
 From New Require Export atomic_fupd.
-Require Import New.code.github_com.goose_lang.primitive.disk.
-Require Import New.generatedproof.github_com.goose_lang.primitive.disk.
 Require Import Perennial.goose_lang.ffi.disk.
 Require Import Perennial.goose_lang.ffi.disk_prelude.
+Require Import New.code.github_com.goose_lang.primitive.disk.
+Require Import New.generatedproof.github_com.goose_lang.primitive.disk.
 
 Section wps.
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ} {go_ctx:GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'disk).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'disk) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit disk :=
   {|
     is_pkg_init_def := True;
@@ -330,7 +330,6 @@ Proof.
   iIntros (Φ) "[#Hpkg Hb] HΦ".
   iDestruct "Hb" as "[Hb %]". subst.
   wp_apply (wp_Read with "[$Hpkg $Hb]").
-  iApply "HΦ".
 Qed.
 
 Lemma wp_Barrier :

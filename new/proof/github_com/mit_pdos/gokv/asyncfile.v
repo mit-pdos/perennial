@@ -144,8 +144,7 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
   right now because it's unused. *)
 .
 
-#[global]
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'asyncfile).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'asyncfile) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit asyncfile :=
   {|
     is_pkg_init_def := True;
@@ -156,7 +155,7 @@ Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
-                             (interface.mk Mutex_type_id #mu))
+                             (interface.mk sync.Mutexⁱᵈ #mu))
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=

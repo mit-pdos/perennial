@@ -50,8 +50,7 @@ Global Instance is_LockClerk_pers ck γ : Persistent (is_LockClerk ck γ) := _.
 
 Global Instance is_lock_pers N γ key R : Persistent (is_lock N γ key R) := _.
 
-#[global]
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'lockservice).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'lockservice) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit lockservice :=
   {|
     is_pkg_init_def := True;

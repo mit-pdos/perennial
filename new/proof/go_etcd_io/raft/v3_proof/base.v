@@ -8,112 +8,112 @@ Section init.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'raftpb).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'raftpb) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit raftpb :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'strconv).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'strconv) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit strconv :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'slices).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'slices) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit slices :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'strings).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit strings :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'math).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'math) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit math :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'fmt).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'fmt) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit fmt :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'quorum).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'quorum) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit quorum :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'tracker).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'tracker) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit tracker :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'confchange).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'confchange) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit confchange :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'big).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'big) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit big :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'rand).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'rand) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit rand :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'bytes).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit bytes :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'os).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'os) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit os :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'log).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'log) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit log :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'io).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'io) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit io :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := deps;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'errors).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit errors :=
   {|
     is_pkg_init_def := True;
@@ -122,7 +122,7 @@ Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'errors).
 
 Definition foo := ltac2:(build_pkg_init ()).
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'raft).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'raft) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit raft :=
   {|
     is_pkg_init_def := True;

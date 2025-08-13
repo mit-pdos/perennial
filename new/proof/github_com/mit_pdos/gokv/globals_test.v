@@ -28,7 +28,7 @@ Context (γtok : gname).
 
 (** (COPY ME.) This creates a definition with the initialization predicates of
     all the dependencies of [main]. *)
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'globals_test.main).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'main) : iProp Σ) (only parsing).
 #[global] Instance is_pkg_init_globals_test : IsPkgInit globals_test.main :=
   {|
     is_pkg_init_def := inv nroot (ghost_var γtok 1 () ∨ own_initialized);
@@ -45,8 +45,7 @@ Lemma wp_initialize' get_is_pkg_init :
   {{{ RET #(); own_initializing ∗ is_pkg_init globals_test.main }}}.
 Proof.
   intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
-  wp_call.
-  wp_apply (wp_package_init with "[$Hown $Hinit]").
+  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
   2:{ rewrite Hinit //. }
   iFrame "∗#". iIntros "Hown".
   wp_auto. wp_call. wp_auto.

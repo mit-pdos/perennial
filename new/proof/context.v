@@ -40,7 +40,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 Context `{contextG Σ}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'context).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'context) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit context :=
   {|
     is_pkg_init_def := True;

@@ -6,7 +6,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} `{!GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'std_core).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'std_core) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit std_core :=
   {|
     is_pkg_init_def := True;

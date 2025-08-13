@@ -22,60 +22,60 @@ Context `{!globalsGS Σ} `{!GoContext}.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'math).
+Local Notation deps_math := (ltac2:(build_pkg_init_deps 'math) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit math :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_math;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'zapcore).
+Local Notation deps_zapcore := (ltac2:(build_pkg_init_deps 'zapcore) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit zapcore :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_zapcore;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'zap).
+Local Notation deps_zap := (ltac2:(build_pkg_init_deps 'zap) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit zap :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_zap;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'time).
+Local Notation deps_time := (ltac2:(build_pkg_init_deps 'time) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit time :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_time;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'strings).
+Local Notation deps_strings := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit strings :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_strings;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'fmt).
+Local Notation deps_fmt := (ltac2:(build_pkg_init_deps 'fmt) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit fmt :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_fmt;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'errors).
+Local Notation deps_errors := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit errors :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_errors;
   |}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'concurrency).
+Local Notation deps_concurrency := (ltac2:(build_pkg_init_deps 'concurrency) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit concurrency :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
+    is_pkg_init_deps := deps_concurrency;
   |}.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
@@ -136,7 +136,6 @@ Proof.
   iClear "err". clear err_ptr.
   iDestruct "Hl" as "#Hlease0".
   wp_apply (wp_WithCancel True) as "* (Hcancel & Hctx)".
-  { iFrame "#". }
   wp_auto.
 
   wp_apply (wp_Client__KeepAlive with "[$]") as "* #Hkch".

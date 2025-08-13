@@ -10,7 +10,7 @@ Context `{!globalsGS Σ} `{!GoContext}.
 Implicit Types (kvptsto: go_string → go_string → iProp Σ).
 Implicit Types (E:coPset).
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'kv).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'kv) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit kv :=
   {|
     is_pkg_init_def := True;

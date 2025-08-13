@@ -11,7 +11,7 @@ Module cryptoutil.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'cryptoutil).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'cryptoutil) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit cryptoutil :=
   {|
     is_pkg_init_def := True;

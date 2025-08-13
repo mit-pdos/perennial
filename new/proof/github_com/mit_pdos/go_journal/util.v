@@ -7,7 +7,7 @@ Require Import New.proof.log.
 From Perennial.Helpers Require Import ModArith.
 
 Section proof.
-Context `{!heapGS Σ} `{!globalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_varG Σ ()}.
 
 (* More realistically, we might want to put this as a non-persistent fact inside
@@ -16,19 +16,14 @@ Context `{!ghost_varG Σ ()}.
  *)
 Definition is_initialized : iProp Σ :=
   ∃ (level: w64),
-    "Hglobal_debug" ∷ util.Debug ↦□ level.
+    "Hglobal_debug" ∷ (global_addr util.Debug) ↦□ level.
 
-#[global] Instance is_pkg_init_util : IsPkgInit (PROP:=iProp Σ) util.
-  (* XXX how to inherit the defaults from [build_pkg_init]? *)
-  refine {|
-    is_pkg_init_def := (
-      "#Hdef" ∷ is_pkg_defined util ∗
-      "#Hlog" ∷ is_pkg_init log ∗
-      "#Hinit" ∷ is_initialized
-    );
-    is_pkg_init_persistent := _
+Local Notation deps := (ltac2:(build_pkg_init_deps 'util) : iProp Σ) (only parsing).
+#[global] Program Instance : IsPkgInit util :=
+  {|
+    is_pkg_init_def := is_initialized;
+    is_pkg_init_deps := deps;
   |}.
-Defined.
 
 Implicit Types (v:val).
 
@@ -61,23 +56,16 @@ Proof.
 Qed.
 
 Theorem wp_DPrintf (level: u64) (msg: go_string) (arg: slice.t) :
-  {{{ is_pkg_init util ∗
-      True }}}
+  {{{ is_pkg_init util ∗ True }}}
     @! util.DPrintf #level #msg #arg
   {{{ T (_: IntoVal T) (v: T), RET #v; True }}}.
 Proof.
-  (* XXX if I use [wp_start], then I can't name the [is_pkg_init] fact to extract [is_initialized].. *)
-  (* wp_start as "_". *)
-  iIntros (Φ) "[#Hpkg _] HΦ".
-  wp_func_call. wp_call.
+  wp_start as "_".
 
-  wp_auto.
-  wp_globals_get.
+  wp_auto. wp_apply wp_globals_get.
 
   (* Annoying that [iNamed "Hpkg"] doesn't work directly.. *)
-  rewrite /is_pkg_init /is_pkg_init_util.
-  iNamed "Hpkg".
-  iNamed "Hinit".
+  iDestruct (is_pkg_init_def_unfold with "[$]") as "Hpkg". simpl. iNamed "Hpkg".
   wp_auto.
   wp_if_destruct; try wp_auto.
   - wp_apply wp_Printf.

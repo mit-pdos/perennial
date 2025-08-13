@@ -5,7 +5,7 @@ Module bytes.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'bytes).
+Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit bytes :=
   {|
     is_pkg_init_def := True;
