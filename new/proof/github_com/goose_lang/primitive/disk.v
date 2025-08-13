@@ -330,6 +330,7 @@ Proof.
   iIntros (Φ) "[#Hpkg Hb] HΦ".
   iDestruct "Hb" as "[Hb %]". subst.
   wp_apply (wp_Read with "[$Hpkg $Hb]").
+  iApply "HΦ".
 Qed.
 
 Lemma wp_Barrier :

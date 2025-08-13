@@ -76,13 +76,13 @@ Definition runtime_Semreleaseⁱᵐᵖˡ : val :=
 (* differs from runtime_Semacquire only in the park "reason", used for internal
 concurrency testing *)
 Definition runtime_SemacquireWaitGroupⁱᵐᵖˡ : val :=
-  λ: "addr", func_call #"sync" #"runtime_Semacquire" "addr".
+  λ: "addr", func_call #"sync.runtime_Semacquire" "addr".
 
 Definition runtime_SemacquireRWMutexRⁱᵐᵖˡ : val :=
-  λ: "addr" "_lifo" "_skipframes", func_call #"sync" #"runtime_Semacquire" "addr".
+  λ: "addr" "_lifo" "_skipframes", func_call #"sync.runtime_Semacquire" "addr".
 
 Definition runtime_SemacquireRWMutexⁱᵐᵖˡ : val :=
-  λ: "addr" "_lifo" "_skipframes", func_call #"sync" #"runtime_Semacquire" "addr".
+  λ: "addr" "_lifo" "_skipframes", func_call #"sync.runtime_Semacquire" "addr".
 
 End code.
 End sync.
