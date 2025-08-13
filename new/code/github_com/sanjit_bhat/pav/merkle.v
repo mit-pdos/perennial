@@ -214,10 +214,10 @@ Definition Tree__proveⁱᵐᵖˡ : val :=
     let: "label" := (mem.alloc "label") in
     let: "foundLabel" := (mem.alloc (type.zero_val #sliceT)) in
     let: "found" := (mem.alloc (type.zero_val #boolT)) in
-    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] "label") in
+    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#ptrT] (struct.field_ref #Tree #"root"%go (![#ptrT] "t"))) in
     let: "$a1" := (![#boolT] "getProof") in
-    let: "$a2" := (![#ptrT] (struct.field_ref #Tree #"root"%go (![#ptrT] "t"))) in
-    let: "$a3" := #(W64 0) in
+    let: "$a2" := #(W64 0) in
+    let: "$a3" := (![#sliceT] "label") in
     (func_call #find) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -312,15 +312,15 @@ Definition getProofLen : go_string := "github.com/sanjit-bhat/pav/merkle.getProo
 
    go: merkle.go:146:6 *)
 Definition findⁱᵐᵖˡ : val :=
-  λ: "label" "getProof" "n" "depth",
+  λ: "n" "getProof" "depth" "label",
     exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
     let: "foundVal" := (mem.alloc (type.zero_val #sliceT)) in
     let: "foundLabel" := (mem.alloc (type.zero_val #sliceT)) in
     let: "found" := (mem.alloc (type.zero_val #boolT)) in
-    let: "depth" := (mem.alloc "depth") in
-    let: "n" := (mem.alloc "n") in
-    let: "getProof" := (mem.alloc "getProof") in
     let: "label" := (mem.alloc "label") in
+    let: "depth" := (mem.alloc "depth") in
+    let: "getProof" := (mem.alloc "getProof") in
+    let: "n" := (mem.alloc "n") in
     (if: (![#ptrT] "n") = #null
     then
       (if: ![#boolT] "getProof"
@@ -361,10 +361,10 @@ Definition findⁱᵐᵖˡ : val :=
     let: "$r1" := "$ret1" in
     do:  ("child" <-[#ptrT] "$r0");;;
     do:  ("sib" <-[#ptrT] "$r1");;;
-    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] "label") in
+    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#ptrT] (![#ptrT] "child")) in
     let: "$a1" := (![#boolT] "getProof") in
-    let: "$a2" := (![#ptrT] (![#ptrT] "child")) in
-    let: "$a3" := ((![#uint64T] "depth") + #(W64 1)) in
+    let: "$a2" := ((![#uint64T] "depth") + #(W64 1)) in
+    let: "$a3" := (![#sliceT] "label") in
     (func_call #find) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -482,7 +482,7 @@ Definition VerifyUpdateⁱᵐᵖˡ : val :=
     do:  ("newDig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "oldDig", ![#sliceT] "newDig", ![#boolT] "err")).
 
-(* go: merkle.go:221:16 *)
+(* go: merkle.go:220:16 *)
 Definition Tree__Digestⁱᵐᵖˡ : val :=
   λ: "t" <>,
     exception_do (let: "t" := (mem.alloc "t") in
@@ -502,7 +502,7 @@ Definition MerkleProofDecode : go_string := "github.com/sanjit-bhat/pav/merkle.M
 
 (* proofToTree guarantees that label not in tree and that label has fixed len.
 
-   go: merkle.go:226:6 *)
+   go: merkle.go:225:6 *)
 Definition proofToTreeⁱᵐᵖˡ : val :=
   λ: "label" "proof",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -569,7 +569,7 @@ Definition proofToTreeⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#ptrT] "tr", ![#boolT] "err")).
 
-(* go: merkle.go:255:6 *)
+(* go: merkle.go:254:6 *)
 Definition newShellⁱᵐᵖˡ : val :=
   λ: "label" "depth" "sibs",
     exception_do (let: "n" := (mem.alloc (type.zero_val #ptrT)) in
@@ -638,7 +638,7 @@ Definition newShellⁱᵐᵖˡ : val :=
     (func_call #setInnerHash) "$a0");;;
     return: (![#ptrT] "inner")).
 
-(* go: merkle.go:272:6 *)
+(* go: merkle.go:271:6 *)
 Definition getNodeHashⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -649,7 +649,7 @@ Definition getNodeHashⁱᵐᵖˡ : val :=
 
 Definition compEmptyHash : go_string := "github.com/sanjit-bhat/pav/merkle.compEmptyHash"%go.
 
-(* go: merkle.go:279:6 *)
+(* go: merkle.go:278:6 *)
 Definition compEmptyHashⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (let: "$a0" := ((let: "$sl0" := emptyNodeTag in
@@ -658,7 +658,7 @@ Definition compEmptyHashⁱᵐᵖˡ : val :=
 
 Definition compLeafHash : go_string := "github.com/sanjit-bhat/pav/merkle.compLeafHash"%go.
 
-(* go: merkle.go:283:6 *)
+(* go: merkle.go:282:6 *)
 Definition setLeafHashⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -668,7 +668,7 @@ Definition setLeafHashⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #node #"hash"%go (![#ptrT] "n")) <-[#sliceT] "$r0");;;
     return: #()).
 
-(* go: merkle.go:287:6 *)
+(* go: merkle.go:286:6 *)
 Definition compLeafHashⁱᵐᵖˡ : val :=
   λ: "label" "val",
     exception_do (let: "val" := (mem.alloc "val") in
@@ -698,7 +698,7 @@ Definition compLeafHashⁱᵐᵖˡ : val :=
 
 Definition compInnerHash : go_string := "github.com/sanjit-bhat/pav/merkle.compInnerHash"%go.
 
-(* go: merkle.go:297:6 *)
+(* go: merkle.go:296:6 *)
 Definition setInnerHashⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -717,7 +717,7 @@ Definition setInnerHashⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #node #"hash"%go (![#ptrT] "n")) <-[#sliceT] "$r0");;;
     return: #()).
 
-(* go: merkle.go:303:6 *)
+(* go: merkle.go:302:6 *)
 Definition compInnerHashⁱᵐᵖˡ : val :=
   λ: "child0" "child1" "h",
     exception_do (let: "h" := (mem.alloc "h") in
@@ -741,7 +741,7 @@ Definition getBit : go_string := "github.com/sanjit-bhat/pav/merkle.getBit"%go.
 (* getChild returns a child and its sibling child,
    relative to the bit referenced by label and depth.
 
-   go: merkle.go:313:6 *)
+   go: merkle.go:312:6 *)
 Definition getChildⁱᵐᵖˡ : val :=
   λ: "n" "label" "depth",
     exception_do (let: "depth" := (mem.alloc "depth") in
@@ -758,7 +758,7 @@ Definition getChildⁱᵐᵖˡ : val :=
    this is fine as long as the code consistently treats labels as
    having variable length.
 
-   go: merkle.go:325:6 *)
+   go: merkle.go:324:6 *)
 Definition getBitⁱᵐᵖˡ : val :=
   λ: "b" "n",
     exception_do (let: "n" := (mem.alloc "n") in
