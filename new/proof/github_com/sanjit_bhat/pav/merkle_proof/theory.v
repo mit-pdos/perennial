@@ -240,138 +240,6 @@ Proof.
       by simplify_option_eq.
 Qed.
 
-(*
-Definition labels_have_bit t n bit :=
-  ∀ l,
-  l ∈ dom (to_map t) →
-  get_bit l n = bit.
-
-Fixpoint is_sorted t depth :=
-  match t with
-  | Inner child0 child1 =>
-    labels_have_bit child0 depth false ∧
-    labels_have_bit child1 depth true ∧
-    is_sorted child0 (S depth) ∧
-    is_sorted child1 (S depth)
-  | _ => True
-  end.
-
-Lemma labels_have_bit_disjoint t0 t1 depth :
-  labels_have_bit t0 depth false →
-  labels_have_bit t1 depth true →
-  dom (to_map t0) ## dom (to_map t1).
-Proof.
-  intros Hb0 Hb1.
-  apply elem_of_disjoint.
-  intros ? Hd0 Hd1.
-  apply Hb0 in Hd0.
-  apply Hb1 in Hd1.
-  congruence.
-Qed.
-
-Lemma bit_impl_lookup_None label depth bit t :
-  get_bit label depth = bit →
-  labels_have_bit t depth (negb bit) →
-  to_map t !! label = None.
-Proof.
-  intros.
-  destruct (to_map t !! label) eqn:He; eauto.
-  assert (get_bit label depth = negb bit).
-  { apply H0. apply elem_of_dom; eauto. }
-  rewrite H1 in H. destruct bit; simpl in *; congruence.
-Qed.
-
-Lemma entry_impl_lookup t label oval :
-  is_entry t label oval →
-  is_sorted t 0 →
-  to_map t !! label = oval.
-Proof.
-  intros He Hs.
-  rewrite /is_entry in He.
-  remember 0%nat as d.
-  clear Heqd.
-  revert d He Hs.
-  induction t; simpl; intros ? He Hs.
-  - case_match; [done|by simpl_map].
-  - case_match; simpl in *.
-    + by simplify_map_eq/=.
-    + rewrite /found_nonmemb in He.
-      destruct He as [[[??]|]?]; intuition; by simplify_map_eq/=.
-  - intuition.
-    opose proof (labels_have_bit_disjoint _ _ _ _ _); [done..|].
-    case_match.
-    + apply lookup_union_Some. { by apply map_disjoint_dom. }
-      case_match; naive_solver.
-    + apply lookup_union_None.
-      case_match.
-      all: opose proof (bit_impl_lookup_None _ _ _ _ _ _); [done..|];
-        naive_solver.
-  - by case_match.
-Qed.
-
-(* [is_sorted_prefix] is prefix-structured, which matches
-the full-tree decoding form. *)
-Fixpoint is_sorted_prefix t pref :=
-  match t with
-  | Leaf label _ => pref `prefix_of` (bytes_to_bits label)
-  | Inner c0 c1 =>
-    is_sorted_prefix c0 (pref ++ [false]) ∧
-    is_sorted_prefix c1 (pref ++ [true])
-  | _ => True
-  end.
-
-Lemma sorted_impl_map_prefix t pref :
-  is_sorted_prefix t pref →
-  (∀ l, l ∈ dom (to_map t) → pref `prefix_of` (bytes_to_bits l)).
-Proof.
-  revert pref.
-  induction t; simpl; intros ? Hs **.
-  - set_solver.
-  - set_unfold. subst. done.
-  - intuition.
-    set_unfold. destruct_or!.
-    + opose proof (IHt1 _ _ _ _) as Hpref; [done..|].
-      by eapply prefix_app_l.
-    + opose proof (IHt2 _ _ _ _) as Hpref; [done..|].
-      by eapply prefix_app_l.
-  - set_solver.
-Qed.
-
-Lemma sorted_impl_have_bit t pref :
-  is_sorted_prefix t pref →
-  ∀ n bit, pref !! n = Some bit → labels_have_bit t n bit.
-Proof.
-  intros ** ? **.
-  opose proof (sorted_impl_map_prefix _ _ _ _ _); [done..|].
-  rewrite /get_bit.
-  by erewrite prefix_lookup_Some.
-Qed.
-
-Lemma sorted_prefix_impl_sorted t pref :
-  is_sorted_prefix t pref →
-  is_sorted t (length pref).
-Proof.
-  revert pref.
-  induction t; intros; try done.
-  simpl in *.
-  destruct_and!.
-  opose proof (IHt1 _ _) as Hs0; [done|].
-  opose proof (IHt2 _ _ ) as Hs1; [done|].
-  rewrite (comm app) in Hs0.
-  rewrite (comm app) in Hs1.
-  rewrite !length_app in Hs0 Hs1.
-  simpl in *.
-  intuition.
-  - eapply sorted_impl_have_bit; [done|]. by rewrite lookup_snoc.
-  - eapply sorted_impl_have_bit; [done|]. by rewrite lookup_snoc.
-Qed.
-
-Lemma sorted_impl_sorted_prefix t :
-  is_sorted t 0 →
-  is_sorted_prefix t [].
-Proof. Admitted.
-*)
-
 (** full trees / maps. *)
 
 Inductive dec_node :=
@@ -716,29 +584,6 @@ Proof.
   by iDestruct ("IHlimit" with "Hchild10 Hchild11") as %->.
 Qed.
 
-(*
-Lemma is_full_tree_sorted_aux t h l p :
-  is_full_tree t h l p -∗
-  ⌜ is_sorted_prefix t p ⌝.
-Proof.
-  revert t h p. induction l; intros.
-  - iNamed 1. repeat case_match; iNamed "Hdecode"; by simplify_eq/=.
-  - iNamed 1. repeat case_match; iNamed "Hdecode"; simplify_eq/=; try done.
-    fold is_full_tree.
-    iDestruct (IHl with "Hrecur0") as %?.
-    by iDestruct (IHl with "Hrecur1") as %?.
-Qed.
-
-Lemma is_full_tree_sorted t h l p :
-  is_full_tree t h l p -∗
-  ⌜ is_sorted t (length p) ⌝.
-Proof.
-  iIntros "H".
-  iDestruct (is_full_tree_sorted_aux with "H") as "%".
-  iPureIntro. by apply sorted_prefix_impl_sorted.
-Qed.
-*)
-
 (* to prevent reducing [max_depth]. *)
 #[local] Opaque is_full_tree.
 
@@ -800,32 +645,12 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
 Instance is_cut_tree_persistent t h : Persistent (is_cut_tree t h).
 Proof. revert h. induction t; apply _. Qed.
 
-Fixpoint cutless_path t (label : list w8) depth : Prop :=
+Fixpoint is_cutless t :=
   match t with
-  | Cut _ => False
-  | Inner child0 child1 =>
-    match get_bit label depth with
-    | false => cutless_path child0 label (S depth)
-    | true  => cutless_path child1 label (S depth)
-    end
-  | _ => True
-  end.
-
-Fixpoint cutless_tree t : Prop :=
-  match t with
-  | Inner child0 child1 => cutless_tree child0 ∧ cutless_tree child1
+  | Inner child0 child1 => is_cutless child0 ∧ is_cutless child1
   | Cut _ => False
   | _ => True
   end.
-
-Lemma cutless_tree_impl_paths t :
-  cutless_tree t →
-  ∀ l d, cutless_path t l d.
-Proof.
-  induction t; intros Hc ??; try done.
-  simpl in *. destruct Hc.
-  case_match; intuition.
-Qed.
 
 Lemma is_cut_tree_len t h:
   is_cut_tree t h -∗
@@ -909,7 +734,7 @@ Qed.
 
 Lemma cutless_impl_full t h l :
   is_cut_tree t h -∗
-  ⌜ cutless_tree t ⌝ -∗
+  ⌜ is_cutless t ⌝ -∗
   ⌜ is_limit t l ⌝ -∗
   is_full_tree t h l.
 Proof.
@@ -929,6 +754,8 @@ Proof.
     + by iApply "IHt1".
     + by iApply "IHt2".
 Qed.
+
+(** stuff that might need to be resurrected. *)
 
 (** tree proofs. *)
 
@@ -1051,7 +878,7 @@ Proof.
       by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
 Qed.
 
-(** tree to map relation. *)
+(** code predicates. *)
 
 Fixpoint minimal_tree t : Prop :=
   match t with
@@ -1065,137 +892,14 @@ Fixpoint minimal_tree t : Prop :=
   | _ => True
   end.
 
-(* [is_map] is when we talk about the underlying tree map.
-this requires no cuts in the tree, since cuts could result in
-different maps for the same tree hash. *)
-Definition is_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
-  ∃ t,
-  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
-  "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
-  "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
-  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
-  "#Hcut_tree" ∷ is_cut_tree t h.
-Global Instance is_map_pers m h : Persistent (is_map m h) := _.
-
-Lemma tree_to_map_lookup_None label depth bit t:
-  get_bit label depth = (negb bit) →
-  tree_labels_have_bit t depth bit →
-  tree_to_map t !! label = None.
-Proof.
-  intros.
-  destruct (tree_to_map t !! label) eqn:He; eauto.
-  assert (get_bit label depth = bit).
-  { apply H0. apply elem_of_dom; eauto. }
-  rewrite H1 in H. destruct bit; simpl in *; congruence.
-Qed.
-
-Lemma tree_to_map_Some t label depth val:
-  tree_to_map t !! label = Some val →
-  sorted_tree t depth →
-  tree_path t label depth (Some (label, val)).
-Proof.
-  revert depth.
-  induction t; simpl; intros.
-  - rewrite lookup_empty in H. congruence.
-  - apply lookup_singleton_Some in H. intuition congruence.
-  - intuition.
-    eapply tree_labels_have_bit_disjoint in H4 as Hd; eauto.
-    apply lookup_union_Some in H.
-    2: apply map_disjoint_dom_2; eauto.
-    destruct (get_bit label depth) eqn:Hbit.
-    + eapply tree_to_map_lookup_None in H0; eauto. destruct H; try congruence.
-      eapply IHt2; eauto.
-    + eapply tree_to_map_lookup_None in H4; eauto. destruct H; try congruence.
-      eapply IHt1; eauto.
-  - rewrite lookup_empty in H. congruence.
-Qed.
-
-Lemma tree_to_map_None t label depth:
-  tree_to_map t !! label = None →
-  sorted_tree t depth →
-  cutless_path t label depth →
-  ∃ found,
-    tree_path t label depth found ∧
-    found_nonmemb label found.
-Proof.
-  revert depth.
-  induction t; simpl; intros; [..|done].
-  - rewrite lookup_empty in H. eexists; eauto.
-  - apply lookup_singleton_None in H. eexists. split; eauto. simpl; congruence.
-  - apply lookup_union_None in H. intuition.
-    destruct (get_bit label depth); eauto.
-Qed.
-
-Lemma is_map_agree_entry m h label val :
-  is_map m h -∗
-  is_entry label val h -∗
-  ⌜ m !! label = val ⌝.
-Proof.
-  iNamedSuffix 1 "0". subst.
-  destruct (tree_to_map t !! label) eqn:He.
-  - eapply tree_to_map_Some in He; eauto.
-    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
-      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
-      try done; naive_solver.
-  - eapply cutless_tree_impl_paths in Hcutless0.
-    eapply tree_to_map_None in He as [? [? ?]]; eauto.
-    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
-      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
-      try done; naive_solver.
-Qed.
-
-Lemma sorted_tree_pair_dom_eq {l0 l1 r0 r1 depth} :
-  let t0 := Inner l0 l1 in
-  let t1 := Inner r0 r1 in
-  tree_to_map t0 = tree_to_map t1 →
-  sorted_tree t0 depth →
-  sorted_tree t1 depth →
-  dom (tree_to_map l0) = dom (tree_to_map r0)
-    ∧ dom (tree_to_map l1) = dom (tree_to_map r1).
-Proof.
-  intros. subst t0 t1. simpl in *.
-  apply (f_equal dom) in H.
-  rewrite !dom_union_L in H.
-  opose proof (proj1 (set_eq _ _) H).
-  intuition; apply set_eq; intros.
-  - split; intros.
-    + opose proof (proj1 (H2 x) _); [set_solver|].
-      apply elem_of_union in H10. intuition.
-      apply H1 in H7. apply H9 in H11. congruence.
-    + opose proof (proj2 (H2 x) _); [set_solver|].
-      apply elem_of_union in H10. intuition.
-      apply H4 in H7. apply H8 in H11. congruence.
-  - split; intros.
-    + opose proof (proj1 (H2 x) _); [set_solver|].
-      apply elem_of_union in H10. intuition.
-      apply H8 in H7. apply H4 in H11. congruence.
-    + opose proof (proj2 (H2 x) _); [set_solver|].
-      apply elem_of_union in H10. intuition.
-      apply H9 in H7. apply H1 in H11. congruence.
-Qed.
-
-Lemma tree_to_map_inner_eq {l0 l1 r0 r1 depth} :
-  let t0 := Inner l0 l1 in
-  let t1 := Inner r0 r1 in
-  tree_to_map t0 = tree_to_map t1 →
-  sorted_tree t0 depth →
-  sorted_tree t1 depth →
-  tree_to_map l0 = tree_to_map r0 ∧ tree_to_map l1 = tree_to_map r1.
-Proof.
-  intros. subst t0 t1. simpl in *. destruct_and?.
-  opose proof (tree_labels_have_bit_disjoint l1 l0 _ _ _); [done..|].
-  opose proof (tree_labels_have_bit_disjoint r1 r0 _ _ _); [done..|].
-  apply map_disjoint_dom in H7, H9.
-  opose proof (sorted_tree_pair_dom_eq H _ _); [done..|]. destruct_and?.
-  by eapply map_union_dom_pair_eq.
-Qed.
+(** misc. *)
 
 Lemma tree_to_map_det {t0 t1 depth} :
   tree_to_map t0 = tree_to_map t1 →
   sorted_tree t0 depth →
   sorted_tree t1 depth →
-  cutless_tree t0 →
-  cutless_tree t1 →
+  is_cutless t0 →
+  is_cutless t1 →
   minimal_tree t0 →
   minimal_tree t1 →
   t0 = t1.
@@ -1223,8 +927,6 @@ Proof.
   opose proof (tree_to_map_det _ _ _ _ _ _ _) as ->; [done..|].
   by iDestruct (is_cut_tree_det with "Hcut_tree0 Hcut_tree1") as %?.
 Qed.
-
-(* TODO: stragglers. *)
 
 Definition is_found (label: list w8)
     (found: option ((list w8) * (list w8))%type) (h: list w8) : iProp Σ :=
