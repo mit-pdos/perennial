@@ -646,6 +646,56 @@ Fixpoint is_full_tree t h limit : iProp Σ :=
     end
   end.
 
+(* clunky / impossible to use this induction principle.
+- t=Inner, limit=0 case required to prove principle,
+even tho [is_full_tree] can't have this.
+able to prove it by contradiction when lemma has form:
+[is_full_tree t h l -∗ ...].
+- all cases have a quantified limit, which prevents reduction.
+so need [is_full_tree_unfold].
+- the principle seems to be screwed up for [Inner] case.
+
+we could maybe fix these if we somehow specialize the principle
+to [is_full_tree], but i don't see how that's possible.
+currently, it's generalized over any [P] and (tree, nat).
+this allows it to be used with [induction t, l using is_full_tree_ind]. *)
+Lemma is_full_tree_ind (P : tree → nat → Prop) :
+  (∀ c0 c1, P (Inner c0 c1) 0%nat) →
+  (∀ l, P Empty l) →
+  (∀ l label val, P (Leaf label val) l) →
+  (∀ l h, P (Cut h) l) →
+  (∀ c0 c1 l, P c0 l → P c1 l → P (Inner c0 c1) (S l)) →
+  ∀ t l, P t l.
+Proof.
+  intros. revert l.
+  induction t; try done.
+  destruct l; naive_solver.
+Qed.
+
+Lemma is_full_tree_unfold t h limit :
+  is_full_tree t h limit -∗
+  ∃ d,
+  "#His_hash" ∷ cryptoffi.is_hash d h ∗
+  "#Hdecode" ∷ match decode_node d with
+  | DecEmpty =>
+    "%" ∷ ⌜ t = Empty ⌝
+  | DecLeaf l v =>
+    "%" ∷ ⌜ t = Leaf l v ⌝
+  | DecInvalid =>
+    "%" ∷ ⌜ t = Cut h ⌝
+  | DecInner h0 h1 =>
+    match limit with
+    | 0%nat =>
+      "%" ∷ ⌜ t = Cut h ⌝
+    | S limit' =>
+      ∃ t0 t1,
+      "#Hchild0" ∷ is_full_tree t0 h0 limit' ∗
+      "#Hchild1" ∷ is_full_tree t1 h1 limit' ∗
+      "%" ∷ ⌜ t = Inner t0 t1 ⌝
+    end
+  end.
+Proof. destruct limit; naive_solver. Qed.
+
 #[global] Instance is_full_tree_pers t h l : Persistent (is_full_tree t h l).
 Proof.
   revert t h. induction l.
