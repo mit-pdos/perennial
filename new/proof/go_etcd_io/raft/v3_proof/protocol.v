@@ -20,33 +20,64 @@ Record t :=
   }.
 End astate.
 
+Section axioms.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+
+(* Global definitions, not specific to a particular (generation of a) node. *)
+Axiom raft_names : Type.
+Implicit Type γ : raft_names.
+
+Axiom own_raft_log : ∀ γ, list (list w8) → iProp Σ.
+
+Axiom is_raft_log : ∀ γ, list (list w8) → iProp Σ.
+Axiom is_raft_log_pers : ∀ γ log, Persistent (is_raft_log γ log).
+#[global] Instance is_raft_log_pers_inst γ log : Persistent (is_raft_log γ log) := (is_raft_log_pers _ _).
+
+End axioms.
+
 Section raft.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!closeable_chanG Σ}.
 Context `{!contextG Σ}.
 
+Implicit Type γraft : raft_names.
+
 Axiom is_chan_inv : ∀ (c : chan.t) {V} `{!IntoVal V} (P : V → iProp Σ), iProp Σ.
 Instance is_chan_inv_pers c V `{!IntoVal V} (P : V → _) : Persistent (is_chan_inv c P).
 Proof. Admitted.
 
-Local Definition is_Node_inner (n : raft.node.t) : iProp Σ :=
-  "#Hpropc" ∷ is_chan_inv n.(raft.node.propc') (λ (_ : raft.msgWithResult.t), True)%I ∗
+(* FIXME: goose could translate typed constants as a typed value? Or maybe
+   emit that in proofgen, since there could be a struct-typed constant. *)
+Definition MsgProp := (W32 2).
+
+Definition own_propose_message γraft (pm : raft.msgWithResult.t) : iProp Σ :=
+  ∃ data_sl (data : list w8),
+    let m := pm.(raft.msgWithResult.m') in
+  "Hmsg" ∷ ⌜ m.(raftpb.Message.Type') = MsgProp ⌝ ∗
+  "Hentries" ∷ m.(raftpb.Message.Entries') ↦* [data_sl] ∗
+  "data_sl" ∷ data_sl ↦* data ∗
+  "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True)) ∗
+  "Hresult" ∷ inv nroot (∃ (s : chanstate.t error.t), own_chan pm.(raft.msgWithResult.result') s).
+
+Local Definition is_Node_inner γraft (n : raft.node.t) : iProp Σ :=
+  "#Hpropc" ∷ is_chan_inv n.(raft.node.propc') (own_propose_message γraft) ∗
   "#Hadvancec" ∷ is_chan_inv n.(raft.node.advancec') (λ (_ : unit), True)%I ∗
   "#Hdone" ∷ own_closeable_chan n.(raft.node.done') True closeable.Unknown.
 
-Definition is_Node (n : loc) : iProp Σ :=
+Definition is_Node γraft (n : loc) : iProp Σ :=
   ∃ nd,
   "n_ptr" ∷ n ↦□ nd ∗
-  "Hinner" ∷ is_Node_inner nd.
+  "Hinner" ∷ is_Node_inner γraft nd.
 
-Lemma wp_node__Ready (n : loc) :
-  {{{ is_pkg_init raft ∗ is_Node n }}}
+Lemma wp_node__Ready γraft (n : loc) :
+  {{{ is_pkg_init raft ∗ is_Node γraft n }}}
     n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Ready" #()
   {{{ (ready : chan.t), RET #ready; True }}}.
 Proof.
-  wp_start. wp_auto. (* need repr predicate for node *)
-Admitted.
+  wp_start. iNamed "Hpre". wp_auto.
+  by iApply "HΦ".
+Qed.
 
 (* FIXME: anonymous struct{} *)
 Global Instance wp_struct_make_unit:
@@ -58,8 +89,8 @@ Proof.
   apply wp_struct_make; cbn; auto.
 Qed.
 
-Lemma wp_node__Advance (n : loc) :
-  {{{ is_pkg_init raft ∗ is_Node n }}}
+Lemma wp_node__Advance γraft (n : loc) :
+  {{{ is_pkg_init raft ∗ is_Node γraft n }}}
     n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Advance" #()
   {{{ RET #(); True }}}.
 Proof.
@@ -71,19 +102,22 @@ Proof.
   - (* able to send on advancec *)
     iExists unit; repeat iExists _. iSplitR.
     { iPureIntro. done. }
+    iNamed "Hinner".
     admit. (* just prove the send atomic update then trivial postcondition *)
   - repeat iExists _. iNamed "Hinner".
     iApply (closeable_chan_receive with "Hdone").
     iIntros "[_ _]". wp_auto. iApply "HΦ". done.
 Admitted.
 
-Lemma wp_node__Propose n (ctx : context.Context.t) ctx_desc (data_sl : slice.t) (data : list w8) :
+Lemma wp_node__Propose γraft n (ctx : context.Context.t) ctx_desc (data_sl : slice.t) (data : list w8) :
   {{{ is_pkg_init raft ∗
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
-      "#Hnode" ∷ is_Node n ∗
-      "data_sl" ∷ data_sl ↦* data }}}
+      "#Hnode" ∷ is_Node γraft n ∗
+      "data_sl" ∷ data_sl ↦* data ∗
+      "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
+  }}}
     n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Propose" #ctx #data_sl
-  {{{ (err : error.t), RET #err; if decide (err = interface.nil) then False else True }}}.
+  {{{ (err : error.t), RET #err; if decide (err = interface.nil) then True else True }}}.
 Proof.
   (* Inlining proofs of [stepWait] and [stepWithWaitOption (wait:=true)] here. *)
   wp_start. iNamed "Hpre". wp_auto.
