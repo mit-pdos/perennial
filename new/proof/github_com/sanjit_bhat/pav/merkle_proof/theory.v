@@ -205,7 +205,7 @@ Proof.
   by simplify_eq/=.
 Qed.
 
-Lemma entry_impl_lookup t label oval :
+Lemma entry_to_lookup t label oval :
   is_entry t label oval →
   to_map t !! label = oval.
 Proof.
@@ -619,16 +619,16 @@ Proof.
 Qed.
 
 (* to prevent reducing [max_depth]. *)
-#[local] Opaque is_full_tree.
+#[global] Opaque is_full_tree.
 
-Definition is_full_map m h : iProp Σ :=
+Definition is_map m h : iProp Σ :=
   ∃ t,
   "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
   "#His_tree" ∷ is_full_tree t h max_depth.
 
-Lemma is_full_map_invert h :
+Lemma is_map_invert h :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
-  ∃ m, is_full_map m h.
+  ∃ m, is_map m h.
 Proof.
   intros.
   iDestruct is_full_tree_invert as "[% H]"; [done|].
@@ -636,9 +636,9 @@ Proof.
   iPureIntro. naive_solver.
 Qed.
 
-Lemma is_full_map_inj m0 m1 h :
-  is_full_map m0 h -∗
-  is_full_map m1 h -∗
+Lemma is_map_inj m0 m1 h :
+  is_map m0 h -∗
+  is_map m1 h -∗
   ⌜ m0 = m1 ⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
@@ -762,7 +762,7 @@ Proof.
     + by iApply "IHt0_1".
 Qed.
 
-Lemma cutless_impl_full t h l :
+Lemma cutless_to_full t h l :
   is_cut_tree t h -∗
   ⌜ is_cutless t ⌝ -∗
   ⌜ is_limit t l ⌝ -∗
