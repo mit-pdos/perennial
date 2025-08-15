@@ -15,54 +15,54 @@ Set Default Proof Using "Type".
 
 Module merkle.
 
-(* type merkle.Tree *)
-Module Tree.
+(* type merkle.Map *)
+Module Map.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   root' : loc;
 }.
 End def.
-End Tree.
+End Map.
 
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Tree : Settable Tree.t :=
-  settable! Tree.mk < Tree.root' >.
-Global Instance into_val_Tree : IntoVal Tree.t :=
+Global Instance settable_Map : Settable Map.t :=
+  settable! Map.mk < Map.root' >.
+Global Instance into_val_Map : IntoVal Map.t :=
   {| to_val_def v :=
-    struct.val_aux merkle.Tree [
-    "root" ::= #(Tree.root' v)
+    struct.val_aux merkle.Map [
+    "root" ::= #(Map.root' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_Tree : IntoValTyped Tree.t merkle.Tree :=
+Global Program Instance into_val_typed_Map : IntoValTyped Map.t merkle.Map :=
 {|
-  default_val := Tree.mk (default_val _);
+  default_val := Map.mk (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Tree_root : IntoValStructField "root" merkle.Tree Tree.root'.
+Global Instance into_val_struct_field_Map_root : IntoValStructField "root" merkle.Map Map.root'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Tree root':
+Global Instance wp_struct_make_Map root':
   PureWp True
-    (struct.make #merkle.Tree (alist_val [
+    (struct.make #merkle.Map (alist_val [
       "root" ::= #root'
     ]))%struct
-    #(Tree.mk root').
+    #(Map.mk root').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
-Global Instance Tree_struct_fields_split dq l (v : Tree.t) :
+Global Instance Map_struct_fields_split dq l (v : Map.t) :
   StructFieldsSplit dq l v (
-    "Hroot" ∷ l ↦s[merkle.Tree :: "root"]{dq} v.(Tree.root')
+    "Hroot" ∷ l ↦s[merkle.Map :: "root"]{dq} v.(Map.root')
   ).
 Proof.
   rewrite /named.
@@ -272,10 +272,6 @@ Global Instance wp_func_call_put :
   WpFuncCall merkle.put _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_find :
-  WpFuncCall merkle.find _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_getProofLen :
   WpFuncCall merkle.getProofLen _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -300,24 +296,12 @@ Global Instance wp_func_call_newShell :
   WpFuncCall merkle.newShell _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_getNodeHash :
-  WpFuncCall merkle.getNodeHash _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_compEmptyHash :
   WpFuncCall merkle.compEmptyHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_setLeafHash :
-  WpFuncCall merkle.setLeafHash _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_compLeafHash :
   WpFuncCall merkle.compLeafHash _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_setInnerHash :
-  WpFuncCall merkle.setInnerHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_compInnerHash :
@@ -340,20 +324,36 @@ Global Instance wp_func_call_MerkleProofDecode :
   WpFuncCall merkle.MerkleProofDecode _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_Tree'ptr_Digest :
-  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "Digest" _ (is_pkg_defined merkle) :=
+Global Instance wp_method_call_Map'ptr_Digest :
+  WpMethodCall (ptrTⁱᵈ merkle.Mapⁱᵈ) "Digest" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Tree'ptr_Prove :
-  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "Prove" _ (is_pkg_defined merkle) :=
+Global Instance wp_method_call_Map'ptr_Prove :
+  WpMethodCall (ptrTⁱᵈ merkle.Mapⁱᵈ) "Prove" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Tree'ptr_Put :
-  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "Put" _ (is_pkg_defined merkle) :=
+Global Instance wp_method_call_Map'ptr_Put :
+  WpMethodCall (ptrTⁱᵈ merkle.Mapⁱᵈ) "Put" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Tree'ptr_prove :
-  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "prove" _ (is_pkg_defined merkle) :=
+Global Instance wp_method_call_node'ptr_find :
+  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "find" _ (is_pkg_defined merkle) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_node'ptr_getHash :
+  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "getHash" _ (is_pkg_defined merkle) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_node'ptr_prove :
+  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "prove" _ (is_pkg_defined merkle) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_node'ptr_setInnerHash :
+  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "setInnerHash" _ (is_pkg_defined merkle) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_node'ptr_setLeafHash :
+  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "setLeafHash" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

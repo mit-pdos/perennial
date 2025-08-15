@@ -260,13 +260,13 @@ Definition Newⁱᵐᵖˡ : val :=
     let: "$r1" := "$ret1" in
     do:  ("sigPk" <-[#cryptoffi.SigPublicKey] "$r0");;;
     do:  ("sk" <-[#ptrT] "$r1");;;
-    let: "tr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (struct.make #merkle.Tree [{
+    let: "m" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (struct.make #merkle.Map [{
       "root" ::= type.zero_val #ptrT
     }])) in
-    do:  ("tr" <-[#ptrT] "$r0");;;
+    do:  ("m" <-[#ptrT] "$r0");;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Digest"%go (![#ptrT] "tr")) #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ merkle.Mapⁱᵈ) #"Digest"%go (![#ptrT] "m")) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "sk") in

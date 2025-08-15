@@ -1258,7 +1258,7 @@ Definition Newⁱᵐᵖˡ : val :=
     }])) in
     do:  ("secs" <-[#ptrT] "$r0");;;
     let: "hidden" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (struct.make #merkle.Tree [{
+    let: "$r0" := (mem.alloc (struct.make #merkle.Map [{
       "root" ::= type.zero_val #ptrT
     }])) in
     do:  ("hidden" <-[#ptrT] "$r0");;;
@@ -1303,7 +1303,7 @@ Definition Newⁱᵐᵖˡ : val :=
     }])) in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Digest"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] "keys")))) #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ merkle.Mapⁱᵈ) #"Digest"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] "keys")))) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "link" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "dig") in
@@ -1507,16 +1507,16 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
         let: "$r0" := (![#sliceT] (struct.field_ref #mapEntry #"label"%go (![#ptrT] "out0"))) in
         do:  ("label" <-[#sliceT] "$r0");;;
         let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "inTree" := (mem.alloc (type.zero_val #boolT)) in
+        let: "inMap" := (mem.alloc (type.zero_val #boolT)) in
         let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "label") in
-        (method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Prove"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0") in
+        (method_call #(ptrTⁱᵈ merkle.Mapⁱᵈ) #"Prove"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         let: "$r2" := "$ret2" in
-        do:  ("inTree" <-[#boolT] "$r0");;;
+        do:  ("inMap" <-[#boolT] "$r0");;;
         do:  "$r1";;;
         do:  ("proof" <-[#sliceT] "$r2");;;
-        do:  (let: "$a0" := (~ (![#boolT] "inTree")) in
+        do:  (let: "$a0" := (~ (![#boolT] "inMap")) in
         (func_call #std.Assert) "$a0");;;
         let: "info" := (mem.alloc (type.zero_val #ptrT)) in
         let: "$r0" := (mem.alloc (let: "$MapLabel" := (![#sliceT] "label") in
@@ -1535,7 +1535,7 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
         do:  ("upd" <-[#sliceT] "$r0");;;
         do:  (let: "$a0" := (![#sliceT] "label") in
         let: "$a1" := (![#sliceT] (struct.field_ref #mapEntry #"val"%go (![#ptrT] "out0"))) in
-        (method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Put"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0" "$a1");;;
+        (method_call #(ptrTⁱᵈ merkle.Mapⁱᵈ) #"Put"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0" "$a1");;;
         let: "$r0" := (let: "$a0" := (Fst (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))))) in
         let: "$a1" := ((let: "$sl0" := (![#sliceT] (struct.field_ref #WQReq #"Pk"%go (![#ptrT] "req"))) in
         slice.literal #sliceT ["$sl0"])) in
@@ -1543,7 +1543,7 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
         do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))) "$r0")
       else do:  #())));;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Digest"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ merkle.Mapⁱᵈ) #"Digest"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "link" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "dig") in
@@ -1604,7 +1604,7 @@ Definition Server__getHistⁱᵐᵖˡ : val :=
       let: "mapProof" := (mem.alloc (type.zero_val #sliceT)) in
       let: "inMap" := (mem.alloc (type.zero_val #boolT)) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "label") in
-      (method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Prove"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0") in
+      (method_call #(ptrTⁱᵈ merkle.Mapⁱᵈ) #"Prove"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
@@ -1665,7 +1665,7 @@ Definition Server__getBoundⁱᵐᵖˡ : val :=
     let: "mapProof" := (mem.alloc (type.zero_val #sliceT)) in
     let: "inMap" := (mem.alloc (type.zero_val #boolT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "label") in
-    (method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Prove"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0") in
+    (method_call #(ptrTⁱᵈ merkle.Mapⁱᵈ) #"Prove"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
