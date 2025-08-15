@@ -13,6 +13,20 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'primitive) : iProp Σ) (only
     is_pkg_init_deps := deps;
   |}.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init primitive = (is_pkg_init primitive) →
+  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined primitive }}}
+    primitive.initialize' #()
+  {{{ RET #(); own_initializing ∗ is_pkg_init primitive }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
+  2:{ rewrite Hinit //. }
+  iIntros "Hown". wp_auto. wp_call.
+  rewrite Hinit is_pkg_init_unfold /=.
+  by iFrame "∗#".
+Qed.
+
 Lemma wp_Assume (cond : bool) :
   {{{ is_pkg_init primitive }}}
     @! primitive.Assume #cond

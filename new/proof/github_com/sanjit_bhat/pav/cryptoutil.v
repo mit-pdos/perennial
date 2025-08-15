@@ -18,6 +18,24 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'cryptoutil) : iProp Σ) (onl
     is_pkg_init_deps := deps;
   |}.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init cryptoutil = (is_pkg_init cryptoutil) →
+  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined cryptoutil }}}
+    cryptoutil.initialize' #()
+  {{{ RET #(); own_initializing ∗ is_pkg_init cryptoutil }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
+  2: { rewrite Hinit //. }
+  iIntros "Hown". wp_auto.
+  wp_apply (cryptoffi.wp_initialize' with "[$Hown]").
+  2: { iFrame "#".
+    (* TODO: don't transitively know [is_pkg_defined].
+    could add [is_pkg_defined] deps as assumption,
+    or that could be implicit in [is_pkg_defined] def. *)
+    admit. }
+Admitted.
+
 Lemma wp_Hash sl_b d0 b :
   {{{
     is_pkg_init cryptoutil ∗

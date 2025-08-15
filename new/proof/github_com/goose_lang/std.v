@@ -15,6 +15,18 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'std) : iProp Σ) (only parsi
     is_pkg_init_deps := deps;
   |}.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init std = (is_pkg_init std) →
+  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined std }}}
+    std.initialize' #()
+  {{{ RET #(); own_initializing ∗ is_pkg_init std }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
+  2:{ rewrite Hinit //. }
+  iIntros "Hown". wp_auto.
+Admitted.
+
 Lemma wp_Assert (cond : bool) :
   {{{ is_pkg_init std ∗ ⌜cond = true⌝ }}}
     @! std.Assert #cond

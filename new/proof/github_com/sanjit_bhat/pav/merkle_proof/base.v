@@ -24,10 +24,10 @@ Definition is_initialized : iProp Σ :=
   ∃ sl_emptyHash emptyHash,
   "#HemptyHash" ∷ (global_addr merkle.emptyHash) ↦□ sl_emptyHash ∗
   "#Hsl_emptyHash" ∷ sl_emptyHash ↦*□ emptyHash ∗
-  "#His_hash" ∷ cryptoffi.cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
+  "#His_emptyHash" ∷ cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'merkle) : iProp Σ) (only parsing).
-#[global] Instance is_pkg_init_merkle : IsPkgInit merkle :=
+#[global] Program Instance : IsPkgInit merkle :=
   {|
     is_pkg_init_def := is_initialized;
     is_pkg_init_deps := deps;
@@ -43,7 +43,39 @@ Proof.
   wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
   2:{ rewrite Hinit //. }
   iIntros "Hown". wp_auto.
-  (* TODO: initialize specs for all these other packages. *)
+  wp_apply (safemarshal.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
+  1-2: admit.
+  wp_apply (marshal.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
+  1-2: admit.
+  wp_apply (cryptoutil.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
+  1-2: admit.
+  wp_apply (cryptoffi.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
+  1-2: admit.
+  wp_apply (std.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
+  1-2: admit.
+  wp_apply (primitive.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
+  1-2: admit.
+  wp_apply (bytes.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
+  1-2: admit.
+  iFrame.
+
+  wp_call. wp_auto.
+  wp_apply wp_globals_get.
+  wp_apply assume.wp_assume.
+  rewrite bool_decide_eq_true. iIntros (<-).
+  iDestruct "addr" as "HemptyHash". wp_auto.
+  wp_func_call. wp_call.
+  (* TODO(goose): need to unfold Go [const] expr for [wp_auto]. *)
+  rewrite /merkle.emptyNodeTag.
+  wp_auto.
+  wp_apply wp_slice_literal as "* Hsl".
+  wp_apply (cryptoutil.wp_Hash with "[$Hsl]") as "* @".
+  wp_apply wp_globals_get --no-auto.
+  wp_store.
+  iPersist "HemptyHash Hsl_hash".
+  wp_auto.
+  iEval (rewrite Hinit is_pkg_init_unfold /=).
+  iFrame "∗#".
 Admitted.
 
 End proof.

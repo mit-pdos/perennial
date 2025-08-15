@@ -18,6 +18,19 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'marshal) : iProp Σ) (only p
     is_pkg_init_deps := deps;
   |}.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init marshal = (is_pkg_init marshal) →
+  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined marshal }}}
+    marshal.initialize' #()
+  {{{ RET #(); own_initializing ∗ is_pkg_init marshal }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
+  2:{ rewrite Hinit //. }
+  iIntros "Hown". wp_auto. wp_call.
+  rewrite Hinit is_pkg_init_unfold /=.
+Admitted.
+
 (* Some helper definition for working with slices of primitive values. *)
 
 Definition uint64_has_encoding (encoded : list u8) (x : u64) : Prop :=

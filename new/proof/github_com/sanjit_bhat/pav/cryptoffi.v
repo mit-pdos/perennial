@@ -15,6 +15,20 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'cryptoffi) : iProp Σ) (only
     is_pkg_init_deps := deps;
   |}.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init cryptoffi = (is_pkg_init cryptoffi) →
+  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined cryptoffi }}}
+    cryptoffi.initialize' #()
+  {{{ RET #(); own_initializing ∗ is_pkg_init cryptoffi }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
+  2: { rewrite Hinit //. }
+  iIntros "Hown". wp_auto. wp_call.
+  rewrite Hinit is_pkg_init_unfold /=.
+  by iFrame "∗#".
+Qed.
+
 (* Hashes. *)
 
 Definition pure_hash (data : list w8) : list w8.
