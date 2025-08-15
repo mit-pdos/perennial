@@ -19,7 +19,6 @@ Notation max_depth := 256%nat.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-Context `{!ghost_varG Σ ()}.
 
 Definition is_initialized : iProp Σ :=
   ∃ sl_emptyHash emptyHash,
@@ -27,8 +26,8 @@ Definition is_initialized : iProp Σ :=
   "#Hsl_emptyHash" ∷ sl_emptyHash ↦*□ emptyHash ∗
   "#His_hash" ∷ cryptoffi.cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'merkle).
-#[global] Instance is_pkg_init_globals_test : IsPkgInit merkle :=
+Local Notation deps := (ltac2:(build_pkg_init_deps 'merkle) : iProp Σ) (only parsing).
+#[global] Instance is_pkg_init_merkle : IsPkgInit merkle :=
   {|
     is_pkg_init_def := is_initialized;
     is_pkg_init_deps := deps;
