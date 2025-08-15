@@ -43,7 +43,7 @@ Fixpoint own_tree ptr t d : iProp Σ :=
 
 Definition own ptr m d : iProp Σ :=
   ∃ ptr_root t,
-  "Hstruct" ∷ ptr ↦{d} (merkle.Tree.mk ptr_root) ∗
+  "Hstruct" ∷ ptr ↦{d} (merkle.Map.mk ptr_root) ∗
   "%Heq_tree" ∷ ⌜ m = to_map t ⌝ ∗
   "Hown_tree" ∷ own_tree ptr_root t d ∗
   "%His_cutless" ∷ ⌜ is_cutless t ⌝ ∗
@@ -74,6 +74,8 @@ Proof.
     by rewrite go_type_size_unseal.
 Qed.
 
+(** program proofs. *)
+
 (*
 Definition wish_Verify (in_tree : bool) label val proof dig : iProp Σ :=
   ∃ found proof_obj proof' tail,
@@ -98,8 +100,6 @@ Proof.
   iNamed 1. iNamed "His_proof".
   repeat case_match; intuition; subst; by iFrame "#%".
 Qed.
-
-(** program proofs. *)
 
 Lemma wp_VerifyMemb sl_label sl_val sl_proof d0 d1 d2 (label val proof : list w8) :
   {{{
