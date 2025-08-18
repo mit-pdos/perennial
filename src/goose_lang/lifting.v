@@ -133,16 +133,16 @@ Section globals_definitions.
 Context `{ext:ffi_syntax}.
 
 Class globalsGS Σ : Set := GlobalsGS {
-  #[global] globals_inG :: inG Σ (authUR (optionUR (exclR (leibnizO (gmap byte_string val))))) ;
+  #[global] globals_inG :: inG Σ (authUR (optionUR (exclR (leibnizO (byte_string → option val))))) ;
   globals_name : gname ;
 }.
 
 Class globals_preG (Σ: gFunctors) : Set := {
-  #[global] globals_preG_inG :: inG Σ (authUR (optionUR (exclR (leibnizO (gmap byte_string val))))) ;
+  #[global] globals_preG_inG :: inG Σ (authUR (optionUR (exclR (leibnizO (byte_string → option val))))) ;
 }.
 
 Definition globalsΣ : gFunctors :=
-  #[GFunctor (authR (optionUR (exclR (leibnizO (gmap byte_string val)))))].
+  #[GFunctor (authR (optionUR (exclR (leibnizO (byte_string → option val)))))].
 
 Global Instance subG_globalsG {Σ} : subG globalsΣ Σ → globals_preG Σ.
 Proof. solve_inG. Qed.
@@ -154,10 +154,10 @@ Definition globalsGS_update (Σ: gFunctors) (hT: globalsGS Σ) (new_globals_name
   {| globals_inG := globals_inG; globals_name := new_globals_name |}.
 
 (* XXX: this is using the frag b/c we want the dfrac in the user-owned part. *)
-Definition own_globals_ctx `{hG : globalsGS Σ} (g : gmap byte_string val) :=
+Definition own_globals_ctx `{hG : globalsGS Σ} (g : byte_string → option val) :=
   own globals_name (◯ (Some (Excl (g : leibnizO _)))).
 
-Definition own_globals_def `{hG : globalsGS Σ} (dq : dfrac) (g : gmap byte_string val) :=
+Definition own_globals_def `{hG : globalsGS Σ} (dq : dfrac) (g : byte_string → option val) :=
   own globals_name (●{dq}Some (Excl (g : leibnizO _))).
 Program Definition own_globals := sealed @own_globals_def.
 Definition own_globals_unseal : own_globals = _ := seal_eq _.
@@ -220,7 +220,7 @@ Proof.
   by apply auth_update, option_local_update, exclusive_local_update.
 Qed.
 
-Lemma globals_name_init `(hT: globals_preG Σ) (g : gmap byte_string val) :
+Lemma globals_name_init `(hT: globals_preG Σ) (g : byte_string → option val) :
   ⊢ |==> ∃ new_globals_name : gname, let _ := globalsGS_update_pre Σ hT new_globals_name in
      own_globals_ctx g ∗ own_globals (DfracOwn 1) g.
 Proof.
@@ -229,7 +229,7 @@ Proof.
   iModIntro. rewrite own_globals_unseal. iFrame.
 Qed.
 
-Lemma globals_reinit `(hT: globalsGS Σ) (g : gmap byte_string val) :
+Lemma globals_reinit `(hT: globalsGS Σ) (g : byte_string → option val) :
   ⊢ |==> ∃ new_globals_name : gname, let _ := globalsGS_update Σ hT new_globals_name in
      own_globals_ctx g ∗ own_globals (DfracOwn 1) g.
 Proof.
@@ -902,7 +902,7 @@ Qed.
 Lemma wp_GlobalGet s E g dq k :
   {{{ own_globals dq g }}}
     GlobalGet #(str k) @ s ; E
-  {{{ RET (match g !! k with
+  {{{ RET (match g k with
            | Some v => SOMEV v
            | None => NONEV
            end);
@@ -925,10 +925,13 @@ Proof.
   iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
+Definition globals_insert k v (g : byte_string → option val) :=
+  λ k', if decide (k' = k) then Some v else g k'.
+
 Lemma wp_GlobalPut s E g k (v : val) :
   {{{ own_globals (DfracOwn 1) g }}}
     GlobalPut #(str k) v @ s ; E
-  {{{ RET #(); own_globals (DfracOwn 1) (<[k := v]> g) }}}.
+  {{{ RET #(); own_globals (DfracOwn 1) (globals_insert k v g) }}}.
 Proof.
   iIntros (?) "Hg HΦ". iApply wp_lift_atomic_base_step; [done|].
   iIntros (σ1 g1 ns mj D κ κs n) "H ? !>".
