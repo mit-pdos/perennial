@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import struct pkg.
+From New.golang.defn Require Import struct pkg typing.
 From Perennial Require Import base.
 
 Module interface.
@@ -66,10 +66,10 @@ Definition try_type_coerce : val :=
 (* Models x, ok := v.(T) - this checks the type and returns a boolean on
 success. The type "T" is used to return the correct default value if the type
 assertion fails. *)
-Definition checked_type_assert : val :=
-  λ: "T" "v" "expected_type_id",
+Definition checked_type_assert T : val :=
+  λ: "v" "expected_type_id",
     let: ("x", "ok") := try_type_coerce "v" "expected_type_id" in
-    if: "ok" then ("x", #true) else (type.zero_val "T", #false).
+    if: "ok" then ("x", #true) else (zero_val T, #false).
 
 End goose_lang.
 End interface.

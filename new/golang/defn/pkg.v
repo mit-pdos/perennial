@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem typing list assume.
+From New.golang.defn Require Import mem list assume typing.
 From Perennial Require Import base.
 
 (** [PkgInfo] associates a pkg_name to its static information. *)
@@ -33,6 +33,7 @@ Module globals.
 Section defns.
 Context `{ffi_syntax}.
 
+Locate "#".
 Definition get_def : val :=
   λ: "var_name", (option.unwrap $ GlobalGet (#"V" + "var_name")).
 Program Definition get := sealed @get_def.
@@ -53,7 +54,7 @@ Definition alloc pkg_name `{!PkgInfo pkg_name} : val :=
            (match vars with
             | Datatypes.nil => #()
             | (pair name t) :: vars =>
-                let: "addr" := mem.alloc (zero_val t) in
+                let: "addr" := mem.alloc t (zero_val t) in
                 assume (globals.get #name = "addr");;
                 alloc vars
             end)%E) (pkg_vars pkg_name).

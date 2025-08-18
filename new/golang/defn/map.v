@@ -65,9 +65,8 @@ Definition len : val :=
                        (for: (!"len" < #(W64 (2^64-1))) ; Skip := #())) ;;
     !"len".
 
-(* key type is also supplied to supply a type to the wp lemma *)
-Definition make : val :=
-  λ: "kt" "vt", Alloc (InjL (type.zero_val "vt")).
+Definition make (kt vt : go_type) : val :=
+  λ: <>, Alloc (InjLV (zero_val vt)).
 
 Definition kv_entry_def : val :=
   λ: "k" "v", ("k", "v").
@@ -75,13 +74,13 @@ Program Definition kv_entry := unseal (_:seal (@kv_entry_def)).
 Obligation 1. by eexists. Qed.
 Definition kv_entry_unseal : @kv_entry = _ := seal_eq _.
 
-Definition literal_val : val :=
-  rec: "lit_val" "kt" "vt" "alist" :=
+Definition literal_val vt : val :=
+  rec: "lit_val" "alist" :=
     list.Match "alist"
-      (λ: <>, InjL (type.zero_val "vt"))
-      (λ: "kv" "alist", InjR ("kv", ("lit_val" "kt" "vt" "alist"))).
+      (λ: <>, InjL (zero_val vt))
+      (λ: "kv" "alist", InjR ("kv", ("lit_val" "alist"))).
 
-Definition literal : val := λ: "ks" "vs" "alist", ref (literal_val "ks" "vs" "alist").
+Definition literal vt : val := λ: "alist", ref (literal_val vt "alist").
 
 End goose_lang.
 End map.

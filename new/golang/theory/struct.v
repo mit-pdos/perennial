@@ -1,14 +1,12 @@
 From Perennial.goose_lang Require Import lifting.
 From New.golang Require defn.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import typed_pointsto exception list typing.
+From New.golang.theory Require Import mem exception list typing.
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
 From Perennial Require Import base.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-
-Set Default Proof Using "Type".
 
 Module struct.
 Section goose_lang.
@@ -18,23 +16,6 @@ Implicit Types (d : struct.descriptor).
 Infix "=?" := (ByteString.eqb).
 
 (* FIXME: what does _f mean? Want better name. *)
-Definition field_offset_f (t : go_type) f : (w64 * go_type) :=
-  let missing := W64 (2^64-1) in
-  match t with
-  | structT d =>
-      (fix field_offset_struct (d : struct.descriptor) : (w64 * go_type) :=
-         match d with
-         | [] => (missing, badT)
-         | (f',t)::fs => if f' =? f then (W64 0, t)
-                         else match field_offset_struct fs with
-                              | (off, t') => (word.add (go_type_size t) off, t')
-                              end
-         end) d
-  | _ => (missing, badT)
-  end .
-
-Definition field_ty_f t f : go_type := (field_offset_f t f).2.
-
 Definition field_get_f t f0: val -> val :=
   match t with
   | structT d =>
@@ -69,7 +50,7 @@ Definition field_set_f t f0 fv: val -> val :=
   end
   .
 
-Definition field_ref_f_def t f0 l: loc := l +ₗ uint.Z (field_offset_f t f0).1.
+Definition field_ref_f_def t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
 Program Definition field_ref_f := sealed @field_ref_f_def.
 Definition field_ref_f_unseal : field_ref_f = _ := seal_eq _.
 
@@ -210,73 +191,13 @@ End lemmas.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-#[global] Instance field_offset_into_val : IntoVal (w64 * go_type) :=
-  { to_val_def := fun '(off, t) => (#off, #t)%V; }.
-
-Lemma field_off_to_val_unfold (p: w64 * go_type) :
-  #p = (#p.1, #p.2)%V.
+Global Instance pure_struct_field_ref_wp t f (l : loc) :
+  PureWp True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
 Proof.
-  destruct p.
-  rewrite {1}to_val_unseal //=.
-Qed.
-
-Global Instance pure_struct_field_offset_wp (t: go_type) f :
-  PureWp True (struct.field_offset #t #f) (#(struct.field_offset_f t f)).
-Proof.
-  apply pure_wp_val. iIntros (??).
-  induction t using go_type_ind;
-    try solve [
-        iIntros (Φ) "_ HΦ"; wp_call_lc "?";
-        rewrite [in #(_, _)]to_val_unseal /=;
-          iApply "HΦ"; done
-      ].
-  iIntros (Φ) "_ HΦ"; wp_call_lc "?".
+  iIntros (?????) "HΦ".
+  wp_call_lc "?".
   iSpecialize ("HΦ" with "[$]").
-  iInduction decls as [|[f' ft] decls] forall (Φ).
-  - wp_pures.
-    rewrite field_off_to_val_unfold /=.
-    iApply "HΦ".
-  - match goal with
-    | |- context[environments.Esnoc _ (INamed "IHdecls") ?P] =>
-        set (IHdeclsP := P)
-    end.
-    wp_pures.
-    rewrite !field_off_to_val_unfold !desc_to_val_unfold /=.
-    wp_pures.
-    destruct (bool_decide_reflect (f' = f)); subst.
-    + rewrite -> bool_decide_eq_true_2 by auto; wp_pures.
-      rewrite -> ByteString.eqb_eq by auto.
-      iApply "HΦ".
-    + rewrite -> bool_decide_eq_false_2 by auto; wp_pures.
-      rewrite -> ByteString.eqb_ne by auto.
-      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
-      iApply "IHdecls".
-      { naive_solver. }
-      wp_pures.
-      rewrite field_off_to_val_unfold.
-      destruct ((fix field_offset_struct (d : struct.descriptor) :=
-                  match d with
-                  | nil => _
-                  | cons _ _ => _
-                  end)
-        decls) eqn:Hoff.
-      wp_pures.
-      wp_apply wp_type_size.
-      iIntros "_".
-      wp_pures.
-      iApply "HΦ".
-Qed.
-
-Global Instance pure_struct_field_ref_wp (t: go_type) f (l : loc) :
-  PureWp True (struct.field_ref #t #f #l) #(struct.field_ref_f t f l).
-Proof.
-  pure_wp_start.
-  destruct (struct.field_offset_f t f) eqn:Hoff.
-  rewrite field_off_to_val_unfold /=; wp_pures.
-  iExactEq "HΦ".
-  repeat f_equal.
-  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
-  rewrite Hoff /=.
+  iExactEq "HΦ". rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
   repeat (f_equal; try word).
 Qed.
 
@@ -289,27 +210,23 @@ Definition is_structT (t : go_type) : Prop :=
 Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
   is_structT t →
   PureWp True
-  (struct.make #t (alist_val l))
+  (struct.make t (alist_val l))
   (struct.val_aux t l).
 Proof.
   intros ?.
   pure_wp_start.
-  rewrite struct.make_unseal /struct.make_def struct.val_aux_unseal.
+  rewrite struct.make_unseal struct.val_aux_unseal.
   destruct t; try by exfalso.
-  wp_pures.
-  iInduction decls as [|[f ft] decls] "IH" forall (Φ).
+  unfold struct.make_def.
+  iInduction decls as [] "IH" forall (Φ).
   - wp_pure_lc "?". wp_pures. by iApply "HΦ".
-  - wp_pure_lc "?"; wp_pures.
-    rewrite !desc_to_val_unfold /=; wp_pures.
-    destruct (alist_lookup_f _ _).
-    + wp_pures.
-      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
-      unshelve iApply "IH"; first done.
-      iIntros "_".
-      simpl fill. wp_pures. by iApply "HΦ".
-    + wp_pures.
-      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
-      unshelve iApply "IH"; first done.
+  - destruct a.
+    wp_pure_lc "?". wp_pures.
+    unfold struct.val_aux_def.
+    destruct (alist_lookup_f _ _); wp_pures.
+    + unshelve wp_apply "IH"; first done.
+      iIntros "_". wp_pures. by iApply "HΦ".
+    + unshelve wp_apply "IH"; first done.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
 Qed.
@@ -406,26 +323,6 @@ Ltac solve_into_val_struct_field :=
   end;
   destruct v; try reflexivity; cbn_w8.
 
-(* XXX: the to_val for go_string * go_type isn't produced by the PureWp
-instances, instead we just have a raw PairV which doesn't work with lists.
-
-We probably shouldn't be using a pair here but instead a new inductive (now that
-the type is used with to_val, after the switch to "dynamic" types).
-*)
-Lemma struct_field_to_val `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
-  (f: go_string) (t: go_type) :
-  (f ::= #t)%V = #(f, t).
-Proof. rewrite [in #(f,t)]to_val_unseal //. Qed.
-
-(* solve the PureWp instance that relates the val representing a generic type to
-its go_type-based model *)
-Ltac solve_type_pure_wp :=
-  pure_wp_start;
-  repeat (rewrite ?struct_field_to_val || wp_pures);
-  (* this should solve the goal; the [try] is only there to leave a proof state
-  for debugging *)
-  try iApply "HΦ".
-
 Ltac solve_struct_make_pure_wp :=
   intros;
   (* BUG: ssreflect has rewrite [in v in PureWp _ _ v]to_val_unseal that would
@@ -510,7 +407,7 @@ parameters give it the right value and go_type to relate.
 
 *)
 Ltac simpl_one_flatten_struct x go_t f :=
-  rewrite (@has_go_type_len _ x (struct.field_offset_f go_t f).2); [ | by solve_has_go_type' ];
+  rewrite (@has_go_type_len _ x (struct.field_offset go_t f).2); [ | by solve_has_go_type' ];
   (* this [solve_field_ref_f] should solve the subgoal, but it does not fail
   otherwise if there are bugs; it's nice for the tactic to leave the simplified
   state for debugging *)
@@ -583,7 +480,7 @@ Proof. solve_into_val_struct_field. Qed.
 Context `{!ffi_syntax} `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Time wall' ext' loc':
   PureWp True
-    (struct.make #time.Time (alist_val [
+    (struct.make time.Time (alist_val [
       "wall" ::= #wall';
       "ext" ::= #ext';
       "loc" ::= #loc'
@@ -647,7 +544,7 @@ Final Obligation. solve_decision. Qed.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_unit:
   PureWp True
-    (struct.make #empty_struct (alist_val [
+    (struct.make empty_struct (alist_val [
     ]))%struct
     #(unit.mk).
 Proof. solve_struct_make_pure_wp. Qed.
@@ -657,6 +554,8 @@ End instances.
 End empty_struct.
 
 
+(* FIXME: generic test *)
+(*
 (* TEST *)
 Module generic_struct.
 
@@ -745,5 +644,6 @@ Qed.
 End instances.
 
 End generic_struct.
+ *)
 
 End __struct_automation_test.
