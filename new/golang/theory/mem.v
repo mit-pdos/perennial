@@ -5,7 +5,7 @@ From New.golang.theory Require Import proofmode.
 From iris.proofmode Require Import string_ident.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-From New.golang.theory Require Import typing assume list dynamic_typing.
+From New.golang.theory Require Import typing assume list.
 (* re-export this theory since it provides ↦ notation *)
 From New.golang.theory Require Export typed_pointsto.
 From New.golang.defn Require Export mem.

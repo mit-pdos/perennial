@@ -1,7 +1,7 @@
 From Perennial.goose_lang Require Import lifting.
 From New.golang Require defn.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import typed_pointsto exception list typing dynamic_typing.
+From New.golang.theory Require Import typed_pointsto exception list typing.
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
 From Perennial Require Import base.

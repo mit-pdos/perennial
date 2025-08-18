@@ -1,4 +1,4 @@
-From New.golang.defn Require Import list dynamic_typing.
+From New.golang.defn Require Import list.
 From Perennial Require Import base.
 
 (* cannot be export *)
@@ -17,6 +17,7 @@ Section goose_lang.
 Infix "=?" := (ByteString.eqb).
 
 Context `{ffi_syntax}.
+
 
 Definition field_offset : val :=
   λ: "t" "f",

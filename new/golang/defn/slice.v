@@ -1,4 +1,4 @@
-From New.golang.defn Require Import loop assume exception typing list dynamic_typing mem.
+From New.golang.defn Require Import loop assume exception typing list mem.
 From Perennial Require Import base.
 
 Module slice.

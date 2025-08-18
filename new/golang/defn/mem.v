@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import lang notation.
-From New.golang.defn Require Import assume list dynamic_typing.
+From New.golang.defn Require Import assume list.
 From New.golang.defn Require Export typing.
 From Perennial Require Import base.
 

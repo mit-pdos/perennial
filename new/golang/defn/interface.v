@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import struct dynamic_typing pkg.
+From New.golang.defn Require Import struct pkg.
 From Perennial Require Import base.
 
 Module interface.

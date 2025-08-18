@@ -1,4 +1,4 @@
-From New.golang.defn Require Import loop typing list dynamic_typing.
+From New.golang.defn Require Import loop typing list.
 
 Module map.
 (* FIXME: seal these functions *)
