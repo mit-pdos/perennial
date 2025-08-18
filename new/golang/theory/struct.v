@@ -553,31 +553,17 @@ End instances.
 
 End empty_struct.
 
-
-(* FIXME: generic test *)
-(*
 (* TEST *)
 Module generic_struct.
 
-Module generics.
-Definition Box `{ffi_syntax} : val :=
-  λ: "T", type.structT [
-    (#"Value"%go, "T")
-  ]%struct.
-End generics.
-
-Module Box.
-Section def.
-Context `{ffi_syntax}.
-Definition ty (T: go_type) : go_type := structT [
+Definition Box `{ffi_syntax} (T : go_type) : go_type := structT [
       "Value" :: T
   ]%struct.
-Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
+Module Box.
+Record t `{ffi_syntax} `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   Value' : T';
 }.
-End def.
 End Box.
-
 Arguments Box.mk {_} {T'} {_ T _}.
 Arguments Box.t {_} T' {_ T _}.
 
@@ -586,19 +572,19 @@ Context `{ffi_syntax}.
 
 Context `{!IntoVal T'} `{!IntoValTyped T' T}.
 
-Global Instance Box_ty_wf : struct.Wf (Box.ty T).
+Global Instance Box_ty_wf : struct.Wf (Box T).
 Proof. apply _. Qed.
 
 Global Instance settable_Box : Settable (Box.t T') :=
   settable! (Box.mk (T:=T)) < Box.Value' >.
 Global Instance into_val_Box : IntoVal (Box.t T') :=
   {| to_val_def v :=
-    struct.val_aux (Box.ty T) [
+    struct.val_aux (Box T) [
     "Value" ::= #(Box.Value' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_Box : IntoValTyped (Box.t T') (Box.ty T) :=
+Global Program Instance into_val_typed_Box : IntoValTyped (Box.t T') (Box T) :=
 {|
   default_val := Box.mk (default_val _);
 |}.
@@ -607,21 +593,14 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Box_Value : IntoValStructField "Value" (Box.ty T) Box.Value'.
+Global Instance into_val_struct_field_Box_Value : IntoValStructField "Value" (Box T) Box.Value'.
 Proof. solve_into_val_struct_field. Qed.
-
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 
-Global Instance wp_type_Box :
-  PureWp True
-         (generics.Box #T)
-         #(Box.ty T).
-Proof. solve_type_pure_wp. Qed.
-
 Global Instance wp_struct_make_Box Value':
   PureWp True
-    (struct.make #(Box.ty T) (alist_val [
+    (struct.make (Box T) (alist_val [
       "Value" ::= #Value'
     ]))%struct
     #(Box.mk Value').
@@ -629,7 +608,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 Global Instance Box_struct_fields_split dq l (v : Box.t T') :
   StructFieldsSplit dq l v (
-    "HValue" ∷ l ↦s[Box.ty T :: "Value"]{dq} v.(Box.Value')
+    "HValue" ∷ l ↦s[Box T :: "Value"]{dq} v.(Box.Value')
   ).
 Proof.
   rewrite /named.
@@ -642,8 +621,6 @@ Proof.
 Qed.
 
 End instances.
-
 End generic_struct.
- *)
 
 End __struct_automation_test.
