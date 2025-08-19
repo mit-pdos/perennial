@@ -10,12 +10,7 @@ From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-(* get_bit returns false if bit n of l is 0 (or the bit is past the length of l). *)
-Definition get_bit l n : bool :=
-  match bytes_to_bits l !! n with
-  | None => false
-  | Some bit => bit
-  end.
+Definition get_bit l n := bytes_to_bits l !!! n.
 
 (** tree. *)
 
@@ -113,10 +108,9 @@ Fixpoint is_path t depth label found :=
   | Leaf found_label found_val =>
     found = Some (found_label, found_val)
   | Inner child0 child1 =>
-    match bytes_to_bits label !! depth with
-    | None => False
-    | Some false => is_path child0 (S depth) label found
-    | Some true => is_path child1 (S depth) label found
+    match get_bit label depth with
+    | false => is_path child0 (S depth) label found
+    | true => is_path child1 (S depth) label found
     end
   | Cut _ => False
   end.
@@ -137,12 +131,74 @@ Definition is_entry t label oval :=
 
 (** relation between trees and maps. *)
 
+Section prefix_total.
+Context `{!Inhabited A}.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+(* prefix of a list extended with inhabitant. *)
+Definition prefix_total : relation (list A) :=
+  λ l1 l2, ∃ n k, l2 ++ replicate n inhabitant = l1 ++ k.
+
+#[global] Instance prefix_total_dec `{!EqDecision A} : RelDecision prefix_total.
+Proof. Admitted.
+(*
+  fix go (l1 l2 : list A) :=
+  match l1, l2 with
+  | [], _ => left (prefix_nil _)
+  | x :: l1, [] =>
+    if x inhabitant, good. recurse.
+    else, reject.
+  | x :: l1, y :: l2 =>
+    match decide_rel (=) x y with
+    | left Hxy =>
+      match go l1 l2 with
+      | left Hl1l2 => left (prefix_cons_alt _ _ _ _ Hxy Hl1l2)
+      | right Hl1l2 => right (Hl1l2 ∘ prefix_cons_inv_2 _ _ _ _)
+      end
+    | right Hxy => right (Hxy ∘ prefix_cons_inv_1 _ _ _ _)
+    end
+  end.
+*)
+
+Lemma prefix_total_nil l :
+  prefix_total [] l.
+Proof. exists 0%nat. by eexists. Qed.
+
+Lemma prefix_total_snoc l0 l1 x :
+  prefix_total l0 l1 →
+  l1 !!! length l0 = x →
+  prefix_total (l0 ++ [x]) l1.
+Proof. Admitted.
+
+Lemma prefix_total_snoc_inv l0 l1 x :
+  prefix_total (l0 ++ [x]) l1 →
+  prefix_total l0 l1 ∧ l1 !!! length l0 = x.
+Proof. Admitted.
+
+Lemma prefix_total_neq l0 l1 l2 :
+  prefix_total l0 l1 →
+  ¬ prefix_total l0 l2 →
+  l1 ≠ l2.
+Proof. Admitted.
+
+Lemma prefix_total_app_l l1 l2 l3 :
+  prefix_total (l1 ++ l3) l2 →
+  prefix_total l1 l2.
+Proof. Admitted.
+
+End prefix_total.
+
 (* [to_map_aux] only collects leaves located in the right place. *)
 Fixpoint to_map_aux t pref : gmap (list w8) (list w8) :=
   match t with
   | Empty => ∅
   | Leaf label val =>
-    if decide (pref `prefix_of` bytes_to_bits label)
+    (* using [prefix_total] allows other preds (e.g., [is_entry])
+    to operate under an easier (and weaker), length-extended leaf model.
+    this reduces proof burden.
+    e.g., [find] doesn't need to track depth bounds. *)
+    if decide (prefix_total pref (bytes_to_bits label))
     then {[label := val]}
     else ∅
   | Inner child0 child1 =>
@@ -154,7 +210,7 @@ Definition to_map t := to_map_aux t [].
 
 Lemma to_map_pref_Some t pref label :
   is_Some (to_map_aux t pref !! label) →
-  pref `prefix_of` bytes_to_bits label.
+  prefix_total pref (bytes_to_bits label).
 Proof.
   revert pref.
   induction t; simpl; intros ? Hsome.
@@ -166,28 +222,28 @@ Proof.
   - apply lookup_union_is_Some in Hsome.
     destruct_or!.
     + apply IHt1 in Hsome.
-      by eapply prefix_app_l.
+      by eapply prefix_total_app_l.
     + apply IHt2 in Hsome.
-      by eapply prefix_app_l.
+      by eapply prefix_total_app_l.
   - by simpl_map.
 Qed.
 
 Lemma to_map_pref_None t pref label :
-  ¬ pref `prefix_of` bytes_to_bits label →
+  ¬ prefix_total pref (bytes_to_bits label) →
   to_map_aux t pref !! label = None.
 Proof.
   revert pref.
   induction t; simpl; intros; [done|idtac..|done].
   - case_decide; [|by simpl_map].
-    opose proof (prefix_neq _ _ _ _ _); [done..|].
+    opose proof (prefix_total_neq _ _ _ _ _); [done..|].
     destruct (decide (label = label0)) as [Heq|?].
     + by apply (f_equal bytes_to_bits) in Heq.
     + by simpl_map.
   - apply lookup_union_None_2.
     + apply IHt1.
-      by intros Hpref%prefix_app_l.
+      by intros Hpref%prefix_total_app_l.
     + apply IHt2.
-      by intros Hpref%prefix_app_l.
+      by intros Hpref%prefix_total_app_l.
 Qed.
 
 Lemma to_map_disj t0 t1 pref :
@@ -196,14 +252,11 @@ Proof.
   apply map_disjoint_spec.
   intros **.
   opose proof (to_map_pref_Some _ _ _ _) as [? Hp0]; [done|].
-  assert (¬ pref ++ [false] `prefix_of` bytes_to_bits i).
-  { rewrite /prefix.
-    intros [? Hp1].
-    rewrite Hp1 in Hp0.
-    list_simplifier. }
+  assert (¬ prefix_total (pref ++ [false]) (bytes_to_bits i)).
+  { admit. }
   opose proof (to_map_pref_None t0 _ _ _); [done|].
   by simplify_eq/=.
-Qed.
+Admitted.
 
 Lemma entry_to_lookup t label oval :
   is_entry t label oval →
@@ -212,8 +265,8 @@ Proof.
   rewrite /is_entry /to_map.
   remember ([]) as pref.
   replace (0%nat) with (length pref) by (by subst).
-  assert (pref `prefix_of` bytes_to_bits label).
-  { subst. apply prefix_nil. }
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
   clear Heqpref.
   intros (?&?&?).
   generalize dependent pref.
@@ -222,20 +275,25 @@ Proof.
   - simpl_map. case_match; by subst.
   - case_match; simplify_eq/=; case_decide; by simpl_map.
   - opose proof (to_map_disj t1 t2 pref).
-    case_match; [|done].
     case_match.
     + opose proof (IHt2 (pref ++ [true]) _ _) as Hl0.
-      { by apply prefix_snoc. }
+      { by apply prefix_total_snoc. }
       { exact_eq Hpath. len. }
       opose proof (to_map_pref_None t1 (pref ++ [false]) label _) as Hl1.
-      { intros ?%prefix_snoc_inv. naive_solver. }
+      { intros ?%prefix_total_snoc_inv.
+        unfold get_bit in *. intuition.
+        (* TODO: somehow naive_solver doesn't get this.
+        but it did with !! lookup. *)
+        by rewrite H2 in H5. }
       rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
     + opose proof (IHt1 (pref ++ [false]) _ _) as Hl0.
-      { by apply prefix_snoc. }
+      { by apply prefix_total_snoc. }
       { exact_eq Hpath. len. }
       opose proof (to_map_pref_None t2 (pref ++ [true]) label _) as Hl1.
-      { intros ?%prefix_snoc_inv. naive_solver. }
+      { intros ?%prefix_total_snoc_inv.
+        unfold get_bit in *. intuition.
+        by rewrite H2 in H5. }
       rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
 Qed.
@@ -756,7 +814,6 @@ Proof.
     intuition.
     iNamedSuffix "Hdecode1" "1".
     subst. simpl.
-    case_match; [|done].
     case_match.
     + by iApply "IHt0_2".
     + by iApply "IHt0_1".
