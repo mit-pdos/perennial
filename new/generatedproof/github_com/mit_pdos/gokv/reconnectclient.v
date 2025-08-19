@@ -108,11 +108,11 @@ Global Instance wp_func_call_MakeReconnectingClient :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_Call :
-  WpMethodCall (ptrTⁱᵈ reconnectclient.ReconnectingClientⁱᵈ) "Call" _ (is_pkg_defined reconnectclient) :=
+  WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "Call" _ (is_pkg_defined reconnectclient) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_getClient :
-  WpMethodCall (ptrTⁱᵈ reconnectclient.ReconnectingClientⁱᵈ) "getClient" _ (is_pkg_defined reconnectclient) :=
+  WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "getClient" _ (is_pkg_defined reconnectclient) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

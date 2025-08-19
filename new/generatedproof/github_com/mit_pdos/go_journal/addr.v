@@ -94,11 +94,11 @@ Global Instance wp_func_call_MkBitAddr :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Addr_Flatid :
-  WpMethodCall addr.Addrⁱᵈ "Flatid" _ (is_pkg_defined addr) :=
+  WpMethodCall addr.Addr.id "Flatid" _ (is_pkg_defined addr) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Addr'ptr_Flatid :
-  WpMethodCall (ptrTⁱᵈ addr.Addrⁱᵈ) "Flatid" _ (is_pkg_defined addr) :=
+  WpMethodCall (ptrT.id addr.Addr.id) "Flatid" _ (is_pkg_defined addr) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

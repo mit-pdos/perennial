@@ -30,7 +30,7 @@ Qed.
 
 Lemma wp_Foo__someMethod (f : main.Foo.t) :
   {{{ is_pkg_init main }}}
-    f @ main.Fooⁱᵈ @ "someMethod" #()
+    f @ main.Foo.id @ "someMethod" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_".
@@ -40,7 +40,7 @@ Qed.
 Lemma wp_Foo__someMethodWithArgs (f : main.Foo.t) (y : go_string) (z : w64) :
   Z.of_nat (length (f ++ y)) = sint.Z z →
   {{{ is_pkg_init main }}}
-    f @ main.Fooⁱᵈ @ "someMethodWithArgs" #y #z
+    f @ main.Foo.id @ "someMethodWithArgs" #y #z
   {{{ RET #(); True }}}.
 Proof.
   intros ?. wp_start as "_".

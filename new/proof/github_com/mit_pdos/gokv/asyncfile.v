@@ -155,7 +155,7 @@ Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
-                             (interface.mk (ptrTⁱᵈ sync.Mutexⁱᵈ) #mu))
+                             (interface.mk (ptrT.id sync.Mutex.id) #mu))
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=
@@ -208,7 +208,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
         "#Hinv" ∷ is_write_inv N γ i Q ∗
         "Htok" ∷ own_escrow_token γ i
   }}}
-    f @ (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) @ "wait" #i
+    f @ (ptrT.id asyncfile.AsyncFile.id) @ "wait" #i
   {{{
         RET #(); Q
   }}}.
@@ -349,7 +349,7 @@ Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
         "Hdata_in" ∷ data_sl ↦* data ∗
         "Hupd" ∷ (P olddata ={⊤∖↑N}=∗ P data ∗ Q)
   }}}
-    f @ (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) @ "Write" #data_sl
+    f @ (ptrT.id asyncfile.AsyncFile.id) @ "Write" #data_sl
   {{{
         (w:val), RET w;
         own_AsyncFile N f γ P data ∗
@@ -452,7 +452,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data :
         "#Hfilename_in" ∷ f ↦s[asyncfile.AsyncFile :: "filename"]□ fname ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    f @ (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) @ "flushThread" #()
+    f @ (ptrT.id asyncfile.AsyncFile.id) @ "flushThread" #()
   {{{
         RET #(); True
   }}}.

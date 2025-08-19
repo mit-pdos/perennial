@@ -103,35 +103,35 @@ Global Instance wp_func_call_MkLog :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_CommitWait :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "CommitWait" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "CommitWait" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Flush :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Flush" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "Flush" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Load :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Load" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "Load" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_LogSz :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "LogSz" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "LogSz" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Shutdown :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Shutdown" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "Shutdown" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_doCommit :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "doCommit" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "doCommit" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_installBufs :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "installBufs" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "installBufs" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_installBufsMap :
-  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "installBufsMap" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrT.id obj.Log.id) "installBufsMap" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

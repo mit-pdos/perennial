@@ -148,19 +148,19 @@ Global Instance wp_func_call_Dial :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Serve :
-  WpMethodCall (ptrTⁱᵈ advrpc.Serverⁱᵈ) "Serve" _ (is_pkg_defined advrpc) :=
+  WpMethodCall (ptrT.id advrpc.Server.id) "Serve" _ (is_pkg_defined advrpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_handle :
-  WpMethodCall (ptrTⁱᵈ advrpc.Serverⁱᵈ) "handle" _ (is_pkg_defined advrpc) :=
+  WpMethodCall (ptrT.id advrpc.Server.id) "handle" _ (is_pkg_defined advrpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_read :
-  WpMethodCall (ptrTⁱᵈ advrpc.Serverⁱᵈ) "read" _ (is_pkg_defined advrpc) :=
+  WpMethodCall (ptrT.id advrpc.Server.id) "read" _ (is_pkg_defined advrpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Call :
-  WpMethodCall (ptrTⁱᵈ advrpc.Clientⁱᵈ) "Call" _ (is_pkg_defined advrpc) :=
+  WpMethodCall (ptrT.id advrpc.Client.id) "Call" _ (is_pkg_defined advrpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -619,35 +619,35 @@ Global Instance wp_func_call_CheckNonMemb :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Audit :
-  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Audit" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.Client.id) "Audit" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Get :
-  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Get" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.Client.id) "Get" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Put :
-  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Put" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.Client.id) "Put" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_SelfMon :
-  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "SelfMon" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.Client.id) "SelfMon" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_getChainExt :
-  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "getChainExt" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.Client.id) "getChainExt" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Evid'ptr_Check :
-  WpMethodCall (ptrTⁱᵈ client.Evidⁱᵈ) "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.Evid.id) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidVrf'ptr_Check :
-  WpMethodCall (ptrTⁱᵈ client.evidVrfⁱᵈ) "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.evidVrf.id) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidLink'ptr_Check :
-  WpMethodCall (ptrTⁱᵈ client.evidLinkⁱᵈ) "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrT.id client.evidLink.id) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

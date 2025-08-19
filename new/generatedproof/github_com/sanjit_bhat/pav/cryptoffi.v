@@ -124,39 +124,39 @@ Global Instance wp_func_call_RandBytes :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Hasher'ptr_Sum :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) "Sum" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.Hasher.id) "Sum" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Hasher'ptr_Write :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) "Write" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.Hasher.id) "Write" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SigPrivateKey'ptr_Sign :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.SigPrivateKeyⁱᵈ) "Sign" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.SigPrivateKey.id) "Sign" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SigPublicKey_Verify :
-  WpMethodCall cryptoffi.SigPublicKeyⁱᵈ "Verify" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall cryptoffi.SigPublicKey.id "Verify" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SigPublicKey'ptr_Verify :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.SigPublicKeyⁱᵈ) "Verify" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.SigPublicKey.id) "Verify" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_VrfPrivateKey'ptr_Evaluate :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.VrfPrivateKeyⁱᵈ) "Evaluate" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.VrfPrivateKey.id) "Evaluate" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_VrfPrivateKey'ptr_Prove :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.VrfPrivateKeyⁱᵈ) "Prove" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.VrfPrivateKey.id) "Prove" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_VrfPrivateKey'ptr_PublicKey :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.VrfPrivateKeyⁱᵈ) "PublicKey" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.VrfPrivateKey.id) "PublicKey" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_VrfPublicKey'ptr_Verify :
-  WpMethodCall (ptrTⁱᵈ cryptoffi.VrfPublicKeyⁱᵈ) "Verify" _ (is_pkg_defined cryptoffi) :=
+  WpMethodCall (ptrT.id cryptoffi.VrfPublicKey.id) "Verify" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

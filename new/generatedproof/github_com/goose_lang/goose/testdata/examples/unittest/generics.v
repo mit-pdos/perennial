@@ -488,11 +488,11 @@ Global Instance wp_func_call_useMultiParamFunc :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Box_Get :
-  WpMethodCall generics.Boxⁱᵈ "Get" _ (is_pkg_defined generics) :=
+  WpMethodCall generics.Box.id "Get" _ (is_pkg_defined generics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Box'ptr_Get :
-  WpMethodCall (ptrTⁱᵈ generics.Boxⁱᵈ) "Get" _ (is_pkg_defined generics) :=
+  WpMethodCall (ptrT.id generics.Box.id) "Get" _ (is_pkg_defined generics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

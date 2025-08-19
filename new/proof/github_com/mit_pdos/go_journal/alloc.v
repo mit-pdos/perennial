@@ -95,7 +95,7 @@ Lemma wp_MarkUsed max l (bn: u64) :
   uint.Z bn < uint.Z max →
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "MarkUsed" #bn
+    l @ (ptrT.id alloc.Alloc.id) @ "MarkUsed" #bn
   {{{ RET #(); True }}}.
 Proof.
   intros Hbound.
@@ -173,7 +173,7 @@ Lemma wp_incNext (max: u64) (l: loc) :
   0 < uint.Z max →
   {{{ is_pkg_init alloc.alloc ∗
       alloc_linv max l }}}
-    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @"incNext" #()
+    l @ (ptrT.id alloc.Alloc.id) @"incNext" #()
   {{{ (next': u64), RET #next'; ⌜uint.Z next' < uint.Z max⌝ ∗
                                 alloc_linv max l }}}.
 Proof.
@@ -205,7 +205,7 @@ Qed.
 Lemma wp_allocBit (max: u64) (l: loc) :
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "allocBit" #()
+    l @ (ptrT.id alloc.Alloc.id) @ "allocBit" #()
   {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
   wp_start as "Hpre".
@@ -265,7 +265,7 @@ Lemma wp_freeBit max l (bn: u64) :
   uint.Z bn < uint.Z max →
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "freeBit" #bn
+    l @ (ptrT.id alloc.Alloc.id) @ "freeBit" #bn
   {{{ RET #(); True }}}.
 Proof.
   intros Hbound.
@@ -293,7 +293,7 @@ Qed.
 Lemma wp_AllocNum max l :
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "AllocNum" #()
+    l @ (ptrT.id alloc.Alloc.id) @ "AllocNum" #()
   {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
   wp_start as "H".
@@ -309,7 +309,7 @@ Lemma wp_FreeNum max l (num: u64) :
   uint.Z num ≠ 0 →
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @"FreeNum" #num
+    l @ (ptrT.id alloc.Alloc.id) @"FreeNum" #num
   {{{ RET #(); True }}}.
 Proof.
   intros Hnum Hnonzero.
@@ -356,7 +356,7 @@ Qed.
 Lemma wp_NumFree max l :
   {{{ is_pkg_init alloc.alloc ∗
       is_alloc max l }}}
-    l @ (ptrTⁱᵈ alloc.Allocⁱᵈ) @ "NumFree" #()
+    l @ (ptrT.id alloc.Alloc.id) @ "NumFree" #()
   {{{ (n:u64), RET #n; ⌜0 ≤ uint.Z n ≤ uint.Z max⌝}}}.
 Proof.
   wp_start as "H". iNamed "H".

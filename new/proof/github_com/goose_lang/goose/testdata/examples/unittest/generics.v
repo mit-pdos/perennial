@@ -29,7 +29,7 @@ Qed.
 
 Lemma wp_Box__Get (b: generics.Box.t T') :
   {{{ is_pkg_init generics }}}
-    b @ generics.Boxⁱᵈ @ "Get" #T #()
+    b @ generics.Box.id @ "Get" #T #()
   {{{ RET #(generics.Box.Value' b); True }}}.
 Proof using Hbounded.
   wp_start as "_"; try wp_auto.

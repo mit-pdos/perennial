@@ -52,7 +52,7 @@ Proof.
 Qed.
 
 Lemma wp_typeAssertInt (x: interface.t) (v: w64) :
-  {{{ is_pkg_init unittest ∗ ⌜x = interface.mk intTⁱᵈ #v⌝ }}}
+  {{{ is_pkg_init unittest ∗ ⌜x = interface.mk intT.id #v⌝ }}}
     @! unittest.typeAssertInt #x
   {{{ RET #v; True }}}.
 Proof.
@@ -80,7 +80,7 @@ Lemma wp_checkedTypeAssert (x: interface.t) :
             (* a technical side condition is required to show that if i has the
                correct type identity, then the value it holds has the expected type
                V *)
-            uint64Tⁱᵈ = type_id' →
+            uint64T.id = type_id' →
             ∃ (v: w64), v0 = #v
         |  interface.nil => True
         end⌝
@@ -105,8 +105,8 @@ Lemma wp_basicTypeSwitch (x: interface.t) :
   {{{ is_pkg_init unittest ∗
       ⌜match x with
       | interface.mk type_id v =>
-          (type_id = intTⁱᵈ → ∃ (v': w64), v = #v') ∧
-          (type_id = stringTⁱᵈ → ∃ (v': go_string), v = #v')
+          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
+          (type_id = stringT.id → ∃ (v': go_string), v = #v')
       | _ => True
       end⌝
   }}}
@@ -139,8 +139,8 @@ Lemma wp_fancyTypeSwitch (x: interface.t) :
   {{{ is_pkg_init unittest ∗
       ⌜match x with
       | interface.mk type_id v =>
-          (type_id = intTⁱᵈ → ∃ (v': w64), v = #v') ∧
-          (type_id = stringTⁱᵈ → ∃ (v': go_string), v = #v')
+          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
+          (type_id = stringT.id → ∃ (v': go_string), v = #v')
       | _ => True
       end⌝
   }}}
@@ -172,8 +172,8 @@ Lemma wp_multiTypeSwitch x :
   {{{ is_pkg_init unittest ∗
       ⌜match x with
       | interface.mk type_id v =>
-          (type_id = intTⁱᵈ → ∃ (v': w64), v = #v') ∧
-          (type_id = stringTⁱᵈ → ∃ (v': go_string), v = #v')
+          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
+          (type_id = stringT.id → ∃ (v': go_string), v = #v')
       | _ => True
       end⌝
   }}}
@@ -215,7 +215,7 @@ Qed.
 
 Lemma wp_Point__IgnoreReceiver (p : unittest.Point.t) :
   {{{ is_pkg_init unittest }}}
-    p @ unittest.Pointⁱᵈ @ "IgnoreReceiver" #()
+    p @ unittest.Point.id @ "IgnoreReceiver" #()
   {{{ RET #"ok"; True }}}.
 Proof.
   wp_start. by iApply "HΦ".

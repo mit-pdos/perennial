@@ -156,15 +156,15 @@ Global Instance wp_func_call_CreateAppendOnlyFile :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_Append :
-  WpMethodCall (ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) "Append" _ (is_pkg_defined aof) :=
+  WpMethodCall (ptrT.id aof.AppendOnlyFile.id) "Append" _ (is_pkg_defined aof) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_Close :
-  WpMethodCall (ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) "Close" _ (is_pkg_defined aof) :=
+  WpMethodCall (ptrT.id aof.AppendOnlyFile.id) "Close" _ (is_pkg_defined aof) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_WaitAppend :
-  WpMethodCall (ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) "WaitAppend" _ (is_pkg_defined aof) :=
+  WpMethodCall (ptrT.id aof.AppendOnlyFile.id) "WaitAppend" _ (is_pkg_defined aof) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -89,7 +89,7 @@ Lemma wp_Hasher_Write hr data sl_b d0 b :
     "Hown_hr" ∷ own_Hasher hr data ∗
     "Hsl_b" ∷ sl_b ↦*{d0} b
   }}}
-  hr @ (ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) @ "Write" #sl_b
+  hr @ (ptrT.id cryptoffi.Hasher.id) @ "Write" #sl_b
   {{{
     RET #();
     "Hown_hr" ∷ own_Hasher hr (data ++ b) ∗
@@ -103,7 +103,7 @@ Lemma wp_Hasher_Sum sl_b_in hr data b_in :
     "Hown_hr" ∷ own_Hasher hr data ∗
     "Hsl_b_in" ∷ sl_b_in ↦* b_in
   }}}
-  hr @ (ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) @ "Sum" #sl_b_in
+  hr @ (ptrT.id cryptoffi.Hasher.id) @ "Sum" #sl_b_in
   {{{
     sl_b_out hash, RET #sl_b_out;
     "Hown_hr" ∷ own_Hasher hr data ∗

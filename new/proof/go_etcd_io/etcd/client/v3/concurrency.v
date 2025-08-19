@@ -209,7 +209,7 @@ Qed.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ (ptrTⁱᵈ concurrency.Sessionⁱᵈ) @ "Lease" #()
+    s @ (ptrT.id concurrency.Session.id) @ "Lease" #()
   {{{ RET #lease; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
@@ -217,7 +217,7 @@ Qed.
 
 Lemma wp_Session__Done s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ (ptrTⁱᵈ concurrency.Sessionⁱᵈ) @ "Done" #()
+    s @ (ptrT.id concurrency.Session.id) @ "Done" #()
   {{{ ch, RET #ch; own_closeable_chan ch True closeable.Unknown }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".

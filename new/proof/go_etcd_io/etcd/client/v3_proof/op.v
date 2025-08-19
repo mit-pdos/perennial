@@ -70,7 +70,7 @@ Admitted.
 
 Lemma wp_Op__applyOpts (op : loc) :
   {{{ is_pkg_init clientv3 }}}
-    op @ (ptrTⁱᵈ clientv3.Opⁱᵈ) @ "applyOpts" #slice.nil
+    op @ (ptrT.id clientv3.Op.id) @ "applyOpts" #slice.nil
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto. wp_apply wp_slice_for_range.
@@ -102,7 +102,7 @@ Qed.
 
 Lemma wp_Op__KeyBytes op req :
   {{{ is_pkg_init clientv3 ∗ is_Op op (Op.Put req) }}}
-    op @ clientv3.Opⁱᵈ @ "KeyBytes" #()
+    op @ clientv3.Op.id @ "KeyBytes" #()
   {{{ key_sl, RET #key_sl; key_sl ↦*□ req.(PutRequest.key) }}}.
 Proof.
   wp_start. wp_auto. iApply "HΦ". iNamed "Hpre". iFrame "#".

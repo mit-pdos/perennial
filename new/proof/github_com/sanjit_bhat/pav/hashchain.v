@@ -288,7 +288,7 @@ Lemma wp_HashChain_Append c vals sl_val d0 val :
     "Hsl_val" ∷ sl_val ↦*{d0} val ∗
     "%Hlen_val" ∷ ⌜ Z.of_nat $ length val = cryptoffi.hash_len ⌝
   }}}
-  c @ (ptrTⁱᵈ hashchain.HashChainⁱᵈ) @ "Append" #sl_val
+  c @ (ptrT.id hashchain.HashChain.id) @ "Append" #sl_val
   {{{
     sl_newLink newLink, RET #sl_newLink;
     "Hown_HashChain" ∷ own c (vals ++ [val]) 1 ∗
@@ -326,7 +326,7 @@ Lemma wp_HashChain_Prove c vals d (prevLen : w64) :
     "Hown_HashChain" ∷ own c vals d ∗
     "%Hlt_prevLen" ∷ ⌜ uint.Z prevLen <= length vals ⌝
   }}}
-  c @ (ptrTⁱᵈ hashchain.HashChainⁱᵈ) @ "Prove" #prevLen
+  c @ (ptrT.id hashchain.HashChain.id) @ "Prove" #prevLen
   {{{
     sl_proof proof, RET #sl_proof;
     "Hown_HashChain" ∷ own c vals d ∗
@@ -362,7 +362,7 @@ Lemma wp_HashChain_Bootstrap c vals d pred_vals lastVal :
     "Hown_HashChain" ∷ own c vals d ∗
     "->" ∷ ⌜ vals = pred_vals ++ [lastVal] ⌝
   }}}
-  c @ (ptrTⁱᵈ hashchain.HashChainⁱᵈ) @ "Bootstrap" #()
+  c @ (ptrT.id hashchain.HashChain.id) @ "Bootstrap" #()
   {{{
     sl_bootLink bootLink sl_proof, RET (#sl_bootLink, #sl_proof);
     "Hown_HashChain" ∷ own c vals d ∗

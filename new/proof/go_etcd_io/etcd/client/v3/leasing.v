@@ -87,7 +87,7 @@ Lemma trivial_WaitGroup_start_done N' wg_ptr γ (N : namespace) ctr :
   (↑N' : coPset) ## ↑N →
   is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ ctr ={⊤}=∗
   [∗] (replicate (Z.to_nat (sint.Z ctr))
-         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Done" #() {{ Φ }})).
+         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @ (ptrT.id sync.WaitGroup.id) @ "Done" #() {{ Φ }})).
 Proof using ghost_mapG0.
   intros HN.
   iIntros "(#His & Hctr)".
@@ -225,7 +225,7 @@ Lemma wp_leasingKV__monitorSession lkv γ :
       "Hown_kv" ∷ own_leasingKV lkv γ ∗
       "Hown" ∷ own_leasingKV_monitorSession lkv γ
   }}}
-    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "monitorSession" #()
+    lkv @ (ptrT.id leasing.leasingKV.id) @ "monitorSession" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "Hpre". iNamed "Hpre". wp_auto.
@@ -396,7 +396,7 @@ Admitted.
 
 Lemma wp_leaseCache__clearOldRevokes lc γ ctx ctx_desc :
   {{{ is_pkg_init leasing ∗ own_leaseCache lc γ ∗ is_Context ctx ctx_desc }}}
-    lc @ (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) @ "clearOldRevokes" #ctx
+    lc @ (ptrT.id leasing.leaseCache.id) @ "clearOldRevokes" #ctx
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[Hlc #Hctx]". wp_auto.
@@ -464,7 +464,7 @@ Proof. unfold named. done. Qed.
 
 Lemma wp_leasingKV__waitSession lkv ctx ctx_desc γ :
   {{{ is_pkg_init leasing ∗ own_leasingKV lkv γ ∗ is_Context ctx ctx_desc }}}
-    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "waitSession" #ctx
+    lkv @ (ptrT.id leasing.leasingKV.id) @ "waitSession" #ctx
   {{{ err, RET #err;
       own_leasingKV lkv γ ∗
       if decide (err = interface.nil) then ghost_var γ.(entries_ready_gn) DfracDiscarded true
@@ -529,7 +529,7 @@ Definition own_KV (kv : interface.t) (γetcd : clientv3_names) : iProp Σ :=
 
 Lemma wp_leasingKV__Put lkv ctx ctx_desc (key v : go_string) γ :
   {{{ is_pkg_init leasing ∗ is_Context ctx ctx_desc ∗ own_leasingKV lkv γ }}}
-    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "Put" #ctx #key #v #slice.nil
+    lkv @ (ptrT.id leasing.leasingKV.id) @ "Put" #ctx #key #v #slice.nil
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[#Hctx Hlkv]". wp_auto.
@@ -547,7 +547,7 @@ Lemma wp_leasingKV__put ctx ctx_desc lkv γ op put_req :
       "Hlkv" ∷ own_leasingKV lkv γ ∗
       "#Hop" ∷ is_Op op (Op.Put put_req)
   }}}
-    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "put" #ctx #op
+    lkv @ (ptrT.id leasing.leasingKV.id) @ "put" #ctx #op
   {{{
       (pr_ptr : loc) (err : error.t), RET (#pr_ptr, #err);
         if decide (err = interface.nil) then
@@ -589,7 +589,7 @@ Admitted.
 
 Lemma wp_leaseCache__Lock lc (key : go_string) γ :
   {{{ is_pkg_init leasing ∗ "Hown" ∷ own_leaseCache lc γ ∗ "#Hready" ∷ is_entries_ready γ }}}
-    lc @ (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) @ "Lock" #key
+    lc @ (ptrT.id leasing.leaseCache.id) @ "Lock" #key
   {{{ wc (rev : w64), RET (#wc, #rev);
       own_leaseCache lc γ ∗ (if decide (wc = null) then True else own_closeable_chan wc True closeable.Open)
   }}}.
@@ -637,7 +637,7 @@ Lemma wp_leasingKV__tryModifyOp ctx ctx_desc op req lkv γ :
       "#Hop" ∷ is_Op op (Op.Put req) ∗
       "Hlkv" ∷ own_leasingKV lkv γ
   }}}
-    lkv @ (ptrTⁱᵈ leasing.leasingKVⁱᵈ) @ "tryModifyOp" #ctx #op
+    lkv @ (ptrT.id leasing.leasingKV.id) @ "tryModifyOp" #ctx #op
   {{{
       (resp_ptr : loc) (wc : chan.t) err, RET (#resp_ptr, #wc, #err);
         if decide (err = interface.nil) then
@@ -661,7 +661,7 @@ Admitted.
 Lemma own_leasingKV_own_KV lkv γ :
   is_entries_ready γ -∗
   own_leasingKV lkv γ -∗
-  own_KV (interface.mk (ptrTⁱᵈ leasing.leasingKVⁱᵈ) #lkv) γ.(etcd_gn).
+  own_KV (interface.mk (ptrT.id leasing.leasingKV.id) #lkv) γ.(etcd_gn).
 Proof.
 Admitted.
 

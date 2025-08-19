@@ -83,7 +83,7 @@ Lemma wp_LockClerk__Lock ck key γ R :
       is_pkg_init lockservice ∗
       is_LockClerk ck γ ∗ is_lock N γ key R
   }}}
-    ck @ (ptrTⁱᵈ lockservice.LockClerkⁱᵈ) @ "Lock" #key
+    ck @ (ptrT.id lockservice.LockClerk.id) @ "Lock" #key
   {{{
        RET #(); R
   }}}
@@ -123,7 +123,7 @@ Lemma wp_LockClerk__Unlock ck key γ R :
   {{{
        is_pkg_init lockservice ∗ is_LockClerk ck γ ∗ is_lock N γ key R ∗ R
   }}}
-    ck @ (ptrTⁱᵈ lockservice.LockClerkⁱᵈ) @ "Unlock" #key
+    ck @ (ptrT.id lockservice.LockClerk.id) @ "Unlock" #key
   {{{
        RET #(); True
   }}}

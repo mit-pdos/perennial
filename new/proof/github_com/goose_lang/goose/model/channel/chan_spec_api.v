@@ -34,7 +34,7 @@ Lemma wp_Channel__Send
   (params: chan V) (i: nat) (q: Qp) (v: V):
   (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
   {{{ is_pkg_init channel ∗ send_pre V params q i v }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Send" #t #v 
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "Send" #t #v 
   {{{ RET #(); send_post V params q i }}}.
 Proof.
   intros Hsp.
@@ -85,7 +85,7 @@ Lemma wp_Channel__Receive
   {H': IntoValTyped V t} {B: BoundedTypeSize t}
   (params: chan V) (i: nat) (q: Qp) (Ri: nat -> iProp Σ):
   {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Receive" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
   {{{ (v: V) (ok: bool), RET (#v, #ok);
       recv_post V params q i ok v Ri }}}.
 Proof.
@@ -122,7 +122,7 @@ Lemma wp_Channel__ReceiveDiscardOk
   {H': IntoValTyped V t} {B: BoundedTypeSize t}
   (params: chan V) (i: nat) (q: Qp) (Ri: nat -> iProp Σ):
   {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "ReceiveDiscardOk" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #t #()
   {{{ (v: V) (ok: bool), RET #v;
       recv_post V params q i ok v Ri }}}.
 Proof.
@@ -320,7 +320,7 @@ Qed.
   
 Lemma wp_Channel__Len (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) :
   {{{ is_pkg_init channel ∗  isChan V params }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Len" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "Len" #t #()
   {{{ (n: nat), RET #(W64 n); ⌜ (0 ≤ n)%nat ⌝ }}}.
 Proof.
   wp_start. wp_auto. iNamed "Hpre".  wp_if_destruct.
@@ -340,7 +340,7 @@ Qed.
 
 Lemma wp_Channel__Cap (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) :
   {{{ is_pkg_init channel ∗ isChan V params }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Cap" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "Cap" #t #()
   {{{ RET #(W64 params.(ch_size)); True%I }}}.
 Proof.
   wp_start. wp_auto. iNamed "Hpre".
@@ -364,7 +364,7 @@ Qed.
 
 Lemma wp_Channel__Close (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V)  (n: nat) :
   {{{ is_pkg_init channel ∗ "HCh" ∷ isChan V params ∗ "HCp" ∷ own_close_perm params.(ch_γ) params.(ch_R) n }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Close" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "Close" #t #()
   {{{ RET #(); True }}}.
 Proof.
    wp_start. wp_auto.

@@ -131,19 +131,19 @@ Global Instance wp_func_call_ErrorDesc :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_EtcdError_Code :
-  WpMethodCall rpctypes.EtcdErrorⁱᵈ "Code" _ (is_pkg_defined rpctypes) :=
+  WpMethodCall rpctypes.EtcdError.id "Code" _ (is_pkg_defined rpctypes) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_EtcdError_Error :
-  WpMethodCall rpctypes.EtcdErrorⁱᵈ "Error" _ (is_pkg_defined rpctypes) :=
+  WpMethodCall rpctypes.EtcdError.id "Error" _ (is_pkg_defined rpctypes) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_EtcdError'ptr_Code :
-  WpMethodCall (ptrTⁱᵈ rpctypes.EtcdErrorⁱᵈ) "Code" _ (is_pkg_defined rpctypes) :=
+  WpMethodCall (ptrT.id rpctypes.EtcdError.id) "Code" _ (is_pkg_defined rpctypes) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_EtcdError'ptr_Error :
-  WpMethodCall (ptrTⁱᵈ rpctypes.EtcdErrorⁱᵈ) "Error" _ (is_pkg_defined rpctypes) :=
+  WpMethodCall (ptrT.id rpctypes.EtcdError.id) "Error" _ (is_pkg_defined rpctypes) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

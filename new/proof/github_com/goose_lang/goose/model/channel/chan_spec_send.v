@@ -34,7 +34,7 @@ Lemma wp_Channel__BufferedTrySend_params
  
   params.(ch_loc) ≠ null ->
   {{{ is_pkg_init channel ∗  send_pre_inner V params q i v  }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "BufferedTrySend" #t #v
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "BufferedTrySend" #t #v
   {{{ (success: bool), RET #success;
       if success then
         send_post_inner V params q i
@@ -660,7 +660,7 @@ Lemma wp_Channel__SenderCheckOfferResult (V: Type) {K: IntoVal V} {t} {H': IntoV
     "Hsttok" ∷ sender_exchange_token params.(ch_γ) v ∗
     "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q
   }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "SenderCheckOfferResult" #t #() 
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "SenderCheckOfferResult" #t #() 
   {{{ (res: rescind_result), RET #(rescind_to_word res);
     match vs, res with
     | Valid_receiver_done, CompletedExchange =>
@@ -797,7 +797,7 @@ Lemma wp_Channel__SenderCompleteOrOffer (V: Type) {K: IntoVal V} {t} {H': IntoVa
     "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) send_count (send_ctr_frozen vs) ∗ 
     "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q
   }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "SenderCompleteOrOffer" #t #v
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "SenderCompleteOrOffer" #t #v
   {{{ (res: sender_result), RET #(sender_result_to_word res);
     match res, vs with
     | SenderCompletedWithReceiver, Valid_receiver_ready =>
@@ -975,7 +975,7 @@ Qed.
     
     (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
     {{{ is_pkg_init channel ∗ send_pre V params q i v }}}
-      params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "TrySend" #t #v
+      params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "TrySend" #t #v
 {{{ (selected: bool), RET #selected; 
         if (selected) then 
         send_post V params q i else 
@@ -1389,7 +1389,7 @@ Lemma wp_Channel__TryClose (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  
   
   "HCh" ∷ isChanInner V params  ∗
   "HCp" ∷   own_close_perm params.(ch_γ) params.(ch_R) n }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "TryClose" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "TryClose" #t #()
   {{{ (selected : bool), RET #selected;
       (if selected then
         

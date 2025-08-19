@@ -111,11 +111,11 @@ Global Instance wp_func_call_Open :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_RepBlock'ptr_Read :
-  WpMethodCall (ptrTⁱᵈ replicated_block.RepBlockⁱᵈ) "Read" _ (is_pkg_defined replicated_block) :=
+  WpMethodCall (ptrT.id replicated_block.RepBlock.id) "Read" _ (is_pkg_defined replicated_block) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RepBlock'ptr_Write :
-  WpMethodCall (ptrTⁱᵈ replicated_block.RepBlockⁱᵈ) "Write" _ (is_pkg_defined replicated_block) :=
+  WpMethodCall (ptrT.id replicated_block.RepBlock.id) "Write" _ (is_pkg_defined replicated_block) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

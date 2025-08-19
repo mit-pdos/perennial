@@ -231,19 +231,19 @@ Global Instance wp_func_call_MkLockMap :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_lockShard'ptr_acquire :
-  WpMethodCall (ptrTⁱᵈ lockmap.lockShardⁱᵈ) "acquire" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrT.id lockmap.lockShard.id) "acquire" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockShard'ptr_release :
-  WpMethodCall (ptrTⁱᵈ lockmap.lockShardⁱᵈ) "release" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrT.id lockmap.lockShard.id) "release" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockMap'ptr_Acquire :
-  WpMethodCall (ptrTⁱᵈ lockmap.LockMapⁱᵈ) "Acquire" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrT.id lockmap.LockMap.id) "Acquire" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockMap'ptr_Release :
-  WpMethodCall (ptrTⁱᵈ lockmap.LockMapⁱᵈ) "Release" _ (is_pkg_defined lockmap) :=
+  WpMethodCall (ptrT.id lockmap.LockMap.id) "Release" _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -1,12 +1,13 @@
 From New.code Require Import sync.
 From New.golang Require Import defn.
 
+Module primitive.
+Module prophId. Definition id : go_string := "github.com/goose-lang/goose.prophId". End prophId.
 Section code.
   Context `{ffi_syntax}.
 
   (* FIXME: this shouldn't be exposed, but it is because of the alias `ProphId =
    *prophId`. *)
-  Definition prophIdⁱᵈ : go_string := "github.com/goose-lang/goose.prophId".
 
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)
@@ -86,3 +87,4 @@ this in GooseLang, so we just loop. *)
     λ: "s", assume.assume (IsNoStringOverflow "s").
 
 End code.
+End primitive.

@@ -107,35 +107,35 @@ Global Instance wp_func_call_writeAll :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Append :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "Append" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "Append" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Get :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "Get" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "Get" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Reset :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "Reset" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "Reset" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_append :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "append" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "append" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_get :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "get" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "get" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_mkHdr :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "mkHdr" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "mkHdr" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_reset :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "reset" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "reset" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_writeHdr :
-  WpMethodCall (ptrTⁱᵈ append_log.Logⁱᵈ) "writeHdr" _ (is_pkg_defined append_log) :=
+  WpMethodCall (ptrT.id append_log.Log.id) "writeHdr" _ (is_pkg_defined append_log) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

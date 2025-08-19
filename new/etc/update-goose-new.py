@@ -206,6 +206,9 @@ def main():
     args = parser.parse_args()
 
     if args.all:
+        setattr(args, "std_lib", True)
+        setattr(args, "channel", True)
+        setattr(args, "goose_examples", True)
         for proj in projs:
             proj_path = path.join("..", proj.name)
             if os.path.isdir(proj_path):

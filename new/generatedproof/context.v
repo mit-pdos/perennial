@@ -798,335 +798,335 @@ Global Instance wp_func_call_value :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_deadlineExceededError_Error :
-  WpMethodCall context.deadlineExceededErrorⁱᵈ "Error" _ (is_pkg_defined context) :=
+  WpMethodCall context.deadlineExceededError.id "Error" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_deadlineExceededError_Temporary :
-  WpMethodCall context.deadlineExceededErrorⁱᵈ "Temporary" _ (is_pkg_defined context) :=
+  WpMethodCall context.deadlineExceededError.id "Temporary" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_deadlineExceededError_Timeout :
-  WpMethodCall context.deadlineExceededErrorⁱᵈ "Timeout" _ (is_pkg_defined context) :=
+  WpMethodCall context.deadlineExceededError.id "Timeout" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_deadlineExceededError'ptr_Error :
-  WpMethodCall (ptrTⁱᵈ context.deadlineExceededErrorⁱᵈ) "Error" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.deadlineExceededError.id) "Error" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_deadlineExceededError'ptr_Temporary :
-  WpMethodCall (ptrTⁱᵈ context.deadlineExceededErrorⁱᵈ) "Temporary" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.deadlineExceededError.id) "Temporary" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_deadlineExceededError'ptr_Timeout :
-  WpMethodCall (ptrTⁱᵈ context.deadlineExceededErrorⁱᵈ) "Timeout" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.deadlineExceededError.id) "Timeout" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx_Deadline :
-  WpMethodCall context.emptyCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.emptyCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx_Done :
-  WpMethodCall context.emptyCtxⁱᵈ "Done" _ (is_pkg_defined context) :=
+  WpMethodCall context.emptyCtx.id "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx_Err :
-  WpMethodCall context.emptyCtxⁱᵈ "Err" _ (is_pkg_defined context) :=
+  WpMethodCall context.emptyCtx.id "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx_Value :
-  WpMethodCall context.emptyCtxⁱᵈ "Value" _ (is_pkg_defined context) :=
+  WpMethodCall context.emptyCtx.id "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.emptyCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.emptyCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.emptyCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.emptyCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.emptyCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.emptyCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_emptyCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.emptyCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.emptyCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx_Deadline :
-  WpMethodCall context.backgroundCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.backgroundCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx_Done :
-  WpMethodCall context.backgroundCtxⁱᵈ "Done" _ (is_pkg_defined context) :=
+  WpMethodCall context.backgroundCtx.id "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx_Err :
-  WpMethodCall context.backgroundCtxⁱᵈ "Err" _ (is_pkg_defined context) :=
+  WpMethodCall context.backgroundCtx.id "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx_String :
-  WpMethodCall context.backgroundCtxⁱᵈ "String" _ (is_pkg_defined context) :=
+  WpMethodCall context.backgroundCtx.id "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx_Value :
-  WpMethodCall context.backgroundCtxⁱᵈ "Value" _ (is_pkg_defined context) :=
+  WpMethodCall context.backgroundCtx.id "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.backgroundCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.backgroundCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.backgroundCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.backgroundCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.backgroundCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.backgroundCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx'ptr_String :
-  WpMethodCall (ptrTⁱᵈ context.backgroundCtxⁱᵈ) "String" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.backgroundCtx.id) "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_backgroundCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.backgroundCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.backgroundCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx_Deadline :
-  WpMethodCall context.todoCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.todoCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx_Done :
-  WpMethodCall context.todoCtxⁱᵈ "Done" _ (is_pkg_defined context) :=
+  WpMethodCall context.todoCtx.id "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx_Err :
-  WpMethodCall context.todoCtxⁱᵈ "Err" _ (is_pkg_defined context) :=
+  WpMethodCall context.todoCtx.id "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx_String :
-  WpMethodCall context.todoCtxⁱᵈ "String" _ (is_pkg_defined context) :=
+  WpMethodCall context.todoCtx.id "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx_Value :
-  WpMethodCall context.todoCtxⁱᵈ "Value" _ (is_pkg_defined context) :=
+  WpMethodCall context.todoCtx.id "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.todoCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.todoCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.todoCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.todoCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.todoCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.todoCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx'ptr_String :
-  WpMethodCall (ptrTⁱᵈ context.todoCtxⁱᵈ) "String" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.todoCtx.id) "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_todoCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.todoCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.todoCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx_Deadline :
-  WpMethodCall context.afterFuncCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.afterFuncCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.afterFuncCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.afterFuncCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.afterFuncCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.afterFuncCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.afterFuncCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.afterFuncCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx'ptr_String :
-  WpMethodCall (ptrTⁱᵈ context.afterFuncCtxⁱᵈ) "String" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.afterFuncCtx.id) "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.afterFuncCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.afterFuncCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx'ptr_cancel :
-  WpMethodCall (ptrTⁱᵈ context.afterFuncCtxⁱᵈ) "cancel" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.afterFuncCtx.id) "cancel" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_afterFuncCtx'ptr_propagateCancel :
-  WpMethodCall (ptrTⁱᵈ context.afterFuncCtxⁱᵈ) "propagateCancel" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.afterFuncCtx.id) "propagateCancel" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx_Deadline :
-  WpMethodCall context.stopCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.stopCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx_Done :
-  WpMethodCall context.stopCtxⁱᵈ "Done" _ (is_pkg_defined context) :=
+  WpMethodCall context.stopCtx.id "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx_Err :
-  WpMethodCall context.stopCtxⁱᵈ "Err" _ (is_pkg_defined context) :=
+  WpMethodCall context.stopCtx.id "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx_Value :
-  WpMethodCall context.stopCtxⁱᵈ "Value" _ (is_pkg_defined context) :=
+  WpMethodCall context.stopCtx.id "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.stopCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.stopCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.stopCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.stopCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.stopCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.stopCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_stopCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.stopCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.stopCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx_Deadline :
-  WpMethodCall context.cancelCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.cancelCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.cancelCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.cancelCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.cancelCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.cancelCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.cancelCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.cancelCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx'ptr_String :
-  WpMethodCall (ptrTⁱᵈ context.cancelCtxⁱᵈ) "String" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.cancelCtx.id) "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.cancelCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.cancelCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx'ptr_cancel :
-  WpMethodCall (ptrTⁱᵈ context.cancelCtxⁱᵈ) "cancel" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.cancelCtx.id) "cancel" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_cancelCtx'ptr_propagateCancel :
-  WpMethodCall (ptrTⁱᵈ context.cancelCtxⁱᵈ) "propagateCancel" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.cancelCtx.id) "propagateCancel" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx_Deadline :
-  WpMethodCall context.withoutCancelCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.withoutCancelCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx_Done :
-  WpMethodCall context.withoutCancelCtxⁱᵈ "Done" _ (is_pkg_defined context) :=
+  WpMethodCall context.withoutCancelCtx.id "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx_Err :
-  WpMethodCall context.withoutCancelCtxⁱᵈ "Err" _ (is_pkg_defined context) :=
+  WpMethodCall context.withoutCancelCtx.id "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx_String :
-  WpMethodCall context.withoutCancelCtxⁱᵈ "String" _ (is_pkg_defined context) :=
+  WpMethodCall context.withoutCancelCtx.id "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx_Value :
-  WpMethodCall context.withoutCancelCtxⁱᵈ "Value" _ (is_pkg_defined context) :=
+  WpMethodCall context.withoutCancelCtx.id "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.withoutCancelCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.withoutCancelCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.withoutCancelCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.withoutCancelCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.withoutCancelCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.withoutCancelCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx'ptr_String :
-  WpMethodCall (ptrTⁱᵈ context.withoutCancelCtxⁱᵈ) "String" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.withoutCancelCtx.id) "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_withoutCancelCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.withoutCancelCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.withoutCancelCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_timerCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.timerCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.timerCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_timerCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.timerCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.timerCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_timerCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.timerCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.timerCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_timerCtx'ptr_String :
-  WpMethodCall (ptrTⁱᵈ context.timerCtxⁱᵈ) "String" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.timerCtx.id) "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_timerCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.timerCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.timerCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_timerCtx'ptr_cancel :
-  WpMethodCall (ptrTⁱᵈ context.timerCtxⁱᵈ) "cancel" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.timerCtx.id) "cancel" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_timerCtx'ptr_propagateCancel :
-  WpMethodCall (ptrTⁱᵈ context.timerCtxⁱᵈ) "propagateCancel" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.timerCtx.id) "propagateCancel" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx_Deadline :
-  WpMethodCall context.valueCtxⁱᵈ "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall context.valueCtx.id "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx_Done :
-  WpMethodCall context.valueCtxⁱᵈ "Done" _ (is_pkg_defined context) :=
+  WpMethodCall context.valueCtx.id "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx_Err :
-  WpMethodCall context.valueCtxⁱᵈ "Err" _ (is_pkg_defined context) :=
+  WpMethodCall context.valueCtx.id "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx'ptr_Deadline :
-  WpMethodCall (ptrTⁱᵈ context.valueCtxⁱᵈ) "Deadline" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.valueCtx.id) "Deadline" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx'ptr_Done :
-  WpMethodCall (ptrTⁱᵈ context.valueCtxⁱᵈ) "Done" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.valueCtx.id) "Done" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx'ptr_Err :
-  WpMethodCall (ptrTⁱᵈ context.valueCtxⁱᵈ) "Err" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.valueCtx.id) "Err" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx'ptr_String :
-  WpMethodCall (ptrTⁱᵈ context.valueCtxⁱᵈ) "String" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.valueCtx.id) "String" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_valueCtx'ptr_Value :
-  WpMethodCall (ptrTⁱᵈ context.valueCtxⁱᵈ) "Value" _ (is_pkg_defined context) :=
+  WpMethodCall (ptrT.id context.valueCtx.id) "Value" _ (is_pkg_defined context) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

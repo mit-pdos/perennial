@@ -40,35 +40,35 @@ Global Instance wp_func_call_file_google_rpc_status_proto_init :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_Descriptor :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "Descriptor" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "Descriptor" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_GetCode :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "GetCode" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "GetCode" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_GetDetails :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "GetDetails" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "GetDetails" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_GetMessage :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "GetMessage" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "GetMessage" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_ProtoMessage :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "ProtoMessage" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "ProtoMessage" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_ProtoReflect :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "ProtoReflect" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "ProtoReflect" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_Reset :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "Reset" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "Reset" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Status'ptr_String :
-  WpMethodCall (ptrTⁱᵈ status.Statusⁱᵈ) "String" _ (is_pkg_defined status) :=
+  WpMethodCall (ptrT.id status.Status.id) "String" _ (is_pkg_defined status) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

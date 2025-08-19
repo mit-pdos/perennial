@@ -48,7 +48,7 @@ Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
       "Hmptr" ∷ own_map mptr (DfracOwn 1) m ∗
       "Hghctx" ∷ ghost_map_auth ghostHeap 1 ghostMap ∗
       "Haddrs" ∷ ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
-          lockShard_addr ghostHeap (interface.mk (ptrTⁱᵈ sync.Mutexⁱᵈ) #shardlock) addr gheld lockStatePtrV covered P ) ∗
+          lockShard_addr ghostHeap (interface.mk (ptrT.id sync.Mutex.id) #shardlock) addr gheld lockStatePtrV covered P ) ∗
       "Hcovered" ∷ ( [∗ set] addr ∈ covered,
           ⌜m !! addr = None⌝ → P addr )
   )%I.
@@ -105,7 +105,7 @@ Theorem wp_lockShard__acquire ls gh covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       is_lockShard ls gh covered P ∗
       ⌜addr ∈ covered⌝ }}}
-    ls @ (ptrTⁱᵈ lockmap.lockShardⁱᵈ) @ "acquire" #addr
+    ls @ (ptrT.id lockmap.lockShard.id) @ "acquire" #addr
   {{{ RET #(); P addr ∗ locked gh addr }}}.
 Proof.
   wp_start as "[@ %]".
@@ -210,7 +210,7 @@ Qed.
 Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
   {{{ is_pkg_init lockmap ∗
       is_lockShard ls gh covered P ∗ P addr ∗ locked gh addr }}}
-    ls @ (ptrTⁱᵈ lockmap.lockShardⁱᵈ) @ "release" #addr
+    ls @ (ptrT.id lockmap.lockShard.id) @ "release" #addr
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(Hls & Hp & Haddrlocked)".
@@ -471,7 +471,7 @@ Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       is_lockMap l ghs covered P ∗
       ⌜addr ∈ covered⌝ }}}
-    l @ (ptrTⁱᵈ lockmap.LockMapⁱᵈ) @"Acquire" #addr
+    l @ (ptrT.id lockmap.LockMap.id) @"Acquire" #addr
   {{{ RET #(); P addr ∗ Locked ghs addr }}}.
 Proof.
   wp_start as "[@ %]".
@@ -512,7 +512,7 @@ Qed.
 Theorem wp_LockMap__Release l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       is_lockMap l ghs covered P ∗ P addr ∗ Locked ghs addr }}}
-    l @ (ptrTⁱᵈ lockmap.LockMapⁱᵈ) @ "Release" #addr
+    l @ (ptrT.id lockmap.LockMap.id) @ "Release" #addr
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[@ [HP Hlocked]]".
