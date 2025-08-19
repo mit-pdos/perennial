@@ -29,7 +29,7 @@ End wps.
 Class GoContext {ext : ffi_syntax} :=
   {
     global_addr_def : go_string → loc;
-    __function : go_string → option val;
+    __function : go_string → option (list go_type → val);
     __method : go_string → option (list (go_string * val));
   }.
 

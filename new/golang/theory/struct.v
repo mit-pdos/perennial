@@ -624,3 +624,79 @@ End instances.
 End generic_struct.
 
 End __struct_automation_test.
+
+From New.golang.defn Require Import pkg.
+Module __pkg_test.
+
+Section defs.
+Context `{!ffi_syntax}.
+Definition test_pkg : go_string := "test_pkg".
+Definition foo : go_string := "foo".
+Definition bar : go_string := "bar".
+Definition fooGeneric (T : go_string) : go_string := ("fooGeneric[" ++ T ++ "]")%go.
+
+Definition fooⁱᵐᵖˡ : val := λ: <>, #"foo".
+Definition barⁱᵐᵖˡ : val := λ: <>, #"bar".
+
+(*
+From Stdlib Require Import VectorDef.
+Import VectorNotations.
+Program Definition fooGenericⁱᵐᵖˡ (T : vec go_type 1) : val :=
+  match T with
+  | [T]%vector =>
+      (λ: "b" "l" "r",
+        let: "ret_ptr" := mem.alloc T #() in
+        (if: "b" then "ret_ptr" <-[T] "l" else "ret_ptr" <-[T] "r");;
+        ![T]"ret_ptr")%V
+  | _ => _
+  end.
+(* Error: Anomaly "Instance and signature do not match." Please report at http://coq.inria.fr/bugs/. *) *)
+
+Inductive func_id :=
+| Basic : go_string → func_id
+| Generic : go_string → func_id.
+
+Definition fooGenericⁱᵐᵖˡ' (T : go_type) : val :=
+  λ: "b" "l" "r",
+    let: "ret_ptr" := mem.alloc T #() in
+    (if: "b" then "ret_ptr" <-[T] "l" else "ret_ptr" <-[T] "r");;
+    ![T]"ret_ptr".
+
+Definition fooGenericⁱᵐᵖˡ (T : list go_type) : val :=
+  match T with
+  | [T] =>
+      λ: "b" "l" "r",
+        let: "ret_ptr" := mem.alloc T #() in
+        (if: "b" then "ret_ptr" <-[T] "l" else "ret_ptr" <-[T] "r");;
+        ![T]"ret_ptr"
+  | _ => (LitV LitPoison)
+  end.
+
+Inductive func_id_expr :=
+| FuncId : go_string → func_id_expr
+| FuncIdGeneric : go_string → list go_string → func_id_expr.
+
+(*
+  alist is list (go_string * val)
+  Here, want list (go_string * (A → val))
+  func_id
+*)
+
+Definition functions' (func_name : go_string) (f : val) : Prop :=
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = bar ∧ f = barⁱᵐᵖˡ) ∨
+  (func_name = foo ∧ f = fooⁱᵐᵖˡ) ∨
+    False
+.
+
+Lemma x g :
+  (∀ func_name f, functions' func_name f → g func_name = Some f) →
+  g foo = Some fooⁱᵐᵖˡ.
+Proof. unfold functions'. intros Hf. naive_solver.
+Qed.
