@@ -5,14 +5,14 @@ Require Export New.code.github_com.goose_lang.std.
 Require Export New.code.github_com.sanjit_bhat.pav.cryptoffi.
 Require Export New.code.github_com.sanjit_bhat.pav.cryptoutil.
 
+Module HashChain. Definition id : go_string := "github.com/sanjit-bhat/pav/hashchain.HashChain"%go. End HashChain.
+
 Definition hashchain : go_string := "github.com/sanjit-bhat/pav/hashchain".
 
 Module hashchain.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition HashChainⁱᵈ : go_string := "github.com/sanjit-bhat/pav/hashchain.HashChain"%go.
 
 Definition HashChain : go_type := structT [
   "predLastLink" :: sliceT;
@@ -156,17 +156,17 @@ Definition GetNextLinkⁱᵐᵖˡ : val :=
     let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
     do:  ("hr" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "prevLink") in
-    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "nextVal") in
-    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Sum"%go (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![#ptrT] "hr")) "$a0")).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Verify, Verifyⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (GetEmptyLink, GetEmptyLinkⁱᵐᵖˡ); (GetNextLink, GetNextLinkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(HashChainⁱᵈ, []); (ptrTⁱᵈ HashChainⁱᵈ, [("Append"%go, HashChain__Appendⁱᵐᵖˡ); ("Bootstrap"%go, HashChain__Bootstrapⁱᵐᵖˡ); ("Prove"%go, HashChain__Proveⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(HashChain.id, []); (ptrT.id HashChain.id, [("Append"%go, HashChain__Appendⁱᵐᵖˡ); ("Bootstrap"%go, HashChain__Bootstrapⁱᵐᵖˡ); ("Prove"%go, HashChain__Proveⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo hashchain.hashchain :=
   {|

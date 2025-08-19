@@ -11,6 +11,8 @@ Require Export New.code.github_com.sanjit_bhat.pav.ktcore.
 Require Export New.code.github_com.sanjit_bhat.pav.server.
 Require Export New.code.sync.
 
+Module histEntry. Definition id : go_string := "github.com/sanjit-bhat/pav/alicebob.histEntry"%go. End histEntry.
+
 Definition alicebob : go_string := "github.com/sanjit-bhat/pav/alicebob".
 
 Module alicebob.
@@ -49,7 +51,7 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     (func_call #server.NewRpcServer) "$a0") in
     do:  ("servRpc" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "servAddr") in
-    (method_call #(ptrTⁱᵈ advrpc.Serverⁱᵈ) #"Serve"%go (![#ptrT] "servRpc")) "$a0");;;
+    (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![#ptrT] "servRpc")) "$a0");;;
     do:  (let: "$a0" := #(W64 1000000) in
     (func_call #primitive.Sleep) "$a0");;;
     let: "adtrPk" := (mem.alloc (type.zero_val #cryptoffi.SigPublicKey)) in
@@ -71,7 +73,7 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     (func_call #auditor.NewRpcAuditor) "$a0") in
     do:  ("adtrRpc" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "adtrAddr") in
-    (method_call #(ptrTⁱᵈ advrpc.Serverⁱᵈ) #"Serve"%go (![#ptrT] "adtrRpc")) "$a0");;;
+    (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![#ptrT] "adtrRpc")) "$a0");;;
     do:  (let: "$a0" := #(W64 1000000) in
     (func_call #primitive.Sleep) "$a0");;;
     let: "alice" := (mem.alloc (type.zero_val #ptrT)) in
@@ -107,9 +109,9 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.WaitGroup)) in
     do:  ("wg" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := #(W64 1) in
-    (method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Add"%go (![#ptrT] "wg")) "$a0");;;
+    (method_call #(ptrT.id sync.WaitGroup.id) #"Add"%go (![#ptrT] "wg")) "$a0");;;
     do:  (let: "$a0" := #(W64 1) in
-    (method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Add"%go (![#ptrT] "wg")) "$a0");;;
+    (method_call #(ptrT.id sync.WaitGroup.id) #"Add"%go (![#ptrT] "wg")) "$a0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "r1" := (mem.alloc (type.zero_val #ktcore.Blame)) in
       let: "r0" := (mem.alloc (type.zero_val #sliceT)) in
@@ -123,7 +125,7 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
       do:  ("aliceHist" <-[#sliceT] "$r0");;;
       let: "$r0" := (![#ktcore.Blame] "r1") in
       do:  ("aliceErr" <-[#ktcore.Blame] "$r0");;;
-      do:  ((method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Done"%go (![#ptrT] "wg")) #());;;
+      do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Done"%go (![#ptrT] "wg")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -145,11 +147,11 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
       do:  ("bobAlicePk" <-[#ptrT] "$r0");;;
       let: "$r0" := (![#ktcore.Blame] "r2") in
       do:  ("bobErr" <-[#ktcore.Blame] "$r0");;;
-      do:  ((method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Done"%go (![#ptrT] "wg")) #());;;
+      do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Done"%go (![#ptrT] "wg")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    do:  ((method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Wait"%go (![#ptrT] "wg")) #());;;
+    do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Wait"%go (![#ptrT] "wg")) #());;;
     (if: (![#ktcore.Blame] "aliceErr") ≠ ktcore.BlameNone
     then
       let: "$r0" := (![#ktcore.Blame] "aliceErr") in
@@ -174,7 +176,7 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     else do:  #()));;;
     (let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "adtrAddr") in
     let: "$a1" := (![#cryptoffi.SigPublicKey] "adtrPk") in
-    (method_call #(ptrTⁱᵈ client.Clientⁱᵈ) #"Audit"%go (![#ptrT] "alice")) "$a0" "$a1") in
+    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![#ptrT] "alice")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("evid" <-[#ptrT] "$r0");;;
@@ -184,7 +186,7 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     else do:  #()));;;
     (let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "adtrAddr") in
     let: "$a1" := (![#cryptoffi.SigPublicKey] "adtrPk") in
-    (method_call #(ptrTⁱᵈ client.Clientⁱᵈ) #"Audit"%go (![#ptrT] "bob")) "$a0" "$a1") in
+    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![#ptrT] "bob")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("evid" <-[#ptrT] "$r0");;;
@@ -207,8 +209,6 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
       return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
     return: (![#ptrT] "evid", ![#ktcore.Blame] "err")).
-
-Definition histEntryⁱᵈ : go_string := "github.com/sanjit-bhat/pav/alicebob.histEntry"%go.
 
 Definition histEntry : go_type := structT [
   "isReg" :: boolT;
@@ -243,7 +243,7 @@ Definition runAliceⁱᵐᵖˡ : val :=
     let: "cli" := (mem.alloc "cli") in
     let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
     let: "isInsert" := (mem.alloc (type.zero_val #boolT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := ((method_call #(ptrTⁱᵈ client.Clientⁱᵈ) #"SelfMon"%go (![#ptrT] "cli")) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := ((method_call #(ptrT.id client.Client.id) #"SelfMon"%go (![#ptrT] "cli")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -276,7 +276,7 @@ Definition runAliceⁱᵐᵖˡ : val :=
       (func_call #cryptoffi.RandBytes) "$a0") in
       do:  ("pk" <-[#sliceT] "$r0");;;
       do:  (let: "$a0" := (![#sliceT] "pk") in
-      (method_call #(ptrTⁱᵈ client.Clientⁱᵈ) #"Put"%go (![#ptrT] "cli")) "$a0");;;
+      (method_call #(ptrT.id client.Client.id) #"Put"%go (![#ptrT] "cli")) "$a0");;;
       (let: "$r0" := (let: "$a0" := (![#ptrT] "cli") in
       let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "hist") in
       slice.len "$a0")) in
@@ -306,7 +306,7 @@ Definition loopPendingⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "ep0" := (mem.alloc (type.zero_val #uint64T)) in
       let: "done" := (mem.alloc (type.zero_val #boolT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := ((method_call #(ptrTⁱᵈ client.Clientⁱᵈ) #"SelfMon"%go (![#ptrT] "cli")) #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := ((method_call #(ptrT.id client.Client.id) #"SelfMon"%go (![#ptrT] "cli")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
@@ -338,7 +338,7 @@ Definition runBobⁱᵐᵖˡ : val :=
     let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
     let: "isReg" := (mem.alloc (type.zero_val #boolT)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := aliceUid in
-    (method_call #(ptrTⁱᵈ client.Clientⁱᵈ) #"Get"%go (![#ptrT] "cli")) "$a0") in
+    (method_call #(ptrT.id client.Client.id) #"Get"%go (![#ptrT] "cli")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -360,7 +360,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(testAliceBob, testAliceBobⁱᵐᵖˡ); (equal, equalⁱᵐᵖˡ); (runAlice, runAliceⁱᵐᵖˡ); (loopPending, loopPendingⁱᵐᵖˡ); (runBob, runBobⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(histEntryⁱᵈ, []); (ptrTⁱᵈ histEntryⁱᵈ, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(histEntry.id, []); (ptrT.id histEntry.id, [])].
 
 #[global] Instance info' : PkgInfo alicebob.alicebob :=
   {|

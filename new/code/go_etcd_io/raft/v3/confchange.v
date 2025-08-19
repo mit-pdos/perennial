@@ -2,14 +2,14 @@
 From New.golang Require Import defn.
 Require Export New.code.go_etcd_io.raft.v3.tracker.
 
+Module Changer. Definition id : go_string := "go.etcd.io/raft/v3/confchange.Changer"%go. End Changer.
+
 Definition confchange : go_string := "go.etcd.io/raft/v3/confchange".
 
 Module confchange.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition Changerⁱᵈ : go_string := "go.etcd.io/raft/v3/confchange.Changer"%go.
 
 Definition Changer : go_type := structT [
   "Tracker" :: tracker.ProgressTracker;
@@ -46,7 +46,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Changerⁱᵈ, []); (ptrTⁱᵈ Changerⁱᵈ, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id, []); (ptrT.id Changer.id, [])].
 
 #[global] Instance info' : PkgInfo confchange.confchange :=
   {|

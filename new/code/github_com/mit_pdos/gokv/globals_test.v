@@ -40,7 +40,7 @@ Definition barⁱᵐᵖˡ : val :=
     exception_do (do:  ((func_call #other) #());;;
     (if: ((![#uint64T] (globals.get #GlobalX)) ≠ #(W64 10)) || ((![#stringT] (globals.get #globalY)) ≠ #"ok"%go)
     then
-      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"bad"%go) in
+      do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).

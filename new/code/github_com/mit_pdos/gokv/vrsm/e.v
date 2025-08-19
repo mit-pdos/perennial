@@ -2,14 +2,14 @@
 From New.golang Require Import defn.
 Require Export New.code.github_com.tchajed.marshal.
 
+Module Error. Definition id : go_string := uint64T.id. End Error.
+
 Definition e : go_string := "github.com/mit-pdos/gokv/vrsm/e".
 
 Module e.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition Errorⁱᵈ : go_string := uint64Tⁱᵈ.
 
 Definition Error : go_type := uint64T.
 

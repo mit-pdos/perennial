@@ -2,6 +2,8 @@
 From New.golang Require Import defn.
 Require Export New.code.go_uber_org.zap.zapcore.
 
+Module Logger. Definition id : go_string := "go.uber.org/zap.Logger"%go. End Logger.
+
 Definition zap : go_string := "go.uber.org/zap".
 
 Module zap.
@@ -243,8 +245,6 @@ Definition NewAtomicLevelAt : go_string := "go.uber.org/zap.NewAtomicLevelAt"%go
 
 Definition ParseAtomicLevel : go_string := "go.uber.org/zap.ParseAtomicLevel"%go.
 
-Definition Loggerⁱᵈ : go_string := "go.uber.org/zap.Logger"%go.
-
 Axiom Logger : go_type.
 
 Definition New : go_string := "go.uber.org/zap.New"%go.
@@ -315,7 +315,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Loggerⁱᵈ, []); (ptrTⁱᵈ Loggerⁱᵈ, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Logger.id, []); (ptrT.id Logger.id, [])].
 
 #[global] Instance info' : PkgInfo zap.zap :=
   {|

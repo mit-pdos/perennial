@@ -5,6 +5,8 @@ Require Export New.code.github_com.mit_pdos.go_journal.buf.
 Require Export New.code.github_com.mit_pdos.go_journal.obj.
 Require Export New.code.github_com.mit_pdos.go_journal.util.
 
+Module Op. Definition id : go_string := "github.com/mit-pdos/go-journal/jrnl.Op"%go. End Op.
+
 Definition jrnl : go_string := "github.com/mit-pdos/go-journal/jrnl".
 
 From New Require Import disk_prelude.
@@ -15,8 +17,6 @@ Section code.
 Definition LogBlocks : expr := #(W64 511).
 
 Definition LogBytes : expr := #(W64 2093056).
-
-Definition Opⁱᵈ : go_string := "github.com/mit-pdos/go-journal/jrnl.Op"%go.
 
 Definition Op : go_type := structT [
   "log" :: ptrT;
@@ -43,7 +43,7 @@ Definition Beginⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrTⁱᵈ Opⁱᵈ) (![#ptrT] "trans")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Op.id) (![#ptrT] "trans")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     return: (![#ptrT] "trans")).
@@ -56,19 +56,19 @@ Definition Op__ReadBufⁱᵐᵖˡ : val :=
     let: "addr" := (mem.alloc "addr") in
     let: "b" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrTⁱᵈ buf.BufMapⁱᵈ) #"Lookup"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0") in
+    (method_call #(ptrT.id buf.BufMap.id) #"Lookup"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0") in
     do:  ("b" <-[#ptrT] "$r0");;;
     (if: (![#ptrT] "b") = #null
     then
       let: "buf" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
       let: "$a1" := (![#uint64T] "sz") in
-      (method_call #(ptrTⁱᵈ obj.Logⁱᵈ) #"Load"%go (![#ptrT] (struct.field_ref #Op #"log"%go (![#ptrT] "op")))) "$a0" "$a1") in
+      (method_call #(ptrT.id obj.Log.id) #"Load"%go (![#ptrT] (struct.field_ref #Op #"log"%go (![#ptrT] "op")))) "$a0" "$a1") in
       do:  ("buf" <-[#ptrT] "$r0");;;
       do:  (let: "$a0" := (![#ptrT] "buf") in
-      (method_call #(ptrTⁱᵈ buf.BufMapⁱᵈ) #"Insert"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0");;;
+      (method_call #(ptrT.id buf.BufMap.id) #"Insert"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0");;;
       return: (let: "$a0" := (![#addr.Addr] "addr") in
-       (method_call #(ptrTⁱᵈ buf.BufMapⁱᵈ) #"Lookup"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0")
+       (method_call #(ptrT.id buf.BufMap.id) #"Lookup"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0")
     else do:  #());;;
     return: (![#ptrT] "b")).
 
@@ -83,7 +83,7 @@ Definition Op__OverWriteⁱᵐᵖˡ : val :=
     let: "addr" := (mem.alloc "addr") in
     let: "b" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrTⁱᵈ buf.BufMapⁱᵈ) #"Lookup"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0") in
+    (method_call #(ptrT.id buf.BufMap.id) #"Lookup"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0") in
     do:  ("b" <-[#ptrT] "$r0");;;
     (if: (![#ptrT] "b") = #null
     then
@@ -92,18 +92,18 @@ Definition Op__OverWriteⁱᵐᵖˡ : val :=
       let: "$a2" := (![#sliceT] "data") in
       (func_call #buf.MkBuf) "$a0" "$a1" "$a2") in
       do:  ("b" <-[#ptrT] "$r0");;;
-      do:  ((method_call #(ptrTⁱᵈ buf.Bufⁱᵈ) #"SetDirty"%go (![#ptrT] "b")) #());;;
+      do:  ((method_call #(ptrT.id buf.Buf.id) #"SetDirty"%go (![#ptrT] "b")) #());;;
       do:  (let: "$a0" := (![#ptrT] "b") in
-      (method_call #(ptrTⁱᵈ buf.BufMapⁱᵈ) #"Insert"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0")
+      (method_call #(ptrT.id buf.BufMap.id) #"Insert"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) "$a0")
     else
       (if: (![#uint64T] "sz") ≠ (![#uint64T] (struct.field_ref #buf.Buf #"Sz"%go (![#ptrT] "b")))
       then
-        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"overwrite"%go) in
+        do:  (let: "$a0" := (interface.make #stringT.id #"overwrite"%go) in
         Panic "$a0")
       else do:  #());;;
       let: "$r0" := (![#sliceT] "data") in
       do:  ((struct.field_ref #buf.Buf #"Data"%go (![#ptrT] "b")) <-[#sliceT] "$r0");;;
-      do:  ((method_call #(ptrTⁱᵈ buf.Bufⁱᵈ) #"SetDirty"%go (![#ptrT] "b")) #()));;;
+      do:  ((method_call #(ptrT.id buf.Buf.id) #"SetDirty"%go (![#ptrT] "b")) #()));;;
     return: #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
@@ -115,7 +115,7 @@ Definition Op__OverWriteⁱᵐᵖˡ : val :=
 Definition Op__NDirtyⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: ((method_call #(ptrTⁱᵈ buf.BufMapⁱᵈ) #"Ndirty"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) #())).
+    return: ((method_call #(ptrT.id buf.BufMap.id) #"Ndirty"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) #())).
 
 (* CommitWait commits the writes in the transaction to disk.
 
@@ -137,14 +137,14 @@ Definition Op__CommitWaitⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Commit %p w %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrTⁱᵈ Opⁱᵈ) (![#ptrT] "op")) in
-    let: "$sl1" := (interface.make #boolTⁱᵈ (![#boolT] "wait")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Op.id) (![#ptrT] "op")) in
+    let: "$sl1" := (interface.make #boolT.id (![#boolT] "wait")) in
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "$r0" := (let: "$a0" := ((method_call #(ptrTⁱᵈ buf.BufMapⁱᵈ) #"DirtyBufs"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) #()) in
+    let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id buf.BufMap.id) #"DirtyBufs"%go (![#ptrT] (struct.field_ref #Op #"bufs"%go (![#ptrT] "op")))) #()) in
     let: "$a1" := (![#boolT] "wait") in
-    (method_call #(ptrTⁱᵈ obj.Logⁱᵈ) #"CommitWait"%go (![#ptrT] (struct.field_ref #Op #"log"%go (![#ptrT] "op")))) "$a0" "$a1") in
+    (method_call #(ptrT.id obj.Log.id) #"CommitWait"%go (![#ptrT] (struct.field_ref #Op #"log"%go (![#ptrT] "op")))) "$a0" "$a1") in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
@@ -152,7 +152,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Begin, Beginⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Opⁱᵈ, []); (ptrTⁱᵈ Opⁱᵈ, [("CommitWait"%go, Op__CommitWaitⁱᵐᵖˡ); ("NDirty"%go, Op__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Op__OverWriteⁱᵐᵖˡ); ("ReadBuf"%go, Op__ReadBufⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Op.id, []); (ptrT.id Op.id, [("CommitWait"%go, Op__CommitWaitⁱᵐᵖˡ); ("NDirty"%go, Op__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Op__OverWriteⁱᵐᵖˡ); ("ReadBuf"%go, Op__ReadBufⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo jrnl.jrnl :=
   {|

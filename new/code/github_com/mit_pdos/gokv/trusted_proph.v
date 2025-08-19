@@ -2,6 +2,8 @@
 From New.golang Require Import defn.
 Require Export New.code.github_com.goose_lang.primitive.
 
+Module ProphId. Definition id : go_string := ptrT.id primitive.prophId.id. End ProphId.
+
 Require Export New.trusted_code.github_com.mit_pdos.gokv.trusted_proph.
 Import trusted_proph.
 Definition trusted_proph : go_string := "github.com/mit-pdos/gokv/trusted_proph".
@@ -10,8 +12,6 @@ Module trusted_proph.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition ProphIdⁱᵈ : go_string := ptrTⁱᵈ primitive.prophIdⁱᵈ.
 
 Definition ProphId : go_type := ptrT.
 

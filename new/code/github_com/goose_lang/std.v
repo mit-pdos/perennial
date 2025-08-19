@@ -3,6 +3,8 @@ From New.golang Require Import defn.
 Require Export New.code.github_com.goose_lang.std.std_core.
 Require Export New.code.sync.
 
+Module JoinHandle. Definition id : go_string := "github.com/goose-lang/std.JoinHandle"%go. End JoinHandle.
+
 Definition std : go_string := "github.com/goose-lang/std".
 
 Module std.
@@ -20,7 +22,7 @@ Definition Assertⁱᵐᵖˡ : val :=
     exception_do (let: "b" := (mem.alloc "b") in
     (if: (~ (![#boolT] "b"))
     then
-      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"assertion failure"%go) in
+      do:  (let: "$a0" := (interface.make #stringT.id #"assertion failure"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -120,8 +122,6 @@ Definition SliceSplitⁱᵐᵖˡ : val :=
      slice.slice "T" "$s" #(W64 0) (![#uint64T] "n"), let: "$s" := (![#sliceT] "xs") in
      slice.slice "T" "$s" (![#uint64T] "n") (slice.len "$s"))).
 
-Definition JoinHandleⁱᵈ : go_string := "github.com/goose-lang/std.JoinHandle"%go.
-
 Definition JoinHandle : go_type := structT [
   "mu" :: ptrT;
   "done" :: boolT;
@@ -137,7 +137,7 @@ Definition newJoinHandleⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
     let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] "mu")) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] "mu")) in
     (func_call #sync.NewCond) "$a0") in
     do:  ("cond" <-[#ptrT] "$r0");;;
     return: (mem.alloc (let: "$mu" := (![#ptrT] "mu") in
@@ -153,11 +153,11 @@ Definition newJoinHandleⁱᵐᵖˡ : val :=
 Definition JoinHandle__finishⁱᵐᵖˡ : val :=
   λ: "h" <>,
     exception_do (let: "h" := (mem.alloc "h") in
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     let: "$r0" := #true in
     do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Signal"%go (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #());;;
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     return: #()).
 
 Definition Spawn : go_string := "github.com/goose-lang/std.Spawn"%go.
@@ -179,7 +179,7 @@ Definition Spawnⁱᵐᵖˡ : val :=
     do:  ("h" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  ((![#funcT] "f") #());;;
-      do:  ((method_call #(ptrTⁱᵈ JoinHandleⁱᵈ) #"finish"%go (![#ptrT] "h")) #());;;
+      do:  ((method_call #(ptrT.id JoinHandle.id) #"finish"%go (![#ptrT] "h")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -189,7 +189,7 @@ Definition Spawnⁱᵐᵖˡ : val :=
 Definition JoinHandle__Joinⁱᵐᵖˡ : val :=
   λ: "h" <>,
     exception_do (let: "h" := (mem.alloc "h") in
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: ![#boolT] (struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h"))
       then
@@ -197,8 +197,8 @@ Definition JoinHandle__Joinⁱᵐᵖˡ : val :=
         do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
         break: #()
       else do:  #());;;
-      do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Wait"%go (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #()));;;
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #()));;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     return: #()).
 
 Definition Multipar : go_string := "github.com/goose-lang/std.Multipar"%go.
@@ -221,7 +221,7 @@ Definition Multiparⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("num_left_mu" <-[#ptrT] "$r0");;;
     let: "num_left_cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] "num_left_mu")) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] "num_left_mu")) in
     (func_call #sync.NewCond) "$a0") in
     do:  ("num_left_cond" <-[#ptrT] "$r0");;;
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
@@ -234,17 +234,17 @@ Definition Multiparⁱᵐᵖˡ : val :=
       let: "$go" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![#uint64T] "i") in
         (![#funcT] "op") "$a0");;;
-        do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] "num_left_mu")) #());;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "num_left_mu")) #());;;
         do:  ("num_left" <-[#uint64T] ((![#uint64T] "num_left") - #(W64 1)));;;
-        do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Signal"%go (![#ptrT] "num_left_cond")) #());;;
-        do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] "num_left_mu")) #());;;
+        do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] "num_left_cond")) #());;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "num_left_mu")) #());;;
         return: #())
         ) in
       do:  (Fork ("$go" #()))));;;
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] "num_left_mu")) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "num_left_mu")) #());;;
     (for: (λ: <>, (![#uint64T] "num_left") > #(W64 0)); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Wait"%go (![#ptrT] "num_left_cond")) #()));;;
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] "num_left_mu")) #());;;
+      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] "num_left_cond")) #()));;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "num_left_mu")) #());;;
     return: #()).
 
 Definition Skip : go_string := "github.com/goose-lang/std.Skip"%go.
@@ -266,7 +266,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Assert, Assertⁱᵐᵖˡ); (SumNoOverflow, SumNoOverflowⁱᵐᵖˡ); (SumAssumeNoOverflow, SumAssumeNoOverflowⁱᵐᵖˡ); (BytesEqual, BytesEqualⁱᵐᵖˡ); (BytesClone, BytesCloneⁱᵐᵖˡ); (SliceSplit, SliceSplitⁱᵐᵖˡ); (newJoinHandle, newJoinHandleⁱᵐᵖˡ); (Spawn, Spawnⁱᵐᵖˡ); (Multipar, Multiparⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(JoinHandleⁱᵈ, []); (ptrTⁱᵈ JoinHandleⁱᵈ, [("Join"%go, JoinHandle__Joinⁱᵐᵖˡ); ("finish"%go, JoinHandle__finishⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(JoinHandle.id, []); (ptrT.id JoinHandle.id, [("Join"%go, JoinHandle__Joinⁱᵐᵖˡ); ("finish"%go, JoinHandle__finishⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo std.std :=
   {|

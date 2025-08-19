@@ -2,6 +2,10 @@
 From New.golang Require Import defn.
 Require Export New.code.sync.
 
+Module lockState. Definition id : go_string := "github.com/mit-pdos/go-journal/lockmap.lockState"%go. End lockState.
+Module lockShard. Definition id : go_string := "github.com/mit-pdos/go-journal/lockmap.lockShard"%go. End lockShard.
+Module LockMap. Definition id : go_string := "github.com/mit-pdos/go-journal/lockmap.LockMap"%go. End LockMap.
+
 Definition lockmap : go_string := "github.com/mit-pdos/go-journal/lockmap".
 
 Module lockmap.
@@ -9,15 +13,11 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition lockStateⁱᵈ : go_string := "github.com/mit-pdos/go-journal/lockmap.lockState"%go.
-
 Definition lockState : go_type := structT [
   "held" :: boolT;
   "cond" :: ptrT;
   "waiters" :: uint64T
 ].
-
-Definition lockShardⁱᵈ : go_string := "github.com/mit-pdos/go-journal/lockmap.lockShard"%go.
 
 Definition lockShard : go_type := structT [
   "mu" :: ptrT;
@@ -50,7 +50,7 @@ Definition lockShard__acquireⁱᵐᵖˡ : val :=
   λ: "lmap" "addr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "addr" := (mem.alloc "addr") in
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "state" := (mem.alloc (type.zero_val #ptrT)) in
       let: "ok1" := (mem.alloc (type.zero_val #boolT)) in
@@ -66,7 +66,7 @@ Definition lockShard__acquireⁱᵐᵖˡ : val :=
         do:  ("state" <-[#ptrT] "$r0")
       else
         let: "$r0" := (mem.alloc (let: "$held" := #false in
-        let: "$cond" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
+        let: "$cond" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
         (func_call #sync.NewCond) "$a0") in
         let: "$waiters" := #(W64 0) in
         struct.make #lockState [{
@@ -86,7 +86,7 @@ Definition lockShard__acquireⁱᵐᵖˡ : val :=
         do:  ("acquired" <-[#boolT] "$r0")
       else
         do:  ((struct.field_ref #lockState #"waiters"%go (![#ptrT] "state")) <-[#uint64T] ((![#uint64T] (struct.field_ref #lockState #"waiters"%go (![#ptrT] "state"))) + #(W64 1)));;;
-        do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Wait"%go (![#ptrT] (struct.field_ref #lockState #"cond"%go (![#ptrT] "state")))) #());;;
+        do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] (struct.field_ref #lockState #"cond"%go (![#ptrT] "state")))) #());;;
         let: "ok2" := (mem.alloc (type.zero_val #boolT)) in
         let: "state2" := (mem.alloc (type.zero_val #ptrT)) in
         let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) (![#uint64T] "addr")) in
@@ -101,7 +101,7 @@ Definition lockShard__acquireⁱᵐᵖˡ : val :=
       then break: #()
       else do:  #());;;
       continue: #());;;
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
     return: #()).
 
 (* go: lock.go:81:24 *)
@@ -109,24 +109,22 @@ Definition lockShard__releaseⁱᵐᵖˡ : val :=
   λ: "lmap" "addr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "addr" := (mem.alloc "addr") in
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
     let: "state" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (Fst (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) (![#uint64T] "addr"))) in
     do:  ("state" <-[#ptrT] "$r0");;;
     let: "$r0" := #false in
     do:  ((struct.field_ref #lockState #"held"%go (![#ptrT] "state")) <-[#boolT] "$r0");;;
     (if: (![#uint64T] (struct.field_ref #lockState #"waiters"%go (![#ptrT] "state"))) > #(W64 0)
-    then do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Signal"%go (![#ptrT] (struct.field_ref #lockState #"cond"%go (![#ptrT] "state")))) #())
+    then do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] (struct.field_ref #lockState #"cond"%go (![#ptrT] "state")))) #())
     else
       do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) in
       let: "$a1" := (![#uint64T] "addr") in
       map.delete "$a0" "$a1"));;;
-    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
     return: #()).
 
 Definition NSHARD : expr := #(W64 65537).
-
-Definition LockMapⁱᵈ : go_string := "github.com/mit-pdos/go-journal/lockmap.LockMap"%go.
 
 Definition LockMap : go_type := structT [
   "shards" :: sliceT
@@ -164,7 +162,7 @@ Definition LockMap__Acquireⁱᵐᵖˡ : val :=
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #LockMap #"shards"%go (![#ptrT] "lmap"))) ((![#uint64T] "flataddr") `rem` NSHARD))) in
     do:  ("shard" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "flataddr") in
-    (method_call #(ptrTⁱᵈ lockShardⁱᵈ) #"acquire"%go (![#ptrT] "shard")) "$a0");;;
+    (method_call #(ptrT.id lockShard.id) #"acquire"%go (![#ptrT] "shard")) "$a0");;;
     return: #()).
 
 (* go: lock.go:115:22 *)
@@ -176,14 +174,14 @@ Definition LockMap__Releaseⁱᵐᵖˡ : val :=
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #LockMap #"shards"%go (![#ptrT] "lmap"))) ((![#uint64T] "flataddr") `rem` NSHARD))) in
     do:  ("shard" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "flataddr") in
-    (method_call #(ptrTⁱᵈ lockShardⁱᵈ) #"release"%go (![#ptrT] "shard")) "$a0");;;
+    (method_call #(ptrT.id lockShard.id) #"release"%go (![#ptrT] "shard")) "$a0");;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(mkLockShard, mkLockShardⁱᵐᵖˡ); (MkLockMap, MkLockMapⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(lockStateⁱᵈ, []); (ptrTⁱᵈ lockStateⁱᵈ, []); (lockShardⁱᵈ, []); (ptrTⁱᵈ lockShardⁱᵈ, [("acquire"%go, lockShard__acquireⁱᵐᵖˡ); ("release"%go, lockShard__releaseⁱᵐᵖˡ)]); (LockMapⁱᵈ, []); (ptrTⁱᵈ LockMapⁱᵈ, [("Acquire"%go, LockMap__Acquireⁱᵐᵖˡ); ("Release"%go, LockMap__Releaseⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(lockState.id, []); (ptrT.id lockState.id, []); (lockShard.id, []); (ptrT.id lockShard.id, [("acquire"%go, lockShard__acquireⁱᵐᵖˡ); ("release"%go, lockShard__releaseⁱᵐᵖˡ)]); (LockMap.id, []); (ptrT.id LockMap.id, [("Acquire"%go, LockMap__Acquireⁱᵐᵖˡ); ("Release"%go, LockMap__Releaseⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo lockmap.lockmap :=
   {|

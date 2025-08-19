@@ -3,14 +3,15 @@ From New.golang Require Import defn.
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.std.
 
+Module Enc. Definition id : go_string := "github.com/tchajed/marshal.Enc"%go. End Enc.
+Module Dec. Definition id : go_string := "github.com/tchajed/marshal.Dec"%go. End Dec.
+
 Definition marshal : go_string := "github.com/tchajed/marshal".
 
 Module marshal.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition Encⁱᵈ : go_string := "github.com/tchajed/marshal.Enc"%go.
 
 Definition Enc : go_type := structT [
   "b" :: sliceT;
@@ -22,8 +23,6 @@ Definition NewEncFromSlice : go_string := "github.com/tchajed/marshal.NewEncFrom
 Definition NewEnc : go_string := "github.com/tchajed/marshal.NewEnc"%go.
 
 Definition bool2byte : go_string := "github.com/tchajed/marshal.bool2byte"%go.
-
-Definition Decⁱᵈ : go_string := "github.com/tchajed/marshal.Dec"%go.
 
 Definition Dec : go_type := structT [
   "b" :: sliceT;
@@ -395,7 +394,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(compute_new_cap, compute_new_capⁱᵐᵖˡ); (reserve, reserveⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadInt32, ReadInt32ⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadBytesCopy, ReadBytesCopyⁱᵐᵖˡ); (ReadBool, ReadBoolⁱᵐᵖˡ); (ReadLenPrefixedBytes, ReadLenPrefixedBytesⁱᵐᵖˡ); (WriteInt, WriteIntⁱᵐᵖˡ); (WriteInt32, WriteInt32ⁱᵐᵖˡ); (WriteBytes, WriteBytesⁱᵐᵖˡ); (WriteBool, WriteBoolⁱᵐᵖˡ); (WriteLenPrefixedBytes, WriteLenPrefixedBytesⁱᵐᵖˡ); (ReadSlice, ReadSliceⁱᵐᵖˡ); (ReadSliceLenPrefix, ReadSliceLenPrefixⁱᵐᵖˡ); (WriteSlice, WriteSliceⁱᵐᵖˡ); (WriteSliceLenPrefix, WriteSliceLenPrefixⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Encⁱᵈ, []); (ptrTⁱᵈ Encⁱᵈ, []); (Decⁱᵈ, []); (ptrTⁱᵈ Decⁱᵈ, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, []); (ptrT.id Enc.id, []); (Dec.id, []); (ptrT.id Dec.id, [])].
 
 #[global] Instance info' : PkgInfo marshal.marshal :=
   {|

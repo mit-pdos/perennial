@@ -2,14 +2,14 @@
 From New.golang Require Import defn.
 Require Export New.code.google_golang_org.genproto.googleapis.rpc.status.
 
+Module Status. Definition id : go_string := status.Status.id. End Status.
+
 Definition status : go_string := "google.golang.org/grpc/status".
 
 Module status.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition Statusⁱᵈ : go_string := status.Statusⁱᵈ.
 
 Definition Status : go_type := status.Status.
 

@@ -10,14 +10,20 @@ Require Export New.code.github_com.sanjit_bhat.pav.ktcore.
 Require Export New.code.github_com.sanjit_bhat.pav.merkle.
 Require Export New.code.github_com.sanjit_bhat.pav.server.
 
+Module Client. Definition id : go_string := "github.com/sanjit-bhat/pav/client.Client"%go. End Client.
+Module pending. Definition id : go_string := "github.com/sanjit-bhat/pav/client.pending"%go. End pending.
+Module epoch. Definition id : go_string := "github.com/sanjit-bhat/pav/client.epoch"%go. End epoch.
+Module serv. Definition id : go_string := "github.com/sanjit-bhat/pav/client.serv"%go. End serv.
+Module Evid. Definition id : go_string := "github.com/sanjit-bhat/pav/client.Evid"%go. End Evid.
+Module evidVrf. Definition id : go_string := "github.com/sanjit-bhat/pav/client.evidVrf"%go. End evidVrf.
+Module evidLink. Definition id : go_string := "github.com/sanjit-bhat/pav/client.evidLink"%go. End evidLink.
+
 Definition client : go_string := "github.com/sanjit-bhat/pav/client".
 
 Module client.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition Clientⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.Client"%go.
 
 Definition Client : go_type := structT [
   "uid" :: uint64T;
@@ -26,15 +32,11 @@ Definition Client : go_type := structT [
   "serv" :: ptrT
 ].
 
-Definition pendingⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.pending"%go.
-
 Definition pending : go_type := structT [
   "nextVer" :: uint64T;
   "isPending" :: boolT;
   "pk" :: sliceT
 ].
-
-Definition epochⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.epoch"%go.
 
 Definition epoch : go_type := structT [
   "epoch" :: uint64T;
@@ -42,8 +44,6 @@ Definition epoch : go_type := structT [
   "link" :: sliceT;
   "sig" :: sliceT
 ].
-
-Definition servⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.serv"%go.
 
 Definition serv : go_type := structT [
   "cli" :: ptrT;
@@ -119,7 +119,7 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     let: "last" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "chainProof") in
     let: "$a1" := (![#sliceT] "sig") in
-    (method_call #(ptrTⁱᵈ Clientⁱᵈ) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
+    (method_call #(ptrT.id Client.id) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("last" <-[#ptrT] "$r0");;;
@@ -202,7 +202,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     let: "last" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "chainProof") in
     let: "$a1" := (![#sliceT] "sig") in
-    (method_call #(ptrTⁱᵈ Clientⁱᵈ) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
+    (method_call #(ptrT.id Client.id) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("last" <-[#ptrT] "$r0");;;
@@ -757,12 +757,6 @@ Definition CheckNonMembⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-Definition Evidⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.Evid"%go.
-
-Definition evidVrfⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.evidVrf"%go.
-
-Definition evidLinkⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.evidLink"%go.
-
 (* go: evidence.go:31:19 *)
 Definition evidVrf__Checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
@@ -820,12 +814,12 @@ Definition Evid__Checkⁱᵐᵖˡ : val :=
     (if: (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e"))) ≠ #null
     then
       return: (let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
-       (method_call #(ptrTⁱᵈ evidVrfⁱᵈ) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e")))) "$a0")
+       (method_call #(ptrT.id evidVrf.id) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e")))) "$a0")
     else do:  #());;;
     (if: (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e"))) ≠ #null
     then
       return: (let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
-       (method_call #(ptrTⁱᵈ evidLinkⁱᵈ) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e")))) "$a0")
+       (method_call #(ptrT.id evidLink.id) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e")))) "$a0")
     else do:  #());;;
     return: (#true)).
 
@@ -833,7 +827,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (CheckMemb, CheckMembⁱᵐᵖˡ); (CheckHist, CheckHistⁱᵐᵖˡ); (CheckNonMemb, CheckNonMembⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Clientⁱᵈ, []); (ptrTⁱᵈ Clientⁱᵈ, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); (pendingⁱᵈ, []); (ptrTⁱᵈ pendingⁱᵈ, []); (epochⁱᵈ, []); (ptrTⁱᵈ epochⁱᵈ, []); (servⁱᵈ, []); (ptrTⁱᵈ servⁱᵈ, []); (Evidⁱᵈ, []); (ptrTⁱᵈ Evidⁱᵈ, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrfⁱᵈ, []); (ptrTⁱᵈ evidVrfⁱᵈ, [("Check"%go, evidVrf__Checkⁱᵐᵖˡ)]); (evidLinkⁱᵈ, []); (ptrTⁱᵈ evidLinkⁱᵈ, [("Check"%go, evidLink__Checkⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Client.id, []); (ptrT.id Client.id, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); (pending.id, []); (ptrT.id pending.id, []); (epoch.id, []); (ptrT.id epoch.id, []); (serv.id, []); (ptrT.id serv.id, []); (Evid.id, []); (ptrT.id Evid.id, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrf.id, []); (ptrT.id evidVrf.id, [("Check"%go, evidVrf__Checkⁱᵐᵖˡ)]); (evidLink.id, []); (ptrT.id evidLink.id, [("Check"%go, evidLink__Checkⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo client.client :=
   {|

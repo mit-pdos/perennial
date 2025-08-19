@@ -2,6 +2,9 @@
 From New.golang Require Import defn.
 Require Export New.code.github_com.goose_lang.primitive.disk.
 
+Module Inum. Definition id : go_string := uint64T.id. End Inum.
+Module Bnum. Definition id : go_string := uint64T.id. End Bnum.
+
 Definition common : go_string := "github.com/mit-pdos/go-journal/common".
 
 From New Require Import disk_prelude.
@@ -26,11 +29,7 @@ Definition HDRADDRS : expr := #(W64 511).
 (* 2 for log header *)
 Definition LOGSIZE : expr := #(W64 513).
 
-Definition Inumⁱᵈ : go_string := uint64Tⁱᵈ.
-
 Definition Inum : go_type := uint64T.
-
-Definition Bnumⁱᵈ : go_string := uint64Tⁱᵈ.
 
 Definition Bnum : go_type := uint64T.
 
