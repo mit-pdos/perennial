@@ -308,10 +308,6 @@ Global Instance wp_func_call_compInnerHash :
   WpFuncCall merkle.compInnerHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_func_call_getChild :
-  WpFuncCall merkle.getChild _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_getBit :
   WpFuncCall merkle.getBit _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -338,6 +334,10 @@ Global Instance wp_method_call_Map'ptr_Put :
 
 Global Instance wp_method_call_node'ptr_find :
   WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "find" _ (is_pkg_defined merkle) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_node'ptr_getChild :
+  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "getChild" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_getHash :
