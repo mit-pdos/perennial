@@ -281,10 +281,7 @@ Proof.
       { exact_eq Hpath. len. }
       opose proof (to_map_pref_None t1 (pref ++ [false]) label _) as Hl1.
       { intros ?%prefix_total_snoc_inv.
-        unfold get_bit in *. intuition.
-        (* TODO: somehow naive_solver doesn't get this.
-        but it did with !! lookup. *)
-        by rewrite H2 in H5. }
+        unfold get_bit in *. intuition. congruence. }
       rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
     + opose proof (IHt1 (pref ++ [false]) _ _) as Hl0.
@@ -292,8 +289,7 @@ Proof.
       { exact_eq Hpath. len. }
       opose proof (to_map_pref_None t2 (pref ++ [true]) label _) as Hl1.
       { intros ?%prefix_total_snoc_inv.
-        unfold get_bit in *. intuition.
-        by rewrite H2 in H5. }
+        unfold get_bit in *. intuition. congruence. }
       rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
 Qed.
