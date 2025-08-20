@@ -866,6 +866,29 @@ Fixpoint pure_Digest t :=
     | Cut h => h
     end.
 
+(** invariants on gallina ops. *)
+
+(* [pure_put] definitionally guarantees limit down the put path.
+for Inner nodes down the opposite path, it preserves the limit. *)
+Lemma is_limit_over_put t t' label val limit :
+  is_limit t limit →
+  pure_put t label val limit = Some t' →
+  is_limit t' limit.
+Proof.
+  revert t t'.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match;
+    simplify_eq/=; try done.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; try done;
+      simplify_eq/=; intuition;
+      by (eapply IH; [|done]).
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; try done; naive_solver.
+Qed.
+
 (** stuff that might need to be resurrected. *)
 
 (** tree proofs. *)
