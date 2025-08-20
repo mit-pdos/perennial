@@ -22,61 +22,21 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-Local Notation deps_math := (ltac2:(build_pkg_init_deps 'math) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit math :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_math;
-  |}.
+#[global] Instance : IsPkgInit math := define_is_pkg_init True%I.
 
-Local Notation deps_zapcore := (ltac2:(build_pkg_init_deps 'zapcore) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit zapcore :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_zapcore;
-  |}.
+#[global] Instance : IsPkgInit zapcore := define_is_pkg_init True%I.
 
-Local Notation deps_zap := (ltac2:(build_pkg_init_deps 'zap) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit zap :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_zap;
-  |}.
+#[global] Instance : IsPkgInit zap := define_is_pkg_init True%I.
 
-Local Notation deps_time := (ltac2:(build_pkg_init_deps 'time) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit time :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_time;
-  |}.
+#[global] Instance : IsPkgInit time := define_is_pkg_init True%I.
 
-Local Notation deps_strings := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit strings :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_strings;
-  |}.
+#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 
-Local Notation deps_fmt := (ltac2:(build_pkg_init_deps 'fmt) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit fmt :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_fmt;
-  |}.
+#[global] Instance : IsPkgInit fmt := define_is_pkg_init True%I.
 
-Local Notation deps_errors := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit errors :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_errors;
-  |}.
+#[global] Instance : IsPkgInit errors := define_is_pkg_init True%I.
 
-Local Notation deps_concurrency := (ltac2:(build_pkg_init_deps 'concurrency) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit concurrency :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_concurrency;
-  |}.
+#[global] Instance : IsPkgInit concurrency := define_is_pkg_init True%I.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl donec,

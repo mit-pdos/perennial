@@ -28,12 +28,8 @@ Context (γtok : gname).
 
 (** (COPY ME.) This creates a definition with the initialization predicates of
     all the dependencies of [main]. *)
-Local Notation deps := (ltac2:(build_pkg_init_deps 'main) : iProp Σ) (only parsing).
 #[global] Instance is_pkg_init_globals_test : IsPkgInit globals_test.main :=
-  {|
-    is_pkg_init_def := inv nroot (ghost_var γtok 1 () ∨ own_initialized);
-    is_pkg_init_deps := deps;
-  |}.
+  define_is_pkg_init inv nroot (ghost_var γtok 1 () ∨ own_initialized).
 
 (** (COPY ME.) This is the spec that should be proved for any package's
     initialization function. The package-specific predicate is encapsulated in

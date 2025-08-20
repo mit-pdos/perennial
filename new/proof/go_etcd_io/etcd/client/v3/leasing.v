@@ -28,56 +28,25 @@ Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 
-Local Notation deps_bytes := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit bytes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_bytes;
-  |}.
+#[global] Instance : IsPkgInit bytes := define_is_pkg_init True%I.
 
-Local Definition deps_rpc_status : iProp Σ := ltac2:(build_pkg_init_deps 'rpc.status.status).
-#[global] Program Instance : IsPkgInit rpc.status.status :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_rpc_status;
-  |}.
+#[global] Instance : IsPkgInit rpc.status.status := define_is_pkg_init True%I.
 
 (* FIXME: status.info' refers to its own [status.status] because `grpc/status` imports
    `genproto/googleapis/rpc/status *)
-(* Local Definition deps_status : iProp Σ := ltac2:(build_pkg_init_deps 'status.status). *)
-#[global] Program Instance : IsPkgInit status.status :=
+#[global] Instance : IsPkgInit status.status :=
   {|
     is_pkg_init_def := True;
     is_pkg_init_deps := True : iProp Σ;
   |}.
 
-Local Notation deps_codes := (ltac2:(build_pkg_init_deps 'codes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit codes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_codes;
-  |}.
+#[global] Instance : IsPkgInit codes := define_is_pkg_init True%I.
 
-Local Notation deps_rpctypes := (ltac2:(build_pkg_init_deps 'rpctypes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit rpctypes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_rpctypes;
-  |}.
+#[global] Instance : IsPkgInit rpctypes := define_is_pkg_init True%I.
 
-Local Notation deps_strings := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit strings :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_strings;
-  |}.
+#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'leasing) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit leasing :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit leasing := define_is_pkg_init True%I.
 
 Context `{!syncG Σ}.
 

@@ -35,12 +35,7 @@ Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 Section heap.
 Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'buf.buf).
-#[global] Program Instance : IsPkgInit buf.buf :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit buf.buf := define_is_pkg_init True%I.
 
 Implicit Types s : slice.t.
 

@@ -8,12 +8,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'atomic) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit atomic :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit atomic := define_is_pkg_init True%I.
 
 
 Lemma wp_LoadUint64 (addr : loc) dq :

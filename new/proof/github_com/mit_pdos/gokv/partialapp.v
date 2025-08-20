@@ -9,12 +9,7 @@ Context `{!ffi_interp ffi}.
 
 Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'main) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit main :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit main := define_is_pkg_init True%I.
 
 Lemma wp_partiallyApplyMe (s : go_string) (x : w64):
   Z.of_nat (length s) = sint.Z x →

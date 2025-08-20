@@ -6,12 +6,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'generics) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit generics :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit generics := define_is_pkg_init True%I.
 
 Section generic_proofs.
 Context `{!IntoVal T'} `{!IntoValTyped T' T} `{Hbounded: BoundedTypeSize T}.

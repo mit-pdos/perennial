@@ -26,12 +26,7 @@ Definition is_initialized : iProp Σ :=
   "#Hsl_emptyHash" ∷ sl_emptyHash ↦*□ emptyHash ∗
   "#His_emptyHash" ∷ cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'merkle) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit merkle :=
-  {|
-    is_pkg_init_def := is_initialized;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit merkle := define_is_pkg_init is_initialized.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init merkle = (is_pkg_init merkle) →

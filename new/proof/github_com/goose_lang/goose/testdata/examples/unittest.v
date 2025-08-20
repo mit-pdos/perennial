@@ -14,12 +14,7 @@ From New.proof Require Import proof_prelude.
 Section proof.
 Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'unittest) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit unittest :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit unittest := define_is_pkg_init True%I.
 
 Lemma wp_BasicNamedReturn :
   {{{ is_pkg_init unittest }}}

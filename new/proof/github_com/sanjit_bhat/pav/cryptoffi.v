@@ -8,12 +8,7 @@ Notation hash_len := 32 (only parsing).
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'cryptoffi) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit cryptoffi :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit cryptoffi := define_is_pkg_init True%I.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init cryptoffi = (is_pkg_init cryptoffi) →

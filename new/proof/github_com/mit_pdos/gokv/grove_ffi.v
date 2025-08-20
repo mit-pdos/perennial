@@ -75,12 +75,7 @@ Section grove.
   Context `{!heapGS Σ}.
   Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-  Local Notation deps := (ltac2:(build_pkg_init_deps 'grove_ffi) : iProp Σ) (only parsing).
-  #[global] Program Instance : IsPkgInit grove_ffi :=
-    {|
-      is_pkg_init_def := True;
-      is_pkg_init_deps := deps;
-    |}.
+  #[global] Instance : IsPkgInit grove_ffi := define_is_pkg_init True%I.
 
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
     is_pkg_init grove_ffi ∗

@@ -18,12 +18,7 @@ Definition is_initialized : iProp Σ :=
   ∃ (level: w64),
     "Hglobal_debug" ∷ (global_addr util.Debug) ↦□ level.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'util) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit util :=
-  {|
-    is_pkg_init_def := is_initialized;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit util := define_is_pkg_init is_initialized.
 
 Implicit Types (v:val).
 

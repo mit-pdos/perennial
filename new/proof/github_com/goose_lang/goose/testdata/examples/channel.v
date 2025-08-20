@@ -16,12 +16,7 @@ Context  `{!chanGhostStateG Σ}.
 Context `{!ghost_varG Σ (w64)}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{ ghost_mapG Σ Z w64 }.
-Local Notation deps := (ltac2:(build_pkg_init_deps 'chan_spec_raw_examples) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit chan_spec_raw_examples :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
 
 (* 
   Transfers pointer ownership from main to forked goroutine.

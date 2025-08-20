@@ -8,12 +8,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'std) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit std :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit std := define_is_pkg_init True%I.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init std = (is_pkg_init std) →

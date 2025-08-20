@@ -5,12 +5,7 @@ Module bytes.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit bytes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit bytes := define_is_pkg_init True%I.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init bytes = (is_pkg_init bytes) →

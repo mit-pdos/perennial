@@ -5,11 +5,6 @@ Require Import New.proof.github_com.goose_lang.primitive.disk.
 Section proof.
 Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'common) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit common :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit common := define_is_pkg_init True%I.
 
 End proof.
