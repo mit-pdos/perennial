@@ -224,6 +224,7 @@ Lemma bool_decide_ite_not (P : Prop) {dec : Decision P} :
   (if bool_decide P then false else true) = bool_decide (¬P).
 Proof. by rewrite bool_decide_not. Qed.
 
+(* TODO: upstream some helper lemmas. *)
 Lemma wp_getBit sl_bs bs (n : w64) :
   {{{
     is_pkg_init merkle ∗
@@ -232,7 +233,7 @@ Lemma wp_getBit sl_bs bs (n : w64) :
   @! merkle.getBit #sl_bs #n
   {{{
     bit, RET #bit;
-    "->" ∷ ⌜ get_bit bs (uint.nat n) = bit ⌝
+    "->" ∷ ⌜ bit = get_bit bs (uint.nat n) ⌝
   }}}.
 Proof.
   wp_start as "@". wp_auto.
@@ -282,8 +283,7 @@ Lemma wp_node_getChild n d nodeTy sl_hash ptr_child0 ptr_child1 sl_label sl_val 
     is_pkg_init merkle ∗
     "Hnode" ∷ n ↦{d}
       (merkle.node.mk nodeTy sl_hash ptr_child0 ptr_child1 sl_label sl_val) ∗
-    "#Hsl_label" ∷ sl_label ↦*□ label ∗
-    "%Hlt_depth" ∷ ⌜ uint.Z depth < Z.of_nat (length label) * 8 ⌝
+    "#Hsl_label" ∷ sl_label ↦*□ label
   }}}
   n @ (ptrT.id merkle.node.id) @ "getChild" #sl_label #depth
   {{{
@@ -293,14 +293,30 @@ Lemma wp_node_getChild n d nodeTy sl_hash ptr_child0 ptr_child1 sl_label sl_val 
     "Hcb" ∷ ptr_cb ↦{d} cb ∗
     "Hcnb" ∷ ptr_cnb ↦{d} cnb ∗
     "Hclose" ∷ (∀ ab anb,
-      ptr_cb ↦{d} ab -∗
-      ptr_cnb ↦{d} anb -∗
+      "Hab" ∷ ptr_cb ↦{d} ab -∗
+      "Hanb" ∷ ptr_cnb ↦{d} anb -∗
       let (c0, c1) := if get_bit label (uint.nat depth)
         then (anb, ab) else (ab, anb) in
       "Hnode" ∷ n ↦{d}
         (merkle.node.mk nodeTy sl_hash c0 c1 sl_label sl_val))
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@". wp_auto.
+  wp_apply (wp_getBit with "[$Hsl_label]") as "* @".
+  destruct (get_bit _ _).
+  - wp_auto. iApply "HΦ".
+    iDestruct (struct_fields_split with "Hnode") as "H".
+    iNamed "H". simpl. iFrame.
+    iIntros (??) "@ @".
+    iDestruct (struct_fields_combine (v:=merkle.node.mk _ _ _ _ _ _)
+      with "[$HnodeTy $Hhash $Hlabel $Hval $Hab $Hanb]") as "$".
+  - wp_auto. iApply "HΦ".
+    iDestruct (struct_fields_split with "Hnode") as "H".
+    iNamed "H". simpl. iFrame.
+    iIntros (??) "@ @".
+    iDestruct (struct_fields_combine (v:=merkle.node.mk _ _ _ _ _ _)
+      with "[$HnodeTy $Hhash $Hlabel $Hval $Hab $Hanb]") as "$".
+Qed.
 
 Lemma wp_put n0 n t depth sl_label sl_val label val :
   {{{
@@ -313,9 +329,8 @@ Lemma wp_put n0 n t depth sl_label sl_val label val :
   @! merkle.put #n0 #depth #sl_label #sl_val
   {{{
     n' t', RET #();
-    let ot' := pure_put t (uint.nat depth) label val in
     "Hn0" ∷ n0 ↦ n' ∗
-    "%Hsome_tree" ∷ ⌜ ot' = Some t' ⌝ ∗
+    "%HSome_tree" ∷ ⌜ pure_put t (uint.nat depth) label val = Some t' ⌝ ∗
     "Hown_tree" ∷ own_tree n' t' 1
   }}}.
 Proof.

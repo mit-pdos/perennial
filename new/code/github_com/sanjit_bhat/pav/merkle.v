@@ -732,11 +732,11 @@ Definition node__getChildⁱᵐᵖˡ : val :=
     exception_do (let: "n" := (mem.alloc "n") in
     let: "depth" := (mem.alloc "depth") in
     let: "label" := (mem.alloc "label") in
-    (if: (~ (let: "$a0" := (![#sliceT] "label") in
+    (if: let: "$a0" := (![#sliceT] "label") in
     let: "$a1" := (![#uint64T] "depth") in
-    (func_call #getBit) "$a0" "$a1"))
-    then return: (struct.field_ref #node #"child0"%go (![#ptrT] "n"), struct.field_ref #node #"child1"%go (![#ptrT] "n"))
-    else return: (struct.field_ref #node #"child1"%go (![#ptrT] "n"), struct.field_ref #node #"child0"%go (![#ptrT] "n")))).
+    (func_call #getBit) "$a0" "$a1"
+    then return: (struct.field_ref #node #"child1"%go (![#ptrT] "n"), struct.field_ref #node #"child0"%go (![#ptrT] "n"))
+    else return: (struct.field_ref #node #"child0"%go (![#ptrT] "n"), struct.field_ref #node #"child1"%go (![#ptrT] "n")))).
 
 (* getBit returns false if the nth bit of b is 0.
    if n exceeds b, it returns true.
