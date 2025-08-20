@@ -50,4 +50,11 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'sync) : iProp Σ) (only pars
     is_pkg_init_deps := deps;
   |}.
 
+Notation "'build_get_is_pkg_init'" := (ltac2:(build_get_is_pkg_init_wf ())).
+
+#[global] Instance g : GetIsPkgInitWfDef race := build_get_is_pkg_init.
+#[global] Instance g2 : GetIsPkgInitWfDef sync := build_get_is_pkg_init.
+Print g2.
+
+
 End defns.
