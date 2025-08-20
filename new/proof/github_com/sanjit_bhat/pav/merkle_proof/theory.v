@@ -28,77 +28,6 @@ Inductive tree :=
   | Inner (child0 child1 : tree)
   | Cut (hash : list w8).
 
-(* need this gallina transl of Golang [merkle.put] for determ spec.
-determ needed bc user might call [VerifyMemb] multiple times on same tree,
-expecting dig to be equal across calls.
-to guarantee that, [merkle.proofToTree] needs to determ make tree from
-inputted proof, and [merkle.put] needs to determ update tree with label, val.
-
-NOTE: the code has tricky termination reasoning due to put-into-leaf
-expanding common label bits into inner nodes.
-this reasoning is reflected into gallina using the depth measure.
-NOTE: using fuel=max_depth would allow for normal Fixpoint,
-which reduces more nicely (under concrete fuel).
-but proving that (exists fuel => Some tree) might be more difficult
-than working with Program Fixpoint, we'll see. *)
-Program Fixpoint pure_put t depth label val {measure (max_depth - depth)} :=
-  if decide (depth ≥ max_depth)
-  then
-    (* Golang put won't hit this. need for measure. *)
-    None
-  else match t with
-  | Empty => Some (Leaf label val)
-  | Leaf label' val' =>
-    if decide (label = label')
-    then Some (Leaf label val)
-    else
-      (* "unfolding" the two leaf puts lets us use [S depth] in
-      recursive calls, which satisfies the depth measure. *)
-      let (c0, c1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
-      let c := if get_bit label depth then c1 else c0 in
-      let t' := pure_put c (S depth) label val in
-      if get_bit label depth then Inner c0 <$> t' else (λ x, Inner x c1) <$> t'
-  | Inner c0 c1 =>
-    let c := if get_bit label depth then c1 else c0 in
-    let t' := pure_put c (S depth) label val in
-    if get_bit label depth then Inner c0 <$> t' else (λ x, Inner x c1) <$> t'
-  | Cut _ =>
-    (* Golang put won't hit this. *)
-    None
-  end.
-Next Obligation. lia. Qed.
-Next Obligation. lia. Qed.
-Final Obligation. auto using lt_wf. Qed.
-
-(* [sibs] order reversed from code. *)
-Fixpoint pure_newShell label depth (sibs : list $ list w8) :=
-  match sibs with
-  | [] => Empty
-  | h :: sibs' =>
-    let c := Cut h in
-    let t := pure_newShell label (S depth) sibs' in
-    if get_bit label depth then Inner c t else Inner t c
-  end.
-
-Definition pure_proofToTree label sibs oleaf :=
-  let t := pure_newShell label 0 sibs in
-  match oleaf with
-  | None => Some t
-  | Some (l, v) => pure_put t 0 l v
-  end.
-
-Fixpoint pure_Digest t :=
-  cryptoffi.pure_hash
-    match t with
-    | Empty => [emptyNodeTag]
-    | Leaf l v =>
-      leafNodeTag ::
-      (u64_le $ length l) ++ l ++
-      (u64_le $ length v) ++ v
-    | Inner c0 c1 => innerNodeTag :: pure_Digest c0 ++ pure_Digest c1
-    | Cut h => h
-    end.
-
 (** tree paths. *)
 
 Fixpoint is_path t depth label found :=
@@ -837,6 +766,105 @@ Proof.
     + by iApply "IHt1".
     + by iApply "IHt2".
 Qed.
+
+#[local] Opaque is_full_tree.
+
+(** gallina tree ops.
+
+need gallina transl of Golang [merkle.put] for determ spec.
+determ needed bc user might call [VerifyMemb] multiple times on same tree,
+expecting dig to be equal across calls.
+to guarantee that, [merkle.proofToTree] needs to determ make tree from
+inputted proof, and [merkle.put] needs to determ update tree with label, val. *)
+
+(* NOTE: the code has tricky termination reasoning due to put-into-leaf
+expanding common label bits into inner nodes.
+this reasoning is reflected into gallina using [limit]. *)
+Fixpoint pure_put t label val (limit : nat) :=
+  let depth := (max_depth - limit)%nat in
+  match t with
+  | Empty => Some (Leaf label val)
+  | Leaf label' val' =>
+    if decide (label = label') then Some (Leaf label val) else
+    (* Golang put won't run out of limit. *)
+    match limit with 0%nat => mfail | S limit' =>
+    (* "unfolding" the two leaf puts lets us use [limit'] in recur calls. *)
+    (* put 1. *)
+    let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
+    let t0 := if get_bit label depth then t0_1 else t0_0 in
+    (* put 2. *)
+    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
+    Some $ Inner t2_0 t2_1
+    end end
+  | Inner c0 c1 =>
+    match limit with 0%nat => mfail | S limit' =>
+    let t0 := if get_bit label depth then c1 else c0 in
+    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
+    Some $ Inner t2_0 t2_1
+    end end
+  | Cut _ => mfail (* Golang put won't hit Cut. *)
+  end.
+
+Lemma pure_put_unfold t label val limit :
+  pure_put t label val limit
+  =
+  let depth := (max_depth - limit)%nat in
+  match t with
+  | Empty => Some (Leaf label val)
+  | Leaf label' val' =>
+    if decide (label = label') then Some (Leaf label val) else
+    (* Golang put won't run out of limit. *)
+    match limit with 0%nat => mfail | S limit' =>
+    (* "unfolding" the two leaf puts lets us use [limit'] in recur calls. *)
+    (* put 1. *)
+    let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
+    let t0 := if get_bit label depth then t0_1 else t0_0 in
+    (* put 2. *)
+    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
+    Some $ Inner t2_0 t2_1
+    end end
+  | Inner c0 c1 =>
+    match limit with 0%nat => mfail | S limit' =>
+    let t0 := if get_bit label depth then c1 else c0 in
+    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
+    Some $ Inner t2_0 t2_1
+    end end
+  | Cut _ => mfail (* Golang put won't hit Cut. *)
+  end.
+Proof. by destruct limit. Qed.
+
+(* [sibs] order reversed from code. *)
+Fixpoint pure_newShell label depth (sibs : list $ list w8) :=
+  match sibs with
+  | [] => Empty
+  | h :: sibs' =>
+    let c := Cut h in
+    let t := pure_newShell label (S depth) sibs' in
+    if get_bit label depth then Inner c t else Inner t c
+  end.
+
+Definition pure_proofToTree label sibs oleaf :=
+  let t := pure_newShell label 0 sibs in
+  match oleaf with
+  | None => Some t
+  | Some (l, v) => pure_put t l v max_depth
+  end.
+
+Fixpoint pure_Digest t :=
+  cryptoffi.pure_hash
+    match t with
+    | Empty => [emptyNodeTag]
+    | Leaf l v =>
+      leafNodeTag ::
+      (u64_le $ length l) ++ l ++
+      (u64_le $ length v) ++ v
+    | Inner c0 c1 => innerNodeTag :: pure_Digest c0 ++ pure_Digest c1
+    | Cut h => h
+    end.
 
 (** stuff that might need to be resurrected. *)
 
