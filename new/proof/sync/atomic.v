@@ -6,12 +6,11 @@ Require Export New.generatedproof.sync.atomic.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!globalsGS Σ} {go_ctx : GoContext} `{!is_pkg_defined atomic}.
 
 #[global] Instance : IsPkgInit atomic := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf atomic := build_get_is_pkg_init.
 #[global] Instance : IsPkgDefinedTransitiveClosure atomic := build_is_pkg_defined_tc.
-
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,
@@ -19,6 +18,56 @@ Lemma wp_LoadUint64 (addr : loc) dq :
   (|={⊤,∅}=> ∃ (v : w64), addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
   WP @! atomic.LoadUint64 #addr {{ Φ }}.
 Proof.
+  iIntros (?) "#? HΦ".
+  wp_func_call_core.
+  {
+Ltac solve_pkg_init :=
+  unfold named;
+  lazymatch goal with
+  | |- environments.envs_entails ?env (is_pkg_init _) => idtac
+  | |- environments.envs_entails ?env (is_go_context) => idtac
+  | _ => fail "not a is_pkg_init or is_go_context goal"
+  end;
+  try iAssumption;
+  iClear "∗";
+  iEval (rewrite ?is_pkg_init_unfold; simpl is_pkg_init_deps; unfold named) in "#";
+  repeat
+    lazymatch goal with
+    | |- environments.envs_entails ?env _ =>
+        lazymatch env with
+        | context[environments.Esnoc _ ?i (_ ∗ _)%I] =>
+            iDestruct i as "[? ?]"
+        | context[environments.Esnoc _ ?i (□ _)%I] =>
+            iDestruct i as "#?"
+        end
+    end;
+  solve [ iFrame "#" ].
+
+PLAN:
+  (* generatedproof has is_pkg_defined_tc definitions. Rename them to be the
+     "default", and then the single-package auxiliary definition has a longer
+     name. Package proofs assume the `is_pkg_defined_tc`. *)
+solve_pkg_init.
+
+    iPkgInit. }
+  (wp_bind (#(func_callv _) _);
+   unshelve iApply (wp_func_call with "[]");
+   [| (tc_solve || fail "could not find mapping from function name to val") | | ]).
+
+  (wp_bind (#(func_callv _) _);
+   unshelve iApply (wp_func_call with "[]")).
+  2:{
+    Set Typeclasses Debug.
+    Fail tc_solve.
+    tc_solve.
+  }
+  wp_func_call_core.
+Tactic Notation "wp_func_call_core" :=
+  (wp_bind (#(func_callv _) _);
+   unshelve iApply (wp_func_call with "[]");
+   [| | (tc_solve || fail "could not find mapping from function name to val") | | ]).
+
+
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
   unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.

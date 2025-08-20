@@ -29,47 +29,47 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined status}.
 
 Global Instance wp_func_call_file_google_rpc_status_proto_rawDescGZIP :
-  WpFuncCall status.file_google_rpc_status_proto_rawDescGZIP _ (is_pkg_defined status) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall status.file_google_rpc_status_proto_rawDescGZIP _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_file_google_rpc_status_proto_init :
-  WpFuncCall status.file_google_rpc_status_proto_init _ (is_pkg_defined status) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall status.file_google_rpc_status_proto_init _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Status'ptr_Descriptor :
-  WpMethodCall (ptrT.id status.Status.id) "Descriptor" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "Descriptor" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Status'ptr_GetCode :
-  WpMethodCall (ptrT.id status.Status.id) "GetCode" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "GetCode" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Status'ptr_GetDetails :
-  WpMethodCall (ptrT.id status.Status.id) "GetDetails" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "GetDetails" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Status'ptr_GetMessage :
-  WpMethodCall (ptrT.id status.Status.id) "GetMessage" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "GetMessage" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Status'ptr_ProtoMessage :
-  WpMethodCall (ptrT.id status.Status.id) "ProtoMessage" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "ProtoMessage" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Status'ptr_ProtoReflect :
-  WpMethodCall (ptrT.id status.Status.id) "ProtoReflect" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "ProtoReflect" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Status'ptr_Reset :
-  WpMethodCall (ptrT.id status.Status.id) "Reset" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "Reset" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Status'ptr_String :
-  WpMethodCall (ptrT.id status.Status.id) "String" _ (is_pkg_defined status) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id status.Status.id) "String" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End status.

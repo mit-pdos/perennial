@@ -20,31 +20,31 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined main}.
 
 Global Instance wp_func_call_partiallyApplyMe :
-  WpFuncCall main.partiallyApplyMe _ (is_pkg_defined main) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall main.partiallyApplyMe _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_main :
-  WpFuncCall main.main _ (is_pkg_defined main) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall main.main _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Foo_someMethod :
-  WpMethodCall main.Foo.id "someMethod" _ (is_pkg_defined main) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall main.Foo.id "someMethod" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Foo_someMethodWithArgs :
-  WpMethodCall main.Foo.id "someMethodWithArgs" _ (is_pkg_defined main) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall main.Foo.id "someMethodWithArgs" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Foo'ptr_someMethod :
-  WpMethodCall (ptrT.id main.Foo.id) "someMethod" _ (is_pkg_defined main) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id main.Foo.id) "someMethod" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Foo'ptr_someMethodWithArgs :
-  WpMethodCall (ptrT.id main.Foo.id) "someMethodWithArgs" _ (is_pkg_defined main) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id main.Foo.id) "someMethodWithArgs" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End main.

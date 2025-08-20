@@ -13,15 +13,15 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined map_string_marshal}.
 
 Global Instance wp_func_call_EncodeStringMap :
-  WpFuncCall map_string_marshal.EncodeStringMap _ (is_pkg_defined map_string_marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall map_string_marshal.EncodeStringMap _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeStringMap :
-  WpFuncCall map_string_marshal.DecodeStringMap _ (is_pkg_defined map_string_marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall map_string_marshal.DecodeStringMap _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End map_string_marshal.

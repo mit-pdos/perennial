@@ -137,31 +137,31 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined advrpc}.
 
 Global Instance wp_func_call_NewServer :
-  WpFuncCall advrpc.NewServer _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall advrpc.NewServer _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Dial :
-  WpFuncCall advrpc.Dial _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall advrpc.Dial _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Server'ptr_Serve :
-  WpMethodCall (ptrT.id advrpc.Server.id) "Serve" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id advrpc.Server.id) "Serve" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_handle :
-  WpMethodCall (ptrT.id advrpc.Server.id) "handle" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id advrpc.Server.id) "handle" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_read :
-  WpMethodCall (ptrT.id advrpc.Server.id) "read" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id advrpc.Server.id) "read" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Client'ptr_Call :
-  WpMethodCall (ptrT.id advrpc.Client.id) "Call" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id advrpc.Client.id) "Call" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End advrpc.

@@ -93,35 +93,35 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined hashchain}.
 
 Global Instance wp_func_call_Verify :
-  WpFuncCall hashchain.Verify _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall hashchain.Verify _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_New :
-  WpFuncCall hashchain.New _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall hashchain.New _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetEmptyLink :
-  WpFuncCall hashchain.GetEmptyLink _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall hashchain.GetEmptyLink _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetNextLink :
-  WpFuncCall hashchain.GetNextLink _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall hashchain.GetNextLink _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_HashChain'ptr_Append :
-  WpMethodCall (ptrT.id hashchain.HashChain.id) "Append" _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id hashchain.HashChain.id) "Append" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_HashChain'ptr_Bootstrap :
-  WpMethodCall (ptrT.id hashchain.HashChain.id) "Bootstrap" _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id hashchain.HashChain.id) "Bootstrap" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_HashChain'ptr_Prove :
-  WpMethodCall (ptrT.id hashchain.HashChain.id) "Prove" _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id hashchain.HashChain.id) "Prove" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End hashchain.

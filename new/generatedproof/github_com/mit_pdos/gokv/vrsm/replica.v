@@ -888,143 +888,143 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined replica}.
 
 Global Instance wp_func_call_EncodeApplyAsBackupArgs :
-  WpFuncCall replica.EncodeApplyAsBackupArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.EncodeApplyAsBackupArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeApplyAsBackupArgs :
-  WpFuncCall replica.DecodeApplyAsBackupArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.DecodeApplyAsBackupArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_EncodeSetStateArgs :
-  WpFuncCall replica.EncodeSetStateArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.EncodeSetStateArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeSetStateArgs :
-  WpFuncCall replica.DecodeSetStateArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.DecodeSetStateArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_EncodeGetStateArgs :
-  WpFuncCall replica.EncodeGetStateArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.EncodeGetStateArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeGetStateArgs :
-  WpFuncCall replica.DecodeGetStateArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.DecodeGetStateArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_EncodeGetStateReply :
-  WpFuncCall replica.EncodeGetStateReply _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.EncodeGetStateReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeGetStateReply :
-  WpFuncCall replica.DecodeGetStateReply _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.DecodeGetStateReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_EncodeBecomePrimaryArgs :
-  WpFuncCall replica.EncodeBecomePrimaryArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.EncodeBecomePrimaryArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeBecomePrimaryArgs :
-  WpFuncCall replica.DecodeBecomePrimaryArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.DecodeBecomePrimaryArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_EncodeApplyReply :
-  WpFuncCall replica.EncodeApplyReply _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.EncodeApplyReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeApplyReply :
-  WpFuncCall replica.DecodeApplyReply _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.DecodeApplyReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_EncodeIncreaseCommitArgs :
-  WpFuncCall replica.EncodeIncreaseCommitArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.EncodeIncreaseCommitArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeIncreaseCommitArgs :
-  WpFuncCall replica.DecodeIncreaseCommitArgs _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.DecodeIncreaseCommitArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall replica.MakeClerk _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.MakeClerk _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeServer :
-  WpFuncCall replica.MakeServer _ (is_pkg_defined replica) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall replica.MakeServer _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Clerk'ptr_Apply :
-  WpMethodCall (ptrT.id replica.Clerk.id) "Apply" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Clerk.id) "Apply" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyAsBackup :
-  WpMethodCall (ptrT.id replica.Clerk.id) "ApplyAsBackup" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Clerk.id) "ApplyAsBackup" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo :
-  WpMethodCall (ptrT.id replica.Clerk.id) "ApplyRo" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Clerk.id) "ApplyRo" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_BecomePrimary :
-  WpMethodCall (ptrT.id replica.Clerk.id) "BecomePrimary" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Clerk.id) "BecomePrimary" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_GetState :
-  WpMethodCall (ptrT.id replica.Clerk.id) "GetState" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Clerk.id) "GetState" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_IncreaseCommitIndex :
-  WpMethodCall (ptrT.id replica.Clerk.id) "IncreaseCommitIndex" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Clerk.id) "IncreaseCommitIndex" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_SetState :
-  WpMethodCall (ptrT.id replica.Clerk.id) "SetState" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Clerk.id) "SetState" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_Apply :
-  WpMethodCall (ptrT.id replica.Server.id) "Apply" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "Apply" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_ApplyAsBackup :
-  WpMethodCall (ptrT.id replica.Server.id) "ApplyAsBackup" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "ApplyAsBackup" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_ApplyRoWaitForCommit :
-  WpMethodCall (ptrT.id replica.Server.id) "ApplyRoWaitForCommit" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "ApplyRoWaitForCommit" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_BecomePrimary :
-  WpMethodCall (ptrT.id replica.Server.id) "BecomePrimary" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "BecomePrimary" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_GetState :
-  WpMethodCall (ptrT.id replica.Server.id) "GetState" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "GetState" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_IncreaseCommitIndex :
-  WpMethodCall (ptrT.id replica.Server.id) "IncreaseCommitIndex" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "IncreaseCommitIndex" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_Serve :
-  WpMethodCall (ptrT.id replica.Server.id) "Serve" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "Serve" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_SetState :
-  WpMethodCall (ptrT.id replica.Server.id) "SetState" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "SetState" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_isEpochStale :
-  WpMethodCall (ptrT.id replica.Server.id) "isEpochStale" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "isEpochStale" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_leaseRenewalThread :
-  WpMethodCall (ptrT.id replica.Server.id) "leaseRenewalThread" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "leaseRenewalThread" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_sendIncreaseCommitThread :
-  WpMethodCall (ptrT.id replica.Server.id) "sendIncreaseCommitThread" _ (is_pkg_defined replica) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id replica.Server.id) "sendIncreaseCommitThread" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End replica.

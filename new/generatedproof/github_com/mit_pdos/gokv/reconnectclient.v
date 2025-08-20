@@ -101,19 +101,19 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined reconnectclient}.
 
 Global Instance wp_func_call_MakeReconnectingClient :
-  WpFuncCall reconnectclient.MakeReconnectingClient _ (is_pkg_defined reconnectclient) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall reconnectclient.MakeReconnectingClient _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_Call :
-  WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "Call" _ (is_pkg_defined reconnectclient) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "Call" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_getClient :
-  WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "getClient" _ (is_pkg_defined reconnectclient) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "getClient" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End reconnectclient.

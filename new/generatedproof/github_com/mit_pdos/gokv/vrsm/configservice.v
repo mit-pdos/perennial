@@ -253,71 +253,71 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined configservice}.
 
 Global Instance wp_func_call_EncodeConfig :
-  WpFuncCall configservice.EncodeConfig _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall configservice.EncodeConfig _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeConfig :
-  WpFuncCall configservice.DecodeConfig _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall configservice.DecodeConfig _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall configservice.MakeClerk _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall configservice.MakeClerk _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeState :
-  WpFuncCall configservice.encodeState _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall configservice.encodeState _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeState :
-  WpFuncCall configservice.decodeState _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall configservice.decodeState _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeServer :
-  WpFuncCall configservice.makeServer _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall configservice.makeServer _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_StartServer :
-  WpFuncCall configservice.StartServer _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall configservice.StartServer _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Clerk'ptr_GetConfig :
-  WpMethodCall (ptrT.id configservice.Clerk.id) "GetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Clerk.id) "GetConfig" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_GetLease :
-  WpMethodCall (ptrT.id configservice.Clerk.id) "GetLease" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Clerk.id) "GetLease" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_ReserveEpochAndGetConfig :
-  WpMethodCall (ptrT.id configservice.Clerk.id) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Clerk.id) "ReserveEpochAndGetConfig" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_TryWriteConfig :
-  WpMethodCall (ptrT.id configservice.Clerk.id) "TryWriteConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Clerk.id) "TryWriteConfig" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_GetConfig :
-  WpMethodCall (ptrT.id configservice.Server.id) "GetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Server.id) "GetConfig" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_GetLease :
-  WpMethodCall (ptrT.id configservice.Server.id) "GetLease" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Server.id) "GetLease" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_ReserveEpochAndGetConfig :
-  WpMethodCall (ptrT.id configservice.Server.id) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Server.id) "ReserveEpochAndGetConfig" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_TryWriteConfig :
-  WpMethodCall (ptrT.id configservice.Server.id) "TryWriteConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Server.id) "TryWriteConfig" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_tryAcquire :
-  WpMethodCall (ptrT.id configservice.Server.id) "tryAcquire" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id configservice.Server.id) "tryAcquire" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End configservice.

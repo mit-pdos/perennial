@@ -13,15 +13,15 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined fmt}.
 
 Global Instance wp_func_call_Printf :
-  WpFuncCall fmt.Printf _ (is_pkg_defined fmt) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall fmt.Printf _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Print :
-  WpFuncCall fmt.Print _ (is_pkg_defined fmt) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall fmt.Print _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End fmt.

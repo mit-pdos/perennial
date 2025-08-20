@@ -1148,703 +1148,703 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined semantics}.
 
 Global Instance wp_func_call_findKey :
-  WpFuncCall semantics.findKey _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.findKey _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_allocate :
-  WpFuncCall semantics.allocate _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.allocate _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_freeRange :
-  WpFuncCall semantics.freeRange _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.freeRange _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAllocateDistinct :
-  WpFuncCall semantics.testAllocateDistinct _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAllocateDistinct _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAllocateFull :
-  WpFuncCall semantics.testAllocateFull _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAllocateFull _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testExplicitBlockStmt :
-  WpFuncCall semantics.testExplicitBlockStmt _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testExplicitBlockStmt _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testMinUint64 :
-  WpFuncCall semantics.testMinUint64 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testMinUint64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testMaxUint64 :
-  WpFuncCall semantics.testMaxUint64 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testMaxUint64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_adder :
-  WpFuncCall semantics.adder _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.adder _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testClosureBasic :
-  WpFuncCall semantics.testClosureBasic _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testClosureBasic _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCompareAll :
-  WpFuncCall semantics.testCompareAll _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCompareAll _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCompareGT :
-  WpFuncCall semantics.testCompareGT _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCompareGT _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCompareGE :
-  WpFuncCall semantics.testCompareGE _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCompareGE _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCompareLT :
-  WpFuncCall semantics.testCompareLT _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCompareLT _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCompareLE :
-  WpFuncCall semantics.testCompareLE _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCompareLE _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_literalCast :
-  WpFuncCall semantics.literalCast _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.literalCast _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_stringToByteSlice :
-  WpFuncCall semantics.stringToByteSlice _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.stringToByteSlice _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_byteSliceToString :
-  WpFuncCall semantics.byteSliceToString _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.byteSliceToString _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testByteSliceToString :
-  WpFuncCall semantics.testByteSliceToString _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testByteSliceToString _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCopySimple :
-  WpFuncCall semantics.testCopySimple _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCopySimple _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCopyShorterDst :
-  WpFuncCall semantics.testCopyShorterDst _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCopyShorterDst _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCopyShorterSrc :
-  WpFuncCall semantics.testCopyShorterSrc _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCopyShorterSrc _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_deferSimple :
-  WpFuncCall semantics.deferSimple _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.deferSimple _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testDefer :
-  WpFuncCall semantics.testDefer _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testDefer _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testDeferFuncLit :
-  WpFuncCall semantics.testDeferFuncLit _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testDeferFuncLit _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_roundtripEncDec32 :
-  WpFuncCall semantics.roundtripEncDec32 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.roundtripEncDec32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_roundtripEncDec64 :
-  WpFuncCall semantics.roundtripEncDec64 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.roundtripEncDec64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testEncDec32Simple :
-  WpFuncCall semantics.testEncDec32Simple _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testEncDec32Simple _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_failing_testEncDec32 :
-  WpFuncCall semantics.failing_testEncDec32 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.failing_testEncDec32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testEncDec64Simple :
-  WpFuncCall semantics.testEncDec64Simple _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testEncDec64Simple _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testEncDec64 :
-  WpFuncCall semantics.testEncDec64 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testEncDec64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_FirstClassFunction :
-  WpFuncCall semantics.FirstClassFunction _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.FirstClassFunction _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ApplyF :
-  WpFuncCall semantics.ApplyF _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.ApplyF _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testFirstClassFunction :
-  WpFuncCall semantics.testFirstClassFunction _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testFirstClassFunction _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_addFour64 :
-  WpFuncCall semantics.addFour64 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.addFour64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_failing_testFunctionOrdering :
-  WpFuncCall semantics.failing_testFunctionOrdering _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.failing_testFunctionOrdering _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_storeAndReturn :
-  WpFuncCall semantics.storeAndReturn _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.storeAndReturn _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_failing_testArgumentOrder :
-  WpFuncCall semantics.failing_testArgumentOrder _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.failing_testArgumentOrder _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testU64ToU32 :
-  WpFuncCall semantics.testU64ToU32 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testU64ToU32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testU32Len :
-  WpFuncCall semantics.testU32Len _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testU32Len _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_failing_testU32NewtypeLen :
-  WpFuncCall semantics.failing_testU32NewtypeLen _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.failing_testU32NewtypeLen _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_measureArea :
-  WpFuncCall semantics.measureArea _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.measureArea _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_measureVolumePlusNM :
-  WpFuncCall semantics.measureVolumePlusNM _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.measureVolumePlusNM _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_measureVolume :
-  WpFuncCall semantics.measureVolume _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.measureVolume _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBasicInterface :
-  WpFuncCall semantics.testBasicInterface _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBasicInterface _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAssignInterface :
-  WpFuncCall semantics.testAssignInterface _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAssignInterface _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testMultipleInterface :
-  WpFuncCall semantics.testMultipleInterface _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testMultipleInterface _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBinaryExprInterface :
-  WpFuncCall semantics.testBinaryExprInterface _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBinaryExprInterface _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testIfStmtInterface :
-  WpFuncCall semantics.testIfStmtInterface _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testIfStmtInterface _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testsUseLocks :
-  WpFuncCall semantics.testsUseLocks _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testsUseLocks _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_standardForLoop :
-  WpFuncCall semantics.standardForLoop _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.standardForLoop _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStandardForLoop :
-  WpFuncCall semantics.testStandardForLoop _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStandardForLoop _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testForLoopWait :
-  WpFuncCall semantics.testForLoopWait _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testForLoopWait _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBreakFromLoopWithContinue :
-  WpFuncCall semantics.testBreakFromLoopWithContinue _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBreakFromLoopWithContinue _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBreakFromLoopNoContinue :
-  WpFuncCall semantics.testBreakFromLoopNoContinue _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBreakFromLoopNoContinue _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBreakFromLoopNoContinueDouble :
-  WpFuncCall semantics.testBreakFromLoopNoContinueDouble _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBreakFromLoopNoContinueDouble _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBreakFromLoopForOnly :
-  WpFuncCall semantics.testBreakFromLoopForOnly _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBreakFromLoopForOnly _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBreakFromLoopAssignAndContinue :
-  WpFuncCall semantics.testBreakFromLoopAssignAndContinue _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBreakFromLoopAssignAndContinue _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testNestedLoops :
-  WpFuncCall semantics.testNestedLoops _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testNestedLoops _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testNestedGoStyleLoops :
-  WpFuncCall semantics.testNestedGoStyleLoops _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testNestedGoStyleLoops _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testNestedGoStyleLoopsNoComparison :
-  WpFuncCall semantics.testNestedGoStyleLoopsNoComparison _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testNestedGoStyleLoopsNoComparison _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_IterateMapKeys :
-  WpFuncCall semantics.IterateMapKeys _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.IterateMapKeys _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_IterateMapValues :
-  WpFuncCall semantics.IterateMapValues _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.IterateMapValues _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testIterateMap :
-  WpFuncCall semantics.testIterateMap _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testIterateMap _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testMapSize :
-  WpFuncCall semantics.testMapSize _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testMapSize _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_multReturnTwo :
-  WpFuncCall semantics.multReturnTwo _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.multReturnTwo _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAssignTwo :
-  WpFuncCall semantics.testAssignTwo _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAssignTwo _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_multReturnThree :
-  WpFuncCall semantics.multReturnThree _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.multReturnThree _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAssignThree :
-  WpFuncCall semantics.testAssignThree _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAssignThree _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testMultipleAssignToMap :
-  WpFuncCall semantics.testMultipleAssignToMap _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testMultipleAssignToMap _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_returnTwo :
-  WpFuncCall semantics.returnTwo _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.returnTwo _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testReturnTwo :
-  WpFuncCall semantics.testReturnTwo _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testReturnTwo _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAnonymousBinding :
-  WpFuncCall semantics.testAnonymousBinding _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAnonymousBinding _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_returnThree :
-  WpFuncCall semantics.returnThree _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.returnThree _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testReturnThree :
-  WpFuncCall semantics.testReturnThree _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testReturnThree _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_returnFour :
-  WpFuncCall semantics.returnFour _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.returnFour _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testReturnFour :
-  WpFuncCall semantics.testReturnFour _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testReturnFour _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_failing_testCompareSliceToNil :
-  WpFuncCall semantics.failing_testCompareSliceToNil _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.failing_testCompareSliceToNil _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testComparePointerToNil :
-  WpFuncCall semantics.testComparePointerToNil _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testComparePointerToNil _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testCompareNilToNil :
-  WpFuncCall semantics.testCompareNilToNil _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testCompareNilToNil _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testComparePointerWrappedToNil :
-  WpFuncCall semantics.testComparePointerWrappedToNil _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testComparePointerWrappedToNil _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testComparePointerWrappedDefaultToNil :
-  WpFuncCall semantics.testComparePointerWrappedDefaultToNil _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testComparePointerWrappedDefaultToNil _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_reverseAssignOps64 :
-  WpFuncCall semantics.reverseAssignOps64 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.reverseAssignOps64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_reverseAssignOps32 :
-  WpFuncCall semantics.reverseAssignOps32 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.reverseAssignOps32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_add64Equals :
-  WpFuncCall semantics.add64Equals _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.add64Equals _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_sub64Equals :
-  WpFuncCall semantics.sub64Equals _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.sub64Equals _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testReverseAssignOps64 :
-  WpFuncCall semantics.testReverseAssignOps64 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testReverseAssignOps64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_failing_testReverseAssignOps32 :
-  WpFuncCall semantics.failing_testReverseAssignOps32 _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.failing_testReverseAssignOps32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAdd64Equals :
-  WpFuncCall semantics.testAdd64Equals _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAdd64Equals _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSub64Equals :
-  WpFuncCall semantics.testSub64Equals _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSub64Equals _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testDivisionPrecedence :
-  WpFuncCall semantics.testDivisionPrecedence _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testDivisionPrecedence _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testModPrecedence :
-  WpFuncCall semantics.testModPrecedence _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testModPrecedence _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBitwiseOpsPrecedence :
-  WpFuncCall semantics.testBitwiseOpsPrecedence _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBitwiseOpsPrecedence _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testArithmeticShifts :
-  WpFuncCall semantics.testArithmeticShifts _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testArithmeticShifts _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testBitAddAnd :
-  WpFuncCall semantics.testBitAddAnd _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testBitAddAnd _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testManyParentheses :
-  WpFuncCall semantics.testManyParentheses _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testManyParentheses _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testPlusTimes :
-  WpFuncCall semantics.testPlusTimes _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testPlusTimes _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testOrCompareSimple :
-  WpFuncCall semantics.testOrCompareSimple _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testOrCompareSimple _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testOrCompare :
-  WpFuncCall semantics.testOrCompare _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testOrCompare _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAndCompare :
-  WpFuncCall semantics.testAndCompare _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAndCompare _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testShiftMod :
-  WpFuncCall semantics.testShiftMod _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testShiftMod _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testLinearize :
-  WpFuncCall semantics.testLinearize _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testLinearize _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CheckTrue :
-  WpFuncCall semantics.CheckTrue _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.CheckTrue _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CheckFalse :
-  WpFuncCall semantics.CheckFalse _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.CheckFalse _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testShortcircuitAndTF :
-  WpFuncCall semantics.testShortcircuitAndTF _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testShortcircuitAndTF _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testShortcircuitAndFT :
-  WpFuncCall semantics.testShortcircuitAndFT _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testShortcircuitAndFT _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testShortcircuitOrTF :
-  WpFuncCall semantics.testShortcircuitOrTF _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testShortcircuitOrTF _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testShortcircuitOrFT :
-  WpFuncCall semantics.testShortcircuitOrFT _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testShortcircuitOrFT _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSliceOps :
-  WpFuncCall semantics.testSliceOps _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSliceOps _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSliceCapacityOps :
-  WpFuncCall semantics.testSliceCapacityOps _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSliceCapacityOps _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testOverwriteArray :
-  WpFuncCall semantics.testOverwriteArray _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testOverwriteArray _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSliceLiteral :
-  WpFuncCall semantics.testSliceLiteral _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSliceLiteral _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSliceAppend :
-  WpFuncCall semantics.testSliceAppend _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSliceAppend _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testFooBarMutation :
-  WpFuncCall semantics.testFooBarMutation _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testFooBarMutation _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewS :
-  WpFuncCall semantics.NewS _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.NewS _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStructUpdates :
-  WpFuncCall semantics.testStructUpdates _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStructUpdates _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testNestedStructUpdates :
-  WpFuncCall semantics.testNestedStructUpdates _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testNestedStructUpdates _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStructConstructions :
-  WpFuncCall semantics.testStructConstructions _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStructConstructions _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testIncompleteStruct :
-  WpFuncCall semantics.testIncompleteStruct _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testIncompleteStruct _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStoreInStructVar :
-  WpFuncCall semantics.testStoreInStructVar _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStoreInStructVar _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStoreInStructPointerVar :
-  WpFuncCall semantics.testStoreInStructPointerVar _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStoreInStructPointerVar _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStoreComposite :
-  WpFuncCall semantics.testStoreComposite _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStoreComposite _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStoreSlice :
-  WpFuncCall semantics.testStoreSlice _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStoreSlice _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testStructFieldFunc :
-  WpFuncCall semantics.testStructFieldFunc _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testStructFieldFunc _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSwitchVal :
-  WpFuncCall semantics.testSwitchVal _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSwitchVal _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSwitchMultiple :
-  WpFuncCall semantics.testSwitchMultiple _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSwitchMultiple _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSwitchDefaultTrue :
-  WpFuncCall semantics.testSwitchDefaultTrue _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSwitchDefaultTrue _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testSwitchConversion :
-  WpFuncCall semantics.testSwitchConversion _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testSwitchConversion _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testPointerAssignment :
-  WpFuncCall semantics.testPointerAssignment _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testPointerAssignment _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAddressOfLocal :
-  WpFuncCall semantics.testAddressOfLocal _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAddressOfLocal _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_testAnonymousAssign :
-  WpFuncCall semantics.testAnonymousAssign _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.testAnonymousAssign _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_intToBlock :
-  WpFuncCall semantics.intToBlock _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.intToBlock _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_blockToInt :
-  WpFuncCall semantics.blockToInt _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.blockToInt _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_New :
-  WpFuncCall semantics.New _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.New _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_getLogEntry :
-  WpFuncCall semantics.getLogEntry _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.getLogEntry _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_applyLog :
-  WpFuncCall semantics.applyLog _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.applyLog _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_clearLog :
-  WpFuncCall semantics.clearLog _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.clearLog _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Open :
-  WpFuncCall semantics.Open _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.Open _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_disabled_testWal :
-  WpFuncCall semantics.disabled_testWal _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall semantics.disabled_testWal _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Enc'ptr_consume :
-  WpMethodCall (ptrT.id semantics.Enc.id) "consume" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Enc.id) "consume" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Dec'ptr_consume :
-  WpMethodCall (ptrT.id semantics.Dec.id) "consume" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Dec.id) "consume" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Editor'ptr_AdvanceReturn :
-  WpMethodCall (ptrT.id semantics.Editor.id) "AdvanceReturn" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Editor.id) "AdvanceReturn" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_SquareStruct_Square :
-  WpMethodCall semantics.SquareStruct.id "Square" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.SquareStruct.id "Square" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_SquareStruct_Volume :
-  WpMethodCall semantics.SquareStruct.id "Volume" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.SquareStruct.id "Volume" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_SquareStruct'ptr_Square :
-  WpMethodCall (ptrT.id semantics.SquareStruct.id) "Square" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.SquareStruct.id) "Square" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_SquareStruct'ptr_Volume :
-  WpMethodCall (ptrT.id semantics.SquareStruct.id) "Volume" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.SquareStruct.id) "Volume" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_LoopStruct_forLoopWait :
-  WpMethodCall semantics.LoopStruct.id "forLoopWait" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.LoopStruct.id "forLoopWait" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_LoopStruct'ptr_forLoopWait :
-  WpMethodCall (ptrT.id semantics.LoopStruct.id) "forLoopWait" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.LoopStruct.id) "forLoopWait" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_ArrayEditor'ptr_Advance :
-  WpMethodCall (ptrT.id semantics.ArrayEditor.id) "Advance" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.ArrayEditor.id) "Advance" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Bar'ptr_mutate :
-  WpMethodCall (ptrT.id semantics.Bar.id) "mutate" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Bar.id) "mutate" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Foo'ptr_mutateBar :
-  WpMethodCall (ptrT.id semantics.Foo.id) "mutateBar" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Foo.id) "mutateBar" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_S_readBVal :
-  WpMethodCall semantics.S.id "readBVal" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.S.id "readBVal" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_S'ptr_negateC :
-  WpMethodCall (ptrT.id semantics.S.id) "negateC" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.S.id) "negateC" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_S'ptr_readA :
-  WpMethodCall (ptrT.id semantics.S.id) "readA" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.S.id) "readA" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_S'ptr_readB :
-  WpMethodCall (ptrT.id semantics.S.id) "readB" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.S.id) "readB" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_S'ptr_readBVal :
-  WpMethodCall (ptrT.id semantics.S.id) "readBVal" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.S.id) "readBVal" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_S'ptr_updateBValX :
-  WpMethodCall (ptrT.id semantics.S.id) "updateBValX" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.S.id) "updateBValX" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_switchConcrete'ptr_marker :
-  WpMethodCall (ptrT.id semantics.switchConcrete.id) "marker" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.switchConcrete.id) "marker" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_Apply :
-  WpMethodCall semantics.Log.id "Apply" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "Apply" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_BeginTxn :
-  WpMethodCall semantics.Log.id "BeginTxn" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "BeginTxn" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_Commit :
-  WpMethodCall semantics.Log.id "Commit" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "Commit" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_Read :
-  WpMethodCall semantics.Log.id "Read" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "Read" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_Size :
-  WpMethodCall semantics.Log.id "Size" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "Size" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_Write :
-  WpMethodCall semantics.Log.id "Write" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "Write" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_lock :
-  WpMethodCall semantics.Log.id "lock" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "lock" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log_unlock :
-  WpMethodCall semantics.Log.id "unlock" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall semantics.Log.id "unlock" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Apply :
-  WpMethodCall (ptrT.id semantics.Log.id) "Apply" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "Apply" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_BeginTxn :
-  WpMethodCall (ptrT.id semantics.Log.id) "BeginTxn" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "BeginTxn" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Commit :
-  WpMethodCall (ptrT.id semantics.Log.id) "Commit" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "Commit" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Read :
-  WpMethodCall (ptrT.id semantics.Log.id) "Read" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "Read" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Size :
-  WpMethodCall (ptrT.id semantics.Log.id) "Size" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "Size" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Write :
-  WpMethodCall (ptrT.id semantics.Log.id) "Write" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "Write" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_lock :
-  WpMethodCall (ptrT.id semantics.Log.id) "lock" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "lock" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_unlock :
-  WpMethodCall (ptrT.id semantics.Log.id) "unlock" _ (is_pkg_defined semantics) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id semantics.Log.id) "unlock" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End semantics.

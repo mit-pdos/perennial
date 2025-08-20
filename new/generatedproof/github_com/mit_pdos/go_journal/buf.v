@@ -163,75 +163,75 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined buf}.
 
 Global Instance wp_func_call_MkBuf :
-  WpFuncCall buf.MkBuf _ (is_pkg_defined buf) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall buf.MkBuf _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MkBufLoad :
-  WpFuncCall buf.MkBufLoad _ (is_pkg_defined buf) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall buf.MkBufLoad _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_installOneBit :
-  WpFuncCall buf.installOneBit _ (is_pkg_defined buf) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall buf.installOneBit _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_installBit :
-  WpFuncCall buf.installBit _ (is_pkg_defined buf) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall buf.installBit _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_installBytes :
-  WpFuncCall buf.installBytes _ (is_pkg_defined buf) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall buf.installBytes _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MkBufMap :
-  WpFuncCall buf.MkBufMap _ (is_pkg_defined buf) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall buf.MkBufMap _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Buf'ptr_BnumGet :
-  WpMethodCall (ptrT.id buf.Buf.id) "BnumGet" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.Buf.id) "BnumGet" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Buf'ptr_BnumPut :
-  WpMethodCall (ptrT.id buf.Buf.id) "BnumPut" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.Buf.id) "BnumPut" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Buf'ptr_Install :
-  WpMethodCall (ptrT.id buf.Buf.id) "Install" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.Buf.id) "Install" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Buf'ptr_IsDirty :
-  WpMethodCall (ptrT.id buf.Buf.id) "IsDirty" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.Buf.id) "IsDirty" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Buf'ptr_SetDirty :
-  WpMethodCall (ptrT.id buf.Buf.id) "SetDirty" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.Buf.id) "SetDirty" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Buf'ptr_WriteDirect :
-  WpMethodCall (ptrT.id buf.Buf.id) "WriteDirect" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.Buf.id) "WriteDirect" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_BufMap'ptr_Del :
-  WpMethodCall (ptrT.id buf.BufMap.id) "Del" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.BufMap.id) "Del" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_BufMap'ptr_DirtyBufs :
-  WpMethodCall (ptrT.id buf.BufMap.id) "DirtyBufs" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.BufMap.id) "DirtyBufs" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_BufMap'ptr_Insert :
-  WpMethodCall (ptrT.id buf.BufMap.id) "Insert" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.BufMap.id) "Insert" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_BufMap'ptr_Lookup :
-  WpMethodCall (ptrT.id buf.BufMap.id) "Lookup" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.BufMap.id) "Lookup" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_BufMap'ptr_Ndirty :
-  WpMethodCall (ptrT.id buf.BufMap.id) "Ndirty" _ (is_pkg_defined buf) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id buf.BufMap.id) "Ndirty" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End buf.

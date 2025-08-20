@@ -13,63 +13,63 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined safemarshal}.
 
 Global Instance wp_func_call_ReadBool :
-  WpFuncCall safemarshal.ReadBool _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadBool _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadConstBool :
-  WpFuncCall safemarshal.ReadConstBool _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadConstBool _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadInt :
-  WpFuncCall safemarshal.ReadInt _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadInt _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadConstInt :
-  WpFuncCall safemarshal.ReadConstInt _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadConstInt _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadByte :
-  WpFuncCall safemarshal.ReadByte _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadByte _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadConstByte :
-  WpFuncCall safemarshal.ReadConstByte _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadConstByte _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteByte :
-  WpFuncCall safemarshal.WriteByte _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.WriteByte _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBytes :
-  WpFuncCall safemarshal.ReadBytes _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadBytes _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadSlice1D :
-  WpFuncCall safemarshal.ReadSlice1D _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadSlice1D _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteSlice1D :
-  WpFuncCall safemarshal.WriteSlice1D _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.WriteSlice1D _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadSlice2D :
-  WpFuncCall safemarshal.ReadSlice2D _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadSlice2D _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteSlice2D :
-  WpFuncCall safemarshal.WriteSlice2D _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.WriteSlice2D _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadSlice3D :
-  WpFuncCall safemarshal.ReadSlice3D _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.ReadSlice3D _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteSlice3D :
-  WpFuncCall safemarshal.WriteSlice3D _ (is_pkg_defined safemarshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall safemarshal.WriteSlice3D _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End safemarshal.

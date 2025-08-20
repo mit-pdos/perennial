@@ -152,75 +152,75 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined marshal}.
 
 Global Instance wp_func_call_compute_new_cap :
-  WpFuncCall marshal.compute_new_cap _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.compute_new_cap _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_reserve :
-  WpFuncCall marshal.reserve _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.reserve _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadInt :
-  WpFuncCall marshal.ReadInt _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadInt _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadInt32 :
-  WpFuncCall marshal.ReadInt32 _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadInt32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBytes :
-  WpFuncCall marshal.ReadBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadBytes _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBytesCopy :
-  WpFuncCall marshal.ReadBytesCopy _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadBytesCopy _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBool :
-  WpFuncCall marshal.ReadBool _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadBool _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadLenPrefixedBytes :
-  WpFuncCall marshal.ReadLenPrefixedBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadLenPrefixedBytes _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteInt :
-  WpFuncCall marshal.WriteInt _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.WriteInt _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteInt32 :
-  WpFuncCall marshal.WriteInt32 _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.WriteInt32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteBytes :
-  WpFuncCall marshal.WriteBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.WriteBytes _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteBool :
-  WpFuncCall marshal.WriteBool _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.WriteBool _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteLenPrefixedBytes :
-  WpFuncCall marshal.WriteLenPrefixedBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.WriteLenPrefixedBytes _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadSlice :
-  WpFuncCall marshal.ReadSlice _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadSlice _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadSliceLenPrefix :
-  WpFuncCall marshal.ReadSliceLenPrefix _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.ReadSliceLenPrefix _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteSlice :
-  WpFuncCall marshal.WriteSlice _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.WriteSlice _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteSliceLenPrefix :
-  WpFuncCall marshal.WriteSliceLenPrefix _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall marshal.WriteSliceLenPrefix _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End marshal.

@@ -83,23 +83,23 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined addr}.
 
 Global Instance wp_func_call_MkAddr :
-  WpFuncCall addr.MkAddr _ (is_pkg_defined addr) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall addr.MkAddr _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MkBitAddr :
-  WpFuncCall addr.MkBitAddr _ (is_pkg_defined addr) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall addr.MkBitAddr _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Addr_Flatid :
-  WpMethodCall addr.Addr.id "Flatid" _ (is_pkg_defined addr) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall addr.Addr.id "Flatid" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Addr'ptr_Flatid :
-  WpMethodCall (ptrT.id addr.Addr.id) "Flatid" _ (is_pkg_defined addr) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id addr.Addr.id) "Flatid" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End addr.

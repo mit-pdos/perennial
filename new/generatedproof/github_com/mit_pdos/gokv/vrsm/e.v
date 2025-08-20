@@ -21,15 +21,15 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined e}.
 
 Global Instance wp_func_call_EncodeError :
-  WpFuncCall e.EncodeError _ (is_pkg_defined e) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall e.EncodeError _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeError :
-  WpFuncCall e.DecodeError _ (is_pkg_defined e) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall e.DecodeError _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End e.

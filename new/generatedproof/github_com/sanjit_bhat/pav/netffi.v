@@ -46,27 +46,27 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined netffi}.
 
 Global Instance wp_func_call_Dial :
-  WpFuncCall netffi.Dial _ (is_pkg_defined netffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall netffi.Dial _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Listen :
-  WpFuncCall netffi.Listen _ (is_pkg_defined netffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall netffi.Listen _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Conn'ptr_Receive :
-  WpMethodCall (ptrT.id netffi.Conn.id) "Receive" _ (is_pkg_defined netffi) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id netffi.Conn.id) "Receive" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Conn'ptr_Send :
-  WpMethodCall (ptrT.id netffi.Conn.id) "Send" _ (is_pkg_defined netffi) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id netffi.Conn.id) "Send" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Listener'ptr_Accept :
-  WpMethodCall (ptrT.id netffi.Listener.id) "Accept" _ (is_pkg_defined netffi) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id netffi.Listener.id) "Accept" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End netffi.

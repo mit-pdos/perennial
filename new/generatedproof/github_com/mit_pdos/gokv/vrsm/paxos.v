@@ -620,107 +620,107 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined paxos}.
 
 Global Instance wp_func_call_MakeSingleClerk :
-  WpFuncCall paxos.MakeSingleClerk _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.MakeSingleClerk _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeApplyAsFollowerArgs :
-  WpFuncCall paxos.encodeApplyAsFollowerArgs _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.encodeApplyAsFollowerArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeApplyAsFollowerArgs :
-  WpFuncCall paxos.decodeApplyAsFollowerArgs _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.decodeApplyAsFollowerArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeApplyAsFollowerReply :
-  WpFuncCall paxos.decodeApplyAsFollowerReply _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.decodeApplyAsFollowerReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeApplyAsFollowerReply :
-  WpFuncCall paxos.encodeApplyAsFollowerReply _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.encodeApplyAsFollowerReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeEnterNewEpochArgs :
-  WpFuncCall paxos.encodeEnterNewEpochArgs _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.encodeEnterNewEpochArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeEnterNewEpochArgs :
-  WpFuncCall paxos.decodeEnterNewEpochArgs _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.decodeEnterNewEpochArgs _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeEnterNewEpochReply :
-  WpFuncCall paxos.decodeEnterNewEpochReply _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.decodeEnterNewEpochReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeEnterNewEpochReply :
-  WpFuncCall paxos.encodeEnterNewEpochReply _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.encodeEnterNewEpochReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeApplyReply :
-  WpFuncCall paxos.encodeApplyReply _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.encodeApplyReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeApplyReply :
-  WpFuncCall paxos.decodeApplyReply _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.decodeApplyReply _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_boolToU64 :
-  WpFuncCall paxos.boolToU64 _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.boolToU64 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodePaxosState :
-  WpFuncCall paxos.encodePaxosState _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.encodePaxosState _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodePaxosState :
-  WpFuncCall paxos.decodePaxosState _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.decodePaxosState _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeServer :
-  WpFuncCall paxos.makeServer _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.makeServer _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_StartServer :
-  WpFuncCall paxos.StartServer _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall paxos.StartServer _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_singleClerk'ptr_TryBecomeLeader :
-  WpMethodCall (ptrT.id paxos.singleClerk.id) "TryBecomeLeader" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.singleClerk.id) "TryBecomeLeader" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_singleClerk'ptr_applyAsFollower :
-  WpMethodCall (ptrT.id paxos.singleClerk.id) "applyAsFollower" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.singleClerk.id) "applyAsFollower" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_singleClerk'ptr_enterNewEpoch :
-  WpMethodCall (ptrT.id paxos.singleClerk.id) "enterNewEpoch" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.singleClerk.id) "enterNewEpoch" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_TryAcquire :
-  WpMethodCall (ptrT.id paxos.Server.id) "TryAcquire" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.Server.id) "TryAcquire" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_TryBecomeLeader :
-  WpMethodCall (ptrT.id paxos.Server.id) "TryBecomeLeader" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.Server.id) "TryBecomeLeader" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_WeakRead :
-  WpMethodCall (ptrT.id paxos.Server.id) "WeakRead" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.Server.id) "WeakRead" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_applyAsFollower :
-  WpMethodCall (ptrT.id paxos.Server.id) "applyAsFollower" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.Server.id) "applyAsFollower" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_enterNewEpoch :
-  WpMethodCall (ptrT.id paxos.Server.id) "enterNewEpoch" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.Server.id) "enterNewEpoch" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_withLock :
-  WpMethodCall (ptrT.id paxos.Server.id) "withLock" _ (is_pkg_defined paxos) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id paxos.Server.id) "withLock" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End paxos.

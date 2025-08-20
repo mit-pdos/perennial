@@ -18,47 +18,47 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined closed}.
 
 Global Instance wp_func_call_mk_lconfig_hosts :
-  WpFuncCall closed.mk_lconfig_hosts _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.mk_lconfig_hosts _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_mk_dconfig_hosts :
-  WpFuncCall closed.mk_dconfig_hosts _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.mk_dconfig_hosts _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_mk_lconfig_paxosHosts :
-  WpFuncCall closed.mk_lconfig_paxosHosts _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.mk_lconfig_paxosHosts _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_mk_dconfig_paxosHosts :
-  WpFuncCall closed.mk_dconfig_paxosHosts _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.mk_dconfig_paxosHosts _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_lconfig_main :
-  WpFuncCall closed.lconfig_main _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.lconfig_main _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_dconfig_main :
-  WpFuncCall closed.dconfig_main _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.dconfig_main _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_kv_replica_main :
-  WpFuncCall closed.kv_replica_main _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.kv_replica_main _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeBankClerk :
-  WpFuncCall closed.makeBankClerk _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.makeBankClerk _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_bank_transferer_main :
-  WpFuncCall closed.bank_transferer_main _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.bank_transferer_main _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_bank_auditor_main :
-  WpFuncCall closed.bank_auditor_main _ (is_pkg_defined closed) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall closed.bank_auditor_main _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End closed.

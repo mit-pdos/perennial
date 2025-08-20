@@ -13,31 +13,31 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined util}.
 
 Global Instance wp_func_call_DPrintf :
-  WpFuncCall util.DPrintf _ (is_pkg_defined util) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall util.DPrintf _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_RoundUp :
-  WpFuncCall util.RoundUp _ (is_pkg_defined util) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall util.RoundUp _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Min :
-  WpFuncCall util.Min _ (is_pkg_defined util) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall util.Min _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_SumOverflows :
-  WpFuncCall util.SumOverflows _ (is_pkg_defined util) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall util.SumOverflows _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_SumOverflows32 :
-  WpFuncCall util.SumOverflows32 _ (is_pkg_defined util) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall util.SumOverflows32 _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CloneByteSlice :
-  WpFuncCall util.CloneByteSlice _ (is_pkg_defined util) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall util.CloneByteSlice _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End util.

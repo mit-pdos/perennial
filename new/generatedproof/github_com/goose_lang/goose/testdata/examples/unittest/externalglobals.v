@@ -13,11 +13,11 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined externalglobals}.
 
 Global Instance wp_func_call_f :
-  WpFuncCall externalglobals.f _ (is_pkg_defined externalglobals) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall externalglobals.f _ :=
+  ltac:(solve_wp_func_call).
 
 End names.
 End externalglobals.

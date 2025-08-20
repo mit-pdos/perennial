@@ -132,25 +132,23 @@ Proof.
   wp_pures. by iApply "Hwp".
 Qed.
 
-(** Internal-ish to Goose. Users should never manually define instances of this.
-    The [P] predicate will generally be a package's [is_pkg_defined]. *)
-Class WpFuncCall func_name (f : val) (P : iProp Σ) :=
+(** Internal-ish to Goose. Users should never manually define instances of this. *)
+Class WpFuncCall func_name (f : val) :=
   wp_func_call :
     (∀ (first_arg : val) Φ,
-       P -∗ (WP (f first_arg) {{ Φ }}) -∗
+       is_go_context -∗ (WP (f first_arg) {{ Φ }}) -∗
        WP #(func_callv func_name) first_arg {{ Φ }}).
 
 (** Same as [WpFuncCall]. *)
-Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val) (P : iProp Σ)
+Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val)
   := wp_method_call :
     (∀ (first_arg receiver : val) Φ,
-         P -∗ (WP (m receiver first_arg) {{ Φ }}) -∗
+         is_go_context -∗ (WP (m receiver first_arg) {{ Φ }}) -∗
          WP #(method_callv type_name func_name receiver) first_arg {{ Φ }}).
 
-(** Pure predicate asserting that the declarations in the Go package [pkg_name]
-    are part of the implicit [GoContext]. Top-level closed theorems can assume
-    this about the starting state/[GoContext]. *)
-Definition is_pkg_defined_pure pkg_name `{!PkgInfo pkg_name} : Prop :=
+(** This says that the package's declarations are accessible (including
+    functions, methods, and variables) in the implicit [GoContext]. *)
+Definition is_pkg_defined_def pkg_name `{!PkgInfo pkg_name} : Prop :=
   (∀ func_name func,
      (alist_lookup_f func_name (pkg_functions pkg_name)) = Some func →
      (alist_lookup_f func_name __function) = Some func) ∧
@@ -159,24 +157,16 @@ Definition is_pkg_defined_pure pkg_name `{!PkgInfo pkg_name} : Prop :=
      (alist_lookup_f method_name) = Some m →
      (alist_lookup_f type_name __method) ≫=
      (alist_lookup_f method_name) = Some m).
-
-(** This says that the package's declarations are accessible (including
-    functions, methods, and variables). *)
-Definition is_pkg_defined_def pkg_name `{!PkgInfo pkg_name} : iProp Σ :=
-  "#Hctx" ∷ is_go_context ∗
-  "%Hdefined" ∷ ⌜ is_pkg_defined_pure pkg_name ⌝.
 Program Definition is_pkg_defined := sealed @is_pkg_defined_def.
 Definition is_pkg_defined_unseal : is_pkg_defined = _ := seal_eq _.
 #[global] Arguments is_pkg_defined (pkg_name) {_}.
-#[global] Instance is_pkg_defined_persistent pkg_name `{!PkgInfo pkg_name} : Persistent (is_pkg_defined pkg_name).
-Proof. rewrite is_pkg_defined_unseal. apply _. Qed.
 
 (** Any package's [is_pkg_defined] suffices as precondition. *)
-Lemma wp_globals_get pkg_name `{!PkgInfo pkg_name} var_name :
-  {{{ is_pkg_defined pkg_name }}} (globals.get #var_name) {{{ RET #(global_addr var_name); True }}}.
+Lemma wp_globals_get pkg_name `{!PkgInfo pkg_name} var_name (Hdef : is_pkg_defined pkg_name) :
+  {{{ is_go_context }}} (globals.get #var_name) {{{ RET #(global_addr var_name); True }}}.
 Proof.
-  iIntros (?) "#Hdef HΦ". rewrite globals.get_unseal.
-  rewrite is_pkg_defined_unseal. iNamed "Hdef". clear Hdefined PkgInfo0. iNamed "Hctx".
+  iIntros (?) "#Hctx HΦ". rewrite globals.get_unseal.
+  rewrite is_pkg_defined_unseal in Hdef. iNamed "Hctx".
   wp_call_lc "Hlc". wp_bind.
   iInv "Hctx" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
@@ -196,11 +186,12 @@ Qed.
 
 (** Internal to Goose. Used in generatedproofs to establish [WpFuncCall]. *)
 Lemma wp_func_call' {func_name func} `{!PkgInfo pkg_name} :
+  is_pkg_defined pkg_name →
   alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
-  WpFuncCall func_name func (is_pkg_defined pkg_name).
+  WpFuncCall func_name func.
 Proof.
-  intros Hlookup. rewrite /WpFuncCall. iIntros "* Hdef HΦ". rewrite func_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. rewrite is_pkg_defined_unseal. iNamed "Hdef". iNamed "Hctx".
+  intros Hdefined Hlookup. rewrite /WpFuncCall. iIntros "* #Hctx HΦ". rewrite func_callv_unseal.
+  wp_pure_lc "Hlc". wp_bind. rewrite is_pkg_defined_unseal in Hdefined. iNamed "Hctx".
   iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__functions"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
@@ -210,12 +201,13 @@ Qed.
 
 (** Internal to Goose. Used in generatedproofs to establish [WpMethodCall]. *)
 Lemma wp_method_call' {type_name method_name m} `{!PkgInfo pkg_name} :
+  is_pkg_defined pkg_name →
   (alist_lookup_f type_name (pkg_msets pkg_name)) ≫= (alist_lookup_f method_name) = (Some m) →
-  WpMethodCall type_name method_name m (is_pkg_defined pkg_name).
+  WpMethodCall type_name method_name m.
 Proof.
-  intros Hlookup. rewrite /WpMethodCall. iIntros "* Hdef HΦ". rewrite method_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. rewrite is_pkg_defined_unseal. iNamed "Hdef".
-  iNamed "Hctx". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  intros Hdefined Hlookup. rewrite /WpMethodCall. iIntros "* #Hctx HΦ". rewrite method_callv_unseal.
+  wp_pure_lc "Hlc". wp_bind. rewrite is_pkg_defined_unseal in Hdefined. iNamed "Hctx".
+  iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__msets"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
   iModIntro. do 2 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
@@ -240,8 +232,14 @@ Qed.
 
 End globals.
 
-Global Hint Mode WpMethodCall - - - - - - + + - - : typeclass_instances.
-Global Hint Mode WpFuncCall - - - - - - + - - : typeclass_instances.
+(* So that typeclass search in program proofs will find [is_pkg_defined] in context. *)
+#[global] Hint Extern 0 (is_pkg_defined _) => solve [assumption] : typeclass_instances.
+
+#[global] Ltac solve_wp_func_call := (apply wp_func_call'; [assumption | reflexivity]).
+#[global] Ltac solve_wp_method_call := (apply wp_method_call'; [assumption | reflexivity]).
+
+Global Hint Mode WpMethodCall - - - - - - - + + - : typeclass_instances.
+Global Hint Mode WpFuncCall - - - - - - - + - : typeclass_instances.
 
 (* TODO: better error messages if tc_solve fails to find a val for the name. *)
 Tactic Notation "wp_globals_get_core" :=
@@ -251,12 +249,12 @@ Tactic Notation "wp_globals_get_core" :=
 Tactic Notation "wp_func_call_core" :=
   (wp_bind (#(func_callv _) _);
    unshelve iApply (wp_func_call with "[]");
-   [| | (tc_solve || fail "could not find mapping from function name to val") | | ]).
+   [| (tc_solve || fail "could not find mapping from function name to val") | | ]).
 
 Tactic Notation "wp_method_call_core" :=
   (wp_bind (#(method_callv _ _ _) _);
    unshelve iApply (wp_method_call with "[]");
-   [| | (tc_solve || fail "could not find mapping from method to val") | |]).
+   [| (tc_solve || fail "could not find mapping from method to val") | |]).
 
 #[global]
 Notation "@! func" :=
@@ -296,7 +294,6 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!GoContext}.
 
 Definition is_pkg_init (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} : iProp Σ :=
-  "#Hdefined" ∷ is_pkg_defined pkg_name ∗
   "#Hdeps" ∷ □ is_pkg_init_deps pkg_name ∗
   "#Hinit" ∷ □ is_pkg_init_def pkg_name.
 #[global] Opaque is_pkg_init.
@@ -307,8 +304,7 @@ Proof. apply _. Qed.
 
 Lemma is_pkg_init_unfold (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} :
   is_pkg_init pkg_name =
-  ("#Hdefined" ∷ is_pkg_defined pkg_name ∗
-  "#Hdeps" ∷ □ is_pkg_init_deps pkg_name ∗
+  ("#Hdeps" ∷ □ is_pkg_init_deps pkg_name ∗
   "#Hinit" ∷ □ is_pkg_init_def pkg_name)%I.
 Proof. done. Qed.
 
@@ -339,7 +335,7 @@ Local Ltac2 build_pkg_init_deps name :=
          | cons ?pkg ?deps =>
              let rest := build_iprop deps in
              constr:((is_pkg_init $pkg ∗ $rest)%I)
-         | nil => constr:(is_pkg_defined $name)
+         | nil => constr:(is_go_context)
          | _ =>
              Message.print (Message.of_constr deps);
              fail (fprintf "build_pkg_init_deps: unable to match deps list")
@@ -393,6 +389,8 @@ automation will need improvement.
 *)
 Ltac iPkgInit :=
   progress (
+      lazy_match! goal with
+      |
       try solve_pkg_init;
       repeat (iSplitR; [ solve_pkg_init | ])
     ).
@@ -567,7 +565,7 @@ Ltac2 build_is_pkg_defined_tc () :=
                                      | cons ?pkg ?deps =>
                                          let rest := build deps in
                                          constr:(is_pkg_defined_tc $pkg ∧ $rest)
-                                     | nil => constr:(is_pkg_defined_pure $name)
+                                     | nil => constr:(is_pkg_defined $name)
                                      | _ =>
                                          Message.print (Message.of_constr deps);
                                          fail (fprintf "build_get_is_pkg_init_wf: unable to match deps list")

@@ -273,39 +273,39 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined exactlyonce}.
 
 Global Instance wp_func_call_MakeExactlyOnceStateMachine :
-  WpFuncCall exactlyonce.MakeExactlyOnceStateMachine _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall exactlyonce.MakeExactlyOnceStateMachine _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall exactlyonce.MakeClerk _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall exactlyonce.MakeClerk _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_eStateMachine'ptr_applyReadonly :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "applyReadonly" _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "applyReadonly" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_eStateMachine'ptr_applyVolatile :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "applyVolatile" _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "applyVolatile" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_eStateMachine'ptr_getState :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "getState" _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "getState" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_eStateMachine'ptr_setState :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "setState" _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "setState" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyExactlyOnce :
-  WpMethodCall (ptrT.id exactlyonce.Clerk.id) "ApplyExactlyOnce" _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id exactlyonce.Clerk.id) "ApplyExactlyOnce" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyReadonly :
-  WpMethodCall (ptrT.id exactlyonce.Clerk.id) "ApplyReadonly" _ (is_pkg_defined exactlyonce) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id exactlyonce.Clerk.id) "ApplyReadonly" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End exactlyonce.

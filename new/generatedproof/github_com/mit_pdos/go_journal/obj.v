@@ -96,43 +96,43 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext} `{!is_pkg_defined obj}.
 
 Global Instance wp_func_call_MkLog :
-  WpFuncCall obj.MkLog _ (is_pkg_defined obj) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall obj.MkLog _ :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Log'ptr_CommitWait :
-  WpMethodCall (ptrT.id obj.Log.id) "CommitWait" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "CommitWait" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Flush :
-  WpMethodCall (ptrT.id obj.Log.id) "Flush" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "Flush" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Load :
-  WpMethodCall (ptrT.id obj.Log.id) "Load" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "Load" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_LogSz :
-  WpMethodCall (ptrT.id obj.Log.id) "LogSz" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "LogSz" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_Shutdown :
-  WpMethodCall (ptrT.id obj.Log.id) "Shutdown" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "Shutdown" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_doCommit :
-  WpMethodCall (ptrT.id obj.Log.id) "doCommit" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "doCommit" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_installBufs :
-  WpMethodCall (ptrT.id obj.Log.id) "installBufs" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "installBufs" _ :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Log'ptr_installBufsMap :
-  WpMethodCall (ptrT.id obj.Log.id) "installBufsMap" _ (is_pkg_defined obj) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  WpMethodCall (ptrT.id obj.Log.id) "installBufsMap" _ :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End obj.
