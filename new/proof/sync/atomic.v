@@ -10,6 +10,7 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit atomic := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf atomic := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure atomic := build_is_pkg_defined_tc.
 
 
 Lemma wp_LoadUint64 (addr : loc) dq :

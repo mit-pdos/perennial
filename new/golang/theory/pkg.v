@@ -141,8 +141,7 @@ Class WpFuncCall func_name (f : val) (P : iProp Σ) :=
        WP #(func_callv func_name) first_arg {{ Φ }}).
 
 (** Same as [WpFuncCall]. *)
-Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val)
-                   (P : iProp Σ)
+Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val) (P : iProp Σ)
   := wp_method_call :
     (∀ (first_arg receiver : val) Φ,
          P -∗ (WP (m receiver first_arg) {{ Φ }}) -∗
@@ -404,13 +403,14 @@ Context `{!goGlobalsGS Σ}.
 Context `{!GoContext}.
 #[local] Transparent is_initialization.
 
-Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init :
+Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init is_pkg_init :
   ∀ Φ,
+  get_is_pkg_init pkg_name = is_pkg_init → (* this allows for [assumption] to fill in [is_pkg_init]. *)
   (is_initialization get_is_pkg_init ∗ own_initializing ∗ (own_initializing -∗ WP init_func #() {{ _, □ get_is_pkg_init pkg_name ∗ own_initializing }})) -∗
   (own_initializing ∗ get_is_pkg_init pkg_name -∗ Φ #()) -∗
   WP package.init #pkg_name init_func {{ Φ }}.
 Proof.
-  iIntros (?) "(#Hctx & Hown & Hpre) HΦ". rewrite package.init_unseal.
+  intros ? Heq. subst. iIntros "(#Hctx & Hown & Hpre) HΦ". rewrite package.init_unseal.
   wp_call. wp_call_lc "Hlc".
   wp_bind. unfold is_initialization. iInv "Hctx" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
@@ -506,9 +506,9 @@ End package_init.
     have all of the init predicates for [pkg_name] and its dependencies. *)
 Class GetIsPkgInitWf (pkg_name : go_string) {PROP} :=
   {
-    get_is_pkg_init_prop (get_is_pkg_init : go_string → PROP) : Prop
+    get_is_pkg_init_prop_def (get_is_pkg_init : go_string → PROP) : Prop
   }.
-
+Notation get_is_pkg_init_prop := get_is_pkg_init_prop_def.
 Arguments get_is_pkg_init_prop (pkg_name) {_} {_} (get_is_pkg_init).
 
 Ltac2 build_get_is_pkg_init_wf () :=
@@ -519,25 +519,65 @@ Ltac2 build_get_is_pkg_init_wf () :=
            let deps := Std.eval_hnf constr:(pkg_imported_pkgs $name) in
            let p :=
              constr:(λ (get_is_pkg_init : go_string → $prop),
-                ltac2:(
-                         Control.refine
-                           (fun () =>
-                              let rec build deps :=
-                                lazy_match! deps with
-                                | cons ?pkg ?deps =>
-                                    let rest := build deps in
-                                    constr:(get_is_pkg_init_prop $pkg &get_is_pkg_init ∧ $rest)
-                                | nil => constr:(&get_is_pkg_init $name = is_pkg_init $name)
-                                | _ =>
-                                    Message.print (Message.of_constr deps);
-                                    fail (fprintf "build_get_is_pkg_init_wf: unable to match deps list")
-                                end in
-                              build deps
-                           )
-                   )) in
+                       ltac2:(Control.refine
+                                (fun () =>
+                                   let rec build deps :=
+                                     lazy_match! deps with
+                                     | cons ?pkg ?deps =>
+                                         let rest := build deps in
+                                         constr:(get_is_pkg_init_prop $pkg &get_is_pkg_init ∧ $rest)
+                                     | nil => constr:(&get_is_pkg_init $name = is_pkg_init $name)
+                                     | _ =>
+                                         Message.print (Message.of_constr deps);
+                                         fail (fprintf "build_get_is_pkg_init_wf: unable to match deps list")
+                                     end in
+                                   build deps
+                                )
+                    )) in
            constr:(Build_GetIsPkgInitWf $name $prop $p)
        | [ |- _ ] => fail (fprintf "build_get_is_pkg_init_wf: goal is not (GetIsPkgInitWf _)")
        end
     ).
 
 Notation "'build_get_is_pkg_init'" := (ltac2:(build_get_is_pkg_init_wf ())) (only parsing).
+
+(** Maps [pkg_name] to a pure predicate that constrains a [GoContext] to have
+    all functions/methods in the package and its dependencies available in the
+    [GoContext]. This is meant to be used in precondition for package initialize
+    functions. *)
+Class IsPkgDefinedTransitiveClosure (pkg_name : go_string) `{ffi_syntax} :=
+  {
+    is_pkg_defined_tc_def : GoContext → Prop;
+  }.
+Notation is_pkg_defined_tc := is_pkg_defined_tc_def.
+Arguments is_pkg_defined_tc (pkg_name) {_} {_} {go_ctx}.
+
+Ltac2 build_is_pkg_defined_tc () :=
+  Control.refine
+    (fun () =>
+       lazy_match! goal with
+       | [ |- @IsPkgDefinedTransitiveClosure ?name ?ffi] =>
+           let deps := Std.eval_hnf constr:(pkg_imported_pkgs $name) in
+           let p :=
+             constr:(λ (go_ctx : GoContext),
+                       ltac2:(Control.refine
+                                (fun () =>
+                                   let rec build deps :=
+                                     lazy_match! deps with
+                                     | cons ?pkg ?deps =>
+                                         let rest := build deps in
+                                         constr:(is_pkg_defined_tc $pkg ∧ $rest)
+                                     | nil => constr:(is_pkg_defined_pure $name)
+                                     | _ =>
+                                         Message.print (Message.of_constr deps);
+                                         fail (fprintf "build_get_is_pkg_init_wf: unable to match deps list")
+                                     end in
+                                   build deps
+                                )
+                    )) in
+           constr:(Build_IsPkgDefinedTransitiveClosure $name $ffi $p)
+       | [ |- _ ] => fail (fprintf "build_is_pkg_defined_tc: goal is not (IsPkgDefinedTransitiveClosure _)")
+       end
+    ).
+
+Notation "'build_is_pkg_defined_tc'" := (ltac2:(build_is_pkg_defined_tc ())) (only parsing).

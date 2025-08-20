@@ -16,6 +16,7 @@ Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit unittest := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf unittest := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure unittest := build_is_pkg_defined_tc.
 
 Lemma wp_BasicNamedReturn :
   {{{ is_pkg_init unittest }}}

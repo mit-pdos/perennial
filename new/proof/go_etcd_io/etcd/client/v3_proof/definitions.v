@@ -8,12 +8,15 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 (* FIXME: move these *)
 #[global] Instance : IsPkgInit mvccpb := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf mvccpb := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure mvccpb := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit etcdserverpb := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf etcdserverpb := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure etcdserverpb := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit clientv3 := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf clientv3 := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure clientv3 := build_is_pkg_defined_tc.
 
 End init.
 

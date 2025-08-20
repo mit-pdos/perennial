@@ -6,5 +6,6 @@ Context  `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoConte
 
 #[global] Instance : IsPkgInit fmt := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf fmt := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure fmt := build_is_pkg_defined_tc.
 
 End proof.

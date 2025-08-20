@@ -24,27 +24,35 @@ Context `{concurrencyG Σ}.
 (* FIXME: move these *)
 #[global] Instance : IsPkgInit math := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf math := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure math := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit zapcore := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf zapcore := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure zapcore := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit zap := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf zap := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure zap := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit time := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf time := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure time := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure strings := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit fmt := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf fmt := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure fmt := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit errors := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf errors := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure errors := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit concurrency := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf concurrency := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure concurrency := build_is_pkg_defined_tc.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl donec,

@@ -18,6 +18,7 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{ ghost_mapG Σ Z w64 }.
 #[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure chan_spec_raw_examples := build_is_pkg_defined_tc.
 
 (* 
   Transfers pointer ownership from main to forked goroutine.

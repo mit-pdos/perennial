@@ -30,6 +30,7 @@ Context `{leasingG Σ}.
 
 #[global] Instance : IsPkgInit bytes := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf bytes := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure bytes := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit rpc.status.status := define_is_pkg_init True%I.
 
@@ -47,15 +48,19 @@ Context `{leasingG Σ}.
 
 #[global] Instance : IsPkgInit codes := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf codes := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure codes := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit rpctypes := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf rpctypes := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure rpctypes := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure strings := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit leasing := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf leasing := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure leasing := build_is_pkg_defined_tc.
 
 Context `{!syncG Σ}.
 

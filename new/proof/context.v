@@ -43,15 +43,19 @@ Context `{contextG Σ}.
 
 #[global] Instance : IsPkgInit time := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf time := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure time := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit reflectlite := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf reflectlite := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure reflectlite := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit errors := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf errors := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure errors := build_is_pkg_defined_tc.
 
 #[global] Instance : IsPkgInit context := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf context := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure context := build_is_pkg_defined_tc.
 
 Import Context_desc.
 Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=

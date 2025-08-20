@@ -20,6 +20,7 @@ Context `{!lockmapG Σ}.
 
 #[global] Instance : IsPkgInit lockmap := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf lockmap := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure lockmap := build_is_pkg_defined_tc.
 
 Implicit Types s : slice.t.
 

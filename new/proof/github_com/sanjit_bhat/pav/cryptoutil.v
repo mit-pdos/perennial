@@ -13,6 +13,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 
 #[global] Instance : IsPkgInit cryptoutil := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf cryptoutil := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure cryptoutil := build_is_pkg_defined_tc.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init cryptoutil = (is_pkg_init cryptoutil) →

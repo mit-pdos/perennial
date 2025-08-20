@@ -12,6 +12,7 @@ Implicit Types (E:coPset).
 
 #[global] Instance : IsPkgInit kv := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf kv := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure kv := build_is_pkg_defined_tc.
 
 (* Specification of Kv interface. *)
 Definition is_Kv_Put kvptsto E (v : interface.t) : iProp Σ :=

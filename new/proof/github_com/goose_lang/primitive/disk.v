@@ -11,6 +11,7 @@ Context `{!globalsGS Σ} {go_ctx:GoContext}.
 
 #[global] Instance : IsPkgInit disk := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf disk := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure disk := build_is_pkg_defined_tc.
 
 Implicit Types v : val.
 Implicit Types z : Z.

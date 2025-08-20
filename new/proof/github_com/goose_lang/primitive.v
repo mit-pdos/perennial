@@ -8,6 +8,7 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit primitive := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf primitive := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure primitive := build_is_pkg_defined_tc.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init primitive = (is_pkg_init primitive) →

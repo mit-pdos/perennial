@@ -11,6 +11,7 @@ Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit main := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf main := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure main := build_is_pkg_defined_tc.
 
 Lemma wp_partiallyApplyMe (s : go_string) (x : w64):
   Z.of_nat (length s) = sint.Z x →

@@ -20,6 +20,7 @@ Definition is_initialized : iProp Σ :=
 
 #[global] Instance : IsPkgInit util := define_is_pkg_init is_initialized.
 #[global] Instance : GetIsPkgInitWf util := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure util := build_is_pkg_defined_tc.
 
 Implicit Types (v:val).
 

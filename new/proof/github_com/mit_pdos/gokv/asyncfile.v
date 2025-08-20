@@ -146,6 +146,7 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 
 #[global] Instance : IsPkgInit asyncfile := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf asyncfile := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure asyncfile := build_is_pkg_defined_tc.
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),

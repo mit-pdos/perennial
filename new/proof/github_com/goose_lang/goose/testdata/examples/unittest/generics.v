@@ -8,6 +8,7 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit generics := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf generics := build_get_is_pkg_init.
+#[global] Instance : IsPkgDefinedTransitiveClosure generics := build_is_pkg_defined_tc.
 
 Section generic_proofs.
 Context `{!IntoVal T'} `{!IntoValTyped T' T} `{Hbounded: BoundedTypeSize T}.
