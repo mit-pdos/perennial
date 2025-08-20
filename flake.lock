@@ -1,20 +1,5 @@
 {
   "nodes": {
-    "coqutil": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1752522335,
-        "narHash": "sha256-vebBQNBHoggZkvCWD2DV+evhL8/GfrnkEaWAehZcRlY=",
-        "rev": "1f7c323c1dfe96498019e2d9a159337deb1b436e",
-        "revCount": 541,
-        "type": "git",
-        "url": "file:./external/coqutil"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:./external/coqutil"
-      }
-    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -57,47 +42,17 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1755282139,
-        "narHash": "sha256-VFDR/32Dq4ZhgV/9e0JXGGAusxyAH+KlC2Dv5C6JIIM=",
+        "lastModified": 1755637914,
+        "narHash": "sha256-bt3cnCFQlXirEvD6RqksZZ5LmsAScybuRdxqeWNW8hs=",
         "owner": "mjschwenne",
         "repo": "grackle",
-        "rev": "fcca08542296b82d9a8cf5c211cc33870ca712f6",
+        "rev": "0287e5c807e39d94f64938bcf391cc615bd3606c",
         "type": "github"
       },
       "original": {
         "owner": "mjschwenne",
         "repo": "grackle",
         "type": "github"
-      }
-    },
-    "iris": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1754301698,
-        "narHash": "sha256-kGP/47f/r9koDNHY2kKFYd1lYwZNLLTj/qeM8YL2M0c=",
-        "rev": "264b29232fa1d019046ab9794c9b106fc1b82fe9",
-        "revCount": 8384,
-        "type": "git",
-        "url": "file:./external/iris"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:./external/iris"
-      }
-    },
-    "iris-named-props": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1754423918,
-        "narHash": "sha256-wEx1YpBVl+scD9SRWResk5CxuGSyexrVBvh6JrtvfdI=",
-        "rev": "c9a767db6d7f53244141a926b08db55b8ed22b0c",
-        "revCount": 73,
-        "type": "git",
-        "url": "file:./external/iris-named-props"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:./external/iris-named-props"
       }
     },
     "nixpkgs": {
@@ -128,46 +83,11 @@
         "type": "indirect"
       }
     },
-    "record-update": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1753991350,
-        "narHash": "sha256-n2HjGD45Ikwhle8jKjum+Hv+4WrpEqKEbJ6iKfwlQKw=",
-        "rev": "f96b4b8f0559197eaab2ac296db447f12f4baf89",
-        "revCount": 146,
-        "type": "git",
-        "url": "file:./external/record-update"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:./external/record-update"
-      }
-    },
     "root": {
       "inputs": {
-        "coqutil": "coqutil",
         "flake-utils": "flake-utils",
         "grackle": "grackle",
-        "iris": "iris",
-        "iris-named-props": "iris-named-props",
-        "nixpkgs": "nixpkgs_2",
-        "record-update": "record-update",
-        "stdpp": "stdpp"
-      }
-    },
-    "stdpp": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1754134811,
-        "narHash": "sha256-GXo9G+bF4wIdMrkedj7/yQnf/4n75kOWmj26g3rjgbg=",
-        "rev": "2d5412f48adadeb69fb3115da4d83075c9ba15bf",
-        "revCount": 2946,
-        "type": "git",
-        "url": "file:./external/stdpp"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:./external/stdpp"
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "systems": {

@@ -5,38 +5,10 @@
     nixpkgs.url = "nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
     grackle.url = "github:mjschwenne/grackle";
-    self.submodules = true; # Use the submodule versions in the repo
-    # Capture each submodule manually so we can export the commit hash
-    # as a package to help keep transitive dependencies in sync
-    coqutil = {
-      url = "git+file:./external/coqutil";
-      flake = false;
-    };
-    iris = {
-      url = "git+file:./external/iris";
-      flake = false;
-    };
-    iris-named-props = {
-      url = "git+file:./external/iris-named-props";
-      flake = false;
-    };
-    record-update = {
-      url = "git+file:./external/record-update";
-      flake = false;
-    };
-    stdpp = {
-      url = "git+file:./external/stdpp";
-      flake = false;
-    };
+    self.submodules = true;
   };
 
   outputs = {
-    self,
-    coqutil,
-    iris,
-    iris-named-props,
-    record-update,
-    stdpp,
     nixpkgs,
     flake-utils,
     grackle,
@@ -47,65 +19,48 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-        submodules = pkgs.writeText "perennial-submodules.json" ''
-          {
-            "perennial": "${
-            if (self ? rev)
-            then self.rev
-            else self.dirtyRev
-          }",
-            "coqutil": "${
-            if (coqutil ? rev)
-            then coqutil.rev
-            else coqutil.dirtyRev
-          }",
-            "iris": "${
-            if (iris ? rev)
-            then iris.rev
-            else iris.dirtyRev
-          }",
-            "iris-named-props": "${
-            if (iris-named-props ? rev)
-            then iris-named-props.rev
-            else iris-named-props.dirtyRev
-          }",
-            "record-update": "${
-            if (record-update ? rev)
-            then record-update.rev
-            else record-update.dirtyRev
-          }",
-            "stdpp": "${
-            if (stdpp ? rev)
-            then stdpp.rev
-            else stdpp.dirtyRev
-          }"
-          }
-        '';
+        rocq = pkgs.rocq-core;
+        rocq-std = pkgs.rocqPackages.stdlib;
+        rocqv = rocq.rocq-version;
         perennial = pkgs.stdenv.mkDerivation {
           pname = "perennial";
-          version = "unstable";
+          version = "unstable-rocq${rocqv}";
 
           src = ./.;
 
-          nativeBuildInputs = with pkgs; [
-            rocq-core
-            rocqPackages.stdlib
+          nativeBuildInputs = [
+            rocq
+            rocq-std
           ];
           allowParrallelBuilds = true;
 
           buildPhase = ''
             make TIMED=false -j$NIX_BUILD_CORES
           '';
+          # Install perennial AND all it's dependencies to ensure the correct version,
+          # down to the commit hash, is installed
           installPhase = ''
-            mkdir -p $out/lib/rocq/${pkgs.rocq-core.version}/user-contrib
-            cp -r src $out/lib/rocq/${pkgs.rocq-core.version}/user-contrib/Perennial/
-            cp -r new $out/lib/rocq/${pkgs.rocq-core.version}/user-contrib/New/
-            cp -r external/Goose $out/lib/rocq/${pkgs.rocq-core.version}/user-contrib/Goose
+            mkdir -p $out/lib/coq/${rocqv}/user-contrib
+
+            cp -r src $out/lib/coq/${rocqv}/user-contrib/Perennial/
+            cp -r new $out/lib/coq/${rocqv}/user-contrib/New/
+            cp -r external/Goose $out/lib/coq/${rocqv}/user-contrib/
+
+            cp -r external/coqutil/src/coqutil $out/lib/coq/${rocqv}/user-contrib/
+            cp -r external/iris/iris $out/lib/coq/${rocqv}/user-contrib/
+            cp -r external/iris/iris_deprecated $out/lib/coq/${rocqv}/user-contrib/iris/deprecated
+            cp -r external/iris/iris_heap_lang $out/lib/coq/${rocqv}/user-contrib/iris/heap_lang
+            cp -r external/iris/iris_unstable $out/lib/coq/${rocqv}/user-contrib/iris/unstable
+            cp -r external/iris-named-props/src $out/lib/coq/${rocqv}/user-contrib/iris_named_props
+            cp -r external/record-update/src $out/lib/coq/${rocqv}/user-contrib/record-update
+            cp -r external/stdpp/stdpp $out/lib/coq/${rocqv}/user-contrib/
+            cp -r external/stdpp/stdpp_unstable $out/lib/coq/${rocqv}/user-contrib/stdpp/unstable
+            cp -r external/stdpp/stdpp_bitvector $out/lib/coq/${rocqv}/user-contrib/stdpp/bitvector
           '';
         };
       in {
         packages = {
-          inherit perennial submodules;
+          inherit perennial;
           default = perennial;
         };
         devShells.default = with pkgs;
