@@ -285,7 +285,7 @@ Lemma wp_node_getChild n d nodeTy sl_hash ptr_child0 ptr_child1 sl_label sl_val 
     "#Hsl_label" ∷ sl_label ↦*□ label ∗
     "%Hlt_depth" ∷ ⌜ uint.Z depth < Z.of_nat (length label) * 8 ⌝
   }}}
-  n @ (ptrTⁱᵈ merkle.nodeⁱᵈ) @ "getChild" #sl_label #depth
+  n @ (ptrT.id merkle.node.id) @ "getChild" #sl_label #depth
   {{{
     ptr_cb ptr_cnb, RET (#ptr_cb, #ptr_cnb);
     let (cb, cnb) := if get_bit label (uint.nat depth)

@@ -563,15 +563,15 @@ Global Instance wp_func_call_GetReplyDecode :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_Get :
-  WpMethodCall (ptrTⁱᵈ auditor.Auditorⁱᵈ) "Get" _ (is_pkg_defined auditor) :=
+  WpMethodCall (ptrT.id auditor.Auditor.id) "Get" _ (is_pkg_defined auditor) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_Update :
-  WpMethodCall (ptrTⁱᵈ auditor.Auditorⁱᵈ) "Update" _ (is_pkg_defined auditor) :=
+  WpMethodCall (ptrT.id auditor.Auditor.id) "Update" _ (is_pkg_defined auditor) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_updOnce :
-  WpMethodCall (ptrTⁱᵈ auditor.Auditorⁱᵈ) "updOnce" _ (is_pkg_defined auditor) :=
+  WpMethodCall (ptrT.id auditor.Auditor.id) "updOnce" _ (is_pkg_defined auditor) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

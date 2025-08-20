@@ -181,15 +181,15 @@ Global Instance wp_func_call_Make :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_Get :
-  WpMethodCall (ptrTⁱᵈ cachekv.CacheKvⁱᵈ) "Get" _ (is_pkg_defined cachekv) :=
+  WpMethodCall (ptrT.id cachekv.CacheKv.id) "Get" _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_GetAndCache :
-  WpMethodCall (ptrTⁱᵈ cachekv.CacheKvⁱᵈ) "GetAndCache" _ (is_pkg_defined cachekv) :=
+  WpMethodCall (ptrT.id cachekv.CacheKv.id) "GetAndCache" _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_Put :
-  WpMethodCall (ptrTⁱᵈ cachekv.CacheKvⁱᵈ) "Put" _ (is_pkg_defined cachekv) :=
+  WpMethodCall (ptrT.id cachekv.CacheKv.id) "Put" _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

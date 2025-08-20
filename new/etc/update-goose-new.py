@@ -175,6 +175,12 @@ def main():
         metavar="GOOSE_PATH",
     )
     parser.add_argument(
+        "-a",
+        "--all",
+        help="translate all code, assuming it is found in `../<proj_name>`",
+        action="store_true",
+    )
+    parser.add_argument(
         "--goose-examples",
         help="also translate tests in Goose",
         action="store_true",
@@ -198,6 +204,15 @@ def main():
         )
 
     args = parser.parse_args()
+
+    if args.all:
+        setattr(args, "std_lib", True)
+        setattr(args, "channel", True)
+        setattr(args, "goose_examples", True)
+        for proj in projs:
+            proj_path = path.join("..", proj.name)
+            if os.path.isdir(proj_path):
+                setattr(args, proj.name.replace("-", "_"), proj_path)
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose

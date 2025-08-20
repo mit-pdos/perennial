@@ -525,163 +525,163 @@ Global Instance wp_func_call_MakeProgressTracker :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Inflights'ptr_Add :
-  WpMethodCall (ptrTⁱᵈ tracker.Inflightsⁱᵈ) "Add" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Inflights.id) "Add" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Inflights'ptr_Clone :
-  WpMethodCall (ptrTⁱᵈ tracker.Inflightsⁱᵈ) "Clone" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Inflights.id) "Clone" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Inflights'ptr_Count :
-  WpMethodCall (ptrTⁱᵈ tracker.Inflightsⁱᵈ) "Count" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Inflights.id) "Count" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Inflights'ptr_FreeLE :
-  WpMethodCall (ptrTⁱᵈ tracker.Inflightsⁱᵈ) "FreeLE" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Inflights.id) "FreeLE" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Inflights'ptr_Full :
-  WpMethodCall (ptrTⁱᵈ tracker.Inflightsⁱᵈ) "Full" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Inflights.id) "Full" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Inflights'ptr_grow :
-  WpMethodCall (ptrTⁱᵈ tracker.Inflightsⁱᵈ) "grow" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Inflights.id) "grow" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Inflights'ptr_reset :
-  WpMethodCall (ptrTⁱᵈ tracker.Inflightsⁱᵈ) "reset" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Inflights.id) "reset" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_BecomeProbe :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "BecomeProbe" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "BecomeProbe" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_BecomeReplicate :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "BecomeReplicate" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "BecomeReplicate" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_BecomeSnapshot :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "BecomeSnapshot" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "BecomeSnapshot" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_CanBumpCommit :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "CanBumpCommit" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "CanBumpCommit" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_IsPaused :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "IsPaused" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "IsPaused" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_MaybeDecrTo :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "MaybeDecrTo" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "MaybeDecrTo" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_MaybeUpdate :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "MaybeUpdate" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "MaybeUpdate" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_ResetState :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "ResetState" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "ResetState" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_SentCommit :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "SentCommit" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "SentCommit" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_SentEntries :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "SentEntries" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "SentEntries" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Progress'ptr_String :
-  WpMethodCall (ptrTⁱᵈ tracker.Progressⁱᵈ) "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Progress.id) "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressMap_String :
-  WpMethodCall tracker.ProgressMapⁱᵈ "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall tracker.ProgressMap.id "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressMap'ptr_String :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressMapⁱᵈ) "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressMap.id) "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateType_String :
-  WpMethodCall tracker.StateTypeⁱᵈ "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall tracker.StateType.id "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_StateType'ptr_String :
-  WpMethodCall (ptrTⁱᵈ tracker.StateTypeⁱᵈ) "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.StateType.id) "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Config_String :
-  WpMethodCall tracker.Configⁱᵈ "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall tracker.Config.id "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Config'ptr_Clone :
-  WpMethodCall (ptrTⁱᵈ tracker.Configⁱᵈ) "Clone" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Config.id) "Clone" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Config'ptr_String :
-  WpMethodCall (ptrTⁱᵈ tracker.Configⁱᵈ) "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.Config.id) "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker_String :
-  WpMethodCall tracker.ProgressTrackerⁱᵈ "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall tracker.ProgressTracker.id "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_Clone :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "Clone" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "Clone" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_Committed :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "Committed" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "Committed" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_ConfState :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "ConfState" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "ConfState" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_IsSingleton :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "IsSingleton" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "IsSingleton" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_LearnerNodes :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "LearnerNodes" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "LearnerNodes" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_QuorumActive :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "QuorumActive" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "QuorumActive" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_RecordVote :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "RecordVote" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "RecordVote" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_ResetVotes :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "ResetVotes" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "ResetVotes" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_String :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "String" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "String" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_TallyVotes :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "TallyVotes" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "TallyVotes" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_Visit :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "Visit" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "Visit" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ProgressTracker'ptr_VoterNodes :
-  WpMethodCall (ptrTⁱᵈ tracker.ProgressTrackerⁱᵈ) "VoterNodes" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.ProgressTracker.id) "VoterNodes" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_matchAckIndexer_AckedIndex :
-  WpMethodCall tracker.matchAckIndexerⁱᵈ "AckedIndex" _ (is_pkg_defined tracker) :=
+  WpMethodCall tracker.matchAckIndexer.id "AckedIndex" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_matchAckIndexer'ptr_AckedIndex :
-  WpMethodCall (ptrTⁱᵈ tracker.matchAckIndexerⁱᵈ) "AckedIndex" _ (is_pkg_defined tracker) :=
+  WpMethodCall (ptrT.id tracker.matchAckIndexer.id) "AckedIndex" _ (is_pkg_defined tracker) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

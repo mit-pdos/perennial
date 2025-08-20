@@ -2172,243 +2172,243 @@ Context `{!globalsGS Σ}.
 Context `{!GoContext}.
 
 Global Instance wp_method_call_RangeRequest_SortOrder_EnumDescriptor :
-  WpMethodCall etcdserverpb.RangeRequest_SortOrderⁱᵈ "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall etcdserverpb.RangeRequest_SortOrder.id "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RangeRequest_SortOrder'ptr_EnumDescriptor :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RangeRequest_SortOrderⁱᵈ) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RangeRequest_SortOrder.id) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RangeRequest_SortTarget_EnumDescriptor :
-  WpMethodCall etcdserverpb.RangeRequest_SortTargetⁱᵈ "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall etcdserverpb.RangeRequest_SortTarget.id "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RangeRequest_SortTarget'ptr_EnumDescriptor :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RangeRequest_SortTargetⁱᵈ) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RangeRequest_SortTarget.id) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CompareResult_EnumDescriptor :
-  WpMethodCall etcdserverpb.Compare_CompareResultⁱᵈ "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall etcdserverpb.Compare_CompareResult.id "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CompareResult'ptr_EnumDescriptor :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_CompareResultⁱᵈ) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_CompareResult.id) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CompareTarget_EnumDescriptor :
-  WpMethodCall etcdserverpb.Compare_CompareTargetⁱᵈ "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall etcdserverpb.Compare_CompareTarget.id "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CompareTarget'ptr_EnumDescriptor :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_CompareTargetⁱᵈ) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_CompareTarget.id) "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestRange'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestRangeⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestRange.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestRange'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestRangeⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestRange.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestRange'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestRangeⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestRange.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestRange'ptr_isRequestOp_Request :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestRangeⁱᵈ) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestRange.id) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestPut'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestPutⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestPut.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestPut'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestPutⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestPut.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestPut'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestPutⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestPut.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestPut'ptr_isRequestOp_Request :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestPutⁱᵈ) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestPut.id) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestDeleteRangeⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestDeleteRange.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestDeleteRangeⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestDeleteRange.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestDeleteRangeⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestDeleteRange.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_isRequestOp_Request :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestDeleteRangeⁱᵈ) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestDeleteRange.id) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestTxn'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestTxnⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestTxn.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestTxn'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestTxnⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestTxn.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestTxn'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestTxnⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestTxn.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RequestOp_RequestTxn'ptr_isRequestOp_Request :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.RequestOp_RequestTxnⁱᵈ) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.RequestOp_RequestTxn.id) "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseRangeⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseRange.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseRangeⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseRange.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseRangeⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseRange.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_isResponseOp_Response :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseRangeⁱᵈ) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseRange.id) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponsePutⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponsePut.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponsePutⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponsePut.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponsePutⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponsePut.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_isResponseOp_Response :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponsePutⁱᵈ) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponsePut.id) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseDeleteRangeⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseDeleteRange.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseDeleteRangeⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseDeleteRange.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseDeleteRangeⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseDeleteRange.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_isResponseOp_Response :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseDeleteRangeⁱᵈ) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseDeleteRange.id) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseTxnⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseTxn.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseTxnⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseTxn.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseTxnⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseTxn.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_isResponseOp_Response :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.ResponseOp_ResponseTxnⁱᵈ) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.ResponseOp_ResponseTxn.id) "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Version'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Versionⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Version.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Version'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Versionⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Version.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Version'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Versionⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Version.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Version'ptr_isCompare_TargetUnion :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Versionⁱᵈ) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Version.id) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CreateRevision'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_CreateRevisionⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_CreateRevision.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CreateRevision'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_CreateRevisionⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_CreateRevision.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CreateRevision'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_CreateRevisionⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_CreateRevision.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_CreateRevision'ptr_isCompare_TargetUnion :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_CreateRevisionⁱᵈ) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_CreateRevision.id) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_ModRevision'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_ModRevisionⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_ModRevision.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_ModRevision'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_ModRevisionⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_ModRevision.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_ModRevision'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_ModRevisionⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_ModRevision.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_ModRevision'ptr_isCompare_TargetUnion :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_ModRevisionⁱᵈ) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_ModRevision.id) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Value'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Valueⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Value.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Value'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Valueⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Value.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Value'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Valueⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Value.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Value'ptr_isCompare_TargetUnion :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Valueⁱᵈ) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Value.id) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Lease'ptr_MarshalTo :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Leaseⁱᵈ) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Lease.id) "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Lease'ptr_MarshalToSizedBuffer :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Leaseⁱᵈ) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Lease.id) "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Lease'ptr_Size :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Leaseⁱᵈ) "Size" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Lease.id) "Size" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Compare_Lease'ptr_isCompare_TargetUnion :
-  WpMethodCall (ptrTⁱᵈ etcdserverpb.Compare_Leaseⁱᵈ) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  WpMethodCall (ptrT.id etcdserverpb.Compare_Lease.id) "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

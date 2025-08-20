@@ -72,7 +72,7 @@ Definition is_Node γraft (n : loc) : iProp Σ :=
 
 Lemma wp_node__Ready γraft (n : loc) :
   {{{ is_pkg_init raft ∗ is_Node γraft n }}}
-    n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Ready" #()
+    n @ (ptrT.id raft.node.id) @ "Ready" #()
   {{{ (ready : chan.t), RET #ready; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
@@ -91,7 +91,7 @@ Qed.
 
 Lemma wp_node__Advance γraft (n : loc) :
   {{{ is_pkg_init raft ∗ is_Node γraft n }}}
-    n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Advance" #()
+    n @ (ptrT.id raft.node.id) @ "Advance" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
@@ -116,7 +116,7 @@ Lemma wp_node__Propose γraft n (ctx : context.Context.t) ctx_desc (data_sl : sl
       "data_sl" ∷ data_sl ↦* data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}
-    n @ (ptrTⁱᵈ raft.nodeⁱᵈ) @ "Propose" #ctx #data_sl
+    n @ (ptrT.id raft.node.id) @ "Propose" #ctx #data_sl
   {{{ (err : error.t), RET #err; if decide (err = interface.nil) then True else True }}}.
 Proof.
   (* Inlining proofs of [stepWait] and [stepWithWaitOption (wait:=true)] here. *)

@@ -37,24 +37,24 @@ Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clie
   (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
                         (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
   (* TODO: return value. *)
-  WP client @ clientv3.Clientⁱᵈ @ "Do" #ctx #op {{ Φ }}.
+  WP client @ clientv3.Client.id @ "Do" #ctx #op {{ Φ }}.
 
 Axiom wp_Client__GetLogger :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "GetLogger" #()
+    client @ (ptrT.id clientv3.Client.id) @ "GetLogger" #()
   {{{ (lg : loc), RET #lg; True }}}.
 
 Axiom wp_Client__Ctx :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "Ctx" #()
+    client @ (ptrT.id clientv3.Client.id) @ "Ctx" #()
   {{{ ctx s, RET #ctx; is_Context ctx s }}}.
 
 Axiom wp_Client__Grant :
   ∀ client γ (ctx : context.Context.t) (ttl : w64),
   {{{ is_Client client γ }}}
-    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "Grant" #ctx #ttl
+    client @ (ptrT.id clientv3.Client.id) @ "Grant" #ctx #ttl
   {{{
       resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
@@ -68,7 +68,7 @@ Axiom wp_Client__KeepAlive :
   ∀ client γ (ctx : context.Context.t) id,
   (* The precondition requires that this is only called on a `Grant`ed lease. *)
   {{{ is_Client client γ ∗ is_etcd_lease γ id }}}
-    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "KeepAlive" #ctx #id
+    client @ (ptrT.id clientv3.Client.id) @ "KeepAlive" #ctx #id
   {{{
       (kch : chan.t) (err : error.t),
         RET (#kch, #err);

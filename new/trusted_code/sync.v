@@ -1,6 +1,9 @@
 From New.golang Require Import defn.
 
 Module sync.
+Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
+Module Cond. Definition id : go_string := "sync.Cond". End Cond.
+
 Section code.
 Context `{ffi_syntax}.
 
@@ -10,7 +13,6 @@ Definition Mutex : go_type := structT [
     "state" :: boolT
   ].
 
-Definition Mutexⁱᵈ : go_string := "sync.Mutex".
 
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
   λ: "m" <>, Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true).
@@ -20,7 +22,7 @@ Definition Mutex__Lockⁱᵐᵖˡ : val :=
     if: Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true) then
       #()
     else
-      method_call #(ptrTⁱᵈ Mutexⁱᵈ) #"Lock" "m" #().
+      method_call #(ptrT.id Mutex.id) #"Lock" "m" #().
 
 Definition Mutex__Unlockⁱᵐᵖˡ : val :=
   λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref #Mutex #"state"%go "m") #true #false ;;; return: #())
@@ -29,8 +31,6 @@ Definition Mutex__Unlockⁱᵐᵖˡ : val :=
 Definition Cond : go_type := structT [
     "L" :: interfaceT
   ].
-
-Definition Condⁱᵈ : go_string := "sync.Cond".
 
 Definition NewCondⁱᵐᵖˡ : val := λ: "m", alloc (struct.make #Cond [{ (#"L", "m") }]).
 Definition Cond__Waitⁱᵐᵖˡ : val := λ: "c" <>, exception_do (

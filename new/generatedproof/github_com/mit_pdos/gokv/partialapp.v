@@ -31,19 +31,19 @@ Global Instance wp_func_call_main :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Foo_someMethod :
-  WpMethodCall main.Fooⁱᵈ "someMethod" _ (is_pkg_defined main) :=
+  WpMethodCall main.Foo.id "someMethod" _ (is_pkg_defined main) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Foo_someMethodWithArgs :
-  WpMethodCall main.Fooⁱᵈ "someMethodWithArgs" _ (is_pkg_defined main) :=
+  WpMethodCall main.Foo.id "someMethodWithArgs" _ (is_pkg_defined main) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Foo'ptr_someMethod :
-  WpMethodCall (ptrTⁱᵈ main.Fooⁱᵈ) "someMethod" _ (is_pkg_defined main) :=
+  WpMethodCall (ptrT.id main.Foo.id) "someMethod" _ (is_pkg_defined main) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Foo'ptr_someMethodWithArgs :
-  WpMethodCall (ptrTⁱᵈ main.Fooⁱᵈ) "someMethodWithArgs" _ (is_pkg_defined main) :=
+  WpMethodCall (ptrT.id main.Foo.id) "someMethodWithArgs" _ (is_pkg_defined main) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

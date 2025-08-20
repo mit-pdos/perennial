@@ -105,31 +105,31 @@ Global Instance wp_func_call_popCnt :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Alloc'ptr_AllocNum :
-  WpMethodCall (ptrTⁱᵈ alloc.Allocⁱᵈ) "AllocNum" _ (is_pkg_defined alloc) :=
+  WpMethodCall (ptrT.id alloc.Alloc.id) "AllocNum" _ (is_pkg_defined alloc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Alloc'ptr_FreeNum :
-  WpMethodCall (ptrTⁱᵈ alloc.Allocⁱᵈ) "FreeNum" _ (is_pkg_defined alloc) :=
+  WpMethodCall (ptrT.id alloc.Alloc.id) "FreeNum" _ (is_pkg_defined alloc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Alloc'ptr_MarkUsed :
-  WpMethodCall (ptrTⁱᵈ alloc.Allocⁱᵈ) "MarkUsed" _ (is_pkg_defined alloc) :=
+  WpMethodCall (ptrT.id alloc.Alloc.id) "MarkUsed" _ (is_pkg_defined alloc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Alloc'ptr_NumFree :
-  WpMethodCall (ptrTⁱᵈ alloc.Allocⁱᵈ) "NumFree" _ (is_pkg_defined alloc) :=
+  WpMethodCall (ptrT.id alloc.Alloc.id) "NumFree" _ (is_pkg_defined alloc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Alloc'ptr_allocBit :
-  WpMethodCall (ptrTⁱᵈ alloc.Allocⁱᵈ) "allocBit" _ (is_pkg_defined alloc) :=
+  WpMethodCall (ptrT.id alloc.Alloc.id) "allocBit" _ (is_pkg_defined alloc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Alloc'ptr_freeBit :
-  WpMethodCall (ptrTⁱᵈ alloc.Allocⁱᵈ) "freeBit" _ (is_pkg_defined alloc) :=
+  WpMethodCall (ptrT.id alloc.Alloc.id) "freeBit" _ (is_pkg_defined alloc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Alloc'ptr_incNext :
-  WpMethodCall (ptrTⁱᵈ alloc.Allocⁱᵈ) "incNext" _ (is_pkg_defined alloc) :=
+  WpMethodCall (ptrT.id alloc.Alloc.id) "incNext" _ (is_pkg_defined alloc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

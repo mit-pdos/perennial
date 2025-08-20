@@ -321,39 +321,39 @@ Global Instance wp_func_call_MerkleProofDecode :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Map'ptr_Digest :
-  WpMethodCall (ptrTⁱᵈ merkle.Mapⁱᵈ) "Digest" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.Map.id) "Digest" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Map'ptr_Prove :
-  WpMethodCall (ptrTⁱᵈ merkle.Mapⁱᵈ) "Prove" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.Map.id) "Prove" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Map'ptr_Put :
-  WpMethodCall (ptrTⁱᵈ merkle.Mapⁱᵈ) "Put" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.Map.id) "Put" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_find :
-  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "find" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.node.id) "find" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_getChild :
-  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "getChild" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.node.id) "getChild" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_getHash :
-  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "getHash" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.node.id) "getHash" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_prove :
-  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "prove" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.node.id) "prove" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_setInnerHash :
-  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "setInnerHash" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.node.id) "setInnerHash" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_node'ptr_setLeafHash :
-  WpMethodCall (ptrTⁱᵈ merkle.nodeⁱᵈ) "setLeafHash" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrT.id merkle.node.id) "setLeafHash" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

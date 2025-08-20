@@ -34,7 +34,7 @@ Qed.
 
 Theorem wp_Cond__Signal c lk :
   {{{ is_Cond c lk }}}
-    c @ (ptrTⁱᵈ sync.Condⁱᵈ) @ "Signal" #()
+    c @ (ptrT.id sync.Cond.id) @ "Signal" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[#Hdef Hc]".
@@ -43,7 +43,7 @@ Qed.
 
 Theorem wp_Cond__Broadcast c lk :
   {{{ is_Cond c lk }}}
-    c @ (ptrTⁱᵈ sync.Condⁱᵈ) @ "Broadcast" #()
+    c @ (ptrT.id sync.Cond.id) @ "Broadcast" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "H"; iNamed "H".
@@ -52,7 +52,7 @@ Qed.
 
 Theorem wp_Cond__Wait c m R :
   {{{ is_Cond c m ∗ is_Locker m R ∗ R }}}
-    c @ (ptrTⁱᵈ sync.Condⁱᵈ) @ "Wait" #()
+    c @ (ptrT.id sync.Cond.id) @ "Wait" #()
   {{{ RET #(); R }}}.
 Proof.
   wp_start as "(#Hcond & #Hlock & HR)".

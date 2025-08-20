@@ -31,7 +31,7 @@ Arguments ch_R: default implicits.
   (if (ch_is_single_party params) then (q) = 1%Qp else (q ≤ 1)%Qp) ->
   (ch_size params) > 0 ->  (* Must be buffered *)
   {{{ is_pkg_init channel ∗ recv_pre_inner V params q i Ri  }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "BufferedTryReceiveLocked" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "BufferedTryReceiveLocked" #t #()
   {{{ (success: bool) (v: V) (has_value: bool), RET (#success, #v, #has_value);
       if success then
         if has_value then
@@ -218,7 +218,7 @@ Lemma wp_Channel__BufferedTryReceive  (V: Type) {K: IntoVal V} {t} {H': IntoValT
   (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
   params.(ch_size) > 0 ->  (* Must be buffered *)
   {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "BufferedTryReceive" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "BufferedTryReceive" #t #()
   {{{ (success: bool) (v: V) (has_value: bool), RET (#success, #v, #has_value);
       if success then
         if has_value then
@@ -619,7 +619,7 @@ Lemma wp_Channel__UnbufferedTryReceive (V: Type) {K: IntoVal V} {t} {H': IntoVal
   (if params.(ch_is_single_party) then q = 1%Qp else (q ≤  1)%Qp) ->
   params.(ch_size) = 0 ->  (* Must be unbuffered *)
   {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "UnbufferedTryReceive" #t #()
+    params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "UnbufferedTryReceive" #t #()
   {{{ (selected: bool) (v: V) (ok: bool), RET (#selected, #v, #ok);
       if selected then
         recv_post V params q i ok v Ri
@@ -916,7 +916,7 @@ Lemma wp_Channel__TryReceive (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}
      
       (if params.(ch_is_single_party) then q = 1%Qp else (q ≤  1)%Qp) ->
       {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-        params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "TryReceive" #t #()
+        params.(ch_loc) @ (ptrT.id channel.Channel.id) @ "TryReceive" #t #()
       {{{ (v: V) (ok selected: bool), RET (#selected, #v, #ok);
           if selected then
             recv_post V params q i ok v Ri

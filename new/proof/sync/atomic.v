@@ -168,7 +168,7 @@ Lemma wp_Uint64__Load u dq :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v, own_Uint64 u dq v ∗ (own_Uint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-  WP u @ (ptrTⁱᵈ atomic.Uint64ⁱᵈ) @ "Load" #() {{ Φ }}.
+  WP u @ (ptrT.id atomic.Uint64.id) @ "Load" #() {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -196,7 +196,7 @@ Lemma wp_Uint64__Store u v :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗ (own_Uint64 u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
-  WP u @ (ptrTⁱᵈ atomic.Uint64ⁱᵈ) @ "Store" #v {{ Φ }}.
+  WP u @ (ptrT.id atomic.Uint64.id) @ "Store" #v {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -225,7 +225,7 @@ Lemma wp_Uint64__Add u delta :
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗
   (own_Uint64 u (DfracOwn 1) (word.add old delta) ={∅,⊤}=∗
    Φ #(word.add old delta))) -∗
-  WP u @ (ptrTⁱᵈ atomic.Uint64ⁱᵈ) @ "Add" #delta {{ Φ }}.
+  WP u @ (ptrT.id atomic.Uint64.id) @ "Add" #delta {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -254,7 +254,7 @@ Lemma wp_Uint64__CompareAndSwap u old new :
   (|={⊤,∅}=> ∃ v dq, own_Uint64 u dq v ∗
                     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
   (own_Uint64 u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
-  WP u @ (ptrTⁱᵈ atomic.Uint64ⁱᵈ) @ "CompareAndSwap" #old #new {{ Φ }}.
+  WP u @ (ptrT.id atomic.Uint64.id) @ "CompareAndSwap" #old #new {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -299,7 +299,7 @@ Lemma wp_Int32__Load u dq :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v, own_Int32 u dq v ∗ (own_Int32 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-  WP u @ (ptrTⁱᵈ atomic.Int32ⁱᵈ) @ "Load" #() {{ Φ }}.
+  WP u @ (ptrT.id atomic.Int32.id) @ "Load" #() {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -327,7 +327,7 @@ Lemma wp_Int32__Store u v :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ old, own_Int32 u (DfracOwn 1) old ∗ (own_Int32 u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
-  WP u @ (ptrTⁱᵈ atomic.Int32ⁱᵈ) @ "Store" #v {{ Φ }}.
+  WP u @ (ptrT.id atomic.Int32.id) @ "Store" #v {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -356,7 +356,7 @@ Lemma wp_Int32__Add u delta :
   (|={⊤,∅}=> ∃ old, own_Int32 u (DfracOwn 1) old ∗
   (own_Int32 u (DfracOwn 1) (word.add old delta) ={∅,⊤}=∗
    Φ #(word.add old delta))) -∗
-  WP u @ (ptrTⁱᵈ atomic.Int32ⁱᵈ) @ "Add" #delta {{ Φ }}.
+  WP u @ (ptrT.id atomic.Int32.id) @ "Add" #delta {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -385,7 +385,7 @@ Lemma wp_Int32__CompareAndSwap u old new :
   (|={⊤,∅}=> ∃ v dq, own_Int32 u dq v ∗
                     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
   (own_Int32 u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
-  WP u @ (ptrTⁱᵈ atomic.Int32ⁱᵈ) @ "CompareAndSwap" #old #new {{ Φ }}.
+  WP u @ (ptrT.id atomic.Int32.id) @ "CompareAndSwap" #old #new {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.

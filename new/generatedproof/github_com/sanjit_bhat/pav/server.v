@@ -1275,63 +1275,63 @@ Global Instance wp_func_call_NewWorkQ :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Audit :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "Audit" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "Audit" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_History :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "History" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "History" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Put :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "Put" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "Put" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Start :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "Start" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "Start" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Worker :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "Worker" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "Worker" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_addEntries :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "addEntries" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "addEntries" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_checkRequests :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "checkRequests" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "checkRequests" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_getBound :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "getBound" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "getBound" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_getHist :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "getHist" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "getHist" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_makeEntries :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "makeEntries" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "makeEntries" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_makeEntry :
-  WpMethodCall (ptrTⁱᵈ server.Serverⁱᵈ) "makeEntry" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Server.id) "makeEntry" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Work'ptr_Finish :
-  WpMethodCall (ptrTⁱᵈ server.Workⁱᵈ) "Finish" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.Work.id) "Finish" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WorkQ'ptr_Do :
-  WpMethodCall (ptrTⁱᵈ server.WorkQⁱᵈ) "Do" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.WorkQ.id) "Do" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WorkQ'ptr_DoBatch :
-  WpMethodCall (ptrTⁱᵈ server.WorkQⁱᵈ) "DoBatch" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.WorkQ.id) "DoBatch" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WorkQ'ptr_Get :
-  WpMethodCall (ptrTⁱᵈ server.WorkQⁱᵈ) "Get" _ (is_pkg_defined server) :=
+  WpMethodCall (ptrT.id server.WorkQ.id) "Get" _ (is_pkg_defined server) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

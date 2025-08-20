@@ -173,7 +173,7 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
        "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP wg @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Add" #delta {{ Φ }}.
+  WP wg @ (ptrT.id sync.WaitGroup.id) @ "Add" #delta {{ Φ }}.
 Proof.
   intros delta'.
   wp_start as "#His".
@@ -406,7 +406,7 @@ Lemma wp_WaitGroup__Done (wg : loc) γ N :
        "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.sub oldc (W32 1)) ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP wg @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Done" #() {{ Φ }}.
+  WP wg @ (ptrT.id sync.WaitGroup.id) @ "Done" #() {{ Φ }}.
 Proof.
   wp_start as "#His".
   wp_auto.
@@ -430,7 +430,7 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
        own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
                                own_WaitGroup_wait_token γ -∗ Φ #())
   ) -∗
-  WP wg @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Wait" #() {{ Φ }}.
+  WP wg @ (ptrT.id sync.WaitGroup.id) @ "Wait" #() {{ Φ }}.
 Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.

@@ -81,11 +81,11 @@ Global Instance wp_func_call_MakeLockClerk :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_LockClerk'ptr_Lock :
-  WpMethodCall (ptrTⁱᵈ lockservice.LockClerkⁱᵈ) "Lock" _ (is_pkg_defined lockservice) :=
+  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Lock" _ (is_pkg_defined lockservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockClerk'ptr_Unlock :
-  WpMethodCall (ptrTⁱᵈ lockservice.LockClerkⁱᵈ) "Unlock" _ (is_pkg_defined lockservice) :=
+  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Unlock" _ (is_pkg_defined lockservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

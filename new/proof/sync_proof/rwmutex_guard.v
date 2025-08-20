@@ -64,7 +64,7 @@ Instance : Inhabited rwmutex := {| inhabitant := Locked |}.
 
 Lemma wp_RWMutex__RLock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex rw P }}}
-    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "RLock" #()
+    rw @ (ptrT.id sync.RWMutex.id) @ "RLock" #()
   {{{ RET #(); own_RWMutex_RLocked rw P ∗ ▷ P rfrac }}}.
 Proof.
   wp_start_folded as "Hpre". iNamed "Hpre".
@@ -96,7 +96,7 @@ Qed.
 
 Lemma wp_RWMutex__RUnlock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex_RLocked rw P ∗ ▷ P rfrac }}}
-    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "RUnlock" #()
+    rw @ (ptrT.id sync.RWMutex.id) @ "RUnlock" #()
   {{{ RET #(); own_RWMutex rw P }}}.
 Proof.
   wp_start_folded as "[Ho HP_in]". iNamed "Ho".
@@ -130,7 +130,7 @@ Qed.
 
 Lemma wp_RWMutex__Lock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex rw P }}}
-    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "Lock" #()
+    rw @ (ptrT.id sync.RWMutex.id) @ "Lock" #()
   {{{ RET #(); own_RWMutex_Locked rw P ∗ ▷ P 1%Qp }}}.
 Proof.
   wp_start_folded as "Ho". iNamed "Ho".
@@ -148,7 +148,7 @@ Qed.
 
 Lemma wp_RWMutex__Unlock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex_Locked rw P ∗ ▷ P 1%Qp }}}
-    rw @ (ptrTⁱᵈ sync.RWMutexⁱᵈ) @ "Unlock" #()
+    rw @ (ptrT.id sync.RWMutex.id) @ "Unlock" #()
   {{{ RET #(); own_RWMutex rw P }}}.
 Proof.
   wp_start_folded as "[Ho HP_in]". iNamed "Ho".
