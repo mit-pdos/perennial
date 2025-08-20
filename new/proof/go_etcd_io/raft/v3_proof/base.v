@@ -132,4 +132,50 @@ Local Notation deps := (ltac2:(build_pkg_init_deps 'raft) : iProp Σ) (only pars
     is_pkg_init_deps := deps;
   |}.
 
+(* Use typeclass instances as a database mapping go_string to its predicate. *)
+Class GetIsPkgInitWf (pkg_name : go_string) {Σ} :=
+  {
+    get_is_pkg_init_prop : (go_string → iProp Σ) → Prop
+  }.
+
+Import Ltac2.
+Print Ltac2 Signatures.
+
+Section test.
+
+
+Ltac2 Eval      (constr:(λ (z : nat), ltac2:(Control.refine (fun () => &z)))).
+Ltac2 x () := (constr:(λ (z : nat), ltac2:(Control.refine (fun () => &z)))).
+
+Ltac2 build_get_is_pkg_init_wf () :=
+  Control.refine
+    (fun () =>
+       lazy_match! goal with
+       | [ |- @GetIsPkgInitWf ?name ?Σ ] =>
+           let deps := Std.eval_hnf constr:(pkg_imported_pkgs $name) in
+           let p :=
+             constr:(λ (get_is_pkg_init : go_string → iProp $Σ),
+                ltac2:(
+                         Control.refine
+                           (fun () =>
+                              let rec build deps :=
+                                lazy_match! deps with
+                                | cons ?pkg ?deps =>
+                                    let rest := build deps in
+                                    constr:(&get_is_pkg_init $pkg = is_pkg_init $pkg ∧ $rest)
+                                | nil => constr:(&get_is_pkg_init $name = is_pkg_init $name)
+                                | _ =>
+                                    Message.print (Message.of_constr deps);
+                                    Control.backtrack_tactic_failure "build_pkg_init: unable to match deps list"
+                                end in
+                              build deps
+                           )
+                   )) in
+           constr:(Build_GetIsPkgInitWf $name $Σ $p)
+       | [ |- _ ] => Control.backtrack_tactic_failure "build_pkg_init: goal is not (iProp _)"
+       end
+    ).
+
+Definition y : GetIsPkgInitWf raft (Σ:=Σ):= ltac2:(build_get_is_pkg_init_wf ()).
+
 End init.

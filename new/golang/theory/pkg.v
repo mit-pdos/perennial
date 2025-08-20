@@ -49,8 +49,8 @@ Definition is_init (σ : state) : Prop :=
      "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
      "__packages"%go := alist_val [] ]}.
 
-(** Proof of initialization must refer to an [is_pkg_init] mapping that covers
-    all packages. This specified what an init function must establish when returning,
+(** Proof of initialization must refer to an [get_is_pkg_init] mapping that covers
+    all packages. This specifies what an init function must establish when returning,
     and what one gets to assume when calling other init functions. *)
 Definition is_initialization get_is_pkg_init : iProp Σ :=
   inv nroot (
