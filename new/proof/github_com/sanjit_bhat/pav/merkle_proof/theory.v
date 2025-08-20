@@ -779,9 +779,11 @@ inputted proof, and [merkle.put] needs to determ update tree with label, val. *)
 
 (* NOTE: the code has tricky termination reasoning due to put-into-leaf
 expanding common label bits into inner nodes.
-this reasoning is reflected into gallina using [limit]. *)
-Fixpoint pure_put t label val (limit : nat) :=
-  let depth := (max_depth - limit)%nat in
+this reasoning is reflected into gallina using [limit].
+NOTE: separating [depth] from [limit] allows us to separate
+label-index reasoning from termination reasoning.
+otherwise, we'd have to track that, e.g., limit <= max_depth. *)
+Fixpoint pure_put t depth label val (limit : nat) :=
   match t with
   | Empty => Some (Leaf label val)
   | Leaf label' val' =>
@@ -793,24 +795,23 @@ Fixpoint pure_put t label val (limit : nat) :=
     let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
-    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
     match limit with 0%nat => mfail | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
-    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
     Some $ Inner t2_0 t2_1
     end end
   | Cut _ => mfail (* Golang put won't hit Cut. *)
   end.
 
-Lemma pure_put_unfold t label val limit :
-  pure_put t label val limit
+Lemma pure_put_unfold t depth label val limit :
+  pure_put t depth label val limit
   =
-  let depth := (max_depth - limit)%nat in
   match t with
   | Empty => Some (Leaf label val)
   | Leaf label' val' =>
@@ -822,14 +823,14 @@ Lemma pure_put_unfold t label val limit :
     let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
-    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
     match limit with 0%nat => mfail | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
-    match pure_put t0 label val limit' with None => mfail | Some t1 =>
+    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
     Some $ Inner t2_0 t2_1
     end end
@@ -851,7 +852,7 @@ Definition pure_proofToTree label sibs oleaf :=
   let t := pure_newShell label 0 sibs in
   match oleaf with
   | None => Some t
-  | Some (l, v) => pure_put t l v max_depth
+  | Some (l, v) => pure_put t 0 l v max_depth
   end.
 
 Fixpoint pure_Digest t :=
@@ -868,14 +869,14 @@ Fixpoint pure_Digest t :=
 
 (** invariants on gallina ops. *)
 
-(* [pure_put] definitionally guarantees limit down the put path.
-for Inner nodes down the opposite path, it preserves the limit. *)
-Lemma is_limit_over_put t t' label val limit :
+(* [pure_put] definitionally guarantees [limit] down the put path.
+for [Inner] nodes down the opposite path, it preserves [limit]. *)
+Lemma is_limit_over_put t t' d label val limit :
   is_limit t limit →
-  pure_put t label val limit = Some t' →
+  pure_put t d label val limit = Some t' →
   is_limit t' limit.
 Proof.
-  revert t t'.
+  revert t t' d.
   induction limit as [? IH] using lt_wf_ind.
   intros *. rewrite pure_put_unfold.
   destruct t; simpl; intros;
@@ -887,6 +888,25 @@ Proof.
       by (eapply IH; [|done]).
   - ospecialize (IH n _); [lia|].
     repeat case_match; try done; naive_solver.
+Qed.
+
+Lemma put_to_path t t' depth label val limit :
+  pure_put t depth label val limit = Some t' →
+  is_path t' depth label (Some (label, val)).
+Proof.
+  revert t t' depth.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match;
+    simplify_eq/=; try done.
+  - ospecialize (IH n _); [lia|].
+    do 3 case_match; case_match eqn:Hb; try case_match; try done;
+      simplify_eq/=; rewrite Hb; naive_solver.
+  - ospecialize (IH n _); [lia|].
+    do 2 case_match; try done.
+    case_match eqn:Hb;
+      simplify_eq/=; rewrite Hb; naive_solver.
 Qed.
 
 (** stuff that might need to be resurrected. *)
