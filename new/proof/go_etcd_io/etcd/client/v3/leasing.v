@@ -29,6 +29,7 @@ Context `{leasingG Σ}.
 (* FIXME: move these *)
 
 #[global] Instance : IsPkgInit bytes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf bytes := build_get_is_pkg_init.
 
 #[global] Instance : IsPkgInit rpc.status.status := define_is_pkg_init True%I.
 
@@ -37,16 +38,24 @@ Context `{leasingG Σ}.
 #[global] Instance : IsPkgInit status.status :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := True : iProp Σ;
+    is_pkg_init_deps := is_pkg_defined status.status;
   |}.
+#[global] Instance : GetIsPkgInitWf status.status :=
+  {|
+    get_is_pkg_init_prop get_is_pkg_init := get_is_pkg_init status.status = is_pkg_init status.status
+ |}.
 
 #[global] Instance : IsPkgInit codes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf codes := build_get_is_pkg_init.
 
 #[global] Instance : IsPkgInit rpctypes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf rpctypes := build_get_is_pkg_init.
 
 #[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init.
 
 #[global] Instance : IsPkgInit leasing := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf leasing := build_get_is_pkg_init.
 
 Context `{!syncG Σ}.
 

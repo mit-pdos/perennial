@@ -7,6 +7,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit primitive := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf primitive := build_get_is_pkg_init.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init primitive = (is_pkg_init primitive) →

@@ -5,5 +5,6 @@ Section proof.
 Context  `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit fmt := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf fmt := build_get_is_pkg_init.
 
 End proof.

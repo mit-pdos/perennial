@@ -76,6 +76,7 @@ Section grove.
   Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
   #[global] Instance : IsPkgInit grove_ffi := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf grove_ffi := build_get_is_pkg_init.
 
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
     is_pkg_init grove_ffi ∗

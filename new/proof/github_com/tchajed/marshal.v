@@ -12,6 +12,7 @@ Section goose_lang.
 Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit marshal := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf marshal := build_get_is_pkg_init.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init marshal = (is_pkg_init marshal) →

@@ -19,6 +19,7 @@ Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!lockmapG Σ}.
 
 #[global] Instance : IsPkgInit lockmap := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf lockmap := build_get_is_pkg_init.
 
 Implicit Types s : slice.t.
 

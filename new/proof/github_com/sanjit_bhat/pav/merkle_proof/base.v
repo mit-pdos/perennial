@@ -27,6 +27,7 @@ Definition is_initialized : iProp Σ :=
   "#His_emptyHash" ∷ cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
 
 #[global] Instance : IsPkgInit merkle := define_is_pkg_init is_initialized.
+#[global] Instance : GetIsPkgInitWf merkle := build_get_is_pkg_init.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init merkle = (is_pkg_init merkle) →

@@ -9,6 +9,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit atomic := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf atomic := build_get_is_pkg_init.
 
 
 Lemma wp_LoadUint64 (addr : loc) dq :

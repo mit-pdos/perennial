@@ -6,5 +6,6 @@ Section proof.
 Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit common := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf common := build_get_is_pkg_init.
 
 End proof.
