@@ -30,29 +30,36 @@ Definition is_initialized : iProp Σ :=
 #[global] Instance : GetIsPkgInitWf merkle := build_get_is_pkg_init.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init merkle = (is_pkg_init merkle) →
+  get_is_pkg_init_prop merkle get_is_pkg_init →
   {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined merkle }}}
     merkle.initialize' #()
   {{{ RET #(); own_initializing ∗ is_pkg_init merkle }}}.
 Proof.
   intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
   wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
-  2:{ rewrite Hinit //. }
+  2:{ destruct_and! Hinit. rewrite H7. iFrame. } (* FIXME: automation *)
   iIntros "Hown". wp_auto.
   wp_apply (safemarshal.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
-  1-2: admit.
+  { naive_solver. }
+  1: admit.
   wp_apply (marshal.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
-  1-2: admit.
+  { naive_solver. }
+  1: admit.
   wp_apply (cryptoutil.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
-  1-2: admit.
+  { naive_solver. }
+  1: admit.
   wp_apply (cryptoffi.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
-  1-2: admit.
+  { naive_solver. }
+  1: admit.
   wp_apply (std.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
-  1-2: admit.
+  { naive_solver. }
+  1: admit.
   wp_apply (primitive.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
-  1-2: admit.
+  { naive_solver. }
+  1: admit.
   wp_apply (bytes.wp_initialize' with "[$Hown $Hinit]") as "[Hown #?]".
-  1-2: admit.
+  { naive_solver. }
+  1: admit.
   iFrame.
 
   wp_call. wp_auto.
