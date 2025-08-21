@@ -8,22 +8,6 @@ From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base serde
 
 Notation get_bit l n := (bytes_to_bits l !!! n : bool).
 
-(** tree. *)
-
-(* [Cut]s denote a cut off tree.
-for full trees, they come from invalid hashes,
-while for partial trees, it's just an unknown-origin hash.
-unifying these two types of Cuts allows for unified tree predicates.
-
-a different approach to invalid full trees bubbles invalidness all the way to the top,
-i.e., inversion resulting in option map.
-that has the undesirable effect of invalidness "stopping the proof". *)
-Inductive tree :=
-  | Empty
-  | Leaf (label val : list w8)
-  | Inner (child0 child1 : tree)
-  | Cut (hash : list w8).
-
 Section prefix_total.
 Context `{!Inhabited A}.
 Implicit Types x : A.
@@ -82,27 +66,24 @@ Proof. Admitted.
 
 End prefix_total.
 
-(* [to_map_aux] only collects leaves located in the right place. *)
-Fixpoint to_map_aux t pref : gmap (list w8) (list w8) :=
-  match t with
-  | Empty => ∅
-  | Leaf label val =>
-    (* using [prefix_total] allows other preds (e.g., [is_entry])
-    to operate under an easier (and weaker), length-extended leaf model.
-    this reduces proof burden.
-    e.g., [find] doesn't need to track depth bounds. *)
-    if decide (prefix_total pref (bytes_to_bits label))
-    then {[label := val]}
-    else ∅
-  | Inner child0 child1 =>
-    to_map_aux child0 (pref ++ [false]) ∪
-    to_map_aux child1 (pref ++ [true])
-  | Cut _ => ∅
-  end.
-Notation to_map t := (to_map_aux t []) (only parsing).
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+(** tree. *)
+
+(* [Cut]s denote a cut off tree.
+for full trees, they come from invalid hashes,
+while for partial trees, it's just an unknown-origin hash.
+unifying these two types of Cuts allows for unified tree predicates.
+
+a different approach to invalid full trees bubbles invalidness all the way to the top,
+i.e., inversion resulting in option map.
+that has the undesirable effect of invalidness "stopping the proof". *)
+Inductive tree :=
+  | Empty
+  | Leaf (label val : list w8)
+  | Inner (child0 child1 : tree)
+  | Cut (hash : list w8).
 
 (** tree paths. *)
 
@@ -129,11 +110,32 @@ Definition is_entry t label oval :=
   | Some v => f = Some (label, v)
   | None => found_nonmemb label f
   end.
+Hint Unfold is_entry : merkle.
 
 (** relation between trees and maps. *)
 
+(* [to_map'] only collects leaves located in the right place. *)
+Fixpoint to_map' t pref : gmap (list w8) (list w8) :=
+  match t with
+  | Empty => ∅
+  | Leaf label val =>
+    (* using [prefix_total] allows other preds (e.g., [is_entry])
+    to operate under an easier (and weaker), length-extended leaf model.
+    this reduces proof burden.
+    e.g., [find] doesn't need to track depth bounds. *)
+    if decide (prefix_total pref (bytes_to_bits label))
+    then {[label := val]}
+    else ∅
+  | Inner child0 child1 =>
+    to_map' child0 (pref ++ [false]) ∪
+    to_map' child1 (pref ++ [true])
+  | Cut _ => ∅
+  end.
+Definition to_map t := to_map' t [].
+Hint Unfold to_map : merkle.
+
 Lemma to_map_pref_Some t pref label :
-  is_Some (to_map_aux t pref !! label) →
+  is_Some (to_map' t pref !! label) →
   prefix_total pref (bytes_to_bits label).
 Proof.
   revert pref.
@@ -154,7 +156,7 @@ Qed.
 
 Lemma to_map_pref_None t pref label :
   ¬ prefix_total pref (bytes_to_bits label) →
-  to_map_aux t pref !! label = None.
+  to_map' t pref !! label = None.
 Proof.
   revert pref.
   induction t; simpl; intros; [done|idtac..|done].
@@ -171,7 +173,7 @@ Proof.
 Qed.
 
 Lemma to_map_disj t0 t1 pref :
-  to_map_aux t0 (pref ++ [false]) ##ₘ to_map_aux t1 (pref ++ [true]).
+  to_map' t0 (pref ++ [false]) ##ₘ to_map' t1 (pref ++ [true]).
 Proof.
   apply map_disjoint_spec.
   intros **.
@@ -186,7 +188,7 @@ Lemma entry_to_lookup t label oval :
   is_entry t label oval →
   to_map t !! label = oval.
 Proof.
-  rewrite /is_entry.
+  autounfold with merkle.
   remember ([]) as pref.
   replace (0%nat) with (length pref) by (by subst).
   assert (prefix_total pref (bytes_to_bits label)).
@@ -220,7 +222,7 @@ Qed.
 Lemma lookup_to_entry t label :
   is_entry t label (to_map t !! label).
 Proof.
-  rewrite /is_entry.
+  autounfold with merkle.
   remember ([]) as pref.
   replace (0%nat) with (length pref) by (by subst).
   assert (prefix_total pref (bytes_to_bits label)).
@@ -296,6 +298,7 @@ Fixpoint is_full_tree t h limit : iProp Σ :=
   | DecInvalid =>
     "%" ∷ ⌜ t = Cut h ⌝
   end.
+#[global] Arguments is_full_tree !_.
 
 (* rocq kernel doesn't allow reducing a fixpoint on its args without
 the decreasing arg being a constructor.
@@ -399,13 +402,13 @@ Proof.
   by iDestruct ("IH" with "Hchild10 Hchild11") as %->.
 Qed.
 
-(* to prevent reducing [max_depth]. *)
-#[global] Opaque is_full_tree.
-
 Definition is_map m h : iProp Σ :=
   ∃ t,
   "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
   "#His_tree" ∷ is_full_tree t h max_depth.
+Hint Unfold is_map : merkle.
+
+#[global] Opaque is_full_tree.
 
 Lemma is_map_invert h :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
@@ -415,6 +418,8 @@ Proof.
   iDestruct is_full_tree_invert as "[% H]"; [done|].
   iFrame "#".
   iPureIntro. naive_solver.
+  (* NOTE: without [Opaque is_full_tree], Qed spins forever.
+  this happens even with [Arguments] constraints. *)
 Qed.
 
 Lemma is_map_inj m0 m1 h :
@@ -467,17 +472,18 @@ Fixpoint is_cutless t :=
   | _ => True
   end.
 
-Fixpoint is_cutless_path_aux t depth label :=
+Fixpoint is_cutless_path' t depth label :=
   match t with
   | Cut _ => False
   | Inner c0 c1 =>
     match get_bit label depth with
-    | false => is_cutless_path_aux c0 (S depth) label
-    | true => is_cutless_path_aux c1 (S depth) label
+    | false => is_cutless_path' c0 (S depth) label
+    | true => is_cutless_path' c1 (S depth) label
     end
   | _ => True
   end.
-Notation is_cutless_path t label := (is_cutless_path_aux t 0 label) (only parsing).
+Definition is_cutless_path t label := is_cutless_path' t 0 label.
+Hint Unfold is_cutless_path : merkle.
 
 Lemma is_cut_tree_len t h:
   is_cut_tree t h -∗
@@ -525,8 +531,6 @@ Proof.
   naive_solver lia.
 Qed.
 
-#[local] Transparent is_full_tree.
-
 Lemma entry_txfer t0 t1 h l label oval :
   is_entry t0 label oval →
   is_cutless_path t0 label →
@@ -535,7 +539,7 @@ Lemma entry_txfer t0 t1 h l label oval :
   is_full_tree t1 h l -∗
   ⌜ is_entry t1 label oval ⌝.
 Proof.
-  rewrite /is_entry.
+  autounfold with merkle.
   remember 0%nat as depth. clear Heqdepth.
   iInduction t0 as [] forall (t1 h l depth); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
@@ -579,8 +583,6 @@ Proof.
     + by iApply "IHt2".
 Qed.
 
-#[local] Opaque is_full_tree.
-
 (** gallina tree ops.
 
 need gallina transl of Golang [merkle.put] for determ spec.
@@ -595,7 +597,7 @@ this reasoning is reflected into gallina using [limit].
 NOTE: separating [depth] from [limit] allows us to separate
 label-index reasoning from termination reasoning.
 otherwise, we'd have to track that, e.g., limit <= max_depth. *)
-Fixpoint pure_put t depth label val (limit : nat) :=
+Fixpoint pure_put' t depth label val (limit : nat) :=
   match t with
   | Empty => Some (Leaf label val)
   | Leaf label' val' =>
@@ -607,22 +609,25 @@ Fixpoint pure_put t depth label val (limit : nat) :=
     let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
-    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
     match limit with 0%nat => mfail | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
-    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
     Some $ Inner t2_0 t2_1
     end end
   | Cut _ => mfail (* Golang put won't hit Cut. *)
   end.
+Definition pure_put t label val := pure_put' t 0 label val max_depth.
+Hint Unfold pure_put : merkle.
+#[global] Arguments pure_put' !_.
 
-Lemma pure_put_unfold t depth label val limit :
-  pure_put t depth label val limit
+Lemma pure_put'_unfold t depth label val limit :
+  pure_put' t depth label val limit
   =
   match t with
   | Empty => Some (Leaf label val)
@@ -635,14 +640,14 @@ Lemma pure_put_unfold t depth label val limit :
     let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
-    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
     match limit with 0%nat => mfail | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
-    match pure_put t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
     Some $ Inner t2_0 t2_1
     end end
@@ -651,20 +656,22 @@ Lemma pure_put_unfold t depth label val limit :
 Proof. by destruct limit. Qed.
 
 (* [sibs] order reversed from code. *)
-Fixpoint pure_newShell label depth (sibs : list $ list w8) :=
+Fixpoint pure_newShell' label depth (sibs : list $ list w8) :=
   match sibs with
   | [] => Empty
   | h :: sibs' =>
     let c := Cut h in
-    let t := pure_newShell label (S depth) sibs' in
+    let t := pure_newShell' label (S depth) sibs' in
     if get_bit label depth then Inner c t else Inner t c
   end.
+Definition pure_newShell label sibs := pure_newShell' label 0 sibs.
+Hint Unfold pure_newShell : merkle.
 
 Definition pure_proofToTree label sibs oleaf :=
-  let t := pure_newShell label 0 sibs in
+  let t := pure_newShell label sibs in
   match oleaf with
   | None => Some t
-  | Some (l, v) => pure_put t 0 l v max_depth
+  | Some (l, v) => pure_put t l v
   end.
 
 Fixpoint pure_Digest t :=
@@ -685,12 +692,12 @@ Fixpoint pure_Digest t :=
 for [Inner] nodes down the opposite path, it preserves [limit]. *)
 Lemma is_limit_over_put t t' d label val limit :
   is_limit t limit →
-  pure_put t d label val limit = Some t' →
+  pure_put' t d label val limit = Some t' →
   is_limit t' limit.
 Proof.
   revert t t' d.
   induction limit as [? IH] using lt_wf_ind.
-  intros *. rewrite pure_put_unfold.
+  intros *. rewrite pure_put'_unfold.
   destruct t; simpl; intros;
     try case_decide; try case_match;
     simplify_eq/=; try done.
@@ -707,11 +714,12 @@ Tactic Notation "rw_get_bit" := repeat
   | H : bytes_to_bits _ !!! _ = _ |- _ => rewrite H
   end.
 
-Lemma put_new_entry t t' label val limit :
-  pure_put t 0 label val limit = Some t' →
+Lemma put_new_entry t t' label val :
+  pure_put t label val = Some t' →
   is_entry t' label (Some val).
 Proof.
-  rewrite /is_entry.
+  autounfold with merkle.
+  remember 256%nat as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
   intros.
   eexists. intuition.
@@ -719,7 +727,7 @@ Proof.
   revert t t'.
 
   induction limit as [? IH] using lt_wf_ind.
-  intros *. rewrite pure_put_unfold.
+  intros *. rewrite pure_put'_unfold.
   destruct t; simpl; intros;
     try case_decide; try case_match;
     simplify_eq/=; try done.
@@ -731,20 +739,21 @@ Proof.
       simplify_eq/=; rw_get_bit; naive_solver.
 Qed.
 
-Lemma old_entry_over_put t t' label label' oval' val limit :
+Lemma old_entry_over_put t t' label label' oval' val :
   is_entry t label' oval' →
-  pure_put t 0 label val limit = Some t' →
+  pure_put t label val = Some t' →
   label ≠ label' →
   is_entry t' label' oval'.
 Proof.
-  rewrite /is_entry.
+  autounfold with merkle.
+  remember 256%nat as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
   intros.
   generalize dependent depth.
   revert t t'.
 
   induction limit as [? IH] using lt_wf_ind.
-  intros *. rewrite pure_put_unfold.
+  intros *. rewrite pure_put'_unfold.
   destruct t; simpl; intros (?&?&?); intros;
     try case_decide; try case_match;
     simplify_eq/=.
@@ -759,10 +768,11 @@ Proof.
       simplify_eq/=; rw_get_bit; naive_solver.
 Qed.
 
-Lemma to_map_over_put t t' label val limit :
-  pure_put t 0 label val limit = Some t' →
+Lemma to_map_over_put t t' label val :
+  pure_put t label val = Some t' →
   to_map t' = <[label:=val]>(to_map t).
 Proof.
+  autounfold with merkle.
   intros. apply map_eq. intros.
   destruct (decide (label = i)); subst; simpl_map.
   - apply entry_eq_lookup.

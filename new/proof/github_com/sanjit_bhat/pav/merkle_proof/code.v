@@ -330,7 +330,7 @@ Lemma wp_put n0 n t depth sl_label sl_val label val :
   {{{
     n' t', RET #();
     "Hn0" ∷ n0 ↦ n' ∗
-    "%HSome_tree" ∷ ⌜ pure_put t (uint.nat depth) label val (max_depth - uint.nat depth)%nat = Some t' ⌝ ∗
+    "%HSome_tree" ∷ ⌜ pure_put' t (uint.nat depth) label val (max_depth - uint.nat depth)%nat = Some t' ⌝ ∗
     "Hown_tree" ∷ own_tree n' t' 1
   }}}.
 Proof.

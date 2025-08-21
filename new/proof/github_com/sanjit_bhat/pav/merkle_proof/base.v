@@ -17,6 +17,9 @@ Notation innerNodeTy := (W8 2) (only parsing).
 
 Notation max_depth := 256%nat.
 
+(* used to [autounfold] top-level recursive defs. *)
+Create HintDb merkle.
+
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
