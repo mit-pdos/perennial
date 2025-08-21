@@ -16,6 +16,29 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition UnderlyingSlice : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UnderlyingSlice"%go.
+
+(* go: constraints.go:3:6 *)
+Definition UnderlyingSliceⁱᵐᵖˡ : val :=
+  λ: "T" "s",
+    exception_do (let: "s" := (mem.alloc "s") in
+    return: (let: "$a0" := (!["T"] "s") in
+     slice.len "$a0")).
+
+Definition Clone : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Clone"%go.
+
+(* Clone copies a generic slice.
+
+   Slightly simplified from [slices.Clone].
+
+   go: constraints.go:10:6 *)
+Definition Cloneⁱᵐᵖˡ : val :=
+  λ: "S" "E" "s",
+    exception_do (let: "s" := (mem.alloc "s") in
+    return: (let: "$a0" := #slice.nil in
+     let: "$a1" := (!["S"] "s") in
+     (slice.append "E") "$a0" "$a1")).
+
 Definition Box : val :=
   λ: "T", type.structT [
     (#"Value"%go, "T")
@@ -196,7 +219,7 @@ Definition useAnyPointerⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(BoxGet, BoxGetⁱᵐᵖˡ); (BoxGet2, BoxGet2ⁱᵐᵖˡ); (makeGenericBox, makeGenericBoxⁱᵐᵖˡ); (makeBox, makeBoxⁱᵐᵖˡ); (useBoxGet, useBoxGetⁱᵐᵖˡ); (useContainer, useContainerⁱᵐᵖˡ); (useMultiParam, useMultiParamⁱᵐᵖˡ); (swapMultiParam, swapMultiParamⁱᵐᵖˡ); (multiParamFunc, multiParamFuncⁱᵐᵖˡ); (useMultiParamFunc, useMultiParamFuncⁱᵐᵖˡ); (useAnyPointer, useAnyPointerⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(UnderlyingSlice, UnderlyingSliceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (BoxGet, BoxGetⁱᵐᵖˡ); (BoxGet2, BoxGet2ⁱᵐᵖˡ); (makeGenericBox, makeGenericBoxⁱᵐᵖˡ); (makeBox, makeBoxⁱᵐᵖˡ); (useBoxGet, useBoxGetⁱᵐᵖˡ); (useContainer, useContainerⁱᵐᵖˡ); (useMultiParam, useMultiParamⁱᵐᵖˡ); (swapMultiParam, swapMultiParamⁱᵐᵖˡ); (multiParamFunc, multiParamFuncⁱᵐᵖˡ); (useMultiParamFunc, useMultiParamFuncⁱᵐᵖˡ); (useAnyPointer, useAnyPointerⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Box.id, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (ptrT.id Box.id, [("Get"%go, (λ: "$recvAddr",
                  method_call #generics.generics #"Box" #"Get" (![Box #()] "$recvAddr")

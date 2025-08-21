@@ -448,6 +448,14 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
 Context `{!GoContext}.
 
+Global Instance wp_func_call_UnderlyingSlice :
+  WpFuncCall generics.UnderlyingSlice _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_Clone :
+  WpFuncCall generics.Clone _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_BoxGet :
   WpFuncCall generics.BoxGet _ (is_pkg_defined generics) :=
   ltac:(apply wp_func_call'; reflexivity).
