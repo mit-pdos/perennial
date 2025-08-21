@@ -60,7 +60,7 @@ Proof.
   iNamed 1.
   iFrame "%".
   iDestruct (own_tree_to_hash with "Hown_tree") as "[% #His_tree]".
-  by iDestruct (cutless_to_full with "His_tree [] []") as "$".
+  by iDestruct (cutless_to_full with "His_tree") as "$".
 Qed.
 
 Lemma own_empty_tree t d :
@@ -240,7 +240,7 @@ Proof.
   iDestruct (own_slice_len with "Hsl_bs") as %?.
 
   (* deal with OOB case. *)
-  rewrite /get_bit list_lookup_total_alt.
+  rewrite list_lookup_total_alt.
   destruct (_ !! _) eqn:Hbs.
   2:{ apply lookup_ge_None in Hbs.
     rewrite length_bytes_to_bits in Hbs.

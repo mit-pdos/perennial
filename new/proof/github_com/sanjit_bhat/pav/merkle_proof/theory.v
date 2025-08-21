@@ -7,10 +7,10 @@ From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
 From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 
+Notation get_bit l n := (bytes_to_bits l !!! n : bool).
+
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-Definition get_bit l n := bytes_to_bits l !!! n.
 
 (** tree. *)
 
@@ -41,7 +41,9 @@ Fixpoint is_path t depth label found :=
     | false => is_path child0 (S depth) label found
     | true => is_path child1 (S depth) label found
     end
-  | Cut _ => False
+  | Cut _ =>
+    (* [None] matches [to_map]. *)
+    found = None
   end.
 
 Definition found_nonmemb label (found : option $ (list w8 * list w8)%type) :=
@@ -200,7 +202,7 @@ Proof.
   intros (?&?&?).
   generalize dependent pref.
 
-  induction t; simpl; intros ?? Hpath; [..|done].
+  induction t; simpl; intros ?? Hpath.
   - simpl_map. case_match; by subst.
   - case_match; simplify_eq/=; case_decide; by simpl_map.
   - opose proof (to_map_disj t1 t2 pref).
@@ -209,22 +211,68 @@ Proof.
       { by apply prefix_total_snoc. }
       { exact_eq Hpath. len. }
       opose proof (to_map_pref_None t1 (pref ++ [false]) label _) as Hl1.
-      { intros ?%prefix_total_snoc_inv.
-        unfold get_bit in *. intuition. congruence. }
+      { intros ?%prefix_total_snoc_inv. intuition. congruence. }
       rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
     + opose proof (IHt1 (pref ++ [false]) _ _) as Hl0.
       { by apply prefix_total_snoc. }
       { exact_eq Hpath. len. }
       opose proof (to_map_pref_None t2 (pref ++ [true]) label _) as Hl1.
-      { intros ?%prefix_total_snoc_inv.
-        unfold get_bit in *. intuition. congruence. }
+      { intros ?%prefix_total_snoc_inv. intuition. congruence. }
       rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
+  - simpl_map. case_match; by subst.
+Qed.
+
+Lemma lookup_to_entry t label :
+  is_entry t label (to_map t !! label).
+Proof.
+  rewrite /is_entry /to_map.
+  remember ([]) as pref.
+  replace (0%nat) with (length pref) by (by subst).
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
+  clear Heqpref.
+  generalize dependent pref.
+
+  induction t; simpl; intros.
+  - simpl_map. naive_solver.
+  - case_decide.
+    + destruct (decide (label = label0)); subst; simpl_map; naive_solver.
+    + opose proof (prefix_total_neq _ _ _ _ _) as Heq; [done..|].
+      rewrite inj_iff in Heq.
+      simpl_map. naive_solver.
+  - case_match.
+    + ospecialize (IHt2 (pref ++ [true]) _).
+      { by apply prefix_total_snoc. }
+      rewrite length_app /= in IHt2.
+      replace (_ + 1)%nat with (S (length pref)) in IHt2; [|lia].
+      rewrite lookup_union.
+      rewrite (to_map_pref_None t1).
+      2: { intros ?%prefix_total_snoc_inv. intuition. congruence. }
+      by rewrite left_id.
+    + ospecialize (IHt1 (pref ++ [false]) _).
+      { by apply prefix_total_snoc. }
+      rewrite length_app /= in IHt1.
+      replace (_ + 1)%nat with (S (length pref)) in IHt1; [|lia].
+      rewrite lookup_union.
+      rewrite (to_map_pref_None t2).
+      2: { intros ?%prefix_total_snoc_inv. intuition. congruence. }
+      by rewrite right_id.
+  - simpl_map. naive_solver.
+Qed.
+
+Lemma entry_eq_lookup t label oval :
+  is_entry t label oval ↔ to_map t !! label = oval.
+Proof.
+  split.
+  - apply entry_to_lookup.
+  - intros <-. apply lookup_to_entry.
 Qed.
 
 (** full trees / maps. *)
 
+(* TODO: move decoding to serde. *)
 Inductive dec_node :=
   | DecEmpty
   | DecLeaf (label val : list w8)
@@ -485,8 +533,6 @@ Fixpoint is_full_tree t h limit : iProp Σ :=
     "%" ∷ ⌜ t = Empty ⌝
   | DecLeaf l v =>
     "%" ∷ ⌜ t = Leaf l v ⌝
-  | DecInvalid =>
-    "%" ∷ ⌜ t = Cut h ⌝
   | DecInner h0 h1 =>
     match limit with
     | 0%nat =>
@@ -497,6 +543,8 @@ Fixpoint is_full_tree t h limit : iProp Σ :=
       "#Hchild1" ∷ is_full_tree t1 h1 limit' ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end
+  | DecInvalid =>
+    "%" ∷ ⌜ t = Cut h ⌝
   end.
 
 (* rocq kernel doesn't allow reducing a fixpoint on its args without
@@ -513,8 +561,6 @@ Lemma is_full_tree_unfold t h limit :
     "%" ∷ ⌜ t = Empty ⌝
   | DecLeaf l v =>
     "%" ∷ ⌜ t = Leaf l v ⌝
-  | DecInvalid =>
-    "%" ∷ ⌜ t = Cut h ⌝
   | DecInner h0 h1 =>
     match limit with
     | 0%nat =>
@@ -525,6 +571,8 @@ Lemma is_full_tree_unfold t h limit :
       "#Hchild1" ∷ is_full_tree t1 h1 limit' ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end
+  | DecInvalid =>
+    "%" ∷ ⌜ t = Cut h ⌝
   end.
 Proof. destruct limit; naive_solver. Qed.
 
@@ -664,8 +712,19 @@ Proof. revert h. induction t; apply _. Qed.
 
 Fixpoint is_cutless t :=
   match t with
-  | Inner child0 child1 => is_cutless child0 ∧ is_cutless child1
   | Cut _ => False
+  | Inner child0 child1 => is_cutless child0 ∧ is_cutless child1
+  | _ => True
+  end.
+
+Fixpoint is_cutless_path t depth label :=
+  match t with
+  | Cut _ => False
+  | Inner c0 c1 =>
+    match get_bit label depth with
+    | false => is_cutless_path c0 (S depth) label
+    | true => is_cutless_path c1 (S depth) label
+    end
   | _ => True
   end.
 
@@ -718,17 +777,17 @@ Qed.
 #[local] Transparent is_full_tree.
 
 Lemma path_txfer t0 t1 h l d label found :
+  is_path t0 d label found →
+  is_cutless_path t0 d label →
+  is_limit t0 l →
   is_cut_tree t0 h -∗
   is_full_tree t1 h l -∗
-  ⌜ is_path t0 d label found ⌝ -∗
-  ⌜ is_limit t0 l ⌝ -∗
   ⌜ is_path t1 d label found ⌝.
 Proof.
-  iInduction t0 as [] forall (t1 h l d); simpl;
+  iInduction t0 as [] forall (t1 h l d); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
     iNamedSuffix 1 "0";
-    iNamedSuffix 1 "1";
-    iIntros (??); try done;
+    iNamedSuffix 1 "1"; try done;
     iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
   - rewrite decode_empty_det. iNamed "Hdecode1". naive_solver.
   - rewrite decode_leaf_det; [|done..]. iNamed "Hdecode1". naive_solver.
@@ -745,15 +804,15 @@ Proof.
 Qed.
 
 Lemma cutless_to_full t h l :
+  is_cutless t →
+  is_limit t l →
   is_cut_tree t h -∗
-  ⌜ is_cutless t ⌝ -∗
-  ⌜ is_limit t l ⌝ -∗
   is_full_tree t h l.
 Proof.
-  iInduction t as [] forall (h l); simpl;
+  iInduction t as [] forall (h l); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
-    iIntros "@ % %"; try done;
-    iFrame "His_hash".
+    iIntros "@"; try done;
+    iFrame "#".
   - by rewrite decode_empty_det.
   - by rewrite decode_leaf_det.
   - iDestruct (is_cut_tree_len with "Hchild0") as %?.
@@ -890,7 +949,12 @@ Proof.
     repeat case_match; try done; naive_solver.
 Qed.
 
-Lemma put_to_entry t t' label val limit :
+Tactic Notation "rw_get_bit" := repeat
+  match goal with
+  | H : bytes_to_bits _ !!! _ = _ |- _ => rewrite H
+  end.
+
+Lemma put_new_entry t t' label val limit :
   pure_put t 0 label val limit = Some t' →
   is_entry t' label (Some val).
 Proof.
@@ -907,47 +971,53 @@ Proof.
     try case_decide; try case_match;
     simplify_eq/=; try done.
   - ospecialize (IH n _); [lia|].
-    do 3 case_match; case_match eqn:Hb; try case_match; try done;
-      simplify_eq/=; rewrite Hb; naive_solver.
+    repeat case_match; try done;
+      simplify_eq/=; rw_get_bit; naive_solver.
   - ospecialize (IH n _); [lia|].
-    do 2 case_match; try done.
-    case_match eqn:Hb;
-      simplify_eq/=; rewrite Hb; naive_solver.
+    repeat case_match; try done;
+      simplify_eq/=; rw_get_bit; naive_solver.
+Qed.
+
+Lemma old_entry_over_put t t' label label' oval' val limit :
+  is_entry t label' oval' →
+  pure_put t 0 label val limit = Some t' →
+  label ≠ label' →
+  is_entry t' label' oval'.
+Proof.
+  rewrite /is_entry.
+  remember 0%nat as depth. clear Heqdepth.
+  intros.
+  generalize dependent depth.
+  revert t t'.
+
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros (?&?&?); intros;
+    try case_decide; try case_match;
+    simplify_eq/=.
+  1-2: naive_solver.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; try done;
+      simplify_eq/=; rw_get_bit;
+      (* bit branch of old entry. *)
+      try case_match; naive_solver.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; try done;
+      simplify_eq/=; rw_get_bit; naive_solver.
 Qed.
 
 Lemma to_map_over_put t t' label val limit :
   pure_put t 0 label val limit = Some t' →
   to_map t' = <[label:=val]>(to_map t).
 Proof.
-  rewrite /to_map.
-  remember ([]) as pref.
-  replace (0%nat) with (length pref) by (by subst).
-  intros.
-  assert (prefix_total pref (bytes_to_bits label)).
-  { subst. apply prefix_total_nil. }
-  clear Heqpref.
-  generalize dependent pref.
-
-  revert t t'.
-  induction limit as [? IH] using lt_wf_ind.
-  intros *. rewrite pure_put_unfold.
-  destruct t; simpl; intros;
-    try (repeat case_decide); try case_match;
-    simplify_eq/=; try done.
-  - by case_decide.
-  - case_decide; [|done].
-    by rewrite insert_singleton_eq.
-  - ospecialize (IH n _); [lia|].
-    do 3 case_match; case_match eqn:Hb; try case_match; try done;
-      simplify_eq/=.
-    + rewrite left_id.
-      opose proof (IH _ _ (pref ++ [true]) _ _) as ->.
-      { by rewrite app_length (comm Nat.add). }
-      { by apply prefix_total_snoc. }
-      simpl. case_decide as Hcontra; [done|].
-      exfalso. apply Hcontra.
-      by apply prefix_total_snoc.
-Admitted.
+  intros. apply map_eq. intros.
+  destruct (decide (label = i)); subst; simpl_map.
+  - apply entry_eq_lookup.
+    by eapply put_new_entry.
+  - rewrite -entry_eq_lookup.
+    eapply old_entry_over_put; [|done..].
+    by apply entry_eq_lookup.
+Qed.
 
 (** stuff that might need to be resurrected. *)
 
