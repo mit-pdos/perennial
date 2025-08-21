@@ -9,9 +9,6 @@ From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 
 Notation get_bit l n := (bytes_to_bits l !!! n : bool).
 
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
 (** tree. *)
 
 (* [Cut]s denote a cut off tree.
@@ -27,40 +24,6 @@ Inductive tree :=
   | Leaf (label val : list w8)
   | Inner (child0 child1 : tree)
   | Cut (hash : list w8).
-
-(** tree paths. *)
-
-Fixpoint is_path t depth label found :=
-  match t with
-  | Empty =>
-    found = None
-  | Leaf found_label found_val =>
-    found = Some (found_label, found_val)
-  | Inner child0 child1 =>
-    match get_bit label depth with
-    | false => is_path child0 (S depth) label found
-    | true => is_path child1 (S depth) label found
-    end
-  | Cut _ =>
-    (* [None] matches [to_map]. *)
-    found = None
-  end.
-
-Definition found_nonmemb label (found : option $ (list w8 * list w8)%type) :=
-  match found with
-  | None => True
-  | Some (found_label, _) => label ≠ found_label
-  end.
-
-Definition is_entry t label oval :=
-  ∃ f,
-  is_path t 0 label f ∧
-  match oval with
-  | Some v => f = Some (label, v)
-  | None => found_nonmemb label f
-  end.
-
-(** relation between trees and maps. *)
 
 Section prefix_total.
 Context `{!Inhabited A}.
@@ -137,7 +100,38 @@ Fixpoint to_map_aux t pref : gmap (list w8) (list w8) :=
     to_map_aux child1 (pref ++ [true])
   | Cut _ => ∅
   end.
-Definition to_map t := to_map_aux t [].
+Notation to_map t := (to_map_aux t []) (only parsing).
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+(** tree paths. *)
+
+Fixpoint find t depth label :=
+  match t with
+  | Empty => mfail
+  | Leaf l v => Some (l, v)
+  | Inner c0 c1 =>
+    let c := if get_bit label depth then c1 else c0 in
+    find c (S depth) label
+  | Cut _ => mfail (* [mfail] matches [to_map]. *)
+  end.
+
+Definition found_nonmemb label (found : option $ (list w8 * list w8)%type) :=
+  match found with
+  | None => True
+  | Some (found_label, _) => label ≠ found_label
+  end.
+
+Definition is_entry t label oval :=
+  ∃ f,
+  find t 0 label = f ∧
+  match oval with
+  | Some v => f = Some (label, v)
+  | None => found_nonmemb label f
+  end.
+
+(** relation between trees and maps. *)
 
 Lemma to_map_pref_Some t pref label :
   is_Some (to_map_aux t pref !! label) →
@@ -193,7 +187,7 @@ Lemma entry_to_lookup t label oval :
   is_entry t label oval →
   to_map t !! label = oval.
 Proof.
-  rewrite /is_entry /to_map.
+  rewrite /is_entry.
   remember ([]) as pref.
   replace (0%nat) with (length pref) by (by subst).
   assert (prefix_total pref (bytes_to_bits label)).
@@ -209,14 +203,14 @@ Proof.
     case_match.
     + opose proof (IHt2 (pref ++ [true]) _ _) as Hl0.
       { by apply prefix_total_snoc. }
-      { exact_eq Hpath. len. }
+      { subst. f_equal. len. }
       opose proof (to_map_pref_None t1 (pref ++ [false]) label _) as Hl1.
       { intros ?%prefix_total_snoc_inv. intuition. congruence. }
       rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
     + opose proof (IHt1 (pref ++ [false]) _ _) as Hl0.
       { by apply prefix_total_snoc. }
-      { exact_eq Hpath. len. }
+      { subst. f_equal. len. }
       opose proof (to_map_pref_None t2 (pref ++ [true]) label _) as Hl1.
       { intros ?%prefix_total_snoc_inv. intuition. congruence. }
       rewrite lookup_union Hl0 Hl1.
@@ -227,7 +221,7 @@ Qed.
 Lemma lookup_to_entry t label :
   is_entry t label (to_map t !! label).
 Proof.
-  rewrite /is_entry /to_map.
+  rewrite /is_entry.
   remember ([]) as pref.
   replace (0%nat) with (length pref) by (by subst).
   assert (prefix_total pref (bytes_to_bits label)).
@@ -717,16 +711,17 @@ Fixpoint is_cutless t :=
   | _ => True
   end.
 
-Fixpoint is_cutless_path t depth label :=
+Fixpoint is_cutless_path_aux t depth label :=
   match t with
   | Cut _ => False
   | Inner c0 c1 =>
     match get_bit label depth with
-    | false => is_cutless_path c0 (S depth) label
-    | true => is_cutless_path c1 (S depth) label
+    | false => is_cutless_path_aux c0 (S depth) label
+    | true => is_cutless_path_aux c1 (S depth) label
     end
   | _ => True
   end.
+Notation is_cutless_path t label := (is_cutless_path_aux t 0 label) (only parsing).
 
 Lemma is_cut_tree_len t h:
   is_cut_tree t h -∗
@@ -776,15 +771,17 @@ Qed.
 
 #[local] Transparent is_full_tree.
 
-Lemma path_txfer t0 t1 h l d label found :
-  is_path t0 d label found →
-  is_cutless_path t0 d label →
+Lemma entry_txfer t0 t1 h l label oval :
+  is_entry t0 label oval →
+  is_cutless_path t0 label →
   is_limit t0 l →
   is_cut_tree t0 h -∗
   is_full_tree t1 h l -∗
-  ⌜ is_path t1 d label found ⌝.
+  ⌜ is_entry t1 label oval ⌝.
 Proof.
-  iInduction t0 as [] forall (t1 h l d); simpl; iIntros "*";
+  rewrite /is_entry.
+  remember 0%nat as depth. clear Heqdepth.
+  iInduction t0 as [] forall (t1 h l depth); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
     iNamedSuffix 1 "0";
     iNamedSuffix 1 "1"; try done;
