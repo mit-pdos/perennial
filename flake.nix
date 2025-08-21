@@ -52,7 +52,7 @@
             cp -r external/iris/iris_heap_lang $out/lib/coq/${rocqv}/user-contrib/iris/heap_lang
             cp -r external/iris/iris_unstable $out/lib/coq/${rocqv}/user-contrib/iris/unstable
             cp -r external/iris-named-props/src $out/lib/coq/${rocqv}/user-contrib/iris_named_props
-            cp -r external/record-update/src $out/lib/coq/${rocqv}/user-contrib/record-update
+            cp -r external/record-update/src $out/lib/coq/${rocqv}/user-contrib/RecordUpdate
             cp -r external/stdpp/stdpp $out/lib/coq/${rocqv}/user-contrib/
             cp -r external/stdpp/stdpp_unstable $out/lib/coq/${rocqv}/user-contrib/stdpp/unstable
             cp -r external/stdpp/stdpp_bitvector $out/lib/coq/${rocqv}/user-contrib/stdpp/bitvector
