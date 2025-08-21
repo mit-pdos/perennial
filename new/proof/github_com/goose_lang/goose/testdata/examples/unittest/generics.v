@@ -1,10 +1,17 @@
 From New.proof Require Import proof_prelude.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples
-  Require Import unittest.generics.
+  Require Import unittest.generics.helpers unittest.generics.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
+
+Local Definition helpers_deps := (ltac2:(build_pkg_init_deps 'helpers) : iProp Σ).
+#[global] Program Instance : IsPkgInit helpers :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := helpers_deps;
+  |}.
 
 Local Notation deps := (ltac2:(build_pkg_init_deps 'generics) : iProp Σ) (only parsing).
 #[global] Program Instance : IsPkgInit generics :=
