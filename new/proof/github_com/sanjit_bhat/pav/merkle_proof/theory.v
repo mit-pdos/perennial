@@ -476,10 +476,8 @@ Fixpoint is_cutless_path' t depth label :=
   match t with
   | Cut _ => False
   | Inner c0 c1 =>
-    match get_bit label depth with
-    | false => is_cutless_path' c0 (S depth) label
-    | true => is_cutless_path' c1 (S depth) label
-    end
+    let c := if get_bit label depth then c1 else c0 in
+    is_cutless_path' c (S depth) label
   | _ => True
   end.
 Definition is_cutless_path t label := is_cutless_path' t 0 label.
@@ -660,9 +658,10 @@ Fixpoint pure_newShell' label depth (sibs : list $ list w8) :=
   match sibs with
   | [] => Empty
   | h :: sibs' =>
-    let c := Cut h in
+    let cut := Cut h in
     let t := pure_newShell' label (S depth) sibs' in
-    if get_bit label depth then Inner c t else Inner t c
+    let (c0, c1) := if get_bit label depth then (cut, t) else (t, cut) in
+    Inner c0 c1
   end.
 Definition pure_newShell label sibs := pure_newShell' label 0 sibs.
 Hint Unfold pure_newShell : merkle.
