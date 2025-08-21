@@ -890,11 +890,17 @@ Proof.
     repeat case_match; try done; naive_solver.
 Qed.
 
-Lemma put_to_path t t' depth label val limit :
-  pure_put t depth label val limit = Some t' →
-  is_path t' depth label (Some (label, val)).
+Lemma put_to_entry t t' label val limit :
+  pure_put t 0 label val limit = Some t' →
+  is_entry t' label (Some val).
 Proof.
-  revert t t' depth.
+  rewrite /is_entry.
+  remember 0%nat as depth. clear Heqdepth.
+  intros.
+  eexists. intuition.
+  generalize dependent depth.
+  revert t t'.
+
   induction limit as [? IH] using lt_wf_ind.
   intros *. rewrite pure_put_unfold.
   destruct t; simpl; intros;
@@ -908,6 +914,40 @@ Proof.
     case_match eqn:Hb;
       simplify_eq/=; rewrite Hb; naive_solver.
 Qed.
+
+Lemma to_map_over_put t t' label val limit :
+  pure_put t 0 label val limit = Some t' →
+  to_map t' = <[label:=val]>(to_map t).
+Proof.
+  rewrite /to_map.
+  remember ([]) as pref.
+  replace (0%nat) with (length pref) by (by subst).
+  intros.
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
+  clear Heqpref.
+  generalize dependent pref.
+
+  revert t t'.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try (repeat case_decide); try case_match;
+    simplify_eq/=; try done.
+  - by case_decide.
+  - case_decide; [|done].
+    by rewrite insert_singleton_eq.
+  - ospecialize (IH n _); [lia|].
+    do 3 case_match; case_match eqn:Hb; try case_match; try done;
+      simplify_eq/=.
+    + rewrite left_id.
+      opose proof (IH _ _ (pref ++ [true]) _ _) as ->.
+      { by rewrite app_length (comm Nat.add). }
+      { by apply prefix_total_snoc. }
+      simpl. case_decide as Hcontra; [done|].
+      exfalso. apply Hcontra.
+      by apply prefix_total_snoc.
+Admitted.
 
 (** stuff that might need to be resurrected. *)
 
