@@ -2,7 +2,7 @@
   description = "A Flake for Perennial development, with Goose and Grackle";
 
   inputs = {
-    nixpkgs.url = "nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/a595dde4d0d31606e19dcec73db02279db59d201";
     flake-utils.url = "github:numtide/flake-utils";
     grackle.url = "github:mjschwenne/grackle";
     self.submodules = true;
@@ -32,7 +32,7 @@
             rocq
             rocq-std
           ];
-          allowParrallelBuilds = true;
+          enableParallelBuilding = true;
 
           buildPhase = ''
             make TIMED=false -j$NIX_BUILD_CORES
