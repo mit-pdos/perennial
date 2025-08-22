@@ -1,1 +1,0 @@
-tests/ptsto_printing.vo tests/ptsto_printing.glob tests/ptsto_printing.v.beautified tests/ptsto_printing.required_vo: tests/ptsto_printing.v /Users/tchajed/.opam/coq-ocaml-4.14/lib/rocq-runtime/rocqworker
