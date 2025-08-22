@@ -262,7 +262,7 @@ Lemma entry_eq_lookup t label oval :
 Proof.
   split.
   - apply entry_to_lookup.
-  - intros <-. apply lookup_to_entry.
+  - intros. subst. apply lookup_to_entry.
 Qed.
 
 (** full trees / maps. *)
@@ -277,7 +277,7 @@ this allows proving [is_full_tree_inj].
 [limit] prevents infinite recursion.
 NOTE: many of the below cases are invariant to whether limit=0 or S l'.
 to prevent duplicate proof branches, we use strong induction: [lt_wf_ind]. *)
-Fixpoint is_full_tree t h limit : iProp Σ :=
+Fixpoint is_full_tree' t h limit : iProp Σ :=
   ∃ d,
   "#His_hash" ∷ cryptoffi.is_hash d h ∗
   "#Hdecode" ∷ match decode_node d with
@@ -291,21 +291,23 @@ Fixpoint is_full_tree t h limit : iProp Σ :=
       "%" ∷ ⌜ t = Cut h ⌝
     | S limit' =>
       ∃ t0 t1,
-      "#Hchild0" ∷ is_full_tree t0 h0 limit' ∗
-      "#Hchild1" ∷ is_full_tree t1 h1 limit' ∗
+      "#Hchild0" ∷ is_full_tree' t0 h0 limit' ∗
+      "#Hchild1" ∷ is_full_tree' t1 h1 limit' ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end
   | DecInvalid =>
     "%" ∷ ⌜ t = Cut h ⌝
   end.
-#[global] Arguments is_full_tree !_.
+#[global] Arguments is_full_tree' !_.
+Definition is_full_tree t h := is_full_tree' t h max_depth.
+Hint Unfold is_full_tree : merkle.
 
 (* rocq kernel doesn't allow reducing a fixpoint on its args without
 the decreasing arg being a constructor.
 this forces us to prove a manual unfolding lemma.
 NOTE: ideally, automation could prove this. *)
 Lemma is_full_tree_unfold t h limit :
-  is_full_tree t h limit
+  is_full_tree' t h limit
   ⊣⊢
   ∃ d,
   "#His_hash" ∷ cryptoffi.is_hash d h ∗
@@ -320,8 +322,8 @@ Lemma is_full_tree_unfold t h limit :
       "%" ∷ ⌜ t = Cut h ⌝
     | S limit' =>
       ∃ t0 t1,
-      "#Hchild0" ∷ is_full_tree t0 h0 limit' ∗
-      "#Hchild1" ∷ is_full_tree t1 h1 limit' ∗
+      "#Hchild0" ∷ is_full_tree' t0 h0 limit' ∗
+      "#Hchild1" ∷ is_full_tree' t1 h1 limit' ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end
   | DecInvalid =>
@@ -329,7 +331,7 @@ Lemma is_full_tree_unfold t h limit :
   end.
 Proof. destruct limit; naive_solver. Qed.
 
-#[global] Instance is_full_tree_pers t h l : Persistent (is_full_tree t h l).
+#[global] Instance is_full_tree_pers t h l : Persistent (is_full_tree' t h l).
 Proof.
   revert t h. induction l as [? IH] using lt_wf_ind. intros.
   setoid_rewrite is_full_tree_unfold.
@@ -341,7 +343,7 @@ Qed.
 
 Lemma is_full_tree_invert h l :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
-  ∃ t, is_full_tree t h l.
+  ∃ t, is_full_tree' t h l.
 Proof.
   revert h. induction l as [? IH] using lt_wf_ind. intros.
   setoid_rewrite is_full_tree_unfold.
@@ -358,8 +360,8 @@ Qed.
 otherwise, [decode_node_inj] says that Some preimg's are equal,
 which implies the hashes are equal. *)
 Lemma is_full_tree_det t h0 h1 l0 l1 :
-  is_full_tree t h0 l0 -∗
-  is_full_tree t h1 l1 -∗
+  is_full_tree' t h0 l0 -∗
+  is_full_tree' t h1 l1 -∗
   ⌜ h0 = h1 ⌝.
 Proof.
   iInduction (l0) as [? IH] using lt_wf_ind forall (t h0 h1 l1);
@@ -386,8 +388,8 @@ which was anyways required for liveness, and now is required for safety.
 another approach is defining a predicate for limit validity.
 however, the inversion lemma can't always guarantee this. *)
 Lemma is_full_tree_inj t0 t1 h limit :
-  is_full_tree t0 h limit -∗
-  is_full_tree t1 h limit -∗
+  is_full_tree' t0 h limit -∗
+  is_full_tree' t1 h limit -∗
   ⌜ t0 = t1 ⌝.
 Proof.
   iInduction (limit) as [? IH] using lt_wf_ind forall (t0 t1 h);
@@ -402,13 +404,13 @@ Proof.
   by iDestruct ("IH" with "Hchild10 Hchild11") as %->.
 Qed.
 
+#[global] Opaque is_full_tree'.
+
 Definition is_map m h : iProp Σ :=
   ∃ t,
   "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
-  "#His_tree" ∷ is_full_tree t h max_depth.
+  "#His_tree" ∷ is_full_tree t h.
 Hint Unfold is_map : merkle.
-
-#[global] Opaque is_full_tree.
 
 Lemma is_map_invert h :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
@@ -418,7 +420,7 @@ Proof.
   iDestruct is_full_tree_invert as "[% H]"; [done|].
   iFrame "#".
   iPureIntro. naive_solver.
-  (* NOTE: without [Opaque is_full_tree], Qed spins forever.
+  (* NOTE: without [Opaque is_full_tree'], Qed spins forever.
   this happens even with [Arguments] constraints. *)
 Qed.
 
@@ -505,22 +507,24 @@ Qed.
 
 (** full <-> cut tree reln. *)
 
-Fixpoint is_limit t limit :=
+Fixpoint is_limit' t limit :=
   match t with
   | Inner c0 c1 =>
     match limit with
     | 0%nat => False
     | S limit' =>
-      is_limit c0 limit' ∧
-      is_limit c1 limit'
+      is_limit' c0 limit' ∧
+      is_limit' c1 limit'
     end
   | _ => True
   end.
+Definition is_limit t := is_limit' t max_depth.
+Hint Unfold is_limit : merkle.
 
 Lemma is_limit_inc t (l0 l1 : nat) :
-  is_limit t l0 →
+  is_limit' t l0 →
   l0 ≤ l1 →
-  is_limit t l1.
+  is_limit' t l1.
 Proof.
   revert l0 l1.
   induction t; try done.
@@ -529,17 +533,18 @@ Proof.
   naive_solver lia.
 Qed.
 
-Lemma entry_txfer t0 t1 h l label oval :
+Lemma cutless_entry_txfer t0 t1 h label oval :
   is_entry t0 label oval →
   is_cutless_path t0 label →
-  is_limit t0 l →
+  is_limit t0 →
   is_cut_tree t0 h -∗
-  is_full_tree t1 h l -∗
+  is_full_tree t1 h -∗
   ⌜ is_entry t1 label oval ⌝.
 Proof.
   autounfold with merkle.
+  remember 256%nat as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
-  iInduction t0 as [] forall (t1 h l depth); simpl; iIntros "*";
+  iInduction t0 as [] forall (t1 h limit depth); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
     iNamedSuffix 1 "0";
     iNamedSuffix 1 "1"; try done;
@@ -558,13 +563,15 @@ Proof.
     + by iApply "IHt0_1".
 Qed.
 
-Lemma cutless_to_full t h l :
+Lemma cutless_to_full t h :
   is_cutless t →
-  is_limit t l →
+  is_limit t →
   is_cut_tree t h -∗
-  is_full_tree t h l.
+  is_full_tree t h.
 Proof.
-  iInduction t as [] forall (h l); simpl; iIntros "*";
+  autounfold with merkle.
+  remember 256%nat as limit. clear Heqlimit.
+  iInduction t as [] forall (h limit); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
     iIntros "@"; try done;
     iFrame "#".
@@ -624,7 +631,7 @@ Definition pure_put t label val := pure_put' t 0 label val max_depth.
 Hint Unfold pure_put : merkle.
 #[global] Arguments pure_put' !_.
 
-Lemma pure_put'_unfold t depth label val limit :
+Lemma pure_put_unfold t depth label val limit :
   pure_put' t depth label val limit
   =
   match t with
@@ -689,14 +696,17 @@ Fixpoint pure_Digest t :=
 
 (* [pure_put] definitionally guarantees [limit] down the put path.
 for [Inner] nodes down the opposite path, it preserves [limit]. *)
-Lemma is_limit_over_put t t' d label val limit :
-  is_limit t limit →
-  pure_put' t d label val limit = Some t' →
-  is_limit t' limit.
+Lemma is_limit_over_put t t' label val :
+  is_limit t →
+  pure_put t label val = Some t' →
+  is_limit t'.
 Proof.
-  revert t t' d.
+  autounfold with merkle.
+  remember 256%nat as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t t' depth.
   induction limit as [? IH] using lt_wf_ind.
-  intros *. rewrite pure_put'_unfold.
+  intros *. rewrite pure_put_unfold.
   destruct t; simpl; intros;
     try case_decide; try case_match;
     simplify_eq/=; try done.
@@ -726,7 +736,7 @@ Proof.
   revert t t'.
 
   induction limit as [? IH] using lt_wf_ind.
-  intros *. rewrite pure_put'_unfold.
+  intros *. rewrite pure_put_unfold.
   destruct t; simpl; intros;
     try case_decide; try case_match;
     simplify_eq/=; try done.
@@ -752,7 +762,7 @@ Proof.
   revert t t'.
 
   induction limit as [? IH] using lt_wf_ind.
-  intros *. rewrite pure_put'_unfold.
+  intros *. rewrite pure_put_unfold.
   destruct t; simpl; intros (?&?&?); intros;
     try case_decide; try case_match;
     simplify_eq/=.
@@ -781,33 +791,54 @@ Proof.
     by apply entry_eq_lookup.
 Qed.
 
-(* max depth arg:
-assumptions:
-1. leaf labels all have const len.
-2. leaf labels all sorted.
-is there some way to state that via to_map? XXX
-3. Inner only located one below max depth.
+Fixpoint is_const_label_len t :=
+  match t with
+  | Leaf label val => length label = max_depth
+  | Inner c0 c1 => is_const_label_len c0 ∧ is_const_label_len c1
+  | _ => True
+  end.
 
-inductive invariants:
-1. leaf lebels are all prefixes of lookup label.
-holds from sorted assumption.
-
-reasoning:
-- for put into leaf at max depth, we must be equal to leaf label.
-bc have full prefix.
-bc leaf length and lookup length equal to max_depth,
-and leaf prefixed by lookup.
-therefore, not branch further.
-- for put into inner, inductive invariants hold from assumptions.
-*)
-
-Fixpoint is_good (t : tree) : Prop. Admitted.
+(* TODO: with [is_sorted], should [to_map] still have sorted filter? *)
+Fixpoint is_sorted' t pref :=
+  match t with
+  | Leaf label val => prefix_total pref (bytes_to_bits label)
+  | Inner c0 c1 =>
+    is_sorted' c0 (pref ++ [false]) ∧
+    is_sorted' c1 (pref ++ [true])
+  | _ => True
+  end.
+Definition is_sorted t := is_sorted' t [].
+Hint Unfold is_sorted : merkle.
 
 Lemma put_Some t label val :
-  is_good t →
+  (* for max depth. *)
+  is_limit t →
+  length label = max_depth →
+  is_const_label_len t →
+  is_sorted t →
+  (* for no Cut. *)
   is_cutless_path t label →
   is_Some (pure_put t label val).
-Proof. Admitted.
+Proof.
+  autounfold with merkle.
+  remember 256%nat as limit. clear Heqlimit.
+  remember [] as pref.
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
+  replace 0%nat with (length pref); [|by subst].
+  clear Heqpref.
+  intros.
+  generalize dependent pref.
+  generalize dependent t.
+
+  induction limit as [? IH] using lt_wf_ind.
+  intros. rewrite pure_put_unfold.
+  destruct t; simpl in *; try done.
+  - case_decide; [done|].
+    case_match.
+    (* limit=0. *)
+    {
+Admitted.
 
 (** stuff that might need to be resurrected. *)
 

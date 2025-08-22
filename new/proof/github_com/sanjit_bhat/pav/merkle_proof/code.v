@@ -46,7 +46,7 @@ Definition own ptr m d : iProp Σ :=
   "%Heq_tree" ∷ ⌜ m = to_map t ⌝ ∗
   "Hown_tree" ∷ own_tree ptr_root t d ∗
   "%His_cutless" ∷ ⌜ is_cutless t ⌝ ∗
-  "%His_limit" ∷ ⌜ is_limit t max_depth ⌝.
+  "%His_limit" ∷ ⌜ is_limit t ⌝.
 
 Lemma own_tree_to_hash ptr t d :
   own_tree ptr t d -∗
@@ -335,10 +335,6 @@ Lemma wp_put n0 n t depth sl_label sl_val label val :
   }}}.
 Proof.
   wp_start as "[Hinit @]". wp_auto.
-  wp_if_destruct.
-  { iDestruct (own_empty_tree with "Hown_tree") as %->.
-    wp_auto.
-    wp_apply wp_alloc as "* Hnode".
 Admitted.
 
 (*
