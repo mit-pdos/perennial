@@ -34,7 +34,14 @@
           ];
           enableParallelBuilding = true;
 
+          # Compile both perennial and ALL files in the dependent libraries, so they can be used
+          # by downstream projects.
           buildPhase = ''
+            make TIMED=false -j$NIX_BUILD_CORES $(find external/coqutil -not -path "external/coqutil/etc/coq-scripts/*" -name "*.v" | sed -e "s/\.v\$/\.vo/g")
+            make TIMED=false -j$NIX_BUILD_CORES $(find external/iris -not -path "external/iris/tests/*" -name "*.v" | sed -e "s/\.v\$/\.vo/g")
+            make TIMED=false -j$NIX_BUILD_CORES $(find external/iris-named-props -name "*.v" | sed -e "s/\.v\$/\.vo/g")
+            make TIMED=false -j$NIX_BUILD_CORES $(find external/record-update -name "*.v" | sed -e "s/\.v\$/\.vo/g")
+            make TIMED=false -j$NIX_BUILD_CORES $(find external/stdpp -not -path "external/stdpp/tests/*" -name "*.v" | sed -e "s/\.v\$/\.vo/g")
             make TIMED=false -j$NIX_BUILD_CORES
           '';
           # Install perennial AND all it's dependencies to ensure the correct version,
