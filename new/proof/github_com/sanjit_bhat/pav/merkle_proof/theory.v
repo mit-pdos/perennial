@@ -781,6 +781,34 @@ Proof.
     by apply entry_eq_lookup.
 Qed.
 
+(* max depth arg:
+assumptions:
+1. leaf labels all have const len.
+2. leaf labels all sorted.
+is there some way to state that via to_map? XXX
+3. Inner only located one below max depth.
+
+inductive invariants:
+1. leaf lebels are all prefixes of lookup label.
+holds from sorted assumption.
+
+reasoning:
+- for put into leaf at max depth, we must be equal to leaf label.
+bc have full prefix.
+bc leaf length and lookup length equal to max_depth,
+and leaf prefixed by lookup.
+therefore, not branch further.
+- for put into inner, inductive invariants hold from assumptions.
+*)
+
+Fixpoint is_good (t : tree) : Prop. Admitted.
+
+Lemma put_Some t label val :
+  is_good t →
+  is_cutless_path t label →
+  is_Some (pure_put t label val).
+Proof. Admitted.
+
 (** stuff that might need to be resurrected. *)
 
 (** tree proofs. *)
