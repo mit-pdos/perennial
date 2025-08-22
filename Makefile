@@ -1,4 +1,4 @@
-SRC_DIRS := 'src' 'external' 'new' 
+SRC_DIRS := 'src' 'external' 'new'
 ALL_VFILES := $(shell find $(SRC_DIRS) -not -path "external/coqutil/etc/coq-scripts/*" -name "*.v")
 VFILES := $(shell find 'src' -name "*.v")
 QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
@@ -13,6 +13,8 @@ ROCQ_DEP_ARGS := -w +module-not-found
 Q:=@
 TIMED:=true
 TIMING_DB:=.timing.sqlite3
+
+-include Makefile.test
 
 # We detect Rocq CI via the TIMING variable (used in coq_makefile) and then
 # disable the rocqc.py wrapper, which doesn't work there
@@ -95,11 +97,11 @@ lite: src/LiteBuild.vo
 
 clean:
 	@echo "CLEAN vo glob aux"
-	$(Q)find $(SRC_DIRS) \( -name "*.vo" -o -name "*.vo[sk]" \
+	$(Q)find $(SRC_DIRS) tests \( -name "*.vo" -o -name "*.vo[sk]" \
 		-o -name ".*.aux" -o -name ".*.cache" -name "*.glob" \) -delete
 	$(Q)rm -f .lia.cache
 	$(Q)rm -f $(TIMING_DB)
-	rm -f .rocqdeps.d
+	rm -f .rocqdeps.d tests/.rocqdeps.d
 
 .PHONY: default
 .DELETE_ON_ERROR:

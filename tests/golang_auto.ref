@@ -1,0 +1,25 @@
+The command has indeed failed with message:
+y is already used.
+The command has indeed failed with message:
+Tactic failure: iIntro: "y" not fresh.
+The command has indeed failed with message:
+Uncaught Ltac2 exception:
+Init.Tactic_failure
+(Init.Some
+  message:(wp_load: could not find a points-to in context covering the address))
+The command has indeed failed with message:
+Uncaught Ltac2 exception:
+Init.Tactic_failure (Init.Some message:(wp_load: could not find load_ty))
+The command has indeed failed with message:
+Uncaught Ltac2 exception:
+Init.Tactic_failure
+(Init.Some
+  message:(wp_store: could not find a points-to in context covering the address))
+The command has indeed failed with message:
+Uncaught Ltac2 exception:
+Init.Tactic_failure
+(Init.Some
+  message:(wp_store: could not find a points-to in context covering the address))
+The command has indeed failed with message:
+Uncaught Ltac2 exception:
+Init.Tactic_failure (Init.Some message:(wp_store: could not find store_ty))
