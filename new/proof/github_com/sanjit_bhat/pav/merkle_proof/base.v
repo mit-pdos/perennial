@@ -15,7 +15,7 @@ Notation cutNodeTy := (W8 0) (only parsing).
 Notation leafNodeTy := (W8 1) (only parsing).
 Notation innerNodeTy := (W8 2) (only parsing).
 
-Notation max_depth := 256%nat.
+Definition max_depth := 256%nat.
 
 (* used to [autounfold] top-level recursive defs. *)
 Create HintDb merkle.

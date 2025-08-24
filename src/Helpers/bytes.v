@@ -135,3 +135,12 @@ Proof.
   2: lia.
   by apply (inj _) in Heq.
 Qed.
+
+Lemma length_bytes_to_bits b :
+  length (bytes_to_bits b) = (8 * length b)%nat.
+Proof.
+  induction b; [done|].
+  rewrite /= IHb. lia.
+Qed.
+
+#[global] Hint Rewrite length_bytes_to_bits : len.

@@ -152,15 +152,6 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-Lemma length_bytes_to_bits b :
-  length (bytes_to_bits b) = (8 * length b) % nat.
-Proof.
-  induction b; [done|].
-  rewrite /= IHb. lia.
-Qed.
-(* TODO: add #[global] when upstream. *)
-Hint Rewrite length_bytes_to_bits : len.
-
 Lemma bytes_to_bits_app a b :
   bytes_to_bits (a ++ b) = bytes_to_bits a ++ bytes_to_bits b.
 Proof. rewrite /bytes_to_bits !fmap_app join_app //. Qed.

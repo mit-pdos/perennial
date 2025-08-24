@@ -64,6 +64,17 @@ Lemma prefix_total_app_l l1 l2 l3 :
   prefix_total l1 l2.
 Proof. Admitted.
 
+Lemma prefix_total_full p l :
+  length p = length l →
+  prefix_total p l →
+  p = l.
+Proof.
+  rewrite /prefix_total.
+  intros ? (?&?&Heq).
+  apply (f_equal (take (length l))) in Heq.
+  by rewrite !take_app_length' in Heq.
+Qed.
+
 End prefix_total.
 
 Section proof.
@@ -89,12 +100,12 @@ Inductive tree :=
 
 Fixpoint find t depth label :=
   match t with
-  | Empty => mfail
+  | Empty => None
   | Leaf l v => Some (l, v)
   | Inner c0 c1 =>
     let c := if get_bit label depth then c1 else c0 in
     find c (S depth) label
-  | Cut _ => mfail (* [mfail] matches [to_map]. *)
+  | Cut _ => None (* [None] matches [to_map]. *)
   end.
 
 Definition found_nonmemb label (found : option $ (list w8 * list w8)%type) :=
@@ -542,7 +553,7 @@ Lemma cutless_entry_txfer t0 t1 h label oval :
   ⌜ is_entry t1 label oval ⌝.
 Proof.
   autounfold with merkle.
-  remember 256%nat as limit. clear Heqlimit.
+  remember max_depth as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
   iInduction t0 as [] forall (t1 h limit depth); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
@@ -570,7 +581,7 @@ Lemma cutless_to_full t h :
   is_full_tree t h.
 Proof.
   autounfold with merkle.
-  remember 256%nat as limit. clear Heqlimit.
+  remember max_depth as limit. clear Heqlimit.
   iInduction t as [] forall (h limit); simpl; iIntros "*";
     iEval (setoid_rewrite is_full_tree_unfold);
     iIntros "@"; try done;
@@ -608,24 +619,24 @@ Fixpoint pure_put' t depth label val (limit : nat) :=
   | Leaf label' val' =>
     if decide (label = label') then Some (Leaf label val) else
     (* Golang put won't run out of limit. *)
-    match limit with 0%nat => mfail | S limit' =>
+    match limit with 0%nat => None | S limit' =>
     (* "unfolding" the two leaf puts lets us use [limit'] in recur calls. *)
     (* put 1. *)
     let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
-    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
-    match limit with 0%nat => mfail | S limit' =>
+    match limit with 0%nat => None | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
-    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
     Some $ Inner t2_0 t2_1
     end end
-  | Cut _ => mfail (* Golang put won't hit Cut. *)
+  | Cut _ => None (* Golang put won't hit Cut. *)
   end.
 Definition pure_put t label val := pure_put' t 0 label val max_depth.
 Hint Unfold pure_put : merkle.
@@ -639,24 +650,24 @@ Lemma pure_put_unfold t depth label val limit :
   | Leaf label' val' =>
     if decide (label = label') then Some (Leaf label val) else
     (* Golang put won't run out of limit. *)
-    match limit with 0%nat => mfail | S limit' =>
+    match limit with 0%nat => None | S limit' =>
     (* "unfolding" the two leaf puts lets us use [limit'] in recur calls. *)
     (* put 1. *)
     let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
-    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
-    match limit with 0%nat => mfail | S limit' =>
+    match limit with 0%nat => None | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
-    match pure_put' t0 (S depth) label val limit' with None => mfail | Some t1 =>
+    match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
     let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
     Some $ Inner t2_0 t2_1
     end end
-  | Cut _ => mfail (* Golang put won't hit Cut. *)
+  | Cut _ => None (* Golang put won't hit Cut. *)
   end.
 Proof. by destruct limit. Qed.
 
@@ -702,7 +713,7 @@ Lemma is_limit_over_put t t' label val :
   is_limit t'.
 Proof.
   autounfold with merkle.
-  remember 256%nat as limit. clear Heqlimit.
+  remember max_depth as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
   revert t t' depth.
   induction limit as [? IH] using lt_wf_ind.
@@ -720,7 +731,7 @@ Qed.
 
 Tactic Notation "rw_get_bit" := repeat
   match goal with
-  | H : bytes_to_bits _ !!! _ = _ |- _ => rewrite H
+  | H : bytes_to_bits _ !!! _ = _ |- _ => rewrite {}H
   end.
 
 Lemma put_new_entry t t' label val :
@@ -728,7 +739,7 @@ Lemma put_new_entry t t' label val :
   is_entry t' label (Some val).
 Proof.
   autounfold with merkle.
-  remember 256%nat as limit. clear Heqlimit.
+  remember max_depth as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
   intros.
   eexists. intuition.
@@ -755,7 +766,7 @@ Lemma old_entry_over_put t t' label label' oval' val :
   is_entry t' label' oval'.
 Proof.
   autounfold with merkle.
-  remember 256%nat as limit. clear Heqlimit.
+  remember max_depth as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
   intros.
   generalize dependent depth.
@@ -793,7 +804,7 @@ Qed.
 
 Fixpoint is_const_label_len t :=
   match t with
-  | Leaf label val => length label = max_depth
+  | Leaf label val => Z.of_nat (length label) = cryptoffi.hash_len
   | Inner c0 c1 => is_const_label_len c0 ∧ is_const_label_len c1
   | _ => True
   end.
@@ -810,10 +821,15 @@ Fixpoint is_sorted' t pref :=
 Definition is_sorted t := is_sorted' t [].
 Hint Unfold is_sorted : merkle.
 
+Tactic Notation "rw_pure_put" := repeat
+  match goal with
+  | H : pure_put' _ _ _ _ _ = None |- _ => rewrite -{}H
+  end.
+
 Lemma put_Some t label val :
   (* for max depth. *)
   is_limit t →
-  length label = max_depth →
+  Z.of_nat (length label) = cryptoffi.hash_len →
   is_const_label_len t →
   is_sorted t →
   (* for no Cut. *)
@@ -821,24 +837,71 @@ Lemma put_Some t label val :
   is_Some (pure_put t label val).
 Proof.
   autounfold with merkle.
-  remember 256%nat as limit. clear Heqlimit.
+  assert (∃ x, x = max_depth) as [limit Heq]; [by eexists|].
+  rewrite -[in is_limit' _ _]Heq.
+  rewrite -[in pure_put' _ _ _ _ _]Heq.
   remember [] as pref.
   assert (prefix_total pref (bytes_to_bits label)).
   { subst. apply prefix_total_nil. }
   replace 0%nat with (length pref); [|by subst].
-  clear Heqpref.
+  assert (length pref + limit = max_depth)%nat.
+  { subst. simpl. lia. }
+  clear Heq Heqpref.
   intros.
-  generalize dependent pref.
   generalize dependent t.
+  generalize dependent pref.
 
   induction limit as [? IH] using lt_wf_ind.
   intros. rewrite pure_put_unfold.
   destruct t; simpl in *; try done.
+
   - case_decide; [done|].
     case_match.
-    (* limit=0. *)
-    {
-Admitted.
+    (* limit=0. show labels actually equal. *)
+    { unfold max_depth in *.
+      opose proof (prefix_total_full _
+        (bytes_to_bits label) _ _).
+      2: done.
+      1: by len.
+      opose proof (prefix_total_full _
+        (bytes_to_bits label0) _ _).
+      2: done.
+      1: by len.
+      simplify_eq/=. }
+
+    ospecialize (IH n _); [lia|].
+    repeat case_match; try done; simplify_eq/=; rw_pure_put;
+      evar (bit : bool);
+      (replace (S _) with (length (pref ++ [bit])); [|len]);
+      subst bit.
+    + eapply IH; try done.
+      * by eapply prefix_total_snoc.
+      * len.
+      * by eapply prefix_total_snoc.
+    + eapply IH; try done.
+      * by eapply prefix_total_snoc.
+      * len.
+    + eapply IH; try done.
+      * by eapply prefix_total_snoc.
+      * len.
+    + eapply IH; try done.
+      * by eapply prefix_total_snoc.
+      * len.
+      * by eapply prefix_total_snoc.
+
+  - destruct limit; try done.
+    ospecialize (IH limit _); [lia|].
+    repeat case_match; try done; intuition; rw_pure_put;
+      evar (bit : bool);
+      (replace (S _) with (length (pref ++ [bit])) in *; [|len]);
+      subst bit.
+    + eapply IH; try done.
+      * by eapply prefix_total_snoc.
+      * len.
+    + eapply IH; try done.
+      * by eapply prefix_total_snoc.
+      * len.
+Qed.
 
 (** stuff that might need to be resurrected. *)
 
