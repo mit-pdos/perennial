@@ -53,6 +53,11 @@ in parallel.  Using `vos` and `vok` files can significantly speed up the
 edit-compile-debug cycle. Note that `vok` checking isn't the same as regular
 compilation - it doesn't check universe constraints in the same way.
 
+We compile with [rocqc.py](etc/rocqc.py), a Python wrapper around `rocq compile`
+to get timing information. You can compile without timing information with `make
+TIMED=false`. To read the results of the timing, run `./etc/timing-report.py`;
+use `--help` to access some other features.
+
 ## Updating Goose output
 
 This repo has committed versions of the output of Goose, to avoid making Goose

@@ -25,10 +25,6 @@ Iris. You should run `git submodule update --init --recursive` to set that up.
 
 To compile just run `make` with rocq on your `$PATH`.
 
-We compile with [rocqc.py](etc/rocqc.py), a Python wrapper around `rocq compile`
-to get timing information. You can also compile without timing information with
-`make TIMED=false`.
-
 ## New goose
 
 We are in the process of migrating to "new Goose", a backwards-incompatible
