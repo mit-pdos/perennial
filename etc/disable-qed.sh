@@ -49,7 +49,7 @@ case "$1" in
         reverse=true
         shift
         ;;
-    *)
+    -*)
         echo "unknown option $1" 1>&2
         exit 1
         ;;
