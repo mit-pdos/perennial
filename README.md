@@ -15,6 +15,8 @@ This repository also includes proofs for several systems verified using the
 Perennial and Grove program frameworks; see the publications list at the bottom for
 an overview.
 
+See also [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Compiling
 
 We develop Perennial using Rocq master and maintain compatibility with the
