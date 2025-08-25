@@ -25,8 +25,13 @@ them, run `git submodule update --init --remote`, then commit the resulting
 change with git.
 
 The dependencies are frozen at a particular version to avoid breaking the
-Perennial build when there are incompatible upstream changes.
-We use Dependabot to do daily checks for dependency updates.
+Perennial build when there are incompatible upstream changes. We use Dependabot
+to do daily checks for dependency updates (see
+[.github/dependabot.yml](.github/dependabot.yml) and read the GitHub
+documentation). In addition, a workflow
+[dependabot-automerge.yml](.github/workflows/dependabot-automerge.yml)
+automatically merges these (this depends on a GitHub Ruleset to ensure CI passes
+before the PR is merged).
 
 ## Tips for managing compilation time
 
