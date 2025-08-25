@@ -130,6 +130,7 @@ class CoqcFilter:
 
     @classmethod
     def from_coqargs(cls, args, db, contents=None, start=None):
+        """Extract is_vos and the input vfile from the arguments passed to rocq compile."""
         is_vos = "-vos" in args
         vfile = None
         for arg in args:
