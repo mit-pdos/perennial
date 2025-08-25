@@ -35,8 +35,8 @@ before the PR is merged).
 
 ## Tips for managing compilation time
 
-Perennial takes about 120 CPU minutes to compile. Compiling in parallel with
-`make -j4` (or more) is significantly faster, and can cut the time down to 45-50
+Perennial takes about 180 CPU minutes to compile. Compiling in parallel with
+`make -j4` (or more) is significantly faster, and can cut the time down to 40-50
 minutes. Incremental builds are generally much faster.
 
 When you make a change to a dependency, you can keep working without fully
