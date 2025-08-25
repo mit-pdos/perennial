@@ -112,5 +112,5 @@ there.
 Perennial 1 is described in our SOSP paper, "[Verifying concurrent, crash-safe
 systems with Perennial](https://www.chajed.io/papers/perennial:sosp2019.pdf)".
 The actual codebase was quite different at the time of this paper; it notably
-used a shallow embedding of Goose and did not have WPCs or any of the associated
-program logic infrastructure. See the tag `sosp2019` or the `shallow` branch.
+used a shallow embedding of Goose and is not have the same program logic. See
+the tag `sosp2019` for this version of Perennial.

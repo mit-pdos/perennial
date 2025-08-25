@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# Toggle between Qed and Admitted in source code.
-# To be safer than Admitted, we actually add some extra commands that ensure
-# there are no remaining goals.
+# Skip Qed commands by changing them to Admitted.
+#
+# This speeds up the build by about 10% at the cost of not checking universe
+# constraints.
+#
+# This script toggles between Qed and Unshelve. Fail idtac. Admitted. in source
+# code. `Fail idtac` is a trick to check that there are no goals remaining.
 
 set -eu
 
@@ -37,9 +41,17 @@ usage() {
 }
 
 case "$1" in
+    "--help" )
+        usage
+        exit
+        ;;
     "--undo" )
         reverse=true
         shift
+        ;;
+    *)
+        echo "unknown option $1" 1>&2
+        exit 1
         ;;
 esac
 

@@ -6,6 +6,18 @@ Not everything in the repo is built by default, even in CI. In order to be
 compiled, a file must be `Require`d from `src/ShouldBuild.vo` (which already includes
 `new/should_build.vo` for new goose proofs).
 
+## CI notes
+
+Rocq's CI checks the Perennial build on every commit to Rocq. In order to avoid
+breaking Rocq CI, they build a branch called `coq/tested` which we push to
+automatically only when perennial master's CI passes. They also only run `make
+lite`, which compiles `src/LiteBuild.v`, a representative subset of Perennial
+that takes much less time to build.
+
+We skip running Qed commands in CI using
+[etc/disable-qed.sh](./etc/disable-qed.sh) - see that script for details. This
+reduces build times by about 10%.
+
 ## Maintaining dependencies
 
 There are a few dependencies managed as submodules in `external/`. To update
@@ -57,3 +69,8 @@ causes the perennial CI to build against your PR, so that the CI check-goose job
 passes while the goose PR is open. This feature is implemented by
 `etc/ci-use-goose-pr`, which reads the PR description and identifies the
 corresponding goose branch using the GitHub API.
+
+## Python linting
+
+We run [ruff](https://github.com/astral-sh/ruff) to lint all python code in CI.
+You can run it locally with `ruff format`.
