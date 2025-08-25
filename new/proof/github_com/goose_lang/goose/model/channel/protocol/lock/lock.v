@@ -1,0 +1,1 @@
+(* Placeholder for invariants/specs for using size 1 buffered channel as a mutex *)

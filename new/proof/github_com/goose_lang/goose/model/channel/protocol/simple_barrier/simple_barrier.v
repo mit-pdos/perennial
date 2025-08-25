@@ -1,0 +1,1 @@
+(* Placeholder for invariants/specs for using a channel as a 1 time use barrier, using send and/or receive to synchronize *)

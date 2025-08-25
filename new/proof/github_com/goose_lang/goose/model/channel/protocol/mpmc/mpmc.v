@@ -1,0 +1,1 @@
+(* Placeholder for invariants/specs for using a channel as a multi producer/consumer pipeline stage *)

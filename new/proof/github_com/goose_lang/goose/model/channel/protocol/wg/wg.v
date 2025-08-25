@@ -1,0 +1,1 @@
+(* Placeholder for invariants/specs for using a buffered channel as a waitgroup, using send as add and receive*N as wait *)
