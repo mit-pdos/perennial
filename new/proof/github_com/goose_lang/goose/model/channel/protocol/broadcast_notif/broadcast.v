@@ -1,0 +1,1 @@
+(* Placeholder for invariants/specs for using channel as notification via close *)
