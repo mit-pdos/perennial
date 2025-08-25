@@ -125,112 +125,100 @@ Hint Unfold is_entry : merkle.
 
 (** relation between trees and maps. *)
 
-(* [to_map'] only collects leaves located in the right place. *)
-Fixpoint to_map' t pref : gmap (list w8) (list w8) :=
+Fixpoint to_map t : gmap (list w8) (list w8) :=
   match t with
-  | Empty => ∅
-  | Leaf label val =>
-    (* using [prefix_total] allows other preds (e.g., [is_entry])
-    to operate under an easier (and weaker), length-extended leaf model.
-    this reduces proof burden.
-    e.g., [find] doesn't need to track depth bounds. *)
-    if decide (prefix_total pref (bytes_to_bits label))
-    then {[label := val]}
-    else ∅
-  | Inner child0 child1 =>
-    to_map' child0 (pref ++ [false]) ∪
-    to_map' child1 (pref ++ [true])
-  | Cut _ => ∅
+  | Leaf label val => {[label := val ]}
+  | Inner child0 child1 => to_map child0 ∪ to_map child1
+  | _ => ∅
   end.
-Definition to_map t := to_map' t [].
-Hint Unfold to_map : merkle.
 
-Lemma to_map_pref_Some t pref label :
-  is_Some (to_map' t pref !! label) →
-  prefix_total pref (bytes_to_bits label).
-Proof.
-  revert pref.
-  induction t; simpl; intros ? Hsome.
-  - by simpl_map.
-  - case_decide; [|by simpl_map].
-    destruct (decide (label0 = label)).
-    + by subst.
-    + by simpl_map.
-  - apply lookup_union_is_Some in Hsome.
-    destruct_or!.
-    + apply IHt1 in Hsome.
-      by eapply prefix_total_app_l.
-    + apply IHt2 in Hsome.
-      by eapply prefix_total_app_l.
-  - by simpl_map.
-Qed.
+Fixpoint is_sorted' t pref :=
+  match t with
+  (* using [prefix_total] allows other preds (e.g., [is_entry])
+  to operate under an easier (and weaker), length-extended leaf model.
+  this reduces proof burden.
+  e.g., [find] doesn't need to track depth bounds. *)
+  | Leaf label val => prefix_total pref (bytes_to_bits label)
+  | Inner c0 c1 =>
+    is_sorted' c0 (pref ++ [false]) ∧
+    is_sorted' c1 (pref ++ [true])
+  | _ => True
+  end.
+Definition is_sorted t := is_sorted' t [].
+Hint Unfold is_sorted : merkle.
 
-Lemma to_map_pref_None t pref label :
+Lemma to_map_None_strong t pref label :
+  is_sorted' t pref →
   ¬ prefix_total pref (bytes_to_bits label) →
-  to_map' t pref !! label = None.
+  to_map t !! label = None.
 Proof.
   revert pref.
-  induction t; simpl; intros; [done|idtac..|done].
-  - case_decide; [|by simpl_map].
-    opose proof (prefix_total_neq _ _ _ _ _); [done..|].
-    destruct (decide (label = label0)) as [Heq|?].
-    + by apply (f_equal bytes_to_bits) in Heq.
-    + by simpl_map.
-  - apply lookup_union_None_2.
-    + apply IHt1.
-      by intros Hpref%prefix_total_app_l.
-    + apply IHt2.
-      by intros Hpref%prefix_total_app_l.
+  induction t; simpl; intros; try done.
+  - opose proof (prefix_total_neq _ _ _ _ _) as Heq; [done..|].
+    rewrite inj_iff in Heq.
+    by simpl_map.
+  - intuition.
+    apply lookup_union_None_2.
+    + eapply IHt1; [done|].
+      by intros ?%prefix_total_app_l.
+    + eapply IHt2; [done|].
+      by intros ?%prefix_total_app_l.
 Qed.
 
-Lemma to_map_disj t0 t1 pref :
-  to_map' t0 (pref ++ [false]) ##ₘ to_map' t1 (pref ++ [true]).
+Tactic Notation "solve_bool" :=
+  match goal with
+  | H : ?x = negb ?x |- _ => by destruct x
+  | H : negb ?x = ?x |- _ => by destruct x
+  | |- ?x ≠ negb ?x => by destruct x
+  | |- negb ?x ≠ ?x => by destruct x
+  end.
+
+Lemma to_map_None t pref bit label :
+  is_sorted' t (pref ++ [bit]) →
+  get_bit label (length pref) = negb bit →
+  to_map t !! label = None.
 Proof.
-  apply map_disjoint_spec.
-  intros **.
-  opose proof (to_map_pref_Some _ _ _ _) as [? Hp0]; [done|].
-  assert (¬ prefix_total (pref ++ [false]) (bytes_to_bits i)).
-  { admit. }
-  opose proof (to_map_pref_None t0 _ _ _); [done|].
-  by simplify_eq/=.
-Admitted.
+  intros.
+  eapply to_map_None_strong; [done|].
+  intros ?%prefix_total_snoc_inv.
+  intuition. subst. solve_bool.
+Qed.
+
+Notation pref_ext p l := (p ++ [get_bit l (length p)]) (only parsing).
 
 Lemma entry_to_lookup t label oval :
+  is_sorted t →
   is_entry t label oval →
   to_map t !! label = oval.
 Proof.
   autounfold with merkle.
   remember ([]) as pref.
   replace (0%nat) with (length pref) by (by subst).
+  intros ? (?&?&?).
   assert (prefix_total pref (bytes_to_bits label)).
   { subst. apply prefix_total_nil. }
   clear Heqpref.
-  intros (?&?&?).
   generalize dependent pref.
 
-  induction t; simpl; intros ?? Hpath.
+  induction t; simpl; intros.
   - simpl_map. case_match; by subst.
-  - case_match; simplify_eq/=; case_decide; by simpl_map.
-  - opose proof (to_map_disj t1 t2 pref).
+  - case_match; simplify_eq/=; by simpl_map.
+  - replace (S _) with (length $ pref_ext pref label) in * by len.
+    intuition. rewrite lookup_union.
     case_match.
-    + opose proof (IHt2 (pref ++ [true]) _ _) as Hl0.
+    + erewrite (to_map_None t1); [|done..].
+      erewrite IHt2; cycle 1; [done|done|..].
       { by apply prefix_total_snoc. }
-      { subst. f_equal. len. }
-      opose proof (to_map_pref_None t1 (pref ++ [false]) label _) as Hl1.
-      { intros ?%prefix_total_snoc_inv. intuition. congruence. }
-      rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
-    + opose proof (IHt1 (pref ++ [false]) _ _) as Hl0.
+    + erewrite (to_map_None t2); [|done..].
+      erewrite IHt1; cycle 1; [done|done|..].
       { by apply prefix_total_snoc. }
-      { subst. f_equal. len. }
-      opose proof (to_map_pref_None t2 (pref ++ [true]) label _) as Hl1.
-      { intros ?%prefix_total_snoc_inv. intuition. congruence. }
-      rewrite lookup_union Hl0 Hl1.
       by simplify_option_eq.
   - simpl_map. case_match; by subst.
 Qed.
 
 Lemma lookup_to_entry t label :
+  is_sorted t →
   is_entry t label (to_map t !! label).
 Proof.
   autounfold with merkle.
@@ -243,37 +231,29 @@ Proof.
 
   induction t; simpl; intros.
   - simpl_map. naive_solver.
-  - case_decide.
-    + destruct (decide (label = label0)); subst; simpl_map; naive_solver.
-    + opose proof (prefix_total_neq _ _ _ _ _) as Heq; [done..|].
-      rewrite inj_iff in Heq.
-      simpl_map. naive_solver.
-  - case_match.
-    + ospecialize (IHt2 (pref ++ [true]) _).
-      { by apply prefix_total_snoc. }
-      rewrite length_app /= in IHt2.
-      replace (_ + 1)%nat with (S (length pref)) in IHt2; [|lia].
-      rewrite lookup_union.
-      rewrite (to_map_pref_None t1).
-      2: { intros ?%prefix_total_snoc_inv. intuition. congruence. }
-      by rewrite left_id.
-    + ospecialize (IHt1 (pref ++ [false]) _).
-      { by apply prefix_total_snoc. }
-      rewrite length_app /= in IHt1.
-      replace (_ + 1)%nat with (S (length pref)) in IHt1; [|lia].
-      rewrite lookup_union.
-      rewrite (to_map_pref_None t2).
-      2: { intros ?%prefix_total_snoc_inv. intuition. congruence. }
-      by rewrite right_id.
+  - eexists. intuition.
+    destruct (decide (label = label0)); subst; by simpl_map.
+  - replace (S _) with (length $ pref_ext pref label) in * by len.
+    intuition. rewrite lookup_union.
+    destruct (get_bit _ _) eqn:?.
+    + erewrite (to_map_None t1); [|done..].
+      rewrite left_id.
+      eapply IHt2; try done.
+      by apply prefix_total_snoc.
+    + erewrite (to_map_None t2); [|done..].
+      rewrite right_id.
+      eapply IHt1; try done.
+      by apply prefix_total_snoc.
   - simpl_map. naive_solver.
 Qed.
 
 Lemma entry_eq_lookup t label oval :
+  is_sorted t →
   is_entry t label oval ↔ to_map t !! label = oval.
 Proof.
   split.
-  - apply entry_to_lookup.
-  - intros. subst. apply lookup_to_entry.
+  - by apply entry_to_lookup.
+  - intros. subst. by apply lookup_to_entry.
 Qed.
 
 (** full trees / maps. *)
@@ -544,7 +524,7 @@ Proof.
   naive_solver lia.
 Qed.
 
-Lemma cutless_entry_txfer t0 t1 h label oval :
+Lemma full_entry_txfer t0 t1 h label oval :
   is_entry t0 label oval →
   is_cutless_path t0 label →
   is_limit t0 →
@@ -574,7 +554,7 @@ Proof.
     + by iApply "IHt0_1".
 Qed.
 
-Lemma cutless_to_full t h :
+Lemma cut_to_full t h :
   is_cutless t →
   is_limit t →
   is_cut_tree t h -∗
@@ -729,6 +709,44 @@ Proof.
     repeat case_match; try done; naive_solver.
 Qed.
 
+Lemma is_sorted_over_put t t' label val :
+  is_sorted t →
+  pure_put t label val = Some t' →
+  is_sorted t'.
+Proof.
+  autounfold with merkle.
+  remember ([]) as pref.
+  replace (0%nat) with (length pref) by (by subst).
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
+  clear Heqpref.
+  remember max_depth as limit. clear Heqlimit.
+  generalize dependent pref.
+  revert t t'.
+
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match;
+    simplify_eq/=; try done.
+  - ospecialize (IH n _); [lia|].
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
+    { by eapply prefix_total_snoc. }
+    assert (prefix_total (pref_ext pref label0) (bytes_to_bits label0)).
+    { by eapply prefix_total_snoc. }
+    repeat case_match; try done;
+      simplify_eq/=; intuition;
+      by (eapply IH; last done).
+  - ospecialize (IH n _); [lia|].
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
+    { by eapply prefix_total_snoc. }
+    repeat case_match; try done;
+      simplify_eq/=; intuition;
+      by eapply IH.
+Qed.
+
 Tactic Notation "rw_get_bit" := repeat
   match goal with
   | H : bytes_to_bits _ !!! _ = _ |- _ => rewrite {}H
@@ -789,15 +807,16 @@ Proof.
 Qed.
 
 Lemma to_map_over_put t t' label val :
+  is_sorted t →
   pure_put t label val = Some t' →
   to_map t' = <[label:=val]>(to_map t).
 Proof.
-  autounfold with merkle.
   intros. apply map_eq. intros.
+  opose proof (is_sorted_over_put _ _ _ _ _ _); [done..|].
   destruct (decide (label = i)); subst; simpl_map.
-  - apply entry_eq_lookup.
+  - apply entry_eq_lookup; [done|].
     by eapply put_new_entry.
-  - rewrite -entry_eq_lookup.
+  - rewrite -entry_eq_lookup; [|done].
     eapply old_entry_over_put; [|done..].
     by apply entry_eq_lookup.
 Qed.
@@ -808,18 +827,6 @@ Fixpoint is_const_label_len t :=
   | Inner c0 c1 => is_const_label_len c0 ∧ is_const_label_len c1
   | _ => True
   end.
-
-(* TODO: with [is_sorted], should [to_map] still have sorted filter? *)
-Fixpoint is_sorted' t pref :=
-  match t with
-  | Leaf label val => prefix_total pref (bytes_to_bits label)
-  | Inner c0 c1 =>
-    is_sorted' c0 (pref ++ [false]) ∧
-    is_sorted' c1 (pref ++ [true])
-  | _ => True
-  end.
-Definition is_sorted t := is_sorted' t [].
-Hint Unfold is_sorted : merkle.
 
 Tactic Notation "rw_pure_put" := repeat
   match goal with
@@ -859,48 +866,28 @@ Proof.
     case_match.
     (* limit=0. show labels actually equal. *)
     { unfold max_depth in *.
-      opose proof (prefix_total_full _
-        (bytes_to_bits label) _ _).
-      2: done.
-      1: by len.
-      opose proof (prefix_total_full _
-        (bytes_to_bits label0) _ _).
-      2: done.
-      1: by len.
+      opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
+        [|done|]; [by len|].
+      opose proof (prefix_total_full _ (bytes_to_bits label0) _ _);
+        [|done|]; [by len|].
       simplify_eq/=. }
 
     ospecialize (IH n _); [lia|].
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
+    { by eapply prefix_total_snoc. }
+    assert (prefix_total (pref_ext pref label0) (bytes_to_bits label0)).
+    { by eapply prefix_total_snoc. }
     repeat case_match; try done; simplify_eq/=; rw_pure_put;
-      evar (bit : bool);
-      (replace (S _) with (length (pref ++ [bit])); [|len]);
-      subst bit.
-    + eapply IH; try done.
-      * by eapply prefix_total_snoc.
-      * len.
-      * by eapply prefix_total_snoc.
-    + eapply IH; try done.
-      * by eapply prefix_total_snoc.
-      * len.
-    + eapply IH; try done.
-      * by eapply prefix_total_snoc.
-      * len.
-    + eapply IH; try done.
-      * by eapply prefix_total_snoc.
-      * len.
-      * by eapply prefix_total_snoc.
+      (eapply IH; try done; len).
 
   - destruct limit; try done.
     ospecialize (IH limit _); [lia|].
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
+    { by eapply prefix_total_snoc. }
     repeat case_match; try done; intuition; rw_pure_put;
-      evar (bit : bool);
-      (replace (S _) with (length (pref ++ [bit])) in *; [|len]);
-      subst bit.
-    + eapply IH; try done.
-      * by eapply prefix_total_snoc.
-      * len.
-    + eapply IH; try done.
-      * by eapply prefix_total_snoc.
-      * len.
+      (eapply IH; try done; len).
 Qed.
 
 (** stuff that might need to be resurrected. *)

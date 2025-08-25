@@ -60,7 +60,7 @@ Proof.
   iNamed 1.
   iFrame "%".
   iDestruct (own_tree_to_hash with "Hown_tree") as "[% #His_tree]".
-  by iDestruct (cutless_to_full with "His_tree") as "$".
+  by iDestruct (cut_to_full with "His_tree") as "$".
 Qed.
 
 Lemma own_empty_tree t d :
