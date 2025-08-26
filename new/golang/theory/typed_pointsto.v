@@ -271,7 +271,8 @@ Section goose_lang.
       }
   Qed.
 
-  #[local] Lemma typed_pointsto_not_null' l dq v :
+  (* for automation - go_type_size_def t > 0 is provable using [auto] *)
+  Lemma pointsto_not_null l dq v :
     go_type_size_def t > 0 →
     l ↦{dq} v -∗ ⌜l ≠ null⌝.
   Proof using IntoValTyped0.
