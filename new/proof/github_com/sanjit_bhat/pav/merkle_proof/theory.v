@@ -1115,3 +1115,6 @@ Qed.
 *)
 
 End proof.
+
+Hint Unfold is_entry is_sorted is_full_tree is_map is_cutless_path
+  is_limit pure_put pure_newShell : merkle.

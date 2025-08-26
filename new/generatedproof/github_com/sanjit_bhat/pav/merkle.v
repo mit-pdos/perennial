@@ -348,13 +348,5 @@ Global Instance wp_method_call_node'ptr_prove :
   WpMethodCall (ptrT.id merkle.node.id) "prove" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_node'ptr_setInnerHash :
-  WpMethodCall (ptrT.id merkle.node.id) "setInnerHash" _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_node'ptr_setLeafHash :
-  WpMethodCall (ptrT.id merkle.node.id) "setLeafHash" _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_method_call'; reflexivity).
-
 End names.
 End merkle.
