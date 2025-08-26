@@ -445,55 +445,55 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined generics}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_BoxGet :
-  WpFuncCall generics.BoxGet _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.BoxGet _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_BoxGet2 :
-  WpFuncCall generics.BoxGet2 _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.BoxGet2 _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_makeGenericBox :
-  WpFuncCall generics.makeGenericBox _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.makeGenericBox _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_makeBox :
-  WpFuncCall generics.makeBox _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.makeBox _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useBoxGet :
-  WpFuncCall generics.useBoxGet _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.useBoxGet _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useContainer :
-  WpFuncCall generics.useContainer _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.useContainer _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useMultiParam :
-  WpFuncCall generics.useMultiParam _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.useMultiParam _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_swapMultiParam :
-  WpFuncCall generics.swapMultiParam _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.swapMultiParam _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_multiParamFunc :
-  WpFuncCall generics.multiParamFunc _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.multiParamFunc _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_useMultiParamFunc :
-  WpFuncCall generics.useMultiParamFunc _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall generics.useMultiParamFunc _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Box_Get :
-  WpMethodCall generics.Box.id "Get" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall generics.Box.id "Get" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Box'ptr_Get :
-  WpMethodCall (ptrT.id generics.Box.id) "Get" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id generics.Box.id) "Get" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End generics.

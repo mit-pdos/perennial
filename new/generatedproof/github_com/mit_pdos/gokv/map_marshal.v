@@ -13,23 +13,23 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined map_marshal}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_EncodeMapU64ToU64 :
-  WpFuncCall map_marshal.EncodeMapU64ToU64 _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall map_marshal.EncodeMapU64ToU64 _ (is_pkg_defined map_marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeMapU64ToU64 :
-  WpFuncCall map_marshal.DecodeMapU64ToU64 _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall map_marshal.DecodeMapU64ToU64 _ (is_pkg_defined map_marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeMapU64ToBytes :
-  WpFuncCall map_marshal.EncodeMapU64ToBytes _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall map_marshal.EncodeMapU64ToBytes _ (is_pkg_defined map_marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeMapU64ToBytes :
-  WpFuncCall map_marshal.DecodeMapU64ToBytes _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall map_marshal.DecodeMapU64ToBytes _ (is_pkg_defined map_marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End map_marshal.

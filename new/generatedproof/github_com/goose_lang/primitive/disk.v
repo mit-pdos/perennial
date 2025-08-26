@@ -13,27 +13,27 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined disk}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Get :
-  WpFuncCall disk.Get _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall disk.Get _ (is_pkg_defined disk) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Read :
-  WpFuncCall disk.Read _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall disk.Read _ (is_pkg_defined disk) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Write :
-  WpFuncCall disk.Write _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall disk.Write _ (is_pkg_defined disk) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Size :
-  WpFuncCall disk.Size _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall disk.Size _ (is_pkg_defined disk) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Barrier :
-  WpFuncCall disk.Barrier _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall disk.Barrier _ (is_pkg_defined disk) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End disk.

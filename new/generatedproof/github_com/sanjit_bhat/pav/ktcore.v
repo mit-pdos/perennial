@@ -600,135 +600,135 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined ktcore}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_CheckBlame :
-  WpFuncCall ktcore.CheckBlame _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.CheckBlame _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SignVrf :
-  WpFuncCall ktcore.SignVrf _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.SignVrf _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VerifyVrfSig :
-  WpFuncCall ktcore.VerifyVrfSig _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.VerifyVrfSig _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SignLink :
-  WpFuncCall ktcore.SignLink _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.SignLink _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VerifyLinkSig :
-  WpFuncCall ktcore.VerifyLinkSig _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.VerifyLinkSig _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ProveMapLabel :
-  WpFuncCall ktcore.ProveMapLabel _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.ProveMapLabel _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EvalMapLabel :
-  WpFuncCall ktcore.EvalMapLabel _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.EvalMapLabel _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckMapLabel :
-  WpFuncCall ktcore.CheckMapLabel _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.CheckMapLabel _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetMapVal :
-  WpFuncCall ktcore.GetMapVal _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.GetMapVal _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetCommitRand :
-  WpFuncCall ktcore.GetCommitRand _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.GetCommitRand _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VrfSigEncode :
-  WpFuncCall ktcore.VrfSigEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.VrfSigEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VrfSigDecode :
-  WpFuncCall ktcore.VrfSigDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.VrfSigDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LinkSigEncode :
-  WpFuncCall ktcore.LinkSigEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.LinkSigEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LinkSigDecode :
-  WpFuncCall ktcore.LinkSigDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.LinkSigDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MapLabelEncode :
-  WpFuncCall ktcore.MapLabelEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.MapLabelEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MapLabelDecode :
-  WpFuncCall ktcore.MapLabelDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.MapLabelDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CommitOpenEncode :
-  WpFuncCall ktcore.CommitOpenEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.CommitOpenEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CommitOpenDecode :
-  WpFuncCall ktcore.CommitOpenDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.CommitOpenDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembEncode :
-  WpFuncCall ktcore.MembEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.MembEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembDecode :
-  WpFuncCall ktcore.MembDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.MembDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NonMembEncode :
-  WpFuncCall ktcore.NonMembEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.NonMembEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NonMembDecode :
-  WpFuncCall ktcore.NonMembDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.NonMembDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofEncode :
-  WpFuncCall ktcore.AuditProofEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.AuditProofEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofDecode :
-  WpFuncCall ktcore.AuditProofDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.AuditProofDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofEncode :
-  WpFuncCall ktcore.UpdateProofEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.UpdateProofEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofDecode :
-  WpFuncCall ktcore.UpdateProofDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.UpdateProofDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofSlice1DEncode :
-  WpFuncCall ktcore.UpdateProofSlice1DEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.UpdateProofSlice1DEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateProofSlice1DDecode :
-  WpFuncCall ktcore.UpdateProofSlice1DDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.UpdateProofSlice1DDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembSlice1DEncode :
-  WpFuncCall ktcore.MembSlice1DEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.MembSlice1DEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MembSlice1DDecode :
-  WpFuncCall ktcore.MembSlice1DDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.MembSlice1DDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofSlice1DEncode :
-  WpFuncCall ktcore.AuditProofSlice1DEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.AuditProofSlice1DEncode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditProofSlice1DDecode :
-  WpFuncCall ktcore.AuditProofSlice1DDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall ktcore.AuditProofSlice1DDecode _ (is_pkg_defined ktcore) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End ktcore.

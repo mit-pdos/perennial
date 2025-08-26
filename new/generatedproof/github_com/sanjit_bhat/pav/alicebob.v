@@ -91,27 +91,27 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined alicebob}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_testAliceBob :
-  WpFuncCall alicebob.testAliceBob _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall alicebob.testAliceBob _ (is_pkg_defined alicebob) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_equal :
-  WpFuncCall alicebob.equal _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall alicebob.equal _ (is_pkg_defined alicebob) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runAlice :
-  WpFuncCall alicebob.runAlice _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall alicebob.runAlice _ (is_pkg_defined alicebob) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_loopPending :
-  WpFuncCall alicebob.loopPending _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall alicebob.loopPending _ (is_pkg_defined alicebob) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runBob :
-  WpFuncCall alicebob.runBob _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall alicebob.runBob _ (is_pkg_defined alicebob) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End alicebob.

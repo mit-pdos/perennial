@@ -93,51 +93,51 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined bank}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_acquire_two_good :
-  WpFuncCall bank.acquire_two_good _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bank.acquire_two_good _ (is_pkg_defined bank) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_acquire_two :
-  WpFuncCall bank.acquire_two _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bank.acquire_two _ (is_pkg_defined bank) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_release_two :
-  WpFuncCall bank.release_two _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bank.release_two _ (is_pkg_defined bank) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeInt :
-  WpFuncCall bank.encodeInt _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bank.encodeInt _ (is_pkg_defined bank) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeInt :
-  WpFuncCall bank.decodeInt _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bank.decodeInt _ (is_pkg_defined bank) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeBankClerkSlice :
-  WpFuncCall bank.MakeBankClerkSlice _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bank.MakeBankClerkSlice _ (is_pkg_defined bank) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeBankClerk :
-  WpFuncCall bank.MakeBankClerk _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bank.MakeBankClerk _ (is_pkg_defined bank) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_SimpleAudit :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "SimpleAudit" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id bank.BankClerk.id) "SimpleAudit" _ (is_pkg_defined bank) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_SimpleTransfer :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "SimpleTransfer" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id bank.BankClerk.id) "SimpleTransfer" _ (is_pkg_defined bank) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_get_total :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "get_total" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id bank.BankClerk.id) "get_total" _ (is_pkg_defined bank) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_transfer_internal :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "transfer_internal" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id bank.BankClerk.id) "transfer_internal" _ (is_pkg_defined bank) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End bank.

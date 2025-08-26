@@ -22,15 +22,15 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined trusted_proph}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewProph :
-  WpFuncCall trusted_proph.NewProph _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall trusted_proph.NewProph _ (is_pkg_defined trusted_proph) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ResolveBytes :
-  WpFuncCall trusted_proph.ResolveBytes _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall trusted_proph.ResolveBytes _ (is_pkg_defined trusted_proph) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End trusted_proph.

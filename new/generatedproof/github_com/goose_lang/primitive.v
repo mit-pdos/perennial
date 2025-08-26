@@ -13,23 +13,23 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined primitive}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_UInt64Put :
-  WpFuncCall primitive.UInt64Put _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall primitive.UInt64Put _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_RandomUint64 :
-  WpFuncCall primitive.RandomUint64 _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall primitive.RandomUint64 _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Assume :
-  WpFuncCall primitive.Assume _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall primitive.Assume _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AssumeNoStringOverflow :
-  WpFuncCall primitive.AssumeNoStringOverflow _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall primitive.AssumeNoStringOverflow _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End primitive.

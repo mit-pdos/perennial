@@ -13,31 +13,31 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined chan_spec_raw_examples}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_SendMessage :
-  WpFuncCall chan_spec_raw_examples.SendMessage _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall chan_spec_raw_examples.SendMessage _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_JoinWithReceive :
-  WpFuncCall chan_spec_raw_examples.JoinWithReceive _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall chan_spec_raw_examples.JoinWithReceive _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_JoinWithSend :
-  WpFuncCall chan_spec_raw_examples.JoinWithSend _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall chan_spec_raw_examples.JoinWithSend _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_BroadcastNotification :
-  WpFuncCall chan_spec_raw_examples.BroadcastNotification _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall chan_spec_raw_examples.BroadcastNotification _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CoordinatedChannelClose :
-  WpFuncCall chan_spec_raw_examples.CoordinatedChannelClose _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall chan_spec_raw_examples.CoordinatedChannelClose _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DoubleValues :
-  WpFuncCall chan_spec_raw_examples.DoubleValues _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall chan_spec_raw_examples.DoubleValues _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End chan_spec_raw_examples.

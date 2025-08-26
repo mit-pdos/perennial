@@ -13,31 +13,31 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined std_core}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_SumNoOverflow :
-  WpFuncCall std_core.SumNoOverflow _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall std_core.SumNoOverflow _ (is_pkg_defined std_core) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SumAssumeNoOverflow :
-  WpFuncCall std_core.SumAssumeNoOverflow _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall std_core.SumAssumeNoOverflow _ (is_pkg_defined std_core) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MulNoOverflow :
-  WpFuncCall std_core.MulNoOverflow _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall std_core.MulNoOverflow _ (is_pkg_defined std_core) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MulAssumeNoOverflow :
-  WpFuncCall std_core.MulAssumeNoOverflow _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall std_core.MulAssumeNoOverflow _ (is_pkg_defined std_core) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Shuffle :
-  WpFuncCall std_core.Shuffle _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall std_core.Shuffle _ (is_pkg_defined std_core) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Permutation :
-  WpFuncCall std_core.Permutation _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall std_core.Permutation _ (is_pkg_defined std_core) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End std_core.

@@ -12,23 +12,23 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined main}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_foo :
-  WpFuncCall main.foo _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall main.foo _ (is_pkg_defined main) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_other :
-  WpFuncCall main.other _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall main.other _ (is_pkg_defined main) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_bar :
-  WpFuncCall main.bar _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall main.bar _ (is_pkg_defined main) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_main :
-  WpFuncCall main.main _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall main.main _ (is_pkg_defined main) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End main.

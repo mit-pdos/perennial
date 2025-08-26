@@ -220,31 +220,31 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined lockmap}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_mkLockShard :
-  WpFuncCall lockmap.mkLockShard _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall lockmap.mkLockShard _ (is_pkg_defined lockmap) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MkLockMap :
-  WpFuncCall lockmap.MkLockMap _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall lockmap.MkLockMap _ (is_pkg_defined lockmap) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_lockShard'ptr_acquire :
-  WpMethodCall (ptrT.id lockmap.lockShard.id) "acquire" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id lockmap.lockShard.id) "acquire" _ (is_pkg_defined lockmap) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_lockShard'ptr_release :
-  WpMethodCall (ptrT.id lockmap.lockShard.id) "release" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id lockmap.lockShard.id) "release" _ (is_pkg_defined lockmap) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockMap'ptr_Acquire :
-  WpMethodCall (ptrT.id lockmap.LockMap.id) "Acquire" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id lockmap.LockMap.id) "Acquire" _ (is_pkg_defined lockmap) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockMap'ptr_Release :
-  WpMethodCall (ptrT.id lockmap.LockMap.id) "Release" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id lockmap.LockMap.id) "Release" _ (is_pkg_defined lockmap) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End lockmap.

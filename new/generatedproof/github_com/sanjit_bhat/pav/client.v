@@ -600,55 +600,55 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined client}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_New :
-  WpFuncCall client.New _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall client.New _ (is_pkg_defined client) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckMemb :
-  WpFuncCall client.CheckMemb _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall client.CheckMemb _ (is_pkg_defined client) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckHist :
-  WpFuncCall client.CheckHist _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall client.CheckHist _ (is_pkg_defined client) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckNonMemb :
-  WpFuncCall client.CheckNonMemb _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall client.CheckNonMemb _ (is_pkg_defined client) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Audit :
-  WpMethodCall (ptrT.id client.Client.id) "Audit" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.Client.id) "Audit" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Get :
-  WpMethodCall (ptrT.id client.Client.id) "Get" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.Client.id) "Get" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Put :
-  WpMethodCall (ptrT.id client.Client.id) "Put" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.Client.id) "Put" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_SelfMon :
-  WpMethodCall (ptrT.id client.Client.id) "SelfMon" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.Client.id) "SelfMon" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_getChainExt :
-  WpMethodCall (ptrT.id client.Client.id) "getChainExt" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.Client.id) "getChainExt" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Evid'ptr_Check :
-  WpMethodCall (ptrT.id client.Evid.id) "Check" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.Evid.id) "Check" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidVrf'ptr_Check :
-  WpMethodCall (ptrT.id client.evidVrf.id) "Check" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.evidVrf.id) "Check" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidLink'ptr_Check :
-  WpMethodCall (ptrT.id client.evidLink.id) "Check" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id client.evidLink.id) "Check" _ (is_pkg_defined client) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End client.

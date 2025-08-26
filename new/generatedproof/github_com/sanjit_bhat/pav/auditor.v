@@ -516,63 +516,63 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined auditor}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_New :
-  WpFuncCall auditor.New _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.New _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getNextDig :
-  WpFuncCall auditor.getNextDig _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewRpcAuditor :
-  WpFuncCall auditor.NewRpcAuditor _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.NewRpcAuditor _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallUpdate :
-  WpFuncCall auditor.CallUpdate _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.CallUpdate _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallGet :
-  WpFuncCall auditor.CallGet _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.CallGet _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateReplyEncode :
-  WpFuncCall auditor.UpdateReplyEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.UpdateReplyEncode _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateReplyDecode :
-  WpFuncCall auditor.UpdateReplyDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.UpdateReplyDecode _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetArgEncode :
-  WpFuncCall auditor.GetArgEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.GetArgEncode _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetArgDecode :
-  WpFuncCall auditor.GetArgDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.GetArgDecode _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetReplyEncode :
-  WpFuncCall auditor.GetReplyEncode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.GetReplyEncode _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetReplyDecode :
-  WpFuncCall auditor.GetReplyDecode _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall auditor.GetReplyDecode _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_Get :
-  WpMethodCall (ptrT.id auditor.Auditor.id) "Get" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id auditor.Auditor.id) "Get" _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_Update :
-  WpMethodCall (ptrT.id auditor.Auditor.id) "Update" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id auditor.Auditor.id) "Update" _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_updOnce :
-  WpMethodCall (ptrT.id auditor.Auditor.id) "updOnce" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id auditor.Auditor.id) "updOnce" _ (is_pkg_defined auditor) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End auditor.

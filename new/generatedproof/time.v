@@ -167,23 +167,23 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined time}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_syncTimer :
-  WpFuncCall time.syncTimer _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall time.syncTimer _ (is_pkg_defined time) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newTimer :
-  WpFuncCall time.newTimer _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall time.newTimer _ (is_pkg_defined time) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_After :
-  WpFuncCall time.After _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall time.After _ (is_pkg_defined time) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtimeNano :
-  WpFuncCall time.runtimeNano _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall time.runtimeNano _ (is_pkg_defined time) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End time.

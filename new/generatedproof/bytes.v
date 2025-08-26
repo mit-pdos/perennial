@@ -29,15 +29,15 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined bytes}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Equal :
-  WpFuncCall bytes.Equal _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bytes.Equal _ (is_pkg_defined bytes) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Clone :
-  WpFuncCall bytes.Clone _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall bytes.Clone _ (is_pkg_defined bytes) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End bytes.

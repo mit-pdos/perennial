@@ -29,7 +29,7 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined big}.
+Context `{!GoContext}.
 
 End names.
 End big.

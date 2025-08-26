@@ -104,19 +104,19 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined replicated_block}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Open :
-  WpFuncCall replicated_block.Open _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall replicated_block.Open _ (is_pkg_defined replicated_block) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_RepBlock'ptr_Read :
-  WpMethodCall (ptrT.id replicated_block.RepBlock.id) "Read" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id replicated_block.RepBlock.id) "Read" _ (is_pkg_defined replicated_block) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RepBlock'ptr_Write :
-  WpMethodCall (ptrT.id replicated_block.RepBlock.id) "Write" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id replicated_block.RepBlock.id) "Write" _ (is_pkg_defined replicated_block) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End replicated_block.

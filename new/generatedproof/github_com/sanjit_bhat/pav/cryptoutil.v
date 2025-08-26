@@ -13,11 +13,11 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined cryptoutil}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Hash :
-  WpFuncCall cryptoutil.Hash _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall cryptoutil.Hash _ (is_pkg_defined cryptoutil) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End cryptoutil.

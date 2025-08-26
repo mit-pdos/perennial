@@ -92,51 +92,51 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined append_log}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Init :
-  WpFuncCall append_log.Init _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall append_log.Init _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Open :
-  WpFuncCall append_log.Open _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall append_log.Open _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_writeAll :
-  WpFuncCall append_log.writeAll _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall append_log.writeAll _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Append :
-  WpMethodCall (ptrT.id append_log.Log.id) "Append" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "Append" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Get :
-  WpMethodCall (ptrT.id append_log.Log.id) "Get" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "Get" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Reset :
-  WpMethodCall (ptrT.id append_log.Log.id) "Reset" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "Reset" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_append :
-  WpMethodCall (ptrT.id append_log.Log.id) "append" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "append" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_get :
-  WpMethodCall (ptrT.id append_log.Log.id) "get" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "get" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_mkHdr :
-  WpMethodCall (ptrT.id append_log.Log.id) "mkHdr" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "mkHdr" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_reset :
-  WpMethodCall (ptrT.id append_log.Log.id) "reset" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "reset" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_writeHdr :
-  WpMethodCall (ptrT.id append_log.Log.id) "writeHdr" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id append_log.Log.id) "writeHdr" _ (is_pkg_defined append_log) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End append_log.

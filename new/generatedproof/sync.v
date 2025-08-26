@@ -307,107 +307,107 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined sync}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewCond :
-  WpFuncCall sync.NewCond _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall sync.NewCond _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_Semacquire :
-  WpFuncCall sync.runtime_Semacquire _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall sync.runtime_Semacquire _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_SemacquireWaitGroup :
-  WpFuncCall sync.runtime_SemacquireWaitGroup _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall sync.runtime_SemacquireWaitGroup _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_SemacquireRWMutexR :
-  WpFuncCall sync.runtime_SemacquireRWMutexR _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall sync.runtime_SemacquireRWMutexR _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_SemacquireRWMutex :
-  WpFuncCall sync.runtime_SemacquireRWMutex _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall sync.runtime_SemacquireRWMutex _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_Semrelease :
-  WpFuncCall sync.runtime_Semrelease _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall sync.runtime_Semrelease _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Cond'ptr_Broadcast :
-  WpMethodCall (ptrT.id sync.Cond.id) "Broadcast" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Cond.id) "Broadcast" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Cond'ptr_Signal :
-  WpMethodCall (ptrT.id sync.Cond.id) "Signal" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Cond.id) "Signal" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Cond'ptr_Wait :
-  WpMethodCall (ptrT.id sync.Cond.id) "Wait" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Cond.id) "Wait" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_Lock :
-  WpMethodCall (ptrT.id sync.Mutex.id) "Lock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Mutex.id) "Lock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_TryLock :
-  WpMethodCall (ptrT.id sync.Mutex.id) "TryLock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Mutex.id) "TryLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Mutex'ptr_Unlock :
-  WpMethodCall (ptrT.id sync.Mutex.id) "Unlock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Mutex.id) "Unlock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Once'ptr_Do :
-  WpMethodCall (ptrT.id sync.Once.id) "Do" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Once.id) "Do" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Once'ptr_doSlow :
-  WpMethodCall (ptrT.id sync.Once.id) "doSlow" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.Once.id) "doSlow" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_Lock :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "Lock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "Lock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_RLock :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "RLock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "RLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_RLocker :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "RLocker" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "RLocker" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_RUnlock :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "RUnlock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "RUnlock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_TryLock :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "TryLock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "TryLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_TryRLock :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "TryRLock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "TryRLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_Unlock :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "Unlock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "Unlock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_rUnlockSlow :
-  WpMethodCall (ptrT.id sync.RWMutex.id) "rUnlockSlow" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.RWMutex.id) "rUnlockSlow" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WaitGroup'ptr_Add :
-  WpMethodCall (ptrT.id sync.WaitGroup.id) "Add" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.WaitGroup.id) "Add" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WaitGroup'ptr_Done :
-  WpMethodCall (ptrT.id sync.WaitGroup.id) "Done" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.WaitGroup.id) "Done" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WaitGroup'ptr_Wait :
-  WpMethodCall (ptrT.id sync.WaitGroup.id) "Wait" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id sync.WaitGroup.id) "Wait" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End sync.

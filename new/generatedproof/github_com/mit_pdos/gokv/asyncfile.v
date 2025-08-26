@@ -148,27 +148,27 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined asyncfile}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeAsyncFile :
-  WpFuncCall asyncfile.MakeAsyncFile _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall asyncfile.MakeAsyncFile _ (is_pkg_defined asyncfile) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Close :
-  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "Close" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "Close" _ (is_pkg_defined asyncfile) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Write :
-  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "Write" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "Write" _ (is_pkg_defined asyncfile) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_flushThread :
-  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "flushThread" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "flushThread" _ (is_pkg_defined asyncfile) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_wait :
-  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "wait" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id asyncfile.AsyncFile.id) "wait" _ (is_pkg_defined asyncfile) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End asyncfile.

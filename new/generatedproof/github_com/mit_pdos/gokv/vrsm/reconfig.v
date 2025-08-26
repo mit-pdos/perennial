@@ -19,15 +19,15 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined reconfig}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_EnterNewConfig :
-  WpFuncCall reconfig.EnterNewConfig _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall reconfig.EnterNewConfig _ (is_pkg_defined reconfig) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_InitializeSystem :
-  WpFuncCall reconfig.InitializeSystem _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall reconfig.InitializeSystem _ (is_pkg_defined reconfig) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End reconfig.

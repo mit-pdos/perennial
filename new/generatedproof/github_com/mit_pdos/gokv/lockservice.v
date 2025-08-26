@@ -74,19 +74,19 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined lockservice}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeLockClerk :
-  WpFuncCall lockservice.MakeLockClerk _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall lockservice.MakeLockClerk _ (is_pkg_defined lockservice) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_LockClerk'ptr_Lock :
-  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Lock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Lock" _ (is_pkg_defined lockservice) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockClerk'ptr_Unlock :
-  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Unlock" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Unlock" _ (is_pkg_defined lockservice) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End lockservice.

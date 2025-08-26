@@ -85,27 +85,27 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined jrnl}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Begin :
-  WpFuncCall jrnl.Begin _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall jrnl.Begin _ (is_pkg_defined jrnl) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_CommitWait :
-  WpMethodCall (ptrT.id jrnl.Op.id) "CommitWait" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id jrnl.Op.id) "CommitWait" _ (is_pkg_defined jrnl) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_NDirty :
-  WpMethodCall (ptrT.id jrnl.Op.id) "NDirty" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id jrnl.Op.id) "NDirty" _ (is_pkg_defined jrnl) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_OverWrite :
-  WpMethodCall (ptrT.id jrnl.Op.id) "OverWrite" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id jrnl.Op.id) "OverWrite" _ (is_pkg_defined jrnl) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_ReadBuf :
-  WpMethodCall (ptrT.id jrnl.Op.id) "ReadBuf" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id jrnl.Op.id) "ReadBuf" _ (is_pkg_defined jrnl) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End jrnl.

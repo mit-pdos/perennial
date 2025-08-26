@@ -103,31 +103,31 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined clerk}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_makeClerks :
-  WpFuncCall clerk.makeClerks _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall clerk.makeClerks _ (is_pkg_defined clerk) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Make :
-  WpFuncCall clerk.Make _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall clerk.Make _ (is_pkg_defined clerk) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_Apply :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "Apply" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id clerk.Clerk.id) "Apply" _ (is_pkg_defined clerk) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "ApplyRo" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id clerk.Clerk.id) "ApplyRo" _ (is_pkg_defined clerk) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo2 :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "ApplyRo2" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id clerk.Clerk.id) "ApplyRo2" _ (is_pkg_defined clerk) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_maybeRefreshPreference :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "maybeRefreshPreference" _ :=
-  ltac:(solve_wp_method_call).
+  WpMethodCall (ptrT.id clerk.Clerk.id) "maybeRefreshPreference" _ (is_pkg_defined clerk) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End clerk.

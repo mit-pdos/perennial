@@ -21,47 +21,47 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined status}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_New :
-  WpFuncCall status.New _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.New _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Newf :
-  WpFuncCall status.Newf _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.Newf _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Error :
-  WpFuncCall status.Error _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.Error _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Errorf :
-  WpFuncCall status.Errorf _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.Errorf _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ErrorProto :
-  WpFuncCall status.ErrorProto _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.ErrorProto _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_FromProto :
-  WpFuncCall status.FromProto _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.FromProto _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_FromError :
-  WpFuncCall status.FromError _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.FromError _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Convert :
-  WpFuncCall status.Convert _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.Convert _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Code :
-  WpFuncCall status.Code _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.Code _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_FromContextError :
-  WpFuncCall status.FromContextError _ :=
-  ltac:(solve_wp_func_call).
+  WpFuncCall status.FromContextError _ (is_pkg_defined status) :=
+  ltac:(apply wp_func_call'; reflexivity).
 
 End names.
 End status.

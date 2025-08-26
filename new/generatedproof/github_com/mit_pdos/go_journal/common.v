@@ -29,7 +29,7 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext} `{!is_pkg_defined common}.
+Context `{!GoContext}.
 
 End names.
 End common.
