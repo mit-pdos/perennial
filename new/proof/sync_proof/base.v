@@ -37,12 +37,10 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
 #[global] Instance : IsPkgInit race := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf race := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure race := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf race := build_get_is_pkg_init_wf.
 
 #[global] Instance : IsPkgInit sync := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure sync := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init_wf.
 
 
 

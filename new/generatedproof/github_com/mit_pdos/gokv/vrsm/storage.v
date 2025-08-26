@@ -211,39 +211,61 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_storage : IsPkgDefined storage :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single storage ∧
+      is_pkg_defined_pure std ∧
+      is_pkg_defined_pure aof ∧
+      is_pkg_defined_pure grove_ffi ∧
+      is_pkg_defined_pure replica ∧
+      is_pkg_defined_pure marshal;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single storage ∗
+         is_pkg_defined std ∗
+         is_pkg_defined aof ∗
+         is_pkg_defined grove_ffi ∗
+         is_pkg_defined replica ∗
+         is_pkg_defined marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_recoverStateMachine :
   WpFuncCall storage.recoverStateMachine _ (is_pkg_defined storage) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakePbServer :
   WpFuncCall storage.MakePbServer _ (is_pkg_defined storage) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_StateMachine'ptr_apply :
   WpMethodCall (ptrT.id storage.StateMachine.id) "apply" _ (is_pkg_defined storage) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_StateMachine'ptr_applyReadonly :
   WpMethodCall (ptrT.id storage.StateMachine.id) "applyReadonly" _ (is_pkg_defined storage) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_StateMachine'ptr_getStateAndSeal :
   WpMethodCall (ptrT.id storage.StateMachine.id) "getStateAndSeal" _ (is_pkg_defined storage) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_StateMachine'ptr_makeDurableWithSnap :
   WpMethodCall (ptrT.id storage.StateMachine.id) "makeDurableWithSnap" _ (is_pkg_defined storage) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_StateMachine'ptr_setStateAndUnseal :
   WpMethodCall (ptrT.id storage.StateMachine.id) "setStateAndUnseal" _ (is_pkg_defined storage) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_StateMachine'ptr_truncateAndMakeDurable :
   WpMethodCall (ptrT.id storage.StateMachine.id) "truncateAndMakeDurable" _ (is_pkg_defined storage) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End storage.

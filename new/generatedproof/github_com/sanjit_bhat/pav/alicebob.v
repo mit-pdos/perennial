@@ -91,27 +91,59 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_alicebob : IsPkgDefined alicebob :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single alicebob ∧
+      is_pkg_defined_pure bytes ∧
+      is_pkg_defined_pure sync ∧
+      is_pkg_defined_pure primitive ∧
+      is_pkg_defined_pure std ∧
+      is_pkg_defined_pure advrpc ∧
+      is_pkg_defined_pure auditor ∧
+      is_pkg_defined_pure client ∧
+      is_pkg_defined_pure cryptoffi ∧
+      is_pkg_defined_pure ktcore ∧
+      is_pkg_defined_pure server;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single alicebob ∗
+         is_pkg_defined bytes ∗
+         is_pkg_defined sync ∗
+         is_pkg_defined primitive ∗
+         is_pkg_defined std ∗
+         is_pkg_defined advrpc ∗
+         is_pkg_defined auditor ∗
+         is_pkg_defined client ∗
+         is_pkg_defined cryptoffi ∗
+         is_pkg_defined ktcore ∗
+         is_pkg_defined server)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_testAliceBob :
   WpFuncCall alicebob.testAliceBob _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_equal :
   WpFuncCall alicebob.equal _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_runAlice :
   WpFuncCall alicebob.runAlice _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_loopPending :
   WpFuncCall alicebob.loopPending _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_runBob :
   WpFuncCall alicebob.runBob _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End alicebob.

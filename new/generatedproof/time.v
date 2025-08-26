@@ -167,23 +167,35 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_time : IsPkgDefined time :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single time;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single time)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_syncTimer :
   WpFuncCall time.syncTimer _ (is_pkg_defined time) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_newTimer :
   WpFuncCall time.newTimer _ (is_pkg_defined time) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_After :
   WpFuncCall time.After _ (is_pkg_defined time) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_runtimeNano :
   WpFuncCall time.runtimeNano _ (is_pkg_defined time) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End time.

@@ -13,11 +13,25 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_externalglobals : IsPkgDefined externalglobals :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single externalglobals ∧
+      is_pkg_defined_pure unittest;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single externalglobals ∗
+         is_pkg_defined unittest)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_f :
   WpFuncCall externalglobals.f _ (is_pkg_defined externalglobals) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End externalglobals.

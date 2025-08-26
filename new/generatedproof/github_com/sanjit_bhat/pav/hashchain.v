@@ -93,35 +93,55 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_hashchain : IsPkgDefined hashchain :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single hashchain ∧
+      is_pkg_defined_pure bytes ∧
+      is_pkg_defined_pure std ∧
+      is_pkg_defined_pure cryptoffi ∧
+      is_pkg_defined_pure cryptoutil;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single hashchain ∗
+         is_pkg_defined bytes ∗
+         is_pkg_defined std ∗
+         is_pkg_defined cryptoffi ∗
+         is_pkg_defined cryptoutil)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_Verify :
   WpFuncCall hashchain.Verify _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_New :
   WpFuncCall hashchain.New _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetEmptyLink :
   WpFuncCall hashchain.GetEmptyLink _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetNextLink :
   WpFuncCall hashchain.GetNextLink _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_HashChain'ptr_Append :
   WpMethodCall (ptrT.id hashchain.HashChain.id) "Append" _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_HashChain'ptr_Bootstrap :
   WpMethodCall (ptrT.id hashchain.HashChain.id) "Bootstrap" _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_HashChain'ptr_Prove :
   WpMethodCall (ptrT.id hashchain.HashChain.id) "Prove" _ (is_pkg_defined hashchain) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End hashchain.

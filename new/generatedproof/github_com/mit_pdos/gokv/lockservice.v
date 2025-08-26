@@ -74,19 +74,33 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_lockservice : IsPkgDefined lockservice :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single lockservice ∧
+      is_pkg_defined_pure kv;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single lockservice ∗
+         is_pkg_defined kv)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MakeLockClerk :
-  WpFuncCall lockservice.MakeLockClerk _ (is_pkg_defined lockservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  WpFuncCall lockservice.MakeLockClerk lockservice.MakeLockClerkⁱᵐᵖˡ (is_pkg_defined lockservice) :=
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_LockClerk'ptr_Lock :
   WpMethodCall (ptrT.id lockservice.LockClerk.id) "Lock" _ (is_pkg_defined lockservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_LockClerk'ptr_Unlock :
   WpMethodCall (ptrT.id lockservice.LockClerk.id) "Unlock" _ (is_pkg_defined lockservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End lockservice.

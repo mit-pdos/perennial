@@ -7,8 +7,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit std_core := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf std_core := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure std_core := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf std_core := build_get_is_pkg_init_wf.
 
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_pkg_init std_core }}}

@@ -90,47 +90,61 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_alloc : IsPkgDefined alloc :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single alloc ∧
+      is_pkg_defined_pure sync;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single alloc ∗
+         is_pkg_defined sync)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MkAlloc :
   WpFuncCall alloc.MkAlloc _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MkMaxAlloc :
   WpFuncCall alloc.MkMaxAlloc _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_popCnt :
   WpFuncCall alloc.popCnt _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Alloc'ptr_AllocNum :
   WpMethodCall (ptrT.id alloc.Alloc.id) "AllocNum" _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Alloc'ptr_FreeNum :
   WpMethodCall (ptrT.id alloc.Alloc.id) "FreeNum" _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Alloc'ptr_MarkUsed :
   WpMethodCall (ptrT.id alloc.Alloc.id) "MarkUsed" _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Alloc'ptr_NumFree :
   WpMethodCall (ptrT.id alloc.Alloc.id) "NumFree" _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Alloc'ptr_allocBit :
   WpMethodCall (ptrT.id alloc.Alloc.id) "allocBit" _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Alloc'ptr_freeBit :
   WpMethodCall (ptrT.id alloc.Alloc.id) "freeBit" _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Alloc'ptr_incNext :
   WpMethodCall (ptrT.id alloc.Alloc.id) "incNext" _ (is_pkg_defined alloc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End alloc.

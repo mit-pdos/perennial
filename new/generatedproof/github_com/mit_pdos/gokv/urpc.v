@@ -249,47 +249,71 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_urpc : IsPkgDefined urpc :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single urpc ∧
+      is_pkg_defined_pure log ∧
+      is_pkg_defined_pure sync ∧
+      is_pkg_defined_pure primitive ∧
+      is_pkg_defined_pure std ∧
+      is_pkg_defined_pure grove_ffi ∧
+      is_pkg_defined_pure marshal;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single urpc ∗
+         is_pkg_defined log ∗
+         is_pkg_defined sync ∗
+         is_pkg_defined primitive ∗
+         is_pkg_defined std ∗
+         is_pkg_defined grove_ffi ∗
+         is_pkg_defined marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MakeServer :
   WpFuncCall urpc.MakeServer _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_TryMakeClient :
   WpFuncCall urpc.TryMakeClient _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeClient :
   WpFuncCall urpc.MakeClient _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Server'ptr_Serve :
   WpMethodCall (ptrT.id urpc.Server.id) "Serve" _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_readThread :
   WpMethodCall (ptrT.id urpc.Server.id) "readThread" _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_rpcHandle :
   WpMethodCall (ptrT.id urpc.Server.id) "rpcHandle" _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Client'ptr_Call :
   WpMethodCall (ptrT.id urpc.Client.id) "Call" _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Client'ptr_CallComplete :
   WpMethodCall (ptrT.id urpc.Client.id) "CallComplete" _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Client'ptr_CallStart :
   WpMethodCall (ptrT.id urpc.Client.id) "CallStart" _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Client'ptr_replyThread :
   WpMethodCall (ptrT.id urpc.Client.id) "replyThread" _ (is_pkg_defined urpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End urpc.

@@ -13,31 +13,45 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_chan_spec_raw_examples : IsPkgDefined chan_spec_raw_examples :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single chan_spec_raw_examples ∧
+      is_pkg_defined_pure channel;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single chan_spec_raw_examples ∗
+         is_pkg_defined channel)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_SendMessage :
   WpFuncCall chan_spec_raw_examples.SendMessage _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_JoinWithReceive :
   WpFuncCall chan_spec_raw_examples.JoinWithReceive _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_JoinWithSend :
   WpFuncCall chan_spec_raw_examples.JoinWithSend _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_BroadcastNotification :
   WpFuncCall chan_spec_raw_examples.BroadcastNotification _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CoordinatedChannelClose :
   WpFuncCall chan_spec_raw_examples.CoordinatedChannelClose _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DoubleValues :
   WpFuncCall chan_spec_raw_examples.DoubleValues _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End chan_spec_raw_examples.

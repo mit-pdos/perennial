@@ -125,10 +125,12 @@ Class IsPkgDefined (pkg_name : go_string) :=
       is_pkg_defined_pure_def → is_go_context -∗ is_pkg_defined_def
   }.
 Notation is_pkg_defined_pure := is_pkg_defined_pure_def.
-Global Arguments is_pkg_defined_pure (pkg_name) {_} {go_ctx}.
+#[global] Arguments is_pkg_defined_pure (pkg_name) {_} {go_ctx}.
+#[global] Opaque is_pkg_defined_pure.
 
 Notation is_pkg_defined := is_pkg_defined_def.
-Global Arguments is_pkg_defined (pkg_name) {_} {go_ctx}.
+#[global] Arguments is_pkg_defined (pkg_name) {_} {go_ctx}.
+#[global] Opaque is_pkg_defined.
 
 (** Internal to Goose. Pure predicate asserting that the declarations in the Go
     package [pkg_name] are part of the implicit [GoContext]. *)
@@ -141,19 +143,18 @@ Definition is_pkg_defined_pure_single pkg_name `{!PkgInfo pkg_name} : Prop :=
      (alist_lookup_f method_name) = Some m →
      (alist_lookup_f type_name __method) ≫=
      (alist_lookup_f method_name) = Some m).
+#[global] Opaque is_pkg_defined_pure_single.
+#[local] Transparent is_pkg_defined_pure_single.
 
 (** Internal to Goose. This says that the package's declarations are accessible
     (including functions, methods, and variables). This does not cover any
     dependencies.  This should only be referring to by definitions in
     generatedproof; do not use this manually in proofs. *)
-Definition is_pkg_defined_single_def pkg_name `{!PkgInfo pkg_name} : iProp Σ :=
+Definition is_pkg_defined_single pkg_name `{!PkgInfo pkg_name} : iProp Σ :=
   "#Hctx" ∷ is_go_context ∗
   "%Hdefined" ∷ ⌜ is_pkg_defined_pure_single pkg_name ⌝.
-Program Definition is_pkg_defined_single := sealed @is_pkg_defined_single_def.
-Definition is_pkg_defined_single_unseal : is_pkg_defined_single = _ := seal_eq _.
-#[global] Arguments is_pkg_defined_single (pkg_name) {_}.
-#[global] Instance is_pkg_defined_single_persistent pkg_name `{!PkgInfo pkg_name} : Persistent (is_pkg_defined_single pkg_name).
-Proof. rewrite is_pkg_defined_single_unseal. apply _. Qed.
+#[global] Opaque is_pkg_defined_single.
+#[local] Transparent is_pkg_defined_single.
 
 (** [IsPkgInit] connects pkg names (really the full package path) to their
     post-initialization predicate. There should only be one instance for each
@@ -242,7 +243,7 @@ Local Ltac2 build_is_pkg_init (is_pkg_init_def : preterm) :=
     (fun () =>
        lazy_match! goal with
        | [ |- IsPkgInit ?pkg_name ] =>
-           constr:(Build_IsPkgInit $pkg_name _ ltac2:(build_pkg_init_deps pkg_name) $preterm:is_pkg_init_def)
+           constr:(Build_IsPkgInit $pkg_name ltac2:(build_pkg_init_deps pkg_name) $preterm:is_pkg_init_def)
        | [ |- ?x ] => fail (fprintf "build_pkg_init: goal is [%t] instead of [IsPkgInit]" x)
        end
     ).
@@ -368,6 +369,8 @@ Proof.
   { simpl in *. wp_pures. rewrite <-Hglobal_addr. by iApply "HΦ". }
 Qed.
 
+#[local] Transparent is_pkg_defined_single.
+
 (** Internal to Goose. Used in generatedproofs to establish [WpFuncCall]. *)
 Lemma wp_func_call' {func_name func} `{!PkgInfo pkg_name} P :
   alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
@@ -375,8 +378,7 @@ Lemma wp_func_call' {func_name func} `{!PkgInfo pkg_name} P :
   WpFuncCall func_name func P.
 Proof.
   intros Hlookup HP. rewrite /WpFuncCall. iIntros "* Hdef HΦ". rewrite func_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. iDestruct (HP with "Hdef") as "Hdef".
-  rewrite is_pkg_defined_single_unseal. iNamed "Hdef". iNamed "Hctx".
+  wp_pure_lc "Hlc". wp_bind. iDestruct (HP with "Hdef") as "Hdef". iNamed "Hdef". iNamed "Hctx".
   iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__functions"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
@@ -391,8 +393,7 @@ Lemma wp_method_call' {type_name method_name m} `{!PkgInfo pkg_name} P :
   WpMethodCall type_name method_name m P.
 Proof.
   intros Hlookup HP. rewrite /WpMethodCall. iIntros "* Hdef HΦ". rewrite method_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. iDestruct (HP with "Hdef") as "Hdef".
-  rewrite is_pkg_defined_single_unseal. iNamed "Hdef".
+  wp_pure_lc "Hlc". wp_bind. iDestruct (HP with "Hdef") as "Hdef". iNamed "Hdef".
   iNamed "Hctx". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__msets"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
@@ -431,6 +432,12 @@ Notation "@! func" :=
 Notation "rcvr @ type @ method" :=
   #(method_callv type method #rcvr)
     (at level 1, type at next level, no associativity) : expr_scope.
+
+Ltac solve_wp_func_call :=
+  apply wp_func_call'; [reflexivity| iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"].
+
+Ltac solve_wp_method_call :=
+  apply wp_method_call'; [reflexivity | iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"].
 
 (* FIXME: better implementation using PkgInfo to direct the search. Could try lithium even. *)
 (* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)

@@ -51,8 +51,7 @@ Global Instance is_LockClerk_pers ck γ : Persistent (is_LockClerk ck γ) := _.
 Global Instance is_lock_pers N γ key R : Persistent (is_lock N γ key R) := _.
 
 #[global] Instance : IsPkgInit lockservice := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf lockservice := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure lockservice := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf lockservice := build_get_is_pkg_init_wf.
 
 Lemma wp_MakeLockClerk kv kvptsto E :
   {{{

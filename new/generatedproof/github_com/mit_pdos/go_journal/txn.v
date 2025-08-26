@@ -164,71 +164,95 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_txn : IsPkgDefined txn :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single txn ∧
+      is_pkg_defined_pure disk ∧
+      is_pkg_defined_pure addr ∧
+      is_pkg_defined_pure jrnl ∧
+      is_pkg_defined_pure lockmap ∧
+      is_pkg_defined_pure obj ∧
+      is_pkg_defined_pure util;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single txn ∗
+         is_pkg_defined disk ∗
+         is_pkg_defined addr ∗
+         is_pkg_defined jrnl ∗
+         is_pkg_defined lockmap ∗
+         is_pkg_defined obj ∗
+         is_pkg_defined util)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_Init :
   WpFuncCall txn.Init _ (is_pkg_defined txn) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Begin :
   WpFuncCall txn.Begin _ (is_pkg_defined txn) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_bitToByte :
   WpFuncCall txn.bitToByte _ (is_pkg_defined txn) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Log'ptr_Flush :
   WpMethodCall (ptrT.id txn.Log.id) "Flush" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_Acquire :
   WpMethodCall (ptrT.id txn.Txn.id) "Acquire" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_Commit :
   WpMethodCall (ptrT.id txn.Txn.id) "Commit" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_NDirty :
   WpMethodCall (ptrT.id txn.Txn.id) "NDirty" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_OverWrite :
   WpMethodCall (ptrT.id txn.Txn.id) "OverWrite" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_OverWriteBit :
   WpMethodCall (ptrT.id txn.Txn.id) "OverWriteBit" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_ReadBuf :
   WpMethodCall (ptrT.id txn.Txn.id) "ReadBuf" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_ReadBufBit :
   WpMethodCall (ptrT.id txn.Txn.id) "ReadBufBit" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_ReleaseAll :
   WpMethodCall (ptrT.id txn.Txn.id) "ReleaseAll" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_acquireNoCheck :
   WpMethodCall (ptrT.id txn.Txn.id) "acquireNoCheck" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_commitNoRelease :
   WpMethodCall (ptrT.id txn.Txn.id) "commitNoRelease" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_isAlreadyAcquired :
   WpMethodCall (ptrT.id txn.Txn.id) "isAlreadyAcquired" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Txn'ptr_readBufNoAcquire :
   WpMethodCall (ptrT.id txn.Txn.id) "readBufNoAcquire" _ (is_pkg_defined txn) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End txn.

@@ -149,23 +149,43 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_aof : IsPkgDefined aof :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single aof ∧
+      is_pkg_defined_pure sync ∧
+      is_pkg_defined_pure std ∧
+      is_pkg_defined_pure grove_ffi ∧
+      is_pkg_defined_pure marshal;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single aof ∗
+         is_pkg_defined sync ∗
+         is_pkg_defined std ∗
+         is_pkg_defined grove_ffi ∗
+         is_pkg_defined marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_CreateAppendOnlyFile :
   WpFuncCall aof.CreateAppendOnlyFile _ (is_pkg_defined aof) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_Append :
   WpMethodCall (ptrT.id aof.AppendOnlyFile.id) "Append" _ (is_pkg_defined aof) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_Close :
   WpMethodCall (ptrT.id aof.AppendOnlyFile.id) "Close" _ (is_pkg_defined aof) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_WaitAppend :
   WpMethodCall (ptrT.id aof.AppendOnlyFile.id) "WaitAppend" _ (is_pkg_defined aof) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End aof.

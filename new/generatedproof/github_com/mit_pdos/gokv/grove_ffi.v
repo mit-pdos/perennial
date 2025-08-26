@@ -13,47 +13,59 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_grove_ffi : IsPkgDefined grove_ffi :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single grove_ffi;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single grove_ffi)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_FileWrite :
   WpFuncCall grove_ffi.FileWrite _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_FileRead :
   WpFuncCall grove_ffi.FileRead _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_FileAppend :
   WpFuncCall grove_ffi.FileAppend _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Listen :
   WpFuncCall grove_ffi.Listen _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Accept :
   WpFuncCall grove_ffi.Accept _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Connect :
   WpFuncCall grove_ffi.Connect _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Send :
   WpFuncCall grove_ffi.Send _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Receive :
   WpFuncCall grove_ffi.Receive _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetTimeRange :
   WpFuncCall grove_ffi.GetTimeRange _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetTSC :
   WpFuncCall grove_ffi.GetTSC _ (is_pkg_defined grove_ffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End grove_ffi.

@@ -137,31 +137,49 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_advrpc : IsPkgDefined advrpc :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single advrpc ∧
+      is_pkg_defined_pure netffi ∧
+      is_pkg_defined_pure safemarshal ∧
+      is_pkg_defined_pure marshal;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single advrpc ∗
+         is_pkg_defined netffi ∗
+         is_pkg_defined safemarshal ∗
+         is_pkg_defined marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_NewServer :
   WpFuncCall advrpc.NewServer _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Dial :
   WpFuncCall advrpc.Dial _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Server'ptr_Serve :
   WpMethodCall (ptrT.id advrpc.Server.id) "Serve" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_handle :
   WpMethodCall (ptrT.id advrpc.Server.id) "handle" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_read :
   WpMethodCall (ptrT.id advrpc.Server.id) "read" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Client'ptr_Call :
   WpMethodCall (ptrT.id advrpc.Client.id) "Call" _ (is_pkg_defined advrpc) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End advrpc.

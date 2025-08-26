@@ -9,8 +9,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit std := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf std := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure std := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf std := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init std = (is_pkg_init std) →

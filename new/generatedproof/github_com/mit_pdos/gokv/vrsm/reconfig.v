@@ -19,15 +19,41 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_reconfig : IsPkgDefined reconfig :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single reconfig ∧
+      is_pkg_defined_pure log ∧
+      is_pkg_defined_pure sync ∧
+      is_pkg_defined_pure primitive ∧
+      is_pkg_defined_pure grove_ffi ∧
+      is_pkg_defined_pure configservice ∧
+      is_pkg_defined_pure e ∧
+      is_pkg_defined_pure replica;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single reconfig ∗
+         is_pkg_defined log ∗
+         is_pkg_defined sync ∗
+         is_pkg_defined primitive ∗
+         is_pkg_defined grove_ffi ∗
+         is_pkg_defined configservice ∗
+         is_pkg_defined e ∗
+         is_pkg_defined replica)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_EnterNewConfig :
   WpFuncCall reconfig.EnterNewConfig _ (is_pkg_defined reconfig) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_InitializeSystem :
   WpFuncCall reconfig.InitializeSystem _ (is_pkg_defined reconfig) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End reconfig.

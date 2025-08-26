@@ -19,8 +19,7 @@ Definition is_initialized : iProp Σ :=
     "Hglobal_debug" ∷ (global_addr util.Debug) ↦□ level.
 
 #[global] Instance : IsPkgInit util := define_is_pkg_init is_initialized.
-#[global] Instance : GetIsPkgInitWf util := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure util := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf util := build_get_is_pkg_init_wf.
 
 Implicit Types (v:val).
 

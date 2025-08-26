@@ -11,8 +11,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit hashchain := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf hashchain := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure hashchain := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf hashchain := build_get_is_pkg_init_wf.
 
 Local Fixpoint is_chain_rev (boot : list w8) (l : list $ list w8) (h : list w8) : iProp Σ :=
   match l with

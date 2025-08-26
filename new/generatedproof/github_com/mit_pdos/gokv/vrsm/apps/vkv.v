@@ -388,103 +388,129 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_vkv : IsPkgDefined vkv :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single vkv ∧
+      is_pkg_defined_pure grove_ffi ∧
+      is_pkg_defined_pure exactlyonce ∧
+      is_pkg_defined_pure sync ∧
+      is_pkg_defined_pure kv ∧
+      is_pkg_defined_pure map_string_marshal ∧
+      is_pkg_defined_pure storage ∧
+      is_pkg_defined_pure marshal;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single vkv ∗
+         is_pkg_defined grove_ffi ∗
+         is_pkg_defined exactlyonce ∗
+         is_pkg_defined sync ∗
+         is_pkg_defined kv ∗
+         is_pkg_defined map_string_marshal ∗
+         is_pkg_defined storage ∗
+         is_pkg_defined marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MakeClerk :
   WpFuncCall vkv.MakeClerk _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeClerkPool :
   WpFuncCall vkv.MakeClerkPool _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeKv :
   WpFuncCall vkv.MakeKv _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodePutArgs :
   WpFuncCall vkv.encodePutArgs _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodePutArgs :
   WpFuncCall vkv.decodePutArgs _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeGetArgs :
   WpFuncCall vkv.encodeGetArgs _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeGetArgs :
   WpFuncCall vkv.decodeGetArgs _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeCondPutArgs :
   WpFuncCall vkv.encodeCondPutArgs _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeCondPutArgs :
   WpFuncCall vkv.decodeCondPutArgs _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeVersionedStateMachine :
   WpFuncCall vkv.makeVersionedStateMachine _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Start :
   WpFuncCall vkv.Start _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Clerk'ptr_CondPut :
   WpMethodCall (ptrT.id vkv.Clerk.id) "CondPut" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_Get :
   WpMethodCall (ptrT.id vkv.Clerk.id) "Get" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_Put :
   WpMethodCall (ptrT.id vkv.Clerk.id) "Put" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_ClerkPool'ptr_ConditionalPut :
   WpMethodCall (ptrT.id vkv.ClerkPool.id) "ConditionalPut" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_ClerkPool'ptr_Get :
   WpMethodCall (ptrT.id vkv.ClerkPool.id) "Get" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_ClerkPool'ptr_Put :
   WpMethodCall (ptrT.id vkv.ClerkPool.id) "Put" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_ClerkPool'ptr_doWithClerk :
   WpMethodCall (ptrT.id vkv.ClerkPool.id) "doWithClerk" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_KVState'ptr_apply :
   WpMethodCall (ptrT.id vkv.KVState.id) "apply" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_KVState'ptr_applyReadonly :
   WpMethodCall (ptrT.id vkv.KVState.id) "applyReadonly" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_KVState'ptr_get :
   WpMethodCall (ptrT.id vkv.KVState.id) "get" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_KVState'ptr_getState :
   WpMethodCall (ptrT.id vkv.KVState.id) "getState" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_KVState'ptr_put :
   WpMethodCall (ptrT.id vkv.KVState.id) "put" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_KVState'ptr_setState :
   WpMethodCall (ptrT.id vkv.KVState.id) "setState" _ (is_pkg_defined vkv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End vkv.

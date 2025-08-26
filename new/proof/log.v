@@ -7,8 +7,7 @@ Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 #[global] Instance : IsPkgInit log := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf log := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure log := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf log := build_get_is_pkg_init_wf.
 
 Theorem wp_Printf (msg: go_string) (arg: slice.t) :
   {{{ is_pkg_init log }}}

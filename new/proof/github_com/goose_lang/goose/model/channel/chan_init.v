@@ -11,6 +11,5 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context  `{!chanGhostStateG Σ}.
 #[global] Instance : IsPkgInit channel := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf channel := build_get_is_pkg_init.
-#[global] Instance : IsPkgDefinedTransitiveClosure channel := build_is_pkg_defined_tc.
+#[global] Instance : GetIsPkgInitWf channel := build_get_is_pkg_init_wf.
 End proof.

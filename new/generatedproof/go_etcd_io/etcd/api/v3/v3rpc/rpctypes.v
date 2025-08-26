@@ -120,31 +120,47 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_rpctypes : IsPkgDefined rpctypes :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single rpctypes ∧
+      is_pkg_defined_pure codes ∧
+      is_pkg_defined_pure status;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single rpctypes ∗
+         is_pkg_defined codes ∗
+         is_pkg_defined status)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_Error :
   WpFuncCall rpctypes.Error _ (is_pkg_defined rpctypes) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ErrorDesc :
   WpFuncCall rpctypes.ErrorDesc _ (is_pkg_defined rpctypes) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_EtcdError_Code :
   WpMethodCall rpctypes.EtcdError.id "Code" _ (is_pkg_defined rpctypes) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_EtcdError_Error :
   WpMethodCall rpctypes.EtcdError.id "Error" _ (is_pkg_defined rpctypes) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_EtcdError'ptr_Code :
   WpMethodCall (ptrT.id rpctypes.EtcdError.id) "Code" _ (is_pkg_defined rpctypes) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_EtcdError'ptr_Error :
   WpMethodCall (ptrT.id rpctypes.EtcdError.id) "Error" _ (is_pkg_defined rpctypes) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End rpctypes.

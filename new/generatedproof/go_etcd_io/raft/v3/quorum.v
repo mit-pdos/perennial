@@ -65,111 +65,133 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_quorum : IsPkgDefined quorum :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single quorum ∧
+      is_pkg_defined_pure fmt ∧
+      is_pkg_defined_pure math ∧
+      is_pkg_defined_pure strings ∧
+      is_pkg_defined_pure slices ∧
+      is_pkg_defined_pure strconv;
+    is_pkg_defined_def go_ctx :=
+        (is_pkg_defined_single quorum ∗
+         is_pkg_defined fmt ∗
+         is_pkg_defined math ∗
+         is_pkg_defined strings ∗
+         is_pkg_defined slices ∗
+         is_pkg_defined strconv)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_method_call_JointConfig_CommittedIndex :
   WpMethodCall quorum.JointConfig.id "CommittedIndex" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig_Describe :
   WpMethodCall quorum.JointConfig.id "Describe" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig_IDs :
   WpMethodCall quorum.JointConfig.id "IDs" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig_String :
   WpMethodCall quorum.JointConfig.id "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig_VoteResult :
   WpMethodCall quorum.JointConfig.id "VoteResult" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig'ptr_CommittedIndex :
   WpMethodCall (ptrT.id quorum.JointConfig.id) "CommittedIndex" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig'ptr_Describe :
   WpMethodCall (ptrT.id quorum.JointConfig.id) "Describe" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig'ptr_IDs :
   WpMethodCall (ptrT.id quorum.JointConfig.id) "IDs" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig'ptr_String :
   WpMethodCall (ptrT.id quorum.JointConfig.id) "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_JointConfig'ptr_VoteResult :
   WpMethodCall (ptrT.id quorum.JointConfig.id) "VoteResult" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig_CommittedIndex :
   WpMethodCall quorum.MajorityConfig.id "CommittedIndex" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig_Describe :
   WpMethodCall quorum.MajorityConfig.id "Describe" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig_Slice :
   WpMethodCall quorum.MajorityConfig.id "Slice" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig_String :
   WpMethodCall quorum.MajorityConfig.id "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig_VoteResult :
   WpMethodCall quorum.MajorityConfig.id "VoteResult" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig'ptr_CommittedIndex :
   WpMethodCall (ptrT.id quorum.MajorityConfig.id) "CommittedIndex" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig'ptr_Describe :
   WpMethodCall (ptrT.id quorum.MajorityConfig.id) "Describe" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig'ptr_Slice :
   WpMethodCall (ptrT.id quorum.MajorityConfig.id) "Slice" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig'ptr_String :
   WpMethodCall (ptrT.id quorum.MajorityConfig.id) "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MajorityConfig'ptr_VoteResult :
   WpMethodCall (ptrT.id quorum.MajorityConfig.id) "VoteResult" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Index_String :
   WpMethodCall quorum.Index.id "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Index'ptr_String :
   WpMethodCall (ptrT.id quorum.Index.id) "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_mapAckIndexer_AckedIndex :
   WpMethodCall quorum.mapAckIndexer.id "AckedIndex" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_mapAckIndexer'ptr_AckedIndex :
   WpMethodCall (ptrT.id quorum.mapAckIndexer.id) "AckedIndex" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_VoteResult_String :
   WpMethodCall quorum.VoteResult.id "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_VoteResult'ptr_String :
   WpMethodCall (ptrT.id quorum.VoteResult.id) "String" _ (is_pkg_defined quorum) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End quorum.
