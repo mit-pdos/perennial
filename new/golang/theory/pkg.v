@@ -171,7 +171,6 @@ Class IsPkgInit (pkg_name : go_string) :=
 
 #[global] Arguments is_pkg_init_deps (pkg_name) {_}.
 #[global] Arguments is_pkg_init_def (pkg_name) {_}.
-#[global] Opaque is_pkg_init_def.
 
 (** [is_pkg_init] asserts the predicate specified in the [IsPkgInit] instance. *)
 Definition is_pkg_init (pkg_name : go_string) `{!IsPkgInit pkg_name} : iProp Σ :=
@@ -230,7 +229,7 @@ Local Ltac2 build_pkg_init_deps name :=
          | cons ?pkg ?deps =>
              let rest := build_iprop deps in
              constr:((is_pkg_init $pkg ∗ $rest)%I)
-         | nil => constr:(is_pkg_defined $name)
+         | nil => constr:((is_pkg_defined $name ∗ is_go_context)%I)
          | _ =>
              Message.print (Message.of_constr deps);
              fail (fprintf "build_pkg_init_deps: unable to match deps list")
@@ -446,7 +445,8 @@ Ltac solve_pkg_init :=
   lazymatch goal with
   | |- environments.envs_entails ?env (is_pkg_init _) => idtac
   | |- environments.envs_entails ?env (is_pkg_defined _) => idtac
-  | _ => fail "not a is_pkg_init or is_pkg_defined goal"
+  | |- environments.envs_entails ?env (is_go_context) => idtac
+  | _ => fail "not a is_pkg_init, is_pkg_defined, or is_go_context goal"
   end;
   try iAssumption;
   iClear "∗";
@@ -482,14 +482,13 @@ Context `{!goGlobalsGS Σ}.
 Context `{!GoContext}.
 
 #[local] Transparent own_initializing.
-Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init is_pkg_init :
+Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init :
   ∀ Φ,
-  get_is_pkg_init pkg_name = is_pkg_init → (* this allows for [assumption] to fill in [is_pkg_init]. *)
-  (own_initializing get_is_pkg_init ∗ (own_initializing get_is_pkg_init -∗ WP init_func #() {{ _, □ get_is_pkg_init pkg_name ∗ own_initializing get_is_pkg_init }})) -∗
   (own_initializing get_is_pkg_init ∗ get_is_pkg_init pkg_name -∗ Φ #()) -∗
+  (own_initializing get_is_pkg_init ∗ (own_initializing get_is_pkg_init -∗ WP init_func #() {{ _, □ get_is_pkg_init pkg_name ∗ own_initializing get_is_pkg_init }})) -∗
   WP package.init #pkg_name init_func {{ Φ }}.
 Proof.
-  intros ? Heq. subst. iIntros "(Hown & Hpre) HΦ". rewrite package.init_unseal.
+  intros ?. iIntros "(Hown & Hpre) HΦ". rewrite package.init_unseal.
   wp_call. wp_call_lc "Hlc".
   wp_bind. iNamed "Hown". iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iRename "Hg" into "Hg2". iNamed "Hi".

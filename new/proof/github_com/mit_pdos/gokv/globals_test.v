@@ -31,21 +31,28 @@ Context (γtok : gname).
 #[global] Instance is_pkg_init_globals_test : IsPkgInit globals_test.main :=
   define_is_pkg_init inv nroot (ghost_var γtok 1 () ∨ own_initialized).
 
+(** (COPY ME.) This creates a definition that describes a [get_is_pkg_init] map
+    that that contains all the definitions for this package and its
+    dependencies. This gets implicitly used in the [wp_initialize']
+    precondition. *)
+#[global] Instance : GetIsPkgInitWf globals_test.main := build_get_is_pkg_init_wf.
+
 (** (COPY ME.) This is the spec that should be proved for any package's
     initialization function. The package-specific predicate is encapsulated in
     [is_pkg_init PKG_NAME]. *)
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init globals_test.main = (is_pkg_init globals_test.main) →
-  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined globals_test.main }}}
+  get_is_pkg_init_prop globals_test.main get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined globals_test.main }}}
     main.initialize' #()
-  {{{ RET #(); own_initializing ∗ is_pkg_init globals_test.main }}}.
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init globals_test.main }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
-  2:{ rewrite Hinit //. }
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[HΦ] [$Hown]").
+  { try destruct Hinit as (Hinit & ?); rewrite Hinit //. }
   iFrame "∗#". iIntros "Hown".
   wp_auto. wp_call. wp_auto.
-  wp_apply wp_globals_get. wp_apply assume.wp_assume. rewrite bool_decide_eq_true. iIntros (<-).
+  wp_apply wp_globals_get.
+  wp_apply assume.wp_assume. rewrite bool_decide_eq_true. iIntros (<-).
   iDestruct "addr" as "?". wp_auto.
 
   repeat (wp_apply wp_globals_get; wp_apply assume.wp_assume; rewrite bool_decide_eq_true; iIntros (<-);

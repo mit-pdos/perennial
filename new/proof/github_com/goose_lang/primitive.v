@@ -10,15 +10,15 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 #[global] Instance : GetIsPkgInitWf primitive := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init primitive = (is_pkg_init primitive) →
+  get_is_pkg_init_prop primitive get_is_pkg_init →
   {{{ own_initializing get_is_pkg_init ∗ □ is_pkg_defined primitive }}}
     primitive.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init primitive }}}.
 Proof.
   intros Hinit. wp_start as "(Hown & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown]").
-  { done. }
-  2:{ rewrite Hinit //. }
+  wp_call. wp_apply (wp_package_init with "[HΦ] [$Hown]").
+  { try destruct Hinit as (Hinit & ?); rewrite Hinit //. }
+  simpl in Hinit.
   iIntros "Hown". wp_auto. wp_call.
   rewrite Hinit is_pkg_init_unfold /=.
   by iFrame "∗#".
