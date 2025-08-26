@@ -65,7 +65,7 @@ in `new/`, with the important caveat that new goose is built on top of the core
     Wrapper around `coqutil`'s word library for u64, u32, and u8.
   - `Transitions.v`
     A library for writing relations in a monadic, combinator style.
-  - other files are generally standard library extensions
+  - other files are generally standard library extensions, like `List.v`.
 
 - `algebra/`, `iris_lib/`, `base_logic/`
 
@@ -110,5 +110,5 @@ there.
 Perennial 1 is described in our SOSP paper, "[Verifying concurrent, crash-safe
 systems with Perennial](https://www.chajed.io/papers/perennial:sosp2019.pdf)".
 The actual codebase was quite different at the time of this paper; it notably
-used a shallow embedding of Goose and is not have the same program logic. See
+used a shallow embedding of Goose and does not have the same program logic. See
 the tag `sosp2019` for this version of Perennial.
