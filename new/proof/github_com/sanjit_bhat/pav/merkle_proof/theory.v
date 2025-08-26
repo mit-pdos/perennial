@@ -602,18 +602,21 @@ Fixpoint pure_put' t depth label val (limit : nat) :=
     match limit with 0%nat => None | S limit' =>
     (* "unfolding" the two leaf puts lets us use [limit'] in recur calls. *)
     (* put 1. *)
-    let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
+    let t0_0 := if get_bit label' depth then Empty else t in
+    let t0_1 := if get_bit label' depth then t else Empty in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
     match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
-    let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
+    let t2_0 := if get_bit label depth then t0_0 else t1 in
+    let t2_1 := if get_bit label depth then t1 else t0_1 in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
     match limit with 0%nat => None | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
     match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
-    let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
+    let t2_0 := if get_bit label depth then c0 else t1 in
+    let t2_1 := if get_bit label depth then t1 else c1 in
     Some $ Inner t2_0 t2_1
     end end
   | Cut _ => None (* Golang put won't hit Cut. *)
@@ -633,18 +636,21 @@ Lemma pure_put_unfold t depth label val limit :
     match limit with 0%nat => None | S limit' =>
     (* "unfolding" the two leaf puts lets us use [limit'] in recur calls. *)
     (* put 1. *)
-    let (t0_0, t0_1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
+    let t0_0 := if get_bit label' depth then Empty else t in
+    let t0_1 := if get_bit label' depth then t else Empty in
     let t0 := if get_bit label depth then t0_1 else t0_0 in
     (* put 2. *)
     match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
-    let (t2_0, t2_1) := if get_bit label depth then (t0_0, t1) else (t1, t0_1) in
+    let t2_0 := if get_bit label depth then t0_0 else t1 in
+    let t2_1 := if get_bit label depth then t1 else t0_1 in
     Some $ Inner t2_0 t2_1
     end end
   | Inner c0 c1 =>
     match limit with 0%nat => None | S limit' =>
     let t0 := if get_bit label depth then c1 else c0 in
     match pure_put' t0 (S depth) label val limit' with None => None | Some t1 =>
-    let (t2_0, t2_1) := if get_bit label depth then (c0, t1) else (t1, c1) in
+    let t2_0 := if get_bit label depth then c0 else t1 in
+    let t2_1 := if get_bit label depth then t1 else c1 in
     Some $ Inner t2_0 t2_1
     end end
   | Cut _ => None (* Golang put won't hit Cut. *)
@@ -658,7 +664,8 @@ Fixpoint pure_newShell' label depth (sibs : list $ list w8) :=
   | h :: sibs' =>
     let cut := Cut h in
     let t := pure_newShell' label (S depth) sibs' in
-    let (c0, c1) := if get_bit label depth then (cut, t) else (t, cut) in
+    let c0 := if get_bit label depth then cut else t in
+    let c1 := if get_bit label depth then t else cut in
     Inner c0 c1
   end.
 Definition pure_newShell label sibs := pure_newShell' label 0 sibs.
@@ -730,14 +737,27 @@ Proof.
     try case_decide; try case_match;
     simplify_eq/=; try done.
   - ospecialize (IH n _); [lia|].
+    case_match; [|done].
+    simplify_eq/=.
     replace (S _) with (length $ pref_ext pref label) in * by len.
-    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
-    { by eapply prefix_total_snoc. }
-    assert (prefix_total (pref_ext pref label0) (bytes_to_bits label0)).
-    { by eapply prefix_total_snoc. }
-    repeat case_match; try done;
-      simplify_eq/=; intuition;
-      by (eapply IH; last done).
+
+    eapply IH in H3.
+    2: { by eapply prefix_total_snoc. }
+    2: { repeat case_match; simpl; try done;
+      by eapply prefix_total_snoc. }
+
+    split;
+      repeat case_match; try done;
+      by eapply prefix_total_snoc.
+    (* TODO: leftoff here.
+    a finished branch of the updated proof style, which doesn't
+    need to split into cases before applying the IH.
+
+    notice that we can't use backward reasoning with IH,
+    since the goal only in some cases has recur.
+    but we can use forward reasoning with IH,
+    and then later use that to finish up the proof,
+    along with tree mods after the recur call. *)
   - ospecialize (IH n _); [lia|].
     replace (S _) with (length $ pref_ext pref label) in * by len.
     assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).

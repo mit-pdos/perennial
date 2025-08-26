@@ -310,12 +310,6 @@ Proof.
       with "[$HnodeTy $Hhash $Hlabel $Hval $Hab $Hanb]") as "$".
 Qed.
 
-(*
-Lemma foo (b : bool) :
-  (if b then null else null) = null.
-Proof. replace (if b then null else null) with (null).
-*)
-
 Lemma wp_put n0 n t sl_label sl_val label val :
   (* for max depth. *)
   is_limit t →
@@ -356,7 +350,7 @@ Proof.
   generalize dependent t.
   generalize dependent pref.
 
-  iInduction limit as [? IH] using lt_wf_ind forall (n0 n).
+  iInduction limit as [? IH] using lt_wf_ind forall (n0 n Φ).
   iIntros (pref ?? t).
   iIntros "* (#?&#?&@) HΦ".
   wp_func_call. wp_call. wp_auto.
@@ -422,7 +416,7 @@ Proof.
     iSpecialize ("IH" $! limit with "[]"); [word|].
     Notation pref_ext p l := (p ++ [get_bit l (length p)]) (only parsing).
     replace (word.add _ _) with (W64 (length (pref_ext pref label))) by len.
-    Fail wp_apply ("IH" $! ptr_cb0 _ (pref_ext pref label) with
+    wp_apply ("IH" $! ptr_cb0 _ _ (pref_ext pref label) with
       "[][][][][][][Hcb]").
 Admitted.
 
