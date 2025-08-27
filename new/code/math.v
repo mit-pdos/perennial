@@ -57,6 +57,12 @@ Definition Cbrt : go_string := "math.Cbrt"%go.
 
 Definition cbrt : go_string := "math.cbrt"%go.
 
+(* MaxInt32 or MaxInt64 depending on intSize. *)
+Definition MaxInt : Z := 9223372036854775807.
+
+(* MinInt32 or MinInt64 depending on intSize. *)
+Definition MinInt : Z := -9223372036854775808.
+
 (* 9223372036854775807 *)
 Definition MaxInt64 : Z := 9223372036854775807.
 
