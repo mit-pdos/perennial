@@ -11,6 +11,41 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 #[global] Instance : IsPkgInit atomic := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf atomic := build_get_is_pkg_init_wf.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init_prop atomic get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined atomic }}}
+    atomic.initialize' #()
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init atomic }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
+  iIntros "Hown". wp_auto. wp_call.
+  Typeclasses Opaque atomic.noCopy.
+  iEval (rewrite is_pkg_init_unfold /=). wp_auto.
+  wp_bind.
+  simpl.
+  eapply (tac_wp_pure_wp []).
+  { Print Hint.
+    Set Typeclasses Debug.
+    Fail apply _.
+    unshelve simple apply @atomic.wp_struct_make_Pointer.
+  }
+  { done. }
+  { done. }
+  wp_pure.
+  rewrite <- (default_val_eq_zero_val (V:=generics.Container.t w64)).
+  Search atomic.Pointer.ty.
+  wp_pure.
+  unshelve wp_apply (atomic.wp_struct_make_Pointer _ _ _ _ _ _ _ []).
+  4:{ apply _. }
+  { done. }
+  wp_apply
+  iFrame "∗#". done.
+Qed.
+
+End init.
+
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,

@@ -25,11 +25,8 @@ Proof.
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
   wp_apply (cryptoffi.wp_initialize' with "[$Hown]").
-  2: {
-    iEval simpl_is_pkg_defined in "Hdef".
-    simpl. iModIntro. iPkgInit.
-  }
   { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
   iIntros "(Hown & #?)".
   wp_auto. wp_call. iFrame. iEval (rewrite is_pkg_init_unfold).
   simpl. iFrame "#". done.

@@ -25,12 +25,12 @@ Global Instance is_pkg_defined_pure_closed : IsPkgDefinedPure closed :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single closed ∧
-      is_pkg_defined_pure bank ∧
-      is_pkg_defined_pure cachekv ∧
-      is_pkg_defined_pure grove_ffi ∧
-      is_pkg_defined_pure lockservice ∧
-      is_pkg_defined_pure vkv ∧
-      is_pkg_defined_pure configservice;
+      is_pkg_defined_pure github_com.mit_pdos.gokv.bank.bank ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.cachekv.cachekv ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.lockservice.lockservice ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.apps.vkv.vkv ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.configservice.configservice;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -38,12 +38,12 @@ Global Program Instance is_pkg_defined_closed : IsPkgDefined closed :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single closed ∗
-       is_pkg_defined bank ∗
-       is_pkg_defined cachekv ∗
-       is_pkg_defined grove_ffi ∗
-       is_pkg_defined lockservice ∗
-       is_pkg_defined vkv ∗
-       is_pkg_defined configservice)%I
+       is_pkg_defined github_com.mit_pdos.gokv.bank.bank ∗
+       is_pkg_defined github_com.mit_pdos.gokv.cachekv.cachekv ∗
+       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined github_com.mit_pdos.gokv.lockservice.lockservice ∗
+       is_pkg_defined github_com.mit_pdos.gokv.vrsm.apps.vkv.vkv ∗
+       is_pkg_defined github_com.mit_pdos.gokv.vrsm.configservice.configservice)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

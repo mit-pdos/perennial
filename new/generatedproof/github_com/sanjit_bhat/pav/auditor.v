@@ -523,16 +523,16 @@ Global Instance is_pkg_defined_pure_auditor : IsPkgDefinedPure auditor :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single auditor ∧
-      is_pkg_defined_pure bytes ∧
-      is_pkg_defined_pure sync ∧
-      is_pkg_defined_pure advrpc ∧
-      is_pkg_defined_pure cryptoffi ∧
-      is_pkg_defined_pure hashchain ∧
-      is_pkg_defined_pure ktcore ∧
-      is_pkg_defined_pure merkle ∧
-      is_pkg_defined_pure server ∧
-      is_pkg_defined_pure safemarshal ∧
-      is_pkg_defined_pure marshal;
+      is_pkg_defined_pure bytes.bytes ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.advrpc.advrpc ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.hashchain.hashchain ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.ktcore.ktcore ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.merkle.merkle ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.server.server ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -540,16 +540,16 @@ Global Program Instance is_pkg_defined_auditor : IsPkgDefined auditor :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single auditor ∗
-       is_pkg_defined bytes ∗
-       is_pkg_defined sync ∗
-       is_pkg_defined advrpc ∗
-       is_pkg_defined cryptoffi ∗
-       is_pkg_defined hashchain ∗
-       is_pkg_defined ktcore ∗
-       is_pkg_defined merkle ∗
-       is_pkg_defined server ∗
-       is_pkg_defined safemarshal ∗
-       is_pkg_defined marshal)%I
+       is_pkg_defined bytes.bytes ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.advrpc.advrpc ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.hashchain.hashchain ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.ktcore.ktcore ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.merkle.merkle ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.server.server ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

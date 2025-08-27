@@ -2,7 +2,7 @@ Require Export New.code.sync.
 From New.proof Require Export proof_prelude.
 Require Export New.generatedproof.sync.
 
-From New.proof Require Export sync.atomic.
+From New.proof Require Export sync.atomic internal.race.
 From New.proof Require Export tok_set.
 
 From New.experiments Require Export glob.
@@ -39,9 +39,33 @@ Context `{!syncG Σ}.
 #[global] Instance : IsPkgInit race := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf race := build_get_is_pkg_init_wf.
 
+(* FIXME: move to race.v *)
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init_prop race get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined race }}}
+    race.initialize' #()
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init race }}}.
+Proof.
+
 #[global] Instance : IsPkgInit sync := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init_wf.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init_prop sync get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined sync }}}
+    sync.initialize' #()
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init sync }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
+  iIntros "Hown". wp_auto.
+  wp_apply (race.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_apply (sync.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
 
 
 End defns.

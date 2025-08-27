@@ -127,8 +127,8 @@ Global Instance is_pkg_defined_pure_rpctypes : IsPkgDefinedPure rpctypes :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single rpctypes ∧
-      is_pkg_defined_pure codes ∧
-      is_pkg_defined_pure status;
+      is_pkg_defined_pure google_golang_org.grpc.codes.codes ∧
+      is_pkg_defined_pure google_golang_org.grpc.status.status;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -136,8 +136,8 @@ Global Program Instance is_pkg_defined_rpctypes : IsPkgDefined rpctypes :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single rpctypes ∗
-       is_pkg_defined codes ∗
-       is_pkg_defined status)%I
+       is_pkg_defined google_golang_org.grpc.codes.codes ∗
+       is_pkg_defined google_golang_org.grpc.status.status)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

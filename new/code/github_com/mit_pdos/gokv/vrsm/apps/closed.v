@@ -221,7 +221,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [bank.bank; cachekv.cachekv; grove_ffi.grove_ffi; lockservice.lockservice; vkv.vkv; configservice.configservice];
+    pkg_imported_pkgs := [github_com.mit_pdos.gokv.bank.bank; github_com.mit_pdos.gokv.cachekv.cachekv; github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.mit_pdos.gokv.lockservice.lockservice; github_com.mit_pdos.gokv.vrsm.apps.vkv.vkv; github_com.mit_pdos.gokv.vrsm.configservice.configservice];
   |}.
 
 Definition initialize' : val :=

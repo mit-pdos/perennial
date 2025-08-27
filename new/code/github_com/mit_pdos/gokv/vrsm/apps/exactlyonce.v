@@ -344,7 +344,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(eStateMachi
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [std.std; grove_ffi.grove_ffi; map_marshal.map_marshal; clerk.clerk; storage.storage; marshal.marshal];
+    pkg_imported_pkgs := [github_com.goose_lang.std.std; github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.mit_pdos.gokv.map_marshal.map_marshal; github_com.mit_pdos.gokv.vrsm.clerk.clerk; github_com.mit_pdos.gokv.vrsm.storage.storage; github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=

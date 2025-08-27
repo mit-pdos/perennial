@@ -144,9 +144,9 @@ Global Instance is_pkg_defined_pure_advrpc : IsPkgDefinedPure advrpc :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single advrpc ∧
-      is_pkg_defined_pure netffi ∧
-      is_pkg_defined_pure safemarshal ∧
-      is_pkg_defined_pure marshal;
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.netffi.netffi ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -154,9 +154,9 @@ Global Program Instance is_pkg_defined_advrpc : IsPkgDefined advrpc :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single advrpc ∗
-       is_pkg_defined netffi ∗
-       is_pkg_defined safemarshal ∗
-       is_pkg_defined marshal)%I
+       is_pkg_defined github_com.sanjit_bhat.pav.netffi.netffi ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

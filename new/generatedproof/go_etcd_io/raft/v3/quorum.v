@@ -72,11 +72,11 @@ Global Instance is_pkg_defined_pure_quorum : IsPkgDefinedPure quorum :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single quorum ∧
-      is_pkg_defined_pure fmt ∧
-      is_pkg_defined_pure math ∧
-      is_pkg_defined_pure strings ∧
-      is_pkg_defined_pure slices ∧
-      is_pkg_defined_pure strconv;
+      is_pkg_defined_pure fmt.fmt ∧
+      is_pkg_defined_pure math.math ∧
+      is_pkg_defined_pure strings.strings ∧
+      is_pkg_defined_pure go_etcd_io.raft.v3.quorum.slices.slices ∧
+      is_pkg_defined_pure strconv.strconv;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -84,11 +84,11 @@ Global Program Instance is_pkg_defined_quorum : IsPkgDefined quorum :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single quorum ∗
-       is_pkg_defined fmt ∗
-       is_pkg_defined math ∗
-       is_pkg_defined strings ∗
-       is_pkg_defined slices ∗
-       is_pkg_defined strconv)%I
+       is_pkg_defined fmt.fmt ∗
+       is_pkg_defined math.math ∗
+       is_pkg_defined strings.strings ∗
+       is_pkg_defined go_etcd_io.raft.v3.quorum.slices.slices ∗
+       is_pkg_defined strconv.strconv)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

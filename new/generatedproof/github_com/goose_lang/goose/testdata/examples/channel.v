@@ -20,7 +20,7 @@ Global Instance is_pkg_defined_pure_chan_spec_raw_examples : IsPkgDefinedPure ch
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single chan_spec_raw_examples ∧
-      is_pkg_defined_pure channel;
+      is_pkg_defined_pure github_com.goose_lang.goose.model.channel.channel;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -28,7 +28,7 @@ Global Program Instance is_pkg_defined_chan_spec_raw_examples : IsPkgDefined cha
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single chan_spec_raw_examples ∗
-       is_pkg_defined channel)%I
+       is_pkg_defined github_com.goose_lang.goose.model.channel.channel)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

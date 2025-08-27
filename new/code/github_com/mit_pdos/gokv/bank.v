@@ -283,7 +283,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(BankClerk.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [primitive.primitive; kv.kv; lockservice.lockservice; marshal.marshal];
+    pkg_imported_pkgs := [github_com.goose_lang.primitive.primitive; github_com.mit_pdos.gokv.kv.kv; github_com.mit_pdos.gokv.lockservice.lockservice; github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=

@@ -2338,23 +2338,23 @@ Global Instance is_pkg_defined_pure_raft : IsPkgDefinedPure raft :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single raft ∧
-      is_pkg_defined_pure errors ∧
-      is_pkg_defined_pure raftpb ∧
-      is_pkg_defined_pure fmt ∧
-      is_pkg_defined_pure io ∧
-      is_pkg_defined_pure log ∧
-      is_pkg_defined_pure os ∧
-      is_pkg_defined_pure sync ∧
-      is_pkg_defined_pure context ∧
-      is_pkg_defined_pure bytes ∧
-      is_pkg_defined_pure rand ∧
-      is_pkg_defined_pure math ∧
-      is_pkg_defined_pure big ∧
-      is_pkg_defined_pure strings ∧
-      is_pkg_defined_pure confchange ∧
-      is_pkg_defined_pure quorum ∧
-      is_pkg_defined_pure slices ∧
-      is_pkg_defined_pure tracker;
+      is_pkg_defined_pure errors.errors ∧
+      is_pkg_defined_pure go_etcd_io.raft.v3.raftpb.raftpb ∧
+      is_pkg_defined_pure fmt.fmt ∧
+      is_pkg_defined_pure io.io ∧
+      is_pkg_defined_pure log.log ∧
+      is_pkg_defined_pure os.os ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure context.context ∧
+      is_pkg_defined_pure bytes.bytes ∧
+      is_pkg_defined_pure crypto.rand.rand ∧
+      is_pkg_defined_pure math.math ∧
+      is_pkg_defined_pure math.big.big ∧
+      is_pkg_defined_pure strings.strings ∧
+      is_pkg_defined_pure go_etcd_io.raft.v3.confchange.confchange ∧
+      is_pkg_defined_pure go_etcd_io.raft.v3.quorum.quorum ∧
+      is_pkg_defined_pure go_etcd_io.raft.v3.quorum.slices.slices ∧
+      is_pkg_defined_pure go_etcd_io.raft.v3.tracker.tracker;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -2362,23 +2362,23 @@ Global Program Instance is_pkg_defined_raft : IsPkgDefined raft :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single raft ∗
-       is_pkg_defined errors ∗
-       is_pkg_defined raftpb ∗
-       is_pkg_defined fmt ∗
-       is_pkg_defined io ∗
-       is_pkg_defined log ∗
-       is_pkg_defined os ∗
-       is_pkg_defined sync ∗
-       is_pkg_defined context ∗
-       is_pkg_defined bytes ∗
-       is_pkg_defined rand ∗
-       is_pkg_defined math ∗
-       is_pkg_defined big ∗
-       is_pkg_defined strings ∗
-       is_pkg_defined confchange ∗
-       is_pkg_defined quorum ∗
-       is_pkg_defined slices ∗
-       is_pkg_defined tracker)%I
+       is_pkg_defined errors.errors ∗
+       is_pkg_defined go_etcd_io.raft.v3.raftpb.raftpb ∗
+       is_pkg_defined fmt.fmt ∗
+       is_pkg_defined io.io ∗
+       is_pkg_defined log.log ∗
+       is_pkg_defined os.os ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined context.context ∗
+       is_pkg_defined bytes.bytes ∗
+       is_pkg_defined crypto.rand.rand ∗
+       is_pkg_defined math.math ∗
+       is_pkg_defined math.big.big ∗
+       is_pkg_defined strings.strings ∗
+       is_pkg_defined go_etcd_io.raft.v3.confchange.confchange ∗
+       is_pkg_defined go_etcd_io.raft.v3.quorum.quorum ∗
+       is_pkg_defined go_etcd_io.raft.v3.quorum.slices.slices ∗
+       is_pkg_defined go_etcd_io.raft.v3.tracker.tracker)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

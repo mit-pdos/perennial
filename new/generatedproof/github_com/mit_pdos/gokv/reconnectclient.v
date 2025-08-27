@@ -108,10 +108,10 @@ Global Instance is_pkg_defined_pure_reconnectclient : IsPkgDefinedPure reconnect
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single reconnectclient ∧
-      is_pkg_defined_pure sync ∧
-      is_pkg_defined_pure primitive ∧
-      is_pkg_defined_pure grove_ffi ∧
-      is_pkg_defined_pure urpc;
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.urpc.urpc;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -119,10 +119,10 @@ Global Program Instance is_pkg_defined_reconnectclient : IsPkgDefined reconnectc
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single reconnectclient ∗
-       is_pkg_defined sync ∗
-       is_pkg_defined primitive ∗
-       is_pkg_defined grove_ffi ∗
-       is_pkg_defined urpc)%I
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined github_com.mit_pdos.gokv.urpc.urpc)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

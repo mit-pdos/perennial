@@ -20,7 +20,7 @@ Global Instance is_pkg_defined_pure_util : IsPkgDefinedPure util :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single util ∧
-      is_pkg_defined_pure log;
+      is_pkg_defined_pure log.log;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -28,7 +28,7 @@ Global Program Instance is_pkg_defined_util : IsPkgDefined util :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single util ∗
-       is_pkg_defined log)%I
+       is_pkg_defined log.log)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

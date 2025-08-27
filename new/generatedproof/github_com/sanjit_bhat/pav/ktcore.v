@@ -607,10 +607,10 @@ Global Instance is_pkg_defined_pure_ktcore : IsPkgDefinedPure ktcore :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single ktcore ∧
-      is_pkg_defined_pure cryptoffi ∧
-      is_pkg_defined_pure cryptoutil ∧
-      is_pkg_defined_pure safemarshal ∧
-      is_pkg_defined_pure marshal;
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -618,10 +618,10 @@ Global Program Instance is_pkg_defined_ktcore : IsPkgDefined ktcore :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single ktcore ∗
-       is_pkg_defined cryptoffi ∗
-       is_pkg_defined cryptoutil ∗
-       is_pkg_defined safemarshal ∗
-       is_pkg_defined marshal)%I
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

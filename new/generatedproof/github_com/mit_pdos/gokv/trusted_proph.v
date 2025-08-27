@@ -29,7 +29,7 @@ Global Instance is_pkg_defined_pure_trusted_proph : IsPkgDefinedPure trusted_pro
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single trusted_proph ∧
-      is_pkg_defined_pure primitive;
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -37,7 +37,7 @@ Global Program Instance is_pkg_defined_trusted_proph : IsPkgDefined trusted_prop
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single trusted_proph ∗
-       is_pkg_defined primitive)%I
+       is_pkg_defined github_com.goose_lang.primitive.primitive)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

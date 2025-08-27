@@ -160,7 +160,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Op.id, []);
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [addr.addr; buf.buf; obj.obj; util.util];
+    pkg_imported_pkgs := [github_com.mit_pdos.go_journal.addr.addr; github_com.mit_pdos.go_journal.buf.buf; github_com.mit_pdos.go_journal.obj.obj; github_com.mit_pdos.go_journal.util.util];
   |}.
 
 Definition initialize' : val :=

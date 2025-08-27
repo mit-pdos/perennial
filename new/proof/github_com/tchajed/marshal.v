@@ -15,17 +15,25 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContex
 #[global] Instance : GetIsPkgInitWf marshal := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init marshal = (is_pkg_init marshal) →
-  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined marshal }}}
+  get_is_pkg_init_prop marshal get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined marshal }}}
     marshal.initialize' #()
-  {{{ RET #(); own_initializing ∗ is_pkg_init marshal }}}.
+  {{{ RET #(); own_initializing get_is_pkg_init  ∗ is_pkg_init marshal }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
-  2:{ rewrite Hinit //. }
-  iIntros "Hown". wp_auto. wp_call.
-  rewrite Hinit is_pkg_init_unfold /=.
-Admitted.
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
+
+  iIntros "Hown". wp_auto. wp_apply (std.wp_initialize' with "[$Hown]").
+  { naive_solver. }
+  { iEval simpl_is_pkg_defined in "Hdef". iModIntro. iPkgInit. }
+  iIntros "(Hown & #?)". wp_auto. wp_apply (primitive.wp_initialize' with "[$Hown]").
+  { naive_solver. }
+  { iEval simpl_is_pkg_defined in "Hdef". iModIntro. iPkgInit. }
+  iIntros "(Hown & #?)". wp_auto.
+  wp_call. iFrame. iModIntro.
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "#". done.
+Qed.
 
 (* Some helper definition for working with slices of primitive values. *)
 

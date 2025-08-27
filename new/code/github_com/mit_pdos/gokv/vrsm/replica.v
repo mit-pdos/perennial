@@ -1341,7 +1341,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(ApplyAsBack
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [grove_ffi.grove_ffi; e.e; marshal.marshal; reconnectclient.reconnectclient; log.log; sync.sync; primitive.primitive; std.std; urpc.urpc; configservice.configservice];
+    pkg_imported_pkgs := [github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.mit_pdos.gokv.vrsm.e.e; github_com.tchajed.marshal.marshal; github_com.mit_pdos.gokv.reconnectclient.reconnectclient; log.log; sync.sync; github_com.goose_lang.primitive.primitive; github_com.goose_lang.std.std; github_com.mit_pdos.gokv.urpc.urpc; github_com.mit_pdos.gokv.vrsm.configservice.configservice];
   |}.
 
 Definition initialize' : val :=

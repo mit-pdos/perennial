@@ -47,11 +47,11 @@ Lemma wp_initialize' get_is_pkg_init :
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init globals_test.main }}}.
 Proof.
   intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[HΦ] [$Hown]").
-  { try destruct Hinit as (Hinit & ?); rewrite Hinit //. }
-  iFrame "∗#". iIntros "Hown".
-  wp_auto. wp_call. wp_auto.
-  wp_apply wp_globals_get.
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
+  iIntros "Hown". wp_auto.
+
+  wp_call. wp_auto. wp_apply wp_globals_get.
   wp_apply assume.wp_assume. rewrite bool_decide_eq_true. iIntros (<-).
   iDestruct "addr" as "?". wp_auto.
 
@@ -62,9 +62,9 @@ Proof.
   wp_func_call. wp_call.
   iApply wp_fupd.
   repeat wp_apply wp_globals_get.
-  iFrame. rewrite Hinit.
-  iMod (inv_alloc with "[-]") as "#?".
-  2:{ repeat iModIntro. rewrite is_pkg_init_unfold /=. iFrame "#". }
+  iFrame. iEval (rewrite is_pkg_init_unfold).
+  iMod (inv_alloc with "[-]") as "#$".
+  2:{ repeat iModIntro. iFrame "#". }
   iNext. iRight.
   iFrame "∗#".
 Qed.

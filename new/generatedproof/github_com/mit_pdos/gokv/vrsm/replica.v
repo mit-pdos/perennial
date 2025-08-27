@@ -895,16 +895,16 @@ Global Instance is_pkg_defined_pure_replica : IsPkgDefinedPure replica :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single replica ∧
-      is_pkg_defined_pure grove_ffi ∧
-      is_pkg_defined_pure e ∧
-      is_pkg_defined_pure marshal ∧
-      is_pkg_defined_pure reconnectclient ∧
-      is_pkg_defined_pure log ∧
-      is_pkg_defined_pure sync ∧
-      is_pkg_defined_pure primitive ∧
-      is_pkg_defined_pure std ∧
-      is_pkg_defined_pure urpc ∧
-      is_pkg_defined_pure configservice;
+      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.e.e ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.reconnectclient.reconnectclient ∧
+      is_pkg_defined_pure log.log ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.urpc.urpc ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.configservice.configservice;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -912,16 +912,16 @@ Global Program Instance is_pkg_defined_replica : IsPkgDefined replica :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single replica ∗
-       is_pkg_defined grove_ffi ∗
-       is_pkg_defined e ∗
-       is_pkg_defined marshal ∗
-       is_pkg_defined reconnectclient ∗
-       is_pkg_defined log ∗
-       is_pkg_defined sync ∗
-       is_pkg_defined primitive ∗
-       is_pkg_defined std ∗
-       is_pkg_defined urpc ∗
-       is_pkg_defined configservice)%I
+       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined github_com.mit_pdos.gokv.vrsm.e.e ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal ∗
+       is_pkg_defined github_com.mit_pdos.gokv.reconnectclient.reconnectclient ∗
+       is_pkg_defined log.log ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined github_com.goose_lang.std.std ∗
+       is_pkg_defined github_com.mit_pdos.gokv.urpc.urpc ∗
+       is_pkg_defined github_com.mit_pdos.gokv.vrsm.configservice.configservice)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

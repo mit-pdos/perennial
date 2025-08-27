@@ -98,16 +98,16 @@ Global Instance is_pkg_defined_pure_alicebob : IsPkgDefinedPure alicebob :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single alicebob ∧
-      is_pkg_defined_pure bytes ∧
-      is_pkg_defined_pure sync ∧
-      is_pkg_defined_pure primitive ∧
-      is_pkg_defined_pure std ∧
-      is_pkg_defined_pure advrpc ∧
-      is_pkg_defined_pure auditor ∧
-      is_pkg_defined_pure client ∧
-      is_pkg_defined_pure cryptoffi ∧
-      is_pkg_defined_pure ktcore ∧
-      is_pkg_defined_pure server;
+      is_pkg_defined_pure bytes.bytes ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.advrpc.advrpc ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.auditor.auditor ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.client.client ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.ktcore.ktcore ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.server.server;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -115,16 +115,16 @@ Global Program Instance is_pkg_defined_alicebob : IsPkgDefined alicebob :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single alicebob ∗
-       is_pkg_defined bytes ∗
-       is_pkg_defined sync ∗
-       is_pkg_defined primitive ∗
-       is_pkg_defined std ∗
-       is_pkg_defined advrpc ∗
-       is_pkg_defined auditor ∗
-       is_pkg_defined client ∗
-       is_pkg_defined cryptoffi ∗
-       is_pkg_defined ktcore ∗
-       is_pkg_defined server)%I
+       is_pkg_defined bytes.bytes ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined github_com.goose_lang.std.std ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.advrpc.advrpc ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.auditor.auditor ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.client.client ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.ktcore.ktcore ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.server.server)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

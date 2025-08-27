@@ -20,7 +20,7 @@ Global Instance is_pkg_defined_pure_cryptoutil : IsPkgDefinedPure cryptoutil :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single cryptoutil ∧
-      is_pkg_defined_pure cryptoffi;
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -28,7 +28,7 @@ Global Program Instance is_pkg_defined_cryptoutil : IsPkgDefined cryptoutil :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single cryptoutil ∗
-       is_pkg_defined cryptoffi)%I
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

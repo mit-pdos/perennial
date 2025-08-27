@@ -810,7 +810,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Clerk.id, [
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [grove_ffi.grove_ffi; marshal.marshal; sync.sync; primitive.primitive; reconnectclient.reconnectclient; e.e; log.log; std.std; urpc.urpc; paxos.paxos];
+    pkg_imported_pkgs := [github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.tchajed.marshal.marshal; sync.sync; github_com.goose_lang.primitive.primitive; github_com.mit_pdos.gokv.reconnectclient.reconnectclient; github_com.mit_pdos.gokv.vrsm.e.e; log.log; github_com.goose_lang.std.std; github_com.mit_pdos.gokv.urpc.urpc; github_com.mit_pdos.gokv.vrsm.paxos.paxos];
   |}.
 
 Definition initialize' : val :=

@@ -571,7 +571,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Clerk.id, [
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [grove_ffi.grove_ffi; exactlyonce.exactlyonce; sync.sync; kv.kv; map_string_marshal.map_string_marshal; storage.storage; marshal.marshal];
+    pkg_imported_pkgs := [github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce; sync.sync; github_com.mit_pdos.gokv.kv.kv; github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal; github_com.mit_pdos.gokv.vrsm.storage.storage; github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=

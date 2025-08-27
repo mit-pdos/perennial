@@ -876,8 +876,8 @@ Global Instance is_pkg_defined_pure_clientv3 : IsPkgDefinedPure clientv3 :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single clientv3 ∧
-      is_pkg_defined_pure etcdserverpb ∧
-      is_pkg_defined_pure mvccpb;
+      is_pkg_defined_pure go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
+      is_pkg_defined_pure go_etcd_io.etcd.api.v3.mvccpb.mvccpb;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -885,8 +885,8 @@ Global Program Instance is_pkg_defined_clientv3 : IsPkgDefined clientv3 :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single clientv3 ∗
-       is_pkg_defined etcdserverpb ∗
-       is_pkg_defined mvccpb)%I
+       is_pkg_defined go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
+       is_pkg_defined go_etcd_io.etcd.api.v3.mvccpb.mvccpb)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

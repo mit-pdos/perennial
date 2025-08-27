@@ -7,6 +7,9 @@ translate = [
   "align64",
   "Value*",
   "efaceWords",
+
+  "_",
+  "Pointer",
 ]
 
 trusted = [

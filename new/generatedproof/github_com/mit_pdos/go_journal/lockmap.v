@@ -227,7 +227,7 @@ Global Instance is_pkg_defined_pure_lockmap : IsPkgDefinedPure lockmap :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single lockmap ∧
-      is_pkg_defined_pure sync;
+      is_pkg_defined_pure sync.sync;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -235,7 +235,7 @@ Global Program Instance is_pkg_defined_lockmap : IsPkgDefined lockmap :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single lockmap ∗
-       is_pkg_defined sync)%I
+       is_pkg_defined sync.sync)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

@@ -234,7 +234,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Clerk.id, [
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [primitive.primitive; grove_ffi.grove_ffi; trusted_proph.trusted_proph; configservice.configservice; e.e; replica.replica];
+    pkg_imported_pkgs := [github_com.goose_lang.primitive.primitive; github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.mit_pdos.gokv.trusted_proph.trusted_proph; github_com.mit_pdos.gokv.vrsm.configservice.configservice; github_com.mit_pdos.gokv.vrsm.e.e; github_com.mit_pdos.gokv.vrsm.replica.replica];
   |}.
 
 Definition initialize' : val :=

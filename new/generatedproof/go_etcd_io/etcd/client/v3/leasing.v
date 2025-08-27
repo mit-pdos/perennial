@@ -428,19 +428,19 @@ Global Instance is_pkg_defined_pure_leasing : IsPkgDefinedPure leasing :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single leasing ∧
-      is_pkg_defined_pure context ∧
-      is_pkg_defined_pure strings ∧
-      is_pkg_defined_pure sync ∧
-      is_pkg_defined_pure time ∧
-      is_pkg_defined_pure etcdserverpb ∧
-      is_pkg_defined_pure mvccpb ∧
-      is_pkg_defined_pure clientv3 ∧
-      is_pkg_defined_pure errors ∧
-      is_pkg_defined_pure codes ∧
-      is_pkg_defined_pure status ∧
-      is_pkg_defined_pure rpctypes ∧
-      is_pkg_defined_pure concurrency ∧
-      is_pkg_defined_pure bytes;
+      is_pkg_defined_pure context.context ∧
+      is_pkg_defined_pure strings.strings ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure time.time ∧
+      is_pkg_defined_pure go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
+      is_pkg_defined_pure go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∧
+      is_pkg_defined_pure go_etcd_io.etcd.client.v3.clientv3 ∧
+      is_pkg_defined_pure errors.errors ∧
+      is_pkg_defined_pure google_golang_org.grpc.codes.codes ∧
+      is_pkg_defined_pure google_golang_org.grpc.status.status ∧
+      is_pkg_defined_pure go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes ∧
+      is_pkg_defined_pure go_etcd_io.etcd.client.v3.concurrency.concurrency ∧
+      is_pkg_defined_pure bytes.bytes;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -448,19 +448,19 @@ Global Program Instance is_pkg_defined_leasing : IsPkgDefined leasing :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single leasing ∗
-       is_pkg_defined context ∗
-       is_pkg_defined strings ∗
-       is_pkg_defined sync ∗
-       is_pkg_defined time ∗
-       is_pkg_defined etcdserverpb ∗
-       is_pkg_defined mvccpb ∗
-       is_pkg_defined clientv3 ∗
-       is_pkg_defined errors ∗
-       is_pkg_defined codes ∗
-       is_pkg_defined status ∗
-       is_pkg_defined rpctypes ∗
-       is_pkg_defined concurrency ∗
-       is_pkg_defined bytes)%I
+       is_pkg_defined context.context ∗
+       is_pkg_defined strings.strings ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined time.time ∗
+       is_pkg_defined go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
+       is_pkg_defined go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∗
+       is_pkg_defined go_etcd_io.etcd.client.v3.clientv3 ∗
+       is_pkg_defined errors.errors ∗
+       is_pkg_defined google_golang_org.grpc.codes.codes ∗
+       is_pkg_defined google_golang_org.grpc.status.status ∗
+       is_pkg_defined go_etcd_io.etcd.api.v3.v3rpc.rpctypes.rpctypes ∗
+       is_pkg_defined go_etcd_io.etcd.client.v3.concurrency.concurrency ∗
+       is_pkg_defined bytes.bytes)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

@@ -156,10 +156,10 @@ Global Instance is_pkg_defined_pure_aof : IsPkgDefinedPure aof :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single aof ∧
-      is_pkg_defined_pure sync ∧
-      is_pkg_defined_pure std ∧
-      is_pkg_defined_pure grove_ffi ∧
-      is_pkg_defined_pure marshal;
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -167,10 +167,10 @@ Global Program Instance is_pkg_defined_aof : IsPkgDefined aof :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single aof ∗
-       is_pkg_defined sync ∗
-       is_pkg_defined std ∗
-       is_pkg_defined grove_ffi ∗
-       is_pkg_defined marshal)%I
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.std.std ∗
+       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
