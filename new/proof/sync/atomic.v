@@ -26,26 +26,14 @@ Proof.
   wp_bind.
   simpl.
   eapply (tac_wp_pure_wp []).
-  { Print Hint.
-    Set Typeclasses Debug.
-    Fail apply _.
-    unshelve simple apply @atomic.wp_struct_make_Pointer.
-  }
+  (* FIXME: generics where type argument is used under pointer *)
+  { Fail apply _. simple apply atomic.wp_struct_make_Pointer. }
   { done. }
-  { done. }
-  wp_pure.
-  rewrite <- (default_val_eq_zero_val (V:=generics.Container.t w64)).
-  Search atomic.Pointer.ty.
-  wp_pure.
-  unshelve wp_apply (atomic.wp_struct_make_Pointer _ _ _ _ _ _ _ []).
-  4:{ apply _. }
-  { done. }
-  wp_apply
-  iFrame "∗#". done.
+  { apply _. }
+  simpl fill. wp_auto.
+  wp_alloc _unused as "_".
+  wp_auto. iFrame "∗#". done.
 Qed.
-
-End init.
-
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,

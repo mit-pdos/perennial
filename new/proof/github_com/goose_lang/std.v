@@ -24,11 +24,11 @@ Proof.
   wp_apply (std_core.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_apply (sync.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  wp_apply (wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-
-Admitted.
+  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".  done.
+Qed.
 
 Lemma wp_Assert (cond : bool) :
   {{{ is_pkg_init std ∗ ⌜cond = true⌝ }}}

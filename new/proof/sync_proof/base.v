@@ -36,17 +36,6 @@ Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
-#[global] Instance : IsPkgInit race := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf race := build_get_is_pkg_init_wf.
-
-(* FIXME: move to race.v *)
-Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init_prop race get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined race }}}
-    race.initialize' #()
-  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init race }}}.
-Proof.
-
 #[global] Instance : IsPkgInit sync := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init_wf.
 
@@ -63,9 +52,10 @@ Proof.
   wp_apply (race.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_apply (sync.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  wp_apply (atomic.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-
+  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".  done.
+Qed.
 
 End defns.
