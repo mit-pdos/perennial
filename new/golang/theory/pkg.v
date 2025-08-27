@@ -111,8 +111,28 @@ End init_defns.
 Section package_init_and_defined.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoContext}.
 
+(** XXX: there are a lof of design questions around [is_pkg_defined].
+    - construct using ltac2 or Goose?
+    - have an Iris version of [is_pkg_defined] or only a pure version?
+    - should WpFuncCall/MethodCall take a transitive version of
+      [is_pkg_defined], or just a single package's?
+    - if pure, should there be new automation for solving [is_pkg_defined_pure]?
+      Use typeclasses? Would be annoying to maintain automation for this given
+      that there's already Iris automation for [is_pkg_init].
+    - If not pure, should one unfold [is_pkg_defined] to get access to the
+    - Should the transitive [is_pkg_defined] be kept sealed? Use [Opaque], and
+      locally make it [Transparent] where needed in program proofs?
+    - and more.
+    Moreover, many of these questions do not make a big difference to the
+    resulting user experience.
+
+    So, this implementation makes design decisions arbitrarily around these
+    questions. For instance, rather than using ltac2 to generate predicates (as
+    is done for [is_pkg_init]), the predicate is generated in Goose.
+ *)
+
 (** Used as a parameter of the below so that this pure predicate can be referred
-    to even without any heapGS. *)
+    without needing a [heapGS]. *)
 Class IsPkgDefinedPure (pkg_name : go_string) :=
   {
     is_pkg_defined_pure_def : ∀ {go_ctx : GoContext}, Prop;

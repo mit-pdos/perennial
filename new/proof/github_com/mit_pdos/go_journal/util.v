@@ -61,7 +61,7 @@ Proof.
   wp_auto. wp_apply wp_globals_get.
 
   (* Annoying that [iNamed "Hpkg"] doesn't work directly.. *)
-  iDestruct (is_pkg_init_def_unfold with "[$]") as "Hpkg". simpl. iNamed "Hpkg".
+  iDestruct (is_pkg_init_access with "[$]") as "Hpkg". simpl. iNamed "Hpkg".
   wp_auto.
   wp_if_destruct; try wp_auto.
   - wp_apply wp_Printf.
