@@ -96,8 +96,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_hashchain : IsPkgDefined hashchain :=
+Global Instance is_pkg_defined_pure_hashchain : IsPkgDefinedPure hashchain :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single hashchain ∧
@@ -105,12 +104,17 @@ Global Program Instance is_pkg_defined_hashchain : IsPkgDefined hashchain :=
       is_pkg_defined_pure std ∧
       is_pkg_defined_pure cryptoffi ∧
       is_pkg_defined_pure cryptoutil;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_hashchain : IsPkgDefined hashchain :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single hashchain ∗
-         is_pkg_defined bytes ∗
-         is_pkg_defined std ∗
-         is_pkg_defined cryptoffi ∗
-         is_pkg_defined cryptoutil)%I
+      (is_pkg_defined_single hashchain ∗
+       is_pkg_defined bytes ∗
+       is_pkg_defined std ∗
+       is_pkg_defined cryptoffi ∗
+       is_pkg_defined cryptoutil)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

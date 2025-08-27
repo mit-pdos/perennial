@@ -1151,19 +1151,23 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_semantics : IsPkgDefined semantics :=
+Global Instance is_pkg_defined_pure_semantics : IsPkgDefinedPure semantics :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single semantics ∧
       is_pkg_defined_pure primitive ∧
       is_pkg_defined_pure sync ∧
       is_pkg_defined_pure disk;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_semantics : IsPkgDefined semantics :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single semantics ∗
-         is_pkg_defined primitive ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined disk)%I
+      (is_pkg_defined_single semantics ∗
+       is_pkg_defined primitive ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined disk)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

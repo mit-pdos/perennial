@@ -68,8 +68,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_quorum : IsPkgDefined quorum :=
+Global Instance is_pkg_defined_pure_quorum : IsPkgDefinedPure quorum :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single quorum ∧
@@ -78,13 +77,18 @@ Global Program Instance is_pkg_defined_quorum : IsPkgDefined quorum :=
       is_pkg_defined_pure strings ∧
       is_pkg_defined_pure slices ∧
       is_pkg_defined_pure strconv;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_quorum : IsPkgDefined quorum :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single quorum ∗
-         is_pkg_defined fmt ∗
-         is_pkg_defined math ∗
-         is_pkg_defined strings ∗
-         is_pkg_defined slices ∗
-         is_pkg_defined strconv)%I
+      (is_pkg_defined_single quorum ∗
+       is_pkg_defined fmt ∗
+       is_pkg_defined math ∗
+       is_pkg_defined strings ∗
+       is_pkg_defined slices ∗
+       is_pkg_defined strconv)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

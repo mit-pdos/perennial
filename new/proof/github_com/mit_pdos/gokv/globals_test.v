@@ -126,15 +126,15 @@ Proof.
     iMod (go_init (λ k, default True%I (({[
                                 globals_test.main := is_pkg_init globals_test.main
                             ]} : gmap _ _) !! k)) with "[$]")
-      as "(#? & ? & #?)"; [done|].
+      as "(? & #?)"; [done|].
     iModIntro. iExists (λ _, True)%I.
     Unshelve.
     2:{ apply (is_pkg_init_globals_test γtok). }
     wp_apply (wp_initialize' with "[-Hescrow]").
-    2:{ iFrame "∗#". rewrite is_pkg_defined_unseal. iFrame "#%". }
+    2:{ iFrame "∗#". iModIntro. iApply (is_pkg_defined_boot with "[$]"). done. }
     { rewrite /= -insert_empty lookup_insert_eq //. }
     iIntros "* (Hown & #Hinit)".
-    iApply fupd_wp. iDestruct (is_pkg_init_def_unfold with "Hinit") as "Hinv".
+    iApply fupd_wp. iDestruct (is_pkg_init_access with "Hinit") as "Hinv".
     simpl. iInv "Hinv" as ">[Hbad|Hi]" "Hclose".
     { iCombine "Hbad Hescrow" gives %[Hbad _]. done. }
     iMod ("Hclose" with "[$Hescrow]") as "_". iModIntro.

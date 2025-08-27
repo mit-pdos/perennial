@@ -77,21 +77,25 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_lockservice : IsPkgDefined lockservice :=
+Global Instance is_pkg_defined_pure_lockservice : IsPkgDefinedPure lockservice :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single lockservice ∧
       is_pkg_defined_pure kv;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_lockservice : IsPkgDefined lockservice :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single lockservice ∗
-         is_pkg_defined kv)%I
+      (is_pkg_defined_single lockservice ∗
+       is_pkg_defined kv)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MakeLockClerk :
-  WpFuncCall lockservice.MakeLockClerk lockservice.MakeLockClerkⁱᵐᵖˡ (is_pkg_defined lockservice) :=
+  WpFuncCall lockservice.MakeLockClerk _ (is_pkg_defined lockservice) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_LockClerk'ptr_Lock :

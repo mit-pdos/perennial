@@ -2334,13 +2334,12 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_raft : IsPkgDefined raft :=
+Global Instance is_pkg_defined_pure_raft : IsPkgDefinedPure raft :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single raft ∧
       is_pkg_defined_pure errors ∧
-      is_pkg_defined_pure pb ∧
+      is_pkg_defined_pure raftpb ∧
       is_pkg_defined_pure fmt ∧
       is_pkg_defined_pure io ∧
       is_pkg_defined_pure log ∧
@@ -2356,25 +2355,30 @@ Global Program Instance is_pkg_defined_raft : IsPkgDefined raft :=
       is_pkg_defined_pure quorum ∧
       is_pkg_defined_pure slices ∧
       is_pkg_defined_pure tracker;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_raft : IsPkgDefined raft :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single raft ∗
-         is_pkg_defined errors ∗
-         is_pkg_defined pb ∗
-         is_pkg_defined fmt ∗
-         is_pkg_defined io ∗
-         is_pkg_defined log ∗
-         is_pkg_defined os ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined context ∗
-         is_pkg_defined bytes ∗
-         is_pkg_defined rand ∗
-         is_pkg_defined math ∗
-         is_pkg_defined big ∗
-         is_pkg_defined strings ∗
-         is_pkg_defined confchange ∗
-         is_pkg_defined quorum ∗
-         is_pkg_defined slices ∗
-         is_pkg_defined tracker)%I
+      (is_pkg_defined_single raft ∗
+       is_pkg_defined errors ∗
+       is_pkg_defined raftpb ∗
+       is_pkg_defined fmt ∗
+       is_pkg_defined io ∗
+       is_pkg_defined log ∗
+       is_pkg_defined os ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined context ∗
+       is_pkg_defined bytes ∗
+       is_pkg_defined rand ∗
+       is_pkg_defined math ∗
+       is_pkg_defined big ∗
+       is_pkg_defined strings ∗
+       is_pkg_defined confchange ∗
+       is_pkg_defined quorum ∗
+       is_pkg_defined slices ∗
+       is_pkg_defined tracker)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

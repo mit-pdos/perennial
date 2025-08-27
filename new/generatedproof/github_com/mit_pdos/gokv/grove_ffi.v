@@ -16,13 +16,17 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_grove_ffi : IsPkgDefined grove_ffi :=
+Global Instance is_pkg_defined_pure_grove_ffi : IsPkgDefinedPure grove_ffi :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single grove_ffi;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_grove_ffi : IsPkgDefined grove_ffi :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single grove_ffi)%I
+      (is_pkg_defined_single grove_ffi)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

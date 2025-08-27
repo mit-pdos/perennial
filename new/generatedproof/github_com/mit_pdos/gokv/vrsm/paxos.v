@@ -623,8 +623,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_paxos : IsPkgDefined paxos :=
+Global Instance is_pkg_defined_pure_paxos : IsPkgDefinedPure paxos :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single paxos ∧
@@ -636,16 +635,21 @@ Global Program Instance is_pkg_defined_paxos : IsPkgDefined paxos :=
       is_pkg_defined_pure std ∧
       is_pkg_defined_pure asyncfile ∧
       is_pkg_defined_pure urpc;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_paxos : IsPkgDefined paxos :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single paxos ∗
-         is_pkg_defined grove_ffi ∗
-         is_pkg_defined reconnectclient ∗
-         is_pkg_defined marshal ∗
-         is_pkg_defined log ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined std ∗
-         is_pkg_defined asyncfile ∗
-         is_pkg_defined urpc)%I
+      (is_pkg_defined_single paxos ∗
+       is_pkg_defined grove_ffi ∗
+       is_pkg_defined reconnectclient ∗
+       is_pkg_defined marshal ∗
+       is_pkg_defined log ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined std ∗
+       is_pkg_defined asyncfile ∗
+       is_pkg_defined urpc)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

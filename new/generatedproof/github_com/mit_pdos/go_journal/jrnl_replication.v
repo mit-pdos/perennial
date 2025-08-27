@@ -107,8 +107,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_replicated_block : IsPkgDefined replicated_block :=
+Global Instance is_pkg_defined_pure_replicated_block : IsPkgDefinedPure replicated_block :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single replicated_block ∧
@@ -119,15 +118,20 @@ Global Program Instance is_pkg_defined_replicated_block : IsPkgDefined replicate
       is_pkg_defined_pure jrnl ∧
       is_pkg_defined_pure obj ∧
       is_pkg_defined_pure util;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_replicated_block : IsPkgDefined replicated_block :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single replicated_block ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined disk ∗
-         is_pkg_defined addr ∗
-         is_pkg_defined common ∗
-         is_pkg_defined jrnl ∗
-         is_pkg_defined obj ∗
-         is_pkg_defined util)%I
+      (is_pkg_defined_single replicated_block ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined disk ∗
+       is_pkg_defined addr ∗
+       is_pkg_defined common ∗
+       is_pkg_defined jrnl ∗
+       is_pkg_defined obj ∗
+       is_pkg_defined util)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

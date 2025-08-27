@@ -279,17 +279,21 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_channel : IsPkgDefined channel :=
+Global Instance is_pkg_defined_pure_channel : IsPkgDefinedPure channel :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single channel ∧
       is_pkg_defined_pure sync ∧
       is_pkg_defined_pure primitive;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_channel : IsPkgDefined channel :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single channel ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined primitive)%I
+      (is_pkg_defined_single channel ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined primitive)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

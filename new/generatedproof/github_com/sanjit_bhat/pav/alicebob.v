@@ -94,8 +94,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_alicebob : IsPkgDefined alicebob :=
+Global Instance is_pkg_defined_pure_alicebob : IsPkgDefinedPure alicebob :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single alicebob ∧
@@ -109,18 +108,23 @@ Global Program Instance is_pkg_defined_alicebob : IsPkgDefined alicebob :=
       is_pkg_defined_pure cryptoffi ∧
       is_pkg_defined_pure ktcore ∧
       is_pkg_defined_pure server;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_alicebob : IsPkgDefined alicebob :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single alicebob ∗
-         is_pkg_defined bytes ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined primitive ∗
-         is_pkg_defined std ∗
-         is_pkg_defined advrpc ∗
-         is_pkg_defined auditor ∗
-         is_pkg_defined client ∗
-         is_pkg_defined cryptoffi ∗
-         is_pkg_defined ktcore ∗
-         is_pkg_defined server)%I
+      (is_pkg_defined_single alicebob ∗
+       is_pkg_defined bytes ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined primitive ∗
+       is_pkg_defined std ∗
+       is_pkg_defined advrpc ∗
+       is_pkg_defined auditor ∗
+       is_pkg_defined client ∗
+       is_pkg_defined cryptoffi ∗
+       is_pkg_defined ktcore ∗
+       is_pkg_defined server)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

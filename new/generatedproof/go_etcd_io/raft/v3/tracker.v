@@ -517,8 +517,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_tracker : IsPkgDefined tracker :=
+Global Instance is_pkg_defined_pure_tracker : IsPkgDefinedPure tracker :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single tracker ∧
@@ -526,14 +525,19 @@ Global Program Instance is_pkg_defined_tracker : IsPkgDefined tracker :=
       is_pkg_defined_pure strings ∧
       is_pkg_defined_pure slices ∧
       is_pkg_defined_pure quorum ∧
-      is_pkg_defined_pure pb;
+      is_pkg_defined_pure raftpb;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_tracker : IsPkgDefined tracker :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single tracker ∗
-         is_pkg_defined fmt ∗
-         is_pkg_defined strings ∗
-         is_pkg_defined slices ∗
-         is_pkg_defined quorum ∗
-         is_pkg_defined pb)%I
+      (is_pkg_defined_single tracker ∗
+       is_pkg_defined fmt ∗
+       is_pkg_defined strings ∗
+       is_pkg_defined slices ∗
+       is_pkg_defined quorum ∗
+       is_pkg_defined raftpb)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

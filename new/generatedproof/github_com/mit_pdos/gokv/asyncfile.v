@@ -151,19 +151,23 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_asyncfile : IsPkgDefined asyncfile :=
+Global Instance is_pkg_defined_pure_asyncfile : IsPkgDefinedPure asyncfile :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single asyncfile ∧
       is_pkg_defined_pure sync ∧
       is_pkg_defined_pure std ∧
       is_pkg_defined_pure grove_ffi;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_asyncfile : IsPkgDefined asyncfile :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single asyncfile ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined std ∗
-         is_pkg_defined grove_ffi)%I
+      (is_pkg_defined_single asyncfile ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined std ∗
+       is_pkg_defined grove_ffi)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

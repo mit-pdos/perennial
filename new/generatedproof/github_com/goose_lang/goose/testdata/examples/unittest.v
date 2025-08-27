@@ -1886,8 +1886,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_unittest : IsPkgDefined unittest :=
+Global Instance is_pkg_defined_pure_unittest : IsPkgDefinedPure unittest :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single unittest ∧
@@ -1897,14 +1896,19 @@ Global Program Instance is_pkg_defined_unittest : IsPkgDefined unittest :=
       is_pkg_defined_pure disk ∧
       is_pkg_defined_pure log ∧
       is_pkg_defined_pure std;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_unittest : IsPkgDefined unittest :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single unittest ∗
-         is_pkg_defined fmt ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined primitive ∗
-         is_pkg_defined disk ∗
-         is_pkg_defined log ∗
-         is_pkg_defined std)%I
+      (is_pkg_defined_single unittest ∗
+       is_pkg_defined fmt ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined primitive ∗
+       is_pkg_defined disk ∗
+       is_pkg_defined log ∗
+       is_pkg_defined std)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

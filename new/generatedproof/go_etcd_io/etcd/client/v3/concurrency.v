@@ -953,35 +953,39 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_concurrency : IsPkgDefined concurrency :=
+Global Instance is_pkg_defined_pure_concurrency : IsPkgDefinedPure concurrency :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single concurrency ∧
       is_pkg_defined_pure context ∧
       is_pkg_defined_pure errors ∧
       is_pkg_defined_pure fmt ∧
-      is_pkg_defined_pure pb ∧
+      is_pkg_defined_pure etcdserverpb ∧
       is_pkg_defined_pure mvccpb ∧
-      is_pkg_defined_pure v3 ∧
+      is_pkg_defined_pure clientv3 ∧
       is_pkg_defined_pure strings ∧
       is_pkg_defined_pure sync ∧
       is_pkg_defined_pure time ∧
       is_pkg_defined_pure zap ∧
       is_pkg_defined_pure math;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_concurrency : IsPkgDefined concurrency :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single concurrency ∗
-         is_pkg_defined context ∗
-         is_pkg_defined errors ∗
-         is_pkg_defined fmt ∗
-         is_pkg_defined pb ∗
-         is_pkg_defined mvccpb ∗
-         is_pkg_defined v3 ∗
-         is_pkg_defined strings ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined time ∗
-         is_pkg_defined zap ∗
-         is_pkg_defined math)%I
+      (is_pkg_defined_single concurrency ∗
+       is_pkg_defined context ∗
+       is_pkg_defined errors ∗
+       is_pkg_defined fmt ∗
+       is_pkg_defined etcdserverpb ∗
+       is_pkg_defined mvccpb ∗
+       is_pkg_defined clientv3 ∗
+       is_pkg_defined strings ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined time ∗
+       is_pkg_defined zap ∗
+       is_pkg_defined math)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

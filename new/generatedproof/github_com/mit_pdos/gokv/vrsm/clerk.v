@@ -106,8 +106,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_clerk : IsPkgDefined clerk :=
+Global Instance is_pkg_defined_pure_clerk : IsPkgDefinedPure clerk :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single clerk ∧
@@ -117,14 +116,19 @@ Global Program Instance is_pkg_defined_clerk : IsPkgDefined clerk :=
       is_pkg_defined_pure configservice ∧
       is_pkg_defined_pure e ∧
       is_pkg_defined_pure replica;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_clerk : IsPkgDefined clerk :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single clerk ∗
-         is_pkg_defined primitive ∗
-         is_pkg_defined grove_ffi ∗
-         is_pkg_defined trusted_proph ∗
-         is_pkg_defined configservice ∗
-         is_pkg_defined e ∗
-         is_pkg_defined replica)%I
+      (is_pkg_defined_single clerk ∗
+       is_pkg_defined primitive ∗
+       is_pkg_defined grove_ffi ∗
+       is_pkg_defined trusted_proph ∗
+       is_pkg_defined configservice ∗
+       is_pkg_defined e ∗
+       is_pkg_defined replica)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

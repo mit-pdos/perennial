@@ -12,17 +12,18 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 #[global] Instance : GetIsPkgInitWf cryptoffi := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init cryptoffi = (is_pkg_init cryptoffi) →
-  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined cryptoffi }}}
+  get_is_pkg_init_prop cryptoffi get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined cryptoffi }}}
     cryptoffi.initialize' #()
-  {{{ RET #(); own_initializing ∗ is_pkg_init cryptoffi }}}.
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init cryptoffi }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
-  2: { rewrite Hinit //. }
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
+
   iIntros "Hown". wp_auto. wp_call.
-  rewrite Hinit is_pkg_init_unfold /=.
-  by iFrame "∗#".
+  rewrite is_pkg_init_unfold.
+  simpl. iFrame "∗#". done.
 Qed.
 
 (* Hashes. *)

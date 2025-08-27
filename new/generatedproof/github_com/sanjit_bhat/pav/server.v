@@ -1195,8 +1195,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_server : IsPkgDefined server :=
+Global Instance is_pkg_defined_pure_server : IsPkgDefinedPure server :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single server ∧
@@ -1209,17 +1208,22 @@ Global Program Instance is_pkg_defined_server : IsPkgDefined server :=
       is_pkg_defined_pure cryptoffi ∧
       is_pkg_defined_pure hashchain ∧
       is_pkg_defined_pure merkle;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_server : IsPkgDefined server :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single server ∗
-         is_pkg_defined advrpc ∗
-         is_pkg_defined ktcore ∗
-         is_pkg_defined safemarshal ∗
-         is_pkg_defined marshal ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined std ∗
-         is_pkg_defined cryptoffi ∗
-         is_pkg_defined hashchain ∗
-         is_pkg_defined merkle)%I
+      (is_pkg_defined_single server ∗
+       is_pkg_defined advrpc ∗
+       is_pkg_defined ktcore ∗
+       is_pkg_defined safemarshal ∗
+       is_pkg_defined marshal ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined std ∗
+       is_pkg_defined cryptoffi ∗
+       is_pkg_defined hashchain ∗
+       is_pkg_defined merkle)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

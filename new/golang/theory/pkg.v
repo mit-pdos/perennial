@@ -111,15 +111,21 @@ End init_defns.
 Section package_init_and_defined.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoContext}.
 
+(** Used as a parameter of the below so that this pure predicate can be referred
+    to even without any heapGS. *)
+Class IsPkgDefinedPure (pkg_name : go_string) :=
+  {
+    is_pkg_defined_pure_def : ∀ {go_ctx : GoContext}, Prop;
+  }.
+
 (** [IsPkgDefined] connects package names to a predicate which asserts that all
     functions/methods from the package and all of its dependencies are
     available.
 
     The pure predicate is used as an assumption in closed theorems. The Iris
     predicate is used as a precondition in specs for [<PACKAGE NAME>.initialize']. *)
-Class IsPkgDefined (pkg_name : go_string) :=
+Class IsPkgDefined (pkg_name : go_string) `{!IsPkgDefinedPure pkg_name} :=
   {
-    is_pkg_defined_pure_def : ∀ {go_ctx : GoContext}, Prop;
     is_pkg_defined_def : ∀ {go_ctx : GoContext}, iProp Σ;
     is_pkg_defined_boot : ∀ {go_ctx : GoContext},
       is_pkg_defined_pure_def → is_go_context -∗ is_pkg_defined_def
@@ -129,7 +135,7 @@ Notation is_pkg_defined_pure := is_pkg_defined_pure_def.
 #[global] Opaque is_pkg_defined_pure.
 
 Notation is_pkg_defined := is_pkg_defined_def.
-#[global] Arguments is_pkg_defined (pkg_name) {_} {go_ctx}.
+#[global] Arguments is_pkg_defined (pkg_name) {_ _} {go_ctx}.
 #[global] Opaque is_pkg_defined.
 
 (** Internal to Goose. Pure predicate asserting that the declarations in the Go
@@ -211,8 +217,8 @@ Global Arguments get_is_pkg_init_prop (pkg_name) {_} {_} (get_is_pkg_init).
 End package_init_and_defined.
 
 #[global] Hint Mode IsPkgInit - + : typeclass_instances.
-#[global] Hint Mode IsPkgDefined - - - - - - + : typeclass_instances.
-#[global] Hint Mode GetIsPkgInitWf - + : typeclass_instances.
+#[global] Hint Mode IsPkgDefined - - - - - - + - : typeclass_instances.
+#[global] Hint Mode GetIsPkgInitWf + - : typeclass_instances.
 
 Notation is_pkg_defined_pure := is_pkg_defined_pure_def.
 Notation is_pkg_defined := is_pkg_defined_def.
@@ -250,7 +256,7 @@ Reserved Notation "'define_is_pkg_init' is_pkg_init" (at level 100).
 Notation "'define_is_pkg_init' is_pkg_init" :=
   (ltac2:(build_is_pkg_init is_pkg_init)) (only parsing, is_pkg_init in scope bi_scope).
 
-Local Ltac2 build_get_is_pkg_init_wf () :=
+Ltac2 build_get_is_pkg_init_wf () :=
   Control.refine
     (fun () =>
        lazy_match! goal with
@@ -258,6 +264,7 @@ Local Ltac2 build_get_is_pkg_init_wf () :=
            let deps := Std.eval_hnf constr:(pkg_imported_pkgs $name) in
            let p :=
              constr:(λ (get_is_pkg_init : go_string → $prop),
+                       (&get_is_pkg_init $name = is_pkg_init $name) ∧
                        ltac2:(Control.refine
                                 (fun () =>
                                    let rec build deps :=
@@ -265,7 +272,7 @@ Local Ltac2 build_get_is_pkg_init_wf () :=
                                      | cons ?pkg ?deps =>
                                          let rest := build deps in
                                          constr:(get_is_pkg_init_prop $pkg &get_is_pkg_init ∧ $rest)
-                                     | nil => constr:(&get_is_pkg_init $name = is_pkg_init $name)
+                                     | nil => constr:(True)
                                      | _ =>
                                          Message.print (Message.of_constr deps);
                                          fail (fprintf "build_get_is_pkg_init_wf: unable to match deps list")
@@ -482,13 +489,14 @@ Context `{!goGlobalsGS Σ}.
 Context `{!GoContext}.
 
 #[local] Transparent own_initializing.
-Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init :
+Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init is_pkg_init :
   ∀ Φ,
-  (own_initializing get_is_pkg_init ∗ get_is_pkg_init pkg_name -∗ Φ #()) -∗
-  (own_initializing get_is_pkg_init ∗ (own_initializing get_is_pkg_init -∗ WP init_func #() {{ _, □ get_is_pkg_init pkg_name ∗ own_initializing get_is_pkg_init }})) -∗
+  get_is_pkg_init pkg_name = is_pkg_init →
+  (own_initializing get_is_pkg_init ∗ (own_initializing get_is_pkg_init -∗ WP init_func #() {{ _, □ is_pkg_init ∗ own_initializing get_is_pkg_init }})) -∗
+  (own_initializing get_is_pkg_init ∗ is_pkg_init -∗ Φ #()) -∗
   WP package.init #pkg_name init_func {{ Φ }}.
 Proof.
-  intros ?. iIntros "(Hown & Hpre) HΦ". rewrite package.init_unseal.
+  intros ? Heq. subst. iIntros "(Hown & Hpre) HΦ". rewrite package.init_unseal.
   wp_call. wp_call_lc "Hlc".
   wp_bind. iNamed "Hown". iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iRename "Hg" into "Hg2". iNamed "Hi".
@@ -579,3 +587,6 @@ Proof.
 Qed.
 
 End package_init.
+
+(* Uses [cbv] to unfold [is_pkg_defined] despite it being [Opaque]. *)
+Ltac simpl_is_pkg_defined := (cbv delta [is_pkg_defined]; simpl).

@@ -96,8 +96,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_bank : IsPkgDefined bank :=
+Global Instance is_pkg_defined_pure_bank : IsPkgDefinedPure bank :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single bank ∧
@@ -105,12 +104,17 @@ Global Program Instance is_pkg_defined_bank : IsPkgDefined bank :=
       is_pkg_defined_pure kv ∧
       is_pkg_defined_pure lockservice ∧
       is_pkg_defined_pure marshal;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_bank : IsPkgDefined bank :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single bank ∗
-         is_pkg_defined primitive ∗
-         is_pkg_defined kv ∗
-         is_pkg_defined lockservice ∗
-         is_pkg_defined marshal)%I
+      (is_pkg_defined_single bank ∗
+       is_pkg_defined primitive ∗
+       is_pkg_defined kv ∗
+       is_pkg_defined lockservice ∗
+       is_pkg_defined marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

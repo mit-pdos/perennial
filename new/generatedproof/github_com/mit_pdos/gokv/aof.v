@@ -152,8 +152,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_aof : IsPkgDefined aof :=
+Global Instance is_pkg_defined_pure_aof : IsPkgDefinedPure aof :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single aof ∧
@@ -161,12 +160,17 @@ Global Program Instance is_pkg_defined_aof : IsPkgDefined aof :=
       is_pkg_defined_pure std ∧
       is_pkg_defined_pure grove_ffi ∧
       is_pkg_defined_pure marshal;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_aof : IsPkgDefined aof :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single aof ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined std ∗
-         is_pkg_defined grove_ffi ∗
-         is_pkg_defined marshal)%I
+      (is_pkg_defined_single aof ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined std ∗
+       is_pkg_defined grove_ffi ∗
+       is_pkg_defined marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

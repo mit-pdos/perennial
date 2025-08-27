@@ -256,8 +256,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_configservice : IsPkgDefined configservice :=
+Global Instance is_pkg_defined_pure_configservice : IsPkgDefinedPure configservice :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single configservice ∧
@@ -271,18 +270,23 @@ Global Program Instance is_pkg_defined_configservice : IsPkgDefined configservic
       is_pkg_defined_pure std ∧
       is_pkg_defined_pure urpc ∧
       is_pkg_defined_pure paxos;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_configservice : IsPkgDefined configservice :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single configservice ∗
-         is_pkg_defined grove_ffi ∗
-         is_pkg_defined marshal ∗
-         is_pkg_defined sync ∗
-         is_pkg_defined primitive ∗
-         is_pkg_defined reconnectclient ∗
-         is_pkg_defined e ∗
-         is_pkg_defined log ∗
-         is_pkg_defined std ∗
-         is_pkg_defined urpc ∗
-         is_pkg_defined paxos)%I
+      (is_pkg_defined_single configservice ∗
+       is_pkg_defined grove_ffi ∗
+       is_pkg_defined marshal ∗
+       is_pkg_defined sync ∗
+       is_pkg_defined primitive ∗
+       is_pkg_defined reconnectclient ∗
+       is_pkg_defined e ∗
+       is_pkg_defined log ∗
+       is_pkg_defined std ∗
+       is_pkg_defined urpc ∗
+       is_pkg_defined paxos)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

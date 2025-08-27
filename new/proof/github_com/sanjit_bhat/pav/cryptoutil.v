@@ -15,22 +15,25 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 #[global] Instance : GetIsPkgInitWf cryptoutil := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init cryptoutil = (is_pkg_init cryptoutil) →
-  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined cryptoutil }}}
+  get_is_pkg_init_prop cryptoutil get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined cryptoutil }}}
     cryptoutil.initialize' #()
-  {{{ RET #(); own_initializing ∗ is_pkg_init cryptoutil }}}.
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init cryptoutil }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
-  2: { rewrite Hinit //. }
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
   wp_apply (cryptoffi.wp_initialize' with "[$Hown]").
-  2: { iFrame "#".
-    (* TODO: don't transitively know [is_pkg_defined].
-    could add [is_pkg_defined] deps as assumption,
-    or that could be implicit in [is_pkg_defined] def. *)
-    admit. }
-Admitted.
+  2: {
+    iEval simpl_is_pkg_defined in "Hdef".
+    simpl. iModIntro. iPkgInit.
+  }
+  { naive_solver. }
+  iIntros "(Hown & #?)".
+  wp_auto. wp_call. iFrame. iEval (rewrite is_pkg_init_unfold).
+  simpl. iFrame "#". done.
+Qed.
 
 Lemma wp_Hash sl_b d0 b :
   {{{

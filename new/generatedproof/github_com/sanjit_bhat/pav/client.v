@@ -603,8 +603,7 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_client : IsPkgDefined client :=
+Global Instance is_pkg_defined_pure_client : IsPkgDefinedPure client :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single client ∧
@@ -617,17 +616,22 @@ Global Program Instance is_pkg_defined_client : IsPkgDefined client :=
       is_pkg_defined_pure ktcore ∧
       is_pkg_defined_pure merkle ∧
       is_pkg_defined_pure server;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_client : IsPkgDefined client :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single client ∗
-         is_pkg_defined bytes ∗
-         is_pkg_defined std ∗
-         is_pkg_defined advrpc ∗
-         is_pkg_defined auditor ∗
-         is_pkg_defined cryptoffi ∗
-         is_pkg_defined hashchain ∗
-         is_pkg_defined ktcore ∗
-         is_pkg_defined merkle ∗
-         is_pkg_defined server)%I
+      (is_pkg_defined_single client ∗
+       is_pkg_defined bytes ∗
+       is_pkg_defined std ∗
+       is_pkg_defined advrpc ∗
+       is_pkg_defined auditor ∗
+       is_pkg_defined cryptoffi ∗
+       is_pkg_defined hashchain ∗
+       is_pkg_defined ktcore ∗
+       is_pkg_defined merkle ∗
+       is_pkg_defined server)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

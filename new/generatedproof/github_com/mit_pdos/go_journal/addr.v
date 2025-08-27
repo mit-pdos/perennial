@@ -86,17 +86,21 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_addr : IsPkgDefined addr :=
+Global Instance is_pkg_defined_pure_addr : IsPkgDefinedPure addr :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single addr ∧
       is_pkg_defined_pure disk ∧
       is_pkg_defined_pure common;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_addr : IsPkgDefined addr :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single addr ∗
-         is_pkg_defined disk ∗
-         is_pkg_defined common)%I
+      (is_pkg_defined_single addr ∗
+       is_pkg_defined disk ∗
+       is_pkg_defined common)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

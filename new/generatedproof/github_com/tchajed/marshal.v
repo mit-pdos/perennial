@@ -155,17 +155,21 @@ Context `{!globalsGS Σ}.
 Context {go_ctx : GoContext}.
 #[local] Transparent is_pkg_defined is_pkg_defined_pure.
 
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_marshal : IsPkgDefined marshal :=
+Global Instance is_pkg_defined_pure_marshal : IsPkgDefinedPure marshal :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single marshal ∧
       is_pkg_defined_pure primitive ∧
       is_pkg_defined_pure std;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_marshal : IsPkgDefined marshal :=
+  {|
     is_pkg_defined_def go_ctx :=
-        (is_pkg_defined_single marshal ∗
-         is_pkg_defined primitive ∗
-         is_pkg_defined std)%I
+      (is_pkg_defined_single marshal ∗
+       is_pkg_defined primitive ∗
+       is_pkg_defined std)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
