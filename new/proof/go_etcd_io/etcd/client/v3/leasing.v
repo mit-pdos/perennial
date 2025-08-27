@@ -372,6 +372,40 @@ Lemma wp_After (d : time.Duration.t) :
 Proof.
 Admitted.
 
+Goal True.
+  Fail unify (is_pkg_init leasing) (is_pkg_init mvccpb).
+  Fail unify (is_pkg_init time)    (is_pkg_init leasing).
+  unify      (is_pkg_init time)    (is_pkg_init mvccpb).
+Abort.
+
+(* FIXME: *)
+Lemma fast : (FromAssumption true (is_pkg_init leasing) (is_pkg_init time)).
+Proof.
+  Fail Timeout 1 tc_solve.
+Abort.
+
+Lemma slow : (FromAssumption true (is_pkg_init mvccpb) (is_pkg_init time)).
+Proof.
+  Set Typeclasses Debug.
+  Set Typeclasses Debug Verbosity 2.
+  Set Printing All.
+  Eval cbv in (@is_pkg_init Σ mvccpb (@definitions.IsPkgInit_instance_0 ext ffi ffi_interp0 Σ hG ffi_semantics0 go_ctx)).
+  Set Debug "all".
+  unify (@is_pkg_init Σ mvccpb (@definitions.IsPkgInit_instance_0 ext ffi ffi_interp0 Σ hG ffi_semantics0 go_ctx))
+    (@is_pkg_init Σ time (@concurrency.IsPkgInit_instance_3 ext ffi ffi_interp0 Σ hG ffi_semantics0 go_ctx)).
+  unify (is_pkg_init time) (is_pkg_init mvccpb).
+  Set Debug "all".
+  evar (P : iProp Σ).
+
+  simpl.
+  unify (is_pkg_init time) (is_pkg_init mvccpb).
+  Check (eq_refl : (is_pkg_init mvccpb = is_pkg_init time)).
+  unify (is_pkg_init time) (is_pkg_init mvccpb).
+  unify (@FromAssumption (iPropI Σ) true ?P ?P)
+    (@FromAssumption (iPropI Σ) true (is_pkg_init mvccpb) (is_pkg_init time)).
+  tc_solve. (* Hangs *)
+Abort.
+
 Lemma wp_leaseCache__clearOldRevokes lc γ ctx ctx_desc :
   {{{ is_pkg_init leasing ∗ own_leaseCache lc γ ∗ is_Context ctx ctx_desc }}}
     lc @ (ptrT.id leasing.leaseCache.id) @ "clearOldRevokes" #ctx
@@ -383,54 +417,55 @@ Proof.
   iApply wp_After.
   {
 
-  try iAssumption;
-  iClear "∗";
-  iEval (rewrite ?is_pkg_init_unfold; simpl is_pkg_init_deps; unfold named) in "#";
-  repeat
-    lazymatch goal with
-    | |- environments.envs_entails ?env _ =>
-        lazymatch env with
-        | context[environments.Esnoc _ ?i (_ ∗ _)%I] =>
-            iDestruct i as "[? ?]"
-        | context[environments.Esnoc _ ?i (□ _)%I] =>
-            iDestruct i as "#?"
-        end
-    end.
-  iClear "Hctx".
-  simpl.
-  Fail Timeout 10 iAssumption.
-  (* FIXME: clearing out only mvccpb is neccessary and sufficient to make iAssumption terminate. *)
-  iClear select (is_pkg_init mvccpb).
-  time iAssumption.
-  Undo 2.
+    try iAssumption;
+      iClear "∗";
+      iEval (rewrite ?is_pkg_init_unfold; simpl is_pkg_init_deps; unfold named) in "#";
+      repeat
+        lazymatch goal with
+        | |- environments.envs_entails ?env _ =>
+            lazymatch env with
+            | context[environments.Esnoc _ ?i (_ ∗ _)%I] =>
+                iDestruct i as "[? ?]"
+            | context[environments.Esnoc _ ?i (□ _)%I] =>
+                iDestruct i as "#?"
+            end
+        end.
+    iClear "Hctx".
+    simpl.
+    Fail Timeout 10 iAssumption.
+    (* FIXME: clearing out only mvccpb is neccessary and sufficient to make iAssumption terminate. *)
+    iClear select (is_pkg_init mvccpb).
+    time iAssumption.
+    Undo 2.
 
-  iClear select (is_go_context).
-  iClear select (is_pkg_defined leasing).
-  iClear select (is_pkg_init bytes).
-  iClear select (is_pkg_init concurrency).
-  iClear select (is_pkg_init rpctypes).
-  iClear select (is_pkg_init etcdserverpb).
-  iClear select (is_pkg_init status.status).
-  iClear select (is_pkg_init codes).
-  iClear select (is_pkg_init errors).
-  (* iClear select (is_pkg_init mvccpb). *)
-  iClear select (is_pkg_init clientv3).
-  iClear select (is_pkg_init etcdserverpb).
-  iClear select (is_pkg_init sync).
-  iClear select (is_pkg_init strings).
-  iClear select (is_pkg_init context).
+    iClear select (is_go_context).
+    iClear select (is_pkg_defined leasing).
+    iClear select (is_pkg_init bytes).
+    iClear select (is_pkg_init concurrency).
+    iClear select (is_pkg_init rpctypes).
+    iClear select (is_pkg_init etcdserverpb).
+    iClear select (is_pkg_init status.status).
+    iClear select (is_pkg_init codes).
+    iClear select (is_pkg_init errors).
+    (* iClear select (is_pkg_init mvccpb). *)
+    iClear select (is_pkg_init clientv3).
+    iClear select (is_pkg_init etcdserverpb).
+    iClear select (is_pkg_init sync).
+    iClear select (is_pkg_init strings).
+    iClear select (is_pkg_init context).
 
-  Fail Timeout 10 time iAssumption.
-  iClear select (is_pkg_init mvccpb).
-  time iAssumption.
-  iClear select (is_pkg_init mvccpb).
 
-  iClear "#".
-  iFrame.
-  iAssumption.
-   time iFrame "#".
-    solve_pkg_init.
-    iPkgInit.
+    assert (FromAssumption true (is_pkg_init mvccpb) (is_pkg_init time)).
+    {
+      Set Typeclasses Debug.
+      Set Typeclasses Debug Verbosity 2.
+      Set Debug "all".
+      Fail Timeout 10 tc_solve.
+    }
+    set x := (_ : FromAssumption true (is_pkg_init mvccpb) (is_pkg_init time)).
+    Fail Timeout 10 time iAssumption.
+    iClear select (is_pkg_init mvccpb).
+    time iAssumption.
   }
   iIntros (after_ch) "#[after_ch Hafter_ch]".
   wp_auto.
