@@ -449,6 +449,20 @@ Lemma pointsto_loc_add0_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
   l ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
 Proof. intros; subst; rewrite loc_add_0 //. Qed.
 
+Lemma field_pointsto_not_null `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  `{!IntoVal V} `{!IntoValTyped V t} (l : loc) (dq : dfrac) (v : V) s_t f :
+  go_type_size_def t > 0 →
+  (struct.field_offset_f s_t f).1 = W64 0 →
+  l ↦s[s_t :: f]{dq} v -∗ ⌜l ≠ null⌝.
+Proof.
+  intros Hsize Hfirst.
+  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
+  rewrite Hfirst.
+  rewrite loc_add_0.
+  apply typed_pointsto_not_null.
+  rewrite go_type_size_unseal //.
+Qed.
+
 Lemma has_bounded_type_size_def (t: go_type) `{BoundedTypeSize t} :
   go_type_size_def t < 2^32.
 Proof.

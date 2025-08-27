@@ -42,11 +42,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1755282139,
-        "narHash": "sha256-VFDR/32Dq4ZhgV/9e0JXGGAusxyAH+KlC2Dv5C6JIIM=",
+        "lastModified": 1755637914,
+        "narHash": "sha256-bt3cnCFQlXirEvD6RqksZZ5LmsAScybuRdxqeWNW8hs=",
         "owner": "mjschwenne",
         "repo": "grackle",
-        "rev": "fcca08542296b82d9a8cf5c211cc33870ca712f6",
+        "rev": "0287e5c807e39d94f64938bcf391cc615bd3606c",
         "type": "github"
       },
       "original": {
@@ -79,8 +79,10 @@
         "type": "github"
       },
       "original": {
-        "id": "nixpkgs",
-        "type": "indirect"
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a595dde4d0d31606e19dcec73db02279db59d201",
+        "type": "github"
       }
     },
     "root": {

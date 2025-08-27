@@ -1,0 +1,59 @@
+## adapted from stdpp testing setup
+
+## needed from Makefile.coq
+ROCQ_VERSION:=$(shell coqc --print-version | cut -d " " -f 1)
+
+# use NO_TEST=1 to skip the tests
+NO_TEST:=
+
+# use MAKE_REF=1 to generate new reference files
+MAKE_REF:=
+
+# Only test reference output on known versions of Rocq, to avoid blocking
+# CI when they change the printing a little.
+ROCQ_REF:=$(shell echo "$(ROCQ_VERSION)" | grep -E "^9\.(0)\." -q && echo 1)
+
+# Run tests interleaved with main build.  They have to be in the same target for this.
+default: $(if $(NO_TEST),,test)
+all: $(if $(NO_TEST),,test)
+
+# no style check
+
+# the test suite
+TESTFILES:=$(shell find tests -name "*.v")
+NORMALIZER:=test-normalizer.sed
+
+test: $(TESTFILES:.v=.vo)
+.PHONY: test
+
+ROCQ_TEST=coqtop -batch -test-mode $(ROCQPROJECT_ARGS)
+
+tests/.rocqdeps.d: $(TESTFILES) _RocqProject
+	@echo 'ROCQ DEP TESTFILES'
+	$(Q)rocq dep -f _RocqProject $(ROCQPROJECT_ARGS) $(ROCQ_DEP_ARGS) -dyndep var $(TESTFILES) > "$@"
+ifeq ($(filter clean,$(MAKECMDGOALS)),)
+-include tests/.rocqdeps.d
+endif
+
+# Main test script (comments out-of-line because macOS otherwise barfs?!?)
+# - Determine reference file (`REF`).
+# - Print user-visible status line.
+# - unset env vars that change Rocq's output
+# - Dump Rocq output into a temporary file.
+# - Run `sed -i` on that file in a way that works on macOS.
+# - Either compare the result with the reference file, or move it over the reference file.
+# - Cleanup, and mark as done for make.
+$(TESTFILES:.v=.vo): %.vo: %.v $(if $(MAKE_REF),,%.ref) $(NORMALIZER)
+	$(Q)REF=$*".ref" && \
+	  echo "ROCQTEST$(if $(ROCQ_REF),$(if $(MAKE_REF), [make ref],), [ref ignored]) $< (ref: $$REF)" && \
+	  TMPFILE="$$(mktemp)" && \
+	  unset OCAMLRUNPARAM && \
+	  $(ROCQ_TEST) -load-vernac-source $< > "$$TMPFILE" && \
+	  sed -E -f $(NORMALIZER) "$$TMPFILE" > "$$TMPFILE".new && \
+	  mv "$$TMPFILE".new "$$TMPFILE" && \
+	  $(if $(ROCQ_REF),\
+	    $(if $(MAKE_REF),mv "$$TMPFILE" "$$REF",diff --strip-trailing-cr -u "$$REF" "$$TMPFILE"), \
+	    true \
+	  ) && \
+	  rm -f "$$TMPFILE" && \
+	  touch $@

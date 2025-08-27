@@ -1,6 +1,6 @@
 From New.proof Require Import proof_prelude.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples
-  Require Import unittest.generics.
+  Require Import unittest.generics.helpers unittest.generics.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

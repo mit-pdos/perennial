@@ -2,6 +2,7 @@ From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
 From Perennial.Helpers Require Import bytes NamedProps.
 
+From New.proof Require Import bytes.
 From New.proof.github_com.goose_lang Require Import primitive std.
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil safemarshal.
 From New.proof.github_com.tchajed Require Import marshal.
@@ -46,7 +47,7 @@ Definition own ptr m d : iProp Σ :=
   "%Heq_tree" ∷ ⌜ m = to_map t ⌝ ∗
   "Hown_tree" ∷ own_tree ptr_root t d ∗
   "%His_cutless" ∷ ⌜ is_cutless t ⌝ ∗
-  "%His_limit" ∷ ⌜ is_limit t max_depth ⌝.
+  "%His_limit" ∷ ⌜ is_limit t ⌝.
 
 Lemma own_tree_to_hash ptr t d :
   own_tree ptr t d -∗
@@ -60,7 +61,7 @@ Proof.
   iNamed 1.
   iFrame "%".
   iDestruct (own_tree_to_hash with "Hown_tree") as "[% #His_tree]".
-  by iDestruct (cutless_to_full with "His_tree [] []") as "$".
+  by iDestruct (cut_to_full with "His_tree") as "$".
 Qed.
 
 Lemma own_empty_tree t d :
@@ -152,15 +153,6 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-Lemma length_bytes_to_bits b :
-  length (bytes_to_bits b) = (8 * length b) % nat.
-Proof.
-  induction b; [done|].
-  rewrite /= IHb. lia.
-Qed.
-(* TODO: add #[global] when upstream. *)
-Hint Rewrite length_bytes_to_bits : len.
-
 Lemma bytes_to_bits_app a b :
   bytes_to_bits (a ++ b) = bytes_to_bits a ++ bytes_to_bits b.
 Proof. rewrite /bytes_to_bits !fmap_app join_app //. Qed.
@@ -224,6 +216,7 @@ Lemma bool_decide_ite_not (P : Prop) {dec : Decision P} :
   (if bool_decide P then false else true) = bool_decide (¬P).
 Proof. by rewrite bool_decide_not. Qed.
 
+(* TODO: upstream some helper lemmas. *)
 Lemma wp_getBit sl_bs bs (n : w64) :
   {{{
     is_pkg_init merkle ∗
@@ -232,14 +225,14 @@ Lemma wp_getBit sl_bs bs (n : w64) :
   @! merkle.getBit #sl_bs #n
   {{{
     bit, RET #bit;
-    "->" ∷ ⌜ get_bit bs (uint.nat n) = bit ⌝
+    "->" ∷ ⌜ bit = get_bit bs (uint.nat n) ⌝
   }}}.
 Proof.
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_bs") as %?.
 
   (* deal with OOB case. *)
-  rewrite /get_bit list_lookup_total_alt.
+  rewrite list_lookup_total_alt.
   destruct (_ !! _) eqn:Hbs.
   2:{ apply lookup_ge_None in Hbs.
     rewrite length_bytes_to_bits in Hbs.
@@ -277,53 +270,154 @@ Proof.
   f_equal. apply Ht. repeat f_equal. word.
 Qed.
 
-Lemma wp_node_getChild n d nodeTy sl_hash ptr_child0 ptr_child1 sl_label sl_val label (depth : w64) :
+Lemma wp_node_getChild n d nodeTy sl_hash ptr_child0 ptr_child1 l v sl_label label (depth : w64) :
   {{{
     is_pkg_init merkle ∗
     "Hnode" ∷ n ↦{d}
-      (merkle.node.mk nodeTy sl_hash ptr_child0 ptr_child1 sl_label sl_val) ∗
-    "#Hsl_label" ∷ sl_label ↦*□ label ∗
-    "%Hlt_depth" ∷ ⌜ uint.Z depth < Z.of_nat (length label) * 8 ⌝
+      (merkle.node.mk nodeTy sl_hash ptr_child0 ptr_child1 l v) ∗
+    "#Hsl_label" ∷ sl_label ↦*□ label
   }}}
   n @ (ptrT.id merkle.node.id) @ "getChild" #sl_label #depth
   {{{
     ptr_cb ptr_cnb, RET (#ptr_cb, #ptr_cnb);
-    let (cb, cnb) := if get_bit label (uint.nat depth)
-      then (ptr_child1, ptr_child0) else (ptr_child0, ptr_child1) in
-    "Hcb" ∷ ptr_cb ↦{d} cb ∗
-    "Hcnb" ∷ ptr_cnb ↦{d} cnb ∗
+    "Hcb" ∷ ptr_cb ↦{d}
+      (if get_bit label (uint.nat depth) then ptr_child1 else ptr_child0) ∗
+    "Hcnb" ∷ ptr_cnb ↦{d}
+      (if get_bit label (uint.nat depth) then ptr_child0 else ptr_child1) ∗
     "Hclose" ∷ (∀ ab anb,
-      ptr_cb ↦{d} ab -∗
-      ptr_cnb ↦{d} anb -∗
-      let (c0, c1) := if get_bit label (uint.nat depth)
-        then (anb, ab) else (ab, anb) in
-      "Hnode" ∷ n ↦{d}
-        (merkle.node.mk nodeTy sl_hash c0 c1 sl_label sl_val))
+      "Hab" ∷ ptr_cb ↦{d} ab -∗
+      "Hanb" ∷ ptr_cnb ↦{d} anb -∗
+      "Hnode" ∷ n ↦{d} (merkle.node.mk nodeTy sl_hash
+        (if get_bit label (uint.nat depth) then anb else ab)
+        (if get_bit label (uint.nat depth) then ab else anb)
+        l v))
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@". wp_auto.
+  wp_apply (wp_getBit with "[$Hsl_label]") as "* @".
+  destruct (get_bit _ _).
+  - wp_auto. iApply "HΦ".
+    iDestruct (struct_fields_split with "Hnode") as "H".
+    iNamed "H". simpl. iFrame.
+    iIntros (??) "@ @".
+    iDestruct (struct_fields_combine (v:=merkle.node.mk _ _ _ _ _ _)
+      with "[$HnodeTy $Hhash $Hlabel $Hval $Hab $Hanb]") as "$".
+  - wp_auto. iApply "HΦ".
+    iDestruct (struct_fields_split with "Hnode") as "H".
+    iNamed "H". simpl. iFrame.
+    iIntros (??) "@ @".
+    iDestruct (struct_fields_combine (v:=merkle.node.mk _ _ _ _ _ _)
+      with "[$HnodeTy $Hhash $Hlabel $Hval $Hab $Hanb]") as "$".
+Qed.
 
-Lemma wp_put n0 n t depth sl_label sl_val label val :
+Lemma wp_put n0 n t sl_label sl_val label val :
+  (* for max depth. *)
+  is_limit t →
+  Z.of_nat (length label) = cryptoffi.hash_len →
+  is_const_label_len t →
+  is_sorted t →
+  (* for no Cut. *)
+  is_cutless_path t label →
   {{{
     is_pkg_init merkle ∗ is_initialized ∗
     "Hn0" ∷ n0 ↦ n ∗
     "Hown_tree" ∷ own_tree n t 1 ∗
-    "#Hlabel" ∷ sl_label ↦*□ label ∗
-    "#Hval" ∷ sl_val ↦*□ val
+    "#Hsl_label" ∷ sl_label ↦*□ label ∗
+    "#Hsl_val" ∷ sl_val ↦*□ val
   }}}
-  @! merkle.put #n0 #depth #sl_label #sl_val
+  @! merkle.put #n0 #(W64 0) #sl_label #sl_val
   {{{
     n' t', RET #();
-    let ot' := pure_put t (uint.nat depth) label val in
     "Hn0" ∷ n0 ↦ n' ∗
-    "%Hsome_tree" ∷ ⌜ ot' = Some t' ⌝ ∗
+    "%HSome_tree" ∷ ⌜ pure_put t label val = Some t' ⌝ ∗
     "Hown_tree" ∷ own_tree n' t' 1
   }}}.
 Proof.
-  wp_start as "[Hinit @]". wp_auto.
+  autounfold with merkle.
+  assert (∃ x, x = max_depth) as [limit Heq]; [by eexists|].
+  rewrite -[in is_limit' _ _]Heq.
+  rewrite -[in pure_put' _ _ _ _ _]Heq.
+  remember [] as pref.
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
+  replace 0%nat with (length pref) by (by subst).
+  replace (W64 0) with (W64 $ length pref).
+  2: { subst. simpl. word. }
+  assert (length pref + limit = max_depth)%nat.
+  { subst. simpl. lia. }
+  clear Heq Heqpref.
+  intros.
+  generalize dependent t.
+  generalize dependent pref.
+
+  iInduction limit as [? IH] using lt_wf_ind forall (n0 n Φ).
+  iIntros (pref ?? t).
+  iIntros "* (#?&#?&@) HΦ".
+  wp_func_call. wp_call. wp_auto.
+  wp_apply wp_Assert.
+  { iPureIntro. case_bool_decide; [done|].
+    unfold max_depth in *. word. }
+  iDestruct (own_slice_len with "Hsl_label") as %?.
+  iDestruct (own_slice_len with "Hsl_val") as %?.
+
   wp_if_destruct.
+  (* empty. *)
   { iDestruct (own_empty_tree with "Hown_tree") as %->.
+    iClear "IH".
     wp_auto.
     wp_apply wp_alloc as "* Hnode".
+    iApply wp_fupd.
+    wp_apply wp_compLeafHash as "* @".
+    { iFrame "#". }
+    iPersist "Hsl_hash". iModIntro.
+    iApply "HΦ".
+    rewrite pure_put_unfold /=.
+    iFrame. iSplit; [done|].
+    iFrame "∗#".
+    iPureIntro. split; word. }
+
+  destruct t; simpl in *; iNamed "Hown_tree"; try done;
+    iNamedSuffix "Hown_tree" "_old".
+  (* leaf. *)
+  - wp_auto.
+    wp_apply bytes.wp_Equal as "_".
+    { iFrame "#". }
+    wp_if_destruct.
+    (* same label. *)
+    { iClear "IH". wp_auto.
+      iApply wp_fupd.
+      wp_apply wp_compLeafHash as "* @".
+      { iFrame "#". }
+      iPersist "Hsl_hash". iModIntro.
+      iApply "HΦ".
+      rewrite pure_put_unfold /=.
+      iFrame. iSplit.
+      { iPureIntro. by case_decide. }
+      iFrame "∗#".
+      iPureIntro. split; word. }
+    (* diff label. *)
+    destruct limit.
+    (* limit=0. show labels actually equal. *)
+    { exfalso. unfold max_depth in *.
+      opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
+        [|done|]; [by len|].
+      opose proof (prefix_total_full _ (bytes_to_bits label0) _ _);
+        [|done|]; [by len|].
+      simplify_eq/=. }
+
+    wp_auto. wp_apply wp_alloc as "* Hnode".
+    wp_apply (wp_node_getChild with "[$Hnode]") as "* @".
+    { iFrame "#". }
+    replace (if get_bit _ _ then null else null) with (null).
+    2: { by case_match. }
+    iDestruct ("Hclose" with "Hcb Hcnb") as "@".
+    wp_apply (wp_node_getChild with "[$Hnode]") as "* @".
+    { iFrame "#". }
+    iSpecialize ("IH" $! limit with "[]"); [word|].
+    Notation pref_ext p l := (p ++ [get_bit l (length p)]) (only parsing).
+    replace (word.add _ _) with (W64 (length (pref_ext pref label))) by len.
+    wp_apply ("IH" $! ptr_cb0 _ _ (pref_ext pref label) with
+      "[][][][][][][Hcb]").
 Admitted.
 
 (*

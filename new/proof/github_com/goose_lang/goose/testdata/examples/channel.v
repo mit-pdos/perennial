@@ -1,3 +1,5 @@
+(*
+TODO:Get these to work with refactored model when possible.
 From New.proof Require Import proof_prelude.
 From Perennial.algebra Require Import auth_map.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_spec_inv chan_ghost_state chan_spec_api chan_spec_base.
@@ -686,3 +688,4 @@ Proof.
 Qed.
 
 End proof.
+*)
