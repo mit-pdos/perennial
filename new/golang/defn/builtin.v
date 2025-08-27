@@ -19,10 +19,27 @@ Definition maxUint64 (n : nat) : val :=
   | _ => LitV $ LitPoison
   end.
 
-Axiom int_lt : val.
-Axiom int_leq : val.
-Axiom int_geq : val.
-Axiom int_gt : val.
+(* TODO(tchajed): I don't believe it's possible to implement signed operations
+in a width-independent way *)
+
+Definition int_ge0 : val :=
+  λ: "x", "x" < #(W64 (2^63)).
+
+Definition int_lt : val :=
+  λ: "x" "y", if: int_ge0 "x" then
+                (if: int_ge0 "y" then "x" < "y"
+                else #false)
+              else (* sint.Z x < 0 *)
+                (if: int_ge0 "y" then #true
+                else "x" < "y").
+Definition int_leq : val :=
+  λ: "x" "y", ("x" = "y") || int_lt "x" "y".
+
+Definition int_geq : val :=
+  λ: "x" "y", int_leq "y" "x".
+Definition int_gt : val :=
+  λ: "x" "y", int_lt "y" "x".
+
 Axiom int_quot : val.
 Axiom int_negative: val.
 Axiom recover : val.
