@@ -40,8 +40,6 @@ Definition int_geq : val :=
 Definition int_gt : val :=
   λ: "x" "y", int_lt "y" "x".
 
-Axiom int_quot : val.
-Axiom int_negative: val.
 Axiom recover : val.
 
 (* method sets for primitive types are empty *)
