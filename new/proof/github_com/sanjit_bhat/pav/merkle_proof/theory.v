@@ -737,27 +737,14 @@ Proof.
     try case_decide; try case_match;
     simplify_eq/=; try done.
   - ospecialize (IH n _); [lia|].
-    case_match; [|done].
-    simplify_eq/=.
     replace (S _) with (length $ pref_ext pref label) in * by len.
-
-    eapply IH in H3.
-    2: { by eapply prefix_total_snoc. }
-    2: { repeat case_match; simpl; try done;
-      by eapply prefix_total_snoc. }
-
-    split;
-      repeat case_match; try done;
-      by eapply prefix_total_snoc.
-    (* TODO: leftoff here.
-    a finished branch of the updated proof style, which doesn't
-    need to split into cases before applying the IH.
-
-    notice that we can't use backward reasoning with IH,
-    since the goal only in some cases has recur.
-    but we can use forward reasoning with IH,
-    and then later use that to finish up the proof,
-    along with tree mods after the recur call. *)
+    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
+    { by eapply prefix_total_snoc. }
+    assert (prefix_total (pref_ext pref label0) (bytes_to_bits label0)).
+    { by eapply prefix_total_snoc. }
+    repeat case_match; try done;
+      simplify_eq/=; intuition;
+      by (eapply IH; last done).
   - ospecialize (IH n _); [lia|].
     replace (S _) with (length $ pref_ext pref label) in * by len.
     assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
@@ -883,7 +870,7 @@ Proof.
   destruct t; simpl in *; try done.
 
   - case_decide; [done|].
-    case_match.
+    destruct limit.
     (* limit=0. show labels actually equal. *)
     { unfold max_depth in *.
       opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
@@ -892,22 +879,18 @@ Proof.
         [|done|]; [by len|].
       simplify_eq/=. }
 
-    ospecialize (IH n _); [lia|].
-    replace (S _) with (length $ pref_ext pref label) in * by len.
-    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
-    { by eapply prefix_total_snoc. }
-    assert (prefix_total (pref_ext pref label0) (bytes_to_bits label0)).
-    { by eapply prefix_total_snoc. }
-    repeat case_match; try done; simplify_eq/=; rw_pure_put;
-      (eapply IH; try done; len).
-
-  - destruct limit; try done.
     ospecialize (IH limit _); [lia|].
+    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
     replace (S _) with (length $ pref_ext pref label) in * by len.
-    assert (prefix_total (pref_ext pref label) (bytes_to_bits label)).
-    { by eapply prefix_total_snoc. }
-    repeat case_match; try done; intuition; rw_pure_put;
-      (eapply IH; try done; len).
+    eapply IH; repeat case_match; try done; [|len|..];
+      by eapply prefix_total_snoc.
+  - destruct limit; [done|].
+    ospecialize (IH limit _); [lia|].
+    intuition.
+    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    eapply IH; repeat case_match; try done; [..|len|len];
+      by eapply prefix_total_snoc.
 Qed.
 
 (** stuff that might need to be resurrected. *)
