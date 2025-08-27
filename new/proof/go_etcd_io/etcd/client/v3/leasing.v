@@ -379,7 +379,59 @@ Lemma wp_leaseCache__clearOldRevokes lc γ ctx ctx_desc :
 Proof.
   wp_start as "[Hlc #Hctx]". wp_auto.
   wp_for.
-  wp_apply wp_After.
+  wp_bind.
+  iApply wp_After.
+  {
+
+  try iAssumption;
+  iClear "∗";
+  iEval (rewrite ?is_pkg_init_unfold; simpl is_pkg_init_deps; unfold named) in "#";
+  repeat
+    lazymatch goal with
+    | |- environments.envs_entails ?env _ =>
+        lazymatch env with
+        | context[environments.Esnoc _ ?i (_ ∗ _)%I] =>
+            iDestruct i as "[? ?]"
+        | context[environments.Esnoc _ ?i (□ _)%I] =>
+            iDestruct i as "#?"
+        end
+    end.
+  iClear "Hctx".
+  simpl.
+  Fail Timeout 10 iAssumption.
+  (* FIXME: clearing out only mvccpb is neccessary and sufficient to make iAssumption terminate. *)
+  iClear select (is_pkg_init mvccpb).
+  time iAssumption.
+  Undo 2.
+
+  iClear select (is_go_context).
+  iClear select (is_pkg_defined leasing).
+  iClear select (is_pkg_init bytes).
+  iClear select (is_pkg_init concurrency).
+  iClear select (is_pkg_init rpctypes).
+  iClear select (is_pkg_init etcdserverpb).
+  iClear select (is_pkg_init status.status).
+  iClear select (is_pkg_init codes).
+  iClear select (is_pkg_init errors).
+  (* iClear select (is_pkg_init mvccpb). *)
+  iClear select (is_pkg_init clientv3).
+  iClear select (is_pkg_init etcdserverpb).
+  iClear select (is_pkg_init sync).
+  iClear select (is_pkg_init strings).
+  iClear select (is_pkg_init context).
+
+  Fail Timeout 10 time iAssumption.
+  iClear select (is_pkg_init mvccpb).
+  time iAssumption.
+  iClear select (is_pkg_init mvccpb).
+
+  iClear "#".
+  iFrame.
+  iAssumption.
+   time iFrame "#".
+    solve_pkg_init.
+    iPkgInit.
+  }
   iIntros (after_ch) "#[after_ch Hafter_ch]".
   wp_auto.
   iNamed "Hctx".

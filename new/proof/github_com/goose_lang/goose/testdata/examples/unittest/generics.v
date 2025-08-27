@@ -6,6 +6,9 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
+#[global] Instance : IsPkgInit helpers := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf helpers := build_get_is_pkg_init_wf.
+
 #[global] Instance : IsPkgInit generics := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf generics := build_get_is_pkg_init_wf.
 
