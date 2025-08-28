@@ -1,7 +1,7 @@
 ## adapted from stdpp testing setup
 
 ## needed from Makefile.coq
-ROCQ_VERSION:=$(shell coqc --print-version | cut -d " " -f 1)
+ROCQ_VERSION:=$(shell ( rocq --print-version || coqc --print-version ) 2>/dev/null | cut -d " " -f 1)
 
 # use NO_TEST=1 to skip the tests
 NO_TEST:=
