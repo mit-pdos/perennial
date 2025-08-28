@@ -16,7 +16,7 @@ Set Default Proof Mode "Classic".
   (word.add x y)] is a "linear" expression.
 
     To have [word] automatically unfold definitions before trying to solve the
-  goal, add a hint the the [word] HintDb, by doing [Hint Unfold foo : word.]
+  goal, add a hint the [word] HintDb, by doing [Hint Unfold foo : word.]
 
     [word] is likely to fail at handling non-linear expressions, e.g. [word.mul
   x y] where [x] and [y] are both non-constants. In some proofs, it is possible
@@ -80,6 +80,18 @@ Proof.
   Z.div_mod_to_equations. nia.
 Qed.
 
+(* word.signed_divs_nowrap with one side goal *)
+#[local]
+Lemma word_signed_divs_nowrap_side_goal {width : Z} {word : Interface.word width} {word_ok : word.ok word} :
+  ∀ x y : word,
+  sint.Z y ≠ 0
+  ∧ (sint.Z x ≠ - 2 ^ (width - 1) ∨ sint.Z y ≠ -1)
+  → sint.Z (divs x y) = sint.Z x `quot` sint.Z y.
+Proof.
+  intros.
+  rewrite word.signed_divs_nowrap; intuition.
+Qed.
+
 End lemmas.
 
 Import Printf.
@@ -127,7 +139,7 @@ Local Ltac2 Notation "delayed:[" ts(list1(thunk(open_constr))) "]" := ts.
 
 (* TODO: check for these and throw an error if found. *)
 Ltac2 unsupported_ops () : (unit -> constr) list :=
-  delayed:[eqb ltu lts mulhss mulhsu mulhuu eqb ltu lts srs divs mods].
+  delayed:[eqb ltu lts mulhss mulhsu mulhuu eqb ltu lts srs].
 
 (* These equalities have no sideconditions *)
 Ltac2 word_op_laws_without_side_goal () : (unit -> constr) list :=
@@ -143,9 +155,9 @@ Ltac2 word_op_laws_with_side_goals () : ((unit -> constr) * string) list := [
     (delayed:(unsigned_sru'), "sru: the shift amount must be less than width");
     (* signed_srs *)
     (delayed:(word.unsigned_divu_nowrap), "divu: the divisor must be non-zero");
-    (* signed_divs *)
-    (delayed:(word.unsigned_modu_nowrap), "modu: the modulus must be non-zero")
-      (* signed_mods *)
+    (delayed:(word_signed_divs_nowrap_side_goal), "divs: the divisor must be non-zero and result must not overflow");
+    (delayed:(word.unsigned_modu_nowrap), "modu: the modulus must be non-zero");
+    (delayed:(word.signed_mods_nowrap), "mods: the modulus must be non-zero")
   ].
 
 Ltac2 mutable solve_unsafe () := ().

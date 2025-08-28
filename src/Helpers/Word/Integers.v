@@ -135,12 +135,12 @@ Proof. apply _. Qed.
 
 Module uint.
   Notation Z := word.unsigned.
-
   Notation nat x := (Z.to_nat (Z x)).
 End uint.
 
 Module sint.
   Notation Z := word.signed.
+  Notation nat x := (Z.to_nat (Z x)).
 End sint.
 
 #[global] Instance int_Z_inj `(word: Interface.word width) {word_ok: word.ok word} :
@@ -174,13 +174,30 @@ Proof.
   rewrite Zmod_small; auto.
 Qed.
 
+Lemma double_pow2_width (w: Z) :
+  0 < w →
+  2^(w-1) + 2^(w-1) = 2^w.
+Proof.
+  intros.
+  unshelve epose proof ZLib.Z.pow2_times2 w _; lia.
+Qed.
+
+Lemma word_swrap_bounds (width : Z) (word : Interface.word width) (word_ok : word.ok word) x :
+  -2^(width-1) ≤ @word.swrap width word x < 2^(width-1).
+Proof.
+  pose proof word.width_pos.
+  unfold word.swrap.
+  pose proof (double_pow2_width width ltac:(auto)).
+  lia.
+Qed.
+
 Lemma swrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
   -(2^(width-1)) <= x < 2^(width-1) ->
   @word.swrap _ word x = x.
 Proof.
   pose proof word.width_pos.
   unfold word.swrap; intros.
-  unshelve epose proof ZLib.Z.pow2_times2 width _; first by lia.
+  pose proof (double_pow2_width width ltac:(auto)).
   rewrite Zmod_small; lia.
 Qed.
 
@@ -191,23 +208,79 @@ Proof.
   assert (0 < width) by apply word.width_pos.
   intros Hlarge.
   unfold word.swrap.
+  pose proof (double_pow2_width width ltac:(auto)).
   assert ((x + 2 ^ (width - 1)) `mod` 2 ^ width =
-            (x + 2^(width-1) - 2^width)).
+            (x + 2^(width-1) - 2^width)); [ | lia ].
+  assert (2^width = 2^(width-1) * 2) as H1 by lia.
+  assert ((x + 2 ^ (width-1) - 2^width) `mod` 2^width =
+          x + 2 ^ (width-1) - 2^width) as <-.
   {
-    assert (2^width = 2^(width-1) * 2) as H1.
-    {
-      replace width with ((width-1) + 1) at 1 by lia.
-      rewrite Z.pow_add_r; lia.
-    }
-    assert ((x + 2 ^ (width - 1) - 2 ^ width) `mod` 2^width = x + 2 ^ (width - 1) - 2 ^ width) as H3.
-    {
-      apply Zmod_small. lia.
-    }
-    rewrite <- H3.
-    apply Z.cong_iff_ex.
-    exists 1. lia.
+    apply Zmod_small. lia.
   }
-  lia.
+  apply Z.cong_iff_ex.
+  exists 1. lia.
+Qed.
+
+(* in swrap (unsigned x), eliminate the swrap if x is bounded as an unsigned number *)
+Lemma swrap_unsigned_small {width : Z} {word : Interface.word width} {word_ok : word.ok word} :
+  ∀ (x: word),
+  word.unsigned x < 2^(width-1) →
+  word.swrap (word:=word) (word.unsigned x) = word.unsigned x.
+Proof.
+  intros.
+  pose proof (word.unsigned_range x).
+  rewrite word.swrap_inrange; [ done | lia ].
+Qed.
+
+Lemma sint_eq_uint `{word: Interface.word width} {ok: word.ok word} (x: word) :
+  uint.Z x < 2^(width-1) →
+  sint.Z x = uint.Z x.
+Proof.
+  intros.
+  rewrite word.signed_eq_swrap_unsigned.
+  rewrite swrap_unsigned_small; lia.
+Qed.
+
+
+Lemma swrap_unsigned_in_bounds_iff `{word: Interface.word width} {ok: word.ok word} (x: word) :
+  0 ≤ word.swrap (word:=word) (word.unsigned x) ↔ word.unsigned x < 2^(width-1).
+Proof.
+  assert (0 < width) by apply word.width_pos.
+  pose proof (double_pow2_width width ltac:(auto)).
+  pose proof (word.unsigned_range x).
+  assert (word.unsigned x < 2^(width-1) ∨
+          2^(width-1) ≤ word.unsigned x) as [|].
+  { lia. }
+  - rewrite word.swrap_inrange; lia.
+  - rewrite swrap_large; lia.
+Qed.
+
+(* alternate proof of swrap (unsigned x) = x using an assumption on the signed
+value rather than the unsigned value *)
+Lemma swrap_unsigned_pos {width : Z} {word : Interface.word width} {word_ok : word.ok word} :
+  ∀ (x: word),
+  0 ≤ word.swrap (word:=word) (word.unsigned x) →
+  word.swrap (word:=word) (word.unsigned x) = word.unsigned x.
+Proof.
+  intros.
+  rewrite swrap_unsigned_small; [ done | ].
+  apply swrap_unsigned_in_bounds_iff; done.
+Qed.
+
+Lemma sint_uint_in_bounds `{word: Interface.word width} {ok: word.ok word} (x: word) :
+  0 ≤ sint.Z x ↔ uint.Z x < 2^(width-1).
+Proof.
+  rewrite word.signed_eq_swrap_unsigned.
+  apply swrap_unsigned_in_bounds_iff.
+Qed.
+
+Lemma sint_eq_uint' `{word: Interface.word width} {ok: word.ok word} (x: word) :
+  0 ≤ sint.Z x →
+  sint.Z x = uint.Z x.
+Proof.
+  intros Hpos.
+  apply sint_uint_in_bounds in Hpos.
+  rewrite sint_eq_uint; lia.
 Qed.
 
 #[global]
