@@ -20,7 +20,8 @@ class Proj:
 projs = {
     "goose": Proj("goose", "https://github.com/goose-lang/goose/", "master"),
     "new_goose": Proj("new_goose", "https://github.com/goose-lang/goose/", "new"),
-    "std": Proj("std", "https://github.com/goose-lang/std", "master"),
+    # starting in v0.7.0, std uses features only supported by new goose
+    "std": Proj("std", "https://github.com/goose-lang/std", "v0.6.1"),
     "primitive": Proj("primitive", "https://github.com/goose-lang/primitive", "main"),
     "marshal": Proj("marshal", "https://github.com/tchajed/marshal", "master"),
     "examples": Proj(
