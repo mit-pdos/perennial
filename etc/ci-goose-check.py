@@ -5,40 +5,52 @@ import subprocess as sp
 import shutil
 import argparse
 import re
+from typing import Optional
 
 
 @dataclass
 class Proj:
     name: str
     repo: str
-    commit: str
+    # default branch if None
+    commit: Optional[str]
+    # separate branch for old goose
+    commit_old: Optional[str]
 
     def path(self) -> str:
         return f"/tmp/{self.name}"
 
+    @classmethod
+    def make(cls, name, repo, commit=None, old=None):
+        return cls(name, repo, commit, old or commit)
+
 
 projs = {
-    "goose": Proj("goose", "https://github.com/goose-lang/goose/", "master"),
-    "new_goose": Proj("new_goose", "https://github.com/goose-lang/goose/", "new"),
-    # starting in v0.7.0, std uses features only supported by new goose
-    "std": Proj("std", "https://github.com/goose-lang/std", "v0.6.1"),
-    "primitive": Proj("primitive", "https://github.com/goose-lang/primitive", "main"),
-    "marshal": Proj("marshal", "https://github.com/tchajed/marshal", "master"),
-    "examples": Proj(
-        "examples", "https://github.com/mit-pdos/perennial-examples", "master"
+    "goose": Proj.make(
+        "goose", "https://github.com/goose-lang/goose/", commit="master"
     ),
-    "journal": Proj("journal", "https://github.com/mit-pdos/go-journal", "master"),
-    "nfsd": Proj("nfsd", "https://github.com/mit-pdos/go-nfsd", "master"),
-    "gokv": Proj("gokv", "https://github.com/mit-pdos/gokv", "main"),
-    "new_gokv": Proj("new_gokv", "https://github.com/mit-pdos/gokv", "new"),
-    "mvcc": Proj("mvcc", "https://github.com/mit-pdos/vmvcc", "main"),
-    "pav": Proj("pav", "https://github.com/sanjit-bhat/pav", "main"),
-    "etcd-raft": Proj("etcd-raft", "https://github.com/upamanyus/etcd-raft", "main"),
-    "etcd": Proj("etcd", "https://github.com/upamanyus/etcd", "main"),
+    "new_goose": Proj.make(
+        "new_goose", "https://github.com/goose-lang/goose/", commit="new"
+    ),
+    # starting in v0.7.0, std uses features only supported by new goose
+    "std": Proj.make(
+        "std", "https://github.com/goose-lang/std", commit="master", old="v0.6.1"
+    ),
+    "primitive": Proj.make("primitive", "https://github.com/goose-lang/primitive"),
+    "marshal": Proj.make("marshal", "https://github.com/tchajed/marshal"),
+    "examples": Proj.make("examples", "https://github.com/mit-pdos/perennial-examples"),
+    "journal": Proj.make("journal", "https://github.com/mit-pdos/go-journal"),
+    "nfsd": Proj.make("nfsd", "https://github.com/mit-pdos/go-nfsd"),
+    "gokv": Proj.make("gokv", "https://github.com/mit-pdos/gokv"),
+    "new_gokv": Proj.make("new_gokv", "https://github.com/mit-pdos/gokv", commit="new"),
+    "mvcc": Proj.make("mvcc", "https://github.com/mit-pdos/vmvcc"),
+    "pav": Proj.make("pav", "https://github.com/sanjit-bhat/pav"),
+    "etcd-raft": Proj.make("etcd-raft", "https://github.com/upamanyus/etcd-raft"),
+    "etcd": Proj.make("etcd", "https://github.com/upamanyus/etcd"),
 }
 
 
-def checkout(proj: Proj):
+def checkout(proj: Proj, old: bool):
     print(f"Checking out {proj.name}")
     path = proj.path()
     shared_args = {"check": True, "cwd": path}
@@ -57,7 +69,11 @@ def checkout(proj: Proj):
         shutil.rmtree(path, ignore_errors=True)
         sp.run(["git", "clone", proj.repo, path], check=True)
 
-    sp.run(["git", "checkout", proj.commit], **shared_args)
+    commit = proj.commit
+    if old:
+        commit = proj.commit_old
+    if commit is not None:
+        sp.run(["git", "checkout", commit], **shared_args)
 
 
 def parse_github_tree_url(url):
@@ -80,11 +96,8 @@ def main():
         args.new_goose_url = "https://github.com/goose-lang/goose/tree/new"
     new_goose_repo, new_goose_commit = parse_github_tree_url(args.new_goose_url)
 
-    projs["new_goose"].repo = new_goose_repo
-    projs["new_goose"].commit = new_goose_commit
-
     for proj in projs.values():
-        checkout(proj)
+        checkout(proj, True)
 
     print("\nRunning Goose")
     sp.run(
@@ -112,6 +125,10 @@ def main():
         ],
         check=True,
     )
+
+    for proj in projs.values():
+        if proj.commit != proj.commit_old:
+            checkout(proj, False)
 
     print("\nRunning new Goose")
     sp.run(
