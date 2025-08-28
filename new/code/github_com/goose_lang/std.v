@@ -287,7 +287,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(JoinHandle.
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [math.math; sync.sync; primitive.primitive; std_core.std_core];
+    pkg_imported_pkgs := [math.math; sync.sync; github_com.goose_lang.primitive.primitive; github_com.goose_lang.std.std_core.std_core];
   |}.
 
 Definition initialize' : val :=

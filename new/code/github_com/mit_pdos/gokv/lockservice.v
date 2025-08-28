@@ -60,7 +60,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(LockClerk.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [kv.kv];
+    pkg_imported_pkgs := [github_com.mit_pdos.gokv.kv.kv];
   |}.
 
 Definition initialize' : val :=

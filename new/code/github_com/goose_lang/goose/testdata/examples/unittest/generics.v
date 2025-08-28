@@ -230,7 +230,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Box.id, [("
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [helpers.helpers];
+    pkg_imported_pkgs := [github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers];
   |}.
 
 Definition initialize' : val :=

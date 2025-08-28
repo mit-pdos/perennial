@@ -9,12 +9,8 @@ Section wps.
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ} {go_ctx:GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'disk) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit disk :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit disk := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf disk := build_get_is_pkg_init_wf.
 
 Implicit Types v : val.
 Implicit Types z : Z.

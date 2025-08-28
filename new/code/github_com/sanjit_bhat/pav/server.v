@@ -1821,7 +1821,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(StartReply.
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [advrpc.advrpc; ktcore.ktcore; safemarshal.safemarshal; marshal.marshal; sync.sync; std.std; cryptoffi.cryptoffi; hashchain.hashchain; merkle.merkle];
+    pkg_imported_pkgs := [github_com.sanjit_bhat.pav.advrpc.advrpc; github_com.sanjit_bhat.pav.ktcore.ktcore; github_com.sanjit_bhat.pav.safemarshal.safemarshal; github_com.tchajed.marshal.marshal; sync.sync; github_com.goose_lang.std.std; github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; github_com.sanjit_bhat.pav.hashchain.hashchain; github_com.sanjit_bhat.pav.merkle.merkle];
   |}.
 
 Definition initialize' : val :=

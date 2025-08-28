@@ -402,7 +402,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, [])
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [primitive.primitive; std.std];
+    pkg_imported_pkgs := [github_com.goose_lang.primitive.primitive; github_com.goose_lang.std.std];
   |}.
 
 Axiom _'init : val.

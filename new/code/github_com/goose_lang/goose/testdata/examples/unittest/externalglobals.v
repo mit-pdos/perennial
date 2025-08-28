@@ -30,7 +30,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [unittest.unittest];
+    pkg_imported_pkgs := [github_com.goose_lang.goose.testdata.examples.unittest.unittest];
   |}.
 
 Definition initialize' : val :=

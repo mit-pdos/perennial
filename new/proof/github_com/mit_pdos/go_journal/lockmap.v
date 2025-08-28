@@ -18,12 +18,8 @@ Section heap.
 Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!lockmapG Σ}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'lockmap) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit lockmap :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit lockmap := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf lockmap := build_get_is_pkg_init_wf.
 
 Implicit Types s : slice.t.
 

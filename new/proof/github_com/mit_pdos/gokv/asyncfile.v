@@ -144,12 +144,8 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
   right now because it's unused. *)
 .
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'asyncfile) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit asyncfile :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit asyncfile := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf asyncfile := build_get_is_pkg_init_wf.
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),

@@ -220,31 +220,49 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_lockmap : IsPkgDefinedPure lockmap :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single lockmap ∧
+      is_pkg_defined_pure sync.sync;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_lockmap : IsPkgDefined lockmap :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single lockmap ∗
+       is_pkg_defined sync.sync)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_mkLockShard :
   WpFuncCall lockmap.mkLockShard _ (is_pkg_defined lockmap) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MkLockMap :
   WpFuncCall lockmap.MkLockMap _ (is_pkg_defined lockmap) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_lockShard'ptr_acquire :
   WpMethodCall (ptrT.id lockmap.lockShard.id) "acquire" _ (is_pkg_defined lockmap) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_lockShard'ptr_release :
   WpMethodCall (ptrT.id lockmap.lockShard.id) "release" _ (is_pkg_defined lockmap) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_LockMap'ptr_Acquire :
   WpMethodCall (ptrT.id lockmap.LockMap.id) "Acquire" _ (is_pkg_defined lockmap) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_LockMap'ptr_Release :
   WpMethodCall (ptrT.id lockmap.LockMap.id) "Release" _ (is_pkg_defined lockmap) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End lockmap.

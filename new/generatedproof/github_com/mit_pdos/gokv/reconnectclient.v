@@ -101,19 +101,43 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_reconnectclient : IsPkgDefinedPure reconnectclient :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single reconnectclient ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.urpc.urpc;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_reconnectclient : IsPkgDefined reconnectclient :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single reconnectclient ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined github_com.mit_pdos.gokv.urpc.urpc)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MakeReconnectingClient :
   WpFuncCall reconnectclient.MakeReconnectingClient _ (is_pkg_defined reconnectclient) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_Call :
   WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "Call" _ (is_pkg_defined reconnectclient) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_getClient :
   WpMethodCall (ptrT.id reconnectclient.ReconnectingClient.id) "getClient" _ (is_pkg_defined reconnectclient) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End reconnectclient.

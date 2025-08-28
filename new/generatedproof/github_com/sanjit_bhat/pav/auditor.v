@@ -516,63 +516,99 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_auditor : IsPkgDefinedPure auditor :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single auditor ∧
+      is_pkg_defined_pure bytes.bytes ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.advrpc.advrpc ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.hashchain.hashchain ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.ktcore.ktcore ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.merkle.merkle ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.server.server ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_auditor : IsPkgDefined auditor :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single auditor ∗
+       is_pkg_defined bytes.bytes ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.advrpc.advrpc ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.hashchain.hashchain ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.ktcore.ktcore ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.merkle.merkle ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.server.server ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_New :
   WpFuncCall auditor.New _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_getNextDig :
   WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewRpcAuditor :
   WpFuncCall auditor.NewRpcAuditor _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CallUpdate :
   WpFuncCall auditor.CallUpdate _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CallGet :
   WpFuncCall auditor.CallGet _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_UpdateReplyEncode :
   WpFuncCall auditor.UpdateReplyEncode _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_UpdateReplyDecode :
   WpFuncCall auditor.UpdateReplyDecode _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetArgEncode :
   WpFuncCall auditor.GetArgEncode _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetArgDecode :
   WpFuncCall auditor.GetArgDecode _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetReplyEncode :
   WpFuncCall auditor.GetReplyEncode _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetReplyDecode :
   WpFuncCall auditor.GetReplyDecode _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Auditor'ptr_Get :
   WpMethodCall (ptrT.id auditor.Auditor.id) "Get" _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Auditor'ptr_Update :
   WpMethodCall (ptrT.id auditor.Auditor.id) "Update" _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Auditor'ptr_updOnce :
   WpMethodCall (ptrT.id auditor.Auditor.id) "updOnce" _ (is_pkg_defined auditor) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End auditor.

@@ -9,24 +9,33 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'std) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit std :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit std := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf std := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init std = (is_pkg_init std) →
-  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined std }}}
+  get_is_pkg_init_prop std get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined std }}}
     std.initialize' #()
-  {{{ RET #(); own_initializing ∗ is_pkg_init std }}}.
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init std }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
-  2:{ rewrite Hinit //. }
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
-Admitted.
+  wp_apply (std_core.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_apply (primitive.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_apply (wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_apply (math.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
+Qed.
 
 Lemma wp_Assert (cond : bool) :
   {{{ is_pkg_init std ∗ ⌜cond = true⌝ }}}

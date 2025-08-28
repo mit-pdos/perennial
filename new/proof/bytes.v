@@ -5,23 +5,20 @@ Module bytes.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit bytes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit bytes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf bytes := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
-  get_is_pkg_init bytes = (is_pkg_init bytes) →
-  {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined bytes }}}
+  get_is_pkg_init_prop bytes get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined bytes }}}
     bytes.initialize' #()
-  {{{ RET #(); own_initializing ∗ is_pkg_init bytes }}}.
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init bytes }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #Hinit & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown $Hinit]").
-  2:{ rewrite Hinit //. }
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?). reflexivity. }
   iIntros "Hown". wp_auto.
+  wp_call.
   (* TODO(goose): FFI toml file should allow excluding global var translation. *)
 Admitted.
 

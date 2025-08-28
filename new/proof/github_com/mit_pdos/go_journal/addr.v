@@ -785,12 +785,7 @@ Qed.
 Section proof.
 Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'New.code.github_com.mit_pdos.go_journal.addr.addr).
-#[global] Program Instance : IsPkgInit New.code.github_com.mit_pdos.go_journal.addr.addr :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit New.code.github_com.mit_pdos.go_journal.addr.addr := define_is_pkg_init True%I.
 
 Theorem wp_Addr__Flatid a :
   {{{

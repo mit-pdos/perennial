@@ -13,15 +13,33 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_map_string_marshal : IsPkgDefinedPure map_string_marshal :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single map_string_marshal ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_map_string_marshal : IsPkgDefined map_string_marshal :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single map_string_marshal ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_EncodeStringMap :
   WpFuncCall map_string_marshal.EncodeStringMap _ (is_pkg_defined map_string_marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeStringMap :
   WpFuncCall map_string_marshal.DecodeStringMap _ (is_pkg_defined map_string_marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End map_string_marshal.

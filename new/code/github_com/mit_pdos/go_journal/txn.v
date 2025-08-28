@@ -267,7 +267,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Log.id, [])
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [disk.disk; addr.addr; jrnl.jrnl; lockmap.lockmap; obj.obj; util.util];
+    pkg_imported_pkgs := [github_com.goose_lang.primitive.disk.disk; github_com.mit_pdos.go_journal.addr.addr; github_com.mit_pdos.go_journal.jrnl.jrnl; github_com.mit_pdos.go_journal.lockmap.lockmap; github_com.mit_pdos.go_journal.obj.obj; github_com.mit_pdos.go_journal.util.util];
   |}.
 
 Definition initialize' : val :=

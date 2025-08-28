@@ -175,7 +175,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(AppendOnlyF
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [sync.sync; std.std; grove_ffi.grove_ffi; marshal.marshal];
+    pkg_imported_pkgs := [sync.sync; github_com.goose_lang.std.std; github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=

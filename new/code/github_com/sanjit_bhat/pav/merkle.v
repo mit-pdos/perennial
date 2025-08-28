@@ -864,7 +864,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Map.id, [])
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [bytes.bytes; primitive.primitive; std.std; cryptoffi.cryptoffi; cryptoutil.cryptoutil; marshal.marshal; safemarshal.safemarshal];
+    pkg_imported_pkgs := [bytes.bytes; github_com.goose_lang.primitive.primitive; github_com.goose_lang.std.std; github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; github_com.sanjit_bhat.pav.cryptoutil.cryptoutil; github_com.tchajed.marshal.marshal; github_com.sanjit_bhat.pav.safemarshal.safemarshal];
   |}.
 
 Definition initialize' : val :=

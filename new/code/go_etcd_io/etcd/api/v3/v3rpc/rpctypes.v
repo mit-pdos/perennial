@@ -369,7 +369,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(EtcdError.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [codes.codes; status.status];
+    pkg_imported_pkgs := [google_golang_org.grpc.codes.codes; google_golang_org.grpc.status.status];
   |}.
 
 Definition initialize' : val :=

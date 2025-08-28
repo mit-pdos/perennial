@@ -23,12 +23,7 @@ Qed.
 Section proof.
 Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'alloc.alloc) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit alloc.alloc :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit alloc.alloc := define_is_pkg_init True%I.
 
 Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
   ∃ (next: u64) (bitmap_s: slice.t) (bits: list u8),

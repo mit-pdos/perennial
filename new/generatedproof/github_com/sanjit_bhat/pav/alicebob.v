@@ -91,27 +91,63 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_alicebob : IsPkgDefinedPure alicebob :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single alicebob ∧
+      is_pkg_defined_pure bytes.bytes ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.advrpc.advrpc ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.auditor.auditor ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.client.client ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.ktcore.ktcore ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.server.server;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_alicebob : IsPkgDefined alicebob :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single alicebob ∗
+       is_pkg_defined bytes.bytes ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined github_com.goose_lang.std.std ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.advrpc.advrpc ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.auditor.auditor ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.client.client ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.ktcore.ktcore ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.server.server)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_testAliceBob :
   WpFuncCall alicebob.testAliceBob _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_equal :
   WpFuncCall alicebob.equal _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_runAlice :
   WpFuncCall alicebob.runAlice _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_loopPending :
   WpFuncCall alicebob.loopPending _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_runBob :
   WpFuncCall alicebob.runBob _ (is_pkg_defined alicebob) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End alicebob.

@@ -18,12 +18,8 @@ Definition is_initialized : iProp Σ :=
   ∃ (level: w64),
     "Hglobal_debug" ∷ (global_addr util.Debug) ↦□ level.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'util) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit util :=
-  {|
-    is_pkg_init_def := is_initialized;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit util := define_is_pkg_init is_initialized.
+#[global] Instance : GetIsPkgInitWf util := build_get_is_pkg_init_wf.
 
 Implicit Types (v:val).
 
@@ -65,7 +61,7 @@ Proof.
   wp_auto. wp_apply wp_globals_get.
 
   (* Annoying that [iNamed "Hpkg"] doesn't work directly.. *)
-  iDestruct (is_pkg_init_def_unfold with "[$]") as "Hpkg". simpl. iNamed "Hpkg".
+  iDestruct (is_pkg_init_access with "[$]") as "Hpkg". simpl. iNamed "Hpkg".
   wp_auto.
   wp_if_destruct; try wp_auto.
   - wp_apply wp_Printf.

@@ -43,9 +43,9 @@ Context `{!contextG Σ}.
 
 Implicit Type γraft : raft_names.
 
-Axiom is_chan_inv : ∀ (c : chan.t) {V} `{!IntoVal V} (P : V → iProp Σ), iProp Σ.
-Instance is_chan_inv_pers c V `{!IntoVal V} (P : V → _) : Persistent (is_chan_inv c P).
-Proof. Admitted.
+(* FIXME: maybe generally useful and should go somewhere else? *)
+Definition unreceived {V} (s : chanstate.t V) : list V :=
+  drop s.(chanstate.received) s.(chanstate.sent).
 
 (* FIXME: goose could translate typed constants as a typed value? Or maybe
    emit that in proofgen, since there could be a struct-typed constant. *)
@@ -61,8 +61,9 @@ Definition own_propose_message γraft (pm : raft.msgWithResult.t) : iProp Σ :=
   "Hresult" ∷ inv nroot (∃ (s : chanstate.t error.t), own_chan pm.(raft.msgWithResult.result') s).
 
 Local Definition is_Node_inner γraft (n : raft.node.t) : iProp Σ :=
-  "#Hpropc" ∷ is_chan_inv n.(raft.node.propc') (own_propose_message γraft) ∗
-  "#Hadvancec" ∷ is_chan_inv n.(raft.node.advancec') (λ (_ : unit), True)%I ∗
+  "#Hpropc" ∷ inv nroot
+    (∃ s, own_chan n.(raft.node.propc') s ∗ [∗ list] v ∈ (unreceived s), own_propose_message γraft v) ∗
+  "#Hadvancec" ∷ inv nroot (∃ (s : chanstate.t unit), own_chan n.(raft.node.advancec') s) ∗
   "#Hdone" ∷ own_closeable_chan n.(raft.node.done') True closeable.Unknown.
 
 Definition is_Node γraft (n : loc) : iProp Σ :=
@@ -144,8 +145,7 @@ Proof.
       repeat iExists _. iNamed "Hinner".
       iApply (closeable_chan_receive with "Hdone").
       iIntros "[_ #HDone_closed]". wp_auto. wp_apply wp_globals_get.
-      iDestruct (is_pkg_init_def_unfold with "[]") as "#Hpkg".
-      { iFrame "#". }
+      iDestruct (is_pkg_init_access with "[$]") as "#Hpkg".
       simpl is_pkg_init_def. iNamed "Hpkg".
       wp_auto.
       iApply "HΦ". rewrite decide_False //.

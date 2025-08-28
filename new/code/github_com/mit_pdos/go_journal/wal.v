@@ -1210,7 +1210,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(LogPosition
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [disk.disk; common.common; marshal.marshal; util.util; sync.sync; primitive.primitive];
+    pkg_imported_pkgs := [github_com.goose_lang.primitive.disk.disk; github_com.mit_pdos.go_journal.common.common; github_com.tchajed.marshal.marshal; github_com.mit_pdos.go_journal.util.util; sync.sync; github_com.goose_lang.primitive.primitive];
   |}.
 
 Definition initialize' : val :=

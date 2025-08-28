@@ -7,6 +7,7 @@ Definition atomic : go_string := "sync/atomic".
 
 Module atomic.
 
+Module Pointer. Definition id : go_string := "sync/atomic.Pointer"%go. End Pointer.
 Module Int32. Definition id : go_string := "sync/atomic.Int32"%go. End Int32.
 Module Uint32. Definition id : go_string := "sync/atomic.Uint32"%go. End Uint32.
 Module Uint64. Definition id : go_string := "sync/atomic.Uint64"%go. End Uint64.
@@ -101,6 +102,13 @@ Definition b32 : go_string := "sync/atomic.b32"%go.
 
 Definition noCopy : go_type := structT [
 ].
+
+Definition Pointer : val :=
+  λ: "T", type.structT [
+    (#"_0"%go, type.arrayT #(W64 0) #ptrT);
+    (#"_1"%go, #noCopy);
+    (#"v"%go, #ptrT)
+  ].
 
 Definition Int32 : go_type := structT [
   "_0" :: noCopy;
@@ -637,7 +645,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (CompareAndSwapUint32, CompareAndSwapUint32ⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (AddUint32, AddUint32ⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (LoadUint32, LoadUint32ⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (StoreUint32, StoreUint32ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Int32.id, []); (ptrT.id Int32.id, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("And"%go, Int32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Or"%go, Int32__Orⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ); ("Swap"%go, Int32__Swapⁱᵐᵖˡ)]); (Uint32.id, []); (ptrT.id Uint32.id, [("Add"%go, Uint32__Addⁱᵐᵖˡ); ("And"%go, Uint32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint32__Loadⁱᵐᵖˡ); ("Or"%go, Uint32__Orⁱᵐᵖˡ); ("Store"%go, Uint32__Storeⁱᵐᵖˡ); ("Swap"%go, Uint32__Swapⁱᵐᵖˡ)]); (Uint64.id, []); (ptrT.id Uint64.id, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("And"%go, Uint64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Or"%go, Uint64__Orⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ); ("Swap"%go, Uint64__Swapⁱᵐᵖˡ)]); (noCopy.id, []); (ptrT.id noCopy.id, []); (align64.id, []); (ptrT.id align64.id, []); (Value.id, []); (ptrT.id Value.id, [("CompareAndSwap"%go, Value__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Value__Loadⁱᵐᵖˡ); ("Store"%go, Value__Storeⁱᵐᵖˡ); ("Swap"%go, Value__Swapⁱᵐᵖˡ)]); (efaceWords.id, []); (ptrT.id efaceWords.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Pointer.id, []); (ptrT.id Pointer.id, []); (Int32.id, []); (ptrT.id Int32.id, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("And"%go, Int32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Or"%go, Int32__Orⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ); ("Swap"%go, Int32__Swapⁱᵐᵖˡ)]); (Uint32.id, []); (ptrT.id Uint32.id, [("Add"%go, Uint32__Addⁱᵐᵖˡ); ("And"%go, Uint32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint32__Loadⁱᵐᵖˡ); ("Or"%go, Uint32__Orⁱᵐᵖˡ); ("Store"%go, Uint32__Storeⁱᵐᵖˡ); ("Swap"%go, Uint32__Swapⁱᵐᵖˡ)]); (Uint64.id, []); (ptrT.id Uint64.id, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("And"%go, Uint64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Or"%go, Uint64__Orⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ); ("Swap"%go, Uint64__Swapⁱᵐᵖˡ)]); (noCopy.id, []); (ptrT.id noCopy.id, []); (align64.id, []); (ptrT.id align64.id, []); (Value.id, []); (ptrT.id Value.id, [("CompareAndSwap"%go, Value__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Value__Loadⁱᵐᵖˡ); ("Store"%go, Value__Storeⁱᵐᵖˡ); ("Swap"%go, Value__Swapⁱᵐᵖˡ)]); (efaceWords.id, []); (ptrT.id efaceWords.id, [])].
 
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|
@@ -647,13 +655,16 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Int32.id, [
     pkg_imported_pkgs := [];
   |}.
 
-Axiom _'init : val.
-
 Definition initialize' : val :=
   λ: <>,
     package.init #atomic.atomic (λ: <>,
       exception_do (do:  (package.alloc atomic.atomic #());;;
-      do:  (_'init #()))
+      let: "$r0" := (mem.alloc (struct.make (Pointer #intT) [{
+        "_0" ::= type.zero_val (type.arrayT #(W64 0) #ptrT);
+        "_1" ::= type.zero_val #noCopy;
+        "v" ::= type.zero_val #ptrT
+      }])) in
+      do:  #())
       ).
 
 End code.

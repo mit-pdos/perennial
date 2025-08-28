@@ -13,31 +13,49 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_std_core : IsPkgDefinedPure std_core :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single std_core ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_std_core : IsPkgDefined std_core :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single std_core ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_SumNoOverflow :
   WpFuncCall std_core.SumNoOverflow _ (is_pkg_defined std_core) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_SumAssumeNoOverflow :
   WpFuncCall std_core.SumAssumeNoOverflow _ (is_pkg_defined std_core) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MulNoOverflow :
   WpFuncCall std_core.MulNoOverflow _ (is_pkg_defined std_core) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MulAssumeNoOverflow :
   WpFuncCall std_core.MulAssumeNoOverflow _ (is_pkg_defined std_core) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Shuffle :
   WpFuncCall std_core.Shuffle _ (is_pkg_defined std_core) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Permutation :
   WpFuncCall std_core.Permutation _ (is_pkg_defined std_core) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End std_core.

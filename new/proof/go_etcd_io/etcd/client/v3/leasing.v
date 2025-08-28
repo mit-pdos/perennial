@@ -28,56 +28,34 @@ Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 
-Local Notation deps_bytes := (ltac2:(build_pkg_init_deps 'bytes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit bytes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_bytes;
-  |}.
+#[global] Instance : IsPkgInit bytes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf bytes := build_get_is_pkg_init_wf.
 
-Local Definition deps_rpc_status : iProp Σ := ltac2:(build_pkg_init_deps 'rpc.status.status).
-#[global] Program Instance : IsPkgInit rpc.status.status :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_rpc_status;
-  |}.
+#[global] Instance : IsPkgInit rpc.status.status := define_is_pkg_init True%I.
 
 (* FIXME: status.info' refers to its own [status.status] because `grpc/status` imports
    `genproto/googleapis/rpc/status *)
-(* Local Definition deps_status : iProp Σ := ltac2:(build_pkg_init_deps 'status.status). *)
-#[global] Program Instance : IsPkgInit status.status :=
+#[global] Instance : IsPkgInit status.status :=
   {|
     is_pkg_init_def := True;
-    is_pkg_init_deps := True : iProp Σ;
+    is_pkg_init_deps := is_pkg_defined status.status;
   |}.
+#[global] Instance : GetIsPkgInitWf status.status :=
+  {|
+    get_is_pkg_init_prop get_is_pkg_init := get_is_pkg_init status.status = is_pkg_init status.status
+ |}.
 
-Local Notation deps_codes := (ltac2:(build_pkg_init_deps 'codes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit codes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_codes;
-  |}.
+#[global] Instance : IsPkgInit codes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf codes := build_get_is_pkg_init_wf.
 
-Local Notation deps_rpctypes := (ltac2:(build_pkg_init_deps 'rpctypes) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit rpctypes :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_rpctypes;
-  |}.
+#[global] Instance : IsPkgInit rpctypes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf rpctypes := build_get_is_pkg_init_wf.
 
-Local Notation deps_strings := (ltac2:(build_pkg_init_deps 'strings) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit strings :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_strings;
-  |}.
+#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'leasing) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit leasing :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit leasing := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf leasing := build_get_is_pkg_init_wf.
 
 Context `{!syncG Σ}.
 
@@ -461,6 +439,7 @@ Program Definition own_RWMutex_sealed := sealed own_RWMutex.
 Instance frame_named {PROP : bi} p (P Q R : PROP) name :
   Frame p P Q R → Frame p P (name ∷ Q) R | 0.
 Proof. unfold named. done. Qed.
+
 
 Lemma wp_leasingKV__waitSession lkv ctx ctx_desc γ :
   {{{ is_pkg_init leasing ∗ own_leasingKV lkv γ ∗ is_Context ctx ctx_desc }}}

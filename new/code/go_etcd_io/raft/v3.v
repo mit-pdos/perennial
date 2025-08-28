@@ -8683,7 +8683,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(raftLog.id,
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [errors.errors; raftpb.raftpb; fmt.fmt; io.io; log.log; os.os; sync.sync; context.context; bytes.bytes; rand.rand; math.math; big.big; strings.strings; confchange.confchange; quorum.quorum; slices.slices; tracker.tracker; raftpb.raftpb];
+    pkg_imported_pkgs := [errors.errors; go_etcd_io.raft.v3.raftpb.raftpb; fmt.fmt; io.io; log.log; os.os; sync.sync; context.context; bytes.bytes; crypto.rand.rand; math.math; math.big.big; strings.strings; go_etcd_io.raft.v3.confchange.confchange; go_etcd_io.raft.v3.quorum.quorum; go_etcd_io.raft.v3.quorum.slices.slices; go_etcd_io.raft.v3.tracker.tracker; go_etcd_io.raft.v3.raftpb.raftpb];
   |}.
 
 Definition initialize' : val :=

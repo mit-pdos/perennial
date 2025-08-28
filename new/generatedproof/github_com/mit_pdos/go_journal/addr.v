@@ -83,23 +83,43 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_addr : IsPkgDefinedPure addr :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single addr ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.disk.disk ∧
+      is_pkg_defined_pure github_com.mit_pdos.go_journal.common.common;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_addr : IsPkgDefined addr :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single addr ∗
+       is_pkg_defined github_com.goose_lang.primitive.disk.disk ∗
+       is_pkg_defined github_com.mit_pdos.go_journal.common.common)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MkAddr :
   WpFuncCall addr.MkAddr _ (is_pkg_defined addr) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MkBitAddr :
   WpFuncCall addr.MkBitAddr _ (is_pkg_defined addr) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Addr_Flatid :
   WpMethodCall addr.Addr.id "Flatid" _ (is_pkg_defined addr) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Addr'ptr_Flatid :
   WpMethodCall (ptrT.id addr.Addr.id) "Flatid" _ (is_pkg_defined addr) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End addr.

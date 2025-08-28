@@ -41,33 +41,17 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{contextG Σ}.
 
-Local Notation deps_time := (ltac2:(build_pkg_init_deps 'time) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit time :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_time;
-  |}.
+#[global] Instance : IsPkgInit time := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf time := build_get_is_pkg_init_wf.
 
-Local Notation deps_reflectlite := (ltac2:(build_pkg_init_deps 'reflectlite) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit reflectlite :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_reflectlite;
-  |}.
+#[global] Instance : IsPkgInit reflectlite := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf reflectlite := build_get_is_pkg_init_wf.
 
-Local Notation deps_errors := (ltac2:(build_pkg_init_deps 'errors) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit errors :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps_errors;
-  |}.
+#[global] Instance : IsPkgInit errors := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf errors := build_get_is_pkg_init_wf.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'context) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit context :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit context := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf context := build_get_is_pkg_init_wf.
 
 Import Context_desc.
 Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=

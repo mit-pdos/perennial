@@ -10,12 +10,8 @@ Module hashchain.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'hashchain) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit hashchain :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit hashchain := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf hashchain := build_get_is_pkg_init_wf.
 
 Local Fixpoint is_chain_rev (boot : list w8) (l : list $ list w8) (h : list w8) : iProp Σ :=
   match l with

@@ -152,75 +152,95 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_marshal : IsPkgDefinedPure marshal :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single marshal ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure github_com.goose_lang.std.std;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_marshal : IsPkgDefined marshal :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single marshal ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined github_com.goose_lang.std.std)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_compute_new_cap :
   WpFuncCall marshal.compute_new_cap _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_reserve :
   WpFuncCall marshal.reserve _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadInt :
   WpFuncCall marshal.ReadInt _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadInt32 :
   WpFuncCall marshal.ReadInt32 _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBytes :
   WpFuncCall marshal.ReadBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBytesCopy :
   WpFuncCall marshal.ReadBytesCopy _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBool :
   WpFuncCall marshal.ReadBool _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadLenPrefixedBytes :
   WpFuncCall marshal.ReadLenPrefixedBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteInt :
   WpFuncCall marshal.WriteInt _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteInt32 :
   WpFuncCall marshal.WriteInt32 _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteBytes :
   WpFuncCall marshal.WriteBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteBool :
   WpFuncCall marshal.WriteBool _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteLenPrefixedBytes :
   WpFuncCall marshal.WriteLenPrefixedBytes _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadSlice :
   WpFuncCall marshal.ReadSlice _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadSliceLenPrefix :
   WpFuncCall marshal.ReadSliceLenPrefix _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteSlice :
   WpFuncCall marshal.WriteSlice _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WriteSliceLenPrefix :
   WpFuncCall marshal.WriteSliceLenPrefix _ (is_pkg_defined marshal) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End marshal.

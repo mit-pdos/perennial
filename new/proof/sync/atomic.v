@@ -8,13 +8,32 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'atomic) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit atomic :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit atomic := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf atomic := build_get_is_pkg_init_wf.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init_prop atomic get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined atomic }}}
+    atomic.initialize' #()
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init atomic }}}.
+Proof.
+  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
+  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
+  iIntros "Hown". wp_auto. wp_call.
+  Typeclasses Opaque atomic.noCopy.
+  iEval (rewrite is_pkg_init_unfold /=). wp_auto.
+  wp_bind.
+  simpl.
+  eapply (tac_wp_pure_wp []).
+  (* FIXME: generics where type argument is used under pointer *)
+  { Fail apply _. simple apply atomic.wp_struct_make_Pointer. }
+  { done. }
+  { apply _. }
+  simpl fill. wp_auto.
+  wp_alloc _unused as "_".
+  wp_auto. iFrame "∗#". done.
+Qed.
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,

@@ -13,23 +13,39 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_primitive : IsPkgDefinedPure primitive :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single primitive;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_primitive : IsPkgDefined primitive :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single primitive)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_UInt64Put :
   WpFuncCall primitive.UInt64Put _ (is_pkg_defined primitive) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_RandomUint64 :
   WpFuncCall primitive.RandomUint64 _ (is_pkg_defined primitive) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Assume :
   WpFuncCall primitive.Assume _ (is_pkg_defined primitive) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_AssumeNoStringOverflow :
   WpFuncCall primitive.AssumeNoStringOverflow _ (is_pkg_defined primitive) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 End names.
 End primitive.

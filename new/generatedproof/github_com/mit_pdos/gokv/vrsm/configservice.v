@@ -253,71 +253,107 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_configservice : IsPkgDefinedPure configservice :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single configservice ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.reconnectclient.reconnectclient ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.e.e ∧
+      is_pkg_defined_pure log.log ∧
+      is_pkg_defined_pure github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.urpc.urpc ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.paxos.paxos;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_configservice : IsPkgDefined configservice :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single configservice ∗
+       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined github_com.mit_pdos.gokv.reconnectclient.reconnectclient ∗
+       is_pkg_defined github_com.mit_pdos.gokv.vrsm.e.e ∗
+       is_pkg_defined log.log ∗
+       is_pkg_defined github_com.goose_lang.std.std ∗
+       is_pkg_defined github_com.mit_pdos.gokv.urpc.urpc ∗
+       is_pkg_defined github_com.mit_pdos.gokv.vrsm.paxos.paxos)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_EncodeConfig :
   WpFuncCall configservice.EncodeConfig _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_DecodeConfig :
   WpFuncCall configservice.DecodeConfig _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_MakeClerk :
   WpFuncCall configservice.MakeClerk _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_encodeState :
   WpFuncCall configservice.encodeState _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_decodeState :
   WpFuncCall configservice.decodeState _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeServer :
   WpFuncCall configservice.makeServer _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_StartServer :
   WpFuncCall configservice.StartServer _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Clerk'ptr_GetConfig :
   WpMethodCall (ptrT.id configservice.Clerk.id) "GetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_GetLease :
   WpMethodCall (ptrT.id configservice.Clerk.id) "GetLease" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_ReserveEpochAndGetConfig :
   WpMethodCall (ptrT.id configservice.Clerk.id) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Clerk'ptr_TryWriteConfig :
   WpMethodCall (ptrT.id configservice.Clerk.id) "TryWriteConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_GetConfig :
   WpMethodCall (ptrT.id configservice.Server.id) "GetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_GetLease :
   WpMethodCall (ptrT.id configservice.Server.id) "GetLease" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_ReserveEpochAndGetConfig :
   WpMethodCall (ptrT.id configservice.Server.id) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_TryWriteConfig :
   WpMethodCall (ptrT.id configservice.Server.id) "TryWriteConfig" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_tryAcquire :
   WpMethodCall (ptrT.id configservice.Server.id) "tryAcquire" _ (is_pkg_defined configservice) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End configservice.

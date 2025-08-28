@@ -1192,147 +1192,181 @@ Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_server : IsPkgDefinedPure server :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single server ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.advrpc.advrpc ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.ktcore.ktcore ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.hashchain.hashchain ∧
+      is_pkg_defined_pure github_com.sanjit_bhat.pav.merkle.merkle;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_server : IsPkgDefined server :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single server ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.advrpc.advrpc ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.ktcore.ktcore ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.goose_lang.std.std ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.hashchain.hashchain ∗
+       is_pkg_defined github_com.sanjit_bhat.pav.merkle.merkle)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_NewRpcServer :
   WpFuncCall server.NewRpcServer _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CallStart :
   WpFuncCall server.CallStart _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CallPut :
   WpFuncCall server.CallPut _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CallHistory :
   WpFuncCall server.CallHistory _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CallAudit :
   WpFuncCall server.CallAudit _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_StartReplyEncode :
   WpFuncCall server.StartReplyEncode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_StartReplyDecode :
   WpFuncCall server.StartReplyDecode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_PutArgEncode :
   WpFuncCall server.PutArgEncode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_PutArgDecode :
   WpFuncCall server.PutArgDecode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_HistoryArgEncode :
   WpFuncCall server.HistoryArgEncode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_HistoryArgDecode :
   WpFuncCall server.HistoryArgDecode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_HistoryReplyEncode :
   WpFuncCall server.HistoryReplyEncode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_HistoryReplyDecode :
   WpFuncCall server.HistoryReplyDecode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_AuditArgEncode :
   WpFuncCall server.AuditArgEncode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_AuditArgDecode :
   WpFuncCall server.AuditArgDecode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_AuditReplyEncode :
   WpFuncCall server.AuditReplyEncode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_AuditReplyDecode :
   WpFuncCall server.AuditReplyDecode _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_New :
   WpFuncCall server.New _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewWork :
   WpFuncCall server.NewWork _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewWorkQ :
   WpFuncCall server.NewWorkQ _ (is_pkg_defined server) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Server'ptr_Audit :
   WpMethodCall (ptrT.id server.Server.id) "Audit" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_History :
   WpMethodCall (ptrT.id server.Server.id) "History" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_Put :
   WpMethodCall (ptrT.id server.Server.id) "Put" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_Start :
   WpMethodCall (ptrT.id server.Server.id) "Start" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_Worker :
   WpMethodCall (ptrT.id server.Server.id) "Worker" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_addEntries :
   WpMethodCall (ptrT.id server.Server.id) "addEntries" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_checkRequests :
   WpMethodCall (ptrT.id server.Server.id) "checkRequests" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_getBound :
   WpMethodCall (ptrT.id server.Server.id) "getBound" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_getHist :
   WpMethodCall (ptrT.id server.Server.id) "getHist" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_makeEntries :
   WpMethodCall (ptrT.id server.Server.id) "makeEntries" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_makeEntry :
   WpMethodCall (ptrT.id server.Server.id) "makeEntry" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Work'ptr_Finish :
   WpMethodCall (ptrT.id server.Work.id) "Finish" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_WorkQ'ptr_Do :
   WpMethodCall (ptrT.id server.WorkQ.id) "Do" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_WorkQ'ptr_DoBatch :
   WpMethodCall (ptrT.id server.WorkQ.id) "DoBatch" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_WorkQ'ptr_Get :
   WpMethodCall (ptrT.id server.WorkQ.id) "Get" _ (is_pkg_defined server) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End server.

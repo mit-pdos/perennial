@@ -50,12 +50,8 @@ Global Instance is_LockClerk_pers ck γ : Persistent (is_LockClerk ck γ) := _.
 
 Global Instance is_lock_pers N γ key R : Persistent (is_lock N γ key R) := _.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'lockservice) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit lockservice :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit lockservice := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf lockservice := build_get_is_pkg_init_wf.
 
 Lemma wp_MakeLockClerk kv kvptsto E :
   {{{

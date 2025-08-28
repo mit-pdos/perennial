@@ -976,7 +976,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(singleClerk
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [grove_ffi.grove_ffi; reconnectclient.reconnectclient; marshal.marshal; log.log; sync.sync; std.std; asyncfile.asyncfile; urpc.urpc];
+    pkg_imported_pkgs := [github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.mit_pdos.gokv.reconnectclient.reconnectclient; github_com.tchajed.marshal.marshal; log.log; sync.sync; github_com.goose_lang.std.std; github_com.mit_pdos.gokv.asyncfile.asyncfile; github_com.mit_pdos.gokv.urpc.urpc];
   |}.
 
 Definition initialize' : val :=

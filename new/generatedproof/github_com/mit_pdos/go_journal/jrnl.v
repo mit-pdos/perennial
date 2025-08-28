@@ -85,27 +85,51 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_jrnl : IsPkgDefinedPure jrnl :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single jrnl ∧
+      is_pkg_defined_pure github_com.mit_pdos.go_journal.addr.addr ∧
+      is_pkg_defined_pure github_com.mit_pdos.go_journal.buf.buf ∧
+      is_pkg_defined_pure github_com.mit_pdos.go_journal.obj.obj ∧
+      is_pkg_defined_pure github_com.mit_pdos.go_journal.util.util;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_jrnl : IsPkgDefined jrnl :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single jrnl ∗
+       is_pkg_defined github_com.mit_pdos.go_journal.addr.addr ∗
+       is_pkg_defined github_com.mit_pdos.go_journal.buf.buf ∗
+       is_pkg_defined github_com.mit_pdos.go_journal.obj.obj ∗
+       is_pkg_defined github_com.mit_pdos.go_journal.util.util)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_Begin :
   WpFuncCall jrnl.Begin _ (is_pkg_defined jrnl) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Op'ptr_CommitWait :
   WpMethodCall (ptrT.id jrnl.Op.id) "CommitWait" _ (is_pkg_defined jrnl) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Op'ptr_NDirty :
   WpMethodCall (ptrT.id jrnl.Op.id) "NDirty" _ (is_pkg_defined jrnl) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Op'ptr_OverWrite :
   WpMethodCall (ptrT.id jrnl.Op.id) "OverWrite" _ (is_pkg_defined jrnl) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Op'ptr_ReadBuf :
   WpMethodCall (ptrT.id jrnl.Op.id) "ReadBuf" _ (is_pkg_defined jrnl) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End jrnl.

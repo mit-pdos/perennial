@@ -162,35 +162,59 @@ Section names.
 
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
-Context `{!GoContext}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_cachekv : IsPkgDefinedPure cachekv :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single cachekv ∧
+      is_pkg_defined_pure sync.sync ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure github_com.mit_pdos.gokv.kv.kv ∧
+      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_cachekv : IsPkgDefined cachekv :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single cachekv ∗
+       is_pkg_defined sync.sync ∗
+       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined github_com.mit_pdos.gokv.kv.kv ∗
+       is_pkg_defined github_com.tchajed.marshal.marshal)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_DecodeValue :
   WpFuncCall cachekv.DecodeValue _ (is_pkg_defined cachekv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_EncodeValue :
   WpFuncCall cachekv.EncodeValue _ (is_pkg_defined cachekv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_max :
   WpFuncCall cachekv.max _ (is_pkg_defined cachekv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Make :
   WpFuncCall cachekv.Make _ (is_pkg_defined cachekv) :=
-  ltac:(apply wp_func_call'; reflexivity).
+  ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_CacheKv'ptr_Get :
   WpMethodCall (ptrT.id cachekv.CacheKv.id) "Get" _ (is_pkg_defined cachekv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_CacheKv'ptr_GetAndCache :
   WpMethodCall (ptrT.id cachekv.CacheKv.id) "GetAndCache" _ (is_pkg_defined cachekv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_CacheKv'ptr_Put :
   WpMethodCall (ptrT.id cachekv.CacheKv.id) "Put" _ (is_pkg_defined cachekv) :=
-  ltac:(apply wp_method_call'; reflexivity).
+  ltac:(solve_wp_method_call).
 
 End names.
 End cachekv.

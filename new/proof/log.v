@@ -6,12 +6,8 @@ Section heap.
 Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'log) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit log :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit log := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf log := build_get_is_pkg_init_wf.
 
 Theorem wp_Printf (msg: go_string) (arg: slice.t) :
   {{{ is_pkg_init log }}}
