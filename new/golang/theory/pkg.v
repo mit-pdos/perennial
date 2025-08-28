@@ -160,7 +160,7 @@ Notation is_pkg_defined := is_pkg_defined_def.
 
 (** Internal to Goose. Pure predicate asserting that the declarations in the Go
     package [pkg_name] are part of the implicit [GoContext]. *)
-Definition is_pkg_defined_pure_single pkg_name `{!PkgInfo pkg_name} : Prop :=
+Definition is_pkg_defined_pure_single_def pkg_name `{!PkgInfo pkg_name} : Prop :=
   (∀ func_name func,
      (alist_lookup_f func_name (pkg_functions pkg_name)) = Some func →
      (alist_lookup_f func_name __function) = Some func) ∧
@@ -169,8 +169,10 @@ Definition is_pkg_defined_pure_single pkg_name `{!PkgInfo pkg_name} : Prop :=
      (alist_lookup_f method_name) = Some m →
      (alist_lookup_f type_name __method) ≫=
      (alist_lookup_f method_name) = Some m).
-#[global] Opaque is_pkg_defined_pure_single.
-#[local] Transparent is_pkg_defined_pure_single.
+(* XXX: sealing because of a unification problem *)
+Program Definition is_pkg_defined_pure_single := sealed is_pkg_defined_pure_single_def.
+Definition is_pkg_defined_pure_single_unseal : is_pkg_defined_pure_single = _ := seal_eq _.
+#[global] Arguments is_pkg_defined_pure_single (pkg_name) {_}.
 
 (** Internal to Goose. This says that the package's declarations are accessible
     (including functions, methods, and variables). This does not cover any
