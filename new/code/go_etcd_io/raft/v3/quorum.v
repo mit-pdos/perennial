@@ -366,7 +366,7 @@ Definition MajorityConfig__CommittedIndexⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#sliceT] "srt") in
     (func_call #slices.SortUint64) "$a0");;;
     let: "pos" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "n") - ((int_quot (![#intT] "n") #(W64 2)) + #(W64 1))) in
+    let: "$r0" := ((![#intT] "n") - (((![#intT] "n") `quots` #(W64 2)) + #(W64 1))) in
     do:  ("pos" <-[#intT] "$r0");;;
     return: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "srt") (![#intT] "pos")))).
 
@@ -408,8 +408,8 @@ Definition MajorityConfig__VoteResultⁱᵐᵖˡ : val :=
       then do:  ("votedCnt" <-[#intT] ((![#intT] "votedCnt") + #(W64 1)))
       else do:  #())));;;
     let: "q" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((int_quot (let: "$a0" := (![#MajorityConfig] "c") in
-    map.len "$a0") #(W64 2)) + #(W64 1)) in
+    let: "$r0" := (((let: "$a0" := (![#MajorityConfig] "c") in
+    map.len "$a0") `quots` #(W64 2)) + #(W64 1)) in
     do:  ("q" <-[#intT] "$r0");;;
     (if: int_geq (![#intT] "votedCnt") (![#intT] "q")
     then return: (VoteWon)

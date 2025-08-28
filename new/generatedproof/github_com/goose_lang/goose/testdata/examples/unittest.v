@@ -2217,6 +2217,10 @@ Global Instance wp_func_call_useInts :
   WpFuncCall unittest.useInts _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_signedMidpoint :
+  WpFuncCall unittest.signedMidpoint _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_normalLiterals :
   WpFuncCall unittest.normalLiterals _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
