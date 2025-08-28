@@ -25,10 +25,16 @@ Proof.
   wp_apply (std_core.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_apply (primitive.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
   wp_apply (wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".  done.
+  wp_apply (math.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
 Lemma wp_Assert (cond : bool) :

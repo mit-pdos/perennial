@@ -411,6 +411,7 @@ Proof.
   iNamed "Hi". rewrite [in # "__functions"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
   iModIntro. rewrite lookup_insert_ne // lookup_insert_eq. wp_pures.
+  rewrite is_pkg_defined_pure_single_unseal in Hdefined.
   destruct Hdefined as [Hfunction Hmethod]. erewrite Hfunction; last done. wp_pures. iApply "HΦ".
 Qed.
 
@@ -426,7 +427,8 @@ Proof.
   iNamed "Hi". rewrite [in # "__msets"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
   iModIntro. do 2 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
-  wp_pures. rewrite alist_lookup_f_fmap. destruct Hdefined as [Hfunction Hmethod].
+  wp_pures. rewrite alist_lookup_f_fmap. rewrite is_pkg_defined_pure_single_unseal in Hdefined.
+  destruct Hdefined as [Hfunction Hmethod].
   specialize (Hmethod _ _ _ Hlookup). destruct (alist_lookup_f type_name __method); last by exfalso.
   wp_pures. simpl in *. destruct (alist_lookup_f method_name l); last by exfalso.
   wp_pures. simplify_eq. iApply "HΦ".

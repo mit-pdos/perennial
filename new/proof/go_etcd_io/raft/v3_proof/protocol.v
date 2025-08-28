@@ -146,7 +146,6 @@ Proof.
       iApply (closeable_chan_receive with "Hdone").
       iIntros "[_ #HDone_closed]". wp_auto. wp_apply wp_globals_get.
       iDestruct (is_pkg_init_access with "[$]") as "#Hpkg".
-      { iFrame "#". }
       simpl is_pkg_init_def. iNamed "Hpkg".
       wp_auto.
       iApply "HΦ". rewrite decide_False //.
