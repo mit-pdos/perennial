@@ -264,4 +264,19 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Lemma wp_signedMidpoint (x y: w64) :
+  {{{ is_pkg_init unittest ∗ ⌜-2^63 < sint.Z x + sint.Z y < 2^63⌝ }}}
+    @! unittest.signedMidpoint #x #y
+  {{{ (z: w64), RET #z; ⌜sint.Z z = (sint.Z x + sint.Z y) `quot` 2⌝ }}}.
+Proof.
+  wp_start as "%H". wp_auto.
+  iApply "HΦ".
+  iPureIntro.
+  rewrite word.signed_divs_nowrap; try word.
+  change (sint.Z (W64 2)) with 2.
+  rewrite word.signed_add.
+  rewrite swrap_small; [ | word ].
+  word.
+Qed.
+
 End proof.

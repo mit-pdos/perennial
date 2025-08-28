@@ -75,7 +75,7 @@ Inductive un_op : Set :=
   | ToStringOp | StringLenOp | IsNoStringOverflowOp
 .
 Inductive bin_op : Set :=
-  | PlusOp | MinusOp | MultOp | QuotOp | RemOp (* Arithmetic *)
+  | PlusOp | MinusOp | MultOp | QuotOp | QuotSignedOp | RemOp | RemSignedOp (* Arithmetic *)
   | AndOp | OrOp | XorOp (* Bitwise *)
   | ShiftLOp | ShiftROp (* Shifts *)
   | LeOp | LtOp | EqOp (* Relations *)
@@ -496,7 +496,9 @@ Proof.
                                 | MinusOp => inl 1
                                 | MultOp => inl 2
                                 | QuotOp => inl 3
+                                | QuotSignedOp => inl 14
                                 | RemOp => inl 4
+                                | RemSignedOp => inl 15
                                 | AndOp => inl 5
                                 | OrOp => inl 6
                                 | XorOp => inl 7
@@ -523,6 +525,8 @@ Proof.
                                | inl 11 => _
                                | inl 12 => _
                                | inl 13 => _
+                               | inl 14 => _
+                               | inl 15 => _
                                | inl _ => PlusOp
                                | inr k => OffsetOp k
                                end) _); by intros [].
@@ -828,6 +832,9 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
   | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.not n)
   | NegOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.not n)
+  | MinusUnOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.opp n)
+  | MinusUnOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.opp n)
+  | MinusUnOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.opp n)
   | NegOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.not n)
   | UToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (uint.Z v))
   | UToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (uint.Z v))
@@ -859,7 +866,9 @@ Definition bin_op_eval_word (op : bin_op) {width} {word: Interface.word width} (
   | MinusOp => Some $ word.sub (word:=word) n1 n2
   | MultOp => Some $ (word.mul (word:=word) n1 n2)
   | QuotOp => Some $ (word.divu (word:=word) n1 n2)
+  | QuotSignedOp => Some $ (word.divs (word:=word) n1 n2)
   | RemOp => Some $ (word.modu (word:=word) n1 n2)
+  | RemSignedOp => Some $ (word.mods (word:=word) n1 n2)
   | AndOp => Some $ (word.and (word:=word) n1 n2)
   | OrOp => Some $ (word.or (word:=word) n1 n2)
   | XorOp => Some $ (word.xor (word:=word) n1 n2)

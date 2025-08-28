@@ -15,7 +15,7 @@ Definition SumNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumN
 
 (* Returns true if x + y does not overflow
 
-   go: std_core.go:9:6 *)
+   go: std_core.go:11:6 *)
 Definition SumNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
@@ -28,7 +28,7 @@ Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_cor
 
    *Use with care* - if the assumption is violated this function will panic.
 
-   go: std_core.go:16:6 *)
+   go: std_core.go:18:6 *)
 Definition SumAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
@@ -43,7 +43,7 @@ Definition MulNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulN
 
 (* MulNoOverflow returns true if x * y does not overflow
 
-   go: std_core.go:22:6 *)
+   go: std_core.go:24:6 *)
 Definition MulNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
@@ -59,7 +59,7 @@ Definition MulAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_cor
 
    *Use with care* - if the assumption is violated this function will panic.
 
-   go: std_core.go:32:6 *)
+   go: std_core.go:34:6 *)
 Definition MulAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
@@ -74,7 +74,7 @@ Definition Shuffle : go_string := "github.com/goose-lang/std/std_core.Shuffle"%g
 
 (* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
 
-   go: std_core.go:38:6 *)
+   go: std_core.go:40:6 *)
 Definition Shuffleⁱᵐᵖˡ : val :=
   λ: "xs",
     exception_do (let: "xs" := (mem.alloc "xs") in
@@ -104,7 +104,7 @@ Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permut
 (* Permutation returns a random permutation of the integers 0, ..., n-1, using a
    Fisher-Yates shuffle.
 
-   go: std_core.go:52:6 *)
+   go: std_core.go:54:6 *)
 Definition Permutationⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in

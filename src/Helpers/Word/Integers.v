@@ -184,6 +184,32 @@ Proof.
   rewrite Zmod_small; lia.
 Qed.
 
+Lemma swrap_large `{word: Interface.word width} {ok: word.ok word} (x:Z) :
+  2^(width-1) ≤ x < 2^width →
+  @word.swrap _ word x = x - 2^(width).
+Proof.
+  assert (0 < width) by apply word.width_pos.
+  intros Hlarge.
+  unfold word.swrap.
+  assert ((x + 2 ^ (width - 1)) `mod` 2 ^ width =
+            (x + 2^(width-1) - 2^width)).
+  {
+    assert (2^width = 2^(width-1) * 2) as H1.
+    {
+      replace width with ((width-1) + 1) at 1 by lia.
+      rewrite Z.pow_add_r; lia.
+    }
+    assert ((x + 2 ^ (width - 1) - 2 ^ width) `mod` 2^width = x + 2 ^ (width - 1) - 2 ^ width) as H3.
+    {
+      apply Zmod_small. lia.
+    }
+    rewrite <- H3.
+    apply Z.cong_iff_ex.
+    exists 1. lia.
+  }
+  lia.
+Qed.
+
 #[global]
 Instance word_finite `(word: Interface.word width) {word_ok: word.ok word} :
   Finite word.

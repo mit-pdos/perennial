@@ -1,4 +1,5 @@
 From New.proof Require Import proof_prelude.
+From New.proof Require Import math.
 From New.generatedproof.github_com.goose_lang Require Import std.
 From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
 
@@ -131,6 +132,23 @@ Proof.
   wp_start as "_"; wp_auto.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros "%". wp_auto. iApply "HΦ". done.
+Qed.
+
+Lemma wp_SignedSumAssumeNoOverflow (x y : u64) :
+  {{{ is_pkg_init std }}}
+    @! std.SignedSumAssumeNoOverflow #x #y
+  {{{ RET #(word.add x y); ⌜sint.Z (word.add x y) = (sint.Z x + sint.Z y)%Z⌝ }}}.
+Proof.
+  wp_start as "_"; wp_auto.
+  unfold math.MaxInt, math.MinInt.
+  repeat (wp_if_destruct
+            (* BUG: this unshelve avoid trivial shelved goals of type w64 and
+            val *)
+          || unshelve wp_auto
+          || (wp_apply wp_Assume; iIntros "%")
+          || congruence).
+  - iApply "HΦ"; word.
+  - iApply "HΦ"; word.
 Qed.
 
 Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
