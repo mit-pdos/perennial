@@ -46,6 +46,10 @@ Definition int16T := uint16T.
 Definition int32T := uint32T.
 Definition int64T := uint64T.
 
+(* The zero_value for [floatX] is 0, so this is OK. *)
+Definition float32T := uint32T.
+Definition float64T := uint64T.
+
 Class IntoVal `{ffi_syntax} (V : Type) :=
   {
     to_val_def : V → val;

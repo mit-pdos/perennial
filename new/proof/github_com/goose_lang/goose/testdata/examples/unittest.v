@@ -279,4 +279,14 @@ Proof.
   word.
 Qed.
 
+Lemma wp_useFloat :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.useFloat #()
+  {{{ (f : w64), RET #f; True }}}.
+Proof.
+  wp_start. wp_auto.
+  repeat wp_apply wp_make_nondet_float64 as "% _".
+  by iApply "HΦ".
+Qed.
+
 End proof.

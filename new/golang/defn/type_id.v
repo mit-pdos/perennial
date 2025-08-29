@@ -3,6 +3,7 @@ From New.golang.defn Require Export typing.
 Module ptrT. Definition id (t : go_string) : go_string := "*"%go ++ t. End ptrT.
 Module chanT. Definition id (t : go_string) : go_string := "chan "%go ++ t. End chanT.
 Module sliceT. Definition id (t : go_string) : go_string := "[]"%go ++ t. End sliceT.
+Module mapT. Definition id (key elem : go_string) : go_string := "map["%go ++ key ++ "]"%go ++ elem. End mapT.
 Module sendchanT. Definition id (t : go_string) : go_string := "chan<- "%go ++ t. End sendchanT.
 Module recvchanT. Definition id (t : go_string) : go_string := "<-chan "%go ++ t. End recvchanT.
 Module funcT.

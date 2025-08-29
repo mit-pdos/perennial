@@ -53,4 +53,15 @@ Definition slice' : (go_string * go_string) := ("", "slice")%go.
 Definition slice'ptr : (go_string * go_string) := ("", "slice'ptr")%go.
 End mset.
 
+Definition float_placeholder : val := #().
+
+Definition make_nondet (t : go_type) : val :=
+  λ: <>,
+     match t with
+     | uint64T => ArbitraryInt
+     | uint32T => u_to_w32 ArbitraryInt
+     | _ => Panic "unsupported nondet"
+     end.
+
 End goose_lang.
+
