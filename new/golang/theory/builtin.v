@@ -83,6 +83,41 @@ Proof. Admitted.
 Global Instance wp_int32_leq (l r : w32) : PureWp True (int_leq #l #r) #(bool_decide (sint.Z l ≤ sint.Z r)).
 Proof. Admitted.
 
+Lemma wp_make_nondet_uint64 (v : val) :
+  {{{ True }}}
+    make_nondet uint64T v
+  {{{ (x : w64), RET #x; True }}}.
+Proof.
+  iIntros (?) "_ HΦ". wp_call. wp_apply wp_ArbitraryInt. rewrite to_val_unseal //.
+Qed.
+
+Lemma wp_make_nondet_float64 (v : val) :
+  {{{ True }}}
+    make_nondet float64T v
+  {{{ (x : w64), RET #x; True }}}.
+Proof.
+  apply wp_make_nondet_uint64.
+Qed.
+
+Lemma wp_make_nondet_uint32 (v : val) :
+  {{{ True }}}
+    make_nondet uint32T v
+  {{{ (x : w32), RET #x; True }}}.
+Proof.
+  iIntros (?) "_ HΦ". wp_call. wp_apply wp_ArbitraryInt. iIntros (?) "_".
+  replace (LitV x) with #x.
+  2:{ rewrite to_val_unseal //. }
+  wp_pures. by iApply "HΦ".
+Qed.
+
+Lemma wp_make_nondet_float32 (v : val) :
+  {{{ True }}}
+    make_nondet float32T v
+  {{{ (x : w32), RET #x; True }}}.
+Proof.
+  apply wp_make_nondet_uint32.
+Qed.
+
 End wps.
 
-#[global] Opaque int_lt int_leq int_gt int_geq.
+#[global] Opaque int_lt int_leq int_gt int_geq make_nondet.
