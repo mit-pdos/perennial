@@ -310,6 +310,55 @@ Proof.
       with "[$HnodeTy $Hhash $Hlabel $Hval $Hab $Hanb]") as "$".
 Qed.
 
+Notation pref_ext p l := (p ++ [get_bit l (length p)]) (only parsing).
+
+Notation pure_put_leaf label label' val' depth :=
+  (let t0_0 := if get_bit label' depth then Empty else (Leaf label' val') in
+  let t0_1 := if get_bit label' depth then (Leaf label' val') else Empty in
+  let t0 := if get_bit label depth then t0_1 else t0_0 in
+  t0).
+
+Context (P : iProp Σ).
+Context (post : iProp Σ).
+Context (run : bool → iProp Σ).
+
+(* in order to [run true], need [P]. *)
+Lemma consume_true :
+  P -∗
+  run true.
+Proof. Admitted.
+
+Lemma consume_false :
+  ⊢ run false.
+Proof. Admitted.
+
+(* similar to merkle.put precond,
+this only uses [P] in one case of [b]. *)
+Lemma consume (b : bool) :
+  (if b then P else True) -∗
+  run b.
+Proof.
+  iIntros "H". destruct b.
+  - by iApply consume_true.
+  - iApply consume_false.
+Qed.
+
+Lemma main b :
+  P -∗
+  (* for opposite case of [b], want [P]. *)
+  run b ∗ (if b then True else P).
+Proof.
+  iIntros "HP".
+  (* key: break up [P] around [b]. *)
+  iAssert ((if b then P else True) ∗ (if b then True else P))%I
+    with "[HP]" as "[Hb0 Hb1]".
+  { destruct b; iFrame. }
+  (* no case match required to handle [run]. *)
+  iDestruct (consume b with "[Hb0 //]") as "$".
+  (* [run] only uses up positive [b] case. negative case still left. *)
+  done.
+Qed.
+
 Lemma wp_put n0 n t sl_label sl_val label val :
   (* for max depth. *)
   is_limit t →
@@ -347,11 +396,11 @@ Proof.
   { subst. simpl. lia. }
   clear Heq Heqpref.
   intros.
-  generalize dependent t.
   generalize dependent pref.
+  generalize dependent t.
 
   iInduction limit as [? IH] using lt_wf_ind forall (n0 n Φ).
-  iIntros (pref ?? t).
+  iIntros (t ?? pref).
   iIntros "* (#?&#?&@) HΦ".
   wp_func_call. wp_call. wp_auto.
   wp_apply wp_Assert.
@@ -395,7 +444,6 @@ Proof.
       { iPureIntro. by case_decide. }
       iFrame "∗#".
       iPureIntro. split; word. }
-    (* diff label. *)
     destruct limit.
     (* limit=0. show labels actually equal. *)
     { exfalso. unfold max_depth in *.
@@ -405,19 +453,28 @@ Proof.
         [|done|]; [by len|].
       simplify_eq/=. }
 
+    (* diff label. *)
     wp_auto. wp_apply wp_alloc as "* Hnode".
     wp_apply (wp_node_getChild with "[$Hnode]") as "* @".
     { iFrame "#". }
-    replace (if get_bit _ _ then null else null) with (null).
-    2: { by case_match. }
+    (* replace (if get_bit _ _ then null else null) with (null).
+    2: { by case_match. } *)
     iDestruct ("Hclose" with "Hcb Hcnb") as "@".
     wp_apply (wp_node_getChild with "[$Hnode]") as "* @".
     { iFrame "#". }
     iSpecialize ("IH" $! limit with "[]"); [word|].
-    Notation pref_ext p l := (p ++ [get_bit l (length p)]) (only parsing).
     replace (word.add _ _) with (W64 (length (pref_ext pref label))) by len.
-    wp_apply ("IH" $! ptr_cb0 _ _ (pref_ext pref label) with
-      "[][][][][][][Hcb]").
+    wp_apply ("IH" $! _ _ _ (pure_put_leaf label label0 val0 (length pref))
+      with "[][][][][][][Hcb]"); try iPureIntro.
+    { by repeat case_match. }
+    { by repeat case_match. }
+    { by eapply prefix_total_snoc. }
+    { len. }
+    { repeat case_match; try done;
+        by eapply prefix_total_snoc. }
+    { by repeat case_match. }
+    { Typeclasses Opaque is_initialized.
+      iFrame "∗#".
 Admitted.
 
 (*
