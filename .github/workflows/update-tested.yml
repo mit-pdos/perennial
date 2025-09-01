@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Update coq/tested
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
         # this branch is protected so the push will fail if CI hasn't succeeded on
