@@ -1,6 +1,6 @@
 From stdpp Require Export namespaces.
 From iris.algebra Require Import gmap.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.base_logic.lib Require Export fancy_updates fupd_level.
 From Perennial.base_logic.lib Require Import wsat.
 From iris.prelude Require Import options.

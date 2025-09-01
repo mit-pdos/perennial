@@ -15,7 +15,7 @@ and a lower-bound at [l'] imply that [l' `prefix_of` l], and [mono_list_update],
 which allows one to grow the auth element by appending only. At any time the
 auth list can be "snapshotted" with [mono_list_lb_own_get] to produce a
 persistent lower-bound. *)
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra.lib Require Import mono_list.
 From iris.bi.lib Require Import fractional.
 From iris.base_logic.lib Require Export own.

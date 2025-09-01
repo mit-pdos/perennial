@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth excl.
 From Perennial.algebra Require Import frac_count big_op.
 From Perennial.goose_lang Require Import proofmode notation wpc_proofmode.

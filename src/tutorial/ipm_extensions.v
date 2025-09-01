@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.Helpers Require NamedProps ProofCaching PropRestore.
 
 (*+ Demo of Perennial's IPM extensions +*)

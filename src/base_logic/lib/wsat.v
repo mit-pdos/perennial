@@ -1,7 +1,7 @@
 From stdpp Require Export coPset.
 From iris.algebra Require Import gmap auth agree gset coPset list vector excl.
 From Perennial.algebra Require Import mlist.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.base_logic Require Export lib.own lib.later_credits.
 From iris.prelude Require Import options.
 

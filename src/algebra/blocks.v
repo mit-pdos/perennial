@@ -1,5 +1,5 @@
 From stdpp Require Export namespaces.
-From iris.proofmode Require Export tactics.
+From iris.proofmode Require Export proofmode.
 Set Default Proof Using "Type".
 
 (* This class encodes how to represent an address into a combination of

@@ -1,5 +1,5 @@
 From iris.proofmode Require Import coq_tactics reduction.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 
 From Perennial.goose_lang Require Import notation proofmode typing.
 From Perennial.goose_lang.lib Require Import typed_mem.

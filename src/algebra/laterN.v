@@ -1,4 +1,4 @@
-From iris.proofmode Require Import base tactics.
+From iris.proofmode Require Import base proofmode.
 From Perennial.base_logic Require Import base_logic.
 Import interface.bi.
 Import derived_laws.bi.

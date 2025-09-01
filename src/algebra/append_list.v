@@ -2,7 +2,7 @@ From stdpp Require Import list.
 From Perennial.Helpers Require Import List ListLen Map.
 From Perennial.Helpers Require Import NamedProps.
 
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.bi.lib Require Import fractional.
 From Perennial.base_logic.lib Require Import own.
 From Perennial.algebra Require Import auth_map.

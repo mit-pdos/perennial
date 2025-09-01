@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth frac agree gmap excl csum.
 From Perennial.goose_lang Require Import proofmode notation crash_borrow.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert.

@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth.
 From Perennial.base_logic.lib Require Import proph_map.
 From Perennial.program_logic Require Export weakestpre.

@@ -1,4 +1,4 @@
-From iris.proofmode Require Import base tactics classes.
+From iris.proofmode Require Import base proofmode classes.
 From Perennial.base_logic Require Import invariants.
 From Perennial.program_logic Require Import invariants_mutable staged_invariant_alt.
 From Perennial.base_logic.lib Require Import wsat.

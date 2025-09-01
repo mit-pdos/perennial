@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.

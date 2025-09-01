@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris Require Import base_logic.lib.invariants.
 
 (** if the goal [Q] can be duplicated out of an invariant, we can access it

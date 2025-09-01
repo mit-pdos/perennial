@@ -1,7 +1,7 @@
 (** A lot like [ghost_map] but without the [auth]. *)
 From stdpp Require Import finite.
 From iris.algebra Require Import gmap agree dfrac.
-From iris.proofmode Require Import base tactics classes.
+From iris.proofmode Require Import base proofmode classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 Set Default Proof Using "Type".

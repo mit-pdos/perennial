@@ -1,7 +1,7 @@
 (** The "lifting lemmas" in this file serve to lift the rules of the operational
 semantics to the program logic. *)
 
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.program_logic Require Export weakestpre.
 From iris.prelude Require Import options.
 

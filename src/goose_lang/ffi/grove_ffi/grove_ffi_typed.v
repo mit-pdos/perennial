@@ -3,7 +3,7 @@ From stdpp Require Import gmap vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import gen_heap_names.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 

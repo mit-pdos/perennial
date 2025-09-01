@@ -1,5 +1,5 @@
 (** Crash instances for mono_nat. *)
-From iris.proofmode Require Import base tactics classes.
+From iris.proofmode Require Import base proofmode classes.
 From Perennial.base_logic.lib Require Export mono_nat.
 From Perennial.goose_lang Require Import crash_modality lifting.
 

@@ -3,7 +3,7 @@ From iris.algebra Require Export cmra functions frac.
 From iris.algebra Require Import updates local_updates.
 From iris.prelude Require Import options.
 From Perennial.base_logic Require Export lib.own.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 
 Record frac_coPset :=
   { fc_carrier :> @discrete_fun _ positive (fun _ => optionO fracR) }.

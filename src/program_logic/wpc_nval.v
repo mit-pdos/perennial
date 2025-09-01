@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant_alt.
 Set Default Proof Using "Type".
 Import uPred.

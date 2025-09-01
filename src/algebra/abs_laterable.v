@@ -1,5 +1,5 @@
 From iris.bi Require Export bi.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.prelude Require Import options.
 
 (** The class of absolutely laterable assertions *)

@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth updates local_updates.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.bi.lib Require Import fractional.
 From iris.prelude Require Import options.
 

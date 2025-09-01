@@ -1,6 +1,6 @@
 From Coq.QArith Require Import Qcanon.
 From Perennial.base_logic.lib Require Import invariants.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.bi Require Import fractional.
 From iris.algebra Require Import excl csum frac auth agree numbers.
 Set Default Proof Using "Type".

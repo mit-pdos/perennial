@@ -1,6 +1,6 @@
 From Perennial.iris_lib Require Export conflicting.
 From Perennial.algebra.big_op Require Import big_sepM.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 
 Set Default Proof Using "Type*".
 Set Default Goal Selector "!".

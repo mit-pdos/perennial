@@ -1,5 +1,5 @@
 (** Some derived lemmas for ectx-based languages *)
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.program_logic Require Export ectx_language weakestpre lifting.
 From iris.prelude Require Import options.
 

@@ -1,5 +1,5 @@
 From Perennial.base_logic.lib Require Import iprop own.
-From iris.proofmode Require Import base tactics classes.
+From iris.proofmode Require Import base proofmode classes.
 From iris.algebra Require Import auth dfrac gmap.
 From Perennial.algebra Require Import auth_frac.
 From iris.bi.lib Require Import fractional.

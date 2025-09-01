@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import excl.
 From Perennial.base_logic.lib Require Import invariants.
 From Perennial.program_logic Require Import weakestpre.

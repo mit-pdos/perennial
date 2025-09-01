@@ -1,4 +1,4 @@
-From iris.proofmode Require Import base tactics classes.
+From iris.proofmode Require Import base proofmode classes.
 From Perennial.Helpers Require Import ipm.
 From Perennial.base_logic Require Export invariants.
 From Perennial.program_logic Require Import crash_weakestpre weakestpre.

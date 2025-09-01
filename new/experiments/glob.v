@@ -138,7 +138,7 @@ Abort.
 End test.
 
 From iris.proofmode Require Import string_ident.
-From iris.proofmode Require Import tactics environments intro_patterns monpred.
+From iris.proofmode Require Import proofmode environments intro_patterns monpred.
 
 Local Ltac iNameReplace i name name' :=
   eapply (tac_name_replace i name name');

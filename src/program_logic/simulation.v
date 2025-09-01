@@ -1,6 +1,6 @@
 From Perennial.Helpers Require Import Transitions.
 From Perennial.base_logic Require Import base_logic lib.invariants.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.prelude Require Import options.
 
 Section simulation.

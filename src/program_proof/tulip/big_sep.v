@@ -1,5 +1,5 @@
 From iris.algebra Require Export big_op.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.Helpers Require Import ipm.
 From Perennial.program_proof.rsm Require Import big_sep.
 

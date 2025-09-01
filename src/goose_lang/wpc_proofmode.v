@@ -1,5 +1,5 @@
 From iris.proofmode Require Import coq_tactics reduction.
-From iris.proofmode Require Export tactics.
+From iris.proofmode Require Export proofmode.
 From Perennial.Helpers Require Export ipm NamedProps ProofCaching.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Export crash_weakestpre staged_invariant.

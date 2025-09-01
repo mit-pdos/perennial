@@ -1,4 +1,4 @@
-From iris.proofmode Require Import base tactics classes.
+From iris.proofmode Require Import base proofmode classes.
 From Perennial.base_logic Require Export invariants fancy_updates2.
 Set Default Proof Using "Type".
 Import uPred.

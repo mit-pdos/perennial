@@ -1,4 +1,4 @@
-From iris.proofmode Require Export tactics.
+From iris.proofmode Require Export proofmode.
 From iris.proofmode Require Import reduction coq_tactics intro_patterns.
 
 

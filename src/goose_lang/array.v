@@ -1,5 +1,5 @@
 From stdpp Require Import fin_maps.
-From iris.proofmode Require Import tactics coq_tactics.
+From iris.proofmode Require Import proofmode coq_tactics.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lifting.
 From Perennial.goose_lang Require Import proofmode typing tactics.

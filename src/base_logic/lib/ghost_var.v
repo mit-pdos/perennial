@@ -20,7 +20,7 @@ End lemmas.
 
 
 From iris.proofmode Require Import coq_tactics intro_patterns spec_patterns.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From stdpp Require Import hlist pretty.
 
 (* This tactic searches for own H (● (Excl' x)) and own H (◯ (Excl' y)) in the context and

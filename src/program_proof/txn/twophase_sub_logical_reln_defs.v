@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth excl.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import frac_count big_op.

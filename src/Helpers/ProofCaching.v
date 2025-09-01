@@ -1,4 +1,4 @@
-From iris.proofmode Require Import tactics environments.
+From iris.proofmode Require Import proofmode environments.
 From Perennial.Helpers Require Import NamedProps.
 
 (** * Caching and re-using Iris proofs.

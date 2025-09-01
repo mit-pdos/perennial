@@ -1,5 +1,5 @@
 From iris.base_logic Require Export lib.gen_heap.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 
 Section exchanger.
 Context `{Countable L}.

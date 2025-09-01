@@ -1,5 +1,5 @@
 From stdpp Require Import fin_maps.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import lib.frac_auth auth numbers gmap excl dfrac_agree.
 From iris.bi Require Import fractional.
 From Perennial.iris_lib Require Import dfractional.

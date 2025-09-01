@@ -1,5 +1,5 @@
 From iris.algebra Require Import auth agree excl csum.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.base_logic.lib Require Export own.
 From iris.prelude Require Import options.
 

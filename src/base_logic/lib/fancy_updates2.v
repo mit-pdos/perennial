@@ -1,6 +1,6 @@
 From stdpp Require Export coPset.
 From stdpp Require Import namespaces.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import gmap auth agree gset coPset.
 From Perennial.base_logic.lib Require Export own.
 From Perennial.base_logic.lib Require Import wsat fancy_updates.

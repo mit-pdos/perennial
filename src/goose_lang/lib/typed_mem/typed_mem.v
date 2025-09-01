@@ -1,5 +1,5 @@
 From iris.proofmode Require Import coq_tactics reduction.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.proofmode Require Import environments.
 From Perennial.program_logic Require Import weakestpre.
 From Perennial.iris_lib Require Import dfractional.

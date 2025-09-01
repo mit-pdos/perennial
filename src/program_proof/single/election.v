@@ -1,4 +1,4 @@
-From iris.proofmode Require Import base tactics classes.
+From iris.proofmode Require Import base proofmode classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude.

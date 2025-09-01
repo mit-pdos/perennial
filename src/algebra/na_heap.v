@@ -6,7 +6,7 @@ From iris.algebra Require Import csum excl auth cmra_big_op numbers lib.gmap_vie
 From iris.bi Require Import fractional.
 From Perennial.base_logic Require Export lib.own.
 From Perennial.iris_lib Require Export dfrac dfractional.
-From iris.proofmode Require Export tactics.
+From iris.proofmode Require Export proofmode.
 From Perennial.algebra Require Export blocks.
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".

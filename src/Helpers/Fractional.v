@@ -1,5 +1,5 @@
 From iris.algebra Require Import gmap.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.bi.lib Require Import fractional.
 From Perennial.base_logic.lib Require Import iprop.
 From Perennial.Helpers Require Import Qextra.

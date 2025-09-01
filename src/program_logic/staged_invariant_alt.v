@@ -4,7 +4,7 @@ From stdpp Require Export namespaces.
 From Perennial.base_logic.lib Require Import wsat invariants ae_invariants saved_prop.
 From Perennial.Helpers Require Import Qextra.
 From iris.algebra Require Import gmap.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_invariants_mutable later_res private_invariants.
 From iris.prelude Require Import options.
 Set Default Proof Using "Type".

@@ -1,5 +1,5 @@
 From iris.algebra Require Import gmap.
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From iris.base_logic Require Import iprop.
 From Perennial.algebra Require Import blocks.
 

@@ -1,7 +1,7 @@
 From iris.base_logic Require Export lib.mono_nat.
 
 (* Add some Perennial-specific stuff *)
-From iris.proofmode Require Import tactics.
+From iris.proofmode Require Import proofmode.
 From Perennial.algebra Require Import own_discrete atleast.
 
 Section iris.
