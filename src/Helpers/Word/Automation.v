@@ -80,6 +80,22 @@ Proof.
   Z.div_mod_to_equations. nia.
 Qed.
 
+(* variant of word.signed_divs that produces Z.div rather than Z.quot (which
+differ only in their handling of negative numbers) *)
+#[local]
+Lemma word_signed_divs_nowrap_pos {width : Z} {word : Interface.word width} {word_ok : word.ok word} :
+  ∀ x y : word,
+  0 < sint.Z y
+  ∧ 0 ≤ sint.Z x
+  → sint.Z (divs x y) = sint.Z x `div` sint.Z y.
+Proof.
+  intros.
+  rewrite word.signed_divs_nowrap; intuition.
+  - rewrite Z.quot_div_nonneg; lia.
+  - lia.
+  - lia.
+Qed.
+
 (* word.signed_divs_nowrap with one side goal *)
 #[local]
 Lemma word_signed_divs_nowrap_side_goal {width : Z} {word : Interface.word width} {word_ok : word.ok word} :
