@@ -1,9 +1,6 @@
 translate = [
   "!*",
 ]
-axiomatize = [
-  "*",
-]
 imports = [
   "!*",
 ]

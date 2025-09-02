@@ -4,6 +4,3 @@ imports = [
 translate = [
   "!*",
 ]
-axiomatize = [
-  "Logger",
-]

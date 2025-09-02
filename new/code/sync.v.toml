@@ -17,9 +17,6 @@ imports = [
   "internal/race",
 ]
 
-axiomatize = [
-]
-
 trusted = [
   # Unlike WaitGroup, one cannot translate and verify Mutex methods because they
   # actually have data races (and the race detector is explicitly disabled on

@@ -50,9 +50,6 @@ translate = [
   "Message",
 ]
 
-axiomatize = [
-]
-
 imports = [
   "!*",
 ]
