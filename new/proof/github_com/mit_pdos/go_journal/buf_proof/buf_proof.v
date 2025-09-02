@@ -847,13 +847,18 @@ Proof.
   iDestruct (own_slice_len with "Hsrc") as %Hsrcsz; simpl in *.
   iDestruct (own_slice_len with "Hdst") as %Hdstsz; simpl in *.
   wp_pure; first word.
-  wp_apply (wp_load_slice_elem with "[$Hsrc]"); first eauto. iIntros "Hsrc".
-  wp_auto.
+  wp_apply (wp_load_slice_elem with "[$Hsrc]") as "Hsrc"; [ word | eauto | ].
   wp_pure; first word.
   wp_apply (wp_load_slice_elem with "[$Hdst]").
-  { replace (uint.nat (w64_word_instance.(word.divu) dstoff (W64 8)))
+  { replace (sint.nat (w64_word_instance.(word.divu) dstoff (W64 8)))
       with (Z.to_nat (uint.Z dstoff `div` 8)); eauto.
-    word. }
+    - word.
+    - word. }
+  {
+    rewrite -> sint_eq_uint by word.
+    rewrite -> word.unsigned_divu_nowrap by word.
+    eauto.
+  }
   iIntros "Hdst".
   wp_auto.
   wp_apply wp_installOneBit; first word.
@@ -863,7 +868,7 @@ Proof.
   iExactEq "Hdst".
   f_equal.
   erewrite list_alter_lookup_insert; last done.
-  word with eauto.
+  f_equal; word.
 Qed.
 
 Lemma list_inserts_app_r' {A} (l1 l2 l3: list A) (i: nat) :
@@ -906,7 +911,7 @@ Proof.
   wp_auto.
   wp_apply (wp_slice_copy with "[$Hsrc1 $Hdst1]"). iIntros (n) "(%Hn & Hdst1 & Hsrc1)".
   wp_auto.
-  replace (uint.nat dst_s.(slice.len_f)) with (length dst_bs).
+  replace (sint.nat dst_s.(slice.len_f)) with (length dst_bs) by word.
   rewrite drop_all.
   iApply "HΦ".
   rewrite subslice_length in Hn; last word.
@@ -945,6 +950,7 @@ Proof.
       rewrite app_nil_r.
       rewrite -[l in list_inserts _ _ l](take_drop (uint.nat (word.divu dstoff 8)) dst_bs).
       rewrite -> list_inserts_app_r' by len.
+      rewrite -> sint_eq_uint by word.
       f_equal.
       match goal with
       | |- context[list_inserts ?n _ _] => replace n with 0%nat by len
@@ -958,8 +964,9 @@ Proof.
       replace (uint.nat (w64_word_instance.(word.divu) nbit (W64 8)) - uint.nat (W64 0))%nat with
         (uint.nat (w64_word_instance.(word.divu) nbit (W64 8)))%nat by word.
       rewrite firstn_all.
-      f_equal.
-      replace (uint.nat (W64 0)) with 0%nat by word.
+      change (sint.nat (W64 0)) with 0%nat.
+      repeat rewrite -> sint_eq_uint by word.
+      f_equal; [ | f_equal; word ].
       rewrite subslice_from_start. rewrite take_take.
       rewrite -> Nat.min_r by word. f_equal.
       word.

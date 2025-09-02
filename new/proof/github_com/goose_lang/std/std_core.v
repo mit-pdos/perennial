@@ -99,6 +99,7 @@ Proof.
   wp_auto.
   iPersist "xs".
   iDestruct (own_slice_len with "Hs") as %Hlen.
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
   destruct (bool_decide_reflect (slice.len_f s = W64 0)); wp_auto.
   {
     assert (xs = []); subst .
@@ -108,7 +109,7 @@ Proof.
   }
   iAssert (∃ (i: w64) (xs': list w64),
               "i" ∷ i_ptr ↦ i ∗
-              "%HI" ∷ ⌜0 ≤ uint.Z i < uint.Z (slice.len_f s)⌝ ∗
+              "%HI" ∷ ⌜0 ≤ sint.Z i < sint.Z (slice.len_f s)⌝ ∗
               "Hs" ∷ s ↦* xs' ∗
               "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝
           )%I with "[$i $Hs]" as "IH".
@@ -124,31 +125,17 @@ Proof.
     wp_apply wp_RandomUint64.
     iIntros (x) "_".
     wp_auto.
-    wp_pure; first word.
+    list_elem xs' (sint.Z i) as x_i.
+    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; [ word | eauto | ].
 
-    list_elem xs' i as x_i.
-    wp_apply (wp_load_slice_elem with "[$Hs]").
-    { eauto. }
-    iIntros "Hs".
-    wp_auto.
-
-    list_elem xs' (uint.nat (word.modu x (word.add i (W64 1)))) as x_i'.
+    list_elem xs' (sint.nat (word.modu x (word.add i (W64 1)))) as x_i'.
     wp_pure; first word.
-    wp_apply (wp_load_slice_elem with "[$Hs]").
-    { eauto. }
-    iIntros "Hs".
-
-    wp_auto.
-    wp_pure; first word.
-    wp_apply (wp_store_slice_elem with "[$Hs]").
+    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; [ word | eauto | ].
+    wp_apply (wp_store_slice_elem with "[$Hs]") as "Hs".
     { word. }
-    iIntros "Hs".
-    wp_auto.
     wp_pure; first word.
-    wp_apply (wp_store_slice_elem with "[$Hs]").
-    { len. }
-    iIntros "Hs".
-    wp_auto. wp_for_post.
+    wp_apply (wp_store_slice_elem with "[$Hs]") as "Hs"; [ len | ].
+    wp_for_post.
     iFrame.
     iPureIntro.
     split; [ word | ].
@@ -171,25 +158,27 @@ Proof.
 Qed.
 
 Lemma wp_Permutation (n: w64) :
-  {{{ is_pkg_init std_core }}}
+  {{{ is_pkg_init std_core ∗ ⌜0 ≤ sint.Z n⌝ }}}
     @! std_core.Permutation #n
   {{{ xs s, RET #s;
-      ⌜xs ≡ₚ (W64 <$> seqZ 0 (uint.Z n))⌝ ∗
+      ⌜xs ≡ₚ (W64 <$> seqZ 0 (sint.Z n))⌝ ∗
       s ↦* xs
   }}}.
 Proof.
-  wp_start as "_".
+  wp_start as "%Hnz".
   wp_auto.
-  wp_apply (wp_slice_make2 (V:=w64)). iIntros (s) "[Hs _]".
+  wp_apply (wp_slice_make2 (V:=w64)).
+  { word. }
+  iIntros (s) "[Hs _]".
   wp_auto.
   iDestruct (own_slice_len with "Hs") as "%Hlen".
   autorewrite with len in Hlen.
   iPersist "n order".
 
   iAssert (∃ (i: w64),
-              "Hs" ∷ s ↦* ((W64 <$> seqZ 0 (uint.Z i)) ++ replicate (uint.nat n - uint.nat i) (W64 0)) ∗
+              "Hs" ∷ s ↦* ((W64 <$> seqZ 0 (sint.Z i)) ++ replicate (sint.nat n - sint.nat i) (W64 0)) ∗
               "i" ∷ i_ptr ↦ i ∗
-              "%Hi" ∷ ⌜uint.Z i ≤ uint.Z n⌝)%I
+              "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z n⌝)%I
     with "[$i Hs]" as "IH".
   { iFrame.
     iSplit; [ | word ].
@@ -211,13 +200,13 @@ Proof.
     rewrite /named.
     iExactEq "Hs".
     f_equal.
-    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
-    replace (uint.Z (word.add i (W64 1))) with (uint.Z i + 1) by word.
+    replace (sint.nat (word.add i (W64 1))) with (S (sint.nat i)) by word.
+    replace (sint.Z (word.add i (W64 1))) with (sint.Z i + 1) by word.
     rewrite insert_app_r_alt; [ | len ].
     autorewrite with len.
-    replace (uint.nat i - uint.nat i)%nat with 0%nat by word.
-    replace (uint.nat n - uint.nat i)%nat with
-      (S (uint.nat n - uint.nat i - 1)%nat) by word.
+    replace (sint.nat i - sint.nat i)%nat with 0%nat by word.
+    replace (sint.nat n - sint.nat i)%nat with
+      (S (sint.nat n - sint.nat i - 1)%nat) by word.
     rewrite replicate_S /=.
     rewrite cons_middle.
     rewrite app_assoc.
@@ -236,7 +225,7 @@ Proof.
     iPureIntro.
     rewrite -Hperm.
     assert (i = n) by word; subst.
-    replace (uint.nat n - uint.nat n)%nat with 0%nat by word.
+    replace (sint.nat n - sint.nat n)%nat with 0%nat by word.
     rewrite replicate_0 app_nil_r.
     auto.
 Qed.

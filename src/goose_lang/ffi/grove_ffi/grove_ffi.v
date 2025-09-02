@@ -54,7 +54,7 @@ Section grove.
     ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
   Definition file_content_bounds (g : gmap byte_string (list byte)) : Prop :=
-    ∀ f c, g !! f = Some c → length c < 2^64.
+    ∀ f c, g !! f = Some c → Z.of_nat (length c) < 2^63.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
     {| ffiGlobalGS := groveGS;
@@ -256,7 +256,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : dfrac) s E :
-    length data = uint.nat len →
+    Z.of_nat (length data) = sint.Z len →
     {{{ c_r c↦ ms ∗ pointsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (connection_socket c_l c_r, (#l, #len))%V @ s; E
     {{{ (err_early err_late : bool), RET #(err_early || err_late);
@@ -293,8 +293,8 @@ lemmas. *)
     iMod (@gen_heap_update with "Hg Hc") as "[$ Hc]".
     assert (data = data0) as <-.
     { apply list_eq=>i.
-      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length data0 = length data) as Hlen by rewrite Hmlen //.
+      rename select (Z.of_nat (length _) = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length data0 = length data) as Hlen by word.
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
@@ -323,7 +323,7 @@ lemmas. *)
     {{{ (err : bool) (l : loc) (len : u64) (data : list u8),
         RET (#err, (#l, #len));
         ⌜if err then l = null ∧ data = [] ∧ len = 0 else
-          Message c_r data ∈ ms ∧ length data = uint.nat len⌝ ∗
+          Message c_r data ∈ ms ∧ Z.of_nat (length data) = sint.Z len⌝ ∗
         c_l c↦ ms ∗ pointsto_vals l (DfracOwn 1) (data_vals data)
     }}}.
   Proof.
@@ -348,7 +348,7 @@ lemmas. *)
     inv_base_step.
     monad_inv.
     rename select (m = None ∨ _) into Hm. simpl in Hm.
-    destruct Hm as [->|(m' & -> & Hm & <-)].
+    destruct Hm as [->|(m' & -> & Hm & <- & ?)].
     { (* Returning no message. *)
       inv_base_step.
       monad_inv.
@@ -397,7 +397,9 @@ lemmas. *)
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
     {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
-      f f↦{q} c ∗ if err then True else ⌜length c = uint.nat len⌝ ∗ pointsto_vals l (DfracOwn 1) (data_vals c)
+      f f↦{q} c ∗
+      if err then True else ⌜Z.of_nat (length c) = sint.Z len⌝ ∗
+      pointsto_vals l (DfracOwn 1) (data_vals c)
     }}}.
   Proof.
     iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -456,7 +458,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_FileWriteOp f old new l q (len : u64) E :
-    length new = uint.nat len →
+    Z.of_nat (length new) = sint.Z len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
     {{{ (err : bool), RET #err; f f↦ (if err then old else new) ∗ pointsto_vals l q (data_vals new) }}}.
@@ -489,7 +491,7 @@ lemmas. *)
     assert (data = new) as <-.
     { apply list_eq=>i.
       rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length new = length data) as Hlen by rewrite Hmlen //.
+      assert (length new = length data) as Hlen by word.
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
@@ -510,7 +512,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_FileAppendOp f old new l q (len : u64) E :
-    length new = uint.nat len →
+    Z.of_nat (length new) = sint.Z len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
     {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ pointsto_vals l q (data_vals new) }}}.
@@ -547,7 +549,7 @@ lemmas. *)
     assert (data = new) as <-.
     { apply list_eq=>i.
       rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length new = length data) as Hlen by rewrite Hmlen //.
+      assert (length new = length data) as Hlen by word.
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.

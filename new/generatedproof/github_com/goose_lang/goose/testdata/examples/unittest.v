@@ -2305,6 +2305,10 @@ Global Instance wp_func_call_sumSlice :
   WpFuncCall unittest.sumSlice _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_intSliceLoop :
+  WpFuncCall unittest.intSliceLoop _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_breakFromLoop :
   WpFuncCall unittest.breakFromLoop _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).

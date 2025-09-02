@@ -116,8 +116,8 @@ Proof.
   { iDestruct own_slice_nil as "$". }
 
   list_simplifier.
-  iDestruct (own_slice_len with "Hsl_label") as %->.
-  iDestruct (own_slice_len with "Hsl_val") as %->.
+  iDestruct (own_slice_len with "Hsl_label") as %?.
+  iDestruct (own_slice_len with "Hsl_val") as %?.
   iApply "HΦ". iFrame.
   iExactEq "His_hash".
   rewrite /named. repeat f_equal; word.
@@ -251,11 +251,15 @@ Proof.
   (* in golang, extract byte. *)
   wp_if_destruct; [|word].
   wp_auto.
+  wp_pure; [ word | ].
   wp_apply (wp_load_slice_elem with "[$Hsl_bs]") as "_".
-  { iPureIntro. exact_eq Hb.
-    f_equal.
-    rewrite word.unsigned_divu_nowrap; [|word].
-    rewrite Z2Nat.inj_div; [done|word..]. }
+  { word. }
+  { replace (sint.nat (word.divu _ _)) with (uint.nat n `div` 8)%nat; eauto.
+    rewrite -> sint_eq_uint by word.
+    rewrite -> word.unsigned_divu_nowrap by word.
+    change (uint.Z (W64 8)) with 8.
+    rewrite Z2Nat.inj_div; [done|word..]. (* TODO: word limitation *)
+  }
 
   (* show equal. *)
   iApply "HΦ". iPureIntro.

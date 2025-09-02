@@ -1166,7 +1166,7 @@ Proof.
   iIntros (k0 j _) "H".
   setoid_rewrite Z.mul_comm at 1.
   setoid_rewrite Z.mul_comm at 2.
-  rewrite /pointsto_vals_toks. eauto.
+  rewrite /pointsto_vals_toks. iFrame.
 Qed.
 
 Lemma wp_allocN_seq0 s E v (n: u64) :

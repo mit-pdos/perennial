@@ -73,9 +73,10 @@ Qed.
 Lemma bits_lookup_byte (max: u64) (bits: list u8) (num: u64) :
   uint.Z max = 8 * length bits →
   uint.Z num < uint.Z max →
-  ∃ (b:u8), bits !! uint.nat (word.divu num 8) = Some b.
+  ∃ (b:u8), bits !! sint.nat (word.divu num 8) = Some b.
 Proof.
   intros Hmax Hnum.
+  rewrite sint_eq_uint; [ | word ].
   assert (uint.Z num / 8 < length bits).
   { apply Zdiv_lt_upper_bound; lia. }
   destruct (list_lookup_lt bits (Z.to_nat (uint.Z num / 8)%Z)) as [b Hlookup].
@@ -116,9 +117,7 @@ Proof.
      contents of the slice are a literal list, but not here. We should probably
      not support it at all. FIXME:(slice elem_ref)
    *)
-  wp_apply (wp_load_slice_elem with "[$Hbits]"); first eauto. iIntros "Hbits".
-
-  wp_auto.
+  wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
 
   (* XXX *)
   wp_pure; first word.
@@ -148,6 +147,7 @@ Proof.
   wp_if_destruct; last by word.
   wp_auto.
   wp_apply (wp_slice_make2 (V:=u8)).
+  { word. }
   iIntros (bitmap_s) "[Hs Hscap]". simpl.
   wp_auto.
   wp_apply (wp_MkAlloc with "[$Hs]").
@@ -228,16 +228,13 @@ Proof.
   wp_auto.
   wp_pure; first by word.
   destruct (bits_lookup_byte max bits num) as [b Hlookup]; [ done | word | ].
-  wp_apply (wp_load_slice_elem with "[$Hbits]"); first by eauto. iIntros "Hbits".
-  wp_auto.
+  wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
   wp_if_destruct.
   - wp_auto.
     wp_pure; first by word.
-    wp_apply (wp_load_slice_elem with "[$Hbits]"); first by eauto. iIntros "Hbits".
-    wp_auto.
+    wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
     wp_pure; first by word.
-    wp_apply (wp_store_slice_elem with "[$Hbits]"); first by word. iIntros "Hbits".
-    wp_auto.
+    wp_apply (wp_store_slice_elem with "[$Hbits]") as "Hbits"; [ word | ].
     wp_for_post.
     wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
     { rewrite length_insert. word. }
@@ -273,13 +270,9 @@ Proof.
   destruct (bits_lookup_byte max bits bn) as [b Hlookup]; [ done | done | ].
   wp_auto.
   wp_pure; first word.
-  wp_apply (wp_load_slice_elem with "[$Hbits]"); first by eauto.
-  iIntros "Hbits".
-  wp_auto.
+  wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
   wp_pure; first word.
-  wp_apply (wp_store_slice_elem with "[$Hbits]"); first by word.
-  iIntros "Hbits".
-  wp_auto.
+  wp_apply (wp_store_slice_elem with "[$Hbits]") as "Hbits"; [ word | ].
   wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
   { rewrite length_insert. word. }
   by iApply "HΦ".
@@ -381,15 +374,15 @@ Proof.
   wp_auto.
   wp_if_destruct.
   - wp_auto.
-    edestruct (lookup_lt_is_Some_2 bits (uint.nat i)); first word.
-    wp_apply (wp_load_slice_elem with "[$Hbits]"); first eauto. iIntros "Hbits".
-    wp_auto.
+    wp_pure; first word.
+    edestruct (lookup_lt_is_Some_2 bits (sint.nat i)); first word.
+    wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
     wp_apply wp_popCnt. iIntros (n Hn).
     wp_auto.
     wp_for_post.
     iFrame.
     word.
-  - (* XXX *)
+  - (* XXX: decide (#false = #true) does not evaluate *)
     replace (# true) with (into_val_bool.(to_val_def) true) by ( rewrite to_val_unseal; auto ).
     replace (# false) with (into_val_bool.(to_val_def) false) by ( rewrite to_val_unseal; auto ).
     simpl.
