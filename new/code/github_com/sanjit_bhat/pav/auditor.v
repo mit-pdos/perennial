@@ -801,7 +801,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Auditor.id,
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [bytes.bytes; sync.sync; github_com.sanjit_bhat.pav.advrpc.advrpc; github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; github_com.sanjit_bhat.pav.hashchain.hashchain; github_com.sanjit_bhat.pav.ktcore.ktcore; github_com.sanjit_bhat.pav.merkle.merkle; github_com.sanjit_bhat.pav.server.server; github_com.sanjit_bhat.pav.safemarshal.safemarshal; github_com.tchajed.marshal.marshal];
+    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.github_com.sanjit_bhat.pav.advrpc.advrpc; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.hashchain.hashchain; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.merkle.merkle; code.github_com.sanjit_bhat.pav.server.server; code.github_com.sanjit_bhat.pav.safemarshal.safemarshal; code.github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=

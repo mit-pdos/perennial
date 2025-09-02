@@ -20,7 +20,7 @@ Global Instance is_pkg_defined_pure_std_core : IsPkgDefinedPure std_core :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single std_core ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.primitive;
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -28,7 +28,7 @@ Global Program Instance is_pkg_defined_std_core : IsPkgDefined std_core :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single std_core ∗
-       is_pkg_defined github_com.goose_lang.primitive.primitive)%I
+       is_pkg_defined code.github_com.goose_lang.primitive.primitive)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

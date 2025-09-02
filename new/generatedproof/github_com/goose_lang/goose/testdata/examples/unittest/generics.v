@@ -453,7 +453,7 @@ Global Instance is_pkg_defined_pure_generics : IsPkgDefinedPure generics :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single generics ∧
-      is_pkg_defined_pure github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers;
+      is_pkg_defined_pure code.github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -461,7 +461,7 @@ Global Program Instance is_pkg_defined_generics : IsPkgDefined generics :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single generics ∗
-       is_pkg_defined github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers)%I
+       is_pkg_defined code.github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

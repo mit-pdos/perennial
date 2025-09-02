@@ -8683,7 +8683,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(raftLog.id,
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [errors.errors; go_etcd_io.raft.v3.raftpb.raftpb; fmt.fmt; io.io; log.log; os.os; sync.sync; context.context; bytes.bytes; crypto.rand.rand; math.math; math.big.big; strings.strings; go_etcd_io.raft.v3.confchange.confchange; go_etcd_io.raft.v3.quorum.quorum; go_etcd_io.raft.v3.quorum.slices.slices; go_etcd_io.raft.v3.tracker.tracker; go_etcd_io.raft.v3.raftpb.raftpb];
+    pkg_imported_pkgs := [code.errors.errors; code.go_etcd_io.raft.v3.raftpb.raftpb; code.fmt.fmt; code.io.io; code.log.log; code.os.os; code.sync.sync; code.context.context; code.bytes.bytes; code.crypto.rand.rand; code.math.math; code.math.big.big; code.strings.strings; code.go_etcd_io.raft.v3.confchange.confchange; code.go_etcd_io.raft.v3.quorum.quorum; code.go_etcd_io.raft.v3.quorum.slices.slices; code.go_etcd_io.raft.v3.tracker.tracker; code.go_etcd_io.raft.v3.raftpb.raftpb];
   |}.
 
 Definition initialize' : val :=

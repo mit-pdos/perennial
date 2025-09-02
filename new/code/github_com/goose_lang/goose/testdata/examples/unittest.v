@@ -3047,7 +3047,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, [])
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [fmt.fmt; sync.sync; github_com.goose_lang.primitive.primitive; github_com.goose_lang.primitive.disk.disk; log.log; github_com.goose_lang.std.std; fmt.fmt];
+    pkg_imported_pkgs := [code.fmt.fmt; code.sync.sync; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.primitive.disk.disk; code.log.log; code.github_com.goose_lang.std.std; code.fmt.fmt];
   |}.
 
 Definition initialize' : val :=

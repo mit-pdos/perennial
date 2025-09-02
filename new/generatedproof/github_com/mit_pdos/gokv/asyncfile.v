@@ -155,9 +155,9 @@ Global Instance is_pkg_defined_pure_asyncfile : IsPkgDefinedPure asyncfile :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single asyncfile ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi;
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -165,9 +165,9 @@ Global Program Instance is_pkg_defined_asyncfile : IsPkgDefined asyncfile :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single asyncfile ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined github_com.goose_lang.std.std ∗
-       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi)%I
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.goose_lang.std.std ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

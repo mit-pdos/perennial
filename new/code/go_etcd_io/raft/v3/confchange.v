@@ -120,7 +120,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id,
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [go_etcd_io.raft.v3.tracker.tracker];
+    pkg_imported_pkgs := [code.go_etcd_io.raft.v3.tracker.tracker];
   |}.
 
 Axiom _'init : val.

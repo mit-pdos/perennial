@@ -1001,7 +1001,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(inflight.id
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [fmt.fmt; strings.strings; go_etcd_io.raft.v3.quorum.slices.slices; go_etcd_io.raft.v3.quorum.quorum; go_etcd_io.raft.v3.raftpb.raftpb];
+    pkg_imported_pkgs := [code.fmt.fmt; code.strings.strings; code.go_etcd_io.raft.v3.quorum.slices.slices; code.go_etcd_io.raft.v3.quorum.quorum; code.go_etcd_io.raft.v3.raftpb.raftpb];
   |}.
 
 Definition initialize' : val :=

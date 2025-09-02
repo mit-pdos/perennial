@@ -390,7 +390,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(InMemorySta
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [github_com.goose_lang.std.std; github_com.mit_pdos.gokv.aof.aof; github_com.mit_pdos.gokv.grove_ffi.grove_ffi; github_com.mit_pdos.gokv.vrsm.replica.replica; github_com.tchajed.marshal.marshal];
+    pkg_imported_pkgs := [code.github_com.goose_lang.std.std; code.github_com.mit_pdos.gokv.aof.aof; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.vrsm.replica.replica; code.github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=

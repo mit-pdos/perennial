@@ -28,7 +28,7 @@ Global Instance is_pkg_defined_pure_status : IsPkgDefinedPure status :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single status ∧
-      is_pkg_defined_pure google_golang_org.genproto.googleapis.rpc.status.status;
+      is_pkg_defined_pure code.google_golang_org.genproto.googleapis.rpc.status.status;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -36,7 +36,7 @@ Global Program Instance is_pkg_defined_status : IsPkgDefined status :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single status ∗
-       is_pkg_defined google_golang_org.genproto.googleapis.rpc.status.status)%I
+       is_pkg_defined code.google_golang_org.genproto.googleapis.rpc.status.status)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

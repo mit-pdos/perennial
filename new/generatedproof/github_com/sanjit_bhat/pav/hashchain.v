@@ -100,10 +100,10 @@ Global Instance is_pkg_defined_pure_hashchain : IsPkgDefinedPure hashchain :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single hashchain ∧
-      is_pkg_defined_pure bytes.bytes ∧
-      is_pkg_defined_pure github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoutil.cryptoutil;
+      is_pkg_defined_pure code.bytes.bytes ∧
+      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -111,10 +111,10 @@ Global Program Instance is_pkg_defined_hashchain : IsPkgDefined hashchain :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single hashchain ∗
-       is_pkg_defined bytes.bytes ∗
-       is_pkg_defined github_com.goose_lang.std.std ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.cryptoutil.cryptoutil)%I
+       is_pkg_defined code.bytes.bytes ∗
+       is_pkg_defined code.github_com.goose_lang.std.std ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

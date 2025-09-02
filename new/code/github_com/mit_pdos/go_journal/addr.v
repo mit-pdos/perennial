@@ -71,7 +71,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [(
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [github_com.goose_lang.primitive.disk.disk; github_com.mit_pdos.go_journal.common.common];
+    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.disk.disk; code.github_com.mit_pdos.go_journal.common.common];
   |}.
 
 Definition initialize' : val :=

@@ -2162,7 +2162,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Election.id
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [context.context; errors.errors; fmt.fmt; go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; go_etcd_io.etcd.api.v3.mvccpb.mvccpb; go_etcd_io.etcd.client.v3.clientv3; strings.strings; sync.sync; time.time; go_uber_org.zap.zap; math.math];
+    pkg_imported_pkgs := [code.context.context; code.errors.errors; code.fmt.fmt; code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb; code.go_etcd_io.etcd.client.v3.clientv3; code.strings.strings; code.sync.sync; code.time.time; code.go_uber_org.zap.zap; code.math.math];
   |}.
 
 Definition initialize' : val :=

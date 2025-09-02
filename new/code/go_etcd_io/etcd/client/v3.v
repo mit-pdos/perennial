@@ -2950,7 +2950,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(AuthEnableR
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; go_etcd_io.etcd.api.v3.mvccpb.mvccpb];
+    pkg_imported_pkgs := [code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb];
   |}.
 
 Axiom _'init : val.

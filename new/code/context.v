@@ -1274,7 +1274,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(deadlineExc
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [errors.errors; internal.reflectlite.reflectlite; sync.sync; sync.atomic.atomic; time.time];
+    pkg_imported_pkgs := [code.errors.errors; code.internal.reflectlite.reflectlite; code.sync.sync; code.sync.atomic.atomic; code.time.time];
   |}.
 
 Definition initialize' : val :=
