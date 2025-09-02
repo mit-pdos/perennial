@@ -21,9 +21,27 @@ Definition Enc : go_type := structT [
 
 Definition NewEncFromSlice : go_string := "github.com/tchajed/marshal.NewEncFromSlice"%go.
 
+Axiom NewEncFromSliceⁱᵐᵖˡ : val.
+
 Definition NewEnc : go_string := "github.com/tchajed/marshal.NewEnc"%go.
 
+Axiom NewEncⁱᵐᵖˡ : val.
+
+Axiom Enc__PutIntⁱᵐᵖˡ : val.
+
+Axiom Enc__PutInt32ⁱᵐᵖˡ : val.
+
+Axiom Enc__PutIntsⁱᵐᵖˡ : val.
+
+Axiom Enc__PutBytesⁱᵐᵖˡ : val.
+
 Definition bool2byte : go_string := "github.com/tchajed/marshal.bool2byte"%go.
+
+Axiom bool2byteⁱᵐᵖˡ : val.
+
+Axiom Enc__PutBoolⁱᵐᵖˡ : val.
+
+Axiom Enc__Finishⁱᵐᵖˡ : val.
 
 Definition Dec : go_type := structT [
   "b" :: sliceT;
@@ -31,6 +49,18 @@ Definition Dec : go_type := structT [
 ].
 
 Definition NewDec : go_string := "github.com/tchajed/marshal.NewDec"%go.
+
+Axiom NewDecⁱᵐᵖˡ : val.
+
+Axiom Dec__GetIntⁱᵐᵖˡ : val.
+
+Axiom Dec__GetInt32ⁱᵐᵖˡ : val.
+
+Axiom Dec__GetIntsⁱᵐᵖˡ : val.
+
+Axiom Dec__GetBytesⁱᵐᵖˡ : val.
+
+Axiom Dec__GetBoolⁱᵐᵖˡ : val.
 
 Definition compute_new_cap : go_string := "github.com/tchajed/marshal.compute_new_cap"%go.
 
@@ -111,6 +141,8 @@ Definition ReadInt32ⁱᵐᵖˡ : val :=
      slice.slice #byteT "$s" #(W64 4) (slice.len "$s"))).
 
 Definition ReadInts : go_string := "github.com/tchajed/marshal.ReadInts"%go.
+
+Axiom ReadIntsⁱᵐᵖˡ : val.
 
 Definition ReadBytes : go_string := "github.com/tchajed/marshal.ReadBytes"%go.
 
@@ -255,6 +287,8 @@ Definition WriteBytesⁱᵐᵖˡ : val :=
 
 Definition WriteInts : go_string := "github.com/tchajed/marshal.WriteInts"%go.
 
+Axiom WriteIntsⁱᵐᵖˡ : val.
+
 Definition WriteBool : go_string := "github.com/tchajed/marshal.WriteBool"%go.
 
 (* go: stateless.go:119:6 *)
@@ -393,9 +427,31 @@ Definition WriteSliceLenPrefixⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(compute_new_cap, compute_new_capⁱᵐᵖˡ); (reserve, reserveⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadInt32, ReadInt32ⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadBytesCopy, ReadBytesCopyⁱᵐᵖˡ); (ReadBool, ReadBoolⁱᵐᵖˡ); (ReadLenPrefixedBytes, ReadLenPrefixedBytesⁱᵐᵖˡ); (WriteInt, WriteIntⁱᵐᵖˡ); (WriteInt32, WriteInt32ⁱᵐᵖˡ); (WriteBytes, WriteBytesⁱᵐᵖˡ); (WriteBool, WriteBoolⁱᵐᵖˡ); (WriteLenPrefixedBytes, WriteLenPrefixedBytesⁱᵐᵖˡ); (ReadSlice, ReadSliceⁱᵐᵖˡ); (ReadSliceLenPrefix, ReadSliceLenPrefixⁱᵐᵖˡ); (WriteSlice, WriteSliceⁱᵐᵖˡ); (WriteSliceLenPrefix, WriteSliceLenPrefixⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewEncFromSlice, NewEncFromSliceⁱᵐᵖˡ); (NewEnc, NewEncⁱᵐᵖˡ); (bool2byte, bool2byteⁱᵐᵖˡ); (NewDec, NewDecⁱᵐᵖˡ); (compute_new_cap, compute_new_capⁱᵐᵖˡ); (reserve, reserveⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadInt32, ReadInt32ⁱᵐᵖˡ); (ReadInts, ReadIntsⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadBytesCopy, ReadBytesCopyⁱᵐᵖˡ); (ReadBool, ReadBoolⁱᵐᵖˡ); (ReadLenPrefixedBytes, ReadLenPrefixedBytesⁱᵐᵖˡ); (WriteInt, WriteIntⁱᵐᵖˡ); (WriteInt32, WriteInt32ⁱᵐᵖˡ); (WriteBytes, WriteBytesⁱᵐᵖˡ); (WriteInts, WriteIntsⁱᵐᵖˡ); (WriteBool, WriteBoolⁱᵐᵖˡ); (WriteLenPrefixedBytes, WriteLenPrefixedBytesⁱᵐᵖˡ); (ReadSlice, ReadSliceⁱᵐᵖˡ); (ReadSliceLenPrefix, ReadSliceLenPrefixⁱᵐᵖˡ); (WriteSlice, WriteSliceⁱᵐᵖˡ); (WriteSliceLenPrefix, WriteSliceLenPrefixⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, []); (ptrT.id Enc.id, []); (Dec.id, []); (ptrT.id Dec.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, [("Finish"%go, Enc__Finishⁱᵐᵖˡ); ("PutBool"%go, Enc__PutBoolⁱᵐᵖˡ); ("PutBytes"%go, Enc__PutBytesⁱᵐᵖˡ); ("PutInt"%go, Enc__PutIntⁱᵐᵖˡ); ("PutInt32"%go, Enc__PutInt32ⁱᵐᵖˡ); ("PutInts"%go, Enc__PutIntsⁱᵐᵖˡ)]); (ptrT.id Enc.id, [("Finish"%go, (λ: "$r",
+                 method_call #Enc.id #"Finish"%go (![#Enc] "$r")
+                 )%V); ("PutBool"%go, (λ: "$r",
+                 method_call #Enc.id #"PutBool"%go (![#Enc] "$r")
+                 )%V); ("PutBytes"%go, (λ: "$r",
+                 method_call #Enc.id #"PutBytes"%go (![#Enc] "$r")
+                 )%V); ("PutInt"%go, (λ: "$r",
+                 method_call #Enc.id #"PutInt"%go (![#Enc] "$r")
+                 )%V); ("PutInt32"%go, (λ: "$r",
+                 method_call #Enc.id #"PutInt32"%go (![#Enc] "$r")
+                 )%V); ("PutInts"%go, (λ: "$r",
+                 method_call #Enc.id #"PutInts"%go (![#Enc] "$r")
+                 )%V)]); (Dec.id, [("GetBool"%go, Dec__GetBoolⁱᵐᵖˡ); ("GetBytes"%go, Dec__GetBytesⁱᵐᵖˡ); ("GetInt"%go, Dec__GetIntⁱᵐᵖˡ); ("GetInt32"%go, Dec__GetInt32ⁱᵐᵖˡ); ("GetInts"%go, Dec__GetIntsⁱᵐᵖˡ)]); (ptrT.id Dec.id, [("GetBool"%go, (λ: "$r",
+                 method_call #Dec.id #"GetBool"%go (![#Dec] "$r")
+                 )%V); ("GetBytes"%go, (λ: "$r",
+                 method_call #Dec.id #"GetBytes"%go (![#Dec] "$r")
+                 )%V); ("GetInt"%go, (λ: "$r",
+                 method_call #Dec.id #"GetInt"%go (![#Dec] "$r")
+                 )%V); ("GetInt32"%go, (λ: "$r",
+                 method_call #Dec.id #"GetInt32"%go (![#Dec] "$r")
+                 )%V); ("GetInts"%go, (λ: "$r",
+                 method_call #Dec.id #"GetInts"%go (![#Dec] "$r")
+                 )%V)])].
 
 #[global] Instance info' : PkgInfo marshal.marshal :=
   {|

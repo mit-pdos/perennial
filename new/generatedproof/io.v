@@ -24,6 +24,584 @@ Definition t := interface.t.
 End def.
 End Writer.
 
+(* type io.Closer *)
+Module Closer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Closer.
+
+Global Instance bounded_size_Closer : BoundedTypeSize io.Closer.
+Admitted.
+
+Global Instance into_val_Closer `{ffi_syntax} : IntoVal Closer.t.
+Admitted.
+
+Global Instance into_val_typed_Closer `{ffi_syntax} : IntoValTyped Closer.t io.Closer.
+Admitted.
+
+(* type io.Seeker *)
+Module Seeker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Seeker.
+
+Global Instance bounded_size_Seeker : BoundedTypeSize io.Seeker.
+Admitted.
+
+Global Instance into_val_Seeker `{ffi_syntax} : IntoVal Seeker.t.
+Admitted.
+
+Global Instance into_val_typed_Seeker `{ffi_syntax} : IntoValTyped Seeker.t io.Seeker.
+Admitted.
+
+(* type io.ReadWriter *)
+Module ReadWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReadWriter.
+
+Global Instance bounded_size_ReadWriter : BoundedTypeSize io.ReadWriter.
+Admitted.
+
+Global Instance into_val_ReadWriter `{ffi_syntax} : IntoVal ReadWriter.t.
+Admitted.
+
+Global Instance into_val_typed_ReadWriter `{ffi_syntax} : IntoValTyped ReadWriter.t io.ReadWriter.
+Admitted.
+
+(* type io.ReadCloser *)
+Module ReadCloser.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReadCloser.
+
+Global Instance bounded_size_ReadCloser : BoundedTypeSize io.ReadCloser.
+Admitted.
+
+Global Instance into_val_ReadCloser `{ffi_syntax} : IntoVal ReadCloser.t.
+Admitted.
+
+Global Instance into_val_typed_ReadCloser `{ffi_syntax} : IntoValTyped ReadCloser.t io.ReadCloser.
+Admitted.
+
+(* type io.WriteCloser *)
+Module WriteCloser.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End WriteCloser.
+
+Global Instance bounded_size_WriteCloser : BoundedTypeSize io.WriteCloser.
+Admitted.
+
+Global Instance into_val_WriteCloser `{ffi_syntax} : IntoVal WriteCloser.t.
+Admitted.
+
+Global Instance into_val_typed_WriteCloser `{ffi_syntax} : IntoValTyped WriteCloser.t io.WriteCloser.
+Admitted.
+
+(* type io.ReadWriteCloser *)
+Module ReadWriteCloser.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReadWriteCloser.
+
+Global Instance bounded_size_ReadWriteCloser : BoundedTypeSize io.ReadWriteCloser.
+Admitted.
+
+Global Instance into_val_ReadWriteCloser `{ffi_syntax} : IntoVal ReadWriteCloser.t.
+Admitted.
+
+Global Instance into_val_typed_ReadWriteCloser `{ffi_syntax} : IntoValTyped ReadWriteCloser.t io.ReadWriteCloser.
+Admitted.
+
+(* type io.ReadSeeker *)
+Module ReadSeeker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReadSeeker.
+
+Global Instance bounded_size_ReadSeeker : BoundedTypeSize io.ReadSeeker.
+Admitted.
+
+Global Instance into_val_ReadSeeker `{ffi_syntax} : IntoVal ReadSeeker.t.
+Admitted.
+
+Global Instance into_val_typed_ReadSeeker `{ffi_syntax} : IntoValTyped ReadSeeker.t io.ReadSeeker.
+Admitted.
+
+(* type io.ReadSeekCloser *)
+Module ReadSeekCloser.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReadSeekCloser.
+
+Global Instance bounded_size_ReadSeekCloser : BoundedTypeSize io.ReadSeekCloser.
+Admitted.
+
+Global Instance into_val_ReadSeekCloser `{ffi_syntax} : IntoVal ReadSeekCloser.t.
+Admitted.
+
+Global Instance into_val_typed_ReadSeekCloser `{ffi_syntax} : IntoValTyped ReadSeekCloser.t io.ReadSeekCloser.
+Admitted.
+
+(* type io.WriteSeeker *)
+Module WriteSeeker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End WriteSeeker.
+
+Global Instance bounded_size_WriteSeeker : BoundedTypeSize io.WriteSeeker.
+Admitted.
+
+Global Instance into_val_WriteSeeker `{ffi_syntax} : IntoVal WriteSeeker.t.
+Admitted.
+
+Global Instance into_val_typed_WriteSeeker `{ffi_syntax} : IntoValTyped WriteSeeker.t io.WriteSeeker.
+Admitted.
+
+(* type io.ReadWriteSeeker *)
+Module ReadWriteSeeker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReadWriteSeeker.
+
+Global Instance bounded_size_ReadWriteSeeker : BoundedTypeSize io.ReadWriteSeeker.
+Admitted.
+
+Global Instance into_val_ReadWriteSeeker `{ffi_syntax} : IntoVal ReadWriteSeeker.t.
+Admitted.
+
+Global Instance into_val_typed_ReadWriteSeeker `{ffi_syntax} : IntoValTyped ReadWriteSeeker.t io.ReadWriteSeeker.
+Admitted.
+
+(* type io.ReaderFrom *)
+Module ReaderFrom.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReaderFrom.
+
+Global Instance bounded_size_ReaderFrom : BoundedTypeSize io.ReaderFrom.
+Admitted.
+
+Global Instance into_val_ReaderFrom `{ffi_syntax} : IntoVal ReaderFrom.t.
+Admitted.
+
+Global Instance into_val_typed_ReaderFrom `{ffi_syntax} : IntoValTyped ReaderFrom.t io.ReaderFrom.
+Admitted.
+
+(* type io.WriterTo *)
+Module WriterTo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End WriterTo.
+
+Global Instance bounded_size_WriterTo : BoundedTypeSize io.WriterTo.
+Admitted.
+
+Global Instance into_val_WriterTo `{ffi_syntax} : IntoVal WriterTo.t.
+Admitted.
+
+Global Instance into_val_typed_WriterTo `{ffi_syntax} : IntoValTyped WriterTo.t io.WriterTo.
+Admitted.
+
+(* type io.ReaderAt *)
+Module ReaderAt.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReaderAt.
+
+Global Instance bounded_size_ReaderAt : BoundedTypeSize io.ReaderAt.
+Admitted.
+
+Global Instance into_val_ReaderAt `{ffi_syntax} : IntoVal ReaderAt.t.
+Admitted.
+
+Global Instance into_val_typed_ReaderAt `{ffi_syntax} : IntoValTyped ReaderAt.t io.ReaderAt.
+Admitted.
+
+(* type io.WriterAt *)
+Module WriterAt.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End WriterAt.
+
+Global Instance bounded_size_WriterAt : BoundedTypeSize io.WriterAt.
+Admitted.
+
+Global Instance into_val_WriterAt `{ffi_syntax} : IntoVal WriterAt.t.
+Admitted.
+
+Global Instance into_val_typed_WriterAt `{ffi_syntax} : IntoValTyped WriterAt.t io.WriterAt.
+Admitted.
+
+(* type io.ByteReader *)
+Module ByteReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ByteReader.
+
+Global Instance bounded_size_ByteReader : BoundedTypeSize io.ByteReader.
+Admitted.
+
+Global Instance into_val_ByteReader `{ffi_syntax} : IntoVal ByteReader.t.
+Admitted.
+
+Global Instance into_val_typed_ByteReader `{ffi_syntax} : IntoValTyped ByteReader.t io.ByteReader.
+Admitted.
+
+(* type io.ByteScanner *)
+Module ByteScanner.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ByteScanner.
+
+Global Instance bounded_size_ByteScanner : BoundedTypeSize io.ByteScanner.
+Admitted.
+
+Global Instance into_val_ByteScanner `{ffi_syntax} : IntoVal ByteScanner.t.
+Admitted.
+
+Global Instance into_val_typed_ByteScanner `{ffi_syntax} : IntoValTyped ByteScanner.t io.ByteScanner.
+Admitted.
+
+(* type io.ByteWriter *)
+Module ByteWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ByteWriter.
+
+Global Instance bounded_size_ByteWriter : BoundedTypeSize io.ByteWriter.
+Admitted.
+
+Global Instance into_val_ByteWriter `{ffi_syntax} : IntoVal ByteWriter.t.
+Admitted.
+
+Global Instance into_val_typed_ByteWriter `{ffi_syntax} : IntoValTyped ByteWriter.t io.ByteWriter.
+Admitted.
+
+(* type io.RuneReader *)
+Module RuneReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End RuneReader.
+
+Global Instance bounded_size_RuneReader : BoundedTypeSize io.RuneReader.
+Admitted.
+
+Global Instance into_val_RuneReader `{ffi_syntax} : IntoVal RuneReader.t.
+Admitted.
+
+Global Instance into_val_typed_RuneReader `{ffi_syntax} : IntoValTyped RuneReader.t io.RuneReader.
+Admitted.
+
+(* type io.RuneScanner *)
+Module RuneScanner.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End RuneScanner.
+
+Global Instance bounded_size_RuneScanner : BoundedTypeSize io.RuneScanner.
+Admitted.
+
+Global Instance into_val_RuneScanner `{ffi_syntax} : IntoVal RuneScanner.t.
+Admitted.
+
+Global Instance into_val_typed_RuneScanner `{ffi_syntax} : IntoValTyped RuneScanner.t io.RuneScanner.
+Admitted.
+
+(* type io.StringWriter *)
+Module StringWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StringWriter.
+
+Global Instance bounded_size_StringWriter : BoundedTypeSize io.StringWriter.
+Admitted.
+
+Global Instance into_val_StringWriter `{ffi_syntax} : IntoVal StringWriter.t.
+Admitted.
+
+Global Instance into_val_typed_StringWriter `{ffi_syntax} : IntoValTyped StringWriter.t io.StringWriter.
+Admitted.
+
+(* type io.LimitedReader *)
+Module LimitedReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LimitedReader.
+
+Global Instance bounded_size_LimitedReader : BoundedTypeSize io.LimitedReader.
+Admitted.
+
+Global Instance into_val_LimitedReader `{ffi_syntax} : IntoVal LimitedReader.t.
+Admitted.
+
+Global Instance into_val_typed_LimitedReader `{ffi_syntax} : IntoValTyped LimitedReader.t io.LimitedReader.
+Admitted.
+
+(* type io.SectionReader *)
+Module SectionReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End SectionReader.
+
+Global Instance bounded_size_SectionReader : BoundedTypeSize io.SectionReader.
+Admitted.
+
+Global Instance into_val_SectionReader `{ffi_syntax} : IntoVal SectionReader.t.
+Admitted.
+
+Global Instance into_val_typed_SectionReader `{ffi_syntax} : IntoValTyped SectionReader.t io.SectionReader.
+Admitted.
+
+(* type io.OffsetWriter *)
+Module OffsetWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End OffsetWriter.
+
+Global Instance bounded_size_OffsetWriter : BoundedTypeSize io.OffsetWriter.
+Admitted.
+
+Global Instance into_val_OffsetWriter `{ffi_syntax} : IntoVal OffsetWriter.t.
+Admitted.
+
+Global Instance into_val_typed_OffsetWriter `{ffi_syntax} : IntoValTyped OffsetWriter.t io.OffsetWriter.
+Admitted.
+
+(* type io.teeReader *)
+Module teeReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End teeReader.
+
+Global Instance bounded_size_teeReader : BoundedTypeSize io.teeReader.
+Admitted.
+
+Global Instance into_val_teeReader `{ffi_syntax} : IntoVal teeReader.t.
+Admitted.
+
+Global Instance into_val_typed_teeReader `{ffi_syntax} : IntoValTyped teeReader.t io.teeReader.
+Admitted.
+
+(* type io.discard *)
+Module discard.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End discard.
+
+Global Instance bounded_size_discard : BoundedTypeSize io.discard.
+Admitted.
+
+Global Instance into_val_discard `{ffi_syntax} : IntoVal discard.t.
+Admitted.
+
+Global Instance into_val_typed_discard `{ffi_syntax} : IntoValTyped discard.t io.discard.
+Admitted.
+
+(* type io.nopCloser *)
+Module nopCloser.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End nopCloser.
+
+Global Instance bounded_size_nopCloser : BoundedTypeSize io.nopCloser.
+Admitted.
+
+Global Instance into_val_nopCloser `{ffi_syntax} : IntoVal nopCloser.t.
+Admitted.
+
+Global Instance into_val_typed_nopCloser `{ffi_syntax} : IntoValTyped nopCloser.t io.nopCloser.
+Admitted.
+
+(* type io.nopCloserWriterTo *)
+Module nopCloserWriterTo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End nopCloserWriterTo.
+
+Global Instance bounded_size_nopCloserWriterTo : BoundedTypeSize io.nopCloserWriterTo.
+Admitted.
+
+Global Instance into_val_nopCloserWriterTo `{ffi_syntax} : IntoVal nopCloserWriterTo.t.
+Admitted.
+
+Global Instance into_val_typed_nopCloserWriterTo `{ffi_syntax} : IntoValTyped nopCloserWriterTo.t io.nopCloserWriterTo.
+Admitted.
+
+(* type io.eofReader *)
+Module eofReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End eofReader.
+
+Global Instance bounded_size_eofReader : BoundedTypeSize io.eofReader.
+Admitted.
+
+Global Instance into_val_eofReader `{ffi_syntax} : IntoVal eofReader.t.
+Admitted.
+
+Global Instance into_val_typed_eofReader `{ffi_syntax} : IntoValTyped eofReader.t io.eofReader.
+Admitted.
+
+(* type io.multiReader *)
+Module multiReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End multiReader.
+
+Global Instance bounded_size_multiReader : BoundedTypeSize io.multiReader.
+Admitted.
+
+Global Instance into_val_multiReader `{ffi_syntax} : IntoVal multiReader.t.
+Admitted.
+
+Global Instance into_val_typed_multiReader `{ffi_syntax} : IntoValTyped multiReader.t io.multiReader.
+Admitted.
+
+(* type io.multiWriter *)
+Module multiWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End multiWriter.
+
+Global Instance bounded_size_multiWriter : BoundedTypeSize io.multiWriter.
+Admitted.
+
+Global Instance into_val_multiWriter `{ffi_syntax} : IntoVal multiWriter.t.
+Admitted.
+
+Global Instance into_val_typed_multiWriter `{ffi_syntax} : IntoValTyped multiWriter.t io.multiWriter.
+Admitted.
+
+(* type io.onceError *)
+Module onceError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End onceError.
+
+Global Instance bounded_size_onceError : BoundedTypeSize io.onceError.
+Admitted.
+
+Global Instance into_val_onceError `{ffi_syntax} : IntoVal onceError.t.
+Admitted.
+
+Global Instance into_val_typed_onceError `{ffi_syntax} : IntoValTyped onceError.t io.onceError.
+Admitted.
+
+(* type io.pipe *)
+Module pipe.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End pipe.
+
+Global Instance bounded_size_pipe : BoundedTypeSize io.pipe.
+Admitted.
+
+Global Instance into_val_pipe `{ffi_syntax} : IntoVal pipe.t.
+Admitted.
+
+Global Instance into_val_typed_pipe `{ffi_syntax} : IntoValTyped pipe.t io.pipe.
+Admitted.
+
+(* type io.PipeReader *)
+Module PipeReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PipeReader.
+
+Global Instance bounded_size_PipeReader : BoundedTypeSize io.PipeReader.
+Admitted.
+
+Global Instance into_val_PipeReader `{ffi_syntax} : IntoVal PipeReader.t.
+Admitted.
+
+Global Instance into_val_typed_PipeReader `{ffi_syntax} : IntoValTyped PipeReader.t io.PipeReader.
+Admitted.
+
+(* type io.PipeWriter *)
+Module PipeWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PipeWriter.
+
+Global Instance bounded_size_PipeWriter : BoundedTypeSize io.PipeWriter.
+Admitted.
+
+Global Instance into_val_PipeWriter `{ffi_syntax} : IntoVal PipeWriter.t.
+Admitted.
+
+Global Instance into_val_typed_PipeWriter `{ffi_syntax} : IntoValTyped PipeWriter.t io.PipeWriter.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -45,6 +623,294 @@ Global Program Instance is_pkg_defined_io : IsPkgDefined io :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_WriteString :
+  WpFuncCall io.WriteString _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadAtLeast :
+  WpFuncCall io.ReadAtLeast _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadFull :
+  WpFuncCall io.ReadFull _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CopyN :
+  WpFuncCall io.CopyN _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Copy :
+  WpFuncCall io.Copy _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CopyBuffer :
+  WpFuncCall io.CopyBuffer _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_copyBuffer :
+  WpFuncCall io.copyBuffer _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LimitReader :
+  WpFuncCall io.LimitReader _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewSectionReader :
+  WpFuncCall io.NewSectionReader _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewOffsetWriter :
+  WpFuncCall io.NewOffsetWriter _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TeeReader :
+  WpFuncCall io.TeeReader _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NopCloser :
+  WpFuncCall io.NopCloser _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadAll :
+  WpFuncCall io.ReadAll _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MultiReader :
+  WpFuncCall io.MultiReader _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MultiWriter :
+  WpFuncCall io.MultiWriter _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Pipe :
+  WpFuncCall io.Pipe _ (is_pkg_defined io) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_LimitedReader'ptr_Read :
+  WpMethodCall (ptrT.id io.LimitedReader.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SectionReader'ptr_Outer :
+  WpMethodCall (ptrT.id io.SectionReader.id) "Outer" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SectionReader'ptr_Read :
+  WpMethodCall (ptrT.id io.SectionReader.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SectionReader'ptr_ReadAt :
+  WpMethodCall (ptrT.id io.SectionReader.id) "ReadAt" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SectionReader'ptr_Seek :
+  WpMethodCall (ptrT.id io.SectionReader.id) "Seek" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SectionReader'ptr_Size :
+  WpMethodCall (ptrT.id io.SectionReader.id) "Size" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OffsetWriter'ptr_Seek :
+  WpMethodCall (ptrT.id io.OffsetWriter.id) "Seek" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OffsetWriter'ptr_Write :
+  WpMethodCall (ptrT.id io.OffsetWriter.id) "Write" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OffsetWriter'ptr_WriteAt :
+  WpMethodCall (ptrT.id io.OffsetWriter.id) "WriteAt" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_teeReader'ptr_Read :
+  WpMethodCall (ptrT.id io.teeReader.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard_ReadFrom :
+  WpMethodCall io.discard.id "ReadFrom" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard_Write :
+  WpMethodCall io.discard.id "Write" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard_WriteString :
+  WpMethodCall io.discard.id "WriteString" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard'ptr_ReadFrom :
+  WpMethodCall (ptrT.id io.discard.id) "ReadFrom" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard'ptr_Write :
+  WpMethodCall (ptrT.id io.discard.id) "Write" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard'ptr_WriteString :
+  WpMethodCall (ptrT.id io.discard.id) "WriteString" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloser_Close :
+  WpMethodCall io.nopCloser.id "Close" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloser_Read :
+  WpMethodCall io.nopCloser.id "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloser'ptr_Close :
+  WpMethodCall (ptrT.id io.nopCloser.id) "Close" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloser'ptr_Read :
+  WpMethodCall (ptrT.id io.nopCloser.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserWriterTo_Close :
+  WpMethodCall io.nopCloserWriterTo.id "Close" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserWriterTo_Read :
+  WpMethodCall io.nopCloserWriterTo.id "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserWriterTo_WriteTo :
+  WpMethodCall io.nopCloserWriterTo.id "WriteTo" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserWriterTo'ptr_Close :
+  WpMethodCall (ptrT.id io.nopCloserWriterTo.id) "Close" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserWriterTo'ptr_Read :
+  WpMethodCall (ptrT.id io.nopCloserWriterTo.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserWriterTo'ptr_WriteTo :
+  WpMethodCall (ptrT.id io.nopCloserWriterTo.id) "WriteTo" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_eofReader_Read :
+  WpMethodCall io.eofReader.id "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_eofReader'ptr_Read :
+  WpMethodCall (ptrT.id io.eofReader.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiReader'ptr_Read :
+  WpMethodCall (ptrT.id io.multiReader.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiReader'ptr_WriteTo :
+  WpMethodCall (ptrT.id io.multiReader.id) "WriteTo" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiReader'ptr_writeToWithBuffer :
+  WpMethodCall (ptrT.id io.multiReader.id) "writeToWithBuffer" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiWriter'ptr_Write :
+  WpMethodCall (ptrT.id io.multiWriter.id) "Write" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiWriter'ptr_WriteString :
+  WpMethodCall (ptrT.id io.multiWriter.id) "WriteString" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_onceError'ptr_Load :
+  WpMethodCall (ptrT.id io.onceError.id) "Load" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_onceError'ptr_Lock :
+  WpMethodCall (ptrT.id io.onceError.id) "Lock" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_onceError'ptr_Store :
+  WpMethodCall (ptrT.id io.onceError.id) "Store" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_onceError'ptr_TryLock :
+  WpMethodCall (ptrT.id io.onceError.id) "TryLock" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_onceError'ptr_Unlock :
+  WpMethodCall (ptrT.id io.onceError.id) "Unlock" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pipe'ptr_closeRead :
+  WpMethodCall (ptrT.id io.pipe.id) "closeRead" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pipe'ptr_closeWrite :
+  WpMethodCall (ptrT.id io.pipe.id) "closeWrite" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pipe'ptr_read :
+  WpMethodCall (ptrT.id io.pipe.id) "read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pipe'ptr_readCloseError :
+  WpMethodCall (ptrT.id io.pipe.id) "readCloseError" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pipe'ptr_write :
+  WpMethodCall (ptrT.id io.pipe.id) "write" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pipe'ptr_writeCloseError :
+  WpMethodCall (ptrT.id io.pipe.id) "writeCloseError" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_Close :
+  WpMethodCall (ptrT.id io.PipeReader.id) "Close" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_CloseWithError :
+  WpMethodCall (ptrT.id io.PipeReader.id) "CloseWithError" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_Read :
+  WpMethodCall (ptrT.id io.PipeReader.id) "Read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_closeRead :
+  WpMethodCall (ptrT.id io.PipeReader.id) "closeRead" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_closeWrite :
+  WpMethodCall (ptrT.id io.PipeReader.id) "closeWrite" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_read :
+  WpMethodCall (ptrT.id io.PipeReader.id) "read" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_readCloseError :
+  WpMethodCall (ptrT.id io.PipeReader.id) "readCloseError" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_write :
+  WpMethodCall (ptrT.id io.PipeReader.id) "write" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeReader'ptr_writeCloseError :
+  WpMethodCall (ptrT.id io.PipeReader.id) "writeCloseError" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeWriter'ptr_Close :
+  WpMethodCall (ptrT.id io.PipeWriter.id) "Close" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeWriter'ptr_CloseWithError :
+  WpMethodCall (ptrT.id io.PipeWriter.id) "CloseWithError" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PipeWriter'ptr_Write :
+  WpMethodCall (ptrT.id io.PipeWriter.id) "Write" _ (is_pkg_defined io) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End io.

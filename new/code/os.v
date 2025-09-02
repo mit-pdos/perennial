@@ -5,59 +5,156 @@ Definition os : go_string := "os".
 
 Module os.
 
+Module readdirMode. Definition id : go_string := "os.readdirMode"%go. End readdirMode.
+Module DirEntry. Axiom id : go_string. End DirEntry.
+Module dirInfo. Definition id : go_string := "os.dirInfo"%go. End dirInfo.
+Module timeout. Definition id : go_string := "os.timeout"%go. End timeout.
+Module PathError. Axiom id : go_string. End PathError.
+Module SyscallError. Definition id : go_string := "os.SyscallError"%go. End SyscallError.
+Module syscallErrorType. Axiom id : go_string. End syscallErrorType.
+Module processMode. Definition id : go_string := "os.processMode"%go. End processMode.
+Module processStatus. Definition id : go_string := "os.processStatus"%go. End processStatus.
+Module Process. Definition id : go_string := "os.Process"%go. End Process.
+Module ProcAttr. Definition id : go_string := "os.ProcAttr"%go. End ProcAttr.
+Module Signal. Definition id : go_string := "os.Signal"%go. End Signal.
+Module ProcessState. Definition id : go_string := "os.ProcessState"%go. End ProcessState.
+Module LinkError. Definition id : go_string := "os.LinkError"%go. End LinkError.
+Module noReadFrom. Definition id : go_string := "os.noReadFrom"%go. End noReadFrom.
+Module fileWithoutReadFrom. Definition id : go_string := "os.fileWithoutReadFrom"%go. End fileWithoutReadFrom.
+Module noWriteTo. Definition id : go_string := "os.noWriteTo"%go. End noWriteTo.
+Module fileWithoutWriteTo. Definition id : go_string := "os.fileWithoutWriteTo"%go. End fileWithoutWriteTo.
+Module dirFS. Definition id : go_string := "os.dirFS"%go. End dirFS.
+Module file. Definition id : go_string := "os.file"%go. End file.
+Module newFileKind. Definition id : go_string := "os.newFileKind"%go. End newFileKind.
+Module unixDirent. Definition id : go_string := "os.unixDirent"%go. End unixDirent.
+Module rawConn. Definition id : go_string := "os.rawConn"%go. End rawConn.
+Module Root. Definition id : go_string := "os.Root"%go. End Root.
+Module rootFS. Definition id : go_string := "os.rootFS"%go. End rootFS.
+Module root. Definition id : go_string := "os.root"%go. End root.
+Module errSymlink. Definition id : go_string := "os.errSymlink"%go. End errSymlink.
+Module sysfdType. Axiom id : go_string. End sysfdType.
 Module File. Definition id : go_string := "os.File"%go. End File.
+Module FileInfo. Axiom id : go_string. End FileInfo.
+Module FileMode. Axiom id : go_string. End FileMode.
+Module fileStat. Definition id : go_string := "os.fileStat"%go. End fileStat.
 
 Section code.
 Context `{ffi_syntax}.
 
 
+Axiom readdirMode : go_type.
+
+Axiom readdirName : expr.
+
+Axiom readdirDirEntry : expr.
+
+Axiom readdirFileInfo : expr.
+
+Axiom File__Readdirⁱᵐᵖˡ : val.
+
+Axiom File__Readdirnamesⁱᵐᵖˡ : val.
+
+Axiom DirEntry : go_type.
+
+Axiom File__ReadDirⁱᵐᵖˡ : val.
+
 Definition testingForceReadDirLstat : go_string := "os.testingForceReadDirLstat"%go.
 
 Definition ReadDir : go_string := "os.ReadDir"%go.
 
+Axiom ReadDirⁱᵐᵖˡ : val.
+
 Definition CopyFS : go_string := "os.CopyFS"%go.
+
+Axiom CopyFSⁱᵐᵖˡ : val.
+
+Axiom dirInfo : go_type.
+
+Axiom blockSize : Z.
 
 Definition dirBufPool : go_string := "os.dirBufPool"%go.
 
 Axiom dirBufPool'init : val.
 
+Axiom dirInfo__closeⁱᵐᵖˡ : val.
+
+Axiom File__readdirⁱᵐᵖˡ : val.
+
 Definition readInt : go_string := "os.readInt"%go.
+
+Axiom readIntⁱᵐᵖˡ : val.
 
 Definition readIntBE : go_string := "os.readIntBE"%go.
 
+Axiom readIntBEⁱᵐᵖˡ : val.
+
 Definition readIntLE : go_string := "os.readIntLE"%go.
+
+Axiom readIntLEⁱᵐᵖˡ : val.
 
 Definition direntIno : go_string := "os.direntIno"%go.
 
+Axiom direntInoⁱᵐᵖˡ : val.
+
 Definition direntReclen : go_string := "os.direntReclen"%go.
+
+Axiom direntReclenⁱᵐᵖˡ : val.
 
 Definition direntNamlen : go_string := "os.direntNamlen"%go.
 
+Axiom direntNamlenⁱᵐᵖˡ : val.
+
 Definition direntType : go_string := "os.direntType"%go.
+
+Axiom direntTypeⁱᵐᵖˡ : val.
 
 Definition isNoFollowErr : go_string := "os.isNoFollowErr"%go.
 
+Axiom isNoFollowErrⁱᵐᵖˡ : val.
+
 Definition Expand : go_string := "os.Expand"%go.
+
+Axiom Expandⁱᵐᵖˡ : val.
 
 Definition ExpandEnv : go_string := "os.ExpandEnv"%go.
 
+Axiom ExpandEnvⁱᵐᵖˡ : val.
+
 Definition isShellSpecialVar : go_string := "os.isShellSpecialVar"%go.
+
+Axiom isShellSpecialVarⁱᵐᵖˡ : val.
 
 Definition isAlphaNum : go_string := "os.isAlphaNum"%go.
 
+Axiom isAlphaNumⁱᵐᵖˡ : val.
+
 Definition getShellName : go_string := "os.getShellName"%go.
+
+Axiom getShellNameⁱᵐᵖˡ : val.
 
 Definition Getenv : go_string := "os.Getenv"%go.
 
+Axiom Getenvⁱᵐᵖˡ : val.
+
 Definition LookupEnv : go_string := "os.LookupEnv"%go.
+
+Axiom LookupEnvⁱᵐᵖˡ : val.
 
 Definition Setenv : go_string := "os.Setenv"%go.
 
+Axiom Setenvⁱᵐᵖˡ : val.
+
 Definition Unsetenv : go_string := "os.Unsetenv"%go.
+
+Axiom Unsetenvⁱᵐᵖˡ : val.
 
 Definition Clearenv : go_string := "os.Clearenv"%go.
 
+Axiom Clearenvⁱᵐᵖˡ : val.
+
 Definition Environ : go_string := "os.Environ"%go.
+
+Axiom Environⁱᵐᵖˡ : val.
 
 Definition ErrInvalid : go_string := "os.ErrInvalid"%go.
 
@@ -89,39 +186,145 @@ Axiom ErrDeadlineExceeded'init : val.
 
 Definition errNoDeadline : go_string := "os.errNoDeadline"%go.
 
+Axiom errNoDeadlineⁱᵐᵖˡ : val.
+
 Definition errDeadlineExceeded : go_string := "os.errDeadlineExceeded"%go.
+
+Axiom errDeadlineExceededⁱᵐᵖˡ : val.
+
+Axiom timeout : go_type.
+
+Axiom PathError : go_type.
+
+Axiom SyscallError : go_type.
+
+Axiom SyscallError__Errorⁱᵐᵖˡ : val.
+
+Axiom SyscallError__Unwrapⁱᵐᵖˡ : val.
+
+Axiom SyscallError__Timeoutⁱᵐᵖˡ : val.
 
 Definition NewSyscallError : go_string := "os.NewSyscallError"%go.
 
+Axiom NewSyscallErrorⁱᵐᵖˡ : val.
+
 Definition IsExist : go_string := "os.IsExist"%go.
+
+Axiom IsExistⁱᵐᵖˡ : val.
 
 Definition IsNotExist : go_string := "os.IsNotExist"%go.
 
+Axiom IsNotExistⁱᵐᵖˡ : val.
+
 Definition IsPermission : go_string := "os.IsPermission"%go.
+
+Axiom IsPermissionⁱᵐᵖˡ : val.
 
 Definition IsTimeout : go_string := "os.IsTimeout"%go.
 
+Axiom IsTimeoutⁱᵐᵖˡ : val.
+
 Definition underlyingErrorIs : go_string := "os.underlyingErrorIs"%go.
 
+Axiom underlyingErrorIsⁱᵐᵖˡ : val.
+
 Definition underlyingError : go_string := "os.underlyingError"%go.
+
+Axiom underlyingErrorⁱᵐᵖˡ : val.
+
+Axiom syscallErrorType : go_type.
+
+Axiom errENOSYS : expr.
+
+Axiom errERANGE : expr.
+
+Axiom errENOMEM : expr.
 
 Definition ErrProcessDone : go_string := "os.ErrProcessDone"%go.
 
 Axiom ErrProcessDone'init : val.
 
+Axiom processMode : go_type.
+
+Axiom modePID : expr.
+
+Axiom modeHandle : expr.
+
+Axiom processStatus : go_type.
+
+Axiom statusOK : expr.
+
+Axiom statusDone : expr.
+
+Axiom statusReleased : expr.
+
+Axiom processStatusMask : Z.
+
+Axiom Process : go_type.
+
 Definition newPIDProcess : go_string := "os.newPIDProcess"%go.
+
+Axiom newPIDProcessⁱᵐᵖˡ : val.
 
 Definition newHandleProcess : go_string := "os.newHandleProcess"%go.
 
+Axiom newHandleProcessⁱᵐᵖˡ : val.
+
 Definition newDoneProcess : go_string := "os.newDoneProcess"%go.
+
+Axiom newDoneProcessⁱᵐᵖˡ : val.
+
+Axiom Process__handleTransientAcquireⁱᵐᵖˡ : val.
+
+Axiom Process__handleTransientReleaseⁱᵐᵖˡ : val.
+
+Axiom Process__handlePersistentReleaseⁱᵐᵖˡ : val.
+
+Axiom Process__pidStatusⁱᵐᵖˡ : val.
+
+Axiom Process__pidDeactivateⁱᵐᵖˡ : val.
+
+Axiom ProcAttr : go_type.
+
+Axiom Signal : go_type.
 
 Definition Getpid : go_string := "os.Getpid"%go.
 
+Axiom Getpidⁱᵐᵖˡ : val.
+
 Definition Getppid : go_string := "os.Getppid"%go.
+
+Axiom Getppidⁱᵐᵖˡ : val.
 
 Definition FindProcess : go_string := "os.FindProcess"%go.
 
+Axiom FindProcessⁱᵐᵖˡ : val.
+
 Definition StartProcess : go_string := "os.StartProcess"%go.
+
+Axiom StartProcessⁱᵐᵖˡ : val.
+
+Axiom Process__Releaseⁱᵐᵖˡ : val.
+
+Axiom Process__Killⁱᵐᵖˡ : val.
+
+Axiom Process__Waitⁱᵐᵖˡ : val.
+
+Axiom Process__Signalⁱᵐᵖˡ : val.
+
+Axiom ProcessState__UserTimeⁱᵐᵖˡ : val.
+
+Axiom ProcessState__SystemTimeⁱᵐᵖˡ : val.
+
+Axiom ProcessState__Exitedⁱᵐᵖˡ : val.
+
+Axiom ProcessState__Successⁱᵐᵖˡ : val.
+
+Axiom ProcessState__Sysⁱᵐᵖˡ : val.
+
+Axiom ProcessState__SysUsageⁱᵐᵖˡ : val.
+
+Axiom Process__closeHandleⁱᵐᵖˡ : val.
 
 Definition Interrupt : go_string := "os.Interrupt"%go.
 
@@ -133,13 +336,61 @@ Axiom Kill'init : val.
 
 Definition startProcess : go_string := "os.startProcess"%go.
 
+Axiom startProcessⁱᵐᵖˡ : val.
+
+Axiom Process__killⁱᵐᵖˡ : val.
+
+Axiom ProcessState : go_type.
+
+Axiom ProcessState__Pidⁱᵐᵖˡ : val.
+
+Axiom ProcessState__exitedⁱᵐᵖˡ : val.
+
+Axiom ProcessState__successⁱᵐᵖˡ : val.
+
+Axiom ProcessState__sysⁱᵐᵖˡ : val.
+
+Axiom ProcessState__sysUsageⁱᵐᵖˡ : val.
+
+Axiom ProcessState__Stringⁱᵐᵖˡ : val.
+
+Axiom ProcessState__ExitCodeⁱᵐᵖˡ : val.
+
+Axiom pidUnset : Z.
+
+Axiom pidReleased : Z.
+
+Axiom Process__waitⁱᵐᵖˡ : val.
+
+Axiom Process__pidWaitⁱᵐᵖˡ : val.
+
+Axiom Process__signalⁱᵐᵖˡ : val.
+
+Axiom Process__pidSignalⁱᵐᵖˡ : val.
+
 Definition convertESRCH : go_string := "os.convertESRCH"%go.
+
+Axiom convertESRCHⁱᵐᵖˡ : val.
+
+Axiom Process__releaseⁱᵐᵖˡ : val.
 
 Definition findProcess : go_string := "os.findProcess"%go.
 
+Axiom findProcessⁱᵐᵖˡ : val.
+
+Axiom ProcessState__userTimeⁱᵐᵖˡ : val.
+
+Axiom ProcessState__systemTimeⁱᵐᵖˡ : val.
+
 Definition Executable : go_string := "os.Executable"%go.
 
+Axiom Executableⁱᵐᵖˡ : val.
+
 Definition executable : go_string := "os.executable"%go.
+
+Axiom executableⁱᵐᵖˡ : val.
+
+Axiom File__Nameⁱᵐᵖˡ : val.
 
 Definition Stdin : go_string := "os.Stdin"%go.
 
@@ -153,25 +404,97 @@ Definition Stderr : go_string := "os.Stderr"%go.
 
 Axiom Stderr'init : val.
 
+Axiom O_RDONLY : expr.
+
+Axiom O_WRONLY : expr.
+
+Axiom O_RDWR : expr.
+
+Axiom O_APPEND : expr.
+
+Axiom O_CREATE : expr.
+
+Axiom O_EXCL : expr.
+
+Axiom O_SYNC : expr.
+
+Axiom O_TRUNC : expr.
+
+Axiom SEEK_SET : expr.
+
+Axiom SEEK_CUR : expr.
+
+Axiom SEEK_END : expr.
+
+Axiom LinkError : go_type.
+
+Axiom LinkError__Errorⁱᵐᵖˡ : val.
+
+Axiom LinkError__Unwrapⁱᵐᵖˡ : val.
+
+Axiom File__Readⁱᵐᵖˡ : val.
+
+Axiom File__ReadAtⁱᵐᵖˡ : val.
+
+Axiom File__ReadFromⁱᵐᵖˡ : val.
+
+Axiom noReadFrom : go_type.
+
+Axiom noReadFrom__ReadFromⁱᵐᵖˡ : val.
+
+Axiom fileWithoutReadFrom : go_type.
+
 Definition genericReadFrom : go_string := "os.genericReadFrom"%go.
+
+Axiom genericReadFromⁱᵐᵖˡ : val.
+
+Axiom File__Writeⁱᵐᵖˡ : val.
 
 Definition errWriteAtInAppendMode : go_string := "os.errWriteAtInAppendMode"%go.
 
 Axiom errWriteAtInAppendMode'init : val.
 
+Axiom File__WriteAtⁱᵐᵖˡ : val.
+
+Axiom File__WriteToⁱᵐᵖˡ : val.
+
+Axiom noWriteTo : go_type.
+
+Axiom noWriteTo__WriteToⁱᵐᵖˡ : val.
+
+Axiom fileWithoutWriteTo : go_type.
+
 Definition genericWriteTo : go_string := "os.genericWriteTo"%go.
+
+Axiom genericWriteToⁱᵐᵖˡ : val.
+
+Axiom File__Seekⁱᵐᵖˡ : val.
+
+Axiom File__WriteStringⁱᵐᵖˡ : val.
 
 Definition Mkdir : go_string := "os.Mkdir"%go.
 
+Axiom Mkdirⁱᵐᵖˡ : val.
+
 Definition setStickyBit : go_string := "os.setStickyBit"%go.
+
+Axiom setStickyBitⁱᵐᵖˡ : val.
 
 Definition Chdir : go_string := "os.Chdir"%go.
 
+Axiom Chdirⁱᵐᵖˡ : val.
+
 Definition Open : go_string := "os.Open"%go.
+
+Axiom Openⁱᵐᵖˡ : val.
 
 Definition Create : go_string := "os.Create"%go.
 
+Axiom Createⁱᵐᵖˡ : val.
+
 Definition OpenFile : go_string := "os.OpenFile"%go.
+
+Axiom OpenFileⁱᵐᵖˡ : val.
 
 Definition errPathEscapes : go_string := "os.errPathEscapes"%go.
 
@@ -179,107 +502,297 @@ Axiom errPathEscapes'init : val.
 
 Definition openDir : go_string := "os.openDir"%go.
 
+Axiom openDirⁱᵐᵖˡ : val.
+
 Definition lstat : go_string := "os.lstat"%go.
 
 Axiom lstat'init : val.
 
 Definition Rename : go_string := "os.Rename"%go.
 
+Axiom Renameⁱᵐᵖˡ : val.
+
 Definition Readlink : go_string := "os.Readlink"%go.
 
+Axiom Readlinkⁱᵐᵖˡ : val.
+
 Definition fixCount : go_string := "os.fixCount"%go.
+
+Axiom fixCountⁱᵐᵖˡ : val.
 
 Definition checkWrapErr : go_string := "os.checkWrapErr"%go.
 
 Axiom checkWrapErr'init : val.
 
+Axiom File__wrapErrⁱᵐᵖˡ : val.
+
 Definition TempDir : go_string := "os.TempDir"%go.
+
+Axiom TempDirⁱᵐᵖˡ : val.
 
 Definition UserCacheDir : go_string := "os.UserCacheDir"%go.
 
+Axiom UserCacheDirⁱᵐᵖˡ : val.
+
 Definition UserConfigDir : go_string := "os.UserConfigDir"%go.
+
+Axiom UserConfigDirⁱᵐᵖˡ : val.
 
 Definition UserHomeDir : go_string := "os.UserHomeDir"%go.
 
+Axiom UserHomeDirⁱᵐᵖˡ : val.
+
 Definition Chmod : go_string := "os.Chmod"%go.
+
+Axiom Chmodⁱᵐᵖˡ : val.
+
+Axiom File__Chmodⁱᵐᵖˡ : val.
+
+Axiom File__SetDeadlineⁱᵐᵖˡ : val.
+
+Axiom File__SetReadDeadlineⁱᵐᵖˡ : val.
+
+Axiom File__SetWriteDeadlineⁱᵐᵖˡ : val.
+
+Axiom File__SyscallConnⁱᵐᵖˡ : val.
 
 Definition DirFS : go_string := "os.DirFS"%go.
 
+Axiom DirFSⁱᵐᵖˡ : val.
+
+Axiom dirFS : go_type.
+
+Axiom dirFS__Openⁱᵐᵖˡ : val.
+
+Axiom dirFS__ReadFileⁱᵐᵖˡ : val.
+
+Axiom dirFS__ReadDirⁱᵐᵖˡ : val.
+
+Axiom dirFS__Statⁱᵐᵖˡ : val.
+
+Axiom dirFS__joinⁱᵐᵖˡ : val.
+
 Definition ReadFile : go_string := "os.ReadFile"%go.
+
+Axiom ReadFileⁱᵐᵖˡ : val.
 
 Definition readFileContents : go_string := "os.readFileContents"%go.
 
+Axiom readFileContentsⁱᵐᵖˡ : val.
+
 Definition WriteFile : go_string := "os.WriteFile"%go.
+
+Axiom WriteFileⁱᵐᵖˡ : val.
 
 Definition open : go_string := "os.open"%go.
 
+Axiom openⁱᵐᵖˡ : val.
+
+Axiom File__Closeⁱᵐᵖˡ : val.
+
+Axiom File__readⁱᵐᵖˡ : val.
+
+Axiom File__preadⁱᵐᵖˡ : val.
+
+Axiom File__writeⁱᵐᵖˡ : val.
+
+Axiom File__pwriteⁱᵐᵖˡ : val.
+
 Definition syscallMode : go_string := "os.syscallMode"%go.
+
+Axiom syscallModeⁱᵐᵖˡ : val.
 
 Definition chmod : go_string := "os.chmod"%go.
 
+Axiom chmodⁱᵐᵖˡ : val.
+
+Axiom File__chmodⁱᵐᵖˡ : val.
+
 Definition Chown : go_string := "os.Chown"%go.
+
+Axiom Chownⁱᵐᵖˡ : val.
 
 Definition Lchown : go_string := "os.Lchown"%go.
 
+Axiom Lchownⁱᵐᵖˡ : val.
+
+Axiom File__Chownⁱᵐᵖˡ : val.
+
+Axiom File__Truncateⁱᵐᵖˡ : val.
+
+Axiom File__Syncⁱᵐᵖˡ : val.
+
 Definition Chtimes : go_string := "os.Chtimes"%go.
+
+Axiom Chtimesⁱᵐᵖˡ : val.
+
+Axiom File__Chdirⁱᵐᵖˡ : val.
+
+Axiom File__setDeadlineⁱᵐᵖˡ : val.
+
+Axiom File__setReadDeadlineⁱᵐᵖˡ : val.
+
+Axiom File__setWriteDeadlineⁱᵐᵖˡ : val.
+
+Axiom File__checkValidⁱᵐᵖˡ : val.
 
 Definition ignoringEINTR : go_string := "os.ignoringEINTR"%go.
 
+Axiom ignoringEINTRⁱᵐᵖˡ : val.
+
 Definition ignoringEINTR2 : go_string := "os.ignoringEINTR2"%go.
+
+Axiom ignoringEINTR2ⁱᵐᵖˡ : val.
+
+Axiom _UTIME_OMIT : Z.
 
 Definition fixLongPath : go_string := "os.fixLongPath"%go.
 
+Axiom fixLongPathⁱᵐᵖˡ : val.
+
 Definition rename : go_string := "os.rename"%go.
+
+Axiom renameⁱᵐᵖˡ : val.
+
+Axiom file : go_type.
+
+Axiom File__Fdⁱᵐᵖˡ : val.
 
 Definition NewFile : go_string := "os.NewFile"%go.
 
+Axiom NewFileⁱᵐᵖˡ : val.
+
 Definition net_newUnixFile : go_string := "os.net_newUnixFile"%go.
+
+Axiom net_newUnixFileⁱᵐᵖˡ : val.
+
+Axiom newFileKind : go_type.
+
+Axiom kindNewFile : expr.
+
+Axiom kindOpenFile : expr.
+
+Axiom kindPipe : expr.
+
+Axiom kindSock : expr.
+
+Axiom kindNoPoll : expr.
 
 Definition newFile : go_string := "os.newFile"%go.
 
+Axiom newFileⁱᵐᵖˡ : val.
+
 Definition sigpipe : go_string := "os.sigpipe"%go.
+
+Axiom sigpipeⁱᵐᵖˡ : val.
 
 Definition epipecheck : go_string := "os.epipecheck"%go.
 
+Axiom epipecheckⁱᵐᵖˡ : val.
+
+Axiom DevNull : go_string.
+
 Definition openFileNolog : go_string := "os.openFileNolog"%go.
+
+Axiom openFileNologⁱᵐᵖˡ : val.
 
 Definition openDirNolog : go_string := "os.openDirNolog"%go.
 
+Axiom openDirNologⁱᵐᵖˡ : val.
+
+Axiom file__closeⁱᵐᵖˡ : val.
+
+Axiom File__seekⁱᵐᵖˡ : val.
+
 Definition Truncate : go_string := "os.Truncate"%go.
+
+Axiom Truncateⁱᵐᵖˡ : val.
 
 Definition Remove : go_string := "os.Remove"%go.
 
+Axiom Removeⁱᵐᵖˡ : val.
+
 Definition tempDir : go_string := "os.tempDir"%go.
+
+Axiom tempDirⁱᵐᵖˡ : val.
 
 Definition Link : go_string := "os.Link"%go.
 
+Axiom Linkⁱᵐᵖˡ : val.
+
 Definition Symlink : go_string := "os.Symlink"%go.
+
+Axiom Symlinkⁱᵐᵖˡ : val.
 
 Definition readlink : go_string := "os.readlink"%go.
 
+Axiom readlinkⁱᵐᵖˡ : val.
+
+Axiom unixDirent : go_type.
+
+Axiom unixDirent__Nameⁱᵐᵖˡ : val.
+
+Axiom unixDirent__IsDirⁱᵐᵖˡ : val.
+
+Axiom unixDirent__Typeⁱᵐᵖˡ : val.
+
+Axiom unixDirent__Infoⁱᵐᵖˡ : val.
+
+Axiom unixDirent__Stringⁱᵐᵖˡ : val.
+
 Definition newUnixDirent : go_string := "os.newUnixDirent"%go.
+
+Axiom newUnixDirentⁱᵐᵖˡ : val.
 
 Definition getwdCache : go_string := "os.getwdCache"%go.
 
 Definition Getwd : go_string := "os.Getwd"%go.
 
+Axiom Getwdⁱᵐᵖˡ : val.
+
 Definition MkdirAll : go_string := "os.MkdirAll"%go.
+
+Axiom MkdirAllⁱᵐᵖˡ : val.
 
 Definition RemoveAll : go_string := "os.RemoveAll"%go.
 
+Axiom RemoveAllⁱᵐᵖˡ : val.
+
 Definition endsWithDot : go_string := "os.endsWithDot"%go.
+
+Axiom endsWithDotⁱᵐᵖˡ : val.
+
+Axiom PathSeparator : expr.
+
+Axiom PathListSeparator : expr.
 
 Definition IsPathSeparator : go_string := "os.IsPathSeparator"%go.
 
+Axiom IsPathSeparatorⁱᵐᵖˡ : val.
+
 Definition splitPath : go_string := "os.splitPath"%go.
+
+Axiom splitPathⁱᵐᵖˡ : val.
 
 Definition ensurePidfd : go_string := "os.ensurePidfd"%go.
 
+Axiom ensurePidfdⁱᵐᵖˡ : val.
+
 Definition getPidfd : go_string := "os.getPidfd"%go.
+
+Axiom getPidfdⁱᵐᵖˡ : val.
 
 Definition pidfdFind : go_string := "os.pidfdFind"%go.
 
+Axiom pidfdFindⁱᵐᵖˡ : val.
+
+Axiom Process__pidfdWaitⁱᵐᵖˡ : val.
+
+Axiom Process__pidfdSendSignalⁱᵐᵖˡ : val.
+
 Definition pidfdWorks : go_string := "os.pidfdWorks"%go.
+
+Axiom pidfdWorksⁱᵐᵖˡ : val.
 
 Definition checkPidfdOnce : go_string := "os.checkPidfdOnce"%go.
 
@@ -287,99 +800,263 @@ Axiom checkPidfdOnce'init : val.
 
 Definition checkPidfd : go_string := "os.checkPidfd"%go.
 
+Axiom checkPidfdⁱᵐᵖˡ : val.
+
 Definition checkClonePidfd : go_string := "os.checkClonePidfd"%go.
+
+Axiom checkClonePidfdⁱᵐᵖˡ : val.
 
 Definition ignoreSIGSYS : go_string := "os.ignoreSIGSYS"%go.
 
+Axiom ignoreSIGSYSⁱᵐᵖˡ : val.
+
 Definition restoreSIGSYS : go_string := "os.restoreSIGSYS"%go.
 
+Axiom restoreSIGSYSⁱᵐᵖˡ : val.
+
 Definition Pipe : go_string := "os.Pipe"%go.
+
+Axiom Pipeⁱᵐᵖˡ : val.
 
 Definition Args : go_string := "os.Args"%go.
 
 Definition init : go_string := "os.init"%go.
 
+Axiom initⁱᵐᵖˡ : val.
+
 Definition runtime_args : go_string := "os.runtime_args"%go.
+
+Axiom runtime_argsⁱᵐᵖˡ : val.
 
 Definition Getuid : go_string := "os.Getuid"%go.
 
+Axiom Getuidⁱᵐᵖˡ : val.
+
 Definition Geteuid : go_string := "os.Geteuid"%go.
+
+Axiom Geteuidⁱᵐᵖˡ : val.
 
 Definition Getgid : go_string := "os.Getgid"%go.
 
+Axiom Getgidⁱᵐᵖˡ : val.
+
 Definition Getegid : go_string := "os.Getegid"%go.
+
+Axiom Getegidⁱᵐᵖˡ : val.
 
 Definition Getgroups : go_string := "os.Getgroups"%go.
 
+Axiom Getgroupsⁱᵐᵖˡ : val.
+
 Definition Exit : go_string := "os.Exit"%go.
+
+Axiom Exitⁱᵐᵖˡ : val.
 
 Definition runtime_beforeExit : go_string := "os.runtime_beforeExit"%go.
 
+Axiom runtime_beforeExitⁱᵐᵖˡ : val.
+
+Axiom rawConn : go_type.
+
+Axiom rawConn__Controlⁱᵐᵖˡ : val.
+
+Axiom rawConn__Readⁱᵐᵖˡ : val.
+
+Axiom rawConn__Writeⁱᵐᵖˡ : val.
+
 Definition newRawConn : go_string := "os.newRawConn"%go.
+
+Axiom newRawConnⁱᵐᵖˡ : val.
 
 Definition removeAll : go_string := "os.removeAll"%go.
 
+Axiom removeAllⁱᵐᵖˡ : val.
+
 Definition removeAllFrom : go_string := "os.removeAllFrom"%go.
+
+Axiom removeAllFromⁱᵐᵖˡ : val.
 
 Definition openDirAt : go_string := "os.openDirAt"%go.
 
+Axiom openDirAtⁱᵐᵖˡ : val.
+
 Definition OpenInRoot : go_string := "os.OpenInRoot"%go.
+
+Axiom OpenInRootⁱᵐᵖˡ : val.
+
+Axiom Root : go_type.
+
+Axiom rootMaxSymlinks : Z.
 
 Definition OpenRoot : go_string := "os.OpenRoot"%go.
 
+Axiom OpenRootⁱᵐᵖˡ : val.
+
+Axiom Root__Nameⁱᵐᵖˡ : val.
+
+Axiom Root__Closeⁱᵐᵖˡ : val.
+
+Axiom Root__Openⁱᵐᵖˡ : val.
+
+Axiom Root__Createⁱᵐᵖˡ : val.
+
+Axiom Root__OpenFileⁱᵐᵖˡ : val.
+
+Axiom Root__OpenRootⁱᵐᵖˡ : val.
+
+Axiom Root__Mkdirⁱᵐᵖˡ : val.
+
+Axiom Root__Removeⁱᵐᵖˡ : val.
+
+Axiom Root__Statⁱᵐᵖˡ : val.
+
+Axiom Root__Lstatⁱᵐᵖˡ : val.
+
+Axiom Root__logOpenⁱᵐᵖˡ : val.
+
+Axiom Root__logStatⁱᵐᵖˡ : val.
+
 Definition splitPathInRoot : go_string := "os.splitPathInRoot"%go.
+
+Axiom splitPathInRootⁱᵐᵖˡ : val.
+
+Axiom Root__FSⁱᵐᵖˡ : val.
+
+Axiom rootFS : go_type.
+
+Axiom rootFS__Openⁱᵐᵖˡ : val.
+
+Axiom rootFS__ReadDirⁱᵐᵖˡ : val.
+
+Axiom rootFS__ReadFileⁱᵐᵖˡ : val.
+
+Axiom rootFS__Statⁱᵐᵖˡ : val.
 
 Definition isValidRootFSPath : go_string := "os.isValidRootFSPath"%go.
 
+Axiom isValidRootFSPathⁱᵐᵖˡ : val.
+
 Definition rootCleanPath : go_string := "os.rootCleanPath"%go.
+
+Axiom rootCleanPathⁱᵐᵖˡ : val.
+
+Axiom root : go_type.
+
+Axiom root__Closeⁱᵐᵖˡ : val.
+
+Axiom root__increfⁱᵐᵖˡ : val.
+
+Axiom root__decrefⁱᵐᵖˡ : val.
+
+Axiom root__Nameⁱᵐᵖˡ : val.
 
 Definition rootMkdir : go_string := "os.rootMkdir"%go.
 
+Axiom rootMkdirⁱᵐᵖˡ : val.
+
 Definition rootRemove : go_string := "os.rootRemove"%go.
+
+Axiom rootRemoveⁱᵐᵖˡ : val.
 
 Definition doInRoot : go_string := "os.doInRoot"%go.
 
+Axiom doInRootⁱᵐᵖˡ : val.
+
+Axiom errSymlink : go_type.
+
+Axiom errSymlink__Errorⁱᵐᵖˡ : val.
+
+Axiom sysfdType : go_type.
+
 Definition openRootNolog : go_string := "os.openRootNolog"%go.
+
+Axiom openRootNologⁱᵐᵖˡ : val.
 
 Definition newRoot : go_string := "os.newRoot"%go.
 
+Axiom newRootⁱᵐᵖˡ : val.
+
 Definition openRootInRoot : go_string := "os.openRootInRoot"%go.
+
+Axiom openRootInRootⁱᵐᵖˡ : val.
 
 Definition rootOpenFileNolog : go_string := "os.rootOpenFileNolog"%go.
 
+Axiom rootOpenFileNologⁱᵐᵖˡ : val.
+
 Definition rootOpenDir : go_string := "os.rootOpenDir"%go.
+
+Axiom rootOpenDirⁱᵐᵖˡ : val.
 
 Definition rootStat : go_string := "os.rootStat"%go.
 
+Axiom rootStatⁱᵐᵖˡ : val.
+
 Definition mkdirat : go_string := "os.mkdirat"%go.
+
+Axiom mkdiratⁱᵐᵖˡ : val.
 
 Definition removeat : go_string := "os.removeat"%go.
 
+Axiom removeatⁱᵐᵖˡ : val.
+
 Definition checkSymlink : go_string := "os.checkSymlink"%go.
+
+Axiom checkSymlinkⁱᵐᵖˡ : val.
 
 Definition readlinkat : go_string := "os.readlinkat"%go.
 
+Axiom readlinkatⁱᵐᵖˡ : val.
+
 Definition Stat : go_string := "os.Stat"%go.
+
+Axiom Statⁱᵐᵖˡ : val.
 
 Definition Lstat : go_string := "os.Lstat"%go.
 
+Axiom Lstatⁱᵐᵖˡ : val.
+
 Definition fillFileStatFromSys : go_string := "os.fillFileStatFromSys"%go.
+
+Axiom fillFileStatFromSysⁱᵐᵖˡ : val.
 
 Definition atime : go_string := "os.atime"%go.
 
+Axiom atimeⁱᵐᵖˡ : val.
+
+Axiom File__Statⁱᵐᵖˡ : val.
+
 Definition statNolog : go_string := "os.statNolog"%go.
+
+Axiom statNologⁱᵐᵖˡ : val.
 
 Definition lstatNolog : go_string := "os.lstatNolog"%go.
 
+Axiom lstatNologⁱᵐᵖˡ : val.
+
+Axiom supportsCreateWithStickyBit : expr.
+
 Definition Hostname : go_string := "os.Hostname"%go.
+
+Axiom Hostnameⁱᵐᵖˡ : val.
 
 Definition hostname : go_string := "os.hostname"%go.
 
+Axiom hostnameⁱᵐᵖˡ : val.
+
+Axiom supportsCloseOnExec : expr.
+
 Definition runtime_rand : go_string := "os.runtime_rand"%go.
+
+Axiom runtime_randⁱᵐᵖˡ : val.
 
 Definition nextRandom : go_string := "os.nextRandom"%go.
 
+Axiom nextRandomⁱᵐᵖˡ : val.
+
 Definition CreateTemp : go_string := "os.CreateTemp"%go.
+
+Axiom CreateTempⁱᵐᵖˡ : val.
 
 Definition errPatternHasSeparator : go_string := "os.errPatternHasSeparator"%go.
 
@@ -387,17 +1064,79 @@ Axiom errPatternHasSeparator'init : val.
 
 Definition prefixAndSuffix : go_string := "os.prefixAndSuffix"%go.
 
+Axiom prefixAndSuffixⁱᵐᵖˡ : val.
+
 Definition MkdirTemp : go_string := "os.MkdirTemp"%go.
+
+Axiom MkdirTempⁱᵐᵖˡ : val.
 
 Definition joinPath : go_string := "os.joinPath"%go.
 
+Axiom joinPathⁱᵐᵖˡ : val.
+
 Definition Getpagesize : go_string := "os.Getpagesize"%go.
+
+Axiom Getpagesizeⁱᵐᵖˡ : val.
 
 Axiom File : go_type.
 
+Axiom FileInfo : go_type.
+
+Axiom FileMode : go_type.
+
+Axiom ModeDir : expr.
+
+Axiom ModeAppend : expr.
+
+Axiom ModeExclusive : expr.
+
+Axiom ModeTemporary : expr.
+
+Axiom ModeSymlink : expr.
+
+Axiom ModeDevice : expr.
+
+Axiom ModeNamedPipe : expr.
+
+Axiom ModeSocket : expr.
+
+Axiom ModeSetuid : expr.
+
+Axiom ModeSetgid : expr.
+
+Axiom ModeCharDevice : expr.
+
+Axiom ModeSticky : expr.
+
+Axiom ModeIrregular : expr.
+
+Axiom ModeType : expr.
+
+Axiom ModePerm : expr.
+
+Axiom fileStat__Nameⁱᵐᵖˡ : val.
+
+Axiom fileStat__IsDirⁱᵐᵖˡ : val.
+
 Definition SameFile : go_string := "os.SameFile"%go.
 
+Axiom SameFileⁱᵐᵖˡ : val.
+
+Axiom fileStat : go_type.
+
+Axiom fileStat__Sizeⁱᵐᵖˡ : val.
+
+Axiom fileStat__Modeⁱᵐᵖˡ : val.
+
+Axiom fileStat__ModTimeⁱᵐᵖˡ : val.
+
+Axiom fileStat__Sysⁱᵐᵖˡ : val.
+
 Definition sameFile : go_string := "os.sameFile"%go.
+
+Axiom sameFileⁱᵐᵖˡ : val.
+
+Axiom Process__blockUntilWaitableⁱᵐᵖˡ : val.
 
 Definition pollCopyFileRange : go_string := "os.pollCopyFileRange"%go.
 
@@ -407,19 +1146,375 @@ Definition pollSplice : go_string := "os.pollSplice"%go.
 
 Axiom pollSplice'init : val.
 
+Axiom File__writeToⁱᵐᵖˡ : val.
+
+Axiom File__readFromⁱᵐᵖˡ : val.
+
+Axiom File__spliceToFileⁱᵐᵖˡ : val.
+
+Axiom File__copyFileRangeⁱᵐᵖˡ : val.
+
 Definition getPollFDAndNetwork : go_string := "os.getPollFDAndNetwork"%go.
+
+Axiom getPollFDAndNetworkⁱᵐᵖˡ : val.
 
 Definition isUnixOrTCP : go_string := "os.isUnixOrTCP"%go.
 
+Axiom isUnixOrTCPⁱᵐᵖˡ : val.
+
 Definition wrapSyscallError : go_string := "os.wrapSyscallError"%go.
+
+Axiom wrapSyscallErrorⁱᵐᵖˡ : val.
 
 Definition tryLimitedReader : go_string := "os.tryLimitedReader"%go.
 
+Axiom tryLimitedReaderⁱᵐᵖˡ : val.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(ReadDir, ReadDirⁱᵐᵖˡ); (CopyFS, CopyFSⁱᵐᵖˡ); (readInt, readIntⁱᵐᵖˡ); (readIntBE, readIntBEⁱᵐᵖˡ); (readIntLE, readIntLEⁱᵐᵖˡ); (direntIno, direntInoⁱᵐᵖˡ); (direntReclen, direntReclenⁱᵐᵖˡ); (direntNamlen, direntNamlenⁱᵐᵖˡ); (direntType, direntTypeⁱᵐᵖˡ); (isNoFollowErr, isNoFollowErrⁱᵐᵖˡ); (Expand, Expandⁱᵐᵖˡ); (ExpandEnv, ExpandEnvⁱᵐᵖˡ); (isShellSpecialVar, isShellSpecialVarⁱᵐᵖˡ); (isAlphaNum, isAlphaNumⁱᵐᵖˡ); (getShellName, getShellNameⁱᵐᵖˡ); (Getenv, Getenvⁱᵐᵖˡ); (LookupEnv, LookupEnvⁱᵐᵖˡ); (Setenv, Setenvⁱᵐᵖˡ); (Unsetenv, Unsetenvⁱᵐᵖˡ); (Clearenv, Clearenvⁱᵐᵖˡ); (Environ, Environⁱᵐᵖˡ); (errNoDeadline, errNoDeadlineⁱᵐᵖˡ); (errDeadlineExceeded, errDeadlineExceededⁱᵐᵖˡ); (NewSyscallError, NewSyscallErrorⁱᵐᵖˡ); (IsExist, IsExistⁱᵐᵖˡ); (IsNotExist, IsNotExistⁱᵐᵖˡ); (IsPermission, IsPermissionⁱᵐᵖˡ); (IsTimeout, IsTimeoutⁱᵐᵖˡ); (underlyingErrorIs, underlyingErrorIsⁱᵐᵖˡ); (underlyingError, underlyingErrorⁱᵐᵖˡ); (newPIDProcess, newPIDProcessⁱᵐᵖˡ); (newHandleProcess, newHandleProcessⁱᵐᵖˡ); (newDoneProcess, newDoneProcessⁱᵐᵖˡ); (Getpid, Getpidⁱᵐᵖˡ); (Getppid, Getppidⁱᵐᵖˡ); (FindProcess, FindProcessⁱᵐᵖˡ); (StartProcess, StartProcessⁱᵐᵖˡ); (startProcess, startProcessⁱᵐᵖˡ); (convertESRCH, convertESRCHⁱᵐᵖˡ); (findProcess, findProcessⁱᵐᵖˡ); (Executable, Executableⁱᵐᵖˡ); (executable, executableⁱᵐᵖˡ); (genericReadFrom, genericReadFromⁱᵐᵖˡ); (genericWriteTo, genericWriteToⁱᵐᵖˡ); (Mkdir, Mkdirⁱᵐᵖˡ); (setStickyBit, setStickyBitⁱᵐᵖˡ); (Chdir, Chdirⁱᵐᵖˡ); (Open, Openⁱᵐᵖˡ); (Create, Createⁱᵐᵖˡ); (OpenFile, OpenFileⁱᵐᵖˡ); (openDir, openDirⁱᵐᵖˡ); (Rename, Renameⁱᵐᵖˡ); (Readlink, Readlinkⁱᵐᵖˡ); (fixCount, fixCountⁱᵐᵖˡ); (TempDir, TempDirⁱᵐᵖˡ); (UserCacheDir, UserCacheDirⁱᵐᵖˡ); (UserConfigDir, UserConfigDirⁱᵐᵖˡ); (UserHomeDir, UserHomeDirⁱᵐᵖˡ); (Chmod, Chmodⁱᵐᵖˡ); (DirFS, DirFSⁱᵐᵖˡ); (ReadFile, ReadFileⁱᵐᵖˡ); (readFileContents, readFileContentsⁱᵐᵖˡ); (WriteFile, WriteFileⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (syscallMode, syscallModeⁱᵐᵖˡ); (chmod, chmodⁱᵐᵖˡ); (Chown, Chownⁱᵐᵖˡ); (Lchown, Lchownⁱᵐᵖˡ); (Chtimes, Chtimesⁱᵐᵖˡ); (ignoringEINTR, ignoringEINTRⁱᵐᵖˡ); (ignoringEINTR2, ignoringEINTR2ⁱᵐᵖˡ); (fixLongPath, fixLongPathⁱᵐᵖˡ); (rename, renameⁱᵐᵖˡ); (NewFile, NewFileⁱᵐᵖˡ); (net_newUnixFile, net_newUnixFileⁱᵐᵖˡ); (newFile, newFileⁱᵐᵖˡ); (sigpipe, sigpipeⁱᵐᵖˡ); (epipecheck, epipecheckⁱᵐᵖˡ); (openFileNolog, openFileNologⁱᵐᵖˡ); (openDirNolog, openDirNologⁱᵐᵖˡ); (Truncate, Truncateⁱᵐᵖˡ); (Remove, Removeⁱᵐᵖˡ); (tempDir, tempDirⁱᵐᵖˡ); (Link, Linkⁱᵐᵖˡ); (Symlink, Symlinkⁱᵐᵖˡ); (readlink, readlinkⁱᵐᵖˡ); (newUnixDirent, newUnixDirentⁱᵐᵖˡ); (Getwd, Getwdⁱᵐᵖˡ); (MkdirAll, MkdirAllⁱᵐᵖˡ); (RemoveAll, RemoveAllⁱᵐᵖˡ); (endsWithDot, endsWithDotⁱᵐᵖˡ); (IsPathSeparator, IsPathSeparatorⁱᵐᵖˡ); (splitPath, splitPathⁱᵐᵖˡ); (ensurePidfd, ensurePidfdⁱᵐᵖˡ); (getPidfd, getPidfdⁱᵐᵖˡ); (pidfdFind, pidfdFindⁱᵐᵖˡ); (pidfdWorks, pidfdWorksⁱᵐᵖˡ); (checkPidfd, checkPidfdⁱᵐᵖˡ); (checkClonePidfd, checkClonePidfdⁱᵐᵖˡ); (ignoreSIGSYS, ignoreSIGSYSⁱᵐᵖˡ); (restoreSIGSYS, restoreSIGSYSⁱᵐᵖˡ); (Pipe, Pipeⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (runtime_args, runtime_argsⁱᵐᵖˡ); (Getuid, Getuidⁱᵐᵖˡ); (Geteuid, Geteuidⁱᵐᵖˡ); (Getgid, Getgidⁱᵐᵖˡ); (Getegid, Getegidⁱᵐᵖˡ); (Getgroups, Getgroupsⁱᵐᵖˡ); (Exit, Exitⁱᵐᵖˡ); (runtime_beforeExit, runtime_beforeExitⁱᵐᵖˡ); (newRawConn, newRawConnⁱᵐᵖˡ); (removeAll, removeAllⁱᵐᵖˡ); (removeAllFrom, removeAllFromⁱᵐᵖˡ); (openDirAt, openDirAtⁱᵐᵖˡ); (OpenInRoot, OpenInRootⁱᵐᵖˡ); (OpenRoot, OpenRootⁱᵐᵖˡ); (splitPathInRoot, splitPathInRootⁱᵐᵖˡ); (isValidRootFSPath, isValidRootFSPathⁱᵐᵖˡ); (rootCleanPath, rootCleanPathⁱᵐᵖˡ); (rootMkdir, rootMkdirⁱᵐᵖˡ); (rootRemove, rootRemoveⁱᵐᵖˡ); (doInRoot, doInRootⁱᵐᵖˡ); (openRootNolog, openRootNologⁱᵐᵖˡ); (newRoot, newRootⁱᵐᵖˡ); (openRootInRoot, openRootInRootⁱᵐᵖˡ); (rootOpenFileNolog, rootOpenFileNologⁱᵐᵖˡ); (rootOpenDir, rootOpenDirⁱᵐᵖˡ); (rootStat, rootStatⁱᵐᵖˡ); (mkdirat, mkdiratⁱᵐᵖˡ); (removeat, removeatⁱᵐᵖˡ); (checkSymlink, checkSymlinkⁱᵐᵖˡ); (readlinkat, readlinkatⁱᵐᵖˡ); (Stat, Statⁱᵐᵖˡ); (Lstat, Lstatⁱᵐᵖˡ); (fillFileStatFromSys, fillFileStatFromSysⁱᵐᵖˡ); (atime, atimeⁱᵐᵖˡ); (statNolog, statNologⁱᵐᵖˡ); (lstatNolog, lstatNologⁱᵐᵖˡ); (Hostname, Hostnameⁱᵐᵖˡ); (hostname, hostnameⁱᵐᵖˡ); (runtime_rand, runtime_randⁱᵐᵖˡ); (nextRandom, nextRandomⁱᵐᵖˡ); (CreateTemp, CreateTempⁱᵐᵖˡ); (prefixAndSuffix, prefixAndSuffixⁱᵐᵖˡ); (MkdirTemp, MkdirTempⁱᵐᵖˡ); (joinPath, joinPathⁱᵐᵖˡ); (Getpagesize, Getpagesizeⁱᵐᵖˡ); (SameFile, SameFileⁱᵐᵖˡ); (sameFile, sameFileⁱᵐᵖˡ); (getPollFDAndNetwork, getPollFDAndNetworkⁱᵐᵖˡ); (isUnixOrTCP, isUnixOrTCPⁱᵐᵖˡ); (wrapSyscallError, wrapSyscallErrorⁱᵐᵖˡ); (tryLimitedReader, tryLimitedReaderⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(File.id, []); (ptrT.id File.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(readdirMode.id, []); (ptrT.id readdirMode.id, []); (dirInfo.id, []); (ptrT.id dirInfo.id, [("close"%go, dirInfo__closeⁱᵐᵖˡ)]); (SyscallError.id, []); (ptrT.id SyscallError.id, [("Error"%go, SyscallError__Errorⁱᵐᵖˡ); ("Timeout"%go, SyscallError__Timeoutⁱᵐᵖˡ); ("Unwrap"%go, SyscallError__Unwrapⁱᵐᵖˡ)]); (processMode.id, []); (ptrT.id processMode.id, []); (processStatus.id, []); (ptrT.id processStatus.id, []); (Process.id, []); (ptrT.id Process.id, [("Kill"%go, Process__Killⁱᵐᵖˡ); ("Release"%go, Process__Releaseⁱᵐᵖˡ); ("Signal"%go, Process__Signalⁱᵐᵖˡ); ("Wait"%go, Process__Waitⁱᵐᵖˡ); ("blockUntilWaitable"%go, Process__blockUntilWaitableⁱᵐᵖˡ); ("closeHandle"%go, Process__closeHandleⁱᵐᵖˡ); ("handlePersistentRelease"%go, Process__handlePersistentReleaseⁱᵐᵖˡ); ("handleTransientAcquire"%go, Process__handleTransientAcquireⁱᵐᵖˡ); ("handleTransientRelease"%go, Process__handleTransientReleaseⁱᵐᵖˡ); ("kill"%go, Process__killⁱᵐᵖˡ); ("pidDeactivate"%go, Process__pidDeactivateⁱᵐᵖˡ); ("pidSignal"%go, Process__pidSignalⁱᵐᵖˡ); ("pidStatus"%go, Process__pidStatusⁱᵐᵖˡ); ("pidWait"%go, Process__pidWaitⁱᵐᵖˡ); ("pidfdSendSignal"%go, Process__pidfdSendSignalⁱᵐᵖˡ); ("pidfdWait"%go, Process__pidfdWaitⁱᵐᵖˡ); ("release"%go, Process__releaseⁱᵐᵖˡ); ("signal"%go, Process__signalⁱᵐᵖˡ); ("wait"%go, Process__waitⁱᵐᵖˡ)]); (ProcAttr.id, []); (ptrT.id ProcAttr.id, []); (ProcessState.id, []); (ptrT.id ProcessState.id, [("ExitCode"%go, ProcessState__ExitCodeⁱᵐᵖˡ); ("Exited"%go, ProcessState__Exitedⁱᵐᵖˡ); ("Pid"%go, ProcessState__Pidⁱᵐᵖˡ); ("String"%go, ProcessState__Stringⁱᵐᵖˡ); ("Success"%go, ProcessState__Successⁱᵐᵖˡ); ("Sys"%go, ProcessState__Sysⁱᵐᵖˡ); ("SysUsage"%go, ProcessState__SysUsageⁱᵐᵖˡ); ("SystemTime"%go, ProcessState__SystemTimeⁱᵐᵖˡ); ("UserTime"%go, ProcessState__UserTimeⁱᵐᵖˡ); ("exited"%go, ProcessState__exitedⁱᵐᵖˡ); ("success"%go, ProcessState__successⁱᵐᵖˡ); ("sys"%go, ProcessState__sysⁱᵐᵖˡ); ("sysUsage"%go, ProcessState__sysUsageⁱᵐᵖˡ); ("systemTime"%go, ProcessState__systemTimeⁱᵐᵖˡ); ("userTime"%go, ProcessState__userTimeⁱᵐᵖˡ)]); (LinkError.id, []); (ptrT.id LinkError.id, [("Error"%go, LinkError__Errorⁱᵐᵖˡ); ("Unwrap"%go, LinkError__Unwrapⁱᵐᵖˡ)]); (noReadFrom.id, [("ReadFrom"%go, noReadFrom__ReadFromⁱᵐᵖˡ)]); (ptrT.id noReadFrom.id, [("ReadFrom"%go, (λ: "$r",
+                 method_call #noReadFrom.id #"ReadFrom"%go (![#noReadFrom] "$r")
+                 )%V)]); (fileWithoutReadFrom.id, [("Chdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chdir"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chmod"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Chown"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chown"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Close"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Fd"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Fd"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Name"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Name"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Read"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("ReadAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadAt"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("ReadDir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadDir"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdir"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Readdirnames"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdirnames"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Seek"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("SetDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetDeadline"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("SetReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetReadDeadline"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("SetWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetWriteDeadline"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Stat"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Stat"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Sync"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("SyscallConn"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SyscallConn"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Truncate"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Truncate"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Write"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("WriteAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteAt"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("WriteString"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteString"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("WriteTo"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteTo"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("checkValid"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"checkValid"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"chmod"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"close"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("copyFileRange"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"copyFileRange"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("pread"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pread"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("pwrite"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pwrite"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"read"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("readFrom"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readFrom"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readdir"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"seek"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("setDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setDeadline"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("setReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setReadDeadline"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("setWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setWriteDeadline"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("spliceToFile"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"spliceToFile"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("wrapErr"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"wrapErr"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"write"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V); ("writeTo"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"writeTo"%go (struct.field_get #fileWithoutReadFrom #"File"%go "$r")
+                 )%V)]); (ptrT.id fileWithoutReadFrom.id, [("Chdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chdir"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chmod"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Chown"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chown"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Close"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Fd"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Fd"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Name"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Name"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Read"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("ReadAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadAt"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("ReadDir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadDir"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdir"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Readdirnames"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdirnames"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Seek"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("SetDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("SetReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetReadDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("SetWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetWriteDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Stat"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Stat"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Sync"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("SyscallConn"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SyscallConn"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Truncate"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Truncate"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Write"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("WriteAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteAt"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("WriteString"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteString"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("WriteTo"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteTo"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("checkValid"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"checkValid"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"chmod"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"close"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("copyFileRange"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"copyFileRange"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("pread"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pread"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("pwrite"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pwrite"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"read"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("readFrom"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readFrom"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readdir"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"seek"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("setDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("setReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setReadDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("setWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setWriteDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("spliceToFile"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"spliceToFile"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("wrapErr"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"wrapErr"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"write"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V); ("writeTo"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"writeTo"%go (![#ptrT] (struct.field_ref #fileWithoutReadFrom #"File"%go "$r"))
+                 )%V)]); (noWriteTo.id, [("WriteTo"%go, noWriteTo__WriteToⁱᵐᵖˡ)]); (ptrT.id noWriteTo.id, [("WriteTo"%go, (λ: "$r",
+                 method_call #noWriteTo.id #"WriteTo"%go (![#noWriteTo] "$r")
+                 )%V)]); (fileWithoutWriteTo.id, [("Chdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chdir"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chmod"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Chown"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chown"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Close"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Fd"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Fd"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Name"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Name"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Read"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("ReadAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadAt"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("ReadDir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadDir"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("ReadFrom"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadFrom"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdir"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Readdirnames"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdirnames"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Seek"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("SetDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetDeadline"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("SetReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetReadDeadline"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("SetWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetWriteDeadline"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Stat"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Stat"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Sync"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("SyscallConn"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SyscallConn"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Truncate"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Truncate"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Write"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("WriteAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteAt"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("WriteString"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteString"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("checkValid"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"checkValid"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"chmod"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"close"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("copyFileRange"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"copyFileRange"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("pread"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pread"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("pwrite"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pwrite"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"read"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("readFrom"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readFrom"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readdir"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"seek"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("setDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setDeadline"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("setReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setReadDeadline"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("setWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setWriteDeadline"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("spliceToFile"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"spliceToFile"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("wrapErr"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"wrapErr"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"write"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V); ("writeTo"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"writeTo"%go (struct.field_get #fileWithoutWriteTo #"File"%go "$r")
+                 )%V)]); (ptrT.id fileWithoutWriteTo.id, [("Chdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chdir"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chmod"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Chown"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Chown"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Close"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Fd"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Fd"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Name"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Name"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Read"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("ReadAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadAt"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("ReadDir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadDir"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("ReadFrom"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"ReadFrom"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdir"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Readdirnames"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Readdirnames"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Seek"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("SetDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("SetReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetReadDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("SetWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SetWriteDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Stat"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Stat"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Sync"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("SyscallConn"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"SyscallConn"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Truncate"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Truncate"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"Write"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("WriteAt"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteAt"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("WriteString"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"WriteString"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("checkValid"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"checkValid"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("chmod"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"chmod"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("close"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"close"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("copyFileRange"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"copyFileRange"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("pread"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pread"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("pwrite"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"pwrite"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("read"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"read"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("readFrom"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readFrom"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("readdir"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"readdir"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("seek"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"seek"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("setDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("setReadDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setReadDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("setWriteDeadline"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"setWriteDeadline"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("spliceToFile"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"spliceToFile"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("wrapErr"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"wrapErr"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("write"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"write"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V); ("writeTo"%go, (λ: "$r",
+                 method_call #(ptrT.id File.id) #"writeTo"%go (![#ptrT] (struct.field_ref #fileWithoutWriteTo #"File"%go "$r"))
+                 )%V)]); (dirFS.id, [("Open"%go, dirFS__Openⁱᵐᵖˡ); ("ReadDir"%go, dirFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, dirFS__ReadFileⁱᵐᵖˡ); ("Stat"%go, dirFS__Statⁱᵐᵖˡ); ("join"%go, dirFS__joinⁱᵐᵖˡ)]); (ptrT.id dirFS.id, [("Open"%go, (λ: "$r",
+                 method_call #dirFS.id #"Open"%go (![#dirFS] "$r")
+                 )%V); ("ReadDir"%go, (λ: "$r",
+                 method_call #dirFS.id #"ReadDir"%go (![#dirFS] "$r")
+                 )%V); ("ReadFile"%go, (λ: "$r",
+                 method_call #dirFS.id #"ReadFile"%go (![#dirFS] "$r")
+                 )%V); ("Stat"%go, (λ: "$r",
+                 method_call #dirFS.id #"Stat"%go (![#dirFS] "$r")
+                 )%V); ("join"%go, (λ: "$r",
+                 method_call #dirFS.id #"join"%go (![#dirFS] "$r")
+                 )%V)]); (file.id, []); (ptrT.id file.id, [("close"%go, file__closeⁱᵐᵖˡ)]); (newFileKind.id, []); (ptrT.id newFileKind.id, []); (unixDirent.id, []); (ptrT.id unixDirent.id, [("Info"%go, unixDirent__Infoⁱᵐᵖˡ); ("IsDir"%go, unixDirent__IsDirⁱᵐᵖˡ); ("Name"%go, unixDirent__Nameⁱᵐᵖˡ); ("String"%go, unixDirent__Stringⁱᵐᵖˡ); ("Type"%go, unixDirent__Typeⁱᵐᵖˡ)]); (rawConn.id, []); (ptrT.id rawConn.id, [("Control"%go, rawConn__Controlⁱᵐᵖˡ); ("Read"%go, rawConn__Readⁱᵐᵖˡ); ("Write"%go, rawConn__Writeⁱᵐᵖˡ)]); (Root.id, []); (ptrT.id Root.id, [("Close"%go, Root__Closeⁱᵐᵖˡ); ("Create"%go, Root__Createⁱᵐᵖˡ); ("FS"%go, Root__FSⁱᵐᵖˡ); ("Lstat"%go, Root__Lstatⁱᵐᵖˡ); ("Mkdir"%go, Root__Mkdirⁱᵐᵖˡ); ("Name"%go, Root__Nameⁱᵐᵖˡ); ("Open"%go, Root__Openⁱᵐᵖˡ); ("OpenFile"%go, Root__OpenFileⁱᵐᵖˡ); ("OpenRoot"%go, Root__OpenRootⁱᵐᵖˡ); ("Remove"%go, Root__Removeⁱᵐᵖˡ); ("Stat"%go, Root__Statⁱᵐᵖˡ); ("logOpen"%go, Root__logOpenⁱᵐᵖˡ); ("logStat"%go, Root__logStatⁱᵐᵖˡ)]); (rootFS.id, []); (ptrT.id rootFS.id, [("Open"%go, rootFS__Openⁱᵐᵖˡ); ("ReadDir"%go, rootFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, rootFS__ReadFileⁱᵐᵖˡ); ("Stat"%go, rootFS__Statⁱᵐᵖˡ)]); (root.id, []); (ptrT.id root.id, [("Close"%go, root__Closeⁱᵐᵖˡ); ("Name"%go, root__Nameⁱᵐᵖˡ); ("decref"%go, root__decrefⁱᵐᵖˡ); ("incref"%go, root__increfⁱᵐᵖˡ)]); (errSymlink.id, [("Error"%go, errSymlink__Errorⁱᵐᵖˡ)]); (ptrT.id errSymlink.id, [("Error"%go, (λ: "$r",
+                 method_call #errSymlink.id #"Error"%go (![#errSymlink] "$r")
+                 )%V)]); (File.id, [("close"%go, (λ: "$r",
+                 method_call #(ptrT.id file.id) #"close"%go (struct.field_get #File #"file"%go "$r")
+                 )%V)]); (ptrT.id File.id, [("Chdir"%go, File__Chdirⁱᵐᵖˡ); ("Chmod"%go, File__Chmodⁱᵐᵖˡ); ("Chown"%go, File__Chownⁱᵐᵖˡ); ("Close"%go, File__Closeⁱᵐᵖˡ); ("Fd"%go, File__Fdⁱᵐᵖˡ); ("Name"%go, File__Nameⁱᵐᵖˡ); ("Read"%go, File__Readⁱᵐᵖˡ); ("ReadAt"%go, File__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, File__ReadDirⁱᵐᵖˡ); ("ReadFrom"%go, File__ReadFromⁱᵐᵖˡ); ("Readdir"%go, File__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, File__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, File__Seekⁱᵐᵖˡ); ("SetDeadline"%go, File__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, File__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, File__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, File__Statⁱᵐᵖˡ); ("Sync"%go, File__Syncⁱᵐᵖˡ); ("SyscallConn"%go, File__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, File__Truncateⁱᵐᵖˡ); ("Write"%go, File__Writeⁱᵐᵖˡ); ("WriteAt"%go, File__WriteAtⁱᵐᵖˡ); ("WriteString"%go, File__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, File__WriteToⁱᵐᵖˡ); ("checkValid"%go, File__checkValidⁱᵐᵖˡ); ("chmod"%go, File__chmodⁱᵐᵖˡ); ("close"%go, (λ: "$r",
+                 method_call #(ptrT.id file.id) #"close"%go (![#ptrT] (struct.field_ref #File #"file"%go "$r"))
+                 )%V); ("copyFileRange"%go, File__copyFileRangeⁱᵐᵖˡ); ("pread"%go, File__preadⁱᵐᵖˡ); ("pwrite"%go, File__pwriteⁱᵐᵖˡ); ("read"%go, File__readⁱᵐᵖˡ); ("readFrom"%go, File__readFromⁱᵐᵖˡ); ("readdir"%go, File__readdirⁱᵐᵖˡ); ("seek"%go, File__seekⁱᵐᵖˡ); ("setDeadline"%go, File__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, File__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, File__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, File__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, File__wrapErrⁱᵐᵖˡ); ("write"%go, File__writeⁱᵐᵖˡ); ("writeTo"%go, File__writeToⁱᵐᵖˡ)]); (fileStat.id, []); (ptrT.id fileStat.id, [("IsDir"%go, fileStat__IsDirⁱᵐᵖˡ); ("ModTime"%go, fileStat__ModTimeⁱᵐᵖˡ); ("Mode"%go, fileStat__Modeⁱᵐᵖˡ); ("Name"%go, fileStat__Nameⁱᵐᵖˡ); ("Size"%go, fileStat__Sizeⁱᵐᵖˡ); ("Sys"%go, fileStat__Sysⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo os.os :=
   {|

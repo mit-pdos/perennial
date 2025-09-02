@@ -264,5 +264,149 @@ Global Program Instance is_pkg_defined_mvccpb : IsPkgDefined mvccpb :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_encodeVarintKv :
+  WpFuncCall mvccpb.encodeVarintKv _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_sovKv :
+  WpFuncCall mvccpb.sovKv _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_sozKv :
+  WpFuncCall mvccpb.sozKv _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_skipKv :
+  WpFuncCall mvccpb.skipKv _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Event_EventType_EnumDescriptor :
+  WpMethodCall mvccpb.Event_EventType.id "EnumDescriptor" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event_EventType_String :
+  WpMethodCall mvccpb.Event_EventType.id "String" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event_EventType'ptr_EnumDescriptor :
+  WpMethodCall (ptrT.id mvccpb.Event_EventType.id) "EnumDescriptor" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event_EventType'ptr_String :
+  WpMethodCall (ptrT.id mvccpb.Event_EventType.id) "String" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_Descriptor :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "Descriptor" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_Marshal :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "Marshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_MarshalTo :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "MarshalTo" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_MarshalToSizedBuffer :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "MarshalToSizedBuffer" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_ProtoMessage :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "ProtoMessage" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_Reset :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "Reset" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_Size :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "Size" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_String :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "String" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_Unmarshal :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "Unmarshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_XXX_DiscardUnknown :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "XXX_DiscardUnknown" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_XXX_Marshal :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "XXX_Marshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_XXX_Merge :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "XXX_Merge" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_XXX_Size :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "XXX_Size" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_KeyValue'ptr_XXX_Unmarshal :
+  WpMethodCall (ptrT.id mvccpb.KeyValue.id) "XXX_Unmarshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_Descriptor :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "Descriptor" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_Marshal :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "Marshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_MarshalTo :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "MarshalTo" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_MarshalToSizedBuffer :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "MarshalToSizedBuffer" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_ProtoMessage :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "ProtoMessage" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_Reset :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "Reset" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_Size :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "Size" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_String :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "String" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_Unmarshal :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "Unmarshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_XXX_DiscardUnknown :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "XXX_DiscardUnknown" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_XXX_Marshal :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "XXX_Marshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_XXX_Merge :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "XXX_Merge" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_XXX_Size :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "XXX_Size" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_XXX_Unmarshal :
+  WpMethodCall (ptrT.id mvccpb.Event.id) "XXX_Unmarshal" _ (is_pkg_defined mvccpb) :=
+  ltac:(solve_wp_method_call).
+
 End names.
 End mvccpb.

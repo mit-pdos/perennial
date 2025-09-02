@@ -30,5 +30,61 @@ Global Program Instance is_pkg_defined_race : IsPkgDefined race :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_Acquire :
+  WpFuncCall race.Acquire _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Release :
+  WpFuncCall race.Release _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReleaseMerge :
+  WpFuncCall race.ReleaseMerge _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Disable :
+  WpFuncCall race.Disable _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Enable :
+  WpFuncCall race.Enable _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Read :
+  WpFuncCall race.Read _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadPC :
+  WpFuncCall race.ReadPC _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadObjectPC :
+  WpFuncCall race.ReadObjectPC _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Write :
+  WpFuncCall race.Write _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WritePC :
+  WpFuncCall race.WritePC _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WriteObjectPC :
+  WpFuncCall race.WriteObjectPC _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadRange :
+  WpFuncCall race.ReadRange _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WriteRange :
+  WpFuncCall race.WriteRange _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Errors :
+  WpFuncCall race.Errors _ (is_pkg_defined race) :=
+  ltac:(solve_wp_func_call).
+
 End names.
 End race.

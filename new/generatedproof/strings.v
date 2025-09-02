@@ -77,6 +77,210 @@ Qed.
 
 End instances.
 
+(* type strings.Reader *)
+Module Reader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Reader.
+
+Global Instance bounded_size_Reader : BoundedTypeSize strings.Reader.
+Admitted.
+
+Global Instance into_val_Reader `{ffi_syntax} : IntoVal Reader.t.
+Admitted.
+
+Global Instance into_val_typed_Reader `{ffi_syntax} : IntoValTyped Reader.t strings.Reader.
+Admitted.
+
+(* type strings.Replacer *)
+Module Replacer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Replacer.
+
+Global Instance bounded_size_Replacer : BoundedTypeSize strings.Replacer.
+Admitted.
+
+Global Instance into_val_Replacer `{ffi_syntax} : IntoVal Replacer.t.
+Admitted.
+
+Global Instance into_val_typed_Replacer `{ffi_syntax} : IntoValTyped Replacer.t strings.Replacer.
+Admitted.
+
+(* type strings.replacer *)
+Module replacer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End replacer.
+
+Global Instance bounded_size_replacer : BoundedTypeSize strings.replacer.
+Admitted.
+
+Global Instance into_val_replacer `{ffi_syntax} : IntoVal replacer.t.
+Admitted.
+
+Global Instance into_val_typed_replacer `{ffi_syntax} : IntoValTyped replacer.t strings.replacer.
+Admitted.
+
+(* type strings.trieNode *)
+Module trieNode.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End trieNode.
+
+Global Instance bounded_size_trieNode : BoundedTypeSize strings.trieNode.
+Admitted.
+
+Global Instance into_val_trieNode `{ffi_syntax} : IntoVal trieNode.t.
+Admitted.
+
+Global Instance into_val_typed_trieNode `{ffi_syntax} : IntoValTyped trieNode.t strings.trieNode.
+Admitted.
+
+(* type strings.genericReplacer *)
+Module genericReplacer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End genericReplacer.
+
+Global Instance bounded_size_genericReplacer : BoundedTypeSize strings.genericReplacer.
+Admitted.
+
+Global Instance into_val_genericReplacer `{ffi_syntax} : IntoVal genericReplacer.t.
+Admitted.
+
+Global Instance into_val_typed_genericReplacer `{ffi_syntax} : IntoValTyped genericReplacer.t strings.genericReplacer.
+Admitted.
+
+(* type strings.appendSliceWriter *)
+Module appendSliceWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End appendSliceWriter.
+
+Global Instance bounded_size_appendSliceWriter : BoundedTypeSize strings.appendSliceWriter.
+Admitted.
+
+Global Instance into_val_appendSliceWriter `{ffi_syntax} : IntoVal appendSliceWriter.t.
+Admitted.
+
+Global Instance into_val_typed_appendSliceWriter `{ffi_syntax} : IntoValTyped appendSliceWriter.t strings.appendSliceWriter.
+Admitted.
+
+(* type strings.stringWriter *)
+Module stringWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End stringWriter.
+
+Global Instance bounded_size_stringWriter : BoundedTypeSize strings.stringWriter.
+Admitted.
+
+Global Instance into_val_stringWriter `{ffi_syntax} : IntoVal stringWriter.t.
+Admitted.
+
+Global Instance into_val_typed_stringWriter `{ffi_syntax} : IntoValTyped stringWriter.t strings.stringWriter.
+Admitted.
+
+(* type strings.singleStringReplacer *)
+Module singleStringReplacer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End singleStringReplacer.
+
+Global Instance bounded_size_singleStringReplacer : BoundedTypeSize strings.singleStringReplacer.
+Admitted.
+
+Global Instance into_val_singleStringReplacer `{ffi_syntax} : IntoVal singleStringReplacer.t.
+Admitted.
+
+Global Instance into_val_typed_singleStringReplacer `{ffi_syntax} : IntoValTyped singleStringReplacer.t strings.singleStringReplacer.
+Admitted.
+
+(* type strings.byteReplacer *)
+Module byteReplacer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End byteReplacer.
+
+Global Instance bounded_size_byteReplacer : BoundedTypeSize strings.byteReplacer.
+Admitted.
+
+Global Instance into_val_byteReplacer `{ffi_syntax} : IntoVal byteReplacer.t.
+Admitted.
+
+Global Instance into_val_typed_byteReplacer `{ffi_syntax} : IntoValTyped byteReplacer.t strings.byteReplacer.
+Admitted.
+
+(* type strings.byteStringReplacer *)
+Module byteStringReplacer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End byteStringReplacer.
+
+Global Instance bounded_size_byteStringReplacer : BoundedTypeSize strings.byteStringReplacer.
+Admitted.
+
+Global Instance into_val_byteStringReplacer `{ffi_syntax} : IntoVal byteStringReplacer.t.
+Admitted.
+
+Global Instance into_val_typed_byteStringReplacer `{ffi_syntax} : IntoValTyped byteStringReplacer.t strings.byteStringReplacer.
+Admitted.
+
+(* type strings.stringFinder *)
+Module stringFinder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End stringFinder.
+
+Global Instance bounded_size_stringFinder : BoundedTypeSize strings.stringFinder.
+Admitted.
+
+Global Instance into_val_stringFinder `{ffi_syntax} : IntoVal stringFinder.t.
+Admitted.
+
+Global Instance into_val_typed_stringFinder `{ffi_syntax} : IntoValTyped stringFinder.t strings.stringFinder.
+Admitted.
+
+(* type strings.asciiSet *)
+Module asciiSet.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End asciiSet.
+
+Global Instance bounded_size_asciiSet : BoundedTypeSize strings.asciiSet.
+Admitted.
+
+Global Instance into_val_asciiSet `{ffi_syntax} : IntoVal asciiSet.t.
+Admitted.
+
+Global Instance into_val_typed_asciiSet `{ffi_syntax} : IntoValTyped asciiSet.t strings.asciiSet.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -98,6 +302,478 @@ Global Program Instance is_pkg_defined_strings : IsPkgDefined strings :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_Clone :
+  WpFuncCall strings.Clone _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Compare :
+  WpFuncCall strings.Compare _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Lines :
+  WpFuncCall strings.Lines _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_explodeSeq :
+  WpFuncCall strings.explodeSeq _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_splitSeq :
+  WpFuncCall strings.splitSeq _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SplitSeq :
+  WpFuncCall strings.SplitSeq _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SplitAfterSeq :
+  WpFuncCall strings.SplitAfterSeq _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FieldsSeq :
+  WpFuncCall strings.FieldsSeq _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FieldsFuncSeq :
+  WpFuncCall strings.FieldsFuncSeq _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewReader :
+  WpFuncCall strings.NewReader _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewReplacer :
+  WpFuncCall strings.NewReplacer _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_makeGenericReplacer :
+  WpFuncCall strings.makeGenericReplacer _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getStringWriter :
+  WpFuncCall strings.getStringWriter _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_makeSingleStringReplacer :
+  WpFuncCall strings.makeSingleStringReplacer _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_makeStringFinder :
+  WpFuncCall strings.makeStringFinder _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_longestCommonSuffix :
+  WpFuncCall strings.longestCommonSuffix _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_explode :
+  WpFuncCall strings.explode _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Count :
+  WpFuncCall strings.Count _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Contains :
+  WpFuncCall strings.Contains _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ContainsAny :
+  WpFuncCall strings.ContainsAny _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ContainsRune :
+  WpFuncCall strings.ContainsRune _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ContainsFunc :
+  WpFuncCall strings.ContainsFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LastIndex :
+  WpFuncCall strings.LastIndex _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IndexByte :
+  WpFuncCall strings.IndexByte _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IndexRune :
+  WpFuncCall strings.IndexRune _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IndexAny :
+  WpFuncCall strings.IndexAny _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LastIndexAny :
+  WpFuncCall strings.LastIndexAny _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LastIndexByte :
+  WpFuncCall strings.LastIndexByte _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_genSplit :
+  WpFuncCall strings.genSplit _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SplitN :
+  WpFuncCall strings.SplitN _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SplitAfterN :
+  WpFuncCall strings.SplitAfterN _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Split :
+  WpFuncCall strings.Split _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SplitAfter :
+  WpFuncCall strings.SplitAfter _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fields :
+  WpFuncCall strings.Fields _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FieldsFunc :
+  WpFuncCall strings.FieldsFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Join :
+  WpFuncCall strings.Join _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_HasPrefix :
+  WpFuncCall strings.HasPrefix _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_HasSuffix :
+  WpFuncCall strings.HasSuffix _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Map :
+  WpFuncCall strings.Map _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Repeat :
+  WpFuncCall strings.Repeat _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ToUpper :
+  WpFuncCall strings.ToUpper _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ToLower :
+  WpFuncCall strings.ToLower _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ToTitle :
+  WpFuncCall strings.ToTitle _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ToUpperSpecial :
+  WpFuncCall strings.ToUpperSpecial _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ToLowerSpecial :
+  WpFuncCall strings.ToLowerSpecial _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ToTitleSpecial :
+  WpFuncCall strings.ToTitleSpecial _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ToValidUTF8 :
+  WpFuncCall strings.ToValidUTF8 _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isSeparator :
+  WpFuncCall strings.isSeparator _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Title :
+  WpFuncCall strings.Title _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimLeftFunc :
+  WpFuncCall strings.TrimLeftFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimRightFunc :
+  WpFuncCall strings.TrimRightFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimFunc :
+  WpFuncCall strings.TrimFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IndexFunc :
+  WpFuncCall strings.IndexFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LastIndexFunc :
+  WpFuncCall strings.LastIndexFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_indexFunc :
+  WpFuncCall strings.indexFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_lastIndexFunc :
+  WpFuncCall strings.lastIndexFunc _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_makeASCIISet :
+  WpFuncCall strings.makeASCIISet _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Trim :
+  WpFuncCall strings.Trim _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimLeft :
+  WpFuncCall strings.TrimLeft _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_trimLeftByte :
+  WpFuncCall strings.trimLeftByte _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_trimLeftASCII :
+  WpFuncCall strings.trimLeftASCII _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_trimLeftUnicode :
+  WpFuncCall strings.trimLeftUnicode _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimRight :
+  WpFuncCall strings.TrimRight _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_trimRightByte :
+  WpFuncCall strings.trimRightByte _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_trimRightASCII :
+  WpFuncCall strings.trimRightASCII _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_trimRightUnicode :
+  WpFuncCall strings.trimRightUnicode _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimSpace :
+  WpFuncCall strings.TrimSpace _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimPrefix :
+  WpFuncCall strings.TrimPrefix _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TrimSuffix :
+  WpFuncCall strings.TrimSuffix _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Replace :
+  WpFuncCall strings.Replace _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReplaceAll :
+  WpFuncCall strings.ReplaceAll _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_EqualFold :
+  WpFuncCall strings.EqualFold _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Index :
+  WpFuncCall strings.Index _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Cut :
+  WpFuncCall strings.Cut _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CutPrefix :
+  WpFuncCall strings.CutPrefix _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CutSuffix :
+  WpFuncCall strings.CutSuffix _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Builder'ptr_Cap :
+  WpMethodCall (ptrT.id strings.Builder.id) "Cap" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_Grow :
+  WpMethodCall (ptrT.id strings.Builder.id) "Grow" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_Len :
+  WpMethodCall (ptrT.id strings.Builder.id) "Len" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_Reset :
+  WpMethodCall (ptrT.id strings.Builder.id) "Reset" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_String :
+  WpMethodCall (ptrT.id strings.Builder.id) "String" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_Write :
+  WpMethodCall (ptrT.id strings.Builder.id) "Write" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_WriteByte :
+  WpMethodCall (ptrT.id strings.Builder.id) "WriteByte" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_WriteRune :
+  WpMethodCall (ptrT.id strings.Builder.id) "WriteRune" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.Builder.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_copyCheck :
+  WpMethodCall (ptrT.id strings.Builder.id) "copyCheck" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Builder'ptr_grow :
+  WpMethodCall (ptrT.id strings.Builder.id) "grow" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_Len :
+  WpMethodCall (ptrT.id strings.Reader.id) "Len" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_Read :
+  WpMethodCall (ptrT.id strings.Reader.id) "Read" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_ReadAt :
+  WpMethodCall (ptrT.id strings.Reader.id) "ReadAt" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_ReadByte :
+  WpMethodCall (ptrT.id strings.Reader.id) "ReadByte" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_ReadRune :
+  WpMethodCall (ptrT.id strings.Reader.id) "ReadRune" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_Reset :
+  WpMethodCall (ptrT.id strings.Reader.id) "Reset" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_Seek :
+  WpMethodCall (ptrT.id strings.Reader.id) "Seek" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_Size :
+  WpMethodCall (ptrT.id strings.Reader.id) "Size" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_UnreadByte :
+  WpMethodCall (ptrT.id strings.Reader.id) "UnreadByte" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_UnreadRune :
+  WpMethodCall (ptrT.id strings.Reader.id) "UnreadRune" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Reader'ptr_WriteTo :
+  WpMethodCall (ptrT.id strings.Reader.id) "WriteTo" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Replacer'ptr_Replace :
+  WpMethodCall (ptrT.id strings.Replacer.id) "Replace" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Replacer'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.Replacer.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Replacer'ptr_build :
+  WpMethodCall (ptrT.id strings.Replacer.id) "build" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Replacer'ptr_buildOnce :
+  WpMethodCall (ptrT.id strings.Replacer.id) "buildOnce" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_trieNode'ptr_add :
+  WpMethodCall (ptrT.id strings.trieNode.id) "add" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_genericReplacer'ptr_Replace :
+  WpMethodCall (ptrT.id strings.genericReplacer.id) "Replace" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_genericReplacer'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.genericReplacer.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_genericReplacer'ptr_lookup :
+  WpMethodCall (ptrT.id strings.genericReplacer.id) "lookup" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_appendSliceWriter'ptr_Write :
+  WpMethodCall (ptrT.id strings.appendSliceWriter.id) "Write" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_appendSliceWriter'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.appendSliceWriter.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringWriter_WriteString :
+  WpMethodCall strings.stringWriter.id "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringWriter'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.stringWriter.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_singleStringReplacer'ptr_Replace :
+  WpMethodCall (ptrT.id strings.singleStringReplacer.id) "Replace" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_singleStringReplacer'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.singleStringReplacer.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_byteReplacer'ptr_Replace :
+  WpMethodCall (ptrT.id strings.byteReplacer.id) "Replace" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_byteReplacer'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.byteReplacer.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_byteStringReplacer'ptr_Replace :
+  WpMethodCall (ptrT.id strings.byteStringReplacer.id) "Replace" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_byteStringReplacer'ptr_WriteString :
+  WpMethodCall (ptrT.id strings.byteStringReplacer.id) "WriteString" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringFinder'ptr_next :
+  WpMethodCall (ptrT.id strings.stringFinder.id) "next" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_asciiSet'ptr_contains :
+  WpMethodCall (ptrT.id strings.asciiSet.id) "contains" _ (is_pkg_defined strings) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End strings.

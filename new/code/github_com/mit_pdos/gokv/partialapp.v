@@ -90,10 +90,10 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(partiallyApplyMe, partiallyApplyMeⁱᵐᵖˡ); (main, mainⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, [("someMethod"%go, Foo__someMethodⁱᵐᵖˡ); ("someMethodWithArgs"%go, Foo__someMethodWithArgsⁱᵐᵖˡ)]); (ptrT.id Foo.id, [("someMethod"%go, (λ: "$recvAddr",
-                 method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "$recvAddr")
-                 )%V); ("someMethodWithArgs"%go, (λ: "$recvAddr",
-                 method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, [("someMethod"%go, Foo__someMethodⁱᵐᵖˡ); ("someMethodWithArgs"%go, Foo__someMethodWithArgsⁱᵐᵖˡ)]); (ptrT.id Foo.id, [("someMethod"%go, (λ: "$r",
+                 method_call #Foo.id #"someMethod"%go (![#Foo] "$r")
+                 )%V); ("someMethodWithArgs"%go, (λ: "$r",
+                 method_call #Foo.id #"someMethodWithArgs"%go (![#Foo] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo partialapp.main :=

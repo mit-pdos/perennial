@@ -174,6 +174,22 @@ Global Program Instance is_pkg_defined_marshal : IsPkgDefined marshal :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_NewEncFromSlice :
+  WpFuncCall marshal.NewEncFromSlice _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewEnc :
+  WpFuncCall marshal.NewEnc _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_bool2byte :
+  WpFuncCall marshal.bool2byte _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewDec :
+  WpFuncCall marshal.NewDec _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_compute_new_cap :
   WpFuncCall marshal.compute_new_cap _ (is_pkg_defined marshal) :=
   ltac:(solve_wp_func_call).
@@ -188,6 +204,10 @@ Global Instance wp_func_call_ReadInt :
 
 Global Instance wp_func_call_ReadInt32 :
   WpFuncCall marshal.ReadInt32 _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadInts :
+  WpFuncCall marshal.ReadInts _ (is_pkg_defined marshal) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_ReadBytes :
@@ -218,6 +238,10 @@ Global Instance wp_func_call_WriteBytes :
   WpFuncCall marshal.WriteBytes _ (is_pkg_defined marshal) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_WriteInts :
+  WpFuncCall marshal.WriteInts _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_WriteBool :
   WpFuncCall marshal.WriteBool _ (is_pkg_defined marshal) :=
   ltac:(solve_wp_func_call).
@@ -241,6 +265,94 @@ Global Instance wp_func_call_WriteSlice :
 Global Instance wp_func_call_WriteSliceLenPrefix :
   WpFuncCall marshal.WriteSliceLenPrefix _ (is_pkg_defined marshal) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Enc_Finish :
+  WpMethodCall marshal.Enc.id "Finish" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc_PutBool :
+  WpMethodCall marshal.Enc.id "PutBool" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc_PutBytes :
+  WpMethodCall marshal.Enc.id "PutBytes" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc_PutInt :
+  WpMethodCall marshal.Enc.id "PutInt" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc_PutInt32 :
+  WpMethodCall marshal.Enc.id "PutInt32" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc_PutInts :
+  WpMethodCall marshal.Enc.id "PutInts" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc'ptr_Finish :
+  WpMethodCall (ptrT.id marshal.Enc.id) "Finish" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc'ptr_PutBool :
+  WpMethodCall (ptrT.id marshal.Enc.id) "PutBool" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc'ptr_PutBytes :
+  WpMethodCall (ptrT.id marshal.Enc.id) "PutBytes" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc'ptr_PutInt :
+  WpMethodCall (ptrT.id marshal.Enc.id) "PutInt" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc'ptr_PutInt32 :
+  WpMethodCall (ptrT.id marshal.Enc.id) "PutInt32" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Enc'ptr_PutInts :
+  WpMethodCall (ptrT.id marshal.Enc.id) "PutInts" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec_GetBool :
+  WpMethodCall marshal.Dec.id "GetBool" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec_GetBytes :
+  WpMethodCall marshal.Dec.id "GetBytes" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec_GetInt :
+  WpMethodCall marshal.Dec.id "GetInt" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec_GetInt32 :
+  WpMethodCall marshal.Dec.id "GetInt32" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec_GetInts :
+  WpMethodCall marshal.Dec.id "GetInts" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec'ptr_GetBool :
+  WpMethodCall (ptrT.id marshal.Dec.id) "GetBool" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec'ptr_GetBytes :
+  WpMethodCall (ptrT.id marshal.Dec.id) "GetBytes" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec'ptr_GetInt :
+  WpMethodCall (ptrT.id marshal.Dec.id) "GetInt" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec'ptr_GetInt32 :
+  WpMethodCall (ptrT.id marshal.Dec.id) "GetInt32" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Dec'ptr_GetInts :
+  WpMethodCall (ptrT.id marshal.Dec.id) "GetInts" _ (is_pkg_defined marshal) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End marshal.

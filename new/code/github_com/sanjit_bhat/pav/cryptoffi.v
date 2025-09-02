@@ -71,8 +71,8 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(NewHasher, NewHasherⁱᵐᵖˡ); (SigGenerateKey, SigGenerateKeyⁱᵐᵖˡ); (VrfGenerateKey, VrfGenerateKeyⁱᵐᵖˡ); (VrfPublicKeyEncode, VrfPublicKeyEncodeⁱᵐᵖˡ); (VrfPublicKeyDecode, VrfPublicKeyDecodeⁱᵐᵖˡ); (RandBytes, RandBytesⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Hasher.id, []); (ptrT.id Hasher.id, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); (SigPrivateKey.id, []); (ptrT.id SigPrivateKey.id, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); (SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (ptrT.id SigPublicKey.id, [("Verify"%go, (λ: "$recvAddr",
-                 method_call #cryptoffi.cryptoffi #"SigPublicKey" #"Verify" (![#SigPublicKey] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Hasher.id, []); (ptrT.id Hasher.id, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); (SigPrivateKey.id, []); (ptrT.id SigPrivateKey.id, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); (SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (ptrT.id SigPublicKey.id, [("Verify"%go, (λ: "$r",
+                 method_call #SigPublicKey.id #"Verify"%go (![#SigPublicKey] "$r")
                  )%V)]); (VrfPrivateKey.id, []); (ptrT.id VrfPrivateKey.id, [("Evaluate"%go, VrfPrivateKey__Evaluateⁱᵐᵖˡ); ("Prove"%go, VrfPrivateKey__Proveⁱᵐᵖˡ); ("PublicKey"%go, VrfPrivateKey__PublicKeyⁱᵐᵖˡ)]); (VrfPublicKey.id, []); (ptrT.id VrfPublicKey.id, [("Verify"%go, VrfPublicKey__Verifyⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo cryptoffi.cryptoffi :=

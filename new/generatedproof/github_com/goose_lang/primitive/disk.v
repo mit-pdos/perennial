@@ -9,6 +9,57 @@ Set Default Proof Using "Type".
 
 Module disk.
 
+(* type disk.Block *)
+Module Block.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Block.
+
+Global Instance bounded_size_Block : BoundedTypeSize disk.Block.
+Admitted.
+
+Global Instance into_val_Block `{ffi_syntax} : IntoVal Block.t.
+Admitted.
+
+Global Instance into_val_typed_Block `{ffi_syntax} : IntoValTyped Block.t disk.Block.
+Admitted.
+
+(* type disk.FileDisk *)
+Module FileDisk.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End FileDisk.
+
+Global Instance bounded_size_FileDisk : BoundedTypeSize disk.FileDisk.
+Admitted.
+
+Global Instance into_val_FileDisk `{ffi_syntax} : IntoVal FileDisk.t.
+Admitted.
+
+Global Instance into_val_typed_FileDisk `{ffi_syntax} : IntoValTyped FileDisk.t disk.FileDisk.
+Admitted.
+
+(* type disk.MemDisk *)
+Module MemDisk.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MemDisk.
+
+Global Instance bounded_size_MemDisk : BoundedTypeSize disk.MemDisk.
+Admitted.
+
+Global Instance into_val_MemDisk `{ffi_syntax} : IntoVal MemDisk.t.
+Admitted.
+
+Global Instance into_val_typed_MemDisk `{ffi_syntax} : IntoValTyped MemDisk.t disk.MemDisk.
+Admitted.
+
 Section names.
 
 Context `{!heapGS Σ}.
@@ -31,6 +82,10 @@ Global Program Instance is_pkg_defined_disk : IsPkgDefined disk :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_Init :
+  WpFuncCall disk.Init _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Get :
   WpFuncCall disk.Get _ (is_pkg_defined disk) :=
   ltac:(solve_wp_func_call).
@@ -50,6 +105,110 @@ Global Instance wp_func_call_Size :
 Global Instance wp_func_call_Barrier :
   WpFuncCall disk.Barrier _ (is_pkg_defined disk) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewFileDisk :
+  WpFuncCall disk.NewFileDisk _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewMemDisk :
+  WpFuncCall disk.NewMemDisk _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_FileDisk_Barrier :
+  WpMethodCall disk.FileDisk.id "Barrier" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk_Close :
+  WpMethodCall disk.FileDisk.id "Close" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk_Read :
+  WpMethodCall disk.FileDisk.id "Read" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk_ReadTo :
+  WpMethodCall disk.FileDisk.id "ReadTo" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk_Size :
+  WpMethodCall disk.FileDisk.id "Size" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk_Write :
+  WpMethodCall disk.FileDisk.id "Write" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk'ptr_Barrier :
+  WpMethodCall (ptrT.id disk.FileDisk.id) "Barrier" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk'ptr_Close :
+  WpMethodCall (ptrT.id disk.FileDisk.id) "Close" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk'ptr_Read :
+  WpMethodCall (ptrT.id disk.FileDisk.id) "Read" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk'ptr_ReadTo :
+  WpMethodCall (ptrT.id disk.FileDisk.id) "ReadTo" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk'ptr_Size :
+  WpMethodCall (ptrT.id disk.FileDisk.id) "Size" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FileDisk'ptr_Write :
+  WpMethodCall (ptrT.id disk.FileDisk.id) "Write" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk_Barrier :
+  WpMethodCall disk.MemDisk.id "Barrier" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk_Close :
+  WpMethodCall disk.MemDisk.id "Close" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk_Read :
+  WpMethodCall disk.MemDisk.id "Read" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk_ReadTo :
+  WpMethodCall disk.MemDisk.id "ReadTo" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk_Size :
+  WpMethodCall disk.MemDisk.id "Size" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk_Write :
+  WpMethodCall disk.MemDisk.id "Write" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk'ptr_Barrier :
+  WpMethodCall (ptrT.id disk.MemDisk.id) "Barrier" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk'ptr_Close :
+  WpMethodCall (ptrT.id disk.MemDisk.id) "Close" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk'ptr_Read :
+  WpMethodCall (ptrT.id disk.MemDisk.id) "Read" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk'ptr_ReadTo :
+  WpMethodCall (ptrT.id disk.MemDisk.id) "ReadTo" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk'ptr_Size :
+  WpMethodCall (ptrT.id disk.MemDisk.id) "Size" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MemDisk'ptr_Write :
+  WpMethodCall (ptrT.id disk.MemDisk.id) "Write" _ (is_pkg_defined disk) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End disk.

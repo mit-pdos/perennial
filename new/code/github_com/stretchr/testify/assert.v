@@ -5,9 +5,35 @@ Definition assert : go_string := "github.com/stretchr/testify/assert".
 
 Module assert.
 
+Module CompareType. Axiom id : go_string. End CompareType.
+Module compareResult. Definition id : go_string := "github.com/stretchr/testify/assert.compareResult"%go. End compareResult.
+Module TestingT. Definition id : go_string := "github.com/stretchr/testify/assert.TestingT"%go. End TestingT.
+Module ComparisonAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.ComparisonAssertionFunc"%go. End ComparisonAssertionFunc.
+Module ValueAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.ValueAssertionFunc"%go. End ValueAssertionFunc.
+Module BoolAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.BoolAssertionFunc"%go. End BoolAssertionFunc.
+Module ErrorAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.ErrorAssertionFunc"%go. End ErrorAssertionFunc.
+Module PanicAssertionFunc. Axiom id : go_string. End PanicAssertionFunc.
+Module Comparison. Definition id : go_string := "github.com/stretchr/testify/assert.Comparison"%go. End Comparison.
+Module failNower. Definition id : go_string := "github.com/stretchr/testify/assert.failNower"%go. End failNower.
+Module labeledContent. Definition id : go_string := "github.com/stretchr/testify/assert.labeledContent"%go. End labeledContent.
+Module PanicTestFunc. Definition id : go_string := "github.com/stretchr/testify/assert.PanicTestFunc"%go. End PanicTestFunc.
+Module tHelper. Axiom id : go_string. End tHelper.
+Module CollectT. Definition id : go_string := "github.com/stretchr/testify/assert.CollectT"%go. End CollectT.
+Module Assertions. Definition id : go_string := "github.com/stretchr/testify/assert.Assertions"%go. End Assertions.
+
 Section code.
 Context `{ffi_syntax}.
 
+
+Axiom CompareType : go_type.
+
+Axiom compareResult : go_type.
+
+Axiom compareLess : expr.
+
+Axiom compareEqual : expr.
+
+Axiom compareGreater : expr.
 
 Definition intType : go_string := "github.com/stretchr/testify/assert.intType"%go.
 
@@ -75,341 +101,999 @@ Axiom bytesType'init : val.
 
 Definition compare : go_string := "github.com/stretchr/testify/assert.compare"%go.
 
+Axiom compareⁱᵐᵖˡ : val.
+
 Definition Greater : go_string := "github.com/stretchr/testify/assert.Greater"%go.
+
+Axiom Greaterⁱᵐᵖˡ : val.
 
 Definition GreaterOrEqual : go_string := "github.com/stretchr/testify/assert.GreaterOrEqual"%go.
 
+Axiom GreaterOrEqualⁱᵐᵖˡ : val.
+
 Definition Less : go_string := "github.com/stretchr/testify/assert.Less"%go.
+
+Axiom Lessⁱᵐᵖˡ : val.
 
 Definition LessOrEqual : go_string := "github.com/stretchr/testify/assert.LessOrEqual"%go.
 
+Axiom LessOrEqualⁱᵐᵖˡ : val.
+
 Definition Positive : go_string := "github.com/stretchr/testify/assert.Positive"%go.
+
+Axiom Positiveⁱᵐᵖˡ : val.
 
 Definition Negative : go_string := "github.com/stretchr/testify/assert.Negative"%go.
 
+Axiom Negativeⁱᵐᵖˡ : val.
+
 Definition compareTwoValues : go_string := "github.com/stretchr/testify/assert.compareTwoValues"%go.
+
+Axiom compareTwoValuesⁱᵐᵖˡ : val.
 
 Definition containsValue : go_string := "github.com/stretchr/testify/assert.containsValue"%go.
 
+Axiom containsValueⁱᵐᵖˡ : val.
+
 Definition Conditionf : go_string := "github.com/stretchr/testify/assert.Conditionf"%go.
+
+Axiom Conditionfⁱᵐᵖˡ : val.
 
 Definition Containsf : go_string := "github.com/stretchr/testify/assert.Containsf"%go.
 
+Axiom Containsfⁱᵐᵖˡ : val.
+
 Definition DirExistsf : go_string := "github.com/stretchr/testify/assert.DirExistsf"%go.
+
+Axiom DirExistsfⁱᵐᵖˡ : val.
 
 Definition ElementsMatchf : go_string := "github.com/stretchr/testify/assert.ElementsMatchf"%go.
 
+Axiom ElementsMatchfⁱᵐᵖˡ : val.
+
 Definition Emptyf : go_string := "github.com/stretchr/testify/assert.Emptyf"%go.
+
+Axiom Emptyfⁱᵐᵖˡ : val.
 
 Definition Equalf : go_string := "github.com/stretchr/testify/assert.Equalf"%go.
 
+Axiom Equalfⁱᵐᵖˡ : val.
+
 Definition EqualErrorf : go_string := "github.com/stretchr/testify/assert.EqualErrorf"%go.
+
+Axiom EqualErrorfⁱᵐᵖˡ : val.
 
 Definition EqualExportedValuesf : go_string := "github.com/stretchr/testify/assert.EqualExportedValuesf"%go.
 
+Axiom EqualExportedValuesfⁱᵐᵖˡ : val.
+
 Definition EqualValuesf : go_string := "github.com/stretchr/testify/assert.EqualValuesf"%go.
+
+Axiom EqualValuesfⁱᵐᵖˡ : val.
 
 Definition Errorf : go_string := "github.com/stretchr/testify/assert.Errorf"%go.
 
+Axiom Errorfⁱᵐᵖˡ : val.
+
 Definition ErrorAsf : go_string := "github.com/stretchr/testify/assert.ErrorAsf"%go.
+
+Axiom ErrorAsfⁱᵐᵖˡ : val.
 
 Definition ErrorContainsf : go_string := "github.com/stretchr/testify/assert.ErrorContainsf"%go.
 
+Axiom ErrorContainsfⁱᵐᵖˡ : val.
+
 Definition ErrorIsf : go_string := "github.com/stretchr/testify/assert.ErrorIsf"%go.
+
+Axiom ErrorIsfⁱᵐᵖˡ : val.
 
 Definition Eventuallyf : go_string := "github.com/stretchr/testify/assert.Eventuallyf"%go.
 
+Axiom Eventuallyfⁱᵐᵖˡ : val.
+
 Definition EventuallyWithTf : go_string := "github.com/stretchr/testify/assert.EventuallyWithTf"%go.
+
+Axiom EventuallyWithTfⁱᵐᵖˡ : val.
 
 Definition Exactlyf : go_string := "github.com/stretchr/testify/assert.Exactlyf"%go.
 
+Axiom Exactlyfⁱᵐᵖˡ : val.
+
 Definition Failf : go_string := "github.com/stretchr/testify/assert.Failf"%go.
+
+Axiom Failfⁱᵐᵖˡ : val.
 
 Definition FailNowf : go_string := "github.com/stretchr/testify/assert.FailNowf"%go.
 
+Axiom FailNowfⁱᵐᵖˡ : val.
+
 Definition Falsef : go_string := "github.com/stretchr/testify/assert.Falsef"%go.
+
+Axiom Falsefⁱᵐᵖˡ : val.
 
 Definition FileExistsf : go_string := "github.com/stretchr/testify/assert.FileExistsf"%go.
 
+Axiom FileExistsfⁱᵐᵖˡ : val.
+
 Definition Greaterf : go_string := "github.com/stretchr/testify/assert.Greaterf"%go.
+
+Axiom Greaterfⁱᵐᵖˡ : val.
 
 Definition GreaterOrEqualf : go_string := "github.com/stretchr/testify/assert.GreaterOrEqualf"%go.
 
+Axiom GreaterOrEqualfⁱᵐᵖˡ : val.
+
 Definition HTTPBodyContainsf : go_string := "github.com/stretchr/testify/assert.HTTPBodyContainsf"%go.
+
+Axiom HTTPBodyContainsfⁱᵐᵖˡ : val.
 
 Definition HTTPBodyNotContainsf : go_string := "github.com/stretchr/testify/assert.HTTPBodyNotContainsf"%go.
 
+Axiom HTTPBodyNotContainsfⁱᵐᵖˡ : val.
+
 Definition HTTPErrorf : go_string := "github.com/stretchr/testify/assert.HTTPErrorf"%go.
+
+Axiom HTTPErrorfⁱᵐᵖˡ : val.
 
 Definition HTTPRedirectf : go_string := "github.com/stretchr/testify/assert.HTTPRedirectf"%go.
 
+Axiom HTTPRedirectfⁱᵐᵖˡ : val.
+
 Definition HTTPStatusCodef : go_string := "github.com/stretchr/testify/assert.HTTPStatusCodef"%go.
+
+Axiom HTTPStatusCodefⁱᵐᵖˡ : val.
 
 Definition HTTPSuccessf : go_string := "github.com/stretchr/testify/assert.HTTPSuccessf"%go.
 
+Axiom HTTPSuccessfⁱᵐᵖˡ : val.
+
 Definition Implementsf : go_string := "github.com/stretchr/testify/assert.Implementsf"%go.
+
+Axiom Implementsfⁱᵐᵖˡ : val.
 
 Definition InDeltaf : go_string := "github.com/stretchr/testify/assert.InDeltaf"%go.
 
+Axiom InDeltafⁱᵐᵖˡ : val.
+
 Definition InDeltaMapValuesf : go_string := "github.com/stretchr/testify/assert.InDeltaMapValuesf"%go.
+
+Axiom InDeltaMapValuesfⁱᵐᵖˡ : val.
 
 Definition InDeltaSlicef : go_string := "github.com/stretchr/testify/assert.InDeltaSlicef"%go.
 
+Axiom InDeltaSlicefⁱᵐᵖˡ : val.
+
 Definition InEpsilonf : go_string := "github.com/stretchr/testify/assert.InEpsilonf"%go.
+
+Axiom InEpsilonfⁱᵐᵖˡ : val.
 
 Definition InEpsilonSlicef : go_string := "github.com/stretchr/testify/assert.InEpsilonSlicef"%go.
 
+Axiom InEpsilonSlicefⁱᵐᵖˡ : val.
+
 Definition IsDecreasingf : go_string := "github.com/stretchr/testify/assert.IsDecreasingf"%go.
+
+Axiom IsDecreasingfⁱᵐᵖˡ : val.
 
 Definition IsIncreasingf : go_string := "github.com/stretchr/testify/assert.IsIncreasingf"%go.
 
+Axiom IsIncreasingfⁱᵐᵖˡ : val.
+
 Definition IsNonDecreasingf : go_string := "github.com/stretchr/testify/assert.IsNonDecreasingf"%go.
+
+Axiom IsNonDecreasingfⁱᵐᵖˡ : val.
 
 Definition IsNonIncreasingf : go_string := "github.com/stretchr/testify/assert.IsNonIncreasingf"%go.
 
+Axiom IsNonIncreasingfⁱᵐᵖˡ : val.
+
 Definition IsTypef : go_string := "github.com/stretchr/testify/assert.IsTypef"%go.
+
+Axiom IsTypefⁱᵐᵖˡ : val.
 
 Definition JSONEqf : go_string := "github.com/stretchr/testify/assert.JSONEqf"%go.
 
+Axiom JSONEqfⁱᵐᵖˡ : val.
+
 Definition Lenf : go_string := "github.com/stretchr/testify/assert.Lenf"%go.
+
+Axiom Lenfⁱᵐᵖˡ : val.
 
 Definition Lessf : go_string := "github.com/stretchr/testify/assert.Lessf"%go.
 
+Axiom Lessfⁱᵐᵖˡ : val.
+
 Definition LessOrEqualf : go_string := "github.com/stretchr/testify/assert.LessOrEqualf"%go.
+
+Axiom LessOrEqualfⁱᵐᵖˡ : val.
 
 Definition Negativef : go_string := "github.com/stretchr/testify/assert.Negativef"%go.
 
+Axiom Negativefⁱᵐᵖˡ : val.
+
 Definition Neverf : go_string := "github.com/stretchr/testify/assert.Neverf"%go.
+
+Axiom Neverfⁱᵐᵖˡ : val.
 
 Definition Nilf : go_string := "github.com/stretchr/testify/assert.Nilf"%go.
 
+Axiom Nilfⁱᵐᵖˡ : val.
+
 Definition NoDirExistsf : go_string := "github.com/stretchr/testify/assert.NoDirExistsf"%go.
+
+Axiom NoDirExistsfⁱᵐᵖˡ : val.
 
 Definition NoErrorf : go_string := "github.com/stretchr/testify/assert.NoErrorf"%go.
 
+Axiom NoErrorfⁱᵐᵖˡ : val.
+
 Definition NoFileExistsf : go_string := "github.com/stretchr/testify/assert.NoFileExistsf"%go.
+
+Axiom NoFileExistsfⁱᵐᵖˡ : val.
 
 Definition NotContainsf : go_string := "github.com/stretchr/testify/assert.NotContainsf"%go.
 
+Axiom NotContainsfⁱᵐᵖˡ : val.
+
 Definition NotElementsMatchf : go_string := "github.com/stretchr/testify/assert.NotElementsMatchf"%go.
+
+Axiom NotElementsMatchfⁱᵐᵖˡ : val.
 
 Definition NotEmptyf : go_string := "github.com/stretchr/testify/assert.NotEmptyf"%go.
 
+Axiom NotEmptyfⁱᵐᵖˡ : val.
+
 Definition NotEqualf : go_string := "github.com/stretchr/testify/assert.NotEqualf"%go.
+
+Axiom NotEqualfⁱᵐᵖˡ : val.
 
 Definition NotEqualValuesf : go_string := "github.com/stretchr/testify/assert.NotEqualValuesf"%go.
 
+Axiom NotEqualValuesfⁱᵐᵖˡ : val.
+
 Definition NotErrorAsf : go_string := "github.com/stretchr/testify/assert.NotErrorAsf"%go.
+
+Axiom NotErrorAsfⁱᵐᵖˡ : val.
 
 Definition NotErrorIsf : go_string := "github.com/stretchr/testify/assert.NotErrorIsf"%go.
 
+Axiom NotErrorIsfⁱᵐᵖˡ : val.
+
 Definition NotImplementsf : go_string := "github.com/stretchr/testify/assert.NotImplementsf"%go.
+
+Axiom NotImplementsfⁱᵐᵖˡ : val.
 
 Definition NotNilf : go_string := "github.com/stretchr/testify/assert.NotNilf"%go.
 
+Axiom NotNilfⁱᵐᵖˡ : val.
+
 Definition NotPanicsf : go_string := "github.com/stretchr/testify/assert.NotPanicsf"%go.
+
+Axiom NotPanicsfⁱᵐᵖˡ : val.
 
 Definition NotRegexpf : go_string := "github.com/stretchr/testify/assert.NotRegexpf"%go.
 
+Axiom NotRegexpfⁱᵐᵖˡ : val.
+
 Definition NotSamef : go_string := "github.com/stretchr/testify/assert.NotSamef"%go.
+
+Axiom NotSamefⁱᵐᵖˡ : val.
 
 Definition NotSubsetf : go_string := "github.com/stretchr/testify/assert.NotSubsetf"%go.
 
+Axiom NotSubsetfⁱᵐᵖˡ : val.
+
 Definition NotZerof : go_string := "github.com/stretchr/testify/assert.NotZerof"%go.
+
+Axiom NotZerofⁱᵐᵖˡ : val.
 
 Definition Panicsf : go_string := "github.com/stretchr/testify/assert.Panicsf"%go.
 
+Axiom Panicsfⁱᵐᵖˡ : val.
+
 Definition PanicsWithErrorf : go_string := "github.com/stretchr/testify/assert.PanicsWithErrorf"%go.
+
+Axiom PanicsWithErrorfⁱᵐᵖˡ : val.
 
 Definition PanicsWithValuef : go_string := "github.com/stretchr/testify/assert.PanicsWithValuef"%go.
 
+Axiom PanicsWithValuefⁱᵐᵖˡ : val.
+
 Definition Positivef : go_string := "github.com/stretchr/testify/assert.Positivef"%go.
+
+Axiom Positivefⁱᵐᵖˡ : val.
 
 Definition Regexpf : go_string := "github.com/stretchr/testify/assert.Regexpf"%go.
 
+Axiom Regexpfⁱᵐᵖˡ : val.
+
 Definition Samef : go_string := "github.com/stretchr/testify/assert.Samef"%go.
+
+Axiom Samefⁱᵐᵖˡ : val.
 
 Definition Subsetf : go_string := "github.com/stretchr/testify/assert.Subsetf"%go.
 
+Axiom Subsetfⁱᵐᵖˡ : val.
+
 Definition Truef : go_string := "github.com/stretchr/testify/assert.Truef"%go.
+
+Axiom Truefⁱᵐᵖˡ : val.
 
 Definition WithinDurationf : go_string := "github.com/stretchr/testify/assert.WithinDurationf"%go.
 
+Axiom WithinDurationfⁱᵐᵖˡ : val.
+
 Definition WithinRangef : go_string := "github.com/stretchr/testify/assert.WithinRangef"%go.
+
+Axiom WithinRangefⁱᵐᵖˡ : val.
 
 Definition YAMLEqf : go_string := "github.com/stretchr/testify/assert.YAMLEqf"%go.
 
+Axiom YAMLEqfⁱᵐᵖˡ : val.
+
 Definition Zerof : go_string := "github.com/stretchr/testify/assert.Zerof"%go.
+
+Axiom Zerofⁱᵐᵖˡ : val.
+
+Axiom Assertions__Conditionⁱᵐᵖˡ : val.
+
+Axiom Assertions__Conditionfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Containsⁱᵐᵖˡ : val.
+
+Axiom Assertions__Containsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__DirExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__DirExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__ElementsMatchⁱᵐᵖˡ : val.
+
+Axiom Assertions__ElementsMatchfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Emptyⁱᵐᵖˡ : val.
+
+Axiom Assertions__Emptyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Equalⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualExportedValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualExportedValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Equalfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Errorⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorAsⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorAsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorIsⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorIsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Errorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Eventuallyⁱᵐᵖˡ : val.
+
+Axiom Assertions__EventuallyWithTⁱᵐᵖˡ : val.
+
+Axiom Assertions__EventuallyWithTfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Eventuallyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Exactlyⁱᵐᵖˡ : val.
+
+Axiom Assertions__Exactlyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Failⁱᵐᵖˡ : val.
+
+Axiom Assertions__FailNowⁱᵐᵖˡ : val.
+
+Axiom Assertions__FailNowfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Failfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Falseⁱᵐᵖˡ : val.
+
+Axiom Assertions__Falsefⁱᵐᵖˡ : val.
+
+Axiom Assertions__FileExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__FileExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Greaterⁱᵐᵖˡ : val.
+
+Axiom Assertions__GreaterOrEqualⁱᵐᵖˡ : val.
+
+Axiom Assertions__GreaterOrEqualfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Greaterfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyNotContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyNotContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPRedirectⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPRedirectfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPStatusCodeⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPStatusCodefⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPSuccessⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPSuccessfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Implementsⁱᵐᵖˡ : val.
+
+Axiom Assertions__Implementsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaMapValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaMapValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaSliceⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaSlicefⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltafⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonSliceⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonSlicefⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsDecreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsDecreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsIncreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsIncreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonDecreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonDecreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonIncreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonIncreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsTypeⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsTypefⁱᵐᵖˡ : val.
+
+Axiom Assertions__JSONEqⁱᵐᵖˡ : val.
+
+Axiom Assertions__JSONEqfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lenⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lenfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lessⁱᵐᵖˡ : val.
+
+Axiom Assertions__LessOrEqualⁱᵐᵖˡ : val.
+
+Axiom Assertions__LessOrEqualfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lessfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Negativeⁱᵐᵖˡ : val.
+
+Axiom Assertions__Negativefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Neverⁱᵐᵖˡ : val.
+
+Axiom Assertions__Neverfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Nilⁱᵐᵖˡ : val.
+
+Axiom Assertions__Nilfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoDirExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoDirExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoFileExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoFileExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotElementsMatchⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotElementsMatchfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEmptyⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEmptyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorAsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorAsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorIsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorIsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotImplementsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotImplementsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotNilⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotNilfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotPanicsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotPanicsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotRegexpⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotRegexpfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSameⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSamefⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSubsetⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSubsetfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotZeroⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotZerofⁱᵐᵖˡ : val.
+
+Axiom Assertions__Panicsⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithValueⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithValuefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Panicsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Positiveⁱᵐᵖˡ : val.
+
+Axiom Assertions__Positivefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Regexpⁱᵐᵖˡ : val.
+
+Axiom Assertions__Regexpfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Sameⁱᵐᵖˡ : val.
+
+Axiom Assertions__Samefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Subsetⁱᵐᵖˡ : val.
+
+Axiom Assertions__Subsetfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Trueⁱᵐᵖˡ : val.
+
+Axiom Assertions__Truefⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinDurationⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinDurationfⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinRangeⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinRangefⁱᵐᵖˡ : val.
+
+Axiom Assertions__YAMLEqⁱᵐᵖˡ : val.
+
+Axiom Assertions__YAMLEqfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Zeroⁱᵐᵖˡ : val.
+
+Axiom Assertions__Zerofⁱᵐᵖˡ : val.
 
 Definition isOrdered : go_string := "github.com/stretchr/testify/assert.isOrdered"%go.
 
+Axiom isOrderedⁱᵐᵖˡ : val.
+
 Definition IsIncreasing : go_string := "github.com/stretchr/testify/assert.IsIncreasing"%go.
+
+Axiom IsIncreasingⁱᵐᵖˡ : val.
 
 Definition IsNonIncreasing : go_string := "github.com/stretchr/testify/assert.IsNonIncreasing"%go.
 
+Axiom IsNonIncreasingⁱᵐᵖˡ : val.
+
 Definition IsDecreasing : go_string := "github.com/stretchr/testify/assert.IsDecreasing"%go.
+
+Axiom IsDecreasingⁱᵐᵖˡ : val.
 
 Definition IsNonDecreasing : go_string := "github.com/stretchr/testify/assert.IsNonDecreasing"%go.
 
+Axiom IsNonDecreasingⁱᵐᵖˡ : val.
+
+Axiom TestingT : go_type.
+
+Axiom ComparisonAssertionFunc : go_type.
+
+Axiom ValueAssertionFunc : go_type.
+
+Axiom BoolAssertionFunc : go_type.
+
+Axiom ErrorAssertionFunc : go_type.
+
+Axiom PanicAssertionFunc : go_type.
+
+Axiom Comparison : go_type.
+
 Definition ObjectsAreEqual : go_string := "github.com/stretchr/testify/assert.ObjectsAreEqual"%go.
+
+Axiom ObjectsAreEqualⁱᵐᵖˡ : val.
 
 Definition copyExportedFields : go_string := "github.com/stretchr/testify/assert.copyExportedFields"%go.
 
+Axiom copyExportedFieldsⁱᵐᵖˡ : val.
+
 Definition ObjectsExportedFieldsAreEqual : go_string := "github.com/stretchr/testify/assert.ObjectsExportedFieldsAreEqual"%go.
+
+Axiom ObjectsExportedFieldsAreEqualⁱᵐᵖˡ : val.
 
 Definition ObjectsAreEqualValues : go_string := "github.com/stretchr/testify/assert.ObjectsAreEqualValues"%go.
 
+Axiom ObjectsAreEqualValuesⁱᵐᵖˡ : val.
+
 Definition isNumericType : go_string := "github.com/stretchr/testify/assert.isNumericType"%go.
+
+Axiom isNumericTypeⁱᵐᵖˡ : val.
 
 Definition CallerInfo : go_string := "github.com/stretchr/testify/assert.CallerInfo"%go.
 
+Axiom CallerInfoⁱᵐᵖˡ : val.
+
 Definition isTest : go_string := "github.com/stretchr/testify/assert.isTest"%go.
+
+Axiom isTestⁱᵐᵖˡ : val.
 
 Definition messageFromMsgAndArgs : go_string := "github.com/stretchr/testify/assert.messageFromMsgAndArgs"%go.
 
+Axiom messageFromMsgAndArgsⁱᵐᵖˡ : val.
+
 Definition indentMessageLines : go_string := "github.com/stretchr/testify/assert.indentMessageLines"%go.
+
+Axiom indentMessageLinesⁱᵐᵖˡ : val.
+
+Axiom failNower : go_type.
 
 Definition FailNow : go_string := "github.com/stretchr/testify/assert.FailNow"%go.
 
+Axiom FailNowⁱᵐᵖˡ : val.
+
 Definition Fail : go_string := "github.com/stretchr/testify/assert.Fail"%go.
+
+Axiom Failⁱᵐᵖˡ : val.
+
+Axiom labeledContent : go_type.
 
 Definition labeledOutput : go_string := "github.com/stretchr/testify/assert.labeledOutput"%go.
 
+Axiom labeledOutputⁱᵐᵖˡ : val.
+
 Definition Implements : go_string := "github.com/stretchr/testify/assert.Implements"%go.
+
+Axiom Implementsⁱᵐᵖˡ : val.
 
 Definition NotImplements : go_string := "github.com/stretchr/testify/assert.NotImplements"%go.
 
+Axiom NotImplementsⁱᵐᵖˡ : val.
+
 Definition IsType : go_string := "github.com/stretchr/testify/assert.IsType"%go.
+
+Axiom IsTypeⁱᵐᵖˡ : val.
 
 Definition Equal : go_string := "github.com/stretchr/testify/assert.Equal"%go.
 
+Axiom Equalⁱᵐᵖˡ : val.
+
 Definition validateEqualArgs : go_string := "github.com/stretchr/testify/assert.validateEqualArgs"%go.
+
+Axiom validateEqualArgsⁱᵐᵖˡ : val.
 
 Definition Same : go_string := "github.com/stretchr/testify/assert.Same"%go.
 
+Axiom Sameⁱᵐᵖˡ : val.
+
 Definition NotSame : go_string := "github.com/stretchr/testify/assert.NotSame"%go.
+
+Axiom NotSameⁱᵐᵖˡ : val.
 
 Definition samePointers : go_string := "github.com/stretchr/testify/assert.samePointers"%go.
 
+Axiom samePointersⁱᵐᵖˡ : val.
+
 Definition formatUnequalValues : go_string := "github.com/stretchr/testify/assert.formatUnequalValues"%go.
+
+Axiom formatUnequalValuesⁱᵐᵖˡ : val.
 
 Definition truncatingFormat : go_string := "github.com/stretchr/testify/assert.truncatingFormat"%go.
 
+Axiom truncatingFormatⁱᵐᵖˡ : val.
+
 Definition EqualValues : go_string := "github.com/stretchr/testify/assert.EqualValues"%go.
+
+Axiom EqualValuesⁱᵐᵖˡ : val.
 
 Definition EqualExportedValues : go_string := "github.com/stretchr/testify/assert.EqualExportedValues"%go.
 
+Axiom EqualExportedValuesⁱᵐᵖˡ : val.
+
 Definition Exactly : go_string := "github.com/stretchr/testify/assert.Exactly"%go.
+
+Axiom Exactlyⁱᵐᵖˡ : val.
 
 Definition NotNil : go_string := "github.com/stretchr/testify/assert.NotNil"%go.
 
+Axiom NotNilⁱᵐᵖˡ : val.
+
 Definition isNil : go_string := "github.com/stretchr/testify/assert.isNil"%go.
+
+Axiom isNilⁱᵐᵖˡ : val.
 
 Definition Nil : go_string := "github.com/stretchr/testify/assert.Nil"%go.
 
+Axiom Nilⁱᵐᵖˡ : val.
+
 Definition isEmpty : go_string := "github.com/stretchr/testify/assert.isEmpty"%go.
+
+Axiom isEmptyⁱᵐᵖˡ : val.
 
 Definition Empty : go_string := "github.com/stretchr/testify/assert.Empty"%go.
 
+Axiom Emptyⁱᵐᵖˡ : val.
+
 Definition NotEmpty : go_string := "github.com/stretchr/testify/assert.NotEmpty"%go.
+
+Axiom NotEmptyⁱᵐᵖˡ : val.
 
 Definition getLen : go_string := "github.com/stretchr/testify/assert.getLen"%go.
 
+Axiom getLenⁱᵐᵖˡ : val.
+
 Definition Len : go_string := "github.com/stretchr/testify/assert.Len"%go.
+
+Axiom Lenⁱᵐᵖˡ : val.
 
 Definition True : go_string := "github.com/stretchr/testify/assert.True"%go.
 
+Axiom Trueⁱᵐᵖˡ : val.
+
 Definition False : go_string := "github.com/stretchr/testify/assert.False"%go.
+
+Axiom Falseⁱᵐᵖˡ : val.
 
 Definition NotEqual : go_string := "github.com/stretchr/testify/assert.NotEqual"%go.
 
+Axiom NotEqualⁱᵐᵖˡ : val.
+
 Definition NotEqualValues : go_string := "github.com/stretchr/testify/assert.NotEqualValues"%go.
+
+Axiom NotEqualValuesⁱᵐᵖˡ : val.
 
 Definition containsElement : go_string := "github.com/stretchr/testify/assert.containsElement"%go.
 
+Axiom containsElementⁱᵐᵖˡ : val.
+
 Definition Contains : go_string := "github.com/stretchr/testify/assert.Contains"%go.
+
+Axiom Containsⁱᵐᵖˡ : val.
 
 Definition NotContains : go_string := "github.com/stretchr/testify/assert.NotContains"%go.
 
+Axiom NotContainsⁱᵐᵖˡ : val.
+
 Definition Subset : go_string := "github.com/stretchr/testify/assert.Subset"%go.
+
+Axiom Subsetⁱᵐᵖˡ : val.
 
 Definition NotSubset : go_string := "github.com/stretchr/testify/assert.NotSubset"%go.
 
+Axiom NotSubsetⁱᵐᵖˡ : val.
+
 Definition ElementsMatch : go_string := "github.com/stretchr/testify/assert.ElementsMatch"%go.
+
+Axiom ElementsMatchⁱᵐᵖˡ : val.
 
 Definition isList : go_string := "github.com/stretchr/testify/assert.isList"%go.
 
+Axiom isListⁱᵐᵖˡ : val.
+
 Definition diffLists : go_string := "github.com/stretchr/testify/assert.diffLists"%go.
+
+Axiom diffListsⁱᵐᵖˡ : val.
 
 Definition formatListDiff : go_string := "github.com/stretchr/testify/assert.formatListDiff"%go.
 
+Axiom formatListDiffⁱᵐᵖˡ : val.
+
 Definition NotElementsMatch : go_string := "github.com/stretchr/testify/assert.NotElementsMatch"%go.
+
+Axiom NotElementsMatchⁱᵐᵖˡ : val.
 
 Definition Condition : go_string := "github.com/stretchr/testify/assert.Condition"%go.
 
+Axiom Conditionⁱᵐᵖˡ : val.
+
+Axiom PanicTestFunc : go_type.
+
 Definition didPanic : go_string := "github.com/stretchr/testify/assert.didPanic"%go.
+
+Axiom didPanicⁱᵐᵖˡ : val.
 
 Definition Panics : go_string := "github.com/stretchr/testify/assert.Panics"%go.
 
+Axiom Panicsⁱᵐᵖˡ : val.
+
 Definition PanicsWithValue : go_string := "github.com/stretchr/testify/assert.PanicsWithValue"%go.
+
+Axiom PanicsWithValueⁱᵐᵖˡ : val.
 
 Definition PanicsWithError : go_string := "github.com/stretchr/testify/assert.PanicsWithError"%go.
 
+Axiom PanicsWithErrorⁱᵐᵖˡ : val.
+
 Definition NotPanics : go_string := "github.com/stretchr/testify/assert.NotPanics"%go.
+
+Axiom NotPanicsⁱᵐᵖˡ : val.
 
 Definition WithinDuration : go_string := "github.com/stretchr/testify/assert.WithinDuration"%go.
 
+Axiom WithinDurationⁱᵐᵖˡ : val.
+
 Definition WithinRange : go_string := "github.com/stretchr/testify/assert.WithinRange"%go.
+
+Axiom WithinRangeⁱᵐᵖˡ : val.
 
 Definition toFloat : go_string := "github.com/stretchr/testify/assert.toFloat"%go.
 
+Axiom toFloatⁱᵐᵖˡ : val.
+
 Definition InDelta : go_string := "github.com/stretchr/testify/assert.InDelta"%go.
+
+Axiom InDeltaⁱᵐᵖˡ : val.
 
 Definition InDeltaSlice : go_string := "github.com/stretchr/testify/assert.InDeltaSlice"%go.
 
+Axiom InDeltaSliceⁱᵐᵖˡ : val.
+
 Definition InDeltaMapValues : go_string := "github.com/stretchr/testify/assert.InDeltaMapValues"%go.
+
+Axiom InDeltaMapValuesⁱᵐᵖˡ : val.
 
 Definition calcRelativeError : go_string := "github.com/stretchr/testify/assert.calcRelativeError"%go.
 
+Axiom calcRelativeErrorⁱᵐᵖˡ : val.
+
 Definition InEpsilon : go_string := "github.com/stretchr/testify/assert.InEpsilon"%go.
+
+Axiom InEpsilonⁱᵐᵖˡ : val.
 
 Definition InEpsilonSlice : go_string := "github.com/stretchr/testify/assert.InEpsilonSlice"%go.
 
+Axiom InEpsilonSliceⁱᵐᵖˡ : val.
+
 Definition NoError : go_string := "github.com/stretchr/testify/assert.NoError"%go.
+
+Axiom NoErrorⁱᵐᵖˡ : val.
 
 Definition Error : go_string := "github.com/stretchr/testify/assert.Error"%go.
 
+Axiom Errorⁱᵐᵖˡ : val.
+
 Definition EqualError : go_string := "github.com/stretchr/testify/assert.EqualError"%go.
+
+Axiom EqualErrorⁱᵐᵖˡ : val.
 
 Definition ErrorContains : go_string := "github.com/stretchr/testify/assert.ErrorContains"%go.
 
+Axiom ErrorContainsⁱᵐᵖˡ : val.
+
 Definition matchRegexp : go_string := "github.com/stretchr/testify/assert.matchRegexp"%go.
+
+Axiom matchRegexpⁱᵐᵖˡ : val.
 
 Definition Regexp : go_string := "github.com/stretchr/testify/assert.Regexp"%go.
 
+Axiom Regexpⁱᵐᵖˡ : val.
+
 Definition NotRegexp : go_string := "github.com/stretchr/testify/assert.NotRegexp"%go.
+
+Axiom NotRegexpⁱᵐᵖˡ : val.
 
 Definition Zero : go_string := "github.com/stretchr/testify/assert.Zero"%go.
 
+Axiom Zeroⁱᵐᵖˡ : val.
+
 Definition NotZero : go_string := "github.com/stretchr/testify/assert.NotZero"%go.
+
+Axiom NotZeroⁱᵐᵖˡ : val.
 
 Definition FileExists : go_string := "github.com/stretchr/testify/assert.FileExists"%go.
 
+Axiom FileExistsⁱᵐᵖˡ : val.
+
 Definition NoFileExists : go_string := "github.com/stretchr/testify/assert.NoFileExists"%go.
+
+Axiom NoFileExistsⁱᵐᵖˡ : val.
 
 Definition DirExists : go_string := "github.com/stretchr/testify/assert.DirExists"%go.
 
+Axiom DirExistsⁱᵐᵖˡ : val.
+
 Definition NoDirExists : go_string := "github.com/stretchr/testify/assert.NoDirExists"%go.
+
+Axiom NoDirExistsⁱᵐᵖˡ : val.
 
 Definition JSONEq : go_string := "github.com/stretchr/testify/assert.JSONEq"%go.
 
+Axiom JSONEqⁱᵐᵖˡ : val.
+
 Definition YAMLEq : go_string := "github.com/stretchr/testify/assert.YAMLEq"%go.
+
+Axiom YAMLEqⁱᵐᵖˡ : val.
 
 Definition typeAndKind : go_string := "github.com/stretchr/testify/assert.typeAndKind"%go.
 
+Axiom typeAndKindⁱᵐᵖˡ : val.
+
 Definition diff : go_string := "github.com/stretchr/testify/assert.diff"%go.
 
+Axiom diffⁱᵐᵖˡ : val.
+
 Definition isFunction : go_string := "github.com/stretchr/testify/assert.isFunction"%go.
+
+Axiom isFunctionⁱᵐᵖˡ : val.
 
 Definition spewConfig : go_string := "github.com/stretchr/testify/assert.spewConfig"%go.
 
@@ -419,49 +1103,101 @@ Definition spewConfigStringerEnabled : go_string := "github.com/stretchr/testify
 
 Axiom spewConfigStringerEnabled'init : val.
 
+Axiom tHelper : go_type.
+
 Definition Eventually : go_string := "github.com/stretchr/testify/assert.Eventually"%go.
+
+Axiom Eventuallyⁱᵐᵖˡ : val.
+
+Axiom CollectT : go_type.
+
+Axiom CollectT__Errorfⁱᵐᵖˡ : val.
+
+Axiom CollectT__FailNowⁱᵐᵖˡ : val.
+
+Axiom CollectT__Resetⁱᵐᵖˡ : val.
+
+Axiom CollectT__Copyⁱᵐᵖˡ : val.
+
+Axiom CollectT__failⁱᵐᵖˡ : val.
+
+Axiom CollectT__failedⁱᵐᵖˡ : val.
 
 Definition EventuallyWithT : go_string := "github.com/stretchr/testify/assert.EventuallyWithT"%go.
 
+Axiom EventuallyWithTⁱᵐᵖˡ : val.
+
 Definition Never : go_string := "github.com/stretchr/testify/assert.Never"%go.
+
+Axiom Neverⁱᵐᵖˡ : val.
 
 Definition ErrorIs : go_string := "github.com/stretchr/testify/assert.ErrorIs"%go.
 
+Axiom ErrorIsⁱᵐᵖˡ : val.
+
 Definition NotErrorIs : go_string := "github.com/stretchr/testify/assert.NotErrorIs"%go.
+
+Axiom NotErrorIsⁱᵐᵖˡ : val.
 
 Definition ErrorAs : go_string := "github.com/stretchr/testify/assert.ErrorAs"%go.
 
+Axiom ErrorAsⁱᵐᵖˡ : val.
+
 Definition NotErrorAs : go_string := "github.com/stretchr/testify/assert.NotErrorAs"%go.
 
+Axiom NotErrorAsⁱᵐᵖˡ : val.
+
 Definition buildErrorChainString : go_string := "github.com/stretchr/testify/assert.buildErrorChainString"%go.
+
+Axiom buildErrorChainStringⁱᵐᵖˡ : val.
 
 Definition AnError : go_string := "github.com/stretchr/testify/assert.AnError"%go.
 
 Axiom AnError'init : val.
 
+Axiom Assertions : go_type.
+
 Definition New : go_string := "github.com/stretchr/testify/assert.New"%go.
+
+Axiom Newⁱᵐᵖˡ : val.
 
 Definition httpCode : go_string := "github.com/stretchr/testify/assert.httpCode"%go.
 
+Axiom httpCodeⁱᵐᵖˡ : val.
+
 Definition HTTPSuccess : go_string := "github.com/stretchr/testify/assert.HTTPSuccess"%go.
+
+Axiom HTTPSuccessⁱᵐᵖˡ : val.
 
 Definition HTTPRedirect : go_string := "github.com/stretchr/testify/assert.HTTPRedirect"%go.
 
+Axiom HTTPRedirectⁱᵐᵖˡ : val.
+
 Definition HTTPError : go_string := "github.com/stretchr/testify/assert.HTTPError"%go.
+
+Axiom HTTPErrorⁱᵐᵖˡ : val.
 
 Definition HTTPStatusCode : go_string := "github.com/stretchr/testify/assert.HTTPStatusCode"%go.
 
+Axiom HTTPStatusCodeⁱᵐᵖˡ : val.
+
 Definition HTTPBody : go_string := "github.com/stretchr/testify/assert.HTTPBody"%go.
+
+Axiom HTTPBodyⁱᵐᵖˡ : val.
 
 Definition HTTPBodyContains : go_string := "github.com/stretchr/testify/assert.HTTPBodyContains"%go.
 
+Axiom HTTPBodyContainsⁱᵐᵖˡ : val.
+
 Definition HTTPBodyNotContains : go_string := "github.com/stretchr/testify/assert.HTTPBodyNotContains"%go.
+
+Axiom HTTPBodyNotContainsⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(compare, compareⁱᵐᵖˡ); (Greater, Greaterⁱᵐᵖˡ); (GreaterOrEqual, GreaterOrEqualⁱᵐᵖˡ); (Less, Lessⁱᵐᵖˡ); (LessOrEqual, LessOrEqualⁱᵐᵖˡ); (Positive, Positiveⁱᵐᵖˡ); (Negative, Negativeⁱᵐᵖˡ); (compareTwoValues, compareTwoValuesⁱᵐᵖˡ); (containsValue, containsValueⁱᵐᵖˡ); (Conditionf, Conditionfⁱᵐᵖˡ); (Containsf, Containsfⁱᵐᵖˡ); (DirExistsf, DirExistsfⁱᵐᵖˡ); (ElementsMatchf, ElementsMatchfⁱᵐᵖˡ); (Emptyf, Emptyfⁱᵐᵖˡ); (Equalf, Equalfⁱᵐᵖˡ); (EqualErrorf, EqualErrorfⁱᵐᵖˡ); (EqualExportedValuesf, EqualExportedValuesfⁱᵐᵖˡ); (EqualValuesf, EqualValuesfⁱᵐᵖˡ); (Errorf, Errorfⁱᵐᵖˡ); (ErrorAsf, ErrorAsfⁱᵐᵖˡ); (ErrorContainsf, ErrorContainsfⁱᵐᵖˡ); (ErrorIsf, ErrorIsfⁱᵐᵖˡ); (Eventuallyf, Eventuallyfⁱᵐᵖˡ); (EventuallyWithTf, EventuallyWithTfⁱᵐᵖˡ); (Exactlyf, Exactlyfⁱᵐᵖˡ); (Failf, Failfⁱᵐᵖˡ); (FailNowf, FailNowfⁱᵐᵖˡ); (Falsef, Falsefⁱᵐᵖˡ); (FileExistsf, FileExistsfⁱᵐᵖˡ); (Greaterf, Greaterfⁱᵐᵖˡ); (GreaterOrEqualf, GreaterOrEqualfⁱᵐᵖˡ); (HTTPBodyContainsf, HTTPBodyContainsfⁱᵐᵖˡ); (HTTPBodyNotContainsf, HTTPBodyNotContainsfⁱᵐᵖˡ); (HTTPErrorf, HTTPErrorfⁱᵐᵖˡ); (HTTPRedirectf, HTTPRedirectfⁱᵐᵖˡ); (HTTPStatusCodef, HTTPStatusCodefⁱᵐᵖˡ); (HTTPSuccessf, HTTPSuccessfⁱᵐᵖˡ); (Implementsf, Implementsfⁱᵐᵖˡ); (InDeltaf, InDeltafⁱᵐᵖˡ); (InDeltaMapValuesf, InDeltaMapValuesfⁱᵐᵖˡ); (InDeltaSlicef, InDeltaSlicefⁱᵐᵖˡ); (InEpsilonf, InEpsilonfⁱᵐᵖˡ); (InEpsilonSlicef, InEpsilonSlicefⁱᵐᵖˡ); (IsDecreasingf, IsDecreasingfⁱᵐᵖˡ); (IsIncreasingf, IsIncreasingfⁱᵐᵖˡ); (IsNonDecreasingf, IsNonDecreasingfⁱᵐᵖˡ); (IsNonIncreasingf, IsNonIncreasingfⁱᵐᵖˡ); (IsTypef, IsTypefⁱᵐᵖˡ); (JSONEqf, JSONEqfⁱᵐᵖˡ); (Lenf, Lenfⁱᵐᵖˡ); (Lessf, Lessfⁱᵐᵖˡ); (LessOrEqualf, LessOrEqualfⁱᵐᵖˡ); (Negativef, Negativefⁱᵐᵖˡ); (Neverf, Neverfⁱᵐᵖˡ); (Nilf, Nilfⁱᵐᵖˡ); (NoDirExistsf, NoDirExistsfⁱᵐᵖˡ); (NoErrorf, NoErrorfⁱᵐᵖˡ); (NoFileExistsf, NoFileExistsfⁱᵐᵖˡ); (NotContainsf, NotContainsfⁱᵐᵖˡ); (NotElementsMatchf, NotElementsMatchfⁱᵐᵖˡ); (NotEmptyf, NotEmptyfⁱᵐᵖˡ); (NotEqualf, NotEqualfⁱᵐᵖˡ); (NotEqualValuesf, NotEqualValuesfⁱᵐᵖˡ); (NotErrorAsf, NotErrorAsfⁱᵐᵖˡ); (NotErrorIsf, NotErrorIsfⁱᵐᵖˡ); (NotImplementsf, NotImplementsfⁱᵐᵖˡ); (NotNilf, NotNilfⁱᵐᵖˡ); (NotPanicsf, NotPanicsfⁱᵐᵖˡ); (NotRegexpf, NotRegexpfⁱᵐᵖˡ); (NotSamef, NotSamefⁱᵐᵖˡ); (NotSubsetf, NotSubsetfⁱᵐᵖˡ); (NotZerof, NotZerofⁱᵐᵖˡ); (Panicsf, Panicsfⁱᵐᵖˡ); (PanicsWithErrorf, PanicsWithErrorfⁱᵐᵖˡ); (PanicsWithValuef, PanicsWithValuefⁱᵐᵖˡ); (Positivef, Positivefⁱᵐᵖˡ); (Regexpf, Regexpfⁱᵐᵖˡ); (Samef, Samefⁱᵐᵖˡ); (Subsetf, Subsetfⁱᵐᵖˡ); (Truef, Truefⁱᵐᵖˡ); (WithinDurationf, WithinDurationfⁱᵐᵖˡ); (WithinRangef, WithinRangefⁱᵐᵖˡ); (YAMLEqf, YAMLEqfⁱᵐᵖˡ); (Zerof, Zerofⁱᵐᵖˡ); (isOrdered, isOrderedⁱᵐᵖˡ); (IsIncreasing, IsIncreasingⁱᵐᵖˡ); (IsNonIncreasing, IsNonIncreasingⁱᵐᵖˡ); (IsDecreasing, IsDecreasingⁱᵐᵖˡ); (IsNonDecreasing, IsNonDecreasingⁱᵐᵖˡ); (ObjectsAreEqual, ObjectsAreEqualⁱᵐᵖˡ); (copyExportedFields, copyExportedFieldsⁱᵐᵖˡ); (ObjectsExportedFieldsAreEqual, ObjectsExportedFieldsAreEqualⁱᵐᵖˡ); (ObjectsAreEqualValues, ObjectsAreEqualValuesⁱᵐᵖˡ); (isNumericType, isNumericTypeⁱᵐᵖˡ); (CallerInfo, CallerInfoⁱᵐᵖˡ); (isTest, isTestⁱᵐᵖˡ); (messageFromMsgAndArgs, messageFromMsgAndArgsⁱᵐᵖˡ); (indentMessageLines, indentMessageLinesⁱᵐᵖˡ); (FailNow, FailNowⁱᵐᵖˡ); (Fail, Failⁱᵐᵖˡ); (labeledOutput, labeledOutputⁱᵐᵖˡ); (Implements, Implementsⁱᵐᵖˡ); (NotImplements, NotImplementsⁱᵐᵖˡ); (IsType, IsTypeⁱᵐᵖˡ); (Equal, Equalⁱᵐᵖˡ); (validateEqualArgs, validateEqualArgsⁱᵐᵖˡ); (Same, Sameⁱᵐᵖˡ); (NotSame, NotSameⁱᵐᵖˡ); (samePointers, samePointersⁱᵐᵖˡ); (formatUnequalValues, formatUnequalValuesⁱᵐᵖˡ); (truncatingFormat, truncatingFormatⁱᵐᵖˡ); (EqualValues, EqualValuesⁱᵐᵖˡ); (EqualExportedValues, EqualExportedValuesⁱᵐᵖˡ); (Exactly, Exactlyⁱᵐᵖˡ); (NotNil, NotNilⁱᵐᵖˡ); (isNil, isNilⁱᵐᵖˡ); (Nil, Nilⁱᵐᵖˡ); (isEmpty, isEmptyⁱᵐᵖˡ); (Empty, Emptyⁱᵐᵖˡ); (NotEmpty, NotEmptyⁱᵐᵖˡ); (getLen, getLenⁱᵐᵖˡ); (Len, Lenⁱᵐᵖˡ); (True, Trueⁱᵐᵖˡ); (False, Falseⁱᵐᵖˡ); (NotEqual, NotEqualⁱᵐᵖˡ); (NotEqualValues, NotEqualValuesⁱᵐᵖˡ); (containsElement, containsElementⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (NotContains, NotContainsⁱᵐᵖˡ); (Subset, Subsetⁱᵐᵖˡ); (NotSubset, NotSubsetⁱᵐᵖˡ); (ElementsMatch, ElementsMatchⁱᵐᵖˡ); (isList, isListⁱᵐᵖˡ); (diffLists, diffListsⁱᵐᵖˡ); (formatListDiff, formatListDiffⁱᵐᵖˡ); (NotElementsMatch, NotElementsMatchⁱᵐᵖˡ); (Condition, Conditionⁱᵐᵖˡ); (didPanic, didPanicⁱᵐᵖˡ); (Panics, Panicsⁱᵐᵖˡ); (PanicsWithValue, PanicsWithValueⁱᵐᵖˡ); (PanicsWithError, PanicsWithErrorⁱᵐᵖˡ); (NotPanics, NotPanicsⁱᵐᵖˡ); (WithinDuration, WithinDurationⁱᵐᵖˡ); (WithinRange, WithinRangeⁱᵐᵖˡ); (toFloat, toFloatⁱᵐᵖˡ); (InDelta, InDeltaⁱᵐᵖˡ); (InDeltaSlice, InDeltaSliceⁱᵐᵖˡ); (InDeltaMapValues, InDeltaMapValuesⁱᵐᵖˡ); (calcRelativeError, calcRelativeErrorⁱᵐᵖˡ); (InEpsilon, InEpsilonⁱᵐᵖˡ); (InEpsilonSlice, InEpsilonSliceⁱᵐᵖˡ); (NoError, NoErrorⁱᵐᵖˡ); (Error, Errorⁱᵐᵖˡ); (EqualError, EqualErrorⁱᵐᵖˡ); (ErrorContains, ErrorContainsⁱᵐᵖˡ); (matchRegexp, matchRegexpⁱᵐᵖˡ); (Regexp, Regexpⁱᵐᵖˡ); (NotRegexp, NotRegexpⁱᵐᵖˡ); (Zero, Zeroⁱᵐᵖˡ); (NotZero, NotZeroⁱᵐᵖˡ); (FileExists, FileExistsⁱᵐᵖˡ); (NoFileExists, NoFileExistsⁱᵐᵖˡ); (DirExists, DirExistsⁱᵐᵖˡ); (NoDirExists, NoDirExistsⁱᵐᵖˡ); (JSONEq, JSONEqⁱᵐᵖˡ); (YAMLEq, YAMLEqⁱᵐᵖˡ); (typeAndKind, typeAndKindⁱᵐᵖˡ); (diff, diffⁱᵐᵖˡ); (isFunction, isFunctionⁱᵐᵖˡ); (Eventually, Eventuallyⁱᵐᵖˡ); (EventuallyWithT, EventuallyWithTⁱᵐᵖˡ); (Never, Neverⁱᵐᵖˡ); (ErrorIs, ErrorIsⁱᵐᵖˡ); (NotErrorIs, NotErrorIsⁱᵐᵖˡ); (ErrorAs, ErrorAsⁱᵐᵖˡ); (NotErrorAs, NotErrorAsⁱᵐᵖˡ); (buildErrorChainString, buildErrorChainStringⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (httpCode, httpCodeⁱᵐᵖˡ); (HTTPSuccess, HTTPSuccessⁱᵐᵖˡ); (HTTPRedirect, HTTPRedirectⁱᵐᵖˡ); (HTTPError, HTTPErrorⁱᵐᵖˡ); (HTTPStatusCode, HTTPStatusCodeⁱᵐᵖˡ); (HTTPBody, HTTPBodyⁱᵐᵖˡ); (HTTPBodyContains, HTTPBodyContainsⁱᵐᵖˡ); (HTTPBodyNotContains, HTTPBodyNotContainsⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(compareResult.id, []); (ptrT.id compareResult.id, []); (ComparisonAssertionFunc.id, []); (ptrT.id ComparisonAssertionFunc.id, []); (ValueAssertionFunc.id, []); (ptrT.id ValueAssertionFunc.id, []); (BoolAssertionFunc.id, []); (ptrT.id BoolAssertionFunc.id, []); (ErrorAssertionFunc.id, []); (ptrT.id ErrorAssertionFunc.id, []); (Comparison.id, []); (ptrT.id Comparison.id, []); (labeledContent.id, []); (ptrT.id labeledContent.id, []); (PanicTestFunc.id, []); (ptrT.id PanicTestFunc.id, []); (CollectT.id, []); (ptrT.id CollectT.id, [("Copy"%go, CollectT__Copyⁱᵐᵖˡ); ("Errorf"%go, CollectT__Errorfⁱᵐᵖˡ); ("FailNow"%go, CollectT__FailNowⁱᵐᵖˡ); ("Reset"%go, CollectT__Resetⁱᵐᵖˡ); ("fail"%go, CollectT__failⁱᵐᵖˡ); ("failed"%go, CollectT__failedⁱᵐᵖˡ)]); (Assertions.id, []); (ptrT.id Assertions.id, [("Condition"%go, Assertions__Conditionⁱᵐᵖˡ); ("Conditionf"%go, Assertions__Conditionfⁱᵐᵖˡ); ("Contains"%go, Assertions__Containsⁱᵐᵖˡ); ("Containsf"%go, Assertions__Containsfⁱᵐᵖˡ); ("DirExists"%go, Assertions__DirExistsⁱᵐᵖˡ); ("DirExistsf"%go, Assertions__DirExistsfⁱᵐᵖˡ); ("ElementsMatch"%go, Assertions__ElementsMatchⁱᵐᵖˡ); ("ElementsMatchf"%go, Assertions__ElementsMatchfⁱᵐᵖˡ); ("Empty"%go, Assertions__Emptyⁱᵐᵖˡ); ("Emptyf"%go, Assertions__Emptyfⁱᵐᵖˡ); ("Equal"%go, Assertions__Equalⁱᵐᵖˡ); ("EqualError"%go, Assertions__EqualErrorⁱᵐᵖˡ); ("EqualErrorf"%go, Assertions__EqualErrorfⁱᵐᵖˡ); ("EqualExportedValues"%go, Assertions__EqualExportedValuesⁱᵐᵖˡ); ("EqualExportedValuesf"%go, Assertions__EqualExportedValuesfⁱᵐᵖˡ); ("EqualValues"%go, Assertions__EqualValuesⁱᵐᵖˡ); ("EqualValuesf"%go, Assertions__EqualValuesfⁱᵐᵖˡ); ("Equalf"%go, Assertions__Equalfⁱᵐᵖˡ); ("Error"%go, Assertions__Errorⁱᵐᵖˡ); ("ErrorAs"%go, Assertions__ErrorAsⁱᵐᵖˡ); ("ErrorAsf"%go, Assertions__ErrorAsfⁱᵐᵖˡ); ("ErrorContains"%go, Assertions__ErrorContainsⁱᵐᵖˡ); ("ErrorContainsf"%go, Assertions__ErrorContainsfⁱᵐᵖˡ); ("ErrorIs"%go, Assertions__ErrorIsⁱᵐᵖˡ); ("ErrorIsf"%go, Assertions__ErrorIsfⁱᵐᵖˡ); ("Errorf"%go, Assertions__Errorfⁱᵐᵖˡ); ("Eventually"%go, Assertions__Eventuallyⁱᵐᵖˡ); ("EventuallyWithT"%go, Assertions__EventuallyWithTⁱᵐᵖˡ); ("EventuallyWithTf"%go, Assertions__EventuallyWithTfⁱᵐᵖˡ); ("Eventuallyf"%go, Assertions__Eventuallyfⁱᵐᵖˡ); ("Exactly"%go, Assertions__Exactlyⁱᵐᵖˡ); ("Exactlyf"%go, Assertions__Exactlyfⁱᵐᵖˡ); ("Fail"%go, Assertions__Failⁱᵐᵖˡ); ("FailNow"%go, Assertions__FailNowⁱᵐᵖˡ); ("FailNowf"%go, Assertions__FailNowfⁱᵐᵖˡ); ("Failf"%go, Assertions__Failfⁱᵐᵖˡ); ("False"%go, Assertions__Falseⁱᵐᵖˡ); ("Falsef"%go, Assertions__Falsefⁱᵐᵖˡ); ("FileExists"%go, Assertions__FileExistsⁱᵐᵖˡ); ("FileExistsf"%go, Assertions__FileExistsfⁱᵐᵖˡ); ("Greater"%go, Assertions__Greaterⁱᵐᵖˡ); ("GreaterOrEqual"%go, Assertions__GreaterOrEqualⁱᵐᵖˡ); ("GreaterOrEqualf"%go, Assertions__GreaterOrEqualfⁱᵐᵖˡ); ("Greaterf"%go, Assertions__Greaterfⁱᵐᵖˡ); ("HTTPBodyContains"%go, Assertions__HTTPBodyContainsⁱᵐᵖˡ); ("HTTPBodyContainsf"%go, Assertions__HTTPBodyContainsfⁱᵐᵖˡ); ("HTTPBodyNotContains"%go, Assertions__HTTPBodyNotContainsⁱᵐᵖˡ); ("HTTPBodyNotContainsf"%go, Assertions__HTTPBodyNotContainsfⁱᵐᵖˡ); ("HTTPError"%go, Assertions__HTTPErrorⁱᵐᵖˡ); ("HTTPErrorf"%go, Assertions__HTTPErrorfⁱᵐᵖˡ); ("HTTPRedirect"%go, Assertions__HTTPRedirectⁱᵐᵖˡ); ("HTTPRedirectf"%go, Assertions__HTTPRedirectfⁱᵐᵖˡ); ("HTTPStatusCode"%go, Assertions__HTTPStatusCodeⁱᵐᵖˡ); ("HTTPStatusCodef"%go, Assertions__HTTPStatusCodefⁱᵐᵖˡ); ("HTTPSuccess"%go, Assertions__HTTPSuccessⁱᵐᵖˡ); ("HTTPSuccessf"%go, Assertions__HTTPSuccessfⁱᵐᵖˡ); ("Implements"%go, Assertions__Implementsⁱᵐᵖˡ); ("Implementsf"%go, Assertions__Implementsfⁱᵐᵖˡ); ("InDelta"%go, Assertions__InDeltaⁱᵐᵖˡ); ("InDeltaMapValues"%go, Assertions__InDeltaMapValuesⁱᵐᵖˡ); ("InDeltaMapValuesf"%go, Assertions__InDeltaMapValuesfⁱᵐᵖˡ); ("InDeltaSlice"%go, Assertions__InDeltaSliceⁱᵐᵖˡ); ("InDeltaSlicef"%go, Assertions__InDeltaSlicefⁱᵐᵖˡ); ("InDeltaf"%go, Assertions__InDeltafⁱᵐᵖˡ); ("InEpsilon"%go, Assertions__InEpsilonⁱᵐᵖˡ); ("InEpsilonSlice"%go, Assertions__InEpsilonSliceⁱᵐᵖˡ); ("InEpsilonSlicef"%go, Assertions__InEpsilonSlicefⁱᵐᵖˡ); ("InEpsilonf"%go, Assertions__InEpsilonfⁱᵐᵖˡ); ("IsDecreasing"%go, Assertions__IsDecreasingⁱᵐᵖˡ); ("IsDecreasingf"%go, Assertions__IsDecreasingfⁱᵐᵖˡ); ("IsIncreasing"%go, Assertions__IsIncreasingⁱᵐᵖˡ); ("IsIncreasingf"%go, Assertions__IsIncreasingfⁱᵐᵖˡ); ("IsNonDecreasing"%go, Assertions__IsNonDecreasingⁱᵐᵖˡ); ("IsNonDecreasingf"%go, Assertions__IsNonDecreasingfⁱᵐᵖˡ); ("IsNonIncreasing"%go, Assertions__IsNonIncreasingⁱᵐᵖˡ); ("IsNonIncreasingf"%go, Assertions__IsNonIncreasingfⁱᵐᵖˡ); ("IsType"%go, Assertions__IsTypeⁱᵐᵖˡ); ("IsTypef"%go, Assertions__IsTypefⁱᵐᵖˡ); ("JSONEq"%go, Assertions__JSONEqⁱᵐᵖˡ); ("JSONEqf"%go, Assertions__JSONEqfⁱᵐᵖˡ); ("Len"%go, Assertions__Lenⁱᵐᵖˡ); ("Lenf"%go, Assertions__Lenfⁱᵐᵖˡ); ("Less"%go, Assertions__Lessⁱᵐᵖˡ); ("LessOrEqual"%go, Assertions__LessOrEqualⁱᵐᵖˡ); ("LessOrEqualf"%go, Assertions__LessOrEqualfⁱᵐᵖˡ); ("Lessf"%go, Assertions__Lessfⁱᵐᵖˡ); ("Negative"%go, Assertions__Negativeⁱᵐᵖˡ); ("Negativef"%go, Assertions__Negativefⁱᵐᵖˡ); ("Never"%go, Assertions__Neverⁱᵐᵖˡ); ("Neverf"%go, Assertions__Neverfⁱᵐᵖˡ); ("Nil"%go, Assertions__Nilⁱᵐᵖˡ); ("Nilf"%go, Assertions__Nilfⁱᵐᵖˡ); ("NoDirExists"%go, Assertions__NoDirExistsⁱᵐᵖˡ); ("NoDirExistsf"%go, Assertions__NoDirExistsfⁱᵐᵖˡ); ("NoError"%go, Assertions__NoErrorⁱᵐᵖˡ); ("NoErrorf"%go, Assertions__NoErrorfⁱᵐᵖˡ); ("NoFileExists"%go, Assertions__NoFileExistsⁱᵐᵖˡ); ("NoFileExistsf"%go, Assertions__NoFileExistsfⁱᵐᵖˡ); ("NotContains"%go, Assertions__NotContainsⁱᵐᵖˡ); ("NotContainsf"%go, Assertions__NotContainsfⁱᵐᵖˡ); ("NotElementsMatch"%go, Assertions__NotElementsMatchⁱᵐᵖˡ); ("NotElementsMatchf"%go, Assertions__NotElementsMatchfⁱᵐᵖˡ); ("NotEmpty"%go, Assertions__NotEmptyⁱᵐᵖˡ); ("NotEmptyf"%go, Assertions__NotEmptyfⁱᵐᵖˡ); ("NotEqual"%go, Assertions__NotEqualⁱᵐᵖˡ); ("NotEqualValues"%go, Assertions__NotEqualValuesⁱᵐᵖˡ); ("NotEqualValuesf"%go, Assertions__NotEqualValuesfⁱᵐᵖˡ); ("NotEqualf"%go, Assertions__NotEqualfⁱᵐᵖˡ); ("NotErrorAs"%go, Assertions__NotErrorAsⁱᵐᵖˡ); ("NotErrorAsf"%go, Assertions__NotErrorAsfⁱᵐᵖˡ); ("NotErrorIs"%go, Assertions__NotErrorIsⁱᵐᵖˡ); ("NotErrorIsf"%go, Assertions__NotErrorIsfⁱᵐᵖˡ); ("NotImplements"%go, Assertions__NotImplementsⁱᵐᵖˡ); ("NotImplementsf"%go, Assertions__NotImplementsfⁱᵐᵖˡ); ("NotNil"%go, Assertions__NotNilⁱᵐᵖˡ); ("NotNilf"%go, Assertions__NotNilfⁱᵐᵖˡ); ("NotPanics"%go, Assertions__NotPanicsⁱᵐᵖˡ); ("NotPanicsf"%go, Assertions__NotPanicsfⁱᵐᵖˡ); ("NotRegexp"%go, Assertions__NotRegexpⁱᵐᵖˡ); ("NotRegexpf"%go, Assertions__NotRegexpfⁱᵐᵖˡ); ("NotSame"%go, Assertions__NotSameⁱᵐᵖˡ); ("NotSamef"%go, Assertions__NotSamefⁱᵐᵖˡ); ("NotSubset"%go, Assertions__NotSubsetⁱᵐᵖˡ); ("NotSubsetf"%go, Assertions__NotSubsetfⁱᵐᵖˡ); ("NotZero"%go, Assertions__NotZeroⁱᵐᵖˡ); ("NotZerof"%go, Assertions__NotZerofⁱᵐᵖˡ); ("Panics"%go, Assertions__Panicsⁱᵐᵖˡ); ("PanicsWithError"%go, Assertions__PanicsWithErrorⁱᵐᵖˡ); ("PanicsWithErrorf"%go, Assertions__PanicsWithErrorfⁱᵐᵖˡ); ("PanicsWithValue"%go, Assertions__PanicsWithValueⁱᵐᵖˡ); ("PanicsWithValuef"%go, Assertions__PanicsWithValuefⁱᵐᵖˡ); ("Panicsf"%go, Assertions__Panicsfⁱᵐᵖˡ); ("Positive"%go, Assertions__Positiveⁱᵐᵖˡ); ("Positivef"%go, Assertions__Positivefⁱᵐᵖˡ); ("Regexp"%go, Assertions__Regexpⁱᵐᵖˡ); ("Regexpf"%go, Assertions__Regexpfⁱᵐᵖˡ); ("Same"%go, Assertions__Sameⁱᵐᵖˡ); ("Samef"%go, Assertions__Samefⁱᵐᵖˡ); ("Subset"%go, Assertions__Subsetⁱᵐᵖˡ); ("Subsetf"%go, Assertions__Subsetfⁱᵐᵖˡ); ("True"%go, Assertions__Trueⁱᵐᵖˡ); ("Truef"%go, Assertions__Truefⁱᵐᵖˡ); ("WithinDuration"%go, Assertions__WithinDurationⁱᵐᵖˡ); ("WithinDurationf"%go, Assertions__WithinDurationfⁱᵐᵖˡ); ("WithinRange"%go, Assertions__WithinRangeⁱᵐᵖˡ); ("WithinRangef"%go, Assertions__WithinRangefⁱᵐᵖˡ); ("YAMLEq"%go, Assertions__YAMLEqⁱᵐᵖˡ); ("YAMLEqf"%go, Assertions__YAMLEqfⁱᵐᵖˡ); ("Zero"%go, Assertions__Zeroⁱᵐᵖˡ); ("Zerof"%go, Assertions__Zerofⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo assert.assert :=
   {|

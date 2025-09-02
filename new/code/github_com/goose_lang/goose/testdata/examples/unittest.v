@@ -2992,54 +2992,54 @@ Definition vars' : list (go_string * go_type) := [(GlobalX, uint64T); (globalY, 
 
 Definition functions' : list (go_string * val) := [(takesArray, takesArrayⁱᵐᵖˡ); (takesPtr, takesPtrⁱᵐᵖˡ); (usesArrayElemRef, usesArrayElemRefⁱᵐᵖˡ); (sum, sumⁱᵐᵖˡ); (arrayToSlice, arrayToSliceⁱᵐᵖˡ); (arrayLiteralKeyed, arrayLiteralKeyedⁱᵐᵖˡ); (chanBasic, chanBasicⁱᵐᵖˡ); (f, fⁱᵐᵖˡ); (chanSelect, chanSelectⁱᵐᵖˡ); (chanDirectional, chanDirectionalⁱᵐᵖˡ); (chanRange, chanRangeⁱᵐᵖˡ); (doSubtleThings, doSubtleThingsⁱᵐᵖˡ); (hasStartComment, hasStartCommentⁱᵐᵖˡ); (hasEndComment, hasEndCommentⁱᵐᵖˡ); (condvarWrapping, condvarWrappingⁱᵐᵖˡ); (useUntypedInt, useUntypedIntⁱᵐᵖˡ); (useUntypedString, useUntypedStringⁱᵐᵖˡ); (conditionalReturn, conditionalReturnⁱᵐᵖˡ); (alwaysReturn, alwaysReturnⁱᵐᵖˡ); (alwaysReturnInNestedBranches, alwaysReturnInNestedBranchesⁱᵐᵖˡ); (earlyReturn, earlyReturnⁱᵐᵖˡ); (conditionalAssign, conditionalAssignⁱᵐᵖˡ); (elseIf, elseIfⁱᵐᵖˡ); (ifStmtInitialization, ifStmtInitializationⁱᵐᵖˡ); (typedLiteral, typedLiteralⁱᵐᵖˡ); (literalCast, literalCastⁱᵐᵖˡ); (castInt, castIntⁱᵐᵖˡ); (stringToByteSlice, stringToByteSliceⁱᵐᵖˡ); (byteSliceToString, byteSliceToStringⁱᵐᵖˡ); (stringToStringWrapper, stringToStringWrapperⁱᵐᵖˡ); (stringWrapperToString, stringWrapperToStringⁱᵐᵖˡ); (testU32NewtypeLen, testU32NewtypeLenⁱᵐᵖˡ); (testCopySimple, testCopySimpleⁱᵐᵖˡ); (testCopyDifferentLengths, testCopyDifferentLengthsⁱᵐᵖˡ); (atomicCreateStub, atomicCreateStubⁱᵐᵖˡ); (useSlice, useSliceⁱᵐᵖˡ); (useSliceIndexing, useSliceIndexingⁱᵐᵖˡ); (useMap, useMapⁱᵐᵖˡ); (usePtr, usePtrⁱᵐᵖˡ); (iterMapKeysAndValues, iterMapKeysAndValuesⁱᵐᵖˡ); (iterMapKeys, iterMapKeysⁱᵐᵖˡ); (getRandom, getRandomⁱᵐᵖˡ); (diskArgument, diskArgumentⁱᵐᵖˡ); (returnEmbedVal, returnEmbedValⁱᵐᵖˡ); (returnEmbedValWithPointer, returnEmbedValWithPointerⁱᵐᵖˡ); (useEmbeddedField, useEmbeddedFieldⁱᵐᵖˡ); (useEmbeddedValField, useEmbeddedValFieldⁱᵐᵖˡ); (useEmbeddedMethod, useEmbeddedMethodⁱᵐᵖˡ); (useEmbeddedMethod2, useEmbeddedMethod2ⁱᵐᵖˡ); (empty, emptyⁱᵐᵖˡ); (emptyReturn, emptyReturnⁱᵐᵖˡ); (unnamedParams, unnamedParamsⁱᵐᵖˡ); (anonymousParam, anonymousParamⁱᵐᵖˡ); (useFloat, useFloatⁱᵐᵖˡ); (forRangeNoBinding, forRangeNoBindingⁱᵐᵖˡ); (forRangeOldVars, forRangeOldVarsⁱᵐᵖˡ); (foo, fooⁱᵐᵖˡ); (other, otherⁱᵐᵖˡ); (bar, barⁱᵐᵖˡ); (TakesFunctionType, TakesFunctionTypeⁱᵐᵖˡ); (FuncVar, FuncVarⁱᵐᵖˡ); (fooConsumer, fooConsumerⁱᵐᵖˡ); (testAssignConcreteToInterface, testAssignConcreteToInterfaceⁱᵐᵖˡ); (testPassConcreteToInterfaceArg, testPassConcreteToInterfaceArgⁱᵐᵖˡ); (testPassConcreteToInterfaceArgSpecial, testPassConcreteToInterfaceArgSpecialⁱᵐᵖˡ); (takesVarArgsInterface, takesVarArgsInterfaceⁱᵐᵖˡ); (test, testⁱᵐᵖˡ); (returnConcrete, returnConcreteⁱᵐᵖˡ); (testMultiReturn, testMultiReturnⁱᵐᵖˡ); (testReturnStatment, testReturnStatmentⁱᵐᵖˡ); (testConversionInEq, testConversionInEqⁱᵐᵖˡ); (takeMultiple, takeMultipleⁱᵐᵖˡ); (giveMultiple, giveMultipleⁱᵐᵖˡ); (testConversionInMultipleReturnPassThrough, testConversionInMultipleReturnPassThroughⁱᵐᵖˡ); (testConversionInMultiplePassThrough, testConversionInMultiplePassThroughⁱᵐᵖˡ); (testPtrMset, testPtrMsetⁱᵐᵖˡ); (useInts, useIntsⁱᵐᵖˡ); (signedMidpoint, signedMidpointⁱᵐᵖˡ); (normalLiterals, normalLiteralsⁱᵐᵖˡ); (outOfOrderLiteral, outOfOrderLiteralⁱᵐᵖˡ); (specialLiterals, specialLiteralsⁱᵐᵖˡ); (oddLiterals, oddLiteralsⁱᵐᵖˡ); (unKeyedLiteral, unKeyedLiteralⁱᵐᵖˡ); (useLocks, useLocksⁱᵐᵖˡ); (useCondVar, useCondVarⁱᵐᵖˡ); (ToBeDebugged, ToBeDebuggedⁱᵐᵖˡ); (DoNothing, DoNothingⁱᵐᵖˡ); (DoSomething, DoSomethingⁱᵐᵖˡ); (standardForLoop, standardForLoopⁱᵐᵖˡ); (conditionalInLoop, conditionalInLoopⁱᵐᵖˡ); (conditionalInLoopElse, conditionalInLoopElseⁱᵐᵖˡ); (nestedConditionalInLoopImplicitContinue, nestedConditionalInLoopImplicitContinueⁱᵐᵖˡ); (ImplicitLoopContinue, ImplicitLoopContinueⁱᵐᵖˡ); (ImplicitLoopContinue2, ImplicitLoopContinue2ⁱᵐᵖˡ); (ImplicitLoopContinueAfterIfBreak, ImplicitLoopContinueAfterIfBreakⁱᵐᵖˡ); (nestedLoops, nestedLoopsⁱᵐᵖˡ); (nestedGoStyleLoops, nestedGoStyleLoopsⁱᵐᵖˡ); (sumSlice, sumSliceⁱᵐᵖˡ); (breakFromLoop, breakFromLoopⁱᵐᵖˡ); (IterateMapKeys, IterateMapKeysⁱᵐᵖˡ); (MapSize, MapSizeⁱᵐᵖˡ); (MapTypeAliases, MapTypeAliasesⁱᵐᵖˡ); (StringMap, StringMapⁱᵐᵖˡ); (mapUpdateField, mapUpdateFieldⁱᵐᵖˡ); (mapGetCall, mapGetCallⁱᵐᵖˡ); (mapLiteralTest, mapLiteralTestⁱᵐᵖˡ); (returnTwo, returnTwoⁱᵐᵖˡ); (returnTwoWrapper, returnTwoWrapperⁱᵐᵖˡ); (multipleVar, multipleVarⁱᵐᵖˡ); (multiplePassThrough, multiplePassThroughⁱᵐᵖˡ); (multipleReturnPassThrough, multipleReturnPassThroughⁱᵐᵖˡ); (AssignNilSlice, AssignNilSliceⁱᵐᵖˡ); (AssignNilPointer, AssignNilPointerⁱᵐᵖˡ); (CompareSliceToNil, CompareSliceToNilⁱᵐᵖˡ); (ComparePointerToNil, ComparePointerToNilⁱᵐᵖˡ); (useNilField, useNilFieldⁱᵐᵖˡ); (LogicalOperators, LogicalOperatorsⁱᵐᵖˡ); (LogicalAndEqualityOperators, LogicalAndEqualityOperatorsⁱᵐᵖˡ); (ArithmeticShifts, ArithmeticShiftsⁱᵐᵖˡ); (BitwiseOps, BitwiseOpsⁱᵐᵖˡ); (Comparison, Comparisonⁱᵐᵖˡ); (AssignOps, AssignOpsⁱᵐᵖˡ); (Negative, Negativeⁱᵐᵖˡ); (PanicAtTheDisco, PanicAtTheDiscoⁱᵐᵖˡ); (Oracle, Oracleⁱᵐᵖˡ); (ReassignVars, ReassignVarsⁱᵐᵖˡ); (recur, recurⁱᵐᵖˡ); (useRenamedImport, useRenamedImportⁱᵐᵖˡ); (TwoDiskWrite, TwoDiskWriteⁱᵐᵖˡ); (TwoDiskRead, TwoDiskReadⁱᵐᵖˡ); (TwoDiskLock, TwoDiskLockⁱᵐᵖˡ); (TwoDiskUnlock, TwoDiskUnlockⁱᵐᵖˡ); (ReplicatedDiskRead, ReplicatedDiskReadⁱᵐᵖˡ); (ReplicatedDiskWrite, ReplicatedDiskWriteⁱᵐᵖˡ); (ReplicatedDiskRecover, ReplicatedDiskRecoverⁱᵐᵖˡ); (BasicNamedReturn, BasicNamedReturnⁱᵐᵖˡ); (NamedReturn, NamedReturnⁱᵐᵖˡ); (BasicNamedReturnMany, BasicNamedReturnManyⁱᵐᵖˡ); (NamedReturnMany, NamedReturnManyⁱᵐᵖˡ); (NamedReturnOverride, NamedReturnOverrideⁱᵐᵖˡ); (VoidButEndsWithReturn, VoidButEndsWithReturnⁱᵐᵖˡ); (VoidImplicitReturnInBranch, VoidImplicitReturnInBranchⁱᵐᵖˡ); (sliceOps, sliceOpsⁱᵐᵖˡ); (makeSingletonSlice, makeSingletonSliceⁱᵐᵖˡ); (makeAlias, makeAliasⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ); (simpleSpawn, simpleSpawnⁱᵐᵖˡ); (threadCode, threadCodeⁱᵐᵖˡ); (loopSpawn, loopSpawnⁱᵐᵖˡ); (stringAppend, stringAppendⁱᵐᵖˡ); (stringLength, stringLengthⁱᵐᵖˡ); (x, xⁱᵐᵖˡ); (UseAdd, UseAddⁱᵐᵖˡ); (UseAddWithLiteral, UseAddWithLiteralⁱᵐᵖˡ); (NewS, NewSⁱᵐᵖˡ); (localSRef, localSRefⁱᵐᵖˡ); (setField, setFieldⁱᵐᵖˡ); (testSwitchVal, testSwitchValⁱᵐᵖˡ); (testSwitchMultiple, testSwitchMultipleⁱᵐᵖˡ); (DoSomeLocking, DoSomeLockingⁱᵐᵖˡ); (makeLock, makeLockⁱᵐᵖˡ); (sleep, sleepⁱᵐᵖˡ); (mkInt, mkIntⁱᵐᵖˡ); (mkNothing, mkNothingⁱᵐᵖˡ); (convertToAlias, convertToAliasⁱᵐᵖˡ); (typeAssertInt, typeAssertIntⁱᵐᵖˡ); (wrapUnwrapInt, wrapUnwrapIntⁱᵐᵖˡ); (checkedTypeAssert, checkedTypeAssertⁱᵐᵖˡ); (basicTypeSwitch, basicTypeSwitchⁱᵐᵖˡ); (fancyTypeSwitch, fancyTypeSwitchⁱᵐᵖˡ); (multiTypeSwitch, multiTypeSwitchⁱᵐᵖˡ); (variadicFunc, variadicFuncⁱᵐᵖˡ); (testVariadicCall, testVariadicCallⁱᵐᵖˡ); (returnMultiple, returnMultipleⁱᵐᵖˡ); (testVariadicPassThrough, testVariadicPassThroughⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, []); (ptrT.id Foo.id, []); (importantStruct.id, []); (ptrT.id importantStruct.id, []); (stringWrapper.id, []); (ptrT.id stringWrapper.id, []); (Uint32.id, []); (ptrT.id Uint32.id, []); (diskWrapper.id, []); (ptrT.id diskWrapper.id, []); (embedA.id, [("Foo"%go, embedA__Fooⁱᵐᵖˡ)]); (ptrT.id embedA.id, [("Bar"%go, embedA__Barⁱᵐᵖˡ); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedA" #"Foo" (![#embedA] "$recvAddr")
-                 )%V)]); (embedB.id, [("Foo"%go, embedB__Fooⁱᵐᵖˡ)]); (ptrT.id embedB.id, [("Bar"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref #embedB #"embedA"%go "$recvAddr")
-                 )%V); ("Car"%go, embedB__Carⁱᵐᵖˡ); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedB" #"Foo" (![#embedB] "$recvAddr")
-                 )%V)]); (embedC.id, [("Bar"%go, (λ: "$recv",
-                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref #embedB #"embedA"%go (struct.field_get #embedC "embedB" "$recv"))
-                 )%V); ("Car"%go, (λ: "$recv",
-                 method_call #unittest.unittest #"embedB'ptr" #"Car" (struct.field_get #embedC "embedB" "$recv")
-                 )%V); ("Foo"%go, (λ: "$recv",
-                 method_call #unittest.unittest #"embedB" #"Foo" (![#embedB] (struct.field_get #embedC "embedB" "$recv"))
-                 )%V)]); (ptrT.id embedC.id, [("Bar"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref #embedB #"embedA"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go "$recvAddr")))
-                 )%V); ("Car"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedB'ptr" #"Car" (![#ptrT] (struct.field_ref #embedC #"embedB"%go "$recvAddr"))
-                 )%V); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedB" #"Foo" (![#embedB] (![#ptrT] (struct.field_ref #embedC #"embedB"%go "$recvAddr")))
-                 )%V)]); (embedD.id, [("Bar"%go, (λ: "$recv",
-                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref #embedB #"embedA"%go (struct.field_get #embedC "embedB" (struct.field_get #embedD "embedC" "$recv")))
-                 )%V); ("Car"%go, (λ: "$recv",
-                 method_call #unittest.unittest #"embedB'ptr" #"Car" (struct.field_get #embedC "embedB" (struct.field_get #embedD "embedC" "$recv"))
-                 )%V); ("Foo"%go, (λ: "$recv",
-                 method_call #unittest.unittest #"embedB" #"Foo" (![#embedB] (struct.field_get #embedC "embedB" (struct.field_get #embedD "embedC" "$recv")))
-                 )%V)]); (ptrT.id embedD.id, [("Bar"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref #embedB #"embedA"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "$recvAddr"))))
-                 )%V); ("Car"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedB'ptr" #"Car" (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "$recvAddr")))
-                 )%V); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"embedB" #"Foo" (![#embedB] (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "$recvAddr"))))
-                 )%V)]); (Enc.id, []); (ptrT.id Enc.id, [("UInt32"%go, Enc__UInt32ⁱᵐᵖˡ); ("UInt64"%go, Enc__UInt64ⁱᵐᵖˡ); ("consume"%go, Enc__consumeⁱᵐᵖˡ)]); (Dec.id, []); (ptrT.id Dec.id, [("UInt32"%go, Dec__UInt32ⁱᵐᵖˡ); ("UInt64"%go, Dec__UInt64ⁱᵐᵖˡ); ("consume"%go, Dec__consumeⁱᵐᵖˡ)]); (Enum1.id, []); (ptrT.id Enum1.id, []); (Enum2.id, []); (ptrT.id Enum2.id, []); (concreteFooer.id, []); (ptrT.id concreteFooer.id, [("Foo"%go, concreteFooer__Fooⁱᵐᵖˡ)]); (FooerUser.id, []); (ptrT.id FooerUser.id, []); (concrete1.id, [("Foo"%go, concrete1__Fooⁱᵐᵖˡ)]); (ptrT.id concrete1.id, [("B"%go, concrete1__Bⁱᵐᵖˡ); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"concrete1" #"Foo" (![#concrete1] "$recvAddr")
-                 )%V)]); (my_u32.id, []); (ptrT.id my_u32.id, []); (also_u32.id, []); (ptrT.id also_u32.id, []); (allTheLiterals.id, []); (ptrT.id allTheLiterals.id, []); (hasCondVar.id, []); (ptrT.id hasCondVar.id, []); (IntWrapper.id, []); (ptrT.id IntWrapper.id, []); (MapWrapper.id, []); (ptrT.id MapWrapper.id, []); (mapElem.id, []); (ptrT.id mapElem.id, []); (containsPointer.id, []); (ptrT.id containsPointer.id, []); (wrapExternalStruct.id, [("join"%go, wrapExternalStruct__joinⁱᵐᵖˡ)]); (ptrT.id wrapExternalStruct.id, [("join"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"wrapExternalStruct" #"join" (![#wrapExternalStruct] "$recvAddr")
-                 )%V)]); (typing.id, []); (ptrT.id typing.id, []); (composite.id, []); (ptrT.id composite.id, []); (R.id, []); (ptrT.id R.id, [("recurMethod"%go, R__recurMethodⁱᵐᵖˡ)]); (Other.id, [("recurEmbeddedMethod"%go, (λ: "$recv",
-                 method_call #unittest.unittest #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (struct.field_get #Other "RecursiveEmbedded" "$recv")
-                 )%V)]); (ptrT.id Other.id, [("recurEmbeddedMethod"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (![#ptrT] (struct.field_ref #Other #"RecursiveEmbedded"%go "$recvAddr"))
-                 )%V)]); (RecursiveEmbedded.id, []); (ptrT.id RecursiveEmbedded.id, [("recurEmbeddedMethod"%go, RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ)]); (Block.id, []); (ptrT.id Block.id, []); (SliceAlias.id, []); (ptrT.id SliceAlias.id, []); (thing.id, []); (ptrT.id thing.id, []); (sliceOfThings.id, [("getThingRef"%go, sliceOfThings__getThingRefⁱᵐᵖˡ)]); (ptrT.id sliceOfThings.id, [("getThingRef"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"sliceOfThings" #"getThingRef" (![#sliceOfThings] "$recvAddr")
-                 )%V)]); (Point.id, [("Add"%go, Point__Addⁱᵐᵖˡ); ("GetField"%go, Point__GetFieldⁱᵐᵖˡ); ("IgnoreReceiver"%go, Point__IgnoreReceiverⁱᵐᵖˡ)]); (ptrT.id Point.id, [("Add"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"Point" #"Add" (![#Point] "$recvAddr")
-                 )%V); ("GetField"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"Point" #"GetField" (![#Point] "$recvAddr")
-                 )%V); ("IgnoreReceiver"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"Point" #"IgnoreReceiver" (![#Point] "$recvAddr")
-                 )%V)]); (TwoInts.id, []); (ptrT.id TwoInts.id, []); (S.id, [("readBVal"%go, S__readBValⁱᵐᵖˡ)]); (ptrT.id S.id, [("negateC"%go, S__negateCⁱᵐᵖˡ); ("readA"%go, S__readAⁱᵐᵖˡ); ("readB"%go, S__readBⁱᵐᵖˡ); ("readBVal"%go, (λ: "$recvAddr",
-                 method_call #unittest.unittest #"S" #"readBVal" (![#S] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, []); (ptrT.id Foo.id, []); (importantStruct.id, []); (ptrT.id importantStruct.id, []); (stringWrapper.id, []); (ptrT.id stringWrapper.id, []); (Uint32.id, []); (ptrT.id Uint32.id, []); (diskWrapper.id, []); (ptrT.id diskWrapper.id, []); (embedA.id, [("Foo"%go, embedA__Fooⁱᵐᵖˡ)]); (ptrT.id embedA.id, [("Bar"%go, embedA__Barⁱᵐᵖˡ); ("Foo"%go, (λ: "$r",
+                 method_call #embedA.id #"Foo"%go (![#embedA] "$r")
+                 )%V)]); (embedB.id, [("Foo"%go, embedB__Fooⁱᵐᵖˡ)]); (ptrT.id embedB.id, [("Bar"%go, (λ: "$r",
+                 method_call #(ptrT.id embedA.id) #"Bar"%go (struct.field_ref #embedB #"embedA"%go "$r")
+                 )%V); ("Car"%go, embedB__Carⁱᵐᵖˡ); ("Foo"%go, (λ: "$r",
+                 method_call #embedB.id #"Foo"%go (![#embedB] "$r")
+                 )%V)]); (embedC.id, [("Bar"%go, (λ: "$r",
+                 method_call #(ptrT.id embedB.id) #"Bar"%go (struct.field_get #embedC #"embedB"%go "$r")
+                 )%V); ("Car"%go, (λ: "$r",
+                 method_call #(ptrT.id embedB.id) #"Car"%go (struct.field_get #embedC #"embedB"%go "$r")
+                 )%V); ("Foo"%go, (λ: "$r",
+                 method_call #(ptrT.id embedB.id) #"Foo"%go (struct.field_get #embedC #"embedB"%go "$r")
+                 )%V)]); (ptrT.id embedC.id, [("Bar"%go, (λ: "$r",
+                 method_call #(ptrT.id embedB.id) #"Bar"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go "$r"))
+                 )%V); ("Car"%go, (λ: "$r",
+                 method_call #(ptrT.id embedB.id) #"Car"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go "$r"))
+                 )%V); ("Foo"%go, (λ: "$r",
+                 method_call #(ptrT.id embedB.id) #"Foo"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go "$r"))
+                 )%V)]); (embedD.id, [("Bar"%go, (λ: "$r",
+                 method_call #embedC.id #"Bar"%go (struct.field_get #embedD #"embedC"%go "$r")
+                 )%V); ("Car"%go, (λ: "$r",
+                 method_call #embedC.id #"Car"%go (struct.field_get #embedD #"embedC"%go "$r")
+                 )%V); ("Foo"%go, (λ: "$r",
+                 method_call #embedC.id #"Foo"%go (struct.field_get #embedD #"embedC"%go "$r")
+                 )%V)]); (ptrT.id embedD.id, [("Bar"%go, (λ: "$r",
+                 method_call #(ptrT.id embedC.id) #"Bar"%go (struct.field_ref #embedD #"embedC"%go "$r")
+                 )%V); ("Car"%go, (λ: "$r",
+                 method_call #(ptrT.id embedC.id) #"Car"%go (struct.field_ref #embedD #"embedC"%go "$r")
+                 )%V); ("Foo"%go, (λ: "$r",
+                 method_call #(ptrT.id embedC.id) #"Foo"%go (struct.field_ref #embedD #"embedC"%go "$r")
+                 )%V)]); (Enc.id, []); (ptrT.id Enc.id, [("UInt32"%go, Enc__UInt32ⁱᵐᵖˡ); ("UInt64"%go, Enc__UInt64ⁱᵐᵖˡ); ("consume"%go, Enc__consumeⁱᵐᵖˡ)]); (Dec.id, []); (ptrT.id Dec.id, [("UInt32"%go, Dec__UInt32ⁱᵐᵖˡ); ("UInt64"%go, Dec__UInt64ⁱᵐᵖˡ); ("consume"%go, Dec__consumeⁱᵐᵖˡ)]); (Enum1.id, []); (ptrT.id Enum1.id, []); (Enum2.id, []); (ptrT.id Enum2.id, []); (concreteFooer.id, []); (ptrT.id concreteFooer.id, [("Foo"%go, concreteFooer__Fooⁱᵐᵖˡ)]); (FooerUser.id, []); (ptrT.id FooerUser.id, []); (concrete1.id, [("Foo"%go, concrete1__Fooⁱᵐᵖˡ)]); (ptrT.id concrete1.id, [("B"%go, concrete1__Bⁱᵐᵖˡ); ("Foo"%go, (λ: "$r",
+                 method_call #concrete1.id #"Foo"%go (![#concrete1] "$r")
+                 )%V)]); (my_u32.id, []); (ptrT.id my_u32.id, []); (also_u32.id, []); (ptrT.id also_u32.id, []); (allTheLiterals.id, []); (ptrT.id allTheLiterals.id, []); (hasCondVar.id, []); (ptrT.id hasCondVar.id, []); (IntWrapper.id, []); (ptrT.id IntWrapper.id, []); (MapWrapper.id, []); (ptrT.id MapWrapper.id, []); (mapElem.id, []); (ptrT.id mapElem.id, []); (containsPointer.id, []); (ptrT.id containsPointer.id, []); (wrapExternalStruct.id, [("join"%go, wrapExternalStruct__joinⁱᵐᵖˡ)]); (ptrT.id wrapExternalStruct.id, [("join"%go, (λ: "$r",
+                 method_call #wrapExternalStruct.id #"join"%go (![#wrapExternalStruct] "$r")
+                 )%V)]); (typing.id, []); (ptrT.id typing.id, []); (composite.id, []); (ptrT.id composite.id, []); (R.id, []); (ptrT.id R.id, [("recurMethod"%go, R__recurMethodⁱᵐᵖˡ)]); (Other.id, [("recurEmbeddedMethod"%go, (λ: "$r",
+                 method_call #(ptrT.id RecursiveEmbedded.id) #"recurEmbeddedMethod"%go (struct.field_get #Other #"RecursiveEmbedded"%go "$r")
+                 )%V)]); (ptrT.id Other.id, [("recurEmbeddedMethod"%go, (λ: "$r",
+                 method_call #(ptrT.id RecursiveEmbedded.id) #"recurEmbeddedMethod"%go (![#ptrT] (struct.field_ref #Other #"RecursiveEmbedded"%go "$r"))
+                 )%V)]); (RecursiveEmbedded.id, []); (ptrT.id RecursiveEmbedded.id, [("recurEmbeddedMethod"%go, RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ)]); (Block.id, []); (ptrT.id Block.id, []); (SliceAlias.id, []); (ptrT.id SliceAlias.id, []); (thing.id, []); (ptrT.id thing.id, []); (sliceOfThings.id, [("getThingRef"%go, sliceOfThings__getThingRefⁱᵐᵖˡ)]); (ptrT.id sliceOfThings.id, [("getThingRef"%go, (λ: "$r",
+                 method_call #sliceOfThings.id #"getThingRef"%go (![#sliceOfThings] "$r")
+                 )%V)]); (Point.id, [("Add"%go, Point__Addⁱᵐᵖˡ); ("GetField"%go, Point__GetFieldⁱᵐᵖˡ); ("IgnoreReceiver"%go, Point__IgnoreReceiverⁱᵐᵖˡ)]); (ptrT.id Point.id, [("Add"%go, (λ: "$r",
+                 method_call #Point.id #"Add"%go (![#Point] "$r")
+                 )%V); ("GetField"%go, (λ: "$r",
+                 method_call #Point.id #"GetField"%go (![#Point] "$r")
+                 )%V); ("IgnoreReceiver"%go, (λ: "$r",
+                 method_call #Point.id #"IgnoreReceiver"%go (![#Point] "$r")
+                 )%V)]); (TwoInts.id, []); (ptrT.id TwoInts.id, []); (S.id, [("readBVal"%go, S__readBValⁱᵐᵖˡ)]); (ptrT.id S.id, [("negateC"%go, S__negateCⁱᵐᵖˡ); ("readA"%go, S__readAⁱᵐᵖˡ); ("readB"%go, S__readBⁱᵐᵖˡ); ("readBVal"%go, (λ: "$r",
+                 method_call #S.id #"readBVal"%go (![#S] "$r")
                  )%V); ("refC"%go, S__refCⁱᵐᵖˡ); ("writeB"%go, S__writeBⁱᵐᵖˡ)]); (B.id, []); (ptrT.id B.id, []); (A.id, []); (ptrT.id A.id, []); (Timestamp.id, []); (ptrT.id Timestamp.id, []); (UseTypeAbbrev.id, []); (ptrT.id UseTypeAbbrev.id, []); (UseNamedType.id, []); (ptrT.id UseNamedType.id, [])].
 
 #[global] Instance info' : PkgInfo unittest.unittest :=

@@ -62,8 +62,8 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MkAddr, MkAddrⁱᵐᵖˡ); (MkBitAddr, MkBitAddrⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [("Flatid"%go, Addr__Flatidⁱᵐᵖˡ)]); (ptrT.id Addr.id, [("Flatid"%go, (λ: "$recvAddr",
-                 method_call #addr.addr #"Addr" #"Flatid" (![#Addr] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [("Flatid"%go, Addr__Flatidⁱᵐᵖˡ)]); (ptrT.id Addr.id, [("Flatid"%go, (λ: "$r",
+                 method_call #Addr.id #"Flatid"%go (![#Addr] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo addr.addr :=

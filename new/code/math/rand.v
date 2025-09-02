@@ -5,9 +5,21 @@ Definition rand : go_string := "math/rand".
 
 Module rand.
 
+Module Source. Definition id : go_string := "math/rand.Source"%go. End Source.
+Module Source64. Definition id : go_string := "math/rand.Source64"%go. End Source64.
+Module Rand. Definition id : go_string := "math/rand.Rand"%go. End Rand.
+Module runtimeSource. Definition id : go_string := "math/rand.runtimeSource"%go. End runtimeSource.
+Module lockedSource. Definition id : go_string := "math/rand.lockedSource"%go. End lockedSource.
+Module rngSource. Definition id : go_string := "math/rand.rngSource"%go. End rngSource.
+Module Zipf. Definition id : go_string := "math/rand.Zipf"%go. End Zipf.
+
 Section code.
 Context `{ffi_syntax}.
 
+
+Axiom re : expr.
+
+Axiom Rand__ExpFloat64ⁱᵐᵖˡ : val.
 
 Definition ke : go_string := "math/rand.ke"%go.
 
@@ -21,7 +33,13 @@ Definition fe : go_string := "math/rand.fe"%go.
 
 Axiom fe'init : val.
 
+Axiom rn : expr.
+
 Definition absInt32 : go_string := "math/rand.absInt32"%go.
+
+Axiom absInt32ⁱᵐᵖˡ : val.
+
+Axiom Rand__NormFloat64ⁱᵐᵖˡ : val.
 
 Definition kn : go_string := "math/rand.kn"%go.
 
@@ -35,13 +53,57 @@ Definition fn : go_string := "math/rand.fn"%go.
 
 Axiom fn'init : val.
 
+Axiom Source : go_type.
+
+Axiom Source64 : go_type.
+
 Definition NewSource : go_string := "math/rand.NewSource"%go.
+
+Axiom NewSourceⁱᵐᵖˡ : val.
 
 Definition newSource : go_string := "math/rand.newSource"%go.
 
+Axiom newSourceⁱᵐᵖˡ : val.
+
+Axiom Rand : go_type.
+
 Definition New : go_string := "math/rand.New"%go.
 
+Axiom Newⁱᵐᵖˡ : val.
+
+Axiom Rand__Seedⁱᵐᵖˡ : val.
+
+Axiom Rand__Int63ⁱᵐᵖˡ : val.
+
+Axiom Rand__Uint32ⁱᵐᵖˡ : val.
+
+Axiom Rand__Uint64ⁱᵐᵖˡ : val.
+
+Axiom Rand__Int31ⁱᵐᵖˡ : val.
+
+Axiom Rand__Intⁱᵐᵖˡ : val.
+
+Axiom Rand__Int63nⁱᵐᵖˡ : val.
+
+Axiom Rand__Int31nⁱᵐᵖˡ : val.
+
+Axiom Rand__int31nⁱᵐᵖˡ : val.
+
+Axiom Rand__Intnⁱᵐᵖˡ : val.
+
+Axiom Rand__Float64ⁱᵐᵖˡ : val.
+
+Axiom Rand__Float32ⁱᵐᵖˡ : val.
+
+Axiom Rand__Permⁱᵐᵖˡ : val.
+
+Axiom Rand__Shuffleⁱᵐᵖˡ : val.
+
+Axiom Rand__Readⁱᵐᵖˡ : val.
+
 Definition read : go_string := "math/rand.read"%go.
+
+Axiom readⁱᵐᵖˡ : val.
 
 Definition globalRandGenerator : go_string := "math/rand.globalRandGenerator"%go.
 
@@ -55,53 +117,143 @@ Axiom randseednop'init : val.
 
 Definition globalRand : go_string := "math/rand.globalRand"%go.
 
+Axiom globalRandⁱᵐᵖˡ : val.
+
 Definition runtime_rand : go_string := "math/rand.runtime_rand"%go.
+
+Axiom runtime_randⁱᵐᵖˡ : val.
+
+Axiom runtimeSource : go_type.
+
+Axiom runtimeSource__Int63ⁱᵐᵖˡ : val.
+
+Axiom runtimeSource__Seedⁱᵐᵖˡ : val.
+
+Axiom runtimeSource__Uint64ⁱᵐᵖˡ : val.
+
+Axiom runtimeSource__readⁱᵐᵖˡ : val.
 
 Definition Seed : go_string := "math/rand.Seed"%go.
 
+Axiom Seedⁱᵐᵖˡ : val.
+
 Definition Int63 : go_string := "math/rand.Int63"%go.
+
+Axiom Int63ⁱᵐᵖˡ : val.
 
 Definition Uint32 : go_string := "math/rand.Uint32"%go.
 
+Axiom Uint32ⁱᵐᵖˡ : val.
+
 Definition Uint64 : go_string := "math/rand.Uint64"%go.
+
+Axiom Uint64ⁱᵐᵖˡ : val.
 
 Definition Int31 : go_string := "math/rand.Int31"%go.
 
+Axiom Int31ⁱᵐᵖˡ : val.
+
 Definition Int : go_string := "math/rand.Int"%go.
+
+Axiom Intⁱᵐᵖˡ : val.
 
 Definition Int63n : go_string := "math/rand.Int63n"%go.
 
+Axiom Int63nⁱᵐᵖˡ : val.
+
 Definition Int31n : go_string := "math/rand.Int31n"%go.
+
+Axiom Int31nⁱᵐᵖˡ : val.
 
 Definition Intn : go_string := "math/rand.Intn"%go.
 
+Axiom Intnⁱᵐᵖˡ : val.
+
 Definition Float64 : go_string := "math/rand.Float64"%go.
+
+Axiom Float64ⁱᵐᵖˡ : val.
 
 Definition Float32 : go_string := "math/rand.Float32"%go.
 
+Axiom Float32ⁱᵐᵖˡ : val.
+
 Definition Perm : go_string := "math/rand.Perm"%go.
+
+Axiom Permⁱᵐᵖˡ : val.
 
 Definition Shuffle : go_string := "math/rand.Shuffle"%go.
 
+Axiom Shuffleⁱᵐᵖˡ : val.
+
 Definition Read : go_string := "math/rand.Read"%go.
+
+Axiom Readⁱᵐᵖˡ : val.
 
 Definition NormFloat64 : go_string := "math/rand.NormFloat64"%go.
 
+Axiom NormFloat64ⁱᵐᵖˡ : val.
+
 Definition ExpFloat64 : go_string := "math/rand.ExpFloat64"%go.
+
+Axiom ExpFloat64ⁱᵐᵖˡ : val.
+
+Axiom lockedSource : go_type.
+
+Axiom lockedSource__Int63ⁱᵐᵖˡ : val.
+
+Axiom lockedSource__Uint64ⁱᵐᵖˡ : val.
+
+Axiom lockedSource__Seedⁱᵐᵖˡ : val.
+
+Axiom lockedSource__seedPosⁱᵐᵖˡ : val.
+
+Axiom lockedSource__seedⁱᵐᵖˡ : val.
+
+Axiom lockedSource__readⁱᵐᵖˡ : val.
+
+Axiom rngLen : Z.
+
+Axiom rngTap : Z.
+
+Axiom rngMax : Z.
+
+Axiom rngMask : Z.
+
+Axiom int32max : Z.
 
 Definition rngCooked : go_string := "math/rand.rngCooked"%go.
 
 Axiom rngCooked'init : val.
 
+Axiom rngSource : go_type.
+
 Definition seedrand : go_string := "math/rand.seedrand"%go.
+
+Axiom seedrandⁱᵐᵖˡ : val.
+
+Axiom rngSource__Seedⁱᵐᵖˡ : val.
+
+Axiom rngSource__Int63ⁱᵐᵖˡ : val.
+
+Axiom rngSource__Uint64ⁱᵐᵖˡ : val.
+
+Axiom Zipf : go_type.
+
+Axiom Zipf__hⁱᵐᵖˡ : val.
+
+Axiom Zipf__hinvⁱᵐᵖˡ : val.
 
 Definition NewZipf : go_string := "math/rand.NewZipf"%go.
 
+Axiom NewZipfⁱᵐᵖˡ : val.
+
+Axiom Zipf__Uint64ⁱᵐᵖˡ : val.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(absInt32, absInt32ⁱᵐᵖˡ); (NewSource, NewSourceⁱᵐᵖˡ); (newSource, newSourceⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (read, readⁱᵐᵖˡ); (globalRand, globalRandⁱᵐᵖˡ); (runtime_rand, runtime_randⁱᵐᵖˡ); (Seed, Seedⁱᵐᵖˡ); (Int63, Int63ⁱᵐᵖˡ); (Uint32, Uint32ⁱᵐᵖˡ); (Uint64, Uint64ⁱᵐᵖˡ); (Int31, Int31ⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ); (Int63n, Int63nⁱᵐᵖˡ); (Int31n, Int31nⁱᵐᵖˡ); (Intn, Intnⁱᵐᵖˡ); (Float64, Float64ⁱᵐᵖˡ); (Float32, Float32ⁱᵐᵖˡ); (Perm, Permⁱᵐᵖˡ); (Shuffle, Shuffleⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (NormFloat64, NormFloat64ⁱᵐᵖˡ); (ExpFloat64, ExpFloat64ⁱᵐᵖˡ); (seedrand, seedrandⁱᵐᵖˡ); (NewZipf, NewZipfⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Rand.id, []); (ptrT.id Rand.id, [("ExpFloat64"%go, Rand__ExpFloat64ⁱᵐᵖˡ); ("Float32"%go, Rand__Float32ⁱᵐᵖˡ); ("Float64"%go, Rand__Float64ⁱᵐᵖˡ); ("Int"%go, Rand__Intⁱᵐᵖˡ); ("Int31"%go, Rand__Int31ⁱᵐᵖˡ); ("Int31n"%go, Rand__Int31nⁱᵐᵖˡ); ("Int63"%go, Rand__Int63ⁱᵐᵖˡ); ("Int63n"%go, Rand__Int63nⁱᵐᵖˡ); ("Intn"%go, Rand__Intnⁱᵐᵖˡ); ("NormFloat64"%go, Rand__NormFloat64ⁱᵐᵖˡ); ("Perm"%go, Rand__Permⁱᵐᵖˡ); ("Read"%go, Rand__Readⁱᵐᵖˡ); ("Seed"%go, Rand__Seedⁱᵐᵖˡ); ("Shuffle"%go, Rand__Shuffleⁱᵐᵖˡ); ("Uint32"%go, Rand__Uint32ⁱᵐᵖˡ); ("Uint64"%go, Rand__Uint64ⁱᵐᵖˡ); ("int31n"%go, Rand__int31nⁱᵐᵖˡ)]); (runtimeSource.id, []); (ptrT.id runtimeSource.id, [("Int63"%go, runtimeSource__Int63ⁱᵐᵖˡ); ("Seed"%go, runtimeSource__Seedⁱᵐᵖˡ); ("Uint64"%go, runtimeSource__Uint64ⁱᵐᵖˡ); ("read"%go, runtimeSource__readⁱᵐᵖˡ)]); (lockedSource.id, []); (ptrT.id lockedSource.id, [("Int63"%go, lockedSource__Int63ⁱᵐᵖˡ); ("Seed"%go, lockedSource__Seedⁱᵐᵖˡ); ("Uint64"%go, lockedSource__Uint64ⁱᵐᵖˡ); ("read"%go, lockedSource__readⁱᵐᵖˡ); ("seed"%go, lockedSource__seedⁱᵐᵖˡ); ("seedPos"%go, lockedSource__seedPosⁱᵐᵖˡ)]); (rngSource.id, []); (ptrT.id rngSource.id, [("Int63"%go, rngSource__Int63ⁱᵐᵖˡ); ("Seed"%go, rngSource__Seedⁱᵐᵖˡ); ("Uint64"%go, rngSource__Uint64ⁱᵐᵖˡ)]); (Zipf.id, []); (ptrT.id Zipf.id, [("Uint64"%go, Zipf__Uint64ⁱᵐᵖˡ); ("h"%go, Zipf__hⁱᵐᵖˡ); ("hinv"%go, Zipf__hinvⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo rand.rand :=
   {|

@@ -17,6 +17,7 @@ Module Message. Definition id : go_string := "go.etcd.io/raft/v3/raftpb.Message"
 Module HardState. Definition id : go_string := "go.etcd.io/raft/v3/raftpb.HardState"%go. End HardState.
 Module ConfState. Definition id : go_string := "go.etcd.io/raft/v3/raftpb.ConfState"%go. End ConfState.
 Module ConfChange. Definition id : go_string := "go.etcd.io/raft/v3/raftpb.ConfChange"%go. End ConfChange.
+Module ConfChangeSingle. Definition id : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeSingle"%go. End ConfChangeSingle.
 Module ConfChangeV2. Definition id : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeV2"%go. End ConfChangeV2.
 
 Section code.
@@ -27,9 +28,29 @@ Definition ConfChangeI : go_type := interfaceT.
 
 Definition MarshalConfChange : go_string := "go.etcd.io/raft/v3/raftpb.MarshalConfChange"%go.
 
+Axiom MarshalConfChangeⁱᵐᵖˡ : val.
+
+Axiom ConfChange__AsV2ⁱᵐᵖˡ : val.
+
+Axiom ConfChange__AsV1ⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__AsV2ⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__AsV1ⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__EnterJointⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__LeaveJointⁱᵐᵖˡ : val.
+
 Definition ConfChangesFromString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesFromString"%go.
 
+Axiom ConfChangesFromStringⁱᵐᵖˡ : val.
+
 Definition ConfChangesToString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesToString"%go.
+
+Axiom ConfChangesToStringⁱᵐᵖˡ : val.
+
+Axiom ConfState__Equivalentⁱᵐᵖˡ : val.
 
 Definition EntryType : go_type := int32T.
 
@@ -46,6 +67,14 @@ Axiom EntryType_name'init : val.
 Definition EntryType_value : go_string := "go.etcd.io/raft/v3/raftpb.EntryType_value"%go.
 
 Axiom EntryType_value'init : val.
+
+Axiom EntryType__Enumⁱᵐᵖˡ : val.
+
+Axiom EntryType__Stringⁱᵐᵖˡ : val.
+
+Axiom EntryType__UnmarshalJSONⁱᵐᵖˡ : val.
+
+Axiom EntryType__EnumDescriptorⁱᵐᵖˡ : val.
 
 Definition MessageType : go_type := int32T.
 
@@ -105,7 +134,21 @@ Definition MessageType_value : go_string := "go.etcd.io/raft/v3/raftpb.MessageTy
 
 Axiom MessageType_value'init : val.
 
+Axiom MessageType__Enumⁱᵐᵖˡ : val.
+
+Axiom MessageType__Stringⁱᵐᵖˡ : val.
+
+Axiom MessageType__UnmarshalJSONⁱᵐᵖˡ : val.
+
+Axiom MessageType__EnumDescriptorⁱᵐᵖˡ : val.
+
 Definition ConfChangeTransition : go_type := int32T.
+
+Axiom ConfChangeTransitionAuto : expr.
+
+Axiom ConfChangeTransitionJointImplicit : expr.
+
+Axiom ConfChangeTransitionJointExplicit : expr.
 
 Definition ConfChangeTransition_name : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition_name"%go.
 
@@ -114,6 +157,14 @@ Axiom ConfChangeTransition_name'init : val.
 Definition ConfChangeTransition_value : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition_value"%go.
 
 Axiom ConfChangeTransition_value'init : val.
+
+Axiom ConfChangeTransition__Enumⁱᵐᵖˡ : val.
+
+Axiom ConfChangeTransition__Stringⁱᵐᵖˡ : val.
+
+Axiom ConfChangeTransition__UnmarshalJSONⁱᵐᵖˡ : val.
+
+Axiom ConfChangeTransition__EnumDescriptorⁱᵐᵖˡ : val.
 
 Definition ConfChangeType : go_type := int32T.
 
@@ -133,12 +184,38 @@ Definition ConfChangeType_value : go_string := "go.etcd.io/raft/v3/raftpb.ConfCh
 
 Axiom ConfChangeType_value'init : val.
 
+Axiom ConfChangeType__Enumⁱᵐᵖˡ : val.
+
+Axiom ConfChangeType__Stringⁱᵐᵖˡ : val.
+
+Axiom ConfChangeType__UnmarshalJSONⁱᵐᵖˡ : val.
+
+Axiom ConfChangeType__EnumDescriptorⁱᵐᵖˡ : val.
+
 Definition Entry : go_type := structT [
   "Term" :: uint64T;
   "Index" :: uint64T;
   "Type" :: EntryType;
   "Data" :: sliceT
 ].
+
+Axiom Entry__Resetⁱᵐᵖˡ : val.
+
+Axiom Entry__Stringⁱᵐᵖˡ : val.
+
+Axiom Entry__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Entry__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Entry__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Entry__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Entry__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Entry__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Entry__XXX_DiscardUnknownⁱᵐᵖˡ : val.
 
 Definition xxx_messageInfo_Entry : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Entry"%go.
 
@@ -156,12 +233,48 @@ Definition SnapshotMetadata : go_type := structT [
   "Term" :: uint64T
 ].
 
+Axiom SnapshotMetadata__Resetⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__Stringⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__Descriptorⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
 Definition xxx_messageInfo_SnapshotMetadata : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_SnapshotMetadata"%go.
 
 Definition Snapshot : go_type := structT [
   "Data" :: sliceT;
   "Metadata" :: SnapshotMetadata
 ].
+
+Axiom Snapshot__Resetⁱᵐᵖˡ : val.
+
+Axiom Snapshot__Stringⁱᵐᵖˡ : val.
+
+Axiom Snapshot__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Snapshot__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Snapshot__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Snapshot__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Snapshot__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Snapshot__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Snapshot__XXX_DiscardUnknownⁱᵐᵖˡ : val.
 
 Definition xxx_messageInfo_Snapshot : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Snapshot"%go.
 
@@ -182,6 +295,24 @@ Definition Message : go_type := structT [
   "Responses" :: sliceT
 ].
 
+Axiom Message__Resetⁱᵐᵖˡ : val.
+
+Axiom Message__Stringⁱᵐᵖˡ : val.
+
+Axiom Message__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Message__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Message__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Message__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Message__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Message__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Message__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
 Definition xxx_messageInfo_Message : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Message"%go.
 
 Definition HardState : go_type := structT [
@@ -190,7 +321,43 @@ Definition HardState : go_type := structT [
   "Commit" :: uint64T
 ].
 
+Axiom HardState__Resetⁱᵐᵖˡ : val.
+
+Axiom HardState__Stringⁱᵐᵖˡ : val.
+
+Axiom HardState__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom HardState__Descriptorⁱᵐᵖˡ : val.
+
+Axiom HardState__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HardState__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom HardState__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom HardState__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom HardState__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
 Definition xxx_messageInfo_HardState : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_HardState"%go.
+
+Axiom ConfState__Resetⁱᵐᵖˡ : val.
+
+Axiom ConfState__Stringⁱᵐᵖˡ : val.
+
+Axiom ConfState__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom ConfState__Descriptorⁱᵐᵖˡ : val.
+
+Axiom ConfState__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfState__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfState__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom ConfState__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfState__XXX_DiscardUnknownⁱᵐᵖˡ : val.
 
 Definition xxx_messageInfo_ConfState : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfState"%go.
 
@@ -201,7 +368,45 @@ Definition ConfChange : go_type := structT [
   "ID" :: uint64T
 ].
 
+Axiom ConfChange__Resetⁱᵐᵖˡ : val.
+
+Axiom ConfChange__Stringⁱᵐᵖˡ : val.
+
+Axiom ConfChange__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom ConfChange__Descriptorⁱᵐᵖˡ : val.
+
+Axiom ConfChange__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfChange__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfChange__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom ConfChange__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfChange__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
 Definition xxx_messageInfo_ConfChange : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChange"%go.
+
+Axiom ConfChangeSingle : go_type.
+
+Axiom ConfChangeSingle__Resetⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__Stringⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__Descriptorⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__XXX_DiscardUnknownⁱᵐᵖˡ : val.
 
 Definition xxx_messageInfo_ConfChangeSingle : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeSingle"%go.
 
@@ -211,21 +416,139 @@ Definition ConfChangeV2 : go_type := structT [
   "Context" :: sliceT
 ].
 
+Axiom ConfChangeV2__Resetⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__Stringⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__Descriptorⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
 Definition xxx_messageInfo_ConfChangeV2 : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeV2"%go.
 
 Definition init : go_string := "go.etcd.io/raft/v3/raftpb.init"%go.
+
+Axiom initⁱᵐᵖˡ : val.
 
 Definition fileDescriptor_b042552c306ae59b : go_string := "go.etcd.io/raft/v3/raftpb.fileDescriptor_b042552c306ae59b"%go.
 
 Axiom fileDescriptor_b042552c306ae59b'init : val.
 
+Axiom Entry__Marshalⁱᵐᵖˡ : val.
+
+Axiom Entry__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Entry__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__Marshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__MarshalToⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Snapshot__Marshalⁱᵐᵖˡ : val.
+
+Axiom Snapshot__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Snapshot__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Message__Marshalⁱᵐᵖˡ : val.
+
+Axiom Message__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Message__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom HardState__Marshalⁱᵐᵖˡ : val.
+
+Axiom HardState__MarshalToⁱᵐᵖˡ : val.
+
+Axiom HardState__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom ConfState__Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfState__MarshalToⁱᵐᵖˡ : val.
+
+Axiom ConfState__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom ConfChange__Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfChange__MarshalToⁱᵐᵖˡ : val.
+
+Axiom ConfChange__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__MarshalToⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__Marshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__MarshalToⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
 Definition encodeVarintRaft : go_string := "go.etcd.io/raft/v3/raftpb.encodeVarintRaft"%go.
+
+Axiom encodeVarintRaftⁱᵐᵖˡ : val.
+
+Axiom Entry__Sizeⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__Sizeⁱᵐᵖˡ : val.
+
+Axiom Snapshot__Sizeⁱᵐᵖˡ : val.
+
+Axiom Message__Sizeⁱᵐᵖˡ : val.
+
+Axiom HardState__Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfState__Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfChange__Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__Sizeⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__Sizeⁱᵐᵖˡ : val.
 
 Definition sovRaft : go_string := "go.etcd.io/raft/v3/raftpb.sovRaft"%go.
 
+Axiom sovRaftⁱᵐᵖˡ : val.
+
 Definition sozRaft : go_string := "go.etcd.io/raft/v3/raftpb.sozRaft"%go.
 
+Axiom sozRaftⁱᵐᵖˡ : val.
+
+Axiom Entry__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotMetadata__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Snapshot__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Message__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HardState__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfState__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfChange__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeSingle__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ConfChangeV2__Unmarshalⁱᵐᵖˡ : val.
+
 Definition skipRaft : go_string := "go.etcd.io/raft/v3/raftpb.skipRaft"%go.
+
+Axiom skipRaftⁱᵐᵖˡ : val.
 
 Definition ErrInvalidLengthRaft : go_string := "go.etcd.io/raft/v3/raftpb.ErrInvalidLengthRaft"%go.
 
@@ -241,9 +564,47 @@ Axiom ErrUnexpectedEndOfGroupRaft'init : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(MarshalConfChange, MarshalConfChangeⁱᵐᵖˡ); (ConfChangesFromString, ConfChangesFromStringⁱᵐᵖˡ); (ConfChangesToString, ConfChangesToStringⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (encodeVarintRaft, encodeVarintRaftⁱᵐᵖˡ); (sovRaft, sovRaftⁱᵐᵖˡ); (sozRaft, sozRaftⁱᵐᵖˡ); (skipRaft, skipRaftⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(EntryType.id, []); (ptrT.id EntryType.id, []); (MessageType.id, []); (ptrT.id MessageType.id, []); (ConfChangeTransition.id, []); (ptrT.id ConfChangeTransition.id, []); (ConfChangeType.id, []); (ptrT.id ConfChangeType.id, []); (Entry.id, []); (ptrT.id Entry.id, []); (SnapshotMetadata.id, []); (ptrT.id SnapshotMetadata.id, []); (Snapshot.id, []); (ptrT.id Snapshot.id, []); (Message.id, []); (ptrT.id Message.id, []); (HardState.id, []); (ptrT.id HardState.id, []); (ConfState.id, []); (ptrT.id ConfState.id, []); (ConfChange.id, []); (ptrT.id ConfChange.id, []); (ConfChangeV2.id, []); (ptrT.id ConfChangeV2.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(EntryType.id, [("Enum"%go, EntryType__Enumⁱᵐᵖˡ); ("EnumDescriptor"%go, EntryType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, EntryType__Stringⁱᵐᵖˡ)]); (ptrT.id EntryType.id, [("Enum"%go, (λ: "$r",
+                 method_call #EntryType.id #"Enum"%go (![#EntryType] "$r")
+                 )%V); ("EnumDescriptor"%go, (λ: "$r",
+                 method_call #EntryType.id #"EnumDescriptor"%go (![#EntryType] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #EntryType.id #"String"%go (![#EntryType] "$r")
+                 )%V); ("UnmarshalJSON"%go, EntryType__UnmarshalJSONⁱᵐᵖˡ)]); (MessageType.id, [("Enum"%go, MessageType__Enumⁱᵐᵖˡ); ("EnumDescriptor"%go, MessageType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, MessageType__Stringⁱᵐᵖˡ)]); (ptrT.id MessageType.id, [("Enum"%go, (λ: "$r",
+                 method_call #MessageType.id #"Enum"%go (![#MessageType] "$r")
+                 )%V); ("EnumDescriptor"%go, (λ: "$r",
+                 method_call #MessageType.id #"EnumDescriptor"%go (![#MessageType] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #MessageType.id #"String"%go (![#MessageType] "$r")
+                 )%V); ("UnmarshalJSON"%go, MessageType__UnmarshalJSONⁱᵐᵖˡ)]); (ConfChangeTransition.id, [("Enum"%go, ConfChangeTransition__Enumⁱᵐᵖˡ); ("EnumDescriptor"%go, ConfChangeTransition__EnumDescriptorⁱᵐᵖˡ); ("String"%go, ConfChangeTransition__Stringⁱᵐᵖˡ)]); (ptrT.id ConfChangeTransition.id, [("Enum"%go, (λ: "$r",
+                 method_call #ConfChangeTransition.id #"Enum"%go (![#ConfChangeTransition] "$r")
+                 )%V); ("EnumDescriptor"%go, (λ: "$r",
+                 method_call #ConfChangeTransition.id #"EnumDescriptor"%go (![#ConfChangeTransition] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #ConfChangeTransition.id #"String"%go (![#ConfChangeTransition] "$r")
+                 )%V); ("UnmarshalJSON"%go, ConfChangeTransition__UnmarshalJSONⁱᵐᵖˡ)]); (ConfChangeType.id, [("Enum"%go, ConfChangeType__Enumⁱᵐᵖˡ); ("EnumDescriptor"%go, ConfChangeType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, ConfChangeType__Stringⁱᵐᵖˡ)]); (ptrT.id ConfChangeType.id, [("Enum"%go, (λ: "$r",
+                 method_call #ConfChangeType.id #"Enum"%go (![#ConfChangeType] "$r")
+                 )%V); ("EnumDescriptor"%go, (λ: "$r",
+                 method_call #ConfChangeType.id #"EnumDescriptor"%go (![#ConfChangeType] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #ConfChangeType.id #"String"%go (![#ConfChangeType] "$r")
+                 )%V); ("UnmarshalJSON"%go, ConfChangeType__UnmarshalJSONⁱᵐᵖˡ)]); (Entry.id, []); (ptrT.id Entry.id, [("Descriptor"%go, Entry__Descriptorⁱᵐᵖˡ); ("Marshal"%go, Entry__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Entry__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Entry__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Entry__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Entry__Resetⁱᵐᵖˡ); ("Size"%go, Entry__Sizeⁱᵐᵖˡ); ("String"%go, Entry__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Entry__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Entry__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Entry__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Entry__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, Entry__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Entry__XXX_Unmarshalⁱᵐᵖˡ)]); (SnapshotMetadata.id, []); (ptrT.id SnapshotMetadata.id, [("Descriptor"%go, SnapshotMetadata__Descriptorⁱᵐᵖˡ); ("Marshal"%go, SnapshotMetadata__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, SnapshotMetadata__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, SnapshotMetadata__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, SnapshotMetadata__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, SnapshotMetadata__Resetⁱᵐᵖˡ); ("Size"%go, SnapshotMetadata__Sizeⁱᵐᵖˡ); ("String"%go, SnapshotMetadata__Stringⁱᵐᵖˡ); ("Unmarshal"%go, SnapshotMetadata__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, SnapshotMetadata__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, SnapshotMetadata__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, SnapshotMetadata__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, SnapshotMetadata__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, SnapshotMetadata__XXX_Unmarshalⁱᵐᵖˡ)]); (Snapshot.id, []); (ptrT.id Snapshot.id, [("Descriptor"%go, Snapshot__Descriptorⁱᵐᵖˡ); ("Marshal"%go, Snapshot__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Snapshot__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Snapshot__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Snapshot__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Snapshot__Resetⁱᵐᵖˡ); ("Size"%go, Snapshot__Sizeⁱᵐᵖˡ); ("String"%go, Snapshot__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Snapshot__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Snapshot__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Snapshot__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Snapshot__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, Snapshot__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Snapshot__XXX_Unmarshalⁱᵐᵖˡ)]); (Message.id, []); (ptrT.id Message.id, [("Descriptor"%go, Message__Descriptorⁱᵐᵖˡ); ("Marshal"%go, Message__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Message__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Message__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Message__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Message__Resetⁱᵐᵖˡ); ("Size"%go, Message__Sizeⁱᵐᵖˡ); ("String"%go, Message__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Message__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Message__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Message__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Message__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, Message__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Message__XXX_Unmarshalⁱᵐᵖˡ)]); (HardState.id, []); (ptrT.id HardState.id, [("Descriptor"%go, HardState__Descriptorⁱᵐᵖˡ); ("Marshal"%go, HardState__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, HardState__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, HardState__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, HardState__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, HardState__Resetⁱᵐᵖˡ); ("Size"%go, HardState__Sizeⁱᵐᵖˡ); ("String"%go, HardState__Stringⁱᵐᵖˡ); ("Unmarshal"%go, HardState__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, HardState__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, HardState__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, HardState__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, HardState__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, HardState__XXX_Unmarshalⁱᵐᵖˡ)]); (ConfState.id, [("Equivalent"%go, ConfState__Equivalentⁱᵐᵖˡ)]); (ptrT.id ConfState.id, [("Descriptor"%go, ConfState__Descriptorⁱᵐᵖˡ); ("Equivalent"%go, (λ: "$r",
+                 method_call #ConfState.id #"Equivalent"%go (![#ConfState] "$r")
+                 )%V); ("Marshal"%go, ConfState__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, ConfState__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ConfState__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, ConfState__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, ConfState__Resetⁱᵐᵖˡ); ("Size"%go, ConfState__Sizeⁱᵐᵖˡ); ("String"%go, ConfState__Stringⁱᵐᵖˡ); ("Unmarshal"%go, ConfState__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, ConfState__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, ConfState__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, ConfState__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, ConfState__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, ConfState__XXX_Unmarshalⁱᵐᵖˡ)]); (ConfChange.id, [("AsV1"%go, ConfChange__AsV1ⁱᵐᵖˡ); ("AsV2"%go, ConfChange__AsV2ⁱᵐᵖˡ)]); (ptrT.id ConfChange.id, [("AsV1"%go, (λ: "$r",
+                 method_call #ConfChange.id #"AsV1"%go (![#ConfChange] "$r")
+                 )%V); ("AsV2"%go, (λ: "$r",
+                 method_call #ConfChange.id #"AsV2"%go (![#ConfChange] "$r")
+                 )%V); ("Descriptor"%go, ConfChange__Descriptorⁱᵐᵖˡ); ("Marshal"%go, ConfChange__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, ConfChange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ConfChange__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, ConfChange__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, ConfChange__Resetⁱᵐᵖˡ); ("Size"%go, ConfChange__Sizeⁱᵐᵖˡ); ("String"%go, ConfChange__Stringⁱᵐᵖˡ); ("Unmarshal"%go, ConfChange__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, ConfChange__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, ConfChange__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, ConfChange__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, ConfChange__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, ConfChange__XXX_Unmarshalⁱᵐᵖˡ)]); (ConfChangeSingle.id, []); (ptrT.id ConfChangeSingle.id, [("Descriptor"%go, ConfChangeSingle__Descriptorⁱᵐᵖˡ); ("Marshal"%go, ConfChangeSingle__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, ConfChangeSingle__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ConfChangeSingle__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, ConfChangeSingle__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, ConfChangeSingle__Resetⁱᵐᵖˡ); ("Size"%go, ConfChangeSingle__Sizeⁱᵐᵖˡ); ("String"%go, ConfChangeSingle__Stringⁱᵐᵖˡ); ("Unmarshal"%go, ConfChangeSingle__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, ConfChangeSingle__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, ConfChangeSingle__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, ConfChangeSingle__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, ConfChangeSingle__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, ConfChangeSingle__XXX_Unmarshalⁱᵐᵖˡ)]); (ConfChangeV2.id, [("AsV1"%go, ConfChangeV2__AsV1ⁱᵐᵖˡ); ("AsV2"%go, ConfChangeV2__AsV2ⁱᵐᵖˡ); ("EnterJoint"%go, ConfChangeV2__EnterJointⁱᵐᵖˡ); ("LeaveJoint"%go, ConfChangeV2__LeaveJointⁱᵐᵖˡ)]); (ptrT.id ConfChangeV2.id, [("AsV1"%go, (λ: "$r",
+                 method_call #ConfChangeV2.id #"AsV1"%go (![#ConfChangeV2] "$r")
+                 )%V); ("AsV2"%go, (λ: "$r",
+                 method_call #ConfChangeV2.id #"AsV2"%go (![#ConfChangeV2] "$r")
+                 )%V); ("Descriptor"%go, ConfChangeV2__Descriptorⁱᵐᵖˡ); ("EnterJoint"%go, (λ: "$r",
+                 method_call #ConfChangeV2.id #"EnterJoint"%go (![#ConfChangeV2] "$r")
+                 )%V); ("LeaveJoint"%go, (λ: "$r",
+                 method_call #ConfChangeV2.id #"LeaveJoint"%go (![#ConfChangeV2] "$r")
+                 )%V); ("Marshal"%go, ConfChangeV2__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, ConfChangeV2__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ConfChangeV2__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, ConfChangeV2__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, ConfChangeV2__Resetⁱᵐᵖˡ); ("Size"%go, ConfChangeV2__Sizeⁱᵐᵖˡ); ("String"%go, ConfChangeV2__Stringⁱᵐᵖˡ); ("Unmarshal"%go, ConfChangeV2__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, ConfChangeV2__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, ConfChangeV2__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, ConfChangeV2__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, ConfChangeV2__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, ConfChangeV2__XXX_Unmarshalⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo raftpb.raftpb :=
   {|

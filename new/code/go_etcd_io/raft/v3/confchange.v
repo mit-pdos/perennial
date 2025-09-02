@@ -17,37 +17,103 @@ Definition Changer : go_type := structT [
   "LastIndex" :: uint64T
 ].
 
+Axiom Changer__EnterJointⁱᵐᵖˡ : val.
+
+Axiom Changer__LeaveJointⁱᵐᵖˡ : val.
+
+Axiom Changer__Simpleⁱᵐᵖˡ : val.
+
+Axiom Changer__applyⁱᵐᵖˡ : val.
+
+Axiom Changer__makeVoterⁱᵐᵖˡ : val.
+
+Axiom Changer__makeLearnerⁱᵐᵖˡ : val.
+
+Axiom Changer__removeⁱᵐᵖˡ : val.
+
+Axiom Changer__initProgressⁱᵐᵖˡ : val.
+
 Definition checkInvariants : go_string := "go.etcd.io/raft/v3/confchange.checkInvariants"%go.
+
+Axiom checkInvariantsⁱᵐᵖˡ : val.
+
+Axiom Changer__checkAndCopyⁱᵐᵖˡ : val.
 
 Definition checkAndReturn : go_string := "go.etcd.io/raft/v3/confchange.checkAndReturn"%go.
 
+Axiom checkAndReturnⁱᵐᵖˡ : val.
+
+Axiom Changer__errⁱᵐᵖˡ : val.
+
 Definition nilAwareAdd : go_string := "go.etcd.io/raft/v3/confchange.nilAwareAdd"%go.
+
+Axiom nilAwareAddⁱᵐᵖˡ : val.
 
 Definition nilAwareDelete : go_string := "go.etcd.io/raft/v3/confchange.nilAwareDelete"%go.
 
+Axiom nilAwareDeleteⁱᵐᵖˡ : val.
+
 Definition symdiff : go_string := "go.etcd.io/raft/v3/confchange.symdiff"%go.
+
+Axiom symdiffⁱᵐᵖˡ : val.
 
 Definition joint : go_string := "go.etcd.io/raft/v3/confchange.joint"%go.
 
+Axiom jointⁱᵐᵖˡ : val.
+
 Definition incoming : go_string := "go.etcd.io/raft/v3/confchange.incoming"%go.
+
+Axiom incomingⁱᵐᵖˡ : val.
 
 Definition outgoing : go_string := "go.etcd.io/raft/v3/confchange.outgoing"%go.
 
+Axiom outgoingⁱᵐᵖˡ : val.
+
 Definition outgoingPtr : go_string := "go.etcd.io/raft/v3/confchange.outgoingPtr"%go.
+
+Axiom outgoingPtrⁱᵐᵖˡ : val.
 
 Definition Describe : go_string := "go.etcd.io/raft/v3/confchange.Describe"%go.
 
+Axiom Describeⁱᵐᵖˡ : val.
+
 Definition toConfChangeSingle : go_string := "go.etcd.io/raft/v3/confchange.toConfChangeSingle"%go.
+
+Axiom toConfChangeSingleⁱᵐᵖˡ : val.
 
 Definition chain : go_string := "go.etcd.io/raft/v3/confchange.chain"%go.
 
+Axiom chainⁱᵐᵖˡ : val.
+
 Definition Restore : go_string := "go.etcd.io/raft/v3/confchange.Restore"%go.
+
+Axiom Restoreⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(checkInvariants, checkInvariantsⁱᵐᵖˡ); (checkAndReturn, checkAndReturnⁱᵐᵖˡ); (nilAwareAdd, nilAwareAddⁱᵐᵖˡ); (nilAwareDelete, nilAwareDeleteⁱᵐᵖˡ); (symdiff, symdiffⁱᵐᵖˡ); (joint, jointⁱᵐᵖˡ); (incoming, incomingⁱᵐᵖˡ); (outgoing, outgoingⁱᵐᵖˡ); (outgoingPtr, outgoingPtrⁱᵐᵖˡ); (Describe, Describeⁱᵐᵖˡ); (toConfChangeSingle, toConfChangeSingleⁱᵐᵖˡ); (chain, chainⁱᵐᵖˡ); (Restore, Restoreⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id, []); (ptrT.id Changer.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id, [("EnterJoint"%go, Changer__EnterJointⁱᵐᵖˡ); ("LeaveJoint"%go, Changer__LeaveJointⁱᵐᵖˡ); ("Simple"%go, Changer__Simpleⁱᵐᵖˡ); ("apply"%go, Changer__applyⁱᵐᵖˡ); ("checkAndCopy"%go, Changer__checkAndCopyⁱᵐᵖˡ); ("err"%go, Changer__errⁱᵐᵖˡ); ("initProgress"%go, Changer__initProgressⁱᵐᵖˡ); ("makeLearner"%go, Changer__makeLearnerⁱᵐᵖˡ); ("makeVoter"%go, Changer__makeVoterⁱᵐᵖˡ); ("remove"%go, Changer__removeⁱᵐᵖˡ)]); (ptrT.id Changer.id, [("EnterJoint"%go, (λ: "$r",
+                 method_call #Changer.id #"EnterJoint"%go (![#Changer] "$r")
+                 )%V); ("LeaveJoint"%go, (λ: "$r",
+                 method_call #Changer.id #"LeaveJoint"%go (![#Changer] "$r")
+                 )%V); ("Simple"%go, (λ: "$r",
+                 method_call #Changer.id #"Simple"%go (![#Changer] "$r")
+                 )%V); ("apply"%go, (λ: "$r",
+                 method_call #Changer.id #"apply"%go (![#Changer] "$r")
+                 )%V); ("checkAndCopy"%go, (λ: "$r",
+                 method_call #Changer.id #"checkAndCopy"%go (![#Changer] "$r")
+                 )%V); ("err"%go, (λ: "$r",
+                 method_call #Changer.id #"err"%go (![#Changer] "$r")
+                 )%V); ("initProgress"%go, (λ: "$r",
+                 method_call #Changer.id #"initProgress"%go (![#Changer] "$r")
+                 )%V); ("makeLearner"%go, (λ: "$r",
+                 method_call #Changer.id #"makeLearner"%go (![#Changer] "$r")
+                 )%V); ("makeVoter"%go, (λ: "$r",
+                 method_call #Changer.id #"makeVoter"%go (![#Changer] "$r")
+                 )%V); ("remove"%go, (λ: "$r",
+                 method_call #Changer.id #"remove"%go (![#Changer] "$r")
+                 )%V)])].
 
 #[global] Instance info' : PkgInfo confchange.confchange :=
   {|

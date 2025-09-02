@@ -221,8 +221,8 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(UnderlyingSlice, UnderlyingSliceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (BoxGet, BoxGetⁱᵐᵖˡ); (BoxGet2, BoxGet2ⁱᵐᵖˡ); (makeGenericBox, makeGenericBoxⁱᵐᵖˡ); (makeBox, makeBoxⁱᵐᵖˡ); (useBoxGet, useBoxGetⁱᵐᵖˡ); (useContainer, useContainerⁱᵐᵖˡ); (useMultiParam, useMultiParamⁱᵐᵖˡ); (swapMultiParam, swapMultiParamⁱᵐᵖˡ); (multiParamFunc, multiParamFuncⁱᵐᵖˡ); (useMultiParamFunc, useMultiParamFuncⁱᵐᵖˡ); (useAnyPointer, useAnyPointerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Box.id, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (ptrT.id Box.id, [("Get"%go, (λ: "$recvAddr",
-                 method_call #generics.generics #"Box" #"Get" (![Box #()] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Box.id, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (ptrT.id Box.id, [("Get"%go, (λ: "$r",
+                 method_call #Box.id #"Get"%go (![Box #()] "$r")
                  )%V)]); (Container.id, []); (ptrT.id Container.id, []); (UseContainer.id, []); (ptrT.id UseContainer.id, []); (OnlyIndirect.id, []); (ptrT.id OnlyIndirect.id, []); (MultiParam.id, []); (ptrT.id MultiParam.id, [])].
 
 #[global] Instance info' : PkgInfo generics.generics :=

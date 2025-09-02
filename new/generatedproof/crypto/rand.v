@@ -8,6 +8,23 @@ Set Default Proof Using "Type".
 
 Module rand.
 
+(* type rand.reader *)
+Module reader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End reader.
+
+Global Instance bounded_size_reader : BoundedTypeSize rand.reader.
+Admitted.
+
+Global Instance into_val_reader `{ffi_syntax} : IntoVal reader.t.
+Admitted.
+
+Global Instance into_val_typed_reader `{ffi_syntax} : IntoValTyped reader.t rand.reader.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -29,6 +46,38 @@ Global Program Instance is_pkg_defined_rand : IsPkgDefined rand :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_fatal :
+  WpFuncCall rand.fatal _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Read :
+  WpFuncCall rand.Read _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Text :
+  WpFuncCall rand.Text _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Prime :
+  WpFuncCall rand.Prime _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int :
+  WpFuncCall rand.Int _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_reader_defaultReader :
+  WpMethodCall rand.reader.id "defaultReader" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_reader'ptr_Read :
+  WpMethodCall (ptrT.id rand.reader.id) "Read" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_reader'ptr_defaultReader :
+  WpMethodCall (ptrT.id rand.reader.id) "defaultReader" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End rand.

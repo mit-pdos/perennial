@@ -358,10 +358,10 @@ Definition vars' : list (go_string * go_type) := [(ErrGRPCEmptyKey, error); (Err
 
 Definition functions' : list (go_string * val) := [(Error, Errorⁱᵐᵖˡ); (ErrorDesc, ErrorDescⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(EtcdError.id, [("Code"%go, EtcdError__Codeⁱᵐᵖˡ); ("Error"%go, EtcdError__Errorⁱᵐᵖˡ)]); (ptrT.id EtcdError.id, [("Code"%go, (λ: "$recvAddr",
-                 method_call #rpctypes.rpctypes #"EtcdError" #"Code" (![#EtcdError] "$recvAddr")
-                 )%V); ("Error"%go, (λ: "$recvAddr",
-                 method_call #rpctypes.rpctypes #"EtcdError" #"Error" (![#EtcdError] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(EtcdError.id, [("Code"%go, EtcdError__Codeⁱᵐᵖˡ); ("Error"%go, EtcdError__Errorⁱᵐᵖˡ)]); (ptrT.id EtcdError.id, [("Code"%go, (λ: "$r",
+                 method_call #EtcdError.id #"Code"%go (![#EtcdError] "$r")
+                 )%V); ("Error"%go, (λ: "$r",
+                 method_call #EtcdError.id #"Error"%go (![#EtcdError] "$r")
                  )%V)]); (TokenFieldNameGRPCKey.id, []); (ptrT.id TokenFieldNameGRPCKey.id, [])].
 
 #[global] Instance info' : PkgInfo rpctypes.rpctypes :=

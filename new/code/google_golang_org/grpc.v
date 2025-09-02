@@ -5,6 +5,128 @@ Definition grpc : go_string := "google.golang.org/grpc".
 
 Module grpc.
 
+Module BackoffConfig. Definition id : go_string := "google.golang.org/grpc.BackoffConfig"%go. End BackoffConfig.
+Module ConnectParams. Definition id : go_string := "google.golang.org/grpc.ConnectParams"%go. End ConnectParams.
+Module ccBalancerWrapper. Definition id : go_string := "google.golang.org/grpc.ccBalancerWrapper"%go. End ccBalancerWrapper.
+Module acBalancerWrapper. Definition id : go_string := "google.golang.org/grpc.acBalancerWrapper"%go. End acBalancerWrapper.
+Module healthData. Definition id : go_string := "google.golang.org/grpc.healthData"%go. End healthData.
+Module refCountedProducer. Definition id : go_string := "google.golang.org/grpc.refCountedProducer"%go. End refCountedProducer.
+Module defaultConfigSelector. Definition id : go_string := "google.golang.org/grpc.defaultConfigSelector"%go. End defaultConfigSelector.
+Module idler. Definition id : go_string := "google.golang.org/grpc.idler"%go. End idler.
+Module connectivityStateManager. Definition id : go_string := "google.golang.org/grpc.connectivityStateManager"%go. End connectivityStateManager.
+Module ClientConnInterface. Definition id : go_string := "google.golang.org/grpc.ClientConnInterface"%go. End ClientConnInterface.
+Module ClientConn. Definition id : go_string := "google.golang.org/grpc.ClientConn"%go. End ClientConn.
+Module addrConn. Definition id : go_string := "google.golang.org/grpc.addrConn"%go. End addrConn.
+Module retryThrottler. Definition id : go_string := "google.golang.org/grpc.retryThrottler"%go. End retryThrottler.
+Module baseCodec. Definition id : go_string := "google.golang.org/grpc.baseCodec"%go. End baseCodec.
+Module codecV0Bridge. Definition id : go_string := "google.golang.org/grpc.codecV0Bridge"%go. End codecV0Bridge.
+Module codecV1Bridge. Definition id : go_string := "google.golang.org/grpc.codecV1Bridge"%go. End codecV1Bridge.
+Module Codec. Definition id : go_string := "google.golang.org/grpc.Codec"%go. End Codec.
+Module dialOptions. Definition id : go_string := "google.golang.org/grpc.dialOptions"%go. End dialOptions.
+Module DialOption. Definition id : go_string := "google.golang.org/grpc.DialOption"%go. End DialOption.
+Module perTargetDialOption. Definition id : go_string := "google.golang.org/grpc.perTargetDialOption"%go. End perTargetDialOption.
+Module EmptyDialOption. Definition id : go_string := "google.golang.org/grpc.EmptyDialOption"%go. End EmptyDialOption.
+Module disableGlobalDialOptions. Definition id : go_string := "google.golang.org/grpc.disableGlobalDialOptions"%go. End disableGlobalDialOptions.
+Module funcDialOption. Definition id : go_string := "google.golang.org/grpc.funcDialOption"%go. End funcDialOption.
+Module joinDialOption. Definition id : go_string := "google.golang.org/grpc.joinDialOption"%go. End joinDialOption.
+Module MaxHeaderListSizeDialOption. Definition id : go_string := "google.golang.org/grpc.MaxHeaderListSizeDialOption"%go. End MaxHeaderListSizeDialOption.
+Module UnaryInvoker. Definition id : go_string := "google.golang.org/grpc.UnaryInvoker"%go. End UnaryInvoker.
+Module UnaryClientInterceptor. Definition id : go_string := "google.golang.org/grpc.UnaryClientInterceptor"%go. End UnaryClientInterceptor.
+Module Streamer. Definition id : go_string := "google.golang.org/grpc.Streamer"%go. End Streamer.
+Module StreamClientInterceptor. Definition id : go_string := "google.golang.org/grpc.StreamClientInterceptor"%go. End StreamClientInterceptor.
+Module UnaryServerInfo. Definition id : go_string := "google.golang.org/grpc.UnaryServerInfo"%go. End UnaryServerInfo.
+Module UnaryHandler. Definition id : go_string := "google.golang.org/grpc.UnaryHandler"%go. End UnaryHandler.
+Module UnaryServerInterceptor. Definition id : go_string := "google.golang.org/grpc.UnaryServerInterceptor"%go. End UnaryServerInterceptor.
+Module StreamServerInfo. Definition id : go_string := "google.golang.org/grpc.StreamServerInfo"%go. End StreamServerInfo.
+Module StreamServerInterceptor. Definition id : go_string := "google.golang.org/grpc.StreamServerInterceptor"%go. End StreamServerInterceptor.
+Module pickerGeneration. Definition id : go_string := "google.golang.org/grpc.pickerGeneration"%go. End pickerGeneration.
+Module pickerWrapper. Definition id : go_string := "google.golang.org/grpc.pickerWrapper"%go. End pickerWrapper.
+Module dropError. Definition id : go_string := "google.golang.org/grpc.dropError"%go. End dropError.
+Module PreparedMsg. Definition id : go_string := "google.golang.org/grpc.PreparedMsg"%go. End PreparedMsg.
+Module ccResolverWrapper. Definition id : go_string := "google.golang.org/grpc.ccResolverWrapper"%go. End ccResolverWrapper.
+Module Compressor. Definition id : go_string := "google.golang.org/grpc.Compressor"%go. End Compressor.
+Module gzipCompressor. Definition id : go_string := "google.golang.org/grpc.gzipCompressor"%go. End gzipCompressor.
+Module Decompressor. Definition id : go_string := "google.golang.org/grpc.Decompressor"%go. End Decompressor.
+Module gzipDecompressor. Definition id : go_string := "google.golang.org/grpc.gzipDecompressor"%go. End gzipDecompressor.
+Module callInfo. Definition id : go_string := "google.golang.org/grpc.callInfo"%go. End callInfo.
+Module CallOption. Definition id : go_string := "google.golang.org/grpc.CallOption"%go. End CallOption.
+Module EmptyCallOption. Definition id : go_string := "google.golang.org/grpc.EmptyCallOption"%go. End EmptyCallOption.
+Module StaticMethodCallOption. Definition id : go_string := "google.golang.org/grpc.StaticMethodCallOption"%go. End StaticMethodCallOption.
+Module HeaderCallOption. Definition id : go_string := "google.golang.org/grpc.HeaderCallOption"%go. End HeaderCallOption.
+Module TrailerCallOption. Definition id : go_string := "google.golang.org/grpc.TrailerCallOption"%go. End TrailerCallOption.
+Module PeerCallOption. Definition id : go_string := "google.golang.org/grpc.PeerCallOption"%go. End PeerCallOption.
+Module FailFastCallOption. Definition id : go_string := "google.golang.org/grpc.FailFastCallOption"%go. End FailFastCallOption.
+Module OnFinishCallOption. Definition id : go_string := "google.golang.org/grpc.OnFinishCallOption"%go. End OnFinishCallOption.
+Module MaxRecvMsgSizeCallOption. Definition id : go_string := "google.golang.org/grpc.MaxRecvMsgSizeCallOption"%go. End MaxRecvMsgSizeCallOption.
+Module MaxSendMsgSizeCallOption. Definition id : go_string := "google.golang.org/grpc.MaxSendMsgSizeCallOption"%go. End MaxSendMsgSizeCallOption.
+Module PerRPCCredsCallOption. Definition id : go_string := "google.golang.org/grpc.PerRPCCredsCallOption"%go. End PerRPCCredsCallOption.
+Module CompressorCallOption. Definition id : go_string := "google.golang.org/grpc.CompressorCallOption"%go. End CompressorCallOption.
+Module ContentSubtypeCallOption. Definition id : go_string := "google.golang.org/grpc.ContentSubtypeCallOption"%go. End ContentSubtypeCallOption.
+Module ForceCodecCallOption. Definition id : go_string := "google.golang.org/grpc.ForceCodecCallOption"%go. End ForceCodecCallOption.
+Module ForceCodecV2CallOption. Definition id : go_string := "google.golang.org/grpc.ForceCodecV2CallOption"%go. End ForceCodecV2CallOption.
+Module CustomCodecCallOption. Definition id : go_string := "google.golang.org/grpc.CustomCodecCallOption"%go. End CustomCodecCallOption.
+Module MaxRetryRPCBufferSizeCallOption. Definition id : go_string := "google.golang.org/grpc.MaxRetryRPCBufferSizeCallOption"%go. End MaxRetryRPCBufferSizeCallOption.
+Module payloadFormat. Definition id : go_string := "google.golang.org/grpc.payloadFormat"%go. End payloadFormat.
+Module streamReader. Definition id : go_string := "google.golang.org/grpc.streamReader"%go. End streamReader.
+Module parser. Definition id : go_string := "google.golang.org/grpc.parser"%go. End parser.
+Module payloadInfo. Definition id : go_string := "google.golang.org/grpc.payloadInfo"%go. End payloadInfo.
+Module recvCompressor. Definition id : go_string := "google.golang.org/grpc.recvCompressor"%go. End recvCompressor.
+Module rpcInfo. Definition id : go_string := "google.golang.org/grpc.rpcInfo"%go. End rpcInfo.
+Module compressorInfo. Definition id : go_string := "google.golang.org/grpc.compressorInfo"%go. End compressorInfo.
+Module rpcInfoContextKey. Definition id : go_string := "google.golang.org/grpc.rpcInfoContextKey"%go. End rpcInfoContextKey.
+Module MethodHandler. Definition id : go_string := "google.golang.org/grpc.MethodHandler"%go. End MethodHandler.
+Module MethodDesc. Definition id : go_string := "google.golang.org/grpc.MethodDesc"%go. End MethodDesc.
+Module ServiceDesc. Definition id : go_string := "google.golang.org/grpc.ServiceDesc"%go. End ServiceDesc.
+Module serviceInfo. Definition id : go_string := "google.golang.org/grpc.serviceInfo"%go. End serviceInfo.
+Module Server. Definition id : go_string := "google.golang.org/grpc.Server"%go. End Server.
+Module serverOptions. Definition id : go_string := "google.golang.org/grpc.serverOptions"%go. End serverOptions.
+Module ServerOption. Definition id : go_string := "google.golang.org/grpc.ServerOption"%go. End ServerOption.
+Module EmptyServerOption. Definition id : go_string := "google.golang.org/grpc.EmptyServerOption"%go. End EmptyServerOption.
+Module funcServerOption. Definition id : go_string := "google.golang.org/grpc.funcServerOption"%go. End funcServerOption.
+Module joinServerOption. Definition id : go_string := "google.golang.org/grpc.joinServerOption"%go. End joinServerOption.
+Module MaxHeaderListSizeServerOption. Definition id : go_string := "google.golang.org/grpc.MaxHeaderListSizeServerOption"%go. End MaxHeaderListSizeServerOption.
+Module ServiceRegistrar. Definition id : go_string := "google.golang.org/grpc.ServiceRegistrar"%go. End ServiceRegistrar.
+Module MethodInfo. Definition id : go_string := "google.golang.org/grpc.MethodInfo"%go. End MethodInfo.
+Module ServiceInfo. Definition id : go_string := "google.golang.org/grpc.ServiceInfo"%go. End ServiceInfo.
+Module listenSocket. Definition id : go_string := "google.golang.org/grpc.listenSocket"%go. End listenSocket.
+Module streamKey. Definition id : go_string := "google.golang.org/grpc.streamKey"%go. End streamKey.
+Module ServerTransportStream. Definition id : go_string := "google.golang.org/grpc.ServerTransportStream"%go. End ServerTransportStream.
+Module serverKey. Definition id : go_string := "google.golang.org/grpc.serverKey"%go. End serverKey.
+Module atomicSemaphore. Definition id : go_string := "google.golang.org/grpc.atomicSemaphore"%go. End atomicSemaphore.
+Module MethodConfig. Axiom id : go_string. End MethodConfig.
+Module ServiceConfig. Definition id : go_string := "google.golang.org/grpc.ServiceConfig"%go. End ServiceConfig.
+Module healthCheckConfig. Definition id : go_string := "google.golang.org/grpc.healthCheckConfig"%go. End healthCheckConfig.
+Module jsonRetryPolicy. Definition id : go_string := "google.golang.org/grpc.jsonRetryPolicy"%go. End jsonRetryPolicy.
+Module retryThrottlingPolicy. Definition id : go_string := "google.golang.org/grpc.retryThrottlingPolicy"%go. End retryThrottlingPolicy.
+Module jsonName. Definition id : go_string := "google.golang.org/grpc.jsonName"%go. End jsonName.
+Module jsonMC. Definition id : go_string := "google.golang.org/grpc.jsonMC"%go. End jsonMC.
+Module jsonSC. Definition id : go_string := "google.golang.org/grpc.jsonSC"%go. End jsonSC.
+Module StreamHandler. Definition id : go_string := "google.golang.org/grpc.StreamHandler"%go. End StreamHandler.
+Module StreamDesc. Definition id : go_string := "google.golang.org/grpc.StreamDesc"%go. End StreamDesc.
+Module Stream. Definition id : go_string := "google.golang.org/grpc.Stream"%go. End Stream.
+Module ClientStream. Definition id : go_string := "google.golang.org/grpc.ClientStream"%go. End ClientStream.
+Module clientStream. Definition id : go_string := "google.golang.org/grpc.clientStream"%go. End clientStream.
+Module replayOp. Definition id : go_string := "google.golang.org/grpc.replayOp"%go. End replayOp.
+Module csAttempt. Definition id : go_string := "google.golang.org/grpc.csAttempt"%go. End csAttempt.
+Module addrConnStream. Definition id : go_string := "google.golang.org/grpc.addrConnStream"%go. End addrConnStream.
+Module ServerStream. Definition id : go_string := "google.golang.org/grpc.ServerStream"%go. End ServerStream.
+Module serverStream. Definition id : go_string := "google.golang.org/grpc.serverStream"%go. End serverStream.
+Module ServerStreamingClient. Definition id : go_string := "google.golang.org/grpc.ServerStreamingClient"%go. End ServerStreamingClient.
+Module ServerStreamingServer. Definition id : go_string := "google.golang.org/grpc.ServerStreamingServer"%go. End ServerStreamingServer.
+Module ClientStreamingClient. Definition id : go_string := "google.golang.org/grpc.ClientStreamingClient"%go. End ClientStreamingClient.
+Module ClientStreamingServer. Definition id : go_string := "google.golang.org/grpc.ClientStreamingServer"%go. End ClientStreamingServer.
+Module BidiStreamingClient. Definition id : go_string := "google.golang.org/grpc.BidiStreamingClient"%go. End BidiStreamingClient.
+Module BidiStreamingServer. Definition id : go_string := "google.golang.org/grpc.BidiStreamingServer"%go. End BidiStreamingServer.
+Module GenericClientStream. Definition id : go_string := "google.golang.org/grpc.GenericClientStream"%go. End GenericClientStream.
+Module GenericServerStream. Definition id : go_string := "google.golang.org/grpc.GenericServerStream"%go. End GenericServerStream.
+Module traceEventLog. Definition id : go_string := "google.golang.org/grpc.traceEventLog"%go. End traceEventLog.
+Module traceLog. Definition id : go_string := "google.golang.org/grpc.traceLog"%go. End traceLog.
+Module traceInfo. Definition id : go_string := "google.golang.org/grpc.traceInfo"%go. End traceInfo.
+Module firstLine. Definition id : go_string := "google.golang.org/grpc.firstLine"%go. End firstLine.
+Module payload. Definition id : go_string := "google.golang.org/grpc.payload"%go. End payload.
+Module fmtStringer. Definition id : go_string := "google.golang.org/grpc.fmtStringer"%go. End fmtStringer.
+Module stringer. Definition id : go_string := "google.golang.org/grpc.stringer"%go. End stringer.
+
 Section code.
 Context `{ffi_syntax}.
 
@@ -13,23 +135,89 @@ Definition DefaultBackoffConfig : go_string := "google.golang.org/grpc.DefaultBa
 
 Axiom DefaultBackoffConfig'init : val.
 
+Axiom BackoffConfig : go_type.
+
+Axiom ConnectParams : go_type.
+
 Definition setConnectedAddress : go_string := "google.golang.org/grpc.setConnectedAddress"%go.
 
 Axiom setConnectedAddress'init : val.
 
+Axiom ccBalancerWrapper : go_type.
+
 Definition newCCBalancerWrapper : go_string := "google.golang.org/grpc.newCCBalancerWrapper"%go.
+
+Axiom newCCBalancerWrapperⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__updateClientConnStateⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__resolverErrorⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__closeⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__exitIdleⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__NewSubConnⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__RemoveSubConnⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__UpdateAddressesⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__UpdateStateⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__ResolveNowⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__Targetⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper : go_type.
+
+Axiom healthData : go_type.
 
 Definition newHealthData : go_string := "google.golang.org/grpc.newHealthData"%go.
 
+Axiom newHealthDataⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__updateStateⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Stringⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__UpdateAddressesⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Connectⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Shutdownⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__NewStreamⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Invokeⁱᵐᵖˡ : val.
+
+Axiom refCountedProducer : go_type.
+
+Axiom acBalancerWrapper__GetOrBuildProducerⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__closeProducersⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__RegisterHealthListenerⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Invokeⁱᵐᵖˡ : val.
+
 Definition combine : go_string := "google.golang.org/grpc.combine"%go.
 
+Axiom combineⁱᵐᵖˡ : val.
+
 Definition Invoke : go_string := "google.golang.org/grpc.Invoke"%go.
+
+Axiom Invokeⁱᵐᵖˡ : val.
 
 Definition unaryStreamDesc : go_string := "google.golang.org/grpc.unaryStreamDesc"%go.
 
 Axiom unaryStreamDesc'init : val.
 
 Definition invoke : go_string := "google.golang.org/grpc.invoke"%go.
+
+Axiom invokeⁱᵐᵖˡ : val.
+
+Axiom minConnectTimeout : expr.
 
 Definition ErrClientConnClosing : go_string := "google.golang.org/grpc.ErrClientConnClosing"%go.
 
@@ -71,223 +259,805 @@ Definition errTransportCredentialsMissing : go_string := "google.golang.org/grpc
 
 Axiom errTransportCredentialsMissing'init : val.
 
+Axiom defaultClientMaxReceiveMessageSize : Z.
+
+Axiom defaultClientMaxSendMessageSize : Z.
+
+Axiom defaultWriteBufSize : Z.
+
+Axiom defaultReadBufSize : Z.
+
+Axiom defaultConfigSelector : go_type.
+
+Axiom defaultConfigSelector__SelectConfigⁱᵐᵖˡ : val.
+
 Definition NewClient : go_string := "google.golang.org/grpc.NewClient"%go.
+
+Axiom NewClientⁱᵐᵖˡ : val.
 
 Definition Dial : go_string := "google.golang.org/grpc.Dial"%go.
 
+Axiom Dialⁱᵐᵖˡ : val.
+
 Definition DialContext : go_string := "google.golang.org/grpc.DialContext"%go.
+
+Axiom DialContextⁱᵐᵖˡ : val.
+
+Axiom ClientConn__addTraceEventⁱᵐᵖˡ : val.
+
+Axiom idler : go_type.
+
+Axiom idler__EnterIdleModeⁱᵐᵖˡ : val.
+
+Axiom idler__ExitIdleModeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__exitIdleModeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__initIdleStateLockedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__enterIdleModeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__validateTransportCredentialsⁱᵐᵖˡ : val.
+
+Axiom ClientConn__channelzRegistrationⁱᵐᵖˡ : val.
 
 Definition chainUnaryClientInterceptors : go_string := "google.golang.org/grpc.chainUnaryClientInterceptors"%go.
 
+Axiom chainUnaryClientInterceptorsⁱᵐᵖˡ : val.
+
 Definition getChainUnaryInvoker : go_string := "google.golang.org/grpc.getChainUnaryInvoker"%go.
+
+Axiom getChainUnaryInvokerⁱᵐᵖˡ : val.
 
 Definition chainStreamClientInterceptors : go_string := "google.golang.org/grpc.chainStreamClientInterceptors"%go.
 
+Axiom chainStreamClientInterceptorsⁱᵐᵖˡ : val.
+
 Definition getChainStreamer : go_string := "google.golang.org/grpc.getChainStreamer"%go.
 
+Axiom getChainStreamerⁱᵐᵖˡ : val.
+
 Definition newConnectivityStateManager : go_string := "google.golang.org/grpc.newConnectivityStateManager"%go.
+
+Axiom newConnectivityStateManagerⁱᵐᵖˡ : val.
+
+Axiom connectivityStateManager : go_type.
+
+Axiom connectivityStateManager__updateStateⁱᵐᵖˡ : val.
+
+Axiom connectivityStateManager__getStateⁱᵐᵖˡ : val.
+
+Axiom connectivityStateManager__getNotifyChanⁱᵐᵖˡ : val.
+
+Axiom ClientConnInterface : go_type.
+
+Axiom ClientConn : go_type.
+
+Axiom ClientConn__WaitForStateChangeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__GetStateⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Connectⁱᵐᵖˡ : val.
+
+Axiom ClientConn__waitForResolvedAddrsⁱᵐᵖˡ : val.
 
 Definition emptyServiceConfig : go_string := "google.golang.org/grpc.emptyServiceConfig"%go.
 
 Definition init : go_string := "google.golang.org/grpc.init"%go.
 
+Axiom initⁱᵐᵖˡ : val.
+
+Axiom ClientConn__maybeApplyDefaultServiceConfigⁱᵐᵖˡ : val.
+
+Axiom ClientConn__updateResolverStateAndUnlockⁱᵐᵖˡ : val.
+
+Axiom ClientConn__applyFailingLBLockedⁱᵐᵖˡ : val.
+
 Definition copyAddresses : go_string := "google.golang.org/grpc.copyAddresses"%go.
+
+Axiom copyAddressesⁱᵐᵖˡ : val.
+
+Axiom ClientConn__newAddrConnLockedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__removeAddrConnⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Targetⁱᵐᵖˡ : val.
+
+Axiom ClientConn__CanonicalTargetⁱᵐᵖˡ : val.
+
+Axiom ClientConn__incrCallsStartedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__incrCallsSucceededⁱᵐᵖˡ : val.
+
+Axiom ClientConn__incrCallsFailedⁱᵐᵖˡ : val.
+
+Axiom addrConn__connectⁱᵐᵖˡ : val.
 
 Definition equalAddressIgnoringBalAttributes : go_string := "google.golang.org/grpc.equalAddressIgnoringBalAttributes"%go.
 
+Axiom equalAddressIgnoringBalAttributesⁱᵐᵖˡ : val.
+
 Definition equalAddressesIgnoringBalAttributes : go_string := "google.golang.org/grpc.equalAddressesIgnoringBalAttributes"%go.
 
+Axiom equalAddressesIgnoringBalAttributesⁱᵐᵖˡ : val.
+
+Axiom addrConn__updateAddrsⁱᵐᵖˡ : val.
+
+Axiom ClientConn__getServerNameⁱᵐᵖˡ : val.
+
 Definition getMethodConfig : go_string := "google.golang.org/grpc.getMethodConfig"%go.
+
+Axiom getMethodConfigⁱᵐᵖˡ : val.
+
+Axiom ClientConn__GetMethodConfigⁱᵐᵖˡ : val.
+
+Axiom ClientConn__healthCheckConfigⁱᵐᵖˡ : val.
+
+Axiom ClientConn__getTransportⁱᵐᵖˡ : val.
+
+Axiom ClientConn__applyServiceConfigAndBalancerⁱᵐᵖˡ : val.
+
+Axiom ClientConn__resolveNowⁱᵐᵖˡ : val.
+
+Axiom ClientConn__resolveNowLockedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__ResetConnectBackoffⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Closeⁱᵐᵖˡ : val.
+
+Axiom addrConn : go_type.
+
+Axiom addrConn__updateConnectivityStateⁱᵐᵖˡ : val.
+
+Axiom addrConn__adjustParamsⁱᵐᵖˡ : val.
+
+Axiom addrConn__resetTransportAndUnlockⁱᵐᵖˡ : val.
+
+Axiom addrConn__tryAllAddrsⁱᵐᵖˡ : val.
+
+Axiom addrConn__createTransportⁱᵐᵖˡ : val.
+
+Axiom addrConn__startHealthCheckⁱᵐᵖˡ : val.
+
+Axiom addrConn__resetConnectBackoffⁱᵐᵖˡ : val.
+
+Axiom addrConn__getReadyTransportⁱᵐᵖˡ : val.
+
+Axiom addrConn__tearDownⁱᵐᵖˡ : val.
+
+Axiom retryThrottler : go_type.
+
+Axiom retryThrottler__throttleⁱᵐᵖˡ : val.
+
+Axiom retryThrottler__successfulRPCⁱᵐᵖˡ : val.
+
+Axiom addrConn__incrCallsStartedⁱᵐᵖˡ : val.
+
+Axiom addrConn__incrCallsSucceededⁱᵐᵖˡ : val.
+
+Axiom addrConn__incrCallsFailedⁱᵐᵖˡ : val.
 
 Definition ErrClientConnTimeout : go_string := "google.golang.org/grpc.ErrClientConnTimeout"%go.
 
 Axiom ErrClientConnTimeout'init : val.
 
+Axiom ClientConn__getResolverⁱᵐᵖˡ : val.
+
+Axiom ClientConn__updateConnectionErrorⁱᵐᵖˡ : val.
+
+Axiom ClientConn__connectionErrorⁱᵐᵖˡ : val.
+
+Axiom ClientConn__initParsedTargetAndResolverBuilderⁱᵐᵖˡ : val.
+
 Definition parseTarget : go_string := "google.golang.org/grpc.parseTarget"%go.
+
+Axiom parseTargetⁱᵐᵖˡ : val.
 
 Definition encodeAuthority : go_string := "google.golang.org/grpc.encodeAuthority"%go.
 
+Axiom encodeAuthorityⁱᵐᵖˡ : val.
+
+Axiom ClientConn__initAuthorityⁱᵐᵖˡ : val.
+
+Axiom baseCodec : go_type.
+
 Definition getCodec : go_string := "google.golang.org/grpc.getCodec"%go.
+
+Axiom getCodecⁱᵐᵖˡ : val.
 
 Definition newCodecV0Bridge : go_string := "google.golang.org/grpc.newCodecV0Bridge"%go.
 
+Axiom newCodecV0Bridgeⁱᵐᵖˡ : val.
+
 Definition newCodecV1Bridge : go_string := "google.golang.org/grpc.newCodecV1Bridge"%go.
+
+Axiom newCodecV1Bridgeⁱᵐᵖˡ : val.
+
+Axiom codecV0Bridge : go_type.
+
+Axiom codecV0Bridge__Marshalⁱᵐᵖˡ : val.
+
+Axiom codecV0Bridge__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom codecV1Bridge : go_type.
+
+Axiom codecV1Bridge__Nameⁱᵐᵖˡ : val.
+
+Axiom Codec : go_type.
+
+Axiom defaultMaxCallAttempts : Z.
+
+Axiom dialOptions : go_type.
+
+Axiom DialOption : go_type.
 
 Definition globalDialOptions : go_string := "google.golang.org/grpc.globalDialOptions"%go.
 
+Axiom perTargetDialOption : go_type.
+
 Definition globalPerTargetDialOptions : go_string := "google.golang.org/grpc.globalPerTargetDialOptions"%go.
+
+Axiom EmptyDialOption : go_type.
+
+Axiom EmptyDialOption__applyⁱᵐᵖˡ : val.
+
+Axiom disableGlobalDialOptions : go_type.
+
+Axiom disableGlobalDialOptions__applyⁱᵐᵖˡ : val.
 
 Definition newDisableGlobalDialOptions : go_string := "google.golang.org/grpc.newDisableGlobalDialOptions"%go.
 
+Axiom newDisableGlobalDialOptionsⁱᵐᵖˡ : val.
+
+Axiom funcDialOption : go_type.
+
+Axiom funcDialOption__applyⁱᵐᵖˡ : val.
+
 Definition newFuncDialOption : go_string := "google.golang.org/grpc.newFuncDialOption"%go.
+
+Axiom newFuncDialOptionⁱᵐᵖˡ : val.
+
+Axiom joinDialOption : go_type.
+
+Axiom joinDialOption__applyⁱᵐᵖˡ : val.
 
 Definition newJoinDialOption : go_string := "google.golang.org/grpc.newJoinDialOption"%go.
 
+Axiom newJoinDialOptionⁱᵐᵖˡ : val.
+
 Definition WithSharedWriteBuffer : go_string := "google.golang.org/grpc.WithSharedWriteBuffer"%go.
+
+Axiom WithSharedWriteBufferⁱᵐᵖˡ : val.
 
 Definition WithWriteBufferSize : go_string := "google.golang.org/grpc.WithWriteBufferSize"%go.
 
+Axiom WithWriteBufferSizeⁱᵐᵖˡ : val.
+
 Definition WithReadBufferSize : go_string := "google.golang.org/grpc.WithReadBufferSize"%go.
+
+Axiom WithReadBufferSizeⁱᵐᵖˡ : val.
 
 Definition WithInitialWindowSize : go_string := "google.golang.org/grpc.WithInitialWindowSize"%go.
 
+Axiom WithInitialWindowSizeⁱᵐᵖˡ : val.
+
 Definition WithInitialConnWindowSize : go_string := "google.golang.org/grpc.WithInitialConnWindowSize"%go.
+
+Axiom WithInitialConnWindowSizeⁱᵐᵖˡ : val.
 
 Definition WithMaxMsgSize : go_string := "google.golang.org/grpc.WithMaxMsgSize"%go.
 
+Axiom WithMaxMsgSizeⁱᵐᵖˡ : val.
+
 Definition WithDefaultCallOptions : go_string := "google.golang.org/grpc.WithDefaultCallOptions"%go.
+
+Axiom WithDefaultCallOptionsⁱᵐᵖˡ : val.
 
 Definition WithCodec : go_string := "google.golang.org/grpc.WithCodec"%go.
 
+Axiom WithCodecⁱᵐᵖˡ : val.
+
 Definition WithCompressor : go_string := "google.golang.org/grpc.WithCompressor"%go.
+
+Axiom WithCompressorⁱᵐᵖˡ : val.
 
 Definition WithDecompressor : go_string := "google.golang.org/grpc.WithDecompressor"%go.
 
+Axiom WithDecompressorⁱᵐᵖˡ : val.
+
 Definition WithConnectParams : go_string := "google.golang.org/grpc.WithConnectParams"%go.
+
+Axiom WithConnectParamsⁱᵐᵖˡ : val.
 
 Definition WithBackoffMaxDelay : go_string := "google.golang.org/grpc.WithBackoffMaxDelay"%go.
 
+Axiom WithBackoffMaxDelayⁱᵐᵖˡ : val.
+
 Definition WithBackoffConfig : go_string := "google.golang.org/grpc.WithBackoffConfig"%go.
+
+Axiom WithBackoffConfigⁱᵐᵖˡ : val.
 
 Definition withBackoff : go_string := "google.golang.org/grpc.withBackoff"%go.
 
+Axiom withBackoffⁱᵐᵖˡ : val.
+
 Definition WithBlock : go_string := "google.golang.org/grpc.WithBlock"%go.
+
+Axiom WithBlockⁱᵐᵖˡ : val.
 
 Definition WithReturnConnectionError : go_string := "google.golang.org/grpc.WithReturnConnectionError"%go.
 
+Axiom WithReturnConnectionErrorⁱᵐᵖˡ : val.
+
 Definition WithInsecure : go_string := "google.golang.org/grpc.WithInsecure"%go.
+
+Axiom WithInsecureⁱᵐᵖˡ : val.
 
 Definition WithNoProxy : go_string := "google.golang.org/grpc.WithNoProxy"%go.
 
+Axiom WithNoProxyⁱᵐᵖˡ : val.
+
 Definition WithTransportCredentials : go_string := "google.golang.org/grpc.WithTransportCredentials"%go.
+
+Axiom WithTransportCredentialsⁱᵐᵖˡ : val.
 
 Definition WithPerRPCCredentials : go_string := "google.golang.org/grpc.WithPerRPCCredentials"%go.
 
+Axiom WithPerRPCCredentialsⁱᵐᵖˡ : val.
+
 Definition WithCredentialsBundle : go_string := "google.golang.org/grpc.WithCredentialsBundle"%go.
+
+Axiom WithCredentialsBundleⁱᵐᵖˡ : val.
 
 Definition WithTimeout : go_string := "google.golang.org/grpc.WithTimeout"%go.
 
+Axiom WithTimeoutⁱᵐᵖˡ : val.
+
 Definition WithContextDialer : go_string := "google.golang.org/grpc.WithContextDialer"%go.
+
+Axiom WithContextDialerⁱᵐᵖˡ : val.
 
 Definition WithDialer : go_string := "google.golang.org/grpc.WithDialer"%go.
 
+Axiom WithDialerⁱᵐᵖˡ : val.
+
 Definition WithStatsHandler : go_string := "google.golang.org/grpc.WithStatsHandler"%go.
+
+Axiom WithStatsHandlerⁱᵐᵖˡ : val.
 
 Definition withBinaryLogger : go_string := "google.golang.org/grpc.withBinaryLogger"%go.
 
+Axiom withBinaryLoggerⁱᵐᵖˡ : val.
+
 Definition FailOnNonTempDialError : go_string := "google.golang.org/grpc.FailOnNonTempDialError"%go.
+
+Axiom FailOnNonTempDialErrorⁱᵐᵖˡ : val.
 
 Definition WithUserAgent : go_string := "google.golang.org/grpc.WithUserAgent"%go.
 
+Axiom WithUserAgentⁱᵐᵖˡ : val.
+
 Definition WithKeepaliveParams : go_string := "google.golang.org/grpc.WithKeepaliveParams"%go.
+
+Axiom WithKeepaliveParamsⁱᵐᵖˡ : val.
 
 Definition WithUnaryInterceptor : go_string := "google.golang.org/grpc.WithUnaryInterceptor"%go.
 
+Axiom WithUnaryInterceptorⁱᵐᵖˡ : val.
+
 Definition WithChainUnaryInterceptor : go_string := "google.golang.org/grpc.WithChainUnaryInterceptor"%go.
+
+Axiom WithChainUnaryInterceptorⁱᵐᵖˡ : val.
 
 Definition WithStreamInterceptor : go_string := "google.golang.org/grpc.WithStreamInterceptor"%go.
 
+Axiom WithStreamInterceptorⁱᵐᵖˡ : val.
+
 Definition WithChainStreamInterceptor : go_string := "google.golang.org/grpc.WithChainStreamInterceptor"%go.
+
+Axiom WithChainStreamInterceptorⁱᵐᵖˡ : val.
 
 Definition WithAuthority : go_string := "google.golang.org/grpc.WithAuthority"%go.
 
+Axiom WithAuthorityⁱᵐᵖˡ : val.
+
 Definition WithChannelzParentID : go_string := "google.golang.org/grpc.WithChannelzParentID"%go.
+
+Axiom WithChannelzParentIDⁱᵐᵖˡ : val.
 
 Definition WithDisableServiceConfig : go_string := "google.golang.org/grpc.WithDisableServiceConfig"%go.
 
+Axiom WithDisableServiceConfigⁱᵐᵖˡ : val.
+
 Definition WithDefaultServiceConfig : go_string := "google.golang.org/grpc.WithDefaultServiceConfig"%go.
+
+Axiom WithDefaultServiceConfigⁱᵐᵖˡ : val.
 
 Definition WithDisableRetry : go_string := "google.golang.org/grpc.WithDisableRetry"%go.
 
+Axiom WithDisableRetryⁱᵐᵖˡ : val.
+
+Axiom MaxHeaderListSizeDialOption : go_type.
+
+Axiom MaxHeaderListSizeDialOption__applyⁱᵐᵖˡ : val.
+
 Definition WithMaxHeaderListSize : go_string := "google.golang.org/grpc.WithMaxHeaderListSize"%go.
+
+Axiom WithMaxHeaderListSizeⁱᵐᵖˡ : val.
 
 Definition WithDisableHealthCheck : go_string := "google.golang.org/grpc.WithDisableHealthCheck"%go.
 
+Axiom WithDisableHealthCheckⁱᵐᵖˡ : val.
+
 Definition defaultDialOptions : go_string := "google.golang.org/grpc.defaultDialOptions"%go.
+
+Axiom defaultDialOptionsⁱᵐᵖˡ : val.
 
 Definition withMinConnectDeadline : go_string := "google.golang.org/grpc.withMinConnectDeadline"%go.
 
+Axiom withMinConnectDeadlineⁱᵐᵖˡ : val.
+
 Definition withDefaultScheme : go_string := "google.golang.org/grpc.withDefaultScheme"%go.
+
+Axiom withDefaultSchemeⁱᵐᵖˡ : val.
 
 Definition WithResolvers : go_string := "google.golang.org/grpc.WithResolvers"%go.
 
+Axiom WithResolversⁱᵐᵖˡ : val.
+
 Definition WithIdleTimeout : go_string := "google.golang.org/grpc.WithIdleTimeout"%go.
+
+Axiom WithIdleTimeoutⁱᵐᵖˡ : val.
 
 Definition WithMaxCallAttempts : go_string := "google.golang.org/grpc.WithMaxCallAttempts"%go.
 
+Axiom WithMaxCallAttemptsⁱᵐᵖˡ : val.
+
 Definition withBufferPool : go_string := "google.golang.org/grpc.withBufferPool"%go.
+
+Axiom withBufferPoolⁱᵐᵖˡ : val.
+
+Axiom UnaryInvoker : go_type.
+
+Axiom UnaryClientInterceptor : go_type.
+
+Axiom Streamer : go_type.
+
+Axiom StreamClientInterceptor : go_type.
+
+Axiom UnaryServerInfo : go_type.
+
+Axiom UnaryHandler : go_type.
+
+Axiom UnaryServerInterceptor : go_type.
+
+Axiom StreamServerInfo : go_type.
+
+Axiom StreamServerInterceptor : go_type.
+
+Axiom pickerGeneration : go_type.
+
+Axiom pickerWrapper : go_type.
 
 Definition newPickerWrapper : go_string := "google.golang.org/grpc.newPickerWrapper"%go.
 
+Axiom newPickerWrapperⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__updatePickerⁱᵐᵖˡ : val.
+
 Definition doneChannelzWrapper : go_string := "google.golang.org/grpc.doneChannelzWrapper"%go.
+
+Axiom doneChannelzWrapperⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__pickⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__closeⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__resetⁱᵐᵖˡ : val.
+
+Axiom dropError : go_type.
+
+Axiom PreparedMsg : go_type.
+
+Axiom PreparedMsg__Encodeⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper : go_type.
 
 Definition newCCResolverWrapper : go_string := "google.golang.org/grpc.newCCResolverWrapper"%go.
 
+Axiom newCCResolverWrapperⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__startⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__resolveNowⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__closeⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__UpdateStateⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__ReportErrorⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__NewAddressⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__ParseServiceConfigⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__addChannelzTraceEventⁱᵐᵖˡ : val.
+
+Axiom Compressor : go_type.
+
+Axiom gzipCompressor : go_type.
+
 Definition NewGZIPCompressor : go_string := "google.golang.org/grpc.NewGZIPCompressor"%go.
+
+Axiom NewGZIPCompressorⁱᵐᵖˡ : val.
 
 Definition NewGZIPCompressorWithLevel : go_string := "google.golang.org/grpc.NewGZIPCompressorWithLevel"%go.
 
+Axiom NewGZIPCompressorWithLevelⁱᵐᵖˡ : val.
+
+Axiom gzipCompressor__Doⁱᵐᵖˡ : val.
+
+Axiom gzipCompressor__Typeⁱᵐᵖˡ : val.
+
+Axiom Decompressor : go_type.
+
+Axiom gzipDecompressor : go_type.
+
 Definition NewGZIPDecompressor : go_string := "google.golang.org/grpc.NewGZIPDecompressor"%go.
+
+Axiom NewGZIPDecompressorⁱᵐᵖˡ : val.
+
+Axiom gzipDecompressor__Doⁱᵐᵖˡ : val.
+
+Axiom gzipDecompressor__Typeⁱᵐᵖˡ : val.
+
+Axiom callInfo : go_type.
 
 Definition defaultCallInfo : go_string := "google.golang.org/grpc.defaultCallInfo"%go.
 
+Axiom defaultCallInfoⁱᵐᵖˡ : val.
+
+Axiom CallOption : go_type.
+
+Axiom EmptyCallOption : go_type.
+
+Axiom EmptyCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom EmptyCallOption__afterⁱᵐᵖˡ : val.
+
 Definition StaticMethod : go_string := "google.golang.org/grpc.StaticMethod"%go.
+
+Axiom StaticMethodⁱᵐᵖˡ : val.
+
+Axiom StaticMethodCallOption : go_type.
 
 Definition Header : go_string := "google.golang.org/grpc.Header"%go.
 
+Axiom Headerⁱᵐᵖˡ : val.
+
+Axiom HeaderCallOption : go_type.
+
+Axiom HeaderCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom HeaderCallOption__afterⁱᵐᵖˡ : val.
+
 Definition Trailer : go_string := "google.golang.org/grpc.Trailer"%go.
+
+Axiom Trailerⁱᵐᵖˡ : val.
+
+Axiom TrailerCallOption : go_type.
+
+Axiom TrailerCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom TrailerCallOption__afterⁱᵐᵖˡ : val.
 
 Definition Peer : go_string := "google.golang.org/grpc.Peer"%go.
 
+Axiom Peerⁱᵐᵖˡ : val.
+
+Axiom PeerCallOption : go_type.
+
+Axiom PeerCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom PeerCallOption__afterⁱᵐᵖˡ : val.
+
 Definition WaitForReady : go_string := "google.golang.org/grpc.WaitForReady"%go.
+
+Axiom WaitForReadyⁱᵐᵖˡ : val.
 
 Definition FailFast : go_string := "google.golang.org/grpc.FailFast"%go.
 
+Axiom FailFastⁱᵐᵖˡ : val.
+
+Axiom FailFastCallOption : go_type.
+
+Axiom FailFastCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom FailFastCallOption__afterⁱᵐᵖˡ : val.
+
 Definition OnFinish : go_string := "google.golang.org/grpc.OnFinish"%go.
+
+Axiom OnFinishⁱᵐᵖˡ : val.
+
+Axiom OnFinishCallOption : go_type.
+
+Axiom OnFinishCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom OnFinishCallOption__afterⁱᵐᵖˡ : val.
 
 Definition MaxCallRecvMsgSize : go_string := "google.golang.org/grpc.MaxCallRecvMsgSize"%go.
 
+Axiom MaxCallRecvMsgSizeⁱᵐᵖˡ : val.
+
+Axiom MaxRecvMsgSizeCallOption : go_type.
+
+Axiom MaxRecvMsgSizeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom MaxRecvMsgSizeCallOption__afterⁱᵐᵖˡ : val.
+
 Definition MaxCallSendMsgSize : go_string := "google.golang.org/grpc.MaxCallSendMsgSize"%go.
+
+Axiom MaxCallSendMsgSizeⁱᵐᵖˡ : val.
+
+Axiom MaxSendMsgSizeCallOption : go_type.
+
+Axiom MaxSendMsgSizeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom MaxSendMsgSizeCallOption__afterⁱᵐᵖˡ : val.
 
 Definition PerRPCCredentials : go_string := "google.golang.org/grpc.PerRPCCredentials"%go.
 
+Axiom PerRPCCredentialsⁱᵐᵖˡ : val.
+
+Axiom PerRPCCredsCallOption : go_type.
+
+Axiom PerRPCCredsCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom PerRPCCredsCallOption__afterⁱᵐᵖˡ : val.
+
 Definition UseCompressor : go_string := "google.golang.org/grpc.UseCompressor"%go.
+
+Axiom UseCompressorⁱᵐᵖˡ : val.
+
+Axiom CompressorCallOption : go_type.
+
+Axiom CompressorCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom CompressorCallOption__afterⁱᵐᵖˡ : val.
 
 Definition CallContentSubtype : go_string := "google.golang.org/grpc.CallContentSubtype"%go.
 
+Axiom CallContentSubtypeⁱᵐᵖˡ : val.
+
+Axiom ContentSubtypeCallOption : go_type.
+
+Axiom ContentSubtypeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom ContentSubtypeCallOption__afterⁱᵐᵖˡ : val.
+
 Definition ForceCodec : go_string := "google.golang.org/grpc.ForceCodec"%go.
+
+Axiom ForceCodecⁱᵐᵖˡ : val.
+
+Axiom ForceCodecCallOption : go_type.
+
+Axiom ForceCodecCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom ForceCodecCallOption__afterⁱᵐᵖˡ : val.
 
 Definition ForceCodecV2 : go_string := "google.golang.org/grpc.ForceCodecV2"%go.
 
+Axiom ForceCodecV2ⁱᵐᵖˡ : val.
+
+Axiom ForceCodecV2CallOption : go_type.
+
+Axiom ForceCodecV2CallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom ForceCodecV2CallOption__afterⁱᵐᵖˡ : val.
+
 Definition CallCustomCodec : go_string := "google.golang.org/grpc.CallCustomCodec"%go.
+
+Axiom CallCustomCodecⁱᵐᵖˡ : val.
+
+Axiom CustomCodecCallOption : go_type.
+
+Axiom CustomCodecCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom CustomCodecCallOption__afterⁱᵐᵖˡ : val.
 
 Definition MaxRetryRPCBufferSize : go_string := "google.golang.org/grpc.MaxRetryRPCBufferSize"%go.
 
+Axiom MaxRetryRPCBufferSizeⁱᵐᵖˡ : val.
+
+Axiom MaxRetryRPCBufferSizeCallOption : go_type.
+
+Axiom MaxRetryRPCBufferSizeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom MaxRetryRPCBufferSizeCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom payloadFormat : go_type.
+
+Axiom compressionNone : expr.
+
+Axiom compressionMade : expr.
+
+Axiom payloadFormat__isCompressedⁱᵐᵖˡ : val.
+
+Axiom streamReader : go_type.
+
+Axiom parser : go_type.
+
+Axiom parser__recvMsgⁱᵐᵖˡ : val.
+
 Definition encode : go_string := "google.golang.org/grpc.encode"%go.
+
+Axiom encodeⁱᵐᵖˡ : val.
 
 Definition compress : go_string := "google.golang.org/grpc.compress"%go.
 
+Axiom compressⁱᵐᵖˡ : val.
+
+Axiom payloadLen : Z.
+
+Axiom sizeLen : Z.
+
+Axiom headerLen : Z.
+
 Definition msgHeader : go_string := "google.golang.org/grpc.msgHeader"%go.
+
+Axiom msgHeaderⁱᵐᵖˡ : val.
 
 Definition outPayload : go_string := "google.golang.org/grpc.outPayload"%go.
 
+Axiom outPayloadⁱᵐᵖˡ : val.
+
 Definition checkRecvPayload : go_string := "google.golang.org/grpc.checkRecvPayload"%go.
+
+Axiom checkRecvPayloadⁱᵐᵖˡ : val.
+
+Axiom payloadInfo : go_type.
+
+Axiom payloadInfo__freeⁱᵐᵖˡ : val.
 
 Definition recvAndDecompress : go_string := "google.golang.org/grpc.recvAndDecompress"%go.
 
+Axiom recvAndDecompressⁱᵐᵖˡ : val.
+
 Definition decompress : go_string := "google.golang.org/grpc.decompress"%go.
+
+Axiom decompressⁱᵐᵖˡ : val.
+
+Axiom recvCompressor : go_type.
 
 Definition recv : go_string := "google.golang.org/grpc.recv"%go.
 
+Axiom recvⁱᵐᵖˡ : val.
+
+Axiom rpcInfo : go_type.
+
+Axiom compressorInfo : go_type.
+
+Axiom rpcInfoContextKey : go_type.
+
 Definition newContextWithRPCInfo : go_string := "google.golang.org/grpc.newContextWithRPCInfo"%go.
+
+Axiom newContextWithRPCInfoⁱᵐᵖˡ : val.
 
 Definition rpcInfoFromContext : go_string := "google.golang.org/grpc.rpcInfoFromContext"%go.
 
+Axiom rpcInfoFromContextⁱᵐᵖˡ : val.
+
 Definition Code : go_string := "google.golang.org/grpc.Code"%go.
+
+Axiom Codeⁱᵐᵖˡ : val.
 
 Definition ErrorDesc : go_string := "google.golang.org/grpc.ErrorDesc"%go.
 
+Axiom ErrorDescⁱᵐᵖˡ : val.
+
 Definition Errorf : go_string := "google.golang.org/grpc.Errorf"%go.
+
+Axiom Errorfⁱᵐᵖˡ : val.
 
 Definition errContextCanceled : go_string := "google.golang.org/grpc.errContextCanceled"%go.
 
@@ -299,7 +1069,33 @@ Axiom errContextDeadline'init : val.
 
 Definition toRPCErr : go_string := "google.golang.org/grpc.toRPCErr"%go.
 
+Axiom toRPCErrⁱᵐᵖˡ : val.
+
 Definition setCallInfoCodec : go_string := "google.golang.org/grpc.setCallInfoCodec"%go.
+
+Axiom setCallInfoCodecⁱᵐᵖˡ : val.
+
+Axiom SupportPackageIsVersion3 : expr.
+
+Axiom SupportPackageIsVersion4 : expr.
+
+Axiom SupportPackageIsVersion5 : expr.
+
+Axiom SupportPackageIsVersion6 : expr.
+
+Axiom SupportPackageIsVersion7 : expr.
+
+Axiom SupportPackageIsVersion8 : expr.
+
+Axiom SupportPackageIsVersion9 : expr.
+
+Axiom grpcUA : go_string.
+
+Axiom defaultServerMaxReceiveMessageSize : Z.
+
+Axiom defaultServerMaxSendMessageSize : Z.
+
+Axiom listenerAddressForServeHTTP : go_string.
 
 Definition statusOK : go_string := "google.golang.org/grpc.statusOK"%go.
 
@@ -309,119 +1105,349 @@ Definition logger : go_string := "google.golang.org/grpc.logger"%go.
 
 Axiom logger'init : val.
 
+Axiom MethodHandler : go_type.
+
+Axiom MethodDesc : go_type.
+
+Axiom ServiceDesc : go_type.
+
+Axiom serviceInfo : go_type.
+
+Axiom Server : go_type.
+
+Axiom serverOptions : go_type.
+
 Definition defaultServerOptions : go_string := "google.golang.org/grpc.defaultServerOptions"%go.
 
 Axiom defaultServerOptions'init : val.
 
 Definition globalServerOptions : go_string := "google.golang.org/grpc.globalServerOptions"%go.
 
+Axiom ServerOption : go_type.
+
+Axiom EmptyServerOption : go_type.
+
+Axiom EmptyServerOption__applyⁱᵐᵖˡ : val.
+
+Axiom funcServerOption : go_type.
+
+Axiom funcServerOption__applyⁱᵐᵖˡ : val.
+
 Definition newFuncServerOption : go_string := "google.golang.org/grpc.newFuncServerOption"%go.
+
+Axiom newFuncServerOptionⁱᵐᵖˡ : val.
+
+Axiom joinServerOption : go_type.
+
+Axiom joinServerOption__applyⁱᵐᵖˡ : val.
 
 Definition newJoinServerOption : go_string := "google.golang.org/grpc.newJoinServerOption"%go.
 
+Axiom newJoinServerOptionⁱᵐᵖˡ : val.
+
 Definition SharedWriteBuffer : go_string := "google.golang.org/grpc.SharedWriteBuffer"%go.
+
+Axiom SharedWriteBufferⁱᵐᵖˡ : val.
 
 Definition WriteBufferSize : go_string := "google.golang.org/grpc.WriteBufferSize"%go.
 
+Axiom WriteBufferSizeⁱᵐᵖˡ : val.
+
 Definition ReadBufferSize : go_string := "google.golang.org/grpc.ReadBufferSize"%go.
+
+Axiom ReadBufferSizeⁱᵐᵖˡ : val.
 
 Definition InitialWindowSize : go_string := "google.golang.org/grpc.InitialWindowSize"%go.
 
+Axiom InitialWindowSizeⁱᵐᵖˡ : val.
+
 Definition InitialConnWindowSize : go_string := "google.golang.org/grpc.InitialConnWindowSize"%go.
+
+Axiom InitialConnWindowSizeⁱᵐᵖˡ : val.
 
 Definition KeepaliveParams : go_string := "google.golang.org/grpc.KeepaliveParams"%go.
 
+Axiom KeepaliveParamsⁱᵐᵖˡ : val.
+
 Definition KeepaliveEnforcementPolicy : go_string := "google.golang.org/grpc.KeepaliveEnforcementPolicy"%go.
+
+Axiom KeepaliveEnforcementPolicyⁱᵐᵖˡ : val.
 
 Definition CustomCodec : go_string := "google.golang.org/grpc.CustomCodec"%go.
 
+Axiom CustomCodecⁱᵐᵖˡ : val.
+
 Definition ForceServerCodec : go_string := "google.golang.org/grpc.ForceServerCodec"%go.
+
+Axiom ForceServerCodecⁱᵐᵖˡ : val.
 
 Definition ForceServerCodecV2 : go_string := "google.golang.org/grpc.ForceServerCodecV2"%go.
 
+Axiom ForceServerCodecV2ⁱᵐᵖˡ : val.
+
 Definition RPCCompressor : go_string := "google.golang.org/grpc.RPCCompressor"%go.
+
+Axiom RPCCompressorⁱᵐᵖˡ : val.
 
 Definition RPCDecompressor : go_string := "google.golang.org/grpc.RPCDecompressor"%go.
 
+Axiom RPCDecompressorⁱᵐᵖˡ : val.
+
 Definition MaxMsgSize : go_string := "google.golang.org/grpc.MaxMsgSize"%go.
+
+Axiom MaxMsgSizeⁱᵐᵖˡ : val.
 
 Definition MaxRecvMsgSize : go_string := "google.golang.org/grpc.MaxRecvMsgSize"%go.
 
+Axiom MaxRecvMsgSizeⁱᵐᵖˡ : val.
+
 Definition MaxSendMsgSize : go_string := "google.golang.org/grpc.MaxSendMsgSize"%go.
+
+Axiom MaxSendMsgSizeⁱᵐᵖˡ : val.
 
 Definition MaxConcurrentStreams : go_string := "google.golang.org/grpc.MaxConcurrentStreams"%go.
 
+Axiom MaxConcurrentStreamsⁱᵐᵖˡ : val.
+
 Definition Creds : go_string := "google.golang.org/grpc.Creds"%go.
+
+Axiom Credsⁱᵐᵖˡ : val.
 
 Definition UnaryInterceptor : go_string := "google.golang.org/grpc.UnaryInterceptor"%go.
 
+Axiom UnaryInterceptorⁱᵐᵖˡ : val.
+
 Definition ChainUnaryInterceptor : go_string := "google.golang.org/grpc.ChainUnaryInterceptor"%go.
+
+Axiom ChainUnaryInterceptorⁱᵐᵖˡ : val.
 
 Definition StreamInterceptor : go_string := "google.golang.org/grpc.StreamInterceptor"%go.
 
+Axiom StreamInterceptorⁱᵐᵖˡ : val.
+
 Definition ChainStreamInterceptor : go_string := "google.golang.org/grpc.ChainStreamInterceptor"%go.
+
+Axiom ChainStreamInterceptorⁱᵐᵖˡ : val.
 
 Definition InTapHandle : go_string := "google.golang.org/grpc.InTapHandle"%go.
 
+Axiom InTapHandleⁱᵐᵖˡ : val.
+
 Definition StatsHandler : go_string := "google.golang.org/grpc.StatsHandler"%go.
+
+Axiom StatsHandlerⁱᵐᵖˡ : val.
 
 Definition binaryLogger : go_string := "google.golang.org/grpc.binaryLogger"%go.
 
+Axiom binaryLoggerⁱᵐᵖˡ : val.
+
 Definition UnknownServiceHandler : go_string := "google.golang.org/grpc.UnknownServiceHandler"%go.
+
+Axiom UnknownServiceHandlerⁱᵐᵖˡ : val.
 
 Definition ConnectionTimeout : go_string := "google.golang.org/grpc.ConnectionTimeout"%go.
 
+Axiom ConnectionTimeoutⁱᵐᵖˡ : val.
+
+Axiom MaxHeaderListSizeServerOption : go_type.
+
+Axiom MaxHeaderListSizeServerOption__applyⁱᵐᵖˡ : val.
+
 Definition MaxHeaderListSize : go_string := "google.golang.org/grpc.MaxHeaderListSize"%go.
+
+Axiom MaxHeaderListSizeⁱᵐᵖˡ : val.
 
 Definition HeaderTableSize : go_string := "google.golang.org/grpc.HeaderTableSize"%go.
 
+Axiom HeaderTableSizeⁱᵐᵖˡ : val.
+
 Definition NumStreamWorkers : go_string := "google.golang.org/grpc.NumStreamWorkers"%go.
+
+Axiom NumStreamWorkersⁱᵐᵖˡ : val.
 
 Definition WaitForHandlers : go_string := "google.golang.org/grpc.WaitForHandlers"%go.
 
+Axiom WaitForHandlersⁱᵐᵖˡ : val.
+
 Definition bufferPool : go_string := "google.golang.org/grpc.bufferPool"%go.
 
+Axiom bufferPoolⁱᵐᵖˡ : val.
+
+Axiom serverWorkerResetThreshold : Z.
+
+Axiom Server__serverWorkerⁱᵐᵖˡ : val.
+
+Axiom Server__initServerWorkersⁱᵐᵖˡ : val.
+
 Definition NewServer : go_string := "google.golang.org/grpc.NewServer"%go.
+
+Axiom NewServerⁱᵐᵖˡ : val.
+
+Axiom Server__printfⁱᵐᵖˡ : val.
+
+Axiom Server__errorfⁱᵐᵖˡ : val.
+
+Axiom ServiceRegistrar : go_type.
+
+Axiom Server__RegisterServiceⁱᵐᵖˡ : val.
+
+Axiom Server__registerⁱᵐᵖˡ : val.
+
+Axiom MethodInfo : go_type.
+
+Axiom ServiceInfo : go_type.
+
+Axiom Server__GetServiceInfoⁱᵐᵖˡ : val.
 
 Definition ErrServerStopped : go_string := "google.golang.org/grpc.ErrServerStopped"%go.
 
 Axiom ErrServerStopped'init : val.
 
+Axiom listenSocket : go_type.
+
+Axiom listenSocket__Closeⁱᵐᵖˡ : val.
+
+Axiom Server__Serveⁱᵐᵖˡ : val.
+
+Axiom Server__handleRawConnⁱᵐᵖˡ : val.
+
+Axiom Server__newHTTP2Transportⁱᵐᵖˡ : val.
+
+Axiom Server__serveStreamsⁱᵐᵖˡ : val.
+
+Axiom Server__ServeHTTPⁱᵐᵖˡ : val.
+
+Axiom Server__addConnⁱᵐᵖˡ : val.
+
+Axiom Server__removeConnⁱᵐᵖˡ : val.
+
+Axiom Server__incrCallsStartedⁱᵐᵖˡ : val.
+
+Axiom Server__incrCallsSucceededⁱᵐᵖˡ : val.
+
+Axiom Server__incrCallsFailedⁱᵐᵖˡ : val.
+
+Axiom Server__sendResponseⁱᵐᵖˡ : val.
+
 Definition chainUnaryServerInterceptors : go_string := "google.golang.org/grpc.chainUnaryServerInterceptors"%go.
+
+Axiom chainUnaryServerInterceptorsⁱᵐᵖˡ : val.
 
 Definition chainUnaryInterceptors : go_string := "google.golang.org/grpc.chainUnaryInterceptors"%go.
 
+Axiom chainUnaryInterceptorsⁱᵐᵖˡ : val.
+
 Definition getChainUnaryHandler : go_string := "google.golang.org/grpc.getChainUnaryHandler"%go.
+
+Axiom getChainUnaryHandlerⁱᵐᵖˡ : val.
+
+Axiom Server__processUnaryRPCⁱᵐᵖˡ : val.
 
 Definition chainStreamServerInterceptors : go_string := "google.golang.org/grpc.chainStreamServerInterceptors"%go.
 
+Axiom chainStreamServerInterceptorsⁱᵐᵖˡ : val.
+
 Definition chainStreamInterceptors : go_string := "google.golang.org/grpc.chainStreamInterceptors"%go.
+
+Axiom chainStreamInterceptorsⁱᵐᵖˡ : val.
 
 Definition getChainStreamHandler : go_string := "google.golang.org/grpc.getChainStreamHandler"%go.
 
+Axiom getChainStreamHandlerⁱᵐᵖˡ : val.
+
+Axiom Server__processStreamingRPCⁱᵐᵖˡ : val.
+
+Axiom Server__handleStreamⁱᵐᵖˡ : val.
+
+Axiom streamKey : go_type.
+
 Definition NewContextWithServerTransportStream : go_string := "google.golang.org/grpc.NewContextWithServerTransportStream"%go.
+
+Axiom NewContextWithServerTransportStreamⁱᵐᵖˡ : val.
+
+Axiom ServerTransportStream : go_type.
 
 Definition ServerTransportStreamFromContext : go_string := "google.golang.org/grpc.ServerTransportStreamFromContext"%go.
 
+Axiom ServerTransportStreamFromContextⁱᵐᵖˡ : val.
+
+Axiom Server__Stopⁱᵐᵖˡ : val.
+
+Axiom Server__GracefulStopⁱᵐᵖˡ : val.
+
+Axiom Server__stopⁱᵐᵖˡ : val.
+
+Axiom Server__closeServerTransportsLockedⁱᵐᵖˡ : val.
+
+Axiom Server__drainAllServerTransportsLockedⁱᵐᵖˡ : val.
+
+Axiom Server__closeListenersLockedⁱᵐᵖˡ : val.
+
+Axiom Server__getCodecⁱᵐᵖˡ : val.
+
+Axiom serverKey : go_type.
+
 Definition serverFromContext : go_string := "google.golang.org/grpc.serverFromContext"%go.
+
+Axiom serverFromContextⁱᵐᵖˡ : val.
 
 Definition contextWithServer : go_string := "google.golang.org/grpc.contextWithServer"%go.
 
+Axiom contextWithServerⁱᵐᵖˡ : val.
+
+Axiom Server__isRegisteredMethodⁱᵐᵖˡ : val.
+
 Definition SetHeader : go_string := "google.golang.org/grpc.SetHeader"%go.
+
+Axiom SetHeaderⁱᵐᵖˡ : val.
 
 Definition SendHeader : go_string := "google.golang.org/grpc.SendHeader"%go.
 
+Axiom SendHeaderⁱᵐᵖˡ : val.
+
 Definition SetSendCompressor : go_string := "google.golang.org/grpc.SetSendCompressor"%go.
+
+Axiom SetSendCompressorⁱᵐᵖˡ : val.
 
 Definition ClientSupportedCompressors : go_string := "google.golang.org/grpc.ClientSupportedCompressors"%go.
 
+Axiom ClientSupportedCompressorsⁱᵐᵖˡ : val.
+
 Definition SetTrailer : go_string := "google.golang.org/grpc.SetTrailer"%go.
+
+Axiom SetTrailerⁱᵐᵖˡ : val.
 
 Definition Method : go_string := "google.golang.org/grpc.Method"%go.
 
+Axiom Methodⁱᵐᵖˡ : val.
+
 Definition validateSendCompressor : go_string := "google.golang.org/grpc.validateSendCompressor"%go.
 
+Axiom validateSendCompressorⁱᵐᵖˡ : val.
+
+Axiom atomicSemaphore : go_type.
+
+Axiom atomicSemaphore__acquireⁱᵐᵖˡ : val.
+
+Axiom atomicSemaphore__releaseⁱᵐᵖˡ : val.
+
 Definition newHandlerQuota : go_string := "google.golang.org/grpc.newHandlerQuota"%go.
+
+Axiom newHandlerQuotaⁱᵐᵖˡ : val.
+
+Axiom maxInt : expr.
+
+Axiom MethodConfig : go_type.
+
+Axiom ServiceConfig : go_type.
+
+Axiom healthCheckConfig : go_type.
+
+Axiom jsonRetryPolicy : go_type.
+
+Axiom retryThrottlingPolicy : go_type.
+
+Axiom jsonName : go_type.
 
 Definition errDuplicatedName : go_string := "google.golang.org/grpc.errDuplicatedName"%go.
 
@@ -431,51 +1457,403 @@ Definition errEmptyServiceNonEmptyMethod : go_string := "google.golang.org/grpc.
 
 Axiom errEmptyServiceNonEmptyMethod'init : val.
 
+Axiom jsonName__generatePathⁱᵐᵖˡ : val.
+
+Axiom jsonMC : go_type.
+
+Axiom jsonSC : go_type.
+
 Definition parseServiceConfig : go_string := "google.golang.org/grpc.parseServiceConfig"%go.
+
+Axiom parseServiceConfigⁱᵐᵖˡ : val.
 
 Definition convertRetryPolicy : go_string := "google.golang.org/grpc.convertRetryPolicy"%go.
 
+Axiom convertRetryPolicyⁱᵐᵖˡ : val.
+
 Definition minPointers : go_string := "google.golang.org/grpc.minPointers"%go.
+
+Axiom minPointersⁱᵐᵖˡ : val.
 
 Definition getMaxSize : go_string := "google.golang.org/grpc.getMaxSize"%go.
 
+Axiom getMaxSizeⁱᵐᵖˡ : val.
+
 Definition newInt : go_string := "google.golang.org/grpc.newInt"%go.
 
+Axiom newIntⁱᵐᵖˡ : val.
+
 Definition equalServiceConfig : go_string := "google.golang.org/grpc.equalServiceConfig"%go.
+
+Axiom equalServiceConfigⁱᵐᵖˡ : val.
 
 Definition metadataFromOutgoingContextRaw : go_string := "google.golang.org/grpc.metadataFromOutgoingContextRaw"%go.
 
 Axiom metadataFromOutgoingContextRaw'init : val.
 
+Axiom StreamHandler : go_type.
+
+Axiom StreamDesc : go_type.
+
+Axiom Stream : go_type.
+
+Axiom ClientStream : go_type.
+
+Axiom ClientConn__NewStreamⁱᵐᵖˡ : val.
+
 Definition NewClientStream : go_string := "google.golang.org/grpc.NewClientStream"%go.
+
+Axiom NewClientStreamⁱᵐᵖˡ : val.
 
 Definition newClientStream : go_string := "google.golang.org/grpc.newClientStream"%go.
 
+Axiom newClientStreamⁱᵐᵖˡ : val.
+
 Definition newClientStreamWithParams : go_string := "google.golang.org/grpc.newClientStreamWithParams"%go.
+
+Axiom newClientStreamWithParamsⁱᵐᵖˡ : val.
+
+Axiom clientStream__newAttemptLockedⁱᵐᵖˡ : val.
+
+Axiom csAttempt__getTransportⁱᵐᵖˡ : val.
+
+Axiom csAttempt__newStreamⁱᵐᵖˡ : val.
+
+Axiom clientStream : go_type.
+
+Axiom replayOp : go_type.
+
+Axiom csAttempt : go_type.
+
+Axiom clientStream__commitAttemptLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__commitAttemptⁱᵐᵖˡ : val.
+
+Axiom csAttempt__shouldRetryⁱᵐᵖˡ : val.
+
+Axiom clientStream__retryLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__Contextⁱᵐᵖˡ : val.
+
+Axiom clientStream__withRetryⁱᵐᵖˡ : val.
+
+Axiom clientStream__Headerⁱᵐᵖˡ : val.
+
+Axiom clientStream__Trailerⁱᵐᵖˡ : val.
+
+Axiom clientStream__replayBufferLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__bufferForRetryLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom clientStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom clientStream__CloseSendⁱᵐᵖˡ : val.
+
+Axiom clientStream__finishⁱᵐᵖˡ : val.
+
+Axiom csAttempt__sendMsgⁱᵐᵖˡ : val.
+
+Axiom csAttempt__recvMsgⁱᵐᵖˡ : val.
+
+Axiom csAttempt__finishⁱᵐᵖˡ : val.
 
 Definition newNonRetryClientStream : go_string := "google.golang.org/grpc.newNonRetryClientStream"%go.
 
+Axiom newNonRetryClientStreamⁱᵐᵖˡ : val.
+
+Axiom addrConnStream : go_type.
+
+Axiom addrConnStream__Headerⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__Trailerⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__CloseSendⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__Contextⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__finishⁱᵐᵖˡ : val.
+
+Axiom ServerStream : go_type.
+
+Axiom serverStream : go_type.
+
+Axiom serverStream__Contextⁱᵐᵖˡ : val.
+
+Axiom serverStream__SetHeaderⁱᵐᵖˡ : val.
+
+Axiom serverStream__SendHeaderⁱᵐᵖˡ : val.
+
+Axiom serverStream__SetTrailerⁱᵐᵖˡ : val.
+
+Axiom serverStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom serverStream__RecvMsgⁱᵐᵖˡ : val.
+
 Definition MethodFromServerStream : go_string := "google.golang.org/grpc.MethodFromServerStream"%go.
 
+Axiom MethodFromServerStreamⁱᵐᵖˡ : val.
+
 Definition prepareMsg : go_string := "google.golang.org/grpc.prepareMsg"%go.
+
+Axiom prepareMsgⁱᵐᵖˡ : val.
+
+Axiom ServerStreamingClient : go_type.
+
+Axiom ServerStreamingServer : go_type.
+
+Axiom ClientStreamingClient : go_type.
+
+Axiom ClientStreamingServer : go_type.
+
+Axiom BidiStreamingClient : go_type.
+
+Axiom BidiStreamingServer : go_type.
+
+Axiom GenericClientStream : go_type.
+
+Axiom GenericClientStream__Sendⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__Recvⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__CloseAndRecvⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream : go_type.
+
+Axiom GenericServerStream__Sendⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__SendAndCloseⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__Recvⁱᵐᵖˡ : val.
 
 Definition EnableTracing : go_string := "google.golang.org/grpc.EnableTracing"%go.
 
 Definition methodFamily : go_string := "google.golang.org/grpc.methodFamily"%go.
 
+Axiom methodFamilyⁱᵐᵖˡ : val.
+
+Axiom traceEventLog : go_type.
+
+Axiom traceLog : go_type.
+
+Axiom traceInfo : go_type.
+
+Axiom firstLine : go_type.
+
+Axiom firstLine__SetRemoteAddrⁱᵐᵖˡ : val.
+
+Axiom firstLine__Stringⁱᵐᵖˡ : val.
+
+Axiom truncateSize : Z.
+
 Definition truncate : go_string := "google.golang.org/grpc.truncate"%go.
+
+Axiom truncateⁱᵐᵖˡ : val.
+
+Axiom payload : go_type.
+
+Axiom payload__Stringⁱᵐᵖˡ : val.
+
+Axiom fmtStringer : go_type.
+
+Axiom fmtStringer__Stringⁱᵐᵖˡ : val.
+
+Axiom stringer : go_type.
+
+Axiom stringer__Stringⁱᵐᵖˡ : val.
 
 Definition newTrace : go_string := "google.golang.org/grpc.newTrace"%go.
 
+Axiom newTraceⁱᵐᵖˡ : val.
+
 Definition newTraceContext : go_string := "google.golang.org/grpc.newTraceContext"%go.
+
+Axiom newTraceContextⁱᵐᵖˡ : val.
 
 Definition newTraceEventLog : go_string := "google.golang.org/grpc.newTraceEventLog"%go.
 
+Axiom newTraceEventLogⁱᵐᵖˡ : val.
+
+Axiom Version : go_string.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(newCCBalancerWrapper, newCCBalancerWrapperⁱᵐᵖˡ); (newHealthData, newHealthDataⁱᵐᵖˡ); (combine, combineⁱᵐᵖˡ); (Invoke, Invokeⁱᵐᵖˡ); (invoke, invokeⁱᵐᵖˡ); (NewClient, NewClientⁱᵐᵖˡ); (Dial, Dialⁱᵐᵖˡ); (DialContext, DialContextⁱᵐᵖˡ); (chainUnaryClientInterceptors, chainUnaryClientInterceptorsⁱᵐᵖˡ); (getChainUnaryInvoker, getChainUnaryInvokerⁱᵐᵖˡ); (chainStreamClientInterceptors, chainStreamClientInterceptorsⁱᵐᵖˡ); (getChainStreamer, getChainStreamerⁱᵐᵖˡ); (newConnectivityStateManager, newConnectivityStateManagerⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (copyAddresses, copyAddressesⁱᵐᵖˡ); (equalAddressIgnoringBalAttributes, equalAddressIgnoringBalAttributesⁱᵐᵖˡ); (equalAddressesIgnoringBalAttributes, equalAddressesIgnoringBalAttributesⁱᵐᵖˡ); (getMethodConfig, getMethodConfigⁱᵐᵖˡ); (parseTarget, parseTargetⁱᵐᵖˡ); (encodeAuthority, encodeAuthorityⁱᵐᵖˡ); (getCodec, getCodecⁱᵐᵖˡ); (newCodecV0Bridge, newCodecV0Bridgeⁱᵐᵖˡ); (newCodecV1Bridge, newCodecV1Bridgeⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (newDisableGlobalDialOptions, newDisableGlobalDialOptionsⁱᵐᵖˡ); (newFuncDialOption, newFuncDialOptionⁱᵐᵖˡ); (newJoinDialOption, newJoinDialOptionⁱᵐᵖˡ); (WithSharedWriteBuffer, WithSharedWriteBufferⁱᵐᵖˡ); (WithWriteBufferSize, WithWriteBufferSizeⁱᵐᵖˡ); (WithReadBufferSize, WithReadBufferSizeⁱᵐᵖˡ); (WithInitialWindowSize, WithInitialWindowSizeⁱᵐᵖˡ); (WithInitialConnWindowSize, WithInitialConnWindowSizeⁱᵐᵖˡ); (WithMaxMsgSize, WithMaxMsgSizeⁱᵐᵖˡ); (WithDefaultCallOptions, WithDefaultCallOptionsⁱᵐᵖˡ); (WithCodec, WithCodecⁱᵐᵖˡ); (WithCompressor, WithCompressorⁱᵐᵖˡ); (WithDecompressor, WithDecompressorⁱᵐᵖˡ); (WithConnectParams, WithConnectParamsⁱᵐᵖˡ); (WithBackoffMaxDelay, WithBackoffMaxDelayⁱᵐᵖˡ); (WithBackoffConfig, WithBackoffConfigⁱᵐᵖˡ); (withBackoff, withBackoffⁱᵐᵖˡ); (WithBlock, WithBlockⁱᵐᵖˡ); (WithReturnConnectionError, WithReturnConnectionErrorⁱᵐᵖˡ); (WithInsecure, WithInsecureⁱᵐᵖˡ); (WithNoProxy, WithNoProxyⁱᵐᵖˡ); (WithTransportCredentials, WithTransportCredentialsⁱᵐᵖˡ); (WithPerRPCCredentials, WithPerRPCCredentialsⁱᵐᵖˡ); (WithCredentialsBundle, WithCredentialsBundleⁱᵐᵖˡ); (WithTimeout, WithTimeoutⁱᵐᵖˡ); (WithContextDialer, WithContextDialerⁱᵐᵖˡ); (WithDialer, WithDialerⁱᵐᵖˡ); (WithStatsHandler, WithStatsHandlerⁱᵐᵖˡ); (withBinaryLogger, withBinaryLoggerⁱᵐᵖˡ); (FailOnNonTempDialError, FailOnNonTempDialErrorⁱᵐᵖˡ); (WithUserAgent, WithUserAgentⁱᵐᵖˡ); (WithKeepaliveParams, WithKeepaliveParamsⁱᵐᵖˡ); (WithUnaryInterceptor, WithUnaryInterceptorⁱᵐᵖˡ); (WithChainUnaryInterceptor, WithChainUnaryInterceptorⁱᵐᵖˡ); (WithStreamInterceptor, WithStreamInterceptorⁱᵐᵖˡ); (WithChainStreamInterceptor, WithChainStreamInterceptorⁱᵐᵖˡ); (WithAuthority, WithAuthorityⁱᵐᵖˡ); (WithChannelzParentID, WithChannelzParentIDⁱᵐᵖˡ); (WithDisableServiceConfig, WithDisableServiceConfigⁱᵐᵖˡ); (WithDefaultServiceConfig, WithDefaultServiceConfigⁱᵐᵖˡ); (WithDisableRetry, WithDisableRetryⁱᵐᵖˡ); (WithMaxHeaderListSize, WithMaxHeaderListSizeⁱᵐᵖˡ); (WithDisableHealthCheck, WithDisableHealthCheckⁱᵐᵖˡ); (defaultDialOptions, defaultDialOptionsⁱᵐᵖˡ); (withMinConnectDeadline, withMinConnectDeadlineⁱᵐᵖˡ); (withDefaultScheme, withDefaultSchemeⁱᵐᵖˡ); (WithResolvers, WithResolversⁱᵐᵖˡ); (WithIdleTimeout, WithIdleTimeoutⁱᵐᵖˡ); (WithMaxCallAttempts, WithMaxCallAttemptsⁱᵐᵖˡ); (withBufferPool, withBufferPoolⁱᵐᵖˡ); (newPickerWrapper, newPickerWrapperⁱᵐᵖˡ); (doneChannelzWrapper, doneChannelzWrapperⁱᵐᵖˡ); (newCCResolverWrapper, newCCResolverWrapperⁱᵐᵖˡ); (NewGZIPCompressor, NewGZIPCompressorⁱᵐᵖˡ); (NewGZIPCompressorWithLevel, NewGZIPCompressorWithLevelⁱᵐᵖˡ); (NewGZIPDecompressor, NewGZIPDecompressorⁱᵐᵖˡ); (defaultCallInfo, defaultCallInfoⁱᵐᵖˡ); (StaticMethod, StaticMethodⁱᵐᵖˡ); (Header, Headerⁱᵐᵖˡ); (Trailer, Trailerⁱᵐᵖˡ); (Peer, Peerⁱᵐᵖˡ); (WaitForReady, WaitForReadyⁱᵐᵖˡ); (FailFast, FailFastⁱᵐᵖˡ); (OnFinish, OnFinishⁱᵐᵖˡ); (MaxCallRecvMsgSize, MaxCallRecvMsgSizeⁱᵐᵖˡ); (MaxCallSendMsgSize, MaxCallSendMsgSizeⁱᵐᵖˡ); (PerRPCCredentials, PerRPCCredentialsⁱᵐᵖˡ); (UseCompressor, UseCompressorⁱᵐᵖˡ); (CallContentSubtype, CallContentSubtypeⁱᵐᵖˡ); (ForceCodec, ForceCodecⁱᵐᵖˡ); (ForceCodecV2, ForceCodecV2ⁱᵐᵖˡ); (CallCustomCodec, CallCustomCodecⁱᵐᵖˡ); (MaxRetryRPCBufferSize, MaxRetryRPCBufferSizeⁱᵐᵖˡ); (encode, encodeⁱᵐᵖˡ); (compress, compressⁱᵐᵖˡ); (msgHeader, msgHeaderⁱᵐᵖˡ); (outPayload, outPayloadⁱᵐᵖˡ); (checkRecvPayload, checkRecvPayloadⁱᵐᵖˡ); (recvAndDecompress, recvAndDecompressⁱᵐᵖˡ); (decompress, decompressⁱᵐᵖˡ); (recv, recvⁱᵐᵖˡ); (newContextWithRPCInfo, newContextWithRPCInfoⁱᵐᵖˡ); (rpcInfoFromContext, rpcInfoFromContextⁱᵐᵖˡ); (Code, Codeⁱᵐᵖˡ); (ErrorDesc, ErrorDescⁱᵐᵖˡ); (Errorf, Errorfⁱᵐᵖˡ); (toRPCErr, toRPCErrⁱᵐᵖˡ); (setCallInfoCodec, setCallInfoCodecⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (newFuncServerOption, newFuncServerOptionⁱᵐᵖˡ); (newJoinServerOption, newJoinServerOptionⁱᵐᵖˡ); (SharedWriteBuffer, SharedWriteBufferⁱᵐᵖˡ); (WriteBufferSize, WriteBufferSizeⁱᵐᵖˡ); (ReadBufferSize, ReadBufferSizeⁱᵐᵖˡ); (InitialWindowSize, InitialWindowSizeⁱᵐᵖˡ); (InitialConnWindowSize, InitialConnWindowSizeⁱᵐᵖˡ); (KeepaliveParams, KeepaliveParamsⁱᵐᵖˡ); (KeepaliveEnforcementPolicy, KeepaliveEnforcementPolicyⁱᵐᵖˡ); (CustomCodec, CustomCodecⁱᵐᵖˡ); (ForceServerCodec, ForceServerCodecⁱᵐᵖˡ); (ForceServerCodecV2, ForceServerCodecV2ⁱᵐᵖˡ); (RPCCompressor, RPCCompressorⁱᵐᵖˡ); (RPCDecompressor, RPCDecompressorⁱᵐᵖˡ); (MaxMsgSize, MaxMsgSizeⁱᵐᵖˡ); (MaxRecvMsgSize, MaxRecvMsgSizeⁱᵐᵖˡ); (MaxSendMsgSize, MaxSendMsgSizeⁱᵐᵖˡ); (MaxConcurrentStreams, MaxConcurrentStreamsⁱᵐᵖˡ); (Creds, Credsⁱᵐᵖˡ); (UnaryInterceptor, UnaryInterceptorⁱᵐᵖˡ); (ChainUnaryInterceptor, ChainUnaryInterceptorⁱᵐᵖˡ); (StreamInterceptor, StreamInterceptorⁱᵐᵖˡ); (ChainStreamInterceptor, ChainStreamInterceptorⁱᵐᵖˡ); (InTapHandle, InTapHandleⁱᵐᵖˡ); (StatsHandler, StatsHandlerⁱᵐᵖˡ); (binaryLogger, binaryLoggerⁱᵐᵖˡ); (UnknownServiceHandler, UnknownServiceHandlerⁱᵐᵖˡ); (ConnectionTimeout, ConnectionTimeoutⁱᵐᵖˡ); (MaxHeaderListSize, MaxHeaderListSizeⁱᵐᵖˡ); (HeaderTableSize, HeaderTableSizeⁱᵐᵖˡ); (NumStreamWorkers, NumStreamWorkersⁱᵐᵖˡ); (WaitForHandlers, WaitForHandlersⁱᵐᵖˡ); (bufferPool, bufferPoolⁱᵐᵖˡ); (NewServer, NewServerⁱᵐᵖˡ); (chainUnaryServerInterceptors, chainUnaryServerInterceptorsⁱᵐᵖˡ); (chainUnaryInterceptors, chainUnaryInterceptorsⁱᵐᵖˡ); (getChainUnaryHandler, getChainUnaryHandlerⁱᵐᵖˡ); (chainStreamServerInterceptors, chainStreamServerInterceptorsⁱᵐᵖˡ); (chainStreamInterceptors, chainStreamInterceptorsⁱᵐᵖˡ); (getChainStreamHandler, getChainStreamHandlerⁱᵐᵖˡ); (NewContextWithServerTransportStream, NewContextWithServerTransportStreamⁱᵐᵖˡ); (ServerTransportStreamFromContext, ServerTransportStreamFromContextⁱᵐᵖˡ); (serverFromContext, serverFromContextⁱᵐᵖˡ); (contextWithServer, contextWithServerⁱᵐᵖˡ); (SetHeader, SetHeaderⁱᵐᵖˡ); (SendHeader, SendHeaderⁱᵐᵖˡ); (SetSendCompressor, SetSendCompressorⁱᵐᵖˡ); (ClientSupportedCompressors, ClientSupportedCompressorsⁱᵐᵖˡ); (SetTrailer, SetTrailerⁱᵐᵖˡ); (Method, Methodⁱᵐᵖˡ); (validateSendCompressor, validateSendCompressorⁱᵐᵖˡ); (newHandlerQuota, newHandlerQuotaⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (parseServiceConfig, parseServiceConfigⁱᵐᵖˡ); (convertRetryPolicy, convertRetryPolicyⁱᵐᵖˡ); (minPointers, minPointersⁱᵐᵖˡ); (getMaxSize, getMaxSizeⁱᵐᵖˡ); (newInt, newIntⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (equalServiceConfig, equalServiceConfigⁱᵐᵖˡ); (NewClientStream, NewClientStreamⁱᵐᵖˡ); (newClientStream, newClientStreamⁱᵐᵖˡ); (newClientStreamWithParams, newClientStreamWithParamsⁱᵐᵖˡ); (newNonRetryClientStream, newNonRetryClientStreamⁱᵐᵖˡ); (MethodFromServerStream, MethodFromServerStreamⁱᵐᵖˡ); (prepareMsg, prepareMsgⁱᵐᵖˡ); (methodFamily, methodFamilyⁱᵐᵖˡ); (truncate, truncateⁱᵐᵖˡ); (newTrace, newTraceⁱᵐᵖˡ); (newTraceContext, newTraceContextⁱᵐᵖˡ); (newTraceEventLog, newTraceEventLogⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [(BackoffConfig.id, []); (ptrT.id BackoffConfig.id, []); (ConnectParams.id, []); (ptrT.id ConnectParams.id, []); (ccBalancerWrapper.id, []); (ptrT.id ccBalancerWrapper.id, [("NewSubConn"%go, ccBalancerWrapper__NewSubConnⁱᵐᵖˡ); ("RemoveSubConn"%go, ccBalancerWrapper__RemoveSubConnⁱᵐᵖˡ); ("ResolveNow"%go, ccBalancerWrapper__ResolveNowⁱᵐᵖˡ); ("Target"%go, ccBalancerWrapper__Targetⁱᵐᵖˡ); ("UpdateAddresses"%go, ccBalancerWrapper__UpdateAddressesⁱᵐᵖˡ); ("UpdateState"%go, ccBalancerWrapper__UpdateStateⁱᵐᵖˡ); ("close"%go, ccBalancerWrapper__closeⁱᵐᵖˡ); ("exitIdle"%go, ccBalancerWrapper__exitIdleⁱᵐᵖˡ); ("resolverError"%go, ccBalancerWrapper__resolverErrorⁱᵐᵖˡ); ("updateClientConnState"%go, ccBalancerWrapper__updateClientConnStateⁱᵐᵖˡ)]); (acBalancerWrapper.id, [("enforceSubConnEmbedding"%go, (λ: "$r",
+                 method_call #internal.EnforceSubConnEmbedding.id #"enforceSubConnEmbedding"%go (struct.field_get #acBalancerWrapper #"EnforceSubConnEmbedding"%go "$r")
+                 )%V)]); (ptrT.id acBalancerWrapper.id, [("Connect"%go, acBalancerWrapper__Connectⁱᵐᵖˡ); ("GetOrBuildProducer"%go, acBalancerWrapper__GetOrBuildProducerⁱᵐᵖˡ); ("Invoke"%go, acBalancerWrapper__Invokeⁱᵐᵖˡ); ("NewStream"%go, acBalancerWrapper__NewStreamⁱᵐᵖˡ); ("RegisterHealthListener"%go, acBalancerWrapper__RegisterHealthListenerⁱᵐᵖˡ); ("Shutdown"%go, acBalancerWrapper__Shutdownⁱᵐᵖˡ); ("String"%go, acBalancerWrapper__Stringⁱᵐᵖˡ); ("UpdateAddresses"%go, acBalancerWrapper__UpdateAddressesⁱᵐᵖˡ); ("closeProducers"%go, acBalancerWrapper__closeProducersⁱᵐᵖˡ); ("updateState"%go, acBalancerWrapper__updateStateⁱᵐᵖˡ); ("enforceSubConnEmbedding"%go, (λ: "$r",
+                 method_call #(ptrT.id internal.EnforceSubConnEmbedding.id) #"enforceSubConnEmbedding"%go (struct.field_ref #acBalancerWrapper #"EnforceSubConnEmbedding"%go "$r")
+                 )%V)]); (healthData.id, []); (ptrT.id healthData.id, []); (refCountedProducer.id, []); (ptrT.id refCountedProducer.id, []); (defaultConfigSelector.id, []); (ptrT.id defaultConfigSelector.id, [("SelectConfig"%go, defaultConfigSelector__SelectConfigⁱᵐᵖˡ)]); (idler.id, []); (ptrT.id idler.id, [("EnterIdleMode"%go, idler__EnterIdleModeⁱᵐᵖˡ); ("ExitIdleMode"%go, idler__ExitIdleModeⁱᵐᵖˡ)]); (connectivityStateManager.id, []); (ptrT.id connectivityStateManager.id, [("getNotifyChan"%go, connectivityStateManager__getNotifyChanⁱᵐᵖˡ); ("getState"%go, connectivityStateManager__getStateⁱᵐᵖˡ); ("updateState"%go, connectivityStateManager__updateStateⁱᵐᵖˡ)]); (ClientConn.id, []); (ptrT.id ClientConn.id, [("CanonicalTarget"%go, ClientConn__CanonicalTargetⁱᵐᵖˡ); ("Close"%go, ClientConn__Closeⁱᵐᵖˡ); ("Connect"%go, ClientConn__Connectⁱᵐᵖˡ); ("GetMethodConfig"%go, ClientConn__GetMethodConfigⁱᵐᵖˡ); ("GetState"%go, ClientConn__GetStateⁱᵐᵖˡ); ("Invoke"%go, ClientConn__Invokeⁱᵐᵖˡ); ("NewStream"%go, ClientConn__NewStreamⁱᵐᵖˡ); ("ResetConnectBackoff"%go, ClientConn__ResetConnectBackoffⁱᵐᵖˡ); ("Target"%go, ClientConn__Targetⁱᵐᵖˡ); ("WaitForStateChange"%go, ClientConn__WaitForStateChangeⁱᵐᵖˡ); ("addTraceEvent"%go, ClientConn__addTraceEventⁱᵐᵖˡ); ("applyFailingLBLocked"%go, ClientConn__applyFailingLBLockedⁱᵐᵖˡ); ("applyServiceConfigAndBalancer"%go, ClientConn__applyServiceConfigAndBalancerⁱᵐᵖˡ); ("channelzRegistration"%go, ClientConn__channelzRegistrationⁱᵐᵖˡ); ("connectionError"%go, ClientConn__connectionErrorⁱᵐᵖˡ); ("enterIdleMode"%go, ClientConn__enterIdleModeⁱᵐᵖˡ); ("exitIdleMode"%go, ClientConn__exitIdleModeⁱᵐᵖˡ); ("getResolver"%go, ClientConn__getResolverⁱᵐᵖˡ); ("getServerName"%go, ClientConn__getServerNameⁱᵐᵖˡ); ("getTransport"%go, ClientConn__getTransportⁱᵐᵖˡ); ("healthCheckConfig"%go, ClientConn__healthCheckConfigⁱᵐᵖˡ); ("incrCallsFailed"%go, ClientConn__incrCallsFailedⁱᵐᵖˡ); ("incrCallsStarted"%go, ClientConn__incrCallsStartedⁱᵐᵖˡ); ("incrCallsSucceeded"%go, ClientConn__incrCallsSucceededⁱᵐᵖˡ); ("initAuthority"%go, ClientConn__initAuthorityⁱᵐᵖˡ); ("initIdleStateLocked"%go, ClientConn__initIdleStateLockedⁱᵐᵖˡ); ("initParsedTargetAndResolverBuilder"%go, ClientConn__initParsedTargetAndResolverBuilderⁱᵐᵖˡ); ("maybeApplyDefaultServiceConfig"%go, ClientConn__maybeApplyDefaultServiceConfigⁱᵐᵖˡ); ("newAddrConnLocked"%go, ClientConn__newAddrConnLockedⁱᵐᵖˡ); ("removeAddrConn"%go, ClientConn__removeAddrConnⁱᵐᵖˡ); ("resolveNow"%go, ClientConn__resolveNowⁱᵐᵖˡ); ("resolveNowLocked"%go, ClientConn__resolveNowLockedⁱᵐᵖˡ); ("updateConnectionError"%go, ClientConn__updateConnectionErrorⁱᵐᵖˡ); ("updateResolverStateAndUnlock"%go, ClientConn__updateResolverStateAndUnlockⁱᵐᵖˡ); ("validateTransportCredentials"%go, ClientConn__validateTransportCredentialsⁱᵐᵖˡ); ("waitForResolvedAddrs"%go, ClientConn__waitForResolvedAddrsⁱᵐᵖˡ)]); (addrConn.id, []); (ptrT.id addrConn.id, [("adjustParams"%go, addrConn__adjustParamsⁱᵐᵖˡ); ("connect"%go, addrConn__connectⁱᵐᵖˡ); ("createTransport"%go, addrConn__createTransportⁱᵐᵖˡ); ("getReadyTransport"%go, addrConn__getReadyTransportⁱᵐᵖˡ); ("incrCallsFailed"%go, addrConn__incrCallsFailedⁱᵐᵖˡ); ("incrCallsStarted"%go, addrConn__incrCallsStartedⁱᵐᵖˡ); ("incrCallsSucceeded"%go, addrConn__incrCallsSucceededⁱᵐᵖˡ); ("resetConnectBackoff"%go, addrConn__resetConnectBackoffⁱᵐᵖˡ); ("resetTransportAndUnlock"%go, addrConn__resetTransportAndUnlockⁱᵐᵖˡ); ("startHealthCheck"%go, addrConn__startHealthCheckⁱᵐᵖˡ); ("tearDown"%go, addrConn__tearDownⁱᵐᵖˡ); ("tryAllAddrs"%go, addrConn__tryAllAddrsⁱᵐᵖˡ); ("updateAddrs"%go, addrConn__updateAddrsⁱᵐᵖˡ); ("updateConnectivityState"%go, addrConn__updateConnectivityStateⁱᵐᵖˡ)]); (retryThrottler.id, []); (ptrT.id retryThrottler.id, [("successfulRPC"%go, retryThrottler__successfulRPCⁱᵐᵖˡ); ("throttle"%go, retryThrottler__throttleⁱᵐᵖˡ)]); (codecV0Bridge.id, [("Marshal"%go, codecV0Bridge__Marshalⁱᵐᵖˡ); ("Unmarshal"%go, codecV0Bridge__Unmarshalⁱᵐᵖˡ)]); (ptrT.id codecV0Bridge.id, [("Marshal"%go, (λ: "$r",
+                 method_call #codecV0Bridge.id #"Marshal"%go (![#codecV0Bridge] "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #codecV0Bridge.id #"Unmarshal"%go (![#codecV0Bridge] "$r")
+                 )%V)]); (codecV1Bridge.id, [("Marshal"%go, (λ: "$r",
+                 method_call #codecV0Bridge.id #"Marshal"%go (struct.field_get #codecV1Bridge #"codecV0Bridge"%go "$r")
+                 )%V); ("Name"%go, codecV1Bridge__Nameⁱᵐᵖˡ); ("Unmarshal"%go, (λ: "$r",
+                 method_call #codecV0Bridge.id #"Unmarshal"%go (struct.field_get #codecV1Bridge #"codecV0Bridge"%go "$r")
+                 )%V)]); (ptrT.id codecV1Bridge.id, [("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id codecV0Bridge.id) #"Marshal"%go (struct.field_ref #codecV1Bridge #"codecV0Bridge"%go "$r")
+                 )%V); ("Name"%go, (λ: "$r",
+                 method_call #codecV1Bridge.id #"Name"%go (![#codecV1Bridge] "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id codecV0Bridge.id) #"Unmarshal"%go (struct.field_ref #codecV1Bridge #"codecV0Bridge"%go "$r")
+                 )%V)]); (dialOptions.id, []); (ptrT.id dialOptions.id, []); (EmptyDialOption.id, [("apply"%go, EmptyDialOption__applyⁱᵐᵖˡ)]); (ptrT.id EmptyDialOption.id, [("apply"%go, (λ: "$r",
+                 method_call #EmptyDialOption.id #"apply"%go (![#EmptyDialOption] "$r")
+                 )%V)]); (disableGlobalDialOptions.id, [("apply"%go, disableGlobalDialOptions__applyⁱᵐᵖˡ)]); (ptrT.id disableGlobalDialOptions.id, [("apply"%go, (λ: "$r",
+                 method_call #disableGlobalDialOptions.id #"apply"%go (![#disableGlobalDialOptions] "$r")
+                 )%V)]); (funcDialOption.id, []); (ptrT.id funcDialOption.id, [("apply"%go, funcDialOption__applyⁱᵐᵖˡ)]); (joinDialOption.id, []); (ptrT.id joinDialOption.id, [("apply"%go, joinDialOption__applyⁱᵐᵖˡ)]); (MaxHeaderListSizeDialOption.id, [("apply"%go, MaxHeaderListSizeDialOption__applyⁱᵐᵖˡ)]); (ptrT.id MaxHeaderListSizeDialOption.id, [("apply"%go, (λ: "$r",
+                 method_call #MaxHeaderListSizeDialOption.id #"apply"%go (![#MaxHeaderListSizeDialOption] "$r")
+                 )%V)]); (UnaryInvoker.id, []); (ptrT.id UnaryInvoker.id, []); (UnaryClientInterceptor.id, []); (ptrT.id UnaryClientInterceptor.id, []); (Streamer.id, []); (ptrT.id Streamer.id, []); (StreamClientInterceptor.id, []); (ptrT.id StreamClientInterceptor.id, []); (UnaryServerInfo.id, []); (ptrT.id UnaryServerInfo.id, []); (UnaryHandler.id, []); (ptrT.id UnaryHandler.id, []); (UnaryServerInterceptor.id, []); (ptrT.id UnaryServerInterceptor.id, []); (StreamServerInfo.id, []); (ptrT.id StreamServerInfo.id, []); (StreamServerInterceptor.id, []); (ptrT.id StreamServerInterceptor.id, []); (pickerGeneration.id, []); (ptrT.id pickerGeneration.id, []); (pickerWrapper.id, []); (ptrT.id pickerWrapper.id, [("close"%go, pickerWrapper__closeⁱᵐᵖˡ); ("pick"%go, pickerWrapper__pickⁱᵐᵖˡ); ("reset"%go, pickerWrapper__resetⁱᵐᵖˡ); ("updatePicker"%go, pickerWrapper__updatePickerⁱᵐᵖˡ)]); (dropError.id, [("Error"%go, (λ: "$r",
+                 method_call #error.id #"Error"%go (struct.field_get #dropError #"error"%go "$r")
+                 )%V)]); (ptrT.id dropError.id, [("Error"%go, (λ: "$r",
+                 method_call #(ptrT.id error.id) #"Error"%go (struct.field_ref #dropError #"error"%go "$r")
+                 )%V)]); (PreparedMsg.id, []); (ptrT.id PreparedMsg.id, [("Encode"%go, PreparedMsg__Encodeⁱᵐᵖˡ)]); (ccResolverWrapper.id, []); (ptrT.id ccResolverWrapper.id, [("NewAddress"%go, ccResolverWrapper__NewAddressⁱᵐᵖˡ); ("ParseServiceConfig"%go, ccResolverWrapper__ParseServiceConfigⁱᵐᵖˡ); ("ReportError"%go, ccResolverWrapper__ReportErrorⁱᵐᵖˡ); ("UpdateState"%go, ccResolverWrapper__UpdateStateⁱᵐᵖˡ); ("addChannelzTraceEvent"%go, ccResolverWrapper__addChannelzTraceEventⁱᵐᵖˡ); ("close"%go, ccResolverWrapper__closeⁱᵐᵖˡ); ("resolveNow"%go, ccResolverWrapper__resolveNowⁱᵐᵖˡ); ("start"%go, ccResolverWrapper__startⁱᵐᵖˡ)]); (gzipCompressor.id, []); (ptrT.id gzipCompressor.id, [("Do"%go, gzipCompressor__Doⁱᵐᵖˡ); ("Type"%go, gzipCompressor__Typeⁱᵐᵖˡ)]); (gzipDecompressor.id, []); (ptrT.id gzipDecompressor.id, [("Do"%go, gzipDecompressor__Doⁱᵐᵖˡ); ("Type"%go, gzipDecompressor__Typeⁱᵐᵖˡ)]); (callInfo.id, []); (ptrT.id callInfo.id, []); (EmptyCallOption.id, [("after"%go, EmptyCallOption__afterⁱᵐᵖˡ); ("before"%go, EmptyCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id EmptyCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #EmptyCallOption.id #"after"%go (![#EmptyCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #EmptyCallOption.id #"before"%go (![#EmptyCallOption] "$r")
+                 )%V)]); (StaticMethodCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #EmptyCallOption.id #"after"%go (struct.field_get #StaticMethodCallOption #"EmptyCallOption"%go "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #EmptyCallOption.id #"before"%go (struct.field_get #StaticMethodCallOption #"EmptyCallOption"%go "$r")
+                 )%V)]); (ptrT.id StaticMethodCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #(ptrT.id EmptyCallOption.id) #"after"%go (struct.field_ref #StaticMethodCallOption #"EmptyCallOption"%go "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #(ptrT.id EmptyCallOption.id) #"before"%go (struct.field_ref #StaticMethodCallOption #"EmptyCallOption"%go "$r")
+                 )%V)]); (HeaderCallOption.id, [("after"%go, HeaderCallOption__afterⁱᵐᵖˡ); ("before"%go, HeaderCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id HeaderCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #HeaderCallOption.id #"after"%go (![#HeaderCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #HeaderCallOption.id #"before"%go (![#HeaderCallOption] "$r")
+                 )%V)]); (TrailerCallOption.id, [("after"%go, TrailerCallOption__afterⁱᵐᵖˡ); ("before"%go, TrailerCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id TrailerCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #TrailerCallOption.id #"after"%go (![#TrailerCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #TrailerCallOption.id #"before"%go (![#TrailerCallOption] "$r")
+                 )%V)]); (PeerCallOption.id, [("after"%go, PeerCallOption__afterⁱᵐᵖˡ); ("before"%go, PeerCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id PeerCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #PeerCallOption.id #"after"%go (![#PeerCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #PeerCallOption.id #"before"%go (![#PeerCallOption] "$r")
+                 )%V)]); (FailFastCallOption.id, [("after"%go, FailFastCallOption__afterⁱᵐᵖˡ); ("before"%go, FailFastCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id FailFastCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #FailFastCallOption.id #"after"%go (![#FailFastCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #FailFastCallOption.id #"before"%go (![#FailFastCallOption] "$r")
+                 )%V)]); (OnFinishCallOption.id, [("after"%go, OnFinishCallOption__afterⁱᵐᵖˡ); ("before"%go, OnFinishCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id OnFinishCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #OnFinishCallOption.id #"after"%go (![#OnFinishCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #OnFinishCallOption.id #"before"%go (![#OnFinishCallOption] "$r")
+                 )%V)]); (MaxRecvMsgSizeCallOption.id, [("after"%go, MaxRecvMsgSizeCallOption__afterⁱᵐᵖˡ); ("before"%go, MaxRecvMsgSizeCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id MaxRecvMsgSizeCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #MaxRecvMsgSizeCallOption.id #"after"%go (![#MaxRecvMsgSizeCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #MaxRecvMsgSizeCallOption.id #"before"%go (![#MaxRecvMsgSizeCallOption] "$r")
+                 )%V)]); (MaxSendMsgSizeCallOption.id, [("after"%go, MaxSendMsgSizeCallOption__afterⁱᵐᵖˡ); ("before"%go, MaxSendMsgSizeCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id MaxSendMsgSizeCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #MaxSendMsgSizeCallOption.id #"after"%go (![#MaxSendMsgSizeCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #MaxSendMsgSizeCallOption.id #"before"%go (![#MaxSendMsgSizeCallOption] "$r")
+                 )%V)]); (PerRPCCredsCallOption.id, [("after"%go, PerRPCCredsCallOption__afterⁱᵐᵖˡ); ("before"%go, PerRPCCredsCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id PerRPCCredsCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #PerRPCCredsCallOption.id #"after"%go (![#PerRPCCredsCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #PerRPCCredsCallOption.id #"before"%go (![#PerRPCCredsCallOption] "$r")
+                 )%V)]); (CompressorCallOption.id, [("after"%go, CompressorCallOption__afterⁱᵐᵖˡ); ("before"%go, CompressorCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id CompressorCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #CompressorCallOption.id #"after"%go (![#CompressorCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #CompressorCallOption.id #"before"%go (![#CompressorCallOption] "$r")
+                 )%V)]); (ContentSubtypeCallOption.id, [("after"%go, ContentSubtypeCallOption__afterⁱᵐᵖˡ); ("before"%go, ContentSubtypeCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id ContentSubtypeCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #ContentSubtypeCallOption.id #"after"%go (![#ContentSubtypeCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #ContentSubtypeCallOption.id #"before"%go (![#ContentSubtypeCallOption] "$r")
+                 )%V)]); (ForceCodecCallOption.id, [("after"%go, ForceCodecCallOption__afterⁱᵐᵖˡ); ("before"%go, ForceCodecCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id ForceCodecCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #ForceCodecCallOption.id #"after"%go (![#ForceCodecCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #ForceCodecCallOption.id #"before"%go (![#ForceCodecCallOption] "$r")
+                 )%V)]); (ForceCodecV2CallOption.id, [("after"%go, ForceCodecV2CallOption__afterⁱᵐᵖˡ); ("before"%go, ForceCodecV2CallOption__beforeⁱᵐᵖˡ)]); (ptrT.id ForceCodecV2CallOption.id, [("after"%go, (λ: "$r",
+                 method_call #ForceCodecV2CallOption.id #"after"%go (![#ForceCodecV2CallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #ForceCodecV2CallOption.id #"before"%go (![#ForceCodecV2CallOption] "$r")
+                 )%V)]); (CustomCodecCallOption.id, [("after"%go, CustomCodecCallOption__afterⁱᵐᵖˡ); ("before"%go, CustomCodecCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id CustomCodecCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #CustomCodecCallOption.id #"after"%go (![#CustomCodecCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #CustomCodecCallOption.id #"before"%go (![#CustomCodecCallOption] "$r")
+                 )%V)]); (MaxRetryRPCBufferSizeCallOption.id, [("after"%go, MaxRetryRPCBufferSizeCallOption__afterⁱᵐᵖˡ); ("before"%go, MaxRetryRPCBufferSizeCallOption__beforeⁱᵐᵖˡ)]); (ptrT.id MaxRetryRPCBufferSizeCallOption.id, [("after"%go, (λ: "$r",
+                 method_call #MaxRetryRPCBufferSizeCallOption.id #"after"%go (![#MaxRetryRPCBufferSizeCallOption] "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #MaxRetryRPCBufferSizeCallOption.id #"before"%go (![#MaxRetryRPCBufferSizeCallOption] "$r")
+                 )%V)]); (payloadFormat.id, [("isCompressed"%go, payloadFormat__isCompressedⁱᵐᵖˡ)]); (ptrT.id payloadFormat.id, [("isCompressed"%go, (λ: "$r",
+                 method_call #payloadFormat.id #"isCompressed"%go (![#payloadFormat] "$r")
+                 )%V)]); (parser.id, []); (ptrT.id parser.id, [("recvMsg"%go, parser__recvMsgⁱᵐᵖˡ)]); (payloadInfo.id, []); (ptrT.id payloadInfo.id, [("free"%go, payloadInfo__freeⁱᵐᵖˡ)]); (rpcInfo.id, []); (ptrT.id rpcInfo.id, []); (compressorInfo.id, []); (ptrT.id compressorInfo.id, []); (rpcInfoContextKey.id, []); (ptrT.id rpcInfoContextKey.id, []); (MethodHandler.id, []); (ptrT.id MethodHandler.id, []); (MethodDesc.id, []); (ptrT.id MethodDesc.id, []); (ServiceDesc.id, []); (ptrT.id ServiceDesc.id, []); (serviceInfo.id, []); (ptrT.id serviceInfo.id, []); (Server.id, []); (ptrT.id Server.id, [("GetServiceInfo"%go, Server__GetServiceInfoⁱᵐᵖˡ); ("GracefulStop"%go, Server__GracefulStopⁱᵐᵖˡ); ("RegisterService"%go, Server__RegisterServiceⁱᵐᵖˡ); ("Serve"%go, Server__Serveⁱᵐᵖˡ); ("ServeHTTP"%go, Server__ServeHTTPⁱᵐᵖˡ); ("Stop"%go, Server__Stopⁱᵐᵖˡ); ("addConn"%go, Server__addConnⁱᵐᵖˡ); ("closeListenersLocked"%go, Server__closeListenersLockedⁱᵐᵖˡ); ("closeServerTransportsLocked"%go, Server__closeServerTransportsLockedⁱᵐᵖˡ); ("drainAllServerTransportsLocked"%go, Server__drainAllServerTransportsLockedⁱᵐᵖˡ); ("errorf"%go, Server__errorfⁱᵐᵖˡ); ("getCodec"%go, Server__getCodecⁱᵐᵖˡ); ("handleRawConn"%go, Server__handleRawConnⁱᵐᵖˡ); ("handleStream"%go, Server__handleStreamⁱᵐᵖˡ); ("incrCallsFailed"%go, Server__incrCallsFailedⁱᵐᵖˡ); ("incrCallsStarted"%go, Server__incrCallsStartedⁱᵐᵖˡ); ("incrCallsSucceeded"%go, Server__incrCallsSucceededⁱᵐᵖˡ); ("initServerWorkers"%go, Server__initServerWorkersⁱᵐᵖˡ); ("isRegisteredMethod"%go, Server__isRegisteredMethodⁱᵐᵖˡ); ("newHTTP2Transport"%go, Server__newHTTP2Transportⁱᵐᵖˡ); ("printf"%go, Server__printfⁱᵐᵖˡ); ("processStreamingRPC"%go, Server__processStreamingRPCⁱᵐᵖˡ); ("processUnaryRPC"%go, Server__processUnaryRPCⁱᵐᵖˡ); ("register"%go, Server__registerⁱᵐᵖˡ); ("removeConn"%go, Server__removeConnⁱᵐᵖˡ); ("sendResponse"%go, Server__sendResponseⁱᵐᵖˡ); ("serveStreams"%go, Server__serveStreamsⁱᵐᵖˡ); ("serverWorker"%go, Server__serverWorkerⁱᵐᵖˡ); ("stop"%go, Server__stopⁱᵐᵖˡ)]); (serverOptions.id, []); (ptrT.id serverOptions.id, []); (EmptyServerOption.id, [("apply"%go, EmptyServerOption__applyⁱᵐᵖˡ)]); (ptrT.id EmptyServerOption.id, [("apply"%go, (λ: "$r",
+                 method_call #EmptyServerOption.id #"apply"%go (![#EmptyServerOption] "$r")
+                 )%V)]); (funcServerOption.id, []); (ptrT.id funcServerOption.id, [("apply"%go, funcServerOption__applyⁱᵐᵖˡ)]); (joinServerOption.id, []); (ptrT.id joinServerOption.id, [("apply"%go, joinServerOption__applyⁱᵐᵖˡ)]); (MaxHeaderListSizeServerOption.id, [("apply"%go, MaxHeaderListSizeServerOption__applyⁱᵐᵖˡ)]); (ptrT.id MaxHeaderListSizeServerOption.id, [("apply"%go, (λ: "$r",
+                 method_call #MaxHeaderListSizeServerOption.id #"apply"%go (![#MaxHeaderListSizeServerOption] "$r")
+                 )%V)]); (MethodInfo.id, []); (ptrT.id MethodInfo.id, []); (ServiceInfo.id, []); (ptrT.id ServiceInfo.id, []); (listenSocket.id, [("Accept"%go, (λ: "$r",
+                 method_call #net.Listener.id #"Accept"%go (struct.field_get #listenSocket #"Listener"%go "$r")
+                 )%V); ("Addr"%go, (λ: "$r",
+                 method_call #net.Listener.id #"Addr"%go (struct.field_get #listenSocket #"Listener"%go "$r")
+                 )%V)]); (ptrT.id listenSocket.id, [("Accept"%go, (λ: "$r",
+                 method_call #(ptrT.id net.Listener.id) #"Accept"%go (struct.field_ref #listenSocket #"Listener"%go "$r")
+                 )%V); ("Addr"%go, (λ: "$r",
+                 method_call #(ptrT.id net.Listener.id) #"Addr"%go (struct.field_ref #listenSocket #"Listener"%go "$r")
+                 )%V); ("Close"%go, listenSocket__Closeⁱᵐᵖˡ)]); (streamKey.id, []); (ptrT.id streamKey.id, []); (serverKey.id, []); (ptrT.id serverKey.id, []); (atomicSemaphore.id, []); (ptrT.id atomicSemaphore.id, [("acquire"%go, atomicSemaphore__acquireⁱᵐᵖˡ); ("release"%go, atomicSemaphore__releaseⁱᵐᵖˡ)]); (ServiceConfig.id, [("isServiceConfig"%go, (λ: "$r",
+                 method_call #serviceconfig.Config.id #"isServiceConfig"%go (struct.field_get #ServiceConfig #"Config"%go "$r")
+                 )%V)]); (ptrT.id ServiceConfig.id, [("isServiceConfig"%go, (λ: "$r",
+                 method_call #(ptrT.id serviceconfig.Config.id) #"isServiceConfig"%go (struct.field_ref #ServiceConfig #"Config"%go "$r")
+                 )%V)]); (healthCheckConfig.id, []); (ptrT.id healthCheckConfig.id, []); (jsonRetryPolicy.id, []); (ptrT.id jsonRetryPolicy.id, []); (retryThrottlingPolicy.id, []); (ptrT.id retryThrottlingPolicy.id, []); (jsonName.id, [("generatePath"%go, jsonName__generatePathⁱᵐᵖˡ)]); (ptrT.id jsonName.id, [("generatePath"%go, (λ: "$r",
+                 method_call #jsonName.id #"generatePath"%go (![#jsonName] "$r")
+                 )%V)]); (jsonMC.id, []); (ptrT.id jsonMC.id, []); (jsonSC.id, []); (ptrT.id jsonSC.id, []); (StreamHandler.id, []); (ptrT.id StreamHandler.id, []); (StreamDesc.id, []); (ptrT.id StreamDesc.id, []); (clientStream.id, []); (ptrT.id clientStream.id, [("CloseSend"%go, clientStream__CloseSendⁱᵐᵖˡ); ("Context"%go, clientStream__Contextⁱᵐᵖˡ); ("Header"%go, clientStream__Headerⁱᵐᵖˡ); ("RecvMsg"%go, clientStream__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, clientStream__SendMsgⁱᵐᵖˡ); ("Trailer"%go, clientStream__Trailerⁱᵐᵖˡ); ("bufferForRetryLocked"%go, clientStream__bufferForRetryLockedⁱᵐᵖˡ); ("commitAttempt"%go, clientStream__commitAttemptⁱᵐᵖˡ); ("commitAttemptLocked"%go, clientStream__commitAttemptLockedⁱᵐᵖˡ); ("finish"%go, clientStream__finishⁱᵐᵖˡ); ("newAttemptLocked"%go, clientStream__newAttemptLockedⁱᵐᵖˡ); ("replayBufferLocked"%go, clientStream__replayBufferLockedⁱᵐᵖˡ); ("retryLocked"%go, clientStream__retryLockedⁱᵐᵖˡ); ("withRetry"%go, clientStream__withRetryⁱᵐᵖˡ)]); (replayOp.id, []); (ptrT.id replayOp.id, []); (csAttempt.id, []); (ptrT.id csAttempt.id, [("finish"%go, csAttempt__finishⁱᵐᵖˡ); ("getTransport"%go, csAttempt__getTransportⁱᵐᵖˡ); ("newStream"%go, csAttempt__newStreamⁱᵐᵖˡ); ("recvMsg"%go, csAttempt__recvMsgⁱᵐᵖˡ); ("sendMsg"%go, csAttempt__sendMsgⁱᵐᵖˡ); ("shouldRetry"%go, csAttempt__shouldRetryⁱᵐᵖˡ)]); (addrConnStream.id, []); (ptrT.id addrConnStream.id, [("CloseSend"%go, addrConnStream__CloseSendⁱᵐᵖˡ); ("Context"%go, addrConnStream__Contextⁱᵐᵖˡ); ("Header"%go, addrConnStream__Headerⁱᵐᵖˡ); ("RecvMsg"%go, addrConnStream__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, addrConnStream__SendMsgⁱᵐᵖˡ); ("Trailer"%go, addrConnStream__Trailerⁱᵐᵖˡ); ("finish"%go, addrConnStream__finishⁱᵐᵖˡ)]); (serverStream.id, []); (ptrT.id serverStream.id, [("Context"%go, serverStream__Contextⁱᵐᵖˡ); ("RecvMsg"%go, serverStream__RecvMsgⁱᵐᵖˡ); ("SendHeader"%go, serverStream__SendHeaderⁱᵐᵖˡ); ("SendMsg"%go, serverStream__SendMsgⁱᵐᵖˡ); ("SetHeader"%go, serverStream__SetHeaderⁱᵐᵖˡ); ("SetTrailer"%go, serverStream__SetTrailerⁱᵐᵖˡ)]); (GenericClientStream.id, [("CloseSend"%go, (λ: "$r",
+                 method_call #ClientStream.id #"CloseSend"%go (struct.field_get (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Context"%go, (λ: "$r",
+                 method_call #ClientStream.id #"Context"%go (struct.field_get (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Header"%go, (λ: "$r",
+                 method_call #ClientStream.id #"Header"%go (struct.field_get (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("RecvMsg"%go, (λ: "$r",
+                 method_call #ClientStream.id #"RecvMsg"%go (struct.field_get (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("SendMsg"%go, (λ: "$r",
+                 method_call #ClientStream.id #"SendMsg"%go (struct.field_get (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Trailer"%go, (λ: "$r",
+                 method_call #ClientStream.id #"Trailer"%go (struct.field_get (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V)]); (ptrT.id GenericClientStream.id, [("CloseAndRecv"%go, GenericClientStream__CloseAndRecvⁱᵐᵖˡ); ("CloseSend"%go, (λ: "$r",
+                 method_call #(ptrT.id ClientStream.id) #"CloseSend"%go (struct.field_ref (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Context"%go, (λ: "$r",
+                 method_call #(ptrT.id ClientStream.id) #"Context"%go (struct.field_ref (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Header"%go, (λ: "$r",
+                 method_call #(ptrT.id ClientStream.id) #"Header"%go (struct.field_ref (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Recv"%go, GenericClientStream__Recvⁱᵐᵖˡ); ("RecvMsg"%go, (λ: "$r",
+                 method_call #(ptrT.id ClientStream.id) #"RecvMsg"%go (struct.field_ref (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Send"%go, GenericClientStream__Sendⁱᵐᵖˡ); ("SendMsg"%go, (λ: "$r",
+                 method_call #(ptrT.id ClientStream.id) #"SendMsg"%go (struct.field_ref (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V); ("Trailer"%go, (λ: "$r",
+                 method_call #(ptrT.id ClientStream.id) #"Trailer"%go (struct.field_ref (GenericClientStream #()) #"ClientStream"%go "$r")
+                 )%V)]); (GenericServerStream.id, [("Context"%go, (λ: "$r",
+                 method_call #ServerStream.id #"Context"%go (struct.field_get (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("RecvMsg"%go, (λ: "$r",
+                 method_call #ServerStream.id #"RecvMsg"%go (struct.field_get (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("SendHeader"%go, (λ: "$r",
+                 method_call #ServerStream.id #"SendHeader"%go (struct.field_get (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("SendMsg"%go, (λ: "$r",
+                 method_call #ServerStream.id #"SendMsg"%go (struct.field_get (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("SetHeader"%go, (λ: "$r",
+                 method_call #ServerStream.id #"SetHeader"%go (struct.field_get (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("SetTrailer"%go, (λ: "$r",
+                 method_call #ServerStream.id #"SetTrailer"%go (struct.field_get (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V)]); (ptrT.id GenericServerStream.id, [("Context"%go, (λ: "$r",
+                 method_call #(ptrT.id ServerStream.id) #"Context"%go (struct.field_ref (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("Recv"%go, GenericServerStream__Recvⁱᵐᵖˡ); ("RecvMsg"%go, (λ: "$r",
+                 method_call #(ptrT.id ServerStream.id) #"RecvMsg"%go (struct.field_ref (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("Send"%go, GenericServerStream__Sendⁱᵐᵖˡ); ("SendAndClose"%go, GenericServerStream__SendAndCloseⁱᵐᵖˡ); ("SendHeader"%go, (λ: "$r",
+                 method_call #(ptrT.id ServerStream.id) #"SendHeader"%go (struct.field_ref (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("SendMsg"%go, (λ: "$r",
+                 method_call #(ptrT.id ServerStream.id) #"SendMsg"%go (struct.field_ref (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("SetHeader"%go, (λ: "$r",
+                 method_call #(ptrT.id ServerStream.id) #"SetHeader"%go (struct.field_ref (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V); ("SetTrailer"%go, (λ: "$r",
+                 method_call #(ptrT.id ServerStream.id) #"SetTrailer"%go (struct.field_ref (GenericServerStream #()) #"ServerStream"%go "$r")
+                 )%V)]); (traceInfo.id, []); (ptrT.id traceInfo.id, []); (firstLine.id, []); (ptrT.id firstLine.id, [("SetRemoteAddr"%go, firstLine__SetRemoteAddrⁱᵐᵖˡ); ("String"%go, firstLine__Stringⁱᵐᵖˡ)]); (payload.id, [("String"%go, payload__Stringⁱᵐᵖˡ)]); (ptrT.id payload.id, [("String"%go, (λ: "$r",
+                 method_call #payload.id #"String"%go (![#payload] "$r")
+                 )%V)]); (fmtStringer.id, []); (ptrT.id fmtStringer.id, [("String"%go, fmtStringer__Stringⁱᵐᵖˡ)]); (stringer.id, [("String"%go, stringer__Stringⁱᵐᵖˡ)]); (ptrT.id stringer.id, [("String"%go, (λ: "$r",
+                 method_call #stringer.id #"String"%go (![#stringer] "$r")
+                 )%V)])].
 
 #[global] Instance info' : PkgInfo grpc.grpc :=
   {|

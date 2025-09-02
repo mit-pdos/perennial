@@ -8,6 +8,40 @@ Set Default Proof Using "Type".
 
 Module slices.
 
+(* type slices.sortedHint *)
+Module sortedHint.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End sortedHint.
+
+Global Instance bounded_size_sortedHint : BoundedTypeSize slices.sortedHint.
+Admitted.
+
+Global Instance into_val_sortedHint `{ffi_syntax} : IntoVal sortedHint.t.
+Admitted.
+
+Global Instance into_val_typed_sortedHint `{ffi_syntax} : IntoValTyped sortedHint.t slices.sortedHint.
+Admitted.
+
+(* type slices.xorshift *)
+Module xorshift.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End xorshift.
+
+Global Instance bounded_size_xorshift : BoundedTypeSize slices.xorshift.
+Admitted.
+
+Global Instance into_val_xorshift `{ffi_syntax} : IntoVal xorshift.t.
+Admitted.
+
+Global Instance into_val_typed_xorshift `{ffi_syntax} : IntoValTyped xorshift.t slices.xorshift.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -29,6 +63,330 @@ Global Program Instance is_pkg_defined_slices : IsPkgDefined slices :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_All :
+  WpFuncCall slices.All _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Backward :
+  WpFuncCall slices.Backward _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Values :
+  WpFuncCall slices.Values _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AppendSeq :
+  WpFuncCall slices.AppendSeq _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Collect :
+  WpFuncCall slices.Collect _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sorted :
+  WpFuncCall slices.Sorted _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SortedFunc :
+  WpFuncCall slices.SortedFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SortedStableFunc :
+  WpFuncCall slices.SortedStableFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Chunk :
+  WpFuncCall slices.Chunk _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Equal :
+  WpFuncCall slices.Equal _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_EqualFunc :
+  WpFuncCall slices.EqualFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Compare :
+  WpFuncCall slices.Compare _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CompareFunc :
+  WpFuncCall slices.CompareFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Index :
+  WpFuncCall slices.Index _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IndexFunc :
+  WpFuncCall slices.IndexFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Contains :
+  WpFuncCall slices.Contains _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ContainsFunc :
+  WpFuncCall slices.ContainsFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Insert :
+  WpFuncCall slices.Insert _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Delete :
+  WpFuncCall slices.Delete _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_DeleteFunc :
+  WpFuncCall slices.DeleteFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Replace :
+  WpFuncCall slices.Replace _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Clone :
+  WpFuncCall slices.Clone _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Compact :
+  WpFuncCall slices.Compact _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CompactFunc :
+  WpFuncCall slices.CompactFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Grow :
+  WpFuncCall slices.Grow _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Clip :
+  WpFuncCall slices.Clip _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rotateLeft :
+  WpFuncCall slices.rotateLeft _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rotateRight :
+  WpFuncCall slices.rotateRight _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_overlaps :
+  WpFuncCall slices.overlaps _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_startIdx :
+  WpFuncCall slices.startIdx _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Reverse :
+  WpFuncCall slices.Reverse _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Concat :
+  WpFuncCall slices.Concat _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Repeat :
+  WpFuncCall slices.Repeat _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sort :
+  WpFuncCall slices.Sort _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SortFunc :
+  WpFuncCall slices.SortFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SortStableFunc :
+  WpFuncCall slices.SortStableFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IsSorted :
+  WpFuncCall slices.IsSorted _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IsSortedFunc :
+  WpFuncCall slices.IsSortedFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Min :
+  WpFuncCall slices.Min _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MinFunc :
+  WpFuncCall slices.MinFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Max :
+  WpFuncCall slices.Max _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxFunc :
+  WpFuncCall slices.MaxFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_BinarySearch :
+  WpFuncCall slices.BinarySearch _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_BinarySearchFunc :
+  WpFuncCall slices.BinarySearchFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_nextPowerOfTwo :
+  WpFuncCall slices.nextPowerOfTwo _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isNaN :
+  WpFuncCall slices.isNaN _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_insertionSortCmpFunc :
+  WpFuncCall slices.insertionSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_siftDownCmpFunc :
+  WpFuncCall slices.siftDownCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_heapSortCmpFunc :
+  WpFuncCall slices.heapSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_pdqsortCmpFunc :
+  WpFuncCall slices.pdqsortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionCmpFunc :
+  WpFuncCall slices.partitionCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionEqualCmpFunc :
+  WpFuncCall slices.partitionEqualCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partialInsertionSortCmpFunc :
+  WpFuncCall slices.partialInsertionSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_breakPatternsCmpFunc :
+  WpFuncCall slices.breakPatternsCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_choosePivotCmpFunc :
+  WpFuncCall slices.choosePivotCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_order2CmpFunc :
+  WpFuncCall slices.order2CmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianCmpFunc :
+  WpFuncCall slices.medianCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianAdjacentCmpFunc :
+  WpFuncCall slices.medianAdjacentCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_reverseRangeCmpFunc :
+  WpFuncCall slices.reverseRangeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_swapRangeCmpFunc :
+  WpFuncCall slices.swapRangeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_stableCmpFunc :
+  WpFuncCall slices.stableCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_symMergeCmpFunc :
+  WpFuncCall slices.symMergeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rotateCmpFunc :
+  WpFuncCall slices.rotateCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_insertionSortOrdered :
+  WpFuncCall slices.insertionSortOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_siftDownOrdered :
+  WpFuncCall slices.siftDownOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_heapSortOrdered :
+  WpFuncCall slices.heapSortOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_pdqsortOrdered :
+  WpFuncCall slices.pdqsortOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionOrdered :
+  WpFuncCall slices.partitionOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionEqualOrdered :
+  WpFuncCall slices.partitionEqualOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partialInsertionSortOrdered :
+  WpFuncCall slices.partialInsertionSortOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_breakPatternsOrdered :
+  WpFuncCall slices.breakPatternsOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_choosePivotOrdered :
+  WpFuncCall slices.choosePivotOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_order2Ordered :
+  WpFuncCall slices.order2Ordered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianOrdered :
+  WpFuncCall slices.medianOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianAdjacentOrdered :
+  WpFuncCall slices.medianAdjacentOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_reverseRangeOrdered :
+  WpFuncCall slices.reverseRangeOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_swapRangeOrdered :
+  WpFuncCall slices.swapRangeOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_stableOrdered :
+  WpFuncCall slices.stableOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_symMergeOrdered :
+  WpFuncCall slices.symMergeOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rotateOrdered :
+  WpFuncCall slices.rotateOrdered _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_xorshift'ptr_Next :
+  WpMethodCall (ptrT.id slices.xorshift.id) "Next" _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End slices.

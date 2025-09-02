@@ -1,5 +1,5 @@
 axiomatize = [
-  "T",
+  "*",
 ]
 translate = [
   "!*",

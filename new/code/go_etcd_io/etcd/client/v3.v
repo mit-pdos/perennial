@@ -7,41 +7,212 @@ Definition clientv3 : go_string := "go.etcd.io/etcd/client/v3".
 
 Module clientv3.
 
+Module AuthEnableResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthEnableResponse"%go. End AuthEnableResponse.
+Module AuthDisableResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthDisableResponse"%go. End AuthDisableResponse.
+Module AuthStatusResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthStatusResponse"%go. End AuthStatusResponse.
+Module AuthenticateResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthenticateResponse"%go. End AuthenticateResponse.
+Module AuthUserAddResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthUserAddResponse"%go. End AuthUserAddResponse.
+Module AuthUserDeleteResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthUserDeleteResponse"%go. End AuthUserDeleteResponse.
+Module AuthUserChangePasswordResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthUserChangePasswordResponse"%go. End AuthUserChangePasswordResponse.
+Module AuthUserGrantRoleResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthUserGrantRoleResponse"%go. End AuthUserGrantRoleResponse.
+Module AuthUserGetResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthUserGetResponse"%go. End AuthUserGetResponse.
+Module AuthUserRevokeRoleResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthUserRevokeRoleResponse"%go. End AuthUserRevokeRoleResponse.
+Module AuthRoleAddResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthRoleAddResponse"%go. End AuthRoleAddResponse.
+Module AuthRoleGrantPermissionResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthRoleGrantPermissionResponse"%go. End AuthRoleGrantPermissionResponse.
+Module AuthRoleGetResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthRoleGetResponse"%go. End AuthRoleGetResponse.
+Module AuthRoleRevokePermissionResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthRoleRevokePermissionResponse"%go. End AuthRoleRevokePermissionResponse.
+Module AuthRoleDeleteResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthRoleDeleteResponse"%go. End AuthRoleDeleteResponse.
+Module AuthUserListResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthUserListResponse"%go. End AuthUserListResponse.
+Module AuthRoleListResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthRoleListResponse"%go. End AuthRoleListResponse.
+Module PermissionType. Definition id : go_string := "go.etcd.io/etcd/client/v3.PermissionType"%go. End PermissionType.
+Module Permission. Definition id : go_string := "go.etcd.io/etcd/client/v3.Permission"%go. End Permission.
+Module UserAddOptions. Definition id : go_string := "go.etcd.io/etcd/client/v3.UserAddOptions"%go. End UserAddOptions.
+Module Auth. Definition id : go_string := "go.etcd.io/etcd/client/v3.Auth"%go. End Auth.
+Module authClient. Definition id : go_string := "go.etcd.io/etcd/client/v3.authClient"%go. End authClient.
 Module Client. Definition id : go_string := "go.etcd.io/etcd/client/v3.Client"%go. End Client.
+Module Option. Definition id : go_string := "go.etcd.io/etcd/client/v3.Option"%go. End Option.
+Module Member. Definition id : go_string := "go.etcd.io/etcd/client/v3.Member"%go. End Member.
+Module MemberListResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.MemberListResponse"%go. End MemberListResponse.
+Module MemberAddResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.MemberAddResponse"%go. End MemberAddResponse.
+Module MemberRemoveResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.MemberRemoveResponse"%go. End MemberRemoveResponse.
+Module MemberUpdateResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.MemberUpdateResponse"%go. End MemberUpdateResponse.
+Module MemberPromoteResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.MemberPromoteResponse"%go. End MemberPromoteResponse.
 Module Cluster. Definition id : go_string := "go.etcd.io/etcd/client/v3.Cluster"%go. End Cluster.
+Module cluster. Definition id : go_string := "go.etcd.io/etcd/client/v3.cluster"%go. End cluster.
+Module CompactOp. Definition id : go_string := "go.etcd.io/etcd/client/v3.CompactOp"%go. End CompactOp.
+Module CompactOption. Definition id : go_string := "go.etcd.io/etcd/client/v3.CompactOption"%go. End CompactOption.
+Module CompareTarget. Definition id : go_string := "go.etcd.io/etcd/client/v3.CompareTarget"%go. End CompareTarget.
+Module CompareResult. Definition id : go_string := "go.etcd.io/etcd/client/v3.CompareResult"%go. End CompareResult.
 Module Cmp. Definition id : go_string := "go.etcd.io/etcd/client/v3.Cmp"%go. End Cmp.
+Module Config. Definition id : go_string := "go.etcd.io/etcd/client/v3.Config"%go. End Config.
+Module ConfigSpec. Definition id : go_string := "go.etcd.io/etcd/client/v3.ConfigSpec"%go. End ConfigSpec.
+Module SecureConfig. Definition id : go_string := "go.etcd.io/etcd/client/v3.SecureConfig"%go. End SecureConfig.
+Module AuthConfig. Definition id : go_string := "go.etcd.io/etcd/client/v3.AuthConfig"%go. End AuthConfig.
+Module CompactResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.CompactResponse"%go. End CompactResponse.
 Module PutResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.PutResponse"%go. End PutResponse.
 Module GetResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.GetResponse"%go. End GetResponse.
 Module DeleteResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.DeleteResponse"%go. End DeleteResponse.
 Module TxnResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.TxnResponse"%go. End TxnResponse.
 Module KV. Definition id : go_string := "go.etcd.io/etcd/client/v3.KV"%go. End KV.
 Module OpResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.OpResponse"%go. End OpResponse.
+Module kv. Definition id : go_string := "go.etcd.io/etcd/client/v3.kv"%go. End kv.
+Module LeaseRevokeResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseRevokeResponse"%go. End LeaseRevokeResponse.
 Module LeaseID. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseID"%go. End LeaseID.
 Module LeaseGrantResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseGrantResponse"%go. End LeaseGrantResponse.
+Module LeaseKeepAliveResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseKeepAliveResponse"%go. End LeaseKeepAliveResponse.
+Module LeaseTimeToLiveResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseTimeToLiveResponse"%go. End LeaseTimeToLiveResponse.
+Module LeaseStatus. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseStatus"%go. End LeaseStatus.
+Module LeaseLeasesResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseLeasesResponse"%go. End LeaseLeasesResponse.
+Module ErrKeepAliveHalted. Definition id : go_string := "go.etcd.io/etcd/client/v3.ErrKeepAliveHalted"%go. End ErrKeepAliveHalted.
 Module Lease. Definition id : go_string := "go.etcd.io/etcd/client/v3.Lease"%go. End Lease.
+Module lessor. Definition id : go_string := "go.etcd.io/etcd/client/v3.lessor"%go. End lessor.
+Module keepAlive. Definition id : go_string := "go.etcd.io/etcd/client/v3.keepAlive"%go. End keepAlive.
+Module keepAliveCtxKey. Definition id : go_string := "go.etcd.io/etcd/client/v3.keepAliveCtxKey"%go. End keepAliveCtxKey.
+Module DefragmentResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.DefragmentResponse"%go. End DefragmentResponse.
+Module AlarmResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.AlarmResponse"%go. End AlarmResponse.
+Module AlarmMember. Definition id : go_string := "go.etcd.io/etcd/client/v3.AlarmMember"%go. End AlarmMember.
+Module StatusResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.StatusResponse"%go. End StatusResponse.
+Module HashKVResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.HashKVResponse"%go. End HashKVResponse.
+Module MoveLeaderResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.MoveLeaderResponse"%go. End MoveLeaderResponse.
+Module DowngradeResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.DowngradeResponse"%go. End DowngradeResponse.
+Module DowngradeAction. Definition id : go_string := "go.etcd.io/etcd/client/v3.DowngradeAction"%go. End DowngradeAction.
+Module Maintenance. Definition id : go_string := "go.etcd.io/etcd/client/v3.Maintenance"%go. End Maintenance.
+Module SnapshotResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.SnapshotResponse"%go. End SnapshotResponse.
+Module maintenance. Definition id : go_string := "go.etcd.io/etcd/client/v3.maintenance"%go. End maintenance.
+Module snapshotReadCloser. Definition id : go_string := "go.etcd.io/etcd/client/v3.snapshotReadCloser"%go. End snapshotReadCloser.
 Module opType. Definition id : go_string := "go.etcd.io/etcd/client/v3.opType"%go. End opType.
 Module Op. Definition id : go_string := "go.etcd.io/etcd/client/v3.Op"%go. End Op.
 Module OpOption. Definition id : go_string := "go.etcd.io/etcd/client/v3.OpOption"%go. End OpOption.
 Module LeaseOp. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseOp"%go. End LeaseOp.
 Module LeaseOption. Definition id : go_string := "go.etcd.io/etcd/client/v3.LeaseOption"%go. End LeaseOption.
+Module retryPolicy. Definition id : go_string := "go.etcd.io/etcd/client/v3.retryPolicy"%go. End retryPolicy.
+Module retryKVClient. Definition id : go_string := "go.etcd.io/etcd/client/v3.retryKVClient"%go. End retryKVClient.
+Module retryLeaseClient. Definition id : go_string := "go.etcd.io/etcd/client/v3.retryLeaseClient"%go. End retryLeaseClient.
+Module retryClusterClient. Definition id : go_string := "go.etcd.io/etcd/client/v3.retryClusterClient"%go. End retryClusterClient.
+Module retryMaintenanceClient. Definition id : go_string := "go.etcd.io/etcd/client/v3.retryMaintenanceClient"%go. End retryMaintenanceClient.
+Module retryAuthClient. Definition id : go_string := "go.etcd.io/etcd/client/v3.retryAuthClient"%go. End retryAuthClient.
+Module serverStreamingRetryingStream. Definition id : go_string := "go.etcd.io/etcd/client/v3.serverStreamingRetryingStream"%go. End serverStreamingRetryingStream.
+Module backoffFunc. Definition id : go_string := "go.etcd.io/etcd/client/v3.backoffFunc"%go. End backoffFunc.
+Module options. Definition id : go_string := "go.etcd.io/etcd/client/v3.options"%go. End options.
+Module retryOption. Definition id : go_string := "go.etcd.io/etcd/client/v3.retryOption"%go. End retryOption.
 Module SortTarget. Definition id : go_string := "go.etcd.io/etcd/client/v3.SortTarget"%go. End SortTarget.
 Module SortOrder. Definition id : go_string := "go.etcd.io/etcd/client/v3.SortOrder"%go. End SortOrder.
 Module SortOption. Definition id : go_string := "go.etcd.io/etcd/client/v3.SortOption"%go. End SortOption.
 Module Txn. Definition id : go_string := "go.etcd.io/etcd/client/v3.Txn"%go. End Txn.
+Module txn. Definition id : go_string := "go.etcd.io/etcd/client/v3.txn"%go. End txn.
 Module Event. Definition id : go_string := "go.etcd.io/etcd/client/v3.Event"%go. End Event.
 Module WatchChan. Definition id : go_string := "go.etcd.io/etcd/client/v3.WatchChan"%go. End WatchChan.
 Module Watcher. Definition id : go_string := "go.etcd.io/etcd/client/v3.Watcher"%go. End Watcher.
 Module WatchResponse. Definition id : go_string := "go.etcd.io/etcd/client/v3.WatchResponse"%go. End WatchResponse.
+Module watcher. Definition id : go_string := "go.etcd.io/etcd/client/v3.watcher"%go. End watcher.
+Module watchGRPCStream. Definition id : go_string := "go.etcd.io/etcd/client/v3.watchGRPCStream"%go. End watchGRPCStream.
+Module watchStreamRequest. Definition id : go_string := "go.etcd.io/etcd/client/v3.watchStreamRequest"%go. End watchStreamRequest.
+Module watchRequest. Definition id : go_string := "go.etcd.io/etcd/client/v3.watchRequest"%go. End watchRequest.
+Module progressRequest. Definition id : go_string := "go.etcd.io/etcd/client/v3.progressRequest"%go. End progressRequest.
+Module watcherStream. Definition id : go_string := "go.etcd.io/etcd/client/v3.watcherStream"%go. End watcherStream.
+Module valCtx. Definition id : go_string := "go.etcd.io/etcd/client/v3.valCtx"%go. End valCtx.
 
 Section code.
 Context `{ffi_syntax}.
 
 
+Axiom AuthEnableResponse : go_type.
+
+Axiom AuthDisableResponse : go_type.
+
+Axiom AuthStatusResponse : go_type.
+
+Axiom AuthenticateResponse : go_type.
+
+Axiom AuthUserAddResponse : go_type.
+
+Axiom AuthUserDeleteResponse : go_type.
+
+Axiom AuthUserChangePasswordResponse : go_type.
+
+Axiom AuthUserGrantRoleResponse : go_type.
+
+Axiom AuthUserGetResponse : go_type.
+
+Axiom AuthUserRevokeRoleResponse : go_type.
+
+Axiom AuthRoleAddResponse : go_type.
+
+Axiom AuthRoleGrantPermissionResponse : go_type.
+
+Axiom AuthRoleGetResponse : go_type.
+
+Axiom AuthRoleRevokePermissionResponse : go_type.
+
+Axiom AuthRoleDeleteResponse : go_type.
+
+Axiom AuthUserListResponse : go_type.
+
+Axiom AuthRoleListResponse : go_type.
+
+Axiom PermissionType : go_type.
+
+Axiom Permission : go_type.
+
+Axiom PermRead : expr.
+
+Axiom PermWrite : expr.
+
+Axiom PermReadWrite : expr.
+
+Axiom UserAddOptions : go_type.
+
+Axiom Auth : go_type.
+
+Axiom authClient : go_type.
+
 Definition NewAuth : go_string := "go.etcd.io/etcd/client/v3.NewAuth"%go.
+
+Axiom NewAuthⁱᵐᵖˡ : val.
 
 Definition NewAuthFromAuthClient : go_string := "go.etcd.io/etcd/client/v3.NewAuthFromAuthClient"%go.
 
+Axiom NewAuthFromAuthClientⁱᵐᵖˡ : val.
+
+Axiom authClient__Authenticateⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthEnableⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthDisableⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthStatusⁱᵐᵖˡ : val.
+
+Axiom authClient__UserAddⁱᵐᵖˡ : val.
+
+Axiom authClient__UserAddWithOptionsⁱᵐᵖˡ : val.
+
+Axiom authClient__UserDeleteⁱᵐᵖˡ : val.
+
+Axiom authClient__UserChangePasswordⁱᵐᵖˡ : val.
+
+Axiom authClient__UserGrantRoleⁱᵐᵖˡ : val.
+
+Axiom authClient__UserGetⁱᵐᵖˡ : val.
+
+Axiom authClient__UserListⁱᵐᵖˡ : val.
+
+Axiom authClient__UserRevokeRoleⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleAddⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleGrantPermissionⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleGetⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleListⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleRevokePermissionⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleDeleteⁱᵐᵖˡ : val.
+
 Definition StrToPermissionType : go_string := "go.etcd.io/etcd/client/v3.StrToPermissionType"%go.
+
+Axiom StrToPermissionTypeⁱᵐᵖˡ : val.
 
 Definition ErrNoAvailableEndpoints : go_string := "go.etcd.io/etcd/client/v3.ErrNoAvailableEndpoints"%go.
 
@@ -55,11 +226,21 @@ Axiom Client : go_type.
 
 Definition New : go_string := "go.etcd.io/etcd/client/v3.New"%go.
 
+Axiom Newⁱᵐᵖˡ : val.
+
 Definition NewCtxClient : go_string := "go.etcd.io/etcd/client/v3.NewCtxClient"%go.
+
+Axiom NewCtxClientⁱᵐᵖˡ : val.
+
+Axiom Option : go_type.
 
 Definition NewFromURL : go_string := "go.etcd.io/etcd/client/v3.NewFromURL"%go.
 
+Axiom NewFromURLⁱᵐᵖˡ : val.
+
 Definition NewFromURLs : go_string := "go.etcd.io/etcd/client/v3.NewFromURLs"%go.
+
+Axiom NewFromURLsⁱᵐᵖˡ : val.
 
 Definition WithZapLogger : go_string := "go.etcd.io/etcd/client/v3.WithZapLogger"%go.
 
@@ -76,57 +257,213 @@ Definition WithZapLoggerⁱᵐᵖˡ : val :=
        return: #())
        ))).
 
+Axiom Client__WithLoggerⁱᵐᵖˡ : val.
+
+Axiom Client__GetLoggerⁱᵐᵖˡ : val.
+
+Axiom Client__Closeⁱᵐᵖˡ : val.
+
+Axiom Client__Ctxⁱᵐᵖˡ : val.
+
+Axiom Client__Endpointsⁱᵐᵖˡ : val.
+
+Axiom Client__SetEndpointsⁱᵐᵖˡ : val.
+
+Axiom Client__Syncⁱᵐᵖˡ : val.
+
+Axiom Client__autoSyncⁱᵐᵖˡ : val.
+
+Axiom Client__dialSetupOptsⁱᵐᵖˡ : val.
+
+Axiom Client__Dialⁱᵐᵖˡ : val.
+
+Axiom Client__getTokenⁱᵐᵖˡ : val.
+
+Axiom Client__dialWithBalancerⁱᵐᵖˡ : val.
+
+Axiom Client__dialⁱᵐᵖˡ : val.
+
 Definition authority : go_string := "go.etcd.io/etcd/client/v3.authority"%go.
+
+Axiom authorityⁱᵐᵖˡ : val.
+
+Axiom Client__credentialsForEndpointⁱᵐᵖˡ : val.
 
 Definition newClient : go_string := "go.etcd.io/etcd/client/v3.newClient"%go.
 
+Axiom newClientⁱᵐᵖˡ : val.
+
+Axiom Client__roundRobinQuorumBackoffⁱᵐᵖˡ : val.
+
 Definition minSupportedVersion : go_string := "go.etcd.io/etcd/client/v3.minSupportedVersion"%go.
+
+Axiom minSupportedVersionⁱᵐᵖˡ : val.
+
+Axiom Client__checkVersionⁱᵐᵖˡ : val.
+
+Axiom Client__ActiveConnectionⁱᵐᵖˡ : val.
 
 Definition isHaltErr : go_string := "go.etcd.io/etcd/client/v3.isHaltErr"%go.
 
+Axiom isHaltErrⁱᵐᵖˡ : val.
+
 Definition isUnavailableErr : go_string := "go.etcd.io/etcd/client/v3.isUnavailableErr"%go.
+
+Axiom isUnavailableErrⁱᵐᵖˡ : val.
 
 Definition ContextError : go_string := "go.etcd.io/etcd/client/v3.ContextError"%go.
 
+Axiom ContextErrorⁱᵐᵖˡ : val.
+
 Definition canceledByCaller : go_string := "go.etcd.io/etcd/client/v3.canceledByCaller"%go.
+
+Axiom canceledByCallerⁱᵐᵖˡ : val.
 
 Definition IsConnCanceled : go_string := "go.etcd.io/etcd/client/v3.IsConnCanceled"%go.
 
+Axiom IsConnCanceledⁱᵐᵖˡ : val.
+
+Axiom Member : go_type.
+
+Axiom MemberListResponse : go_type.
+
+Axiom MemberAddResponse : go_type.
+
+Axiom MemberRemoveResponse : go_type.
+
+Axiom MemberUpdateResponse : go_type.
+
+Axiom MemberPromoteResponse : go_type.
+
 Definition Cluster : go_type := interfaceT.
+
+Axiom cluster : go_type.
 
 Definition NewCluster : go_string := "go.etcd.io/etcd/client/v3.NewCluster"%go.
 
+Axiom NewClusterⁱᵐᵖˡ : val.
+
 Definition NewClusterFromClusterClient : go_string := "go.etcd.io/etcd/client/v3.NewClusterFromClusterClient"%go.
+
+Axiom NewClusterFromClusterClientⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberAddⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberAddAsLearnerⁱᵐᵖˡ : val.
+
+Axiom cluster__memberAddⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberRemoveⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberUpdateⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberListⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberPromoteⁱᵐᵖˡ : val.
+
+Axiom CompactOp : go_type.
+
+Axiom CompactOption : go_type.
+
+Axiom CompactOp__applyCompactOptsⁱᵐᵖˡ : val.
 
 Definition OpCompact : go_string := "go.etcd.io/etcd/client/v3.OpCompact"%go.
 
+Axiom OpCompactⁱᵐᵖˡ : val.
+
+Axiom CompactOp__toRequestⁱᵐᵖˡ : val.
+
 Definition WithCompactPhysical : go_string := "go.etcd.io/etcd/client/v3.WithCompactPhysical"%go.
+
+Axiom WithCompactPhysicalⁱᵐᵖˡ : val.
+
+Axiom CompareTarget : go_type.
+
+Axiom CompareResult : go_type.
+
+Axiom CompareVersion : expr.
+
+Axiom CompareCreated : expr.
+
+Axiom CompareModified : expr.
+
+Axiom CompareValue : expr.
 
 Definition Cmp : go_type := etcdserverpb.Compare.
 
 Definition Compare : go_string := "go.etcd.io/etcd/client/v3.Compare"%go.
 
+Axiom Compareⁱᵐᵖˡ : val.
+
 Definition Value : go_string := "go.etcd.io/etcd/client/v3.Value"%go.
+
+Axiom Valueⁱᵐᵖˡ : val.
 
 Definition Version : go_string := "go.etcd.io/etcd/client/v3.Version"%go.
 
+Axiom Versionⁱᵐᵖˡ : val.
+
 Definition CreateRevision : go_string := "go.etcd.io/etcd/client/v3.CreateRevision"%go.
+
+Axiom CreateRevisionⁱᵐᵖˡ : val.
 
 Definition ModRevision : go_string := "go.etcd.io/etcd/client/v3.ModRevision"%go.
 
+Axiom ModRevisionⁱᵐᵖˡ : val.
+
 Definition LeaseValue : go_string := "go.etcd.io/etcd/client/v3.LeaseValue"%go.
+
+Axiom LeaseValueⁱᵐᵖˡ : val.
+
+Axiom Cmp__KeyBytesⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithKeyBytesⁱᵐᵖˡ : val.
+
+Axiom Cmp__ValueBytesⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithValueBytesⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithRangeⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithPrefixⁱᵐᵖˡ : val.
 
 Definition mustInt64 : go_string := "go.etcd.io/etcd/client/v3.mustInt64"%go.
 
+Axiom mustInt64ⁱᵐᵖˡ : val.
+
 Definition mustInt64orLeaseID : go_string := "go.etcd.io/etcd/client/v3.mustInt64orLeaseID"%go.
+
+Axiom mustInt64orLeaseIDⁱᵐᵖˡ : val.
+
+Axiom Config : go_type.
+
+Axiom ConfigSpec : go_type.
+
+Axiom SecureConfig : go_type.
+
+Axiom AuthConfig : go_type.
+
+Axiom ConfigSpec__Cloneⁱᵐᵖˡ : val.
+
+Axiom AuthConfig__Emptyⁱᵐᵖˡ : val.
 
 Definition NewClientConfig : go_string := "go.etcd.io/etcd/client/v3.NewClientConfig"%go.
 
+Axiom NewClientConfigⁱᵐᵖˡ : val.
+
 Definition newTLSConfig : go_string := "go.etcd.io/etcd/client/v3.newTLSConfig"%go.
+
+Axiom newTLSConfigⁱᵐᵖˡ : val.
 
 Definition WithRequireLeader : go_string := "go.etcd.io/etcd/client/v3.WithRequireLeader"%go.
 
+Axiom WithRequireLeaderⁱᵐᵖˡ : val.
+
 Definition withVersion : go_string := "go.etcd.io/etcd/client/v3.withVersion"%go.
+
+Axiom withVersionⁱᵐᵖˡ : val.
+
+Axiom CompactResponse : go_type.
 
 Definition PutResponse : go_type := etcdserverpb.PutResponse.
 
@@ -145,9 +482,45 @@ Definition OpResponse : go_type := structT [
   "txn" :: ptrT
 ].
 
+Axiom OpResponse__Putⁱᵐᵖˡ : val.
+
+Axiom OpResponse__Getⁱᵐᵖˡ : val.
+
+Axiom OpResponse__Delⁱᵐᵖˡ : val.
+
+Axiom OpResponse__Txnⁱᵐᵖˡ : val.
+
+Axiom PutResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom GetResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom DeleteResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom kv : go_type.
+
 Definition NewKV : go_string := "go.etcd.io/etcd/client/v3.NewKV"%go.
 
+Axiom NewKVⁱᵐᵖˡ : val.
+
 Definition NewKVFromKVClient : go_string := "go.etcd.io/etcd/client/v3.NewKVFromKVClient"%go.
+
+Axiom NewKVFromKVClientⁱᵐᵖˡ : val.
+
+Axiom kv__Putⁱᵐᵖˡ : val.
+
+Axiom kv__Getⁱᵐᵖˡ : val.
+
+Axiom kv__Deleteⁱᵐᵖˡ : val.
+
+Axiom kv__Compactⁱᵐᵖˡ : val.
+
+Axiom kv__Txnⁱᵐᵖˡ : val.
+
+Axiom kv__Doⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse : go_type.
 
 Definition LeaseID : go_type := int64T.
 
@@ -158,27 +531,149 @@ Definition LeaseGrantResponse : go_type := structT [
   "Error" :: stringT
 ].
 
+Axiom LeaseKeepAliveResponse : go_type.
+
+Axiom LeaseTimeToLiveResponse : go_type.
+
+Axiom LeaseStatus : go_type.
+
+Axiom LeaseLeasesResponse : go_type.
+
+Axiom defaultTTL : expr.
+
 Definition NoLease : expr := #(W64 0).
+
+Axiom retryConnWait : expr.
 
 Definition LeaseResponseChSize : go_string := "go.etcd.io/etcd/client/v3.LeaseResponseChSize"%go.
 
 Axiom LeaseResponseChSize'init : val.
 
+Axiom ErrKeepAliveHalted : go_type.
+
+Axiom ErrKeepAliveHalted__Errorⁱᵐᵖˡ : val.
+
 Definition Lease : go_type := interfaceT.
+
+Axiom lessor : go_type.
+
+Axiom keepAlive : go_type.
 
 Definition NewLease : go_string := "go.etcd.io/etcd/client/v3.NewLease"%go.
 
+Axiom NewLeaseⁱᵐᵖˡ : val.
+
 Definition NewLeaseFromLeaseClient : go_string := "go.etcd.io/etcd/client/v3.NewLeaseFromLeaseClient"%go.
+
+Axiom NewLeaseFromLeaseClientⁱᵐᵖˡ : val.
+
+Axiom lessor__Grantⁱᵐᵖˡ : val.
+
+Axiom lessor__Revokeⁱᵐᵖˡ : val.
+
+Axiom lessor__TimeToLiveⁱᵐᵖˡ : val.
+
+Axiom lessor__Leasesⁱᵐᵖˡ : val.
+
+Axiom keepAliveCtxKey : go_type.
+
+Axiom lessor__KeepAliveⁱᵐᵖˡ : val.
+
+Axiom lessor__KeepAliveOnceⁱᵐᵖˡ : val.
+
+Axiom lessor__Closeⁱᵐᵖˡ : val.
+
+Axiom lessor__keepAliveCtxCloserⁱᵐᵖˡ : val.
+
+Axiom lessor__closeRequireLeaderⁱᵐᵖˡ : val.
+
+Axiom lessor__keepAliveOnceⁱᵐᵖˡ : val.
+
+Axiom lessor__recvKeepAliveLoopⁱᵐᵖˡ : val.
+
+Axiom lessor__resetRecvⁱᵐᵖˡ : val.
+
+Axiom lessor__recvKeepAliveⁱᵐᵖˡ : val.
+
+Axiom lessor__deadlineLoopⁱᵐᵖˡ : val.
+
+Axiom lessor__sendKeepAliveLoopⁱᵐᵖˡ : val.
+
+Axiom keepAlive__closeⁱᵐᵖˡ : val.
 
 Definition init : go_string := "go.etcd.io/etcd/client/v3.init"%go.
 
+Axiom initⁱᵐᵖˡ : val.
+
 Definition SetLogger : go_string := "go.etcd.io/etcd/client/v3.SetLogger"%go.
+
+Axiom SetLoggerⁱᵐᵖˡ : val.
 
 Definition etcdClientDebugLevel : go_string := "go.etcd.io/etcd/client/v3.etcdClientDebugLevel"%go.
 
+Axiom etcdClientDebugLevelⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse : go_type.
+
+Axiom AlarmResponse : go_type.
+
+Axiom AlarmMember : go_type.
+
+Axiom StatusResponse : go_type.
+
+Axiom HashKVResponse : go_type.
+
+Axiom MoveLeaderResponse : go_type.
+
+Axiom DowngradeResponse : go_type.
+
+Axiom DowngradeAction : go_type.
+
+Axiom DowngradeValidate : expr.
+
+Axiom DowngradeEnable : expr.
+
+Axiom DowngradeCancel : expr.
+
+Axiom Maintenance : go_type.
+
+Axiom SnapshotResponse : go_type.
+
+Axiom maintenance : go_type.
+
 Definition NewMaintenance : go_string := "go.etcd.io/etcd/client/v3.NewMaintenance"%go.
 
+Axiom NewMaintenanceⁱᵐᵖˡ : val.
+
 Definition NewMaintenanceFromMaintenanceClient : go_string := "go.etcd.io/etcd/client/v3.NewMaintenanceFromMaintenanceClient"%go.
+
+Axiom NewMaintenanceFromMaintenanceClientⁱᵐᵖˡ : val.
+
+Axiom maintenance__AlarmListⁱᵐᵖˡ : val.
+
+Axiom maintenance__AlarmDisarmⁱᵐᵖˡ : val.
+
+Axiom maintenance__Defragmentⁱᵐᵖˡ : val.
+
+Axiom maintenance__Statusⁱᵐᵖˡ : val.
+
+Axiom maintenance__HashKVⁱᵐᵖˡ : val.
+
+Axiom maintenance__SnapshotWithVersionⁱᵐᵖˡ : val.
+
+Axiom maintenance__Snapshotⁱᵐᵖˡ : val.
+
+Axiom maintenance__logAndCloseWithErrorⁱᵐᵖˡ : val.
+
+Axiom maintenance__saveⁱᵐᵖˡ : val.
+
+Axiom snapshotReadCloser : go_type.
+
+Axiom snapshotReadCloser__Readⁱᵐᵖˡ : val.
+
+Axiom maintenance__MoveLeaderⁱᵐᵖˡ : val.
+
+Axiom maintenance__Downgradeⁱᵐᵖˡ : val.
 
 Definition opType : go_type := intT.
 
@@ -634,6 +1129,8 @@ Definition Op__isWriteⁱᵐᵖˡ : val :=
 
 Definition NewOp : go_string := "go.etcd.io/etcd/client/v3.NewOp"%go.
 
+Axiom NewOpⁱᵐᵖˡ : val.
+
 Definition OpGet : go_string := "go.etcd.io/etcd/client/v3.OpGet"%go.
 
 Definition IsOptsWithPrefix : go_string := "go.etcd.io/etcd/client/v3.IsOptsWithPrefix"%go.
@@ -944,6 +1441,8 @@ Definition OpTxnⁱᵐᵖˡ : val :=
 
 Definition opWatch : go_string := "go.etcd.io/etcd/client/v3.opWatch"%go.
 
+Axiom opWatchⁱᵐᵖˡ : val.
+
 Definition OpOption : go_type := funcT.
 
 (* go: op.go:330:15 *)
@@ -1042,7 +1541,11 @@ Definition WithSortⁱᵐᵖˡ : val :=
 
 Definition GetPrefixRangeEnd : go_string := "go.etcd.io/etcd/client/v3.GetPrefixRangeEnd"%go.
 
+Axiom GetPrefixRangeEndⁱᵐᵖˡ : val.
+
 Definition getPrefix : go_string := "go.etcd.io/etcd/client/v3.getPrefix"%go.
+
+Axiom getPrefixⁱᵐᵖˡ : val.
 
 Definition WithPrefix : go_string := "go.etcd.io/etcd/client/v3.WithPrefix"%go.
 
@@ -1301,6 +1804,8 @@ Definition WithLastRevⁱᵐᵖˡ : val :=
      let: "$a1" := SortDescend in
      (func_call #withTop) "$a0" "$a1")).
 
+Axiom withTopⁱᵐᵖˡ : val.
+
 Definition WithProgressNotify : go_string := "go.etcd.io/etcd/client/v3.WithProgressNotify"%go.
 
 (* WithProgressNotify makes watch server send periodic progress updates
@@ -1433,6 +1938,8 @@ Definition LeaseOp : go_type := structT [
 
 Definition LeaseOption : go_type := funcT.
 
+Axiom LeaseOp__applyOptsⁱᵐᵖˡ : val.
+
 Definition WithAttachedKeys : go_string := "go.etcd.io/etcd/client/v3.WithAttachedKeys"%go.
 
 (* WithAttachedKeys makes TimeToLive list the keys attached to the given lease ID.
@@ -1448,6 +1955,12 @@ Definition WithAttachedKeysⁱᵐᵖˡ : val :=
        ))).
 
 Definition toLeaseTimeToLiveRequest : go_string := "go.etcd.io/etcd/client/v3.toLeaseTimeToLiveRequest"%go.
+
+Axiom toLeaseTimeToLiveRequestⁱᵐᵖˡ : val.
+
+Axiom IsOptsWithPrefixⁱᵐᵖˡ : val.
+
+Axiom IsOptsWithFromKeyⁱᵐᵖˡ : val.
 
 (* go: op.go:595:14 *)
 Definition Op__IsSortOptionValidⁱᵐᵖˡ : val :=
@@ -1514,43 +2027,211 @@ Definition defaultCallOpts : go_string := "go.etcd.io/etcd/client/v3.defaultCall
 
 Axiom defaultCallOpts'init : val.
 
+Axiom MaxLeaseTTL : Z.
+
+Axiom retryPolicy : go_type.
+
+Axiom repeatable : expr.
+
+Axiom nonRepeatable : expr.
+
+Axiom retryPolicy__Stringⁱᵐᵖˡ : val.
+
 Definition isSafeRetryImmutableRPC : go_string := "go.etcd.io/etcd/client/v3.isSafeRetryImmutableRPC"%go.
+
+Axiom isSafeRetryImmutableRPCⁱᵐᵖˡ : val.
 
 Definition isSafeRetryMutableRPC : go_string := "go.etcd.io/etcd/client/v3.isSafeRetryMutableRPC"%go.
 
+Axiom isSafeRetryMutableRPCⁱᵐᵖˡ : val.
+
+Axiom retryKVClient : go_type.
+
 Definition RetryKVClient : go_string := "go.etcd.io/etcd/client/v3.RetryKVClient"%go.
+
+Axiom RetryKVClientⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Rangeⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Putⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__DeleteRangeⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Txnⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Compactⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient : go_type.
 
 Definition RetryLeaseClient : go_string := "go.etcd.io/etcd/client/v3.RetryLeaseClient"%go.
 
+Axiom RetryLeaseClientⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseTimeToLiveⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseLeasesⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseGrantⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseRevokeⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseKeepAliveⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient : go_type.
+
 Definition RetryClusterClient : go_string := "go.etcd.io/etcd/client/v3.RetryClusterClient"%go.
+
+Axiom RetryClusterClientⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberListⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberAddⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberRemoveⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberUpdateⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberPromoteⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient : go_type.
 
 Definition RetryMaintenanceClient : go_string := "go.etcd.io/etcd/client/v3.RetryMaintenanceClient"%go.
 
+Axiom RetryMaintenanceClientⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Alarmⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Statusⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Hashⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__HashKVⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Snapshotⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__MoveLeaderⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Defragmentⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Downgradeⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient : go_type.
+
 Definition RetryAuthClient : go_string := "go.etcd.io/etcd/client/v3.RetryAuthClient"%go.
+
+Axiom RetryAuthClientⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserListⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserGetⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleGetⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleListⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__AuthEnableⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__AuthDisableⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__AuthStatusⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserAddⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserDeleteⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserChangePasswordⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserGrantRoleⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserRevokeRoleⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleAddⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleDeleteⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleGrantPermissionⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleRevokePermissionⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__Authenticateⁱᵐᵖˡ : val.
+
+Axiom Client__unaryClientInterceptorⁱᵐᵖˡ : val.
+
+Axiom Client__streamClientInterceptorⁱᵐᵖˡ : val.
+
+Axiom Client__shouldRefreshTokenⁱᵐᵖˡ : val.
+
+Axiom Client__refreshTokenⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream : go_type.
+
+Axiom serverStreamingRetryingStream__setStreamⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__getStreamⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__CloseSendⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__Headerⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__Trailerⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__receiveMsgAndIndicateRetryⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__reestablishStreamAndResendBufferⁱᵐᵖˡ : val.
 
 Definition waitRetryBackoff : go_string := "go.etcd.io/etcd/client/v3.waitRetryBackoff"%go.
 
+Axiom waitRetryBackoffⁱᵐᵖˡ : val.
+
 Definition isSafeRetry : go_string := "go.etcd.io/etcd/client/v3.isSafeRetry"%go.
+
+Axiom isSafeRetryⁱᵐᵖˡ : val.
 
 Definition isContextError : go_string := "go.etcd.io/etcd/client/v3.isContextError"%go.
 
+Axiom isContextErrorⁱᵐᵖˡ : val.
+
 Definition contextErrToGRPCErr : go_string := "go.etcd.io/etcd/client/v3.contextErrToGRPCErr"%go.
+
+Axiom contextErrToGRPCErrⁱᵐᵖˡ : val.
 
 Definition defaultOptions : go_string := "go.etcd.io/etcd/client/v3.defaultOptions"%go.
 
 Axiom defaultOptions'init : val.
 
+Axiom backoffFunc : go_type.
+
 Definition withRepeatablePolicy : go_string := "go.etcd.io/etcd/client/v3.withRepeatablePolicy"%go.
+
+Axiom withRepeatablePolicyⁱᵐᵖˡ : val.
 
 Definition withMax : go_string := "go.etcd.io/etcd/client/v3.withMax"%go.
 
+Axiom withMaxⁱᵐᵖˡ : val.
+
 Definition withBackoff : go_string := "go.etcd.io/etcd/client/v3.withBackoff"%go.
+
+Axiom withBackoffⁱᵐᵖˡ : val.
+
+Axiom options : go_type.
+
+Axiom retryOption : go_type.
 
 Definition reuseOrNewWithCallOptions : go_string := "go.etcd.io/etcd/client/v3.reuseOrNewWithCallOptions"%go.
 
+Axiom reuseOrNewWithCallOptionsⁱᵐᵖˡ : val.
+
 Definition filterCallOptions : go_string := "go.etcd.io/etcd/client/v3.filterCallOptions"%go.
 
+Axiom filterCallOptionsⁱᵐᵖˡ : val.
+
 Definition backoffLinearWithJitter : go_string := "go.etcd.io/etcd/client/v3.backoffLinearWithJitter"%go.
+
+Axiom backoffLinearWithJitterⁱᵐᵖˡ : val.
 
 Definition SortByVersion : expr := #(W64 1).
 
@@ -1558,9 +2239,29 @@ Definition SortByValue : expr := #(W64 4).
 
 Definition Txn : go_type := interfaceT.
 
+Axiom txn : go_type.
+
+Axiom txn__Ifⁱᵐᵖˡ : val.
+
+Axiom txn__Thenⁱᵐᵖˡ : val.
+
+Axiom txn__Elseⁱᵐᵖˡ : val.
+
+Axiom txn__Commitⁱᵐᵖˡ : val.
+
 Definition jitterUp : go_string := "go.etcd.io/etcd/client/v3.jitterUp"%go.
 
+Axiom jitterUpⁱᵐᵖˡ : val.
+
 Definition EventTypeDelete : expr := #(W32 1).
+
+Axiom EventTypePut : expr.
+
+Axiom closeSendErrTimeout : expr.
+
+Axiom AutoWatchID : Z.
+
+Axiom InvalidWatchID : Z.
 
 Definition Event : go_type := mvccpb.Event.
 
@@ -1578,9 +2279,33 @@ Definition WatchChan : go_type := chanT WatchResponse.
 
 Definition Watcher : go_type := interfaceT.
 
+Axiom Event__IsCreateⁱᵐᵖˡ : val.
+
+Axiom Event__IsModifyⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Errⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__IsProgressNotifyⁱᵐᵖˡ : val.
+
+Axiom watcher : go_type.
+
+Axiom watchGRPCStream : go_type.
+
+Axiom watchStreamRequest : go_type.
+
+Axiom watchRequest : go_type.
+
+Axiom progressRequest : go_type.
+
+Axiom watcherStream : go_type.
+
 Definition NewWatcher : go_string := "go.etcd.io/etcd/client/v3.NewWatcher"%go.
 
+Axiom NewWatcherⁱᵐᵖˡ : val.
+
 Definition NewWatchFromWatchClient : go_string := "go.etcd.io/etcd/client/v3.NewWatchFromWatchClient"%go.
+
+Axiom NewWatchFromWatchClientⁱᵐᵖˡ : val.
 
 Definition valCtxCh : go_string := "go.etcd.io/etcd/client/v3.valCtxCh"%go.
 
@@ -1590,63 +2315,635 @@ Definition zeroTime : go_string := "go.etcd.io/etcd/client/v3.zeroTime"%go.
 
 Axiom zeroTime'init : val.
 
+Axiom valCtx : go_type.
+
+Axiom valCtx__Deadlineⁱᵐᵖˡ : val.
+
+Axiom valCtx__Doneⁱᵐᵖˡ : val.
+
+Axiom valCtx__Errⁱᵐᵖˡ : val.
+
+Axiom watcher__newWatcherGRPCStreamⁱᵐᵖˡ : val.
+
+Axiom watcher__Watchⁱᵐᵖˡ : val.
+
+Axiom watcher__Closeⁱᵐᵖˡ : val.
+
+Axiom watcher__RequestProgressⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__closeⁱᵐᵖˡ : val.
+
+Axiom watcher__closeStreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__addSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__sendCloseSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__closeSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__runⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__nextResumeⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__dispatchEventⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__broadcastResponseⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__unicastResponseⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__serveWatchClientⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__serveSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__newWatchClientⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__waitCancelSubstreamsⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__joinSubstreamsⁱᵐᵖˡ : val.
+
 Definition maxBackoff : go_string := "go.etcd.io/etcd/client/v3.maxBackoff"%go.
 
 Axiom maxBackoff'init : val.
 
+Axiom watchGRPCStream__backoffIfUnavailableⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__openWatchClientⁱᵐᵖˡ : val.
+
+Axiom watchRequest__toPBⁱᵐᵖˡ : val.
+
+Axiom progressRequest__toPBⁱᵐᵖˡ : val.
+
 Definition streamKeyFromCtx : go_string := "go.etcd.io/etcd/client/v3.streamKeyFromCtx"%go.
+
+Axiom streamKeyFromCtxⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(WithZapLogger, WithZapLoggerⁱᵐᵖˡ); (OpGet, OpGetⁱᵐᵖˡ); (OpDelete, OpDeleteⁱᵐᵖˡ); (OpPut, OpPutⁱᵐᵖˡ); (OpTxn, OpTxnⁱᵐᵖˡ); (WithLease, WithLeaseⁱᵐᵖˡ); (WithLimit, WithLimitⁱᵐᵖˡ); (WithRev, WithRevⁱᵐᵖˡ); (WithSort, WithSortⁱᵐᵖˡ); (WithPrefix, WithPrefixⁱᵐᵖˡ); (WithRange, WithRangeⁱᵐᵖˡ); (WithFromKey, WithFromKeyⁱᵐᵖˡ); (WithSerializable, WithSerializableⁱᵐᵖˡ); (WithKeysOnly, WithKeysOnlyⁱᵐᵖˡ); (WithCountOnly, WithCountOnlyⁱᵐᵖˡ); (WithMinModRev, WithMinModRevⁱᵐᵖˡ); (WithMaxModRev, WithMaxModRevⁱᵐᵖˡ); (WithMinCreateRev, WithMinCreateRevⁱᵐᵖˡ); (WithMaxCreateRev, WithMaxCreateRevⁱᵐᵖˡ); (WithFirstCreate, WithFirstCreateⁱᵐᵖˡ); (WithLastCreate, WithLastCreateⁱᵐᵖˡ); (WithFirstKey, WithFirstKeyⁱᵐᵖˡ); (WithLastKey, WithLastKeyⁱᵐᵖˡ); (WithFirstRev, WithFirstRevⁱᵐᵖˡ); (WithLastRev, WithLastRevⁱᵐᵖˡ); (WithProgressNotify, WithProgressNotifyⁱᵐᵖˡ); (WithCreatedNotify, WithCreatedNotifyⁱᵐᵖˡ); (WithFilterPut, WithFilterPutⁱᵐᵖˡ); (WithFilterDelete, WithFilterDeleteⁱᵐᵖˡ); (WithPrevKV, WithPrevKVⁱᵐᵖˡ); (WithFragment, WithFragmentⁱᵐᵖˡ); (WithIgnoreValue, WithIgnoreValueⁱᵐᵖˡ); (WithIgnoreLease, WithIgnoreLeaseⁱᵐᵖˡ); (WithAttachedKeys, WithAttachedKeysⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewAuth, NewAuthⁱᵐᵖˡ); (NewAuthFromAuthClient, NewAuthFromAuthClientⁱᵐᵖˡ); (StrToPermissionType, StrToPermissionTypeⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (NewCtxClient, NewCtxClientⁱᵐᵖˡ); (NewFromURL, NewFromURLⁱᵐᵖˡ); (NewFromURLs, NewFromURLsⁱᵐᵖˡ); (WithZapLogger, WithZapLoggerⁱᵐᵖˡ); (authority, authorityⁱᵐᵖˡ); (newClient, newClientⁱᵐᵖˡ); (minSupportedVersion, minSupportedVersionⁱᵐᵖˡ); (isHaltErr, isHaltErrⁱᵐᵖˡ); (isUnavailableErr, isUnavailableErrⁱᵐᵖˡ); (ContextError, ContextErrorⁱᵐᵖˡ); (canceledByCaller, canceledByCallerⁱᵐᵖˡ); (IsConnCanceled, IsConnCanceledⁱᵐᵖˡ); (NewCluster, NewClusterⁱᵐᵖˡ); (NewClusterFromClusterClient, NewClusterFromClusterClientⁱᵐᵖˡ); (OpCompact, OpCompactⁱᵐᵖˡ); (WithCompactPhysical, WithCompactPhysicalⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (Value, Valueⁱᵐᵖˡ); (Version, Versionⁱᵐᵖˡ); (CreateRevision, CreateRevisionⁱᵐᵖˡ); (ModRevision, ModRevisionⁱᵐᵖˡ); (LeaseValue, LeaseValueⁱᵐᵖˡ); (mustInt64, mustInt64ⁱᵐᵖˡ); (mustInt64orLeaseID, mustInt64orLeaseIDⁱᵐᵖˡ); (NewClientConfig, NewClientConfigⁱᵐᵖˡ); (newTLSConfig, newTLSConfigⁱᵐᵖˡ); (WithRequireLeader, WithRequireLeaderⁱᵐᵖˡ); (withVersion, withVersionⁱᵐᵖˡ); (NewKV, NewKVⁱᵐᵖˡ); (NewKVFromKVClient, NewKVFromKVClientⁱᵐᵖˡ); (NewLease, NewLeaseⁱᵐᵖˡ); (NewLeaseFromLeaseClient, NewLeaseFromLeaseClientⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (SetLogger, SetLoggerⁱᵐᵖˡ); (etcdClientDebugLevel, etcdClientDebugLevelⁱᵐᵖˡ); (NewMaintenance, NewMaintenanceⁱᵐᵖˡ); (NewMaintenanceFromMaintenanceClient, NewMaintenanceFromMaintenanceClientⁱᵐᵖˡ); (NewOp, NewOpⁱᵐᵖˡ); (OpGet, OpGetⁱᵐᵖˡ); (OpDelete, OpDeleteⁱᵐᵖˡ); (OpPut, OpPutⁱᵐᵖˡ); (OpTxn, OpTxnⁱᵐᵖˡ); (opWatch, opWatchⁱᵐᵖˡ); (WithLease, WithLeaseⁱᵐᵖˡ); (WithLimit, WithLimitⁱᵐᵖˡ); (WithRev, WithRevⁱᵐᵖˡ); (WithSort, WithSortⁱᵐᵖˡ); (GetPrefixRangeEnd, GetPrefixRangeEndⁱᵐᵖˡ); (getPrefix, getPrefixⁱᵐᵖˡ); (WithPrefix, WithPrefixⁱᵐᵖˡ); (WithRange, WithRangeⁱᵐᵖˡ); (WithFromKey, WithFromKeyⁱᵐᵖˡ); (WithSerializable, WithSerializableⁱᵐᵖˡ); (WithKeysOnly, WithKeysOnlyⁱᵐᵖˡ); (WithCountOnly, WithCountOnlyⁱᵐᵖˡ); (WithMinModRev, WithMinModRevⁱᵐᵖˡ); (WithMaxModRev, WithMaxModRevⁱᵐᵖˡ); (WithMinCreateRev, WithMinCreateRevⁱᵐᵖˡ); (WithMaxCreateRev, WithMaxCreateRevⁱᵐᵖˡ); (WithFirstCreate, WithFirstCreateⁱᵐᵖˡ); (WithLastCreate, WithLastCreateⁱᵐᵖˡ); (WithFirstKey, WithFirstKeyⁱᵐᵖˡ); (WithLastKey, WithLastKeyⁱᵐᵖˡ); (WithFirstRev, WithFirstRevⁱᵐᵖˡ); (WithLastRev, WithLastRevⁱᵐᵖˡ); (withTop, withTopⁱᵐᵖˡ); (WithProgressNotify, WithProgressNotifyⁱᵐᵖˡ); (WithCreatedNotify, WithCreatedNotifyⁱᵐᵖˡ); (WithFilterPut, WithFilterPutⁱᵐᵖˡ); (WithFilterDelete, WithFilterDeleteⁱᵐᵖˡ); (WithPrevKV, WithPrevKVⁱᵐᵖˡ); (WithFragment, WithFragmentⁱᵐᵖˡ); (WithIgnoreValue, WithIgnoreValueⁱᵐᵖˡ); (WithIgnoreLease, WithIgnoreLeaseⁱᵐᵖˡ); (WithAttachedKeys, WithAttachedKeysⁱᵐᵖˡ); (toLeaseTimeToLiveRequest, toLeaseTimeToLiveRequestⁱᵐᵖˡ); (IsOptsWithPrefix, IsOptsWithPrefixⁱᵐᵖˡ); (IsOptsWithFromKey, IsOptsWithFromKeyⁱᵐᵖˡ); (isSafeRetryImmutableRPC, isSafeRetryImmutableRPCⁱᵐᵖˡ); (isSafeRetryMutableRPC, isSafeRetryMutableRPCⁱᵐᵖˡ); (RetryKVClient, RetryKVClientⁱᵐᵖˡ); (RetryLeaseClient, RetryLeaseClientⁱᵐᵖˡ); (RetryClusterClient, RetryClusterClientⁱᵐᵖˡ); (RetryMaintenanceClient, RetryMaintenanceClientⁱᵐᵖˡ); (RetryAuthClient, RetryAuthClientⁱᵐᵖˡ); (waitRetryBackoff, waitRetryBackoffⁱᵐᵖˡ); (isSafeRetry, isSafeRetryⁱᵐᵖˡ); (isContextError, isContextErrorⁱᵐᵖˡ); (contextErrToGRPCErr, contextErrToGRPCErrⁱᵐᵖˡ); (withRepeatablePolicy, withRepeatablePolicyⁱᵐᵖˡ); (withMax, withMaxⁱᵐᵖˡ); (withBackoff, withBackoffⁱᵐᵖˡ); (reuseOrNewWithCallOptions, reuseOrNewWithCallOptionsⁱᵐᵖˡ); (filterCallOptions, filterCallOptionsⁱᵐᵖˡ); (backoffLinearWithJitter, backoffLinearWithJitterⁱᵐᵖˡ); (jitterUp, jitterUpⁱᵐᵖˡ); (NewWatcher, NewWatcherⁱᵐᵖˡ); (NewWatchFromWatchClient, NewWatchFromWatchClientⁱᵐᵖˡ); (streamKeyFromCtx, streamKeyFromCtxⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Client.id, []); (ptrT.id Client.id, []); (Cmp.id, []); (ptrT.id Cmp.id, []); (PutResponse.id, []); (ptrT.id PutResponse.id, []); (GetResponse.id, []); (ptrT.id GetResponse.id, []); (DeleteResponse.id, []); (ptrT.id DeleteResponse.id, []); (TxnResponse.id, []); (ptrT.id TxnResponse.id, []); (OpResponse.id, []); (ptrT.id OpResponse.id, []); (LeaseID.id, []); (ptrT.id LeaseID.id, []); (LeaseGrantResponse.id, []); (ptrT.id LeaseGrantResponse.id, []); (opType.id, []); (ptrT.id opType.id, []); (Op.id, [("IsCountOnly"%go, Op__IsCountOnlyⁱᵐᵖˡ); ("IsDelete"%go, Op__IsDeleteⁱᵐᵖˡ); ("IsGet"%go, Op__IsGetⁱᵐᵖˡ); ("IsKeysOnly"%go, Op__IsKeysOnlyⁱᵐᵖˡ); ("IsOptsWithFromKey"%go, Op__IsOptsWithFromKeyⁱᵐᵖˡ); ("IsOptsWithPrefix"%go, Op__IsOptsWithPrefixⁱᵐᵖˡ); ("IsPut"%go, Op__IsPutⁱᵐᵖˡ); ("IsSerializable"%go, Op__IsSerializableⁱᵐᵖˡ); ("IsSortOptionValid"%go, Op__IsSortOptionValidⁱᵐᵖˡ); ("IsTxn"%go, Op__IsTxnⁱᵐᵖˡ); ("KeyBytes"%go, Op__KeyBytesⁱᵐᵖˡ); ("MaxCreateRev"%go, Op__MaxCreateRevⁱᵐᵖˡ); ("MaxModRev"%go, Op__MaxModRevⁱᵐᵖˡ); ("MinCreateRev"%go, Op__MinCreateRevⁱᵐᵖˡ); ("MinModRev"%go, Op__MinModRevⁱᵐᵖˡ); ("RangeBytes"%go, Op__RangeBytesⁱᵐᵖˡ); ("Rev"%go, Op__Revⁱᵐᵖˡ); ("Txn"%go, Op__Txnⁱᵐᵖˡ); ("ValueBytes"%go, Op__ValueBytesⁱᵐᵖˡ); ("isWrite"%go, Op__isWriteⁱᵐᵖˡ); ("toRangeRequest"%go, Op__toRangeRequestⁱᵐᵖˡ); ("toRequestOp"%go, Op__toRequestOpⁱᵐᵖˡ); ("toTxnRequest"%go, Op__toTxnRequestⁱᵐᵖˡ)]); (ptrT.id Op.id, [("IsCountOnly"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsCountOnly" (![#Op] "$recvAddr")
-                 )%V); ("IsDelete"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsDelete" (![#Op] "$recvAddr")
-                 )%V); ("IsGet"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsGet" (![#Op] "$recvAddr")
-                 )%V); ("IsKeysOnly"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsKeysOnly" (![#Op] "$recvAddr")
-                 )%V); ("IsOptsWithFromKey"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsOptsWithFromKey" (![#Op] "$recvAddr")
-                 )%V); ("IsOptsWithPrefix"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsOptsWithPrefix" (![#Op] "$recvAddr")
-                 )%V); ("IsPut"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsPut" (![#Op] "$recvAddr")
-                 )%V); ("IsSerializable"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsSerializable" (![#Op] "$recvAddr")
-                 )%V); ("IsSortOptionValid"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsSortOptionValid" (![#Op] "$recvAddr")
-                 )%V); ("IsTxn"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"IsTxn" (![#Op] "$recvAddr")
-                 )%V); ("KeyBytes"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"KeyBytes" (![#Op] "$recvAddr")
-                 )%V); ("MaxCreateRev"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"MaxCreateRev" (![#Op] "$recvAddr")
-                 )%V); ("MaxModRev"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"MaxModRev" (![#Op] "$recvAddr")
-                 )%V); ("MinCreateRev"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"MinCreateRev" (![#Op] "$recvAddr")
-                 )%V); ("MinModRev"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"MinModRev" (![#Op] "$recvAddr")
-                 )%V); ("RangeBytes"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"RangeBytes" (![#Op] "$recvAddr")
-                 )%V); ("Rev"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"Rev" (![#Op] "$recvAddr")
-                 )%V); ("Txn"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"Txn" (![#Op] "$recvAddr")
-                 )%V); ("ValueBytes"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"ValueBytes" (![#Op] "$recvAddr")
-                 )%V); ("WithKeyBytes"%go, Op__WithKeyBytesⁱᵐᵖˡ); ("WithRangeBytes"%go, Op__WithRangeBytesⁱᵐᵖˡ); ("WithValueBytes"%go, Op__WithValueBytesⁱᵐᵖˡ); ("applyOpts"%go, Op__applyOptsⁱᵐᵖˡ); ("isWrite"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"isWrite" (![#Op] "$recvAddr")
-                 )%V); ("toRangeRequest"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"toRangeRequest" (![#Op] "$recvAddr")
-                 )%V); ("toRequestOp"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"toRequestOp" (![#Op] "$recvAddr")
-                 )%V); ("toTxnRequest"%go, (λ: "$recvAddr",
-                 method_call #v3.clientv3 #"Op" #"toTxnRequest" (![#Op] "$recvAddr")
-                 )%V)]); (OpOption.id, []); (ptrT.id OpOption.id, []); (LeaseOp.id, []); (ptrT.id LeaseOp.id, []); (LeaseOption.id, []); (ptrT.id LeaseOption.id, []); (SortTarget.id, []); (ptrT.id SortTarget.id, []); (SortOrder.id, []); (ptrT.id SortOrder.id, []); (SortOption.id, []); (ptrT.id SortOption.id, []); (Event.id, []); (ptrT.id Event.id, []); (WatchChan.id, []); (ptrT.id WatchChan.id, []); (WatchResponse.id, []); (ptrT.id WatchResponse.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(AuthEnableResponse.id, []); (ptrT.id AuthEnableResponse.id, []); (AuthDisableResponse.id, []); (ptrT.id AuthDisableResponse.id, []); (AuthStatusResponse.id, []); (ptrT.id AuthStatusResponse.id, []); (AuthenticateResponse.id, []); (ptrT.id AuthenticateResponse.id, []); (AuthUserAddResponse.id, []); (ptrT.id AuthUserAddResponse.id, []); (AuthUserDeleteResponse.id, []); (ptrT.id AuthUserDeleteResponse.id, []); (AuthUserChangePasswordResponse.id, []); (ptrT.id AuthUserChangePasswordResponse.id, []); (AuthUserGrantRoleResponse.id, []); (ptrT.id AuthUserGrantRoleResponse.id, []); (AuthUserGetResponse.id, []); (ptrT.id AuthUserGetResponse.id, []); (AuthUserRevokeRoleResponse.id, []); (ptrT.id AuthUserRevokeRoleResponse.id, []); (AuthRoleAddResponse.id, []); (ptrT.id AuthRoleAddResponse.id, []); (AuthRoleGrantPermissionResponse.id, []); (ptrT.id AuthRoleGrantPermissionResponse.id, []); (AuthRoleGetResponse.id, []); (ptrT.id AuthRoleGetResponse.id, []); (AuthRoleRevokePermissionResponse.id, []); (ptrT.id AuthRoleRevokePermissionResponse.id, []); (AuthRoleDeleteResponse.id, []); (ptrT.id AuthRoleDeleteResponse.id, []); (AuthUserListResponse.id, []); (ptrT.id AuthUserListResponse.id, []); (AuthRoleListResponse.id, []); (ptrT.id AuthRoleListResponse.id, []); (PermissionType.id, []); (ptrT.id PermissionType.id, []); (Permission.id, []); (ptrT.id Permission.id, []); (UserAddOptions.id, []); (ptrT.id UserAddOptions.id, []); (authClient.id, []); (ptrT.id authClient.id, [("AuthDisable"%go, authClient__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, authClient__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, authClient__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, authClient__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, authClient__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, authClient__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, authClient__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, authClient__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, authClient__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, authClient__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, authClient__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, authClient__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, authClient__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, authClient__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, authClient__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, authClient__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, authClient__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, authClient__UserRevokeRoleⁱᵐᵖˡ)]); (Client.id, [("AlarmDisarm"%go, (λ: "$r",
+                 method_call #Maintenance.id #"AlarmDisarm"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("AlarmList"%go, (λ: "$r",
+                 method_call #Maintenance.id #"AlarmList"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("AuthDisable"%go, (λ: "$r",
+                 method_call #Auth.id #"AuthDisable"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("AuthEnable"%go, (λ: "$r",
+                 method_call #Auth.id #"AuthEnable"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("AuthStatus"%go, (λ: "$r",
+                 method_call #Auth.id #"AuthStatus"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("Authenticate"%go, (λ: "$r",
+                 method_call #Auth.id #"Authenticate"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("Compact"%go, (λ: "$r",
+                 method_call #KV.id #"Compact"%go (struct.field_get #Client #"KV"%go "$r")
+                 )%V); ("Defragment"%go, (λ: "$r",
+                 method_call #Maintenance.id #"Defragment"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("Delete"%go, (λ: "$r",
+                 method_call #KV.id #"Delete"%go (struct.field_get #Client #"KV"%go "$r")
+                 )%V); ("Do"%go, (λ: "$r",
+                 method_call #KV.id #"Do"%go (struct.field_get #Client #"KV"%go "$r")
+                 )%V); ("Downgrade"%go, (λ: "$r",
+                 method_call #Maintenance.id #"Downgrade"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("Get"%go, (λ: "$r",
+                 method_call #KV.id #"Get"%go (struct.field_get #Client #"KV"%go "$r")
+                 )%V); ("Grant"%go, (λ: "$r",
+                 method_call #Lease.id #"Grant"%go (struct.field_get #Client #"Lease"%go "$r")
+                 )%V); ("HashKV"%go, (λ: "$r",
+                 method_call #Maintenance.id #"HashKV"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("KeepAlive"%go, (λ: "$r",
+                 method_call #Lease.id #"KeepAlive"%go (struct.field_get #Client #"Lease"%go "$r")
+                 )%V); ("KeepAliveOnce"%go, (λ: "$r",
+                 method_call #Lease.id #"KeepAliveOnce"%go (struct.field_get #Client #"Lease"%go "$r")
+                 )%V); ("Leases"%go, (λ: "$r",
+                 method_call #Lease.id #"Leases"%go (struct.field_get #Client #"Lease"%go "$r")
+                 )%V); ("MemberAdd"%go, (λ: "$r",
+                 method_call #Cluster.id #"MemberAdd"%go (struct.field_get #Client #"Cluster"%go "$r")
+                 )%V); ("MemberAddAsLearner"%go, (λ: "$r",
+                 method_call #Cluster.id #"MemberAddAsLearner"%go (struct.field_get #Client #"Cluster"%go "$r")
+                 )%V); ("MemberList"%go, (λ: "$r",
+                 method_call #Cluster.id #"MemberList"%go (struct.field_get #Client #"Cluster"%go "$r")
+                 )%V); ("MemberPromote"%go, (λ: "$r",
+                 method_call #Cluster.id #"MemberPromote"%go (struct.field_get #Client #"Cluster"%go "$r")
+                 )%V); ("MemberRemove"%go, (λ: "$r",
+                 method_call #Cluster.id #"MemberRemove"%go (struct.field_get #Client #"Cluster"%go "$r")
+                 )%V); ("MemberUpdate"%go, (λ: "$r",
+                 method_call #Cluster.id #"MemberUpdate"%go (struct.field_get #Client #"Cluster"%go "$r")
+                 )%V); ("MoveLeader"%go, (λ: "$r",
+                 method_call #Maintenance.id #"MoveLeader"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("Put"%go, (λ: "$r",
+                 method_call #KV.id #"Put"%go (struct.field_get #Client #"KV"%go "$r")
+                 )%V); ("RequestProgress"%go, (λ: "$r",
+                 method_call #Watcher.id #"RequestProgress"%go (struct.field_get #Client #"Watcher"%go "$r")
+                 )%V); ("Revoke"%go, (λ: "$r",
+                 method_call #Lease.id #"Revoke"%go (struct.field_get #Client #"Lease"%go "$r")
+                 )%V); ("RoleAdd"%go, (λ: "$r",
+                 method_call #Auth.id #"RoleAdd"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("RoleDelete"%go, (λ: "$r",
+                 method_call #Auth.id #"RoleDelete"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("RoleGet"%go, (λ: "$r",
+                 method_call #Auth.id #"RoleGet"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("RoleGrantPermission"%go, (λ: "$r",
+                 method_call #Auth.id #"RoleGrantPermission"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("RoleList"%go, (λ: "$r",
+                 method_call #Auth.id #"RoleList"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("RoleRevokePermission"%go, (λ: "$r",
+                 method_call #Auth.id #"RoleRevokePermission"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("Snapshot"%go, (λ: "$r",
+                 method_call #Maintenance.id #"Snapshot"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("SnapshotWithVersion"%go, (λ: "$r",
+                 method_call #Maintenance.id #"SnapshotWithVersion"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("Status"%go, (λ: "$r",
+                 method_call #Maintenance.id #"Status"%go (struct.field_get #Client #"Maintenance"%go "$r")
+                 )%V); ("TimeToLive"%go, (λ: "$r",
+                 method_call #Lease.id #"TimeToLive"%go (struct.field_get #Client #"Lease"%go "$r")
+                 )%V); ("Txn"%go, (λ: "$r",
+                 method_call #KV.id #"Txn"%go (struct.field_get #Client #"KV"%go "$r")
+                 )%V); ("UserAdd"%go, (λ: "$r",
+                 method_call #Auth.id #"UserAdd"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("UserAddWithOptions"%go, (λ: "$r",
+                 method_call #Auth.id #"UserAddWithOptions"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("UserChangePassword"%go, (λ: "$r",
+                 method_call #Auth.id #"UserChangePassword"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("UserDelete"%go, (λ: "$r",
+                 method_call #Auth.id #"UserDelete"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("UserGet"%go, (λ: "$r",
+                 method_call #Auth.id #"UserGet"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("UserGrantRole"%go, (λ: "$r",
+                 method_call #Auth.id #"UserGrantRole"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("UserList"%go, (λ: "$r",
+                 method_call #Auth.id #"UserList"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("UserRevokeRole"%go, (λ: "$r",
+                 method_call #Auth.id #"UserRevokeRole"%go (struct.field_get #Client #"Auth"%go "$r")
+                 )%V); ("Watch"%go, (λ: "$r",
+                 method_call #Watcher.id #"Watch"%go (struct.field_get #Client #"Watcher"%go "$r")
+                 )%V)]); (ptrT.id Client.id, [("ActiveConnection"%go, Client__ActiveConnectionⁱᵐᵖˡ); ("AlarmDisarm"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"AlarmDisarm"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("AlarmList"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"AlarmList"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("AuthDisable"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"AuthDisable"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("AuthEnable"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"AuthEnable"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("AuthStatus"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"AuthStatus"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("Authenticate"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"Authenticate"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("Close"%go, Client__Closeⁱᵐᵖˡ); ("Compact"%go, (λ: "$r",
+                 method_call #(ptrT.id KV.id) #"Compact"%go (struct.field_ref #Client #"KV"%go "$r")
+                 )%V); ("Ctx"%go, Client__Ctxⁱᵐᵖˡ); ("Defragment"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"Defragment"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("Delete"%go, (λ: "$r",
+                 method_call #(ptrT.id KV.id) #"Delete"%go (struct.field_ref #Client #"KV"%go "$r")
+                 )%V); ("Dial"%go, Client__Dialⁱᵐᵖˡ); ("Do"%go, (λ: "$r",
+                 method_call #(ptrT.id KV.id) #"Do"%go (struct.field_ref #Client #"KV"%go "$r")
+                 )%V); ("Downgrade"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"Downgrade"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("Endpoints"%go, Client__Endpointsⁱᵐᵖˡ); ("Get"%go, (λ: "$r",
+                 method_call #(ptrT.id KV.id) #"Get"%go (struct.field_ref #Client #"KV"%go "$r")
+                 )%V); ("GetLogger"%go, Client__GetLoggerⁱᵐᵖˡ); ("Grant"%go, (λ: "$r",
+                 method_call #(ptrT.id Lease.id) #"Grant"%go (struct.field_ref #Client #"Lease"%go "$r")
+                 )%V); ("HashKV"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"HashKV"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("KeepAlive"%go, (λ: "$r",
+                 method_call #(ptrT.id Lease.id) #"KeepAlive"%go (struct.field_ref #Client #"Lease"%go "$r")
+                 )%V); ("KeepAliveOnce"%go, (λ: "$r",
+                 method_call #(ptrT.id Lease.id) #"KeepAliveOnce"%go (struct.field_ref #Client #"Lease"%go "$r")
+                 )%V); ("Leases"%go, (λ: "$r",
+                 method_call #(ptrT.id Lease.id) #"Leases"%go (struct.field_ref #Client #"Lease"%go "$r")
+                 )%V); ("MemberAdd"%go, (λ: "$r",
+                 method_call #(ptrT.id Cluster.id) #"MemberAdd"%go (struct.field_ref #Client #"Cluster"%go "$r")
+                 )%V); ("MemberAddAsLearner"%go, (λ: "$r",
+                 method_call #(ptrT.id Cluster.id) #"MemberAddAsLearner"%go (struct.field_ref #Client #"Cluster"%go "$r")
+                 )%V); ("MemberList"%go, (λ: "$r",
+                 method_call #(ptrT.id Cluster.id) #"MemberList"%go (struct.field_ref #Client #"Cluster"%go "$r")
+                 )%V); ("MemberPromote"%go, (λ: "$r",
+                 method_call #(ptrT.id Cluster.id) #"MemberPromote"%go (struct.field_ref #Client #"Cluster"%go "$r")
+                 )%V); ("MemberRemove"%go, (λ: "$r",
+                 method_call #(ptrT.id Cluster.id) #"MemberRemove"%go (struct.field_ref #Client #"Cluster"%go "$r")
+                 )%V); ("MemberUpdate"%go, (λ: "$r",
+                 method_call #(ptrT.id Cluster.id) #"MemberUpdate"%go (struct.field_ref #Client #"Cluster"%go "$r")
+                 )%V); ("MoveLeader"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"MoveLeader"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("Put"%go, (λ: "$r",
+                 method_call #(ptrT.id KV.id) #"Put"%go (struct.field_ref #Client #"KV"%go "$r")
+                 )%V); ("RequestProgress"%go, (λ: "$r",
+                 method_call #(ptrT.id Watcher.id) #"RequestProgress"%go (struct.field_ref #Client #"Watcher"%go "$r")
+                 )%V); ("Revoke"%go, (λ: "$r",
+                 method_call #(ptrT.id Lease.id) #"Revoke"%go (struct.field_ref #Client #"Lease"%go "$r")
+                 )%V); ("RoleAdd"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"RoleAdd"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("RoleDelete"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"RoleDelete"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("RoleGet"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"RoleGet"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("RoleGrantPermission"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"RoleGrantPermission"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("RoleList"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"RoleList"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("RoleRevokePermission"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"RoleRevokePermission"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("SetEndpoints"%go, Client__SetEndpointsⁱᵐᵖˡ); ("Snapshot"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"Snapshot"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("SnapshotWithVersion"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"SnapshotWithVersion"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("Status"%go, (λ: "$r",
+                 method_call #(ptrT.id Maintenance.id) #"Status"%go (struct.field_ref #Client #"Maintenance"%go "$r")
+                 )%V); ("Sync"%go, Client__Syncⁱᵐᵖˡ); ("TimeToLive"%go, (λ: "$r",
+                 method_call #(ptrT.id Lease.id) #"TimeToLive"%go (struct.field_ref #Client #"Lease"%go "$r")
+                 )%V); ("Txn"%go, (λ: "$r",
+                 method_call #(ptrT.id KV.id) #"Txn"%go (struct.field_ref #Client #"KV"%go "$r")
+                 )%V); ("UserAdd"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserAdd"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("UserAddWithOptions"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserAddWithOptions"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("UserChangePassword"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserChangePassword"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("UserDelete"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserDelete"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("UserGet"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserGet"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("UserGrantRole"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserGrantRole"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("UserList"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserList"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("UserRevokeRole"%go, (λ: "$r",
+                 method_call #(ptrT.id Auth.id) #"UserRevokeRole"%go (struct.field_ref #Client #"Auth"%go "$r")
+                 )%V); ("Watch"%go, (λ: "$r",
+                 method_call #(ptrT.id Watcher.id) #"Watch"%go (struct.field_ref #Client #"Watcher"%go "$r")
+                 )%V); ("WithLogger"%go, Client__WithLoggerⁱᵐᵖˡ); ("autoSync"%go, Client__autoSyncⁱᵐᵖˡ); ("checkVersion"%go, Client__checkVersionⁱᵐᵖˡ); ("credentialsForEndpoint"%go, Client__credentialsForEndpointⁱᵐᵖˡ); ("dial"%go, Client__dialⁱᵐᵖˡ); ("dialSetupOpts"%go, Client__dialSetupOptsⁱᵐᵖˡ); ("dialWithBalancer"%go, Client__dialWithBalancerⁱᵐᵖˡ); ("getToken"%go, Client__getTokenⁱᵐᵖˡ); ("refreshToken"%go, Client__refreshTokenⁱᵐᵖˡ); ("roundRobinQuorumBackoff"%go, Client__roundRobinQuorumBackoffⁱᵐᵖˡ); ("shouldRefreshToken"%go, Client__shouldRefreshTokenⁱᵐᵖˡ); ("streamClientInterceptor"%go, Client__streamClientInterceptorⁱᵐᵖˡ); ("unaryClientInterceptor"%go, Client__unaryClientInterceptorⁱᵐᵖˡ)]); (Option.id, []); (ptrT.id Option.id, []); (Member.id, []); (ptrT.id Member.id, []); (MemberListResponse.id, []); (ptrT.id MemberListResponse.id, []); (MemberAddResponse.id, []); (ptrT.id MemberAddResponse.id, []); (MemberRemoveResponse.id, []); (ptrT.id MemberRemoveResponse.id, []); (MemberUpdateResponse.id, []); (ptrT.id MemberUpdateResponse.id, []); (MemberPromoteResponse.id, []); (ptrT.id MemberPromoteResponse.id, []); (cluster.id, []); (ptrT.id cluster.id, [("MemberAdd"%go, cluster__MemberAddⁱᵐᵖˡ); ("MemberAddAsLearner"%go, cluster__MemberAddAsLearnerⁱᵐᵖˡ); ("MemberList"%go, cluster__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, cluster__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, cluster__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, cluster__MemberUpdateⁱᵐᵖˡ); ("memberAdd"%go, cluster__memberAddⁱᵐᵖˡ)]); (CompactOp.id, [("toRequest"%go, CompactOp__toRequestⁱᵐᵖˡ)]); (ptrT.id CompactOp.id, [("applyCompactOpts"%go, CompactOp__applyCompactOptsⁱᵐᵖˡ); ("toRequest"%go, (λ: "$r",
+                 method_call #CompactOp.id #"toRequest"%go (![#CompactOp] "$r")
+                 )%V)]); (CompactOption.id, []); (ptrT.id CompactOption.id, []); (CompareTarget.id, []); (ptrT.id CompareTarget.id, []); (CompareResult.id, []); (ptrT.id CompareResult.id, []); (Cmp.id, [("WithPrefix"%go, Cmp__WithPrefixⁱᵐᵖˡ); ("WithRange"%go, Cmp__WithRangeⁱᵐᵖˡ)]); (ptrT.id Cmp.id, [("KeyBytes"%go, Cmp__KeyBytesⁱᵐᵖˡ); ("ValueBytes"%go, Cmp__ValueBytesⁱᵐᵖˡ); ("WithKeyBytes"%go, Cmp__WithKeyBytesⁱᵐᵖˡ); ("WithPrefix"%go, (λ: "$r",
+                 method_call #Cmp.id #"WithPrefix"%go (![#Cmp] "$r")
+                 )%V); ("WithRange"%go, (λ: "$r",
+                 method_call #Cmp.id #"WithRange"%go (![#Cmp] "$r")
+                 )%V); ("WithValueBytes"%go, Cmp__WithValueBytesⁱᵐᵖˡ)]); (Config.id, []); (ptrT.id Config.id, []); (ConfigSpec.id, []); (ptrT.id ConfigSpec.id, [("Clone"%go, ConfigSpec__Cloneⁱᵐᵖˡ)]); (SecureConfig.id, []); (ptrT.id SecureConfig.id, []); (AuthConfig.id, [("Empty"%go, AuthConfig__Emptyⁱᵐᵖˡ)]); (ptrT.id AuthConfig.id, [("Empty"%go, (λ: "$r",
+                 method_call #AuthConfig.id #"Empty"%go (![#AuthConfig] "$r")
+                 )%V)]); (CompactResponse.id, []); (ptrT.id CompactResponse.id, []); (PutResponse.id, []); (ptrT.id PutResponse.id, [("OpResponse"%go, PutResponse__OpResponseⁱᵐᵖˡ)]); (GetResponse.id, []); (ptrT.id GetResponse.id, [("OpResponse"%go, GetResponse__OpResponseⁱᵐᵖˡ)]); (DeleteResponse.id, []); (ptrT.id DeleteResponse.id, [("OpResponse"%go, DeleteResponse__OpResponseⁱᵐᵖˡ)]); (TxnResponse.id, []); (ptrT.id TxnResponse.id, [("OpResponse"%go, TxnResponse__OpResponseⁱᵐᵖˡ)]); (OpResponse.id, [("Del"%go, OpResponse__Delⁱᵐᵖˡ); ("Get"%go, OpResponse__Getⁱᵐᵖˡ); ("Put"%go, OpResponse__Putⁱᵐᵖˡ); ("Txn"%go, OpResponse__Txnⁱᵐᵖˡ)]); (ptrT.id OpResponse.id, [("Del"%go, (λ: "$r",
+                 method_call #OpResponse.id #"Del"%go (![#OpResponse] "$r")
+                 )%V); ("Get"%go, (λ: "$r",
+                 method_call #OpResponse.id #"Get"%go (![#OpResponse] "$r")
+                 )%V); ("Put"%go, (λ: "$r",
+                 method_call #OpResponse.id #"Put"%go (![#OpResponse] "$r")
+                 )%V); ("Txn"%go, (λ: "$r",
+                 method_call #OpResponse.id #"Txn"%go (![#OpResponse] "$r")
+                 )%V)]); (kv.id, []); (ptrT.id kv.id, [("Compact"%go, kv__Compactⁱᵐᵖˡ); ("Delete"%go, kv__Deleteⁱᵐᵖˡ); ("Do"%go, kv__Doⁱᵐᵖˡ); ("Get"%go, kv__Getⁱᵐᵖˡ); ("Put"%go, kv__Putⁱᵐᵖˡ); ("Txn"%go, kv__Txnⁱᵐᵖˡ)]); (LeaseRevokeResponse.id, []); (ptrT.id LeaseRevokeResponse.id, []); (LeaseID.id, []); (ptrT.id LeaseID.id, []); (LeaseGrantResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (struct.field_get #LeaseGrantResponse #"ResponseHeader"%go "$r")
+                 )%V)]); (ptrT.id LeaseGrantResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseGrantResponse #"ResponseHeader"%go "$r"))
+                 )%V)]); (LeaseKeepAliveResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (struct.field_get #LeaseKeepAliveResponse #"ResponseHeader"%go "$r")
+                 )%V)]); (ptrT.id LeaseKeepAliveResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseKeepAliveResponse #"ResponseHeader"%go "$r"))
+                 )%V)]); (LeaseTimeToLiveResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (struct.field_get #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r")
+                 )%V)]); (ptrT.id LeaseTimeToLiveResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseTimeToLiveResponse #"ResponseHeader"%go "$r"))
+                 )%V)]); (LeaseStatus.id, []); (ptrT.id LeaseStatus.id, []); (LeaseLeasesResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (struct.field_get #LeaseLeasesResponse #"ResponseHeader"%go "$r")
+                 )%V)]); (ptrT.id LeaseLeasesResponse.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Descriptor"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetClusterId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetClusterId"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetMemberId"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetMemberId"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRaftTerm"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRaftTerm"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("GetRevision"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"GetRevision"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Marshal"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalTo"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"MarshalToSizedBuffer"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"ProtoMessage"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Reset"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Size"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"String"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_DiscardUnknown"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Marshal"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Merge"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Size"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id etcdserverpb.ResponseHeader.id) #"XXX_Unmarshal"%go (![#ptrT] (struct.field_ref #LeaseLeasesResponse #"ResponseHeader"%go "$r"))
+                 )%V)]); (ErrKeepAliveHalted.id, [("Error"%go, ErrKeepAliveHalted__Errorⁱᵐᵖˡ)]); (ptrT.id ErrKeepAliveHalted.id, [("Error"%go, (λ: "$r",
+                 method_call #ErrKeepAliveHalted.id #"Error"%go (![#ErrKeepAliveHalted] "$r")
+                 )%V)]); (lessor.id, []); (ptrT.id lessor.id, [("Close"%go, lessor__Closeⁱᵐᵖˡ); ("Grant"%go, lessor__Grantⁱᵐᵖˡ); ("KeepAlive"%go, lessor__KeepAliveⁱᵐᵖˡ); ("KeepAliveOnce"%go, lessor__KeepAliveOnceⁱᵐᵖˡ); ("Leases"%go, lessor__Leasesⁱᵐᵖˡ); ("Revoke"%go, lessor__Revokeⁱᵐᵖˡ); ("TimeToLive"%go, lessor__TimeToLiveⁱᵐᵖˡ); ("closeRequireLeader"%go, lessor__closeRequireLeaderⁱᵐᵖˡ); ("deadlineLoop"%go, lessor__deadlineLoopⁱᵐᵖˡ); ("keepAliveCtxCloser"%go, lessor__keepAliveCtxCloserⁱᵐᵖˡ); ("keepAliveOnce"%go, lessor__keepAliveOnceⁱᵐᵖˡ); ("recvKeepAlive"%go, lessor__recvKeepAliveⁱᵐᵖˡ); ("recvKeepAliveLoop"%go, lessor__recvKeepAliveLoopⁱᵐᵖˡ); ("resetRecv"%go, lessor__resetRecvⁱᵐᵖˡ); ("sendKeepAliveLoop"%go, lessor__sendKeepAliveLoopⁱᵐᵖˡ)]); (keepAlive.id, []); (ptrT.id keepAlive.id, [("close"%go, keepAlive__closeⁱᵐᵖˡ)]); (keepAliveCtxKey.id, []); (ptrT.id keepAliveCtxKey.id, []); (DefragmentResponse.id, []); (ptrT.id DefragmentResponse.id, []); (AlarmResponse.id, []); (ptrT.id AlarmResponse.id, []); (AlarmMember.id, []); (ptrT.id AlarmMember.id, []); (StatusResponse.id, []); (ptrT.id StatusResponse.id, []); (HashKVResponse.id, []); (ptrT.id HashKVResponse.id, []); (MoveLeaderResponse.id, []); (ptrT.id MoveLeaderResponse.id, []); (DowngradeResponse.id, []); (ptrT.id DowngradeResponse.id, []); (DowngradeAction.id, []); (ptrT.id DowngradeAction.id, []); (SnapshotResponse.id, []); (ptrT.id SnapshotResponse.id, []); (maintenance.id, []); (ptrT.id maintenance.id, [("AlarmDisarm"%go, maintenance__AlarmDisarmⁱᵐᵖˡ); ("AlarmList"%go, maintenance__AlarmListⁱᵐᵖˡ); ("Defragment"%go, maintenance__Defragmentⁱᵐᵖˡ); ("Downgrade"%go, maintenance__Downgradeⁱᵐᵖˡ); ("HashKV"%go, maintenance__HashKVⁱᵐᵖˡ); ("MoveLeader"%go, maintenance__MoveLeaderⁱᵐᵖˡ); ("Snapshot"%go, maintenance__Snapshotⁱᵐᵖˡ); ("SnapshotWithVersion"%go, maintenance__SnapshotWithVersionⁱᵐᵖˡ); ("Status"%go, maintenance__Statusⁱᵐᵖˡ); ("logAndCloseWithError"%go, maintenance__logAndCloseWithErrorⁱᵐᵖˡ); ("save"%go, maintenance__saveⁱᵐᵖˡ)]); (snapshotReadCloser.id, [("Close"%go, (λ: "$r",
+                 method_call #io.ReadCloser.id #"Close"%go (struct.field_get #snapshotReadCloser #"ReadCloser"%go "$r")
+                 )%V)]); (ptrT.id snapshotReadCloser.id, [("Close"%go, (λ: "$r",
+                 method_call #(ptrT.id io.ReadCloser.id) #"Close"%go (struct.field_ref #snapshotReadCloser #"ReadCloser"%go "$r")
+                 )%V); ("Read"%go, snapshotReadCloser__Readⁱᵐᵖˡ)]); (opType.id, []); (ptrT.id opType.id, []); (Op.id, [("IsCountOnly"%go, Op__IsCountOnlyⁱᵐᵖˡ); ("IsDelete"%go, Op__IsDeleteⁱᵐᵖˡ); ("IsGet"%go, Op__IsGetⁱᵐᵖˡ); ("IsKeysOnly"%go, Op__IsKeysOnlyⁱᵐᵖˡ); ("IsOptsWithFromKey"%go, Op__IsOptsWithFromKeyⁱᵐᵖˡ); ("IsOptsWithPrefix"%go, Op__IsOptsWithPrefixⁱᵐᵖˡ); ("IsPut"%go, Op__IsPutⁱᵐᵖˡ); ("IsSerializable"%go, Op__IsSerializableⁱᵐᵖˡ); ("IsSortOptionValid"%go, Op__IsSortOptionValidⁱᵐᵖˡ); ("IsTxn"%go, Op__IsTxnⁱᵐᵖˡ); ("KeyBytes"%go, Op__KeyBytesⁱᵐᵖˡ); ("MaxCreateRev"%go, Op__MaxCreateRevⁱᵐᵖˡ); ("MaxModRev"%go, Op__MaxModRevⁱᵐᵖˡ); ("MinCreateRev"%go, Op__MinCreateRevⁱᵐᵖˡ); ("MinModRev"%go, Op__MinModRevⁱᵐᵖˡ); ("RangeBytes"%go, Op__RangeBytesⁱᵐᵖˡ); ("Rev"%go, Op__Revⁱᵐᵖˡ); ("Txn"%go, Op__Txnⁱᵐᵖˡ); ("ValueBytes"%go, Op__ValueBytesⁱᵐᵖˡ); ("isWrite"%go, Op__isWriteⁱᵐᵖˡ); ("toRangeRequest"%go, Op__toRangeRequestⁱᵐᵖˡ); ("toRequestOp"%go, Op__toRequestOpⁱᵐᵖˡ); ("toTxnRequest"%go, Op__toTxnRequestⁱᵐᵖˡ)]); (ptrT.id Op.id, [("IsCountOnly"%go, (λ: "$r",
+                 method_call #Op.id #"IsCountOnly"%go (![#Op] "$r")
+                 )%V); ("IsDelete"%go, (λ: "$r",
+                 method_call #Op.id #"IsDelete"%go (![#Op] "$r")
+                 )%V); ("IsGet"%go, (λ: "$r",
+                 method_call #Op.id #"IsGet"%go (![#Op] "$r")
+                 )%V); ("IsKeysOnly"%go, (λ: "$r",
+                 method_call #Op.id #"IsKeysOnly"%go (![#Op] "$r")
+                 )%V); ("IsOptsWithFromKey"%go, (λ: "$r",
+                 method_call #Op.id #"IsOptsWithFromKey"%go (![#Op] "$r")
+                 )%V); ("IsOptsWithPrefix"%go, (λ: "$r",
+                 method_call #Op.id #"IsOptsWithPrefix"%go (![#Op] "$r")
+                 )%V); ("IsPut"%go, (λ: "$r",
+                 method_call #Op.id #"IsPut"%go (![#Op] "$r")
+                 )%V); ("IsSerializable"%go, (λ: "$r",
+                 method_call #Op.id #"IsSerializable"%go (![#Op] "$r")
+                 )%V); ("IsSortOptionValid"%go, (λ: "$r",
+                 method_call #Op.id #"IsSortOptionValid"%go (![#Op] "$r")
+                 )%V); ("IsTxn"%go, (λ: "$r",
+                 method_call #Op.id #"IsTxn"%go (![#Op] "$r")
+                 )%V); ("KeyBytes"%go, (λ: "$r",
+                 method_call #Op.id #"KeyBytes"%go (![#Op] "$r")
+                 )%V); ("MaxCreateRev"%go, (λ: "$r",
+                 method_call #Op.id #"MaxCreateRev"%go (![#Op] "$r")
+                 )%V); ("MaxModRev"%go, (λ: "$r",
+                 method_call #Op.id #"MaxModRev"%go (![#Op] "$r")
+                 )%V); ("MinCreateRev"%go, (λ: "$r",
+                 method_call #Op.id #"MinCreateRev"%go (![#Op] "$r")
+                 )%V); ("MinModRev"%go, (λ: "$r",
+                 method_call #Op.id #"MinModRev"%go (![#Op] "$r")
+                 )%V); ("RangeBytes"%go, (λ: "$r",
+                 method_call #Op.id #"RangeBytes"%go (![#Op] "$r")
+                 )%V); ("Rev"%go, (λ: "$r",
+                 method_call #Op.id #"Rev"%go (![#Op] "$r")
+                 )%V); ("Txn"%go, (λ: "$r",
+                 method_call #Op.id #"Txn"%go (![#Op] "$r")
+                 )%V); ("ValueBytes"%go, (λ: "$r",
+                 method_call #Op.id #"ValueBytes"%go (![#Op] "$r")
+                 )%V); ("WithKeyBytes"%go, Op__WithKeyBytesⁱᵐᵖˡ); ("WithRangeBytes"%go, Op__WithRangeBytesⁱᵐᵖˡ); ("WithValueBytes"%go, Op__WithValueBytesⁱᵐᵖˡ); ("applyOpts"%go, Op__applyOptsⁱᵐᵖˡ); ("isWrite"%go, (λ: "$r",
+                 method_call #Op.id #"isWrite"%go (![#Op] "$r")
+                 )%V); ("toRangeRequest"%go, (λ: "$r",
+                 method_call #Op.id #"toRangeRequest"%go (![#Op] "$r")
+                 )%V); ("toRequestOp"%go, (λ: "$r",
+                 method_call #Op.id #"toRequestOp"%go (![#Op] "$r")
+                 )%V); ("toTxnRequest"%go, (λ: "$r",
+                 method_call #Op.id #"toTxnRequest"%go (![#Op] "$r")
+                 )%V)]); (OpOption.id, []); (ptrT.id OpOption.id, []); (LeaseOp.id, []); (ptrT.id LeaseOp.id, [("applyOpts"%go, LeaseOp__applyOptsⁱᵐᵖˡ)]); (LeaseOption.id, []); (ptrT.id LeaseOption.id, []); (retryPolicy.id, [("String"%go, retryPolicy__Stringⁱᵐᵖˡ)]); (ptrT.id retryPolicy.id, [("String"%go, (λ: "$r",
+                 method_call #retryPolicy.id #"String"%go (![#retryPolicy] "$r")
+                 )%V)]); (retryKVClient.id, []); (ptrT.id retryKVClient.id, [("Compact"%go, retryKVClient__Compactⁱᵐᵖˡ); ("DeleteRange"%go, retryKVClient__DeleteRangeⁱᵐᵖˡ); ("Put"%go, retryKVClient__Putⁱᵐᵖˡ); ("Range"%go, retryKVClient__Rangeⁱᵐᵖˡ); ("Txn"%go, retryKVClient__Txnⁱᵐᵖˡ)]); (retryLeaseClient.id, []); (ptrT.id retryLeaseClient.id, [("LeaseGrant"%go, retryLeaseClient__LeaseGrantⁱᵐᵖˡ); ("LeaseKeepAlive"%go, retryLeaseClient__LeaseKeepAliveⁱᵐᵖˡ); ("LeaseLeases"%go, retryLeaseClient__LeaseLeasesⁱᵐᵖˡ); ("LeaseRevoke"%go, retryLeaseClient__LeaseRevokeⁱᵐᵖˡ); ("LeaseTimeToLive"%go, retryLeaseClient__LeaseTimeToLiveⁱᵐᵖˡ)]); (retryClusterClient.id, []); (ptrT.id retryClusterClient.id, [("MemberAdd"%go, retryClusterClient__MemberAddⁱᵐᵖˡ); ("MemberList"%go, retryClusterClient__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, retryClusterClient__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, retryClusterClient__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, retryClusterClient__MemberUpdateⁱᵐᵖˡ)]); (retryMaintenanceClient.id, []); (ptrT.id retryMaintenanceClient.id, [("Alarm"%go, retryMaintenanceClient__Alarmⁱᵐᵖˡ); ("Defragment"%go, retryMaintenanceClient__Defragmentⁱᵐᵖˡ); ("Downgrade"%go, retryMaintenanceClient__Downgradeⁱᵐᵖˡ); ("Hash"%go, retryMaintenanceClient__Hashⁱᵐᵖˡ); ("HashKV"%go, retryMaintenanceClient__HashKVⁱᵐᵖˡ); ("MoveLeader"%go, retryMaintenanceClient__MoveLeaderⁱᵐᵖˡ); ("Snapshot"%go, retryMaintenanceClient__Snapshotⁱᵐᵖˡ); ("Status"%go, retryMaintenanceClient__Statusⁱᵐᵖˡ)]); (retryAuthClient.id, []); (ptrT.id retryAuthClient.id, [("AuthDisable"%go, retryAuthClient__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, retryAuthClient__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, retryAuthClient__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, retryAuthClient__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, retryAuthClient__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, retryAuthClient__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, retryAuthClient__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, retryAuthClient__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, retryAuthClient__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, retryAuthClient__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, retryAuthClient__UserAddⁱᵐᵖˡ); ("UserChangePassword"%go, retryAuthClient__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, retryAuthClient__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, retryAuthClient__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, retryAuthClient__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, retryAuthClient__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, retryAuthClient__UserRevokeRoleⁱᵐᵖˡ)]); (serverStreamingRetryingStream.id, [("Context"%go, (λ: "$r",
+                 method_call #grpc.ClientStream.id #"Context"%go (struct.field_get #serverStreamingRetryingStream #"ClientStream"%go "$r")
+                 )%V)]); (ptrT.id serverStreamingRetryingStream.id, [("CloseSend"%go, serverStreamingRetryingStream__CloseSendⁱᵐᵖˡ); ("Context"%go, (λ: "$r",
+                 method_call #(ptrT.id grpc.ClientStream.id) #"Context"%go (struct.field_ref #serverStreamingRetryingStream #"ClientStream"%go "$r")
+                 )%V); ("Header"%go, serverStreamingRetryingStream__Headerⁱᵐᵖˡ); ("RecvMsg"%go, serverStreamingRetryingStream__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, serverStreamingRetryingStream__SendMsgⁱᵐᵖˡ); ("Trailer"%go, serverStreamingRetryingStream__Trailerⁱᵐᵖˡ); ("getStream"%go, serverStreamingRetryingStream__getStreamⁱᵐᵖˡ); ("receiveMsgAndIndicateRetry"%go, serverStreamingRetryingStream__receiveMsgAndIndicateRetryⁱᵐᵖˡ); ("reestablishStreamAndResendBuffer"%go, serverStreamingRetryingStream__reestablishStreamAndResendBufferⁱᵐᵖˡ); ("setStream"%go, serverStreamingRetryingStream__setStreamⁱᵐᵖˡ)]); (backoffFunc.id, []); (ptrT.id backoffFunc.id, []); (options.id, []); (ptrT.id options.id, []); (retryOption.id, [("after"%go, (λ: "$r",
+                 method_call #grpc.EmptyCallOption.id #"after"%go (struct.field_get #retryOption #"EmptyCallOption"%go "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #grpc.EmptyCallOption.id #"before"%go (struct.field_get #retryOption #"EmptyCallOption"%go "$r")
+                 )%V)]); (ptrT.id retryOption.id, [("after"%go, (λ: "$r",
+                 method_call #(ptrT.id grpc.EmptyCallOption.id) #"after"%go (struct.field_ref #retryOption #"EmptyCallOption"%go "$r")
+                 )%V); ("before"%go, (λ: "$r",
+                 method_call #(ptrT.id grpc.EmptyCallOption.id) #"before"%go (struct.field_ref #retryOption #"EmptyCallOption"%go "$r")
+                 )%V)]); (SortTarget.id, []); (ptrT.id SortTarget.id, []); (SortOrder.id, []); (ptrT.id SortOrder.id, []); (SortOption.id, []); (ptrT.id SortOption.id, []); (txn.id, []); (ptrT.id txn.id, [("Commit"%go, txn__Commitⁱᵐᵖˡ); ("Else"%go, txn__Elseⁱᵐᵖˡ); ("If"%go, txn__Ifⁱᵐᵖˡ); ("Then"%go, txn__Thenⁱᵐᵖˡ)]); (Event.id, []); (ptrT.id Event.id, [("IsCreate"%go, Event__IsCreateⁱᵐᵖˡ); ("IsModify"%go, Event__IsModifyⁱᵐᵖˡ)]); (WatchChan.id, []); (ptrT.id WatchChan.id, []); (WatchResponse.id, []); (ptrT.id WatchResponse.id, [("Err"%go, WatchResponse__Errⁱᵐᵖˡ); ("IsProgressNotify"%go, WatchResponse__IsProgressNotifyⁱᵐᵖˡ)]); (watcher.id, []); (ptrT.id watcher.id, [("Close"%go, watcher__Closeⁱᵐᵖˡ); ("RequestProgress"%go, watcher__RequestProgressⁱᵐᵖˡ); ("Watch"%go, watcher__Watchⁱᵐᵖˡ); ("closeStream"%go, watcher__closeStreamⁱᵐᵖˡ); ("newWatcherGRPCStream"%go, watcher__newWatcherGRPCStreamⁱᵐᵖˡ)]); (watchGRPCStream.id, []); (ptrT.id watchGRPCStream.id, [("addSubstream"%go, watchGRPCStream__addSubstreamⁱᵐᵖˡ); ("backoffIfUnavailable"%go, watchGRPCStream__backoffIfUnavailableⁱᵐᵖˡ); ("broadcastResponse"%go, watchGRPCStream__broadcastResponseⁱᵐᵖˡ); ("close"%go, watchGRPCStream__closeⁱᵐᵖˡ); ("closeSubstream"%go, watchGRPCStream__closeSubstreamⁱᵐᵖˡ); ("dispatchEvent"%go, watchGRPCStream__dispatchEventⁱᵐᵖˡ); ("joinSubstreams"%go, watchGRPCStream__joinSubstreamsⁱᵐᵖˡ); ("newWatchClient"%go, watchGRPCStream__newWatchClientⁱᵐᵖˡ); ("nextResume"%go, watchGRPCStream__nextResumeⁱᵐᵖˡ); ("openWatchClient"%go, watchGRPCStream__openWatchClientⁱᵐᵖˡ); ("run"%go, watchGRPCStream__runⁱᵐᵖˡ); ("sendCloseSubstream"%go, watchGRPCStream__sendCloseSubstreamⁱᵐᵖˡ); ("serveSubstream"%go, watchGRPCStream__serveSubstreamⁱᵐᵖˡ); ("serveWatchClient"%go, watchGRPCStream__serveWatchClientⁱᵐᵖˡ); ("unicastResponse"%go, watchGRPCStream__unicastResponseⁱᵐᵖˡ); ("waitCancelSubstreams"%go, watchGRPCStream__waitCancelSubstreamsⁱᵐᵖˡ)]); (watchRequest.id, []); (ptrT.id watchRequest.id, [("toPB"%go, watchRequest__toPBⁱᵐᵖˡ)]); (progressRequest.id, []); (ptrT.id progressRequest.id, [("toPB"%go, progressRequest__toPBⁱᵐᵖˡ)]); (watcherStream.id, []); (ptrT.id watcherStream.id, []); (valCtx.id, [("Value"%go, (λ: "$r",
+                 method_call #context.Context.id #"Value"%go (struct.field_get #valCtx #"Context"%go "$r")
+                 )%V)]); (ptrT.id valCtx.id, [("Deadline"%go, valCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, valCtx__Doneⁱᵐᵖˡ); ("Err"%go, valCtx__Errⁱᵐᵖˡ); ("Value"%go, (λ: "$r",
+                 method_call #(ptrT.id context.Context.id) #"Value"%go (struct.field_ref #valCtx #"Context"%go "$r")
+                 )%V)])].
 
 #[global] Instance info' : PkgInfo v3.clientv3 :=
   {|

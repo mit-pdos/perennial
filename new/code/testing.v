@@ -5,7 +5,40 @@ Definition testing : go_string := "testing".
 
 Module testing.
 
+Module durationOrCountFlag. Definition id : go_string := "testing.durationOrCountFlag"%go. End durationOrCountFlag.
+Module InternalBenchmark. Definition id : go_string := "testing.InternalBenchmark"%go. End InternalBenchmark.
+Module B. Definition id : go_string := "testing.B"%go. End B.
+Module BenchmarkResult. Definition id : go_string := "testing.BenchmarkResult"%go. End BenchmarkResult.
+Module benchState. Definition id : go_string := "testing.benchState"%go. End benchState.
+Module PB. Definition id : go_string := "testing.PB"%go. End PB.
+Module discard. Definition id : go_string := "testing.discard"%go. End discard.
+Module CoverBlock. Definition id : go_string := "testing.CoverBlock"%go. End CoverBlock.
+Module Cover. Definition id : go_string := "testing.Cover"%go. End Cover.
+Module InternalExample. Definition id : go_string := "testing.InternalExample"%go. End InternalExample.
+Module InternalFuzzTarget. Definition id : go_string := "testing.InternalFuzzTarget"%go. End InternalFuzzTarget.
+Module F. Definition id : go_string := "testing.F"%go. End F.
+Module corpusEntry. Axiom id : go_string. End corpusEntry.
+Module fuzzResult. Definition id : go_string := "testing.fuzzResult"%go. End fuzzResult.
+Module fuzzCrashError. Definition id : go_string := "testing.fuzzCrashError"%go. End fuzzCrashError.
+Module fuzzState. Definition id : go_string := "testing.fuzzState"%go. End fuzzState.
+Module fuzzMode. Definition id : go_string := "testing.fuzzMode"%go. End fuzzMode.
+Module matcher. Definition id : go_string := "testing.matcher"%go. End matcher.
+Module filterMatch. Definition id : go_string := "testing.filterMatch"%go. End filterMatch.
+Module simpleMatch. Definition id : go_string := "testing.simpleMatch"%go. End simpleMatch.
+Module alternationMatch. Definition id : go_string := "testing.alternationMatch"%go. End alternationMatch.
+Module chattyFlag. Definition id : go_string := "testing.chattyFlag"%go. End chattyFlag.
+Module chattyPrinter. Definition id : go_string := "testing.chattyPrinter"%go. End chattyPrinter.
+Module common. Definition id : go_string := "testing.common"%go. End common.
+Module indenter. Definition id : go_string := "testing.indenter"%go. End indenter.
+Module TB. Definition id : go_string := "testing.TB"%go. End TB.
 Module T. Definition id : go_string := "testing.T"%go. End T.
+Module panicHandling. Definition id : go_string := "testing.panicHandling"%go. End panicHandling.
+Module InternalTest. Definition id : go_string := "testing.InternalTest"%go. End InternalTest.
+Module testState. Definition id : go_string := "testing.testState"%go. End testState.
+Module matchStringOnly. Definition id : go_string := "testing.matchStringOnly"%go. End matchStringOnly.
+Module M. Definition id : go_string := "testing.M"%go. End M.
+Module testDeps. Definition id : go_string := "testing.testDeps"%go. End testDeps.
+Module highPrecisionTime. Definition id : go_string := "testing.highPrecisionTime"%go. End highPrecisionTime.
 
 Section code.
 Context `{ffi_syntax}.
@@ -13,7 +46,11 @@ Context `{ffi_syntax}.
 
 Definition AllocsPerRun : go_string := "testing.AllocsPerRun"%go.
 
+Axiom AllocsPerRunⁱᵐᵖˡ : val.
+
 Definition initBenchmarkFlags : go_string := "testing.initBenchmarkFlags"%go.
+
+Axiom initBenchmarkFlagsⁱᵐᵖˡ : val.
 
 Definition matchBenchmarks : go_string := "testing.matchBenchmarks"%go.
 
@@ -23,45 +60,161 @@ Definition benchTime : go_string := "testing.benchTime"%go.
 
 Axiom benchTime'init : val.
 
+Axiom durationOrCountFlag : go_type.
+
+Axiom durationOrCountFlag__Stringⁱᵐᵖˡ : val.
+
+Axiom durationOrCountFlag__Setⁱᵐᵖˡ : val.
+
 Definition benchmarkLock : go_string := "testing.benchmarkLock"%go.
 
 Definition memStats : go_string := "testing.memStats"%go.
 
+Axiom InternalBenchmark : go_type.
+
+Axiom B : go_type.
+
+Axiom B__StartTimerⁱᵐᵖˡ : val.
+
+Axiom B__StopTimerⁱᵐᵖˡ : val.
+
+Axiom B__ResetTimerⁱᵐᵖˡ : val.
+
+Axiom B__SetBytesⁱᵐᵖˡ : val.
+
+Axiom B__ReportAllocsⁱᵐᵖˡ : val.
+
+Axiom B__runNⁱᵐᵖˡ : val.
+
+Axiom B__run1ⁱᵐᵖˡ : val.
+
 Definition labelsOnce : go_string := "testing.labelsOnce"%go.
+
+Axiom B__runⁱᵐᵖˡ : val.
+
+Axiom B__doBenchⁱᵐᵖˡ : val.
 
 Definition predictN : go_string := "testing.predictN"%go.
 
+Axiom predictNⁱᵐᵖˡ : val.
+
+Axiom B__launchⁱᵐᵖˡ : val.
+
+Axiom B__Elapsedⁱᵐᵖˡ : val.
+
+Axiom B__ReportMetricⁱᵐᵖˡ : val.
+
+Axiom B__stopOrScaleBLoopⁱᵐᵖˡ : val.
+
+Axiom B__loopSlowPathⁱᵐᵖˡ : val.
+
+Axiom B__Loopⁱᵐᵖˡ : val.
+
+Axiom loopPoisonTimer : expr.
+
+Axiom loopPoisonMask : expr.
+
+Axiom BenchmarkResult : go_type.
+
+Axiom BenchmarkResult__NsPerOpⁱᵐᵖˡ : val.
+
+Axiom BenchmarkResult__mbPerSecⁱᵐᵖˡ : val.
+
+Axiom BenchmarkResult__AllocsPerOpⁱᵐᵖˡ : val.
+
+Axiom BenchmarkResult__AllocedBytesPerOpⁱᵐᵖˡ : val.
+
+Axiom BenchmarkResult__Stringⁱᵐᵖˡ : val.
+
 Definition prettyPrint : go_string := "testing.prettyPrint"%go.
+
+Axiom prettyPrintⁱᵐᵖˡ : val.
+
+Axiom BenchmarkResult__MemStringⁱᵐᵖˡ : val.
 
 Definition benchmarkName : go_string := "testing.benchmarkName"%go.
 
+Axiom benchmarkNameⁱᵐᵖˡ : val.
+
+Axiom benchState : go_type.
+
 Definition RunBenchmarks : go_string := "testing.RunBenchmarks"%go.
 
+Axiom RunBenchmarksⁱᵐᵖˡ : val.
+
 Definition runBenchmarks : go_string := "testing.runBenchmarks"%go.
+
+Axiom runBenchmarksⁱᵐᵖˡ : val.
+
+Axiom benchState__processBenchⁱᵐᵖˡ : val.
 
 Definition hideStdoutForTesting : go_string := "testing.hideStdoutForTesting"%go.
 
 Axiom hideStdoutForTesting'init : val.
 
+Axiom B__Runⁱᵐᵖˡ : val.
+
+Axiom B__addⁱᵐᵖˡ : val.
+
+Axiom B__trimOutputⁱᵐᵖˡ : val.
+
+Axiom PB : go_type.
+
+Axiom PB__Nextⁱᵐᵖˡ : val.
+
+Axiom B__RunParallelⁱᵐᵖˡ : val.
+
+Axiom B__SetParallelismⁱᵐᵖˡ : val.
+
 Definition Benchmark : go_string := "testing.Benchmark"%go.
+
+Axiom Benchmarkⁱᵐᵖˡ : val.
+
+Axiom discard : go_type.
+
+Axiom discard__Writeⁱᵐᵖˡ : val.
+
+Axiom CoverBlock : go_type.
 
 Definition cover : go_string := "testing.cover"%go.
 
+Axiom Cover : go_type.
+
 Definition Coverage : go_string := "testing.Coverage"%go.
+
+Axiom Coverageⁱᵐᵖˡ : val.
 
 Definition RegisterCover : go_string := "testing.RegisterCover"%go.
 
+Axiom RegisterCoverⁱᵐᵖˡ : val.
+
 Definition mustBeNil : go_string := "testing.mustBeNil"%go.
+
+Axiom mustBeNilⁱᵐᵖˡ : val.
 
 Definition coverReport : go_string := "testing.coverReport"%go.
 
+Axiom coverReportⁱᵐᵖˡ : val.
+
+Axiom InternalExample : go_type.
+
 Definition RunExamples : go_string := "testing.RunExamples"%go.
+
+Axiom RunExamplesⁱᵐᵖˡ : val.
 
 Definition runExamples : go_string := "testing.runExamples"%go.
 
+Axiom runExamplesⁱᵐᵖˡ : val.
+
 Definition sortLines : go_string := "testing.sortLines"%go.
 
+Axiom sortLinesⁱᵐᵖˡ : val.
+
+Axiom InternalExample__processRunResultⁱᵐᵖˡ : val.
+
 Definition initFuzzFlags : go_string := "testing.initFuzzFlags"%go.
+
+Axiom initFuzzFlagsⁱᵐᵖˡ : val.
 
 Definition matchFuzz : go_string := "testing.matchFuzz"%go.
 
@@ -79,43 +232,129 @@ Definition corpusDir : go_string := "testing.corpusDir"%go.
 
 Axiom corpusDir'init : val.
 
+Axiom fuzzWorkerExitCode : Z.
+
+Axiom InternalFuzzTarget : go_type.
+
+Axiom F : go_type.
+
+Axiom corpusEntry : go_type.
+
+Axiom F__Helperⁱᵐᵖˡ : val.
+
+Axiom F__Failⁱᵐᵖˡ : val.
+
+Axiom F__Skippedⁱᵐᵖˡ : val.
+
+Axiom F__Addⁱᵐᵖˡ : val.
+
 Definition supportedTypes : go_string := "testing.supportedTypes"%go.
 
 Axiom supportedTypes'init : val.
 
+Axiom F__Fuzzⁱᵐᵖˡ : val.
+
+Axiom F__reportⁱᵐᵖˡ : val.
+
+Axiom fuzzResult : go_type.
+
+Axiom fuzzResult__Stringⁱᵐᵖˡ : val.
+
+Axiom fuzzCrashError : go_type.
+
+Axiom fuzzState : go_type.
+
+Axiom fuzzMode : go_type.
+
+Axiom seedCorpusOnly : expr.
+
+Axiom fuzzCoordinator : expr.
+
+Axiom fuzzWorker : expr.
+
 Definition runFuzzTests : go_string := "testing.runFuzzTests"%go.
+
+Axiom runFuzzTestsⁱᵐᵖˡ : val.
 
 Definition runFuzzing : go_string := "testing.runFuzzing"%go.
 
+Axiom runFuzzingⁱᵐᵖˡ : val.
+
 Definition fRunner : go_string := "testing.fRunner"%go.
+
+Axiom fRunnerⁱᵐᵖˡ : val.
+
+Axiom matcher : go_type.
+
+Axiom filterMatch : go_type.
+
+Axiom simpleMatch : go_type.
+
+Axiom alternationMatch : go_type.
 
 Definition matchMutex : go_string := "testing.matchMutex"%go.
 
 Definition allMatcher : go_string := "testing.allMatcher"%go.
 
+Axiom allMatcherⁱᵐᵖˡ : val.
+
 Definition newMatcher : go_string := "testing.newMatcher"%go.
+
+Axiom newMatcherⁱᵐᵖˡ : val.
+
+Axiom matcher__fullNameⁱᵐᵖˡ : val.
+
+Axiom matcher__clearSubNamesⁱᵐᵖˡ : val.
+
+Axiom simpleMatch__matchesⁱᵐᵖˡ : val.
+
+Axiom simpleMatch__verifyⁱᵐᵖˡ : val.
+
+Axiom alternationMatch__matchesⁱᵐᵖˡ : val.
+
+Axiom alternationMatch__verifyⁱᵐᵖˡ : val.
 
 Definition splitRegexp : go_string := "testing.splitRegexp"%go.
 
+Axiom splitRegexpⁱᵐᵖˡ : val.
+
+Axiom matcher__uniqueⁱᵐᵖˡ : val.
+
 Definition parseSubtestNumber : go_string := "testing.parseSubtestNumber"%go.
+
+Axiom parseSubtestNumberⁱᵐᵖˡ : val.
 
 Definition rewrite : go_string := "testing.rewrite"%go.
 
+Axiom rewriteⁱᵐᵖˡ : val.
+
 Definition isSpace : go_string := "testing.isSpace"%go.
+
+Axiom isSpaceⁱᵐᵖˡ : val.
 
 Definition cover2 : go_string := "testing.cover2"%go.
 
 Definition registerCover2 : go_string := "testing.registerCover2"%go.
 
+Axiom registerCover2ⁱᵐᵖˡ : val.
+
 Definition coverReport2 : go_string := "testing.coverReport2"%go.
+
+Axiom coverReport2ⁱᵐᵖˡ : val.
 
 Definition coverage2 : go_string := "testing.coverage2"%go.
 
+Axiom coverage2ⁱᵐᵖˡ : val.
+
 Definition runExample : go_string := "testing.runExample"%go.
+
+Axiom runExampleⁱᵐᵖˡ : val.
 
 Definition initRan : go_string := "testing.initRan"%go.
 
 Definition Init : go_string := "testing.Init"%go.
+
+Axiom Initⁱᵐᵖˡ : val.
 
 Definition short : go_string := "testing.short"%go.
 
@@ -177,9 +416,39 @@ Definition numFailed : go_string := "testing.numFailed"%go.
 
 Definition running : go_string := "testing.running"%go.
 
+Axiom chattyFlag : go_type.
+
+Axiom chattyFlag__IsBoolFlagⁱᵐᵖˡ : val.
+
+Axiom chattyFlag__Setⁱᵐᵖˡ : val.
+
+Axiom chattyFlag__Stringⁱᵐᵖˡ : val.
+
+Axiom chattyFlag__Getⁱᵐᵖˡ : val.
+
+Axiom marker : expr.
+
+Axiom chattyFlag__prefixⁱᵐᵖˡ : val.
+
+Axiom chattyPrinter : go_type.
+
 Definition newChattyPrinter : go_string := "testing.newChattyPrinter"%go.
 
+Axiom newChattyPrinterⁱᵐᵖˡ : val.
+
+Axiom chattyPrinter__prefixⁱᵐᵖˡ : val.
+
+Axiom chattyPrinter__Updatefⁱᵐᵖˡ : val.
+
+Axiom chattyPrinter__Printfⁱᵐᵖˡ : val.
+
+Axiom maxStackLen : Z.
+
+Axiom common : go_type.
+
 Definition Short : go_string := "testing.Short"%go.
+
+Axiom Shortⁱᵐᵖˡ : val.
 
 Definition testBinary : go_string := "testing.testBinary"%go.
 
@@ -187,19 +456,119 @@ Axiom testBinary'init : val.
 
 Definition Testing : go_string := "testing.Testing"%go.
 
+Axiom Testingⁱᵐᵖˡ : val.
+
 Definition CoverMode : go_string := "testing.CoverMode"%go.
+
+Axiom CoverModeⁱᵐᵖˡ : val.
 
 Definition Verbose : go_string := "testing.Verbose"%go.
 
+Axiom Verboseⁱᵐᵖˡ : val.
+
+Axiom common__checkFuzzFnⁱᵐᵖˡ : val.
+
+Axiom common__frameSkipⁱᵐᵖˡ : val.
+
+Axiom common__decorateⁱᵐᵖˡ : val.
+
+Axiom common__flushToParentⁱᵐᵖˡ : val.
+
+Axiom indenter : go_type.
+
+Axiom indenter__Writeⁱᵐᵖˡ : val.
+
 Definition fmtDuration : go_string := "testing.fmtDuration"%go.
+
+Axiom fmtDurationⁱᵐᵖˡ : val.
+
+Axiom TB : go_type.
 
 Axiom T : go_type.
 
+Axiom common__privateⁱᵐᵖˡ : val.
+
+Axiom common__Nameⁱᵐᵖˡ : val.
+
+Axiom common__setRanⁱᵐᵖˡ : val.
+
+Axiom common__Failⁱᵐᵖˡ : val.
+
+Axiom common__Failedⁱᵐᵖˡ : val.
+
+Axiom common__FailNowⁱᵐᵖˡ : val.
+
+Axiom common__logⁱᵐᵖˡ : val.
+
+Axiom common__logDepthⁱᵐᵖˡ : val.
+
+Axiom common__Logⁱᵐᵖˡ : val.
+
+Axiom common__Logfⁱᵐᵖˡ : val.
+
+Axiom common__Errorⁱᵐᵖˡ : val.
+
+Axiom common__Errorfⁱᵐᵖˡ : val.
+
+Axiom common__Fatalⁱᵐᵖˡ : val.
+
+Axiom common__Fatalfⁱᵐᵖˡ : val.
+
+Axiom common__Skipⁱᵐᵖˡ : val.
+
+Axiom common__Skipfⁱᵐᵖˡ : val.
+
+Axiom common__SkipNowⁱᵐᵖˡ : val.
+
+Axiom common__Skippedⁱᵐᵖˡ : val.
+
+Axiom common__Helperⁱᵐᵖˡ : val.
+
+Axiom common__Cleanupⁱᵐᵖˡ : val.
+
+Axiom common__TempDirⁱᵐᵖˡ : val.
+
 Definition removeAll : go_string := "testing.removeAll"%go.
+
+Axiom removeAllⁱᵐᵖˡ : val.
+
+Axiom common__Setenvⁱᵐᵖˡ : val.
+
+Axiom common__Chdirⁱᵐᵖˡ : val.
+
+Axiom common__Contextⁱᵐᵖˡ : val.
+
+Axiom panicHandling : go_type.
+
+Axiom normalPanic : expr.
+
+Axiom recoverAndReturnPanic : expr.
+
+Axiom common__runCleanupⁱᵐᵖˡ : val.
+
+Axiom common__resetRacesⁱᵐᵖˡ : val.
+
+Axiom common__checkRacesⁱᵐᵖˡ : val.
 
 Definition callerName : go_string := "testing.callerName"%go.
 
+Axiom callerNameⁱᵐᵖˡ : val.
+
 Definition pcToName : go_string := "testing.pcToName"%go.
+
+Axiom pcToNameⁱᵐᵖˡ : val.
+
+Axiom parallelConflict : go_string.
+
+Axiom T__Parallelⁱᵐᵖˡ : val.
+
+Axiom T__checkParallelⁱᵐᵖˡ : val.
+
+Axiom T__Setenvⁱᵐᵖˡ : val.
+
+Axiom T__Chdirⁱᵐᵖˡ : val.
+
+Axiom InternalTest : go_type.
 
 Definition errNilPanicOrGoexit : go_string := "testing.errNilPanicOrGoexit"%go.
 
@@ -207,45 +576,367 @@ Axiom errNilPanicOrGoexit'init : val.
 
 Definition tRunner : go_string := "testing.tRunner"%go.
 
+Axiom tRunnerⁱᵐᵖˡ : val.
+
+Axiom T__Runⁱᵐᵖˡ : val.
+
+Axiom T__Deadlineⁱᵐᵖˡ : val.
+
+Axiom testState : go_type.
+
 Definition newTestState : go_string := "testing.newTestState"%go.
+
+Axiom newTestStateⁱᵐᵖˡ : val.
+
+Axiom testState__waitParallelⁱᵐᵖˡ : val.
+
+Axiom testState__releaseⁱᵐᵖˡ : val.
 
 Definition errMain : go_string := "testing.errMain"%go.
 
 Axiom errMain'init : val.
 
+Axiom matchStringOnly : go_type.
+
+Axiom matchStringOnly__MatchStringⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__StartCPUProfileⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__StopCPUProfileⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__WriteProfileToⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__ImportPathⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__StartTestLogⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__StopTestLogⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__SetPanicOnExit0ⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__CoordinateFuzzingⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__RunFuzzWorkerⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__ReadCorpusⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__CheckCorpusⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__ResetCoverageⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__SnapshotCoverageⁱᵐᵖˡ : val.
+
+Axiom matchStringOnly__InitRuntimeCoverageⁱᵐᵖˡ : val.
+
 Definition Main : go_string := "testing.Main"%go.
 
+Axiom Mainⁱᵐᵖˡ : val.
+
+Axiom M : go_type.
+
+Axiom testDeps : go_type.
+
 Definition MainStart : go_string := "testing.MainStart"%go.
+
+Axiom MainStartⁱᵐᵖˡ : val.
 
 Definition testingTesting : go_string := "testing.testingTesting"%go.
 
 Definition realStderr : go_string := "testing.realStderr"%go.
 
+Axiom M__Runⁱᵐᵖˡ : val.
+
+Axiom T__reportⁱᵐᵖˡ : val.
+
 Definition listTests : go_string := "testing.listTests"%go.
+
+Axiom listTestsⁱᵐᵖˡ : val.
 
 Definition RunTests : go_string := "testing.RunTests"%go.
 
+Axiom RunTestsⁱᵐᵖˡ : val.
+
 Definition runTests : go_string := "testing.runTests"%go.
+
+Axiom runTestsⁱᵐᵖˡ : val.
+
+Axiom M__beforeⁱᵐᵖˡ : val.
+
+Axiom M__afterⁱᵐᵖˡ : val.
+
+Axiom M__writeProfilesⁱᵐᵖˡ : val.
 
 Definition toOutputDir : go_string := "testing.toOutputDir"%go.
 
+Axiom toOutputDirⁱᵐᵖˡ : val.
+
+Axiom M__startAlarmⁱᵐᵖˡ : val.
+
 Definition runningList : go_string := "testing.runningList"%go.
+
+Axiom runningListⁱᵐᵖˡ : val.
+
+Axiom M__stopAlarmⁱᵐᵖˡ : val.
 
 Definition parseCpuList : go_string := "testing.parseCpuList"%go.
 
+Axiom parseCpuListⁱᵐᵖˡ : val.
+
 Definition shouldFailFast : go_string := "testing.shouldFailFast"%go.
+
+Axiom shouldFailFastⁱᵐᵖˡ : val.
 
 Definition isWindowsRetryable : go_string := "testing.isWindowsRetryable"%go.
 
+Axiom isWindowsRetryableⁱᵐᵖˡ : val.
+
+Axiom highPrecisionTime : go_type.
+
 Definition highPrecisionTimeNow : go_string := "testing.highPrecisionTimeNow"%go.
+
+Axiom highPrecisionTimeNowⁱᵐᵖˡ : val.
 
 Definition highPrecisionTimeSince : go_string := "testing.highPrecisionTimeSince"%go.
 
+Axiom highPrecisionTimeSinceⁱᵐᵖˡ : val.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(AllocsPerRun, AllocsPerRunⁱᵐᵖˡ); (initBenchmarkFlags, initBenchmarkFlagsⁱᵐᵖˡ); (predictN, predictNⁱᵐᵖˡ); (prettyPrint, prettyPrintⁱᵐᵖˡ); (benchmarkName, benchmarkNameⁱᵐᵖˡ); (RunBenchmarks, RunBenchmarksⁱᵐᵖˡ); (runBenchmarks, runBenchmarksⁱᵐᵖˡ); (Benchmark, Benchmarkⁱᵐᵖˡ); (Coverage, Coverageⁱᵐᵖˡ); (RegisterCover, RegisterCoverⁱᵐᵖˡ); (mustBeNil, mustBeNilⁱᵐᵖˡ); (coverReport, coverReportⁱᵐᵖˡ); (RunExamples, RunExamplesⁱᵐᵖˡ); (runExamples, runExamplesⁱᵐᵖˡ); (sortLines, sortLinesⁱᵐᵖˡ); (initFuzzFlags, initFuzzFlagsⁱᵐᵖˡ); (runFuzzTests, runFuzzTestsⁱᵐᵖˡ); (runFuzzing, runFuzzingⁱᵐᵖˡ); (fRunner, fRunnerⁱᵐᵖˡ); (allMatcher, allMatcherⁱᵐᵖˡ); (newMatcher, newMatcherⁱᵐᵖˡ); (splitRegexp, splitRegexpⁱᵐᵖˡ); (parseSubtestNumber, parseSubtestNumberⁱᵐᵖˡ); (rewrite, rewriteⁱᵐᵖˡ); (isSpace, isSpaceⁱᵐᵖˡ); (registerCover2, registerCover2ⁱᵐᵖˡ); (coverReport2, coverReport2ⁱᵐᵖˡ); (coverage2, coverage2ⁱᵐᵖˡ); (runExample, runExampleⁱᵐᵖˡ); (Init, Initⁱᵐᵖˡ); (newChattyPrinter, newChattyPrinterⁱᵐᵖˡ); (Short, Shortⁱᵐᵖˡ); (Testing, Testingⁱᵐᵖˡ); (CoverMode, CoverModeⁱᵐᵖˡ); (Verbose, Verboseⁱᵐᵖˡ); (fmtDuration, fmtDurationⁱᵐᵖˡ); (removeAll, removeAllⁱᵐᵖˡ); (callerName, callerNameⁱᵐᵖˡ); (pcToName, pcToNameⁱᵐᵖˡ); (tRunner, tRunnerⁱᵐᵖˡ); (newTestState, newTestStateⁱᵐᵖˡ); (Main, Mainⁱᵐᵖˡ); (MainStart, MainStartⁱᵐᵖˡ); (listTests, listTestsⁱᵐᵖˡ); (RunTests, RunTestsⁱᵐᵖˡ); (runTests, runTestsⁱᵐᵖˡ); (toOutputDir, toOutputDirⁱᵐᵖˡ); (runningList, runningListⁱᵐᵖˡ); (parseCpuList, parseCpuListⁱᵐᵖˡ); (shouldFailFast, shouldFailFastⁱᵐᵖˡ); (isWindowsRetryable, isWindowsRetryableⁱᵐᵖˡ); (highPrecisionTimeNow, highPrecisionTimeNowⁱᵐᵖˡ); (highPrecisionTimeSince, highPrecisionTimeSinceⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(T.id, []); (ptrT.id T.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(durationOrCountFlag.id, []); (ptrT.id durationOrCountFlag.id, [("Set"%go, durationOrCountFlag__Setⁱᵐᵖˡ); ("String"%go, durationOrCountFlag__Stringⁱᵐᵖˡ)]); (InternalBenchmark.id, []); (ptrT.id InternalBenchmark.id, []); (B.id, []); (ptrT.id B.id, [("Chdir"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Chdir"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Cleanup"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Cleanup"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Context"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Context"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Elapsed"%go, B__Elapsedⁱᵐᵖˡ); ("Error"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Error"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Errorf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Errorf"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Fail"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fail"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("FailNow"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"FailNow"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Failed"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Failed"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Fatal"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fatal"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Fatalf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fatalf"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Helper"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Helper"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Log"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Log"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Logf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Logf"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Loop"%go, B__Loopⁱᵐᵖˡ); ("Name"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Name"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("ReportAllocs"%go, B__ReportAllocsⁱᵐᵖˡ); ("ReportMetric"%go, B__ReportMetricⁱᵐᵖˡ); ("ResetTimer"%go, B__ResetTimerⁱᵐᵖˡ); ("Run"%go, B__Runⁱᵐᵖˡ); ("RunParallel"%go, B__RunParallelⁱᵐᵖˡ); ("SetBytes"%go, B__SetBytesⁱᵐᵖˡ); ("SetParallelism"%go, B__SetParallelismⁱᵐᵖˡ); ("Setenv"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Setenv"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Skip"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skip"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("SkipNow"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"SkipNow"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Skipf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skipf"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("Skipped"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skipped"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("StartTimer"%go, B__StartTimerⁱᵐᵖˡ); ("StopTimer"%go, B__StopTimerⁱᵐᵖˡ); ("TempDir"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"TempDir"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("add"%go, B__addⁱᵐᵖˡ); ("checkFuzzFn"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"checkFuzzFn"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("checkRaces"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"checkRaces"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("decorate"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"decorate"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("doBench"%go, B__doBenchⁱᵐᵖˡ); ("flushToParent"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"flushToParent"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("frameSkip"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"frameSkip"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("launch"%go, B__launchⁱᵐᵖˡ); ("log"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"log"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("logDepth"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"logDepth"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("loopSlowPath"%go, B__loopSlowPathⁱᵐᵖˡ); ("private"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"private"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("resetRaces"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"resetRaces"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("run"%go, B__runⁱᵐᵖˡ); ("run1"%go, B__run1ⁱᵐᵖˡ); ("runCleanup"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"runCleanup"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("runN"%go, B__runNⁱᵐᵖˡ); ("setRan"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"setRan"%go (struct.field_ref #B #"common"%go "$r")
+                 )%V); ("stopOrScaleBLoop"%go, B__stopOrScaleBLoopⁱᵐᵖˡ); ("trimOutput"%go, B__trimOutputⁱᵐᵖˡ)]); (BenchmarkResult.id, [("AllocedBytesPerOp"%go, BenchmarkResult__AllocedBytesPerOpⁱᵐᵖˡ); ("AllocsPerOp"%go, BenchmarkResult__AllocsPerOpⁱᵐᵖˡ); ("MemString"%go, BenchmarkResult__MemStringⁱᵐᵖˡ); ("NsPerOp"%go, BenchmarkResult__NsPerOpⁱᵐᵖˡ); ("String"%go, BenchmarkResult__Stringⁱᵐᵖˡ); ("mbPerSec"%go, BenchmarkResult__mbPerSecⁱᵐᵖˡ)]); (ptrT.id BenchmarkResult.id, [("AllocedBytesPerOp"%go, (λ: "$r",
+                 method_call #BenchmarkResult.id #"AllocedBytesPerOp"%go (![#BenchmarkResult] "$r")
+                 )%V); ("AllocsPerOp"%go, (λ: "$r",
+                 method_call #BenchmarkResult.id #"AllocsPerOp"%go (![#BenchmarkResult] "$r")
+                 )%V); ("MemString"%go, (λ: "$r",
+                 method_call #BenchmarkResult.id #"MemString"%go (![#BenchmarkResult] "$r")
+                 )%V); ("NsPerOp"%go, (λ: "$r",
+                 method_call #BenchmarkResult.id #"NsPerOp"%go (![#BenchmarkResult] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #BenchmarkResult.id #"String"%go (![#BenchmarkResult] "$r")
+                 )%V); ("mbPerSec"%go, (λ: "$r",
+                 method_call #BenchmarkResult.id #"mbPerSec"%go (![#BenchmarkResult] "$r")
+                 )%V)]); (benchState.id, []); (ptrT.id benchState.id, [("processBench"%go, benchState__processBenchⁱᵐᵖˡ)]); (PB.id, []); (ptrT.id PB.id, [("Next"%go, PB__Nextⁱᵐᵖˡ)]); (discard.id, [("Write"%go, discard__Writeⁱᵐᵖˡ)]); (ptrT.id discard.id, [("Write"%go, (λ: "$r",
+                 method_call #discard.id #"Write"%go (![#discard] "$r")
+                 )%V)]); (CoverBlock.id, []); (ptrT.id CoverBlock.id, []); (Cover.id, []); (ptrT.id Cover.id, []); (InternalExample.id, []); (ptrT.id InternalExample.id, [("processRunResult"%go, InternalExample__processRunResultⁱᵐᵖˡ)]); (InternalFuzzTarget.id, []); (ptrT.id InternalFuzzTarget.id, []); (F.id, []); (ptrT.id F.id, [("Add"%go, F__Addⁱᵐᵖˡ); ("Chdir"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Chdir"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Cleanup"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Cleanup"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Context"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Context"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Error"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Error"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Errorf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Errorf"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Fail"%go, F__Failⁱᵐᵖˡ); ("FailNow"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"FailNow"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Failed"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Failed"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Fatal"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fatal"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Fatalf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fatalf"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Fuzz"%go, F__Fuzzⁱᵐᵖˡ); ("Helper"%go, F__Helperⁱᵐᵖˡ); ("Log"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Log"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Logf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Logf"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Name"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Name"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Setenv"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Setenv"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Skip"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skip"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("SkipNow"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"SkipNow"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Skipf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skipf"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("Skipped"%go, F__Skippedⁱᵐᵖˡ); ("TempDir"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"TempDir"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("checkFuzzFn"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"checkFuzzFn"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("checkRaces"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"checkRaces"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("decorate"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"decorate"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("flushToParent"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"flushToParent"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("frameSkip"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"frameSkip"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("log"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"log"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("logDepth"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"logDepth"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("private"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"private"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("report"%go, F__reportⁱᵐᵖˡ); ("resetRaces"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"resetRaces"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("runCleanup"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"runCleanup"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V); ("setRan"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"setRan"%go (struct.field_ref #F #"common"%go "$r")
+                 )%V)]); (fuzzResult.id, [("String"%go, fuzzResult__Stringⁱᵐᵖˡ)]); (ptrT.id fuzzResult.id, [("String"%go, (λ: "$r",
+                 method_call #fuzzResult.id #"String"%go (![#fuzzResult] "$r")
+                 )%V)]); (fuzzState.id, []); (ptrT.id fuzzState.id, []); (fuzzMode.id, []); (ptrT.id fuzzMode.id, []); (matcher.id, []); (ptrT.id matcher.id, [("clearSubNames"%go, matcher__clearSubNamesⁱᵐᵖˡ); ("fullName"%go, matcher__fullNameⁱᵐᵖˡ); ("unique"%go, matcher__uniqueⁱᵐᵖˡ)]); (simpleMatch.id, [("matches"%go, simpleMatch__matchesⁱᵐᵖˡ); ("verify"%go, simpleMatch__verifyⁱᵐᵖˡ)]); (ptrT.id simpleMatch.id, [("matches"%go, (λ: "$r",
+                 method_call #simpleMatch.id #"matches"%go (![#simpleMatch] "$r")
+                 )%V); ("verify"%go, (λ: "$r",
+                 method_call #simpleMatch.id #"verify"%go (![#simpleMatch] "$r")
+                 )%V)]); (alternationMatch.id, [("matches"%go, alternationMatch__matchesⁱᵐᵖˡ); ("verify"%go, alternationMatch__verifyⁱᵐᵖˡ)]); (ptrT.id alternationMatch.id, [("matches"%go, (λ: "$r",
+                 method_call #alternationMatch.id #"matches"%go (![#alternationMatch] "$r")
+                 )%V); ("verify"%go, (λ: "$r",
+                 method_call #alternationMatch.id #"verify"%go (![#alternationMatch] "$r")
+                 )%V)]); (chattyFlag.id, []); (ptrT.id chattyFlag.id, [("Get"%go, chattyFlag__Getⁱᵐᵖˡ); ("IsBoolFlag"%go, chattyFlag__IsBoolFlagⁱᵐᵖˡ); ("Set"%go, chattyFlag__Setⁱᵐᵖˡ); ("String"%go, chattyFlag__Stringⁱᵐᵖˡ); ("prefix"%go, chattyFlag__prefixⁱᵐᵖˡ)]); (chattyPrinter.id, []); (ptrT.id chattyPrinter.id, [("Printf"%go, chattyPrinter__Printfⁱᵐᵖˡ); ("Updatef"%go, chattyPrinter__Updatefⁱᵐᵖˡ); ("prefix"%go, chattyPrinter__prefixⁱᵐᵖˡ)]); (common.id, []); (ptrT.id common.id, [("Chdir"%go, common__Chdirⁱᵐᵖˡ); ("Cleanup"%go, common__Cleanupⁱᵐᵖˡ); ("Context"%go, common__Contextⁱᵐᵖˡ); ("Error"%go, common__Errorⁱᵐᵖˡ); ("Errorf"%go, common__Errorfⁱᵐᵖˡ); ("Fail"%go, common__Failⁱᵐᵖˡ); ("FailNow"%go, common__FailNowⁱᵐᵖˡ); ("Failed"%go, common__Failedⁱᵐᵖˡ); ("Fatal"%go, common__Fatalⁱᵐᵖˡ); ("Fatalf"%go, common__Fatalfⁱᵐᵖˡ); ("Helper"%go, common__Helperⁱᵐᵖˡ); ("Log"%go, common__Logⁱᵐᵖˡ); ("Logf"%go, common__Logfⁱᵐᵖˡ); ("Name"%go, common__Nameⁱᵐᵖˡ); ("Setenv"%go, common__Setenvⁱᵐᵖˡ); ("Skip"%go, common__Skipⁱᵐᵖˡ); ("SkipNow"%go, common__SkipNowⁱᵐᵖˡ); ("Skipf"%go, common__Skipfⁱᵐᵖˡ); ("Skipped"%go, common__Skippedⁱᵐᵖˡ); ("TempDir"%go, common__TempDirⁱᵐᵖˡ); ("checkFuzzFn"%go, common__checkFuzzFnⁱᵐᵖˡ); ("checkRaces"%go, common__checkRacesⁱᵐᵖˡ); ("decorate"%go, common__decorateⁱᵐᵖˡ); ("flushToParent"%go, common__flushToParentⁱᵐᵖˡ); ("frameSkip"%go, common__frameSkipⁱᵐᵖˡ); ("log"%go, common__logⁱᵐᵖˡ); ("logDepth"%go, common__logDepthⁱᵐᵖˡ); ("private"%go, common__privateⁱᵐᵖˡ); ("resetRaces"%go, common__resetRacesⁱᵐᵖˡ); ("runCleanup"%go, common__runCleanupⁱᵐᵖˡ); ("setRan"%go, common__setRanⁱᵐᵖˡ)]); (indenter.id, [("Write"%go, indenter__Writeⁱᵐᵖˡ)]); (ptrT.id indenter.id, [("Write"%go, (λ: "$r",
+                 method_call #indenter.id #"Write"%go (![#indenter] "$r")
+                 )%V)]); (T.id, []); (ptrT.id T.id, [("Chdir"%go, T__Chdirⁱᵐᵖˡ); ("Cleanup"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Cleanup"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Context"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Context"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Deadline"%go, T__Deadlineⁱᵐᵖˡ); ("Error"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Error"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Errorf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Errorf"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Fail"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fail"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("FailNow"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"FailNow"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Failed"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Failed"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Fatal"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fatal"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Fatalf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Fatalf"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Helper"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Helper"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Log"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Log"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Logf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Logf"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Name"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Name"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Parallel"%go, T__Parallelⁱᵐᵖˡ); ("Run"%go, T__Runⁱᵐᵖˡ); ("Setenv"%go, T__Setenvⁱᵐᵖˡ); ("Skip"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skip"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("SkipNow"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"SkipNow"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Skipf"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skipf"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("Skipped"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"Skipped"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("TempDir"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"TempDir"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("checkFuzzFn"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"checkFuzzFn"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("checkParallel"%go, T__checkParallelⁱᵐᵖˡ); ("checkRaces"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"checkRaces"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("decorate"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"decorate"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("flushToParent"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"flushToParent"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("frameSkip"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"frameSkip"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("log"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"log"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("logDepth"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"logDepth"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("private"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"private"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("report"%go, T__reportⁱᵐᵖˡ); ("resetRaces"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"resetRaces"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("runCleanup"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"runCleanup"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V); ("setRan"%go, (λ: "$r",
+                 method_call #(ptrT.id common.id) #"setRan"%go (struct.field_ref #T #"common"%go "$r")
+                 )%V)]); (panicHandling.id, []); (ptrT.id panicHandling.id, []); (InternalTest.id, []); (ptrT.id InternalTest.id, []); (testState.id, []); (ptrT.id testState.id, [("release"%go, testState__releaseⁱᵐᵖˡ); ("waitParallel"%go, testState__waitParallelⁱᵐᵖˡ)]); (matchStringOnly.id, [("CheckCorpus"%go, matchStringOnly__CheckCorpusⁱᵐᵖˡ); ("CoordinateFuzzing"%go, matchStringOnly__CoordinateFuzzingⁱᵐᵖˡ); ("ImportPath"%go, matchStringOnly__ImportPathⁱᵐᵖˡ); ("InitRuntimeCoverage"%go, matchStringOnly__InitRuntimeCoverageⁱᵐᵖˡ); ("MatchString"%go, matchStringOnly__MatchStringⁱᵐᵖˡ); ("ReadCorpus"%go, matchStringOnly__ReadCorpusⁱᵐᵖˡ); ("ResetCoverage"%go, matchStringOnly__ResetCoverageⁱᵐᵖˡ); ("RunFuzzWorker"%go, matchStringOnly__RunFuzzWorkerⁱᵐᵖˡ); ("SetPanicOnExit0"%go, matchStringOnly__SetPanicOnExit0ⁱᵐᵖˡ); ("SnapshotCoverage"%go, matchStringOnly__SnapshotCoverageⁱᵐᵖˡ); ("StartCPUProfile"%go, matchStringOnly__StartCPUProfileⁱᵐᵖˡ); ("StartTestLog"%go, matchStringOnly__StartTestLogⁱᵐᵖˡ); ("StopCPUProfile"%go, matchStringOnly__StopCPUProfileⁱᵐᵖˡ); ("StopTestLog"%go, matchStringOnly__StopTestLogⁱᵐᵖˡ); ("WriteProfileTo"%go, matchStringOnly__WriteProfileToⁱᵐᵖˡ)]); (ptrT.id matchStringOnly.id, [("CheckCorpus"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"CheckCorpus"%go (![#matchStringOnly] "$r")
+                 )%V); ("CoordinateFuzzing"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"CoordinateFuzzing"%go (![#matchStringOnly] "$r")
+                 )%V); ("ImportPath"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"ImportPath"%go (![#matchStringOnly] "$r")
+                 )%V); ("InitRuntimeCoverage"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"InitRuntimeCoverage"%go (![#matchStringOnly] "$r")
+                 )%V); ("MatchString"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"MatchString"%go (![#matchStringOnly] "$r")
+                 )%V); ("ReadCorpus"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"ReadCorpus"%go (![#matchStringOnly] "$r")
+                 )%V); ("ResetCoverage"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"ResetCoverage"%go (![#matchStringOnly] "$r")
+                 )%V); ("RunFuzzWorker"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"RunFuzzWorker"%go (![#matchStringOnly] "$r")
+                 )%V); ("SetPanicOnExit0"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"SetPanicOnExit0"%go (![#matchStringOnly] "$r")
+                 )%V); ("SnapshotCoverage"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"SnapshotCoverage"%go (![#matchStringOnly] "$r")
+                 )%V); ("StartCPUProfile"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"StartCPUProfile"%go (![#matchStringOnly] "$r")
+                 )%V); ("StartTestLog"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"StartTestLog"%go (![#matchStringOnly] "$r")
+                 )%V); ("StopCPUProfile"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"StopCPUProfile"%go (![#matchStringOnly] "$r")
+                 )%V); ("StopTestLog"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"StopTestLog"%go (![#matchStringOnly] "$r")
+                 )%V); ("WriteProfileTo"%go, (λ: "$r",
+                 method_call #matchStringOnly.id #"WriteProfileTo"%go (![#matchStringOnly] "$r")
+                 )%V)]); (M.id, []); (ptrT.id M.id, [("Run"%go, M__Runⁱᵐᵖˡ); ("after"%go, M__afterⁱᵐᵖˡ); ("before"%go, M__beforeⁱᵐᵖˡ); ("startAlarm"%go, M__startAlarmⁱᵐᵖˡ); ("stopAlarm"%go, M__stopAlarmⁱᵐᵖˡ); ("writeProfiles"%go, M__writeProfilesⁱᵐᵖˡ)]); (highPrecisionTime.id, []); (ptrT.id highPrecisionTime.id, [])].
 
 #[global] Instance info' : PkgInfo testing.testing :=
   {|

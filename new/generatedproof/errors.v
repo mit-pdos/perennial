@@ -8,6 +8,40 @@ Set Default Proof Using "Type".
 
 Module errors.
 
+(* type errors.errorString *)
+Module errorString.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End errorString.
+
+Global Instance bounded_size_errorString : BoundedTypeSize errors.errorString.
+Admitted.
+
+Global Instance into_val_errorString `{ffi_syntax} : IntoVal errorString.t.
+Admitted.
+
+Global Instance into_val_typed_errorString `{ffi_syntax} : IntoValTyped errorString.t errors.errorString.
+Admitted.
+
+(* type errors.joinError *)
+Module joinError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End joinError.
+
+Global Instance bounded_size_joinError : BoundedTypeSize errors.joinError.
+Admitted.
+
+Global Instance into_val_joinError `{ffi_syntax} : IntoVal joinError.t.
+Admitted.
+
+Global Instance into_val_typed_joinError `{ffi_syntax} : IntoValTyped joinError.t errors.joinError.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -29,6 +63,46 @@ Global Program Instance is_pkg_defined_errors : IsPkgDefined errors :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_New :
+  WpFuncCall errors.New _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Join :
+  WpFuncCall errors.Join _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Unwrap :
+  WpFuncCall errors.Unwrap _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Is :
+  WpFuncCall errors.Is _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_is' :
+  WpFuncCall errors.is' _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_As :
+  WpFuncCall errors.As _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_as' :
+  WpFuncCall errors.as' _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_errorString'ptr_Error :
+  WpMethodCall (ptrT.id errors.errorString.id) "Error" _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_joinError'ptr_Error :
+  WpMethodCall (ptrT.id errors.joinError.id) "Error" _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_joinError'ptr_Unwrap :
+  WpMethodCall (ptrT.id errors.joinError.id) "Unwrap" _ (is_pkg_defined errors) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End errors.

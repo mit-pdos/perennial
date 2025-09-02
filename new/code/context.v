@@ -1153,120 +1153,120 @@ Definition vars' : list (go_string * go_type) := [(Canceled, error); (DeadlineEx
 
 Definition functions' : list (go_string * val) := [(Background, Backgroundⁱᵐᵖˡ); (TODO, TODOⁱᵐᵖˡ); (WithCancel, WithCancelⁱᵐᵖˡ); (WithCancelCause, WithCancelCauseⁱᵐᵖˡ); (withCancel, withCancelⁱᵐᵖˡ); (Cause, Causeⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (parentCancelCtx, parentCancelCtxⁱᵐᵖˡ); (removeChild, removeChildⁱᵐᵖˡ); (contextName, contextNameⁱᵐᵖˡ); (WithoutCancel, WithoutCancelⁱᵐᵖˡ); (WithDeadline, WithDeadlineⁱᵐᵖˡ); (WithDeadlineCause, WithDeadlineCauseⁱᵐᵖˡ); (WithTimeout, WithTimeoutⁱᵐᵖˡ); (WithTimeoutCause, WithTimeoutCauseⁱᵐᵖˡ); (WithValue, WithValueⁱᵐᵖˡ); (stringify, stringifyⁱᵐᵖˡ); (value, valueⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(deadlineExceededError.id, [("Error"%go, deadlineExceededError__Errorⁱᵐᵖˡ); ("Temporary"%go, deadlineExceededError__Temporaryⁱᵐᵖˡ); ("Timeout"%go, deadlineExceededError__Timeoutⁱᵐᵖˡ)]); (ptrT.id deadlineExceededError.id, [("Error"%go, (λ: "$recvAddr",
-                 method_call #context.context #"deadlineExceededError" #"Error" (![#deadlineExceededError] "$recvAddr")
-                 )%V); ("Temporary"%go, (λ: "$recvAddr",
-                 method_call #context.context #"deadlineExceededError" #"Temporary" (![#deadlineExceededError] "$recvAddr")
-                 )%V); ("Timeout"%go, (λ: "$recvAddr",
-                 method_call #context.context #"deadlineExceededError" #"Timeout" (![#deadlineExceededError] "$recvAddr")
-                 )%V)]); (emptyCtx.id, [("Deadline"%go, emptyCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, emptyCtx__Doneⁱᵐᵖˡ); ("Err"%go, emptyCtx__Errⁱᵐᵖˡ); ("Value"%go, emptyCtx__Valueⁱᵐᵖˡ)]); (ptrT.id emptyCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Deadline" (![#emptyCtx] "$recvAddr")
-                 )%V); ("Done"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Done" (![#emptyCtx] "$recvAddr")
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Err" (![#emptyCtx] "$recvAddr")
-                 )%V); ("Value"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Value" (![#emptyCtx] "$recvAddr")
-                 )%V)]); (backgroundCtx.id, [("Deadline"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Deadline" "Deadline" #() (struct.field_get #backgroundCtx "emptyCtx" "$recv")
-                 )%V); ("Done"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Done" "Done" #() (struct.field_get #backgroundCtx "emptyCtx" "$recv")
-                 )%V); ("Err"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Err" "Err" #() (struct.field_get #backgroundCtx "emptyCtx" "$recv")
-                 )%V); ("String"%go, backgroundCtx__Stringⁱᵐᵖˡ); ("Value"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Value" "Value" #() (struct.field_get #backgroundCtx "emptyCtx" "$recv")
-                 )%V)]); (ptrT.id backgroundCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Deadline" (![#emptyCtx] (struct.field_ref #backgroundCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V); ("Done"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Done" (![#emptyCtx] (struct.field_ref #backgroundCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Err" (![#emptyCtx] (struct.field_ref #backgroundCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #context.context #"backgroundCtx" #"String" (![#backgroundCtx] "$recvAddr")
-                 )%V); ("Value"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Value" (![#emptyCtx] (struct.field_ref #backgroundCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V)]); (todoCtx.id, [("Deadline"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Deadline" "Deadline" #() (struct.field_get #todoCtx "emptyCtx" "$recv")
-                 )%V); ("Done"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Done" "Done" #() (struct.field_get #todoCtx "emptyCtx" "$recv")
-                 )%V); ("Err"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Err" "Err" #() (struct.field_get #todoCtx "emptyCtx" "$recv")
-                 )%V); ("String"%go, todoCtx__Stringⁱᵐᵖˡ); ("Value"%go, (λ: "$recv",
-                 method_call #context.context #"emptyCtx" #"Value" "Value" #() (struct.field_get #todoCtx "emptyCtx" "$recv")
-                 )%V)]); (ptrT.id todoCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Deadline" (![#emptyCtx] (struct.field_ref #todoCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V); ("Done"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Done" (![#emptyCtx] (struct.field_ref #todoCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Err" (![#emptyCtx] (struct.field_ref #todoCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #context.context #"todoCtx" #"String" (![#todoCtx] "$recvAddr")
-                 )%V); ("Value"%go, (λ: "$recvAddr",
-                 method_call #context.context #"emptyCtx" #"Value" (![#emptyCtx] (struct.field_ref #todoCtx #"emptyCtx"%go "$recvAddr"))
-                 )%V)]); (CancelFunc.id, []); (ptrT.id CancelFunc.id, []); (CancelCauseFunc.id, []); (ptrT.id CancelCauseFunc.id, []); (afterFuncCtx.id, [("Deadline"%go, (λ: "$recv",
-                 interface.get #"Deadline"%go (struct.field_get #cancelCtx "Context" (struct.field_get #afterFuncCtx "cancelCtx" "$recv"))
-                 )%V)]); (ptrT.id afterFuncCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 interface.get #"Deadline"%go (![#Context] (struct.field_ref #cancelCtx #"Context"%go (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$recvAddr")))
-                 )%V); ("Done"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"Done" (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$recvAddr")
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"Err" (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$recvAddr")
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"String" (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$recvAddr")
-                 )%V); ("Value"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"Value" (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$recvAddr")
-                 )%V); ("cancel"%go, afterFuncCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"propagateCancel" (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$recvAddr")
-                 )%V)]); (stopCtx.id, [("Deadline"%go, (λ: "$recv",
-                 interface.get #"Deadline"%go (struct.field_get #stopCtx "Context" "$recv")
-                 )%V); ("Done"%go, (λ: "$recv",
-                 interface.get #"Done"%go (struct.field_get #stopCtx "Context" "$recv")
-                 )%V); ("Err"%go, (λ: "$recv",
-                 interface.get #"Err"%go (struct.field_get #stopCtx "Context" "$recv")
-                 )%V); ("Value"%go, (λ: "$recv",
-                 interface.get #"Value"%go (struct.field_get #stopCtx "Context" "$recv")
-                 )%V)]); (ptrT.id stopCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 interface.get #"Deadline"%go (![#Context] (struct.field_ref #stopCtx #"Context"%go "$recvAddr"))
-                 )%V); ("Done"%go, (λ: "$recvAddr",
-                 interface.get #"Done"%go (![#Context] (struct.field_ref #stopCtx #"Context"%go "$recvAddr"))
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 interface.get #"Err"%go (![#Context] (struct.field_ref #stopCtx #"Context"%go "$recvAddr"))
-                 )%V); ("Value"%go, (λ: "$recvAddr",
-                 interface.get #"Value"%go (![#Context] (struct.field_ref #stopCtx #"Context"%go "$recvAddr"))
-                 )%V)]); (cancelCtx.id, [("Deadline"%go, (λ: "$recv",
-                 interface.get #"Deadline"%go (struct.field_get #cancelCtx "Context" "$recv")
-                 )%V)]); (ptrT.id cancelCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 interface.get #"Deadline"%go (![#Context] (struct.field_ref #cancelCtx #"Context"%go "$recvAddr"))
-                 )%V); ("Done"%go, cancelCtx__Doneⁱᵐᵖˡ); ("Err"%go, cancelCtx__Errⁱᵐᵖˡ); ("String"%go, cancelCtx__Stringⁱᵐᵖˡ); ("Value"%go, cancelCtx__Valueⁱᵐᵖˡ); ("cancel"%go, cancelCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, cancelCtx__propagateCancelⁱᵐᵖˡ)]); (withoutCancelCtx.id, [("Deadline"%go, withoutCancelCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, withoutCancelCtx__Doneⁱᵐᵖˡ); ("Err"%go, withoutCancelCtx__Errⁱᵐᵖˡ); ("String"%go, withoutCancelCtx__Stringⁱᵐᵖˡ); ("Value"%go, withoutCancelCtx__Valueⁱᵐᵖˡ)]); (ptrT.id withoutCancelCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 method_call #context.context #"withoutCancelCtx" #"Deadline" (![#withoutCancelCtx] "$recvAddr")
-                 )%V); ("Done"%go, (λ: "$recvAddr",
-                 method_call #context.context #"withoutCancelCtx" #"Done" (![#withoutCancelCtx] "$recvAddr")
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 method_call #context.context #"withoutCancelCtx" #"Err" (![#withoutCancelCtx] "$recvAddr")
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #context.context #"withoutCancelCtx" #"String" (![#withoutCancelCtx] "$recvAddr")
-                 )%V); ("Value"%go, (λ: "$recvAddr",
-                 method_call #context.context #"withoutCancelCtx" #"Value" (![#withoutCancelCtx] "$recvAddr")
-                 )%V)]); (timerCtx.id, []); (ptrT.id timerCtx.id, [("Deadline"%go, timerCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"Done" (struct.field_ref #timerCtx #"cancelCtx"%go "$recvAddr")
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"Err" (struct.field_ref #timerCtx #"cancelCtx"%go "$recvAddr")
-                 )%V); ("String"%go, timerCtx__Stringⁱᵐᵖˡ); ("Value"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"Value" (struct.field_ref #timerCtx #"cancelCtx"%go "$recvAddr")
-                 )%V); ("cancel"%go, timerCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, (λ: "$recvAddr",
-                 method_call #context.context #"cancelCtx'ptr" #"propagateCancel" (struct.field_ref #timerCtx #"cancelCtx"%go "$recvAddr")
-                 )%V)]); (valueCtx.id, [("Deadline"%go, (λ: "$recv",
-                 interface.get #"Deadline"%go (struct.field_get #valueCtx "Context" "$recv")
-                 )%V); ("Done"%go, (λ: "$recv",
-                 interface.get #"Done"%go (struct.field_get #valueCtx "Context" "$recv")
-                 )%V); ("Err"%go, (λ: "$recv",
-                 interface.get #"Err"%go (struct.field_get #valueCtx "Context" "$recv")
-                 )%V)]); (ptrT.id valueCtx.id, [("Deadline"%go, (λ: "$recvAddr",
-                 interface.get #"Deadline"%go (![#Context] (struct.field_ref #valueCtx #"Context"%go "$recvAddr"))
-                 )%V); ("Done"%go, (λ: "$recvAddr",
-                 interface.get #"Done"%go (![#Context] (struct.field_ref #valueCtx #"Context"%go "$recvAddr"))
-                 )%V); ("Err"%go, (λ: "$recvAddr",
-                 interface.get #"Err"%go (![#Context] (struct.field_ref #valueCtx #"Context"%go "$recvAddr"))
+Definition msets' : list (go_string * (list (go_string * val))) := [(deadlineExceededError.id, [("Error"%go, deadlineExceededError__Errorⁱᵐᵖˡ); ("Temporary"%go, deadlineExceededError__Temporaryⁱᵐᵖˡ); ("Timeout"%go, deadlineExceededError__Timeoutⁱᵐᵖˡ)]); (ptrT.id deadlineExceededError.id, [("Error"%go, (λ: "$r",
+                 method_call #deadlineExceededError.id #"Error"%go (![#deadlineExceededError] "$r")
+                 )%V); ("Temporary"%go, (λ: "$r",
+                 method_call #deadlineExceededError.id #"Temporary"%go (![#deadlineExceededError] "$r")
+                 )%V); ("Timeout"%go, (λ: "$r",
+                 method_call #deadlineExceededError.id #"Timeout"%go (![#deadlineExceededError] "$r")
+                 )%V)]); (emptyCtx.id, [("Deadline"%go, emptyCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, emptyCtx__Doneⁱᵐᵖˡ); ("Err"%go, emptyCtx__Errⁱᵐᵖˡ); ("Value"%go, emptyCtx__Valueⁱᵐᵖˡ)]); (ptrT.id emptyCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Deadline"%go (![#emptyCtx] "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Done"%go (![#emptyCtx] "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Err"%go (![#emptyCtx] "$r")
+                 )%V); ("Value"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Value"%go (![#emptyCtx] "$r")
+                 )%V)]); (backgroundCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Deadline"%go (struct.field_get #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Done"%go (struct.field_get #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Err"%go (struct.field_get #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V); ("String"%go, backgroundCtx__Stringⁱᵐᵖˡ); ("Value"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Value"%go (struct.field_get #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V)]); (ptrT.id backgroundCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Deadline"%go (struct.field_ref #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Done"%go (struct.field_ref #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Err"%go (struct.field_ref #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #backgroundCtx.id #"String"%go (![#backgroundCtx] "$r")
+                 )%V); ("Value"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Value"%go (struct.field_ref #backgroundCtx #"emptyCtx"%go "$r")
+                 )%V)]); (todoCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Deadline"%go (struct.field_get #todoCtx #"emptyCtx"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Done"%go (struct.field_get #todoCtx #"emptyCtx"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Err"%go (struct.field_get #todoCtx #"emptyCtx"%go "$r")
+                 )%V); ("String"%go, todoCtx__Stringⁱᵐᵖˡ); ("Value"%go, (λ: "$r",
+                 method_call #emptyCtx.id #"Value"%go (struct.field_get #todoCtx #"emptyCtx"%go "$r")
+                 )%V)]); (ptrT.id todoCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Deadline"%go (struct.field_ref #todoCtx #"emptyCtx"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Done"%go (struct.field_ref #todoCtx #"emptyCtx"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Err"%go (struct.field_ref #todoCtx #"emptyCtx"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #todoCtx.id #"String"%go (![#todoCtx] "$r")
+                 )%V); ("Value"%go, (λ: "$r",
+                 method_call #(ptrT.id emptyCtx.id) #"Value"%go (struct.field_ref #todoCtx #"emptyCtx"%go "$r")
+                 )%V)]); (CancelFunc.id, []); (ptrT.id CancelFunc.id, []); (CancelCauseFunc.id, []); (ptrT.id CancelCauseFunc.id, []); (afterFuncCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #cancelCtx.id #"Deadline"%go (struct.field_get #afterFuncCtx #"cancelCtx"%go "$r")
+                 )%V)]); (ptrT.id afterFuncCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"Deadline"%go (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"Done"%go (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"Err"%go (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"String"%go (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$r")
+                 )%V); ("Value"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"Value"%go (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$r")
+                 )%V); ("cancel"%go, afterFuncCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"propagateCancel"%go (struct.field_ref #afterFuncCtx #"cancelCtx"%go "$r")
+                 )%V)]); (stopCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #Context.id #"Deadline"%go (struct.field_get #stopCtx #"Context"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #Context.id #"Done"%go (struct.field_get #stopCtx #"Context"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #Context.id #"Err"%go (struct.field_get #stopCtx #"Context"%go "$r")
+                 )%V); ("Value"%go, (λ: "$r",
+                 method_call #Context.id #"Value"%go (struct.field_get #stopCtx #"Context"%go "$r")
+                 )%V)]); (ptrT.id stopCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Deadline"%go (struct.field_ref #stopCtx #"Context"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Done"%go (struct.field_ref #stopCtx #"Context"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Err"%go (struct.field_ref #stopCtx #"Context"%go "$r")
+                 )%V); ("Value"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Value"%go (struct.field_ref #stopCtx #"Context"%go "$r")
+                 )%V)]); (cancelCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #Context.id #"Deadline"%go (struct.field_get #cancelCtx #"Context"%go "$r")
+                 )%V)]); (ptrT.id cancelCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Deadline"%go (struct.field_ref #cancelCtx #"Context"%go "$r")
+                 )%V); ("Done"%go, cancelCtx__Doneⁱᵐᵖˡ); ("Err"%go, cancelCtx__Errⁱᵐᵖˡ); ("String"%go, cancelCtx__Stringⁱᵐᵖˡ); ("Value"%go, cancelCtx__Valueⁱᵐᵖˡ); ("cancel"%go, cancelCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, cancelCtx__propagateCancelⁱᵐᵖˡ)]); (withoutCancelCtx.id, [("Deadline"%go, withoutCancelCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, withoutCancelCtx__Doneⁱᵐᵖˡ); ("Err"%go, withoutCancelCtx__Errⁱᵐᵖˡ); ("String"%go, withoutCancelCtx__Stringⁱᵐᵖˡ); ("Value"%go, withoutCancelCtx__Valueⁱᵐᵖˡ)]); (ptrT.id withoutCancelCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #withoutCancelCtx.id #"Deadline"%go (![#withoutCancelCtx] "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #withoutCancelCtx.id #"Done"%go (![#withoutCancelCtx] "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #withoutCancelCtx.id #"Err"%go (![#withoutCancelCtx] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #withoutCancelCtx.id #"String"%go (![#withoutCancelCtx] "$r")
+                 )%V); ("Value"%go, (λ: "$r",
+                 method_call #withoutCancelCtx.id #"Value"%go (![#withoutCancelCtx] "$r")
+                 )%V)]); (timerCtx.id, []); (ptrT.id timerCtx.id, [("Deadline"%go, timerCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"Done"%go (struct.field_ref #timerCtx #"cancelCtx"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"Err"%go (struct.field_ref #timerCtx #"cancelCtx"%go "$r")
+                 )%V); ("String"%go, timerCtx__Stringⁱᵐᵖˡ); ("Value"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"Value"%go (struct.field_ref #timerCtx #"cancelCtx"%go "$r")
+                 )%V); ("cancel"%go, timerCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, (λ: "$r",
+                 method_call #(ptrT.id cancelCtx.id) #"propagateCancel"%go (struct.field_ref #timerCtx #"cancelCtx"%go "$r")
+                 )%V)]); (valueCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #Context.id #"Deadline"%go (struct.field_get #valueCtx #"Context"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #Context.id #"Done"%go (struct.field_get #valueCtx #"Context"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #Context.id #"Err"%go (struct.field_get #valueCtx #"Context"%go "$r")
+                 )%V)]); (ptrT.id valueCtx.id, [("Deadline"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Deadline"%go (struct.field_ref #valueCtx #"Context"%go "$r")
+                 )%V); ("Done"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Done"%go (struct.field_ref #valueCtx #"Context"%go "$r")
+                 )%V); ("Err"%go, (λ: "$r",
+                 method_call #(ptrT.id Context.id) #"Err"%go (struct.field_ref #valueCtx #"Context"%go "$r")
                  )%V); ("String"%go, valueCtx__Stringⁱᵐᵖˡ); ("Value"%go, valueCtx__Valueⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo context.context :=

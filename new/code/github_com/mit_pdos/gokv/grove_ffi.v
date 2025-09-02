@@ -8,16 +8,17 @@ Definition grove_ffi : go_string := "github.com/mit-pdos/gokv/grove_ffi".
 From New Require Import grove_prelude.
 Module grove_ffi.
 
-Module Address. Definition id : go_string := uint64T.id. End Address.
-Module Listener. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.Listener"%go. End Listener.
-Module Connection. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connection"%go. End Connection.
-Module ConnectRet. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.ConnectRet"%go. End ConnectRet.
-Module ReceiveRet. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.ReceiveRet"%go. End ReceiveRet.
+Module listener. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.listener"%go. End listener.
+Module connection. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.connection"%go. End connection.
 
 Section code.
 
 
+Axiom DataDir : go_string.
+
 Definition panic_if_err : go_string := "github.com/mit-pdos/gokv/grove_ffi.panic_if_err"%go.
+
+Axiom panic_if_errⁱᵐᵖˡ : val.
 
 Definition FileWrite : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileWrite"%go.
 
@@ -27,15 +28,27 @@ Definition FileAppend : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileApp
 
 Definition U64ToString : go_string := "github.com/mit-pdos/gokv/grove_ffi.U64ToString"%go.
 
+Axiom U64ToStringⁱᵐᵖˡ : val.
+
 Definition MakeAddress : go_string := "github.com/mit-pdos/gokv/grove_ffi.MakeAddress"%go.
 
+Axiom MakeAddressⁱᵐᵖˡ : val.
+
 Definition AddressToStr : go_string := "github.com/mit-pdos/gokv/grove_ffi.AddressToStr"%go.
+
+Axiom AddressToStrⁱᵐᵖˡ : val.
+
+Axiom listener : go_type.
 
 Definition Listen : go_string := "github.com/mit-pdos/gokv/grove_ffi.Listen"%go.
 
 Definition Accept : go_string := "github.com/mit-pdos/gokv/grove_ffi.Accept"%go.
 
+Axiom connection : go_type.
+
 Definition makeConnection : go_string := "github.com/mit-pdos/gokv/grove_ffi.makeConnection"%go.
+
+Axiom makeConnectionⁱᵐᵖˡ : val.
 
 Definition Connect : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connect"%go.
 
@@ -49,9 +62,9 @@ Definition GetTSC : go_string := "github.com/mit-pdos/gokv/grove_ffi.GetTSC"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(FileWrite, FileWriteⁱᵐᵖˡ); (FileRead, FileReadⁱᵐᵖˡ); (FileAppend, FileAppendⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ); (Accept, Acceptⁱᵐᵖˡ); (Connect, Connectⁱᵐᵖˡ); (Send, Sendⁱᵐᵖˡ); (Receive, Receiveⁱᵐᵖˡ); (GetTimeRange, GetTimeRangeⁱᵐᵖˡ); (GetTSC, GetTSCⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(panic_if_err, panic_if_errⁱᵐᵖˡ); (FileWrite, FileWriteⁱᵐᵖˡ); (FileRead, FileReadⁱᵐᵖˡ); (FileAppend, FileAppendⁱᵐᵖˡ); (U64ToString, U64ToStringⁱᵐᵖˡ); (MakeAddress, MakeAddressⁱᵐᵖˡ); (AddressToStr, AddressToStrⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ); (Accept, Acceptⁱᵐᵖˡ); (makeConnection, makeConnectionⁱᵐᵖˡ); (Connect, Connectⁱᵐᵖˡ); (Send, Sendⁱᵐᵖˡ); (Receive, Receiveⁱᵐᵖˡ); (GetTimeRange, GetTimeRangeⁱᵐᵖˡ); (GetTSC, GetTSCⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Listener.id, []); (ptrT.id Listener.id, []); (Connection.id, []); (ptrT.id Connection.id, []); (ConnectRet.id, []); (ptrT.id ConnectRet.id, []); (ReceiveRet.id, []); (ptrT.id ReceiveRet.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(listener.id, []); (ptrT.id listener.id, []); (Listener.id, []); (ptrT.id Listener.id, []); (connection.id, []); (ptrT.id connection.id, []); (Connection.id, []); (ptrT.id Connection.id, []); (ConnectRet.id, []); (ptrT.id ConnectRet.id, []); (ReceiveRet.id, []); (ptrT.id ReceiveRet.id, [])].
 
 #[global] Instance info' : PkgInfo grove_ffi.grove_ffi :=
   {|

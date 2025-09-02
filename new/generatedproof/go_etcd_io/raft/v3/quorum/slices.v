@@ -115,5 +115,17 @@ Global Program Instance is_pkg_defined_slices : IsPkgDefined slices :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_CompareUint64 :
+  WpFuncCall slices.CompareUint64 _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SortUint64 :
+  WpFuncCall slices.SortUint64 _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SortFuncTup :
+  WpFuncCall slices.SortFuncTup _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
 End names.
 End slices.

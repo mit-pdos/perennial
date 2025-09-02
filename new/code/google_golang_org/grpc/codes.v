@@ -13,11 +13,21 @@ Context `{ffi_syntax}.
 
 Definition init : go_string := "google.golang.org/grpc/codes.init"%go.
 
+Axiom initⁱᵐᵖˡ : val.
+
+Axiom Code__Stringⁱᵐᵖˡ : val.
+
 Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonicalString"%go.
+
+Axiom canonicalStringⁱᵐᵖˡ : val.
 
 Definition Code : go_type := uint32T.
 
+Axiom OK : expr.
+
 Definition Canceled : expr := #(W32 1).
+
+Axiom Unknown : expr.
 
 Definition InvalidArgument : expr := #(W32 3).
 
@@ -25,13 +35,21 @@ Definition DeadlineExceeded : expr := #(W32 4).
 
 Definition NotFound : expr := #(W32 5).
 
+Axiom AlreadyExists : expr.
+
 Definition PermissionDenied : expr := #(W32 7).
 
 Definition ResourceExhausted : expr := #(W32 8).
 
 Definition FailedPrecondition : expr := #(W32 9).
 
+Axiom Aborted : expr.
+
 Definition OutOfRange : expr := #(W32 11).
+
+Axiom Unimplemented : expr.
+
+Axiom Internal : expr.
 
 Definition Unavailable : expr := #(W32 14).
 
@@ -39,15 +57,21 @@ Definition DataLoss : expr := #(W32 15).
 
 Definition Unauthenticated : expr := #(W32 16).
 
+Axiom _maxCode : Z.
+
 Definition strToCode : go_string := "google.golang.org/grpc/codes.strToCode"%go.
 
 Axiom strToCode'init : val.
 
+Axiom Code__UnmarshalJSONⁱᵐᵖˡ : val.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(init, initⁱᵐᵖˡ); (canonicalString, canonicalStringⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Code.id, []); (ptrT.id Code.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Code.id, [("String"%go, Code__Stringⁱᵐᵖˡ)]); (ptrT.id Code.id, [("String"%go, (λ: "$r",
+                 method_call #Code.id #"String"%go (![#Code] "$r")
+                 )%V); ("UnmarshalJSON"%go, Code__UnmarshalJSONⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo codes.codes :=
   {|

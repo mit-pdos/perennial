@@ -8,6 +8,448 @@ Set Default Proof Using "Type".
 
 Module testing.
 
+(* type testing.durationOrCountFlag *)
+Module durationOrCountFlag.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End durationOrCountFlag.
+
+Global Instance bounded_size_durationOrCountFlag : BoundedTypeSize testing.durationOrCountFlag.
+Admitted.
+
+Global Instance into_val_durationOrCountFlag `{ffi_syntax} : IntoVal durationOrCountFlag.t.
+Admitted.
+
+Global Instance into_val_typed_durationOrCountFlag `{ffi_syntax} : IntoValTyped durationOrCountFlag.t testing.durationOrCountFlag.
+Admitted.
+
+(* type testing.InternalBenchmark *)
+Module InternalBenchmark.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End InternalBenchmark.
+
+Global Instance bounded_size_InternalBenchmark : BoundedTypeSize testing.InternalBenchmark.
+Admitted.
+
+Global Instance into_val_InternalBenchmark `{ffi_syntax} : IntoVal InternalBenchmark.t.
+Admitted.
+
+Global Instance into_val_typed_InternalBenchmark `{ffi_syntax} : IntoValTyped InternalBenchmark.t testing.InternalBenchmark.
+Admitted.
+
+(* type testing.B *)
+Module B.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End B.
+
+Global Instance bounded_size_B : BoundedTypeSize testing.B.
+Admitted.
+
+Global Instance into_val_B `{ffi_syntax} : IntoVal B.t.
+Admitted.
+
+Global Instance into_val_typed_B `{ffi_syntax} : IntoValTyped B.t testing.B.
+Admitted.
+
+(* type testing.BenchmarkResult *)
+Module BenchmarkResult.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End BenchmarkResult.
+
+Global Instance bounded_size_BenchmarkResult : BoundedTypeSize testing.BenchmarkResult.
+Admitted.
+
+Global Instance into_val_BenchmarkResult `{ffi_syntax} : IntoVal BenchmarkResult.t.
+Admitted.
+
+Global Instance into_val_typed_BenchmarkResult `{ffi_syntax} : IntoValTyped BenchmarkResult.t testing.BenchmarkResult.
+Admitted.
+
+(* type testing.benchState *)
+Module benchState.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End benchState.
+
+Global Instance bounded_size_benchState : BoundedTypeSize testing.benchState.
+Admitted.
+
+Global Instance into_val_benchState `{ffi_syntax} : IntoVal benchState.t.
+Admitted.
+
+Global Instance into_val_typed_benchState `{ffi_syntax} : IntoValTyped benchState.t testing.benchState.
+Admitted.
+
+(* type testing.PB *)
+Module PB.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PB.
+
+Global Instance bounded_size_PB : BoundedTypeSize testing.PB.
+Admitted.
+
+Global Instance into_val_PB `{ffi_syntax} : IntoVal PB.t.
+Admitted.
+
+Global Instance into_val_typed_PB `{ffi_syntax} : IntoValTyped PB.t testing.PB.
+Admitted.
+
+(* type testing.discard *)
+Module discard.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End discard.
+
+Global Instance bounded_size_discard : BoundedTypeSize testing.discard.
+Admitted.
+
+Global Instance into_val_discard `{ffi_syntax} : IntoVal discard.t.
+Admitted.
+
+Global Instance into_val_typed_discard `{ffi_syntax} : IntoValTyped discard.t testing.discard.
+Admitted.
+
+(* type testing.CoverBlock *)
+Module CoverBlock.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CoverBlock.
+
+Global Instance bounded_size_CoverBlock : BoundedTypeSize testing.CoverBlock.
+Admitted.
+
+Global Instance into_val_CoverBlock `{ffi_syntax} : IntoVal CoverBlock.t.
+Admitted.
+
+Global Instance into_val_typed_CoverBlock `{ffi_syntax} : IntoValTyped CoverBlock.t testing.CoverBlock.
+Admitted.
+
+(* type testing.Cover *)
+Module Cover.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Cover.
+
+Global Instance bounded_size_Cover : BoundedTypeSize testing.Cover.
+Admitted.
+
+Global Instance into_val_Cover `{ffi_syntax} : IntoVal Cover.t.
+Admitted.
+
+Global Instance into_val_typed_Cover `{ffi_syntax} : IntoValTyped Cover.t testing.Cover.
+Admitted.
+
+(* type testing.InternalExample *)
+Module InternalExample.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End InternalExample.
+
+Global Instance bounded_size_InternalExample : BoundedTypeSize testing.InternalExample.
+Admitted.
+
+Global Instance into_val_InternalExample `{ffi_syntax} : IntoVal InternalExample.t.
+Admitted.
+
+Global Instance into_val_typed_InternalExample `{ffi_syntax} : IntoValTyped InternalExample.t testing.InternalExample.
+Admitted.
+
+(* type testing.InternalFuzzTarget *)
+Module InternalFuzzTarget.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End InternalFuzzTarget.
+
+Global Instance bounded_size_InternalFuzzTarget : BoundedTypeSize testing.InternalFuzzTarget.
+Admitted.
+
+Global Instance into_val_InternalFuzzTarget `{ffi_syntax} : IntoVal InternalFuzzTarget.t.
+Admitted.
+
+Global Instance into_val_typed_InternalFuzzTarget `{ffi_syntax} : IntoValTyped InternalFuzzTarget.t testing.InternalFuzzTarget.
+Admitted.
+
+(* type testing.F *)
+Module F.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End F.
+
+Global Instance bounded_size_F : BoundedTypeSize testing.F.
+Admitted.
+
+Global Instance into_val_F `{ffi_syntax} : IntoVal F.t.
+Admitted.
+
+Global Instance into_val_typed_F `{ffi_syntax} : IntoValTyped F.t testing.F.
+Admitted.
+
+(* type testing.corpusEntry *)
+Module corpusEntry.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End corpusEntry.
+
+Global Instance bounded_size_corpusEntry : BoundedTypeSize testing.corpusEntry.
+Admitted.
+
+Global Instance into_val_corpusEntry `{ffi_syntax} : IntoVal corpusEntry.t.
+Admitted.
+
+Global Instance into_val_typed_corpusEntry `{ffi_syntax} : IntoValTyped corpusEntry.t testing.corpusEntry.
+Admitted.
+
+(* type testing.fuzzResult *)
+Module fuzzResult.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fuzzResult.
+
+Global Instance bounded_size_fuzzResult : BoundedTypeSize testing.fuzzResult.
+Admitted.
+
+Global Instance into_val_fuzzResult `{ffi_syntax} : IntoVal fuzzResult.t.
+Admitted.
+
+Global Instance into_val_typed_fuzzResult `{ffi_syntax} : IntoValTyped fuzzResult.t testing.fuzzResult.
+Admitted.
+
+(* type testing.fuzzCrashError *)
+Module fuzzCrashError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fuzzCrashError.
+
+Global Instance bounded_size_fuzzCrashError : BoundedTypeSize testing.fuzzCrashError.
+Admitted.
+
+Global Instance into_val_fuzzCrashError `{ffi_syntax} : IntoVal fuzzCrashError.t.
+Admitted.
+
+Global Instance into_val_typed_fuzzCrashError `{ffi_syntax} : IntoValTyped fuzzCrashError.t testing.fuzzCrashError.
+Admitted.
+
+(* type testing.fuzzState *)
+Module fuzzState.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fuzzState.
+
+Global Instance bounded_size_fuzzState : BoundedTypeSize testing.fuzzState.
+Admitted.
+
+Global Instance into_val_fuzzState `{ffi_syntax} : IntoVal fuzzState.t.
+Admitted.
+
+Global Instance into_val_typed_fuzzState `{ffi_syntax} : IntoValTyped fuzzState.t testing.fuzzState.
+Admitted.
+
+(* type testing.fuzzMode *)
+Module fuzzMode.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fuzzMode.
+
+Global Instance bounded_size_fuzzMode : BoundedTypeSize testing.fuzzMode.
+Admitted.
+
+Global Instance into_val_fuzzMode `{ffi_syntax} : IntoVal fuzzMode.t.
+Admitted.
+
+Global Instance into_val_typed_fuzzMode `{ffi_syntax} : IntoValTyped fuzzMode.t testing.fuzzMode.
+Admitted.
+
+(* type testing.matcher *)
+Module matcher.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End matcher.
+
+Global Instance bounded_size_matcher : BoundedTypeSize testing.matcher.
+Admitted.
+
+Global Instance into_val_matcher `{ffi_syntax} : IntoVal matcher.t.
+Admitted.
+
+Global Instance into_val_typed_matcher `{ffi_syntax} : IntoValTyped matcher.t testing.matcher.
+Admitted.
+
+(* type testing.filterMatch *)
+Module filterMatch.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End filterMatch.
+
+Global Instance bounded_size_filterMatch : BoundedTypeSize testing.filterMatch.
+Admitted.
+
+Global Instance into_val_filterMatch `{ffi_syntax} : IntoVal filterMatch.t.
+Admitted.
+
+Global Instance into_val_typed_filterMatch `{ffi_syntax} : IntoValTyped filterMatch.t testing.filterMatch.
+Admitted.
+
+(* type testing.simpleMatch *)
+Module simpleMatch.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End simpleMatch.
+
+Global Instance bounded_size_simpleMatch : BoundedTypeSize testing.simpleMatch.
+Admitted.
+
+Global Instance into_val_simpleMatch `{ffi_syntax} : IntoVal simpleMatch.t.
+Admitted.
+
+Global Instance into_val_typed_simpleMatch `{ffi_syntax} : IntoValTyped simpleMatch.t testing.simpleMatch.
+Admitted.
+
+(* type testing.alternationMatch *)
+Module alternationMatch.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End alternationMatch.
+
+Global Instance bounded_size_alternationMatch : BoundedTypeSize testing.alternationMatch.
+Admitted.
+
+Global Instance into_val_alternationMatch `{ffi_syntax} : IntoVal alternationMatch.t.
+Admitted.
+
+Global Instance into_val_typed_alternationMatch `{ffi_syntax} : IntoValTyped alternationMatch.t testing.alternationMatch.
+Admitted.
+
+(* type testing.chattyFlag *)
+Module chattyFlag.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End chattyFlag.
+
+Global Instance bounded_size_chattyFlag : BoundedTypeSize testing.chattyFlag.
+Admitted.
+
+Global Instance into_val_chattyFlag `{ffi_syntax} : IntoVal chattyFlag.t.
+Admitted.
+
+Global Instance into_val_typed_chattyFlag `{ffi_syntax} : IntoValTyped chattyFlag.t testing.chattyFlag.
+Admitted.
+
+(* type testing.chattyPrinter *)
+Module chattyPrinter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End chattyPrinter.
+
+Global Instance bounded_size_chattyPrinter : BoundedTypeSize testing.chattyPrinter.
+Admitted.
+
+Global Instance into_val_chattyPrinter `{ffi_syntax} : IntoVal chattyPrinter.t.
+Admitted.
+
+Global Instance into_val_typed_chattyPrinter `{ffi_syntax} : IntoValTyped chattyPrinter.t testing.chattyPrinter.
+Admitted.
+
+(* type testing.common *)
+Module common.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End common.
+
+Global Instance bounded_size_common : BoundedTypeSize testing.common.
+Admitted.
+
+Global Instance into_val_common `{ffi_syntax} : IntoVal common.t.
+Admitted.
+
+Global Instance into_val_typed_common `{ffi_syntax} : IntoValTyped common.t testing.common.
+Admitted.
+
+(* type testing.indenter *)
+Module indenter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End indenter.
+
+Global Instance bounded_size_indenter : BoundedTypeSize testing.indenter.
+Admitted.
+
+Global Instance into_val_indenter `{ffi_syntax} : IntoVal indenter.t.
+Admitted.
+
+Global Instance into_val_typed_indenter `{ffi_syntax} : IntoValTyped indenter.t testing.indenter.
+Admitted.
+
+(* type testing.TB *)
+Module TB.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End TB.
+
+Global Instance bounded_size_TB : BoundedTypeSize testing.TB.
+Admitted.
+
+Global Instance into_val_TB `{ffi_syntax} : IntoVal TB.t.
+Admitted.
+
+Global Instance into_val_typed_TB `{ffi_syntax} : IntoValTyped TB.t testing.TB.
+Admitted.
+
 (* type testing.T *)
 Module T.
 Section def.
@@ -23,6 +465,125 @@ Global Instance into_val_T `{ffi_syntax} : IntoVal T.t.
 Admitted.
 
 Global Instance into_val_typed_T `{ffi_syntax} : IntoValTyped T.t testing.T.
+Admitted.
+
+(* type testing.panicHandling *)
+Module panicHandling.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End panicHandling.
+
+Global Instance bounded_size_panicHandling : BoundedTypeSize testing.panicHandling.
+Admitted.
+
+Global Instance into_val_panicHandling `{ffi_syntax} : IntoVal panicHandling.t.
+Admitted.
+
+Global Instance into_val_typed_panicHandling `{ffi_syntax} : IntoValTyped panicHandling.t testing.panicHandling.
+Admitted.
+
+(* type testing.InternalTest *)
+Module InternalTest.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End InternalTest.
+
+Global Instance bounded_size_InternalTest : BoundedTypeSize testing.InternalTest.
+Admitted.
+
+Global Instance into_val_InternalTest `{ffi_syntax} : IntoVal InternalTest.t.
+Admitted.
+
+Global Instance into_val_typed_InternalTest `{ffi_syntax} : IntoValTyped InternalTest.t testing.InternalTest.
+Admitted.
+
+(* type testing.testState *)
+Module testState.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End testState.
+
+Global Instance bounded_size_testState : BoundedTypeSize testing.testState.
+Admitted.
+
+Global Instance into_val_testState `{ffi_syntax} : IntoVal testState.t.
+Admitted.
+
+Global Instance into_val_typed_testState `{ffi_syntax} : IntoValTyped testState.t testing.testState.
+Admitted.
+
+(* type testing.matchStringOnly *)
+Module matchStringOnly.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End matchStringOnly.
+
+Global Instance bounded_size_matchStringOnly : BoundedTypeSize testing.matchStringOnly.
+Admitted.
+
+Global Instance into_val_matchStringOnly `{ffi_syntax} : IntoVal matchStringOnly.t.
+Admitted.
+
+Global Instance into_val_typed_matchStringOnly `{ffi_syntax} : IntoValTyped matchStringOnly.t testing.matchStringOnly.
+Admitted.
+
+(* type testing.M *)
+Module M.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End M.
+
+Global Instance bounded_size_M : BoundedTypeSize testing.M.
+Admitted.
+
+Global Instance into_val_M `{ffi_syntax} : IntoVal M.t.
+Admitted.
+
+Global Instance into_val_typed_M `{ffi_syntax} : IntoValTyped M.t testing.M.
+Admitted.
+
+(* type testing.testDeps *)
+Module testDeps.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End testDeps.
+
+Global Instance bounded_size_testDeps : BoundedTypeSize testing.testDeps.
+Admitted.
+
+Global Instance into_val_testDeps `{ffi_syntax} : IntoVal testDeps.t.
+Admitted.
+
+Global Instance into_val_typed_testDeps `{ffi_syntax} : IntoValTyped testDeps.t testing.testDeps.
+Admitted.
+
+(* type testing.highPrecisionTime *)
+Module highPrecisionTime.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End highPrecisionTime.
+
+Global Instance bounded_size_highPrecisionTime : BoundedTypeSize testing.highPrecisionTime.
+Admitted.
+
+Global Instance into_val_highPrecisionTime `{ffi_syntax} : IntoVal highPrecisionTime.t.
+Admitted.
+
+Global Instance into_val_typed_highPrecisionTime `{ffi_syntax} : IntoValTyped highPrecisionTime.t testing.highPrecisionTime.
 Admitted.
 
 Section names.
@@ -46,6 +607,1146 @@ Global Program Instance is_pkg_defined_testing : IsPkgDefined testing :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_AllocsPerRun :
+  WpFuncCall testing.AllocsPerRun _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_initBenchmarkFlags :
+  WpFuncCall testing.initBenchmarkFlags _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_predictN :
+  WpFuncCall testing.predictN _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_prettyPrint :
+  WpFuncCall testing.prettyPrint _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_benchmarkName :
+  WpFuncCall testing.benchmarkName _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RunBenchmarks :
+  WpFuncCall testing.RunBenchmarks _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runBenchmarks :
+  WpFuncCall testing.runBenchmarks _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Benchmark :
+  WpFuncCall testing.Benchmark _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Coverage :
+  WpFuncCall testing.Coverage _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RegisterCover :
+  WpFuncCall testing.RegisterCover _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_mustBeNil :
+  WpFuncCall testing.mustBeNil _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_coverReport :
+  WpFuncCall testing.coverReport _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RunExamples :
+  WpFuncCall testing.RunExamples _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runExamples :
+  WpFuncCall testing.runExamples _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_sortLines :
+  WpFuncCall testing.sortLines _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_initFuzzFlags :
+  WpFuncCall testing.initFuzzFlags _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runFuzzTests :
+  WpFuncCall testing.runFuzzTests _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runFuzzing :
+  WpFuncCall testing.runFuzzing _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_fRunner :
+  WpFuncCall testing.fRunner _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_allMatcher :
+  WpFuncCall testing.allMatcher _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newMatcher :
+  WpFuncCall testing.newMatcher _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_splitRegexp :
+  WpFuncCall testing.splitRegexp _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseSubtestNumber :
+  WpFuncCall testing.parseSubtestNumber _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rewrite :
+  WpFuncCall testing.rewrite _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isSpace :
+  WpFuncCall testing.isSpace _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_registerCover2 :
+  WpFuncCall testing.registerCover2 _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_coverReport2 :
+  WpFuncCall testing.coverReport2 _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_coverage2 :
+  WpFuncCall testing.coverage2 _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runExample :
+  WpFuncCall testing.runExample _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Init :
+  WpFuncCall testing.Init _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newChattyPrinter :
+  WpFuncCall testing.newChattyPrinter _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Short :
+  WpFuncCall testing.Short _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Testing :
+  WpFuncCall testing.Testing _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CoverMode :
+  WpFuncCall testing.CoverMode _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Verbose :
+  WpFuncCall testing.Verbose _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_fmtDuration :
+  WpFuncCall testing.fmtDuration _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_removeAll :
+  WpFuncCall testing.removeAll _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_callerName :
+  WpFuncCall testing.callerName _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_pcToName :
+  WpFuncCall testing.pcToName _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tRunner :
+  WpFuncCall testing.tRunner _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newTestState :
+  WpFuncCall testing.newTestState _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Main :
+  WpFuncCall testing.Main _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MainStart :
+  WpFuncCall testing.MainStart _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_listTests :
+  WpFuncCall testing.listTests _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RunTests :
+  WpFuncCall testing.RunTests _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runTests :
+  WpFuncCall testing.runTests _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_toOutputDir :
+  WpFuncCall testing.toOutputDir _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runningList :
+  WpFuncCall testing.runningList _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseCpuList :
+  WpFuncCall testing.parseCpuList _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_shouldFailFast :
+  WpFuncCall testing.shouldFailFast _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isWindowsRetryable :
+  WpFuncCall testing.isWindowsRetryable _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_highPrecisionTimeNow :
+  WpFuncCall testing.highPrecisionTimeNow _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_highPrecisionTimeSince :
+  WpFuncCall testing.highPrecisionTimeSince _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_durationOrCountFlag'ptr_Set :
+  WpMethodCall (ptrT.id testing.durationOrCountFlag.id) "Set" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_durationOrCountFlag'ptr_String :
+  WpMethodCall (ptrT.id testing.durationOrCountFlag.id) "String" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Chdir :
+  WpMethodCall (ptrT.id testing.B.id) "Chdir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Cleanup :
+  WpMethodCall (ptrT.id testing.B.id) "Cleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Context :
+  WpMethodCall (ptrT.id testing.B.id) "Context" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Elapsed :
+  WpMethodCall (ptrT.id testing.B.id) "Elapsed" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Error :
+  WpMethodCall (ptrT.id testing.B.id) "Error" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Errorf :
+  WpMethodCall (ptrT.id testing.B.id) "Errorf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Fail :
+  WpMethodCall (ptrT.id testing.B.id) "Fail" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_FailNow :
+  WpMethodCall (ptrT.id testing.B.id) "FailNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Failed :
+  WpMethodCall (ptrT.id testing.B.id) "Failed" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Fatal :
+  WpMethodCall (ptrT.id testing.B.id) "Fatal" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Fatalf :
+  WpMethodCall (ptrT.id testing.B.id) "Fatalf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Helper :
+  WpMethodCall (ptrT.id testing.B.id) "Helper" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Log :
+  WpMethodCall (ptrT.id testing.B.id) "Log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Logf :
+  WpMethodCall (ptrT.id testing.B.id) "Logf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Loop :
+  WpMethodCall (ptrT.id testing.B.id) "Loop" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Name :
+  WpMethodCall (ptrT.id testing.B.id) "Name" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_ReportAllocs :
+  WpMethodCall (ptrT.id testing.B.id) "ReportAllocs" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_ReportMetric :
+  WpMethodCall (ptrT.id testing.B.id) "ReportMetric" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_ResetTimer :
+  WpMethodCall (ptrT.id testing.B.id) "ResetTimer" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Run :
+  WpMethodCall (ptrT.id testing.B.id) "Run" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_RunParallel :
+  WpMethodCall (ptrT.id testing.B.id) "RunParallel" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_SetBytes :
+  WpMethodCall (ptrT.id testing.B.id) "SetBytes" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_SetParallelism :
+  WpMethodCall (ptrT.id testing.B.id) "SetParallelism" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Setenv :
+  WpMethodCall (ptrT.id testing.B.id) "Setenv" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Skip :
+  WpMethodCall (ptrT.id testing.B.id) "Skip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_SkipNow :
+  WpMethodCall (ptrT.id testing.B.id) "SkipNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Skipf :
+  WpMethodCall (ptrT.id testing.B.id) "Skipf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_Skipped :
+  WpMethodCall (ptrT.id testing.B.id) "Skipped" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_StartTimer :
+  WpMethodCall (ptrT.id testing.B.id) "StartTimer" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_StopTimer :
+  WpMethodCall (ptrT.id testing.B.id) "StopTimer" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_TempDir :
+  WpMethodCall (ptrT.id testing.B.id) "TempDir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_add :
+  WpMethodCall (ptrT.id testing.B.id) "add" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_checkFuzzFn :
+  WpMethodCall (ptrT.id testing.B.id) "checkFuzzFn" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_checkRaces :
+  WpMethodCall (ptrT.id testing.B.id) "checkRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_decorate :
+  WpMethodCall (ptrT.id testing.B.id) "decorate" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_doBench :
+  WpMethodCall (ptrT.id testing.B.id) "doBench" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_flushToParent :
+  WpMethodCall (ptrT.id testing.B.id) "flushToParent" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_frameSkip :
+  WpMethodCall (ptrT.id testing.B.id) "frameSkip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_launch :
+  WpMethodCall (ptrT.id testing.B.id) "launch" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_log :
+  WpMethodCall (ptrT.id testing.B.id) "log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_logDepth :
+  WpMethodCall (ptrT.id testing.B.id) "logDepth" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_loopSlowPath :
+  WpMethodCall (ptrT.id testing.B.id) "loopSlowPath" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_private :
+  WpMethodCall (ptrT.id testing.B.id) "private" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_resetRaces :
+  WpMethodCall (ptrT.id testing.B.id) "resetRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_run :
+  WpMethodCall (ptrT.id testing.B.id) "run" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_run1 :
+  WpMethodCall (ptrT.id testing.B.id) "run1" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_runCleanup :
+  WpMethodCall (ptrT.id testing.B.id) "runCleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_runN :
+  WpMethodCall (ptrT.id testing.B.id) "runN" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_setRan :
+  WpMethodCall (ptrT.id testing.B.id) "setRan" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_stopOrScaleBLoop :
+  WpMethodCall (ptrT.id testing.B.id) "stopOrScaleBLoop" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_B'ptr_trimOutput :
+  WpMethodCall (ptrT.id testing.B.id) "trimOutput" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult_AllocedBytesPerOp :
+  WpMethodCall testing.BenchmarkResult.id "AllocedBytesPerOp" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult_AllocsPerOp :
+  WpMethodCall testing.BenchmarkResult.id "AllocsPerOp" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult_MemString :
+  WpMethodCall testing.BenchmarkResult.id "MemString" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult_NsPerOp :
+  WpMethodCall testing.BenchmarkResult.id "NsPerOp" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult_String :
+  WpMethodCall testing.BenchmarkResult.id "String" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult_mbPerSec :
+  WpMethodCall testing.BenchmarkResult.id "mbPerSec" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult'ptr_AllocedBytesPerOp :
+  WpMethodCall (ptrT.id testing.BenchmarkResult.id) "AllocedBytesPerOp" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult'ptr_AllocsPerOp :
+  WpMethodCall (ptrT.id testing.BenchmarkResult.id) "AllocsPerOp" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult'ptr_MemString :
+  WpMethodCall (ptrT.id testing.BenchmarkResult.id) "MemString" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult'ptr_NsPerOp :
+  WpMethodCall (ptrT.id testing.BenchmarkResult.id) "NsPerOp" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult'ptr_String :
+  WpMethodCall (ptrT.id testing.BenchmarkResult.id) "String" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BenchmarkResult'ptr_mbPerSec :
+  WpMethodCall (ptrT.id testing.BenchmarkResult.id) "mbPerSec" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_benchState'ptr_processBench :
+  WpMethodCall (ptrT.id testing.benchState.id) "processBench" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PB'ptr_Next :
+  WpMethodCall (ptrT.id testing.PB.id) "Next" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard_Write :
+  WpMethodCall testing.discard.id "Write" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_discard'ptr_Write :
+  WpMethodCall (ptrT.id testing.discard.id) "Write" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_InternalExample'ptr_processRunResult :
+  WpMethodCall (ptrT.id testing.InternalExample.id) "processRunResult" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Add :
+  WpMethodCall (ptrT.id testing.F.id) "Add" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Chdir :
+  WpMethodCall (ptrT.id testing.F.id) "Chdir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Cleanup :
+  WpMethodCall (ptrT.id testing.F.id) "Cleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Context :
+  WpMethodCall (ptrT.id testing.F.id) "Context" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Error :
+  WpMethodCall (ptrT.id testing.F.id) "Error" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Errorf :
+  WpMethodCall (ptrT.id testing.F.id) "Errorf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Fail :
+  WpMethodCall (ptrT.id testing.F.id) "Fail" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_FailNow :
+  WpMethodCall (ptrT.id testing.F.id) "FailNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Failed :
+  WpMethodCall (ptrT.id testing.F.id) "Failed" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Fatal :
+  WpMethodCall (ptrT.id testing.F.id) "Fatal" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Fatalf :
+  WpMethodCall (ptrT.id testing.F.id) "Fatalf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Fuzz :
+  WpMethodCall (ptrT.id testing.F.id) "Fuzz" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Helper :
+  WpMethodCall (ptrT.id testing.F.id) "Helper" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Log :
+  WpMethodCall (ptrT.id testing.F.id) "Log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Logf :
+  WpMethodCall (ptrT.id testing.F.id) "Logf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Name :
+  WpMethodCall (ptrT.id testing.F.id) "Name" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Setenv :
+  WpMethodCall (ptrT.id testing.F.id) "Setenv" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Skip :
+  WpMethodCall (ptrT.id testing.F.id) "Skip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_SkipNow :
+  WpMethodCall (ptrT.id testing.F.id) "SkipNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Skipf :
+  WpMethodCall (ptrT.id testing.F.id) "Skipf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_Skipped :
+  WpMethodCall (ptrT.id testing.F.id) "Skipped" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_TempDir :
+  WpMethodCall (ptrT.id testing.F.id) "TempDir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_checkFuzzFn :
+  WpMethodCall (ptrT.id testing.F.id) "checkFuzzFn" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_checkRaces :
+  WpMethodCall (ptrT.id testing.F.id) "checkRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_decorate :
+  WpMethodCall (ptrT.id testing.F.id) "decorate" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_flushToParent :
+  WpMethodCall (ptrT.id testing.F.id) "flushToParent" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_frameSkip :
+  WpMethodCall (ptrT.id testing.F.id) "frameSkip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_log :
+  WpMethodCall (ptrT.id testing.F.id) "log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_logDepth :
+  WpMethodCall (ptrT.id testing.F.id) "logDepth" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_private :
+  WpMethodCall (ptrT.id testing.F.id) "private" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_report :
+  WpMethodCall (ptrT.id testing.F.id) "report" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_resetRaces :
+  WpMethodCall (ptrT.id testing.F.id) "resetRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_runCleanup :
+  WpMethodCall (ptrT.id testing.F.id) "runCleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_F'ptr_setRan :
+  WpMethodCall (ptrT.id testing.F.id) "setRan" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fuzzResult_String :
+  WpMethodCall testing.fuzzResult.id "String" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fuzzResult'ptr_String :
+  WpMethodCall (ptrT.id testing.fuzzResult.id) "String" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matcher'ptr_clearSubNames :
+  WpMethodCall (ptrT.id testing.matcher.id) "clearSubNames" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matcher'ptr_fullName :
+  WpMethodCall (ptrT.id testing.matcher.id) "fullName" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matcher'ptr_unique :
+  WpMethodCall (ptrT.id testing.matcher.id) "unique" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_simpleMatch_matches :
+  WpMethodCall testing.simpleMatch.id "matches" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_simpleMatch_verify :
+  WpMethodCall testing.simpleMatch.id "verify" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_simpleMatch'ptr_matches :
+  WpMethodCall (ptrT.id testing.simpleMatch.id) "matches" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_simpleMatch'ptr_verify :
+  WpMethodCall (ptrT.id testing.simpleMatch.id) "verify" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_alternationMatch_matches :
+  WpMethodCall testing.alternationMatch.id "matches" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_alternationMatch_verify :
+  WpMethodCall testing.alternationMatch.id "verify" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_alternationMatch'ptr_matches :
+  WpMethodCall (ptrT.id testing.alternationMatch.id) "matches" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_alternationMatch'ptr_verify :
+  WpMethodCall (ptrT.id testing.alternationMatch.id) "verify" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyFlag'ptr_Get :
+  WpMethodCall (ptrT.id testing.chattyFlag.id) "Get" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyFlag'ptr_IsBoolFlag :
+  WpMethodCall (ptrT.id testing.chattyFlag.id) "IsBoolFlag" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyFlag'ptr_Set :
+  WpMethodCall (ptrT.id testing.chattyFlag.id) "Set" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyFlag'ptr_String :
+  WpMethodCall (ptrT.id testing.chattyFlag.id) "String" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyFlag'ptr_prefix :
+  WpMethodCall (ptrT.id testing.chattyFlag.id) "prefix" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyPrinter'ptr_Printf :
+  WpMethodCall (ptrT.id testing.chattyPrinter.id) "Printf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyPrinter'ptr_Updatef :
+  WpMethodCall (ptrT.id testing.chattyPrinter.id) "Updatef" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_chattyPrinter'ptr_prefix :
+  WpMethodCall (ptrT.id testing.chattyPrinter.id) "prefix" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Chdir :
+  WpMethodCall (ptrT.id testing.common.id) "Chdir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Cleanup :
+  WpMethodCall (ptrT.id testing.common.id) "Cleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Context :
+  WpMethodCall (ptrT.id testing.common.id) "Context" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Error :
+  WpMethodCall (ptrT.id testing.common.id) "Error" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Errorf :
+  WpMethodCall (ptrT.id testing.common.id) "Errorf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Fail :
+  WpMethodCall (ptrT.id testing.common.id) "Fail" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_FailNow :
+  WpMethodCall (ptrT.id testing.common.id) "FailNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Failed :
+  WpMethodCall (ptrT.id testing.common.id) "Failed" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Fatal :
+  WpMethodCall (ptrT.id testing.common.id) "Fatal" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Fatalf :
+  WpMethodCall (ptrT.id testing.common.id) "Fatalf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Helper :
+  WpMethodCall (ptrT.id testing.common.id) "Helper" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Log :
+  WpMethodCall (ptrT.id testing.common.id) "Log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Logf :
+  WpMethodCall (ptrT.id testing.common.id) "Logf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Name :
+  WpMethodCall (ptrT.id testing.common.id) "Name" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Setenv :
+  WpMethodCall (ptrT.id testing.common.id) "Setenv" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Skip :
+  WpMethodCall (ptrT.id testing.common.id) "Skip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_SkipNow :
+  WpMethodCall (ptrT.id testing.common.id) "SkipNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Skipf :
+  WpMethodCall (ptrT.id testing.common.id) "Skipf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_Skipped :
+  WpMethodCall (ptrT.id testing.common.id) "Skipped" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_TempDir :
+  WpMethodCall (ptrT.id testing.common.id) "TempDir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_checkFuzzFn :
+  WpMethodCall (ptrT.id testing.common.id) "checkFuzzFn" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_checkRaces :
+  WpMethodCall (ptrT.id testing.common.id) "checkRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_decorate :
+  WpMethodCall (ptrT.id testing.common.id) "decorate" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_flushToParent :
+  WpMethodCall (ptrT.id testing.common.id) "flushToParent" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_frameSkip :
+  WpMethodCall (ptrT.id testing.common.id) "frameSkip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_log :
+  WpMethodCall (ptrT.id testing.common.id) "log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_logDepth :
+  WpMethodCall (ptrT.id testing.common.id) "logDepth" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_private :
+  WpMethodCall (ptrT.id testing.common.id) "private" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_resetRaces :
+  WpMethodCall (ptrT.id testing.common.id) "resetRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_runCleanup :
+  WpMethodCall (ptrT.id testing.common.id) "runCleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_common'ptr_setRan :
+  WpMethodCall (ptrT.id testing.common.id) "setRan" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_indenter_Write :
+  WpMethodCall testing.indenter.id "Write" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_indenter'ptr_Write :
+  WpMethodCall (ptrT.id testing.indenter.id) "Write" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Chdir :
+  WpMethodCall (ptrT.id testing.T.id) "Chdir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Cleanup :
+  WpMethodCall (ptrT.id testing.T.id) "Cleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Context :
+  WpMethodCall (ptrT.id testing.T.id) "Context" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Deadline :
+  WpMethodCall (ptrT.id testing.T.id) "Deadline" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Error :
+  WpMethodCall (ptrT.id testing.T.id) "Error" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Errorf :
+  WpMethodCall (ptrT.id testing.T.id) "Errorf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Fail :
+  WpMethodCall (ptrT.id testing.T.id) "Fail" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_FailNow :
+  WpMethodCall (ptrT.id testing.T.id) "FailNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Failed :
+  WpMethodCall (ptrT.id testing.T.id) "Failed" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Fatal :
+  WpMethodCall (ptrT.id testing.T.id) "Fatal" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Fatalf :
+  WpMethodCall (ptrT.id testing.T.id) "Fatalf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Helper :
+  WpMethodCall (ptrT.id testing.T.id) "Helper" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Log :
+  WpMethodCall (ptrT.id testing.T.id) "Log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Logf :
+  WpMethodCall (ptrT.id testing.T.id) "Logf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Name :
+  WpMethodCall (ptrT.id testing.T.id) "Name" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Parallel :
+  WpMethodCall (ptrT.id testing.T.id) "Parallel" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Run :
+  WpMethodCall (ptrT.id testing.T.id) "Run" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Setenv :
+  WpMethodCall (ptrT.id testing.T.id) "Setenv" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Skip :
+  WpMethodCall (ptrT.id testing.T.id) "Skip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_SkipNow :
+  WpMethodCall (ptrT.id testing.T.id) "SkipNow" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Skipf :
+  WpMethodCall (ptrT.id testing.T.id) "Skipf" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_Skipped :
+  WpMethodCall (ptrT.id testing.T.id) "Skipped" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_TempDir :
+  WpMethodCall (ptrT.id testing.T.id) "TempDir" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_checkFuzzFn :
+  WpMethodCall (ptrT.id testing.T.id) "checkFuzzFn" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_checkParallel :
+  WpMethodCall (ptrT.id testing.T.id) "checkParallel" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_checkRaces :
+  WpMethodCall (ptrT.id testing.T.id) "checkRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_decorate :
+  WpMethodCall (ptrT.id testing.T.id) "decorate" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_flushToParent :
+  WpMethodCall (ptrT.id testing.T.id) "flushToParent" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_frameSkip :
+  WpMethodCall (ptrT.id testing.T.id) "frameSkip" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_log :
+  WpMethodCall (ptrT.id testing.T.id) "log" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_logDepth :
+  WpMethodCall (ptrT.id testing.T.id) "logDepth" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_private :
+  WpMethodCall (ptrT.id testing.T.id) "private" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_report :
+  WpMethodCall (ptrT.id testing.T.id) "report" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_resetRaces :
+  WpMethodCall (ptrT.id testing.T.id) "resetRaces" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_runCleanup :
+  WpMethodCall (ptrT.id testing.T.id) "runCleanup" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_T'ptr_setRan :
+  WpMethodCall (ptrT.id testing.T.id) "setRan" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_testState'ptr_release :
+  WpMethodCall (ptrT.id testing.testState.id) "release" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_testState'ptr_waitParallel :
+  WpMethodCall (ptrT.id testing.testState.id) "waitParallel" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_CheckCorpus :
+  WpMethodCall testing.matchStringOnly.id "CheckCorpus" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_CoordinateFuzzing :
+  WpMethodCall testing.matchStringOnly.id "CoordinateFuzzing" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_ImportPath :
+  WpMethodCall testing.matchStringOnly.id "ImportPath" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_InitRuntimeCoverage :
+  WpMethodCall testing.matchStringOnly.id "InitRuntimeCoverage" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_MatchString :
+  WpMethodCall testing.matchStringOnly.id "MatchString" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_ReadCorpus :
+  WpMethodCall testing.matchStringOnly.id "ReadCorpus" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_ResetCoverage :
+  WpMethodCall testing.matchStringOnly.id "ResetCoverage" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_RunFuzzWorker :
+  WpMethodCall testing.matchStringOnly.id "RunFuzzWorker" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_SetPanicOnExit0 :
+  WpMethodCall testing.matchStringOnly.id "SetPanicOnExit0" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_SnapshotCoverage :
+  WpMethodCall testing.matchStringOnly.id "SnapshotCoverage" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_StartCPUProfile :
+  WpMethodCall testing.matchStringOnly.id "StartCPUProfile" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_StartTestLog :
+  WpMethodCall testing.matchStringOnly.id "StartTestLog" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_StopCPUProfile :
+  WpMethodCall testing.matchStringOnly.id "StopCPUProfile" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_StopTestLog :
+  WpMethodCall testing.matchStringOnly.id "StopTestLog" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly_WriteProfileTo :
+  WpMethodCall testing.matchStringOnly.id "WriteProfileTo" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_CheckCorpus :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "CheckCorpus" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_CoordinateFuzzing :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "CoordinateFuzzing" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_ImportPath :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "ImportPath" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_InitRuntimeCoverage :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "InitRuntimeCoverage" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_MatchString :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "MatchString" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_ReadCorpus :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "ReadCorpus" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_ResetCoverage :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "ResetCoverage" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_RunFuzzWorker :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "RunFuzzWorker" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_SetPanicOnExit0 :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "SetPanicOnExit0" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_SnapshotCoverage :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "SnapshotCoverage" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_StartCPUProfile :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "StartCPUProfile" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_StartTestLog :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "StartTestLog" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_StopCPUProfile :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "StopCPUProfile" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_StopTestLog :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "StopTestLog" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_matchStringOnly'ptr_WriteProfileTo :
+  WpMethodCall (ptrT.id testing.matchStringOnly.id) "WriteProfileTo" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_M'ptr_Run :
+  WpMethodCall (ptrT.id testing.M.id) "Run" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_M'ptr_after :
+  WpMethodCall (ptrT.id testing.M.id) "after" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_M'ptr_before :
+  WpMethodCall (ptrT.id testing.M.id) "before" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_M'ptr_startAlarm :
+  WpMethodCall (ptrT.id testing.M.id) "startAlarm" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_M'ptr_stopAlarm :
+  WpMethodCall (ptrT.id testing.M.id) "stopAlarm" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_M'ptr_writeProfiles :
+  WpMethodCall (ptrT.id testing.M.id) "writeProfiles" _ (is_pkg_defined testing) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End testing.

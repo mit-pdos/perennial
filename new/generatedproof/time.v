@@ -9,6 +9,23 @@ Set Default Proof Using "Type".
 
 Module time.
 
+(* type time.ParseError *)
+Module ParseError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ParseError.
+
+Global Instance bounded_size_ParseError : BoundedTypeSize time.ParseError.
+Admitted.
+
+Global Instance into_val_ParseError `{ffi_syntax} : IntoVal ParseError.t.
+Admitted.
+
+Global Instance into_val_typed_ParseError `{ffi_syntax} : IntoValTyped ParseError.t time.ParseError.
+Admitted.
+
 (* type time.Timer *)
 Module Timer.
 Section def.
@@ -77,6 +94,23 @@ Proof.
 Qed.
 
 End instances.
+
+(* type time.Ticker *)
+Module Ticker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Ticker.
+
+Global Instance bounded_size_Ticker : BoundedTypeSize time.Ticker.
+Admitted.
+
+Global Instance into_val_Ticker `{ffi_syntax} : IntoVal Ticker.t.
+Admitted.
+
+Global Instance into_val_typed_Ticker `{ffi_syntax} : IntoValTyped Ticker.t time.Ticker.
+Admitted.
 
 (* type time.Time *)
 Module Time.
@@ -155,6 +189,176 @@ Qed.
 
 End instances.
 
+(* type time.Month *)
+Module Month.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Month.
+
+Global Instance bounded_size_Month : BoundedTypeSize time.Month.
+Admitted.
+
+Global Instance into_val_Month `{ffi_syntax} : IntoVal Month.t.
+Admitted.
+
+Global Instance into_val_typed_Month `{ffi_syntax} : IntoValTyped Month.t time.Month.
+Admitted.
+
+(* type time.Weekday *)
+Module Weekday.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Weekday.
+
+Global Instance bounded_size_Weekday : BoundedTypeSize time.Weekday.
+Admitted.
+
+Global Instance into_val_Weekday `{ffi_syntax} : IntoVal Weekday.t.
+Admitted.
+
+Global Instance into_val_typed_Weekday `{ffi_syntax} : IntoValTyped Weekday.t time.Weekday.
+Admitted.
+
+(* type time.absSeconds *)
+Module absSeconds.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absSeconds.
+
+Global Instance bounded_size_absSeconds : BoundedTypeSize time.absSeconds.
+Admitted.
+
+Global Instance into_val_absSeconds `{ffi_syntax} : IntoVal absSeconds.t.
+Admitted.
+
+Global Instance into_val_typed_absSeconds `{ffi_syntax} : IntoValTyped absSeconds.t time.absSeconds.
+Admitted.
+
+(* type time.absDays *)
+Module absDays.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absDays.
+
+Global Instance bounded_size_absDays : BoundedTypeSize time.absDays.
+Admitted.
+
+Global Instance into_val_absDays `{ffi_syntax} : IntoVal absDays.t.
+Admitted.
+
+Global Instance into_val_typed_absDays `{ffi_syntax} : IntoValTyped absDays.t time.absDays.
+Admitted.
+
+(* type time.absCentury *)
+Module absCentury.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absCentury.
+
+Global Instance bounded_size_absCentury : BoundedTypeSize time.absCentury.
+Admitted.
+
+Global Instance into_val_absCentury `{ffi_syntax} : IntoVal absCentury.t.
+Admitted.
+
+Global Instance into_val_typed_absCentury `{ffi_syntax} : IntoValTyped absCentury.t time.absCentury.
+Admitted.
+
+(* type time.absCyear *)
+Module absCyear.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absCyear.
+
+Global Instance bounded_size_absCyear : BoundedTypeSize time.absCyear.
+Admitted.
+
+Global Instance into_val_absCyear `{ffi_syntax} : IntoVal absCyear.t.
+Admitted.
+
+Global Instance into_val_typed_absCyear `{ffi_syntax} : IntoValTyped absCyear.t time.absCyear.
+Admitted.
+
+(* type time.absYday *)
+Module absYday.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absYday.
+
+Global Instance bounded_size_absYday : BoundedTypeSize time.absYday.
+Admitted.
+
+Global Instance into_val_absYday `{ffi_syntax} : IntoVal absYday.t.
+Admitted.
+
+Global Instance into_val_typed_absYday `{ffi_syntax} : IntoValTyped absYday.t time.absYday.
+Admitted.
+
+(* type time.absMonth *)
+Module absMonth.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absMonth.
+
+Global Instance bounded_size_absMonth : BoundedTypeSize time.absMonth.
+Admitted.
+
+Global Instance into_val_absMonth `{ffi_syntax} : IntoVal absMonth.t.
+Admitted.
+
+Global Instance into_val_typed_absMonth `{ffi_syntax} : IntoValTyped absMonth.t time.absMonth.
+Admitted.
+
+(* type time.absLeap *)
+Module absLeap.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absLeap.
+
+Global Instance bounded_size_absLeap : BoundedTypeSize time.absLeap.
+Admitted.
+
+Global Instance into_val_absLeap `{ffi_syntax} : IntoVal absLeap.t.
+Admitted.
+
+Global Instance into_val_typed_absLeap `{ffi_syntax} : IntoValTyped absLeap.t time.absLeap.
+Admitted.
+
+(* type time.absJanFeb *)
+Module absJanFeb.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End absJanFeb.
+
+Global Instance bounded_size_absJanFeb : BoundedTypeSize time.absJanFeb.
+Admitted.
+
+Global Instance into_val_absJanFeb `{ffi_syntax} : IntoVal absJanFeb.t.
+Admitted.
+
+Global Instance into_val_typed_absJanFeb `{ffi_syntax} : IntoValTyped absJanFeb.t time.absJanFeb.
+Admitted.
+
 (* type time.Duration *)
 Module Duration.
 Section def.
@@ -162,6 +366,125 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End Duration.
+
+(* type time.Location *)
+Module Location.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Location.
+
+Global Instance bounded_size_Location : BoundedTypeSize time.Location.
+Admitted.
+
+Global Instance into_val_Location `{ffi_syntax} : IntoVal Location.t.
+Admitted.
+
+Global Instance into_val_typed_Location `{ffi_syntax} : IntoValTyped Location.t time.Location.
+Admitted.
+
+(* type time.zone *)
+Module zone.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End zone.
+
+Global Instance bounded_size_zone : BoundedTypeSize time.zone.
+Admitted.
+
+Global Instance into_val_zone `{ffi_syntax} : IntoVal zone.t.
+Admitted.
+
+Global Instance into_val_typed_zone `{ffi_syntax} : IntoValTyped zone.t time.zone.
+Admitted.
+
+(* type time.zoneTrans *)
+Module zoneTrans.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End zoneTrans.
+
+Global Instance bounded_size_zoneTrans : BoundedTypeSize time.zoneTrans.
+Admitted.
+
+Global Instance into_val_zoneTrans `{ffi_syntax} : IntoVal zoneTrans.t.
+Admitted.
+
+Global Instance into_val_typed_zoneTrans `{ffi_syntax} : IntoValTyped zoneTrans.t time.zoneTrans.
+Admitted.
+
+(* type time.ruleKind *)
+Module ruleKind.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ruleKind.
+
+Global Instance bounded_size_ruleKind : BoundedTypeSize time.ruleKind.
+Admitted.
+
+Global Instance into_val_ruleKind `{ffi_syntax} : IntoVal ruleKind.t.
+Admitted.
+
+Global Instance into_val_typed_ruleKind `{ffi_syntax} : IntoValTyped ruleKind.t time.ruleKind.
+Admitted.
+
+(* type time.rule *)
+Module rule.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End rule.
+
+Global Instance bounded_size_rule : BoundedTypeSize time.rule.
+Admitted.
+
+Global Instance into_val_rule `{ffi_syntax} : IntoVal rule.t.
+Admitted.
+
+Global Instance into_val_typed_rule `{ffi_syntax} : IntoValTyped rule.t time.rule.
+Admitted.
+
+(* type time.fileSizeError *)
+Module fileSizeError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fileSizeError.
+
+Global Instance bounded_size_fileSizeError : BoundedTypeSize time.fileSizeError.
+Admitted.
+
+Global Instance into_val_fileSizeError `{ffi_syntax} : IntoVal fileSizeError.t.
+Admitted.
+
+Global Instance into_val_typed_fileSizeError `{ffi_syntax} : IntoValTyped fileSizeError.t time.fileSizeError.
+Admitted.
+
+(* type time.dataIO *)
+Module dataIO.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End dataIO.
+
+Global Instance bounded_size_dataIO : BoundedTypeSize time.dataIO.
+Admitted.
+
+Global Instance into_val_dataIO `{ffi_syntax} : IntoVal dataIO.t.
+Admitted.
+
+Global Instance into_val_typed_dataIO `{ffi_syntax} : IntoValTyped dataIO.t time.dataIO.
+Admitted.
 
 Section names.
 
@@ -185,21 +508,1097 @@ Global Program Instance is_pkg_defined_time : IsPkgDefined time :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_startsWithLowerCase :
+  WpFuncCall time.startsWithLowerCase _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_nextStdChunk :
+  WpFuncCall time.nextStdChunk _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_match' :
+  WpFuncCall time.match' _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_lookup' :
+  WpFuncCall time.lookup' _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_appendInt :
+  WpFuncCall time.appendInt _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_atoi :
+  WpFuncCall time.atoi _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_stdFracSecond :
+  WpFuncCall time.stdFracSecond _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_digitsLen :
+  WpFuncCall time.digitsLen _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_separator :
+  WpFuncCall time.separator _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_appendNano :
+  WpFuncCall time.appendNano _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newParseError :
+  WpFuncCall time.newParseError _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_quote :
+  WpFuncCall time.quote _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isDigit :
+  WpFuncCall time.isDigit _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getnum :
+  WpFuncCall time.getnum _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getnum3 :
+  WpFuncCall time.getnum3 _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_cutspace :
+  WpFuncCall time.cutspace _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_skip :
+  WpFuncCall time.skip _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Parse :
+  WpFuncCall time.Parse _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ParseInLocation :
+  WpFuncCall time.ParseInLocation _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parse :
+  WpFuncCall time.parse _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseTimeZone :
+  WpFuncCall time.parseTimeZone _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseGMT :
+  WpFuncCall time.parseGMT _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseSignedOffset :
+  WpFuncCall time.parseSignedOffset _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_commaOrPeriod :
+  WpFuncCall time.commaOrPeriod _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseNanoseconds :
+  WpFuncCall time.parseNanoseconds _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_leadingInt :
+  WpFuncCall time.leadingInt _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_leadingFraction :
+  WpFuncCall time.leadingFraction _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ParseDuration :
+  WpFuncCall time.ParseDuration _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseRFC3339 :
+  WpFuncCall time.parseRFC3339 _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseStrictRFC3339 :
+  WpFuncCall time.parseStrictRFC3339 _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sleep :
+  WpFuncCall time.Sleep _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_syncTimer :
   WpFuncCall time.syncTimer _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_when :
+  WpFuncCall time.when _ (is_pkg_defined time) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_newTimer :
   WpFuncCall time.newTimer _ (is_pkg_defined time) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_stopTimer :
+  WpFuncCall time.stopTimer _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_resetTimer :
+  WpFuncCall time.resetTimer _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewTimer :
+  WpFuncCall time.NewTimer _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_sendTime :
+  WpFuncCall time.sendTime _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_After :
   WpFuncCall time.After _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AfterFunc :
+  WpFuncCall time.AfterFunc _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_goFunc :
+  WpFuncCall time.goFunc _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_interrupt :
+  WpFuncCall time.interrupt _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_open :
+  WpFuncCall time.open _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_read :
+  WpFuncCall time.read _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_closefd :
+  WpFuncCall time.closefd _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_preadn :
+  WpFuncCall time.preadn _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewTicker :
+  WpFuncCall time.NewTicker _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Tick :
+  WpFuncCall time.Tick _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_dateToAbsDays :
+  WpFuncCall time.dateToAbsDays _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_fmtFrac :
+  WpFuncCall time.fmtFrac _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_fmtInt :
+  WpFuncCall time.fmtInt _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_lessThanHalf :
+  WpFuncCall time.lessThanHalf _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_subMono :
+  WpFuncCall time.subMono _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Since :
+  WpFuncCall time.Since _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Until :
+  WpFuncCall time.Until _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_daysBefore :
+  WpFuncCall time.daysBefore _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_daysIn :
+  WpFuncCall time.daysIn _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_now :
+  WpFuncCall time.now _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtimeNow :
+  WpFuncCall time.runtimeNow _ (is_pkg_defined time) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_runtimeNano :
   WpFuncCall time.runtimeNano _ (is_pkg_defined time) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Now :
+  WpFuncCall time.Now _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_unixTime :
+  WpFuncCall time.unixTime _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Unix :
+  WpFuncCall time.Unix _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_UnixMilli :
+  WpFuncCall time.UnixMilli _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_UnixMicro :
+  WpFuncCall time.UnixMicro _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isLeap :
+  WpFuncCall time.isLeap _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_norm :
+  WpFuncCall time.norm _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Date :
+  WpFuncCall time.Date _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_div :
+  WpFuncCall time.div _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_legacyTimeTimeAbs :
+  WpFuncCall time.legacyTimeTimeAbs _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_legacyAbsClock :
+  WpFuncCall time.legacyAbsClock _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_legacyAbsDate :
+  WpFuncCall time.legacyAbsDate _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FixedZone :
+  WpFuncCall time.FixedZone _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_fixedZone :
+  WpFuncCall time.fixedZone _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tzset :
+  WpFuncCall time.tzset _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tzsetName :
+  WpFuncCall time.tzsetName _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tzsetOffset :
+  WpFuncCall time.tzsetOffset _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tzsetRule :
+  WpFuncCall time.tzsetRule _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tzsetNum :
+  WpFuncCall time.tzsetNum _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tzruleTime :
+  WpFuncCall time.tzruleTime _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LoadLocation :
+  WpFuncCall time.LoadLocation _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_containsDotDot :
+  WpFuncCall time.containsDotDot _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_gorootZoneSource :
+  WpFuncCall time.gorootZoneSource _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_registerLoadFromEmbeddedTZData :
+  WpFuncCall time.registerLoadFromEmbeddedTZData _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_byteString :
+  WpFuncCall time.byteString _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LoadLocationFromTZData :
+  WpFuncCall time.LoadLocationFromTZData _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_findZone :
+  WpFuncCall time.findZone _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_loadTzinfoFromDirOrZip :
+  WpFuncCall time.loadTzinfoFromDirOrZip _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_get4 :
+  WpFuncCall time.get4 _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_get2 :
+  WpFuncCall time.get2 _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_loadTzinfoFromZip :
+  WpFuncCall time.loadTzinfoFromZip _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_loadTzinfo :
+  WpFuncCall time.loadTzinfo _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_loadLocation :
+  WpFuncCall time.loadLocation _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_readFile :
+  WpFuncCall time.readFile _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_initLocal :
+  WpFuncCall time.initLocal _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_ParseError'ptr_Error :
+  WpMethodCall (ptrT.id time.ParseError.id) "Error" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Timer'ptr_Reset :
+  WpMethodCall (ptrT.id time.Timer.id) "Reset" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Timer'ptr_Stop :
+  WpMethodCall (ptrT.id time.Timer.id) "Stop" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Ticker'ptr_Reset :
+  WpMethodCall (ptrT.id time.Ticker.id) "Reset" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Ticker'ptr_Stop :
+  WpMethodCall (ptrT.id time.Ticker.id) "Stop" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Add :
+  WpMethodCall time.Time.id "Add" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_AddDate :
+  WpMethodCall time.Time.id "AddDate" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_After :
+  WpMethodCall time.Time.id "After" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_AppendBinary :
+  WpMethodCall time.Time.id "AppendBinary" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_AppendFormat :
+  WpMethodCall time.Time.id "AppendFormat" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_AppendText :
+  WpMethodCall time.Time.id "AppendText" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Before :
+  WpMethodCall time.Time.id "Before" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Clock :
+  WpMethodCall time.Time.id "Clock" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Compare :
+  WpMethodCall time.Time.id "Compare" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Date :
+  WpMethodCall time.Time.id "Date" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Day :
+  WpMethodCall time.Time.id "Day" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Equal :
+  WpMethodCall time.Time.id "Equal" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Format :
+  WpMethodCall time.Time.id "Format" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_GoString :
+  WpMethodCall time.Time.id "GoString" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_GobEncode :
+  WpMethodCall time.Time.id "GobEncode" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Hour :
+  WpMethodCall time.Time.id "Hour" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_ISOWeek :
+  WpMethodCall time.Time.id "ISOWeek" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_In :
+  WpMethodCall time.Time.id "In" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_IsDST :
+  WpMethodCall time.Time.id "IsDST" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_IsZero :
+  WpMethodCall time.Time.id "IsZero" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Local :
+  WpMethodCall time.Time.id "Local" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Location :
+  WpMethodCall time.Time.id "Location" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_MarshalBinary :
+  WpMethodCall time.Time.id "MarshalBinary" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_MarshalJSON :
+  WpMethodCall time.Time.id "MarshalJSON" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_MarshalText :
+  WpMethodCall time.Time.id "MarshalText" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Minute :
+  WpMethodCall time.Time.id "Minute" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Month :
+  WpMethodCall time.Time.id "Month" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Nanosecond :
+  WpMethodCall time.Time.id "Nanosecond" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Round :
+  WpMethodCall time.Time.id "Round" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Second :
+  WpMethodCall time.Time.id "Second" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_String :
+  WpMethodCall time.Time.id "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Sub :
+  WpMethodCall time.Time.id "Sub" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Truncate :
+  WpMethodCall time.Time.id "Truncate" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_UTC :
+  WpMethodCall time.Time.id "UTC" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Unix :
+  WpMethodCall time.Time.id "Unix" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_UnixMicro :
+  WpMethodCall time.Time.id "UnixMicro" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_UnixMilli :
+  WpMethodCall time.Time.id "UnixMilli" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_UnixNano :
+  WpMethodCall time.Time.id "UnixNano" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Weekday :
+  WpMethodCall time.Time.id "Weekday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Year :
+  WpMethodCall time.Time.id "Year" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_YearDay :
+  WpMethodCall time.Time.id "YearDay" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_Zone :
+  WpMethodCall time.Time.id "Zone" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_ZoneBounds :
+  WpMethodCall time.Time.id "ZoneBounds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_absSec :
+  WpMethodCall time.Time.id "absSec" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_appendFormat :
+  WpMethodCall time.Time.id "appendFormat" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_appendFormatRFC3339 :
+  WpMethodCall time.Time.id "appendFormatRFC3339" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_appendStrictRFC3339 :
+  WpMethodCall time.Time.id "appendStrictRFC3339" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_appendTo :
+  WpMethodCall time.Time.id "appendTo" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time_locabs :
+  WpMethodCall time.Time.id "locabs" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Add :
+  WpMethodCall (ptrT.id time.Time.id) "Add" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_AddDate :
+  WpMethodCall (ptrT.id time.Time.id) "AddDate" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_After :
+  WpMethodCall (ptrT.id time.Time.id) "After" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_AppendBinary :
+  WpMethodCall (ptrT.id time.Time.id) "AppendBinary" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_AppendFormat :
+  WpMethodCall (ptrT.id time.Time.id) "AppendFormat" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_AppendText :
+  WpMethodCall (ptrT.id time.Time.id) "AppendText" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Before :
+  WpMethodCall (ptrT.id time.Time.id) "Before" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Clock :
+  WpMethodCall (ptrT.id time.Time.id) "Clock" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Compare :
+  WpMethodCall (ptrT.id time.Time.id) "Compare" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Date :
+  WpMethodCall (ptrT.id time.Time.id) "Date" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Day :
+  WpMethodCall (ptrT.id time.Time.id) "Day" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Equal :
+  WpMethodCall (ptrT.id time.Time.id) "Equal" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Format :
+  WpMethodCall (ptrT.id time.Time.id) "Format" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_GoString :
+  WpMethodCall (ptrT.id time.Time.id) "GoString" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_GobDecode :
+  WpMethodCall (ptrT.id time.Time.id) "GobDecode" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_GobEncode :
+  WpMethodCall (ptrT.id time.Time.id) "GobEncode" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Hour :
+  WpMethodCall (ptrT.id time.Time.id) "Hour" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_ISOWeek :
+  WpMethodCall (ptrT.id time.Time.id) "ISOWeek" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_In :
+  WpMethodCall (ptrT.id time.Time.id) "In" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_IsDST :
+  WpMethodCall (ptrT.id time.Time.id) "IsDST" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_IsZero :
+  WpMethodCall (ptrT.id time.Time.id) "IsZero" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Local :
+  WpMethodCall (ptrT.id time.Time.id) "Local" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Location :
+  WpMethodCall (ptrT.id time.Time.id) "Location" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_MarshalBinary :
+  WpMethodCall (ptrT.id time.Time.id) "MarshalBinary" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_MarshalJSON :
+  WpMethodCall (ptrT.id time.Time.id) "MarshalJSON" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_MarshalText :
+  WpMethodCall (ptrT.id time.Time.id) "MarshalText" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Minute :
+  WpMethodCall (ptrT.id time.Time.id) "Minute" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Month :
+  WpMethodCall (ptrT.id time.Time.id) "Month" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Nanosecond :
+  WpMethodCall (ptrT.id time.Time.id) "Nanosecond" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Round :
+  WpMethodCall (ptrT.id time.Time.id) "Round" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Second :
+  WpMethodCall (ptrT.id time.Time.id) "Second" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_String :
+  WpMethodCall (ptrT.id time.Time.id) "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Sub :
+  WpMethodCall (ptrT.id time.Time.id) "Sub" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Truncate :
+  WpMethodCall (ptrT.id time.Time.id) "Truncate" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_UTC :
+  WpMethodCall (ptrT.id time.Time.id) "UTC" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Unix :
+  WpMethodCall (ptrT.id time.Time.id) "Unix" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_UnixMicro :
+  WpMethodCall (ptrT.id time.Time.id) "UnixMicro" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_UnixMilli :
+  WpMethodCall (ptrT.id time.Time.id) "UnixMilli" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_UnixNano :
+  WpMethodCall (ptrT.id time.Time.id) "UnixNano" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_UnmarshalBinary :
+  WpMethodCall (ptrT.id time.Time.id) "UnmarshalBinary" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_UnmarshalJSON :
+  WpMethodCall (ptrT.id time.Time.id) "UnmarshalJSON" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id time.Time.id) "UnmarshalText" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Weekday :
+  WpMethodCall (ptrT.id time.Time.id) "Weekday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Year :
+  WpMethodCall (ptrT.id time.Time.id) "Year" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_YearDay :
+  WpMethodCall (ptrT.id time.Time.id) "YearDay" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_Zone :
+  WpMethodCall (ptrT.id time.Time.id) "Zone" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_ZoneBounds :
+  WpMethodCall (ptrT.id time.Time.id) "ZoneBounds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_absSec :
+  WpMethodCall (ptrT.id time.Time.id) "absSec" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_addSec :
+  WpMethodCall (ptrT.id time.Time.id) "addSec" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_appendFormat :
+  WpMethodCall (ptrT.id time.Time.id) "appendFormat" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_appendFormatRFC3339 :
+  WpMethodCall (ptrT.id time.Time.id) "appendFormatRFC3339" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_appendStrictRFC3339 :
+  WpMethodCall (ptrT.id time.Time.id) "appendStrictRFC3339" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_appendTo :
+  WpMethodCall (ptrT.id time.Time.id) "appendTo" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_locabs :
+  WpMethodCall (ptrT.id time.Time.id) "locabs" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_mono :
+  WpMethodCall (ptrT.id time.Time.id) "mono" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_nsec :
+  WpMethodCall (ptrT.id time.Time.id) "nsec" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_sec :
+  WpMethodCall (ptrT.id time.Time.id) "sec" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_setLoc :
+  WpMethodCall (ptrT.id time.Time.id) "setLoc" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_setMono :
+  WpMethodCall (ptrT.id time.Time.id) "setMono" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_stripMono :
+  WpMethodCall (ptrT.id time.Time.id) "stripMono" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Time'ptr_unixSec :
+  WpMethodCall (ptrT.id time.Time.id) "unixSec" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Month_String :
+  WpMethodCall time.Month.id "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Month'ptr_String :
+  WpMethodCall (ptrT.id time.Month.id) "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Weekday_String :
+  WpMethodCall time.Weekday.id "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Weekday'ptr_String :
+  WpMethodCall (ptrT.id time.Weekday.id) "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absSeconds_clock :
+  WpMethodCall time.absSeconds.id "clock" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absSeconds_days :
+  WpMethodCall time.absSeconds.id "days" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absSeconds'ptr_clock :
+  WpMethodCall (ptrT.id time.absSeconds.id) "clock" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absSeconds'ptr_days :
+  WpMethodCall (ptrT.id time.absSeconds.id) "days" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays_date :
+  WpMethodCall time.absDays.id "date" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays_split :
+  WpMethodCall time.absDays.id "split" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays_weekday :
+  WpMethodCall time.absDays.id "weekday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays_yearYday :
+  WpMethodCall time.absDays.id "yearYday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays'ptr_date :
+  WpMethodCall (ptrT.id time.absDays.id) "date" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays'ptr_split :
+  WpMethodCall (ptrT.id time.absDays.id) "split" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays'ptr_weekday :
+  WpMethodCall (ptrT.id time.absDays.id) "weekday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absDays'ptr_yearYday :
+  WpMethodCall (ptrT.id time.absDays.id) "yearYday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absCentury_leap :
+  WpMethodCall time.absCentury.id "leap" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absCentury_year :
+  WpMethodCall time.absCentury.id "year" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absCentury'ptr_leap :
+  WpMethodCall (ptrT.id time.absCentury.id) "leap" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absCentury'ptr_year :
+  WpMethodCall (ptrT.id time.absCentury.id) "year" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absYday_janFeb :
+  WpMethodCall time.absYday.id "janFeb" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absYday_split :
+  WpMethodCall time.absYday.id "split" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absYday_yday :
+  WpMethodCall time.absYday.id "yday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absYday'ptr_janFeb :
+  WpMethodCall (ptrT.id time.absYday.id) "janFeb" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absYday'ptr_split :
+  WpMethodCall (ptrT.id time.absYday.id) "split" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absYday'ptr_yday :
+  WpMethodCall (ptrT.id time.absYday.id) "yday" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absMonth_month :
+  WpMethodCall time.absMonth.id "month" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_absMonth'ptr_month :
+  WpMethodCall (ptrT.id time.absMonth.id) "month" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Abs :
+  WpMethodCall time.Duration.id "Abs" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Hours :
+  WpMethodCall time.Duration.id "Hours" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Microseconds :
+  WpMethodCall time.Duration.id "Microseconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Milliseconds :
+  WpMethodCall time.Duration.id "Milliseconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Minutes :
+  WpMethodCall time.Duration.id "Minutes" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Nanoseconds :
+  WpMethodCall time.Duration.id "Nanoseconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Round :
+  WpMethodCall time.Duration.id "Round" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Seconds :
+  WpMethodCall time.Duration.id "Seconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_String :
+  WpMethodCall time.Duration.id "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_Truncate :
+  WpMethodCall time.Duration.id "Truncate" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration_format :
+  WpMethodCall time.Duration.id "format" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Abs :
+  WpMethodCall (ptrT.id time.Duration.id) "Abs" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Hours :
+  WpMethodCall (ptrT.id time.Duration.id) "Hours" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Microseconds :
+  WpMethodCall (ptrT.id time.Duration.id) "Microseconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Milliseconds :
+  WpMethodCall (ptrT.id time.Duration.id) "Milliseconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Minutes :
+  WpMethodCall (ptrT.id time.Duration.id) "Minutes" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Nanoseconds :
+  WpMethodCall (ptrT.id time.Duration.id) "Nanoseconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Round :
+  WpMethodCall (ptrT.id time.Duration.id) "Round" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Seconds :
+  WpMethodCall (ptrT.id time.Duration.id) "Seconds" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_String :
+  WpMethodCall (ptrT.id time.Duration.id) "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_Truncate :
+  WpMethodCall (ptrT.id time.Duration.id) "Truncate" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Duration'ptr_format :
+  WpMethodCall (ptrT.id time.Duration.id) "format" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Location'ptr_String :
+  WpMethodCall (ptrT.id time.Location.id) "String" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Location'ptr_firstZoneUsed :
+  WpMethodCall (ptrT.id time.Location.id) "firstZoneUsed" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Location'ptr_get :
+  WpMethodCall (ptrT.id time.Location.id) "get" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Location'ptr_lookup :
+  WpMethodCall (ptrT.id time.Location.id) "lookup" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Location'ptr_lookupFirstZone :
+  WpMethodCall (ptrT.id time.Location.id) "lookupFirstZone" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Location'ptr_lookupName :
+  WpMethodCall (ptrT.id time.Location.id) "lookupName" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fileSizeError_Error :
+  WpMethodCall time.fileSizeError.id "Error" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fileSizeError'ptr_Error :
+  WpMethodCall (ptrT.id time.fileSizeError.id) "Error" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dataIO'ptr_big4 :
+  WpMethodCall (ptrT.id time.dataIO.id) "big4" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dataIO'ptr_big8 :
+  WpMethodCall (ptrT.id time.dataIO.id) "big8" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dataIO'ptr_byte :
+  WpMethodCall (ptrT.id time.dataIO.id) "byte" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dataIO'ptr_read :
+  WpMethodCall (ptrT.id time.dataIO.id) "read" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dataIO'ptr_rest :
+  WpMethodCall (ptrT.id time.dataIO.id) "rest" _ (is_pkg_defined time) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End time.

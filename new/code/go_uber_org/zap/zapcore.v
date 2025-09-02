@@ -5,16 +5,90 @@ Definition zapcore : go_string := "go.uber.org/zap/zapcore".
 
 Module zapcore.
 
+Module BufferedWriteSyncer. Definition id : go_string := "go.uber.org/zap/zapcore.BufferedWriteSyncer"%go. End BufferedWriteSyncer.
+Module Clock. Definition id : go_string := "go.uber.org/zap/zapcore.Clock"%go. End Clock.
+Module systemClock. Definition id : go_string := "go.uber.org/zap/zapcore.systemClock"%go. End systemClock.
+Module consoleEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.consoleEncoder"%go. End consoleEncoder.
+Module Core. Definition id : go_string := "go.uber.org/zap/zapcore.Core"%go. End Core.
+Module nopCore. Definition id : go_string := "go.uber.org/zap/zapcore.nopCore"%go. End nopCore.
+Module ioCore. Definition id : go_string := "go.uber.org/zap/zapcore.ioCore"%go. End ioCore.
+Module LevelEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.LevelEncoder"%go. End LevelEncoder.
+Module TimeEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.TimeEncoder"%go. End TimeEncoder.
+Module DurationEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.DurationEncoder"%go. End DurationEncoder.
+Module CallerEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.CallerEncoder"%go. End CallerEncoder.
+Module NameEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.NameEncoder"%go. End NameEncoder.
+Module EncoderConfig. Definition id : go_string := "go.uber.org/zap/zapcore.EncoderConfig"%go. End EncoderConfig.
+Module ObjectEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.ObjectEncoder"%go. End ObjectEncoder.
+Module ArrayEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.ArrayEncoder"%go. End ArrayEncoder.
+Module PrimitiveArrayEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.PrimitiveArrayEncoder"%go. End PrimitiveArrayEncoder.
+Module Encoder. Definition id : go_string := "go.uber.org/zap/zapcore.Encoder"%go. End Encoder.
+Module EntryCaller. Definition id : go_string := "go.uber.org/zap/zapcore.EntryCaller"%go. End EntryCaller.
+Module Entry. Definition id : go_string := "go.uber.org/zap/zapcore.Entry"%go. End Entry.
+Module CheckWriteHook. Definition id : go_string := "go.uber.org/zap/zapcore.CheckWriteHook"%go. End CheckWriteHook.
+Module CheckWriteAction. Definition id : go_string := "go.uber.org/zap/zapcore.CheckWriteAction"%go. End CheckWriteAction.
+Module CheckedEntry. Definition id : go_string := "go.uber.org/zap/zapcore.CheckedEntry"%go. End CheckedEntry.
+Module errorGroup. Definition id : go_string := "go.uber.org/zap/zapcore.errorGroup"%go. End errorGroup.
+Module errArray. Definition id : go_string := "go.uber.org/zap/zapcore.errArray"%go. End errArray.
+Module errArrayElem. Definition id : go_string := "go.uber.org/zap/zapcore.errArrayElem"%go. End errArrayElem.
 Module FieldType. Definition id : go_string := "go.uber.org/zap/zapcore.FieldType"%go. End FieldType.
 Module Field. Definition id : go_string := "go.uber.org/zap/zapcore.Field"%go. End Field.
+Module hooked. Definition id : go_string := "go.uber.org/zap/zapcore.hooked"%go. End hooked.
+Module levelFilterCore. Definition id : go_string := "go.uber.org/zap/zapcore.levelFilterCore"%go. End levelFilterCore.
+Module jsonEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.jsonEncoder"%go. End jsonEncoder.
+Module lazyWithCore. Definition id : go_string := "go.uber.org/zap/zapcore.lazyWithCore"%go. End lazyWithCore.
+Module Level. Definition id : go_string := "go.uber.org/zap/zapcore.Level"%go. End Level.
+Module leveledEnabler. Definition id : go_string := "go.uber.org/zap/zapcore.leveledEnabler"%go. End leveledEnabler.
+Module LevelEnabler. Definition id : go_string := "go.uber.org/zap/zapcore.LevelEnabler"%go. End LevelEnabler.
+Module ObjectMarshaler. Definition id : go_string := "go.uber.org/zap/zapcore.ObjectMarshaler"%go. End ObjectMarshaler.
+Module ObjectMarshalerFunc. Definition id : go_string := "go.uber.org/zap/zapcore.ObjectMarshalerFunc"%go. End ObjectMarshalerFunc.
+Module ArrayMarshaler. Definition id : go_string := "go.uber.org/zap/zapcore.ArrayMarshaler"%go. End ArrayMarshaler.
+Module ArrayMarshalerFunc. Definition id : go_string := "go.uber.org/zap/zapcore.ArrayMarshalerFunc"%go. End ArrayMarshalerFunc.
+Module MapObjectEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.MapObjectEncoder"%go. End MapObjectEncoder.
+Module sliceArrayEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.sliceArrayEncoder"%go. End sliceArrayEncoder.
+Module ReflectedEncoder. Definition id : go_string := "go.uber.org/zap/zapcore.ReflectedEncoder"%go. End ReflectedEncoder.
+Module counter. Definition id : go_string := "go.uber.org/zap/zapcore.counter"%go. End counter.
+Module counters. Definition id : go_string := "go.uber.org/zap/zapcore.counters"%go. End counters.
+Module SamplingDecision. Definition id : go_string := "go.uber.org/zap/zapcore.SamplingDecision"%go. End SamplingDecision.
+Module optionFunc. Definition id : go_string := "go.uber.org/zap/zapcore.optionFunc"%go. End optionFunc.
+Module SamplerOption. Definition id : go_string := "go.uber.org/zap/zapcore.SamplerOption"%go. End SamplerOption.
+Module sampler. Definition id : go_string := "go.uber.org/zap/zapcore.sampler"%go. End sampler.
+Module multiCore. Definition id : go_string := "go.uber.org/zap/zapcore.multiCore"%go. End multiCore.
+Module WriteSyncer. Definition id : go_string := "go.uber.org/zap/zapcore.WriteSyncer"%go. End WriteSyncer.
+Module lockedWriteSyncer. Definition id : go_string := "go.uber.org/zap/zapcore.lockedWriteSyncer"%go. End lockedWriteSyncer.
+Module writerWrapper. Definition id : go_string := "go.uber.org/zap/zapcore.writerWrapper"%go. End writerWrapper.
+Module multiWriteSyncer. Definition id : go_string := "go.uber.org/zap/zapcore.multiWriteSyncer"%go. End multiWriteSyncer.
 
 Section code.
 Context `{ffi_syntax}.
 
 
+Axiom _defaultBufferSize : Z.
+
+Axiom _defaultFlushInterval : expr.
+
+Axiom BufferedWriteSyncer : go_type.
+
+Axiom BufferedWriteSyncer__initializeⁱᵐᵖˡ : val.
+
+Axiom BufferedWriteSyncer__Writeⁱᵐᵖˡ : val.
+
+Axiom BufferedWriteSyncer__Syncⁱᵐᵖˡ : val.
+
+Axiom BufferedWriteSyncer__flushLoopⁱᵐᵖˡ : val.
+
+Axiom BufferedWriteSyncer__Stopⁱᵐᵖˡ : val.
+
 Definition DefaultClock : go_string := "go.uber.org/zap/zapcore.DefaultClock"%go.
 
 Axiom DefaultClock'init : val.
+
+Axiom Clock : go_type.
+
+Axiom systemClock : go_type.
+
+Axiom systemClock__Nowⁱᵐᵖˡ : val.
+
+Axiom systemClock__NewTickerⁱᵐᵖˡ : val.
 
 Definition _sliceEncoderPool : go_string := "go.uber.org/zap/zapcore._sliceEncoderPool"%go.
 
@@ -22,51 +96,175 @@ Axiom _sliceEncoderPool'init : val.
 
 Definition getSliceEncoder : go_string := "go.uber.org/zap/zapcore.getSliceEncoder"%go.
 
+Axiom getSliceEncoderⁱᵐᵖˡ : val.
+
 Definition putSliceEncoder : go_string := "go.uber.org/zap/zapcore.putSliceEncoder"%go.
+
+Axiom putSliceEncoderⁱᵐᵖˡ : val.
+
+Axiom consoleEncoder : go_type.
 
 Definition NewConsoleEncoder : go_string := "go.uber.org/zap/zapcore.NewConsoleEncoder"%go.
 
+Axiom NewConsoleEncoderⁱᵐᵖˡ : val.
+
+Axiom consoleEncoder__Cloneⁱᵐᵖˡ : val.
+
+Axiom consoleEncoder__EncodeEntryⁱᵐᵖˡ : val.
+
+Axiom consoleEncoder__writeContextⁱᵐᵖˡ : val.
+
+Axiom consoleEncoder__addSeparatorIfNecessaryⁱᵐᵖˡ : val.
+
+Axiom Core : go_type.
+
+Axiom nopCore : go_type.
+
 Definition NewNopCore : go_string := "go.uber.org/zap/zapcore.NewNopCore"%go.
+
+Axiom NewNopCoreⁱᵐᵖˡ : val.
+
+Axiom nopCore__Enabledⁱᵐᵖˡ : val.
+
+Axiom nopCore__Withⁱᵐᵖˡ : val.
+
+Axiom nopCore__Checkⁱᵐᵖˡ : val.
+
+Axiom nopCore__Writeⁱᵐᵖˡ : val.
+
+Axiom nopCore__Syncⁱᵐᵖˡ : val.
 
 Definition NewCore : go_string := "go.uber.org/zap/zapcore.NewCore"%go.
 
+Axiom NewCoreⁱᵐᵖˡ : val.
+
+Axiom ioCore : go_type.
+
+Axiom ioCore__Levelⁱᵐᵖˡ : val.
+
+Axiom ioCore__Withⁱᵐᵖˡ : val.
+
+Axiom ioCore__Checkⁱᵐᵖˡ : val.
+
+Axiom ioCore__Writeⁱᵐᵖˡ : val.
+
+Axiom ioCore__Syncⁱᵐᵖˡ : val.
+
+Axiom ioCore__cloneⁱᵐᵖˡ : val.
+
+Axiom DefaultLineEnding : go_string.
+
+Axiom OmitKey : go_string.
+
+Axiom LevelEncoder : go_type.
+
 Definition LowercaseLevelEncoder : go_string := "go.uber.org/zap/zapcore.LowercaseLevelEncoder"%go.
+
+Axiom LowercaseLevelEncoderⁱᵐᵖˡ : val.
 
 Definition LowercaseColorLevelEncoder : go_string := "go.uber.org/zap/zapcore.LowercaseColorLevelEncoder"%go.
 
+Axiom LowercaseColorLevelEncoderⁱᵐᵖˡ : val.
+
 Definition CapitalLevelEncoder : go_string := "go.uber.org/zap/zapcore.CapitalLevelEncoder"%go.
+
+Axiom CapitalLevelEncoderⁱᵐᵖˡ : val.
 
 Definition CapitalColorLevelEncoder : go_string := "go.uber.org/zap/zapcore.CapitalColorLevelEncoder"%go.
 
+Axiom CapitalColorLevelEncoderⁱᵐᵖˡ : val.
+
+Axiom LevelEncoder__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom TimeEncoder : go_type.
+
 Definition EpochTimeEncoder : go_string := "go.uber.org/zap/zapcore.EpochTimeEncoder"%go.
+
+Axiom EpochTimeEncoderⁱᵐᵖˡ : val.
 
 Definition EpochMillisTimeEncoder : go_string := "go.uber.org/zap/zapcore.EpochMillisTimeEncoder"%go.
 
+Axiom EpochMillisTimeEncoderⁱᵐᵖˡ : val.
+
 Definition EpochNanosTimeEncoder : go_string := "go.uber.org/zap/zapcore.EpochNanosTimeEncoder"%go.
+
+Axiom EpochNanosTimeEncoderⁱᵐᵖˡ : val.
 
 Definition encodeTimeLayout : go_string := "go.uber.org/zap/zapcore.encodeTimeLayout"%go.
 
+Axiom encodeTimeLayoutⁱᵐᵖˡ : val.
+
 Definition ISO8601TimeEncoder : go_string := "go.uber.org/zap/zapcore.ISO8601TimeEncoder"%go.
+
+Axiom ISO8601TimeEncoderⁱᵐᵖˡ : val.
 
 Definition RFC3339TimeEncoder : go_string := "go.uber.org/zap/zapcore.RFC3339TimeEncoder"%go.
 
+Axiom RFC3339TimeEncoderⁱᵐᵖˡ : val.
+
 Definition RFC3339NanoTimeEncoder : go_string := "go.uber.org/zap/zapcore.RFC3339NanoTimeEncoder"%go.
+
+Axiom RFC3339NanoTimeEncoderⁱᵐᵖˡ : val.
 
 Definition TimeEncoderOfLayout : go_string := "go.uber.org/zap/zapcore.TimeEncoderOfLayout"%go.
 
+Axiom TimeEncoderOfLayoutⁱᵐᵖˡ : val.
+
+Axiom TimeEncoder__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom TimeEncoder__UnmarshalYAMLⁱᵐᵖˡ : val.
+
+Axiom TimeEncoder__UnmarshalJSONⁱᵐᵖˡ : val.
+
+Axiom DurationEncoder : go_type.
+
 Definition SecondsDurationEncoder : go_string := "go.uber.org/zap/zapcore.SecondsDurationEncoder"%go.
+
+Axiom SecondsDurationEncoderⁱᵐᵖˡ : val.
 
 Definition NanosDurationEncoder : go_string := "go.uber.org/zap/zapcore.NanosDurationEncoder"%go.
 
+Axiom NanosDurationEncoderⁱᵐᵖˡ : val.
+
 Definition MillisDurationEncoder : go_string := "go.uber.org/zap/zapcore.MillisDurationEncoder"%go.
+
+Axiom MillisDurationEncoderⁱᵐᵖˡ : val.
 
 Definition StringDurationEncoder : go_string := "go.uber.org/zap/zapcore.StringDurationEncoder"%go.
 
+Axiom StringDurationEncoderⁱᵐᵖˡ : val.
+
+Axiom DurationEncoder__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom CallerEncoder : go_type.
+
 Definition FullCallerEncoder : go_string := "go.uber.org/zap/zapcore.FullCallerEncoder"%go.
+
+Axiom FullCallerEncoderⁱᵐᵖˡ : val.
 
 Definition ShortCallerEncoder : go_string := "go.uber.org/zap/zapcore.ShortCallerEncoder"%go.
 
+Axiom ShortCallerEncoderⁱᵐᵖˡ : val.
+
+Axiom CallerEncoder__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom NameEncoder : go_type.
+
 Definition FullNameEncoder : go_string := "go.uber.org/zap/zapcore.FullNameEncoder"%go.
+
+Axiom FullNameEncoderⁱᵐᵖˡ : val.
+
+Axiom NameEncoder__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom EncoderConfig : go_type.
+
+Axiom ObjectEncoder : go_type.
+
+Axiom ArrayEncoder : go_type.
+
+Axiom PrimitiveArrayEncoder : go_type.
+
+Axiom Encoder : go_type.
 
 Definition _cePool : go_string := "go.uber.org/zap/zapcore._cePool"%go.
 
@@ -74,19 +272,137 @@ Axiom _cePool'init : val.
 
 Definition getCheckedEntry : go_string := "go.uber.org/zap/zapcore.getCheckedEntry"%go.
 
+Axiom getCheckedEntryⁱᵐᵖˡ : val.
+
 Definition putCheckedEntry : go_string := "go.uber.org/zap/zapcore.putCheckedEntry"%go.
+
+Axiom putCheckedEntryⁱᵐᵖˡ : val.
 
 Definition NewEntryCaller : go_string := "go.uber.org/zap/zapcore.NewEntryCaller"%go.
 
+Axiom NewEntryCallerⁱᵐᵖˡ : val.
+
+Axiom EntryCaller : go_type.
+
+Axiom EntryCaller__Stringⁱᵐᵖˡ : val.
+
+Axiom EntryCaller__FullPathⁱᵐᵖˡ : val.
+
+Axiom EntryCaller__TrimmedPathⁱᵐᵖˡ : val.
+
+Axiom Entry : go_type.
+
+Axiom CheckWriteHook : go_type.
+
+Axiom CheckWriteAction : go_type.
+
+Axiom WriteThenNoop : expr.
+
+Axiom WriteThenGoexit : expr.
+
+Axiom WriteThenPanic : expr.
+
+Axiom WriteThenFatal : expr.
+
+Axiom CheckWriteAction__OnWriteⁱᵐᵖˡ : val.
+
+Axiom CheckedEntry : go_type.
+
+Axiom CheckedEntry__resetⁱᵐᵖˡ : val.
+
+Axiom CheckedEntry__Writeⁱᵐᵖˡ : val.
+
+Axiom CheckedEntry__AddCoreⁱᵐᵖˡ : val.
+
+Axiom CheckedEntry__Shouldⁱᵐᵖˡ : val.
+
+Axiom CheckedEntry__Afterⁱᵐᵖˡ : val.
+
 Definition encodeError : go_string := "go.uber.org/zap/zapcore.encodeError"%go.
+
+Axiom encodeErrorⁱᵐᵖˡ : val.
+
+Axiom errorGroup : go_type.
+
+Axiom errArray : go_type.
+
+Axiom errArray__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Definition _errArrayElemPool : go_string := "go.uber.org/zap/zapcore._errArrayElemPool"%go.
 
 Axiom _errArrayElemPool'init : val.
 
+Axiom errArrayElem : go_type.
+
 Definition newErrArrayElem : go_string := "go.uber.org/zap/zapcore.newErrArrayElem"%go.
 
+Axiom newErrArrayElemⁱᵐᵖˡ : val.
+
+Axiom errArrayElem__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom errArrayElem__MarshalLogObjectⁱᵐᵖˡ : val.
+
+Axiom errArrayElem__Freeⁱᵐᵖˡ : val.
+
 Definition FieldType : go_type := uint8T.
+
+Axiom UnknownType : expr.
+
+Axiom ArrayMarshalerType : expr.
+
+Axiom ObjectMarshalerType : expr.
+
+Axiom BinaryType : expr.
+
+Axiom BoolType : expr.
+
+Axiom ByteStringType : expr.
+
+Axiom Complex128Type : expr.
+
+Axiom Complex64Type : expr.
+
+Axiom DurationType : expr.
+
+Axiom Float64Type : expr.
+
+Axiom Float32Type : expr.
+
+Axiom Int64Type : expr.
+
+Axiom Int32Type : expr.
+
+Axiom Int16Type : expr.
+
+Axiom Int8Type : expr.
+
+Axiom StringType : expr.
+
+Axiom TimeType : expr.
+
+Axiom TimeFullType : expr.
+
+Axiom Uint64Type : expr.
+
+Axiom Uint32Type : expr.
+
+Axiom Uint16Type : expr.
+
+Axiom Uint8Type : expr.
+
+Axiom UintptrType : expr.
+
+Axiom ReflectType : expr.
+
+Axiom NamespaceType : expr.
+
+Axiom StringerType : expr.
+
+Axiom ErrorType : expr.
+
+Axiom SkipType : expr.
+
+Axiom InlineMarshalerType : expr.
 
 Definition Field : go_type := structT [
   "Key" :: stringT;
@@ -96,13 +412,51 @@ Definition Field : go_type := structT [
   "Interface" :: interfaceT
 ].
 
+Axiom Field__AddToⁱᵐᵖˡ : val.
+
+Axiom Field__Equalsⁱᵐᵖˡ : val.
+
 Definition addFields : go_string := "go.uber.org/zap/zapcore.addFields"%go.
+
+Axiom addFieldsⁱᵐᵖˡ : val.
 
 Definition encodeStringer : go_string := "go.uber.org/zap/zapcore.encodeStringer"%go.
 
+Axiom encodeStringerⁱᵐᵖˡ : val.
+
+Axiom hooked : go_type.
+
 Definition RegisterHooks : go_string := "go.uber.org/zap/zapcore.RegisterHooks"%go.
 
+Axiom RegisterHooksⁱᵐᵖˡ : val.
+
+Axiom hooked__Levelⁱᵐᵖˡ : val.
+
+Axiom hooked__Checkⁱᵐᵖˡ : val.
+
+Axiom hooked__Withⁱᵐᵖˡ : val.
+
+Axiom hooked__Writeⁱᵐᵖˡ : val.
+
+Axiom levelFilterCore : go_type.
+
 Definition NewIncreaseLevelCore : go_string := "go.uber.org/zap/zapcore.NewIncreaseLevelCore"%go.
+
+Axiom NewIncreaseLevelCoreⁱᵐᵖˡ : val.
+
+Axiom levelFilterCore__Enabledⁱᵐᵖˡ : val.
+
+Axiom levelFilterCore__Levelⁱᵐᵖˡ : val.
+
+Axiom levelFilterCore__Withⁱᵐᵖˡ : val.
+
+Axiom levelFilterCore__Checkⁱᵐᵖˡ : val.
+
+Axiom levelFilterCore__Writeⁱᵐᵖˡ : val.
+
+Axiom levelFilterCore__Syncⁱᵐᵖˡ : val.
+
+Axiom _hex : go_string.
 
 Definition _jsonPool : go_string := "go.uber.org/zap/zapcore._jsonPool"%go.
 
@@ -110,25 +464,215 @@ Axiom _jsonPool'init : val.
 
 Definition putJSONEncoder : go_string := "go.uber.org/zap/zapcore.putJSONEncoder"%go.
 
+Axiom putJSONEncoderⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder : go_type.
+
 Definition NewJSONEncoder : go_string := "go.uber.org/zap/zapcore.NewJSONEncoder"%go.
 
+Axiom NewJSONEncoderⁱᵐᵖˡ : val.
+
 Definition newJSONEncoder : go_string := "go.uber.org/zap/zapcore.newJSONEncoder"%go.
+
+Axiom newJSONEncoderⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddArrayⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddObjectⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddBinaryⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddByteStringⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddBoolⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddComplex128ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddComplex64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddDurationⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddFloat64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddFloat32ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddInt64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__resetReflectBufⁱᵐᵖˡ : val.
 
 Definition nullLiteralBytes : go_string := "go.uber.org/zap/zapcore.nullLiteralBytes"%go.
 
 Axiom nullLiteralBytes'init : val.
 
+Axiom jsonEncoder__encodeReflectedⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddReflectedⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__OpenNamespaceⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddStringⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddTimeⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddUint64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendArrayⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendObjectⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendBoolⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendByteStringⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__appendComplexⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendDurationⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendInt64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendReflectedⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendStringⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendTimeLayoutⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendTimeⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendUint64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddIntⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddInt32ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddInt16ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddInt8ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddUintⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddUint32ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddUint16ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddUint8ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AddUintptrⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendComplex64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendComplex128ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendFloat64ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendFloat32ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendIntⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendInt32ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendInt16ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendInt8ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendUintⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendUint32ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendUint16ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendUint8ⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__AppendUintptrⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__Cloneⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__cloneⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__EncodeEntryⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__truncateⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__closeOpenNamespacesⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__addKeyⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__addElementSeparatorⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__appendFloatⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__safeAddStringⁱᵐᵖˡ : val.
+
+Axiom jsonEncoder__safeAddByteStringⁱᵐᵖˡ : val.
+
 Definition safeAppendStringLike : go_string := "go.uber.org/zap/zapcore.safeAppendStringLike"%go.
 
+Axiom safeAppendStringLikeⁱᵐᵖˡ : val.
+
+Axiom lazyWithCore : go_type.
+
 Definition NewLazyWith : go_string := "go.uber.org/zap/zapcore.NewLazyWith"%go.
+
+Axiom NewLazyWithⁱᵐᵖˡ : val.
+
+Axiom lazyWithCore__initOnceⁱᵐᵖˡ : val.
+
+Axiom lazyWithCore__Withⁱᵐᵖˡ : val.
+
+Axiom lazyWithCore__Checkⁱᵐᵖˡ : val.
 
 Definition errUnmarshalNilLevel : go_string := "go.uber.org/zap/zapcore.errUnmarshalNilLevel"%go.
 
 Axiom errUnmarshalNilLevel'init : val.
 
+Axiom Level : go_type.
+
+Axiom DebugLevel : expr.
+
+Axiom InfoLevel : expr.
+
+Axiom WarnLevel : expr.
+
+Axiom ErrorLevel : expr.
+
+Axiom DPanicLevel : expr.
+
+Axiom PanicLevel : expr.
+
+Axiom FatalLevel : expr.
+
+Axiom _minLevel : expr.
+
+Axiom _maxLevel : expr.
+
+Axiom InvalidLevel : expr.
+
 Definition ParseLevel : go_string := "go.uber.org/zap/zapcore.ParseLevel"%go.
 
+Axiom ParseLevelⁱᵐᵖˡ : val.
+
+Axiom leveledEnabler : go_type.
+
 Definition LevelOf : go_string := "go.uber.org/zap/zapcore.LevelOf"%go.
+
+Axiom LevelOfⁱᵐᵖˡ : val.
+
+Axiom Level__Stringⁱᵐᵖˡ : val.
+
+Axiom Level__CapitalStringⁱᵐᵖˡ : val.
+
+Axiom Level__MarshalTextⁱᵐᵖˡ : val.
+
+Axiom Level__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom Level__unmarshalTextⁱᵐᵖˡ : val.
+
+Axiom Level__Setⁱᵐᵖˡ : val.
+
+Axiom Level__Getⁱᵐᵖˡ : val.
+
+Axiom Level__Enabledⁱᵐᵖˡ : val.
+
+Axiom LevelEnabler : go_type.
 
 Definition _levelToColor : go_string := "go.uber.org/zap/zapcore._levelToColor"%go.
 
@@ -148,35 +692,601 @@ Axiom _levelToCapitalColorString'init : val.
 
 Definition init : go_string := "go.uber.org/zap/zapcore.init"%go.
 
+Axiom initⁱᵐᵖˡ : val.
+
+Axiom ObjectMarshaler : go_type.
+
+Axiom ObjectMarshalerFunc : go_type.
+
+Axiom ObjectMarshalerFunc__MarshalLogObjectⁱᵐᵖˡ : val.
+
+Axiom ArrayMarshaler : go_type.
+
+Axiom ArrayMarshalerFunc : go_type.
+
+Axiom ArrayMarshalerFunc__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder : go_type.
+
 Definition NewMapObjectEncoder : go_string := "go.uber.org/zap/zapcore.NewMapObjectEncoder"%go.
+
+Axiom NewMapObjectEncoderⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddArrayⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddObjectⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddBinaryⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddByteStringⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddBoolⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddDurationⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddComplex128ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddComplex64ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddFloat64ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddFloat32ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddIntⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddInt64ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddInt32ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddInt16ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddInt8ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddStringⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddTimeⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddUintⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddUint64ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddUint32ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddUint16ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddUint8ⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddUintptrⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__AddReflectedⁱᵐᵖˡ : val.
+
+Axiom MapObjectEncoder__OpenNamespaceⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder : go_type.
+
+Axiom sliceArrayEncoder__AppendArrayⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendObjectⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendReflectedⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendBoolⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendByteStringⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendComplex128ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendComplex64ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendDurationⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendFloat64ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendFloat32ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendIntⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendInt64ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendInt32ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendInt16ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendInt8ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendStringⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendTimeⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendUintⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendUint64ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendUint32ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendUint16ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendUint8ⁱᵐᵖˡ : val.
+
+Axiom sliceArrayEncoder__AppendUintptrⁱᵐᵖˡ : val.
+
+Axiom ReflectedEncoder : go_type.
 
 Definition defaultReflectedEncoder : go_string := "go.uber.org/zap/zapcore.defaultReflectedEncoder"%go.
 
+Axiom defaultReflectedEncoderⁱᵐᵖˡ : val.
+
+Axiom _numLevels : expr.
+
+Axiom _countersPerLevel : Z.
+
+Axiom counter : go_type.
+
+Axiom counters : go_type.
+
 Definition newCounters : go_string := "go.uber.org/zap/zapcore.newCounters"%go.
+
+Axiom newCountersⁱᵐᵖˡ : val.
+
+Axiom counters__getⁱᵐᵖˡ : val.
 
 Definition fnv32a : go_string := "go.uber.org/zap/zapcore.fnv32a"%go.
 
+Axiom fnv32aⁱᵐᵖˡ : val.
+
+Axiom counter__IncCheckResetⁱᵐᵖˡ : val.
+
+Axiom SamplingDecision : go_type.
+
+Axiom LogDropped : expr.
+
+Axiom LogSampled : expr.
+
+Axiom optionFunc : go_type.
+
+Axiom optionFunc__applyⁱᵐᵖˡ : val.
+
+Axiom SamplerOption : go_type.
+
 Definition nopSamplingHook : go_string := "go.uber.org/zap/zapcore.nopSamplingHook"%go.
+
+Axiom nopSamplingHookⁱᵐᵖˡ : val.
 
 Definition SamplerHook : go_string := "go.uber.org/zap/zapcore.SamplerHook"%go.
 
+Axiom SamplerHookⁱᵐᵖˡ : val.
+
 Definition NewSamplerWithOptions : go_string := "go.uber.org/zap/zapcore.NewSamplerWithOptions"%go.
+
+Axiom NewSamplerWithOptionsⁱᵐᵖˡ : val.
+
+Axiom sampler : go_type.
 
 Definition NewSampler : go_string := "go.uber.org/zap/zapcore.NewSampler"%go.
 
+Axiom NewSamplerⁱᵐᵖˡ : val.
+
+Axiom sampler__Levelⁱᵐᵖˡ : val.
+
+Axiom sampler__Withⁱᵐᵖˡ : val.
+
+Axiom sampler__Checkⁱᵐᵖˡ : val.
+
+Axiom multiCore : go_type.
+
 Definition NewTee : go_string := "go.uber.org/zap/zapcore.NewTee"%go.
+
+Axiom NewTeeⁱᵐᵖˡ : val.
+
+Axiom multiCore__Withⁱᵐᵖˡ : val.
+
+Axiom multiCore__Levelⁱᵐᵖˡ : val.
+
+Axiom multiCore__Enabledⁱᵐᵖˡ : val.
+
+Axiom multiCore__Checkⁱᵐᵖˡ : val.
+
+Axiom multiCore__Writeⁱᵐᵖˡ : val.
+
+Axiom multiCore__Syncⁱᵐᵖˡ : val.
+
+Axiom WriteSyncer : go_type.
 
 Definition AddSync : go_string := "go.uber.org/zap/zapcore.AddSync"%go.
 
+Axiom AddSyncⁱᵐᵖˡ : val.
+
+Axiom lockedWriteSyncer : go_type.
+
 Definition Lock : go_string := "go.uber.org/zap/zapcore.Lock"%go.
+
+Axiom Lockⁱᵐᵖˡ : val.
+
+Axiom lockedWriteSyncer__Writeⁱᵐᵖˡ : val.
+
+Axiom lockedWriteSyncer__Syncⁱᵐᵖˡ : val.
+
+Axiom writerWrapper : go_type.
+
+Axiom writerWrapper__Syncⁱᵐᵖˡ : val.
+
+Axiom multiWriteSyncer : go_type.
 
 Definition NewMultiWriteSyncer : go_string := "go.uber.org/zap/zapcore.NewMultiWriteSyncer"%go.
 
+Axiom NewMultiWriteSyncerⁱᵐᵖˡ : val.
+
+Axiom multiWriteSyncer__Writeⁱᵐᵖˡ : val.
+
+Axiom multiWriteSyncer__Syncⁱᵐᵖˡ : val.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(getSliceEncoder, getSliceEncoderⁱᵐᵖˡ); (putSliceEncoder, putSliceEncoderⁱᵐᵖˡ); (NewConsoleEncoder, NewConsoleEncoderⁱᵐᵖˡ); (NewNopCore, NewNopCoreⁱᵐᵖˡ); (NewCore, NewCoreⁱᵐᵖˡ); (LowercaseLevelEncoder, LowercaseLevelEncoderⁱᵐᵖˡ); (LowercaseColorLevelEncoder, LowercaseColorLevelEncoderⁱᵐᵖˡ); (CapitalLevelEncoder, CapitalLevelEncoderⁱᵐᵖˡ); (CapitalColorLevelEncoder, CapitalColorLevelEncoderⁱᵐᵖˡ); (EpochTimeEncoder, EpochTimeEncoderⁱᵐᵖˡ); (EpochMillisTimeEncoder, EpochMillisTimeEncoderⁱᵐᵖˡ); (EpochNanosTimeEncoder, EpochNanosTimeEncoderⁱᵐᵖˡ); (encodeTimeLayout, encodeTimeLayoutⁱᵐᵖˡ); (ISO8601TimeEncoder, ISO8601TimeEncoderⁱᵐᵖˡ); (RFC3339TimeEncoder, RFC3339TimeEncoderⁱᵐᵖˡ); (RFC3339NanoTimeEncoder, RFC3339NanoTimeEncoderⁱᵐᵖˡ); (TimeEncoderOfLayout, TimeEncoderOfLayoutⁱᵐᵖˡ); (SecondsDurationEncoder, SecondsDurationEncoderⁱᵐᵖˡ); (NanosDurationEncoder, NanosDurationEncoderⁱᵐᵖˡ); (MillisDurationEncoder, MillisDurationEncoderⁱᵐᵖˡ); (StringDurationEncoder, StringDurationEncoderⁱᵐᵖˡ); (FullCallerEncoder, FullCallerEncoderⁱᵐᵖˡ); (ShortCallerEncoder, ShortCallerEncoderⁱᵐᵖˡ); (FullNameEncoder, FullNameEncoderⁱᵐᵖˡ); (getCheckedEntry, getCheckedEntryⁱᵐᵖˡ); (putCheckedEntry, putCheckedEntryⁱᵐᵖˡ); (NewEntryCaller, NewEntryCallerⁱᵐᵖˡ); (encodeError, encodeErrorⁱᵐᵖˡ); (newErrArrayElem, newErrArrayElemⁱᵐᵖˡ); (addFields, addFieldsⁱᵐᵖˡ); (encodeStringer, encodeStringerⁱᵐᵖˡ); (RegisterHooks, RegisterHooksⁱᵐᵖˡ); (NewIncreaseLevelCore, NewIncreaseLevelCoreⁱᵐᵖˡ); (putJSONEncoder, putJSONEncoderⁱᵐᵖˡ); (NewJSONEncoder, NewJSONEncoderⁱᵐᵖˡ); (newJSONEncoder, newJSONEncoderⁱᵐᵖˡ); (safeAppendStringLike, safeAppendStringLikeⁱᵐᵖˡ); (NewLazyWith, NewLazyWithⁱᵐᵖˡ); (ParseLevel, ParseLevelⁱᵐᵖˡ); (LevelOf, LevelOfⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (NewMapObjectEncoder, NewMapObjectEncoderⁱᵐᵖˡ); (defaultReflectedEncoder, defaultReflectedEncoderⁱᵐᵖˡ); (newCounters, newCountersⁱᵐᵖˡ); (fnv32a, fnv32aⁱᵐᵖˡ); (nopSamplingHook, nopSamplingHookⁱᵐᵖˡ); (SamplerHook, SamplerHookⁱᵐᵖˡ); (NewSamplerWithOptions, NewSamplerWithOptionsⁱᵐᵖˡ); (NewSampler, NewSamplerⁱᵐᵖˡ); (NewTee, NewTeeⁱᵐᵖˡ); (AddSync, AddSyncⁱᵐᵖˡ); (Lock, Lockⁱᵐᵖˡ); (NewMultiWriteSyncer, NewMultiWriteSyncerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(FieldType.id, []); (ptrT.id FieldType.id, []); (Field.id, []); (ptrT.id Field.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(BufferedWriteSyncer.id, []); (ptrT.id BufferedWriteSyncer.id, [("Stop"%go, BufferedWriteSyncer__Stopⁱᵐᵖˡ); ("Sync"%go, BufferedWriteSyncer__Syncⁱᵐᵖˡ); ("Write"%go, BufferedWriteSyncer__Writeⁱᵐᵖˡ); ("flushLoop"%go, BufferedWriteSyncer__flushLoopⁱᵐᵖˡ); ("initialize"%go, BufferedWriteSyncer__initializeⁱᵐᵖˡ)]); (systemClock.id, [("NewTicker"%go, systemClock__NewTickerⁱᵐᵖˡ); ("Now"%go, systemClock__Nowⁱᵐᵖˡ)]); (ptrT.id systemClock.id, [("NewTicker"%go, (λ: "$r",
+                 method_call #systemClock.id #"NewTicker"%go (![#systemClock] "$r")
+                 )%V); ("Now"%go, (λ: "$r",
+                 method_call #systemClock.id #"Now"%go (![#systemClock] "$r")
+                 )%V)]); (consoleEncoder.id, [("AddArray"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddArray"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddBinary"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddBinary"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddBool"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddBool"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddByteString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddByteString"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddComplex128"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddComplex128"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddComplex64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddComplex64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddDuration"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddDuration"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddFloat32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddFloat32"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddFloat64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddFloat64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddInt"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddInt16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt16"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddInt32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt32"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddInt64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddInt8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt8"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddObject"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddObject"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddReflected"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddReflected"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddString"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddTime"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddTime"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddUint"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddUint16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint16"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddUint32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint32"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddUint64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddUint8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint8"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AddUintptr"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUintptr"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendArray"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendArray"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendBool"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendBool"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendByteString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendByteString"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendComplex128"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendComplex128"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendComplex64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendComplex64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendDuration"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendDuration"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendFloat32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendFloat32"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendFloat64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendFloat64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendInt"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendInt16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt16"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendInt32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt32"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendInt64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendInt8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt8"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendObject"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendObject"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendReflected"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendReflected"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendString"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendTime"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendTime"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendTimeLayout"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendTimeLayout"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendUint"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendUint16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint16"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendUint32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint32"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendUint64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint64"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendUint8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint8"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("AppendUintptr"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUintptr"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("Clone"%go, consoleEncoder__Cloneⁱᵐᵖˡ); ("EncodeEntry"%go, consoleEncoder__EncodeEntryⁱᵐᵖˡ); ("OpenNamespace"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"OpenNamespace"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("addElementSeparator"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"addElementSeparator"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("addKey"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"addKey"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("addSeparatorIfNecessary"%go, consoleEncoder__addSeparatorIfNecessaryⁱᵐᵖˡ); ("appendComplex"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"appendComplex"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("appendFloat"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"appendFloat"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("clone"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"clone"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("closeOpenNamespaces"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"closeOpenNamespaces"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("encodeReflected"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"encodeReflected"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("resetReflectBuf"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"resetReflectBuf"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("safeAddByteString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"safeAddByteString"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("safeAddString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"safeAddString"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("truncate"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"truncate"%go (struct.field_get #consoleEncoder #"jsonEncoder"%go "$r")
+                 )%V); ("writeContext"%go, consoleEncoder__writeContextⁱᵐᵖˡ)]); (ptrT.id consoleEncoder.id, [("AddArray"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddArray"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddBinary"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddBinary"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddBool"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddBool"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddByteString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddByteString"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddComplex128"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddComplex128"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddComplex64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddComplex64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddDuration"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddDuration"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddFloat32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddFloat32"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddFloat64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddFloat64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddInt"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddInt16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt16"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddInt32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt32"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddInt64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddInt8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddInt8"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddObject"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddObject"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddReflected"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddReflected"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddString"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddTime"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddTime"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddUint"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddUint16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint16"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddUint32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint32"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddUint64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddUint8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUint8"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AddUintptr"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AddUintptr"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendArray"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendArray"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendBool"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendBool"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendByteString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendByteString"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendComplex128"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendComplex128"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendComplex64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendComplex64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendDuration"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendDuration"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendFloat32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendFloat32"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendFloat64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendFloat64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendInt"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendInt16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt16"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendInt32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt32"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendInt64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendInt8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendInt8"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendObject"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendObject"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendReflected"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendReflected"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendString"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendTime"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendTime"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendTimeLayout"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendTimeLayout"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendUint"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendUint16"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint16"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendUint32"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint32"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendUint64"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint64"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendUint8"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUint8"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("AppendUintptr"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"AppendUintptr"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("Clone"%go, (λ: "$r",
+                 method_call #consoleEncoder.id #"Clone"%go (![#consoleEncoder] "$r")
+                 )%V); ("EncodeEntry"%go, (λ: "$r",
+                 method_call #consoleEncoder.id #"EncodeEntry"%go (![#consoleEncoder] "$r")
+                 )%V); ("OpenNamespace"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"OpenNamespace"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("addElementSeparator"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"addElementSeparator"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("addKey"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"addKey"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("addSeparatorIfNecessary"%go, (λ: "$r",
+                 method_call #consoleEncoder.id #"addSeparatorIfNecessary"%go (![#consoleEncoder] "$r")
+                 )%V); ("appendComplex"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"appendComplex"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("appendFloat"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"appendFloat"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("clone"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"clone"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("closeOpenNamespaces"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"closeOpenNamespaces"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("encodeReflected"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"encodeReflected"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("resetReflectBuf"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"resetReflectBuf"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("safeAddByteString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"safeAddByteString"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("safeAddString"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"safeAddString"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("truncate"%go, (λ: "$r",
+                 method_call #(ptrT.id jsonEncoder.id) #"truncate"%go (![#ptrT] (struct.field_ref #consoleEncoder #"jsonEncoder"%go "$r"))
+                 )%V); ("writeContext"%go, (λ: "$r",
+                 method_call #consoleEncoder.id #"writeContext"%go (![#consoleEncoder] "$r")
+                 )%V)]); (nopCore.id, [("Check"%go, nopCore__Checkⁱᵐᵖˡ); ("Enabled"%go, nopCore__Enabledⁱᵐᵖˡ); ("Sync"%go, nopCore__Syncⁱᵐᵖˡ); ("With"%go, nopCore__Withⁱᵐᵖˡ); ("Write"%go, nopCore__Writeⁱᵐᵖˡ)]); (ptrT.id nopCore.id, [("Check"%go, (λ: "$r",
+                 method_call #nopCore.id #"Check"%go (![#nopCore] "$r")
+                 )%V); ("Enabled"%go, (λ: "$r",
+                 method_call #nopCore.id #"Enabled"%go (![#nopCore] "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #nopCore.id #"Sync"%go (![#nopCore] "$r")
+                 )%V); ("With"%go, (λ: "$r",
+                 method_call #nopCore.id #"With"%go (![#nopCore] "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #nopCore.id #"Write"%go (![#nopCore] "$r")
+                 )%V)]); (ioCore.id, [("Enabled"%go, (λ: "$r",
+                 method_call #LevelEnabler.id #"Enabled"%go (struct.field_get #ioCore #"LevelEnabler"%go "$r")
+                 )%V)]); (ptrT.id ioCore.id, [("Check"%go, ioCore__Checkⁱᵐᵖˡ); ("Enabled"%go, (λ: "$r",
+                 method_call #(ptrT.id LevelEnabler.id) #"Enabled"%go (struct.field_ref #ioCore #"LevelEnabler"%go "$r")
+                 )%V); ("Level"%go, ioCore__Levelⁱᵐᵖˡ); ("Sync"%go, ioCore__Syncⁱᵐᵖˡ); ("With"%go, ioCore__Withⁱᵐᵖˡ); ("Write"%go, ioCore__Writeⁱᵐᵖˡ); ("clone"%go, ioCore__cloneⁱᵐᵖˡ)]); (LevelEncoder.id, []); (ptrT.id LevelEncoder.id, [("UnmarshalText"%go, LevelEncoder__UnmarshalTextⁱᵐᵖˡ)]); (TimeEncoder.id, []); (ptrT.id TimeEncoder.id, [("UnmarshalJSON"%go, TimeEncoder__UnmarshalJSONⁱᵐᵖˡ); ("UnmarshalText"%go, TimeEncoder__UnmarshalTextⁱᵐᵖˡ); ("UnmarshalYAML"%go, TimeEncoder__UnmarshalYAMLⁱᵐᵖˡ)]); (DurationEncoder.id, []); (ptrT.id DurationEncoder.id, [("UnmarshalText"%go, DurationEncoder__UnmarshalTextⁱᵐᵖˡ)]); (CallerEncoder.id, []); (ptrT.id CallerEncoder.id, [("UnmarshalText"%go, CallerEncoder__UnmarshalTextⁱᵐᵖˡ)]); (NameEncoder.id, []); (ptrT.id NameEncoder.id, [("UnmarshalText"%go, NameEncoder__UnmarshalTextⁱᵐᵖˡ)]); (EncoderConfig.id, []); (ptrT.id EncoderConfig.id, []); (EntryCaller.id, [("FullPath"%go, EntryCaller__FullPathⁱᵐᵖˡ); ("String"%go, EntryCaller__Stringⁱᵐᵖˡ); ("TrimmedPath"%go, EntryCaller__TrimmedPathⁱᵐᵖˡ)]); (ptrT.id EntryCaller.id, [("FullPath"%go, (λ: "$r",
+                 method_call #EntryCaller.id #"FullPath"%go (![#EntryCaller] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #EntryCaller.id #"String"%go (![#EntryCaller] "$r")
+                 )%V); ("TrimmedPath"%go, (λ: "$r",
+                 method_call #EntryCaller.id #"TrimmedPath"%go (![#EntryCaller] "$r")
+                 )%V)]); (Entry.id, []); (ptrT.id Entry.id, []); (CheckWriteAction.id, [("OnWrite"%go, CheckWriteAction__OnWriteⁱᵐᵖˡ)]); (ptrT.id CheckWriteAction.id, [("OnWrite"%go, (λ: "$r",
+                 method_call #CheckWriteAction.id #"OnWrite"%go (![#CheckWriteAction] "$r")
+                 )%V)]); (CheckedEntry.id, []); (ptrT.id CheckedEntry.id, [("AddCore"%go, CheckedEntry__AddCoreⁱᵐᵖˡ); ("After"%go, CheckedEntry__Afterⁱᵐᵖˡ); ("Should"%go, CheckedEntry__Shouldⁱᵐᵖˡ); ("Write"%go, CheckedEntry__Writeⁱᵐᵖˡ); ("reset"%go, CheckedEntry__resetⁱᵐᵖˡ)]); (errArray.id, [("MarshalLogArray"%go, errArray__MarshalLogArrayⁱᵐᵖˡ)]); (ptrT.id errArray.id, [("MarshalLogArray"%go, (λ: "$r",
+                 method_call #errArray.id #"MarshalLogArray"%go (![#errArray] "$r")
+                 )%V)]); (errArrayElem.id, []); (ptrT.id errArrayElem.id, [("Free"%go, errArrayElem__Freeⁱᵐᵖˡ); ("MarshalLogArray"%go, errArrayElem__MarshalLogArrayⁱᵐᵖˡ); ("MarshalLogObject"%go, errArrayElem__MarshalLogObjectⁱᵐᵖˡ)]); (FieldType.id, []); (ptrT.id FieldType.id, []); (Field.id, [("AddTo"%go, Field__AddToⁱᵐᵖˡ); ("Equals"%go, Field__Equalsⁱᵐᵖˡ)]); (ptrT.id Field.id, [("AddTo"%go, (λ: "$r",
+                 method_call #Field.id #"AddTo"%go (![#Field] "$r")
+                 )%V); ("Equals"%go, (λ: "$r",
+                 method_call #Field.id #"Equals"%go (![#Field] "$r")
+                 )%V)]); (hooked.id, [("Enabled"%go, (λ: "$r",
+                 method_call #Core.id #"Enabled"%go (struct.field_get #hooked #"Core"%go "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #Core.id #"Sync"%go (struct.field_get #hooked #"Core"%go "$r")
+                 )%V)]); (ptrT.id hooked.id, [("Check"%go, hooked__Checkⁱᵐᵖˡ); ("Enabled"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Enabled"%go (struct.field_ref #hooked #"Core"%go "$r")
+                 )%V); ("Level"%go, hooked__Levelⁱᵐᵖˡ); ("Sync"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Sync"%go (struct.field_ref #hooked #"Core"%go "$r")
+                 )%V); ("With"%go, hooked__Withⁱᵐᵖˡ); ("Write"%go, hooked__Writeⁱᵐᵖˡ)]); (levelFilterCore.id, []); (ptrT.id levelFilterCore.id, [("Check"%go, levelFilterCore__Checkⁱᵐᵖˡ); ("Enabled"%go, levelFilterCore__Enabledⁱᵐᵖˡ); ("Level"%go, levelFilterCore__Levelⁱᵐᵖˡ); ("Sync"%go, levelFilterCore__Syncⁱᵐᵖˡ); ("With"%go, levelFilterCore__Withⁱᵐᵖˡ); ("Write"%go, levelFilterCore__Writeⁱᵐᵖˡ)]); (jsonEncoder.id, []); (ptrT.id jsonEncoder.id, [("AddArray"%go, jsonEncoder__AddArrayⁱᵐᵖˡ); ("AddBinary"%go, jsonEncoder__AddBinaryⁱᵐᵖˡ); ("AddBool"%go, jsonEncoder__AddBoolⁱᵐᵖˡ); ("AddByteString"%go, jsonEncoder__AddByteStringⁱᵐᵖˡ); ("AddComplex128"%go, jsonEncoder__AddComplex128ⁱᵐᵖˡ); ("AddComplex64"%go, jsonEncoder__AddComplex64ⁱᵐᵖˡ); ("AddDuration"%go, jsonEncoder__AddDurationⁱᵐᵖˡ); ("AddFloat32"%go, jsonEncoder__AddFloat32ⁱᵐᵖˡ); ("AddFloat64"%go, jsonEncoder__AddFloat64ⁱᵐᵖˡ); ("AddInt"%go, jsonEncoder__AddIntⁱᵐᵖˡ); ("AddInt16"%go, jsonEncoder__AddInt16ⁱᵐᵖˡ); ("AddInt32"%go, jsonEncoder__AddInt32ⁱᵐᵖˡ); ("AddInt64"%go, jsonEncoder__AddInt64ⁱᵐᵖˡ); ("AddInt8"%go, jsonEncoder__AddInt8ⁱᵐᵖˡ); ("AddObject"%go, jsonEncoder__AddObjectⁱᵐᵖˡ); ("AddReflected"%go, jsonEncoder__AddReflectedⁱᵐᵖˡ); ("AddString"%go, jsonEncoder__AddStringⁱᵐᵖˡ); ("AddTime"%go, jsonEncoder__AddTimeⁱᵐᵖˡ); ("AddUint"%go, jsonEncoder__AddUintⁱᵐᵖˡ); ("AddUint16"%go, jsonEncoder__AddUint16ⁱᵐᵖˡ); ("AddUint32"%go, jsonEncoder__AddUint32ⁱᵐᵖˡ); ("AddUint64"%go, jsonEncoder__AddUint64ⁱᵐᵖˡ); ("AddUint8"%go, jsonEncoder__AddUint8ⁱᵐᵖˡ); ("AddUintptr"%go, jsonEncoder__AddUintptrⁱᵐᵖˡ); ("AppendArray"%go, jsonEncoder__AppendArrayⁱᵐᵖˡ); ("AppendBool"%go, jsonEncoder__AppendBoolⁱᵐᵖˡ); ("AppendByteString"%go, jsonEncoder__AppendByteStringⁱᵐᵖˡ); ("AppendComplex128"%go, jsonEncoder__AppendComplex128ⁱᵐᵖˡ); ("AppendComplex64"%go, jsonEncoder__AppendComplex64ⁱᵐᵖˡ); ("AppendDuration"%go, jsonEncoder__AppendDurationⁱᵐᵖˡ); ("AppendFloat32"%go, jsonEncoder__AppendFloat32ⁱᵐᵖˡ); ("AppendFloat64"%go, jsonEncoder__AppendFloat64ⁱᵐᵖˡ); ("AppendInt"%go, jsonEncoder__AppendIntⁱᵐᵖˡ); ("AppendInt16"%go, jsonEncoder__AppendInt16ⁱᵐᵖˡ); ("AppendInt32"%go, jsonEncoder__AppendInt32ⁱᵐᵖˡ); ("AppendInt64"%go, jsonEncoder__AppendInt64ⁱᵐᵖˡ); ("AppendInt8"%go, jsonEncoder__AppendInt8ⁱᵐᵖˡ); ("AppendObject"%go, jsonEncoder__AppendObjectⁱᵐᵖˡ); ("AppendReflected"%go, jsonEncoder__AppendReflectedⁱᵐᵖˡ); ("AppendString"%go, jsonEncoder__AppendStringⁱᵐᵖˡ); ("AppendTime"%go, jsonEncoder__AppendTimeⁱᵐᵖˡ); ("AppendTimeLayout"%go, jsonEncoder__AppendTimeLayoutⁱᵐᵖˡ); ("AppendUint"%go, jsonEncoder__AppendUintⁱᵐᵖˡ); ("AppendUint16"%go, jsonEncoder__AppendUint16ⁱᵐᵖˡ); ("AppendUint32"%go, jsonEncoder__AppendUint32ⁱᵐᵖˡ); ("AppendUint64"%go, jsonEncoder__AppendUint64ⁱᵐᵖˡ); ("AppendUint8"%go, jsonEncoder__AppendUint8ⁱᵐᵖˡ); ("AppendUintptr"%go, jsonEncoder__AppendUintptrⁱᵐᵖˡ); ("Clone"%go, jsonEncoder__Cloneⁱᵐᵖˡ); ("EncodeEntry"%go, jsonEncoder__EncodeEntryⁱᵐᵖˡ); ("OpenNamespace"%go, jsonEncoder__OpenNamespaceⁱᵐᵖˡ); ("addElementSeparator"%go, jsonEncoder__addElementSeparatorⁱᵐᵖˡ); ("addKey"%go, jsonEncoder__addKeyⁱᵐᵖˡ); ("appendComplex"%go, jsonEncoder__appendComplexⁱᵐᵖˡ); ("appendFloat"%go, jsonEncoder__appendFloatⁱᵐᵖˡ); ("clone"%go, jsonEncoder__cloneⁱᵐᵖˡ); ("closeOpenNamespaces"%go, jsonEncoder__closeOpenNamespacesⁱᵐᵖˡ); ("encodeReflected"%go, jsonEncoder__encodeReflectedⁱᵐᵖˡ); ("resetReflectBuf"%go, jsonEncoder__resetReflectBufⁱᵐᵖˡ); ("safeAddByteString"%go, jsonEncoder__safeAddByteStringⁱᵐᵖˡ); ("safeAddString"%go, jsonEncoder__safeAddStringⁱᵐᵖˡ); ("truncate"%go, jsonEncoder__truncateⁱᵐᵖˡ)]); (lazyWithCore.id, [("Enabled"%go, (λ: "$r",
+                 method_call #Core.id #"Enabled"%go (struct.field_get #lazyWithCore #"Core"%go "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #Core.id #"Sync"%go (struct.field_get #lazyWithCore #"Core"%go "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #Core.id #"Write"%go (struct.field_get #lazyWithCore #"Core"%go "$r")
+                 )%V)]); (ptrT.id lazyWithCore.id, [("Check"%go, lazyWithCore__Checkⁱᵐᵖˡ); ("Do"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Once.id) #"Do"%go (struct.field_ref #lazyWithCore #"Once"%go "$r")
+                 )%V); ("Enabled"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Enabled"%go (struct.field_ref #lazyWithCore #"Core"%go "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Sync"%go (struct.field_ref #lazyWithCore #"Core"%go "$r")
+                 )%V); ("With"%go, lazyWithCore__Withⁱᵐᵖˡ); ("Write"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Write"%go (struct.field_ref #lazyWithCore #"Core"%go "$r")
+                 )%V); ("initOnce"%go, lazyWithCore__initOnceⁱᵐᵖˡ); ("doSlow"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Once.id) #"doSlow"%go (struct.field_ref #lazyWithCore #"Once"%go "$r")
+                 )%V)]); (Level.id, [("CapitalString"%go, Level__CapitalStringⁱᵐᵖˡ); ("Enabled"%go, Level__Enabledⁱᵐᵖˡ); ("MarshalText"%go, Level__MarshalTextⁱᵐᵖˡ); ("String"%go, Level__Stringⁱᵐᵖˡ)]); (ptrT.id Level.id, [("CapitalString"%go, (λ: "$r",
+                 method_call #Level.id #"CapitalString"%go (![#Level] "$r")
+                 )%V); ("Enabled"%go, (λ: "$r",
+                 method_call #Level.id #"Enabled"%go (![#Level] "$r")
+                 )%V); ("Get"%go, Level__Getⁱᵐᵖˡ); ("MarshalText"%go, (λ: "$r",
+                 method_call #Level.id #"MarshalText"%go (![#Level] "$r")
+                 )%V); ("Set"%go, Level__Setⁱᵐᵖˡ); ("String"%go, (λ: "$r",
+                 method_call #Level.id #"String"%go (![#Level] "$r")
+                 )%V); ("UnmarshalText"%go, Level__UnmarshalTextⁱᵐᵖˡ); ("unmarshalText"%go, Level__unmarshalTextⁱᵐᵖˡ)]); (ObjectMarshalerFunc.id, [("MarshalLogObject"%go, ObjectMarshalerFunc__MarshalLogObjectⁱᵐᵖˡ)]); (ptrT.id ObjectMarshalerFunc.id, [("MarshalLogObject"%go, (λ: "$r",
+                 method_call #ObjectMarshalerFunc.id #"MarshalLogObject"%go (![#ObjectMarshalerFunc] "$r")
+                 )%V)]); (ArrayMarshalerFunc.id, [("MarshalLogArray"%go, ArrayMarshalerFunc__MarshalLogArrayⁱᵐᵖˡ)]); (ptrT.id ArrayMarshalerFunc.id, [("MarshalLogArray"%go, (λ: "$r",
+                 method_call #ArrayMarshalerFunc.id #"MarshalLogArray"%go (![#ArrayMarshalerFunc] "$r")
+                 )%V)]); (MapObjectEncoder.id, [("AddDuration"%go, MapObjectEncoder__AddDurationⁱᵐᵖˡ); ("AddTime"%go, MapObjectEncoder__AddTimeⁱᵐᵖˡ)]); (ptrT.id MapObjectEncoder.id, [("AddArray"%go, MapObjectEncoder__AddArrayⁱᵐᵖˡ); ("AddBinary"%go, MapObjectEncoder__AddBinaryⁱᵐᵖˡ); ("AddBool"%go, MapObjectEncoder__AddBoolⁱᵐᵖˡ); ("AddByteString"%go, MapObjectEncoder__AddByteStringⁱᵐᵖˡ); ("AddComplex128"%go, MapObjectEncoder__AddComplex128ⁱᵐᵖˡ); ("AddComplex64"%go, MapObjectEncoder__AddComplex64ⁱᵐᵖˡ); ("AddDuration"%go, (λ: "$r",
+                 method_call #MapObjectEncoder.id #"AddDuration"%go (![#MapObjectEncoder] "$r")
+                 )%V); ("AddFloat32"%go, MapObjectEncoder__AddFloat32ⁱᵐᵖˡ); ("AddFloat64"%go, MapObjectEncoder__AddFloat64ⁱᵐᵖˡ); ("AddInt"%go, MapObjectEncoder__AddIntⁱᵐᵖˡ); ("AddInt16"%go, MapObjectEncoder__AddInt16ⁱᵐᵖˡ); ("AddInt32"%go, MapObjectEncoder__AddInt32ⁱᵐᵖˡ); ("AddInt64"%go, MapObjectEncoder__AddInt64ⁱᵐᵖˡ); ("AddInt8"%go, MapObjectEncoder__AddInt8ⁱᵐᵖˡ); ("AddObject"%go, MapObjectEncoder__AddObjectⁱᵐᵖˡ); ("AddReflected"%go, MapObjectEncoder__AddReflectedⁱᵐᵖˡ); ("AddString"%go, MapObjectEncoder__AddStringⁱᵐᵖˡ); ("AddTime"%go, (λ: "$r",
+                 method_call #MapObjectEncoder.id #"AddTime"%go (![#MapObjectEncoder] "$r")
+                 )%V); ("AddUint"%go, MapObjectEncoder__AddUintⁱᵐᵖˡ); ("AddUint16"%go, MapObjectEncoder__AddUint16ⁱᵐᵖˡ); ("AddUint32"%go, MapObjectEncoder__AddUint32ⁱᵐᵖˡ); ("AddUint64"%go, MapObjectEncoder__AddUint64ⁱᵐᵖˡ); ("AddUint8"%go, MapObjectEncoder__AddUint8ⁱᵐᵖˡ); ("AddUintptr"%go, MapObjectEncoder__AddUintptrⁱᵐᵖˡ); ("OpenNamespace"%go, MapObjectEncoder__OpenNamespaceⁱᵐᵖˡ)]); (sliceArrayEncoder.id, []); (ptrT.id sliceArrayEncoder.id, [("AppendArray"%go, sliceArrayEncoder__AppendArrayⁱᵐᵖˡ); ("AppendBool"%go, sliceArrayEncoder__AppendBoolⁱᵐᵖˡ); ("AppendByteString"%go, sliceArrayEncoder__AppendByteStringⁱᵐᵖˡ); ("AppendComplex128"%go, sliceArrayEncoder__AppendComplex128ⁱᵐᵖˡ); ("AppendComplex64"%go, sliceArrayEncoder__AppendComplex64ⁱᵐᵖˡ); ("AppendDuration"%go, sliceArrayEncoder__AppendDurationⁱᵐᵖˡ); ("AppendFloat32"%go, sliceArrayEncoder__AppendFloat32ⁱᵐᵖˡ); ("AppendFloat64"%go, sliceArrayEncoder__AppendFloat64ⁱᵐᵖˡ); ("AppendInt"%go, sliceArrayEncoder__AppendIntⁱᵐᵖˡ); ("AppendInt16"%go, sliceArrayEncoder__AppendInt16ⁱᵐᵖˡ); ("AppendInt32"%go, sliceArrayEncoder__AppendInt32ⁱᵐᵖˡ); ("AppendInt64"%go, sliceArrayEncoder__AppendInt64ⁱᵐᵖˡ); ("AppendInt8"%go, sliceArrayEncoder__AppendInt8ⁱᵐᵖˡ); ("AppendObject"%go, sliceArrayEncoder__AppendObjectⁱᵐᵖˡ); ("AppendReflected"%go, sliceArrayEncoder__AppendReflectedⁱᵐᵖˡ); ("AppendString"%go, sliceArrayEncoder__AppendStringⁱᵐᵖˡ); ("AppendTime"%go, sliceArrayEncoder__AppendTimeⁱᵐᵖˡ); ("AppendUint"%go, sliceArrayEncoder__AppendUintⁱᵐᵖˡ); ("AppendUint16"%go, sliceArrayEncoder__AppendUint16ⁱᵐᵖˡ); ("AppendUint32"%go, sliceArrayEncoder__AppendUint32ⁱᵐᵖˡ); ("AppendUint64"%go, sliceArrayEncoder__AppendUint64ⁱᵐᵖˡ); ("AppendUint8"%go, sliceArrayEncoder__AppendUint8ⁱᵐᵖˡ); ("AppendUintptr"%go, sliceArrayEncoder__AppendUintptrⁱᵐᵖˡ)]); (counter.id, []); (ptrT.id counter.id, [("IncCheckReset"%go, counter__IncCheckResetⁱᵐᵖˡ)]); (counters.id, []); (ptrT.id counters.id, [("get"%go, counters__getⁱᵐᵖˡ)]); (SamplingDecision.id, []); (ptrT.id SamplingDecision.id, []); (optionFunc.id, [("apply"%go, optionFunc__applyⁱᵐᵖˡ)]); (ptrT.id optionFunc.id, [("apply"%go, (λ: "$r",
+                 method_call #optionFunc.id #"apply"%go (![#optionFunc] "$r")
+                 )%V)]); (sampler.id, [("Enabled"%go, (λ: "$r",
+                 method_call #Core.id #"Enabled"%go (struct.field_get #sampler #"Core"%go "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #Core.id #"Sync"%go (struct.field_get #sampler #"Core"%go "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #Core.id #"Write"%go (struct.field_get #sampler #"Core"%go "$r")
+                 )%V)]); (ptrT.id sampler.id, [("Check"%go, sampler__Checkⁱᵐᵖˡ); ("Enabled"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Enabled"%go (struct.field_ref #sampler #"Core"%go "$r")
+                 )%V); ("Level"%go, sampler__Levelⁱᵐᵖˡ); ("Sync"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Sync"%go (struct.field_ref #sampler #"Core"%go "$r")
+                 )%V); ("With"%go, sampler__Withⁱᵐᵖˡ); ("Write"%go, (λ: "$r",
+                 method_call #(ptrT.id Core.id) #"Write"%go (struct.field_ref #sampler #"Core"%go "$r")
+                 )%V)]); (multiCore.id, [("Check"%go, multiCore__Checkⁱᵐᵖˡ); ("Enabled"%go, multiCore__Enabledⁱᵐᵖˡ); ("Level"%go, multiCore__Levelⁱᵐᵖˡ); ("Sync"%go, multiCore__Syncⁱᵐᵖˡ); ("With"%go, multiCore__Withⁱᵐᵖˡ); ("Write"%go, multiCore__Writeⁱᵐᵖˡ)]); (ptrT.id multiCore.id, [("Check"%go, (λ: "$r",
+                 method_call #multiCore.id #"Check"%go (![#multiCore] "$r")
+                 )%V); ("Enabled"%go, (λ: "$r",
+                 method_call #multiCore.id #"Enabled"%go (![#multiCore] "$r")
+                 )%V); ("Level"%go, (λ: "$r",
+                 method_call #multiCore.id #"Level"%go (![#multiCore] "$r")
+                 )%V); ("Sync"%go, (λ: "$r",
+                 method_call #multiCore.id #"Sync"%go (![#multiCore] "$r")
+                 )%V); ("With"%go, (λ: "$r",
+                 method_call #multiCore.id #"With"%go (![#multiCore] "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #multiCore.id #"Write"%go (![#multiCore] "$r")
+                 )%V)]); (lockedWriteSyncer.id, []); (ptrT.id lockedWriteSyncer.id, [("Lock"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #lockedWriteSyncer #"Mutex"%go "$r")
+                 )%V); ("Sync"%go, lockedWriteSyncer__Syncⁱᵐᵖˡ); ("TryLock"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Mutex.id) #"TryLock"%go (struct.field_ref #lockedWriteSyncer #"Mutex"%go "$r")
+                 )%V); ("Unlock"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #lockedWriteSyncer #"Mutex"%go "$r")
+                 )%V); ("Write"%go, lockedWriteSyncer__Writeⁱᵐᵖˡ)]); (writerWrapper.id, [("Sync"%go, writerWrapper__Syncⁱᵐᵖˡ); ("Write"%go, (λ: "$r",
+                 method_call #io.Writer.id #"Write"%go (struct.field_get #writerWrapper #"Writer"%go "$r")
+                 )%V)]); (ptrT.id writerWrapper.id, [("Sync"%go, (λ: "$r",
+                 method_call #writerWrapper.id #"Sync"%go (![#writerWrapper] "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #(ptrT.id io.Writer.id) #"Write"%go (struct.field_ref #writerWrapper #"Writer"%go "$r")
+                 )%V)]); (multiWriteSyncer.id, [("Sync"%go, multiWriteSyncer__Syncⁱᵐᵖˡ); ("Write"%go, multiWriteSyncer__Writeⁱᵐᵖˡ)]); (ptrT.id multiWriteSyncer.id, [("Sync"%go, (λ: "$r",
+                 method_call #multiWriteSyncer.id #"Sync"%go (![#multiWriteSyncer] "$r")
+                 )%V); ("Write"%go, (λ: "$r",
+                 method_call #multiWriteSyncer.id #"Write"%go (![#multiWriteSyncer] "$r")
+                 )%V)])].
 
 #[global] Instance info' : PkgInfo zapcore.zapcore :=
   {|

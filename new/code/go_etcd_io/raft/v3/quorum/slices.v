@@ -13,7 +13,11 @@ Context `{ffi_syntax}.
 
 Definition CompareUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.CompareUint64"%go.
 
+Axiom CompareUint64ⁱᵐᵖˡ : val.
+
 Definition SortUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.SortUint64"%go.
+
+Axiom SortUint64ⁱᵐᵖˡ : val.
 
 Definition Tup : go_type := structT [
   "ID" :: uint64T;
@@ -24,9 +28,11 @@ Definition Tup : go_type := structT [
 
 Definition SortFuncTup : go_string := "go.etcd.io/raft/v3/quorum/slices.SortFuncTup"%go.
 
+Axiom SortFuncTupⁱᵐᵖˡ : val.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(CompareUint64, CompareUint64ⁱᵐᵖˡ); (SortUint64, SortUint64ⁱᵐᵖˡ); (SortFuncTup, SortFuncTupⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Tup.id, []); (ptrT.id Tup.id, [])].
 
