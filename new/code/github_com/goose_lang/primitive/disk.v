@@ -9,6 +9,7 @@ From New Require Import disk_prelude.
 Module disk.
 
 Module Block. Axiom id : go_string. End Block.
+Module Disk. Definition id : go_string := "github.com/goose-lang/primitive/disk.Disk"%go. End Disk.
 Module FileDisk. Definition id : go_string := "github.com/goose-lang/primitive/disk.FileDisk"%go. End FileDisk.
 Module MemDisk. Definition id : go_string := "github.com/goose-lang/primitive/disk.MemDisk"%go. End MemDisk.
 

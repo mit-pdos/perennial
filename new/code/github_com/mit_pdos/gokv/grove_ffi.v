@@ -9,7 +9,11 @@ From New Require Import grove_prelude.
 Module grove_ffi.
 
 Module listener. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.listener"%go. End listener.
+Module Listener. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.Listener"%go. End Listener.
 Module connection. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.connection"%go. End connection.
+Module Connection. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connection"%go. End Connection.
+Module ConnectRet. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.ConnectRet"%go. End ConnectRet.
+Module ReceiveRet. Definition id : go_string := "github.com/mit-pdos/gokv/grove_ffi.ReceiveRet"%go. End ReceiveRet.
 
 Section code.
 

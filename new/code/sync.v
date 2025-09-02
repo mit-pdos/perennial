@@ -9,9 +9,11 @@ Definition sync : go_string := "sync".
 
 Module sync.
 
+Module Cond. Definition id : go_string := "sync.Cond"%go. End Cond.
 Module copyChecker. Definition id : go_string := "sync.copyChecker"%go. End copyChecker.
 Module noCopy. Definition id : go_string := "sync.noCopy"%go. End noCopy.
 Module Map. Definition id : go_string := "sync.Map"%go. End Map.
+Module Mutex. Definition id : go_string := "sync.Mutex"%go. End Mutex.
 Module Locker. Definition id : go_string := "sync.Locker"%go. End Locker.
 Module Once. Definition id : go_string := "sync.Once"%go. End Once.
 Module Pool. Definition id : go_string := "sync.Pool"%go. End Pool.

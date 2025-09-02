@@ -5,7 +5,7 @@ Definition reflectlite : go_string := "internal/reflectlite".
 
 Module reflectlite.
 
-Module Type. Definition id : go_string := "internal/reflectlite.Type"%go. End Type.
+Module Type'. Definition id : go_string := "internal/reflectlite.Type"%go. End Type'.
 Module Kind. Axiom id : go_string. End Kind.
 Module nameOff. Axiom id : go_string. End nameOff.
 Module typeOff. Axiom id : go_string. End typeOff.
@@ -32,7 +32,7 @@ Definition Swapper : go_string := "internal/reflectlite.Swapper"%go.
 
 Axiom Swapperⁱᵐᵖˡ : val.
 
-Axiom Type : go_type.
+Axiom Type' : go_type.
 
 Axiom Kind : go_type.
 
