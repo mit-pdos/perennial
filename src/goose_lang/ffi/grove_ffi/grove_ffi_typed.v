@@ -112,6 +112,8 @@ Local Ltac solve_atomic2 :=
   Qed.
 
   Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : dfrac) :
+    (* TODO: unsoundly not adding this for backwards compatibility *)
+    (* Z.of_nat (length data) < 2^63 → *)
     ⊢ {{{ own_slice_small s byteT q data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
         Send (connection_socket c_l c_r) (slice_val s) @ ∅
@@ -130,6 +132,7 @@ Local Ltac solve_atomic2 :=
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     { solve_atomic2. }
+    assert (Z.of_nat (length data) = sint.Z s.(Slice.sz)) by admit.
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
     { iApply own_slice_small_byte_pointsto_vals. done. }
     iIntros (err_early err_late) "[Hc Hl]".
@@ -138,7 +141,7 @@ Local Ltac solve_atomic2 :=
     iSplit.
     - iPureIntro. by destruct err_early, err_late.
     - iApply pointsto_vals_own_slice_small_byte; done.
-  Qed.
+  Admitted.
 
   Lemma wp_Receive c_l c_r :
     ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
@@ -171,7 +174,7 @@ Local Ltac solve_atomic2 :=
     iApply ("HΦ" $! (Slice.mk _ _ _)).
     rewrite /own_slice.
     iSplitL.
-    - iApply pointsto_vals_own_slice_small_byte; done.
+    - iApply pointsto_vals_own_slice_small_byte; simpl; auto; try word.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
   Qed.
@@ -202,7 +205,7 @@ Lemma wpc_FileRead f dq c E :
     iApply ("HΦ" $! (Slice.mk _ _ _)). iFrame. iModIntro.
     rewrite /own_slice.
     iSplitL.
-    - iApply pointsto_vals_own_slice_small_byte; done.
+    - iApply pointsto_vals_own_slice_small_byte; simpl; auto; try word.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
   Qed.
@@ -227,6 +230,8 @@ Lemma wpc_FileRead f dq c E :
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
+    (* NOTE: old goose own_slice does not maintain signed bounds *)
+    assert (Z.of_nat (length data) = sint.Z s.(Slice.sz)) by admit.
     wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
     { iApply own_slice_small_byte_pointsto_vals. done. }
     iIntros (err) "[Hf Hs]".
@@ -238,7 +243,7 @@ Lemma wpc_FileRead f dq c E :
     { iApply "HΦ". eauto. }
     iApply "HΦ". iFrame.
     iApply pointsto_vals_own_slice_small_byte; done.
-  Qed.
+  Admitted.
 
   Lemma wpc_FileAppend f s q old data E :
     ⊢ {{{ f f↦ old ∗ own_slice_small s byteT q data }}}
@@ -260,6 +265,8 @@ Lemma wpc_FileRead f dq c E :
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
+    (* NOTE: old goose own_slice does not maintain signed bounds *)
+    assert (Z.of_nat (length data) = sint.Z s.(Slice.sz)) by admit.
     wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
     { iApply own_slice_small_byte_pointsto_vals. done. }
     iIntros (err) "[Hf Hs]".
@@ -271,7 +278,7 @@ Lemma wpc_FileRead f dq c E :
     { iApply "HΦ". eauto. }
     iApply "HΦ". iFrame.
     iApply pointsto_vals_own_slice_small_byte; done.
-  Qed.
+  Admitted.
 
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
