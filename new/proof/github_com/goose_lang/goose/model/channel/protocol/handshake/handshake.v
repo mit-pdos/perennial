@@ -9,17 +9,22 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Implicit Types (s : chan_rep.t ()).
 
-Record params :=
-  {
-    chan_gn : chan_names;
-  }.
+(*----------------------------------------------------------------------------
+  Invariant for a simple handshake on an unbuffered channel with unit payloads.
 
+  - When the channel has an in-flight *send* (SndWait/SndDone), predicate [P]
+    must hold (producer-side obligation).
+  - When the channel has an in-flight *receive* (RcvWait/RcvDone), predicate [Q]
+    must hold (consumer-side obligation).
+  - Buffered channels are intentionally disallowed.
+  - Closing is also disallowed in this protocol ([_ => False]).
 
+  ---------------------------------------------------------------------------*)
 Definition is_handshake γ (ch : loc) P Q : iProp Σ :=
-  is_channel ch 0 γ.(chan_gn)  ∗
+  is_channel ch 0 γ  ∗
   inv nroot (
       ∃ s,
-        "Hch" ∷ own_channel ch s 0 γ.(chan_gn) ∗
+        "Hch" ∷ own_channel ch s 0 γ ∗
     (match s with
      | chan_rep.Idle =>
         True
@@ -33,8 +38,8 @@ Definition is_handshake γ (ch : loc) P Q : iProp Σ :=
     )).
 
 Lemma start_handshake P Q ch s γ:
-  is_channel ch 0 γ.(chan_gn)  -∗
-  own_channel ch chan_rep.Idle 0 γ.(chan_gn) ={⊤}=∗
+  is_channel ch 0 γ  -∗
+  own_channel ch chan_rep.Idle 0 γ ={⊤}=∗
   is_handshake γ ch P Q .
 Proof.
     intros.
@@ -58,7 +63,7 @@ Lemma wp_handshake_receive γ ch P Q :
   }}}.
 Proof.
   iIntros (?) "(Hlc1 & Hlc2 & Hlc3 & Hpc & (#Hchan & #Hinv) & HQ) HΦ".
-  iApply ((wp_Receive ch 0  γ.(chan_gn) Φ  ) with "[$Hpc $Hchan]").
+  iApply ((wp_Receive ch 0  γ Φ  ) with "[$Hpc $Hchan]").
   iModIntro. unfold chan_blocking_receive_atomic_update.
   iFrame "#".
   iInv "Hinv" as "Hi" "Hclose".
@@ -99,7 +104,7 @@ Lemma wp_handshake_send γ ch P Q :
   }}}.
 Proof.
   iIntros (?) "(Hlc1 & Hlc2 & Hlc3 & Hpc & (#Hchan & #Hinv) & HP) HΦ".
-  iApply ((wp_Send ch 0 ()  γ.(chan_gn) Φ  ) with "[$Hpc $Hchan]").
+  iApply ((wp_Send ch 0 ()  γ Φ  ) with "[$Hpc $Hchan]").
   iModIntro. unfold chan_blocking_receive_atomic_update.
   iFrame "#".
   iInv "Hinv" as "Hi" "Hclose".
