@@ -138,7 +138,7 @@ Section resume.
     set dataP := Slice.mk p len len.
     iDestruct (pointsto_vals_own_slice_small_byte dataP with "HdataP") as "Hdata".
     { done. }
-    { done. }
+    { simpl. word. }
     wp_apply wp_ref_to.
     { apply (slice_val_ty dataP). }
     iIntros (dataPP) "HdataPP".
