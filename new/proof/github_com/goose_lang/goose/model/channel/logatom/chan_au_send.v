@@ -43,7 +43,8 @@ Definition chan_blocking_send_atomic_update ch (cap: w64) (v : V) (γ: chan_name
                         own_channel ch chan_rep.Idle 0 γ ={∅,⊤}=∗ Φ
                     | _ => True
                  end)
-    | _ => False
+    | chan_rep.SndWait _ | chan_rep.RcvDone | chan_rep.SndDone _ => True
+    | chan_rep.Closed _ => False
     end).
 
 (* Used for an attempt at sending that is part of a nonblocking select statement. *)
