@@ -1,7 +1,7 @@
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.proof.proof_prelude.
-From New.proof Require Import context log.
+From New.proof Require Import context log fmt.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -13,6 +13,11 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 #[global] Instance : IsPkgInit apply.apply := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit v3.auth.auth := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit wait := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit math := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit idutil := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit prometheus := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit errors.errors := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit config := define_is_pkg_init True%I.
 
 #[global] Instance : IsPkgInit etcdserver := define_is_pkg_init True%I.
 
