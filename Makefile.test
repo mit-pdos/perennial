@@ -30,7 +30,7 @@ test-vok: $(TESTFILES:.v=.vok)
 ## add tests to CI build
 ci: test
 
-ROCQ_TEST=coqtop -batch -test-mode $(ROCQPROJECT_ARGS)
+ROCQ_TEST=rocq top -batch -test-mode $(ROCQPROJECT_ARGS)
 
 tests/.rocqdeps.d: $(TESTFILES) _RocqProject
 	@echo 'ROCQ DEP TESTFILES'
