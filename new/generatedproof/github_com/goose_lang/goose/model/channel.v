@@ -28,14 +28,14 @@ Definition ty (T : go_type) : go_type := structT [
   "state" :: channel.OfferState;
   "buffer" :: sliceT;
   "cap" :: uint64T;
-  "v" :: ptrT
+  "v" :: T
 ]%struct.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   lock' : loc;
   state' : OfferState.t;
   buffer' : slice.t;
   cap' : w64;
-  v' : loc;
+  v' : T';
 }.
 End def.
 End Channel.
@@ -325,14 +325,6 @@ Global Instance wp_func_call_Select5 :
   WpFuncCall channel.Select5 _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_method_call_Channel'ptr_BufferedTryReceive :
-  WpMethodCall (ptrT.id channel.Channel.id) "BufferedTryReceive" _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Channel'ptr_BufferedTrySend :
-  WpMethodCall (ptrT.id channel.Channel.id) "BufferedTrySend" _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_method_call).
-
 Global Instance wp_method_call_Channel'ptr_Cap :
   WpMethodCall (ptrT.id channel.Channel.id) "Cap" _ (is_pkg_defined channel) :=
   ltac:(solve_wp_method_call).
@@ -367,14 +359,6 @@ Global Instance wp_method_call_Channel'ptr_TryReceive :
 
 Global Instance wp_method_call_Channel'ptr_TrySend :
   WpMethodCall (ptrT.id channel.Channel.id) "TrySend" _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Channel'ptr_UnbufferedTryReceive :
-  WpMethodCall (ptrT.id channel.Channel.id) "UnbufferedTryReceive" _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Channel'ptr_UnbufferedTrySend :
-  WpMethodCall (ptrT.id channel.Channel.id) "UnbufferedTrySend" _ (is_pkg_defined channel) :=
   ltac:(solve_wp_method_call).
 
 End names.
