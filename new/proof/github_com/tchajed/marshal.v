@@ -481,10 +481,11 @@ Proof.
   iIntros (s'0) "(Hs & Hscap & Hdata)". wp_auto.
   iApply "HΦ".
   rewrite -app_assoc.
-  iDestruct (own_slice_len with "Hdata") as "%Hdlen".
+  iDestruct (own_slice_len with "Hdata") as "[%Hdlen %]".
   rewrite Hdlen.
-  rewrite w64_to_nat_id. 
   iFrame.
+  iExactEq "Hs".
+  repeat (f_equal; try word).
 Qed.
 
 Theorem wp_WriteBool s (vs: list u8) (b: bool) :

@@ -40,7 +40,7 @@ Proof.
   iDestruct own_slice_cap_nil as "?".
   wp_if_destruct.
   { iApply "HΦ".
-    iDestruct (own_slice_len with "Hsl_b") as %Hb_len.
+    iDestruct (own_slice_len with "Hsl_b") as %[Hb_len ?].
     apply nil_length_inv in Hb_len. subst.
     iFrame "∗#". }
   wp_auto.

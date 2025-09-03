@@ -194,8 +194,8 @@ Section grove.
   Qed.
 
   Local Lemma pointsto_vals_to_own_slice (p : loc) (cap : w64) (dq : dfrac) (d : list w8) :
-    (length d) = uint.nat (length d) →
-    (length d) ≤ uint.Z cap →
+    (length d) = sint.nat (length d) →
+    (length d) ≤ sint.Z cap →
     pointsto_vals p dq (data_vals d) -∗
     (slice.mk p (length d) cap) ↦*{dq} d.
   Proof using go_ctx.
@@ -232,14 +232,15 @@ Section grove.
     iIntros "!> * #?".
     wp_auto.
     destruct s.
-    iDestruct (own_slice_len with "Hs") as "%Hlen".
-    iDestruct (own_slice_wf with "Hs") as "%Hwf".
+    iDestruct (own_slice_len with "Hs") as "[%Hlen %Hcap]".
+    iDestruct (own_slice_wf with "Hs")as "%Hwf".
+    cbn in * |-.
+    assert (Z.of_nat (length data) = sint.Z len_f) as Hlen' by word.
     rewrite difference_empty_L /=.
     (* XXX why was it not necessary to explicitly use wp_ncatomic in old Perennial/Goose? *)
     iApply wp_ncatomic.
     { solve_atomic2. }
     iMod "HΦ" as (ms) "[Hc HΦ]".
-    cbn in *.
     rewrite to_val_unseal.
     iApply (wp_SendOp with "[$Hc Hs]").
     { done. }
@@ -291,7 +292,7 @@ Section grove.
       destruct Hm as (?&?&?); subst.
       wp_auto.
       iApply "HΦ".
-      iApply own_slice_empty. done.
+      iApply own_slice_empty; done.
     }
     destruct Hm as [Hin Hlen].
     wp_auto.
@@ -363,8 +364,9 @@ Section grove.
     { solve_atomic2. }
     iMod "HΦ" as "[Hf Hau]".
     iModIntro.
-    iDestruct (own_slice_len with "Hs") as %Hlen.
+    iDestruct (own_slice_len with "Hs") as %[Hlen Hlen_w].
     iDestruct (own_slice_wf with "Hs") as %Hcap.
+    assert (Z.of_nat (length data) = sint.Z s.(slice.len_f)) by word.
     iApply (wp_FileWriteOp with "[$Hf Hs]").
     { done. }
     { by iApply own_slice_to_pointsto_vals. }
@@ -399,11 +401,12 @@ Section grove.
     { solve_atomic2. }
     iMod "HΦ" as "[Hf Hau]".
     iModIntro.
-    iDestruct (own_slice_len with "Hs") as %Hlen.
+    iDestruct (own_slice_len with "Hs") as %[Hlen Hlen_w].
     iDestruct (own_slice_wf with "Hs") as %Hcap.
+    assert (Z.of_nat (length data) = sint.Z s.(slice.len_f)) by word.
     rewrite to_val_unseal /=.
     iApply (wp_FileAppendOp with "[$Hf Hs]").
-    { done. }
+    { erewrite Hlen. word. }
     { by iApply own_slice_to_pointsto_vals. }
     iNext. iIntros "* [Hf Hl]".
     replace (LitV err) with #err; last by rewrite to_val_unseal //.

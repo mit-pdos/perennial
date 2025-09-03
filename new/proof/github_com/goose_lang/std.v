@@ -61,34 +61,38 @@ Proof.
     assert (length xs1 = length xs2) by word.
     iAssert (∃ (i: w64),
                 "i" ∷ i_ptr ↦ i ∗
+                "%Hbound" ∷ ⌜0 ≤ uint.Z i ≤ Z.of_nat (length xs1)⌝ ∗
                 "%Hi" ∷ ⌜∀ (n: nat), (n < uint.nat i)%nat → xs1 !! n = xs2 !! n⌝
             )%I with "[$i]" as "IH".
     {
-      iPureIntro. intros. word.
+      iPureIntro.
+      split; [ word | intros; word ].
     }
     wp_for "IH".
     wp_if_destruct; try wp_auto.
-    - list_elem xs1 i as x1_i.
-      wp_apply (wp_load_slice_elem with "[$Hs1]") as "Hs1"; first by eauto.
+    - list_elem xs1 (sint.Z i) as x1_i.
+      wp_pure; [ word | ].
+      wp_apply (wp_load_slice_elem with "[$Hs1]") as "Hs1"; [ word | eauto | ].
       wp_pure; first by word.
-      list_elem xs2 i as x2_i.
-      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2"; first by eauto.
+      list_elem xs2 (sint.Z i) as x2_i.
+      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2"; [ word | eauto | ].
       destruct (bool_decide_reflect (x1_i = x2_i)); subst; wp_auto.
       + wp_for_post.
         iFrame.
-        iPureIntro; intros.
+        iPureIntro.
+        split; [ word | ].
+        intros.
         destruct (decide (n < uint.nat i)); eauto with lia.
-        assert (n = uint.nat i) by word; subst.
+        assert (n = sint.nat i) by word; subst.
         congruence.
       + wp_for_post.
         rewrite -> bool_decide_eq_false_2 by congruence.
         iApply "HΦ"; iFrame.
     - rewrite bool_decide_eq_true_2.
       { iApply "HΦ"; iFrame. }
-      eapply list_eq_same_length; eauto.
-      { word. }
+      eapply list_eq_same_length; [ eauto | eauto | ].
       intros ???? Hget1 Hget2.
-      rewrite -> Hi in Hget1 by lia.
+      rewrite -> Hi in Hget1 by word.
       congruence.
   }
   rewrite bool_decide_eq_false_2.
@@ -106,7 +110,7 @@ Proof.
   wp_if_destruct; try wp_auto.
   - iApply "HΦ". 
     + iSplitL.
-      * iDestruct (own_slice_len with "Hb") as "%Hb_len".
+      * iDestruct (own_slice_len with "Hb") as "[%Hb_len %]".
         apply nil_length_inv in Hb_len. subst.
         iDestruct (own_slice_nil (DfracOwn 1)) as "Hnil".
         iApply "Hnil".
@@ -148,7 +152,7 @@ Proof.
   wp_start as "_"; wp_auto.
   unfold math.MaxInt, math.MinInt.
   repeat (wp_if_destruct
-            (* BUG: this unshelve avoid trivial shelved goals of type w64 and
+            (* BUG: this unshelve avoids trivial shelved goals of type w64 and
             val *)
           || unshelve wp_auto
           || (wp_apply wp_Assume; iIntros "%")

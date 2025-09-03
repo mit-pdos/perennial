@@ -90,12 +90,14 @@ Theorem wp_CloneByteSlice (s:slice.t) q (vs:list w8) :
       own_slice s' (DfracOwn 1) vs }}}.
 Proof.
   wp_start as "Hs".
+  iDestruct (own_slice_len with "Hs") as %Hlen_s.
   wp_auto.
-  wp_apply wp_slice_make2. iIntros (s') "[Hs' _]".
+  wp_apply wp_slice_make2. { word. }
+  iIntros (s') "[Hs' _]".
   wp_auto.
   wp_apply (wp_slice_copy with "[$Hs $Hs']"). iIntros (n) "[% [Hs' Hs]]".
   wp_auto.
-  iDestruct (own_slice_len with "Hs") as "%Hlen".
+  iDestruct (own_slice_len with "Hs") as "[%Hlen %Hcap]".
   autorewrite with len. rewrite -Hlen. rewrite firstn_all.
   rewrite drop_ge.
   2: { rewrite length_replicate. done. }

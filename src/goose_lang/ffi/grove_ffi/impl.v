@@ -157,7 +157,7 @@ Section grove.
       err_early ← any bool;
       if err_early is true then ret $ Val $ (*err*)#true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+            Z.of_nat (length data) = sint.Z len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
@@ -168,8 +168,10 @@ Section grove.
       ret $ Val $ (*err*)#(err_late : bool)
     | RecvOp, ExtV (ConnectionSocketV c_l c_r) =>
       ms ← reads (λ '(σ,g), g.(global_world).(grove_net) !! c_l) ≫= unwrap;
+      (* NOTE: assumes m has length bounded by 2^63, but we could prove it by
+      tracking it from SendOp *)
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
-            m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ m'.(msg_sender) = c_r);
+            m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ m'.(msg_sender) = c_r ∧ Z.of_nat (length m'.(msg_data)) < 2^63);
       match m with
       | None =>
         (* We errored *)
@@ -210,9 +212,9 @@ Section grove.
                 | _ => False
                 end);
       old_content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
-      (* Files cannot become bigger than 2^64 bytes on real systems, so we also
+      (* Files cannot become bigger than 2^63 bytes on real systems, so we also
       reject that here. *)
-      if bool_decide (length (old_content ++ new_content) >= 2^64) then ret $ Val #true else
+      if bool_decide (length (old_content ++ new_content) >= 2^63) then ret $ Val #true else
       modify_n (set grove_node_files $ <[ name := old_content ++ new_content ]>);;
       ret $ Val $ (*err*)#false
     (* Time *)

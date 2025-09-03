@@ -387,9 +387,9 @@ Proof.
     by rewrite Forall_singleton. }
   iExactEq "Hsl_b'". rewrite /named. f_equal.
   subst.
-  replace (uint.nat (word.sub _ _)) with
+  replace (sint.nat (word.sub _ _)) with
     ((length pred_vals + 0) * (Z.to_nat cryptoffi.hash_len))%nat by word.
-  replace (uint.nat _) with
+  replace (sint.nat _) with
     ((length pred_vals + 1) * (Z.to_nat cryptoffi.hash_len))%nat by word.
   rewrite -join_subslice.
   2: { rewrite app_length. simpl. lia. }

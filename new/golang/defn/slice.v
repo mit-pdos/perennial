@@ -1,4 +1,4 @@
-From New.golang.defn Require Import loop assume exception typing list dynamic_typing mem.
+From New.golang.defn Require Import loop assume exception typing list dynamic_typing mem builtin.
 From Perennial Require Import base.
 
 Module slice.
@@ -20,7 +20,7 @@ Definition cap : val := λ: "s",
    "(Loc 1 0) +ₗ ArbiraryInt"*)
 Definition make3 : val :=
   λ: "t" "sz" "cap",
-  if: "cap" < "sz" then Panic "NewSlice with cap smaller than len"
+  if: int_lt "cap" "sz" then Panic "NewSlice with cap smaller than len"
   else if: "cap" = #(W64 0) then InjL (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
   else let: "p" := AllocN "cap" (type.zero_val "t") in
        InjL ("p", "sz", "cap").
@@ -30,14 +30,14 @@ Definition make2 : val :=
 
 (* computes `&s[i]` *)
 Definition elem_ref : val :=
-  λ: "t" "s" "i", if: "i" < len "s"
+  λ: "t" "s" "i", if: int_lt "i" (len "s")
               then (array_loc_add "t" (ptr "s") "i")
               else Panic "slice index out-of-bounds".
 
 (* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)
 Definition slice : val :=
   λ: "t" "s" "low" "high",
-  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "s") then
+  if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" (cap "s")) then
     InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", cap "s" - "low")
   else Panic "slice indices out of order"
 .
@@ -45,7 +45,7 @@ Definition slice : val :=
 (* s[a:b:c] (picking a specific capacity c) *)
 Definition full_slice : val :=
   λ: "t" "s" "low" "high" "max",
-  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "s") then
+  if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" "max") && (int_leq "max" (cap "s")) then
     InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", "max" - "low")
   else Panic "slice indices out of order"
 .
@@ -53,19 +53,19 @@ Definition full_slice : val :=
 Definition for_range : val :=
   λ: "t" "s" "body",
   let: "i" := alloc #(W64 0) in
-  for: (λ: <>, ![#uint64T] "i" < len "s") ; (λ: <>, "i" <-[#uint64T] (![#uint64T] "i") + #(W64 1)) :=
-    (λ: <>, "body" (![#uint64T] "i") (!["t"] (elem_ref "t" "s" (![#uint64T] "i"))))
+  for: (λ: <>, int_lt (![#int64T] "i") (len "s")) ; (λ: <>, "i" <-[#int64T] (![#int64T] "i") + #(W64 1)) :=
+    (λ: <>, "body" (![#int64T] "i") (!["t"] (elem_ref "t" "s" (![#int64T] "i"))))
 .
 
 Definition copy : val :=
   λ: "t" "dst" "src",
   let: "i" := alloc (zero_val uint64T) in
-  (for: (λ: <>, (![#uint64T] "i" < len "dst") && (![#uint64T] "i" < (len "src"))) ; (λ: <>, Skip) :=
+  (for: (λ: <>, int_lt (![#int64T] "i") (len "dst") && (int_lt (![#int64T] "i") (len "src"))) ; (λ: <>, Skip) :=
     (λ: <>,
-    do: (let: "i_val" := ![#uint64T] "i" in
+    do: (let: "i_val" := ![#int64T] "i" in
       elem_ref "t" "dst" "i_val" <-["t"] !["t"] (elem_ref "t" "src" "i_val");;
-      "i" <-[#uint64T] "i_val" + #(W64 1))));;
-  ![#uint64T] "i"
+      "i" <-[#int64T] "i_val" + #(W64 1))));;
+  ![#int64T] "i"
 .
 
 Definition append : val :=
@@ -92,12 +92,12 @@ Definition literal : val :=
   let: "s" := make2 "t" "len" in
   let: "l" := ref "elems" in
   let: "i" := alloc (zero_val uint64T) in
-  (for: (λ: <>, ![#uint64T] "i" < "len") ; (λ: <>, "i" <-[#uint64T] ![#uint64T] "i" + #(W64 1)) :=
+  (for: (λ: <>, int_lt (![#int64T] "i") "len") ; (λ: <>, "i" <-[#int64T] ![#int64T] "i" + #(W64 1)) :=
      (λ: <>,
         do: (list.Match !"l" (λ: <>, #())
                (λ: "elem" "l_tail",
                   "l" <- "l_tail" ;;
-                  elem_ref "t" "s" (![#uint64T] "i") <-["t"] "elem")))) ;;
+                  elem_ref "t" "s" (![#int64T] "i") <-["t"] "elem")))) ;;
   "s"
 .
 

@@ -11,6 +11,8 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples
   Require Import unittest.
 From New.proof Require Import proof_prelude.
 
+Unset Printing Records.
+
 Section proof.
 Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
@@ -259,6 +261,7 @@ Lemma wp_testU32NewtypeLen :
   {{{ RET #true; True }}}.
 Proof.
   wp_start. wp_auto. wp_apply (wp_slice_make2 (V:=w8)) as "* [? ?]".
+  { word. }
   iDestruct (own_slice_len with "[$]") as "%". rewrite bool_decide_true.
   2:{ revert H. len. }
   by iApply "HΦ".
@@ -287,6 +290,34 @@ Proof.
   wp_start. wp_auto.
   repeat wp_apply wp_make_nondet_float64 as "% _".
   by iApply "HΦ".
+Qed.
+
+Lemma wp_intSliceLoop (s: slice.t) (xs: list w64) :
+  {{{ is_pkg_init unittest ∗ s ↦* xs }}}
+    @! unittest.intSliceLoop #s
+  {{{ (z: w64), RET #z; s ↦* xs }}}.
+Proof.
+  wp_start as "Hs". wp_auto.
+  iDestruct (own_slice_len with "Hs") as %Hs_len.
+  iDestruct (own_slice_wf with "Hs") as %Hs_wf.
+  iAssert (∃ (i sum: w64),
+      "i" ∷ i_ptr ↦ i ∗
+      "xs" ∷ xs_ptr ↦ s ∗
+      "sum" ∷ sum_ptr ↦ sum ∗
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z (slice.len_f s)⌝
+    )%I with "[$i $sum $xs]" as "IH".
+  { word. }
+  wp_for "IH".
+  wp_if_destruct.
+  - wp_auto.
+    wp_pure; first word.
+    list_elem xs (sint.nat i) as x_i.
+    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; first word.
+    { eauto. }
+    wp_for_post.
+    iFrame.
+    word.
+  - wp_auto. iApply "HΦ". iFrame.
 Qed.
 
 End proof.

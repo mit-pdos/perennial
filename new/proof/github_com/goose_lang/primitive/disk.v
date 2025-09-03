@@ -139,7 +139,7 @@ Proof.
   2: {
     iPureIntro. simpl.
     rewrite length_vec_to_list.
-    assert (block_bytes < 2^64)%Z.
+    assert (0 ≤ block_bytes < 2^63)%Z.
     { unfold block_bytes. lia. }
     word.
   }
@@ -154,8 +154,8 @@ Proof.
 Qed.
 
 Lemma block_array_to_slice s q (b: Block) :
-  length b = uint.nat s.(slice.len_f) ->
-  uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ->
+  length b = sint.nat s.(slice.len_f) ->
+  0 ≤ sint.Z s.(slice.len_f) ≤ sint.Z s.(slice.cap_f) ->
   pointsto_block s.(slice.ptr_f) q b -∗ own_slice s q (vec_to_list b).
 Proof.
   intros.
@@ -163,7 +163,7 @@ Proof.
   rewrite own_slice_unseal /own_slice_def.
   iIntros "Hb".
   rewrite big_sepL_fmap.
-  iDestruct (big_sepL_impl with "Hb []") as "$"; eauto.
+  iDestruct (big_sepL_impl with "Hb []") as "$"; [ | word ].
   iModIntro.
   iIntros (i x) "% Hl".
   rewrite typed_pointsto_unseal /typed_pointsto_def.
@@ -218,6 +218,7 @@ Proof.
   iModIntro.
   iApply "HQ".
   iApply block_array_to_slice; eauto.
+  word.
 Qed.
 
 Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :

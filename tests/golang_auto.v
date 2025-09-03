@@ -10,12 +10,8 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples
 Section proof.
 Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Local Notation deps := (ltac2:(build_pkg_init_deps 'unittest) : iProp Σ) (only parsing).
-#[global] Program Instance : IsPkgInit unittest :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := deps;
-  |}.
+#[global] Instance : IsPkgInit unittest := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf unittest := build_get_is_pkg_init_wf.
 
 Lemma wp_useInts (x: w64) (y: w32) :
   {{{ is_pkg_init unittest }}}
