@@ -512,7 +512,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_FileAppendOp f old new l q (len : u64) E :
-    Z.of_nat (length new) = sint.Z len →
+    length new = uint.nat len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
     {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ pointsto_vals l q (data_vals new) }}}.

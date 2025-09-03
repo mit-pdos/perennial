@@ -265,8 +265,6 @@ Lemma wpc_FileRead f dq c E :
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
-    (* NOTE: old goose own_slice does not maintain signed bounds *)
-    assert (Z.of_nat (length data) = sint.Z s.(Slice.sz)) by admit.
     wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
     { iApply own_slice_small_byte_pointsto_vals. done. }
     iIntros (err) "[Hf Hs]".
@@ -278,7 +276,7 @@ Lemma wpc_FileRead f dq c E :
     { iApply "HΦ". eauto. }
     iApply "HΦ". iFrame.
     iApply pointsto_vals_own_slice_small_byte; done.
-  Admitted.
+  Qed.
 
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
