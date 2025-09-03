@@ -85,10 +85,8 @@ projs = [
             "google.golang.org/genproto/googleapis/rpc/status",
             "go.uber.org/zap",
             "go.uber.org/zap/zapcore",
-
             # "go.etcd.io/etcd/server/v3/etcdserver",
             "go.etcd.io/etcd/server/v3/etcdserver/cindex",
-
             # Axiomatized
             "go.etcd.io/etcd/server/v3/storage/backend",
             "go.etcd.io/etcd/server/v3/storage/schema",
