@@ -1,6 +1,7 @@
 translate = [
   "!*",
   "EtcdServer.Put",
+  "EtcdServer.processInternalRaftRequestOnce",
 ]
 imports = [
   "!*",
@@ -8,4 +9,11 @@ imports = [
   "context",
   "go.etcd.io/etcd/pkg/v3/traceutil",
   "github.com/gogo/protobuf/proto",
+  "go.etcd.io/etcd/server/v3/etcdserver/apply",
+  "go.etcd.io/etcd/pkg/v3/wait",
+  "github.com/prometheus/client_golang/prometheus",
+  "go.etcd.io/etcd/server/v3/etcdserver/errors",
+  "go.etcd.io/etcd/server/v3/config",
+  "go.etcd.io/etcd/server/v3/auth",
+  "go.etcd.io/etcd/pkg/v3/idutil",
 ]

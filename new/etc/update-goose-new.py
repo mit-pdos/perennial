@@ -87,9 +87,16 @@ projs = [
             "go.uber.org/zap/zapcore",
             # etcdserver:
             "go.etcd.io/etcd/server/v3/etcdserver",
+            "go.etcd.io/etcd/pkg/v3/wait",
+            "go.etcd.io/etcd/server/v3/etcdserver/errors",
+            "go.etcd.io/etcd/pkg/v3/idutil",
             # Axiomatized for etcdserver:
+            "go.etcd.io/etcd/server/v3/etcdserver/apply",
             "go.etcd.io/etcd/pkg/v3/traceutil",
             "github.com/gogo/protobuf/proto",
+            "github.com/prometheus/client_golang/prometheus",
+            "go.etcd.io/etcd/server/v3/config",
+            "go.etcd.io/etcd/server/v3/auth",
             # cindex:
             "go.etcd.io/etcd/server/v3/etcdserver/cindex",
             # Axiomatized for cindex:
