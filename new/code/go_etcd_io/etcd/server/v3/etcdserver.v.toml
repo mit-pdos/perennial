@@ -1,0 +1,11 @@
+translate = [
+  "!*",
+  "EtcdServer.Put",
+]
+imports = [
+  "!*",
+  "go.etcd.io/etcd/api/v3/etcdserverpb",
+  "context",
+  "go.etcd.io/etcd/pkg/v3/traceutil",
+  "github.com/gogo/protobuf/proto",
+]
