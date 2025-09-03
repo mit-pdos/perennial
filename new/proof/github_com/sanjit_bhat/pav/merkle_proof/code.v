@@ -116,8 +116,8 @@ Proof.
   { iDestruct own_slice_nil as "$". }
 
   list_simplifier.
-  iDestruct (own_slice_len with "Hsl_label") as %?.
-  iDestruct (own_slice_len with "Hsl_val") as %?.
+  iDestruct (own_slice_len with "Hsl_label") as %[-> ?].
+  iDestruct (own_slice_len with "Hsl_val") as %[-> ?].
   iApply "HΦ". iFrame.
   iExactEq "His_hash".
   rewrite /named. repeat f_equal; word.
@@ -217,14 +217,15 @@ Lemma bool_decide_ite_not (P : Prop) {dec : Decision P} :
 Proof. by rewrite bool_decide_not. Qed.
 
 (* TODO: upstream some helper lemmas. *)
-Lemma wp_getBit sl_bs bs (n : w64) :
+Lemma wp_getBit sl_bs d0 bs (n : w64) :
   {{{
     is_pkg_init merkle ∗
-    "#Hsl_bs" ∷ sl_bs ↦*□ bs
+    "Hsl_bs" ∷ sl_bs ↦*{d0} bs
   }}}
   @! merkle.getBit #sl_bs #n
   {{{
     bit, RET #bit;
+    "Hsl_bs" ∷ sl_bs ↦*{d0} bs ∗
     "->" ∷ ⌜ bit = get_bit bs (uint.nat n) ⌝
   }}}.
 Proof.
@@ -237,7 +238,7 @@ Proof.
   2:{ apply lookup_ge_None in Hbs.
     rewrite length_bytes_to_bits in Hbs.
     wp_if_destruct; [word|].
-    by iApply "HΦ". }
+    iApply "HΦ". by iFrame. }
 
   (* in pure, extract bit. *)
   opose proof (lookup_lt_Some _ _ _ Hbs) as Hlt_n.
@@ -252,17 +253,16 @@ Proof.
   wp_if_destruct; [|word].
   wp_auto.
   wp_pure; [ word | ].
-  wp_apply (wp_load_slice_elem with "[$Hsl_bs]") as "_".
+  wp_apply (wp_load_slice_elem with "[$Hsl_bs]") as "Hsl_bs".
   { word. }
   { replace (sint.nat (word.divu _ _)) with (uint.nat n `div` 8)%nat; eauto.
     rewrite -> sint_eq_uint by word.
     rewrite -> word.unsigned_divu_nowrap by word.
     change (uint.Z (W64 8)) with 8.
-    rewrite Z2Nat.inj_div; [done|word..]. (* TODO: word limitation *)
-  }
+    rewrite Z2Nat.inj_div; [done|word..]. (* TODO: word limitation *) }
 
   (* show equal. *)
-  iApply "HΦ". iPureIntro.
+  iApply "HΦ". iFrame. iPureIntro.
   rewrite lookup_byte_to_bits in Ho.
   2: { by apply Nat.mod_upper_bound. }
   rewrite bool_decide_ite_not.
@@ -274,24 +274,26 @@ Proof.
   f_equal. apply Ht. repeat f_equal. word.
 Qed.
 
-Lemma wp_node_getChild n d nodeTy sl_hash ptr_child0 ptr_child1 l v sl_label label (depth : w64) :
+Lemma wp_node_getChild n d0 nodeTy sl_hash ptr_child0 ptr_child1 l v sl_label d1 label (depth : w64) :
   {{{
     is_pkg_init merkle ∗
-    "Hnode" ∷ n ↦{d}
+    "Hnode" ∷ n ↦{d0}
       (merkle.node.mk nodeTy sl_hash ptr_child0 ptr_child1 l v) ∗
-    "#Hsl_label" ∷ sl_label ↦*□ label
+    "Hsl_label" ∷ sl_label ↦*{d1} label
   }}}
   n @ (ptrT.id merkle.node.id) @ "getChild" #sl_label #depth
   {{{
     ptr_cb ptr_cnb, RET (#ptr_cb, #ptr_cnb);
-    "Hcb" ∷ ptr_cb ↦{d}
+    sl_label ↦*{d1} label ∗
+
+    "Hcb" ∷ ptr_cb ↦{d0}
       (if get_bit label (uint.nat depth) then ptr_child1 else ptr_child0) ∗
-    "Hcnb" ∷ ptr_cnb ↦{d}
+    "Hcnb" ∷ ptr_cnb ↦{d0}
       (if get_bit label (uint.nat depth) then ptr_child0 else ptr_child1) ∗
     "Hclose" ∷ (∀ ab anb,
-      "Hab" ∷ ptr_cb ↦{d} ab -∗
-      "Hanb" ∷ ptr_cnb ↦{d} anb -∗
-      "Hnode" ∷ n ↦{d} (merkle.node.mk nodeTy sl_hash
+      "Hab" ∷ ptr_cb ↦{d0} ab -∗
+      "Hanb" ∷ ptr_cnb ↦{d0} anb -∗
+      "Hnode" ∷ n ↦{d0} (merkle.node.mk nodeTy sl_hash
         (if get_bit label (uint.nat depth) then anb else ab)
         (if get_bit label (uint.nat depth) then ab else anb)
         l v))
@@ -314,7 +316,7 @@ Proof.
       with "[$HnodeTy $Hhash $Hlabel $Hval $Hab $Hanb]") as "$".
 Qed.
 
-Lemma wp_node_getHash n t d :
+Lemma wp_node_getHash t n d :
   {{{
     is_pkg_init merkle ∗
     "#Hinit" ∷ is_initialized ∗
@@ -324,7 +326,7 @@ Lemma wp_node_getHash n t d :
   {{{
     sl_hash hash, RET #sl_hash;
     "Hown_tree" ∷ own_tree n t d ∗
-    "Hsl_hash" ∷ sl_hash ↦*□ hash ∗
+    "#Hsl_hash" ∷ sl_hash ↦*□ hash ∗
     "#His_hash" ∷ is_cut_tree t hash
   }}}.
 Proof.
@@ -345,13 +347,148 @@ Lemma condition_prop {P Q : iProp Σ} {φ : Prop} (dec : Decision φ) :
   P -∗
   Q -∗
   (if dec then P else Q) ∗ (if dec then Q else P).
-Proof. iIntros "??". case_match; iFrame. Qed.
+Proof. iIntros "**". case_match; iFrame. Qed.
 
 Lemma condition_bool {P Q : iProp Σ} (b : bool) :
   P -∗
   Q -∗
   (if b then P else Q) ∗ (if b then Q else P).
-Proof. iIntros "??". case_match; iFrame. Qed.
+Proof. iIntros "**". case_match; iFrame. Qed.
+
+Lemma wp_getProofCap (depth : nat) :
+  {{{
+    is_pkg_init merkle ∗
+    "%Heq_depth" ∷ ⌜depth≤max_depth⌝
+  }}}
+  @! merkle.getProofCap #(W64 depth)
+  {{{
+    (cap : w64), RET #cap;
+    "%Heq_cap" ∷ ⌜8 ≤ sint.Z cap⌝
+  }}}.
+Proof. rewrite /max_depth. wp_start as "@". wp_auto. iApply "HΦ". word. Qed.
+
+(* make def to prevent unfolding the nat. *)
+Definition w64_len := 8%nat.
+Hint Unfold w64_len : len.
+
+(* TODO: move up. *)
+#[global] Instance is_initialized_pers : Persistent is_initialized.
+Proof. apply _. Qed.
+Typeclasses Opaque is_initialized.
+
+Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
+  (* limit needed to prevent depth overflow. *)
+  is_limit t →
+  is_cutless_path t label →
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "Hown_tree" ∷ own_tree n t d0 ∗
+    "Hsl_label_in" ∷ sl_label ↦*{d1} label
+  }}}
+  n @ (ptrT.id merkle.node.id) @ "find" #(W64 0) #sl_label #getProof
+  {{{
+    (found : bool) sl_foundLabel foundLabel sl_foundVal foundVal sl_sibs sibs_enc,
+    RET (#found, #sl_foundLabel, #sl_foundVal, #sl_sibs);
+    "Hown_tree" ∷ own_tree n t d0 ∗
+    "Hsl_label" ∷ sl_label ↦*{d1} label ∗
+
+    "#Hsl_foundLabel" ∷ sl_foundLabel ↦*□ foundLabel ∗
+    "#Hsl_foundVal" ∷ sl_foundVal ↦*□ foundVal ∗
+    "Hsl_sibs" ∷ sl_sibs ↦* sibs_enc ∗
+    "Hcap_sibs" ∷ own_slice_cap w8 sl_sibs 1 ∗
+
+    "%Heq_found" ∷ ⌜ find t label = if found then Some (foundLabel, foundVal) else None ⌝ ∗
+    "Hproof" ∷ (if negb getProof then True else
+      ∃ sibsLen sibs,
+      "#His_sibs" ∷ is_sibs t label sibs ∗
+      "%Henc_sibs" ∷ ⌜sibs_enc = sibsLen ++ mjoin (reverse sibs)⌝ ∗
+      "%Hlen_sibsLen" ∷ ⌜length sibsLen = w64_len⌝)
+  }}}.
+Proof.
+  autounfold with merkle.
+  intros Hlimit Hcutless.
+  remember max_depth as limit.
+  remember 0%nat as depth.
+  replace (W64 0) with (W64 depth) by word.
+  assert (depth + limit = max_depth) as Heq_depth; [word|].
+  clear Heqlimit Heqdepth.
+  iLöb as "IH" forall (t limit depth n Hcutless Hlimit Heq_depth).
+  iIntros (Φ) "(#?&@) HΦ".
+  wp_method_call. wp_call. wp_auto.
+  wp_if_destruct.
+
+  { iClear "IH".
+    iDestruct (own_empty_tree with "Hown_tree") as %->.
+    wp_auto.
+    (* TODO(goose): wp_if_destruct could destruct bool's. *)
+    destruct getProof; wp_auto.
+    + wp_apply wp_getProofCap as "* %"; [word|].
+      wp_apply wp_slice_make3 as "* (Hsl_sibs&Hcap_sibs&_)"; [word|].
+      iApply "HΦ". iFrame.
+      iDestruct own_slice_nil as "$".
+      repeat (iSplit || iExists _); try done;
+        [by list_simplifier | len].
+    + iApply "HΦ". iFrame.
+      iDestruct own_slice_nil as "$".
+      iDestruct own_slice_nil as "$".
+      by iDestruct own_slice_cap_nil as "$". }
+
+  destruct t; simpl in *; iNamed "Hown_tree"; try done;
+    iNamed "Hown_tree"; wp_auto.
+
+  - iClear "IH".
+    destruct getProof; wp_auto.
+    + wp_apply wp_getProofCap as "* %"; [word|].
+      wp_apply wp_slice_make3 as "* (Hsl_sibs&Hcap_sibs&_)"; [word|].
+      iApply "HΦ". iFrame "∗#".
+      repeat (iSplit || iExists _); try done;
+        [by list_simplifier | len].
+    + iApply "HΦ". iFrame "∗#".
+      iDestruct own_slice_nil as "$".
+      by iDestruct own_slice_cap_nil as "$".
+
+  - destruct limit; [done|]. intuition.
+    wp_apply (wp_node_getChild with "[$Hnode $Hsl_label_in]") as "*".
+    iIntros "[Hsl_label_in H]". iNamed "H". wp_auto.
+    replace (uint.nat (W64 depth)) with depth.
+    2: { unfold max_depth in *. word. }
+    iDestruct (condition_bool (get_bit label depth)
+      with "[Hown_child1] [Hown_child0]")
+      as "[Hown_child_l Hown_child_r]"; [iAccu..|].
+    replace (word.add _ _) with (W64 (S depth)).
+    2: { unfold max_depth in *. word. }
+    wp_apply ("IH" with "[//] [] [] [Hown_child_l Hsl_label_in]") as "* @".
+    { by case_match. }
+    { word. }
+    { iFrame "∗#". case_match; iFrame. }
+    iClear "IH".
+    assert (∀ (b : bool) T (x0 x1 : T),
+      (if b then if b then x0 else x1 else if b then x1 else x0) = x0) as Hif.
+    { intros. by repeat case_match. }
+
+    destruct getProof; wp_auto; simpl in *; iNamed "Hproof".
+    + iDestruct ("Hclose" with "Hcb Hcnb") as "@".
+      rewrite !{}Hif.
+      wp_apply (wp_node_getHash (if get_bit label depth then _ else _)
+        with "[Hown_child_r]") as "* H".
+      { iFrame "#". case_match; iFrame. }
+      iNamedSuffix "H" "0".
+      wp_apply (wp_slice_append with "[$Hsl_sibs $Hcap_sibs]")
+        as "* (Hsl_sibs & Hcap_sibs & _)".
+      { iFrame "#". }
+      iApply "HΦ". iFrame "∗#".
+      iSplitL. { case_match; iFrame. }
+      repeat (iSplit || iExists _); try done.
+      iPureIntro. list_simplifier. f_equal.
+      rewrite reverse_cons join_app.
+      by list_simplifier.
+    + iDestruct ("Hclose" with "Hcb Hcnb") as "@".
+      rewrite !{}Hif.
+      iApply "HΦ". iFrame "∗#".
+      iSplit; [|done].
+      case_match; iFrame.
+Qed.
 
 Lemma wp_put n0 n t sl_label sl_val label val :
   (* for max depth. *)
@@ -362,11 +499,12 @@ Lemma wp_put n0 n t sl_label sl_val label val :
   (* for no Cut. *)
   is_cutless_path t label →
   {{{
-    is_pkg_init merkle ∗ is_initialized ∗
-    "Hn0" ∷ n0 ↦ n ∗
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "Hn0_in" ∷ n0 ↦ n ∗
     "Hown_tree" ∷ own_tree n t 1 ∗
-    "#Hsl_label" ∷ sl_label ↦*□ label ∗
-    "#Hsl_val" ∷ sl_val ↦*□ val
+    "#Hsl_label_in" ∷ sl_label ↦*□ label ∗
+    "#Hsl_val_in" ∷ sl_val ↦*□ val
   }}}
   @! merkle.put #n0 #(W64 0) #sl_label #sl_val
   {{{
@@ -395,14 +533,13 @@ Proof.
 
   iInduction limit as [? IH] using lt_wf_ind forall (n0 n Φ).
   iIntros (t ?? pref).
-  iIntros "* (#?&#Hinit&@) HΦ".
-  iRename "Hn0" into "Hn0_old".
+  iIntros "* (#?&@) HΦ".
   wp_func_call. wp_call. wp_auto.
   wp_apply wp_Assert.
   { iPureIntro. case_bool_decide; [done|].
     unfold max_depth in *. word. }
-  iDestruct (own_slice_len with "Hsl_label") as %?.
-  iDestruct (own_slice_len with "Hsl_val") as %?.
+  iDestruct (own_slice_len with "Hsl_label_in") as %?.
+  iDestruct (own_slice_len with "Hsl_val_in") as %?.
   iEval (rewrite pure_put_unfold) in "HΦ".
 
   wp_if_destruct.
@@ -450,13 +587,15 @@ Proof.
 
     (* diff label. *)
     wp_auto. wp_apply wp_alloc as "* Hnode".
-    wp_apply (wp_node_getChild with "[$Hnode]") as "* @".
+    wp_apply (wp_node_getChild with "[$Hnode]") as "*".
     { iFrame "#". }
+    iIntros "[_ H]". iNamed "H". wp_auto.
     replace (if get_bit _ _ then null else null) with (null).
     2: { by case_match. }
     iDestruct ("Hclose" with "Hcb Hcnb") as "@".
-    wp_apply (wp_node_getChild with "[$Hnode]") as "* @".
+    wp_apply (wp_node_getChild with "[$Hnode]") as "*".
     { iFrame "#". }
+    iIntros "[_ H]". iNamed "H". wp_auto.
     replace (uint.nat (W64 _)) with (length pref).
     2: { unfold max_depth in *. word. }
     assert (∀ (b0 b1 : bool) T (x0 x1 : T),
@@ -480,8 +619,7 @@ Proof.
     { repeat case_match; try done;
         by eapply prefix_total_snoc. }
     { by repeat case_match. }
-    { Typeclasses Opaque is_initialized. (* TODO *)
-      iFrame "∗#".
+    { iFrame "∗#".
       case_match.
       - iFrame "∗#".
       - rewrite /is_initialized. iNamed "Hinit".
@@ -491,11 +629,12 @@ Proof.
     iDestruct ("Hclose" with "Hn0 Hcnb") as "@".
     wp_auto.
 
+    (* TODO: can these two conditions be combined together? *)
     iDestruct (condition_bool (get_bit label (length pref))
       with "[Hown_n_right] []") as "[Hown_n_left Hown_n_right]"; [iAccu..|].
     iDestruct (condition_bool (get_bit label (length pref))
       with "[Hown_tree] []") as "[Hown_n'_left Hown_n'_right]"; [iAccu..|].
-    wp_apply (wp_node_getHash _
+    wp_apply (wp_node_getHash
       (if get_bit label (length pref)
         then if cond then Empty else (Leaf label0 val0) else _)
       with "[Hown_n_left Hown_n'_right]").
@@ -506,7 +645,7 @@ Proof.
         by iFrame "#".
       - iFrame "∗#". }
     iIntros "*". iNamedSuffix 1 "0". wp_auto.
-    wp_apply (wp_node_getHash _
+    wp_apply (wp_node_getHash
       (if get_bit label (length pref)
         then _ else if cond then Empty else (Leaf label0 val0))
       with "[Hown_n_right Hown_n'_left]").
@@ -524,11 +663,13 @@ Proof.
     { iFrame "#". }
     iPersist "Hsl_hash".
     iModIntro. iApply "HΦ".
-    iFrame "Hn0_old".
+    iFrame "Hn0_in".
     iSplit; [done|].
+    simpl.
     iFrame "Hnode #".
 
-    (* TODO: figure out how to get rid of these replaces. *)
+    (* TODO: figure out how to get rid of these replaces.
+    if we remove unfold cond, does it simplify this? *)
     replace (if get_bit label _ then if get_bit label0 _ then _ else _ else _)
       with (if get_bit label (length pref) then if cond then Empty else Leaf label0 val0 else t').
     2: { clear. by repeat case_match. }
@@ -541,8 +682,9 @@ Proof.
   - destruct limit; [done|].
     intuition.
     wp_auto.
-    wp_apply (wp_node_getChild with "[$Hnode_old]") as "* @".
+    wp_apply (wp_node_getChild with "[$Hnode_old]") as "*".
     { iFrame "#". }
+    iIntros "[_ H]". iNamed "H". wp_auto.
     replace (uint.nat (W64 _)) with (length pref).
     2: { unfold max_depth in *. word. }
     replace (word.add _ _) with (W64 (length (pref_ext pref label))) by len.
@@ -560,18 +702,19 @@ Proof.
     { len. }
     { by repeat case_match. }
     { by repeat case_match. }
-    { Typeclasses Opaque is_initialized. (* TODO *)
-      iFrame "∗#".
+    { iFrame "∗#".
       case_match; iFrame. }
     rewrite HSome_tree.
     iClear "IH".
     iDestruct ("Hclose" with "Hn0 Hcnb") as "@".
     wp_auto.
 
+    (* TODO: combine these conditions? *)
     iDestruct (condition_bool (get_bit label (length pref))
       with "[Hown_tree] []") as "[Hown_n'_left Hown_n'_right]"; [iAccu..|].
     iDestruct (condition_bool (get_bit label (length pref))
       with "[Hown_child_right] []") as "[Hown_child_left Hown_child_right]"; [iAccu..|].
+    (* TODO: why do these simplifications show up? *)
     assert (∀ (b : bool) T (x0 x1 x2 : T),
       (if b then if b then x0 else x1 else x2)
       = (if b then x0 else x2)) as Ht0.
@@ -582,12 +725,12 @@ Proof.
     { intros. by repeat case_match. }
     rewrite !{}Ht0 !{}Ht1.
 
-    wp_apply (wp_node_getHash _
+    wp_apply (wp_node_getHash
       (if get_bit label (length pref) then t1 else t')
       with "[Hown_child_left Hown_n'_right]").
     { iFrame "#". case_match; iFrame. }
     iIntros "*". iNamedSuffix 1 "0". wp_auto.
-    wp_apply (wp_node_getHash _
+    wp_apply (wp_node_getHash
       (if get_bit label (length pref) then t' else t2)
       with "[Hown_child_right Hown_n'_left]").
     { iFrame "#". case_match; iFrame. }
@@ -599,8 +742,9 @@ Proof.
     { iFrame "#". }
     iPersist "Hsl_hash".
     iModIntro. iApply "HΦ".
-    iFrame "Hn0_old".
+    iFrame "Hn0_in".
     iSplit; [done|].
+    simpl.
     iFrame "Hnode".
     iFrame "∗#".
 Qed.

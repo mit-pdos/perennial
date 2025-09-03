@@ -98,15 +98,17 @@ Inductive tree :=
 
 (** tree paths. *)
 
-Fixpoint find t depth label :=
+Fixpoint find' t depth label :=
   match t with
   | Empty => None
   | Leaf l v => Some (l, v)
   | Inner c0 c1 =>
     let c := if get_bit label depth then c1 else c0 in
-    find c (S depth) label
+    find' c (S depth) label
   | Cut _ => None (* [None] matches [to_map]. *)
   end.
+Definition find t label := find' t 0 label.
+Hint Unfold find : merkle.
 
 Definition found_nonmemb label (found : option $ (list w8 * list w8)%type) :=
   match found with
@@ -116,7 +118,7 @@ Definition found_nonmemb label (found : option $ (list w8 * list w8)%type) :=
 
 Definition is_entry t label oval :=
   ∃ f,
-  find t 0 label = f ∧
+  find t label = f ∧
   match oval with
   | Some v => f = Some (label, v)
   | None => found_nonmemb label f
@@ -455,7 +457,7 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
   end.
 
 #[global]
-Instance is_cut_tree_persistent t h : Persistent (is_cut_tree t h).
+Instance is_cut_tree_pers t h : Persistent (is_cut_tree t h).
 Proof. revert h. induction t; apply _. Qed.
 
 Fixpoint is_cutless t :=
@@ -658,17 +660,17 @@ Lemma pure_put_unfold t depth label val limit :
 Proof. by destruct limit. Qed.
 
 (* [sibs] order reversed from code. *)
-Fixpoint pure_newShell' label depth (sibs : list $ list w8) :=
+Fixpoint pure_newShell' depth label (sibs : list $ list w8) :=
   match sibs with
   | [] => Empty
   | h :: sibs' =>
     let cut := Cut h in
-    let t := pure_newShell' label (S depth) sibs' in
+    let t := pure_newShell' (S depth) label sibs' in
     let c0 := if get_bit label depth then cut else t in
     let c1 := if get_bit label depth then t else cut in
     Inner c0 c1
   end.
-Definition pure_newShell label sibs := pure_newShell' label 0 sibs.
+Definition pure_newShell label sibs := pure_newShell' 0 label sibs.
 Hint Unfold pure_newShell : merkle.
 
 Definition pure_proofToTree label sibs oleaf :=
@@ -677,18 +679,6 @@ Definition pure_proofToTree label sibs oleaf :=
   | None => Some t
   | Some (l, v) => pure_put t l v
   end.
-
-Fixpoint pure_Digest t :=
-  cryptoffi.pure_hash
-    match t with
-    | Empty => [emptyNodeTag]
-    | Leaf l v =>
-      leafNodeTag ::
-      (u64_le $ length l) ++ l ++
-      (u64_le $ length v) ++ v
-    | Inner c0 c1 => innerNodeTag :: pure_Digest c0 ++ pure_Digest c1
-    | Cut h => h
-    end.
 
 (** invariants on gallina ops. *)
 
@@ -893,40 +883,34 @@ Proof.
       by eapply prefix_total_snoc.
 Qed.
 
-(** stuff that might need to be resurrected. *)
-
 (** tree proofs. *)
 
-(*
-Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
-    (proof: list w8) : iProp Σ :=
+Fixpoint is_sibs' (t : tree) (depth : nat) (label : list w8)
+    (sibs : list $ list w8) : iProp Σ :=
   match t with
   | Empty =>
-    "%Heq_proof" ∷ ⌜proof = []⌝
-  | Leaf found_label found_val =>
-    "%Heq_proof" ∷ ⌜proof = []⌝
+    "%Heq_sibs" ∷ ⌜ sibs = [] ⌝
+  | Leaf _ _ =>
+    "%Heq_sibs" ∷ ⌜ sibs = [] ⌝
   | Inner child0 child1 =>
-    ∃ sibhash proof',
-    "%Heq_proof" ∷ ⌜proof = proof' ++ sibhash ⌝ ∗
-    "Hrecur" ∷
-      match get_bit label depth with
-      | false =>
-        "Hrecur_proof" ∷ tree_sibs_proof child0 label (word.add depth (W64 1)) proof' ∗
-        "#Hcut_tree" ∷ is_cut_tree child1 sibhash
-      | true =>
-        "Hrecur_proof" ∷ tree_sibs_proof child1 label (word.add depth (W64 1)) proof' ∗
-        "#Hcut_tree" ∷ is_cut_tree child0 sibhash
-      end
+    let c_recur := if get_bit label depth then child1 else child0 in
+    let c_sib := if get_bit label depth then child0 else child1 in
+    ∃ sib sibs',
+    "%Heq_sibs" ∷ ⌜ sibs = sib :: sibs' ⌝ ∗
+    "#Hrecur" ∷ is_sibs' c_recur (S depth) label sibs' ∗
+    "#Hcut_tree" ∷ is_cut_tree c_sib sib
   | Cut _ => False
   end.
+Definition is_sibs t label sibs := is_sibs' t 0 label sibs.
+Hint Unfold is_sibs : merkle.
 
-#[global]
-Instance tree_sibs_proof_persistent t l d p : Persistent (tree_sibs_proof t l d p).
+#[global] Instance is_sibs_pers t d l s : Persistent (is_sibs' t d l s).
 Proof.
-  revert d p. induction t; try apply _.
+  revert d s. induction t; try apply _.
   simpl. intros. case_match; apply _.
 Qed.
 
+(*
 Definition is_proof (label: list w8)
     (found: option ((list w8) * (list w8)%type)) (proof: list w8)
     (h: list w8) : iProp Σ :=
@@ -1015,7 +999,11 @@ Proof.
         Hleft_hash1 Hrecur_proof1") as %->; [done..|].
       by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
 Qed.
+*)
 
+(** stuff that might need to be resurrected. *)
+
+(*
 (** code predicates. *)
 
 Fixpoint minimal_tree t : Prop :=
@@ -1119,5 +1107,5 @@ Qed.
 
 End proof.
 
-Hint Unfold is_entry is_sorted is_full_tree is_map is_cutless_path
-  is_limit pure_put pure_newShell : merkle.
+Hint Unfold find is_entry is_sorted is_full_tree is_map is_cutless_path
+  is_limit pure_put pure_newShell is_sibs : merkle.
