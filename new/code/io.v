@@ -332,47 +332,7 @@ Axiom PipeWriter__CloseWithErrorⁱᵐᵖˡ : val.
 
 Axiom PipeWriter__Writeⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(LimitedReader.id, []); (ptrT.id LimitedReader.id, [("Read"%go, LimitedReader__Readⁱᵐᵖˡ)]); (SectionReader.id, []); (ptrT.id SectionReader.id, [("Outer"%go, SectionReader__Outerⁱᵐᵖˡ); ("Read"%go, SectionReader__Readⁱᵐᵖˡ); ("ReadAt"%go, SectionReader__ReadAtⁱᵐᵖˡ); ("Seek"%go, SectionReader__Seekⁱᵐᵖˡ); ("Size"%go, SectionReader__Sizeⁱᵐᵖˡ)]); (OffsetWriter.id, []); (ptrT.id OffsetWriter.id, [("Seek"%go, OffsetWriter__Seekⁱᵐᵖˡ); ("Write"%go, OffsetWriter__Writeⁱᵐᵖˡ); ("WriteAt"%go, OffsetWriter__WriteAtⁱᵐᵖˡ)]); (teeReader.id, []); (ptrT.id teeReader.id, [("Read"%go, teeReader__Readⁱᵐᵖˡ)]); (discard.id, [("ReadFrom"%go, discard__ReadFromⁱᵐᵖˡ); ("Write"%go, discard__Writeⁱᵐᵖˡ); ("WriteString"%go, discard__WriteStringⁱᵐᵖˡ)]); (ptrT.id discard.id, [("ReadFrom"%go, (λ: "$r",
-                 method_call #discard.id #"ReadFrom"%go (![#discard] "$r")
-                 )%V); ("Write"%go, (λ: "$r",
-                 method_call #discard.id #"Write"%go (![#discard] "$r")
-                 )%V); ("WriteString"%go, (λ: "$r",
-                 method_call #discard.id #"WriteString"%go (![#discard] "$r")
-                 )%V)]); (nopCloser.id, [("Close"%go, nopCloser__Closeⁱᵐᵖˡ); ("Read"%go, (λ: "$r",
-                 method_call #Reader.id #"Read"%go (struct.field_get #nopCloser #"Reader"%go "$r")
-                 )%V)]); (ptrT.id nopCloser.id, [("Close"%go, (λ: "$r",
-                 method_call #nopCloser.id #"Close"%go (![#nopCloser] "$r")
-                 )%V); ("Read"%go, (λ: "$r",
-                 method_call #(ptrT.id Reader.id) #"Read"%go (struct.field_ref #nopCloser #"Reader"%go "$r")
-                 )%V)]); (nopCloserWriterTo.id, [("Close"%go, nopCloserWriterTo__Closeⁱᵐᵖˡ); ("Read"%go, (λ: "$r",
-                 method_call #Reader.id #"Read"%go (struct.field_get #nopCloserWriterTo #"Reader"%go "$r")
-                 )%V); ("WriteTo"%go, nopCloserWriterTo__WriteToⁱᵐᵖˡ)]); (ptrT.id nopCloserWriterTo.id, [("Close"%go, (λ: "$r",
-                 method_call #nopCloserWriterTo.id #"Close"%go (![#nopCloserWriterTo] "$r")
-                 )%V); ("Read"%go, (λ: "$r",
-                 method_call #(ptrT.id Reader.id) #"Read"%go (struct.field_ref #nopCloserWriterTo #"Reader"%go "$r")
-                 )%V); ("WriteTo"%go, (λ: "$r",
-                 method_call #nopCloserWriterTo.id #"WriteTo"%go (![#nopCloserWriterTo] "$r")
-                 )%V)]); (eofReader.id, [("Read"%go, eofReader__Readⁱᵐᵖˡ)]); (ptrT.id eofReader.id, [("Read"%go, (λ: "$r",
-                 method_call #eofReader.id #"Read"%go (![#eofReader] "$r")
-                 )%V)]); (multiReader.id, []); (ptrT.id multiReader.id, [("Read"%go, multiReader__Readⁱᵐᵖˡ); ("WriteTo"%go, multiReader__WriteToⁱᵐᵖˡ); ("writeToWithBuffer"%go, multiReader__writeToWithBufferⁱᵐᵖˡ)]); (multiWriter.id, []); (ptrT.id multiWriter.id, [("Write"%go, multiWriter__Writeⁱᵐᵖˡ); ("WriteString"%go, multiWriter__WriteStringⁱᵐᵖˡ)]); (onceError.id, []); (ptrT.id onceError.id, [("Load"%go, onceError__Loadⁱᵐᵖˡ); ("Lock"%go, (λ: "$r",
-                 method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #onceError #"Mutex"%go "$r")
-                 )%V); ("Store"%go, onceError__Storeⁱᵐᵖˡ); ("TryLock"%go, (λ: "$r",
-                 method_call #(ptrT.id sync.Mutex.id) #"TryLock"%go (struct.field_ref #onceError #"Mutex"%go "$r")
-                 )%V); ("Unlock"%go, (λ: "$r",
-                 method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #onceError #"Mutex"%go "$r")
-                 )%V)]); (pipe.id, []); (ptrT.id pipe.id, [("closeRead"%go, pipe__closeReadⁱᵐᵖˡ); ("closeWrite"%go, pipe__closeWriteⁱᵐᵖˡ); ("read"%go, pipe__readⁱᵐᵖˡ); ("readCloseError"%go, pipe__readCloseErrorⁱᵐᵖˡ); ("write"%go, pipe__writeⁱᵐᵖˡ); ("writeCloseError"%go, pipe__writeCloseErrorⁱᵐᵖˡ)]); (PipeReader.id, []); (ptrT.id PipeReader.id, [("Close"%go, PipeReader__Closeⁱᵐᵖˡ); ("CloseWithError"%go, PipeReader__CloseWithErrorⁱᵐᵖˡ); ("Read"%go, PipeReader__Readⁱᵐᵖˡ); ("closeRead"%go, (λ: "$r",
-                 method_call #(ptrT.id pipe.id) #"closeRead"%go (struct.field_ref #PipeReader #"pipe"%go "$r")
-                 )%V); ("closeWrite"%go, (λ: "$r",
-                 method_call #(ptrT.id pipe.id) #"closeWrite"%go (struct.field_ref #PipeReader #"pipe"%go "$r")
-                 )%V); ("read"%go, (λ: "$r",
-                 method_call #(ptrT.id pipe.id) #"read"%go (struct.field_ref #PipeReader #"pipe"%go "$r")
-                 )%V); ("readCloseError"%go, (λ: "$r",
-                 method_call #(ptrT.id pipe.id) #"readCloseError"%go (struct.field_ref #PipeReader #"pipe"%go "$r")
-                 )%V); ("write"%go, (λ: "$r",
-                 method_call #(ptrT.id pipe.id) #"write"%go (struct.field_ref #PipeReader #"pipe"%go "$r")
-                 )%V); ("writeCloseError"%go, (λ: "$r",
-                 method_call #(ptrT.id pipe.id) #"writeCloseError"%go (struct.field_ref #PipeReader #"pipe"%go "$r")
-                 )%V)]); (PipeWriter.id, []); (ptrT.id PipeWriter.id, [("Close"%go, PipeWriter__Closeⁱᵐᵖˡ); ("CloseWithError"%go, PipeWriter__CloseWithErrorⁱᵐᵖˡ); ("Write"%go, PipeWriter__Writeⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(LimitedReader.id, []); (ptrT.id LimitedReader.id, [("Read"%go, LimitedReader__Readⁱᵐᵖˡ)]); (SectionReader.id, []); (ptrT.id SectionReader.id, [("Outer"%go, SectionReader__Outerⁱᵐᵖˡ); ("Read"%go, SectionReader__Readⁱᵐᵖˡ); ("ReadAt"%go, SectionReader__ReadAtⁱᵐᵖˡ); ("Seek"%go, SectionReader__Seekⁱᵐᵖˡ); ("Size"%go, SectionReader__Sizeⁱᵐᵖˡ)]); (OffsetWriter.id, []); (ptrT.id OffsetWriter.id, [("Seek"%go, OffsetWriter__Seekⁱᵐᵖˡ); ("Write"%go, OffsetWriter__Writeⁱᵐᵖˡ); ("WriteAt"%go, OffsetWriter__WriteAtⁱᵐᵖˡ)]); (teeReader.id, []); (ptrT.id teeReader.id, [("Read"%go, teeReader__Readⁱᵐᵖˡ)]); (discard.id, [("ReadFrom"%go, discard__ReadFromⁱᵐᵖˡ); ("Write"%go, discard__Writeⁱᵐᵖˡ); ("WriteString"%go, discard__WriteStringⁱᵐᵖˡ)]); (ptrT.id discard.id, [("ReadFrom"%go, discard__ReadFromⁱᵐᵖˡ); ("Write"%go, discard__Writeⁱᵐᵖˡ); ("WriteString"%go, discard__WriteStringⁱᵐᵖˡ)]); (nopCloser.id, [("Close"%go, nopCloser__Closeⁱᵐᵖˡ); ("Read"%go, nopCloser__Readⁱᵐᵖˡ)]); (ptrT.id nopCloser.id, [("Close"%go, nopCloser__Closeⁱᵐᵖˡ); ("Read"%go, nopCloser__Readⁱᵐᵖˡ)]); (nopCloserWriterTo.id, [("Close"%go, nopCloserWriterTo__Closeⁱᵐᵖˡ); ("Read"%go, nopCloserWriterTo__Readⁱᵐᵖˡ); ("WriteTo"%go, nopCloserWriterTo__WriteToⁱᵐᵖˡ)]); (ptrT.id nopCloserWriterTo.id, [("Close"%go, nopCloserWriterTo__Closeⁱᵐᵖˡ); ("Read"%go, nopCloserWriterTo__Readⁱᵐᵖˡ); ("WriteTo"%go, nopCloserWriterTo__WriteToⁱᵐᵖˡ)]); (eofReader.id, [("Read"%go, eofReader__Readⁱᵐᵖˡ)]); (ptrT.id eofReader.id, [("Read"%go, eofReader__Readⁱᵐᵖˡ)]); (multiReader.id, []); (ptrT.id multiReader.id, [("Read"%go, multiReader__Readⁱᵐᵖˡ); ("WriteTo"%go, multiReader__WriteToⁱᵐᵖˡ); ("writeToWithBuffer"%go, multiReader__writeToWithBufferⁱᵐᵖˡ)]); (multiWriter.id, []); (ptrT.id multiWriter.id, [("Write"%go, multiWriter__Writeⁱᵐᵖˡ); ("WriteString"%go, multiWriter__WriteStringⁱᵐᵖˡ)]); (onceError.id, []); (ptrT.id onceError.id, [("Load"%go, onceError__Loadⁱᵐᵖˡ); ("Lock"%go, onceError__Lockⁱᵐᵖˡ); ("Store"%go, onceError__Storeⁱᵐᵖˡ); ("TryLock"%go, onceError__TryLockⁱᵐᵖˡ); ("Unlock"%go, onceError__Unlockⁱᵐᵖˡ)]); (pipe.id, []); (ptrT.id pipe.id, [("closeRead"%go, pipe__closeReadⁱᵐᵖˡ); ("closeWrite"%go, pipe__closeWriteⁱᵐᵖˡ); ("read"%go, pipe__readⁱᵐᵖˡ); ("readCloseError"%go, pipe__readCloseErrorⁱᵐᵖˡ); ("write"%go, pipe__writeⁱᵐᵖˡ); ("writeCloseError"%go, pipe__writeCloseErrorⁱᵐᵖˡ)]); (PipeReader.id, []); (ptrT.id PipeReader.id, [("Close"%go, PipeReader__Closeⁱᵐᵖˡ); ("CloseWithError"%go, PipeReader__CloseWithErrorⁱᵐᵖˡ); ("Read"%go, PipeReader__Readⁱᵐᵖˡ); ("closeRead"%go, PipeReader__closeReadⁱᵐᵖˡ); ("closeWrite"%go, PipeReader__closeWriteⁱᵐᵖˡ); ("read"%go, PipeReader__readⁱᵐᵖˡ); ("readCloseError"%go, PipeReader__readCloseErrorⁱᵐᵖˡ); ("write"%go, PipeReader__writeⁱᵐᵖˡ); ("writeCloseError"%go, PipeReader__writeCloseErrorⁱᵐᵖˡ)]); (PipeWriter.id, []); (ptrT.id PipeWriter.id, [("Close"%go, PipeWriter__Closeⁱᵐᵖˡ); ("CloseWithError"%go, PipeWriter__CloseWithErrorⁱᵐᵖˡ); ("Write"%go, PipeWriter__Writeⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo io.io :=
   {|

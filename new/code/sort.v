@@ -298,47 +298,7 @@ Axiom StringSlice__Sortⁱᵐᵖˡ : val.
 
 Axiom StringSlice__Swapⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(sortedHint.id, []); (ptrT.id sortedHint.id, []); (xorshift.id, []); (ptrT.id xorshift.id, [("Next"%go, xorshift__Nextⁱᵐᵖˡ)]); (lessSwap.id, []); (ptrT.id lessSwap.id, []); (reverse.id, [("Len"%go, (λ: "$r",
-                 method_call #Interface.id #"Len"%go (struct.field_get #reverse #"Interface"%go "$r")
-                 )%V); ("Less"%go, reverse__Lessⁱᵐᵖˡ); ("Swap"%go, (λ: "$r",
-                 method_call #Interface.id #"Swap"%go (struct.field_get #reverse #"Interface"%go "$r")
-                 )%V)]); (ptrT.id reverse.id, [("Len"%go, (λ: "$r",
-                 method_call #(ptrT.id Interface.id) #"Len"%go (struct.field_ref #reverse #"Interface"%go "$r")
-                 )%V); ("Less"%go, (λ: "$r",
-                 method_call #reverse.id #"Less"%go (![#reverse] "$r")
-                 )%V); ("Swap"%go, (λ: "$r",
-                 method_call #(ptrT.id Interface.id) #"Swap"%go (struct.field_ref #reverse #"Interface"%go "$r")
-                 )%V)]); (IntSlice.id, [("Len"%go, IntSlice__Lenⁱᵐᵖˡ); ("Less"%go, IntSlice__Lessⁱᵐᵖˡ); ("Search"%go, IntSlice__Searchⁱᵐᵖˡ); ("Sort"%go, IntSlice__Sortⁱᵐᵖˡ); ("Swap"%go, IntSlice__Swapⁱᵐᵖˡ)]); (ptrT.id IntSlice.id, [("Len"%go, (λ: "$r",
-                 method_call #IntSlice.id #"Len"%go (![#IntSlice] "$r")
-                 )%V); ("Less"%go, (λ: "$r",
-                 method_call #IntSlice.id #"Less"%go (![#IntSlice] "$r")
-                 )%V); ("Search"%go, (λ: "$r",
-                 method_call #IntSlice.id #"Search"%go (![#IntSlice] "$r")
-                 )%V); ("Sort"%go, (λ: "$r",
-                 method_call #IntSlice.id #"Sort"%go (![#IntSlice] "$r")
-                 )%V); ("Swap"%go, (λ: "$r",
-                 method_call #IntSlice.id #"Swap"%go (![#IntSlice] "$r")
-                 )%V)]); (Float64Slice.id, [("Len"%go, Float64Slice__Lenⁱᵐᵖˡ); ("Less"%go, Float64Slice__Lessⁱᵐᵖˡ); ("Search"%go, Float64Slice__Searchⁱᵐᵖˡ); ("Sort"%go, Float64Slice__Sortⁱᵐᵖˡ); ("Swap"%go, Float64Slice__Swapⁱᵐᵖˡ)]); (ptrT.id Float64Slice.id, [("Len"%go, (λ: "$r",
-                 method_call #Float64Slice.id #"Len"%go (![#Float64Slice] "$r")
-                 )%V); ("Less"%go, (λ: "$r",
-                 method_call #Float64Slice.id #"Less"%go (![#Float64Slice] "$r")
-                 )%V); ("Search"%go, (λ: "$r",
-                 method_call #Float64Slice.id #"Search"%go (![#Float64Slice] "$r")
-                 )%V); ("Sort"%go, (λ: "$r",
-                 method_call #Float64Slice.id #"Sort"%go (![#Float64Slice] "$r")
-                 )%V); ("Swap"%go, (λ: "$r",
-                 method_call #Float64Slice.id #"Swap"%go (![#Float64Slice] "$r")
-                 )%V)]); (StringSlice.id, [("Len"%go, StringSlice__Lenⁱᵐᵖˡ); ("Less"%go, StringSlice__Lessⁱᵐᵖˡ); ("Search"%go, StringSlice__Searchⁱᵐᵖˡ); ("Sort"%go, StringSlice__Sortⁱᵐᵖˡ); ("Swap"%go, StringSlice__Swapⁱᵐᵖˡ)]); (ptrT.id StringSlice.id, [("Len"%go, (λ: "$r",
-                 method_call #StringSlice.id #"Len"%go (![#StringSlice] "$r")
-                 )%V); ("Less"%go, (λ: "$r",
-                 method_call #StringSlice.id #"Less"%go (![#StringSlice] "$r")
-                 )%V); ("Search"%go, (λ: "$r",
-                 method_call #StringSlice.id #"Search"%go (![#StringSlice] "$r")
-                 )%V); ("Sort"%go, (λ: "$r",
-                 method_call #StringSlice.id #"Sort"%go (![#StringSlice] "$r")
-                 )%V); ("Swap"%go, (λ: "$r",
-                 method_call #StringSlice.id #"Swap"%go (![#StringSlice] "$r")
-                 )%V)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(sortedHint.id, []); (ptrT.id sortedHint.id, []); (xorshift.id, []); (ptrT.id xorshift.id, [("Next"%go, xorshift__Nextⁱᵐᵖˡ)]); (lessSwap.id, []); (ptrT.id lessSwap.id, []); (reverse.id, [("Len"%go, reverse__Lenⁱᵐᵖˡ); ("Less"%go, reverse__Lessⁱᵐᵖˡ); ("Swap"%go, reverse__Swapⁱᵐᵖˡ)]); (ptrT.id reverse.id, [("Len"%go, reverse__Lenⁱᵐᵖˡ); ("Less"%go, reverse__Lessⁱᵐᵖˡ); ("Swap"%go, reverse__Swapⁱᵐᵖˡ)]); (IntSlice.id, [("Len"%go, IntSlice__Lenⁱᵐᵖˡ); ("Less"%go, IntSlice__Lessⁱᵐᵖˡ); ("Search"%go, IntSlice__Searchⁱᵐᵖˡ); ("Sort"%go, IntSlice__Sortⁱᵐᵖˡ); ("Swap"%go, IntSlice__Swapⁱᵐᵖˡ)]); (ptrT.id IntSlice.id, [("Len"%go, IntSlice__Lenⁱᵐᵖˡ); ("Less"%go, IntSlice__Lessⁱᵐᵖˡ); ("Search"%go, IntSlice__Searchⁱᵐᵖˡ); ("Sort"%go, IntSlice__Sortⁱᵐᵖˡ); ("Swap"%go, IntSlice__Swapⁱᵐᵖˡ)]); (Float64Slice.id, [("Len"%go, Float64Slice__Lenⁱᵐᵖˡ); ("Less"%go, Float64Slice__Lessⁱᵐᵖˡ); ("Search"%go, Float64Slice__Searchⁱᵐᵖˡ); ("Sort"%go, Float64Slice__Sortⁱᵐᵖˡ); ("Swap"%go, Float64Slice__Swapⁱᵐᵖˡ)]); (ptrT.id Float64Slice.id, [("Len"%go, Float64Slice__Lenⁱᵐᵖˡ); ("Less"%go, Float64Slice__Lessⁱᵐᵖˡ); ("Search"%go, Float64Slice__Searchⁱᵐᵖˡ); ("Sort"%go, Float64Slice__Sortⁱᵐᵖˡ); ("Swap"%go, Float64Slice__Swapⁱᵐᵖˡ)]); (StringSlice.id, [("Len"%go, StringSlice__Lenⁱᵐᵖˡ); ("Less"%go, StringSlice__Lessⁱᵐᵖˡ); ("Search"%go, StringSlice__Searchⁱᵐᵖˡ); ("Sort"%go, StringSlice__Sortⁱᵐᵖˡ); ("Swap"%go, StringSlice__Swapⁱᵐᵖˡ)]); (ptrT.id StringSlice.id, [("Len"%go, StringSlice__Lenⁱᵐᵖˡ); ("Less"%go, StringSlice__Lessⁱᵐᵖˡ); ("Search"%go, StringSlice__Searchⁱᵐᵖˡ); ("Sort"%go, StringSlice__Sortⁱᵐᵖˡ); ("Swap"%go, StringSlice__Swapⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo sort.sort :=
   {|

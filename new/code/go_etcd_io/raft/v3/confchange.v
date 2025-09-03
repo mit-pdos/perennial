@@ -93,27 +93,7 @@ Axiom Changer__makeVoterⁱᵐᵖˡ : val.
 
 Axiom Changer__removeⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id, [("EnterJoint"%go, Changer__EnterJointⁱᵐᵖˡ); ("LeaveJoint"%go, Changer__LeaveJointⁱᵐᵖˡ); ("Simple"%go, Changer__Simpleⁱᵐᵖˡ); ("apply"%go, Changer__applyⁱᵐᵖˡ); ("checkAndCopy"%go, Changer__checkAndCopyⁱᵐᵖˡ); ("err"%go, Changer__errⁱᵐᵖˡ); ("initProgress"%go, Changer__initProgressⁱᵐᵖˡ); ("makeLearner"%go, Changer__makeLearnerⁱᵐᵖˡ); ("makeVoter"%go, Changer__makeVoterⁱᵐᵖˡ); ("remove"%go, Changer__removeⁱᵐᵖˡ)]); (ptrT.id Changer.id, [("EnterJoint"%go, (λ: "$r",
-                 method_call #Changer.id #"EnterJoint"%go (![#Changer] "$r")
-                 )%V); ("LeaveJoint"%go, (λ: "$r",
-                 method_call #Changer.id #"LeaveJoint"%go (![#Changer] "$r")
-                 )%V); ("Simple"%go, (λ: "$r",
-                 method_call #Changer.id #"Simple"%go (![#Changer] "$r")
-                 )%V); ("apply"%go, (λ: "$r",
-                 method_call #Changer.id #"apply"%go (![#Changer] "$r")
-                 )%V); ("checkAndCopy"%go, (λ: "$r",
-                 method_call #Changer.id #"checkAndCopy"%go (![#Changer] "$r")
-                 )%V); ("err"%go, (λ: "$r",
-                 method_call #Changer.id #"err"%go (![#Changer] "$r")
-                 )%V); ("initProgress"%go, (λ: "$r",
-                 method_call #Changer.id #"initProgress"%go (![#Changer] "$r")
-                 )%V); ("makeLearner"%go, (λ: "$r",
-                 method_call #Changer.id #"makeLearner"%go (![#Changer] "$r")
-                 )%V); ("makeVoter"%go, (λ: "$r",
-                 method_call #Changer.id #"makeVoter"%go (![#Changer] "$r")
-                 )%V); ("remove"%go, (λ: "$r",
-                 method_call #Changer.id #"remove"%go (![#Changer] "$r")
-                 )%V)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id, [("EnterJoint"%go, Changer__EnterJointⁱᵐᵖˡ); ("LeaveJoint"%go, Changer__LeaveJointⁱᵐᵖˡ); ("Simple"%go, Changer__Simpleⁱᵐᵖˡ); ("apply"%go, Changer__applyⁱᵐᵖˡ); ("checkAndCopy"%go, Changer__checkAndCopyⁱᵐᵖˡ); ("err"%go, Changer__errⁱᵐᵖˡ); ("initProgress"%go, Changer__initProgressⁱᵐᵖˡ); ("makeLearner"%go, Changer__makeLearnerⁱᵐᵖˡ); ("makeVoter"%go, Changer__makeVoterⁱᵐᵖˡ); ("remove"%go, Changer__removeⁱᵐᵖˡ)]); (ptrT.id Changer.id, [("EnterJoint"%go, Changer__EnterJointⁱᵐᵖˡ); ("LeaveJoint"%go, Changer__LeaveJointⁱᵐᵖˡ); ("Simple"%go, Changer__Simpleⁱᵐᵖˡ); ("apply"%go, Changer__applyⁱᵐᵖˡ); ("checkAndCopy"%go, Changer__checkAndCopyⁱᵐᵖˡ); ("err"%go, Changer__errⁱᵐᵖˡ); ("initProgress"%go, Changer__initProgressⁱᵐᵖˡ); ("makeLearner"%go, Changer__makeLearnerⁱᵐᵖˡ); ("makeVoter"%go, Changer__makeVoterⁱᵐᵖˡ); ("remove"%go, Changer__removeⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo confchange.confchange :=
   {|

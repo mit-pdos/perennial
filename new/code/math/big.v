@@ -22,8 +22,6 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition _ : go_string := "math/big._"%go.
-
 Axiom _Accuracy_name : go_string.
 
 Definition _Accuracy_index : go_string := "math/big._Accuracy_index"%go.
@@ -326,8 +324,6 @@ Definition newFloat : go_string := "math/big.newFloat"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Axiom _ⁱᵐᵖˡ : val.
-
 Axiom mulWWⁱᵐᵖˡ : val.
 
 Axiom mulAddWWW_gⁱᵐᵖˡ : val.
@@ -474,7 +470,7 @@ Axiom threeⁱᵐᵖˡ : val.
 
 Axiom newFloatⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(_, _ⁱᵐᵖˡ); (mulWW, mulWWⁱᵐᵖˡ); (mulAddWWW_g, mulAddWWW_gⁱᵐᵖˡ); (nlz, nlzⁱᵐᵖˡ); (addVV_g, addVV_gⁱᵐᵖˡ); (subVV_g, subVV_gⁱᵐᵖˡ); (addVW_g, addVW_gⁱᵐᵖˡ); (addVWlarge, addVWlargeⁱᵐᵖˡ); (subVW_g, subVW_gⁱᵐᵖˡ); (subVWlarge, subVWlargeⁱᵐᵖˡ); (shlVU_g, shlVU_gⁱᵐᵖˡ); (shrVU_g, shrVU_gⁱᵐᵖˡ); (mulAddVWW_g, mulAddVWW_gⁱᵐᵖˡ); (addMulVVW_g, addMulVVW_gⁱᵐᵖˡ); (divWW, divWWⁱᵐᵖˡ); (reciprocalWord, reciprocalWordⁱᵐᵖˡ); (addVV, addVVⁱᵐᵖˡ); (subVV, subVVⁱᵐᵖˡ); (addVW, addVWⁱᵐᵖˡ); (subVW, subVWⁱᵐᵖˡ); (shlVU, shlVUⁱᵐᵖˡ); (shrVU, shrVUⁱᵐᵖˡ); (mulAddVWW, mulAddVWWⁱᵐᵖˡ); (addMulVVW, addMulVVWⁱᵐᵖˡ); (shr, shrⁱᵐᵖˡ); (appendZeros, appendZerosⁱᵐᵖˡ); (shouldRoundUp, shouldRoundUpⁱᵐᵖˡ); (trim, trimⁱᵐᵖˡ); (NewFloat, NewFloatⁱᵐᵖˡ); (makeAcc, makeAccⁱᵐᵖˡ); (fnorm, fnormⁱᵐᵖˡ); (msb32, msb32ⁱᵐᵖˡ); (msb64, msb64ⁱᵐᵖˡ); (validateBinaryOperands, validateBinaryOperandsⁱᵐᵖˡ); (umax32, umax32ⁱᵐᵖˡ); (ParseFloat, ParseFloatⁱᵐᵖˡ); (roundShortest, roundShortestⁱᵐᵖˡ); (fmtE, fmtEⁱᵐᵖˡ); (fmtF, fmtFⁱᵐᵖˡ); (NewInt, NewIntⁱᵐᵖˡ); (low32, low32ⁱᵐᵖˡ); (low64, low64ⁱᵐᵖˡ); (lehmerSimulate, lehmerSimulateⁱᵐᵖˡ); (lehmerUpdate, lehmerUpdateⁱᵐᵖˡ); (euclidUpdate, euclidUpdateⁱᵐᵖˡ); (Jacobi, Jacobiⁱᵐᵖˡ); (writeMultiple, writeMultipleⁱᵐᵖˡ); (scanSign, scanSignⁱᵐᵖˡ); (basicMul, basicMulⁱᵐᵖˡ); (karatsubaAdd, karatsubaAddⁱᵐᵖˡ); (karatsubaSub, karatsubaSubⁱᵐᵖˡ); (karatsuba, karatsubaⁱᵐᵖˡ); (alias, aliasⁱᵐᵖˡ); (addAt, addAtⁱᵐᵖˡ); (karatsubaLen, karatsubaLenⁱᵐᵖˡ); (basicSqr, basicSqrⁱᵐᵖˡ); (karatsubaSqr, karatsubaSqrⁱᵐᵖˡ); (getNat, getNatⁱᵐᵖˡ); (putNat, putNatⁱᵐᵖˡ); (same, sameⁱᵐᵖˡ); (bigEndianWord, bigEndianWordⁱᵐᵖˡ); (maxPow, maxPowⁱᵐᵖˡ); (pow, powⁱᵐᵖˡ); (divisors, divisorsⁱᵐᵖˡ); (divWVW, divWVWⁱᵐᵖˡ); (greaterThan, greaterThanⁱᵐᵖˡ); (NewRat, NewRatⁱᵐᵖˡ); (quotToFloat32, quotToFloat32ⁱᵐᵖˡ); (quotToFloat64, quotToFloat64ⁱᵐᵖˡ); (mulDenom, mulDenomⁱᵐᵖˡ); (ratTok, ratTokⁱᵐᵖˡ); (scanExponent, scanExponentⁱᵐᵖˡ); (_, _ⁱᵐᵖˡ); (three, threeⁱᵐᵖˡ); (newFloat, newFloatⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(mulWW, mulWWⁱᵐᵖˡ); (mulAddWWW_g, mulAddWWW_gⁱᵐᵖˡ); (nlz, nlzⁱᵐᵖˡ); (addVV_g, addVV_gⁱᵐᵖˡ); (subVV_g, subVV_gⁱᵐᵖˡ); (addVW_g, addVW_gⁱᵐᵖˡ); (addVWlarge, addVWlargeⁱᵐᵖˡ); (subVW_g, subVW_gⁱᵐᵖˡ); (subVWlarge, subVWlargeⁱᵐᵖˡ); (shlVU_g, shlVU_gⁱᵐᵖˡ); (shrVU_g, shrVU_gⁱᵐᵖˡ); (mulAddVWW_g, mulAddVWW_gⁱᵐᵖˡ); (addMulVVW_g, addMulVVW_gⁱᵐᵖˡ); (divWW, divWWⁱᵐᵖˡ); (reciprocalWord, reciprocalWordⁱᵐᵖˡ); (addVV, addVVⁱᵐᵖˡ); (subVV, subVVⁱᵐᵖˡ); (addVW, addVWⁱᵐᵖˡ); (subVW, subVWⁱᵐᵖˡ); (shlVU, shlVUⁱᵐᵖˡ); (shrVU, shrVUⁱᵐᵖˡ); (mulAddVWW, mulAddVWWⁱᵐᵖˡ); (addMulVVW, addMulVVWⁱᵐᵖˡ); (shr, shrⁱᵐᵖˡ); (appendZeros, appendZerosⁱᵐᵖˡ); (shouldRoundUp, shouldRoundUpⁱᵐᵖˡ); (trim, trimⁱᵐᵖˡ); (NewFloat, NewFloatⁱᵐᵖˡ); (makeAcc, makeAccⁱᵐᵖˡ); (fnorm, fnormⁱᵐᵖˡ); (msb32, msb32ⁱᵐᵖˡ); (msb64, msb64ⁱᵐᵖˡ); (validateBinaryOperands, validateBinaryOperandsⁱᵐᵖˡ); (umax32, umax32ⁱᵐᵖˡ); (ParseFloat, ParseFloatⁱᵐᵖˡ); (roundShortest, roundShortestⁱᵐᵖˡ); (fmtE, fmtEⁱᵐᵖˡ); (fmtF, fmtFⁱᵐᵖˡ); (NewInt, NewIntⁱᵐᵖˡ); (low32, low32ⁱᵐᵖˡ); (low64, low64ⁱᵐᵖˡ); (lehmerSimulate, lehmerSimulateⁱᵐᵖˡ); (lehmerUpdate, lehmerUpdateⁱᵐᵖˡ); (euclidUpdate, euclidUpdateⁱᵐᵖˡ); (Jacobi, Jacobiⁱᵐᵖˡ); (writeMultiple, writeMultipleⁱᵐᵖˡ); (scanSign, scanSignⁱᵐᵖˡ); (basicMul, basicMulⁱᵐᵖˡ); (karatsubaAdd, karatsubaAddⁱᵐᵖˡ); (karatsubaSub, karatsubaSubⁱᵐᵖˡ); (karatsuba, karatsubaⁱᵐᵖˡ); (alias, aliasⁱᵐᵖˡ); (addAt, addAtⁱᵐᵖˡ); (karatsubaLen, karatsubaLenⁱᵐᵖˡ); (basicSqr, basicSqrⁱᵐᵖˡ); (karatsubaSqr, karatsubaSqrⁱᵐᵖˡ); (getNat, getNatⁱᵐᵖˡ); (putNat, putNatⁱᵐᵖˡ); (same, sameⁱᵐᵖˡ); (bigEndianWord, bigEndianWordⁱᵐᵖˡ); (maxPow, maxPowⁱᵐᵖˡ); (pow, powⁱᵐᵖˡ); (divisors, divisorsⁱᵐᵖˡ); (divWVW, divWVWⁱᵐᵖˡ); (greaterThan, greaterThanⁱᵐᵖˡ); (NewRat, NewRatⁱᵐᵖˡ); (quotToFloat32, quotToFloat32ⁱᵐᵖˡ); (quotToFloat64, quotToFloat64ⁱᵐᵖˡ); (mulDenom, mulDenomⁱᵐᵖˡ); (ratTok, ratTokⁱᵐᵖˡ); (scanExponent, scanExponentⁱᵐᵖˡ); (three, threeⁱᵐᵖˡ); (newFloat, newFloatⁱᵐᵖˡ)].
 
 Axiom decimal__Stringⁱᵐᵖˡ : val.
 
@@ -946,145 +942,7 @@ Axiom Rat__marshalⁱᵐᵖˡ : val.
 
 Axiom Rat__normⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Word.id, []); (ptrT.id Word.id, []); (decimal.id, []); (ptrT.id decimal.id, [("String"%go, decimal__Stringⁱᵐᵖˡ); ("at"%go, decimal__atⁱᵐᵖˡ); ("init"%go, decimal__initⁱᵐᵖˡ); ("round"%go, decimal__roundⁱᵐᵖˡ); ("roundDown"%go, decimal__roundDownⁱᵐᵖˡ); ("roundUp"%go, decimal__roundUpⁱᵐᵖˡ)]); (Float.id, []); (ptrT.id Float.id, [("Abs"%go, Float__Absⁱᵐᵖˡ); ("Acc"%go, Float__Accⁱᵐᵖˡ); ("Add"%go, Float__Addⁱᵐᵖˡ); ("Append"%go, Float__Appendⁱᵐᵖˡ); ("AppendText"%go, Float__AppendTextⁱᵐᵖˡ); ("Cmp"%go, Float__Cmpⁱᵐᵖˡ); ("Copy"%go, Float__Copyⁱᵐᵖˡ); ("Float32"%go, Float__Float32ⁱᵐᵖˡ); ("Float64"%go, Float__Float64ⁱᵐᵖˡ); ("Format"%go, Float__Formatⁱᵐᵖˡ); ("GobDecode"%go, Float__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Float__GobEncodeⁱᵐᵖˡ); ("Int"%go, Float__Intⁱᵐᵖˡ); ("Int64"%go, Float__Int64ⁱᵐᵖˡ); ("IsInf"%go, Float__IsInfⁱᵐᵖˡ); ("IsInt"%go, Float__IsIntⁱᵐᵖˡ); ("MantExp"%go, Float__MantExpⁱᵐᵖˡ); ("MarshalText"%go, Float__MarshalTextⁱᵐᵖˡ); ("MinPrec"%go, Float__MinPrecⁱᵐᵖˡ); ("Mode"%go, Float__Modeⁱᵐᵖˡ); ("Mul"%go, Float__Mulⁱᵐᵖˡ); ("Neg"%go, Float__Negⁱᵐᵖˡ); ("Parse"%go, Float__Parseⁱᵐᵖˡ); ("Prec"%go, Float__Precⁱᵐᵖˡ); ("Quo"%go, Float__Quoⁱᵐᵖˡ); ("Rat"%go, Float__Ratⁱᵐᵖˡ); ("Scan"%go, Float__Scanⁱᵐᵖˡ); ("Set"%go, Float__Setⁱᵐᵖˡ); ("SetFloat64"%go, Float__SetFloat64ⁱᵐᵖˡ); ("SetInf"%go, Float__SetInfⁱᵐᵖˡ); ("SetInt"%go, Float__SetIntⁱᵐᵖˡ); ("SetInt64"%go, Float__SetInt64ⁱᵐᵖˡ); ("SetMantExp"%go, Float__SetMantExpⁱᵐᵖˡ); ("SetMode"%go, Float__SetModeⁱᵐᵖˡ); ("SetPrec"%go, Float__SetPrecⁱᵐᵖˡ); ("SetRat"%go, Float__SetRatⁱᵐᵖˡ); ("SetString"%go, Float__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Float__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Float__Signⁱᵐᵖˡ); ("Signbit"%go, Float__Signbitⁱᵐᵖˡ); ("Sqrt"%go, Float__Sqrtⁱᵐᵖˡ); ("String"%go, Float__Stringⁱᵐᵖˡ); ("Sub"%go, Float__Subⁱᵐᵖˡ); ("Text"%go, Float__Textⁱᵐᵖˡ); ("Uint64"%go, Float__Uint64ⁱᵐᵖˡ); ("UnmarshalText"%go, Float__UnmarshalTextⁱᵐᵖˡ); ("fmtB"%go, Float__fmtBⁱᵐᵖˡ); ("fmtP"%go, Float__fmtPⁱᵐᵖˡ); ("fmtX"%go, Float__fmtXⁱᵐᵖˡ); ("ord"%go, Float__ordⁱᵐᵖˡ); ("pow5"%go, Float__pow5ⁱᵐᵖˡ); ("round"%go, Float__roundⁱᵐᵖˡ); ("scan"%go, Float__scanⁱᵐᵖˡ); ("setBits64"%go, Float__setBits64ⁱᵐᵖˡ); ("setExpAndRound"%go, Float__setExpAndRoundⁱᵐᵖˡ); ("sqrtInverse"%go, Float__sqrtInverseⁱᵐᵖˡ); ("uadd"%go, Float__uaddⁱᵐᵖˡ); ("ucmp"%go, Float__ucmpⁱᵐᵖˡ); ("umul"%go, Float__umulⁱᵐᵖˡ); ("uquo"%go, Float__uquoⁱᵐᵖˡ); ("usub"%go, Float__usubⁱᵐᵖˡ); ("validate"%go, Float__validateⁱᵐᵖˡ); ("validate0"%go, Float__validate0ⁱᵐᵖˡ)]); (ErrNaN.id, [("Error"%go, ErrNaN__Errorⁱᵐᵖˡ)]); (ptrT.id ErrNaN.id, [("Error"%go, (λ: "$r",
-                 method_call #ErrNaN.id #"Error"%go (![#ErrNaN] "$r")
-                 )%V)]); (form.id, []); (ptrT.id form.id, []); (RoundingMode.id, [("String"%go, RoundingMode__Stringⁱᵐᵖˡ)]); (ptrT.id RoundingMode.id, [("String"%go, (λ: "$r",
-                 method_call #RoundingMode.id #"String"%go (![#RoundingMode] "$r")
-                 )%V)]); (Accuracy.id, [("String"%go, Accuracy__Stringⁱᵐᵖˡ)]); (ptrT.id Accuracy.id, [("String"%go, (λ: "$r",
-                 method_call #Accuracy.id #"String"%go (![#Accuracy] "$r")
-                 )%V)]); (Int.id, []); (ptrT.id Int.id, [("Abs"%go, Int__Absⁱᵐᵖˡ); ("Add"%go, Int__Addⁱᵐᵖˡ); ("And"%go, Int__Andⁱᵐᵖˡ); ("AndNot"%go, Int__AndNotⁱᵐᵖˡ); ("Append"%go, Int__Appendⁱᵐᵖˡ); ("AppendText"%go, Int__AppendTextⁱᵐᵖˡ); ("Binomial"%go, Int__Binomialⁱᵐᵖˡ); ("Bit"%go, Int__Bitⁱᵐᵖˡ); ("BitLen"%go, Int__BitLenⁱᵐᵖˡ); ("Bits"%go, Int__Bitsⁱᵐᵖˡ); ("Bytes"%go, Int__Bytesⁱᵐᵖˡ); ("Cmp"%go, Int__Cmpⁱᵐᵖˡ); ("CmpAbs"%go, Int__CmpAbsⁱᵐᵖˡ); ("Div"%go, Int__Divⁱᵐᵖˡ); ("DivMod"%go, Int__DivModⁱᵐᵖˡ); ("Exp"%go, Int__Expⁱᵐᵖˡ); ("FillBytes"%go, Int__FillBytesⁱᵐᵖˡ); ("Float64"%go, Int__Float64ⁱᵐᵖˡ); ("Format"%go, Int__Formatⁱᵐᵖˡ); ("GCD"%go, Int__GCDⁱᵐᵖˡ); ("GobDecode"%go, Int__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Int__GobEncodeⁱᵐᵖˡ); ("Int64"%go, Int__Int64ⁱᵐᵖˡ); ("IsInt64"%go, Int__IsInt64ⁱᵐᵖˡ); ("IsUint64"%go, Int__IsUint64ⁱᵐᵖˡ); ("Lsh"%go, Int__Lshⁱᵐᵖˡ); ("MarshalJSON"%go, Int__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Int__MarshalTextⁱᵐᵖˡ); ("Mod"%go, Int__Modⁱᵐᵖˡ); ("ModInverse"%go, Int__ModInverseⁱᵐᵖˡ); ("ModSqrt"%go, Int__ModSqrtⁱᵐᵖˡ); ("Mul"%go, Int__Mulⁱᵐᵖˡ); ("MulRange"%go, Int__MulRangeⁱᵐᵖˡ); ("Neg"%go, Int__Negⁱᵐᵖˡ); ("Not"%go, Int__Notⁱᵐᵖˡ); ("Or"%go, Int__Orⁱᵐᵖˡ); ("ProbablyPrime"%go, Int__ProbablyPrimeⁱᵐᵖˡ); ("Quo"%go, Int__Quoⁱᵐᵖˡ); ("QuoRem"%go, Int__QuoRemⁱᵐᵖˡ); ("Rand"%go, Int__Randⁱᵐᵖˡ); ("Rem"%go, Int__Remⁱᵐᵖˡ); ("Rsh"%go, Int__Rshⁱᵐᵖˡ); ("Scan"%go, Int__Scanⁱᵐᵖˡ); ("Set"%go, Int__Setⁱᵐᵖˡ); ("SetBit"%go, Int__SetBitⁱᵐᵖˡ); ("SetBits"%go, Int__SetBitsⁱᵐᵖˡ); ("SetBytes"%go, Int__SetBytesⁱᵐᵖˡ); ("SetInt64"%go, Int__SetInt64ⁱᵐᵖˡ); ("SetString"%go, Int__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Int__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Int__Signⁱᵐᵖˡ); ("Sqrt"%go, Int__Sqrtⁱᵐᵖˡ); ("String"%go, Int__Stringⁱᵐᵖˡ); ("Sub"%go, Int__Subⁱᵐᵖˡ); ("Text"%go, Int__Textⁱᵐᵖˡ); ("TrailingZeroBits"%go, Int__TrailingZeroBitsⁱᵐᵖˡ); ("Uint64"%go, Int__Uint64ⁱᵐᵖˡ); ("UnmarshalJSON"%go, Int__UnmarshalJSONⁱᵐᵖˡ); ("UnmarshalText"%go, Int__UnmarshalTextⁱᵐᵖˡ); ("Xor"%go, Int__Xorⁱᵐᵖˡ); ("exp"%go, Int__expⁱᵐᵖˡ); ("expSlow"%go, Int__expSlowⁱᵐᵖˡ); ("lehmerGCD"%go, Int__lehmerGCDⁱᵐᵖˡ); ("modSqrt3Mod4Prime"%go, Int__modSqrt3Mod4Primeⁱᵐᵖˡ); ("modSqrt5Mod8Prime"%go, Int__modSqrt5Mod8Primeⁱᵐᵖˡ); ("modSqrtTonelliShanks"%go, Int__modSqrtTonelliShanksⁱᵐᵖˡ); ("scaleDenom"%go, Int__scaleDenomⁱᵐᵖˡ); ("scan"%go, Int__scanⁱᵐᵖˡ); ("setFromScanner"%go, Int__setFromScannerⁱᵐᵖˡ)]); (byteReader.id, [("Read"%go, (λ: "$r",
-                 method_call #fmt.ScanState.id #"Read"%go (struct.field_get #byteReader #"ScanState"%go "$r")
-                 )%V); ("ReadByte"%go, byteReader__ReadByteⁱᵐᵖˡ); ("ReadRune"%go, (λ: "$r",
-                 method_call #fmt.ScanState.id #"ReadRune"%go (struct.field_get #byteReader #"ScanState"%go "$r")
-                 )%V); ("SkipSpace"%go, (λ: "$r",
-                 method_call #fmt.ScanState.id #"SkipSpace"%go (struct.field_get #byteReader #"ScanState"%go "$r")
-                 )%V); ("Token"%go, (λ: "$r",
-                 method_call #fmt.ScanState.id #"Token"%go (struct.field_get #byteReader #"ScanState"%go "$r")
-                 )%V); ("UnreadByte"%go, byteReader__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, (λ: "$r",
-                 method_call #fmt.ScanState.id #"UnreadRune"%go (struct.field_get #byteReader #"ScanState"%go "$r")
-                 )%V); ("Width"%go, (λ: "$r",
-                 method_call #fmt.ScanState.id #"Width"%go (struct.field_get #byteReader #"ScanState"%go "$r")
-                 )%V)]); (ptrT.id byteReader.id, [("Read"%go, (λ: "$r",
-                 method_call #(ptrT.id fmt.ScanState.id) #"Read"%go (struct.field_ref #byteReader #"ScanState"%go "$r")
-                 )%V); ("ReadByte"%go, (λ: "$r",
-                 method_call #byteReader.id #"ReadByte"%go (![#byteReader] "$r")
-                 )%V); ("ReadRune"%go, (λ: "$r",
-                 method_call #(ptrT.id fmt.ScanState.id) #"ReadRune"%go (struct.field_ref #byteReader #"ScanState"%go "$r")
-                 )%V); ("SkipSpace"%go, (λ: "$r",
-                 method_call #(ptrT.id fmt.ScanState.id) #"SkipSpace"%go (struct.field_ref #byteReader #"ScanState"%go "$r")
-                 )%V); ("Token"%go, (λ: "$r",
-                 method_call #(ptrT.id fmt.ScanState.id) #"Token"%go (struct.field_ref #byteReader #"ScanState"%go "$r")
-                 )%V); ("UnreadByte"%go, (λ: "$r",
-                 method_call #byteReader.id #"UnreadByte"%go (![#byteReader] "$r")
-                 )%V); ("UnreadRune"%go, (λ: "$r",
-                 method_call #(ptrT.id fmt.ScanState.id) #"UnreadRune"%go (struct.field_ref #byteReader #"ScanState"%go "$r")
-                 )%V); ("Width"%go, (λ: "$r",
-                 method_call #(ptrT.id fmt.ScanState.id) #"Width"%go (struct.field_ref #byteReader #"ScanState"%go "$r")
-                 )%V)]); (nat.id, [("String"%go, nat__Stringⁱᵐᵖˡ); ("add"%go, nat__addⁱᵐᵖˡ); ("and"%go, nat__andⁱᵐᵖˡ); ("andNot"%go, nat__andNotⁱᵐᵖˡ); ("bit"%go, nat__bitⁱᵐᵖˡ); ("bitLen"%go, nat__bitLenⁱᵐᵖˡ); ("bytes"%go, nat__bytesⁱᵐᵖˡ); ("cmp"%go, nat__cmpⁱᵐᵖˡ); ("convertWords"%go, nat__convertWordsⁱᵐᵖˡ); ("div"%go, nat__divⁱᵐᵖˡ); ("divBasic"%go, nat__divBasicⁱᵐᵖˡ); ("divLarge"%go, nat__divLargeⁱᵐᵖˡ); ("divRecursive"%go, nat__divRecursiveⁱᵐᵖˡ); ("divRecursiveStep"%go, nat__divRecursiveStepⁱᵐᵖˡ); ("divW"%go, nat__divWⁱᵐᵖˡ); ("expNN"%go, nat__expNNⁱᵐᵖˡ); ("expNNMontgomery"%go, nat__expNNMontgomeryⁱᵐᵖˡ); ("expNNMontgomeryEven"%go, nat__expNNMontgomeryEvenⁱᵐᵖˡ); ("expNNWindowed"%go, nat__expNNWindowedⁱᵐᵖˡ); ("expWW"%go, nat__expWWⁱᵐᵖˡ); ("isPow2"%go, nat__isPow2ⁱᵐᵖˡ); ("itoa"%go, nat__itoaⁱᵐᵖˡ); ("make"%go, nat__makeⁱᵐᵖˡ); ("modInverse"%go, nat__modInverseⁱᵐᵖˡ); ("modW"%go, nat__modWⁱᵐᵖˡ); ("montgomery"%go, nat__montgomeryⁱᵐᵖˡ); ("mul"%go, nat__mulⁱᵐᵖˡ); ("mulAddWW"%go, nat__mulAddWWⁱᵐᵖˡ); ("mulRange"%go, nat__mulRangeⁱᵐᵖˡ); ("norm"%go, nat__normⁱᵐᵖˡ); ("or"%go, nat__orⁱᵐᵖˡ); ("probablyPrimeLucas"%go, nat__probablyPrimeLucasⁱᵐᵖˡ); ("probablyPrimeMillerRabin"%go, nat__probablyPrimeMillerRabinⁱᵐᵖˡ); ("random"%go, nat__randomⁱᵐᵖˡ); ("rem"%go, nat__remⁱᵐᵖˡ); ("scan"%go, nat__scanⁱᵐᵖˡ); ("set"%go, nat__setⁱᵐᵖˡ); ("setBit"%go, nat__setBitⁱᵐᵖˡ); ("setBytes"%go, nat__setBytesⁱᵐᵖˡ); ("setUint64"%go, nat__setUint64ⁱᵐᵖˡ); ("setWord"%go, nat__setWordⁱᵐᵖˡ); ("shl"%go, nat__shlⁱᵐᵖˡ); ("shr"%go, nat__shrⁱᵐᵖˡ); ("sqr"%go, nat__sqrⁱᵐᵖˡ); ("sqrt"%go, nat__sqrtⁱᵐᵖˡ); ("sticky"%go, nat__stickyⁱᵐᵖˡ); ("sub"%go, nat__subⁱᵐᵖˡ); ("subMod2N"%go, nat__subMod2Nⁱᵐᵖˡ); ("trailingZeroBits"%go, nat__trailingZeroBitsⁱᵐᵖˡ); ("trunc"%go, nat__truncⁱᵐᵖˡ); ("utoa"%go, nat__utoaⁱᵐᵖˡ); ("xor"%go, nat__xorⁱᵐᵖˡ)]); (ptrT.id nat.id, [("String"%go, (λ: "$r",
-                 method_call #nat.id #"String"%go (![#nat] "$r")
-                 )%V); ("add"%go, (λ: "$r",
-                 method_call #nat.id #"add"%go (![#nat] "$r")
-                 )%V); ("and"%go, (λ: "$r",
-                 method_call #nat.id #"and"%go (![#nat] "$r")
-                 )%V); ("andNot"%go, (λ: "$r",
-                 method_call #nat.id #"andNot"%go (![#nat] "$r")
-                 )%V); ("bit"%go, (λ: "$r",
-                 method_call #nat.id #"bit"%go (![#nat] "$r")
-                 )%V); ("bitLen"%go, (λ: "$r",
-                 method_call #nat.id #"bitLen"%go (![#nat] "$r")
-                 )%V); ("bytes"%go, (λ: "$r",
-                 method_call #nat.id #"bytes"%go (![#nat] "$r")
-                 )%V); ("cmp"%go, (λ: "$r",
-                 method_call #nat.id #"cmp"%go (![#nat] "$r")
-                 )%V); ("convertWords"%go, (λ: "$r",
-                 method_call #nat.id #"convertWords"%go (![#nat] "$r")
-                 )%V); ("div"%go, (λ: "$r",
-                 method_call #nat.id #"div"%go (![#nat] "$r")
-                 )%V); ("divBasic"%go, (λ: "$r",
-                 method_call #nat.id #"divBasic"%go (![#nat] "$r")
-                 )%V); ("divLarge"%go, (λ: "$r",
-                 method_call #nat.id #"divLarge"%go (![#nat] "$r")
-                 )%V); ("divRecursive"%go, (λ: "$r",
-                 method_call #nat.id #"divRecursive"%go (![#nat] "$r")
-                 )%V); ("divRecursiveStep"%go, (λ: "$r",
-                 method_call #nat.id #"divRecursiveStep"%go (![#nat] "$r")
-                 )%V); ("divW"%go, (λ: "$r",
-                 method_call #nat.id #"divW"%go (![#nat] "$r")
-                 )%V); ("expNN"%go, (λ: "$r",
-                 method_call #nat.id #"expNN"%go (![#nat] "$r")
-                 )%V); ("expNNMontgomery"%go, (λ: "$r",
-                 method_call #nat.id #"expNNMontgomery"%go (![#nat] "$r")
-                 )%V); ("expNNMontgomeryEven"%go, (λ: "$r",
-                 method_call #nat.id #"expNNMontgomeryEven"%go (![#nat] "$r")
-                 )%V); ("expNNWindowed"%go, (λ: "$r",
-                 method_call #nat.id #"expNNWindowed"%go (![#nat] "$r")
-                 )%V); ("expWW"%go, (λ: "$r",
-                 method_call #nat.id #"expWW"%go (![#nat] "$r")
-                 )%V); ("isPow2"%go, (λ: "$r",
-                 method_call #nat.id #"isPow2"%go (![#nat] "$r")
-                 )%V); ("itoa"%go, (λ: "$r",
-                 method_call #nat.id #"itoa"%go (![#nat] "$r")
-                 )%V); ("make"%go, (λ: "$r",
-                 method_call #nat.id #"make"%go (![#nat] "$r")
-                 )%V); ("modInverse"%go, (λ: "$r",
-                 method_call #nat.id #"modInverse"%go (![#nat] "$r")
-                 )%V); ("modW"%go, (λ: "$r",
-                 method_call #nat.id #"modW"%go (![#nat] "$r")
-                 )%V); ("montgomery"%go, (λ: "$r",
-                 method_call #nat.id #"montgomery"%go (![#nat] "$r")
-                 )%V); ("mul"%go, (λ: "$r",
-                 method_call #nat.id #"mul"%go (![#nat] "$r")
-                 )%V); ("mulAddWW"%go, (λ: "$r",
-                 method_call #nat.id #"mulAddWW"%go (![#nat] "$r")
-                 )%V); ("mulRange"%go, (λ: "$r",
-                 method_call #nat.id #"mulRange"%go (![#nat] "$r")
-                 )%V); ("norm"%go, (λ: "$r",
-                 method_call #nat.id #"norm"%go (![#nat] "$r")
-                 )%V); ("or"%go, (λ: "$r",
-                 method_call #nat.id #"or"%go (![#nat] "$r")
-                 )%V); ("probablyPrimeLucas"%go, (λ: "$r",
-                 method_call #nat.id #"probablyPrimeLucas"%go (![#nat] "$r")
-                 )%V); ("probablyPrimeMillerRabin"%go, (λ: "$r",
-                 method_call #nat.id #"probablyPrimeMillerRabin"%go (![#nat] "$r")
-                 )%V); ("random"%go, (λ: "$r",
-                 method_call #nat.id #"random"%go (![#nat] "$r")
-                 )%V); ("rem"%go, (λ: "$r",
-                 method_call #nat.id #"rem"%go (![#nat] "$r")
-                 )%V); ("scan"%go, (λ: "$r",
-                 method_call #nat.id #"scan"%go (![#nat] "$r")
-                 )%V); ("set"%go, (λ: "$r",
-                 method_call #nat.id #"set"%go (![#nat] "$r")
-                 )%V); ("setBit"%go, (λ: "$r",
-                 method_call #nat.id #"setBit"%go (![#nat] "$r")
-                 )%V); ("setBytes"%go, (λ: "$r",
-                 method_call #nat.id #"setBytes"%go (![#nat] "$r")
-                 )%V); ("setUint64"%go, (λ: "$r",
-                 method_call #nat.id #"setUint64"%go (![#nat] "$r")
-                 )%V); ("setWord"%go, (λ: "$r",
-                 method_call #nat.id #"setWord"%go (![#nat] "$r")
-                 )%V); ("shl"%go, (λ: "$r",
-                 method_call #nat.id #"shl"%go (![#nat] "$r")
-                 )%V); ("shr"%go, (λ: "$r",
-                 method_call #nat.id #"shr"%go (![#nat] "$r")
-                 )%V); ("sqr"%go, (λ: "$r",
-                 method_call #nat.id #"sqr"%go (![#nat] "$r")
-                 )%V); ("sqrt"%go, (λ: "$r",
-                 method_call #nat.id #"sqrt"%go (![#nat] "$r")
-                 )%V); ("sticky"%go, (λ: "$r",
-                 method_call #nat.id #"sticky"%go (![#nat] "$r")
-                 )%V); ("sub"%go, (λ: "$r",
-                 method_call #nat.id #"sub"%go (![#nat] "$r")
-                 )%V); ("subMod2N"%go, (λ: "$r",
-                 method_call #nat.id #"subMod2N"%go (![#nat] "$r")
-                 )%V); ("trailingZeroBits"%go, (λ: "$r",
-                 method_call #nat.id #"trailingZeroBits"%go (![#nat] "$r")
-                 )%V); ("trunc"%go, (λ: "$r",
-                 method_call #nat.id #"trunc"%go (![#nat] "$r")
-                 )%V); ("utoa"%go, (λ: "$r",
-                 method_call #nat.id #"utoa"%go (![#nat] "$r")
-                 )%V); ("xor"%go, (λ: "$r",
-                 method_call #nat.id #"xor"%go (![#nat] "$r")
-                 )%V)]); (divisor.id, []); (ptrT.id divisor.id, []); (Rat.id, []); (ptrT.id Rat.id, [("Abs"%go, Rat__Absⁱᵐᵖˡ); ("Add"%go, Rat__Addⁱᵐᵖˡ); ("AppendText"%go, Rat__AppendTextⁱᵐᵖˡ); ("Cmp"%go, Rat__Cmpⁱᵐᵖˡ); ("Denom"%go, Rat__Denomⁱᵐᵖˡ); ("Float32"%go, Rat__Float32ⁱᵐᵖˡ); ("Float64"%go, Rat__Float64ⁱᵐᵖˡ); ("FloatPrec"%go, Rat__FloatPrecⁱᵐᵖˡ); ("FloatString"%go, Rat__FloatStringⁱᵐᵖˡ); ("GobDecode"%go, Rat__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Rat__GobEncodeⁱᵐᵖˡ); ("Inv"%go, Rat__Invⁱᵐᵖˡ); ("IsInt"%go, Rat__IsIntⁱᵐᵖˡ); ("MarshalText"%go, Rat__MarshalTextⁱᵐᵖˡ); ("Mul"%go, Rat__Mulⁱᵐᵖˡ); ("Neg"%go, Rat__Negⁱᵐᵖˡ); ("Num"%go, Rat__Numⁱᵐᵖˡ); ("Quo"%go, Rat__Quoⁱᵐᵖˡ); ("RatString"%go, Rat__RatStringⁱᵐᵖˡ); ("Scan"%go, Rat__Scanⁱᵐᵖˡ); ("Set"%go, Rat__Setⁱᵐᵖˡ); ("SetFloat64"%go, Rat__SetFloat64ⁱᵐᵖˡ); ("SetFrac"%go, Rat__SetFracⁱᵐᵖˡ); ("SetFrac64"%go, Rat__SetFrac64ⁱᵐᵖˡ); ("SetInt"%go, Rat__SetIntⁱᵐᵖˡ); ("SetInt64"%go, Rat__SetInt64ⁱᵐᵖˡ); ("SetString"%go, Rat__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Rat__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Rat__Signⁱᵐᵖˡ); ("String"%go, Rat__Stringⁱᵐᵖˡ); ("Sub"%go, Rat__Subⁱᵐᵖˡ); ("UnmarshalText"%go, Rat__UnmarshalTextⁱᵐᵖˡ); ("marshal"%go, Rat__marshalⁱᵐᵖˡ); ("norm"%go, Rat__normⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Word.id, []); (ptrT.id Word.id, []); (decimal.id, []); (ptrT.id decimal.id, [("String"%go, decimal__Stringⁱᵐᵖˡ); ("at"%go, decimal__atⁱᵐᵖˡ); ("init"%go, decimal__initⁱᵐᵖˡ); ("round"%go, decimal__roundⁱᵐᵖˡ); ("roundDown"%go, decimal__roundDownⁱᵐᵖˡ); ("roundUp"%go, decimal__roundUpⁱᵐᵖˡ)]); (Float.id, []); (ptrT.id Float.id, [("Abs"%go, Float__Absⁱᵐᵖˡ); ("Acc"%go, Float__Accⁱᵐᵖˡ); ("Add"%go, Float__Addⁱᵐᵖˡ); ("Append"%go, Float__Appendⁱᵐᵖˡ); ("AppendText"%go, Float__AppendTextⁱᵐᵖˡ); ("Cmp"%go, Float__Cmpⁱᵐᵖˡ); ("Copy"%go, Float__Copyⁱᵐᵖˡ); ("Float32"%go, Float__Float32ⁱᵐᵖˡ); ("Float64"%go, Float__Float64ⁱᵐᵖˡ); ("Format"%go, Float__Formatⁱᵐᵖˡ); ("GobDecode"%go, Float__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Float__GobEncodeⁱᵐᵖˡ); ("Int"%go, Float__Intⁱᵐᵖˡ); ("Int64"%go, Float__Int64ⁱᵐᵖˡ); ("IsInf"%go, Float__IsInfⁱᵐᵖˡ); ("IsInt"%go, Float__IsIntⁱᵐᵖˡ); ("MantExp"%go, Float__MantExpⁱᵐᵖˡ); ("MarshalText"%go, Float__MarshalTextⁱᵐᵖˡ); ("MinPrec"%go, Float__MinPrecⁱᵐᵖˡ); ("Mode"%go, Float__Modeⁱᵐᵖˡ); ("Mul"%go, Float__Mulⁱᵐᵖˡ); ("Neg"%go, Float__Negⁱᵐᵖˡ); ("Parse"%go, Float__Parseⁱᵐᵖˡ); ("Prec"%go, Float__Precⁱᵐᵖˡ); ("Quo"%go, Float__Quoⁱᵐᵖˡ); ("Rat"%go, Float__Ratⁱᵐᵖˡ); ("Scan"%go, Float__Scanⁱᵐᵖˡ); ("Set"%go, Float__Setⁱᵐᵖˡ); ("SetFloat64"%go, Float__SetFloat64ⁱᵐᵖˡ); ("SetInf"%go, Float__SetInfⁱᵐᵖˡ); ("SetInt"%go, Float__SetIntⁱᵐᵖˡ); ("SetInt64"%go, Float__SetInt64ⁱᵐᵖˡ); ("SetMantExp"%go, Float__SetMantExpⁱᵐᵖˡ); ("SetMode"%go, Float__SetModeⁱᵐᵖˡ); ("SetPrec"%go, Float__SetPrecⁱᵐᵖˡ); ("SetRat"%go, Float__SetRatⁱᵐᵖˡ); ("SetString"%go, Float__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Float__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Float__Signⁱᵐᵖˡ); ("Signbit"%go, Float__Signbitⁱᵐᵖˡ); ("Sqrt"%go, Float__Sqrtⁱᵐᵖˡ); ("String"%go, Float__Stringⁱᵐᵖˡ); ("Sub"%go, Float__Subⁱᵐᵖˡ); ("Text"%go, Float__Textⁱᵐᵖˡ); ("Uint64"%go, Float__Uint64ⁱᵐᵖˡ); ("UnmarshalText"%go, Float__UnmarshalTextⁱᵐᵖˡ); ("fmtB"%go, Float__fmtBⁱᵐᵖˡ); ("fmtP"%go, Float__fmtPⁱᵐᵖˡ); ("fmtX"%go, Float__fmtXⁱᵐᵖˡ); ("ord"%go, Float__ordⁱᵐᵖˡ); ("pow5"%go, Float__pow5ⁱᵐᵖˡ); ("round"%go, Float__roundⁱᵐᵖˡ); ("scan"%go, Float__scanⁱᵐᵖˡ); ("setBits64"%go, Float__setBits64ⁱᵐᵖˡ); ("setExpAndRound"%go, Float__setExpAndRoundⁱᵐᵖˡ); ("sqrtInverse"%go, Float__sqrtInverseⁱᵐᵖˡ); ("uadd"%go, Float__uaddⁱᵐᵖˡ); ("ucmp"%go, Float__ucmpⁱᵐᵖˡ); ("umul"%go, Float__umulⁱᵐᵖˡ); ("uquo"%go, Float__uquoⁱᵐᵖˡ); ("usub"%go, Float__usubⁱᵐᵖˡ); ("validate"%go, Float__validateⁱᵐᵖˡ); ("validate0"%go, Float__validate0ⁱᵐᵖˡ)]); (ErrNaN.id, [("Error"%go, ErrNaN__Errorⁱᵐᵖˡ)]); (ptrT.id ErrNaN.id, [("Error"%go, ErrNaN__Errorⁱᵐᵖˡ)]); (form.id, []); (ptrT.id form.id, []); (RoundingMode.id, [("String"%go, RoundingMode__Stringⁱᵐᵖˡ)]); (ptrT.id RoundingMode.id, [("String"%go, RoundingMode__Stringⁱᵐᵖˡ)]); (Accuracy.id, [("String"%go, Accuracy__Stringⁱᵐᵖˡ)]); (ptrT.id Accuracy.id, [("String"%go, Accuracy__Stringⁱᵐᵖˡ)]); (Int.id, []); (ptrT.id Int.id, [("Abs"%go, Int__Absⁱᵐᵖˡ); ("Add"%go, Int__Addⁱᵐᵖˡ); ("And"%go, Int__Andⁱᵐᵖˡ); ("AndNot"%go, Int__AndNotⁱᵐᵖˡ); ("Append"%go, Int__Appendⁱᵐᵖˡ); ("AppendText"%go, Int__AppendTextⁱᵐᵖˡ); ("Binomial"%go, Int__Binomialⁱᵐᵖˡ); ("Bit"%go, Int__Bitⁱᵐᵖˡ); ("BitLen"%go, Int__BitLenⁱᵐᵖˡ); ("Bits"%go, Int__Bitsⁱᵐᵖˡ); ("Bytes"%go, Int__Bytesⁱᵐᵖˡ); ("Cmp"%go, Int__Cmpⁱᵐᵖˡ); ("CmpAbs"%go, Int__CmpAbsⁱᵐᵖˡ); ("Div"%go, Int__Divⁱᵐᵖˡ); ("DivMod"%go, Int__DivModⁱᵐᵖˡ); ("Exp"%go, Int__Expⁱᵐᵖˡ); ("FillBytes"%go, Int__FillBytesⁱᵐᵖˡ); ("Float64"%go, Int__Float64ⁱᵐᵖˡ); ("Format"%go, Int__Formatⁱᵐᵖˡ); ("GCD"%go, Int__GCDⁱᵐᵖˡ); ("GobDecode"%go, Int__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Int__GobEncodeⁱᵐᵖˡ); ("Int64"%go, Int__Int64ⁱᵐᵖˡ); ("IsInt64"%go, Int__IsInt64ⁱᵐᵖˡ); ("IsUint64"%go, Int__IsUint64ⁱᵐᵖˡ); ("Lsh"%go, Int__Lshⁱᵐᵖˡ); ("MarshalJSON"%go, Int__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Int__MarshalTextⁱᵐᵖˡ); ("Mod"%go, Int__Modⁱᵐᵖˡ); ("ModInverse"%go, Int__ModInverseⁱᵐᵖˡ); ("ModSqrt"%go, Int__ModSqrtⁱᵐᵖˡ); ("Mul"%go, Int__Mulⁱᵐᵖˡ); ("MulRange"%go, Int__MulRangeⁱᵐᵖˡ); ("Neg"%go, Int__Negⁱᵐᵖˡ); ("Not"%go, Int__Notⁱᵐᵖˡ); ("Or"%go, Int__Orⁱᵐᵖˡ); ("ProbablyPrime"%go, Int__ProbablyPrimeⁱᵐᵖˡ); ("Quo"%go, Int__Quoⁱᵐᵖˡ); ("QuoRem"%go, Int__QuoRemⁱᵐᵖˡ); ("Rand"%go, Int__Randⁱᵐᵖˡ); ("Rem"%go, Int__Remⁱᵐᵖˡ); ("Rsh"%go, Int__Rshⁱᵐᵖˡ); ("Scan"%go, Int__Scanⁱᵐᵖˡ); ("Set"%go, Int__Setⁱᵐᵖˡ); ("SetBit"%go, Int__SetBitⁱᵐᵖˡ); ("SetBits"%go, Int__SetBitsⁱᵐᵖˡ); ("SetBytes"%go, Int__SetBytesⁱᵐᵖˡ); ("SetInt64"%go, Int__SetInt64ⁱᵐᵖˡ); ("SetString"%go, Int__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Int__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Int__Signⁱᵐᵖˡ); ("Sqrt"%go, Int__Sqrtⁱᵐᵖˡ); ("String"%go, Int__Stringⁱᵐᵖˡ); ("Sub"%go, Int__Subⁱᵐᵖˡ); ("Text"%go, Int__Textⁱᵐᵖˡ); ("TrailingZeroBits"%go, Int__TrailingZeroBitsⁱᵐᵖˡ); ("Uint64"%go, Int__Uint64ⁱᵐᵖˡ); ("UnmarshalJSON"%go, Int__UnmarshalJSONⁱᵐᵖˡ); ("UnmarshalText"%go, Int__UnmarshalTextⁱᵐᵖˡ); ("Xor"%go, Int__Xorⁱᵐᵖˡ); ("exp"%go, Int__expⁱᵐᵖˡ); ("expSlow"%go, Int__expSlowⁱᵐᵖˡ); ("lehmerGCD"%go, Int__lehmerGCDⁱᵐᵖˡ); ("modSqrt3Mod4Prime"%go, Int__modSqrt3Mod4Primeⁱᵐᵖˡ); ("modSqrt5Mod8Prime"%go, Int__modSqrt5Mod8Primeⁱᵐᵖˡ); ("modSqrtTonelliShanks"%go, Int__modSqrtTonelliShanksⁱᵐᵖˡ); ("scaleDenom"%go, Int__scaleDenomⁱᵐᵖˡ); ("scan"%go, Int__scanⁱᵐᵖˡ); ("setFromScanner"%go, Int__setFromScannerⁱᵐᵖˡ)]); (byteReader.id, [("Read"%go, byteReader__Readⁱᵐᵖˡ); ("ReadByte"%go, byteReader__ReadByteⁱᵐᵖˡ); ("ReadRune"%go, byteReader__ReadRuneⁱᵐᵖˡ); ("SkipSpace"%go, byteReader__SkipSpaceⁱᵐᵖˡ); ("Token"%go, byteReader__Tokenⁱᵐᵖˡ); ("UnreadByte"%go, byteReader__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, byteReader__UnreadRuneⁱᵐᵖˡ); ("Width"%go, byteReader__Widthⁱᵐᵖˡ)]); (ptrT.id byteReader.id, [("Read"%go, byteReader__Readⁱᵐᵖˡ); ("ReadByte"%go, byteReader__ReadByteⁱᵐᵖˡ); ("ReadRune"%go, byteReader__ReadRuneⁱᵐᵖˡ); ("SkipSpace"%go, byteReader__SkipSpaceⁱᵐᵖˡ); ("Token"%go, byteReader__Tokenⁱᵐᵖˡ); ("UnreadByte"%go, byteReader__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, byteReader__UnreadRuneⁱᵐᵖˡ); ("Width"%go, byteReader__Widthⁱᵐᵖˡ)]); (nat.id, [("String"%go, nat__Stringⁱᵐᵖˡ); ("add"%go, nat__addⁱᵐᵖˡ); ("and"%go, nat__andⁱᵐᵖˡ); ("andNot"%go, nat__andNotⁱᵐᵖˡ); ("bit"%go, nat__bitⁱᵐᵖˡ); ("bitLen"%go, nat__bitLenⁱᵐᵖˡ); ("bytes"%go, nat__bytesⁱᵐᵖˡ); ("cmp"%go, nat__cmpⁱᵐᵖˡ); ("convertWords"%go, nat__convertWordsⁱᵐᵖˡ); ("div"%go, nat__divⁱᵐᵖˡ); ("divBasic"%go, nat__divBasicⁱᵐᵖˡ); ("divLarge"%go, nat__divLargeⁱᵐᵖˡ); ("divRecursive"%go, nat__divRecursiveⁱᵐᵖˡ); ("divRecursiveStep"%go, nat__divRecursiveStepⁱᵐᵖˡ); ("divW"%go, nat__divWⁱᵐᵖˡ); ("expNN"%go, nat__expNNⁱᵐᵖˡ); ("expNNMontgomery"%go, nat__expNNMontgomeryⁱᵐᵖˡ); ("expNNMontgomeryEven"%go, nat__expNNMontgomeryEvenⁱᵐᵖˡ); ("expNNWindowed"%go, nat__expNNWindowedⁱᵐᵖˡ); ("expWW"%go, nat__expWWⁱᵐᵖˡ); ("isPow2"%go, nat__isPow2ⁱᵐᵖˡ); ("itoa"%go, nat__itoaⁱᵐᵖˡ); ("make"%go, nat__makeⁱᵐᵖˡ); ("modInverse"%go, nat__modInverseⁱᵐᵖˡ); ("modW"%go, nat__modWⁱᵐᵖˡ); ("montgomery"%go, nat__montgomeryⁱᵐᵖˡ); ("mul"%go, nat__mulⁱᵐᵖˡ); ("mulAddWW"%go, nat__mulAddWWⁱᵐᵖˡ); ("mulRange"%go, nat__mulRangeⁱᵐᵖˡ); ("norm"%go, nat__normⁱᵐᵖˡ); ("or"%go, nat__orⁱᵐᵖˡ); ("probablyPrimeLucas"%go, nat__probablyPrimeLucasⁱᵐᵖˡ); ("probablyPrimeMillerRabin"%go, nat__probablyPrimeMillerRabinⁱᵐᵖˡ); ("random"%go, nat__randomⁱᵐᵖˡ); ("rem"%go, nat__remⁱᵐᵖˡ); ("scan"%go, nat__scanⁱᵐᵖˡ); ("set"%go, nat__setⁱᵐᵖˡ); ("setBit"%go, nat__setBitⁱᵐᵖˡ); ("setBytes"%go, nat__setBytesⁱᵐᵖˡ); ("setUint64"%go, nat__setUint64ⁱᵐᵖˡ); ("setWord"%go, nat__setWordⁱᵐᵖˡ); ("shl"%go, nat__shlⁱᵐᵖˡ); ("shr"%go, nat__shrⁱᵐᵖˡ); ("sqr"%go, nat__sqrⁱᵐᵖˡ); ("sqrt"%go, nat__sqrtⁱᵐᵖˡ); ("sticky"%go, nat__stickyⁱᵐᵖˡ); ("sub"%go, nat__subⁱᵐᵖˡ); ("subMod2N"%go, nat__subMod2Nⁱᵐᵖˡ); ("trailingZeroBits"%go, nat__trailingZeroBitsⁱᵐᵖˡ); ("trunc"%go, nat__truncⁱᵐᵖˡ); ("utoa"%go, nat__utoaⁱᵐᵖˡ); ("xor"%go, nat__xorⁱᵐᵖˡ)]); (ptrT.id nat.id, [("String"%go, nat__Stringⁱᵐᵖˡ); ("add"%go, nat__addⁱᵐᵖˡ); ("and"%go, nat__andⁱᵐᵖˡ); ("andNot"%go, nat__andNotⁱᵐᵖˡ); ("bit"%go, nat__bitⁱᵐᵖˡ); ("bitLen"%go, nat__bitLenⁱᵐᵖˡ); ("bytes"%go, nat__bytesⁱᵐᵖˡ); ("cmp"%go, nat__cmpⁱᵐᵖˡ); ("convertWords"%go, nat__convertWordsⁱᵐᵖˡ); ("div"%go, nat__divⁱᵐᵖˡ); ("divBasic"%go, nat__divBasicⁱᵐᵖˡ); ("divLarge"%go, nat__divLargeⁱᵐᵖˡ); ("divRecursive"%go, nat__divRecursiveⁱᵐᵖˡ); ("divRecursiveStep"%go, nat__divRecursiveStepⁱᵐᵖˡ); ("divW"%go, nat__divWⁱᵐᵖˡ); ("expNN"%go, nat__expNNⁱᵐᵖˡ); ("expNNMontgomery"%go, nat__expNNMontgomeryⁱᵐᵖˡ); ("expNNMontgomeryEven"%go, nat__expNNMontgomeryEvenⁱᵐᵖˡ); ("expNNWindowed"%go, nat__expNNWindowedⁱᵐᵖˡ); ("expWW"%go, nat__expWWⁱᵐᵖˡ); ("isPow2"%go, nat__isPow2ⁱᵐᵖˡ); ("itoa"%go, nat__itoaⁱᵐᵖˡ); ("make"%go, nat__makeⁱᵐᵖˡ); ("modInverse"%go, nat__modInverseⁱᵐᵖˡ); ("modW"%go, nat__modWⁱᵐᵖˡ); ("montgomery"%go, nat__montgomeryⁱᵐᵖˡ); ("mul"%go, nat__mulⁱᵐᵖˡ); ("mulAddWW"%go, nat__mulAddWWⁱᵐᵖˡ); ("mulRange"%go, nat__mulRangeⁱᵐᵖˡ); ("norm"%go, nat__normⁱᵐᵖˡ); ("or"%go, nat__orⁱᵐᵖˡ); ("probablyPrimeLucas"%go, nat__probablyPrimeLucasⁱᵐᵖˡ); ("probablyPrimeMillerRabin"%go, nat__probablyPrimeMillerRabinⁱᵐᵖˡ); ("random"%go, nat__randomⁱᵐᵖˡ); ("rem"%go, nat__remⁱᵐᵖˡ); ("scan"%go, nat__scanⁱᵐᵖˡ); ("set"%go, nat__setⁱᵐᵖˡ); ("setBit"%go, nat__setBitⁱᵐᵖˡ); ("setBytes"%go, nat__setBytesⁱᵐᵖˡ); ("setUint64"%go, nat__setUint64ⁱᵐᵖˡ); ("setWord"%go, nat__setWordⁱᵐᵖˡ); ("shl"%go, nat__shlⁱᵐᵖˡ); ("shr"%go, nat__shrⁱᵐᵖˡ); ("sqr"%go, nat__sqrⁱᵐᵖˡ); ("sqrt"%go, nat__sqrtⁱᵐᵖˡ); ("sticky"%go, nat__stickyⁱᵐᵖˡ); ("sub"%go, nat__subⁱᵐᵖˡ); ("subMod2N"%go, nat__subMod2Nⁱᵐᵖˡ); ("trailingZeroBits"%go, nat__trailingZeroBitsⁱᵐᵖˡ); ("trunc"%go, nat__truncⁱᵐᵖˡ); ("utoa"%go, nat__utoaⁱᵐᵖˡ); ("xor"%go, nat__xorⁱᵐᵖˡ)]); (divisor.id, []); (ptrT.id divisor.id, []); (Rat.id, []); (ptrT.id Rat.id, [("Abs"%go, Rat__Absⁱᵐᵖˡ); ("Add"%go, Rat__Addⁱᵐᵖˡ); ("AppendText"%go, Rat__AppendTextⁱᵐᵖˡ); ("Cmp"%go, Rat__Cmpⁱᵐᵖˡ); ("Denom"%go, Rat__Denomⁱᵐᵖˡ); ("Float32"%go, Rat__Float32ⁱᵐᵖˡ); ("Float64"%go, Rat__Float64ⁱᵐᵖˡ); ("FloatPrec"%go, Rat__FloatPrecⁱᵐᵖˡ); ("FloatString"%go, Rat__FloatStringⁱᵐᵖˡ); ("GobDecode"%go, Rat__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Rat__GobEncodeⁱᵐᵖˡ); ("Inv"%go, Rat__Invⁱᵐᵖˡ); ("IsInt"%go, Rat__IsIntⁱᵐᵖˡ); ("MarshalText"%go, Rat__MarshalTextⁱᵐᵖˡ); ("Mul"%go, Rat__Mulⁱᵐᵖˡ); ("Neg"%go, Rat__Negⁱᵐᵖˡ); ("Num"%go, Rat__Numⁱᵐᵖˡ); ("Quo"%go, Rat__Quoⁱᵐᵖˡ); ("RatString"%go, Rat__RatStringⁱᵐᵖˡ); ("Scan"%go, Rat__Scanⁱᵐᵖˡ); ("Set"%go, Rat__Setⁱᵐᵖˡ); ("SetFloat64"%go, Rat__SetFloat64ⁱᵐᵖˡ); ("SetFrac"%go, Rat__SetFracⁱᵐᵖˡ); ("SetFrac64"%go, Rat__SetFrac64ⁱᵐᵖˡ); ("SetInt"%go, Rat__SetIntⁱᵐᵖˡ); ("SetInt64"%go, Rat__SetInt64ⁱᵐᵖˡ); ("SetString"%go, Rat__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Rat__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Rat__Signⁱᵐᵖˡ); ("String"%go, Rat__Stringⁱᵐᵖˡ); ("Sub"%go, Rat__Subⁱᵐᵖˡ); ("UnmarshalText"%go, Rat__UnmarshalTextⁱᵐᵖˡ); ("marshal"%go, Rat__marshalⁱᵐᵖˡ); ("norm"%go, Rat__normⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo big.big :=
   {|

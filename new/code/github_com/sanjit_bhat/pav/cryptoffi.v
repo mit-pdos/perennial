@@ -71,9 +71,7 @@ Axiom VrfPrivateKey__PublicKeyⁱᵐᵖˡ : val.
 
 Axiom VrfPublicKey__Verifyⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Hasher.id, []); (ptrT.id Hasher.id, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); (SigPrivateKey.id, []); (ptrT.id SigPrivateKey.id, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); (SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (ptrT.id SigPublicKey.id, [("Verify"%go, (λ: "$r",
-                 method_call #SigPublicKey.id #"Verify"%go (![#SigPublicKey] "$r")
-                 )%V)]); (VrfPrivateKey.id, []); (ptrT.id VrfPrivateKey.id, [("Evaluate"%go, VrfPrivateKey__Evaluateⁱᵐᵖˡ); ("Prove"%go, VrfPrivateKey__Proveⁱᵐᵖˡ); ("PublicKey"%go, VrfPrivateKey__PublicKeyⁱᵐᵖˡ)]); (VrfPublicKey.id, []); (ptrT.id VrfPublicKey.id, [("Verify"%go, VrfPublicKey__Verifyⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Hasher.id, []); (ptrT.id Hasher.id, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); (SigPrivateKey.id, []); (ptrT.id SigPrivateKey.id, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); (SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (ptrT.id SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (VrfPrivateKey.id, []); (ptrT.id VrfPrivateKey.id, [("Evaluate"%go, VrfPrivateKey__Evaluateⁱᵐᵖˡ); ("Prove"%go, VrfPrivateKey__Proveⁱᵐᵖˡ); ("PublicKey"%go, VrfPrivateKey__PublicKeyⁱᵐᵖˡ)]); (VrfPublicKey.id, []); (ptrT.id VrfPublicKey.id, [("Verify"%go, VrfPublicKey__Verifyⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo cryptoffi.cryptoffi :=
   {|

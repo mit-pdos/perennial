@@ -429,29 +429,7 @@ Axiom Dec__GetInt32ⁱᵐᵖˡ : val.
 
 Axiom Dec__GetIntsⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, [("Finish"%go, Enc__Finishⁱᵐᵖˡ); ("PutBool"%go, Enc__PutBoolⁱᵐᵖˡ); ("PutBytes"%go, Enc__PutBytesⁱᵐᵖˡ); ("PutInt"%go, Enc__PutIntⁱᵐᵖˡ); ("PutInt32"%go, Enc__PutInt32ⁱᵐᵖˡ); ("PutInts"%go, Enc__PutIntsⁱᵐᵖˡ)]); (ptrT.id Enc.id, [("Finish"%go, (λ: "$r",
-                 method_call #Enc.id #"Finish"%go (![#Enc] "$r")
-                 )%V); ("PutBool"%go, (λ: "$r",
-                 method_call #Enc.id #"PutBool"%go (![#Enc] "$r")
-                 )%V); ("PutBytes"%go, (λ: "$r",
-                 method_call #Enc.id #"PutBytes"%go (![#Enc] "$r")
-                 )%V); ("PutInt"%go, (λ: "$r",
-                 method_call #Enc.id #"PutInt"%go (![#Enc] "$r")
-                 )%V); ("PutInt32"%go, (λ: "$r",
-                 method_call #Enc.id #"PutInt32"%go (![#Enc] "$r")
-                 )%V); ("PutInts"%go, (λ: "$r",
-                 method_call #Enc.id #"PutInts"%go (![#Enc] "$r")
-                 )%V)]); (Dec.id, [("GetBool"%go, Dec__GetBoolⁱᵐᵖˡ); ("GetBytes"%go, Dec__GetBytesⁱᵐᵖˡ); ("GetInt"%go, Dec__GetIntⁱᵐᵖˡ); ("GetInt32"%go, Dec__GetInt32ⁱᵐᵖˡ); ("GetInts"%go, Dec__GetIntsⁱᵐᵖˡ)]); (ptrT.id Dec.id, [("GetBool"%go, (λ: "$r",
-                 method_call #Dec.id #"GetBool"%go (![#Dec] "$r")
-                 )%V); ("GetBytes"%go, (λ: "$r",
-                 method_call #Dec.id #"GetBytes"%go (![#Dec] "$r")
-                 )%V); ("GetInt"%go, (λ: "$r",
-                 method_call #Dec.id #"GetInt"%go (![#Dec] "$r")
-                 )%V); ("GetInt32"%go, (λ: "$r",
-                 method_call #Dec.id #"GetInt32"%go (![#Dec] "$r")
-                 )%V); ("GetInts"%go, (λ: "$r",
-                 method_call #Dec.id #"GetInts"%go (![#Dec] "$r")
-                 )%V)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, [("Finish"%go, Enc__Finishⁱᵐᵖˡ); ("PutBool"%go, Enc__PutBoolⁱᵐᵖˡ); ("PutBytes"%go, Enc__PutBytesⁱᵐᵖˡ); ("PutInt"%go, Enc__PutIntⁱᵐᵖˡ); ("PutInt32"%go, Enc__PutInt32ⁱᵐᵖˡ); ("PutInts"%go, Enc__PutIntsⁱᵐᵖˡ)]); (ptrT.id Enc.id, [("Finish"%go, Enc__Finishⁱᵐᵖˡ); ("PutBool"%go, Enc__PutBoolⁱᵐᵖˡ); ("PutBytes"%go, Enc__PutBytesⁱᵐᵖˡ); ("PutInt"%go, Enc__PutIntⁱᵐᵖˡ); ("PutInt32"%go, Enc__PutInt32ⁱᵐᵖˡ); ("PutInts"%go, Enc__PutIntsⁱᵐᵖˡ)]); (Dec.id, [("GetBool"%go, Dec__GetBoolⁱᵐᵖˡ); ("GetBytes"%go, Dec__GetBytesⁱᵐᵖˡ); ("GetInt"%go, Dec__GetIntⁱᵐᵖˡ); ("GetInt32"%go, Dec__GetInt32ⁱᵐᵖˡ); ("GetInts"%go, Dec__GetIntsⁱᵐᵖˡ)]); (ptrT.id Dec.id, [("GetBool"%go, Dec__GetBoolⁱᵐᵖˡ); ("GetBytes"%go, Dec__GetBytesⁱᵐᵖˡ); ("GetInt"%go, Dec__GetIntⁱᵐᵖˡ); ("GetInt32"%go, Dec__GetInt32ⁱᵐᵖˡ); ("GetInts"%go, Dec__GetIntsⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo marshal.marshal :=
   {|

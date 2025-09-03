@@ -47,11 +47,7 @@ Axiom reader__Readⁱᵐᵖˡ : val.
 
 Axiom reader__defaultReaderⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(reader.id, [("defaultReader"%go, (λ: "$r",
-                 method_call #drbg.DefaultReader.id #"defaultReader"%go (struct.field_get #reader #"DefaultReader"%go "$r")
-                 )%V)]); (ptrT.id reader.id, [("Read"%go, reader__Readⁱᵐᵖˡ); ("defaultReader"%go, (λ: "$r",
-                 method_call #(ptrT.id drbg.DefaultReader.id) #"defaultReader"%go (struct.field_ref #reader #"DefaultReader"%go "$r")
-                 )%V)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(reader.id, [("defaultReader"%go, reader__defaultReaderⁱᵐᵖˡ)]); (ptrT.id reader.id, [("Read"%go, reader__Readⁱᵐᵖˡ); ("defaultReader"%go, reader__defaultReaderⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo rand.rand :=
   {|

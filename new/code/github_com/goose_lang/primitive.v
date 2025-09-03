@@ -78,11 +78,7 @@ Axiom prophId__ResolveBoolⁱᵐᵖˡ : val.
 
 Axiom prophId__ResolveU64ⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(prophId.id, []); (ptrT.id prophId.id, [("ResolveBool"%go, (λ: "$r",
-                 method_call #prophId.id #"ResolveBool"%go (![#prophId] "$r")
-                 )%V); ("ResolveU64"%go, (λ: "$r",
-                 method_call #prophId.id #"ResolveU64"%go (![#prophId] "$r")
-                 )%V)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(prophId.id, []); (ptrT.id prophId.id, [("ResolveBool"%go, prophId__ResolveBoolⁱᵐᵖˡ); ("ResolveU64"%go, prophId__ResolveU64ⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo primitive.primitive :=
   {|

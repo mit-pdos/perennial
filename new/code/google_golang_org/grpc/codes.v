@@ -67,9 +67,7 @@ Axiom Code__Stringⁱᵐᵖˡ : val.
 
 Axiom Code__UnmarshalJSONⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Code.id, [("String"%go, Code__Stringⁱᵐᵖˡ)]); (ptrT.id Code.id, [("String"%go, (λ: "$r",
-                 method_call #Code.id #"String"%go (![#Code] "$r")
-                 )%V); ("UnmarshalJSON"%go, Code__UnmarshalJSONⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Code.id, [("String"%go, Code__Stringⁱᵐᵖˡ)]); (ptrT.id Code.id, [("String"%go, Code__Stringⁱᵐᵖˡ); ("UnmarshalJSON"%go, Code__UnmarshalJSONⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo codes.codes :=
   {|

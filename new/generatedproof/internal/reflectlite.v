@@ -8,21 +8,21 @@ Set Default Proof Using "Type".
 
 Module reflectlite.
 
-(* type reflectlite.Type *)
-Module Type.
+(* type reflectlite.Type' *)
+Module Type'.
 Section def.
 Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
-End Type.
+End Type'.
 
-Global Instance bounded_size_Type : BoundedTypeSize reflectlite.Type.
+Global Instance bounded_size_Type' : BoundedTypeSize reflectlite.Type'.
 Admitted.
 
-Global Instance into_val_Type `{ffi_syntax} : IntoVal Type.t.
+Global Instance into_val_Type' `{ffi_syntax} : IntoVal Type'.t.
 Admitted.
 
-Global Instance into_val_typed_Type `{ffi_syntax} : IntoValTyped Type.t reflectlite.Type.
+Global Instance into_val_typed_Type' `{ffi_syntax} : IntoValTyped Type'.t reflectlite.Type'.
 Admitted.
 
 (* type reflectlite.Kind *)
