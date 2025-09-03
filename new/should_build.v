@@ -22,3 +22,5 @@ From New.proof Require Import inG_problem.
 
 From New.generatedproof.github_com.sanjit_bhat.pav Require alicebob.
 From New.proof.github_com.sanjit_bhat.pav Require hashchain merkle.
+
+Require New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.cindex.
