@@ -31,19 +31,9 @@ Context `{ffi_syntax}.
 
 Definition Errorf : go_string := "fmt.Errorf"%go.
 
-Axiom Errorfⁱᵐᵖˡ : val.
-
 Axiom wrapError : go_type.
 
-Axiom wrapError__Errorⁱᵐᵖˡ : val.
-
-Axiom wrapError__Unwrapⁱᵐᵖˡ : val.
-
 Axiom wrapErrors : go_type.
-
-Axiom wrapErrors__Errorⁱᵐᵖˡ : val.
-
-Axiom wrapErrors__Unwrapⁱᵐᵖˡ : val.
 
 Axiom ldigits : go_string.
 
@@ -56,44 +46,6 @@ Axiom unsigned : expr.
 Axiom fmtFlags : go_type.
 
 Axiom fmt : go_type.
-
-Axiom fmt__clearflagsⁱᵐᵖˡ : val.
-
-Axiom fmt__initⁱᵐᵖˡ : val.
-
-Axiom fmt__writePaddingⁱᵐᵖˡ : val.
-
-Axiom fmt__padⁱᵐᵖˡ : val.
-
-Axiom fmt__padStringⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtBooleanⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtUnicodeⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtIntegerⁱᵐᵖˡ : val.
-
-Axiom fmt__truncateStringⁱᵐᵖˡ : val.
-
-Axiom fmt__truncateⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtSⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtBsⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtSbxⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtSxⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtBxⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtQⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtCⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtQcⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtFloatⁱᵐᵖˡ : val.
 
 Axiom commaSpaceString : go_string.
 
@@ -133,17 +85,7 @@ Axiom GoStringer : go_type.
 
 Definition FormatString : go_string := "fmt.FormatString"%go.
 
-Axiom FormatStringⁱᵐᵖˡ : val.
-
 Axiom buffer : go_type.
-
-Axiom buffer__writeⁱᵐᵖˡ : val.
-
-Axiom buffer__writeStringⁱᵐᵖˡ : val.
-
-Axiom buffer__writeByteⁱᵐᵖˡ : val.
-
-Axiom buffer__writeRuneⁱᵐᵖˡ : val.
 
 Axiom pp : go_type.
 
@@ -153,123 +95,39 @@ Axiom ppFree'init : val.
 
 Definition newPrinter : go_string := "fmt.newPrinter"%go.
 
-Axiom newPrinterⁱᵐᵖˡ : val.
-
-Axiom pp__freeⁱᵐᵖˡ : val.
-
-Axiom pp__Widthⁱᵐᵖˡ : val.
-
-Axiom pp__Precisionⁱᵐᵖˡ : val.
-
-Axiom pp__Flagⁱᵐᵖˡ : val.
-
-Axiom pp__Writeⁱᵐᵖˡ : val.
-
-Axiom pp__WriteStringⁱᵐᵖˡ : val.
-
 Definition Fprintf : go_string := "fmt.Fprintf"%go.
-
-Axiom Fprintfⁱᵐᵖˡ : val.
 
 Definition Printf : go_string := "fmt.Printf"%go.
 
 Definition Sprintf : go_string := "fmt.Sprintf"%go.
 
-Axiom Sprintfⁱᵐᵖˡ : val.
-
 Definition Appendf : go_string := "fmt.Appendf"%go.
 
-Axiom Appendfⁱᵐᵖˡ : val.
-
 Definition Fprint : go_string := "fmt.Fprint"%go.
-
-Axiom Fprintⁱᵐᵖˡ : val.
 
 Definition Print : go_string := "fmt.Print"%go.
 
 Definition Sprint : go_string := "fmt.Sprint"%go.
 
-Axiom Sprintⁱᵐᵖˡ : val.
-
 Definition Append : go_string := "fmt.Append"%go.
-
-Axiom Appendⁱᵐᵖˡ : val.
 
 Definition Fprintln : go_string := "fmt.Fprintln"%go.
 
-Axiom Fprintlnⁱᵐᵖˡ : val.
-
 Definition Println : go_string := "fmt.Println"%go.
-
-Axiom Printlnⁱᵐᵖˡ : val.
 
 Definition Sprintln : go_string := "fmt.Sprintln"%go.
 
-Axiom Sprintlnⁱᵐᵖˡ : val.
-
 Definition Appendln : go_string := "fmt.Appendln"%go.
-
-Axiom Appendlnⁱᵐᵖˡ : val.
 
 Definition getField : go_string := "fmt.getField"%go.
 
-Axiom getFieldⁱᵐᵖˡ : val.
-
 Definition tooLarge : go_string := "fmt.tooLarge"%go.
-
-Axiom tooLargeⁱᵐᵖˡ : val.
 
 Definition parsenum : go_string := "fmt.parsenum"%go.
 
-Axiom parsenumⁱᵐᵖˡ : val.
-
-Axiom pp__unknownTypeⁱᵐᵖˡ : val.
-
-Axiom pp__badVerbⁱᵐᵖˡ : val.
-
-Axiom pp__fmtBoolⁱᵐᵖˡ : val.
-
-Axiom pp__fmt0x64ⁱᵐᵖˡ : val.
-
-Axiom pp__fmtIntegerⁱᵐᵖˡ : val.
-
-Axiom pp__fmtFloatⁱᵐᵖˡ : val.
-
-Axiom pp__fmtComplexⁱᵐᵖˡ : val.
-
-Axiom pp__fmtStringⁱᵐᵖˡ : val.
-
-Axiom pp__fmtBytesⁱᵐᵖˡ : val.
-
-Axiom pp__fmtPointerⁱᵐᵖˡ : val.
-
-Axiom pp__catchPanicⁱᵐᵖˡ : val.
-
-Axiom pp__handleMethodsⁱᵐᵖˡ : val.
-
-Axiom pp__printArgⁱᵐᵖˡ : val.
-
-Axiom pp__printValueⁱᵐᵖˡ : val.
-
 Definition intFromArg : go_string := "fmt.intFromArg"%go.
 
-Axiom intFromArgⁱᵐᵖˡ : val.
-
 Definition parseArgNumber : go_string := "fmt.parseArgNumber"%go.
-
-Axiom parseArgNumberⁱᵐᵖˡ : val.
-
-Axiom pp__argNumberⁱᵐᵖˡ : val.
-
-Axiom pp__badArgNumⁱᵐᵖˡ : val.
-
-Axiom pp__missingArgⁱᵐᵖˡ : val.
-
-Axiom pp__doPrintfⁱᵐᵖˡ : val.
-
-Axiom pp__doPrintⁱᵐᵖˡ : val.
-
-Axiom pp__doPrintlnⁱᵐᵖˡ : val.
 
 Axiom ScanState : go_type.
 
@@ -277,43 +135,23 @@ Axiom Scanner : go_type.
 
 Definition Scan : go_string := "fmt.Scan"%go.
 
-Axiom Scanⁱᵐᵖˡ : val.
-
 Definition Scanln : go_string := "fmt.Scanln"%go.
-
-Axiom Scanlnⁱᵐᵖˡ : val.
 
 Definition Scanf : go_string := "fmt.Scanf"%go.
 
-Axiom Scanfⁱᵐᵖˡ : val.
-
 Axiom stringReader : go_type.
-
-Axiom stringReader__Readⁱᵐᵖˡ : val.
 
 Definition Sscan : go_string := "fmt.Sscan"%go.
 
-Axiom Sscanⁱᵐᵖˡ : val.
-
 Definition Sscanln : go_string := "fmt.Sscanln"%go.
-
-Axiom Sscanlnⁱᵐᵖˡ : val.
 
 Definition Sscanf : go_string := "fmt.Sscanf"%go.
 
-Axiom Sscanfⁱᵐᵖˡ : val.
-
 Definition Fscan : go_string := "fmt.Fscan"%go.
-
-Axiom Fscanⁱᵐᵖˡ : val.
 
 Definition Fscanln : go_string := "fmt.Fscanln"%go.
 
-Axiom Fscanlnⁱᵐᵖˡ : val.
-
 Definition Fscanf : go_string := "fmt.Fscanf"%go.
-
-Axiom Fscanfⁱᵐᵖˡ : val.
 
 Axiom scanError : go_type.
 
@@ -323,57 +161,21 @@ Axiom ss : go_type.
 
 Axiom ssave : go_type.
 
-Axiom ss__Readⁱᵐᵖˡ : val.
-
-Axiom ss__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom ss__Widthⁱᵐᵖˡ : val.
-
-Axiom ss__getRuneⁱᵐᵖˡ : val.
-
-Axiom ss__mustReadRuneⁱᵐᵖˡ : val.
-
-Axiom ss__UnreadRuneⁱᵐᵖˡ : val.
-
-Axiom ss__errorⁱᵐᵖˡ : val.
-
-Axiom ss__errorStringⁱᵐᵖˡ : val.
-
-Axiom ss__Tokenⁱᵐᵖˡ : val.
-
 Definition space : go_string := "fmt.space"%go.
 
 Axiom space'init : val.
 
 Definition isSpace : go_string := "fmt.isSpace"%go.
 
-Axiom isSpaceⁱᵐᵖˡ : val.
-
 Definition notSpace : go_string := "fmt.notSpace"%go.
 
-Axiom notSpaceⁱᵐᵖˡ : val.
-
 Axiom readRune : go_type.
-
-Axiom readRune__readByteⁱᵐᵖˡ : val.
-
-Axiom readRune__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom readRune__UnreadRuneⁱᵐᵖˡ : val.
 
 Definition ssFree : go_string := "fmt.ssFree"%go.
 
 Axiom ssFree'init : val.
 
 Definition newScanState : go_string := "fmt.newScanState"%go.
-
-Axiom newScanStateⁱᵐᵖˡ : val.
-
-Axiom ss__freeⁱᵐᵖˡ : val.
-
-Axiom ss__SkipSpaceⁱᵐᵖˡ : val.
-
-Axiom ss__tokenⁱᵐᵖˡ : val.
 
 Definition errComplex : go_string := "fmt.errComplex"%go.
 
@@ -384,20 +186,6 @@ Definition errBool : go_string := "fmt.errBool"%go.
 Axiom errBool'init : val.
 
 Definition indexRune : go_string := "fmt.indexRune"%go.
-
-Axiom indexRuneⁱᵐᵖˡ : val.
-
-Axiom ss__consumeⁱᵐᵖˡ : val.
-
-Axiom ss__peekⁱᵐᵖˡ : val.
-
-Axiom ss__notEOFⁱᵐᵖˡ : val.
-
-Axiom ss__acceptⁱᵐᵖˡ : val.
-
-Axiom ss__okVerbⁱᵐᵖˡ : val.
-
-Axiom ss__scanBoolⁱᵐᵖˡ : val.
 
 Axiom binaryDigits : go_string.
 
@@ -413,41 +201,9 @@ Axiom period : go_string.
 
 Axiom exponent : go_string.
 
-Axiom ss__getBaseⁱᵐᵖˡ : val.
-
-Axiom ss__scanNumberⁱᵐᵖˡ : val.
-
-Axiom ss__scanRuneⁱᵐᵖˡ : val.
-
-Axiom ss__scanBasePrefixⁱᵐᵖˡ : val.
-
-Axiom ss__scanIntⁱᵐᵖˡ : val.
-
-Axiom ss__scanUintⁱᵐᵖˡ : val.
-
-Axiom ss__floatTokenⁱᵐᵖˡ : val.
-
-Axiom ss__complexTokensⁱᵐᵖˡ : val.
-
 Definition hasX : go_string := "fmt.hasX"%go.
 
-Axiom hasXⁱᵐᵖˡ : val.
-
-Axiom ss__convertFloatⁱᵐᵖˡ : val.
-
-Axiom ss__scanComplexⁱᵐᵖˡ : val.
-
-Axiom ss__convertStringⁱᵐᵖˡ : val.
-
-Axiom ss__quotedStringⁱᵐᵖˡ : val.
-
 Definition hexDigit : go_string := "fmt.hexDigit"%go.
-
-Axiom hexDigitⁱᵐᵖˡ : val.
-
-Axiom ss__hexByteⁱᵐᵖˡ : val.
-
-Axiom ss__hexStringⁱᵐᵖˡ : val.
 
 Axiom floatVerbs : go_string.
 
@@ -457,23 +213,267 @@ Axiom intBits : Z.
 
 Axiom uintptrBits : Z.
 
-Axiom ss__scanPercentⁱᵐᵖˡ : val.
-
-Axiom ss__scanOneⁱᵐᵖˡ : val.
-
 Definition errorHandler : go_string := "fmt.errorHandler"%go.
-
-Axiom errorHandlerⁱᵐᵖˡ : val.
-
-Axiom ss__doScanⁱᵐᵖˡ : val.
-
-Axiom ss__advanceⁱᵐᵖˡ : val.
-
-Axiom ss__doScanfⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
+Axiom Errorfⁱᵐᵖˡ : val.
+
+Axiom FormatStringⁱᵐᵖˡ : val.
+
+Axiom newPrinterⁱᵐᵖˡ : val.
+
+Axiom Fprintfⁱᵐᵖˡ : val.
+
+Axiom Sprintfⁱᵐᵖˡ : val.
+
+Axiom Appendfⁱᵐᵖˡ : val.
+
+Axiom Fprintⁱᵐᵖˡ : val.
+
+Axiom Sprintⁱᵐᵖˡ : val.
+
+Axiom Appendⁱᵐᵖˡ : val.
+
+Axiom Fprintlnⁱᵐᵖˡ : val.
+
+Axiom Printlnⁱᵐᵖˡ : val.
+
+Axiom Sprintlnⁱᵐᵖˡ : val.
+
+Axiom Appendlnⁱᵐᵖˡ : val.
+
+Axiom getFieldⁱᵐᵖˡ : val.
+
+Axiom tooLargeⁱᵐᵖˡ : val.
+
+Axiom parsenumⁱᵐᵖˡ : val.
+
+Axiom intFromArgⁱᵐᵖˡ : val.
+
+Axiom parseArgNumberⁱᵐᵖˡ : val.
+
+Axiom Scanⁱᵐᵖˡ : val.
+
+Axiom Scanlnⁱᵐᵖˡ : val.
+
+Axiom Scanfⁱᵐᵖˡ : val.
+
+Axiom Sscanⁱᵐᵖˡ : val.
+
+Axiom Sscanlnⁱᵐᵖˡ : val.
+
+Axiom Sscanfⁱᵐᵖˡ : val.
+
+Axiom Fscanⁱᵐᵖˡ : val.
+
+Axiom Fscanlnⁱᵐᵖˡ : val.
+
+Axiom Fscanfⁱᵐᵖˡ : val.
+
+Axiom isSpaceⁱᵐᵖˡ : val.
+
+Axiom notSpaceⁱᵐᵖˡ : val.
+
+Axiom newScanStateⁱᵐᵖˡ : val.
+
+Axiom indexRuneⁱᵐᵖˡ : val.
+
+Axiom hasXⁱᵐᵖˡ : val.
+
+Axiom hexDigitⁱᵐᵖˡ : val.
+
+Axiom errorHandlerⁱᵐᵖˡ : val.
+
 Definition functions' : list (go_string * val) := [(Errorf, Errorfⁱᵐᵖˡ); (FormatString, FormatStringⁱᵐᵖˡ); (newPrinter, newPrinterⁱᵐᵖˡ); (Fprintf, Fprintfⁱᵐᵖˡ); (Printf, Printfⁱᵐᵖˡ); (Sprintf, Sprintfⁱᵐᵖˡ); (Appendf, Appendfⁱᵐᵖˡ); (Fprint, Fprintⁱᵐᵖˡ); (Print, Printⁱᵐᵖˡ); (Sprint, Sprintⁱᵐᵖˡ); (Append, Appendⁱᵐᵖˡ); (Fprintln, Fprintlnⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ); (Sprintln, Sprintlnⁱᵐᵖˡ); (Appendln, Appendlnⁱᵐᵖˡ); (getField, getFieldⁱᵐᵖˡ); (tooLarge, tooLargeⁱᵐᵖˡ); (parsenum, parsenumⁱᵐᵖˡ); (intFromArg, intFromArgⁱᵐᵖˡ); (parseArgNumber, parseArgNumberⁱᵐᵖˡ); (Scan, Scanⁱᵐᵖˡ); (Scanln, Scanlnⁱᵐᵖˡ); (Scanf, Scanfⁱᵐᵖˡ); (Sscan, Sscanⁱᵐᵖˡ); (Sscanln, Sscanlnⁱᵐᵖˡ); (Sscanf, Sscanfⁱᵐᵖˡ); (Fscan, Fscanⁱᵐᵖˡ); (Fscanln, Fscanlnⁱᵐᵖˡ); (Fscanf, Fscanfⁱᵐᵖˡ); (isSpace, isSpaceⁱᵐᵖˡ); (notSpace, notSpaceⁱᵐᵖˡ); (newScanState, newScanStateⁱᵐᵖˡ); (indexRune, indexRuneⁱᵐᵖˡ); (hasX, hasXⁱᵐᵖˡ); (hexDigit, hexDigitⁱᵐᵖˡ); (errorHandler, errorHandlerⁱᵐᵖˡ)].
+
+Axiom wrapError__Errorⁱᵐᵖˡ : val.
+
+Axiom wrapError__Unwrapⁱᵐᵖˡ : val.
+
+Axiom wrapErrors__Errorⁱᵐᵖˡ : val.
+
+Axiom wrapErrors__Unwrapⁱᵐᵖˡ : val.
+
+Axiom fmt__clearflagsⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtBooleanⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtBsⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtBxⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtCⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtFloatⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtIntegerⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtQⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtQcⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtSⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtSbxⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtSxⁱᵐᵖˡ : val.
+
+Axiom fmt__fmtUnicodeⁱᵐᵖˡ : val.
+
+Axiom fmt__initⁱᵐᵖˡ : val.
+
+Axiom fmt__padⁱᵐᵖˡ : val.
+
+Axiom fmt__padStringⁱᵐᵖˡ : val.
+
+Axiom fmt__truncateⁱᵐᵖˡ : val.
+
+Axiom fmt__truncateStringⁱᵐᵖˡ : val.
+
+Axiom fmt__writePaddingⁱᵐᵖˡ : val.
+
+Axiom buffer__writeⁱᵐᵖˡ : val.
+
+Axiom buffer__writeByteⁱᵐᵖˡ : val.
+
+Axiom buffer__writeRuneⁱᵐᵖˡ : val.
+
+Axiom buffer__writeStringⁱᵐᵖˡ : val.
+
+Axiom pp__Flagⁱᵐᵖˡ : val.
+
+Axiom pp__Precisionⁱᵐᵖˡ : val.
+
+Axiom pp__Widthⁱᵐᵖˡ : val.
+
+Axiom pp__Writeⁱᵐᵖˡ : val.
+
+Axiom pp__WriteStringⁱᵐᵖˡ : val.
+
+Axiom pp__argNumberⁱᵐᵖˡ : val.
+
+Axiom pp__badArgNumⁱᵐᵖˡ : val.
+
+Axiom pp__badVerbⁱᵐᵖˡ : val.
+
+Axiom pp__catchPanicⁱᵐᵖˡ : val.
+
+Axiom pp__doPrintⁱᵐᵖˡ : val.
+
+Axiom pp__doPrintfⁱᵐᵖˡ : val.
+
+Axiom pp__doPrintlnⁱᵐᵖˡ : val.
+
+Axiom pp__fmt0x64ⁱᵐᵖˡ : val.
+
+Axiom pp__fmtBoolⁱᵐᵖˡ : val.
+
+Axiom pp__fmtBytesⁱᵐᵖˡ : val.
+
+Axiom pp__fmtComplexⁱᵐᵖˡ : val.
+
+Axiom pp__fmtFloatⁱᵐᵖˡ : val.
+
+Axiom pp__fmtIntegerⁱᵐᵖˡ : val.
+
+Axiom pp__fmtPointerⁱᵐᵖˡ : val.
+
+Axiom pp__fmtStringⁱᵐᵖˡ : val.
+
+Axiom pp__freeⁱᵐᵖˡ : val.
+
+Axiom pp__handleMethodsⁱᵐᵖˡ : val.
+
+Axiom pp__missingArgⁱᵐᵖˡ : val.
+
+Axiom pp__printArgⁱᵐᵖˡ : val.
+
+Axiom pp__printValueⁱᵐᵖˡ : val.
+
+Axiom pp__unknownTypeⁱᵐᵖˡ : val.
+
+Axiom stringReader__Readⁱᵐᵖˡ : val.
+
+Axiom ss__Readⁱᵐᵖˡ : val.
+
+Axiom ss__ReadRuneⁱᵐᵖˡ : val.
+
+Axiom ss__SkipSpaceⁱᵐᵖˡ : val.
+
+Axiom ss__Tokenⁱᵐᵖˡ : val.
+
+Axiom ss__UnreadRuneⁱᵐᵖˡ : val.
+
+Axiom ss__Widthⁱᵐᵖˡ : val.
+
+Axiom ss__acceptⁱᵐᵖˡ : val.
+
+Axiom ss__advanceⁱᵐᵖˡ : val.
+
+Axiom ss__complexTokensⁱᵐᵖˡ : val.
+
+Axiom ss__consumeⁱᵐᵖˡ : val.
+
+Axiom ss__convertFloatⁱᵐᵖˡ : val.
+
+Axiom ss__convertStringⁱᵐᵖˡ : val.
+
+Axiom ss__doScanⁱᵐᵖˡ : val.
+
+Axiom ss__doScanfⁱᵐᵖˡ : val.
+
+Axiom ss__errorⁱᵐᵖˡ : val.
+
+Axiom ss__errorStringⁱᵐᵖˡ : val.
+
+Axiom ss__floatTokenⁱᵐᵖˡ : val.
+
+Axiom ss__freeⁱᵐᵖˡ : val.
+
+Axiom ss__getBaseⁱᵐᵖˡ : val.
+
+Axiom ss__getRuneⁱᵐᵖˡ : val.
+
+Axiom ss__hexByteⁱᵐᵖˡ : val.
+
+Axiom ss__hexStringⁱᵐᵖˡ : val.
+
+Axiom ss__mustReadRuneⁱᵐᵖˡ : val.
+
+Axiom ss__notEOFⁱᵐᵖˡ : val.
+
+Axiom ss__okVerbⁱᵐᵖˡ : val.
+
+Axiom ss__peekⁱᵐᵖˡ : val.
+
+Axiom ss__quotedStringⁱᵐᵖˡ : val.
+
+Axiom ss__scanBasePrefixⁱᵐᵖˡ : val.
+
+Axiom ss__scanBoolⁱᵐᵖˡ : val.
+
+Axiom ss__scanComplexⁱᵐᵖˡ : val.
+
+Axiom ss__scanIntⁱᵐᵖˡ : val.
+
+Axiom ss__scanNumberⁱᵐᵖˡ : val.
+
+Axiom ss__scanOneⁱᵐᵖˡ : val.
+
+Axiom ss__scanPercentⁱᵐᵖˡ : val.
+
+Axiom ss__scanRuneⁱᵐᵖˡ : val.
+
+Axiom ss__scanUintⁱᵐᵖˡ : val.
+
+Axiom ss__tokenⁱᵐᵖˡ : val.
+
+Axiom readRune__ReadRuneⁱᵐᵖˡ : val.
+
+Axiom readRune__UnreadRuneⁱᵐᵖˡ : val.
+
+Axiom readRune__readByteⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(wrapError.id, []); (ptrT.id wrapError.id, [("Error"%go, wrapError__Errorⁱᵐᵖˡ); ("Unwrap"%go, wrapError__Unwrapⁱᵐᵖˡ)]); (wrapErrors.id, []); (ptrT.id wrapErrors.id, [("Error"%go, wrapErrors__Errorⁱᵐᵖˡ); ("Unwrap"%go, wrapErrors__Unwrapⁱᵐᵖˡ)]); (fmtFlags.id, []); (ptrT.id fmtFlags.id, []); (fmt.id, []); (ptrT.id fmt.id, [("clearflags"%go, fmt__clearflagsⁱᵐᵖˡ); ("fmtBoolean"%go, fmt__fmtBooleanⁱᵐᵖˡ); ("fmtBs"%go, fmt__fmtBsⁱᵐᵖˡ); ("fmtBx"%go, fmt__fmtBxⁱᵐᵖˡ); ("fmtC"%go, fmt__fmtCⁱᵐᵖˡ); ("fmtFloat"%go, fmt__fmtFloatⁱᵐᵖˡ); ("fmtInteger"%go, fmt__fmtIntegerⁱᵐᵖˡ); ("fmtQ"%go, fmt__fmtQⁱᵐᵖˡ); ("fmtQc"%go, fmt__fmtQcⁱᵐᵖˡ); ("fmtS"%go, fmt__fmtSⁱᵐᵖˡ); ("fmtSbx"%go, fmt__fmtSbxⁱᵐᵖˡ); ("fmtSx"%go, fmt__fmtSxⁱᵐᵖˡ); ("fmtUnicode"%go, fmt__fmtUnicodeⁱᵐᵖˡ); ("init"%go, fmt__initⁱᵐᵖˡ); ("pad"%go, fmt__padⁱᵐᵖˡ); ("padString"%go, fmt__padStringⁱᵐᵖˡ); ("truncate"%go, fmt__truncateⁱᵐᵖˡ); ("truncateString"%go, fmt__truncateStringⁱᵐᵖˡ); ("writePadding"%go, fmt__writePaddingⁱᵐᵖˡ)]); (buffer.id, []); (ptrT.id buffer.id, [("write"%go, buffer__writeⁱᵐᵖˡ); ("writeByte"%go, buffer__writeByteⁱᵐᵖˡ); ("writeRune"%go, buffer__writeRuneⁱᵐᵖˡ); ("writeString"%go, buffer__writeStringⁱᵐᵖˡ)]); (pp.id, []); (ptrT.id pp.id, [("Flag"%go, pp__Flagⁱᵐᵖˡ); ("Precision"%go, pp__Precisionⁱᵐᵖˡ); ("Width"%go, pp__Widthⁱᵐᵖˡ); ("Write"%go, pp__Writeⁱᵐᵖˡ); ("WriteString"%go, pp__WriteStringⁱᵐᵖˡ); ("argNumber"%go, pp__argNumberⁱᵐᵖˡ); ("badArgNum"%go, pp__badArgNumⁱᵐᵖˡ); ("badVerb"%go, pp__badVerbⁱᵐᵖˡ); ("catchPanic"%go, pp__catchPanicⁱᵐᵖˡ); ("doPrint"%go, pp__doPrintⁱᵐᵖˡ); ("doPrintf"%go, pp__doPrintfⁱᵐᵖˡ); ("doPrintln"%go, pp__doPrintlnⁱᵐᵖˡ); ("fmt0x64"%go, pp__fmt0x64ⁱᵐᵖˡ); ("fmtBool"%go, pp__fmtBoolⁱᵐᵖˡ); ("fmtBytes"%go, pp__fmtBytesⁱᵐᵖˡ); ("fmtComplex"%go, pp__fmtComplexⁱᵐᵖˡ); ("fmtFloat"%go, pp__fmtFloatⁱᵐᵖˡ); ("fmtInteger"%go, pp__fmtIntegerⁱᵐᵖˡ); ("fmtPointer"%go, pp__fmtPointerⁱᵐᵖˡ); ("fmtString"%go, pp__fmtStringⁱᵐᵖˡ); ("free"%go, pp__freeⁱᵐᵖˡ); ("handleMethods"%go, pp__handleMethodsⁱᵐᵖˡ); ("missingArg"%go, pp__missingArgⁱᵐᵖˡ); ("printArg"%go, pp__printArgⁱᵐᵖˡ); ("printValue"%go, pp__printValueⁱᵐᵖˡ); ("unknownType"%go, pp__unknownTypeⁱᵐᵖˡ)]); (stringReader.id, []); (ptrT.id stringReader.id, [("Read"%go, stringReader__Readⁱᵐᵖˡ)]); (scanError.id, []); (ptrT.id scanError.id, []); (ss.id, []); (ptrT.id ss.id, [("Read"%go, ss__Readⁱᵐᵖˡ); ("ReadRune"%go, ss__ReadRuneⁱᵐᵖˡ); ("SkipSpace"%go, ss__SkipSpaceⁱᵐᵖˡ); ("Token"%go, ss__Tokenⁱᵐᵖˡ); ("UnreadRune"%go, ss__UnreadRuneⁱᵐᵖˡ); ("Width"%go, ss__Widthⁱᵐᵖˡ); ("accept"%go, ss__acceptⁱᵐᵖˡ); ("advance"%go, ss__advanceⁱᵐᵖˡ); ("complexTokens"%go, ss__complexTokensⁱᵐᵖˡ); ("consume"%go, ss__consumeⁱᵐᵖˡ); ("convertFloat"%go, ss__convertFloatⁱᵐᵖˡ); ("convertString"%go, ss__convertStringⁱᵐᵖˡ); ("doScan"%go, ss__doScanⁱᵐᵖˡ); ("doScanf"%go, ss__doScanfⁱᵐᵖˡ); ("error"%go, ss__errorⁱᵐᵖˡ); ("errorString"%go, ss__errorStringⁱᵐᵖˡ); ("floatToken"%go, ss__floatTokenⁱᵐᵖˡ); ("free"%go, ss__freeⁱᵐᵖˡ); ("getBase"%go, ss__getBaseⁱᵐᵖˡ); ("getRune"%go, ss__getRuneⁱᵐᵖˡ); ("hexByte"%go, ss__hexByteⁱᵐᵖˡ); ("hexString"%go, ss__hexStringⁱᵐᵖˡ); ("mustReadRune"%go, ss__mustReadRuneⁱᵐᵖˡ); ("notEOF"%go, ss__notEOFⁱᵐᵖˡ); ("okVerb"%go, ss__okVerbⁱᵐᵖˡ); ("peek"%go, ss__peekⁱᵐᵖˡ); ("quotedString"%go, ss__quotedStringⁱᵐᵖˡ); ("scanBasePrefix"%go, ss__scanBasePrefixⁱᵐᵖˡ); ("scanBool"%go, ss__scanBoolⁱᵐᵖˡ); ("scanComplex"%go, ss__scanComplexⁱᵐᵖˡ); ("scanInt"%go, ss__scanIntⁱᵐᵖˡ); ("scanNumber"%go, ss__scanNumberⁱᵐᵖˡ); ("scanOne"%go, ss__scanOneⁱᵐᵖˡ); ("scanPercent"%go, ss__scanPercentⁱᵐᵖˡ); ("scanRune"%go, ss__scanRuneⁱᵐᵖˡ); ("scanUint"%go, ss__scanUintⁱᵐᵖˡ); ("token"%go, ss__tokenⁱᵐᵖˡ)]); (ssave.id, []); (ptrT.id ssave.id, []); (readRune.id, []); (ptrT.id readRune.id, [("ReadRune"%go, readRune__ReadRuneⁱᵐᵖˡ); ("UnreadRune"%go, readRune__UnreadRuneⁱᵐᵖˡ); ("readByte"%go, readRune__readByteⁱᵐᵖˡ)])].
 

@@ -16,45 +16,45 @@ Definition Status : go_type := status.Status.
 
 Definition New : go_string := "google.golang.org/grpc/status.New"%go.
 
-Axiom Newⁱᵐᵖˡ : val.
-
 Definition Newf : go_string := "google.golang.org/grpc/status.Newf"%go.
-
-Axiom Newfⁱᵐᵖˡ : val.
 
 Definition Error : go_string := "google.golang.org/grpc/status.Error"%go.
 
-Axiom Errorⁱᵐᵖˡ : val.
-
 Definition Errorf : go_string := "google.golang.org/grpc/status.Errorf"%go.
-
-Axiom Errorfⁱᵐᵖˡ : val.
 
 Definition ErrorProto : go_string := "google.golang.org/grpc/status.ErrorProto"%go.
 
-Axiom ErrorProtoⁱᵐᵖˡ : val.
-
 Definition FromProto : go_string := "google.golang.org/grpc/status.FromProto"%go.
-
-Axiom FromProtoⁱᵐᵖˡ : val.
 
 Definition FromError : go_string := "google.golang.org/grpc/status.FromError"%go.
 
-Axiom FromErrorⁱᵐᵖˡ : val.
-
 Definition Convert : go_string := "google.golang.org/grpc/status.Convert"%go.
-
-Axiom Convertⁱᵐᵖˡ : val.
 
 Definition Code : go_string := "google.golang.org/grpc/status.Code"%go.
 
-Axiom Codeⁱᵐᵖˡ : val.
-
 Definition FromContextError : go_string := "google.golang.org/grpc/status.FromContextError"%go.
 
-Axiom FromContextErrorⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
+
+Axiom Newⁱᵐᵖˡ : val.
+
+Axiom Newfⁱᵐᵖˡ : val.
+
+Axiom Errorⁱᵐᵖˡ : val.
+
+Axiom Errorfⁱᵐᵖˡ : val.
+
+Axiom ErrorProtoⁱᵐᵖˡ : val.
+
+Axiom FromProtoⁱᵐᵖˡ : val.
+
+Axiom FromErrorⁱᵐᵖˡ : val.
+
+Axiom Convertⁱᵐᵖˡ : val.
+
+Axiom Codeⁱᵐᵖˡ : val.
+
+Axiom FromContextErrorⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Newf, Newfⁱᵐᵖˡ); (Error, Errorⁱᵐᵖˡ); (Errorf, Errorfⁱᵐᵖˡ); (ErrorProto, ErrorProtoⁱᵐᵖˡ); (FromProto, FromProtoⁱᵐᵖˡ); (FromError, FromErrorⁱᵐᵖˡ); (Convert, Convertⁱᵐᵖˡ); (Code, Codeⁱᵐᵖˡ); (FromContextError, FromContextErrorⁱᵐᵖˡ)].
 

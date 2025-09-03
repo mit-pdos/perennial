@@ -21,23 +21,11 @@ Axiom Hasher : go_type.
 
 Definition NewHasher : go_string := "github.com/sanjit-bhat/pav/cryptoffi.NewHasher"%go.
 
-Axiom NewHasherⁱᵐᵖˡ : val.
-
-Axiom Hasher__Writeⁱᵐᵖˡ : val.
-
-Axiom Hasher__Sumⁱᵐᵖˡ : val.
-
 Axiom SigPrivateKey : go_type.
 
 Axiom SigPublicKey : go_type.
 
 Definition SigGenerateKey : go_string := "github.com/sanjit-bhat/pav/cryptoffi.SigGenerateKey"%go.
-
-Axiom SigGenerateKeyⁱᵐᵖˡ : val.
-
-Axiom SigPrivateKey__Signⁱᵐᵖˡ : val.
-
-Axiom SigPublicKey__Verifyⁱᵐᵖˡ : val.
 
 Axiom VrfPrivateKey : go_type.
 
@@ -45,31 +33,43 @@ Axiom VrfPublicKey : go_type.
 
 Definition VrfGenerateKey : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfGenerateKey"%go.
 
-Axiom VrfGenerateKeyⁱᵐᵖˡ : val.
-
-Axiom VrfPrivateKey__Proveⁱᵐᵖˡ : val.
-
-Axiom VrfPrivateKey__Evaluateⁱᵐᵖˡ : val.
-
-Axiom VrfPublicKey__Verifyⁱᵐᵖˡ : val.
-
-Axiom VrfPrivateKey__PublicKeyⁱᵐᵖˡ : val.
-
 Definition VrfPublicKeyEncode : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPublicKeyEncode"%go.
-
-Axiom VrfPublicKeyEncodeⁱᵐᵖˡ : val.
 
 Definition VrfPublicKeyDecode : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPublicKeyDecode"%go.
 
-Axiom VrfPublicKeyDecodeⁱᵐᵖˡ : val.
-
 Definition RandBytes : go_string := "github.com/sanjit-bhat/pav/cryptoffi.RandBytes"%go.
-
-Axiom RandBytesⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
+Axiom NewHasherⁱᵐᵖˡ : val.
+
+Axiom SigGenerateKeyⁱᵐᵖˡ : val.
+
+Axiom VrfGenerateKeyⁱᵐᵖˡ : val.
+
+Axiom VrfPublicKeyEncodeⁱᵐᵖˡ : val.
+
+Axiom VrfPublicKeyDecodeⁱᵐᵖˡ : val.
+
+Axiom RandBytesⁱᵐᵖˡ : val.
+
 Definition functions' : list (go_string * val) := [(NewHasher, NewHasherⁱᵐᵖˡ); (SigGenerateKey, SigGenerateKeyⁱᵐᵖˡ); (VrfGenerateKey, VrfGenerateKeyⁱᵐᵖˡ); (VrfPublicKeyEncode, VrfPublicKeyEncodeⁱᵐᵖˡ); (VrfPublicKeyDecode, VrfPublicKeyDecodeⁱᵐᵖˡ); (RandBytes, RandBytesⁱᵐᵖˡ)].
+
+Axiom Hasher__Sumⁱᵐᵖˡ : val.
+
+Axiom Hasher__Writeⁱᵐᵖˡ : val.
+
+Axiom SigPrivateKey__Signⁱᵐᵖˡ : val.
+
+Axiom SigPublicKey__Verifyⁱᵐᵖˡ : val.
+
+Axiom VrfPrivateKey__Evaluateⁱᵐᵖˡ : val.
+
+Axiom VrfPrivateKey__Proveⁱᵐᵖˡ : val.
+
+Axiom VrfPrivateKey__PublicKeyⁱᵐᵖˡ : val.
+
+Axiom VrfPublicKey__Verifyⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Hasher.id, []); (ptrT.id Hasher.id, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); (SigPrivateKey.id, []); (ptrT.id SigPrivateKey.id, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); (SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (ptrT.id SigPublicKey.id, [("Verify"%go, (λ: "$r",
                  method_call #SigPublicKey.id #"Verify"%go (![#SigPublicKey] "$r")

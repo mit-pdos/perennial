@@ -124,47 +124,25 @@ Axiom StringWriter : go_type.
 
 Definition WriteString : go_string := "io.WriteString"%go.
 
-Axiom WriteStringⁱᵐᵖˡ : val.
-
 Definition ReadAtLeast : go_string := "io.ReadAtLeast"%go.
-
-Axiom ReadAtLeastⁱᵐᵖˡ : val.
 
 Definition ReadFull : go_string := "io.ReadFull"%go.
 
-Axiom ReadFullⁱᵐᵖˡ : val.
-
 Definition CopyN : go_string := "io.CopyN"%go.
-
-Axiom CopyNⁱᵐᵖˡ : val.
 
 Definition Copy : go_string := "io.Copy"%go.
 
-Axiom Copyⁱᵐᵖˡ : val.
-
 Definition CopyBuffer : go_string := "io.CopyBuffer"%go.
-
-Axiom CopyBufferⁱᵐᵖˡ : val.
 
 Definition copyBuffer : go_string := "io.copyBuffer"%go.
 
-Axiom copyBufferⁱᵐᵖˡ : val.
-
 Definition LimitReader : go_string := "io.LimitReader"%go.
-
-Axiom LimitReaderⁱᵐᵖˡ : val.
 
 Axiom LimitedReader : go_type.
 
-Axiom LimitedReader__Readⁱᵐᵖˡ : val.
-
 Definition NewSectionReader : go_string := "io.NewSectionReader"%go.
 
-Axiom NewSectionReaderⁱᵐᵖˡ : val.
-
 Axiom SectionReader : go_type.
-
-Axiom SectionReader__Readⁱᵐᵖˡ : val.
 
 Definition errWhence : go_string := "io.errWhence"%go.
 
@@ -174,33 +152,13 @@ Definition errOffset : go_string := "io.errOffset"%go.
 
 Axiom errOffset'init : val.
 
-Axiom SectionReader__Seekⁱᵐᵖˡ : val.
-
-Axiom SectionReader__ReadAtⁱᵐᵖˡ : val.
-
-Axiom SectionReader__Sizeⁱᵐᵖˡ : val.
-
-Axiom SectionReader__Outerⁱᵐᵖˡ : val.
-
 Axiom OffsetWriter : go_type.
 
 Definition NewOffsetWriter : go_string := "io.NewOffsetWriter"%go.
 
-Axiom NewOffsetWriterⁱᵐᵖˡ : val.
-
-Axiom OffsetWriter__Writeⁱᵐᵖˡ : val.
-
-Axiom OffsetWriter__WriteAtⁱᵐᵖˡ : val.
-
-Axiom OffsetWriter__Seekⁱᵐᵖˡ : val.
-
 Definition TeeReader : go_string := "io.TeeReader"%go.
 
-Axiom TeeReaderⁱᵐᵖˡ : val.
-
 Axiom teeReader : go_type.
-
-Axiom teeReader__Readⁱᵐᵖˡ : val.
 
 Definition Discard : go_string := "io.Discard"%go.
 
@@ -208,65 +166,29 @@ Axiom Discard'init : val.
 
 Axiom discard : go_type.
 
-Axiom discard__Writeⁱᵐᵖˡ : val.
-
-Axiom discard__WriteStringⁱᵐᵖˡ : val.
-
 Definition blackHolePool : go_string := "io.blackHolePool"%go.
 
 Axiom blackHolePool'init : val.
 
-Axiom discard__ReadFromⁱᵐᵖˡ : val.
-
 Definition NopCloser : go_string := "io.NopCloser"%go.
-
-Axiom NopCloserⁱᵐᵖˡ : val.
 
 Axiom nopCloser : go_type.
 
-Axiom nopCloser__Closeⁱᵐᵖˡ : val.
-
 Axiom nopCloserWriterTo : go_type.
-
-Axiom nopCloserWriterTo__Closeⁱᵐᵖˡ : val.
-
-Axiom nopCloserWriterTo__WriteToⁱᵐᵖˡ : val.
 
 Definition ReadAll : go_string := "io.ReadAll"%go.
 
-Axiom ReadAllⁱᵐᵖˡ : val.
-
 Axiom eofReader : go_type.
-
-Axiom eofReader__Readⁱᵐᵖˡ : val.
 
 Axiom multiReader : go_type.
 
-Axiom multiReader__Readⁱᵐᵖˡ : val.
-
-Axiom multiReader__WriteToⁱᵐᵖˡ : val.
-
-Axiom multiReader__writeToWithBufferⁱᵐᵖˡ : val.
-
 Definition MultiReader : go_string := "io.MultiReader"%go.
-
-Axiom MultiReaderⁱᵐᵖˡ : val.
 
 Axiom multiWriter : go_type.
 
-Axiom multiWriter__Writeⁱᵐᵖˡ : val.
-
-Axiom multiWriter__WriteStringⁱᵐᵖˡ : val.
-
 Definition MultiWriter : go_string := "io.MultiWriter"%go.
 
-Axiom MultiWriterⁱᵐᵖˡ : val.
-
 Axiom onceError : go_type.
-
-Axiom onceError__Storeⁱᵐᵖˡ : val.
-
-Axiom onceError__Loadⁱᵐᵖˡ : val.
 
 Definition ErrClosedPipe : go_string := "io.ErrClosedPipe"%go.
 
@@ -274,41 +196,141 @@ Axiom ErrClosedPipe'init : val.
 
 Axiom pipe : go_type.
 
-Axiom pipe__readⁱᵐᵖˡ : val.
+Axiom PipeReader : go_type.
+
+Axiom PipeWriter : go_type.
+
+Definition Pipe : go_string := "io.Pipe"%go.
+
+Definition vars' : list (go_string * go_type) := [].
+
+Axiom WriteStringⁱᵐᵖˡ : val.
+
+Axiom ReadAtLeastⁱᵐᵖˡ : val.
+
+Axiom ReadFullⁱᵐᵖˡ : val.
+
+Axiom CopyNⁱᵐᵖˡ : val.
+
+Axiom Copyⁱᵐᵖˡ : val.
+
+Axiom CopyBufferⁱᵐᵖˡ : val.
+
+Axiom copyBufferⁱᵐᵖˡ : val.
+
+Axiom LimitReaderⁱᵐᵖˡ : val.
+
+Axiom NewSectionReaderⁱᵐᵖˡ : val.
+
+Axiom NewOffsetWriterⁱᵐᵖˡ : val.
+
+Axiom TeeReaderⁱᵐᵖˡ : val.
+
+Axiom NopCloserⁱᵐᵖˡ : val.
+
+Axiom ReadAllⁱᵐᵖˡ : val.
+
+Axiom MultiReaderⁱᵐᵖˡ : val.
+
+Axiom MultiWriterⁱᵐᵖˡ : val.
+
+Axiom Pipeⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(WriteString, WriteStringⁱᵐᵖˡ); (ReadAtLeast, ReadAtLeastⁱᵐᵖˡ); (ReadFull, ReadFullⁱᵐᵖˡ); (CopyN, CopyNⁱᵐᵖˡ); (Copy, Copyⁱᵐᵖˡ); (CopyBuffer, CopyBufferⁱᵐᵖˡ); (copyBuffer, copyBufferⁱᵐᵖˡ); (LimitReader, LimitReaderⁱᵐᵖˡ); (NewSectionReader, NewSectionReaderⁱᵐᵖˡ); (NewOffsetWriter, NewOffsetWriterⁱᵐᵖˡ); (TeeReader, TeeReaderⁱᵐᵖˡ); (NopCloser, NopCloserⁱᵐᵖˡ); (ReadAll, ReadAllⁱᵐᵖˡ); (MultiReader, MultiReaderⁱᵐᵖˡ); (MultiWriter, MultiWriterⁱᵐᵖˡ); (Pipe, Pipeⁱᵐᵖˡ)].
+
+Axiom LimitedReader__Readⁱᵐᵖˡ : val.
+
+Axiom SectionReader__Outerⁱᵐᵖˡ : val.
+
+Axiom SectionReader__Readⁱᵐᵖˡ : val.
+
+Axiom SectionReader__ReadAtⁱᵐᵖˡ : val.
+
+Axiom SectionReader__Seekⁱᵐᵖˡ : val.
+
+Axiom SectionReader__Sizeⁱᵐᵖˡ : val.
+
+Axiom OffsetWriter__Seekⁱᵐᵖˡ : val.
+
+Axiom OffsetWriter__Writeⁱᵐᵖˡ : val.
+
+Axiom OffsetWriter__WriteAtⁱᵐᵖˡ : val.
+
+Axiom teeReader__Readⁱᵐᵖˡ : val.
+
+Axiom discard__ReadFromⁱᵐᵖˡ : val.
+
+Axiom discard__Writeⁱᵐᵖˡ : val.
+
+Axiom discard__WriteStringⁱᵐᵖˡ : val.
+
+Axiom nopCloser__Closeⁱᵐᵖˡ : val.
+
+Axiom nopCloser__Readⁱᵐᵖˡ : val.
+
+Axiom nopCloserWriterTo__Closeⁱᵐᵖˡ : val.
+
+Axiom nopCloserWriterTo__Readⁱᵐᵖˡ : val.
+
+Axiom nopCloserWriterTo__WriteToⁱᵐᵖˡ : val.
+
+Axiom eofReader__Readⁱᵐᵖˡ : val.
+
+Axiom multiReader__Readⁱᵐᵖˡ : val.
+
+Axiom multiReader__WriteToⁱᵐᵖˡ : val.
+
+Axiom multiReader__writeToWithBufferⁱᵐᵖˡ : val.
+
+Axiom multiWriter__Writeⁱᵐᵖˡ : val.
+
+Axiom multiWriter__WriteStringⁱᵐᵖˡ : val.
+
+Axiom onceError__Loadⁱᵐᵖˡ : val.
+
+Axiom onceError__Lockⁱᵐᵖˡ : val.
+
+Axiom onceError__Storeⁱᵐᵖˡ : val.
+
+Axiom onceError__TryLockⁱᵐᵖˡ : val.
+
+Axiom onceError__Unlockⁱᵐᵖˡ : val.
 
 Axiom pipe__closeReadⁱᵐᵖˡ : val.
 
-Axiom pipe__writeⁱᵐᵖˡ : val.
-
 Axiom pipe__closeWriteⁱᵐᵖˡ : val.
+
+Axiom pipe__readⁱᵐᵖˡ : val.
 
 Axiom pipe__readCloseErrorⁱᵐᵖˡ : val.
 
+Axiom pipe__writeⁱᵐᵖˡ : val.
+
 Axiom pipe__writeCloseErrorⁱᵐᵖˡ : val.
-
-Axiom PipeReader : go_type.
-
-Axiom PipeReader__Readⁱᵐᵖˡ : val.
 
 Axiom PipeReader__Closeⁱᵐᵖˡ : val.
 
 Axiom PipeReader__CloseWithErrorⁱᵐᵖˡ : val.
 
-Axiom PipeWriter : go_type.
+Axiom PipeReader__Readⁱᵐᵖˡ : val.
 
-Axiom PipeWriter__Writeⁱᵐᵖˡ : val.
+Axiom PipeReader__closeReadⁱᵐᵖˡ : val.
+
+Axiom PipeReader__closeWriteⁱᵐᵖˡ : val.
+
+Axiom PipeReader__readⁱᵐᵖˡ : val.
+
+Axiom PipeReader__readCloseErrorⁱᵐᵖˡ : val.
+
+Axiom PipeReader__writeⁱᵐᵖˡ : val.
+
+Axiom PipeReader__writeCloseErrorⁱᵐᵖˡ : val.
 
 Axiom PipeWriter__Closeⁱᵐᵖˡ : val.
 
 Axiom PipeWriter__CloseWithErrorⁱᵐᵖˡ : val.
 
-Definition Pipe : go_string := "io.Pipe"%go.
-
-Axiom Pipeⁱᵐᵖˡ : val.
-
-Definition vars' : list (go_string * go_type) := [].
-
-Definition functions' : list (go_string * val) := [(WriteString, WriteStringⁱᵐᵖˡ); (ReadAtLeast, ReadAtLeastⁱᵐᵖˡ); (ReadFull, ReadFullⁱᵐᵖˡ); (CopyN, CopyNⁱᵐᵖˡ); (Copy, Copyⁱᵐᵖˡ); (CopyBuffer, CopyBufferⁱᵐᵖˡ); (copyBuffer, copyBufferⁱᵐᵖˡ); (LimitReader, LimitReaderⁱᵐᵖˡ); (NewSectionReader, NewSectionReaderⁱᵐᵖˡ); (NewOffsetWriter, NewOffsetWriterⁱᵐᵖˡ); (TeeReader, TeeReaderⁱᵐᵖˡ); (NopCloser, NopCloserⁱᵐᵖˡ); (ReadAll, ReadAllⁱᵐᵖˡ); (MultiReader, MultiReaderⁱᵐᵖˡ); (MultiWriter, MultiWriterⁱᵐᵖˡ); (Pipe, Pipeⁱᵐᵖˡ)].
+Axiom PipeWriter__Writeⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(LimitedReader.id, []); (ptrT.id LimitedReader.id, [("Read"%go, LimitedReader__Readⁱᵐᵖˡ)]); (SectionReader.id, []); (ptrT.id SectionReader.id, [("Outer"%go, SectionReader__Outerⁱᵐᵖˡ); ("Read"%go, SectionReader__Readⁱᵐᵖˡ); ("ReadAt"%go, SectionReader__ReadAtⁱᵐᵖˡ); ("Seek"%go, SectionReader__Seekⁱᵐᵖˡ); ("Size"%go, SectionReader__Sizeⁱᵐᵖˡ)]); (OffsetWriter.id, []); (ptrT.id OffsetWriter.id, [("Seek"%go, OffsetWriter__Seekⁱᵐᵖˡ); ("Write"%go, OffsetWriter__Writeⁱᵐᵖˡ); ("WriteAt"%go, OffsetWriter__WriteAtⁱᵐᵖˡ)]); (teeReader.id, []); (ptrT.id teeReader.id, [("Read"%go, teeReader__Readⁱᵐᵖˡ)]); (discard.id, [("ReadFrom"%go, discard__ReadFromⁱᵐᵖˡ); ("Write"%go, discard__Writeⁱᵐᵖˡ); ("WriteString"%go, discard__WriteStringⁱᵐᵖˡ)]); (ptrT.id discard.id, [("ReadFrom"%go, (λ: "$r",
                  method_call #discard.id #"ReadFrom"%go (![#discard] "$r")

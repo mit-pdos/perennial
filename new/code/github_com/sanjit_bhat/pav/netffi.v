@@ -14,33 +14,33 @@ Context `{ffi_syntax}.
 
 Definition addrToStr : go_string := "github.com/sanjit-bhat/pav/netffi.addrToStr"%go.
 
-Axiom addrToStrⁱᵐᵖˡ : val.
-
 Axiom Conn : go_type.
 
 Definition Dial : go_string := "github.com/sanjit-bhat/pav/netffi.Dial"%go.
 
-Axiom Dialⁱᵐᵖˡ : val.
-
-Axiom Conn__Sendⁱᵐᵖˡ : val.
-
 Definition newConn : go_string := "github.com/sanjit-bhat/pav/netffi.newConn"%go.
-
-Axiom newConnⁱᵐᵖˡ : val.
-
-Axiom Conn__Receiveⁱᵐᵖˡ : val.
 
 Axiom Listener : go_type.
 
 Definition Listen : go_string := "github.com/sanjit-bhat/pav/netffi.Listen"%go.
 
-Axiom Listenⁱᵐᵖˡ : val.
-
-Axiom Listener__Acceptⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
 
+Axiom addrToStrⁱᵐᵖˡ : val.
+
+Axiom Dialⁱᵐᵖˡ : val.
+
+Axiom newConnⁱᵐᵖˡ : val.
+
+Axiom Listenⁱᵐᵖˡ : val.
+
 Definition functions' : list (go_string * val) := [(addrToStr, addrToStrⁱᵐᵖˡ); (Dial, Dialⁱᵐᵖˡ); (newConn, newConnⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ)].
+
+Axiom Conn__Receiveⁱᵐᵖˡ : val.
+
+Axiom Conn__Sendⁱᵐᵖˡ : val.
+
+Axiom Listener__Acceptⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Conn.id, []); (ptrT.id Conn.id, [("Receive"%go, Conn__Receiveⁱᵐᵖˡ); ("Send"%go, Conn__Sendⁱᵐᵖˡ)]); (Listener.id, []); (ptrT.id Listener.id, [("Accept"%go, Listener__Acceptⁱᵐᵖˡ)])].
 

@@ -22,8 +22,6 @@ Axiom DataDir : go_string.
 
 Definition panic_if_err : go_string := "github.com/mit-pdos/gokv/grove_ffi.panic_if_err"%go.
 
-Axiom panic_if_errⁱᵐᵖˡ : val.
-
 Definition FileWrite : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileWrite"%go.
 
 Definition FileRead : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileRead"%go.
@@ -32,15 +30,9 @@ Definition FileAppend : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileApp
 
 Definition U64ToString : go_string := "github.com/mit-pdos/gokv/grove_ffi.U64ToString"%go.
 
-Axiom U64ToStringⁱᵐᵖˡ : val.
-
 Definition MakeAddress : go_string := "github.com/mit-pdos/gokv/grove_ffi.MakeAddress"%go.
 
-Axiom MakeAddressⁱᵐᵖˡ : val.
-
 Definition AddressToStr : go_string := "github.com/mit-pdos/gokv/grove_ffi.AddressToStr"%go.
-
-Axiom AddressToStrⁱᵐᵖˡ : val.
 
 Axiom listener : go_type.
 
@@ -51,8 +43,6 @@ Definition Accept : go_string := "github.com/mit-pdos/gokv/grove_ffi.Accept"%go.
 Axiom connection : go_type.
 
 Definition makeConnection : go_string := "github.com/mit-pdos/gokv/grove_ffi.makeConnection"%go.
-
-Axiom makeConnectionⁱᵐᵖˡ : val.
 
 Definition Connect : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connect"%go.
 
@@ -65,6 +55,16 @@ Definition GetTimeRange : go_string := "github.com/mit-pdos/gokv/grove_ffi.GetTi
 Definition GetTSC : go_string := "github.com/mit-pdos/gokv/grove_ffi.GetTSC"%go.
 
 Definition vars' : list (go_string * go_type) := [].
+
+Axiom panic_if_errⁱᵐᵖˡ : val.
+
+Axiom U64ToStringⁱᵐᵖˡ : val.
+
+Axiom MakeAddressⁱᵐᵖˡ : val.
+
+Axiom AddressToStrⁱᵐᵖˡ : val.
+
+Axiom makeConnectionⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(panic_if_err, panic_if_errⁱᵐᵖˡ); (FileWrite, FileWriteⁱᵐᵖˡ); (FileRead, FileReadⁱᵐᵖˡ); (FileAppend, FileAppendⁱᵐᵖˡ); (U64ToString, U64ToStringⁱᵐᵖˡ); (MakeAddress, MakeAddressⁱᵐᵖˡ); (AddressToStr, AddressToStrⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ); (Accept, Acceptⁱᵐᵖˡ); (makeConnection, makeConnectionⁱᵐᵖˡ); (Connect, Connectⁱᵐᵖˡ); (Send, Sendⁱᵐᵖˡ); (Receive, Receiveⁱᵐᵖˡ); (GetTimeRange, GetTimeRangeⁱᵐᵖˡ); (GetTSC, GetTSCⁱᵐᵖˡ)].
 

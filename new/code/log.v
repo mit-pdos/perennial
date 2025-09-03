@@ -36,25 +36,15 @@ Axiom Logger : go_type.
 
 Definition New : go_string := "log.New"%go.
 
-Axiom Newⁱᵐᵖˡ : val.
-
-Axiom Logger__SetOutputⁱᵐᵖˡ : val.
-
 Definition std : go_string := "log.std"%go.
 
 Axiom std'init : val.
 
 Definition Default : go_string := "log.Default"%go.
 
-Axiom Defaultⁱᵐᵖˡ : val.
-
 Definition itoa : go_string := "log.itoa"%go.
 
-Axiom itoaⁱᵐᵖˡ : val.
-
 Definition formatHeader : go_string := "log.formatHeader"%go.
-
-Axiom formatHeaderⁱᵐᵖˡ : val.
 
 Definition bufferPool : go_string := "log.bufferPool"%go.
 
@@ -62,75 +52,23 @@ Axiom bufferPool'init : val.
 
 Definition getBuffer : go_string := "log.getBuffer"%go.
 
-Axiom getBufferⁱᵐᵖˡ : val.
-
 Definition putBuffer : go_string := "log.putBuffer"%go.
-
-Axiom putBufferⁱᵐᵖˡ : val.
-
-Axiom Logger__Outputⁱᵐᵖˡ : val.
-
-Axiom Logger__outputⁱᵐᵖˡ : val.
 
 Definition init : go_string := "log.init"%go.
 
-Axiom initⁱᵐᵖˡ : val.
-
-Axiom Logger__Printⁱᵐᵖˡ : val.
-
-Axiom Logger__Printfⁱᵐᵖˡ : val.
-
-Axiom Logger__Printlnⁱᵐᵖˡ : val.
-
-Axiom Logger__Fatalⁱᵐᵖˡ : val.
-
-Axiom Logger__Fatalfⁱᵐᵖˡ : val.
-
-Axiom Logger__Fatallnⁱᵐᵖˡ : val.
-
-Axiom Logger__Panicⁱᵐᵖˡ : val.
-
-Axiom Logger__Panicfⁱᵐᵖˡ : val.
-
-Axiom Logger__Paniclnⁱᵐᵖˡ : val.
-
-Axiom Logger__Flagsⁱᵐᵖˡ : val.
-
-Axiom Logger__SetFlagsⁱᵐᵖˡ : val.
-
-Axiom Logger__Prefixⁱᵐᵖˡ : val.
-
-Axiom Logger__SetPrefixⁱᵐᵖˡ : val.
-
-Axiom Logger__Writerⁱᵐᵖˡ : val.
-
 Definition SetOutput : go_string := "log.SetOutput"%go.
-
-Axiom SetOutputⁱᵐᵖˡ : val.
 
 Definition Flags : go_string := "log.Flags"%go.
 
-Axiom Flagsⁱᵐᵖˡ : val.
-
 Definition SetFlags : go_string := "log.SetFlags"%go.
-
-Axiom SetFlagsⁱᵐᵖˡ : val.
 
 Definition Prefix : go_string := "log.Prefix"%go.
 
-Axiom Prefixⁱᵐᵖˡ : val.
-
 Definition SetPrefix : go_string := "log.SetPrefix"%go.
-
-Axiom SetPrefixⁱᵐᵖˡ : val.
 
 Definition Writer : go_string := "log.Writer"%go.
 
-Axiom Writerⁱᵐᵖˡ : val.
-
 Definition Print : go_string := "log.Print"%go.
-
-Axiom Printⁱᵐᵖˡ : val.
 
 Definition Printf : go_string := "log.Printf"%go.
 
@@ -138,35 +76,95 @@ Definition Println : go_string := "log.Println"%go.
 
 Definition Fatal : go_string := "log.Fatal"%go.
 
-Axiom Fatalⁱᵐᵖˡ : val.
-
 Definition Fatalf : go_string := "log.Fatalf"%go.
-
-Axiom Fatalfⁱᵐᵖˡ : val.
 
 Definition Fatalln : go_string := "log.Fatalln"%go.
 
-Axiom Fatallnⁱᵐᵖˡ : val.
-
 Definition Panic : go_string := "log.Panic"%go.
-
-Axiom Panicⁱᵐᵖˡ : val.
 
 Definition Panicf : go_string := "log.Panicf"%go.
 
-Axiom Panicfⁱᵐᵖˡ : val.
-
 Definition Panicln : go_string := "log.Panicln"%go.
-
-Axiom Paniclnⁱᵐᵖˡ : val.
 
 Definition Output : go_string := "log.Output"%go.
 
-Axiom Outputⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Default, Defaultⁱᵐᵖˡ); (itoa, itoaⁱᵐᵖˡ); (formatHeader, formatHeaderⁱᵐᵖˡ); (getBuffer, getBufferⁱᵐᵖˡ); (putBuffer, putBufferⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (SetOutput, SetOutputⁱᵐᵖˡ); (Flags, Flagsⁱᵐᵖˡ); (SetFlags, SetFlagsⁱᵐᵖˡ); (Prefix, Prefixⁱᵐᵖˡ); (SetPrefix, SetPrefixⁱᵐᵖˡ); (Writer, Writerⁱᵐᵖˡ); (Print, Printⁱᵐᵖˡ); (Printf, Printfⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ); (Fatal, Fatalⁱᵐᵖˡ); (Fatalf, Fatalfⁱᵐᵖˡ); (Fatalln, Fatallnⁱᵐᵖˡ); (Panic, Panicⁱᵐᵖˡ); (Panicf, Panicfⁱᵐᵖˡ); (Panicln, Paniclnⁱᵐᵖˡ); (Output, Outputⁱᵐᵖˡ)].
+Axiom Newⁱᵐᵖˡ : val.
+
+Axiom Defaultⁱᵐᵖˡ : val.
+
+Axiom itoaⁱᵐᵖˡ : val.
+
+Axiom formatHeaderⁱᵐᵖˡ : val.
+
+Axiom getBufferⁱᵐᵖˡ : val.
+
+Axiom putBufferⁱᵐᵖˡ : val.
+
+Axiom SetOutputⁱᵐᵖˡ : val.
+
+Axiom Flagsⁱᵐᵖˡ : val.
+
+Axiom SetFlagsⁱᵐᵖˡ : val.
+
+Axiom Prefixⁱᵐᵖˡ : val.
+
+Axiom SetPrefixⁱᵐᵖˡ : val.
+
+Axiom Writerⁱᵐᵖˡ : val.
+
+Axiom Printⁱᵐᵖˡ : val.
+
+Axiom Fatalⁱᵐᵖˡ : val.
+
+Axiom Fatalfⁱᵐᵖˡ : val.
+
+Axiom Fatallnⁱᵐᵖˡ : val.
+
+Axiom Panicⁱᵐᵖˡ : val.
+
+Axiom Panicfⁱᵐᵖˡ : val.
+
+Axiom Paniclnⁱᵐᵖˡ : val.
+
+Axiom Outputⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Default, Defaultⁱᵐᵖˡ); (itoa, itoaⁱᵐᵖˡ); (formatHeader, formatHeaderⁱᵐᵖˡ); (getBuffer, getBufferⁱᵐᵖˡ); (putBuffer, putBufferⁱᵐᵖˡ); (SetOutput, SetOutputⁱᵐᵖˡ); (Flags, Flagsⁱᵐᵖˡ); (SetFlags, SetFlagsⁱᵐᵖˡ); (Prefix, Prefixⁱᵐᵖˡ); (SetPrefix, SetPrefixⁱᵐᵖˡ); (Writer, Writerⁱᵐᵖˡ); (Print, Printⁱᵐᵖˡ); (Printf, Printfⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ); (Fatal, Fatalⁱᵐᵖˡ); (Fatalf, Fatalfⁱᵐᵖˡ); (Fatalln, Fatallnⁱᵐᵖˡ); (Panic, Panicⁱᵐᵖˡ); (Panicf, Panicfⁱᵐᵖˡ); (Panicln, Paniclnⁱᵐᵖˡ); (Output, Outputⁱᵐᵖˡ)].
+
+Axiom Logger__Fatalⁱᵐᵖˡ : val.
+
+Axiom Logger__Fatalfⁱᵐᵖˡ : val.
+
+Axiom Logger__Fatallnⁱᵐᵖˡ : val.
+
+Axiom Logger__Flagsⁱᵐᵖˡ : val.
+
+Axiom Logger__Outputⁱᵐᵖˡ : val.
+
+Axiom Logger__Panicⁱᵐᵖˡ : val.
+
+Axiom Logger__Panicfⁱᵐᵖˡ : val.
+
+Axiom Logger__Paniclnⁱᵐᵖˡ : val.
+
+Axiom Logger__Prefixⁱᵐᵖˡ : val.
+
+Axiom Logger__Printⁱᵐᵖˡ : val.
+
+Axiom Logger__Printfⁱᵐᵖˡ : val.
+
+Axiom Logger__Printlnⁱᵐᵖˡ : val.
+
+Axiom Logger__SetFlagsⁱᵐᵖˡ : val.
+
+Axiom Logger__SetOutputⁱᵐᵖˡ : val.
+
+Axiom Logger__SetPrefixⁱᵐᵖˡ : val.
+
+Axiom Logger__Writerⁱᵐᵖˡ : val.
+
+Axiom Logger__outputⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Logger.id, []); (ptrT.id Logger.id, [("Fatal"%go, Logger__Fatalⁱᵐᵖˡ); ("Fatalf"%go, Logger__Fatalfⁱᵐᵖˡ); ("Fatalln"%go, Logger__Fatallnⁱᵐᵖˡ); ("Flags"%go, Logger__Flagsⁱᵐᵖˡ); ("Output"%go, Logger__Outputⁱᵐᵖˡ); ("Panic"%go, Logger__Panicⁱᵐᵖˡ); ("Panicf"%go, Logger__Panicfⁱᵐᵖˡ); ("Panicln"%go, Logger__Paniclnⁱᵐᵖˡ); ("Prefix"%go, Logger__Prefixⁱᵐᵖˡ); ("Print"%go, Logger__Printⁱᵐᵖˡ); ("Printf"%go, Logger__Printfⁱᵐᵖˡ); ("Println"%go, Logger__Printlnⁱᵐᵖˡ); ("SetFlags"%go, Logger__SetFlagsⁱᵐᵖˡ); ("SetOutput"%go, Logger__SetOutputⁱᵐᵖˡ); ("SetPrefix"%go, Logger__SetPrefixⁱᵐᵖˡ); ("Writer"%go, Logger__Writerⁱᵐᵖˡ); ("output"%go, Logger__outputⁱᵐᵖˡ)])].
 

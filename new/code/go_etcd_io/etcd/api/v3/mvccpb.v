@@ -27,10 +27,6 @@ Definition Event_EventType_value : go_string := "go.etcd.io/etcd/api/v3/mvccpb.E
 
 Axiom Event_EventType_value'init : val.
 
-Axiom Event_EventType__Stringⁱᵐᵖˡ : val.
-
-Axiom Event_EventType__EnumDescriptorⁱᵐᵖˡ : val.
-
 Definition KeyValue : go_type := structT [
   "Key" :: sliceT;
   "CreateRevision" :: int64T;
@@ -44,24 +40,6 @@ Definition KeyValue : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
-Axiom KeyValue__Resetⁱᵐᵖˡ : val.
-
-Axiom KeyValue__Stringⁱᵐᵖˡ : val.
-
-Axiom KeyValue__ProtoMessageⁱᵐᵖˡ : val.
-
-Axiom KeyValue__Descriptorⁱᵐᵖˡ : val.
-
-Axiom KeyValue__XXX_Unmarshalⁱᵐᵖˡ : val.
-
-Axiom KeyValue__XXX_Marshalⁱᵐᵖˡ : val.
-
-Axiom KeyValue__XXX_Mergeⁱᵐᵖˡ : val.
-
-Axiom KeyValue__XXX_Sizeⁱᵐᵖˡ : val.
-
-Axiom KeyValue__XXX_DiscardUnknownⁱᵐᵖˡ : val.
-
 Definition xxx_messageInfo_KeyValue : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_KeyValue"%go.
 
 Definition Event : go_type := structT [
@@ -74,69 +52,21 @@ Definition Event : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
-Axiom Event__Resetⁱᵐᵖˡ : val.
-
-Axiom Event__Stringⁱᵐᵖˡ : val.
-
-Axiom Event__ProtoMessageⁱᵐᵖˡ : val.
-
-Axiom Event__Descriptorⁱᵐᵖˡ : val.
-
-Axiom Event__XXX_Unmarshalⁱᵐᵖˡ : val.
-
-Axiom Event__XXX_Marshalⁱᵐᵖˡ : val.
-
-Axiom Event__XXX_Mergeⁱᵐᵖˡ : val.
-
-Axiom Event__XXX_Sizeⁱᵐᵖˡ : val.
-
-Axiom Event__XXX_DiscardUnknownⁱᵐᵖˡ : val.
-
 Definition xxx_messageInfo_Event : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_Event"%go.
 
 Definition init : go_string := "go.etcd.io/etcd/api/v3/mvccpb.init"%go.
-
-Axiom initⁱᵐᵖˡ : val.
 
 Definition fileDescriptor_2216fe83c9c12408 : go_string := "go.etcd.io/etcd/api/v3/mvccpb.fileDescriptor_2216fe83c9c12408"%go.
 
 Axiom fileDescriptor_2216fe83c9c12408'init : val.
 
-Axiom KeyValue__Marshalⁱᵐᵖˡ : val.
-
-Axiom KeyValue__MarshalToⁱᵐᵖˡ : val.
-
-Axiom KeyValue__MarshalToSizedBufferⁱᵐᵖˡ : val.
-
-Axiom Event__Marshalⁱᵐᵖˡ : val.
-
-Axiom Event__MarshalToⁱᵐᵖˡ : val.
-
-Axiom Event__MarshalToSizedBufferⁱᵐᵖˡ : val.
-
 Definition encodeVarintKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.encodeVarintKv"%go.
-
-Axiom encodeVarintKvⁱᵐᵖˡ : val.
-
-Axiom KeyValue__Sizeⁱᵐᵖˡ : val.
-
-Axiom Event__Sizeⁱᵐᵖˡ : val.
 
 Definition sovKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.sovKv"%go.
 
-Axiom sovKvⁱᵐᵖˡ : val.
-
 Definition sozKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.sozKv"%go.
 
-Axiom sozKvⁱᵐᵖˡ : val.
-
-Axiom KeyValue__Unmarshalⁱᵐᵖˡ : val.
-
-Axiom Event__Unmarshalⁱᵐᵖˡ : val.
-
 Definition skipKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.skipKv"%go.
-
-Axiom skipKvⁱᵐᵖˡ : val.
 
 Definition ErrInvalidLengthKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.ErrInvalidLengthKv"%go.
 
@@ -152,7 +82,75 @@ Axiom ErrUnexpectedEndOfGroupKv'init : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(init, initⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (encodeVarintKv, encodeVarintKvⁱᵐᵖˡ); (sovKv, sovKvⁱᵐᵖˡ); (sozKv, sozKvⁱᵐᵖˡ); (skipKv, skipKvⁱᵐᵖˡ)].
+Axiom encodeVarintKvⁱᵐᵖˡ : val.
+
+Axiom sovKvⁱᵐᵖˡ : val.
+
+Axiom sozKvⁱᵐᵖˡ : val.
+
+Axiom skipKvⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(encodeVarintKv, encodeVarintKvⁱᵐᵖˡ); (sovKv, sovKvⁱᵐᵖˡ); (sozKv, sozKvⁱᵐᵖˡ); (skipKv, skipKvⁱᵐᵖˡ)].
+
+Axiom Event_EventType__EnumDescriptorⁱᵐᵖˡ : val.
+
+Axiom Event_EventType__Stringⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Descriptorⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Marshalⁱᵐᵖˡ : val.
+
+Axiom KeyValue__MarshalToⁱᵐᵖˡ : val.
+
+Axiom KeyValue__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom KeyValue__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Resetⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Sizeⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Stringⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Event__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Event__Marshalⁱᵐᵖˡ : val.
+
+Axiom Event__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Event__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Event__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Event__Resetⁱᵐᵖˡ : val.
+
+Axiom Event__Sizeⁱᵐᵖˡ : val.
+
+Axiom Event__Stringⁱᵐᵖˡ : val.
+
+Axiom Event__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Unmarshalⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Event_EventType.id, [("EnumDescriptor"%go, Event_EventType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, Event_EventType__Stringⁱᵐᵖˡ)]); (ptrT.id Event_EventType.id, [("EnumDescriptor"%go, (λ: "$r",
                  method_call #Event_EventType.id #"EnumDescriptor"%go (![#Event_EventType] "$r")

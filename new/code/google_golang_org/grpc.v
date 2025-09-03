@@ -147,75 +147,23 @@ Axiom ccBalancerWrapper : go_type.
 
 Definition newCCBalancerWrapper : go_string := "google.golang.org/grpc.newCCBalancerWrapper"%go.
 
-Axiom newCCBalancerWrapperⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__updateClientConnStateⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__resolverErrorⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__closeⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__exitIdleⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__NewSubConnⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__RemoveSubConnⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__UpdateAddressesⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__UpdateStateⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__ResolveNowⁱᵐᵖˡ : val.
-
-Axiom ccBalancerWrapper__Targetⁱᵐᵖˡ : val.
-
 Axiom acBalancerWrapper : go_type.
 
 Axiom healthData : go_type.
 
 Definition newHealthData : go_string := "google.golang.org/grpc.newHealthData"%go.
 
-Axiom newHealthDataⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__updateStateⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__Stringⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__UpdateAddressesⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__Connectⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__Shutdownⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__NewStreamⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__Invokeⁱᵐᵖˡ : val.
-
 Axiom refCountedProducer : go_type.
-
-Axiom acBalancerWrapper__GetOrBuildProducerⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__closeProducersⁱᵐᵖˡ : val.
-
-Axiom acBalancerWrapper__RegisterHealthListenerⁱᵐᵖˡ : val.
-
-Axiom ClientConn__Invokeⁱᵐᵖˡ : val.
 
 Definition combine : go_string := "google.golang.org/grpc.combine"%go.
 
-Axiom combineⁱᵐᵖˡ : val.
-
 Definition Invoke : go_string := "google.golang.org/grpc.Invoke"%go.
-
-Axiom Invokeⁱᵐᵖˡ : val.
 
 Definition unaryStreamDesc : go_string := "google.golang.org/grpc.unaryStreamDesc"%go.
 
 Axiom unaryStreamDesc'init : val.
 
 Definition invoke : go_string := "google.golang.org/grpc.invoke"%go.
-
-Axiom invokeⁱᵐᵖˡ : val.
 
 Axiom minConnectTimeout : expr.
 
@@ -269,219 +217,65 @@ Axiom defaultReadBufSize : Z.
 
 Axiom defaultConfigSelector : go_type.
 
-Axiom defaultConfigSelector__SelectConfigⁱᵐᵖˡ : val.
-
 Definition NewClient : go_string := "google.golang.org/grpc.NewClient"%go.
-
-Axiom NewClientⁱᵐᵖˡ : val.
 
 Definition Dial : go_string := "google.golang.org/grpc.Dial"%go.
 
-Axiom Dialⁱᵐᵖˡ : val.
-
 Definition DialContext : go_string := "google.golang.org/grpc.DialContext"%go.
-
-Axiom DialContextⁱᵐᵖˡ : val.
-
-Axiom ClientConn__addTraceEventⁱᵐᵖˡ : val.
 
 Axiom idler : go_type.
 
-Axiom idler__EnterIdleModeⁱᵐᵖˡ : val.
-
-Axiom idler__ExitIdleModeⁱᵐᵖˡ : val.
-
-Axiom ClientConn__exitIdleModeⁱᵐᵖˡ : val.
-
-Axiom ClientConn__initIdleStateLockedⁱᵐᵖˡ : val.
-
-Axiom ClientConn__enterIdleModeⁱᵐᵖˡ : val.
-
-Axiom ClientConn__validateTransportCredentialsⁱᵐᵖˡ : val.
-
-Axiom ClientConn__channelzRegistrationⁱᵐᵖˡ : val.
-
 Definition chainUnaryClientInterceptors : go_string := "google.golang.org/grpc.chainUnaryClientInterceptors"%go.
-
-Axiom chainUnaryClientInterceptorsⁱᵐᵖˡ : val.
 
 Definition getChainUnaryInvoker : go_string := "google.golang.org/grpc.getChainUnaryInvoker"%go.
 
-Axiom getChainUnaryInvokerⁱᵐᵖˡ : val.
-
 Definition chainStreamClientInterceptors : go_string := "google.golang.org/grpc.chainStreamClientInterceptors"%go.
-
-Axiom chainStreamClientInterceptorsⁱᵐᵖˡ : val.
 
 Definition getChainStreamer : go_string := "google.golang.org/grpc.getChainStreamer"%go.
 
-Axiom getChainStreamerⁱᵐᵖˡ : val.
-
 Definition newConnectivityStateManager : go_string := "google.golang.org/grpc.newConnectivityStateManager"%go.
 
-Axiom newConnectivityStateManagerⁱᵐᵖˡ : val.
-
 Axiom connectivityStateManager : go_type.
-
-Axiom connectivityStateManager__updateStateⁱᵐᵖˡ : val.
-
-Axiom connectivityStateManager__getStateⁱᵐᵖˡ : val.
-
-Axiom connectivityStateManager__getNotifyChanⁱᵐᵖˡ : val.
 
 Axiom ClientConnInterface : go_type.
 
 Axiom ClientConn : go_type.
 
-Axiom ClientConn__WaitForStateChangeⁱᵐᵖˡ : val.
-
-Axiom ClientConn__GetStateⁱᵐᵖˡ : val.
-
-Axiom ClientConn__Connectⁱᵐᵖˡ : val.
-
-Axiom ClientConn__waitForResolvedAddrsⁱᵐᵖˡ : val.
-
 Definition emptyServiceConfig : go_string := "google.golang.org/grpc.emptyServiceConfig"%go.
 
 Definition init : go_string := "google.golang.org/grpc.init"%go.
 
-Axiom initⁱᵐᵖˡ : val.
-
-Axiom ClientConn__maybeApplyDefaultServiceConfigⁱᵐᵖˡ : val.
-
-Axiom ClientConn__updateResolverStateAndUnlockⁱᵐᵖˡ : val.
-
-Axiom ClientConn__applyFailingLBLockedⁱᵐᵖˡ : val.
-
 Definition copyAddresses : go_string := "google.golang.org/grpc.copyAddresses"%go.
-
-Axiom copyAddressesⁱᵐᵖˡ : val.
-
-Axiom ClientConn__newAddrConnLockedⁱᵐᵖˡ : val.
-
-Axiom ClientConn__removeAddrConnⁱᵐᵖˡ : val.
-
-Axiom ClientConn__Targetⁱᵐᵖˡ : val.
-
-Axiom ClientConn__CanonicalTargetⁱᵐᵖˡ : val.
-
-Axiom ClientConn__incrCallsStartedⁱᵐᵖˡ : val.
-
-Axiom ClientConn__incrCallsSucceededⁱᵐᵖˡ : val.
-
-Axiom ClientConn__incrCallsFailedⁱᵐᵖˡ : val.
-
-Axiom addrConn__connectⁱᵐᵖˡ : val.
 
 Definition equalAddressIgnoringBalAttributes : go_string := "google.golang.org/grpc.equalAddressIgnoringBalAttributes"%go.
 
-Axiom equalAddressIgnoringBalAttributesⁱᵐᵖˡ : val.
-
 Definition equalAddressesIgnoringBalAttributes : go_string := "google.golang.org/grpc.equalAddressesIgnoringBalAttributes"%go.
-
-Axiom equalAddressesIgnoringBalAttributesⁱᵐᵖˡ : val.
-
-Axiom addrConn__updateAddrsⁱᵐᵖˡ : val.
-
-Axiom ClientConn__getServerNameⁱᵐᵖˡ : val.
 
 Definition getMethodConfig : go_string := "google.golang.org/grpc.getMethodConfig"%go.
 
-Axiom getMethodConfigⁱᵐᵖˡ : val.
-
-Axiom ClientConn__GetMethodConfigⁱᵐᵖˡ : val.
-
-Axiom ClientConn__healthCheckConfigⁱᵐᵖˡ : val.
-
-Axiom ClientConn__getTransportⁱᵐᵖˡ : val.
-
-Axiom ClientConn__applyServiceConfigAndBalancerⁱᵐᵖˡ : val.
-
-Axiom ClientConn__resolveNowⁱᵐᵖˡ : val.
-
-Axiom ClientConn__resolveNowLockedⁱᵐᵖˡ : val.
-
-Axiom ClientConn__ResetConnectBackoffⁱᵐᵖˡ : val.
-
-Axiom ClientConn__Closeⁱᵐᵖˡ : val.
-
 Axiom addrConn : go_type.
 
-Axiom addrConn__updateConnectivityStateⁱᵐᵖˡ : val.
-
-Axiom addrConn__adjustParamsⁱᵐᵖˡ : val.
-
-Axiom addrConn__resetTransportAndUnlockⁱᵐᵖˡ : val.
-
-Axiom addrConn__tryAllAddrsⁱᵐᵖˡ : val.
-
-Axiom addrConn__createTransportⁱᵐᵖˡ : val.
-
-Axiom addrConn__startHealthCheckⁱᵐᵖˡ : val.
-
-Axiom addrConn__resetConnectBackoffⁱᵐᵖˡ : val.
-
-Axiom addrConn__getReadyTransportⁱᵐᵖˡ : val.
-
-Axiom addrConn__tearDownⁱᵐᵖˡ : val.
-
 Axiom retryThrottler : go_type.
-
-Axiom retryThrottler__throttleⁱᵐᵖˡ : val.
-
-Axiom retryThrottler__successfulRPCⁱᵐᵖˡ : val.
-
-Axiom addrConn__incrCallsStartedⁱᵐᵖˡ : val.
-
-Axiom addrConn__incrCallsSucceededⁱᵐᵖˡ : val.
-
-Axiom addrConn__incrCallsFailedⁱᵐᵖˡ : val.
 
 Definition ErrClientConnTimeout : go_string := "google.golang.org/grpc.ErrClientConnTimeout"%go.
 
 Axiom ErrClientConnTimeout'init : val.
 
-Axiom ClientConn__getResolverⁱᵐᵖˡ : val.
-
-Axiom ClientConn__updateConnectionErrorⁱᵐᵖˡ : val.
-
-Axiom ClientConn__connectionErrorⁱᵐᵖˡ : val.
-
-Axiom ClientConn__initParsedTargetAndResolverBuilderⁱᵐᵖˡ : val.
-
 Definition parseTarget : go_string := "google.golang.org/grpc.parseTarget"%go.
 
-Axiom parseTargetⁱᵐᵖˡ : val.
-
 Definition encodeAuthority : go_string := "google.golang.org/grpc.encodeAuthority"%go.
-
-Axiom encodeAuthorityⁱᵐᵖˡ : val.
-
-Axiom ClientConn__initAuthorityⁱᵐᵖˡ : val.
 
 Axiom baseCodec : go_type.
 
 Definition getCodec : go_string := "google.golang.org/grpc.getCodec"%go.
 
-Axiom getCodecⁱᵐᵖˡ : val.
-
 Definition newCodecV0Bridge : go_string := "google.golang.org/grpc.newCodecV0Bridge"%go.
-
-Axiom newCodecV0Bridgeⁱᵐᵖˡ : val.
 
 Definition newCodecV1Bridge : go_string := "google.golang.org/grpc.newCodecV1Bridge"%go.
 
-Axiom newCodecV1Bridgeⁱᵐᵖˡ : val.
-
 Axiom codecV0Bridge : go_type.
 
-Axiom codecV0Bridge__Marshalⁱᵐᵖˡ : val.
-
-Axiom codecV0Bridge__Unmarshalⁱᵐᵖˡ : val.
-
 Axiom codecV1Bridge : go_type.
-
-Axiom codecV1Bridge__Nameⁱᵐᵖˡ : val.
 
 Axiom Codec : go_type.
 
@@ -499,223 +293,113 @@ Definition globalPerTargetDialOptions : go_string := "google.golang.org/grpc.glo
 
 Axiom EmptyDialOption : go_type.
 
-Axiom EmptyDialOption__applyⁱᵐᵖˡ : val.
-
 Axiom disableGlobalDialOptions : go_type.
-
-Axiom disableGlobalDialOptions__applyⁱᵐᵖˡ : val.
 
 Definition newDisableGlobalDialOptions : go_string := "google.golang.org/grpc.newDisableGlobalDialOptions"%go.
 
-Axiom newDisableGlobalDialOptionsⁱᵐᵖˡ : val.
-
 Axiom funcDialOption : go_type.
-
-Axiom funcDialOption__applyⁱᵐᵖˡ : val.
 
 Definition newFuncDialOption : go_string := "google.golang.org/grpc.newFuncDialOption"%go.
 
-Axiom newFuncDialOptionⁱᵐᵖˡ : val.
-
 Axiom joinDialOption : go_type.
-
-Axiom joinDialOption__applyⁱᵐᵖˡ : val.
 
 Definition newJoinDialOption : go_string := "google.golang.org/grpc.newJoinDialOption"%go.
 
-Axiom newJoinDialOptionⁱᵐᵖˡ : val.
-
 Definition WithSharedWriteBuffer : go_string := "google.golang.org/grpc.WithSharedWriteBuffer"%go.
-
-Axiom WithSharedWriteBufferⁱᵐᵖˡ : val.
 
 Definition WithWriteBufferSize : go_string := "google.golang.org/grpc.WithWriteBufferSize"%go.
 
-Axiom WithWriteBufferSizeⁱᵐᵖˡ : val.
-
 Definition WithReadBufferSize : go_string := "google.golang.org/grpc.WithReadBufferSize"%go.
-
-Axiom WithReadBufferSizeⁱᵐᵖˡ : val.
 
 Definition WithInitialWindowSize : go_string := "google.golang.org/grpc.WithInitialWindowSize"%go.
 
-Axiom WithInitialWindowSizeⁱᵐᵖˡ : val.
-
 Definition WithInitialConnWindowSize : go_string := "google.golang.org/grpc.WithInitialConnWindowSize"%go.
-
-Axiom WithInitialConnWindowSizeⁱᵐᵖˡ : val.
 
 Definition WithMaxMsgSize : go_string := "google.golang.org/grpc.WithMaxMsgSize"%go.
 
-Axiom WithMaxMsgSizeⁱᵐᵖˡ : val.
-
 Definition WithDefaultCallOptions : go_string := "google.golang.org/grpc.WithDefaultCallOptions"%go.
-
-Axiom WithDefaultCallOptionsⁱᵐᵖˡ : val.
 
 Definition WithCodec : go_string := "google.golang.org/grpc.WithCodec"%go.
 
-Axiom WithCodecⁱᵐᵖˡ : val.
-
 Definition WithCompressor : go_string := "google.golang.org/grpc.WithCompressor"%go.
-
-Axiom WithCompressorⁱᵐᵖˡ : val.
 
 Definition WithDecompressor : go_string := "google.golang.org/grpc.WithDecompressor"%go.
 
-Axiom WithDecompressorⁱᵐᵖˡ : val.
-
 Definition WithConnectParams : go_string := "google.golang.org/grpc.WithConnectParams"%go.
-
-Axiom WithConnectParamsⁱᵐᵖˡ : val.
 
 Definition WithBackoffMaxDelay : go_string := "google.golang.org/grpc.WithBackoffMaxDelay"%go.
 
-Axiom WithBackoffMaxDelayⁱᵐᵖˡ : val.
-
 Definition WithBackoffConfig : go_string := "google.golang.org/grpc.WithBackoffConfig"%go.
-
-Axiom WithBackoffConfigⁱᵐᵖˡ : val.
 
 Definition withBackoff : go_string := "google.golang.org/grpc.withBackoff"%go.
 
-Axiom withBackoffⁱᵐᵖˡ : val.
-
 Definition WithBlock : go_string := "google.golang.org/grpc.WithBlock"%go.
-
-Axiom WithBlockⁱᵐᵖˡ : val.
 
 Definition WithReturnConnectionError : go_string := "google.golang.org/grpc.WithReturnConnectionError"%go.
 
-Axiom WithReturnConnectionErrorⁱᵐᵖˡ : val.
-
 Definition WithInsecure : go_string := "google.golang.org/grpc.WithInsecure"%go.
-
-Axiom WithInsecureⁱᵐᵖˡ : val.
 
 Definition WithNoProxy : go_string := "google.golang.org/grpc.WithNoProxy"%go.
 
-Axiom WithNoProxyⁱᵐᵖˡ : val.
-
 Definition WithTransportCredentials : go_string := "google.golang.org/grpc.WithTransportCredentials"%go.
-
-Axiom WithTransportCredentialsⁱᵐᵖˡ : val.
 
 Definition WithPerRPCCredentials : go_string := "google.golang.org/grpc.WithPerRPCCredentials"%go.
 
-Axiom WithPerRPCCredentialsⁱᵐᵖˡ : val.
-
 Definition WithCredentialsBundle : go_string := "google.golang.org/grpc.WithCredentialsBundle"%go.
-
-Axiom WithCredentialsBundleⁱᵐᵖˡ : val.
 
 Definition WithTimeout : go_string := "google.golang.org/grpc.WithTimeout"%go.
 
-Axiom WithTimeoutⁱᵐᵖˡ : val.
-
 Definition WithContextDialer : go_string := "google.golang.org/grpc.WithContextDialer"%go.
-
-Axiom WithContextDialerⁱᵐᵖˡ : val.
 
 Definition WithDialer : go_string := "google.golang.org/grpc.WithDialer"%go.
 
-Axiom WithDialerⁱᵐᵖˡ : val.
-
 Definition WithStatsHandler : go_string := "google.golang.org/grpc.WithStatsHandler"%go.
-
-Axiom WithStatsHandlerⁱᵐᵖˡ : val.
 
 Definition withBinaryLogger : go_string := "google.golang.org/grpc.withBinaryLogger"%go.
 
-Axiom withBinaryLoggerⁱᵐᵖˡ : val.
-
 Definition FailOnNonTempDialError : go_string := "google.golang.org/grpc.FailOnNonTempDialError"%go.
-
-Axiom FailOnNonTempDialErrorⁱᵐᵖˡ : val.
 
 Definition WithUserAgent : go_string := "google.golang.org/grpc.WithUserAgent"%go.
 
-Axiom WithUserAgentⁱᵐᵖˡ : val.
-
 Definition WithKeepaliveParams : go_string := "google.golang.org/grpc.WithKeepaliveParams"%go.
-
-Axiom WithKeepaliveParamsⁱᵐᵖˡ : val.
 
 Definition WithUnaryInterceptor : go_string := "google.golang.org/grpc.WithUnaryInterceptor"%go.
 
-Axiom WithUnaryInterceptorⁱᵐᵖˡ : val.
-
 Definition WithChainUnaryInterceptor : go_string := "google.golang.org/grpc.WithChainUnaryInterceptor"%go.
-
-Axiom WithChainUnaryInterceptorⁱᵐᵖˡ : val.
 
 Definition WithStreamInterceptor : go_string := "google.golang.org/grpc.WithStreamInterceptor"%go.
 
-Axiom WithStreamInterceptorⁱᵐᵖˡ : val.
-
 Definition WithChainStreamInterceptor : go_string := "google.golang.org/grpc.WithChainStreamInterceptor"%go.
-
-Axiom WithChainStreamInterceptorⁱᵐᵖˡ : val.
 
 Definition WithAuthority : go_string := "google.golang.org/grpc.WithAuthority"%go.
 
-Axiom WithAuthorityⁱᵐᵖˡ : val.
-
 Definition WithChannelzParentID : go_string := "google.golang.org/grpc.WithChannelzParentID"%go.
-
-Axiom WithChannelzParentIDⁱᵐᵖˡ : val.
 
 Definition WithDisableServiceConfig : go_string := "google.golang.org/grpc.WithDisableServiceConfig"%go.
 
-Axiom WithDisableServiceConfigⁱᵐᵖˡ : val.
-
 Definition WithDefaultServiceConfig : go_string := "google.golang.org/grpc.WithDefaultServiceConfig"%go.
-
-Axiom WithDefaultServiceConfigⁱᵐᵖˡ : val.
 
 Definition WithDisableRetry : go_string := "google.golang.org/grpc.WithDisableRetry"%go.
 
-Axiom WithDisableRetryⁱᵐᵖˡ : val.
-
 Axiom MaxHeaderListSizeDialOption : go_type.
-
-Axiom MaxHeaderListSizeDialOption__applyⁱᵐᵖˡ : val.
 
 Definition WithMaxHeaderListSize : go_string := "google.golang.org/grpc.WithMaxHeaderListSize"%go.
 
-Axiom WithMaxHeaderListSizeⁱᵐᵖˡ : val.
-
 Definition WithDisableHealthCheck : go_string := "google.golang.org/grpc.WithDisableHealthCheck"%go.
-
-Axiom WithDisableHealthCheckⁱᵐᵖˡ : val.
 
 Definition defaultDialOptions : go_string := "google.golang.org/grpc.defaultDialOptions"%go.
 
-Axiom defaultDialOptionsⁱᵐᵖˡ : val.
-
 Definition withMinConnectDeadline : go_string := "google.golang.org/grpc.withMinConnectDeadline"%go.
-
-Axiom withMinConnectDeadlineⁱᵐᵖˡ : val.
 
 Definition withDefaultScheme : go_string := "google.golang.org/grpc.withDefaultScheme"%go.
 
-Axiom withDefaultSchemeⁱᵐᵖˡ : val.
-
 Definition WithResolvers : go_string := "google.golang.org/grpc.WithResolvers"%go.
-
-Axiom WithResolversⁱᵐᵖˡ : val.
 
 Definition WithIdleTimeout : go_string := "google.golang.org/grpc.WithIdleTimeout"%go.
 
-Axiom WithIdleTimeoutⁱᵐᵖˡ : val.
-
 Definition WithMaxCallAttempts : go_string := "google.golang.org/grpc.WithMaxCallAttempts"%go.
 
-Axiom WithMaxCallAttemptsⁱᵐᵖˡ : val.
-
 Definition withBufferPool : go_string := "google.golang.org/grpc.withBufferPool"%go.
-
-Axiom withBufferPoolⁱᵐᵖˡ : val.
 
 Axiom UnaryInvoker : go_type.
 
@@ -741,47 +425,15 @@ Axiom pickerWrapper : go_type.
 
 Definition newPickerWrapper : go_string := "google.golang.org/grpc.newPickerWrapper"%go.
 
-Axiom newPickerWrapperⁱᵐᵖˡ : val.
-
-Axiom pickerWrapper__updatePickerⁱᵐᵖˡ : val.
-
 Definition doneChannelzWrapper : go_string := "google.golang.org/grpc.doneChannelzWrapper"%go.
-
-Axiom doneChannelzWrapperⁱᵐᵖˡ : val.
-
-Axiom pickerWrapper__pickⁱᵐᵖˡ : val.
-
-Axiom pickerWrapper__closeⁱᵐᵖˡ : val.
-
-Axiom pickerWrapper__resetⁱᵐᵖˡ : val.
 
 Axiom dropError : go_type.
 
 Axiom PreparedMsg : go_type.
 
-Axiom PreparedMsg__Encodeⁱᵐᵖˡ : val.
-
 Axiom ccResolverWrapper : go_type.
 
 Definition newCCResolverWrapper : go_string := "google.golang.org/grpc.newCCResolverWrapper"%go.
-
-Axiom newCCResolverWrapperⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__startⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__resolveNowⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__closeⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__UpdateStateⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__ReportErrorⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__NewAddressⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__ParseServiceConfigⁱᵐᵖˡ : val.
-
-Axiom ccResolverWrapper__addChannelzTraceEventⁱᵐᵖˡ : val.
 
 Axiom Compressor : go_type.
 
@@ -789,15 +441,7 @@ Axiom gzipCompressor : go_type.
 
 Definition NewGZIPCompressor : go_string := "google.golang.org/grpc.NewGZIPCompressor"%go.
 
-Axiom NewGZIPCompressorⁱᵐᵖˡ : val.
-
 Definition NewGZIPCompressorWithLevel : go_string := "google.golang.org/grpc.NewGZIPCompressorWithLevel"%go.
-
-Axiom NewGZIPCompressorWithLevelⁱᵐᵖˡ : val.
-
-Axiom gzipCompressor__Doⁱᵐᵖˡ : val.
-
-Axiom gzipCompressor__Typeⁱᵐᵖˡ : val.
 
 Axiom Decompressor : go_type.
 
@@ -805,175 +449,75 @@ Axiom gzipDecompressor : go_type.
 
 Definition NewGZIPDecompressor : go_string := "google.golang.org/grpc.NewGZIPDecompressor"%go.
 
-Axiom NewGZIPDecompressorⁱᵐᵖˡ : val.
-
-Axiom gzipDecompressor__Doⁱᵐᵖˡ : val.
-
-Axiom gzipDecompressor__Typeⁱᵐᵖˡ : val.
-
 Axiom callInfo : go_type.
 
 Definition defaultCallInfo : go_string := "google.golang.org/grpc.defaultCallInfo"%go.
-
-Axiom defaultCallInfoⁱᵐᵖˡ : val.
 
 Axiom CallOption : go_type.
 
 Axiom EmptyCallOption : go_type.
 
-Axiom EmptyCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom EmptyCallOption__afterⁱᵐᵖˡ : val.
-
 Definition StaticMethod : go_string := "google.golang.org/grpc.StaticMethod"%go.
-
-Axiom StaticMethodⁱᵐᵖˡ : val.
 
 Axiom StaticMethodCallOption : go_type.
 
 Definition Header : go_string := "google.golang.org/grpc.Header"%go.
 
-Axiom Headerⁱᵐᵖˡ : val.
-
 Axiom HeaderCallOption : go_type.
-
-Axiom HeaderCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom HeaderCallOption__afterⁱᵐᵖˡ : val.
 
 Definition Trailer : go_string := "google.golang.org/grpc.Trailer"%go.
 
-Axiom Trailerⁱᵐᵖˡ : val.
-
 Axiom TrailerCallOption : go_type.
-
-Axiom TrailerCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom TrailerCallOption__afterⁱᵐᵖˡ : val.
 
 Definition Peer : go_string := "google.golang.org/grpc.Peer"%go.
 
-Axiom Peerⁱᵐᵖˡ : val.
-
 Axiom PeerCallOption : go_type.
-
-Axiom PeerCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom PeerCallOption__afterⁱᵐᵖˡ : val.
 
 Definition WaitForReady : go_string := "google.golang.org/grpc.WaitForReady"%go.
 
-Axiom WaitForReadyⁱᵐᵖˡ : val.
-
 Definition FailFast : go_string := "google.golang.org/grpc.FailFast"%go.
-
-Axiom FailFastⁱᵐᵖˡ : val.
 
 Axiom FailFastCallOption : go_type.
 
-Axiom FailFastCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom FailFastCallOption__afterⁱᵐᵖˡ : val.
-
 Definition OnFinish : go_string := "google.golang.org/grpc.OnFinish"%go.
-
-Axiom OnFinishⁱᵐᵖˡ : val.
 
 Axiom OnFinishCallOption : go_type.
 
-Axiom OnFinishCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom OnFinishCallOption__afterⁱᵐᵖˡ : val.
-
 Definition MaxCallRecvMsgSize : go_string := "google.golang.org/grpc.MaxCallRecvMsgSize"%go.
-
-Axiom MaxCallRecvMsgSizeⁱᵐᵖˡ : val.
 
 Axiom MaxRecvMsgSizeCallOption : go_type.
 
-Axiom MaxRecvMsgSizeCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom MaxRecvMsgSizeCallOption__afterⁱᵐᵖˡ : val.
-
 Definition MaxCallSendMsgSize : go_string := "google.golang.org/grpc.MaxCallSendMsgSize"%go.
-
-Axiom MaxCallSendMsgSizeⁱᵐᵖˡ : val.
 
 Axiom MaxSendMsgSizeCallOption : go_type.
 
-Axiom MaxSendMsgSizeCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom MaxSendMsgSizeCallOption__afterⁱᵐᵖˡ : val.
-
 Definition PerRPCCredentials : go_string := "google.golang.org/grpc.PerRPCCredentials"%go.
-
-Axiom PerRPCCredentialsⁱᵐᵖˡ : val.
 
 Axiom PerRPCCredsCallOption : go_type.
 
-Axiom PerRPCCredsCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom PerRPCCredsCallOption__afterⁱᵐᵖˡ : val.
-
 Definition UseCompressor : go_string := "google.golang.org/grpc.UseCompressor"%go.
-
-Axiom UseCompressorⁱᵐᵖˡ : val.
 
 Axiom CompressorCallOption : go_type.
 
-Axiom CompressorCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom CompressorCallOption__afterⁱᵐᵖˡ : val.
-
 Definition CallContentSubtype : go_string := "google.golang.org/grpc.CallContentSubtype"%go.
-
-Axiom CallContentSubtypeⁱᵐᵖˡ : val.
 
 Axiom ContentSubtypeCallOption : go_type.
 
-Axiom ContentSubtypeCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom ContentSubtypeCallOption__afterⁱᵐᵖˡ : val.
-
 Definition ForceCodec : go_string := "google.golang.org/grpc.ForceCodec"%go.
-
-Axiom ForceCodecⁱᵐᵖˡ : val.
 
 Axiom ForceCodecCallOption : go_type.
 
-Axiom ForceCodecCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom ForceCodecCallOption__afterⁱᵐᵖˡ : val.
-
 Definition ForceCodecV2 : go_string := "google.golang.org/grpc.ForceCodecV2"%go.
-
-Axiom ForceCodecV2ⁱᵐᵖˡ : val.
 
 Axiom ForceCodecV2CallOption : go_type.
 
-Axiom ForceCodecV2CallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom ForceCodecV2CallOption__afterⁱᵐᵖˡ : val.
-
 Definition CallCustomCodec : go_string := "google.golang.org/grpc.CallCustomCodec"%go.
-
-Axiom CallCustomCodecⁱᵐᵖˡ : val.
 
 Axiom CustomCodecCallOption : go_type.
 
-Axiom CustomCodecCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom CustomCodecCallOption__afterⁱᵐᵖˡ : val.
-
 Definition MaxRetryRPCBufferSize : go_string := "google.golang.org/grpc.MaxRetryRPCBufferSize"%go.
 
-Axiom MaxRetryRPCBufferSizeⁱᵐᵖˡ : val.
-
 Axiom MaxRetryRPCBufferSizeCallOption : go_type.
-
-Axiom MaxRetryRPCBufferSizeCallOption__beforeⁱᵐᵖˡ : val.
-
-Axiom MaxRetryRPCBufferSizeCallOption__afterⁱᵐᵖˡ : val.
 
 Axiom payloadFormat : go_type.
 
@@ -981,21 +525,13 @@ Axiom compressionNone : expr.
 
 Axiom compressionMade : expr.
 
-Axiom payloadFormat__isCompressedⁱᵐᵖˡ : val.
-
 Axiom streamReader : go_type.
 
 Axiom parser : go_type.
 
-Axiom parser__recvMsgⁱᵐᵖˡ : val.
-
 Definition encode : go_string := "google.golang.org/grpc.encode"%go.
 
-Axiom encodeⁱᵐᵖˡ : val.
-
 Definition compress : go_string := "google.golang.org/grpc.compress"%go.
-
-Axiom compressⁱᵐᵖˡ : val.
 
 Axiom payloadLen : Z.
 
@@ -1005,33 +541,19 @@ Axiom headerLen : Z.
 
 Definition msgHeader : go_string := "google.golang.org/grpc.msgHeader"%go.
 
-Axiom msgHeaderⁱᵐᵖˡ : val.
-
 Definition outPayload : go_string := "google.golang.org/grpc.outPayload"%go.
-
-Axiom outPayloadⁱᵐᵖˡ : val.
 
 Definition checkRecvPayload : go_string := "google.golang.org/grpc.checkRecvPayload"%go.
 
-Axiom checkRecvPayloadⁱᵐᵖˡ : val.
-
 Axiom payloadInfo : go_type.
-
-Axiom payloadInfo__freeⁱᵐᵖˡ : val.
 
 Definition recvAndDecompress : go_string := "google.golang.org/grpc.recvAndDecompress"%go.
 
-Axiom recvAndDecompressⁱᵐᵖˡ : val.
-
 Definition decompress : go_string := "google.golang.org/grpc.decompress"%go.
-
-Axiom decompressⁱᵐᵖˡ : val.
 
 Axiom recvCompressor : go_type.
 
 Definition recv : go_string := "google.golang.org/grpc.recv"%go.
-
-Axiom recvⁱᵐᵖˡ : val.
 
 Axiom rpcInfo : go_type.
 
@@ -1041,23 +563,13 @@ Axiom rpcInfoContextKey : go_type.
 
 Definition newContextWithRPCInfo : go_string := "google.golang.org/grpc.newContextWithRPCInfo"%go.
 
-Axiom newContextWithRPCInfoⁱᵐᵖˡ : val.
-
 Definition rpcInfoFromContext : go_string := "google.golang.org/grpc.rpcInfoFromContext"%go.
-
-Axiom rpcInfoFromContextⁱᵐᵖˡ : val.
 
 Definition Code : go_string := "google.golang.org/grpc.Code"%go.
 
-Axiom Codeⁱᵐᵖˡ : val.
-
 Definition ErrorDesc : go_string := "google.golang.org/grpc.ErrorDesc"%go.
 
-Axiom ErrorDescⁱᵐᵖˡ : val.
-
 Definition Errorf : go_string := "google.golang.org/grpc.Errorf"%go.
-
-Axiom Errorfⁱᵐᵖˡ : val.
 
 Definition errContextCanceled : go_string := "google.golang.org/grpc.errContextCanceled"%go.
 
@@ -1069,11 +581,7 @@ Axiom errContextDeadline'init : val.
 
 Definition toRPCErr : go_string := "google.golang.org/grpc.toRPCErr"%go.
 
-Axiom toRPCErrⁱᵐᵖˡ : val.
-
 Definition setCallInfoCodec : go_string := "google.golang.org/grpc.setCallInfoCodec"%go.
-
-Axiom setCallInfoCodecⁱᵐᵖˡ : val.
 
 Axiom SupportPackageIsVersion3 : expr.
 
@@ -1127,177 +635,87 @@ Axiom ServerOption : go_type.
 
 Axiom EmptyServerOption : go_type.
 
-Axiom EmptyServerOption__applyⁱᵐᵖˡ : val.
-
 Axiom funcServerOption : go_type.
-
-Axiom funcServerOption__applyⁱᵐᵖˡ : val.
 
 Definition newFuncServerOption : go_string := "google.golang.org/grpc.newFuncServerOption"%go.
 
-Axiom newFuncServerOptionⁱᵐᵖˡ : val.
-
 Axiom joinServerOption : go_type.
-
-Axiom joinServerOption__applyⁱᵐᵖˡ : val.
 
 Definition newJoinServerOption : go_string := "google.golang.org/grpc.newJoinServerOption"%go.
 
-Axiom newJoinServerOptionⁱᵐᵖˡ : val.
-
 Definition SharedWriteBuffer : go_string := "google.golang.org/grpc.SharedWriteBuffer"%go.
-
-Axiom SharedWriteBufferⁱᵐᵖˡ : val.
 
 Definition WriteBufferSize : go_string := "google.golang.org/grpc.WriteBufferSize"%go.
 
-Axiom WriteBufferSizeⁱᵐᵖˡ : val.
-
 Definition ReadBufferSize : go_string := "google.golang.org/grpc.ReadBufferSize"%go.
-
-Axiom ReadBufferSizeⁱᵐᵖˡ : val.
 
 Definition InitialWindowSize : go_string := "google.golang.org/grpc.InitialWindowSize"%go.
 
-Axiom InitialWindowSizeⁱᵐᵖˡ : val.
-
 Definition InitialConnWindowSize : go_string := "google.golang.org/grpc.InitialConnWindowSize"%go.
-
-Axiom InitialConnWindowSizeⁱᵐᵖˡ : val.
 
 Definition KeepaliveParams : go_string := "google.golang.org/grpc.KeepaliveParams"%go.
 
-Axiom KeepaliveParamsⁱᵐᵖˡ : val.
-
 Definition KeepaliveEnforcementPolicy : go_string := "google.golang.org/grpc.KeepaliveEnforcementPolicy"%go.
-
-Axiom KeepaliveEnforcementPolicyⁱᵐᵖˡ : val.
 
 Definition CustomCodec : go_string := "google.golang.org/grpc.CustomCodec"%go.
 
-Axiom CustomCodecⁱᵐᵖˡ : val.
-
 Definition ForceServerCodec : go_string := "google.golang.org/grpc.ForceServerCodec"%go.
-
-Axiom ForceServerCodecⁱᵐᵖˡ : val.
 
 Definition ForceServerCodecV2 : go_string := "google.golang.org/grpc.ForceServerCodecV2"%go.
 
-Axiom ForceServerCodecV2ⁱᵐᵖˡ : val.
-
 Definition RPCCompressor : go_string := "google.golang.org/grpc.RPCCompressor"%go.
-
-Axiom RPCCompressorⁱᵐᵖˡ : val.
 
 Definition RPCDecompressor : go_string := "google.golang.org/grpc.RPCDecompressor"%go.
 
-Axiom RPCDecompressorⁱᵐᵖˡ : val.
-
 Definition MaxMsgSize : go_string := "google.golang.org/grpc.MaxMsgSize"%go.
-
-Axiom MaxMsgSizeⁱᵐᵖˡ : val.
 
 Definition MaxRecvMsgSize : go_string := "google.golang.org/grpc.MaxRecvMsgSize"%go.
 
-Axiom MaxRecvMsgSizeⁱᵐᵖˡ : val.
-
 Definition MaxSendMsgSize : go_string := "google.golang.org/grpc.MaxSendMsgSize"%go.
-
-Axiom MaxSendMsgSizeⁱᵐᵖˡ : val.
 
 Definition MaxConcurrentStreams : go_string := "google.golang.org/grpc.MaxConcurrentStreams"%go.
 
-Axiom MaxConcurrentStreamsⁱᵐᵖˡ : val.
-
 Definition Creds : go_string := "google.golang.org/grpc.Creds"%go.
-
-Axiom Credsⁱᵐᵖˡ : val.
 
 Definition UnaryInterceptor : go_string := "google.golang.org/grpc.UnaryInterceptor"%go.
 
-Axiom UnaryInterceptorⁱᵐᵖˡ : val.
-
 Definition ChainUnaryInterceptor : go_string := "google.golang.org/grpc.ChainUnaryInterceptor"%go.
-
-Axiom ChainUnaryInterceptorⁱᵐᵖˡ : val.
 
 Definition StreamInterceptor : go_string := "google.golang.org/grpc.StreamInterceptor"%go.
 
-Axiom StreamInterceptorⁱᵐᵖˡ : val.
-
 Definition ChainStreamInterceptor : go_string := "google.golang.org/grpc.ChainStreamInterceptor"%go.
-
-Axiom ChainStreamInterceptorⁱᵐᵖˡ : val.
 
 Definition InTapHandle : go_string := "google.golang.org/grpc.InTapHandle"%go.
 
-Axiom InTapHandleⁱᵐᵖˡ : val.
-
 Definition StatsHandler : go_string := "google.golang.org/grpc.StatsHandler"%go.
-
-Axiom StatsHandlerⁱᵐᵖˡ : val.
 
 Definition binaryLogger : go_string := "google.golang.org/grpc.binaryLogger"%go.
 
-Axiom binaryLoggerⁱᵐᵖˡ : val.
-
 Definition UnknownServiceHandler : go_string := "google.golang.org/grpc.UnknownServiceHandler"%go.
-
-Axiom UnknownServiceHandlerⁱᵐᵖˡ : val.
 
 Definition ConnectionTimeout : go_string := "google.golang.org/grpc.ConnectionTimeout"%go.
 
-Axiom ConnectionTimeoutⁱᵐᵖˡ : val.
-
 Axiom MaxHeaderListSizeServerOption : go_type.
-
-Axiom MaxHeaderListSizeServerOption__applyⁱᵐᵖˡ : val.
 
 Definition MaxHeaderListSize : go_string := "google.golang.org/grpc.MaxHeaderListSize"%go.
 
-Axiom MaxHeaderListSizeⁱᵐᵖˡ : val.
-
 Definition HeaderTableSize : go_string := "google.golang.org/grpc.HeaderTableSize"%go.
-
-Axiom HeaderTableSizeⁱᵐᵖˡ : val.
 
 Definition NumStreamWorkers : go_string := "google.golang.org/grpc.NumStreamWorkers"%go.
 
-Axiom NumStreamWorkersⁱᵐᵖˡ : val.
-
 Definition WaitForHandlers : go_string := "google.golang.org/grpc.WaitForHandlers"%go.
-
-Axiom WaitForHandlersⁱᵐᵖˡ : val.
 
 Definition bufferPool : go_string := "google.golang.org/grpc.bufferPool"%go.
 
-Axiom bufferPoolⁱᵐᵖˡ : val.
-
 Axiom serverWorkerResetThreshold : Z.
-
-Axiom Server__serverWorkerⁱᵐᵖˡ : val.
-
-Axiom Server__initServerWorkersⁱᵐᵖˡ : val.
 
 Definition NewServer : go_string := "google.golang.org/grpc.NewServer"%go.
 
-Axiom NewServerⁱᵐᵖˡ : val.
-
-Axiom Server__printfⁱᵐᵖˡ : val.
-
-Axiom Server__errorfⁱᵐᵖˡ : val.
-
 Axiom ServiceRegistrar : go_type.
-
-Axiom Server__RegisterServiceⁱᵐᵖˡ : val.
-
-Axiom Server__registerⁱᵐᵖˡ : val.
 
 Axiom MethodInfo : go_type.
 
 Axiom ServiceInfo : go_type.
-
-Axiom Server__GetServiceInfoⁱᵐᵖˡ : val.
 
 Definition ErrServerStopped : go_string := "google.golang.org/grpc.ErrServerStopped"%go.
 
@@ -1305,135 +723,49 @@ Axiom ErrServerStopped'init : val.
 
 Axiom listenSocket : go_type.
 
-Axiom listenSocket__Closeⁱᵐᵖˡ : val.
-
-Axiom Server__Serveⁱᵐᵖˡ : val.
-
-Axiom Server__handleRawConnⁱᵐᵖˡ : val.
-
-Axiom Server__newHTTP2Transportⁱᵐᵖˡ : val.
-
-Axiom Server__serveStreamsⁱᵐᵖˡ : val.
-
-Axiom Server__ServeHTTPⁱᵐᵖˡ : val.
-
-Axiom Server__addConnⁱᵐᵖˡ : val.
-
-Axiom Server__removeConnⁱᵐᵖˡ : val.
-
-Axiom Server__incrCallsStartedⁱᵐᵖˡ : val.
-
-Axiom Server__incrCallsSucceededⁱᵐᵖˡ : val.
-
-Axiom Server__incrCallsFailedⁱᵐᵖˡ : val.
-
-Axiom Server__sendResponseⁱᵐᵖˡ : val.
-
 Definition chainUnaryServerInterceptors : go_string := "google.golang.org/grpc.chainUnaryServerInterceptors"%go.
-
-Axiom chainUnaryServerInterceptorsⁱᵐᵖˡ : val.
 
 Definition chainUnaryInterceptors : go_string := "google.golang.org/grpc.chainUnaryInterceptors"%go.
 
-Axiom chainUnaryInterceptorsⁱᵐᵖˡ : val.
-
 Definition getChainUnaryHandler : go_string := "google.golang.org/grpc.getChainUnaryHandler"%go.
-
-Axiom getChainUnaryHandlerⁱᵐᵖˡ : val.
-
-Axiom Server__processUnaryRPCⁱᵐᵖˡ : val.
 
 Definition chainStreamServerInterceptors : go_string := "google.golang.org/grpc.chainStreamServerInterceptors"%go.
 
-Axiom chainStreamServerInterceptorsⁱᵐᵖˡ : val.
-
 Definition chainStreamInterceptors : go_string := "google.golang.org/grpc.chainStreamInterceptors"%go.
 
-Axiom chainStreamInterceptorsⁱᵐᵖˡ : val.
-
 Definition getChainStreamHandler : go_string := "google.golang.org/grpc.getChainStreamHandler"%go.
-
-Axiom getChainStreamHandlerⁱᵐᵖˡ : val.
-
-Axiom Server__processStreamingRPCⁱᵐᵖˡ : val.
-
-Axiom Server__handleStreamⁱᵐᵖˡ : val.
 
 Axiom streamKey : go_type.
 
 Definition NewContextWithServerTransportStream : go_string := "google.golang.org/grpc.NewContextWithServerTransportStream"%go.
 
-Axiom NewContextWithServerTransportStreamⁱᵐᵖˡ : val.
-
 Axiom ServerTransportStream : go_type.
 
 Definition ServerTransportStreamFromContext : go_string := "google.golang.org/grpc.ServerTransportStreamFromContext"%go.
-
-Axiom ServerTransportStreamFromContextⁱᵐᵖˡ : val.
-
-Axiom Server__Stopⁱᵐᵖˡ : val.
-
-Axiom Server__GracefulStopⁱᵐᵖˡ : val.
-
-Axiom Server__stopⁱᵐᵖˡ : val.
-
-Axiom Server__closeServerTransportsLockedⁱᵐᵖˡ : val.
-
-Axiom Server__drainAllServerTransportsLockedⁱᵐᵖˡ : val.
-
-Axiom Server__closeListenersLockedⁱᵐᵖˡ : val.
-
-Axiom Server__getCodecⁱᵐᵖˡ : val.
 
 Axiom serverKey : go_type.
 
 Definition serverFromContext : go_string := "google.golang.org/grpc.serverFromContext"%go.
 
-Axiom serverFromContextⁱᵐᵖˡ : val.
-
 Definition contextWithServer : go_string := "google.golang.org/grpc.contextWithServer"%go.
-
-Axiom contextWithServerⁱᵐᵖˡ : val.
-
-Axiom Server__isRegisteredMethodⁱᵐᵖˡ : val.
 
 Definition SetHeader : go_string := "google.golang.org/grpc.SetHeader"%go.
 
-Axiom SetHeaderⁱᵐᵖˡ : val.
-
 Definition SendHeader : go_string := "google.golang.org/grpc.SendHeader"%go.
-
-Axiom SendHeaderⁱᵐᵖˡ : val.
 
 Definition SetSendCompressor : go_string := "google.golang.org/grpc.SetSendCompressor"%go.
 
-Axiom SetSendCompressorⁱᵐᵖˡ : val.
-
 Definition ClientSupportedCompressors : go_string := "google.golang.org/grpc.ClientSupportedCompressors"%go.
-
-Axiom ClientSupportedCompressorsⁱᵐᵖˡ : val.
 
 Definition SetTrailer : go_string := "google.golang.org/grpc.SetTrailer"%go.
 
-Axiom SetTrailerⁱᵐᵖˡ : val.
-
 Definition Method : go_string := "google.golang.org/grpc.Method"%go.
-
-Axiom Methodⁱᵐᵖˡ : val.
 
 Definition validateSendCompressor : go_string := "google.golang.org/grpc.validateSendCompressor"%go.
 
-Axiom validateSendCompressorⁱᵐᵖˡ : val.
-
 Axiom atomicSemaphore : go_type.
 
-Axiom atomicSemaphore__acquireⁱᵐᵖˡ : val.
-
-Axiom atomicSemaphore__releaseⁱᵐᵖˡ : val.
-
 Definition newHandlerQuota : go_string := "google.golang.org/grpc.newHandlerQuota"%go.
-
-Axiom newHandlerQuotaⁱᵐᵖˡ : val.
 
 Axiom maxInt : expr.
 
@@ -1457,35 +789,21 @@ Definition errEmptyServiceNonEmptyMethod : go_string := "google.golang.org/grpc.
 
 Axiom errEmptyServiceNonEmptyMethod'init : val.
 
-Axiom jsonName__generatePathⁱᵐᵖˡ : val.
-
 Axiom jsonMC : go_type.
 
 Axiom jsonSC : go_type.
 
 Definition parseServiceConfig : go_string := "google.golang.org/grpc.parseServiceConfig"%go.
 
-Axiom parseServiceConfigⁱᵐᵖˡ : val.
-
 Definition convertRetryPolicy : go_string := "google.golang.org/grpc.convertRetryPolicy"%go.
-
-Axiom convertRetryPolicyⁱᵐᵖˡ : val.
 
 Definition minPointers : go_string := "google.golang.org/grpc.minPointers"%go.
 
-Axiom minPointersⁱᵐᵖˡ : val.
-
 Definition getMaxSize : go_string := "google.golang.org/grpc.getMaxSize"%go.
-
-Axiom getMaxSizeⁱᵐᵖˡ : val.
 
 Definition newInt : go_string := "google.golang.org/grpc.newInt"%go.
 
-Axiom newIntⁱᵐᵖˡ : val.
-
 Definition equalServiceConfig : go_string := "google.golang.org/grpc.equalServiceConfig"%go.
-
-Axiom equalServiceConfigⁱᵐᵖˡ : val.
 
 Definition metadataFromOutgoingContextRaw : go_string := "google.golang.org/grpc.metadataFromOutgoingContextRaw"%go.
 
@@ -1499,25 +817,11 @@ Axiom Stream : go_type.
 
 Axiom ClientStream : go_type.
 
-Axiom ClientConn__NewStreamⁱᵐᵖˡ : val.
-
 Definition NewClientStream : go_string := "google.golang.org/grpc.NewClientStream"%go.
-
-Axiom NewClientStreamⁱᵐᵖˡ : val.
 
 Definition newClientStream : go_string := "google.golang.org/grpc.newClientStream"%go.
 
-Axiom newClientStreamⁱᵐᵖˡ : val.
-
 Definition newClientStreamWithParams : go_string := "google.golang.org/grpc.newClientStreamWithParams"%go.
-
-Axiom newClientStreamWithParamsⁱᵐᵖˡ : val.
-
-Axiom clientStream__newAttemptLockedⁱᵐᵖˡ : val.
-
-Axiom csAttempt__getTransportⁱᵐᵖˡ : val.
-
-Axiom csAttempt__newStreamⁱᵐᵖˡ : val.
 
 Axiom clientStream : go_type.
 
@@ -1525,83 +829,17 @@ Axiom replayOp : go_type.
 
 Axiom csAttempt : go_type.
 
-Axiom clientStream__commitAttemptLockedⁱᵐᵖˡ : val.
-
-Axiom clientStream__commitAttemptⁱᵐᵖˡ : val.
-
-Axiom csAttempt__shouldRetryⁱᵐᵖˡ : val.
-
-Axiom clientStream__retryLockedⁱᵐᵖˡ : val.
-
-Axiom clientStream__Contextⁱᵐᵖˡ : val.
-
-Axiom clientStream__withRetryⁱᵐᵖˡ : val.
-
-Axiom clientStream__Headerⁱᵐᵖˡ : val.
-
-Axiom clientStream__Trailerⁱᵐᵖˡ : val.
-
-Axiom clientStream__replayBufferLockedⁱᵐᵖˡ : val.
-
-Axiom clientStream__bufferForRetryLockedⁱᵐᵖˡ : val.
-
-Axiom clientStream__SendMsgⁱᵐᵖˡ : val.
-
-Axiom clientStream__RecvMsgⁱᵐᵖˡ : val.
-
-Axiom clientStream__CloseSendⁱᵐᵖˡ : val.
-
-Axiom clientStream__finishⁱᵐᵖˡ : val.
-
-Axiom csAttempt__sendMsgⁱᵐᵖˡ : val.
-
-Axiom csAttempt__recvMsgⁱᵐᵖˡ : val.
-
-Axiom csAttempt__finishⁱᵐᵖˡ : val.
-
 Definition newNonRetryClientStream : go_string := "google.golang.org/grpc.newNonRetryClientStream"%go.
 
-Axiom newNonRetryClientStreamⁱᵐᵖˡ : val.
-
 Axiom addrConnStream : go_type.
-
-Axiom addrConnStream__Headerⁱᵐᵖˡ : val.
-
-Axiom addrConnStream__Trailerⁱᵐᵖˡ : val.
-
-Axiom addrConnStream__CloseSendⁱᵐᵖˡ : val.
-
-Axiom addrConnStream__Contextⁱᵐᵖˡ : val.
-
-Axiom addrConnStream__SendMsgⁱᵐᵖˡ : val.
-
-Axiom addrConnStream__RecvMsgⁱᵐᵖˡ : val.
-
-Axiom addrConnStream__finishⁱᵐᵖˡ : val.
 
 Axiom ServerStream : go_type.
 
 Axiom serverStream : go_type.
 
-Axiom serverStream__Contextⁱᵐᵖˡ : val.
-
-Axiom serverStream__SetHeaderⁱᵐᵖˡ : val.
-
-Axiom serverStream__SendHeaderⁱᵐᵖˡ : val.
-
-Axiom serverStream__SetTrailerⁱᵐᵖˡ : val.
-
-Axiom serverStream__SendMsgⁱᵐᵖˡ : val.
-
-Axiom serverStream__RecvMsgⁱᵐᵖˡ : val.
-
 Definition MethodFromServerStream : go_string := "google.golang.org/grpc.MethodFromServerStream"%go.
 
-Axiom MethodFromServerStreamⁱᵐᵖˡ : val.
-
 Definition prepareMsg : go_string := "google.golang.org/grpc.prepareMsg"%go.
-
-Axiom prepareMsgⁱᵐᵖˡ : val.
 
 Axiom ServerStreamingClient : go_type.
 
@@ -1617,25 +855,11 @@ Axiom BidiStreamingServer : go_type.
 
 Axiom GenericClientStream : go_type.
 
-Axiom GenericClientStream__Sendⁱᵐᵖˡ : val.
-
-Axiom GenericClientStream__Recvⁱᵐᵖˡ : val.
-
-Axiom GenericClientStream__CloseAndRecvⁱᵐᵖˡ : val.
-
 Axiom GenericServerStream : go_type.
-
-Axiom GenericServerStream__Sendⁱᵐᵖˡ : val.
-
-Axiom GenericServerStream__SendAndCloseⁱᵐᵖˡ : val.
-
-Axiom GenericServerStream__Recvⁱᵐᵖˡ : val.
 
 Definition EnableTracing : go_string := "google.golang.org/grpc.EnableTracing"%go.
 
 Definition methodFamily : go_string := "google.golang.org/grpc.methodFamily"%go.
-
-Axiom methodFamilyⁱᵐᵖˡ : val.
 
 Axiom traceEventLog : go_type.
 
@@ -1645,45 +869,861 @@ Axiom traceInfo : go_type.
 
 Axiom firstLine : go_type.
 
-Axiom firstLine__SetRemoteAddrⁱᵐᵖˡ : val.
-
-Axiom firstLine__Stringⁱᵐᵖˡ : val.
-
 Axiom truncateSize : Z.
 
 Definition truncate : go_string := "google.golang.org/grpc.truncate"%go.
 
-Axiom truncateⁱᵐᵖˡ : val.
-
 Axiom payload : go_type.
-
-Axiom payload__Stringⁱᵐᵖˡ : val.
 
 Axiom fmtStringer : go_type.
 
-Axiom fmtStringer__Stringⁱᵐᵖˡ : val.
-
 Axiom stringer : go_type.
-
-Axiom stringer__Stringⁱᵐᵖˡ : val.
 
 Definition newTrace : go_string := "google.golang.org/grpc.newTrace"%go.
 
-Axiom newTraceⁱᵐᵖˡ : val.
-
 Definition newTraceContext : go_string := "google.golang.org/grpc.newTraceContext"%go.
 
-Axiom newTraceContextⁱᵐᵖˡ : val.
-
 Definition newTraceEventLog : go_string := "google.golang.org/grpc.newTraceEventLog"%go.
-
-Axiom newTraceEventLogⁱᵐᵖˡ : val.
 
 Axiom Version : go_string.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(newCCBalancerWrapper, newCCBalancerWrapperⁱᵐᵖˡ); (newHealthData, newHealthDataⁱᵐᵖˡ); (combine, combineⁱᵐᵖˡ); (Invoke, Invokeⁱᵐᵖˡ); (invoke, invokeⁱᵐᵖˡ); (NewClient, NewClientⁱᵐᵖˡ); (Dial, Dialⁱᵐᵖˡ); (DialContext, DialContextⁱᵐᵖˡ); (chainUnaryClientInterceptors, chainUnaryClientInterceptorsⁱᵐᵖˡ); (getChainUnaryInvoker, getChainUnaryInvokerⁱᵐᵖˡ); (chainStreamClientInterceptors, chainStreamClientInterceptorsⁱᵐᵖˡ); (getChainStreamer, getChainStreamerⁱᵐᵖˡ); (newConnectivityStateManager, newConnectivityStateManagerⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (copyAddresses, copyAddressesⁱᵐᵖˡ); (equalAddressIgnoringBalAttributes, equalAddressIgnoringBalAttributesⁱᵐᵖˡ); (equalAddressesIgnoringBalAttributes, equalAddressesIgnoringBalAttributesⁱᵐᵖˡ); (getMethodConfig, getMethodConfigⁱᵐᵖˡ); (parseTarget, parseTargetⁱᵐᵖˡ); (encodeAuthority, encodeAuthorityⁱᵐᵖˡ); (getCodec, getCodecⁱᵐᵖˡ); (newCodecV0Bridge, newCodecV0Bridgeⁱᵐᵖˡ); (newCodecV1Bridge, newCodecV1Bridgeⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (newDisableGlobalDialOptions, newDisableGlobalDialOptionsⁱᵐᵖˡ); (newFuncDialOption, newFuncDialOptionⁱᵐᵖˡ); (newJoinDialOption, newJoinDialOptionⁱᵐᵖˡ); (WithSharedWriteBuffer, WithSharedWriteBufferⁱᵐᵖˡ); (WithWriteBufferSize, WithWriteBufferSizeⁱᵐᵖˡ); (WithReadBufferSize, WithReadBufferSizeⁱᵐᵖˡ); (WithInitialWindowSize, WithInitialWindowSizeⁱᵐᵖˡ); (WithInitialConnWindowSize, WithInitialConnWindowSizeⁱᵐᵖˡ); (WithMaxMsgSize, WithMaxMsgSizeⁱᵐᵖˡ); (WithDefaultCallOptions, WithDefaultCallOptionsⁱᵐᵖˡ); (WithCodec, WithCodecⁱᵐᵖˡ); (WithCompressor, WithCompressorⁱᵐᵖˡ); (WithDecompressor, WithDecompressorⁱᵐᵖˡ); (WithConnectParams, WithConnectParamsⁱᵐᵖˡ); (WithBackoffMaxDelay, WithBackoffMaxDelayⁱᵐᵖˡ); (WithBackoffConfig, WithBackoffConfigⁱᵐᵖˡ); (withBackoff, withBackoffⁱᵐᵖˡ); (WithBlock, WithBlockⁱᵐᵖˡ); (WithReturnConnectionError, WithReturnConnectionErrorⁱᵐᵖˡ); (WithInsecure, WithInsecureⁱᵐᵖˡ); (WithNoProxy, WithNoProxyⁱᵐᵖˡ); (WithTransportCredentials, WithTransportCredentialsⁱᵐᵖˡ); (WithPerRPCCredentials, WithPerRPCCredentialsⁱᵐᵖˡ); (WithCredentialsBundle, WithCredentialsBundleⁱᵐᵖˡ); (WithTimeout, WithTimeoutⁱᵐᵖˡ); (WithContextDialer, WithContextDialerⁱᵐᵖˡ); (WithDialer, WithDialerⁱᵐᵖˡ); (WithStatsHandler, WithStatsHandlerⁱᵐᵖˡ); (withBinaryLogger, withBinaryLoggerⁱᵐᵖˡ); (FailOnNonTempDialError, FailOnNonTempDialErrorⁱᵐᵖˡ); (WithUserAgent, WithUserAgentⁱᵐᵖˡ); (WithKeepaliveParams, WithKeepaliveParamsⁱᵐᵖˡ); (WithUnaryInterceptor, WithUnaryInterceptorⁱᵐᵖˡ); (WithChainUnaryInterceptor, WithChainUnaryInterceptorⁱᵐᵖˡ); (WithStreamInterceptor, WithStreamInterceptorⁱᵐᵖˡ); (WithChainStreamInterceptor, WithChainStreamInterceptorⁱᵐᵖˡ); (WithAuthority, WithAuthorityⁱᵐᵖˡ); (WithChannelzParentID, WithChannelzParentIDⁱᵐᵖˡ); (WithDisableServiceConfig, WithDisableServiceConfigⁱᵐᵖˡ); (WithDefaultServiceConfig, WithDefaultServiceConfigⁱᵐᵖˡ); (WithDisableRetry, WithDisableRetryⁱᵐᵖˡ); (WithMaxHeaderListSize, WithMaxHeaderListSizeⁱᵐᵖˡ); (WithDisableHealthCheck, WithDisableHealthCheckⁱᵐᵖˡ); (defaultDialOptions, defaultDialOptionsⁱᵐᵖˡ); (withMinConnectDeadline, withMinConnectDeadlineⁱᵐᵖˡ); (withDefaultScheme, withDefaultSchemeⁱᵐᵖˡ); (WithResolvers, WithResolversⁱᵐᵖˡ); (WithIdleTimeout, WithIdleTimeoutⁱᵐᵖˡ); (WithMaxCallAttempts, WithMaxCallAttemptsⁱᵐᵖˡ); (withBufferPool, withBufferPoolⁱᵐᵖˡ); (newPickerWrapper, newPickerWrapperⁱᵐᵖˡ); (doneChannelzWrapper, doneChannelzWrapperⁱᵐᵖˡ); (newCCResolverWrapper, newCCResolverWrapperⁱᵐᵖˡ); (NewGZIPCompressor, NewGZIPCompressorⁱᵐᵖˡ); (NewGZIPCompressorWithLevel, NewGZIPCompressorWithLevelⁱᵐᵖˡ); (NewGZIPDecompressor, NewGZIPDecompressorⁱᵐᵖˡ); (defaultCallInfo, defaultCallInfoⁱᵐᵖˡ); (StaticMethod, StaticMethodⁱᵐᵖˡ); (Header, Headerⁱᵐᵖˡ); (Trailer, Trailerⁱᵐᵖˡ); (Peer, Peerⁱᵐᵖˡ); (WaitForReady, WaitForReadyⁱᵐᵖˡ); (FailFast, FailFastⁱᵐᵖˡ); (OnFinish, OnFinishⁱᵐᵖˡ); (MaxCallRecvMsgSize, MaxCallRecvMsgSizeⁱᵐᵖˡ); (MaxCallSendMsgSize, MaxCallSendMsgSizeⁱᵐᵖˡ); (PerRPCCredentials, PerRPCCredentialsⁱᵐᵖˡ); (UseCompressor, UseCompressorⁱᵐᵖˡ); (CallContentSubtype, CallContentSubtypeⁱᵐᵖˡ); (ForceCodec, ForceCodecⁱᵐᵖˡ); (ForceCodecV2, ForceCodecV2ⁱᵐᵖˡ); (CallCustomCodec, CallCustomCodecⁱᵐᵖˡ); (MaxRetryRPCBufferSize, MaxRetryRPCBufferSizeⁱᵐᵖˡ); (encode, encodeⁱᵐᵖˡ); (compress, compressⁱᵐᵖˡ); (msgHeader, msgHeaderⁱᵐᵖˡ); (outPayload, outPayloadⁱᵐᵖˡ); (checkRecvPayload, checkRecvPayloadⁱᵐᵖˡ); (recvAndDecompress, recvAndDecompressⁱᵐᵖˡ); (decompress, decompressⁱᵐᵖˡ); (recv, recvⁱᵐᵖˡ); (newContextWithRPCInfo, newContextWithRPCInfoⁱᵐᵖˡ); (rpcInfoFromContext, rpcInfoFromContextⁱᵐᵖˡ); (Code, Codeⁱᵐᵖˡ); (ErrorDesc, ErrorDescⁱᵐᵖˡ); (Errorf, Errorfⁱᵐᵖˡ); (toRPCErr, toRPCErrⁱᵐᵖˡ); (setCallInfoCodec, setCallInfoCodecⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (newFuncServerOption, newFuncServerOptionⁱᵐᵖˡ); (newJoinServerOption, newJoinServerOptionⁱᵐᵖˡ); (SharedWriteBuffer, SharedWriteBufferⁱᵐᵖˡ); (WriteBufferSize, WriteBufferSizeⁱᵐᵖˡ); (ReadBufferSize, ReadBufferSizeⁱᵐᵖˡ); (InitialWindowSize, InitialWindowSizeⁱᵐᵖˡ); (InitialConnWindowSize, InitialConnWindowSizeⁱᵐᵖˡ); (KeepaliveParams, KeepaliveParamsⁱᵐᵖˡ); (KeepaliveEnforcementPolicy, KeepaliveEnforcementPolicyⁱᵐᵖˡ); (CustomCodec, CustomCodecⁱᵐᵖˡ); (ForceServerCodec, ForceServerCodecⁱᵐᵖˡ); (ForceServerCodecV2, ForceServerCodecV2ⁱᵐᵖˡ); (RPCCompressor, RPCCompressorⁱᵐᵖˡ); (RPCDecompressor, RPCDecompressorⁱᵐᵖˡ); (MaxMsgSize, MaxMsgSizeⁱᵐᵖˡ); (MaxRecvMsgSize, MaxRecvMsgSizeⁱᵐᵖˡ); (MaxSendMsgSize, MaxSendMsgSizeⁱᵐᵖˡ); (MaxConcurrentStreams, MaxConcurrentStreamsⁱᵐᵖˡ); (Creds, Credsⁱᵐᵖˡ); (UnaryInterceptor, UnaryInterceptorⁱᵐᵖˡ); (ChainUnaryInterceptor, ChainUnaryInterceptorⁱᵐᵖˡ); (StreamInterceptor, StreamInterceptorⁱᵐᵖˡ); (ChainStreamInterceptor, ChainStreamInterceptorⁱᵐᵖˡ); (InTapHandle, InTapHandleⁱᵐᵖˡ); (StatsHandler, StatsHandlerⁱᵐᵖˡ); (binaryLogger, binaryLoggerⁱᵐᵖˡ); (UnknownServiceHandler, UnknownServiceHandlerⁱᵐᵖˡ); (ConnectionTimeout, ConnectionTimeoutⁱᵐᵖˡ); (MaxHeaderListSize, MaxHeaderListSizeⁱᵐᵖˡ); (HeaderTableSize, HeaderTableSizeⁱᵐᵖˡ); (NumStreamWorkers, NumStreamWorkersⁱᵐᵖˡ); (WaitForHandlers, WaitForHandlersⁱᵐᵖˡ); (bufferPool, bufferPoolⁱᵐᵖˡ); (NewServer, NewServerⁱᵐᵖˡ); (chainUnaryServerInterceptors, chainUnaryServerInterceptorsⁱᵐᵖˡ); (chainUnaryInterceptors, chainUnaryInterceptorsⁱᵐᵖˡ); (getChainUnaryHandler, getChainUnaryHandlerⁱᵐᵖˡ); (chainStreamServerInterceptors, chainStreamServerInterceptorsⁱᵐᵖˡ); (chainStreamInterceptors, chainStreamInterceptorsⁱᵐᵖˡ); (getChainStreamHandler, getChainStreamHandlerⁱᵐᵖˡ); (NewContextWithServerTransportStream, NewContextWithServerTransportStreamⁱᵐᵖˡ); (ServerTransportStreamFromContext, ServerTransportStreamFromContextⁱᵐᵖˡ); (serverFromContext, serverFromContextⁱᵐᵖˡ); (contextWithServer, contextWithServerⁱᵐᵖˡ); (SetHeader, SetHeaderⁱᵐᵖˡ); (SendHeader, SendHeaderⁱᵐᵖˡ); (SetSendCompressor, SetSendCompressorⁱᵐᵖˡ); (ClientSupportedCompressors, ClientSupportedCompressorsⁱᵐᵖˡ); (SetTrailer, SetTrailerⁱᵐᵖˡ); (Method, Methodⁱᵐᵖˡ); (validateSendCompressor, validateSendCompressorⁱᵐᵖˡ); (newHandlerQuota, newHandlerQuotaⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (parseServiceConfig, parseServiceConfigⁱᵐᵖˡ); (convertRetryPolicy, convertRetryPolicyⁱᵐᵖˡ); (minPointers, minPointersⁱᵐᵖˡ); (getMaxSize, getMaxSizeⁱᵐᵖˡ); (newInt, newIntⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (equalServiceConfig, equalServiceConfigⁱᵐᵖˡ); (NewClientStream, NewClientStreamⁱᵐᵖˡ); (newClientStream, newClientStreamⁱᵐᵖˡ); (newClientStreamWithParams, newClientStreamWithParamsⁱᵐᵖˡ); (newNonRetryClientStream, newNonRetryClientStreamⁱᵐᵖˡ); (MethodFromServerStream, MethodFromServerStreamⁱᵐᵖˡ); (prepareMsg, prepareMsgⁱᵐᵖˡ); (methodFamily, methodFamilyⁱᵐᵖˡ); (truncate, truncateⁱᵐᵖˡ); (newTrace, newTraceⁱᵐᵖˡ); (newTraceContext, newTraceContextⁱᵐᵖˡ); (newTraceEventLog, newTraceEventLogⁱᵐᵖˡ)].
+Axiom newCCBalancerWrapperⁱᵐᵖˡ : val.
+
+Axiom newHealthDataⁱᵐᵖˡ : val.
+
+Axiom combineⁱᵐᵖˡ : val.
+
+Axiom Invokeⁱᵐᵖˡ : val.
+
+Axiom invokeⁱᵐᵖˡ : val.
+
+Axiom NewClientⁱᵐᵖˡ : val.
+
+Axiom Dialⁱᵐᵖˡ : val.
+
+Axiom DialContextⁱᵐᵖˡ : val.
+
+Axiom chainUnaryClientInterceptorsⁱᵐᵖˡ : val.
+
+Axiom getChainUnaryInvokerⁱᵐᵖˡ : val.
+
+Axiom chainStreamClientInterceptorsⁱᵐᵖˡ : val.
+
+Axiom getChainStreamerⁱᵐᵖˡ : val.
+
+Axiom newConnectivityStateManagerⁱᵐᵖˡ : val.
+
+Axiom copyAddressesⁱᵐᵖˡ : val.
+
+Axiom equalAddressIgnoringBalAttributesⁱᵐᵖˡ : val.
+
+Axiom equalAddressesIgnoringBalAttributesⁱᵐᵖˡ : val.
+
+Axiom getMethodConfigⁱᵐᵖˡ : val.
+
+Axiom parseTargetⁱᵐᵖˡ : val.
+
+Axiom encodeAuthorityⁱᵐᵖˡ : val.
+
+Axiom getCodecⁱᵐᵖˡ : val.
+
+Axiom newCodecV0Bridgeⁱᵐᵖˡ : val.
+
+Axiom newCodecV1Bridgeⁱᵐᵖˡ : val.
+
+Axiom newDisableGlobalDialOptionsⁱᵐᵖˡ : val.
+
+Axiom newFuncDialOptionⁱᵐᵖˡ : val.
+
+Axiom newJoinDialOptionⁱᵐᵖˡ : val.
+
+Axiom WithSharedWriteBufferⁱᵐᵖˡ : val.
+
+Axiom WithWriteBufferSizeⁱᵐᵖˡ : val.
+
+Axiom WithReadBufferSizeⁱᵐᵖˡ : val.
+
+Axiom WithInitialWindowSizeⁱᵐᵖˡ : val.
+
+Axiom WithInitialConnWindowSizeⁱᵐᵖˡ : val.
+
+Axiom WithMaxMsgSizeⁱᵐᵖˡ : val.
+
+Axiom WithDefaultCallOptionsⁱᵐᵖˡ : val.
+
+Axiom WithCodecⁱᵐᵖˡ : val.
+
+Axiom WithCompressorⁱᵐᵖˡ : val.
+
+Axiom WithDecompressorⁱᵐᵖˡ : val.
+
+Axiom WithConnectParamsⁱᵐᵖˡ : val.
+
+Axiom WithBackoffMaxDelayⁱᵐᵖˡ : val.
+
+Axiom WithBackoffConfigⁱᵐᵖˡ : val.
+
+Axiom withBackoffⁱᵐᵖˡ : val.
+
+Axiom WithBlockⁱᵐᵖˡ : val.
+
+Axiom WithReturnConnectionErrorⁱᵐᵖˡ : val.
+
+Axiom WithInsecureⁱᵐᵖˡ : val.
+
+Axiom WithNoProxyⁱᵐᵖˡ : val.
+
+Axiom WithTransportCredentialsⁱᵐᵖˡ : val.
+
+Axiom WithPerRPCCredentialsⁱᵐᵖˡ : val.
+
+Axiom WithCredentialsBundleⁱᵐᵖˡ : val.
+
+Axiom WithTimeoutⁱᵐᵖˡ : val.
+
+Axiom WithContextDialerⁱᵐᵖˡ : val.
+
+Axiom WithDialerⁱᵐᵖˡ : val.
+
+Axiom WithStatsHandlerⁱᵐᵖˡ : val.
+
+Axiom withBinaryLoggerⁱᵐᵖˡ : val.
+
+Axiom FailOnNonTempDialErrorⁱᵐᵖˡ : val.
+
+Axiom WithUserAgentⁱᵐᵖˡ : val.
+
+Axiom WithKeepaliveParamsⁱᵐᵖˡ : val.
+
+Axiom WithUnaryInterceptorⁱᵐᵖˡ : val.
+
+Axiom WithChainUnaryInterceptorⁱᵐᵖˡ : val.
+
+Axiom WithStreamInterceptorⁱᵐᵖˡ : val.
+
+Axiom WithChainStreamInterceptorⁱᵐᵖˡ : val.
+
+Axiom WithAuthorityⁱᵐᵖˡ : val.
+
+Axiom WithChannelzParentIDⁱᵐᵖˡ : val.
+
+Axiom WithDisableServiceConfigⁱᵐᵖˡ : val.
+
+Axiom WithDefaultServiceConfigⁱᵐᵖˡ : val.
+
+Axiom WithDisableRetryⁱᵐᵖˡ : val.
+
+Axiom WithMaxHeaderListSizeⁱᵐᵖˡ : val.
+
+Axiom WithDisableHealthCheckⁱᵐᵖˡ : val.
+
+Axiom defaultDialOptionsⁱᵐᵖˡ : val.
+
+Axiom withMinConnectDeadlineⁱᵐᵖˡ : val.
+
+Axiom withDefaultSchemeⁱᵐᵖˡ : val.
+
+Axiom WithResolversⁱᵐᵖˡ : val.
+
+Axiom WithIdleTimeoutⁱᵐᵖˡ : val.
+
+Axiom WithMaxCallAttemptsⁱᵐᵖˡ : val.
+
+Axiom withBufferPoolⁱᵐᵖˡ : val.
+
+Axiom newPickerWrapperⁱᵐᵖˡ : val.
+
+Axiom doneChannelzWrapperⁱᵐᵖˡ : val.
+
+Axiom newCCResolverWrapperⁱᵐᵖˡ : val.
+
+Axiom NewGZIPCompressorⁱᵐᵖˡ : val.
+
+Axiom NewGZIPCompressorWithLevelⁱᵐᵖˡ : val.
+
+Axiom NewGZIPDecompressorⁱᵐᵖˡ : val.
+
+Axiom defaultCallInfoⁱᵐᵖˡ : val.
+
+Axiom StaticMethodⁱᵐᵖˡ : val.
+
+Axiom Headerⁱᵐᵖˡ : val.
+
+Axiom Trailerⁱᵐᵖˡ : val.
+
+Axiom Peerⁱᵐᵖˡ : val.
+
+Axiom WaitForReadyⁱᵐᵖˡ : val.
+
+Axiom FailFastⁱᵐᵖˡ : val.
+
+Axiom OnFinishⁱᵐᵖˡ : val.
+
+Axiom MaxCallRecvMsgSizeⁱᵐᵖˡ : val.
+
+Axiom MaxCallSendMsgSizeⁱᵐᵖˡ : val.
+
+Axiom PerRPCCredentialsⁱᵐᵖˡ : val.
+
+Axiom UseCompressorⁱᵐᵖˡ : val.
+
+Axiom CallContentSubtypeⁱᵐᵖˡ : val.
+
+Axiom ForceCodecⁱᵐᵖˡ : val.
+
+Axiom ForceCodecV2ⁱᵐᵖˡ : val.
+
+Axiom CallCustomCodecⁱᵐᵖˡ : val.
+
+Axiom MaxRetryRPCBufferSizeⁱᵐᵖˡ : val.
+
+Axiom encodeⁱᵐᵖˡ : val.
+
+Axiom compressⁱᵐᵖˡ : val.
+
+Axiom msgHeaderⁱᵐᵖˡ : val.
+
+Axiom outPayloadⁱᵐᵖˡ : val.
+
+Axiom checkRecvPayloadⁱᵐᵖˡ : val.
+
+Axiom recvAndDecompressⁱᵐᵖˡ : val.
+
+Axiom decompressⁱᵐᵖˡ : val.
+
+Axiom recvⁱᵐᵖˡ : val.
+
+Axiom newContextWithRPCInfoⁱᵐᵖˡ : val.
+
+Axiom rpcInfoFromContextⁱᵐᵖˡ : val.
+
+Axiom Codeⁱᵐᵖˡ : val.
+
+Axiom ErrorDescⁱᵐᵖˡ : val.
+
+Axiom Errorfⁱᵐᵖˡ : val.
+
+Axiom toRPCErrⁱᵐᵖˡ : val.
+
+Axiom setCallInfoCodecⁱᵐᵖˡ : val.
+
+Axiom newFuncServerOptionⁱᵐᵖˡ : val.
+
+Axiom newJoinServerOptionⁱᵐᵖˡ : val.
+
+Axiom SharedWriteBufferⁱᵐᵖˡ : val.
+
+Axiom WriteBufferSizeⁱᵐᵖˡ : val.
+
+Axiom ReadBufferSizeⁱᵐᵖˡ : val.
+
+Axiom InitialWindowSizeⁱᵐᵖˡ : val.
+
+Axiom InitialConnWindowSizeⁱᵐᵖˡ : val.
+
+Axiom KeepaliveParamsⁱᵐᵖˡ : val.
+
+Axiom KeepaliveEnforcementPolicyⁱᵐᵖˡ : val.
+
+Axiom CustomCodecⁱᵐᵖˡ : val.
+
+Axiom ForceServerCodecⁱᵐᵖˡ : val.
+
+Axiom ForceServerCodecV2ⁱᵐᵖˡ : val.
+
+Axiom RPCCompressorⁱᵐᵖˡ : val.
+
+Axiom RPCDecompressorⁱᵐᵖˡ : val.
+
+Axiom MaxMsgSizeⁱᵐᵖˡ : val.
+
+Axiom MaxRecvMsgSizeⁱᵐᵖˡ : val.
+
+Axiom MaxSendMsgSizeⁱᵐᵖˡ : val.
+
+Axiom MaxConcurrentStreamsⁱᵐᵖˡ : val.
+
+Axiom Credsⁱᵐᵖˡ : val.
+
+Axiom UnaryInterceptorⁱᵐᵖˡ : val.
+
+Axiom ChainUnaryInterceptorⁱᵐᵖˡ : val.
+
+Axiom StreamInterceptorⁱᵐᵖˡ : val.
+
+Axiom ChainStreamInterceptorⁱᵐᵖˡ : val.
+
+Axiom InTapHandleⁱᵐᵖˡ : val.
+
+Axiom StatsHandlerⁱᵐᵖˡ : val.
+
+Axiom binaryLoggerⁱᵐᵖˡ : val.
+
+Axiom UnknownServiceHandlerⁱᵐᵖˡ : val.
+
+Axiom ConnectionTimeoutⁱᵐᵖˡ : val.
+
+Axiom MaxHeaderListSizeⁱᵐᵖˡ : val.
+
+Axiom HeaderTableSizeⁱᵐᵖˡ : val.
+
+Axiom NumStreamWorkersⁱᵐᵖˡ : val.
+
+Axiom WaitForHandlersⁱᵐᵖˡ : val.
+
+Axiom bufferPoolⁱᵐᵖˡ : val.
+
+Axiom NewServerⁱᵐᵖˡ : val.
+
+Axiom chainUnaryServerInterceptorsⁱᵐᵖˡ : val.
+
+Axiom chainUnaryInterceptorsⁱᵐᵖˡ : val.
+
+Axiom getChainUnaryHandlerⁱᵐᵖˡ : val.
+
+Axiom chainStreamServerInterceptorsⁱᵐᵖˡ : val.
+
+Axiom chainStreamInterceptorsⁱᵐᵖˡ : val.
+
+Axiom getChainStreamHandlerⁱᵐᵖˡ : val.
+
+Axiom NewContextWithServerTransportStreamⁱᵐᵖˡ : val.
+
+Axiom ServerTransportStreamFromContextⁱᵐᵖˡ : val.
+
+Axiom serverFromContextⁱᵐᵖˡ : val.
+
+Axiom contextWithServerⁱᵐᵖˡ : val.
+
+Axiom SetHeaderⁱᵐᵖˡ : val.
+
+Axiom SendHeaderⁱᵐᵖˡ : val.
+
+Axiom SetSendCompressorⁱᵐᵖˡ : val.
+
+Axiom ClientSupportedCompressorsⁱᵐᵖˡ : val.
+
+Axiom SetTrailerⁱᵐᵖˡ : val.
+
+Axiom Methodⁱᵐᵖˡ : val.
+
+Axiom validateSendCompressorⁱᵐᵖˡ : val.
+
+Axiom newHandlerQuotaⁱᵐᵖˡ : val.
+
+Axiom parseServiceConfigⁱᵐᵖˡ : val.
+
+Axiom convertRetryPolicyⁱᵐᵖˡ : val.
+
+Axiom minPointersⁱᵐᵖˡ : val.
+
+Axiom getMaxSizeⁱᵐᵖˡ : val.
+
+Axiom newIntⁱᵐᵖˡ : val.
+
+Axiom equalServiceConfigⁱᵐᵖˡ : val.
+
+Axiom NewClientStreamⁱᵐᵖˡ : val.
+
+Axiom newClientStreamⁱᵐᵖˡ : val.
+
+Axiom newClientStreamWithParamsⁱᵐᵖˡ : val.
+
+Axiom newNonRetryClientStreamⁱᵐᵖˡ : val.
+
+Axiom MethodFromServerStreamⁱᵐᵖˡ : val.
+
+Axiom prepareMsgⁱᵐᵖˡ : val.
+
+Axiom methodFamilyⁱᵐᵖˡ : val.
+
+Axiom truncateⁱᵐᵖˡ : val.
+
+Axiom newTraceⁱᵐᵖˡ : val.
+
+Axiom newTraceContextⁱᵐᵖˡ : val.
+
+Axiom newTraceEventLogⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(newCCBalancerWrapper, newCCBalancerWrapperⁱᵐᵖˡ); (newHealthData, newHealthDataⁱᵐᵖˡ); (combine, combineⁱᵐᵖˡ); (Invoke, Invokeⁱᵐᵖˡ); (invoke, invokeⁱᵐᵖˡ); (NewClient, NewClientⁱᵐᵖˡ); (Dial, Dialⁱᵐᵖˡ); (DialContext, DialContextⁱᵐᵖˡ); (chainUnaryClientInterceptors, chainUnaryClientInterceptorsⁱᵐᵖˡ); (getChainUnaryInvoker, getChainUnaryInvokerⁱᵐᵖˡ); (chainStreamClientInterceptors, chainStreamClientInterceptorsⁱᵐᵖˡ); (getChainStreamer, getChainStreamerⁱᵐᵖˡ); (newConnectivityStateManager, newConnectivityStateManagerⁱᵐᵖˡ); (copyAddresses, copyAddressesⁱᵐᵖˡ); (equalAddressIgnoringBalAttributes, equalAddressIgnoringBalAttributesⁱᵐᵖˡ); (equalAddressesIgnoringBalAttributes, equalAddressesIgnoringBalAttributesⁱᵐᵖˡ); (getMethodConfig, getMethodConfigⁱᵐᵖˡ); (parseTarget, parseTargetⁱᵐᵖˡ); (encodeAuthority, encodeAuthorityⁱᵐᵖˡ); (getCodec, getCodecⁱᵐᵖˡ); (newCodecV0Bridge, newCodecV0Bridgeⁱᵐᵖˡ); (newCodecV1Bridge, newCodecV1Bridgeⁱᵐᵖˡ); (newDisableGlobalDialOptions, newDisableGlobalDialOptionsⁱᵐᵖˡ); (newFuncDialOption, newFuncDialOptionⁱᵐᵖˡ); (newJoinDialOption, newJoinDialOptionⁱᵐᵖˡ); (WithSharedWriteBuffer, WithSharedWriteBufferⁱᵐᵖˡ); (WithWriteBufferSize, WithWriteBufferSizeⁱᵐᵖˡ); (WithReadBufferSize, WithReadBufferSizeⁱᵐᵖˡ); (WithInitialWindowSize, WithInitialWindowSizeⁱᵐᵖˡ); (WithInitialConnWindowSize, WithInitialConnWindowSizeⁱᵐᵖˡ); (WithMaxMsgSize, WithMaxMsgSizeⁱᵐᵖˡ); (WithDefaultCallOptions, WithDefaultCallOptionsⁱᵐᵖˡ); (WithCodec, WithCodecⁱᵐᵖˡ); (WithCompressor, WithCompressorⁱᵐᵖˡ); (WithDecompressor, WithDecompressorⁱᵐᵖˡ); (WithConnectParams, WithConnectParamsⁱᵐᵖˡ); (WithBackoffMaxDelay, WithBackoffMaxDelayⁱᵐᵖˡ); (WithBackoffConfig, WithBackoffConfigⁱᵐᵖˡ); (withBackoff, withBackoffⁱᵐᵖˡ); (WithBlock, WithBlockⁱᵐᵖˡ); (WithReturnConnectionError, WithReturnConnectionErrorⁱᵐᵖˡ); (WithInsecure, WithInsecureⁱᵐᵖˡ); (WithNoProxy, WithNoProxyⁱᵐᵖˡ); (WithTransportCredentials, WithTransportCredentialsⁱᵐᵖˡ); (WithPerRPCCredentials, WithPerRPCCredentialsⁱᵐᵖˡ); (WithCredentialsBundle, WithCredentialsBundleⁱᵐᵖˡ); (WithTimeout, WithTimeoutⁱᵐᵖˡ); (WithContextDialer, WithContextDialerⁱᵐᵖˡ); (WithDialer, WithDialerⁱᵐᵖˡ); (WithStatsHandler, WithStatsHandlerⁱᵐᵖˡ); (withBinaryLogger, withBinaryLoggerⁱᵐᵖˡ); (FailOnNonTempDialError, FailOnNonTempDialErrorⁱᵐᵖˡ); (WithUserAgent, WithUserAgentⁱᵐᵖˡ); (WithKeepaliveParams, WithKeepaliveParamsⁱᵐᵖˡ); (WithUnaryInterceptor, WithUnaryInterceptorⁱᵐᵖˡ); (WithChainUnaryInterceptor, WithChainUnaryInterceptorⁱᵐᵖˡ); (WithStreamInterceptor, WithStreamInterceptorⁱᵐᵖˡ); (WithChainStreamInterceptor, WithChainStreamInterceptorⁱᵐᵖˡ); (WithAuthority, WithAuthorityⁱᵐᵖˡ); (WithChannelzParentID, WithChannelzParentIDⁱᵐᵖˡ); (WithDisableServiceConfig, WithDisableServiceConfigⁱᵐᵖˡ); (WithDefaultServiceConfig, WithDefaultServiceConfigⁱᵐᵖˡ); (WithDisableRetry, WithDisableRetryⁱᵐᵖˡ); (WithMaxHeaderListSize, WithMaxHeaderListSizeⁱᵐᵖˡ); (WithDisableHealthCheck, WithDisableHealthCheckⁱᵐᵖˡ); (defaultDialOptions, defaultDialOptionsⁱᵐᵖˡ); (withMinConnectDeadline, withMinConnectDeadlineⁱᵐᵖˡ); (withDefaultScheme, withDefaultSchemeⁱᵐᵖˡ); (WithResolvers, WithResolversⁱᵐᵖˡ); (WithIdleTimeout, WithIdleTimeoutⁱᵐᵖˡ); (WithMaxCallAttempts, WithMaxCallAttemptsⁱᵐᵖˡ); (withBufferPool, withBufferPoolⁱᵐᵖˡ); (newPickerWrapper, newPickerWrapperⁱᵐᵖˡ); (doneChannelzWrapper, doneChannelzWrapperⁱᵐᵖˡ); (newCCResolverWrapper, newCCResolverWrapperⁱᵐᵖˡ); (NewGZIPCompressor, NewGZIPCompressorⁱᵐᵖˡ); (NewGZIPCompressorWithLevel, NewGZIPCompressorWithLevelⁱᵐᵖˡ); (NewGZIPDecompressor, NewGZIPDecompressorⁱᵐᵖˡ); (defaultCallInfo, defaultCallInfoⁱᵐᵖˡ); (StaticMethod, StaticMethodⁱᵐᵖˡ); (Header, Headerⁱᵐᵖˡ); (Trailer, Trailerⁱᵐᵖˡ); (Peer, Peerⁱᵐᵖˡ); (WaitForReady, WaitForReadyⁱᵐᵖˡ); (FailFast, FailFastⁱᵐᵖˡ); (OnFinish, OnFinishⁱᵐᵖˡ); (MaxCallRecvMsgSize, MaxCallRecvMsgSizeⁱᵐᵖˡ); (MaxCallSendMsgSize, MaxCallSendMsgSizeⁱᵐᵖˡ); (PerRPCCredentials, PerRPCCredentialsⁱᵐᵖˡ); (UseCompressor, UseCompressorⁱᵐᵖˡ); (CallContentSubtype, CallContentSubtypeⁱᵐᵖˡ); (ForceCodec, ForceCodecⁱᵐᵖˡ); (ForceCodecV2, ForceCodecV2ⁱᵐᵖˡ); (CallCustomCodec, CallCustomCodecⁱᵐᵖˡ); (MaxRetryRPCBufferSize, MaxRetryRPCBufferSizeⁱᵐᵖˡ); (encode, encodeⁱᵐᵖˡ); (compress, compressⁱᵐᵖˡ); (msgHeader, msgHeaderⁱᵐᵖˡ); (outPayload, outPayloadⁱᵐᵖˡ); (checkRecvPayload, checkRecvPayloadⁱᵐᵖˡ); (recvAndDecompress, recvAndDecompressⁱᵐᵖˡ); (decompress, decompressⁱᵐᵖˡ); (recv, recvⁱᵐᵖˡ); (newContextWithRPCInfo, newContextWithRPCInfoⁱᵐᵖˡ); (rpcInfoFromContext, rpcInfoFromContextⁱᵐᵖˡ); (Code, Codeⁱᵐᵖˡ); (ErrorDesc, ErrorDescⁱᵐᵖˡ); (Errorf, Errorfⁱᵐᵖˡ); (toRPCErr, toRPCErrⁱᵐᵖˡ); (setCallInfoCodec, setCallInfoCodecⁱᵐᵖˡ); (newFuncServerOption, newFuncServerOptionⁱᵐᵖˡ); (newJoinServerOption, newJoinServerOptionⁱᵐᵖˡ); (SharedWriteBuffer, SharedWriteBufferⁱᵐᵖˡ); (WriteBufferSize, WriteBufferSizeⁱᵐᵖˡ); (ReadBufferSize, ReadBufferSizeⁱᵐᵖˡ); (InitialWindowSize, InitialWindowSizeⁱᵐᵖˡ); (InitialConnWindowSize, InitialConnWindowSizeⁱᵐᵖˡ); (KeepaliveParams, KeepaliveParamsⁱᵐᵖˡ); (KeepaliveEnforcementPolicy, KeepaliveEnforcementPolicyⁱᵐᵖˡ); (CustomCodec, CustomCodecⁱᵐᵖˡ); (ForceServerCodec, ForceServerCodecⁱᵐᵖˡ); (ForceServerCodecV2, ForceServerCodecV2ⁱᵐᵖˡ); (RPCCompressor, RPCCompressorⁱᵐᵖˡ); (RPCDecompressor, RPCDecompressorⁱᵐᵖˡ); (MaxMsgSize, MaxMsgSizeⁱᵐᵖˡ); (MaxRecvMsgSize, MaxRecvMsgSizeⁱᵐᵖˡ); (MaxSendMsgSize, MaxSendMsgSizeⁱᵐᵖˡ); (MaxConcurrentStreams, MaxConcurrentStreamsⁱᵐᵖˡ); (Creds, Credsⁱᵐᵖˡ); (UnaryInterceptor, UnaryInterceptorⁱᵐᵖˡ); (ChainUnaryInterceptor, ChainUnaryInterceptorⁱᵐᵖˡ); (StreamInterceptor, StreamInterceptorⁱᵐᵖˡ); (ChainStreamInterceptor, ChainStreamInterceptorⁱᵐᵖˡ); (InTapHandle, InTapHandleⁱᵐᵖˡ); (StatsHandler, StatsHandlerⁱᵐᵖˡ); (binaryLogger, binaryLoggerⁱᵐᵖˡ); (UnknownServiceHandler, UnknownServiceHandlerⁱᵐᵖˡ); (ConnectionTimeout, ConnectionTimeoutⁱᵐᵖˡ); (MaxHeaderListSize, MaxHeaderListSizeⁱᵐᵖˡ); (HeaderTableSize, HeaderTableSizeⁱᵐᵖˡ); (NumStreamWorkers, NumStreamWorkersⁱᵐᵖˡ); (WaitForHandlers, WaitForHandlersⁱᵐᵖˡ); (bufferPool, bufferPoolⁱᵐᵖˡ); (NewServer, NewServerⁱᵐᵖˡ); (chainUnaryServerInterceptors, chainUnaryServerInterceptorsⁱᵐᵖˡ); (chainUnaryInterceptors, chainUnaryInterceptorsⁱᵐᵖˡ); (getChainUnaryHandler, getChainUnaryHandlerⁱᵐᵖˡ); (chainStreamServerInterceptors, chainStreamServerInterceptorsⁱᵐᵖˡ); (chainStreamInterceptors, chainStreamInterceptorsⁱᵐᵖˡ); (getChainStreamHandler, getChainStreamHandlerⁱᵐᵖˡ); (NewContextWithServerTransportStream, NewContextWithServerTransportStreamⁱᵐᵖˡ); (ServerTransportStreamFromContext, ServerTransportStreamFromContextⁱᵐᵖˡ); (serverFromContext, serverFromContextⁱᵐᵖˡ); (contextWithServer, contextWithServerⁱᵐᵖˡ); (SetHeader, SetHeaderⁱᵐᵖˡ); (SendHeader, SendHeaderⁱᵐᵖˡ); (SetSendCompressor, SetSendCompressorⁱᵐᵖˡ); (ClientSupportedCompressors, ClientSupportedCompressorsⁱᵐᵖˡ); (SetTrailer, SetTrailerⁱᵐᵖˡ); (Method, Methodⁱᵐᵖˡ); (validateSendCompressor, validateSendCompressorⁱᵐᵖˡ); (newHandlerQuota, newHandlerQuotaⁱᵐᵖˡ); (parseServiceConfig, parseServiceConfigⁱᵐᵖˡ); (convertRetryPolicy, convertRetryPolicyⁱᵐᵖˡ); (minPointers, minPointersⁱᵐᵖˡ); (getMaxSize, getMaxSizeⁱᵐᵖˡ); (newInt, newIntⁱᵐᵖˡ); (equalServiceConfig, equalServiceConfigⁱᵐᵖˡ); (NewClientStream, NewClientStreamⁱᵐᵖˡ); (newClientStream, newClientStreamⁱᵐᵖˡ); (newClientStreamWithParams, newClientStreamWithParamsⁱᵐᵖˡ); (newNonRetryClientStream, newNonRetryClientStreamⁱᵐᵖˡ); (MethodFromServerStream, MethodFromServerStreamⁱᵐᵖˡ); (prepareMsg, prepareMsgⁱᵐᵖˡ); (methodFamily, methodFamilyⁱᵐᵖˡ); (truncate, truncateⁱᵐᵖˡ); (newTrace, newTraceⁱᵐᵖˡ); (newTraceContext, newTraceContextⁱᵐᵖˡ); (newTraceEventLog, newTraceEventLogⁱᵐᵖˡ)].
+
+Axiom ccBalancerWrapper__NewSubConnⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__RemoveSubConnⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__ResolveNowⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__Targetⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__UpdateAddressesⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__UpdateStateⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__closeⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__exitIdleⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__resolverErrorⁱᵐᵖˡ : val.
+
+Axiom ccBalancerWrapper__updateClientConnStateⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Connectⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__GetOrBuildProducerⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Invokeⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__NewStreamⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__RegisterHealthListenerⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Shutdownⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__Stringⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__UpdateAddressesⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__closeProducersⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__updateStateⁱᵐᵖˡ : val.
+
+Axiom acBalancerWrapper__enforceSubConnEmbeddingⁱᵐᵖˡ : val.
+
+Axiom defaultConfigSelector__SelectConfigⁱᵐᵖˡ : val.
+
+Axiom idler__EnterIdleModeⁱᵐᵖˡ : val.
+
+Axiom idler__ExitIdleModeⁱᵐᵖˡ : val.
+
+Axiom connectivityStateManager__getNotifyChanⁱᵐᵖˡ : val.
+
+Axiom connectivityStateManager__getStateⁱᵐᵖˡ : val.
+
+Axiom connectivityStateManager__updateStateⁱᵐᵖˡ : val.
+
+Axiom ClientConn__CanonicalTargetⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Closeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Connectⁱᵐᵖˡ : val.
+
+Axiom ClientConn__GetMethodConfigⁱᵐᵖˡ : val.
+
+Axiom ClientConn__GetStateⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Invokeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__NewStreamⁱᵐᵖˡ : val.
+
+Axiom ClientConn__ResetConnectBackoffⁱᵐᵖˡ : val.
+
+Axiom ClientConn__Targetⁱᵐᵖˡ : val.
+
+Axiom ClientConn__WaitForStateChangeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__addTraceEventⁱᵐᵖˡ : val.
+
+Axiom ClientConn__applyFailingLBLockedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__applyServiceConfigAndBalancerⁱᵐᵖˡ : val.
+
+Axiom ClientConn__channelzRegistrationⁱᵐᵖˡ : val.
+
+Axiom ClientConn__connectionErrorⁱᵐᵖˡ : val.
+
+Axiom ClientConn__enterIdleModeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__exitIdleModeⁱᵐᵖˡ : val.
+
+Axiom ClientConn__getResolverⁱᵐᵖˡ : val.
+
+Axiom ClientConn__getServerNameⁱᵐᵖˡ : val.
+
+Axiom ClientConn__getTransportⁱᵐᵖˡ : val.
+
+Axiom ClientConn__healthCheckConfigⁱᵐᵖˡ : val.
+
+Axiom ClientConn__incrCallsFailedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__incrCallsStartedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__incrCallsSucceededⁱᵐᵖˡ : val.
+
+Axiom ClientConn__initAuthorityⁱᵐᵖˡ : val.
+
+Axiom ClientConn__initIdleStateLockedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__initParsedTargetAndResolverBuilderⁱᵐᵖˡ : val.
+
+Axiom ClientConn__maybeApplyDefaultServiceConfigⁱᵐᵖˡ : val.
+
+Axiom ClientConn__newAddrConnLockedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__removeAddrConnⁱᵐᵖˡ : val.
+
+Axiom ClientConn__resolveNowⁱᵐᵖˡ : val.
+
+Axiom ClientConn__resolveNowLockedⁱᵐᵖˡ : val.
+
+Axiom ClientConn__updateConnectionErrorⁱᵐᵖˡ : val.
+
+Axiom ClientConn__updateResolverStateAndUnlockⁱᵐᵖˡ : val.
+
+Axiom ClientConn__validateTransportCredentialsⁱᵐᵖˡ : val.
+
+Axiom ClientConn__waitForResolvedAddrsⁱᵐᵖˡ : val.
+
+Axiom addrConn__adjustParamsⁱᵐᵖˡ : val.
+
+Axiom addrConn__connectⁱᵐᵖˡ : val.
+
+Axiom addrConn__createTransportⁱᵐᵖˡ : val.
+
+Axiom addrConn__getReadyTransportⁱᵐᵖˡ : val.
+
+Axiom addrConn__incrCallsFailedⁱᵐᵖˡ : val.
+
+Axiom addrConn__incrCallsStartedⁱᵐᵖˡ : val.
+
+Axiom addrConn__incrCallsSucceededⁱᵐᵖˡ : val.
+
+Axiom addrConn__resetConnectBackoffⁱᵐᵖˡ : val.
+
+Axiom addrConn__resetTransportAndUnlockⁱᵐᵖˡ : val.
+
+Axiom addrConn__startHealthCheckⁱᵐᵖˡ : val.
+
+Axiom addrConn__tearDownⁱᵐᵖˡ : val.
+
+Axiom addrConn__tryAllAddrsⁱᵐᵖˡ : val.
+
+Axiom addrConn__updateAddrsⁱᵐᵖˡ : val.
+
+Axiom addrConn__updateConnectivityStateⁱᵐᵖˡ : val.
+
+Axiom retryThrottler__successfulRPCⁱᵐᵖˡ : val.
+
+Axiom retryThrottler__throttleⁱᵐᵖˡ : val.
+
+Axiom codecV0Bridge__Marshalⁱᵐᵖˡ : val.
+
+Axiom codecV0Bridge__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom codecV1Bridge__Marshalⁱᵐᵖˡ : val.
+
+Axiom codecV1Bridge__Nameⁱᵐᵖˡ : val.
+
+Axiom codecV1Bridge__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom EmptyDialOption__applyⁱᵐᵖˡ : val.
+
+Axiom disableGlobalDialOptions__applyⁱᵐᵖˡ : val.
+
+Axiom funcDialOption__applyⁱᵐᵖˡ : val.
+
+Axiom joinDialOption__applyⁱᵐᵖˡ : val.
+
+Axiom MaxHeaderListSizeDialOption__applyⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__closeⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__pickⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__resetⁱᵐᵖˡ : val.
+
+Axiom pickerWrapper__updatePickerⁱᵐᵖˡ : val.
+
+Axiom dropError__Errorⁱᵐᵖˡ : val.
+
+Axiom PreparedMsg__Encodeⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__NewAddressⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__ParseServiceConfigⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__ReportErrorⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__UpdateStateⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__addChannelzTraceEventⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__closeⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__resolveNowⁱᵐᵖˡ : val.
+
+Axiom ccResolverWrapper__startⁱᵐᵖˡ : val.
+
+Axiom gzipCompressor__Doⁱᵐᵖˡ : val.
+
+Axiom gzipCompressor__Typeⁱᵐᵖˡ : val.
+
+Axiom gzipDecompressor__Doⁱᵐᵖˡ : val.
+
+Axiom gzipDecompressor__Typeⁱᵐᵖˡ : val.
+
+Axiom EmptyCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom EmptyCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom StaticMethodCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom StaticMethodCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom HeaderCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom HeaderCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom TrailerCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom TrailerCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom PeerCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom PeerCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom FailFastCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom FailFastCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom OnFinishCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom OnFinishCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom MaxRecvMsgSizeCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom MaxRecvMsgSizeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom MaxSendMsgSizeCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom MaxSendMsgSizeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom PerRPCCredsCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom PerRPCCredsCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom CompressorCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom CompressorCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom ContentSubtypeCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom ContentSubtypeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom ForceCodecCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom ForceCodecCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom ForceCodecV2CallOption__afterⁱᵐᵖˡ : val.
+
+Axiom ForceCodecV2CallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom CustomCodecCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom CustomCodecCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom MaxRetryRPCBufferSizeCallOption__afterⁱᵐᵖˡ : val.
+
+Axiom MaxRetryRPCBufferSizeCallOption__beforeⁱᵐᵖˡ : val.
+
+Axiom payloadFormat__isCompressedⁱᵐᵖˡ : val.
+
+Axiom parser__recvMsgⁱᵐᵖˡ : val.
+
+Axiom payloadInfo__freeⁱᵐᵖˡ : val.
+
+Axiom Server__GetServiceInfoⁱᵐᵖˡ : val.
+
+Axiom Server__GracefulStopⁱᵐᵖˡ : val.
+
+Axiom Server__RegisterServiceⁱᵐᵖˡ : val.
+
+Axiom Server__Serveⁱᵐᵖˡ : val.
+
+Axiom Server__ServeHTTPⁱᵐᵖˡ : val.
+
+Axiom Server__Stopⁱᵐᵖˡ : val.
+
+Axiom Server__addConnⁱᵐᵖˡ : val.
+
+Axiom Server__closeListenersLockedⁱᵐᵖˡ : val.
+
+Axiom Server__closeServerTransportsLockedⁱᵐᵖˡ : val.
+
+Axiom Server__drainAllServerTransportsLockedⁱᵐᵖˡ : val.
+
+Axiom Server__errorfⁱᵐᵖˡ : val.
+
+Axiom Server__getCodecⁱᵐᵖˡ : val.
+
+Axiom Server__handleRawConnⁱᵐᵖˡ : val.
+
+Axiom Server__handleStreamⁱᵐᵖˡ : val.
+
+Axiom Server__incrCallsFailedⁱᵐᵖˡ : val.
+
+Axiom Server__incrCallsStartedⁱᵐᵖˡ : val.
+
+Axiom Server__incrCallsSucceededⁱᵐᵖˡ : val.
+
+Axiom Server__initServerWorkersⁱᵐᵖˡ : val.
+
+Axiom Server__isRegisteredMethodⁱᵐᵖˡ : val.
+
+Axiom Server__newHTTP2Transportⁱᵐᵖˡ : val.
+
+Axiom Server__printfⁱᵐᵖˡ : val.
+
+Axiom Server__processStreamingRPCⁱᵐᵖˡ : val.
+
+Axiom Server__processUnaryRPCⁱᵐᵖˡ : val.
+
+Axiom Server__registerⁱᵐᵖˡ : val.
+
+Axiom Server__removeConnⁱᵐᵖˡ : val.
+
+Axiom Server__sendResponseⁱᵐᵖˡ : val.
+
+Axiom Server__serveStreamsⁱᵐᵖˡ : val.
+
+Axiom Server__serverWorkerⁱᵐᵖˡ : val.
+
+Axiom Server__stopⁱᵐᵖˡ : val.
+
+Axiom EmptyServerOption__applyⁱᵐᵖˡ : val.
+
+Axiom funcServerOption__applyⁱᵐᵖˡ : val.
+
+Axiom joinServerOption__applyⁱᵐᵖˡ : val.
+
+Axiom MaxHeaderListSizeServerOption__applyⁱᵐᵖˡ : val.
+
+Axiom listenSocket__Acceptⁱᵐᵖˡ : val.
+
+Axiom listenSocket__Addrⁱᵐᵖˡ : val.
+
+Axiom listenSocket__Closeⁱᵐᵖˡ : val.
+
+Axiom atomicSemaphore__acquireⁱᵐᵖˡ : val.
+
+Axiom atomicSemaphore__releaseⁱᵐᵖˡ : val.
+
+Axiom ServiceConfig__isServiceConfigⁱᵐᵖˡ : val.
+
+Axiom jsonName__generatePathⁱᵐᵖˡ : val.
+
+Axiom clientStream__CloseSendⁱᵐᵖˡ : val.
+
+Axiom clientStream__Contextⁱᵐᵖˡ : val.
+
+Axiom clientStream__Headerⁱᵐᵖˡ : val.
+
+Axiom clientStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom clientStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom clientStream__Trailerⁱᵐᵖˡ : val.
+
+Axiom clientStream__bufferForRetryLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__commitAttemptⁱᵐᵖˡ : val.
+
+Axiom clientStream__commitAttemptLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__finishⁱᵐᵖˡ : val.
+
+Axiom clientStream__newAttemptLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__replayBufferLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__retryLockedⁱᵐᵖˡ : val.
+
+Axiom clientStream__withRetryⁱᵐᵖˡ : val.
+
+Axiom csAttempt__finishⁱᵐᵖˡ : val.
+
+Axiom csAttempt__getTransportⁱᵐᵖˡ : val.
+
+Axiom csAttempt__newStreamⁱᵐᵖˡ : val.
+
+Axiom csAttempt__recvMsgⁱᵐᵖˡ : val.
+
+Axiom csAttempt__sendMsgⁱᵐᵖˡ : val.
+
+Axiom csAttempt__shouldRetryⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__CloseSendⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__Contextⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__Headerⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__Trailerⁱᵐᵖˡ : val.
+
+Axiom addrConnStream__finishⁱᵐᵖˡ : val.
+
+Axiom serverStream__Contextⁱᵐᵖˡ : val.
+
+Axiom serverStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom serverStream__SendHeaderⁱᵐᵖˡ : val.
+
+Axiom serverStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom serverStream__SetHeaderⁱᵐᵖˡ : val.
+
+Axiom serverStream__SetTrailerⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__CloseAndRecvⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__CloseSendⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__Contextⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__Headerⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__Recvⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__Sendⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom GenericClientStream__Trailerⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__Contextⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__Recvⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__Sendⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__SendAndCloseⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__SendHeaderⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__SetHeaderⁱᵐᵖˡ : val.
+
+Axiom GenericServerStream__SetTrailerⁱᵐᵖˡ : val.
+
+Axiom firstLine__SetRemoteAddrⁱᵐᵖˡ : val.
+
+Axiom firstLine__Stringⁱᵐᵖˡ : val.
+
+Axiom payload__Stringⁱᵐᵖˡ : val.
+
+Axiom fmtStringer__Stringⁱᵐᵖˡ : val.
+
+Axiom stringer__Stringⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(BackoffConfig.id, []); (ptrT.id BackoffConfig.id, []); (ConnectParams.id, []); (ptrT.id ConnectParams.id, []); (ccBalancerWrapper.id, []); (ptrT.id ccBalancerWrapper.id, [("NewSubConn"%go, ccBalancerWrapper__NewSubConnⁱᵐᵖˡ); ("RemoveSubConn"%go, ccBalancerWrapper__RemoveSubConnⁱᵐᵖˡ); ("ResolveNow"%go, ccBalancerWrapper__ResolveNowⁱᵐᵖˡ); ("Target"%go, ccBalancerWrapper__Targetⁱᵐᵖˡ); ("UpdateAddresses"%go, ccBalancerWrapper__UpdateAddressesⁱᵐᵖˡ); ("UpdateState"%go, ccBalancerWrapper__UpdateStateⁱᵐᵖˡ); ("close"%go, ccBalancerWrapper__closeⁱᵐᵖˡ); ("exitIdle"%go, ccBalancerWrapper__exitIdleⁱᵐᵖˡ); ("resolverError"%go, ccBalancerWrapper__resolverErrorⁱᵐᵖˡ); ("updateClientConnState"%go, ccBalancerWrapper__updateClientConnStateⁱᵐᵖˡ)]); (acBalancerWrapper.id, [("enforceSubConnEmbedding"%go, (λ: "$r",
                  method_call #internal.EnforceSubConnEmbedding.id #"enforceSubConnEmbedding"%go (struct.field_get #acBalancerWrapper #"EnforceSubConnEmbedding"%go "$r")

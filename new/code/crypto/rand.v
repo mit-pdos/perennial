@@ -15,37 +15,37 @@ Definition Reader : go_string := "crypto/rand.Reader"%go.
 
 Definition init : go_string := "crypto/rand.init"%go.
 
-Axiom initⁱᵐᵖˡ : val.
-
 Axiom reader : go_type.
-
-Axiom reader__Readⁱᵐᵖˡ : val.
 
 Definition fatal : go_string := "crypto/rand.fatal"%go.
 
-Axiom fatalⁱᵐᵖˡ : val.
-
 Definition Read : go_string := "crypto/rand.Read"%go.
-
-Axiom Readⁱᵐᵖˡ : val.
 
 Axiom base32alphabet : go_string.
 
 Definition Text : go_string := "crypto/rand.Text"%go.
 
-Axiom Textⁱᵐᵖˡ : val.
-
 Definition Prime : go_string := "crypto/rand.Prime"%go.
-
-Axiom Primeⁱᵐᵖˡ : val.
 
 Definition Int : go_string := "crypto/rand.Int"%go.
 
-Axiom Intⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(init, initⁱᵐᵖˡ); (fatal, fatalⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Text, Textⁱᵐᵖˡ); (Prime, Primeⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ)].
+Axiom fatalⁱᵐᵖˡ : val.
+
+Axiom Readⁱᵐᵖˡ : val.
+
+Axiom Textⁱᵐᵖˡ : val.
+
+Axiom Primeⁱᵐᵖˡ : val.
+
+Axiom Intⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(fatal, fatalⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Text, Textⁱᵐᵖˡ); (Prime, Primeⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ)].
+
+Axiom reader__Readⁱᵐᵖˡ : val.
+
+Axiom reader__defaultReaderⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(reader.id, [("defaultReader"%go, (λ: "$r",
                  method_call #drbg.DefaultReader.id #"defaultReader"%go (struct.field_get #reader #"DefaultReader"%go "$r")

@@ -20,47 +20,23 @@ Context `{ffi_syntax}.
 
 Definition Search : go_string := "sort.Search"%go.
 
-Axiom Searchⁱᵐᵖˡ : val.
-
 Definition Find : go_string := "sort.Find"%go.
-
-Axiom Findⁱᵐᵖˡ : val.
 
 Definition SearchInts : go_string := "sort.SearchInts"%go.
 
-Axiom SearchIntsⁱᵐᵖˡ : val.
-
 Definition SearchFloat64s : go_string := "sort.SearchFloat64s"%go.
-
-Axiom SearchFloat64sⁱᵐᵖˡ : val.
 
 Definition SearchStrings : go_string := "sort.SearchStrings"%go.
 
-Axiom SearchStringsⁱᵐᵖˡ : val.
-
-Axiom IntSlice__Searchⁱᵐᵖˡ : val.
-
-Axiom Float64Slice__Searchⁱᵐᵖˡ : val.
-
-Axiom StringSlice__Searchⁱᵐᵖˡ : val.
-
 Definition Slice : go_string := "sort.Slice"%go.
-
-Axiom Sliceⁱᵐᵖˡ : val.
 
 Definition SliceStable : go_string := "sort.SliceStable"%go.
 
-Axiom SliceStableⁱᵐᵖˡ : val.
-
 Definition SliceIsSorted : go_string := "sort.SliceIsSorted"%go.
-
-Axiom SliceIsSortedⁱᵐᵖˡ : val.
 
 Axiom Interface : go_type.
 
 Definition Sort : go_string := "sort.Sort"%go.
-
-Axiom Sortⁱᵐᵖˡ : val.
 
 Axiom sortedHint : go_type.
 
@@ -72,227 +48,255 @@ Axiom decreasingHint : expr.
 
 Axiom xorshift : go_type.
 
-Axiom xorshift__Nextⁱᵐᵖˡ : val.
-
 Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
-
-Axiom nextPowerOfTwoⁱᵐᵖˡ : val.
 
 Axiom lessSwap : go_type.
 
 Axiom reverse : go_type.
 
-Axiom reverse__Lessⁱᵐᵖˡ : val.
-
 Definition Reverse : go_string := "sort.Reverse"%go.
-
-Axiom Reverseⁱᵐᵖˡ : val.
 
 Definition IsSorted : go_string := "sort.IsSorted"%go.
 
+Axiom IntSlice : go_type.
+
+Axiom Float64Slice : go_type.
+
+Definition isNaN : go_string := "sort.isNaN"%go.
+
+Axiom StringSlice : go_type.
+
+Definition Ints : go_string := "sort.Ints"%go.
+
+Definition Float64s : go_string := "sort.Float64s"%go.
+
+Definition Strings : go_string := "sort.Strings"%go.
+
+Definition IntsAreSorted : go_string := "sort.IntsAreSorted"%go.
+
+Definition Float64sAreSorted : go_string := "sort.Float64sAreSorted"%go.
+
+Definition StringsAreSorted : go_string := "sort.StringsAreSorted"%go.
+
+Definition Stable : go_string := "sort.Stable"%go.
+
+Definition insertionSort_func : go_string := "sort.insertionSort_func"%go.
+
+Definition siftDown_func : go_string := "sort.siftDown_func"%go.
+
+Definition heapSort_func : go_string := "sort.heapSort_func"%go.
+
+Definition pdqsort_func : go_string := "sort.pdqsort_func"%go.
+
+Definition partition_func : go_string := "sort.partition_func"%go.
+
+Definition partitionEqual_func : go_string := "sort.partitionEqual_func"%go.
+
+Definition partialInsertionSort_func : go_string := "sort.partialInsertionSort_func"%go.
+
+Definition breakPatterns_func : go_string := "sort.breakPatterns_func"%go.
+
+Definition choosePivot_func : go_string := "sort.choosePivot_func"%go.
+
+Definition order2_func : go_string := "sort.order2_func"%go.
+
+Definition median_func : go_string := "sort.median_func"%go.
+
+Definition medianAdjacent_func : go_string := "sort.medianAdjacent_func"%go.
+
+Definition reverseRange_func : go_string := "sort.reverseRange_func"%go.
+
+Definition swapRange_func : go_string := "sort.swapRange_func"%go.
+
+Definition stable_func : go_string := "sort.stable_func"%go.
+
+Definition symMerge_func : go_string := "sort.symMerge_func"%go.
+
+Definition rotate_func : go_string := "sort.rotate_func"%go.
+
+Definition insertionSort : go_string := "sort.insertionSort"%go.
+
+Definition siftDown : go_string := "sort.siftDown"%go.
+
+Definition heapSort : go_string := "sort.heapSort"%go.
+
+Definition pdqsort : go_string := "sort.pdqsort"%go.
+
+Definition partition : go_string := "sort.partition"%go.
+
+Definition partitionEqual : go_string := "sort.partitionEqual"%go.
+
+Definition partialInsertionSort : go_string := "sort.partialInsertionSort"%go.
+
+Definition breakPatterns : go_string := "sort.breakPatterns"%go.
+
+Definition choosePivot : go_string := "sort.choosePivot"%go.
+
+Definition order2 : go_string := "sort.order2"%go.
+
+Definition median : go_string := "sort.median"%go.
+
+Definition medianAdjacent : go_string := "sort.medianAdjacent"%go.
+
+Definition reverseRange : go_string := "sort.reverseRange"%go.
+
+Definition swapRange : go_string := "sort.swapRange"%go.
+
+Definition stable : go_string := "sort.stable"%go.
+
+Definition symMerge : go_string := "sort.symMerge"%go.
+
+Definition rotate : go_string := "sort.rotate"%go.
+
+Definition vars' : list (go_string * go_type) := [].
+
+Axiom Searchⁱᵐᵖˡ : val.
+
+Axiom Findⁱᵐᵖˡ : val.
+
+Axiom SearchIntsⁱᵐᵖˡ : val.
+
+Axiom SearchFloat64sⁱᵐᵖˡ : val.
+
+Axiom SearchStringsⁱᵐᵖˡ : val.
+
+Axiom Sliceⁱᵐᵖˡ : val.
+
+Axiom SliceStableⁱᵐᵖˡ : val.
+
+Axiom SliceIsSortedⁱᵐᵖˡ : val.
+
+Axiom Sortⁱᵐᵖˡ : val.
+
+Axiom nextPowerOfTwoⁱᵐᵖˡ : val.
+
+Axiom Reverseⁱᵐᵖˡ : val.
+
 Axiom IsSortedⁱᵐᵖˡ : val.
 
-Axiom IntSlice : go_type.
+Axiom isNaNⁱᵐᵖˡ : val.
+
+Axiom Intsⁱᵐᵖˡ : val.
+
+Axiom Float64sⁱᵐᵖˡ : val.
+
+Axiom Stringsⁱᵐᵖˡ : val.
+
+Axiom IntsAreSortedⁱᵐᵖˡ : val.
+
+Axiom Float64sAreSortedⁱᵐᵖˡ : val.
+
+Axiom StringsAreSortedⁱᵐᵖˡ : val.
+
+Axiom Stableⁱᵐᵖˡ : val.
+
+Axiom insertionSort_funcⁱᵐᵖˡ : val.
+
+Axiom siftDown_funcⁱᵐᵖˡ : val.
+
+Axiom heapSort_funcⁱᵐᵖˡ : val.
+
+Axiom pdqsort_funcⁱᵐᵖˡ : val.
+
+Axiom partition_funcⁱᵐᵖˡ : val.
+
+Axiom partitionEqual_funcⁱᵐᵖˡ : val.
+
+Axiom partialInsertionSort_funcⁱᵐᵖˡ : val.
+
+Axiom breakPatterns_funcⁱᵐᵖˡ : val.
+
+Axiom choosePivot_funcⁱᵐᵖˡ : val.
+
+Axiom order2_funcⁱᵐᵖˡ : val.
+
+Axiom median_funcⁱᵐᵖˡ : val.
+
+Axiom medianAdjacent_funcⁱᵐᵖˡ : val.
+
+Axiom reverseRange_funcⁱᵐᵖˡ : val.
+
+Axiom swapRange_funcⁱᵐᵖˡ : val.
+
+Axiom stable_funcⁱᵐᵖˡ : val.
+
+Axiom symMerge_funcⁱᵐᵖˡ : val.
+
+Axiom rotate_funcⁱᵐᵖˡ : val.
+
+Axiom insertionSortⁱᵐᵖˡ : val.
+
+Axiom siftDownⁱᵐᵖˡ : val.
+
+Axiom heapSortⁱᵐᵖˡ : val.
+
+Axiom pdqsortⁱᵐᵖˡ : val.
+
+Axiom partitionⁱᵐᵖˡ : val.
+
+Axiom partitionEqualⁱᵐᵖˡ : val.
+
+Axiom partialInsertionSortⁱᵐᵖˡ : val.
+
+Axiom breakPatternsⁱᵐᵖˡ : val.
+
+Axiom choosePivotⁱᵐᵖˡ : val.
+
+Axiom order2ⁱᵐᵖˡ : val.
+
+Axiom medianⁱᵐᵖˡ : val.
+
+Axiom medianAdjacentⁱᵐᵖˡ : val.
+
+Axiom reverseRangeⁱᵐᵖˡ : val.
+
+Axiom swapRangeⁱᵐᵖˡ : val.
+
+Axiom stableⁱᵐᵖˡ : val.
+
+Axiom symMergeⁱᵐᵖˡ : val.
+
+Axiom rotateⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(Search, Searchⁱᵐᵖˡ); (Find, Findⁱᵐᵖˡ); (SearchInts, SearchIntsⁱᵐᵖˡ); (SearchFloat64s, SearchFloat64sⁱᵐᵖˡ); (SearchStrings, SearchStringsⁱᵐᵖˡ); (Slice, Sliceⁱᵐᵖˡ); (SliceStable, SliceStableⁱᵐᵖˡ); (SliceIsSorted, SliceIsSortedⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (Ints, Intsⁱᵐᵖˡ); (Float64s, Float64sⁱᵐᵖˡ); (Strings, Stringsⁱᵐᵖˡ); (IntsAreSorted, IntsAreSortedⁱᵐᵖˡ); (Float64sAreSorted, Float64sAreSortedⁱᵐᵖˡ); (StringsAreSorted, StringsAreSortedⁱᵐᵖˡ); (Stable, Stableⁱᵐᵖˡ); (insertionSort_func, insertionSort_funcⁱᵐᵖˡ); (siftDown_func, siftDown_funcⁱᵐᵖˡ); (heapSort_func, heapSort_funcⁱᵐᵖˡ); (pdqsort_func, pdqsort_funcⁱᵐᵖˡ); (partition_func, partition_funcⁱᵐᵖˡ); (partitionEqual_func, partitionEqual_funcⁱᵐᵖˡ); (partialInsertionSort_func, partialInsertionSort_funcⁱᵐᵖˡ); (breakPatterns_func, breakPatterns_funcⁱᵐᵖˡ); (choosePivot_func, choosePivot_funcⁱᵐᵖˡ); (order2_func, order2_funcⁱᵐᵖˡ); (median_func, median_funcⁱᵐᵖˡ); (medianAdjacent_func, medianAdjacent_funcⁱᵐᵖˡ); (reverseRange_func, reverseRange_funcⁱᵐᵖˡ); (swapRange_func, swapRange_funcⁱᵐᵖˡ); (stable_func, stable_funcⁱᵐᵖˡ); (symMerge_func, symMerge_funcⁱᵐᵖˡ); (rotate_func, rotate_funcⁱᵐᵖˡ); (insertionSort, insertionSortⁱᵐᵖˡ); (siftDown, siftDownⁱᵐᵖˡ); (heapSort, heapSortⁱᵐᵖˡ); (pdqsort, pdqsortⁱᵐᵖˡ); (partition, partitionⁱᵐᵖˡ); (partitionEqual, partitionEqualⁱᵐᵖˡ); (partialInsertionSort, partialInsertionSortⁱᵐᵖˡ); (breakPatterns, breakPatternsⁱᵐᵖˡ); (choosePivot, choosePivotⁱᵐᵖˡ); (order2, order2ⁱᵐᵖˡ); (median, medianⁱᵐᵖˡ); (medianAdjacent, medianAdjacentⁱᵐᵖˡ); (reverseRange, reverseRangeⁱᵐᵖˡ); (swapRange, swapRangeⁱᵐᵖˡ); (stable, stableⁱᵐᵖˡ); (symMerge, symMergeⁱᵐᵖˡ); (rotate, rotateⁱᵐᵖˡ)].
+
+Axiom xorshift__Nextⁱᵐᵖˡ : val.
+
+Axiom reverse__Lenⁱᵐᵖˡ : val.
+
+Axiom reverse__Lessⁱᵐᵖˡ : val.
+
+Axiom reverse__Swapⁱᵐᵖˡ : val.
 
 Axiom IntSlice__Lenⁱᵐᵖˡ : val.
 
 Axiom IntSlice__Lessⁱᵐᵖˡ : val.
 
-Axiom IntSlice__Swapⁱᵐᵖˡ : val.
+Axiom IntSlice__Searchⁱᵐᵖˡ : val.
 
 Axiom IntSlice__Sortⁱᵐᵖˡ : val.
 
-Axiom Float64Slice : go_type.
+Axiom IntSlice__Swapⁱᵐᵖˡ : val.
 
 Axiom Float64Slice__Lenⁱᵐᵖˡ : val.
 
 Axiom Float64Slice__Lessⁱᵐᵖˡ : val.
 
-Axiom Float64Slice__Swapⁱᵐᵖˡ : val.
-
-Definition isNaN : go_string := "sort.isNaN"%go.
-
-Axiom isNaNⁱᵐᵖˡ : val.
+Axiom Float64Slice__Searchⁱᵐᵖˡ : val.
 
 Axiom Float64Slice__Sortⁱᵐᵖˡ : val.
 
-Axiom StringSlice : go_type.
+Axiom Float64Slice__Swapⁱᵐᵖˡ : val.
 
 Axiom StringSlice__Lenⁱᵐᵖˡ : val.
 
 Axiom StringSlice__Lessⁱᵐᵖˡ : val.
 
-Axiom StringSlice__Swapⁱᵐᵖˡ : val.
+Axiom StringSlice__Searchⁱᵐᵖˡ : val.
 
 Axiom StringSlice__Sortⁱᵐᵖˡ : val.
 
-Definition Ints : go_string := "sort.Ints"%go.
-
-Axiom Intsⁱᵐᵖˡ : val.
-
-Definition Float64s : go_string := "sort.Float64s"%go.
-
-Axiom Float64sⁱᵐᵖˡ : val.
-
-Definition Strings : go_string := "sort.Strings"%go.
-
-Axiom Stringsⁱᵐᵖˡ : val.
-
-Definition IntsAreSorted : go_string := "sort.IntsAreSorted"%go.
-
-Axiom IntsAreSortedⁱᵐᵖˡ : val.
-
-Definition Float64sAreSorted : go_string := "sort.Float64sAreSorted"%go.
-
-Axiom Float64sAreSortedⁱᵐᵖˡ : val.
-
-Definition StringsAreSorted : go_string := "sort.StringsAreSorted"%go.
-
-Axiom StringsAreSortedⁱᵐᵖˡ : val.
-
-Definition Stable : go_string := "sort.Stable"%go.
-
-Axiom Stableⁱᵐᵖˡ : val.
-
-Definition insertionSort_func : go_string := "sort.insertionSort_func"%go.
-
-Axiom insertionSort_funcⁱᵐᵖˡ : val.
-
-Definition siftDown_func : go_string := "sort.siftDown_func"%go.
-
-Axiom siftDown_funcⁱᵐᵖˡ : val.
-
-Definition heapSort_func : go_string := "sort.heapSort_func"%go.
-
-Axiom heapSort_funcⁱᵐᵖˡ : val.
-
-Definition pdqsort_func : go_string := "sort.pdqsort_func"%go.
-
-Axiom pdqsort_funcⁱᵐᵖˡ : val.
-
-Definition partition_func : go_string := "sort.partition_func"%go.
-
-Axiom partition_funcⁱᵐᵖˡ : val.
-
-Definition partitionEqual_func : go_string := "sort.partitionEqual_func"%go.
-
-Axiom partitionEqual_funcⁱᵐᵖˡ : val.
-
-Definition partialInsertionSort_func : go_string := "sort.partialInsertionSort_func"%go.
-
-Axiom partialInsertionSort_funcⁱᵐᵖˡ : val.
-
-Definition breakPatterns_func : go_string := "sort.breakPatterns_func"%go.
-
-Axiom breakPatterns_funcⁱᵐᵖˡ : val.
-
-Definition choosePivot_func : go_string := "sort.choosePivot_func"%go.
-
-Axiom choosePivot_funcⁱᵐᵖˡ : val.
-
-Definition order2_func : go_string := "sort.order2_func"%go.
-
-Axiom order2_funcⁱᵐᵖˡ : val.
-
-Definition median_func : go_string := "sort.median_func"%go.
-
-Axiom median_funcⁱᵐᵖˡ : val.
-
-Definition medianAdjacent_func : go_string := "sort.medianAdjacent_func"%go.
-
-Axiom medianAdjacent_funcⁱᵐᵖˡ : val.
-
-Definition reverseRange_func : go_string := "sort.reverseRange_func"%go.
-
-Axiom reverseRange_funcⁱᵐᵖˡ : val.
-
-Definition swapRange_func : go_string := "sort.swapRange_func"%go.
-
-Axiom swapRange_funcⁱᵐᵖˡ : val.
-
-Definition stable_func : go_string := "sort.stable_func"%go.
-
-Axiom stable_funcⁱᵐᵖˡ : val.
-
-Definition symMerge_func : go_string := "sort.symMerge_func"%go.
-
-Axiom symMerge_funcⁱᵐᵖˡ : val.
-
-Definition rotate_func : go_string := "sort.rotate_func"%go.
-
-Axiom rotate_funcⁱᵐᵖˡ : val.
-
-Definition insertionSort : go_string := "sort.insertionSort"%go.
-
-Axiom insertionSortⁱᵐᵖˡ : val.
-
-Definition siftDown : go_string := "sort.siftDown"%go.
-
-Axiom siftDownⁱᵐᵖˡ : val.
-
-Definition heapSort : go_string := "sort.heapSort"%go.
-
-Axiom heapSortⁱᵐᵖˡ : val.
-
-Definition pdqsort : go_string := "sort.pdqsort"%go.
-
-Axiom pdqsortⁱᵐᵖˡ : val.
-
-Definition partition : go_string := "sort.partition"%go.
-
-Axiom partitionⁱᵐᵖˡ : val.
-
-Definition partitionEqual : go_string := "sort.partitionEqual"%go.
-
-Axiom partitionEqualⁱᵐᵖˡ : val.
-
-Definition partialInsertionSort : go_string := "sort.partialInsertionSort"%go.
-
-Axiom partialInsertionSortⁱᵐᵖˡ : val.
-
-Definition breakPatterns : go_string := "sort.breakPatterns"%go.
-
-Axiom breakPatternsⁱᵐᵖˡ : val.
-
-Definition choosePivot : go_string := "sort.choosePivot"%go.
-
-Axiom choosePivotⁱᵐᵖˡ : val.
-
-Definition order2 : go_string := "sort.order2"%go.
-
-Axiom order2ⁱᵐᵖˡ : val.
-
-Definition median : go_string := "sort.median"%go.
-
-Axiom medianⁱᵐᵖˡ : val.
-
-Definition medianAdjacent : go_string := "sort.medianAdjacent"%go.
-
-Axiom medianAdjacentⁱᵐᵖˡ : val.
-
-Definition reverseRange : go_string := "sort.reverseRange"%go.
-
-Axiom reverseRangeⁱᵐᵖˡ : val.
-
-Definition swapRange : go_string := "sort.swapRange"%go.
-
-Axiom swapRangeⁱᵐᵖˡ : val.
-
-Definition stable : go_string := "sort.stable"%go.
-
-Axiom stableⁱᵐᵖˡ : val.
-
-Definition symMerge : go_string := "sort.symMerge"%go.
-
-Axiom symMergeⁱᵐᵖˡ : val.
-
-Definition rotate : go_string := "sort.rotate"%go.
-
-Axiom rotateⁱᵐᵖˡ : val.
-
-Definition vars' : list (go_string * go_type) := [].
-
-Definition functions' : list (go_string * val) := [(Search, Searchⁱᵐᵖˡ); (Find, Findⁱᵐᵖˡ); (SearchInts, SearchIntsⁱᵐᵖˡ); (SearchFloat64s, SearchFloat64sⁱᵐᵖˡ); (SearchStrings, SearchStringsⁱᵐᵖˡ); (Slice, Sliceⁱᵐᵖˡ); (SliceStable, SliceStableⁱᵐᵖˡ); (SliceIsSorted, SliceIsSortedⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (Ints, Intsⁱᵐᵖˡ); (Float64s, Float64sⁱᵐᵖˡ); (Strings, Stringsⁱᵐᵖˡ); (IntsAreSorted, IntsAreSortedⁱᵐᵖˡ); (Float64sAreSorted, Float64sAreSortedⁱᵐᵖˡ); (StringsAreSorted, StringsAreSortedⁱᵐᵖˡ); (Stable, Stableⁱᵐᵖˡ); (insertionSort_func, insertionSort_funcⁱᵐᵖˡ); (siftDown_func, siftDown_funcⁱᵐᵖˡ); (heapSort_func, heapSort_funcⁱᵐᵖˡ); (pdqsort_func, pdqsort_funcⁱᵐᵖˡ); (partition_func, partition_funcⁱᵐᵖˡ); (partitionEqual_func, partitionEqual_funcⁱᵐᵖˡ); (partialInsertionSort_func, partialInsertionSort_funcⁱᵐᵖˡ); (breakPatterns_func, breakPatterns_funcⁱᵐᵖˡ); (choosePivot_func, choosePivot_funcⁱᵐᵖˡ); (order2_func, order2_funcⁱᵐᵖˡ); (median_func, median_funcⁱᵐᵖˡ); (medianAdjacent_func, medianAdjacent_funcⁱᵐᵖˡ); (reverseRange_func, reverseRange_funcⁱᵐᵖˡ); (swapRange_func, swapRange_funcⁱᵐᵖˡ); (stable_func, stable_funcⁱᵐᵖˡ); (symMerge_func, symMerge_funcⁱᵐᵖˡ); (rotate_func, rotate_funcⁱᵐᵖˡ); (insertionSort, insertionSortⁱᵐᵖˡ); (siftDown, siftDownⁱᵐᵖˡ); (heapSort, heapSortⁱᵐᵖˡ); (pdqsort, pdqsortⁱᵐᵖˡ); (partition, partitionⁱᵐᵖˡ); (partitionEqual, partitionEqualⁱᵐᵖˡ); (partialInsertionSort, partialInsertionSortⁱᵐᵖˡ); (breakPatterns, breakPatternsⁱᵐᵖˡ); (choosePivot, choosePivotⁱᵐᵖˡ); (order2, order2ⁱᵐᵖˡ); (median, medianⁱᵐᵖˡ); (medianAdjacent, medianAdjacentⁱᵐᵖˡ); (reverseRange, reverseRangeⁱᵐᵖˡ); (swapRange, swapRangeⁱᵐᵖˡ); (stable, stableⁱᵐᵖˡ); (symMerge, symMergeⁱᵐᵖˡ); (rotate, rotateⁱᵐᵖˡ)].
+Axiom StringSlice__Swapⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(sortedHint.id, []); (ptrT.id sortedHint.id, []); (xorshift.id, []); (ptrT.id xorshift.id, [("Next"%go, xorshift__Nextⁱᵐᵖˡ)]); (lessSwap.id, []); (ptrT.id lessSwap.id, []); (reverse.id, [("Len"%go, (λ: "$r",
                  method_call #Interface.id #"Len"%go (struct.field_get #reverse #"Interface"%go "$r")

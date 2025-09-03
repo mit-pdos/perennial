@@ -21,27 +21,9 @@ Definition Enc : go_type := structT [
 
 Definition NewEncFromSlice : go_string := "github.com/tchajed/marshal.NewEncFromSlice"%go.
 
-Axiom NewEncFromSliceⁱᵐᵖˡ : val.
-
 Definition NewEnc : go_string := "github.com/tchajed/marshal.NewEnc"%go.
 
-Axiom NewEncⁱᵐᵖˡ : val.
-
-Axiom Enc__PutIntⁱᵐᵖˡ : val.
-
-Axiom Enc__PutInt32ⁱᵐᵖˡ : val.
-
-Axiom Enc__PutIntsⁱᵐᵖˡ : val.
-
-Axiom Enc__PutBytesⁱᵐᵖˡ : val.
-
 Definition bool2byte : go_string := "github.com/tchajed/marshal.bool2byte"%go.
-
-Axiom bool2byteⁱᵐᵖˡ : val.
-
-Axiom Enc__PutBoolⁱᵐᵖˡ : val.
-
-Axiom Enc__Finishⁱᵐᵖˡ : val.
 
 Definition Dec : go_type := structT [
   "b" :: sliceT;
@@ -49,18 +31,6 @@ Definition Dec : go_type := structT [
 ].
 
 Definition NewDec : go_string := "github.com/tchajed/marshal.NewDec"%go.
-
-Axiom NewDecⁱᵐᵖˡ : val.
-
-Axiom Dec__GetIntⁱᵐᵖˡ : val.
-
-Axiom Dec__GetInt32ⁱᵐᵖˡ : val.
-
-Axiom Dec__GetIntsⁱᵐᵖˡ : val.
-
-Axiom Dec__GetBytesⁱᵐᵖˡ : val.
-
-Axiom Dec__GetBoolⁱᵐᵖˡ : val.
 
 Definition compute_new_cap : go_string := "github.com/tchajed/marshal.compute_new_cap"%go.
 
@@ -141,8 +111,6 @@ Definition ReadInt32ⁱᵐᵖˡ : val :=
      slice.slice #byteT "$s" #(W64 4) (slice.len "$s"))).
 
 Definition ReadInts : go_string := "github.com/tchajed/marshal.ReadInts"%go.
-
-Axiom ReadIntsⁱᵐᵖˡ : val.
 
 Definition ReadBytes : go_string := "github.com/tchajed/marshal.ReadBytes"%go.
 
@@ -287,8 +255,6 @@ Definition WriteBytesⁱᵐᵖˡ : val :=
 
 Definition WriteInts : go_string := "github.com/tchajed/marshal.WriteInts"%go.
 
-Axiom WriteIntsⁱᵐᵖˡ : val.
-
 Definition WriteBool : go_string := "github.com/tchajed/marshal.WriteBool"%go.
 
 (* go: stateless.go:119:6 *)
@@ -427,7 +393,41 @@ Definition WriteSliceLenPrefixⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
+Axiom NewEncFromSliceⁱᵐᵖˡ : val.
+
+Axiom NewEncⁱᵐᵖˡ : val.
+
+Axiom bool2byteⁱᵐᵖˡ : val.
+
+Axiom NewDecⁱᵐᵖˡ : val.
+
+Axiom ReadIntsⁱᵐᵖˡ : val.
+
+Axiom WriteIntsⁱᵐᵖˡ : val.
+
 Definition functions' : list (go_string * val) := [(NewEncFromSlice, NewEncFromSliceⁱᵐᵖˡ); (NewEnc, NewEncⁱᵐᵖˡ); (bool2byte, bool2byteⁱᵐᵖˡ); (NewDec, NewDecⁱᵐᵖˡ); (compute_new_cap, compute_new_capⁱᵐᵖˡ); (reserve, reserveⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadInt32, ReadInt32ⁱᵐᵖˡ); (ReadInts, ReadIntsⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadBytesCopy, ReadBytesCopyⁱᵐᵖˡ); (ReadBool, ReadBoolⁱᵐᵖˡ); (ReadLenPrefixedBytes, ReadLenPrefixedBytesⁱᵐᵖˡ); (WriteInt, WriteIntⁱᵐᵖˡ); (WriteInt32, WriteInt32ⁱᵐᵖˡ); (WriteBytes, WriteBytesⁱᵐᵖˡ); (WriteInts, WriteIntsⁱᵐᵖˡ); (WriteBool, WriteBoolⁱᵐᵖˡ); (WriteLenPrefixedBytes, WriteLenPrefixedBytesⁱᵐᵖˡ); (ReadSlice, ReadSliceⁱᵐᵖˡ); (ReadSliceLenPrefix, ReadSliceLenPrefixⁱᵐᵖˡ); (WriteSlice, WriteSliceⁱᵐᵖˡ); (WriteSliceLenPrefix, WriteSliceLenPrefixⁱᵐᵖˡ)].
+
+Axiom Enc__Finishⁱᵐᵖˡ : val.
+
+Axiom Enc__PutBoolⁱᵐᵖˡ : val.
+
+Axiom Enc__PutBytesⁱᵐᵖˡ : val.
+
+Axiom Enc__PutIntⁱᵐᵖˡ : val.
+
+Axiom Enc__PutInt32ⁱᵐᵖˡ : val.
+
+Axiom Enc__PutIntsⁱᵐᵖˡ : val.
+
+Axiom Dec__GetBoolⁱᵐᵖˡ : val.
+
+Axiom Dec__GetBytesⁱᵐᵖˡ : val.
+
+Axiom Dec__GetIntⁱᵐᵖˡ : val.
+
+Axiom Dec__GetInt32ⁱᵐᵖˡ : val.
+
+Axiom Dec__GetIntsⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, [("Finish"%go, Enc__Finishⁱᵐᵖˡ); ("PutBool"%go, Enc__PutBoolⁱᵐᵖˡ); ("PutBytes"%go, Enc__PutBytesⁱᵐᵖˡ); ("PutInt"%go, Enc__PutIntⁱᵐᵖˡ); ("PutInt32"%go, Enc__PutInt32ⁱᵐᵖˡ); ("PutInts"%go, Enc__PutIntsⁱᵐᵖˡ)]); (ptrT.id Enc.id, [("Finish"%go, (λ: "$r",
                  method_call #Enc.id #"Finish"%go (![#Enc] "$r")

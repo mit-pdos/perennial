@@ -13,13 +13,7 @@ Context `{ffi_syntax}.
 
 Definition init : go_string := "google.golang.org/grpc/codes.init"%go.
 
-Axiom initⁱᵐᵖˡ : val.
-
-Axiom Code__Stringⁱᵐᵖˡ : val.
-
 Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonicalString"%go.
-
-Axiom canonicalStringⁱᵐᵖˡ : val.
 
 Definition Code : go_type := uint32T.
 
@@ -63,11 +57,15 @@ Definition strToCode : go_string := "google.golang.org/grpc/codes.strToCode"%go.
 
 Axiom strToCode'init : val.
 
-Axiom Code__UnmarshalJSONⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(init, initⁱᵐᵖˡ); (canonicalString, canonicalStringⁱᵐᵖˡ)].
+Axiom canonicalStringⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(canonicalString, canonicalStringⁱᵐᵖˡ)].
+
+Axiom Code__Stringⁱᵐᵖˡ : val.
+
+Axiom Code__UnmarshalJSONⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Code.id, [("String"%go, Code__Stringⁱᵐᵖˡ)]); (ptrT.id Code.id, [("String"%go, (λ: "$r",
                  method_call #Code.id #"String"%go (![#Code] "$r")

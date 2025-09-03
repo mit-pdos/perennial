@@ -168,51 +168,9 @@ Axiom authClient : go_type.
 
 Definition NewAuth : go_string := "go.etcd.io/etcd/client/v3.NewAuth"%go.
 
-Axiom NewAuthⁱᵐᵖˡ : val.
-
 Definition NewAuthFromAuthClient : go_string := "go.etcd.io/etcd/client/v3.NewAuthFromAuthClient"%go.
 
-Axiom NewAuthFromAuthClientⁱᵐᵖˡ : val.
-
-Axiom authClient__Authenticateⁱᵐᵖˡ : val.
-
-Axiom authClient__AuthEnableⁱᵐᵖˡ : val.
-
-Axiom authClient__AuthDisableⁱᵐᵖˡ : val.
-
-Axiom authClient__AuthStatusⁱᵐᵖˡ : val.
-
-Axiom authClient__UserAddⁱᵐᵖˡ : val.
-
-Axiom authClient__UserAddWithOptionsⁱᵐᵖˡ : val.
-
-Axiom authClient__UserDeleteⁱᵐᵖˡ : val.
-
-Axiom authClient__UserChangePasswordⁱᵐᵖˡ : val.
-
-Axiom authClient__UserGrantRoleⁱᵐᵖˡ : val.
-
-Axiom authClient__UserGetⁱᵐᵖˡ : val.
-
-Axiom authClient__UserListⁱᵐᵖˡ : val.
-
-Axiom authClient__UserRevokeRoleⁱᵐᵖˡ : val.
-
-Axiom authClient__RoleAddⁱᵐᵖˡ : val.
-
-Axiom authClient__RoleGrantPermissionⁱᵐᵖˡ : val.
-
-Axiom authClient__RoleGetⁱᵐᵖˡ : val.
-
-Axiom authClient__RoleListⁱᵐᵖˡ : val.
-
-Axiom authClient__RoleRevokePermissionⁱᵐᵖˡ : val.
-
-Axiom authClient__RoleDeleteⁱᵐᵖˡ : val.
-
 Definition StrToPermissionType : go_string := "go.etcd.io/etcd/client/v3.StrToPermissionType"%go.
-
-Axiom StrToPermissionTypeⁱᵐᵖˡ : val.
 
 Definition ErrNoAvailableEndpoints : go_string := "go.etcd.io/etcd/client/v3.ErrNoAvailableEndpoints"%go.
 
@@ -226,21 +184,13 @@ Axiom Client : go_type.
 
 Definition New : go_string := "go.etcd.io/etcd/client/v3.New"%go.
 
-Axiom Newⁱᵐᵖˡ : val.
-
 Definition NewCtxClient : go_string := "go.etcd.io/etcd/client/v3.NewCtxClient"%go.
-
-Axiom NewCtxClientⁱᵐᵖˡ : val.
 
 Axiom Option : go_type.
 
 Definition NewFromURL : go_string := "go.etcd.io/etcd/client/v3.NewFromURL"%go.
 
-Axiom NewFromURLⁱᵐᵖˡ : val.
-
 Definition NewFromURLs : go_string := "go.etcd.io/etcd/client/v3.NewFromURLs"%go.
-
-Axiom NewFromURLsⁱᵐᵖˡ : val.
 
 Definition WithZapLogger : go_string := "go.etcd.io/etcd/client/v3.WithZapLogger"%go.
 
@@ -257,71 +207,21 @@ Definition WithZapLoggerⁱᵐᵖˡ : val :=
        return: #())
        ))).
 
-Axiom Client__WithLoggerⁱᵐᵖˡ : val.
-
-Axiom Client__GetLoggerⁱᵐᵖˡ : val.
-
-Axiom Client__Closeⁱᵐᵖˡ : val.
-
-Axiom Client__Ctxⁱᵐᵖˡ : val.
-
-Axiom Client__Endpointsⁱᵐᵖˡ : val.
-
-Axiom Client__SetEndpointsⁱᵐᵖˡ : val.
-
-Axiom Client__Syncⁱᵐᵖˡ : val.
-
-Axiom Client__autoSyncⁱᵐᵖˡ : val.
-
-Axiom Client__dialSetupOptsⁱᵐᵖˡ : val.
-
-Axiom Client__Dialⁱᵐᵖˡ : val.
-
-Axiom Client__getTokenⁱᵐᵖˡ : val.
-
-Axiom Client__dialWithBalancerⁱᵐᵖˡ : val.
-
-Axiom Client__dialⁱᵐᵖˡ : val.
-
 Definition authority : go_string := "go.etcd.io/etcd/client/v3.authority"%go.
-
-Axiom authorityⁱᵐᵖˡ : val.
-
-Axiom Client__credentialsForEndpointⁱᵐᵖˡ : val.
 
 Definition newClient : go_string := "go.etcd.io/etcd/client/v3.newClient"%go.
 
-Axiom newClientⁱᵐᵖˡ : val.
-
-Axiom Client__roundRobinQuorumBackoffⁱᵐᵖˡ : val.
-
 Definition minSupportedVersion : go_string := "go.etcd.io/etcd/client/v3.minSupportedVersion"%go.
-
-Axiom minSupportedVersionⁱᵐᵖˡ : val.
-
-Axiom Client__checkVersionⁱᵐᵖˡ : val.
-
-Axiom Client__ActiveConnectionⁱᵐᵖˡ : val.
 
 Definition isHaltErr : go_string := "go.etcd.io/etcd/client/v3.isHaltErr"%go.
 
-Axiom isHaltErrⁱᵐᵖˡ : val.
-
 Definition isUnavailableErr : go_string := "go.etcd.io/etcd/client/v3.isUnavailableErr"%go.
-
-Axiom isUnavailableErrⁱᵐᵖˡ : val.
 
 Definition ContextError : go_string := "go.etcd.io/etcd/client/v3.ContextError"%go.
 
-Axiom ContextErrorⁱᵐᵖˡ : val.
-
 Definition canceledByCaller : go_string := "go.etcd.io/etcd/client/v3.canceledByCaller"%go.
 
-Axiom canceledByCallerⁱᵐᵖˡ : val.
-
 Definition IsConnCanceled : go_string := "go.etcd.io/etcd/client/v3.IsConnCanceled"%go.
-
-Axiom IsConnCanceledⁱᵐᵖˡ : val.
 
 Axiom Member : go_type.
 
@@ -341,41 +241,15 @@ Axiom cluster : go_type.
 
 Definition NewCluster : go_string := "go.etcd.io/etcd/client/v3.NewCluster"%go.
 
-Axiom NewClusterⁱᵐᵖˡ : val.
-
 Definition NewClusterFromClusterClient : go_string := "go.etcd.io/etcd/client/v3.NewClusterFromClusterClient"%go.
-
-Axiom NewClusterFromClusterClientⁱᵐᵖˡ : val.
-
-Axiom cluster__MemberAddⁱᵐᵖˡ : val.
-
-Axiom cluster__MemberAddAsLearnerⁱᵐᵖˡ : val.
-
-Axiom cluster__memberAddⁱᵐᵖˡ : val.
-
-Axiom cluster__MemberRemoveⁱᵐᵖˡ : val.
-
-Axiom cluster__MemberUpdateⁱᵐᵖˡ : val.
-
-Axiom cluster__MemberListⁱᵐᵖˡ : val.
-
-Axiom cluster__MemberPromoteⁱᵐᵖˡ : val.
 
 Axiom CompactOp : go_type.
 
 Axiom CompactOption : go_type.
 
-Axiom CompactOp__applyCompactOptsⁱᵐᵖˡ : val.
-
 Definition OpCompact : go_string := "go.etcd.io/etcd/client/v3.OpCompact"%go.
 
-Axiom OpCompactⁱᵐᵖˡ : val.
-
-Axiom CompactOp__toRequestⁱᵐᵖˡ : val.
-
 Definition WithCompactPhysical : go_string := "go.etcd.io/etcd/client/v3.WithCompactPhysical"%go.
-
-Axiom WithCompactPhysicalⁱᵐᵖˡ : val.
 
 Axiom CompareTarget : go_type.
 
@@ -393,47 +267,19 @@ Definition Cmp : go_type := etcdserverpb.Compare.
 
 Definition Compare : go_string := "go.etcd.io/etcd/client/v3.Compare"%go.
 
-Axiom Compareⁱᵐᵖˡ : val.
-
 Definition Value : go_string := "go.etcd.io/etcd/client/v3.Value"%go.
-
-Axiom Valueⁱᵐᵖˡ : val.
 
 Definition Version : go_string := "go.etcd.io/etcd/client/v3.Version"%go.
 
-Axiom Versionⁱᵐᵖˡ : val.
-
 Definition CreateRevision : go_string := "go.etcd.io/etcd/client/v3.CreateRevision"%go.
-
-Axiom CreateRevisionⁱᵐᵖˡ : val.
 
 Definition ModRevision : go_string := "go.etcd.io/etcd/client/v3.ModRevision"%go.
 
-Axiom ModRevisionⁱᵐᵖˡ : val.
-
 Definition LeaseValue : go_string := "go.etcd.io/etcd/client/v3.LeaseValue"%go.
-
-Axiom LeaseValueⁱᵐᵖˡ : val.
-
-Axiom Cmp__KeyBytesⁱᵐᵖˡ : val.
-
-Axiom Cmp__WithKeyBytesⁱᵐᵖˡ : val.
-
-Axiom Cmp__ValueBytesⁱᵐᵖˡ : val.
-
-Axiom Cmp__WithValueBytesⁱᵐᵖˡ : val.
-
-Axiom Cmp__WithRangeⁱᵐᵖˡ : val.
-
-Axiom Cmp__WithPrefixⁱᵐᵖˡ : val.
 
 Definition mustInt64 : go_string := "go.etcd.io/etcd/client/v3.mustInt64"%go.
 
-Axiom mustInt64ⁱᵐᵖˡ : val.
-
 Definition mustInt64orLeaseID : go_string := "go.etcd.io/etcd/client/v3.mustInt64orLeaseID"%go.
-
-Axiom mustInt64orLeaseIDⁱᵐᵖˡ : val.
 
 Axiom Config : go_type.
 
@@ -443,25 +289,13 @@ Axiom SecureConfig : go_type.
 
 Axiom AuthConfig : go_type.
 
-Axiom ConfigSpec__Cloneⁱᵐᵖˡ : val.
-
-Axiom AuthConfig__Emptyⁱᵐᵖˡ : val.
-
 Definition NewClientConfig : go_string := "go.etcd.io/etcd/client/v3.NewClientConfig"%go.
-
-Axiom NewClientConfigⁱᵐᵖˡ : val.
 
 Definition newTLSConfig : go_string := "go.etcd.io/etcd/client/v3.newTLSConfig"%go.
 
-Axiom newTLSConfigⁱᵐᵖˡ : val.
-
 Definition WithRequireLeader : go_string := "go.etcd.io/etcd/client/v3.WithRequireLeader"%go.
 
-Axiom WithRequireLeaderⁱᵐᵖˡ : val.
-
 Definition withVersion : go_string := "go.etcd.io/etcd/client/v3.withVersion"%go.
-
-Axiom withVersionⁱᵐᵖˡ : val.
 
 Axiom CompactResponse : go_type.
 
@@ -482,43 +316,11 @@ Definition OpResponse : go_type := structT [
   "txn" :: ptrT
 ].
 
-Axiom OpResponse__Putⁱᵐᵖˡ : val.
-
-Axiom OpResponse__Getⁱᵐᵖˡ : val.
-
-Axiom OpResponse__Delⁱᵐᵖˡ : val.
-
-Axiom OpResponse__Txnⁱᵐᵖˡ : val.
-
-Axiom PutResponse__OpResponseⁱᵐᵖˡ : val.
-
-Axiom GetResponse__OpResponseⁱᵐᵖˡ : val.
-
-Axiom DeleteResponse__OpResponseⁱᵐᵖˡ : val.
-
-Axiom TxnResponse__OpResponseⁱᵐᵖˡ : val.
-
 Axiom kv : go_type.
 
 Definition NewKV : go_string := "go.etcd.io/etcd/client/v3.NewKV"%go.
 
-Axiom NewKVⁱᵐᵖˡ : val.
-
 Definition NewKVFromKVClient : go_string := "go.etcd.io/etcd/client/v3.NewKVFromKVClient"%go.
-
-Axiom NewKVFromKVClientⁱᵐᵖˡ : val.
-
-Axiom kv__Putⁱᵐᵖˡ : val.
-
-Axiom kv__Getⁱᵐᵖˡ : val.
-
-Axiom kv__Deleteⁱᵐᵖˡ : val.
-
-Axiom kv__Compactⁱᵐᵖˡ : val.
-
-Axiom kv__Txnⁱᵐᵖˡ : val.
-
-Axiom kv__Doⁱᵐᵖˡ : val.
 
 Axiom LeaseRevokeResponse : go_type.
 
@@ -551,8 +353,6 @@ Axiom LeaseResponseChSize'init : val.
 
 Axiom ErrKeepAliveHalted : go_type.
 
-Axiom ErrKeepAliveHalted__Errorⁱᵐᵖˡ : val.
-
 Definition Lease : go_type := interfaceT.
 
 Axiom lessor : go_type.
@@ -561,57 +361,15 @@ Axiom keepAlive : go_type.
 
 Definition NewLease : go_string := "go.etcd.io/etcd/client/v3.NewLease"%go.
 
-Axiom NewLeaseⁱᵐᵖˡ : val.
-
 Definition NewLeaseFromLeaseClient : go_string := "go.etcd.io/etcd/client/v3.NewLeaseFromLeaseClient"%go.
-
-Axiom NewLeaseFromLeaseClientⁱᵐᵖˡ : val.
-
-Axiom lessor__Grantⁱᵐᵖˡ : val.
-
-Axiom lessor__Revokeⁱᵐᵖˡ : val.
-
-Axiom lessor__TimeToLiveⁱᵐᵖˡ : val.
-
-Axiom lessor__Leasesⁱᵐᵖˡ : val.
 
 Axiom keepAliveCtxKey : go_type.
 
-Axiom lessor__KeepAliveⁱᵐᵖˡ : val.
-
-Axiom lessor__KeepAliveOnceⁱᵐᵖˡ : val.
-
-Axiom lessor__Closeⁱᵐᵖˡ : val.
-
-Axiom lessor__keepAliveCtxCloserⁱᵐᵖˡ : val.
-
-Axiom lessor__closeRequireLeaderⁱᵐᵖˡ : val.
-
-Axiom lessor__keepAliveOnceⁱᵐᵖˡ : val.
-
-Axiom lessor__recvKeepAliveLoopⁱᵐᵖˡ : val.
-
-Axiom lessor__resetRecvⁱᵐᵖˡ : val.
-
-Axiom lessor__recvKeepAliveⁱᵐᵖˡ : val.
-
-Axiom lessor__deadlineLoopⁱᵐᵖˡ : val.
-
-Axiom lessor__sendKeepAliveLoopⁱᵐᵖˡ : val.
-
-Axiom keepAlive__closeⁱᵐᵖˡ : val.
-
 Definition init : go_string := "go.etcd.io/etcd/client/v3.init"%go.
-
-Axiom initⁱᵐᵖˡ : val.
 
 Definition SetLogger : go_string := "go.etcd.io/etcd/client/v3.SetLogger"%go.
 
-Axiom SetLoggerⁱᵐᵖˡ : val.
-
 Definition etcdClientDebugLevel : go_string := "go.etcd.io/etcd/client/v3.etcdClientDebugLevel"%go.
-
-Axiom etcdClientDebugLevelⁱᵐᵖˡ : val.
 
 Axiom DefragmentResponse : go_type.
 
@@ -643,37 +401,9 @@ Axiom maintenance : go_type.
 
 Definition NewMaintenance : go_string := "go.etcd.io/etcd/client/v3.NewMaintenance"%go.
 
-Axiom NewMaintenanceⁱᵐᵖˡ : val.
-
 Definition NewMaintenanceFromMaintenanceClient : go_string := "go.etcd.io/etcd/client/v3.NewMaintenanceFromMaintenanceClient"%go.
 
-Axiom NewMaintenanceFromMaintenanceClientⁱᵐᵖˡ : val.
-
-Axiom maintenance__AlarmListⁱᵐᵖˡ : val.
-
-Axiom maintenance__AlarmDisarmⁱᵐᵖˡ : val.
-
-Axiom maintenance__Defragmentⁱᵐᵖˡ : val.
-
-Axiom maintenance__Statusⁱᵐᵖˡ : val.
-
-Axiom maintenance__HashKVⁱᵐᵖˡ : val.
-
-Axiom maintenance__SnapshotWithVersionⁱᵐᵖˡ : val.
-
-Axiom maintenance__Snapshotⁱᵐᵖˡ : val.
-
-Axiom maintenance__logAndCloseWithErrorⁱᵐᵖˡ : val.
-
-Axiom maintenance__saveⁱᵐᵖˡ : val.
-
 Axiom snapshotReadCloser : go_type.
-
-Axiom snapshotReadCloser__Readⁱᵐᵖˡ : val.
-
-Axiom maintenance__MoveLeaderⁱᵐᵖˡ : val.
-
-Axiom maintenance__Downgradeⁱᵐᵖˡ : val.
 
 Definition opType : go_type := intT.
 
@@ -1129,8 +859,6 @@ Definition Op__isWriteⁱᵐᵖˡ : val :=
 
 Definition NewOp : go_string := "go.etcd.io/etcd/client/v3.NewOp"%go.
 
-Axiom NewOpⁱᵐᵖˡ : val.
-
 Definition OpGet : go_string := "go.etcd.io/etcd/client/v3.OpGet"%go.
 
 Definition IsOptsWithPrefix : go_string := "go.etcd.io/etcd/client/v3.IsOptsWithPrefix"%go.
@@ -1441,8 +1169,6 @@ Definition OpTxnⁱᵐᵖˡ : val :=
 
 Definition opWatch : go_string := "go.etcd.io/etcd/client/v3.opWatch"%go.
 
-Axiom opWatchⁱᵐᵖˡ : val.
-
 Definition OpOption : go_type := funcT.
 
 (* go: op.go:330:15 *)
@@ -1541,11 +1267,7 @@ Definition WithSortⁱᵐᵖˡ : val :=
 
 Definition GetPrefixRangeEnd : go_string := "go.etcd.io/etcd/client/v3.GetPrefixRangeEnd"%go.
 
-Axiom GetPrefixRangeEndⁱᵐᵖˡ : val.
-
 Definition getPrefix : go_string := "go.etcd.io/etcd/client/v3.getPrefix"%go.
-
-Axiom getPrefixⁱᵐᵖˡ : val.
 
 Definition WithPrefix : go_string := "go.etcd.io/etcd/client/v3.WithPrefix"%go.
 
@@ -1804,8 +1526,6 @@ Definition WithLastRevⁱᵐᵖˡ : val :=
      let: "$a1" := SortDescend in
      (func_call #withTop) "$a0" "$a1")).
 
-Axiom withTopⁱᵐᵖˡ : val.
-
 Definition WithProgressNotify : go_string := "go.etcd.io/etcd/client/v3.WithProgressNotify"%go.
 
 (* WithProgressNotify makes watch server send periodic progress updates
@@ -1938,8 +1658,6 @@ Definition LeaseOp : go_type := structT [
 
 Definition LeaseOption : go_type := funcT.
 
-Axiom LeaseOp__applyOptsⁱᵐᵖˡ : val.
-
 Definition WithAttachedKeys : go_string := "go.etcd.io/etcd/client/v3.WithAttachedKeys"%go.
 
 (* WithAttachedKeys makes TimeToLive list the keys attached to the given lease ID.
@@ -1955,12 +1673,6 @@ Definition WithAttachedKeysⁱᵐᵖˡ : val :=
        ))).
 
 Definition toLeaseTimeToLiveRequest : go_string := "go.etcd.io/etcd/client/v3.toLeaseTimeToLiveRequest"%go.
-
-Axiom toLeaseTimeToLiveRequestⁱᵐᵖˡ : val.
-
-Axiom IsOptsWithPrefixⁱᵐᵖˡ : val.
-
-Axiom IsOptsWithFromKeyⁱᵐᵖˡ : val.
 
 (* go: op.go:595:14 *)
 Definition Op__IsSortOptionValidⁱᵐᵖˡ : val :=
@@ -2035,169 +1747,39 @@ Axiom repeatable : expr.
 
 Axiom nonRepeatable : expr.
 
-Axiom retryPolicy__Stringⁱᵐᵖˡ : val.
-
 Definition isSafeRetryImmutableRPC : go_string := "go.etcd.io/etcd/client/v3.isSafeRetryImmutableRPC"%go.
 
-Axiom isSafeRetryImmutableRPCⁱᵐᵖˡ : val.
-
 Definition isSafeRetryMutableRPC : go_string := "go.etcd.io/etcd/client/v3.isSafeRetryMutableRPC"%go.
-
-Axiom isSafeRetryMutableRPCⁱᵐᵖˡ : val.
 
 Axiom retryKVClient : go_type.
 
 Definition RetryKVClient : go_string := "go.etcd.io/etcd/client/v3.RetryKVClient"%go.
 
-Axiom RetryKVClientⁱᵐᵖˡ : val.
-
-Axiom retryKVClient__Rangeⁱᵐᵖˡ : val.
-
-Axiom retryKVClient__Putⁱᵐᵖˡ : val.
-
-Axiom retryKVClient__DeleteRangeⁱᵐᵖˡ : val.
-
-Axiom retryKVClient__Txnⁱᵐᵖˡ : val.
-
-Axiom retryKVClient__Compactⁱᵐᵖˡ : val.
-
 Axiom retryLeaseClient : go_type.
 
 Definition RetryLeaseClient : go_string := "go.etcd.io/etcd/client/v3.RetryLeaseClient"%go.
-
-Axiom RetryLeaseClientⁱᵐᵖˡ : val.
-
-Axiom retryLeaseClient__LeaseTimeToLiveⁱᵐᵖˡ : val.
-
-Axiom retryLeaseClient__LeaseLeasesⁱᵐᵖˡ : val.
-
-Axiom retryLeaseClient__LeaseGrantⁱᵐᵖˡ : val.
-
-Axiom retryLeaseClient__LeaseRevokeⁱᵐᵖˡ : val.
-
-Axiom retryLeaseClient__LeaseKeepAliveⁱᵐᵖˡ : val.
 
 Axiom retryClusterClient : go_type.
 
 Definition RetryClusterClient : go_string := "go.etcd.io/etcd/client/v3.RetryClusterClient"%go.
 
-Axiom RetryClusterClientⁱᵐᵖˡ : val.
-
-Axiom retryClusterClient__MemberListⁱᵐᵖˡ : val.
-
-Axiom retryClusterClient__MemberAddⁱᵐᵖˡ : val.
-
-Axiom retryClusterClient__MemberRemoveⁱᵐᵖˡ : val.
-
-Axiom retryClusterClient__MemberUpdateⁱᵐᵖˡ : val.
-
-Axiom retryClusterClient__MemberPromoteⁱᵐᵖˡ : val.
-
 Axiom retryMaintenanceClient : go_type.
 
 Definition RetryMaintenanceClient : go_string := "go.etcd.io/etcd/client/v3.RetryMaintenanceClient"%go.
-
-Axiom RetryMaintenanceClientⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__Alarmⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__Statusⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__Hashⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__HashKVⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__Snapshotⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__MoveLeaderⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__Defragmentⁱᵐᵖˡ : val.
-
-Axiom retryMaintenanceClient__Downgradeⁱᵐᵖˡ : val.
 
 Axiom retryAuthClient : go_type.
 
 Definition RetryAuthClient : go_string := "go.etcd.io/etcd/client/v3.RetryAuthClient"%go.
 
-Axiom RetryAuthClientⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__UserListⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__UserGetⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__RoleGetⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__RoleListⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__AuthEnableⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__AuthDisableⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__AuthStatusⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__UserAddⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__UserDeleteⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__UserChangePasswordⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__UserGrantRoleⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__UserRevokeRoleⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__RoleAddⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__RoleDeleteⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__RoleGrantPermissionⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__RoleRevokePermissionⁱᵐᵖˡ : val.
-
-Axiom retryAuthClient__Authenticateⁱᵐᵖˡ : val.
-
-Axiom Client__unaryClientInterceptorⁱᵐᵖˡ : val.
-
-Axiom Client__streamClientInterceptorⁱᵐᵖˡ : val.
-
-Axiom Client__shouldRefreshTokenⁱᵐᵖˡ : val.
-
-Axiom Client__refreshTokenⁱᵐᵖˡ : val.
-
 Axiom serverStreamingRetryingStream : go_type.
-
-Axiom serverStreamingRetryingStream__setStreamⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__getStreamⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__SendMsgⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__CloseSendⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__Headerⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__Trailerⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__RecvMsgⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__receiveMsgAndIndicateRetryⁱᵐᵖˡ : val.
-
-Axiom serverStreamingRetryingStream__reestablishStreamAndResendBufferⁱᵐᵖˡ : val.
 
 Definition waitRetryBackoff : go_string := "go.etcd.io/etcd/client/v3.waitRetryBackoff"%go.
 
-Axiom waitRetryBackoffⁱᵐᵖˡ : val.
-
 Definition isSafeRetry : go_string := "go.etcd.io/etcd/client/v3.isSafeRetry"%go.
-
-Axiom isSafeRetryⁱᵐᵖˡ : val.
 
 Definition isContextError : go_string := "go.etcd.io/etcd/client/v3.isContextError"%go.
 
-Axiom isContextErrorⁱᵐᵖˡ : val.
-
 Definition contextErrToGRPCErr : go_string := "go.etcd.io/etcd/client/v3.contextErrToGRPCErr"%go.
-
-Axiom contextErrToGRPCErrⁱᵐᵖˡ : val.
 
 Definition defaultOptions : go_string := "go.etcd.io/etcd/client/v3.defaultOptions"%go.
 
@@ -2207,15 +1789,9 @@ Axiom backoffFunc : go_type.
 
 Definition withRepeatablePolicy : go_string := "go.etcd.io/etcd/client/v3.withRepeatablePolicy"%go.
 
-Axiom withRepeatablePolicyⁱᵐᵖˡ : val.
-
 Definition withMax : go_string := "go.etcd.io/etcd/client/v3.withMax"%go.
 
-Axiom withMaxⁱᵐᵖˡ : val.
-
 Definition withBackoff : go_string := "go.etcd.io/etcd/client/v3.withBackoff"%go.
-
-Axiom withBackoffⁱᵐᵖˡ : val.
 
 Axiom options : go_type.
 
@@ -2223,15 +1799,9 @@ Axiom retryOption : go_type.
 
 Definition reuseOrNewWithCallOptions : go_string := "go.etcd.io/etcd/client/v3.reuseOrNewWithCallOptions"%go.
 
-Axiom reuseOrNewWithCallOptionsⁱᵐᵖˡ : val.
-
 Definition filterCallOptions : go_string := "go.etcd.io/etcd/client/v3.filterCallOptions"%go.
 
-Axiom filterCallOptionsⁱᵐᵖˡ : val.
-
 Definition backoffLinearWithJitter : go_string := "go.etcd.io/etcd/client/v3.backoffLinearWithJitter"%go.
-
-Axiom backoffLinearWithJitterⁱᵐᵖˡ : val.
 
 Definition SortByVersion : expr := #(W64 1).
 
@@ -2241,17 +1811,7 @@ Definition Txn : go_type := interfaceT.
 
 Axiom txn : go_type.
 
-Axiom txn__Ifⁱᵐᵖˡ : val.
-
-Axiom txn__Thenⁱᵐᵖˡ : val.
-
-Axiom txn__Elseⁱᵐᵖˡ : val.
-
-Axiom txn__Commitⁱᵐᵖˡ : val.
-
 Definition jitterUp : go_string := "go.etcd.io/etcd/client/v3.jitterUp"%go.
-
-Axiom jitterUpⁱᵐᵖˡ : val.
 
 Definition EventTypeDelete : expr := #(W32 1).
 
@@ -2279,14 +1839,6 @@ Definition WatchChan : go_type := chanT WatchResponse.
 
 Definition Watcher : go_type := interfaceT.
 
-Axiom Event__IsCreateⁱᵐᵖˡ : val.
-
-Axiom Event__IsModifyⁱᵐᵖˡ : val.
-
-Axiom WatchResponse__Errⁱᵐᵖˡ : val.
-
-Axiom WatchResponse__IsProgressNotifyⁱᵐᵖˡ : val.
-
 Axiom watcher : go_type.
 
 Axiom watchGRPCStream : go_type.
@@ -2301,11 +1853,7 @@ Axiom watcherStream : go_type.
 
 Definition NewWatcher : go_string := "go.etcd.io/etcd/client/v3.NewWatcher"%go.
 
-Axiom NewWatcherⁱᵐᵖˡ : val.
-
 Definition NewWatchFromWatchClient : go_string := "go.etcd.io/etcd/client/v3.NewWatchFromWatchClient"%go.
-
-Axiom NewWatchFromWatchClientⁱᵐᵖˡ : val.
 
 Definition valCtxCh : go_string := "go.etcd.io/etcd/client/v3.valCtxCh"%go.
 
@@ -2317,69 +1865,767 @@ Axiom zeroTime'init : val.
 
 Axiom valCtx : go_type.
 
+Definition maxBackoff : go_string := "go.etcd.io/etcd/client/v3.maxBackoff"%go.
+
+Axiom maxBackoff'init : val.
+
+Definition streamKeyFromCtx : go_string := "go.etcd.io/etcd/client/v3.streamKeyFromCtx"%go.
+
+Definition vars' : list (go_string * go_type) := [].
+
+Axiom NewAuthⁱᵐᵖˡ : val.
+
+Axiom NewAuthFromAuthClientⁱᵐᵖˡ : val.
+
+Axiom StrToPermissionTypeⁱᵐᵖˡ : val.
+
+Axiom Newⁱᵐᵖˡ : val.
+
+Axiom NewCtxClientⁱᵐᵖˡ : val.
+
+Axiom NewFromURLⁱᵐᵖˡ : val.
+
+Axiom NewFromURLsⁱᵐᵖˡ : val.
+
+Axiom authorityⁱᵐᵖˡ : val.
+
+Axiom newClientⁱᵐᵖˡ : val.
+
+Axiom minSupportedVersionⁱᵐᵖˡ : val.
+
+Axiom isHaltErrⁱᵐᵖˡ : val.
+
+Axiom isUnavailableErrⁱᵐᵖˡ : val.
+
+Axiom ContextErrorⁱᵐᵖˡ : val.
+
+Axiom canceledByCallerⁱᵐᵖˡ : val.
+
+Axiom IsConnCanceledⁱᵐᵖˡ : val.
+
+Axiom NewClusterⁱᵐᵖˡ : val.
+
+Axiom NewClusterFromClusterClientⁱᵐᵖˡ : val.
+
+Axiom OpCompactⁱᵐᵖˡ : val.
+
+Axiom WithCompactPhysicalⁱᵐᵖˡ : val.
+
+Axiom Compareⁱᵐᵖˡ : val.
+
+Axiom Valueⁱᵐᵖˡ : val.
+
+Axiom Versionⁱᵐᵖˡ : val.
+
+Axiom CreateRevisionⁱᵐᵖˡ : val.
+
+Axiom ModRevisionⁱᵐᵖˡ : val.
+
+Axiom LeaseValueⁱᵐᵖˡ : val.
+
+Axiom mustInt64ⁱᵐᵖˡ : val.
+
+Axiom mustInt64orLeaseIDⁱᵐᵖˡ : val.
+
+Axiom NewClientConfigⁱᵐᵖˡ : val.
+
+Axiom newTLSConfigⁱᵐᵖˡ : val.
+
+Axiom WithRequireLeaderⁱᵐᵖˡ : val.
+
+Axiom withVersionⁱᵐᵖˡ : val.
+
+Axiom NewKVⁱᵐᵖˡ : val.
+
+Axiom NewKVFromKVClientⁱᵐᵖˡ : val.
+
+Axiom NewLeaseⁱᵐᵖˡ : val.
+
+Axiom NewLeaseFromLeaseClientⁱᵐᵖˡ : val.
+
+Axiom SetLoggerⁱᵐᵖˡ : val.
+
+Axiom etcdClientDebugLevelⁱᵐᵖˡ : val.
+
+Axiom NewMaintenanceⁱᵐᵖˡ : val.
+
+Axiom NewMaintenanceFromMaintenanceClientⁱᵐᵖˡ : val.
+
+Axiom NewOpⁱᵐᵖˡ : val.
+
+Axiom opWatchⁱᵐᵖˡ : val.
+
+Axiom GetPrefixRangeEndⁱᵐᵖˡ : val.
+
+Axiom getPrefixⁱᵐᵖˡ : val.
+
+Axiom withTopⁱᵐᵖˡ : val.
+
+Axiom toLeaseTimeToLiveRequestⁱᵐᵖˡ : val.
+
+Axiom IsOptsWithPrefixⁱᵐᵖˡ : val.
+
+Axiom IsOptsWithFromKeyⁱᵐᵖˡ : val.
+
+Axiom isSafeRetryImmutableRPCⁱᵐᵖˡ : val.
+
+Axiom isSafeRetryMutableRPCⁱᵐᵖˡ : val.
+
+Axiom RetryKVClientⁱᵐᵖˡ : val.
+
+Axiom RetryLeaseClientⁱᵐᵖˡ : val.
+
+Axiom RetryClusterClientⁱᵐᵖˡ : val.
+
+Axiom RetryMaintenanceClientⁱᵐᵖˡ : val.
+
+Axiom RetryAuthClientⁱᵐᵖˡ : val.
+
+Axiom waitRetryBackoffⁱᵐᵖˡ : val.
+
+Axiom isSafeRetryⁱᵐᵖˡ : val.
+
+Axiom isContextErrorⁱᵐᵖˡ : val.
+
+Axiom contextErrToGRPCErrⁱᵐᵖˡ : val.
+
+Axiom withRepeatablePolicyⁱᵐᵖˡ : val.
+
+Axiom withMaxⁱᵐᵖˡ : val.
+
+Axiom withBackoffⁱᵐᵖˡ : val.
+
+Axiom reuseOrNewWithCallOptionsⁱᵐᵖˡ : val.
+
+Axiom filterCallOptionsⁱᵐᵖˡ : val.
+
+Axiom backoffLinearWithJitterⁱᵐᵖˡ : val.
+
+Axiom jitterUpⁱᵐᵖˡ : val.
+
+Axiom NewWatcherⁱᵐᵖˡ : val.
+
+Axiom NewWatchFromWatchClientⁱᵐᵖˡ : val.
+
+Axiom streamKeyFromCtxⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(NewAuth, NewAuthⁱᵐᵖˡ); (NewAuthFromAuthClient, NewAuthFromAuthClientⁱᵐᵖˡ); (StrToPermissionType, StrToPermissionTypeⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (NewCtxClient, NewCtxClientⁱᵐᵖˡ); (NewFromURL, NewFromURLⁱᵐᵖˡ); (NewFromURLs, NewFromURLsⁱᵐᵖˡ); (WithZapLogger, WithZapLoggerⁱᵐᵖˡ); (authority, authorityⁱᵐᵖˡ); (newClient, newClientⁱᵐᵖˡ); (minSupportedVersion, minSupportedVersionⁱᵐᵖˡ); (isHaltErr, isHaltErrⁱᵐᵖˡ); (isUnavailableErr, isUnavailableErrⁱᵐᵖˡ); (ContextError, ContextErrorⁱᵐᵖˡ); (canceledByCaller, canceledByCallerⁱᵐᵖˡ); (IsConnCanceled, IsConnCanceledⁱᵐᵖˡ); (NewCluster, NewClusterⁱᵐᵖˡ); (NewClusterFromClusterClient, NewClusterFromClusterClientⁱᵐᵖˡ); (OpCompact, OpCompactⁱᵐᵖˡ); (WithCompactPhysical, WithCompactPhysicalⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (Value, Valueⁱᵐᵖˡ); (Version, Versionⁱᵐᵖˡ); (CreateRevision, CreateRevisionⁱᵐᵖˡ); (ModRevision, ModRevisionⁱᵐᵖˡ); (LeaseValue, LeaseValueⁱᵐᵖˡ); (mustInt64, mustInt64ⁱᵐᵖˡ); (mustInt64orLeaseID, mustInt64orLeaseIDⁱᵐᵖˡ); (NewClientConfig, NewClientConfigⁱᵐᵖˡ); (newTLSConfig, newTLSConfigⁱᵐᵖˡ); (WithRequireLeader, WithRequireLeaderⁱᵐᵖˡ); (withVersion, withVersionⁱᵐᵖˡ); (NewKV, NewKVⁱᵐᵖˡ); (NewKVFromKVClient, NewKVFromKVClientⁱᵐᵖˡ); (NewLease, NewLeaseⁱᵐᵖˡ); (NewLeaseFromLeaseClient, NewLeaseFromLeaseClientⁱᵐᵖˡ); (SetLogger, SetLoggerⁱᵐᵖˡ); (etcdClientDebugLevel, etcdClientDebugLevelⁱᵐᵖˡ); (NewMaintenance, NewMaintenanceⁱᵐᵖˡ); (NewMaintenanceFromMaintenanceClient, NewMaintenanceFromMaintenanceClientⁱᵐᵖˡ); (NewOp, NewOpⁱᵐᵖˡ); (OpGet, OpGetⁱᵐᵖˡ); (OpDelete, OpDeleteⁱᵐᵖˡ); (OpPut, OpPutⁱᵐᵖˡ); (OpTxn, OpTxnⁱᵐᵖˡ); (opWatch, opWatchⁱᵐᵖˡ); (WithLease, WithLeaseⁱᵐᵖˡ); (WithLimit, WithLimitⁱᵐᵖˡ); (WithRev, WithRevⁱᵐᵖˡ); (WithSort, WithSortⁱᵐᵖˡ); (GetPrefixRangeEnd, GetPrefixRangeEndⁱᵐᵖˡ); (getPrefix, getPrefixⁱᵐᵖˡ); (WithPrefix, WithPrefixⁱᵐᵖˡ); (WithRange, WithRangeⁱᵐᵖˡ); (WithFromKey, WithFromKeyⁱᵐᵖˡ); (WithSerializable, WithSerializableⁱᵐᵖˡ); (WithKeysOnly, WithKeysOnlyⁱᵐᵖˡ); (WithCountOnly, WithCountOnlyⁱᵐᵖˡ); (WithMinModRev, WithMinModRevⁱᵐᵖˡ); (WithMaxModRev, WithMaxModRevⁱᵐᵖˡ); (WithMinCreateRev, WithMinCreateRevⁱᵐᵖˡ); (WithMaxCreateRev, WithMaxCreateRevⁱᵐᵖˡ); (WithFirstCreate, WithFirstCreateⁱᵐᵖˡ); (WithLastCreate, WithLastCreateⁱᵐᵖˡ); (WithFirstKey, WithFirstKeyⁱᵐᵖˡ); (WithLastKey, WithLastKeyⁱᵐᵖˡ); (WithFirstRev, WithFirstRevⁱᵐᵖˡ); (WithLastRev, WithLastRevⁱᵐᵖˡ); (withTop, withTopⁱᵐᵖˡ); (WithProgressNotify, WithProgressNotifyⁱᵐᵖˡ); (WithCreatedNotify, WithCreatedNotifyⁱᵐᵖˡ); (WithFilterPut, WithFilterPutⁱᵐᵖˡ); (WithFilterDelete, WithFilterDeleteⁱᵐᵖˡ); (WithPrevKV, WithPrevKVⁱᵐᵖˡ); (WithFragment, WithFragmentⁱᵐᵖˡ); (WithIgnoreValue, WithIgnoreValueⁱᵐᵖˡ); (WithIgnoreLease, WithIgnoreLeaseⁱᵐᵖˡ); (WithAttachedKeys, WithAttachedKeysⁱᵐᵖˡ); (toLeaseTimeToLiveRequest, toLeaseTimeToLiveRequestⁱᵐᵖˡ); (IsOptsWithPrefix, IsOptsWithPrefixⁱᵐᵖˡ); (IsOptsWithFromKey, IsOptsWithFromKeyⁱᵐᵖˡ); (isSafeRetryImmutableRPC, isSafeRetryImmutableRPCⁱᵐᵖˡ); (isSafeRetryMutableRPC, isSafeRetryMutableRPCⁱᵐᵖˡ); (RetryKVClient, RetryKVClientⁱᵐᵖˡ); (RetryLeaseClient, RetryLeaseClientⁱᵐᵖˡ); (RetryClusterClient, RetryClusterClientⁱᵐᵖˡ); (RetryMaintenanceClient, RetryMaintenanceClientⁱᵐᵖˡ); (RetryAuthClient, RetryAuthClientⁱᵐᵖˡ); (waitRetryBackoff, waitRetryBackoffⁱᵐᵖˡ); (isSafeRetry, isSafeRetryⁱᵐᵖˡ); (isContextError, isContextErrorⁱᵐᵖˡ); (contextErrToGRPCErr, contextErrToGRPCErrⁱᵐᵖˡ); (withRepeatablePolicy, withRepeatablePolicyⁱᵐᵖˡ); (withMax, withMaxⁱᵐᵖˡ); (withBackoff, withBackoffⁱᵐᵖˡ); (reuseOrNewWithCallOptions, reuseOrNewWithCallOptionsⁱᵐᵖˡ); (filterCallOptions, filterCallOptionsⁱᵐᵖˡ); (backoffLinearWithJitter, backoffLinearWithJitterⁱᵐᵖˡ); (jitterUp, jitterUpⁱᵐᵖˡ); (NewWatcher, NewWatcherⁱᵐᵖˡ); (NewWatchFromWatchClient, NewWatchFromWatchClientⁱᵐᵖˡ); (streamKeyFromCtx, streamKeyFromCtxⁱᵐᵖˡ)].
+
+Axiom authClient__AuthDisableⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthEnableⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthStatusⁱᵐᵖˡ : val.
+
+Axiom authClient__Authenticateⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleAddⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleDeleteⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleGetⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleGrantPermissionⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleListⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleRevokePermissionⁱᵐᵖˡ : val.
+
+Axiom authClient__UserAddⁱᵐᵖˡ : val.
+
+Axiom authClient__UserAddWithOptionsⁱᵐᵖˡ : val.
+
+Axiom authClient__UserChangePasswordⁱᵐᵖˡ : val.
+
+Axiom authClient__UserDeleteⁱᵐᵖˡ : val.
+
+Axiom authClient__UserGetⁱᵐᵖˡ : val.
+
+Axiom authClient__UserGrantRoleⁱᵐᵖˡ : val.
+
+Axiom authClient__UserListⁱᵐᵖˡ : val.
+
+Axiom authClient__UserRevokeRoleⁱᵐᵖˡ : val.
+
+Axiom Client__ActiveConnectionⁱᵐᵖˡ : val.
+
+Axiom Client__AlarmDisarmⁱᵐᵖˡ : val.
+
+Axiom Client__AlarmListⁱᵐᵖˡ : val.
+
+Axiom Client__AuthDisableⁱᵐᵖˡ : val.
+
+Axiom Client__AuthEnableⁱᵐᵖˡ : val.
+
+Axiom Client__AuthStatusⁱᵐᵖˡ : val.
+
+Axiom Client__Authenticateⁱᵐᵖˡ : val.
+
+Axiom Client__Closeⁱᵐᵖˡ : val.
+
+Axiom Client__Compactⁱᵐᵖˡ : val.
+
+Axiom Client__Ctxⁱᵐᵖˡ : val.
+
+Axiom Client__Defragmentⁱᵐᵖˡ : val.
+
+Axiom Client__Deleteⁱᵐᵖˡ : val.
+
+Axiom Client__Dialⁱᵐᵖˡ : val.
+
+Axiom Client__Doⁱᵐᵖˡ : val.
+
+Axiom Client__Downgradeⁱᵐᵖˡ : val.
+
+Axiom Client__Endpointsⁱᵐᵖˡ : val.
+
+Axiom Client__Getⁱᵐᵖˡ : val.
+
+Axiom Client__GetLoggerⁱᵐᵖˡ : val.
+
+Axiom Client__Grantⁱᵐᵖˡ : val.
+
+Axiom Client__HashKVⁱᵐᵖˡ : val.
+
+Axiom Client__KeepAliveⁱᵐᵖˡ : val.
+
+Axiom Client__KeepAliveOnceⁱᵐᵖˡ : val.
+
+Axiom Client__Leasesⁱᵐᵖˡ : val.
+
+Axiom Client__MemberAddⁱᵐᵖˡ : val.
+
+Axiom Client__MemberAddAsLearnerⁱᵐᵖˡ : val.
+
+Axiom Client__MemberListⁱᵐᵖˡ : val.
+
+Axiom Client__MemberPromoteⁱᵐᵖˡ : val.
+
+Axiom Client__MemberRemoveⁱᵐᵖˡ : val.
+
+Axiom Client__MemberUpdateⁱᵐᵖˡ : val.
+
+Axiom Client__MoveLeaderⁱᵐᵖˡ : val.
+
+Axiom Client__Putⁱᵐᵖˡ : val.
+
+Axiom Client__RequestProgressⁱᵐᵖˡ : val.
+
+Axiom Client__Revokeⁱᵐᵖˡ : val.
+
+Axiom Client__RoleAddⁱᵐᵖˡ : val.
+
+Axiom Client__RoleDeleteⁱᵐᵖˡ : val.
+
+Axiom Client__RoleGetⁱᵐᵖˡ : val.
+
+Axiom Client__RoleGrantPermissionⁱᵐᵖˡ : val.
+
+Axiom Client__RoleListⁱᵐᵖˡ : val.
+
+Axiom Client__RoleRevokePermissionⁱᵐᵖˡ : val.
+
+Axiom Client__SetEndpointsⁱᵐᵖˡ : val.
+
+Axiom Client__Snapshotⁱᵐᵖˡ : val.
+
+Axiom Client__SnapshotWithVersionⁱᵐᵖˡ : val.
+
+Axiom Client__Statusⁱᵐᵖˡ : val.
+
+Axiom Client__Syncⁱᵐᵖˡ : val.
+
+Axiom Client__TimeToLiveⁱᵐᵖˡ : val.
+
+Axiom Client__Txnⁱᵐᵖˡ : val.
+
+Axiom Client__UserAddⁱᵐᵖˡ : val.
+
+Axiom Client__UserAddWithOptionsⁱᵐᵖˡ : val.
+
+Axiom Client__UserChangePasswordⁱᵐᵖˡ : val.
+
+Axiom Client__UserDeleteⁱᵐᵖˡ : val.
+
+Axiom Client__UserGetⁱᵐᵖˡ : val.
+
+Axiom Client__UserGrantRoleⁱᵐᵖˡ : val.
+
+Axiom Client__UserListⁱᵐᵖˡ : val.
+
+Axiom Client__UserRevokeRoleⁱᵐᵖˡ : val.
+
+Axiom Client__Watchⁱᵐᵖˡ : val.
+
+Axiom Client__WithLoggerⁱᵐᵖˡ : val.
+
+Axiom Client__autoSyncⁱᵐᵖˡ : val.
+
+Axiom Client__checkVersionⁱᵐᵖˡ : val.
+
+Axiom Client__credentialsForEndpointⁱᵐᵖˡ : val.
+
+Axiom Client__dialⁱᵐᵖˡ : val.
+
+Axiom Client__dialSetupOptsⁱᵐᵖˡ : val.
+
+Axiom Client__dialWithBalancerⁱᵐᵖˡ : val.
+
+Axiom Client__getTokenⁱᵐᵖˡ : val.
+
+Axiom Client__refreshTokenⁱᵐᵖˡ : val.
+
+Axiom Client__roundRobinQuorumBackoffⁱᵐᵖˡ : val.
+
+Axiom Client__shouldRefreshTokenⁱᵐᵖˡ : val.
+
+Axiom Client__streamClientInterceptorⁱᵐᵖˡ : val.
+
+Axiom Client__unaryClientInterceptorⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberAddⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberAddAsLearnerⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberListⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberPromoteⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberRemoveⁱᵐᵖˡ : val.
+
+Axiom cluster__MemberUpdateⁱᵐᵖˡ : val.
+
+Axiom cluster__memberAddⁱᵐᵖˡ : val.
+
+Axiom CompactOp__applyCompactOptsⁱᵐᵖˡ : val.
+
+Axiom CompactOp__toRequestⁱᵐᵖˡ : val.
+
+Axiom Cmp__KeyBytesⁱᵐᵖˡ : val.
+
+Axiom Cmp__ValueBytesⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithKeyBytesⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithPrefixⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithRangeⁱᵐᵖˡ : val.
+
+Axiom Cmp__WithValueBytesⁱᵐᵖˡ : val.
+
+Axiom ConfigSpec__Cloneⁱᵐᵖˡ : val.
+
+Axiom AuthConfig__Emptyⁱᵐᵖˡ : val.
+
+Axiom PutResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom GetResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom DeleteResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__OpResponseⁱᵐᵖˡ : val.
+
+Axiom OpResponse__Delⁱᵐᵖˡ : val.
+
+Axiom OpResponse__Getⁱᵐᵖˡ : val.
+
+Axiom OpResponse__Putⁱᵐᵖˡ : val.
+
+Axiom OpResponse__Txnⁱᵐᵖˡ : val.
+
+Axiom kv__Compactⁱᵐᵖˡ : val.
+
+Axiom kv__Deleteⁱᵐᵖˡ : val.
+
+Axiom kv__Doⁱᵐᵖˡ : val.
+
+Axiom kv__Getⁱᵐᵖˡ : val.
+
+Axiom kv__Putⁱᵐᵖˡ : val.
+
+Axiom kv__Txnⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetClusterIdⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetMemberIdⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetRaftTermⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__GetClusterIdⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__GetMemberIdⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__GetRaftTermⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetClusterIdⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetMemberIdⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetRaftTermⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__GetClusterIdⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__GetMemberIdⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__GetRaftTermⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ErrKeepAliveHalted__Errorⁱᵐᵖˡ : val.
+
+Axiom lessor__Closeⁱᵐᵖˡ : val.
+
+Axiom lessor__Grantⁱᵐᵖˡ : val.
+
+Axiom lessor__KeepAliveⁱᵐᵖˡ : val.
+
+Axiom lessor__KeepAliveOnceⁱᵐᵖˡ : val.
+
+Axiom lessor__Leasesⁱᵐᵖˡ : val.
+
+Axiom lessor__Revokeⁱᵐᵖˡ : val.
+
+Axiom lessor__TimeToLiveⁱᵐᵖˡ : val.
+
+Axiom lessor__closeRequireLeaderⁱᵐᵖˡ : val.
+
+Axiom lessor__deadlineLoopⁱᵐᵖˡ : val.
+
+Axiom lessor__keepAliveCtxCloserⁱᵐᵖˡ : val.
+
+Axiom lessor__keepAliveOnceⁱᵐᵖˡ : val.
+
+Axiom lessor__recvKeepAliveⁱᵐᵖˡ : val.
+
+Axiom lessor__recvKeepAliveLoopⁱᵐᵖˡ : val.
+
+Axiom lessor__resetRecvⁱᵐᵖˡ : val.
+
+Axiom lessor__sendKeepAliveLoopⁱᵐᵖˡ : val.
+
+Axiom keepAlive__closeⁱᵐᵖˡ : val.
+
+Axiom maintenance__AlarmDisarmⁱᵐᵖˡ : val.
+
+Axiom maintenance__AlarmListⁱᵐᵖˡ : val.
+
+Axiom maintenance__Defragmentⁱᵐᵖˡ : val.
+
+Axiom maintenance__Downgradeⁱᵐᵖˡ : val.
+
+Axiom maintenance__HashKVⁱᵐᵖˡ : val.
+
+Axiom maintenance__MoveLeaderⁱᵐᵖˡ : val.
+
+Axiom maintenance__Snapshotⁱᵐᵖˡ : val.
+
+Axiom maintenance__SnapshotWithVersionⁱᵐᵖˡ : val.
+
+Axiom maintenance__Statusⁱᵐᵖˡ : val.
+
+Axiom maintenance__logAndCloseWithErrorⁱᵐᵖˡ : val.
+
+Axiom maintenance__saveⁱᵐᵖˡ : val.
+
+Axiom snapshotReadCloser__Closeⁱᵐᵖˡ : val.
+
+Axiom snapshotReadCloser__Readⁱᵐᵖˡ : val.
+
+Axiom LeaseOp__applyOptsⁱᵐᵖˡ : val.
+
+Axiom retryPolicy__Stringⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Compactⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__DeleteRangeⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Putⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Rangeⁱᵐᵖˡ : val.
+
+Axiom retryKVClient__Txnⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseGrantⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseKeepAliveⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseLeasesⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseRevokeⁱᵐᵖˡ : val.
+
+Axiom retryLeaseClient__LeaseTimeToLiveⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberAddⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberListⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberPromoteⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberRemoveⁱᵐᵖˡ : val.
+
+Axiom retryClusterClient__MemberUpdateⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Alarmⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Defragmentⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Downgradeⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Hashⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__HashKVⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__MoveLeaderⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Snapshotⁱᵐᵖˡ : val.
+
+Axiom retryMaintenanceClient__Statusⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__AuthDisableⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__AuthEnableⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__AuthStatusⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__Authenticateⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleAddⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleDeleteⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleGetⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleGrantPermissionⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleListⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__RoleRevokePermissionⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserAddⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserChangePasswordⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserDeleteⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserGetⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserGrantRoleⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserListⁱᵐᵖˡ : val.
+
+Axiom retryAuthClient__UserRevokeRoleⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__CloseSendⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__Contextⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__Headerⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__SendMsgⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__Trailerⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__getStreamⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__receiveMsgAndIndicateRetryⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__reestablishStreamAndResendBufferⁱᵐᵖˡ : val.
+
+Axiom serverStreamingRetryingStream__setStreamⁱᵐᵖˡ : val.
+
+Axiom retryOption__afterⁱᵐᵖˡ : val.
+
+Axiom retryOption__beforeⁱᵐᵖˡ : val.
+
+Axiom txn__Commitⁱᵐᵖˡ : val.
+
+Axiom txn__Elseⁱᵐᵖˡ : val.
+
+Axiom txn__Ifⁱᵐᵖˡ : val.
+
+Axiom txn__Thenⁱᵐᵖˡ : val.
+
+Axiom Event__IsCreateⁱᵐᵖˡ : val.
+
+Axiom Event__IsModifyⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Errⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__IsProgressNotifyⁱᵐᵖˡ : val.
+
+Axiom watcher__Closeⁱᵐᵖˡ : val.
+
+Axiom watcher__RequestProgressⁱᵐᵖˡ : val.
+
+Axiom watcher__Watchⁱᵐᵖˡ : val.
+
+Axiom watcher__closeStreamⁱᵐᵖˡ : val.
+
+Axiom watcher__newWatcherGRPCStreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__addSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__backoffIfUnavailableⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__broadcastResponseⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__closeⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__closeSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__dispatchEventⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__joinSubstreamsⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__newWatchClientⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__nextResumeⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__openWatchClientⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__runⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__sendCloseSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__serveSubstreamⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__serveWatchClientⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__unicastResponseⁱᵐᵖˡ : val.
+
+Axiom watchGRPCStream__waitCancelSubstreamsⁱᵐᵖˡ : val.
+
+Axiom watchRequest__toPBⁱᵐᵖˡ : val.
+
+Axiom progressRequest__toPBⁱᵐᵖˡ : val.
+
 Axiom valCtx__Deadlineⁱᵐᵖˡ : val.
 
 Axiom valCtx__Doneⁱᵐᵖˡ : val.
 
 Axiom valCtx__Errⁱᵐᵖˡ : val.
 
-Axiom watcher__newWatcherGRPCStreamⁱᵐᵖˡ : val.
-
-Axiom watcher__Watchⁱᵐᵖˡ : val.
-
-Axiom watcher__Closeⁱᵐᵖˡ : val.
-
-Axiom watcher__RequestProgressⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__closeⁱᵐᵖˡ : val.
-
-Axiom watcher__closeStreamⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__addSubstreamⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__sendCloseSubstreamⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__closeSubstreamⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__runⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__nextResumeⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__dispatchEventⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__broadcastResponseⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__unicastResponseⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__serveWatchClientⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__serveSubstreamⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__newWatchClientⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__waitCancelSubstreamsⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__joinSubstreamsⁱᵐᵖˡ : val.
-
-Definition maxBackoff : go_string := "go.etcd.io/etcd/client/v3.maxBackoff"%go.
-
-Axiom maxBackoff'init : val.
-
-Axiom watchGRPCStream__backoffIfUnavailableⁱᵐᵖˡ : val.
-
-Axiom watchGRPCStream__openWatchClientⁱᵐᵖˡ : val.
-
-Axiom watchRequest__toPBⁱᵐᵖˡ : val.
-
-Axiom progressRequest__toPBⁱᵐᵖˡ : val.
-
-Definition streamKeyFromCtx : go_string := "go.etcd.io/etcd/client/v3.streamKeyFromCtx"%go.
-
-Axiom streamKeyFromCtxⁱᵐᵖˡ : val.
-
-Definition vars' : list (go_string * go_type) := [].
-
-Definition functions' : list (go_string * val) := [(NewAuth, NewAuthⁱᵐᵖˡ); (NewAuthFromAuthClient, NewAuthFromAuthClientⁱᵐᵖˡ); (StrToPermissionType, StrToPermissionTypeⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (NewCtxClient, NewCtxClientⁱᵐᵖˡ); (NewFromURL, NewFromURLⁱᵐᵖˡ); (NewFromURLs, NewFromURLsⁱᵐᵖˡ); (WithZapLogger, WithZapLoggerⁱᵐᵖˡ); (authority, authorityⁱᵐᵖˡ); (newClient, newClientⁱᵐᵖˡ); (minSupportedVersion, minSupportedVersionⁱᵐᵖˡ); (isHaltErr, isHaltErrⁱᵐᵖˡ); (isUnavailableErr, isUnavailableErrⁱᵐᵖˡ); (ContextError, ContextErrorⁱᵐᵖˡ); (canceledByCaller, canceledByCallerⁱᵐᵖˡ); (IsConnCanceled, IsConnCanceledⁱᵐᵖˡ); (NewCluster, NewClusterⁱᵐᵖˡ); (NewClusterFromClusterClient, NewClusterFromClusterClientⁱᵐᵖˡ); (OpCompact, OpCompactⁱᵐᵖˡ); (WithCompactPhysical, WithCompactPhysicalⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (Value, Valueⁱᵐᵖˡ); (Version, Versionⁱᵐᵖˡ); (CreateRevision, CreateRevisionⁱᵐᵖˡ); (ModRevision, ModRevisionⁱᵐᵖˡ); (LeaseValue, LeaseValueⁱᵐᵖˡ); (mustInt64, mustInt64ⁱᵐᵖˡ); (mustInt64orLeaseID, mustInt64orLeaseIDⁱᵐᵖˡ); (NewClientConfig, NewClientConfigⁱᵐᵖˡ); (newTLSConfig, newTLSConfigⁱᵐᵖˡ); (WithRequireLeader, WithRequireLeaderⁱᵐᵖˡ); (withVersion, withVersionⁱᵐᵖˡ); (NewKV, NewKVⁱᵐᵖˡ); (NewKVFromKVClient, NewKVFromKVClientⁱᵐᵖˡ); (NewLease, NewLeaseⁱᵐᵖˡ); (NewLeaseFromLeaseClient, NewLeaseFromLeaseClientⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (SetLogger, SetLoggerⁱᵐᵖˡ); (etcdClientDebugLevel, etcdClientDebugLevelⁱᵐᵖˡ); (NewMaintenance, NewMaintenanceⁱᵐᵖˡ); (NewMaintenanceFromMaintenanceClient, NewMaintenanceFromMaintenanceClientⁱᵐᵖˡ); (NewOp, NewOpⁱᵐᵖˡ); (OpGet, OpGetⁱᵐᵖˡ); (OpDelete, OpDeleteⁱᵐᵖˡ); (OpPut, OpPutⁱᵐᵖˡ); (OpTxn, OpTxnⁱᵐᵖˡ); (opWatch, opWatchⁱᵐᵖˡ); (WithLease, WithLeaseⁱᵐᵖˡ); (WithLimit, WithLimitⁱᵐᵖˡ); (WithRev, WithRevⁱᵐᵖˡ); (WithSort, WithSortⁱᵐᵖˡ); (GetPrefixRangeEnd, GetPrefixRangeEndⁱᵐᵖˡ); (getPrefix, getPrefixⁱᵐᵖˡ); (WithPrefix, WithPrefixⁱᵐᵖˡ); (WithRange, WithRangeⁱᵐᵖˡ); (WithFromKey, WithFromKeyⁱᵐᵖˡ); (WithSerializable, WithSerializableⁱᵐᵖˡ); (WithKeysOnly, WithKeysOnlyⁱᵐᵖˡ); (WithCountOnly, WithCountOnlyⁱᵐᵖˡ); (WithMinModRev, WithMinModRevⁱᵐᵖˡ); (WithMaxModRev, WithMaxModRevⁱᵐᵖˡ); (WithMinCreateRev, WithMinCreateRevⁱᵐᵖˡ); (WithMaxCreateRev, WithMaxCreateRevⁱᵐᵖˡ); (WithFirstCreate, WithFirstCreateⁱᵐᵖˡ); (WithLastCreate, WithLastCreateⁱᵐᵖˡ); (WithFirstKey, WithFirstKeyⁱᵐᵖˡ); (WithLastKey, WithLastKeyⁱᵐᵖˡ); (WithFirstRev, WithFirstRevⁱᵐᵖˡ); (WithLastRev, WithLastRevⁱᵐᵖˡ); (withTop, withTopⁱᵐᵖˡ); (WithProgressNotify, WithProgressNotifyⁱᵐᵖˡ); (WithCreatedNotify, WithCreatedNotifyⁱᵐᵖˡ); (WithFilterPut, WithFilterPutⁱᵐᵖˡ); (WithFilterDelete, WithFilterDeleteⁱᵐᵖˡ); (WithPrevKV, WithPrevKVⁱᵐᵖˡ); (WithFragment, WithFragmentⁱᵐᵖˡ); (WithIgnoreValue, WithIgnoreValueⁱᵐᵖˡ); (WithIgnoreLease, WithIgnoreLeaseⁱᵐᵖˡ); (WithAttachedKeys, WithAttachedKeysⁱᵐᵖˡ); (toLeaseTimeToLiveRequest, toLeaseTimeToLiveRequestⁱᵐᵖˡ); (IsOptsWithPrefix, IsOptsWithPrefixⁱᵐᵖˡ); (IsOptsWithFromKey, IsOptsWithFromKeyⁱᵐᵖˡ); (isSafeRetryImmutableRPC, isSafeRetryImmutableRPCⁱᵐᵖˡ); (isSafeRetryMutableRPC, isSafeRetryMutableRPCⁱᵐᵖˡ); (RetryKVClient, RetryKVClientⁱᵐᵖˡ); (RetryLeaseClient, RetryLeaseClientⁱᵐᵖˡ); (RetryClusterClient, RetryClusterClientⁱᵐᵖˡ); (RetryMaintenanceClient, RetryMaintenanceClientⁱᵐᵖˡ); (RetryAuthClient, RetryAuthClientⁱᵐᵖˡ); (waitRetryBackoff, waitRetryBackoffⁱᵐᵖˡ); (isSafeRetry, isSafeRetryⁱᵐᵖˡ); (isContextError, isContextErrorⁱᵐᵖˡ); (contextErrToGRPCErr, contextErrToGRPCErrⁱᵐᵖˡ); (withRepeatablePolicy, withRepeatablePolicyⁱᵐᵖˡ); (withMax, withMaxⁱᵐᵖˡ); (withBackoff, withBackoffⁱᵐᵖˡ); (reuseOrNewWithCallOptions, reuseOrNewWithCallOptionsⁱᵐᵖˡ); (filterCallOptions, filterCallOptionsⁱᵐᵖˡ); (backoffLinearWithJitter, backoffLinearWithJitterⁱᵐᵖˡ); (jitterUp, jitterUpⁱᵐᵖˡ); (NewWatcher, NewWatcherⁱᵐᵖˡ); (NewWatchFromWatchClient, NewWatchFromWatchClientⁱᵐᵖˡ); (streamKeyFromCtx, streamKeyFromCtxⁱᵐᵖˡ)].
+Axiom valCtx__Valueⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(AuthEnableResponse.id, []); (ptrT.id AuthEnableResponse.id, []); (AuthDisableResponse.id, []); (ptrT.id AuthDisableResponse.id, []); (AuthStatusResponse.id, []); (ptrT.id AuthStatusResponse.id, []); (AuthenticateResponse.id, []); (ptrT.id AuthenticateResponse.id, []); (AuthUserAddResponse.id, []); (ptrT.id AuthUserAddResponse.id, []); (AuthUserDeleteResponse.id, []); (ptrT.id AuthUserDeleteResponse.id, []); (AuthUserChangePasswordResponse.id, []); (ptrT.id AuthUserChangePasswordResponse.id, []); (AuthUserGrantRoleResponse.id, []); (ptrT.id AuthUserGrantRoleResponse.id, []); (AuthUserGetResponse.id, []); (ptrT.id AuthUserGetResponse.id, []); (AuthUserRevokeRoleResponse.id, []); (ptrT.id AuthUserRevokeRoleResponse.id, []); (AuthRoleAddResponse.id, []); (ptrT.id AuthRoleAddResponse.id, []); (AuthRoleGrantPermissionResponse.id, []); (ptrT.id AuthRoleGrantPermissionResponse.id, []); (AuthRoleGetResponse.id, []); (ptrT.id AuthRoleGetResponse.id, []); (AuthRoleRevokePermissionResponse.id, []); (ptrT.id AuthRoleRevokePermissionResponse.id, []); (AuthRoleDeleteResponse.id, []); (ptrT.id AuthRoleDeleteResponse.id, []); (AuthUserListResponse.id, []); (ptrT.id AuthUserListResponse.id, []); (AuthRoleListResponse.id, []); (ptrT.id AuthRoleListResponse.id, []); (PermissionType.id, []); (ptrT.id PermissionType.id, []); (Permission.id, []); (ptrT.id Permission.id, []); (UserAddOptions.id, []); (ptrT.id UserAddOptions.id, []); (authClient.id, []); (ptrT.id authClient.id, [("AuthDisable"%go, authClient__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, authClient__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, authClient__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, authClient__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, authClient__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, authClient__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, authClient__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, authClient__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, authClient__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, authClient__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, authClient__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, authClient__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, authClient__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, authClient__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, authClient__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, authClient__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, authClient__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, authClient__UserRevokeRoleⁱᵐᵖˡ)]); (Client.id, [("AlarmDisarm"%go, (λ: "$r",
                  method_call #Maintenance.id #"AlarmDisarm"%go (struct.field_get #Client #"Maintenance"%go "$r")

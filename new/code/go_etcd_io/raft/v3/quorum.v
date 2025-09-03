@@ -446,6 +446,8 @@ Definition mapAckIndexer__AckedIndexⁱᵐᵖˡ : val :=
     do:  ("ok" <-[#boolT] "$r1");;;
     return: (![#Index] "idx", ![#boolT] "ok")).
 
+Definition _ : go_string := "go.etcd.io/raft/v3/quorum._"%go.
+
 Definition _VoteResult_name : go_string := "VotePendingVoteLostVoteWon"%go.
 
 Definition _VoteResult_index : go_string := "go.etcd.io/raft/v3/quorum._VoteResult_index"%go.
@@ -466,7 +468,7 @@ Definition VoteResult__Stringⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [(_VoteResult_index, arrayT (W64 4) uint8T)].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [(_, _ⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(JointConfig.id, [("CommittedIndex"%go, JointConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, JointConfig__Describeⁱᵐᵖˡ); ("IDs"%go, JointConfig__IDsⁱᵐᵖˡ); ("String"%go, JointConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, JointConfig__VoteResultⁱᵐᵖˡ)]); (ptrT.id JointConfig.id, [("CommittedIndex"%go, (λ: "$r",
                  method_call #JointConfig.id #"CommittedIndex"%go (![#JointConfig] "$r")

@@ -22,8 +22,6 @@ Definition implicitDisk : go_string := "github.com/goose-lang/primitive/disk.imp
 
 Definition Init : go_string := "github.com/goose-lang/primitive/disk.Init"%go.
 
-Axiom Initⁱᵐᵖˡ : val.
-
 Definition Get : go_string := "github.com/goose-lang/primitive/disk.Get"%go.
 
 Definition Read : go_string := "github.com/goose-lang/primitive/disk.Read"%go.
@@ -38,41 +36,43 @@ Axiom FileDisk : go_type.
 
 Definition NewFileDisk : go_string := "github.com/goose-lang/primitive/disk.NewFileDisk"%go.
 
+Axiom MemDisk : go_type.
+
+Definition NewMemDisk : go_string := "github.com/goose-lang/primitive/disk.NewMemDisk"%go.
+
+Definition vars' : list (go_string * go_type) := [].
+
+Axiom Initⁱᵐᵖˡ : val.
+
 Axiom NewFileDiskⁱᵐᵖˡ : val.
 
-Axiom FileDisk__ReadToⁱᵐᵖˡ : val.
+Axiom NewMemDiskⁱᵐᵖˡ : val.
 
-Axiom FileDisk__Readⁱᵐᵖˡ : val.
-
-Axiom FileDisk__Writeⁱᵐᵖˡ : val.
-
-Axiom FileDisk__Sizeⁱᵐᵖˡ : val.
+Definition functions' : list (go_string * val) := [(Init, Initⁱᵐᵖˡ); (Get, Getⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Write, Writeⁱᵐᵖˡ); (Size, Sizeⁱᵐᵖˡ); (Barrier, Barrierⁱᵐᵖˡ); (NewFileDisk, NewFileDiskⁱᵐᵖˡ); (NewMemDisk, NewMemDiskⁱᵐᵖˡ)].
 
 Axiom FileDisk__Barrierⁱᵐᵖˡ : val.
 
 Axiom FileDisk__Closeⁱᵐᵖˡ : val.
 
-Axiom MemDisk : go_type.
+Axiom FileDisk__Readⁱᵐᵖˡ : val.
 
-Definition NewMemDisk : go_string := "github.com/goose-lang/primitive/disk.NewMemDisk"%go.
+Axiom FileDisk__ReadToⁱᵐᵖˡ : val.
 
-Axiom NewMemDiskⁱᵐᵖˡ : val.
+Axiom FileDisk__Sizeⁱᵐᵖˡ : val.
 
-Axiom MemDisk__ReadToⁱᵐᵖˡ : val.
-
-Axiom MemDisk__Readⁱᵐᵖˡ : val.
-
-Axiom MemDisk__Writeⁱᵐᵖˡ : val.
-
-Axiom MemDisk__Sizeⁱᵐᵖˡ : val.
+Axiom FileDisk__Writeⁱᵐᵖˡ : val.
 
 Axiom MemDisk__Barrierⁱᵐᵖˡ : val.
 
 Axiom MemDisk__Closeⁱᵐᵖˡ : val.
 
-Definition vars' : list (go_string * go_type) := [].
+Axiom MemDisk__Readⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(Init, Initⁱᵐᵖˡ); (Get, Getⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Write, Writeⁱᵐᵖˡ); (Size, Sizeⁱᵐᵖˡ); (Barrier, Barrierⁱᵐᵖˡ); (NewFileDisk, NewFileDiskⁱᵐᵖˡ); (NewMemDisk, NewMemDiskⁱᵐᵖˡ)].
+Axiom MemDisk__ReadToⁱᵐᵖˡ : val.
+
+Axiom MemDisk__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemDisk__Writeⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(FileDisk.id, [("Barrier"%go, FileDisk__Barrierⁱᵐᵖˡ); ("Close"%go, FileDisk__Closeⁱᵐᵖˡ); ("Read"%go, FileDisk__Readⁱᵐᵖˡ); ("ReadTo"%go, FileDisk__ReadToⁱᵐᵖˡ); ("Size"%go, FileDisk__Sizeⁱᵐᵖˡ); ("Write"%go, FileDisk__Writeⁱᵐᵖˡ)]); (ptrT.id FileDisk.id, [("Barrier"%go, (λ: "$r",
                  method_call #FileDisk.id #"Barrier"%go (![#FileDisk] "$r")

@@ -14,179 +14,91 @@ Context `{ffi_syntax}.
 
 Definition All : go_string := "slices.All"%go.
 
-Axiom Allⁱᵐᵖˡ : val.
-
 Definition Backward : go_string := "slices.Backward"%go.
-
-Axiom Backwardⁱᵐᵖˡ : val.
 
 Definition Values : go_string := "slices.Values"%go.
 
-Axiom Valuesⁱᵐᵖˡ : val.
-
 Definition AppendSeq : go_string := "slices.AppendSeq"%go.
-
-Axiom AppendSeqⁱᵐᵖˡ : val.
 
 Definition Collect : go_string := "slices.Collect"%go.
 
-Axiom Collectⁱᵐᵖˡ : val.
-
 Definition Sorted : go_string := "slices.Sorted"%go.
-
-Axiom Sortedⁱᵐᵖˡ : val.
 
 Definition SortedFunc : go_string := "slices.SortedFunc"%go.
 
-Axiom SortedFuncⁱᵐᵖˡ : val.
-
 Definition SortedStableFunc : go_string := "slices.SortedStableFunc"%go.
-
-Axiom SortedStableFuncⁱᵐᵖˡ : val.
 
 Definition Chunk : go_string := "slices.Chunk"%go.
 
-Axiom Chunkⁱᵐᵖˡ : val.
-
 Definition Equal : go_string := "slices.Equal"%go.
-
-Axiom Equalⁱᵐᵖˡ : val.
 
 Definition EqualFunc : go_string := "slices.EqualFunc"%go.
 
-Axiom EqualFuncⁱᵐᵖˡ : val.
-
 Definition Compare : go_string := "slices.Compare"%go.
-
-Axiom Compareⁱᵐᵖˡ : val.
 
 Definition CompareFunc : go_string := "slices.CompareFunc"%go.
 
-Axiom CompareFuncⁱᵐᵖˡ : val.
-
 Definition Index : go_string := "slices.Index"%go.
-
-Axiom Indexⁱᵐᵖˡ : val.
 
 Definition IndexFunc : go_string := "slices.IndexFunc"%go.
 
-Axiom IndexFuncⁱᵐᵖˡ : val.
-
 Definition Contains : go_string := "slices.Contains"%go.
-
-Axiom Containsⁱᵐᵖˡ : val.
 
 Definition ContainsFunc : go_string := "slices.ContainsFunc"%go.
 
-Axiom ContainsFuncⁱᵐᵖˡ : val.
-
 Definition Insert : go_string := "slices.Insert"%go.
-
-Axiom Insertⁱᵐᵖˡ : val.
 
 Definition Delete : go_string := "slices.Delete"%go.
 
-Axiom Deleteⁱᵐᵖˡ : val.
-
 Definition DeleteFunc : go_string := "slices.DeleteFunc"%go.
-
-Axiom DeleteFuncⁱᵐᵖˡ : val.
 
 Definition Replace : go_string := "slices.Replace"%go.
 
-Axiom Replaceⁱᵐᵖˡ : val.
-
 Definition Clone : go_string := "slices.Clone"%go.
-
-Axiom Cloneⁱᵐᵖˡ : val.
 
 Definition Compact : go_string := "slices.Compact"%go.
 
-Axiom Compactⁱᵐᵖˡ : val.
-
 Definition CompactFunc : go_string := "slices.CompactFunc"%go.
-
-Axiom CompactFuncⁱᵐᵖˡ : val.
 
 Definition Grow : go_string := "slices.Grow"%go.
 
-Axiom Growⁱᵐᵖˡ : val.
-
 Definition Clip : go_string := "slices.Clip"%go.
-
-Axiom Clipⁱᵐᵖˡ : val.
 
 Definition rotateLeft : go_string := "slices.rotateLeft"%go.
 
-Axiom rotateLeftⁱᵐᵖˡ : val.
-
 Definition rotateRight : go_string := "slices.rotateRight"%go.
-
-Axiom rotateRightⁱᵐᵖˡ : val.
 
 Definition overlaps : go_string := "slices.overlaps"%go.
 
-Axiom overlapsⁱᵐᵖˡ : val.
-
 Definition startIdx : go_string := "slices.startIdx"%go.
-
-Axiom startIdxⁱᵐᵖˡ : val.
 
 Definition Reverse : go_string := "slices.Reverse"%go.
 
-Axiom Reverseⁱᵐᵖˡ : val.
-
 Definition Concat : go_string := "slices.Concat"%go.
-
-Axiom Concatⁱᵐᵖˡ : val.
 
 Definition Repeat : go_string := "slices.Repeat"%go.
 
-Axiom Repeatⁱᵐᵖˡ : val.
-
 Definition Sort : go_string := "slices.Sort"%go.
-
-Axiom Sortⁱᵐᵖˡ : val.
 
 Definition SortFunc : go_string := "slices.SortFunc"%go.
 
-Axiom SortFuncⁱᵐᵖˡ : val.
-
 Definition SortStableFunc : go_string := "slices.SortStableFunc"%go.
-
-Axiom SortStableFuncⁱᵐᵖˡ : val.
 
 Definition IsSorted : go_string := "slices.IsSorted"%go.
 
-Axiom IsSortedⁱᵐᵖˡ : val.
-
 Definition IsSortedFunc : go_string := "slices.IsSortedFunc"%go.
-
-Axiom IsSortedFuncⁱᵐᵖˡ : val.
 
 Definition Min : go_string := "slices.Min"%go.
 
-Axiom Minⁱᵐᵖˡ : val.
-
 Definition MinFunc : go_string := "slices.MinFunc"%go.
-
-Axiom MinFuncⁱᵐᵖˡ : val.
 
 Definition Max : go_string := "slices.Max"%go.
 
-Axiom Maxⁱᵐᵖˡ : val.
-
 Definition MaxFunc : go_string := "slices.MaxFunc"%go.
-
-Axiom MaxFuncⁱᵐᵖˡ : val.
 
 Definition BinarySearch : go_string := "slices.BinarySearch"%go.
 
-Axiom BinarySearchⁱᵐᵖˡ : val.
-
 Definition BinarySearchFunc : go_string := "slices.BinarySearchFunc"%go.
-
-Axiom BinarySearchFuncⁱᵐᵖˡ : val.
 
 Axiom sortedHint : go_type.
 
@@ -198,155 +110,243 @@ Axiom decreasingHint : expr.
 
 Axiom xorshift : go_type.
 
-Axiom xorshift__Nextⁱᵐᵖˡ : val.
-
 Definition nextPowerOfTwo : go_string := "slices.nextPowerOfTwo"%go.
-
-Axiom nextPowerOfTwoⁱᵐᵖˡ : val.
 
 Definition isNaN : go_string := "slices.isNaN"%go.
 
-Axiom isNaNⁱᵐᵖˡ : val.
-
 Definition insertionSortCmpFunc : go_string := "slices.insertionSortCmpFunc"%go.
-
-Axiom insertionSortCmpFuncⁱᵐᵖˡ : val.
 
 Definition siftDownCmpFunc : go_string := "slices.siftDownCmpFunc"%go.
 
-Axiom siftDownCmpFuncⁱᵐᵖˡ : val.
-
 Definition heapSortCmpFunc : go_string := "slices.heapSortCmpFunc"%go.
-
-Axiom heapSortCmpFuncⁱᵐᵖˡ : val.
 
 Definition pdqsortCmpFunc : go_string := "slices.pdqsortCmpFunc"%go.
 
-Axiom pdqsortCmpFuncⁱᵐᵖˡ : val.
-
 Definition partitionCmpFunc : go_string := "slices.partitionCmpFunc"%go.
-
-Axiom partitionCmpFuncⁱᵐᵖˡ : val.
 
 Definition partitionEqualCmpFunc : go_string := "slices.partitionEqualCmpFunc"%go.
 
-Axiom partitionEqualCmpFuncⁱᵐᵖˡ : val.
-
 Definition partialInsertionSortCmpFunc : go_string := "slices.partialInsertionSortCmpFunc"%go.
-
-Axiom partialInsertionSortCmpFuncⁱᵐᵖˡ : val.
 
 Definition breakPatternsCmpFunc : go_string := "slices.breakPatternsCmpFunc"%go.
 
-Axiom breakPatternsCmpFuncⁱᵐᵖˡ : val.
-
 Definition choosePivotCmpFunc : go_string := "slices.choosePivotCmpFunc"%go.
-
-Axiom choosePivotCmpFuncⁱᵐᵖˡ : val.
 
 Definition order2CmpFunc : go_string := "slices.order2CmpFunc"%go.
 
-Axiom order2CmpFuncⁱᵐᵖˡ : val.
-
 Definition medianCmpFunc : go_string := "slices.medianCmpFunc"%go.
-
-Axiom medianCmpFuncⁱᵐᵖˡ : val.
 
 Definition medianAdjacentCmpFunc : go_string := "slices.medianAdjacentCmpFunc"%go.
 
-Axiom medianAdjacentCmpFuncⁱᵐᵖˡ : val.
-
 Definition reverseRangeCmpFunc : go_string := "slices.reverseRangeCmpFunc"%go.
-
-Axiom reverseRangeCmpFuncⁱᵐᵖˡ : val.
 
 Definition swapRangeCmpFunc : go_string := "slices.swapRangeCmpFunc"%go.
 
-Axiom swapRangeCmpFuncⁱᵐᵖˡ : val.
-
 Definition stableCmpFunc : go_string := "slices.stableCmpFunc"%go.
-
-Axiom stableCmpFuncⁱᵐᵖˡ : val.
 
 Definition symMergeCmpFunc : go_string := "slices.symMergeCmpFunc"%go.
 
-Axiom symMergeCmpFuncⁱᵐᵖˡ : val.
-
 Definition rotateCmpFunc : go_string := "slices.rotateCmpFunc"%go.
-
-Axiom rotateCmpFuncⁱᵐᵖˡ : val.
 
 Definition insertionSortOrdered : go_string := "slices.insertionSortOrdered"%go.
 
-Axiom insertionSortOrderedⁱᵐᵖˡ : val.
-
 Definition siftDownOrdered : go_string := "slices.siftDownOrdered"%go.
-
-Axiom siftDownOrderedⁱᵐᵖˡ : val.
 
 Definition heapSortOrdered : go_string := "slices.heapSortOrdered"%go.
 
-Axiom heapSortOrderedⁱᵐᵖˡ : val.
-
 Definition pdqsortOrdered : go_string := "slices.pdqsortOrdered"%go.
-
-Axiom pdqsortOrderedⁱᵐᵖˡ : val.
 
 Definition partitionOrdered : go_string := "slices.partitionOrdered"%go.
 
-Axiom partitionOrderedⁱᵐᵖˡ : val.
-
 Definition partitionEqualOrdered : go_string := "slices.partitionEqualOrdered"%go.
-
-Axiom partitionEqualOrderedⁱᵐᵖˡ : val.
 
 Definition partialInsertionSortOrdered : go_string := "slices.partialInsertionSortOrdered"%go.
 
-Axiom partialInsertionSortOrderedⁱᵐᵖˡ : val.
-
 Definition breakPatternsOrdered : go_string := "slices.breakPatternsOrdered"%go.
-
-Axiom breakPatternsOrderedⁱᵐᵖˡ : val.
 
 Definition choosePivotOrdered : go_string := "slices.choosePivotOrdered"%go.
 
-Axiom choosePivotOrderedⁱᵐᵖˡ : val.
-
 Definition order2Ordered : go_string := "slices.order2Ordered"%go.
-
-Axiom order2Orderedⁱᵐᵖˡ : val.
 
 Definition medianOrdered : go_string := "slices.medianOrdered"%go.
 
-Axiom medianOrderedⁱᵐᵖˡ : val.
-
 Definition medianAdjacentOrdered : go_string := "slices.medianAdjacentOrdered"%go.
-
-Axiom medianAdjacentOrderedⁱᵐᵖˡ : val.
 
 Definition reverseRangeOrdered : go_string := "slices.reverseRangeOrdered"%go.
 
-Axiom reverseRangeOrderedⁱᵐᵖˡ : val.
-
 Definition swapRangeOrdered : go_string := "slices.swapRangeOrdered"%go.
-
-Axiom swapRangeOrderedⁱᵐᵖˡ : val.
 
 Definition stableOrdered : go_string := "slices.stableOrdered"%go.
 
-Axiom stableOrderedⁱᵐᵖˡ : val.
-
 Definition symMergeOrdered : go_string := "slices.symMergeOrdered"%go.
-
-Axiom symMergeOrderedⁱᵐᵖˡ : val.
 
 Definition rotateOrdered : go_string := "slices.rotateOrdered"%go.
 
-Axiom rotateOrderedⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
 
+Axiom Allⁱᵐᵖˡ : val.
+
+Axiom Backwardⁱᵐᵖˡ : val.
+
+Axiom Valuesⁱᵐᵖˡ : val.
+
+Axiom AppendSeqⁱᵐᵖˡ : val.
+
+Axiom Collectⁱᵐᵖˡ : val.
+
+Axiom Sortedⁱᵐᵖˡ : val.
+
+Axiom SortedFuncⁱᵐᵖˡ : val.
+
+Axiom SortedStableFuncⁱᵐᵖˡ : val.
+
+Axiom Chunkⁱᵐᵖˡ : val.
+
+Axiom Equalⁱᵐᵖˡ : val.
+
+Axiom EqualFuncⁱᵐᵖˡ : val.
+
+Axiom Compareⁱᵐᵖˡ : val.
+
+Axiom CompareFuncⁱᵐᵖˡ : val.
+
+Axiom Indexⁱᵐᵖˡ : val.
+
+Axiom IndexFuncⁱᵐᵖˡ : val.
+
+Axiom Containsⁱᵐᵖˡ : val.
+
+Axiom ContainsFuncⁱᵐᵖˡ : val.
+
+Axiom Insertⁱᵐᵖˡ : val.
+
+Axiom Deleteⁱᵐᵖˡ : val.
+
+Axiom DeleteFuncⁱᵐᵖˡ : val.
+
+Axiom Replaceⁱᵐᵖˡ : val.
+
+Axiom Cloneⁱᵐᵖˡ : val.
+
+Axiom Compactⁱᵐᵖˡ : val.
+
+Axiom CompactFuncⁱᵐᵖˡ : val.
+
+Axiom Growⁱᵐᵖˡ : val.
+
+Axiom Clipⁱᵐᵖˡ : val.
+
+Axiom rotateLeftⁱᵐᵖˡ : val.
+
+Axiom rotateRightⁱᵐᵖˡ : val.
+
+Axiom overlapsⁱᵐᵖˡ : val.
+
+Axiom startIdxⁱᵐᵖˡ : val.
+
+Axiom Reverseⁱᵐᵖˡ : val.
+
+Axiom Concatⁱᵐᵖˡ : val.
+
+Axiom Repeatⁱᵐᵖˡ : val.
+
+Axiom Sortⁱᵐᵖˡ : val.
+
+Axiom SortFuncⁱᵐᵖˡ : val.
+
+Axiom SortStableFuncⁱᵐᵖˡ : val.
+
+Axiom IsSortedⁱᵐᵖˡ : val.
+
+Axiom IsSortedFuncⁱᵐᵖˡ : val.
+
+Axiom Minⁱᵐᵖˡ : val.
+
+Axiom MinFuncⁱᵐᵖˡ : val.
+
+Axiom Maxⁱᵐᵖˡ : val.
+
+Axiom MaxFuncⁱᵐᵖˡ : val.
+
+Axiom BinarySearchⁱᵐᵖˡ : val.
+
+Axiom BinarySearchFuncⁱᵐᵖˡ : val.
+
+Axiom nextPowerOfTwoⁱᵐᵖˡ : val.
+
+Axiom isNaNⁱᵐᵖˡ : val.
+
+Axiom insertionSortCmpFuncⁱᵐᵖˡ : val.
+
+Axiom siftDownCmpFuncⁱᵐᵖˡ : val.
+
+Axiom heapSortCmpFuncⁱᵐᵖˡ : val.
+
+Axiom pdqsortCmpFuncⁱᵐᵖˡ : val.
+
+Axiom partitionCmpFuncⁱᵐᵖˡ : val.
+
+Axiom partitionEqualCmpFuncⁱᵐᵖˡ : val.
+
+Axiom partialInsertionSortCmpFuncⁱᵐᵖˡ : val.
+
+Axiom breakPatternsCmpFuncⁱᵐᵖˡ : val.
+
+Axiom choosePivotCmpFuncⁱᵐᵖˡ : val.
+
+Axiom order2CmpFuncⁱᵐᵖˡ : val.
+
+Axiom medianCmpFuncⁱᵐᵖˡ : val.
+
+Axiom medianAdjacentCmpFuncⁱᵐᵖˡ : val.
+
+Axiom reverseRangeCmpFuncⁱᵐᵖˡ : val.
+
+Axiom swapRangeCmpFuncⁱᵐᵖˡ : val.
+
+Axiom stableCmpFuncⁱᵐᵖˡ : val.
+
+Axiom symMergeCmpFuncⁱᵐᵖˡ : val.
+
+Axiom rotateCmpFuncⁱᵐᵖˡ : val.
+
+Axiom insertionSortOrderedⁱᵐᵖˡ : val.
+
+Axiom siftDownOrderedⁱᵐᵖˡ : val.
+
+Axiom heapSortOrderedⁱᵐᵖˡ : val.
+
+Axiom pdqsortOrderedⁱᵐᵖˡ : val.
+
+Axiom partitionOrderedⁱᵐᵖˡ : val.
+
+Axiom partitionEqualOrderedⁱᵐᵖˡ : val.
+
+Axiom partialInsertionSortOrderedⁱᵐᵖˡ : val.
+
+Axiom breakPatternsOrderedⁱᵐᵖˡ : val.
+
+Axiom choosePivotOrderedⁱᵐᵖˡ : val.
+
+Axiom order2Orderedⁱᵐᵖˡ : val.
+
+Axiom medianOrderedⁱᵐᵖˡ : val.
+
+Axiom medianAdjacentOrderedⁱᵐᵖˡ : val.
+
+Axiom reverseRangeOrderedⁱᵐᵖˡ : val.
+
+Axiom swapRangeOrderedⁱᵐᵖˡ : val.
+
+Axiom stableOrderedⁱᵐᵖˡ : val.
+
+Axiom symMergeOrderedⁱᵐᵖˡ : val.
+
+Axiom rotateOrderedⁱᵐᵖˡ : val.
+
 Definition functions' : list (go_string * val) := [(All, Allⁱᵐᵖˡ); (Backward, Backwardⁱᵐᵖˡ); (Values, Valuesⁱᵐᵖˡ); (AppendSeq, AppendSeqⁱᵐᵖˡ); (Collect, Collectⁱᵐᵖˡ); (Sorted, Sortedⁱᵐᵖˡ); (SortedFunc, SortedFuncⁱᵐᵖˡ); (SortedStableFunc, SortedStableFuncⁱᵐᵖˡ); (Chunk, Chunkⁱᵐᵖˡ); (Equal, Equalⁱᵐᵖˡ); (EqualFunc, EqualFuncⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (CompareFunc, CompareFuncⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (Insert, Insertⁱᵐᵖˡ); (Delete, Deleteⁱᵐᵖˡ); (DeleteFunc, DeleteFuncⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (Compact, Compactⁱᵐᵖˡ); (CompactFunc, CompactFuncⁱᵐᵖˡ); (Grow, Growⁱᵐᵖˡ); (Clip, Clipⁱᵐᵖˡ); (rotateLeft, rotateLeftⁱᵐᵖˡ); (rotateRight, rotateRightⁱᵐᵖˡ); (overlaps, overlapsⁱᵐᵖˡ); (startIdx, startIdxⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (Concat, Concatⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (SortFunc, SortFuncⁱᵐᵖˡ); (SortStableFunc, SortStableFuncⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (IsSortedFunc, IsSortedFuncⁱᵐᵖˡ); (Min, Minⁱᵐᵖˡ); (MinFunc, MinFuncⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (MaxFunc, MaxFuncⁱᵐᵖˡ); (BinarySearch, BinarySearchⁱᵐᵖˡ); (BinarySearchFunc, BinarySearchFuncⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (insertionSortCmpFunc, insertionSortCmpFuncⁱᵐᵖˡ); (siftDownCmpFunc, siftDownCmpFuncⁱᵐᵖˡ); (heapSortCmpFunc, heapSortCmpFuncⁱᵐᵖˡ); (pdqsortCmpFunc, pdqsortCmpFuncⁱᵐᵖˡ); (partitionCmpFunc, partitionCmpFuncⁱᵐᵖˡ); (partitionEqualCmpFunc, partitionEqualCmpFuncⁱᵐᵖˡ); (partialInsertionSortCmpFunc, partialInsertionSortCmpFuncⁱᵐᵖˡ); (breakPatternsCmpFunc, breakPatternsCmpFuncⁱᵐᵖˡ); (choosePivotCmpFunc, choosePivotCmpFuncⁱᵐᵖˡ); (order2CmpFunc, order2CmpFuncⁱᵐᵖˡ); (medianCmpFunc, medianCmpFuncⁱᵐᵖˡ); (medianAdjacentCmpFunc, medianAdjacentCmpFuncⁱᵐᵖˡ); (reverseRangeCmpFunc, reverseRangeCmpFuncⁱᵐᵖˡ); (swapRangeCmpFunc, swapRangeCmpFuncⁱᵐᵖˡ); (stableCmpFunc, stableCmpFuncⁱᵐᵖˡ); (symMergeCmpFunc, symMergeCmpFuncⁱᵐᵖˡ); (rotateCmpFunc, rotateCmpFuncⁱᵐᵖˡ); (insertionSortOrdered, insertionSortOrderedⁱᵐᵖˡ); (siftDownOrdered, siftDownOrderedⁱᵐᵖˡ); (heapSortOrdered, heapSortOrderedⁱᵐᵖˡ); (pdqsortOrdered, pdqsortOrderedⁱᵐᵖˡ); (partitionOrdered, partitionOrderedⁱᵐᵖˡ); (partitionEqualOrdered, partitionEqualOrderedⁱᵐᵖˡ); (partialInsertionSortOrdered, partialInsertionSortOrderedⁱᵐᵖˡ); (breakPatternsOrdered, breakPatternsOrderedⁱᵐᵖˡ); (choosePivotOrdered, choosePivotOrderedⁱᵐᵖˡ); (order2Ordered, order2Orderedⁱᵐᵖˡ); (medianOrdered, medianOrderedⁱᵐᵖˡ); (medianAdjacentOrdered, medianAdjacentOrderedⁱᵐᵖˡ); (reverseRangeOrdered, reverseRangeOrderedⁱᵐᵖˡ); (swapRangeOrdered, swapRangeOrderedⁱᵐᵖˡ); (stableOrdered, stableOrderedⁱᵐᵖˡ); (symMergeOrdered, symMergeOrderedⁱᵐᵖˡ); (rotateOrdered, rotateOrderedⁱᵐᵖˡ)].
+
+Axiom xorshift__Nextⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(sortedHint.id, []); (ptrT.id sortedHint.id, []); (xorshift.id, []); (ptrT.id xorshift.id, [("Next"%go, xorshift__Nextⁱᵐᵖˡ)])].
 

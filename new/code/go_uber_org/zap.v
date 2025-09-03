@@ -57,197 +57,101 @@ Context `{ffi_syntax}.
 
 Definition Array : go_string := "go.uber.org/zap.Array"%go.
 
-Axiom Arrayⁱᵐᵖˡ : val.
-
 Definition Bools : go_string := "go.uber.org/zap.Bools"%go.
-
-Axiom Boolsⁱᵐᵖˡ : val.
 
 Definition ByteStrings : go_string := "go.uber.org/zap.ByteStrings"%go.
 
-Axiom ByteStringsⁱᵐᵖˡ : val.
-
 Definition Complex128s : go_string := "go.uber.org/zap.Complex128s"%go.
-
-Axiom Complex128sⁱᵐᵖˡ : val.
 
 Definition Complex64s : go_string := "go.uber.org/zap.Complex64s"%go.
 
-Axiom Complex64sⁱᵐᵖˡ : val.
-
 Definition Durations : go_string := "go.uber.org/zap.Durations"%go.
-
-Axiom Durationsⁱᵐᵖˡ : val.
 
 Definition Float64s : go_string := "go.uber.org/zap.Float64s"%go.
 
-Axiom Float64sⁱᵐᵖˡ : val.
-
 Definition Float32s : go_string := "go.uber.org/zap.Float32s"%go.
-
-Axiom Float32sⁱᵐᵖˡ : val.
 
 Definition Ints : go_string := "go.uber.org/zap.Ints"%go.
 
-Axiom Intsⁱᵐᵖˡ : val.
-
 Definition Int64s : go_string := "go.uber.org/zap.Int64s"%go.
-
-Axiom Int64sⁱᵐᵖˡ : val.
 
 Definition Int32s : go_string := "go.uber.org/zap.Int32s"%go.
 
-Axiom Int32sⁱᵐᵖˡ : val.
-
 Definition Int16s : go_string := "go.uber.org/zap.Int16s"%go.
-
-Axiom Int16sⁱᵐᵖˡ : val.
 
 Definition Int8s : go_string := "go.uber.org/zap.Int8s"%go.
 
-Axiom Int8sⁱᵐᵖˡ : val.
-
 Definition Objects : go_string := "go.uber.org/zap.Objects"%go.
 
-Axiom Objectsⁱᵐᵖˡ : val.
-
 Axiom objects : go_type.
-
-Axiom objects__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom ObjectMarshalerPtr : go_type.
 
 Definition ObjectValues : go_string := "go.uber.org/zap.ObjectValues"%go.
 
-Axiom ObjectValuesⁱᵐᵖˡ : val.
-
 Axiom objectValues : go_type.
-
-Axiom objectValues__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Definition Strings : go_string := "go.uber.org/zap.Strings"%go.
 
-Axiom Stringsⁱᵐᵖˡ : val.
-
 Definition Stringers : go_string := "go.uber.org/zap.Stringers"%go.
-
-Axiom Stringersⁱᵐᵖˡ : val.
 
 Axiom stringers : go_type.
 
-Axiom stringers__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Definition Times : go_string := "go.uber.org/zap.Times"%go.
-
-Axiom Timesⁱᵐᵖˡ : val.
 
 Definition Uints : go_string := "go.uber.org/zap.Uints"%go.
 
-Axiom Uintsⁱᵐᵖˡ : val.
-
 Definition Uint64s : go_string := "go.uber.org/zap.Uint64s"%go.
-
-Axiom Uint64sⁱᵐᵖˡ : val.
 
 Definition Uint32s : go_string := "go.uber.org/zap.Uint32s"%go.
 
-Axiom Uint32sⁱᵐᵖˡ : val.
-
 Definition Uint16s : go_string := "go.uber.org/zap.Uint16s"%go.
-
-Axiom Uint16sⁱᵐᵖˡ : val.
 
 Definition Uint8s : go_string := "go.uber.org/zap.Uint8s"%go.
 
-Axiom Uint8sⁱᵐᵖˡ : val.
-
 Definition Uintptrs : go_string := "go.uber.org/zap.Uintptrs"%go.
-
-Axiom Uintptrsⁱᵐᵖˡ : val.
 
 Definition Errors : go_string := "go.uber.org/zap.Errors"%go.
 
-Axiom Errorsⁱᵐᵖˡ : val.
-
 Axiom bools : go_type.
-
-Axiom bools__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom byteStringsArray : go_type.
 
-Axiom byteStringsArray__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom complex128s : go_type.
-
-Axiom complex128s__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom complex64s : go_type.
 
-Axiom complex64s__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom durations : go_type.
-
-Axiom durations__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom float64s : go_type.
 
-Axiom float64s__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom float32s : go_type.
-
-Axiom float32s__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom ints : go_type.
 
-Axiom ints__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom int64s : go_type.
-
-Axiom int64s__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom int32s : go_type.
 
-Axiom int32s__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom int16s : go_type.
-
-Axiom int16s__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom int8s : go_type.
 
-Axiom int8s__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom stringArray : go_type.
-
-Axiom stringArray__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom times : go_type.
 
-Axiom times__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom uints : go_type.
-
-Axiom uints__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom uint64s : go_type.
 
-Axiom uint64s__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom uint32s : go_type.
-
-Axiom uint32s__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom uint16s : go_type.
 
-Axiom uint16s__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom uint8s : go_type.
 
-Axiom uint8s__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom uintptrs : go_type.
-
-Axiom uintptrs__MarshalLogArrayⁱᵐᵖˡ : val.
 
 Axiom SamplingConfig : go_type.
 
@@ -255,27 +159,11 @@ Axiom Config : go_type.
 
 Definition NewProductionEncoderConfig : go_string := "go.uber.org/zap.NewProductionEncoderConfig"%go.
 
-Axiom NewProductionEncoderConfigⁱᵐᵖˡ : val.
-
 Definition NewProductionConfig : go_string := "go.uber.org/zap.NewProductionConfig"%go.
-
-Axiom NewProductionConfigⁱᵐᵖˡ : val.
 
 Definition NewDevelopmentEncoderConfig : go_string := "go.uber.org/zap.NewDevelopmentEncoderConfig"%go.
 
-Axiom NewDevelopmentEncoderConfigⁱᵐᵖˡ : val.
-
 Definition NewDevelopmentConfig : go_string := "go.uber.org/zap.NewDevelopmentConfig"%go.
-
-Axiom NewDevelopmentConfigⁱᵐᵖˡ : val.
-
-Axiom Config__Buildⁱᵐᵖˡ : val.
-
-Axiom Config__buildOptionsⁱᵐᵖˡ : val.
-
-Axiom Config__openSinksⁱᵐᵖˡ : val.
-
-Axiom Config__buildEncoderⁱᵐᵖˡ : val.
 
 Definition errNoEncoderNameSpecified : go_string := "go.uber.org/zap.errNoEncoderNameSpecified"%go.
 
@@ -289,11 +177,7 @@ Definition _encoderMutex : go_string := "go.uber.org/zap._encoderMutex"%go.
 
 Definition RegisterEncoder : go_string := "go.uber.org/zap.RegisterEncoder"%go.
 
-Axiom RegisterEncoderⁱᵐᵖˡ : val.
-
 Definition newEncoder : go_string := "go.uber.org/zap.newEncoder"%go.
-
-Axiom newEncoderⁱᵐᵖˡ : val.
 
 Definition _errArrayElemPool : go_string := "go.uber.org/zap._errArrayElemPool"%go.
 
@@ -301,19 +185,11 @@ Axiom _errArrayElemPool'init : val.
 
 Definition Error : go_string := "go.uber.org/zap.Error"%go.
 
-Axiom Errorⁱᵐᵖˡ : val.
-
 Definition NamedError : go_string := "go.uber.org/zap.NamedError"%go.
-
-Axiom NamedErrorⁱᵐᵖˡ : val.
 
 Axiom errArray : go_type.
 
-Axiom errArray__MarshalLogArrayⁱᵐᵖˡ : val.
-
 Axiom errArrayElem : go_type.
-
-Axiom errArrayElem__MarshalLogObjectⁱᵐᵖˡ : val.
 
 Axiom Field : go_type.
 
@@ -327,223 +203,113 @@ Axiom _maxTimeInt64'init : val.
 
 Definition Skip : go_string := "go.uber.org/zap.Skip"%go.
 
-Axiom Skipⁱᵐᵖˡ : val.
-
 Definition nilField : go_string := "go.uber.org/zap.nilField"%go.
-
-Axiom nilFieldⁱᵐᵖˡ : val.
 
 Definition Binary : go_string := "go.uber.org/zap.Binary"%go.
 
-Axiom Binaryⁱᵐᵖˡ : val.
-
 Definition Bool : go_string := "go.uber.org/zap.Bool"%go.
-
-Axiom Boolⁱᵐᵖˡ : val.
 
 Definition Boolp : go_string := "go.uber.org/zap.Boolp"%go.
 
-Axiom Boolpⁱᵐᵖˡ : val.
-
 Definition ByteString : go_string := "go.uber.org/zap.ByteString"%go.
-
-Axiom ByteStringⁱᵐᵖˡ : val.
 
 Definition Complex128 : go_string := "go.uber.org/zap.Complex128"%go.
 
-Axiom Complex128ⁱᵐᵖˡ : val.
-
 Definition Complex128p : go_string := "go.uber.org/zap.Complex128p"%go.
-
-Axiom Complex128pⁱᵐᵖˡ : val.
 
 Definition Complex64 : go_string := "go.uber.org/zap.Complex64"%go.
 
-Axiom Complex64ⁱᵐᵖˡ : val.
-
 Definition Complex64p : go_string := "go.uber.org/zap.Complex64p"%go.
-
-Axiom Complex64pⁱᵐᵖˡ : val.
 
 Definition Float64 : go_string := "go.uber.org/zap.Float64"%go.
 
-Axiom Float64ⁱᵐᵖˡ : val.
-
 Definition Float64p : go_string := "go.uber.org/zap.Float64p"%go.
-
-Axiom Float64pⁱᵐᵖˡ : val.
 
 Definition Float32 : go_string := "go.uber.org/zap.Float32"%go.
 
-Axiom Float32ⁱᵐᵖˡ : val.
-
 Definition Float32p : go_string := "go.uber.org/zap.Float32p"%go.
-
-Axiom Float32pⁱᵐᵖˡ : val.
 
 Definition Int : go_string := "go.uber.org/zap.Int"%go.
 
-Axiom Intⁱᵐᵖˡ : val.
-
 Definition Intp : go_string := "go.uber.org/zap.Intp"%go.
-
-Axiom Intpⁱᵐᵖˡ : val.
 
 Definition Int64 : go_string := "go.uber.org/zap.Int64"%go.
 
-Axiom Int64ⁱᵐᵖˡ : val.
-
 Definition Int64p : go_string := "go.uber.org/zap.Int64p"%go.
-
-Axiom Int64pⁱᵐᵖˡ : val.
 
 Definition Int32 : go_string := "go.uber.org/zap.Int32"%go.
 
-Axiom Int32ⁱᵐᵖˡ : val.
-
 Definition Int32p : go_string := "go.uber.org/zap.Int32p"%go.
-
-Axiom Int32pⁱᵐᵖˡ : val.
 
 Definition Int16 : go_string := "go.uber.org/zap.Int16"%go.
 
-Axiom Int16ⁱᵐᵖˡ : val.
-
 Definition Int16p : go_string := "go.uber.org/zap.Int16p"%go.
-
-Axiom Int16pⁱᵐᵖˡ : val.
 
 Definition Int8 : go_string := "go.uber.org/zap.Int8"%go.
 
-Axiom Int8ⁱᵐᵖˡ : val.
-
 Definition Int8p : go_string := "go.uber.org/zap.Int8p"%go.
-
-Axiom Int8pⁱᵐᵖˡ : val.
 
 Definition String : go_string := "go.uber.org/zap.String"%go.
 
-Axiom Stringⁱᵐᵖˡ : val.
-
 Definition Stringp : go_string := "go.uber.org/zap.Stringp"%go.
-
-Axiom Stringpⁱᵐᵖˡ : val.
 
 Definition Uint : go_string := "go.uber.org/zap.Uint"%go.
 
-Axiom Uintⁱᵐᵖˡ : val.
-
 Definition Uintp : go_string := "go.uber.org/zap.Uintp"%go.
-
-Axiom Uintpⁱᵐᵖˡ : val.
 
 Definition Uint64 : go_string := "go.uber.org/zap.Uint64"%go.
 
-Axiom Uint64ⁱᵐᵖˡ : val.
-
 Definition Uint64p : go_string := "go.uber.org/zap.Uint64p"%go.
-
-Axiom Uint64pⁱᵐᵖˡ : val.
 
 Definition Uint32 : go_string := "go.uber.org/zap.Uint32"%go.
 
-Axiom Uint32ⁱᵐᵖˡ : val.
-
 Definition Uint32p : go_string := "go.uber.org/zap.Uint32p"%go.
-
-Axiom Uint32pⁱᵐᵖˡ : val.
 
 Definition Uint16 : go_string := "go.uber.org/zap.Uint16"%go.
 
-Axiom Uint16ⁱᵐᵖˡ : val.
-
 Definition Uint16p : go_string := "go.uber.org/zap.Uint16p"%go.
-
-Axiom Uint16pⁱᵐᵖˡ : val.
 
 Definition Uint8 : go_string := "go.uber.org/zap.Uint8"%go.
 
-Axiom Uint8ⁱᵐᵖˡ : val.
-
 Definition Uint8p : go_string := "go.uber.org/zap.Uint8p"%go.
-
-Axiom Uint8pⁱᵐᵖˡ : val.
 
 Definition Uintptr : go_string := "go.uber.org/zap.Uintptr"%go.
 
-Axiom Uintptrⁱᵐᵖˡ : val.
-
 Definition Uintptrp : go_string := "go.uber.org/zap.Uintptrp"%go.
-
-Axiom Uintptrpⁱᵐᵖˡ : val.
 
 Definition Reflect : go_string := "go.uber.org/zap.Reflect"%go.
 
-Axiom Reflectⁱᵐᵖˡ : val.
-
 Definition Namespace : go_string := "go.uber.org/zap.Namespace"%go.
-
-Axiom Namespaceⁱᵐᵖˡ : val.
 
 Definition Stringer : go_string := "go.uber.org/zap.Stringer"%go.
 
-Axiom Stringerⁱᵐᵖˡ : val.
-
 Definition Time : go_string := "go.uber.org/zap.Time"%go.
-
-Axiom Timeⁱᵐᵖˡ : val.
 
 Definition Timep : go_string := "go.uber.org/zap.Timep"%go.
 
-Axiom Timepⁱᵐᵖˡ : val.
-
 Definition Stack : go_string := "go.uber.org/zap.Stack"%go.
-
-Axiom Stackⁱᵐᵖˡ : val.
 
 Definition StackSkip : go_string := "go.uber.org/zap.StackSkip"%go.
 
-Axiom StackSkipⁱᵐᵖˡ : val.
-
 Definition Duration : go_string := "go.uber.org/zap.Duration"%go.
-
-Axiom Durationⁱᵐᵖˡ : val.
 
 Definition Durationp : go_string := "go.uber.org/zap.Durationp"%go.
 
-Axiom Durationpⁱᵐᵖˡ : val.
-
 Definition Object : go_string := "go.uber.org/zap.Object"%go.
-
-Axiom Objectⁱᵐᵖˡ : val.
 
 Definition Inline : go_string := "go.uber.org/zap.Inline"%go.
 
-Axiom Inlineⁱᵐᵖˡ : val.
-
 Definition Dict : go_string := "go.uber.org/zap.Dict"%go.
-
-Axiom Dictⁱᵐᵖˡ : val.
 
 Definition dictField : go_string := "go.uber.org/zap.dictField"%go.
 
-Axiom dictFieldⁱᵐᵖˡ : val.
-
 Axiom dictObject : go_type.
-
-Axiom dictObject__MarshalLogObjectⁱᵐᵖˡ : val.
 
 Axiom anyFieldC : go_type.
 
-Axiom anyFieldC__Anyⁱᵐᵖˡ : val.
-
 Definition Any : go_string := "go.uber.org/zap.Any"%go.
 
-Axiom Anyⁱᵐᵖˡ : val.
-
 Definition LevelFlag : go_string := "go.uber.org/zap.LevelFlag"%go.
-
-Axiom LevelFlagⁱᵐᵖˡ : val.
 
 Axiom _stdLogDefaultDepth : Z.
 
@@ -563,59 +329,29 @@ Axiom _globalS'init : val.
 
 Definition L : go_string := "go.uber.org/zap.L"%go.
 
-Axiom Lⁱᵐᵖˡ : val.
-
 Definition S : go_string := "go.uber.org/zap.S"%go.
-
-Axiom Sⁱᵐᵖˡ : val.
 
 Definition ReplaceGlobals : go_string := "go.uber.org/zap.ReplaceGlobals"%go.
 
-Axiom ReplaceGlobalsⁱᵐᵖˡ : val.
-
 Definition NewStdLog : go_string := "go.uber.org/zap.NewStdLog"%go.
-
-Axiom NewStdLogⁱᵐᵖˡ : val.
 
 Definition NewStdLogAt : go_string := "go.uber.org/zap.NewStdLogAt"%go.
 
-Axiom NewStdLogAtⁱᵐᵖˡ : val.
-
 Definition RedirectStdLog : go_string := "go.uber.org/zap.RedirectStdLog"%go.
-
-Axiom RedirectStdLogⁱᵐᵖˡ : val.
 
 Definition RedirectStdLogAt : go_string := "go.uber.org/zap.RedirectStdLogAt"%go.
 
-Axiom RedirectStdLogAtⁱᵐᵖˡ : val.
-
 Definition redirectStdLogAt : go_string := "go.uber.org/zap.redirectStdLogAt"%go.
-
-Axiom redirectStdLogAtⁱᵐᵖˡ : val.
 
 Definition levelToFunc : go_string := "go.uber.org/zap.levelToFunc"%go.
 
-Axiom levelToFuncⁱᵐᵖˡ : val.
-
 Axiom loggerWriter : go_type.
-
-Axiom loggerWriter__Writeⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__ServeHTTPⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__serveHTTPⁱᵐᵖˡ : val.
 
 Definition decodePutRequest : go_string := "go.uber.org/zap.decodePutRequest"%go.
 
-Axiom decodePutRequestⁱᵐᵖˡ : val.
-
 Definition decodePutURL : go_string := "go.uber.org/zap.decodePutURL"%go.
 
-Axiom decodePutURLⁱᵐᵖˡ : val.
-
 Definition decodePutJSON : go_string := "go.uber.org/zap.decodePutJSON"%go.
-
-Axiom decodePutJSONⁱᵐᵖˡ : val.
 
 Axiom DebugLevel : expr.
 
@@ -633,165 +369,61 @@ Axiom FatalLevel : expr.
 
 Axiom LevelEnablerFunc : go_type.
 
-Axiom LevelEnablerFunc__Enabledⁱᵐᵖˡ : val.
-
 Axiom AtomicLevel : go_type.
 
 Definition NewAtomicLevel : go_string := "go.uber.org/zap.NewAtomicLevel"%go.
 
-Axiom NewAtomicLevelⁱᵐᵖˡ : val.
-
 Definition NewAtomicLevelAt : go_string := "go.uber.org/zap.NewAtomicLevelAt"%go.
 
-Axiom NewAtomicLevelAtⁱᵐᵖˡ : val.
-
 Definition ParseAtomicLevel : go_string := "go.uber.org/zap.ParseAtomicLevel"%go.
-
-Axiom ParseAtomicLevelⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__Enabledⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__Levelⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__SetLevelⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__Stringⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__UnmarshalTextⁱᵐᵖˡ : val.
-
-Axiom AtomicLevel__MarshalTextⁱᵐᵖˡ : val.
 
 Axiom Logger : go_type.
 
 Definition New : go_string := "go.uber.org/zap.New"%go.
 
-Axiom Newⁱᵐᵖˡ : val.
-
 Definition NewNop : go_string := "go.uber.org/zap.NewNop"%go.
-
-Axiom NewNopⁱᵐᵖˡ : val.
 
 Definition NewProduction : go_string := "go.uber.org/zap.NewProduction"%go.
 
-Axiom NewProductionⁱᵐᵖˡ : val.
-
 Definition NewDevelopment : go_string := "go.uber.org/zap.NewDevelopment"%go.
-
-Axiom NewDevelopmentⁱᵐᵖˡ : val.
 
 Definition Must : go_string := "go.uber.org/zap.Must"%go.
 
-Axiom Mustⁱᵐᵖˡ : val.
-
 Definition NewExample : go_string := "go.uber.org/zap.NewExample"%go.
 
-Axiom NewExampleⁱᵐᵖˡ : val.
-
-Axiom Logger__Sugarⁱᵐᵖˡ : val.
-
-Axiom Logger__Namedⁱᵐᵖˡ : val.
-
-Axiom Logger__WithOptionsⁱᵐᵖˡ : val.
-
-Axiom Logger__Withⁱᵐᵖˡ : val.
-
-Axiom Logger__WithLazyⁱᵐᵖˡ : val.
-
-Axiom Logger__Levelⁱᵐᵖˡ : val.
-
-Axiom Logger__Checkⁱᵐᵖˡ : val.
-
-Axiom Logger__Logⁱᵐᵖˡ : val.
-
-Axiom Logger__Debugⁱᵐᵖˡ : val.
-
-Axiom Logger__Infoⁱᵐᵖˡ : val.
-
-Axiom Logger__Warnⁱᵐᵖˡ : val.
-
-Axiom Logger__Errorⁱᵐᵖˡ : val.
-
-Axiom Logger__DPanicⁱᵐᵖˡ : val.
-
-Axiom Logger__Panicⁱᵐᵖˡ : val.
-
-Axiom Logger__Fatalⁱᵐᵖˡ : val.
-
-Axiom Logger__Syncⁱᵐᵖˡ : val.
-
-Axiom Logger__Coreⁱᵐᵖˡ : val.
-
-Axiom Logger__Nameⁱᵐᵖˡ : val.
-
-Axiom Logger__cloneⁱᵐᵖˡ : val.
-
-Axiom Logger__checkⁱᵐᵖˡ : val.
-
 Definition terminalHookOverride : go_string := "go.uber.org/zap.terminalHookOverride"%go.
-
-Axiom terminalHookOverrideⁱᵐᵖˡ : val.
 
 Axiom Option : go_type.
 
 Axiom optionFunc : go_type.
 
-Axiom optionFunc__applyⁱᵐᵖˡ : val.
-
 Definition WrapCore : go_string := "go.uber.org/zap.WrapCore"%go.
-
-Axiom WrapCoreⁱᵐᵖˡ : val.
 
 Definition Hooks : go_string := "go.uber.org/zap.Hooks"%go.
 
-Axiom Hooksⁱᵐᵖˡ : val.
-
 Definition Fields : go_string := "go.uber.org/zap.Fields"%go.
-
-Axiom Fieldsⁱᵐᵖˡ : val.
 
 Definition ErrorOutput : go_string := "go.uber.org/zap.ErrorOutput"%go.
 
-Axiom ErrorOutputⁱᵐᵖˡ : val.
-
 Definition Development : go_string := "go.uber.org/zap.Development"%go.
-
-Axiom Developmentⁱᵐᵖˡ : val.
 
 Definition AddCaller : go_string := "go.uber.org/zap.AddCaller"%go.
 
-Axiom AddCallerⁱᵐᵖˡ : val.
-
 Definition WithCaller : go_string := "go.uber.org/zap.WithCaller"%go.
-
-Axiom WithCallerⁱᵐᵖˡ : val.
 
 Definition AddCallerSkip : go_string := "go.uber.org/zap.AddCallerSkip"%go.
 
-Axiom AddCallerSkipⁱᵐᵖˡ : val.
-
 Definition AddStacktrace : go_string := "go.uber.org/zap.AddStacktrace"%go.
-
-Axiom AddStacktraceⁱᵐᵖˡ : val.
 
 Definition IncreaseLevel : go_string := "go.uber.org/zap.IncreaseLevel"%go.
 
-Axiom IncreaseLevelⁱᵐᵖˡ : val.
-
 Definition WithPanicHook : go_string := "go.uber.org/zap.WithPanicHook"%go.
-
-Axiom WithPanicHookⁱᵐᵖˡ : val.
 
 Definition OnFatal : go_string := "go.uber.org/zap.OnFatal"%go.
 
-Axiom OnFatalⁱᵐᵖˡ : val.
-
 Definition WithFatalHook : go_string := "go.uber.org/zap.WithFatalHook"%go.
 
-Axiom WithFatalHookⁱᵐᵖˡ : val.
-
 Definition WithClock : go_string := "go.uber.org/zap.WithClock"%go.
-
-Axiom WithClockⁱᵐᵖˡ : val.
 
 Axiom schemeFile : go_string.
 
@@ -803,33 +435,15 @@ Axiom Sink : go_type.
 
 Axiom errSinkNotFound : go_type.
 
-Axiom errSinkNotFound__Errorⁱᵐᵖˡ : val.
-
 Axiom nopCloserSink : go_type.
-
-Axiom nopCloserSink__Closeⁱᵐᵖˡ : val.
 
 Axiom sinkRegistry : go_type.
 
 Definition newSinkRegistry : go_string := "go.uber.org/zap.newSinkRegistry"%go.
 
-Axiom newSinkRegistryⁱᵐᵖˡ : val.
-
-Axiom sinkRegistry__RegisterSinkⁱᵐᵖˡ : val.
-
-Axiom sinkRegistry__newSinkⁱᵐᵖˡ : val.
-
 Definition RegisterSink : go_string := "go.uber.org/zap.RegisterSink"%go.
 
-Axiom RegisterSinkⁱᵐᵖˡ : val.
-
-Axiom sinkRegistry__newFileSinkFromURLⁱᵐᵖˡ : val.
-
-Axiom sinkRegistry__newFileSinkFromPathⁱᵐᵖˡ : val.
-
 Definition normalizeScheme : go_string := "go.uber.org/zap.normalizeScheme"%go.
-
-Axiom normalizeSchemeⁱᵐᵖˡ : val.
 
 Axiom _oddNumberErrMsg : go_string.
 
@@ -839,125 +453,517 @@ Axiom _multipleErrMsg : go_string.
 
 Axiom SugaredLogger : go_type.
 
+Definition getMessage : go_string := "go.uber.org/zap.getMessage"%go.
+
+Definition getMessageln : go_string := "go.uber.org/zap.getMessageln"%go.
+
+Axiom invalidPair : go_type.
+
+Axiom invalidPairs : go_type.
+
+Definition timeToMillis : go_string := "go.uber.org/zap.timeToMillis"%go.
+
+Definition Open : go_string := "go.uber.org/zap.Open"%go.
+
+Definition open : go_string := "go.uber.org/zap.open"%go.
+
+Definition CombineWriteSyncers : go_string := "go.uber.org/zap.CombineWriteSyncers"%go.
+
+Definition vars' : list (go_string * go_type) := [].
+
+Axiom Arrayⁱᵐᵖˡ : val.
+
+Axiom Boolsⁱᵐᵖˡ : val.
+
+Axiom ByteStringsⁱᵐᵖˡ : val.
+
+Axiom Complex128sⁱᵐᵖˡ : val.
+
+Axiom Complex64sⁱᵐᵖˡ : val.
+
+Axiom Durationsⁱᵐᵖˡ : val.
+
+Axiom Float64sⁱᵐᵖˡ : val.
+
+Axiom Float32sⁱᵐᵖˡ : val.
+
+Axiom Intsⁱᵐᵖˡ : val.
+
+Axiom Int64sⁱᵐᵖˡ : val.
+
+Axiom Int32sⁱᵐᵖˡ : val.
+
+Axiom Int16sⁱᵐᵖˡ : val.
+
+Axiom Int8sⁱᵐᵖˡ : val.
+
+Axiom Objectsⁱᵐᵖˡ : val.
+
+Axiom ObjectValuesⁱᵐᵖˡ : val.
+
+Axiom Stringsⁱᵐᵖˡ : val.
+
+Axiom Stringersⁱᵐᵖˡ : val.
+
+Axiom Timesⁱᵐᵖˡ : val.
+
+Axiom Uintsⁱᵐᵖˡ : val.
+
+Axiom Uint64sⁱᵐᵖˡ : val.
+
+Axiom Uint32sⁱᵐᵖˡ : val.
+
+Axiom Uint16sⁱᵐᵖˡ : val.
+
+Axiom Uint8sⁱᵐᵖˡ : val.
+
+Axiom Uintptrsⁱᵐᵖˡ : val.
+
+Axiom Errorsⁱᵐᵖˡ : val.
+
+Axiom NewProductionEncoderConfigⁱᵐᵖˡ : val.
+
+Axiom NewProductionConfigⁱᵐᵖˡ : val.
+
+Axiom NewDevelopmentEncoderConfigⁱᵐᵖˡ : val.
+
+Axiom NewDevelopmentConfigⁱᵐᵖˡ : val.
+
+Axiom RegisterEncoderⁱᵐᵖˡ : val.
+
+Axiom newEncoderⁱᵐᵖˡ : val.
+
+Axiom Errorⁱᵐᵖˡ : val.
+
+Axiom NamedErrorⁱᵐᵖˡ : val.
+
+Axiom Skipⁱᵐᵖˡ : val.
+
+Axiom nilFieldⁱᵐᵖˡ : val.
+
+Axiom Binaryⁱᵐᵖˡ : val.
+
+Axiom Boolⁱᵐᵖˡ : val.
+
+Axiom Boolpⁱᵐᵖˡ : val.
+
+Axiom ByteStringⁱᵐᵖˡ : val.
+
+Axiom Complex128ⁱᵐᵖˡ : val.
+
+Axiom Complex128pⁱᵐᵖˡ : val.
+
+Axiom Complex64ⁱᵐᵖˡ : val.
+
+Axiom Complex64pⁱᵐᵖˡ : val.
+
+Axiom Float64ⁱᵐᵖˡ : val.
+
+Axiom Float64pⁱᵐᵖˡ : val.
+
+Axiom Float32ⁱᵐᵖˡ : val.
+
+Axiom Float32pⁱᵐᵖˡ : val.
+
+Axiom Intⁱᵐᵖˡ : val.
+
+Axiom Intpⁱᵐᵖˡ : val.
+
+Axiom Int64ⁱᵐᵖˡ : val.
+
+Axiom Int64pⁱᵐᵖˡ : val.
+
+Axiom Int32ⁱᵐᵖˡ : val.
+
+Axiom Int32pⁱᵐᵖˡ : val.
+
+Axiom Int16ⁱᵐᵖˡ : val.
+
+Axiom Int16pⁱᵐᵖˡ : val.
+
+Axiom Int8ⁱᵐᵖˡ : val.
+
+Axiom Int8pⁱᵐᵖˡ : val.
+
+Axiom Stringⁱᵐᵖˡ : val.
+
+Axiom Stringpⁱᵐᵖˡ : val.
+
+Axiom Uintⁱᵐᵖˡ : val.
+
+Axiom Uintpⁱᵐᵖˡ : val.
+
+Axiom Uint64ⁱᵐᵖˡ : val.
+
+Axiom Uint64pⁱᵐᵖˡ : val.
+
+Axiom Uint32ⁱᵐᵖˡ : val.
+
+Axiom Uint32pⁱᵐᵖˡ : val.
+
+Axiom Uint16ⁱᵐᵖˡ : val.
+
+Axiom Uint16pⁱᵐᵖˡ : val.
+
+Axiom Uint8ⁱᵐᵖˡ : val.
+
+Axiom Uint8pⁱᵐᵖˡ : val.
+
+Axiom Uintptrⁱᵐᵖˡ : val.
+
+Axiom Uintptrpⁱᵐᵖˡ : val.
+
+Axiom Reflectⁱᵐᵖˡ : val.
+
+Axiom Namespaceⁱᵐᵖˡ : val.
+
+Axiom Stringerⁱᵐᵖˡ : val.
+
+Axiom Timeⁱᵐᵖˡ : val.
+
+Axiom Timepⁱᵐᵖˡ : val.
+
+Axiom Stackⁱᵐᵖˡ : val.
+
+Axiom StackSkipⁱᵐᵖˡ : val.
+
+Axiom Durationⁱᵐᵖˡ : val.
+
+Axiom Durationpⁱᵐᵖˡ : val.
+
+Axiom Objectⁱᵐᵖˡ : val.
+
+Axiom Inlineⁱᵐᵖˡ : val.
+
+Axiom Dictⁱᵐᵖˡ : val.
+
+Axiom dictFieldⁱᵐᵖˡ : val.
+
+Axiom Anyⁱᵐᵖˡ : val.
+
+Axiom LevelFlagⁱᵐᵖˡ : val.
+
+Axiom Lⁱᵐᵖˡ : val.
+
+Axiom Sⁱᵐᵖˡ : val.
+
+Axiom ReplaceGlobalsⁱᵐᵖˡ : val.
+
+Axiom NewStdLogⁱᵐᵖˡ : val.
+
+Axiom NewStdLogAtⁱᵐᵖˡ : val.
+
+Axiom RedirectStdLogⁱᵐᵖˡ : val.
+
+Axiom RedirectStdLogAtⁱᵐᵖˡ : val.
+
+Axiom redirectStdLogAtⁱᵐᵖˡ : val.
+
+Axiom levelToFuncⁱᵐᵖˡ : val.
+
+Axiom decodePutRequestⁱᵐᵖˡ : val.
+
+Axiom decodePutURLⁱᵐᵖˡ : val.
+
+Axiom decodePutJSONⁱᵐᵖˡ : val.
+
+Axiom NewAtomicLevelⁱᵐᵖˡ : val.
+
+Axiom NewAtomicLevelAtⁱᵐᵖˡ : val.
+
+Axiom ParseAtomicLevelⁱᵐᵖˡ : val.
+
+Axiom Newⁱᵐᵖˡ : val.
+
+Axiom NewNopⁱᵐᵖˡ : val.
+
+Axiom NewProductionⁱᵐᵖˡ : val.
+
+Axiom NewDevelopmentⁱᵐᵖˡ : val.
+
+Axiom Mustⁱᵐᵖˡ : val.
+
+Axiom NewExampleⁱᵐᵖˡ : val.
+
+Axiom terminalHookOverrideⁱᵐᵖˡ : val.
+
+Axiom WrapCoreⁱᵐᵖˡ : val.
+
+Axiom Hooksⁱᵐᵖˡ : val.
+
+Axiom Fieldsⁱᵐᵖˡ : val.
+
+Axiom ErrorOutputⁱᵐᵖˡ : val.
+
+Axiom Developmentⁱᵐᵖˡ : val.
+
+Axiom AddCallerⁱᵐᵖˡ : val.
+
+Axiom WithCallerⁱᵐᵖˡ : val.
+
+Axiom AddCallerSkipⁱᵐᵖˡ : val.
+
+Axiom AddStacktraceⁱᵐᵖˡ : val.
+
+Axiom IncreaseLevelⁱᵐᵖˡ : val.
+
+Axiom WithPanicHookⁱᵐᵖˡ : val.
+
+Axiom OnFatalⁱᵐᵖˡ : val.
+
+Axiom WithFatalHookⁱᵐᵖˡ : val.
+
+Axiom WithClockⁱᵐᵖˡ : val.
+
+Axiom newSinkRegistryⁱᵐᵖˡ : val.
+
+Axiom RegisterSinkⁱᵐᵖˡ : val.
+
+Axiom normalizeSchemeⁱᵐᵖˡ : val.
+
+Axiom getMessageⁱᵐᵖˡ : val.
+
+Axiom getMessagelnⁱᵐᵖˡ : val.
+
+Axiom timeToMillisⁱᵐᵖˡ : val.
+
+Axiom Openⁱᵐᵖˡ : val.
+
+Axiom openⁱᵐᵖˡ : val.
+
+Axiom CombineWriteSyncersⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(Array, Arrayⁱᵐᵖˡ); (Bools, Boolsⁱᵐᵖˡ); (ByteStrings, ByteStringsⁱᵐᵖˡ); (Complex128s, Complex128sⁱᵐᵖˡ); (Complex64s, Complex64sⁱᵐᵖˡ); (Durations, Durationsⁱᵐᵖˡ); (Float64s, Float64sⁱᵐᵖˡ); (Float32s, Float32sⁱᵐᵖˡ); (Ints, Intsⁱᵐᵖˡ); (Int64s, Int64sⁱᵐᵖˡ); (Int32s, Int32sⁱᵐᵖˡ); (Int16s, Int16sⁱᵐᵖˡ); (Int8s, Int8sⁱᵐᵖˡ); (Objects, Objectsⁱᵐᵖˡ); (ObjectValues, ObjectValuesⁱᵐᵖˡ); (Strings, Stringsⁱᵐᵖˡ); (Stringers, Stringersⁱᵐᵖˡ); (Times, Timesⁱᵐᵖˡ); (Uints, Uintsⁱᵐᵖˡ); (Uint64s, Uint64sⁱᵐᵖˡ); (Uint32s, Uint32sⁱᵐᵖˡ); (Uint16s, Uint16sⁱᵐᵖˡ); (Uint8s, Uint8sⁱᵐᵖˡ); (Uintptrs, Uintptrsⁱᵐᵖˡ); (Errors, Errorsⁱᵐᵖˡ); (NewProductionEncoderConfig, NewProductionEncoderConfigⁱᵐᵖˡ); (NewProductionConfig, NewProductionConfigⁱᵐᵖˡ); (NewDevelopmentEncoderConfig, NewDevelopmentEncoderConfigⁱᵐᵖˡ); (NewDevelopmentConfig, NewDevelopmentConfigⁱᵐᵖˡ); (RegisterEncoder, RegisterEncoderⁱᵐᵖˡ); (newEncoder, newEncoderⁱᵐᵖˡ); (Error, Errorⁱᵐᵖˡ); (NamedError, NamedErrorⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ); (nilField, nilFieldⁱᵐᵖˡ); (Binary, Binaryⁱᵐᵖˡ); (Bool, Boolⁱᵐᵖˡ); (Boolp, Boolpⁱᵐᵖˡ); (ByteString, ByteStringⁱᵐᵖˡ); (Complex128, Complex128ⁱᵐᵖˡ); (Complex128p, Complex128pⁱᵐᵖˡ); (Complex64, Complex64ⁱᵐᵖˡ); (Complex64p, Complex64pⁱᵐᵖˡ); (Float64, Float64ⁱᵐᵖˡ); (Float64p, Float64pⁱᵐᵖˡ); (Float32, Float32ⁱᵐᵖˡ); (Float32p, Float32pⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ); (Intp, Intpⁱᵐᵖˡ); (Int64, Int64ⁱᵐᵖˡ); (Int64p, Int64pⁱᵐᵖˡ); (Int32, Int32ⁱᵐᵖˡ); (Int32p, Int32pⁱᵐᵖˡ); (Int16, Int16ⁱᵐᵖˡ); (Int16p, Int16pⁱᵐᵖˡ); (Int8, Int8ⁱᵐᵖˡ); (Int8p, Int8pⁱᵐᵖˡ); (String, Stringⁱᵐᵖˡ); (Stringp, Stringpⁱᵐᵖˡ); (Uint, Uintⁱᵐᵖˡ); (Uintp, Uintpⁱᵐᵖˡ); (Uint64, Uint64ⁱᵐᵖˡ); (Uint64p, Uint64pⁱᵐᵖˡ); (Uint32, Uint32ⁱᵐᵖˡ); (Uint32p, Uint32pⁱᵐᵖˡ); (Uint16, Uint16ⁱᵐᵖˡ); (Uint16p, Uint16pⁱᵐᵖˡ); (Uint8, Uint8ⁱᵐᵖˡ); (Uint8p, Uint8pⁱᵐᵖˡ); (Uintptr, Uintptrⁱᵐᵖˡ); (Uintptrp, Uintptrpⁱᵐᵖˡ); (Reflect, Reflectⁱᵐᵖˡ); (Namespace, Namespaceⁱᵐᵖˡ); (Stringer, Stringerⁱᵐᵖˡ); (Time, Timeⁱᵐᵖˡ); (Timep, Timepⁱᵐᵖˡ); (Stack, Stackⁱᵐᵖˡ); (StackSkip, StackSkipⁱᵐᵖˡ); (Duration, Durationⁱᵐᵖˡ); (Durationp, Durationpⁱᵐᵖˡ); (Object, Objectⁱᵐᵖˡ); (Inline, Inlineⁱᵐᵖˡ); (Dict, Dictⁱᵐᵖˡ); (dictField, dictFieldⁱᵐᵖˡ); (Any, Anyⁱᵐᵖˡ); (LevelFlag, LevelFlagⁱᵐᵖˡ); (L, Lⁱᵐᵖˡ); (S, Sⁱᵐᵖˡ); (ReplaceGlobals, ReplaceGlobalsⁱᵐᵖˡ); (NewStdLog, NewStdLogⁱᵐᵖˡ); (NewStdLogAt, NewStdLogAtⁱᵐᵖˡ); (RedirectStdLog, RedirectStdLogⁱᵐᵖˡ); (RedirectStdLogAt, RedirectStdLogAtⁱᵐᵖˡ); (redirectStdLogAt, redirectStdLogAtⁱᵐᵖˡ); (levelToFunc, levelToFuncⁱᵐᵖˡ); (decodePutRequest, decodePutRequestⁱᵐᵖˡ); (decodePutURL, decodePutURLⁱᵐᵖˡ); (decodePutJSON, decodePutJSONⁱᵐᵖˡ); (NewAtomicLevel, NewAtomicLevelⁱᵐᵖˡ); (NewAtomicLevelAt, NewAtomicLevelAtⁱᵐᵖˡ); (ParseAtomicLevel, ParseAtomicLevelⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (NewNop, NewNopⁱᵐᵖˡ); (NewProduction, NewProductionⁱᵐᵖˡ); (NewDevelopment, NewDevelopmentⁱᵐᵖˡ); (Must, Mustⁱᵐᵖˡ); (NewExample, NewExampleⁱᵐᵖˡ); (terminalHookOverride, terminalHookOverrideⁱᵐᵖˡ); (WrapCore, WrapCoreⁱᵐᵖˡ); (Hooks, Hooksⁱᵐᵖˡ); (Fields, Fieldsⁱᵐᵖˡ); (ErrorOutput, ErrorOutputⁱᵐᵖˡ); (Development, Developmentⁱᵐᵖˡ); (AddCaller, AddCallerⁱᵐᵖˡ); (WithCaller, WithCallerⁱᵐᵖˡ); (AddCallerSkip, AddCallerSkipⁱᵐᵖˡ); (AddStacktrace, AddStacktraceⁱᵐᵖˡ); (IncreaseLevel, IncreaseLevelⁱᵐᵖˡ); (WithPanicHook, WithPanicHookⁱᵐᵖˡ); (OnFatal, OnFatalⁱᵐᵖˡ); (WithFatalHook, WithFatalHookⁱᵐᵖˡ); (WithClock, WithClockⁱᵐᵖˡ); (newSinkRegistry, newSinkRegistryⁱᵐᵖˡ); (RegisterSink, RegisterSinkⁱᵐᵖˡ); (normalizeScheme, normalizeSchemeⁱᵐᵖˡ); (getMessage, getMessageⁱᵐᵖˡ); (getMessageln, getMessagelnⁱᵐᵖˡ); (timeToMillis, timeToMillisⁱᵐᵖˡ); (Open, Openⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (CombineWriteSyncers, CombineWriteSyncersⁱᵐᵖˡ)].
+
+Axiom objects__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom objectValues__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom stringers__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom bools__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom byteStringsArray__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom complex128s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom complex64s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom durations__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom float64s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom float32s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom ints__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom int64s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom int32s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom int16s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom int8s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom stringArray__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom times__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom uints__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom uint64s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom uint32s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom uint16s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom uint8s__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom uintptrs__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom Config__Buildⁱᵐᵖˡ : val.
+
+Axiom Config__buildEncoderⁱᵐᵖˡ : val.
+
+Axiom Config__buildOptionsⁱᵐᵖˡ : val.
+
+Axiom Config__openSinksⁱᵐᵖˡ : val.
+
+Axiom errArray__MarshalLogArrayⁱᵐᵖˡ : val.
+
+Axiom errArrayElem__Errorⁱᵐᵖˡ : val.
+
+Axiom errArrayElem__MarshalLogObjectⁱᵐᵖˡ : val.
+
+Axiom dictObject__MarshalLogObjectⁱᵐᵖˡ : val.
+
+Axiom anyFieldC__Anyⁱᵐᵖˡ : val.
+
+Axiom loggerWriter__Writeⁱᵐᵖˡ : val.
+
+Axiom LevelEnablerFunc__Enabledⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__Enabledⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__Levelⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__MarshalTextⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__ServeHTTPⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__SetLevelⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__Stringⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom AtomicLevel__serveHTTPⁱᵐᵖˡ : val.
+
+Axiom Logger__Checkⁱᵐᵖˡ : val.
+
+Axiom Logger__Coreⁱᵐᵖˡ : val.
+
+Axiom Logger__DPanicⁱᵐᵖˡ : val.
+
+Axiom Logger__Debugⁱᵐᵖˡ : val.
+
+Axiom Logger__Errorⁱᵐᵖˡ : val.
+
+Axiom Logger__Fatalⁱᵐᵖˡ : val.
+
+Axiom Logger__Infoⁱᵐᵖˡ : val.
+
+Axiom Logger__Levelⁱᵐᵖˡ : val.
+
+Axiom Logger__Logⁱᵐᵖˡ : val.
+
+Axiom Logger__Nameⁱᵐᵖˡ : val.
+
+Axiom Logger__Namedⁱᵐᵖˡ : val.
+
+Axiom Logger__Panicⁱᵐᵖˡ : val.
+
+Axiom Logger__Sugarⁱᵐᵖˡ : val.
+
+Axiom Logger__Syncⁱᵐᵖˡ : val.
+
+Axiom Logger__Warnⁱᵐᵖˡ : val.
+
+Axiom Logger__Withⁱᵐᵖˡ : val.
+
+Axiom Logger__WithLazyⁱᵐᵖˡ : val.
+
+Axiom Logger__WithOptionsⁱᵐᵖˡ : val.
+
+Axiom Logger__checkⁱᵐᵖˡ : val.
+
+Axiom Logger__cloneⁱᵐᵖˡ : val.
+
+Axiom optionFunc__applyⁱᵐᵖˡ : val.
+
+Axiom errSinkNotFound__Errorⁱᵐᵖˡ : val.
+
+Axiom nopCloserSink__Closeⁱᵐᵖˡ : val.
+
+Axiom nopCloserSink__Syncⁱᵐᵖˡ : val.
+
+Axiom nopCloserSink__Writeⁱᵐᵖˡ : val.
+
+Axiom sinkRegistry__RegisterSinkⁱᵐᵖˡ : val.
+
+Axiom sinkRegistry__newFileSinkFromPathⁱᵐᵖˡ : val.
+
+Axiom sinkRegistry__newFileSinkFromURLⁱᵐᵖˡ : val.
+
+Axiom sinkRegistry__newSinkⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__DPanicⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__DPanicfⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__DPaniclnⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__DPanicwⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Debugⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Debugfⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Debuglnⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Debugwⁱᵐᵖˡ : val.
+
 Axiom SugaredLogger__Desugarⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Namedⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Errorⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__WithOptionsⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Errorfⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Withⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Errorlnⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__WithLazyⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Errorwⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Fatalⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Fatalfⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Fatallnⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Fatalwⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Infoⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Infofⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Infolnⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Infowⁱᵐᵖˡ : val.
 
 Axiom SugaredLogger__Levelⁱᵐᵖˡ : val.
 
 Axiom SugaredLogger__Logⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Debugⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Infoⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Warnⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Errorⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__DPanicⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Panicⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Fatalⁱᵐᵖˡ : val.
-
 Axiom SugaredLogger__Logfⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Debugfⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Infofⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Warnfⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Errorfⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__DPanicfⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Panicfⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Fatalfⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Logwⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Debugwⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Infowⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Warnwⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Errorwⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__DPanicwⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Panicwⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__Fatalwⁱᵐᵖˡ : val.
 
 Axiom SugaredLogger__Loglnⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Debuglnⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Logwⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Infolnⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Namedⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Warnlnⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Panicⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Errorlnⁱᵐᵖˡ : val.
-
-Axiom SugaredLogger__DPaniclnⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Panicfⁱᵐᵖˡ : val.
 
 Axiom SugaredLogger__Paniclnⁱᵐᵖˡ : val.
 
-Axiom SugaredLogger__Fatallnⁱᵐᵖˡ : val.
+Axiom SugaredLogger__Panicwⁱᵐᵖˡ : val.
 
 Axiom SugaredLogger__Syncⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Warnⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Warnfⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Warnlnⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Warnwⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__Withⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__WithLazyⁱᵐᵖˡ : val.
+
+Axiom SugaredLogger__WithOptionsⁱᵐᵖˡ : val.
 
 Axiom SugaredLogger__logⁱᵐᵖˡ : val.
 
 Axiom SugaredLogger__loglnⁱᵐᵖˡ : val.
 
-Definition getMessage : go_string := "go.uber.org/zap.getMessage"%go.
-
-Axiom getMessageⁱᵐᵖˡ : val.
-
-Definition getMessageln : go_string := "go.uber.org/zap.getMessageln"%go.
-
-Axiom getMessagelnⁱᵐᵖˡ : val.
-
 Axiom SugaredLogger__sweetenFieldsⁱᵐᵖˡ : val.
-
-Axiom invalidPair : go_type.
 
 Axiom invalidPair__MarshalLogObjectⁱᵐᵖˡ : val.
 
-Axiom invalidPairs : go_type.
-
 Axiom invalidPairs__MarshalLogArrayⁱᵐᵖˡ : val.
-
-Definition timeToMillis : go_string := "go.uber.org/zap.timeToMillis"%go.
-
-Axiom timeToMillisⁱᵐᵖˡ : val.
-
-Definition Open : go_string := "go.uber.org/zap.Open"%go.
-
-Axiom Openⁱᵐᵖˡ : val.
-
-Definition open : go_string := "go.uber.org/zap.open"%go.
-
-Axiom openⁱᵐᵖˡ : val.
-
-Definition CombineWriteSyncers : go_string := "go.uber.org/zap.CombineWriteSyncers"%go.
-
-Axiom CombineWriteSyncersⁱᵐᵖˡ : val.
-
-Definition vars' : list (go_string * go_type) := [].
-
-Definition functions' : list (go_string * val) := [(Array, Arrayⁱᵐᵖˡ); (Bools, Boolsⁱᵐᵖˡ); (ByteStrings, ByteStringsⁱᵐᵖˡ); (Complex128s, Complex128sⁱᵐᵖˡ); (Complex64s, Complex64sⁱᵐᵖˡ); (Durations, Durationsⁱᵐᵖˡ); (Float64s, Float64sⁱᵐᵖˡ); (Float32s, Float32sⁱᵐᵖˡ); (Ints, Intsⁱᵐᵖˡ); (Int64s, Int64sⁱᵐᵖˡ); (Int32s, Int32sⁱᵐᵖˡ); (Int16s, Int16sⁱᵐᵖˡ); (Int8s, Int8sⁱᵐᵖˡ); (Objects, Objectsⁱᵐᵖˡ); (ObjectValues, ObjectValuesⁱᵐᵖˡ); (Strings, Stringsⁱᵐᵖˡ); (Stringers, Stringersⁱᵐᵖˡ); (Times, Timesⁱᵐᵖˡ); (Uints, Uintsⁱᵐᵖˡ); (Uint64s, Uint64sⁱᵐᵖˡ); (Uint32s, Uint32sⁱᵐᵖˡ); (Uint16s, Uint16sⁱᵐᵖˡ); (Uint8s, Uint8sⁱᵐᵖˡ); (Uintptrs, Uintptrsⁱᵐᵖˡ); (Errors, Errorsⁱᵐᵖˡ); (NewProductionEncoderConfig, NewProductionEncoderConfigⁱᵐᵖˡ); (NewProductionConfig, NewProductionConfigⁱᵐᵖˡ); (NewDevelopmentEncoderConfig, NewDevelopmentEncoderConfigⁱᵐᵖˡ); (NewDevelopmentConfig, NewDevelopmentConfigⁱᵐᵖˡ); (RegisterEncoder, RegisterEncoderⁱᵐᵖˡ); (newEncoder, newEncoderⁱᵐᵖˡ); (Error, Errorⁱᵐᵖˡ); (NamedError, NamedErrorⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ); (nilField, nilFieldⁱᵐᵖˡ); (Binary, Binaryⁱᵐᵖˡ); (Bool, Boolⁱᵐᵖˡ); (Boolp, Boolpⁱᵐᵖˡ); (ByteString, ByteStringⁱᵐᵖˡ); (Complex128, Complex128ⁱᵐᵖˡ); (Complex128p, Complex128pⁱᵐᵖˡ); (Complex64, Complex64ⁱᵐᵖˡ); (Complex64p, Complex64pⁱᵐᵖˡ); (Float64, Float64ⁱᵐᵖˡ); (Float64p, Float64pⁱᵐᵖˡ); (Float32, Float32ⁱᵐᵖˡ); (Float32p, Float32pⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ); (Intp, Intpⁱᵐᵖˡ); (Int64, Int64ⁱᵐᵖˡ); (Int64p, Int64pⁱᵐᵖˡ); (Int32, Int32ⁱᵐᵖˡ); (Int32p, Int32pⁱᵐᵖˡ); (Int16, Int16ⁱᵐᵖˡ); (Int16p, Int16pⁱᵐᵖˡ); (Int8, Int8ⁱᵐᵖˡ); (Int8p, Int8pⁱᵐᵖˡ); (String, Stringⁱᵐᵖˡ); (Stringp, Stringpⁱᵐᵖˡ); (Uint, Uintⁱᵐᵖˡ); (Uintp, Uintpⁱᵐᵖˡ); (Uint64, Uint64ⁱᵐᵖˡ); (Uint64p, Uint64pⁱᵐᵖˡ); (Uint32, Uint32ⁱᵐᵖˡ); (Uint32p, Uint32pⁱᵐᵖˡ); (Uint16, Uint16ⁱᵐᵖˡ); (Uint16p, Uint16pⁱᵐᵖˡ); (Uint8, Uint8ⁱᵐᵖˡ); (Uint8p, Uint8pⁱᵐᵖˡ); (Uintptr, Uintptrⁱᵐᵖˡ); (Uintptrp, Uintptrpⁱᵐᵖˡ); (Reflect, Reflectⁱᵐᵖˡ); (Namespace, Namespaceⁱᵐᵖˡ); (Stringer, Stringerⁱᵐᵖˡ); (Time, Timeⁱᵐᵖˡ); (Timep, Timepⁱᵐᵖˡ); (Stack, Stackⁱᵐᵖˡ); (StackSkip, StackSkipⁱᵐᵖˡ); (Duration, Durationⁱᵐᵖˡ); (Durationp, Durationpⁱᵐᵖˡ); (Object, Objectⁱᵐᵖˡ); (Inline, Inlineⁱᵐᵖˡ); (Dict, Dictⁱᵐᵖˡ); (dictField, dictFieldⁱᵐᵖˡ); (Any, Anyⁱᵐᵖˡ); (LevelFlag, LevelFlagⁱᵐᵖˡ); (L, Lⁱᵐᵖˡ); (S, Sⁱᵐᵖˡ); (ReplaceGlobals, ReplaceGlobalsⁱᵐᵖˡ); (NewStdLog, NewStdLogⁱᵐᵖˡ); (NewStdLogAt, NewStdLogAtⁱᵐᵖˡ); (RedirectStdLog, RedirectStdLogⁱᵐᵖˡ); (RedirectStdLogAt, RedirectStdLogAtⁱᵐᵖˡ); (redirectStdLogAt, redirectStdLogAtⁱᵐᵖˡ); (levelToFunc, levelToFuncⁱᵐᵖˡ); (decodePutRequest, decodePutRequestⁱᵐᵖˡ); (decodePutURL, decodePutURLⁱᵐᵖˡ); (decodePutJSON, decodePutJSONⁱᵐᵖˡ); (NewAtomicLevel, NewAtomicLevelⁱᵐᵖˡ); (NewAtomicLevelAt, NewAtomicLevelAtⁱᵐᵖˡ); (ParseAtomicLevel, ParseAtomicLevelⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (NewNop, NewNopⁱᵐᵖˡ); (NewProduction, NewProductionⁱᵐᵖˡ); (NewDevelopment, NewDevelopmentⁱᵐᵖˡ); (Must, Mustⁱᵐᵖˡ); (NewExample, NewExampleⁱᵐᵖˡ); (terminalHookOverride, terminalHookOverrideⁱᵐᵖˡ); (WrapCore, WrapCoreⁱᵐᵖˡ); (Hooks, Hooksⁱᵐᵖˡ); (Fields, Fieldsⁱᵐᵖˡ); (ErrorOutput, ErrorOutputⁱᵐᵖˡ); (Development, Developmentⁱᵐᵖˡ); (AddCaller, AddCallerⁱᵐᵖˡ); (WithCaller, WithCallerⁱᵐᵖˡ); (AddCallerSkip, AddCallerSkipⁱᵐᵖˡ); (AddStacktrace, AddStacktraceⁱᵐᵖˡ); (IncreaseLevel, IncreaseLevelⁱᵐᵖˡ); (WithPanicHook, WithPanicHookⁱᵐᵖˡ); (OnFatal, OnFatalⁱᵐᵖˡ); (WithFatalHook, WithFatalHookⁱᵐᵖˡ); (WithClock, WithClockⁱᵐᵖˡ); (newSinkRegistry, newSinkRegistryⁱᵐᵖˡ); (RegisterSink, RegisterSinkⁱᵐᵖˡ); (normalizeScheme, normalizeSchemeⁱᵐᵖˡ); (getMessage, getMessageⁱᵐᵖˡ); (getMessageln, getMessagelnⁱᵐᵖˡ); (timeToMillis, timeToMillisⁱᵐᵖˡ); (Open, Openⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (CombineWriteSyncers, CombineWriteSyncersⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(objects.id, [("MarshalLogArray"%go, objects__MarshalLogArrayⁱᵐᵖˡ)]); (ptrT.id objects.id, [("MarshalLogArray"%go, (λ: "$r",
                  method_call #objects.id #"MarshalLogArray"%go (![#objects] "$r")

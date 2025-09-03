@@ -160,11 +160,7 @@ Axiom std0x'init : val.
 
 Definition startsWithLowerCase : go_string := "time.startsWithLowerCase"%go.
 
-Axiom startsWithLowerCaseⁱᵐᵖˡ : val.
-
 Definition nextStdChunk : go_string := "time.nextStdChunk"%go.
-
-Axiom nextStdChunkⁱᵐᵖˡ : val.
 
 Definition longDayNames : go_string := "time.longDayNames"%go.
 
@@ -184,15 +180,9 @@ Axiom longMonthNames'init : val.
 
 Definition match' : go_string := "time.match"%go.
 
-Axiom matchⁱᵐᵖˡ : val.
-
 Definition lookup' : go_string := "time.lookup"%go.
 
-Axiom lookupⁱᵐᵖˡ : val.
-
 Definition appendInt : go_string := "time.appendInt"%go.
-
-Axiom appendIntⁱᵐᵖˡ : val.
 
 Definition errAtoi : go_string := "time.errAtoi"%go.
 
@@ -200,33 +190,13 @@ Axiom errAtoi'init : val.
 
 Definition atoi : go_string := "time.atoi"%go.
 
-Axiom atoiⁱᵐᵖˡ : val.
-
 Definition stdFracSecond : go_string := "time.stdFracSecond"%go.
-
-Axiom stdFracSecondⁱᵐᵖˡ : val.
 
 Definition digitsLen : go_string := "time.digitsLen"%go.
 
-Axiom digitsLenⁱᵐᵖˡ : val.
-
 Definition separator : go_string := "time.separator"%go.
 
-Axiom separatorⁱᵐᵖˡ : val.
-
 Definition appendNano : go_string := "time.appendNano"%go.
-
-Axiom appendNanoⁱᵐᵖˡ : val.
-
-Axiom Time__Stringⁱᵐᵖˡ : val.
-
-Axiom Time__GoStringⁱᵐᵖˡ : val.
-
-Axiom Time__Formatⁱᵐᵖˡ : val.
-
-Axiom Time__AppendFormatⁱᵐᵖˡ : val.
-
-Axiom Time__appendFormatⁱᵐᵖˡ : val.
 
 Definition errBad : go_string := "time.errBad"%go.
 
@@ -236,8 +206,6 @@ Axiom ParseError : go_type.
 
 Definition newParseError : go_string := "time.newParseError"%go.
 
-Axiom newParseErrorⁱᵐᵖˡ : val.
-
 Axiom lowerhex : go_string.
 
 Axiom runeSelf : Z.
@@ -246,61 +214,31 @@ Axiom runeError : expr.
 
 Definition quote : go_string := "time.quote"%go.
 
-Axiom quoteⁱᵐᵖˡ : val.
-
-Axiom ParseError__Errorⁱᵐᵖˡ : val.
-
 Definition isDigit : go_string := "time.isDigit"%go.
-
-Axiom isDigitⁱᵐᵖˡ : val.
 
 Definition getnum : go_string := "time.getnum"%go.
 
-Axiom getnumⁱᵐᵖˡ : val.
-
 Definition getnum3 : go_string := "time.getnum3"%go.
-
-Axiom getnum3ⁱᵐᵖˡ : val.
 
 Definition cutspace : go_string := "time.cutspace"%go.
 
-Axiom cutspaceⁱᵐᵖˡ : val.
-
 Definition skip : go_string := "time.skip"%go.
-
-Axiom skipⁱᵐᵖˡ : val.
 
 Definition Parse : go_string := "time.Parse"%go.
 
-Axiom Parseⁱᵐᵖˡ : val.
-
 Definition ParseInLocation : go_string := "time.ParseInLocation"%go.
-
-Axiom ParseInLocationⁱᵐᵖˡ : val.
 
 Definition parse : go_string := "time.parse"%go.
 
-Axiom parseⁱᵐᵖˡ : val.
-
 Definition parseTimeZone : go_string := "time.parseTimeZone"%go.
-
-Axiom parseTimeZoneⁱᵐᵖˡ : val.
 
 Definition parseGMT : go_string := "time.parseGMT"%go.
 
-Axiom parseGMTⁱᵐᵖˡ : val.
-
 Definition parseSignedOffset : go_string := "time.parseSignedOffset"%go.
-
-Axiom parseSignedOffsetⁱᵐᵖˡ : val.
 
 Definition commaOrPeriod : go_string := "time.commaOrPeriod"%go.
 
-Axiom commaOrPeriodⁱᵐᵖˡ : val.
-
 Definition parseNanoseconds : go_string := "time.parseNanoseconds"%go.
-
-Axiom parseNanosecondsⁱᵐᵖˡ : val.
 
 Definition errLeadingInt : go_string := "time.errLeadingInt"%go.
 
@@ -308,11 +246,7 @@ Axiom errLeadingInt'init : val.
 
 Definition leadingInt : go_string := "time.leadingInt"%go.
 
-Axiom leadingIntⁱᵐᵖˡ : val.
-
 Definition leadingFraction : go_string := "time.leadingFraction"%go.
-
-Axiom leadingFractionⁱᵐᵖˡ : val.
 
 Definition unitMap : go_string := "time.unitMap"%go.
 
@@ -320,23 +254,11 @@ Axiom unitMap'init : val.
 
 Definition ParseDuration : go_string := "time.ParseDuration"%go.
 
-Axiom ParseDurationⁱᵐᵖˡ : val.
-
-Axiom Time__appendFormatRFC3339ⁱᵐᵖˡ : val.
-
-Axiom Time__appendStrictRFC3339ⁱᵐᵖˡ : val.
-
 Definition parseRFC3339 : go_string := "time.parseRFC3339"%go.
-
-Axiom parseRFC3339ⁱᵐᵖˡ : val.
 
 Definition parseStrictRFC3339 : go_string := "time.parseStrictRFC3339"%go.
 
-Axiom parseStrictRFC3339ⁱᵐᵖˡ : val.
-
 Definition Sleep : go_string := "time.Sleep"%go.
-
-Axiom Sleepⁱᵐᵖˡ : val.
 
 Definition asynctimerchan : go_string := "time.asynctimerchan"%go.
 
@@ -346,17 +268,11 @@ Definition syncTimer : go_string := "time.syncTimer"%go.
 
 Definition when : go_string := "time.when"%go.
 
-Axiom whenⁱᵐᵖˡ : val.
-
 Definition newTimer : go_string := "time.newTimer"%go.
 
 Definition stopTimer : go_string := "time.stopTimer"%go.
 
-Axiom stopTimerⁱᵐᵖˡ : val.
-
 Definition resetTimer : go_string := "time.resetTimer"%go.
-
-Axiom resetTimerⁱᵐᵖˡ : val.
 
 Definition Time : go_type := structT [
   "wall" :: uint64T;
@@ -369,61 +285,31 @@ Definition Timer : go_type := structT [
   "initTimer" :: boolT
 ].
 
-Axiom Timer__Stopⁱᵐᵖˡ : val.
-
 Definition NewTimer : go_string := "time.NewTimer"%go.
 
-Axiom NewTimerⁱᵐᵖˡ : val.
-
-Axiom Timer__Resetⁱᵐᵖˡ : val.
-
 Definition sendTime : go_string := "time.sendTime"%go.
-
-Axiom sendTimeⁱᵐᵖˡ : val.
 
 Definition After : go_string := "time.After"%go.
 
 Definition AfterFunc : go_string := "time.AfterFunc"%go.
 
-Axiom AfterFuncⁱᵐᵖˡ : val.
-
 Definition goFunc : go_string := "time.goFunc"%go.
-
-Axiom goFuncⁱᵐᵖˡ : val.
 
 Definition interrupt : go_string := "time.interrupt"%go.
 
-Axiom interruptⁱᵐᵖˡ : val.
-
 Definition open : go_string := "time.open"%go.
-
-Axiom openⁱᵐᵖˡ : val.
 
 Definition read : go_string := "time.read"%go.
 
-Axiom readⁱᵐᵖˡ : val.
-
 Definition closefd : go_string := "time.closefd"%go.
 
-Axiom closefdⁱᵐᵖˡ : val.
-
 Definition preadn : go_string := "time.preadn"%go.
-
-Axiom preadnⁱᵐᵖˡ : val.
 
 Axiom Ticker : go_type.
 
 Definition NewTicker : go_string := "time.NewTicker"%go.
 
-Axiom NewTickerⁱᵐᵖˡ : val.
-
-Axiom Ticker__Stopⁱᵐᵖˡ : val.
-
-Axiom Ticker__Resetⁱᵐᵖˡ : val.
-
 Definition Tick : go_string := "time.Tick"%go.
-
-Axiom Tickⁱᵐᵖˡ : val.
 
 Axiom hasMonotonic : Z.
 
@@ -434,32 +320,6 @@ Axiom minWall : expr.
 Axiom nsecMask : Z.
 
 Axiom nsecShift : Z.
-
-Axiom Time__nsecⁱᵐᵖˡ : val.
-
-Axiom Time__secⁱᵐᵖˡ : val.
-
-Axiom Time__unixSecⁱᵐᵖˡ : val.
-
-Axiom Time__addSecⁱᵐᵖˡ : val.
-
-Axiom Time__setLocⁱᵐᵖˡ : val.
-
-Axiom Time__stripMonoⁱᵐᵖˡ : val.
-
-Axiom Time__setMonoⁱᵐᵖˡ : val.
-
-Axiom Time__monoⁱᵐᵖˡ : val.
-
-Axiom Time__IsZeroⁱᵐᵖˡ : val.
-
-Axiom Time__Afterⁱᵐᵖˡ : val.
-
-Axiom Time__Beforeⁱᵐᵖˡ : val.
-
-Axiom Time__Compareⁱᵐᵖˡ : val.
-
-Axiom Time__Equalⁱᵐᵖˡ : val.
 
 Axiom Month : go_type.
 
@@ -487,8 +347,6 @@ Axiom November : expr.
 
 Axiom December : expr.
 
-Axiom Month__Stringⁱᵐᵖˡ : val.
-
 Axiom Weekday : go_type.
 
 Axiom Sunday : expr.
@@ -504,8 +362,6 @@ Axiom Thursday : expr.
 Axiom Friday : expr.
 
 Axiom Saturday : expr.
-
-Axiom Weekday__Stringⁱᵐᵖˡ : val.
 
 Axiom secondsPerMinute : Z.
 
@@ -555,60 +411,6 @@ Axiom absJanFeb : go_type.
 
 Definition dateToAbsDays : go_string := "time.dateToAbsDays"%go.
 
-Axiom dateToAbsDaysⁱᵐᵖˡ : val.
-
-Axiom absSeconds__daysⁱᵐᵖˡ : val.
-
-Axiom absDays__splitⁱᵐᵖˡ : val.
-
-Axiom absYday__splitⁱᵐᵖˡ : val.
-
-Axiom absYday__janFebⁱᵐᵖˡ : val.
-
-Axiom absMonth__monthⁱᵐᵖˡ : val.
-
-Axiom absCentury__leapⁱᵐᵖˡ : val.
-
-Axiom absCentury__yearⁱᵐᵖˡ : val.
-
-Axiom absYday__ydayⁱᵐᵖˡ : val.
-
-Axiom absDays__dateⁱᵐᵖˡ : val.
-
-Axiom absDays__yearYdayⁱᵐᵖˡ : val.
-
-Axiom Time__absSecⁱᵐᵖˡ : val.
-
-Axiom Time__locabsⁱᵐᵖˡ : val.
-
-Axiom Time__Dateⁱᵐᵖˡ : val.
-
-Axiom Time__Yearⁱᵐᵖˡ : val.
-
-Axiom Time__Monthⁱᵐᵖˡ : val.
-
-Axiom Time__Dayⁱᵐᵖˡ : val.
-
-Axiom Time__Weekdayⁱᵐᵖˡ : val.
-
-Axiom absDays__weekdayⁱᵐᵖˡ : val.
-
-Axiom Time__ISOWeekⁱᵐᵖˡ : val.
-
-Axiom Time__Clockⁱᵐᵖˡ : val.
-
-Axiom absSeconds__clockⁱᵐᵖˡ : val.
-
-Axiom Time__Hourⁱᵐᵖˡ : val.
-
-Axiom Time__Minuteⁱᵐᵖˡ : val.
-
-Axiom Time__Secondⁱᵐᵖˡ : val.
-
-Axiom Time__Nanosecondⁱᵐᵖˡ : val.
-
-Axiom Time__YearDayⁱᵐᵖˡ : val.
-
 Definition Duration : go_type := int64T.
 
 Axiom minDuration : expr.
@@ -627,73 +429,25 @@ Axiom Minute : expr.
 
 Axiom Hour : expr.
 
-Axiom Duration__Stringⁱᵐᵖˡ : val.
-
-Axiom Duration__formatⁱᵐᵖˡ : val.
-
 Definition fmtFrac : go_string := "time.fmtFrac"%go.
-
-Axiom fmtFracⁱᵐᵖˡ : val.
 
 Definition fmtInt : go_string := "time.fmtInt"%go.
 
-Axiom fmtIntⁱᵐᵖˡ : val.
-
-Axiom Duration__Nanosecondsⁱᵐᵖˡ : val.
-
-Axiom Duration__Microsecondsⁱᵐᵖˡ : val.
-
-Axiom Duration__Millisecondsⁱᵐᵖˡ : val.
-
-Axiom Duration__Secondsⁱᵐᵖˡ : val.
-
-Axiom Duration__Minutesⁱᵐᵖˡ : val.
-
-Axiom Duration__Hoursⁱᵐᵖˡ : val.
-
-Axiom Duration__Truncateⁱᵐᵖˡ : val.
-
 Definition lessThanHalf : go_string := "time.lessThanHalf"%go.
-
-Axiom lessThanHalfⁱᵐᵖˡ : val.
-
-Axiom Duration__Roundⁱᵐᵖˡ : val.
-
-Axiom Duration__Absⁱᵐᵖˡ : val.
-
-Axiom Time__Addⁱᵐᵖˡ : val.
-
-Axiom Time__Subⁱᵐᵖˡ : val.
 
 Definition subMono : go_string := "time.subMono"%go.
 
-Axiom subMonoⁱᵐᵖˡ : val.
-
 Definition Since : go_string := "time.Since"%go.
-
-Axiom Sinceⁱᵐᵖˡ : val.
 
 Definition Until : go_string := "time.Until"%go.
 
-Axiom Untilⁱᵐᵖˡ : val.
-
-Axiom Time__AddDateⁱᵐᵖˡ : val.
-
 Definition daysBefore : go_string := "time.daysBefore"%go.
-
-Axiom daysBeforeⁱᵐᵖˡ : val.
 
 Definition daysIn : go_string := "time.daysIn"%go.
 
-Axiom daysInⁱᵐᵖˡ : val.
-
 Definition now : go_string := "time.now"%go.
 
-Axiom nowⁱᵐᵖˡ : val.
-
 Definition runtimeNow : go_string := "time.runtimeNow"%go.
-
-Axiom runtimeNowⁱᵐᵖˡ : val.
 
 Definition runtimeNano : go_string := "time.runtimeNano"%go.
 
@@ -703,103 +457,31 @@ Axiom startNano'init : val.
 
 Definition Now : go_string := "time.Now"%go.
 
-Axiom Nowⁱᵐᵖˡ : val.
-
 Definition unixTime : go_string := "time.unixTime"%go.
-
-Axiom unixTimeⁱᵐᵖˡ : val.
-
-Axiom Time__UTCⁱᵐᵖˡ : val.
-
-Axiom Time__Localⁱᵐᵖˡ : val.
-
-Axiom Time__Inⁱᵐᵖˡ : val.
-
-Axiom Time__Locationⁱᵐᵖˡ : val.
-
-Axiom Time__Zoneⁱᵐᵖˡ : val.
-
-Axiom Time__ZoneBoundsⁱᵐᵖˡ : val.
-
-Axiom Time__Unixⁱᵐᵖˡ : val.
-
-Axiom Time__UnixMilliⁱᵐᵖˡ : val.
-
-Axiom Time__UnixMicroⁱᵐᵖˡ : val.
-
-Axiom Time__UnixNanoⁱᵐᵖˡ : val.
 
 Axiom timeBinaryVersionV1 : expr.
 
 Axiom timeBinaryVersionV2 : expr.
 
-Axiom Time__AppendBinaryⁱᵐᵖˡ : val.
-
-Axiom Time__MarshalBinaryⁱᵐᵖˡ : val.
-
-Axiom Time__UnmarshalBinaryⁱᵐᵖˡ : val.
-
-Axiom Time__GobEncodeⁱᵐᵖˡ : val.
-
-Axiom Time__GobDecodeⁱᵐᵖˡ : val.
-
-Axiom Time__MarshalJSONⁱᵐᵖˡ : val.
-
-Axiom Time__UnmarshalJSONⁱᵐᵖˡ : val.
-
-Axiom Time__appendToⁱᵐᵖˡ : val.
-
-Axiom Time__AppendTextⁱᵐᵖˡ : val.
-
-Axiom Time__MarshalTextⁱᵐᵖˡ : val.
-
-Axiom Time__UnmarshalTextⁱᵐᵖˡ : val.
-
 Definition Unix : go_string := "time.Unix"%go.
-
-Axiom Unixⁱᵐᵖˡ : val.
 
 Definition UnixMilli : go_string := "time.UnixMilli"%go.
 
-Axiom UnixMilliⁱᵐᵖˡ : val.
-
 Definition UnixMicro : go_string := "time.UnixMicro"%go.
-
-Axiom UnixMicroⁱᵐᵖˡ : val.
-
-Axiom Time__IsDSTⁱᵐᵖˡ : val.
 
 Definition isLeap : go_string := "time.isLeap"%go.
 
-Axiom isLeapⁱᵐᵖˡ : val.
-
 Definition norm : go_string := "time.norm"%go.
-
-Axiom normⁱᵐᵖˡ : val.
 
 Definition Date : go_string := "time.Date"%go.
 
-Axiom Dateⁱᵐᵖˡ : val.
-
-Axiom Time__Truncateⁱᵐᵖˡ : val.
-
-Axiom Time__Roundⁱᵐᵖˡ : val.
-
 Definition div : go_string := "time.div"%go.
-
-Axiom divⁱᵐᵖˡ : val.
 
 Definition legacyTimeTimeAbs : go_string := "time.legacyTimeTimeAbs"%go.
 
-Axiom legacyTimeTimeAbsⁱᵐᵖˡ : val.
-
 Definition legacyAbsClock : go_string := "time.legacyAbsClock"%go.
 
-Axiom legacyAbsClockⁱᵐᵖˡ : val.
-
 Definition legacyAbsDate : go_string := "time.legacyAbsDate"%go.
-
-Axiom legacyAbsDateⁱᵐᵖˡ : val.
 
 Axiom Location : go_type.
 
@@ -827,39 +509,19 @@ Definition localLoc : go_string := "time.localLoc"%go.
 
 Definition localOnce : go_string := "time.localOnce"%go.
 
-Axiom Location__getⁱᵐᵖˡ : val.
-
-Axiom Location__Stringⁱᵐᵖˡ : val.
-
 Definition unnamedFixedZones : go_string := "time.unnamedFixedZones"%go.
 
 Definition unnamedFixedZonesOnce : go_string := "time.unnamedFixedZonesOnce"%go.
 
 Definition FixedZone : go_string := "time.FixedZone"%go.
 
-Axiom FixedZoneⁱᵐᵖˡ : val.
-
 Definition fixedZone : go_string := "time.fixedZone"%go.
-
-Axiom fixedZoneⁱᵐᵖˡ : val.
-
-Axiom Location__lookupⁱᵐᵖˡ : val.
-
-Axiom Location__lookupFirstZoneⁱᵐᵖˡ : val.
-
-Axiom Location__firstZoneUsedⁱᵐᵖˡ : val.
 
 Definition tzset : go_string := "time.tzset"%go.
 
-Axiom tzsetⁱᵐᵖˡ : val.
-
 Definition tzsetName : go_string := "time.tzsetName"%go.
 
-Axiom tzsetNameⁱᵐᵖˡ : val.
-
 Definition tzsetOffset : go_string := "time.tzsetOffset"%go.
-
-Axiom tzsetOffsetⁱᵐᵖˡ : val.
 
 Axiom ruleKind : go_type.
 
@@ -873,17 +535,9 @@ Axiom rule : go_type.
 
 Definition tzsetRule : go_string := "time.tzsetRule"%go.
 
-Axiom tzsetRuleⁱᵐᵖˡ : val.
-
 Definition tzsetNum : go_string := "time.tzsetNum"%go.
 
-Axiom tzsetNumⁱᵐᵖˡ : val.
-
 Definition tzruleTime : go_string := "time.tzruleTime"%go.
-
-Axiom tzruleTimeⁱᵐᵖˡ : val.
-
-Axiom Location__lookupNameⁱᵐᵖˡ : val.
 
 Definition errLocation : go_string := "time.errLocation"%go.
 
@@ -895,27 +549,17 @@ Definition zoneinfoOnce : go_string := "time.zoneinfoOnce"%go.
 
 Definition LoadLocation : go_string := "time.LoadLocation"%go.
 
-Axiom LoadLocationⁱᵐᵖˡ : val.
-
 Definition containsDotDot : go_string := "time.containsDotDot"%go.
-
-Axiom containsDotDotⁱᵐᵖˡ : val.
 
 Definition gorootZoneSource : go_string := "time.gorootZoneSource"%go.
 
-Axiom gorootZoneSourceⁱᵐᵖˡ : val.
-
 Definition registerLoadFromEmbeddedTZData : go_string := "time.registerLoadFromEmbeddedTZData"%go.
-
-Axiom registerLoadFromEmbeddedTZDataⁱᵐᵖˡ : val.
 
 Definition loadFromEmbeddedTZData : go_string := "time.loadFromEmbeddedTZData"%go.
 
 Axiom maxFileSize : Z.
 
 Axiom fileSizeError : go_type.
-
-Axiom fileSizeError__Errorⁱᵐᵖˡ : val.
 
 Axiom seekStart : Z.
 
@@ -925,19 +569,7 @@ Axiom seekEnd : Z.
 
 Axiom dataIO : go_type.
 
-Axiom dataIO__readⁱᵐᵖˡ : val.
-
-Axiom dataIO__big4ⁱᵐᵖˡ : val.
-
-Axiom dataIO__big8ⁱᵐᵖˡ : val.
-
-Axiom dataIO__byteⁱᵐᵖˡ : val.
-
-Axiom dataIO__restⁱᵐᵖˡ : val.
-
 Definition byteString : go_string := "time.byteString"%go.
-
-Axiom byteStringⁱᵐᵖˡ : val.
 
 Definition errBadData : go_string := "time.errBadData"%go.
 
@@ -945,41 +577,23 @@ Axiom errBadData'init : val.
 
 Definition LoadLocationFromTZData : go_string := "time.LoadLocationFromTZData"%go.
 
-Axiom LoadLocationFromTZDataⁱᵐᵖˡ : val.
-
 Definition findZone : go_string := "time.findZone"%go.
-
-Axiom findZoneⁱᵐᵖˡ : val.
 
 Definition loadTzinfoFromDirOrZip : go_string := "time.loadTzinfoFromDirOrZip"%go.
 
-Axiom loadTzinfoFromDirOrZipⁱᵐᵖˡ : val.
-
 Definition get4 : go_string := "time.get4"%go.
-
-Axiom get4ⁱᵐᵖˡ : val.
 
 Definition get2 : go_string := "time.get2"%go.
 
-Axiom get2ⁱᵐᵖˡ : val.
-
 Definition loadTzinfoFromZip : go_string := "time.loadTzinfoFromZip"%go.
-
-Axiom loadTzinfoFromZipⁱᵐᵖˡ : val.
 
 Definition loadTzinfoFromTzdata : go_string := "time.loadTzinfoFromTzdata"%go.
 
 Definition loadTzinfo : go_string := "time.loadTzinfo"%go.
 
-Axiom loadTzinfoⁱᵐᵖˡ : val.
-
 Definition loadLocation : go_string := "time.loadLocation"%go.
 
-Axiom loadLocationⁱᵐᵖˡ : val.
-
 Definition readFile : go_string := "time.readFile"%go.
-
-Axiom readFileⁱᵐᵖˡ : val.
 
 Definition platformZoneSources : go_string := "time.platformZoneSources"%go.
 
@@ -987,11 +601,397 @@ Axiom platformZoneSources'init : val.
 
 Definition initLocal : go_string := "time.initLocal"%go.
 
-Axiom initLocalⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
 
+Axiom startsWithLowerCaseⁱᵐᵖˡ : val.
+
+Axiom nextStdChunkⁱᵐᵖˡ : val.
+
+Axiom matchⁱᵐᵖˡ : val.
+
+Axiom lookupⁱᵐᵖˡ : val.
+
+Axiom appendIntⁱᵐᵖˡ : val.
+
+Axiom atoiⁱᵐᵖˡ : val.
+
+Axiom stdFracSecondⁱᵐᵖˡ : val.
+
+Axiom digitsLenⁱᵐᵖˡ : val.
+
+Axiom separatorⁱᵐᵖˡ : val.
+
+Axiom appendNanoⁱᵐᵖˡ : val.
+
+Axiom newParseErrorⁱᵐᵖˡ : val.
+
+Axiom quoteⁱᵐᵖˡ : val.
+
+Axiom isDigitⁱᵐᵖˡ : val.
+
+Axiom getnumⁱᵐᵖˡ : val.
+
+Axiom getnum3ⁱᵐᵖˡ : val.
+
+Axiom cutspaceⁱᵐᵖˡ : val.
+
+Axiom skipⁱᵐᵖˡ : val.
+
+Axiom Parseⁱᵐᵖˡ : val.
+
+Axiom ParseInLocationⁱᵐᵖˡ : val.
+
+Axiom parseⁱᵐᵖˡ : val.
+
+Axiom parseTimeZoneⁱᵐᵖˡ : val.
+
+Axiom parseGMTⁱᵐᵖˡ : val.
+
+Axiom parseSignedOffsetⁱᵐᵖˡ : val.
+
+Axiom commaOrPeriodⁱᵐᵖˡ : val.
+
+Axiom parseNanosecondsⁱᵐᵖˡ : val.
+
+Axiom leadingIntⁱᵐᵖˡ : val.
+
+Axiom leadingFractionⁱᵐᵖˡ : val.
+
+Axiom ParseDurationⁱᵐᵖˡ : val.
+
+Axiom parseRFC3339ⁱᵐᵖˡ : val.
+
+Axiom parseStrictRFC3339ⁱᵐᵖˡ : val.
+
+Axiom Sleepⁱᵐᵖˡ : val.
+
+Axiom whenⁱᵐᵖˡ : val.
+
+Axiom stopTimerⁱᵐᵖˡ : val.
+
+Axiom resetTimerⁱᵐᵖˡ : val.
+
+Axiom NewTimerⁱᵐᵖˡ : val.
+
+Axiom sendTimeⁱᵐᵖˡ : val.
+
+Axiom AfterFuncⁱᵐᵖˡ : val.
+
+Axiom goFuncⁱᵐᵖˡ : val.
+
+Axiom interruptⁱᵐᵖˡ : val.
+
+Axiom openⁱᵐᵖˡ : val.
+
+Axiom readⁱᵐᵖˡ : val.
+
+Axiom closefdⁱᵐᵖˡ : val.
+
+Axiom preadnⁱᵐᵖˡ : val.
+
+Axiom NewTickerⁱᵐᵖˡ : val.
+
+Axiom Tickⁱᵐᵖˡ : val.
+
+Axiom dateToAbsDaysⁱᵐᵖˡ : val.
+
+Axiom fmtFracⁱᵐᵖˡ : val.
+
+Axiom fmtIntⁱᵐᵖˡ : val.
+
+Axiom lessThanHalfⁱᵐᵖˡ : val.
+
+Axiom subMonoⁱᵐᵖˡ : val.
+
+Axiom Sinceⁱᵐᵖˡ : val.
+
+Axiom Untilⁱᵐᵖˡ : val.
+
+Axiom daysBeforeⁱᵐᵖˡ : val.
+
+Axiom daysInⁱᵐᵖˡ : val.
+
+Axiom nowⁱᵐᵖˡ : val.
+
+Axiom runtimeNowⁱᵐᵖˡ : val.
+
+Axiom Nowⁱᵐᵖˡ : val.
+
+Axiom unixTimeⁱᵐᵖˡ : val.
+
+Axiom Unixⁱᵐᵖˡ : val.
+
+Axiom UnixMilliⁱᵐᵖˡ : val.
+
+Axiom UnixMicroⁱᵐᵖˡ : val.
+
+Axiom isLeapⁱᵐᵖˡ : val.
+
+Axiom normⁱᵐᵖˡ : val.
+
+Axiom Dateⁱᵐᵖˡ : val.
+
+Axiom divⁱᵐᵖˡ : val.
+
+Axiom legacyTimeTimeAbsⁱᵐᵖˡ : val.
+
+Axiom legacyAbsClockⁱᵐᵖˡ : val.
+
+Axiom legacyAbsDateⁱᵐᵖˡ : val.
+
+Axiom FixedZoneⁱᵐᵖˡ : val.
+
+Axiom fixedZoneⁱᵐᵖˡ : val.
+
+Axiom tzsetⁱᵐᵖˡ : val.
+
+Axiom tzsetNameⁱᵐᵖˡ : val.
+
+Axiom tzsetOffsetⁱᵐᵖˡ : val.
+
+Axiom tzsetRuleⁱᵐᵖˡ : val.
+
+Axiom tzsetNumⁱᵐᵖˡ : val.
+
+Axiom tzruleTimeⁱᵐᵖˡ : val.
+
+Axiom LoadLocationⁱᵐᵖˡ : val.
+
+Axiom containsDotDotⁱᵐᵖˡ : val.
+
+Axiom gorootZoneSourceⁱᵐᵖˡ : val.
+
+Axiom registerLoadFromEmbeddedTZDataⁱᵐᵖˡ : val.
+
+Axiom byteStringⁱᵐᵖˡ : val.
+
+Axiom LoadLocationFromTZDataⁱᵐᵖˡ : val.
+
+Axiom findZoneⁱᵐᵖˡ : val.
+
+Axiom loadTzinfoFromDirOrZipⁱᵐᵖˡ : val.
+
+Axiom get4ⁱᵐᵖˡ : val.
+
+Axiom get2ⁱᵐᵖˡ : val.
+
+Axiom loadTzinfoFromZipⁱᵐᵖˡ : val.
+
+Axiom loadTzinfoⁱᵐᵖˡ : val.
+
+Axiom loadLocationⁱᵐᵖˡ : val.
+
+Axiom readFileⁱᵐᵖˡ : val.
+
+Axiom initLocalⁱᵐᵖˡ : val.
+
 Definition functions' : list (go_string * val) := [(startsWithLowerCase, startsWithLowerCaseⁱᵐᵖˡ); (nextStdChunk, nextStdChunkⁱᵐᵖˡ); (match', matchⁱᵐᵖˡ); (lookup', lookupⁱᵐᵖˡ); (appendInt, appendIntⁱᵐᵖˡ); (atoi, atoiⁱᵐᵖˡ); (stdFracSecond, stdFracSecondⁱᵐᵖˡ); (digitsLen, digitsLenⁱᵐᵖˡ); (separator, separatorⁱᵐᵖˡ); (appendNano, appendNanoⁱᵐᵖˡ); (newParseError, newParseErrorⁱᵐᵖˡ); (quote, quoteⁱᵐᵖˡ); (isDigit, isDigitⁱᵐᵖˡ); (getnum, getnumⁱᵐᵖˡ); (getnum3, getnum3ⁱᵐᵖˡ); (cutspace, cutspaceⁱᵐᵖˡ); (skip, skipⁱᵐᵖˡ); (Parse, Parseⁱᵐᵖˡ); (ParseInLocation, ParseInLocationⁱᵐᵖˡ); (parse, parseⁱᵐᵖˡ); (parseTimeZone, parseTimeZoneⁱᵐᵖˡ); (parseGMT, parseGMTⁱᵐᵖˡ); (parseSignedOffset, parseSignedOffsetⁱᵐᵖˡ); (commaOrPeriod, commaOrPeriodⁱᵐᵖˡ); (parseNanoseconds, parseNanosecondsⁱᵐᵖˡ); (leadingInt, leadingIntⁱᵐᵖˡ); (leadingFraction, leadingFractionⁱᵐᵖˡ); (ParseDuration, ParseDurationⁱᵐᵖˡ); (parseRFC3339, parseRFC3339ⁱᵐᵖˡ); (parseStrictRFC3339, parseStrictRFC3339ⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (syncTimer, syncTimerⁱᵐᵖˡ); (when, whenⁱᵐᵖˡ); (newTimer, newTimerⁱᵐᵖˡ); (stopTimer, stopTimerⁱᵐᵖˡ); (resetTimer, resetTimerⁱᵐᵖˡ); (NewTimer, NewTimerⁱᵐᵖˡ); (sendTime, sendTimeⁱᵐᵖˡ); (After, Afterⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (goFunc, goFuncⁱᵐᵖˡ); (interrupt, interruptⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (read, readⁱᵐᵖˡ); (closefd, closefdⁱᵐᵖˡ); (preadn, preadnⁱᵐᵖˡ); (NewTicker, NewTickerⁱᵐᵖˡ); (Tick, Tickⁱᵐᵖˡ); (dateToAbsDays, dateToAbsDaysⁱᵐᵖˡ); (fmtFrac, fmtFracⁱᵐᵖˡ); (fmtInt, fmtIntⁱᵐᵖˡ); (lessThanHalf, lessThanHalfⁱᵐᵖˡ); (subMono, subMonoⁱᵐᵖˡ); (Since, Sinceⁱᵐᵖˡ); (Until, Untilⁱᵐᵖˡ); (daysBefore, daysBeforeⁱᵐᵖˡ); (daysIn, daysInⁱᵐᵖˡ); (now, nowⁱᵐᵖˡ); (runtimeNow, runtimeNowⁱᵐᵖˡ); (runtimeNano, runtimeNanoⁱᵐᵖˡ); (Now, Nowⁱᵐᵖˡ); (unixTime, unixTimeⁱᵐᵖˡ); (Unix, Unixⁱᵐᵖˡ); (UnixMilli, UnixMilliⁱᵐᵖˡ); (UnixMicro, UnixMicroⁱᵐᵖˡ); (isLeap, isLeapⁱᵐᵖˡ); (norm, normⁱᵐᵖˡ); (Date, Dateⁱᵐᵖˡ); (div, divⁱᵐᵖˡ); (legacyTimeTimeAbs, legacyTimeTimeAbsⁱᵐᵖˡ); (legacyAbsClock, legacyAbsClockⁱᵐᵖˡ); (legacyAbsDate, legacyAbsDateⁱᵐᵖˡ); (FixedZone, FixedZoneⁱᵐᵖˡ); (fixedZone, fixedZoneⁱᵐᵖˡ); (tzset, tzsetⁱᵐᵖˡ); (tzsetName, tzsetNameⁱᵐᵖˡ); (tzsetOffset, tzsetOffsetⁱᵐᵖˡ); (tzsetRule, tzsetRuleⁱᵐᵖˡ); (tzsetNum, tzsetNumⁱᵐᵖˡ); (tzruleTime, tzruleTimeⁱᵐᵖˡ); (LoadLocation, LoadLocationⁱᵐᵖˡ); (containsDotDot, containsDotDotⁱᵐᵖˡ); (gorootZoneSource, gorootZoneSourceⁱᵐᵖˡ); (registerLoadFromEmbeddedTZData, registerLoadFromEmbeddedTZDataⁱᵐᵖˡ); (byteString, byteStringⁱᵐᵖˡ); (LoadLocationFromTZData, LoadLocationFromTZDataⁱᵐᵖˡ); (findZone, findZoneⁱᵐᵖˡ); (loadTzinfoFromDirOrZip, loadTzinfoFromDirOrZipⁱᵐᵖˡ); (get4, get4ⁱᵐᵖˡ); (get2, get2ⁱᵐᵖˡ); (loadTzinfoFromZip, loadTzinfoFromZipⁱᵐᵖˡ); (loadTzinfo, loadTzinfoⁱᵐᵖˡ); (loadLocation, loadLocationⁱᵐᵖˡ); (readFile, readFileⁱᵐᵖˡ); (initLocal, initLocalⁱᵐᵖˡ)].
+
+Axiom ParseError__Errorⁱᵐᵖˡ : val.
+
+Axiom Timer__Resetⁱᵐᵖˡ : val.
+
+Axiom Timer__Stopⁱᵐᵖˡ : val.
+
+Axiom Ticker__Resetⁱᵐᵖˡ : val.
+
+Axiom Ticker__Stopⁱᵐᵖˡ : val.
+
+Axiom Time__Addⁱᵐᵖˡ : val.
+
+Axiom Time__AddDateⁱᵐᵖˡ : val.
+
+Axiom Time__Afterⁱᵐᵖˡ : val.
+
+Axiom Time__AppendBinaryⁱᵐᵖˡ : val.
+
+Axiom Time__AppendFormatⁱᵐᵖˡ : val.
+
+Axiom Time__AppendTextⁱᵐᵖˡ : val.
+
+Axiom Time__Beforeⁱᵐᵖˡ : val.
+
+Axiom Time__Clockⁱᵐᵖˡ : val.
+
+Axiom Time__Compareⁱᵐᵖˡ : val.
+
+Axiom Time__Dateⁱᵐᵖˡ : val.
+
+Axiom Time__Dayⁱᵐᵖˡ : val.
+
+Axiom Time__Equalⁱᵐᵖˡ : val.
+
+Axiom Time__Formatⁱᵐᵖˡ : val.
+
+Axiom Time__GoStringⁱᵐᵖˡ : val.
+
+Axiom Time__GobDecodeⁱᵐᵖˡ : val.
+
+Axiom Time__GobEncodeⁱᵐᵖˡ : val.
+
+Axiom Time__Hourⁱᵐᵖˡ : val.
+
+Axiom Time__ISOWeekⁱᵐᵖˡ : val.
+
+Axiom Time__Inⁱᵐᵖˡ : val.
+
+Axiom Time__IsDSTⁱᵐᵖˡ : val.
+
+Axiom Time__IsZeroⁱᵐᵖˡ : val.
+
+Axiom Time__Localⁱᵐᵖˡ : val.
+
+Axiom Time__Locationⁱᵐᵖˡ : val.
+
+Axiom Time__MarshalBinaryⁱᵐᵖˡ : val.
+
+Axiom Time__MarshalJSONⁱᵐᵖˡ : val.
+
+Axiom Time__MarshalTextⁱᵐᵖˡ : val.
+
+Axiom Time__Minuteⁱᵐᵖˡ : val.
+
+Axiom Time__Monthⁱᵐᵖˡ : val.
+
+Axiom Time__Nanosecondⁱᵐᵖˡ : val.
+
+Axiom Time__Roundⁱᵐᵖˡ : val.
+
+Axiom Time__Secondⁱᵐᵖˡ : val.
+
+Axiom Time__Stringⁱᵐᵖˡ : val.
+
+Axiom Time__Subⁱᵐᵖˡ : val.
+
+Axiom Time__Truncateⁱᵐᵖˡ : val.
+
+Axiom Time__UTCⁱᵐᵖˡ : val.
+
+Axiom Time__Unixⁱᵐᵖˡ : val.
+
+Axiom Time__UnixMicroⁱᵐᵖˡ : val.
+
+Axiom Time__UnixMilliⁱᵐᵖˡ : val.
+
+Axiom Time__UnixNanoⁱᵐᵖˡ : val.
+
+Axiom Time__UnmarshalBinaryⁱᵐᵖˡ : val.
+
+Axiom Time__UnmarshalJSONⁱᵐᵖˡ : val.
+
+Axiom Time__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom Time__Weekdayⁱᵐᵖˡ : val.
+
+Axiom Time__Yearⁱᵐᵖˡ : val.
+
+Axiom Time__YearDayⁱᵐᵖˡ : val.
+
+Axiom Time__Zoneⁱᵐᵖˡ : val.
+
+Axiom Time__ZoneBoundsⁱᵐᵖˡ : val.
+
+Axiom Time__absSecⁱᵐᵖˡ : val.
+
+Axiom Time__addSecⁱᵐᵖˡ : val.
+
+Axiom Time__appendFormatⁱᵐᵖˡ : val.
+
+Axiom Time__appendFormatRFC3339ⁱᵐᵖˡ : val.
+
+Axiom Time__appendStrictRFC3339ⁱᵐᵖˡ : val.
+
+Axiom Time__appendToⁱᵐᵖˡ : val.
+
+Axiom Time__locabsⁱᵐᵖˡ : val.
+
+Axiom Time__monoⁱᵐᵖˡ : val.
+
+Axiom Time__nsecⁱᵐᵖˡ : val.
+
+Axiom Time__secⁱᵐᵖˡ : val.
+
+Axiom Time__setLocⁱᵐᵖˡ : val.
+
+Axiom Time__setMonoⁱᵐᵖˡ : val.
+
+Axiom Time__stripMonoⁱᵐᵖˡ : val.
+
+Axiom Time__unixSecⁱᵐᵖˡ : val.
+
+Axiom Month__Stringⁱᵐᵖˡ : val.
+
+Axiom Weekday__Stringⁱᵐᵖˡ : val.
+
+Axiom absSeconds__clockⁱᵐᵖˡ : val.
+
+Axiom absSeconds__daysⁱᵐᵖˡ : val.
+
+Axiom absDays__dateⁱᵐᵖˡ : val.
+
+Axiom absDays__splitⁱᵐᵖˡ : val.
+
+Axiom absDays__weekdayⁱᵐᵖˡ : val.
+
+Axiom absDays__yearYdayⁱᵐᵖˡ : val.
+
+Axiom absCentury__leapⁱᵐᵖˡ : val.
+
+Axiom absCentury__yearⁱᵐᵖˡ : val.
+
+Axiom absYday__janFebⁱᵐᵖˡ : val.
+
+Axiom absYday__splitⁱᵐᵖˡ : val.
+
+Axiom absYday__ydayⁱᵐᵖˡ : val.
+
+Axiom absMonth__monthⁱᵐᵖˡ : val.
+
+Axiom Duration__Absⁱᵐᵖˡ : val.
+
+Axiom Duration__Hoursⁱᵐᵖˡ : val.
+
+Axiom Duration__Microsecondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Millisecondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Minutesⁱᵐᵖˡ : val.
+
+Axiom Duration__Nanosecondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Roundⁱᵐᵖˡ : val.
+
+Axiom Duration__Secondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Stringⁱᵐᵖˡ : val.
+
+Axiom Duration__Truncateⁱᵐᵖˡ : val.
+
+Axiom Duration__formatⁱᵐᵖˡ : val.
+
+Axiom Location__Stringⁱᵐᵖˡ : val.
+
+Axiom Location__firstZoneUsedⁱᵐᵖˡ : val.
+
+Axiom Location__getⁱᵐᵖˡ : val.
+
+Axiom Location__lookupⁱᵐᵖˡ : val.
+
+Axiom Location__lookupFirstZoneⁱᵐᵖˡ : val.
+
+Axiom Location__lookupNameⁱᵐᵖˡ : val.
+
+Axiom fileSizeError__Errorⁱᵐᵖˡ : val.
+
+Axiom dataIO__big4ⁱᵐᵖˡ : val.
+
+Axiom dataIO__big8ⁱᵐᵖˡ : val.
+
+Axiom dataIO__byteⁱᵐᵖˡ : val.
+
+Axiom dataIO__readⁱᵐᵖˡ : val.
+
+Axiom dataIO__restⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(ParseError.id, []); (ptrT.id ParseError.id, [("Error"%go, ParseError__Errorⁱᵐᵖˡ)]); (Timer.id, []); (ptrT.id Timer.id, [("Reset"%go, Timer__Resetⁱᵐᵖˡ); ("Stop"%go, Timer__Stopⁱᵐᵖˡ)]); (Ticker.id, []); (ptrT.id Ticker.id, [("Reset"%go, Ticker__Resetⁱᵐᵖˡ); ("Stop"%go, Ticker__Stopⁱᵐᵖˡ)]); (Time.id, [("Add"%go, Time__Addⁱᵐᵖˡ); ("AddDate"%go, Time__AddDateⁱᵐᵖˡ); ("After"%go, Time__Afterⁱᵐᵖˡ); ("AppendBinary"%go, Time__AppendBinaryⁱᵐᵖˡ); ("AppendFormat"%go, Time__AppendFormatⁱᵐᵖˡ); ("AppendText"%go, Time__AppendTextⁱᵐᵖˡ); ("Before"%go, Time__Beforeⁱᵐᵖˡ); ("Clock"%go, Time__Clockⁱᵐᵖˡ); ("Compare"%go, Time__Compareⁱᵐᵖˡ); ("Date"%go, Time__Dateⁱᵐᵖˡ); ("Day"%go, Time__Dayⁱᵐᵖˡ); ("Equal"%go, Time__Equalⁱᵐᵖˡ); ("Format"%go, Time__Formatⁱᵐᵖˡ); ("GoString"%go, Time__GoStringⁱᵐᵖˡ); ("GobEncode"%go, Time__GobEncodeⁱᵐᵖˡ); ("Hour"%go, Time__Hourⁱᵐᵖˡ); ("ISOWeek"%go, Time__ISOWeekⁱᵐᵖˡ); ("In"%go, Time__Inⁱᵐᵖˡ); ("IsDST"%go, Time__IsDSTⁱᵐᵖˡ); ("IsZero"%go, Time__IsZeroⁱᵐᵖˡ); ("Local"%go, Time__Localⁱᵐᵖˡ); ("Location"%go, Time__Locationⁱᵐᵖˡ); ("MarshalBinary"%go, Time__MarshalBinaryⁱᵐᵖˡ); ("MarshalJSON"%go, Time__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Time__MarshalTextⁱᵐᵖˡ); ("Minute"%go, Time__Minuteⁱᵐᵖˡ); ("Month"%go, Time__Monthⁱᵐᵖˡ); ("Nanosecond"%go, Time__Nanosecondⁱᵐᵖˡ); ("Round"%go, Time__Roundⁱᵐᵖˡ); ("Second"%go, Time__Secondⁱᵐᵖˡ); ("String"%go, Time__Stringⁱᵐᵖˡ); ("Sub"%go, Time__Subⁱᵐᵖˡ); ("Truncate"%go, Time__Truncateⁱᵐᵖˡ); ("UTC"%go, Time__UTCⁱᵐᵖˡ); ("Unix"%go, Time__Unixⁱᵐᵖˡ); ("UnixMicro"%go, Time__UnixMicroⁱᵐᵖˡ); ("UnixMilli"%go, Time__UnixMilliⁱᵐᵖˡ); ("UnixNano"%go, Time__UnixNanoⁱᵐᵖˡ); ("Weekday"%go, Time__Weekdayⁱᵐᵖˡ); ("Year"%go, Time__Yearⁱᵐᵖˡ); ("YearDay"%go, Time__YearDayⁱᵐᵖˡ); ("Zone"%go, Time__Zoneⁱᵐᵖˡ); ("ZoneBounds"%go, Time__ZoneBoundsⁱᵐᵖˡ); ("absSec"%go, Time__absSecⁱᵐᵖˡ); ("appendFormat"%go, Time__appendFormatⁱᵐᵖˡ); ("appendFormatRFC3339"%go, Time__appendFormatRFC3339ⁱᵐᵖˡ); ("appendStrictRFC3339"%go, Time__appendStrictRFC3339ⁱᵐᵖˡ); ("appendTo"%go, Time__appendToⁱᵐᵖˡ); ("locabs"%go, Time__locabsⁱᵐᵖˡ)]); (ptrT.id Time.id, [("Add"%go, (λ: "$r",
                  method_call #Time.id #"Add"%go (![#Time] "$r")

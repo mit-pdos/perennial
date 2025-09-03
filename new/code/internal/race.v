@@ -13,61 +13,61 @@ Definition Enabled : expr := #false.
 
 Definition Acquire : go_string := "internal/race.Acquire"%go.
 
-Axiom Acquireⁱᵐᵖˡ : val.
-
 Definition Release : go_string := "internal/race.Release"%go.
-
-Axiom Releaseⁱᵐᵖˡ : val.
 
 Definition ReleaseMerge : go_string := "internal/race.ReleaseMerge"%go.
 
-Axiom ReleaseMergeⁱᵐᵖˡ : val.
-
 Definition Disable : go_string := "internal/race.Disable"%go.
-
-Axiom Disableⁱᵐᵖˡ : val.
 
 Definition Enable : go_string := "internal/race.Enable"%go.
 
-Axiom Enableⁱᵐᵖˡ : val.
-
 Definition Read : go_string := "internal/race.Read"%go.
-
-Axiom Readⁱᵐᵖˡ : val.
 
 Definition ReadPC : go_string := "internal/race.ReadPC"%go.
 
-Axiom ReadPCⁱᵐᵖˡ : val.
-
 Definition ReadObjectPC : go_string := "internal/race.ReadObjectPC"%go.
-
-Axiom ReadObjectPCⁱᵐᵖˡ : val.
 
 Definition Write : go_string := "internal/race.Write"%go.
 
-Axiom Writeⁱᵐᵖˡ : val.
-
 Definition WritePC : go_string := "internal/race.WritePC"%go.
-
-Axiom WritePCⁱᵐᵖˡ : val.
 
 Definition WriteObjectPC : go_string := "internal/race.WriteObjectPC"%go.
 
-Axiom WriteObjectPCⁱᵐᵖˡ : val.
-
 Definition ReadRange : go_string := "internal/race.ReadRange"%go.
-
-Axiom ReadRangeⁱᵐᵖˡ : val.
 
 Definition WriteRange : go_string := "internal/race.WriteRange"%go.
 
-Axiom WriteRangeⁱᵐᵖˡ : val.
-
 Definition Errors : go_string := "internal/race.Errors"%go.
 
-Axiom Errorsⁱᵐᵖˡ : val.
-
 Definition vars' : list (go_string * go_type) := [].
+
+Axiom Acquireⁱᵐᵖˡ : val.
+
+Axiom Releaseⁱᵐᵖˡ : val.
+
+Axiom ReleaseMergeⁱᵐᵖˡ : val.
+
+Axiom Disableⁱᵐᵖˡ : val.
+
+Axiom Enableⁱᵐᵖˡ : val.
+
+Axiom Readⁱᵐᵖˡ : val.
+
+Axiom ReadPCⁱᵐᵖˡ : val.
+
+Axiom ReadObjectPCⁱᵐᵖˡ : val.
+
+Axiom Writeⁱᵐᵖˡ : val.
+
+Axiom WritePCⁱᵐᵖˡ : val.
+
+Axiom WriteObjectPCⁱᵐᵖˡ : val.
+
+Axiom ReadRangeⁱᵐᵖˡ : val.
+
+Axiom WriteRangeⁱᵐᵖˡ : val.
+
+Axiom Errorsⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Acquire, Acquireⁱᵐᵖˡ); (Release, Releaseⁱᵐᵖˡ); (ReleaseMerge, ReleaseMergeⁱᵐᵖˡ); (Disable, Disableⁱᵐᵖˡ); (Enable, Enableⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (ReadPC, ReadPCⁱᵐᵖˡ); (ReadObjectPC, ReadObjectPCⁱᵐᵖˡ); (Write, Writeⁱᵐᵖˡ); (WritePC, WritePCⁱᵐᵖˡ); (WriteObjectPC, WriteObjectPCⁱᵐᵖˡ); (ReadRange, ReadRangeⁱᵐᵖˡ); (WriteRange, WriteRangeⁱᵐᵖˡ); (Errors, Errorsⁱᵐᵖˡ)].
 

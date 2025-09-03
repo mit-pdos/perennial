@@ -30,8 +30,6 @@ Context `{ffi_syntax}.
 
 Definition Swapper : go_string := "internal/reflectlite.Swapper"%go.
 
-Axiom Swapperⁱᵐᵖˡ : val.
-
 Axiom Type' : go_type.
 
 Axiom Kind : go_type.
@@ -72,107 +70,29 @@ Axiom structType : go_type.
 
 Axiom name : go_type.
 
-Axiom name__dataⁱᵐᵖˡ : val.
-
-Axiom name__isExportedⁱᵐᵖˡ : val.
-
-Axiom name__hasTagⁱᵐᵖˡ : val.
-
-Axiom name__embeddedⁱᵐᵖˡ : val.
-
-Axiom name__readVarintⁱᵐᵖˡ : val.
-
-Axiom name__nameⁱᵐᵖˡ : val.
-
-Axiom name__tagⁱᵐᵖˡ : val.
-
 Definition pkgPath : go_string := "internal/reflectlite.pkgPath"%go.
-
-Axiom pkgPathⁱᵐᵖˡ : val.
 
 Definition resolveNameOff : go_string := "internal/reflectlite.resolveNameOff"%go.
 
-Axiom resolveNameOffⁱᵐᵖˡ : val.
-
 Definition resolveTypeOff : go_string := "internal/reflectlite.resolveTypeOff"%go.
-
-Axiom resolveTypeOffⁱᵐᵖˡ : val.
-
-Axiom rtype__nameOffⁱᵐᵖˡ : val.
-
-Axiom rtype__typeOffⁱᵐᵖˡ : val.
-
-Axiom rtype__uncommonⁱᵐᵖˡ : val.
-
-Axiom rtype__Stringⁱᵐᵖˡ : val.
-
-Axiom rtype__commonⁱᵐᵖˡ : val.
-
-Axiom rtype__exportedMethodsⁱᵐᵖˡ : val.
-
-Axiom rtype__NumMethodⁱᵐᵖˡ : val.
-
-Axiom rtype__PkgPathⁱᵐᵖˡ : val.
-
-Axiom rtype__Nameⁱᵐᵖˡ : val.
 
 Definition toRType : go_string := "internal/reflectlite.toRType"%go.
 
-Axiom toRTypeⁱᵐᵖˡ : val.
-
 Definition elem : go_string := "internal/reflectlite.elem"%go.
-
-Axiom elemⁱᵐᵖˡ : val.
-
-Axiom rtype__Elemⁱᵐᵖˡ : val.
-
-Axiom rtype__Inⁱᵐᵖˡ : val.
-
-Axiom rtype__Keyⁱᵐᵖˡ : val.
-
-Axiom rtype__Lenⁱᵐᵖˡ : val.
-
-Axiom rtype__NumFieldⁱᵐᵖˡ : val.
-
-Axiom rtype__NumInⁱᵐᵖˡ : val.
-
-Axiom rtype__NumOutⁱᵐᵖˡ : val.
-
-Axiom rtype__Outⁱᵐᵖˡ : val.
 
 Definition add : go_string := "internal/reflectlite.add"%go.
 
-Axiom addⁱᵐᵖˡ : val.
-
 Definition TypeOf : go_string := "internal/reflectlite.TypeOf"%go.
-
-Axiom TypeOfⁱᵐᵖˡ : val.
-
-Axiom rtype__Implementsⁱᵐᵖˡ : val.
-
-Axiom rtype__AssignableToⁱᵐᵖˡ : val.
-
-Axiom rtype__Comparableⁱᵐᵖˡ : val.
 
 Definition implements : go_string := "internal/reflectlite.implements"%go.
 
-Axiom implementsⁱᵐᵖˡ : val.
-
 Definition directlyAssignable : go_string := "internal/reflectlite.directlyAssignable"%go.
-
-Axiom directlyAssignableⁱᵐᵖˡ : val.
 
 Definition haveIdenticalType : go_string := "internal/reflectlite.haveIdenticalType"%go.
 
-Axiom haveIdenticalTypeⁱᵐᵖˡ : val.
-
 Definition haveIdenticalUnderlyingType : go_string := "internal/reflectlite.haveIdenticalUnderlyingType"%go.
 
-Axiom haveIdenticalUnderlyingTypeⁱᵐᵖˡ : val.
-
 Definition toType : go_string := "internal/reflectlite.toType"%go.
-
-Axiom toTypeⁱᵐᵖˡ : val.
 
 Axiom Value : go_type.
 
@@ -196,41 +116,181 @@ Axiom flagMethodShift : Z.
 
 Axiom flagRO : expr.
 
-Axiom flag__kindⁱᵐᵖˡ : val.
-
-Axiom flag__roⁱᵐᵖˡ : val.
-
-Axiom Value__typⁱᵐᵖˡ : val.
-
-Axiom Value__pointerⁱᵐᵖˡ : val.
-
 Definition packEface : go_string := "internal/reflectlite.packEface"%go.
-
-Axiom packEfaceⁱᵐᵖˡ : val.
 
 Definition unpackEface : go_string := "internal/reflectlite.unpackEface"%go.
 
-Axiom unpackEfaceⁱᵐᵖˡ : val.
-
 Axiom ValueError : go_type.
-
-Axiom ValueError__Errorⁱᵐᵖˡ : val.
 
 Definition methodName : go_string := "internal/reflectlite.methodName"%go.
 
+Definition valueInterface : go_string := "internal/reflectlite.valueInterface"%go.
+
+Definition chanlen : go_string := "internal/reflectlite.chanlen"%go.
+
+Definition maplen : go_string := "internal/reflectlite.maplen"%go.
+
+Definition unsafe_New : go_string := "internal/reflectlite.unsafe_New"%go.
+
+Definition ValueOf : go_string := "internal/reflectlite.ValueOf"%go.
+
+Definition arrayAt : go_string := "internal/reflectlite.arrayAt"%go.
+
+Definition ifaceE2I : go_string := "internal/reflectlite.ifaceE2I"%go.
+
+Definition typedmemmove : go_string := "internal/reflectlite.typedmemmove"%go.
+
+Definition escapes : go_string := "internal/reflectlite.escapes"%go.
+
+Definition dummy : go_string := "internal/reflectlite.dummy"%go.
+
+Definition vars' : list (go_string * go_type) := [].
+
+Axiom Swapperⁱᵐᵖˡ : val.
+
+Axiom pkgPathⁱᵐᵖˡ : val.
+
+Axiom resolveNameOffⁱᵐᵖˡ : val.
+
+Axiom resolveTypeOffⁱᵐᵖˡ : val.
+
+Axiom toRTypeⁱᵐᵖˡ : val.
+
+Axiom elemⁱᵐᵖˡ : val.
+
+Axiom addⁱᵐᵖˡ : val.
+
+Axiom TypeOfⁱᵐᵖˡ : val.
+
+Axiom implementsⁱᵐᵖˡ : val.
+
+Axiom directlyAssignableⁱᵐᵖˡ : val.
+
+Axiom haveIdenticalTypeⁱᵐᵖˡ : val.
+
+Axiom haveIdenticalUnderlyingTypeⁱᵐᵖˡ : val.
+
+Axiom toTypeⁱᵐᵖˡ : val.
+
+Axiom packEfaceⁱᵐᵖˡ : val.
+
+Axiom unpackEfaceⁱᵐᵖˡ : val.
+
 Axiom methodNameⁱᵐᵖˡ : val.
 
-Axiom flag__mustBeExportedⁱᵐᵖˡ : val.
+Axiom valueInterfaceⁱᵐᵖˡ : val.
 
-Axiom flag__mustBeAssignableⁱᵐᵖˡ : val.
+Axiom chanlenⁱᵐᵖˡ : val.
+
+Axiom maplenⁱᵐᵖˡ : val.
+
+Axiom unsafe_Newⁱᵐᵖˡ : val.
+
+Axiom ValueOfⁱᵐᵖˡ : val.
+
+Axiom arrayAtⁱᵐᵖˡ : val.
+
+Axiom ifaceE2Iⁱᵐᵖˡ : val.
+
+Axiom typedmemmoveⁱᵐᵖˡ : val.
+
+Axiom escapesⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(Swapper, Swapperⁱᵐᵖˡ); (pkgPath, pkgPathⁱᵐᵖˡ); (resolveNameOff, resolveNameOffⁱᵐᵖˡ); (resolveTypeOff, resolveTypeOffⁱᵐᵖˡ); (toRType, toRTypeⁱᵐᵖˡ); (elem, elemⁱᵐᵖˡ); (add, addⁱᵐᵖˡ); (TypeOf, TypeOfⁱᵐᵖˡ); (implements, implementsⁱᵐᵖˡ); (directlyAssignable, directlyAssignableⁱᵐᵖˡ); (haveIdenticalType, haveIdenticalTypeⁱᵐᵖˡ); (haveIdenticalUnderlyingType, haveIdenticalUnderlyingTypeⁱᵐᵖˡ); (toType, toTypeⁱᵐᵖˡ); (packEface, packEfaceⁱᵐᵖˡ); (unpackEface, unpackEfaceⁱᵐᵖˡ); (methodName, methodNameⁱᵐᵖˡ); (valueInterface, valueInterfaceⁱᵐᵖˡ); (chanlen, chanlenⁱᵐᵖˡ); (maplen, maplenⁱᵐᵖˡ); (unsafe_New, unsafe_Newⁱᵐᵖˡ); (ValueOf, ValueOfⁱᵐᵖˡ); (arrayAt, arrayAtⁱᵐᵖˡ); (ifaceE2I, ifaceE2Iⁱᵐᵖˡ); (typedmemmove, typedmemmoveⁱᵐᵖˡ); (escapes, escapesⁱᵐᵖˡ)].
+
+Axiom rtype__Alignⁱᵐᵖˡ : val.
+
+Axiom rtype__ArrayTypeⁱᵐᵖˡ : val.
+
+Axiom rtype__AssignableToⁱᵐᵖˡ : val.
+
+Axiom rtype__ChanDirⁱᵐᵖˡ : val.
+
+Axiom rtype__Commonⁱᵐᵖˡ : val.
+
+Axiom rtype__Comparableⁱᵐᵖˡ : val.
+
+Axiom rtype__Elemⁱᵐᵖˡ : val.
+
+Axiom rtype__ExportedMethodsⁱᵐᵖˡ : val.
+
+Axiom rtype__FieldAlignⁱᵐᵖˡ : val.
+
+Axiom rtype__FuncTypeⁱᵐᵖˡ : val.
+
+Axiom rtype__GcSliceⁱᵐᵖˡ : val.
+
+Axiom rtype__HasNameⁱᵐᵖˡ : val.
+
+Axiom rtype__IfaceIndirⁱᵐᵖˡ : val.
+
+Axiom rtype__Implementsⁱᵐᵖˡ : val.
+
+Axiom rtype__Inⁱᵐᵖˡ : val.
+
+Axiom rtype__InterfaceTypeⁱᵐᵖˡ : val.
+
+Axiom rtype__IsDirectIfaceⁱᵐᵖˡ : val.
+
+Axiom rtype__Keyⁱᵐᵖˡ : val.
+
+Axiom rtype__Kindⁱᵐᵖˡ : val.
+
+Axiom rtype__Lenⁱᵐᵖˡ : val.
+
+Axiom rtype__MapTypeⁱᵐᵖˡ : val.
+
+Axiom rtype__Nameⁱᵐᵖˡ : val.
+
+Axiom rtype__NumFieldⁱᵐᵖˡ : val.
+
+Axiom rtype__NumInⁱᵐᵖˡ : val.
+
+Axiom rtype__NumMethodⁱᵐᵖˡ : val.
+
+Axiom rtype__NumOutⁱᵐᵖˡ : val.
+
+Axiom rtype__Outⁱᵐᵖˡ : val.
+
+Axiom rtype__PkgPathⁱᵐᵖˡ : val.
+
+Axiom rtype__Pointersⁱᵐᵖˡ : val.
+
+Axiom rtype__Sizeⁱᵐᵖˡ : val.
+
+Axiom rtype__Stringⁱᵐᵖˡ : val.
+
+Axiom rtype__StructTypeⁱᵐᵖˡ : val.
+
+Axiom rtype__Uncommonⁱᵐᵖˡ : val.
+
+Axiom rtype__commonⁱᵐᵖˡ : val.
+
+Axiom rtype__exportedMethodsⁱᵐᵖˡ : val.
+
+Axiom rtype__nameOffⁱᵐᵖˡ : val.
+
+Axiom rtype__typeOffⁱᵐᵖˡ : val.
+
+Axiom rtype__uncommonⁱᵐᵖˡ : val.
+
+Axiom name__dataⁱᵐᵖˡ : val.
+
+Axiom name__embeddedⁱᵐᵖˡ : val.
+
+Axiom name__hasTagⁱᵐᵖˡ : val.
+
+Axiom name__isExportedⁱᵐᵖˡ : val.
+
+Axiom name__nameⁱᵐᵖˡ : val.
+
+Axiom name__readVarintⁱᵐᵖˡ : val.
+
+Axiom name__tagⁱᵐᵖˡ : val.
 
 Axiom Value__CanSetⁱᵐᵖˡ : val.
 
 Axiom Value__Elemⁱᵐᵖˡ : val.
-
-Definition valueInterface : go_string := "internal/reflectlite.valueInterface"%go.
-
-Axiom valueInterfaceⁱᵐᵖˡ : val.
 
 Axiom Value__IsNilⁱᵐᵖˡ : val.
 
@@ -238,132 +298,116 @@ Axiom Value__IsValidⁱᵐᵖˡ : val.
 
 Axiom Value__Kindⁱᵐᵖˡ : val.
 
-Definition chanlen : go_string := "internal/reflectlite.chanlen"%go.
-
-Axiom chanlenⁱᵐᵖˡ : val.
-
-Definition maplen : go_string := "internal/reflectlite.maplen"%go.
-
-Axiom maplenⁱᵐᵖˡ : val.
-
 Axiom Value__Lenⁱᵐᵖˡ : val.
-
-Axiom Value__numMethodⁱᵐᵖˡ : val.
 
 Axiom Value__Setⁱᵐᵖˡ : val.
 
 Axiom Value__Typeⁱᵐᵖˡ : val.
 
-Definition unsafe_New : go_string := "internal/reflectlite.unsafe_New"%go.
-
-Axiom unsafe_Newⁱᵐᵖˡ : val.
-
-Definition ValueOf : go_string := "internal/reflectlite.ValueOf"%go.
-
-Axiom ValueOfⁱᵐᵖˡ : val.
-
 Axiom Value__assignToⁱᵐᵖˡ : val.
 
-Definition arrayAt : go_string := "internal/reflectlite.arrayAt"%go.
+Axiom Value__kindⁱᵐᵖˡ : val.
 
-Axiom arrayAtⁱᵐᵖˡ : val.
+Axiom Value__mustBeAssignableⁱᵐᵖˡ : val.
 
-Definition ifaceE2I : go_string := "internal/reflectlite.ifaceE2I"%go.
+Axiom Value__mustBeExportedⁱᵐᵖˡ : val.
 
-Axiom ifaceE2Iⁱᵐᵖˡ : val.
+Axiom Value__numMethodⁱᵐᵖˡ : val.
 
-Definition typedmemmove : go_string := "internal/reflectlite.typedmemmove"%go.
+Axiom Value__pointerⁱᵐᵖˡ : val.
 
-Axiom typedmemmoveⁱᵐᵖˡ : val.
+Axiom Value__roⁱᵐᵖˡ : val.
 
-Definition escapes : go_string := "internal/reflectlite.escapes"%go.
+Axiom Value__typⁱᵐᵖˡ : val.
 
-Axiom escapesⁱᵐᵖˡ : val.
+Axiom flag__kindⁱᵐᵖˡ : val.
 
-Definition dummy : go_string := "internal/reflectlite.dummy"%go.
+Axiom flag__mustBeAssignableⁱᵐᵖˡ : val.
 
-Definition vars' : list (go_string * go_type) := [].
+Axiom flag__mustBeExportedⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(Swapper, Swapperⁱᵐᵖˡ); (pkgPath, pkgPathⁱᵐᵖˡ); (resolveNameOff, resolveNameOffⁱᵐᵖˡ); (resolveTypeOff, resolveTypeOffⁱᵐᵖˡ); (toRType, toRTypeⁱᵐᵖˡ); (elem, elemⁱᵐᵖˡ); (add, addⁱᵐᵖˡ); (TypeOf, TypeOfⁱᵐᵖˡ); (implements, implementsⁱᵐᵖˡ); (directlyAssignable, directlyAssignableⁱᵐᵖˡ); (haveIdenticalType, haveIdenticalTypeⁱᵐᵖˡ); (haveIdenticalUnderlyingType, haveIdenticalUnderlyingTypeⁱᵐᵖˡ); (toType, toTypeⁱᵐᵖˡ); (packEface, packEfaceⁱᵐᵖˡ); (unpackEface, unpackEfaceⁱᵐᵖˡ); (methodName, methodNameⁱᵐᵖˡ); (valueInterface, valueInterfaceⁱᵐᵖˡ); (chanlen, chanlenⁱᵐᵖˡ); (maplen, maplenⁱᵐᵖˡ); (unsafe_New, unsafe_Newⁱᵐᵖˡ); (ValueOf, ValueOfⁱᵐᵖˡ); (arrayAt, arrayAtⁱᵐᵖˡ); (ifaceE2I, ifaceE2Iⁱᵐᵖˡ); (typedmemmove, typedmemmoveⁱᵐᵖˡ); (escapes, escapesⁱᵐᵖˡ)].
+Axiom flag__roⁱᵐᵖˡ : val.
+
+Axiom ValueError__Errorⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(rtype.id, [("Align"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Align"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"Align"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("ArrayType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"ArrayType"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"ArrayType"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("AssignableTo"%go, rtype__AssignableToⁱᵐᵖˡ); ("ChanDir"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"ChanDir"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"ChanDir"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Common"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Common"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"Common"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Comparable"%go, rtype__Comparableⁱᵐᵖˡ); ("Elem"%go, rtype__Elemⁱᵐᵖˡ); ("ExportedMethods"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"ExportedMethods"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"ExportedMethods"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("FieldAlign"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"FieldAlign"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"FieldAlign"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("FuncType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"FuncType"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"FuncType"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("GcSlice"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"GcSlice"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"GcSlice"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("HasName"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"HasName"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"HasName"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("IfaceIndir"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"IfaceIndir"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"IfaceIndir"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Implements"%go, rtype__Implementsⁱᵐᵖˡ); ("In"%go, rtype__Inⁱᵐᵖˡ); ("InterfaceType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"InterfaceType"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"InterfaceType"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("IsDirectIface"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"IsDirectIface"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"IsDirectIface"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Key"%go, rtype__Keyⁱᵐᵖˡ); ("Kind"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Kind"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"Kind"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Len"%go, rtype__Lenⁱᵐᵖˡ); ("MapType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"MapType"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"MapType"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Name"%go, rtype__Nameⁱᵐᵖˡ); ("NumField"%go, rtype__NumFieldⁱᵐᵖˡ); ("NumIn"%go, rtype__NumInⁱᵐᵖˡ); ("NumMethod"%go, rtype__NumMethodⁱᵐᵖˡ); ("NumOut"%go, rtype__NumOutⁱᵐᵖˡ); ("Out"%go, rtype__Outⁱᵐᵖˡ); ("PkgPath"%go, rtype__PkgPathⁱᵐᵖˡ); ("Pointers"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Pointers"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"Pointers"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Size"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Size"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"Size"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("String"%go, rtype__Stringⁱᵐᵖˡ); ("StructType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"StructType"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"StructType"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("Uncommon"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Uncommon"%go (struct.field_get #rtype #"Type"%go "$r")
+                 method_call #(ptrT.id abi.Type'.id) #"Uncommon"%go (struct.field_get #rtype #"Type"%go "$r")
                  )%V); ("common"%go, rtype__commonⁱᵐᵖˡ); ("exportedMethods"%go, rtype__exportedMethodsⁱᵐᵖˡ); ("nameOff"%go, rtype__nameOffⁱᵐᵖˡ); ("typeOff"%go, rtype__typeOffⁱᵐᵖˡ); ("uncommon"%go, rtype__uncommonⁱᵐᵖˡ)]); (ptrT.id rtype.id, [("Align"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Align"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"Align"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("ArrayType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"ArrayType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"ArrayType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("AssignableTo"%go, (λ: "$r",
                  method_call #rtype.id #"AssignableTo"%go (![#rtype] "$r")
                  )%V); ("ChanDir"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"ChanDir"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"ChanDir"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Common"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Common"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"Common"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Comparable"%go, (λ: "$r",
                  method_call #rtype.id #"Comparable"%go (![#rtype] "$r")
                  )%V); ("Elem"%go, (λ: "$r",
                  method_call #rtype.id #"Elem"%go (![#rtype] "$r")
                  )%V); ("ExportedMethods"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"ExportedMethods"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"ExportedMethods"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("FieldAlign"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"FieldAlign"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"FieldAlign"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("FuncType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"FuncType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"FuncType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("GcSlice"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"GcSlice"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"GcSlice"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("HasName"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"HasName"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"HasName"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("IfaceIndir"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"IfaceIndir"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"IfaceIndir"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Implements"%go, (λ: "$r",
                  method_call #rtype.id #"Implements"%go (![#rtype] "$r")
                  )%V); ("In"%go, (λ: "$r",
                  method_call #rtype.id #"In"%go (![#rtype] "$r")
                  )%V); ("InterfaceType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"InterfaceType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"InterfaceType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("IsDirectIface"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"IsDirectIface"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"IsDirectIface"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Key"%go, (λ: "$r",
                  method_call #rtype.id #"Key"%go (![#rtype] "$r")
                  )%V); ("Kind"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Kind"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"Kind"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Len"%go, (λ: "$r",
                  method_call #rtype.id #"Len"%go (![#rtype] "$r")
                  )%V); ("MapType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"MapType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"MapType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Name"%go, (λ: "$r",
                  method_call #rtype.id #"Name"%go (![#rtype] "$r")
                  )%V); ("NumField"%go, (λ: "$r",
@@ -379,15 +423,15 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(rtype.id, [
                  )%V); ("PkgPath"%go, (λ: "$r",
                  method_call #rtype.id #"PkgPath"%go (![#rtype] "$r")
                  )%V); ("Pointers"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Pointers"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"Pointers"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Size"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Size"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"Size"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("String"%go, (λ: "$r",
                  method_call #rtype.id #"String"%go (![#rtype] "$r")
                  )%V); ("StructType"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"StructType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"StructType"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("Uncommon"%go, (λ: "$r",
-                 method_call #(ptrT.id abi.Type.id) #"Uncommon"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
+                 method_call #(ptrT.id abi.Type'.id) #"Uncommon"%go (![#ptrT] (struct.field_ref #rtype #"Type"%go "$r"))
                  )%V); ("common"%go, (λ: "$r",
                  method_call #rtype.id #"common"%go (![#rtype] "$r")
                  )%V); ("exportedMethods"%go, (λ: "$r",
