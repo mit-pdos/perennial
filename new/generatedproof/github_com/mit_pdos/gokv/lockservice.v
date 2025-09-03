@@ -81,7 +81,7 @@ Global Instance is_pkg_defined_pure_lockservice : IsPkgDefinedPure lockservice :
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single lockservice ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.kv.kv;
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.kv.kv;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -89,7 +89,7 @@ Global Program Instance is_pkg_defined_lockservice : IsPkgDefined lockservice :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single lockservice ∗
-       is_pkg_defined github_com.mit_pdos.gokv.kv.kv)%I
+       is_pkg_defined code.github_com.mit_pdos.gokv.kv.kv)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

@@ -1890,12 +1890,12 @@ Global Instance is_pkg_defined_pure_unittest : IsPkgDefinedPure unittest :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single unittest ∧
-      is_pkg_defined_pure fmt.fmt ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.disk.disk ∧
-      is_pkg_defined_pure log.log ∧
-      is_pkg_defined_pure github_com.goose_lang.std.std;
+      is_pkg_defined_pure code.fmt.fmt ∧
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.disk.disk ∧
+      is_pkg_defined_pure code.log.log ∧
+      is_pkg_defined_pure code.github_com.goose_lang.std.std;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -1903,12 +1903,12 @@ Global Program Instance is_pkg_defined_unittest : IsPkgDefined unittest :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single unittest ∗
-       is_pkg_defined fmt.fmt ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined github_com.goose_lang.primitive.disk.disk ∗
-       is_pkg_defined log.log ∗
-       is_pkg_defined github_com.goose_lang.std.std)%I
+       is_pkg_defined code.fmt.fmt ∗
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined code.github_com.goose_lang.primitive.disk.disk ∗
+       is_pkg_defined code.log.log ∗
+       is_pkg_defined code.github_com.goose_lang.std.std)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

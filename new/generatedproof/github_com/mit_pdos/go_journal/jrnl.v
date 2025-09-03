@@ -92,10 +92,10 @@ Global Instance is_pkg_defined_pure_jrnl : IsPkgDefinedPure jrnl :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single jrnl ∧
-      is_pkg_defined_pure github_com.mit_pdos.go_journal.addr.addr ∧
-      is_pkg_defined_pure github_com.mit_pdos.go_journal.buf.buf ∧
-      is_pkg_defined_pure github_com.mit_pdos.go_journal.obj.obj ∧
-      is_pkg_defined_pure github_com.mit_pdos.go_journal.util.util;
+      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.addr.addr ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.buf.buf ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.obj.obj ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.util.util;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -103,10 +103,10 @@ Global Program Instance is_pkg_defined_jrnl : IsPkgDefined jrnl :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single jrnl ∗
-       is_pkg_defined github_com.mit_pdos.go_journal.addr.addr ∗
-       is_pkg_defined github_com.mit_pdos.go_journal.buf.buf ∗
-       is_pkg_defined github_com.mit_pdos.go_journal.obj.obj ∗
-       is_pkg_defined github_com.mit_pdos.go_journal.util.util)%I
+       is_pkg_defined code.github_com.mit_pdos.go_journal.addr.addr ∗
+       is_pkg_defined code.github_com.mit_pdos.go_journal.buf.buf ∗
+       is_pkg_defined code.github_com.mit_pdos.go_journal.obj.obj ∗
+       is_pkg_defined code.github_com.mit_pdos.go_journal.util.util)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

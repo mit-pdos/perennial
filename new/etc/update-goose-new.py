@@ -85,9 +85,16 @@ projs = [
             "google.golang.org/genproto/googleapis/rpc/status",
             "go.uber.org/zap",
             "go.uber.org/zap/zapcore",
-            # "go.etcd.io/etcd/server/v3/etcdserver",
-            # "go.etcd.io/etcd/server/v3/etcdserver/cindex",
-            # "go.etcd.io/etcd/server/v3/storage/backend",
+            # etcdserver:
+            "go.etcd.io/etcd/server/v3/etcdserver",
+            # Axiomatized for etcdserver:
+            "go.etcd.io/etcd/pkg/v3/traceutil",
+            "github.com/gogo/protobuf/proto",
+            # cindex:
+            "go.etcd.io/etcd/server/v3/etcdserver/cindex",
+            # Axiomatized for cindex:
+            "go.etcd.io/etcd/server/v3/storage/backend",
+            "go.etcd.io/etcd/server/v3/storage/schema",
         ],
     ),
     create_proj(repo="mit-pdos/go-journal"),

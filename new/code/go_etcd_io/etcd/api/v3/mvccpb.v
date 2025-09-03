@@ -82,9 +82,77 @@ Axiom ErrUnexpectedEndOfGroupKv'init : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom encodeVarintKvⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Event_EventType.id, []); (ptrT.id Event_EventType.id, []); (KeyValue.id, []); (ptrT.id KeyValue.id, []); (Event.id, []); (ptrT.id Event.id, [])].
+Axiom sovKvⁱᵐᵖˡ : val.
+
+Axiom sozKvⁱᵐᵖˡ : val.
+
+Axiom skipKvⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(encodeVarintKv, encodeVarintKvⁱᵐᵖˡ); (sovKv, sovKvⁱᵐᵖˡ); (sozKv, sozKvⁱᵐᵖˡ); (skipKv, skipKvⁱᵐᵖˡ)].
+
+Axiom Event_EventType__EnumDescriptorⁱᵐᵖˡ : val.
+
+Axiom Event_EventType__Stringⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Descriptorⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Marshalⁱᵐᵖˡ : val.
+
+Axiom KeyValue__MarshalToⁱᵐᵖˡ : val.
+
+Axiom KeyValue__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom KeyValue__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Resetⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Sizeⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Stringⁱᵐᵖˡ : val.
+
+Axiom KeyValue__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom KeyValue__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Event__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Event__Marshalⁱᵐᵖˡ : val.
+
+Axiom Event__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Event__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Event__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Event__Resetⁱᵐᵖˡ : val.
+
+Axiom Event__Sizeⁱᵐᵖˡ : val.
+
+Axiom Event__Stringⁱᵐᵖˡ : val.
+
+Axiom Event__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Event__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(Event_EventType.id, [("EnumDescriptor"%go, Event_EventType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, Event_EventType__Stringⁱᵐᵖˡ)]); (ptrT.id Event_EventType.id, [("EnumDescriptor"%go, Event_EventType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, Event_EventType__Stringⁱᵐᵖˡ)]); (KeyValue.id, []); (ptrT.id KeyValue.id, [("Descriptor"%go, KeyValue__Descriptorⁱᵐᵖˡ); ("Marshal"%go, KeyValue__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, KeyValue__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, KeyValue__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, KeyValue__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, KeyValue__Resetⁱᵐᵖˡ); ("Size"%go, KeyValue__Sizeⁱᵐᵖˡ); ("String"%go, KeyValue__Stringⁱᵐᵖˡ); ("Unmarshal"%go, KeyValue__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, KeyValue__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, KeyValue__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, KeyValue__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, KeyValue__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, KeyValue__XXX_Unmarshalⁱᵐᵖˡ)]); (Event.id, []); (ptrT.id Event.id, [("Descriptor"%go, Event__Descriptorⁱᵐᵖˡ); ("Marshal"%go, Event__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Event__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Event__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Event__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Event__Resetⁱᵐᵖˡ); ("Size"%go, Event__Sizeⁱᵐᵖˡ); ("String"%go, Event__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Event__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Event__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Event__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Event__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, Event__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Event__XXX_Unmarshalⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo mvccpb.mvccpb :=
   {|

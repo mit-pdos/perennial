@@ -256,12 +256,12 @@ Global Instance is_pkg_defined_pure_urpc : IsPkgDefinedPure urpc :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single urpc ∧
-      is_pkg_defined_pure log.log ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
-      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
+      is_pkg_defined_pure code.log.log ∧
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -269,12 +269,12 @@ Global Program Instance is_pkg_defined_urpc : IsPkgDefined urpc :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single urpc ∗
-       is_pkg_defined log.log ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined github_com.goose_lang.std.std ∗
-       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
-       is_pkg_defined github_com.tchajed.marshal.marshal)%I
+       is_pkg_defined code.log.log ∗
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined code.github_com.goose_lang.std.std ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

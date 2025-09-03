@@ -48,6 +48,58 @@ Global Program Instance is_pkg_defined_log : IsPkgDefined log :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_New :
+  WpFuncCall log.New _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Default :
+  WpFuncCall log.Default _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_itoa :
+  WpFuncCall log.itoa _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_formatHeader :
+  WpFuncCall log.formatHeader _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getBuffer :
+  WpFuncCall log.getBuffer _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_putBuffer :
+  WpFuncCall log.putBuffer _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SetOutput :
+  WpFuncCall log.SetOutput _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Flags :
+  WpFuncCall log.Flags _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SetFlags :
+  WpFuncCall log.SetFlags _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Prefix :
+  WpFuncCall log.Prefix _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SetPrefix :
+  WpFuncCall log.SetPrefix _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Writer :
+  WpFuncCall log.Writer _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Print :
+  WpFuncCall log.Print _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Printf :
   WpFuncCall log.Printf _ (is_pkg_defined log) :=
   ltac:(solve_wp_func_call).
@@ -55,6 +107,102 @@ Global Instance wp_func_call_Printf :
 Global Instance wp_func_call_Println :
   WpFuncCall log.Println _ (is_pkg_defined log) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fatal :
+  WpFuncCall log.Fatal _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fatalf :
+  WpFuncCall log.Fatalf _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fatalln :
+  WpFuncCall log.Fatalln _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Panic :
+  WpFuncCall log.Panic _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Panicf :
+  WpFuncCall log.Panicf _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Panicln :
+  WpFuncCall log.Panicln _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Output :
+  WpFuncCall log.Output _ (is_pkg_defined log) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Logger'ptr_Fatal :
+  WpMethodCall (ptrT.id log.Logger.id) "Fatal" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Fatalf :
+  WpMethodCall (ptrT.id log.Logger.id) "Fatalf" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Fatalln :
+  WpMethodCall (ptrT.id log.Logger.id) "Fatalln" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Flags :
+  WpMethodCall (ptrT.id log.Logger.id) "Flags" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Output :
+  WpMethodCall (ptrT.id log.Logger.id) "Output" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Panic :
+  WpMethodCall (ptrT.id log.Logger.id) "Panic" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Panicf :
+  WpMethodCall (ptrT.id log.Logger.id) "Panicf" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Panicln :
+  WpMethodCall (ptrT.id log.Logger.id) "Panicln" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Prefix :
+  WpMethodCall (ptrT.id log.Logger.id) "Prefix" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Print :
+  WpMethodCall (ptrT.id log.Logger.id) "Print" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Printf :
+  WpMethodCall (ptrT.id log.Logger.id) "Printf" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Println :
+  WpMethodCall (ptrT.id log.Logger.id) "Println" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_SetFlags :
+  WpMethodCall (ptrT.id log.Logger.id) "SetFlags" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_SetOutput :
+  WpMethodCall (ptrT.id log.Logger.id) "SetOutput" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_SetPrefix :
+  WpMethodCall (ptrT.id log.Logger.id) "SetPrefix" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Writer :
+  WpMethodCall (ptrT.id log.Logger.id) "Writer" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_output :
+  WpMethodCall (ptrT.id log.Logger.id) "output" _ (is_pkg_defined log) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End log.

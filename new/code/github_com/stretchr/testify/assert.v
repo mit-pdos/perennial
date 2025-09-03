@@ -5,9 +5,35 @@ Definition assert : go_string := "github.com/stretchr/testify/assert".
 
 Module assert.
 
+Module CompareType. Axiom id : go_string. End CompareType.
+Module compareResult. Definition id : go_string := "github.com/stretchr/testify/assert.compareResult"%go. End compareResult.
+Module TestingT. Definition id : go_string := "github.com/stretchr/testify/assert.TestingT"%go. End TestingT.
+Module ComparisonAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.ComparisonAssertionFunc"%go. End ComparisonAssertionFunc.
+Module ValueAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.ValueAssertionFunc"%go. End ValueAssertionFunc.
+Module BoolAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.BoolAssertionFunc"%go. End BoolAssertionFunc.
+Module ErrorAssertionFunc. Definition id : go_string := "github.com/stretchr/testify/assert.ErrorAssertionFunc"%go. End ErrorAssertionFunc.
+Module PanicAssertionFunc. Axiom id : go_string. End PanicAssertionFunc.
+Module Comparison. Definition id : go_string := "github.com/stretchr/testify/assert.Comparison"%go. End Comparison.
+Module failNower. Definition id : go_string := "github.com/stretchr/testify/assert.failNower"%go. End failNower.
+Module labeledContent. Definition id : go_string := "github.com/stretchr/testify/assert.labeledContent"%go. End labeledContent.
+Module PanicTestFunc. Definition id : go_string := "github.com/stretchr/testify/assert.PanicTestFunc"%go. End PanicTestFunc.
+Module tHelper. Axiom id : go_string. End tHelper.
+Module CollectT. Definition id : go_string := "github.com/stretchr/testify/assert.CollectT"%go. End CollectT.
+Module Assertions. Definition id : go_string := "github.com/stretchr/testify/assert.Assertions"%go. End Assertions.
+
 Section code.
 Context `{ffi_syntax}.
 
+
+Axiom CompareType : go_type.
+
+Axiom compareResult : go_type.
+
+Axiom compareLess : expr.
+
+Axiom compareEqual : expr.
+
+Axiom compareGreater : expr.
 
 Definition intType : go_string := "github.com/stretchr/testify/assert.intType"%go.
 
@@ -251,6 +277,20 @@ Definition IsDecreasing : go_string := "github.com/stretchr/testify/assert.IsDec
 
 Definition IsNonDecreasing : go_string := "github.com/stretchr/testify/assert.IsNonDecreasing"%go.
 
+Axiom TestingT : go_type.
+
+Axiom ComparisonAssertionFunc : go_type.
+
+Axiom ValueAssertionFunc : go_type.
+
+Axiom BoolAssertionFunc : go_type.
+
+Axiom ErrorAssertionFunc : go_type.
+
+Axiom PanicAssertionFunc : go_type.
+
+Axiom Comparison : go_type.
+
 Definition ObjectsAreEqual : go_string := "github.com/stretchr/testify/assert.ObjectsAreEqual"%go.
 
 Definition copyExportedFields : go_string := "github.com/stretchr/testify/assert.copyExportedFields"%go.
@@ -269,9 +309,13 @@ Definition messageFromMsgAndArgs : go_string := "github.com/stretchr/testify/ass
 
 Definition indentMessageLines : go_string := "github.com/stretchr/testify/assert.indentMessageLines"%go.
 
+Axiom failNower : go_type.
+
 Definition FailNow : go_string := "github.com/stretchr/testify/assert.FailNow"%go.
 
 Definition Fail : go_string := "github.com/stretchr/testify/assert.Fail"%go.
+
+Axiom labeledContent : go_type.
 
 Definition labeledOutput : go_string := "github.com/stretchr/testify/assert.labeledOutput"%go.
 
@@ -347,6 +391,8 @@ Definition NotElementsMatch : go_string := "github.com/stretchr/testify/assert.N
 
 Definition Condition : go_string := "github.com/stretchr/testify/assert.Condition"%go.
 
+Axiom PanicTestFunc : go_type.
+
 Definition didPanic : go_string := "github.com/stretchr/testify/assert.didPanic"%go.
 
 Definition Panics : go_string := "github.com/stretchr/testify/assert.Panics"%go.
@@ -419,7 +465,11 @@ Definition spewConfigStringerEnabled : go_string := "github.com/stretchr/testify
 
 Axiom spewConfigStringerEnabled'init : val.
 
+Axiom tHelper : go_type.
+
 Definition Eventually : go_string := "github.com/stretchr/testify/assert.Eventually"%go.
+
+Axiom CollectT : go_type.
 
 Definition EventuallyWithT : go_string := "github.com/stretchr/testify/assert.EventuallyWithT"%go.
 
@@ -438,6 +488,8 @@ Definition buildErrorChainString : go_string := "github.com/stretchr/testify/ass
 Definition AnError : go_string := "github.com/stretchr/testify/assert.AnError"%go.
 
 Axiom AnError'init : val.
+
+Axiom Assertions : go_type.
 
 Definition New : go_string := "github.com/stretchr/testify/assert.New"%go.
 
@@ -459,9 +511,693 @@ Definition HTTPBodyNotContains : go_string := "github.com/stretchr/testify/asser
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom compareⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Axiom Greaterⁱᵐᵖˡ : val.
+
+Axiom GreaterOrEqualⁱᵐᵖˡ : val.
+
+Axiom Lessⁱᵐᵖˡ : val.
+
+Axiom LessOrEqualⁱᵐᵖˡ : val.
+
+Axiom Positiveⁱᵐᵖˡ : val.
+
+Axiom Negativeⁱᵐᵖˡ : val.
+
+Axiom compareTwoValuesⁱᵐᵖˡ : val.
+
+Axiom containsValueⁱᵐᵖˡ : val.
+
+Axiom Conditionfⁱᵐᵖˡ : val.
+
+Axiom Containsfⁱᵐᵖˡ : val.
+
+Axiom DirExistsfⁱᵐᵖˡ : val.
+
+Axiom ElementsMatchfⁱᵐᵖˡ : val.
+
+Axiom Emptyfⁱᵐᵖˡ : val.
+
+Axiom Equalfⁱᵐᵖˡ : val.
+
+Axiom EqualErrorfⁱᵐᵖˡ : val.
+
+Axiom EqualExportedValuesfⁱᵐᵖˡ : val.
+
+Axiom EqualValuesfⁱᵐᵖˡ : val.
+
+Axiom Errorfⁱᵐᵖˡ : val.
+
+Axiom ErrorAsfⁱᵐᵖˡ : val.
+
+Axiom ErrorContainsfⁱᵐᵖˡ : val.
+
+Axiom ErrorIsfⁱᵐᵖˡ : val.
+
+Axiom Eventuallyfⁱᵐᵖˡ : val.
+
+Axiom EventuallyWithTfⁱᵐᵖˡ : val.
+
+Axiom Exactlyfⁱᵐᵖˡ : val.
+
+Axiom Failfⁱᵐᵖˡ : val.
+
+Axiom FailNowfⁱᵐᵖˡ : val.
+
+Axiom Falsefⁱᵐᵖˡ : val.
+
+Axiom FileExistsfⁱᵐᵖˡ : val.
+
+Axiom Greaterfⁱᵐᵖˡ : val.
+
+Axiom GreaterOrEqualfⁱᵐᵖˡ : val.
+
+Axiom HTTPBodyContainsfⁱᵐᵖˡ : val.
+
+Axiom HTTPBodyNotContainsfⁱᵐᵖˡ : val.
+
+Axiom HTTPErrorfⁱᵐᵖˡ : val.
+
+Axiom HTTPRedirectfⁱᵐᵖˡ : val.
+
+Axiom HTTPStatusCodefⁱᵐᵖˡ : val.
+
+Axiom HTTPSuccessfⁱᵐᵖˡ : val.
+
+Axiom Implementsfⁱᵐᵖˡ : val.
+
+Axiom InDeltafⁱᵐᵖˡ : val.
+
+Axiom InDeltaMapValuesfⁱᵐᵖˡ : val.
+
+Axiom InDeltaSlicefⁱᵐᵖˡ : val.
+
+Axiom InEpsilonfⁱᵐᵖˡ : val.
+
+Axiom InEpsilonSlicefⁱᵐᵖˡ : val.
+
+Axiom IsDecreasingfⁱᵐᵖˡ : val.
+
+Axiom IsIncreasingfⁱᵐᵖˡ : val.
+
+Axiom IsNonDecreasingfⁱᵐᵖˡ : val.
+
+Axiom IsNonIncreasingfⁱᵐᵖˡ : val.
+
+Axiom IsTypefⁱᵐᵖˡ : val.
+
+Axiom JSONEqfⁱᵐᵖˡ : val.
+
+Axiom Lenfⁱᵐᵖˡ : val.
+
+Axiom Lessfⁱᵐᵖˡ : val.
+
+Axiom LessOrEqualfⁱᵐᵖˡ : val.
+
+Axiom Negativefⁱᵐᵖˡ : val.
+
+Axiom Neverfⁱᵐᵖˡ : val.
+
+Axiom Nilfⁱᵐᵖˡ : val.
+
+Axiom NoDirExistsfⁱᵐᵖˡ : val.
+
+Axiom NoErrorfⁱᵐᵖˡ : val.
+
+Axiom NoFileExistsfⁱᵐᵖˡ : val.
+
+Axiom NotContainsfⁱᵐᵖˡ : val.
+
+Axiom NotElementsMatchfⁱᵐᵖˡ : val.
+
+Axiom NotEmptyfⁱᵐᵖˡ : val.
+
+Axiom NotEqualfⁱᵐᵖˡ : val.
+
+Axiom NotEqualValuesfⁱᵐᵖˡ : val.
+
+Axiom NotErrorAsfⁱᵐᵖˡ : val.
+
+Axiom NotErrorIsfⁱᵐᵖˡ : val.
+
+Axiom NotImplementsfⁱᵐᵖˡ : val.
+
+Axiom NotNilfⁱᵐᵖˡ : val.
+
+Axiom NotPanicsfⁱᵐᵖˡ : val.
+
+Axiom NotRegexpfⁱᵐᵖˡ : val.
+
+Axiom NotSamefⁱᵐᵖˡ : val.
+
+Axiom NotSubsetfⁱᵐᵖˡ : val.
+
+Axiom NotZerofⁱᵐᵖˡ : val.
+
+Axiom Panicsfⁱᵐᵖˡ : val.
+
+Axiom PanicsWithErrorfⁱᵐᵖˡ : val.
+
+Axiom PanicsWithValuefⁱᵐᵖˡ : val.
+
+Axiom Positivefⁱᵐᵖˡ : val.
+
+Axiom Regexpfⁱᵐᵖˡ : val.
+
+Axiom Samefⁱᵐᵖˡ : val.
+
+Axiom Subsetfⁱᵐᵖˡ : val.
+
+Axiom Truefⁱᵐᵖˡ : val.
+
+Axiom WithinDurationfⁱᵐᵖˡ : val.
+
+Axiom WithinRangefⁱᵐᵖˡ : val.
+
+Axiom YAMLEqfⁱᵐᵖˡ : val.
+
+Axiom Zerofⁱᵐᵖˡ : val.
+
+Axiom isOrderedⁱᵐᵖˡ : val.
+
+Axiom IsIncreasingⁱᵐᵖˡ : val.
+
+Axiom IsNonIncreasingⁱᵐᵖˡ : val.
+
+Axiom IsDecreasingⁱᵐᵖˡ : val.
+
+Axiom IsNonDecreasingⁱᵐᵖˡ : val.
+
+Axiom ObjectsAreEqualⁱᵐᵖˡ : val.
+
+Axiom copyExportedFieldsⁱᵐᵖˡ : val.
+
+Axiom ObjectsExportedFieldsAreEqualⁱᵐᵖˡ : val.
+
+Axiom ObjectsAreEqualValuesⁱᵐᵖˡ : val.
+
+Axiom isNumericTypeⁱᵐᵖˡ : val.
+
+Axiom CallerInfoⁱᵐᵖˡ : val.
+
+Axiom isTestⁱᵐᵖˡ : val.
+
+Axiom messageFromMsgAndArgsⁱᵐᵖˡ : val.
+
+Axiom indentMessageLinesⁱᵐᵖˡ : val.
+
+Axiom FailNowⁱᵐᵖˡ : val.
+
+Axiom Failⁱᵐᵖˡ : val.
+
+Axiom labeledOutputⁱᵐᵖˡ : val.
+
+Axiom Implementsⁱᵐᵖˡ : val.
+
+Axiom NotImplementsⁱᵐᵖˡ : val.
+
+Axiom IsTypeⁱᵐᵖˡ : val.
+
+Axiom Equalⁱᵐᵖˡ : val.
+
+Axiom validateEqualArgsⁱᵐᵖˡ : val.
+
+Axiom Sameⁱᵐᵖˡ : val.
+
+Axiom NotSameⁱᵐᵖˡ : val.
+
+Axiom samePointersⁱᵐᵖˡ : val.
+
+Axiom formatUnequalValuesⁱᵐᵖˡ : val.
+
+Axiom truncatingFormatⁱᵐᵖˡ : val.
+
+Axiom EqualValuesⁱᵐᵖˡ : val.
+
+Axiom EqualExportedValuesⁱᵐᵖˡ : val.
+
+Axiom Exactlyⁱᵐᵖˡ : val.
+
+Axiom NotNilⁱᵐᵖˡ : val.
+
+Axiom isNilⁱᵐᵖˡ : val.
+
+Axiom Nilⁱᵐᵖˡ : val.
+
+Axiom isEmptyⁱᵐᵖˡ : val.
+
+Axiom Emptyⁱᵐᵖˡ : val.
+
+Axiom NotEmptyⁱᵐᵖˡ : val.
+
+Axiom getLenⁱᵐᵖˡ : val.
+
+Axiom Lenⁱᵐᵖˡ : val.
+
+Axiom Trueⁱᵐᵖˡ : val.
+
+Axiom Falseⁱᵐᵖˡ : val.
+
+Axiom NotEqualⁱᵐᵖˡ : val.
+
+Axiom NotEqualValuesⁱᵐᵖˡ : val.
+
+Axiom containsElementⁱᵐᵖˡ : val.
+
+Axiom Containsⁱᵐᵖˡ : val.
+
+Axiom NotContainsⁱᵐᵖˡ : val.
+
+Axiom Subsetⁱᵐᵖˡ : val.
+
+Axiom NotSubsetⁱᵐᵖˡ : val.
+
+Axiom ElementsMatchⁱᵐᵖˡ : val.
+
+Axiom isListⁱᵐᵖˡ : val.
+
+Axiom diffListsⁱᵐᵖˡ : val.
+
+Axiom formatListDiffⁱᵐᵖˡ : val.
+
+Axiom NotElementsMatchⁱᵐᵖˡ : val.
+
+Axiom Conditionⁱᵐᵖˡ : val.
+
+Axiom didPanicⁱᵐᵖˡ : val.
+
+Axiom Panicsⁱᵐᵖˡ : val.
+
+Axiom PanicsWithValueⁱᵐᵖˡ : val.
+
+Axiom PanicsWithErrorⁱᵐᵖˡ : val.
+
+Axiom NotPanicsⁱᵐᵖˡ : val.
+
+Axiom WithinDurationⁱᵐᵖˡ : val.
+
+Axiom WithinRangeⁱᵐᵖˡ : val.
+
+Axiom toFloatⁱᵐᵖˡ : val.
+
+Axiom InDeltaⁱᵐᵖˡ : val.
+
+Axiom InDeltaSliceⁱᵐᵖˡ : val.
+
+Axiom InDeltaMapValuesⁱᵐᵖˡ : val.
+
+Axiom calcRelativeErrorⁱᵐᵖˡ : val.
+
+Axiom InEpsilonⁱᵐᵖˡ : val.
+
+Axiom InEpsilonSliceⁱᵐᵖˡ : val.
+
+Axiom NoErrorⁱᵐᵖˡ : val.
+
+Axiom Errorⁱᵐᵖˡ : val.
+
+Axiom EqualErrorⁱᵐᵖˡ : val.
+
+Axiom ErrorContainsⁱᵐᵖˡ : val.
+
+Axiom matchRegexpⁱᵐᵖˡ : val.
+
+Axiom Regexpⁱᵐᵖˡ : val.
+
+Axiom NotRegexpⁱᵐᵖˡ : val.
+
+Axiom Zeroⁱᵐᵖˡ : val.
+
+Axiom NotZeroⁱᵐᵖˡ : val.
+
+Axiom FileExistsⁱᵐᵖˡ : val.
+
+Axiom NoFileExistsⁱᵐᵖˡ : val.
+
+Axiom DirExistsⁱᵐᵖˡ : val.
+
+Axiom NoDirExistsⁱᵐᵖˡ : val.
+
+Axiom JSONEqⁱᵐᵖˡ : val.
+
+Axiom YAMLEqⁱᵐᵖˡ : val.
+
+Axiom typeAndKindⁱᵐᵖˡ : val.
+
+Axiom diffⁱᵐᵖˡ : val.
+
+Axiom isFunctionⁱᵐᵖˡ : val.
+
+Axiom Eventuallyⁱᵐᵖˡ : val.
+
+Axiom EventuallyWithTⁱᵐᵖˡ : val.
+
+Axiom Neverⁱᵐᵖˡ : val.
+
+Axiom ErrorIsⁱᵐᵖˡ : val.
+
+Axiom NotErrorIsⁱᵐᵖˡ : val.
+
+Axiom ErrorAsⁱᵐᵖˡ : val.
+
+Axiom NotErrorAsⁱᵐᵖˡ : val.
+
+Axiom buildErrorChainStringⁱᵐᵖˡ : val.
+
+Axiom Newⁱᵐᵖˡ : val.
+
+Axiom httpCodeⁱᵐᵖˡ : val.
+
+Axiom HTTPSuccessⁱᵐᵖˡ : val.
+
+Axiom HTTPRedirectⁱᵐᵖˡ : val.
+
+Axiom HTTPErrorⁱᵐᵖˡ : val.
+
+Axiom HTTPStatusCodeⁱᵐᵖˡ : val.
+
+Axiom HTTPBodyⁱᵐᵖˡ : val.
+
+Axiom HTTPBodyContainsⁱᵐᵖˡ : val.
+
+Axiom HTTPBodyNotContainsⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(compare, compareⁱᵐᵖˡ); (Greater, Greaterⁱᵐᵖˡ); (GreaterOrEqual, GreaterOrEqualⁱᵐᵖˡ); (Less, Lessⁱᵐᵖˡ); (LessOrEqual, LessOrEqualⁱᵐᵖˡ); (Positive, Positiveⁱᵐᵖˡ); (Negative, Negativeⁱᵐᵖˡ); (compareTwoValues, compareTwoValuesⁱᵐᵖˡ); (containsValue, containsValueⁱᵐᵖˡ); (Conditionf, Conditionfⁱᵐᵖˡ); (Containsf, Containsfⁱᵐᵖˡ); (DirExistsf, DirExistsfⁱᵐᵖˡ); (ElementsMatchf, ElementsMatchfⁱᵐᵖˡ); (Emptyf, Emptyfⁱᵐᵖˡ); (Equalf, Equalfⁱᵐᵖˡ); (EqualErrorf, EqualErrorfⁱᵐᵖˡ); (EqualExportedValuesf, EqualExportedValuesfⁱᵐᵖˡ); (EqualValuesf, EqualValuesfⁱᵐᵖˡ); (Errorf, Errorfⁱᵐᵖˡ); (ErrorAsf, ErrorAsfⁱᵐᵖˡ); (ErrorContainsf, ErrorContainsfⁱᵐᵖˡ); (ErrorIsf, ErrorIsfⁱᵐᵖˡ); (Eventuallyf, Eventuallyfⁱᵐᵖˡ); (EventuallyWithTf, EventuallyWithTfⁱᵐᵖˡ); (Exactlyf, Exactlyfⁱᵐᵖˡ); (Failf, Failfⁱᵐᵖˡ); (FailNowf, FailNowfⁱᵐᵖˡ); (Falsef, Falsefⁱᵐᵖˡ); (FileExistsf, FileExistsfⁱᵐᵖˡ); (Greaterf, Greaterfⁱᵐᵖˡ); (GreaterOrEqualf, GreaterOrEqualfⁱᵐᵖˡ); (HTTPBodyContainsf, HTTPBodyContainsfⁱᵐᵖˡ); (HTTPBodyNotContainsf, HTTPBodyNotContainsfⁱᵐᵖˡ); (HTTPErrorf, HTTPErrorfⁱᵐᵖˡ); (HTTPRedirectf, HTTPRedirectfⁱᵐᵖˡ); (HTTPStatusCodef, HTTPStatusCodefⁱᵐᵖˡ); (HTTPSuccessf, HTTPSuccessfⁱᵐᵖˡ); (Implementsf, Implementsfⁱᵐᵖˡ); (InDeltaf, InDeltafⁱᵐᵖˡ); (InDeltaMapValuesf, InDeltaMapValuesfⁱᵐᵖˡ); (InDeltaSlicef, InDeltaSlicefⁱᵐᵖˡ); (InEpsilonf, InEpsilonfⁱᵐᵖˡ); (InEpsilonSlicef, InEpsilonSlicefⁱᵐᵖˡ); (IsDecreasingf, IsDecreasingfⁱᵐᵖˡ); (IsIncreasingf, IsIncreasingfⁱᵐᵖˡ); (IsNonDecreasingf, IsNonDecreasingfⁱᵐᵖˡ); (IsNonIncreasingf, IsNonIncreasingfⁱᵐᵖˡ); (IsTypef, IsTypefⁱᵐᵖˡ); (JSONEqf, JSONEqfⁱᵐᵖˡ); (Lenf, Lenfⁱᵐᵖˡ); (Lessf, Lessfⁱᵐᵖˡ); (LessOrEqualf, LessOrEqualfⁱᵐᵖˡ); (Negativef, Negativefⁱᵐᵖˡ); (Neverf, Neverfⁱᵐᵖˡ); (Nilf, Nilfⁱᵐᵖˡ); (NoDirExistsf, NoDirExistsfⁱᵐᵖˡ); (NoErrorf, NoErrorfⁱᵐᵖˡ); (NoFileExistsf, NoFileExistsfⁱᵐᵖˡ); (NotContainsf, NotContainsfⁱᵐᵖˡ); (NotElementsMatchf, NotElementsMatchfⁱᵐᵖˡ); (NotEmptyf, NotEmptyfⁱᵐᵖˡ); (NotEqualf, NotEqualfⁱᵐᵖˡ); (NotEqualValuesf, NotEqualValuesfⁱᵐᵖˡ); (NotErrorAsf, NotErrorAsfⁱᵐᵖˡ); (NotErrorIsf, NotErrorIsfⁱᵐᵖˡ); (NotImplementsf, NotImplementsfⁱᵐᵖˡ); (NotNilf, NotNilfⁱᵐᵖˡ); (NotPanicsf, NotPanicsfⁱᵐᵖˡ); (NotRegexpf, NotRegexpfⁱᵐᵖˡ); (NotSamef, NotSamefⁱᵐᵖˡ); (NotSubsetf, NotSubsetfⁱᵐᵖˡ); (NotZerof, NotZerofⁱᵐᵖˡ); (Panicsf, Panicsfⁱᵐᵖˡ); (PanicsWithErrorf, PanicsWithErrorfⁱᵐᵖˡ); (PanicsWithValuef, PanicsWithValuefⁱᵐᵖˡ); (Positivef, Positivefⁱᵐᵖˡ); (Regexpf, Regexpfⁱᵐᵖˡ); (Samef, Samefⁱᵐᵖˡ); (Subsetf, Subsetfⁱᵐᵖˡ); (Truef, Truefⁱᵐᵖˡ); (WithinDurationf, WithinDurationfⁱᵐᵖˡ); (WithinRangef, WithinRangefⁱᵐᵖˡ); (YAMLEqf, YAMLEqfⁱᵐᵖˡ); (Zerof, Zerofⁱᵐᵖˡ); (isOrdered, isOrderedⁱᵐᵖˡ); (IsIncreasing, IsIncreasingⁱᵐᵖˡ); (IsNonIncreasing, IsNonIncreasingⁱᵐᵖˡ); (IsDecreasing, IsDecreasingⁱᵐᵖˡ); (IsNonDecreasing, IsNonDecreasingⁱᵐᵖˡ); (ObjectsAreEqual, ObjectsAreEqualⁱᵐᵖˡ); (copyExportedFields, copyExportedFieldsⁱᵐᵖˡ); (ObjectsExportedFieldsAreEqual, ObjectsExportedFieldsAreEqualⁱᵐᵖˡ); (ObjectsAreEqualValues, ObjectsAreEqualValuesⁱᵐᵖˡ); (isNumericType, isNumericTypeⁱᵐᵖˡ); (CallerInfo, CallerInfoⁱᵐᵖˡ); (isTest, isTestⁱᵐᵖˡ); (messageFromMsgAndArgs, messageFromMsgAndArgsⁱᵐᵖˡ); (indentMessageLines, indentMessageLinesⁱᵐᵖˡ); (FailNow, FailNowⁱᵐᵖˡ); (Fail, Failⁱᵐᵖˡ); (labeledOutput, labeledOutputⁱᵐᵖˡ); (Implements, Implementsⁱᵐᵖˡ); (NotImplements, NotImplementsⁱᵐᵖˡ); (IsType, IsTypeⁱᵐᵖˡ); (Equal, Equalⁱᵐᵖˡ); (validateEqualArgs, validateEqualArgsⁱᵐᵖˡ); (Same, Sameⁱᵐᵖˡ); (NotSame, NotSameⁱᵐᵖˡ); (samePointers, samePointersⁱᵐᵖˡ); (formatUnequalValues, formatUnequalValuesⁱᵐᵖˡ); (truncatingFormat, truncatingFormatⁱᵐᵖˡ); (EqualValues, EqualValuesⁱᵐᵖˡ); (EqualExportedValues, EqualExportedValuesⁱᵐᵖˡ); (Exactly, Exactlyⁱᵐᵖˡ); (NotNil, NotNilⁱᵐᵖˡ); (isNil, isNilⁱᵐᵖˡ); (Nil, Nilⁱᵐᵖˡ); (isEmpty, isEmptyⁱᵐᵖˡ); (Empty, Emptyⁱᵐᵖˡ); (NotEmpty, NotEmptyⁱᵐᵖˡ); (getLen, getLenⁱᵐᵖˡ); (Len, Lenⁱᵐᵖˡ); (True, Trueⁱᵐᵖˡ); (False, Falseⁱᵐᵖˡ); (NotEqual, NotEqualⁱᵐᵖˡ); (NotEqualValues, NotEqualValuesⁱᵐᵖˡ); (containsElement, containsElementⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (NotContains, NotContainsⁱᵐᵖˡ); (Subset, Subsetⁱᵐᵖˡ); (NotSubset, NotSubsetⁱᵐᵖˡ); (ElementsMatch, ElementsMatchⁱᵐᵖˡ); (isList, isListⁱᵐᵖˡ); (diffLists, diffListsⁱᵐᵖˡ); (formatListDiff, formatListDiffⁱᵐᵖˡ); (NotElementsMatch, NotElementsMatchⁱᵐᵖˡ); (Condition, Conditionⁱᵐᵖˡ); (didPanic, didPanicⁱᵐᵖˡ); (Panics, Panicsⁱᵐᵖˡ); (PanicsWithValue, PanicsWithValueⁱᵐᵖˡ); (PanicsWithError, PanicsWithErrorⁱᵐᵖˡ); (NotPanics, NotPanicsⁱᵐᵖˡ); (WithinDuration, WithinDurationⁱᵐᵖˡ); (WithinRange, WithinRangeⁱᵐᵖˡ); (toFloat, toFloatⁱᵐᵖˡ); (InDelta, InDeltaⁱᵐᵖˡ); (InDeltaSlice, InDeltaSliceⁱᵐᵖˡ); (InDeltaMapValues, InDeltaMapValuesⁱᵐᵖˡ); (calcRelativeError, calcRelativeErrorⁱᵐᵖˡ); (InEpsilon, InEpsilonⁱᵐᵖˡ); (InEpsilonSlice, InEpsilonSliceⁱᵐᵖˡ); (NoError, NoErrorⁱᵐᵖˡ); (Error, Errorⁱᵐᵖˡ); (EqualError, EqualErrorⁱᵐᵖˡ); (ErrorContains, ErrorContainsⁱᵐᵖˡ); (matchRegexp, matchRegexpⁱᵐᵖˡ); (Regexp, Regexpⁱᵐᵖˡ); (NotRegexp, NotRegexpⁱᵐᵖˡ); (Zero, Zeroⁱᵐᵖˡ); (NotZero, NotZeroⁱᵐᵖˡ); (FileExists, FileExistsⁱᵐᵖˡ); (NoFileExists, NoFileExistsⁱᵐᵖˡ); (DirExists, DirExistsⁱᵐᵖˡ); (NoDirExists, NoDirExistsⁱᵐᵖˡ); (JSONEq, JSONEqⁱᵐᵖˡ); (YAMLEq, YAMLEqⁱᵐᵖˡ); (typeAndKind, typeAndKindⁱᵐᵖˡ); (diff, diffⁱᵐᵖˡ); (isFunction, isFunctionⁱᵐᵖˡ); (Eventually, Eventuallyⁱᵐᵖˡ); (EventuallyWithT, EventuallyWithTⁱᵐᵖˡ); (Never, Neverⁱᵐᵖˡ); (ErrorIs, ErrorIsⁱᵐᵖˡ); (NotErrorIs, NotErrorIsⁱᵐᵖˡ); (ErrorAs, ErrorAsⁱᵐᵖˡ); (NotErrorAs, NotErrorAsⁱᵐᵖˡ); (buildErrorChainString, buildErrorChainStringⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (httpCode, httpCodeⁱᵐᵖˡ); (HTTPSuccess, HTTPSuccessⁱᵐᵖˡ); (HTTPRedirect, HTTPRedirectⁱᵐᵖˡ); (HTTPError, HTTPErrorⁱᵐᵖˡ); (HTTPStatusCode, HTTPStatusCodeⁱᵐᵖˡ); (HTTPBody, HTTPBodyⁱᵐᵖˡ); (HTTPBodyContains, HTTPBodyContainsⁱᵐᵖˡ); (HTTPBodyNotContains, HTTPBodyNotContainsⁱᵐᵖˡ)].
+
+Axiom CollectT__Copyⁱᵐᵖˡ : val.
+
+Axiom CollectT__Errorfⁱᵐᵖˡ : val.
+
+Axiom CollectT__FailNowⁱᵐᵖˡ : val.
+
+Axiom CollectT__Resetⁱᵐᵖˡ : val.
+
+Axiom CollectT__failⁱᵐᵖˡ : val.
+
+Axiom CollectT__failedⁱᵐᵖˡ : val.
+
+Axiom Assertions__Conditionⁱᵐᵖˡ : val.
+
+Axiom Assertions__Conditionfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Containsⁱᵐᵖˡ : val.
+
+Axiom Assertions__Containsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__DirExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__DirExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__ElementsMatchⁱᵐᵖˡ : val.
+
+Axiom Assertions__ElementsMatchfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Emptyⁱᵐᵖˡ : val.
+
+Axiom Assertions__Emptyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Equalⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualExportedValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualExportedValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__EqualValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Equalfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Errorⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorAsⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorAsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorIsⁱᵐᵖˡ : val.
+
+Axiom Assertions__ErrorIsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Errorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Eventuallyⁱᵐᵖˡ : val.
+
+Axiom Assertions__EventuallyWithTⁱᵐᵖˡ : val.
+
+Axiom Assertions__EventuallyWithTfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Eventuallyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Exactlyⁱᵐᵖˡ : val.
+
+Axiom Assertions__Exactlyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Failⁱᵐᵖˡ : val.
+
+Axiom Assertions__FailNowⁱᵐᵖˡ : val.
+
+Axiom Assertions__FailNowfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Failfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Falseⁱᵐᵖˡ : val.
+
+Axiom Assertions__Falsefⁱᵐᵖˡ : val.
+
+Axiom Assertions__FileExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__FileExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Greaterⁱᵐᵖˡ : val.
+
+Axiom Assertions__GreaterOrEqualⁱᵐᵖˡ : val.
+
+Axiom Assertions__GreaterOrEqualfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Greaterfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyNotContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPBodyNotContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPRedirectⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPRedirectfⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPStatusCodeⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPStatusCodefⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPSuccessⁱᵐᵖˡ : val.
+
+Axiom Assertions__HTTPSuccessfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Implementsⁱᵐᵖˡ : val.
+
+Axiom Assertions__Implementsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaMapValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaMapValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaSliceⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltaSlicefⁱᵐᵖˡ : val.
+
+Axiom Assertions__InDeltafⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonSliceⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonSlicefⁱᵐᵖˡ : val.
+
+Axiom Assertions__InEpsilonfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsDecreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsDecreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsIncreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsIncreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonDecreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonDecreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonIncreasingⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsNonIncreasingfⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsTypeⁱᵐᵖˡ : val.
+
+Axiom Assertions__IsTypefⁱᵐᵖˡ : val.
+
+Axiom Assertions__JSONEqⁱᵐᵖˡ : val.
+
+Axiom Assertions__JSONEqfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lenⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lenfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lessⁱᵐᵖˡ : val.
+
+Axiom Assertions__LessOrEqualⁱᵐᵖˡ : val.
+
+Axiom Assertions__LessOrEqualfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Lessfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Negativeⁱᵐᵖˡ : val.
+
+Axiom Assertions__Negativefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Neverⁱᵐᵖˡ : val.
+
+Axiom Assertions__Neverfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Nilⁱᵐᵖˡ : val.
+
+Axiom Assertions__Nilfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoDirExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoDirExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoFileExistsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NoFileExistsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotContainsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotContainsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotElementsMatchⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotElementsMatchfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEmptyⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEmptyfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualValuesⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualValuesfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotEqualfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorAsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorAsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorIsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotErrorIsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotImplementsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotImplementsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotNilⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotNilfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotPanicsⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotPanicsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotRegexpⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotRegexpfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSameⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSamefⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSubsetⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotSubsetfⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotZeroⁱᵐᵖˡ : val.
+
+Axiom Assertions__NotZerofⁱᵐᵖˡ : val.
+
+Axiom Assertions__Panicsⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithErrorⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithErrorfⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithValueⁱᵐᵖˡ : val.
+
+Axiom Assertions__PanicsWithValuefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Panicsfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Positiveⁱᵐᵖˡ : val.
+
+Axiom Assertions__Positivefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Regexpⁱᵐᵖˡ : val.
+
+Axiom Assertions__Regexpfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Sameⁱᵐᵖˡ : val.
+
+Axiom Assertions__Samefⁱᵐᵖˡ : val.
+
+Axiom Assertions__Subsetⁱᵐᵖˡ : val.
+
+Axiom Assertions__Subsetfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Trueⁱᵐᵖˡ : val.
+
+Axiom Assertions__Truefⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinDurationⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinDurationfⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinRangeⁱᵐᵖˡ : val.
+
+Axiom Assertions__WithinRangefⁱᵐᵖˡ : val.
+
+Axiom Assertions__YAMLEqⁱᵐᵖˡ : val.
+
+Axiom Assertions__YAMLEqfⁱᵐᵖˡ : val.
+
+Axiom Assertions__Zeroⁱᵐᵖˡ : val.
+
+Axiom Assertions__Zerofⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(compareResult.id, []); (ptrT.id compareResult.id, []); (ComparisonAssertionFunc.id, []); (ptrT.id ComparisonAssertionFunc.id, []); (ValueAssertionFunc.id, []); (ptrT.id ValueAssertionFunc.id, []); (BoolAssertionFunc.id, []); (ptrT.id BoolAssertionFunc.id, []); (ErrorAssertionFunc.id, []); (ptrT.id ErrorAssertionFunc.id, []); (Comparison.id, []); (ptrT.id Comparison.id, []); (labeledContent.id, []); (ptrT.id labeledContent.id, []); (PanicTestFunc.id, []); (ptrT.id PanicTestFunc.id, []); (CollectT.id, []); (ptrT.id CollectT.id, [("Copy"%go, CollectT__Copyⁱᵐᵖˡ); ("Errorf"%go, CollectT__Errorfⁱᵐᵖˡ); ("FailNow"%go, CollectT__FailNowⁱᵐᵖˡ); ("Reset"%go, CollectT__Resetⁱᵐᵖˡ); ("fail"%go, CollectT__failⁱᵐᵖˡ); ("failed"%go, CollectT__failedⁱᵐᵖˡ)]); (Assertions.id, []); (ptrT.id Assertions.id, [("Condition"%go, Assertions__Conditionⁱᵐᵖˡ); ("Conditionf"%go, Assertions__Conditionfⁱᵐᵖˡ); ("Contains"%go, Assertions__Containsⁱᵐᵖˡ); ("Containsf"%go, Assertions__Containsfⁱᵐᵖˡ); ("DirExists"%go, Assertions__DirExistsⁱᵐᵖˡ); ("DirExistsf"%go, Assertions__DirExistsfⁱᵐᵖˡ); ("ElementsMatch"%go, Assertions__ElementsMatchⁱᵐᵖˡ); ("ElementsMatchf"%go, Assertions__ElementsMatchfⁱᵐᵖˡ); ("Empty"%go, Assertions__Emptyⁱᵐᵖˡ); ("Emptyf"%go, Assertions__Emptyfⁱᵐᵖˡ); ("Equal"%go, Assertions__Equalⁱᵐᵖˡ); ("EqualError"%go, Assertions__EqualErrorⁱᵐᵖˡ); ("EqualErrorf"%go, Assertions__EqualErrorfⁱᵐᵖˡ); ("EqualExportedValues"%go, Assertions__EqualExportedValuesⁱᵐᵖˡ); ("EqualExportedValuesf"%go, Assertions__EqualExportedValuesfⁱᵐᵖˡ); ("EqualValues"%go, Assertions__EqualValuesⁱᵐᵖˡ); ("EqualValuesf"%go, Assertions__EqualValuesfⁱᵐᵖˡ); ("Equalf"%go, Assertions__Equalfⁱᵐᵖˡ); ("Error"%go, Assertions__Errorⁱᵐᵖˡ); ("ErrorAs"%go, Assertions__ErrorAsⁱᵐᵖˡ); ("ErrorAsf"%go, Assertions__ErrorAsfⁱᵐᵖˡ); ("ErrorContains"%go, Assertions__ErrorContainsⁱᵐᵖˡ); ("ErrorContainsf"%go, Assertions__ErrorContainsfⁱᵐᵖˡ); ("ErrorIs"%go, Assertions__ErrorIsⁱᵐᵖˡ); ("ErrorIsf"%go, Assertions__ErrorIsfⁱᵐᵖˡ); ("Errorf"%go, Assertions__Errorfⁱᵐᵖˡ); ("Eventually"%go, Assertions__Eventuallyⁱᵐᵖˡ); ("EventuallyWithT"%go, Assertions__EventuallyWithTⁱᵐᵖˡ); ("EventuallyWithTf"%go, Assertions__EventuallyWithTfⁱᵐᵖˡ); ("Eventuallyf"%go, Assertions__Eventuallyfⁱᵐᵖˡ); ("Exactly"%go, Assertions__Exactlyⁱᵐᵖˡ); ("Exactlyf"%go, Assertions__Exactlyfⁱᵐᵖˡ); ("Fail"%go, Assertions__Failⁱᵐᵖˡ); ("FailNow"%go, Assertions__FailNowⁱᵐᵖˡ); ("FailNowf"%go, Assertions__FailNowfⁱᵐᵖˡ); ("Failf"%go, Assertions__Failfⁱᵐᵖˡ); ("False"%go, Assertions__Falseⁱᵐᵖˡ); ("Falsef"%go, Assertions__Falsefⁱᵐᵖˡ); ("FileExists"%go, Assertions__FileExistsⁱᵐᵖˡ); ("FileExistsf"%go, Assertions__FileExistsfⁱᵐᵖˡ); ("Greater"%go, Assertions__Greaterⁱᵐᵖˡ); ("GreaterOrEqual"%go, Assertions__GreaterOrEqualⁱᵐᵖˡ); ("GreaterOrEqualf"%go, Assertions__GreaterOrEqualfⁱᵐᵖˡ); ("Greaterf"%go, Assertions__Greaterfⁱᵐᵖˡ); ("HTTPBodyContains"%go, Assertions__HTTPBodyContainsⁱᵐᵖˡ); ("HTTPBodyContainsf"%go, Assertions__HTTPBodyContainsfⁱᵐᵖˡ); ("HTTPBodyNotContains"%go, Assertions__HTTPBodyNotContainsⁱᵐᵖˡ); ("HTTPBodyNotContainsf"%go, Assertions__HTTPBodyNotContainsfⁱᵐᵖˡ); ("HTTPError"%go, Assertions__HTTPErrorⁱᵐᵖˡ); ("HTTPErrorf"%go, Assertions__HTTPErrorfⁱᵐᵖˡ); ("HTTPRedirect"%go, Assertions__HTTPRedirectⁱᵐᵖˡ); ("HTTPRedirectf"%go, Assertions__HTTPRedirectfⁱᵐᵖˡ); ("HTTPStatusCode"%go, Assertions__HTTPStatusCodeⁱᵐᵖˡ); ("HTTPStatusCodef"%go, Assertions__HTTPStatusCodefⁱᵐᵖˡ); ("HTTPSuccess"%go, Assertions__HTTPSuccessⁱᵐᵖˡ); ("HTTPSuccessf"%go, Assertions__HTTPSuccessfⁱᵐᵖˡ); ("Implements"%go, Assertions__Implementsⁱᵐᵖˡ); ("Implementsf"%go, Assertions__Implementsfⁱᵐᵖˡ); ("InDelta"%go, Assertions__InDeltaⁱᵐᵖˡ); ("InDeltaMapValues"%go, Assertions__InDeltaMapValuesⁱᵐᵖˡ); ("InDeltaMapValuesf"%go, Assertions__InDeltaMapValuesfⁱᵐᵖˡ); ("InDeltaSlice"%go, Assertions__InDeltaSliceⁱᵐᵖˡ); ("InDeltaSlicef"%go, Assertions__InDeltaSlicefⁱᵐᵖˡ); ("InDeltaf"%go, Assertions__InDeltafⁱᵐᵖˡ); ("InEpsilon"%go, Assertions__InEpsilonⁱᵐᵖˡ); ("InEpsilonSlice"%go, Assertions__InEpsilonSliceⁱᵐᵖˡ); ("InEpsilonSlicef"%go, Assertions__InEpsilonSlicefⁱᵐᵖˡ); ("InEpsilonf"%go, Assertions__InEpsilonfⁱᵐᵖˡ); ("IsDecreasing"%go, Assertions__IsDecreasingⁱᵐᵖˡ); ("IsDecreasingf"%go, Assertions__IsDecreasingfⁱᵐᵖˡ); ("IsIncreasing"%go, Assertions__IsIncreasingⁱᵐᵖˡ); ("IsIncreasingf"%go, Assertions__IsIncreasingfⁱᵐᵖˡ); ("IsNonDecreasing"%go, Assertions__IsNonDecreasingⁱᵐᵖˡ); ("IsNonDecreasingf"%go, Assertions__IsNonDecreasingfⁱᵐᵖˡ); ("IsNonIncreasing"%go, Assertions__IsNonIncreasingⁱᵐᵖˡ); ("IsNonIncreasingf"%go, Assertions__IsNonIncreasingfⁱᵐᵖˡ); ("IsType"%go, Assertions__IsTypeⁱᵐᵖˡ); ("IsTypef"%go, Assertions__IsTypefⁱᵐᵖˡ); ("JSONEq"%go, Assertions__JSONEqⁱᵐᵖˡ); ("JSONEqf"%go, Assertions__JSONEqfⁱᵐᵖˡ); ("Len"%go, Assertions__Lenⁱᵐᵖˡ); ("Lenf"%go, Assertions__Lenfⁱᵐᵖˡ); ("Less"%go, Assertions__Lessⁱᵐᵖˡ); ("LessOrEqual"%go, Assertions__LessOrEqualⁱᵐᵖˡ); ("LessOrEqualf"%go, Assertions__LessOrEqualfⁱᵐᵖˡ); ("Lessf"%go, Assertions__Lessfⁱᵐᵖˡ); ("Negative"%go, Assertions__Negativeⁱᵐᵖˡ); ("Negativef"%go, Assertions__Negativefⁱᵐᵖˡ); ("Never"%go, Assertions__Neverⁱᵐᵖˡ); ("Neverf"%go, Assertions__Neverfⁱᵐᵖˡ); ("Nil"%go, Assertions__Nilⁱᵐᵖˡ); ("Nilf"%go, Assertions__Nilfⁱᵐᵖˡ); ("NoDirExists"%go, Assertions__NoDirExistsⁱᵐᵖˡ); ("NoDirExistsf"%go, Assertions__NoDirExistsfⁱᵐᵖˡ); ("NoError"%go, Assertions__NoErrorⁱᵐᵖˡ); ("NoErrorf"%go, Assertions__NoErrorfⁱᵐᵖˡ); ("NoFileExists"%go, Assertions__NoFileExistsⁱᵐᵖˡ); ("NoFileExistsf"%go, Assertions__NoFileExistsfⁱᵐᵖˡ); ("NotContains"%go, Assertions__NotContainsⁱᵐᵖˡ); ("NotContainsf"%go, Assertions__NotContainsfⁱᵐᵖˡ); ("NotElementsMatch"%go, Assertions__NotElementsMatchⁱᵐᵖˡ); ("NotElementsMatchf"%go, Assertions__NotElementsMatchfⁱᵐᵖˡ); ("NotEmpty"%go, Assertions__NotEmptyⁱᵐᵖˡ); ("NotEmptyf"%go, Assertions__NotEmptyfⁱᵐᵖˡ); ("NotEqual"%go, Assertions__NotEqualⁱᵐᵖˡ); ("NotEqualValues"%go, Assertions__NotEqualValuesⁱᵐᵖˡ); ("NotEqualValuesf"%go, Assertions__NotEqualValuesfⁱᵐᵖˡ); ("NotEqualf"%go, Assertions__NotEqualfⁱᵐᵖˡ); ("NotErrorAs"%go, Assertions__NotErrorAsⁱᵐᵖˡ); ("NotErrorAsf"%go, Assertions__NotErrorAsfⁱᵐᵖˡ); ("NotErrorIs"%go, Assertions__NotErrorIsⁱᵐᵖˡ); ("NotErrorIsf"%go, Assertions__NotErrorIsfⁱᵐᵖˡ); ("NotImplements"%go, Assertions__NotImplementsⁱᵐᵖˡ); ("NotImplementsf"%go, Assertions__NotImplementsfⁱᵐᵖˡ); ("NotNil"%go, Assertions__NotNilⁱᵐᵖˡ); ("NotNilf"%go, Assertions__NotNilfⁱᵐᵖˡ); ("NotPanics"%go, Assertions__NotPanicsⁱᵐᵖˡ); ("NotPanicsf"%go, Assertions__NotPanicsfⁱᵐᵖˡ); ("NotRegexp"%go, Assertions__NotRegexpⁱᵐᵖˡ); ("NotRegexpf"%go, Assertions__NotRegexpfⁱᵐᵖˡ); ("NotSame"%go, Assertions__NotSameⁱᵐᵖˡ); ("NotSamef"%go, Assertions__NotSamefⁱᵐᵖˡ); ("NotSubset"%go, Assertions__NotSubsetⁱᵐᵖˡ); ("NotSubsetf"%go, Assertions__NotSubsetfⁱᵐᵖˡ); ("NotZero"%go, Assertions__NotZeroⁱᵐᵖˡ); ("NotZerof"%go, Assertions__NotZerofⁱᵐᵖˡ); ("Panics"%go, Assertions__Panicsⁱᵐᵖˡ); ("PanicsWithError"%go, Assertions__PanicsWithErrorⁱᵐᵖˡ); ("PanicsWithErrorf"%go, Assertions__PanicsWithErrorfⁱᵐᵖˡ); ("PanicsWithValue"%go, Assertions__PanicsWithValueⁱᵐᵖˡ); ("PanicsWithValuef"%go, Assertions__PanicsWithValuefⁱᵐᵖˡ); ("Panicsf"%go, Assertions__Panicsfⁱᵐᵖˡ); ("Positive"%go, Assertions__Positiveⁱᵐᵖˡ); ("Positivef"%go, Assertions__Positivefⁱᵐᵖˡ); ("Regexp"%go, Assertions__Regexpⁱᵐᵖˡ); ("Regexpf"%go, Assertions__Regexpfⁱᵐᵖˡ); ("Same"%go, Assertions__Sameⁱᵐᵖˡ); ("Samef"%go, Assertions__Samefⁱᵐᵖˡ); ("Subset"%go, Assertions__Subsetⁱᵐᵖˡ); ("Subsetf"%go, Assertions__Subsetfⁱᵐᵖˡ); ("True"%go, Assertions__Trueⁱᵐᵖˡ); ("Truef"%go, Assertions__Truefⁱᵐᵖˡ); ("WithinDuration"%go, Assertions__WithinDurationⁱᵐᵖˡ); ("WithinDurationf"%go, Assertions__WithinDurationfⁱᵐᵖˡ); ("WithinRange"%go, Assertions__WithinRangeⁱᵐᵖˡ); ("WithinRangef"%go, Assertions__WithinRangefⁱᵐᵖˡ); ("YAMLEq"%go, Assertions__YAMLEqⁱᵐᵖˡ); ("YAMLEqf"%go, Assertions__YAMLEqfⁱᵐᵖˡ); ("Zero"%go, Assertions__Zeroⁱᵐᵖˡ); ("Zerof"%go, Assertions__Zerofⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo assert.assert :=
   {|

@@ -8514,168 +8514,168 @@ Definition vars' : list (go_string * go_type) := [(defaultLogger, ptrT); (discar
 
 Definition functions' : list (go_string * val) := [(newLog, newLogⁱᵐᵖˡ); (newLogWithSize, newLogWithSizeⁱᵐᵖˡ); (SetLogger, SetLoggerⁱᵐᵖˡ); (ResetDefaultLogger, ResetDefaultLoggerⁱᵐᵖˡ); (getLogger, getLoggerⁱᵐᵖˡ); (header, headerⁱᵐᵖˡ); (isHardStateEqual, isHardStateEqualⁱᵐᵖˡ); (IsEmptyHardState, IsEmptyHardStateⁱᵐᵖˡ); (IsEmptySnap, IsEmptySnapⁱᵐᵖˡ); (setupNode, setupNodeⁱᵐᵖˡ); (StartNode, StartNodeⁱᵐᵖˡ); (RestartNode, RestartNodeⁱᵐᵖˡ); (newNode, newNodeⁱᵐᵖˡ); (confChangeToMsg, confChangeToMsgⁱᵐᵖˡ); (newRaft, newRaftⁱᵐᵖˡ); (stepLeader, stepLeaderⁱᵐᵖˡ); (stepCandidate, stepCandidateⁱᵐᵖˡ); (stepFollower, stepFollowerⁱᵐᵖˡ); (logSliceFromMsgApp, logSliceFromMsgAppⁱᵐᵖˡ); (releasePendingReadIndexMessages, releasePendingReadIndexMessagesⁱᵐᵖˡ); (sendMsgReadIndexResponse, sendMsgReadIndexResponseⁱᵐᵖˡ); (NewRawNode, NewRawNodeⁱᵐᵖˡ); (MustSync, MustSyncⁱᵐᵖˡ); (needStorageAppendMsg, needStorageAppendMsgⁱᵐᵖˡ); (needStorageAppendRespMsg, needStorageAppendRespMsgⁱᵐᵖˡ); (newStorageAppendMsg, newStorageAppendMsgⁱᵐᵖˡ); (newStorageAppendRespMsg, newStorageAppendRespMsgⁱᵐᵖˡ); (needStorageApplyMsg, needStorageApplyMsgⁱᵐᵖˡ); (needStorageApplyRespMsg, needStorageApplyRespMsgⁱᵐᵖˡ); (newStorageApplyMsg, newStorageApplyMsgⁱᵐᵖˡ); (newStorageApplyRespMsg, newStorageApplyRespMsgⁱᵐᵖˡ); (newReadOnly, newReadOnlyⁱᵐᵖˡ); (traceInitState, traceInitStateⁱᵐᵖˡ); (traceReady, traceReadyⁱᵐᵖˡ); (traceCommit, traceCommitⁱᵐᵖˡ); (traceReplicate, traceReplicateⁱᵐᵖˡ); (traceBecomeFollower, traceBecomeFollowerⁱᵐᵖˡ); (traceBecomeCandidate, traceBecomeCandidateⁱᵐᵖˡ); (traceBecomeLeader, traceBecomeLeaderⁱᵐᵖˡ); (traceChangeConfEvent, traceChangeConfEventⁱᵐᵖˡ); (traceConfChangeEvent, traceConfChangeEventⁱᵐᵖˡ); (traceSendMessage, traceSendMessageⁱᵐᵖˡ); (traceReceiveMessage, traceReceiveMessageⁱᵐᵖˡ); (getProgressCopy, getProgressCopyⁱᵐᵖˡ); (getBasicStatus, getBasicStatusⁱᵐᵖˡ); (getStatus, getStatusⁱᵐᵖˡ); (NewMemoryStorage, NewMemoryStorageⁱᵐᵖˡ); (pbEntryID, pbEntryIDⁱᵐᵖˡ); (isMsgInArray, isMsgInArrayⁱᵐᵖˡ); (IsLocalMsg, IsLocalMsgⁱᵐᵖˡ); (IsResponseMsg, IsResponseMsgⁱᵐᵖˡ); (IsLocalMsgTarget, IsLocalMsgTargetⁱᵐᵖˡ); (voteRespMsgType, voteRespMsgTypeⁱᵐᵖˡ); (DescribeHardState, DescribeHardStateⁱᵐᵖˡ); (DescribeSoftState, DescribeSoftStateⁱᵐᵖˡ); (DescribeConfState, DescribeConfStateⁱᵐᵖˡ); (DescribeSnapshot, DescribeSnapshotⁱᵐᵖˡ); (DescribeReady, DescribeReadyⁱᵐᵖˡ); (DescribeMessage, DescribeMessageⁱᵐᵖˡ); (describeMessageWithIndent, describeMessageWithIndentⁱᵐᵖˡ); (describeTarget, describeTargetⁱᵐᵖˡ); (DescribeEntry, DescribeEntryⁱᵐᵖˡ); (DescribeEntries, DescribeEntriesⁱᵐᵖˡ); (entsSize, entsSizeⁱᵐᵖˡ); (limitSize, limitSizeⁱᵐᵖˡ); (payloadSize, payloadSizeⁱᵐᵖˡ); (payloadsSize, payloadsSizeⁱᵐᵖˡ); (assertConfStatesEquivalent, assertConfStatesEquivalentⁱᵐᵖˡ); (extend, extendⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(raftLog.id, []); (ptrT.id raftLog.id, [("String"%go, raftLog__Stringⁱᵐᵖˡ); ("acceptApplying"%go, raftLog__acceptApplyingⁱᵐᵖˡ); ("acceptUnstable"%go, raftLog__acceptUnstableⁱᵐᵖˡ); ("allEntries"%go, raftLog__allEntriesⁱᵐᵖˡ); ("append"%go, raftLog__appendⁱᵐᵖˡ); ("appliedTo"%go, raftLog__appliedToⁱᵐᵖˡ); ("commitTo"%go, raftLog__commitToⁱᵐᵖˡ); ("entries"%go, raftLog__entriesⁱᵐᵖˡ); ("findConflict"%go, raftLog__findConflictⁱᵐᵖˡ); ("findConflictByTerm"%go, raftLog__findConflictByTermⁱᵐᵖˡ); ("firstIndex"%go, raftLog__firstIndexⁱᵐᵖˡ); ("hasNextCommittedEnts"%go, raftLog__hasNextCommittedEntsⁱᵐᵖˡ); ("hasNextOrInProgressSnapshot"%go, raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ); ("hasNextOrInProgressUnstableEnts"%go, raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ); ("hasNextUnstableEnts"%go, raftLog__hasNextUnstableEntsⁱᵐᵖˡ); ("hasNextUnstableSnapshot"%go, raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ); ("isUpToDate"%go, raftLog__isUpToDateⁱᵐᵖˡ); ("lastEntryID"%go, raftLog__lastEntryIDⁱᵐᵖˡ); ("lastIndex"%go, raftLog__lastIndexⁱᵐᵖˡ); ("matchTerm"%go, raftLog__matchTermⁱᵐᵖˡ); ("maxAppliableIndex"%go, raftLog__maxAppliableIndexⁱᵐᵖˡ); ("maybeAppend"%go, raftLog__maybeAppendⁱᵐᵖˡ); ("maybeCommit"%go, raftLog__maybeCommitⁱᵐᵖˡ); ("mustCheckOutOfBounds"%go, raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ); ("nextCommittedEnts"%go, raftLog__nextCommittedEntsⁱᵐᵖˡ); ("nextUnstableEnts"%go, raftLog__nextUnstableEntsⁱᵐᵖˡ); ("nextUnstableSnapshot"%go, raftLog__nextUnstableSnapshotⁱᵐᵖˡ); ("restore"%go, raftLog__restoreⁱᵐᵖˡ); ("scan"%go, raftLog__scanⁱᵐᵖˡ); ("slice"%go, raftLog__sliceⁱᵐᵖˡ); ("snapshot"%go, raftLog__snapshotⁱᵐᵖˡ); ("stableSnapTo"%go, raftLog__stableSnapToⁱᵐᵖˡ); ("stableTo"%go, raftLog__stableToⁱᵐᵖˡ); ("term"%go, raftLog__termⁱᵐᵖˡ); ("zeroTermOnOutOfBounds"%go, raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ)]); (unstable.id, []); (ptrT.id unstable.id, [("acceptInProgress"%go, unstable__acceptInProgressⁱᵐᵖˡ); ("maybeFirstIndex"%go, unstable__maybeFirstIndexⁱᵐᵖˡ); ("maybeLastIndex"%go, unstable__maybeLastIndexⁱᵐᵖˡ); ("maybeTerm"%go, unstable__maybeTermⁱᵐᵖˡ); ("mustCheckOutOfBounds"%go, unstable__mustCheckOutOfBoundsⁱᵐᵖˡ); ("nextEntries"%go, unstable__nextEntriesⁱᵐᵖˡ); ("nextSnapshot"%go, unstable__nextSnapshotⁱᵐᵖˡ); ("restore"%go, unstable__restoreⁱᵐᵖˡ); ("shrinkEntriesArray"%go, unstable__shrinkEntriesArrayⁱᵐᵖˡ); ("slice"%go, unstable__sliceⁱᵐᵖˡ); ("stableSnapTo"%go, unstable__stableSnapToⁱᵐᵖˡ); ("stableTo"%go, unstable__stableToⁱᵐᵖˡ); ("truncateAndAppend"%go, unstable__truncateAndAppendⁱᵐᵖˡ)]); (DefaultLogger.id, [("Fatalln"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Fatalln" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Flags"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Flags" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Output"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Output" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Panicln"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Panicln" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Prefix"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Prefix" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Print"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Print" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Printf"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Printf" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Println"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Println" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("SetFlags"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"SetFlags" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("SetOutput"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"SetOutput" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("SetPrefix"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"SetPrefix" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("Writer"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"Writer" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V); ("output"%go, (λ: "$recv",
-                 method_call #log #"Logger'ptr" #"output" (struct.field_get #DefaultLogger "Logger" "$recv")
-                 )%V)]); (ptrT.id DefaultLogger.id, [("Debug"%go, DefaultLogger__Debugⁱᵐᵖˡ); ("Debugf"%go, DefaultLogger__Debugfⁱᵐᵖˡ); ("EnableDebug"%go, DefaultLogger__EnableDebugⁱᵐᵖˡ); ("EnableTimestamps"%go, DefaultLogger__EnableTimestampsⁱᵐᵖˡ); ("Error"%go, DefaultLogger__Errorⁱᵐᵖˡ); ("Errorf"%go, DefaultLogger__Errorfⁱᵐᵖˡ); ("Fatal"%go, DefaultLogger__Fatalⁱᵐᵖˡ); ("Fatalf"%go, DefaultLogger__Fatalfⁱᵐᵖˡ); ("Fatalln"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Fatalln" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Flags"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Flags" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Info"%go, DefaultLogger__Infoⁱᵐᵖˡ); ("Infof"%go, DefaultLogger__Infofⁱᵐᵖˡ); ("Output"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Output" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Panic"%go, DefaultLogger__Panicⁱᵐᵖˡ); ("Panicf"%go, DefaultLogger__Panicfⁱᵐᵖˡ); ("Panicln"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Panicln" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Prefix"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Prefix" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Print"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Print" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Printf"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Printf" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Println"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Println" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("SetFlags"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"SetFlags" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("SetOutput"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"SetOutput" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("SetPrefix"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"SetPrefix" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("Warning"%go, DefaultLogger__Warningⁱᵐᵖˡ); ("Warningf"%go, DefaultLogger__Warningfⁱᵐᵖˡ); ("Writer"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"Writer" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V); ("output"%go, (λ: "$recvAddr",
-                 method_call #log #"Logger'ptr" #"output" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$recvAddr"))
-                 )%V)]); (SnapshotStatus.id, []); (ptrT.id SnapshotStatus.id, []); (SoftState.id, []); (ptrT.id SoftState.id, [("equal"%go, SoftState__equalⁱᵐᵖˡ)]); (Ready.id, [("equal"%go, (λ: "$recv",
-                 method_call #v3.raft #"SoftState'ptr" #"equal" (struct.field_get #Ready "SoftState" "$recv")
-                 )%V)]); (ptrT.id Ready.id, [("Descriptor"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Descriptor" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Marshal" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("MarshalTo"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"MarshalTo" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("ProtoMessage"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"ProtoMessage" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("Reset"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Reset" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Size" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"String" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Unmarshal" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Marshal" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Merge"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Merge" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Size" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref #Ready #"HardState"%go "$recvAddr")
-                 )%V); ("equal"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"SoftState'ptr" #"equal" (![#ptrT] (struct.field_ref #Ready #"SoftState"%go "$recvAddr"))
-                 )%V)]); (Peer.id, []); (ptrT.id Peer.id, []); (msgWithResult.id, []); (ptrT.id msgWithResult.id, []); (node.id, []); (ptrT.id node.id, [("Advance"%go, node__Advanceⁱᵐᵖˡ); ("ApplyConfChange"%go, node__ApplyConfChangeⁱᵐᵖˡ); ("Campaign"%go, node__Campaignⁱᵐᵖˡ); ("ForgetLeader"%go, node__ForgetLeaderⁱᵐᵖˡ); ("Propose"%go, node__Proposeⁱᵐᵖˡ); ("ProposeConfChange"%go, node__ProposeConfChangeⁱᵐᵖˡ); ("ReadIndex"%go, node__ReadIndexⁱᵐᵖˡ); ("Ready"%go, node__Readyⁱᵐᵖˡ); ("ReportSnapshot"%go, node__ReportSnapshotⁱᵐᵖˡ); ("ReportUnreachable"%go, node__ReportUnreachableⁱᵐᵖˡ); ("Status"%go, node__Statusⁱᵐᵖˡ); ("Step"%go, node__Stepⁱᵐᵖˡ); ("Stop"%go, node__Stopⁱᵐᵖˡ); ("Tick"%go, node__Tickⁱᵐᵖˡ); ("TransferLeadership"%go, node__TransferLeadershipⁱᵐᵖˡ); ("run"%go, node__runⁱᵐᵖˡ); ("step"%go, node__stepⁱᵐᵖˡ); ("stepWait"%go, node__stepWaitⁱᵐᵖˡ); ("stepWithWaitOption"%go, node__stepWithWaitOptionⁱᵐᵖˡ)]); (ReadOnlyOption.id, []); (ptrT.id ReadOnlyOption.id, []); (lockedRand.id, []); (ptrT.id lockedRand.id, [("Intn"%go, lockedRand__Intnⁱᵐᵖˡ)]); (CampaignType.id, []); (ptrT.id CampaignType.id, []); (StateType.id, [("MarshalJSON"%go, StateType__MarshalJSONⁱᵐᵖˡ); ("String"%go, StateType__Stringⁱᵐᵖˡ)]); (ptrT.id StateType.id, [("MarshalJSON"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"StateType" #"MarshalJSON" (![#StateType] "$recvAddr")
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"StateType" #"String" (![#StateType] "$recvAddr")
-                 )%V)]); (Config.id, []); (ptrT.id Config.id, [("validate"%go, Config__validateⁱᵐᵖˡ)]); (raft.id, []); (ptrT.id raft.id, [("Step"%go, raft__Stepⁱᵐᵖˡ); ("abortLeaderTransfer"%go, raft__abortLeaderTransferⁱᵐᵖˡ); ("appendEntry"%go, raft__appendEntryⁱᵐᵖˡ); ("appliedSnap"%go, raft__appliedSnapⁱᵐᵖˡ); ("appliedTo"%go, raft__appliedToⁱᵐᵖˡ); ("applyConfChange"%go, raft__applyConfChangeⁱᵐᵖˡ); ("bcastAppend"%go, raft__bcastAppendⁱᵐᵖˡ); ("bcastHeartbeat"%go, raft__bcastHeartbeatⁱᵐᵖˡ); ("bcastHeartbeatWithCtx"%go, raft__bcastHeartbeatWithCtxⁱᵐᵖˡ); ("becomeCandidate"%go, raft__becomeCandidateⁱᵐᵖˡ); ("becomeFollower"%go, raft__becomeFollowerⁱᵐᵖˡ); ("becomeLeader"%go, raft__becomeLeaderⁱᵐᵖˡ); ("becomePreCandidate"%go, raft__becomePreCandidateⁱᵐᵖˡ); ("campaign"%go, raft__campaignⁱᵐᵖˡ); ("committedEntryInCurrentTerm"%go, raft__committedEntryInCurrentTermⁱᵐᵖˡ); ("handleAppendEntries"%go, raft__handleAppendEntriesⁱᵐᵖˡ); ("handleHeartbeat"%go, raft__handleHeartbeatⁱᵐᵖˡ); ("handleSnapshot"%go, raft__handleSnapshotⁱᵐᵖˡ); ("hardState"%go, raft__hardStateⁱᵐᵖˡ); ("hasLeader"%go, raft__hasLeaderⁱᵐᵖˡ); ("hasUnappliedConfChanges"%go, raft__hasUnappliedConfChangesⁱᵐᵖˡ); ("hup"%go, raft__hupⁱᵐᵖˡ); ("increaseUncommittedSize"%go, raft__increaseUncommittedSizeⁱᵐᵖˡ); ("loadState"%go, raft__loadStateⁱᵐᵖˡ); ("maybeCommit"%go, raft__maybeCommitⁱᵐᵖˡ); ("maybeSendAppend"%go, raft__maybeSendAppendⁱᵐᵖˡ); ("maybeSendSnapshot"%go, raft__maybeSendSnapshotⁱᵐᵖˡ); ("pastElectionTimeout"%go, raft__pastElectionTimeoutⁱᵐᵖˡ); ("poll"%go, raft__pollⁱᵐᵖˡ); ("promotable"%go, raft__promotableⁱᵐᵖˡ); ("reduceUncommittedSize"%go, raft__reduceUncommittedSizeⁱᵐᵖˡ); ("reset"%go, raft__resetⁱᵐᵖˡ); ("resetRandomizedElectionTimeout"%go, raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ); ("responseToReadIndexReq"%go, raft__responseToReadIndexReqⁱᵐᵖˡ); ("restore"%go, raft__restoreⁱᵐᵖˡ); ("send"%go, raft__sendⁱᵐᵖˡ); ("sendAppend"%go, raft__sendAppendⁱᵐᵖˡ); ("sendHeartbeat"%go, raft__sendHeartbeatⁱᵐᵖˡ); ("sendTimeoutNow"%go, raft__sendTimeoutNowⁱᵐᵖˡ); ("softState"%go, raft__softStateⁱᵐᵖˡ); ("switchToConfig"%go, raft__switchToConfigⁱᵐᵖˡ); ("tickElection"%go, raft__tickElectionⁱᵐᵖˡ); ("tickHeartbeat"%go, raft__tickHeartbeatⁱᵐᵖˡ)]); (stepFunc.id, []); (ptrT.id stepFunc.id, []); (RawNode.id, []); (ptrT.id RawNode.id, [("Advance"%go, RawNode__Advanceⁱᵐᵖˡ); ("ApplyConfChange"%go, RawNode__ApplyConfChangeⁱᵐᵖˡ); ("BasicStatus"%go, RawNode__BasicStatusⁱᵐᵖˡ); ("Bootstrap"%go, RawNode__Bootstrapⁱᵐᵖˡ); ("Campaign"%go, RawNode__Campaignⁱᵐᵖˡ); ("ForgetLeader"%go, RawNode__ForgetLeaderⁱᵐᵖˡ); ("HasReady"%go, RawNode__HasReadyⁱᵐᵖˡ); ("Propose"%go, RawNode__Proposeⁱᵐᵖˡ); ("ProposeConfChange"%go, RawNode__ProposeConfChangeⁱᵐᵖˡ); ("ReadIndex"%go, RawNode__ReadIndexⁱᵐᵖˡ); ("Ready"%go, RawNode__Readyⁱᵐᵖˡ); ("ReportSnapshot"%go, RawNode__ReportSnapshotⁱᵐᵖˡ); ("ReportUnreachable"%go, RawNode__ReportUnreachableⁱᵐᵖˡ); ("Status"%go, RawNode__Statusⁱᵐᵖˡ); ("Step"%go, RawNode__Stepⁱᵐᵖˡ); ("Tick"%go, RawNode__Tickⁱᵐᵖˡ); ("TickQuiesced"%go, RawNode__TickQuiescedⁱᵐᵖˡ); ("TransferLeader"%go, RawNode__TransferLeaderⁱᵐᵖˡ); ("WithProgress"%go, RawNode__WithProgressⁱᵐᵖˡ); ("acceptReady"%go, RawNode__acceptReadyⁱᵐᵖˡ); ("applyUnstableEntries"%go, RawNode__applyUnstableEntriesⁱᵐᵖˡ); ("readyWithoutAccept"%go, RawNode__readyWithoutAcceptⁱᵐᵖˡ)]); (ProgressType.id, []); (ptrT.id ProgressType.id, []); (ReadState.id, []); (ptrT.id ReadState.id, []); (readIndexStatus.id, []); (ptrT.id readIndexStatus.id, []); (readOnly.id, []); (ptrT.id readOnly.id, [("addRequest"%go, readOnly__addRequestⁱᵐᵖˡ); ("advance"%go, readOnly__advanceⁱᵐᵖˡ); ("lastPendingRequestCtx"%go, readOnly__lastPendingRequestCtxⁱᵐᵖˡ); ("recvAck"%go, readOnly__recvAckⁱᵐᵖˡ)]); (TracingEvent.id, []); (ptrT.id TracingEvent.id, []); (Status.id, [("MarshalJSON"%go, Status__MarshalJSONⁱᵐᵖˡ); ("String"%go, Status__Stringⁱᵐᵖˡ)]); (ptrT.id Status.id, [("Descriptor"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Descriptor" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Marshal" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("MarshalJSON"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"Status" #"MarshalJSON" (![#Status] "$recvAddr")
-                 )%V); ("MarshalTo"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"MarshalTo" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("ProtoMessage"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"ProtoMessage" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("Reset"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Reset" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Size" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"Status" #"String" (![#Status] "$recvAddr")
-                 )%V); ("Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Unmarshal" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("XXX_Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Marshal" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("XXX_Merge"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Merge" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("XXX_Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Size" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("XXX_Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V); ("equal"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"SoftState'ptr" #"equal" (struct.field_ref #BasicStatus #"SoftState"%go (struct.field_ref #Status #"BasicStatus"%go "$recvAddr"))
-                 )%V)]); (BasicStatus.id, []); (ptrT.id BasicStatus.id, [("Descriptor"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Descriptor" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Marshal" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("MarshalTo"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"MarshalTo" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("ProtoMessage"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"ProtoMessage" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("Reset"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Reset" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Size" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"String" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"Unmarshal" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Marshal" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Merge"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Merge" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Size" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("XXX_Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref #BasicStatus #"HardState"%go "$recvAddr")
-                 )%V); ("equal"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"SoftState'ptr" #"equal" (struct.field_ref #BasicStatus #"SoftState"%go "$recvAddr")
-                 )%V)]); (inMemStorageCallStats.id, []); (ptrT.id inMemStorageCallStats.id, []); (MemoryStorage.id, []); (ptrT.id MemoryStorage.id, [("Append"%go, MemoryStorage__Appendⁱᵐᵖˡ); ("ApplySnapshot"%go, MemoryStorage__ApplySnapshotⁱᵐᵖˡ); ("Compact"%go, MemoryStorage__Compactⁱᵐᵖˡ); ("CreateSnapshot"%go, MemoryStorage__CreateSnapshotⁱᵐᵖˡ); ("Entries"%go, MemoryStorage__Entriesⁱᵐᵖˡ); ("FirstIndex"%go, MemoryStorage__FirstIndexⁱᵐᵖˡ); ("InitialState"%go, MemoryStorage__InitialStateⁱᵐᵖˡ); ("LastIndex"%go, MemoryStorage__LastIndexⁱᵐᵖˡ); ("Lock"%go, (λ: "$recvAddr",
-                 method_call #sync #"Mutex'ptr" #"Lock" (struct.field_ref #MemoryStorage #"Mutex"%go "$recvAddr")
-                 )%V); ("SetHardState"%go, MemoryStorage__SetHardStateⁱᵐᵖˡ); ("Snapshot"%go, MemoryStorage__Snapshotⁱᵐᵖˡ); ("Term"%go, MemoryStorage__Termⁱᵐᵖˡ); ("TryLock"%go, (λ: "$recvAddr",
-                 method_call #sync #"Mutex'ptr" #"TryLock" (struct.field_ref #MemoryStorage #"Mutex"%go "$recvAddr")
-                 )%V); ("Unlock"%go, (λ: "$recvAddr",
-                 method_call #sync #"Mutex'ptr" #"Unlock" (struct.field_ref #MemoryStorage #"Mutex"%go "$recvAddr")
-                 )%V); ("firstIndex"%go, MemoryStorage__firstIndexⁱᵐᵖˡ); ("lastIndex"%go, MemoryStorage__lastIndexⁱᵐᵖˡ)]); (entryID.id, []); (ptrT.id entryID.id, []); (logSlice.id, [("lastEntryID"%go, logSlice__lastEntryIDⁱᵐᵖˡ); ("lastIndex"%go, logSlice__lastIndexⁱᵐᵖˡ); ("valid"%go, logSlice__validⁱᵐᵖˡ)]); (ptrT.id logSlice.id, [("lastEntryID"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"logSlice" #"lastEntryID" (![#logSlice] "$recvAddr")
-                 )%V); ("lastIndex"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"logSlice" #"lastIndex" (![#logSlice] "$recvAddr")
-                 )%V); ("valid"%go, (λ: "$recvAddr",
-                 method_call #v3.raft #"logSlice" #"valid" (![#logSlice] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(raftLog.id, []); (ptrT.id raftLog.id, [("String"%go, raftLog__Stringⁱᵐᵖˡ); ("acceptApplying"%go, raftLog__acceptApplyingⁱᵐᵖˡ); ("acceptUnstable"%go, raftLog__acceptUnstableⁱᵐᵖˡ); ("allEntries"%go, raftLog__allEntriesⁱᵐᵖˡ); ("append"%go, raftLog__appendⁱᵐᵖˡ); ("appliedTo"%go, raftLog__appliedToⁱᵐᵖˡ); ("commitTo"%go, raftLog__commitToⁱᵐᵖˡ); ("entries"%go, raftLog__entriesⁱᵐᵖˡ); ("findConflict"%go, raftLog__findConflictⁱᵐᵖˡ); ("findConflictByTerm"%go, raftLog__findConflictByTermⁱᵐᵖˡ); ("firstIndex"%go, raftLog__firstIndexⁱᵐᵖˡ); ("hasNextCommittedEnts"%go, raftLog__hasNextCommittedEntsⁱᵐᵖˡ); ("hasNextOrInProgressSnapshot"%go, raftLog__hasNextOrInProgressSnapshotⁱᵐᵖˡ); ("hasNextOrInProgressUnstableEnts"%go, raftLog__hasNextOrInProgressUnstableEntsⁱᵐᵖˡ); ("hasNextUnstableEnts"%go, raftLog__hasNextUnstableEntsⁱᵐᵖˡ); ("hasNextUnstableSnapshot"%go, raftLog__hasNextUnstableSnapshotⁱᵐᵖˡ); ("isUpToDate"%go, raftLog__isUpToDateⁱᵐᵖˡ); ("lastEntryID"%go, raftLog__lastEntryIDⁱᵐᵖˡ); ("lastIndex"%go, raftLog__lastIndexⁱᵐᵖˡ); ("matchTerm"%go, raftLog__matchTermⁱᵐᵖˡ); ("maxAppliableIndex"%go, raftLog__maxAppliableIndexⁱᵐᵖˡ); ("maybeAppend"%go, raftLog__maybeAppendⁱᵐᵖˡ); ("maybeCommit"%go, raftLog__maybeCommitⁱᵐᵖˡ); ("mustCheckOutOfBounds"%go, raftLog__mustCheckOutOfBoundsⁱᵐᵖˡ); ("nextCommittedEnts"%go, raftLog__nextCommittedEntsⁱᵐᵖˡ); ("nextUnstableEnts"%go, raftLog__nextUnstableEntsⁱᵐᵖˡ); ("nextUnstableSnapshot"%go, raftLog__nextUnstableSnapshotⁱᵐᵖˡ); ("restore"%go, raftLog__restoreⁱᵐᵖˡ); ("scan"%go, raftLog__scanⁱᵐᵖˡ); ("slice"%go, raftLog__sliceⁱᵐᵖˡ); ("snapshot"%go, raftLog__snapshotⁱᵐᵖˡ); ("stableSnapTo"%go, raftLog__stableSnapToⁱᵐᵖˡ); ("stableTo"%go, raftLog__stableToⁱᵐᵖˡ); ("term"%go, raftLog__termⁱᵐᵖˡ); ("zeroTermOnOutOfBounds"%go, raftLog__zeroTermOnOutOfBoundsⁱᵐᵖˡ)]); (unstable.id, []); (ptrT.id unstable.id, [("acceptInProgress"%go, unstable__acceptInProgressⁱᵐᵖˡ); ("maybeFirstIndex"%go, unstable__maybeFirstIndexⁱᵐᵖˡ); ("maybeLastIndex"%go, unstable__maybeLastIndexⁱᵐᵖˡ); ("maybeTerm"%go, unstable__maybeTermⁱᵐᵖˡ); ("mustCheckOutOfBounds"%go, unstable__mustCheckOutOfBoundsⁱᵐᵖˡ); ("nextEntries"%go, unstable__nextEntriesⁱᵐᵖˡ); ("nextSnapshot"%go, unstable__nextSnapshotⁱᵐᵖˡ); ("restore"%go, unstable__restoreⁱᵐᵖˡ); ("shrinkEntriesArray"%go, unstable__shrinkEntriesArrayⁱᵐᵖˡ); ("slice"%go, unstable__sliceⁱᵐᵖˡ); ("stableSnapTo"%go, unstable__stableSnapToⁱᵐᵖˡ); ("stableTo"%go, unstable__stableToⁱᵐᵖˡ); ("truncateAndAppend"%go, unstable__truncateAndAppendⁱᵐᵖˡ)]); (DefaultLogger.id, [("Fatalln"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Fatalln"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Flags"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Flags"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Output"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Output"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Panicln"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Panicln"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Prefix"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Prefix"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Print"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Print"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Printf"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Printf"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Println"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Println"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("SetFlags"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"SetFlags"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("SetOutput"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"SetOutput"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("SetPrefix"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"SetPrefix"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("Writer"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Writer"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V); ("output"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"output"%go (struct.field_get #DefaultLogger #"Logger"%go "$r")
+                 )%V)]); (ptrT.id DefaultLogger.id, [("Debug"%go, DefaultLogger__Debugⁱᵐᵖˡ); ("Debugf"%go, DefaultLogger__Debugfⁱᵐᵖˡ); ("EnableDebug"%go, DefaultLogger__EnableDebugⁱᵐᵖˡ); ("EnableTimestamps"%go, DefaultLogger__EnableTimestampsⁱᵐᵖˡ); ("Error"%go, DefaultLogger__Errorⁱᵐᵖˡ); ("Errorf"%go, DefaultLogger__Errorfⁱᵐᵖˡ); ("Fatal"%go, DefaultLogger__Fatalⁱᵐᵖˡ); ("Fatalf"%go, DefaultLogger__Fatalfⁱᵐᵖˡ); ("Fatalln"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Fatalln"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Flags"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Flags"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Info"%go, DefaultLogger__Infoⁱᵐᵖˡ); ("Infof"%go, DefaultLogger__Infofⁱᵐᵖˡ); ("Output"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Output"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Panic"%go, DefaultLogger__Panicⁱᵐᵖˡ); ("Panicf"%go, DefaultLogger__Panicfⁱᵐᵖˡ); ("Panicln"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Panicln"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Prefix"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Prefix"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Print"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Print"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Printf"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Printf"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Println"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Println"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("SetFlags"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"SetFlags"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("SetOutput"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"SetOutput"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("SetPrefix"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"SetPrefix"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("Warning"%go, DefaultLogger__Warningⁱᵐᵖˡ); ("Warningf"%go, DefaultLogger__Warningfⁱᵐᵖˡ); ("Writer"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"Writer"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V); ("output"%go, (λ: "$r",
+                 method_call #(ptrT.id log.Logger.id) #"output"%go (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go "$r"))
+                 )%V)]); (SnapshotStatus.id, []); (ptrT.id SnapshotStatus.id, []); (SoftState.id, []); (ptrT.id SoftState.id, [("equal"%go, SoftState__equalⁱᵐᵖˡ)]); (Ready.id, [("equal"%go, (λ: "$r",
+                 method_call #(ptrT.id SoftState.id) #"equal"%go (struct.field_get #Ready #"SoftState"%go "$r")
+                 )%V)]); (ptrT.id Ready.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Descriptor"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Marshal"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"MarshalTo"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"MarshalToSizedBuffer"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"ProtoMessage"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Reset"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Size"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"String"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Unmarshal"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_DiscardUnknown"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Marshal"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Merge"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Size"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Unmarshal"%go (struct.field_ref #Ready #"HardState"%go "$r")
+                 )%V); ("equal"%go, (λ: "$r",
+                 method_call #(ptrT.id SoftState.id) #"equal"%go (![#ptrT] (struct.field_ref #Ready #"SoftState"%go "$r"))
+                 )%V)]); (Peer.id, []); (ptrT.id Peer.id, []); (msgWithResult.id, []); (ptrT.id msgWithResult.id, []); (node.id, []); (ptrT.id node.id, [("Advance"%go, node__Advanceⁱᵐᵖˡ); ("ApplyConfChange"%go, node__ApplyConfChangeⁱᵐᵖˡ); ("Campaign"%go, node__Campaignⁱᵐᵖˡ); ("ForgetLeader"%go, node__ForgetLeaderⁱᵐᵖˡ); ("Propose"%go, node__Proposeⁱᵐᵖˡ); ("ProposeConfChange"%go, node__ProposeConfChangeⁱᵐᵖˡ); ("ReadIndex"%go, node__ReadIndexⁱᵐᵖˡ); ("Ready"%go, node__Readyⁱᵐᵖˡ); ("ReportSnapshot"%go, node__ReportSnapshotⁱᵐᵖˡ); ("ReportUnreachable"%go, node__ReportUnreachableⁱᵐᵖˡ); ("Status"%go, node__Statusⁱᵐᵖˡ); ("Step"%go, node__Stepⁱᵐᵖˡ); ("Stop"%go, node__Stopⁱᵐᵖˡ); ("Tick"%go, node__Tickⁱᵐᵖˡ); ("TransferLeadership"%go, node__TransferLeadershipⁱᵐᵖˡ); ("run"%go, node__runⁱᵐᵖˡ); ("step"%go, node__stepⁱᵐᵖˡ); ("stepWait"%go, node__stepWaitⁱᵐᵖˡ); ("stepWithWaitOption"%go, node__stepWithWaitOptionⁱᵐᵖˡ)]); (ReadOnlyOption.id, []); (ptrT.id ReadOnlyOption.id, []); (lockedRand.id, []); (ptrT.id lockedRand.id, [("Intn"%go, lockedRand__Intnⁱᵐᵖˡ)]); (CampaignType.id, []); (ptrT.id CampaignType.id, []); (StateType.id, [("MarshalJSON"%go, StateType__MarshalJSONⁱᵐᵖˡ); ("String"%go, StateType__Stringⁱᵐᵖˡ)]); (ptrT.id StateType.id, [("MarshalJSON"%go, (λ: "$r",
+                 method_call #StateType.id #"MarshalJSON"%go (![#StateType] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #StateType.id #"String"%go (![#StateType] "$r")
+                 )%V)]); (Config.id, []); (ptrT.id Config.id, [("validate"%go, Config__validateⁱᵐᵖˡ)]); (raft.id, []); (ptrT.id raft.id, [("Step"%go, raft__Stepⁱᵐᵖˡ); ("abortLeaderTransfer"%go, raft__abortLeaderTransferⁱᵐᵖˡ); ("appendEntry"%go, raft__appendEntryⁱᵐᵖˡ); ("appliedSnap"%go, raft__appliedSnapⁱᵐᵖˡ); ("appliedTo"%go, raft__appliedToⁱᵐᵖˡ); ("applyConfChange"%go, raft__applyConfChangeⁱᵐᵖˡ); ("bcastAppend"%go, raft__bcastAppendⁱᵐᵖˡ); ("bcastHeartbeat"%go, raft__bcastHeartbeatⁱᵐᵖˡ); ("bcastHeartbeatWithCtx"%go, raft__bcastHeartbeatWithCtxⁱᵐᵖˡ); ("becomeCandidate"%go, raft__becomeCandidateⁱᵐᵖˡ); ("becomeFollower"%go, raft__becomeFollowerⁱᵐᵖˡ); ("becomeLeader"%go, raft__becomeLeaderⁱᵐᵖˡ); ("becomePreCandidate"%go, raft__becomePreCandidateⁱᵐᵖˡ); ("campaign"%go, raft__campaignⁱᵐᵖˡ); ("committedEntryInCurrentTerm"%go, raft__committedEntryInCurrentTermⁱᵐᵖˡ); ("handleAppendEntries"%go, raft__handleAppendEntriesⁱᵐᵖˡ); ("handleHeartbeat"%go, raft__handleHeartbeatⁱᵐᵖˡ); ("handleSnapshot"%go, raft__handleSnapshotⁱᵐᵖˡ); ("hardState"%go, raft__hardStateⁱᵐᵖˡ); ("hasLeader"%go, raft__hasLeaderⁱᵐᵖˡ); ("hasUnappliedConfChanges"%go, raft__hasUnappliedConfChangesⁱᵐᵖˡ); ("hup"%go, raft__hupⁱᵐᵖˡ); ("increaseUncommittedSize"%go, raft__increaseUncommittedSizeⁱᵐᵖˡ); ("loadState"%go, raft__loadStateⁱᵐᵖˡ); ("maybeCommit"%go, raft__maybeCommitⁱᵐᵖˡ); ("maybeSendAppend"%go, raft__maybeSendAppendⁱᵐᵖˡ); ("maybeSendSnapshot"%go, raft__maybeSendSnapshotⁱᵐᵖˡ); ("pastElectionTimeout"%go, raft__pastElectionTimeoutⁱᵐᵖˡ); ("poll"%go, raft__pollⁱᵐᵖˡ); ("promotable"%go, raft__promotableⁱᵐᵖˡ); ("reduceUncommittedSize"%go, raft__reduceUncommittedSizeⁱᵐᵖˡ); ("reset"%go, raft__resetⁱᵐᵖˡ); ("resetRandomizedElectionTimeout"%go, raft__resetRandomizedElectionTimeoutⁱᵐᵖˡ); ("responseToReadIndexReq"%go, raft__responseToReadIndexReqⁱᵐᵖˡ); ("restore"%go, raft__restoreⁱᵐᵖˡ); ("send"%go, raft__sendⁱᵐᵖˡ); ("sendAppend"%go, raft__sendAppendⁱᵐᵖˡ); ("sendHeartbeat"%go, raft__sendHeartbeatⁱᵐᵖˡ); ("sendTimeoutNow"%go, raft__sendTimeoutNowⁱᵐᵖˡ); ("softState"%go, raft__softStateⁱᵐᵖˡ); ("switchToConfig"%go, raft__switchToConfigⁱᵐᵖˡ); ("tickElection"%go, raft__tickElectionⁱᵐᵖˡ); ("tickHeartbeat"%go, raft__tickHeartbeatⁱᵐᵖˡ)]); (stepFunc.id, []); (ptrT.id stepFunc.id, []); (RawNode.id, []); (ptrT.id RawNode.id, [("Advance"%go, RawNode__Advanceⁱᵐᵖˡ); ("ApplyConfChange"%go, RawNode__ApplyConfChangeⁱᵐᵖˡ); ("BasicStatus"%go, RawNode__BasicStatusⁱᵐᵖˡ); ("Bootstrap"%go, RawNode__Bootstrapⁱᵐᵖˡ); ("Campaign"%go, RawNode__Campaignⁱᵐᵖˡ); ("ForgetLeader"%go, RawNode__ForgetLeaderⁱᵐᵖˡ); ("HasReady"%go, RawNode__HasReadyⁱᵐᵖˡ); ("Propose"%go, RawNode__Proposeⁱᵐᵖˡ); ("ProposeConfChange"%go, RawNode__ProposeConfChangeⁱᵐᵖˡ); ("ReadIndex"%go, RawNode__ReadIndexⁱᵐᵖˡ); ("Ready"%go, RawNode__Readyⁱᵐᵖˡ); ("ReportSnapshot"%go, RawNode__ReportSnapshotⁱᵐᵖˡ); ("ReportUnreachable"%go, RawNode__ReportUnreachableⁱᵐᵖˡ); ("Status"%go, RawNode__Statusⁱᵐᵖˡ); ("Step"%go, RawNode__Stepⁱᵐᵖˡ); ("Tick"%go, RawNode__Tickⁱᵐᵖˡ); ("TickQuiesced"%go, RawNode__TickQuiescedⁱᵐᵖˡ); ("TransferLeader"%go, RawNode__TransferLeaderⁱᵐᵖˡ); ("WithProgress"%go, RawNode__WithProgressⁱᵐᵖˡ); ("acceptReady"%go, RawNode__acceptReadyⁱᵐᵖˡ); ("applyUnstableEntries"%go, RawNode__applyUnstableEntriesⁱᵐᵖˡ); ("readyWithoutAccept"%go, RawNode__readyWithoutAcceptⁱᵐᵖˡ)]); (ProgressType.id, []); (ptrT.id ProgressType.id, []); (ReadState.id, []); (ptrT.id ReadState.id, []); (readIndexStatus.id, []); (ptrT.id readIndexStatus.id, []); (readOnly.id, []); (ptrT.id readOnly.id, [("addRequest"%go, readOnly__addRequestⁱᵐᵖˡ); ("advance"%go, readOnly__advanceⁱᵐᵖˡ); ("lastPendingRequestCtx"%go, readOnly__lastPendingRequestCtxⁱᵐᵖˡ); ("recvAck"%go, readOnly__recvAckⁱᵐᵖˡ)]); (TracingEvent.id, []); (ptrT.id TracingEvent.id, []); (Status.id, [("MarshalJSON"%go, Status__MarshalJSONⁱᵐᵖˡ); ("String"%go, Status__Stringⁱᵐᵖˡ)]); (ptrT.id Status.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"Descriptor"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"Marshal"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("MarshalJSON"%go, (λ: "$r",
+                 method_call #Status.id #"MarshalJSON"%go (![#Status] "$r")
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"MarshalTo"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"MarshalToSizedBuffer"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"ProtoMessage"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"Reset"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"Size"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #Status.id #"String"%go (![#Status] "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"Unmarshal"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"XXX_DiscardUnknown"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"XXX_Marshal"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"XXX_Merge"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"XXX_Size"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"XXX_Unmarshal"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V); ("equal"%go, (λ: "$r",
+                 method_call #(ptrT.id BasicStatus.id) #"equal"%go (struct.field_ref #Status #"BasicStatus"%go "$r")
+                 )%V)]); (BasicStatus.id, []); (ptrT.id BasicStatus.id, [("Descriptor"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Descriptor"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Marshal"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("MarshalTo"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"MarshalTo"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("MarshalToSizedBuffer"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"MarshalToSizedBuffer"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("ProtoMessage"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"ProtoMessage"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("Reset"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Reset"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("Size"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Size"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"String"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"Unmarshal"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("XXX_DiscardUnknown"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_DiscardUnknown"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("XXX_Marshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Marshal"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("XXX_Merge"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Merge"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("XXX_Size"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Size"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("XXX_Unmarshal"%go, (λ: "$r",
+                 method_call #(ptrT.id raftpb.HardState.id) #"XXX_Unmarshal"%go (struct.field_ref #BasicStatus #"HardState"%go "$r")
+                 )%V); ("equal"%go, (λ: "$r",
+                 method_call #(ptrT.id SoftState.id) #"equal"%go (struct.field_ref #BasicStatus #"SoftState"%go "$r")
+                 )%V)]); (inMemStorageCallStats.id, []); (ptrT.id inMemStorageCallStats.id, []); (MemoryStorage.id, []); (ptrT.id MemoryStorage.id, [("Append"%go, MemoryStorage__Appendⁱᵐᵖˡ); ("ApplySnapshot"%go, MemoryStorage__ApplySnapshotⁱᵐᵖˡ); ("Compact"%go, MemoryStorage__Compactⁱᵐᵖˡ); ("CreateSnapshot"%go, MemoryStorage__CreateSnapshotⁱᵐᵖˡ); ("Entries"%go, MemoryStorage__Entriesⁱᵐᵖˡ); ("FirstIndex"%go, MemoryStorage__FirstIndexⁱᵐᵖˡ); ("InitialState"%go, MemoryStorage__InitialStateⁱᵐᵖˡ); ("LastIndex"%go, MemoryStorage__LastIndexⁱᵐᵖˡ); ("Lock"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #MemoryStorage #"Mutex"%go "$r")
+                 )%V); ("SetHardState"%go, MemoryStorage__SetHardStateⁱᵐᵖˡ); ("Snapshot"%go, MemoryStorage__Snapshotⁱᵐᵖˡ); ("Term"%go, MemoryStorage__Termⁱᵐᵖˡ); ("TryLock"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Mutex.id) #"TryLock"%go (struct.field_ref #MemoryStorage #"Mutex"%go "$r")
+                 )%V); ("Unlock"%go, (λ: "$r",
+                 method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #MemoryStorage #"Mutex"%go "$r")
+                 )%V); ("firstIndex"%go, MemoryStorage__firstIndexⁱᵐᵖˡ); ("lastIndex"%go, MemoryStorage__lastIndexⁱᵐᵖˡ)]); (entryID.id, []); (ptrT.id entryID.id, []); (logSlice.id, [("lastEntryID"%go, logSlice__lastEntryIDⁱᵐᵖˡ); ("lastIndex"%go, logSlice__lastIndexⁱᵐᵖˡ); ("valid"%go, logSlice__validⁱᵐᵖˡ)]); (ptrT.id logSlice.id, [("lastEntryID"%go, (λ: "$r",
+                 method_call #logSlice.id #"lastEntryID"%go (![#logSlice] "$r")
+                 )%V); ("lastIndex"%go, (λ: "$r",
+                 method_call #logSlice.id #"lastIndex"%go (![#logSlice] "$r")
+                 )%V); ("valid"%go, (λ: "$r",
+                 method_call #logSlice.id #"valid"%go (![#logSlice] "$r")
                  )%V)]); (EntryFormatter.id, []); (ptrT.id EntryFormatter.id, []); (entryEncodingSize.id, []); (ptrT.id entryEncodingSize.id, []); (entryPayloadSize.id, []); (ptrT.id entryPayloadSize.id, [])].
 
 #[global] Instance info' : PkgInfo v3.raft :=
@@ -8683,7 +8683,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(raftLog.id,
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [errors.errors; go_etcd_io.raft.v3.raftpb.raftpb; fmt.fmt; io.io; log.log; os.os; sync.sync; context.context; bytes.bytes; crypto.rand.rand; math.math; math.big.big; strings.strings; go_etcd_io.raft.v3.confchange.confchange; go_etcd_io.raft.v3.quorum.quorum; go_etcd_io.raft.v3.quorum.slices.slices; go_etcd_io.raft.v3.tracker.tracker; go_etcd_io.raft.v3.raftpb.raftpb];
+    pkg_imported_pkgs := [code.errors.errors; code.go_etcd_io.raft.v3.raftpb.raftpb; code.fmt.fmt; code.io.io; code.log.log; code.os.os; code.sync.sync; code.context.context; code.bytes.bytes; code.crypto.rand.rand; code.math.math; code.math.big.big; code.strings.strings; code.go_etcd_io.raft.v3.confchange.confchange; code.go_etcd_io.raft.v3.quorum.quorum; code.go_etcd_io.raft.v3.quorum.slices.slices; code.go_etcd_io.raft.v3.tracker.tracker; code.go_etcd_io.raft.v3.raftpb.raftpb];
   |}.
 
 Definition initialize' : val :=

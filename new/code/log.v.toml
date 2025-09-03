@@ -4,10 +4,6 @@ translate = [
   "LstdFlags",
 ]
 
-axiomatize = [
-  "Logger",
-]
-
 trusted = [
   "Printf",
   "Println",

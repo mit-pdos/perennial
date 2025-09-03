@@ -9,6 +9,40 @@ Set Default Proof Using "Type".
 
 Module grove_ffi.
 
+(* type grove_ffi.listener *)
+Module listener.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End listener.
+
+Global Instance bounded_size_listener : BoundedTypeSize grove_ffi.listener.
+Admitted.
+
+Global Instance into_val_listener `{ffi_syntax} : IntoVal listener.t.
+Admitted.
+
+Global Instance into_val_typed_listener `{ffi_syntax} : IntoValTyped listener.t grove_ffi.listener.
+Admitted.
+
+(* type grove_ffi.connection *)
+Module connection.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End connection.
+
+Global Instance bounded_size_connection : BoundedTypeSize grove_ffi.connection.
+Admitted.
+
+Global Instance into_val_connection `{ffi_syntax} : IntoVal connection.t.
+Admitted.
+
+Global Instance into_val_typed_connection `{ffi_syntax} : IntoValTyped connection.t grove_ffi.connection.
+Admitted.
+
 Section names.
 
 Context `{!heapGS Σ}.
@@ -31,6 +65,10 @@ Global Program Instance is_pkg_defined_grove_ffi : IsPkgDefined grove_ffi :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_panic_if_err :
+  WpFuncCall grove_ffi.panic_if_err _ (is_pkg_defined grove_ffi) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_FileWrite :
   WpFuncCall grove_ffi.FileWrite _ (is_pkg_defined grove_ffi) :=
   ltac:(solve_wp_func_call).
@@ -43,12 +81,28 @@ Global Instance wp_func_call_FileAppend :
   WpFuncCall grove_ffi.FileAppend _ (is_pkg_defined grove_ffi) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_U64ToString :
+  WpFuncCall grove_ffi.U64ToString _ (is_pkg_defined grove_ffi) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MakeAddress :
+  WpFuncCall grove_ffi.MakeAddress _ (is_pkg_defined grove_ffi) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AddressToStr :
+  WpFuncCall grove_ffi.AddressToStr _ (is_pkg_defined grove_ffi) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Listen :
   WpFuncCall grove_ffi.Listen _ (is_pkg_defined grove_ffi) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Accept :
   WpFuncCall grove_ffi.Accept _ (is_pkg_defined grove_ffi) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_makeConnection :
+  WpFuncCall grove_ffi.makeConnection _ (is_pkg_defined grove_ffi) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Connect :

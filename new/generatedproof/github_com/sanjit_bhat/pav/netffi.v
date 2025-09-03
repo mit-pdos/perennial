@@ -64,8 +64,16 @@ Global Program Instance is_pkg_defined_netffi : IsPkgDefined netffi :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_addrToStr :
+  WpFuncCall netffi.addrToStr _ (is_pkg_defined netffi) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Dial :
   WpFuncCall netffi.Dial _ (is_pkg_defined netffi) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newConn :
+  WpFuncCall netffi.newConn _ (is_pkg_defined netffi) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Listen :

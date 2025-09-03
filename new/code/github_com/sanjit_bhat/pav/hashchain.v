@@ -174,7 +174,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(HashChain.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [bytes.bytes; github_com.goose_lang.std.std; github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; github_com.sanjit_bhat.pav.cryptoutil.cryptoutil];
+    pkg_imported_pkgs := [code.bytes.bytes; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil];
   |}.
 
 Definition initialize' : val :=

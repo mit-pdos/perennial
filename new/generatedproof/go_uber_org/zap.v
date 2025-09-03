@@ -9,6 +9,584 @@ Set Default Proof Using "Type".
 
 Module zap.
 
+(* type zap.objects *)
+Module objects.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End objects.
+
+Global Instance bounded_size_objects : BoundedTypeSize zap.objects.
+Admitted.
+
+Global Instance into_val_objects `{ffi_syntax} : IntoVal objects.t.
+Admitted.
+
+Global Instance into_val_typed_objects `{ffi_syntax} : IntoValTyped objects.t zap.objects.
+Admitted.
+
+(* type zap.ObjectMarshalerPtr *)
+Module ObjectMarshalerPtr.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ObjectMarshalerPtr.
+
+Global Instance bounded_size_ObjectMarshalerPtr : BoundedTypeSize zap.ObjectMarshalerPtr.
+Admitted.
+
+Global Instance into_val_ObjectMarshalerPtr `{ffi_syntax} : IntoVal ObjectMarshalerPtr.t.
+Admitted.
+
+Global Instance into_val_typed_ObjectMarshalerPtr `{ffi_syntax} : IntoValTyped ObjectMarshalerPtr.t zap.ObjectMarshalerPtr.
+Admitted.
+
+(* type zap.objectValues *)
+Module objectValues.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End objectValues.
+
+Global Instance bounded_size_objectValues : BoundedTypeSize zap.objectValues.
+Admitted.
+
+Global Instance into_val_objectValues `{ffi_syntax} : IntoVal objectValues.t.
+Admitted.
+
+Global Instance into_val_typed_objectValues `{ffi_syntax} : IntoValTyped objectValues.t zap.objectValues.
+Admitted.
+
+(* type zap.stringers *)
+Module stringers.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End stringers.
+
+Global Instance bounded_size_stringers : BoundedTypeSize zap.stringers.
+Admitted.
+
+Global Instance into_val_stringers `{ffi_syntax} : IntoVal stringers.t.
+Admitted.
+
+Global Instance into_val_typed_stringers `{ffi_syntax} : IntoValTyped stringers.t zap.stringers.
+Admitted.
+
+(* type zap.bools *)
+Module bools.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End bools.
+
+Global Instance bounded_size_bools : BoundedTypeSize zap.bools.
+Admitted.
+
+Global Instance into_val_bools `{ffi_syntax} : IntoVal bools.t.
+Admitted.
+
+Global Instance into_val_typed_bools `{ffi_syntax} : IntoValTyped bools.t zap.bools.
+Admitted.
+
+(* type zap.byteStringsArray *)
+Module byteStringsArray.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End byteStringsArray.
+
+Global Instance bounded_size_byteStringsArray : BoundedTypeSize zap.byteStringsArray.
+Admitted.
+
+Global Instance into_val_byteStringsArray `{ffi_syntax} : IntoVal byteStringsArray.t.
+Admitted.
+
+Global Instance into_val_typed_byteStringsArray `{ffi_syntax} : IntoValTyped byteStringsArray.t zap.byteStringsArray.
+Admitted.
+
+(* type zap.complex128s *)
+Module complex128s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End complex128s.
+
+Global Instance bounded_size_complex128s : BoundedTypeSize zap.complex128s.
+Admitted.
+
+Global Instance into_val_complex128s `{ffi_syntax} : IntoVal complex128s.t.
+Admitted.
+
+Global Instance into_val_typed_complex128s `{ffi_syntax} : IntoValTyped complex128s.t zap.complex128s.
+Admitted.
+
+(* type zap.complex64s *)
+Module complex64s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End complex64s.
+
+Global Instance bounded_size_complex64s : BoundedTypeSize zap.complex64s.
+Admitted.
+
+Global Instance into_val_complex64s `{ffi_syntax} : IntoVal complex64s.t.
+Admitted.
+
+Global Instance into_val_typed_complex64s `{ffi_syntax} : IntoValTyped complex64s.t zap.complex64s.
+Admitted.
+
+(* type zap.durations *)
+Module durations.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End durations.
+
+Global Instance bounded_size_durations : BoundedTypeSize zap.durations.
+Admitted.
+
+Global Instance into_val_durations `{ffi_syntax} : IntoVal durations.t.
+Admitted.
+
+Global Instance into_val_typed_durations `{ffi_syntax} : IntoValTyped durations.t zap.durations.
+Admitted.
+
+(* type zap.float64s *)
+Module float64s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End float64s.
+
+Global Instance bounded_size_float64s : BoundedTypeSize zap.float64s.
+Admitted.
+
+Global Instance into_val_float64s `{ffi_syntax} : IntoVal float64s.t.
+Admitted.
+
+Global Instance into_val_typed_float64s `{ffi_syntax} : IntoValTyped float64s.t zap.float64s.
+Admitted.
+
+(* type zap.float32s *)
+Module float32s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End float32s.
+
+Global Instance bounded_size_float32s : BoundedTypeSize zap.float32s.
+Admitted.
+
+Global Instance into_val_float32s `{ffi_syntax} : IntoVal float32s.t.
+Admitted.
+
+Global Instance into_val_typed_float32s `{ffi_syntax} : IntoValTyped float32s.t zap.float32s.
+Admitted.
+
+(* type zap.ints *)
+Module ints.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ints.
+
+Global Instance bounded_size_ints : BoundedTypeSize zap.ints.
+Admitted.
+
+Global Instance into_val_ints `{ffi_syntax} : IntoVal ints.t.
+Admitted.
+
+Global Instance into_val_typed_ints `{ffi_syntax} : IntoValTyped ints.t zap.ints.
+Admitted.
+
+(* type zap.int64s *)
+Module int64s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End int64s.
+
+Global Instance bounded_size_int64s : BoundedTypeSize zap.int64s.
+Admitted.
+
+Global Instance into_val_int64s `{ffi_syntax} : IntoVal int64s.t.
+Admitted.
+
+Global Instance into_val_typed_int64s `{ffi_syntax} : IntoValTyped int64s.t zap.int64s.
+Admitted.
+
+(* type zap.int32s *)
+Module int32s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End int32s.
+
+Global Instance bounded_size_int32s : BoundedTypeSize zap.int32s.
+Admitted.
+
+Global Instance into_val_int32s `{ffi_syntax} : IntoVal int32s.t.
+Admitted.
+
+Global Instance into_val_typed_int32s `{ffi_syntax} : IntoValTyped int32s.t zap.int32s.
+Admitted.
+
+(* type zap.int16s *)
+Module int16s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End int16s.
+
+Global Instance bounded_size_int16s : BoundedTypeSize zap.int16s.
+Admitted.
+
+Global Instance into_val_int16s `{ffi_syntax} : IntoVal int16s.t.
+Admitted.
+
+Global Instance into_val_typed_int16s `{ffi_syntax} : IntoValTyped int16s.t zap.int16s.
+Admitted.
+
+(* type zap.int8s *)
+Module int8s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End int8s.
+
+Global Instance bounded_size_int8s : BoundedTypeSize zap.int8s.
+Admitted.
+
+Global Instance into_val_int8s `{ffi_syntax} : IntoVal int8s.t.
+Admitted.
+
+Global Instance into_val_typed_int8s `{ffi_syntax} : IntoValTyped int8s.t zap.int8s.
+Admitted.
+
+(* type zap.stringArray *)
+Module stringArray.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End stringArray.
+
+Global Instance bounded_size_stringArray : BoundedTypeSize zap.stringArray.
+Admitted.
+
+Global Instance into_val_stringArray `{ffi_syntax} : IntoVal stringArray.t.
+Admitted.
+
+Global Instance into_val_typed_stringArray `{ffi_syntax} : IntoValTyped stringArray.t zap.stringArray.
+Admitted.
+
+(* type zap.times *)
+Module times.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End times.
+
+Global Instance bounded_size_times : BoundedTypeSize zap.times.
+Admitted.
+
+Global Instance into_val_times `{ffi_syntax} : IntoVal times.t.
+Admitted.
+
+Global Instance into_val_typed_times `{ffi_syntax} : IntoValTyped times.t zap.times.
+Admitted.
+
+(* type zap.uints *)
+Module uints.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End uints.
+
+Global Instance bounded_size_uints : BoundedTypeSize zap.uints.
+Admitted.
+
+Global Instance into_val_uints `{ffi_syntax} : IntoVal uints.t.
+Admitted.
+
+Global Instance into_val_typed_uints `{ffi_syntax} : IntoValTyped uints.t zap.uints.
+Admitted.
+
+(* type zap.uint64s *)
+Module uint64s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End uint64s.
+
+Global Instance bounded_size_uint64s : BoundedTypeSize zap.uint64s.
+Admitted.
+
+Global Instance into_val_uint64s `{ffi_syntax} : IntoVal uint64s.t.
+Admitted.
+
+Global Instance into_val_typed_uint64s `{ffi_syntax} : IntoValTyped uint64s.t zap.uint64s.
+Admitted.
+
+(* type zap.uint32s *)
+Module uint32s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End uint32s.
+
+Global Instance bounded_size_uint32s : BoundedTypeSize zap.uint32s.
+Admitted.
+
+Global Instance into_val_uint32s `{ffi_syntax} : IntoVal uint32s.t.
+Admitted.
+
+Global Instance into_val_typed_uint32s `{ffi_syntax} : IntoValTyped uint32s.t zap.uint32s.
+Admitted.
+
+(* type zap.uint16s *)
+Module uint16s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End uint16s.
+
+Global Instance bounded_size_uint16s : BoundedTypeSize zap.uint16s.
+Admitted.
+
+Global Instance into_val_uint16s `{ffi_syntax} : IntoVal uint16s.t.
+Admitted.
+
+Global Instance into_val_typed_uint16s `{ffi_syntax} : IntoValTyped uint16s.t zap.uint16s.
+Admitted.
+
+(* type zap.uint8s *)
+Module uint8s.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End uint8s.
+
+Global Instance bounded_size_uint8s : BoundedTypeSize zap.uint8s.
+Admitted.
+
+Global Instance into_val_uint8s `{ffi_syntax} : IntoVal uint8s.t.
+Admitted.
+
+Global Instance into_val_typed_uint8s `{ffi_syntax} : IntoValTyped uint8s.t zap.uint8s.
+Admitted.
+
+(* type zap.uintptrs *)
+Module uintptrs.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End uintptrs.
+
+Global Instance bounded_size_uintptrs : BoundedTypeSize zap.uintptrs.
+Admitted.
+
+Global Instance into_val_uintptrs `{ffi_syntax} : IntoVal uintptrs.t.
+Admitted.
+
+Global Instance into_val_typed_uintptrs `{ffi_syntax} : IntoValTyped uintptrs.t zap.uintptrs.
+Admitted.
+
+(* type zap.SamplingConfig *)
+Module SamplingConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End SamplingConfig.
+
+Global Instance bounded_size_SamplingConfig : BoundedTypeSize zap.SamplingConfig.
+Admitted.
+
+Global Instance into_val_SamplingConfig `{ffi_syntax} : IntoVal SamplingConfig.t.
+Admitted.
+
+Global Instance into_val_typed_SamplingConfig `{ffi_syntax} : IntoValTyped SamplingConfig.t zap.SamplingConfig.
+Admitted.
+
+(* type zap.Config *)
+Module Config.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Config.
+
+Global Instance bounded_size_Config : BoundedTypeSize zap.Config.
+Admitted.
+
+Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
+Admitted.
+
+Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t zap.Config.
+Admitted.
+
+(* type zap.errArray *)
+Module errArray.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End errArray.
+
+Global Instance bounded_size_errArray : BoundedTypeSize zap.errArray.
+Admitted.
+
+Global Instance into_val_errArray `{ffi_syntax} : IntoVal errArray.t.
+Admitted.
+
+Global Instance into_val_typed_errArray `{ffi_syntax} : IntoValTyped errArray.t zap.errArray.
+Admitted.
+
+(* type zap.errArrayElem *)
+Module errArrayElem.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End errArrayElem.
+
+Global Instance bounded_size_errArrayElem : BoundedTypeSize zap.errArrayElem.
+Admitted.
+
+Global Instance into_val_errArrayElem `{ffi_syntax} : IntoVal errArrayElem.t.
+Admitted.
+
+Global Instance into_val_typed_errArrayElem `{ffi_syntax} : IntoValTyped errArrayElem.t zap.errArrayElem.
+Admitted.
+
+(* type zap.Field *)
+Module Field.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Field.
+
+Global Instance bounded_size_Field : BoundedTypeSize zap.Field.
+Admitted.
+
+Global Instance into_val_Field `{ffi_syntax} : IntoVal Field.t.
+Admitted.
+
+Global Instance into_val_typed_Field `{ffi_syntax} : IntoValTyped Field.t zap.Field.
+Admitted.
+
+(* type zap.dictObject *)
+Module dictObject.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End dictObject.
+
+Global Instance bounded_size_dictObject : BoundedTypeSize zap.dictObject.
+Admitted.
+
+Global Instance into_val_dictObject `{ffi_syntax} : IntoVal dictObject.t.
+Admitted.
+
+Global Instance into_val_typed_dictObject `{ffi_syntax} : IntoValTyped dictObject.t zap.dictObject.
+Admitted.
+
+(* type zap.anyFieldC *)
+Module anyFieldC.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End anyFieldC.
+
+Global Instance bounded_size_anyFieldC : BoundedTypeSize zap.anyFieldC.
+Admitted.
+
+Global Instance into_val_anyFieldC `{ffi_syntax} : IntoVal anyFieldC.t.
+Admitted.
+
+Global Instance into_val_typed_anyFieldC `{ffi_syntax} : IntoValTyped anyFieldC.t zap.anyFieldC.
+Admitted.
+
+(* type zap.loggerWriter *)
+Module loggerWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End loggerWriter.
+
+Global Instance bounded_size_loggerWriter : BoundedTypeSize zap.loggerWriter.
+Admitted.
+
+Global Instance into_val_loggerWriter `{ffi_syntax} : IntoVal loggerWriter.t.
+Admitted.
+
+Global Instance into_val_typed_loggerWriter `{ffi_syntax} : IntoValTyped loggerWriter.t zap.loggerWriter.
+Admitted.
+
+(* type zap.LevelEnablerFunc *)
+Module LevelEnablerFunc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LevelEnablerFunc.
+
+Global Instance bounded_size_LevelEnablerFunc : BoundedTypeSize zap.LevelEnablerFunc.
+Admitted.
+
+Global Instance into_val_LevelEnablerFunc `{ffi_syntax} : IntoVal LevelEnablerFunc.t.
+Admitted.
+
+Global Instance into_val_typed_LevelEnablerFunc `{ffi_syntax} : IntoValTyped LevelEnablerFunc.t zap.LevelEnablerFunc.
+Admitted.
+
+(* type zap.AtomicLevel *)
+Module AtomicLevel.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AtomicLevel.
+
+Global Instance bounded_size_AtomicLevel : BoundedTypeSize zap.AtomicLevel.
+Admitted.
+
+Global Instance into_val_AtomicLevel `{ffi_syntax} : IntoVal AtomicLevel.t.
+Admitted.
+
+Global Instance into_val_typed_AtomicLevel `{ffi_syntax} : IntoValTyped AtomicLevel.t zap.AtomicLevel.
+Admitted.
+
 (* type zap.Logger *)
 Module Logger.
 Section def.
@@ -26,6 +604,159 @@ Admitted.
 Global Instance into_val_typed_Logger `{ffi_syntax} : IntoValTyped Logger.t zap.Logger.
 Admitted.
 
+(* type zap.Option *)
+Module Option.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Option.
+
+Global Instance bounded_size_Option : BoundedTypeSize zap.Option.
+Admitted.
+
+Global Instance into_val_Option `{ffi_syntax} : IntoVal Option.t.
+Admitted.
+
+Global Instance into_val_typed_Option `{ffi_syntax} : IntoValTyped Option.t zap.Option.
+Admitted.
+
+(* type zap.optionFunc *)
+Module optionFunc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End optionFunc.
+
+Global Instance bounded_size_optionFunc : BoundedTypeSize zap.optionFunc.
+Admitted.
+
+Global Instance into_val_optionFunc `{ffi_syntax} : IntoVal optionFunc.t.
+Admitted.
+
+Global Instance into_val_typed_optionFunc `{ffi_syntax} : IntoValTyped optionFunc.t zap.optionFunc.
+Admitted.
+
+(* type zap.Sink *)
+Module Sink.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Sink.
+
+Global Instance bounded_size_Sink : BoundedTypeSize zap.Sink.
+Admitted.
+
+Global Instance into_val_Sink `{ffi_syntax} : IntoVal Sink.t.
+Admitted.
+
+Global Instance into_val_typed_Sink `{ffi_syntax} : IntoValTyped Sink.t zap.Sink.
+Admitted.
+
+(* type zap.errSinkNotFound *)
+Module errSinkNotFound.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End errSinkNotFound.
+
+Global Instance bounded_size_errSinkNotFound : BoundedTypeSize zap.errSinkNotFound.
+Admitted.
+
+Global Instance into_val_errSinkNotFound `{ffi_syntax} : IntoVal errSinkNotFound.t.
+Admitted.
+
+Global Instance into_val_typed_errSinkNotFound `{ffi_syntax} : IntoValTyped errSinkNotFound.t zap.errSinkNotFound.
+Admitted.
+
+(* type zap.nopCloserSink *)
+Module nopCloserSink.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End nopCloserSink.
+
+Global Instance bounded_size_nopCloserSink : BoundedTypeSize zap.nopCloserSink.
+Admitted.
+
+Global Instance into_val_nopCloserSink `{ffi_syntax} : IntoVal nopCloserSink.t.
+Admitted.
+
+Global Instance into_val_typed_nopCloserSink `{ffi_syntax} : IntoValTyped nopCloserSink.t zap.nopCloserSink.
+Admitted.
+
+(* type zap.sinkRegistry *)
+Module sinkRegistry.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End sinkRegistry.
+
+Global Instance bounded_size_sinkRegistry : BoundedTypeSize zap.sinkRegistry.
+Admitted.
+
+Global Instance into_val_sinkRegistry `{ffi_syntax} : IntoVal sinkRegistry.t.
+Admitted.
+
+Global Instance into_val_typed_sinkRegistry `{ffi_syntax} : IntoValTyped sinkRegistry.t zap.sinkRegistry.
+Admitted.
+
+(* type zap.SugaredLogger *)
+Module SugaredLogger.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End SugaredLogger.
+
+Global Instance bounded_size_SugaredLogger : BoundedTypeSize zap.SugaredLogger.
+Admitted.
+
+Global Instance into_val_SugaredLogger `{ffi_syntax} : IntoVal SugaredLogger.t.
+Admitted.
+
+Global Instance into_val_typed_SugaredLogger `{ffi_syntax} : IntoValTyped SugaredLogger.t zap.SugaredLogger.
+Admitted.
+
+(* type zap.invalidPair *)
+Module invalidPair.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End invalidPair.
+
+Global Instance bounded_size_invalidPair : BoundedTypeSize zap.invalidPair.
+Admitted.
+
+Global Instance into_val_invalidPair `{ffi_syntax} : IntoVal invalidPair.t.
+Admitted.
+
+Global Instance into_val_typed_invalidPair `{ffi_syntax} : IntoValTyped invalidPair.t zap.invalidPair.
+Admitted.
+
+(* type zap.invalidPairs *)
+Module invalidPairs.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End invalidPairs.
+
+Global Instance bounded_size_invalidPairs : BoundedTypeSize zap.invalidPairs.
+Admitted.
+
+Global Instance into_val_invalidPairs `{ffi_syntax} : IntoVal invalidPairs.t.
+Admitted.
+
+Global Instance into_val_typed_invalidPairs `{ffi_syntax} : IntoValTyped invalidPairs.t zap.invalidPairs.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -37,7 +768,7 @@ Global Instance is_pkg_defined_pure_zap : IsPkgDefinedPure zap :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single zap ∧
-      is_pkg_defined_pure go_uber_org.zap.zapcore.zapcore;
+      is_pkg_defined_pure code.go_uber_org.zap.zapcore.zapcore;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -45,10 +776,1174 @@ Global Program Instance is_pkg_defined_zap : IsPkgDefined zap :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single zap ∗
-       is_pkg_defined go_uber_org.zap.zapcore.zapcore)%I
+       is_pkg_defined code.go_uber_org.zap.zapcore.zapcore)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_Array :
+  WpFuncCall zap.Array _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Bools :
+  WpFuncCall zap.Bools _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ByteStrings :
+  WpFuncCall zap.ByteStrings _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Complex128s :
+  WpFuncCall zap.Complex128s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Complex64s :
+  WpFuncCall zap.Complex64s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Durations :
+  WpFuncCall zap.Durations _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float64s :
+  WpFuncCall zap.Float64s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float32s :
+  WpFuncCall zap.Float32s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Ints :
+  WpFuncCall zap.Ints _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int64s :
+  WpFuncCall zap.Int64s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int32s :
+  WpFuncCall zap.Int32s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int16s :
+  WpFuncCall zap.Int16s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int8s :
+  WpFuncCall zap.Int8s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Objects :
+  WpFuncCall zap.Objects _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ObjectValues :
+  WpFuncCall zap.ObjectValues _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Strings :
+  WpFuncCall zap.Strings _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Stringers :
+  WpFuncCall zap.Stringers _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Times :
+  WpFuncCall zap.Times _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uints :
+  WpFuncCall zap.Uints _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint64s :
+  WpFuncCall zap.Uint64s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint32s :
+  WpFuncCall zap.Uint32s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint16s :
+  WpFuncCall zap.Uint16s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint8s :
+  WpFuncCall zap.Uint8s _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uintptrs :
+  WpFuncCall zap.Uintptrs _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Errors :
+  WpFuncCall zap.Errors _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewProductionEncoderConfig :
+  WpFuncCall zap.NewProductionEncoderConfig _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewProductionConfig :
+  WpFuncCall zap.NewProductionConfig _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewDevelopmentEncoderConfig :
+  WpFuncCall zap.NewDevelopmentEncoderConfig _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewDevelopmentConfig :
+  WpFuncCall zap.NewDevelopmentConfig _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RegisterEncoder :
+  WpFuncCall zap.RegisterEncoder _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newEncoder :
+  WpFuncCall zap.newEncoder _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Error :
+  WpFuncCall zap.Error _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NamedError :
+  WpFuncCall zap.NamedError _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Skip :
+  WpFuncCall zap.Skip _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_nilField :
+  WpFuncCall zap.nilField _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Binary :
+  WpFuncCall zap.Binary _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Bool :
+  WpFuncCall zap.Bool _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Boolp :
+  WpFuncCall zap.Boolp _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ByteString :
+  WpFuncCall zap.ByteString _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Complex128 :
+  WpFuncCall zap.Complex128 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Complex128p :
+  WpFuncCall zap.Complex128p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Complex64 :
+  WpFuncCall zap.Complex64 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Complex64p :
+  WpFuncCall zap.Complex64p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float64 :
+  WpFuncCall zap.Float64 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float64p :
+  WpFuncCall zap.Float64p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float32 :
+  WpFuncCall zap.Float32 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float32p :
+  WpFuncCall zap.Float32p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int :
+  WpFuncCall zap.Int _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Intp :
+  WpFuncCall zap.Intp _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int64 :
+  WpFuncCall zap.Int64 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int64p :
+  WpFuncCall zap.Int64p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int32 :
+  WpFuncCall zap.Int32 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int32p :
+  WpFuncCall zap.Int32p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int16 :
+  WpFuncCall zap.Int16 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int16p :
+  WpFuncCall zap.Int16p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int8 :
+  WpFuncCall zap.Int8 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int8p :
+  WpFuncCall zap.Int8p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_String :
+  WpFuncCall zap.String _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Stringp :
+  WpFuncCall zap.Stringp _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint :
+  WpFuncCall zap.Uint _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uintp :
+  WpFuncCall zap.Uintp _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint64 :
+  WpFuncCall zap.Uint64 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint64p :
+  WpFuncCall zap.Uint64p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint32 :
+  WpFuncCall zap.Uint32 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint32p :
+  WpFuncCall zap.Uint32p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint16 :
+  WpFuncCall zap.Uint16 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint16p :
+  WpFuncCall zap.Uint16p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint8 :
+  WpFuncCall zap.Uint8 _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint8p :
+  WpFuncCall zap.Uint8p _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uintptr :
+  WpFuncCall zap.Uintptr _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uintptrp :
+  WpFuncCall zap.Uintptrp _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Reflect :
+  WpFuncCall zap.Reflect _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Namespace :
+  WpFuncCall zap.Namespace _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Stringer :
+  WpFuncCall zap.Stringer _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Time :
+  WpFuncCall zap.Time _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Timep :
+  WpFuncCall zap.Timep _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Stack :
+  WpFuncCall zap.Stack _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StackSkip :
+  WpFuncCall zap.StackSkip _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Duration :
+  WpFuncCall zap.Duration _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Durationp :
+  WpFuncCall zap.Durationp _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Object :
+  WpFuncCall zap.Object _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Inline :
+  WpFuncCall zap.Inline _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Dict :
+  WpFuncCall zap.Dict _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_dictField :
+  WpFuncCall zap.dictField _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Any :
+  WpFuncCall zap.Any _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LevelFlag :
+  WpFuncCall zap.LevelFlag _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_L :
+  WpFuncCall zap.L _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_S :
+  WpFuncCall zap.S _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReplaceGlobals :
+  WpFuncCall zap.ReplaceGlobals _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewStdLog :
+  WpFuncCall zap.NewStdLog _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewStdLogAt :
+  WpFuncCall zap.NewStdLogAt _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RedirectStdLog :
+  WpFuncCall zap.RedirectStdLog _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RedirectStdLogAt :
+  WpFuncCall zap.RedirectStdLogAt _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_redirectStdLogAt :
+  WpFuncCall zap.redirectStdLogAt _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_levelToFunc :
+  WpFuncCall zap.levelToFunc _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_decodePutRequest :
+  WpFuncCall zap.decodePutRequest _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_decodePutURL :
+  WpFuncCall zap.decodePutURL _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_decodePutJSON :
+  WpFuncCall zap.decodePutJSON _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewAtomicLevel :
+  WpFuncCall zap.NewAtomicLevel _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewAtomicLevelAt :
+  WpFuncCall zap.NewAtomicLevelAt _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ParseAtomicLevel :
+  WpFuncCall zap.ParseAtomicLevel _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_New :
+  WpFuncCall zap.New _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewNop :
+  WpFuncCall zap.NewNop _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewProduction :
+  WpFuncCall zap.NewProduction _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewDevelopment :
+  WpFuncCall zap.NewDevelopment _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Must :
+  WpFuncCall zap.Must _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewExample :
+  WpFuncCall zap.NewExample _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_terminalHookOverride :
+  WpFuncCall zap.terminalHookOverride _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WrapCore :
+  WpFuncCall zap.WrapCore _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Hooks :
+  WpFuncCall zap.Hooks _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fields :
+  WpFuncCall zap.Fields _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ErrorOutput :
+  WpFuncCall zap.ErrorOutput _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Development :
+  WpFuncCall zap.Development _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AddCaller :
+  WpFuncCall zap.AddCaller _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithCaller :
+  WpFuncCall zap.WithCaller _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AddCallerSkip :
+  WpFuncCall zap.AddCallerSkip _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AddStacktrace :
+  WpFuncCall zap.AddStacktrace _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IncreaseLevel :
+  WpFuncCall zap.IncreaseLevel _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithPanicHook :
+  WpFuncCall zap.WithPanicHook _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_OnFatal :
+  WpFuncCall zap.OnFatal _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithFatalHook :
+  WpFuncCall zap.WithFatalHook _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithClock :
+  WpFuncCall zap.WithClock _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newSinkRegistry :
+  WpFuncCall zap.newSinkRegistry _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RegisterSink :
+  WpFuncCall zap.RegisterSink _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_normalizeScheme :
+  WpFuncCall zap.normalizeScheme _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getMessage :
+  WpFuncCall zap.getMessage _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getMessageln :
+  WpFuncCall zap.getMessageln _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_timeToMillis :
+  WpFuncCall zap.timeToMillis _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Open :
+  WpFuncCall zap.Open _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_open :
+  WpFuncCall zap.open _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CombineWriteSyncers :
+  WpFuncCall zap.CombineWriteSyncers _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_objects_MarshalLogArray :
+  WpMethodCall zap.objects.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_objects'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.objects.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_objectValues_MarshalLogArray :
+  WpMethodCall zap.objectValues.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_objectValues'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.objectValues.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringers_MarshalLogArray :
+  WpMethodCall zap.stringers.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringers'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.stringers.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_bools_MarshalLogArray :
+  WpMethodCall zap.bools.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_bools'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.bools.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_byteStringsArray_MarshalLogArray :
+  WpMethodCall zap.byteStringsArray.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_byteStringsArray'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.byteStringsArray.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_complex128s_MarshalLogArray :
+  WpMethodCall zap.complex128s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_complex128s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.complex128s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_complex64s_MarshalLogArray :
+  WpMethodCall zap.complex64s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_complex64s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.complex64s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_durations_MarshalLogArray :
+  WpMethodCall zap.durations.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_durations'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.durations.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_float64s_MarshalLogArray :
+  WpMethodCall zap.float64s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_float64s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.float64s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_float32s_MarshalLogArray :
+  WpMethodCall zap.float32s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_float32s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.float32s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ints_MarshalLogArray :
+  WpMethodCall zap.ints.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ints'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.ints.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int64s_MarshalLogArray :
+  WpMethodCall zap.int64s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int64s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.int64s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int32s_MarshalLogArray :
+  WpMethodCall zap.int32s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int32s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.int32s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int16s_MarshalLogArray :
+  WpMethodCall zap.int16s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int16s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.int16s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int8s_MarshalLogArray :
+  WpMethodCall zap.int8s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_int8s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.int8s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringArray_MarshalLogArray :
+  WpMethodCall zap.stringArray.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringArray'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.stringArray.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_times_MarshalLogArray :
+  WpMethodCall zap.times.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_times'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.times.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uints_MarshalLogArray :
+  WpMethodCall zap.uints.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uints'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.uints.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint64s_MarshalLogArray :
+  WpMethodCall zap.uint64s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint64s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.uint64s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint32s_MarshalLogArray :
+  WpMethodCall zap.uint32s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint32s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.uint32s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint16s_MarshalLogArray :
+  WpMethodCall zap.uint16s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint16s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.uint16s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint8s_MarshalLogArray :
+  WpMethodCall zap.uint8s.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uint8s'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.uint8s.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uintptrs_MarshalLogArray :
+  WpMethodCall zap.uintptrs.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_uintptrs'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.uintptrs.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config_Build :
+  WpMethodCall zap.Config.id "Build" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config_buildEncoder :
+  WpMethodCall zap.Config.id "buildEncoder" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config_buildOptions :
+  WpMethodCall zap.Config.id "buildOptions" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config_openSinks :
+  WpMethodCall zap.Config.id "openSinks" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config'ptr_Build :
+  WpMethodCall (ptrT.id zap.Config.id) "Build" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config'ptr_buildEncoder :
+  WpMethodCall (ptrT.id zap.Config.id) "buildEncoder" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config'ptr_buildOptions :
+  WpMethodCall (ptrT.id zap.Config.id) "buildOptions" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Config'ptr_openSinks :
+  WpMethodCall (ptrT.id zap.Config.id) "openSinks" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArray_MarshalLogArray :
+  WpMethodCall zap.errArray.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArray'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.errArray.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArrayElem_Error :
+  WpMethodCall zap.errArrayElem.id "Error" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArrayElem'ptr_Error :
+  WpMethodCall (ptrT.id zap.errArrayElem.id) "Error" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArrayElem'ptr_MarshalLogObject :
+  WpMethodCall (ptrT.id zap.errArrayElem.id) "MarshalLogObject" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dictObject_MarshalLogObject :
+  WpMethodCall zap.dictObject.id "MarshalLogObject" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dictObject'ptr_MarshalLogObject :
+  WpMethodCall (ptrT.id zap.dictObject.id) "MarshalLogObject" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_anyFieldC_Any :
+  WpMethodCall zap.anyFieldC.id "Any" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_anyFieldC'ptr_Any :
+  WpMethodCall (ptrT.id zap.anyFieldC.id) "Any" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_loggerWriter'ptr_Write :
+  WpMethodCall (ptrT.id zap.loggerWriter.id) "Write" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LevelEnablerFunc_Enabled :
+  WpMethodCall zap.LevelEnablerFunc.id "Enabled" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LevelEnablerFunc'ptr_Enabled :
+  WpMethodCall (ptrT.id zap.LevelEnablerFunc.id) "Enabled" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel_Enabled :
+  WpMethodCall zap.AtomicLevel.id "Enabled" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel_Level :
+  WpMethodCall zap.AtomicLevel.id "Level" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel_MarshalText :
+  WpMethodCall zap.AtomicLevel.id "MarshalText" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel_ServeHTTP :
+  WpMethodCall zap.AtomicLevel.id "ServeHTTP" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel_SetLevel :
+  WpMethodCall zap.AtomicLevel.id "SetLevel" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel_String :
+  WpMethodCall zap.AtomicLevel.id "String" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel_serveHTTP :
+  WpMethodCall zap.AtomicLevel.id "serveHTTP" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_Enabled :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "Enabled" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_Level :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "Level" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_MarshalText :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "MarshalText" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_ServeHTTP :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "ServeHTTP" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_SetLevel :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "SetLevel" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_String :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "String" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "UnmarshalText" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AtomicLevel'ptr_serveHTTP :
+  WpMethodCall (ptrT.id zap.AtomicLevel.id) "serveHTTP" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Check :
+  WpMethodCall (ptrT.id zap.Logger.id) "Check" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Core :
+  WpMethodCall (ptrT.id zap.Logger.id) "Core" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_DPanic :
+  WpMethodCall (ptrT.id zap.Logger.id) "DPanic" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Debug :
+  WpMethodCall (ptrT.id zap.Logger.id) "Debug" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Error :
+  WpMethodCall (ptrT.id zap.Logger.id) "Error" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Fatal :
+  WpMethodCall (ptrT.id zap.Logger.id) "Fatal" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Info :
+  WpMethodCall (ptrT.id zap.Logger.id) "Info" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Level :
+  WpMethodCall (ptrT.id zap.Logger.id) "Level" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Log :
+  WpMethodCall (ptrT.id zap.Logger.id) "Log" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Name :
+  WpMethodCall (ptrT.id zap.Logger.id) "Name" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Named :
+  WpMethodCall (ptrT.id zap.Logger.id) "Named" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Panic :
+  WpMethodCall (ptrT.id zap.Logger.id) "Panic" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Sugar :
+  WpMethodCall (ptrT.id zap.Logger.id) "Sugar" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Sync :
+  WpMethodCall (ptrT.id zap.Logger.id) "Sync" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_Warn :
+  WpMethodCall (ptrT.id zap.Logger.id) "Warn" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_With :
+  WpMethodCall (ptrT.id zap.Logger.id) "With" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_WithLazy :
+  WpMethodCall (ptrT.id zap.Logger.id) "WithLazy" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_WithOptions :
+  WpMethodCall (ptrT.id zap.Logger.id) "WithOptions" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_check :
+  WpMethodCall (ptrT.id zap.Logger.id) "check" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Logger'ptr_clone :
+  WpMethodCall (ptrT.id zap.Logger.id) "clone" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_optionFunc_apply :
+  WpMethodCall zap.optionFunc.id "apply" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_optionFunc'ptr_apply :
+  WpMethodCall (ptrT.id zap.optionFunc.id) "apply" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errSinkNotFound'ptr_Error :
+  WpMethodCall (ptrT.id zap.errSinkNotFound.id) "Error" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserSink_Close :
+  WpMethodCall zap.nopCloserSink.id "Close" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserSink_Sync :
+  WpMethodCall zap.nopCloserSink.id "Sync" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserSink_Write :
+  WpMethodCall zap.nopCloserSink.id "Write" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserSink'ptr_Close :
+  WpMethodCall (ptrT.id zap.nopCloserSink.id) "Close" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserSink'ptr_Sync :
+  WpMethodCall (ptrT.id zap.nopCloserSink.id) "Sync" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCloserSink'ptr_Write :
+  WpMethodCall (ptrT.id zap.nopCloserSink.id) "Write" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sinkRegistry'ptr_RegisterSink :
+  WpMethodCall (ptrT.id zap.sinkRegistry.id) "RegisterSink" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sinkRegistry'ptr_newFileSinkFromPath :
+  WpMethodCall (ptrT.id zap.sinkRegistry.id) "newFileSinkFromPath" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sinkRegistry'ptr_newFileSinkFromURL :
+  WpMethodCall (ptrT.id zap.sinkRegistry.id) "newFileSinkFromURL" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sinkRegistry'ptr_newSink :
+  WpMethodCall (ptrT.id zap.sinkRegistry.id) "newSink" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_DPanic :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "DPanic" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_DPanicf :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "DPanicf" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_DPanicln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "DPanicln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_DPanicw :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "DPanicw" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Debug :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Debug" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Debugf :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Debugf" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Debugln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Debugln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Debugw :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Debugw" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Desugar :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Desugar" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Error :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Error" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Errorf :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Errorf" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Errorln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Errorln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Errorw :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Errorw" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Fatal :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Fatal" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Fatalf :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Fatalf" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Fatalln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Fatalln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Fatalw :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Fatalw" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Info :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Info" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Infof :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Infof" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Infoln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Infoln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Infow :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Infow" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Level :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Level" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Log :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Log" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Logf :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Logf" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Logln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Logln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Logw :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Logw" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Named :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Named" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Panic :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Panic" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Panicf :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Panicf" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Panicln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Panicln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Panicw :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Panicw" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Sync :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Sync" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Warn :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Warn" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Warnf :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Warnf" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Warnln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Warnln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_Warnw :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "Warnw" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_With :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "With" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_WithLazy :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "WithLazy" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_WithOptions :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "WithOptions" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_log :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "log" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_logln :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "logln" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_SugaredLogger'ptr_sweetenFields :
+  WpMethodCall (ptrT.id zap.SugaredLogger.id) "sweetenFields" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_invalidPair_MarshalLogObject :
+  WpMethodCall zap.invalidPair.id "MarshalLogObject" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_invalidPair'ptr_MarshalLogObject :
+  WpMethodCall (ptrT.id zap.invalidPair.id) "MarshalLogObject" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_invalidPairs_MarshalLogArray :
+  WpMethodCall zap.invalidPairs.id "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_invalidPairs'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zap.invalidPairs.id) "MarshalLogArray" _ (is_pkg_defined zap) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End zap.

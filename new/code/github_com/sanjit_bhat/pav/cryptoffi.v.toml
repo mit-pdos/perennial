@@ -1,30 +1,6 @@
 translate = [
   "HashLen"
 ]
-axiomatize = [
-  "Hasher",
-  "NewHasher",
-  "Hasher.Write",
-  "Hasher.Sum",
-
-  "SigPrivateKey",
-  "SigPublicKey",
-  "SigGenerateKey",
-  "SigPrivateKey.Sign",
-  "SigPublicKey.Verify",
-
-  "VrfPrivateKey",
-  "VrfPublicKey",
-  "VrfGenerateKey",
-  "VrfPrivateKey.Prove",
-  "VrfPrivateKey.Evaluate",
-  "VrfPublicKey.Verify",
-  "VrfPrivateKey.PublicKey",
-  "VrfPublicKeyEncode",
-  "VrfPublicKeyDecode",
-
-  "RandBytes",
-]
 imports = [
   "!*"
 ]

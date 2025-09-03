@@ -10,6 +10,380 @@ Set Default Proof Using "Type".
 
 Module clientv3.
 
+(* type clientv3.AuthEnableResponse *)
+Module AuthEnableResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthEnableResponse.
+
+Global Instance bounded_size_AuthEnableResponse : BoundedTypeSize clientv3.AuthEnableResponse.
+Admitted.
+
+Global Instance into_val_AuthEnableResponse `{ffi_syntax} : IntoVal AuthEnableResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthEnableResponse `{ffi_syntax} : IntoValTyped AuthEnableResponse.t clientv3.AuthEnableResponse.
+Admitted.
+
+(* type clientv3.AuthDisableResponse *)
+Module AuthDisableResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthDisableResponse.
+
+Global Instance bounded_size_AuthDisableResponse : BoundedTypeSize clientv3.AuthDisableResponse.
+Admitted.
+
+Global Instance into_val_AuthDisableResponse `{ffi_syntax} : IntoVal AuthDisableResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthDisableResponse `{ffi_syntax} : IntoValTyped AuthDisableResponse.t clientv3.AuthDisableResponse.
+Admitted.
+
+(* type clientv3.AuthStatusResponse *)
+Module AuthStatusResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthStatusResponse.
+
+Global Instance bounded_size_AuthStatusResponse : BoundedTypeSize clientv3.AuthStatusResponse.
+Admitted.
+
+Global Instance into_val_AuthStatusResponse `{ffi_syntax} : IntoVal AuthStatusResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthStatusResponse `{ffi_syntax} : IntoValTyped AuthStatusResponse.t clientv3.AuthStatusResponse.
+Admitted.
+
+(* type clientv3.AuthenticateResponse *)
+Module AuthenticateResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthenticateResponse.
+
+Global Instance bounded_size_AuthenticateResponse : BoundedTypeSize clientv3.AuthenticateResponse.
+Admitted.
+
+Global Instance into_val_AuthenticateResponse `{ffi_syntax} : IntoVal AuthenticateResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthenticateResponse `{ffi_syntax} : IntoValTyped AuthenticateResponse.t clientv3.AuthenticateResponse.
+Admitted.
+
+(* type clientv3.AuthUserAddResponse *)
+Module AuthUserAddResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthUserAddResponse.
+
+Global Instance bounded_size_AuthUserAddResponse : BoundedTypeSize clientv3.AuthUserAddResponse.
+Admitted.
+
+Global Instance into_val_AuthUserAddResponse `{ffi_syntax} : IntoVal AuthUserAddResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthUserAddResponse `{ffi_syntax} : IntoValTyped AuthUserAddResponse.t clientv3.AuthUserAddResponse.
+Admitted.
+
+(* type clientv3.AuthUserDeleteResponse *)
+Module AuthUserDeleteResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthUserDeleteResponse.
+
+Global Instance bounded_size_AuthUserDeleteResponse : BoundedTypeSize clientv3.AuthUserDeleteResponse.
+Admitted.
+
+Global Instance into_val_AuthUserDeleteResponse `{ffi_syntax} : IntoVal AuthUserDeleteResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthUserDeleteResponse `{ffi_syntax} : IntoValTyped AuthUserDeleteResponse.t clientv3.AuthUserDeleteResponse.
+Admitted.
+
+(* type clientv3.AuthUserChangePasswordResponse *)
+Module AuthUserChangePasswordResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthUserChangePasswordResponse.
+
+Global Instance bounded_size_AuthUserChangePasswordResponse : BoundedTypeSize clientv3.AuthUserChangePasswordResponse.
+Admitted.
+
+Global Instance into_val_AuthUserChangePasswordResponse `{ffi_syntax} : IntoVal AuthUserChangePasswordResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthUserChangePasswordResponse `{ffi_syntax} : IntoValTyped AuthUserChangePasswordResponse.t clientv3.AuthUserChangePasswordResponse.
+Admitted.
+
+(* type clientv3.AuthUserGrantRoleResponse *)
+Module AuthUserGrantRoleResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthUserGrantRoleResponse.
+
+Global Instance bounded_size_AuthUserGrantRoleResponse : BoundedTypeSize clientv3.AuthUserGrantRoleResponse.
+Admitted.
+
+Global Instance into_val_AuthUserGrantRoleResponse `{ffi_syntax} : IntoVal AuthUserGrantRoleResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthUserGrantRoleResponse `{ffi_syntax} : IntoValTyped AuthUserGrantRoleResponse.t clientv3.AuthUserGrantRoleResponse.
+Admitted.
+
+(* type clientv3.AuthUserGetResponse *)
+Module AuthUserGetResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthUserGetResponse.
+
+Global Instance bounded_size_AuthUserGetResponse : BoundedTypeSize clientv3.AuthUserGetResponse.
+Admitted.
+
+Global Instance into_val_AuthUserGetResponse `{ffi_syntax} : IntoVal AuthUserGetResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthUserGetResponse `{ffi_syntax} : IntoValTyped AuthUserGetResponse.t clientv3.AuthUserGetResponse.
+Admitted.
+
+(* type clientv3.AuthUserRevokeRoleResponse *)
+Module AuthUserRevokeRoleResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthUserRevokeRoleResponse.
+
+Global Instance bounded_size_AuthUserRevokeRoleResponse : BoundedTypeSize clientv3.AuthUserRevokeRoleResponse.
+Admitted.
+
+Global Instance into_val_AuthUserRevokeRoleResponse `{ffi_syntax} : IntoVal AuthUserRevokeRoleResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthUserRevokeRoleResponse `{ffi_syntax} : IntoValTyped AuthUserRevokeRoleResponse.t clientv3.AuthUserRevokeRoleResponse.
+Admitted.
+
+(* type clientv3.AuthRoleAddResponse *)
+Module AuthRoleAddResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthRoleAddResponse.
+
+Global Instance bounded_size_AuthRoleAddResponse : BoundedTypeSize clientv3.AuthRoleAddResponse.
+Admitted.
+
+Global Instance into_val_AuthRoleAddResponse `{ffi_syntax} : IntoVal AuthRoleAddResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthRoleAddResponse `{ffi_syntax} : IntoValTyped AuthRoleAddResponse.t clientv3.AuthRoleAddResponse.
+Admitted.
+
+(* type clientv3.AuthRoleGrantPermissionResponse *)
+Module AuthRoleGrantPermissionResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthRoleGrantPermissionResponse.
+
+Global Instance bounded_size_AuthRoleGrantPermissionResponse : BoundedTypeSize clientv3.AuthRoleGrantPermissionResponse.
+Admitted.
+
+Global Instance into_val_AuthRoleGrantPermissionResponse `{ffi_syntax} : IntoVal AuthRoleGrantPermissionResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthRoleGrantPermissionResponse `{ffi_syntax} : IntoValTyped AuthRoleGrantPermissionResponse.t clientv3.AuthRoleGrantPermissionResponse.
+Admitted.
+
+(* type clientv3.AuthRoleGetResponse *)
+Module AuthRoleGetResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthRoleGetResponse.
+
+Global Instance bounded_size_AuthRoleGetResponse : BoundedTypeSize clientv3.AuthRoleGetResponse.
+Admitted.
+
+Global Instance into_val_AuthRoleGetResponse `{ffi_syntax} : IntoVal AuthRoleGetResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthRoleGetResponse `{ffi_syntax} : IntoValTyped AuthRoleGetResponse.t clientv3.AuthRoleGetResponse.
+Admitted.
+
+(* type clientv3.AuthRoleRevokePermissionResponse *)
+Module AuthRoleRevokePermissionResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthRoleRevokePermissionResponse.
+
+Global Instance bounded_size_AuthRoleRevokePermissionResponse : BoundedTypeSize clientv3.AuthRoleRevokePermissionResponse.
+Admitted.
+
+Global Instance into_val_AuthRoleRevokePermissionResponse `{ffi_syntax} : IntoVal AuthRoleRevokePermissionResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthRoleRevokePermissionResponse `{ffi_syntax} : IntoValTyped AuthRoleRevokePermissionResponse.t clientv3.AuthRoleRevokePermissionResponse.
+Admitted.
+
+(* type clientv3.AuthRoleDeleteResponse *)
+Module AuthRoleDeleteResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthRoleDeleteResponse.
+
+Global Instance bounded_size_AuthRoleDeleteResponse : BoundedTypeSize clientv3.AuthRoleDeleteResponse.
+Admitted.
+
+Global Instance into_val_AuthRoleDeleteResponse `{ffi_syntax} : IntoVal AuthRoleDeleteResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthRoleDeleteResponse `{ffi_syntax} : IntoValTyped AuthRoleDeleteResponse.t clientv3.AuthRoleDeleteResponse.
+Admitted.
+
+(* type clientv3.AuthUserListResponse *)
+Module AuthUserListResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthUserListResponse.
+
+Global Instance bounded_size_AuthUserListResponse : BoundedTypeSize clientv3.AuthUserListResponse.
+Admitted.
+
+Global Instance into_val_AuthUserListResponse `{ffi_syntax} : IntoVal AuthUserListResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthUserListResponse `{ffi_syntax} : IntoValTyped AuthUserListResponse.t clientv3.AuthUserListResponse.
+Admitted.
+
+(* type clientv3.AuthRoleListResponse *)
+Module AuthRoleListResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthRoleListResponse.
+
+Global Instance bounded_size_AuthRoleListResponse : BoundedTypeSize clientv3.AuthRoleListResponse.
+Admitted.
+
+Global Instance into_val_AuthRoleListResponse `{ffi_syntax} : IntoVal AuthRoleListResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AuthRoleListResponse `{ffi_syntax} : IntoValTyped AuthRoleListResponse.t clientv3.AuthRoleListResponse.
+Admitted.
+
+(* type clientv3.PermissionType *)
+Module PermissionType.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PermissionType.
+
+Global Instance bounded_size_PermissionType : BoundedTypeSize clientv3.PermissionType.
+Admitted.
+
+Global Instance into_val_PermissionType `{ffi_syntax} : IntoVal PermissionType.t.
+Admitted.
+
+Global Instance into_val_typed_PermissionType `{ffi_syntax} : IntoValTyped PermissionType.t clientv3.PermissionType.
+Admitted.
+
+(* type clientv3.Permission *)
+Module Permission.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Permission.
+
+Global Instance bounded_size_Permission : BoundedTypeSize clientv3.Permission.
+Admitted.
+
+Global Instance into_val_Permission `{ffi_syntax} : IntoVal Permission.t.
+Admitted.
+
+Global Instance into_val_typed_Permission `{ffi_syntax} : IntoValTyped Permission.t clientv3.Permission.
+Admitted.
+
+(* type clientv3.UserAddOptions *)
+Module UserAddOptions.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End UserAddOptions.
+
+Global Instance bounded_size_UserAddOptions : BoundedTypeSize clientv3.UserAddOptions.
+Admitted.
+
+Global Instance into_val_UserAddOptions `{ffi_syntax} : IntoVal UserAddOptions.t.
+Admitted.
+
+Global Instance into_val_typed_UserAddOptions `{ffi_syntax} : IntoValTyped UserAddOptions.t clientv3.UserAddOptions.
+Admitted.
+
+(* type clientv3.Auth *)
+Module Auth.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Auth.
+
+Global Instance bounded_size_Auth : BoundedTypeSize clientv3.Auth.
+Admitted.
+
+Global Instance into_val_Auth `{ffi_syntax} : IntoVal Auth.t.
+Admitted.
+
+Global Instance into_val_typed_Auth `{ffi_syntax} : IntoValTyped Auth.t clientv3.Auth.
+Admitted.
+
+(* type clientv3.authClient *)
+Module authClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End authClient.
+
+Global Instance bounded_size_authClient : BoundedTypeSize clientv3.authClient.
+Admitted.
+
+Global Instance into_val_authClient `{ffi_syntax} : IntoVal authClient.t.
+Admitted.
+
+Global Instance into_val_typed_authClient `{ffi_syntax} : IntoValTyped authClient.t clientv3.authClient.
+Admitted.
+
 (* type clientv3.Client *)
 Module Client.
 Section def.
@@ -27,6 +401,125 @@ Admitted.
 Global Instance into_val_typed_Client `{ffi_syntax} : IntoValTyped Client.t clientv3.Client.
 Admitted.
 
+(* type clientv3.Option *)
+Module Option.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Option.
+
+Global Instance bounded_size_Option : BoundedTypeSize clientv3.Option.
+Admitted.
+
+Global Instance into_val_Option `{ffi_syntax} : IntoVal Option.t.
+Admitted.
+
+Global Instance into_val_typed_Option `{ffi_syntax} : IntoValTyped Option.t clientv3.Option.
+Admitted.
+
+(* type clientv3.Member *)
+Module Member.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Member.
+
+Global Instance bounded_size_Member : BoundedTypeSize clientv3.Member.
+Admitted.
+
+Global Instance into_val_Member `{ffi_syntax} : IntoVal Member.t.
+Admitted.
+
+Global Instance into_val_typed_Member `{ffi_syntax} : IntoValTyped Member.t clientv3.Member.
+Admitted.
+
+(* type clientv3.MemberListResponse *)
+Module MemberListResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MemberListResponse.
+
+Global Instance bounded_size_MemberListResponse : BoundedTypeSize clientv3.MemberListResponse.
+Admitted.
+
+Global Instance into_val_MemberListResponse `{ffi_syntax} : IntoVal MemberListResponse.t.
+Admitted.
+
+Global Instance into_val_typed_MemberListResponse `{ffi_syntax} : IntoValTyped MemberListResponse.t clientv3.MemberListResponse.
+Admitted.
+
+(* type clientv3.MemberAddResponse *)
+Module MemberAddResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MemberAddResponse.
+
+Global Instance bounded_size_MemberAddResponse : BoundedTypeSize clientv3.MemberAddResponse.
+Admitted.
+
+Global Instance into_val_MemberAddResponse `{ffi_syntax} : IntoVal MemberAddResponse.t.
+Admitted.
+
+Global Instance into_val_typed_MemberAddResponse `{ffi_syntax} : IntoValTyped MemberAddResponse.t clientv3.MemberAddResponse.
+Admitted.
+
+(* type clientv3.MemberRemoveResponse *)
+Module MemberRemoveResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MemberRemoveResponse.
+
+Global Instance bounded_size_MemberRemoveResponse : BoundedTypeSize clientv3.MemberRemoveResponse.
+Admitted.
+
+Global Instance into_val_MemberRemoveResponse `{ffi_syntax} : IntoVal MemberRemoveResponse.t.
+Admitted.
+
+Global Instance into_val_typed_MemberRemoveResponse `{ffi_syntax} : IntoValTyped MemberRemoveResponse.t clientv3.MemberRemoveResponse.
+Admitted.
+
+(* type clientv3.MemberUpdateResponse *)
+Module MemberUpdateResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MemberUpdateResponse.
+
+Global Instance bounded_size_MemberUpdateResponse : BoundedTypeSize clientv3.MemberUpdateResponse.
+Admitted.
+
+Global Instance into_val_MemberUpdateResponse `{ffi_syntax} : IntoVal MemberUpdateResponse.t.
+Admitted.
+
+Global Instance into_val_typed_MemberUpdateResponse `{ffi_syntax} : IntoValTyped MemberUpdateResponse.t clientv3.MemberUpdateResponse.
+Admitted.
+
+(* type clientv3.MemberPromoteResponse *)
+Module MemberPromoteResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MemberPromoteResponse.
+
+Global Instance bounded_size_MemberPromoteResponse : BoundedTypeSize clientv3.MemberPromoteResponse.
+Admitted.
+
+Global Instance into_val_MemberPromoteResponse `{ffi_syntax} : IntoVal MemberPromoteResponse.t.
+Admitted.
+
+Global Instance into_val_typed_MemberPromoteResponse `{ffi_syntax} : IntoValTyped MemberPromoteResponse.t clientv3.MemberPromoteResponse.
+Admitted.
+
 (* type clientv3.Cluster *)
 Module Cluster.
 Section def.
@@ -35,6 +528,91 @@ Definition t := interface.t.
 End def.
 End Cluster.
 
+(* type clientv3.cluster *)
+Module cluster.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End cluster.
+
+Global Instance bounded_size_cluster : BoundedTypeSize clientv3.cluster.
+Admitted.
+
+Global Instance into_val_cluster `{ffi_syntax} : IntoVal cluster.t.
+Admitted.
+
+Global Instance into_val_typed_cluster `{ffi_syntax} : IntoValTyped cluster.t clientv3.cluster.
+Admitted.
+
+(* type clientv3.CompactOp *)
+Module CompactOp.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CompactOp.
+
+Global Instance bounded_size_CompactOp : BoundedTypeSize clientv3.CompactOp.
+Admitted.
+
+Global Instance into_val_CompactOp `{ffi_syntax} : IntoVal CompactOp.t.
+Admitted.
+
+Global Instance into_val_typed_CompactOp `{ffi_syntax} : IntoValTyped CompactOp.t clientv3.CompactOp.
+Admitted.
+
+(* type clientv3.CompactOption *)
+Module CompactOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CompactOption.
+
+Global Instance bounded_size_CompactOption : BoundedTypeSize clientv3.CompactOption.
+Admitted.
+
+Global Instance into_val_CompactOption `{ffi_syntax} : IntoVal CompactOption.t.
+Admitted.
+
+Global Instance into_val_typed_CompactOption `{ffi_syntax} : IntoValTyped CompactOption.t clientv3.CompactOption.
+Admitted.
+
+(* type clientv3.CompareTarget *)
+Module CompareTarget.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CompareTarget.
+
+Global Instance bounded_size_CompareTarget : BoundedTypeSize clientv3.CompareTarget.
+Admitted.
+
+Global Instance into_val_CompareTarget `{ffi_syntax} : IntoVal CompareTarget.t.
+Admitted.
+
+Global Instance into_val_typed_CompareTarget `{ffi_syntax} : IntoValTyped CompareTarget.t clientv3.CompareTarget.
+Admitted.
+
+(* type clientv3.CompareResult *)
+Module CompareResult.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CompareResult.
+
+Global Instance bounded_size_CompareResult : BoundedTypeSize clientv3.CompareResult.
+Admitted.
+
+Global Instance into_val_CompareResult `{ffi_syntax} : IntoVal CompareResult.t.
+Admitted.
+
+Global Instance into_val_typed_CompareResult `{ffi_syntax} : IntoValTyped CompareResult.t clientv3.CompareResult.
+Admitted.
+
 (* type clientv3.Cmp *)
 Module Cmp.
 Section def.
@@ -42,6 +620,91 @@ Context `{ffi_syntax}.
 Definition t := etcdserverpb.Compare.t.
 End def.
 End Cmp.
+
+(* type clientv3.Config *)
+Module Config.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Config.
+
+Global Instance bounded_size_Config : BoundedTypeSize clientv3.Config.
+Admitted.
+
+Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
+Admitted.
+
+Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t clientv3.Config.
+Admitted.
+
+(* type clientv3.ConfigSpec *)
+Module ConfigSpec.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ConfigSpec.
+
+Global Instance bounded_size_ConfigSpec : BoundedTypeSize clientv3.ConfigSpec.
+Admitted.
+
+Global Instance into_val_ConfigSpec `{ffi_syntax} : IntoVal ConfigSpec.t.
+Admitted.
+
+Global Instance into_val_typed_ConfigSpec `{ffi_syntax} : IntoValTyped ConfigSpec.t clientv3.ConfigSpec.
+Admitted.
+
+(* type clientv3.SecureConfig *)
+Module SecureConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End SecureConfig.
+
+Global Instance bounded_size_SecureConfig : BoundedTypeSize clientv3.SecureConfig.
+Admitted.
+
+Global Instance into_val_SecureConfig `{ffi_syntax} : IntoVal SecureConfig.t.
+Admitted.
+
+Global Instance into_val_typed_SecureConfig `{ffi_syntax} : IntoValTyped SecureConfig.t clientv3.SecureConfig.
+Admitted.
+
+(* type clientv3.AuthConfig *)
+Module AuthConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AuthConfig.
+
+Global Instance bounded_size_AuthConfig : BoundedTypeSize clientv3.AuthConfig.
+Admitted.
+
+Global Instance into_val_AuthConfig `{ffi_syntax} : IntoVal AuthConfig.t.
+Admitted.
+
+Global Instance into_val_typed_AuthConfig `{ffi_syntax} : IntoValTyped AuthConfig.t clientv3.AuthConfig.
+Admitted.
+
+(* type clientv3.CompactResponse *)
+Module CompactResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CompactResponse.
+
+Global Instance bounded_size_CompactResponse : BoundedTypeSize clientv3.CompactResponse.
+Admitted.
+
+Global Instance into_val_CompactResponse `{ffi_syntax} : IntoVal CompactResponse.t.
+Admitted.
+
+Global Instance into_val_typed_CompactResponse `{ffi_syntax} : IntoValTyped CompactResponse.t clientv3.CompactResponse.
+Admitted.
 
 (* type clientv3.PutResponse *)
 Module PutResponse.
@@ -168,6 +831,40 @@ Qed.
 
 End instances.
 
+(* type clientv3.kv *)
+Module kv.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End kv.
+
+Global Instance bounded_size_kv : BoundedTypeSize clientv3.kv.
+Admitted.
+
+Global Instance into_val_kv `{ffi_syntax} : IntoVal kv.t.
+Admitted.
+
+Global Instance into_val_typed_kv `{ffi_syntax} : IntoValTyped kv.t clientv3.kv.
+Admitted.
+
+(* type clientv3.LeaseRevokeResponse *)
+Module LeaseRevokeResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LeaseRevokeResponse.
+
+Global Instance bounded_size_LeaseRevokeResponse : BoundedTypeSize clientv3.LeaseRevokeResponse.
+Admitted.
+
+Global Instance into_val_LeaseRevokeResponse `{ffi_syntax} : IntoVal LeaseRevokeResponse.t.
+Admitted.
+
+Global Instance into_val_typed_LeaseRevokeResponse `{ffi_syntax} : IntoValTyped LeaseRevokeResponse.t clientv3.LeaseRevokeResponse.
+Admitted.
+
 (* type clientv3.LeaseID *)
 Module LeaseID.
 Section def.
@@ -261,6 +958,91 @@ Qed.
 
 End instances.
 
+(* type clientv3.LeaseKeepAliveResponse *)
+Module LeaseKeepAliveResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LeaseKeepAliveResponse.
+
+Global Instance bounded_size_LeaseKeepAliveResponse : BoundedTypeSize clientv3.LeaseKeepAliveResponse.
+Admitted.
+
+Global Instance into_val_LeaseKeepAliveResponse `{ffi_syntax} : IntoVal LeaseKeepAliveResponse.t.
+Admitted.
+
+Global Instance into_val_typed_LeaseKeepAliveResponse `{ffi_syntax} : IntoValTyped LeaseKeepAliveResponse.t clientv3.LeaseKeepAliveResponse.
+Admitted.
+
+(* type clientv3.LeaseTimeToLiveResponse *)
+Module LeaseTimeToLiveResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LeaseTimeToLiveResponse.
+
+Global Instance bounded_size_LeaseTimeToLiveResponse : BoundedTypeSize clientv3.LeaseTimeToLiveResponse.
+Admitted.
+
+Global Instance into_val_LeaseTimeToLiveResponse `{ffi_syntax} : IntoVal LeaseTimeToLiveResponse.t.
+Admitted.
+
+Global Instance into_val_typed_LeaseTimeToLiveResponse `{ffi_syntax} : IntoValTyped LeaseTimeToLiveResponse.t clientv3.LeaseTimeToLiveResponse.
+Admitted.
+
+(* type clientv3.LeaseStatus *)
+Module LeaseStatus.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LeaseStatus.
+
+Global Instance bounded_size_LeaseStatus : BoundedTypeSize clientv3.LeaseStatus.
+Admitted.
+
+Global Instance into_val_LeaseStatus `{ffi_syntax} : IntoVal LeaseStatus.t.
+Admitted.
+
+Global Instance into_val_typed_LeaseStatus `{ffi_syntax} : IntoValTyped LeaseStatus.t clientv3.LeaseStatus.
+Admitted.
+
+(* type clientv3.LeaseLeasesResponse *)
+Module LeaseLeasesResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LeaseLeasesResponse.
+
+Global Instance bounded_size_LeaseLeasesResponse : BoundedTypeSize clientv3.LeaseLeasesResponse.
+Admitted.
+
+Global Instance into_val_LeaseLeasesResponse `{ffi_syntax} : IntoVal LeaseLeasesResponse.t.
+Admitted.
+
+Global Instance into_val_typed_LeaseLeasesResponse `{ffi_syntax} : IntoValTyped LeaseLeasesResponse.t clientv3.LeaseLeasesResponse.
+Admitted.
+
+(* type clientv3.ErrKeepAliveHalted *)
+Module ErrKeepAliveHalted.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ErrKeepAliveHalted.
+
+Global Instance bounded_size_ErrKeepAliveHalted : BoundedTypeSize clientv3.ErrKeepAliveHalted.
+Admitted.
+
+Global Instance into_val_ErrKeepAliveHalted `{ffi_syntax} : IntoVal ErrKeepAliveHalted.t.
+Admitted.
+
+Global Instance into_val_typed_ErrKeepAliveHalted `{ffi_syntax} : IntoValTyped ErrKeepAliveHalted.t clientv3.ErrKeepAliveHalted.
+Admitted.
+
 (* type clientv3.Lease *)
 Module Lease.
 Section def.
@@ -268,6 +1050,261 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End Lease.
+
+(* type clientv3.lessor *)
+Module lessor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End lessor.
+
+Global Instance bounded_size_lessor : BoundedTypeSize clientv3.lessor.
+Admitted.
+
+Global Instance into_val_lessor `{ffi_syntax} : IntoVal lessor.t.
+Admitted.
+
+Global Instance into_val_typed_lessor `{ffi_syntax} : IntoValTyped lessor.t clientv3.lessor.
+Admitted.
+
+(* type clientv3.keepAlive *)
+Module keepAlive.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End keepAlive.
+
+Global Instance bounded_size_keepAlive : BoundedTypeSize clientv3.keepAlive.
+Admitted.
+
+Global Instance into_val_keepAlive `{ffi_syntax} : IntoVal keepAlive.t.
+Admitted.
+
+Global Instance into_val_typed_keepAlive `{ffi_syntax} : IntoValTyped keepAlive.t clientv3.keepAlive.
+Admitted.
+
+(* type clientv3.keepAliveCtxKey *)
+Module keepAliveCtxKey.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End keepAliveCtxKey.
+
+Global Instance bounded_size_keepAliveCtxKey : BoundedTypeSize clientv3.keepAliveCtxKey.
+Admitted.
+
+Global Instance into_val_keepAliveCtxKey `{ffi_syntax} : IntoVal keepAliveCtxKey.t.
+Admitted.
+
+Global Instance into_val_typed_keepAliveCtxKey `{ffi_syntax} : IntoValTyped keepAliveCtxKey.t clientv3.keepAliveCtxKey.
+Admitted.
+
+(* type clientv3.DefragmentResponse *)
+Module DefragmentResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End DefragmentResponse.
+
+Global Instance bounded_size_DefragmentResponse : BoundedTypeSize clientv3.DefragmentResponse.
+Admitted.
+
+Global Instance into_val_DefragmentResponse `{ffi_syntax} : IntoVal DefragmentResponse.t.
+Admitted.
+
+Global Instance into_val_typed_DefragmentResponse `{ffi_syntax} : IntoValTyped DefragmentResponse.t clientv3.DefragmentResponse.
+Admitted.
+
+(* type clientv3.AlarmResponse *)
+Module AlarmResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AlarmResponse.
+
+Global Instance bounded_size_AlarmResponse : BoundedTypeSize clientv3.AlarmResponse.
+Admitted.
+
+Global Instance into_val_AlarmResponse `{ffi_syntax} : IntoVal AlarmResponse.t.
+Admitted.
+
+Global Instance into_val_typed_AlarmResponse `{ffi_syntax} : IntoValTyped AlarmResponse.t clientv3.AlarmResponse.
+Admitted.
+
+(* type clientv3.AlarmMember *)
+Module AlarmMember.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End AlarmMember.
+
+Global Instance bounded_size_AlarmMember : BoundedTypeSize clientv3.AlarmMember.
+Admitted.
+
+Global Instance into_val_AlarmMember `{ffi_syntax} : IntoVal AlarmMember.t.
+Admitted.
+
+Global Instance into_val_typed_AlarmMember `{ffi_syntax} : IntoValTyped AlarmMember.t clientv3.AlarmMember.
+Admitted.
+
+(* type clientv3.StatusResponse *)
+Module StatusResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StatusResponse.
+
+Global Instance bounded_size_StatusResponse : BoundedTypeSize clientv3.StatusResponse.
+Admitted.
+
+Global Instance into_val_StatusResponse `{ffi_syntax} : IntoVal StatusResponse.t.
+Admitted.
+
+Global Instance into_val_typed_StatusResponse `{ffi_syntax} : IntoValTyped StatusResponse.t clientv3.StatusResponse.
+Admitted.
+
+(* type clientv3.HashKVResponse *)
+Module HashKVResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End HashKVResponse.
+
+Global Instance bounded_size_HashKVResponse : BoundedTypeSize clientv3.HashKVResponse.
+Admitted.
+
+Global Instance into_val_HashKVResponse `{ffi_syntax} : IntoVal HashKVResponse.t.
+Admitted.
+
+Global Instance into_val_typed_HashKVResponse `{ffi_syntax} : IntoValTyped HashKVResponse.t clientv3.HashKVResponse.
+Admitted.
+
+(* type clientv3.MoveLeaderResponse *)
+Module MoveLeaderResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MoveLeaderResponse.
+
+Global Instance bounded_size_MoveLeaderResponse : BoundedTypeSize clientv3.MoveLeaderResponse.
+Admitted.
+
+Global Instance into_val_MoveLeaderResponse `{ffi_syntax} : IntoVal MoveLeaderResponse.t.
+Admitted.
+
+Global Instance into_val_typed_MoveLeaderResponse `{ffi_syntax} : IntoValTyped MoveLeaderResponse.t clientv3.MoveLeaderResponse.
+Admitted.
+
+(* type clientv3.DowngradeResponse *)
+Module DowngradeResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End DowngradeResponse.
+
+Global Instance bounded_size_DowngradeResponse : BoundedTypeSize clientv3.DowngradeResponse.
+Admitted.
+
+Global Instance into_val_DowngradeResponse `{ffi_syntax} : IntoVal DowngradeResponse.t.
+Admitted.
+
+Global Instance into_val_typed_DowngradeResponse `{ffi_syntax} : IntoValTyped DowngradeResponse.t clientv3.DowngradeResponse.
+Admitted.
+
+(* type clientv3.DowngradeAction *)
+Module DowngradeAction.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End DowngradeAction.
+
+Global Instance bounded_size_DowngradeAction : BoundedTypeSize clientv3.DowngradeAction.
+Admitted.
+
+Global Instance into_val_DowngradeAction `{ffi_syntax} : IntoVal DowngradeAction.t.
+Admitted.
+
+Global Instance into_val_typed_DowngradeAction `{ffi_syntax} : IntoValTyped DowngradeAction.t clientv3.DowngradeAction.
+Admitted.
+
+(* type clientv3.Maintenance *)
+Module Maintenance.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Maintenance.
+
+Global Instance bounded_size_Maintenance : BoundedTypeSize clientv3.Maintenance.
+Admitted.
+
+Global Instance into_val_Maintenance `{ffi_syntax} : IntoVal Maintenance.t.
+Admitted.
+
+Global Instance into_val_typed_Maintenance `{ffi_syntax} : IntoValTyped Maintenance.t clientv3.Maintenance.
+Admitted.
+
+(* type clientv3.SnapshotResponse *)
+Module SnapshotResponse.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End SnapshotResponse.
+
+Global Instance bounded_size_SnapshotResponse : BoundedTypeSize clientv3.SnapshotResponse.
+Admitted.
+
+Global Instance into_val_SnapshotResponse `{ffi_syntax} : IntoVal SnapshotResponse.t.
+Admitted.
+
+Global Instance into_val_typed_SnapshotResponse `{ffi_syntax} : IntoValTyped SnapshotResponse.t clientv3.SnapshotResponse.
+Admitted.
+
+(* type clientv3.maintenance *)
+Module maintenance.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End maintenance.
+
+Global Instance bounded_size_maintenance : BoundedTypeSize clientv3.maintenance.
+Admitted.
+
+Global Instance into_val_maintenance `{ffi_syntax} : IntoVal maintenance.t.
+Admitted.
+
+Global Instance into_val_typed_maintenance `{ffi_syntax} : IntoValTyped maintenance.t clientv3.maintenance.
+Admitted.
+
+(* type clientv3.snapshotReadCloser *)
+Module snapshotReadCloser.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End snapshotReadCloser.
+
+Global Instance bounded_size_snapshotReadCloser : BoundedTypeSize clientv3.snapshotReadCloser.
+Admitted.
+
+Global Instance into_val_snapshotReadCloser `{ffi_syntax} : IntoVal snapshotReadCloser.t.
+Admitted.
+
+Global Instance into_val_typed_snapshotReadCloser `{ffi_syntax} : IntoValTyped snapshotReadCloser.t clientv3.snapshotReadCloser.
+Admitted.
 
 (* type clientv3.opType *)
 Module opType.
@@ -639,6 +1676,176 @@ Definition t := func.t.
 End def.
 End LeaseOption.
 
+(* type clientv3.retryPolicy *)
+Module retryPolicy.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryPolicy.
+
+Global Instance bounded_size_retryPolicy : BoundedTypeSize clientv3.retryPolicy.
+Admitted.
+
+Global Instance into_val_retryPolicy `{ffi_syntax} : IntoVal retryPolicy.t.
+Admitted.
+
+Global Instance into_val_typed_retryPolicy `{ffi_syntax} : IntoValTyped retryPolicy.t clientv3.retryPolicy.
+Admitted.
+
+(* type clientv3.retryKVClient *)
+Module retryKVClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryKVClient.
+
+Global Instance bounded_size_retryKVClient : BoundedTypeSize clientv3.retryKVClient.
+Admitted.
+
+Global Instance into_val_retryKVClient `{ffi_syntax} : IntoVal retryKVClient.t.
+Admitted.
+
+Global Instance into_val_typed_retryKVClient `{ffi_syntax} : IntoValTyped retryKVClient.t clientv3.retryKVClient.
+Admitted.
+
+(* type clientv3.retryLeaseClient *)
+Module retryLeaseClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryLeaseClient.
+
+Global Instance bounded_size_retryLeaseClient : BoundedTypeSize clientv3.retryLeaseClient.
+Admitted.
+
+Global Instance into_val_retryLeaseClient `{ffi_syntax} : IntoVal retryLeaseClient.t.
+Admitted.
+
+Global Instance into_val_typed_retryLeaseClient `{ffi_syntax} : IntoValTyped retryLeaseClient.t clientv3.retryLeaseClient.
+Admitted.
+
+(* type clientv3.retryClusterClient *)
+Module retryClusterClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryClusterClient.
+
+Global Instance bounded_size_retryClusterClient : BoundedTypeSize clientv3.retryClusterClient.
+Admitted.
+
+Global Instance into_val_retryClusterClient `{ffi_syntax} : IntoVal retryClusterClient.t.
+Admitted.
+
+Global Instance into_val_typed_retryClusterClient `{ffi_syntax} : IntoValTyped retryClusterClient.t clientv3.retryClusterClient.
+Admitted.
+
+(* type clientv3.retryMaintenanceClient *)
+Module retryMaintenanceClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryMaintenanceClient.
+
+Global Instance bounded_size_retryMaintenanceClient : BoundedTypeSize clientv3.retryMaintenanceClient.
+Admitted.
+
+Global Instance into_val_retryMaintenanceClient `{ffi_syntax} : IntoVal retryMaintenanceClient.t.
+Admitted.
+
+Global Instance into_val_typed_retryMaintenanceClient `{ffi_syntax} : IntoValTyped retryMaintenanceClient.t clientv3.retryMaintenanceClient.
+Admitted.
+
+(* type clientv3.retryAuthClient *)
+Module retryAuthClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryAuthClient.
+
+Global Instance bounded_size_retryAuthClient : BoundedTypeSize clientv3.retryAuthClient.
+Admitted.
+
+Global Instance into_val_retryAuthClient `{ffi_syntax} : IntoVal retryAuthClient.t.
+Admitted.
+
+Global Instance into_val_typed_retryAuthClient `{ffi_syntax} : IntoValTyped retryAuthClient.t clientv3.retryAuthClient.
+Admitted.
+
+(* type clientv3.serverStreamingRetryingStream *)
+Module serverStreamingRetryingStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End serverStreamingRetryingStream.
+
+Global Instance bounded_size_serverStreamingRetryingStream : BoundedTypeSize clientv3.serverStreamingRetryingStream.
+Admitted.
+
+Global Instance into_val_serverStreamingRetryingStream `{ffi_syntax} : IntoVal serverStreamingRetryingStream.t.
+Admitted.
+
+Global Instance into_val_typed_serverStreamingRetryingStream `{ffi_syntax} : IntoValTyped serverStreamingRetryingStream.t clientv3.serverStreamingRetryingStream.
+Admitted.
+
+(* type clientv3.backoffFunc *)
+Module backoffFunc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End backoffFunc.
+
+Global Instance bounded_size_backoffFunc : BoundedTypeSize clientv3.backoffFunc.
+Admitted.
+
+Global Instance into_val_backoffFunc `{ffi_syntax} : IntoVal backoffFunc.t.
+Admitted.
+
+Global Instance into_val_typed_backoffFunc `{ffi_syntax} : IntoValTyped backoffFunc.t clientv3.backoffFunc.
+Admitted.
+
+(* type clientv3.options *)
+Module options.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End options.
+
+Global Instance bounded_size_options : BoundedTypeSize clientv3.options.
+Admitted.
+
+Global Instance into_val_options `{ffi_syntax} : IntoVal options.t.
+Admitted.
+
+Global Instance into_val_typed_options `{ffi_syntax} : IntoValTyped options.t clientv3.options.
+Admitted.
+
+(* type clientv3.retryOption *)
+Module retryOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryOption.
+
+Global Instance bounded_size_retryOption : BoundedTypeSize clientv3.retryOption.
+Admitted.
+
+Global Instance into_val_retryOption `{ffi_syntax} : IntoVal retryOption.t.
+Admitted.
+
+Global Instance into_val_typed_retryOption `{ffi_syntax} : IntoValTyped retryOption.t clientv3.retryOption.
+Admitted.
+
 (* type clientv3.SortTarget *)
 Module SortTarget.
 Section def.
@@ -731,6 +1938,23 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End Txn.
+
+(* type clientv3.txn *)
+Module txn.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End txn.
+
+Global Instance bounded_size_txn : BoundedTypeSize clientv3.txn.
+Admitted.
+
+Global Instance into_val_txn `{ffi_syntax} : IntoVal txn.t.
+Admitted.
+
+Global Instance into_val_typed_txn `{ffi_syntax} : IntoValTyped txn.t clientv3.txn.
+Admitted.
 
 (* type clientv3.Event *)
 Module Event.
@@ -865,6 +2089,125 @@ Qed.
 
 End instances.
 
+(* type clientv3.watcher *)
+Module watcher.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End watcher.
+
+Global Instance bounded_size_watcher : BoundedTypeSize clientv3.watcher.
+Admitted.
+
+Global Instance into_val_watcher `{ffi_syntax} : IntoVal watcher.t.
+Admitted.
+
+Global Instance into_val_typed_watcher `{ffi_syntax} : IntoValTyped watcher.t clientv3.watcher.
+Admitted.
+
+(* type clientv3.watchGRPCStream *)
+Module watchGRPCStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End watchGRPCStream.
+
+Global Instance bounded_size_watchGRPCStream : BoundedTypeSize clientv3.watchGRPCStream.
+Admitted.
+
+Global Instance into_val_watchGRPCStream `{ffi_syntax} : IntoVal watchGRPCStream.t.
+Admitted.
+
+Global Instance into_val_typed_watchGRPCStream `{ffi_syntax} : IntoValTyped watchGRPCStream.t clientv3.watchGRPCStream.
+Admitted.
+
+(* type clientv3.watchStreamRequest *)
+Module watchStreamRequest.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End watchStreamRequest.
+
+Global Instance bounded_size_watchStreamRequest : BoundedTypeSize clientv3.watchStreamRequest.
+Admitted.
+
+Global Instance into_val_watchStreamRequest `{ffi_syntax} : IntoVal watchStreamRequest.t.
+Admitted.
+
+Global Instance into_val_typed_watchStreamRequest `{ffi_syntax} : IntoValTyped watchStreamRequest.t clientv3.watchStreamRequest.
+Admitted.
+
+(* type clientv3.watchRequest *)
+Module watchRequest.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End watchRequest.
+
+Global Instance bounded_size_watchRequest : BoundedTypeSize clientv3.watchRequest.
+Admitted.
+
+Global Instance into_val_watchRequest `{ffi_syntax} : IntoVal watchRequest.t.
+Admitted.
+
+Global Instance into_val_typed_watchRequest `{ffi_syntax} : IntoValTyped watchRequest.t clientv3.watchRequest.
+Admitted.
+
+(* type clientv3.progressRequest *)
+Module progressRequest.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End progressRequest.
+
+Global Instance bounded_size_progressRequest : BoundedTypeSize clientv3.progressRequest.
+Admitted.
+
+Global Instance into_val_progressRequest `{ffi_syntax} : IntoVal progressRequest.t.
+Admitted.
+
+Global Instance into_val_typed_progressRequest `{ffi_syntax} : IntoValTyped progressRequest.t clientv3.progressRequest.
+Admitted.
+
+(* type clientv3.watcherStream *)
+Module watcherStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End watcherStream.
+
+Global Instance bounded_size_watcherStream : BoundedTypeSize clientv3.watcherStream.
+Admitted.
+
+Global Instance into_val_watcherStream `{ffi_syntax} : IntoVal watcherStream.t.
+Admitted.
+
+Global Instance into_val_typed_watcherStream `{ffi_syntax} : IntoValTyped watcherStream.t clientv3.watcherStream.
+Admitted.
+
+(* type clientv3.valCtx *)
+Module valCtx.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End valCtx.
+
+Global Instance bounded_size_valCtx : BoundedTypeSize clientv3.valCtx.
+Admitted.
+
+Global Instance into_val_valCtx `{ffi_syntax} : IntoVal valCtx.t.
+Admitted.
+
+Global Instance into_val_typed_valCtx `{ffi_syntax} : IntoValTyped valCtx.t clientv3.valCtx.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -876,8 +2219,8 @@ Global Instance is_pkg_defined_pure_clientv3 : IsPkgDefinedPure clientv3 :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single clientv3 ∧
-      is_pkg_defined_pure go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
-      is_pkg_defined_pure go_etcd_io.etcd.api.v3.mvccpb.mvccpb;
+      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
+      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -885,14 +2228,174 @@ Global Program Instance is_pkg_defined_clientv3 : IsPkgDefined clientv3 :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single clientv3 ∗
-       is_pkg_defined go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
-       is_pkg_defined go_etcd_io.etcd.api.v3.mvccpb.mvccpb)%I
+       is_pkg_defined code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
+       is_pkg_defined code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_NewAuth :
+  WpFuncCall clientv3.NewAuth _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewAuthFromAuthClient :
+  WpFuncCall clientv3.NewAuthFromAuthClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StrToPermissionType :
+  WpFuncCall clientv3.StrToPermissionType _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_New :
+  WpFuncCall clientv3.New _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewCtxClient :
+  WpFuncCall clientv3.NewCtxClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewFromURL :
+  WpFuncCall clientv3.NewFromURL _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewFromURLs :
+  WpFuncCall clientv3.NewFromURLs _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_WithZapLogger :
   WpFuncCall clientv3.WithZapLogger _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_authority :
+  WpFuncCall clientv3.authority _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newClient :
+  WpFuncCall clientv3.newClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_minSupportedVersion :
+  WpFuncCall clientv3.minSupportedVersion _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isHaltErr :
+  WpFuncCall clientv3.isHaltErr _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isUnavailableErr :
+  WpFuncCall clientv3.isUnavailableErr _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ContextError :
+  WpFuncCall clientv3.ContextError _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_canceledByCaller :
+  WpFuncCall clientv3.canceledByCaller _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IsConnCanceled :
+  WpFuncCall clientv3.IsConnCanceled _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewCluster :
+  WpFuncCall clientv3.NewCluster _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewClusterFromClusterClient :
+  WpFuncCall clientv3.NewClusterFromClusterClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_OpCompact :
+  WpFuncCall clientv3.OpCompact _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithCompactPhysical :
+  WpFuncCall clientv3.WithCompactPhysical _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Compare :
+  WpFuncCall clientv3.Compare _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Value :
+  WpFuncCall clientv3.Value _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Version :
+  WpFuncCall clientv3.Version _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CreateRevision :
+  WpFuncCall clientv3.CreateRevision _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ModRevision :
+  WpFuncCall clientv3.ModRevision _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LeaseValue :
+  WpFuncCall clientv3.LeaseValue _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_mustInt64 :
+  WpFuncCall clientv3.mustInt64 _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_mustInt64orLeaseID :
+  WpFuncCall clientv3.mustInt64orLeaseID _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewClientConfig :
+  WpFuncCall clientv3.NewClientConfig _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newTLSConfig :
+  WpFuncCall clientv3.newTLSConfig _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithRequireLeader :
+  WpFuncCall clientv3.WithRequireLeader _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withVersion :
+  WpFuncCall clientv3.withVersion _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewKV :
+  WpFuncCall clientv3.NewKV _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewKVFromKVClient :
+  WpFuncCall clientv3.NewKVFromKVClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewLease :
+  WpFuncCall clientv3.NewLease _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewLeaseFromLeaseClient :
+  WpFuncCall clientv3.NewLeaseFromLeaseClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SetLogger :
+  WpFuncCall clientv3.SetLogger _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_etcdClientDebugLevel :
+  WpFuncCall clientv3.etcdClientDebugLevel _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewMaintenance :
+  WpFuncCall clientv3.NewMaintenance _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewMaintenanceFromMaintenanceClient :
+  WpFuncCall clientv3.NewMaintenanceFromMaintenanceClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewOp :
+  WpFuncCall clientv3.NewOp _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_OpGet :
@@ -911,6 +2414,10 @@ Global Instance wp_func_call_OpTxn :
   WpFuncCall clientv3.OpTxn _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_opWatch :
+  WpFuncCall clientv3.opWatch _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_WithLease :
   WpFuncCall clientv3.WithLease _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_func_call).
@@ -925,6 +2432,14 @@ Global Instance wp_func_call_WithRev :
 
 Global Instance wp_func_call_WithSort :
   WpFuncCall clientv3.WithSort _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_GetPrefixRangeEnd :
+  WpFuncCall clientv3.GetPrefixRangeEnd _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getPrefix :
+  WpFuncCall clientv3.getPrefix _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_WithPrefix :
@@ -991,6 +2506,10 @@ Global Instance wp_func_call_WithLastRev :
   WpFuncCall clientv3.WithLastRev _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_withTop :
+  WpFuncCall clientv3.withTop _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_WithProgressNotify :
   WpFuncCall clientv3.WithProgressNotify _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_func_call).
@@ -1026,6 +2545,1494 @@ Global Instance wp_func_call_WithIgnoreLease :
 Global Instance wp_func_call_WithAttachedKeys :
   WpFuncCall clientv3.WithAttachedKeys _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_toLeaseTimeToLiveRequest :
+  WpFuncCall clientv3.toLeaseTimeToLiveRequest _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IsOptsWithPrefix :
+  WpFuncCall clientv3.IsOptsWithPrefix _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_IsOptsWithFromKey :
+  WpFuncCall clientv3.IsOptsWithFromKey _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isSafeRetryImmutableRPC :
+  WpFuncCall clientv3.isSafeRetryImmutableRPC _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isSafeRetryMutableRPC :
+  WpFuncCall clientv3.isSafeRetryMutableRPC _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RetryKVClient :
+  WpFuncCall clientv3.RetryKVClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RetryLeaseClient :
+  WpFuncCall clientv3.RetryLeaseClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RetryClusterClient :
+  WpFuncCall clientv3.RetryClusterClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RetryMaintenanceClient :
+  WpFuncCall clientv3.RetryMaintenanceClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RetryAuthClient :
+  WpFuncCall clientv3.RetryAuthClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_waitRetryBackoff :
+  WpFuncCall clientv3.waitRetryBackoff _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isSafeRetry :
+  WpFuncCall clientv3.isSafeRetry _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isContextError :
+  WpFuncCall clientv3.isContextError _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_contextErrToGRPCErr :
+  WpFuncCall clientv3.contextErrToGRPCErr _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withRepeatablePolicy :
+  WpFuncCall clientv3.withRepeatablePolicy _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withMax :
+  WpFuncCall clientv3.withMax _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withBackoff :
+  WpFuncCall clientv3.withBackoff _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_reuseOrNewWithCallOptions :
+  WpFuncCall clientv3.reuseOrNewWithCallOptions _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_filterCallOptions :
+  WpFuncCall clientv3.filterCallOptions _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_backoffLinearWithJitter :
+  WpFuncCall clientv3.backoffLinearWithJitter _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_jitterUp :
+  WpFuncCall clientv3.jitterUp _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewWatcher :
+  WpFuncCall clientv3.NewWatcher _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewWatchFromWatchClient :
+  WpFuncCall clientv3.NewWatchFromWatchClient _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_streamKeyFromCtx :
+  WpFuncCall clientv3.streamKeyFromCtx _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_authClient'ptr_AuthDisable :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "AuthDisable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_AuthEnable :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "AuthEnable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_AuthStatus :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "AuthStatus" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_Authenticate :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "Authenticate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_RoleAdd :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "RoleAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_RoleDelete :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "RoleDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_RoleGet :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "RoleGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_RoleGrantPermission :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "RoleGrantPermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_RoleList :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "RoleList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_RoleRevokePermission :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "RoleRevokePermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserAdd :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserAddWithOptions :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserAddWithOptions" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserChangePassword :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserChangePassword" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserDelete :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserGet :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserGrantRole :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserGrantRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserList :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_authClient'ptr_UserRevokeRole :
+  WpMethodCall (ptrT.id clientv3.authClient.id) "UserRevokeRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_AlarmDisarm :
+  WpMethodCall clientv3.Client.id "AlarmDisarm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_AlarmList :
+  WpMethodCall clientv3.Client.id "AlarmList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_AuthDisable :
+  WpMethodCall clientv3.Client.id "AuthDisable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_AuthEnable :
+  WpMethodCall clientv3.Client.id "AuthEnable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_AuthStatus :
+  WpMethodCall clientv3.Client.id "AuthStatus" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Authenticate :
+  WpMethodCall clientv3.Client.id "Authenticate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Compact :
+  WpMethodCall clientv3.Client.id "Compact" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Defragment :
+  WpMethodCall clientv3.Client.id "Defragment" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Delete :
+  WpMethodCall clientv3.Client.id "Delete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Do :
+  WpMethodCall clientv3.Client.id "Do" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Downgrade :
+  WpMethodCall clientv3.Client.id "Downgrade" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Get :
+  WpMethodCall clientv3.Client.id "Get" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Grant :
+  WpMethodCall clientv3.Client.id "Grant" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_HashKV :
+  WpMethodCall clientv3.Client.id "HashKV" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_KeepAlive :
+  WpMethodCall clientv3.Client.id "KeepAlive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_KeepAliveOnce :
+  WpMethodCall clientv3.Client.id "KeepAliveOnce" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Leases :
+  WpMethodCall clientv3.Client.id "Leases" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_MemberAdd :
+  WpMethodCall clientv3.Client.id "MemberAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_MemberAddAsLearner :
+  WpMethodCall clientv3.Client.id "MemberAddAsLearner" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_MemberList :
+  WpMethodCall clientv3.Client.id "MemberList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_MemberPromote :
+  WpMethodCall clientv3.Client.id "MemberPromote" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_MemberRemove :
+  WpMethodCall clientv3.Client.id "MemberRemove" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_MemberUpdate :
+  WpMethodCall clientv3.Client.id "MemberUpdate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_MoveLeader :
+  WpMethodCall clientv3.Client.id "MoveLeader" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Put :
+  WpMethodCall clientv3.Client.id "Put" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_RequestProgress :
+  WpMethodCall clientv3.Client.id "RequestProgress" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Revoke :
+  WpMethodCall clientv3.Client.id "Revoke" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_RoleAdd :
+  WpMethodCall clientv3.Client.id "RoleAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_RoleDelete :
+  WpMethodCall clientv3.Client.id "RoleDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_RoleGet :
+  WpMethodCall clientv3.Client.id "RoleGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_RoleGrantPermission :
+  WpMethodCall clientv3.Client.id "RoleGrantPermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_RoleList :
+  WpMethodCall clientv3.Client.id "RoleList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_RoleRevokePermission :
+  WpMethodCall clientv3.Client.id "RoleRevokePermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Snapshot :
+  WpMethodCall clientv3.Client.id "Snapshot" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_SnapshotWithVersion :
+  WpMethodCall clientv3.Client.id "SnapshotWithVersion" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Status :
+  WpMethodCall clientv3.Client.id "Status" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_TimeToLive :
+  WpMethodCall clientv3.Client.id "TimeToLive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Txn :
+  WpMethodCall clientv3.Client.id "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserAdd :
+  WpMethodCall clientv3.Client.id "UserAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserAddWithOptions :
+  WpMethodCall clientv3.Client.id "UserAddWithOptions" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserChangePassword :
+  WpMethodCall clientv3.Client.id "UserChangePassword" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserDelete :
+  WpMethodCall clientv3.Client.id "UserDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserGet :
+  WpMethodCall clientv3.Client.id "UserGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserGrantRole :
+  WpMethodCall clientv3.Client.id "UserGrantRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserList :
+  WpMethodCall clientv3.Client.id "UserList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_UserRevokeRole :
+  WpMethodCall clientv3.Client.id "UserRevokeRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client_Watch :
+  WpMethodCall clientv3.Client.id "Watch" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_ActiveConnection :
+  WpMethodCall (ptrT.id clientv3.Client.id) "ActiveConnection" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_AlarmDisarm :
+  WpMethodCall (ptrT.id clientv3.Client.id) "AlarmDisarm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_AlarmList :
+  WpMethodCall (ptrT.id clientv3.Client.id) "AlarmList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_AuthDisable :
+  WpMethodCall (ptrT.id clientv3.Client.id) "AuthDisable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_AuthEnable :
+  WpMethodCall (ptrT.id clientv3.Client.id) "AuthEnable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_AuthStatus :
+  WpMethodCall (ptrT.id clientv3.Client.id) "AuthStatus" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Authenticate :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Authenticate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Close :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Close" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Compact :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Compact" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Ctx :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Ctx" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Defragment :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Defragment" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Delete :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Delete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Dial :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Dial" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Do :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Do" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Downgrade :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Downgrade" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Endpoints :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Endpoints" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Get :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Get" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_GetLogger :
+  WpMethodCall (ptrT.id clientv3.Client.id) "GetLogger" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Grant :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Grant" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_HashKV :
+  WpMethodCall (ptrT.id clientv3.Client.id) "HashKV" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_KeepAlive :
+  WpMethodCall (ptrT.id clientv3.Client.id) "KeepAlive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_KeepAliveOnce :
+  WpMethodCall (ptrT.id clientv3.Client.id) "KeepAliveOnce" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Leases :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Leases" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_MemberAdd :
+  WpMethodCall (ptrT.id clientv3.Client.id) "MemberAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_MemberAddAsLearner :
+  WpMethodCall (ptrT.id clientv3.Client.id) "MemberAddAsLearner" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_MemberList :
+  WpMethodCall (ptrT.id clientv3.Client.id) "MemberList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_MemberPromote :
+  WpMethodCall (ptrT.id clientv3.Client.id) "MemberPromote" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_MemberRemove :
+  WpMethodCall (ptrT.id clientv3.Client.id) "MemberRemove" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_MemberUpdate :
+  WpMethodCall (ptrT.id clientv3.Client.id) "MemberUpdate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_MoveLeader :
+  WpMethodCall (ptrT.id clientv3.Client.id) "MoveLeader" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Put :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Put" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_RequestProgress :
+  WpMethodCall (ptrT.id clientv3.Client.id) "RequestProgress" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Revoke :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Revoke" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_RoleAdd :
+  WpMethodCall (ptrT.id clientv3.Client.id) "RoleAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_RoleDelete :
+  WpMethodCall (ptrT.id clientv3.Client.id) "RoleDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_RoleGet :
+  WpMethodCall (ptrT.id clientv3.Client.id) "RoleGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_RoleGrantPermission :
+  WpMethodCall (ptrT.id clientv3.Client.id) "RoleGrantPermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_RoleList :
+  WpMethodCall (ptrT.id clientv3.Client.id) "RoleList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_RoleRevokePermission :
+  WpMethodCall (ptrT.id clientv3.Client.id) "RoleRevokePermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_SetEndpoints :
+  WpMethodCall (ptrT.id clientv3.Client.id) "SetEndpoints" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Snapshot :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Snapshot" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_SnapshotWithVersion :
+  WpMethodCall (ptrT.id clientv3.Client.id) "SnapshotWithVersion" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Status :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Status" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Sync :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Sync" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_TimeToLive :
+  WpMethodCall (ptrT.id clientv3.Client.id) "TimeToLive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Txn :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserAdd :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserAddWithOptions :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserAddWithOptions" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserChangePassword :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserChangePassword" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserDelete :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserGet :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserGrantRole :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserGrantRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserList :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_UserRevokeRole :
+  WpMethodCall (ptrT.id clientv3.Client.id) "UserRevokeRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_Watch :
+  WpMethodCall (ptrT.id clientv3.Client.id) "Watch" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_WithLogger :
+  WpMethodCall (ptrT.id clientv3.Client.id) "WithLogger" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_autoSync :
+  WpMethodCall (ptrT.id clientv3.Client.id) "autoSync" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_checkVersion :
+  WpMethodCall (ptrT.id clientv3.Client.id) "checkVersion" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_credentialsForEndpoint :
+  WpMethodCall (ptrT.id clientv3.Client.id) "credentialsForEndpoint" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_dial :
+  WpMethodCall (ptrT.id clientv3.Client.id) "dial" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_dialSetupOpts :
+  WpMethodCall (ptrT.id clientv3.Client.id) "dialSetupOpts" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_dialWithBalancer :
+  WpMethodCall (ptrT.id clientv3.Client.id) "dialWithBalancer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_getToken :
+  WpMethodCall (ptrT.id clientv3.Client.id) "getToken" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_refreshToken :
+  WpMethodCall (ptrT.id clientv3.Client.id) "refreshToken" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_roundRobinQuorumBackoff :
+  WpMethodCall (ptrT.id clientv3.Client.id) "roundRobinQuorumBackoff" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_shouldRefreshToken :
+  WpMethodCall (ptrT.id clientv3.Client.id) "shouldRefreshToken" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_streamClientInterceptor :
+  WpMethodCall (ptrT.id clientv3.Client.id) "streamClientInterceptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Client'ptr_unaryClientInterceptor :
+  WpMethodCall (ptrT.id clientv3.Client.id) "unaryClientInterceptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_cluster'ptr_MemberAdd :
+  WpMethodCall (ptrT.id clientv3.cluster.id) "MemberAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_cluster'ptr_MemberAddAsLearner :
+  WpMethodCall (ptrT.id clientv3.cluster.id) "MemberAddAsLearner" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_cluster'ptr_MemberList :
+  WpMethodCall (ptrT.id clientv3.cluster.id) "MemberList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_cluster'ptr_MemberPromote :
+  WpMethodCall (ptrT.id clientv3.cluster.id) "MemberPromote" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_cluster'ptr_MemberRemove :
+  WpMethodCall (ptrT.id clientv3.cluster.id) "MemberRemove" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_cluster'ptr_MemberUpdate :
+  WpMethodCall (ptrT.id clientv3.cluster.id) "MemberUpdate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_cluster'ptr_memberAdd :
+  WpMethodCall (ptrT.id clientv3.cluster.id) "memberAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CompactOp_toRequest :
+  WpMethodCall clientv3.CompactOp.id "toRequest" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CompactOp'ptr_applyCompactOpts :
+  WpMethodCall (ptrT.id clientv3.CompactOp.id) "applyCompactOpts" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CompactOp'ptr_toRequest :
+  WpMethodCall (ptrT.id clientv3.CompactOp.id) "toRequest" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp_WithPrefix :
+  WpMethodCall clientv3.Cmp.id "WithPrefix" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp_WithRange :
+  WpMethodCall clientv3.Cmp.id "WithRange" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp'ptr_KeyBytes :
+  WpMethodCall (ptrT.id clientv3.Cmp.id) "KeyBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp'ptr_ValueBytes :
+  WpMethodCall (ptrT.id clientv3.Cmp.id) "ValueBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp'ptr_WithKeyBytes :
+  WpMethodCall (ptrT.id clientv3.Cmp.id) "WithKeyBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp'ptr_WithPrefix :
+  WpMethodCall (ptrT.id clientv3.Cmp.id) "WithPrefix" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp'ptr_WithRange :
+  WpMethodCall (ptrT.id clientv3.Cmp.id) "WithRange" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Cmp'ptr_WithValueBytes :
+  WpMethodCall (ptrT.id clientv3.Cmp.id) "WithValueBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ConfigSpec'ptr_Clone :
+  WpMethodCall (ptrT.id clientv3.ConfigSpec.id) "Clone" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AuthConfig_Empty :
+  WpMethodCall clientv3.AuthConfig.id "Empty" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_AuthConfig'ptr_Empty :
+  WpMethodCall (ptrT.id clientv3.AuthConfig.id) "Empty" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PutResponse'ptr_OpResponse :
+  WpMethodCall (ptrT.id clientv3.PutResponse.id) "OpResponse" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GetResponse'ptr_OpResponse :
+  WpMethodCall (ptrT.id clientv3.GetResponse.id) "OpResponse" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_DeleteResponse'ptr_OpResponse :
+  WpMethodCall (ptrT.id clientv3.DeleteResponse.id) "OpResponse" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TxnResponse'ptr_OpResponse :
+  WpMethodCall (ptrT.id clientv3.TxnResponse.id) "OpResponse" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse_Del :
+  WpMethodCall clientv3.OpResponse.id "Del" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse_Get :
+  WpMethodCall clientv3.OpResponse.id "Get" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse_Put :
+  WpMethodCall clientv3.OpResponse.id "Put" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse_Txn :
+  WpMethodCall clientv3.OpResponse.id "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse'ptr_Del :
+  WpMethodCall (ptrT.id clientv3.OpResponse.id) "Del" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse'ptr_Get :
+  WpMethodCall (ptrT.id clientv3.OpResponse.id) "Get" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse'ptr_Put :
+  WpMethodCall (ptrT.id clientv3.OpResponse.id) "Put" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OpResponse'ptr_Txn :
+  WpMethodCall (ptrT.id clientv3.OpResponse.id) "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_kv'ptr_Compact :
+  WpMethodCall (ptrT.id clientv3.kv.id) "Compact" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_kv'ptr_Delete :
+  WpMethodCall (ptrT.id clientv3.kv.id) "Delete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_kv'ptr_Do :
+  WpMethodCall (ptrT.id clientv3.kv.id) "Do" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_kv'ptr_Get :
+  WpMethodCall (ptrT.id clientv3.kv.id) "Get" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_kv'ptr_Put :
+  WpMethodCall (ptrT.id clientv3.kv.id) "Put" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_kv'ptr_Txn :
+  WpMethodCall (ptrT.id clientv3.kv.id) "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_Descriptor :
+  WpMethodCall clientv3.LeaseGrantResponse.id "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_GetClusterId :
+  WpMethodCall clientv3.LeaseGrantResponse.id "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_GetMemberId :
+  WpMethodCall clientv3.LeaseGrantResponse.id "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_GetRaftTerm :
+  WpMethodCall clientv3.LeaseGrantResponse.id "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_GetRevision :
+  WpMethodCall clientv3.LeaseGrantResponse.id "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_Marshal :
+  WpMethodCall clientv3.LeaseGrantResponse.id "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_MarshalTo :
+  WpMethodCall clientv3.LeaseGrantResponse.id "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_MarshalToSizedBuffer :
+  WpMethodCall clientv3.LeaseGrantResponse.id "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_ProtoMessage :
+  WpMethodCall clientv3.LeaseGrantResponse.id "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_Reset :
+  WpMethodCall clientv3.LeaseGrantResponse.id "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_Size :
+  WpMethodCall clientv3.LeaseGrantResponse.id "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_String :
+  WpMethodCall clientv3.LeaseGrantResponse.id "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_Unmarshal :
+  WpMethodCall clientv3.LeaseGrantResponse.id "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_XXX_DiscardUnknown :
+  WpMethodCall clientv3.LeaseGrantResponse.id "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_XXX_Marshal :
+  WpMethodCall clientv3.LeaseGrantResponse.id "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_XXX_Merge :
+  WpMethodCall clientv3.LeaseGrantResponse.id "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_XXX_Size :
+  WpMethodCall clientv3.LeaseGrantResponse.id "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse_XXX_Unmarshal :
+  WpMethodCall clientv3.LeaseGrantResponse.id "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_Descriptor :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_GetClusterId :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_GetMemberId :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_GetRaftTerm :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_GetRevision :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_MarshalTo :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_MarshalToSizedBuffer :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_ProtoMessage :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_Reset :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_String :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_XXX_DiscardUnknown :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_XXX_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_XXX_Merge :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_XXX_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseGrantResponse'ptr_XXX_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseGrantResponse.id) "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_Descriptor :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_GetClusterId :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_GetMemberId :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_GetRaftTerm :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_GetRevision :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_Marshal :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_MarshalTo :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_MarshalToSizedBuffer :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_ProtoMessage :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_Reset :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_Size :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_String :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_Unmarshal :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_XXX_DiscardUnknown :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_XXX_Marshal :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_XXX_Merge :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_XXX_Size :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse_XXX_Unmarshal :
+  WpMethodCall clientv3.LeaseKeepAliveResponse.id "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_Descriptor :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_GetClusterId :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_GetMemberId :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_GetRaftTerm :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_GetRevision :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_MarshalTo :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_MarshalToSizedBuffer :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_ProtoMessage :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_Reset :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_String :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_XXX_DiscardUnknown :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_XXX_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_XXX_Merge :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_XXX_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseKeepAliveResponse'ptr_XXX_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseKeepAliveResponse.id) "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_Descriptor :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_GetClusterId :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_GetMemberId :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_GetRaftTerm :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_GetRevision :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_Marshal :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_MarshalTo :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_MarshalToSizedBuffer :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_ProtoMessage :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_Reset :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_Size :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_String :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_Unmarshal :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_XXX_DiscardUnknown :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_XXX_Marshal :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_XXX_Merge :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_XXX_Size :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse_XXX_Unmarshal :
+  WpMethodCall clientv3.LeaseTimeToLiveResponse.id "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_Descriptor :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_GetClusterId :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_GetMemberId :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_GetRaftTerm :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_GetRevision :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_MarshalTo :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_MarshalToSizedBuffer :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_ProtoMessage :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_Reset :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_String :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_XXX_DiscardUnknown :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_XXX_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_XXX_Merge :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_XXX_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseTimeToLiveResponse'ptr_XXX_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseTimeToLiveResponse.id) "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_Descriptor :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_GetClusterId :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_GetMemberId :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_GetRaftTerm :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_GetRevision :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_Marshal :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_MarshalTo :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_MarshalToSizedBuffer :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_ProtoMessage :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_Reset :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_Size :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_String :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_Unmarshal :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_XXX_DiscardUnknown :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_XXX_Marshal :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_XXX_Merge :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_XXX_Size :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse_XXX_Unmarshal :
+  WpMethodCall clientv3.LeaseLeasesResponse.id "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_Descriptor :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "Descriptor" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_GetClusterId :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "GetClusterId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_GetMemberId :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "GetMemberId" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_GetRaftTerm :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "GetRaftTerm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_GetRevision :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "GetRevision" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_MarshalTo :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "MarshalTo" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_MarshalToSizedBuffer :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "MarshalToSizedBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_ProtoMessage :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "ProtoMessage" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_Reset :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "Reset" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_String :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_XXX_DiscardUnknown :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "XXX_DiscardUnknown" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_XXX_Marshal :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "XXX_Marshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_XXX_Merge :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "XXX_Merge" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_XXX_Size :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "XXX_Size" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseLeasesResponse'ptr_XXX_Unmarshal :
+  WpMethodCall (ptrT.id clientv3.LeaseLeasesResponse.id) "XXX_Unmarshal" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ErrKeepAliveHalted_Error :
+  WpMethodCall clientv3.ErrKeepAliveHalted.id "Error" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ErrKeepAliveHalted'ptr_Error :
+  WpMethodCall (ptrT.id clientv3.ErrKeepAliveHalted.id) "Error" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_Close :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "Close" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_Grant :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "Grant" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_KeepAlive :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "KeepAlive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_KeepAliveOnce :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "KeepAliveOnce" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_Leases :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "Leases" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_Revoke :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "Revoke" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_TimeToLive :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "TimeToLive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_closeRequireLeader :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "closeRequireLeader" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_deadlineLoop :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "deadlineLoop" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_keepAliveCtxCloser :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "keepAliveCtxCloser" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_keepAliveOnce :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "keepAliveOnce" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_recvKeepAlive :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "recvKeepAlive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_recvKeepAliveLoop :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "recvKeepAliveLoop" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_resetRecv :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "resetRecv" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lessor'ptr_sendKeepAliveLoop :
+  WpMethodCall (ptrT.id clientv3.lessor.id) "sendKeepAliveLoop" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_keepAlive'ptr_close :
+  WpMethodCall (ptrT.id clientv3.keepAlive.id) "close" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_AlarmDisarm :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "AlarmDisarm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_AlarmList :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "AlarmList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_Defragment :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "Defragment" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_Downgrade :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "Downgrade" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_HashKV :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "HashKV" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_MoveLeader :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "MoveLeader" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_Snapshot :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "Snapshot" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_SnapshotWithVersion :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "SnapshotWithVersion" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_Status :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "Status" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_logAndCloseWithError :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "logAndCloseWithError" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_maintenance'ptr_save :
+  WpMethodCall (ptrT.id clientv3.maintenance.id) "save" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_snapshotReadCloser_Close :
+  WpMethodCall clientv3.snapshotReadCloser.id "Close" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_snapshotReadCloser'ptr_Close :
+  WpMethodCall (ptrT.id clientv3.snapshotReadCloser.id) "Close" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_snapshotReadCloser'ptr_Read :
+  WpMethodCall (ptrT.id clientv3.snapshotReadCloser.id) "Read" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Op_IsCountOnly :
   WpMethodCall clientv3.Op.id "IsCountOnly" _ (is_pkg_defined clientv3) :=
@@ -1225,6 +4232,382 @@ Global Instance wp_method_call_Op'ptr_toRequestOp :
 
 Global Instance wp_method_call_Op'ptr_toTxnRequest :
   WpMethodCall (ptrT.id clientv3.Op.id) "toTxnRequest" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LeaseOp'ptr_applyOpts :
+  WpMethodCall (ptrT.id clientv3.LeaseOp.id) "applyOpts" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryPolicy_String :
+  WpMethodCall clientv3.retryPolicy.id "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryPolicy'ptr_String :
+  WpMethodCall (ptrT.id clientv3.retryPolicy.id) "String" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryKVClient'ptr_Compact :
+  WpMethodCall (ptrT.id clientv3.retryKVClient.id) "Compact" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryKVClient'ptr_DeleteRange :
+  WpMethodCall (ptrT.id clientv3.retryKVClient.id) "DeleteRange" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryKVClient'ptr_Put :
+  WpMethodCall (ptrT.id clientv3.retryKVClient.id) "Put" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryKVClient'ptr_Range :
+  WpMethodCall (ptrT.id clientv3.retryKVClient.id) "Range" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryKVClient'ptr_Txn :
+  WpMethodCall (ptrT.id clientv3.retryKVClient.id) "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryLeaseClient'ptr_LeaseGrant :
+  WpMethodCall (ptrT.id clientv3.retryLeaseClient.id) "LeaseGrant" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryLeaseClient'ptr_LeaseKeepAlive :
+  WpMethodCall (ptrT.id clientv3.retryLeaseClient.id) "LeaseKeepAlive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryLeaseClient'ptr_LeaseLeases :
+  WpMethodCall (ptrT.id clientv3.retryLeaseClient.id) "LeaseLeases" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryLeaseClient'ptr_LeaseRevoke :
+  WpMethodCall (ptrT.id clientv3.retryLeaseClient.id) "LeaseRevoke" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryLeaseClient'ptr_LeaseTimeToLive :
+  WpMethodCall (ptrT.id clientv3.retryLeaseClient.id) "LeaseTimeToLive" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryClusterClient'ptr_MemberAdd :
+  WpMethodCall (ptrT.id clientv3.retryClusterClient.id) "MemberAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryClusterClient'ptr_MemberList :
+  WpMethodCall (ptrT.id clientv3.retryClusterClient.id) "MemberList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryClusterClient'ptr_MemberPromote :
+  WpMethodCall (ptrT.id clientv3.retryClusterClient.id) "MemberPromote" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryClusterClient'ptr_MemberRemove :
+  WpMethodCall (ptrT.id clientv3.retryClusterClient.id) "MemberRemove" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryClusterClient'ptr_MemberUpdate :
+  WpMethodCall (ptrT.id clientv3.retryClusterClient.id) "MemberUpdate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_Alarm :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "Alarm" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_Defragment :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "Defragment" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_Downgrade :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "Downgrade" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_Hash :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "Hash" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_HashKV :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "HashKV" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_MoveLeader :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "MoveLeader" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_Snapshot :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "Snapshot" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryMaintenanceClient'ptr_Status :
+  WpMethodCall (ptrT.id clientv3.retryMaintenanceClient.id) "Status" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_AuthDisable :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "AuthDisable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_AuthEnable :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "AuthEnable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_AuthStatus :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "AuthStatus" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_Authenticate :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "Authenticate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_RoleAdd :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "RoleAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_RoleDelete :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "RoleDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_RoleGet :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "RoleGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_RoleGrantPermission :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "RoleGrantPermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_RoleList :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "RoleList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_RoleRevokePermission :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "RoleRevokePermission" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_UserAdd :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "UserAdd" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_UserChangePassword :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "UserChangePassword" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_UserDelete :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "UserDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_UserGet :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "UserGet" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_UserGrantRole :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "UserGrantRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_UserList :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "UserList" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryAuthClient'ptr_UserRevokeRole :
+  WpMethodCall (ptrT.id clientv3.retryAuthClient.id) "UserRevokeRole" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream_Context :
+  WpMethodCall clientv3.serverStreamingRetryingStream.id "Context" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_CloseSend :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "CloseSend" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_Context :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "Context" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_Header :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "Header" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_RecvMsg :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "RecvMsg" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_SendMsg :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "SendMsg" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_Trailer :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "Trailer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_getStream :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "getStream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_receiveMsgAndIndicateRetry :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "receiveMsgAndIndicateRetry" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_reestablishStreamAndResendBuffer :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "reestablishStreamAndResendBuffer" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStreamingRetryingStream'ptr_setStream :
+  WpMethodCall (ptrT.id clientv3.serverStreamingRetryingStream.id) "setStream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryOption_after :
+  WpMethodCall clientv3.retryOption.id "after" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryOption_before :
+  WpMethodCall clientv3.retryOption.id "before" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryOption'ptr_after :
+  WpMethodCall (ptrT.id clientv3.retryOption.id) "after" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryOption'ptr_before :
+  WpMethodCall (ptrT.id clientv3.retryOption.id) "before" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_txn'ptr_Commit :
+  WpMethodCall (ptrT.id clientv3.txn.id) "Commit" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_txn'ptr_Else :
+  WpMethodCall (ptrT.id clientv3.txn.id) "Else" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_txn'ptr_If :
+  WpMethodCall (ptrT.id clientv3.txn.id) "If" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_txn'ptr_Then :
+  WpMethodCall (ptrT.id clientv3.txn.id) "Then" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_IsCreate :
+  WpMethodCall (ptrT.id clientv3.Event.id) "IsCreate" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Event'ptr_IsModify :
+  WpMethodCall (ptrT.id clientv3.Event.id) "IsModify" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_WatchResponse'ptr_Err :
+  WpMethodCall (ptrT.id clientv3.WatchResponse.id) "Err" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_WatchResponse'ptr_IsProgressNotify :
+  WpMethodCall (ptrT.id clientv3.WatchResponse.id) "IsProgressNotify" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watcher'ptr_Close :
+  WpMethodCall (ptrT.id clientv3.watcher.id) "Close" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watcher'ptr_RequestProgress :
+  WpMethodCall (ptrT.id clientv3.watcher.id) "RequestProgress" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watcher'ptr_Watch :
+  WpMethodCall (ptrT.id clientv3.watcher.id) "Watch" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watcher'ptr_closeStream :
+  WpMethodCall (ptrT.id clientv3.watcher.id) "closeStream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watcher'ptr_newWatcherGRPCStream :
+  WpMethodCall (ptrT.id clientv3.watcher.id) "newWatcherGRPCStream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_addSubstream :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "addSubstream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_backoffIfUnavailable :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "backoffIfUnavailable" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_broadcastResponse :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "broadcastResponse" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_close :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "close" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_closeSubstream :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "closeSubstream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_dispatchEvent :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "dispatchEvent" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_joinSubstreams :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "joinSubstreams" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_newWatchClient :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "newWatchClient" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_nextResume :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "nextResume" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_openWatchClient :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "openWatchClient" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_run :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "run" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_sendCloseSubstream :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "sendCloseSubstream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_serveSubstream :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "serveSubstream" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_serveWatchClient :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "serveWatchClient" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_unicastResponse :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "unicastResponse" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchGRPCStream'ptr_waitCancelSubstreams :
+  WpMethodCall (ptrT.id clientv3.watchGRPCStream.id) "waitCancelSubstreams" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_watchRequest'ptr_toPB :
+  WpMethodCall (ptrT.id clientv3.watchRequest.id) "toPB" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_progressRequest'ptr_toPB :
+  WpMethodCall (ptrT.id clientv3.progressRequest.id) "toPB" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_valCtx_Value :
+  WpMethodCall clientv3.valCtx.id "Value" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_valCtx'ptr_Deadline :
+  WpMethodCall (ptrT.id clientv3.valCtx.id) "Deadline" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_valCtx'ptr_Done :
+  WpMethodCall (ptrT.id clientv3.valCtx.id) "Done" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_valCtx'ptr_Err :
+  WpMethodCall (ptrT.id clientv3.valCtx.id) "Err" _ (is_pkg_defined clientv3) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_valCtx'ptr_Value :
+  WpMethodCall (ptrT.id clientv3.valCtx.id) "Value" _ (is_pkg_defined clientv3) :=
   ltac:(solve_wp_method_call).
 
 End names.

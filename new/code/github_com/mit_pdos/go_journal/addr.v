@@ -62,8 +62,8 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MkAddr, MkAddrⁱᵐᵖˡ); (MkBitAddr, MkBitAddrⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [("Flatid"%go, Addr__Flatidⁱᵐᵖˡ)]); (ptrT.id Addr.id, [("Flatid"%go, (λ: "$recvAddr",
-                 method_call #addr.addr #"Addr" #"Flatid" (![#Addr] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [("Flatid"%go, Addr__Flatidⁱᵐᵖˡ)]); (ptrT.id Addr.id, [("Flatid"%go, (λ: "$r",
+                 method_call #Addr.id #"Flatid"%go (![#Addr] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo addr.addr :=
@@ -71,7 +71,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [(
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [github_com.goose_lang.primitive.disk.disk; github_com.mit_pdos.go_journal.common.common];
+    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.disk.disk; code.github_com.mit_pdos.go_journal.common.common];
   |}.
 
 Definition initialize' : val :=

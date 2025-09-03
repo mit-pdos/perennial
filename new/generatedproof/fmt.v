@@ -9,6 +9,295 @@ Set Default Proof Using "Type".
 
 Module fmt.
 
+(* type fmt.wrapError *)
+Module wrapError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End wrapError.
+
+Global Instance bounded_size_wrapError : BoundedTypeSize fmt.wrapError.
+Admitted.
+
+Global Instance into_val_wrapError `{ffi_syntax} : IntoVal wrapError.t.
+Admitted.
+
+Global Instance into_val_typed_wrapError `{ffi_syntax} : IntoValTyped wrapError.t fmt.wrapError.
+Admitted.
+
+(* type fmt.wrapErrors *)
+Module wrapErrors.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End wrapErrors.
+
+Global Instance bounded_size_wrapErrors : BoundedTypeSize fmt.wrapErrors.
+Admitted.
+
+Global Instance into_val_wrapErrors `{ffi_syntax} : IntoVal wrapErrors.t.
+Admitted.
+
+Global Instance into_val_typed_wrapErrors `{ffi_syntax} : IntoValTyped wrapErrors.t fmt.wrapErrors.
+Admitted.
+
+(* type fmt.fmtFlags *)
+Module fmtFlags.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fmtFlags.
+
+Global Instance bounded_size_fmtFlags : BoundedTypeSize fmt.fmtFlags.
+Admitted.
+
+Global Instance into_val_fmtFlags `{ffi_syntax} : IntoVal fmtFlags.t.
+Admitted.
+
+Global Instance into_val_typed_fmtFlags `{ffi_syntax} : IntoValTyped fmtFlags.t fmt.fmtFlags.
+Admitted.
+
+(* type fmt.fmt *)
+Module fmt.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fmt.
+
+Global Instance bounded_size_fmt : BoundedTypeSize fmt.fmt.
+Admitted.
+
+Global Instance into_val_fmt `{ffi_syntax} : IntoVal fmt.t.
+Admitted.
+
+Global Instance into_val_typed_fmt `{ffi_syntax} : IntoValTyped fmt.t fmt.fmt.
+Admitted.
+
+(* type fmt.State *)
+Module State.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End State.
+
+Global Instance bounded_size_State : BoundedTypeSize fmt.State.
+Admitted.
+
+Global Instance into_val_State `{ffi_syntax} : IntoVal State.t.
+Admitted.
+
+Global Instance into_val_typed_State `{ffi_syntax} : IntoValTyped State.t fmt.State.
+Admitted.
+
+(* type fmt.Formatter *)
+Module Formatter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Formatter.
+
+Global Instance bounded_size_Formatter : BoundedTypeSize fmt.Formatter.
+Admitted.
+
+Global Instance into_val_Formatter `{ffi_syntax} : IntoVal Formatter.t.
+Admitted.
+
+Global Instance into_val_typed_Formatter `{ffi_syntax} : IntoValTyped Formatter.t fmt.Formatter.
+Admitted.
+
+(* type fmt.Stringer *)
+Module Stringer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Stringer.
+
+Global Instance bounded_size_Stringer : BoundedTypeSize fmt.Stringer.
+Admitted.
+
+Global Instance into_val_Stringer `{ffi_syntax} : IntoVal Stringer.t.
+Admitted.
+
+Global Instance into_val_typed_Stringer `{ffi_syntax} : IntoValTyped Stringer.t fmt.Stringer.
+Admitted.
+
+(* type fmt.GoStringer *)
+Module GoStringer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End GoStringer.
+
+Global Instance bounded_size_GoStringer : BoundedTypeSize fmt.GoStringer.
+Admitted.
+
+Global Instance into_val_GoStringer `{ffi_syntax} : IntoVal GoStringer.t.
+Admitted.
+
+Global Instance into_val_typed_GoStringer `{ffi_syntax} : IntoValTyped GoStringer.t fmt.GoStringer.
+Admitted.
+
+(* type fmt.buffer *)
+Module buffer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End buffer.
+
+Global Instance bounded_size_buffer : BoundedTypeSize fmt.buffer.
+Admitted.
+
+Global Instance into_val_buffer `{ffi_syntax} : IntoVal buffer.t.
+Admitted.
+
+Global Instance into_val_typed_buffer `{ffi_syntax} : IntoValTyped buffer.t fmt.buffer.
+Admitted.
+
+(* type fmt.pp *)
+Module pp.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End pp.
+
+Global Instance bounded_size_pp : BoundedTypeSize fmt.pp.
+Admitted.
+
+Global Instance into_val_pp `{ffi_syntax} : IntoVal pp.t.
+Admitted.
+
+Global Instance into_val_typed_pp `{ffi_syntax} : IntoValTyped pp.t fmt.pp.
+Admitted.
+
+(* type fmt.ScanState *)
+Module ScanState.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ScanState.
+
+Global Instance bounded_size_ScanState : BoundedTypeSize fmt.ScanState.
+Admitted.
+
+Global Instance into_val_ScanState `{ffi_syntax} : IntoVal ScanState.t.
+Admitted.
+
+Global Instance into_val_typed_ScanState `{ffi_syntax} : IntoValTyped ScanState.t fmt.ScanState.
+Admitted.
+
+(* type fmt.Scanner *)
+Module Scanner.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Scanner.
+
+Global Instance bounded_size_Scanner : BoundedTypeSize fmt.Scanner.
+Admitted.
+
+Global Instance into_val_Scanner `{ffi_syntax} : IntoVal Scanner.t.
+Admitted.
+
+Global Instance into_val_typed_Scanner `{ffi_syntax} : IntoValTyped Scanner.t fmt.Scanner.
+Admitted.
+
+(* type fmt.stringReader *)
+Module stringReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End stringReader.
+
+Global Instance bounded_size_stringReader : BoundedTypeSize fmt.stringReader.
+Admitted.
+
+Global Instance into_val_stringReader `{ffi_syntax} : IntoVal stringReader.t.
+Admitted.
+
+Global Instance into_val_typed_stringReader `{ffi_syntax} : IntoValTyped stringReader.t fmt.stringReader.
+Admitted.
+
+(* type fmt.scanError *)
+Module scanError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End scanError.
+
+Global Instance bounded_size_scanError : BoundedTypeSize fmt.scanError.
+Admitted.
+
+Global Instance into_val_scanError `{ffi_syntax} : IntoVal scanError.t.
+Admitted.
+
+Global Instance into_val_typed_scanError `{ffi_syntax} : IntoValTyped scanError.t fmt.scanError.
+Admitted.
+
+(* type fmt.ss *)
+Module ss.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ss.
+
+Global Instance bounded_size_ss : BoundedTypeSize fmt.ss.
+Admitted.
+
+Global Instance into_val_ss `{ffi_syntax} : IntoVal ss.t.
+Admitted.
+
+Global Instance into_val_typed_ss `{ffi_syntax} : IntoValTyped ss.t fmt.ss.
+Admitted.
+
+(* type fmt.ssave *)
+Module ssave.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ssave.
+
+Global Instance bounded_size_ssave : BoundedTypeSize fmt.ssave.
+Admitted.
+
+Global Instance into_val_ssave `{ffi_syntax} : IntoVal ssave.t.
+Admitted.
+
+Global Instance into_val_typed_ssave `{ffi_syntax} : IntoValTyped ssave.t fmt.ssave.
+Admitted.
+
+(* type fmt.readRune *)
+Module readRune.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End readRune.
+
+Global Instance bounded_size_readRune : BoundedTypeSize fmt.readRune.
+Admitted.
+
+Global Instance into_val_readRune `{ffi_syntax} : IntoVal readRune.t.
+Admitted.
+
+Global Instance into_val_typed_readRune `{ffi_syntax} : IntoValTyped readRune.t fmt.readRune.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -31,13 +320,525 @@ Global Program Instance is_pkg_defined_fmt : IsPkgDefined fmt :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_Errorf :
+  WpFuncCall fmt.Errorf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FormatString :
+  WpFuncCall fmt.FormatString _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newPrinter :
+  WpFuncCall fmt.newPrinter _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fprintf :
+  WpFuncCall fmt.Fprintf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Printf :
   WpFuncCall fmt.Printf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sprintf :
+  WpFuncCall fmt.Sprintf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Appendf :
+  WpFuncCall fmt.Appendf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fprint :
+  WpFuncCall fmt.Fprint _ (is_pkg_defined fmt) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_Print :
   WpFuncCall fmt.Print _ (is_pkg_defined fmt) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sprint :
+  WpFuncCall fmt.Sprint _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Append :
+  WpFuncCall fmt.Append _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fprintln :
+  WpFuncCall fmt.Fprintln _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Println :
+  WpFuncCall fmt.Println _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sprintln :
+  WpFuncCall fmt.Sprintln _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Appendln :
+  WpFuncCall fmt.Appendln _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getField :
+  WpFuncCall fmt.getField _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_tooLarge :
+  WpFuncCall fmt.tooLarge _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parsenum :
+  WpFuncCall fmt.parsenum _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_intFromArg :
+  WpFuncCall fmt.intFromArg _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseArgNumber :
+  WpFuncCall fmt.parseArgNumber _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Scan :
+  WpFuncCall fmt.Scan _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Scanln :
+  WpFuncCall fmt.Scanln _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Scanf :
+  WpFuncCall fmt.Scanf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sscan :
+  WpFuncCall fmt.Sscan _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sscanln :
+  WpFuncCall fmt.Sscanln _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sscanf :
+  WpFuncCall fmt.Sscanf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fscan :
+  WpFuncCall fmt.Fscan _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fscanln :
+  WpFuncCall fmt.Fscanln _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Fscanf :
+  WpFuncCall fmt.Fscanf _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_isSpace :
+  WpFuncCall fmt.isSpace _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_notSpace :
+  WpFuncCall fmt.notSpace _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newScanState :
+  WpFuncCall fmt.newScanState _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_indexRune :
+  WpFuncCall fmt.indexRune _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_hasX :
+  WpFuncCall fmt.hasX _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_hexDigit :
+  WpFuncCall fmt.hexDigit _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_errorHandler :
+  WpFuncCall fmt.errorHandler _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_wrapError'ptr_Error :
+  WpMethodCall (ptrT.id fmt.wrapError.id) "Error" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_wrapError'ptr_Unwrap :
+  WpMethodCall (ptrT.id fmt.wrapError.id) "Unwrap" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_wrapErrors'ptr_Error :
+  WpMethodCall (ptrT.id fmt.wrapErrors.id) "Error" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_wrapErrors'ptr_Unwrap :
+  WpMethodCall (ptrT.id fmt.wrapErrors.id) "Unwrap" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_clearflags :
+  WpMethodCall (ptrT.id fmt.fmt.id) "clearflags" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtBoolean :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtBoolean" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtBs :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtBs" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtBx :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtBx" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtC :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtC" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtFloat :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtFloat" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtInteger :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtInteger" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtQ :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtQ" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtQc :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtQc" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtS :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtS" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtSbx :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtSbx" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtSx :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtSx" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_fmtUnicode :
+  WpMethodCall (ptrT.id fmt.fmt.id) "fmtUnicode" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_init :
+  WpMethodCall (ptrT.id fmt.fmt.id) "init" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_pad :
+  WpMethodCall (ptrT.id fmt.fmt.id) "pad" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_padString :
+  WpMethodCall (ptrT.id fmt.fmt.id) "padString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_truncate :
+  WpMethodCall (ptrT.id fmt.fmt.id) "truncate" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_truncateString :
+  WpMethodCall (ptrT.id fmt.fmt.id) "truncateString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmt'ptr_writePadding :
+  WpMethodCall (ptrT.id fmt.fmt.id) "writePadding" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_buffer'ptr_write :
+  WpMethodCall (ptrT.id fmt.buffer.id) "write" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_buffer'ptr_writeByte :
+  WpMethodCall (ptrT.id fmt.buffer.id) "writeByte" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_buffer'ptr_writeRune :
+  WpMethodCall (ptrT.id fmt.buffer.id) "writeRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_buffer'ptr_writeString :
+  WpMethodCall (ptrT.id fmt.buffer.id) "writeString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_Flag :
+  WpMethodCall (ptrT.id fmt.pp.id) "Flag" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_Precision :
+  WpMethodCall (ptrT.id fmt.pp.id) "Precision" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_Width :
+  WpMethodCall (ptrT.id fmt.pp.id) "Width" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_Write :
+  WpMethodCall (ptrT.id fmt.pp.id) "Write" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_WriteString :
+  WpMethodCall (ptrT.id fmt.pp.id) "WriteString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_argNumber :
+  WpMethodCall (ptrT.id fmt.pp.id) "argNumber" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_badArgNum :
+  WpMethodCall (ptrT.id fmt.pp.id) "badArgNum" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_badVerb :
+  WpMethodCall (ptrT.id fmt.pp.id) "badVerb" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_catchPanic :
+  WpMethodCall (ptrT.id fmt.pp.id) "catchPanic" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_doPrint :
+  WpMethodCall (ptrT.id fmt.pp.id) "doPrint" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_doPrintf :
+  WpMethodCall (ptrT.id fmt.pp.id) "doPrintf" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_doPrintln :
+  WpMethodCall (ptrT.id fmt.pp.id) "doPrintln" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmt0x64 :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmt0x64" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmtBool :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmtBool" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmtBytes :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmtBytes" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmtComplex :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmtComplex" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmtFloat :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmtFloat" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmtInteger :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmtInteger" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmtPointer :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmtPointer" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_fmtString :
+  WpMethodCall (ptrT.id fmt.pp.id) "fmtString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_free :
+  WpMethodCall (ptrT.id fmt.pp.id) "free" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_handleMethods :
+  WpMethodCall (ptrT.id fmt.pp.id) "handleMethods" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_missingArg :
+  WpMethodCall (ptrT.id fmt.pp.id) "missingArg" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_printArg :
+  WpMethodCall (ptrT.id fmt.pp.id) "printArg" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_printValue :
+  WpMethodCall (ptrT.id fmt.pp.id) "printValue" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pp'ptr_unknownType :
+  WpMethodCall (ptrT.id fmt.pp.id) "unknownType" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringReader'ptr_Read :
+  WpMethodCall (ptrT.id fmt.stringReader.id) "Read" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_Read :
+  WpMethodCall (ptrT.id fmt.ss.id) "Read" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_ReadRune :
+  WpMethodCall (ptrT.id fmt.ss.id) "ReadRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_SkipSpace :
+  WpMethodCall (ptrT.id fmt.ss.id) "SkipSpace" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_Token :
+  WpMethodCall (ptrT.id fmt.ss.id) "Token" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_UnreadRune :
+  WpMethodCall (ptrT.id fmt.ss.id) "UnreadRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_Width :
+  WpMethodCall (ptrT.id fmt.ss.id) "Width" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_accept :
+  WpMethodCall (ptrT.id fmt.ss.id) "accept" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_advance :
+  WpMethodCall (ptrT.id fmt.ss.id) "advance" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_complexTokens :
+  WpMethodCall (ptrT.id fmt.ss.id) "complexTokens" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_consume :
+  WpMethodCall (ptrT.id fmt.ss.id) "consume" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_convertFloat :
+  WpMethodCall (ptrT.id fmt.ss.id) "convertFloat" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_convertString :
+  WpMethodCall (ptrT.id fmt.ss.id) "convertString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_doScan :
+  WpMethodCall (ptrT.id fmt.ss.id) "doScan" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_doScanf :
+  WpMethodCall (ptrT.id fmt.ss.id) "doScanf" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_error :
+  WpMethodCall (ptrT.id fmt.ss.id) "error" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_errorString :
+  WpMethodCall (ptrT.id fmt.ss.id) "errorString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_floatToken :
+  WpMethodCall (ptrT.id fmt.ss.id) "floatToken" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_free :
+  WpMethodCall (ptrT.id fmt.ss.id) "free" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_getBase :
+  WpMethodCall (ptrT.id fmt.ss.id) "getBase" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_getRune :
+  WpMethodCall (ptrT.id fmt.ss.id) "getRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_hexByte :
+  WpMethodCall (ptrT.id fmt.ss.id) "hexByte" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_hexString :
+  WpMethodCall (ptrT.id fmt.ss.id) "hexString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_mustReadRune :
+  WpMethodCall (ptrT.id fmt.ss.id) "mustReadRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_notEOF :
+  WpMethodCall (ptrT.id fmt.ss.id) "notEOF" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_okVerb :
+  WpMethodCall (ptrT.id fmt.ss.id) "okVerb" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_peek :
+  WpMethodCall (ptrT.id fmt.ss.id) "peek" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_quotedString :
+  WpMethodCall (ptrT.id fmt.ss.id) "quotedString" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanBasePrefix :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanBasePrefix" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanBool :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanBool" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanComplex :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanComplex" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanInt :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanInt" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanNumber :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanNumber" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanOne :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanOne" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanPercent :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanPercent" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanRune :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_scanUint :
+  WpMethodCall (ptrT.id fmt.ss.id) "scanUint" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ss'ptr_token :
+  WpMethodCall (ptrT.id fmt.ss.id) "token" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_readRune'ptr_ReadRune :
+  WpMethodCall (ptrT.id fmt.readRune.id) "ReadRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_readRune'ptr_UnreadRune :
+  WpMethodCall (ptrT.id fmt.readRune.id) "UnreadRune" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_readRune'ptr_readByte :
+  WpMethodCall (ptrT.id fmt.readRune.id) "readByte" _ (is_pkg_defined fmt) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End fmt.

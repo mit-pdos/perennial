@@ -393,16 +393,50 @@ Definition WriteSliceLenPrefixⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(compute_new_cap, compute_new_capⁱᵐᵖˡ); (reserve, reserveⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadInt32, ReadInt32ⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadBytesCopy, ReadBytesCopyⁱᵐᵖˡ); (ReadBool, ReadBoolⁱᵐᵖˡ); (ReadLenPrefixedBytes, ReadLenPrefixedBytesⁱᵐᵖˡ); (WriteInt, WriteIntⁱᵐᵖˡ); (WriteInt32, WriteInt32ⁱᵐᵖˡ); (WriteBytes, WriteBytesⁱᵐᵖˡ); (WriteBool, WriteBoolⁱᵐᵖˡ); (WriteLenPrefixedBytes, WriteLenPrefixedBytesⁱᵐᵖˡ); (ReadSlice, ReadSliceⁱᵐᵖˡ); (ReadSliceLenPrefix, ReadSliceLenPrefixⁱᵐᵖˡ); (WriteSlice, WriteSliceⁱᵐᵖˡ); (WriteSliceLenPrefix, WriteSliceLenPrefixⁱᵐᵖˡ)].
+Axiom NewEncFromSliceⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, []); (ptrT.id Enc.id, []); (Dec.id, []); (ptrT.id Dec.id, [])].
+Axiom NewEncⁱᵐᵖˡ : val.
+
+Axiom bool2byteⁱᵐᵖˡ : val.
+
+Axiom NewDecⁱᵐᵖˡ : val.
+
+Axiom ReadIntsⁱᵐᵖˡ : val.
+
+Axiom WriteIntsⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(NewEncFromSlice, NewEncFromSliceⁱᵐᵖˡ); (NewEnc, NewEncⁱᵐᵖˡ); (bool2byte, bool2byteⁱᵐᵖˡ); (NewDec, NewDecⁱᵐᵖˡ); (compute_new_cap, compute_new_capⁱᵐᵖˡ); (reserve, reserveⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadInt32, ReadInt32ⁱᵐᵖˡ); (ReadInts, ReadIntsⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadBytesCopy, ReadBytesCopyⁱᵐᵖˡ); (ReadBool, ReadBoolⁱᵐᵖˡ); (ReadLenPrefixedBytes, ReadLenPrefixedBytesⁱᵐᵖˡ); (WriteInt, WriteIntⁱᵐᵖˡ); (WriteInt32, WriteInt32ⁱᵐᵖˡ); (WriteBytes, WriteBytesⁱᵐᵖˡ); (WriteInts, WriteIntsⁱᵐᵖˡ); (WriteBool, WriteBoolⁱᵐᵖˡ); (WriteLenPrefixedBytes, WriteLenPrefixedBytesⁱᵐᵖˡ); (ReadSlice, ReadSliceⁱᵐᵖˡ); (ReadSliceLenPrefix, ReadSliceLenPrefixⁱᵐᵖˡ); (WriteSlice, WriteSliceⁱᵐᵖˡ); (WriteSliceLenPrefix, WriteSliceLenPrefixⁱᵐᵖˡ)].
+
+Axiom Enc__Finishⁱᵐᵖˡ : val.
+
+Axiom Enc__PutBoolⁱᵐᵖˡ : val.
+
+Axiom Enc__PutBytesⁱᵐᵖˡ : val.
+
+Axiom Enc__PutIntⁱᵐᵖˡ : val.
+
+Axiom Enc__PutInt32ⁱᵐᵖˡ : val.
+
+Axiom Enc__PutIntsⁱᵐᵖˡ : val.
+
+Axiom Dec__GetBoolⁱᵐᵖˡ : val.
+
+Axiom Dec__GetBytesⁱᵐᵖˡ : val.
+
+Axiom Dec__GetIntⁱᵐᵖˡ : val.
+
+Axiom Dec__GetInt32ⁱᵐᵖˡ : val.
+
+Axiom Dec__GetIntsⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(Enc.id, [("Finish"%go, Enc__Finishⁱᵐᵖˡ); ("PutBool"%go, Enc__PutBoolⁱᵐᵖˡ); ("PutBytes"%go, Enc__PutBytesⁱᵐᵖˡ); ("PutInt"%go, Enc__PutIntⁱᵐᵖˡ); ("PutInt32"%go, Enc__PutInt32ⁱᵐᵖˡ); ("PutInts"%go, Enc__PutIntsⁱᵐᵖˡ)]); (ptrT.id Enc.id, [("Finish"%go, Enc__Finishⁱᵐᵖˡ); ("PutBool"%go, Enc__PutBoolⁱᵐᵖˡ); ("PutBytes"%go, Enc__PutBytesⁱᵐᵖˡ); ("PutInt"%go, Enc__PutIntⁱᵐᵖˡ); ("PutInt32"%go, Enc__PutInt32ⁱᵐᵖˡ); ("PutInts"%go, Enc__PutIntsⁱᵐᵖˡ)]); (Dec.id, [("GetBool"%go, Dec__GetBoolⁱᵐᵖˡ); ("GetBytes"%go, Dec__GetBytesⁱᵐᵖˡ); ("GetInt"%go, Dec__GetIntⁱᵐᵖˡ); ("GetInt32"%go, Dec__GetInt32ⁱᵐᵖˡ); ("GetInts"%go, Dec__GetIntsⁱᵐᵖˡ)]); (ptrT.id Dec.id, [("GetBool"%go, Dec__GetBoolⁱᵐᵖˡ); ("GetBytes"%go, Dec__GetBytesⁱᵐᵖˡ); ("GetInt"%go, Dec__GetIntⁱᵐᵖˡ); ("GetInt32"%go, Dec__GetInt32ⁱᵐᵖˡ); ("GetInts"%go, Dec__GetIntsⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo marshal.marshal :=
   {|
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [github_com.goose_lang.primitive.primitive; github_com.goose_lang.std.std];
+    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std];
   |}.
 
 Axiom _'init : val.

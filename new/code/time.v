@@ -7,13 +7,152 @@ Definition time : go_string := "time".
 
 Module time.
 
+Module ParseError. Definition id : go_string := "time.ParseError"%go. End ParseError.
 Module Timer. Definition id : go_string := "time.Timer"%go. End Timer.
+Module Ticker. Definition id : go_string := "time.Ticker"%go. End Ticker.
 Module Time. Definition id : go_string := "time.Time"%go. End Time.
+Module Month. Definition id : go_string := "time.Month"%go. End Month.
+Module Weekday. Definition id : go_string := "time.Weekday"%go. End Weekday.
+Module absSeconds. Definition id : go_string := "time.absSeconds"%go. End absSeconds.
+Module absDays. Definition id : go_string := "time.absDays"%go. End absDays.
+Module absCentury. Definition id : go_string := "time.absCentury"%go. End absCentury.
+Module absCyear. Definition id : go_string := "time.absCyear"%go. End absCyear.
+Module absYday. Definition id : go_string := "time.absYday"%go. End absYday.
+Module absMonth. Definition id : go_string := "time.absMonth"%go. End absMonth.
+Module absLeap. Definition id : go_string := "time.absLeap"%go. End absLeap.
+Module absJanFeb. Definition id : go_string := "time.absJanFeb"%go. End absJanFeb.
 Module Duration. Definition id : go_string := "time.Duration"%go. End Duration.
+Module Location. Definition id : go_string := "time.Location"%go. End Location.
+Module zone. Definition id : go_string := "time.zone"%go. End zone.
+Module zoneTrans. Definition id : go_string := "time.zoneTrans"%go. End zoneTrans.
+Module ruleKind. Definition id : go_string := "time.ruleKind"%go. End ruleKind.
+Module rule. Definition id : go_string := "time.rule"%go. End rule.
+Module fileSizeError. Definition id : go_string := "time.fileSizeError"%go. End fileSizeError.
+Module dataIO. Definition id : go_string := "time.dataIO"%go. End dataIO.
 
 Section code.
 Context `{ffi_syntax}.
 
+
+Axiom Layout : go_string.
+
+Axiom ANSIC : go_string.
+
+Axiom UnixDate : go_string.
+
+Axiom RubyDate : go_string.
+
+Axiom RFC822 : go_string.
+
+Axiom RFC822Z : go_string.
+
+Axiom RFC850 : go_string.
+
+Axiom RFC1123 : go_string.
+
+Axiom RFC1123Z : go_string.
+
+Axiom RFC3339 : go_string.
+
+Axiom RFC3339Nano : go_string.
+
+Axiom Kitchen : go_string.
+
+Axiom Stamp : go_string.
+
+Axiom StampMilli : go_string.
+
+Axiom StampMicro : go_string.
+
+Axiom StampNano : go_string.
+
+Axiom DateTime : go_string.
+
+Axiom DateOnly : go_string.
+
+Axiom TimeOnly : go_string.
+
+Axiom stdLongMonth : Z.
+
+Axiom stdMonth : Z.
+
+Axiom stdNumMonth : Z.
+
+Axiom stdZeroMonth : Z.
+
+Axiom stdLongWeekDay : Z.
+
+Axiom stdWeekDay : Z.
+
+Axiom stdDay : Z.
+
+Axiom stdUnderDay : Z.
+
+Axiom stdZeroDay : Z.
+
+Axiom stdUnderYearDay : Z.
+
+Axiom stdZeroYearDay : Z.
+
+Axiom stdHour : Z.
+
+Axiom stdHour12 : Z.
+
+Axiom stdZeroHour12 : Z.
+
+Axiom stdMinute : Z.
+
+Axiom stdZeroMinute : Z.
+
+Axiom stdSecond : Z.
+
+Axiom stdZeroSecond : Z.
+
+Axiom stdLongYear : Z.
+
+Axiom stdYear : Z.
+
+Axiom stdPM : Z.
+
+Axiom stdpm : Z.
+
+Axiom stdTZ : Z.
+
+Axiom stdISO8601TZ : Z.
+
+Axiom stdISO8601SecondsTZ : Z.
+
+Axiom stdISO8601ShortTZ : Z.
+
+Axiom stdISO8601ColonTZ : Z.
+
+Axiom stdISO8601ColonSecondsTZ : Z.
+
+Axiom stdNumTZ : Z.
+
+Axiom stdNumSecondsTz : Z.
+
+Axiom stdNumShortTZ : Z.
+
+Axiom stdNumColonTZ : Z.
+
+Axiom stdNumColonSecondsTZ : Z.
+
+Axiom stdFracSecond0 : Z.
+
+Axiom stdFracSecond9 : Z.
+
+Axiom stdNeedDate : Z.
+
+Axiom stdNeedYday : Z.
+
+Axiom stdNeedClock : Z.
+
+Axiom stdArgShift : Z.
+
+Axiom stdSeparatorShift : Z.
+
+Axiom stdMask : Z.
 
 Definition std0x : go_string := "time.std0x"%go.
 
@@ -63,7 +202,15 @@ Definition errBad : go_string := "time.errBad"%go.
 
 Axiom errBad'init : val.
 
+Axiom ParseError : go_type.
+
 Definition newParseError : go_string := "time.newParseError"%go.
+
+Axiom lowerhex : go_string.
+
+Axiom runeSelf : Z.
+
+Axiom runeError : expr.
 
 Definition quote : go_string := "time.quote"%go.
 
@@ -158,13 +305,117 @@ Definition closefd : go_string := "time.closefd"%go.
 
 Definition preadn : go_string := "time.preadn"%go.
 
+Axiom Ticker : go_type.
+
 Definition NewTicker : go_string := "time.NewTicker"%go.
 
 Definition Tick : go_string := "time.Tick"%go.
 
+Axiom hasMonotonic : Z.
+
+Axiom maxWall : expr.
+
+Axiom minWall : expr.
+
+Axiom nsecMask : Z.
+
+Axiom nsecShift : Z.
+
+Axiom Month : go_type.
+
+Axiom January : expr.
+
+Axiom February : expr.
+
+Axiom March : expr.
+
+Axiom April : expr.
+
+Axiom May : expr.
+
+Axiom June : expr.
+
+Axiom July : expr.
+
+Axiom August : expr.
+
+Axiom September : expr.
+
+Axiom October : expr.
+
+Axiom November : expr.
+
+Axiom December : expr.
+
+Axiom Weekday : go_type.
+
+Axiom Sunday : expr.
+
+Axiom Monday : expr.
+
+Axiom Tuesday : expr.
+
+Axiom Wednesday : expr.
+
+Axiom Thursday : expr.
+
+Axiom Friday : expr.
+
+Axiom Saturday : expr.
+
+Axiom secondsPerMinute : Z.
+
+Axiom secondsPerHour : Z.
+
+Axiom secondsPerDay : Z.
+
+Axiom secondsPerWeek : Z.
+
+Axiom daysPer400Years : Z.
+
+Axiom marchThruDecember : Z.
+
+Axiom absoluteYears : Z.
+
+Axiom internalYear : Z.
+
+Axiom absoluteToInternal : expr.
+
+Axiom internalToAbsolute : expr.
+
+Axiom unixToInternal : expr.
+
+Axiom internalToUnix : expr.
+
+Axiom absoluteToUnix : expr.
+
+Axiom unixToAbsolute : expr.
+
+Axiom wallToInternal : expr.
+
+Axiom absSeconds : go_type.
+
+Axiom absDays : go_type.
+
+Axiom absCentury : go_type.
+
+Axiom absCyear : go_type.
+
+Axiom absYday : go_type.
+
+Axiom absMonth : go_type.
+
+Axiom absLeap : go_type.
+
+Axiom absJanFeb : go_type.
+
 Definition dateToAbsDays : go_string := "time.dateToAbsDays"%go.
 
 Definition Duration : go_type := int64T.
+
+Axiom minDuration : expr.
+
+Axiom maxDuration : expr.
 
 Definition Nanosecond : expr := #(W64 1).
 
@@ -173,6 +424,10 @@ Definition Microsecond : expr := #(W64 1000).
 Definition Millisecond : expr := #(W64 1000000).
 
 Definition Second : expr := #(W64 1000000000).
+
+Axiom Minute : expr.
+
+Axiom Hour : expr.
 
 Definition fmtFrac : go_string := "time.fmtFrac"%go.
 
@@ -204,6 +459,10 @@ Definition Now : go_string := "time.Now"%go.
 
 Definition unixTime : go_string := "time.unixTime"%go.
 
+Axiom timeBinaryVersionV1 : expr.
+
+Axiom timeBinaryVersionV2 : expr.
+
 Definition Unix : go_string := "time.Unix"%go.
 
 Definition UnixMilli : go_string := "time.UnixMilli"%go.
@@ -223,6 +482,16 @@ Definition legacyTimeTimeAbs : go_string := "time.legacyTimeTimeAbs"%go.
 Definition legacyAbsClock : go_string := "time.legacyAbsClock"%go.
 
 Definition legacyAbsDate : go_string := "time.legacyAbsDate"%go.
+
+Axiom Location : go_type.
+
+Axiom zone : go_type.
+
+Axiom zoneTrans : go_type.
+
+Axiom alpha : Z.
+
+Axiom omega : Z.
 
 Definition UTC : go_string := "time.UTC"%go.
 
@@ -254,6 +523,16 @@ Definition tzsetName : go_string := "time.tzsetName"%go.
 
 Definition tzsetOffset : go_string := "time.tzsetOffset"%go.
 
+Axiom ruleKind : go_type.
+
+Axiom ruleJulian : expr.
+
+Axiom ruleDOY : expr.
+
+Axiom ruleMonthWeekDay : expr.
+
+Axiom rule : go_type.
+
 Definition tzsetRule : go_string := "time.tzsetRule"%go.
 
 Definition tzsetNum : go_string := "time.tzsetNum"%go.
@@ -277,6 +556,18 @@ Definition gorootZoneSource : go_string := "time.gorootZoneSource"%go.
 Definition registerLoadFromEmbeddedTZData : go_string := "time.registerLoadFromEmbeddedTZData"%go.
 
 Definition loadFromEmbeddedTZData : go_string := "time.loadFromEmbeddedTZData"%go.
+
+Axiom maxFileSize : Z.
+
+Axiom fileSizeError : go_type.
+
+Axiom seekStart : Z.
+
+Axiom seekCurrent : Z.
+
+Axiom seekEnd : Z.
+
+Axiom dataIO : go_type.
 
 Definition byteString : go_string := "time.byteString"%go.
 
@@ -312,9 +603,397 @@ Definition initLocal : go_string := "time.initLocal"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(syncTimer, syncTimerⁱᵐᵖˡ); (newTimer, newTimerⁱᵐᵖˡ); (After, Afterⁱᵐᵖˡ); (runtimeNano, runtimeNanoⁱᵐᵖˡ)].
+Axiom startsWithLowerCaseⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Timer.id, []); (ptrT.id Timer.id, []); (Time.id, []); (ptrT.id Time.id, []); (Duration.id, []); (ptrT.id Duration.id, [])].
+Axiom nextStdChunkⁱᵐᵖˡ : val.
+
+Axiom matchⁱᵐᵖˡ : val.
+
+Axiom lookupⁱᵐᵖˡ : val.
+
+Axiom appendIntⁱᵐᵖˡ : val.
+
+Axiom atoiⁱᵐᵖˡ : val.
+
+Axiom stdFracSecondⁱᵐᵖˡ : val.
+
+Axiom digitsLenⁱᵐᵖˡ : val.
+
+Axiom separatorⁱᵐᵖˡ : val.
+
+Axiom appendNanoⁱᵐᵖˡ : val.
+
+Axiom newParseErrorⁱᵐᵖˡ : val.
+
+Axiom quoteⁱᵐᵖˡ : val.
+
+Axiom isDigitⁱᵐᵖˡ : val.
+
+Axiom getnumⁱᵐᵖˡ : val.
+
+Axiom getnum3ⁱᵐᵖˡ : val.
+
+Axiom cutspaceⁱᵐᵖˡ : val.
+
+Axiom skipⁱᵐᵖˡ : val.
+
+Axiom Parseⁱᵐᵖˡ : val.
+
+Axiom ParseInLocationⁱᵐᵖˡ : val.
+
+Axiom parseⁱᵐᵖˡ : val.
+
+Axiom parseTimeZoneⁱᵐᵖˡ : val.
+
+Axiom parseGMTⁱᵐᵖˡ : val.
+
+Axiom parseSignedOffsetⁱᵐᵖˡ : val.
+
+Axiom commaOrPeriodⁱᵐᵖˡ : val.
+
+Axiom parseNanosecondsⁱᵐᵖˡ : val.
+
+Axiom leadingIntⁱᵐᵖˡ : val.
+
+Axiom leadingFractionⁱᵐᵖˡ : val.
+
+Axiom ParseDurationⁱᵐᵖˡ : val.
+
+Axiom parseRFC3339ⁱᵐᵖˡ : val.
+
+Axiom parseStrictRFC3339ⁱᵐᵖˡ : val.
+
+Axiom Sleepⁱᵐᵖˡ : val.
+
+Axiom whenⁱᵐᵖˡ : val.
+
+Axiom stopTimerⁱᵐᵖˡ : val.
+
+Axiom resetTimerⁱᵐᵖˡ : val.
+
+Axiom NewTimerⁱᵐᵖˡ : val.
+
+Axiom sendTimeⁱᵐᵖˡ : val.
+
+Axiom AfterFuncⁱᵐᵖˡ : val.
+
+Axiom goFuncⁱᵐᵖˡ : val.
+
+Axiom interruptⁱᵐᵖˡ : val.
+
+Axiom openⁱᵐᵖˡ : val.
+
+Axiom readⁱᵐᵖˡ : val.
+
+Axiom closefdⁱᵐᵖˡ : val.
+
+Axiom preadnⁱᵐᵖˡ : val.
+
+Axiom NewTickerⁱᵐᵖˡ : val.
+
+Axiom Tickⁱᵐᵖˡ : val.
+
+Axiom dateToAbsDaysⁱᵐᵖˡ : val.
+
+Axiom fmtFracⁱᵐᵖˡ : val.
+
+Axiom fmtIntⁱᵐᵖˡ : val.
+
+Axiom lessThanHalfⁱᵐᵖˡ : val.
+
+Axiom subMonoⁱᵐᵖˡ : val.
+
+Axiom Sinceⁱᵐᵖˡ : val.
+
+Axiom Untilⁱᵐᵖˡ : val.
+
+Axiom daysBeforeⁱᵐᵖˡ : val.
+
+Axiom daysInⁱᵐᵖˡ : val.
+
+Axiom nowⁱᵐᵖˡ : val.
+
+Axiom runtimeNowⁱᵐᵖˡ : val.
+
+Axiom Nowⁱᵐᵖˡ : val.
+
+Axiom unixTimeⁱᵐᵖˡ : val.
+
+Axiom Unixⁱᵐᵖˡ : val.
+
+Axiom UnixMilliⁱᵐᵖˡ : val.
+
+Axiom UnixMicroⁱᵐᵖˡ : val.
+
+Axiom isLeapⁱᵐᵖˡ : val.
+
+Axiom normⁱᵐᵖˡ : val.
+
+Axiom Dateⁱᵐᵖˡ : val.
+
+Axiom divⁱᵐᵖˡ : val.
+
+Axiom legacyTimeTimeAbsⁱᵐᵖˡ : val.
+
+Axiom legacyAbsClockⁱᵐᵖˡ : val.
+
+Axiom legacyAbsDateⁱᵐᵖˡ : val.
+
+Axiom FixedZoneⁱᵐᵖˡ : val.
+
+Axiom fixedZoneⁱᵐᵖˡ : val.
+
+Axiom tzsetⁱᵐᵖˡ : val.
+
+Axiom tzsetNameⁱᵐᵖˡ : val.
+
+Axiom tzsetOffsetⁱᵐᵖˡ : val.
+
+Axiom tzsetRuleⁱᵐᵖˡ : val.
+
+Axiom tzsetNumⁱᵐᵖˡ : val.
+
+Axiom tzruleTimeⁱᵐᵖˡ : val.
+
+Axiom LoadLocationⁱᵐᵖˡ : val.
+
+Axiom containsDotDotⁱᵐᵖˡ : val.
+
+Axiom gorootZoneSourceⁱᵐᵖˡ : val.
+
+Axiom registerLoadFromEmbeddedTZDataⁱᵐᵖˡ : val.
+
+Axiom byteStringⁱᵐᵖˡ : val.
+
+Axiom LoadLocationFromTZDataⁱᵐᵖˡ : val.
+
+Axiom findZoneⁱᵐᵖˡ : val.
+
+Axiom loadTzinfoFromDirOrZipⁱᵐᵖˡ : val.
+
+Axiom get4ⁱᵐᵖˡ : val.
+
+Axiom get2ⁱᵐᵖˡ : val.
+
+Axiom loadTzinfoFromZipⁱᵐᵖˡ : val.
+
+Axiom loadTzinfoⁱᵐᵖˡ : val.
+
+Axiom loadLocationⁱᵐᵖˡ : val.
+
+Axiom readFileⁱᵐᵖˡ : val.
+
+Axiom initLocalⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(startsWithLowerCase, startsWithLowerCaseⁱᵐᵖˡ); (nextStdChunk, nextStdChunkⁱᵐᵖˡ); (match', matchⁱᵐᵖˡ); (lookup', lookupⁱᵐᵖˡ); (appendInt, appendIntⁱᵐᵖˡ); (atoi, atoiⁱᵐᵖˡ); (stdFracSecond, stdFracSecondⁱᵐᵖˡ); (digitsLen, digitsLenⁱᵐᵖˡ); (separator, separatorⁱᵐᵖˡ); (appendNano, appendNanoⁱᵐᵖˡ); (newParseError, newParseErrorⁱᵐᵖˡ); (quote, quoteⁱᵐᵖˡ); (isDigit, isDigitⁱᵐᵖˡ); (getnum, getnumⁱᵐᵖˡ); (getnum3, getnum3ⁱᵐᵖˡ); (cutspace, cutspaceⁱᵐᵖˡ); (skip, skipⁱᵐᵖˡ); (Parse, Parseⁱᵐᵖˡ); (ParseInLocation, ParseInLocationⁱᵐᵖˡ); (parse, parseⁱᵐᵖˡ); (parseTimeZone, parseTimeZoneⁱᵐᵖˡ); (parseGMT, parseGMTⁱᵐᵖˡ); (parseSignedOffset, parseSignedOffsetⁱᵐᵖˡ); (commaOrPeriod, commaOrPeriodⁱᵐᵖˡ); (parseNanoseconds, parseNanosecondsⁱᵐᵖˡ); (leadingInt, leadingIntⁱᵐᵖˡ); (leadingFraction, leadingFractionⁱᵐᵖˡ); (ParseDuration, ParseDurationⁱᵐᵖˡ); (parseRFC3339, parseRFC3339ⁱᵐᵖˡ); (parseStrictRFC3339, parseStrictRFC3339ⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (syncTimer, syncTimerⁱᵐᵖˡ); (when, whenⁱᵐᵖˡ); (newTimer, newTimerⁱᵐᵖˡ); (stopTimer, stopTimerⁱᵐᵖˡ); (resetTimer, resetTimerⁱᵐᵖˡ); (NewTimer, NewTimerⁱᵐᵖˡ); (sendTime, sendTimeⁱᵐᵖˡ); (After, Afterⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (goFunc, goFuncⁱᵐᵖˡ); (interrupt, interruptⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (read, readⁱᵐᵖˡ); (closefd, closefdⁱᵐᵖˡ); (preadn, preadnⁱᵐᵖˡ); (NewTicker, NewTickerⁱᵐᵖˡ); (Tick, Tickⁱᵐᵖˡ); (dateToAbsDays, dateToAbsDaysⁱᵐᵖˡ); (fmtFrac, fmtFracⁱᵐᵖˡ); (fmtInt, fmtIntⁱᵐᵖˡ); (lessThanHalf, lessThanHalfⁱᵐᵖˡ); (subMono, subMonoⁱᵐᵖˡ); (Since, Sinceⁱᵐᵖˡ); (Until, Untilⁱᵐᵖˡ); (daysBefore, daysBeforeⁱᵐᵖˡ); (daysIn, daysInⁱᵐᵖˡ); (now, nowⁱᵐᵖˡ); (runtimeNow, runtimeNowⁱᵐᵖˡ); (runtimeNano, runtimeNanoⁱᵐᵖˡ); (Now, Nowⁱᵐᵖˡ); (unixTime, unixTimeⁱᵐᵖˡ); (Unix, Unixⁱᵐᵖˡ); (UnixMilli, UnixMilliⁱᵐᵖˡ); (UnixMicro, UnixMicroⁱᵐᵖˡ); (isLeap, isLeapⁱᵐᵖˡ); (norm, normⁱᵐᵖˡ); (Date, Dateⁱᵐᵖˡ); (div, divⁱᵐᵖˡ); (legacyTimeTimeAbs, legacyTimeTimeAbsⁱᵐᵖˡ); (legacyAbsClock, legacyAbsClockⁱᵐᵖˡ); (legacyAbsDate, legacyAbsDateⁱᵐᵖˡ); (FixedZone, FixedZoneⁱᵐᵖˡ); (fixedZone, fixedZoneⁱᵐᵖˡ); (tzset, tzsetⁱᵐᵖˡ); (tzsetName, tzsetNameⁱᵐᵖˡ); (tzsetOffset, tzsetOffsetⁱᵐᵖˡ); (tzsetRule, tzsetRuleⁱᵐᵖˡ); (tzsetNum, tzsetNumⁱᵐᵖˡ); (tzruleTime, tzruleTimeⁱᵐᵖˡ); (LoadLocation, LoadLocationⁱᵐᵖˡ); (containsDotDot, containsDotDotⁱᵐᵖˡ); (gorootZoneSource, gorootZoneSourceⁱᵐᵖˡ); (registerLoadFromEmbeddedTZData, registerLoadFromEmbeddedTZDataⁱᵐᵖˡ); (byteString, byteStringⁱᵐᵖˡ); (LoadLocationFromTZData, LoadLocationFromTZDataⁱᵐᵖˡ); (findZone, findZoneⁱᵐᵖˡ); (loadTzinfoFromDirOrZip, loadTzinfoFromDirOrZipⁱᵐᵖˡ); (get4, get4ⁱᵐᵖˡ); (get2, get2ⁱᵐᵖˡ); (loadTzinfoFromZip, loadTzinfoFromZipⁱᵐᵖˡ); (loadTzinfo, loadTzinfoⁱᵐᵖˡ); (loadLocation, loadLocationⁱᵐᵖˡ); (readFile, readFileⁱᵐᵖˡ); (initLocal, initLocalⁱᵐᵖˡ)].
+
+Axiom ParseError__Errorⁱᵐᵖˡ : val.
+
+Axiom Timer__Resetⁱᵐᵖˡ : val.
+
+Axiom Timer__Stopⁱᵐᵖˡ : val.
+
+Axiom Ticker__Resetⁱᵐᵖˡ : val.
+
+Axiom Ticker__Stopⁱᵐᵖˡ : val.
+
+Axiom Time__Addⁱᵐᵖˡ : val.
+
+Axiom Time__AddDateⁱᵐᵖˡ : val.
+
+Axiom Time__Afterⁱᵐᵖˡ : val.
+
+Axiom Time__AppendBinaryⁱᵐᵖˡ : val.
+
+Axiom Time__AppendFormatⁱᵐᵖˡ : val.
+
+Axiom Time__AppendTextⁱᵐᵖˡ : val.
+
+Axiom Time__Beforeⁱᵐᵖˡ : val.
+
+Axiom Time__Clockⁱᵐᵖˡ : val.
+
+Axiom Time__Compareⁱᵐᵖˡ : val.
+
+Axiom Time__Dateⁱᵐᵖˡ : val.
+
+Axiom Time__Dayⁱᵐᵖˡ : val.
+
+Axiom Time__Equalⁱᵐᵖˡ : val.
+
+Axiom Time__Formatⁱᵐᵖˡ : val.
+
+Axiom Time__GoStringⁱᵐᵖˡ : val.
+
+Axiom Time__GobDecodeⁱᵐᵖˡ : val.
+
+Axiom Time__GobEncodeⁱᵐᵖˡ : val.
+
+Axiom Time__Hourⁱᵐᵖˡ : val.
+
+Axiom Time__ISOWeekⁱᵐᵖˡ : val.
+
+Axiom Time__Inⁱᵐᵖˡ : val.
+
+Axiom Time__IsDSTⁱᵐᵖˡ : val.
+
+Axiom Time__IsZeroⁱᵐᵖˡ : val.
+
+Axiom Time__Localⁱᵐᵖˡ : val.
+
+Axiom Time__Locationⁱᵐᵖˡ : val.
+
+Axiom Time__MarshalBinaryⁱᵐᵖˡ : val.
+
+Axiom Time__MarshalJSONⁱᵐᵖˡ : val.
+
+Axiom Time__MarshalTextⁱᵐᵖˡ : val.
+
+Axiom Time__Minuteⁱᵐᵖˡ : val.
+
+Axiom Time__Monthⁱᵐᵖˡ : val.
+
+Axiom Time__Nanosecondⁱᵐᵖˡ : val.
+
+Axiom Time__Roundⁱᵐᵖˡ : val.
+
+Axiom Time__Secondⁱᵐᵖˡ : val.
+
+Axiom Time__Stringⁱᵐᵖˡ : val.
+
+Axiom Time__Subⁱᵐᵖˡ : val.
+
+Axiom Time__Truncateⁱᵐᵖˡ : val.
+
+Axiom Time__UTCⁱᵐᵖˡ : val.
+
+Axiom Time__Unixⁱᵐᵖˡ : val.
+
+Axiom Time__UnixMicroⁱᵐᵖˡ : val.
+
+Axiom Time__UnixMilliⁱᵐᵖˡ : val.
+
+Axiom Time__UnixNanoⁱᵐᵖˡ : val.
+
+Axiom Time__UnmarshalBinaryⁱᵐᵖˡ : val.
+
+Axiom Time__UnmarshalJSONⁱᵐᵖˡ : val.
+
+Axiom Time__UnmarshalTextⁱᵐᵖˡ : val.
+
+Axiom Time__Weekdayⁱᵐᵖˡ : val.
+
+Axiom Time__Yearⁱᵐᵖˡ : val.
+
+Axiom Time__YearDayⁱᵐᵖˡ : val.
+
+Axiom Time__Zoneⁱᵐᵖˡ : val.
+
+Axiom Time__ZoneBoundsⁱᵐᵖˡ : val.
+
+Axiom Time__absSecⁱᵐᵖˡ : val.
+
+Axiom Time__addSecⁱᵐᵖˡ : val.
+
+Axiom Time__appendFormatⁱᵐᵖˡ : val.
+
+Axiom Time__appendFormatRFC3339ⁱᵐᵖˡ : val.
+
+Axiom Time__appendStrictRFC3339ⁱᵐᵖˡ : val.
+
+Axiom Time__appendToⁱᵐᵖˡ : val.
+
+Axiom Time__locabsⁱᵐᵖˡ : val.
+
+Axiom Time__monoⁱᵐᵖˡ : val.
+
+Axiom Time__nsecⁱᵐᵖˡ : val.
+
+Axiom Time__secⁱᵐᵖˡ : val.
+
+Axiom Time__setLocⁱᵐᵖˡ : val.
+
+Axiom Time__setMonoⁱᵐᵖˡ : val.
+
+Axiom Time__stripMonoⁱᵐᵖˡ : val.
+
+Axiom Time__unixSecⁱᵐᵖˡ : val.
+
+Axiom Month__Stringⁱᵐᵖˡ : val.
+
+Axiom Weekday__Stringⁱᵐᵖˡ : val.
+
+Axiom absSeconds__clockⁱᵐᵖˡ : val.
+
+Axiom absSeconds__daysⁱᵐᵖˡ : val.
+
+Axiom absDays__dateⁱᵐᵖˡ : val.
+
+Axiom absDays__splitⁱᵐᵖˡ : val.
+
+Axiom absDays__weekdayⁱᵐᵖˡ : val.
+
+Axiom absDays__yearYdayⁱᵐᵖˡ : val.
+
+Axiom absCentury__leapⁱᵐᵖˡ : val.
+
+Axiom absCentury__yearⁱᵐᵖˡ : val.
+
+Axiom absYday__janFebⁱᵐᵖˡ : val.
+
+Axiom absYday__splitⁱᵐᵖˡ : val.
+
+Axiom absYday__ydayⁱᵐᵖˡ : val.
+
+Axiom absMonth__monthⁱᵐᵖˡ : val.
+
+Axiom Duration__Absⁱᵐᵖˡ : val.
+
+Axiom Duration__Hoursⁱᵐᵖˡ : val.
+
+Axiom Duration__Microsecondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Millisecondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Minutesⁱᵐᵖˡ : val.
+
+Axiom Duration__Nanosecondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Roundⁱᵐᵖˡ : val.
+
+Axiom Duration__Secondsⁱᵐᵖˡ : val.
+
+Axiom Duration__Stringⁱᵐᵖˡ : val.
+
+Axiom Duration__Truncateⁱᵐᵖˡ : val.
+
+Axiom Duration__formatⁱᵐᵖˡ : val.
+
+Axiom Location__Stringⁱᵐᵖˡ : val.
+
+Axiom Location__firstZoneUsedⁱᵐᵖˡ : val.
+
+Axiom Location__getⁱᵐᵖˡ : val.
+
+Axiom Location__lookupⁱᵐᵖˡ : val.
+
+Axiom Location__lookupFirstZoneⁱᵐᵖˡ : val.
+
+Axiom Location__lookupNameⁱᵐᵖˡ : val.
+
+Axiom fileSizeError__Errorⁱᵐᵖˡ : val.
+
+Axiom dataIO__big4ⁱᵐᵖˡ : val.
+
+Axiom dataIO__big8ⁱᵐᵖˡ : val.
+
+Axiom dataIO__byteⁱᵐᵖˡ : val.
+
+Axiom dataIO__readⁱᵐᵖˡ : val.
+
+Axiom dataIO__restⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(ParseError.id, []); (ptrT.id ParseError.id, [("Error"%go, ParseError__Errorⁱᵐᵖˡ)]); (Timer.id, []); (ptrT.id Timer.id, [("Reset"%go, Timer__Resetⁱᵐᵖˡ); ("Stop"%go, Timer__Stopⁱᵐᵖˡ)]); (Ticker.id, []); (ptrT.id Ticker.id, [("Reset"%go, Ticker__Resetⁱᵐᵖˡ); ("Stop"%go, Ticker__Stopⁱᵐᵖˡ)]); (Time.id, [("Add"%go, Time__Addⁱᵐᵖˡ); ("AddDate"%go, Time__AddDateⁱᵐᵖˡ); ("After"%go, Time__Afterⁱᵐᵖˡ); ("AppendBinary"%go, Time__AppendBinaryⁱᵐᵖˡ); ("AppendFormat"%go, Time__AppendFormatⁱᵐᵖˡ); ("AppendText"%go, Time__AppendTextⁱᵐᵖˡ); ("Before"%go, Time__Beforeⁱᵐᵖˡ); ("Clock"%go, Time__Clockⁱᵐᵖˡ); ("Compare"%go, Time__Compareⁱᵐᵖˡ); ("Date"%go, Time__Dateⁱᵐᵖˡ); ("Day"%go, Time__Dayⁱᵐᵖˡ); ("Equal"%go, Time__Equalⁱᵐᵖˡ); ("Format"%go, Time__Formatⁱᵐᵖˡ); ("GoString"%go, Time__GoStringⁱᵐᵖˡ); ("GobEncode"%go, Time__GobEncodeⁱᵐᵖˡ); ("Hour"%go, Time__Hourⁱᵐᵖˡ); ("ISOWeek"%go, Time__ISOWeekⁱᵐᵖˡ); ("In"%go, Time__Inⁱᵐᵖˡ); ("IsDST"%go, Time__IsDSTⁱᵐᵖˡ); ("IsZero"%go, Time__IsZeroⁱᵐᵖˡ); ("Local"%go, Time__Localⁱᵐᵖˡ); ("Location"%go, Time__Locationⁱᵐᵖˡ); ("MarshalBinary"%go, Time__MarshalBinaryⁱᵐᵖˡ); ("MarshalJSON"%go, Time__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Time__MarshalTextⁱᵐᵖˡ); ("Minute"%go, Time__Minuteⁱᵐᵖˡ); ("Month"%go, Time__Monthⁱᵐᵖˡ); ("Nanosecond"%go, Time__Nanosecondⁱᵐᵖˡ); ("Round"%go, Time__Roundⁱᵐᵖˡ); ("Second"%go, Time__Secondⁱᵐᵖˡ); ("String"%go, Time__Stringⁱᵐᵖˡ); ("Sub"%go, Time__Subⁱᵐᵖˡ); ("Truncate"%go, Time__Truncateⁱᵐᵖˡ); ("UTC"%go, Time__UTCⁱᵐᵖˡ); ("Unix"%go, Time__Unixⁱᵐᵖˡ); ("UnixMicro"%go, Time__UnixMicroⁱᵐᵖˡ); ("UnixMilli"%go, Time__UnixMilliⁱᵐᵖˡ); ("UnixNano"%go, Time__UnixNanoⁱᵐᵖˡ); ("Weekday"%go, Time__Weekdayⁱᵐᵖˡ); ("Year"%go, Time__Yearⁱᵐᵖˡ); ("YearDay"%go, Time__YearDayⁱᵐᵖˡ); ("Zone"%go, Time__Zoneⁱᵐᵖˡ); ("ZoneBounds"%go, Time__ZoneBoundsⁱᵐᵖˡ); ("absSec"%go, Time__absSecⁱᵐᵖˡ); ("appendFormat"%go, Time__appendFormatⁱᵐᵖˡ); ("appendFormatRFC3339"%go, Time__appendFormatRFC3339ⁱᵐᵖˡ); ("appendStrictRFC3339"%go, Time__appendStrictRFC3339ⁱᵐᵖˡ); ("appendTo"%go, Time__appendToⁱᵐᵖˡ); ("locabs"%go, Time__locabsⁱᵐᵖˡ)]); (ptrT.id Time.id, [("Add"%go, Time__Addⁱᵐᵖˡ); ("AddDate"%go, Time__AddDateⁱᵐᵖˡ); ("After"%go, Time__Afterⁱᵐᵖˡ); ("AppendBinary"%go, Time__AppendBinaryⁱᵐᵖˡ); ("AppendFormat"%go, Time__AppendFormatⁱᵐᵖˡ); ("AppendText"%go, Time__AppendTextⁱᵐᵖˡ); ("Before"%go, Time__Beforeⁱᵐᵖˡ); ("Clock"%go, Time__Clockⁱᵐᵖˡ); ("Compare"%go, Time__Compareⁱᵐᵖˡ); ("Date"%go, Time__Dateⁱᵐᵖˡ); ("Day"%go, Time__Dayⁱᵐᵖˡ); ("Equal"%go, Time__Equalⁱᵐᵖˡ); ("Format"%go, Time__Formatⁱᵐᵖˡ); ("GoString"%go, Time__GoStringⁱᵐᵖˡ); ("GobDecode"%go, Time__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Time__GobEncodeⁱᵐᵖˡ); ("Hour"%go, Time__Hourⁱᵐᵖˡ); ("ISOWeek"%go, Time__ISOWeekⁱᵐᵖˡ); ("In"%go, Time__Inⁱᵐᵖˡ); ("IsDST"%go, Time__IsDSTⁱᵐᵖˡ); ("IsZero"%go, Time__IsZeroⁱᵐᵖˡ); ("Local"%go, Time__Localⁱᵐᵖˡ); ("Location"%go, Time__Locationⁱᵐᵖˡ); ("MarshalBinary"%go, Time__MarshalBinaryⁱᵐᵖˡ); ("MarshalJSON"%go, Time__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Time__MarshalTextⁱᵐᵖˡ); ("Minute"%go, Time__Minuteⁱᵐᵖˡ); ("Month"%go, Time__Monthⁱᵐᵖˡ); ("Nanosecond"%go, Time__Nanosecondⁱᵐᵖˡ); ("Round"%go, Time__Roundⁱᵐᵖˡ); ("Second"%go, Time__Secondⁱᵐᵖˡ); ("String"%go, Time__Stringⁱᵐᵖˡ); ("Sub"%go, Time__Subⁱᵐᵖˡ); ("Truncate"%go, Time__Truncateⁱᵐᵖˡ); ("UTC"%go, Time__UTCⁱᵐᵖˡ); ("Unix"%go, Time__Unixⁱᵐᵖˡ); ("UnixMicro"%go, Time__UnixMicroⁱᵐᵖˡ); ("UnixMilli"%go, Time__UnixMilliⁱᵐᵖˡ); ("UnixNano"%go, Time__UnixNanoⁱᵐᵖˡ); ("UnmarshalBinary"%go, Time__UnmarshalBinaryⁱᵐᵖˡ); ("UnmarshalJSON"%go, Time__UnmarshalJSONⁱᵐᵖˡ); ("UnmarshalText"%go, Time__UnmarshalTextⁱᵐᵖˡ); ("Weekday"%go, Time__Weekdayⁱᵐᵖˡ); ("Year"%go, Time__Yearⁱᵐᵖˡ); ("YearDay"%go, Time__YearDayⁱᵐᵖˡ); ("Zone"%go, Time__Zoneⁱᵐᵖˡ); ("ZoneBounds"%go, Time__ZoneBoundsⁱᵐᵖˡ); ("absSec"%go, Time__absSecⁱᵐᵖˡ); ("addSec"%go, Time__addSecⁱᵐᵖˡ); ("appendFormat"%go, Time__appendFormatⁱᵐᵖˡ); ("appendFormatRFC3339"%go, Time__appendFormatRFC3339ⁱᵐᵖˡ); ("appendStrictRFC3339"%go, Time__appendStrictRFC3339ⁱᵐᵖˡ); ("appendTo"%go, Time__appendToⁱᵐᵖˡ); ("locabs"%go, Time__locabsⁱᵐᵖˡ); ("mono"%go, Time__monoⁱᵐᵖˡ); ("nsec"%go, Time__nsecⁱᵐᵖˡ); ("sec"%go, Time__secⁱᵐᵖˡ); ("setLoc"%go, Time__setLocⁱᵐᵖˡ); ("setMono"%go, Time__setMonoⁱᵐᵖˡ); ("stripMono"%go, Time__stripMonoⁱᵐᵖˡ); ("unixSec"%go, Time__unixSecⁱᵐᵖˡ)]); (Month.id, [("String"%go, Month__Stringⁱᵐᵖˡ)]); (ptrT.id Month.id, [("String"%go, Month__Stringⁱᵐᵖˡ)]); (Weekday.id, [("String"%go, Weekday__Stringⁱᵐᵖˡ)]); (ptrT.id Weekday.id, [("String"%go, Weekday__Stringⁱᵐᵖˡ)]); (absSeconds.id, [("clock"%go, absSeconds__clockⁱᵐᵖˡ); ("days"%go, absSeconds__daysⁱᵐᵖˡ)]); (ptrT.id absSeconds.id, [("clock"%go, absSeconds__clockⁱᵐᵖˡ); ("days"%go, absSeconds__daysⁱᵐᵖˡ)]); (absDays.id, [("date"%go, absDays__dateⁱᵐᵖˡ); ("split"%go, absDays__splitⁱᵐᵖˡ); ("weekday"%go, absDays__weekdayⁱᵐᵖˡ); ("yearYday"%go, absDays__yearYdayⁱᵐᵖˡ)]); (ptrT.id absDays.id, [("date"%go, absDays__dateⁱᵐᵖˡ); ("split"%go, absDays__splitⁱᵐᵖˡ); ("weekday"%go, absDays__weekdayⁱᵐᵖˡ); ("yearYday"%go, absDays__yearYdayⁱᵐᵖˡ)]); (absCentury.id, [("leap"%go, absCentury__leapⁱᵐᵖˡ); ("year"%go, absCentury__yearⁱᵐᵖˡ)]); (ptrT.id absCentury.id, [("leap"%go, absCentury__leapⁱᵐᵖˡ); ("year"%go, absCentury__yearⁱᵐᵖˡ)]); (absCyear.id, []); (ptrT.id absCyear.id, []); (absYday.id, [("janFeb"%go, absYday__janFebⁱᵐᵖˡ); ("split"%go, absYday__splitⁱᵐᵖˡ); ("yday"%go, absYday__ydayⁱᵐᵖˡ)]); (ptrT.id absYday.id, [("janFeb"%go, absYday__janFebⁱᵐᵖˡ); ("split"%go, absYday__splitⁱᵐᵖˡ); ("yday"%go, absYday__ydayⁱᵐᵖˡ)]); (absMonth.id, [("month"%go, absMonth__monthⁱᵐᵖˡ)]); (ptrT.id absMonth.id, [("month"%go, absMonth__monthⁱᵐᵖˡ)]); (absLeap.id, []); (ptrT.id absLeap.id, []); (absJanFeb.id, []); (ptrT.id absJanFeb.id, []); (Duration.id, [("Abs"%go, Duration__Absⁱᵐᵖˡ); ("Hours"%go, Duration__Hoursⁱᵐᵖˡ); ("Microseconds"%go, Duration__Microsecondsⁱᵐᵖˡ); ("Milliseconds"%go, Duration__Millisecondsⁱᵐᵖˡ); ("Minutes"%go, Duration__Minutesⁱᵐᵖˡ); ("Nanoseconds"%go, Duration__Nanosecondsⁱᵐᵖˡ); ("Round"%go, Duration__Roundⁱᵐᵖˡ); ("Seconds"%go, Duration__Secondsⁱᵐᵖˡ); ("String"%go, Duration__Stringⁱᵐᵖˡ); ("Truncate"%go, Duration__Truncateⁱᵐᵖˡ); ("format"%go, Duration__formatⁱᵐᵖˡ)]); (ptrT.id Duration.id, [("Abs"%go, Duration__Absⁱᵐᵖˡ); ("Hours"%go, Duration__Hoursⁱᵐᵖˡ); ("Microseconds"%go, Duration__Microsecondsⁱᵐᵖˡ); ("Milliseconds"%go, Duration__Millisecondsⁱᵐᵖˡ); ("Minutes"%go, Duration__Minutesⁱᵐᵖˡ); ("Nanoseconds"%go, Duration__Nanosecondsⁱᵐᵖˡ); ("Round"%go, Duration__Roundⁱᵐᵖˡ); ("Seconds"%go, Duration__Secondsⁱᵐᵖˡ); ("String"%go, Duration__Stringⁱᵐᵖˡ); ("Truncate"%go, Duration__Truncateⁱᵐᵖˡ); ("format"%go, Duration__formatⁱᵐᵖˡ)]); (Location.id, []); (ptrT.id Location.id, [("String"%go, Location__Stringⁱᵐᵖˡ); ("firstZoneUsed"%go, Location__firstZoneUsedⁱᵐᵖˡ); ("get"%go, Location__getⁱᵐᵖˡ); ("lookup"%go, Location__lookupⁱᵐᵖˡ); ("lookupFirstZone"%go, Location__lookupFirstZoneⁱᵐᵖˡ); ("lookupName"%go, Location__lookupNameⁱᵐᵖˡ)]); (zone.id, []); (ptrT.id zone.id, []); (zoneTrans.id, []); (ptrT.id zoneTrans.id, []); (ruleKind.id, []); (ptrT.id ruleKind.id, []); (rule.id, []); (ptrT.id rule.id, []); (fileSizeError.id, [("Error"%go, fileSizeError__Errorⁱᵐᵖˡ)]); (ptrT.id fileSizeError.id, [("Error"%go, fileSizeError__Errorⁱᵐᵖˡ)]); (dataIO.id, []); (ptrT.id dataIO.id, [("big4"%go, dataIO__big4ⁱᵐᵖˡ); ("big8"%go, dataIO__big8ⁱᵐᵖˡ); ("byte"%go, dataIO__byteⁱᵐᵖˡ); ("read"%go, dataIO__readⁱᵐᵖˡ); ("rest"%go, dataIO__restⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo time.time :=
   {|

@@ -111,7 +111,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(RepBlock.id
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [sync.sync; github_com.goose_lang.primitive.disk.disk; github_com.mit_pdos.go_journal.addr.addr; github_com.mit_pdos.go_journal.common.common; github_com.mit_pdos.go_journal.jrnl.jrnl; github_com.mit_pdos.go_journal.obj.obj; github_com.mit_pdos.go_journal.util.util];
+    pkg_imported_pkgs := [code.sync.sync; code.github_com.goose_lang.primitive.disk.disk; code.github_com.mit_pdos.go_journal.addr.addr; code.github_com.mit_pdos.go_journal.common.common; code.github_com.mit_pdos.go_journal.jrnl.jrnl; code.github_com.mit_pdos.go_journal.obj.obj; code.github_com.mit_pdos.go_journal.util.util];
   |}.
 
 Definition initialize' : val :=

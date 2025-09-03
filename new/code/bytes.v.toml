@@ -5,6 +5,3 @@ translate = [
 imports = [
   "!*",
 ]
-axiomatize = [
-  "Buffer",
-]

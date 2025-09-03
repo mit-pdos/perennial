@@ -1,15 +1,6 @@
 translate = [
   "!*",
 ]
-axiomatize = [
-  "Conn",
-  "Dial",
-  "Conn.Send",
-  "Conn.Receive",
-  "Listener",
-  "Listen",
-  "Listener.Accept",
-]
 imports = [
   "!*"
 ]

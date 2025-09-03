@@ -8,6 +8,2063 @@ Set Default Proof Using "Type".
 
 Module grpc.
 
+(* type grpc.BackoffConfig *)
+Module BackoffConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End BackoffConfig.
+
+Global Instance bounded_size_BackoffConfig : BoundedTypeSize grpc.BackoffConfig.
+Admitted.
+
+Global Instance into_val_BackoffConfig `{ffi_syntax} : IntoVal BackoffConfig.t.
+Admitted.
+
+Global Instance into_val_typed_BackoffConfig `{ffi_syntax} : IntoValTyped BackoffConfig.t grpc.BackoffConfig.
+Admitted.
+
+(* type grpc.ConnectParams *)
+Module ConnectParams.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ConnectParams.
+
+Global Instance bounded_size_ConnectParams : BoundedTypeSize grpc.ConnectParams.
+Admitted.
+
+Global Instance into_val_ConnectParams `{ffi_syntax} : IntoVal ConnectParams.t.
+Admitted.
+
+Global Instance into_val_typed_ConnectParams `{ffi_syntax} : IntoValTyped ConnectParams.t grpc.ConnectParams.
+Admitted.
+
+(* type grpc.ccBalancerWrapper *)
+Module ccBalancerWrapper.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ccBalancerWrapper.
+
+Global Instance bounded_size_ccBalancerWrapper : BoundedTypeSize grpc.ccBalancerWrapper.
+Admitted.
+
+Global Instance into_val_ccBalancerWrapper `{ffi_syntax} : IntoVal ccBalancerWrapper.t.
+Admitted.
+
+Global Instance into_val_typed_ccBalancerWrapper `{ffi_syntax} : IntoValTyped ccBalancerWrapper.t grpc.ccBalancerWrapper.
+Admitted.
+
+(* type grpc.acBalancerWrapper *)
+Module acBalancerWrapper.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End acBalancerWrapper.
+
+Global Instance bounded_size_acBalancerWrapper : BoundedTypeSize grpc.acBalancerWrapper.
+Admitted.
+
+Global Instance into_val_acBalancerWrapper `{ffi_syntax} : IntoVal acBalancerWrapper.t.
+Admitted.
+
+Global Instance into_val_typed_acBalancerWrapper `{ffi_syntax} : IntoValTyped acBalancerWrapper.t grpc.acBalancerWrapper.
+Admitted.
+
+(* type grpc.healthData *)
+Module healthData.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End healthData.
+
+Global Instance bounded_size_healthData : BoundedTypeSize grpc.healthData.
+Admitted.
+
+Global Instance into_val_healthData `{ffi_syntax} : IntoVal healthData.t.
+Admitted.
+
+Global Instance into_val_typed_healthData `{ffi_syntax} : IntoValTyped healthData.t grpc.healthData.
+Admitted.
+
+(* type grpc.refCountedProducer *)
+Module refCountedProducer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End refCountedProducer.
+
+Global Instance bounded_size_refCountedProducer : BoundedTypeSize grpc.refCountedProducer.
+Admitted.
+
+Global Instance into_val_refCountedProducer `{ffi_syntax} : IntoVal refCountedProducer.t.
+Admitted.
+
+Global Instance into_val_typed_refCountedProducer `{ffi_syntax} : IntoValTyped refCountedProducer.t grpc.refCountedProducer.
+Admitted.
+
+(* type grpc.defaultConfigSelector *)
+Module defaultConfigSelector.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End defaultConfigSelector.
+
+Global Instance bounded_size_defaultConfigSelector : BoundedTypeSize grpc.defaultConfigSelector.
+Admitted.
+
+Global Instance into_val_defaultConfigSelector `{ffi_syntax} : IntoVal defaultConfigSelector.t.
+Admitted.
+
+Global Instance into_val_typed_defaultConfigSelector `{ffi_syntax} : IntoValTyped defaultConfigSelector.t grpc.defaultConfigSelector.
+Admitted.
+
+(* type grpc.idler *)
+Module idler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End idler.
+
+Global Instance bounded_size_idler : BoundedTypeSize grpc.idler.
+Admitted.
+
+Global Instance into_val_idler `{ffi_syntax} : IntoVal idler.t.
+Admitted.
+
+Global Instance into_val_typed_idler `{ffi_syntax} : IntoValTyped idler.t grpc.idler.
+Admitted.
+
+(* type grpc.connectivityStateManager *)
+Module connectivityStateManager.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End connectivityStateManager.
+
+Global Instance bounded_size_connectivityStateManager : BoundedTypeSize grpc.connectivityStateManager.
+Admitted.
+
+Global Instance into_val_connectivityStateManager `{ffi_syntax} : IntoVal connectivityStateManager.t.
+Admitted.
+
+Global Instance into_val_typed_connectivityStateManager `{ffi_syntax} : IntoValTyped connectivityStateManager.t grpc.connectivityStateManager.
+Admitted.
+
+(* type grpc.ClientConnInterface *)
+Module ClientConnInterface.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ClientConnInterface.
+
+Global Instance bounded_size_ClientConnInterface : BoundedTypeSize grpc.ClientConnInterface.
+Admitted.
+
+Global Instance into_val_ClientConnInterface `{ffi_syntax} : IntoVal ClientConnInterface.t.
+Admitted.
+
+Global Instance into_val_typed_ClientConnInterface `{ffi_syntax} : IntoValTyped ClientConnInterface.t grpc.ClientConnInterface.
+Admitted.
+
+(* type grpc.ClientConn *)
+Module ClientConn.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ClientConn.
+
+Global Instance bounded_size_ClientConn : BoundedTypeSize grpc.ClientConn.
+Admitted.
+
+Global Instance into_val_ClientConn `{ffi_syntax} : IntoVal ClientConn.t.
+Admitted.
+
+Global Instance into_val_typed_ClientConn `{ffi_syntax} : IntoValTyped ClientConn.t grpc.ClientConn.
+Admitted.
+
+(* type grpc.addrConn *)
+Module addrConn.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End addrConn.
+
+Global Instance bounded_size_addrConn : BoundedTypeSize grpc.addrConn.
+Admitted.
+
+Global Instance into_val_addrConn `{ffi_syntax} : IntoVal addrConn.t.
+Admitted.
+
+Global Instance into_val_typed_addrConn `{ffi_syntax} : IntoValTyped addrConn.t grpc.addrConn.
+Admitted.
+
+(* type grpc.retryThrottler *)
+Module retryThrottler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryThrottler.
+
+Global Instance bounded_size_retryThrottler : BoundedTypeSize grpc.retryThrottler.
+Admitted.
+
+Global Instance into_val_retryThrottler `{ffi_syntax} : IntoVal retryThrottler.t.
+Admitted.
+
+Global Instance into_val_typed_retryThrottler `{ffi_syntax} : IntoValTyped retryThrottler.t grpc.retryThrottler.
+Admitted.
+
+(* type grpc.baseCodec *)
+Module baseCodec.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End baseCodec.
+
+Global Instance bounded_size_baseCodec : BoundedTypeSize grpc.baseCodec.
+Admitted.
+
+Global Instance into_val_baseCodec `{ffi_syntax} : IntoVal baseCodec.t.
+Admitted.
+
+Global Instance into_val_typed_baseCodec `{ffi_syntax} : IntoValTyped baseCodec.t grpc.baseCodec.
+Admitted.
+
+(* type grpc.codecV0Bridge *)
+Module codecV0Bridge.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End codecV0Bridge.
+
+Global Instance bounded_size_codecV0Bridge : BoundedTypeSize grpc.codecV0Bridge.
+Admitted.
+
+Global Instance into_val_codecV0Bridge `{ffi_syntax} : IntoVal codecV0Bridge.t.
+Admitted.
+
+Global Instance into_val_typed_codecV0Bridge `{ffi_syntax} : IntoValTyped codecV0Bridge.t grpc.codecV0Bridge.
+Admitted.
+
+(* type grpc.codecV1Bridge *)
+Module codecV1Bridge.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End codecV1Bridge.
+
+Global Instance bounded_size_codecV1Bridge : BoundedTypeSize grpc.codecV1Bridge.
+Admitted.
+
+Global Instance into_val_codecV1Bridge `{ffi_syntax} : IntoVal codecV1Bridge.t.
+Admitted.
+
+Global Instance into_val_typed_codecV1Bridge `{ffi_syntax} : IntoValTyped codecV1Bridge.t grpc.codecV1Bridge.
+Admitted.
+
+(* type grpc.Codec *)
+Module Codec.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Codec.
+
+Global Instance bounded_size_Codec : BoundedTypeSize grpc.Codec.
+Admitted.
+
+Global Instance into_val_Codec `{ffi_syntax} : IntoVal Codec.t.
+Admitted.
+
+Global Instance into_val_typed_Codec `{ffi_syntax} : IntoValTyped Codec.t grpc.Codec.
+Admitted.
+
+(* type grpc.dialOptions *)
+Module dialOptions.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End dialOptions.
+
+Global Instance bounded_size_dialOptions : BoundedTypeSize grpc.dialOptions.
+Admitted.
+
+Global Instance into_val_dialOptions `{ffi_syntax} : IntoVal dialOptions.t.
+Admitted.
+
+Global Instance into_val_typed_dialOptions `{ffi_syntax} : IntoValTyped dialOptions.t grpc.dialOptions.
+Admitted.
+
+(* type grpc.DialOption *)
+Module DialOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End DialOption.
+
+Global Instance bounded_size_DialOption : BoundedTypeSize grpc.DialOption.
+Admitted.
+
+Global Instance into_val_DialOption `{ffi_syntax} : IntoVal DialOption.t.
+Admitted.
+
+Global Instance into_val_typed_DialOption `{ffi_syntax} : IntoValTyped DialOption.t grpc.DialOption.
+Admitted.
+
+(* type grpc.perTargetDialOption *)
+Module perTargetDialOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End perTargetDialOption.
+
+Global Instance bounded_size_perTargetDialOption : BoundedTypeSize grpc.perTargetDialOption.
+Admitted.
+
+Global Instance into_val_perTargetDialOption `{ffi_syntax} : IntoVal perTargetDialOption.t.
+Admitted.
+
+Global Instance into_val_typed_perTargetDialOption `{ffi_syntax} : IntoValTyped perTargetDialOption.t grpc.perTargetDialOption.
+Admitted.
+
+(* type grpc.EmptyDialOption *)
+Module EmptyDialOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End EmptyDialOption.
+
+Global Instance bounded_size_EmptyDialOption : BoundedTypeSize grpc.EmptyDialOption.
+Admitted.
+
+Global Instance into_val_EmptyDialOption `{ffi_syntax} : IntoVal EmptyDialOption.t.
+Admitted.
+
+Global Instance into_val_typed_EmptyDialOption `{ffi_syntax} : IntoValTyped EmptyDialOption.t grpc.EmptyDialOption.
+Admitted.
+
+(* type grpc.disableGlobalDialOptions *)
+Module disableGlobalDialOptions.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End disableGlobalDialOptions.
+
+Global Instance bounded_size_disableGlobalDialOptions : BoundedTypeSize grpc.disableGlobalDialOptions.
+Admitted.
+
+Global Instance into_val_disableGlobalDialOptions `{ffi_syntax} : IntoVal disableGlobalDialOptions.t.
+Admitted.
+
+Global Instance into_val_typed_disableGlobalDialOptions `{ffi_syntax} : IntoValTyped disableGlobalDialOptions.t grpc.disableGlobalDialOptions.
+Admitted.
+
+(* type grpc.funcDialOption *)
+Module funcDialOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End funcDialOption.
+
+Global Instance bounded_size_funcDialOption : BoundedTypeSize grpc.funcDialOption.
+Admitted.
+
+Global Instance into_val_funcDialOption `{ffi_syntax} : IntoVal funcDialOption.t.
+Admitted.
+
+Global Instance into_val_typed_funcDialOption `{ffi_syntax} : IntoValTyped funcDialOption.t grpc.funcDialOption.
+Admitted.
+
+(* type grpc.joinDialOption *)
+Module joinDialOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End joinDialOption.
+
+Global Instance bounded_size_joinDialOption : BoundedTypeSize grpc.joinDialOption.
+Admitted.
+
+Global Instance into_val_joinDialOption `{ffi_syntax} : IntoVal joinDialOption.t.
+Admitted.
+
+Global Instance into_val_typed_joinDialOption `{ffi_syntax} : IntoValTyped joinDialOption.t grpc.joinDialOption.
+Admitted.
+
+(* type grpc.MaxHeaderListSizeDialOption *)
+Module MaxHeaderListSizeDialOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MaxHeaderListSizeDialOption.
+
+Global Instance bounded_size_MaxHeaderListSizeDialOption : BoundedTypeSize grpc.MaxHeaderListSizeDialOption.
+Admitted.
+
+Global Instance into_val_MaxHeaderListSizeDialOption `{ffi_syntax} : IntoVal MaxHeaderListSizeDialOption.t.
+Admitted.
+
+Global Instance into_val_typed_MaxHeaderListSizeDialOption `{ffi_syntax} : IntoValTyped MaxHeaderListSizeDialOption.t grpc.MaxHeaderListSizeDialOption.
+Admitted.
+
+(* type grpc.UnaryInvoker *)
+Module UnaryInvoker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End UnaryInvoker.
+
+Global Instance bounded_size_UnaryInvoker : BoundedTypeSize grpc.UnaryInvoker.
+Admitted.
+
+Global Instance into_val_UnaryInvoker `{ffi_syntax} : IntoVal UnaryInvoker.t.
+Admitted.
+
+Global Instance into_val_typed_UnaryInvoker `{ffi_syntax} : IntoValTyped UnaryInvoker.t grpc.UnaryInvoker.
+Admitted.
+
+(* type grpc.UnaryClientInterceptor *)
+Module UnaryClientInterceptor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End UnaryClientInterceptor.
+
+Global Instance bounded_size_UnaryClientInterceptor : BoundedTypeSize grpc.UnaryClientInterceptor.
+Admitted.
+
+Global Instance into_val_UnaryClientInterceptor `{ffi_syntax} : IntoVal UnaryClientInterceptor.t.
+Admitted.
+
+Global Instance into_val_typed_UnaryClientInterceptor `{ffi_syntax} : IntoValTyped UnaryClientInterceptor.t grpc.UnaryClientInterceptor.
+Admitted.
+
+(* type grpc.Streamer *)
+Module Streamer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Streamer.
+
+Global Instance bounded_size_Streamer : BoundedTypeSize grpc.Streamer.
+Admitted.
+
+Global Instance into_val_Streamer `{ffi_syntax} : IntoVal Streamer.t.
+Admitted.
+
+Global Instance into_val_typed_Streamer `{ffi_syntax} : IntoValTyped Streamer.t grpc.Streamer.
+Admitted.
+
+(* type grpc.StreamClientInterceptor *)
+Module StreamClientInterceptor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StreamClientInterceptor.
+
+Global Instance bounded_size_StreamClientInterceptor : BoundedTypeSize grpc.StreamClientInterceptor.
+Admitted.
+
+Global Instance into_val_StreamClientInterceptor `{ffi_syntax} : IntoVal StreamClientInterceptor.t.
+Admitted.
+
+Global Instance into_val_typed_StreamClientInterceptor `{ffi_syntax} : IntoValTyped StreamClientInterceptor.t grpc.StreamClientInterceptor.
+Admitted.
+
+(* type grpc.UnaryServerInfo *)
+Module UnaryServerInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End UnaryServerInfo.
+
+Global Instance bounded_size_UnaryServerInfo : BoundedTypeSize grpc.UnaryServerInfo.
+Admitted.
+
+Global Instance into_val_UnaryServerInfo `{ffi_syntax} : IntoVal UnaryServerInfo.t.
+Admitted.
+
+Global Instance into_val_typed_UnaryServerInfo `{ffi_syntax} : IntoValTyped UnaryServerInfo.t grpc.UnaryServerInfo.
+Admitted.
+
+(* type grpc.UnaryHandler *)
+Module UnaryHandler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End UnaryHandler.
+
+Global Instance bounded_size_UnaryHandler : BoundedTypeSize grpc.UnaryHandler.
+Admitted.
+
+Global Instance into_val_UnaryHandler `{ffi_syntax} : IntoVal UnaryHandler.t.
+Admitted.
+
+Global Instance into_val_typed_UnaryHandler `{ffi_syntax} : IntoValTyped UnaryHandler.t grpc.UnaryHandler.
+Admitted.
+
+(* type grpc.UnaryServerInterceptor *)
+Module UnaryServerInterceptor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End UnaryServerInterceptor.
+
+Global Instance bounded_size_UnaryServerInterceptor : BoundedTypeSize grpc.UnaryServerInterceptor.
+Admitted.
+
+Global Instance into_val_UnaryServerInterceptor `{ffi_syntax} : IntoVal UnaryServerInterceptor.t.
+Admitted.
+
+Global Instance into_val_typed_UnaryServerInterceptor `{ffi_syntax} : IntoValTyped UnaryServerInterceptor.t grpc.UnaryServerInterceptor.
+Admitted.
+
+(* type grpc.StreamServerInfo *)
+Module StreamServerInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StreamServerInfo.
+
+Global Instance bounded_size_StreamServerInfo : BoundedTypeSize grpc.StreamServerInfo.
+Admitted.
+
+Global Instance into_val_StreamServerInfo `{ffi_syntax} : IntoVal StreamServerInfo.t.
+Admitted.
+
+Global Instance into_val_typed_StreamServerInfo `{ffi_syntax} : IntoValTyped StreamServerInfo.t grpc.StreamServerInfo.
+Admitted.
+
+(* type grpc.StreamServerInterceptor *)
+Module StreamServerInterceptor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StreamServerInterceptor.
+
+Global Instance bounded_size_StreamServerInterceptor : BoundedTypeSize grpc.StreamServerInterceptor.
+Admitted.
+
+Global Instance into_val_StreamServerInterceptor `{ffi_syntax} : IntoVal StreamServerInterceptor.t.
+Admitted.
+
+Global Instance into_val_typed_StreamServerInterceptor `{ffi_syntax} : IntoValTyped StreamServerInterceptor.t grpc.StreamServerInterceptor.
+Admitted.
+
+(* type grpc.pickerGeneration *)
+Module pickerGeneration.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End pickerGeneration.
+
+Global Instance bounded_size_pickerGeneration : BoundedTypeSize grpc.pickerGeneration.
+Admitted.
+
+Global Instance into_val_pickerGeneration `{ffi_syntax} : IntoVal pickerGeneration.t.
+Admitted.
+
+Global Instance into_val_typed_pickerGeneration `{ffi_syntax} : IntoValTyped pickerGeneration.t grpc.pickerGeneration.
+Admitted.
+
+(* type grpc.pickerWrapper *)
+Module pickerWrapper.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End pickerWrapper.
+
+Global Instance bounded_size_pickerWrapper : BoundedTypeSize grpc.pickerWrapper.
+Admitted.
+
+Global Instance into_val_pickerWrapper `{ffi_syntax} : IntoVal pickerWrapper.t.
+Admitted.
+
+Global Instance into_val_typed_pickerWrapper `{ffi_syntax} : IntoValTyped pickerWrapper.t grpc.pickerWrapper.
+Admitted.
+
+(* type grpc.dropError *)
+Module dropError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End dropError.
+
+Global Instance bounded_size_dropError : BoundedTypeSize grpc.dropError.
+Admitted.
+
+Global Instance into_val_dropError `{ffi_syntax} : IntoVal dropError.t.
+Admitted.
+
+Global Instance into_val_typed_dropError `{ffi_syntax} : IntoValTyped dropError.t grpc.dropError.
+Admitted.
+
+(* type grpc.PreparedMsg *)
+Module PreparedMsg.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PreparedMsg.
+
+Global Instance bounded_size_PreparedMsg : BoundedTypeSize grpc.PreparedMsg.
+Admitted.
+
+Global Instance into_val_PreparedMsg `{ffi_syntax} : IntoVal PreparedMsg.t.
+Admitted.
+
+Global Instance into_val_typed_PreparedMsg `{ffi_syntax} : IntoValTyped PreparedMsg.t grpc.PreparedMsg.
+Admitted.
+
+(* type grpc.ccResolverWrapper *)
+Module ccResolverWrapper.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ccResolverWrapper.
+
+Global Instance bounded_size_ccResolverWrapper : BoundedTypeSize grpc.ccResolverWrapper.
+Admitted.
+
+Global Instance into_val_ccResolverWrapper `{ffi_syntax} : IntoVal ccResolverWrapper.t.
+Admitted.
+
+Global Instance into_val_typed_ccResolverWrapper `{ffi_syntax} : IntoValTyped ccResolverWrapper.t grpc.ccResolverWrapper.
+Admitted.
+
+(* type grpc.Compressor *)
+Module Compressor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Compressor.
+
+Global Instance bounded_size_Compressor : BoundedTypeSize grpc.Compressor.
+Admitted.
+
+Global Instance into_val_Compressor `{ffi_syntax} : IntoVal Compressor.t.
+Admitted.
+
+Global Instance into_val_typed_Compressor `{ffi_syntax} : IntoValTyped Compressor.t grpc.Compressor.
+Admitted.
+
+(* type grpc.gzipCompressor *)
+Module gzipCompressor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End gzipCompressor.
+
+Global Instance bounded_size_gzipCompressor : BoundedTypeSize grpc.gzipCompressor.
+Admitted.
+
+Global Instance into_val_gzipCompressor `{ffi_syntax} : IntoVal gzipCompressor.t.
+Admitted.
+
+Global Instance into_val_typed_gzipCompressor `{ffi_syntax} : IntoValTyped gzipCompressor.t grpc.gzipCompressor.
+Admitted.
+
+(* type grpc.Decompressor *)
+Module Decompressor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Decompressor.
+
+Global Instance bounded_size_Decompressor : BoundedTypeSize grpc.Decompressor.
+Admitted.
+
+Global Instance into_val_Decompressor `{ffi_syntax} : IntoVal Decompressor.t.
+Admitted.
+
+Global Instance into_val_typed_Decompressor `{ffi_syntax} : IntoValTyped Decompressor.t grpc.Decompressor.
+Admitted.
+
+(* type grpc.gzipDecompressor *)
+Module gzipDecompressor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End gzipDecompressor.
+
+Global Instance bounded_size_gzipDecompressor : BoundedTypeSize grpc.gzipDecompressor.
+Admitted.
+
+Global Instance into_val_gzipDecompressor `{ffi_syntax} : IntoVal gzipDecompressor.t.
+Admitted.
+
+Global Instance into_val_typed_gzipDecompressor `{ffi_syntax} : IntoValTyped gzipDecompressor.t grpc.gzipDecompressor.
+Admitted.
+
+(* type grpc.callInfo *)
+Module callInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End callInfo.
+
+Global Instance bounded_size_callInfo : BoundedTypeSize grpc.callInfo.
+Admitted.
+
+Global Instance into_val_callInfo `{ffi_syntax} : IntoVal callInfo.t.
+Admitted.
+
+Global Instance into_val_typed_callInfo `{ffi_syntax} : IntoValTyped callInfo.t grpc.callInfo.
+Admitted.
+
+(* type grpc.CallOption *)
+Module CallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CallOption.
+
+Global Instance bounded_size_CallOption : BoundedTypeSize grpc.CallOption.
+Admitted.
+
+Global Instance into_val_CallOption `{ffi_syntax} : IntoVal CallOption.t.
+Admitted.
+
+Global Instance into_val_typed_CallOption `{ffi_syntax} : IntoValTyped CallOption.t grpc.CallOption.
+Admitted.
+
+(* type grpc.EmptyCallOption *)
+Module EmptyCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End EmptyCallOption.
+
+Global Instance bounded_size_EmptyCallOption : BoundedTypeSize grpc.EmptyCallOption.
+Admitted.
+
+Global Instance into_val_EmptyCallOption `{ffi_syntax} : IntoVal EmptyCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_EmptyCallOption `{ffi_syntax} : IntoValTyped EmptyCallOption.t grpc.EmptyCallOption.
+Admitted.
+
+(* type grpc.StaticMethodCallOption *)
+Module StaticMethodCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StaticMethodCallOption.
+
+Global Instance bounded_size_StaticMethodCallOption : BoundedTypeSize grpc.StaticMethodCallOption.
+Admitted.
+
+Global Instance into_val_StaticMethodCallOption `{ffi_syntax} : IntoVal StaticMethodCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_StaticMethodCallOption `{ffi_syntax} : IntoValTyped StaticMethodCallOption.t grpc.StaticMethodCallOption.
+Admitted.
+
+(* type grpc.HeaderCallOption *)
+Module HeaderCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End HeaderCallOption.
+
+Global Instance bounded_size_HeaderCallOption : BoundedTypeSize grpc.HeaderCallOption.
+Admitted.
+
+Global Instance into_val_HeaderCallOption `{ffi_syntax} : IntoVal HeaderCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_HeaderCallOption `{ffi_syntax} : IntoValTyped HeaderCallOption.t grpc.HeaderCallOption.
+Admitted.
+
+(* type grpc.TrailerCallOption *)
+Module TrailerCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End TrailerCallOption.
+
+Global Instance bounded_size_TrailerCallOption : BoundedTypeSize grpc.TrailerCallOption.
+Admitted.
+
+Global Instance into_val_TrailerCallOption `{ffi_syntax} : IntoVal TrailerCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_TrailerCallOption `{ffi_syntax} : IntoValTyped TrailerCallOption.t grpc.TrailerCallOption.
+Admitted.
+
+(* type grpc.PeerCallOption *)
+Module PeerCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PeerCallOption.
+
+Global Instance bounded_size_PeerCallOption : BoundedTypeSize grpc.PeerCallOption.
+Admitted.
+
+Global Instance into_val_PeerCallOption `{ffi_syntax} : IntoVal PeerCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_PeerCallOption `{ffi_syntax} : IntoValTyped PeerCallOption.t grpc.PeerCallOption.
+Admitted.
+
+(* type grpc.FailFastCallOption *)
+Module FailFastCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End FailFastCallOption.
+
+Global Instance bounded_size_FailFastCallOption : BoundedTypeSize grpc.FailFastCallOption.
+Admitted.
+
+Global Instance into_val_FailFastCallOption `{ffi_syntax} : IntoVal FailFastCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_FailFastCallOption `{ffi_syntax} : IntoValTyped FailFastCallOption.t grpc.FailFastCallOption.
+Admitted.
+
+(* type grpc.OnFinishCallOption *)
+Module OnFinishCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End OnFinishCallOption.
+
+Global Instance bounded_size_OnFinishCallOption : BoundedTypeSize grpc.OnFinishCallOption.
+Admitted.
+
+Global Instance into_val_OnFinishCallOption `{ffi_syntax} : IntoVal OnFinishCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_OnFinishCallOption `{ffi_syntax} : IntoValTyped OnFinishCallOption.t grpc.OnFinishCallOption.
+Admitted.
+
+(* type grpc.MaxRecvMsgSizeCallOption *)
+Module MaxRecvMsgSizeCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MaxRecvMsgSizeCallOption.
+
+Global Instance bounded_size_MaxRecvMsgSizeCallOption : BoundedTypeSize grpc.MaxRecvMsgSizeCallOption.
+Admitted.
+
+Global Instance into_val_MaxRecvMsgSizeCallOption `{ffi_syntax} : IntoVal MaxRecvMsgSizeCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_MaxRecvMsgSizeCallOption `{ffi_syntax} : IntoValTyped MaxRecvMsgSizeCallOption.t grpc.MaxRecvMsgSizeCallOption.
+Admitted.
+
+(* type grpc.MaxSendMsgSizeCallOption *)
+Module MaxSendMsgSizeCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MaxSendMsgSizeCallOption.
+
+Global Instance bounded_size_MaxSendMsgSizeCallOption : BoundedTypeSize grpc.MaxSendMsgSizeCallOption.
+Admitted.
+
+Global Instance into_val_MaxSendMsgSizeCallOption `{ffi_syntax} : IntoVal MaxSendMsgSizeCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_MaxSendMsgSizeCallOption `{ffi_syntax} : IntoValTyped MaxSendMsgSizeCallOption.t grpc.MaxSendMsgSizeCallOption.
+Admitted.
+
+(* type grpc.PerRPCCredsCallOption *)
+Module PerRPCCredsCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PerRPCCredsCallOption.
+
+Global Instance bounded_size_PerRPCCredsCallOption : BoundedTypeSize grpc.PerRPCCredsCallOption.
+Admitted.
+
+Global Instance into_val_PerRPCCredsCallOption `{ffi_syntax} : IntoVal PerRPCCredsCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_PerRPCCredsCallOption `{ffi_syntax} : IntoValTyped PerRPCCredsCallOption.t grpc.PerRPCCredsCallOption.
+Admitted.
+
+(* type grpc.CompressorCallOption *)
+Module CompressorCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CompressorCallOption.
+
+Global Instance bounded_size_CompressorCallOption : BoundedTypeSize grpc.CompressorCallOption.
+Admitted.
+
+Global Instance into_val_CompressorCallOption `{ffi_syntax} : IntoVal CompressorCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_CompressorCallOption `{ffi_syntax} : IntoValTyped CompressorCallOption.t grpc.CompressorCallOption.
+Admitted.
+
+(* type grpc.ContentSubtypeCallOption *)
+Module ContentSubtypeCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ContentSubtypeCallOption.
+
+Global Instance bounded_size_ContentSubtypeCallOption : BoundedTypeSize grpc.ContentSubtypeCallOption.
+Admitted.
+
+Global Instance into_val_ContentSubtypeCallOption `{ffi_syntax} : IntoVal ContentSubtypeCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_ContentSubtypeCallOption `{ffi_syntax} : IntoValTyped ContentSubtypeCallOption.t grpc.ContentSubtypeCallOption.
+Admitted.
+
+(* type grpc.ForceCodecCallOption *)
+Module ForceCodecCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ForceCodecCallOption.
+
+Global Instance bounded_size_ForceCodecCallOption : BoundedTypeSize grpc.ForceCodecCallOption.
+Admitted.
+
+Global Instance into_val_ForceCodecCallOption `{ffi_syntax} : IntoVal ForceCodecCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_ForceCodecCallOption `{ffi_syntax} : IntoValTyped ForceCodecCallOption.t grpc.ForceCodecCallOption.
+Admitted.
+
+(* type grpc.ForceCodecV2CallOption *)
+Module ForceCodecV2CallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ForceCodecV2CallOption.
+
+Global Instance bounded_size_ForceCodecV2CallOption : BoundedTypeSize grpc.ForceCodecV2CallOption.
+Admitted.
+
+Global Instance into_val_ForceCodecV2CallOption `{ffi_syntax} : IntoVal ForceCodecV2CallOption.t.
+Admitted.
+
+Global Instance into_val_typed_ForceCodecV2CallOption `{ffi_syntax} : IntoValTyped ForceCodecV2CallOption.t grpc.ForceCodecV2CallOption.
+Admitted.
+
+(* type grpc.CustomCodecCallOption *)
+Module CustomCodecCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CustomCodecCallOption.
+
+Global Instance bounded_size_CustomCodecCallOption : BoundedTypeSize grpc.CustomCodecCallOption.
+Admitted.
+
+Global Instance into_val_CustomCodecCallOption `{ffi_syntax} : IntoVal CustomCodecCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_CustomCodecCallOption `{ffi_syntax} : IntoValTyped CustomCodecCallOption.t grpc.CustomCodecCallOption.
+Admitted.
+
+(* type grpc.MaxRetryRPCBufferSizeCallOption *)
+Module MaxRetryRPCBufferSizeCallOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MaxRetryRPCBufferSizeCallOption.
+
+Global Instance bounded_size_MaxRetryRPCBufferSizeCallOption : BoundedTypeSize grpc.MaxRetryRPCBufferSizeCallOption.
+Admitted.
+
+Global Instance into_val_MaxRetryRPCBufferSizeCallOption `{ffi_syntax} : IntoVal MaxRetryRPCBufferSizeCallOption.t.
+Admitted.
+
+Global Instance into_val_typed_MaxRetryRPCBufferSizeCallOption `{ffi_syntax} : IntoValTyped MaxRetryRPCBufferSizeCallOption.t grpc.MaxRetryRPCBufferSizeCallOption.
+Admitted.
+
+(* type grpc.payloadFormat *)
+Module payloadFormat.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End payloadFormat.
+
+Global Instance bounded_size_payloadFormat : BoundedTypeSize grpc.payloadFormat.
+Admitted.
+
+Global Instance into_val_payloadFormat `{ffi_syntax} : IntoVal payloadFormat.t.
+Admitted.
+
+Global Instance into_val_typed_payloadFormat `{ffi_syntax} : IntoValTyped payloadFormat.t grpc.payloadFormat.
+Admitted.
+
+(* type grpc.streamReader *)
+Module streamReader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End streamReader.
+
+Global Instance bounded_size_streamReader : BoundedTypeSize grpc.streamReader.
+Admitted.
+
+Global Instance into_val_streamReader `{ffi_syntax} : IntoVal streamReader.t.
+Admitted.
+
+Global Instance into_val_typed_streamReader `{ffi_syntax} : IntoValTyped streamReader.t grpc.streamReader.
+Admitted.
+
+(* type grpc.parser *)
+Module parser.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End parser.
+
+Global Instance bounded_size_parser : BoundedTypeSize grpc.parser.
+Admitted.
+
+Global Instance into_val_parser `{ffi_syntax} : IntoVal parser.t.
+Admitted.
+
+Global Instance into_val_typed_parser `{ffi_syntax} : IntoValTyped parser.t grpc.parser.
+Admitted.
+
+(* type grpc.payloadInfo *)
+Module payloadInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End payloadInfo.
+
+Global Instance bounded_size_payloadInfo : BoundedTypeSize grpc.payloadInfo.
+Admitted.
+
+Global Instance into_val_payloadInfo `{ffi_syntax} : IntoVal payloadInfo.t.
+Admitted.
+
+Global Instance into_val_typed_payloadInfo `{ffi_syntax} : IntoValTyped payloadInfo.t grpc.payloadInfo.
+Admitted.
+
+(* type grpc.recvCompressor *)
+Module recvCompressor.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End recvCompressor.
+
+Global Instance bounded_size_recvCompressor : BoundedTypeSize grpc.recvCompressor.
+Admitted.
+
+Global Instance into_val_recvCompressor `{ffi_syntax} : IntoVal recvCompressor.t.
+Admitted.
+
+Global Instance into_val_typed_recvCompressor `{ffi_syntax} : IntoValTyped recvCompressor.t grpc.recvCompressor.
+Admitted.
+
+(* type grpc.rpcInfo *)
+Module rpcInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End rpcInfo.
+
+Global Instance bounded_size_rpcInfo : BoundedTypeSize grpc.rpcInfo.
+Admitted.
+
+Global Instance into_val_rpcInfo `{ffi_syntax} : IntoVal rpcInfo.t.
+Admitted.
+
+Global Instance into_val_typed_rpcInfo `{ffi_syntax} : IntoValTyped rpcInfo.t grpc.rpcInfo.
+Admitted.
+
+(* type grpc.compressorInfo *)
+Module compressorInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End compressorInfo.
+
+Global Instance bounded_size_compressorInfo : BoundedTypeSize grpc.compressorInfo.
+Admitted.
+
+Global Instance into_val_compressorInfo `{ffi_syntax} : IntoVal compressorInfo.t.
+Admitted.
+
+Global Instance into_val_typed_compressorInfo `{ffi_syntax} : IntoValTyped compressorInfo.t grpc.compressorInfo.
+Admitted.
+
+(* type grpc.rpcInfoContextKey *)
+Module rpcInfoContextKey.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End rpcInfoContextKey.
+
+Global Instance bounded_size_rpcInfoContextKey : BoundedTypeSize grpc.rpcInfoContextKey.
+Admitted.
+
+Global Instance into_val_rpcInfoContextKey `{ffi_syntax} : IntoVal rpcInfoContextKey.t.
+Admitted.
+
+Global Instance into_val_typed_rpcInfoContextKey `{ffi_syntax} : IntoValTyped rpcInfoContextKey.t grpc.rpcInfoContextKey.
+Admitted.
+
+(* type grpc.MethodHandler *)
+Module MethodHandler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MethodHandler.
+
+Global Instance bounded_size_MethodHandler : BoundedTypeSize grpc.MethodHandler.
+Admitted.
+
+Global Instance into_val_MethodHandler `{ffi_syntax} : IntoVal MethodHandler.t.
+Admitted.
+
+Global Instance into_val_typed_MethodHandler `{ffi_syntax} : IntoValTyped MethodHandler.t grpc.MethodHandler.
+Admitted.
+
+(* type grpc.MethodDesc *)
+Module MethodDesc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MethodDesc.
+
+Global Instance bounded_size_MethodDesc : BoundedTypeSize grpc.MethodDesc.
+Admitted.
+
+Global Instance into_val_MethodDesc `{ffi_syntax} : IntoVal MethodDesc.t.
+Admitted.
+
+Global Instance into_val_typed_MethodDesc `{ffi_syntax} : IntoValTyped MethodDesc.t grpc.MethodDesc.
+Admitted.
+
+(* type grpc.ServiceDesc *)
+Module ServiceDesc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServiceDesc.
+
+Global Instance bounded_size_ServiceDesc : BoundedTypeSize grpc.ServiceDesc.
+Admitted.
+
+Global Instance into_val_ServiceDesc `{ffi_syntax} : IntoVal ServiceDesc.t.
+Admitted.
+
+Global Instance into_val_typed_ServiceDesc `{ffi_syntax} : IntoValTyped ServiceDesc.t grpc.ServiceDesc.
+Admitted.
+
+(* type grpc.serviceInfo *)
+Module serviceInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End serviceInfo.
+
+Global Instance bounded_size_serviceInfo : BoundedTypeSize grpc.serviceInfo.
+Admitted.
+
+Global Instance into_val_serviceInfo `{ffi_syntax} : IntoVal serviceInfo.t.
+Admitted.
+
+Global Instance into_val_typed_serviceInfo `{ffi_syntax} : IntoValTyped serviceInfo.t grpc.serviceInfo.
+Admitted.
+
+(* type grpc.Server *)
+Module Server.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Server.
+
+Global Instance bounded_size_Server : BoundedTypeSize grpc.Server.
+Admitted.
+
+Global Instance into_val_Server `{ffi_syntax} : IntoVal Server.t.
+Admitted.
+
+Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t grpc.Server.
+Admitted.
+
+(* type grpc.serverOptions *)
+Module serverOptions.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End serverOptions.
+
+Global Instance bounded_size_serverOptions : BoundedTypeSize grpc.serverOptions.
+Admitted.
+
+Global Instance into_val_serverOptions `{ffi_syntax} : IntoVal serverOptions.t.
+Admitted.
+
+Global Instance into_val_typed_serverOptions `{ffi_syntax} : IntoValTyped serverOptions.t grpc.serverOptions.
+Admitted.
+
+(* type grpc.ServerOption *)
+Module ServerOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServerOption.
+
+Global Instance bounded_size_ServerOption : BoundedTypeSize grpc.ServerOption.
+Admitted.
+
+Global Instance into_val_ServerOption `{ffi_syntax} : IntoVal ServerOption.t.
+Admitted.
+
+Global Instance into_val_typed_ServerOption `{ffi_syntax} : IntoValTyped ServerOption.t grpc.ServerOption.
+Admitted.
+
+(* type grpc.EmptyServerOption *)
+Module EmptyServerOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End EmptyServerOption.
+
+Global Instance bounded_size_EmptyServerOption : BoundedTypeSize grpc.EmptyServerOption.
+Admitted.
+
+Global Instance into_val_EmptyServerOption `{ffi_syntax} : IntoVal EmptyServerOption.t.
+Admitted.
+
+Global Instance into_val_typed_EmptyServerOption `{ffi_syntax} : IntoValTyped EmptyServerOption.t grpc.EmptyServerOption.
+Admitted.
+
+(* type grpc.funcServerOption *)
+Module funcServerOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End funcServerOption.
+
+Global Instance bounded_size_funcServerOption : BoundedTypeSize grpc.funcServerOption.
+Admitted.
+
+Global Instance into_val_funcServerOption `{ffi_syntax} : IntoVal funcServerOption.t.
+Admitted.
+
+Global Instance into_val_typed_funcServerOption `{ffi_syntax} : IntoValTyped funcServerOption.t grpc.funcServerOption.
+Admitted.
+
+(* type grpc.joinServerOption *)
+Module joinServerOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End joinServerOption.
+
+Global Instance bounded_size_joinServerOption : BoundedTypeSize grpc.joinServerOption.
+Admitted.
+
+Global Instance into_val_joinServerOption `{ffi_syntax} : IntoVal joinServerOption.t.
+Admitted.
+
+Global Instance into_val_typed_joinServerOption `{ffi_syntax} : IntoValTyped joinServerOption.t grpc.joinServerOption.
+Admitted.
+
+(* type grpc.MaxHeaderListSizeServerOption *)
+Module MaxHeaderListSizeServerOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MaxHeaderListSizeServerOption.
+
+Global Instance bounded_size_MaxHeaderListSizeServerOption : BoundedTypeSize grpc.MaxHeaderListSizeServerOption.
+Admitted.
+
+Global Instance into_val_MaxHeaderListSizeServerOption `{ffi_syntax} : IntoVal MaxHeaderListSizeServerOption.t.
+Admitted.
+
+Global Instance into_val_typed_MaxHeaderListSizeServerOption `{ffi_syntax} : IntoValTyped MaxHeaderListSizeServerOption.t grpc.MaxHeaderListSizeServerOption.
+Admitted.
+
+(* type grpc.ServiceRegistrar *)
+Module ServiceRegistrar.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServiceRegistrar.
+
+Global Instance bounded_size_ServiceRegistrar : BoundedTypeSize grpc.ServiceRegistrar.
+Admitted.
+
+Global Instance into_val_ServiceRegistrar `{ffi_syntax} : IntoVal ServiceRegistrar.t.
+Admitted.
+
+Global Instance into_val_typed_ServiceRegistrar `{ffi_syntax} : IntoValTyped ServiceRegistrar.t grpc.ServiceRegistrar.
+Admitted.
+
+(* type grpc.MethodInfo *)
+Module MethodInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MethodInfo.
+
+Global Instance bounded_size_MethodInfo : BoundedTypeSize grpc.MethodInfo.
+Admitted.
+
+Global Instance into_val_MethodInfo `{ffi_syntax} : IntoVal MethodInfo.t.
+Admitted.
+
+Global Instance into_val_typed_MethodInfo `{ffi_syntax} : IntoValTyped MethodInfo.t grpc.MethodInfo.
+Admitted.
+
+(* type grpc.ServiceInfo *)
+Module ServiceInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServiceInfo.
+
+Global Instance bounded_size_ServiceInfo : BoundedTypeSize grpc.ServiceInfo.
+Admitted.
+
+Global Instance into_val_ServiceInfo `{ffi_syntax} : IntoVal ServiceInfo.t.
+Admitted.
+
+Global Instance into_val_typed_ServiceInfo `{ffi_syntax} : IntoValTyped ServiceInfo.t grpc.ServiceInfo.
+Admitted.
+
+(* type grpc.listenSocket *)
+Module listenSocket.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End listenSocket.
+
+Global Instance bounded_size_listenSocket : BoundedTypeSize grpc.listenSocket.
+Admitted.
+
+Global Instance into_val_listenSocket `{ffi_syntax} : IntoVal listenSocket.t.
+Admitted.
+
+Global Instance into_val_typed_listenSocket `{ffi_syntax} : IntoValTyped listenSocket.t grpc.listenSocket.
+Admitted.
+
+(* type grpc.streamKey *)
+Module streamKey.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End streamKey.
+
+Global Instance bounded_size_streamKey : BoundedTypeSize grpc.streamKey.
+Admitted.
+
+Global Instance into_val_streamKey `{ffi_syntax} : IntoVal streamKey.t.
+Admitted.
+
+Global Instance into_val_typed_streamKey `{ffi_syntax} : IntoValTyped streamKey.t grpc.streamKey.
+Admitted.
+
+(* type grpc.ServerTransportStream *)
+Module ServerTransportStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServerTransportStream.
+
+Global Instance bounded_size_ServerTransportStream : BoundedTypeSize grpc.ServerTransportStream.
+Admitted.
+
+Global Instance into_val_ServerTransportStream `{ffi_syntax} : IntoVal ServerTransportStream.t.
+Admitted.
+
+Global Instance into_val_typed_ServerTransportStream `{ffi_syntax} : IntoValTyped ServerTransportStream.t grpc.ServerTransportStream.
+Admitted.
+
+(* type grpc.serverKey *)
+Module serverKey.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End serverKey.
+
+Global Instance bounded_size_serverKey : BoundedTypeSize grpc.serverKey.
+Admitted.
+
+Global Instance into_val_serverKey `{ffi_syntax} : IntoVal serverKey.t.
+Admitted.
+
+Global Instance into_val_typed_serverKey `{ffi_syntax} : IntoValTyped serverKey.t grpc.serverKey.
+Admitted.
+
+(* type grpc.atomicSemaphore *)
+Module atomicSemaphore.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End atomicSemaphore.
+
+Global Instance bounded_size_atomicSemaphore : BoundedTypeSize grpc.atomicSemaphore.
+Admitted.
+
+Global Instance into_val_atomicSemaphore `{ffi_syntax} : IntoVal atomicSemaphore.t.
+Admitted.
+
+Global Instance into_val_typed_atomicSemaphore `{ffi_syntax} : IntoValTyped atomicSemaphore.t grpc.atomicSemaphore.
+Admitted.
+
+(* type grpc.MethodConfig *)
+Module MethodConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MethodConfig.
+
+Global Instance bounded_size_MethodConfig : BoundedTypeSize grpc.MethodConfig.
+Admitted.
+
+Global Instance into_val_MethodConfig `{ffi_syntax} : IntoVal MethodConfig.t.
+Admitted.
+
+Global Instance into_val_typed_MethodConfig `{ffi_syntax} : IntoValTyped MethodConfig.t grpc.MethodConfig.
+Admitted.
+
+(* type grpc.ServiceConfig *)
+Module ServiceConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServiceConfig.
+
+Global Instance bounded_size_ServiceConfig : BoundedTypeSize grpc.ServiceConfig.
+Admitted.
+
+Global Instance into_val_ServiceConfig `{ffi_syntax} : IntoVal ServiceConfig.t.
+Admitted.
+
+Global Instance into_val_typed_ServiceConfig `{ffi_syntax} : IntoValTyped ServiceConfig.t grpc.ServiceConfig.
+Admitted.
+
+(* type grpc.healthCheckConfig *)
+Module healthCheckConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End healthCheckConfig.
+
+Global Instance bounded_size_healthCheckConfig : BoundedTypeSize grpc.healthCheckConfig.
+Admitted.
+
+Global Instance into_val_healthCheckConfig `{ffi_syntax} : IntoVal healthCheckConfig.t.
+Admitted.
+
+Global Instance into_val_typed_healthCheckConfig `{ffi_syntax} : IntoValTyped healthCheckConfig.t grpc.healthCheckConfig.
+Admitted.
+
+(* type grpc.jsonRetryPolicy *)
+Module jsonRetryPolicy.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End jsonRetryPolicy.
+
+Global Instance bounded_size_jsonRetryPolicy : BoundedTypeSize grpc.jsonRetryPolicy.
+Admitted.
+
+Global Instance into_val_jsonRetryPolicy `{ffi_syntax} : IntoVal jsonRetryPolicy.t.
+Admitted.
+
+Global Instance into_val_typed_jsonRetryPolicy `{ffi_syntax} : IntoValTyped jsonRetryPolicy.t grpc.jsonRetryPolicy.
+Admitted.
+
+(* type grpc.retryThrottlingPolicy *)
+Module retryThrottlingPolicy.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End retryThrottlingPolicy.
+
+Global Instance bounded_size_retryThrottlingPolicy : BoundedTypeSize grpc.retryThrottlingPolicy.
+Admitted.
+
+Global Instance into_val_retryThrottlingPolicy `{ffi_syntax} : IntoVal retryThrottlingPolicy.t.
+Admitted.
+
+Global Instance into_val_typed_retryThrottlingPolicy `{ffi_syntax} : IntoValTyped retryThrottlingPolicy.t grpc.retryThrottlingPolicy.
+Admitted.
+
+(* type grpc.jsonName *)
+Module jsonName.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End jsonName.
+
+Global Instance bounded_size_jsonName : BoundedTypeSize grpc.jsonName.
+Admitted.
+
+Global Instance into_val_jsonName `{ffi_syntax} : IntoVal jsonName.t.
+Admitted.
+
+Global Instance into_val_typed_jsonName `{ffi_syntax} : IntoValTyped jsonName.t grpc.jsonName.
+Admitted.
+
+(* type grpc.jsonMC *)
+Module jsonMC.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End jsonMC.
+
+Global Instance bounded_size_jsonMC : BoundedTypeSize grpc.jsonMC.
+Admitted.
+
+Global Instance into_val_jsonMC `{ffi_syntax} : IntoVal jsonMC.t.
+Admitted.
+
+Global Instance into_val_typed_jsonMC `{ffi_syntax} : IntoValTyped jsonMC.t grpc.jsonMC.
+Admitted.
+
+(* type grpc.jsonSC *)
+Module jsonSC.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End jsonSC.
+
+Global Instance bounded_size_jsonSC : BoundedTypeSize grpc.jsonSC.
+Admitted.
+
+Global Instance into_val_jsonSC `{ffi_syntax} : IntoVal jsonSC.t.
+Admitted.
+
+Global Instance into_val_typed_jsonSC `{ffi_syntax} : IntoValTyped jsonSC.t grpc.jsonSC.
+Admitted.
+
+(* type grpc.StreamHandler *)
+Module StreamHandler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StreamHandler.
+
+Global Instance bounded_size_StreamHandler : BoundedTypeSize grpc.StreamHandler.
+Admitted.
+
+Global Instance into_val_StreamHandler `{ffi_syntax} : IntoVal StreamHandler.t.
+Admitted.
+
+Global Instance into_val_typed_StreamHandler `{ffi_syntax} : IntoValTyped StreamHandler.t grpc.StreamHandler.
+Admitted.
+
+(* type grpc.StreamDesc *)
+Module StreamDesc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End StreamDesc.
+
+Global Instance bounded_size_StreamDesc : BoundedTypeSize grpc.StreamDesc.
+Admitted.
+
+Global Instance into_val_StreamDesc `{ffi_syntax} : IntoVal StreamDesc.t.
+Admitted.
+
+Global Instance into_val_typed_StreamDesc `{ffi_syntax} : IntoValTyped StreamDesc.t grpc.StreamDesc.
+Admitted.
+
+(* type grpc.Stream *)
+Module Stream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Stream.
+
+Global Instance bounded_size_Stream : BoundedTypeSize grpc.Stream.
+Admitted.
+
+Global Instance into_val_Stream `{ffi_syntax} : IntoVal Stream.t.
+Admitted.
+
+Global Instance into_val_typed_Stream `{ffi_syntax} : IntoValTyped Stream.t grpc.Stream.
+Admitted.
+
+(* type grpc.ClientStream *)
+Module ClientStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ClientStream.
+
+Global Instance bounded_size_ClientStream : BoundedTypeSize grpc.ClientStream.
+Admitted.
+
+Global Instance into_val_ClientStream `{ffi_syntax} : IntoVal ClientStream.t.
+Admitted.
+
+Global Instance into_val_typed_ClientStream `{ffi_syntax} : IntoValTyped ClientStream.t grpc.ClientStream.
+Admitted.
+
+(* type grpc.clientStream *)
+Module clientStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End clientStream.
+
+Global Instance bounded_size_clientStream : BoundedTypeSize grpc.clientStream.
+Admitted.
+
+Global Instance into_val_clientStream `{ffi_syntax} : IntoVal clientStream.t.
+Admitted.
+
+Global Instance into_val_typed_clientStream `{ffi_syntax} : IntoValTyped clientStream.t grpc.clientStream.
+Admitted.
+
+(* type grpc.replayOp *)
+Module replayOp.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End replayOp.
+
+Global Instance bounded_size_replayOp : BoundedTypeSize grpc.replayOp.
+Admitted.
+
+Global Instance into_val_replayOp `{ffi_syntax} : IntoVal replayOp.t.
+Admitted.
+
+Global Instance into_val_typed_replayOp `{ffi_syntax} : IntoValTyped replayOp.t grpc.replayOp.
+Admitted.
+
+(* type grpc.csAttempt *)
+Module csAttempt.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End csAttempt.
+
+Global Instance bounded_size_csAttempt : BoundedTypeSize grpc.csAttempt.
+Admitted.
+
+Global Instance into_val_csAttempt `{ffi_syntax} : IntoVal csAttempt.t.
+Admitted.
+
+Global Instance into_val_typed_csAttempt `{ffi_syntax} : IntoValTyped csAttempt.t grpc.csAttempt.
+Admitted.
+
+(* type grpc.addrConnStream *)
+Module addrConnStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End addrConnStream.
+
+Global Instance bounded_size_addrConnStream : BoundedTypeSize grpc.addrConnStream.
+Admitted.
+
+Global Instance into_val_addrConnStream `{ffi_syntax} : IntoVal addrConnStream.t.
+Admitted.
+
+Global Instance into_val_typed_addrConnStream `{ffi_syntax} : IntoValTyped addrConnStream.t grpc.addrConnStream.
+Admitted.
+
+(* type grpc.ServerStream *)
+Module ServerStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServerStream.
+
+Global Instance bounded_size_ServerStream : BoundedTypeSize grpc.ServerStream.
+Admitted.
+
+Global Instance into_val_ServerStream `{ffi_syntax} : IntoVal ServerStream.t.
+Admitted.
+
+Global Instance into_val_typed_ServerStream `{ffi_syntax} : IntoValTyped ServerStream.t grpc.ServerStream.
+Admitted.
+
+(* type grpc.serverStream *)
+Module serverStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End serverStream.
+
+Global Instance bounded_size_serverStream : BoundedTypeSize grpc.serverStream.
+Admitted.
+
+Global Instance into_val_serverStream `{ffi_syntax} : IntoVal serverStream.t.
+Admitted.
+
+Global Instance into_val_typed_serverStream `{ffi_syntax} : IntoValTyped serverStream.t grpc.serverStream.
+Admitted.
+
+(* type grpc.ServerStreamingClient *)
+Module ServerStreamingClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServerStreamingClient.
+
+Global Instance bounded_size_ServerStreamingClient : BoundedTypeSize grpc.ServerStreamingClient.
+Admitted.
+
+Global Instance into_val_ServerStreamingClient `{ffi_syntax} : IntoVal ServerStreamingClient.t.
+Admitted.
+
+Global Instance into_val_typed_ServerStreamingClient `{ffi_syntax} : IntoValTyped ServerStreamingClient.t grpc.ServerStreamingClient.
+Admitted.
+
+(* type grpc.ServerStreamingServer *)
+Module ServerStreamingServer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ServerStreamingServer.
+
+Global Instance bounded_size_ServerStreamingServer : BoundedTypeSize grpc.ServerStreamingServer.
+Admitted.
+
+Global Instance into_val_ServerStreamingServer `{ffi_syntax} : IntoVal ServerStreamingServer.t.
+Admitted.
+
+Global Instance into_val_typed_ServerStreamingServer `{ffi_syntax} : IntoValTyped ServerStreamingServer.t grpc.ServerStreamingServer.
+Admitted.
+
+(* type grpc.ClientStreamingClient *)
+Module ClientStreamingClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ClientStreamingClient.
+
+Global Instance bounded_size_ClientStreamingClient : BoundedTypeSize grpc.ClientStreamingClient.
+Admitted.
+
+Global Instance into_val_ClientStreamingClient `{ffi_syntax} : IntoVal ClientStreamingClient.t.
+Admitted.
+
+Global Instance into_val_typed_ClientStreamingClient `{ffi_syntax} : IntoValTyped ClientStreamingClient.t grpc.ClientStreamingClient.
+Admitted.
+
+(* type grpc.ClientStreamingServer *)
+Module ClientStreamingServer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ClientStreamingServer.
+
+Global Instance bounded_size_ClientStreamingServer : BoundedTypeSize grpc.ClientStreamingServer.
+Admitted.
+
+Global Instance into_val_ClientStreamingServer `{ffi_syntax} : IntoVal ClientStreamingServer.t.
+Admitted.
+
+Global Instance into_val_typed_ClientStreamingServer `{ffi_syntax} : IntoValTyped ClientStreamingServer.t grpc.ClientStreamingServer.
+Admitted.
+
+(* type grpc.BidiStreamingClient *)
+Module BidiStreamingClient.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End BidiStreamingClient.
+
+Global Instance bounded_size_BidiStreamingClient : BoundedTypeSize grpc.BidiStreamingClient.
+Admitted.
+
+Global Instance into_val_BidiStreamingClient `{ffi_syntax} : IntoVal BidiStreamingClient.t.
+Admitted.
+
+Global Instance into_val_typed_BidiStreamingClient `{ffi_syntax} : IntoValTyped BidiStreamingClient.t grpc.BidiStreamingClient.
+Admitted.
+
+(* type grpc.BidiStreamingServer *)
+Module BidiStreamingServer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End BidiStreamingServer.
+
+Global Instance bounded_size_BidiStreamingServer : BoundedTypeSize grpc.BidiStreamingServer.
+Admitted.
+
+Global Instance into_val_BidiStreamingServer `{ffi_syntax} : IntoVal BidiStreamingServer.t.
+Admitted.
+
+Global Instance into_val_typed_BidiStreamingServer `{ffi_syntax} : IntoValTyped BidiStreamingServer.t grpc.BidiStreamingServer.
+Admitted.
+
+(* type grpc.GenericClientStream *)
+Module GenericClientStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End GenericClientStream.
+
+Global Instance bounded_size_GenericClientStream : BoundedTypeSize grpc.GenericClientStream.
+Admitted.
+
+Global Instance into_val_GenericClientStream `{ffi_syntax} : IntoVal GenericClientStream.t.
+Admitted.
+
+Global Instance into_val_typed_GenericClientStream `{ffi_syntax} : IntoValTyped GenericClientStream.t grpc.GenericClientStream.
+Admitted.
+
+(* type grpc.GenericServerStream *)
+Module GenericServerStream.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End GenericServerStream.
+
+Global Instance bounded_size_GenericServerStream : BoundedTypeSize grpc.GenericServerStream.
+Admitted.
+
+Global Instance into_val_GenericServerStream `{ffi_syntax} : IntoVal GenericServerStream.t.
+Admitted.
+
+Global Instance into_val_typed_GenericServerStream `{ffi_syntax} : IntoValTyped GenericServerStream.t grpc.GenericServerStream.
+Admitted.
+
+(* type grpc.traceEventLog *)
+Module traceEventLog.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End traceEventLog.
+
+Global Instance bounded_size_traceEventLog : BoundedTypeSize grpc.traceEventLog.
+Admitted.
+
+Global Instance into_val_traceEventLog `{ffi_syntax} : IntoVal traceEventLog.t.
+Admitted.
+
+Global Instance into_val_typed_traceEventLog `{ffi_syntax} : IntoValTyped traceEventLog.t grpc.traceEventLog.
+Admitted.
+
+(* type grpc.traceLog *)
+Module traceLog.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End traceLog.
+
+Global Instance bounded_size_traceLog : BoundedTypeSize grpc.traceLog.
+Admitted.
+
+Global Instance into_val_traceLog `{ffi_syntax} : IntoVal traceLog.t.
+Admitted.
+
+Global Instance into_val_typed_traceLog `{ffi_syntax} : IntoValTyped traceLog.t grpc.traceLog.
+Admitted.
+
+(* type grpc.traceInfo *)
+Module traceInfo.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End traceInfo.
+
+Global Instance bounded_size_traceInfo : BoundedTypeSize grpc.traceInfo.
+Admitted.
+
+Global Instance into_val_traceInfo `{ffi_syntax} : IntoVal traceInfo.t.
+Admitted.
+
+Global Instance into_val_typed_traceInfo `{ffi_syntax} : IntoValTyped traceInfo.t grpc.traceInfo.
+Admitted.
+
+(* type grpc.firstLine *)
+Module firstLine.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End firstLine.
+
+Global Instance bounded_size_firstLine : BoundedTypeSize grpc.firstLine.
+Admitted.
+
+Global Instance into_val_firstLine `{ffi_syntax} : IntoVal firstLine.t.
+Admitted.
+
+Global Instance into_val_typed_firstLine `{ffi_syntax} : IntoValTyped firstLine.t grpc.firstLine.
+Admitted.
+
+(* type grpc.payload *)
+Module payload.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End payload.
+
+Global Instance bounded_size_payload : BoundedTypeSize grpc.payload.
+Admitted.
+
+Global Instance into_val_payload `{ffi_syntax} : IntoVal payload.t.
+Admitted.
+
+Global Instance into_val_typed_payload `{ffi_syntax} : IntoValTyped payload.t grpc.payload.
+Admitted.
+
+(* type grpc.fmtStringer *)
+Module fmtStringer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End fmtStringer.
+
+Global Instance bounded_size_fmtStringer : BoundedTypeSize grpc.fmtStringer.
+Admitted.
+
+Global Instance into_val_fmtStringer `{ffi_syntax} : IntoVal fmtStringer.t.
+Admitted.
+
+Global Instance into_val_typed_fmtStringer `{ffi_syntax} : IntoValTyped fmtStringer.t grpc.fmtStringer.
+Admitted.
+
+(* type grpc.stringer *)
+Module stringer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End stringer.
+
+Global Instance bounded_size_stringer : BoundedTypeSize grpc.stringer.
+Admitted.
+
+Global Instance into_val_stringer `{ffi_syntax} : IntoVal stringer.t.
+Admitted.
+
+Global Instance into_val_typed_stringer `{ffi_syntax} : IntoValTyped stringer.t grpc.stringer.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -29,6 +2086,1926 @@ Global Program Instance is_pkg_defined_grpc : IsPkgDefined grpc :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_newCCBalancerWrapper :
+  WpFuncCall grpc.newCCBalancerWrapper _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newHealthData :
+  WpFuncCall grpc.newHealthData _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_combine :
+  WpFuncCall grpc.combine _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Invoke :
+  WpFuncCall grpc.Invoke _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_invoke :
+  WpFuncCall grpc.invoke _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewClient :
+  WpFuncCall grpc.NewClient _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Dial :
+  WpFuncCall grpc.Dial _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_DialContext :
+  WpFuncCall grpc.DialContext _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_chainUnaryClientInterceptors :
+  WpFuncCall grpc.chainUnaryClientInterceptors _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getChainUnaryInvoker :
+  WpFuncCall grpc.getChainUnaryInvoker _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_chainStreamClientInterceptors :
+  WpFuncCall grpc.chainStreamClientInterceptors _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getChainStreamer :
+  WpFuncCall grpc.getChainStreamer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newConnectivityStateManager :
+  WpFuncCall grpc.newConnectivityStateManager _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_copyAddresses :
+  WpFuncCall grpc.copyAddresses _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_equalAddressIgnoringBalAttributes :
+  WpFuncCall grpc.equalAddressIgnoringBalAttributes _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_equalAddressesIgnoringBalAttributes :
+  WpFuncCall grpc.equalAddressesIgnoringBalAttributes _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getMethodConfig :
+  WpFuncCall grpc.getMethodConfig _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseTarget :
+  WpFuncCall grpc.parseTarget _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_encodeAuthority :
+  WpFuncCall grpc.encodeAuthority _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getCodec :
+  WpFuncCall grpc.getCodec _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newCodecV0Bridge :
+  WpFuncCall grpc.newCodecV0Bridge _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newCodecV1Bridge :
+  WpFuncCall grpc.newCodecV1Bridge _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newDisableGlobalDialOptions :
+  WpFuncCall grpc.newDisableGlobalDialOptions _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newFuncDialOption :
+  WpFuncCall grpc.newFuncDialOption _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newJoinDialOption :
+  WpFuncCall grpc.newJoinDialOption _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithSharedWriteBuffer :
+  WpFuncCall grpc.WithSharedWriteBuffer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithWriteBufferSize :
+  WpFuncCall grpc.WithWriteBufferSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithReadBufferSize :
+  WpFuncCall grpc.WithReadBufferSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithInitialWindowSize :
+  WpFuncCall grpc.WithInitialWindowSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithInitialConnWindowSize :
+  WpFuncCall grpc.WithInitialConnWindowSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithMaxMsgSize :
+  WpFuncCall grpc.WithMaxMsgSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithDefaultCallOptions :
+  WpFuncCall grpc.WithDefaultCallOptions _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithCodec :
+  WpFuncCall grpc.WithCodec _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithCompressor :
+  WpFuncCall grpc.WithCompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithDecompressor :
+  WpFuncCall grpc.WithDecompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithConnectParams :
+  WpFuncCall grpc.WithConnectParams _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithBackoffMaxDelay :
+  WpFuncCall grpc.WithBackoffMaxDelay _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithBackoffConfig :
+  WpFuncCall grpc.WithBackoffConfig _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withBackoff :
+  WpFuncCall grpc.withBackoff _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithBlock :
+  WpFuncCall grpc.WithBlock _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithReturnConnectionError :
+  WpFuncCall grpc.WithReturnConnectionError _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithInsecure :
+  WpFuncCall grpc.WithInsecure _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithNoProxy :
+  WpFuncCall grpc.WithNoProxy _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithTransportCredentials :
+  WpFuncCall grpc.WithTransportCredentials _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithPerRPCCredentials :
+  WpFuncCall grpc.WithPerRPCCredentials _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithCredentialsBundle :
+  WpFuncCall grpc.WithCredentialsBundle _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithTimeout :
+  WpFuncCall grpc.WithTimeout _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithContextDialer :
+  WpFuncCall grpc.WithContextDialer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithDialer :
+  WpFuncCall grpc.WithDialer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithStatsHandler :
+  WpFuncCall grpc.WithStatsHandler _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withBinaryLogger :
+  WpFuncCall grpc.withBinaryLogger _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FailOnNonTempDialError :
+  WpFuncCall grpc.FailOnNonTempDialError _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithUserAgent :
+  WpFuncCall grpc.WithUserAgent _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithKeepaliveParams :
+  WpFuncCall grpc.WithKeepaliveParams _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithUnaryInterceptor :
+  WpFuncCall grpc.WithUnaryInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithChainUnaryInterceptor :
+  WpFuncCall grpc.WithChainUnaryInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithStreamInterceptor :
+  WpFuncCall grpc.WithStreamInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithChainStreamInterceptor :
+  WpFuncCall grpc.WithChainStreamInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithAuthority :
+  WpFuncCall grpc.WithAuthority _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithChannelzParentID :
+  WpFuncCall grpc.WithChannelzParentID _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithDisableServiceConfig :
+  WpFuncCall grpc.WithDisableServiceConfig _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithDefaultServiceConfig :
+  WpFuncCall grpc.WithDefaultServiceConfig _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithDisableRetry :
+  WpFuncCall grpc.WithDisableRetry _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithMaxHeaderListSize :
+  WpFuncCall grpc.WithMaxHeaderListSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithDisableHealthCheck :
+  WpFuncCall grpc.WithDisableHealthCheck _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_defaultDialOptions :
+  WpFuncCall grpc.defaultDialOptions _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withMinConnectDeadline :
+  WpFuncCall grpc.withMinConnectDeadline _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withDefaultScheme :
+  WpFuncCall grpc.withDefaultScheme _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithResolvers :
+  WpFuncCall grpc.WithResolvers _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithIdleTimeout :
+  WpFuncCall grpc.WithIdleTimeout _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WithMaxCallAttempts :
+  WpFuncCall grpc.WithMaxCallAttempts _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_withBufferPool :
+  WpFuncCall grpc.withBufferPool _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newPickerWrapper :
+  WpFuncCall grpc.newPickerWrapper _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_doneChannelzWrapper :
+  WpFuncCall grpc.doneChannelzWrapper _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newCCResolverWrapper :
+  WpFuncCall grpc.newCCResolverWrapper _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewGZIPCompressor :
+  WpFuncCall grpc.NewGZIPCompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewGZIPCompressorWithLevel :
+  WpFuncCall grpc.NewGZIPCompressorWithLevel _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewGZIPDecompressor :
+  WpFuncCall grpc.NewGZIPDecompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_defaultCallInfo :
+  WpFuncCall grpc.defaultCallInfo _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StaticMethod :
+  WpFuncCall grpc.StaticMethod _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Header :
+  WpFuncCall grpc.Header _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Trailer :
+  WpFuncCall grpc.Trailer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Peer :
+  WpFuncCall grpc.Peer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WaitForReady :
+  WpFuncCall grpc.WaitForReady _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FailFast :
+  WpFuncCall grpc.FailFast _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_OnFinish :
+  WpFuncCall grpc.OnFinish _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxCallRecvMsgSize :
+  WpFuncCall grpc.MaxCallRecvMsgSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxCallSendMsgSize :
+  WpFuncCall grpc.MaxCallSendMsgSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_PerRPCCredentials :
+  WpFuncCall grpc.PerRPCCredentials _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_UseCompressor :
+  WpFuncCall grpc.UseCompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CallContentSubtype :
+  WpFuncCall grpc.CallContentSubtype _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ForceCodec :
+  WpFuncCall grpc.ForceCodec _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ForceCodecV2 :
+  WpFuncCall grpc.ForceCodecV2 _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CallCustomCodec :
+  WpFuncCall grpc.CallCustomCodec _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxRetryRPCBufferSize :
+  WpFuncCall grpc.MaxRetryRPCBufferSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_encode :
+  WpFuncCall grpc.encode _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_compress :
+  WpFuncCall grpc.compress _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_msgHeader :
+  WpFuncCall grpc.msgHeader _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_outPayload :
+  WpFuncCall grpc.outPayload _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_checkRecvPayload :
+  WpFuncCall grpc.checkRecvPayload _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_recvAndDecompress :
+  WpFuncCall grpc.recvAndDecompress _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_decompress :
+  WpFuncCall grpc.decompress _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_recv :
+  WpFuncCall grpc.recv _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newContextWithRPCInfo :
+  WpFuncCall grpc.newContextWithRPCInfo _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rpcInfoFromContext :
+  WpFuncCall grpc.rpcInfoFromContext _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Code :
+  WpFuncCall grpc.Code _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ErrorDesc :
+  WpFuncCall grpc.ErrorDesc _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Errorf :
+  WpFuncCall grpc.Errorf _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_toRPCErr :
+  WpFuncCall grpc.toRPCErr _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_setCallInfoCodec :
+  WpFuncCall grpc.setCallInfoCodec _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newFuncServerOption :
+  WpFuncCall grpc.newFuncServerOption _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newJoinServerOption :
+  WpFuncCall grpc.newJoinServerOption _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SharedWriteBuffer :
+  WpFuncCall grpc.SharedWriteBuffer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WriteBufferSize :
+  WpFuncCall grpc.WriteBufferSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ReadBufferSize :
+  WpFuncCall grpc.ReadBufferSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_InitialWindowSize :
+  WpFuncCall grpc.InitialWindowSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_InitialConnWindowSize :
+  WpFuncCall grpc.InitialConnWindowSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_KeepaliveParams :
+  WpFuncCall grpc.KeepaliveParams _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_KeepaliveEnforcementPolicy :
+  WpFuncCall grpc.KeepaliveEnforcementPolicy _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CustomCodec :
+  WpFuncCall grpc.CustomCodec _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ForceServerCodec :
+  WpFuncCall grpc.ForceServerCodec _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ForceServerCodecV2 :
+  WpFuncCall grpc.ForceServerCodecV2 _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RPCCompressor :
+  WpFuncCall grpc.RPCCompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RPCDecompressor :
+  WpFuncCall grpc.RPCDecompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxMsgSize :
+  WpFuncCall grpc.MaxMsgSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxRecvMsgSize :
+  WpFuncCall grpc.MaxRecvMsgSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxSendMsgSize :
+  WpFuncCall grpc.MaxSendMsgSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxConcurrentStreams :
+  WpFuncCall grpc.MaxConcurrentStreams _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Creds :
+  WpFuncCall grpc.Creds _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_UnaryInterceptor :
+  WpFuncCall grpc.UnaryInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ChainUnaryInterceptor :
+  WpFuncCall grpc.ChainUnaryInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StreamInterceptor :
+  WpFuncCall grpc.StreamInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ChainStreamInterceptor :
+  WpFuncCall grpc.ChainStreamInterceptor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_InTapHandle :
+  WpFuncCall grpc.InTapHandle _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StatsHandler :
+  WpFuncCall grpc.StatsHandler _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_binaryLogger :
+  WpFuncCall grpc.binaryLogger _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_UnknownServiceHandler :
+  WpFuncCall grpc.UnknownServiceHandler _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ConnectionTimeout :
+  WpFuncCall grpc.ConnectionTimeout _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MaxHeaderListSize :
+  WpFuncCall grpc.MaxHeaderListSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_HeaderTableSize :
+  WpFuncCall grpc.HeaderTableSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NumStreamWorkers :
+  WpFuncCall grpc.NumStreamWorkers _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WaitForHandlers :
+  WpFuncCall grpc.WaitForHandlers _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_bufferPool :
+  WpFuncCall grpc.bufferPool _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewServer :
+  WpFuncCall grpc.NewServer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_chainUnaryServerInterceptors :
+  WpFuncCall grpc.chainUnaryServerInterceptors _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_chainUnaryInterceptors :
+  WpFuncCall grpc.chainUnaryInterceptors _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getChainUnaryHandler :
+  WpFuncCall grpc.getChainUnaryHandler _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_chainStreamServerInterceptors :
+  WpFuncCall grpc.chainStreamServerInterceptors _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_chainStreamInterceptors :
+  WpFuncCall grpc.chainStreamInterceptors _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getChainStreamHandler :
+  WpFuncCall grpc.getChainStreamHandler _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewContextWithServerTransportStream :
+  WpFuncCall grpc.NewContextWithServerTransportStream _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ServerTransportStreamFromContext :
+  WpFuncCall grpc.ServerTransportStreamFromContext _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_serverFromContext :
+  WpFuncCall grpc.serverFromContext _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_contextWithServer :
+  WpFuncCall grpc.contextWithServer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SetHeader :
+  WpFuncCall grpc.SetHeader _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SendHeader :
+  WpFuncCall grpc.SendHeader _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SetSendCompressor :
+  WpFuncCall grpc.SetSendCompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ClientSupportedCompressors :
+  WpFuncCall grpc.ClientSupportedCompressors _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SetTrailer :
+  WpFuncCall grpc.SetTrailer _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Method :
+  WpFuncCall grpc.Method _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_validateSendCompressor :
+  WpFuncCall grpc.validateSendCompressor _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newHandlerQuota :
+  WpFuncCall grpc.newHandlerQuota _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_parseServiceConfig :
+  WpFuncCall grpc.parseServiceConfig _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_convertRetryPolicy :
+  WpFuncCall grpc.convertRetryPolicy _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_minPointers :
+  WpFuncCall grpc.minPointers _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getMaxSize :
+  WpFuncCall grpc.getMaxSize _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newInt :
+  WpFuncCall grpc.newInt _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_equalServiceConfig :
+  WpFuncCall grpc.equalServiceConfig _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewClientStream :
+  WpFuncCall grpc.NewClientStream _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newClientStream :
+  WpFuncCall grpc.newClientStream _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newClientStreamWithParams :
+  WpFuncCall grpc.newClientStreamWithParams _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newNonRetryClientStream :
+  WpFuncCall grpc.newNonRetryClientStream _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MethodFromServerStream :
+  WpFuncCall grpc.MethodFromServerStream _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_prepareMsg :
+  WpFuncCall grpc.prepareMsg _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_methodFamily :
+  WpFuncCall grpc.methodFamily _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_truncate :
+  WpFuncCall grpc.truncate _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newTrace :
+  WpFuncCall grpc.newTrace _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newTraceContext :
+  WpFuncCall grpc.newTraceContext _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newTraceEventLog :
+  WpFuncCall grpc.newTraceEventLog _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_NewSubConn :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "NewSubConn" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_RemoveSubConn :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "RemoveSubConn" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_ResolveNow :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "ResolveNow" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_Target :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "Target" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_UpdateAddresses :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "UpdateAddresses" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_UpdateState :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "UpdateState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_close :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "close" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_exitIdle :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "exitIdle" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_resolverError :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "resolverError" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccBalancerWrapper'ptr_updateClientConnState :
+  WpMethodCall (ptrT.id grpc.ccBalancerWrapper.id) "updateClientConnState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper_enforceSubConnEmbedding :
+  WpMethodCall grpc.acBalancerWrapper.id "enforceSubConnEmbedding" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_Connect :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "Connect" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_GetOrBuildProducer :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "GetOrBuildProducer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_Invoke :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "Invoke" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_NewStream :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "NewStream" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_RegisterHealthListener :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "RegisterHealthListener" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_Shutdown :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "Shutdown" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_String :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "String" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_UpdateAddresses :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "UpdateAddresses" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_closeProducers :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "closeProducers" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_updateState :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "updateState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_acBalancerWrapper'ptr_enforceSubConnEmbedding :
+  WpMethodCall (ptrT.id grpc.acBalancerWrapper.id) "enforceSubConnEmbedding" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_defaultConfigSelector'ptr_SelectConfig :
+  WpMethodCall (ptrT.id grpc.defaultConfigSelector.id) "SelectConfig" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_idler'ptr_EnterIdleMode :
+  WpMethodCall (ptrT.id grpc.idler.id) "EnterIdleMode" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_idler'ptr_ExitIdleMode :
+  WpMethodCall (ptrT.id grpc.idler.id) "ExitIdleMode" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_connectivityStateManager'ptr_getNotifyChan :
+  WpMethodCall (ptrT.id grpc.connectivityStateManager.id) "getNotifyChan" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_connectivityStateManager'ptr_getState :
+  WpMethodCall (ptrT.id grpc.connectivityStateManager.id) "getState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_connectivityStateManager'ptr_updateState :
+  WpMethodCall (ptrT.id grpc.connectivityStateManager.id) "updateState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_CanonicalTarget :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "CanonicalTarget" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_Close :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "Close" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_Connect :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "Connect" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_GetMethodConfig :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "GetMethodConfig" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_GetState :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "GetState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_Invoke :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "Invoke" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_NewStream :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "NewStream" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_ResetConnectBackoff :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "ResetConnectBackoff" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_Target :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "Target" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_WaitForStateChange :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "WaitForStateChange" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_addTraceEvent :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "addTraceEvent" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_applyFailingLBLocked :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "applyFailingLBLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_applyServiceConfigAndBalancer :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "applyServiceConfigAndBalancer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_channelzRegistration :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "channelzRegistration" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_connectionError :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "connectionError" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_enterIdleMode :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "enterIdleMode" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_exitIdleMode :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "exitIdleMode" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_getResolver :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "getResolver" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_getServerName :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "getServerName" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_getTransport :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "getTransport" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_healthCheckConfig :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "healthCheckConfig" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_incrCallsFailed :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "incrCallsFailed" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_incrCallsStarted :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "incrCallsStarted" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_incrCallsSucceeded :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "incrCallsSucceeded" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_initAuthority :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "initAuthority" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_initIdleStateLocked :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "initIdleStateLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_initParsedTargetAndResolverBuilder :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "initParsedTargetAndResolverBuilder" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_maybeApplyDefaultServiceConfig :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "maybeApplyDefaultServiceConfig" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_newAddrConnLocked :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "newAddrConnLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_removeAddrConn :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "removeAddrConn" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_resolveNow :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "resolveNow" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_resolveNowLocked :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "resolveNowLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_updateConnectionError :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "updateConnectionError" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_updateResolverStateAndUnlock :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "updateResolverStateAndUnlock" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_validateTransportCredentials :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "validateTransportCredentials" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ClientConn'ptr_waitForResolvedAddrs :
+  WpMethodCall (ptrT.id grpc.ClientConn.id) "waitForResolvedAddrs" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_adjustParams :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "adjustParams" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_connect :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "connect" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_createTransport :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "createTransport" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_getReadyTransport :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "getReadyTransport" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_incrCallsFailed :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "incrCallsFailed" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_incrCallsStarted :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "incrCallsStarted" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_incrCallsSucceeded :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "incrCallsSucceeded" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_resetConnectBackoff :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "resetConnectBackoff" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_resetTransportAndUnlock :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "resetTransportAndUnlock" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_startHealthCheck :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "startHealthCheck" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_tearDown :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "tearDown" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_tryAllAddrs :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "tryAllAddrs" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_updateAddrs :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "updateAddrs" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConn'ptr_updateConnectivityState :
+  WpMethodCall (ptrT.id grpc.addrConn.id) "updateConnectivityState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryThrottler'ptr_successfulRPC :
+  WpMethodCall (ptrT.id grpc.retryThrottler.id) "successfulRPC" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_retryThrottler'ptr_throttle :
+  WpMethodCall (ptrT.id grpc.retryThrottler.id) "throttle" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV0Bridge_Marshal :
+  WpMethodCall grpc.codecV0Bridge.id "Marshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV0Bridge_Unmarshal :
+  WpMethodCall grpc.codecV0Bridge.id "Unmarshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV0Bridge'ptr_Marshal :
+  WpMethodCall (ptrT.id grpc.codecV0Bridge.id) "Marshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV0Bridge'ptr_Unmarshal :
+  WpMethodCall (ptrT.id grpc.codecV0Bridge.id) "Unmarshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV1Bridge_Marshal :
+  WpMethodCall grpc.codecV1Bridge.id "Marshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV1Bridge_Name :
+  WpMethodCall grpc.codecV1Bridge.id "Name" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV1Bridge_Unmarshal :
+  WpMethodCall grpc.codecV1Bridge.id "Unmarshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV1Bridge'ptr_Marshal :
+  WpMethodCall (ptrT.id grpc.codecV1Bridge.id) "Marshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV1Bridge'ptr_Name :
+  WpMethodCall (ptrT.id grpc.codecV1Bridge.id) "Name" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_codecV1Bridge'ptr_Unmarshal :
+  WpMethodCall (ptrT.id grpc.codecV1Bridge.id) "Unmarshal" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyDialOption_apply :
+  WpMethodCall grpc.EmptyDialOption.id "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyDialOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.EmptyDialOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_disableGlobalDialOptions_apply :
+  WpMethodCall grpc.disableGlobalDialOptions.id "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_disableGlobalDialOptions'ptr_apply :
+  WpMethodCall (ptrT.id grpc.disableGlobalDialOptions.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_funcDialOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.funcDialOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_joinDialOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.joinDialOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxHeaderListSizeDialOption_apply :
+  WpMethodCall grpc.MaxHeaderListSizeDialOption.id "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxHeaderListSizeDialOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.MaxHeaderListSizeDialOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pickerWrapper'ptr_close :
+  WpMethodCall (ptrT.id grpc.pickerWrapper.id) "close" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pickerWrapper'ptr_pick :
+  WpMethodCall (ptrT.id grpc.pickerWrapper.id) "pick" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pickerWrapper'ptr_reset :
+  WpMethodCall (ptrT.id grpc.pickerWrapper.id) "reset" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_pickerWrapper'ptr_updatePicker :
+  WpMethodCall (ptrT.id grpc.pickerWrapper.id) "updatePicker" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dropError_Error :
+  WpMethodCall grpc.dropError.id "Error" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_dropError'ptr_Error :
+  WpMethodCall (ptrT.id grpc.dropError.id) "Error" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PreparedMsg'ptr_Encode :
+  WpMethodCall (ptrT.id grpc.PreparedMsg.id) "Encode" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_NewAddress :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "NewAddress" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_ParseServiceConfig :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "ParseServiceConfig" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_ReportError :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "ReportError" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_UpdateState :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "UpdateState" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_addChannelzTraceEvent :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "addChannelzTraceEvent" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_close :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "close" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_resolveNow :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "resolveNow" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ccResolverWrapper'ptr_start :
+  WpMethodCall (ptrT.id grpc.ccResolverWrapper.id) "start" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_gzipCompressor'ptr_Do :
+  WpMethodCall (ptrT.id grpc.gzipCompressor.id) "Do" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_gzipCompressor'ptr_Type :
+  WpMethodCall (ptrT.id grpc.gzipCompressor.id) "Type" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_gzipDecompressor'ptr_Do :
+  WpMethodCall (ptrT.id grpc.gzipDecompressor.id) "Do" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_gzipDecompressor'ptr_Type :
+  WpMethodCall (ptrT.id grpc.gzipDecompressor.id) "Type" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyCallOption_after :
+  WpMethodCall grpc.EmptyCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyCallOption_before :
+  WpMethodCall grpc.EmptyCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.EmptyCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.EmptyCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_StaticMethodCallOption_after :
+  WpMethodCall grpc.StaticMethodCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_StaticMethodCallOption_before :
+  WpMethodCall grpc.StaticMethodCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_StaticMethodCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.StaticMethodCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_StaticMethodCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.StaticMethodCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_HeaderCallOption_after :
+  WpMethodCall grpc.HeaderCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_HeaderCallOption_before :
+  WpMethodCall grpc.HeaderCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_HeaderCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.HeaderCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_HeaderCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.HeaderCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TrailerCallOption_after :
+  WpMethodCall grpc.TrailerCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TrailerCallOption_before :
+  WpMethodCall grpc.TrailerCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TrailerCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.TrailerCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TrailerCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.TrailerCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PeerCallOption_after :
+  WpMethodCall grpc.PeerCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PeerCallOption_before :
+  WpMethodCall grpc.PeerCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PeerCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.PeerCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PeerCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.PeerCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FailFastCallOption_after :
+  WpMethodCall grpc.FailFastCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FailFastCallOption_before :
+  WpMethodCall grpc.FailFastCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FailFastCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.FailFastCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_FailFastCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.FailFastCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OnFinishCallOption_after :
+  WpMethodCall grpc.OnFinishCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OnFinishCallOption_before :
+  WpMethodCall grpc.OnFinishCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OnFinishCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.OnFinishCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_OnFinishCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.OnFinishCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRecvMsgSizeCallOption_after :
+  WpMethodCall grpc.MaxRecvMsgSizeCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRecvMsgSizeCallOption_before :
+  WpMethodCall grpc.MaxRecvMsgSizeCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRecvMsgSizeCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.MaxRecvMsgSizeCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRecvMsgSizeCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.MaxRecvMsgSizeCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxSendMsgSizeCallOption_after :
+  WpMethodCall grpc.MaxSendMsgSizeCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxSendMsgSizeCallOption_before :
+  WpMethodCall grpc.MaxSendMsgSizeCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxSendMsgSizeCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.MaxSendMsgSizeCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxSendMsgSizeCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.MaxSendMsgSizeCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PerRPCCredsCallOption_after :
+  WpMethodCall grpc.PerRPCCredsCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PerRPCCredsCallOption_before :
+  WpMethodCall grpc.PerRPCCredsCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PerRPCCredsCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.PerRPCCredsCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_PerRPCCredsCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.PerRPCCredsCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CompressorCallOption_after :
+  WpMethodCall grpc.CompressorCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CompressorCallOption_before :
+  WpMethodCall grpc.CompressorCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CompressorCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.CompressorCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CompressorCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.CompressorCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ContentSubtypeCallOption_after :
+  WpMethodCall grpc.ContentSubtypeCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ContentSubtypeCallOption_before :
+  WpMethodCall grpc.ContentSubtypeCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ContentSubtypeCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.ContentSubtypeCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ContentSubtypeCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.ContentSubtypeCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecCallOption_after :
+  WpMethodCall grpc.ForceCodecCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecCallOption_before :
+  WpMethodCall grpc.ForceCodecCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.ForceCodecCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.ForceCodecCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecV2CallOption_after :
+  WpMethodCall grpc.ForceCodecV2CallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecV2CallOption_before :
+  WpMethodCall grpc.ForceCodecV2CallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecV2CallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.ForceCodecV2CallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ForceCodecV2CallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.ForceCodecV2CallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CustomCodecCallOption_after :
+  WpMethodCall grpc.CustomCodecCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CustomCodecCallOption_before :
+  WpMethodCall grpc.CustomCodecCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CustomCodecCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.CustomCodecCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CustomCodecCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.CustomCodecCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRetryRPCBufferSizeCallOption_after :
+  WpMethodCall grpc.MaxRetryRPCBufferSizeCallOption.id "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRetryRPCBufferSizeCallOption_before :
+  WpMethodCall grpc.MaxRetryRPCBufferSizeCallOption.id "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRetryRPCBufferSizeCallOption'ptr_after :
+  WpMethodCall (ptrT.id grpc.MaxRetryRPCBufferSizeCallOption.id) "after" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxRetryRPCBufferSizeCallOption'ptr_before :
+  WpMethodCall (ptrT.id grpc.MaxRetryRPCBufferSizeCallOption.id) "before" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_payloadFormat_isCompressed :
+  WpMethodCall grpc.payloadFormat.id "isCompressed" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_payloadFormat'ptr_isCompressed :
+  WpMethodCall (ptrT.id grpc.payloadFormat.id) "isCompressed" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_parser'ptr_recvMsg :
+  WpMethodCall (ptrT.id grpc.parser.id) "recvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_payloadInfo'ptr_free :
+  WpMethodCall (ptrT.id grpc.payloadInfo.id) "free" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_GetServiceInfo :
+  WpMethodCall (ptrT.id grpc.Server.id) "GetServiceInfo" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_GracefulStop :
+  WpMethodCall (ptrT.id grpc.Server.id) "GracefulStop" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_RegisterService :
+  WpMethodCall (ptrT.id grpc.Server.id) "RegisterService" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_Serve :
+  WpMethodCall (ptrT.id grpc.Server.id) "Serve" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_ServeHTTP :
+  WpMethodCall (ptrT.id grpc.Server.id) "ServeHTTP" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_Stop :
+  WpMethodCall (ptrT.id grpc.Server.id) "Stop" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_addConn :
+  WpMethodCall (ptrT.id grpc.Server.id) "addConn" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_closeListenersLocked :
+  WpMethodCall (ptrT.id grpc.Server.id) "closeListenersLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_closeServerTransportsLocked :
+  WpMethodCall (ptrT.id grpc.Server.id) "closeServerTransportsLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_drainAllServerTransportsLocked :
+  WpMethodCall (ptrT.id grpc.Server.id) "drainAllServerTransportsLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_errorf :
+  WpMethodCall (ptrT.id grpc.Server.id) "errorf" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_getCodec :
+  WpMethodCall (ptrT.id grpc.Server.id) "getCodec" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_handleRawConn :
+  WpMethodCall (ptrT.id grpc.Server.id) "handleRawConn" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_handleStream :
+  WpMethodCall (ptrT.id grpc.Server.id) "handleStream" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_incrCallsFailed :
+  WpMethodCall (ptrT.id grpc.Server.id) "incrCallsFailed" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_incrCallsStarted :
+  WpMethodCall (ptrT.id grpc.Server.id) "incrCallsStarted" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_incrCallsSucceeded :
+  WpMethodCall (ptrT.id grpc.Server.id) "incrCallsSucceeded" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_initServerWorkers :
+  WpMethodCall (ptrT.id grpc.Server.id) "initServerWorkers" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_isRegisteredMethod :
+  WpMethodCall (ptrT.id grpc.Server.id) "isRegisteredMethod" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_newHTTP2Transport :
+  WpMethodCall (ptrT.id grpc.Server.id) "newHTTP2Transport" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_printf :
+  WpMethodCall (ptrT.id grpc.Server.id) "printf" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_processStreamingRPC :
+  WpMethodCall (ptrT.id grpc.Server.id) "processStreamingRPC" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_processUnaryRPC :
+  WpMethodCall (ptrT.id grpc.Server.id) "processUnaryRPC" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_register :
+  WpMethodCall (ptrT.id grpc.Server.id) "register" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_removeConn :
+  WpMethodCall (ptrT.id grpc.Server.id) "removeConn" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_sendResponse :
+  WpMethodCall (ptrT.id grpc.Server.id) "sendResponse" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_serveStreams :
+  WpMethodCall (ptrT.id grpc.Server.id) "serveStreams" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_serverWorker :
+  WpMethodCall (ptrT.id grpc.Server.id) "serverWorker" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_stop :
+  WpMethodCall (ptrT.id grpc.Server.id) "stop" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyServerOption_apply :
+  WpMethodCall grpc.EmptyServerOption.id "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EmptyServerOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.EmptyServerOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_funcServerOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.funcServerOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_joinServerOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.joinServerOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxHeaderListSizeServerOption_apply :
+  WpMethodCall grpc.MaxHeaderListSizeServerOption.id "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MaxHeaderListSizeServerOption'ptr_apply :
+  WpMethodCall (ptrT.id grpc.MaxHeaderListSizeServerOption.id) "apply" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_listenSocket_Accept :
+  WpMethodCall grpc.listenSocket.id "Accept" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_listenSocket_Addr :
+  WpMethodCall grpc.listenSocket.id "Addr" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_listenSocket'ptr_Accept :
+  WpMethodCall (ptrT.id grpc.listenSocket.id) "Accept" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_listenSocket'ptr_Addr :
+  WpMethodCall (ptrT.id grpc.listenSocket.id) "Addr" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_listenSocket'ptr_Close :
+  WpMethodCall (ptrT.id grpc.listenSocket.id) "Close" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_atomicSemaphore'ptr_acquire :
+  WpMethodCall (ptrT.id grpc.atomicSemaphore.id) "acquire" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_atomicSemaphore'ptr_release :
+  WpMethodCall (ptrT.id grpc.atomicSemaphore.id) "release" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ServiceConfig_isServiceConfig :
+  WpMethodCall grpc.ServiceConfig.id "isServiceConfig" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ServiceConfig'ptr_isServiceConfig :
+  WpMethodCall (ptrT.id grpc.ServiceConfig.id) "isServiceConfig" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonName_generatePath :
+  WpMethodCall grpc.jsonName.id "generatePath" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonName'ptr_generatePath :
+  WpMethodCall (ptrT.id grpc.jsonName.id) "generatePath" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_CloseSend :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "CloseSend" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_Context :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "Context" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_Header :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "Header" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_RecvMsg :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "RecvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_SendMsg :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "SendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_Trailer :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "Trailer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_bufferForRetryLocked :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "bufferForRetryLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_commitAttempt :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "commitAttempt" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_commitAttemptLocked :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "commitAttemptLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_finish :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "finish" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_newAttemptLocked :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "newAttemptLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_replayBufferLocked :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "replayBufferLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_retryLocked :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "retryLocked" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_clientStream'ptr_withRetry :
+  WpMethodCall (ptrT.id grpc.clientStream.id) "withRetry" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_csAttempt'ptr_finish :
+  WpMethodCall (ptrT.id grpc.csAttempt.id) "finish" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_csAttempt'ptr_getTransport :
+  WpMethodCall (ptrT.id grpc.csAttempt.id) "getTransport" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_csAttempt'ptr_newStream :
+  WpMethodCall (ptrT.id grpc.csAttempt.id) "newStream" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_csAttempt'ptr_recvMsg :
+  WpMethodCall (ptrT.id grpc.csAttempt.id) "recvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_csAttempt'ptr_sendMsg :
+  WpMethodCall (ptrT.id grpc.csAttempt.id) "sendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_csAttempt'ptr_shouldRetry :
+  WpMethodCall (ptrT.id grpc.csAttempt.id) "shouldRetry" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConnStream'ptr_CloseSend :
+  WpMethodCall (ptrT.id grpc.addrConnStream.id) "CloseSend" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConnStream'ptr_Context :
+  WpMethodCall (ptrT.id grpc.addrConnStream.id) "Context" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConnStream'ptr_Header :
+  WpMethodCall (ptrT.id grpc.addrConnStream.id) "Header" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConnStream'ptr_RecvMsg :
+  WpMethodCall (ptrT.id grpc.addrConnStream.id) "RecvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConnStream'ptr_SendMsg :
+  WpMethodCall (ptrT.id grpc.addrConnStream.id) "SendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConnStream'ptr_Trailer :
+  WpMethodCall (ptrT.id grpc.addrConnStream.id) "Trailer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_addrConnStream'ptr_finish :
+  WpMethodCall (ptrT.id grpc.addrConnStream.id) "finish" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStream'ptr_Context :
+  WpMethodCall (ptrT.id grpc.serverStream.id) "Context" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStream'ptr_RecvMsg :
+  WpMethodCall (ptrT.id grpc.serverStream.id) "RecvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStream'ptr_SendHeader :
+  WpMethodCall (ptrT.id grpc.serverStream.id) "SendHeader" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStream'ptr_SendMsg :
+  WpMethodCall (ptrT.id grpc.serverStream.id) "SendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStream'ptr_SetHeader :
+  WpMethodCall (ptrT.id grpc.serverStream.id) "SetHeader" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_serverStream'ptr_SetTrailer :
+  WpMethodCall (ptrT.id grpc.serverStream.id) "SetTrailer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream_CloseSend :
+  WpMethodCall grpc.GenericClientStream.id "CloseSend" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream_Context :
+  WpMethodCall grpc.GenericClientStream.id "Context" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream_Header :
+  WpMethodCall grpc.GenericClientStream.id "Header" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream_RecvMsg :
+  WpMethodCall grpc.GenericClientStream.id "RecvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream_SendMsg :
+  WpMethodCall grpc.GenericClientStream.id "SendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream_Trailer :
+  WpMethodCall grpc.GenericClientStream.id "Trailer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_CloseAndRecv :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "CloseAndRecv" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_CloseSend :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "CloseSend" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_Context :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "Context" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_Header :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "Header" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_Recv :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "Recv" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_RecvMsg :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "RecvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_Send :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "Send" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_SendMsg :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "SendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericClientStream'ptr_Trailer :
+  WpMethodCall (ptrT.id grpc.GenericClientStream.id) "Trailer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream_Context :
+  WpMethodCall grpc.GenericServerStream.id "Context" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream_RecvMsg :
+  WpMethodCall grpc.GenericServerStream.id "RecvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream_SendHeader :
+  WpMethodCall grpc.GenericServerStream.id "SendHeader" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream_SendMsg :
+  WpMethodCall grpc.GenericServerStream.id "SendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream_SetHeader :
+  WpMethodCall grpc.GenericServerStream.id "SetHeader" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream_SetTrailer :
+  WpMethodCall grpc.GenericServerStream.id "SetTrailer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_Context :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "Context" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_Recv :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "Recv" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_RecvMsg :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "RecvMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_Send :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "Send" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_SendAndClose :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "SendAndClose" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_SendHeader :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "SendHeader" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_SendMsg :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "SendMsg" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_SetHeader :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "SetHeader" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_GenericServerStream'ptr_SetTrailer :
+  WpMethodCall (ptrT.id grpc.GenericServerStream.id) "SetTrailer" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_firstLine'ptr_SetRemoteAddr :
+  WpMethodCall (ptrT.id grpc.firstLine.id) "SetRemoteAddr" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_firstLine'ptr_String :
+  WpMethodCall (ptrT.id grpc.firstLine.id) "String" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_payload_String :
+  WpMethodCall grpc.payload.id "String" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_payload'ptr_String :
+  WpMethodCall (ptrT.id grpc.payload.id) "String" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_fmtStringer'ptr_String :
+  WpMethodCall (ptrT.id grpc.fmtStringer.id) "String" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringer_String :
+  WpMethodCall grpc.stringer.id "String" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_stringer'ptr_String :
+  WpMethodCall (ptrT.id grpc.stringer.id) "String" _ (is_pkg_defined grpc) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End grpc.
