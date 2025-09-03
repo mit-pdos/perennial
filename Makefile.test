@@ -24,7 +24,11 @@ TESTFILES:=$(shell find tests -name "*.v")
 NORMALIZER:=test-normalizer.sed
 
 test: $(TESTFILES:.v=.vo)
-.PHONY: test
+test-vok: $(TESTFILES:.v=.vok)
+.PHONY: test test-vok
+
+## add tests to CI build
+ci: test
 
 ROCQ_TEST=coqtop -batch -test-mode $(ROCQPROJECT_ARGS)
 
