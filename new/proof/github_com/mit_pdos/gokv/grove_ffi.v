@@ -406,7 +406,7 @@ Section grove.
     assert (Z.of_nat (length data) = sint.Z s.(slice.len_f)) by word.
     rewrite to_val_unseal /=.
     iApply (wp_FileAppendOp with "[$Hf Hs]").
-    { done. }
+    { erewrite Hlen. word. }
     { by iApply own_slice_to_pointsto_vals. }
     iNext. iIntros "* [Hf Hl]".
     replace (LitV err) with #err; last by rewrite to_val_unseal //.
