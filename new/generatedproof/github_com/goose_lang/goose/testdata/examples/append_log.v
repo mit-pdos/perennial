@@ -99,9 +99,9 @@ Global Instance is_pkg_defined_pure_append_log : IsPkgDefinedPure append_log :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single append_log ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure github_com.tchajed.marshal.marshal ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.disk.disk;
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal ∧
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.disk.disk;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -109,9 +109,9 @@ Global Program Instance is_pkg_defined_append_log : IsPkgDefined append_log :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single append_log ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined github_com.tchajed.marshal.marshal ∗
-       is_pkg_defined github_com.goose_lang.primitive.disk.disk)%I
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.tchajed.marshal.marshal ∗
+       is_pkg_defined code.github_com.goose_lang.primitive.disk.disk)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

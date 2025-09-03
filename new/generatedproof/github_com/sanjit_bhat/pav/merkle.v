@@ -273,13 +273,13 @@ Global Instance is_pkg_defined_pure_merkle : IsPkgDefinedPure merkle :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single merkle ∧
-      is_pkg_defined_pure bytes.bytes ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∧
-      is_pkg_defined_pure github_com.tchajed.marshal.marshal ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.safemarshal.safemarshal;
+      is_pkg_defined_pure code.bytes.bytes ∧
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∧
+      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.safemarshal.safemarshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -287,13 +287,13 @@ Global Program Instance is_pkg_defined_merkle : IsPkgDefined merkle :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single merkle ∗
-       is_pkg_defined bytes.bytes ∗
-       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined github_com.goose_lang.std.std ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∗
-       is_pkg_defined github_com.tchajed.marshal.marshal ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.safemarshal.safemarshal)%I
+       is_pkg_defined code.bytes.bytes ∗
+       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined code.github_com.goose_lang.std.std ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∗
+       is_pkg_defined code.github_com.tchajed.marshal.marshal ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.safemarshal.safemarshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

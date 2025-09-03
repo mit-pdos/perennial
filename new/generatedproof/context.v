@@ -730,11 +730,11 @@ Global Instance is_pkg_defined_pure_context : IsPkgDefinedPure context :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single context ∧
-      is_pkg_defined_pure errors.errors ∧
-      is_pkg_defined_pure internal.reflectlite.reflectlite ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure sync.atomic.atomic ∧
-      is_pkg_defined_pure time.time;
+      is_pkg_defined_pure code.errors.errors ∧
+      is_pkg_defined_pure code.internal.reflectlite.reflectlite ∧
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.sync.atomic.atomic ∧
+      is_pkg_defined_pure code.time.time;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -742,11 +742,11 @@ Global Program Instance is_pkg_defined_context : IsPkgDefined context :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single context ∗
-       is_pkg_defined errors.errors ∗
-       is_pkg_defined internal.reflectlite.reflectlite ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined sync.atomic.atomic ∗
-       is_pkg_defined time.time)%I
+       is_pkg_defined code.errors.errors ∗
+       is_pkg_defined code.internal.reflectlite.reflectlite ∗
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.sync.atomic.atomic ∗
+       is_pkg_defined code.time.time)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

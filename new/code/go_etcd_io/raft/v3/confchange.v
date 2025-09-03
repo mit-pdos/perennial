@@ -45,16 +45,62 @@ Definition Restore : go_string := "go.etcd.io/raft/v3/confchange.Restore"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom checkInvariantsⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id, []); (ptrT.id Changer.id, [])].
+Axiom checkAndReturnⁱᵐᵖˡ : val.
+
+Axiom nilAwareAddⁱᵐᵖˡ : val.
+
+Axiom nilAwareDeleteⁱᵐᵖˡ : val.
+
+Axiom symdiffⁱᵐᵖˡ : val.
+
+Axiom jointⁱᵐᵖˡ : val.
+
+Axiom incomingⁱᵐᵖˡ : val.
+
+Axiom outgoingⁱᵐᵖˡ : val.
+
+Axiom outgoingPtrⁱᵐᵖˡ : val.
+
+Axiom Describeⁱᵐᵖˡ : val.
+
+Axiom toConfChangeSingleⁱᵐᵖˡ : val.
+
+Axiom chainⁱᵐᵖˡ : val.
+
+Axiom Restoreⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(checkInvariants, checkInvariantsⁱᵐᵖˡ); (checkAndReturn, checkAndReturnⁱᵐᵖˡ); (nilAwareAdd, nilAwareAddⁱᵐᵖˡ); (nilAwareDelete, nilAwareDeleteⁱᵐᵖˡ); (symdiff, symdiffⁱᵐᵖˡ); (joint, jointⁱᵐᵖˡ); (incoming, incomingⁱᵐᵖˡ); (outgoing, outgoingⁱᵐᵖˡ); (outgoingPtr, outgoingPtrⁱᵐᵖˡ); (Describe, Describeⁱᵐᵖˡ); (toConfChangeSingle, toConfChangeSingleⁱᵐᵖˡ); (chain, chainⁱᵐᵖˡ); (Restore, Restoreⁱᵐᵖˡ)].
+
+Axiom Changer__EnterJointⁱᵐᵖˡ : val.
+
+Axiom Changer__LeaveJointⁱᵐᵖˡ : val.
+
+Axiom Changer__Simpleⁱᵐᵖˡ : val.
+
+Axiom Changer__applyⁱᵐᵖˡ : val.
+
+Axiom Changer__checkAndCopyⁱᵐᵖˡ : val.
+
+Axiom Changer__errⁱᵐᵖˡ : val.
+
+Axiom Changer__initProgressⁱᵐᵖˡ : val.
+
+Axiom Changer__makeLearnerⁱᵐᵖˡ : val.
+
+Axiom Changer__makeVoterⁱᵐᵖˡ : val.
+
+Axiom Changer__removeⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(Changer.id, [("EnterJoint"%go, Changer__EnterJointⁱᵐᵖˡ); ("LeaveJoint"%go, Changer__LeaveJointⁱᵐᵖˡ); ("Simple"%go, Changer__Simpleⁱᵐᵖˡ); ("apply"%go, Changer__applyⁱᵐᵖˡ); ("checkAndCopy"%go, Changer__checkAndCopyⁱᵐᵖˡ); ("err"%go, Changer__errⁱᵐᵖˡ); ("initProgress"%go, Changer__initProgressⁱᵐᵖˡ); ("makeLearner"%go, Changer__makeLearnerⁱᵐᵖˡ); ("makeVoter"%go, Changer__makeVoterⁱᵐᵖˡ); ("remove"%go, Changer__removeⁱᵐᵖˡ)]); (ptrT.id Changer.id, [("EnterJoint"%go, Changer__EnterJointⁱᵐᵖˡ); ("LeaveJoint"%go, Changer__LeaveJointⁱᵐᵖˡ); ("Simple"%go, Changer__Simpleⁱᵐᵖˡ); ("apply"%go, Changer__applyⁱᵐᵖˡ); ("checkAndCopy"%go, Changer__checkAndCopyⁱᵐᵖˡ); ("err"%go, Changer__errⁱᵐᵖˡ); ("initProgress"%go, Changer__initProgressⁱᵐᵖˡ); ("makeLearner"%go, Changer__makeLearnerⁱᵐᵖˡ); ("makeVoter"%go, Changer__makeVoterⁱᵐᵖˡ); ("remove"%go, Changer__removeⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo confchange.confchange :=
   {|
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [go_etcd_io.raft.v3.tracker.tracker];
+    pkg_imported_pkgs := [code.go_etcd_io.raft.v3.tracker.tracker];
   |}.
 
 Axiom _'init : val.

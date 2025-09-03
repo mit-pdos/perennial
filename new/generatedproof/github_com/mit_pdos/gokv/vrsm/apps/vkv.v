@@ -395,13 +395,13 @@ Global Instance is_pkg_defined_pure_vkv : IsPkgDefinedPure vkv :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single vkv ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.kv.kv ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.storage.storage ∧
-      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∧
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.kv.kv ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.storage.storage ∧
+      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -409,13 +409,13 @@ Global Program Instance is_pkg_defined_vkv : IsPkgDefined vkv :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single vkv ∗
-       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
-       is_pkg_defined github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined github_com.mit_pdos.gokv.kv.kv ∗
-       is_pkg_defined github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∗
-       is_pkg_defined github_com.mit_pdos.gokv.vrsm.storage.storage ∗
-       is_pkg_defined github_com.tchajed.marshal.marshal)%I
+       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∗
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.kv.kv ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.storage.storage ∗
+       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

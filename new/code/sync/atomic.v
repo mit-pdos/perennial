@@ -7,10 +7,13 @@ Definition atomic : go_string := "sync/atomic".
 
 Module atomic.
 
+Module Bool. Definition id : go_string := "sync/atomic.Bool"%go. End Bool.
 Module Pointer. Definition id : go_string := "sync/atomic.Pointer"%go. End Pointer.
 Module Int32. Definition id : go_string := "sync/atomic.Int32"%go. End Int32.
+Module Int64. Definition id : go_string := "sync/atomic.Int64"%go. End Int64.
 Module Uint32. Definition id : go_string := "sync/atomic.Uint32"%go. End Uint32.
 Module Uint64. Definition id : go_string := "sync/atomic.Uint64"%go. End Uint64.
+Module Uintptr. Definition id : go_string := "sync/atomic.Uintptr"%go. End Uintptr.
 Module noCopy. Definition id : go_string := "sync/atomic.noCopy"%go. End noCopy.
 Module align64. Definition id : go_string := "sync/atomic.align64"%go. End align64.
 Module Value. Definition id : go_string := "sync/atomic.Value"%go. End Value.
@@ -97,6 +100,8 @@ Definition LoadUint64 : go_string := "sync/atomic.LoadUint64"%go.
 Definition StoreInt64 : go_string := "sync/atomic.StoreInt64"%go.
 
 Definition StoreUint64 : go_string := "sync/atomic.StoreUint64"%go.
+
+Axiom Bool : go_type.
 
 Definition b32 : go_string := "sync/atomic.b32"%go.
 
@@ -199,6 +204,8 @@ Definition Int32__Orⁱᵐᵖˡ : val :=
     return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#int32T] "mask") in
      (func_call #OrInt32) "$a0" "$a1")).
+
+Axiom Int64 : go_type.
 
 Definition Uint32 : go_type := structT [
   "_0" :: noCopy;
@@ -383,6 +390,8 @@ Definition Uint64__Orⁱᵐᵖˡ : val :=
     return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#uint64T] "mask") in
      (func_call #OrUint64) "$a0" "$a1")).
+
+Axiom Uintptr : go_type.
 
 Definition Value : go_type := structT [
   "v" :: interfaceT
@@ -643,9 +652,117 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (CompareAndSwapUint32, CompareAndSwapUint32ⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (AddUint32, AddUint32ⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (LoadUint32, LoadUint32ⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (StoreUint32, StoreUint32ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ)].
+Axiom SwapInt32ⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Pointer.id, []); (ptrT.id Pointer.id, []); (Int32.id, []); (ptrT.id Int32.id, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("And"%go, Int32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Or"%go, Int32__Orⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ); ("Swap"%go, Int32__Swapⁱᵐᵖˡ)]); (Uint32.id, []); (ptrT.id Uint32.id, [("Add"%go, Uint32__Addⁱᵐᵖˡ); ("And"%go, Uint32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint32__Loadⁱᵐᵖˡ); ("Or"%go, Uint32__Orⁱᵐᵖˡ); ("Store"%go, Uint32__Storeⁱᵐᵖˡ); ("Swap"%go, Uint32__Swapⁱᵐᵖˡ)]); (Uint64.id, []); (ptrT.id Uint64.id, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("And"%go, Uint64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Or"%go, Uint64__Orⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ); ("Swap"%go, Uint64__Swapⁱᵐᵖˡ)]); (noCopy.id, []); (ptrT.id noCopy.id, []); (align64.id, []); (ptrT.id align64.id, []); (Value.id, []); (ptrT.id Value.id, [("CompareAndSwap"%go, Value__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Value__Loadⁱᵐᵖˡ); ("Store"%go, Value__Storeⁱᵐᵖˡ); ("Swap"%go, Value__Swapⁱᵐᵖˡ)]); (efaceWords.id, []); (ptrT.id efaceWords.id, [])].
+Axiom SwapUint32ⁱᵐᵖˡ : val.
+
+Axiom SwapUintptrⁱᵐᵖˡ : val.
+
+Axiom SwapPointerⁱᵐᵖˡ : val.
+
+Axiom CompareAndSwapUintptrⁱᵐᵖˡ : val.
+
+Axiom CompareAndSwapPointerⁱᵐᵖˡ : val.
+
+Axiom AddUintptrⁱᵐᵖˡ : val.
+
+Axiom AndInt32ⁱᵐᵖˡ : val.
+
+Axiom AndUint32ⁱᵐᵖˡ : val.
+
+Axiom AndUintptrⁱᵐᵖˡ : val.
+
+Axiom OrInt32ⁱᵐᵖˡ : val.
+
+Axiom OrUint32ⁱᵐᵖˡ : val.
+
+Axiom OrUintptrⁱᵐᵖˡ : val.
+
+Axiom LoadUintptrⁱᵐᵖˡ : val.
+
+Axiom LoadPointerⁱᵐᵖˡ : val.
+
+Axiom StoreUintptrⁱᵐᵖˡ : val.
+
+Axiom StorePointerⁱᵐᵖˡ : val.
+
+Axiom SwapInt64ⁱᵐᵖˡ : val.
+
+Axiom SwapUint64ⁱᵐᵖˡ : val.
+
+Axiom CompareAndSwapInt64ⁱᵐᵖˡ : val.
+
+Axiom AddInt64ⁱᵐᵖˡ : val.
+
+Axiom AndInt64ⁱᵐᵖˡ : val.
+
+Axiom AndUint64ⁱᵐᵖˡ : val.
+
+Axiom OrInt64ⁱᵐᵖˡ : val.
+
+Axiom OrUint64ⁱᵐᵖˡ : val.
+
+Axiom LoadInt64ⁱᵐᵖˡ : val.
+
+Axiom StoreInt64ⁱᵐᵖˡ : val.
+
+Axiom b32ⁱᵐᵖˡ : val.
+
+Axiom runtime_procPinⁱᵐᵖˡ : val.
+
+Axiom runtime_procUnpinⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(SwapInt32, SwapInt32ⁱᵐᵖˡ); (SwapUint32, SwapUint32ⁱᵐᵖˡ); (SwapUintptr, SwapUintptrⁱᵐᵖˡ); (SwapPointer, SwapPointerⁱᵐᵖˡ); (CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (CompareAndSwapUint32, CompareAndSwapUint32ⁱᵐᵖˡ); (CompareAndSwapUintptr, CompareAndSwapUintptrⁱᵐᵖˡ); (CompareAndSwapPointer, CompareAndSwapPointerⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (AddUint32, AddUint32ⁱᵐᵖˡ); (AddUintptr, AddUintptrⁱᵐᵖˡ); (AndInt32, AndInt32ⁱᵐᵖˡ); (AndUint32, AndUint32ⁱᵐᵖˡ); (AndUintptr, AndUintptrⁱᵐᵖˡ); (OrInt32, OrInt32ⁱᵐᵖˡ); (OrUint32, OrUint32ⁱᵐᵖˡ); (OrUintptr, OrUintptrⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (LoadUint32, LoadUint32ⁱᵐᵖˡ); (LoadUintptr, LoadUintptrⁱᵐᵖˡ); (LoadPointer, LoadPointerⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (StoreUint32, StoreUint32ⁱᵐᵖˡ); (StoreUintptr, StoreUintptrⁱᵐᵖˡ); (StorePointer, StorePointerⁱᵐᵖˡ); (SwapInt64, SwapInt64ⁱᵐᵖˡ); (SwapUint64, SwapUint64ⁱᵐᵖˡ); (CompareAndSwapInt64, CompareAndSwapInt64ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddInt64, AddInt64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (AndInt64, AndInt64ⁱᵐᵖˡ); (AndUint64, AndUint64ⁱᵐᵖˡ); (OrInt64, OrInt64ⁱᵐᵖˡ); (OrUint64, OrUint64ⁱᵐᵖˡ); (LoadInt64, LoadInt64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreInt64, StoreInt64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ); (b32, b32ⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ)].
+
+Axiom Bool__CompareAndSwapⁱᵐᵖˡ : val.
+
+Axiom Bool__Loadⁱᵐᵖˡ : val.
+
+Axiom Bool__Storeⁱᵐᵖˡ : val.
+
+Axiom Bool__Swapⁱᵐᵖˡ : val.
+
+Axiom Pointer__CompareAndSwapⁱᵐᵖˡ : val.
+
+Axiom Pointer__Loadⁱᵐᵖˡ : val.
+
+Axiom Pointer__Storeⁱᵐᵖˡ : val.
+
+Axiom Pointer__Swapⁱᵐᵖˡ : val.
+
+Axiom Int64__Addⁱᵐᵖˡ : val.
+
+Axiom Int64__Andⁱᵐᵖˡ : val.
+
+Axiom Int64__CompareAndSwapⁱᵐᵖˡ : val.
+
+Axiom Int64__Loadⁱᵐᵖˡ : val.
+
+Axiom Int64__Orⁱᵐᵖˡ : val.
+
+Axiom Int64__Storeⁱᵐᵖˡ : val.
+
+Axiom Int64__Swapⁱᵐᵖˡ : val.
+
+Axiom Uintptr__Addⁱᵐᵖˡ : val.
+
+Axiom Uintptr__Andⁱᵐᵖˡ : val.
+
+Axiom Uintptr__CompareAndSwapⁱᵐᵖˡ : val.
+
+Axiom Uintptr__Loadⁱᵐᵖˡ : val.
+
+Axiom Uintptr__Orⁱᵐᵖˡ : val.
+
+Axiom Uintptr__Storeⁱᵐᵖˡ : val.
+
+Axiom Uintptr__Swapⁱᵐᵖˡ : val.
+
+Axiom noCopy__Lockⁱᵐᵖˡ : val.
+
+Axiom noCopy__Unlockⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(Bool.id, []); (ptrT.id Bool.id, [("CompareAndSwap"%go, Bool__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Bool__Loadⁱᵐᵖˡ); ("Store"%go, Bool__Storeⁱᵐᵖˡ); ("Swap"%go, Bool__Swapⁱᵐᵖˡ)]); (Pointer.id, []); (ptrT.id Pointer.id, [("CompareAndSwap"%go, Pointer__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Pointer__Loadⁱᵐᵖˡ); ("Store"%go, Pointer__Storeⁱᵐᵖˡ); ("Swap"%go, Pointer__Swapⁱᵐᵖˡ)]); (Int32.id, []); (ptrT.id Int32.id, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("And"%go, Int32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Or"%go, Int32__Orⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ); ("Swap"%go, Int32__Swapⁱᵐᵖˡ)]); (Int64.id, []); (ptrT.id Int64.id, [("Add"%go, Int64__Addⁱᵐᵖˡ); ("And"%go, Int64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int64__Loadⁱᵐᵖˡ); ("Or"%go, Int64__Orⁱᵐᵖˡ); ("Store"%go, Int64__Storeⁱᵐᵖˡ); ("Swap"%go, Int64__Swapⁱᵐᵖˡ)]); (Uint32.id, []); (ptrT.id Uint32.id, [("Add"%go, Uint32__Addⁱᵐᵖˡ); ("And"%go, Uint32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint32__Loadⁱᵐᵖˡ); ("Or"%go, Uint32__Orⁱᵐᵖˡ); ("Store"%go, Uint32__Storeⁱᵐᵖˡ); ("Swap"%go, Uint32__Swapⁱᵐᵖˡ)]); (Uint64.id, []); (ptrT.id Uint64.id, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("And"%go, Uint64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Or"%go, Uint64__Orⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ); ("Swap"%go, Uint64__Swapⁱᵐᵖˡ)]); (Uintptr.id, []); (ptrT.id Uintptr.id, [("Add"%go, Uintptr__Addⁱᵐᵖˡ); ("And"%go, Uintptr__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uintptr__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uintptr__Loadⁱᵐᵖˡ); ("Or"%go, Uintptr__Orⁱᵐᵖˡ); ("Store"%go, Uintptr__Storeⁱᵐᵖˡ); ("Swap"%go, Uintptr__Swapⁱᵐᵖˡ)]); (noCopy.id, []); (ptrT.id noCopy.id, [("Lock"%go, noCopy__Lockⁱᵐᵖˡ); ("Unlock"%go, noCopy__Unlockⁱᵐᵖˡ)]); (align64.id, []); (ptrT.id align64.id, []); (Value.id, []); (ptrT.id Value.id, [("CompareAndSwap"%go, Value__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Value__Loadⁱᵐᵖˡ); ("Store"%go, Value__Storeⁱᵐᵖˡ); ("Swap"%go, Value__Swapⁱᵐᵖˡ)]); (efaceWords.id, []); (ptrT.id efaceWords.id, [])].
 
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|

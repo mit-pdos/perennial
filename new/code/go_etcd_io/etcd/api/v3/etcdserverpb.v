@@ -5,10 +5,25 @@ Definition etcdserverpb : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb".
 
 Module etcdserverpb.
 
+Module Request. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Request"%go. End Request.
+Module Metadata. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Metadata"%go. End Metadata.
+Module RequestHeader. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RequestHeader"%go. End RequestHeader.
+Module InternalRaftRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.InternalRaftRequest"%go. End InternalRaftRequest.
+Module EmptyResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.EmptyResponse"%go. End EmptyResponse.
+Module InternalAuthenticateRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.InternalAuthenticateRequest"%go. End InternalAuthenticateRequest.
+Module InternalRaftStringer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.InternalRaftStringer"%go. End InternalRaftStringer.
+Module txnRequestStringer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.txnRequestStringer"%go. End txnRequestStringer.
+Module requestOpStringer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.requestOpStringer"%go. End requestOpStringer.
+Module loggableValueCompare. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.loggableValueCompare"%go. End loggableValueCompare.
+Module loggablePutRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.loggablePutRequest"%go. End loggablePutRequest.
+Module AlarmType. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType"%go. End AlarmType.
 Module RangeRequest_SortOrder. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortOrder"%go. End RangeRequest_SortOrder.
 Module RangeRequest_SortTarget. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortTarget"%go. End RangeRequest_SortTarget.
 Module Compare_CompareResult. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareResult"%go. End Compare_CompareResult.
 Module Compare_CompareTarget. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareTarget"%go. End Compare_CompareTarget.
+Module WatchCreateRequest_FilterType. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType"%go. End WatchCreateRequest_FilterType.
+Module AlarmRequest_AlarmAction. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction"%go. End AlarmRequest_AlarmAction.
+Module DowngradeRequest_DowngradeAction. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction"%go. End DowngradeRequest_DowngradeAction.
 Module ResponseHeader. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseHeader"%go. End ResponseHeader.
 Module RangeRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest"%go. End RangeRequest.
 Module RangeResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeResponse"%go. End RangeResponse.
@@ -37,12 +52,139 @@ Module Compare_Value. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcds
 Module Compare_Lease. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_Lease"%go. End Compare_Lease.
 Module TxnRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.TxnRequest"%go. End TxnRequest.
 Module TxnResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.TxnResponse"%go. End TxnResponse.
+Module CompactionRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.CompactionRequest"%go. End CompactionRequest.
+Module CompactionResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.CompactionResponse"%go. End CompactionResponse.
+Module HashRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.HashRequest"%go. End HashRequest.
+Module HashKVRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.HashKVRequest"%go. End HashKVRequest.
+Module HashKVResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.HashKVResponse"%go. End HashKVResponse.
+Module HashResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.HashResponse"%go. End HashResponse.
+Module SnapshotRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.SnapshotRequest"%go. End SnapshotRequest.
+Module SnapshotResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.SnapshotResponse"%go. End SnapshotResponse.
+Module WatchRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest"%go. End WatchRequest.
+Module isWatchRequest_RequestUnion. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.isWatchRequest_RequestUnion"%go. End isWatchRequest_RequestUnion.
+Module WatchRequest_CreateRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest_CreateRequest"%go. End WatchRequest_CreateRequest.
+Module WatchRequest_CancelRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest_CancelRequest"%go. End WatchRequest_CancelRequest.
+Module WatchRequest_ProgressRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest_ProgressRequest"%go. End WatchRequest_ProgressRequest.
+Module WatchCreateRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest"%go. End WatchCreateRequest.
+Module WatchCancelRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCancelRequest"%go. End WatchCancelRequest.
+Module WatchProgressRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchProgressRequest"%go. End WatchProgressRequest.
+Module WatchResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchResponse"%go. End WatchResponse.
+Module LeaseGrantRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseGrantRequest"%go. End LeaseGrantRequest.
+Module LeaseGrantResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseGrantResponse"%go. End LeaseGrantResponse.
+Module LeaseRevokeRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseRevokeRequest"%go. End LeaseRevokeRequest.
+Module LeaseRevokeResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseRevokeResponse"%go. End LeaseRevokeResponse.
+Module LeaseCheckpoint. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseCheckpoint"%go. End LeaseCheckpoint.
+Module LeaseCheckpointRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseCheckpointRequest"%go. End LeaseCheckpointRequest.
+Module LeaseCheckpointResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseCheckpointResponse"%go. End LeaseCheckpointResponse.
+Module LeaseKeepAliveRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseKeepAliveRequest"%go. End LeaseKeepAliveRequest.
+Module LeaseKeepAliveResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseKeepAliveResponse"%go. End LeaseKeepAliveResponse.
+Module LeaseTimeToLiveRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseTimeToLiveRequest"%go. End LeaseTimeToLiveRequest.
+Module LeaseTimeToLiveResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseTimeToLiveResponse"%go. End LeaseTimeToLiveResponse.
+Module LeaseLeasesRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseLeasesRequest"%go. End LeaseLeasesRequest.
+Module LeaseStatus. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseStatus"%go. End LeaseStatus.
+Module LeaseLeasesResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseLeasesResponse"%go. End LeaseLeasesResponse.
+Module Member. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Member"%go. End Member.
+Module MemberAddRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberAddRequest"%go. End MemberAddRequest.
+Module MemberAddResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberAddResponse"%go. End MemberAddResponse.
+Module MemberRemoveRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberRemoveRequest"%go. End MemberRemoveRequest.
+Module MemberRemoveResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberRemoveResponse"%go. End MemberRemoveResponse.
+Module MemberUpdateRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberUpdateRequest"%go. End MemberUpdateRequest.
+Module MemberUpdateResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberUpdateResponse"%go. End MemberUpdateResponse.
+Module MemberListRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberListRequest"%go. End MemberListRequest.
+Module MemberListResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberListResponse"%go. End MemberListResponse.
+Module MemberPromoteRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberPromoteRequest"%go. End MemberPromoteRequest.
+Module MemberPromoteResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MemberPromoteResponse"%go. End MemberPromoteResponse.
+Module DefragmentRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DefragmentRequest"%go. End DefragmentRequest.
+Module DefragmentResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DefragmentResponse"%go. End DefragmentResponse.
+Module MoveLeaderRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MoveLeaderRequest"%go. End MoveLeaderRequest.
+Module MoveLeaderResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MoveLeaderResponse"%go. End MoveLeaderResponse.
+Module AlarmRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest"%go. End AlarmRequest.
+Module AlarmMember. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmMember"%go. End AlarmMember.
+Module AlarmResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmResponse"%go. End AlarmResponse.
+Module DowngradeRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest"%go. End DowngradeRequest.
+Module DowngradeResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeResponse"%go. End DowngradeResponse.
+Module StatusRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.StatusRequest"%go. End StatusRequest.
+Module StatusResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.StatusResponse"%go. End StatusResponse.
+Module AuthEnableRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthEnableRequest"%go. End AuthEnableRequest.
+Module AuthDisableRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthDisableRequest"%go. End AuthDisableRequest.
+Module AuthStatusRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthStatusRequest"%go. End AuthStatusRequest.
+Module AuthenticateRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthenticateRequest"%go. End AuthenticateRequest.
+Module AuthUserAddRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserAddRequest"%go. End AuthUserAddRequest.
+Module AuthUserGetRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGetRequest"%go. End AuthUserGetRequest.
+Module AuthUserDeleteRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserDeleteRequest"%go. End AuthUserDeleteRequest.
+Module AuthUserChangePasswordRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserChangePasswordRequest"%go. End AuthUserChangePasswordRequest.
+Module AuthUserGrantRoleRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGrantRoleRequest"%go. End AuthUserGrantRoleRequest.
+Module AuthUserRevokeRoleRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserRevokeRoleRequest"%go. End AuthUserRevokeRoleRequest.
+Module AuthRoleAddRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleAddRequest"%go. End AuthRoleAddRequest.
+Module AuthRoleGetRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGetRequest"%go. End AuthRoleGetRequest.
+Module AuthUserListRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserListRequest"%go. End AuthUserListRequest.
+Module AuthRoleListRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleListRequest"%go. End AuthRoleListRequest.
+Module AuthRoleDeleteRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleDeleteRequest"%go. End AuthRoleDeleteRequest.
+Module AuthRoleGrantPermissionRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGrantPermissionRequest"%go. End AuthRoleGrantPermissionRequest.
+Module AuthRoleRevokePermissionRequest. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleRevokePermissionRequest"%go. End AuthRoleRevokePermissionRequest.
+Module AuthEnableResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthEnableResponse"%go. End AuthEnableResponse.
+Module AuthDisableResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthDisableResponse"%go. End AuthDisableResponse.
+Module AuthStatusResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthStatusResponse"%go. End AuthStatusResponse.
+Module AuthenticateResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthenticateResponse"%go. End AuthenticateResponse.
+Module AuthUserAddResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserAddResponse"%go. End AuthUserAddResponse.
+Module AuthUserGetResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGetResponse"%go. End AuthUserGetResponse.
+Module AuthUserDeleteResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserDeleteResponse"%go. End AuthUserDeleteResponse.
+Module AuthUserChangePasswordResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserChangePasswordResponse"%go. End AuthUserChangePasswordResponse.
+Module AuthUserGrantRoleResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGrantRoleResponse"%go. End AuthUserGrantRoleResponse.
+Module AuthUserRevokeRoleResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserRevokeRoleResponse"%go. End AuthUserRevokeRoleResponse.
+Module AuthRoleAddResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleAddResponse"%go. End AuthRoleAddResponse.
+Module AuthRoleGetResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGetResponse"%go. End AuthRoleGetResponse.
+Module AuthRoleListResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleListResponse"%go. End AuthRoleListResponse.
+Module AuthUserListResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserListResponse"%go. End AuthUserListResponse.
+Module AuthRoleDeleteResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleDeleteResponse"%go. End AuthRoleDeleteResponse.
+Module AuthRoleGrantPermissionResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGrantPermissionResponse"%go. End AuthRoleGrantPermissionResponse.
+Module AuthRoleRevokePermissionResponse. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleRevokePermissionResponse"%go. End AuthRoleRevokePermissionResponse.
+Module KVClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.KVClient"%go. End KVClient.
+Module kVClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.kVClient"%go. End kVClient.
+Module KVServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.KVServer"%go. End KVServer.
+Module UnimplementedKVServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedKVServer"%go. End UnimplementedKVServer.
+Module WatchClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchClient"%go. End WatchClient.
+Module watchClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.watchClient"%go. End watchClient.
+Module Watch_WatchClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Watch_WatchClient"%go. End Watch_WatchClient.
+Module watchWatchClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.watchWatchClient"%go. End watchWatchClient.
+Module WatchServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchServer"%go. End WatchServer.
+Module UnimplementedWatchServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedWatchServer"%go. End UnimplementedWatchServer.
+Module Watch_WatchServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Watch_WatchServer"%go. End Watch_WatchServer.
+Module watchWatchServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.watchWatchServer"%go. End watchWatchServer.
+Module LeaseClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseClient"%go. End LeaseClient.
+Module leaseClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.leaseClient"%go. End leaseClient.
+Module Lease_LeaseKeepAliveClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Lease_LeaseKeepAliveClient"%go. End Lease_LeaseKeepAliveClient.
+Module leaseLeaseKeepAliveClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.leaseLeaseKeepAliveClient"%go. End leaseLeaseKeepAliveClient.
+Module LeaseServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseServer"%go. End LeaseServer.
+Module UnimplementedLeaseServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedLeaseServer"%go. End UnimplementedLeaseServer.
+Module Lease_LeaseKeepAliveServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Lease_LeaseKeepAliveServer"%go. End Lease_LeaseKeepAliveServer.
+Module leaseLeaseKeepAliveServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.leaseLeaseKeepAliveServer"%go. End leaseLeaseKeepAliveServer.
+Module ClusterClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ClusterClient"%go. End ClusterClient.
+Module clusterClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.clusterClient"%go. End clusterClient.
+Module ClusterServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.ClusterServer"%go. End ClusterServer.
+Module UnimplementedClusterServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedClusterServer"%go. End UnimplementedClusterServer.
+Module MaintenanceClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MaintenanceClient"%go. End MaintenanceClient.
+Module maintenanceClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.maintenanceClient"%go. End maintenanceClient.
+Module Maintenance_SnapshotClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Maintenance_SnapshotClient"%go. End Maintenance_SnapshotClient.
+Module maintenanceSnapshotClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.maintenanceSnapshotClient"%go. End maintenanceSnapshotClient.
+Module MaintenanceServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.MaintenanceServer"%go. End MaintenanceServer.
+Module UnimplementedMaintenanceServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedMaintenanceServer"%go. End UnimplementedMaintenanceServer.
+Module Maintenance_SnapshotServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Maintenance_SnapshotServer"%go. End Maintenance_SnapshotServer.
+Module maintenanceSnapshotServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.maintenanceSnapshotServer"%go. End maintenanceSnapshotServer.
+Module AuthClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthClient"%go. End AuthClient.
+Module authClient. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.authClient"%go. End authClient.
+Module AuthServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AuthServer"%go. End AuthServer.
+Module UnimplementedAuthServer. Definition id : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedAuthServer"%go. End UnimplementedAuthServer.
 
 Section code.
 Context `{ffi_syntax}.
 
 
+Axiom Request : go_type.
+
 Definition xxx_messageInfo_Request : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Request"%go.
+
+Axiom Metadata : go_type.
 
 Definition xxx_messageInfo_Metadata : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Metadata"%go.
 
@@ -72,11 +214,19 @@ Definition ErrUnexpectedEndOfGroupEtcdserver : go_string := "go.etcd.io/etcd/api
 
 Axiom ErrUnexpectedEndOfGroupEtcdserver'init : val.
 
+Axiom RequestHeader : go_type.
+
 Definition xxx_messageInfo_RequestHeader : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestHeader"%go.
+
+Axiom InternalRaftRequest : go_type.
 
 Definition xxx_messageInfo_InternalRaftRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_InternalRaftRequest"%go.
 
+Axiom EmptyResponse : go_type.
+
 Definition xxx_messageInfo_EmptyResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_EmptyResponse"%go.
+
+Axiom InternalAuthenticateRequest : go_type.
 
 Definition xxx_messageInfo_InternalAuthenticateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_InternalAuthenticateRequest"%go.
 
@@ -104,13 +254,31 @@ Definition ErrUnexpectedEndOfGroupRaftInternal : go_string := "go.etcd.io/etcd/a
 
 Axiom ErrUnexpectedEndOfGroupRaftInternal'init : val.
 
+Axiom InternalRaftStringer : go_type.
+
+Axiom txnRequestStringer : go_type.
+
 Definition NewLoggableTxnRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewLoggableTxnRequest"%go.
+
+Axiom requestOpStringer : go_type.
 
 Definition newLoggableRequestOp : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.newLoggableRequestOp"%go.
 
+Axiom loggableValueCompare : go_type.
+
 Definition newLoggableValueCompare : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.newLoggableValueCompare"%go.
 
+Axiom loggablePutRequest : go_type.
+
 Definition NewLoggablePutRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewLoggablePutRequest"%go.
+
+Axiom AlarmType : go_type.
+
+Axiom AlarmType_NONE : expr.
+
+Axiom AlarmType_NOSPACE : expr.
+
+Axiom AlarmType_CORRUPT : expr.
 
 Definition AlarmType_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType_name"%go.
 
@@ -208,6 +376,12 @@ Definition Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ : val :=
      let: "$sl1" := #(W64 1) in
      slice.literal #intT ["$sl0"; "$sl1"]))).
 
+Axiom WatchCreateRequest_FilterType : go_type.
+
+Axiom WatchCreateRequest_NOPUT : expr.
+
+Axiom WatchCreateRequest_NODELETE : expr.
+
 Definition WatchCreateRequest_FilterType_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType_name"%go.
 
 Axiom WatchCreateRequest_FilterType_name'init : val.
@@ -216,6 +390,14 @@ Definition WatchCreateRequest_FilterType_value : go_string := "go.etcd.io/etcd/a
 
 Axiom WatchCreateRequest_FilterType_value'init : val.
 
+Axiom AlarmRequest_AlarmAction : go_type.
+
+Axiom AlarmRequest_GET : expr.
+
+Axiom AlarmRequest_ACTIVATE : expr.
+
+Axiom AlarmRequest_DEACTIVATE : expr.
+
 Definition AlarmRequest_AlarmAction_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction_name"%go.
 
 Axiom AlarmRequest_AlarmAction_name'init : val.
@@ -223,6 +405,14 @@ Axiom AlarmRequest_AlarmAction_name'init : val.
 Definition AlarmRequest_AlarmAction_value : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction_value"%go.
 
 Axiom AlarmRequest_AlarmAction_value'init : val.
+
+Axiom DowngradeRequest_DowngradeAction : go_type.
+
+Axiom DowngradeRequest_VALIDATE : expr.
+
+Axiom DowngradeRequest_ENABLE : expr.
+
+Axiom DowngradeRequest_CANCEL : expr.
 
 Definition DowngradeRequest_DowngradeAction_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction_name"%go.
 
@@ -511,175 +701,357 @@ Definition TxnResponse : go_type := structT [
 
 Definition xxx_messageInfo_TxnResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_TxnResponse"%go.
 
+Axiom CompactionRequest : go_type.
+
 Definition xxx_messageInfo_CompactionRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_CompactionRequest"%go.
+
+Axiom CompactionResponse : go_type.
 
 Definition xxx_messageInfo_CompactionResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_CompactionResponse"%go.
 
+Axiom HashRequest : go_type.
+
 Definition xxx_messageInfo_HashRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashRequest"%go.
+
+Axiom HashKVRequest : go_type.
 
 Definition xxx_messageInfo_HashKVRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashKVRequest"%go.
 
+Axiom HashKVResponse : go_type.
+
 Definition xxx_messageInfo_HashKVResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashKVResponse"%go.
+
+Axiom HashResponse : go_type.
 
 Definition xxx_messageInfo_HashResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_HashResponse"%go.
 
+Axiom SnapshotRequest : go_type.
+
 Definition xxx_messageInfo_SnapshotRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_SnapshotRequest"%go.
+
+Axiom SnapshotResponse : go_type.
 
 Definition xxx_messageInfo_SnapshotResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_SnapshotResponse"%go.
 
+Axiom WatchRequest : go_type.
+
 Definition xxx_messageInfo_WatchRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchRequest"%go.
+
+Axiom isWatchRequest_RequestUnion : go_type.
+
+Axiom WatchRequest_CreateRequest : go_type.
+
+Axiom WatchRequest_CancelRequest : go_type.
+
+Axiom WatchRequest_ProgressRequest : go_type.
+
+Axiom WatchCreateRequest : go_type.
 
 Definition xxx_messageInfo_WatchCreateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchCreateRequest"%go.
 
+Axiom WatchCancelRequest : go_type.
+
 Definition xxx_messageInfo_WatchCancelRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchCancelRequest"%go.
+
+Axiom WatchProgressRequest : go_type.
 
 Definition xxx_messageInfo_WatchProgressRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchProgressRequest"%go.
 
+Axiom WatchResponse : go_type.
+
 Definition xxx_messageInfo_WatchResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_WatchResponse"%go.
+
+Axiom LeaseGrantRequest : go_type.
 
 Definition xxx_messageInfo_LeaseGrantRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseGrantRequest"%go.
 
+Axiom LeaseGrantResponse : go_type.
+
 Definition xxx_messageInfo_LeaseGrantResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseGrantResponse"%go.
+
+Axiom LeaseRevokeRequest : go_type.
 
 Definition xxx_messageInfo_LeaseRevokeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseRevokeRequest"%go.
 
+Axiom LeaseRevokeResponse : go_type.
+
 Definition xxx_messageInfo_LeaseRevokeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseRevokeResponse"%go.
+
+Axiom LeaseCheckpoint : go_type.
 
 Definition xxx_messageInfo_LeaseCheckpoint : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpoint"%go.
 
+Axiom LeaseCheckpointRequest : go_type.
+
 Definition xxx_messageInfo_LeaseCheckpointRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpointRequest"%go.
+
+Axiom LeaseCheckpointResponse : go_type.
 
 Definition xxx_messageInfo_LeaseCheckpointResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseCheckpointResponse"%go.
 
+Axiom LeaseKeepAliveRequest : go_type.
+
 Definition xxx_messageInfo_LeaseKeepAliveRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseKeepAliveRequest"%go.
+
+Axiom LeaseKeepAliveResponse : go_type.
 
 Definition xxx_messageInfo_LeaseKeepAliveResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseKeepAliveResponse"%go.
 
+Axiom LeaseTimeToLiveRequest : go_type.
+
 Definition xxx_messageInfo_LeaseTimeToLiveRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseTimeToLiveRequest"%go.
+
+Axiom LeaseTimeToLiveResponse : go_type.
 
 Definition xxx_messageInfo_LeaseTimeToLiveResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseTimeToLiveResponse"%go.
 
+Axiom LeaseLeasesRequest : go_type.
+
 Definition xxx_messageInfo_LeaseLeasesRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseLeasesRequest"%go.
+
+Axiom LeaseStatus : go_type.
 
 Definition xxx_messageInfo_LeaseStatus : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseStatus"%go.
 
+Axiom LeaseLeasesResponse : go_type.
+
 Definition xxx_messageInfo_LeaseLeasesResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_LeaseLeasesResponse"%go.
+
+Axiom Member : go_type.
 
 Definition xxx_messageInfo_Member : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Member"%go.
 
+Axiom MemberAddRequest : go_type.
+
 Definition xxx_messageInfo_MemberAddRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberAddRequest"%go.
+
+Axiom MemberAddResponse : go_type.
 
 Definition xxx_messageInfo_MemberAddResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberAddResponse"%go.
 
+Axiom MemberRemoveRequest : go_type.
+
 Definition xxx_messageInfo_MemberRemoveRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberRemoveRequest"%go.
+
+Axiom MemberRemoveResponse : go_type.
 
 Definition xxx_messageInfo_MemberRemoveResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberRemoveResponse"%go.
 
+Axiom MemberUpdateRequest : go_type.
+
 Definition xxx_messageInfo_MemberUpdateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberUpdateRequest"%go.
+
+Axiom MemberUpdateResponse : go_type.
 
 Definition xxx_messageInfo_MemberUpdateResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberUpdateResponse"%go.
 
+Axiom MemberListRequest : go_type.
+
 Definition xxx_messageInfo_MemberListRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberListRequest"%go.
+
+Axiom MemberListResponse : go_type.
 
 Definition xxx_messageInfo_MemberListResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberListResponse"%go.
 
+Axiom MemberPromoteRequest : go_type.
+
 Definition xxx_messageInfo_MemberPromoteRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberPromoteRequest"%go.
+
+Axiom MemberPromoteResponse : go_type.
 
 Definition xxx_messageInfo_MemberPromoteResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MemberPromoteResponse"%go.
 
+Axiom DefragmentRequest : go_type.
+
 Definition xxx_messageInfo_DefragmentRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DefragmentRequest"%go.
+
+Axiom DefragmentResponse : go_type.
 
 Definition xxx_messageInfo_DefragmentResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DefragmentResponse"%go.
 
+Axiom MoveLeaderRequest : go_type.
+
 Definition xxx_messageInfo_MoveLeaderRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MoveLeaderRequest"%go.
+
+Axiom MoveLeaderResponse : go_type.
 
 Definition xxx_messageInfo_MoveLeaderResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_MoveLeaderResponse"%go.
 
+Axiom AlarmRequest : go_type.
+
 Definition xxx_messageInfo_AlarmRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmRequest"%go.
+
+Axiom AlarmMember : go_type.
 
 Definition xxx_messageInfo_AlarmMember : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmMember"%go.
 
+Axiom AlarmResponse : go_type.
+
 Definition xxx_messageInfo_AlarmResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AlarmResponse"%go.
+
+Axiom DowngradeRequest : go_type.
 
 Definition xxx_messageInfo_DowngradeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeRequest"%go.
 
+Axiom DowngradeResponse : go_type.
+
 Definition xxx_messageInfo_DowngradeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DowngradeResponse"%go.
+
+Axiom StatusRequest : go_type.
 
 Definition xxx_messageInfo_StatusRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_StatusRequest"%go.
 
+Axiom StatusResponse : go_type.
+
 Definition xxx_messageInfo_StatusResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_StatusResponse"%go.
+
+Axiom AuthEnableRequest : go_type.
 
 Definition xxx_messageInfo_AuthEnableRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthEnableRequest"%go.
 
+Axiom AuthDisableRequest : go_type.
+
 Definition xxx_messageInfo_AuthDisableRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthDisableRequest"%go.
+
+Axiom AuthStatusRequest : go_type.
 
 Definition xxx_messageInfo_AuthStatusRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthStatusRequest"%go.
 
+Axiom AuthenticateRequest : go_type.
+
 Definition xxx_messageInfo_AuthenticateRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthenticateRequest"%go.
+
+Axiom AuthUserAddRequest : go_type.
 
 Definition xxx_messageInfo_AuthUserAddRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserAddRequest"%go.
 
+Axiom AuthUserGetRequest : go_type.
+
 Definition xxx_messageInfo_AuthUserGetRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGetRequest"%go.
+
+Axiom AuthUserDeleteRequest : go_type.
 
 Definition xxx_messageInfo_AuthUserDeleteRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserDeleteRequest"%go.
 
+Axiom AuthUserChangePasswordRequest : go_type.
+
 Definition xxx_messageInfo_AuthUserChangePasswordRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserChangePasswordRequest"%go.
+
+Axiom AuthUserGrantRoleRequest : go_type.
 
 Definition xxx_messageInfo_AuthUserGrantRoleRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGrantRoleRequest"%go.
 
+Axiom AuthUserRevokeRoleRequest : go_type.
+
 Definition xxx_messageInfo_AuthUserRevokeRoleRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserRevokeRoleRequest"%go.
+
+Axiom AuthRoleAddRequest : go_type.
 
 Definition xxx_messageInfo_AuthRoleAddRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleAddRequest"%go.
 
+Axiom AuthRoleGetRequest : go_type.
+
 Definition xxx_messageInfo_AuthRoleGetRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGetRequest"%go.
+
+Axiom AuthUserListRequest : go_type.
 
 Definition xxx_messageInfo_AuthUserListRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserListRequest"%go.
 
+Axiom AuthRoleListRequest : go_type.
+
 Definition xxx_messageInfo_AuthRoleListRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleListRequest"%go.
+
+Axiom AuthRoleDeleteRequest : go_type.
 
 Definition xxx_messageInfo_AuthRoleDeleteRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleDeleteRequest"%go.
 
+Axiom AuthRoleGrantPermissionRequest : go_type.
+
 Definition xxx_messageInfo_AuthRoleGrantPermissionRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGrantPermissionRequest"%go.
+
+Axiom AuthRoleRevokePermissionRequest : go_type.
 
 Definition xxx_messageInfo_AuthRoleRevokePermissionRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleRevokePermissionRequest"%go.
 
+Axiom AuthEnableResponse : go_type.
+
 Definition xxx_messageInfo_AuthEnableResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthEnableResponse"%go.
+
+Axiom AuthDisableResponse : go_type.
 
 Definition xxx_messageInfo_AuthDisableResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthDisableResponse"%go.
 
+Axiom AuthStatusResponse : go_type.
+
 Definition xxx_messageInfo_AuthStatusResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthStatusResponse"%go.
+
+Axiom AuthenticateResponse : go_type.
 
 Definition xxx_messageInfo_AuthenticateResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthenticateResponse"%go.
 
+Axiom AuthUserAddResponse : go_type.
+
 Definition xxx_messageInfo_AuthUserAddResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserAddResponse"%go.
+
+Axiom AuthUserGetResponse : go_type.
 
 Definition xxx_messageInfo_AuthUserGetResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGetResponse"%go.
 
+Axiom AuthUserDeleteResponse : go_type.
+
 Definition xxx_messageInfo_AuthUserDeleteResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserDeleteResponse"%go.
+
+Axiom AuthUserChangePasswordResponse : go_type.
 
 Definition xxx_messageInfo_AuthUserChangePasswordResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserChangePasswordResponse"%go.
 
+Axiom AuthUserGrantRoleResponse : go_type.
+
 Definition xxx_messageInfo_AuthUserGrantRoleResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserGrantRoleResponse"%go.
+
+Axiom AuthUserRevokeRoleResponse : go_type.
 
 Definition xxx_messageInfo_AuthUserRevokeRoleResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserRevokeRoleResponse"%go.
 
+Axiom AuthRoleAddResponse : go_type.
+
 Definition xxx_messageInfo_AuthRoleAddResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleAddResponse"%go.
+
+Axiom AuthRoleGetResponse : go_type.
 
 Definition xxx_messageInfo_AuthRoleGetResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGetResponse"%go.
 
+Axiom AuthRoleListResponse : go_type.
+
 Definition xxx_messageInfo_AuthRoleListResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleListResponse"%go.
+
+Axiom AuthUserListResponse : go_type.
 
 Definition xxx_messageInfo_AuthUserListResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthUserListResponse"%go.
 
+Axiom AuthRoleDeleteResponse : go_type.
+
 Definition xxx_messageInfo_AuthRoleDeleteResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleDeleteResponse"%go.
 
+Axiom AuthRoleGrantPermissionResponse : go_type.
+
 Definition xxx_messageInfo_AuthRoleGrantPermissionResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleGrantPermissionResponse"%go.
+
+Axiom AuthRoleRevokePermissionResponse : go_type.
 
 Definition xxx_messageInfo_AuthRoleRevokePermissionResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_AuthRoleRevokePermissionResponse"%go.
 
 Axiom fileDescriptor_77a6da22d6a3feb1'init : val.
 
+Axiom KVClient : go_type.
+
+Axiom kVClient : go_type.
+
 Definition NewKVClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewKVClient"%go.
+
+Axiom KVServer : go_type.
+
+Axiom UnimplementedKVServer : go_type.
 
 Definition RegisterKVServer : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RegisterKVServer"%go.
 
@@ -697,17 +1069,45 @@ Definition _KV_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._
 
 Axiom _KV_serviceDesc'init : val.
 
+Axiom WatchClient : go_type.
+
+Axiom watchClient : go_type.
+
 Definition NewWatchClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewWatchClient"%go.
+
+Axiom Watch_WatchClient : go_type.
+
+Axiom watchWatchClient : go_type.
+
+Axiom WatchServer : go_type.
+
+Axiom UnimplementedWatchServer : go_type.
 
 Definition RegisterWatchServer : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RegisterWatchServer"%go.
 
 Definition _Watch_Watch_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Watch_Watch_Handler"%go.
 
+Axiom Watch_WatchServer : go_type.
+
+Axiom watchWatchServer : go_type.
+
 Definition _Watch_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Watch_serviceDesc"%go.
 
 Axiom _Watch_serviceDesc'init : val.
 
+Axiom LeaseClient : go_type.
+
+Axiom leaseClient : go_type.
+
 Definition NewLeaseClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewLeaseClient"%go.
+
+Axiom Lease_LeaseKeepAliveClient : go_type.
+
+Axiom leaseLeaseKeepAliveClient : go_type.
+
+Axiom LeaseServer : go_type.
+
+Axiom UnimplementedLeaseServer : go_type.
 
 Definition RegisterLeaseServer : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RegisterLeaseServer"%go.
 
@@ -717,6 +1117,10 @@ Definition _Lease_LeaseRevoke_Handler : go_string := "go.etcd.io/etcd/api/v3/etc
 
 Definition _Lease_LeaseKeepAlive_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseKeepAlive_Handler"%go.
 
+Axiom Lease_LeaseKeepAliveServer : go_type.
+
+Axiom leaseLeaseKeepAliveServer : go_type.
+
 Definition _Lease_LeaseTimeToLive_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseTimeToLive_Handler"%go.
 
 Definition _Lease_LeaseLeases_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Lease_LeaseLeases_Handler"%go.
@@ -725,7 +1129,15 @@ Definition _Lease_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserverp
 
 Axiom _Lease_serviceDesc'init : val.
 
+Axiom ClusterClient : go_type.
+
+Axiom clusterClient : go_type.
+
 Definition NewClusterClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewClusterClient"%go.
+
+Axiom ClusterServer : go_type.
+
+Axiom UnimplementedClusterServer : go_type.
 
 Definition RegisterClusterServer : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RegisterClusterServer"%go.
 
@@ -743,7 +1155,19 @@ Definition _Cluster_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcdserve
 
 Axiom _Cluster_serviceDesc'init : val.
 
+Axiom MaintenanceClient : go_type.
+
+Axiom maintenanceClient : go_type.
+
 Definition NewMaintenanceClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewMaintenanceClient"%go.
+
+Axiom Maintenance_SnapshotClient : go_type.
+
+Axiom maintenanceSnapshotClient : go_type.
+
+Axiom MaintenanceServer : go_type.
+
+Axiom UnimplementedMaintenanceServer : go_type.
 
 Definition RegisterMaintenanceServer : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RegisterMaintenanceServer"%go.
 
@@ -759,6 +1183,10 @@ Definition _Maintenance_HashKV_Handler : go_string := "go.etcd.io/etcd/api/v3/et
 
 Definition _Maintenance_Snapshot_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Snapshot_Handler"%go.
 
+Axiom Maintenance_SnapshotServer : go_type.
+
+Axiom maintenanceSnapshotServer : go_type.
+
 Definition _Maintenance_MoveLeader_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_MoveLeader_Handler"%go.
 
 Definition _Maintenance_Downgrade_Handler : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb._Maintenance_Downgrade_Handler"%go.
@@ -767,7 +1195,15 @@ Definition _Maintenance_serviceDesc : go_string := "go.etcd.io/etcd/api/v3/etcds
 
 Axiom _Maintenance_serviceDesc'init : val.
 
+Axiom AuthClient : go_type.
+
+Axiom authClient : go_type.
+
 Definition NewAuthClient : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.NewAuthClient"%go.
+
+Axiom AuthServer : go_type.
+
+Axiom UnimplementedAuthServer : go_type.
 
 Definition RegisterAuthServer : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RegisterAuthServer"%go.
 
@@ -1639,17 +2075,3749 @@ Axiom ErrUnexpectedEndOfGroupRpc'init : val.
 
 Definition vars' : list (go_string * go_type) := [(RangeRequest_SortOrder_name, mapT int32T stringT); (RangeRequest_SortOrder_value, mapT stringT int32T); (RangeRequest_SortTarget_name, mapT int32T stringT); (RangeRequest_SortTarget_value, mapT stringT int32T); (Compare_CompareResult_name, mapT int32T stringT); (Compare_CompareResult_value, mapT stringT int32T); (Compare_CompareTarget_name, mapT int32T stringT); (Compare_CompareTarget_value, mapT stringT int32T)].
 
-Definition functions' : list (go_string * val) := [].
+Axiom encodeVarintEtcdserverⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(RangeRequest_SortOrder.id, [("EnumDescriptor"%go, RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ)]); (ptrT.id RangeRequest_SortOrder.id, [("EnumDescriptor"%go, (λ: "$recvAddr",
-                 method_call #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder" #"EnumDescriptor" (![#RangeRequest_SortOrder] "$recvAddr")
-                 )%V)]); (RangeRequest_SortTarget.id, [("EnumDescriptor"%go, RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ)]); (ptrT.id RangeRequest_SortTarget.id, [("EnumDescriptor"%go, (λ: "$recvAddr",
-                 method_call #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget" #"EnumDescriptor" (![#RangeRequest_SortTarget] "$recvAddr")
-                 )%V)]); (Compare_CompareResult.id, [("EnumDescriptor"%go, Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ)]); (ptrT.id Compare_CompareResult.id, [("EnumDescriptor"%go, (λ: "$recvAddr",
-                 method_call #etcdserverpb.etcdserverpb #"Compare_CompareResult" #"EnumDescriptor" (![#Compare_CompareResult] "$recvAddr")
-                 )%V)]); (Compare_CompareTarget.id, [("EnumDescriptor"%go, Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ)]); (ptrT.id Compare_CompareTarget.id, [("EnumDescriptor"%go, (λ: "$recvAddr",
-                 method_call #etcdserverpb.etcdserverpb #"Compare_CompareTarget" #"EnumDescriptor" (![#Compare_CompareTarget] "$recvAddr")
-                 )%V)]); (ResponseHeader.id, []); (ptrT.id ResponseHeader.id, []); (RangeRequest.id, []); (ptrT.id RangeRequest.id, []); (RangeResponse.id, []); (ptrT.id RangeResponse.id, []); (PutRequest.id, []); (ptrT.id PutRequest.id, []); (PutResponse.id, []); (ptrT.id PutResponse.id, []); (DeleteRangeRequest.id, []); (ptrT.id DeleteRangeRequest.id, []); (DeleteRangeResponse.id, []); (ptrT.id DeleteRangeResponse.id, []); (RequestOp.id, []); (ptrT.id RequestOp.id, []); (RequestOp_RequestRange.id, []); (ptrT.id RequestOp_RequestRange.id, [("MarshalTo"%go, RequestOp_RequestRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestRange__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ)]); (RequestOp_RequestPut.id, []); (ptrT.id RequestOp_RequestPut.id, [("MarshalTo"%go, RequestOp_RequestPut__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestPut__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestPut__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestPut__isRequestOp_Requestⁱᵐᵖˡ)]); (RequestOp_RequestDeleteRange.id, []); (ptrT.id RequestOp_RequestDeleteRange.id, [("MarshalTo"%go, RequestOp_RequestDeleteRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestDeleteRange__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestDeleteRange__isRequestOp_Requestⁱᵐᵖˡ)]); (RequestOp_RequestTxn.id, []); (ptrT.id RequestOp_RequestTxn.id, [("MarshalTo"%go, RequestOp_RequestTxn__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestTxn__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestTxn__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestTxn__isRequestOp_Requestⁱᵐᵖˡ)]); (ResponseOp.id, []); (ptrT.id ResponseOp.id, []); (ResponseOp_ResponseRange.id, []); (ptrT.id ResponseOp_ResponseRange.id, [("MarshalTo"%go, ResponseOp_ResponseRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponseRange__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponseRange__isResponseOp_Responseⁱᵐᵖˡ)]); (ResponseOp_ResponsePut.id, []); (ptrT.id ResponseOp_ResponsePut.id, [("MarshalTo"%go, ResponseOp_ResponsePut__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponsePut__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponsePut__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponsePut__isResponseOp_Responseⁱᵐᵖˡ)]); (ResponseOp_ResponseDeleteRange.id, []); (ptrT.id ResponseOp_ResponseDeleteRange.id, [("MarshalTo"%go, ResponseOp_ResponseDeleteRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponseDeleteRange__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponseDeleteRange__isResponseOp_Responseⁱᵐᵖˡ)]); (ResponseOp_ResponseTxn.id, []); (ptrT.id ResponseOp_ResponseTxn.id, [("MarshalTo"%go, ResponseOp_ResponseTxn__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseTxn__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponseTxn__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponseTxn__isResponseOp_Responseⁱᵐᵖˡ)]); (Compare.id, []); (ptrT.id Compare.id, []); (Compare_Version.id, []); (ptrT.id Compare_Version.id, [("MarshalTo"%go, Compare_Version__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_Version__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_Version__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_Version__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_CreateRevision.id, []); (ptrT.id Compare_CreateRevision.id, [("MarshalTo"%go, Compare_CreateRevision__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_CreateRevision__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_CreateRevision__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_CreateRevision__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_ModRevision.id, []); (ptrT.id Compare_ModRevision.id, [("MarshalTo"%go, Compare_ModRevision__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_ModRevision__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_ModRevision__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_ModRevision__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_Value.id, []); (ptrT.id Compare_Value.id, [("MarshalTo"%go, Compare_Value__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_Value__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_Value__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_Value__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_Lease.id, []); (ptrT.id Compare_Lease.id, [("MarshalTo"%go, Compare_Lease__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_Lease__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_Lease__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_Lease__isCompare_TargetUnionⁱᵐᵖˡ)]); (TxnRequest.id, []); (ptrT.id TxnRequest.id, []); (TxnResponse.id, []); (ptrT.id TxnResponse.id, [])].
+Axiom sovEtcdserverⁱᵐᵖˡ : val.
+
+Axiom sozEtcdserverⁱᵐᵖˡ : val.
+
+Axiom skipEtcdserverⁱᵐᵖˡ : val.
+
+Axiom encodeVarintRaftInternalⁱᵐᵖˡ : val.
+
+Axiom sovRaftInternalⁱᵐᵖˡ : val.
+
+Axiom sozRaftInternalⁱᵐᵖˡ : val.
+
+Axiom skipRaftInternalⁱᵐᵖˡ : val.
+
+Axiom NewLoggableTxnRequestⁱᵐᵖˡ : val.
+
+Axiom newLoggableRequestOpⁱᵐᵖˡ : val.
+
+Axiom newLoggableValueCompareⁱᵐᵖˡ : val.
+
+Axiom NewLoggablePutRequestⁱᵐᵖˡ : val.
+
+Axiom NewKVClientⁱᵐᵖˡ : val.
+
+Axiom RegisterKVServerⁱᵐᵖˡ : val.
+
+Axiom _KV_Range_Handlerⁱᵐᵖˡ : val.
+
+Axiom _KV_Put_Handlerⁱᵐᵖˡ : val.
+
+Axiom _KV_DeleteRange_Handlerⁱᵐᵖˡ : val.
+
+Axiom _KV_Txn_Handlerⁱᵐᵖˡ : val.
+
+Axiom _KV_Compact_Handlerⁱᵐᵖˡ : val.
+
+Axiom NewWatchClientⁱᵐᵖˡ : val.
+
+Axiom RegisterWatchServerⁱᵐᵖˡ : val.
+
+Axiom _Watch_Watch_Handlerⁱᵐᵖˡ : val.
+
+Axiom NewLeaseClientⁱᵐᵖˡ : val.
+
+Axiom RegisterLeaseServerⁱᵐᵖˡ : val.
+
+Axiom _Lease_LeaseGrant_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Lease_LeaseRevoke_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Lease_LeaseKeepAlive_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Lease_LeaseTimeToLive_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Lease_LeaseLeases_Handlerⁱᵐᵖˡ : val.
+
+Axiom NewClusterClientⁱᵐᵖˡ : val.
+
+Axiom RegisterClusterServerⁱᵐᵖˡ : val.
+
+Axiom _Cluster_MemberAdd_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Cluster_MemberRemove_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Cluster_MemberUpdate_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Cluster_MemberList_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Cluster_MemberPromote_Handlerⁱᵐᵖˡ : val.
+
+Axiom NewMaintenanceClientⁱᵐᵖˡ : val.
+
+Axiom RegisterMaintenanceServerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_Alarm_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_Status_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_Defragment_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_Hash_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_HashKV_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_Snapshot_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_MoveLeader_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Maintenance_Downgrade_Handlerⁱᵐᵖˡ : val.
+
+Axiom NewAuthClientⁱᵐᵖˡ : val.
+
+Axiom RegisterAuthServerⁱᵐᵖˡ : val.
+
+Axiom _Auth_AuthEnable_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_AuthDisable_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_AuthStatus_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_Authenticate_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_UserAdd_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_UserGet_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_UserList_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_UserDelete_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_UserChangePassword_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_UserGrantRole_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_UserRevokeRole_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_RoleAdd_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_RoleGet_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_RoleList_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_RoleDelete_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_RoleGrantPermission_Handlerⁱᵐᵖˡ : val.
+
+Axiom _Auth_RoleRevokePermission_Handlerⁱᵐᵖˡ : val.
+
+Axiom encodeVarintRpcⁱᵐᵖˡ : val.
+
+Axiom sovRpcⁱᵐᵖˡ : val.
+
+Axiom sozRpcⁱᵐᵖˡ : val.
+
+Axiom skipRpcⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(encodeVarintEtcdserver, encodeVarintEtcdserverⁱᵐᵖˡ); (sovEtcdserver, sovEtcdserverⁱᵐᵖˡ); (sozEtcdserver, sozEtcdserverⁱᵐᵖˡ); (skipEtcdserver, skipEtcdserverⁱᵐᵖˡ); (encodeVarintRaftInternal, encodeVarintRaftInternalⁱᵐᵖˡ); (sovRaftInternal, sovRaftInternalⁱᵐᵖˡ); (sozRaftInternal, sozRaftInternalⁱᵐᵖˡ); (skipRaftInternal, skipRaftInternalⁱᵐᵖˡ); (NewLoggableTxnRequest, NewLoggableTxnRequestⁱᵐᵖˡ); (newLoggableRequestOp, newLoggableRequestOpⁱᵐᵖˡ); (newLoggableValueCompare, newLoggableValueCompareⁱᵐᵖˡ); (NewLoggablePutRequest, NewLoggablePutRequestⁱᵐᵖˡ); (NewKVClient, NewKVClientⁱᵐᵖˡ); (RegisterKVServer, RegisterKVServerⁱᵐᵖˡ); (_KV_Range_Handler, _KV_Range_Handlerⁱᵐᵖˡ); (_KV_Put_Handler, _KV_Put_Handlerⁱᵐᵖˡ); (_KV_DeleteRange_Handler, _KV_DeleteRange_Handlerⁱᵐᵖˡ); (_KV_Txn_Handler, _KV_Txn_Handlerⁱᵐᵖˡ); (_KV_Compact_Handler, _KV_Compact_Handlerⁱᵐᵖˡ); (NewWatchClient, NewWatchClientⁱᵐᵖˡ); (RegisterWatchServer, RegisterWatchServerⁱᵐᵖˡ); (_Watch_Watch_Handler, _Watch_Watch_Handlerⁱᵐᵖˡ); (NewLeaseClient, NewLeaseClientⁱᵐᵖˡ); (RegisterLeaseServer, RegisterLeaseServerⁱᵐᵖˡ); (_Lease_LeaseGrant_Handler, _Lease_LeaseGrant_Handlerⁱᵐᵖˡ); (_Lease_LeaseRevoke_Handler, _Lease_LeaseRevoke_Handlerⁱᵐᵖˡ); (_Lease_LeaseKeepAlive_Handler, _Lease_LeaseKeepAlive_Handlerⁱᵐᵖˡ); (_Lease_LeaseTimeToLive_Handler, _Lease_LeaseTimeToLive_Handlerⁱᵐᵖˡ); (_Lease_LeaseLeases_Handler, _Lease_LeaseLeases_Handlerⁱᵐᵖˡ); (NewClusterClient, NewClusterClientⁱᵐᵖˡ); (RegisterClusterServer, RegisterClusterServerⁱᵐᵖˡ); (_Cluster_MemberAdd_Handler, _Cluster_MemberAdd_Handlerⁱᵐᵖˡ); (_Cluster_MemberRemove_Handler, _Cluster_MemberRemove_Handlerⁱᵐᵖˡ); (_Cluster_MemberUpdate_Handler, _Cluster_MemberUpdate_Handlerⁱᵐᵖˡ); (_Cluster_MemberList_Handler, _Cluster_MemberList_Handlerⁱᵐᵖˡ); (_Cluster_MemberPromote_Handler, _Cluster_MemberPromote_Handlerⁱᵐᵖˡ); (NewMaintenanceClient, NewMaintenanceClientⁱᵐᵖˡ); (RegisterMaintenanceServer, RegisterMaintenanceServerⁱᵐᵖˡ); (_Maintenance_Alarm_Handler, _Maintenance_Alarm_Handlerⁱᵐᵖˡ); (_Maintenance_Status_Handler, _Maintenance_Status_Handlerⁱᵐᵖˡ); (_Maintenance_Defragment_Handler, _Maintenance_Defragment_Handlerⁱᵐᵖˡ); (_Maintenance_Hash_Handler, _Maintenance_Hash_Handlerⁱᵐᵖˡ); (_Maintenance_HashKV_Handler, _Maintenance_HashKV_Handlerⁱᵐᵖˡ); (_Maintenance_Snapshot_Handler, _Maintenance_Snapshot_Handlerⁱᵐᵖˡ); (_Maintenance_MoveLeader_Handler, _Maintenance_MoveLeader_Handlerⁱᵐᵖˡ); (_Maintenance_Downgrade_Handler, _Maintenance_Downgrade_Handlerⁱᵐᵖˡ); (NewAuthClient, NewAuthClientⁱᵐᵖˡ); (RegisterAuthServer, RegisterAuthServerⁱᵐᵖˡ); (_Auth_AuthEnable_Handler, _Auth_AuthEnable_Handlerⁱᵐᵖˡ); (_Auth_AuthDisable_Handler, _Auth_AuthDisable_Handlerⁱᵐᵖˡ); (_Auth_AuthStatus_Handler, _Auth_AuthStatus_Handlerⁱᵐᵖˡ); (_Auth_Authenticate_Handler, _Auth_Authenticate_Handlerⁱᵐᵖˡ); (_Auth_UserAdd_Handler, _Auth_UserAdd_Handlerⁱᵐᵖˡ); (_Auth_UserGet_Handler, _Auth_UserGet_Handlerⁱᵐᵖˡ); (_Auth_UserList_Handler, _Auth_UserList_Handlerⁱᵐᵖˡ); (_Auth_UserDelete_Handler, _Auth_UserDelete_Handlerⁱᵐᵖˡ); (_Auth_UserChangePassword_Handler, _Auth_UserChangePassword_Handlerⁱᵐᵖˡ); (_Auth_UserGrantRole_Handler, _Auth_UserGrantRole_Handlerⁱᵐᵖˡ); (_Auth_UserRevokeRole_Handler, _Auth_UserRevokeRole_Handlerⁱᵐᵖˡ); (_Auth_RoleAdd_Handler, _Auth_RoleAdd_Handlerⁱᵐᵖˡ); (_Auth_RoleGet_Handler, _Auth_RoleGet_Handlerⁱᵐᵖˡ); (_Auth_RoleList_Handler, _Auth_RoleList_Handlerⁱᵐᵖˡ); (_Auth_RoleDelete_Handler, _Auth_RoleDelete_Handlerⁱᵐᵖˡ); (_Auth_RoleGrantPermission_Handler, _Auth_RoleGrantPermission_Handlerⁱᵐᵖˡ); (_Auth_RoleRevokePermission_Handler, _Auth_RoleRevokePermission_Handlerⁱᵐᵖˡ); (encodeVarintRpc, encodeVarintRpcⁱᵐᵖˡ); (sovRpc, sovRpcⁱᵐᵖˡ); (sozRpc, sozRpcⁱᵐᵖˡ); (skipRpc, skipRpcⁱᵐᵖˡ)].
+
+Axiom Request__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Request__Marshalⁱᵐᵖˡ : val.
+
+Axiom Request__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Request__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Request__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Request__Resetⁱᵐᵖˡ : val.
+
+Axiom Request__Sizeⁱᵐᵖˡ : val.
+
+Axiom Request__Stringⁱᵐᵖˡ : val.
+
+Axiom Request__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Request__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom Request__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Request__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Request__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Request__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Metadata__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Metadata__Marshalⁱᵐᵖˡ : val.
+
+Axiom Metadata__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Metadata__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Metadata__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Metadata__Resetⁱᵐᵖˡ : val.
+
+Axiom Metadata__Sizeⁱᵐᵖˡ : val.
+
+Axiom Metadata__Stringⁱᵐᵖˡ : val.
+
+Axiom Metadata__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Metadata__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom Metadata__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Metadata__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Metadata__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Metadata__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__Descriptorⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__Marshalⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__MarshalToⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__Resetⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__Sizeⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__Stringⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom RequestHeader__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom InternalRaftRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom EmptyResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom InternalAuthenticateRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom InternalRaftStringer__Stringⁱᵐᵖˡ : val.
+
+Axiom txnRequestStringer__Stringⁱᵐᵖˡ : val.
+
+Axiom requestOpStringer__Stringⁱᵐᵖˡ : val.
+
+Axiom loggableValueCompare__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom loggableValueCompare__Resetⁱᵐᵖˡ : val.
+
+Axiom loggableValueCompare__Stringⁱᵐᵖˡ : val.
+
+Axiom loggablePutRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom loggablePutRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom loggablePutRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AlarmType__EnumDescriptorⁱᵐᵖˡ : val.
+
+Axiom AlarmType__Stringⁱᵐᵖˡ : val.
+
+Axiom RangeRequest_SortOrder__Stringⁱᵐᵖˡ : val.
+
+Axiom RangeRequest_SortTarget__Stringⁱᵐᵖˡ : val.
+
+Axiom Compare_CompareResult__Stringⁱᵐᵖˡ : val.
+
+Axiom Compare_CompareTarget__Stringⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest_FilterType__EnumDescriptorⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest_FilterType__Stringⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest_AlarmAction__EnumDescriptorⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest_AlarmAction__Stringⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest_DowngradeAction__EnumDescriptorⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest_DowngradeAction__Stringⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__Descriptorⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__GetClusterIdⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__GetMemberIdⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__GetRaftTermⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__Marshalⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__MarshalToⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__Resetⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__Sizeⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__Stringⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom ResponseHeader__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetCountOnlyⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetKeyⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetKeysOnlyⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetLimitⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetMaxCreateRevisionⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetMaxModRevisionⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetMinCreateRevisionⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetMinModRevisionⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetRangeEndⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetSerializableⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetSortOrderⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__GetSortTargetⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom RangeRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__GetCountⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__GetKvsⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__GetMoreⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom RangeResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom PutRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom PutRequest__GetIgnoreLeaseⁱᵐᵖˡ : val.
+
+Axiom PutRequest__GetIgnoreValueⁱᵐᵖˡ : val.
+
+Axiom PutRequest__GetKeyⁱᵐᵖˡ : val.
+
+Axiom PutRequest__GetLeaseⁱᵐᵖˡ : val.
+
+Axiom PutRequest__GetPrevKvⁱᵐᵖˡ : val.
+
+Axiom PutRequest__GetValueⁱᵐᵖˡ : val.
+
+Axiom PutRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom PutRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom PutRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom PutRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom PutRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom PutRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom PutRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom PutRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom PutRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom PutRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom PutRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom PutRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom PutRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom PutResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom PutResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom PutResponse__GetPrevKvⁱᵐᵖˡ : val.
+
+Axiom PutResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom PutResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom PutResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom PutResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom PutResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom PutResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom PutResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom PutResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom PutResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom PutResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom PutResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom PutResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom PutResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__GetKeyⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__GetPrevKvⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__GetRangeEndⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__GetDeletedⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__GetPrevKvsⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom DeleteRangeResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RequestOp__Descriptorⁱᵐᵖˡ : val.
+
+Axiom RequestOp__GetRequestⁱᵐᵖˡ : val.
+
+Axiom RequestOp__GetRequestDeleteRangeⁱᵐᵖˡ : val.
+
+Axiom RequestOp__GetRequestPutⁱᵐᵖˡ : val.
+
+Axiom RequestOp__GetRequestRangeⁱᵐᵖˡ : val.
+
+Axiom RequestOp__GetRequestTxnⁱᵐᵖˡ : val.
+
+Axiom RequestOp__Marshalⁱᵐᵖˡ : val.
+
+Axiom RequestOp__MarshalToⁱᵐᵖˡ : val.
+
+Axiom RequestOp__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom RequestOp__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom RequestOp__Resetⁱᵐᵖˡ : val.
+
+Axiom RequestOp__Sizeⁱᵐᵖˡ : val.
+
+Axiom RequestOp__Stringⁱᵐᵖˡ : val.
+
+Axiom RequestOp__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom RequestOp__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom RequestOp__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom RequestOp__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom RequestOp__XXX_OneofWrappersⁱᵐᵖˡ : val.
+
+Axiom RequestOp__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom RequestOp__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__Descriptorⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__GetResponseⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__GetResponseDeleteRangeⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__GetResponsePutⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__GetResponseRangeⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__GetResponseTxnⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__Marshalⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__MarshalToⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__Resetⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__Sizeⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__Stringⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__XXX_OneofWrappersⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom ResponseOp__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Compare__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Compare__GetCreateRevisionⁱᵐᵖˡ : val.
+
+Axiom Compare__GetKeyⁱᵐᵖˡ : val.
+
+Axiom Compare__GetLeaseⁱᵐᵖˡ : val.
+
+Axiom Compare__GetModRevisionⁱᵐᵖˡ : val.
+
+Axiom Compare__GetRangeEndⁱᵐᵖˡ : val.
+
+Axiom Compare__GetResultⁱᵐᵖˡ : val.
+
+Axiom Compare__GetTargetⁱᵐᵖˡ : val.
+
+Axiom Compare__GetTargetUnionⁱᵐᵖˡ : val.
+
+Axiom Compare__GetValueⁱᵐᵖˡ : val.
+
+Axiom Compare__GetVersionⁱᵐᵖˡ : val.
+
+Axiom Compare__Marshalⁱᵐᵖˡ : val.
+
+Axiom Compare__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Compare__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Compare__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Compare__Resetⁱᵐᵖˡ : val.
+
+Axiom Compare__Sizeⁱᵐᵖˡ : val.
+
+Axiom Compare__Stringⁱᵐᵖˡ : val.
+
+Axiom Compare__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Compare__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom Compare__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Compare__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Compare__XXX_OneofWrappersⁱᵐᵖˡ : val.
+
+Axiom Compare__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Compare__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__GetCompareⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__GetFailureⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__GetSuccessⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom TxnRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__GetResponsesⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__GetSucceededⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom TxnResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__GetPhysicalⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom CompactionRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom CompactionResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom HashRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom HashRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom HashRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom HashRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom HashRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom HashRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom HashRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom HashRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom HashRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom HashRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom HashRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom HashRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__GetRevisionⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom HashKVRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__GetCompactRevisionⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__GetHashⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__GetHashRevisionⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom HashKVResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom HashResponse__GetHashⁱᵐᵖˡ : val.
+
+Axiom HashResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom HashResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom HashResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom HashResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom HashResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom HashResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom HashResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom HashResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom HashResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom HashResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom HashResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom HashResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom HashResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom HashResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom SnapshotRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__GetBlobⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__GetRemainingBytesⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__GetVersionⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom SnapshotResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__GetCancelRequestⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__GetCreateRequestⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__GetProgressRequestⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__GetRequestUnionⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__XXX_OneofWrappersⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CreateRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CreateRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CreateRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CreateRequest__isWatchRequest_RequestUnionⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CancelRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CancelRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CancelRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_CancelRequest__isWatchRequest_RequestUnionⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_ProgressRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_ProgressRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_ProgressRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchRequest_ProgressRequest__isWatchRequest_RequestUnionⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetFiltersⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetFragmentⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetKeyⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetPrevKvⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetProgressNotifyⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetRangeEndⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetStartRevisionⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__GetWatchIdⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchCreateRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__GetWatchIdⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchCancelRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchProgressRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetCancelReasonⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetCanceledⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetCompactRevisionⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetCreatedⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetEventsⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetFragmentⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__GetWatchIdⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom WatchResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__GetTTLⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetErrorⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__GetTTLⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseGrantResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseRevokeResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__GetRemaining_TTLⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpoint__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__GetCheckpointsⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseCheckpointResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__GetTTLⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseKeepAliveResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__GetKeysⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetGrantedTTLⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetKeysⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__GetTTLⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseTimeToLiveResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__GetIDⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseStatus__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__GetLeasesⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom LeaseLeasesResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Member__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Member__GetClientURLsⁱᵐᵖˡ : val.
+
+Axiom Member__GetIDⁱᵐᵖˡ : val.
+
+Axiom Member__GetIsLearnerⁱᵐᵖˡ : val.
+
+Axiom Member__GetNameⁱᵐᵖˡ : val.
+
+Axiom Member__GetPeerURLsⁱᵐᵖˡ : val.
+
+Axiom Member__Marshalⁱᵐᵖˡ : val.
+
+Axiom Member__MarshalToⁱᵐᵖˡ : val.
+
+Axiom Member__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom Member__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Member__Resetⁱᵐᵖˡ : val.
+
+Axiom Member__Sizeⁱᵐᵖˡ : val.
+
+Axiom Member__Stringⁱᵐᵖˡ : val.
+
+Axiom Member__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom Member__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom Member__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom Member__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom Member__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom Member__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__GetIsLearnerⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__GetPeerURLsⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberAddRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__GetMemberⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__GetMembersⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberAddResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__GetIDⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__GetMembersⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberRemoveResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__GetIDⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__GetPeerURLsⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__GetMembersⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberUpdateResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__GetLinearizableⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberListRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__GetMembersⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberListResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__GetIDⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__GetMembersⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MemberPromoteResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom DefragmentRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom DefragmentResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__GetTargetIDⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom MoveLeaderResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__GetActionⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__GetAlarmⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__GetMemberIDⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AlarmRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__GetAlarmⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__GetMemberIDⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__Marshalⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__Resetⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__Sizeⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__Stringⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AlarmMember__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__GetAlarmsⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AlarmResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__GetActionⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__GetVersionⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom DowngradeRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__GetVersionⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom DowngradeResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom StatusRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetDbSizeⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetDbSizeInUseⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetDbSizeQuotaⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetErrorsⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetIsLearnerⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetLeaderⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetRaftAppliedIndexⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetRaftIndexⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetRaftTermⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetStorageVersionⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__GetVersionⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom StatusResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthEnableRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthDisableRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthStatusRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__GetPasswordⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthenticateRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__GetHashedPasswordⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__GetOptionsⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__GetPasswordⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__GetHashedPasswordⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__GetPasswordⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__GetRoleⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__GetUserⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__GetRoleⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__GetRoleⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserListRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__GetRoleⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__GetNameⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__GetPermⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__GetKeyⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__GetRangeEndⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__GetRoleⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionRequest__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthEnableResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthDisableResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__GetAuthRevisionⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__GetEnabledⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthStatusResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__GetTokenⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthenticateResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserAddResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__GetRolesⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGetResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserDeleteResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserChangePasswordResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserGrantRoleResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserRevokeRoleResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleAddResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__GetPermⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGetResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__GetRolesⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleListResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__GetUsersⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthUserListResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleDeleteResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleGrantPermissionResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__Descriptorⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__GetHeaderⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__MarshalToⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__MarshalToSizedBufferⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__Resetⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__Stringⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__Unmarshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__XXX_DiscardUnknownⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__XXX_Marshalⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__XXX_Mergeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__XXX_Sizeⁱᵐᵖˡ : val.
+
+Axiom AuthRoleRevokePermissionResponse__XXX_Unmarshalⁱᵐᵖˡ : val.
+
+Axiom kVClient__Compactⁱᵐᵖˡ : val.
+
+Axiom kVClient__DeleteRangeⁱᵐᵖˡ : val.
+
+Axiom kVClient__Putⁱᵐᵖˡ : val.
+
+Axiom kVClient__Rangeⁱᵐᵖˡ : val.
+
+Axiom kVClient__Txnⁱᵐᵖˡ : val.
+
+Axiom UnimplementedKVServer__Compactⁱᵐᵖˡ : val.
+
+Axiom UnimplementedKVServer__DeleteRangeⁱᵐᵖˡ : val.
+
+Axiom UnimplementedKVServer__Putⁱᵐᵖˡ : val.
+
+Axiom UnimplementedKVServer__Rangeⁱᵐᵖˡ : val.
+
+Axiom UnimplementedKVServer__Txnⁱᵐᵖˡ : val.
+
+Axiom watchClient__Watchⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__CloseSendⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__Contextⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__Headerⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__Recvⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__Sendⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__SendMsgⁱᵐᵖˡ : val.
+
+Axiom watchWatchClient__Trailerⁱᵐᵖˡ : val.
+
+Axiom UnimplementedWatchServer__Watchⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__Contextⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__Recvⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__Sendⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__SendHeaderⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__SendMsgⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__SetHeaderⁱᵐᵖˡ : val.
+
+Axiom watchWatchServer__SetTrailerⁱᵐᵖˡ : val.
+
+Axiom leaseClient__LeaseGrantⁱᵐᵖˡ : val.
+
+Axiom leaseClient__LeaseKeepAliveⁱᵐᵖˡ : val.
+
+Axiom leaseClient__LeaseLeasesⁱᵐᵖˡ : val.
+
+Axiom leaseClient__LeaseRevokeⁱᵐᵖˡ : val.
+
+Axiom leaseClient__LeaseTimeToLiveⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__CloseSendⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__Contextⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__Headerⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__Recvⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__Sendⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__SendMsgⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveClient__Trailerⁱᵐᵖˡ : val.
+
+Axiom UnimplementedLeaseServer__LeaseGrantⁱᵐᵖˡ : val.
+
+Axiom UnimplementedLeaseServer__LeaseKeepAliveⁱᵐᵖˡ : val.
+
+Axiom UnimplementedLeaseServer__LeaseLeasesⁱᵐᵖˡ : val.
+
+Axiom UnimplementedLeaseServer__LeaseRevokeⁱᵐᵖˡ : val.
+
+Axiom UnimplementedLeaseServer__LeaseTimeToLiveⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__Contextⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__Recvⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__Sendⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__SendHeaderⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__SendMsgⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__SetHeaderⁱᵐᵖˡ : val.
+
+Axiom leaseLeaseKeepAliveServer__SetTrailerⁱᵐᵖˡ : val.
+
+Axiom clusterClient__MemberAddⁱᵐᵖˡ : val.
+
+Axiom clusterClient__MemberListⁱᵐᵖˡ : val.
+
+Axiom clusterClient__MemberPromoteⁱᵐᵖˡ : val.
+
+Axiom clusterClient__MemberRemoveⁱᵐᵖˡ : val.
+
+Axiom clusterClient__MemberUpdateⁱᵐᵖˡ : val.
+
+Axiom UnimplementedClusterServer__MemberAddⁱᵐᵖˡ : val.
+
+Axiom UnimplementedClusterServer__MemberListⁱᵐᵖˡ : val.
+
+Axiom UnimplementedClusterServer__MemberPromoteⁱᵐᵖˡ : val.
+
+Axiom UnimplementedClusterServer__MemberRemoveⁱᵐᵖˡ : val.
+
+Axiom UnimplementedClusterServer__MemberUpdateⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__Alarmⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__Defragmentⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__Downgradeⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__Hashⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__HashKVⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__MoveLeaderⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__Snapshotⁱᵐᵖˡ : val.
+
+Axiom maintenanceClient__Statusⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotClient__CloseSendⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotClient__Contextⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotClient__Headerⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotClient__Recvⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotClient__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotClient__SendMsgⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotClient__Trailerⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__Alarmⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__Defragmentⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__Downgradeⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__Hashⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__HashKVⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__MoveLeaderⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__Snapshotⁱᵐᵖˡ : val.
+
+Axiom UnimplementedMaintenanceServer__Statusⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotServer__Contextⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotServer__RecvMsgⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotServer__Sendⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotServer__SendHeaderⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotServer__SendMsgⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotServer__SetHeaderⁱᵐᵖˡ : val.
+
+Axiom maintenanceSnapshotServer__SetTrailerⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthDisableⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthEnableⁱᵐᵖˡ : val.
+
+Axiom authClient__AuthStatusⁱᵐᵖˡ : val.
+
+Axiom authClient__Authenticateⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleAddⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleDeleteⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleGetⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleGrantPermissionⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleListⁱᵐᵖˡ : val.
+
+Axiom authClient__RoleRevokePermissionⁱᵐᵖˡ : val.
+
+Axiom authClient__UserAddⁱᵐᵖˡ : val.
+
+Axiom authClient__UserChangePasswordⁱᵐᵖˡ : val.
+
+Axiom authClient__UserDeleteⁱᵐᵖˡ : val.
+
+Axiom authClient__UserGetⁱᵐᵖˡ : val.
+
+Axiom authClient__UserGrantRoleⁱᵐᵖˡ : val.
+
+Axiom authClient__UserListⁱᵐᵖˡ : val.
+
+Axiom authClient__UserRevokeRoleⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__AuthDisableⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__AuthEnableⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__AuthStatusⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__Authenticateⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__RoleAddⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__RoleDeleteⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__RoleGetⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__RoleGrantPermissionⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__RoleListⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__RoleRevokePermissionⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__UserAddⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__UserChangePasswordⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__UserDeleteⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__UserGetⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__UserGrantRoleⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__UserListⁱᵐᵖˡ : val.
+
+Axiom UnimplementedAuthServer__UserRevokeRoleⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(Request.id, []); (ptrT.id Request.id, [("Descriptor"%go, Request__Descriptorⁱᵐᵖˡ); ("Marshal"%go, Request__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Request__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Request__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Request__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Request__Resetⁱᵐᵖˡ); ("Size"%go, Request__Sizeⁱᵐᵖˡ); ("String"%go, Request__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Request__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Request__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Request__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Request__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, Request__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Request__XXX_Unmarshalⁱᵐᵖˡ)]); (Metadata.id, []); (ptrT.id Metadata.id, [("Descriptor"%go, Metadata__Descriptorⁱᵐᵖˡ); ("Marshal"%go, Metadata__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Metadata__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Metadata__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Metadata__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Metadata__Resetⁱᵐᵖˡ); ("Size"%go, Metadata__Sizeⁱᵐᵖˡ); ("String"%go, Metadata__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Metadata__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Metadata__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Metadata__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Metadata__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, Metadata__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Metadata__XXX_Unmarshalⁱᵐᵖˡ)]); (RequestHeader.id, []); (ptrT.id RequestHeader.id, [("Descriptor"%go, RequestHeader__Descriptorⁱᵐᵖˡ); ("Marshal"%go, RequestHeader__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, RequestHeader__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestHeader__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, RequestHeader__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, RequestHeader__Resetⁱᵐᵖˡ); ("Size"%go, RequestHeader__Sizeⁱᵐᵖˡ); ("String"%go, RequestHeader__Stringⁱᵐᵖˡ); ("Unmarshal"%go, RequestHeader__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, RequestHeader__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, RequestHeader__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, RequestHeader__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, RequestHeader__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, RequestHeader__XXX_Unmarshalⁱᵐᵖˡ)]); (InternalRaftRequest.id, []); (ptrT.id InternalRaftRequest.id, [("Descriptor"%go, InternalRaftRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, InternalRaftRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, InternalRaftRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, InternalRaftRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, InternalRaftRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, InternalRaftRequest__Resetⁱᵐᵖˡ); ("Size"%go, InternalRaftRequest__Sizeⁱᵐᵖˡ); ("String"%go, InternalRaftRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, InternalRaftRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, InternalRaftRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, InternalRaftRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, InternalRaftRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, InternalRaftRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, InternalRaftRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (EmptyResponse.id, []); (ptrT.id EmptyResponse.id, [("Descriptor"%go, EmptyResponse__Descriptorⁱᵐᵖˡ); ("Marshal"%go, EmptyResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, EmptyResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, EmptyResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, EmptyResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, EmptyResponse__Resetⁱᵐᵖˡ); ("Size"%go, EmptyResponse__Sizeⁱᵐᵖˡ); ("String"%go, EmptyResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, EmptyResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, EmptyResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, EmptyResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, EmptyResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, EmptyResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, EmptyResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (InternalAuthenticateRequest.id, []); (ptrT.id InternalAuthenticateRequest.id, [("Descriptor"%go, InternalAuthenticateRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, InternalAuthenticateRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, InternalAuthenticateRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, InternalAuthenticateRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, InternalAuthenticateRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, InternalAuthenticateRequest__Resetⁱᵐᵖˡ); ("Size"%go, InternalAuthenticateRequest__Sizeⁱᵐᵖˡ); ("String"%go, InternalAuthenticateRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, InternalAuthenticateRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, InternalAuthenticateRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, InternalAuthenticateRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, InternalAuthenticateRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, InternalAuthenticateRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, InternalAuthenticateRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (InternalRaftStringer.id, []); (ptrT.id InternalRaftStringer.id, [("String"%go, InternalRaftStringer__Stringⁱᵐᵖˡ)]); (txnRequestStringer.id, []); (ptrT.id txnRequestStringer.id, [("String"%go, txnRequestStringer__Stringⁱᵐᵖˡ)]); (requestOpStringer.id, []); (ptrT.id requestOpStringer.id, [("String"%go, requestOpStringer__Stringⁱᵐᵖˡ)]); (loggableValueCompare.id, []); (ptrT.id loggableValueCompare.id, [("ProtoMessage"%go, loggableValueCompare__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, loggableValueCompare__Resetⁱᵐᵖˡ); ("String"%go, loggableValueCompare__Stringⁱᵐᵖˡ)]); (loggablePutRequest.id, []); (ptrT.id loggablePutRequest.id, [("ProtoMessage"%go, loggablePutRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, loggablePutRequest__Resetⁱᵐᵖˡ); ("String"%go, loggablePutRequest__Stringⁱᵐᵖˡ)]); (AlarmType.id, [("EnumDescriptor"%go, AlarmType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, AlarmType__Stringⁱᵐᵖˡ)]); (ptrT.id AlarmType.id, [("EnumDescriptor"%go, AlarmType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, AlarmType__Stringⁱᵐᵖˡ)]); (RangeRequest_SortOrder.id, [("EnumDescriptor"%go, RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ); ("String"%go, RangeRequest_SortOrder__Stringⁱᵐᵖˡ)]); (ptrT.id RangeRequest_SortOrder.id, [("EnumDescriptor"%go, (λ: "$r",
+                 method_call #RangeRequest_SortOrder.id #"EnumDescriptor"%go (![#RangeRequest_SortOrder] "$r")
+                 )%V); ("String"%go, RangeRequest_SortOrder__Stringⁱᵐᵖˡ)]); (RangeRequest_SortTarget.id, [("EnumDescriptor"%go, RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ); ("String"%go, RangeRequest_SortTarget__Stringⁱᵐᵖˡ)]); (ptrT.id RangeRequest_SortTarget.id, [("EnumDescriptor"%go, (λ: "$r",
+                 method_call #RangeRequest_SortTarget.id #"EnumDescriptor"%go (![#RangeRequest_SortTarget] "$r")
+                 )%V); ("String"%go, RangeRequest_SortTarget__Stringⁱᵐᵖˡ)]); (Compare_CompareResult.id, [("EnumDescriptor"%go, Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ); ("String"%go, Compare_CompareResult__Stringⁱᵐᵖˡ)]); (ptrT.id Compare_CompareResult.id, [("EnumDescriptor"%go, (λ: "$r",
+                 method_call #Compare_CompareResult.id #"EnumDescriptor"%go (![#Compare_CompareResult] "$r")
+                 )%V); ("String"%go, Compare_CompareResult__Stringⁱᵐᵖˡ)]); (Compare_CompareTarget.id, [("EnumDescriptor"%go, Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ); ("String"%go, Compare_CompareTarget__Stringⁱᵐᵖˡ)]); (ptrT.id Compare_CompareTarget.id, [("EnumDescriptor"%go, (λ: "$r",
+                 method_call #Compare_CompareTarget.id #"EnumDescriptor"%go (![#Compare_CompareTarget] "$r")
+                 )%V); ("String"%go, Compare_CompareTarget__Stringⁱᵐᵖˡ)]); (WatchCreateRequest_FilterType.id, [("EnumDescriptor"%go, WatchCreateRequest_FilterType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, WatchCreateRequest_FilterType__Stringⁱᵐᵖˡ)]); (ptrT.id WatchCreateRequest_FilterType.id, [("EnumDescriptor"%go, WatchCreateRequest_FilterType__EnumDescriptorⁱᵐᵖˡ); ("String"%go, WatchCreateRequest_FilterType__Stringⁱᵐᵖˡ)]); (AlarmRequest_AlarmAction.id, [("EnumDescriptor"%go, AlarmRequest_AlarmAction__EnumDescriptorⁱᵐᵖˡ); ("String"%go, AlarmRequest_AlarmAction__Stringⁱᵐᵖˡ)]); (ptrT.id AlarmRequest_AlarmAction.id, [("EnumDescriptor"%go, AlarmRequest_AlarmAction__EnumDescriptorⁱᵐᵖˡ); ("String"%go, AlarmRequest_AlarmAction__Stringⁱᵐᵖˡ)]); (DowngradeRequest_DowngradeAction.id, [("EnumDescriptor"%go, DowngradeRequest_DowngradeAction__EnumDescriptorⁱᵐᵖˡ); ("String"%go, DowngradeRequest_DowngradeAction__Stringⁱᵐᵖˡ)]); (ptrT.id DowngradeRequest_DowngradeAction.id, [("EnumDescriptor"%go, DowngradeRequest_DowngradeAction__EnumDescriptorⁱᵐᵖˡ); ("String"%go, DowngradeRequest_DowngradeAction__Stringⁱᵐᵖˡ)]); (ResponseHeader.id, []); (ptrT.id ResponseHeader.id, [("Descriptor"%go, ResponseHeader__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, ResponseHeader__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, ResponseHeader__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, ResponseHeader__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, ResponseHeader__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, ResponseHeader__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, ResponseHeader__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseHeader__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, ResponseHeader__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, ResponseHeader__Resetⁱᵐᵖˡ); ("Size"%go, ResponseHeader__Sizeⁱᵐᵖˡ); ("String"%go, ResponseHeader__Stringⁱᵐᵖˡ); ("Unmarshal"%go, ResponseHeader__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, ResponseHeader__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, ResponseHeader__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, ResponseHeader__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, ResponseHeader__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, ResponseHeader__XXX_Unmarshalⁱᵐᵖˡ)]); (RangeRequest.id, []); (ptrT.id RangeRequest.id, [("Descriptor"%go, RangeRequest__Descriptorⁱᵐᵖˡ); ("GetCountOnly"%go, RangeRequest__GetCountOnlyⁱᵐᵖˡ); ("GetKey"%go, RangeRequest__GetKeyⁱᵐᵖˡ); ("GetKeysOnly"%go, RangeRequest__GetKeysOnlyⁱᵐᵖˡ); ("GetLimit"%go, RangeRequest__GetLimitⁱᵐᵖˡ); ("GetMaxCreateRevision"%go, RangeRequest__GetMaxCreateRevisionⁱᵐᵖˡ); ("GetMaxModRevision"%go, RangeRequest__GetMaxModRevisionⁱᵐᵖˡ); ("GetMinCreateRevision"%go, RangeRequest__GetMinCreateRevisionⁱᵐᵖˡ); ("GetMinModRevision"%go, RangeRequest__GetMinModRevisionⁱᵐᵖˡ); ("GetRangeEnd"%go, RangeRequest__GetRangeEndⁱᵐᵖˡ); ("GetRevision"%go, RangeRequest__GetRevisionⁱᵐᵖˡ); ("GetSerializable"%go, RangeRequest__GetSerializableⁱᵐᵖˡ); ("GetSortOrder"%go, RangeRequest__GetSortOrderⁱᵐᵖˡ); ("GetSortTarget"%go, RangeRequest__GetSortTargetⁱᵐᵖˡ); ("Marshal"%go, RangeRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, RangeRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RangeRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, RangeRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, RangeRequest__Resetⁱᵐᵖˡ); ("Size"%go, RangeRequest__Sizeⁱᵐᵖˡ); ("String"%go, RangeRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, RangeRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, RangeRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, RangeRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, RangeRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, RangeRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, RangeRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (RangeResponse.id, []); (ptrT.id RangeResponse.id, [("Descriptor"%go, RangeResponse__Descriptorⁱᵐᵖˡ); ("GetCount"%go, RangeResponse__GetCountⁱᵐᵖˡ); ("GetHeader"%go, RangeResponse__GetHeaderⁱᵐᵖˡ); ("GetKvs"%go, RangeResponse__GetKvsⁱᵐᵖˡ); ("GetMore"%go, RangeResponse__GetMoreⁱᵐᵖˡ); ("Marshal"%go, RangeResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, RangeResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RangeResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, RangeResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, RangeResponse__Resetⁱᵐᵖˡ); ("Size"%go, RangeResponse__Sizeⁱᵐᵖˡ); ("String"%go, RangeResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, RangeResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, RangeResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, RangeResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, RangeResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, RangeResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, RangeResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (PutRequest.id, []); (ptrT.id PutRequest.id, [("Descriptor"%go, PutRequest__Descriptorⁱᵐᵖˡ); ("GetIgnoreLease"%go, PutRequest__GetIgnoreLeaseⁱᵐᵖˡ); ("GetIgnoreValue"%go, PutRequest__GetIgnoreValueⁱᵐᵖˡ); ("GetKey"%go, PutRequest__GetKeyⁱᵐᵖˡ); ("GetLease"%go, PutRequest__GetLeaseⁱᵐᵖˡ); ("GetPrevKv"%go, PutRequest__GetPrevKvⁱᵐᵖˡ); ("GetValue"%go, PutRequest__GetValueⁱᵐᵖˡ); ("Marshal"%go, PutRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, PutRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, PutRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, PutRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, PutRequest__Resetⁱᵐᵖˡ); ("Size"%go, PutRequest__Sizeⁱᵐᵖˡ); ("String"%go, PutRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, PutRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, PutRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, PutRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, PutRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, PutRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, PutRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (PutResponse.id, []); (ptrT.id PutResponse.id, [("Descriptor"%go, PutResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, PutResponse__GetHeaderⁱᵐᵖˡ); ("GetPrevKv"%go, PutResponse__GetPrevKvⁱᵐᵖˡ); ("Marshal"%go, PutResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, PutResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, PutResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, PutResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, PutResponse__Resetⁱᵐᵖˡ); ("Size"%go, PutResponse__Sizeⁱᵐᵖˡ); ("String"%go, PutResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, PutResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, PutResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, PutResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, PutResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, PutResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, PutResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (DeleteRangeRequest.id, []); (ptrT.id DeleteRangeRequest.id, [("Descriptor"%go, DeleteRangeRequest__Descriptorⁱᵐᵖˡ); ("GetKey"%go, DeleteRangeRequest__GetKeyⁱᵐᵖˡ); ("GetPrevKv"%go, DeleteRangeRequest__GetPrevKvⁱᵐᵖˡ); ("GetRangeEnd"%go, DeleteRangeRequest__GetRangeEndⁱᵐᵖˡ); ("Marshal"%go, DeleteRangeRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, DeleteRangeRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, DeleteRangeRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, DeleteRangeRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, DeleteRangeRequest__Resetⁱᵐᵖˡ); ("Size"%go, DeleteRangeRequest__Sizeⁱᵐᵖˡ); ("String"%go, DeleteRangeRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, DeleteRangeRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, DeleteRangeRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, DeleteRangeRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, DeleteRangeRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, DeleteRangeRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, DeleteRangeRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (DeleteRangeResponse.id, []); (ptrT.id DeleteRangeResponse.id, [("Descriptor"%go, DeleteRangeResponse__Descriptorⁱᵐᵖˡ); ("GetDeleted"%go, DeleteRangeResponse__GetDeletedⁱᵐᵖˡ); ("GetHeader"%go, DeleteRangeResponse__GetHeaderⁱᵐᵖˡ); ("GetPrevKvs"%go, DeleteRangeResponse__GetPrevKvsⁱᵐᵖˡ); ("Marshal"%go, DeleteRangeResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, DeleteRangeResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, DeleteRangeResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, DeleteRangeResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, DeleteRangeResponse__Resetⁱᵐᵖˡ); ("Size"%go, DeleteRangeResponse__Sizeⁱᵐᵖˡ); ("String"%go, DeleteRangeResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, DeleteRangeResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, DeleteRangeResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, DeleteRangeResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, DeleteRangeResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, DeleteRangeResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, DeleteRangeResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (RequestOp.id, []); (ptrT.id RequestOp.id, [("Descriptor"%go, RequestOp__Descriptorⁱᵐᵖˡ); ("GetRequest"%go, RequestOp__GetRequestⁱᵐᵖˡ); ("GetRequestDeleteRange"%go, RequestOp__GetRequestDeleteRangeⁱᵐᵖˡ); ("GetRequestPut"%go, RequestOp__GetRequestPutⁱᵐᵖˡ); ("GetRequestRange"%go, RequestOp__GetRequestRangeⁱᵐᵖˡ); ("GetRequestTxn"%go, RequestOp__GetRequestTxnⁱᵐᵖˡ); ("Marshal"%go, RequestOp__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, RequestOp__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, RequestOp__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, RequestOp__Resetⁱᵐᵖˡ); ("Size"%go, RequestOp__Sizeⁱᵐᵖˡ); ("String"%go, RequestOp__Stringⁱᵐᵖˡ); ("Unmarshal"%go, RequestOp__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, RequestOp__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, RequestOp__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, RequestOp__XXX_Mergeⁱᵐᵖˡ); ("XXX_OneofWrappers"%go, RequestOp__XXX_OneofWrappersⁱᵐᵖˡ); ("XXX_Size"%go, RequestOp__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, RequestOp__XXX_Unmarshalⁱᵐᵖˡ)]); (RequestOp_RequestRange.id, []); (ptrT.id RequestOp_RequestRange.id, [("MarshalTo"%go, RequestOp_RequestRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestRange__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ)]); (RequestOp_RequestPut.id, []); (ptrT.id RequestOp_RequestPut.id, [("MarshalTo"%go, RequestOp_RequestPut__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestPut__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestPut__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestPut__isRequestOp_Requestⁱᵐᵖˡ)]); (RequestOp_RequestDeleteRange.id, []); (ptrT.id RequestOp_RequestDeleteRange.id, [("MarshalTo"%go, RequestOp_RequestDeleteRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestDeleteRange__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestDeleteRange__isRequestOp_Requestⁱᵐᵖˡ)]); (RequestOp_RequestTxn.id, []); (ptrT.id RequestOp_RequestTxn.id, [("MarshalTo"%go, RequestOp_RequestTxn__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, RequestOp_RequestTxn__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, RequestOp_RequestTxn__Sizeⁱᵐᵖˡ); ("isRequestOp_Request"%go, RequestOp_RequestTxn__isRequestOp_Requestⁱᵐᵖˡ)]); (ResponseOp.id, []); (ptrT.id ResponseOp.id, [("Descriptor"%go, ResponseOp__Descriptorⁱᵐᵖˡ); ("GetResponse"%go, ResponseOp__GetResponseⁱᵐᵖˡ); ("GetResponseDeleteRange"%go, ResponseOp__GetResponseDeleteRangeⁱᵐᵖˡ); ("GetResponsePut"%go, ResponseOp__GetResponsePutⁱᵐᵖˡ); ("GetResponseRange"%go, ResponseOp__GetResponseRangeⁱᵐᵖˡ); ("GetResponseTxn"%go, ResponseOp__GetResponseTxnⁱᵐᵖˡ); ("Marshal"%go, ResponseOp__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, ResponseOp__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, ResponseOp__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, ResponseOp__Resetⁱᵐᵖˡ); ("Size"%go, ResponseOp__Sizeⁱᵐᵖˡ); ("String"%go, ResponseOp__Stringⁱᵐᵖˡ); ("Unmarshal"%go, ResponseOp__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, ResponseOp__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, ResponseOp__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, ResponseOp__XXX_Mergeⁱᵐᵖˡ); ("XXX_OneofWrappers"%go, ResponseOp__XXX_OneofWrappersⁱᵐᵖˡ); ("XXX_Size"%go, ResponseOp__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, ResponseOp__XXX_Unmarshalⁱᵐᵖˡ)]); (ResponseOp_ResponseRange.id, []); (ptrT.id ResponseOp_ResponseRange.id, [("MarshalTo"%go, ResponseOp_ResponseRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponseRange__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponseRange__isResponseOp_Responseⁱᵐᵖˡ)]); (ResponseOp_ResponsePut.id, []); (ptrT.id ResponseOp_ResponsePut.id, [("MarshalTo"%go, ResponseOp_ResponsePut__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponsePut__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponsePut__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponsePut__isResponseOp_Responseⁱᵐᵖˡ)]); (ResponseOp_ResponseDeleteRange.id, []); (ptrT.id ResponseOp_ResponseDeleteRange.id, [("MarshalTo"%go, ResponseOp_ResponseDeleteRange__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponseDeleteRange__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponseDeleteRange__isResponseOp_Responseⁱᵐᵖˡ)]); (ResponseOp_ResponseTxn.id, []); (ptrT.id ResponseOp_ResponseTxn.id, [("MarshalTo"%go, ResponseOp_ResponseTxn__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseTxn__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, ResponseOp_ResponseTxn__Sizeⁱᵐᵖˡ); ("isResponseOp_Response"%go, ResponseOp_ResponseTxn__isResponseOp_Responseⁱᵐᵖˡ)]); (Compare.id, []); (ptrT.id Compare.id, [("Descriptor"%go, Compare__Descriptorⁱᵐᵖˡ); ("GetCreateRevision"%go, Compare__GetCreateRevisionⁱᵐᵖˡ); ("GetKey"%go, Compare__GetKeyⁱᵐᵖˡ); ("GetLease"%go, Compare__GetLeaseⁱᵐᵖˡ); ("GetModRevision"%go, Compare__GetModRevisionⁱᵐᵖˡ); ("GetRangeEnd"%go, Compare__GetRangeEndⁱᵐᵖˡ); ("GetResult"%go, Compare__GetResultⁱᵐᵖˡ); ("GetTarget"%go, Compare__GetTargetⁱᵐᵖˡ); ("GetTargetUnion"%go, Compare__GetTargetUnionⁱᵐᵖˡ); ("GetValue"%go, Compare__GetValueⁱᵐᵖˡ); ("GetVersion"%go, Compare__GetVersionⁱᵐᵖˡ); ("Marshal"%go, Compare__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Compare__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Compare__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Compare__Resetⁱᵐᵖˡ); ("Size"%go, Compare__Sizeⁱᵐᵖˡ); ("String"%go, Compare__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Compare__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Compare__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Compare__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Compare__XXX_Mergeⁱᵐᵖˡ); ("XXX_OneofWrappers"%go, Compare__XXX_OneofWrappersⁱᵐᵖˡ); ("XXX_Size"%go, Compare__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Compare__XXX_Unmarshalⁱᵐᵖˡ)]); (Compare_Version.id, []); (ptrT.id Compare_Version.id, [("MarshalTo"%go, Compare_Version__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_Version__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_Version__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_Version__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_CreateRevision.id, []); (ptrT.id Compare_CreateRevision.id, [("MarshalTo"%go, Compare_CreateRevision__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_CreateRevision__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_CreateRevision__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_CreateRevision__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_ModRevision.id, []); (ptrT.id Compare_ModRevision.id, [("MarshalTo"%go, Compare_ModRevision__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_ModRevision__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_ModRevision__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_ModRevision__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_Value.id, []); (ptrT.id Compare_Value.id, [("MarshalTo"%go, Compare_Value__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_Value__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_Value__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_Value__isCompare_TargetUnionⁱᵐᵖˡ)]); (Compare_Lease.id, []); (ptrT.id Compare_Lease.id, [("MarshalTo"%go, Compare_Lease__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Compare_Lease__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, Compare_Lease__Sizeⁱᵐᵖˡ); ("isCompare_TargetUnion"%go, Compare_Lease__isCompare_TargetUnionⁱᵐᵖˡ)]); (TxnRequest.id, []); (ptrT.id TxnRequest.id, [("Descriptor"%go, TxnRequest__Descriptorⁱᵐᵖˡ); ("GetCompare"%go, TxnRequest__GetCompareⁱᵐᵖˡ); ("GetFailure"%go, TxnRequest__GetFailureⁱᵐᵖˡ); ("GetSuccess"%go, TxnRequest__GetSuccessⁱᵐᵖˡ); ("Marshal"%go, TxnRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, TxnRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, TxnRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, TxnRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, TxnRequest__Resetⁱᵐᵖˡ); ("Size"%go, TxnRequest__Sizeⁱᵐᵖˡ); ("String"%go, TxnRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, TxnRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, TxnRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, TxnRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, TxnRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, TxnRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, TxnRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (TxnResponse.id, []); (ptrT.id TxnResponse.id, [("Descriptor"%go, TxnResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, TxnResponse__GetHeaderⁱᵐᵖˡ); ("GetResponses"%go, TxnResponse__GetResponsesⁱᵐᵖˡ); ("GetSucceeded"%go, TxnResponse__GetSucceededⁱᵐᵖˡ); ("Marshal"%go, TxnResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, TxnResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, TxnResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, TxnResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, TxnResponse__Resetⁱᵐᵖˡ); ("Size"%go, TxnResponse__Sizeⁱᵐᵖˡ); ("String"%go, TxnResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, TxnResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, TxnResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, TxnResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, TxnResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, TxnResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, TxnResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (CompactionRequest.id, []); (ptrT.id CompactionRequest.id, [("Descriptor"%go, CompactionRequest__Descriptorⁱᵐᵖˡ); ("GetPhysical"%go, CompactionRequest__GetPhysicalⁱᵐᵖˡ); ("GetRevision"%go, CompactionRequest__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, CompactionRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, CompactionRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, CompactionRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, CompactionRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, CompactionRequest__Resetⁱᵐᵖˡ); ("Size"%go, CompactionRequest__Sizeⁱᵐᵖˡ); ("String"%go, CompactionRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, CompactionRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, CompactionRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, CompactionRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, CompactionRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, CompactionRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, CompactionRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (CompactionResponse.id, []); (ptrT.id CompactionResponse.id, [("Descriptor"%go, CompactionResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, CompactionResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, CompactionResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, CompactionResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, CompactionResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, CompactionResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, CompactionResponse__Resetⁱᵐᵖˡ); ("Size"%go, CompactionResponse__Sizeⁱᵐᵖˡ); ("String"%go, CompactionResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, CompactionResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, CompactionResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, CompactionResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, CompactionResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, CompactionResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, CompactionResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (HashRequest.id, []); (ptrT.id HashRequest.id, [("Descriptor"%go, HashRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, HashRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, HashRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, HashRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, HashRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, HashRequest__Resetⁱᵐᵖˡ); ("Size"%go, HashRequest__Sizeⁱᵐᵖˡ); ("String"%go, HashRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, HashRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, HashRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, HashRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, HashRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, HashRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, HashRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (HashKVRequest.id, []); (ptrT.id HashKVRequest.id, [("Descriptor"%go, HashKVRequest__Descriptorⁱᵐᵖˡ); ("GetRevision"%go, HashKVRequest__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, HashKVRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, HashKVRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, HashKVRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, HashKVRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, HashKVRequest__Resetⁱᵐᵖˡ); ("Size"%go, HashKVRequest__Sizeⁱᵐᵖˡ); ("String"%go, HashKVRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, HashKVRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, HashKVRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, HashKVRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, HashKVRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, HashKVRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, HashKVRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (HashKVResponse.id, []); (ptrT.id HashKVResponse.id, [("Descriptor"%go, HashKVResponse__Descriptorⁱᵐᵖˡ); ("GetCompactRevision"%go, HashKVResponse__GetCompactRevisionⁱᵐᵖˡ); ("GetHash"%go, HashKVResponse__GetHashⁱᵐᵖˡ); ("GetHashRevision"%go, HashKVResponse__GetHashRevisionⁱᵐᵖˡ); ("GetHeader"%go, HashKVResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, HashKVResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, HashKVResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, HashKVResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, HashKVResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, HashKVResponse__Resetⁱᵐᵖˡ); ("Size"%go, HashKVResponse__Sizeⁱᵐᵖˡ); ("String"%go, HashKVResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, HashKVResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, HashKVResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, HashKVResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, HashKVResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, HashKVResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, HashKVResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (HashResponse.id, []); (ptrT.id HashResponse.id, [("Descriptor"%go, HashResponse__Descriptorⁱᵐᵖˡ); ("GetHash"%go, HashResponse__GetHashⁱᵐᵖˡ); ("GetHeader"%go, HashResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, HashResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, HashResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, HashResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, HashResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, HashResponse__Resetⁱᵐᵖˡ); ("Size"%go, HashResponse__Sizeⁱᵐᵖˡ); ("String"%go, HashResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, HashResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, HashResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, HashResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, HashResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, HashResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, HashResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (SnapshotRequest.id, []); (ptrT.id SnapshotRequest.id, [("Descriptor"%go, SnapshotRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, SnapshotRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, SnapshotRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, SnapshotRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, SnapshotRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, SnapshotRequest__Resetⁱᵐᵖˡ); ("Size"%go, SnapshotRequest__Sizeⁱᵐᵖˡ); ("String"%go, SnapshotRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, SnapshotRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, SnapshotRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, SnapshotRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, SnapshotRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, SnapshotRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, SnapshotRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (SnapshotResponse.id, []); (ptrT.id SnapshotResponse.id, [("Descriptor"%go, SnapshotResponse__Descriptorⁱᵐᵖˡ); ("GetBlob"%go, SnapshotResponse__GetBlobⁱᵐᵖˡ); ("GetHeader"%go, SnapshotResponse__GetHeaderⁱᵐᵖˡ); ("GetRemainingBytes"%go, SnapshotResponse__GetRemainingBytesⁱᵐᵖˡ); ("GetVersion"%go, SnapshotResponse__GetVersionⁱᵐᵖˡ); ("Marshal"%go, SnapshotResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, SnapshotResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, SnapshotResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, SnapshotResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, SnapshotResponse__Resetⁱᵐᵖˡ); ("Size"%go, SnapshotResponse__Sizeⁱᵐᵖˡ); ("String"%go, SnapshotResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, SnapshotResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, SnapshotResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, SnapshotResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, SnapshotResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, SnapshotResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, SnapshotResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (WatchRequest.id, []); (ptrT.id WatchRequest.id, [("Descriptor"%go, WatchRequest__Descriptorⁱᵐᵖˡ); ("GetCancelRequest"%go, WatchRequest__GetCancelRequestⁱᵐᵖˡ); ("GetCreateRequest"%go, WatchRequest__GetCreateRequestⁱᵐᵖˡ); ("GetProgressRequest"%go, WatchRequest__GetProgressRequestⁱᵐᵖˡ); ("GetRequestUnion"%go, WatchRequest__GetRequestUnionⁱᵐᵖˡ); ("Marshal"%go, WatchRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, WatchRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, WatchRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, WatchRequest__Resetⁱᵐᵖˡ); ("Size"%go, WatchRequest__Sizeⁱᵐᵖˡ); ("String"%go, WatchRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, WatchRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, WatchRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, WatchRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, WatchRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_OneofWrappers"%go, WatchRequest__XXX_OneofWrappersⁱᵐᵖˡ); ("XXX_Size"%go, WatchRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, WatchRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (WatchRequest_CreateRequest.id, []); (ptrT.id WatchRequest_CreateRequest.id, [("MarshalTo"%go, WatchRequest_CreateRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchRequest_CreateRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, WatchRequest_CreateRequest__Sizeⁱᵐᵖˡ); ("isWatchRequest_RequestUnion"%go, WatchRequest_CreateRequest__isWatchRequest_RequestUnionⁱᵐᵖˡ)]); (WatchRequest_CancelRequest.id, []); (ptrT.id WatchRequest_CancelRequest.id, [("MarshalTo"%go, WatchRequest_CancelRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchRequest_CancelRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, WatchRequest_CancelRequest__Sizeⁱᵐᵖˡ); ("isWatchRequest_RequestUnion"%go, WatchRequest_CancelRequest__isWatchRequest_RequestUnionⁱᵐᵖˡ)]); (WatchRequest_ProgressRequest.id, []); (ptrT.id WatchRequest_ProgressRequest.id, [("MarshalTo"%go, WatchRequest_ProgressRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchRequest_ProgressRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("Size"%go, WatchRequest_ProgressRequest__Sizeⁱᵐᵖˡ); ("isWatchRequest_RequestUnion"%go, WatchRequest_ProgressRequest__isWatchRequest_RequestUnionⁱᵐᵖˡ)]); (WatchCreateRequest.id, []); (ptrT.id WatchCreateRequest.id, [("Descriptor"%go, WatchCreateRequest__Descriptorⁱᵐᵖˡ); ("GetFilters"%go, WatchCreateRequest__GetFiltersⁱᵐᵖˡ); ("GetFragment"%go, WatchCreateRequest__GetFragmentⁱᵐᵖˡ); ("GetKey"%go, WatchCreateRequest__GetKeyⁱᵐᵖˡ); ("GetPrevKv"%go, WatchCreateRequest__GetPrevKvⁱᵐᵖˡ); ("GetProgressNotify"%go, WatchCreateRequest__GetProgressNotifyⁱᵐᵖˡ); ("GetRangeEnd"%go, WatchCreateRequest__GetRangeEndⁱᵐᵖˡ); ("GetStartRevision"%go, WatchCreateRequest__GetStartRevisionⁱᵐᵖˡ); ("GetWatchId"%go, WatchCreateRequest__GetWatchIdⁱᵐᵖˡ); ("Marshal"%go, WatchCreateRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, WatchCreateRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchCreateRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, WatchCreateRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, WatchCreateRequest__Resetⁱᵐᵖˡ); ("Size"%go, WatchCreateRequest__Sizeⁱᵐᵖˡ); ("String"%go, WatchCreateRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, WatchCreateRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, WatchCreateRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, WatchCreateRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, WatchCreateRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, WatchCreateRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, WatchCreateRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (WatchCancelRequest.id, []); (ptrT.id WatchCancelRequest.id, [("Descriptor"%go, WatchCancelRequest__Descriptorⁱᵐᵖˡ); ("GetWatchId"%go, WatchCancelRequest__GetWatchIdⁱᵐᵖˡ); ("Marshal"%go, WatchCancelRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, WatchCancelRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchCancelRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, WatchCancelRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, WatchCancelRequest__Resetⁱᵐᵖˡ); ("Size"%go, WatchCancelRequest__Sizeⁱᵐᵖˡ); ("String"%go, WatchCancelRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, WatchCancelRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, WatchCancelRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, WatchCancelRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, WatchCancelRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, WatchCancelRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, WatchCancelRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (WatchProgressRequest.id, []); (ptrT.id WatchProgressRequest.id, [("Descriptor"%go, WatchProgressRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, WatchProgressRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, WatchProgressRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchProgressRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, WatchProgressRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, WatchProgressRequest__Resetⁱᵐᵖˡ); ("Size"%go, WatchProgressRequest__Sizeⁱᵐᵖˡ); ("String"%go, WatchProgressRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, WatchProgressRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, WatchProgressRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, WatchProgressRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, WatchProgressRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, WatchProgressRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, WatchProgressRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (WatchResponse.id, []); (ptrT.id WatchResponse.id, [("Descriptor"%go, WatchResponse__Descriptorⁱᵐᵖˡ); ("GetCancelReason"%go, WatchResponse__GetCancelReasonⁱᵐᵖˡ); ("GetCanceled"%go, WatchResponse__GetCanceledⁱᵐᵖˡ); ("GetCompactRevision"%go, WatchResponse__GetCompactRevisionⁱᵐᵖˡ); ("GetCreated"%go, WatchResponse__GetCreatedⁱᵐᵖˡ); ("GetEvents"%go, WatchResponse__GetEventsⁱᵐᵖˡ); ("GetFragment"%go, WatchResponse__GetFragmentⁱᵐᵖˡ); ("GetHeader"%go, WatchResponse__GetHeaderⁱᵐᵖˡ); ("GetWatchId"%go, WatchResponse__GetWatchIdⁱᵐᵖˡ); ("Marshal"%go, WatchResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, WatchResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, WatchResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, WatchResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, WatchResponse__Resetⁱᵐᵖˡ); ("Size"%go, WatchResponse__Sizeⁱᵐᵖˡ); ("String"%go, WatchResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, WatchResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, WatchResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, WatchResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, WatchResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, WatchResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, WatchResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseGrantRequest.id, []); (ptrT.id LeaseGrantRequest.id, [("Descriptor"%go, LeaseGrantRequest__Descriptorⁱᵐᵖˡ); ("GetID"%go, LeaseGrantRequest__GetIDⁱᵐᵖˡ); ("GetTTL"%go, LeaseGrantRequest__GetTTLⁱᵐᵖˡ); ("Marshal"%go, LeaseGrantRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseGrantRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseGrantRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseGrantRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseGrantRequest__Resetⁱᵐᵖˡ); ("Size"%go, LeaseGrantRequest__Sizeⁱᵐᵖˡ); ("String"%go, LeaseGrantRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseGrantRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseGrantRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseGrantRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseGrantRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseGrantRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseGrantRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseGrantResponse.id, []); (ptrT.id LeaseGrantResponse.id, [("Descriptor"%go, LeaseGrantResponse__Descriptorⁱᵐᵖˡ); ("GetError"%go, LeaseGrantResponse__GetErrorⁱᵐᵖˡ); ("GetHeader"%go, LeaseGrantResponse__GetHeaderⁱᵐᵖˡ); ("GetID"%go, LeaseGrantResponse__GetIDⁱᵐᵖˡ); ("GetTTL"%go, LeaseGrantResponse__GetTTLⁱᵐᵖˡ); ("Marshal"%go, LeaseGrantResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseGrantResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseGrantResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseGrantResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseGrantResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseGrantResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseGrantResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseGrantResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseGrantResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseGrantResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseGrantResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseGrantResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseGrantResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseRevokeRequest.id, []); (ptrT.id LeaseRevokeRequest.id, [("Descriptor"%go, LeaseRevokeRequest__Descriptorⁱᵐᵖˡ); ("GetID"%go, LeaseRevokeRequest__GetIDⁱᵐᵖˡ); ("Marshal"%go, LeaseRevokeRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseRevokeRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseRevokeRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseRevokeRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseRevokeRequest__Resetⁱᵐᵖˡ); ("Size"%go, LeaseRevokeRequest__Sizeⁱᵐᵖˡ); ("String"%go, LeaseRevokeRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseRevokeRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseRevokeRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseRevokeRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseRevokeRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseRevokeRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseRevokeRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseRevokeResponse.id, []); (ptrT.id LeaseRevokeResponse.id, [("Descriptor"%go, LeaseRevokeResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, LeaseRevokeResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, LeaseRevokeResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseRevokeResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseRevokeResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseRevokeResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseRevokeResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseRevokeResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseRevokeResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseRevokeResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseRevokeResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseRevokeResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseRevokeResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseRevokeResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseRevokeResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseCheckpoint.id, []); (ptrT.id LeaseCheckpoint.id, [("Descriptor"%go, LeaseCheckpoint__Descriptorⁱᵐᵖˡ); ("GetID"%go, LeaseCheckpoint__GetIDⁱᵐᵖˡ); ("GetRemaining_TTL"%go, LeaseCheckpoint__GetRemaining_TTLⁱᵐᵖˡ); ("Marshal"%go, LeaseCheckpoint__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseCheckpoint__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseCheckpoint__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseCheckpoint__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseCheckpoint__Resetⁱᵐᵖˡ); ("Size"%go, LeaseCheckpoint__Sizeⁱᵐᵖˡ); ("String"%go, LeaseCheckpoint__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseCheckpoint__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseCheckpoint__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseCheckpoint__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseCheckpoint__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseCheckpoint__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseCheckpoint__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseCheckpointRequest.id, []); (ptrT.id LeaseCheckpointRequest.id, [("Descriptor"%go, LeaseCheckpointRequest__Descriptorⁱᵐᵖˡ); ("GetCheckpoints"%go, LeaseCheckpointRequest__GetCheckpointsⁱᵐᵖˡ); ("Marshal"%go, LeaseCheckpointRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseCheckpointRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseCheckpointRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseCheckpointRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseCheckpointRequest__Resetⁱᵐᵖˡ); ("Size"%go, LeaseCheckpointRequest__Sizeⁱᵐᵖˡ); ("String"%go, LeaseCheckpointRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseCheckpointRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseCheckpointRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseCheckpointRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseCheckpointRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseCheckpointRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseCheckpointRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseCheckpointResponse.id, []); (ptrT.id LeaseCheckpointResponse.id, [("Descriptor"%go, LeaseCheckpointResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, LeaseCheckpointResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, LeaseCheckpointResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseCheckpointResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseCheckpointResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseCheckpointResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseCheckpointResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseCheckpointResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseCheckpointResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseCheckpointResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseCheckpointResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseCheckpointResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseCheckpointResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseCheckpointResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseCheckpointResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseKeepAliveRequest.id, []); (ptrT.id LeaseKeepAliveRequest.id, [("Descriptor"%go, LeaseKeepAliveRequest__Descriptorⁱᵐᵖˡ); ("GetID"%go, LeaseKeepAliveRequest__GetIDⁱᵐᵖˡ); ("Marshal"%go, LeaseKeepAliveRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseKeepAliveRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseKeepAliveRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseKeepAliveRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseKeepAliveRequest__Resetⁱᵐᵖˡ); ("Size"%go, LeaseKeepAliveRequest__Sizeⁱᵐᵖˡ); ("String"%go, LeaseKeepAliveRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseKeepAliveRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseKeepAliveRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseKeepAliveRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseKeepAliveRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseKeepAliveRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseKeepAliveRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseKeepAliveResponse.id, []); (ptrT.id LeaseKeepAliveResponse.id, [("Descriptor"%go, LeaseKeepAliveResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, LeaseKeepAliveResponse__GetHeaderⁱᵐᵖˡ); ("GetID"%go, LeaseKeepAliveResponse__GetIDⁱᵐᵖˡ); ("GetTTL"%go, LeaseKeepAliveResponse__GetTTLⁱᵐᵖˡ); ("Marshal"%go, LeaseKeepAliveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseKeepAliveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseKeepAliveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseKeepAliveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseKeepAliveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseKeepAliveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseKeepAliveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseKeepAliveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseKeepAliveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseKeepAliveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseKeepAliveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseKeepAliveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseKeepAliveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseTimeToLiveRequest.id, []); (ptrT.id LeaseTimeToLiveRequest.id, [("Descriptor"%go, LeaseTimeToLiveRequest__Descriptorⁱᵐᵖˡ); ("GetID"%go, LeaseTimeToLiveRequest__GetIDⁱᵐᵖˡ); ("GetKeys"%go, LeaseTimeToLiveRequest__GetKeysⁱᵐᵖˡ); ("Marshal"%go, LeaseTimeToLiveRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseTimeToLiveRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseTimeToLiveRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseTimeToLiveRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseTimeToLiveRequest__Resetⁱᵐᵖˡ); ("Size"%go, LeaseTimeToLiveRequest__Sizeⁱᵐᵖˡ); ("String"%go, LeaseTimeToLiveRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseTimeToLiveRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseTimeToLiveRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseTimeToLiveRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseTimeToLiveRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseTimeToLiveRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseTimeToLiveRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseTimeToLiveResponse.id, []); (ptrT.id LeaseTimeToLiveResponse.id, [("Descriptor"%go, LeaseTimeToLiveResponse__Descriptorⁱᵐᵖˡ); ("GetGrantedTTL"%go, LeaseTimeToLiveResponse__GetGrantedTTLⁱᵐᵖˡ); ("GetHeader"%go, LeaseTimeToLiveResponse__GetHeaderⁱᵐᵖˡ); ("GetID"%go, LeaseTimeToLiveResponse__GetIDⁱᵐᵖˡ); ("GetKeys"%go, LeaseTimeToLiveResponse__GetKeysⁱᵐᵖˡ); ("GetTTL"%go, LeaseTimeToLiveResponse__GetTTLⁱᵐᵖˡ); ("Marshal"%go, LeaseTimeToLiveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseTimeToLiveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseTimeToLiveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseTimeToLiveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseTimeToLiveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseTimeToLiveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseTimeToLiveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseTimeToLiveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseTimeToLiveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseTimeToLiveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseTimeToLiveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseTimeToLiveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseTimeToLiveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseLeasesRequest.id, []); (ptrT.id LeaseLeasesRequest.id, [("Descriptor"%go, LeaseLeasesRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, LeaseLeasesRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseLeasesRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseLeasesRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseLeasesRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseLeasesRequest__Resetⁱᵐᵖˡ); ("Size"%go, LeaseLeasesRequest__Sizeⁱᵐᵖˡ); ("String"%go, LeaseLeasesRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseLeasesRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseLeasesRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseLeasesRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseLeasesRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseLeasesRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseLeasesRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseStatus.id, []); (ptrT.id LeaseStatus.id, [("Descriptor"%go, LeaseStatus__Descriptorⁱᵐᵖˡ); ("GetID"%go, LeaseStatus__GetIDⁱᵐᵖˡ); ("Marshal"%go, LeaseStatus__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseStatus__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseStatus__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseStatus__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseStatus__Resetⁱᵐᵖˡ); ("Size"%go, LeaseStatus__Sizeⁱᵐᵖˡ); ("String"%go, LeaseStatus__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseStatus__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseStatus__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseStatus__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseStatus__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseStatus__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseStatus__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseLeasesResponse.id, []); (ptrT.id LeaseLeasesResponse.id, [("Descriptor"%go, LeaseLeasesResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, LeaseLeasesResponse__GetHeaderⁱᵐᵖˡ); ("GetLeases"%go, LeaseLeasesResponse__GetLeasesⁱᵐᵖˡ); ("Marshal"%go, LeaseLeasesResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseLeasesResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseLeasesResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseLeasesResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseLeasesResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseLeasesResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseLeasesResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseLeasesResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseLeasesResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseLeasesResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseLeasesResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseLeasesResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseLeasesResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (Member.id, []); (ptrT.id Member.id, [("Descriptor"%go, Member__Descriptorⁱᵐᵖˡ); ("GetClientURLs"%go, Member__GetClientURLsⁱᵐᵖˡ); ("GetID"%go, Member__GetIDⁱᵐᵖˡ); ("GetIsLearner"%go, Member__GetIsLearnerⁱᵐᵖˡ); ("GetName"%go, Member__GetNameⁱᵐᵖˡ); ("GetPeerURLs"%go, Member__GetPeerURLsⁱᵐᵖˡ); ("Marshal"%go, Member__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, Member__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, Member__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, Member__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, Member__Resetⁱᵐᵖˡ); ("Size"%go, Member__Sizeⁱᵐᵖˡ); ("String"%go, Member__Stringⁱᵐᵖˡ); ("Unmarshal"%go, Member__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, Member__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, Member__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, Member__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, Member__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, Member__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberAddRequest.id, []); (ptrT.id MemberAddRequest.id, [("Descriptor"%go, MemberAddRequest__Descriptorⁱᵐᵖˡ); ("GetIsLearner"%go, MemberAddRequest__GetIsLearnerⁱᵐᵖˡ); ("GetPeerURLs"%go, MemberAddRequest__GetPeerURLsⁱᵐᵖˡ); ("Marshal"%go, MemberAddRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberAddRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberAddRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberAddRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberAddRequest__Resetⁱᵐᵖˡ); ("Size"%go, MemberAddRequest__Sizeⁱᵐᵖˡ); ("String"%go, MemberAddRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberAddRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberAddRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberAddRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberAddRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberAddRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberAddRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberAddResponse.id, []); (ptrT.id MemberAddResponse.id, [("Descriptor"%go, MemberAddResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, MemberAddResponse__GetHeaderⁱᵐᵖˡ); ("GetMember"%go, MemberAddResponse__GetMemberⁱᵐᵖˡ); ("GetMembers"%go, MemberAddResponse__GetMembersⁱᵐᵖˡ); ("Marshal"%go, MemberAddResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberAddResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberAddResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberAddResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberAddResponse__Resetⁱᵐᵖˡ); ("Size"%go, MemberAddResponse__Sizeⁱᵐᵖˡ); ("String"%go, MemberAddResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberAddResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberAddResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberAddResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberAddResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberAddResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberAddResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberRemoveRequest.id, []); (ptrT.id MemberRemoveRequest.id, [("Descriptor"%go, MemberRemoveRequest__Descriptorⁱᵐᵖˡ); ("GetID"%go, MemberRemoveRequest__GetIDⁱᵐᵖˡ); ("Marshal"%go, MemberRemoveRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberRemoveRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberRemoveRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberRemoveRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberRemoveRequest__Resetⁱᵐᵖˡ); ("Size"%go, MemberRemoveRequest__Sizeⁱᵐᵖˡ); ("String"%go, MemberRemoveRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberRemoveRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberRemoveRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberRemoveRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberRemoveRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberRemoveRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberRemoveRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberRemoveResponse.id, []); (ptrT.id MemberRemoveResponse.id, [("Descriptor"%go, MemberRemoveResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, MemberRemoveResponse__GetHeaderⁱᵐᵖˡ); ("GetMembers"%go, MemberRemoveResponse__GetMembersⁱᵐᵖˡ); ("Marshal"%go, MemberRemoveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberRemoveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberRemoveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberRemoveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberRemoveResponse__Resetⁱᵐᵖˡ); ("Size"%go, MemberRemoveResponse__Sizeⁱᵐᵖˡ); ("String"%go, MemberRemoveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberRemoveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberRemoveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberRemoveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberRemoveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberRemoveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberRemoveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberUpdateRequest.id, []); (ptrT.id MemberUpdateRequest.id, [("Descriptor"%go, MemberUpdateRequest__Descriptorⁱᵐᵖˡ); ("GetID"%go, MemberUpdateRequest__GetIDⁱᵐᵖˡ); ("GetPeerURLs"%go, MemberUpdateRequest__GetPeerURLsⁱᵐᵖˡ); ("Marshal"%go, MemberUpdateRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberUpdateRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberUpdateRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberUpdateRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberUpdateRequest__Resetⁱᵐᵖˡ); ("Size"%go, MemberUpdateRequest__Sizeⁱᵐᵖˡ); ("String"%go, MemberUpdateRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberUpdateRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberUpdateRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberUpdateRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberUpdateRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberUpdateRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberUpdateRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberUpdateResponse.id, []); (ptrT.id MemberUpdateResponse.id, [("Descriptor"%go, MemberUpdateResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, MemberUpdateResponse__GetHeaderⁱᵐᵖˡ); ("GetMembers"%go, MemberUpdateResponse__GetMembersⁱᵐᵖˡ); ("Marshal"%go, MemberUpdateResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberUpdateResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberUpdateResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberUpdateResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberUpdateResponse__Resetⁱᵐᵖˡ); ("Size"%go, MemberUpdateResponse__Sizeⁱᵐᵖˡ); ("String"%go, MemberUpdateResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberUpdateResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberUpdateResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberUpdateResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberUpdateResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberUpdateResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberUpdateResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberListRequest.id, []); (ptrT.id MemberListRequest.id, [("Descriptor"%go, MemberListRequest__Descriptorⁱᵐᵖˡ); ("GetLinearizable"%go, MemberListRequest__GetLinearizableⁱᵐᵖˡ); ("Marshal"%go, MemberListRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberListRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberListRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberListRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberListRequest__Resetⁱᵐᵖˡ); ("Size"%go, MemberListRequest__Sizeⁱᵐᵖˡ); ("String"%go, MemberListRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberListRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberListRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberListRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberListRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberListRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberListRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberListResponse.id, []); (ptrT.id MemberListResponse.id, [("Descriptor"%go, MemberListResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, MemberListResponse__GetHeaderⁱᵐᵖˡ); ("GetMembers"%go, MemberListResponse__GetMembersⁱᵐᵖˡ); ("Marshal"%go, MemberListResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberListResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberListResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberListResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberListResponse__Resetⁱᵐᵖˡ); ("Size"%go, MemberListResponse__Sizeⁱᵐᵖˡ); ("String"%go, MemberListResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberListResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberListResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberListResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberListResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberListResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberListResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberPromoteRequest.id, []); (ptrT.id MemberPromoteRequest.id, [("Descriptor"%go, MemberPromoteRequest__Descriptorⁱᵐᵖˡ); ("GetID"%go, MemberPromoteRequest__GetIDⁱᵐᵖˡ); ("Marshal"%go, MemberPromoteRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberPromoteRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberPromoteRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberPromoteRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberPromoteRequest__Resetⁱᵐᵖˡ); ("Size"%go, MemberPromoteRequest__Sizeⁱᵐᵖˡ); ("String"%go, MemberPromoteRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberPromoteRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberPromoteRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberPromoteRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberPromoteRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberPromoteRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberPromoteRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (MemberPromoteResponse.id, []); (ptrT.id MemberPromoteResponse.id, [("Descriptor"%go, MemberPromoteResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, MemberPromoteResponse__GetHeaderⁱᵐᵖˡ); ("GetMembers"%go, MemberPromoteResponse__GetMembersⁱᵐᵖˡ); ("Marshal"%go, MemberPromoteResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MemberPromoteResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MemberPromoteResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MemberPromoteResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MemberPromoteResponse__Resetⁱᵐᵖˡ); ("Size"%go, MemberPromoteResponse__Sizeⁱᵐᵖˡ); ("String"%go, MemberPromoteResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MemberPromoteResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MemberPromoteResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MemberPromoteResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MemberPromoteResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MemberPromoteResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MemberPromoteResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (DefragmentRequest.id, []); (ptrT.id DefragmentRequest.id, [("Descriptor"%go, DefragmentRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, DefragmentRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, DefragmentRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, DefragmentRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, DefragmentRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, DefragmentRequest__Resetⁱᵐᵖˡ); ("Size"%go, DefragmentRequest__Sizeⁱᵐᵖˡ); ("String"%go, DefragmentRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, DefragmentRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, DefragmentRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, DefragmentRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, DefragmentRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, DefragmentRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, DefragmentRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (DefragmentResponse.id, []); (ptrT.id DefragmentResponse.id, [("Descriptor"%go, DefragmentResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, DefragmentResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, DefragmentResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, DefragmentResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, DefragmentResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, DefragmentResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, DefragmentResponse__Resetⁱᵐᵖˡ); ("Size"%go, DefragmentResponse__Sizeⁱᵐᵖˡ); ("String"%go, DefragmentResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, DefragmentResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, DefragmentResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, DefragmentResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, DefragmentResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, DefragmentResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, DefragmentResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (MoveLeaderRequest.id, []); (ptrT.id MoveLeaderRequest.id, [("Descriptor"%go, MoveLeaderRequest__Descriptorⁱᵐᵖˡ); ("GetTargetID"%go, MoveLeaderRequest__GetTargetIDⁱᵐᵖˡ); ("Marshal"%go, MoveLeaderRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MoveLeaderRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MoveLeaderRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MoveLeaderRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MoveLeaderRequest__Resetⁱᵐᵖˡ); ("Size"%go, MoveLeaderRequest__Sizeⁱᵐᵖˡ); ("String"%go, MoveLeaderRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MoveLeaderRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MoveLeaderRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MoveLeaderRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MoveLeaderRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MoveLeaderRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MoveLeaderRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (MoveLeaderResponse.id, []); (ptrT.id MoveLeaderResponse.id, [("Descriptor"%go, MoveLeaderResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, MoveLeaderResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, MoveLeaderResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, MoveLeaderResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, MoveLeaderResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, MoveLeaderResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, MoveLeaderResponse__Resetⁱᵐᵖˡ); ("Size"%go, MoveLeaderResponse__Sizeⁱᵐᵖˡ); ("String"%go, MoveLeaderResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, MoveLeaderResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, MoveLeaderResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, MoveLeaderResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, MoveLeaderResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, MoveLeaderResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, MoveLeaderResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AlarmRequest.id, []); (ptrT.id AlarmRequest.id, [("Descriptor"%go, AlarmRequest__Descriptorⁱᵐᵖˡ); ("GetAction"%go, AlarmRequest__GetActionⁱᵐᵖˡ); ("GetAlarm"%go, AlarmRequest__GetAlarmⁱᵐᵖˡ); ("GetMemberID"%go, AlarmRequest__GetMemberIDⁱᵐᵖˡ); ("Marshal"%go, AlarmRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AlarmRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AlarmRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AlarmRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AlarmRequest__Resetⁱᵐᵖˡ); ("Size"%go, AlarmRequest__Sizeⁱᵐᵖˡ); ("String"%go, AlarmRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AlarmRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AlarmRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AlarmRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AlarmRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AlarmRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AlarmRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AlarmMember.id, []); (ptrT.id AlarmMember.id, [("Descriptor"%go, AlarmMember__Descriptorⁱᵐᵖˡ); ("GetAlarm"%go, AlarmMember__GetAlarmⁱᵐᵖˡ); ("GetMemberID"%go, AlarmMember__GetMemberIDⁱᵐᵖˡ); ("Marshal"%go, AlarmMember__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AlarmMember__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AlarmMember__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AlarmMember__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AlarmMember__Resetⁱᵐᵖˡ); ("Size"%go, AlarmMember__Sizeⁱᵐᵖˡ); ("String"%go, AlarmMember__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AlarmMember__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AlarmMember__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AlarmMember__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AlarmMember__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AlarmMember__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AlarmMember__XXX_Unmarshalⁱᵐᵖˡ)]); (AlarmResponse.id, []); (ptrT.id AlarmResponse.id, [("Descriptor"%go, AlarmResponse__Descriptorⁱᵐᵖˡ); ("GetAlarms"%go, AlarmResponse__GetAlarmsⁱᵐᵖˡ); ("GetHeader"%go, AlarmResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AlarmResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AlarmResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AlarmResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AlarmResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AlarmResponse__Resetⁱᵐᵖˡ); ("Size"%go, AlarmResponse__Sizeⁱᵐᵖˡ); ("String"%go, AlarmResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AlarmResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AlarmResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AlarmResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AlarmResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AlarmResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AlarmResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (DowngradeRequest.id, []); (ptrT.id DowngradeRequest.id, [("Descriptor"%go, DowngradeRequest__Descriptorⁱᵐᵖˡ); ("GetAction"%go, DowngradeRequest__GetActionⁱᵐᵖˡ); ("GetVersion"%go, DowngradeRequest__GetVersionⁱᵐᵖˡ); ("Marshal"%go, DowngradeRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, DowngradeRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, DowngradeRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, DowngradeRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, DowngradeRequest__Resetⁱᵐᵖˡ); ("Size"%go, DowngradeRequest__Sizeⁱᵐᵖˡ); ("String"%go, DowngradeRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, DowngradeRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, DowngradeRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, DowngradeRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, DowngradeRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, DowngradeRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, DowngradeRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (DowngradeResponse.id, []); (ptrT.id DowngradeResponse.id, [("Descriptor"%go, DowngradeResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, DowngradeResponse__GetHeaderⁱᵐᵖˡ); ("GetVersion"%go, DowngradeResponse__GetVersionⁱᵐᵖˡ); ("Marshal"%go, DowngradeResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, DowngradeResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, DowngradeResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, DowngradeResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, DowngradeResponse__Resetⁱᵐᵖˡ); ("Size"%go, DowngradeResponse__Sizeⁱᵐᵖˡ); ("String"%go, DowngradeResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, DowngradeResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, DowngradeResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, DowngradeResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, DowngradeResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, DowngradeResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, DowngradeResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (StatusRequest.id, []); (ptrT.id StatusRequest.id, [("Descriptor"%go, StatusRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, StatusRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, StatusRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, StatusRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, StatusRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, StatusRequest__Resetⁱᵐᵖˡ); ("Size"%go, StatusRequest__Sizeⁱᵐᵖˡ); ("String"%go, StatusRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, StatusRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, StatusRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, StatusRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, StatusRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, StatusRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, StatusRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (StatusResponse.id, []); (ptrT.id StatusResponse.id, [("Descriptor"%go, StatusResponse__Descriptorⁱᵐᵖˡ); ("GetDbSize"%go, StatusResponse__GetDbSizeⁱᵐᵖˡ); ("GetDbSizeInUse"%go, StatusResponse__GetDbSizeInUseⁱᵐᵖˡ); ("GetDbSizeQuota"%go, StatusResponse__GetDbSizeQuotaⁱᵐᵖˡ); ("GetErrors"%go, StatusResponse__GetErrorsⁱᵐᵖˡ); ("GetHeader"%go, StatusResponse__GetHeaderⁱᵐᵖˡ); ("GetIsLearner"%go, StatusResponse__GetIsLearnerⁱᵐᵖˡ); ("GetLeader"%go, StatusResponse__GetLeaderⁱᵐᵖˡ); ("GetRaftAppliedIndex"%go, StatusResponse__GetRaftAppliedIndexⁱᵐᵖˡ); ("GetRaftIndex"%go, StatusResponse__GetRaftIndexⁱᵐᵖˡ); ("GetRaftTerm"%go, StatusResponse__GetRaftTermⁱᵐᵖˡ); ("GetStorageVersion"%go, StatusResponse__GetStorageVersionⁱᵐᵖˡ); ("GetVersion"%go, StatusResponse__GetVersionⁱᵐᵖˡ); ("Marshal"%go, StatusResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, StatusResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, StatusResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, StatusResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, StatusResponse__Resetⁱᵐᵖˡ); ("Size"%go, StatusResponse__Sizeⁱᵐᵖˡ); ("String"%go, StatusResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, StatusResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, StatusResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, StatusResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, StatusResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, StatusResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, StatusResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthEnableRequest.id, []); (ptrT.id AuthEnableRequest.id, [("Descriptor"%go, AuthEnableRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, AuthEnableRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthEnableRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthEnableRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthEnableRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthEnableRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthEnableRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthEnableRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthEnableRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthEnableRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthEnableRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthEnableRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthEnableRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthEnableRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthDisableRequest.id, []); (ptrT.id AuthDisableRequest.id, [("Descriptor"%go, AuthDisableRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, AuthDisableRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthDisableRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthDisableRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthDisableRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthDisableRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthDisableRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthDisableRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthDisableRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthDisableRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthDisableRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthDisableRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthDisableRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthDisableRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthStatusRequest.id, []); (ptrT.id AuthStatusRequest.id, [("Descriptor"%go, AuthStatusRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, AuthStatusRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthStatusRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthStatusRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthStatusRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthStatusRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthStatusRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthStatusRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthStatusRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthStatusRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthStatusRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthStatusRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthStatusRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthStatusRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthenticateRequest.id, []); (ptrT.id AuthenticateRequest.id, [("Descriptor"%go, AuthenticateRequest__Descriptorⁱᵐᵖˡ); ("GetName"%go, AuthenticateRequest__GetNameⁱᵐᵖˡ); ("GetPassword"%go, AuthenticateRequest__GetPasswordⁱᵐᵖˡ); ("Marshal"%go, AuthenticateRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthenticateRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthenticateRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthenticateRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthenticateRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthenticateRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthenticateRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthenticateRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthenticateRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthenticateRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthenticateRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthenticateRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthenticateRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserAddRequest.id, []); (ptrT.id AuthUserAddRequest.id, [("Descriptor"%go, AuthUserAddRequest__Descriptorⁱᵐᵖˡ); ("GetHashedPassword"%go, AuthUserAddRequest__GetHashedPasswordⁱᵐᵖˡ); ("GetName"%go, AuthUserAddRequest__GetNameⁱᵐᵖˡ); ("GetOptions"%go, AuthUserAddRequest__GetOptionsⁱᵐᵖˡ); ("GetPassword"%go, AuthUserAddRequest__GetPasswordⁱᵐᵖˡ); ("Marshal"%go, AuthUserAddRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserAddRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserAddRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserAddRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserAddRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserAddRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserAddRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserAddRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserAddRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserAddRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserAddRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserAddRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserAddRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserGetRequest.id, []); (ptrT.id AuthUserGetRequest.id, [("Descriptor"%go, AuthUserGetRequest__Descriptorⁱᵐᵖˡ); ("GetName"%go, AuthUserGetRequest__GetNameⁱᵐᵖˡ); ("Marshal"%go, AuthUserGetRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserGetRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserGetRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserGetRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserGetRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserGetRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserGetRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserGetRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserGetRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserGetRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserGetRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserGetRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserGetRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserDeleteRequest.id, []); (ptrT.id AuthUserDeleteRequest.id, [("Descriptor"%go, AuthUserDeleteRequest__Descriptorⁱᵐᵖˡ); ("GetName"%go, AuthUserDeleteRequest__GetNameⁱᵐᵖˡ); ("Marshal"%go, AuthUserDeleteRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserDeleteRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserDeleteRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserDeleteRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserDeleteRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserDeleteRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserDeleteRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserDeleteRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserDeleteRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserDeleteRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserDeleteRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserDeleteRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserDeleteRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserChangePasswordRequest.id, []); (ptrT.id AuthUserChangePasswordRequest.id, [("Descriptor"%go, AuthUserChangePasswordRequest__Descriptorⁱᵐᵖˡ); ("GetHashedPassword"%go, AuthUserChangePasswordRequest__GetHashedPasswordⁱᵐᵖˡ); ("GetName"%go, AuthUserChangePasswordRequest__GetNameⁱᵐᵖˡ); ("GetPassword"%go, AuthUserChangePasswordRequest__GetPasswordⁱᵐᵖˡ); ("Marshal"%go, AuthUserChangePasswordRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserChangePasswordRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserChangePasswordRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserChangePasswordRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserChangePasswordRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserChangePasswordRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserChangePasswordRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserChangePasswordRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserChangePasswordRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserChangePasswordRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserChangePasswordRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserChangePasswordRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserChangePasswordRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserGrantRoleRequest.id, []); (ptrT.id AuthUserGrantRoleRequest.id, [("Descriptor"%go, AuthUserGrantRoleRequest__Descriptorⁱᵐᵖˡ); ("GetRole"%go, AuthUserGrantRoleRequest__GetRoleⁱᵐᵖˡ); ("GetUser"%go, AuthUserGrantRoleRequest__GetUserⁱᵐᵖˡ); ("Marshal"%go, AuthUserGrantRoleRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserGrantRoleRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserGrantRoleRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserGrantRoleRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserGrantRoleRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserGrantRoleRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserGrantRoleRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserGrantRoleRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserGrantRoleRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserGrantRoleRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserGrantRoleRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserGrantRoleRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserGrantRoleRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserRevokeRoleRequest.id, []); (ptrT.id AuthUserRevokeRoleRequest.id, [("Descriptor"%go, AuthUserRevokeRoleRequest__Descriptorⁱᵐᵖˡ); ("GetName"%go, AuthUserRevokeRoleRequest__GetNameⁱᵐᵖˡ); ("GetRole"%go, AuthUserRevokeRoleRequest__GetRoleⁱᵐᵖˡ); ("Marshal"%go, AuthUserRevokeRoleRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserRevokeRoleRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserRevokeRoleRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserRevokeRoleRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserRevokeRoleRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserRevokeRoleRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserRevokeRoleRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserRevokeRoleRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserRevokeRoleRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserRevokeRoleRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserRevokeRoleRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserRevokeRoleRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserRevokeRoleRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleAddRequest.id, []); (ptrT.id AuthRoleAddRequest.id, [("Descriptor"%go, AuthRoleAddRequest__Descriptorⁱᵐᵖˡ); ("GetName"%go, AuthRoleAddRequest__GetNameⁱᵐᵖˡ); ("Marshal"%go, AuthRoleAddRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleAddRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleAddRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleAddRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleAddRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleAddRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleAddRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleAddRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleAddRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleAddRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleAddRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleAddRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleAddRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleGetRequest.id, []); (ptrT.id AuthRoleGetRequest.id, [("Descriptor"%go, AuthRoleGetRequest__Descriptorⁱᵐᵖˡ); ("GetRole"%go, AuthRoleGetRequest__GetRoleⁱᵐᵖˡ); ("Marshal"%go, AuthRoleGetRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleGetRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleGetRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleGetRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleGetRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleGetRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleGetRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleGetRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleGetRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleGetRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleGetRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleGetRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleGetRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserListRequest.id, []); (ptrT.id AuthUserListRequest.id, [("Descriptor"%go, AuthUserListRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, AuthUserListRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserListRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserListRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserListRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserListRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserListRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserListRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserListRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserListRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserListRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserListRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserListRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserListRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleListRequest.id, []); (ptrT.id AuthRoleListRequest.id, [("Descriptor"%go, AuthRoleListRequest__Descriptorⁱᵐᵖˡ); ("Marshal"%go, AuthRoleListRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleListRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleListRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleListRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleListRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleListRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleListRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleListRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleListRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleListRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleListRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleListRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleListRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleDeleteRequest.id, []); (ptrT.id AuthRoleDeleteRequest.id, [("Descriptor"%go, AuthRoleDeleteRequest__Descriptorⁱᵐᵖˡ); ("GetRole"%go, AuthRoleDeleteRequest__GetRoleⁱᵐᵖˡ); ("Marshal"%go, AuthRoleDeleteRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleDeleteRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleDeleteRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleDeleteRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleDeleteRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleDeleteRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleDeleteRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleDeleteRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleDeleteRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleDeleteRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleDeleteRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleDeleteRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleDeleteRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleGrantPermissionRequest.id, []); (ptrT.id AuthRoleGrantPermissionRequest.id, [("Descriptor"%go, AuthRoleGrantPermissionRequest__Descriptorⁱᵐᵖˡ); ("GetName"%go, AuthRoleGrantPermissionRequest__GetNameⁱᵐᵖˡ); ("GetPerm"%go, AuthRoleGrantPermissionRequest__GetPermⁱᵐᵖˡ); ("Marshal"%go, AuthRoleGrantPermissionRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleGrantPermissionRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleGrantPermissionRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleGrantPermissionRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleGrantPermissionRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleGrantPermissionRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleGrantPermissionRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleGrantPermissionRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleGrantPermissionRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleGrantPermissionRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleGrantPermissionRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleGrantPermissionRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleGrantPermissionRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleRevokePermissionRequest.id, []); (ptrT.id AuthRoleRevokePermissionRequest.id, [("Descriptor"%go, AuthRoleRevokePermissionRequest__Descriptorⁱᵐᵖˡ); ("GetKey"%go, AuthRoleRevokePermissionRequest__GetKeyⁱᵐᵖˡ); ("GetRangeEnd"%go, AuthRoleRevokePermissionRequest__GetRangeEndⁱᵐᵖˡ); ("GetRole"%go, AuthRoleRevokePermissionRequest__GetRoleⁱᵐᵖˡ); ("Marshal"%go, AuthRoleRevokePermissionRequest__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleRevokePermissionRequest__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleRevokePermissionRequest__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleRevokePermissionRequest__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleRevokePermissionRequest__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleRevokePermissionRequest__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleRevokePermissionRequest__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleRevokePermissionRequest__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleRevokePermissionRequest__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleRevokePermissionRequest__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleRevokePermissionRequest__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleRevokePermissionRequest__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleRevokePermissionRequest__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthEnableResponse.id, []); (ptrT.id AuthEnableResponse.id, [("Descriptor"%go, AuthEnableResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthEnableResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthEnableResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthEnableResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthEnableResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthEnableResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthEnableResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthEnableResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthEnableResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthEnableResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthEnableResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthEnableResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthEnableResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthEnableResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthEnableResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthDisableResponse.id, []); (ptrT.id AuthDisableResponse.id, [("Descriptor"%go, AuthDisableResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthDisableResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthDisableResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthDisableResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthDisableResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthDisableResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthDisableResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthDisableResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthDisableResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthDisableResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthDisableResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthDisableResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthDisableResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthDisableResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthDisableResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthStatusResponse.id, []); (ptrT.id AuthStatusResponse.id, [("Descriptor"%go, AuthStatusResponse__Descriptorⁱᵐᵖˡ); ("GetAuthRevision"%go, AuthStatusResponse__GetAuthRevisionⁱᵐᵖˡ); ("GetEnabled"%go, AuthStatusResponse__GetEnabledⁱᵐᵖˡ); ("GetHeader"%go, AuthStatusResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthStatusResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthStatusResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthStatusResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthStatusResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthStatusResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthStatusResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthStatusResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthStatusResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthStatusResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthStatusResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthStatusResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthStatusResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthStatusResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthenticateResponse.id, []); (ptrT.id AuthenticateResponse.id, [("Descriptor"%go, AuthenticateResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthenticateResponse__GetHeaderⁱᵐᵖˡ); ("GetToken"%go, AuthenticateResponse__GetTokenⁱᵐᵖˡ); ("Marshal"%go, AuthenticateResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthenticateResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthenticateResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthenticateResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthenticateResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthenticateResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthenticateResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthenticateResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthenticateResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthenticateResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthenticateResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthenticateResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthenticateResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserAddResponse.id, []); (ptrT.id AuthUserAddResponse.id, [("Descriptor"%go, AuthUserAddResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthUserAddResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthUserAddResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserAddResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserAddResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserAddResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserAddResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserAddResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserAddResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserAddResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserAddResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserAddResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserAddResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserAddResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserAddResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserGetResponse.id, []); (ptrT.id AuthUserGetResponse.id, [("Descriptor"%go, AuthUserGetResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthUserGetResponse__GetHeaderⁱᵐᵖˡ); ("GetRoles"%go, AuthUserGetResponse__GetRolesⁱᵐᵖˡ); ("Marshal"%go, AuthUserGetResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserGetResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserGetResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserGetResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserGetResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserGetResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserGetResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserGetResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserGetResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserGetResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserGetResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserGetResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserGetResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserDeleteResponse.id, []); (ptrT.id AuthUserDeleteResponse.id, [("Descriptor"%go, AuthUserDeleteResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthUserDeleteResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthUserDeleteResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserDeleteResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserDeleteResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserDeleteResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserDeleteResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserDeleteResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserDeleteResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserDeleteResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserDeleteResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserDeleteResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserDeleteResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserDeleteResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserDeleteResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserChangePasswordResponse.id, []); (ptrT.id AuthUserChangePasswordResponse.id, [("Descriptor"%go, AuthUserChangePasswordResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthUserChangePasswordResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthUserChangePasswordResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserChangePasswordResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserChangePasswordResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserChangePasswordResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserChangePasswordResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserChangePasswordResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserChangePasswordResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserChangePasswordResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserChangePasswordResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserChangePasswordResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserChangePasswordResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserChangePasswordResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserChangePasswordResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserGrantRoleResponse.id, []); (ptrT.id AuthUserGrantRoleResponse.id, [("Descriptor"%go, AuthUserGrantRoleResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthUserGrantRoleResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthUserGrantRoleResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserGrantRoleResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserGrantRoleResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserGrantRoleResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserGrantRoleResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserGrantRoleResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserGrantRoleResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserGrantRoleResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserGrantRoleResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserGrantRoleResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserGrantRoleResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserGrantRoleResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserGrantRoleResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserRevokeRoleResponse.id, []); (ptrT.id AuthUserRevokeRoleResponse.id, [("Descriptor"%go, AuthUserRevokeRoleResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthUserRevokeRoleResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthUserRevokeRoleResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserRevokeRoleResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserRevokeRoleResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserRevokeRoleResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserRevokeRoleResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserRevokeRoleResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserRevokeRoleResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserRevokeRoleResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserRevokeRoleResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserRevokeRoleResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserRevokeRoleResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserRevokeRoleResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserRevokeRoleResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleAddResponse.id, []); (ptrT.id AuthRoleAddResponse.id, [("Descriptor"%go, AuthRoleAddResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthRoleAddResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthRoleAddResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleAddResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleAddResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleAddResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleAddResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleAddResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleAddResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleAddResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleAddResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleAddResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleAddResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleAddResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleAddResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleGetResponse.id, []); (ptrT.id AuthRoleGetResponse.id, [("Descriptor"%go, AuthRoleGetResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthRoleGetResponse__GetHeaderⁱᵐᵖˡ); ("GetPerm"%go, AuthRoleGetResponse__GetPermⁱᵐᵖˡ); ("Marshal"%go, AuthRoleGetResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleGetResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleGetResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleGetResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleGetResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleGetResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleGetResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleGetResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleGetResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleGetResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleGetResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleGetResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleGetResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleListResponse.id, []); (ptrT.id AuthRoleListResponse.id, [("Descriptor"%go, AuthRoleListResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthRoleListResponse__GetHeaderⁱᵐᵖˡ); ("GetRoles"%go, AuthRoleListResponse__GetRolesⁱᵐᵖˡ); ("Marshal"%go, AuthRoleListResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleListResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleListResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleListResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleListResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleListResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleListResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleListResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleListResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleListResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleListResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleListResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleListResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthUserListResponse.id, []); (ptrT.id AuthUserListResponse.id, [("Descriptor"%go, AuthUserListResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthUserListResponse__GetHeaderⁱᵐᵖˡ); ("GetUsers"%go, AuthUserListResponse__GetUsersⁱᵐᵖˡ); ("Marshal"%go, AuthUserListResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthUserListResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthUserListResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthUserListResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthUserListResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthUserListResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthUserListResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthUserListResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthUserListResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthUserListResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthUserListResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthUserListResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthUserListResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleDeleteResponse.id, []); (ptrT.id AuthRoleDeleteResponse.id, [("Descriptor"%go, AuthRoleDeleteResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthRoleDeleteResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthRoleDeleteResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleDeleteResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleDeleteResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleDeleteResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleDeleteResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleDeleteResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleDeleteResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleDeleteResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleDeleteResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleDeleteResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleDeleteResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleDeleteResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleDeleteResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleGrantPermissionResponse.id, []); (ptrT.id AuthRoleGrantPermissionResponse.id, [("Descriptor"%go, AuthRoleGrantPermissionResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthRoleGrantPermissionResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthRoleGrantPermissionResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleGrantPermissionResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleGrantPermissionResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleGrantPermissionResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleGrantPermissionResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleGrantPermissionResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleGrantPermissionResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleGrantPermissionResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleGrantPermissionResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleGrantPermissionResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleGrantPermissionResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleGrantPermissionResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleGrantPermissionResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (AuthRoleRevokePermissionResponse.id, []); (ptrT.id AuthRoleRevokePermissionResponse.id, [("Descriptor"%go, AuthRoleRevokePermissionResponse__Descriptorⁱᵐᵖˡ); ("GetHeader"%go, AuthRoleRevokePermissionResponse__GetHeaderⁱᵐᵖˡ); ("Marshal"%go, AuthRoleRevokePermissionResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, AuthRoleRevokePermissionResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, AuthRoleRevokePermissionResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, AuthRoleRevokePermissionResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, AuthRoleRevokePermissionResponse__Resetⁱᵐᵖˡ); ("Size"%go, AuthRoleRevokePermissionResponse__Sizeⁱᵐᵖˡ); ("String"%go, AuthRoleRevokePermissionResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, AuthRoleRevokePermissionResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, AuthRoleRevokePermissionResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, AuthRoleRevokePermissionResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, AuthRoleRevokePermissionResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, AuthRoleRevokePermissionResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, AuthRoleRevokePermissionResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (kVClient.id, []); (ptrT.id kVClient.id, [("Compact"%go, kVClient__Compactⁱᵐᵖˡ); ("DeleteRange"%go, kVClient__DeleteRangeⁱᵐᵖˡ); ("Put"%go, kVClient__Putⁱᵐᵖˡ); ("Range"%go, kVClient__Rangeⁱᵐᵖˡ); ("Txn"%go, kVClient__Txnⁱᵐᵖˡ)]); (UnimplementedKVServer.id, []); (ptrT.id UnimplementedKVServer.id, [("Compact"%go, UnimplementedKVServer__Compactⁱᵐᵖˡ); ("DeleteRange"%go, UnimplementedKVServer__DeleteRangeⁱᵐᵖˡ); ("Put"%go, UnimplementedKVServer__Putⁱᵐᵖˡ); ("Range"%go, UnimplementedKVServer__Rangeⁱᵐᵖˡ); ("Txn"%go, UnimplementedKVServer__Txnⁱᵐᵖˡ)]); (watchClient.id, []); (ptrT.id watchClient.id, [("Watch"%go, watchClient__Watchⁱᵐᵖˡ)]); (watchWatchClient.id, [("CloseSend"%go, watchWatchClient__CloseSendⁱᵐᵖˡ); ("Context"%go, watchWatchClient__Contextⁱᵐᵖˡ); ("Header"%go, watchWatchClient__Headerⁱᵐᵖˡ); ("RecvMsg"%go, watchWatchClient__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, watchWatchClient__SendMsgⁱᵐᵖˡ); ("Trailer"%go, watchWatchClient__Trailerⁱᵐᵖˡ)]); (ptrT.id watchWatchClient.id, [("CloseSend"%go, watchWatchClient__CloseSendⁱᵐᵖˡ); ("Context"%go, watchWatchClient__Contextⁱᵐᵖˡ); ("Header"%go, watchWatchClient__Headerⁱᵐᵖˡ); ("Recv"%go, watchWatchClient__Recvⁱᵐᵖˡ); ("RecvMsg"%go, watchWatchClient__RecvMsgⁱᵐᵖˡ); ("Send"%go, watchWatchClient__Sendⁱᵐᵖˡ); ("SendMsg"%go, watchWatchClient__SendMsgⁱᵐᵖˡ); ("Trailer"%go, watchWatchClient__Trailerⁱᵐᵖˡ)]); (UnimplementedWatchServer.id, []); (ptrT.id UnimplementedWatchServer.id, [("Watch"%go, UnimplementedWatchServer__Watchⁱᵐᵖˡ)]); (watchWatchServer.id, [("Context"%go, watchWatchServer__Contextⁱᵐᵖˡ); ("RecvMsg"%go, watchWatchServer__RecvMsgⁱᵐᵖˡ); ("SendHeader"%go, watchWatchServer__SendHeaderⁱᵐᵖˡ); ("SendMsg"%go, watchWatchServer__SendMsgⁱᵐᵖˡ); ("SetHeader"%go, watchWatchServer__SetHeaderⁱᵐᵖˡ); ("SetTrailer"%go, watchWatchServer__SetTrailerⁱᵐᵖˡ)]); (ptrT.id watchWatchServer.id, [("Context"%go, watchWatchServer__Contextⁱᵐᵖˡ); ("Recv"%go, watchWatchServer__Recvⁱᵐᵖˡ); ("RecvMsg"%go, watchWatchServer__RecvMsgⁱᵐᵖˡ); ("Send"%go, watchWatchServer__Sendⁱᵐᵖˡ); ("SendHeader"%go, watchWatchServer__SendHeaderⁱᵐᵖˡ); ("SendMsg"%go, watchWatchServer__SendMsgⁱᵐᵖˡ); ("SetHeader"%go, watchWatchServer__SetHeaderⁱᵐᵖˡ); ("SetTrailer"%go, watchWatchServer__SetTrailerⁱᵐᵖˡ)]); (leaseClient.id, []); (ptrT.id leaseClient.id, [("LeaseGrant"%go, leaseClient__LeaseGrantⁱᵐᵖˡ); ("LeaseKeepAlive"%go, leaseClient__LeaseKeepAliveⁱᵐᵖˡ); ("LeaseLeases"%go, leaseClient__LeaseLeasesⁱᵐᵖˡ); ("LeaseRevoke"%go, leaseClient__LeaseRevokeⁱᵐᵖˡ); ("LeaseTimeToLive"%go, leaseClient__LeaseTimeToLiveⁱᵐᵖˡ)]); (leaseLeaseKeepAliveClient.id, [("CloseSend"%go, leaseLeaseKeepAliveClient__CloseSendⁱᵐᵖˡ); ("Context"%go, leaseLeaseKeepAliveClient__Contextⁱᵐᵖˡ); ("Header"%go, leaseLeaseKeepAliveClient__Headerⁱᵐᵖˡ); ("RecvMsg"%go, leaseLeaseKeepAliveClient__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, leaseLeaseKeepAliveClient__SendMsgⁱᵐᵖˡ); ("Trailer"%go, leaseLeaseKeepAliveClient__Trailerⁱᵐᵖˡ)]); (ptrT.id leaseLeaseKeepAliveClient.id, [("CloseSend"%go, leaseLeaseKeepAliveClient__CloseSendⁱᵐᵖˡ); ("Context"%go, leaseLeaseKeepAliveClient__Contextⁱᵐᵖˡ); ("Header"%go, leaseLeaseKeepAliveClient__Headerⁱᵐᵖˡ); ("Recv"%go, leaseLeaseKeepAliveClient__Recvⁱᵐᵖˡ); ("RecvMsg"%go, leaseLeaseKeepAliveClient__RecvMsgⁱᵐᵖˡ); ("Send"%go, leaseLeaseKeepAliveClient__Sendⁱᵐᵖˡ); ("SendMsg"%go, leaseLeaseKeepAliveClient__SendMsgⁱᵐᵖˡ); ("Trailer"%go, leaseLeaseKeepAliveClient__Trailerⁱᵐᵖˡ)]); (UnimplementedLeaseServer.id, []); (ptrT.id UnimplementedLeaseServer.id, [("LeaseGrant"%go, UnimplementedLeaseServer__LeaseGrantⁱᵐᵖˡ); ("LeaseKeepAlive"%go, UnimplementedLeaseServer__LeaseKeepAliveⁱᵐᵖˡ); ("LeaseLeases"%go, UnimplementedLeaseServer__LeaseLeasesⁱᵐᵖˡ); ("LeaseRevoke"%go, UnimplementedLeaseServer__LeaseRevokeⁱᵐᵖˡ); ("LeaseTimeToLive"%go, UnimplementedLeaseServer__LeaseTimeToLiveⁱᵐᵖˡ)]); (leaseLeaseKeepAliveServer.id, [("Context"%go, leaseLeaseKeepAliveServer__Contextⁱᵐᵖˡ); ("RecvMsg"%go, leaseLeaseKeepAliveServer__RecvMsgⁱᵐᵖˡ); ("SendHeader"%go, leaseLeaseKeepAliveServer__SendHeaderⁱᵐᵖˡ); ("SendMsg"%go, leaseLeaseKeepAliveServer__SendMsgⁱᵐᵖˡ); ("SetHeader"%go, leaseLeaseKeepAliveServer__SetHeaderⁱᵐᵖˡ); ("SetTrailer"%go, leaseLeaseKeepAliveServer__SetTrailerⁱᵐᵖˡ)]); (ptrT.id leaseLeaseKeepAliveServer.id, [("Context"%go, leaseLeaseKeepAliveServer__Contextⁱᵐᵖˡ); ("Recv"%go, leaseLeaseKeepAliveServer__Recvⁱᵐᵖˡ); ("RecvMsg"%go, leaseLeaseKeepAliveServer__RecvMsgⁱᵐᵖˡ); ("Send"%go, leaseLeaseKeepAliveServer__Sendⁱᵐᵖˡ); ("SendHeader"%go, leaseLeaseKeepAliveServer__SendHeaderⁱᵐᵖˡ); ("SendMsg"%go, leaseLeaseKeepAliveServer__SendMsgⁱᵐᵖˡ); ("SetHeader"%go, leaseLeaseKeepAliveServer__SetHeaderⁱᵐᵖˡ); ("SetTrailer"%go, leaseLeaseKeepAliveServer__SetTrailerⁱᵐᵖˡ)]); (clusterClient.id, []); (ptrT.id clusterClient.id, [("MemberAdd"%go, clusterClient__MemberAddⁱᵐᵖˡ); ("MemberList"%go, clusterClient__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, clusterClient__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, clusterClient__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, clusterClient__MemberUpdateⁱᵐᵖˡ)]); (UnimplementedClusterServer.id, []); (ptrT.id UnimplementedClusterServer.id, [("MemberAdd"%go, UnimplementedClusterServer__MemberAddⁱᵐᵖˡ); ("MemberList"%go, UnimplementedClusterServer__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, UnimplementedClusterServer__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, UnimplementedClusterServer__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, UnimplementedClusterServer__MemberUpdateⁱᵐᵖˡ)]); (maintenanceClient.id, []); (ptrT.id maintenanceClient.id, [("Alarm"%go, maintenanceClient__Alarmⁱᵐᵖˡ); ("Defragment"%go, maintenanceClient__Defragmentⁱᵐᵖˡ); ("Downgrade"%go, maintenanceClient__Downgradeⁱᵐᵖˡ); ("Hash"%go, maintenanceClient__Hashⁱᵐᵖˡ); ("HashKV"%go, maintenanceClient__HashKVⁱᵐᵖˡ); ("MoveLeader"%go, maintenanceClient__MoveLeaderⁱᵐᵖˡ); ("Snapshot"%go, maintenanceClient__Snapshotⁱᵐᵖˡ); ("Status"%go, maintenanceClient__Statusⁱᵐᵖˡ)]); (maintenanceSnapshotClient.id, [("CloseSend"%go, maintenanceSnapshotClient__CloseSendⁱᵐᵖˡ); ("Context"%go, maintenanceSnapshotClient__Contextⁱᵐᵖˡ); ("Header"%go, maintenanceSnapshotClient__Headerⁱᵐᵖˡ); ("RecvMsg"%go, maintenanceSnapshotClient__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, maintenanceSnapshotClient__SendMsgⁱᵐᵖˡ); ("Trailer"%go, maintenanceSnapshotClient__Trailerⁱᵐᵖˡ)]); (ptrT.id maintenanceSnapshotClient.id, [("CloseSend"%go, maintenanceSnapshotClient__CloseSendⁱᵐᵖˡ); ("Context"%go, maintenanceSnapshotClient__Contextⁱᵐᵖˡ); ("Header"%go, maintenanceSnapshotClient__Headerⁱᵐᵖˡ); ("Recv"%go, maintenanceSnapshotClient__Recvⁱᵐᵖˡ); ("RecvMsg"%go, maintenanceSnapshotClient__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, maintenanceSnapshotClient__SendMsgⁱᵐᵖˡ); ("Trailer"%go, maintenanceSnapshotClient__Trailerⁱᵐᵖˡ)]); (UnimplementedMaintenanceServer.id, []); (ptrT.id UnimplementedMaintenanceServer.id, [("Alarm"%go, UnimplementedMaintenanceServer__Alarmⁱᵐᵖˡ); ("Defragment"%go, UnimplementedMaintenanceServer__Defragmentⁱᵐᵖˡ); ("Downgrade"%go, UnimplementedMaintenanceServer__Downgradeⁱᵐᵖˡ); ("Hash"%go, UnimplementedMaintenanceServer__Hashⁱᵐᵖˡ); ("HashKV"%go, UnimplementedMaintenanceServer__HashKVⁱᵐᵖˡ); ("MoveLeader"%go, UnimplementedMaintenanceServer__MoveLeaderⁱᵐᵖˡ); ("Snapshot"%go, UnimplementedMaintenanceServer__Snapshotⁱᵐᵖˡ); ("Status"%go, UnimplementedMaintenanceServer__Statusⁱᵐᵖˡ)]); (maintenanceSnapshotServer.id, [("Context"%go, maintenanceSnapshotServer__Contextⁱᵐᵖˡ); ("RecvMsg"%go, maintenanceSnapshotServer__RecvMsgⁱᵐᵖˡ); ("SendHeader"%go, maintenanceSnapshotServer__SendHeaderⁱᵐᵖˡ); ("SendMsg"%go, maintenanceSnapshotServer__SendMsgⁱᵐᵖˡ); ("SetHeader"%go, maintenanceSnapshotServer__SetHeaderⁱᵐᵖˡ); ("SetTrailer"%go, maintenanceSnapshotServer__SetTrailerⁱᵐᵖˡ)]); (ptrT.id maintenanceSnapshotServer.id, [("Context"%go, maintenanceSnapshotServer__Contextⁱᵐᵖˡ); ("RecvMsg"%go, maintenanceSnapshotServer__RecvMsgⁱᵐᵖˡ); ("Send"%go, maintenanceSnapshotServer__Sendⁱᵐᵖˡ); ("SendHeader"%go, maintenanceSnapshotServer__SendHeaderⁱᵐᵖˡ); ("SendMsg"%go, maintenanceSnapshotServer__SendMsgⁱᵐᵖˡ); ("SetHeader"%go, maintenanceSnapshotServer__SetHeaderⁱᵐᵖˡ); ("SetTrailer"%go, maintenanceSnapshotServer__SetTrailerⁱᵐᵖˡ)]); (authClient.id, []); (ptrT.id authClient.id, [("AuthDisable"%go, authClient__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, authClient__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, authClient__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, authClient__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, authClient__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, authClient__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, authClient__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, authClient__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, authClient__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, authClient__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, authClient__UserAddⁱᵐᵖˡ); ("UserChangePassword"%go, authClient__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, authClient__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, authClient__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, authClient__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, authClient__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, authClient__UserRevokeRoleⁱᵐᵖˡ)]); (UnimplementedAuthServer.id, []); (ptrT.id UnimplementedAuthServer.id, [("AuthDisable"%go, UnimplementedAuthServer__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, UnimplementedAuthServer__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, UnimplementedAuthServer__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, UnimplementedAuthServer__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, UnimplementedAuthServer__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, UnimplementedAuthServer__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, UnimplementedAuthServer__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, UnimplementedAuthServer__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, UnimplementedAuthServer__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, UnimplementedAuthServer__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, UnimplementedAuthServer__UserAddⁱᵐᵖˡ); ("UserChangePassword"%go, UnimplementedAuthServer__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, UnimplementedAuthServer__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, UnimplementedAuthServer__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, UnimplementedAuthServer__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, UnimplementedAuthServer__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, UnimplementedAuthServer__UserRevokeRoleⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo etcdserverpb.etcdserverpb :=
   {|

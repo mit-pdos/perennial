@@ -43,6 +43,24 @@ Definition Atanh : go_string := "math.Atanh"%go.
 
 Definition atanh : go_string := "math.atanh"%go.
 
+Axiom uvnan : Z.
+
+Axiom uvinf : Z.
+
+Axiom uvneginf : Z.
+
+Axiom uvone : Z.
+
+Axiom mask : Z.
+
+Axiom shift : Z.
+
+Axiom bias : Z.
+
+Axiom signMask : Z.
+
+Axiom fracMask : Z.
+
 Definition Inf : go_string := "math.Inf"%go.
 
 Definition NaN : go_string := "math.NaN"%go.
@@ -57,14 +75,68 @@ Definition Cbrt : go_string := "math.Cbrt"%go.
 
 Definition cbrt : go_string := "math.cbrt"%go.
 
+Axiom E : expr.
+
+Axiom Pi : expr.
+
+Axiom Phi : expr.
+
+Axiom Sqrt2 : expr.
+
+Axiom SqrtE : expr.
+
+Axiom SqrtPi : expr.
+
+Axiom SqrtPhi : expr.
+
+Axiom Ln2 : expr.
+
+Axiom Log2E : expr.
+
+Axiom Ln10 : expr.
+
+Axiom Log10E : expr.
+
+Axiom MaxFloat32 : expr.
+
+Axiom SmallestNonzeroFloat32 : expr.
+
+Axiom MaxFloat64 : expr.
+
+Axiom SmallestNonzeroFloat64 : expr.
+
+Axiom intSize : Z.
+
 (* MaxInt32 or MaxInt64 depending on intSize. *)
 Definition MaxInt : Z := 9223372036854775807.
 
 (* MinInt32 or MinInt64 depending on intSize. *)
 Definition MinInt : Z := -9223372036854775808.
 
+Axiom MaxInt8 : Z.
+
+Axiom MinInt8 : Z.
+
+Axiom MaxInt16 : Z.
+
+Axiom MinInt16 : Z.
+
+Axiom MaxInt32 : Z.
+
+Axiom MinInt32 : Z.
+
 (* 9223372036854775807 *)
 Definition MaxInt64 : Z := 9223372036854775807.
+
+Axiom MinInt64 : Z.
+
+Axiom MaxUint : Z.
+
+Axiom MaxUint8 : Z.
+
+Axiom MaxUint16 : Z.
+
+Axiom MaxUint32 : Z.
 
 (* 18446744073709551615 *)
 Definition MaxUint64 : Z := 18446744073709551615.
@@ -81,9 +153,125 @@ Definition Min : go_string := "math.Min"%go.
 
 Definition min : go_string := "math.min"%go.
 
+Axiom haveArchMax : expr.
+
 Definition archMax : go_string := "math.archMax"%go.
 
+Axiom haveArchMin : expr.
+
 Definition archMin : go_string := "math.archMin"%go.
+
+Axiom erx : expr.
+
+Axiom efx : expr.
+
+Axiom efx8 : expr.
+
+Axiom pp0 : expr.
+
+Axiom pp1 : expr.
+
+Axiom pp2 : expr.
+
+Axiom pp3 : expr.
+
+Axiom pp4 : expr.
+
+Axiom qq1 : expr.
+
+Axiom qq2 : expr.
+
+Axiom qq3 : expr.
+
+Axiom qq4 : expr.
+
+Axiom qq5 : expr.
+
+Axiom pa0 : expr.
+
+Axiom pa1 : expr.
+
+Axiom pa2 : expr.
+
+Axiom pa3 : expr.
+
+Axiom pa4 : expr.
+
+Axiom pa5 : expr.
+
+Axiom pa6 : expr.
+
+Axiom qa1 : expr.
+
+Axiom qa2 : expr.
+
+Axiom qa3 : expr.
+
+Axiom qa4 : expr.
+
+Axiom qa5 : expr.
+
+Axiom qa6 : expr.
+
+Axiom ra0 : expr.
+
+Axiom ra1 : expr.
+
+Axiom ra2 : expr.
+
+Axiom ra3 : expr.
+
+Axiom ra4 : expr.
+
+Axiom ra5 : expr.
+
+Axiom ra6 : expr.
+
+Axiom ra7 : expr.
+
+Axiom sa1 : expr.
+
+Axiom sa2 : expr.
+
+Axiom sa3 : expr.
+
+Axiom sa4 : expr.
+
+Axiom sa5 : expr.
+
+Axiom sa6 : expr.
+
+Axiom sa7 : expr.
+
+Axiom sa8 : expr.
+
+Axiom rb0 : expr.
+
+Axiom rb1 : expr.
+
+Axiom rb2 : expr.
+
+Axiom rb3 : expr.
+
+Axiom rb4 : expr.
+
+Axiom rb5 : expr.
+
+Axiom rb6 : expr.
+
+Axiom sb1 : expr.
+
+Axiom sb2 : expr.
+
+Axiom sb3 : expr.
+
+Axiom sb4 : expr.
+
+Axiom sb5 : expr.
+
+Axiom sb6 : expr.
+
+Axiom sb7 : expr.
 
 Definition Erf : go_string := "math.Erf"%go.
 
@@ -92,6 +280,102 @@ Definition erf : go_string := "math.erf"%go.
 Definition Erfc : go_string := "math.Erfc"%go.
 
 Definition erfc : go_string := "math.erfc"%go.
+
+Axiom a0 : expr.
+
+Axiom a1 : expr.
+
+Axiom a2 : expr.
+
+Axiom a3 : expr.
+
+Axiom a4 : expr.
+
+Axiom a5 : expr.
+
+Axiom a6 : expr.
+
+Axiom a7 : expr.
+
+Axiom b0 : expr.
+
+Axiom b1 : expr.
+
+Axiom b2 : expr.
+
+Axiom b3 : expr.
+
+Axiom b4 : expr.
+
+Axiom b5 : expr.
+
+Axiom b6 : expr.
+
+Axiom b7 : expr.
+
+Axiom c0 : expr.
+
+Axiom c1 : expr.
+
+Axiom c2 : expr.
+
+Axiom c3 : expr.
+
+Axiom c4 : expr.
+
+Axiom c5 : expr.
+
+Axiom c6 : expr.
+
+Axiom c7 : expr.
+
+Axiom d0 : expr.
+
+Axiom d1 : expr.
+
+Axiom d2 : expr.
+
+Axiom d3 : expr.
+
+Axiom d4 : expr.
+
+Axiom d5 : expr.
+
+Axiom d6 : expr.
+
+Axiom d7 : expr.
+
+Axiom e0 : expr.
+
+Axiom e1 : expr.
+
+Axiom e2 : expr.
+
+Axiom e3 : expr.
+
+Axiom e4 : expr.
+
+Axiom e5 : expr.
+
+Axiom e6 : expr.
+
+Axiom e7 : expr.
+
+Axiom f0 : expr.
+
+Axiom f1 : expr.
+
+Axiom f2 : expr.
+
+Axiom f3 : expr.
+
+Axiom f4 : expr.
+
+Axiom f5 : expr.
+
+Axiom f6 : expr.
+
+Axiom f7 : expr.
 
 Definition Erfinv : go_string := "math.Erfinv"%go.
 
@@ -107,11 +391,15 @@ Definition exp2 : go_string := "math.exp2"%go.
 
 Definition expmulti : go_string := "math.expmulti"%go.
 
+Axiom haveArchExp2 : expr.
+
 Definition archExp2 : go_string := "math.archExp2"%go.
 
 Definition useFMA : go_string := "math.useFMA"%go.
 
 Axiom useFMA'init : val.
+
+Axiom haveArchExp : expr.
 
 Definition archExp : go_string := "math.archExp"%go.
 
@@ -135,9 +423,15 @@ Definition Round : go_string := "math.Round"%go.
 
 Definition RoundToEven : go_string := "math.RoundToEven"%go.
 
+Axiom haveArchFloor : expr.
+
 Definition archFloor : go_string := "math.archFloor"%go.
 
+Axiom haveArchCeil : expr.
+
 Definition archCeil : go_string := "math.archCeil"%go.
+
+Axiom haveArchTrunc : expr.
 
 Definition archTrunc : go_string := "math.archTrunc"%go.
 
@@ -182,6 +476,8 @@ Definition isNegInt : go_string := "math.isNegInt"%go.
 Definition Hypot : go_string := "math.Hypot"%go.
 
 Definition hypot : go_string := "math.hypot"%go.
+
+Axiom haveArchHypot : expr.
 
 Definition archHypot : go_string := "math.archHypot"%go.
 
@@ -385,6 +681,8 @@ Definition Log1p : go_string := "math.Log1p"%go.
 
 Definition log1p : go_string := "math.log1p"%go.
 
+Axiom haveArchLog : expr.
+
 Definition archLog : go_string := "math.archLog"%go.
 
 Definition Logb : go_string := "math.Logb"%go.
@@ -400,6 +698,8 @@ Definition mod' : go_string := "math.mod"%go.
 Definition Modf : go_string := "math.Modf"%go.
 
 Definition modf : go_string := "math.modf"%go.
+
+Axiom haveArchModf : expr.
 
 Definition archModf : go_string := "math.archModf"%go.
 
@@ -463,53 +763,103 @@ Definition Sqrt : go_string := "math.Sqrt"%go.
 
 Definition sqrt : go_string := "math.sqrt"%go.
 
+Axiom haveArchAcos : expr.
+
 Definition archAcos : go_string := "math.archAcos"%go.
+
+Axiom haveArchAcosh : expr.
 
 Definition archAcosh : go_string := "math.archAcosh"%go.
 
+Axiom haveArchAsin : expr.
+
 Definition archAsin : go_string := "math.archAsin"%go.
+
+Axiom haveArchAsinh : expr.
 
 Definition archAsinh : go_string := "math.archAsinh"%go.
 
+Axiom haveArchAtan : expr.
+
 Definition archAtan : go_string := "math.archAtan"%go.
+
+Axiom haveArchAtan2 : expr.
 
 Definition archAtan2 : go_string := "math.archAtan2"%go.
 
+Axiom haveArchAtanh : expr.
+
 Definition archAtanh : go_string := "math.archAtanh"%go.
+
+Axiom haveArchCbrt : expr.
 
 Definition archCbrt : go_string := "math.archCbrt"%go.
 
+Axiom haveArchCos : expr.
+
 Definition archCos : go_string := "math.archCos"%go.
+
+Axiom haveArchCosh : expr.
 
 Definition archCosh : go_string := "math.archCosh"%go.
 
+Axiom haveArchErf : expr.
+
 Definition archErf : go_string := "math.archErf"%go.
+
+Axiom haveArchErfc : expr.
 
 Definition archErfc : go_string := "math.archErfc"%go.
 
+Axiom haveArchExpm1 : expr.
+
 Definition archExpm1 : go_string := "math.archExpm1"%go.
+
+Axiom haveArchFrexp : expr.
 
 Definition archFrexp : go_string := "math.archFrexp"%go.
 
+Axiom haveArchLdexp : expr.
+
 Definition archLdexp : go_string := "math.archLdexp"%go.
+
+Axiom haveArchLog10 : expr.
 
 Definition archLog10 : go_string := "math.archLog10"%go.
 
+Axiom haveArchLog2 : expr.
+
 Definition archLog2 : go_string := "math.archLog2"%go.
+
+Axiom haveArchLog1p : expr.
 
 Definition archLog1p : go_string := "math.archLog1p"%go.
 
+Axiom haveArchMod : expr.
+
 Definition archMod : go_string := "math.archMod"%go.
+
+Axiom haveArchPow : expr.
 
 Definition archPow : go_string := "math.archPow"%go.
 
+Axiom haveArchRemainder : expr.
+
 Definition archRemainder : go_string := "math.archRemainder"%go.
+
+Axiom haveArchSin : expr.
 
 Definition archSin : go_string := "math.archSin"%go.
 
+Axiom haveArchSinh : expr.
+
 Definition archSinh : go_string := "math.archSinh"%go.
 
+Axiom haveArchTan : expr.
+
 Definition archTan : go_string := "math.archTan"%go.
+
+Axiom haveArchTanh : expr.
 
 Definition archTanh : go_string := "math.archTanh"%go.
 
@@ -537,6 +887,8 @@ Definition Tanh : go_string := "math.Tanh"%go.
 
 Definition tanh : go_string := "math.tanh"%go.
 
+Axiom reduceThreshold : Z.
+
 Definition trigReduce : go_string := "math.trigReduce"%go.
 
 Definition mPi4 : go_string := "math.mPi4"%go.
@@ -553,7 +905,325 @@ Definition Float64frombits : go_string := "math.Float64frombits"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom Absⁱᵐᵖˡ : val.
+
+Axiom Acoshⁱᵐᵖˡ : val.
+
+Axiom acoshⁱᵐᵖˡ : val.
+
+Axiom Asinⁱᵐᵖˡ : val.
+
+Axiom asinⁱᵐᵖˡ : val.
+
+Axiom Acosⁱᵐᵖˡ : val.
+
+Axiom acosⁱᵐᵖˡ : val.
+
+Axiom Asinhⁱᵐᵖˡ : val.
+
+Axiom asinhⁱᵐᵖˡ : val.
+
+Axiom xatanⁱᵐᵖˡ : val.
+
+Axiom satanⁱᵐᵖˡ : val.
+
+Axiom Atanⁱᵐᵖˡ : val.
+
+Axiom atanⁱᵐᵖˡ : val.
+
+Axiom Atan2ⁱᵐᵖˡ : val.
+
+Axiom atan2ⁱᵐᵖˡ : val.
+
+Axiom Atanhⁱᵐᵖˡ : val.
+
+Axiom atanhⁱᵐᵖˡ : val.
+
+Axiom Infⁱᵐᵖˡ : val.
+
+Axiom NaNⁱᵐᵖˡ : val.
+
+Axiom IsNaNⁱᵐᵖˡ : val.
+
+Axiom IsInfⁱᵐᵖˡ : val.
+
+Axiom normalizeⁱᵐᵖˡ : val.
+
+Axiom Cbrtⁱᵐᵖˡ : val.
+
+Axiom cbrtⁱᵐᵖˡ : val.
+
+Axiom Copysignⁱᵐᵖˡ : val.
+
+Axiom Dimⁱᵐᵖˡ : val.
+
+Axiom Maxⁱᵐᵖˡ : val.
+
+Axiom maxⁱᵐᵖˡ : val.
+
+Axiom Minⁱᵐᵖˡ : val.
+
+Axiom minⁱᵐᵖˡ : val.
+
+Axiom archMaxⁱᵐᵖˡ : val.
+
+Axiom archMinⁱᵐᵖˡ : val.
+
+Axiom Erfⁱᵐᵖˡ : val.
+
+Axiom erfⁱᵐᵖˡ : val.
+
+Axiom Erfcⁱᵐᵖˡ : val.
+
+Axiom erfcⁱᵐᵖˡ : val.
+
+Axiom Erfinvⁱᵐᵖˡ : val.
+
+Axiom Erfcinvⁱᵐᵖˡ : val.
+
+Axiom Expⁱᵐᵖˡ : val.
+
+Axiom expⁱᵐᵖˡ : val.
+
+Axiom Exp2ⁱᵐᵖˡ : val.
+
+Axiom exp2ⁱᵐᵖˡ : val.
+
+Axiom expmultiⁱᵐᵖˡ : val.
+
+Axiom archExp2ⁱᵐᵖˡ : val.
+
+Axiom archExpⁱᵐᵖˡ : val.
+
+Axiom Expm1ⁱᵐᵖˡ : val.
+
+Axiom expm1ⁱᵐᵖˡ : val.
+
+Axiom Floorⁱᵐᵖˡ : val.
+
+Axiom floorⁱᵐᵖˡ : val.
+
+Axiom Ceilⁱᵐᵖˡ : val.
+
+Axiom ceilⁱᵐᵖˡ : val.
+
+Axiom Truncⁱᵐᵖˡ : val.
+
+Axiom truncⁱᵐᵖˡ : val.
+
+Axiom Roundⁱᵐᵖˡ : val.
+
+Axiom RoundToEvenⁱᵐᵖˡ : val.
+
+Axiom archFloorⁱᵐᵖˡ : val.
+
+Axiom archCeilⁱᵐᵖˡ : val.
+
+Axiom archTruncⁱᵐᵖˡ : val.
+
+Axiom zeroⁱᵐᵖˡ : val.
+
+Axiom nonzeroⁱᵐᵖˡ : val.
+
+Axiom shlⁱᵐᵖˡ : val.
+
+Axiom shrⁱᵐᵖˡ : val.
+
+Axiom shrcompressⁱᵐᵖˡ : val.
+
+Axiom lzⁱᵐᵖˡ : val.
+
+Axiom splitⁱᵐᵖˡ : val.
+
+Axiom FMAⁱᵐᵖˡ : val.
+
+Axiom Frexpⁱᵐᵖˡ : val.
+
+Axiom frexpⁱᵐᵖˡ : val.
+
+Axiom stirlingⁱᵐᵖˡ : val.
+
+Axiom Gammaⁱᵐᵖˡ : val.
+
+Axiom isNegIntⁱᵐᵖˡ : val.
+
+Axiom Hypotⁱᵐᵖˡ : val.
+
+Axiom hypotⁱᵐᵖˡ : val.
+
+Axiom archHypotⁱᵐᵖˡ : val.
+
+Axiom J0ⁱᵐᵖˡ : val.
+
+Axiom Y0ⁱᵐᵖˡ : val.
+
+Axiom pzeroⁱᵐᵖˡ : val.
+
+Axiom qzeroⁱᵐᵖˡ : val.
+
+Axiom J1ⁱᵐᵖˡ : val.
+
+Axiom Y1ⁱᵐᵖˡ : val.
+
+Axiom poneⁱᵐᵖˡ : val.
+
+Axiom qoneⁱᵐᵖˡ : val.
+
+Axiom Jnⁱᵐᵖˡ : val.
+
+Axiom Ynⁱᵐᵖˡ : val.
+
+Axiom Ldexpⁱᵐᵖˡ : val.
+
+Axiom ldexpⁱᵐᵖˡ : val.
+
+Axiom Lgammaⁱᵐᵖˡ : val.
+
+Axiom sinPiⁱᵐᵖˡ : val.
+
+Axiom Logⁱᵐᵖˡ : val.
+
+Axiom logⁱᵐᵖˡ : val.
+
+Axiom Log10ⁱᵐᵖˡ : val.
+
+Axiom log10ⁱᵐᵖˡ : val.
+
+Axiom Log2ⁱᵐᵖˡ : val.
+
+Axiom log2ⁱᵐᵖˡ : val.
+
+Axiom Log1pⁱᵐᵖˡ : val.
+
+Axiom log1pⁱᵐᵖˡ : val.
+
+Axiom archLogⁱᵐᵖˡ : val.
+
+Axiom Logbⁱᵐᵖˡ : val.
+
+Axiom Ilogbⁱᵐᵖˡ : val.
+
+Axiom ilogbⁱᵐᵖˡ : val.
+
+Axiom Modⁱᵐᵖˡ : val.
+
+Axiom modⁱᵐᵖˡ : val.
+
+Axiom Modfⁱᵐᵖˡ : val.
+
+Axiom modfⁱᵐᵖˡ : val.
+
+Axiom archModfⁱᵐᵖˡ : val.
+
+Axiom Nextafter32ⁱᵐᵖˡ : val.
+
+Axiom Nextafterⁱᵐᵖˡ : val.
+
+Axiom isOddIntⁱᵐᵖˡ : val.
+
+Axiom Powⁱᵐᵖˡ : val.
+
+Axiom powⁱᵐᵖˡ : val.
+
+Axiom Pow10ⁱᵐᵖˡ : val.
+
+Axiom Remainderⁱᵐᵖˡ : val.
+
+Axiom remainderⁱᵐᵖˡ : val.
+
+Axiom Signbitⁱᵐᵖˡ : val.
+
+Axiom Cosⁱᵐᵖˡ : val.
+
+Axiom cosⁱᵐᵖˡ : val.
+
+Axiom Sinⁱᵐᵖˡ : val.
+
+Axiom sinⁱᵐᵖˡ : val.
+
+Axiom Sincosⁱᵐᵖˡ : val.
+
+Axiom Sinhⁱᵐᵖˡ : val.
+
+Axiom sinhⁱᵐᵖˡ : val.
+
+Axiom Coshⁱᵐᵖˡ : val.
+
+Axiom coshⁱᵐᵖˡ : val.
+
+Axiom Sqrtⁱᵐᵖˡ : val.
+
+Axiom sqrtⁱᵐᵖˡ : val.
+
+Axiom archAcosⁱᵐᵖˡ : val.
+
+Axiom archAcoshⁱᵐᵖˡ : val.
+
+Axiom archAsinⁱᵐᵖˡ : val.
+
+Axiom archAsinhⁱᵐᵖˡ : val.
+
+Axiom archAtanⁱᵐᵖˡ : val.
+
+Axiom archAtan2ⁱᵐᵖˡ : val.
+
+Axiom archAtanhⁱᵐᵖˡ : val.
+
+Axiom archCbrtⁱᵐᵖˡ : val.
+
+Axiom archCosⁱᵐᵖˡ : val.
+
+Axiom archCoshⁱᵐᵖˡ : val.
+
+Axiom archErfⁱᵐᵖˡ : val.
+
+Axiom archErfcⁱᵐᵖˡ : val.
+
+Axiom archExpm1ⁱᵐᵖˡ : val.
+
+Axiom archFrexpⁱᵐᵖˡ : val.
+
+Axiom archLdexpⁱᵐᵖˡ : val.
+
+Axiom archLog10ⁱᵐᵖˡ : val.
+
+Axiom archLog2ⁱᵐᵖˡ : val.
+
+Axiom archLog1pⁱᵐᵖˡ : val.
+
+Axiom archModⁱᵐᵖˡ : val.
+
+Axiom archPowⁱᵐᵖˡ : val.
+
+Axiom archRemainderⁱᵐᵖˡ : val.
+
+Axiom archSinⁱᵐᵖˡ : val.
+
+Axiom archSinhⁱᵐᵖˡ : val.
+
+Axiom archTanⁱᵐᵖˡ : val.
+
+Axiom archTanhⁱᵐᵖˡ : val.
+
+Axiom Tanⁱᵐᵖˡ : val.
+
+Axiom tanⁱᵐᵖˡ : val.
+
+Axiom Tanhⁱᵐᵖˡ : val.
+
+Axiom tanhⁱᵐᵖˡ : val.
+
+Axiom trigReduceⁱᵐᵖˡ : val.
+
+Axiom Float32bitsⁱᵐᵖˡ : val.
+
+Axiom Float32frombitsⁱᵐᵖˡ : val.
+
+Axiom Float64bitsⁱᵐᵖˡ : val.
+
+Axiom Float64frombitsⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(Abs, Absⁱᵐᵖˡ); (Acosh, Acoshⁱᵐᵖˡ); (acosh, acoshⁱᵐᵖˡ); (Asin, Asinⁱᵐᵖˡ); (asin, asinⁱᵐᵖˡ); (Acos, Acosⁱᵐᵖˡ); (acos, acosⁱᵐᵖˡ); (Asinh, Asinhⁱᵐᵖˡ); (asinh, asinhⁱᵐᵖˡ); (xatan, xatanⁱᵐᵖˡ); (satan, satanⁱᵐᵖˡ); (Atan, Atanⁱᵐᵖˡ); (atan, atanⁱᵐᵖˡ); (Atan2, Atan2ⁱᵐᵖˡ); (atan2, atan2ⁱᵐᵖˡ); (Atanh, Atanhⁱᵐᵖˡ); (atanh, atanhⁱᵐᵖˡ); (Inf, Infⁱᵐᵖˡ); (NaN, NaNⁱᵐᵖˡ); (IsNaN, IsNaNⁱᵐᵖˡ); (IsInf, IsInfⁱᵐᵖˡ); (normalize, normalizeⁱᵐᵖˡ); (Cbrt, Cbrtⁱᵐᵖˡ); (cbrt, cbrtⁱᵐᵖˡ); (Copysign, Copysignⁱᵐᵖˡ); (Dim, Dimⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (max, maxⁱᵐᵖˡ); (Min, Minⁱᵐᵖˡ); (min, minⁱᵐᵖˡ); (archMax, archMaxⁱᵐᵖˡ); (archMin, archMinⁱᵐᵖˡ); (Erf, Erfⁱᵐᵖˡ); (erf, erfⁱᵐᵖˡ); (Erfc, Erfcⁱᵐᵖˡ); (erfc, erfcⁱᵐᵖˡ); (Erfinv, Erfinvⁱᵐᵖˡ); (Erfcinv, Erfcinvⁱᵐᵖˡ); (Exp, Expⁱᵐᵖˡ); (exp, expⁱᵐᵖˡ); (Exp2, Exp2ⁱᵐᵖˡ); (exp2, exp2ⁱᵐᵖˡ); (expmulti, expmultiⁱᵐᵖˡ); (archExp2, archExp2ⁱᵐᵖˡ); (archExp, archExpⁱᵐᵖˡ); (Expm1, Expm1ⁱᵐᵖˡ); (expm1, expm1ⁱᵐᵖˡ); (Floor, Floorⁱᵐᵖˡ); (floor, floorⁱᵐᵖˡ); (Ceil, Ceilⁱᵐᵖˡ); (ceil, ceilⁱᵐᵖˡ); (Trunc, Truncⁱᵐᵖˡ); (trunc, truncⁱᵐᵖˡ); (Round, Roundⁱᵐᵖˡ); (RoundToEven, RoundToEvenⁱᵐᵖˡ); (archFloor, archFloorⁱᵐᵖˡ); (archCeil, archCeilⁱᵐᵖˡ); (archTrunc, archTruncⁱᵐᵖˡ); (zero, zeroⁱᵐᵖˡ); (nonzero, nonzeroⁱᵐᵖˡ); (shl, shlⁱᵐᵖˡ); (shr, shrⁱᵐᵖˡ); (shrcompress, shrcompressⁱᵐᵖˡ); (lz, lzⁱᵐᵖˡ); (split, splitⁱᵐᵖˡ); (FMA, FMAⁱᵐᵖˡ); (Frexp, Frexpⁱᵐᵖˡ); (frexp, frexpⁱᵐᵖˡ); (stirling, stirlingⁱᵐᵖˡ); (Gamma, Gammaⁱᵐᵖˡ); (isNegInt, isNegIntⁱᵐᵖˡ); (Hypot, Hypotⁱᵐᵖˡ); (hypot, hypotⁱᵐᵖˡ); (archHypot, archHypotⁱᵐᵖˡ); (J0, J0ⁱᵐᵖˡ); (Y0, Y0ⁱᵐᵖˡ); (pzero, pzeroⁱᵐᵖˡ); (qzero, qzeroⁱᵐᵖˡ); (J1, J1ⁱᵐᵖˡ); (Y1, Y1ⁱᵐᵖˡ); (pone, poneⁱᵐᵖˡ); (qone, qoneⁱᵐᵖˡ); (Jn, Jnⁱᵐᵖˡ); (Yn, Ynⁱᵐᵖˡ); (Ldexp, Ldexpⁱᵐᵖˡ); (ldexp, ldexpⁱᵐᵖˡ); (Lgamma, Lgammaⁱᵐᵖˡ); (sinPi, sinPiⁱᵐᵖˡ); (Log, Logⁱᵐᵖˡ); (log, logⁱᵐᵖˡ); (Log10, Log10ⁱᵐᵖˡ); (log10, log10ⁱᵐᵖˡ); (Log2, Log2ⁱᵐᵖˡ); (log2, log2ⁱᵐᵖˡ); (Log1p, Log1pⁱᵐᵖˡ); (log1p, log1pⁱᵐᵖˡ); (archLog, archLogⁱᵐᵖˡ); (Logb, Logbⁱᵐᵖˡ); (Ilogb, Ilogbⁱᵐᵖˡ); (ilogb, ilogbⁱᵐᵖˡ); (Mod, Modⁱᵐᵖˡ); (mod', modⁱᵐᵖˡ); (Modf, Modfⁱᵐᵖˡ); (modf, modfⁱᵐᵖˡ); (archModf, archModfⁱᵐᵖˡ); (Nextafter32, Nextafter32ⁱᵐᵖˡ); (Nextafter, Nextafterⁱᵐᵖˡ); (isOddInt, isOddIntⁱᵐᵖˡ); (Pow, Powⁱᵐᵖˡ); (pow, powⁱᵐᵖˡ); (Pow10, Pow10ⁱᵐᵖˡ); (Remainder, Remainderⁱᵐᵖˡ); (remainder, remainderⁱᵐᵖˡ); (Signbit, Signbitⁱᵐᵖˡ); (Cos, Cosⁱᵐᵖˡ); (cos, cosⁱᵐᵖˡ); (Sin, Sinⁱᵐᵖˡ); (sin, sinⁱᵐᵖˡ); (Sincos, Sincosⁱᵐᵖˡ); (Sinh, Sinhⁱᵐᵖˡ); (sinh, sinhⁱᵐᵖˡ); (Cosh, Coshⁱᵐᵖˡ); (cosh, coshⁱᵐᵖˡ); (Sqrt, Sqrtⁱᵐᵖˡ); (sqrt, sqrtⁱᵐᵖˡ); (archAcos, archAcosⁱᵐᵖˡ); (archAcosh, archAcoshⁱᵐᵖˡ); (archAsin, archAsinⁱᵐᵖˡ); (archAsinh, archAsinhⁱᵐᵖˡ); (archAtan, archAtanⁱᵐᵖˡ); (archAtan2, archAtan2ⁱᵐᵖˡ); (archAtanh, archAtanhⁱᵐᵖˡ); (archCbrt, archCbrtⁱᵐᵖˡ); (archCos, archCosⁱᵐᵖˡ); (archCosh, archCoshⁱᵐᵖˡ); (archErf, archErfⁱᵐᵖˡ); (archErfc, archErfcⁱᵐᵖˡ); (archExpm1, archExpm1ⁱᵐᵖˡ); (archFrexp, archFrexpⁱᵐᵖˡ); (archLdexp, archLdexpⁱᵐᵖˡ); (archLog10, archLog10ⁱᵐᵖˡ); (archLog2, archLog2ⁱᵐᵖˡ); (archLog1p, archLog1pⁱᵐᵖˡ); (archMod, archModⁱᵐᵖˡ); (archPow, archPowⁱᵐᵖˡ); (archRemainder, archRemainderⁱᵐᵖˡ); (archSin, archSinⁱᵐᵖˡ); (archSinh, archSinhⁱᵐᵖˡ); (archTan, archTanⁱᵐᵖˡ); (archTanh, archTanhⁱᵐᵖˡ); (Tan, Tanⁱᵐᵖˡ); (tan, tanⁱᵐᵖˡ); (Tanh, Tanhⁱᵐᵖˡ); (tanh, tanhⁱᵐᵖˡ); (trigReduce, trigReduceⁱᵐᵖˡ); (Float32bits, Float32bitsⁱᵐᵖˡ); (Float32frombits, Float32frombitsⁱᵐᵖˡ); (Float64bits, Float64bitsⁱᵐᵖˡ); (Float64frombits, Float64frombitsⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 

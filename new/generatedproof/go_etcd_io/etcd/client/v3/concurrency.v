@@ -957,17 +957,17 @@ Global Instance is_pkg_defined_pure_concurrency : IsPkgDefinedPure concurrency :
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single concurrency ∧
-      is_pkg_defined_pure context.context ∧
-      is_pkg_defined_pure errors.errors ∧
-      is_pkg_defined_pure fmt.fmt ∧
-      is_pkg_defined_pure go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
-      is_pkg_defined_pure go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∧
-      is_pkg_defined_pure go_etcd_io.etcd.client.v3.clientv3 ∧
-      is_pkg_defined_pure strings.strings ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure time.time ∧
-      is_pkg_defined_pure go_uber_org.zap.zap ∧
-      is_pkg_defined_pure math.math;
+      is_pkg_defined_pure code.context.context ∧
+      is_pkg_defined_pure code.errors.errors ∧
+      is_pkg_defined_pure code.fmt.fmt ∧
+      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
+      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∧
+      is_pkg_defined_pure code.go_etcd_io.etcd.client.v3.clientv3 ∧
+      is_pkg_defined_pure code.strings.strings ∧
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.time.time ∧
+      is_pkg_defined_pure code.go_uber_org.zap.zap ∧
+      is_pkg_defined_pure code.math.math;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -975,17 +975,17 @@ Global Program Instance is_pkg_defined_concurrency : IsPkgDefined concurrency :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single concurrency ∗
-       is_pkg_defined context.context ∗
-       is_pkg_defined errors.errors ∗
-       is_pkg_defined fmt.fmt ∗
-       is_pkg_defined go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
-       is_pkg_defined go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∗
-       is_pkg_defined go_etcd_io.etcd.client.v3.clientv3 ∗
-       is_pkg_defined strings.strings ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined time.time ∗
-       is_pkg_defined go_uber_org.zap.zap ∗
-       is_pkg_defined math.math)%I
+       is_pkg_defined code.context.context ∗
+       is_pkg_defined code.errors.errors ∗
+       is_pkg_defined code.fmt.fmt ∗
+       is_pkg_defined code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
+       is_pkg_defined code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∗
+       is_pkg_defined code.go_etcd_io.etcd.client.v3.clientv3 ∗
+       is_pkg_defined code.strings.strings ∗
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.time.time ∗
+       is_pkg_defined code.go_uber_org.zap.zap ∗
+       is_pkg_defined code.math.math)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

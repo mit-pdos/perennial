@@ -13,22 +13,6 @@ Context `{ffi_syntax}.
 
 Axiom Status : go_type.
 
-Axiom Status__Resetⁱᵐᵖˡ : val.
-
-Axiom Status__Stringⁱᵐᵖˡ : val.
-
-Axiom Status__ProtoMessageⁱᵐᵖˡ : val.
-
-Axiom Status__ProtoReflectⁱᵐᵖˡ : val.
-
-Axiom Status__Descriptorⁱᵐᵖˡ : val.
-
-Axiom Status__GetCodeⁱᵐᵖˡ : val.
-
-Axiom Status__GetMessageⁱᵐᵖˡ : val.
-
-Axiom Status__GetDetailsⁱᵐᵖˡ : val.
-
 Definition File_google_rpc_status_proto : go_string := "google.golang.org/genproto/googleapis/rpc/status.File_google_rpc_status_proto"%go.
 
 Definition file_google_rpc_status_proto_rawDesc : go_string := "google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDesc"%go.
@@ -42,8 +26,6 @@ Definition file_google_rpc_status_proto_rawDescData : go_string := "google.golan
 Axiom file_google_rpc_status_proto_rawDescData'init : val.
 
 Definition file_google_rpc_status_proto_rawDescGZIP : go_string := "google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_rawDescGZIP"%go.
-
-Axiom file_google_rpc_status_proto_rawDescGZIPⁱᵐᵖˡ : val.
 
 Definition file_google_rpc_status_proto_msgTypes : go_string := "google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_msgTypes"%go.
 
@@ -59,15 +41,31 @@ Axiom file_google_rpc_status_proto_depIdxs'init : val.
 
 Definition init : go_string := "google.golang.org/genproto/googleapis/rpc/status.init"%go.
 
-Axiom initⁱᵐᵖˡ : val.
-
 Definition file_google_rpc_status_proto_init : go_string := "google.golang.org/genproto/googleapis/rpc/status.file_google_rpc_status_proto_init"%go.
-
-Axiom file_google_rpc_status_proto_initⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(file_google_rpc_status_proto_rawDescGZIP, file_google_rpc_status_proto_rawDescGZIPⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (file_google_rpc_status_proto_init, file_google_rpc_status_proto_initⁱᵐᵖˡ)].
+Axiom file_google_rpc_status_proto_rawDescGZIPⁱᵐᵖˡ : val.
+
+Axiom file_google_rpc_status_proto_initⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(file_google_rpc_status_proto_rawDescGZIP, file_google_rpc_status_proto_rawDescGZIPⁱᵐᵖˡ); (file_google_rpc_status_proto_init, file_google_rpc_status_proto_initⁱᵐᵖˡ)].
+
+Axiom Status__Descriptorⁱᵐᵖˡ : val.
+
+Axiom Status__GetCodeⁱᵐᵖˡ : val.
+
+Axiom Status__GetDetailsⁱᵐᵖˡ : val.
+
+Axiom Status__GetMessageⁱᵐᵖˡ : val.
+
+Axiom Status__ProtoMessageⁱᵐᵖˡ : val.
+
+Axiom Status__ProtoReflectⁱᵐᵖˡ : val.
+
+Axiom Status__Resetⁱᵐᵖˡ : val.
+
+Axiom Status__Stringⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Status.id, []); (ptrT.id Status.id, [("Descriptor"%go, Status__Descriptorⁱᵐᵖˡ); ("GetCode"%go, Status__GetCodeⁱᵐᵖˡ); ("GetDetails"%go, Status__GetDetailsⁱᵐᵖˡ); ("GetMessage"%go, Status__GetMessageⁱᵐᵖˡ); ("ProtoMessage"%go, Status__ProtoMessageⁱᵐᵖˡ); ("ProtoReflect"%go, Status__ProtoReflectⁱᵐᵖˡ); ("Reset"%go, Status__Resetⁱᵐᵖˡ); ("String"%go, Status__Stringⁱᵐᵖˡ)])].
 

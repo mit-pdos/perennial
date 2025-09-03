@@ -26,7 +26,13 @@ Definition SortFuncTup : go_string := "go.etcd.io/raft/v3/quorum/slices.SortFunc
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom CompareUint64ⁱᵐᵖˡ : val.
+
+Axiom SortUint64ⁱᵐᵖˡ : val.
+
+Axiom SortFuncTupⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(CompareUint64, CompareUint64ⁱᵐᵖˡ); (SortUint64, SortUint64ⁱᵐᵖˡ); (SortFuncTup, SortFuncTupⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Tup.id, []); (ptrT.id Tup.id, [])].
 

@@ -7,6 +7,9 @@ Definition primitive : go_string := "github.com/goose-lang/primitive".
 
 Module primitive.
 
+Module prophId. Definition id : go_string := "github.com/goose-lang/primitive.prophId"%go. End prophId.
+Module ProphId. Axiom id : go_string. End ProphId.
+
 Section code.
 Context `{ffi_syntax}.
 
@@ -39,13 +42,43 @@ Definition Sleep : go_string := "github.com/goose-lang/primitive.Sleep"%go.
 
 Definition AssumeNoStringOverflow : go_string := "github.com/goose-lang/primitive.AssumeNoStringOverflow"%go.
 
+Axiom prophId : go_type.
+
+Axiom ProphId : go_type.
+
 Definition NewProph : go_string := "github.com/goose-lang/primitive.NewProph"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(UInt64Put, UInt64Putⁱᵐᵖˡ); (RandomUint64, RandomUint64ⁱᵐᵖˡ); (Assume, Assumeⁱᵐᵖˡ); (AssumeNoStringOverflow, AssumeNoStringOverflowⁱᵐᵖˡ)].
+Axiom UInt64Getⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Axiom UInt32Getⁱᵐᵖˡ : val.
+
+Axiom UInt32Putⁱᵐᵖˡ : val.
+
+Axiom UInt64ToStringⁱᵐᵖˡ : val.
+
+Axiom Linearizeⁱᵐᵖˡ : val.
+
+Axiom Assertⁱᵐᵖˡ : val.
+
+Axiom Exitⁱᵐᵖˡ : val.
+
+Axiom WaitTimeoutⁱᵐᵖˡ : val.
+
+Axiom TimeNowⁱᵐᵖˡ : val.
+
+Axiom Sleepⁱᵐᵖˡ : val.
+
+Axiom NewProphⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(UInt64Get, UInt64Getⁱᵐᵖˡ); (UInt32Get, UInt32Getⁱᵐᵖˡ); (UInt64Put, UInt64Putⁱᵐᵖˡ); (UInt32Put, UInt32Putⁱᵐᵖˡ); (RandomUint64, RandomUint64ⁱᵐᵖˡ); (UInt64ToString, UInt64ToStringⁱᵐᵖˡ); (Linearize, Linearizeⁱᵐᵖˡ); (Assume, Assumeⁱᵐᵖˡ); (Assert, Assertⁱᵐᵖˡ); (Exit, Exitⁱᵐᵖˡ); (WaitTimeout, WaitTimeoutⁱᵐᵖˡ); (TimeNow, TimeNowⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (AssumeNoStringOverflow, AssumeNoStringOverflowⁱᵐᵖˡ); (NewProph, NewProphⁱᵐᵖˡ)].
+
+Axiom prophId__ResolveBoolⁱᵐᵖˡ : val.
+
+Axiom prophId__ResolveU64ⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(prophId.id, []); (ptrT.id prophId.id, [("ResolveBool"%go, prophId__ResolveBoolⁱᵐᵖˡ); ("ResolveU64"%go, prophId__ResolveU64ⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo primitive.primitive :=
   {|

@@ -8,6 +8,125 @@ Set Default Proof Using "Type".
 
 Module rand.
 
+(* type rand.Source *)
+Module Source.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Source.
+
+Global Instance bounded_size_Source : BoundedTypeSize rand.Source.
+Admitted.
+
+Global Instance into_val_Source `{ffi_syntax} : IntoVal Source.t.
+Admitted.
+
+Global Instance into_val_typed_Source `{ffi_syntax} : IntoValTyped Source.t rand.Source.
+Admitted.
+
+(* type rand.Source64 *)
+Module Source64.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Source64.
+
+Global Instance bounded_size_Source64 : BoundedTypeSize rand.Source64.
+Admitted.
+
+Global Instance into_val_Source64 `{ffi_syntax} : IntoVal Source64.t.
+Admitted.
+
+Global Instance into_val_typed_Source64 `{ffi_syntax} : IntoValTyped Source64.t rand.Source64.
+Admitted.
+
+(* type rand.Rand *)
+Module Rand.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Rand.
+
+Global Instance bounded_size_Rand : BoundedTypeSize rand.Rand.
+Admitted.
+
+Global Instance into_val_Rand `{ffi_syntax} : IntoVal Rand.t.
+Admitted.
+
+Global Instance into_val_typed_Rand `{ffi_syntax} : IntoValTyped Rand.t rand.Rand.
+Admitted.
+
+(* type rand.runtimeSource *)
+Module runtimeSource.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End runtimeSource.
+
+Global Instance bounded_size_runtimeSource : BoundedTypeSize rand.runtimeSource.
+Admitted.
+
+Global Instance into_val_runtimeSource `{ffi_syntax} : IntoVal runtimeSource.t.
+Admitted.
+
+Global Instance into_val_typed_runtimeSource `{ffi_syntax} : IntoValTyped runtimeSource.t rand.runtimeSource.
+Admitted.
+
+(* type rand.lockedSource *)
+Module lockedSource.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End lockedSource.
+
+Global Instance bounded_size_lockedSource : BoundedTypeSize rand.lockedSource.
+Admitted.
+
+Global Instance into_val_lockedSource `{ffi_syntax} : IntoVal lockedSource.t.
+Admitted.
+
+Global Instance into_val_typed_lockedSource `{ffi_syntax} : IntoValTyped lockedSource.t rand.lockedSource.
+Admitted.
+
+(* type rand.rngSource *)
+Module rngSource.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End rngSource.
+
+Global Instance bounded_size_rngSource : BoundedTypeSize rand.rngSource.
+Admitted.
+
+Global Instance into_val_rngSource `{ffi_syntax} : IntoVal rngSource.t.
+Admitted.
+
+Global Instance into_val_typed_rngSource `{ffi_syntax} : IntoValTyped rngSource.t rand.rngSource.
+Admitted.
+
+(* type rand.Zipf *)
+Module Zipf.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Zipf.
+
+Global Instance bounded_size_Zipf : BoundedTypeSize rand.Zipf.
+Admitted.
+
+Global Instance into_val_Zipf `{ffi_syntax} : IntoVal Zipf.t.
+Admitted.
+
+Global Instance into_val_typed_Zipf `{ffi_syntax} : IntoValTyped Zipf.t rand.Zipf.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -29,6 +148,238 @@ Global Program Instance is_pkg_defined_rand : IsPkgDefined rand :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_absInt32 :
+  WpFuncCall rand.absInt32 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewSource :
+  WpFuncCall rand.NewSource _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newSource :
+  WpFuncCall rand.newSource _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_New :
+  WpFuncCall rand.New _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_read :
+  WpFuncCall rand.read _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_globalRand :
+  WpFuncCall rand.globalRand _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_rand :
+  WpFuncCall rand.runtime_rand _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Seed :
+  WpFuncCall rand.Seed _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int63 :
+  WpFuncCall rand.Int63 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint32 :
+  WpFuncCall rand.Uint32 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Uint64 :
+  WpFuncCall rand.Uint64 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int31 :
+  WpFuncCall rand.Int31 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int :
+  WpFuncCall rand.Int _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int63n :
+  WpFuncCall rand.Int63n _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Int31n :
+  WpFuncCall rand.Int31n _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Intn :
+  WpFuncCall rand.Intn _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float64 :
+  WpFuncCall rand.Float64 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Float32 :
+  WpFuncCall rand.Float32 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Perm :
+  WpFuncCall rand.Perm _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Shuffle :
+  WpFuncCall rand.Shuffle _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Read :
+  WpFuncCall rand.Read _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NormFloat64 :
+  WpFuncCall rand.NormFloat64 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ExpFloat64 :
+  WpFuncCall rand.ExpFloat64 _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_seedrand :
+  WpFuncCall rand.seedrand _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewZipf :
+  WpFuncCall rand.NewZipf _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Rand'ptr_ExpFloat64 :
+  WpMethodCall (ptrT.id rand.Rand.id) "ExpFloat64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Float32 :
+  WpMethodCall (ptrT.id rand.Rand.id) "Float32" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Float64 :
+  WpMethodCall (ptrT.id rand.Rand.id) "Float64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Int :
+  WpMethodCall (ptrT.id rand.Rand.id) "Int" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Int31 :
+  WpMethodCall (ptrT.id rand.Rand.id) "Int31" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Int31n :
+  WpMethodCall (ptrT.id rand.Rand.id) "Int31n" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Int63 :
+  WpMethodCall (ptrT.id rand.Rand.id) "Int63" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Int63n :
+  WpMethodCall (ptrT.id rand.Rand.id) "Int63n" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Intn :
+  WpMethodCall (ptrT.id rand.Rand.id) "Intn" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_NormFloat64 :
+  WpMethodCall (ptrT.id rand.Rand.id) "NormFloat64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Perm :
+  WpMethodCall (ptrT.id rand.Rand.id) "Perm" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Read :
+  WpMethodCall (ptrT.id rand.Rand.id) "Read" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Seed :
+  WpMethodCall (ptrT.id rand.Rand.id) "Seed" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Shuffle :
+  WpMethodCall (ptrT.id rand.Rand.id) "Shuffle" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Uint32 :
+  WpMethodCall (ptrT.id rand.Rand.id) "Uint32" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_Uint64 :
+  WpMethodCall (ptrT.id rand.Rand.id) "Uint64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Rand'ptr_int31n :
+  WpMethodCall (ptrT.id rand.Rand.id) "int31n" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_runtimeSource'ptr_Int63 :
+  WpMethodCall (ptrT.id rand.runtimeSource.id) "Int63" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_runtimeSource'ptr_Seed :
+  WpMethodCall (ptrT.id rand.runtimeSource.id) "Seed" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_runtimeSource'ptr_Uint64 :
+  WpMethodCall (ptrT.id rand.runtimeSource.id) "Uint64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_runtimeSource'ptr_read :
+  WpMethodCall (ptrT.id rand.runtimeSource.id) "read" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedSource'ptr_Int63 :
+  WpMethodCall (ptrT.id rand.lockedSource.id) "Int63" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedSource'ptr_Seed :
+  WpMethodCall (ptrT.id rand.lockedSource.id) "Seed" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedSource'ptr_Uint64 :
+  WpMethodCall (ptrT.id rand.lockedSource.id) "Uint64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedSource'ptr_read :
+  WpMethodCall (ptrT.id rand.lockedSource.id) "read" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedSource'ptr_seed :
+  WpMethodCall (ptrT.id rand.lockedSource.id) "seed" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedSource'ptr_seedPos :
+  WpMethodCall (ptrT.id rand.lockedSource.id) "seedPos" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_rngSource'ptr_Int63 :
+  WpMethodCall (ptrT.id rand.rngSource.id) "Int63" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_rngSource'ptr_Seed :
+  WpMethodCall (ptrT.id rand.rngSource.id) "Seed" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_rngSource'ptr_Uint64 :
+  WpMethodCall (ptrT.id rand.rngSource.id) "Uint64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Zipf'ptr_Uint64 :
+  WpMethodCall (ptrT.id rand.Zipf.id) "Uint64" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Zipf'ptr_h :
+  WpMethodCall (ptrT.id rand.Zipf.id) "h" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Zipf'ptr_hinv :
+  WpMethodCall (ptrT.id rand.Zipf.id) "hinv" _ (is_pkg_defined rand) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End rand.

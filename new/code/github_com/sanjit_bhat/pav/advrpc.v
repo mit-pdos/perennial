@@ -194,7 +194,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Server.id, 
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [github_com.sanjit_bhat.pav.netffi.netffi; github_com.sanjit_bhat.pav.safemarshal.safemarshal; github_com.tchajed.marshal.marshal];
+    pkg_imported_pkgs := [code.github_com.sanjit_bhat.pav.netffi.netffi; code.github_com.sanjit_bhat.pav.safemarshal.safemarshal; code.github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=

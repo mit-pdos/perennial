@@ -8,6 +8,431 @@ Set Default Proof Using "Type".
 
 Module zapcore.
 
+(* type zapcore.BufferedWriteSyncer *)
+Module BufferedWriteSyncer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End BufferedWriteSyncer.
+
+Global Instance bounded_size_BufferedWriteSyncer : BoundedTypeSize zapcore.BufferedWriteSyncer.
+Admitted.
+
+Global Instance into_val_BufferedWriteSyncer `{ffi_syntax} : IntoVal BufferedWriteSyncer.t.
+Admitted.
+
+Global Instance into_val_typed_BufferedWriteSyncer `{ffi_syntax} : IntoValTyped BufferedWriteSyncer.t zapcore.BufferedWriteSyncer.
+Admitted.
+
+(* type zapcore.Clock *)
+Module Clock.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Clock.
+
+Global Instance bounded_size_Clock : BoundedTypeSize zapcore.Clock.
+Admitted.
+
+Global Instance into_val_Clock `{ffi_syntax} : IntoVal Clock.t.
+Admitted.
+
+Global Instance into_val_typed_Clock `{ffi_syntax} : IntoValTyped Clock.t zapcore.Clock.
+Admitted.
+
+(* type zapcore.systemClock *)
+Module systemClock.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End systemClock.
+
+Global Instance bounded_size_systemClock : BoundedTypeSize zapcore.systemClock.
+Admitted.
+
+Global Instance into_val_systemClock `{ffi_syntax} : IntoVal systemClock.t.
+Admitted.
+
+Global Instance into_val_typed_systemClock `{ffi_syntax} : IntoValTyped systemClock.t zapcore.systemClock.
+Admitted.
+
+(* type zapcore.consoleEncoder *)
+Module consoleEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End consoleEncoder.
+
+Global Instance bounded_size_consoleEncoder : BoundedTypeSize zapcore.consoleEncoder.
+Admitted.
+
+Global Instance into_val_consoleEncoder `{ffi_syntax} : IntoVal consoleEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_consoleEncoder `{ffi_syntax} : IntoValTyped consoleEncoder.t zapcore.consoleEncoder.
+Admitted.
+
+(* type zapcore.Core *)
+Module Core.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Core.
+
+Global Instance bounded_size_Core : BoundedTypeSize zapcore.Core.
+Admitted.
+
+Global Instance into_val_Core `{ffi_syntax} : IntoVal Core.t.
+Admitted.
+
+Global Instance into_val_typed_Core `{ffi_syntax} : IntoValTyped Core.t zapcore.Core.
+Admitted.
+
+(* type zapcore.nopCore *)
+Module nopCore.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End nopCore.
+
+Global Instance bounded_size_nopCore : BoundedTypeSize zapcore.nopCore.
+Admitted.
+
+Global Instance into_val_nopCore `{ffi_syntax} : IntoVal nopCore.t.
+Admitted.
+
+Global Instance into_val_typed_nopCore `{ffi_syntax} : IntoValTyped nopCore.t zapcore.nopCore.
+Admitted.
+
+(* type zapcore.ioCore *)
+Module ioCore.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ioCore.
+
+Global Instance bounded_size_ioCore : BoundedTypeSize zapcore.ioCore.
+Admitted.
+
+Global Instance into_val_ioCore `{ffi_syntax} : IntoVal ioCore.t.
+Admitted.
+
+Global Instance into_val_typed_ioCore `{ffi_syntax} : IntoValTyped ioCore.t zapcore.ioCore.
+Admitted.
+
+(* type zapcore.LevelEncoder *)
+Module LevelEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LevelEncoder.
+
+Global Instance bounded_size_LevelEncoder : BoundedTypeSize zapcore.LevelEncoder.
+Admitted.
+
+Global Instance into_val_LevelEncoder `{ffi_syntax} : IntoVal LevelEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_LevelEncoder `{ffi_syntax} : IntoValTyped LevelEncoder.t zapcore.LevelEncoder.
+Admitted.
+
+(* type zapcore.TimeEncoder *)
+Module TimeEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End TimeEncoder.
+
+Global Instance bounded_size_TimeEncoder : BoundedTypeSize zapcore.TimeEncoder.
+Admitted.
+
+Global Instance into_val_TimeEncoder `{ffi_syntax} : IntoVal TimeEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_TimeEncoder `{ffi_syntax} : IntoValTyped TimeEncoder.t zapcore.TimeEncoder.
+Admitted.
+
+(* type zapcore.DurationEncoder *)
+Module DurationEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End DurationEncoder.
+
+Global Instance bounded_size_DurationEncoder : BoundedTypeSize zapcore.DurationEncoder.
+Admitted.
+
+Global Instance into_val_DurationEncoder `{ffi_syntax} : IntoVal DurationEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_DurationEncoder `{ffi_syntax} : IntoValTyped DurationEncoder.t zapcore.DurationEncoder.
+Admitted.
+
+(* type zapcore.CallerEncoder *)
+Module CallerEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CallerEncoder.
+
+Global Instance bounded_size_CallerEncoder : BoundedTypeSize zapcore.CallerEncoder.
+Admitted.
+
+Global Instance into_val_CallerEncoder `{ffi_syntax} : IntoVal CallerEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_CallerEncoder `{ffi_syntax} : IntoValTyped CallerEncoder.t zapcore.CallerEncoder.
+Admitted.
+
+(* type zapcore.NameEncoder *)
+Module NameEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End NameEncoder.
+
+Global Instance bounded_size_NameEncoder : BoundedTypeSize zapcore.NameEncoder.
+Admitted.
+
+Global Instance into_val_NameEncoder `{ffi_syntax} : IntoVal NameEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_NameEncoder `{ffi_syntax} : IntoValTyped NameEncoder.t zapcore.NameEncoder.
+Admitted.
+
+(* type zapcore.EncoderConfig *)
+Module EncoderConfig.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End EncoderConfig.
+
+Global Instance bounded_size_EncoderConfig : BoundedTypeSize zapcore.EncoderConfig.
+Admitted.
+
+Global Instance into_val_EncoderConfig `{ffi_syntax} : IntoVal EncoderConfig.t.
+Admitted.
+
+Global Instance into_val_typed_EncoderConfig `{ffi_syntax} : IntoValTyped EncoderConfig.t zapcore.EncoderConfig.
+Admitted.
+
+(* type zapcore.ObjectEncoder *)
+Module ObjectEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ObjectEncoder.
+
+Global Instance bounded_size_ObjectEncoder : BoundedTypeSize zapcore.ObjectEncoder.
+Admitted.
+
+Global Instance into_val_ObjectEncoder `{ffi_syntax} : IntoVal ObjectEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_ObjectEncoder `{ffi_syntax} : IntoValTyped ObjectEncoder.t zapcore.ObjectEncoder.
+Admitted.
+
+(* type zapcore.ArrayEncoder *)
+Module ArrayEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ArrayEncoder.
+
+Global Instance bounded_size_ArrayEncoder : BoundedTypeSize zapcore.ArrayEncoder.
+Admitted.
+
+Global Instance into_val_ArrayEncoder `{ffi_syntax} : IntoVal ArrayEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_ArrayEncoder `{ffi_syntax} : IntoValTyped ArrayEncoder.t zapcore.ArrayEncoder.
+Admitted.
+
+(* type zapcore.PrimitiveArrayEncoder *)
+Module PrimitiveArrayEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End PrimitiveArrayEncoder.
+
+Global Instance bounded_size_PrimitiveArrayEncoder : BoundedTypeSize zapcore.PrimitiveArrayEncoder.
+Admitted.
+
+Global Instance into_val_PrimitiveArrayEncoder `{ffi_syntax} : IntoVal PrimitiveArrayEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_PrimitiveArrayEncoder `{ffi_syntax} : IntoValTyped PrimitiveArrayEncoder.t zapcore.PrimitiveArrayEncoder.
+Admitted.
+
+(* type zapcore.Encoder *)
+Module Encoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Encoder.
+
+Global Instance bounded_size_Encoder : BoundedTypeSize zapcore.Encoder.
+Admitted.
+
+Global Instance into_val_Encoder `{ffi_syntax} : IntoVal Encoder.t.
+Admitted.
+
+Global Instance into_val_typed_Encoder `{ffi_syntax} : IntoValTyped Encoder.t zapcore.Encoder.
+Admitted.
+
+(* type zapcore.EntryCaller *)
+Module EntryCaller.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End EntryCaller.
+
+Global Instance bounded_size_EntryCaller : BoundedTypeSize zapcore.EntryCaller.
+Admitted.
+
+Global Instance into_val_EntryCaller `{ffi_syntax} : IntoVal EntryCaller.t.
+Admitted.
+
+Global Instance into_val_typed_EntryCaller `{ffi_syntax} : IntoValTyped EntryCaller.t zapcore.EntryCaller.
+Admitted.
+
+(* type zapcore.Entry *)
+Module Entry.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Entry.
+
+Global Instance bounded_size_Entry : BoundedTypeSize zapcore.Entry.
+Admitted.
+
+Global Instance into_val_Entry `{ffi_syntax} : IntoVal Entry.t.
+Admitted.
+
+Global Instance into_val_typed_Entry `{ffi_syntax} : IntoValTyped Entry.t zapcore.Entry.
+Admitted.
+
+(* type zapcore.CheckWriteHook *)
+Module CheckWriteHook.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CheckWriteHook.
+
+Global Instance bounded_size_CheckWriteHook : BoundedTypeSize zapcore.CheckWriteHook.
+Admitted.
+
+Global Instance into_val_CheckWriteHook `{ffi_syntax} : IntoVal CheckWriteHook.t.
+Admitted.
+
+Global Instance into_val_typed_CheckWriteHook `{ffi_syntax} : IntoValTyped CheckWriteHook.t zapcore.CheckWriteHook.
+Admitted.
+
+(* type zapcore.CheckWriteAction *)
+Module CheckWriteAction.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CheckWriteAction.
+
+Global Instance bounded_size_CheckWriteAction : BoundedTypeSize zapcore.CheckWriteAction.
+Admitted.
+
+Global Instance into_val_CheckWriteAction `{ffi_syntax} : IntoVal CheckWriteAction.t.
+Admitted.
+
+Global Instance into_val_typed_CheckWriteAction `{ffi_syntax} : IntoValTyped CheckWriteAction.t zapcore.CheckWriteAction.
+Admitted.
+
+(* type zapcore.CheckedEntry *)
+Module CheckedEntry.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End CheckedEntry.
+
+Global Instance bounded_size_CheckedEntry : BoundedTypeSize zapcore.CheckedEntry.
+Admitted.
+
+Global Instance into_val_CheckedEntry `{ffi_syntax} : IntoVal CheckedEntry.t.
+Admitted.
+
+Global Instance into_val_typed_CheckedEntry `{ffi_syntax} : IntoValTyped CheckedEntry.t zapcore.CheckedEntry.
+Admitted.
+
+(* type zapcore.errorGroup *)
+Module errorGroup.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End errorGroup.
+
+Global Instance bounded_size_errorGroup : BoundedTypeSize zapcore.errorGroup.
+Admitted.
+
+Global Instance into_val_errorGroup `{ffi_syntax} : IntoVal errorGroup.t.
+Admitted.
+
+Global Instance into_val_typed_errorGroup `{ffi_syntax} : IntoValTyped errorGroup.t zapcore.errorGroup.
+Admitted.
+
+(* type zapcore.errArray *)
+Module errArray.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End errArray.
+
+Global Instance bounded_size_errArray : BoundedTypeSize zapcore.errArray.
+Admitted.
+
+Global Instance into_val_errArray `{ffi_syntax} : IntoVal errArray.t.
+Admitted.
+
+Global Instance into_val_typed_errArray `{ffi_syntax} : IntoValTyped errArray.t zapcore.errArray.
+Admitted.
+
+(* type zapcore.errArrayElem *)
+Module errArrayElem.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End errArrayElem.
+
+Global Instance bounded_size_errArrayElem : BoundedTypeSize zapcore.errArrayElem.
+Admitted.
+
+Global Instance into_val_errArrayElem `{ffi_syntax} : IntoVal errArrayElem.t.
+Admitted.
+
+Global Instance into_val_typed_errArrayElem `{ffi_syntax} : IntoValTyped errArrayElem.t zapcore.errArrayElem.
+Admitted.
+
 (* type zapcore.FieldType *)
 Module FieldType.
 Section def.
@@ -109,6 +534,431 @@ Qed.
 
 End instances.
 
+(* type zapcore.hooked *)
+Module hooked.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End hooked.
+
+Global Instance bounded_size_hooked : BoundedTypeSize zapcore.hooked.
+Admitted.
+
+Global Instance into_val_hooked `{ffi_syntax} : IntoVal hooked.t.
+Admitted.
+
+Global Instance into_val_typed_hooked `{ffi_syntax} : IntoValTyped hooked.t zapcore.hooked.
+Admitted.
+
+(* type zapcore.levelFilterCore *)
+Module levelFilterCore.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End levelFilterCore.
+
+Global Instance bounded_size_levelFilterCore : BoundedTypeSize zapcore.levelFilterCore.
+Admitted.
+
+Global Instance into_val_levelFilterCore `{ffi_syntax} : IntoVal levelFilterCore.t.
+Admitted.
+
+Global Instance into_val_typed_levelFilterCore `{ffi_syntax} : IntoValTyped levelFilterCore.t zapcore.levelFilterCore.
+Admitted.
+
+(* type zapcore.jsonEncoder *)
+Module jsonEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End jsonEncoder.
+
+Global Instance bounded_size_jsonEncoder : BoundedTypeSize zapcore.jsonEncoder.
+Admitted.
+
+Global Instance into_val_jsonEncoder `{ffi_syntax} : IntoVal jsonEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_jsonEncoder `{ffi_syntax} : IntoValTyped jsonEncoder.t zapcore.jsonEncoder.
+Admitted.
+
+(* type zapcore.lazyWithCore *)
+Module lazyWithCore.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End lazyWithCore.
+
+Global Instance bounded_size_lazyWithCore : BoundedTypeSize zapcore.lazyWithCore.
+Admitted.
+
+Global Instance into_val_lazyWithCore `{ffi_syntax} : IntoVal lazyWithCore.t.
+Admitted.
+
+Global Instance into_val_typed_lazyWithCore `{ffi_syntax} : IntoValTyped lazyWithCore.t zapcore.lazyWithCore.
+Admitted.
+
+(* type zapcore.Level *)
+Module Level.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Level.
+
+Global Instance bounded_size_Level : BoundedTypeSize zapcore.Level.
+Admitted.
+
+Global Instance into_val_Level `{ffi_syntax} : IntoVal Level.t.
+Admitted.
+
+Global Instance into_val_typed_Level `{ffi_syntax} : IntoValTyped Level.t zapcore.Level.
+Admitted.
+
+(* type zapcore.leveledEnabler *)
+Module leveledEnabler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End leveledEnabler.
+
+Global Instance bounded_size_leveledEnabler : BoundedTypeSize zapcore.leveledEnabler.
+Admitted.
+
+Global Instance into_val_leveledEnabler `{ffi_syntax} : IntoVal leveledEnabler.t.
+Admitted.
+
+Global Instance into_val_typed_leveledEnabler `{ffi_syntax} : IntoValTyped leveledEnabler.t zapcore.leveledEnabler.
+Admitted.
+
+(* type zapcore.LevelEnabler *)
+Module LevelEnabler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End LevelEnabler.
+
+Global Instance bounded_size_LevelEnabler : BoundedTypeSize zapcore.LevelEnabler.
+Admitted.
+
+Global Instance into_val_LevelEnabler `{ffi_syntax} : IntoVal LevelEnabler.t.
+Admitted.
+
+Global Instance into_val_typed_LevelEnabler `{ffi_syntax} : IntoValTyped LevelEnabler.t zapcore.LevelEnabler.
+Admitted.
+
+(* type zapcore.ObjectMarshaler *)
+Module ObjectMarshaler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ObjectMarshaler.
+
+Global Instance bounded_size_ObjectMarshaler : BoundedTypeSize zapcore.ObjectMarshaler.
+Admitted.
+
+Global Instance into_val_ObjectMarshaler `{ffi_syntax} : IntoVal ObjectMarshaler.t.
+Admitted.
+
+Global Instance into_val_typed_ObjectMarshaler `{ffi_syntax} : IntoValTyped ObjectMarshaler.t zapcore.ObjectMarshaler.
+Admitted.
+
+(* type zapcore.ObjectMarshalerFunc *)
+Module ObjectMarshalerFunc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ObjectMarshalerFunc.
+
+Global Instance bounded_size_ObjectMarshalerFunc : BoundedTypeSize zapcore.ObjectMarshalerFunc.
+Admitted.
+
+Global Instance into_val_ObjectMarshalerFunc `{ffi_syntax} : IntoVal ObjectMarshalerFunc.t.
+Admitted.
+
+Global Instance into_val_typed_ObjectMarshalerFunc `{ffi_syntax} : IntoValTyped ObjectMarshalerFunc.t zapcore.ObjectMarshalerFunc.
+Admitted.
+
+(* type zapcore.ArrayMarshaler *)
+Module ArrayMarshaler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ArrayMarshaler.
+
+Global Instance bounded_size_ArrayMarshaler : BoundedTypeSize zapcore.ArrayMarshaler.
+Admitted.
+
+Global Instance into_val_ArrayMarshaler `{ffi_syntax} : IntoVal ArrayMarshaler.t.
+Admitted.
+
+Global Instance into_val_typed_ArrayMarshaler `{ffi_syntax} : IntoValTyped ArrayMarshaler.t zapcore.ArrayMarshaler.
+Admitted.
+
+(* type zapcore.ArrayMarshalerFunc *)
+Module ArrayMarshalerFunc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ArrayMarshalerFunc.
+
+Global Instance bounded_size_ArrayMarshalerFunc : BoundedTypeSize zapcore.ArrayMarshalerFunc.
+Admitted.
+
+Global Instance into_val_ArrayMarshalerFunc `{ffi_syntax} : IntoVal ArrayMarshalerFunc.t.
+Admitted.
+
+Global Instance into_val_typed_ArrayMarshalerFunc `{ffi_syntax} : IntoValTyped ArrayMarshalerFunc.t zapcore.ArrayMarshalerFunc.
+Admitted.
+
+(* type zapcore.MapObjectEncoder *)
+Module MapObjectEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End MapObjectEncoder.
+
+Global Instance bounded_size_MapObjectEncoder : BoundedTypeSize zapcore.MapObjectEncoder.
+Admitted.
+
+Global Instance into_val_MapObjectEncoder `{ffi_syntax} : IntoVal MapObjectEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_MapObjectEncoder `{ffi_syntax} : IntoValTyped MapObjectEncoder.t zapcore.MapObjectEncoder.
+Admitted.
+
+(* type zapcore.sliceArrayEncoder *)
+Module sliceArrayEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End sliceArrayEncoder.
+
+Global Instance bounded_size_sliceArrayEncoder : BoundedTypeSize zapcore.sliceArrayEncoder.
+Admitted.
+
+Global Instance into_val_sliceArrayEncoder `{ffi_syntax} : IntoVal sliceArrayEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_sliceArrayEncoder `{ffi_syntax} : IntoValTyped sliceArrayEncoder.t zapcore.sliceArrayEncoder.
+Admitted.
+
+(* type zapcore.ReflectedEncoder *)
+Module ReflectedEncoder.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ReflectedEncoder.
+
+Global Instance bounded_size_ReflectedEncoder : BoundedTypeSize zapcore.ReflectedEncoder.
+Admitted.
+
+Global Instance into_val_ReflectedEncoder `{ffi_syntax} : IntoVal ReflectedEncoder.t.
+Admitted.
+
+Global Instance into_val_typed_ReflectedEncoder `{ffi_syntax} : IntoValTyped ReflectedEncoder.t zapcore.ReflectedEncoder.
+Admitted.
+
+(* type zapcore.counter *)
+Module counter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End counter.
+
+Global Instance bounded_size_counter : BoundedTypeSize zapcore.counter.
+Admitted.
+
+Global Instance into_val_counter `{ffi_syntax} : IntoVal counter.t.
+Admitted.
+
+Global Instance into_val_typed_counter `{ffi_syntax} : IntoValTyped counter.t zapcore.counter.
+Admitted.
+
+(* type zapcore.counters *)
+Module counters.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End counters.
+
+Global Instance bounded_size_counters : BoundedTypeSize zapcore.counters.
+Admitted.
+
+Global Instance into_val_counters `{ffi_syntax} : IntoVal counters.t.
+Admitted.
+
+Global Instance into_val_typed_counters `{ffi_syntax} : IntoValTyped counters.t zapcore.counters.
+Admitted.
+
+(* type zapcore.SamplingDecision *)
+Module SamplingDecision.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End SamplingDecision.
+
+Global Instance bounded_size_SamplingDecision : BoundedTypeSize zapcore.SamplingDecision.
+Admitted.
+
+Global Instance into_val_SamplingDecision `{ffi_syntax} : IntoVal SamplingDecision.t.
+Admitted.
+
+Global Instance into_val_typed_SamplingDecision `{ffi_syntax} : IntoValTyped SamplingDecision.t zapcore.SamplingDecision.
+Admitted.
+
+(* type zapcore.optionFunc *)
+Module optionFunc.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End optionFunc.
+
+Global Instance bounded_size_optionFunc : BoundedTypeSize zapcore.optionFunc.
+Admitted.
+
+Global Instance into_val_optionFunc `{ffi_syntax} : IntoVal optionFunc.t.
+Admitted.
+
+Global Instance into_val_typed_optionFunc `{ffi_syntax} : IntoValTyped optionFunc.t zapcore.optionFunc.
+Admitted.
+
+(* type zapcore.SamplerOption *)
+Module SamplerOption.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End SamplerOption.
+
+Global Instance bounded_size_SamplerOption : BoundedTypeSize zapcore.SamplerOption.
+Admitted.
+
+Global Instance into_val_SamplerOption `{ffi_syntax} : IntoVal SamplerOption.t.
+Admitted.
+
+Global Instance into_val_typed_SamplerOption `{ffi_syntax} : IntoValTyped SamplerOption.t zapcore.SamplerOption.
+Admitted.
+
+(* type zapcore.sampler *)
+Module sampler.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End sampler.
+
+Global Instance bounded_size_sampler : BoundedTypeSize zapcore.sampler.
+Admitted.
+
+Global Instance into_val_sampler `{ffi_syntax} : IntoVal sampler.t.
+Admitted.
+
+Global Instance into_val_typed_sampler `{ffi_syntax} : IntoValTyped sampler.t zapcore.sampler.
+Admitted.
+
+(* type zapcore.multiCore *)
+Module multiCore.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End multiCore.
+
+Global Instance bounded_size_multiCore : BoundedTypeSize zapcore.multiCore.
+Admitted.
+
+Global Instance into_val_multiCore `{ffi_syntax} : IntoVal multiCore.t.
+Admitted.
+
+Global Instance into_val_typed_multiCore `{ffi_syntax} : IntoValTyped multiCore.t zapcore.multiCore.
+Admitted.
+
+(* type zapcore.WriteSyncer *)
+Module WriteSyncer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End WriteSyncer.
+
+Global Instance bounded_size_WriteSyncer : BoundedTypeSize zapcore.WriteSyncer.
+Admitted.
+
+Global Instance into_val_WriteSyncer `{ffi_syntax} : IntoVal WriteSyncer.t.
+Admitted.
+
+Global Instance into_val_typed_WriteSyncer `{ffi_syntax} : IntoValTyped WriteSyncer.t zapcore.WriteSyncer.
+Admitted.
+
+(* type zapcore.lockedWriteSyncer *)
+Module lockedWriteSyncer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End lockedWriteSyncer.
+
+Global Instance bounded_size_lockedWriteSyncer : BoundedTypeSize zapcore.lockedWriteSyncer.
+Admitted.
+
+Global Instance into_val_lockedWriteSyncer `{ffi_syntax} : IntoVal lockedWriteSyncer.t.
+Admitted.
+
+Global Instance into_val_typed_lockedWriteSyncer `{ffi_syntax} : IntoValTyped lockedWriteSyncer.t zapcore.lockedWriteSyncer.
+Admitted.
+
+(* type zapcore.writerWrapper *)
+Module writerWrapper.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End writerWrapper.
+
+Global Instance bounded_size_writerWrapper : BoundedTypeSize zapcore.writerWrapper.
+Admitted.
+
+Global Instance into_val_writerWrapper `{ffi_syntax} : IntoVal writerWrapper.t.
+Admitted.
+
+Global Instance into_val_typed_writerWrapper `{ffi_syntax} : IntoValTyped writerWrapper.t zapcore.writerWrapper.
+Admitted.
+
+(* type zapcore.multiWriteSyncer *)
+Module multiWriteSyncer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End multiWriteSyncer.
+
+Global Instance bounded_size_multiWriteSyncer : BoundedTypeSize zapcore.multiWriteSyncer.
+Admitted.
+
+Global Instance into_val_multiWriteSyncer `{ffi_syntax} : IntoVal multiWriteSyncer.t.
+Admitted.
+
+Global Instance into_val_typed_multiWriteSyncer `{ffi_syntax} : IntoValTyped multiWriteSyncer.t zapcore.multiWriteSyncer.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -130,6 +980,1714 @@ Global Program Instance is_pkg_defined_zapcore : IsPkgDefined zapcore :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_getSliceEncoder :
+  WpFuncCall zapcore.getSliceEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_putSliceEncoder :
+  WpFuncCall zapcore.putSliceEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewConsoleEncoder :
+  WpFuncCall zapcore.NewConsoleEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewNopCore :
+  WpFuncCall zapcore.NewNopCore _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewCore :
+  WpFuncCall zapcore.NewCore _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LowercaseLevelEncoder :
+  WpFuncCall zapcore.LowercaseLevelEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LowercaseColorLevelEncoder :
+  WpFuncCall zapcore.LowercaseColorLevelEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CapitalLevelEncoder :
+  WpFuncCall zapcore.CapitalLevelEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CapitalColorLevelEncoder :
+  WpFuncCall zapcore.CapitalColorLevelEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_EpochTimeEncoder :
+  WpFuncCall zapcore.EpochTimeEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_EpochMillisTimeEncoder :
+  WpFuncCall zapcore.EpochMillisTimeEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_EpochNanosTimeEncoder :
+  WpFuncCall zapcore.EpochNanosTimeEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_encodeTimeLayout :
+  WpFuncCall zapcore.encodeTimeLayout _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ISO8601TimeEncoder :
+  WpFuncCall zapcore.ISO8601TimeEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RFC3339TimeEncoder :
+  WpFuncCall zapcore.RFC3339TimeEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RFC3339NanoTimeEncoder :
+  WpFuncCall zapcore.RFC3339NanoTimeEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TimeEncoderOfLayout :
+  WpFuncCall zapcore.TimeEncoderOfLayout _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SecondsDurationEncoder :
+  WpFuncCall zapcore.SecondsDurationEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NanosDurationEncoder :
+  WpFuncCall zapcore.NanosDurationEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MillisDurationEncoder :
+  WpFuncCall zapcore.MillisDurationEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StringDurationEncoder :
+  WpFuncCall zapcore.StringDurationEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FullCallerEncoder :
+  WpFuncCall zapcore.FullCallerEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ShortCallerEncoder :
+  WpFuncCall zapcore.ShortCallerEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_FullNameEncoder :
+  WpFuncCall zapcore.FullNameEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_getCheckedEntry :
+  WpFuncCall zapcore.getCheckedEntry _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_putCheckedEntry :
+  WpFuncCall zapcore.putCheckedEntry _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewEntryCaller :
+  WpFuncCall zapcore.NewEntryCaller _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_encodeError :
+  WpFuncCall zapcore.encodeError _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newErrArrayElem :
+  WpFuncCall zapcore.newErrArrayElem _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_addFields :
+  WpFuncCall zapcore.addFields _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_encodeStringer :
+  WpFuncCall zapcore.encodeStringer _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_RegisterHooks :
+  WpFuncCall zapcore.RegisterHooks _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewIncreaseLevelCore :
+  WpFuncCall zapcore.NewIncreaseLevelCore _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_putJSONEncoder :
+  WpFuncCall zapcore.putJSONEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewJSONEncoder :
+  WpFuncCall zapcore.NewJSONEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newJSONEncoder :
+  WpFuncCall zapcore.newJSONEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_safeAppendStringLike :
+  WpFuncCall zapcore.safeAppendStringLike _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewLazyWith :
+  WpFuncCall zapcore.NewLazyWith _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ParseLevel :
+  WpFuncCall zapcore.ParseLevel _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LevelOf :
+  WpFuncCall zapcore.LevelOf _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewMapObjectEncoder :
+  WpFuncCall zapcore.NewMapObjectEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_defaultReflectedEncoder :
+  WpFuncCall zapcore.defaultReflectedEncoder _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_newCounters :
+  WpFuncCall zapcore.newCounters _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_fnv32a :
+  WpFuncCall zapcore.fnv32a _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_nopSamplingHook :
+  WpFuncCall zapcore.nopSamplingHook _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SamplerHook :
+  WpFuncCall zapcore.SamplerHook _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewSamplerWithOptions :
+  WpFuncCall zapcore.NewSamplerWithOptions _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewSampler :
+  WpFuncCall zapcore.NewSampler _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewTee :
+  WpFuncCall zapcore.NewTee _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AddSync :
+  WpFuncCall zapcore.AddSync _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Lock :
+  WpFuncCall zapcore.Lock _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewMultiWriteSyncer :
+  WpFuncCall zapcore.NewMultiWriteSyncer _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_BufferedWriteSyncer'ptr_Stop :
+  WpMethodCall (ptrT.id zapcore.BufferedWriteSyncer.id) "Stop" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BufferedWriteSyncer'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.BufferedWriteSyncer.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BufferedWriteSyncer'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.BufferedWriteSyncer.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BufferedWriteSyncer'ptr_flushLoop :
+  WpMethodCall (ptrT.id zapcore.BufferedWriteSyncer.id) "flushLoop" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_BufferedWriteSyncer'ptr_initialize :
+  WpMethodCall (ptrT.id zapcore.BufferedWriteSyncer.id) "initialize" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_systemClock_NewTicker :
+  WpMethodCall zapcore.systemClock.id "NewTicker" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_systemClock_Now :
+  WpMethodCall zapcore.systemClock.id "Now" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_systemClock'ptr_NewTicker :
+  WpMethodCall (ptrT.id zapcore.systemClock.id) "NewTicker" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_systemClock'ptr_Now :
+  WpMethodCall (ptrT.id zapcore.systemClock.id) "Now" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddArray :
+  WpMethodCall zapcore.consoleEncoder.id "AddArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddBinary :
+  WpMethodCall zapcore.consoleEncoder.id "AddBinary" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddBool :
+  WpMethodCall zapcore.consoleEncoder.id "AddBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddByteString :
+  WpMethodCall zapcore.consoleEncoder.id "AddByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddComplex128 :
+  WpMethodCall zapcore.consoleEncoder.id "AddComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddComplex64 :
+  WpMethodCall zapcore.consoleEncoder.id "AddComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddDuration :
+  WpMethodCall zapcore.consoleEncoder.id "AddDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddFloat32 :
+  WpMethodCall zapcore.consoleEncoder.id "AddFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddFloat64 :
+  WpMethodCall zapcore.consoleEncoder.id "AddFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddInt :
+  WpMethodCall zapcore.consoleEncoder.id "AddInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddInt16 :
+  WpMethodCall zapcore.consoleEncoder.id "AddInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddInt32 :
+  WpMethodCall zapcore.consoleEncoder.id "AddInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddInt64 :
+  WpMethodCall zapcore.consoleEncoder.id "AddInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddInt8 :
+  WpMethodCall zapcore.consoleEncoder.id "AddInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddObject :
+  WpMethodCall zapcore.consoleEncoder.id "AddObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddReflected :
+  WpMethodCall zapcore.consoleEncoder.id "AddReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddString :
+  WpMethodCall zapcore.consoleEncoder.id "AddString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddTime :
+  WpMethodCall zapcore.consoleEncoder.id "AddTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddUint :
+  WpMethodCall zapcore.consoleEncoder.id "AddUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddUint16 :
+  WpMethodCall zapcore.consoleEncoder.id "AddUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddUint32 :
+  WpMethodCall zapcore.consoleEncoder.id "AddUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddUint64 :
+  WpMethodCall zapcore.consoleEncoder.id "AddUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddUint8 :
+  WpMethodCall zapcore.consoleEncoder.id "AddUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AddUintptr :
+  WpMethodCall zapcore.consoleEncoder.id "AddUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendArray :
+  WpMethodCall zapcore.consoleEncoder.id "AppendArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendBool :
+  WpMethodCall zapcore.consoleEncoder.id "AppendBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendByteString :
+  WpMethodCall zapcore.consoleEncoder.id "AppendByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendComplex128 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendComplex64 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendDuration :
+  WpMethodCall zapcore.consoleEncoder.id "AppendDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendFloat32 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendFloat64 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendInt :
+  WpMethodCall zapcore.consoleEncoder.id "AppendInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendInt16 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendInt32 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendInt64 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendInt8 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendObject :
+  WpMethodCall zapcore.consoleEncoder.id "AppendObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendReflected :
+  WpMethodCall zapcore.consoleEncoder.id "AppendReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendString :
+  WpMethodCall zapcore.consoleEncoder.id "AppendString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendTime :
+  WpMethodCall zapcore.consoleEncoder.id "AppendTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendTimeLayout :
+  WpMethodCall zapcore.consoleEncoder.id "AppendTimeLayout" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendUint :
+  WpMethodCall zapcore.consoleEncoder.id "AppendUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendUint16 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendUint32 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendUint64 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendUint8 :
+  WpMethodCall zapcore.consoleEncoder.id "AppendUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_AppendUintptr :
+  WpMethodCall zapcore.consoleEncoder.id "AppendUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_Clone :
+  WpMethodCall zapcore.consoleEncoder.id "Clone" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_EncodeEntry :
+  WpMethodCall zapcore.consoleEncoder.id "EncodeEntry" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_OpenNamespace :
+  WpMethodCall zapcore.consoleEncoder.id "OpenNamespace" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_addElementSeparator :
+  WpMethodCall zapcore.consoleEncoder.id "addElementSeparator" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_addKey :
+  WpMethodCall zapcore.consoleEncoder.id "addKey" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_addSeparatorIfNecessary :
+  WpMethodCall zapcore.consoleEncoder.id "addSeparatorIfNecessary" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_appendComplex :
+  WpMethodCall zapcore.consoleEncoder.id "appendComplex" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_appendFloat :
+  WpMethodCall zapcore.consoleEncoder.id "appendFloat" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_clone :
+  WpMethodCall zapcore.consoleEncoder.id "clone" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_closeOpenNamespaces :
+  WpMethodCall zapcore.consoleEncoder.id "closeOpenNamespaces" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_encodeReflected :
+  WpMethodCall zapcore.consoleEncoder.id "encodeReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_resetReflectBuf :
+  WpMethodCall zapcore.consoleEncoder.id "resetReflectBuf" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_safeAddByteString :
+  WpMethodCall zapcore.consoleEncoder.id "safeAddByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_safeAddString :
+  WpMethodCall zapcore.consoleEncoder.id "safeAddString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_truncate :
+  WpMethodCall zapcore.consoleEncoder.id "truncate" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder_writeContext :
+  WpMethodCall zapcore.consoleEncoder.id "writeContext" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddArray :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddBinary :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddBinary" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddBool :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddByteString :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddComplex128 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddComplex64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddDuration :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddFloat32 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddFloat64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddInt :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddInt16 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddInt32 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddInt64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddInt8 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddObject :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddReflected :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddString :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddTime :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddUint :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddUint16 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddUint32 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddUint64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddUint8 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AddUintptr :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AddUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendArray :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendBool :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendByteString :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendComplex128 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendComplex64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendDuration :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendFloat32 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendFloat64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendInt :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendInt16 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendInt32 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendInt64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendInt8 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendObject :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendReflected :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendString :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendTime :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendTimeLayout :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendTimeLayout" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendUint :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendUint16 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendUint32 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendUint64 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendUint8 :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_AppendUintptr :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "AppendUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_Clone :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "Clone" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_EncodeEntry :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "EncodeEntry" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_OpenNamespace :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "OpenNamespace" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_addElementSeparator :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "addElementSeparator" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_addKey :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "addKey" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_addSeparatorIfNecessary :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "addSeparatorIfNecessary" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_appendComplex :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "appendComplex" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_appendFloat :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "appendFloat" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_clone :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "clone" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_closeOpenNamespaces :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "closeOpenNamespaces" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_encodeReflected :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "encodeReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_resetReflectBuf :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "resetReflectBuf" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_safeAddByteString :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "safeAddByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_safeAddString :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "safeAddString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_truncate :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "truncate" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_consoleEncoder'ptr_writeContext :
+  WpMethodCall (ptrT.id zapcore.consoleEncoder.id) "writeContext" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore_Check :
+  WpMethodCall zapcore.nopCore.id "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore_Enabled :
+  WpMethodCall zapcore.nopCore.id "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore_Sync :
+  WpMethodCall zapcore.nopCore.id "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore_With :
+  WpMethodCall zapcore.nopCore.id "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore_Write :
+  WpMethodCall zapcore.nopCore.id "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore'ptr_Check :
+  WpMethodCall (ptrT.id zapcore.nopCore.id) "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.nopCore.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.nopCore.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore'ptr_With :
+  WpMethodCall (ptrT.id zapcore.nopCore.id) "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_nopCore'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.nopCore.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore_Enabled :
+  WpMethodCall zapcore.ioCore.id "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore'ptr_Check :
+  WpMethodCall (ptrT.id zapcore.ioCore.id) "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.ioCore.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore'ptr_Level :
+  WpMethodCall (ptrT.id zapcore.ioCore.id) "Level" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.ioCore.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore'ptr_With :
+  WpMethodCall (ptrT.id zapcore.ioCore.id) "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.ioCore.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ioCore'ptr_clone :
+  WpMethodCall (ptrT.id zapcore.ioCore.id) "clone" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LevelEncoder'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id zapcore.LevelEncoder.id) "UnmarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TimeEncoder'ptr_UnmarshalJSON :
+  WpMethodCall (ptrT.id zapcore.TimeEncoder.id) "UnmarshalJSON" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TimeEncoder'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id zapcore.TimeEncoder.id) "UnmarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_TimeEncoder'ptr_UnmarshalYAML :
+  WpMethodCall (ptrT.id zapcore.TimeEncoder.id) "UnmarshalYAML" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_DurationEncoder'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id zapcore.DurationEncoder.id) "UnmarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CallerEncoder'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id zapcore.CallerEncoder.id) "UnmarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_NameEncoder'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id zapcore.NameEncoder.id) "UnmarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EntryCaller_FullPath :
+  WpMethodCall zapcore.EntryCaller.id "FullPath" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EntryCaller_String :
+  WpMethodCall zapcore.EntryCaller.id "String" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EntryCaller_TrimmedPath :
+  WpMethodCall zapcore.EntryCaller.id "TrimmedPath" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EntryCaller'ptr_FullPath :
+  WpMethodCall (ptrT.id zapcore.EntryCaller.id) "FullPath" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EntryCaller'ptr_String :
+  WpMethodCall (ptrT.id zapcore.EntryCaller.id) "String" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EntryCaller'ptr_TrimmedPath :
+  WpMethodCall (ptrT.id zapcore.EntryCaller.id) "TrimmedPath" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CheckWriteAction_OnWrite :
+  WpMethodCall zapcore.CheckWriteAction.id "OnWrite" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CheckWriteAction'ptr_OnWrite :
+  WpMethodCall (ptrT.id zapcore.CheckWriteAction.id) "OnWrite" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CheckedEntry'ptr_AddCore :
+  WpMethodCall (ptrT.id zapcore.CheckedEntry.id) "AddCore" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CheckedEntry'ptr_After :
+  WpMethodCall (ptrT.id zapcore.CheckedEntry.id) "After" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CheckedEntry'ptr_Should :
+  WpMethodCall (ptrT.id zapcore.CheckedEntry.id) "Should" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CheckedEntry'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.CheckedEntry.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_CheckedEntry'ptr_reset :
+  WpMethodCall (ptrT.id zapcore.CheckedEntry.id) "reset" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArray_MarshalLogArray :
+  WpMethodCall zapcore.errArray.id "MarshalLogArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArray'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zapcore.errArray.id) "MarshalLogArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArrayElem'ptr_Free :
+  WpMethodCall (ptrT.id zapcore.errArrayElem.id) "Free" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArrayElem'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zapcore.errArrayElem.id) "MarshalLogArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_errArrayElem'ptr_MarshalLogObject :
+  WpMethodCall (ptrT.id zapcore.errArrayElem.id) "MarshalLogObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Field_AddTo :
+  WpMethodCall zapcore.Field.id "AddTo" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Field_Equals :
+  WpMethodCall zapcore.Field.id "Equals" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Field'ptr_AddTo :
+  WpMethodCall (ptrT.id zapcore.Field.id) "AddTo" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Field'ptr_Equals :
+  WpMethodCall (ptrT.id zapcore.Field.id) "Equals" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked_Enabled :
+  WpMethodCall zapcore.hooked.id "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked_Sync :
+  WpMethodCall zapcore.hooked.id "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked'ptr_Check :
+  WpMethodCall (ptrT.id zapcore.hooked.id) "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.hooked.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked'ptr_Level :
+  WpMethodCall (ptrT.id zapcore.hooked.id) "Level" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.hooked.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked'ptr_With :
+  WpMethodCall (ptrT.id zapcore.hooked.id) "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_hooked'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.hooked.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_levelFilterCore'ptr_Check :
+  WpMethodCall (ptrT.id zapcore.levelFilterCore.id) "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_levelFilterCore'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.levelFilterCore.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_levelFilterCore'ptr_Level :
+  WpMethodCall (ptrT.id zapcore.levelFilterCore.id) "Level" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_levelFilterCore'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.levelFilterCore.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_levelFilterCore'ptr_With :
+  WpMethodCall (ptrT.id zapcore.levelFilterCore.id) "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_levelFilterCore'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.levelFilterCore.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddArray :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddBinary :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddBinary" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddBool :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddByteString :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddComplex128 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddComplex64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddDuration :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddFloat32 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddFloat64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddInt :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddInt16 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddInt32 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddInt64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddInt8 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddObject :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddReflected :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddString :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddTime :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddUint :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddUint16 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddUint32 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddUint64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddUint8 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AddUintptr :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AddUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendArray :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendBool :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendByteString :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendComplex128 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendComplex64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendDuration :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendFloat32 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendFloat64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendInt :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendInt16 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendInt32 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendInt64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendInt8 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendObject :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendReflected :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendString :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendTime :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendTimeLayout :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendTimeLayout" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendUint :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendUint16 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendUint32 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendUint64 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendUint8 :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_AppendUintptr :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "AppendUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_Clone :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "Clone" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_EncodeEntry :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "EncodeEntry" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_OpenNamespace :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "OpenNamespace" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_addElementSeparator :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "addElementSeparator" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_addKey :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "addKey" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_appendComplex :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "appendComplex" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_appendFloat :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "appendFloat" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_clone :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "clone" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_closeOpenNamespaces :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "closeOpenNamespaces" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_encodeReflected :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "encodeReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_resetReflectBuf :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "resetReflectBuf" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_safeAddByteString :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "safeAddByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_safeAddString :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "safeAddString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_jsonEncoder'ptr_truncate :
+  WpMethodCall (ptrT.id zapcore.jsonEncoder.id) "truncate" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore_Enabled :
+  WpMethodCall zapcore.lazyWithCore.id "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore_Sync :
+  WpMethodCall zapcore.lazyWithCore.id "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore_Write :
+  WpMethodCall zapcore.lazyWithCore.id "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_Check :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_Do :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "Do" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_With :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_initOnce :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "initOnce" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lazyWithCore'ptr_doSlow :
+  WpMethodCall (ptrT.id zapcore.lazyWithCore.id) "doSlow" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level_CapitalString :
+  WpMethodCall zapcore.Level.id "CapitalString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level_Enabled :
+  WpMethodCall zapcore.Level.id "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level_MarshalText :
+  WpMethodCall zapcore.Level.id "MarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level_String :
+  WpMethodCall zapcore.Level.id "String" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_CapitalString :
+  WpMethodCall (ptrT.id zapcore.Level.id) "CapitalString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.Level.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_Get :
+  WpMethodCall (ptrT.id zapcore.Level.id) "Get" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_MarshalText :
+  WpMethodCall (ptrT.id zapcore.Level.id) "MarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_Set :
+  WpMethodCall (ptrT.id zapcore.Level.id) "Set" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_String :
+  WpMethodCall (ptrT.id zapcore.Level.id) "String" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_UnmarshalText :
+  WpMethodCall (ptrT.id zapcore.Level.id) "UnmarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Level'ptr_unmarshalText :
+  WpMethodCall (ptrT.id zapcore.Level.id) "unmarshalText" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ObjectMarshalerFunc_MarshalLogObject :
+  WpMethodCall zapcore.ObjectMarshalerFunc.id "MarshalLogObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ObjectMarshalerFunc'ptr_MarshalLogObject :
+  WpMethodCall (ptrT.id zapcore.ObjectMarshalerFunc.id) "MarshalLogObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ArrayMarshalerFunc_MarshalLogArray :
+  WpMethodCall zapcore.ArrayMarshalerFunc.id "MarshalLogArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_ArrayMarshalerFunc'ptr_MarshalLogArray :
+  WpMethodCall (ptrT.id zapcore.ArrayMarshalerFunc.id) "MarshalLogArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder_AddDuration :
+  WpMethodCall zapcore.MapObjectEncoder.id "AddDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder_AddTime :
+  WpMethodCall zapcore.MapObjectEncoder.id "AddTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddArray :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddBinary :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddBinary" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddBool :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddByteString :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddComplex128 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddComplex64 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddDuration :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddFloat32 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddFloat64 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddInt :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddInt16 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddInt32 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddInt64 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddInt8 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddObject :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddReflected :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddString :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddTime :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddUint :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddUint16 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddUint32 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddUint64 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddUint8 :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_AddUintptr :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "AddUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_MapObjectEncoder'ptr_OpenNamespace :
+  WpMethodCall (ptrT.id zapcore.MapObjectEncoder.id) "OpenNamespace" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendArray :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendArray" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendBool :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendBool" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendByteString :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendByteString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendComplex128 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendComplex128" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendComplex64 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendComplex64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendDuration :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendDuration" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendFloat32 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendFloat32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendFloat64 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendFloat64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendInt :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendInt" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendInt16 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendInt16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendInt32 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendInt32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendInt64 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendInt64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendInt8 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendInt8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendObject :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendObject" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendReflected :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendReflected" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendString :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendString" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendTime :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendTime" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendUint :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendUint" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendUint16 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendUint16" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendUint32 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendUint32" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendUint64 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendUint64" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendUint8 :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendUint8" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sliceArrayEncoder'ptr_AppendUintptr :
+  WpMethodCall (ptrT.id zapcore.sliceArrayEncoder.id) "AppendUintptr" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_counter'ptr_IncCheckReset :
+  WpMethodCall (ptrT.id zapcore.counter.id) "IncCheckReset" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_counters'ptr_get :
+  WpMethodCall (ptrT.id zapcore.counters.id) "get" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_optionFunc_apply :
+  WpMethodCall zapcore.optionFunc.id "apply" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_optionFunc'ptr_apply :
+  WpMethodCall (ptrT.id zapcore.optionFunc.id) "apply" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler_Enabled :
+  WpMethodCall zapcore.sampler.id "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler_Sync :
+  WpMethodCall zapcore.sampler.id "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler_Write :
+  WpMethodCall zapcore.sampler.id "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler'ptr_Check :
+  WpMethodCall (ptrT.id zapcore.sampler.id) "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.sampler.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler'ptr_Level :
+  WpMethodCall (ptrT.id zapcore.sampler.id) "Level" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.sampler.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler'ptr_With :
+  WpMethodCall (ptrT.id zapcore.sampler.id) "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_sampler'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.sampler.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore_Check :
+  WpMethodCall zapcore.multiCore.id "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore_Enabled :
+  WpMethodCall zapcore.multiCore.id "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore_Level :
+  WpMethodCall zapcore.multiCore.id "Level" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore_Sync :
+  WpMethodCall zapcore.multiCore.id "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore_With :
+  WpMethodCall zapcore.multiCore.id "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore_Write :
+  WpMethodCall zapcore.multiCore.id "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore'ptr_Check :
+  WpMethodCall (ptrT.id zapcore.multiCore.id) "Check" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore'ptr_Enabled :
+  WpMethodCall (ptrT.id zapcore.multiCore.id) "Enabled" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore'ptr_Level :
+  WpMethodCall (ptrT.id zapcore.multiCore.id) "Level" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.multiCore.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore'ptr_With :
+  WpMethodCall (ptrT.id zapcore.multiCore.id) "With" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiCore'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.multiCore.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedWriteSyncer'ptr_Lock :
+  WpMethodCall (ptrT.id zapcore.lockedWriteSyncer.id) "Lock" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedWriteSyncer'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.lockedWriteSyncer.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedWriteSyncer'ptr_TryLock :
+  WpMethodCall (ptrT.id zapcore.lockedWriteSyncer.id) "TryLock" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedWriteSyncer'ptr_Unlock :
+  WpMethodCall (ptrT.id zapcore.lockedWriteSyncer.id) "Unlock" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockedWriteSyncer'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.lockedWriteSyncer.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_writerWrapper_Sync :
+  WpMethodCall zapcore.writerWrapper.id "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_writerWrapper_Write :
+  WpMethodCall zapcore.writerWrapper.id "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_writerWrapper'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.writerWrapper.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_writerWrapper'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.writerWrapper.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiWriteSyncer_Sync :
+  WpMethodCall zapcore.multiWriteSyncer.id "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiWriteSyncer_Write :
+  WpMethodCall zapcore.multiWriteSyncer.id "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiWriteSyncer'ptr_Sync :
+  WpMethodCall (ptrT.id zapcore.multiWriteSyncer.id) "Sync" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_multiWriteSyncer'ptr_Write :
+  WpMethodCall (ptrT.id zapcore.multiWriteSyncer.id) "Write" _ (is_pkg_defined zapcore) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End zapcore.

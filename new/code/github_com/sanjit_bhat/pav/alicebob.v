@@ -368,7 +368,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(histEntry.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [bytes.bytes; sync.sync; github_com.goose_lang.primitive.primitive; github_com.goose_lang.std.std; github_com.sanjit_bhat.pav.advrpc.advrpc; github_com.sanjit_bhat.pav.auditor.auditor; github_com.sanjit_bhat.pav.client.client; github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; github_com.sanjit_bhat.pav.ktcore.ktcore; github_com.sanjit_bhat.pav.server.server];
+    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.advrpc.advrpc; code.github_com.sanjit_bhat.pav.auditor.auditor; code.github_com.sanjit_bhat.pav.client.client; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.server.server];
   |}.
 
 Definition initialize' : val :=

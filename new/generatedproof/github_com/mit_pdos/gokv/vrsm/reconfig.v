@@ -26,13 +26,13 @@ Global Instance is_pkg_defined_pure_reconfig : IsPkgDefinedPure reconfig :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single reconfig ∧
-      is_pkg_defined_pure log.log ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.configservice.configservice ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.e.e ∧
-      is_pkg_defined_pure github_com.mit_pdos.gokv.vrsm.replica.replica;
+      is_pkg_defined_pure code.log.log ∧
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.e.e ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.replica;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -40,13 +40,13 @@ Global Program Instance is_pkg_defined_reconfig : IsPkgDefined reconfig :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single reconfig ∗
-       is_pkg_defined log.log ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
-       is_pkg_defined github_com.mit_pdos.gokv.vrsm.configservice.configservice ∗
-       is_pkg_defined github_com.mit_pdos.gokv.vrsm.e.e ∗
-       is_pkg_defined github_com.mit_pdos.gokv.vrsm.replica.replica)%I
+       is_pkg_defined code.log.log ∗
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.e.e ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.replica)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

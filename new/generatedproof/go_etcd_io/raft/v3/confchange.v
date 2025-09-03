@@ -89,7 +89,7 @@ Global Instance is_pkg_defined_pure_confchange : IsPkgDefinedPure confchange :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single confchange ∧
-      is_pkg_defined_pure go_etcd_io.raft.v3.tracker.tracker;
+      is_pkg_defined_pure code.go_etcd_io.raft.v3.tracker.tracker;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -97,10 +97,142 @@ Global Program Instance is_pkg_defined_confchange : IsPkgDefined confchange :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single confchange ∗
-       is_pkg_defined go_etcd_io.raft.v3.tracker.tracker)%I
+       is_pkg_defined code.go_etcd_io.raft.v3.tracker.tracker)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_checkInvariants :
+  WpFuncCall confchange.checkInvariants _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_checkAndReturn :
+  WpFuncCall confchange.checkAndReturn _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_nilAwareAdd :
+  WpFuncCall confchange.nilAwareAdd _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_nilAwareDelete :
+  WpFuncCall confchange.nilAwareDelete _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_symdiff :
+  WpFuncCall confchange.symdiff _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_joint :
+  WpFuncCall confchange.joint _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_incoming :
+  WpFuncCall confchange.incoming _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_outgoing :
+  WpFuncCall confchange.outgoing _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_outgoingPtr :
+  WpFuncCall confchange.outgoingPtr _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Describe :
+  WpFuncCall confchange.Describe _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_toConfChangeSingle :
+  WpFuncCall confchange.toConfChangeSingle _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_chain :
+  WpFuncCall confchange.chain _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Restore :
+  WpFuncCall confchange.Restore _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Changer_EnterJoint :
+  WpMethodCall confchange.Changer.id "EnterJoint" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_LeaveJoint :
+  WpMethodCall confchange.Changer.id "LeaveJoint" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_Simple :
+  WpMethodCall confchange.Changer.id "Simple" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_apply :
+  WpMethodCall confchange.Changer.id "apply" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_checkAndCopy :
+  WpMethodCall confchange.Changer.id "checkAndCopy" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_err :
+  WpMethodCall confchange.Changer.id "err" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_initProgress :
+  WpMethodCall confchange.Changer.id "initProgress" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_makeLearner :
+  WpMethodCall confchange.Changer.id "makeLearner" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_makeVoter :
+  WpMethodCall confchange.Changer.id "makeVoter" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer_remove :
+  WpMethodCall confchange.Changer.id "remove" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_EnterJoint :
+  WpMethodCall (ptrT.id confchange.Changer.id) "EnterJoint" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_LeaveJoint :
+  WpMethodCall (ptrT.id confchange.Changer.id) "LeaveJoint" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_Simple :
+  WpMethodCall (ptrT.id confchange.Changer.id) "Simple" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_apply :
+  WpMethodCall (ptrT.id confchange.Changer.id) "apply" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_checkAndCopy :
+  WpMethodCall (ptrT.id confchange.Changer.id) "checkAndCopy" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_err :
+  WpMethodCall (ptrT.id confchange.Changer.id) "err" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_initProgress :
+  WpMethodCall (ptrT.id confchange.Changer.id) "initProgress" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_makeLearner :
+  WpMethodCall (ptrT.id confchange.Changer.id) "makeLearner" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_makeVoter :
+  WpMethodCall (ptrT.id confchange.Changer.id) "makeVoter" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Changer'ptr_remove :
+  WpMethodCall (ptrT.id confchange.Changer.id) "remove" _ (is_pkg_defined confchange) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End confchange.

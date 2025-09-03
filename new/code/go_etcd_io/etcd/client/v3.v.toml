@@ -36,11 +36,6 @@ translate = [
   "LeaseOp", "LeaseOption",
 ]
 
-axiomatize = [
-  "Client",
-  "Op",
-]
-
 imports = [
   "go.etcd.io/etcd/api/v3/etcdserverpb",
   "go.etcd.io/etcd/api/v3/mvccpb",

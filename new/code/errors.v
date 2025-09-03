@@ -5,17 +5,24 @@ Definition errors : go_string := "errors".
 
 Module errors.
 
+Module errorString. Definition id : go_string := "errors.errorString"%go. End errorString.
+Module joinError. Definition id : go_string := "errors.joinError"%go. End joinError.
+
 Section code.
 Context `{ffi_syntax}.
 
 
 Definition New : go_string := "errors.New"%go.
 
+Axiom errorString : go_type.
+
 Definition ErrUnsupported : go_string := "errors.ErrUnsupported"%go.
 
 Axiom ErrUnsupported'init : val.
 
 Definition Join : go_string := "errors.Join"%go.
+
+Axiom joinError : go_type.
 
 Definition Unwrap : go_string := "errors.Unwrap"%go.
 
@@ -33,9 +40,29 @@ Axiom errorType'init : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom Newⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Axiom Joinⁱᵐᵖˡ : val.
+
+Axiom Unwrapⁱᵐᵖˡ : val.
+
+Axiom Isⁱᵐᵖˡ : val.
+
+Axiom isⁱᵐᵖˡ : val.
+
+Axiom Asⁱᵐᵖˡ : val.
+
+Axiom asⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Join, Joinⁱᵐᵖˡ); (Unwrap, Unwrapⁱᵐᵖˡ); (Is, Isⁱᵐᵖˡ); (is', isⁱᵐᵖˡ); (As, Asⁱᵐᵖˡ); (as', asⁱᵐᵖˡ)].
+
+Axiom errorString__Errorⁱᵐᵖˡ : val.
+
+Axiom joinError__Errorⁱᵐᵖˡ : val.
+
+Axiom joinError__Unwrapⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(errorString.id, []); (ptrT.id errorString.id, [("Error"%go, errorString__Errorⁱᵐᵖˡ)]); (joinError.id, []); (ptrT.id joinError.id, [("Error"%go, joinError__Errorⁱᵐᵖˡ); ("Unwrap"%go, joinError__Unwrapⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo errors.errors :=
   {|

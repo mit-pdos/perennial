@@ -11,6 +11,23 @@ Set Default Proof Using "Type".
 
 Module sync.
 
+(* type sync.copyChecker *)
+Module copyChecker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End copyChecker.
+
+Global Instance bounded_size_copyChecker : BoundedTypeSize sync.copyChecker.
+Admitted.
+
+Global Instance into_val_copyChecker `{ffi_syntax} : IntoVal copyChecker.t.
+Admitted.
+
+Global Instance into_val_typed_copyChecker `{ffi_syntax} : IntoValTyped copyChecker.t sync.copyChecker.
+Admitted.
+
 (* type sync.noCopy *)
 Module noCopy.
 Section def.
@@ -47,6 +64,40 @@ Global Instance wp_struct_make_noCopy:
 Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
+
+(* type sync.Map *)
+Module Map.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Map.
+
+Global Instance bounded_size_Map : BoundedTypeSize sync.Map.
+Admitted.
+
+Global Instance into_val_Map `{ffi_syntax} : IntoVal Map.t.
+Admitted.
+
+Global Instance into_val_typed_Map `{ffi_syntax} : IntoValTyped Map.t sync.Map.
+Admitted.
+
+(* type sync.Locker *)
+Module Locker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Locker.
+
+Global Instance bounded_size_Locker : BoundedTypeSize sync.Locker.
+Admitted.
+
+Global Instance into_val_Locker `{ffi_syntax} : IntoVal Locker.t.
+Admitted.
+
+Global Instance into_val_typed_Locker `{ffi_syntax} : IntoValTyped Locker.t sync.Locker.
+Admitted.
 
 (* type sync.Once *)
 Module Once.
@@ -124,6 +175,159 @@ Proof.
 Qed.
 
 End instances.
+
+(* type sync.Pool *)
+Module Pool.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End Pool.
+
+Global Instance bounded_size_Pool : BoundedTypeSize sync.Pool.
+Admitted.
+
+Global Instance into_val_Pool `{ffi_syntax} : IntoVal Pool.t.
+Admitted.
+
+Global Instance into_val_typed_Pool `{ffi_syntax} : IntoValTyped Pool.t sync.Pool.
+Admitted.
+
+(* type sync.poolLocalInternal *)
+Module poolLocalInternal.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End poolLocalInternal.
+
+Global Instance bounded_size_poolLocalInternal : BoundedTypeSize sync.poolLocalInternal.
+Admitted.
+
+Global Instance into_val_poolLocalInternal `{ffi_syntax} : IntoVal poolLocalInternal.t.
+Admitted.
+
+Global Instance into_val_typed_poolLocalInternal `{ffi_syntax} : IntoValTyped poolLocalInternal.t sync.poolLocalInternal.
+Admitted.
+
+(* type sync.poolLocal *)
+Module poolLocal.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End poolLocal.
+
+Global Instance bounded_size_poolLocal : BoundedTypeSize sync.poolLocal.
+Admitted.
+
+Global Instance into_val_poolLocal `{ffi_syntax} : IntoVal poolLocal.t.
+Admitted.
+
+Global Instance into_val_typed_poolLocal `{ffi_syntax} : IntoValTyped poolLocal.t sync.poolLocal.
+Admitted.
+
+(* type sync.poolDequeue *)
+Module poolDequeue.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End poolDequeue.
+
+Global Instance bounded_size_poolDequeue : BoundedTypeSize sync.poolDequeue.
+Admitted.
+
+Global Instance into_val_poolDequeue `{ffi_syntax} : IntoVal poolDequeue.t.
+Admitted.
+
+Global Instance into_val_typed_poolDequeue `{ffi_syntax} : IntoValTyped poolDequeue.t sync.poolDequeue.
+Admitted.
+
+(* type sync.eface *)
+Module eface.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End eface.
+
+Global Instance bounded_size_eface : BoundedTypeSize sync.eface.
+Admitted.
+
+Global Instance into_val_eface `{ffi_syntax} : IntoVal eface.t.
+Admitted.
+
+Global Instance into_val_typed_eface `{ffi_syntax} : IntoValTyped eface.t sync.eface.
+Admitted.
+
+(* type sync.dequeueNil *)
+Module dequeueNil.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End dequeueNil.
+
+Global Instance bounded_size_dequeueNil : BoundedTypeSize sync.dequeueNil.
+Admitted.
+
+Global Instance into_val_dequeueNil `{ffi_syntax} : IntoVal dequeueNil.t.
+Admitted.
+
+Global Instance into_val_typed_dequeueNil `{ffi_syntax} : IntoValTyped dequeueNil.t sync.dequeueNil.
+Admitted.
+
+(* type sync.poolChain *)
+Module poolChain.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End poolChain.
+
+Global Instance bounded_size_poolChain : BoundedTypeSize sync.poolChain.
+Admitted.
+
+Global Instance into_val_poolChain `{ffi_syntax} : IntoVal poolChain.t.
+Admitted.
+
+Global Instance into_val_typed_poolChain `{ffi_syntax} : IntoValTyped poolChain.t sync.poolChain.
+Admitted.
+
+(* type sync.poolChainElt *)
+Module poolChainElt.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End poolChainElt.
+
+Global Instance bounded_size_poolChainElt : BoundedTypeSize sync.poolChainElt.
+Admitted.
+
+Global Instance into_val_poolChainElt `{ffi_syntax} : IntoVal poolChainElt.t.
+Admitted.
+
+Global Instance into_val_typed_poolChainElt `{ffi_syntax} : IntoValTyped poolChainElt.t sync.poolChainElt.
+Admitted.
+
+(* type sync.notifyList *)
+Module notifyList.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End notifyList.
+
+Global Instance bounded_size_notifyList : BoundedTypeSize sync.notifyList.
+Admitted.
+
+Global Instance into_val_notifyList `{ffi_syntax} : IntoVal notifyList.t.
+Admitted.
+
+Global Instance into_val_typed_notifyList `{ffi_syntax} : IntoValTyped notifyList.t sync.notifyList.
+Admitted.
 
 (* type sync.RWMutex *)
 Module RWMutex.
@@ -314,8 +518,8 @@ Global Instance is_pkg_defined_pure_sync : IsPkgDefinedPure sync :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single sync ∧
-      is_pkg_defined_pure sync.atomic.atomic ∧
-      is_pkg_defined_pure internal.race.race;
+      is_pkg_defined_pure code.sync.atomic.atomic ∧
+      is_pkg_defined_pure code.internal.race.race;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -323,14 +527,62 @@ Global Program Instance is_pkg_defined_sync : IsPkgDefined sync :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single sync ∗
-       is_pkg_defined sync.atomic.atomic ∗
-       is_pkg_defined internal.race.race)%I
+       is_pkg_defined code.sync.atomic.atomic ∗
+       is_pkg_defined code.internal.race.race)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_NewCond :
   WpFuncCall sync.NewCond _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_OnceFunc :
+  WpFuncCall sync.OnceFunc _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_OnceValue :
+  WpFuncCall sync.OnceValue _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_OnceValues :
+  WpFuncCall sync.OnceValues _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_randn :
+  WpFuncCall sync.runtime_randn _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_poolRaceAddr :
+  WpFuncCall sync.poolRaceAddr _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_poolCleanup :
+  WpFuncCall sync.poolCleanup _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_indexLocal :
+  WpFuncCall sync.indexLocal _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_registerPoolCleanup :
+  WpFuncCall sync.runtime_registerPoolCleanup _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_procPin :
+  WpFuncCall sync.runtime_procPin _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_procUnpin :
+  WpFuncCall sync.runtime_procUnpin _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_LoadAcquintptr :
+  WpFuncCall sync.runtime_LoadAcquintptr _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_StoreReluintptr :
+  WpFuncCall sync.runtime_StoreReluintptr _ (is_pkg_defined sync) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_runtime_Semacquire :
@@ -353,6 +605,38 @@ Global Instance wp_func_call_runtime_Semrelease :
   WpFuncCall sync.runtime_Semrelease _ (is_pkg_defined sync) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_runtime_notifyListAdd :
+  WpFuncCall sync.runtime_notifyListAdd _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListWait :
+  WpFuncCall sync.runtime_notifyListWait _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListNotifyAll :
+  WpFuncCall sync.runtime_notifyListNotifyAll _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListNotifyOne :
+  WpFuncCall sync.runtime_notifyListNotifyOne _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListCheck :
+  WpFuncCall sync.runtime_notifyListCheck _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_throw :
+  WpFuncCall sync.throw _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_fatal :
+  WpFuncCall sync.fatal _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_syscall_hasWaitingReaders :
+  WpFuncCall sync.syscall_hasWaitingReaders _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_method_call_Cond'ptr_Broadcast :
   WpMethodCall (ptrT.id sync.Cond.id) "Broadcast" _ (is_pkg_defined sync) :=
   ltac:(solve_wp_method_call).
@@ -363,6 +647,58 @@ Global Instance wp_method_call_Cond'ptr_Signal :
 
 Global Instance wp_method_call_Cond'ptr_Wait :
   WpMethodCall (ptrT.id sync.Cond.id) "Wait" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_copyChecker'ptr_check :
+  WpMethodCall (ptrT.id sync.copyChecker.id) "check" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_noCopy'ptr_Lock :
+  WpMethodCall (ptrT.id sync.noCopy.id) "Lock" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_noCopy'ptr_Unlock :
+  WpMethodCall (ptrT.id sync.noCopy.id) "Unlock" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_Clear :
+  WpMethodCall (ptrT.id sync.Map.id) "Clear" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_CompareAndDelete :
+  WpMethodCall (ptrT.id sync.Map.id) "CompareAndDelete" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_CompareAndSwap :
+  WpMethodCall (ptrT.id sync.Map.id) "CompareAndSwap" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_Delete :
+  WpMethodCall (ptrT.id sync.Map.id) "Delete" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_Load :
+  WpMethodCall (ptrT.id sync.Map.id) "Load" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_LoadAndDelete :
+  WpMethodCall (ptrT.id sync.Map.id) "LoadAndDelete" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_LoadOrStore :
+  WpMethodCall (ptrT.id sync.Map.id) "LoadOrStore" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_Range :
+  WpMethodCall (ptrT.id sync.Map.id) "Range" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_Store :
+  WpMethodCall (ptrT.id sync.Map.id) "Store" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Map'ptr_Swap :
+  WpMethodCall (ptrT.id sync.Map.id) "Swap" _ (is_pkg_defined sync) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Mutex'ptr_Lock :
@@ -383,6 +719,78 @@ Global Instance wp_method_call_Once'ptr_Do :
 
 Global Instance wp_method_call_Once'ptr_doSlow :
   WpMethodCall (ptrT.id sync.Once.id) "doSlow" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Pool'ptr_Get :
+  WpMethodCall (ptrT.id sync.Pool.id) "Get" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Pool'ptr_Put :
+  WpMethodCall (ptrT.id sync.Pool.id) "Put" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Pool'ptr_getSlow :
+  WpMethodCall (ptrT.id sync.Pool.id) "getSlow" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Pool'ptr_pin :
+  WpMethodCall (ptrT.id sync.Pool.id) "pin" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Pool'ptr_pinSlow :
+  WpMethodCall (ptrT.id sync.Pool.id) "pinSlow" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolDequeue'ptr_pack :
+  WpMethodCall (ptrT.id sync.poolDequeue.id) "pack" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolDequeue'ptr_popHead :
+  WpMethodCall (ptrT.id sync.poolDequeue.id) "popHead" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolDequeue'ptr_popTail :
+  WpMethodCall (ptrT.id sync.poolDequeue.id) "popTail" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolDequeue'ptr_pushHead :
+  WpMethodCall (ptrT.id sync.poolDequeue.id) "pushHead" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolDequeue'ptr_unpack :
+  WpMethodCall (ptrT.id sync.poolDequeue.id) "unpack" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChain'ptr_popHead :
+  WpMethodCall (ptrT.id sync.poolChain.id) "popHead" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChain'ptr_popTail :
+  WpMethodCall (ptrT.id sync.poolChain.id) "popTail" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChain'ptr_pushHead :
+  WpMethodCall (ptrT.id sync.poolChain.id) "pushHead" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChainElt'ptr_pack :
+  WpMethodCall (ptrT.id sync.poolChainElt.id) "pack" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChainElt'ptr_popHead :
+  WpMethodCall (ptrT.id sync.poolChainElt.id) "popHead" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChainElt'ptr_popTail :
+  WpMethodCall (ptrT.id sync.poolChainElt.id) "popTail" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChainElt'ptr_pushHead :
+  WpMethodCall (ptrT.id sync.poolChainElt.id) "pushHead" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_poolChainElt'ptr_unpack :
+  WpMethodCall (ptrT.id sync.poolChainElt.id) "unpack" _ (is_pkg_defined sync) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_RWMutex'ptr_Lock :
@@ -415,6 +823,14 @@ Global Instance wp_method_call_RWMutex'ptr_Unlock :
 
 Global Instance wp_method_call_RWMutex'ptr_rUnlockSlow :
   WpMethodCall (ptrT.id sync.RWMutex.id) "rUnlockSlow" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_rlocker'ptr_Lock :
+  WpMethodCall (ptrT.id sync.rlocker.id) "Lock" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_rlocker'ptr_Unlock :
+  WpMethodCall (ptrT.id sync.rlocker.id) "Unlock" _ (is_pkg_defined sync) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_WaitGroup'ptr_Add :

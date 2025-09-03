@@ -9,6 +9,40 @@ Set Default Proof Using "Type".
 
 Module primitive.
 
+(* type primitive.prophId *)
+Module prophId.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End prophId.
+
+Global Instance bounded_size_prophId : BoundedTypeSize primitive.prophId.
+Admitted.
+
+Global Instance into_val_prophId `{ffi_syntax} : IntoVal prophId.t.
+Admitted.
+
+Global Instance into_val_typed_prophId `{ffi_syntax} : IntoValTyped prophId.t primitive.prophId.
+Admitted.
+
+(* type primitive.ProphId *)
+Module ProphId.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End ProphId.
+
+Global Instance bounded_size_ProphId : BoundedTypeSize primitive.ProphId.
+Admitted.
+
+Global Instance into_val_ProphId `{ffi_syntax} : IntoVal ProphId.t.
+Admitted.
+
+Global Instance into_val_typed_ProphId `{ffi_syntax} : IntoValTyped ProphId.t primitive.ProphId.
+Admitted.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -31,21 +65,73 @@ Global Program Instance is_pkg_defined_primitive : IsPkgDefined primitive :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_UInt64Get :
+  WpFuncCall primitive.UInt64Get _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_UInt32Get :
+  WpFuncCall primitive.UInt32Get _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_UInt64Put :
   WpFuncCall primitive.UInt64Put _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_UInt32Put :
+  WpFuncCall primitive.UInt32Put _ (is_pkg_defined primitive) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_RandomUint64 :
   WpFuncCall primitive.RandomUint64 _ (is_pkg_defined primitive) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_UInt64ToString :
+  WpFuncCall primitive.UInt64ToString _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Linearize :
+  WpFuncCall primitive.Linearize _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Assume :
   WpFuncCall primitive.Assume _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Assert :
+  WpFuncCall primitive.Assert _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Exit :
+  WpFuncCall primitive.Exit _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WaitTimeout :
+  WpFuncCall primitive.WaitTimeout _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_TimeNow :
+  WpFuncCall primitive.TimeNow _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Sleep :
+  WpFuncCall primitive.Sleep _ (is_pkg_defined primitive) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_AssumeNoStringOverflow :
   WpFuncCall primitive.AssumeNoStringOverflow _ (is_pkg_defined primitive) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_NewProph :
+  WpFuncCall primitive.NewProph _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_prophId'ptr_ResolveBool :
+  WpMethodCall (ptrT.id primitive.prophId.id) "ResolveBool" _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_prophId'ptr_ResolveU64 :
+  WpMethodCall (ptrT.id primitive.prophId.id) "ResolveU64" _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End primitive.

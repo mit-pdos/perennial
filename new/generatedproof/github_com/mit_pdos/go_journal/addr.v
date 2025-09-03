@@ -90,8 +90,8 @@ Global Instance is_pkg_defined_pure_addr : IsPkgDefinedPure addr :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single addr ∧
-      is_pkg_defined_pure github_com.goose_lang.primitive.disk.disk ∧
-      is_pkg_defined_pure github_com.mit_pdos.go_journal.common.common;
+      is_pkg_defined_pure code.github_com.goose_lang.primitive.disk.disk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.common.common;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -99,8 +99,8 @@ Global Program Instance is_pkg_defined_addr : IsPkgDefined addr :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single addr ∗
-       is_pkg_defined github_com.goose_lang.primitive.disk.disk ∗
-       is_pkg_defined github_com.mit_pdos.go_journal.common.common)%I
+       is_pkg_defined code.github_com.goose_lang.primitive.disk.disk ∗
+       is_pkg_defined code.github_com.mit_pdos.go_journal.common.common)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

@@ -5,6 +5,15 @@ Definition sort : go_string := "sort".
 
 Module sort.
 
+Module Interface. Definition id : go_string := "sort.Interface"%go. End Interface.
+Module sortedHint. Definition id : go_string := "sort.sortedHint"%go. End sortedHint.
+Module xorshift. Definition id : go_string := "sort.xorshift"%go. End xorshift.
+Module lessSwap. Definition id : go_string := "sort.lessSwap"%go. End lessSwap.
+Module reverse. Definition id : go_string := "sort.reverse"%go. End reverse.
+Module IntSlice. Definition id : go_string := "sort.IntSlice"%go. End IntSlice.
+Module Float64Slice. Definition id : go_string := "sort.Float64Slice"%go. End Float64Slice.
+Module StringSlice. Definition id : go_string := "sort.StringSlice"%go. End StringSlice.
+
 Section code.
 Context `{ffi_syntax}.
 
@@ -25,15 +34,37 @@ Definition SliceStable : go_string := "sort.SliceStable"%go.
 
 Definition SliceIsSorted : go_string := "sort.SliceIsSorted"%go.
 
+Axiom Interface : go_type.
+
 Definition Sort : go_string := "sort.Sort"%go.
 
+Axiom sortedHint : go_type.
+
+Axiom unknownHint : expr.
+
+Axiom increasingHint : expr.
+
+Axiom decreasingHint : expr.
+
+Axiom xorshift : go_type.
+
 Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
+
+Axiom lessSwap : go_type.
+
+Axiom reverse : go_type.
 
 Definition Reverse : go_string := "sort.Reverse"%go.
 
 Definition IsSorted : go_string := "sort.IsSorted"%go.
 
+Axiom IntSlice : go_type.
+
+Axiom Float64Slice : go_type.
+
 Definition isNaN : go_string := "sort.isNaN"%go.
+
+Axiom StringSlice : go_type.
 
 Definition Ints : go_string := "sort.Ints"%go.
 
@@ -119,9 +150,155 @@ Definition rotate : go_string := "sort.rotate"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom Searchⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Axiom Findⁱᵐᵖˡ : val.
+
+Axiom SearchIntsⁱᵐᵖˡ : val.
+
+Axiom SearchFloat64sⁱᵐᵖˡ : val.
+
+Axiom SearchStringsⁱᵐᵖˡ : val.
+
+Axiom Sliceⁱᵐᵖˡ : val.
+
+Axiom SliceStableⁱᵐᵖˡ : val.
+
+Axiom SliceIsSortedⁱᵐᵖˡ : val.
+
+Axiom Sortⁱᵐᵖˡ : val.
+
+Axiom nextPowerOfTwoⁱᵐᵖˡ : val.
+
+Axiom Reverseⁱᵐᵖˡ : val.
+
+Axiom IsSortedⁱᵐᵖˡ : val.
+
+Axiom isNaNⁱᵐᵖˡ : val.
+
+Axiom Intsⁱᵐᵖˡ : val.
+
+Axiom Float64sⁱᵐᵖˡ : val.
+
+Axiom Stringsⁱᵐᵖˡ : val.
+
+Axiom IntsAreSortedⁱᵐᵖˡ : val.
+
+Axiom Float64sAreSortedⁱᵐᵖˡ : val.
+
+Axiom StringsAreSortedⁱᵐᵖˡ : val.
+
+Axiom Stableⁱᵐᵖˡ : val.
+
+Axiom insertionSort_funcⁱᵐᵖˡ : val.
+
+Axiom siftDown_funcⁱᵐᵖˡ : val.
+
+Axiom heapSort_funcⁱᵐᵖˡ : val.
+
+Axiom pdqsort_funcⁱᵐᵖˡ : val.
+
+Axiom partition_funcⁱᵐᵖˡ : val.
+
+Axiom partitionEqual_funcⁱᵐᵖˡ : val.
+
+Axiom partialInsertionSort_funcⁱᵐᵖˡ : val.
+
+Axiom breakPatterns_funcⁱᵐᵖˡ : val.
+
+Axiom choosePivot_funcⁱᵐᵖˡ : val.
+
+Axiom order2_funcⁱᵐᵖˡ : val.
+
+Axiom median_funcⁱᵐᵖˡ : val.
+
+Axiom medianAdjacent_funcⁱᵐᵖˡ : val.
+
+Axiom reverseRange_funcⁱᵐᵖˡ : val.
+
+Axiom swapRange_funcⁱᵐᵖˡ : val.
+
+Axiom stable_funcⁱᵐᵖˡ : val.
+
+Axiom symMerge_funcⁱᵐᵖˡ : val.
+
+Axiom rotate_funcⁱᵐᵖˡ : val.
+
+Axiom insertionSortⁱᵐᵖˡ : val.
+
+Axiom siftDownⁱᵐᵖˡ : val.
+
+Axiom heapSortⁱᵐᵖˡ : val.
+
+Axiom pdqsortⁱᵐᵖˡ : val.
+
+Axiom partitionⁱᵐᵖˡ : val.
+
+Axiom partitionEqualⁱᵐᵖˡ : val.
+
+Axiom partialInsertionSortⁱᵐᵖˡ : val.
+
+Axiom breakPatternsⁱᵐᵖˡ : val.
+
+Axiom choosePivotⁱᵐᵖˡ : val.
+
+Axiom order2ⁱᵐᵖˡ : val.
+
+Axiom medianⁱᵐᵖˡ : val.
+
+Axiom medianAdjacentⁱᵐᵖˡ : val.
+
+Axiom reverseRangeⁱᵐᵖˡ : val.
+
+Axiom swapRangeⁱᵐᵖˡ : val.
+
+Axiom stableⁱᵐᵖˡ : val.
+
+Axiom symMergeⁱᵐᵖˡ : val.
+
+Axiom rotateⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(Search, Searchⁱᵐᵖˡ); (Find, Findⁱᵐᵖˡ); (SearchInts, SearchIntsⁱᵐᵖˡ); (SearchFloat64s, SearchFloat64sⁱᵐᵖˡ); (SearchStrings, SearchStringsⁱᵐᵖˡ); (Slice, Sliceⁱᵐᵖˡ); (SliceStable, SliceStableⁱᵐᵖˡ); (SliceIsSorted, SliceIsSortedⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (Ints, Intsⁱᵐᵖˡ); (Float64s, Float64sⁱᵐᵖˡ); (Strings, Stringsⁱᵐᵖˡ); (IntsAreSorted, IntsAreSortedⁱᵐᵖˡ); (Float64sAreSorted, Float64sAreSortedⁱᵐᵖˡ); (StringsAreSorted, StringsAreSortedⁱᵐᵖˡ); (Stable, Stableⁱᵐᵖˡ); (insertionSort_func, insertionSort_funcⁱᵐᵖˡ); (siftDown_func, siftDown_funcⁱᵐᵖˡ); (heapSort_func, heapSort_funcⁱᵐᵖˡ); (pdqsort_func, pdqsort_funcⁱᵐᵖˡ); (partition_func, partition_funcⁱᵐᵖˡ); (partitionEqual_func, partitionEqual_funcⁱᵐᵖˡ); (partialInsertionSort_func, partialInsertionSort_funcⁱᵐᵖˡ); (breakPatterns_func, breakPatterns_funcⁱᵐᵖˡ); (choosePivot_func, choosePivot_funcⁱᵐᵖˡ); (order2_func, order2_funcⁱᵐᵖˡ); (median_func, median_funcⁱᵐᵖˡ); (medianAdjacent_func, medianAdjacent_funcⁱᵐᵖˡ); (reverseRange_func, reverseRange_funcⁱᵐᵖˡ); (swapRange_func, swapRange_funcⁱᵐᵖˡ); (stable_func, stable_funcⁱᵐᵖˡ); (symMerge_func, symMerge_funcⁱᵐᵖˡ); (rotate_func, rotate_funcⁱᵐᵖˡ); (insertionSort, insertionSortⁱᵐᵖˡ); (siftDown, siftDownⁱᵐᵖˡ); (heapSort, heapSortⁱᵐᵖˡ); (pdqsort, pdqsortⁱᵐᵖˡ); (partition, partitionⁱᵐᵖˡ); (partitionEqual, partitionEqualⁱᵐᵖˡ); (partialInsertionSort, partialInsertionSortⁱᵐᵖˡ); (breakPatterns, breakPatternsⁱᵐᵖˡ); (choosePivot, choosePivotⁱᵐᵖˡ); (order2, order2ⁱᵐᵖˡ); (median, medianⁱᵐᵖˡ); (medianAdjacent, medianAdjacentⁱᵐᵖˡ); (reverseRange, reverseRangeⁱᵐᵖˡ); (swapRange, swapRangeⁱᵐᵖˡ); (stable, stableⁱᵐᵖˡ); (symMerge, symMergeⁱᵐᵖˡ); (rotate, rotateⁱᵐᵖˡ)].
+
+Axiom xorshift__Nextⁱᵐᵖˡ : val.
+
+Axiom reverse__Lenⁱᵐᵖˡ : val.
+
+Axiom reverse__Lessⁱᵐᵖˡ : val.
+
+Axiom reverse__Swapⁱᵐᵖˡ : val.
+
+Axiom IntSlice__Lenⁱᵐᵖˡ : val.
+
+Axiom IntSlice__Lessⁱᵐᵖˡ : val.
+
+Axiom IntSlice__Searchⁱᵐᵖˡ : val.
+
+Axiom IntSlice__Sortⁱᵐᵖˡ : val.
+
+Axiom IntSlice__Swapⁱᵐᵖˡ : val.
+
+Axiom Float64Slice__Lenⁱᵐᵖˡ : val.
+
+Axiom Float64Slice__Lessⁱᵐᵖˡ : val.
+
+Axiom Float64Slice__Searchⁱᵐᵖˡ : val.
+
+Axiom Float64Slice__Sortⁱᵐᵖˡ : val.
+
+Axiom Float64Slice__Swapⁱᵐᵖˡ : val.
+
+Axiom StringSlice__Lenⁱᵐᵖˡ : val.
+
+Axiom StringSlice__Lessⁱᵐᵖˡ : val.
+
+Axiom StringSlice__Searchⁱᵐᵖˡ : val.
+
+Axiom StringSlice__Sortⁱᵐᵖˡ : val.
+
+Axiom StringSlice__Swapⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(sortedHint.id, []); (ptrT.id sortedHint.id, []); (xorshift.id, []); (ptrT.id xorshift.id, [("Next"%go, xorshift__Nextⁱᵐᵖˡ)]); (lessSwap.id, []); (ptrT.id lessSwap.id, []); (reverse.id, [("Len"%go, reverse__Lenⁱᵐᵖˡ); ("Less"%go, reverse__Lessⁱᵐᵖˡ); ("Swap"%go, reverse__Swapⁱᵐᵖˡ)]); (ptrT.id reverse.id, [("Len"%go, reverse__Lenⁱᵐᵖˡ); ("Less"%go, reverse__Lessⁱᵐᵖˡ); ("Swap"%go, reverse__Swapⁱᵐᵖˡ)]); (IntSlice.id, [("Len"%go, IntSlice__Lenⁱᵐᵖˡ); ("Less"%go, IntSlice__Lessⁱᵐᵖˡ); ("Search"%go, IntSlice__Searchⁱᵐᵖˡ); ("Sort"%go, IntSlice__Sortⁱᵐᵖˡ); ("Swap"%go, IntSlice__Swapⁱᵐᵖˡ)]); (ptrT.id IntSlice.id, [("Len"%go, IntSlice__Lenⁱᵐᵖˡ); ("Less"%go, IntSlice__Lessⁱᵐᵖˡ); ("Search"%go, IntSlice__Searchⁱᵐᵖˡ); ("Sort"%go, IntSlice__Sortⁱᵐᵖˡ); ("Swap"%go, IntSlice__Swapⁱᵐᵖˡ)]); (Float64Slice.id, [("Len"%go, Float64Slice__Lenⁱᵐᵖˡ); ("Less"%go, Float64Slice__Lessⁱᵐᵖˡ); ("Search"%go, Float64Slice__Searchⁱᵐᵖˡ); ("Sort"%go, Float64Slice__Sortⁱᵐᵖˡ); ("Swap"%go, Float64Slice__Swapⁱᵐᵖˡ)]); (ptrT.id Float64Slice.id, [("Len"%go, Float64Slice__Lenⁱᵐᵖˡ); ("Less"%go, Float64Slice__Lessⁱᵐᵖˡ); ("Search"%go, Float64Slice__Searchⁱᵐᵖˡ); ("Sort"%go, Float64Slice__Sortⁱᵐᵖˡ); ("Swap"%go, Float64Slice__Swapⁱᵐᵖˡ)]); (StringSlice.id, [("Len"%go, StringSlice__Lenⁱᵐᵖˡ); ("Less"%go, StringSlice__Lessⁱᵐᵖˡ); ("Search"%go, StringSlice__Searchⁱᵐᵖˡ); ("Sort"%go, StringSlice__Sortⁱᵐᵖˡ); ("Swap"%go, StringSlice__Swapⁱᵐᵖˡ)]); (ptrT.id StringSlice.id, [("Len"%go, StringSlice__Lenⁱᵐᵖˡ); ("Less"%go, StringSlice__Lessⁱᵐᵖˡ); ("Search"%go, StringSlice__Searchⁱᵐᵖˡ); ("Sort"%go, StringSlice__Sortⁱᵐᵖˡ); ("Swap"%go, StringSlice__Swapⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo sort.sort :=
   {|

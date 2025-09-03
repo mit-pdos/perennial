@@ -523,16 +523,16 @@ Global Instance is_pkg_defined_pure_auditor : IsPkgDefinedPure auditor :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single auditor ∧
-      is_pkg_defined_pure bytes.bytes ∧
-      is_pkg_defined_pure sync.sync ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.advrpc.advrpc ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.hashchain.hashchain ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.ktcore.ktcore ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.merkle.merkle ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.server.server ∧
-      is_pkg_defined_pure github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
-      is_pkg_defined_pure github_com.tchajed.marshal.marshal;
+      is_pkg_defined_pure code.bytes.bytes ∧
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.advrpc.advrpc ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.hashchain.hashchain ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.ktcore.ktcore ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.merkle.merkle ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.server.server ∧
+      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
+      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -540,16 +540,16 @@ Global Program Instance is_pkg_defined_auditor : IsPkgDefined auditor :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single auditor ∗
-       is_pkg_defined bytes.bytes ∗
-       is_pkg_defined sync.sync ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.advrpc.advrpc ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.hashchain.hashchain ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.ktcore.ktcore ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.merkle.merkle ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.server.server ∗
-       is_pkg_defined github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
-       is_pkg_defined github_com.tchajed.marshal.marshal)%I
+       is_pkg_defined code.bytes.bytes ∗
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.advrpc.advrpc ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.hashchain.hashchain ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.ktcore.ktcore ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.merkle.merkle ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.server.server ∗
+       is_pkg_defined code.github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
+       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

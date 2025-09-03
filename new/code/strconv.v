@@ -5,6 +5,12 @@ Definition strconv : go_string := "strconv".
 
 Module strconv.
 
+Module NumError. Definition id : go_string := "strconv.NumError"%go. End NumError.
+Module decimal. Definition id : go_string := "strconv.decimal"%go. End decimal.
+Module leftCheat. Definition id : go_string := "strconv.leftCheat"%go. End leftCheat.
+Module floatInfo. Definition id : go_string := "strconv.floatInfo"%go. End floatInfo.
+Module decimalSlice. Definition id : go_string := "strconv.decimalSlice"%go. End decimalSlice.
+
 Section code.
 Context `{ffi_syntax}.
 
@@ -14,6 +20,8 @@ Definition ParseBool : go_string := "strconv.ParseBool"%go.
 Definition FormatBool : go_string := "strconv.FormatBool"%go.
 
 Definition AppendBool : go_string := "strconv.AppendBool"%go.
+
+Axiom fnParseComplex : go_string.
 
 Definition convErr : go_string := "strconv.convErr"%go.
 
@@ -47,6 +55,8 @@ Definition atof32exact : go_string := "strconv.atof32exact"%go.
 
 Definition atofHex : go_string := "strconv.atofHex"%go.
 
+Axiom fnParseFloat : go_string.
+
 Definition atof32 : go_string := "strconv.atof32"%go.
 
 Definition atof64 : go_string := "strconv.atof64"%go.
@@ -65,6 +75,8 @@ Definition ErrSyntax : go_string := "strconv.ErrSyntax"%go.
 
 Axiom ErrSyntax'init : val.
 
+Axiom NumError : go_type.
+
 Definition syntaxError : go_string := "strconv.syntaxError"%go.
 
 Definition rangeError : go_string := "strconv.rangeError"%go.
@@ -72,6 +84,12 @@ Definition rangeError : go_string := "strconv.rangeError"%go.
 Definition baseError : go_string := "strconv.baseError"%go.
 
 Definition bitSizeError : go_string := "strconv.bitSizeError"%go.
+
+Axiom intSize : Z.
+
+Axiom IntSize : Z.
+
+Axiom maxUint64 : Z.
 
 Definition ParseUint : go_string := "strconv.ParseUint"%go.
 
@@ -85,11 +103,19 @@ Definition index : go_string := "strconv.index"%go.
 
 Definition FormatComplex : go_string := "strconv.FormatComplex"%go.
 
+Axiom decimal : go_type.
+
 Definition digitZero : go_string := "strconv.digitZero"%go.
 
 Definition trim : go_string := "strconv.trim"%go.
 
+Axiom uintSize : Z.
+
+Axiom maxShift : Z.
+
 Definition rightShift : go_string := "strconv.rightShift"%go.
+
+Axiom leftCheat : go_type.
 
 Definition leftcheats : go_string := "strconv.leftcheats"%go.
 
@@ -105,9 +131,15 @@ Definition eiselLemire64 : go_string := "strconv.eiselLemire64"%go.
 
 Definition eiselLemire32 : go_string := "strconv.eiselLemire32"%go.
 
+Axiom detailedPowersOfTenMinExp10 : Z.
+
+Axiom detailedPowersOfTenMaxExp10 : Z.
+
 Definition detailedPowersOfTen : go_string := "strconv.detailedPowersOfTen"%go.
 
 Axiom detailedPowersOfTen'init : val.
+
+Axiom floatInfo : go_type.
 
 Definition float32info : go_string := "strconv.float32info"%go.
 
@@ -128,6 +160,8 @@ Definition bigFtoa : go_string := "strconv.bigFtoa"%go.
 Definition formatDigits : go_string := "strconv.formatDigits"%go.
 
 Definition roundShortest : go_string := "strconv.roundShortest"%go.
+
+Axiom decimalSlice : go_type.
 
 Definition fmtE : go_string := "strconv.fmtE"%go.
 
@@ -187,6 +221,8 @@ Definition isGraphic : go_string := "strconv.isGraphic"%go.
 
 Axiom isGraphic'init : val.
 
+Axiom fastSmalls : expr.
+
 Definition FormatUint : go_string := "strconv.FormatUint"%go.
 
 Definition FormatInt : go_string := "strconv.FormatInt"%go.
@@ -199,9 +235,21 @@ Definition AppendUint : go_string := "strconv.AppendUint"%go.
 
 Definition small : go_string := "strconv.small"%go.
 
+Axiom nSmalls : Z.
+
+Axiom smallsString : go_string.
+
+Axiom host32bit : expr.
+
+Axiom digits : go_string.
+
 Definition formatBits : go_string := "strconv.formatBits"%go.
 
 Definition isPowerOfTwo : go_string := "strconv.isPowerOfTwo"%go.
+
+Axiom lowerhex : go_string.
+
+Axiom upperhex : go_string.
 
 Definition contains : go_string := "strconv.contains"%go.
 
@@ -261,9 +309,217 @@ Definition isInGraphicList : go_string := "strconv.isInGraphicList"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Axiom ParseBoolⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Axiom FormatBoolⁱᵐᵖˡ : val.
+
+Axiom AppendBoolⁱᵐᵖˡ : val.
+
+Axiom convErrⁱᵐᵖˡ : val.
+
+Axiom ParseComplexⁱᵐᵖˡ : val.
+
+Axiom commonPrefixLenIgnoreCaseⁱᵐᵖˡ : val.
+
+Axiom specialⁱᵐᵖˡ : val.
+
+Axiom readFloatⁱᵐᵖˡ : val.
+
+Axiom atof64exactⁱᵐᵖˡ : val.
+
+Axiom atof32exactⁱᵐᵖˡ : val.
+
+Axiom atofHexⁱᵐᵖˡ : val.
+
+Axiom atof32ⁱᵐᵖˡ : val.
+
+Axiom atof64ⁱᵐᵖˡ : val.
+
+Axiom ParseFloatⁱᵐᵖˡ : val.
+
+Axiom parseFloatPrefixⁱᵐᵖˡ : val.
+
+Axiom lowerⁱᵐᵖˡ : val.
+
+Axiom syntaxErrorⁱᵐᵖˡ : val.
+
+Axiom rangeErrorⁱᵐᵖˡ : val.
+
+Axiom baseErrorⁱᵐᵖˡ : val.
+
+Axiom bitSizeErrorⁱᵐᵖˡ : val.
+
+Axiom ParseUintⁱᵐᵖˡ : val.
+
+Axiom ParseIntⁱᵐᵖˡ : val.
+
+Axiom Atoiⁱᵐᵖˡ : val.
+
+Axiom underscoreOKⁱᵐᵖˡ : val.
+
+Axiom indexⁱᵐᵖˡ : val.
+
+Axiom FormatComplexⁱᵐᵖˡ : val.
+
+Axiom digitZeroⁱᵐᵖˡ : val.
+
+Axiom trimⁱᵐᵖˡ : val.
+
+Axiom rightShiftⁱᵐᵖˡ : val.
+
+Axiom prefixIsLessThanⁱᵐᵖˡ : val.
+
+Axiom leftShiftⁱᵐᵖˡ : val.
+
+Axiom shouldRoundUpⁱᵐᵖˡ : val.
+
+Axiom eiselLemire64ⁱᵐᵖˡ : val.
+
+Axiom eiselLemire32ⁱᵐᵖˡ : val.
+
+Axiom FormatFloatⁱᵐᵖˡ : val.
+
+Axiom AppendFloatⁱᵐᵖˡ : val.
+
+Axiom genericFtoaⁱᵐᵖˡ : val.
+
+Axiom bigFtoaⁱᵐᵖˡ : val.
+
+Axiom formatDigitsⁱᵐᵖˡ : val.
+
+Axiom roundShortestⁱᵐᵖˡ : val.
+
+Axiom fmtEⁱᵐᵖˡ : val.
+
+Axiom fmtFⁱᵐᵖˡ : val.
+
+Axiom fmtBⁱᵐᵖˡ : val.
+
+Axiom fmtXⁱᵐᵖˡ : val.
+
+Axiom ryuFtoaFixed32ⁱᵐᵖˡ : val.
+
+Axiom ryuFtoaFixed64ⁱᵐᵖˡ : val.
+
+Axiom formatDecimalⁱᵐᵖˡ : val.
+
+Axiom ryuFtoaShortestⁱᵐᵖˡ : val.
+
+Axiom mulByLog2Log10ⁱᵐᵖˡ : val.
+
+Axiom mulByLog10Log2ⁱᵐᵖˡ : val.
+
+Axiom computeBoundsⁱᵐᵖˡ : val.
+
+Axiom ryuDigitsⁱᵐᵖˡ : val.
+
+Axiom ryuDigits32ⁱᵐᵖˡ : val.
+
+Axiom mult64bitPow10ⁱᵐᵖˡ : val.
+
+Axiom mult128bitPow10ⁱᵐᵖˡ : val.
+
+Axiom divisibleByPower5ⁱᵐᵖˡ : val.
+
+Axiom divmod1e9ⁱᵐᵖˡ : val.
+
+Axiom FormatUintⁱᵐᵖˡ : val.
+
+Axiom FormatIntⁱᵐᵖˡ : val.
+
+Axiom Itoaⁱᵐᵖˡ : val.
+
+Axiom AppendIntⁱᵐᵖˡ : val.
+
+Axiom AppendUintⁱᵐᵖˡ : val.
+
+Axiom smallⁱᵐᵖˡ : val.
+
+Axiom formatBitsⁱᵐᵖˡ : val.
+
+Axiom isPowerOfTwoⁱᵐᵖˡ : val.
+
+Axiom containsⁱᵐᵖˡ : val.
+
+Axiom quoteWithⁱᵐᵖˡ : val.
+
+Axiom quoteRuneWithⁱᵐᵖˡ : val.
+
+Axiom appendQuotedWithⁱᵐᵖˡ : val.
+
+Axiom appendQuotedRuneWithⁱᵐᵖˡ : val.
+
+Axiom appendEscapedRuneⁱᵐᵖˡ : val.
+
+Axiom Quoteⁱᵐᵖˡ : val.
+
+Axiom AppendQuoteⁱᵐᵖˡ : val.
+
+Axiom QuoteToASCIIⁱᵐᵖˡ : val.
+
+Axiom AppendQuoteToASCIIⁱᵐᵖˡ : val.
+
+Axiom QuoteToGraphicⁱᵐᵖˡ : val.
+
+Axiom AppendQuoteToGraphicⁱᵐᵖˡ : val.
+
+Axiom QuoteRuneⁱᵐᵖˡ : val.
+
+Axiom AppendQuoteRuneⁱᵐᵖˡ : val.
+
+Axiom QuoteRuneToASCIIⁱᵐᵖˡ : val.
+
+Axiom AppendQuoteRuneToASCIIⁱᵐᵖˡ : val.
+
+Axiom QuoteRuneToGraphicⁱᵐᵖˡ : val.
+
+Axiom AppendQuoteRuneToGraphicⁱᵐᵖˡ : val.
+
+Axiom CanBackquoteⁱᵐᵖˡ : val.
+
+Axiom unhexⁱᵐᵖˡ : val.
+
+Axiom UnquoteCharⁱᵐᵖˡ : val.
+
+Axiom QuotedPrefixⁱᵐᵖˡ : val.
+
+Axiom Unquoteⁱᵐᵖˡ : val.
+
+Axiom unquoteⁱᵐᵖˡ : val.
+
+Axiom bsearchⁱᵐᵖˡ : val.
+
+Axiom IsPrintⁱᵐᵖˡ : val.
+
+Axiom IsGraphicⁱᵐᵖˡ : val.
+
+Axiom isInGraphicListⁱᵐᵖˡ : val.
+
+Definition functions' : list (go_string * val) := [(ParseBool, ParseBoolⁱᵐᵖˡ); (FormatBool, FormatBoolⁱᵐᵖˡ); (AppendBool, AppendBoolⁱᵐᵖˡ); (convErr, convErrⁱᵐᵖˡ); (ParseComplex, ParseComplexⁱᵐᵖˡ); (commonPrefixLenIgnoreCase, commonPrefixLenIgnoreCaseⁱᵐᵖˡ); (special, specialⁱᵐᵖˡ); (readFloat, readFloatⁱᵐᵖˡ); (atof64exact, atof64exactⁱᵐᵖˡ); (atof32exact, atof32exactⁱᵐᵖˡ); (atofHex, atofHexⁱᵐᵖˡ); (atof32, atof32ⁱᵐᵖˡ); (atof64, atof64ⁱᵐᵖˡ); (ParseFloat, ParseFloatⁱᵐᵖˡ); (parseFloatPrefix, parseFloatPrefixⁱᵐᵖˡ); (lower, lowerⁱᵐᵖˡ); (syntaxError, syntaxErrorⁱᵐᵖˡ); (rangeError, rangeErrorⁱᵐᵖˡ); (baseError, baseErrorⁱᵐᵖˡ); (bitSizeError, bitSizeErrorⁱᵐᵖˡ); (ParseUint, ParseUintⁱᵐᵖˡ); (ParseInt, ParseIntⁱᵐᵖˡ); (Atoi, Atoiⁱᵐᵖˡ); (underscoreOK, underscoreOKⁱᵐᵖˡ); (index, indexⁱᵐᵖˡ); (FormatComplex, FormatComplexⁱᵐᵖˡ); (digitZero, digitZeroⁱᵐᵖˡ); (trim, trimⁱᵐᵖˡ); (rightShift, rightShiftⁱᵐᵖˡ); (prefixIsLessThan, prefixIsLessThanⁱᵐᵖˡ); (leftShift, leftShiftⁱᵐᵖˡ); (shouldRoundUp, shouldRoundUpⁱᵐᵖˡ); (eiselLemire64, eiselLemire64ⁱᵐᵖˡ); (eiselLemire32, eiselLemire32ⁱᵐᵖˡ); (FormatFloat, FormatFloatⁱᵐᵖˡ); (AppendFloat, AppendFloatⁱᵐᵖˡ); (genericFtoa, genericFtoaⁱᵐᵖˡ); (bigFtoa, bigFtoaⁱᵐᵖˡ); (formatDigits, formatDigitsⁱᵐᵖˡ); (roundShortest, roundShortestⁱᵐᵖˡ); (fmtE, fmtEⁱᵐᵖˡ); (fmtF, fmtFⁱᵐᵖˡ); (fmtB, fmtBⁱᵐᵖˡ); (fmtX, fmtXⁱᵐᵖˡ); (ryuFtoaFixed32, ryuFtoaFixed32ⁱᵐᵖˡ); (ryuFtoaFixed64, ryuFtoaFixed64ⁱᵐᵖˡ); (formatDecimal, formatDecimalⁱᵐᵖˡ); (ryuFtoaShortest, ryuFtoaShortestⁱᵐᵖˡ); (mulByLog2Log10, mulByLog2Log10ⁱᵐᵖˡ); (mulByLog10Log2, mulByLog10Log2ⁱᵐᵖˡ); (computeBounds, computeBoundsⁱᵐᵖˡ); (ryuDigits, ryuDigitsⁱᵐᵖˡ); (ryuDigits32, ryuDigits32ⁱᵐᵖˡ); (mult64bitPow10, mult64bitPow10ⁱᵐᵖˡ); (mult128bitPow10, mult128bitPow10ⁱᵐᵖˡ); (divisibleByPower5, divisibleByPower5ⁱᵐᵖˡ); (divmod1e9, divmod1e9ⁱᵐᵖˡ); (FormatUint, FormatUintⁱᵐᵖˡ); (FormatInt, FormatIntⁱᵐᵖˡ); (Itoa, Itoaⁱᵐᵖˡ); (AppendInt, AppendIntⁱᵐᵖˡ); (AppendUint, AppendUintⁱᵐᵖˡ); (small, smallⁱᵐᵖˡ); (formatBits, formatBitsⁱᵐᵖˡ); (isPowerOfTwo, isPowerOfTwoⁱᵐᵖˡ); (contains, containsⁱᵐᵖˡ); (quoteWith, quoteWithⁱᵐᵖˡ); (quoteRuneWith, quoteRuneWithⁱᵐᵖˡ); (appendQuotedWith, appendQuotedWithⁱᵐᵖˡ); (appendQuotedRuneWith, appendQuotedRuneWithⁱᵐᵖˡ); (appendEscapedRune, appendEscapedRuneⁱᵐᵖˡ); (Quote, Quoteⁱᵐᵖˡ); (AppendQuote, AppendQuoteⁱᵐᵖˡ); (QuoteToASCII, QuoteToASCIIⁱᵐᵖˡ); (AppendQuoteToASCII, AppendQuoteToASCIIⁱᵐᵖˡ); (QuoteToGraphic, QuoteToGraphicⁱᵐᵖˡ); (AppendQuoteToGraphic, AppendQuoteToGraphicⁱᵐᵖˡ); (QuoteRune, QuoteRuneⁱᵐᵖˡ); (AppendQuoteRune, AppendQuoteRuneⁱᵐᵖˡ); (QuoteRuneToASCII, QuoteRuneToASCIIⁱᵐᵖˡ); (AppendQuoteRuneToASCII, AppendQuoteRuneToASCIIⁱᵐᵖˡ); (QuoteRuneToGraphic, QuoteRuneToGraphicⁱᵐᵖˡ); (AppendQuoteRuneToGraphic, AppendQuoteRuneToGraphicⁱᵐᵖˡ); (CanBackquote, CanBackquoteⁱᵐᵖˡ); (unhex, unhexⁱᵐᵖˡ); (UnquoteChar, UnquoteCharⁱᵐᵖˡ); (QuotedPrefix, QuotedPrefixⁱᵐᵖˡ); (Unquote, Unquoteⁱᵐᵖˡ); (unquote, unquoteⁱᵐᵖˡ); (bsearch, bsearchⁱᵐᵖˡ); (IsPrint, IsPrintⁱᵐᵖˡ); (IsGraphic, IsGraphicⁱᵐᵖˡ); (isInGraphicList, isInGraphicListⁱᵐᵖˡ)].
+
+Axiom NumError__Errorⁱᵐᵖˡ : val.
+
+Axiom NumError__Unwrapⁱᵐᵖˡ : val.
+
+Axiom decimal__Assignⁱᵐᵖˡ : val.
+
+Axiom decimal__Roundⁱᵐᵖˡ : val.
+
+Axiom decimal__RoundDownⁱᵐᵖˡ : val.
+
+Axiom decimal__RoundUpⁱᵐᵖˡ : val.
+
+Axiom decimal__RoundedIntegerⁱᵐᵖˡ : val.
+
+Axiom decimal__Shiftⁱᵐᵖˡ : val.
+
+Axiom decimal__Stringⁱᵐᵖˡ : val.
+
+Axiom decimal__floatBitsⁱᵐᵖˡ : val.
+
+Axiom decimal__setⁱᵐᵖˡ : val.
+
+Definition msets' : list (go_string * (list (go_string * val))) := [(NumError.id, []); (ptrT.id NumError.id, [("Error"%go, NumError__Errorⁱᵐᵖˡ); ("Unwrap"%go, NumError__Unwrapⁱᵐᵖˡ)]); (decimal.id, []); (ptrT.id decimal.id, [("Assign"%go, decimal__Assignⁱᵐᵖˡ); ("Round"%go, decimal__Roundⁱᵐᵖˡ); ("RoundDown"%go, decimal__RoundDownⁱᵐᵖˡ); ("RoundUp"%go, decimal__RoundUpⁱᵐᵖˡ); ("RoundedInteger"%go, decimal__RoundedIntegerⁱᵐᵖˡ); ("Shift"%go, decimal__Shiftⁱᵐᵖˡ); ("String"%go, decimal__Stringⁱᵐᵖˡ); ("floatBits"%go, decimal__floatBitsⁱᵐᵖˡ); ("set"%go, decimal__setⁱᵐᵖˡ)]); (leftCheat.id, []); (ptrT.id leftCheat.id, []); (floatInfo.id, []); (ptrT.id floatInfo.id, []); (decimalSlice.id, []); (ptrT.id decimalSlice.id, [])].
 
 #[global] Instance info' : PkgInfo strconv.strconv :=
   {|

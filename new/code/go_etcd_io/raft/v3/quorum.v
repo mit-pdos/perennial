@@ -468,32 +468,32 @@ Definition vars' : list (go_string * go_type) := [(_VoteResult_index, arrayT (W6
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(JointConfig.id, [("CommittedIndex"%go, JointConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, JointConfig__Describeⁱᵐᵖˡ); ("IDs"%go, JointConfig__IDsⁱᵐᵖˡ); ("String"%go, JointConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, JointConfig__VoteResultⁱᵐᵖˡ)]); (ptrT.id JointConfig.id, [("CommittedIndex"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"JointConfig" #"CommittedIndex" (![#JointConfig] "$recvAddr")
-                 )%V); ("Describe"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"JointConfig" #"Describe" (![#JointConfig] "$recvAddr")
-                 )%V); ("IDs"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"JointConfig" #"IDs" (![#JointConfig] "$recvAddr")
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"JointConfig" #"String" (![#JointConfig] "$recvAddr")
-                 )%V); ("VoteResult"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"JointConfig" #"VoteResult" (![#JointConfig] "$recvAddr")
-                 )%V)]); (MajorityConfig.id, [("CommittedIndex"%go, MajorityConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, MajorityConfig__Describeⁱᵐᵖˡ); ("Slice"%go, MajorityConfig__Sliceⁱᵐᵖˡ); ("String"%go, MajorityConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, MajorityConfig__VoteResultⁱᵐᵖˡ)]); (ptrT.id MajorityConfig.id, [("CommittedIndex"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"MajorityConfig" #"CommittedIndex" (![#MajorityConfig] "$recvAddr")
-                 )%V); ("Describe"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"MajorityConfig" #"Describe" (![#MajorityConfig] "$recvAddr")
-                 )%V); ("Slice"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"MajorityConfig" #"Slice" (![#MajorityConfig] "$recvAddr")
-                 )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"MajorityConfig" #"String" (![#MajorityConfig] "$recvAddr")
-                 )%V); ("VoteResult"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![#MajorityConfig] "$recvAddr")
-                 )%V)]); (Index.id, [("String"%go, Index__Stringⁱᵐᵖˡ)]); (ptrT.id Index.id, [("String"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"Index" #"String" (![#Index] "$recvAddr")
-                 )%V)]); (mapAckIndexer.id, [("AckedIndex"%go, mapAckIndexer__AckedIndexⁱᵐᵖˡ)]); (ptrT.id mapAckIndexer.id, [("AckedIndex"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"mapAckIndexer" #"AckedIndex" (![#mapAckIndexer] "$recvAddr")
-                 )%V)]); (VoteResult.id, [("String"%go, VoteResult__Stringⁱᵐᵖˡ)]); (ptrT.id VoteResult.id, [("String"%go, (λ: "$recvAddr",
-                 method_call #quorum.quorum #"VoteResult" #"String" (![#VoteResult] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(JointConfig.id, [("CommittedIndex"%go, JointConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, JointConfig__Describeⁱᵐᵖˡ); ("IDs"%go, JointConfig__IDsⁱᵐᵖˡ); ("String"%go, JointConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, JointConfig__VoteResultⁱᵐᵖˡ)]); (ptrT.id JointConfig.id, [("CommittedIndex"%go, (λ: "$r",
+                 method_call #JointConfig.id #"CommittedIndex"%go (![#JointConfig] "$r")
+                 )%V); ("Describe"%go, (λ: "$r",
+                 method_call #JointConfig.id #"Describe"%go (![#JointConfig] "$r")
+                 )%V); ("IDs"%go, (λ: "$r",
+                 method_call #JointConfig.id #"IDs"%go (![#JointConfig] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #JointConfig.id #"String"%go (![#JointConfig] "$r")
+                 )%V); ("VoteResult"%go, (λ: "$r",
+                 method_call #JointConfig.id #"VoteResult"%go (![#JointConfig] "$r")
+                 )%V)]); (MajorityConfig.id, [("CommittedIndex"%go, MajorityConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, MajorityConfig__Describeⁱᵐᵖˡ); ("Slice"%go, MajorityConfig__Sliceⁱᵐᵖˡ); ("String"%go, MajorityConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, MajorityConfig__VoteResultⁱᵐᵖˡ)]); (ptrT.id MajorityConfig.id, [("CommittedIndex"%go, (λ: "$r",
+                 method_call #MajorityConfig.id #"CommittedIndex"%go (![#MajorityConfig] "$r")
+                 )%V); ("Describe"%go, (λ: "$r",
+                 method_call #MajorityConfig.id #"Describe"%go (![#MajorityConfig] "$r")
+                 )%V); ("Slice"%go, (λ: "$r",
+                 method_call #MajorityConfig.id #"Slice"%go (![#MajorityConfig] "$r")
+                 )%V); ("String"%go, (λ: "$r",
+                 method_call #MajorityConfig.id #"String"%go (![#MajorityConfig] "$r")
+                 )%V); ("VoteResult"%go, (λ: "$r",
+                 method_call #MajorityConfig.id #"VoteResult"%go (![#MajorityConfig] "$r")
+                 )%V)]); (Index.id, [("String"%go, Index__Stringⁱᵐᵖˡ)]); (ptrT.id Index.id, [("String"%go, (λ: "$r",
+                 method_call #Index.id #"String"%go (![#Index] "$r")
+                 )%V)]); (mapAckIndexer.id, [("AckedIndex"%go, mapAckIndexer__AckedIndexⁱᵐᵖˡ)]); (ptrT.id mapAckIndexer.id, [("AckedIndex"%go, (λ: "$r",
+                 method_call #mapAckIndexer.id #"AckedIndex"%go (![#mapAckIndexer] "$r")
+                 )%V)]); (VoteResult.id, [("String"%go, VoteResult__Stringⁱᵐᵖˡ)]); (ptrT.id VoteResult.id, [("String"%go, (λ: "$r",
+                 method_call #VoteResult.id #"String"%go (![#VoteResult] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo quorum.quorum :=
@@ -501,7 +501,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(JointConfig
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [fmt.fmt; math.math; strings.strings; go_etcd_io.raft.v3.quorum.slices.slices; strconv.strconv];
+    pkg_imported_pkgs := [code.fmt.fmt; code.math.math; code.strings.strings; code.go_etcd_io.raft.v3.quorum.slices.slices; code.strconv.strconv];
   |}.
 
 Definition initialize' : val :=
