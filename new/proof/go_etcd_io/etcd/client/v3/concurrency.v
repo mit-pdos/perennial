@@ -2,7 +2,7 @@ Require Import New.code.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
-From New.proof Require Import context sync.
+From New.proof Require Import context sync time math errors fmt.
 From New.proof Require Export chan.
 
 Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
@@ -22,26 +22,14 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-#[global] Instance : IsPkgInit math := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf math := build_get_is_pkg_init_wf.
-
 #[global] Instance : IsPkgInit zapcore := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf zapcore := build_get_is_pkg_init_wf.
 
 #[global] Instance : IsPkgInit zap := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf zap := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit time := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf time := build_get_is_pkg_init_wf.
-
 #[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
-
-#[global] Instance : IsPkgInit fmt := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf fmt := build_get_is_pkg_init_wf.
-
-#[global] Instance : IsPkgInit errors := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf errors := build_get_is_pkg_init_wf.
 
 #[global] Instance : IsPkgInit concurrency := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf concurrency := build_get_is_pkg_init_wf.

@@ -2,7 +2,7 @@ Require Import New.code.context.
 Require Export New.generatedproof.context.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.chan.
-Require Import New.proof.sync.atomic New.proof.sync.
+From New.proof Require Import sync.atomic sync time errors.
 
 Require Import Perennial.Helpers.CountableTactics.
 
@@ -41,14 +41,8 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{contextG Σ}.
 
-#[global] Instance : IsPkgInit time := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf time := build_get_is_pkg_init_wf.
-
 #[global] Instance : IsPkgInit reflectlite := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf reflectlite := build_get_is_pkg_init_wf.
-
-#[global] Instance : IsPkgInit errors := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf errors := build_get_is_pkg_init_wf.
 
 #[global] Instance : IsPkgInit context := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf context := build_get_is_pkg_init_wf.
