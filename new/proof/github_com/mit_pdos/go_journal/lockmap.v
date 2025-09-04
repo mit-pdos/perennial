@@ -290,19 +290,6 @@ Proof.
   + apply elem_of_filter in H; intuition.
 Qed.
 
-Lemma covered_by_shard_mod' addr covered :
-  addr ∈ covered <->
-  addr ∈ covered_by_shard (sint.nat (word.modu addr NSHARD)) covered.
-Proof.
-  intros.
-  rewrite /covered_by_shard.
-  split; intros.
-  + apply elem_of_filter; intuition.
-    unseal_nshard.
-    word.
-  + apply elem_of_filter in H; intuition.
-Qed.
-
 Lemma covered_by_shard_empty x :
   covered_by_shard x ∅ = ∅.
 Proof. done. Qed.
@@ -361,11 +348,8 @@ Proof.
     iSplitL "HP Hthis".
     + rewrite covered_by_shard_insert.
       iApply big_sepS_insert.
-      { intro Hx. apply H. apply covered_by_shard_mod'.
-        rewrite Z2Nat.id; [ | unseal_nshard; word ].
-        revert Hx. unseal_nshard.
-        rewrite sint_eq_uint; [ | word ].
-        auto. }
+      { intro Hx. apply H. apply covered_by_shard_mod.
+        ereplace (uint.nat ?[x] : Z) with (uint.Z ?x) by (unseal_nshard; word). done. }
       iFrame.
     + iApply (big_sepS_mono with "Hother").
       iIntros (x' Hx') "H".
@@ -427,7 +411,7 @@ Proof.
     { done. }
     iDestruct (covered_by_shard_split with "Hcovered") as "Hsplit".
     change (sint.Z 0%Z) with 0%Z.
-    replace (NSHARD - 0)%Z with NSHARD by word.
+    ereplace (?[a] - 0)%Z with NSHARD by word.
     iFrame "Hsplit".
     unseal_nshard. word.
   }
@@ -452,7 +436,7 @@ Proof.
     iDestruct (big_sepL2_app with "Hshards [Hls]") as "Hshards".
     { iApply big_sepL2_singleton.
       rewrite Hlen.
-      replace (uint.Z (W64 (sint.Z i))) with (sint.Z i) by word.
+      ereplace (uint.Z (W64 ?[x])) with ?x by word.
       replace (Z.of_nat (sint.nat i + 0)) with (sint.Z i) by word.
       iFrame.
     }
@@ -462,7 +446,7 @@ Proof.
     iSplitR.
     { rewrite length_app Hlen /=. word. }
     replace (sint.Z (word.add i 1))%Z with (sint.Z i + 1)%Z by word.
-    replace (NSHARD - (sint.Z i + 1))%Z with (NSHARD - sint.Z i - 1)%Z by word.
+    ereplace (?[a] - (?[b] + ?[c]))%Z with (?a - ?b - ?c)%Z by word.
     iFrame.
     unseal_nshard. word.
 
@@ -490,9 +474,9 @@ Proof.
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
   pose proof NSHARD_pos.
-  list_elem shards (sint.nat (word.modu addr NSHARD)) as shard.
+  list_elem shards (uint.nat (word.modu addr NSHARD)) as shard.
   { revert Hlen. unseal_nshard. word. }
-  list_elem ghs (sint.nat (word.modu addr NSHARD)) as gh.
+  list_elem ghs (uint.nat (word.modu addr NSHARD)) as gh.
   { revert Hlen. unseal_nshard. word. }
 
   iDestruct (own_slice_len with "Hslice") as "%Hlen3".
@@ -505,12 +489,12 @@ Proof.
   wp_pure; first word.
 
   (* XXX is this the expected way to use [wp_load_slice_elem]? *)
-  wp_apply (wp_load_slice_elem with "[$Hslice]"); [ word | eauto | iIntros "_" ].
+  wp_apply (wp_load_slice_elem with "[$Hslice]") as "_"; first word.
+  { ereplace (sint.nat ?[x]) with (uint.nat ?x); first done. word. }
 
-  wp_auto.
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
   wp_apply (wp_lockShard__acquire with "[$Hshard]").
-  { iPureIntro. rewrite -Hunseal. rewrite -covered_by_shard_mod'. eauto. }
+  { iPureIntro. rewrite -Hunseal. rewrite -covered_by_shard_mod. eauto. }
 
   iIntros "[HP Hlocked]".
   wp_auto.
