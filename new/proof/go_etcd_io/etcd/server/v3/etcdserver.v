@@ -31,4 +31,12 @@ Proof.
   (* Need to translate traceutil.StartTimeKey. so struct literal can be allocated *)
 Abort.
 
+Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) (ctx : context.Context.t) (r : loc) :
+  {{{ is_pkg_init etcdserver }}}
+    s @ (ptrT.id etcdserver.EtcdServer.id) @ "processInternalRaftRequestOnce" #ctx #r
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start.
+Abort.
+
 End wps.

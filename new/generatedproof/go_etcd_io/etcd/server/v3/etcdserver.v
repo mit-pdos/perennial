@@ -692,5 +692,13 @@ Global Program Instance is_pkg_defined_etcdserver : IsPkgDefined etcdserver :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_method_call_EtcdServer'ptr_Put :
+  WpMethodCall (ptrT.id etcdserver.EtcdServer.id) "Put" _ (is_pkg_defined etcdserver) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_EtcdServer'ptr_processInternalRaftRequestOnce :
+  WpMethodCall (ptrT.id etcdserver.EtcdServer.id) "processInternalRaftRequestOnce" _ (is_pkg_defined etcdserver) :=
+  ltac:(solve_wp_method_call).
+
 End names.
 End etcdserver.

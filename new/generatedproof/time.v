@@ -524,29 +524,5 @@ Global Instance wp_func_call_runtimeNano :
   WpFuncCall time.runtimeNano _ (is_pkg_defined time) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_method_call_Time_After :
-  WpMethodCall time.Time.id "After" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time_Nanosecond :
-  WpMethodCall time.Time.id "Nanosecond" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time_Second :
-  WpMethodCall time.Time.id "Second" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time'ptr_After :
-  WpMethodCall (ptrT.id time.Time.id) "After" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time'ptr_Nanosecond :
-  WpMethodCall (ptrT.id time.Time.id) "Nanosecond" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time'ptr_Second :
-  WpMethodCall (ptrT.id time.Time.id) "Second" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
 End names.
 End time.

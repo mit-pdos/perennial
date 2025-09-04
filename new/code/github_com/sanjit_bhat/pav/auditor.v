@@ -268,7 +268,7 @@ Definition Newⁱᵐᵖˡ : val :=
     }])) in
     do:  ("m" <-[#ptrT] "$r0");;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #(ptrT.id merkle.Map.id) #"Hash"%go (![#ptrT] "m")) #()) in
+    let: "$r0" := ((method_call #(ptrT.id merkle.Map.id) #"Digest"%go (![#ptrT] "m")) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "sk") in

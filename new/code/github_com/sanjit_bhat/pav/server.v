@@ -1290,7 +1290,7 @@ Definition Newⁱᵐᵖˡ : val :=
     }])) in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #(ptrT.id merkle.Map.id) #"Hash"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] "keys")))) #()) in
+    let: "$r0" := ((method_call #(ptrT.id merkle.Map.id) #"Digest"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] "keys")))) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "link" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "dig") in
@@ -1530,7 +1530,7 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
         do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))) "$r0")
       else do:  #())));;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #(ptrT.id merkle.Map.id) #"Hash"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) #()) in
+    let: "$r0" := ((method_call #(ptrT.id merkle.Map.id) #"Digest"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "link" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "dig") in

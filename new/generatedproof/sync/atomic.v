@@ -646,5 +646,105 @@ Global Instance wp_func_call_StoreUint64 :
   WpFuncCall atomic.StoreUint64 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_method_call_Int32'ptr_Add :
+  WpMethodCall (ptrT.id atomic.Int32.id) "Add" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int32'ptr_And :
+  WpMethodCall (ptrT.id atomic.Int32.id) "And" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int32'ptr_CompareAndSwap :
+  WpMethodCall (ptrT.id atomic.Int32.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int32'ptr_Load :
+  WpMethodCall (ptrT.id atomic.Int32.id) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int32'ptr_Or :
+  WpMethodCall (ptrT.id atomic.Int32.id) "Or" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int32'ptr_Store :
+  WpMethodCall (ptrT.id atomic.Int32.id) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int32'ptr_Swap :
+  WpMethodCall (ptrT.id atomic.Int32.id) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint32'ptr_Add :
+  WpMethodCall (ptrT.id atomic.Uint32.id) "Add" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint32'ptr_And :
+  WpMethodCall (ptrT.id atomic.Uint32.id) "And" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint32'ptr_CompareAndSwap :
+  WpMethodCall (ptrT.id atomic.Uint32.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint32'ptr_Load :
+  WpMethodCall (ptrT.id atomic.Uint32.id) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint32'ptr_Or :
+  WpMethodCall (ptrT.id atomic.Uint32.id) "Or" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint32'ptr_Store :
+  WpMethodCall (ptrT.id atomic.Uint32.id) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint32'ptr_Swap :
+  WpMethodCall (ptrT.id atomic.Uint32.id) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint64'ptr_Add :
+  WpMethodCall (ptrT.id atomic.Uint64.id) "Add" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint64'ptr_And :
+  WpMethodCall (ptrT.id atomic.Uint64.id) "And" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint64'ptr_CompareAndSwap :
+  WpMethodCall (ptrT.id atomic.Uint64.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint64'ptr_Load :
+  WpMethodCall (ptrT.id atomic.Uint64.id) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint64'ptr_Or :
+  WpMethodCall (ptrT.id atomic.Uint64.id) "Or" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint64'ptr_Store :
+  WpMethodCall (ptrT.id atomic.Uint64.id) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Uint64'ptr_Swap :
+  WpMethodCall (ptrT.id atomic.Uint64.id) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Value'ptr_CompareAndSwap :
+  WpMethodCall (ptrT.id atomic.Value.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Value'ptr_Load :
+  WpMethodCall (ptrT.id atomic.Value.id) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Value'ptr_Store :
+  WpMethodCall (ptrT.id atomic.Value.id) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Value'ptr_Swap :
+  WpMethodCall (ptrT.id atomic.Value.id) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
 End names.
 End atomic.

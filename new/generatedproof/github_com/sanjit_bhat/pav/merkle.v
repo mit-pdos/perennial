@@ -302,8 +302,8 @@ Global Instance wp_func_call_put :
   WpFuncCall merkle.put _ (is_pkg_defined merkle) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_getProofCap :
-  WpFuncCall merkle.getProofCap _ (is_pkg_defined merkle) :=
+Global Instance wp_func_call_getProofLen :
+  WpFuncCall merkle.getProofLen _ (is_pkg_defined merkle) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_VerifyMemb :
@@ -350,8 +350,8 @@ Global Instance wp_func_call_MerkleProofDecode :
   WpFuncCall merkle.MerkleProofDecode _ (is_pkg_defined merkle) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_method_call_Map'ptr_Hash :
-  WpMethodCall (ptrT.id merkle.Map.id) "Hash" _ (is_pkg_defined merkle) :=
+Global Instance wp_method_call_Map'ptr_Digest :
+  WpMethodCall (ptrT.id merkle.Map.id) "Digest" _ (is_pkg_defined merkle) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Map'ptr_Prove :

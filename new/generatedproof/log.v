@@ -56,13 +56,5 @@ Global Instance wp_func_call_Println :
   WpFuncCall log.Println _ (is_pkg_defined log) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_method_call_Logger'ptr_Printf :
-  WpMethodCall (ptrT.id log.Logger.id) "Printf" _ (is_pkg_defined log) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Logger'ptr_Println :
-  WpMethodCall (ptrT.id log.Logger.id) "Println" _ (is_pkg_defined log) :=
-  ltac:(solve_wp_method_call).
-
 End names.
 End log.
