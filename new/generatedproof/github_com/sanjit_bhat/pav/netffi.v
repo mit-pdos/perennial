@@ -64,33 +64,5 @@ Global Program Instance is_pkg_defined_netffi : IsPkgDefined netffi :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_addrToStr :
-  WpFuncCall netffi.addrToStr _ (is_pkg_defined netffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Dial :
-  WpFuncCall netffi.Dial _ (is_pkg_defined netffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_newConn :
-  WpFuncCall netffi.newConn _ (is_pkg_defined netffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Listen :
-  WpFuncCall netffi.Listen _ (is_pkg_defined netffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Conn'ptr_Receive :
-  WpMethodCall (ptrT.id netffi.Conn.id) "Receive" _ (is_pkg_defined netffi) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Conn'ptr_Send :
-  WpMethodCall (ptrT.id netffi.Conn.id) "Send" _ (is_pkg_defined netffi) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Listener'ptr_Accept :
-  WpMethodCall (ptrT.id netffi.Listener.id) "Accept" _ (is_pkg_defined netffi) :=
-  ltac:(solve_wp_method_call).
-
 End names.
 End netffi.

@@ -64,45 +64,5 @@ Global Program Instance is_pkg_defined_errors : IsPkgDefined errors :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_New :
-  WpFuncCall errors.New _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Join :
-  WpFuncCall errors.Join _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unwrap :
-  WpFuncCall errors.Unwrap _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Is :
-  WpFuncCall errors.Is _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_is' :
-  WpFuncCall errors.is' _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_As :
-  WpFuncCall errors.As _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_as' :
-  WpFuncCall errors.as' _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_errorString'ptr_Error :
-  WpMethodCall (ptrT.id errors.errorString.id) "Error" _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_joinError'ptr_Error :
-  WpMethodCall (ptrT.id errors.joinError.id) "Error" _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_joinError'ptr_Unwrap :
-  WpMethodCall (ptrT.id errors.joinError.id) "Unwrap" _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_method_call).
-
 End names.
 End errors.

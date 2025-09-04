@@ -38,21 +38,5 @@ Global Program Instance is_pkg_defined_codes : IsPkgDefined codes :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_canonicalString :
-  WpFuncCall codes.canonicalString _ (is_pkg_defined codes) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Code_String :
-  WpMethodCall codes.Code.id "String" _ (is_pkg_defined codes) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Code'ptr_String :
-  WpMethodCall (ptrT.id codes.Code.id) "String" _ (is_pkg_defined codes) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Code'ptr_UnmarshalJSON :
-  WpMethodCall (ptrT.id codes.Code.id) "UnmarshalJSON" _ (is_pkg_defined codes) :=
-  ltac:(solve_wp_method_call).
-
 End names.
 End codes.
