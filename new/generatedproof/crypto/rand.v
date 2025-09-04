@@ -47,37 +47,5 @@ Global Program Instance is_pkg_defined_rand : IsPkgDefined rand :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_fatal :
-  WpFuncCall rand.fatal _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Read :
-  WpFuncCall rand.Read _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Text :
-  WpFuncCall rand.Text _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Prime :
-  WpFuncCall rand.Prime _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Int :
-  WpFuncCall rand.Int _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_reader_defaultReader :
-  WpMethodCall rand.reader.id "defaultReader" _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_reader'ptr_Read :
-  WpMethodCall (ptrT.id rand.reader.id) "Read" _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_reader'ptr_defaultReader :
-  WpMethodCall (ptrT.id rand.reader.id) "defaultReader" _ (is_pkg_defined rand) :=
-  ltac:(solve_wp_method_call).
-
 End names.
 End rand.

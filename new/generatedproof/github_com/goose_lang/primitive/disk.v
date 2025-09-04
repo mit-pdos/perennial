@@ -82,10 +82,6 @@ Global Program Instance is_pkg_defined_disk : IsPkgDefined disk :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_Init :
-  WpFuncCall disk.Init _ (is_pkg_defined disk) :=
-  ltac:(solve_wp_func_call).
-
 Global Instance wp_func_call_Get :
   WpFuncCall disk.Get _ (is_pkg_defined disk) :=
   ltac:(solve_wp_func_call).
@@ -106,20 +102,8 @@ Global Instance wp_func_call_Barrier :
   WpFuncCall disk.Barrier _ (is_pkg_defined disk) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_NewFileDisk :
-  WpFuncCall disk.NewFileDisk _ (is_pkg_defined disk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewMemDisk :
-  WpFuncCall disk.NewMemDisk _ (is_pkg_defined disk) :=
-  ltac:(solve_wp_func_call).
-
 Global Instance wp_method_call_FileDisk_Barrier :
   WpMethodCall disk.FileDisk.id "Barrier" _ (is_pkg_defined disk) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_FileDisk_Close :
-  WpMethodCall disk.FileDisk.id "Close" _ (is_pkg_defined disk) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_FileDisk_Read :
@@ -142,10 +126,6 @@ Global Instance wp_method_call_FileDisk'ptr_Barrier :
   WpMethodCall (ptrT.id disk.FileDisk.id) "Barrier" _ (is_pkg_defined disk) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_FileDisk'ptr_Close :
-  WpMethodCall (ptrT.id disk.FileDisk.id) "Close" _ (is_pkg_defined disk) :=
-  ltac:(solve_wp_method_call).
-
 Global Instance wp_method_call_FileDisk'ptr_Read :
   WpMethodCall (ptrT.id disk.FileDisk.id) "Read" _ (is_pkg_defined disk) :=
   ltac:(solve_wp_method_call).
@@ -166,10 +146,6 @@ Global Instance wp_method_call_MemDisk_Barrier :
   WpMethodCall disk.MemDisk.id "Barrier" _ (is_pkg_defined disk) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_MemDisk_Close :
-  WpMethodCall disk.MemDisk.id "Close" _ (is_pkg_defined disk) :=
-  ltac:(solve_wp_method_call).
-
 Global Instance wp_method_call_MemDisk_Read :
   WpMethodCall disk.MemDisk.id "Read" _ (is_pkg_defined disk) :=
   ltac:(solve_wp_method_call).
@@ -188,10 +164,6 @@ Global Instance wp_method_call_MemDisk_Write :
 
 Global Instance wp_method_call_MemDisk'ptr_Barrier :
   WpMethodCall (ptrT.id disk.MemDisk.id) "Barrier" _ (is_pkg_defined disk) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_MemDisk'ptr_Close :
-  WpMethodCall (ptrT.id disk.MemDisk.id) "Close" _ (is_pkg_defined disk) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_MemDisk'ptr_Read :
