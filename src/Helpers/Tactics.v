@@ -33,3 +33,11 @@ Ltac exact_eq H :=
       assert (x = y) as <-; [f_equal|assumption]
     end
   end.
+
+(* No built-in replace (see https://github.com/rocq-prover/rocq/issues/15009).
+   This introduces a tactic notation so that the open_constrs can introduce new
+   evars before being passed into the builtin [replace] tactic.
+ *)
+Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) := replace x with y.
+
+Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) "by" tactic(s) := replace x with y by s.
