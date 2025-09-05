@@ -34,7 +34,6 @@ Proof.
   wp_start. wp_auto. by iApply "HΦ".
 Qed.
 
-#[local]
 Lemma wp_Time__UnixNano (t : time.Time.t) :
   {{{ is_pkg_init time }}}
     t @ time.Time.id @ "UnixNano" #()

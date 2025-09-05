@@ -47,9 +47,16 @@ Qed.
 Lemma wp_NewGenerator (memberID : w16) (now : time.Time.t) :
   {{{ is_pkg_init idutil }}}
     @! idutil.NewGenerator #memberID #now
-  {{{ RET #(); True }}}.
+  {{{ g, RET #g; is_Generator g }}}.
 Proof.
   wp_start as "H". wp_auto.
-Admitted.
+  wp_apply wp_Time__UnixNano as "%nowNano _".
+  wp_apply wp_lowbit as "% _". wp_alloc g as "Hg".
+  iApply wp_fupd. wp_auto. iApply "HΦ". iFrame "∗#".
+  iDestruct (struct_fields_split with "Hg") as "Hg". iNamed "Hg".
+  iPersist "Hprefix". iFrame "#".
+  iMod (inv_alloc with "[Hsuffix]") as "$"; last done.
+  iFrame.
+Qed.
 
 End wps.

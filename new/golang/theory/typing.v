@@ -414,6 +414,12 @@ Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
+Program Global Instance into_val_typed_w16 : IntoValTyped w16 uint16T :=
+{| default_val := W16 0 |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
 Program Global Instance into_val_typed_w8 : IntoValTyped w8 uint8T :=
 {| default_val := W8 0 |}.
 Next Obligation. solve_has_go_type. Qed.
