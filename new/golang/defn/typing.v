@@ -89,6 +89,9 @@ Global Instance into_val_w64 : IntoVal w64 :=
 Global Instance into_val_w32 : IntoVal w32 :=
   {| to_val_def := λ v, (LitV $ LitInt32 v) |}.
 
+Global Instance into_val_w16 : IntoVal w16 :=
+  {| to_val_def := λ v, (LitV $ LitInt16 v) |}.
+
 Global Instance into_val_w8 : IntoVal w8 :=
   {| to_val_def := λ v, (LitV $ LitByte v) |}.
 
@@ -182,7 +185,7 @@ Section val_types.
 
     (* Numeric, except float and impl-specific sized objects *)
     | uint8T => #(W8 0)
-    | uint16T => #null
+    | uint16T => #(W16 0)
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
 

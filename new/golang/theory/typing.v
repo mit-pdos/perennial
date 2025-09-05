@@ -95,7 +95,7 @@ destruct a. apply Forall_cons. split.
   | has_go_type_bool (b : bool) : has_go_type #b boolT
   | has_go_type_uint64 (x : w64) : has_go_type #x uint64T
   | has_go_type_uint32 (x : w32) : has_go_type #x uint32T
-  | has_go_type_uint16 : has_go_type #null uint16T
+  | has_go_type_uint16 (x : w16) : has_go_type #x uint16T
   | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
 
   | has_go_type_string (s : go_string) : has_go_type #s stringT
@@ -226,7 +226,7 @@ destruct a. apply Forall_cons. split.
 
     (* Numeric, except float and impl-specific sized objects *)
     | uint8T => #(W8 0)
-    | uint16T => #null
+    | uint16T => #(W16 0)
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
 

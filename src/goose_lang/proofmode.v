@@ -211,6 +211,7 @@ Lemma base_lit_inv (l1 l2: base_lit) :
   match l1, l2 with
   | LitInt n1, LitInt n2 => n1 = n2
   | LitInt32 n1, LitInt32 n2 => n1 = n2
+  | LitInt16 n1, LitInt16 n2 => n1 = n2
   | LitBool b1, LitBool b2 => b1 = b2
   | LitByte n1, LitByte n2 => n1 = n2
   | LitString s1, LitString s2 => s1 = s2
@@ -229,6 +230,7 @@ Lemma lit_ne_inv `{!ffi_syntax} (l1 l2: base_lit) :
   match l1, l2 with
   | LitInt n1, LitInt n2 => n1 ≠ n2
   | LitInt32 n1, LitInt32 n2 => n1 ≠ n2
+  | LitInt16 n1, LitInt16 n2 => n1 ≠ n2
   | LitBool b1, LitBool b2 => b1 ≠ b2
   | LitByte n1, LitByte n2 => n1 ≠ n2
   | LitString s1, LitString s2 => s1 ≠ s2

@@ -15,6 +15,10 @@ Instance pretty_u32 : Pretty Integers.u32 :=
   fun x => pretty (word.unsigned x).
 
 #[global]
+Instance pretty_u16 : Pretty Integers.w16 :=
+  fun x => pretty (word.unsigned x).
+
+#[global]
 Instance pretty_loc : Pretty loc :=
   fun x => pretty x.(loc_car).
 
@@ -26,6 +30,7 @@ Instance pretty_lit : Pretty base_lit :=
   fun x => match x with
         | LitInt n => "#" ++ pretty n
         | LitInt32 n => "#(W32 " ++ pretty n ++ ")"
+        | LitInt16 n => "#(W16 " ++ pretty n ++ ")"
         | LitBool b => if b then "#t" else "#f"
         | LitByte b => "LitByte"
         | LitString s => "str" ++ quoted s
@@ -42,9 +47,11 @@ Instance pretty_un_op : Pretty un_op :=
         | MinusUnOp => "MinusUnOp"
         | UToW64Op => "u_to_w64"
         | UToW32Op => "u_to_w32"
+        | UToW16Op => "u_to_w16"
         | UToW8Op => "u_to_w8"
         | SToW64Op => "s_to_w64"
         | SToW32Op => "s_to_w32"
+        | SToW16Op => "s_to_w16"
         | SToW8Op => "s_to_w8"
         | ToStringOp => "to_string"
         | StringLenOp => "StringLength"

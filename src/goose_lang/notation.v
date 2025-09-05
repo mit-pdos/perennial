@@ -23,6 +23,7 @@ Coercion LitLoc : loc >-> base_lit.
 (* Coercion LitString : string >-> base_lit. *)
 Coercion LitInt : u64 >-> base_lit.
 Coercion LitInt32 : u32 >-> base_lit.
+Coercion LitInt16 : w16 >-> base_lit.
 Coercion LitByte : u8 >-> base_lit.
 Coercion LitProphecy : proph_id >-> base_lit.
 Notation "'str' s" := (LitString (s : byte_string)) (at level 30, format "'str'  s") : val_scope.
@@ -104,12 +105,15 @@ Notation "'ref' e" := (Alloc e%E) (at level 10) : expr_scope.
 Notation "- e" := (UnOp MinusUnOp e%E) : expr_scope.
 Notation "'u_to_w64' e" := (UnOp UToW64Op e%E) (at level 10) : expr_scope.
 Notation "'u_to_w32' e" := (UnOp UToW32Op e%E) (at level 10) : expr_scope.
+Notation "'u_to_w16' e" := (UnOp UToW16Op e%E) (at level 10) : expr_scope.
 Notation "'u_to_w8' e" := (UnOp UToW8Op e%E) (at level 10) : expr_scope.
 Notation "'s_to_w64' e" := (UnOp SToW64Op e%E) (at level 10) : expr_scope.
 Notation "'s_to_w32' e" := (UnOp SToW32Op e%E) (at level 10) : expr_scope.
+Notation "'s_to_w16' e" := (UnOp SToW16Op e%E) (at level 10) : expr_scope.
 Notation "'s_to_w8' e" := (UnOp SToW8Op e%E) (at level 10) : expr_scope.
 Notation "'to_u64' e" := (UnOp UToW64Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
 Notation "'to_u32' e" := (UnOp UToW32Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
+Notation "'to_u16' e" := (UnOp UToW16Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
 Notation "'to_u8' e" := (UnOp UToW8Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
 Notation "'to_string' e" := (UnOp ToStringOp e%E) (at level 10) : expr_scope.
 Notation "'StringLength' e" := (UnOp StringLenOp e%E) (at level 10) : expr_scope.

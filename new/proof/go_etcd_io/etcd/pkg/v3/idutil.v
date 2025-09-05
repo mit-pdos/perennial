@@ -44,13 +44,12 @@ Proof.
   wp_auto. wp_apply wp_lowbit as "%y _". iApply "HΦ". done.
 Qed.
 
-(* FIXME: need w16  *)
-(*
 Lemma wp_NewGenerator (memberID : w16) (now : time.Time.t) :
   {{{ is_pkg_init idutil }}}
     @! idutil.NewGenerator #memberID #now
   {{{ RET #(); True }}}.
 Proof.
-Qed. *)
+  wp_start as "H". wp_auto.
+Admitted.
 
 End wps.

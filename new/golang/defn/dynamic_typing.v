@@ -102,7 +102,7 @@ Definition zero_val_def: val :=
             else if: "n" = #(W64 1) then
                  #(W8 0)
             else if: "n" = #(W64 2) then
-                #null (* uint16 *)
+                #(W16 0) (* uint16 *)
             else if: "n" = #(W64 3) then
                  #(W32 0)
             else if: "n" = #(W64 4) then

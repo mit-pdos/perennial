@@ -34,15 +34,18 @@ Definition shift_overflow_special_case_handlers := {|
 #[global] Instance w64_word_instance_ok : word.ok w64_word_instance := Naive.gen_ok 64 _ eq_refl.
 #[global] Instance w32_word_instance : word 32 := (Naive.gen_word 32%Z shift_overflow_special_case_handlers).
 #[global] Instance w32_word_instance_ok : word.ok w32_word_instance := Naive.gen_ok 32 _ eq_refl.
+#[global] Instance w16_word_instance : word 16 := (Naive.gen_word 16%Z shift_overflow_special_case_handlers).
+#[global] Instance w16_word_instance_ok : word.ok w16_word_instance := Naive.gen_ok 16 _ eq_refl.
 #[global] Instance w8_word_instance : word 8 := (Naive.gen_word 8%Z shift_overflow_special_case_handlers).
 #[global] Instance w8_word_instance_ok : word.ok w8_word_instance := Naive.gen_ok 8 _ eq_refl.
 
 (* w64 needs to be a hard boundary (not a notation) to make coercions work. *)
 Global SubClass w64 := @word.rep _ w64_word_instance.
 Global SubClass w32 := @word.rep _ w32_word_instance.
+Global SubClass w16 := @word.rep _ w16_word_instance.
 Global SubClass w8 := @word.rep _ w8_word_instance.
 
-#[global] Opaque w64_word_instance w32_word_instance w8_word_instance.
+#[global] Opaque w64_word_instance w32_word_instance w16_word_instance w8_word_instance.
 
 (* Ring does syntactic type matching (read: very simple matching) to see
 if there's a matching ring structure.
@@ -66,6 +69,12 @@ Add Ring w32_rep_ring :
    morphism (word.ring_morph (word := w32_word_instance)),
    constants [Properties.word_cst]).
 
+Add Ring w16_rep_ring :
+  (word.ring_theory (word := w16_word_instance))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w16_word_instance)),
+   constants [Properties.word_cst]).
+
 Add Ring w8_rep_ring :
   (word.ring_theory (word := w8_word_instance))
   (preprocess [autorewrite with rew_word_morphism],
@@ -84,6 +93,12 @@ Add Ring w32_ring :
    morphism (word.ring_morph (word := w32_word_instance)),
    constants [Properties.word_cst]).
 
+Add Ring w16_ring :
+  (word.ring_theory (word := w16_word_instance) : (@ring_theory w16 _ _ _ _ _ _ (@eq w16)))
+  (preprocess [autorewrite with rew_word_morphism],
+   morphism (word.ring_morph (word := w16_word_instance)),
+   constants [Properties.word_cst]).
+
 Add Ring w8_ring :
   (word.ring_theory (word := w8_word_instance) : (@ring_theory w8 _ _ _ _ _ _ (@eq w8)))
   (preprocess [autorewrite with rew_word_morphism],
@@ -94,14 +109,17 @@ Notation byte := w8 (only parsing).
 
 Definition W64 (x:Z) : w64 := word.of_Z x.
 Definition W32 (x:Z) : w32 := word.of_Z x.
+Definition W16 (x:Z) : w16 := word.of_Z x.
 Definition W8 (x:Z)  : w8  := word.of_Z x.
 
 (* Compatibility for existing code that refers to U64, u64, etc *)
 Notation U64 x := (W64 x) (only parsing).
 Notation U32 x := (W32 x) (only parsing).
+Notation U16 x := (W16 x) (only parsing).
 Notation U8 x := (W8 x) (only parsing).
 Notation u64 := w64 (only parsing).
 Notation u32 := w32 (only parsing).
+Notation u16 := w16 (only parsing).
 Notation u8 := w8 (only parsing).
 
 #[global]
@@ -115,6 +133,7 @@ Defined.
 
 #[global] Instance w64_eq_dec : EqDecision w64 := _.
 #[global] Instance w32_eq_dec : EqDecision w32 := _.
+#[global] Instance w16_eq_dec : EqDecision w16 := _.
 #[global] Instance w8_eq_dec : EqDecision w8 := _.
 
 #[global]
@@ -129,6 +148,8 @@ Qed.
 #[global] Instance w64_countable : Countable w64.
 Proof. apply _. Qed.
 #[global] Instance w32_countable : Countable w32.
+Proof. apply _. Qed.
+#[global] Instance w16_countable : Countable w16.
 Proof. apply _. Qed.
 #[global] Instance w8_countable : Countable byte.
 Proof. apply _. Qed.

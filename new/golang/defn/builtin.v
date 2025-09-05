@@ -60,6 +60,7 @@ Definition make_nondet (t : go_type) : val :=
      match t with
      | uint64T => ArbitraryInt
      | uint32T => u_to_w32 ArbitraryInt
+     | uint16T => u_to_w16 ArbitraryInt
      | _ => Panic "unsupported nondet"
      end.
 

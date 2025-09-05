@@ -146,6 +146,9 @@ Qed.
 Global Instance wp_w64_u_to_w32 (v : w64) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
+Global Instance wp_w64_u_to_w16 (v : w64) : PureWp True (u_to_w16 #v) #(W16 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
 Global Instance wp_w64_u_to_w8 (v : w64) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
@@ -156,6 +159,9 @@ Proof.
 Qed.
 
 Global Instance wp_w64_s_to_w32 (v : w64) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w64_s_to_w16 (v : w64) : PureWp True (s_to_w16 #v) #(W16 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 Global Instance wp_w64_s_to_w8 (v : w64) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
@@ -174,6 +180,9 @@ Proof.
   solve_pure_exec. replace (_ (uint.Z v)) with v by word. done.
 Qed.
 
+Global Instance wp_w32_u_to_w16 (v : w32) : PureWp True (u_to_w16 #v) #(W16 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
 Global Instance wp_w32_u_to_w8 (v : w32) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
@@ -185,6 +194,9 @@ Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O).
   solve_pure_exec. replace (_ (sint.Z v)) with v by word. done.
 Qed.
+
+Global Instance wp_w32_s_to_w16 (v : w32) : PureWp True (s_to_w16 #v) #(W16 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 Global Instance wp_w32_s_to_w8 (v : w32) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -218,6 +230,34 @@ Proof.
 Qed.
 
 Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #([v]).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+(* w16 unops *)
+Global Instance wp_neg_w16 (v : w16) : PureWp True (~#v) #(word.not v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_u_to_w64 (v : w16) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_u_to_w32 (v : w16) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_u_to_w16 (v : w16) : PureWp True (u_to_w16 #v) #(W16 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_u_to_w8 (v : w16) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_s_to_w64 (v : w16) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_s_to_w32 (v : w16) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_s_to_w16 (v : w16) : PureWp True (s_to_w16 #v) #(W16 $ sint.Z v).
+Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance wp_w16_s_to_w8 (v : w16) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* bool unop *)
@@ -257,6 +297,17 @@ Proof.
   revert H. solve_pure_exec.
 Qed.
 
+Global Instance wp_w16_binop op (v1 v2 : w16) (v : val) :
+  PureWp (op ≠ EqOp ∧
+      (to_val <$> bin_op_eval_word op v1 v2) ∪ (to_val <$> bin_op_eval_compare op v1 v2) = Some v)
+    (BinOp op #v1 #v2)%E v | 1.
+Proof.
+  rewrite to_val_unseal /=. apply (pure_exec_pure_wp O).
+  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
+  { rewrite /bin_op_eval decide_False // /=. destruct op; try by simpl in *. }
+  revert H. solve_pure_exec.
+Qed.
+
 Global Instance wp_w8_binop op (v1 v2 : w8) (v : val) :
   PureWp (op ≠ EqOp ∧
       (to_val <$> bin_op_eval_word op v1 v2) ∪ (to_val <$> bin_op_eval_compare op v1 v2) = Some v)
@@ -277,6 +328,14 @@ Proof.
   all: revert H; solve_pure_exec; inversion H; subst; done.
 Qed.
 
+Global Instance wp_w8_w16_binop op (v1 : w8) (v2 : w16) (v : w8) :
+  PureWp (bin_op_eval_shift op v1 (W8 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
 Global Instance wp_w8_w32_binop op (v1 : w8) (v2 : w32) (v : w8) :
   PureWp (bin_op_eval_shift op v1 (W8 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
 Proof.
@@ -293,8 +352,24 @@ Proof.
   all: revert H; solve_pure_exec; inversion H; subst; done.
 Qed.
 
+Global Instance wp_w32_w16_binop op (v1 : w32) (v2 : w16) (v : w32) :
+  PureWp (bin_op_eval_shift op v1 (W32 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
 Global Instance wp_w32_w8_binop op (v1 : w32) (v2 : w8) (v : w32) :
   PureWp (bin_op_eval_shift op v1 (W32 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w64_w16_binop op (v1 : w64) (v2 : w16) (v : w64) :
+  PureWp (bin_op_eval_shift op v1 (W64 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O).
   intros H. destruct op; simpl in H; try by exfalso.
@@ -311,6 +386,30 @@ Qed.
 
 Global Instance wp_w64_w32_binop op (v1 : w64) (v2 : w32) (v : w64) :
   PureWp (bin_op_eval_shift op v1 (W64 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w16_w64_binop op (v1 : w16) (v2 : w64) (v : w16) :
+  PureWp (bin_op_eval_shift op v1 (W16 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w16_w32_binop op (v1 : w16) (v2 : w32) (v : w16) :
+  PureWp (bin_op_eval_shift op v1 (W16 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  intros H. destruct op; simpl in H; try by exfalso.
+  all: revert H; solve_pure_exec; inversion H; subst; done.
+Qed.
+
+Global Instance wp_w16_w8_binop op (v1 : w16) (v2 : w8) (v : w16) :
+  PureWp (bin_op_eval_shift op v1 (W16 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O).
   intros H. destruct op; simpl in H; try by exfalso.
@@ -351,6 +450,14 @@ Proof.
 Qed.
 
 Global Instance wp_StringGet_w32 (s : go_string) (i : w32) (v : w8) :
+  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
+  - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
+  - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
+Qed.
+
+Global Instance wp_StringGet_w16 (s : go_string) (i : w16) (v : w8) :
   PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.

@@ -65,13 +65,13 @@ with anything. This is useful for erasure proofs: if we erased things to unit,
 behavior. So we erase to the poison value instead, making sure that no legal
 comparisons could be affected. *)
 Inductive base_lit : Type :=
-  | LitInt (n : u64) | LitInt32 (n : u32) | LitBool (b : bool) | LitByte (n : u8)
+  | LitInt (n : u64) | LitInt32 (n : u32) | LitInt16 (n : w16) | LitBool (b : bool) | LitByte (n : u8)
   | LitString (s : byte_string) | LitUnit | LitPoison
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   | NegOp | MinusUnOp
-  | UToW64Op | UToW32Op | UToW8Op
-  | SToW64Op | SToW32Op | SToW8Op
+  | UToW64Op | UToW32Op | UToW16Op | UToW8Op
+  | SToW64Op | SToW32Op | SToW16Op | SToW8Op
   | ToStringOp | StringLenOp | IsNoStringOverflowOp
 .
 Inductive bin_op : Set :=
@@ -353,6 +353,7 @@ Proof. refine (
              match e1, e2 with
              | LitInt x, LitInt x' => cast_if (decide (x = x'))
              | LitInt32 x, LitInt32 x' => cast_if (decide (x = x'))
+             | LitInt16 x, LitInt16 x' => cast_if (decide (x = x'))
              | LitBool x, LitBool x' => cast_if (decide (x = x'))
              | LitByte x, LitByte x' => cast_if (decide (x = x'))
              | LitString x, LitString x' => cast_if (decide (x = x'))
@@ -452,8 +453,9 @@ Defined.
 
 Definition enc_base_lit :=
 (λ l, match l with
-  | LitInt n => (inl (inl (inl (inl n))), None)
-  | LitInt32 n => (inl (inl (inl (inr n))), None)
+  | LitInt n => (inl (inl (inl (inl (inl n)))), None)
+  | LitInt32 n => (inl (inl (inl (inl (inr n)))), None)
+  | LitInt16 n => (inl (inl (inl (inr n))), None)
   | LitByte n => (inl (inl (inr n)), None)
   | LitBool b => (inl (inr b), None)
   | LitUnit => (inr (inl false), None)
@@ -465,8 +467,9 @@ Definition enc_base_lit :=
 
 Definition dec_base_lit :=
 (λ l, match l with
-  | (inl (inl (inl (inl n))), None) => LitInt n
-  | (inl (inl (inl (inr n))), None) => LitInt32 n
+  | (inl (inl (inl (inl (inl n)))), None) => LitInt n
+  | (inl (inl (inl (inl (inr n)))), None) => LitInt32 n
+  | (inl (inl (inl (inr n))), None) => LitInt16 n
   | (inl (inl (inr n)), None) => LitByte n
   | (inl (inr b), None) => LitBool b
   | (inr (inl false), None) => LitUnit
@@ -832,27 +835,43 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | NegOp, LitV (LitBool b) => Some $ LitV $ LitBool (negb b)
   | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.not n)
   | NegOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.not n)
+  | NegOp, LitV (LitInt16 n) => Some $ LitV $ LitInt16 (word.not n)
   | MinusUnOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.opp n)
   | MinusUnOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.opp n)
   | MinusUnOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.opp n)
+  | MinusUnOp, LitV (LitInt16 n) => Some $ LitV $ LitInt16 (word.opp n)
   | NegOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.not n)
   | UToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (uint.Z v))
   | UToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (uint.Z v))
+  | UToW64Op, LitV (LitInt16 v) => Some $ LitV $ LitInt (W64 (uint.Z v))
   | UToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (uint.Z v))
   | UToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (uint.Z v))
   | UToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (uint.Z v))
+  | UToW32Op, LitV (LitInt16 v) => Some $ LitV $ LitInt32 (W32 (uint.Z v))
   | UToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (uint.Z v))
+  | UToW16Op, LitV (LitInt v)   => Some $ LitV $ LitInt16 (W16 (uint.Z v))
+  | UToW16Op, LitV (LitInt32 v) => Some $ LitV $ LitInt16 (W16 (uint.Z v))
+  | UToW16Op, LitV (LitInt16 v) => Some $ LitV $ LitInt16 (W16 (uint.Z v))
+  | UToW16Op, LitV (LitByte v)  => Some $ LitV $ LitInt16 (W16 (uint.Z v))
   | UToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (uint.Z v))
   | UToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (uint.Z v))
+  | UToW8Op, LitV (LitInt16 v)  => Some $ LitV $ LitByte (W8 (uint.Z v))
   | UToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (uint.Z v))
   | SToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (sint.Z v))
   | SToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (sint.Z v))
+  | SToW64Op, LitV (LitInt16 v) => Some $ LitV $ LitInt (W64 (sint.Z v))
   | SToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (sint.Z v))
   | SToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (sint.Z v))
   | SToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (sint.Z v))
+  | SToW32Op, LitV (LitInt16 v) => Some $ LitV $ LitInt32 (W32 (sint.Z v))
   | SToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (sint.Z v))
+  | SToW16Op, LitV (LitInt v)   => Some $ LitV $ LitInt16 (W16 (sint.Z v))
+  | SToW16Op, LitV (LitInt32 v) => Some $ LitV $ LitInt16 (W16 (sint.Z v))
+  | SToW16Op, LitV (LitInt16 v) => Some $ LitV $ LitInt16 (W16 (sint.Z v))
+  | SToW16Op, LitV (LitByte v)  => Some $ LitV $ LitInt16 (W16 (sint.Z v))
   | SToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (sint.Z v))
   | SToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (sint.Z v))
+  | SToW8Op, LitV (LitInt16 v)  => Some $ LitV $ LitByte (W8 (sint.Z v))
   | SToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (sint.Z v))
   | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString [v]
   | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (Z.of_nat (length v)))
@@ -944,6 +963,9 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
     | LitV (LitInt32 n1), LitV (LitInt32 n2) =>
       LitV <$> ((LitInt32 <$> bin_op_eval_word op n1 n2)
                   ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
+    | LitV (LitInt16 n1), LitV (LitInt16 n2) =>
+      LitV <$> ((LitInt16 <$> bin_op_eval_word op n1 n2)
+                  ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
     | LitV (LitByte n1), LitV (LitByte n2) =>
       LitV <$> ((LitByte <$> bin_op_eval_word op n1 n2)
                   ∪ (LitBool <$> bin_op_eval_compare op n1 n2))
@@ -953,11 +975,23 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
       LitV <$> (LitByte <$> bin_op_eval_shift op n1 (W8 (uint.Z n2)))
     | LitV (LitByte n1), LitV (LitInt32 n2) =>
       LitV <$> (LitByte <$> bin_op_eval_shift op n1 (W8 (uint.Z n2)))
+    | LitV (LitByte n1), LitV (LitInt16 n2) =>
+      LitV <$> (LitByte <$> bin_op_eval_shift op n1 (W8 (uint.Z n2)))
+    | LitV (LitInt16 n1), LitV (LitInt n2) =>
+      LitV <$> (LitInt16 <$> bin_op_eval_shift op n1 (W16 (uint.Z n2)))
+    | LitV (LitInt16 n1), LitV (LitInt32 n2) =>
+      LitV <$> (LitInt16 <$> bin_op_eval_shift op n1 (W16 (uint.Z n2)))
+    | LitV (LitInt16 n1), LitV (LitByte n2) =>
+      LitV <$> (LitInt16 <$> bin_op_eval_shift op n1 (W16 (uint.Z n2)))
     | LitV (LitInt32 n1), LitV (LitInt n2) =>
+      LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (W32 (uint.Z n2)))
+    | LitV (LitInt32 n1), LitV (LitInt16 n2) =>
       LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (W32 (uint.Z n2)))
     | LitV (LitInt32 n1), LitV (LitByte n2) =>
       LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (W32 (uint.Z n2)))
     | LitV (LitInt n1), LitV (LitByte n2) =>
+      LitV <$> (LitInt <$> bin_op_eval_shift op n1 (W64 (uint.Z n2)))
+    | LitV (LitInt n1), LitV (LitInt16 n2) =>
       LitV <$> (LitInt <$> bin_op_eval_shift op n1 (W64 (uint.Z n2)))
     | LitV (LitInt n1), LitV (LitInt32 n2) =>
       LitV <$> (LitInt <$> bin_op_eval_shift op n1 (W64 (uint.Z n2)))
@@ -970,6 +1004,7 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
                                            | _ => None
                                            end
     | LitV (LitString s1), LitV (LitByte n) => LitV <$> (LitByte <$> bin_op_eval_string_word op s1 n)
+    | LitV (LitString s1), LitV (LitInt16 n) => LitV <$> (LitByte <$> bin_op_eval_string_word op s1 n)
     | LitV (LitString s1), LitV (LitInt32 n) => LitV <$> (LitByte <$> bin_op_eval_string_word op s1 n)
     | LitV (LitString s1), LitV (LitInt n) => LitV <$> (LitByte <$> bin_op_eval_string_word op s1 n)
     | _, _ => None
