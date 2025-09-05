@@ -69,9 +69,6 @@ Proof.
   rewrite bool_decide_eq_true. iIntros (<-).
   iDestruct "addr" as "HemptyHash". wp_auto.
   wp_func_call. wp_call.
-  (* FIXME(goose): need to unfold Go [const] expr for [wp_auto]. *)
-  rewrite /merkle.emptyNodeTag.
-  wp_auto.
   wp_apply wp_slice_literal as "* Hsl".
   wp_apply (cryptoutil.wp_Hash with "[$Hsl]") as "* @".
   wp_apply wp_globals_get --no-auto.
