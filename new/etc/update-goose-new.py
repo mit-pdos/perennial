@@ -122,6 +122,7 @@ projs = [
             "./server",
         ],
     ),
+    create_proj(repo="mit-pdos/go-liveness"),
 ]
 
 
@@ -323,7 +324,7 @@ def main():
         run_goose(goose_dir, "./model/channel")
 
     if args.std_lib:
-        # this list of packages comes from the dependencies of etcd-raft
+        # this list of packages comes from the dependencies of etcd-raft and others
         run_goose(
             goose_dir,
             "testing",
@@ -338,6 +339,7 @@ def main():
             "math/big",
             "math/rand",
             "os",
+            "runtime",
             "sort",
             "slices",
             "strconv",
