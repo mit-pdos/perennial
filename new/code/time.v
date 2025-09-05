@@ -342,7 +342,7 @@ Definition Time__secⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#int64T] (struct.field_ref #Time #"ext"%go (![#ptrT] "t")))).
 
-Axiom internalToUnix : val.
+Definition internalToUnix : val := #(W64 (-62135596800)).
 
 (* unixSec returns the time's seconds since Jan 1 1970 (Unix time).
 

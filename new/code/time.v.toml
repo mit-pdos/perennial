@@ -26,5 +26,5 @@ translate = [
   "wallToInternal",
   "nsecMask",
   "hasMonotonic",
-  "internalToUnix,"
+  "internalToUnix",
 ]
