@@ -11,8 +11,8 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 #[global] Instance : IsPkgInit idutil := define_is_pkg_init True%I.
 
 (* FIXME: id.go says that the overflowing of cnt into timestamp is intentional
-   "to extend the event window to 2^56". However, I only count 48 bits. Is that
-   a typo? *)
+   "to extend the event window to 2^56". However, there are only 48 bits in the
+   suffix, and the documentation is a typo from an older version of the code. *)
 Definition is_Generator (g : loc) (R : w64 → iProp Σ) : iProp Σ :=
   ∃ (prefix : Z),
     "#prefix" ∷ g ↦s[idutil.Generator :: "prefix"]□ (W64 (prefix * 2^48)) ∗
@@ -30,10 +30,12 @@ Proof. apply _. Qed.
 
 (* Specialized to 48 low bits. *)
 #[local]
-Lemma wp_lowbit (x : w64) :
-  {{{ is_pkg_init idutil }}}
-    @! idutil.lowbit #x #(W64 48)
-  {{{ RET #(W64 ((uint.Z x) `mod` 2^(uint.Z 48))); True }}}.
+Lemma wp_lowbit (x n : w64) :
+  (* NOTE: need `0 < uint.Z n` because there's no guarantees about [word.sru]
+     when the shift amount is the width. *)
+  {{{ is_pkg_init idutil ∗ ⌜ 0 < uint.Z n < 64 ⌝ }}}
+    @! idutil.lowbit #x #n
+  {{{ RET #(W64 ((uint.Z x) `mod` 2^(uint.Z n))); True }}}.
 Proof.
   wp_start as "%H". wp_auto.
   iSpecialize ("HΦ" with "[//]").
@@ -41,9 +43,12 @@ Proof.
   rewrite Automation.word.word_eq_iff_Z_eq.
   rewrite word.unsigned_and Automation.word.unsigned_sru'. 2:{ word. }
   repeat ereplace (uint.Z (W64 ?[a])) with (?a) by word.
-  replace (uint.Z (word.sub (W64 _) _)) with (64 - 48)%Z by word.
-  replace (_ `div` _) with (Z.ones (uint.Z 48)).
-  2:{ vm_compute Z.ones. unfold math.MaxUint64. word. }
+  replace (uint.Z (word.sub (W64 _) _)) with (64 - uint.Z n)%Z by word.
+  replace (_ `div` _) with (Z.ones (uint.Z n)).
+  2:{
+    change (uint.Z (W64 math.MaxUint64)) with (Z.ones 64).
+    Z.bitblast.
+  }
   rewrite Z.land_ones //. word.
 Qed.
 
@@ -70,7 +75,9 @@ Proof.
   }
   iModIntro.
   wp_auto.
-  wp_apply wp_lowbit. iApply "HΦ".
+  unfold idutil.suffixLen.
+  wp_apply wp_lowbit; first word.
+  iApply "HΦ".
   iExactEq "HR". f_equal.
   rewrite Automation.word.word_eq_iff_Z_eq.
   rewrite word.unsigned_or.
@@ -81,6 +88,7 @@ Proof.
     - apply andb_false_intro1.
       rewrite Z.testbit_mod_pow2 // Z.mul_pow2_bits_low //. lia.
     - apply andb_false_intro2.
+      unfold idutil.suffixLen.
       ereplace (uint.Z (W64 ?[a])) with ?a by word.
       rewrite Z.testbit_mod_pow2 //.
       apply andb_false_intro1. word.
@@ -101,14 +109,30 @@ Lemma wp_NewGenerator R (memberID : w16) (now : time.Time.t) :
 Proof.
   wp_start as "HR". wp_auto.
   wp_apply wp_Time__UnixNano as "%nowNano _".
-  (* FIXME: wp_lowbit should *at least* support `suffixLen` and `tsLen` *)
-  (*
-  wp_apply wp_lowbit. wp_alloc g as "Hg".
+  rewrite /idutil.tsLen /idutil.cntLen /idutil.suffixLen.
+  wp_apply wp_lowbit; first word. wp_alloc g as "Hg".
   iApply wp_fupd. wp_auto. iApply "HΦ". iFrame "∗#".
   iDestruct (struct_fields_split with "Hg") as "Hg". iNamed "Hg".
-  iPersist "Hprefix". iFrame "#".
-  iMod (inv_alloc with "[Hsuffix]") as "$"; last done.
-  iFrame. *)
+  iPersist "Hprefix".
+  iMod (inv_alloc with "[Hsuffix HR]") as "$".
+  { iEval (simpl) in "Hsuffix". iExists _, 0. iNext.
+    iSplitL "Hsuffix".
+    { iApply to_named. iExactEq "Hsuffix". ereplace (?[a] + 0) with ?a by word.
+      f_equal.
+      instantiate (1:=(uint.Z ?[x])).
+      setoid_rewrite (word.of_Z_unsigned ?x).
+      done.
+    }
+    rewrite -big_sepS_list_to_set.
+    2:{ apply NoDup_seqZ. }
+    rewrite -big_sepS_list_to_set.
+    2:{ apply NoDup_seqZ. }
+    admit. (* TODO: use the given R to prove the invariant's Rs. *)
+  }
+  iModIntro. iApply to_named.
+  iExactEq "Hprefix".
+  f_equal. simpl. instantiate (1:=uint.Z memberID).
+  word.
 Admitted.
 
 End wps.
