@@ -365,9 +365,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom c0 : expr.
+Axiom c0 : val.
 
-Axiom c1 : expr.
+Axiom c1 : val.
 
 Definition memhash0 : go_string := "runtime.memhash0"%go.
 
@@ -479,11 +479,11 @@ Definition arena_heapify : go_string := "runtime.arena_heapify"%go.
 
 Axiom userArenaChunkBytesMax : Z.
 
-Axiom userArenaChunkBytes : expr.
+Axiom userArenaChunkBytes : val.
 
-Axiom userArenaChunkPages : expr.
+Axiom userArenaChunkPages : val.
 
-Axiom userArenaChunkMaxAllocBytes : expr.
+Axiom userArenaChunkMaxAllocBytes : val.
 
 Definition init : go_string := "runtime.init"%go.
 
@@ -511,7 +511,7 @@ Definition inUserArenaChunk : go_string := "runtime.inUserArenaChunk"%go.
 
 Definition freeUserArenaChunk : go_string := "runtime.freeUserArenaChunk"%go.
 
-Axiom asanenabled : expr.
+Axiom asanenabled : val.
 
 Definition asanread : go_string := "runtime.asanread"%go.
 
@@ -663,9 +663,9 @@ Definition cgoCheckUsingType : go_string := "runtime.cgoCheckUsingType"%go.
 
 Axiom maxAlign : Z.
 
-Axiom hchanSize : expr.
+Axiom hchanSize : val.
 
-Axiom debugChan : expr.
+Axiom debugChan : val.
 
 Axiom hchan : go_type.
 
@@ -761,19 +761,19 @@ Definition coverage_getCovCounterList : go_string := "runtime.coverage_getCovCou
 
 Definition addCovMeta : go_string := "runtime.addCovMeta"%go.
 
-Axiom offsetX86HasAVX : expr.
+Axiom offsetX86HasAVX : val.
 
-Axiom offsetX86HasAVX2 : expr.
+Axiom offsetX86HasAVX2 : val.
 
-Axiom offsetX86HasERMS : expr.
+Axiom offsetX86HasERMS : val.
 
-Axiom offsetX86HasRDTSCP : expr.
+Axiom offsetX86HasRDTSCP : val.
 
-Axiom offsetARMHasIDIVA : expr.
+Axiom offsetARMHasIDIVA : val.
 
-Axiom offsetMIPS64XHasMSA : expr.
+Axiom offsetMIPS64XHasMSA : val.
 
-Axiom offsetLOONG64HasLSX : expr.
+Axiom offsetLOONG64HasLSX : val.
 
 Definition x86HasPOPCNT : go_string := "runtime.x86HasPOPCNT"%go.
 
@@ -817,7 +817,7 @@ Definition runtime_pprof_readProfile : go_string := "runtime.runtime_pprof_readP
 
 Definition cputicks : go_string := "runtime.cputicks"%go.
 
-Axiom canCreateFile : expr.
+Axiom canCreateFile : val.
 
 Definition create : go_string := "runtime.create"%go.
 
@@ -921,7 +921,7 @@ Definition printDebugLogImpl : go_string := "runtime.printDebugLogImpl"%go.
 
 Definition printDebugLogPC : go_string := "runtime.printDebugLogPC"%go.
 
-Axiom dlogEnabled : expr.
+Axiom dlogEnabled : val.
 
 Axiom dlogger : go_type.
 
@@ -1165,23 +1165,23 @@ Axiom boundsError : go_type.
 
 Axiom boundsErrorCode : go_type.
 
-Axiom boundsIndex : expr.
+Axiom boundsIndex : val.
 
-Axiom boundsSliceAlen : expr.
+Axiom boundsSliceAlen : val.
 
-Axiom boundsSliceAcap : expr.
+Axiom boundsSliceAcap : val.
 
-Axiom boundsSliceB : expr.
+Axiom boundsSliceB : val.
 
-Axiom boundsSlice3Alen : expr.
+Axiom boundsSlice3Alen : val.
 
-Axiom boundsSlice3Acap : expr.
+Axiom boundsSlice3Acap : val.
 
-Axiom boundsSlice3B : expr.
+Axiom boundsSlice3B : val.
 
-Axiom boundsSlice3C : expr.
+Axiom boundsSlice3C : val.
 
-Axiom boundsConvert : expr.
+Axiom boundsConvert : val.
 
 Definition boundsErrorFmts : go_string := "runtime.boundsErrorFmts"%go.
 
@@ -1215,9 +1215,9 @@ Definition buildVersion : go_string := "runtime.buildVersion"%go.
 
 Definition Version : go_string := "runtime.Version"%go.
 
-Axiom GOOS : expr.
+Axiom GOOS : val.
 
-Axiom GOARCH : expr.
+Axiom GOARCH : val.
 
 Definition fastlog2 : go_string := "runtime.fastlog2"%go.
 
@@ -1637,129 +1637,129 @@ Definition unlock2Wake : go_string := "runtime.unlock2Wake"%go.
 
 Axiom lockRank : go_type.
 
-Axiom lockRankUnknown : expr.
+Axiom lockRankUnknown : val.
 
-Axiom lockRankSysmon : expr.
+Axiom lockRankSysmon : val.
 
-Axiom lockRankScavenge : expr.
+Axiom lockRankScavenge : val.
 
-Axiom lockRankForcegc : expr.
+Axiom lockRankForcegc : val.
 
-Axiom lockRankDefer : expr.
+Axiom lockRankDefer : val.
 
-Axiom lockRankSweepWaiters : expr.
+Axiom lockRankSweepWaiters : val.
 
-Axiom lockRankAssistQueue : expr.
+Axiom lockRankAssistQueue : val.
 
-Axiom lockRankStrongFromWeakQueue : expr.
+Axiom lockRankStrongFromWeakQueue : val.
 
-Axiom lockRankSweep : expr.
+Axiom lockRankSweep : val.
 
-Axiom lockRankTestR : expr.
+Axiom lockRankTestR : val.
 
-Axiom lockRankTestW : expr.
+Axiom lockRankTestW : val.
 
-Axiom lockRankTimerSend : expr.
+Axiom lockRankTimerSend : val.
 
-Axiom lockRankAllocmW : expr.
+Axiom lockRankAllocmW : val.
 
-Axiom lockRankExecW : expr.
+Axiom lockRankExecW : val.
 
-Axiom lockRankCpuprof : expr.
+Axiom lockRankCpuprof : val.
 
-Axiom lockRankPollCache : expr.
+Axiom lockRankPollCache : val.
 
-Axiom lockRankPollDesc : expr.
+Axiom lockRankPollDesc : val.
 
-Axiom lockRankWakeableSleep : expr.
+Axiom lockRankWakeableSleep : val.
 
-Axiom lockRankHchan : expr.
+Axiom lockRankHchan : val.
 
-Axiom lockRankAllocmR : expr.
+Axiom lockRankAllocmR : val.
 
-Axiom lockRankExecR : expr.
+Axiom lockRankExecR : val.
 
-Axiom lockRankSched : expr.
+Axiom lockRankSched : val.
 
-Axiom lockRankAllg : expr.
+Axiom lockRankAllg : val.
 
-Axiom lockRankAllp : expr.
+Axiom lockRankAllp : val.
 
-Axiom lockRankNotifyList : expr.
+Axiom lockRankNotifyList : val.
 
-Axiom lockRankSudog : expr.
+Axiom lockRankSudog : val.
 
-Axiom lockRankTimers : expr.
+Axiom lockRankTimers : val.
 
-Axiom lockRankTimer : expr.
+Axiom lockRankTimer : val.
 
-Axiom lockRankNetpollInit : expr.
+Axiom lockRankNetpollInit : val.
 
-Axiom lockRankRoot : expr.
+Axiom lockRankRoot : val.
 
-Axiom lockRankItab : expr.
+Axiom lockRankItab : val.
 
-Axiom lockRankReflectOffs : expr.
+Axiom lockRankReflectOffs : val.
 
-Axiom lockRankSynctest : expr.
+Axiom lockRankSynctest : val.
 
-Axiom lockRankUserArenaState : expr.
+Axiom lockRankUserArenaState : val.
 
-Axiom lockRankTraceBuf : expr.
+Axiom lockRankTraceBuf : val.
 
-Axiom lockRankTraceStrings : expr.
+Axiom lockRankTraceStrings : val.
 
-Axiom lockRankFin : expr.
+Axiom lockRankFin : val.
 
-Axiom lockRankSpanSetSpine : expr.
+Axiom lockRankSpanSetSpine : val.
 
-Axiom lockRankMspanSpecial : expr.
+Axiom lockRankMspanSpecial : val.
 
-Axiom lockRankTraceTypeTab : expr.
+Axiom lockRankTraceTypeTab : val.
 
-Axiom lockRankGcBitsArenas : expr.
+Axiom lockRankGcBitsArenas : val.
 
-Axiom lockRankProfInsert : expr.
+Axiom lockRankProfInsert : val.
 
-Axiom lockRankProfBlock : expr.
+Axiom lockRankProfBlock : val.
 
-Axiom lockRankProfMemActive : expr.
+Axiom lockRankProfMemActive : val.
 
-Axiom lockRankProfMemFuture : expr.
+Axiom lockRankProfMemFuture : val.
 
-Axiom lockRankGscan : expr.
+Axiom lockRankGscan : val.
 
-Axiom lockRankStackpool : expr.
+Axiom lockRankStackpool : val.
 
-Axiom lockRankStackLarge : expr.
+Axiom lockRankStackLarge : val.
 
-Axiom lockRankHchanLeaf : expr.
+Axiom lockRankHchanLeaf : val.
 
-Axiom lockRankWbufSpans : expr.
+Axiom lockRankWbufSpans : val.
 
-Axiom lockRankMheap : expr.
+Axiom lockRankMheap : val.
 
-Axiom lockRankMheapSpecial : expr.
+Axiom lockRankMheapSpecial : val.
 
-Axiom lockRankGlobalAlloc : expr.
+Axiom lockRankGlobalAlloc : val.
 
-Axiom lockRankTrace : expr.
+Axiom lockRankTrace : val.
 
-Axiom lockRankTraceStackTab : expr.
+Axiom lockRankTraceStackTab : val.
 
-Axiom lockRankPanic : expr.
+Axiom lockRankPanic : val.
 
-Axiom lockRankDeadlock : expr.
+Axiom lockRankDeadlock : val.
 
-Axiom lockRankRaceFini : expr.
+Axiom lockRankRaceFini : val.
 
-Axiom lockRankAllocmRInternal : expr.
+Axiom lockRankAllocmRInternal : val.
 
-Axiom lockRankExecRInternal : expr.
+Axiom lockRankExecRInternal : val.
 
-Axiom lockRankTestRInternal : expr.
+Axiom lockRankTestRInternal : val.
 
-Axiom lockRankLeafRank : expr.
+Axiom lockRankLeafRank : val.
 
 Definition lockNames : go_string := "runtime.lockNames"%go.
 
@@ -1769,7 +1769,7 @@ Definition lockPartialOrder : go_string := "runtime.lockPartialOrder"%go.
 
 Axiom lockPartialOrder'init : val.
 
-Axiom staticLockRanking : expr.
+Axiom staticLockRanking : val.
 
 Axiom lockRankStruct : go_type.
 
@@ -1801,7 +1801,7 @@ Definition assertWorldStoppedOrLockHeld : go_string := "runtime.assertWorldStopp
 
 Axiom maxTinySize : Z.
 
-Axiom tinySizeClass : expr.
+Axiom tinySizeClass : val.
 
 Axiom maxSmallSize : Z.
 
@@ -1817,7 +1817,7 @@ Axiom _64bit : Z.
 
 Axiom _TinySize : Z.
 
-Axiom _TinySizeClass : expr.
+Axiom _TinySizeClass : val.
 
 Axiom _FixAllocChunk : Z.
 
@@ -1849,11 +1849,11 @@ Axiom arenaBits : Z.
 
 Axiom arenaBaseOffset : Z.
 
-Axiom arenaBaseOffsetUintptr : expr.
+Axiom arenaBaseOffsetUintptr : val.
 
 Axiom _MaxGcproc : Z.
 
-Axiom minLegalPointer : expr.
+Axiom minLegalPointer : val.
 
 Axiom minHeapForMetadataHugePages : Z.
 
@@ -1871,7 +1871,7 @@ Definition zerobase : go_string := "runtime.zerobase"%go.
 
 Definition nextFreeFast : go_string := "runtime.nextFreeFast"%go.
 
-Axiom doubleCheckMalloc : expr.
+Axiom doubleCheckMalloc : val.
 
 Definition mallocgc : go_string := "runtime.mallocgc"%go.
 
@@ -2073,7 +2073,7 @@ Definition bulkBarrierPreWriteSrcOnly : go_string := "runtime.bulkBarrierPreWrit
 
 Definition heapBitsSlice : go_string := "runtime.heapBitsSlice"%go.
 
-Axiom doubleCheckHeapSetType : expr.
+Axiom doubleCheckHeapSetType : val.
 
 Definition heapSetTypeNoHeader : go_string := "runtime.heapSetTypeNoHeader"%go.
 
@@ -2105,7 +2105,7 @@ Definition markBitsForAddr : go_string := "runtime.markBitsForAddr"%go.
 
 Definition markBitsForSpan : go_string := "runtime.markBitsForSpan"%go.
 
-Axiom clobberdeadPtr : expr.
+Axiom clobberdeadPtr : val.
 
 Definition badPointer : go_string := "runtime.badPointer"%go.
 
@@ -2217,7 +2217,7 @@ Definition sysReserveOS : go_string := "runtime.sysReserveOS"%go.
 
 Definition sysMapOS : go_string := "runtime.sysMapOS"%go.
 
-Axiom isSbrkPlatform : expr.
+Axiom isSbrkPlatform : val.
 
 Definition sysReserveAlignedSbrk : go_string := "runtime.sysReserveAlignedSbrk"%go.
 
@@ -2249,15 +2249,15 @@ Definition godebug_registerMetric : go_string := "runtime.godebug_registerMetric
 
 Axiom statDep : go_type.
 
-Axiom heapStatsDep : expr.
+Axiom heapStatsDep : val.
 
-Axiom sysStatsDep : expr.
+Axiom sysStatsDep : val.
 
-Axiom cpuStatsDep : expr.
+Axiom cpuStatsDep : val.
 
-Axiom gcStatsDep : expr.
+Axiom gcStatsDep : val.
 
-Axiom numStatsDeps : expr.
+Axiom numStatsDeps : val.
 
 Axiom statDepSet : go_type.
 
@@ -2277,13 +2277,13 @@ Axiom statAggregate : go_type.
 
 Axiom metricKind : go_type.
 
-Axiom metricKindBad : expr.
+Axiom metricKindBad : val.
 
-Axiom metricKindUint64 : expr.
+Axiom metricKindUint64 : val.
 
-Axiom metricKindFloat64 : expr.
+Axiom metricKindFloat64 : val.
 
-Axiom metricKindFloat64Histogram : expr.
+Axiom metricKindFloat64Histogram : val.
 
 Axiom metricSample : go_type.
 
@@ -2305,15 +2305,15 @@ Axiom finblock : go_type.
 
 Definition fingStatus : go_string := "runtime.fingStatus"%go.
 
-Axiom fingUninitialized : expr.
+Axiom fingUninitialized : val.
 
-Axiom fingCreated : expr.
+Axiom fingCreated : val.
 
-Axiom fingRunningFinalizer : expr.
+Axiom fingRunningFinalizer : val.
 
-Axiom fingWait : expr.
+Axiom fingWait : val.
 
-Axiom fingWake : expr.
+Axiom fingWake : val.
 
 Definition finlock : go_string := "runtime.finlock"%go.
 
@@ -2363,9 +2363,9 @@ Axiom _DebugGC : Z.
 
 Axiom _FinBlockSize : Z.
 
-Axiom concurrentSweep : expr.
+Axiom concurrentSweep : val.
 
-Axiom debugScanConservative : expr.
+Axiom debugScanConservative : val.
 
 Axiom sweepMinHeapDistance : Z.
 
@@ -2391,13 +2391,13 @@ Definition setGCPhase : go_string := "runtime.setGCPhase"%go.
 
 Axiom gcMarkWorkerMode : go_type.
 
-Axiom gcMarkWorkerNotWorker : expr.
+Axiom gcMarkWorkerNotWorker : val.
 
-Axiom gcMarkWorkerDedicatedMode : expr.
+Axiom gcMarkWorkerDedicatedMode : val.
 
-Axiom gcMarkWorkerFractionalMode : expr.
+Axiom gcMarkWorkerFractionalMode : val.
 
-Axiom gcMarkWorkerIdleMode : expr.
+Axiom gcMarkWorkerIdleMode : val.
 
 Definition gcMarkWorkerModeStrings : go_string := "runtime.gcMarkWorkerModeStrings"%go.
 
@@ -2415,21 +2415,21 @@ Definition gcWaitOnMark : go_string := "runtime.gcWaitOnMark"%go.
 
 Axiom gcMode : go_type.
 
-Axiom gcBackgroundMode : expr.
+Axiom gcBackgroundMode : val.
 
-Axiom gcForceMode : expr.
+Axiom gcForceMode : val.
 
-Axiom gcForceBlockMode : expr.
+Axiom gcForceBlockMode : val.
 
 Axiom gcTrigger : go_type.
 
 Axiom gcTriggerKind : go_type.
 
-Axiom gcTriggerHeap : expr.
+Axiom gcTriggerHeap : val.
 
-Axiom gcTriggerTime : expr.
+Axiom gcTriggerTime : val.
 
-Axiom gcTriggerCycle : expr.
+Axiom gcTriggerCycle : val.
 
 Definition gcStart : go_string := "runtime.gcStart"%go.
 
@@ -2485,27 +2485,27 @@ Definition gcCPULimiter : go_string := "runtime.gcCPULimiter"%go.
 
 Axiom gcCPULimiterState : go_type.
 
-Axiom gcCPULimiterUpdatePeriod : expr.
+Axiom gcCPULimiterUpdatePeriod : val.
 
-Axiom capacityPerProc : expr.
+Axiom capacityPerProc : val.
 
 Axiom limiterEventType : go_type.
 
-Axiom limiterEventNone : expr.
+Axiom limiterEventNone : val.
 
-Axiom limiterEventIdleMarkWork : expr.
+Axiom limiterEventIdleMarkWork : val.
 
-Axiom limiterEventMarkAssist : expr.
+Axiom limiterEventMarkAssist : val.
 
-Axiom limiterEventScavengeAssist : expr.
+Axiom limiterEventScavengeAssist : val.
 
-Axiom limiterEventIdle : expr.
+Axiom limiterEventIdle : val.
 
 Axiom limiterEventBits : Z.
 
-Axiom limiterEventTypeMask : expr.
+Axiom limiterEventTypeMask : val.
 
-Axiom limiterEventStampNone : expr.
+Axiom limiterEventStampNone : val.
 
 Axiom limiterEventStamp : go_type.
 
@@ -2559,13 +2559,13 @@ Definition scanframeworker : go_string := "runtime.scanframeworker"%go.
 
 Axiom gcDrainFlags : go_type.
 
-Axiom gcDrainUntilPreempt : expr.
+Axiom gcDrainUntilPreempt : val.
 
-Axiom gcDrainFlushBgCredit : expr.
+Axiom gcDrainFlushBgCredit : val.
 
-Axiom gcDrainIdle : expr.
+Axiom gcDrainIdle : val.
 
-Axiom gcDrainFractional : expr.
+Axiom gcDrainFractional : val.
 
 Definition gcDrainMarkWorkerIdle : go_string := "runtime.gcDrainMarkWorkerIdle"%go.
 
@@ -2593,9 +2593,9 @@ Definition gcmarknewobject : go_string := "runtime.gcmarknewobject"%go.
 
 Definition gcMarkTinyAllocs : go_string := "runtime.gcMarkTinyAllocs"%go.
 
-Axiom gcGoalUtilization : expr.
+Axiom gcGoalUtilization : val.
 
-Axiom gcBackgroundUtilization : expr.
+Axiom gcBackgroundUtilization : val.
 
 Axiom gcCreditSlack : Z.
 
@@ -2639,11 +2639,11 @@ Axiom reduceExtraPercent : Z.
 
 Axiom maxPagesPerPhysPage : Z.
 
-Axiom scavengeCostRatio : expr.
+Axiom scavengeCostRatio : val.
 
-Axiom scavChunkHiOccFrac : expr.
+Axiom scavChunkHiOccFrac : val.
 
-Axiom scavChunkHiOccPages : expr.
+Axiom scavChunkHiOccPages : val.
 
 Definition heapRetained : go_string := "runtime.heapRetained"%go.
 
@@ -2651,9 +2651,9 @@ Definition gcPaceScavenger : go_string := "runtime.gcPaceScavenger"%go.
 
 Definition scavenge : go_string := "runtime.scavenge"%go.
 
-Axiom startingScavSleepRatio : expr.
+Axiom startingScavSleepRatio : val.
 
-Axiom minScavWorkTime : expr.
+Axiom minScavWorkTime : val.
 
 Definition scavenger : go_string := "runtime.scavenger"%go.
 
@@ -2673,7 +2673,7 @@ Axiom scavChunkData : go_type.
 
 Definition unpackScavChunkData : go_string := "runtime.unpackScavChunkData"%go.
 
-Axiom scavChunkHasFree : expr.
+Axiom scavChunkHasFree : val.
 
 Axiom scavChunkMaxFlags : Z.
 
@@ -2687,7 +2687,7 @@ Axiom scavChunkFlags : go_type.
 
 Axiom piController : go_type.
 
-Axiom stackTraceDebug : expr.
+Axiom stackTraceDebug : val.
 
 Axiom stackWorkBuf : go_type.
 
@@ -2711,7 +2711,7 @@ Axiom sweepClass : go_type.
 
 Axiom numSweepClasses : Z.
 
-Axiom sweepClassDone : expr.
+Axiom sweepClassDone : val.
 
 Axiom sweepDrainedMask : Z.
 
@@ -2767,7 +2767,7 @@ Axiom maxPhysHugePageSize : Z.
 
 Axiom pagesPerReclaimerChunk : Z.
 
-Axiom physPageAlignedStacks : expr.
+Axiom physPageAlignedStacks : val.
 
 Axiom mheap : go_type.
 
@@ -2779,11 +2779,11 @@ Axiom arenaHint : go_type.
 
 Axiom mSpanState : go_type.
 
-Axiom mSpanDead : expr.
+Axiom mSpanDead : val.
 
-Axiom mSpanInUse : expr.
+Axiom mSpanInUse : val.
 
-Axiom mSpanManual : expr.
+Axiom mSpanManual : val.
 
 Definition mSpanStateNames : go_string := "runtime.mSpanStateNames"%go.
 
@@ -2801,7 +2801,7 @@ Axiom spanClass : go_type.
 
 Axiom numSpanClasses : Z.
 
-Axiom tinySpanClass : expr.
+Axiom tinySpanClass : val.
 
 Definition makeSpanClass : go_string := "runtime.makeSpanClass"%go.
 
@@ -2825,13 +2825,13 @@ Definition pageIndexOf : go_string := "runtime.pageIndexOf"%go.
 
 Axiom spanAllocType : go_type.
 
-Axiom spanAllocHeap : expr.
+Axiom spanAllocHeap : val.
 
-Axiom spanAllocStack : expr.
+Axiom spanAllocStack : val.
 
-Axiom spanAllocPtrScalarBits : expr.
+Axiom spanAllocPtrScalarBits : val.
 
-Axiom spanAllocWorkBuf : expr.
+Axiom spanAllocWorkBuf : val.
 
 Definition runtime_debug_freeOSMemory : go_string := "runtime.runtime_debug_freeOSMemory"%go.
 
@@ -2897,9 +2897,9 @@ Definition freeSpecial : go_string := "runtime.freeSpecial"%go.
 
 Axiom gcBits : go_type.
 
-Axiom gcBitsChunkBytes : expr.
+Axiom gcBitsChunkBytes : val.
 
-Axiom gcBitsHeaderBytes : expr.
+Axiom gcBitsHeaderBytes : val.
 
 Axiom gcBitsHeader : go_type.
 
@@ -2973,13 +2973,13 @@ Definition blockAlignSummaryRange : go_string := "runtime.blockAlignSummaryRange
 
 Axiom pageAlloc : go_type.
 
-Axiom pallocSumBytes : expr.
+Axiom pallocSumBytes : val.
 
 Axiom maxPackedValue : Z.
 
 Axiom logMaxPackedValue : Z.
 
-Axiom freeChunkSum : expr.
+Axiom freeChunkSum : val.
 
 Axiom pallocSum : go_type.
 
@@ -3007,7 +3007,7 @@ Definition levelLogPages : go_string := "runtime.levelLogPages"%go.
 
 Axiom levelLogPages'init : val.
 
-Axiom pageCachePages : expr.
+Axiom pageCachePages : val.
 
 Axiom pageCache : go_type.
 
@@ -3027,11 +3027,11 @@ Definition profMemActiveLock : go_string := "runtime.profMemActiveLock"%go.
 
 Definition profMemFutureLock : go_string := "runtime.profMemFutureLock"%go.
 
-Axiom memProfile : expr.
+Axiom memProfile : val.
 
-Axiom blockProfile : expr.
+Axiom blockProfile : val.
 
-Axiom mutexProfile : expr.
+Axiom mutexProfile : val.
 
 Axiom buckHashSize : Z.
 
@@ -3061,7 +3061,7 @@ Definition mProfCycle : go_string := "runtime.mProfCycle"%go.
 
 Axiom buckhashArray : go_type.
 
-Axiom mProfCycleWrap : expr.
+Axiom mProfCycleWrap : val.
 
 Axiom mProfCycleHolder : go_type.
 
@@ -3161,11 +3161,11 @@ Axiom goroutineProfile'init : val.
 
 Axiom goroutineProfileState : go_type.
 
-Axiom goroutineProfileAbsent : expr.
+Axiom goroutineProfileAbsent : val.
 
-Axiom goroutineProfileInProgress : expr.
+Axiom goroutineProfileInProgress : val.
 
-Axiom goroutineProfileSatisfied : expr.
+Axiom goroutineProfileSatisfied : val.
 
 Axiom goroutineProfileStateHolder : go_type.
 
@@ -3205,7 +3205,7 @@ Axiom atomicOffAddr : go_type.
 
 Axiom addrRanges : go_type.
 
-Axiom msanenabled : expr.
+Axiom msanenabled : val.
 
 Definition msanread : go_string := "runtime.msanread"%go.
 
@@ -3273,7 +3273,7 @@ Axiom consistentHeapStats : go_type.
 
 Axiom cpuStats : go_type.
 
-Axiom testSmallBuf : expr.
+Axiom testSmallBuf : val.
 
 Axiom wbBuf : go_type.
 
@@ -3295,11 +3295,11 @@ Axiom pollErrTimeout : Z.
 
 Axiom pollErrNotPollable : Z.
 
-Axiom pdNil : expr.
+Axiom pdNil : val.
 
-Axiom pdReady : expr.
+Axiom pdReady : val.
 
-Axiom pdWait : expr.
+Axiom pdWait : val.
 
 Axiom pollBlockSize : Z.
 
@@ -3657,11 +3657,11 @@ Definition closeonexec : go_string := "runtime.closeonexec"%go.
 
 Axiom throwType : go_type.
 
-Axiom throwTypeNone : expr.
+Axiom throwTypeNone : val.
 
-Axiom throwTypeUser : expr.
+Axiom throwTypeUser : val.
 
-Axiom throwTypeRuntime : expr.
+Axiom throwTypeRuntime : val.
 
 Definition panicCheck1 : go_string := "runtime.panicCheck1"%go.
 
@@ -3871,7 +3871,7 @@ Axiom Pinner : go_type.
 
 Axiom pinnerSize : Z.
 
-Axiom pinnerRefStoreSize : expr.
+Axiom pinnerRefStoreSize : val.
 
 Axiom pinner : go_type.
 
@@ -4041,7 +4041,7 @@ Definition crashingG : go_string := "runtime.crashingG"%go.
 
 Definition switchToCrashStack : go_string := "runtime.switchToCrashStack"%go.
 
-Axiom crashStackImplemented : expr.
+Axiom crashStackImplemented : val.
 
 Definition switchToCrashStack0 : go_string := "runtime.switchToCrashStack0"%go.
 
@@ -4091,11 +4091,11 @@ Definition makeProfStack : go_string := "runtime.makeProfStack"%go.
 
 Definition pprof_makeProfStack : go_string := "runtime.pprof_makeProfStack"%go.
 
-Axiom osHasLowResTimer : expr.
+Axiom osHasLowResTimer : val.
 
 Axiom osHasLowResClockInt : Z.
 
-Axiom osHasLowResClock : expr.
+Axiom osHasLowResClock : val.
 
 Definition ready : go_string := "runtime.ready"%go.
 
@@ -4127,39 +4127,39 @@ Definition casGFromPreempted : go_string := "runtime.casGFromPreempted"%go.
 
 Axiom stwReason : go_type.
 
-Axiom stwUnknown : expr.
+Axiom stwUnknown : val.
 
-Axiom stwGCMarkTerm : expr.
+Axiom stwGCMarkTerm : val.
 
-Axiom stwGCSweepTerm : expr.
+Axiom stwGCSweepTerm : val.
 
-Axiom stwWriteHeapDump : expr.
+Axiom stwWriteHeapDump : val.
 
-Axiom stwGoroutineProfile : expr.
+Axiom stwGoroutineProfile : val.
 
-Axiom stwGoroutineProfileCleanup : expr.
+Axiom stwGoroutineProfileCleanup : val.
 
-Axiom stwAllGoroutinesStack : expr.
+Axiom stwAllGoroutinesStack : val.
 
-Axiom stwReadMemStats : expr.
+Axiom stwReadMemStats : val.
 
-Axiom stwAllThreadsSyscall : expr.
+Axiom stwAllThreadsSyscall : val.
 
-Axiom stwGOMAXPROCS : expr.
+Axiom stwGOMAXPROCS : val.
 
-Axiom stwStartTrace : expr.
+Axiom stwStartTrace : val.
 
-Axiom stwStopTrace : expr.
+Axiom stwStopTrace : val.
 
-Axiom stwForTestCountPagesInUse : expr.
+Axiom stwForTestCountPagesInUse : val.
 
-Axiom stwForTestReadMetricsSlow : expr.
+Axiom stwForTestReadMetricsSlow : val.
 
-Axiom stwForTestReadMemStatsSlow : expr.
+Axiom stwForTestReadMemStatsSlow : val.
 
-Axiom stwForTestPageCachePagesLeaked : expr.
+Axiom stwForTestPageCachePagesLeaked : val.
 
-Axiom stwForTestResetDebugLog : expr.
+Axiom stwForTestResetDebugLog : val.
 
 Definition stwReasonStrings : go_string := "runtime.stwReasonStrings"%go.
 
@@ -4445,7 +4445,7 @@ Definition needSysmonWorkaround : go_string := "runtime.needSysmonWorkaround"%go
 
 Axiom needSysmonWorkaround'init : val.
 
-Axiom haveSysmon : expr.
+Axiom haveSysmon : val.
 
 Definition sysmon : go_string := "runtime.sysmon"%go.
 
@@ -4489,7 +4489,7 @@ Definition pidlegetSpinning : go_string := "runtime.pidlegetSpinning"%go.
 
 Definition runqempty : go_string := "runtime.runqempty"%go.
 
-Axiom randomizeScheduler : expr.
+Axiom randomizeScheduler : val.
 
 Definition runqput : go_string := "runtime.runqput"%go.
 
@@ -4555,9 +4555,9 @@ Axiom profAtomic : go_type.
 
 Axiom profIndex : go_type.
 
-Axiom profReaderSleeping : expr.
+Axiom profReaderSleeping : val.
 
-Axiom profWriteExtra : expr.
+Axiom profWriteExtra : val.
 
 Definition countSub : go_string := "runtime.countSub"%go.
 
@@ -4565,9 +4565,9 @@ Definition newProfBuf : go_string := "runtime.newProfBuf"%go.
 
 Axiom profBufReadMode : go_type.
 
-Axiom profBufBlocking : expr.
+Axiom profBufBlocking : val.
 
-Axiom profBufNonBlocking : expr.
+Axiom profBufNonBlocking : val.
 
 Definition overflowTag : go_string := "runtime.overflowTag"%go.
 
@@ -4577,7 +4577,7 @@ Definition runtime_setProfLabel : go_string := "runtime.runtime_setProfLabel"%go
 
 Definition runtime_getProfLabel : go_string := "runtime.runtime_getProfLabel"%go.
 
-Axiom raceenabled : expr.
+Axiom raceenabled : val.
 
 Definition raceReadObjectPC : go_string := "runtime.raceReadObjectPC"%go.
 
@@ -4935,93 +4935,93 @@ Axiom ancestorInfo : go_type.
 
 Axiom waitReason : go_type.
 
-Axiom waitReasonZero : expr.
+Axiom waitReasonZero : val.
 
-Axiom waitReasonGCAssistMarking : expr.
+Axiom waitReasonGCAssistMarking : val.
 
-Axiom waitReasonIOWait : expr.
+Axiom waitReasonIOWait : val.
 
-Axiom waitReasonChanReceiveNilChan : expr.
+Axiom waitReasonChanReceiveNilChan : val.
 
-Axiom waitReasonChanSendNilChan : expr.
+Axiom waitReasonChanSendNilChan : val.
 
-Axiom waitReasonDumpingHeap : expr.
+Axiom waitReasonDumpingHeap : val.
 
-Axiom waitReasonGarbageCollection : expr.
+Axiom waitReasonGarbageCollection : val.
 
-Axiom waitReasonGarbageCollectionScan : expr.
+Axiom waitReasonGarbageCollectionScan : val.
 
-Axiom waitReasonPanicWait : expr.
+Axiom waitReasonPanicWait : val.
 
-Axiom waitReasonSelect : expr.
+Axiom waitReasonSelect : val.
 
-Axiom waitReasonSelectNoCases : expr.
+Axiom waitReasonSelectNoCases : val.
 
-Axiom waitReasonGCAssistWait : expr.
+Axiom waitReasonGCAssistWait : val.
 
-Axiom waitReasonGCSweepWait : expr.
+Axiom waitReasonGCSweepWait : val.
 
-Axiom waitReasonGCScavengeWait : expr.
+Axiom waitReasonGCScavengeWait : val.
 
-Axiom waitReasonChanReceive : expr.
+Axiom waitReasonChanReceive : val.
 
-Axiom waitReasonChanSend : expr.
+Axiom waitReasonChanSend : val.
 
-Axiom waitReasonFinalizerWait : expr.
+Axiom waitReasonFinalizerWait : val.
 
-Axiom waitReasonForceGCIdle : expr.
+Axiom waitReasonForceGCIdle : val.
 
-Axiom waitReasonSemacquire : expr.
+Axiom waitReasonSemacquire : val.
 
-Axiom waitReasonSleep : expr.
+Axiom waitReasonSleep : val.
 
-Axiom waitReasonSyncCondWait : expr.
+Axiom waitReasonSyncCondWait : val.
 
-Axiom waitReasonSyncMutexLock : expr.
+Axiom waitReasonSyncMutexLock : val.
 
-Axiom waitReasonSyncRWMutexRLock : expr.
+Axiom waitReasonSyncRWMutexRLock : val.
 
-Axiom waitReasonSyncRWMutexLock : expr.
+Axiom waitReasonSyncRWMutexLock : val.
 
-Axiom waitReasonSyncWaitGroupWait : expr.
+Axiom waitReasonSyncWaitGroupWait : val.
 
-Axiom waitReasonTraceReaderBlocked : expr.
+Axiom waitReasonTraceReaderBlocked : val.
 
-Axiom waitReasonWaitForGCCycle : expr.
+Axiom waitReasonWaitForGCCycle : val.
 
-Axiom waitReasonGCWorkerIdle : expr.
+Axiom waitReasonGCWorkerIdle : val.
 
-Axiom waitReasonGCWorkerActive : expr.
+Axiom waitReasonGCWorkerActive : val.
 
-Axiom waitReasonPreempted : expr.
+Axiom waitReasonPreempted : val.
 
-Axiom waitReasonDebugCall : expr.
+Axiom waitReasonDebugCall : val.
 
-Axiom waitReasonGCMarkTermination : expr.
+Axiom waitReasonGCMarkTermination : val.
 
-Axiom waitReasonStoppingTheWorld : expr.
+Axiom waitReasonStoppingTheWorld : val.
 
-Axiom waitReasonFlushProcCaches : expr.
+Axiom waitReasonFlushProcCaches : val.
 
-Axiom waitReasonTraceGoroutineStatus : expr.
+Axiom waitReasonTraceGoroutineStatus : val.
 
-Axiom waitReasonTraceProcStatus : expr.
+Axiom waitReasonTraceProcStatus : val.
 
-Axiom waitReasonPageTraceFlush : expr.
+Axiom waitReasonPageTraceFlush : val.
 
-Axiom waitReasonCoroutine : expr.
+Axiom waitReasonCoroutine : val.
 
-Axiom waitReasonGCWeakToStrongWait : expr.
+Axiom waitReasonGCWeakToStrongWait : val.
 
-Axiom waitReasonSynctestRun : expr.
+Axiom waitReasonSynctestRun : val.
 
-Axiom waitReasonSynctestWait : expr.
+Axiom waitReasonSynctestWait : val.
 
-Axiom waitReasonSynctestChanReceive : expr.
+Axiom waitReasonSynctestChanReceive : val.
 
-Axiom waitReasonSynctestChanSend : expr.
+Axiom waitReasonSynctestChanSend : val.
 
-Axiom waitReasonSynctestSelect : expr.
+Axiom waitReasonSynctestSelect : val.
 
 Definition waitReasonStrings : go_string := "runtime.waitReasonStrings"%go.
 
@@ -5071,7 +5071,7 @@ Definition islibrary : go_string := "runtime.islibrary"%go.
 
 Definition isarchive : go_string := "runtime.isarchive"%go.
 
-Axiom framepointer_enabled : expr.
+Axiom framepointer_enabled : val.
 
 Definition getcallerfp : go_string := "runtime.getcallerfp"%go.
 
@@ -5091,7 +5091,7 @@ Definition secure : go_string := "runtime.secure"%go.
 
 Definition secureEnv : go_string := "runtime.secureEnv"%go.
 
-Axiom debugSelect : expr.
+Axiom debugSelect : val.
 
 Axiom scase : go_type.
 
@@ -5119,11 +5119,11 @@ Axiom runtimeSelect : go_type.
 
 Axiom selectDir : go_type.
 
-Axiom selectSend : expr.
+Axiom selectSend : val.
 
-Axiom selectRecv : expr.
+Axiom selectRecv : val.
 
-Axiom selectDefault : expr.
+Axiom selectDefault : val.
 
 Definition reflect_rselect : go_string := "runtime.reflect_rselect"%go.
 
@@ -5157,9 +5157,9 @@ Definition readyWithTime : go_string := "runtime.readyWithTime"%go.
 
 Axiom semaProfileFlags : go_type.
 
-Axiom semaBlockProfile : expr.
+Axiom semaBlockProfile : val.
 
-Axiom semaMutexProfile : expr.
+Axiom semaMutexProfile : val.
 
 Definition semacquire : go_string := "runtime.semacquire"%go.
 
@@ -5197,9 +5197,9 @@ Definition os_sigpipe : go_string := "runtime.os_sigpipe"%go.
 
 Definition signame : go_string := "runtime.signame"%go.
 
-Axiom _SIG_DFL : expr.
+Axiom _SIG_DFL : val.
 
-Axiom _SIG_IGN : expr.
+Axiom _SIG_IGN : val.
 
 Axiom sigPreempt : Z.
 
@@ -5235,7 +5235,7 @@ Definition sigpipe : go_string := "runtime.sigpipe"%go.
 
 Definition doSigPreempt : go_string := "runtime.doSigPreempt"%go.
 
-Axiom preemptMSupported : expr.
+Axiom preemptMSupported : val.
 
 Definition preemptM : go_string := "runtime.preemptM"%go.
 
@@ -5425,29 +5425,29 @@ Definition slicecopy : go_string := "runtime.slicecopy"%go.
 
 Definition bytealg_MakeNoZero : go_string := "runtime.bytealg_MakeNoZero"%go.
 
-Axiom mantbits64 : expr.
+Axiom mantbits64 : val.
 
-Axiom expbits64 : expr.
+Axiom expbits64 : val.
 
 Axiom bias64 : Z.
 
-Axiom nan64 : expr.
+Axiom nan64 : val.
 
-Axiom inf64 : expr.
+Axiom inf64 : val.
 
-Axiom neg64 : expr.
+Axiom neg64 : val.
 
-Axiom mantbits32 : expr.
+Axiom mantbits32 : val.
 
-Axiom expbits32 : expr.
+Axiom expbits32 : val.
 
 Axiom bias32 : Z.
 
-Axiom nan32 : expr.
+Axiom nan32 : val.
 
-Axiom inf32 : expr.
+Axiom inf32 : val.
 
-Axiom neg32 : expr.
+Axiom neg32 : val.
 
 Definition funpack64 : go_string := "runtime.funpack64"%go.
 
@@ -5557,7 +5557,7 @@ Axiom stackFaultOnFree : Z.
 
 Axiom stackNoCache : Z.
 
-Axiom debugCheckBP : expr.
+Axiom debugCheckBP : val.
 
 Definition stackPoisonCopy : go_string := "runtime.stackPoisonCopy"%go.
 
@@ -5727,9 +5727,9 @@ Definition internal_syscall_gostring : go_string := "runtime.internal_syscall_go
 
 Definition gostringn : go_string := "runtime.gostringn"%go.
 
-Axiom maxUint64 : expr.
+Axiom maxUint64 : val.
 
-Axiom maxInt64 : expr.
+Axiom maxInt64 : val.
 
 Definition atoi64 : go_string := "runtime.atoi64"%go.
 
@@ -5765,7 +5765,7 @@ Definition memmove : go_string := "runtime.memmove"%go.
 
 Definition reflect_memmove : go_string := "runtime.reflect_memmove"%go.
 
-Axiom hashLoad : expr.
+Axiom hashLoad : val.
 
 Definition memequal : go_string := "runtime.memequal"%go.
 
@@ -6033,7 +6033,7 @@ Axiom findfuncbucket : go_type.
 
 Definition moduledataverify : go_string := "runtime.moduledataverify"%go.
 
-Axiom debugPcln : expr.
+Axiom debugPcln : val.
 
 Definition moduledataverify1 : go_string := "runtime.moduledataverify1"%go.
 
@@ -6153,17 +6153,17 @@ Axiom timers : go_type.
 
 Axiom timerWhen : go_type.
 
-Axiom timerHeaped : expr.
+Axiom timerHeaped : val.
 
-Axiom timerModified : expr.
+Axiom timerModified : val.
 
-Axiom timerZombie : expr.
+Axiom timerZombie : val.
 
-Axiom timerDebug : expr.
+Axiom timerDebug : val.
 
 Axiom maxWhen : Z.
 
-Axiom verifyTimers : expr.
+Axiom verifyTimers : val.
 
 Definition timeSleep : go_string := "runtime.timeSleep"%go.
 
@@ -6233,7 +6233,7 @@ Definition traceAdvancer : go_string := "runtime.traceAdvancer"%go.
 
 Axiom traceAdvancerState : go_type.
 
-Axiom defaultTraceAdvancePeriod : expr.
+Axiom defaultTraceAdvancePeriod : val.
 
 Axiom wakeableSleep : go_type.
 
@@ -6255,7 +6255,7 @@ Definition traceGoroutineStackID : go_string := "runtime.traceGoroutineStackID"%
 
 Definition traceCompressStackSize : go_string := "runtime.traceCompressStackSize"%go.
 
-Axiom usesLR : expr.
+Axiom usesLR : val.
 
 Axiom tracebackInnerFrames : Z.
 
@@ -6263,13 +6263,13 @@ Axiom tracebackOuterFrames : Z.
 
 Axiom unwindFlags : go_type.
 
-Axiom unwindPrintErrors : expr.
+Axiom unwindPrintErrors : val.
 
-Axiom unwindSilentErrors : expr.
+Axiom unwindSilentErrors : val.
 
-Axiom unwindTrap : expr.
+Axiom unwindTrap : val.
 
-Axiom unwindJumpStack : expr.
+Axiom unwindJumpStack : val.
 
 Axiom unwinder : go_type.
 
@@ -6373,105 +6373,105 @@ Definition traceCPUSample : go_string := "runtime.traceCPUSample"%go.
 
 Axiom traceEv : go_type.
 
-Axiom traceEvNone : expr.
+Axiom traceEvNone : val.
 
-Axiom traceEvEventBatch : expr.
+Axiom traceEvEventBatch : val.
 
-Axiom traceEvStacks : expr.
+Axiom traceEvStacks : val.
 
-Axiom traceEvStack : expr.
+Axiom traceEvStack : val.
 
-Axiom traceEvStrings : expr.
+Axiom traceEvStrings : val.
 
-Axiom traceEvString : expr.
+Axiom traceEvString : val.
 
-Axiom traceEvCPUSamples : expr.
+Axiom traceEvCPUSamples : val.
 
-Axiom traceEvCPUSample : expr.
+Axiom traceEvCPUSample : val.
 
-Axiom traceEvFrequency : expr.
+Axiom traceEvFrequency : val.
 
-Axiom traceEvProcsChange : expr.
+Axiom traceEvProcsChange : val.
 
-Axiom traceEvProcStart : expr.
+Axiom traceEvProcStart : val.
 
-Axiom traceEvProcStop : expr.
+Axiom traceEvProcStop : val.
 
-Axiom traceEvProcSteal : expr.
+Axiom traceEvProcSteal : val.
 
-Axiom traceEvProcStatus : expr.
+Axiom traceEvProcStatus : val.
 
-Axiom traceEvGoCreate : expr.
+Axiom traceEvGoCreate : val.
 
-Axiom traceEvGoCreateSyscall : expr.
+Axiom traceEvGoCreateSyscall : val.
 
-Axiom traceEvGoStart : expr.
+Axiom traceEvGoStart : val.
 
-Axiom traceEvGoDestroy : expr.
+Axiom traceEvGoDestroy : val.
 
-Axiom traceEvGoDestroySyscall : expr.
+Axiom traceEvGoDestroySyscall : val.
 
-Axiom traceEvGoStop : expr.
+Axiom traceEvGoStop : val.
 
-Axiom traceEvGoBlock : expr.
+Axiom traceEvGoBlock : val.
 
-Axiom traceEvGoUnblock : expr.
+Axiom traceEvGoUnblock : val.
 
-Axiom traceEvGoSyscallBegin : expr.
+Axiom traceEvGoSyscallBegin : val.
 
-Axiom traceEvGoSyscallEnd : expr.
+Axiom traceEvGoSyscallEnd : val.
 
-Axiom traceEvGoSyscallEndBlocked : expr.
+Axiom traceEvGoSyscallEndBlocked : val.
 
-Axiom traceEvGoStatus : expr.
+Axiom traceEvGoStatus : val.
 
-Axiom traceEvSTWBegin : expr.
+Axiom traceEvSTWBegin : val.
 
-Axiom traceEvSTWEnd : expr.
+Axiom traceEvSTWEnd : val.
 
-Axiom traceEvGCActive : expr.
+Axiom traceEvGCActive : val.
 
-Axiom traceEvGCBegin : expr.
+Axiom traceEvGCBegin : val.
 
-Axiom traceEvGCEnd : expr.
+Axiom traceEvGCEnd : val.
 
-Axiom traceEvGCSweepActive : expr.
+Axiom traceEvGCSweepActive : val.
 
-Axiom traceEvGCSweepBegin : expr.
+Axiom traceEvGCSweepBegin : val.
 
-Axiom traceEvGCSweepEnd : expr.
+Axiom traceEvGCSweepEnd : val.
 
-Axiom traceEvGCMarkAssistActive : expr.
+Axiom traceEvGCMarkAssistActive : val.
 
-Axiom traceEvGCMarkAssistBegin : expr.
+Axiom traceEvGCMarkAssistBegin : val.
 
-Axiom traceEvGCMarkAssistEnd : expr.
+Axiom traceEvGCMarkAssistEnd : val.
 
-Axiom traceEvHeapAlloc : expr.
+Axiom traceEvHeapAlloc : val.
 
-Axiom traceEvHeapGoal : expr.
+Axiom traceEvHeapGoal : val.
 
-Axiom traceEvGoLabel : expr.
+Axiom traceEvGoLabel : val.
 
-Axiom traceEvUserTaskBegin : expr.
+Axiom traceEvUserTaskBegin : val.
 
-Axiom traceEvUserTaskEnd : expr.
+Axiom traceEvUserTaskEnd : val.
 
-Axiom traceEvUserRegionBegin : expr.
+Axiom traceEvUserRegionBegin : val.
 
-Axiom traceEvUserRegionEnd : expr.
+Axiom traceEvUserRegionEnd : val.
 
-Axiom traceEvUserLog : expr.
+Axiom traceEvUserLog : val.
 
-Axiom traceEvGoSwitch : expr.
+Axiom traceEvGoSwitch : val.
 
-Axiom traceEvGoSwitchDestroy : expr.
+Axiom traceEvGoSwitchDestroy : val.
 
-Axiom traceEvGoCreateBlocked : expr.
+Axiom traceEvGoCreateBlocked : val.
 
-Axiom traceEvGoStatusStack : expr.
+Axiom traceEvGoStatusStack : val.
 
-Axiom traceEvExperimentalBatch : expr.
+Axiom traceEvExperimentalBatch : val.
 
 Axiom traceArg : go_type.
 
@@ -6481,29 +6481,29 @@ Definition unsafeTraceExpWriter : go_string := "runtime.unsafeTraceExpWriter"%go
 
 Axiom traceExperiment : go_type.
 
-Axiom traceNoExperiment : expr.
+Axiom traceNoExperiment : val.
 
-Axiom traceExperimentAllocFree : expr.
+Axiom traceExperimentAllocFree : val.
 
-Axiom traceNumExperiments : expr.
+Axiom traceNumExperiments : val.
 
-Axiom traceEvSpan : expr.
+Axiom traceEvSpan : val.
 
-Axiom traceEvSpanAlloc : expr.
+Axiom traceEvSpanAlloc : val.
 
-Axiom traceEvSpanFree : expr.
+Axiom traceEvSpanFree : val.
 
-Axiom traceEvHeapObject : expr.
+Axiom traceEvHeapObject : val.
 
-Axiom traceEvHeapObjectAlloc : expr.
+Axiom traceEvHeapObjectAlloc : val.
 
-Axiom traceEvHeapObjectFree : expr.
+Axiom traceEvHeapObjectFree : val.
 
-Axiom traceEvGoroutineStack : expr.
+Axiom traceEvGoroutineStack : val.
 
-Axiom traceEvGoroutineStackAlloc : expr.
+Axiom traceEvGoroutineStackAlloc : val.
 
-Axiom traceEvGoroutineStackFree : expr.
+Axiom traceEvGoroutineStackFree : val.
 
 Axiom traceMap : go_type.
 
@@ -6515,7 +6515,7 @@ Axiom traceRegionAllocBlock : go_type.
 
 Axiom traceRegionAllocBlockHeader : go_type.
 
-Axiom traceRegionAllocBlockData : expr.
+Axiom traceRegionAllocBlockData : val.
 
 Axiom gTraceState : go_type.
 
@@ -6529,39 +6529,39 @@ Definition lockRankMayTraceFlush : go_string := "runtime.lockRankMayTraceFlush"%
 
 Axiom traceBlockReason : go_type.
 
-Axiom traceBlockGeneric : expr.
+Axiom traceBlockGeneric : val.
 
-Axiom traceBlockForever : expr.
+Axiom traceBlockForever : val.
 
-Axiom traceBlockNet : expr.
+Axiom traceBlockNet : val.
 
-Axiom traceBlockSelect : expr.
+Axiom traceBlockSelect : val.
 
-Axiom traceBlockCondWait : expr.
+Axiom traceBlockCondWait : val.
 
-Axiom traceBlockSync : expr.
+Axiom traceBlockSync : val.
 
-Axiom traceBlockChanSend : expr.
+Axiom traceBlockChanSend : val.
 
-Axiom traceBlockChanRecv : expr.
+Axiom traceBlockChanRecv : val.
 
-Axiom traceBlockGCMarkAssist : expr.
+Axiom traceBlockGCMarkAssist : val.
 
-Axiom traceBlockGCSweep : expr.
+Axiom traceBlockGCSweep : val.
 
-Axiom traceBlockSystemGoroutine : expr.
+Axiom traceBlockSystemGoroutine : val.
 
-Axiom traceBlockPreempted : expr.
+Axiom traceBlockPreempted : val.
 
-Axiom traceBlockDebugCall : expr.
+Axiom traceBlockDebugCall : val.
 
-Axiom traceBlockUntilGCEnds : expr.
+Axiom traceBlockUntilGCEnds : val.
 
-Axiom traceBlockSleep : expr.
+Axiom traceBlockSleep : val.
 
-Axiom traceBlockGCWeakToStrongWait : expr.
+Axiom traceBlockGCWeakToStrongWait : val.
 
-Axiom traceBlockSynctest : expr.
+Axiom traceBlockSynctest : val.
 
 Definition traceBlockReasonStrings : go_string := "runtime.traceBlockReasonStrings"%go.
 
@@ -6569,11 +6569,11 @@ Axiom traceBlockReasonStrings'init : val.
 
 Axiom traceGoStopReason : go_type.
 
-Axiom traceGoStopGeneric : expr.
+Axiom traceGoStopGeneric : val.
 
-Axiom traceGoStopGoSched : expr.
+Axiom traceGoStopGoSched : val.
 
-Axiom traceGoStopPreempted : expr.
+Axiom traceGoStopPreempted : val.
 
 Definition traceGoStopReasonStrings : go_string := "runtime.traceGoStopReasonStrings"%go.
 
@@ -6587,7 +6587,7 @@ Definition traceShuttingDown : go_string := "runtime.traceShuttingDown"%go.
 
 Axiom traceLocker : go_type.
 
-Axiom debugTraceReentrancy : expr.
+Axiom debugTraceReentrancy : val.
 
 Definition traceAcquire : go_string := "runtime.traceAcquire"%go.
 
@@ -6611,7 +6611,7 @@ Definition traceThreadDestroy : go_string := "runtime.traceThreadDestroy"%go.
 
 Axiom traceStackSize : Z.
 
-Axiom logicalStackSentinel : expr.
+Axiom logicalStackSentinel : val.
 
 Definition traceStack : go_string := "runtime.traceStack"%go.
 
@@ -6637,27 +6637,27 @@ Definition startPCForTrace : go_string := "runtime.startPCForTrace"%go.
 
 Axiom traceGoStatus : go_type.
 
-Axiom traceGoBad : expr.
+Axiom traceGoBad : val.
 
-Axiom traceGoRunnable : expr.
+Axiom traceGoRunnable : val.
 
-Axiom traceGoRunning : expr.
+Axiom traceGoRunning : val.
 
-Axiom traceGoSyscall : expr.
+Axiom traceGoSyscall : val.
 
-Axiom traceGoWaiting : expr.
+Axiom traceGoWaiting : val.
 
 Axiom traceProcStatus : go_type.
 
-Axiom traceProcBad : expr.
+Axiom traceProcBad : val.
 
-Axiom traceProcRunning : expr.
+Axiom traceProcRunning : val.
 
-Axiom traceProcIdle : expr.
+Axiom traceProcIdle : val.
 
-Axiom traceProcSyscall : expr.
+Axiom traceProcSyscall : val.
 
-Axiom traceProcSyscallAbandoned : expr.
+Axiom traceProcSyscallAbandoned : val.
 
 Definition goStatusToTraceGoStatus : go_string := "runtime.goStatusToTraceGoStatus"%go.
 
@@ -6767,11 +6767,11 @@ Definition panicunsafeslicenilptr1 : go_string := "runtime.panicunsafeslicenilpt
 
 Definition reflect_unsafeslice : go_string := "runtime.reflect_unsafeslice"%go.
 
-Axiom runeError : expr.
+Axiom runeError : val.
 
 Axiom runeSelf : Z.
 
-Axiom maxRune : expr.
+Axiom maxRune : val.
 
 Axiom surrogateMin : Z.
 
@@ -6863,9 +6863,9 @@ Axiom _STB_WEAK : Z.
 
 Axiom _EI_NIDENT : Z.
 
-Axiom vdsoSymTabSize : expr.
+Axiom vdsoSymTabSize : val.
 
-Axiom vdsoDynSize : expr.
+Axiom vdsoDynSize : val.
 
 Axiom vdsoSymStringsSize : Z.
 
@@ -6873,7 +6873,7 @@ Axiom vdsoVerSymSize : Z.
 
 Axiom vdsoHashSize : Z.
 
-Axiom vdsoBloomSizeScale : expr.
+Axiom vdsoBloomSizeScale : val.
 
 Definition _ELF_ST_BIND : go_string := "runtime._ELF_ST_BIND"%go.
 
@@ -11457,11 +11457,7 @@ Axiom g__guintptrⁱᵐᵖˡ : val.
 
 Axiom m__becomeSpinningⁱᵐᵖˡ : val.
 
-Axiom m__clearAllpSnapshotⁱᵐᵖˡ : val.
-
 Axiom m__hasCgoOnStackⁱᵐᵖˡ : val.
-
-Axiom m__snapshotAllpⁱᵐᵖˡ : val.
 
 Axiom p__destroyⁱᵐᵖˡ : val.
 
@@ -12133,7 +12129,7 @@ Axiom bitCursor__offsetⁱᵐᵖˡ : val.
 
 Axiom bitCursor__writeⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(userArena.id, []); (ptrT.id userArena.id, [("alloc"%go, userArena__allocⁱᵐᵖˡ); ("free"%go, userArena__freeⁱᵐᵖˡ); ("new"%go, userArena__newⁱᵐᵖˡ); ("refill"%go, userArena__refillⁱᵐᵖˡ); ("slice"%go, userArena__sliceⁱᵐᵖˡ)]); (liveUserArenaChunk.id, [("allocBitsForIndex"%go, liveUserArenaChunk__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, liveUserArenaChunk__baseⁱᵐᵖˡ); ("countAlloc"%go, liveUserArenaChunk__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, liveUserArenaChunk__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, liveUserArenaChunk__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, liveUserArenaChunk__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, liveUserArenaChunk__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, liveUserArenaChunk__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, liveUserArenaChunk__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, liveUserArenaChunk__inListⁱᵐᵖˡ); ("incPinCounter"%go, liveUserArenaChunk__incPinCounterⁱᵐᵖˡ); ("init"%go, liveUserArenaChunk__initⁱᵐᵖˡ); ("initHeapBits"%go, liveUserArenaChunk__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, liveUserArenaChunk__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, liveUserArenaChunk__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, liveUserArenaChunk__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, liveUserArenaChunk__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, liveUserArenaChunk__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, liveUserArenaChunk__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, liveUserArenaChunk__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, liveUserArenaChunk__objBaseⁱᵐᵖˡ); ("objIndex"%go, liveUserArenaChunk__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, liveUserArenaChunk__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, liveUserArenaChunk__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, liveUserArenaChunk__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, liveUserArenaChunk__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, liveUserArenaChunk__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, liveUserArenaChunk__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, liveUserArenaChunk__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, liveUserArenaChunk__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, liveUserArenaChunk__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, liveUserArenaChunk__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, liveUserArenaChunk__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, liveUserArenaChunk__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, liveUserArenaChunk__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (ptrT.id liveUserArenaChunk.id, [("allocBitsForIndex"%go, liveUserArenaChunk__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, liveUserArenaChunk__baseⁱᵐᵖˡ); ("countAlloc"%go, liveUserArenaChunk__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, liveUserArenaChunk__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, liveUserArenaChunk__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, liveUserArenaChunk__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, liveUserArenaChunk__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, liveUserArenaChunk__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, liveUserArenaChunk__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, liveUserArenaChunk__inListⁱᵐᵖˡ); ("incPinCounter"%go, liveUserArenaChunk__incPinCounterⁱᵐᵖˡ); ("init"%go, liveUserArenaChunk__initⁱᵐᵖˡ); ("initHeapBits"%go, liveUserArenaChunk__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, liveUserArenaChunk__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, liveUserArenaChunk__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, liveUserArenaChunk__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, liveUserArenaChunk__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, liveUserArenaChunk__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, liveUserArenaChunk__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, liveUserArenaChunk__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, liveUserArenaChunk__objBaseⁱᵐᵖˡ); ("objIndex"%go, liveUserArenaChunk__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, liveUserArenaChunk__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, liveUserArenaChunk__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, liveUserArenaChunk__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, liveUserArenaChunk__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, liveUserArenaChunk__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, liveUserArenaChunk__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, liveUserArenaChunk__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, liveUserArenaChunk__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, liveUserArenaChunk__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, liveUserArenaChunk__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, liveUserArenaChunk__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, liveUserArenaChunk__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, liveUserArenaChunk__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (writeUserArenaHeapBits.id, [("flush"%go, writeUserArenaHeapBits__flushⁱᵐᵖˡ); ("pad"%go, writeUserArenaHeapBits__padⁱᵐᵖˡ); ("write"%go, writeUserArenaHeapBits__writeⁱᵐᵖˡ)]); (ptrT.id writeUserArenaHeapBits.id, [("flush"%go, writeUserArenaHeapBits__flushⁱᵐᵖˡ); ("pad"%go, writeUserArenaHeapBits__padⁱᵐᵖˡ); ("write"%go, writeUserArenaHeapBits__writeⁱᵐᵖˡ)]); (cgoCallers.id, []); (ptrT.id cgoCallers.id, []); (argset.id, []); (ptrT.id argset.id, []); (hchan.id, []); (ptrT.id hchan.id, [("raceaddr"%go, hchan__raceaddrⁱᵐᵖˡ); ("sortkey"%go, hchan__sortkeyⁱᵐᵖˡ)]); (waitq.id, []); (ptrT.id waitq.id, [("dequeue"%go, waitq__dequeueⁱᵐᵖˡ); ("dequeueSudoG"%go, waitq__dequeueSudoGⁱᵐᵖˡ); ("enqueue"%go, waitq__enqueueⁱᵐᵖˡ)]); (coro.id, []); (ptrT.id coro.id, []); (cpuProfile.id, []); (ptrT.id cpuProfile.id, [("add"%go, cpuProfile__addⁱᵐᵖˡ); ("addExtra"%go, cpuProfile__addExtraⁱᵐᵖˡ); ("addNonGo"%go, cpuProfile__addNonGoⁱᵐᵖˡ)]); (debugCallWrapArgs.id, []); (ptrT.id debugCallWrapArgs.id, []); (dloggerImpl.id, []); (ptrT.id dloggerImpl.id, [("b"%go, dloggerImpl__bⁱᵐᵖˡ); ("end"%go, dloggerImpl__endⁱᵐᵖˡ); ("hex"%go, dloggerImpl__hexⁱᵐᵖˡ); ("i"%go, dloggerImpl__iⁱᵐᵖˡ); ("i16"%go, dloggerImpl__i16ⁱᵐᵖˡ); ("i32"%go, dloggerImpl__i32ⁱᵐᵖˡ); ("i64"%go, dloggerImpl__i64ⁱᵐᵖˡ); ("i8"%go, dloggerImpl__i8ⁱᵐᵖˡ); ("p"%go, dloggerImpl__pⁱᵐᵖˡ); ("pc"%go, dloggerImpl__pcⁱᵐᵖˡ); ("s"%go, dloggerImpl__sⁱᵐᵖˡ); ("traceback"%go, dloggerImpl__tracebackⁱᵐᵖˡ); ("u"%go, dloggerImpl__uⁱᵐᵖˡ); ("u16"%go, dloggerImpl__u16ⁱᵐᵖˡ); ("u32"%go, dloggerImpl__u32ⁱᵐᵖˡ); ("u64"%go, dloggerImpl__u64ⁱᵐᵖˡ); ("u8"%go, dloggerImpl__u8ⁱᵐᵖˡ); ("uptr"%go, dloggerImpl__uptrⁱᵐᵖˡ)]); (dloggerFake.id, [("b"%go, dloggerFake__bⁱᵐᵖˡ); ("end"%go, dloggerFake__endⁱᵐᵖˡ); ("hex"%go, dloggerFake__hexⁱᵐᵖˡ); ("i"%go, dloggerFake__iⁱᵐᵖˡ); ("i16"%go, dloggerFake__i16ⁱᵐᵖˡ); ("i32"%go, dloggerFake__i32ⁱᵐᵖˡ); ("i64"%go, dloggerFake__i64ⁱᵐᵖˡ); ("i8"%go, dloggerFake__i8ⁱᵐᵖˡ); ("p"%go, dloggerFake__pⁱᵐᵖˡ); ("pc"%go, dloggerFake__pcⁱᵐᵖˡ); ("s"%go, dloggerFake__sⁱᵐᵖˡ); ("traceback"%go, dloggerFake__tracebackⁱᵐᵖˡ); ("u"%go, dloggerFake__uⁱᵐᵖˡ); ("u16"%go, dloggerFake__u16ⁱᵐᵖˡ); ("u32"%go, dloggerFake__u32ⁱᵐᵖˡ); ("u64"%go, dloggerFake__u64ⁱᵐᵖˡ); ("u8"%go, dloggerFake__u8ⁱᵐᵖˡ); ("uptr"%go, dloggerFake__uptrⁱᵐᵖˡ)]); (ptrT.id dloggerFake.id, [("b"%go, dloggerFake__bⁱᵐᵖˡ); ("end"%go, dloggerFake__endⁱᵐᵖˡ); ("hex"%go, dloggerFake__hexⁱᵐᵖˡ); ("i"%go, dloggerFake__iⁱᵐᵖˡ); ("i16"%go, dloggerFake__i16ⁱᵐᵖˡ); ("i32"%go, dloggerFake__i32ⁱᵐᵖˡ); ("i64"%go, dloggerFake__i64ⁱᵐᵖˡ); ("i8"%go, dloggerFake__i8ⁱᵐᵖˡ); ("p"%go, dloggerFake__pⁱᵐᵖˡ); ("pc"%go, dloggerFake__pcⁱᵐᵖˡ); ("s"%go, dloggerFake__sⁱᵐᵖˡ); ("traceback"%go, dloggerFake__tracebackⁱᵐᵖˡ); ("u"%go, dloggerFake__uⁱᵐᵖˡ); ("u16"%go, dloggerFake__u16ⁱᵐᵖˡ); ("u32"%go, dloggerFake__u32ⁱᵐᵖˡ); ("u64"%go, dloggerFake__u64ⁱᵐᵖˡ); ("u8"%go, dloggerFake__u8ⁱᵐᵖˡ); ("uptr"%go, dloggerFake__uptrⁱᵐᵖˡ)]); (debugLogWriter.id, []); (ptrT.id debugLogWriter.id, [("byte"%go, debugLogWriter__byteⁱᵐᵖˡ); ("bytes"%go, debugLogWriter__bytesⁱᵐᵖˡ); ("ensure"%go, debugLogWriter__ensureⁱᵐᵖˡ); ("uvarint"%go, debugLogWriter__uvarintⁱᵐᵖˡ); ("varint"%go, debugLogWriter__varintⁱᵐᵖˡ); ("writeFrameAt"%go, debugLogWriter__writeFrameAtⁱᵐᵖˡ); ("writeSync"%go, debugLogWriter__writeSyncⁱᵐᵖˡ); ("writeUint64LE"%go, debugLogWriter__writeUint64LEⁱᵐᵖˡ)]); (debugLogBuf.id, []); (ptrT.id debugLogBuf.id, []); (debugLogReader.id, []); (ptrT.id debugLogReader.id, [("header"%go, debugLogReader__headerⁱᵐᵖˡ); ("peek"%go, debugLogReader__peekⁱᵐᵖˡ); ("printVal"%go, debugLogReader__printValⁱᵐᵖˡ); ("readUint16LEAt"%go, debugLogReader__readUint16LEAtⁱᵐᵖˡ); ("readUint64LEAt"%go, debugLogReader__readUint64LEAtⁱᵐᵖˡ); ("skip"%go, debugLogReader__skipⁱᵐᵖˡ); ("uvarint"%go, debugLogReader__uvarintⁱᵐᵖˡ); ("varint"%go, debugLogReader__varintⁱᵐᵖˡ)]); (dlogPerM.id, []); (ptrT.id dlogPerM.id, []); (timespec.id, []); (ptrT.id timespec.id, [("setNsec"%go, timespec__setNsecⁱᵐᵖˡ)]); (timeval.id, []); (ptrT.id timeval.id, [("set_usec"%go, timeval__set_usecⁱᵐᵖˡ)]); (sigactiont.id, []); (ptrT.id sigactiont.id, []); (siginfoFields.id, []); (ptrT.id siginfoFields.id, []); (siginfo.id, []); (ptrT.id siginfo.id, []); (itimerspec.id, []); (ptrT.id itimerspec.id, []); (itimerval.id, []); (ptrT.id itimerval.id, []); (sigeventFields.id, []); (ptrT.id sigeventFields.id, []); (sigevent.id, []); (ptrT.id sigevent.id, []); (usigset.id, []); (ptrT.id usigset.id, []); (fpxreg.id, []); (ptrT.id fpxreg.id, []); (xmmreg.id, []); (ptrT.id xmmreg.id, []); (fpstate.id, []); (ptrT.id fpstate.id, []); (fpxreg1.id, []); (ptrT.id fpxreg1.id, []); (xmmreg1.id, []); (ptrT.id xmmreg1.id, []); (fpstate1.id, []); (ptrT.id fpstate1.id, []); (fpreg1.id, []); (ptrT.id fpreg1.id, []); (stackt.id, []); (ptrT.id stackt.id, []); (mcontext.id, []); (ptrT.id mcontext.id, []); (ucontext.id, []); (ptrT.id ucontext.id, []); (sigcontext.id, []); (ptrT.id sigcontext.id, []); (sockaddr_un.id, []); (ptrT.id sockaddr_un.id, []); (TypeAssertionError.id, []); (ptrT.id TypeAssertionError.id, [("Error"%go, TypeAssertionError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, TypeAssertionError__RuntimeErrorⁱᵐᵖˡ)]); (errorString.id, [("Error"%go, errorString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorString__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id errorString.id, [("Error"%go, errorString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorString__RuntimeErrorⁱᵐᵖˡ)]); (errorAddressString.id, [("Addr"%go, errorAddressString__Addrⁱᵐᵖˡ); ("Error"%go, errorAddressString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorAddressString__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id errorAddressString.id, [("Addr"%go, errorAddressString__Addrⁱᵐᵖˡ); ("Error"%go, errorAddressString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorAddressString__RuntimeErrorⁱᵐᵖˡ)]); (plainError.id, [("Error"%go, plainError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, plainError__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id plainError.id, [("Error"%go, plainError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, plainError__RuntimeErrorⁱᵐᵖˡ)]); (boundsError.id, [("Error"%go, boundsError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, boundsError__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id boundsError.id, [("Error"%go, boundsError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, boundsError__RuntimeErrorⁱᵐᵖˡ)]); (boundsErrorCode.id, []); (ptrT.id boundsErrorCode.id, []); (typeCacheBucket.id, []); (ptrT.id typeCacheBucket.id, []); (childInfo.id, []); (ptrT.id childInfo.id, []); (timeHistogram.id, []); (ptrT.id timeHistogram.id, [("record"%go, timeHistogram__recordⁱᵐᵖˡ); ("write"%go, timeHistogram__writeⁱᵐᵖˡ)]); (itabTableType.id, []); (ptrT.id itabTableType.id, [("add"%go, itabTableType__addⁱᵐᵖˡ); ("find"%go, itabTableType__findⁱᵐᵖˡ)]); (uint16InterfacePtr.id, []); (ptrT.id uint16InterfacePtr.id, []); (uint32InterfacePtr.id, []); (ptrT.id uint32InterfacePtr.id, []); (uint64InterfacePtr.id, []); (ptrT.id uint64InterfacePtr.id, []); (stringInterfacePtr.id, []); (ptrT.id stringInterfacePtr.id, []); (sliceInterfacePtr.id, []); (ptrT.id sliceInterfacePtr.id, []); (lfstack.id, []); (ptrT.id lfstack.id, [("empty"%go, lfstack__emptyⁱᵐᵖˡ); ("pop"%go, lfstack__popⁱᵐᵖˡ); ("push"%go, lfstack__pushⁱᵐᵖˡ)]); (linknameIter.id, []); (ptrT.id linknameIter.id, []); (mWaitList.id, []); (ptrT.id mWaitList.id, []); (lockRank.id, [("String"%go, lockRank__Stringⁱᵐᵖˡ)]); (ptrT.id lockRank.id, [("String"%go, lockRank__Stringⁱᵐᵖˡ)]); (lockRankStruct.id, []); (ptrT.id lockRankStruct.id, []); (persistentAlloc.id, []); (ptrT.id persistentAlloc.id, []); (linearAlloc.id, []); (ptrT.id linearAlloc.id, [("alloc"%go, linearAlloc__allocⁱᵐᵖˡ); ("init"%go, linearAlloc__initⁱᵐᵖˡ)]); (notInHeap.id, []); (ptrT.id notInHeap.id, [("add"%go, notInHeap__addⁱᵐᵖˡ)]); (typePointers.id, [("fastForward"%go, typePointers__fastForwardⁱᵐᵖˡ); ("next"%go, typePointers__nextⁱᵐᵖˡ); ("nextFast"%go, typePointers__nextFastⁱᵐᵖˡ)]); (ptrT.id typePointers.id, [("fastForward"%go, typePointers__fastForwardⁱᵐᵖˡ); ("next"%go, typePointers__nextⁱᵐᵖˡ); ("nextFast"%go, typePointers__nextFastⁱᵐᵖˡ)]); (markBits.id, [("clearMarked"%go, markBits__clearMarkedⁱᵐᵖˡ); ("isMarked"%go, markBits__isMarkedⁱᵐᵖˡ); ("setMarked"%go, markBits__setMarkedⁱᵐᵖˡ); ("setMarkedNonAtomic"%go, markBits__setMarkedNonAtomicⁱᵐᵖˡ)]); (ptrT.id markBits.id, [("advance"%go, markBits__advanceⁱᵐᵖˡ); ("clearMarked"%go, markBits__clearMarkedⁱᵐᵖˡ); ("isMarked"%go, markBits__isMarkedⁱᵐᵖˡ); ("setMarked"%go, markBits__setMarkedⁱᵐᵖˡ); ("setMarkedNonAtomic"%go, markBits__setMarkedNonAtomicⁱᵐᵖˡ)]); (mcache.id, []); (ptrT.id mcache.id, [("allocLarge"%go, mcache__allocLargeⁱᵐᵖˡ); ("nextFree"%go, mcache__nextFreeⁱᵐᵖˡ); ("prepareForSweep"%go, mcache__prepareForSweepⁱᵐᵖˡ); ("refill"%go, mcache__refillⁱᵐᵖˡ); ("releaseAll"%go, mcache__releaseAllⁱᵐᵖˡ)]); (gclink.id, []); (ptrT.id gclink.id, []); (gclinkptr.id, [("ptr"%go, gclinkptr__ptrⁱᵐᵖˡ)]); (ptrT.id gclinkptr.id, [("ptr"%go, gclinkptr__ptrⁱᵐᵖˡ)]); (stackfreelist.id, []); (ptrT.id stackfreelist.id, []); (mcentral.id, []); (ptrT.id mcentral.id, [("cacheSpan"%go, mcentral__cacheSpanⁱᵐᵖˡ); ("fullSwept"%go, mcentral__fullSweptⁱᵐᵖˡ); ("fullUnswept"%go, mcentral__fullUnsweptⁱᵐᵖˡ); ("grow"%go, mcentral__growⁱᵐᵖˡ); ("init"%go, mcentral__initⁱᵐᵖˡ); ("partialSwept"%go, mcentral__partialSweptⁱᵐᵖˡ); ("partialUnswept"%go, mcentral__partialUnsweptⁱᵐᵖˡ); ("uncacheSpan"%go, mcentral__uncacheSpanⁱᵐᵖˡ)]); (checkmarksMap.id, []); (ptrT.id checkmarksMap.id, []); (Cleanup.id, [("Stop"%go, Cleanup__Stopⁱᵐᵖˡ)]); (ptrT.id Cleanup.id, [("Stop"%go, Cleanup__Stopⁱᵐᵖˡ)]); (metricData.id, []); (ptrT.id metricData.id, []); (metricReader.id, [("compute"%go, metricReader__computeⁱᵐᵖˡ)]); (ptrT.id metricReader.id, [("compute"%go, metricReader__computeⁱᵐᵖˡ)]); (statDep.id, []); (ptrT.id statDep.id, []); (statDepSet.id, [("difference"%go, statDepSet__differenceⁱᵐᵖˡ); ("union"%go, statDepSet__unionⁱᵐᵖˡ)]); (ptrT.id statDepSet.id, [("difference"%go, statDepSet__differenceⁱᵐᵖˡ); ("empty"%go, statDepSet__emptyⁱᵐᵖˡ); ("has"%go, statDepSet__hasⁱᵐᵖˡ); ("union"%go, statDepSet__unionⁱᵐᵖˡ)]); (heapStatsAggregate.id, []); (ptrT.id heapStatsAggregate.id, [("compute"%go, heapStatsAggregate__computeⁱᵐᵖˡ); ("merge"%go, heapStatsAggregate__mergeⁱᵐᵖˡ)]); (sysStatsAggregate.id, []); (ptrT.id sysStatsAggregate.id, [("compute"%go, sysStatsAggregate__computeⁱᵐᵖˡ)]); (cpuStatsAggregate.id, []); (ptrT.id cpuStatsAggregate.id, [("accumulate"%go, cpuStatsAggregate__accumulateⁱᵐᵖˡ); ("accumulateGCPauseTime"%go, cpuStatsAggregate__accumulateGCPauseTimeⁱᵐᵖˡ); ("compute"%go, cpuStatsAggregate__computeⁱᵐᵖˡ)]); (gcStatsAggregate.id, []); (ptrT.id gcStatsAggregate.id, [("compute"%go, gcStatsAggregate__computeⁱᵐᵖˡ)]); (statAggregate.id, []); (ptrT.id statAggregate.id, [("ensure"%go, statAggregate__ensureⁱᵐᵖˡ)]); (metricKind.id, []); (ptrT.id metricKind.id, []); (metricSample.id, []); (ptrT.id metricSample.id, []); (metricValue.id, []); (ptrT.id metricValue.id, [("float64HistOrInit"%go, metricValue__float64HistOrInitⁱᵐᵖˡ)]); (metricFloat64Histogram.id, []); (ptrT.id metricFloat64Histogram.id, []); (metricName.id, []); (ptrT.id metricName.id, []); (finblock.id, []); (ptrT.id finblock.id, []); (finalizer.id, []); (ptrT.id finalizer.id, []); (fixalloc.id, []); (ptrT.id fixalloc.id, [("alloc"%go, fixalloc__allocⁱᵐᵖˡ); ("free"%go, fixalloc__freeⁱᵐᵖˡ); ("init"%go, fixalloc__initⁱᵐᵖˡ)]); (mlink.id, []); (ptrT.id mlink.id, []); (gcMarkWorkerMode.id, []); (ptrT.id gcMarkWorkerMode.id, []); (workType.id, []); (ptrT.id workType.id, [("accumulate"%go, workType__accumulateⁱᵐᵖˡ); ("accumulateGCPauseTime"%go, workType__accumulateGCPauseTimeⁱᵐᵖˡ)]); (gcMode.id, []); (ptrT.id gcMode.id, []); (gcTrigger.id, [("test"%go, gcTrigger__testⁱᵐᵖˡ)]); (ptrT.id gcTrigger.id, [("test"%go, gcTrigger__testⁱᵐᵖˡ)]); (gcTriggerKind.id, []); (ptrT.id gcTriggerKind.id, []); (gcBgMarkWorkerNode.id, []); (ptrT.id gcBgMarkWorkerNode.id, []); (gcCPULimiterState.id, []); (ptrT.id gcCPULimiterState.id, [("accumulate"%go, gcCPULimiterState__accumulateⁱᵐᵖˡ); ("addAssistTime"%go, gcCPULimiterState__addAssistTimeⁱᵐᵖˡ); ("addIdleTime"%go, gcCPULimiterState__addIdleTimeⁱᵐᵖˡ); ("finishGCTransition"%go, gcCPULimiterState__finishGCTransitionⁱᵐᵖˡ); ("limiting"%go, gcCPULimiterState__limitingⁱᵐᵖˡ); ("needUpdate"%go, gcCPULimiterState__needUpdateⁱᵐᵖˡ); ("resetCapacity"%go, gcCPULimiterState__resetCapacityⁱᵐᵖˡ); ("startGCTransition"%go, gcCPULimiterState__startGCTransitionⁱᵐᵖˡ); ("tryLock"%go, gcCPULimiterState__tryLockⁱᵐᵖˡ); ("unlock"%go, gcCPULimiterState__unlockⁱᵐᵖˡ); ("update"%go, gcCPULimiterState__updateⁱᵐᵖˡ); ("updateLocked"%go, gcCPULimiterState__updateLockedⁱᵐᵖˡ)]); (limiterEventType.id, []); (ptrT.id limiterEventType.id, []); (limiterEventStamp.id, [("duration"%go, limiterEventStamp__durationⁱᵐᵖˡ); ("typ"%go, limiterEventStamp__typⁱᵐᵖˡ)]); (ptrT.id limiterEventStamp.id, [("duration"%go, limiterEventStamp__durationⁱᵐᵖˡ); ("typ"%go, limiterEventStamp__typⁱᵐᵖˡ)]); (limiterEvent.id, []); (ptrT.id limiterEvent.id, [("consume"%go, limiterEvent__consumeⁱᵐᵖˡ); ("start"%go, limiterEvent__startⁱᵐᵖˡ); ("stop"%go, limiterEvent__stopⁱᵐᵖˡ)]); (gcDrainFlags.id, []); (ptrT.id gcDrainFlags.id, []); (gcControllerState.id, []); (ptrT.id gcControllerState.id, [("addGlobals"%go, gcControllerState__addGlobalsⁱᵐᵖˡ); ("addIdleMarkWorker"%go, gcControllerState__addIdleMarkWorkerⁱᵐᵖˡ); ("addScannableStack"%go, gcControllerState__addScannableStackⁱᵐᵖˡ); ("commit"%go, gcControllerState__commitⁱᵐᵖˡ); ("endCycle"%go, gcControllerState__endCycleⁱᵐᵖˡ); ("enlistWorker"%go, gcControllerState__enlistWorkerⁱᵐᵖˡ); ("findRunnableGCWorker"%go, gcControllerState__findRunnableGCWorkerⁱᵐᵖˡ); ("heapGoal"%go, gcControllerState__heapGoalⁱᵐᵖˡ); ("heapGoalInternal"%go, gcControllerState__heapGoalInternalⁱᵐᵖˡ); ("init"%go, gcControllerState__initⁱᵐᵖˡ); ("markWorkerStop"%go, gcControllerState__markWorkerStopⁱᵐᵖˡ); ("memoryLimitHeapGoal"%go, gcControllerState__memoryLimitHeapGoalⁱᵐᵖˡ); ("needIdleMarkWorker"%go, gcControllerState__needIdleMarkWorkerⁱᵐᵖˡ); ("removeIdleMarkWorker"%go, gcControllerState__removeIdleMarkWorkerⁱᵐᵖˡ); ("resetLive"%go, gcControllerState__resetLiveⁱᵐᵖˡ); ("revise"%go, gcControllerState__reviseⁱᵐᵖˡ); ("setGCPercent"%go, gcControllerState__setGCPercentⁱᵐᵖˡ); ("setMaxIdleMarkWorkers"%go, gcControllerState__setMaxIdleMarkWorkersⁱᵐᵖˡ); ("setMemoryLimit"%go, gcControllerState__setMemoryLimitⁱᵐᵖˡ); ("startCycle"%go, gcControllerState__startCycleⁱᵐᵖˡ); ("trigger"%go, gcControllerState__triggerⁱᵐᵖˡ); ("update"%go, gcControllerState__updateⁱᵐᵖˡ)]); (scavengerState.id, []); (ptrT.id scavengerState.id, [("controllerFailed"%go, scavengerState__controllerFailedⁱᵐᵖˡ); ("init"%go, scavengerState__initⁱᵐᵖˡ); ("park"%go, scavengerState__parkⁱᵐᵖˡ); ("ready"%go, scavengerState__readyⁱᵐᵖˡ); ("run"%go, scavengerState__runⁱᵐᵖˡ); ("sleep"%go, scavengerState__sleepⁱᵐᵖˡ); ("wake"%go, scavengerState__wakeⁱᵐᵖˡ)]); (scavengeIndex.id, []); (ptrT.id scavengeIndex.id, [("alloc"%go, scavengeIndex__allocⁱᵐᵖˡ); ("find"%go, scavengeIndex__findⁱᵐᵖˡ); ("free"%go, scavengeIndex__freeⁱᵐᵖˡ); ("grow"%go, scavengeIndex__growⁱᵐᵖˡ); ("init"%go, scavengeIndex__initⁱᵐᵖˡ); ("nextGen"%go, scavengeIndex__nextGenⁱᵐᵖˡ); ("setEmpty"%go, scavengeIndex__setEmptyⁱᵐᵖˡ); ("sysGrow"%go, scavengeIndex__sysGrowⁱᵐᵖˡ); ("sysInit"%go, scavengeIndex__sysInitⁱᵐᵖˡ)]); (atomicScavChunkData.id, []); (ptrT.id atomicScavChunkData.id, [("load"%go, atomicScavChunkData__loadⁱᵐᵖˡ); ("store"%go, atomicScavChunkData__storeⁱᵐᵖˡ)]); (scavChunkData.id, [("pack"%go, scavChunkData__packⁱᵐᵖˡ); ("shouldScavenge"%go, scavChunkData__shouldScavengeⁱᵐᵖˡ)]); (ptrT.id scavChunkData.id, [("alloc"%go, scavChunkData__allocⁱᵐᵖˡ); ("free"%go, scavChunkData__freeⁱᵐᵖˡ); ("isEmpty"%go, scavChunkData__isEmptyⁱᵐᵖˡ); ("pack"%go, scavChunkData__packⁱᵐᵖˡ); ("setEmpty"%go, scavChunkData__setEmptyⁱᵐᵖˡ); ("setNonEmpty"%go, scavChunkData__setNonEmptyⁱᵐᵖˡ); ("shouldScavenge"%go, scavChunkData__shouldScavengeⁱᵐᵖˡ)]); (scavChunkFlags.id, []); (ptrT.id scavChunkFlags.id, [("isEmpty"%go, scavChunkFlags__isEmptyⁱᵐᵖˡ); ("setEmpty"%go, scavChunkFlags__setEmptyⁱᵐᵖˡ); ("setNonEmpty"%go, scavChunkFlags__setNonEmptyⁱᵐᵖˡ)]); (piController.id, []); (ptrT.id piController.id, [("next"%go, piController__nextⁱᵐᵖˡ); ("reset"%go, piController__resetⁱᵐᵖˡ)]); (stackWorkBuf.id, []); (ptrT.id stackWorkBuf.id, []); (stackWorkBufHdr.id, []); (ptrT.id stackWorkBufHdr.id, []); (stackObjectBuf.id, []); (ptrT.id stackObjectBuf.id, []); (stackObjectBufHdr.id, []); (ptrT.id stackObjectBufHdr.id, []); (stackObject.id, []); (ptrT.id stackObject.id, [("setRecord"%go, stackObject__setRecordⁱᵐᵖˡ)]); (stackScanState.id, []); (ptrT.id stackScanState.id, [("addObject"%go, stackScanState__addObjectⁱᵐᵖˡ); ("buildIndex"%go, stackScanState__buildIndexⁱᵐᵖˡ); ("findObject"%go, stackScanState__findObjectⁱᵐᵖˡ); ("getPtr"%go, stackScanState__getPtrⁱᵐᵖˡ); ("putPtr"%go, stackScanState__putPtrⁱᵐᵖˡ)]); (sweepdata.id, []); (ptrT.id sweepdata.id, []); (sweepClass.id, [("split"%go, sweepClass__splitⁱᵐᵖˡ)]); (ptrT.id sweepClass.id, [("clear"%go, sweepClass__clearⁱᵐᵖˡ); ("load"%go, sweepClass__loadⁱᵐᵖˡ); ("split"%go, sweepClass__splitⁱᵐᵖˡ); ("update"%go, sweepClass__updateⁱᵐᵖˡ)]); (activeSweep.id, []); (ptrT.id activeSweep.id, [("begin"%go, activeSweep__beginⁱᵐᵖˡ); ("end"%go, activeSweep__endⁱᵐᵖˡ); ("isDone"%go, activeSweep__isDoneⁱᵐᵖˡ); ("markDrained"%go, activeSweep__markDrainedⁱᵐᵖˡ); ("reset"%go, activeSweep__resetⁱᵐᵖˡ); ("sweepers"%go, activeSweep__sweepersⁱᵐᵖˡ)]); (sweepLocker.id, []); (ptrT.id sweepLocker.id, [("tryAcquire"%go, sweepLocker__tryAcquireⁱᵐᵖˡ)]); (sweepLocked.id, [("allocBitsForIndex"%go, sweepLocked__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, sweepLocked__baseⁱᵐᵖˡ); ("countAlloc"%go, sweepLocked__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, sweepLocked__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, sweepLocked__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, sweepLocked__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, sweepLocked__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, sweepLocked__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, sweepLocked__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, sweepLocked__inListⁱᵐᵖˡ); ("incPinCounter"%go, sweepLocked__incPinCounterⁱᵐᵖˡ); ("init"%go, sweepLocked__initⁱᵐᵖˡ); ("initHeapBits"%go, sweepLocked__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, sweepLocked__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, sweepLocked__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, sweepLocked__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, sweepLocked__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, sweepLocked__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, sweepLocked__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, sweepLocked__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, sweepLocked__objBaseⁱᵐᵖˡ); ("objIndex"%go, sweepLocked__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, sweepLocked__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, sweepLocked__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, sweepLocked__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, sweepLocked__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, sweepLocked__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, sweepLocked__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, sweepLocked__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, sweepLocked__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, sweepLocked__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, sweepLocked__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, sweepLocked__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, sweepLocked__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, sweepLocked__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (ptrT.id sweepLocked.id, [("allocBitsForIndex"%go, sweepLocked__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, sweepLocked__baseⁱᵐᵖˡ); ("countAlloc"%go, sweepLocked__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, sweepLocked__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, sweepLocked__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, sweepLocked__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, sweepLocked__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, sweepLocked__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, sweepLocked__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, sweepLocked__inListⁱᵐᵖˡ); ("incPinCounter"%go, sweepLocked__incPinCounterⁱᵐᵖˡ); ("init"%go, sweepLocked__initⁱᵐᵖˡ); ("initHeapBits"%go, sweepLocked__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, sweepLocked__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, sweepLocked__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, sweepLocked__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, sweepLocked__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, sweepLocked__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, sweepLocked__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, sweepLocked__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, sweepLocked__objBaseⁱᵐᵖˡ); ("objIndex"%go, sweepLocked__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, sweepLocked__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, sweepLocked__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, sweepLocked__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, sweepLocked__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, sweepLocked__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, sweepLocked__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, sweepLocked__specialFindSplicePointⁱᵐᵖˡ); ("sweep"%go, sweepLocked__sweepⁱᵐᵖˡ); ("typePointersOf"%go, sweepLocked__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, sweepLocked__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, sweepLocked__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, sweepLocked__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, sweepLocked__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, sweepLocked__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (gcWork.id, []); (ptrT.id gcWork.id, [("balance"%go, gcWork__balanceⁱᵐᵖˡ); ("dispose"%go, gcWork__disposeⁱᵐᵖˡ); ("empty"%go, gcWork__emptyⁱᵐᵖˡ); ("init"%go, gcWork__initⁱᵐᵖˡ); ("put"%go, gcWork__putⁱᵐᵖˡ); ("putBatch"%go, gcWork__putBatchⁱᵐᵖˡ); ("putFast"%go, gcWork__putFastⁱᵐᵖˡ); ("tryGet"%go, gcWork__tryGetⁱᵐᵖˡ); ("tryGetFast"%go, gcWork__tryGetFastⁱᵐᵖˡ)]); (workbufhdr.id, []); (ptrT.id workbufhdr.id, []); (workbuf.id, []); (ptrT.id workbuf.id, [("checkempty"%go, workbuf__checkemptyⁱᵐᵖˡ); ("checknonempty"%go, workbuf__checknonemptyⁱᵐᵖˡ)]); (mheap.id, []); (ptrT.id mheap.id, [("alloc"%go, mheap__allocⁱᵐᵖˡ); ("allocMSpanLocked"%go, mheap__allocMSpanLockedⁱᵐᵖˡ); ("allocManual"%go, mheap__allocManualⁱᵐᵖˡ); ("allocNeedsZero"%go, mheap__allocNeedsZeroⁱᵐᵖˡ); ("allocSpan"%go, mheap__allocSpanⁱᵐᵖˡ); ("allocUserArenaChunk"%go, mheap__allocUserArenaChunkⁱᵐᵖˡ); ("enableMetadataHugePages"%go, mheap__enableMetadataHugePagesⁱᵐᵖˡ); ("freeMSpanLocked"%go, mheap__freeMSpanLockedⁱᵐᵖˡ); ("freeManual"%go, mheap__freeManualⁱᵐᵖˡ); ("freeSpan"%go, mheap__freeSpanⁱᵐᵖˡ); ("freeSpanLocked"%go, mheap__freeSpanLockedⁱᵐᵖˡ); ("grow"%go, mheap__growⁱᵐᵖˡ); ("init"%go, mheap__initⁱᵐᵖˡ); ("initSpan"%go, mheap__initSpanⁱᵐᵖˡ); ("nextSpanForSweep"%go, mheap__nextSpanForSweepⁱᵐᵖˡ); ("reclaim"%go, mheap__reclaimⁱᵐᵖˡ); ("reclaimChunk"%go, mheap__reclaimChunkⁱᵐᵖˡ); ("scavengeAll"%go, mheap__scavengeAllⁱᵐᵖˡ); ("setSpans"%go, mheap__setSpansⁱᵐᵖˡ); ("sysAlloc"%go, mheap__sysAllocⁱᵐᵖˡ); ("tryAllocMSpan"%go, mheap__tryAllocMSpanⁱᵐᵖˡ)]); (heapArena.id, []); (ptrT.id heapArena.id, []); (arenaHint.id, []); (ptrT.id arenaHint.id, []); (mSpanState.id, []); (ptrT.id mSpanState.id, []); (mSpanStateBox.id, []); (ptrT.id mSpanStateBox.id, [("get"%go, mSpanStateBox__getⁱᵐᵖˡ); ("set"%go, mSpanStateBox__setⁱᵐᵖˡ)]); (mSpanList.id, []); (ptrT.id mSpanList.id, [("init"%go, mSpanList__initⁱᵐᵖˡ); ("insert"%go, mSpanList__insertⁱᵐᵖˡ); ("insertBack"%go, mSpanList__insertBackⁱᵐᵖˡ); ("isEmpty"%go, mSpanList__isEmptyⁱᵐᵖˡ); ("remove"%go, mSpanList__removeⁱᵐᵖˡ); ("takeAll"%go, mSpanList__takeAllⁱᵐᵖˡ)]); (mspan.id, []); (ptrT.id mspan.id, [("allocBitsForIndex"%go, mspan__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, mspan__baseⁱᵐᵖˡ); ("countAlloc"%go, mspan__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, mspan__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, mspan__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, mspan__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, mspan__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, mspan__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, mspan__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, mspan__inListⁱᵐᵖˡ); ("incPinCounter"%go, mspan__incPinCounterⁱᵐᵖˡ); ("init"%go, mspan__initⁱᵐᵖˡ); ("initHeapBits"%go, mspan__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, mspan__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, mspan__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, mspan__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, mspan__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, mspan__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, mspan__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, mspan__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, mspan__objBaseⁱᵐᵖˡ); ("objIndex"%go, mspan__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, mspan__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, mspan__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, mspan__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, mspan__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, mspan__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, mspan__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, mspan__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, mspan__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, mspan__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, mspan__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, mspan__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, mspan__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, mspan__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (spanClass.id, [("noscan"%go, spanClass__noscanⁱᵐᵖˡ); ("sizeclass"%go, spanClass__sizeclassⁱᵐᵖˡ)]); (ptrT.id spanClass.id, [("noscan"%go, spanClass__noscanⁱᵐᵖˡ); ("sizeclass"%go, spanClass__sizeclassⁱᵐᵖˡ)]); (arenaIdx.id, [("l1"%go, arenaIdx__l1ⁱᵐᵖˡ); ("l2"%go, arenaIdx__l2ⁱᵐᵖˡ)]); (ptrT.id arenaIdx.id, [("l1"%go, arenaIdx__l1ⁱᵐᵖˡ); ("l2"%go, arenaIdx__l2ⁱᵐᵖˡ)]); (spanAllocType.id, [("manual"%go, spanAllocType__manualⁱᵐᵖˡ)]); (ptrT.id spanAllocType.id, [("manual"%go, spanAllocType__manualⁱᵐᵖˡ)]); (special.id, []); (ptrT.id special.id, []); (specialfinalizer.id, []); (ptrT.id specialfinalizer.id, []); (specialCleanup.id, []); (ptrT.id specialCleanup.id, []); (specialWeakHandle.id, []); (ptrT.id specialWeakHandle.id, []); (specialprofile.id, []); (ptrT.id specialprofile.id, []); (specialReachable.id, []); (ptrT.id specialReachable.id, []); (specialPinCounter.id, []); (ptrT.id specialPinCounter.id, []); (specialsIter.id, []); (ptrT.id specialsIter.id, [("next"%go, specialsIter__nextⁱᵐᵖˡ); ("unlinkAndNext"%go, specialsIter__unlinkAndNextⁱᵐᵖˡ); ("valid"%go, specialsIter__validⁱᵐᵖˡ)]); (gcBits.id, []); (ptrT.id gcBits.id, [("bitp"%go, gcBits__bitpⁱᵐᵖˡ); ("bytep"%go, gcBits__bytepⁱᵐᵖˡ)]); (gcBitsHeader.id, []); (ptrT.id gcBitsHeader.id, []); (gcBitsArena.id, []); (ptrT.id gcBitsArena.id, [("tryAlloc"%go, gcBitsArena__tryAllocⁱᵐᵖˡ)]); (chunkIdx.id, [("l1"%go, chunkIdx__l1ⁱᵐᵖˡ); ("l2"%go, chunkIdx__l2ⁱᵐᵖˡ)]); (ptrT.id chunkIdx.id, [("l1"%go, chunkIdx__l1ⁱᵐᵖˡ); ("l2"%go, chunkIdx__l2ⁱᵐᵖˡ)]); (pageAlloc.id, []); (ptrT.id pageAlloc.id, [("alloc"%go, pageAlloc__allocⁱᵐᵖˡ); ("allocRange"%go, pageAlloc__allocRangeⁱᵐᵖˡ); ("allocToCache"%go, pageAlloc__allocToCacheⁱᵐᵖˡ); ("chunkOf"%go, pageAlloc__chunkOfⁱᵐᵖˡ); ("enableChunkHugePages"%go, pageAlloc__enableChunkHugePagesⁱᵐᵖˡ); ("find"%go, pageAlloc__findⁱᵐᵖˡ); ("findMappedAddr"%go, pageAlloc__findMappedAddrⁱᵐᵖˡ); ("free"%go, pageAlloc__freeⁱᵐᵖˡ); ("grow"%go, pageAlloc__growⁱᵐᵖˡ); ("init"%go, pageAlloc__initⁱᵐᵖˡ); ("scavenge"%go, pageAlloc__scavengeⁱᵐᵖˡ); ("scavengeOne"%go, pageAlloc__scavengeOneⁱᵐᵖˡ); ("sysGrow"%go, pageAlloc__sysGrowⁱᵐᵖˡ); ("sysInit"%go, pageAlloc__sysInitⁱᵐᵖˡ); ("tryChunkOf"%go, pageAlloc__tryChunkOfⁱᵐᵖˡ); ("update"%go, pageAlloc__updateⁱᵐᵖˡ)]); (pallocSum.id, [("end"%go, pallocSum__endⁱᵐᵖˡ); ("max"%go, pallocSum__maxⁱᵐᵖˡ); ("start"%go, pallocSum__startⁱᵐᵖˡ); ("unpack"%go, pallocSum__unpackⁱᵐᵖˡ)]); (ptrT.id pallocSum.id, [("end"%go, pallocSum__endⁱᵐᵖˡ); ("max"%go, pallocSum__maxⁱᵐᵖˡ); ("start"%go, pallocSum__startⁱᵐᵖˡ); ("unpack"%go, pallocSum__unpackⁱᵐᵖˡ)]); (pageCache.id, []); (ptrT.id pageCache.id, [("alloc"%go, pageCache__allocⁱᵐᵖˡ); ("allocN"%go, pageCache__allocNⁱᵐᵖˡ); ("empty"%go, pageCache__emptyⁱᵐᵖˡ); ("flush"%go, pageCache__flushⁱᵐᵖˡ)]); (pageBits.id, []); (ptrT.id pageBits.id, [("block64"%go, pageBits__block64ⁱᵐᵖˡ); ("clear"%go, pageBits__clearⁱᵐᵖˡ); ("clearAll"%go, pageBits__clearAllⁱᵐᵖˡ); ("clearBlock64"%go, pageBits__clearBlock64ⁱᵐᵖˡ); ("clearRange"%go, pageBits__clearRangeⁱᵐᵖˡ); ("get"%go, pageBits__getⁱᵐᵖˡ); ("popcntRange"%go, pageBits__popcntRangeⁱᵐᵖˡ); ("set"%go, pageBits__setⁱᵐᵖˡ); ("setAll"%go, pageBits__setAllⁱᵐᵖˡ); ("setBlock64"%go, pageBits__setBlock64ⁱᵐᵖˡ); ("setRange"%go, pageBits__setRangeⁱᵐᵖˡ)]); (pallocBits.id, []); (ptrT.id pallocBits.id, [("allocAll"%go, pallocBits__allocAllⁱᵐᵖˡ); ("allocPages64"%go, pallocBits__allocPages64ⁱᵐᵖˡ); ("allocRange"%go, pallocBits__allocRangeⁱᵐᵖˡ); ("find"%go, pallocBits__findⁱᵐᵖˡ); ("find1"%go, pallocBits__find1ⁱᵐᵖˡ); ("findLargeN"%go, pallocBits__findLargeNⁱᵐᵖˡ); ("findSmallN"%go, pallocBits__findSmallNⁱᵐᵖˡ); ("free"%go, pallocBits__freeⁱᵐᵖˡ); ("free1"%go, pallocBits__free1ⁱᵐᵖˡ); ("freeAll"%go, pallocBits__freeAllⁱᵐᵖˡ); ("pages64"%go, pallocBits__pages64ⁱᵐᵖˡ); ("summarize"%go, pallocBits__summarizeⁱᵐᵖˡ)]); (pallocData.id, []); (ptrT.id pallocData.id, [("allocAll"%go, pallocData__allocAllⁱᵐᵖˡ); ("allocPages64"%go, pallocData__allocPages64ⁱᵐᵖˡ); ("allocRange"%go, pallocData__allocRangeⁱᵐᵖˡ); ("find"%go, pallocData__findⁱᵐᵖˡ); ("find1"%go, pallocData__find1ⁱᵐᵖˡ); ("findLargeN"%go, pallocData__findLargeNⁱᵐᵖˡ); ("findScavengeCandidate"%go, pallocData__findScavengeCandidateⁱᵐᵖˡ); ("findSmallN"%go, pallocData__findSmallNⁱᵐᵖˡ); ("free"%go, pallocData__freeⁱᵐᵖˡ); ("free1"%go, pallocData__free1ⁱᵐᵖˡ); ("freeAll"%go, pallocData__freeAllⁱᵐᵖˡ); ("pages64"%go, pallocData__pages64ⁱᵐᵖˡ); ("summarize"%go, pallocData__summarizeⁱᵐᵖˡ)]); (bucketType.id, []); (ptrT.id bucketType.id, []); (bucket.id, []); (ptrT.id bucket.id, [("bp"%go, bucket__bpⁱᵐᵖˡ); ("mp"%go, bucket__mpⁱᵐᵖˡ); ("stk"%go, bucket__stkⁱᵐᵖˡ)]); (memRecord.id, []); (ptrT.id memRecord.id, []); (memRecordCycle.id, []); (ptrT.id memRecordCycle.id, [("add"%go, memRecordCycle__addⁱᵐᵖˡ)]); (blockRecord.id, []); (ptrT.id blockRecord.id, []); (buckhashArray.id, []); (ptrT.id buckhashArray.id, []); (mProfCycleHolder.id, []); (ptrT.id mProfCycleHolder.id, [("increment"%go, mProfCycleHolder__incrementⁱᵐᵖˡ); ("read"%go, mProfCycleHolder__readⁱᵐᵖˡ); ("setFlushed"%go, mProfCycleHolder__setFlushedⁱᵐᵖˡ)]); (lockTimer.id, []); (ptrT.id lockTimer.id, [("begin"%go, lockTimer__beginⁱᵐᵖˡ); ("end"%go, lockTimer__endⁱᵐᵖˡ)]); (mLockProfile.id, []); (ptrT.id mLockProfile.id, [("captureStack"%go, mLockProfile__captureStackⁱᵐᵖˡ); ("recordLock"%go, mLockProfile__recordLockⁱᵐᵖˡ); ("recordUnlock"%go, mLockProfile__recordUnlockⁱᵐᵖˡ); ("store"%go, mLockProfile__storeⁱᵐᵖˡ)]); (StackRecord.id, []); (ptrT.id StackRecord.id, [("Stack"%go, StackRecord__Stackⁱᵐᵖˡ)]); (MemProfileRecord.id, []); (ptrT.id MemProfileRecord.id, [("InUseBytes"%go, MemProfileRecord__InUseBytesⁱᵐᵖˡ); ("InUseObjects"%go, MemProfileRecord__InUseObjectsⁱᵐᵖˡ); ("Stack"%go, MemProfileRecord__Stackⁱᵐᵖˡ)]); (BlockProfileRecord.id, []); (ptrT.id BlockProfileRecord.id, [("Stack"%go, BlockProfileRecord__Stackⁱᵐᵖˡ)]); (goroutineProfileState.id, []); (ptrT.id goroutineProfileState.id, []); (goroutineProfileStateHolder.id, []); (ptrT.id goroutineProfileStateHolder.id, [("CompareAndSwap"%go, goroutineProfileStateHolder__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, goroutineProfileStateHolder__Loadⁱᵐᵖˡ); ("Store"%go, goroutineProfileStateHolder__Storeⁱᵐᵖˡ)]); (addrRange.id, [("contains"%go, addrRange__containsⁱᵐᵖˡ); ("removeGreaterEqual"%go, addrRange__removeGreaterEqualⁱᵐᵖˡ); ("size"%go, addrRange__sizeⁱᵐᵖˡ); ("subtract"%go, addrRange__subtractⁱᵐᵖˡ)]); (ptrT.id addrRange.id, [("contains"%go, addrRange__containsⁱᵐᵖˡ); ("removeGreaterEqual"%go, addrRange__removeGreaterEqualⁱᵐᵖˡ); ("size"%go, addrRange__sizeⁱᵐᵖˡ); ("subtract"%go, addrRange__subtractⁱᵐᵖˡ); ("takeFromBack"%go, addrRange__takeFromBackⁱᵐᵖˡ); ("takeFromFront"%go, addrRange__takeFromFrontⁱᵐᵖˡ)]); (offAddr.id, [("add"%go, offAddr__addⁱᵐᵖˡ); ("addr"%go, offAddr__addrⁱᵐᵖˡ); ("diff"%go, offAddr__diffⁱᵐᵖˡ); ("equal"%go, offAddr__equalⁱᵐᵖˡ); ("lessEqual"%go, offAddr__lessEqualⁱᵐᵖˡ); ("lessThan"%go, offAddr__lessThanⁱᵐᵖˡ); ("sub"%go, offAddr__subⁱᵐᵖˡ)]); (ptrT.id offAddr.id, [("add"%go, offAddr__addⁱᵐᵖˡ); ("addr"%go, offAddr__addrⁱᵐᵖˡ); ("diff"%go, offAddr__diffⁱᵐᵖˡ); ("equal"%go, offAddr__equalⁱᵐᵖˡ); ("lessEqual"%go, offAddr__lessEqualⁱᵐᵖˡ); ("lessThan"%go, offAddr__lessThanⁱᵐᵖˡ); ("sub"%go, offAddr__subⁱᵐᵖˡ)]); (atomicOffAddr.id, []); (ptrT.id atomicOffAddr.id, [("Clear"%go, atomicOffAddr__Clearⁱᵐᵖˡ); ("Load"%go, atomicOffAddr__Loadⁱᵐᵖˡ); ("StoreMarked"%go, atomicOffAddr__StoreMarkedⁱᵐᵖˡ); ("StoreMin"%go, atomicOffAddr__StoreMinⁱᵐᵖˡ); ("StoreUnmark"%go, atomicOffAddr__StoreUnmarkⁱᵐᵖˡ)]); (addrRanges.id, []); (ptrT.id addrRanges.id, [("add"%go, addrRanges__addⁱᵐᵖˡ); ("cloneInto"%go, addrRanges__cloneIntoⁱᵐᵖˡ); ("contains"%go, addrRanges__containsⁱᵐᵖˡ); ("findAddrGreaterEqual"%go, addrRanges__findAddrGreaterEqualⁱᵐᵖˡ); ("findSucc"%go, addrRanges__findSuccⁱᵐᵖˡ); ("init"%go, addrRanges__initⁱᵐᵖˡ); ("removeGreaterEqual"%go, addrRanges__removeGreaterEqualⁱᵐᵖˡ); ("removeLast"%go, addrRanges__removeLastⁱᵐᵖˡ)]); (spanSet.id, []); (ptrT.id spanSet.id, [("pop"%go, spanSet__popⁱᵐᵖˡ); ("push"%go, spanSet__pushⁱᵐᵖˡ); ("reset"%go, spanSet__resetⁱᵐᵖˡ)]); (spanSetBlock.id, []); (ptrT.id spanSetBlock.id, []); (atomicSpanSetSpinePointer.id, []); (ptrT.id atomicSpanSetSpinePointer.id, [("Load"%go, atomicSpanSetSpinePointer__Loadⁱᵐᵖˡ); ("StoreNoWB"%go, atomicSpanSetSpinePointer__StoreNoWBⁱᵐᵖˡ)]); (spanSetSpinePointer.id, [("lookup"%go, spanSetSpinePointer__lookupⁱᵐᵖˡ)]); (ptrT.id spanSetSpinePointer.id, [("lookup"%go, spanSetSpinePointer__lookupⁱᵐᵖˡ)]); (spanSetBlockAlloc.id, []); (ptrT.id spanSetBlockAlloc.id, [("alloc"%go, spanSetBlockAlloc__allocⁱᵐᵖˡ); ("free"%go, spanSetBlockAlloc__freeⁱᵐᵖˡ)]); (headTailIndex.id, [("head"%go, headTailIndex__headⁱᵐᵖˡ); ("split"%go, headTailIndex__splitⁱᵐᵖˡ); ("tail"%go, headTailIndex__tailⁱᵐᵖˡ)]); (ptrT.id headTailIndex.id, [("head"%go, headTailIndex__headⁱᵐᵖˡ); ("split"%go, headTailIndex__splitⁱᵐᵖˡ); ("tail"%go, headTailIndex__tailⁱᵐᵖˡ)]); (atomicHeadTailIndex.id, []); (ptrT.id atomicHeadTailIndex.id, [("cas"%go, atomicHeadTailIndex__casⁱᵐᵖˡ); ("decHead"%go, atomicHeadTailIndex__decHeadⁱᵐᵖˡ); ("incHead"%go, atomicHeadTailIndex__incHeadⁱᵐᵖˡ); ("incTail"%go, atomicHeadTailIndex__incTailⁱᵐᵖˡ); ("load"%go, atomicHeadTailIndex__loadⁱᵐᵖˡ); ("reset"%go, atomicHeadTailIndex__resetⁱᵐᵖˡ)]); (atomicMSpanPointer.id, []); (ptrT.id atomicMSpanPointer.id, [("Load"%go, atomicMSpanPointer__Loadⁱᵐᵖˡ); ("StoreNoWB"%go, atomicMSpanPointer__StoreNoWBⁱᵐᵖˡ)]); (mstats.id, []); (ptrT.id mstats.id, []); (MemStats.id, []); (ptrT.id MemStats.id, []); (sysMemStat.id, []); (ptrT.id sysMemStat.id, [("add"%go, sysMemStat__addⁱᵐᵖˡ); ("load"%go, sysMemStat__loadⁱᵐᵖˡ)]); (heapStatsDelta.id, []); (ptrT.id heapStatsDelta.id, [("merge"%go, heapStatsDelta__mergeⁱᵐᵖˡ)]); (consistentHeapStats.id, []); (ptrT.id consistentHeapStats.id, [("acquire"%go, consistentHeapStats__acquireⁱᵐᵖˡ); ("read"%go, consistentHeapStats__readⁱᵐᵖˡ); ("release"%go, consistentHeapStats__releaseⁱᵐᵖˡ); ("unsafeClear"%go, consistentHeapStats__unsafeClearⁱᵐᵖˡ); ("unsafeRead"%go, consistentHeapStats__unsafeReadⁱᵐᵖˡ)]); (cpuStats.id, []); (ptrT.id cpuStats.id, [("accumulate"%go, cpuStats__accumulateⁱᵐᵖˡ); ("accumulateGCPauseTime"%go, cpuStats__accumulateGCPauseTimeⁱᵐᵖˡ)]); (wbBuf.id, []); (ptrT.id wbBuf.id, [("discard"%go, wbBuf__discardⁱᵐᵖˡ); ("empty"%go, wbBuf__emptyⁱᵐᵖˡ); ("get1"%go, wbBuf__get1ⁱᵐᵖˡ); ("get2"%go, wbBuf__get2ⁱᵐᵖˡ); ("reset"%go, wbBuf__resetⁱᵐᵖˡ)]); (pollDesc.id, []); (ptrT.id pollDesc.id, [("info"%go, pollDesc__infoⁱᵐᵖˡ); ("makeArg"%go, pollDesc__makeArgⁱᵐᵖˡ); ("publishInfo"%go, pollDesc__publishInfoⁱᵐᵖˡ); ("setEventErr"%go, pollDesc__setEventErrⁱᵐᵖˡ)]); (pollInfo.id, [("closing"%go, pollInfo__closingⁱᵐᵖˡ); ("eventErr"%go, pollInfo__eventErrⁱᵐᵖˡ); ("expiredReadDeadline"%go, pollInfo__expiredReadDeadlineⁱᵐᵖˡ); ("expiredWriteDeadline"%go, pollInfo__expiredWriteDeadlineⁱᵐᵖˡ)]); (ptrT.id pollInfo.id, [("closing"%go, pollInfo__closingⁱᵐᵖˡ); ("eventErr"%go, pollInfo__eventErrⁱᵐᵖˡ); ("expiredReadDeadline"%go, pollInfo__expiredReadDeadlineⁱᵐᵖˡ); ("expiredWriteDeadline"%go, pollInfo__expiredWriteDeadlineⁱᵐᵖˡ)]); (pollCache.id, []); (ptrT.id pollCache.id, [("alloc"%go, pollCache__allocⁱᵐᵖˡ); ("free"%go, pollCache__freeⁱᵐᵖˡ)]); (winlibcall.id, []); (ptrT.id winlibcall.id, []); (note.id, []); (ptrT.id note.id, []); (mOS.id, []); (ptrT.id mOS.id, []); (perThreadSyscallArgs.id, []); (ptrT.id perThreadSyscallArgs.id, []); (sigset.id, []); (ptrT.id sigset.id, []); (throwType.id, []); (ptrT.id throwType.id, []); (PanicNilError.id, []); (ptrT.id PanicNilError.id, [("Error"%go, PanicNilError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, PanicNilError__RuntimeErrorⁱᵐᵖˡ)]); (Pinner.id, [("unpin"%go, Pinner__unpinⁱᵐᵖˡ)]); (ptrT.id Pinner.id, [("Pin"%go, Pinner__Pinⁱᵐᵖˡ); ("Unpin"%go, Pinner__Unpinⁱᵐᵖˡ); ("unpin"%go, Pinner__unpinⁱᵐᵖˡ)]); (pinner.id, []); (ptrT.id pinner.id, [("unpin"%go, pinner__unpinⁱᵐᵖˡ)]); (pinState.id, []); (ptrT.id pinState.id, [("isMultiPinned"%go, pinState__isMultiPinnedⁱᵐᵖˡ); ("isPinned"%go, pinState__isPinnedⁱᵐᵖˡ); ("set"%go, pinState__setⁱᵐᵖˡ); ("setMultiPinned"%go, pinState__setMultiPinnedⁱᵐᵖˡ); ("setPinned"%go, pinState__setPinnedⁱᵐᵖˡ)]); (pinnerBits.id, []); (ptrT.id pinnerBits.id, [("ofObject"%go, pinnerBits__ofObjectⁱᵐᵖˡ)]); (ptabEntry.id, []); (ptrT.id ptabEntry.id, []); (suspendGState.id, []); (ptrT.id suspendGState.id, []); (hex.id, []); (ptrT.id hex.id, []); (stwReason.id, [("String"%go, stwReason__Stringⁱᵐᵖˡ); ("isGC"%go, stwReason__isGCⁱᵐᵖˡ)]); (ptrT.id stwReason.id, [("String"%go, stwReason__Stringⁱᵐᵖˡ); ("isGC"%go, stwReason__isGCⁱᵐᵖˡ)]); (worldStop.id, []); (ptrT.id worldStop.id, []); (cgothreadstart.id, []); (ptrT.id cgothreadstart.id, []); (sysmontick.id, []); (ptrT.id sysmontick.id, []); (pMask.id, [("clear"%go, pMask__clearⁱᵐᵖˡ); ("read"%go, pMask__readⁱᵐᵖˡ); ("set"%go, pMask__setⁱᵐᵖˡ)]); (ptrT.id pMask.id, [("clear"%go, pMask__clearⁱᵐᵖˡ); ("read"%go, pMask__readⁱᵐᵖˡ); ("set"%go, pMask__setⁱᵐᵖˡ)]); (gQueue.id, []); (ptrT.id gQueue.id, [("empty"%go, gQueue__emptyⁱᵐᵖˡ); ("pop"%go, gQueue__popⁱᵐᵖˡ); ("popList"%go, gQueue__popListⁱᵐᵖˡ); ("push"%go, gQueue__pushⁱᵐᵖˡ); ("pushBack"%go, gQueue__pushBackⁱᵐᵖˡ); ("pushBackAll"%go, gQueue__pushBackAllⁱᵐᵖˡ)]); (gList.id, []); (ptrT.id gList.id, [("empty"%go, gList__emptyⁱᵐᵖˡ); ("pop"%go, gList__popⁱᵐᵖˡ); ("push"%go, gList__pushⁱᵐᵖˡ); ("pushAll"%go, gList__pushAllⁱᵐᵖˡ)]); (randomOrder.id, []); (ptrT.id randomOrder.id, [("reset"%go, randomOrder__resetⁱᵐᵖˡ); ("start"%go, randomOrder__startⁱᵐᵖˡ)]); (randomEnum.id, []); (ptrT.id randomEnum.id, [("done"%go, randomEnum__doneⁱᵐᵖˡ); ("next"%go, randomEnum__nextⁱᵐᵖˡ); ("position"%go, randomEnum__positionⁱᵐᵖˡ)]); (initTask.id, []); (ptrT.id initTask.id, []); (tracestat.id, []); (ptrT.id tracestat.id, []); (profBuf.id, []); (ptrT.id profBuf.id, [("canWriteRecord"%go, profBuf__canWriteRecordⁱᵐᵖˡ); ("canWriteTwoRecords"%go, profBuf__canWriteTwoRecordsⁱᵐᵖˡ); ("close"%go, profBuf__closeⁱᵐᵖˡ); ("hasOverflow"%go, profBuf__hasOverflowⁱᵐᵖˡ); ("incrementOverflow"%go, profBuf__incrementOverflowⁱᵐᵖˡ); ("read"%go, profBuf__readⁱᵐᵖˡ); ("takeOverflow"%go, profBuf__takeOverflowⁱᵐᵖˡ); ("wakeupExtra"%go, profBuf__wakeupExtraⁱᵐᵖˡ); ("write"%go, profBuf__writeⁱᵐᵖˡ)]); (profAtomic.id, []); (ptrT.id profAtomic.id, [("cas"%go, profAtomic__casⁱᵐᵖˡ); ("load"%go, profAtomic__loadⁱᵐᵖˡ); ("store"%go, profAtomic__storeⁱᵐᵖˡ)]); (profIndex.id, [("addCountsAndClearFlags"%go, profIndex__addCountsAndClearFlagsⁱᵐᵖˡ); ("dataCount"%go, profIndex__dataCountⁱᵐᵖˡ); ("tagCount"%go, profIndex__tagCountⁱᵐᵖˡ)]); (ptrT.id profIndex.id, [("addCountsAndClearFlags"%go, profIndex__addCountsAndClearFlagsⁱᵐᵖˡ); ("dataCount"%go, profIndex__dataCountⁱᵐᵖˡ); ("tagCount"%go, profIndex__tagCountⁱᵐᵖˡ)]); (profBufReadMode.id, []); (ptrT.id profBufReadMode.id, []); (ticksType.id, []); (ptrT.id ticksType.id, [("init"%go, ticksType__initⁱᵐᵖˡ)]); (godebugInc.id, []); (ptrT.id godebugInc.id, [("IncNonDefault"%go, godebugInc__IncNonDefaultⁱᵐᵖˡ)]); (dbgVar.id, []); (ptrT.id dbgVar.id, []); (mutex.id, []); (ptrT.id mutex.id, []); (funcval.id, []); (ptrT.id funcval.id, []); (iface.id, []); (ptrT.id iface.id, []); (eface.id, []); (ptrT.id eface.id, []); (guintptr.id, [("ptr"%go, guintptr__ptrⁱᵐᵖˡ)]); (ptrT.id guintptr.id, [("cas"%go, guintptr__casⁱᵐᵖˡ); ("ptr"%go, guintptr__ptrⁱᵐᵖˡ); ("set"%go, guintptr__setⁱᵐᵖˡ)]); (puintptr.id, [("ptr"%go, puintptr__ptrⁱᵐᵖˡ)]); (ptrT.id puintptr.id, [("ptr"%go, puintptr__ptrⁱᵐᵖˡ); ("set"%go, puintptr__setⁱᵐᵖˡ)]); (muintptr.id, [("ptr"%go, muintptr__ptrⁱᵐᵖˡ)]); (ptrT.id muintptr.id, [("ptr"%go, muintptr__ptrⁱᵐᵖˡ); ("set"%go, muintptr__setⁱᵐᵖˡ)]); (gobuf.id, []); (ptrT.id gobuf.id, []); (sudog.id, []); (ptrT.id sudog.id, []); (libcall.id, []); (ptrT.id libcall.id, []); (stack.id, []); (ptrT.id stack.id, []); (heldLockInfo.id, []); (ptrT.id heldLockInfo.id, []); (g.id, []); (ptrT.id g.id, [("guintptr"%go, g__guintptrⁱᵐᵖˡ)]); (m.id, []); (ptrT.id m.id, [("becomeSpinning"%go, m__becomeSpinningⁱᵐᵖˡ); ("clearAllpSnapshot"%go, m__clearAllpSnapshotⁱᵐᵖˡ); ("hasCgoOnStack"%go, m__hasCgoOnStackⁱᵐᵖˡ); ("snapshotAllp"%go, m__snapshotAllpⁱᵐᵖˡ)]); (p.id, []); (ptrT.id p.id, [("destroy"%go, p__destroyⁱᵐᵖˡ); ("init"%go, p__initⁱᵐᵖˡ)]); (schedt.id, []); (ptrT.id schedt.id, []); (_func.id, []); (ptrT.id _func.id, [("funcInfo"%go, _func__funcInfoⁱᵐᵖˡ); ("isInlined"%go, _func__isInlinedⁱᵐᵖˡ)]); (funcinl.id, []); (ptrT.id funcinl.id, []); (lfnode.id, []); (ptrT.id lfnode.id, []); (forcegcstate.id, []); (ptrT.id forcegcstate.id, []); (_defer.id, []); (ptrT.id _defer.id, []); (_panic.id, []); (ptrT.id _panic.id, [("initOpenCodedDefers"%go, _panic__initOpenCodedDefersⁱᵐᵖˡ); ("nextDefer"%go, _panic__nextDeferⁱᵐᵖˡ); ("nextFrame"%go, _panic__nextFrameⁱᵐᵖˡ); ("start"%go, _panic__startⁱᵐᵖˡ)]); (savedOpenDeferState.id, []); (ptrT.id savedOpenDeferState.id, []); (ancestorInfo.id, []); (ptrT.id ancestorInfo.id, []); (waitReason.id, [("String"%go, waitReason__Stringⁱᵐᵖˡ); ("isIdleInSynctest"%go, waitReason__isIdleInSynctestⁱᵐᵖˡ); ("isMutexWait"%go, waitReason__isMutexWaitⁱᵐᵖˡ); ("isWaitingForSuspendG"%go, waitReason__isWaitingForSuspendGⁱᵐᵖˡ)]); (ptrT.id waitReason.id, [("String"%go, waitReason__Stringⁱᵐᵖˡ); ("isIdleInSynctest"%go, waitReason__isIdleInSynctestⁱᵐᵖˡ); ("isMutexWait"%go, waitReason__isMutexWaitⁱᵐᵖˡ); ("isWaitingForSuspendG"%go, waitReason__isWaitingForSuspendGⁱᵐᵖˡ)]); (rwmutex.id, []); (ptrT.id rwmutex.id, [("init"%go, rwmutex__initⁱᵐᵖˡ); ("lock"%go, rwmutex__lockⁱᵐᵖˡ); ("rlock"%go, rwmutex__rlockⁱᵐᵖˡ); ("runlock"%go, rwmutex__runlockⁱᵐᵖˡ); ("unlock"%go, rwmutex__unlockⁱᵐᵖˡ)]); (scase.id, []); (ptrT.id scase.id, []); (runtimeSelect.id, []); (ptrT.id runtimeSelect.id, []); (selectDir.id, []); (ptrT.id selectDir.id, []); (semaRoot.id, []); (ptrT.id semaRoot.id, [("dequeue"%go, semaRoot__dequeueⁱᵐᵖˡ); ("queue"%go, semaRoot__queueⁱᵐᵖˡ); ("rotateLeft"%go, semaRoot__rotateLeftⁱᵐᵖˡ); ("rotateRight"%go, semaRoot__rotateRightⁱᵐᵖˡ)]); (semTable.id, []); (ptrT.id semTable.id, [("rootFor"%go, semTable__rootForⁱᵐᵖˡ)]); (semaProfileFlags.id, []); (ptrT.id semaProfileFlags.id, []); (notifyList.id, []); (ptrT.id notifyList.id, []); (sigctxt.id, []); (ptrT.id sigctxt.id, [("cs"%go, sigctxt__csⁱᵐᵖˡ); ("fault"%go, sigctxt__faultⁱᵐᵖˡ); ("fixsigcode"%go, sigctxt__fixsigcodeⁱᵐᵖˡ); ("fs"%go, sigctxt__fsⁱᵐᵖˡ); ("gs"%go, sigctxt__gsⁱᵐᵖˡ); ("preparePanic"%go, sigctxt__preparePanicⁱᵐᵖˡ); ("pushCall"%go, sigctxt__pushCallⁱᵐᵖˡ); ("r10"%go, sigctxt__r10ⁱᵐᵖˡ); ("r11"%go, sigctxt__r11ⁱᵐᵖˡ); ("r12"%go, sigctxt__r12ⁱᵐᵖˡ); ("r13"%go, sigctxt__r13ⁱᵐᵖˡ); ("r14"%go, sigctxt__r14ⁱᵐᵖˡ); ("r15"%go, sigctxt__r15ⁱᵐᵖˡ); ("r8"%go, sigctxt__r8ⁱᵐᵖˡ); ("r9"%go, sigctxt__r9ⁱᵐᵖˡ); ("rax"%go, sigctxt__raxⁱᵐᵖˡ); ("rbp"%go, sigctxt__rbpⁱᵐᵖˡ); ("rbx"%go, sigctxt__rbxⁱᵐᵖˡ); ("rcx"%go, sigctxt__rcxⁱᵐᵖˡ); ("rdi"%go, sigctxt__rdiⁱᵐᵖˡ); ("rdx"%go, sigctxt__rdxⁱᵐᵖˡ); ("regs"%go, sigctxt__regsⁱᵐᵖˡ); ("rflags"%go, sigctxt__rflagsⁱᵐᵖˡ); ("rip"%go, sigctxt__ripⁱᵐᵖˡ); ("rsi"%go, sigctxt__rsiⁱᵐᵖˡ); ("rsp"%go, sigctxt__rspⁱᵐᵖˡ); ("set_rip"%go, sigctxt__set_ripⁱᵐᵖˡ); ("set_rsp"%go, sigctxt__set_rspⁱᵐᵖˡ); ("set_sigaddr"%go, sigctxt__set_sigaddrⁱᵐᵖˡ); ("set_sigcode"%go, sigctxt__set_sigcodeⁱᵐᵖˡ); ("setsigpc"%go, sigctxt__setsigpcⁱᵐᵖˡ); ("sigFromSeccomp"%go, sigctxt__sigFromSeccompⁱᵐᵖˡ); ("sigFromUser"%go, sigctxt__sigFromUserⁱᵐᵖˡ); ("sigaddr"%go, sigctxt__sigaddrⁱᵐᵖˡ); ("sigcode"%go, sigctxt__sigcodeⁱᵐᵖˡ); ("siglr"%go, sigctxt__siglrⁱᵐᵖˡ); ("sigpc"%go, sigctxt__sigpcⁱᵐᵖˡ); ("sigsp"%go, sigctxt__sigspⁱᵐᵖˡ)]); (sigTabT.id, []); (ptrT.id sigTabT.id, []); (gsignalStack.id, []); (ptrT.id gsignalStack.id, []); (slice.id, []); (ptrT.id slice.id, []); (notInHeapSlice.id, []); (ptrT.id notInHeapSlice.id, []); (stackpoolItem.id, []); (ptrT.id stackpoolItem.id, []); (adjustinfo.id, []); (ptrT.id adjustinfo.id, []); (bitvector.id, []); (ptrT.id bitvector.id, [("ptrbit"%go, bitvector__ptrbitⁱᵐᵖˡ)]); (stackObjectRecord.id, []); (ptrT.id stackObjectRecord.id, [("gcdata"%go, stackObjectRecord__gcdataⁱᵐᵖˡ)]); (stkframe.id, []); (ptrT.id stkframe.id, [("argBytes"%go, stkframe__argBytesⁱᵐᵖˡ); ("argMapInternal"%go, stkframe__argMapInternalⁱᵐᵖˡ); ("getStackMap"%go, stkframe__getStackMapⁱᵐᵖˡ)]); (reflectMethodValue.id, []); (ptrT.id reflectMethodValue.id, []); (tmpBuf.id, []); (ptrT.id tmpBuf.id, []); (stringStruct.id, []); (ptrT.id stringStruct.id, []); (stringStructDWARF.id, []); (ptrT.id stringStructDWARF.id, []); (neverCallThisFunction.id, []); (ptrT.id neverCallThisFunction.id, []); (Frames.id, []); (ptrT.id Frames.id, [("Next"%go, Frames__Nextⁱᵐᵖˡ)]); (Frame.id, []); (ptrT.id Frame.id, []); (Func.id, []); (ptrT.id Func.id, [("Entry"%go, Func__Entryⁱᵐᵖˡ); ("FileLine"%go, Func__FileLineⁱᵐᵖˡ); ("Name"%go, Func__Nameⁱᵐᵖˡ); ("funcInfo"%go, Func__funcInfoⁱᵐᵖˡ); ("raw"%go, Func__rawⁱᵐᵖˡ); ("startLine"%go, Func__startLineⁱᵐᵖˡ)]); (pcHeader.id, []); (ptrT.id pcHeader.id, []); (moduledata.id, []); (ptrT.id moduledata.id, [("funcName"%go, moduledata__funcNameⁱᵐᵖˡ); ("textAddr"%go, moduledata__textAddrⁱᵐᵖˡ); ("textOff"%go, moduledata__textOffⁱᵐᵖˡ)]); (modulehash.id, []); (ptrT.id modulehash.id, []); (functab.id, []); (ptrT.id functab.id, []); (textsect.id, []); (ptrT.id textsect.id, []); (findfuncbucket.id, []); (ptrT.id findfuncbucket.id, []); (funcInfo.id, [("_Func"%go, funcInfo___Funcⁱᵐᵖˡ); ("entry"%go, funcInfo__entryⁱᵐᵖˡ); ("funcInfo"%go, funcInfo__funcInfoⁱᵐᵖˡ); ("isInlined"%go, funcInfo__isInlinedⁱᵐᵖˡ); ("srcFunc"%go, funcInfo__srcFuncⁱᵐᵖˡ); ("valid"%go, funcInfo__validⁱᵐᵖˡ)]); (ptrT.id funcInfo.id, [("_Func"%go, funcInfo___Funcⁱᵐᵖˡ); ("entry"%go, funcInfo__entryⁱᵐᵖˡ); ("funcInfo"%go, funcInfo__funcInfoⁱᵐᵖˡ); ("isInlined"%go, funcInfo__isInlinedⁱᵐᵖˡ); ("srcFunc"%go, funcInfo__srcFuncⁱᵐᵖˡ); ("valid"%go, funcInfo__validⁱᵐᵖˡ)]); (srcFunc.id, [("name"%go, srcFunc__nameⁱᵐᵖˡ)]); (ptrT.id srcFunc.id, [("name"%go, srcFunc__nameⁱᵐᵖˡ)]); (pcvalueCache.id, []); (ptrT.id pcvalueCache.id, []); (pcvalueCacheEnt.id, []); (ptrT.id pcvalueCacheEnt.id, []); (stackmap.id, []); (ptrT.id stackmap.id, []); (inlinedCall.id, []); (ptrT.id inlinedCall.id, []); (inlineUnwinder.id, []); (ptrT.id inlineUnwinder.id, [("fileLine"%go, inlineUnwinder__fileLineⁱᵐᵖˡ); ("isInlined"%go, inlineUnwinder__isInlinedⁱᵐᵖˡ); ("next"%go, inlineUnwinder__nextⁱᵐᵖˡ); ("resolveInternal"%go, inlineUnwinder__resolveInternalⁱᵐᵖˡ); ("srcFunc"%go, inlineUnwinder__srcFuncⁱᵐᵖˡ)]); (inlineFrame.id, [("valid"%go, inlineFrame__validⁱᵐᵖˡ)]); (ptrT.id inlineFrame.id, [("valid"%go, inlineFrame__validⁱᵐᵖˡ)]); (synctestGroup.id, []); (ptrT.id synctestGroup.id, [("changegstatus"%go, synctestGroup__changegstatusⁱᵐᵖˡ); ("decActive"%go, synctestGroup__decActiveⁱᵐᵖˡ); ("incActive"%go, synctestGroup__incActiveⁱᵐᵖˡ); ("maybeWakeLocked"%go, synctestGroup__maybeWakeLockedⁱᵐᵖˡ); ("raceaddr"%go, synctestGroup__raceaddrⁱᵐᵖˡ)]); (taggedPointer.id, [("pointer"%go, taggedPointer__pointerⁱᵐᵖˡ); ("tag"%go, taggedPointer__tagⁱᵐᵖˡ)]); (ptrT.id taggedPointer.id, [("pointer"%go, taggedPointer__pointerⁱᵐᵖˡ); ("tag"%go, taggedPointer__tagⁱᵐᵖˡ)]); (timer.id, []); (ptrT.id timer.id, [("hchan"%go, timer__hchanⁱᵐᵖˡ); ("init"%go, timer__initⁱᵐᵖˡ); ("lock"%go, timer__lockⁱᵐᵖˡ); ("maybeAdd"%go, timer__maybeAddⁱᵐᵖˡ); ("maybeRunAsync"%go, timer__maybeRunAsyncⁱᵐᵖˡ); ("maybeRunChan"%go, timer__maybeRunChanⁱᵐᵖˡ); ("modify"%go, timer__modifyⁱᵐᵖˡ); ("needsAdd"%go, timer__needsAddⁱᵐᵖˡ); ("reset"%go, timer__resetⁱᵐᵖˡ); ("stop"%go, timer__stopⁱᵐᵖˡ); ("trace"%go, timer__traceⁱᵐᵖˡ); ("trace1"%go, timer__trace1ⁱᵐᵖˡ); ("unlock"%go, timer__unlockⁱᵐᵖˡ); ("unlockAndRun"%go, timer__unlockAndRunⁱᵐᵖˡ); ("updateHeap"%go, timer__updateHeapⁱᵐᵖˡ)]); (timers.id, []); (ptrT.id timers.id, [("addHeap"%go, timers__addHeapⁱᵐᵖˡ); ("adjust"%go, timers__adjustⁱᵐᵖˡ); ("check"%go, timers__checkⁱᵐᵖˡ); ("cleanHead"%go, timers__cleanHeadⁱᵐᵖˡ); ("deleteMin"%go, timers__deleteMinⁱᵐᵖˡ); ("initHeap"%go, timers__initHeapⁱᵐᵖˡ); ("lock"%go, timers__lockⁱᵐᵖˡ); ("run"%go, timers__runⁱᵐᵖˡ); ("siftDown"%go, timers__siftDownⁱᵐᵖˡ); ("siftUp"%go, timers__siftUpⁱᵐᵖˡ); ("take"%go, timers__takeⁱᵐᵖˡ); ("trace"%go, timers__traceⁱᵐᵖˡ); ("unlock"%go, timers__unlockⁱᵐᵖˡ); ("updateMinWhenHeap"%go, timers__updateMinWhenHeapⁱᵐᵖˡ); ("updateMinWhenModified"%go, timers__updateMinWhenModifiedⁱᵐᵖˡ); ("verify"%go, timers__verifyⁱᵐᵖˡ); ("wakeTime"%go, timers__wakeTimeⁱᵐᵖˡ)]); (timerWhen.id, []); (ptrT.id timerWhen.id, []); (timeTimer.id, []); (ptrT.id timeTimer.id, [("hchan"%go, timeTimer__hchanⁱᵐᵖˡ); ("lock"%go, timeTimer__lockⁱᵐᵖˡ); ("maybeAdd"%go, timeTimer__maybeAddⁱᵐᵖˡ); ("maybeRunAsync"%go, timeTimer__maybeRunAsyncⁱᵐᵖˡ); ("maybeRunChan"%go, timeTimer__maybeRunChanⁱᵐᵖˡ); ("modify"%go, timeTimer__modifyⁱᵐᵖˡ); ("needsAdd"%go, timeTimer__needsAddⁱᵐᵖˡ); ("reset"%go, timeTimer__resetⁱᵐᵖˡ); ("stop"%go, timeTimer__stopⁱᵐᵖˡ); ("trace"%go, timeTimer__traceⁱᵐᵖˡ); ("trace1"%go, timeTimer__trace1ⁱᵐᵖˡ); ("unlock"%go, timeTimer__unlockⁱᵐᵖˡ); ("unlockAndRun"%go, timeTimer__unlockAndRunⁱᵐᵖˡ); ("updateHeap"%go, timeTimer__updateHeapⁱᵐᵖˡ)]); (traceAdvancerState.id, []); (ptrT.id traceAdvancerState.id, [("start"%go, traceAdvancerState__startⁱᵐᵖˡ); ("stop"%go, traceAdvancerState__stopⁱᵐᵖˡ)]); (wakeableSleep.id, []); (ptrT.id wakeableSleep.id, [("close"%go, wakeableSleep__closeⁱᵐᵖˡ); ("sleep"%go, wakeableSleep__sleepⁱᵐᵖˡ); ("wake"%go, wakeableSleep__wakeⁱᵐᵖˡ)]); (unwindFlags.id, []); (ptrT.id unwindFlags.id, []); (unwinder.id, []); (ptrT.id unwinder.id, [("cgoCallers"%go, unwinder__cgoCallersⁱᵐᵖˡ); ("finishInternal"%go, unwinder__finishInternalⁱᵐᵖˡ); ("init"%go, unwinder__initⁱᵐᵖˡ); ("initAt"%go, unwinder__initAtⁱᵐᵖˡ); ("next"%go, unwinder__nextⁱᵐᵖˡ); ("resolveInternal"%go, unwinder__resolveInternalⁱᵐᵖˡ); ("symPC"%go, unwinder__symPCⁱᵐᵖˡ); ("valid"%go, unwinder__validⁱᵐᵖˡ)]); (cgoTracebackArg.id, []); (ptrT.id cgoTracebackArg.id, []); (cgoContextArg.id, []); (ptrT.id cgoContextArg.id, []); (cgoSymbolizerArg.id, []); (ptrT.id cgoSymbolizerArg.id, []); (traceWriter.id, [("GCActive"%go, traceWriter__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceWriter__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceWriter__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceWriter__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceWriter__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceWriter__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceWriter__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceWriter__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceWriter__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceWriter__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceWriter__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceWriter__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceWriter__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceWriter__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceWriter__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceWriter__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceWriter__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceWriter__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceWriter__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceWriter__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceWriter__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceWriter__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceWriter__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceWriter__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceWriter__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceWriter__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceWriter__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceWriter__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceWriter__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceWriter__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceWriter__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceWriter__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceWriter__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceWriter__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceWriter__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceWriter__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceWriter__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceWriter__SpanFreeⁱᵐᵖˡ); ("available"%go, traceWriter__availableⁱᵐᵖˡ); ("byte"%go, traceWriter__byteⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceWriter__emitUnblockStatusⁱᵐᵖˡ); ("end"%go, traceWriter__endⁱᵐᵖˡ); ("ensure"%go, traceWriter__ensureⁱᵐᵖˡ); ("event"%go, traceWriter__eventⁱᵐᵖˡ); ("eventWriter"%go, traceWriter__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceWriter__expWriterⁱᵐᵖˡ); ("flush"%go, traceWriter__flushⁱᵐᵖˡ); ("ok"%go, traceWriter__okⁱᵐᵖˡ); ("refill"%go, traceWriter__refillⁱᵐᵖˡ); ("rtype"%go, traceWriter__rtypeⁱᵐᵖˡ); ("stack"%go, traceWriter__stackⁱᵐᵖˡ); ("startPC"%go, traceWriter__startPCⁱᵐᵖˡ); ("string"%go, traceWriter__stringⁱᵐᵖˡ); ("stringData"%go, traceWriter__stringDataⁱᵐᵖˡ); ("uniqueString"%go, traceWriter__uniqueStringⁱᵐᵖˡ); ("varint"%go, traceWriter__varintⁱᵐᵖˡ); ("varintAt"%go, traceWriter__varintAtⁱᵐᵖˡ); ("varintReserve"%go, traceWriter__varintReserveⁱᵐᵖˡ); ("writeGoStatus"%go, traceWriter__writeGoStatusⁱᵐᵖˡ); ("writeProcStatus"%go, traceWriter__writeProcStatusⁱᵐᵖˡ); ("writeProcStatusForP"%go, traceWriter__writeProcStatusForPⁱᵐᵖˡ); ("writer"%go, traceWriter__writerⁱᵐᵖˡ)]); (ptrT.id traceWriter.id, [("GCActive"%go, traceWriter__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceWriter__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceWriter__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceWriter__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceWriter__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceWriter__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceWriter__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceWriter__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceWriter__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceWriter__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceWriter__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceWriter__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceWriter__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceWriter__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceWriter__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceWriter__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceWriter__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceWriter__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceWriter__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceWriter__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceWriter__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceWriter__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceWriter__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceWriter__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceWriter__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceWriter__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceWriter__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceWriter__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceWriter__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceWriter__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceWriter__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceWriter__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceWriter__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceWriter__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceWriter__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceWriter__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceWriter__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceWriter__SpanFreeⁱᵐᵖˡ); ("available"%go, traceWriter__availableⁱᵐᵖˡ); ("byte"%go, traceWriter__byteⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceWriter__emitUnblockStatusⁱᵐᵖˡ); ("end"%go, traceWriter__endⁱᵐᵖˡ); ("ensure"%go, traceWriter__ensureⁱᵐᵖˡ); ("event"%go, traceWriter__eventⁱᵐᵖˡ); ("eventWriter"%go, traceWriter__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceWriter__expWriterⁱᵐᵖˡ); ("flush"%go, traceWriter__flushⁱᵐᵖˡ); ("ok"%go, traceWriter__okⁱᵐᵖˡ); ("refill"%go, traceWriter__refillⁱᵐᵖˡ); ("rtype"%go, traceWriter__rtypeⁱᵐᵖˡ); ("stack"%go, traceWriter__stackⁱᵐᵖˡ); ("startPC"%go, traceWriter__startPCⁱᵐᵖˡ); ("string"%go, traceWriter__stringⁱᵐᵖˡ); ("stringData"%go, traceWriter__stringDataⁱᵐᵖˡ); ("uniqueString"%go, traceWriter__uniqueStringⁱᵐᵖˡ); ("varint"%go, traceWriter__varintⁱᵐᵖˡ); ("varintAt"%go, traceWriter__varintAtⁱᵐᵖˡ); ("varintReserve"%go, traceWriter__varintReserveⁱᵐᵖˡ); ("writeGoStatus"%go, traceWriter__writeGoStatusⁱᵐᵖˡ); ("writeProcStatus"%go, traceWriter__writeProcStatusⁱᵐᵖˡ); ("writeProcStatusForP"%go, traceWriter__writeProcStatusForPⁱᵐᵖˡ); ("writer"%go, traceWriter__writerⁱᵐᵖˡ)]); (traceBufQueue.id, []); (ptrT.id traceBufQueue.id, [("empty"%go, traceBufQueue__emptyⁱᵐᵖˡ); ("pop"%go, traceBufQueue__popⁱᵐᵖˡ); ("push"%go, traceBufQueue__pushⁱᵐᵖˡ)]); (traceBufHeader.id, []); (ptrT.id traceBufHeader.id, []); (traceBuf.id, []); (ptrT.id traceBuf.id, [("available"%go, traceBuf__availableⁱᵐᵖˡ); ("byte"%go, traceBuf__byteⁱᵐᵖˡ); ("stringData"%go, traceBuf__stringDataⁱᵐᵖˡ); ("varint"%go, traceBuf__varintⁱᵐᵖˡ); ("varintAt"%go, traceBuf__varintAtⁱᵐᵖˡ); ("varintReserve"%go, traceBuf__varintReserveⁱᵐᵖˡ)]); (traceEv.id, []); (ptrT.id traceEv.id, []); (traceArg.id, []); (ptrT.id traceArg.id, []); (traceEventWriter.id, [("event"%go, traceEventWriter__eventⁱᵐᵖˡ)]); (ptrT.id traceEventWriter.id, [("event"%go, traceEventWriter__eventⁱᵐᵖˡ)]); (traceExperiment.id, []); (ptrT.id traceExperiment.id, []); (traceMap.id, []); (ptrT.id traceMap.id, [("newTraceMapNode"%go, traceMap__newTraceMapNodeⁱᵐᵖˡ); ("put"%go, traceMap__putⁱᵐᵖˡ); ("reset"%go, traceMap__resetⁱᵐᵖˡ); ("stealID"%go, traceMap__stealIDⁱᵐᵖˡ)]); (traceMapNode.id, []); (ptrT.id traceMapNode.id, []); (traceRegionAlloc.id, []); (ptrT.id traceRegionAlloc.id, [("alloc"%go, traceRegionAlloc__allocⁱᵐᵖˡ); ("drop"%go, traceRegionAlloc__dropⁱᵐᵖˡ)]); (traceRegionAllocBlock.id, []); (ptrT.id traceRegionAllocBlock.id, []); (traceRegionAllocBlockHeader.id, []); (ptrT.id traceRegionAllocBlockHeader.id, []); (gTraceState.id, []); (ptrT.id gTraceState.id, [("acquireStatus"%go, gTraceState__acquireStatusⁱᵐᵖˡ); ("nextSeq"%go, gTraceState__nextSeqⁱᵐᵖˡ); ("readyNextGen"%go, gTraceState__readyNextGenⁱᵐᵖˡ); ("reset"%go, gTraceState__resetⁱᵐᵖˡ); ("setStatusTraced"%go, gTraceState__setStatusTracedⁱᵐᵖˡ); ("statusWasTraced"%go, gTraceState__statusWasTracedⁱᵐᵖˡ)]); (mTraceState.id, []); (ptrT.id mTraceState.id, []); (pTraceState.id, []); (ptrT.id pTraceState.id, [("acquireStatus"%go, pTraceState__acquireStatusⁱᵐᵖˡ); ("nextSeq"%go, pTraceState__nextSeqⁱᵐᵖˡ); ("readyNextGen"%go, pTraceState__readyNextGenⁱᵐᵖˡ); ("setStatusTraced"%go, pTraceState__setStatusTracedⁱᵐᵖˡ); ("statusWasTraced"%go, pTraceState__statusWasTracedⁱᵐᵖˡ)]); (traceBlockReason.id, []); (ptrT.id traceBlockReason.id, []); (traceGoStopReason.id, []); (ptrT.id traceGoStopReason.id, []); (traceLocker.id, [("GCActive"%go, traceLocker__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceLocker__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceLocker__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceLocker__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceLocker__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceLocker__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceLocker__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceLocker__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceLocker__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceLocker__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceLocker__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceLocker__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceLocker__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceLocker__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceLocker__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceLocker__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceLocker__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceLocker__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceLocker__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceLocker__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceLocker__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceLocker__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceLocker__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceLocker__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceLocker__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceLocker__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceLocker__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceLocker__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceLocker__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceLocker__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceLocker__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceLocker__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceLocker__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceLocker__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceLocker__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceLocker__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceLocker__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceLocker__SpanFreeⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceLocker__emitUnblockStatusⁱᵐᵖˡ); ("eventWriter"%go, traceLocker__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceLocker__expWriterⁱᵐᵖˡ); ("ok"%go, traceLocker__okⁱᵐᵖˡ); ("rtype"%go, traceLocker__rtypeⁱᵐᵖˡ); ("stack"%go, traceLocker__stackⁱᵐᵖˡ); ("startPC"%go, traceLocker__startPCⁱᵐᵖˡ); ("string"%go, traceLocker__stringⁱᵐᵖˡ); ("uniqueString"%go, traceLocker__uniqueStringⁱᵐᵖˡ); ("writer"%go, traceLocker__writerⁱᵐᵖˡ)]); (ptrT.id traceLocker.id, [("GCActive"%go, traceLocker__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceLocker__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceLocker__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceLocker__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceLocker__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceLocker__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceLocker__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceLocker__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceLocker__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceLocker__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceLocker__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceLocker__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceLocker__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceLocker__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceLocker__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceLocker__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceLocker__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceLocker__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceLocker__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceLocker__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceLocker__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceLocker__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceLocker__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceLocker__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceLocker__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceLocker__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceLocker__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceLocker__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceLocker__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceLocker__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceLocker__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceLocker__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceLocker__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceLocker__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceLocker__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceLocker__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceLocker__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceLocker__SpanFreeⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceLocker__emitUnblockStatusⁱᵐᵖˡ); ("eventWriter"%go, traceLocker__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceLocker__expWriterⁱᵐᵖˡ); ("ok"%go, traceLocker__okⁱᵐᵖˡ); ("rtype"%go, traceLocker__rtypeⁱᵐᵖˡ); ("stack"%go, traceLocker__stackⁱᵐᵖˡ); ("startPC"%go, traceLocker__startPCⁱᵐᵖˡ); ("string"%go, traceLocker__stringⁱᵐᵖˡ); ("uniqueString"%go, traceLocker__uniqueStringⁱᵐᵖˡ); ("writer"%go, traceLocker__writerⁱᵐᵖˡ)]); (traceStackTable.id, []); (ptrT.id traceStackTable.id, [("dump"%go, traceStackTable__dumpⁱᵐᵖˡ); ("put"%go, traceStackTable__putⁱᵐᵖˡ)]); (traceFrame.id, []); (ptrT.id traceFrame.id, []); (traceGoStatus.id, []); (ptrT.id traceGoStatus.id, []); (traceProcStatus.id, []); (ptrT.id traceProcStatus.id, []); (traceSchedResourceState.id, []); (ptrT.id traceSchedResourceState.id, [("acquireStatus"%go, traceSchedResourceState__acquireStatusⁱᵐᵖˡ); ("nextSeq"%go, traceSchedResourceState__nextSeqⁱᵐᵖˡ); ("readyNextGen"%go, traceSchedResourceState__readyNextGenⁱᵐᵖˡ); ("setStatusTraced"%go, traceSchedResourceState__setStatusTracedⁱᵐᵖˡ); ("statusWasTraced"%go, traceSchedResourceState__statusWasTracedⁱᵐᵖˡ)]); (traceStringTable.id, []); (ptrT.id traceStringTable.id, [("emit"%go, traceStringTable__emitⁱᵐᵖˡ); ("put"%go, traceStringTable__putⁱᵐᵖˡ); ("reset"%go, traceStringTable__resetⁱᵐᵖˡ); ("writeString"%go, traceStringTable__writeStringⁱᵐᵖˡ)]); (traceTime.id, []); (ptrT.id traceTime.id, []); (traceTypeTable.id, []); (ptrT.id traceTypeTable.id, [("dump"%go, traceTypeTable__dumpⁱᵐᵖˡ); ("put"%go, traceTypeTable__putⁱᵐᵖˡ)]); (rtype.id, [("Align"%go, rtype__Alignⁱᵐᵖˡ); ("ArrayType"%go, rtype__ArrayTypeⁱᵐᵖˡ); ("ChanDir"%go, rtype__ChanDirⁱᵐᵖˡ); ("Common"%go, rtype__Commonⁱᵐᵖˡ); ("Elem"%go, rtype__Elemⁱᵐᵖˡ); ("ExportedMethods"%go, rtype__ExportedMethodsⁱᵐᵖˡ); ("FieldAlign"%go, rtype__FieldAlignⁱᵐᵖˡ); ("FuncType"%go, rtype__FuncTypeⁱᵐᵖˡ); ("GcSlice"%go, rtype__GcSliceⁱᵐᵖˡ); ("HasName"%go, rtype__HasNameⁱᵐᵖˡ); ("IfaceIndir"%go, rtype__IfaceIndirⁱᵐᵖˡ); ("InterfaceType"%go, rtype__InterfaceTypeⁱᵐᵖˡ); ("IsDirectIface"%go, rtype__IsDirectIfaceⁱᵐᵖˡ); ("Key"%go, rtype__Keyⁱᵐᵖˡ); ("Kind"%go, rtype__Kindⁱᵐᵖˡ); ("Len"%go, rtype__Lenⁱᵐᵖˡ); ("MapType"%go, rtype__MapTypeⁱᵐᵖˡ); ("NumMethod"%go, rtype__NumMethodⁱᵐᵖˡ); ("Pointers"%go, rtype__Pointersⁱᵐᵖˡ); ("Size"%go, rtype__Sizeⁱᵐᵖˡ); ("StructType"%go, rtype__StructTypeⁱᵐᵖˡ); ("Uncommon"%go, rtype__Uncommonⁱᵐᵖˡ); ("name"%go, rtype__nameⁱᵐᵖˡ); ("nameOff"%go, rtype__nameOffⁱᵐᵖˡ); ("pkgpath"%go, rtype__pkgpathⁱᵐᵖˡ); ("string"%go, rtype__stringⁱᵐᵖˡ); ("textOff"%go, rtype__textOffⁱᵐᵖˡ); ("typeOff"%go, rtype__typeOffⁱᵐᵖˡ); ("uncommon"%go, rtype__uncommonⁱᵐᵖˡ)]); (ptrT.id rtype.id, [("Align"%go, rtype__Alignⁱᵐᵖˡ); ("ArrayType"%go, rtype__ArrayTypeⁱᵐᵖˡ); ("ChanDir"%go, rtype__ChanDirⁱᵐᵖˡ); ("Common"%go, rtype__Commonⁱᵐᵖˡ); ("Elem"%go, rtype__Elemⁱᵐᵖˡ); ("ExportedMethods"%go, rtype__ExportedMethodsⁱᵐᵖˡ); ("FieldAlign"%go, rtype__FieldAlignⁱᵐᵖˡ); ("FuncType"%go, rtype__FuncTypeⁱᵐᵖˡ); ("GcSlice"%go, rtype__GcSliceⁱᵐᵖˡ); ("HasName"%go, rtype__HasNameⁱᵐᵖˡ); ("IfaceIndir"%go, rtype__IfaceIndirⁱᵐᵖˡ); ("InterfaceType"%go, rtype__InterfaceTypeⁱᵐᵖˡ); ("IsDirectIface"%go, rtype__IsDirectIfaceⁱᵐᵖˡ); ("Key"%go, rtype__Keyⁱᵐᵖˡ); ("Kind"%go, rtype__Kindⁱᵐᵖˡ); ("Len"%go, rtype__Lenⁱᵐᵖˡ); ("MapType"%go, rtype__MapTypeⁱᵐᵖˡ); ("NumMethod"%go, rtype__NumMethodⁱᵐᵖˡ); ("Pointers"%go, rtype__Pointersⁱᵐᵖˡ); ("Size"%go, rtype__Sizeⁱᵐᵖˡ); ("StructType"%go, rtype__StructTypeⁱᵐᵖˡ); ("Uncommon"%go, rtype__Uncommonⁱᵐᵖˡ); ("name"%go, rtype__nameⁱᵐᵖˡ); ("nameOff"%go, rtype__nameOffⁱᵐᵖˡ); ("pkgpath"%go, rtype__pkgpathⁱᵐᵖˡ); ("string"%go, rtype__stringⁱᵐᵖˡ); ("textOff"%go, rtype__textOffⁱᵐᵖˡ); ("typeOff"%go, rtype__typeOffⁱᵐᵖˡ); ("uncommon"%go, rtype__uncommonⁱᵐᵖˡ)]); (bitCursor.id, [("offset"%go, bitCursor__offsetⁱᵐᵖˡ); ("write"%go, bitCursor__writeⁱᵐᵖˡ)]); (ptrT.id bitCursor.id, [("offset"%go, bitCursor__offsetⁱᵐᵖˡ); ("write"%go, bitCursor__writeⁱᵐᵖˡ)]); (_typePair.id, []); (ptrT.id _typePair.id, []); (elfSym.id, []); (ptrT.id elfSym.id, []); (elfVerdef.id, []); (ptrT.id elfVerdef.id, []); (elfEhdr.id, []); (ptrT.id elfEhdr.id, []); (elfPhdr.id, []); (ptrT.id elfPhdr.id, []); (elfShdr.id, []); (ptrT.id elfShdr.id, []); (elfDyn.id, []); (ptrT.id elfDyn.id, []); (elfVerdaux.id, []); (ptrT.id elfVerdaux.id, []); (vdsoSymbolKey.id, []); (ptrT.id vdsoSymbolKey.id, []); (vdsoVersionKey.id, []); (ptrT.id vdsoVersionKey.id, []); (vdsoInfo.id, []); (ptrT.id vdsoInfo.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(userArena.id, []); (ptrT.id userArena.id, [("alloc"%go, userArena__allocⁱᵐᵖˡ); ("free"%go, userArena__freeⁱᵐᵖˡ); ("new"%go, userArena__newⁱᵐᵖˡ); ("refill"%go, userArena__refillⁱᵐᵖˡ); ("slice"%go, userArena__sliceⁱᵐᵖˡ)]); (liveUserArenaChunk.id, [("allocBitsForIndex"%go, liveUserArenaChunk__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, liveUserArenaChunk__baseⁱᵐᵖˡ); ("countAlloc"%go, liveUserArenaChunk__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, liveUserArenaChunk__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, liveUserArenaChunk__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, liveUserArenaChunk__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, liveUserArenaChunk__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, liveUserArenaChunk__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, liveUserArenaChunk__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, liveUserArenaChunk__inListⁱᵐᵖˡ); ("incPinCounter"%go, liveUserArenaChunk__incPinCounterⁱᵐᵖˡ); ("init"%go, liveUserArenaChunk__initⁱᵐᵖˡ); ("initHeapBits"%go, liveUserArenaChunk__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, liveUserArenaChunk__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, liveUserArenaChunk__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, liveUserArenaChunk__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, liveUserArenaChunk__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, liveUserArenaChunk__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, liveUserArenaChunk__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, liveUserArenaChunk__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, liveUserArenaChunk__objBaseⁱᵐᵖˡ); ("objIndex"%go, liveUserArenaChunk__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, liveUserArenaChunk__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, liveUserArenaChunk__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, liveUserArenaChunk__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, liveUserArenaChunk__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, liveUserArenaChunk__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, liveUserArenaChunk__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, liveUserArenaChunk__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, liveUserArenaChunk__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, liveUserArenaChunk__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, liveUserArenaChunk__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, liveUserArenaChunk__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, liveUserArenaChunk__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, liveUserArenaChunk__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (ptrT.id liveUserArenaChunk.id, [("allocBitsForIndex"%go, liveUserArenaChunk__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, liveUserArenaChunk__baseⁱᵐᵖˡ); ("countAlloc"%go, liveUserArenaChunk__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, liveUserArenaChunk__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, liveUserArenaChunk__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, liveUserArenaChunk__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, liveUserArenaChunk__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, liveUserArenaChunk__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, liveUserArenaChunk__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, liveUserArenaChunk__inListⁱᵐᵖˡ); ("incPinCounter"%go, liveUserArenaChunk__incPinCounterⁱᵐᵖˡ); ("init"%go, liveUserArenaChunk__initⁱᵐᵖˡ); ("initHeapBits"%go, liveUserArenaChunk__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, liveUserArenaChunk__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, liveUserArenaChunk__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, liveUserArenaChunk__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, liveUserArenaChunk__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, liveUserArenaChunk__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, liveUserArenaChunk__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, liveUserArenaChunk__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, liveUserArenaChunk__objBaseⁱᵐᵖˡ); ("objIndex"%go, liveUserArenaChunk__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, liveUserArenaChunk__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, liveUserArenaChunk__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, liveUserArenaChunk__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, liveUserArenaChunk__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, liveUserArenaChunk__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, liveUserArenaChunk__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, liveUserArenaChunk__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, liveUserArenaChunk__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, liveUserArenaChunk__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, liveUserArenaChunk__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, liveUserArenaChunk__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, liveUserArenaChunk__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, liveUserArenaChunk__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (writeUserArenaHeapBits.id, [("flush"%go, writeUserArenaHeapBits__flushⁱᵐᵖˡ); ("pad"%go, writeUserArenaHeapBits__padⁱᵐᵖˡ); ("write"%go, writeUserArenaHeapBits__writeⁱᵐᵖˡ)]); (ptrT.id writeUserArenaHeapBits.id, [("flush"%go, writeUserArenaHeapBits__flushⁱᵐᵖˡ); ("pad"%go, writeUserArenaHeapBits__padⁱᵐᵖˡ); ("write"%go, writeUserArenaHeapBits__writeⁱᵐᵖˡ)]); (cgoCallers.id, []); (ptrT.id cgoCallers.id, []); (argset.id, []); (ptrT.id argset.id, []); (hchan.id, []); (ptrT.id hchan.id, [("raceaddr"%go, hchan__raceaddrⁱᵐᵖˡ); ("sortkey"%go, hchan__sortkeyⁱᵐᵖˡ)]); (waitq.id, []); (ptrT.id waitq.id, [("dequeue"%go, waitq__dequeueⁱᵐᵖˡ); ("dequeueSudoG"%go, waitq__dequeueSudoGⁱᵐᵖˡ); ("enqueue"%go, waitq__enqueueⁱᵐᵖˡ)]); (coro.id, []); (ptrT.id coro.id, []); (cpuProfile.id, []); (ptrT.id cpuProfile.id, [("add"%go, cpuProfile__addⁱᵐᵖˡ); ("addExtra"%go, cpuProfile__addExtraⁱᵐᵖˡ); ("addNonGo"%go, cpuProfile__addNonGoⁱᵐᵖˡ)]); (debugCallWrapArgs.id, []); (ptrT.id debugCallWrapArgs.id, []); (dloggerImpl.id, []); (ptrT.id dloggerImpl.id, [("b"%go, dloggerImpl__bⁱᵐᵖˡ); ("end"%go, dloggerImpl__endⁱᵐᵖˡ); ("hex"%go, dloggerImpl__hexⁱᵐᵖˡ); ("i"%go, dloggerImpl__iⁱᵐᵖˡ); ("i16"%go, dloggerImpl__i16ⁱᵐᵖˡ); ("i32"%go, dloggerImpl__i32ⁱᵐᵖˡ); ("i64"%go, dloggerImpl__i64ⁱᵐᵖˡ); ("i8"%go, dloggerImpl__i8ⁱᵐᵖˡ); ("p"%go, dloggerImpl__pⁱᵐᵖˡ); ("pc"%go, dloggerImpl__pcⁱᵐᵖˡ); ("s"%go, dloggerImpl__sⁱᵐᵖˡ); ("traceback"%go, dloggerImpl__tracebackⁱᵐᵖˡ); ("u"%go, dloggerImpl__uⁱᵐᵖˡ); ("u16"%go, dloggerImpl__u16ⁱᵐᵖˡ); ("u32"%go, dloggerImpl__u32ⁱᵐᵖˡ); ("u64"%go, dloggerImpl__u64ⁱᵐᵖˡ); ("u8"%go, dloggerImpl__u8ⁱᵐᵖˡ); ("uptr"%go, dloggerImpl__uptrⁱᵐᵖˡ)]); (dloggerFake.id, [("b"%go, dloggerFake__bⁱᵐᵖˡ); ("end"%go, dloggerFake__endⁱᵐᵖˡ); ("hex"%go, dloggerFake__hexⁱᵐᵖˡ); ("i"%go, dloggerFake__iⁱᵐᵖˡ); ("i16"%go, dloggerFake__i16ⁱᵐᵖˡ); ("i32"%go, dloggerFake__i32ⁱᵐᵖˡ); ("i64"%go, dloggerFake__i64ⁱᵐᵖˡ); ("i8"%go, dloggerFake__i8ⁱᵐᵖˡ); ("p"%go, dloggerFake__pⁱᵐᵖˡ); ("pc"%go, dloggerFake__pcⁱᵐᵖˡ); ("s"%go, dloggerFake__sⁱᵐᵖˡ); ("traceback"%go, dloggerFake__tracebackⁱᵐᵖˡ); ("u"%go, dloggerFake__uⁱᵐᵖˡ); ("u16"%go, dloggerFake__u16ⁱᵐᵖˡ); ("u32"%go, dloggerFake__u32ⁱᵐᵖˡ); ("u64"%go, dloggerFake__u64ⁱᵐᵖˡ); ("u8"%go, dloggerFake__u8ⁱᵐᵖˡ); ("uptr"%go, dloggerFake__uptrⁱᵐᵖˡ)]); (ptrT.id dloggerFake.id, [("b"%go, dloggerFake__bⁱᵐᵖˡ); ("end"%go, dloggerFake__endⁱᵐᵖˡ); ("hex"%go, dloggerFake__hexⁱᵐᵖˡ); ("i"%go, dloggerFake__iⁱᵐᵖˡ); ("i16"%go, dloggerFake__i16ⁱᵐᵖˡ); ("i32"%go, dloggerFake__i32ⁱᵐᵖˡ); ("i64"%go, dloggerFake__i64ⁱᵐᵖˡ); ("i8"%go, dloggerFake__i8ⁱᵐᵖˡ); ("p"%go, dloggerFake__pⁱᵐᵖˡ); ("pc"%go, dloggerFake__pcⁱᵐᵖˡ); ("s"%go, dloggerFake__sⁱᵐᵖˡ); ("traceback"%go, dloggerFake__tracebackⁱᵐᵖˡ); ("u"%go, dloggerFake__uⁱᵐᵖˡ); ("u16"%go, dloggerFake__u16ⁱᵐᵖˡ); ("u32"%go, dloggerFake__u32ⁱᵐᵖˡ); ("u64"%go, dloggerFake__u64ⁱᵐᵖˡ); ("u8"%go, dloggerFake__u8ⁱᵐᵖˡ); ("uptr"%go, dloggerFake__uptrⁱᵐᵖˡ)]); (debugLogWriter.id, []); (ptrT.id debugLogWriter.id, [("byte"%go, debugLogWriter__byteⁱᵐᵖˡ); ("bytes"%go, debugLogWriter__bytesⁱᵐᵖˡ); ("ensure"%go, debugLogWriter__ensureⁱᵐᵖˡ); ("uvarint"%go, debugLogWriter__uvarintⁱᵐᵖˡ); ("varint"%go, debugLogWriter__varintⁱᵐᵖˡ); ("writeFrameAt"%go, debugLogWriter__writeFrameAtⁱᵐᵖˡ); ("writeSync"%go, debugLogWriter__writeSyncⁱᵐᵖˡ); ("writeUint64LE"%go, debugLogWriter__writeUint64LEⁱᵐᵖˡ)]); (debugLogBuf.id, []); (ptrT.id debugLogBuf.id, []); (debugLogReader.id, []); (ptrT.id debugLogReader.id, [("header"%go, debugLogReader__headerⁱᵐᵖˡ); ("peek"%go, debugLogReader__peekⁱᵐᵖˡ); ("printVal"%go, debugLogReader__printValⁱᵐᵖˡ); ("readUint16LEAt"%go, debugLogReader__readUint16LEAtⁱᵐᵖˡ); ("readUint64LEAt"%go, debugLogReader__readUint64LEAtⁱᵐᵖˡ); ("skip"%go, debugLogReader__skipⁱᵐᵖˡ); ("uvarint"%go, debugLogReader__uvarintⁱᵐᵖˡ); ("varint"%go, debugLogReader__varintⁱᵐᵖˡ)]); (dlogPerM.id, []); (ptrT.id dlogPerM.id, []); (timespec.id, []); (ptrT.id timespec.id, [("setNsec"%go, timespec__setNsecⁱᵐᵖˡ)]); (timeval.id, []); (ptrT.id timeval.id, [("set_usec"%go, timeval__set_usecⁱᵐᵖˡ)]); (sigactiont.id, []); (ptrT.id sigactiont.id, []); (siginfoFields.id, []); (ptrT.id siginfoFields.id, []); (siginfo.id, []); (ptrT.id siginfo.id, []); (itimerspec.id, []); (ptrT.id itimerspec.id, []); (itimerval.id, []); (ptrT.id itimerval.id, []); (sigeventFields.id, []); (ptrT.id sigeventFields.id, []); (sigevent.id, []); (ptrT.id sigevent.id, []); (usigset.id, []); (ptrT.id usigset.id, []); (fpxreg.id, []); (ptrT.id fpxreg.id, []); (xmmreg.id, []); (ptrT.id xmmreg.id, []); (fpstate.id, []); (ptrT.id fpstate.id, []); (fpxreg1.id, []); (ptrT.id fpxreg1.id, []); (xmmreg1.id, []); (ptrT.id xmmreg1.id, []); (fpstate1.id, []); (ptrT.id fpstate1.id, []); (fpreg1.id, []); (ptrT.id fpreg1.id, []); (stackt.id, []); (ptrT.id stackt.id, []); (mcontext.id, []); (ptrT.id mcontext.id, []); (ucontext.id, []); (ptrT.id ucontext.id, []); (sigcontext.id, []); (ptrT.id sigcontext.id, []); (sockaddr_un.id, []); (ptrT.id sockaddr_un.id, []); (TypeAssertionError.id, []); (ptrT.id TypeAssertionError.id, [("Error"%go, TypeAssertionError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, TypeAssertionError__RuntimeErrorⁱᵐᵖˡ)]); (errorString.id, [("Error"%go, errorString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorString__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id errorString.id, [("Error"%go, errorString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorString__RuntimeErrorⁱᵐᵖˡ)]); (errorAddressString.id, [("Addr"%go, errorAddressString__Addrⁱᵐᵖˡ); ("Error"%go, errorAddressString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorAddressString__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id errorAddressString.id, [("Addr"%go, errorAddressString__Addrⁱᵐᵖˡ); ("Error"%go, errorAddressString__Errorⁱᵐᵖˡ); ("RuntimeError"%go, errorAddressString__RuntimeErrorⁱᵐᵖˡ)]); (plainError.id, [("Error"%go, plainError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, plainError__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id plainError.id, [("Error"%go, plainError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, plainError__RuntimeErrorⁱᵐᵖˡ)]); (boundsError.id, [("Error"%go, boundsError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, boundsError__RuntimeErrorⁱᵐᵖˡ)]); (ptrT.id boundsError.id, [("Error"%go, boundsError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, boundsError__RuntimeErrorⁱᵐᵖˡ)]); (boundsErrorCode.id, []); (ptrT.id boundsErrorCode.id, []); (typeCacheBucket.id, []); (ptrT.id typeCacheBucket.id, []); (childInfo.id, []); (ptrT.id childInfo.id, []); (timeHistogram.id, []); (ptrT.id timeHistogram.id, [("record"%go, timeHistogram__recordⁱᵐᵖˡ); ("write"%go, timeHistogram__writeⁱᵐᵖˡ)]); (itabTableType.id, []); (ptrT.id itabTableType.id, [("add"%go, itabTableType__addⁱᵐᵖˡ); ("find"%go, itabTableType__findⁱᵐᵖˡ)]); (uint16InterfacePtr.id, []); (ptrT.id uint16InterfacePtr.id, []); (uint32InterfacePtr.id, []); (ptrT.id uint32InterfacePtr.id, []); (uint64InterfacePtr.id, []); (ptrT.id uint64InterfacePtr.id, []); (stringInterfacePtr.id, []); (ptrT.id stringInterfacePtr.id, []); (sliceInterfacePtr.id, []); (ptrT.id sliceInterfacePtr.id, []); (lfstack.id, []); (ptrT.id lfstack.id, [("empty"%go, lfstack__emptyⁱᵐᵖˡ); ("pop"%go, lfstack__popⁱᵐᵖˡ); ("push"%go, lfstack__pushⁱᵐᵖˡ)]); (linknameIter.id, []); (ptrT.id linknameIter.id, []); (mWaitList.id, []); (ptrT.id mWaitList.id, []); (lockRank.id, [("String"%go, lockRank__Stringⁱᵐᵖˡ)]); (ptrT.id lockRank.id, [("String"%go, lockRank__Stringⁱᵐᵖˡ)]); (lockRankStruct.id, []); (ptrT.id lockRankStruct.id, []); (persistentAlloc.id, []); (ptrT.id persistentAlloc.id, []); (linearAlloc.id, []); (ptrT.id linearAlloc.id, [("alloc"%go, linearAlloc__allocⁱᵐᵖˡ); ("init"%go, linearAlloc__initⁱᵐᵖˡ)]); (notInHeap.id, []); (ptrT.id notInHeap.id, [("add"%go, notInHeap__addⁱᵐᵖˡ)]); (typePointers.id, [("fastForward"%go, typePointers__fastForwardⁱᵐᵖˡ); ("next"%go, typePointers__nextⁱᵐᵖˡ); ("nextFast"%go, typePointers__nextFastⁱᵐᵖˡ)]); (ptrT.id typePointers.id, [("fastForward"%go, typePointers__fastForwardⁱᵐᵖˡ); ("next"%go, typePointers__nextⁱᵐᵖˡ); ("nextFast"%go, typePointers__nextFastⁱᵐᵖˡ)]); (markBits.id, [("clearMarked"%go, markBits__clearMarkedⁱᵐᵖˡ); ("isMarked"%go, markBits__isMarkedⁱᵐᵖˡ); ("setMarked"%go, markBits__setMarkedⁱᵐᵖˡ); ("setMarkedNonAtomic"%go, markBits__setMarkedNonAtomicⁱᵐᵖˡ)]); (ptrT.id markBits.id, [("advance"%go, markBits__advanceⁱᵐᵖˡ); ("clearMarked"%go, markBits__clearMarkedⁱᵐᵖˡ); ("isMarked"%go, markBits__isMarkedⁱᵐᵖˡ); ("setMarked"%go, markBits__setMarkedⁱᵐᵖˡ); ("setMarkedNonAtomic"%go, markBits__setMarkedNonAtomicⁱᵐᵖˡ)]); (mcache.id, []); (ptrT.id mcache.id, [("allocLarge"%go, mcache__allocLargeⁱᵐᵖˡ); ("nextFree"%go, mcache__nextFreeⁱᵐᵖˡ); ("prepareForSweep"%go, mcache__prepareForSweepⁱᵐᵖˡ); ("refill"%go, mcache__refillⁱᵐᵖˡ); ("releaseAll"%go, mcache__releaseAllⁱᵐᵖˡ)]); (gclink.id, []); (ptrT.id gclink.id, []); (gclinkptr.id, [("ptr"%go, gclinkptr__ptrⁱᵐᵖˡ)]); (ptrT.id gclinkptr.id, [("ptr"%go, gclinkptr__ptrⁱᵐᵖˡ)]); (stackfreelist.id, []); (ptrT.id stackfreelist.id, []); (mcentral.id, []); (ptrT.id mcentral.id, [("cacheSpan"%go, mcentral__cacheSpanⁱᵐᵖˡ); ("fullSwept"%go, mcentral__fullSweptⁱᵐᵖˡ); ("fullUnswept"%go, mcentral__fullUnsweptⁱᵐᵖˡ); ("grow"%go, mcentral__growⁱᵐᵖˡ); ("init"%go, mcentral__initⁱᵐᵖˡ); ("partialSwept"%go, mcentral__partialSweptⁱᵐᵖˡ); ("partialUnswept"%go, mcentral__partialUnsweptⁱᵐᵖˡ); ("uncacheSpan"%go, mcentral__uncacheSpanⁱᵐᵖˡ)]); (checkmarksMap.id, []); (ptrT.id checkmarksMap.id, []); (Cleanup.id, [("Stop"%go, Cleanup__Stopⁱᵐᵖˡ)]); (ptrT.id Cleanup.id, [("Stop"%go, Cleanup__Stopⁱᵐᵖˡ)]); (metricData.id, []); (ptrT.id metricData.id, []); (metricReader.id, [("compute"%go, metricReader__computeⁱᵐᵖˡ)]); (ptrT.id metricReader.id, [("compute"%go, metricReader__computeⁱᵐᵖˡ)]); (statDep.id, []); (ptrT.id statDep.id, []); (statDepSet.id, [("difference"%go, statDepSet__differenceⁱᵐᵖˡ); ("union"%go, statDepSet__unionⁱᵐᵖˡ)]); (ptrT.id statDepSet.id, [("difference"%go, statDepSet__differenceⁱᵐᵖˡ); ("empty"%go, statDepSet__emptyⁱᵐᵖˡ); ("has"%go, statDepSet__hasⁱᵐᵖˡ); ("union"%go, statDepSet__unionⁱᵐᵖˡ)]); (heapStatsAggregate.id, []); (ptrT.id heapStatsAggregate.id, [("compute"%go, heapStatsAggregate__computeⁱᵐᵖˡ); ("merge"%go, heapStatsAggregate__mergeⁱᵐᵖˡ)]); (sysStatsAggregate.id, []); (ptrT.id sysStatsAggregate.id, [("compute"%go, sysStatsAggregate__computeⁱᵐᵖˡ)]); (cpuStatsAggregate.id, []); (ptrT.id cpuStatsAggregate.id, [("accumulate"%go, cpuStatsAggregate__accumulateⁱᵐᵖˡ); ("accumulateGCPauseTime"%go, cpuStatsAggregate__accumulateGCPauseTimeⁱᵐᵖˡ); ("compute"%go, cpuStatsAggregate__computeⁱᵐᵖˡ)]); (gcStatsAggregate.id, []); (ptrT.id gcStatsAggregate.id, [("compute"%go, gcStatsAggregate__computeⁱᵐᵖˡ)]); (statAggregate.id, []); (ptrT.id statAggregate.id, [("ensure"%go, statAggregate__ensureⁱᵐᵖˡ)]); (metricKind.id, []); (ptrT.id metricKind.id, []); (metricSample.id, []); (ptrT.id metricSample.id, []); (metricValue.id, []); (ptrT.id metricValue.id, [("float64HistOrInit"%go, metricValue__float64HistOrInitⁱᵐᵖˡ)]); (metricFloat64Histogram.id, []); (ptrT.id metricFloat64Histogram.id, []); (metricName.id, []); (ptrT.id metricName.id, []); (finblock.id, []); (ptrT.id finblock.id, []); (finalizer.id, []); (ptrT.id finalizer.id, []); (fixalloc.id, []); (ptrT.id fixalloc.id, [("alloc"%go, fixalloc__allocⁱᵐᵖˡ); ("free"%go, fixalloc__freeⁱᵐᵖˡ); ("init"%go, fixalloc__initⁱᵐᵖˡ)]); (mlink.id, []); (ptrT.id mlink.id, []); (gcMarkWorkerMode.id, []); (ptrT.id gcMarkWorkerMode.id, []); (workType.id, []); (ptrT.id workType.id, [("accumulate"%go, workType__accumulateⁱᵐᵖˡ); ("accumulateGCPauseTime"%go, workType__accumulateGCPauseTimeⁱᵐᵖˡ)]); (gcMode.id, []); (ptrT.id gcMode.id, []); (gcTrigger.id, [("test"%go, gcTrigger__testⁱᵐᵖˡ)]); (ptrT.id gcTrigger.id, [("test"%go, gcTrigger__testⁱᵐᵖˡ)]); (gcTriggerKind.id, []); (ptrT.id gcTriggerKind.id, []); (gcBgMarkWorkerNode.id, []); (ptrT.id gcBgMarkWorkerNode.id, []); (gcCPULimiterState.id, []); (ptrT.id gcCPULimiterState.id, [("accumulate"%go, gcCPULimiterState__accumulateⁱᵐᵖˡ); ("addAssistTime"%go, gcCPULimiterState__addAssistTimeⁱᵐᵖˡ); ("addIdleTime"%go, gcCPULimiterState__addIdleTimeⁱᵐᵖˡ); ("finishGCTransition"%go, gcCPULimiterState__finishGCTransitionⁱᵐᵖˡ); ("limiting"%go, gcCPULimiterState__limitingⁱᵐᵖˡ); ("needUpdate"%go, gcCPULimiterState__needUpdateⁱᵐᵖˡ); ("resetCapacity"%go, gcCPULimiterState__resetCapacityⁱᵐᵖˡ); ("startGCTransition"%go, gcCPULimiterState__startGCTransitionⁱᵐᵖˡ); ("tryLock"%go, gcCPULimiterState__tryLockⁱᵐᵖˡ); ("unlock"%go, gcCPULimiterState__unlockⁱᵐᵖˡ); ("update"%go, gcCPULimiterState__updateⁱᵐᵖˡ); ("updateLocked"%go, gcCPULimiterState__updateLockedⁱᵐᵖˡ)]); (limiterEventType.id, []); (ptrT.id limiterEventType.id, []); (limiterEventStamp.id, [("duration"%go, limiterEventStamp__durationⁱᵐᵖˡ); ("typ"%go, limiterEventStamp__typⁱᵐᵖˡ)]); (ptrT.id limiterEventStamp.id, [("duration"%go, limiterEventStamp__durationⁱᵐᵖˡ); ("typ"%go, limiterEventStamp__typⁱᵐᵖˡ)]); (limiterEvent.id, []); (ptrT.id limiterEvent.id, [("consume"%go, limiterEvent__consumeⁱᵐᵖˡ); ("start"%go, limiterEvent__startⁱᵐᵖˡ); ("stop"%go, limiterEvent__stopⁱᵐᵖˡ)]); (gcDrainFlags.id, []); (ptrT.id gcDrainFlags.id, []); (gcControllerState.id, []); (ptrT.id gcControllerState.id, [("addGlobals"%go, gcControllerState__addGlobalsⁱᵐᵖˡ); ("addIdleMarkWorker"%go, gcControllerState__addIdleMarkWorkerⁱᵐᵖˡ); ("addScannableStack"%go, gcControllerState__addScannableStackⁱᵐᵖˡ); ("commit"%go, gcControllerState__commitⁱᵐᵖˡ); ("endCycle"%go, gcControllerState__endCycleⁱᵐᵖˡ); ("enlistWorker"%go, gcControllerState__enlistWorkerⁱᵐᵖˡ); ("findRunnableGCWorker"%go, gcControllerState__findRunnableGCWorkerⁱᵐᵖˡ); ("heapGoal"%go, gcControllerState__heapGoalⁱᵐᵖˡ); ("heapGoalInternal"%go, gcControllerState__heapGoalInternalⁱᵐᵖˡ); ("init"%go, gcControllerState__initⁱᵐᵖˡ); ("markWorkerStop"%go, gcControllerState__markWorkerStopⁱᵐᵖˡ); ("memoryLimitHeapGoal"%go, gcControllerState__memoryLimitHeapGoalⁱᵐᵖˡ); ("needIdleMarkWorker"%go, gcControllerState__needIdleMarkWorkerⁱᵐᵖˡ); ("removeIdleMarkWorker"%go, gcControllerState__removeIdleMarkWorkerⁱᵐᵖˡ); ("resetLive"%go, gcControllerState__resetLiveⁱᵐᵖˡ); ("revise"%go, gcControllerState__reviseⁱᵐᵖˡ); ("setGCPercent"%go, gcControllerState__setGCPercentⁱᵐᵖˡ); ("setMaxIdleMarkWorkers"%go, gcControllerState__setMaxIdleMarkWorkersⁱᵐᵖˡ); ("setMemoryLimit"%go, gcControllerState__setMemoryLimitⁱᵐᵖˡ); ("startCycle"%go, gcControllerState__startCycleⁱᵐᵖˡ); ("trigger"%go, gcControllerState__triggerⁱᵐᵖˡ); ("update"%go, gcControllerState__updateⁱᵐᵖˡ)]); (scavengerState.id, []); (ptrT.id scavengerState.id, [("controllerFailed"%go, scavengerState__controllerFailedⁱᵐᵖˡ); ("init"%go, scavengerState__initⁱᵐᵖˡ); ("park"%go, scavengerState__parkⁱᵐᵖˡ); ("ready"%go, scavengerState__readyⁱᵐᵖˡ); ("run"%go, scavengerState__runⁱᵐᵖˡ); ("sleep"%go, scavengerState__sleepⁱᵐᵖˡ); ("wake"%go, scavengerState__wakeⁱᵐᵖˡ)]); (scavengeIndex.id, []); (ptrT.id scavengeIndex.id, [("alloc"%go, scavengeIndex__allocⁱᵐᵖˡ); ("find"%go, scavengeIndex__findⁱᵐᵖˡ); ("free"%go, scavengeIndex__freeⁱᵐᵖˡ); ("grow"%go, scavengeIndex__growⁱᵐᵖˡ); ("init"%go, scavengeIndex__initⁱᵐᵖˡ); ("nextGen"%go, scavengeIndex__nextGenⁱᵐᵖˡ); ("setEmpty"%go, scavengeIndex__setEmptyⁱᵐᵖˡ); ("sysGrow"%go, scavengeIndex__sysGrowⁱᵐᵖˡ); ("sysInit"%go, scavengeIndex__sysInitⁱᵐᵖˡ)]); (atomicScavChunkData.id, []); (ptrT.id atomicScavChunkData.id, [("load"%go, atomicScavChunkData__loadⁱᵐᵖˡ); ("store"%go, atomicScavChunkData__storeⁱᵐᵖˡ)]); (scavChunkData.id, [("pack"%go, scavChunkData__packⁱᵐᵖˡ); ("shouldScavenge"%go, scavChunkData__shouldScavengeⁱᵐᵖˡ)]); (ptrT.id scavChunkData.id, [("alloc"%go, scavChunkData__allocⁱᵐᵖˡ); ("free"%go, scavChunkData__freeⁱᵐᵖˡ); ("isEmpty"%go, scavChunkData__isEmptyⁱᵐᵖˡ); ("pack"%go, scavChunkData__packⁱᵐᵖˡ); ("setEmpty"%go, scavChunkData__setEmptyⁱᵐᵖˡ); ("setNonEmpty"%go, scavChunkData__setNonEmptyⁱᵐᵖˡ); ("shouldScavenge"%go, scavChunkData__shouldScavengeⁱᵐᵖˡ)]); (scavChunkFlags.id, []); (ptrT.id scavChunkFlags.id, [("isEmpty"%go, scavChunkFlags__isEmptyⁱᵐᵖˡ); ("setEmpty"%go, scavChunkFlags__setEmptyⁱᵐᵖˡ); ("setNonEmpty"%go, scavChunkFlags__setNonEmptyⁱᵐᵖˡ)]); (piController.id, []); (ptrT.id piController.id, [("next"%go, piController__nextⁱᵐᵖˡ); ("reset"%go, piController__resetⁱᵐᵖˡ)]); (stackWorkBuf.id, []); (ptrT.id stackWorkBuf.id, []); (stackWorkBufHdr.id, []); (ptrT.id stackWorkBufHdr.id, []); (stackObjectBuf.id, []); (ptrT.id stackObjectBuf.id, []); (stackObjectBufHdr.id, []); (ptrT.id stackObjectBufHdr.id, []); (stackObject.id, []); (ptrT.id stackObject.id, [("setRecord"%go, stackObject__setRecordⁱᵐᵖˡ)]); (stackScanState.id, []); (ptrT.id stackScanState.id, [("addObject"%go, stackScanState__addObjectⁱᵐᵖˡ); ("buildIndex"%go, stackScanState__buildIndexⁱᵐᵖˡ); ("findObject"%go, stackScanState__findObjectⁱᵐᵖˡ); ("getPtr"%go, stackScanState__getPtrⁱᵐᵖˡ); ("putPtr"%go, stackScanState__putPtrⁱᵐᵖˡ)]); (sweepdata.id, []); (ptrT.id sweepdata.id, []); (sweepClass.id, [("split"%go, sweepClass__splitⁱᵐᵖˡ)]); (ptrT.id sweepClass.id, [("clear"%go, sweepClass__clearⁱᵐᵖˡ); ("load"%go, sweepClass__loadⁱᵐᵖˡ); ("split"%go, sweepClass__splitⁱᵐᵖˡ); ("update"%go, sweepClass__updateⁱᵐᵖˡ)]); (activeSweep.id, []); (ptrT.id activeSweep.id, [("begin"%go, activeSweep__beginⁱᵐᵖˡ); ("end"%go, activeSweep__endⁱᵐᵖˡ); ("isDone"%go, activeSweep__isDoneⁱᵐᵖˡ); ("markDrained"%go, activeSweep__markDrainedⁱᵐᵖˡ); ("reset"%go, activeSweep__resetⁱᵐᵖˡ); ("sweepers"%go, activeSweep__sweepersⁱᵐᵖˡ)]); (sweepLocker.id, []); (ptrT.id sweepLocker.id, [("tryAcquire"%go, sweepLocker__tryAcquireⁱᵐᵖˡ)]); (sweepLocked.id, [("allocBitsForIndex"%go, sweepLocked__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, sweepLocked__baseⁱᵐᵖˡ); ("countAlloc"%go, sweepLocked__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, sweepLocked__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, sweepLocked__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, sweepLocked__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, sweepLocked__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, sweepLocked__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, sweepLocked__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, sweepLocked__inListⁱᵐᵖˡ); ("incPinCounter"%go, sweepLocked__incPinCounterⁱᵐᵖˡ); ("init"%go, sweepLocked__initⁱᵐᵖˡ); ("initHeapBits"%go, sweepLocked__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, sweepLocked__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, sweepLocked__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, sweepLocked__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, sweepLocked__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, sweepLocked__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, sweepLocked__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, sweepLocked__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, sweepLocked__objBaseⁱᵐᵖˡ); ("objIndex"%go, sweepLocked__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, sweepLocked__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, sweepLocked__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, sweepLocked__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, sweepLocked__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, sweepLocked__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, sweepLocked__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, sweepLocked__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, sweepLocked__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, sweepLocked__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, sweepLocked__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, sweepLocked__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, sweepLocked__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, sweepLocked__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (ptrT.id sweepLocked.id, [("allocBitsForIndex"%go, sweepLocked__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, sweepLocked__baseⁱᵐᵖˡ); ("countAlloc"%go, sweepLocked__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, sweepLocked__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, sweepLocked__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, sweepLocked__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, sweepLocked__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, sweepLocked__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, sweepLocked__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, sweepLocked__inListⁱᵐᵖˡ); ("incPinCounter"%go, sweepLocked__incPinCounterⁱᵐᵖˡ); ("init"%go, sweepLocked__initⁱᵐᵖˡ); ("initHeapBits"%go, sweepLocked__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, sweepLocked__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, sweepLocked__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, sweepLocked__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, sweepLocked__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, sweepLocked__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, sweepLocked__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, sweepLocked__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, sweepLocked__objBaseⁱᵐᵖˡ); ("objIndex"%go, sweepLocked__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, sweepLocked__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, sweepLocked__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, sweepLocked__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, sweepLocked__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, sweepLocked__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, sweepLocked__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, sweepLocked__specialFindSplicePointⁱᵐᵖˡ); ("sweep"%go, sweepLocked__sweepⁱᵐᵖˡ); ("typePointersOf"%go, sweepLocked__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, sweepLocked__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, sweepLocked__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, sweepLocked__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, sweepLocked__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, sweepLocked__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (gcWork.id, []); (ptrT.id gcWork.id, [("balance"%go, gcWork__balanceⁱᵐᵖˡ); ("dispose"%go, gcWork__disposeⁱᵐᵖˡ); ("empty"%go, gcWork__emptyⁱᵐᵖˡ); ("init"%go, gcWork__initⁱᵐᵖˡ); ("put"%go, gcWork__putⁱᵐᵖˡ); ("putBatch"%go, gcWork__putBatchⁱᵐᵖˡ); ("putFast"%go, gcWork__putFastⁱᵐᵖˡ); ("tryGet"%go, gcWork__tryGetⁱᵐᵖˡ); ("tryGetFast"%go, gcWork__tryGetFastⁱᵐᵖˡ)]); (workbufhdr.id, []); (ptrT.id workbufhdr.id, []); (workbuf.id, []); (ptrT.id workbuf.id, [("checkempty"%go, workbuf__checkemptyⁱᵐᵖˡ); ("checknonempty"%go, workbuf__checknonemptyⁱᵐᵖˡ)]); (mheap.id, []); (ptrT.id mheap.id, [("alloc"%go, mheap__allocⁱᵐᵖˡ); ("allocMSpanLocked"%go, mheap__allocMSpanLockedⁱᵐᵖˡ); ("allocManual"%go, mheap__allocManualⁱᵐᵖˡ); ("allocNeedsZero"%go, mheap__allocNeedsZeroⁱᵐᵖˡ); ("allocSpan"%go, mheap__allocSpanⁱᵐᵖˡ); ("allocUserArenaChunk"%go, mheap__allocUserArenaChunkⁱᵐᵖˡ); ("enableMetadataHugePages"%go, mheap__enableMetadataHugePagesⁱᵐᵖˡ); ("freeMSpanLocked"%go, mheap__freeMSpanLockedⁱᵐᵖˡ); ("freeManual"%go, mheap__freeManualⁱᵐᵖˡ); ("freeSpan"%go, mheap__freeSpanⁱᵐᵖˡ); ("freeSpanLocked"%go, mheap__freeSpanLockedⁱᵐᵖˡ); ("grow"%go, mheap__growⁱᵐᵖˡ); ("init"%go, mheap__initⁱᵐᵖˡ); ("initSpan"%go, mheap__initSpanⁱᵐᵖˡ); ("nextSpanForSweep"%go, mheap__nextSpanForSweepⁱᵐᵖˡ); ("reclaim"%go, mheap__reclaimⁱᵐᵖˡ); ("reclaimChunk"%go, mheap__reclaimChunkⁱᵐᵖˡ); ("scavengeAll"%go, mheap__scavengeAllⁱᵐᵖˡ); ("setSpans"%go, mheap__setSpansⁱᵐᵖˡ); ("sysAlloc"%go, mheap__sysAllocⁱᵐᵖˡ); ("tryAllocMSpan"%go, mheap__tryAllocMSpanⁱᵐᵖˡ)]); (heapArena.id, []); (ptrT.id heapArena.id, []); (arenaHint.id, []); (ptrT.id arenaHint.id, []); (mSpanState.id, []); (ptrT.id mSpanState.id, []); (mSpanStateBox.id, []); (ptrT.id mSpanStateBox.id, [("get"%go, mSpanStateBox__getⁱᵐᵖˡ); ("set"%go, mSpanStateBox__setⁱᵐᵖˡ)]); (mSpanList.id, []); (ptrT.id mSpanList.id, [("init"%go, mSpanList__initⁱᵐᵖˡ); ("insert"%go, mSpanList__insertⁱᵐᵖˡ); ("insertBack"%go, mSpanList__insertBackⁱᵐᵖˡ); ("isEmpty"%go, mSpanList__isEmptyⁱᵐᵖˡ); ("remove"%go, mSpanList__removeⁱᵐᵖˡ); ("takeAll"%go, mSpanList__takeAllⁱᵐᵖˡ)]); (mspan.id, []); (ptrT.id mspan.id, [("allocBitsForIndex"%go, mspan__allocBitsForIndexⁱᵐᵖˡ); ("base"%go, mspan__baseⁱᵐᵖˡ); ("countAlloc"%go, mspan__countAllocⁱᵐᵖˡ); ("decPinCounter"%go, mspan__decPinCounterⁱᵐᵖˡ); ("divideByElemSize"%go, mspan__divideByElemSizeⁱᵐᵖˡ); ("ensureSwept"%go, mspan__ensureSweptⁱᵐᵖˡ); ("getPinnerBits"%go, mspan__getPinnerBitsⁱᵐᵖˡ); ("heapBits"%go, mspan__heapBitsⁱᵐᵖˡ); ("heapBitsSmallForAddr"%go, mspan__heapBitsSmallForAddrⁱᵐᵖˡ); ("inList"%go, mspan__inListⁱᵐᵖˡ); ("incPinCounter"%go, mspan__incPinCounterⁱᵐᵖˡ); ("init"%go, mspan__initⁱᵐᵖˡ); ("initHeapBits"%go, mspan__initHeapBitsⁱᵐᵖˡ); ("isFree"%go, mspan__isFreeⁱᵐᵖˡ); ("isUnusedUserArenaChunk"%go, mspan__isUnusedUserArenaChunkⁱᵐᵖˡ); ("layout"%go, mspan__layoutⁱᵐᵖˡ); ("markBitsForBase"%go, mspan__markBitsForBaseⁱᵐᵖˡ); ("markBitsForIndex"%go, mspan__markBitsForIndexⁱᵐᵖˡ); ("newPinnerBits"%go, mspan__newPinnerBitsⁱᵐᵖˡ); ("nextFreeIndex"%go, mspan__nextFreeIndexⁱᵐᵖˡ); ("objBase"%go, mspan__objBaseⁱᵐᵖˡ); ("objIndex"%go, mspan__objIndexⁱᵐᵖˡ); ("pinnerBitSize"%go, mspan__pinnerBitSizeⁱᵐᵖˡ); ("refillAllocCache"%go, mspan__refillAllocCacheⁱᵐᵖˡ); ("refreshPinnerBits"%go, mspan__refreshPinnerBitsⁱᵐᵖˡ); ("reportZombies"%go, mspan__reportZombiesⁱᵐᵖˡ); ("setPinnerBits"%go, mspan__setPinnerBitsⁱᵐᵖˡ); ("setUserArenaChunkToFault"%go, mspan__setUserArenaChunkToFaultⁱᵐᵖˡ); ("specialFindSplicePoint"%go, mspan__specialFindSplicePointⁱᵐᵖˡ); ("typePointersOf"%go, mspan__typePointersOfⁱᵐᵖˡ); ("typePointersOfType"%go, mspan__typePointersOfTypeⁱᵐᵖˡ); ("typePointersOfUnchecked"%go, mspan__typePointersOfUncheckedⁱᵐᵖˡ); ("userArenaNextFree"%go, mspan__userArenaNextFreeⁱᵐᵖˡ); ("writeHeapBitsSmall"%go, mspan__writeHeapBitsSmallⁱᵐᵖˡ); ("writeUserArenaHeapBits"%go, mspan__writeUserArenaHeapBitsⁱᵐᵖˡ)]); (spanClass.id, [("noscan"%go, spanClass__noscanⁱᵐᵖˡ); ("sizeclass"%go, spanClass__sizeclassⁱᵐᵖˡ)]); (ptrT.id spanClass.id, [("noscan"%go, spanClass__noscanⁱᵐᵖˡ); ("sizeclass"%go, spanClass__sizeclassⁱᵐᵖˡ)]); (arenaIdx.id, [("l1"%go, arenaIdx__l1ⁱᵐᵖˡ); ("l2"%go, arenaIdx__l2ⁱᵐᵖˡ)]); (ptrT.id arenaIdx.id, [("l1"%go, arenaIdx__l1ⁱᵐᵖˡ); ("l2"%go, arenaIdx__l2ⁱᵐᵖˡ)]); (spanAllocType.id, [("manual"%go, spanAllocType__manualⁱᵐᵖˡ)]); (ptrT.id spanAllocType.id, [("manual"%go, spanAllocType__manualⁱᵐᵖˡ)]); (special.id, []); (ptrT.id special.id, []); (specialfinalizer.id, []); (ptrT.id specialfinalizer.id, []); (specialCleanup.id, []); (ptrT.id specialCleanup.id, []); (specialWeakHandle.id, []); (ptrT.id specialWeakHandle.id, []); (specialprofile.id, []); (ptrT.id specialprofile.id, []); (specialReachable.id, []); (ptrT.id specialReachable.id, []); (specialPinCounter.id, []); (ptrT.id specialPinCounter.id, []); (specialsIter.id, []); (ptrT.id specialsIter.id, [("next"%go, specialsIter__nextⁱᵐᵖˡ); ("unlinkAndNext"%go, specialsIter__unlinkAndNextⁱᵐᵖˡ); ("valid"%go, specialsIter__validⁱᵐᵖˡ)]); (gcBits.id, []); (ptrT.id gcBits.id, [("bitp"%go, gcBits__bitpⁱᵐᵖˡ); ("bytep"%go, gcBits__bytepⁱᵐᵖˡ)]); (gcBitsHeader.id, []); (ptrT.id gcBitsHeader.id, []); (gcBitsArena.id, []); (ptrT.id gcBitsArena.id, [("tryAlloc"%go, gcBitsArena__tryAllocⁱᵐᵖˡ)]); (chunkIdx.id, [("l1"%go, chunkIdx__l1ⁱᵐᵖˡ); ("l2"%go, chunkIdx__l2ⁱᵐᵖˡ)]); (ptrT.id chunkIdx.id, [("l1"%go, chunkIdx__l1ⁱᵐᵖˡ); ("l2"%go, chunkIdx__l2ⁱᵐᵖˡ)]); (pageAlloc.id, []); (ptrT.id pageAlloc.id, [("alloc"%go, pageAlloc__allocⁱᵐᵖˡ); ("allocRange"%go, pageAlloc__allocRangeⁱᵐᵖˡ); ("allocToCache"%go, pageAlloc__allocToCacheⁱᵐᵖˡ); ("chunkOf"%go, pageAlloc__chunkOfⁱᵐᵖˡ); ("enableChunkHugePages"%go, pageAlloc__enableChunkHugePagesⁱᵐᵖˡ); ("find"%go, pageAlloc__findⁱᵐᵖˡ); ("findMappedAddr"%go, pageAlloc__findMappedAddrⁱᵐᵖˡ); ("free"%go, pageAlloc__freeⁱᵐᵖˡ); ("grow"%go, pageAlloc__growⁱᵐᵖˡ); ("init"%go, pageAlloc__initⁱᵐᵖˡ); ("scavenge"%go, pageAlloc__scavengeⁱᵐᵖˡ); ("scavengeOne"%go, pageAlloc__scavengeOneⁱᵐᵖˡ); ("sysGrow"%go, pageAlloc__sysGrowⁱᵐᵖˡ); ("sysInit"%go, pageAlloc__sysInitⁱᵐᵖˡ); ("tryChunkOf"%go, pageAlloc__tryChunkOfⁱᵐᵖˡ); ("update"%go, pageAlloc__updateⁱᵐᵖˡ)]); (pallocSum.id, [("end"%go, pallocSum__endⁱᵐᵖˡ); ("max"%go, pallocSum__maxⁱᵐᵖˡ); ("start"%go, pallocSum__startⁱᵐᵖˡ); ("unpack"%go, pallocSum__unpackⁱᵐᵖˡ)]); (ptrT.id pallocSum.id, [("end"%go, pallocSum__endⁱᵐᵖˡ); ("max"%go, pallocSum__maxⁱᵐᵖˡ); ("start"%go, pallocSum__startⁱᵐᵖˡ); ("unpack"%go, pallocSum__unpackⁱᵐᵖˡ)]); (pageCache.id, []); (ptrT.id pageCache.id, [("alloc"%go, pageCache__allocⁱᵐᵖˡ); ("allocN"%go, pageCache__allocNⁱᵐᵖˡ); ("empty"%go, pageCache__emptyⁱᵐᵖˡ); ("flush"%go, pageCache__flushⁱᵐᵖˡ)]); (pageBits.id, []); (ptrT.id pageBits.id, [("block64"%go, pageBits__block64ⁱᵐᵖˡ); ("clear"%go, pageBits__clearⁱᵐᵖˡ); ("clearAll"%go, pageBits__clearAllⁱᵐᵖˡ); ("clearBlock64"%go, pageBits__clearBlock64ⁱᵐᵖˡ); ("clearRange"%go, pageBits__clearRangeⁱᵐᵖˡ); ("get"%go, pageBits__getⁱᵐᵖˡ); ("popcntRange"%go, pageBits__popcntRangeⁱᵐᵖˡ); ("set"%go, pageBits__setⁱᵐᵖˡ); ("setAll"%go, pageBits__setAllⁱᵐᵖˡ); ("setBlock64"%go, pageBits__setBlock64ⁱᵐᵖˡ); ("setRange"%go, pageBits__setRangeⁱᵐᵖˡ)]); (pallocBits.id, []); (ptrT.id pallocBits.id, [("allocAll"%go, pallocBits__allocAllⁱᵐᵖˡ); ("allocPages64"%go, pallocBits__allocPages64ⁱᵐᵖˡ); ("allocRange"%go, pallocBits__allocRangeⁱᵐᵖˡ); ("find"%go, pallocBits__findⁱᵐᵖˡ); ("find1"%go, pallocBits__find1ⁱᵐᵖˡ); ("findLargeN"%go, pallocBits__findLargeNⁱᵐᵖˡ); ("findSmallN"%go, pallocBits__findSmallNⁱᵐᵖˡ); ("free"%go, pallocBits__freeⁱᵐᵖˡ); ("free1"%go, pallocBits__free1ⁱᵐᵖˡ); ("freeAll"%go, pallocBits__freeAllⁱᵐᵖˡ); ("pages64"%go, pallocBits__pages64ⁱᵐᵖˡ); ("summarize"%go, pallocBits__summarizeⁱᵐᵖˡ)]); (pallocData.id, []); (ptrT.id pallocData.id, [("allocAll"%go, pallocData__allocAllⁱᵐᵖˡ); ("allocPages64"%go, pallocData__allocPages64ⁱᵐᵖˡ); ("allocRange"%go, pallocData__allocRangeⁱᵐᵖˡ); ("find"%go, pallocData__findⁱᵐᵖˡ); ("find1"%go, pallocData__find1ⁱᵐᵖˡ); ("findLargeN"%go, pallocData__findLargeNⁱᵐᵖˡ); ("findScavengeCandidate"%go, pallocData__findScavengeCandidateⁱᵐᵖˡ); ("findSmallN"%go, pallocData__findSmallNⁱᵐᵖˡ); ("free"%go, pallocData__freeⁱᵐᵖˡ); ("free1"%go, pallocData__free1ⁱᵐᵖˡ); ("freeAll"%go, pallocData__freeAllⁱᵐᵖˡ); ("pages64"%go, pallocData__pages64ⁱᵐᵖˡ); ("summarize"%go, pallocData__summarizeⁱᵐᵖˡ)]); (bucketType.id, []); (ptrT.id bucketType.id, []); (bucket.id, []); (ptrT.id bucket.id, [("bp"%go, bucket__bpⁱᵐᵖˡ); ("mp"%go, bucket__mpⁱᵐᵖˡ); ("stk"%go, bucket__stkⁱᵐᵖˡ)]); (memRecord.id, []); (ptrT.id memRecord.id, []); (memRecordCycle.id, []); (ptrT.id memRecordCycle.id, [("add"%go, memRecordCycle__addⁱᵐᵖˡ)]); (blockRecord.id, []); (ptrT.id blockRecord.id, []); (buckhashArray.id, []); (ptrT.id buckhashArray.id, []); (mProfCycleHolder.id, []); (ptrT.id mProfCycleHolder.id, [("increment"%go, mProfCycleHolder__incrementⁱᵐᵖˡ); ("read"%go, mProfCycleHolder__readⁱᵐᵖˡ); ("setFlushed"%go, mProfCycleHolder__setFlushedⁱᵐᵖˡ)]); (lockTimer.id, []); (ptrT.id lockTimer.id, [("begin"%go, lockTimer__beginⁱᵐᵖˡ); ("end"%go, lockTimer__endⁱᵐᵖˡ)]); (mLockProfile.id, []); (ptrT.id mLockProfile.id, [("captureStack"%go, mLockProfile__captureStackⁱᵐᵖˡ); ("recordLock"%go, mLockProfile__recordLockⁱᵐᵖˡ); ("recordUnlock"%go, mLockProfile__recordUnlockⁱᵐᵖˡ); ("store"%go, mLockProfile__storeⁱᵐᵖˡ)]); (StackRecord.id, []); (ptrT.id StackRecord.id, [("Stack"%go, StackRecord__Stackⁱᵐᵖˡ)]); (MemProfileRecord.id, []); (ptrT.id MemProfileRecord.id, [("InUseBytes"%go, MemProfileRecord__InUseBytesⁱᵐᵖˡ); ("InUseObjects"%go, MemProfileRecord__InUseObjectsⁱᵐᵖˡ); ("Stack"%go, MemProfileRecord__Stackⁱᵐᵖˡ)]); (BlockProfileRecord.id, []); (ptrT.id BlockProfileRecord.id, [("Stack"%go, BlockProfileRecord__Stackⁱᵐᵖˡ)]); (goroutineProfileState.id, []); (ptrT.id goroutineProfileState.id, []); (goroutineProfileStateHolder.id, []); (ptrT.id goroutineProfileStateHolder.id, [("CompareAndSwap"%go, goroutineProfileStateHolder__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, goroutineProfileStateHolder__Loadⁱᵐᵖˡ); ("Store"%go, goroutineProfileStateHolder__Storeⁱᵐᵖˡ)]); (addrRange.id, [("contains"%go, addrRange__containsⁱᵐᵖˡ); ("removeGreaterEqual"%go, addrRange__removeGreaterEqualⁱᵐᵖˡ); ("size"%go, addrRange__sizeⁱᵐᵖˡ); ("subtract"%go, addrRange__subtractⁱᵐᵖˡ)]); (ptrT.id addrRange.id, [("contains"%go, addrRange__containsⁱᵐᵖˡ); ("removeGreaterEqual"%go, addrRange__removeGreaterEqualⁱᵐᵖˡ); ("size"%go, addrRange__sizeⁱᵐᵖˡ); ("subtract"%go, addrRange__subtractⁱᵐᵖˡ); ("takeFromBack"%go, addrRange__takeFromBackⁱᵐᵖˡ); ("takeFromFront"%go, addrRange__takeFromFrontⁱᵐᵖˡ)]); (offAddr.id, [("add"%go, offAddr__addⁱᵐᵖˡ); ("addr"%go, offAddr__addrⁱᵐᵖˡ); ("diff"%go, offAddr__diffⁱᵐᵖˡ); ("equal"%go, offAddr__equalⁱᵐᵖˡ); ("lessEqual"%go, offAddr__lessEqualⁱᵐᵖˡ); ("lessThan"%go, offAddr__lessThanⁱᵐᵖˡ); ("sub"%go, offAddr__subⁱᵐᵖˡ)]); (ptrT.id offAddr.id, [("add"%go, offAddr__addⁱᵐᵖˡ); ("addr"%go, offAddr__addrⁱᵐᵖˡ); ("diff"%go, offAddr__diffⁱᵐᵖˡ); ("equal"%go, offAddr__equalⁱᵐᵖˡ); ("lessEqual"%go, offAddr__lessEqualⁱᵐᵖˡ); ("lessThan"%go, offAddr__lessThanⁱᵐᵖˡ); ("sub"%go, offAddr__subⁱᵐᵖˡ)]); (atomicOffAddr.id, []); (ptrT.id atomicOffAddr.id, [("Clear"%go, atomicOffAddr__Clearⁱᵐᵖˡ); ("Load"%go, atomicOffAddr__Loadⁱᵐᵖˡ); ("StoreMarked"%go, atomicOffAddr__StoreMarkedⁱᵐᵖˡ); ("StoreMin"%go, atomicOffAddr__StoreMinⁱᵐᵖˡ); ("StoreUnmark"%go, atomicOffAddr__StoreUnmarkⁱᵐᵖˡ)]); (addrRanges.id, []); (ptrT.id addrRanges.id, [("add"%go, addrRanges__addⁱᵐᵖˡ); ("cloneInto"%go, addrRanges__cloneIntoⁱᵐᵖˡ); ("contains"%go, addrRanges__containsⁱᵐᵖˡ); ("findAddrGreaterEqual"%go, addrRanges__findAddrGreaterEqualⁱᵐᵖˡ); ("findSucc"%go, addrRanges__findSuccⁱᵐᵖˡ); ("init"%go, addrRanges__initⁱᵐᵖˡ); ("removeGreaterEqual"%go, addrRanges__removeGreaterEqualⁱᵐᵖˡ); ("removeLast"%go, addrRanges__removeLastⁱᵐᵖˡ)]); (spanSet.id, []); (ptrT.id spanSet.id, [("pop"%go, spanSet__popⁱᵐᵖˡ); ("push"%go, spanSet__pushⁱᵐᵖˡ); ("reset"%go, spanSet__resetⁱᵐᵖˡ)]); (spanSetBlock.id, []); (ptrT.id spanSetBlock.id, []); (atomicSpanSetSpinePointer.id, []); (ptrT.id atomicSpanSetSpinePointer.id, [("Load"%go, atomicSpanSetSpinePointer__Loadⁱᵐᵖˡ); ("StoreNoWB"%go, atomicSpanSetSpinePointer__StoreNoWBⁱᵐᵖˡ)]); (spanSetSpinePointer.id, [("lookup"%go, spanSetSpinePointer__lookupⁱᵐᵖˡ)]); (ptrT.id spanSetSpinePointer.id, [("lookup"%go, spanSetSpinePointer__lookupⁱᵐᵖˡ)]); (spanSetBlockAlloc.id, []); (ptrT.id spanSetBlockAlloc.id, [("alloc"%go, spanSetBlockAlloc__allocⁱᵐᵖˡ); ("free"%go, spanSetBlockAlloc__freeⁱᵐᵖˡ)]); (headTailIndex.id, [("head"%go, headTailIndex__headⁱᵐᵖˡ); ("split"%go, headTailIndex__splitⁱᵐᵖˡ); ("tail"%go, headTailIndex__tailⁱᵐᵖˡ)]); (ptrT.id headTailIndex.id, [("head"%go, headTailIndex__headⁱᵐᵖˡ); ("split"%go, headTailIndex__splitⁱᵐᵖˡ); ("tail"%go, headTailIndex__tailⁱᵐᵖˡ)]); (atomicHeadTailIndex.id, []); (ptrT.id atomicHeadTailIndex.id, [("cas"%go, atomicHeadTailIndex__casⁱᵐᵖˡ); ("decHead"%go, atomicHeadTailIndex__decHeadⁱᵐᵖˡ); ("incHead"%go, atomicHeadTailIndex__incHeadⁱᵐᵖˡ); ("incTail"%go, atomicHeadTailIndex__incTailⁱᵐᵖˡ); ("load"%go, atomicHeadTailIndex__loadⁱᵐᵖˡ); ("reset"%go, atomicHeadTailIndex__resetⁱᵐᵖˡ)]); (atomicMSpanPointer.id, []); (ptrT.id atomicMSpanPointer.id, [("Load"%go, atomicMSpanPointer__Loadⁱᵐᵖˡ); ("StoreNoWB"%go, atomicMSpanPointer__StoreNoWBⁱᵐᵖˡ)]); (mstats.id, []); (ptrT.id mstats.id, []); (MemStats.id, []); (ptrT.id MemStats.id, []); (sysMemStat.id, []); (ptrT.id sysMemStat.id, [("add"%go, sysMemStat__addⁱᵐᵖˡ); ("load"%go, sysMemStat__loadⁱᵐᵖˡ)]); (heapStatsDelta.id, []); (ptrT.id heapStatsDelta.id, [("merge"%go, heapStatsDelta__mergeⁱᵐᵖˡ)]); (consistentHeapStats.id, []); (ptrT.id consistentHeapStats.id, [("acquire"%go, consistentHeapStats__acquireⁱᵐᵖˡ); ("read"%go, consistentHeapStats__readⁱᵐᵖˡ); ("release"%go, consistentHeapStats__releaseⁱᵐᵖˡ); ("unsafeClear"%go, consistentHeapStats__unsafeClearⁱᵐᵖˡ); ("unsafeRead"%go, consistentHeapStats__unsafeReadⁱᵐᵖˡ)]); (cpuStats.id, []); (ptrT.id cpuStats.id, [("accumulate"%go, cpuStats__accumulateⁱᵐᵖˡ); ("accumulateGCPauseTime"%go, cpuStats__accumulateGCPauseTimeⁱᵐᵖˡ)]); (wbBuf.id, []); (ptrT.id wbBuf.id, [("discard"%go, wbBuf__discardⁱᵐᵖˡ); ("empty"%go, wbBuf__emptyⁱᵐᵖˡ); ("get1"%go, wbBuf__get1ⁱᵐᵖˡ); ("get2"%go, wbBuf__get2ⁱᵐᵖˡ); ("reset"%go, wbBuf__resetⁱᵐᵖˡ)]); (pollDesc.id, []); (ptrT.id pollDesc.id, [("info"%go, pollDesc__infoⁱᵐᵖˡ); ("makeArg"%go, pollDesc__makeArgⁱᵐᵖˡ); ("publishInfo"%go, pollDesc__publishInfoⁱᵐᵖˡ); ("setEventErr"%go, pollDesc__setEventErrⁱᵐᵖˡ)]); (pollInfo.id, [("closing"%go, pollInfo__closingⁱᵐᵖˡ); ("eventErr"%go, pollInfo__eventErrⁱᵐᵖˡ); ("expiredReadDeadline"%go, pollInfo__expiredReadDeadlineⁱᵐᵖˡ); ("expiredWriteDeadline"%go, pollInfo__expiredWriteDeadlineⁱᵐᵖˡ)]); (ptrT.id pollInfo.id, [("closing"%go, pollInfo__closingⁱᵐᵖˡ); ("eventErr"%go, pollInfo__eventErrⁱᵐᵖˡ); ("expiredReadDeadline"%go, pollInfo__expiredReadDeadlineⁱᵐᵖˡ); ("expiredWriteDeadline"%go, pollInfo__expiredWriteDeadlineⁱᵐᵖˡ)]); (pollCache.id, []); (ptrT.id pollCache.id, [("alloc"%go, pollCache__allocⁱᵐᵖˡ); ("free"%go, pollCache__freeⁱᵐᵖˡ)]); (winlibcall.id, []); (ptrT.id winlibcall.id, []); (note.id, []); (ptrT.id note.id, []); (mOS.id, []); (ptrT.id mOS.id, []); (perThreadSyscallArgs.id, []); (ptrT.id perThreadSyscallArgs.id, []); (sigset.id, []); (ptrT.id sigset.id, []); (throwType.id, []); (ptrT.id throwType.id, []); (PanicNilError.id, []); (ptrT.id PanicNilError.id, [("Error"%go, PanicNilError__Errorⁱᵐᵖˡ); ("RuntimeError"%go, PanicNilError__RuntimeErrorⁱᵐᵖˡ)]); (Pinner.id, [("unpin"%go, Pinner__unpinⁱᵐᵖˡ)]); (ptrT.id Pinner.id, [("Pin"%go, Pinner__Pinⁱᵐᵖˡ); ("Unpin"%go, Pinner__Unpinⁱᵐᵖˡ); ("unpin"%go, Pinner__unpinⁱᵐᵖˡ)]); (pinner.id, []); (ptrT.id pinner.id, [("unpin"%go, pinner__unpinⁱᵐᵖˡ)]); (pinState.id, []); (ptrT.id pinState.id, [("isMultiPinned"%go, pinState__isMultiPinnedⁱᵐᵖˡ); ("isPinned"%go, pinState__isPinnedⁱᵐᵖˡ); ("set"%go, pinState__setⁱᵐᵖˡ); ("setMultiPinned"%go, pinState__setMultiPinnedⁱᵐᵖˡ); ("setPinned"%go, pinState__setPinnedⁱᵐᵖˡ)]); (pinnerBits.id, []); (ptrT.id pinnerBits.id, [("ofObject"%go, pinnerBits__ofObjectⁱᵐᵖˡ)]); (ptabEntry.id, []); (ptrT.id ptabEntry.id, []); (suspendGState.id, []); (ptrT.id suspendGState.id, []); (hex.id, []); (ptrT.id hex.id, []); (stwReason.id, [("String"%go, stwReason__Stringⁱᵐᵖˡ); ("isGC"%go, stwReason__isGCⁱᵐᵖˡ)]); (ptrT.id stwReason.id, [("String"%go, stwReason__Stringⁱᵐᵖˡ); ("isGC"%go, stwReason__isGCⁱᵐᵖˡ)]); (worldStop.id, []); (ptrT.id worldStop.id, []); (cgothreadstart.id, []); (ptrT.id cgothreadstart.id, []); (sysmontick.id, []); (ptrT.id sysmontick.id, []); (pMask.id, [("clear"%go, pMask__clearⁱᵐᵖˡ); ("read"%go, pMask__readⁱᵐᵖˡ); ("set"%go, pMask__setⁱᵐᵖˡ)]); (ptrT.id pMask.id, [("clear"%go, pMask__clearⁱᵐᵖˡ); ("read"%go, pMask__readⁱᵐᵖˡ); ("set"%go, pMask__setⁱᵐᵖˡ)]); (gQueue.id, []); (ptrT.id gQueue.id, [("empty"%go, gQueue__emptyⁱᵐᵖˡ); ("pop"%go, gQueue__popⁱᵐᵖˡ); ("popList"%go, gQueue__popListⁱᵐᵖˡ); ("push"%go, gQueue__pushⁱᵐᵖˡ); ("pushBack"%go, gQueue__pushBackⁱᵐᵖˡ); ("pushBackAll"%go, gQueue__pushBackAllⁱᵐᵖˡ)]); (gList.id, []); (ptrT.id gList.id, [("empty"%go, gList__emptyⁱᵐᵖˡ); ("pop"%go, gList__popⁱᵐᵖˡ); ("push"%go, gList__pushⁱᵐᵖˡ); ("pushAll"%go, gList__pushAllⁱᵐᵖˡ)]); (randomOrder.id, []); (ptrT.id randomOrder.id, [("reset"%go, randomOrder__resetⁱᵐᵖˡ); ("start"%go, randomOrder__startⁱᵐᵖˡ)]); (randomEnum.id, []); (ptrT.id randomEnum.id, [("done"%go, randomEnum__doneⁱᵐᵖˡ); ("next"%go, randomEnum__nextⁱᵐᵖˡ); ("position"%go, randomEnum__positionⁱᵐᵖˡ)]); (initTask.id, []); (ptrT.id initTask.id, []); (tracestat.id, []); (ptrT.id tracestat.id, []); (profBuf.id, []); (ptrT.id profBuf.id, [("canWriteRecord"%go, profBuf__canWriteRecordⁱᵐᵖˡ); ("canWriteTwoRecords"%go, profBuf__canWriteTwoRecordsⁱᵐᵖˡ); ("close"%go, profBuf__closeⁱᵐᵖˡ); ("hasOverflow"%go, profBuf__hasOverflowⁱᵐᵖˡ); ("incrementOverflow"%go, profBuf__incrementOverflowⁱᵐᵖˡ); ("read"%go, profBuf__readⁱᵐᵖˡ); ("takeOverflow"%go, profBuf__takeOverflowⁱᵐᵖˡ); ("wakeupExtra"%go, profBuf__wakeupExtraⁱᵐᵖˡ); ("write"%go, profBuf__writeⁱᵐᵖˡ)]); (profAtomic.id, []); (ptrT.id profAtomic.id, [("cas"%go, profAtomic__casⁱᵐᵖˡ); ("load"%go, profAtomic__loadⁱᵐᵖˡ); ("store"%go, profAtomic__storeⁱᵐᵖˡ)]); (profIndex.id, [("addCountsAndClearFlags"%go, profIndex__addCountsAndClearFlagsⁱᵐᵖˡ); ("dataCount"%go, profIndex__dataCountⁱᵐᵖˡ); ("tagCount"%go, profIndex__tagCountⁱᵐᵖˡ)]); (ptrT.id profIndex.id, [("addCountsAndClearFlags"%go, profIndex__addCountsAndClearFlagsⁱᵐᵖˡ); ("dataCount"%go, profIndex__dataCountⁱᵐᵖˡ); ("tagCount"%go, profIndex__tagCountⁱᵐᵖˡ)]); (profBufReadMode.id, []); (ptrT.id profBufReadMode.id, []); (ticksType.id, []); (ptrT.id ticksType.id, [("init"%go, ticksType__initⁱᵐᵖˡ)]); (godebugInc.id, []); (ptrT.id godebugInc.id, [("IncNonDefault"%go, godebugInc__IncNonDefaultⁱᵐᵖˡ)]); (dbgVar.id, []); (ptrT.id dbgVar.id, []); (mutex.id, []); (ptrT.id mutex.id, []); (funcval.id, []); (ptrT.id funcval.id, []); (iface.id, []); (ptrT.id iface.id, []); (eface.id, []); (ptrT.id eface.id, []); (guintptr.id, [("ptr"%go, guintptr__ptrⁱᵐᵖˡ)]); (ptrT.id guintptr.id, [("cas"%go, guintptr__casⁱᵐᵖˡ); ("ptr"%go, guintptr__ptrⁱᵐᵖˡ); ("set"%go, guintptr__setⁱᵐᵖˡ)]); (puintptr.id, [("ptr"%go, puintptr__ptrⁱᵐᵖˡ)]); (ptrT.id puintptr.id, [("ptr"%go, puintptr__ptrⁱᵐᵖˡ); ("set"%go, puintptr__setⁱᵐᵖˡ)]); (muintptr.id, [("ptr"%go, muintptr__ptrⁱᵐᵖˡ)]); (ptrT.id muintptr.id, [("ptr"%go, muintptr__ptrⁱᵐᵖˡ); ("set"%go, muintptr__setⁱᵐᵖˡ)]); (gobuf.id, []); (ptrT.id gobuf.id, []); (sudog.id, []); (ptrT.id sudog.id, []); (libcall.id, []); (ptrT.id libcall.id, []); (stack.id, []); (ptrT.id stack.id, []); (heldLockInfo.id, []); (ptrT.id heldLockInfo.id, []); (g.id, []); (ptrT.id g.id, [("guintptr"%go, g__guintptrⁱᵐᵖˡ)]); (m.id, []); (ptrT.id m.id, [("becomeSpinning"%go, m__becomeSpinningⁱᵐᵖˡ); ("hasCgoOnStack"%go, m__hasCgoOnStackⁱᵐᵖˡ)]); (p.id, []); (ptrT.id p.id, [("destroy"%go, p__destroyⁱᵐᵖˡ); ("init"%go, p__initⁱᵐᵖˡ)]); (schedt.id, []); (ptrT.id schedt.id, []); (_func.id, []); (ptrT.id _func.id, [("funcInfo"%go, _func__funcInfoⁱᵐᵖˡ); ("isInlined"%go, _func__isInlinedⁱᵐᵖˡ)]); (funcinl.id, []); (ptrT.id funcinl.id, []); (lfnode.id, []); (ptrT.id lfnode.id, []); (forcegcstate.id, []); (ptrT.id forcegcstate.id, []); (_defer.id, []); (ptrT.id _defer.id, []); (_panic.id, []); (ptrT.id _panic.id, [("initOpenCodedDefers"%go, _panic__initOpenCodedDefersⁱᵐᵖˡ); ("nextDefer"%go, _panic__nextDeferⁱᵐᵖˡ); ("nextFrame"%go, _panic__nextFrameⁱᵐᵖˡ); ("start"%go, _panic__startⁱᵐᵖˡ)]); (savedOpenDeferState.id, []); (ptrT.id savedOpenDeferState.id, []); (ancestorInfo.id, []); (ptrT.id ancestorInfo.id, []); (waitReason.id, [("String"%go, waitReason__Stringⁱᵐᵖˡ); ("isIdleInSynctest"%go, waitReason__isIdleInSynctestⁱᵐᵖˡ); ("isMutexWait"%go, waitReason__isMutexWaitⁱᵐᵖˡ); ("isWaitingForSuspendG"%go, waitReason__isWaitingForSuspendGⁱᵐᵖˡ)]); (ptrT.id waitReason.id, [("String"%go, waitReason__Stringⁱᵐᵖˡ); ("isIdleInSynctest"%go, waitReason__isIdleInSynctestⁱᵐᵖˡ); ("isMutexWait"%go, waitReason__isMutexWaitⁱᵐᵖˡ); ("isWaitingForSuspendG"%go, waitReason__isWaitingForSuspendGⁱᵐᵖˡ)]); (rwmutex.id, []); (ptrT.id rwmutex.id, [("init"%go, rwmutex__initⁱᵐᵖˡ); ("lock"%go, rwmutex__lockⁱᵐᵖˡ); ("rlock"%go, rwmutex__rlockⁱᵐᵖˡ); ("runlock"%go, rwmutex__runlockⁱᵐᵖˡ); ("unlock"%go, rwmutex__unlockⁱᵐᵖˡ)]); (scase.id, []); (ptrT.id scase.id, []); (runtimeSelect.id, []); (ptrT.id runtimeSelect.id, []); (selectDir.id, []); (ptrT.id selectDir.id, []); (semaRoot.id, []); (ptrT.id semaRoot.id, [("dequeue"%go, semaRoot__dequeueⁱᵐᵖˡ); ("queue"%go, semaRoot__queueⁱᵐᵖˡ); ("rotateLeft"%go, semaRoot__rotateLeftⁱᵐᵖˡ); ("rotateRight"%go, semaRoot__rotateRightⁱᵐᵖˡ)]); (semTable.id, []); (ptrT.id semTable.id, [("rootFor"%go, semTable__rootForⁱᵐᵖˡ)]); (semaProfileFlags.id, []); (ptrT.id semaProfileFlags.id, []); (notifyList.id, []); (ptrT.id notifyList.id, []); (sigctxt.id, []); (ptrT.id sigctxt.id, [("cs"%go, sigctxt__csⁱᵐᵖˡ); ("fault"%go, sigctxt__faultⁱᵐᵖˡ); ("fixsigcode"%go, sigctxt__fixsigcodeⁱᵐᵖˡ); ("fs"%go, sigctxt__fsⁱᵐᵖˡ); ("gs"%go, sigctxt__gsⁱᵐᵖˡ); ("preparePanic"%go, sigctxt__preparePanicⁱᵐᵖˡ); ("pushCall"%go, sigctxt__pushCallⁱᵐᵖˡ); ("r10"%go, sigctxt__r10ⁱᵐᵖˡ); ("r11"%go, sigctxt__r11ⁱᵐᵖˡ); ("r12"%go, sigctxt__r12ⁱᵐᵖˡ); ("r13"%go, sigctxt__r13ⁱᵐᵖˡ); ("r14"%go, sigctxt__r14ⁱᵐᵖˡ); ("r15"%go, sigctxt__r15ⁱᵐᵖˡ); ("r8"%go, sigctxt__r8ⁱᵐᵖˡ); ("r9"%go, sigctxt__r9ⁱᵐᵖˡ); ("rax"%go, sigctxt__raxⁱᵐᵖˡ); ("rbp"%go, sigctxt__rbpⁱᵐᵖˡ); ("rbx"%go, sigctxt__rbxⁱᵐᵖˡ); ("rcx"%go, sigctxt__rcxⁱᵐᵖˡ); ("rdi"%go, sigctxt__rdiⁱᵐᵖˡ); ("rdx"%go, sigctxt__rdxⁱᵐᵖˡ); ("regs"%go, sigctxt__regsⁱᵐᵖˡ); ("rflags"%go, sigctxt__rflagsⁱᵐᵖˡ); ("rip"%go, sigctxt__ripⁱᵐᵖˡ); ("rsi"%go, sigctxt__rsiⁱᵐᵖˡ); ("rsp"%go, sigctxt__rspⁱᵐᵖˡ); ("set_rip"%go, sigctxt__set_ripⁱᵐᵖˡ); ("set_rsp"%go, sigctxt__set_rspⁱᵐᵖˡ); ("set_sigaddr"%go, sigctxt__set_sigaddrⁱᵐᵖˡ); ("set_sigcode"%go, sigctxt__set_sigcodeⁱᵐᵖˡ); ("setsigpc"%go, sigctxt__setsigpcⁱᵐᵖˡ); ("sigFromSeccomp"%go, sigctxt__sigFromSeccompⁱᵐᵖˡ); ("sigFromUser"%go, sigctxt__sigFromUserⁱᵐᵖˡ); ("sigaddr"%go, sigctxt__sigaddrⁱᵐᵖˡ); ("sigcode"%go, sigctxt__sigcodeⁱᵐᵖˡ); ("siglr"%go, sigctxt__siglrⁱᵐᵖˡ); ("sigpc"%go, sigctxt__sigpcⁱᵐᵖˡ); ("sigsp"%go, sigctxt__sigspⁱᵐᵖˡ)]); (sigTabT.id, []); (ptrT.id sigTabT.id, []); (gsignalStack.id, []); (ptrT.id gsignalStack.id, []); (slice.id, []); (ptrT.id slice.id, []); (notInHeapSlice.id, []); (ptrT.id notInHeapSlice.id, []); (stackpoolItem.id, []); (ptrT.id stackpoolItem.id, []); (adjustinfo.id, []); (ptrT.id adjustinfo.id, []); (bitvector.id, []); (ptrT.id bitvector.id, [("ptrbit"%go, bitvector__ptrbitⁱᵐᵖˡ)]); (stackObjectRecord.id, []); (ptrT.id stackObjectRecord.id, [("gcdata"%go, stackObjectRecord__gcdataⁱᵐᵖˡ)]); (stkframe.id, []); (ptrT.id stkframe.id, [("argBytes"%go, stkframe__argBytesⁱᵐᵖˡ); ("argMapInternal"%go, stkframe__argMapInternalⁱᵐᵖˡ); ("getStackMap"%go, stkframe__getStackMapⁱᵐᵖˡ)]); (reflectMethodValue.id, []); (ptrT.id reflectMethodValue.id, []); (tmpBuf.id, []); (ptrT.id tmpBuf.id, []); (stringStruct.id, []); (ptrT.id stringStruct.id, []); (stringStructDWARF.id, []); (ptrT.id stringStructDWARF.id, []); (neverCallThisFunction.id, []); (ptrT.id neverCallThisFunction.id, []); (Frames.id, []); (ptrT.id Frames.id, [("Next"%go, Frames__Nextⁱᵐᵖˡ)]); (Frame.id, []); (ptrT.id Frame.id, []); (Func.id, []); (ptrT.id Func.id, [("Entry"%go, Func__Entryⁱᵐᵖˡ); ("FileLine"%go, Func__FileLineⁱᵐᵖˡ); ("Name"%go, Func__Nameⁱᵐᵖˡ); ("funcInfo"%go, Func__funcInfoⁱᵐᵖˡ); ("raw"%go, Func__rawⁱᵐᵖˡ); ("startLine"%go, Func__startLineⁱᵐᵖˡ)]); (pcHeader.id, []); (ptrT.id pcHeader.id, []); (moduledata.id, []); (ptrT.id moduledata.id, [("funcName"%go, moduledata__funcNameⁱᵐᵖˡ); ("textAddr"%go, moduledata__textAddrⁱᵐᵖˡ); ("textOff"%go, moduledata__textOffⁱᵐᵖˡ)]); (modulehash.id, []); (ptrT.id modulehash.id, []); (functab.id, []); (ptrT.id functab.id, []); (textsect.id, []); (ptrT.id textsect.id, []); (findfuncbucket.id, []); (ptrT.id findfuncbucket.id, []); (funcInfo.id, [("_Func"%go, funcInfo___Funcⁱᵐᵖˡ); ("entry"%go, funcInfo__entryⁱᵐᵖˡ); ("funcInfo"%go, funcInfo__funcInfoⁱᵐᵖˡ); ("isInlined"%go, funcInfo__isInlinedⁱᵐᵖˡ); ("srcFunc"%go, funcInfo__srcFuncⁱᵐᵖˡ); ("valid"%go, funcInfo__validⁱᵐᵖˡ)]); (ptrT.id funcInfo.id, [("_Func"%go, funcInfo___Funcⁱᵐᵖˡ); ("entry"%go, funcInfo__entryⁱᵐᵖˡ); ("funcInfo"%go, funcInfo__funcInfoⁱᵐᵖˡ); ("isInlined"%go, funcInfo__isInlinedⁱᵐᵖˡ); ("srcFunc"%go, funcInfo__srcFuncⁱᵐᵖˡ); ("valid"%go, funcInfo__validⁱᵐᵖˡ)]); (srcFunc.id, [("name"%go, srcFunc__nameⁱᵐᵖˡ)]); (ptrT.id srcFunc.id, [("name"%go, srcFunc__nameⁱᵐᵖˡ)]); (pcvalueCache.id, []); (ptrT.id pcvalueCache.id, []); (pcvalueCacheEnt.id, []); (ptrT.id pcvalueCacheEnt.id, []); (stackmap.id, []); (ptrT.id stackmap.id, []); (inlinedCall.id, []); (ptrT.id inlinedCall.id, []); (inlineUnwinder.id, []); (ptrT.id inlineUnwinder.id, [("fileLine"%go, inlineUnwinder__fileLineⁱᵐᵖˡ); ("isInlined"%go, inlineUnwinder__isInlinedⁱᵐᵖˡ); ("next"%go, inlineUnwinder__nextⁱᵐᵖˡ); ("resolveInternal"%go, inlineUnwinder__resolveInternalⁱᵐᵖˡ); ("srcFunc"%go, inlineUnwinder__srcFuncⁱᵐᵖˡ)]); (inlineFrame.id, [("valid"%go, inlineFrame__validⁱᵐᵖˡ)]); (ptrT.id inlineFrame.id, [("valid"%go, inlineFrame__validⁱᵐᵖˡ)]); (synctestGroup.id, []); (ptrT.id synctestGroup.id, [("changegstatus"%go, synctestGroup__changegstatusⁱᵐᵖˡ); ("decActive"%go, synctestGroup__decActiveⁱᵐᵖˡ); ("incActive"%go, synctestGroup__incActiveⁱᵐᵖˡ); ("maybeWakeLocked"%go, synctestGroup__maybeWakeLockedⁱᵐᵖˡ); ("raceaddr"%go, synctestGroup__raceaddrⁱᵐᵖˡ)]); (taggedPointer.id, [("pointer"%go, taggedPointer__pointerⁱᵐᵖˡ); ("tag"%go, taggedPointer__tagⁱᵐᵖˡ)]); (ptrT.id taggedPointer.id, [("pointer"%go, taggedPointer__pointerⁱᵐᵖˡ); ("tag"%go, taggedPointer__tagⁱᵐᵖˡ)]); (timer.id, []); (ptrT.id timer.id, [("hchan"%go, timer__hchanⁱᵐᵖˡ); ("init"%go, timer__initⁱᵐᵖˡ); ("lock"%go, timer__lockⁱᵐᵖˡ); ("maybeAdd"%go, timer__maybeAddⁱᵐᵖˡ); ("maybeRunAsync"%go, timer__maybeRunAsyncⁱᵐᵖˡ); ("maybeRunChan"%go, timer__maybeRunChanⁱᵐᵖˡ); ("modify"%go, timer__modifyⁱᵐᵖˡ); ("needsAdd"%go, timer__needsAddⁱᵐᵖˡ); ("reset"%go, timer__resetⁱᵐᵖˡ); ("stop"%go, timer__stopⁱᵐᵖˡ); ("trace"%go, timer__traceⁱᵐᵖˡ); ("trace1"%go, timer__trace1ⁱᵐᵖˡ); ("unlock"%go, timer__unlockⁱᵐᵖˡ); ("unlockAndRun"%go, timer__unlockAndRunⁱᵐᵖˡ); ("updateHeap"%go, timer__updateHeapⁱᵐᵖˡ)]); (timers.id, []); (ptrT.id timers.id, [("addHeap"%go, timers__addHeapⁱᵐᵖˡ); ("adjust"%go, timers__adjustⁱᵐᵖˡ); ("check"%go, timers__checkⁱᵐᵖˡ); ("cleanHead"%go, timers__cleanHeadⁱᵐᵖˡ); ("deleteMin"%go, timers__deleteMinⁱᵐᵖˡ); ("initHeap"%go, timers__initHeapⁱᵐᵖˡ); ("lock"%go, timers__lockⁱᵐᵖˡ); ("run"%go, timers__runⁱᵐᵖˡ); ("siftDown"%go, timers__siftDownⁱᵐᵖˡ); ("siftUp"%go, timers__siftUpⁱᵐᵖˡ); ("take"%go, timers__takeⁱᵐᵖˡ); ("trace"%go, timers__traceⁱᵐᵖˡ); ("unlock"%go, timers__unlockⁱᵐᵖˡ); ("updateMinWhenHeap"%go, timers__updateMinWhenHeapⁱᵐᵖˡ); ("updateMinWhenModified"%go, timers__updateMinWhenModifiedⁱᵐᵖˡ); ("verify"%go, timers__verifyⁱᵐᵖˡ); ("wakeTime"%go, timers__wakeTimeⁱᵐᵖˡ)]); (timerWhen.id, []); (ptrT.id timerWhen.id, []); (timeTimer.id, []); (ptrT.id timeTimer.id, [("hchan"%go, timeTimer__hchanⁱᵐᵖˡ); ("lock"%go, timeTimer__lockⁱᵐᵖˡ); ("maybeAdd"%go, timeTimer__maybeAddⁱᵐᵖˡ); ("maybeRunAsync"%go, timeTimer__maybeRunAsyncⁱᵐᵖˡ); ("maybeRunChan"%go, timeTimer__maybeRunChanⁱᵐᵖˡ); ("modify"%go, timeTimer__modifyⁱᵐᵖˡ); ("needsAdd"%go, timeTimer__needsAddⁱᵐᵖˡ); ("reset"%go, timeTimer__resetⁱᵐᵖˡ); ("stop"%go, timeTimer__stopⁱᵐᵖˡ); ("trace"%go, timeTimer__traceⁱᵐᵖˡ); ("trace1"%go, timeTimer__trace1ⁱᵐᵖˡ); ("unlock"%go, timeTimer__unlockⁱᵐᵖˡ); ("unlockAndRun"%go, timeTimer__unlockAndRunⁱᵐᵖˡ); ("updateHeap"%go, timeTimer__updateHeapⁱᵐᵖˡ)]); (traceAdvancerState.id, []); (ptrT.id traceAdvancerState.id, [("start"%go, traceAdvancerState__startⁱᵐᵖˡ); ("stop"%go, traceAdvancerState__stopⁱᵐᵖˡ)]); (wakeableSleep.id, []); (ptrT.id wakeableSleep.id, [("close"%go, wakeableSleep__closeⁱᵐᵖˡ); ("sleep"%go, wakeableSleep__sleepⁱᵐᵖˡ); ("wake"%go, wakeableSleep__wakeⁱᵐᵖˡ)]); (unwindFlags.id, []); (ptrT.id unwindFlags.id, []); (unwinder.id, []); (ptrT.id unwinder.id, [("cgoCallers"%go, unwinder__cgoCallersⁱᵐᵖˡ); ("finishInternal"%go, unwinder__finishInternalⁱᵐᵖˡ); ("init"%go, unwinder__initⁱᵐᵖˡ); ("initAt"%go, unwinder__initAtⁱᵐᵖˡ); ("next"%go, unwinder__nextⁱᵐᵖˡ); ("resolveInternal"%go, unwinder__resolveInternalⁱᵐᵖˡ); ("symPC"%go, unwinder__symPCⁱᵐᵖˡ); ("valid"%go, unwinder__validⁱᵐᵖˡ)]); (cgoTracebackArg.id, []); (ptrT.id cgoTracebackArg.id, []); (cgoContextArg.id, []); (ptrT.id cgoContextArg.id, []); (cgoSymbolizerArg.id, []); (ptrT.id cgoSymbolizerArg.id, []); (traceWriter.id, [("GCActive"%go, traceWriter__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceWriter__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceWriter__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceWriter__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceWriter__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceWriter__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceWriter__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceWriter__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceWriter__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceWriter__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceWriter__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceWriter__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceWriter__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceWriter__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceWriter__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceWriter__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceWriter__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceWriter__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceWriter__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceWriter__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceWriter__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceWriter__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceWriter__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceWriter__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceWriter__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceWriter__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceWriter__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceWriter__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceWriter__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceWriter__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceWriter__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceWriter__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceWriter__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceWriter__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceWriter__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceWriter__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceWriter__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceWriter__SpanFreeⁱᵐᵖˡ); ("available"%go, traceWriter__availableⁱᵐᵖˡ); ("byte"%go, traceWriter__byteⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceWriter__emitUnblockStatusⁱᵐᵖˡ); ("end"%go, traceWriter__endⁱᵐᵖˡ); ("ensure"%go, traceWriter__ensureⁱᵐᵖˡ); ("event"%go, traceWriter__eventⁱᵐᵖˡ); ("eventWriter"%go, traceWriter__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceWriter__expWriterⁱᵐᵖˡ); ("flush"%go, traceWriter__flushⁱᵐᵖˡ); ("ok"%go, traceWriter__okⁱᵐᵖˡ); ("refill"%go, traceWriter__refillⁱᵐᵖˡ); ("rtype"%go, traceWriter__rtypeⁱᵐᵖˡ); ("stack"%go, traceWriter__stackⁱᵐᵖˡ); ("startPC"%go, traceWriter__startPCⁱᵐᵖˡ); ("string"%go, traceWriter__stringⁱᵐᵖˡ); ("stringData"%go, traceWriter__stringDataⁱᵐᵖˡ); ("uniqueString"%go, traceWriter__uniqueStringⁱᵐᵖˡ); ("varint"%go, traceWriter__varintⁱᵐᵖˡ); ("varintAt"%go, traceWriter__varintAtⁱᵐᵖˡ); ("varintReserve"%go, traceWriter__varintReserveⁱᵐᵖˡ); ("writeGoStatus"%go, traceWriter__writeGoStatusⁱᵐᵖˡ); ("writeProcStatus"%go, traceWriter__writeProcStatusⁱᵐᵖˡ); ("writeProcStatusForP"%go, traceWriter__writeProcStatusForPⁱᵐᵖˡ); ("writer"%go, traceWriter__writerⁱᵐᵖˡ)]); (ptrT.id traceWriter.id, [("GCActive"%go, traceWriter__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceWriter__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceWriter__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceWriter__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceWriter__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceWriter__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceWriter__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceWriter__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceWriter__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceWriter__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceWriter__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceWriter__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceWriter__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceWriter__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceWriter__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceWriter__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceWriter__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceWriter__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceWriter__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceWriter__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceWriter__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceWriter__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceWriter__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceWriter__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceWriter__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceWriter__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceWriter__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceWriter__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceWriter__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceWriter__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceWriter__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceWriter__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceWriter__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceWriter__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceWriter__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceWriter__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceWriter__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceWriter__SpanFreeⁱᵐᵖˡ); ("available"%go, traceWriter__availableⁱᵐᵖˡ); ("byte"%go, traceWriter__byteⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceWriter__emitUnblockStatusⁱᵐᵖˡ); ("end"%go, traceWriter__endⁱᵐᵖˡ); ("ensure"%go, traceWriter__ensureⁱᵐᵖˡ); ("event"%go, traceWriter__eventⁱᵐᵖˡ); ("eventWriter"%go, traceWriter__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceWriter__expWriterⁱᵐᵖˡ); ("flush"%go, traceWriter__flushⁱᵐᵖˡ); ("ok"%go, traceWriter__okⁱᵐᵖˡ); ("refill"%go, traceWriter__refillⁱᵐᵖˡ); ("rtype"%go, traceWriter__rtypeⁱᵐᵖˡ); ("stack"%go, traceWriter__stackⁱᵐᵖˡ); ("startPC"%go, traceWriter__startPCⁱᵐᵖˡ); ("string"%go, traceWriter__stringⁱᵐᵖˡ); ("stringData"%go, traceWriter__stringDataⁱᵐᵖˡ); ("uniqueString"%go, traceWriter__uniqueStringⁱᵐᵖˡ); ("varint"%go, traceWriter__varintⁱᵐᵖˡ); ("varintAt"%go, traceWriter__varintAtⁱᵐᵖˡ); ("varintReserve"%go, traceWriter__varintReserveⁱᵐᵖˡ); ("writeGoStatus"%go, traceWriter__writeGoStatusⁱᵐᵖˡ); ("writeProcStatus"%go, traceWriter__writeProcStatusⁱᵐᵖˡ); ("writeProcStatusForP"%go, traceWriter__writeProcStatusForPⁱᵐᵖˡ); ("writer"%go, traceWriter__writerⁱᵐᵖˡ)]); (traceBufQueue.id, []); (ptrT.id traceBufQueue.id, [("empty"%go, traceBufQueue__emptyⁱᵐᵖˡ); ("pop"%go, traceBufQueue__popⁱᵐᵖˡ); ("push"%go, traceBufQueue__pushⁱᵐᵖˡ)]); (traceBufHeader.id, []); (ptrT.id traceBufHeader.id, []); (traceBuf.id, []); (ptrT.id traceBuf.id, [("available"%go, traceBuf__availableⁱᵐᵖˡ); ("byte"%go, traceBuf__byteⁱᵐᵖˡ); ("stringData"%go, traceBuf__stringDataⁱᵐᵖˡ); ("varint"%go, traceBuf__varintⁱᵐᵖˡ); ("varintAt"%go, traceBuf__varintAtⁱᵐᵖˡ); ("varintReserve"%go, traceBuf__varintReserveⁱᵐᵖˡ)]); (traceEv.id, []); (ptrT.id traceEv.id, []); (traceArg.id, []); (ptrT.id traceArg.id, []); (traceEventWriter.id, [("event"%go, traceEventWriter__eventⁱᵐᵖˡ)]); (ptrT.id traceEventWriter.id, [("event"%go, traceEventWriter__eventⁱᵐᵖˡ)]); (traceExperiment.id, []); (ptrT.id traceExperiment.id, []); (traceMap.id, []); (ptrT.id traceMap.id, [("newTraceMapNode"%go, traceMap__newTraceMapNodeⁱᵐᵖˡ); ("put"%go, traceMap__putⁱᵐᵖˡ); ("reset"%go, traceMap__resetⁱᵐᵖˡ); ("stealID"%go, traceMap__stealIDⁱᵐᵖˡ)]); (traceMapNode.id, []); (ptrT.id traceMapNode.id, []); (traceRegionAlloc.id, []); (ptrT.id traceRegionAlloc.id, [("alloc"%go, traceRegionAlloc__allocⁱᵐᵖˡ); ("drop"%go, traceRegionAlloc__dropⁱᵐᵖˡ)]); (traceRegionAllocBlock.id, []); (ptrT.id traceRegionAllocBlock.id, []); (traceRegionAllocBlockHeader.id, []); (ptrT.id traceRegionAllocBlockHeader.id, []); (gTraceState.id, []); (ptrT.id gTraceState.id, [("acquireStatus"%go, gTraceState__acquireStatusⁱᵐᵖˡ); ("nextSeq"%go, gTraceState__nextSeqⁱᵐᵖˡ); ("readyNextGen"%go, gTraceState__readyNextGenⁱᵐᵖˡ); ("reset"%go, gTraceState__resetⁱᵐᵖˡ); ("setStatusTraced"%go, gTraceState__setStatusTracedⁱᵐᵖˡ); ("statusWasTraced"%go, gTraceState__statusWasTracedⁱᵐᵖˡ)]); (mTraceState.id, []); (ptrT.id mTraceState.id, []); (pTraceState.id, []); (ptrT.id pTraceState.id, [("acquireStatus"%go, pTraceState__acquireStatusⁱᵐᵖˡ); ("nextSeq"%go, pTraceState__nextSeqⁱᵐᵖˡ); ("readyNextGen"%go, pTraceState__readyNextGenⁱᵐᵖˡ); ("setStatusTraced"%go, pTraceState__setStatusTracedⁱᵐᵖˡ); ("statusWasTraced"%go, pTraceState__statusWasTracedⁱᵐᵖˡ)]); (traceBlockReason.id, []); (ptrT.id traceBlockReason.id, []); (traceGoStopReason.id, []); (ptrT.id traceGoStopReason.id, []); (traceLocker.id, [("GCActive"%go, traceLocker__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceLocker__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceLocker__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceLocker__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceLocker__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceLocker__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceLocker__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceLocker__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceLocker__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceLocker__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceLocker__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceLocker__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceLocker__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceLocker__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceLocker__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceLocker__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceLocker__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceLocker__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceLocker__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceLocker__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceLocker__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceLocker__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceLocker__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceLocker__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceLocker__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceLocker__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceLocker__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceLocker__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceLocker__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceLocker__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceLocker__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceLocker__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceLocker__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceLocker__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceLocker__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceLocker__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceLocker__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceLocker__SpanFreeⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceLocker__emitUnblockStatusⁱᵐᵖˡ); ("eventWriter"%go, traceLocker__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceLocker__expWriterⁱᵐᵖˡ); ("ok"%go, traceLocker__okⁱᵐᵖˡ); ("rtype"%go, traceLocker__rtypeⁱᵐᵖˡ); ("stack"%go, traceLocker__stackⁱᵐᵖˡ); ("startPC"%go, traceLocker__startPCⁱᵐᵖˡ); ("string"%go, traceLocker__stringⁱᵐᵖˡ); ("uniqueString"%go, traceLocker__uniqueStringⁱᵐᵖˡ); ("writer"%go, traceLocker__writerⁱᵐᵖˡ)]); (ptrT.id traceLocker.id, [("GCActive"%go, traceLocker__GCActiveⁱᵐᵖˡ); ("GCDone"%go, traceLocker__GCDoneⁱᵐᵖˡ); ("GCMarkAssistDone"%go, traceLocker__GCMarkAssistDoneⁱᵐᵖˡ); ("GCMarkAssistStart"%go, traceLocker__GCMarkAssistStartⁱᵐᵖˡ); ("GCStart"%go, traceLocker__GCStartⁱᵐᵖˡ); ("GCSweepDone"%go, traceLocker__GCSweepDoneⁱᵐᵖˡ); ("GCSweepSpan"%go, traceLocker__GCSweepSpanⁱᵐᵖˡ); ("GCSweepStart"%go, traceLocker__GCSweepStartⁱᵐᵖˡ); ("GoCreate"%go, traceLocker__GoCreateⁱᵐᵖˡ); ("GoCreateSyscall"%go, traceLocker__GoCreateSyscallⁱᵐᵖˡ); ("GoDestroySyscall"%go, traceLocker__GoDestroySyscallⁱᵐᵖˡ); ("GoEnd"%go, traceLocker__GoEndⁱᵐᵖˡ); ("GoPark"%go, traceLocker__GoParkⁱᵐᵖˡ); ("GoPreempt"%go, traceLocker__GoPreemptⁱᵐᵖˡ); ("GoSched"%go, traceLocker__GoSchedⁱᵐᵖˡ); ("GoStart"%go, traceLocker__GoStartⁱᵐᵖˡ); ("GoStop"%go, traceLocker__GoStopⁱᵐᵖˡ); ("GoSwitch"%go, traceLocker__GoSwitchⁱᵐᵖˡ); ("GoSysCall"%go, traceLocker__GoSysCallⁱᵐᵖˡ); ("GoSysExit"%go, traceLocker__GoSysExitⁱᵐᵖˡ); ("GoUnpark"%go, traceLocker__GoUnparkⁱᵐᵖˡ); ("Gomaxprocs"%go, traceLocker__Gomaxprocsⁱᵐᵖˡ); ("GoroutineStackAlloc"%go, traceLocker__GoroutineStackAllocⁱᵐᵖˡ); ("GoroutineStackExists"%go, traceLocker__GoroutineStackExistsⁱᵐᵖˡ); ("GoroutineStackFree"%go, traceLocker__GoroutineStackFreeⁱᵐᵖˡ); ("HeapAlloc"%go, traceLocker__HeapAllocⁱᵐᵖˡ); ("HeapGoal"%go, traceLocker__HeapGoalⁱᵐᵖˡ); ("HeapObjectAlloc"%go, traceLocker__HeapObjectAllocⁱᵐᵖˡ); ("HeapObjectExists"%go, traceLocker__HeapObjectExistsⁱᵐᵖˡ); ("HeapObjectFree"%go, traceLocker__HeapObjectFreeⁱᵐᵖˡ); ("ProcStart"%go, traceLocker__ProcStartⁱᵐᵖˡ); ("ProcSteal"%go, traceLocker__ProcStealⁱᵐᵖˡ); ("ProcStop"%go, traceLocker__ProcStopⁱᵐᵖˡ); ("STWDone"%go, traceLocker__STWDoneⁱᵐᵖˡ); ("STWStart"%go, traceLocker__STWStartⁱᵐᵖˡ); ("SpanAlloc"%go, traceLocker__SpanAllocⁱᵐᵖˡ); ("SpanExists"%go, traceLocker__SpanExistsⁱᵐᵖˡ); ("SpanFree"%go, traceLocker__SpanFreeⁱᵐᵖˡ); ("emitUnblockStatus"%go, traceLocker__emitUnblockStatusⁱᵐᵖˡ); ("eventWriter"%go, traceLocker__eventWriterⁱᵐᵖˡ); ("expWriter"%go, traceLocker__expWriterⁱᵐᵖˡ); ("ok"%go, traceLocker__okⁱᵐᵖˡ); ("rtype"%go, traceLocker__rtypeⁱᵐᵖˡ); ("stack"%go, traceLocker__stackⁱᵐᵖˡ); ("startPC"%go, traceLocker__startPCⁱᵐᵖˡ); ("string"%go, traceLocker__stringⁱᵐᵖˡ); ("uniqueString"%go, traceLocker__uniqueStringⁱᵐᵖˡ); ("writer"%go, traceLocker__writerⁱᵐᵖˡ)]); (traceStackTable.id, []); (ptrT.id traceStackTable.id, [("dump"%go, traceStackTable__dumpⁱᵐᵖˡ); ("put"%go, traceStackTable__putⁱᵐᵖˡ)]); (traceFrame.id, []); (ptrT.id traceFrame.id, []); (traceGoStatus.id, []); (ptrT.id traceGoStatus.id, []); (traceProcStatus.id, []); (ptrT.id traceProcStatus.id, []); (traceSchedResourceState.id, []); (ptrT.id traceSchedResourceState.id, [("acquireStatus"%go, traceSchedResourceState__acquireStatusⁱᵐᵖˡ); ("nextSeq"%go, traceSchedResourceState__nextSeqⁱᵐᵖˡ); ("readyNextGen"%go, traceSchedResourceState__readyNextGenⁱᵐᵖˡ); ("setStatusTraced"%go, traceSchedResourceState__setStatusTracedⁱᵐᵖˡ); ("statusWasTraced"%go, traceSchedResourceState__statusWasTracedⁱᵐᵖˡ)]); (traceStringTable.id, []); (ptrT.id traceStringTable.id, [("emit"%go, traceStringTable__emitⁱᵐᵖˡ); ("put"%go, traceStringTable__putⁱᵐᵖˡ); ("reset"%go, traceStringTable__resetⁱᵐᵖˡ); ("writeString"%go, traceStringTable__writeStringⁱᵐᵖˡ)]); (traceTime.id, []); (ptrT.id traceTime.id, []); (traceTypeTable.id, []); (ptrT.id traceTypeTable.id, [("dump"%go, traceTypeTable__dumpⁱᵐᵖˡ); ("put"%go, traceTypeTable__putⁱᵐᵖˡ)]); (rtype.id, [("Align"%go, rtype__Alignⁱᵐᵖˡ); ("ArrayType"%go, rtype__ArrayTypeⁱᵐᵖˡ); ("ChanDir"%go, rtype__ChanDirⁱᵐᵖˡ); ("Common"%go, rtype__Commonⁱᵐᵖˡ); ("Elem"%go, rtype__Elemⁱᵐᵖˡ); ("ExportedMethods"%go, rtype__ExportedMethodsⁱᵐᵖˡ); ("FieldAlign"%go, rtype__FieldAlignⁱᵐᵖˡ); ("FuncType"%go, rtype__FuncTypeⁱᵐᵖˡ); ("GcSlice"%go, rtype__GcSliceⁱᵐᵖˡ); ("HasName"%go, rtype__HasNameⁱᵐᵖˡ); ("IfaceIndir"%go, rtype__IfaceIndirⁱᵐᵖˡ); ("InterfaceType"%go, rtype__InterfaceTypeⁱᵐᵖˡ); ("IsDirectIface"%go, rtype__IsDirectIfaceⁱᵐᵖˡ); ("Key"%go, rtype__Keyⁱᵐᵖˡ); ("Kind"%go, rtype__Kindⁱᵐᵖˡ); ("Len"%go, rtype__Lenⁱᵐᵖˡ); ("MapType"%go, rtype__MapTypeⁱᵐᵖˡ); ("NumMethod"%go, rtype__NumMethodⁱᵐᵖˡ); ("Pointers"%go, rtype__Pointersⁱᵐᵖˡ); ("Size"%go, rtype__Sizeⁱᵐᵖˡ); ("StructType"%go, rtype__StructTypeⁱᵐᵖˡ); ("Uncommon"%go, rtype__Uncommonⁱᵐᵖˡ); ("name"%go, rtype__nameⁱᵐᵖˡ); ("nameOff"%go, rtype__nameOffⁱᵐᵖˡ); ("pkgpath"%go, rtype__pkgpathⁱᵐᵖˡ); ("string"%go, rtype__stringⁱᵐᵖˡ); ("textOff"%go, rtype__textOffⁱᵐᵖˡ); ("typeOff"%go, rtype__typeOffⁱᵐᵖˡ); ("uncommon"%go, rtype__uncommonⁱᵐᵖˡ)]); (ptrT.id rtype.id, [("Align"%go, rtype__Alignⁱᵐᵖˡ); ("ArrayType"%go, rtype__ArrayTypeⁱᵐᵖˡ); ("ChanDir"%go, rtype__ChanDirⁱᵐᵖˡ); ("Common"%go, rtype__Commonⁱᵐᵖˡ); ("Elem"%go, rtype__Elemⁱᵐᵖˡ); ("ExportedMethods"%go, rtype__ExportedMethodsⁱᵐᵖˡ); ("FieldAlign"%go, rtype__FieldAlignⁱᵐᵖˡ); ("FuncType"%go, rtype__FuncTypeⁱᵐᵖˡ); ("GcSlice"%go, rtype__GcSliceⁱᵐᵖˡ); ("HasName"%go, rtype__HasNameⁱᵐᵖˡ); ("IfaceIndir"%go, rtype__IfaceIndirⁱᵐᵖˡ); ("InterfaceType"%go, rtype__InterfaceTypeⁱᵐᵖˡ); ("IsDirectIface"%go, rtype__IsDirectIfaceⁱᵐᵖˡ); ("Key"%go, rtype__Keyⁱᵐᵖˡ); ("Kind"%go, rtype__Kindⁱᵐᵖˡ); ("Len"%go, rtype__Lenⁱᵐᵖˡ); ("MapType"%go, rtype__MapTypeⁱᵐᵖˡ); ("NumMethod"%go, rtype__NumMethodⁱᵐᵖˡ); ("Pointers"%go, rtype__Pointersⁱᵐᵖˡ); ("Size"%go, rtype__Sizeⁱᵐᵖˡ); ("StructType"%go, rtype__StructTypeⁱᵐᵖˡ); ("Uncommon"%go, rtype__Uncommonⁱᵐᵖˡ); ("name"%go, rtype__nameⁱᵐᵖˡ); ("nameOff"%go, rtype__nameOffⁱᵐᵖˡ); ("pkgpath"%go, rtype__pkgpathⁱᵐᵖˡ); ("string"%go, rtype__stringⁱᵐᵖˡ); ("textOff"%go, rtype__textOffⁱᵐᵖˡ); ("typeOff"%go, rtype__typeOffⁱᵐᵖˡ); ("uncommon"%go, rtype__uncommonⁱᵐᵖˡ)]); (bitCursor.id, [("offset"%go, bitCursor__offsetⁱᵐᵖˡ); ("write"%go, bitCursor__writeⁱᵐᵖˡ)]); (ptrT.id bitCursor.id, [("offset"%go, bitCursor__offsetⁱᵐᵖˡ); ("write"%go, bitCursor__writeⁱᵐᵖˡ)]); (_typePair.id, []); (ptrT.id _typePair.id, []); (elfSym.id, []); (ptrT.id elfSym.id, []); (elfVerdef.id, []); (ptrT.id elfVerdef.id, []); (elfEhdr.id, []); (ptrT.id elfEhdr.id, []); (elfPhdr.id, []); (ptrT.id elfPhdr.id, []); (elfShdr.id, []); (ptrT.id elfShdr.id, []); (elfDyn.id, []); (ptrT.id elfDyn.id, []); (elfVerdaux.id, []); (ptrT.id elfVerdaux.id, []); (vdsoSymbolKey.id, []); (ptrT.id vdsoSymbolKey.id, []); (vdsoVersionKey.id, []); (ptrT.id vdsoVersionKey.id, []); (vdsoInfo.id, []); (ptrT.id vdsoInfo.id, [])].
 
 #[global] Instance info' : PkgInfo runtime.runtime :=
   {|
