@@ -154,11 +154,11 @@ Axiom PermissionType : go_type.
 
 Axiom Permission : go_type.
 
-Axiom PermRead : expr.
+Axiom PermRead : val.
 
-Axiom PermWrite : expr.
+Axiom PermWrite : val.
 
-Axiom PermReadWrite : expr.
+Axiom PermReadWrite : val.
 
 Axiom UserAddOptions : go_type.
 
@@ -255,13 +255,13 @@ Axiom CompareTarget : go_type.
 
 Axiom CompareResult : go_type.
 
-Axiom CompareVersion : expr.
+Axiom CompareVersion : val.
 
-Axiom CompareCreated : expr.
+Axiom CompareCreated : val.
 
-Axiom CompareModified : expr.
+Axiom CompareModified : val.
 
-Axiom CompareValue : expr.
+Axiom CompareValue : val.
 
 Definition Cmp : go_type := etcdserverpb.Compare.
 
@@ -341,11 +341,11 @@ Axiom LeaseStatus : go_type.
 
 Axiom LeaseLeasesResponse : go_type.
 
-Axiom defaultTTL : expr.
+Axiom defaultTTL : val.
 
-Definition NoLease : expr := #(W64 0).
+Definition NoLease : val := #(W64 0).
 
-Axiom retryConnWait : expr.
+Axiom retryConnWait : val.
 
 Definition LeaseResponseChSize : go_string := "go.etcd.io/etcd/client/v3.LeaseResponseChSize"%go.
 
@@ -387,11 +387,11 @@ Axiom DowngradeResponse : go_type.
 
 Axiom DowngradeAction : go_type.
 
-Axiom DowngradeValidate : expr.
+Axiom DowngradeValidate : val.
 
-Axiom DowngradeEnable : expr.
+Axiom DowngradeEnable : val.
 
-Axiom DowngradeCancel : expr.
+Axiom DowngradeCancel : val.
 
 Axiom Maintenance : go_type.
 
@@ -407,13 +407,13 @@ Axiom snapshotReadCloser : go_type.
 
 Definition opType : go_type := intT.
 
-Definition tRange : expr := #(W64 1).
+Definition tRange : val := #(W64 1).
 
-Definition tPut : expr := #(W64 2).
+Definition tPut : val := #(W64 2).
 
-Definition tDeleteRange : expr := #(W64 3).
+Definition tDeleteRange : val := #(W64 3).
 
-Definition tTxn : expr := #(W64 4).
+Definition tTxn : val := #(W64 4).
 
 Definition noPrefixEnd : go_string := "go.etcd.io/etcd/client/v3.noPrefixEnd"%go.
 
@@ -1234,11 +1234,11 @@ Definition WithRevⁱᵐᵖˡ : val :=
 
 Definition WithSort : go_string := "go.etcd.io/etcd/client/v3.WithSort"%go.
 
-Definition SortByKey : expr := #(W64 0).
+Definition SortByKey : val := #(W64 0).
 
-Definition SortAscend : expr := #(W64 1).
+Definition SortAscend : val := #(W64 1).
 
-Definition SortNone : expr := #(W64 0).
+Definition SortNone : val := #(W64 0).
 
 (* WithSort specifies the ordering in 'Get' request. It requires
    'WithRange' and/or 'WithPrefix' to be specified too.
@@ -1456,7 +1456,7 @@ Definition WithFirstCreate : go_string := "go.etcd.io/etcd/client/v3.WithFirstCr
 
 Definition withTop : go_string := "go.etcd.io/etcd/client/v3.withTop"%go.
 
-Definition SortByCreateRevision : expr := #(W64 2).
+Definition SortByCreateRevision : val := #(W64 2).
 
 (* WithFirstCreate gets the key with the oldest creation revision in the request range.
 
@@ -1469,7 +1469,7 @@ Definition WithFirstCreateⁱᵐᵖˡ : val :=
 
 Definition WithLastCreate : go_string := "go.etcd.io/etcd/client/v3.WithLastCreate"%go.
 
-Definition SortDescend : expr := #(W64 2).
+Definition SortDescend : val := #(W64 2).
 
 (* WithLastCreate gets the key with the latest creation revision in the request range.
 
@@ -1504,7 +1504,7 @@ Definition WithLastKeyⁱᵐᵖˡ : val :=
 
 Definition WithFirstRev : go_string := "go.etcd.io/etcd/client/v3.WithFirstRev"%go.
 
-Definition SortByModRevision : expr := #(W64 3).
+Definition SortByModRevision : val := #(W64 3).
 
 (* WithFirstRev gets the key with the oldest modification revision in the request range.
 
@@ -1743,9 +1743,9 @@ Axiom MaxLeaseTTL : Z.
 
 Axiom retryPolicy : go_type.
 
-Axiom repeatable : expr.
+Axiom repeatable : val.
 
-Axiom nonRepeatable : expr.
+Axiom nonRepeatable : val.
 
 Definition isSafeRetryImmutableRPC : go_string := "go.etcd.io/etcd/client/v3.isSafeRetryImmutableRPC"%go.
 
@@ -1803,9 +1803,9 @@ Definition filterCallOptions : go_string := "go.etcd.io/etcd/client/v3.filterCal
 
 Definition backoffLinearWithJitter : go_string := "go.etcd.io/etcd/client/v3.backoffLinearWithJitter"%go.
 
-Definition SortByVersion : expr := #(W64 1).
+Definition SortByVersion : val := #(W64 1).
 
-Definition SortByValue : expr := #(W64 4).
+Definition SortByValue : val := #(W64 4).
 
 Definition Txn : go_type := interfaceT.
 
@@ -1813,11 +1813,11 @@ Axiom txn : go_type.
 
 Definition jitterUp : go_string := "go.etcd.io/etcd/client/v3.jitterUp"%go.
 
-Definition EventTypeDelete : expr := #(W32 1).
+Definition EventTypeDelete : val := #(W32 1).
 
-Axiom EventTypePut : expr.
+Axiom EventTypePut : val.
 
-Axiom closeSendErrTimeout : expr.
+Axiom closeSendErrTimeout : val.
 
 Axiom AutoWatchID : Z.
 

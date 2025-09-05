@@ -34,15 +34,15 @@ Axiom Type' : go_type.
 
 Axiom Kind : go_type.
 
-Axiom Ptr : expr.
+Axiom Ptr : val.
 
-Axiom Interface : expr.
+Axiom Interface : val.
 
-Axiom Slice : expr.
+Axiom Slice : val.
 
-Axiom String : expr.
+Axiom String : val.
 
-Axiom Struct : expr.
+Axiom Struct : val.
 
 Axiom nameOff : go_type.
 
@@ -100,21 +100,21 @@ Axiom flag : go_type.
 
 Axiom flagKindWidth : Z.
 
-Axiom flagKindMask : expr.
+Axiom flagKindMask : val.
 
-Axiom flagStickyRO : expr.
+Axiom flagStickyRO : val.
 
-Axiom flagEmbedRO : expr.
+Axiom flagEmbedRO : val.
 
-Axiom flagIndir : expr.
+Axiom flagIndir : val.
 
-Axiom flagAddr : expr.
+Axiom flagAddr : val.
 
-Axiom flagMethod : expr.
+Axiom flagMethod : val.
 
 Axiom flagMethodShift : Z.
 
-Axiom flagRO : expr.
+Axiom flagRO : val.
 
 Definition packEface : go_string := "internal/reflectlite.packEface"%go.
 

@@ -25,19 +25,19 @@ Context `{ffi_syntax}.
 
 Definition Blame : go_type := uint64T.
 
-Definition BlameNone : expr := #(W64 0).
+Definition BlameNone : val := #(W64 0).
 
-Definition BlameServSig : expr := #(W64 1).
+Definition BlameServSig : val := #(W64 1).
 
-Definition BlameServFull : expr := #(W64 2).
+Definition BlameServFull : val := #(W64 2).
 
-Definition BlameAdtrSig : expr := #(W64 4).
+Definition BlameAdtrSig : val := #(W64 4).
 
-Definition BlameAdtrFull : expr := #(W64 8).
+Definition BlameAdtrFull : val := #(W64 8).
 
-Definition BlameClients : expr := #(W64 16).
+Definition BlameClients : val := #(W64 16).
 
-Definition BlameUnknown : expr := #(W64 32).
+Definition BlameUnknown : val := #(W64 32).
 
 Definition CheckBlame : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckBlame"%go.
 
@@ -67,7 +67,7 @@ Definition VrfSig : go_type := structT [
   "VrfPk" :: sliceT
 ].
 
-Definition VrfSigTag : expr := #(W8 0).
+Definition VrfSigTag : val := #(W8 0).
 
 (* go: ktcore.go:40:6 *)
 Definition SignVrfⁱᵐᵖˡ : val :=
@@ -127,7 +127,7 @@ Definition LinkSig : go_type := structT [
   "Link" :: sliceT
 ].
 
-Definition LinkSigTag : expr := #(W8 1).
+Definition LinkSigTag : val := #(W8 1).
 
 (* go: ktcore.go:54:6 *)
 Definition SignLinkⁱᵐᵖˡ : val :=

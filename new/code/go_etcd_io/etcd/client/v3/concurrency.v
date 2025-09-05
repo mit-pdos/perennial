@@ -1268,13 +1268,13 @@ Definition STM : go_type := interfaceT.
 
 Definition Isolation : go_type := intT.
 
-Definition SerializableSnapshot : expr := #(W64 0).
+Definition SerializableSnapshot : val := #(W64 0).
 
-Definition Serializable : expr := #(W64 1).
+Definition Serializable : val := #(W64 1).
 
-Definition RepeatableReads : expr := #(W64 2).
+Definition RepeatableReads : val := #(W64 2).
 
-Definition ReadCommitted : expr := #(W64 3).
+Definition ReadCommitted : val := #(W64 3).
 
 Definition stmError : go_type := structT [
   "err" :: error

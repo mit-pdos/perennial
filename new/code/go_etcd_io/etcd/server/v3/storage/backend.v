@@ -174,7 +174,7 @@ Axiom bucketBuffer : go_type.
 
 Definition newBucketBuffer : go_string := "go.etcd.io/etcd/server/v3/storage/backend.newBucketBuffer"%go.
 
-Axiom EnvVerifyValueLock : expr.
+Axiom EnvVerifyValueLock : val.
 
 Definition ValidateCalledInsideApply : go_string := "go.etcd.io/etcd/server/v3/storage/backend.ValidateCalledInsideApply"%go.
 

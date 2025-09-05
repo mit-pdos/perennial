@@ -142,11 +142,11 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
     do:  (Fork ("$go" #()));;;
     return: #()).
 
-Definition callbackStateWaiting : expr := #(W64 0).
+Definition callbackStateWaiting : val := #(W64 0).
 
-Definition callbackStateDone : expr := #(W64 1).
+Definition callbackStateDone : val := #(W64 1).
 
-Definition callbackStateAborted : expr := #(W64 2).
+Definition callbackStateAborted : val := #(W64 2).
 
 Definition Callback : go_type := structT [
   "reply" :: ptrT;
@@ -284,11 +284,11 @@ Definition MakeClientⁱᵐᵖˡ : val :=
 
 Definition Error : go_type := uint64T.
 
-Definition ErrNone : expr := #(W64 0).
+Definition ErrNone : val := #(W64 0).
 
-Definition ErrTimeout : expr := #(W64 1).
+Definition ErrTimeout : val := #(W64 1).
 
-Definition ErrDisconnect : expr := #(W64 2).
+Definition ErrDisconnect : val := #(W64 2).
 
 (* go: urpc.go:155:19 *)
 Definition Client__CallStartⁱᵐᵖˡ : val :=

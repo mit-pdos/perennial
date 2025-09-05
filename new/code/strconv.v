@@ -221,7 +221,7 @@ Definition isGraphic : go_string := "strconv.isGraphic"%go.
 
 Axiom isGraphic'init : val.
 
-Axiom fastSmalls : expr.
+Axiom fastSmalls : val.
 
 Definition FormatUint : go_string := "strconv.FormatUint"%go.
 
@@ -239,7 +239,7 @@ Axiom nSmalls : Z.
 
 Axiom smallsString : go_string.
 
-Axiom host32bit : expr.
+Axiom host32bit : val.
 
 Axiom digits : go_string.
 

@@ -17,39 +17,39 @@ Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonica
 
 Definition Code : go_type := uint32T.
 
-Axiom OK : expr.
+Axiom OK : val.
 
-Definition Canceled : expr := #(W32 1).
+Definition Canceled : val := #(W32 1).
 
-Axiom Unknown : expr.
+Axiom Unknown : val.
 
-Definition InvalidArgument : expr := #(W32 3).
+Definition InvalidArgument : val := #(W32 3).
 
-Definition DeadlineExceeded : expr := #(W32 4).
+Definition DeadlineExceeded : val := #(W32 4).
 
-Definition NotFound : expr := #(W32 5).
+Definition NotFound : val := #(W32 5).
 
-Axiom AlreadyExists : expr.
+Axiom AlreadyExists : val.
 
-Definition PermissionDenied : expr := #(W32 7).
+Definition PermissionDenied : val := #(W32 7).
 
-Definition ResourceExhausted : expr := #(W32 8).
+Definition ResourceExhausted : val := #(W32 8).
 
-Definition FailedPrecondition : expr := #(W32 9).
+Definition FailedPrecondition : val := #(W32 9).
 
-Axiom Aborted : expr.
+Axiom Aborted : val.
 
-Definition OutOfRange : expr := #(W32 11).
+Definition OutOfRange : val := #(W32 11).
 
-Axiom Unimplemented : expr.
+Axiom Unimplemented : val.
 
-Axiom Internal : expr.
+Axiom Internal : val.
 
-Definition Unavailable : expr := #(W32 14).
+Definition Unavailable : val := #(W32 14).
 
-Definition DataLoss : expr := #(W32 15).
+Definition DataLoss : val := #(W32 15).
 
-Definition Unauthenticated : expr := #(W32 16).
+Definition Unauthenticated : val := #(W32 16).
 
 Axiom _maxCode : Z.
 

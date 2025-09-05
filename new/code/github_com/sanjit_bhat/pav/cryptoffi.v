@@ -15,7 +15,7 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition HashLen : expr := #(W64 32).
+Definition HashLen : val := #(W64 32).
 
 Axiom Hasher : go_type.
 

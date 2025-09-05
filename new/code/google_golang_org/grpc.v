@@ -165,7 +165,7 @@ Axiom unaryStreamDesc'init : val.
 
 Definition invoke : go_string := "google.golang.org/grpc.invoke"%go.
 
-Axiom minConnectTimeout : expr.
+Axiom minConnectTimeout : val.
 
 Definition ErrClientConnClosing : go_string := "google.golang.org/grpc.ErrClientConnClosing"%go.
 
@@ -521,9 +521,9 @@ Axiom MaxRetryRPCBufferSizeCallOption : go_type.
 
 Axiom payloadFormat : go_type.
 
-Axiom compressionNone : expr.
+Axiom compressionNone : val.
 
-Axiom compressionMade : expr.
+Axiom compressionMade : val.
 
 Axiom streamReader : go_type.
 
@@ -583,19 +583,19 @@ Definition toRPCErr : go_string := "google.golang.org/grpc.toRPCErr"%go.
 
 Definition setCallInfoCodec : go_string := "google.golang.org/grpc.setCallInfoCodec"%go.
 
-Axiom SupportPackageIsVersion3 : expr.
+Axiom SupportPackageIsVersion3 : val.
 
-Axiom SupportPackageIsVersion4 : expr.
+Axiom SupportPackageIsVersion4 : val.
 
-Axiom SupportPackageIsVersion5 : expr.
+Axiom SupportPackageIsVersion5 : val.
 
-Axiom SupportPackageIsVersion6 : expr.
+Axiom SupportPackageIsVersion6 : val.
 
-Axiom SupportPackageIsVersion7 : expr.
+Axiom SupportPackageIsVersion7 : val.
 
-Axiom SupportPackageIsVersion8 : expr.
+Axiom SupportPackageIsVersion8 : val.
 
-Axiom SupportPackageIsVersion9 : expr.
+Axiom SupportPackageIsVersion9 : val.
 
 Axiom grpcUA : go_string.
 
@@ -767,7 +767,7 @@ Axiom atomicSemaphore : go_type.
 
 Definition newHandlerQuota : go_string := "google.golang.org/grpc.newHandlerQuota"%go.
 
-Axiom maxInt : expr.
+Axiom maxInt : val.
 
 Axiom MethodConfig : go_type.
 

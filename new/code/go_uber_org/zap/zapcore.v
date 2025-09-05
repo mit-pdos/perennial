@@ -64,7 +64,7 @@ Context `{ffi_syntax}.
 
 Axiom _defaultBufferSize : Z.
 
-Axiom _defaultFlushInterval : expr.
+Axiom _defaultFlushInterval : val.
 
 Axiom BufferedWriteSyncer : go_type.
 
@@ -178,13 +178,13 @@ Axiom CheckWriteHook : go_type.
 
 Axiom CheckWriteAction : go_type.
 
-Axiom WriteThenNoop : expr.
+Axiom WriteThenNoop : val.
 
-Axiom WriteThenGoexit : expr.
+Axiom WriteThenGoexit : val.
 
-Axiom WriteThenPanic : expr.
+Axiom WriteThenPanic : val.
 
-Axiom WriteThenFatal : expr.
+Axiom WriteThenFatal : val.
 
 Axiom CheckedEntry : go_type.
 
@@ -204,63 +204,63 @@ Definition newErrArrayElem : go_string := "go.uber.org/zap/zapcore.newErrArrayEl
 
 Definition FieldType : go_type := uint8T.
 
-Axiom UnknownType : expr.
+Axiom UnknownType : val.
 
-Axiom ArrayMarshalerType : expr.
+Axiom ArrayMarshalerType : val.
 
-Axiom ObjectMarshalerType : expr.
+Axiom ObjectMarshalerType : val.
 
-Axiom BinaryType : expr.
+Axiom BinaryType : val.
 
-Axiom BoolType : expr.
+Axiom BoolType : val.
 
-Axiom ByteStringType : expr.
+Axiom ByteStringType : val.
 
-Axiom Complex128Type : expr.
+Axiom Complex128Type : val.
 
-Axiom Complex64Type : expr.
+Axiom Complex64Type : val.
 
-Axiom DurationType : expr.
+Axiom DurationType : val.
 
-Axiom Float64Type : expr.
+Axiom Float64Type : val.
 
-Axiom Float32Type : expr.
+Axiom Float32Type : val.
 
-Axiom Int64Type : expr.
+Axiom Int64Type : val.
 
-Axiom Int32Type : expr.
+Axiom Int32Type : val.
 
-Axiom Int16Type : expr.
+Axiom Int16Type : val.
 
-Axiom Int8Type : expr.
+Axiom Int8Type : val.
 
-Axiom StringType : expr.
+Axiom StringType : val.
 
-Axiom TimeType : expr.
+Axiom TimeType : val.
 
-Axiom TimeFullType : expr.
+Axiom TimeFullType : val.
 
-Axiom Uint64Type : expr.
+Axiom Uint64Type : val.
 
-Axiom Uint32Type : expr.
+Axiom Uint32Type : val.
 
-Axiom Uint16Type : expr.
+Axiom Uint16Type : val.
 
-Axiom Uint8Type : expr.
+Axiom Uint8Type : val.
 
-Axiom UintptrType : expr.
+Axiom UintptrType : val.
 
-Axiom ReflectType : expr.
+Axiom ReflectType : val.
 
-Axiom NamespaceType : expr.
+Axiom NamespaceType : val.
 
-Axiom StringerType : expr.
+Axiom StringerType : val.
 
-Axiom ErrorType : expr.
+Axiom ErrorType : val.
 
-Axiom SkipType : expr.
+Axiom SkipType : val.
 
-Axiom InlineMarshalerType : expr.
+Axiom InlineMarshalerType : val.
 
 Definition Field : go_type := structT [
   "Key" :: stringT;
@@ -312,25 +312,25 @@ Axiom errUnmarshalNilLevel'init : val.
 
 Axiom Level : go_type.
 
-Axiom DebugLevel : expr.
+Axiom DebugLevel : val.
 
-Axiom InfoLevel : expr.
+Axiom InfoLevel : val.
 
-Axiom WarnLevel : expr.
+Axiom WarnLevel : val.
 
-Axiom ErrorLevel : expr.
+Axiom ErrorLevel : val.
 
-Axiom DPanicLevel : expr.
+Axiom DPanicLevel : val.
 
-Axiom PanicLevel : expr.
+Axiom PanicLevel : val.
 
-Axiom FatalLevel : expr.
+Axiom FatalLevel : val.
 
-Axiom _minLevel : expr.
+Axiom _minLevel : val.
 
-Axiom _maxLevel : expr.
+Axiom _maxLevel : val.
 
-Axiom InvalidLevel : expr.
+Axiom InvalidLevel : val.
 
 Definition ParseLevel : go_string := "go.uber.org/zap/zapcore.ParseLevel"%go.
 
@@ -376,7 +376,7 @@ Axiom ReflectedEncoder : go_type.
 
 Definition defaultReflectedEncoder : go_string := "go.uber.org/zap/zapcore.defaultReflectedEncoder"%go.
 
-Axiom _numLevels : expr.
+Axiom _numLevels : val.
 
 Axiom _countersPerLevel : Z.
 
@@ -390,9 +390,9 @@ Definition fnv32a : go_string := "go.uber.org/zap/zapcore.fnv32a"%go.
 
 Axiom SamplingDecision : go_type.
 
-Axiom LogDropped : expr.
+Axiom LogDropped : val.
 
-Axiom LogSampled : expr.
+Axiom LogSampled : val.
 
 Axiom optionFunc : go_type.
 

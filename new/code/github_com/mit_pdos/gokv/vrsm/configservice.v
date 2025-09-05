@@ -88,13 +88,13 @@ Definition Clerk : go_type := structT [
   "leader" :: uint64T
 ].
 
-Definition RPC_RESERVEEPOCH : expr := #(W64 0).
+Definition RPC_RESERVEEPOCH : val := #(W64 0).
 
-Definition RPC_GETCONFIG : expr := #(W64 1).
+Definition RPC_GETCONFIG : val := #(W64 1).
 
-Definition RPC_TRYWRITECONFIG : expr := #(W64 2).
+Definition RPC_TRYWRITECONFIG : val := #(W64 2).
 
-Definition RPC_GETLEASE : expr := #(W64 3).
+Definition RPC_GETLEASE : val := #(W64 3).
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.MakeClerk"%go.
 
@@ -348,7 +348,7 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
     return: (![#uint64T] "err2", ![#uint64T] "leaseExpiration")).
 
 (* 1 second *)
-Definition LeaseInterval : expr := #(W64 1000000000).
+Definition LeaseInterval : val := #(W64 1000000000).
 
 Definition state : go_type := structT [
   "epoch" :: uint64T;

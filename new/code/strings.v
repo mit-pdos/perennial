@@ -84,7 +84,7 @@ Definition makeStringFinder : go_string := "strings.makeStringFinder"%go.
 
 Definition longestCommonSuffix : go_string := "strings.longestCommonSuffix"%go.
 
-Axiom maxInt : expr.
+Axiom maxInt : val.
 
 Definition explode : go_string := "strings.explode"%go.
 

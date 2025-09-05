@@ -14,31 +14,31 @@ Section code.
 
 
 (* on-disk size *)
-Definition INODESZ : expr := #(W64 128).
+Definition INODESZ : val := #(W64 128).
 
-Definition NBITBLOCK : expr := #(W64 32768).
+Definition NBITBLOCK : val := #(W64 32768).
 
-Definition INODEBLK : expr := #(W64 32).
+Definition INODEBLK : val := #(W64 32).
 
-Definition NINODEBITMAP : expr := #(W64 1).
+Definition NINODEBITMAP : val := #(W64 1).
 
 (* space for the end position *)
-Definition HDRMETA : expr := #(W64 8).
+Definition HDRMETA : val := #(W64 8).
 
-Definition HDRADDRS : expr := #(W64 511).
+Definition HDRADDRS : val := #(W64 511).
 
 (* 2 for log header *)
-Definition LOGSIZE : expr := #(W64 513).
+Definition LOGSIZE : val := #(W64 513).
 
 Definition Inum : go_type := uint64T.
 
 Definition Bnum : go_type := uint64T.
 
-Definition NULLINUM : expr := #(W64 0).
+Definition NULLINUM : val := #(W64 0).
 
-Definition ROOTINUM : expr := #(W64 1).
+Definition ROOTINUM : val := #(W64 1).
 
-Definition NULLBNUM : expr := #(W64 0).
+Definition NULLBNUM : val := #(W64 0).
 
 Definition vars' : list (go_string * go_type) := [].
 

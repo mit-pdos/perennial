@@ -20,19 +20,19 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition emptyNodeTag : expr := #(W8 0).
+Definition emptyNodeTag : val := #(W8 0).
 
-Definition leafNodeTag : expr := #(W8 1).
+Definition leafNodeTag : val := #(W8 1).
 
-Definition innerNodeTag : expr := #(W8 2).
+Definition innerNodeTag : val := #(W8 2).
 
-Definition cutNodeTy : expr := #(W8 0).
+Definition cutNodeTy : val := #(W8 0).
 
-Definition leafNodeTy : expr := #(W8 1).
+Definition leafNodeTy : val := #(W8 1).
 
-Definition innerNodeTy : expr := #(W8 2).
+Definition innerNodeTy : val := #(W8 2).
 
-Definition maxDepth : expr := #(W64 256).
+Definition maxDepth : val := #(W64 256).
 
 Definition emptyHash : go_string := "github.com/sanjit-bhat/pav/merkle.emptyHash"%go.
 

@@ -20,25 +20,25 @@ Definition CheckDuplicateURL : go_string := "go.etcd.io/etcd/server/v3/config.Ch
 
 Axiom V2DeprecationEnum : go_type.
 
-Axiom V2Depr0NotYet : expr.
+Axiom V2Depr0NotYet : val.
 
-Axiom V2_DEPR_0_NOT_YET : expr.
+Axiom V2_DEPR_0_NOT_YET : val.
 
-Axiom V2Depr1WriteOnly : expr.
+Axiom V2Depr1WriteOnly : val.
 
-Axiom V2_DEPR_1_WRITE_ONLY : expr.
+Axiom V2_DEPR_1_WRITE_ONLY : val.
 
-Axiom V2Depr1WriteOnlyDrop : expr.
+Axiom V2Depr1WriteOnlyDrop : val.
 
-Axiom V2_DEPR_1_WRITE_ONLY_DROP : expr.
+Axiom V2_DEPR_1_WRITE_ONLY_DROP : val.
 
-Axiom V2Depr2Gone : expr.
+Axiom V2Depr2Gone : val.
 
-Axiom V2_DEPR_2_GONE : expr.
+Axiom V2_DEPR_2_GONE : val.
 
-Axiom V2DeprDefault : expr.
+Axiom V2DeprDefault : val.
 
-Axiom V2_DEPR_DEFAULT : expr.
+Axiom V2_DEPR_DEFAULT : val.
 
 Definition vars' : list (go_string * go_type) := [].
 

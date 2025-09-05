@@ -70,9 +70,9 @@ Definition labelsOnce : go_string := "testing.labelsOnce"%go.
 
 Definition predictN : go_string := "testing.predictN"%go.
 
-Axiom loopPoisonTimer : expr.
+Axiom loopPoisonTimer : val.
 
-Axiom loopPoisonMask : expr.
+Axiom loopPoisonMask : val.
 
 Axiom BenchmarkResult : go_type.
 
@@ -156,11 +156,11 @@ Axiom fuzzState : go_type.
 
 Axiom fuzzMode : go_type.
 
-Axiom seedCorpusOnly : expr.
+Axiom seedCorpusOnly : val.
 
-Axiom fuzzCoordinator : expr.
+Axiom fuzzCoordinator : val.
 
-Axiom fuzzWorker : expr.
+Axiom fuzzWorker : val.
 
 Definition runFuzzTests : go_string := "testing.runFuzzTests"%go.
 
@@ -266,7 +266,7 @@ Definition running : go_string := "testing.running"%go.
 
 Axiom chattyFlag : go_type.
 
-Axiom marker : expr.
+Axiom marker : val.
 
 Axiom chattyPrinter : go_type.
 
@@ -300,9 +300,9 @@ Definition removeAll : go_string := "testing.removeAll"%go.
 
 Axiom panicHandling : go_type.
 
-Axiom normalPanic : expr.
+Axiom normalPanic : val.
 
-Axiom recoverAndReturnPanic : expr.
+Axiom recoverAndReturnPanic : val.
 
 Definition callerName : go_string := "testing.callerName"%go.
 

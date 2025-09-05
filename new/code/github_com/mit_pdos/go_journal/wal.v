@@ -23,20 +23,20 @@ Section code.
 
 
 (* space for the end position *)
-Definition HDRMETA : expr := #(W64 8).
+Definition HDRMETA : val := #(W64 8).
 
-Definition HDRADDRS : expr := #(W64 511).
+Definition HDRADDRS : val := #(W64 511).
 
-Definition LOGSZ : expr := #(W64 511).
+Definition LOGSZ : val := #(W64 511).
 
 (* 2 for log header *)
-Definition LOGDISKBLOCKS : expr := #(W64 513).
+Definition LOGDISKBLOCKS : val := #(W64 513).
 
-Definition LOGHDR : expr := #(W64 0).
+Definition LOGHDR : val := #(W64 0).
 
-Definition LOGHDR2 : expr := #(W64 1).
+Definition LOGHDR2 : val := #(W64 1).
 
-Definition LOGSTART : expr := #(W64 2).
+Definition LOGSTART : val := #(W64 2).
 
 Definition LogPosition : go_type := uint64T.
 

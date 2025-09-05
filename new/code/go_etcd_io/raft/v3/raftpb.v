@@ -34,11 +34,11 @@ Definition ConfChangesToString : go_string := "go.etcd.io/raft/v3/raftpb.ConfCha
 
 Definition EntryType : go_type := int32T.
 
-Definition EntryNormal : expr := #(W32 0).
+Definition EntryNormal : val := #(W32 0).
 
-Definition EntryConfChange : expr := #(W32 1).
+Definition EntryConfChange : val := #(W32 1).
 
-Definition EntryConfChangeV2 : expr := #(W32 2).
+Definition EntryConfChangeV2 : val := #(W32 2).
 
 Definition EntryType_name : go_string := "go.etcd.io/raft/v3/raftpb.EntryType_name"%go.
 
@@ -50,53 +50,53 @@ Axiom EntryType_value'init : val.
 
 Definition MessageType : go_type := int32T.
 
-Definition MsgHup : expr := #(W32 0).
+Definition MsgHup : val := #(W32 0).
 
-Definition MsgBeat : expr := #(W32 1).
+Definition MsgBeat : val := #(W32 1).
 
-Definition MsgProp : expr := #(W32 2).
+Definition MsgProp : val := #(W32 2).
 
-Definition MsgApp : expr := #(W32 3).
+Definition MsgApp : val := #(W32 3).
 
-Definition MsgAppResp : expr := #(W32 4).
+Definition MsgAppResp : val := #(W32 4).
 
-Definition MsgVote : expr := #(W32 5).
+Definition MsgVote : val := #(W32 5).
 
-Definition MsgVoteResp : expr := #(W32 6).
+Definition MsgVoteResp : val := #(W32 6).
 
-Definition MsgSnap : expr := #(W32 7).
+Definition MsgSnap : val := #(W32 7).
 
-Definition MsgHeartbeat : expr := #(W32 8).
+Definition MsgHeartbeat : val := #(W32 8).
 
-Definition MsgHeartbeatResp : expr := #(W32 9).
+Definition MsgHeartbeatResp : val := #(W32 9).
 
-Definition MsgUnreachable : expr := #(W32 10).
+Definition MsgUnreachable : val := #(W32 10).
 
-Definition MsgSnapStatus : expr := #(W32 11).
+Definition MsgSnapStatus : val := #(W32 11).
 
-Definition MsgCheckQuorum : expr := #(W32 12).
+Definition MsgCheckQuorum : val := #(W32 12).
 
-Definition MsgTransferLeader : expr := #(W32 13).
+Definition MsgTransferLeader : val := #(W32 13).
 
-Definition MsgTimeoutNow : expr := #(W32 14).
+Definition MsgTimeoutNow : val := #(W32 14).
 
-Definition MsgReadIndex : expr := #(W32 15).
+Definition MsgReadIndex : val := #(W32 15).
 
-Definition MsgReadIndexResp : expr := #(W32 16).
+Definition MsgReadIndexResp : val := #(W32 16).
 
-Definition MsgPreVote : expr := #(W32 17).
+Definition MsgPreVote : val := #(W32 17).
 
-Definition MsgPreVoteResp : expr := #(W32 18).
+Definition MsgPreVoteResp : val := #(W32 18).
 
-Definition MsgStorageAppend : expr := #(W32 19).
+Definition MsgStorageAppend : val := #(W32 19).
 
-Definition MsgStorageAppendResp : expr := #(W32 20).
+Definition MsgStorageAppendResp : val := #(W32 20).
 
-Definition MsgStorageApply : expr := #(W32 21).
+Definition MsgStorageApply : val := #(W32 21).
 
-Definition MsgStorageApplyResp : expr := #(W32 22).
+Definition MsgStorageApplyResp : val := #(W32 22).
 
-Definition MsgForgetLeader : expr := #(W32 23).
+Definition MsgForgetLeader : val := #(W32 23).
 
 Definition MessageType_name : go_string := "go.etcd.io/raft/v3/raftpb.MessageType_name"%go.
 
@@ -108,11 +108,11 @@ Axiom MessageType_value'init : val.
 
 Definition ConfChangeTransition : go_type := int32T.
 
-Axiom ConfChangeTransitionAuto : expr.
+Axiom ConfChangeTransitionAuto : val.
 
-Axiom ConfChangeTransitionJointImplicit : expr.
+Axiom ConfChangeTransitionJointImplicit : val.
 
-Axiom ConfChangeTransitionJointExplicit : expr.
+Axiom ConfChangeTransitionJointExplicit : val.
 
 Definition ConfChangeTransition_name : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition_name"%go.
 
@@ -124,13 +124,13 @@ Axiom ConfChangeTransition_value'init : val.
 
 Definition ConfChangeType : go_type := int32T.
 
-Definition ConfChangeAddNode : expr := #(W32 0).
+Definition ConfChangeAddNode : val := #(W32 0).
 
-Definition ConfChangeRemoveNode : expr := #(W32 1).
+Definition ConfChangeRemoveNode : val := #(W32 1).
 
-Definition ConfChangeUpdateNode : expr := #(W32 2).
+Definition ConfChangeUpdateNode : val := #(W32 2).
 
-Definition ConfChangeAddLearnerNode : expr := #(W32 3).
+Definition ConfChangeAddLearnerNode : val := #(W32 3).
 
 Definition ConfChangeType_name : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeType_name"%go.
 

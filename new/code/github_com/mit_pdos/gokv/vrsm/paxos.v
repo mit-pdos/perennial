@@ -27,11 +27,11 @@ Module Server. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/paxos
 Section code.
 
 
-Definition RPC_APPLY_AS_FOLLOWER : expr := #(W64 0).
+Definition RPC_APPLY_AS_FOLLOWER : val := #(W64 0).
 
-Definition RPC_ENTER_NEW_EPOCH : expr := #(W64 1).
+Definition RPC_ENTER_NEW_EPOCH : val := #(W64 1).
 
-Definition RPC_BECOME_LEADER : expr := #(W64 2).
+Definition RPC_BECOME_LEADER : val := #(W64 2).
 
 Definition singleClerk : go_type := structT [
   "cl" :: ptrT
@@ -61,7 +61,7 @@ Definition enterNewEpochReply : go_type := structT [
   "state" :: sliceT
 ].
 
-Definition ETimeout : expr := #(W64 3).
+Definition ETimeout : val := #(W64 3).
 
 Definition decodeEnterNewEpochReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodeEnterNewEpochReply"%go.
 
@@ -150,13 +150,13 @@ Definition singleClerk__TryBecomeLeaderⁱᵐᵖˡ : val :=
     (method_call #(ptrT.id reconnectclient.ReconnectingClient.id) #"Call"%go (![#ptrT] (struct.field_ref #singleClerk #"cl"%go (![#ptrT] "s")))) "$a0" "$a1" "$a2" "$a3");;;
     return: #()).
 
-Definition ENone : expr := #(W64 0).
+Definition ENone : val := #(W64 0).
 
-Definition EEpochStale : expr := #(W64 1).
+Definition EEpochStale : val := #(W64 1).
 
-Definition EOutOfOrder : expr := #(W64 2).
+Definition EOutOfOrder : val := #(W64 2).
 
-Definition ENotLeader : expr := #(W64 4).
+Definition ENotLeader : val := #(W64 4).
 
 Definition applyAsFollowerArgs : go_type := structT [
   "epoch" :: uint64T;

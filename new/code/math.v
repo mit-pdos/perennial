@@ -75,35 +75,35 @@ Definition Cbrt : go_string := "math.Cbrt"%go.
 
 Definition cbrt : go_string := "math.cbrt"%go.
 
-Axiom E : expr.
+Axiom E : val.
 
-Axiom Pi : expr.
+Axiom Pi : val.
 
-Axiom Phi : expr.
+Axiom Phi : val.
 
-Axiom Sqrt2 : expr.
+Axiom Sqrt2 : val.
 
-Axiom SqrtE : expr.
+Axiom SqrtE : val.
 
-Axiom SqrtPi : expr.
+Axiom SqrtPi : val.
 
-Axiom SqrtPhi : expr.
+Axiom SqrtPhi : val.
 
-Axiom Ln2 : expr.
+Axiom Ln2 : val.
 
-Axiom Log2E : expr.
+Axiom Log2E : val.
 
-Axiom Ln10 : expr.
+Axiom Ln10 : val.
 
-Axiom Log10E : expr.
+Axiom Log10E : val.
 
-Axiom MaxFloat32 : expr.
+Axiom MaxFloat32 : val.
 
-Axiom SmallestNonzeroFloat32 : expr.
+Axiom SmallestNonzeroFloat32 : val.
 
-Axiom MaxFloat64 : expr.
+Axiom MaxFloat64 : val.
 
-Axiom SmallestNonzeroFloat64 : expr.
+Axiom SmallestNonzeroFloat64 : val.
 
 Axiom intSize : Z.
 
@@ -153,125 +153,125 @@ Definition Min : go_string := "math.Min"%go.
 
 Definition min : go_string := "math.min"%go.
 
-Axiom haveArchMax : expr.
+Axiom haveArchMax : val.
 
 Definition archMax : go_string := "math.archMax"%go.
 
-Axiom haveArchMin : expr.
+Axiom haveArchMin : val.
 
 Definition archMin : go_string := "math.archMin"%go.
 
-Axiom erx : expr.
+Axiom erx : val.
 
-Axiom efx : expr.
+Axiom efx : val.
 
-Axiom efx8 : expr.
+Axiom efx8 : val.
 
-Axiom pp0 : expr.
+Axiom pp0 : val.
 
-Axiom pp1 : expr.
+Axiom pp1 : val.
 
-Axiom pp2 : expr.
+Axiom pp2 : val.
 
-Axiom pp3 : expr.
+Axiom pp3 : val.
 
-Axiom pp4 : expr.
+Axiom pp4 : val.
 
-Axiom qq1 : expr.
+Axiom qq1 : val.
 
-Axiom qq2 : expr.
+Axiom qq2 : val.
 
-Axiom qq3 : expr.
+Axiom qq3 : val.
 
-Axiom qq4 : expr.
+Axiom qq4 : val.
 
-Axiom qq5 : expr.
+Axiom qq5 : val.
 
-Axiom pa0 : expr.
+Axiom pa0 : val.
 
-Axiom pa1 : expr.
+Axiom pa1 : val.
 
-Axiom pa2 : expr.
+Axiom pa2 : val.
 
-Axiom pa3 : expr.
+Axiom pa3 : val.
 
-Axiom pa4 : expr.
+Axiom pa4 : val.
 
-Axiom pa5 : expr.
+Axiom pa5 : val.
 
-Axiom pa6 : expr.
+Axiom pa6 : val.
 
-Axiom qa1 : expr.
+Axiom qa1 : val.
 
-Axiom qa2 : expr.
+Axiom qa2 : val.
 
-Axiom qa3 : expr.
+Axiom qa3 : val.
 
-Axiom qa4 : expr.
+Axiom qa4 : val.
 
-Axiom qa5 : expr.
+Axiom qa5 : val.
 
-Axiom qa6 : expr.
+Axiom qa6 : val.
 
-Axiom ra0 : expr.
+Axiom ra0 : val.
 
-Axiom ra1 : expr.
+Axiom ra1 : val.
 
-Axiom ra2 : expr.
+Axiom ra2 : val.
 
-Axiom ra3 : expr.
+Axiom ra3 : val.
 
-Axiom ra4 : expr.
+Axiom ra4 : val.
 
-Axiom ra5 : expr.
+Axiom ra5 : val.
 
-Axiom ra6 : expr.
+Axiom ra6 : val.
 
-Axiom ra7 : expr.
+Axiom ra7 : val.
 
-Axiom sa1 : expr.
+Axiom sa1 : val.
 
-Axiom sa2 : expr.
+Axiom sa2 : val.
 
-Axiom sa3 : expr.
+Axiom sa3 : val.
 
-Axiom sa4 : expr.
+Axiom sa4 : val.
 
-Axiom sa5 : expr.
+Axiom sa5 : val.
 
-Axiom sa6 : expr.
+Axiom sa6 : val.
 
-Axiom sa7 : expr.
+Axiom sa7 : val.
 
-Axiom sa8 : expr.
+Axiom sa8 : val.
 
-Axiom rb0 : expr.
+Axiom rb0 : val.
 
-Axiom rb1 : expr.
+Axiom rb1 : val.
 
-Axiom rb2 : expr.
+Axiom rb2 : val.
 
-Axiom rb3 : expr.
+Axiom rb3 : val.
 
-Axiom rb4 : expr.
+Axiom rb4 : val.
 
-Axiom rb5 : expr.
+Axiom rb5 : val.
 
-Axiom rb6 : expr.
+Axiom rb6 : val.
 
-Axiom sb1 : expr.
+Axiom sb1 : val.
 
-Axiom sb2 : expr.
+Axiom sb2 : val.
 
-Axiom sb3 : expr.
+Axiom sb3 : val.
 
-Axiom sb4 : expr.
+Axiom sb4 : val.
 
-Axiom sb5 : expr.
+Axiom sb5 : val.
 
-Axiom sb6 : expr.
+Axiom sb6 : val.
 
-Axiom sb7 : expr.
+Axiom sb7 : val.
 
 Definition Erf : go_string := "math.Erf"%go.
 
@@ -281,101 +281,101 @@ Definition Erfc : go_string := "math.Erfc"%go.
 
 Definition erfc : go_string := "math.erfc"%go.
 
-Axiom a0 : expr.
+Axiom a0 : val.
 
-Axiom a1 : expr.
+Axiom a1 : val.
 
-Axiom a2 : expr.
+Axiom a2 : val.
 
-Axiom a3 : expr.
+Axiom a3 : val.
 
-Axiom a4 : expr.
+Axiom a4 : val.
 
-Axiom a5 : expr.
+Axiom a5 : val.
 
-Axiom a6 : expr.
+Axiom a6 : val.
 
-Axiom a7 : expr.
+Axiom a7 : val.
 
-Axiom b0 : expr.
+Axiom b0 : val.
 
-Axiom b1 : expr.
+Axiom b1 : val.
 
-Axiom b2 : expr.
+Axiom b2 : val.
 
-Axiom b3 : expr.
+Axiom b3 : val.
 
-Axiom b4 : expr.
+Axiom b4 : val.
 
-Axiom b5 : expr.
+Axiom b5 : val.
 
-Axiom b6 : expr.
+Axiom b6 : val.
 
-Axiom b7 : expr.
+Axiom b7 : val.
 
-Axiom c0 : expr.
+Axiom c0 : val.
 
-Axiom c1 : expr.
+Axiom c1 : val.
 
-Axiom c2 : expr.
+Axiom c2 : val.
 
-Axiom c3 : expr.
+Axiom c3 : val.
 
-Axiom c4 : expr.
+Axiom c4 : val.
 
-Axiom c5 : expr.
+Axiom c5 : val.
 
-Axiom c6 : expr.
+Axiom c6 : val.
 
-Axiom c7 : expr.
+Axiom c7 : val.
 
-Axiom d0 : expr.
+Axiom d0 : val.
 
-Axiom d1 : expr.
+Axiom d1 : val.
 
-Axiom d2 : expr.
+Axiom d2 : val.
 
-Axiom d3 : expr.
+Axiom d3 : val.
 
-Axiom d4 : expr.
+Axiom d4 : val.
 
-Axiom d5 : expr.
+Axiom d5 : val.
 
-Axiom d6 : expr.
+Axiom d6 : val.
 
-Axiom d7 : expr.
+Axiom d7 : val.
 
-Axiom e0 : expr.
+Axiom e0 : val.
 
-Axiom e1 : expr.
+Axiom e1 : val.
 
-Axiom e2 : expr.
+Axiom e2 : val.
 
-Axiom e3 : expr.
+Axiom e3 : val.
 
-Axiom e4 : expr.
+Axiom e4 : val.
 
-Axiom e5 : expr.
+Axiom e5 : val.
 
-Axiom e6 : expr.
+Axiom e6 : val.
 
-Axiom e7 : expr.
+Axiom e7 : val.
 
-Axiom f0 : expr.
+Axiom f0 : val.
 
-Axiom f1 : expr.
+Axiom f1 : val.
 
-Axiom f2 : expr.
+Axiom f2 : val.
 
-Axiom f3 : expr.
+Axiom f3 : val.
 
-Axiom f4 : expr.
+Axiom f4 : val.
 
-Axiom f5 : expr.
+Axiom f5 : val.
 
-Axiom f6 : expr.
+Axiom f6 : val.
 
-Axiom f7 : expr.
+Axiom f7 : val.
 
 Definition Erfinv : go_string := "math.Erfinv"%go.
 
@@ -391,7 +391,7 @@ Definition exp2 : go_string := "math.exp2"%go.
 
 Definition expmulti : go_string := "math.expmulti"%go.
 
-Axiom haveArchExp2 : expr.
+Axiom haveArchExp2 : val.
 
 Definition archExp2 : go_string := "math.archExp2"%go.
 
@@ -399,7 +399,7 @@ Definition useFMA : go_string := "math.useFMA"%go.
 
 Axiom useFMA'init : val.
 
-Axiom haveArchExp : expr.
+Axiom haveArchExp : val.
 
 Definition archExp : go_string := "math.archExp"%go.
 
@@ -423,15 +423,15 @@ Definition Round : go_string := "math.Round"%go.
 
 Definition RoundToEven : go_string := "math.RoundToEven"%go.
 
-Axiom haveArchFloor : expr.
+Axiom haveArchFloor : val.
 
 Definition archFloor : go_string := "math.archFloor"%go.
 
-Axiom haveArchCeil : expr.
+Axiom haveArchCeil : val.
 
 Definition archCeil : go_string := "math.archCeil"%go.
 
-Axiom haveArchTrunc : expr.
+Axiom haveArchTrunc : val.
 
 Definition archTrunc : go_string := "math.archTrunc"%go.
 
@@ -477,7 +477,7 @@ Definition Hypot : go_string := "math.Hypot"%go.
 
 Definition hypot : go_string := "math.hypot"%go.
 
-Axiom haveArchHypot : expr.
+Axiom haveArchHypot : val.
 
 Definition archHypot : go_string := "math.archHypot"%go.
 
@@ -681,7 +681,7 @@ Definition Log1p : go_string := "math.Log1p"%go.
 
 Definition log1p : go_string := "math.log1p"%go.
 
-Axiom haveArchLog : expr.
+Axiom haveArchLog : val.
 
 Definition archLog : go_string := "math.archLog"%go.
 
@@ -699,7 +699,7 @@ Definition Modf : go_string := "math.Modf"%go.
 
 Definition modf : go_string := "math.modf"%go.
 
-Axiom haveArchModf : expr.
+Axiom haveArchModf : val.
 
 Definition archModf : go_string := "math.archModf"%go.
 
@@ -763,103 +763,103 @@ Definition Sqrt : go_string := "math.Sqrt"%go.
 
 Definition sqrt : go_string := "math.sqrt"%go.
 
-Axiom haveArchAcos : expr.
+Axiom haveArchAcos : val.
 
 Definition archAcos : go_string := "math.archAcos"%go.
 
-Axiom haveArchAcosh : expr.
+Axiom haveArchAcosh : val.
 
 Definition archAcosh : go_string := "math.archAcosh"%go.
 
-Axiom haveArchAsin : expr.
+Axiom haveArchAsin : val.
 
 Definition archAsin : go_string := "math.archAsin"%go.
 
-Axiom haveArchAsinh : expr.
+Axiom haveArchAsinh : val.
 
 Definition archAsinh : go_string := "math.archAsinh"%go.
 
-Axiom haveArchAtan : expr.
+Axiom haveArchAtan : val.
 
 Definition archAtan : go_string := "math.archAtan"%go.
 
-Axiom haveArchAtan2 : expr.
+Axiom haveArchAtan2 : val.
 
 Definition archAtan2 : go_string := "math.archAtan2"%go.
 
-Axiom haveArchAtanh : expr.
+Axiom haveArchAtanh : val.
 
 Definition archAtanh : go_string := "math.archAtanh"%go.
 
-Axiom haveArchCbrt : expr.
+Axiom haveArchCbrt : val.
 
 Definition archCbrt : go_string := "math.archCbrt"%go.
 
-Axiom haveArchCos : expr.
+Axiom haveArchCos : val.
 
 Definition archCos : go_string := "math.archCos"%go.
 
-Axiom haveArchCosh : expr.
+Axiom haveArchCosh : val.
 
 Definition archCosh : go_string := "math.archCosh"%go.
 
-Axiom haveArchErf : expr.
+Axiom haveArchErf : val.
 
 Definition archErf : go_string := "math.archErf"%go.
 
-Axiom haveArchErfc : expr.
+Axiom haveArchErfc : val.
 
 Definition archErfc : go_string := "math.archErfc"%go.
 
-Axiom haveArchExpm1 : expr.
+Axiom haveArchExpm1 : val.
 
 Definition archExpm1 : go_string := "math.archExpm1"%go.
 
-Axiom haveArchFrexp : expr.
+Axiom haveArchFrexp : val.
 
 Definition archFrexp : go_string := "math.archFrexp"%go.
 
-Axiom haveArchLdexp : expr.
+Axiom haveArchLdexp : val.
 
 Definition archLdexp : go_string := "math.archLdexp"%go.
 
-Axiom haveArchLog10 : expr.
+Axiom haveArchLog10 : val.
 
 Definition archLog10 : go_string := "math.archLog10"%go.
 
-Axiom haveArchLog2 : expr.
+Axiom haveArchLog2 : val.
 
 Definition archLog2 : go_string := "math.archLog2"%go.
 
-Axiom haveArchLog1p : expr.
+Axiom haveArchLog1p : val.
 
 Definition archLog1p : go_string := "math.archLog1p"%go.
 
-Axiom haveArchMod : expr.
+Axiom haveArchMod : val.
 
 Definition archMod : go_string := "math.archMod"%go.
 
-Axiom haveArchPow : expr.
+Axiom haveArchPow : val.
 
 Definition archPow : go_string := "math.archPow"%go.
 
-Axiom haveArchRemainder : expr.
+Axiom haveArchRemainder : val.
 
 Definition archRemainder : go_string := "math.archRemainder"%go.
 
-Axiom haveArchSin : expr.
+Axiom haveArchSin : val.
 
 Definition archSin : go_string := "math.archSin"%go.
 
-Axiom haveArchSinh : expr.
+Axiom haveArchSinh : val.
 
 Definition archSinh : go_string := "math.archSinh"%go.
 
-Axiom haveArchTan : expr.
+Axiom haveArchTan : val.
 
 Definition archTan : go_string := "math.archTan"%go.
 
-Axiom haveArchTanh : expr.
+Axiom haveArchTanh : val.
 
 Definition archTanh : go_string := "math.archTanh"%go.
 

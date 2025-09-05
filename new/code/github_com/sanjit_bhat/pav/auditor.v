@@ -344,9 +344,9 @@ Definition getNextDigⁱᵐᵖˡ : val :=
       do:  ("dig" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "dig", ![#boolT] "err")).
 
-Definition UpdateRpc : expr := #(W64 0).
+Definition UpdateRpc : val := #(W64 0).
 
-Definition GetRpc : expr := #(W64 1).
+Definition GetRpc : val := #(W64 1).
 
 Definition NewRpcAuditor : go_string := "github.com/sanjit-bhat/pav/auditor.NewRpcAuditor"%go.
 

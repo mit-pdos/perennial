@@ -210,7 +210,7 @@ Axiom lowerhex : go_string.
 
 Axiom runeSelf : Z.
 
-Axiom runeError : expr.
+Axiom runeError : val.
 
 Definition quote : go_string := "time.quote"%go.
 
@@ -311,57 +311,88 @@ Definition NewTicker : go_string := "time.NewTicker"%go.
 
 Definition Tick : go_string := "time.Tick"%go.
 
-Axiom hasMonotonic : Z.
+Definition hasMonotonic : Z := 9223372036854775808.
 
-Axiom maxWall : expr.
+Axiom maxWall : val.
 
-Axiom minWall : expr.
+Axiom minWall : val.
 
-Axiom nsecMask : Z.
+Definition nsecMask : Z := 1073741823.
 
 Axiom nsecShift : Z.
 
+(* nsec returns the time's nanoseconds.
+
+   go: time.go:176:16 *)
+Definition Time__nsecⁱᵐᵖˡ : val :=
+  λ: "t" <>,
+    exception_do (let: "t" := (mem.alloc "t") in
+    return: (u_to_w32 ((![#uint64T] (struct.field_ref #Time #"wall"%go (![#ptrT] "t"))) `and` #(W64 nsecMask)))).
+
+Definition wallToInternal : val := #(W64 59453308800).
+
+(* sec returns the time's seconds since Jan 1 year 1.
+
+   go: time.go:181:16 *)
+Definition Time__secⁱᵐᵖˡ : val :=
+  λ: "t" <>,
+    exception_do (let: "t" := (mem.alloc "t") in
+    (if: ((![#uint64T] (struct.field_ref #Time #"wall"%go (![#ptrT] "t"))) `and` #(W64 hasMonotonic)) ≠ #(W64 0)
+    then return: (wallToInternal + (u_to_w64 (((![#uint64T] (struct.field_ref #Time #"wall"%go (![#ptrT] "t"))) ≪ #(W64 1)) ≫ #(W64 (nsecShift + 1)))))
+    else do:  #());;;
+    return: (![#int64T] (struct.field_ref #Time #"ext"%go (![#ptrT] "t")))).
+
+Axiom internalToUnix : val.
+
+(* unixSec returns the time's seconds since Jan 1 1970 (Unix time).
+
+   go: time.go:189:16 *)
+Definition Time__unixSecⁱᵐᵖˡ : val :=
+  λ: "t" <>,
+    exception_do (let: "t" := (mem.alloc "t") in
+    return: (((method_call #(ptrT.id Time.id) #"sec"%go (![#ptrT] "t")) #()) + internalToUnix)).
+
 Axiom Month : go_type.
 
-Axiom January : expr.
+Axiom January : val.
 
-Axiom February : expr.
+Axiom February : val.
 
-Axiom March : expr.
+Axiom March : val.
 
-Axiom April : expr.
+Axiom April : val.
 
-Axiom May : expr.
+Axiom May : val.
 
-Axiom June : expr.
+Axiom June : val.
 
-Axiom July : expr.
+Axiom July : val.
 
-Axiom August : expr.
+Axiom August : val.
 
-Axiom September : expr.
+Axiom September : val.
 
-Axiom October : expr.
+Axiom October : val.
 
-Axiom November : expr.
+Axiom November : val.
 
-Axiom December : expr.
+Axiom December : val.
 
 Axiom Weekday : go_type.
 
-Axiom Sunday : expr.
+Axiom Sunday : val.
 
-Axiom Monday : expr.
+Axiom Monday : val.
 
-Axiom Tuesday : expr.
+Axiom Tuesday : val.
 
-Axiom Wednesday : expr.
+Axiom Wednesday : val.
 
-Axiom Thursday : expr.
+Axiom Thursday : val.
 
-Axiom Friday : expr.
+Axiom Friday : val.
 
-Axiom Saturday : expr.
+Axiom Saturday : val.
 
 Axiom secondsPerMinute : Z.
 
@@ -379,19 +410,15 @@ Axiom absoluteYears : Z.
 
 Axiom internalYear : Z.
 
-Axiom absoluteToInternal : expr.
+Axiom absoluteToInternal : val.
 
-Axiom internalToAbsolute : expr.
+Axiom internalToAbsolute : val.
 
-Axiom unixToInternal : expr.
+Axiom unixToInternal : val.
 
-Axiom internalToUnix : expr.
+Axiom absoluteToUnix : val.
 
-Axiom absoluteToUnix : expr.
-
-Axiom unixToAbsolute : expr.
-
-Axiom wallToInternal : expr.
+Axiom unixToAbsolute : val.
 
 Axiom absSeconds : go_type.
 
@@ -413,21 +440,21 @@ Definition dateToAbsDays : go_string := "time.dateToAbsDays"%go.
 
 Definition Duration : go_type := int64T.
 
-Axiom minDuration : expr.
+Axiom minDuration : val.
 
-Axiom maxDuration : expr.
+Axiom maxDuration : val.
 
-Definition Nanosecond : expr := #(W64 1).
+Definition Nanosecond : val := #(W64 1).
 
-Definition Microsecond : expr := #(W64 1000).
+Definition Microsecond : val := #(W64 1000).
 
-Definition Millisecond : expr := #(W64 1000000).
+Definition Millisecond : val := #(W64 1000000).
 
-Definition Second : expr := #(W64 1000000000).
+Definition Second : val := #(W64 1000000000).
 
-Axiom Minute : expr.
+Axiom Minute : val.
 
-Axiom Hour : expr.
+Axiom Hour : val.
 
 Definition fmtFrac : go_string := "time.fmtFrac"%go.
 
@@ -459,9 +486,22 @@ Definition Now : go_string := "time.Now"%go.
 
 Definition unixTime : go_string := "time.unixTime"%go.
 
-Axiom timeBinaryVersionV1 : expr.
+(* UnixNano returns t as a Unix time, the number of nanoseconds elapsed
+   since January 1, 1970 UTC. The result is undefined if the Unix time
+   in nanoseconds cannot be represented by an int64 (a date before the year
+   1678 or after 2262). Note that this means the result of calling UnixNano
+   on the zero Time is undefined. The result does not depend on the
+   location associated with t.
 
-Axiom timeBinaryVersionV2 : expr.
+   go: time.go:1453:15 *)
+Definition Time__UnixNanoⁱᵐᵖˡ : val :=
+  λ: "t" <>,
+    exception_do (let: "t" := (mem.alloc "t") in
+    return: ((((method_call #(ptrT.id Time.id) #"unixSec"%go "t") #()) * #(W64 1000000000)) + (s_to_w64 ((method_call #(ptrT.id Time.id) #"nsec"%go "t") #())))).
+
+Axiom timeBinaryVersionV1 : val.
+
+Axiom timeBinaryVersionV2 : val.
 
 Definition Unix : go_string := "time.Unix"%go.
 
@@ -525,11 +565,11 @@ Definition tzsetOffset : go_string := "time.tzsetOffset"%go.
 
 Axiom ruleKind : go_type.
 
-Axiom ruleJulian : expr.
+Axiom ruleJulian : val.
 
-Axiom ruleDOY : expr.
+Axiom ruleDOY : val.
 
-Axiom ruleMonthWeekDay : expr.
+Axiom ruleMonthWeekDay : val.
 
 Axiom rule : go_type.
 
@@ -873,8 +913,6 @@ Axiom Time__UnixMicroⁱᵐᵖˡ : val.
 
 Axiom Time__UnixMilliⁱᵐᵖˡ : val.
 
-Axiom Time__UnixNanoⁱᵐᵖˡ : val.
-
 Axiom Time__UnmarshalBinaryⁱᵐᵖˡ : val.
 
 Axiom Time__UnmarshalJSONⁱᵐᵖˡ : val.
@@ -907,17 +945,11 @@ Axiom Time__locabsⁱᵐᵖˡ : val.
 
 Axiom Time__monoⁱᵐᵖˡ : val.
 
-Axiom Time__nsecⁱᵐᵖˡ : val.
-
-Axiom Time__secⁱᵐᵖˡ : val.
-
 Axiom Time__setLocⁱᵐᵖˡ : val.
 
 Axiom Time__setMonoⁱᵐᵖˡ : val.
 
 Axiom Time__stripMonoⁱᵐᵖˡ : val.
-
-Axiom Time__unixSecⁱᵐᵖˡ : val.
 
 Axiom Month__Stringⁱᵐᵖˡ : val.
 
@@ -993,7 +1025,9 @@ Axiom dataIO__readⁱᵐᵖˡ : val.
 
 Axiom dataIO__restⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(ParseError.id, []); (ptrT.id ParseError.id, [("Error"%go, ParseError__Errorⁱᵐᵖˡ)]); (Timer.id, []); (ptrT.id Timer.id, [("Reset"%go, Timer__Resetⁱᵐᵖˡ); ("Stop"%go, Timer__Stopⁱᵐᵖˡ)]); (Ticker.id, []); (ptrT.id Ticker.id, [("Reset"%go, Ticker__Resetⁱᵐᵖˡ); ("Stop"%go, Ticker__Stopⁱᵐᵖˡ)]); (Time.id, [("Add"%go, Time__Addⁱᵐᵖˡ); ("AddDate"%go, Time__AddDateⁱᵐᵖˡ); ("After"%go, Time__Afterⁱᵐᵖˡ); ("AppendBinary"%go, Time__AppendBinaryⁱᵐᵖˡ); ("AppendFormat"%go, Time__AppendFormatⁱᵐᵖˡ); ("AppendText"%go, Time__AppendTextⁱᵐᵖˡ); ("Before"%go, Time__Beforeⁱᵐᵖˡ); ("Clock"%go, Time__Clockⁱᵐᵖˡ); ("Compare"%go, Time__Compareⁱᵐᵖˡ); ("Date"%go, Time__Dateⁱᵐᵖˡ); ("Day"%go, Time__Dayⁱᵐᵖˡ); ("Equal"%go, Time__Equalⁱᵐᵖˡ); ("Format"%go, Time__Formatⁱᵐᵖˡ); ("GoString"%go, Time__GoStringⁱᵐᵖˡ); ("GobEncode"%go, Time__GobEncodeⁱᵐᵖˡ); ("Hour"%go, Time__Hourⁱᵐᵖˡ); ("ISOWeek"%go, Time__ISOWeekⁱᵐᵖˡ); ("In"%go, Time__Inⁱᵐᵖˡ); ("IsDST"%go, Time__IsDSTⁱᵐᵖˡ); ("IsZero"%go, Time__IsZeroⁱᵐᵖˡ); ("Local"%go, Time__Localⁱᵐᵖˡ); ("Location"%go, Time__Locationⁱᵐᵖˡ); ("MarshalBinary"%go, Time__MarshalBinaryⁱᵐᵖˡ); ("MarshalJSON"%go, Time__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Time__MarshalTextⁱᵐᵖˡ); ("Minute"%go, Time__Minuteⁱᵐᵖˡ); ("Month"%go, Time__Monthⁱᵐᵖˡ); ("Nanosecond"%go, Time__Nanosecondⁱᵐᵖˡ); ("Round"%go, Time__Roundⁱᵐᵖˡ); ("Second"%go, Time__Secondⁱᵐᵖˡ); ("String"%go, Time__Stringⁱᵐᵖˡ); ("Sub"%go, Time__Subⁱᵐᵖˡ); ("Truncate"%go, Time__Truncateⁱᵐᵖˡ); ("UTC"%go, Time__UTCⁱᵐᵖˡ); ("Unix"%go, Time__Unixⁱᵐᵖˡ); ("UnixMicro"%go, Time__UnixMicroⁱᵐᵖˡ); ("UnixMilli"%go, Time__UnixMilliⁱᵐᵖˡ); ("UnixNano"%go, Time__UnixNanoⁱᵐᵖˡ); ("Weekday"%go, Time__Weekdayⁱᵐᵖˡ); ("Year"%go, Time__Yearⁱᵐᵖˡ); ("YearDay"%go, Time__YearDayⁱᵐᵖˡ); ("Zone"%go, Time__Zoneⁱᵐᵖˡ); ("ZoneBounds"%go, Time__ZoneBoundsⁱᵐᵖˡ); ("absSec"%go, Time__absSecⁱᵐᵖˡ); ("appendFormat"%go, Time__appendFormatⁱᵐᵖˡ); ("appendFormatRFC3339"%go, Time__appendFormatRFC3339ⁱᵐᵖˡ); ("appendStrictRFC3339"%go, Time__appendStrictRFC3339ⁱᵐᵖˡ); ("appendTo"%go, Time__appendToⁱᵐᵖˡ); ("locabs"%go, Time__locabsⁱᵐᵖˡ)]); (ptrT.id Time.id, [("Add"%go, Time__Addⁱᵐᵖˡ); ("AddDate"%go, Time__AddDateⁱᵐᵖˡ); ("After"%go, Time__Afterⁱᵐᵖˡ); ("AppendBinary"%go, Time__AppendBinaryⁱᵐᵖˡ); ("AppendFormat"%go, Time__AppendFormatⁱᵐᵖˡ); ("AppendText"%go, Time__AppendTextⁱᵐᵖˡ); ("Before"%go, Time__Beforeⁱᵐᵖˡ); ("Clock"%go, Time__Clockⁱᵐᵖˡ); ("Compare"%go, Time__Compareⁱᵐᵖˡ); ("Date"%go, Time__Dateⁱᵐᵖˡ); ("Day"%go, Time__Dayⁱᵐᵖˡ); ("Equal"%go, Time__Equalⁱᵐᵖˡ); ("Format"%go, Time__Formatⁱᵐᵖˡ); ("GoString"%go, Time__GoStringⁱᵐᵖˡ); ("GobDecode"%go, Time__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Time__GobEncodeⁱᵐᵖˡ); ("Hour"%go, Time__Hourⁱᵐᵖˡ); ("ISOWeek"%go, Time__ISOWeekⁱᵐᵖˡ); ("In"%go, Time__Inⁱᵐᵖˡ); ("IsDST"%go, Time__IsDSTⁱᵐᵖˡ); ("IsZero"%go, Time__IsZeroⁱᵐᵖˡ); ("Local"%go, Time__Localⁱᵐᵖˡ); ("Location"%go, Time__Locationⁱᵐᵖˡ); ("MarshalBinary"%go, Time__MarshalBinaryⁱᵐᵖˡ); ("MarshalJSON"%go, Time__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Time__MarshalTextⁱᵐᵖˡ); ("Minute"%go, Time__Minuteⁱᵐᵖˡ); ("Month"%go, Time__Monthⁱᵐᵖˡ); ("Nanosecond"%go, Time__Nanosecondⁱᵐᵖˡ); ("Round"%go, Time__Roundⁱᵐᵖˡ); ("Second"%go, Time__Secondⁱᵐᵖˡ); ("String"%go, Time__Stringⁱᵐᵖˡ); ("Sub"%go, Time__Subⁱᵐᵖˡ); ("Truncate"%go, Time__Truncateⁱᵐᵖˡ); ("UTC"%go, Time__UTCⁱᵐᵖˡ); ("Unix"%go, Time__Unixⁱᵐᵖˡ); ("UnixMicro"%go, Time__UnixMicroⁱᵐᵖˡ); ("UnixMilli"%go, Time__UnixMilliⁱᵐᵖˡ); ("UnixNano"%go, Time__UnixNanoⁱᵐᵖˡ); ("UnmarshalBinary"%go, Time__UnmarshalBinaryⁱᵐᵖˡ); ("UnmarshalJSON"%go, Time__UnmarshalJSONⁱᵐᵖˡ); ("UnmarshalText"%go, Time__UnmarshalTextⁱᵐᵖˡ); ("Weekday"%go, Time__Weekdayⁱᵐᵖˡ); ("Year"%go, Time__Yearⁱᵐᵖˡ); ("YearDay"%go, Time__YearDayⁱᵐᵖˡ); ("Zone"%go, Time__Zoneⁱᵐᵖˡ); ("ZoneBounds"%go, Time__ZoneBoundsⁱᵐᵖˡ); ("absSec"%go, Time__absSecⁱᵐᵖˡ); ("addSec"%go, Time__addSecⁱᵐᵖˡ); ("appendFormat"%go, Time__appendFormatⁱᵐᵖˡ); ("appendFormatRFC3339"%go, Time__appendFormatRFC3339ⁱᵐᵖˡ); ("appendStrictRFC3339"%go, Time__appendStrictRFC3339ⁱᵐᵖˡ); ("appendTo"%go, Time__appendToⁱᵐᵖˡ); ("locabs"%go, Time__locabsⁱᵐᵖˡ); ("mono"%go, Time__monoⁱᵐᵖˡ); ("nsec"%go, Time__nsecⁱᵐᵖˡ); ("sec"%go, Time__secⁱᵐᵖˡ); ("setLoc"%go, Time__setLocⁱᵐᵖˡ); ("setMono"%go, Time__setMonoⁱᵐᵖˡ); ("stripMono"%go, Time__stripMonoⁱᵐᵖˡ); ("unixSec"%go, Time__unixSecⁱᵐᵖˡ)]); (Month.id, [("String"%go, Month__Stringⁱᵐᵖˡ)]); (ptrT.id Month.id, [("String"%go, Month__Stringⁱᵐᵖˡ)]); (Weekday.id, [("String"%go, Weekday__Stringⁱᵐᵖˡ)]); (ptrT.id Weekday.id, [("String"%go, Weekday__Stringⁱᵐᵖˡ)]); (absSeconds.id, [("clock"%go, absSeconds__clockⁱᵐᵖˡ); ("days"%go, absSeconds__daysⁱᵐᵖˡ)]); (ptrT.id absSeconds.id, [("clock"%go, absSeconds__clockⁱᵐᵖˡ); ("days"%go, absSeconds__daysⁱᵐᵖˡ)]); (absDays.id, [("date"%go, absDays__dateⁱᵐᵖˡ); ("split"%go, absDays__splitⁱᵐᵖˡ); ("weekday"%go, absDays__weekdayⁱᵐᵖˡ); ("yearYday"%go, absDays__yearYdayⁱᵐᵖˡ)]); (ptrT.id absDays.id, [("date"%go, absDays__dateⁱᵐᵖˡ); ("split"%go, absDays__splitⁱᵐᵖˡ); ("weekday"%go, absDays__weekdayⁱᵐᵖˡ); ("yearYday"%go, absDays__yearYdayⁱᵐᵖˡ)]); (absCentury.id, [("leap"%go, absCentury__leapⁱᵐᵖˡ); ("year"%go, absCentury__yearⁱᵐᵖˡ)]); (ptrT.id absCentury.id, [("leap"%go, absCentury__leapⁱᵐᵖˡ); ("year"%go, absCentury__yearⁱᵐᵖˡ)]); (absCyear.id, []); (ptrT.id absCyear.id, []); (absYday.id, [("janFeb"%go, absYday__janFebⁱᵐᵖˡ); ("split"%go, absYday__splitⁱᵐᵖˡ); ("yday"%go, absYday__ydayⁱᵐᵖˡ)]); (ptrT.id absYday.id, [("janFeb"%go, absYday__janFebⁱᵐᵖˡ); ("split"%go, absYday__splitⁱᵐᵖˡ); ("yday"%go, absYday__ydayⁱᵐᵖˡ)]); (absMonth.id, [("month"%go, absMonth__monthⁱᵐᵖˡ)]); (ptrT.id absMonth.id, [("month"%go, absMonth__monthⁱᵐᵖˡ)]); (absLeap.id, []); (ptrT.id absLeap.id, []); (absJanFeb.id, []); (ptrT.id absJanFeb.id, []); (Duration.id, [("Abs"%go, Duration__Absⁱᵐᵖˡ); ("Hours"%go, Duration__Hoursⁱᵐᵖˡ); ("Microseconds"%go, Duration__Microsecondsⁱᵐᵖˡ); ("Milliseconds"%go, Duration__Millisecondsⁱᵐᵖˡ); ("Minutes"%go, Duration__Minutesⁱᵐᵖˡ); ("Nanoseconds"%go, Duration__Nanosecondsⁱᵐᵖˡ); ("Round"%go, Duration__Roundⁱᵐᵖˡ); ("Seconds"%go, Duration__Secondsⁱᵐᵖˡ); ("String"%go, Duration__Stringⁱᵐᵖˡ); ("Truncate"%go, Duration__Truncateⁱᵐᵖˡ); ("format"%go, Duration__formatⁱᵐᵖˡ)]); (ptrT.id Duration.id, [("Abs"%go, Duration__Absⁱᵐᵖˡ); ("Hours"%go, Duration__Hoursⁱᵐᵖˡ); ("Microseconds"%go, Duration__Microsecondsⁱᵐᵖˡ); ("Milliseconds"%go, Duration__Millisecondsⁱᵐᵖˡ); ("Minutes"%go, Duration__Minutesⁱᵐᵖˡ); ("Nanoseconds"%go, Duration__Nanosecondsⁱᵐᵖˡ); ("Round"%go, Duration__Roundⁱᵐᵖˡ); ("Seconds"%go, Duration__Secondsⁱᵐᵖˡ); ("String"%go, Duration__Stringⁱᵐᵖˡ); ("Truncate"%go, Duration__Truncateⁱᵐᵖˡ); ("format"%go, Duration__formatⁱᵐᵖˡ)]); (Location.id, []); (ptrT.id Location.id, [("String"%go, Location__Stringⁱᵐᵖˡ); ("firstZoneUsed"%go, Location__firstZoneUsedⁱᵐᵖˡ); ("get"%go, Location__getⁱᵐᵖˡ); ("lookup"%go, Location__lookupⁱᵐᵖˡ); ("lookupFirstZone"%go, Location__lookupFirstZoneⁱᵐᵖˡ); ("lookupName"%go, Location__lookupNameⁱᵐᵖˡ)]); (zone.id, []); (ptrT.id zone.id, []); (zoneTrans.id, []); (ptrT.id zoneTrans.id, []); (ruleKind.id, []); (ptrT.id ruleKind.id, []); (rule.id, []); (ptrT.id rule.id, []); (fileSizeError.id, [("Error"%go, fileSizeError__Errorⁱᵐᵖˡ)]); (ptrT.id fileSizeError.id, [("Error"%go, fileSizeError__Errorⁱᵐᵖˡ)]); (dataIO.id, []); (ptrT.id dataIO.id, [("big4"%go, dataIO__big4ⁱᵐᵖˡ); ("big8"%go, dataIO__big8ⁱᵐᵖˡ); ("byte"%go, dataIO__byteⁱᵐᵖˡ); ("read"%go, dataIO__readⁱᵐᵖˡ); ("rest"%go, dataIO__restⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(ParseError.id, []); (ptrT.id ParseError.id, [("Error"%go, ParseError__Errorⁱᵐᵖˡ)]); (Timer.id, []); (ptrT.id Timer.id, [("Reset"%go, Timer__Resetⁱᵐᵖˡ); ("Stop"%go, Timer__Stopⁱᵐᵖˡ)]); (Ticker.id, []); (ptrT.id Ticker.id, [("Reset"%go, Ticker__Resetⁱᵐᵖˡ); ("Stop"%go, Ticker__Stopⁱᵐᵖˡ)]); (Time.id, [("Add"%go, Time__Addⁱᵐᵖˡ); ("AddDate"%go, Time__AddDateⁱᵐᵖˡ); ("After"%go, Time__Afterⁱᵐᵖˡ); ("AppendBinary"%go, Time__AppendBinaryⁱᵐᵖˡ); ("AppendFormat"%go, Time__AppendFormatⁱᵐᵖˡ); ("AppendText"%go, Time__AppendTextⁱᵐᵖˡ); ("Before"%go, Time__Beforeⁱᵐᵖˡ); ("Clock"%go, Time__Clockⁱᵐᵖˡ); ("Compare"%go, Time__Compareⁱᵐᵖˡ); ("Date"%go, Time__Dateⁱᵐᵖˡ); ("Day"%go, Time__Dayⁱᵐᵖˡ); ("Equal"%go, Time__Equalⁱᵐᵖˡ); ("Format"%go, Time__Formatⁱᵐᵖˡ); ("GoString"%go, Time__GoStringⁱᵐᵖˡ); ("GobEncode"%go, Time__GobEncodeⁱᵐᵖˡ); ("Hour"%go, Time__Hourⁱᵐᵖˡ); ("ISOWeek"%go, Time__ISOWeekⁱᵐᵖˡ); ("In"%go, Time__Inⁱᵐᵖˡ); ("IsDST"%go, Time__IsDSTⁱᵐᵖˡ); ("IsZero"%go, Time__IsZeroⁱᵐᵖˡ); ("Local"%go, Time__Localⁱᵐᵖˡ); ("Location"%go, Time__Locationⁱᵐᵖˡ); ("MarshalBinary"%go, Time__MarshalBinaryⁱᵐᵖˡ); ("MarshalJSON"%go, Time__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Time__MarshalTextⁱᵐᵖˡ); ("Minute"%go, Time__Minuteⁱᵐᵖˡ); ("Month"%go, Time__Monthⁱᵐᵖˡ); ("Nanosecond"%go, Time__Nanosecondⁱᵐᵖˡ); ("Round"%go, Time__Roundⁱᵐᵖˡ); ("Second"%go, Time__Secondⁱᵐᵖˡ); ("String"%go, Time__Stringⁱᵐᵖˡ); ("Sub"%go, Time__Subⁱᵐᵖˡ); ("Truncate"%go, Time__Truncateⁱᵐᵖˡ); ("UTC"%go, Time__UTCⁱᵐᵖˡ); ("Unix"%go, Time__Unixⁱᵐᵖˡ); ("UnixMicro"%go, Time__UnixMicroⁱᵐᵖˡ); ("UnixMilli"%go, Time__UnixMilliⁱᵐᵖˡ); ("UnixNano"%go, Time__UnixNanoⁱᵐᵖˡ); ("Weekday"%go, Time__Weekdayⁱᵐᵖˡ); ("Year"%go, Time__Yearⁱᵐᵖˡ); ("YearDay"%go, Time__YearDayⁱᵐᵖˡ); ("Zone"%go, Time__Zoneⁱᵐᵖˡ); ("ZoneBounds"%go, Time__ZoneBoundsⁱᵐᵖˡ); ("absSec"%go, Time__absSecⁱᵐᵖˡ); ("appendFormat"%go, Time__appendFormatⁱᵐᵖˡ); ("appendFormatRFC3339"%go, Time__appendFormatRFC3339ⁱᵐᵖˡ); ("appendStrictRFC3339"%go, Time__appendStrictRFC3339ⁱᵐᵖˡ); ("appendTo"%go, Time__appendToⁱᵐᵖˡ); ("locabs"%go, Time__locabsⁱᵐᵖˡ)]); (ptrT.id Time.id, [("Add"%go, Time__Addⁱᵐᵖˡ); ("AddDate"%go, Time__AddDateⁱᵐᵖˡ); ("After"%go, Time__Afterⁱᵐᵖˡ); ("AppendBinary"%go, Time__AppendBinaryⁱᵐᵖˡ); ("AppendFormat"%go, Time__AppendFormatⁱᵐᵖˡ); ("AppendText"%go, Time__AppendTextⁱᵐᵖˡ); ("Before"%go, Time__Beforeⁱᵐᵖˡ); ("Clock"%go, Time__Clockⁱᵐᵖˡ); ("Compare"%go, Time__Compareⁱᵐᵖˡ); ("Date"%go, Time__Dateⁱᵐᵖˡ); ("Day"%go, Time__Dayⁱᵐᵖˡ); ("Equal"%go, Time__Equalⁱᵐᵖˡ); ("Format"%go, Time__Formatⁱᵐᵖˡ); ("GoString"%go, Time__GoStringⁱᵐᵖˡ); ("GobDecode"%go, Time__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Time__GobEncodeⁱᵐᵖˡ); ("Hour"%go, Time__Hourⁱᵐᵖˡ); ("ISOWeek"%go, Time__ISOWeekⁱᵐᵖˡ); ("In"%go, Time__Inⁱᵐᵖˡ); ("IsDST"%go, Time__IsDSTⁱᵐᵖˡ); ("IsZero"%go, Time__IsZeroⁱᵐᵖˡ); ("Local"%go, Time__Localⁱᵐᵖˡ); ("Location"%go, Time__Locationⁱᵐᵖˡ); ("MarshalBinary"%go, Time__MarshalBinaryⁱᵐᵖˡ); ("MarshalJSON"%go, Time__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Time__MarshalTextⁱᵐᵖˡ); ("Minute"%go, Time__Minuteⁱᵐᵖˡ); ("Month"%go, Time__Monthⁱᵐᵖˡ); ("Nanosecond"%go, Time__Nanosecondⁱᵐᵖˡ); ("Round"%go, Time__Roundⁱᵐᵖˡ); ("Second"%go, Time__Secondⁱᵐᵖˡ); ("String"%go, Time__Stringⁱᵐᵖˡ); ("Sub"%go, Time__Subⁱᵐᵖˡ); ("Truncate"%go, Time__Truncateⁱᵐᵖˡ); ("UTC"%go, Time__UTCⁱᵐᵖˡ); ("Unix"%go, Time__Unixⁱᵐᵖˡ); ("UnixMicro"%go, Time__UnixMicroⁱᵐᵖˡ); ("UnixMilli"%go, Time__UnixMilliⁱᵐᵖˡ); ("UnixNano"%go, (λ: "$r",
+                 method_call #Time.id #"UnixNano"%go (![#Time] "$r")
+                 )%V); ("UnmarshalBinary"%go, Time__UnmarshalBinaryⁱᵐᵖˡ); ("UnmarshalJSON"%go, Time__UnmarshalJSONⁱᵐᵖˡ); ("UnmarshalText"%go, Time__UnmarshalTextⁱᵐᵖˡ); ("Weekday"%go, Time__Weekdayⁱᵐᵖˡ); ("Year"%go, Time__Yearⁱᵐᵖˡ); ("YearDay"%go, Time__YearDayⁱᵐᵖˡ); ("Zone"%go, Time__Zoneⁱᵐᵖˡ); ("ZoneBounds"%go, Time__ZoneBoundsⁱᵐᵖˡ); ("absSec"%go, Time__absSecⁱᵐᵖˡ); ("addSec"%go, Time__addSecⁱᵐᵖˡ); ("appendFormat"%go, Time__appendFormatⁱᵐᵖˡ); ("appendFormatRFC3339"%go, Time__appendFormatRFC3339ⁱᵐᵖˡ); ("appendStrictRFC3339"%go, Time__appendStrictRFC3339ⁱᵐᵖˡ); ("appendTo"%go, Time__appendToⁱᵐᵖˡ); ("locabs"%go, Time__locabsⁱᵐᵖˡ); ("mono"%go, Time__monoⁱᵐᵖˡ); ("nsec"%go, Time__nsecⁱᵐᵖˡ); ("sec"%go, Time__secⁱᵐᵖˡ); ("setLoc"%go, Time__setLocⁱᵐᵖˡ); ("setMono"%go, Time__setMonoⁱᵐᵖˡ); ("stripMono"%go, Time__stripMonoⁱᵐᵖˡ); ("unixSec"%go, Time__unixSecⁱᵐᵖˡ)]); (Month.id, [("String"%go, Month__Stringⁱᵐᵖˡ)]); (ptrT.id Month.id, [("String"%go, Month__Stringⁱᵐᵖˡ)]); (Weekday.id, [("String"%go, Weekday__Stringⁱᵐᵖˡ)]); (ptrT.id Weekday.id, [("String"%go, Weekday__Stringⁱᵐᵖˡ)]); (absSeconds.id, [("clock"%go, absSeconds__clockⁱᵐᵖˡ); ("days"%go, absSeconds__daysⁱᵐᵖˡ)]); (ptrT.id absSeconds.id, [("clock"%go, absSeconds__clockⁱᵐᵖˡ); ("days"%go, absSeconds__daysⁱᵐᵖˡ)]); (absDays.id, [("date"%go, absDays__dateⁱᵐᵖˡ); ("split"%go, absDays__splitⁱᵐᵖˡ); ("weekday"%go, absDays__weekdayⁱᵐᵖˡ); ("yearYday"%go, absDays__yearYdayⁱᵐᵖˡ)]); (ptrT.id absDays.id, [("date"%go, absDays__dateⁱᵐᵖˡ); ("split"%go, absDays__splitⁱᵐᵖˡ); ("weekday"%go, absDays__weekdayⁱᵐᵖˡ); ("yearYday"%go, absDays__yearYdayⁱᵐᵖˡ)]); (absCentury.id, [("leap"%go, absCentury__leapⁱᵐᵖˡ); ("year"%go, absCentury__yearⁱᵐᵖˡ)]); (ptrT.id absCentury.id, [("leap"%go, absCentury__leapⁱᵐᵖˡ); ("year"%go, absCentury__yearⁱᵐᵖˡ)]); (absCyear.id, []); (ptrT.id absCyear.id, []); (absYday.id, [("janFeb"%go, absYday__janFebⁱᵐᵖˡ); ("split"%go, absYday__splitⁱᵐᵖˡ); ("yday"%go, absYday__ydayⁱᵐᵖˡ)]); (ptrT.id absYday.id, [("janFeb"%go, absYday__janFebⁱᵐᵖˡ); ("split"%go, absYday__splitⁱᵐᵖˡ); ("yday"%go, absYday__ydayⁱᵐᵖˡ)]); (absMonth.id, [("month"%go, absMonth__monthⁱᵐᵖˡ)]); (ptrT.id absMonth.id, [("month"%go, absMonth__monthⁱᵐᵖˡ)]); (absLeap.id, []); (ptrT.id absLeap.id, []); (absJanFeb.id, []); (ptrT.id absJanFeb.id, []); (Duration.id, [("Abs"%go, Duration__Absⁱᵐᵖˡ); ("Hours"%go, Duration__Hoursⁱᵐᵖˡ); ("Microseconds"%go, Duration__Microsecondsⁱᵐᵖˡ); ("Milliseconds"%go, Duration__Millisecondsⁱᵐᵖˡ); ("Minutes"%go, Duration__Minutesⁱᵐᵖˡ); ("Nanoseconds"%go, Duration__Nanosecondsⁱᵐᵖˡ); ("Round"%go, Duration__Roundⁱᵐᵖˡ); ("Seconds"%go, Duration__Secondsⁱᵐᵖˡ); ("String"%go, Duration__Stringⁱᵐᵖˡ); ("Truncate"%go, Duration__Truncateⁱᵐᵖˡ); ("format"%go, Duration__formatⁱᵐᵖˡ)]); (ptrT.id Duration.id, [("Abs"%go, Duration__Absⁱᵐᵖˡ); ("Hours"%go, Duration__Hoursⁱᵐᵖˡ); ("Microseconds"%go, Duration__Microsecondsⁱᵐᵖˡ); ("Milliseconds"%go, Duration__Millisecondsⁱᵐᵖˡ); ("Minutes"%go, Duration__Minutesⁱᵐᵖˡ); ("Nanoseconds"%go, Duration__Nanosecondsⁱᵐᵖˡ); ("Round"%go, Duration__Roundⁱᵐᵖˡ); ("Seconds"%go, Duration__Secondsⁱᵐᵖˡ); ("String"%go, Duration__Stringⁱᵐᵖˡ); ("Truncate"%go, Duration__Truncateⁱᵐᵖˡ); ("format"%go, Duration__formatⁱᵐᵖˡ)]); (Location.id, []); (ptrT.id Location.id, [("String"%go, Location__Stringⁱᵐᵖˡ); ("firstZoneUsed"%go, Location__firstZoneUsedⁱᵐᵖˡ); ("get"%go, Location__getⁱᵐᵖˡ); ("lookup"%go, Location__lookupⁱᵐᵖˡ); ("lookupFirstZone"%go, Location__lookupFirstZoneⁱᵐᵖˡ); ("lookupName"%go, Location__lookupNameⁱᵐᵖˡ)]); (zone.id, []); (ptrT.id zone.id, []); (zoneTrans.id, []); (ptrT.id zoneTrans.id, []); (ruleKind.id, []); (ptrT.id ruleKind.id, []); (rule.id, []); (ptrT.id rule.id, []); (fileSizeError.id, [("Error"%go, fileSizeError__Errorⁱᵐᵖˡ)]); (ptrT.id fileSizeError.id, [("Error"%go, fileSizeError__Errorⁱᵐᵖˡ)]); (dataIO.id, []); (ptrT.id dataIO.id, [("big4"%go, dataIO__big4ⁱᵐᵖˡ); ("big8"%go, dataIO__big8ⁱᵐᵖˡ); ("byte"%go, dataIO__byteⁱᵐᵖˡ); ("read"%go, dataIO__readⁱᵐᵖˡ); ("rest"%go, dataIO__restⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo time.time :=
   {|

@@ -241,11 +241,11 @@ Definition KVState : go_type := structT [
   "minVnum" :: uint64T
 ].
 
-Definition OP_PUT : expr := #(W8 0).
+Definition OP_PUT : val := #(W8 0).
 
-Definition OP_GET : expr := #(W8 1).
+Definition OP_GET : val := #(W8 1).
 
-Definition OP_COND_PUT : expr := #(W8 2).
+Definition OP_COND_PUT : val := #(W8 2).
 
 (* go: server.go:35:6 *)
 Definition encodePutArgsⁱᵐᵖˡ : val :=

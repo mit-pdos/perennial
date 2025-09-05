@@ -18,19 +18,19 @@ Context `{ffi_syntax}.
 
 Definition OfferState : go_type := uint64T.
 
-Definition Buffered : expr := #(W64 0).
+Definition Buffered : val := #(W64 0).
 
-Definition Idle : expr := #(W64 1).
+Definition Idle : val := #(W64 1).
 
-Definition SndWait : expr := #(W64 2).
+Definition SndWait : val := #(W64 2).
 
-Definition RcvWait : expr := #(W64 3).
+Definition RcvWait : val := #(W64 3).
 
-Definition SndDone : expr := #(W64 4).
+Definition SndDone : val := #(W64 4).
 
-Definition RcvDone : expr := #(W64 5).
+Definition RcvDone : val := #(W64 5).
 
-Definition Closed : expr := #(W64 6).
+Definition Closed : val := #(W64 6).
 
 Definition Channel : val :=
   λ: "T", type.structT [
@@ -388,10 +388,10 @@ Definition Channel__Capⁱᵐᵖˡ : val :=
 Definition SelectDir : go_type := uint64T.
 
 (* case Chan <- Send *)
-Definition SelectSend : expr := #(W64 0).
+Definition SelectSend : val := #(W64 0).
 
 (* case <-Chan: *)
-Definition SelectRecv : expr := #(W64 1).
+Definition SelectRecv : val := #(W64 1).
 
 Definition SelectCase : val :=
   λ: "T", type.structT [

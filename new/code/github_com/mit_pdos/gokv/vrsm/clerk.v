@@ -18,7 +18,7 @@ Section code.
 
 
 (* 1 second *)
-Definition PreferenceRefreshTime : expr := #(W64 1000000000).
+Definition PreferenceRefreshTime : val := #(W64 1000000000).
 
 Definition Clerk : go_type := structT [
   "confCk" :: ptrT;

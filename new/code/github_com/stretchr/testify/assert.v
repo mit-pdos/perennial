@@ -29,11 +29,11 @@ Axiom CompareType : go_type.
 
 Axiom compareResult : go_type.
 
-Axiom compareLess : expr.
+Axiom compareLess : val.
 
-Axiom compareEqual : expr.
+Axiom compareEqual : val.
 
-Axiom compareGreater : expr.
+Axiom compareGreater : val.
 
 Definition intType : go_string := "github.com/stretchr/testify/assert.intType"%go.
 

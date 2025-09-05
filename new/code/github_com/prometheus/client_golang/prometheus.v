@@ -254,7 +254,7 @@ Definition DefBuckets : go_string := "github.com/prometheus/client_golang/promet
 
 Axiom DefBuckets'init : val.
 
-Axiom DefNativeHistogramZeroThreshold : expr.
+Axiom DefNativeHistogramZeroThreshold : val.
 
 Axiom NativeHistogramZeroThresholdZero : Z.
 
@@ -466,7 +466,7 @@ Definition errQuantileLabelNotAllowed : go_string := "github.com/prometheus/clie
 
 Axiom errQuantileLabelNotAllowed'init : val.
 
-Axiom DefMaxAge : expr.
+Axiom DefMaxAge : val.
 
 Axiom DefAgeBuckets : Z.
 
@@ -514,11 +514,11 @@ Definition NewUntypedFunc : go_string := "github.com/prometheus/client_golang/pr
 
 Axiom ValueType : go_type.
 
-Axiom CounterValue : expr.
+Axiom CounterValue : val.
 
-Axiom GaugeValue : expr.
+Axiom GaugeValue : val.
 
-Axiom UntypedValue : expr.
+Axiom UntypedValue : val.
 
 Definition CounterMetricTypePtr : go_string := "github.com/prometheus/client_golang/prometheus.CounterMetricTypePtr"%go.
 

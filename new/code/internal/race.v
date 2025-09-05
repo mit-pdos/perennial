@@ -9,7 +9,7 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition Enabled : expr := #false.
+Definition Enabled : val := #false.
 
 Definition Acquire : go_string := "internal/race.Acquire"%go.
 

@@ -274,11 +274,11 @@ Definition NewLoggablePutRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserv
 
 Axiom AlarmType : go_type.
 
-Axiom AlarmType_NONE : expr.
+Axiom AlarmType_NONE : val.
 
-Axiom AlarmType_NOSPACE : expr.
+Axiom AlarmType_NOSPACE : val.
 
-Axiom AlarmType_CORRUPT : expr.
+Axiom AlarmType_CORRUPT : val.
 
 Definition AlarmType_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType_name"%go.
 
@@ -290,11 +290,11 @@ Axiom AlarmType_value'init : val.
 
 Definition RangeRequest_SortOrder : go_type := int32T.
 
-Definition RangeRequest_NONE : expr := #(W32 0).
+Definition RangeRequest_NONE : val := #(W32 0).
 
-Definition RangeRequest_ASCEND : expr := #(W32 1).
+Definition RangeRequest_ASCEND : val := #(W32 1).
 
-Definition RangeRequest_DESCEND : expr := #(W32 2).
+Definition RangeRequest_DESCEND : val := #(W32 2).
 
 Definition RangeRequest_SortOrder_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortOrder_name"%go.
 
@@ -311,15 +311,15 @@ Definition RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ : val :=
 
 Definition RangeRequest_SortTarget : go_type := int32T.
 
-Definition RangeRequest_KEY : expr := #(W32 0).
+Definition RangeRequest_KEY : val := #(W32 0).
 
-Definition RangeRequest_VERSION : expr := #(W32 1).
+Definition RangeRequest_VERSION : val := #(W32 1).
 
-Definition RangeRequest_CREATE : expr := #(W32 2).
+Definition RangeRequest_CREATE : val := #(W32 2).
 
-Definition RangeRequest_MOD : expr := #(W32 3).
+Definition RangeRequest_MOD : val := #(W32 3).
 
-Definition RangeRequest_VALUE : expr := #(W32 4).
+Definition RangeRequest_VALUE : val := #(W32 4).
 
 Definition RangeRequest_SortTarget_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortTarget_name"%go.
 
@@ -334,13 +334,13 @@ Definition RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ : val :=
 
 Definition Compare_CompareResult : go_type := int32T.
 
-Definition Compare_EQUAL : expr := #(W32 0).
+Definition Compare_EQUAL : val := #(W32 0).
 
-Definition Compare_GREATER : expr := #(W32 1).
+Definition Compare_GREATER : val := #(W32 1).
 
-Definition Compare_LESS : expr := #(W32 2).
+Definition Compare_LESS : val := #(W32 2).
 
-Definition Compare_NOT_EQUAL : expr := #(W32 3).
+Definition Compare_NOT_EQUAL : val := #(W32 3).
 
 Definition Compare_CompareResult_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareResult_name"%go.
 
@@ -355,15 +355,15 @@ Definition Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ : val :=
 
 Definition Compare_CompareTarget : go_type := int32T.
 
-Definition Compare_VERSION : expr := #(W32 0).
+Definition Compare_VERSION : val := #(W32 0).
 
-Definition Compare_CREATE : expr := #(W32 1).
+Definition Compare_CREATE : val := #(W32 1).
 
-Definition Compare_MOD : expr := #(W32 2).
+Definition Compare_MOD : val := #(W32 2).
 
-Definition Compare_VALUE : expr := #(W32 3).
+Definition Compare_VALUE : val := #(W32 3).
 
-Definition Compare_LEASE : expr := #(W32 4).
+Definition Compare_LEASE : val := #(W32 4).
 
 Definition Compare_CompareTarget_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareTarget_name"%go.
 
@@ -378,9 +378,9 @@ Definition Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ : val :=
 
 Axiom WatchCreateRequest_FilterType : go_type.
 
-Axiom WatchCreateRequest_NOPUT : expr.
+Axiom WatchCreateRequest_NOPUT : val.
 
-Axiom WatchCreateRequest_NODELETE : expr.
+Axiom WatchCreateRequest_NODELETE : val.
 
 Definition WatchCreateRequest_FilterType_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType_name"%go.
 
@@ -392,11 +392,11 @@ Axiom WatchCreateRequest_FilterType_value'init : val.
 
 Axiom AlarmRequest_AlarmAction : go_type.
 
-Axiom AlarmRequest_GET : expr.
+Axiom AlarmRequest_GET : val.
 
-Axiom AlarmRequest_ACTIVATE : expr.
+Axiom AlarmRequest_ACTIVATE : val.
 
-Axiom AlarmRequest_DEACTIVATE : expr.
+Axiom AlarmRequest_DEACTIVATE : val.
 
 Definition AlarmRequest_AlarmAction_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction_name"%go.
 
@@ -408,11 +408,11 @@ Axiom AlarmRequest_AlarmAction_value'init : val.
 
 Axiom DowngradeRequest_DowngradeAction : go_type.
 
-Axiom DowngradeRequest_VALIDATE : expr.
+Axiom DowngradeRequest_VALIDATE : val.
 
-Axiom DowngradeRequest_ENABLE : expr.
+Axiom DowngradeRequest_ENABLE : val.
 
-Axiom DowngradeRequest_CANCEL : expr.
+Axiom DowngradeRequest_CANCEL : val.
 
 Definition DowngradeRequest_DowngradeAction_name : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction_name"%go.
 

@@ -260,25 +260,25 @@ Definition updateCommittedIndex : go_string := "go.etcd.io/etcd/server/v3/etcdse
 
 Axiom DefaultSnapshotCount : Z.
 
-Axiom DefaultSnapshotCatchUpEntries : expr.
+Axiom DefaultSnapshotCatchUpEntries : val.
 
 Axiom StoreClusterPrefix : go_string.
 
 Axiom StoreKeysPrefix : go_string.
 
-Axiom HealthInterval : expr.
+Axiom HealthInterval : val.
 
-Axiom purgeFileInterval : expr.
+Axiom purgeFileInterval : val.
 
 Axiom maxInFlightMsgSnap : Z.
 
-Axiom releaseDelayAfterSnapshot : expr.
+Axiom releaseDelayAfterSnapshot : val.
 
 Axiom maxPendingRevokes : Z.
 
 Axiom recommendedMaxRequestBytes : Z.
 
-Axiom readyPercentThreshold : expr.
+Axiom readyPercentThreshold : val.
 
 Axiom DowngradeEnabledPath : go_string.
 
@@ -356,11 +356,11 @@ Axiom RequestV2 : go_type.
 
 Axiom maxGapBetweenApplyAndCommitIndex : Z.
 
-Axiom traceThreshold : expr.
+Axiom traceThreshold : val.
 
-Axiom readIndexRetryTime : expr.
+Axiom readIndexRetryTime : val.
 
-Axiom applyTimeout : expr.
+Axiom applyTimeout : val.
 
 Axiom RaftKV : go_type.
 

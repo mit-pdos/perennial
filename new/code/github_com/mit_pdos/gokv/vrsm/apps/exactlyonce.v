@@ -27,11 +27,11 @@ Definition eStateMachine : go_type := structT [
   "esmNextIndex" :: uint64T
 ].
 
-Definition OPTYPE_RW : expr := #(W8 0).
+Definition OPTYPE_RW : val := #(W8 0).
 
-Definition OPTYPE_GETFRESHCID : expr := #(W8 1).
+Definition OPTYPE_GETFRESHCID : val := #(W8 1).
 
-Definition OPTYPE_RO : expr := #(W8 2).
+Definition OPTYPE_RO : val := #(W8 2).
 
 Definition VersionedStateMachine : go_type := structT [
   "ApplyVolatile" :: funcT;

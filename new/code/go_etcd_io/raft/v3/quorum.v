@@ -107,11 +107,11 @@ Definition JointConfig__CommittedIndexⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#Index] "idx1")).
 
-Definition VotePending : expr := #(W8 1).
+Definition VotePending : val := #(W8 1).
 
 Definition VoteResult : go_type := uint8T.
 
-Definition VoteLost : expr := #(W8 2).
+Definition VoteLost : val := #(W8 2).
 
 (* VoteResult takes a mapping of voters to yes/no (true/false) votes and returns
    a result indicating whether the vote is pending, lost, or won. A joint quorum
@@ -370,7 +370,7 @@ Definition MajorityConfig__CommittedIndexⁱᵐᵖˡ : val :=
     do:  ("pos" <-[#intT] "$r0");;;
     return: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "srt") (![#intT] "pos")))).
 
-Definition VoteWon : expr := #(W8 3).
+Definition VoteWon : val := #(W8 3).
 
 (* VoteResult takes a mapping of voters to yes/no (true/false) votes and returns
    a result indicating whether the vote is pending (i.e. neither a quorum of

@@ -15,9 +15,9 @@ Context `{ffi_syntax}.
 
 Definition Event_EventType : go_type := int32T.
 
-Definition PUT : expr := #(W32 0).
+Definition PUT : val := #(W32 0).
 
-Definition DELETE : expr := #(W32 1).
+Definition DELETE : val := #(W32 1).
 
 Definition Event_EventType_name : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_name"%go.
 

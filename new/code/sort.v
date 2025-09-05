@@ -40,11 +40,11 @@ Definition Sort : go_string := "sort.Sort"%go.
 
 Axiom sortedHint : go_type.
 
-Axiom unknownHint : expr.
+Axiom unknownHint : val.
 
-Axiom increasingHint : expr.
+Axiom increasingHint : val.
 
-Axiom decreasingHint : expr.
+Axiom decreasingHint : val.
 
 Axiom xorshift : go_type.
 

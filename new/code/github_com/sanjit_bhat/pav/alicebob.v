@@ -21,9 +21,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition aliceUid : expr := #(W64 0).
+Definition aliceUid : val := #(W64 0).
 
-Definition bobUid : expr := #(W64 1).
+Definition bobUid : val := #(W64 1).
 
 Definition testAliceBob : go_string := "github.com/sanjit-bhat/pav/alicebob.testAliceBob"%go.
 

@@ -20,17 +20,17 @@ Axiom Buffer : go_type.
 
 Axiom readOp : go_type.
 
-Axiom opRead : expr.
+Axiom opRead : val.
 
-Axiom opInvalid : expr.
+Axiom opInvalid : val.
 
-Axiom opReadRune1 : expr.
+Axiom opReadRune1 : val.
 
-Axiom opReadRune2 : expr.
+Axiom opReadRune2 : val.
 
-Axiom opReadRune3 : expr.
+Axiom opReadRune3 : val.
 
-Axiom opReadRune4 : expr.
+Axiom opReadRune4 : val.
 
 Definition ErrTooLarge : go_string := "bytes.ErrTooLarge"%go.
 
@@ -40,7 +40,7 @@ Definition errNegativeRead : go_string := "bytes.errNegativeRead"%go.
 
 Axiom errNegativeRead'init : val.
 
-Axiom maxInt : expr.
+Axiom maxInt : val.
 
 Axiom MinRead : Z.
 

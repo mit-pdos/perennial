@@ -432,19 +432,19 @@ Definition Clerk : go_type := structT [
   "cl" :: ptrT
 ].
 
-Definition RPC_APPLYASBACKUP : expr := #(W64 0).
+Definition RPC_APPLYASBACKUP : val := #(W64 0).
 
-Definition RPC_SETSTATE : expr := #(W64 1).
+Definition RPC_SETSTATE : val := #(W64 1).
 
-Definition RPC_GETSTATE : expr := #(W64 2).
+Definition RPC_GETSTATE : val := #(W64 2).
 
-Definition RPC_BECOMEPRIMARY : expr := #(W64 3).
+Definition RPC_BECOMEPRIMARY : val := #(W64 3).
 
-Definition RPC_PRIMARYAPPLY : expr := #(W64 4).
+Definition RPC_PRIMARYAPPLY : val := #(W64 4).
 
-Definition RPC_ROPRIMARYAPPLY : expr := #(W64 6).
+Definition RPC_ROPRIMARYAPPLY : val := #(W64 6).
 
-Definition RPC_INCREASECOMMIT : expr := #(W64 7).
+Definition RPC_INCREASECOMMIT : val := #(W64 7).
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/replica.MakeClerk"%go.
 

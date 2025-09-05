@@ -19,4 +19,12 @@ translate = [
   "Microsecond",
   "Nanosecond",
   "Timer",
+  "Time.UnixNano",
+  "Time.nsec",
+  "Time.unixSec",
+  "Time.sec",
+  "wallToInternal",
+  "nsecMask",
+  "hasMonotonic",
+  "internalToUnix,"
 ]

@@ -44,11 +44,11 @@ Context `{ffi_syntax}.
 
 Axiom readdirMode : go_type.
 
-Axiom readdirName : expr.
+Axiom readdirName : val.
 
-Axiom readdirDirEntry : expr.
+Axiom readdirDirEntry : val.
 
-Axiom readdirFileInfo : expr.
+Axiom readdirFileInfo : val.
 
 Axiom DirEntry : go_type.
 
@@ -158,11 +158,11 @@ Definition underlyingError : go_string := "os.underlyingError"%go.
 
 Axiom syscallErrorType : go_type.
 
-Axiom errENOSYS : expr.
+Axiom errENOSYS : val.
 
-Axiom errERANGE : expr.
+Axiom errERANGE : val.
 
-Axiom errENOMEM : expr.
+Axiom errENOMEM : val.
 
 Definition ErrProcessDone : go_string := "os.ErrProcessDone"%go.
 
@@ -170,17 +170,17 @@ Axiom ErrProcessDone'init : val.
 
 Axiom processMode : go_type.
 
-Axiom modePID : expr.
+Axiom modePID : val.
 
-Axiom modeHandle : expr.
+Axiom modeHandle : val.
 
 Axiom processStatus : go_type.
 
-Axiom statusOK : expr.
+Axiom statusOK : val.
 
-Axiom statusDone : expr.
+Axiom statusDone : val.
 
-Axiom statusReleased : expr.
+Axiom statusReleased : val.
 
 Axiom processStatusMask : Z.
 
@@ -240,27 +240,27 @@ Definition Stderr : go_string := "os.Stderr"%go.
 
 Axiom Stderr'init : val.
 
-Axiom O_RDONLY : expr.
+Axiom O_RDONLY : val.
 
-Axiom O_WRONLY : expr.
+Axiom O_WRONLY : val.
 
-Axiom O_RDWR : expr.
+Axiom O_RDWR : val.
 
-Axiom O_APPEND : expr.
+Axiom O_APPEND : val.
 
-Axiom O_CREATE : expr.
+Axiom O_CREATE : val.
 
-Axiom O_EXCL : expr.
+Axiom O_EXCL : val.
 
-Axiom O_SYNC : expr.
+Axiom O_SYNC : val.
 
-Axiom O_TRUNC : expr.
+Axiom O_TRUNC : val.
 
-Axiom SEEK_SET : expr.
+Axiom SEEK_SET : val.
 
-Axiom SEEK_CUR : expr.
+Axiom SEEK_CUR : val.
 
-Axiom SEEK_END : expr.
+Axiom SEEK_END : val.
 
 Axiom LinkError : go_type.
 
@@ -362,15 +362,15 @@ Definition net_newUnixFile : go_string := "os.net_newUnixFile"%go.
 
 Axiom newFileKind : go_type.
 
-Axiom kindNewFile : expr.
+Axiom kindNewFile : val.
 
-Axiom kindOpenFile : expr.
+Axiom kindOpenFile : val.
 
-Axiom kindPipe : expr.
+Axiom kindPipe : val.
 
-Axiom kindSock : expr.
+Axiom kindSock : val.
 
-Axiom kindNoPoll : expr.
+Axiom kindNoPoll : val.
 
 Definition newFile : go_string := "os.newFile"%go.
 
@@ -410,9 +410,9 @@ Definition RemoveAll : go_string := "os.RemoveAll"%go.
 
 Definition endsWithDot : go_string := "os.endsWithDot"%go.
 
-Axiom PathSeparator : expr.
+Axiom PathSeparator : val.
 
-Axiom PathListSeparator : expr.
+Axiom PathListSeparator : val.
 
 Definition IsPathSeparator : go_string := "os.IsPathSeparator"%go.
 
@@ -530,13 +530,13 @@ Definition statNolog : go_string := "os.statNolog"%go.
 
 Definition lstatNolog : go_string := "os.lstatNolog"%go.
 
-Axiom supportsCreateWithStickyBit : expr.
+Axiom supportsCreateWithStickyBit : val.
 
 Definition Hostname : go_string := "os.Hostname"%go.
 
 Definition hostname : go_string := "os.hostname"%go.
 
-Axiom supportsCloseOnExec : expr.
+Axiom supportsCloseOnExec : val.
 
 Definition runtime_rand : go_string := "os.runtime_rand"%go.
 
@@ -562,35 +562,35 @@ Axiom FileInfo : go_type.
 
 Axiom FileMode : go_type.
 
-Axiom ModeDir : expr.
+Axiom ModeDir : val.
 
-Axiom ModeAppend : expr.
+Axiom ModeAppend : val.
 
-Axiom ModeExclusive : expr.
+Axiom ModeExclusive : val.
 
-Axiom ModeTemporary : expr.
+Axiom ModeTemporary : val.
 
-Axiom ModeSymlink : expr.
+Axiom ModeSymlink : val.
 
-Axiom ModeDevice : expr.
+Axiom ModeDevice : val.
 
-Axiom ModeNamedPipe : expr.
+Axiom ModeNamedPipe : val.
 
-Axiom ModeSocket : expr.
+Axiom ModeSocket : val.
 
-Axiom ModeSetuid : expr.
+Axiom ModeSetuid : val.
 
-Axiom ModeSetgid : expr.
+Axiom ModeSetgid : val.
 
-Axiom ModeCharDevice : expr.
+Axiom ModeCharDevice : val.
 
-Axiom ModeSticky : expr.
+Axiom ModeSticky : val.
 
-Axiom ModeIrregular : expr.
+Axiom ModeIrregular : val.
 
-Axiom ModeType : expr.
+Axiom ModeType : val.
 
-Axiom ModePerm : expr.
+Axiom ModePerm : val.
 
 Definition SameFile : go_string := "os.SameFile"%go.
 

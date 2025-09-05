@@ -34,13 +34,13 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition StartRpc : expr := #(W64 0).
+Definition StartRpc : val := #(W64 0).
 
-Definition PutRpc : expr := #(W64 1).
+Definition PutRpc : val := #(W64 1).
 
-Definition HistoryRpc : expr := #(W64 2).
+Definition HistoryRpc : val := #(W64 2).
 
-Definition AuditRpc : expr := #(W64 3).
+Definition AuditRpc : val := #(W64 3).
 
 Definition NewRpcServer : go_string := "github.com/sanjit-bhat/pav/server.NewRpcServer"%go.
 

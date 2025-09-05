@@ -125,7 +125,7 @@ Definition lockShard__releaseⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
     return: #()).
 
-Definition NSHARD : expr := #(W64 65537).
+Definition NSHARD : val := #(W64 65537).
 
 Definition LockMap : go_type := structT [
   "shards" :: sliceT

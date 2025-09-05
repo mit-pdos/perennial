@@ -15,9 +15,9 @@ Module Op. Definition id : go_string := "github.com/mit-pdos/go-journal/jrnl.Op"
 Section code.
 
 
-Definition LogBlocks : expr := #(W64 511).
+Definition LogBlocks : val := #(W64 511).
 
-Definition LogBytes : expr := #(W64 2093056).
+Definition LogBytes : val := #(W64 2093056).
 
 Definition Op : go_type := structT [
   "log" :: ptrT;

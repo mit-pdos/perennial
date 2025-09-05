@@ -100,7 +100,7 @@ Definition shouldRoundUp : go_string := "math/big.shouldRoundUp"%go.
 
 Definition trim : go_string := "math/big.trim"%go.
 
-Axiom debugFloat : expr.
+Axiom debugFloat : val.
 
 Axiom Float : go_type.
 
@@ -116,33 +116,33 @@ Axiom MaxPrec : Z.
 
 Axiom form : go_type.
 
-Axiom zero : expr.
+Axiom zero : val.
 
-Axiom finite : expr.
+Axiom finite : val.
 
-Axiom inf : expr.
+Axiom inf : val.
 
 Axiom RoundingMode : go_type.
 
-Axiom ToNearestEven : expr.
+Axiom ToNearestEven : val.
 
-Axiom ToNearestAway : expr.
+Axiom ToNearestAway : val.
 
-Axiom ToZero : expr.
+Axiom ToZero : val.
 
-Axiom AwayFromZero : expr.
+Axiom AwayFromZero : val.
 
-Axiom ToNegativeInf : expr.
+Axiom ToNegativeInf : val.
 
-Axiom ToPositiveInf : expr.
+Axiom ToPositiveInf : val.
 
 Axiom Accuracy : go_type.
 
-Axiom Below : expr.
+Axiom Below : val.
 
-Axiom Exact : expr.
+Axiom Exact : val.
 
-Axiom Above : expr.
+Axiom Above : val.
 
 Definition makeAcc : go_string := "math/big.makeAcc"%go.
 
@@ -164,7 +164,7 @@ Axiom pow5tab'init : val.
 
 Definition ParseFloat : go_string := "math/big.ParseFloat"%go.
 
-Axiom floatGobVersion : expr.
+Axiom floatGobVersion : val.
 
 Definition roundShortest : go_string := "math/big.roundShortest"%go.
 
@@ -198,7 +198,7 @@ Definition scanSign : go_string := "math/big.scanSign"%go.
 
 Axiom byteReader : go_type.
 
-Axiom intGobVersion : expr.
+Axiom intGobVersion : val.
 
 Axiom nat : go_type.
 
@@ -260,9 +260,9 @@ Definition bigEndianWord : go_string := "math/big.bigEndianWord"%go.
 
 Axiom digits : go_string.
 
-Axiom MaxBase : expr.
+Axiom MaxBase : val.
 
-Axiom maxBaseSmall : expr.
+Axiom maxBaseSmall : val.
 
 Definition maxPow : go_string := "math/big.maxPow"%go.
 
@@ -308,7 +308,7 @@ Definition ratZero : go_string := "math/big.ratZero"%go.
 
 Definition scanExponent : go_string := "math/big.scanExponent"%go.
 
-Axiom ratGobVersion : expr.
+Axiom ratGobVersion : val.
 
 Axiom _RoundingMode_name : go_string.
 

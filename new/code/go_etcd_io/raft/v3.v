@@ -145,7 +145,7 @@ Definition raftLog : go_type := structT [
   "applyingEntsPaused" :: boolT
 ].
 
-Definition None : expr := #(W64 0).
+Definition None : val := #(W64 0).
 
 Definition emptyState : go_string := "go.etcd.io/raft/v3.emptyState"%go.
 
@@ -1829,9 +1829,9 @@ Definition headerⁱᵐᵖˡ : val :=
 
 Definition SnapshotStatus : go_type := intT.
 
-Definition SnapshotFinish : expr := #(W64 1).
+Definition SnapshotFinish : val := #(W64 1).
 
-Definition SnapshotFailure : expr := #(W64 2).
+Definition SnapshotFailure : val := #(W64 2).
 
 Definition ErrStopped : go_string := "go.etcd.io/raft/v3.ErrStopped"%go.
 
@@ -2800,29 +2800,29 @@ Definition node__ReadIndexⁱᵐᵖˡ : val :=
      }]) in
      (method_call #(ptrT.id node.id) #"step"%go (![#ptrT] "n")) "$a0" "$a1")).
 
-Definition LocalAppendThread : expr := #(W64 18446744073709551615).
+Definition LocalAppendThread : val := #(W64 18446744073709551615).
 
-Definition LocalApplyThread : expr := #(W64 18446744073709551614).
+Definition LocalApplyThread : val := #(W64 18446744073709551614).
 
-Definition StateFollower : expr := #(W64 0).
+Definition StateFollower : val := #(W64 0).
 
-Definition StateCandidate : expr := #(W64 1).
+Definition StateCandidate : val := #(W64 1).
 
-Definition StateLeader : expr := #(W64 2).
+Definition StateLeader : val := #(W64 2).
 
-Definition StatePreCandidate : expr := #(W64 3).
+Definition StatePreCandidate : val := #(W64 3).
 
-Definition numStates : expr := #(W64 4).
+Definition numStates : val := #(W64 4).
 
-Definition ReadOnlySafe : expr := #(W64 0).
+Definition ReadOnlySafe : val := #(W64 0).
 
-Definition ReadOnlyLeaseBased : expr := #(W64 1).
+Definition ReadOnlyLeaseBased : val := #(W64 1).
 
-Definition campaignPreElection : expr := #"CampaignPreElection"%go.
+Definition campaignPreElection : val := #"CampaignPreElection"%go.
 
-Definition campaignElection : expr := #"CampaignElection"%go.
+Definition campaignElection : val := #"CampaignElection"%go.
 
-Definition campaignTransfer : expr := #"CampaignTransfer"%go.
+Definition campaignTransfer : val := #"CampaignTransfer"%go.
 
 Definition ErrProposalDropped : go_string := "go.etcd.io/raft/v3.ErrProposalDropped"%go.
 
@@ -6839,9 +6839,9 @@ Definition RawNode__BasicStatusⁱᵐᵖˡ : val :=
 
 Definition ProgressType : go_type := byteT.
 
-Definition ProgressTypePeer : expr := #(W8 0).
+Definition ProgressTypePeer : val := #(W8 0).
 
-Definition ProgressTypeLearner : expr := #(W8 1).
+Definition ProgressTypeLearner : val := #(W8 1).
 
 (* WithProgress is a helper to introspect the Progress for this node and its
    peers.
@@ -7183,7 +7183,7 @@ Definition readOnly__lastPendingRequestCtxⁱᵐᵖˡ : val :=
     return: (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref #readOnly #"readIndexQueue"%go (![#ptrT] "ro"))) ((let: "$a0" := (![#sliceT] (struct.field_ref #readOnly #"readIndexQueue"%go (![#ptrT] "ro"))) in
      slice.len "$a0") - #(W64 1))))).
 
-Definition StateTraceDeployed : expr := #false.
+Definition StateTraceDeployed : val := #false.
 
 Definition TracingEvent : go_type := structT [
 ].

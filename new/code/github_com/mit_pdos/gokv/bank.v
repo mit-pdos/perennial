@@ -15,7 +15,7 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition BAL_TOTAL : expr := #(W64 1000).
+Definition BAL_TOTAL : val := #(W64 1000).
 
 Definition BankClerk : go_type := structT [
   "lck" :: ptrT;

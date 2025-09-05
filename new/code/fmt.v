@@ -39,9 +39,9 @@ Axiom ldigits : go_string.
 
 Axiom udigits : go_string.
 
-Axiom signed : expr.
+Axiom signed : val.
 
-Axiom unsigned : expr.
+Axiom unsigned : val.
 
 Axiom fmtFlags : go_type.
 

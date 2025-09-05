@@ -15,21 +15,21 @@ Module closed.
 Section code.
 
 
-Definition dconfigHost : expr := #(W64 11).
+Definition dconfigHost : val := #(W64 11).
 
-Definition dconfigHostPaxos : expr := #(W64 12).
+Definition dconfigHostPaxos : val := #(W64 12).
 
-Definition dr1 : expr := #(W64 1).
+Definition dr1 : val := #(W64 1).
 
-Definition dr2 : expr := #(W64 2).
+Definition dr2 : val := #(W64 2).
 
-Definition lconfigHost : expr := #(W64 111).
+Definition lconfigHost : val := #(W64 111).
 
-Definition lconfigHostPaxos : expr := #(W64 112).
+Definition lconfigHostPaxos : val := #(W64 112).
 
-Definition lr1 : expr := #(W64 101).
+Definition lr1 : val := #(W64 101).
 
-Definition lr2 : expr := #(W64 102).
+Definition lr2 : val := #(W64 102).
 
 Definition mk_lconfig_hosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_lconfig_hosts"%go.
 

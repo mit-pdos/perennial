@@ -14,23 +14,23 @@ Context `{ffi_syntax}.
 
 Definition Error : go_type := uint64T.
 
-Definition None : expr := #(W64 0).
+Definition None : val := #(W64 0).
 
-Definition Stale : expr := #(W64 1).
+Definition Stale : val := #(W64 1).
 
-Definition OutOfOrder : expr := #(W64 2).
+Definition OutOfOrder : val := #(W64 2).
 
-Definition Timeout : expr := #(W64 3).
+Definition Timeout : val := #(W64 3).
 
-Definition EmptyConfig : expr := #(W64 4).
+Definition EmptyConfig : val := #(W64 4).
 
-Definition NotLeader : expr := #(W64 5).
+Definition NotLeader : val := #(W64 5).
 
-Definition Sealed : expr := #(W64 6).
+Definition Sealed : val := #(W64 6).
 
-Definition LeaseExpired : expr := #(W64 7).
+Definition LeaseExpired : val := #(W64 7).
 
-Definition Leased : expr := #(W64 8).
+Definition Leased : val := #(W64 8).
 
 Definition EncodeError : go_string := "github.com/mit-pdos/gokv/vrsm/e.EncodeError"%go.
 

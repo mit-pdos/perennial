@@ -24,7 +24,7 @@ Definition InMemoryStateMachine : go_type := structT [
   "SetState" :: funcT
 ].
 
-Definition MAX_LOG_SIZE : expr := #(W64 68719476736).
+Definition MAX_LOG_SIZE : val := #(W64 68719476736).
 
 Definition StateMachine : go_type := structT [
   "fname" :: stringT;

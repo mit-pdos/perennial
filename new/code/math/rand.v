@@ -17,7 +17,7 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Axiom re : expr.
+Axiom re : val.
 
 Definition ke : go_string := "math/rand.ke"%go.
 
@@ -31,7 +31,7 @@ Definition fe : go_string := "math/rand.fe"%go.
 
 Axiom fe'init : val.
 
-Axiom rn : expr.
+Axiom rn : val.
 
 Definition absInt32 : go_string := "math/rand.absInt32"%go.
 

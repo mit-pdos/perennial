@@ -155,9 +155,9 @@ Definition getDiscardInfo : go_string := "github.com/gogo/protobuf/proto.getDisc
 
 Definition discardLegacy : go_string := "github.com/gogo/protobuf/proto.discardLegacy"%go.
 
-Axiom maxSeconds : expr.
+Axiom maxSeconds : val.
 
-Axiom minSeconds : expr.
+Axiom minSeconds : val.
 
 Definition validateDuration : go_string := "github.com/gogo/protobuf/proto.validateDuration"%go.
 
@@ -401,11 +401,11 @@ Axiom mapKeySorter : go_type.
 
 Definition isProto3Zero : go_string := "github.com/gogo/protobuf/proto.isProto3Zero"%go.
 
-Axiom GoGoProtoPackageIsVersion3 : expr.
+Axiom GoGoProtoPackageIsVersion3 : val.
 
-Axiom GoGoProtoPackageIsVersion2 : expr.
+Axiom GoGoProtoPackageIsVersion2 : val.
 
-Axiom GoGoProtoPackageIsVersion1 : expr.
+Axiom GoGoProtoPackageIsVersion1 : val.
 
 Axiom InternalMessageInfo : go_type.
 
@@ -429,15 +429,15 @@ Definition skipVarint : go_string := "github.com/gogo/protobuf/proto.skipVarint"
 
 Definition unmarshalMessageSet : go_string := "github.com/gogo/protobuf/proto.unmarshalMessageSet"%go.
 
-Axiom unsafeAllowed : expr.
+Axiom unsafeAllowed : val.
 
 Axiom field : go_type.
 
 Definition toField : go_string := "github.com/gogo/protobuf/proto.toField"%go.
 
-Axiom invalidField : expr.
+Axiom invalidField : val.
 
-Axiom zeroField : expr.
+Axiom zeroField : val.
 
 Axiom pointer : go_type.
 
@@ -467,7 +467,7 @@ Definition atomicLoadDiscardInfo : go_string := "github.com/gogo/protobuf/proto.
 
 Definition atomicStoreDiscardInfo : go_string := "github.com/gogo/protobuf/proto.atomicStoreDiscardInfo"%go.
 
-Axiom debug : expr.
+Axiom debug : val.
 
 Axiom WireVarint : Z.
 

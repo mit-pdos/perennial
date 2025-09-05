@@ -353,19 +353,19 @@ Definition decodePutURL : go_string := "go.uber.org/zap.decodePutURL"%go.
 
 Definition decodePutJSON : go_string := "go.uber.org/zap.decodePutJSON"%go.
 
-Axiom DebugLevel : expr.
+Axiom DebugLevel : val.
 
-Axiom InfoLevel : expr.
+Axiom InfoLevel : val.
 
-Axiom WarnLevel : expr.
+Axiom WarnLevel : val.
 
-Axiom ErrorLevel : expr.
+Axiom ErrorLevel : val.
 
-Axiom DPanicLevel : expr.
+Axiom DPanicLevel : val.
 
-Axiom PanicLevel : expr.
+Axiom PanicLevel : val.
 
-Axiom FatalLevel : expr.
+Axiom FatalLevel : val.
 
 Axiom LevelEnablerFunc : go_type.
 

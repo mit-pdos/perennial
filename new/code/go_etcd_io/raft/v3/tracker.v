@@ -249,9 +249,9 @@ Definition Progress__ResetStateⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id Inflights.id) #"reset"%go (![#ptrT] (struct.field_ref #Progress #"Inflights"%go (![#ptrT] "pr")))) #());;;
     return: #()).
 
-Definition StateProbe : expr := #(W64 0).
+Definition StateProbe : val := #(W64 0).
 
-Definition StateSnapshot : expr := #(W64 2).
+Definition StateSnapshot : val := #(W64 2).
 
 (* BecomeProbe transitions into StateProbe. Next is reset to Match+1 or,
    optionally and if larger, the index of the pending snapshot.
@@ -282,7 +282,7 @@ Definition Progress__BecomeProbeⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
     return: #()).
 
-Definition StateReplicate : expr := #(W64 1).
+Definition StateReplicate : val := #(W64 1).
 
 (* BecomeReplicate transitions into StateReplicate, resetting Next to Match+1.
 

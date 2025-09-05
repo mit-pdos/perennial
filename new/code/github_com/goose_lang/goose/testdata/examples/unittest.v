@@ -356,7 +356,7 @@ Definition condvarWrappingⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] "cond1")) #());;;
     return: #()).
 
-Definition GlobalConstant : expr := #"foo"%go.
+Definition GlobalConstant : val := #"foo"%go.
 
 (* an untyped string *)
 Definition UntypedStringConstant : go_string := "bar"%go.
@@ -365,19 +365,21 @@ Definition UntypedInt : Z := 13.
 
 Definition OtherUntypedInt : Z := 26.
 
-Definition TypedInt : expr := #(W64 32).
+Definition TypedInt : val := #(W64 32).
 
-Definition ConstWithArith : expr := #(W64 100).
+Definition ConstWithArith : val := #(W64 100).
 
-Definition TypedInt32 : expr := #(W32 3).
+Definition TypedInt32 : val := #(W32 3).
 
-Definition DivisionInConst : expr := #(W64 511).
+Definition DivisionInConst : val := #(W64 511).
 
 (* 517 *)
-Definition ModInConst : expr := #(W64 517).
+Definition ModInConst : val := #(W64 517).
 
 (* 5 *)
-Definition ModInConstParens : expr := #(W64 5).
+Definition ModInConstParens : val := #(W64 5).
+
+Definition SignedIntegerExample : val := #(W64 (-37)).
 
 Definition First : Z := 0.
 
@@ -385,22 +387,22 @@ Definition Second : Z := 1.
 
 Definition Third : Z := 2.
 
-Definition ComplicatedFirst : expr := #(W64 3).
+Definition ComplicatedFirst : val := #(W64 3).
 
-Definition ComplicatedSecond : expr := #(W64 5).
+Definition ComplicatedSecond : val := #(W64 5).
 
-Definition ComplicatedThird : expr := #(W64 7).
+Definition ComplicatedThird : val := #(W64 7).
 
 Definition useUntypedInt : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useUntypedInt"%go.
 
-(* go: const.go:35:6 *)
+(* go: const.go:37:6 *)
 Definition useUntypedIntⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (#(W64 UntypedInt) + TypedInt)).
 
 Definition useUntypedString : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useUntypedString"%go.
 
-(* go: const.go:39:6 *)
+(* go: const.go:41:6 *)
 Definition useUntypedStringⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (#UntypedStringConstant)).
@@ -1030,16 +1032,16 @@ Definition Dec__UInt32ⁱᵐᵖˡ : val :=
 
 Definition Enum1 : go_type := uint64T.
 
-Definition Enum1A : expr := #(W64 0).
+Definition Enum1A : val := #(W64 0).
 
-Definition Enum1B : expr := #(W64 1).
+Definition Enum1B : val := #(W64 1).
 
-Definition Enum1C : expr := #(W64 2).
+Definition Enum1C : val := #(W64 2).
 
 Definition Enum2 : go_type := intT.
 
 (* line comment 1 *)
-Definition Enum2A : expr := #(W64 1).
+Definition Enum2A : val := #(W64 1).
 
 (* line comment 2 *)
 Definition Enum2B : Z := 3.
@@ -1047,9 +1049,9 @@ Definition Enum2B : Z := 3.
 Definition Enum2C : Z := 4.
 
 (* line comment 3 *)
-Definition Enum2D : expr := #(W64 15).
+Definition Enum2D : val := #(W64 15).
 
-Definition a : expr := float_placeholder.
+Definition a : val := float_placeholder.
 
 Definition useFloat : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useFloat"%go.
 
@@ -1428,7 +1430,7 @@ Definition my_u32 : go_type := uint32T.
 
 Definition also_u32 : go_type := my_u32.
 
-Definition ConstWithAbbrevType : expr := #(W32 3).
+Definition ConstWithAbbrevType : val := #(W32 3).
 
 Definition allTheLiterals : go_type := structT [
   "int" :: uint64T;
@@ -2213,11 +2215,11 @@ Definition Block : go_type := structT [
   "Value" :: uint64T
 ].
 
-Definition Disk1 : expr := #(W64 0).
+Definition Disk1 : val := #(W64 0).
 
-Definition Disk2 : expr := #(W64 0).
+Definition Disk2 : val := #(W64 0).
 
-Definition DiskSize : expr := #(W64 1000).
+Definition DiskSize : val := #(W64 1000).
 
 Definition TwoDiskWrite : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.TwoDiskWrite"%go.
 
