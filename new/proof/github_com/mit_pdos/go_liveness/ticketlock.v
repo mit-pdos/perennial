@@ -176,10 +176,8 @@ Proof.
     iModIntro.
     wp_auto.
     wp_if_destruct.
-    { destruct (decide (# false = # true)).
-      { admit. }
-      destruct (decide (# false = # false)).
-      2: { admit. }
+    { rewrite decide_False. 2: rewrite to_val_unseal //.
+      rewrite decide_True. 2: rewrite to_val_unseal //.
       wp_auto.
       iApply "HΦ".
       rewrite Hnextsome. iFrame.
@@ -200,10 +198,8 @@ Proof.
     iModIntro.
     wp_auto.
     wp_if_destruct.
-    { destruct (decide (# false = # true)).
-      { admit. }
-      destruct (decide (# false = # false)).
-      2: { admit. }
+    { rewrite decide_False. 2: rewrite to_val_unseal //.
+      rewrite decide_True. 2: rewrite to_val_unseal //.
       word.
     }
     wp_auto.
