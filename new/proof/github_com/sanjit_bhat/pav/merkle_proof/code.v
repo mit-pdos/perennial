@@ -153,70 +153,10 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-Lemma bytes_to_bits_app a b :
-  bytes_to_bits (a ++ b) = bytes_to_bits a ++ bytes_to_bits b.
-Proof. rewrite /bytes_to_bits !fmap_app join_app //. Qed.
-
-Lemma join_same_len_lookup {A : Type} ls c i (x : A) :
-  (0 < c)%nat →
-  Forall (λ l, length l = c) ls →
-  mjoin ls !! i = Some x ↔
-  ∃ l, ls !! (i `div` c)%nat = Some l ∧ l !! (i `mod` c)%nat = Some x.
-Proof.
-  intros ??.
-  rewrite {1}(Nat.div_mod_eq i c) (comm Nat.mul).
-  apply join_lookup_Some_same_length'; [done|].
-  apply Nat.mod_upper_bound. lia.
-Qed.
-
-Lemma testbit_spec a n :
-  0 ≤ n →
-  Z.testbit a n = bool_decide (Z.land a (2 ^ n) ≠ 0).
-Proof.
-  intros. case_bool_decide as Heq.
-  - apply Automation.word.decision_assume_opposite.
-    intros Ht. apply Heq. clear Heq. rename Ht into Heq.
-    apply not_true_is_false in Heq.
-    apply Z.bits_inj_iff. intros p.
-    rewrite Z.land_spec Z.bits_0.
-    destruct (decide (p = n)).
-    { subst.
-      rewrite Z.pow2_bits_true; [|word].
-      by rewrite andb_true_r. }
-    rewrite Z.pow2_bits_false; [|word].
-    by rewrite andb_false_r.
-  - apply (f_equal (λ x, Z.testbit x n)) in Heq.
-    rewrite Z.land_spec Z.bits_0 Z.pow2_bits_true in Heq; [|done].
-    by rewrite andb_true_r in Heq.
-Qed.
-
-Lemma lookup_byte_to_bits byt i :
-  (i < 8)%nat →
-  byte_to_bits byt !! i =
-    Some $ bool_decide (word.and byt (word.slu (W8 1) (W8 i)) ≠ W8 0).
-Proof.
-  intros. rewrite /byte_to_bits.
-  assert (∀ x, bool_decide (x ≠ W8 0) = bool_decide (uint.Z x ≠ 0)) as ->.
-  { intros. repeat case_bool_decide; word. }
-  rewrite word.unsigned_and_nowrap.
-  rewrite Automation.word.unsigned_slu'; [|word].
-  rewrite left_id.
-  replace (uint.Z (W8 i)) with (Z.of_nat i) by word.
-  rewrite wrap_small.
-  2: { split; [lia|]. apply Z.pow_lt_mono_r; word. }
-
-  rewrite list_lookup_fmap.
-  rewrite lookup_seqZ_lt; [|lia].
-  rewrite left_id /=.
-  f_equal.
-  rewrite testbit_spec; [done|lia].
-Qed.
-
 Lemma bool_decide_ite_not (P : Prop) {dec : Decision P} :
   (if bool_decide P then false else true) = bool_decide (¬P).
 Proof. by rewrite bool_decide_not. Qed.
 
-(* TODO: upstream some helper lemmas. *)
 Lemma wp_getBit sl_bs d0 bs (n : w64) :
   {{{
     is_pkg_init merkle ∗
@@ -244,7 +184,7 @@ Proof.
   opose proof (lookup_lt_Some _ _ _ Hbs) as Hlt_n.
   rewrite length_bytes_to_bits in Hlt_n.
   rewrite /bytes_to_bits in Hbs.
-  eapply join_same_len_lookup in Hbs as (?&Hb&Ho).
+  eapply join_same_len_lookup_join in Hbs as (?&Hb&Ho).
   3: { apply Forall_fmap, Forall_true. naive_solver. }
   2: lia.
   apply list_lookup_fmap_Some in Hb as (byt&->&Hb).
@@ -370,79 +310,6 @@ Proof. rewrite /max_depth. wp_start as "@". wp_auto. iApply "HΦ". word. Qed.
 (* make def to prevent unfolding the nat. *)
 Definition w64_len := 8%nat.
 Hint Unfold w64_len : len.
-
-(* TODO: move up. *)
-#[global] Instance is_initialized_pers : Persistent is_initialized.
-Proof. apply _. Qed.
-Typeclasses Opaque is_initialized.
-
-Lemma join_same_len_nil {A} {c : nat} (ls : list $ list A) :
-  Forall (λ x, length x = c) ls →
-  0 < c →
-  length (mjoin ls) = 0%nat →
-  ls = [].
-Proof.
-  destruct ls; [done|].
-  simpl. intros Hconst ? Hlen.
-  apply list.Forall_cons in Hconst.
-  rewrite app_length in Hlen.
-  lia.
-Qed.
-
-Lemma fmap_length_reverse {A} (l : list $ list A) :
-  length <$> reverse l = reverse (length <$> l).
-Proof.
-  induction l; [done|].
-  rewrite !reverse_cons fmap_snoc IHl //.
-Qed.
-
-Lemma join_length_reverse {A} (ls : list $ list A) :
-  length (mjoin (reverse ls)) = length (mjoin ls).
-Proof. rewrite !length_join fmap_length_reverse sum_list_with_reverse //. Qed.
-
-Lemma join_same_len_length {A} {c : nat} (ls : list $ list A) :
-  Forall (λ x, length x = c) ls →
-  length (mjoin ls) = (length ls * c)%nat.
-Proof.
-  intros.
-  rewrite length_join.
-  by erewrite sum_list_fmap_same.
-Qed.
-
-Lemma take_snoc {A} l (x : A) n :
-  n = length l →
-  take n (l ++ [x]) = l.
-Proof. intros. rewrite take_app_length' //. Qed.
-
-Lemma drop_snoc {A} l (x : A) n :
-  n = length l →
-  drop n (l ++ [x]) = [x].
-Proof. intros. rewrite drop_app_length' //. Qed.
-
-Lemma join_same_len_take {A} (i : nat) c (ls : list $ list A) :
-  Forall (λ x, length x = c) ls →
-  i ≤ length ls →
-  mjoin (take i ls) = take (i * c) (mjoin ls).
-Proof.
-  intros.
-  rewrite -!subslice_from_start.
-  erewrite join_same_len_subslice; cycle 1; [lia|done..].
-Qed.
-
-Lemma join_same_len_drop {A} (i : nat) c (ls : list $ list A) :
-  Forall (λ x, length x = c) ls →
-  i ≤ length ls →
-  mjoin (drop i ls) = drop (i * c) (mjoin ls).
-Proof.
-  intros.
-  rewrite !subslice_from_drop.
-  erewrite join_same_len_subslice; cycle 1; [lia|done|].
-  by rewrite -join_same_len_length.
-Qed.
-
-Lemma join_singleton {A} (l : list A) :
-  mjoin [l] = l.
-Proof. by list_simplifier. Qed.
 
 Lemma wp_newShell sl_label label sl_sibs sibs (depth : nat) :
   {{{

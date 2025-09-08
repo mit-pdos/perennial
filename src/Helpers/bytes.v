@@ -144,3 +144,50 @@ Proof.
 Qed.
 
 #[global] Hint Rewrite length_bytes_to_bits : len.
+
+Lemma bytes_to_bits_app a b :
+  bytes_to_bits (a ++ b) = bytes_to_bits a ++ bytes_to_bits b.
+Proof. rewrite /bytes_to_bits !fmap_app join_app //. Qed.
+
+Lemma testbit_spec a n :
+  0 ≤ n →
+  Z.testbit a n = bool_decide (Z.land a (2 ^ n) ≠ 0).
+Proof.
+  intros. case_bool_decide as Heq.
+  - apply Automation.word.decision_assume_opposite.
+    intros Ht. apply Heq. clear Heq. rename Ht into Heq.
+    apply not_true_is_false in Heq.
+    apply Z.bits_inj_iff. intros p.
+    rewrite Z.land_spec Z.bits_0.
+    destruct (decide (p = n)).
+    { subst.
+      rewrite Z.pow2_bits_true; [|word].
+      by rewrite andb_true_r. }
+    rewrite Z.pow2_bits_false; [|word].
+    by rewrite andb_false_r.
+  - apply (f_equal (λ x, Z.testbit x n)) in Heq.
+    rewrite Z.land_spec Z.bits_0 Z.pow2_bits_true in Heq; [|done].
+    by rewrite andb_true_r in Heq.
+Qed.
+
+Lemma lookup_byte_to_bits byt i :
+  (i < 8)%nat →
+  byte_to_bits byt !! i =
+    Some $ bool_decide (word.and byt (word.slu (W8 1) (W8 (Z.of_nat i))) ≠ W8 0).
+Proof.
+  intros. rewrite /byte_to_bits.
+  assert (∀ x, bool_decide (x ≠ W8 0) = bool_decide (uint.Z x ≠ 0)) as ->.
+  { intros. repeat case_bool_decide; word. }
+  rewrite word.unsigned_and_nowrap.
+  rewrite Automation.word.unsigned_slu'; [|word].
+  rewrite left_id.
+  replace (uint.Z (W8 (Z.of_nat i))) with (Z.of_nat i) by word.
+  rewrite wrap_small.
+  2: { split; [lia|]. apply Z.pow_lt_mono_r; word. }
+
+  rewrite list_lookup_fmap.
+  rewrite lookup_seqZ_lt; [|lia].
+  rewrite left_id /=.
+  f_equal.
+  rewrite testbit_spec; [done|lia].
+Qed.

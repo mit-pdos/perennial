@@ -80,4 +80,10 @@ Proof.
   iFrame "∗#".
 Qed.
 
+#[global] Instance is_initialized_pers : Persistent is_initialized.
+Proof. apply _. Qed.
+
 End proof.
+
+(* to prevent weird unfolding during iFrame. *)
+Typeclasses Opaque is_initialized.

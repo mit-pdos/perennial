@@ -30,6 +30,65 @@ Section list.
   Context {A : Type}.
   Implicit Types l : (list A).
 
+  Lemma join_same_len_lookup_join ls c i (x : A) :
+    0 < c →
+    Forall (λ l, length l = c) ls →
+    mjoin ls !! i = Some x ↔
+    ∃ l, ls !! (i `div` c) = Some l ∧ l !! (i `mod` c) = Some x.
+  Proof.
+    intros ??.
+    rewrite {1}(Nat.div_mod_eq i c) (comm Nat.mul).
+    apply join_lookup_Some_same_length'; [done|].
+    apply Nat.mod_upper_bound. lia.
+  Qed.
+
+  Lemma join_same_len_nil {c} (ls : list $ list A) :
+    Forall (λ x, length x = c) ls →
+    0 < c →
+    length (mjoin ls) = 0%nat →
+    ls = [].
+  Proof.
+    destruct ls; [done|].
+    simpl. intros Hconst ? Hlen.
+    apply list.Forall_cons in Hconst.
+    rewrite app_length in Hlen.
+    lia.
+  Qed.
+
+  Lemma fmap_length_reverse (l : list $ list A) :
+    length <$> reverse l = reverse (length <$> l).
+  Proof.
+    induction l; [done|].
+    rewrite !reverse_cons fmap_snoc IHl //.
+  Qed.
+
+  Lemma join_length_reverse (ls : list $ list A) :
+    length (mjoin (reverse ls)) = length (mjoin ls).
+  Proof. rewrite !length_join fmap_length_reverse sum_list_with_reverse //. Qed.
+
+  Lemma join_same_len_length {c} (ls : list $ list A) :
+    Forall (λ x, length x = c) ls →
+    length (mjoin ls) = (length ls * c).
+  Proof.
+    intros.
+    rewrite length_join.
+    by erewrite sum_list_fmap_same.
+  Qed.
+
+  Lemma take_snoc l x n :
+    n = length l →
+    take n (l ++ [x]) = l.
+  Proof. intros. rewrite take_app_length' //. Qed.
+
+  Lemma drop_snoc l x n :
+    n = length l →
+    drop n (l ++ [x]) = [x].
+  Proof. intros. rewrite drop_app_length' //. Qed.
+
+  Lemma join_singleton l :
+    mjoin [l] = l.
+  Proof. by list_simplifier. Qed.
+
   Lemma prefix_neq (l0 l1 p : list A) :
     p `prefix_of` l0 →
     ¬ p `prefix_of` l1 →
@@ -816,4 +875,25 @@ Proof.
   intros.
   replace (j) with ((j - i) + i) by lia.
   eapply join_same_len_subslice_aux; [lia|done].
+Qed.
+
+Lemma join_same_len_take {A} (i : nat) c (ls : list $ list A) :
+  Forall (λ x, length x = c) ls →
+  i ≤ length ls →
+  mjoin (take i ls) = take (i * c) (mjoin ls).
+Proof.
+  intros.
+  rewrite -!subslice_from_start.
+  erewrite join_same_len_subslice; cycle 1; [lia|done..].
+Qed.
+
+Lemma join_same_len_drop {A} (i : nat) c (ls : list $ list A) :
+  Forall (λ x, length x = c) ls →
+  i ≤ length ls →
+  mjoin (drop i ls) = drop (i * c) (mjoin ls).
+Proof.
+  intros.
+  rewrite !subslice_from_drop.
+  erewrite join_same_len_subslice; cycle 1; [lia|done|].
+  by rewrite -join_same_len_length.
 Qed.
