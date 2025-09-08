@@ -401,13 +401,13 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-(* simplify / solve some cases of: error return goals of form:
+(* simplify / solve some cases of: return error = true goals of form:
 "Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ quants, wish) ∗
 "Herr" ∷ (∀ quants, wish -∗ post)
 
-it's an implementation restriction (see [iIntros (?) "*"])
-that the wish must have at least one quant.
-*)
+it's an implementation restriction that the wish must have at least one quant.
+see [iIntros (?) "*"] and
+https://github.com/tchajed/iris-named-props/issues/18 *)
 Tactic Notation "genie_err" := iSplit; [
   iSplit;
     [by iIntros "%"|];
