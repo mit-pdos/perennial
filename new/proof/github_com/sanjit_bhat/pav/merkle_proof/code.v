@@ -401,6 +401,59 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
+(* simplify / solve some cases of: error return goals of form:
+"Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ quants, wish) ∗
+"Herr" ∷ (∀ quants, wish -∗ post)
+
+it's an implementation restriction (see [iIntros (?) "*"])
+that the wish must have at least one quant.
+*)
+Tactic Notation "genie_err" := iSplit; [
+  iSplit;
+    [by iIntros "%"|];
+    iIntros "H"; repeat iDestruct "H" as (?) "H"; iNamed "H"; iExFalso
+  |
+  iIntros (?) "*"; iNamed 1; iExFalso
+].
+
+Definition wish_proofToTree label sibs oleaf proof_enc : iProp Σ :=
+  let IsOtherLeaf := match oleaf with None => false | _ => true end in
+  let LeafLabel := match oleaf with None => [] | Some (l, _) => l end in
+  let LeafVal := match oleaf with None => [] | Some (_, v) => v end in
+  let proof := MerkleProof.mk' (mjoin (reverse sibs)) IsOtherLeaf LeafLabel LeafVal in
+  "%Henc_proof" ∷ ⌜MerkleProof.encodes proof proof_enc⌝ ∗
+  "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
+  "%Heq_depth" ∷ ⌜length sibs ≤ max_depth⌝ ∗
+  "%Hlen_label" ∷ ⌜length label = Z.to_nat (cryptoffi.hash_len)⌝ ∗
+  "%Hlen_olabel" ∷ ⌜match oleaf with None => True | Some (l, _) =>
+    length l = Z.to_nat $ cryptoffi.hash_len end ⌝ ∗
+  "%Heq_olabel" ∷ ⌜match oleaf with None => True | Some (l, _) =>
+    label ≠ l end⌝.
+
+Lemma wp_proofToTree sl_label label sl_proof proof :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "#Hsl_label" ∷ sl_label ↦*□ label ∗
+    "#Hsl_proof" ∷ sl_proof ↦*□ proof
+  }}}
+  @! merkle.proofToTree #sl_label #sl_proof
+  {{{
+    tr err, RET (#tr, #err);
+    "Hgenie" ∷ (⌜err = false⌝ ∗-∗
+      ∃ sibs oleaf, wish_proofToTree label sibs oleaf proof) ∗
+    "Herr" ∷ (∀ sibs oleaf, wish_proofToTree label sibs oleaf proof -∗
+      ∃ t,
+      "%HSome_tree" ∷ ⌜pure_proofToTree label sibs oleaf = Some t⌝ ∗
+      "Hown_tree" ∷ own_tree tr t 1)
+  }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  iDestruct (own_slice_len with "Hsl_label") as %[].
+  wp_if_destruct; wp_auto.
+  2: { iApply "HΦ". genie_err; word. }
+Admitted.
+
 Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
   (* limit needed to prevent depth overflow. *)
   is_limit t →
