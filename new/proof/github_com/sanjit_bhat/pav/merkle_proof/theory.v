@@ -862,8 +862,7 @@ Proof.
   - case_decide; [done|].
     destruct limit.
     (* limit=0. show labels actually equal. *)
-    { unfold max_depth in *.
-      opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
+    { opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
         [|done|]; [by len|].
       opose proof (prefix_total_full _ (bytes_to_bits label0) _ _);
         [|done|]; [by len|].

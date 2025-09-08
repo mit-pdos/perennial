@@ -399,8 +399,6 @@ Qed.
 Lemma join_length_reverse {A} (ls : list $ list A) :
   length (mjoin (reverse ls)) = length (mjoin ls).
 Proof. rewrite !length_join fmap_length_reverse sum_list_with_reverse //. Qed.
-(* TODO: sum_list_with_reverse could be proven with sum_list Permutation lemma.
-see https://gitlab.mpi-sws.org/iris/stdpp/-/issues/111 *)
 
 Lemma join_same_len_length {A} {c : nat} (ls : list $ list A) :
   Forall (λ x, length x = c) ls →
@@ -508,8 +506,7 @@ Proof.
     iPureIntro. split.
     { by apply list.Forall_cons in Hlen_sibs as []. }
     { simpl in *. lia. } }
-  replace (uint.nat (W64 _)) with depth.
-  2: { unfold max_depth in *. word. }
+  replace (uint.nat (W64 _)) with depth by word.
   iDestruct ("Hclose" with "Hcb Hcnb") as "@".
   wp_auto.
   iDestruct (condition_bool (get_bit label depth)
@@ -612,13 +609,11 @@ Proof.
   - destruct limit; [done|]. intuition.
     wp_apply (wp_node_getChild with "[$Hnode $Hsl_label_in]") as "*".
     iIntros "[Hsl_label_in H]". iNamed "H". wp_auto.
-    replace (uint.nat (W64 depth)) with depth.
-    2: { unfold max_depth in *. word. }
+    replace (uint.nat (W64 depth)) with depth by word.
     iDestruct (condition_bool (get_bit label depth)
       with "[Hown_child1] [Hown_child0]")
       as "[Hown_child_l Hown_child_r]"; [iAccu..|].
-    replace (word.add _ _) with (W64 (S depth)).
-    2: { unfold max_depth in *. word. }
+    replace (word.add _ _) with (W64 (S depth)) by word.
     wp_apply ("IH" with "[//] [] [] [Hown_child_l Hsl_label_in]") as "* @".
     { by case_match. }
     { word. }
@@ -697,8 +692,7 @@ Proof.
   iIntros "* (#?&@) HΦ".
   wp_func_call. wp_call. wp_auto.
   wp_apply wp_Assert.
-  { iPureIntro. case_bool_decide; [done|].
-    unfold max_depth in *. word. }
+  { iPureIntro. case_bool_decide; [done|]. word. }
   iDestruct (own_slice_len with "Hsl_label_in") as %?.
   iDestruct (own_slice_len with "Hsl_val_in") as %?.
   iEval (rewrite pure_put_unfold) in "HΦ".
@@ -739,7 +733,7 @@ Proof.
     case_decide; [done|].
     destruct limit.
     (* limit=0. show labels actually equal. *)
-    { exfalso. unfold max_depth in *.
+    { exfalso.
       opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
         [|done|]; [by len|].
       opose proof (prefix_total_full _ (bytes_to_bits label0) _ _);
@@ -757,8 +751,7 @@ Proof.
     wp_apply (wp_node_getChild with "[$Hnode]") as "*".
     { iFrame "#". }
     iIntros "[_ H]". iNamed "H". wp_auto.
-    replace (uint.nat (W64 _)) with (length pref).
-    2: { unfold max_depth in *. word. }
+    replace (uint.nat (W64 _)) with (length pref) by word.
     assert (∀ (b0 b1 : bool) T (x0 x1 : T),
       (if b0 then (if b1 then x0 else x1) else (if b1 then x1 else x0))
       = (if decide (b0 = b1) then x0 else x1)) as Ht.
@@ -846,8 +839,7 @@ Proof.
     wp_apply (wp_node_getChild with "[$Hnode_old]") as "*".
     { iFrame "#". }
     iIntros "[_ H]". iNamed "H". wp_auto.
-    replace (uint.nat (W64 _)) with (length pref).
-    2: { unfold max_depth in *. word. }
+    replace (uint.nat (W64 _)) with (length pref) by word.
     replace (word.add _ _) with (W64 (length (pref_ext pref label))) by len.
     replace (S (length _)) with (length (pref_ext pref label)) in * by len.
 

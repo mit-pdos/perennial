@@ -16,6 +16,7 @@ Notation leafNodeTy := (W8 1) (only parsing).
 Notation innerNodeTy := (W8 2) (only parsing).
 
 Definition max_depth := 256%nat.
+Hint Unfold max_depth : word.
 
 (* used to [autounfold] top-level recursive defs. *)
 Create HintDb merkle.
