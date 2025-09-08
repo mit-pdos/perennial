@@ -344,7 +344,7 @@ Proof.
   split.
   { by apply Forall_drop. }
   subst.
-  opose proof (join_subslice (uint.nat prevLen) (length vals)
+  opose proof (join_same_len_subslice (uint.nat prevLen) (length vals)
     (Z.to_nat cryptoffi.hash_len) vals _ _) as Heq; [word|..].
   { apply (list.Forall_impl _ _ _ Hlen_vals). lia. }
   rewrite subslice_to_end in Heq; [|done].
@@ -391,7 +391,7 @@ Proof.
     ((length pred_vals + 0) * (Z.to_nat cryptoffi.hash_len))%nat by word.
   replace (sint.nat _) with
     ((length pred_vals + 1) * (Z.to_nat cryptoffi.hash_len))%nat by word.
-  rewrite -join_subslice.
+  rewrite -join_same_len_subslice.
   2: { rewrite app_length. simpl. lia. }
   2: { apply (list.Forall_impl _ _ _ Hlen_vals). lia. }
   rewrite subslice_app_length.
@@ -415,7 +415,7 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
     "Herr" ∷ (∀ new_vals, wish_Verify proof new_vals -∗
       (* TODO(goose): stdpp things like [last] that shadow Stdlib things
       have extremely brittle imports in Perennial.
-      see my external notes on fixing. *)
+      https://github.com/mit-pdos/perennial/issues/327 *)
       "->" ∷ ⌜ newVal = default [] (list.last new_vals) ⌝ ∗
       "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink)
   }}}.

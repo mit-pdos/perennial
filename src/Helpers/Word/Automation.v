@@ -32,7 +32,7 @@ Set Default Proof Mode "Classic".
 
 (** Developer's guide to the [word] tactic.
 
-    At a high-level, [word] is rewrites everything it can to involve arithmetic
+    At a high-level, [word] rewrites everything it can to involve arithmetic
   in [Z] (as opposed to operations on [word]), then it invokes [lia]. In more detail,
   the steps [word] tactic takes are:
   - Unfold types like [w64] to expose the underlying [word.rep ...] type.

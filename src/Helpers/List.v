@@ -752,7 +752,7 @@ Lemma subslice_app_length {A} n m (l0 l1 : list A) :
   subslice n m l1.
 Proof. by rewrite /subslice take_app_add drop_app_add. Qed.
 
-Lemma join_lookup_Some_same_length'' {A} i c (x : list A) ls :
+Lemma join_same_len_lookup {A} i c (x : list A) ls :
   Forall (λ x, length x = c) ls →
   ls !! i = Some x →
   x = subslice (i * c) (S i * c) (mjoin ls).
@@ -784,7 +784,7 @@ Proof.
   rewrite length_take. lia.
 Qed.
 
-Local Lemma join_subslice_aux {A} i k c (ls : list $ list A) :
+Local Lemma join_same_len_subslice_aux {A} i k c (ls : list $ list A) :
   i ≤ i + k ≤ length ls →
   Forall (λ x, length x = c) ls →
   mjoin (subslice i (k + i) ls) = subslice (i * c) ((k + i) * c) (mjoin ls).
@@ -805,15 +805,15 @@ Proof.
   replace (S k + i) with (S (k + i)) by lia.
   eapply subslice_singleton in Hlook0 as ->.
   list_simplifier.
-  by rewrite -(join_lookup_Some_same_length'' _ _ x).
+  by rewrite -(join_same_len_lookup _ _ x).
 Qed.
 
-Lemma join_subslice {A} i j c (ls : list $ list A) :
+Lemma join_same_len_subslice {A} i j c (ls : list $ list A) :
   i ≤ j ≤ length ls →
   Forall (λ x, length x = c) ls →
   mjoin (subslice i j ls) = subslice (i * c) (j * c) (mjoin ls).
 Proof.
   intros.
   replace (j) with ((j - i) + i) by lia.
-  eapply join_subslice_aux; [lia|done].
+  eapply join_same_len_subslice_aux; [lia|done].
 Qed.

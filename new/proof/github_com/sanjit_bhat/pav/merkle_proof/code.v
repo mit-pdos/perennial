@@ -157,7 +157,7 @@ Lemma bytes_to_bits_app a b :
   bytes_to_bits (a ++ b) = bytes_to_bits a ++ bytes_to_bits b.
 Proof. rewrite /bytes_to_bits !fmap_app join_app //. Qed.
 
-Lemma join_lookup_Some_same_length''' {A : Type} ls c i (x : A) :
+Lemma join_same_len_lookup {A : Type} ls c i (x : A) :
   (0 < c)%nat →
   Forall (λ l, length l = c) ls →
   mjoin ls !! i = Some x ↔
@@ -244,7 +244,7 @@ Proof.
   opose proof (lookup_lt_Some _ _ _ Hbs) as Hlt_n.
   rewrite length_bytes_to_bits in Hlt_n.
   rewrite /bytes_to_bits in Hbs.
-  eapply join_lookup_Some_same_length''' in Hbs as (?&Hb&Ho).
+  eapply join_same_len_lookup in Hbs as (?&Hb&Ho).
   3: { apply Forall_fmap, Forall_true. naive_solver. }
   2: lia.
   apply list_lookup_fmap_Some in Hb as (byt&->&Hb).
@@ -375,6 +375,167 @@ Hint Unfold w64_len : len.
 #[global] Instance is_initialized_pers : Persistent is_initialized.
 Proof. apply _. Qed.
 Typeclasses Opaque is_initialized.
+
+Lemma join_same_len_nil {A} {c : nat} (ls : list $ list A) :
+  Forall (λ x, length x = c) ls →
+  0 < c →
+  length (mjoin ls) = 0%nat →
+  ls = [].
+Proof.
+  destruct ls; [done|].
+  simpl. intros Hconst ? Hlen.
+  apply list.Forall_cons in Hconst.
+  rewrite app_length in Hlen.
+  lia.
+Qed.
+
+Lemma fmap_length_reverse {A} (l : list $ list A) :
+  length <$> reverse l = reverse (length <$> l).
+Proof.
+  induction l; [done|].
+  rewrite !reverse_cons fmap_snoc IHl //.
+Qed.
+
+Lemma join_length_reverse {A} (ls : list $ list A) :
+  length (mjoin (reverse ls)) = length (mjoin ls).
+Proof. rewrite !length_join fmap_length_reverse sum_list_with_reverse //. Qed.
+(* TODO: sum_list_with_reverse could be proven with sum_list Permutation lemma.
+see https://gitlab.mpi-sws.org/iris/stdpp/-/issues/111 *)
+
+Lemma join_same_len_length {A} {c : nat} (ls : list $ list A) :
+  Forall (λ x, length x = c) ls →
+  length (mjoin ls) = (length ls * c)%nat.
+Proof.
+  intros.
+  rewrite length_join.
+  by erewrite sum_list_fmap_same.
+Qed.
+
+Lemma take_snoc {A} l (x : A) n :
+  n = length l →
+  take n (l ++ [x]) = l.
+Proof. intros. rewrite take_app_length' //. Qed.
+
+Lemma drop_snoc {A} l (x : A) n :
+  n = length l →
+  drop n (l ++ [x]) = [x].
+Proof. intros. rewrite drop_app_length' //. Qed.
+
+Lemma join_same_len_take {A} (i : nat) c (ls : list $ list A) :
+  Forall (λ x, length x = c) ls →
+  i ≤ length ls →
+  mjoin (take i ls) = take (i * c) (mjoin ls).
+Proof.
+  intros.
+  rewrite -!subslice_from_start.
+  erewrite join_same_len_subslice; cycle 1; [lia|done..].
+Qed.
+
+Lemma join_same_len_drop {A} (i : nat) c (ls : list $ list A) :
+  Forall (λ x, length x = c) ls →
+  i ≤ length ls →
+  mjoin (drop i ls) = drop (i * c) (mjoin ls).
+Proof.
+  intros.
+  rewrite !subslice_from_drop.
+  erewrite join_same_len_subslice; cycle 1; [lia|done|].
+  by rewrite -join_same_len_length.
+Qed.
+
+Lemma join_singleton {A} (l : list A) :
+  mjoin [l] = l.
+Proof. by list_simplifier. Qed.
+
+Lemma wp_newShell sl_label label sl_sibs sibs (depth : nat) :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "#Hsl_label" ∷ sl_label ↦*□ label ∗
+    "#Hsl_sibs" ∷ sl_sibs ↦*□ mjoin (reverse sibs) ∗
+    "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
+    "%Heq_depth" ∷ ⌜depth + length sibs ≤ max_depth⌝
+  }}}
+  @! merkle.newShell #(W64 depth) #sl_label #sl_sibs
+  {{{
+    n, RET #n;
+    "Hown_tree" ∷ own_tree n (pure_newShell' depth label sibs) 1
+  }}}.
+Proof.
+  iLöb as "IH" forall (sl_sibs sibs depth).
+  wp_start as "@". wp_auto.
+  iDestruct (own_slice_len with "Hsl_sibs") as %[Hlen_join ?].
+  rewrite join_length_reverse in Hlen_join.
+
+  wp_if_destruct; wp_auto.
+  { iApply "HΦ".
+    erewrite (join_same_len_nil sibs); cycle 1; [done|lia|word|].
+    rewrite /is_initialized. iNamed "Hinit".
+    by iFrame "#". }
+
+  destruct sibs as [|sib sibs]. { simpl in *. word. }
+  replace (Z.to_nat 32) with (32%nat) in * by lia.
+  eapply join_same_len_length in Hlen_sibs as ?.
+  iDestruct (own_slice_wf with "Hsl_sibs") as %?.
+  wp_apply (wp_slice_slice with "[$Hsl_sibs]")
+    as "{Hsl_sibs} (_&#Hsplit_l&#Hsplit_r)"; [word|].
+  wp_pure; [word|].
+  wp_auto.
+  wp_apply wp_alloc as "* Hcut".
+  wp_apply wp_alloc as "* Hinner".
+  wp_apply (wp_node_getChild with "[$Hinner]").
+  { iFrame "#". }
+  iIntros "* [_ @]". wp_auto.
+  replace (word.add _ _) with (W64 (S depth)) by word.
+
+  (* simplify the subslice's. *)
+  replace (sint.nat (W64 0)) with 0%nat by word.
+  rewrite subslice_from_start.
+  replace (sint.nat (word.sub _ _)) with (length sibs * 32)%nat.
+  2: { simpl in *. word. }
+  assert (Forall (λ x, length x = 32%nat) (reverse (sib :: sibs))) as Ht.
+  { rewrite Forall_Permutation; [done..|].
+    apply reverse_Permutation. }
+  rewrite -join_same_len_take; [|done|len].
+  rewrite -join_same_len_drop; [|done|len].
+  clear Ht.
+  rewrite reverse_cons.
+  rewrite take_snoc; [|len].
+  rewrite drop_snoc; [|len].
+  rewrite join_singleton.
+
+  wp_apply "IH" as "* @".
+  { iFrame "#".
+    iPureIntro. split.
+    { by apply list.Forall_cons in Hlen_sibs as []. }
+    { simpl in *. lia. } }
+  replace (uint.nat (W64 _)) with depth.
+  2: { unfold max_depth in *. word. }
+  iDestruct ("Hclose" with "Hcb Hcnb") as "@".
+  wp_auto.
+  iDestruct (condition_bool (get_bit label depth)
+    with "[Hcut] [Hown_tree]") as "[Htree_l Htree_r]"; [iAccu..|].
+  wp_apply (wp_node_getHash
+    (if get_bit label depth then Cut _ else _)
+    with "[Htree_l]").
+  { iFrame "#". case_match; [|iFrame].
+    iFrame "∗#".
+    iPureIntro. intuition.
+    apply list.Forall_cons in Hlen_sibs as []. lia. }
+  iIntros "*". iNamedSuffix 1 "0". wp_auto.
+  wp_apply (wp_node_getHash
+    (if get_bit label depth then _ else Cut _)
+    with "[Htree_r]").
+  { iFrame "#". case_match; [iFrame|].
+    iFrame "∗#".
+    iPureIntro. intuition.
+    apply list.Forall_cons in Hlen_sibs as []. lia. }
+  iIntros "*". iNamedSuffix 1 "1". wp_auto.
+
+  wp_apply wp_compInnerHash. { iFrame "#". }
+  iIntros "*". iNamedSuffix 1 "_inner".
+  iPersist "Hsl_hash_inner". wp_auto.
+  iApply "HΦ". iFrame "∗#".
+Qed.
 
 Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
   (* limit needed to prevent depth overflow. *)
