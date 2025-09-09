@@ -426,7 +426,10 @@ Tactic Notation "genie_err" :=
       iIntros "H"; repeat iDestruct "H" as (?) "H"; iNamed "H"; iExFalso
     |
     iIntros (?) "*"; iNamed 1; iExFalso
-  ].
+  ];
+  (* use genies from sub-routine calls. *)
+  try (iDestruct "Hgenie" as "[_ Hgenie]";
+    iDestruct ("Hgenie" with "[]") as %?; [|done]).
 
 Definition wish_proofToTree label sibs oleaf proof_enc : iProp Σ :=
   let IsOtherLeaf := match oleaf with None => false | _ => true end in
@@ -463,10 +466,14 @@ Proof.
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_label") as %[].
   wp_if_destruct; wp_auto.
-  2: { iApply "HΦ". genie_err; word. }
+  2: { iApply "HΦ". genie_err.
+    - word.
+    - word. }
   wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* @".
   destruct err; wp_auto.
   { iClear "Herr". iApply "HΦ". genie_err.
+    - iFrame "%". iExists []. by list_simplifier.
+    - iFrame "%". iExists []. by list_simplifier. }
 Admitted.
 
 Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
