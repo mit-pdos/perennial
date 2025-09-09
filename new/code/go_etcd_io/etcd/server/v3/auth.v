@@ -201,7 +201,12 @@ Axiom tokenTypeSimple : go_string.
 
 Axiom tokenTypeJWT : go_string.
 
-Axiom AuthInfo : go_type.
+Definition AuthInfo : go_type := structT [
+  "Username" :: stringT;
+  "Revision" :: uint64T
+].
+#[global] Typeclasses Opaque AuthInfo.
+#[global] Opaque AuthInfo.
 
 Axiom AuthenticateParamIndex : go_type.
 

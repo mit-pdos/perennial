@@ -114,18 +114,75 @@ Admitted.
 Module AuthInfo.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Record t := mk {
+  Username' : go_string;
+  Revision' : w64;
+}.
 End def.
 End AuthInfo.
 
-Global Instance bounded_size_AuthInfo : BoundedTypeSize auth.AuthInfo.
-Admitted.
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent auth.AuthInfo.
+#[local] Typeclasses Transparent auth.AuthInfo.
 
-Global Instance into_val_AuthInfo `{ffi_syntax} : IntoVal AuthInfo.t.
-Admitted.
+Global Instance AuthInfo_wf : struct.Wf auth.AuthInfo.
+Proof. apply _. Qed.
 
-Global Instance into_val_typed_AuthInfo `{ffi_syntax} : IntoValTyped AuthInfo.t auth.AuthInfo.
-Admitted.
+Global Instance settable_AuthInfo : Settable AuthInfo.t :=
+  settable! AuthInfo.mk < AuthInfo.Username'; AuthInfo.Revision' >.
+Global Instance into_val_AuthInfo : IntoVal AuthInfo.t :=
+  {| to_val_def v :=
+    struct.val_aux auth.AuthInfo [
+    "Username" ::= #(AuthInfo.Username' v);
+    "Revision" ::= #(AuthInfo.Revision' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_AuthInfo : IntoValTyped AuthInfo.t auth.AuthInfo :=
+{|
+  default_val := AuthInfo.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_AuthInfo_Username : IntoValStructField "Username" auth.AuthInfo AuthInfo.Username'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_AuthInfo_Revision : IntoValStructField "Revision" auth.AuthInfo AuthInfo.Revision'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_AuthInfo Username' Revision':
+  PureWp True
+    (struct.make #auth.AuthInfo (alist_val [
+      "Username" ::= #Username';
+      "Revision" ::= #Revision'
+    ]))%struct
+    #(AuthInfo.mk Username' Revision').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance AuthInfo_struct_fields_split dq l (v : AuthInfo.t) :
+  StructFieldsSplit dq l v (
+    "HUsername" ∷ l ↦s[auth.AuthInfo :: "Username"]{dq} v.(AuthInfo.Username') ∗
+    "HRevision" ∷ l ↦s[auth.AuthInfo :: "Revision"]{dq} v.(AuthInfo.Revision')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (AuthInfo.Username' v)) (auth.AuthInfo) "Username"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 (* type auth.AuthenticateParamIndex *)
 Module AuthenticateParamIndex.
