@@ -114,7 +114,7 @@ Proof.
     { by iExFalso. }
 Qed.
 
-Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :
+Lemma wp_for_post_do stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
   for_postcondition stk E post P Φ execute_val.
 Proof.

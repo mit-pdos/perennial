@@ -44,7 +44,7 @@ Proof.
   wp_call_lc "?". by iApply "Hwp".
 Qed.
 
-Global Instance pure_exception_do_execute_v (v : val) :
+Global Instance pure_exception_do_execute_v :
   PureWp True (exception_do execute_val) (#()).
 Proof.
   rewrite exception_do_unseal execute_val_unseal.

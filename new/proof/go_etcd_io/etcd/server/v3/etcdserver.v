@@ -64,7 +64,7 @@ Definition is_SimpleRequest r : iProp Σ :=
 .
 
 Axiom wp_EtcdServer__AuthInfoFromCtx : ∀ s γ ctx ctx_desc,
-  {{{ is_EtcdServer s γ ∗ is_Context ctx ctx_desc }}}
+  {{{ is_pkg_init etcdserver ∗ is_EtcdServer s γ ∗ is_Context ctx ctx_desc }}}
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "AuthInfoFromCtx" #ctx
   {{{ (a_ptr : loc) (err : interface.t), RET (#a_ptr, #err);
       if decide (a_ptr = null) then

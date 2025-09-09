@@ -174,7 +174,7 @@ Lemma wp_for_chan_range P ch (body : func.t) :
 Proof.
 Admitted.
 
-Lemma wp_for_chan_post_do (v : val) P Φ :
+Lemma wp_for_chan_post_do P Φ :
   P -∗
   for_chan_postcondition P Φ execute_val.
 Proof.
