@@ -401,20 +401,32 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-(* simplify / solve some cases of: return error = true goals of form:
-"Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ quants, wish) ∗
-"Herr" ∷ (∀ quants, wish -∗ post)
+(* for goals of the form:
+"Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ quants, wish quants) ∗
+"Herr" ∷ (∀ quants, wish quants -∗ post quants)
+
+this tactic reduces the err = true case down to these goals,
+which are equivalent and proved from having contradictory wish info in ctx:
+1. (∃ quants, wish quants) -∗ False
+2. ∀ quants, wish quants -∗ False
+
+note that for err = false, we can reduce to these goals.
+1. ∃ quants, wish quants
+  proved from having wish in ctx.
+2. ∀ quants, wish quants -∗ post quants
+  have wish q0 in ctx. might always need [wish q0 -∗ wish q1 -∗ q0 = q1] lemma.
 
 it's an implementation restriction that the wish must have at least one quant.
 see [iIntros (?) "*"] and
 https://github.com/tchajed/iris-named-props/issues/18 *)
-Tactic Notation "genie_err" := iSplit; [
-  iSplit;
-    [by iIntros "%"|];
-    iIntros "H"; repeat iDestruct "H" as (?) "H"; iNamed "H"; iExFalso
-  |
-  iIntros (?) "*"; iNamed 1; iExFalso
-].
+Tactic Notation "genie_err" :=
+  iSplit; [
+    iSplit;
+      [by iIntros "%"|];
+      iIntros "H"; repeat iDestruct "H" as (?) "H"; iNamed "H"; iExFalso
+    |
+    iIntros (?) "*"; iNamed 1; iExFalso
+  ].
 
 Definition wish_proofToTree label sibs oleaf proof_enc : iProp Σ :=
   let IsOtherLeaf := match oleaf with None => false | _ => true end in
@@ -452,6 +464,9 @@ Proof.
   iDestruct (own_slice_len with "Hsl_label") as %[].
   wp_if_destruct; wp_auto.
   2: { iApply "HΦ". genie_err; word. }
+  wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* @".
+  destruct err; wp_auto.
+  { iClear "Herr". iApply "HΦ". genie_err.
 Admitted.
 
 Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
