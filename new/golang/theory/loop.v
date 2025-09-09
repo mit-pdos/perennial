@@ -44,8 +44,8 @@ Qed.
 (* Sealed - use the wp_for_post_ lemmas below to prove this. *)
 Definition for_postcondition_def stk E (post : val) P Φ bv : iProp Σ :=
             ⌜ bv = continue_val ⌝ ∗ WP post #() @ stk; E {{ _, P }} ∨
-            (∃ v, ⌜ bv = execute_val v ⌝ ∗ WP post #() @ stk; E {{ _, P }}) ∨
-            ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
+            (⌜ bv = execute_val ⌝ ∗ WP post #() @ stk; E {{ _, P }}) ∨
+            ⌜ bv = break_val ⌝ ∗ Φ execute_val ∨
             (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv).
 Program Definition for_postcondition := sealed @for_postcondition_def.
 Definition for_postcondition_unseal : for_postcondition = _ := seal_eq _.
@@ -56,7 +56,7 @@ Lemma wp_for P stk E (cond body post : val) Φ :
      WP cond #() @ stk ; E {{ v, if decide (v = #true) then
                                    WP body #() @ stk ; E {{ for_postcondition stk E post P Φ }}
                                  else if decide (v = #false) then
-                                        Φ (execute_val #())
+                                        Φ execute_val
                                       else False
                            }}
     ) -∗
@@ -88,7 +88,7 @@ Proof.
       wp_pures.
       done.
     }
-    iDestruct "Hb" as "[[% [% HP]]|Hb]".
+    iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "execute" *)
       subst. rewrite execute_val_unseal. wp_pures. (* FIXME: don't unfold [do:] here *)
       wp_apply (wp_wand with "HP").
@@ -116,7 +116,7 @@ Qed.
 
 Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
-  for_postcondition stk E post P Φ (execute_val v).
+  for_postcondition stk E post P Φ execute_val.
 Proof.
   iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
   eauto 10 with iFrame.
@@ -131,7 +131,7 @@ Proof.
 Qed.
 
 Lemma wp_for_post_break stk E (post : val) P Φ :
-  Φ (execute_val #()) -∗
+  Φ execute_val -∗
   for_postcondition stk E post P Φ break_val.
 Proof.
   iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.

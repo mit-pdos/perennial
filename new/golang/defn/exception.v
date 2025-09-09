@@ -6,7 +6,7 @@ Section defn.
 
 Context `{!ffi_syntax}.
 
-Definition execute_val_def (v : val) : val := (#"execute", v).
+Definition execute_val_def : val := (#"execute", #()).
 Program Definition execute_val := sealed @execute_val_def.
 Definition execute_val_unseal : execute_val = _ := seal_eq _.
 

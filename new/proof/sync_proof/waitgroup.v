@@ -234,7 +234,7 @@ Proof.
     wp_auto.
     wp_bind (if: _ then _ else do: #())%E.
     clear Hbad.
-    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[-]").
+    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗ _)%I with "[-]").
     {
       destruct bool_decide eqn:Heq0.
       - wp_auto.
@@ -280,7 +280,7 @@ Proof.
   wp_auto.
   wp_bind (if: _ then _ else do: #())%E.
   clear Hbad.
-  iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[-]").
+  iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗ _)%I with "[-]").
   {
     destruct bool_decide eqn:Heq0.
     - wp_auto.

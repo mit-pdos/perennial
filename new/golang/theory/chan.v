@@ -144,8 +144,8 @@ Admitted.
 
 Definition for_chan_postcondition_def P Φ bv : iProp Σ :=
             ⌜ bv = continue_val ⌝ ∗ P ∨
-            (∃ (v : val), ⌜ bv = execute_val v ⌝ ∗ P) ∨
-            ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
+            (⌜ bv = execute_val ⌝ ∗ P) ∨
+            (⌜ bv = break_val ⌝ ∗ Φ execute_val) ∨
             (∃ (v : val), ⌜ bv = return_val v ⌝ ∗ Φ bv).
 Program Definition for_chan_postcondition := sealed @for_chan_postcondition_def.
 Definition for_chan_postcondition_unseal : for_chan_postcondition = _ := seal_eq _.
@@ -159,7 +159,7 @@ Lemma wp_for_chan_range P ch (body : func.t) :
       ▷∃ s, own_chan ch s ∗
             if decide (s.(chanstate.closed) = true ∧ length s.(chanstate.sent) ≤ s.(chanstate.received)) then
               (* the channel is closed and empty, so the loop exits *)
-              (own_chan ch s ={∅,⊤}=∗ (Φ (execute_val #())))
+              (own_chan ch s ={∅,⊤}=∗ (Φ execute_val))
             else
               (* notify the sender that this thread is receiving *)
               (own_chan ch (set chanstate.received S s) ={∅,⊤}=∗
@@ -176,7 +176,7 @@ Admitted.
 
 Lemma wp_for_chan_post_do (v : val) P Φ :
   P -∗
-  for_chan_postcondition P Φ (execute_val v).
+  for_chan_postcondition P Φ execute_val.
 Proof.
   iIntros "H". rewrite for_chan_postcondition_unseal /for_chan_postcondition_def.
   eauto 10 with iFrame.
@@ -191,7 +191,7 @@ Proof.
 Qed.
 
 Lemma wp_for_chan_post_break P Φ :
-  Φ (execute_val #()) -∗
+  Φ execute_val -∗
   for_chan_postcondition P Φ break_val.
 Proof.
   iIntros "H". rewrite for_chan_postcondition_unseal /for_chan_postcondition_def.

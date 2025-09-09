@@ -35,7 +35,7 @@ Definition big_context l : iProp Σ :=
 Lemma x (l : loc) :
   {{{ big_context l }}}
     (test l)
-  {{{ RET (execute_val #()); True }}}.
+  {{{ RET execute_val; True }}}.
 Proof.
   iIntros (?) "H HΦ".
   unfold test.
@@ -109,7 +109,7 @@ Tactic Notation "wp_store_bad" :=
 Lemma x_bad (l : loc) :
   {{{ big_context l }}}
     (test l)
-  {{{ RET (execute_val #()); True }}}.
+  {{{ RET execute_val; True }}}.
 Proof.
   iIntros (?) "H HΦ".
   unfold test.
