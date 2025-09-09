@@ -152,18 +152,339 @@ End instances.
 Module InternalRaftRequest.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Record t := mk {
+  Header' : loc;
+  ID' : w64;
+  V2' : loc;
+  Range' : loc;
+  Put' : loc;
+  DeleteRange' : loc;
+  Txn' : loc;
+  Compaction' : loc;
+  LeaseGrant' : loc;
+  LeaseRevoke' : loc;
+  Alarm' : loc;
+  LeaseCheckpoint' : loc;
+  AuthEnable' : loc;
+  AuthDisable' : loc;
+  AuthStatus' : loc;
+  Authenticate' : loc;
+  AuthUserAdd' : loc;
+  AuthUserDelete' : loc;
+  AuthUserGet' : loc;
+  AuthUserChangePassword' : loc;
+  AuthUserGrantRole' : loc;
+  AuthUserRevokeRole' : loc;
+  AuthUserList' : loc;
+  AuthRoleList' : loc;
+  AuthRoleAdd' : loc;
+  AuthRoleDelete' : loc;
+  AuthRoleGet' : loc;
+  AuthRoleGrantPermission' : loc;
+  AuthRoleRevokePermission' : loc;
+  ClusterVersionSet' : loc;
+  ClusterMemberAttrSet' : loc;
+  DowngradeInfoSet' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
 End def.
 End InternalRaftRequest.
 
-Global Instance bounded_size_InternalRaftRequest : BoundedTypeSize etcdserverpb.InternalRaftRequest.
-Admitted.
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent etcdserverpb.InternalRaftRequest.
+#[local] Typeclasses Transparent etcdserverpb.InternalRaftRequest.
 
-Global Instance into_val_InternalRaftRequest `{ffi_syntax} : IntoVal InternalRaftRequest.t.
-Admitted.
+Global Instance InternalRaftRequest_wf : struct.Wf etcdserverpb.InternalRaftRequest.
+Proof. apply _. Qed.
 
-Global Instance into_val_typed_InternalRaftRequest `{ffi_syntax} : IntoValTyped InternalRaftRequest.t etcdserverpb.InternalRaftRequest.
-Admitted.
+Global Instance settable_InternalRaftRequest : Settable InternalRaftRequest.t :=
+  settable! InternalRaftRequest.mk < InternalRaftRequest.Header'; InternalRaftRequest.ID'; InternalRaftRequest.V2'; InternalRaftRequest.Range'; InternalRaftRequest.Put'; InternalRaftRequest.DeleteRange'; InternalRaftRequest.Txn'; InternalRaftRequest.Compaction'; InternalRaftRequest.LeaseGrant'; InternalRaftRequest.LeaseRevoke'; InternalRaftRequest.Alarm'; InternalRaftRequest.LeaseCheckpoint'; InternalRaftRequest.AuthEnable'; InternalRaftRequest.AuthDisable'; InternalRaftRequest.AuthStatus'; InternalRaftRequest.Authenticate'; InternalRaftRequest.AuthUserAdd'; InternalRaftRequest.AuthUserDelete'; InternalRaftRequest.AuthUserGet'; InternalRaftRequest.AuthUserChangePassword'; InternalRaftRequest.AuthUserGrantRole'; InternalRaftRequest.AuthUserRevokeRole'; InternalRaftRequest.AuthUserList'; InternalRaftRequest.AuthRoleList'; InternalRaftRequest.AuthRoleAdd'; InternalRaftRequest.AuthRoleDelete'; InternalRaftRequest.AuthRoleGet'; InternalRaftRequest.AuthRoleGrantPermission'; InternalRaftRequest.AuthRoleRevokePermission'; InternalRaftRequest.ClusterVersionSet'; InternalRaftRequest.ClusterMemberAttrSet'; InternalRaftRequest.DowngradeInfoSet'; InternalRaftRequest.XXX_NoUnkeyedLiteral'; InternalRaftRequest.XXX_unrecognized'; InternalRaftRequest.XXX_sizecache' >.
+Global Instance into_val_InternalRaftRequest : IntoVal InternalRaftRequest.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.InternalRaftRequest [
+    "Header" ::= #(InternalRaftRequest.Header' v);
+    "ID" ::= #(InternalRaftRequest.ID' v);
+    "V2" ::= #(InternalRaftRequest.V2' v);
+    "Range" ::= #(InternalRaftRequest.Range' v);
+    "Put" ::= #(InternalRaftRequest.Put' v);
+    "DeleteRange" ::= #(InternalRaftRequest.DeleteRange' v);
+    "Txn" ::= #(InternalRaftRequest.Txn' v);
+    "Compaction" ::= #(InternalRaftRequest.Compaction' v);
+    "LeaseGrant" ::= #(InternalRaftRequest.LeaseGrant' v);
+    "LeaseRevoke" ::= #(InternalRaftRequest.LeaseRevoke' v);
+    "Alarm" ::= #(InternalRaftRequest.Alarm' v);
+    "LeaseCheckpoint" ::= #(InternalRaftRequest.LeaseCheckpoint' v);
+    "AuthEnable" ::= #(InternalRaftRequest.AuthEnable' v);
+    "AuthDisable" ::= #(InternalRaftRequest.AuthDisable' v);
+    "AuthStatus" ::= #(InternalRaftRequest.AuthStatus' v);
+    "Authenticate" ::= #(InternalRaftRequest.Authenticate' v);
+    "AuthUserAdd" ::= #(InternalRaftRequest.AuthUserAdd' v);
+    "AuthUserDelete" ::= #(InternalRaftRequest.AuthUserDelete' v);
+    "AuthUserGet" ::= #(InternalRaftRequest.AuthUserGet' v);
+    "AuthUserChangePassword" ::= #(InternalRaftRequest.AuthUserChangePassword' v);
+    "AuthUserGrantRole" ::= #(InternalRaftRequest.AuthUserGrantRole' v);
+    "AuthUserRevokeRole" ::= #(InternalRaftRequest.AuthUserRevokeRole' v);
+    "AuthUserList" ::= #(InternalRaftRequest.AuthUserList' v);
+    "AuthRoleList" ::= #(InternalRaftRequest.AuthRoleList' v);
+    "AuthRoleAdd" ::= #(InternalRaftRequest.AuthRoleAdd' v);
+    "AuthRoleDelete" ::= #(InternalRaftRequest.AuthRoleDelete' v);
+    "AuthRoleGet" ::= #(InternalRaftRequest.AuthRoleGet' v);
+    "AuthRoleGrantPermission" ::= #(InternalRaftRequest.AuthRoleGrantPermission' v);
+    "AuthRoleRevokePermission" ::= #(InternalRaftRequest.AuthRoleRevokePermission' v);
+    "ClusterVersionSet" ::= #(InternalRaftRequest.ClusterVersionSet' v);
+    "ClusterMemberAttrSet" ::= #(InternalRaftRequest.ClusterMemberAttrSet' v);
+    "DowngradeInfoSet" ::= #(InternalRaftRequest.DowngradeInfoSet' v);
+    "XXX_NoUnkeyedLiteral" ::= #(InternalRaftRequest.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(InternalRaftRequest.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(InternalRaftRequest.XXX_sizecache' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_InternalRaftRequest : IntoValTyped InternalRaftRequest.t etcdserverpb.InternalRaftRequest :=
+{|
+  default_val := InternalRaftRequest.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_Header : IntoValStructField "Header" etcdserverpb.InternalRaftRequest InternalRaftRequest.Header'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_ID : IntoValStructField "ID" etcdserverpb.InternalRaftRequest InternalRaftRequest.ID'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_V2 : IntoValStructField "V2" etcdserverpb.InternalRaftRequest InternalRaftRequest.V2'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_Range : IntoValStructField "Range" etcdserverpb.InternalRaftRequest InternalRaftRequest.Range'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_Put : IntoValStructField "Put" etcdserverpb.InternalRaftRequest InternalRaftRequest.Put'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_DeleteRange : IntoValStructField "DeleteRange" etcdserverpb.InternalRaftRequest InternalRaftRequest.DeleteRange'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_Txn : IntoValStructField "Txn" etcdserverpb.InternalRaftRequest InternalRaftRequest.Txn'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_Compaction : IntoValStructField "Compaction" etcdserverpb.InternalRaftRequest InternalRaftRequest.Compaction'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_LeaseGrant : IntoValStructField "LeaseGrant" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseGrant'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_LeaseRevoke : IntoValStructField "LeaseRevoke" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseRevoke'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_Alarm : IntoValStructField "Alarm" etcdserverpb.InternalRaftRequest InternalRaftRequest.Alarm'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_LeaseCheckpoint : IntoValStructField "LeaseCheckpoint" etcdserverpb.InternalRaftRequest InternalRaftRequest.LeaseCheckpoint'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthEnable : IntoValStructField "AuthEnable" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthEnable'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthDisable : IntoValStructField "AuthDisable" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthDisable'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthStatus : IntoValStructField "AuthStatus" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthStatus'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_Authenticate : IntoValStructField "Authenticate" etcdserverpb.InternalRaftRequest InternalRaftRequest.Authenticate'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserAdd : IntoValStructField "AuthUserAdd" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserAdd'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserDelete : IntoValStructField "AuthUserDelete" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserDelete'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserGet : IntoValStructField "AuthUserGet" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserGet'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserChangePassword : IntoValStructField "AuthUserChangePassword" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserChangePassword'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserGrantRole : IntoValStructField "AuthUserGrantRole" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserGrantRole'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserRevokeRole : IntoValStructField "AuthUserRevokeRole" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserRevokeRole'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthUserList : IntoValStructField "AuthUserList" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthUserList'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleList : IntoValStructField "AuthRoleList" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleList'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleAdd : IntoValStructField "AuthRoleAdd" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleAdd'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleDelete : IntoValStructField "AuthRoleDelete" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleDelete'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleGet : IntoValStructField "AuthRoleGet" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleGet'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleGrantPermission : IntoValStructField "AuthRoleGrantPermission" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleGrantPermission'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_AuthRoleRevokePermission : IntoValStructField "AuthRoleRevokePermission" etcdserverpb.InternalRaftRequest InternalRaftRequest.AuthRoleRevokePermission'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_ClusterVersionSet : IntoValStructField "ClusterVersionSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.ClusterVersionSet'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_ClusterMemberAttrSet : IntoValStructField "ClusterMemberAttrSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.ClusterMemberAttrSet'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_DowngradeInfoSet : IntoValStructField "DowngradeInfoSet" etcdserverpb.InternalRaftRequest InternalRaftRequest.DowngradeInfoSet'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_NoUnkeyedLiteral'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_XXX_unrecognized : IntoValStructField "XXX_unrecognized" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_unrecognized'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_InternalRaftRequest_XXX_sizecache : IntoValStructField "XXX_sizecache" etcdserverpb.InternalRaftRequest InternalRaftRequest.XXX_sizecache'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_InternalRaftRequest Header' ID' V2' Range' Put' DeleteRange' Txn' Compaction' LeaseGrant' LeaseRevoke' Alarm' LeaseCheckpoint' AuthEnable' AuthDisable' AuthStatus' Authenticate' AuthUserAdd' AuthUserDelete' AuthUserGet' AuthUserChangePassword' AuthUserGrantRole' AuthUserRevokeRole' AuthUserList' AuthRoleList' AuthRoleAdd' AuthRoleDelete' AuthRoleGet' AuthRoleGrantPermission' AuthRoleRevokePermission' ClusterVersionSet' ClusterMemberAttrSet' DowngradeInfoSet' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make #etcdserverpb.InternalRaftRequest (alist_val [
+      "Header" ::= #Header';
+      "ID" ::= #ID';
+      "V2" ::= #V2';
+      "Range" ::= #Range';
+      "Put" ::= #Put';
+      "DeleteRange" ::= #DeleteRange';
+      "Txn" ::= #Txn';
+      "Compaction" ::= #Compaction';
+      "LeaseGrant" ::= #LeaseGrant';
+      "LeaseRevoke" ::= #LeaseRevoke';
+      "Alarm" ::= #Alarm';
+      "LeaseCheckpoint" ::= #LeaseCheckpoint';
+      "AuthEnable" ::= #AuthEnable';
+      "AuthDisable" ::= #AuthDisable';
+      "AuthStatus" ::= #AuthStatus';
+      "Authenticate" ::= #Authenticate';
+      "AuthUserAdd" ::= #AuthUserAdd';
+      "AuthUserDelete" ::= #AuthUserDelete';
+      "AuthUserGet" ::= #AuthUserGet';
+      "AuthUserChangePassword" ::= #AuthUserChangePassword';
+      "AuthUserGrantRole" ::= #AuthUserGrantRole';
+      "AuthUserRevokeRole" ::= #AuthUserRevokeRole';
+      "AuthUserList" ::= #AuthUserList';
+      "AuthRoleList" ::= #AuthRoleList';
+      "AuthRoleAdd" ::= #AuthRoleAdd';
+      "AuthRoleDelete" ::= #AuthRoleDelete';
+      "AuthRoleGet" ::= #AuthRoleGet';
+      "AuthRoleGrantPermission" ::= #AuthRoleGrantPermission';
+      "AuthRoleRevokePermission" ::= #AuthRoleRevokePermission';
+      "ClusterVersionSet" ::= #ClusterVersionSet';
+      "ClusterMemberAttrSet" ::= #ClusterMemberAttrSet';
+      "DowngradeInfoSet" ::= #DowngradeInfoSet';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%struct
+    #(InternalRaftRequest.mk Header' ID' V2' Range' Put' DeleteRange' Txn' Compaction' LeaseGrant' LeaseRevoke' Alarm' LeaseCheckpoint' AuthEnable' AuthDisable' AuthStatus' Authenticate' AuthUserAdd' AuthUserDelete' AuthUserGet' AuthUserChangePassword' AuthUserGrantRole' AuthUserRevokeRole' AuthUserList' AuthRoleList' AuthRoleAdd' AuthRoleDelete' AuthRoleGet' AuthRoleGrantPermission' AuthRoleRevokePermission' ClusterVersionSet' ClusterMemberAttrSet' DowngradeInfoSet' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance InternalRaftRequest_struct_fields_split dq l (v : InternalRaftRequest.t) :
+  StructFieldsSplit dq l v (
+    "HHeader" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "Header"]{dq} v.(InternalRaftRequest.Header') ∗
+    "HID" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "ID"]{dq} v.(InternalRaftRequest.ID') ∗
+    "HV2" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "V2"]{dq} v.(InternalRaftRequest.V2') ∗
+    "HRange" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "Range"]{dq} v.(InternalRaftRequest.Range') ∗
+    "HPut" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "Put"]{dq} v.(InternalRaftRequest.Put') ∗
+    "HDeleteRange" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "DeleteRange"]{dq} v.(InternalRaftRequest.DeleteRange') ∗
+    "HTxn" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "Txn"]{dq} v.(InternalRaftRequest.Txn') ∗
+    "HCompaction" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "Compaction"]{dq} v.(InternalRaftRequest.Compaction') ∗
+    "HLeaseGrant" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "LeaseGrant"]{dq} v.(InternalRaftRequest.LeaseGrant') ∗
+    "HLeaseRevoke" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "LeaseRevoke"]{dq} v.(InternalRaftRequest.LeaseRevoke') ∗
+    "HAlarm" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "Alarm"]{dq} v.(InternalRaftRequest.Alarm') ∗
+    "HLeaseCheckpoint" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "LeaseCheckpoint"]{dq} v.(InternalRaftRequest.LeaseCheckpoint') ∗
+    "HAuthEnable" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthEnable"]{dq} v.(InternalRaftRequest.AuthEnable') ∗
+    "HAuthDisable" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthDisable"]{dq} v.(InternalRaftRequest.AuthDisable') ∗
+    "HAuthStatus" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthStatus"]{dq} v.(InternalRaftRequest.AuthStatus') ∗
+    "HAuthenticate" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "Authenticate"]{dq} v.(InternalRaftRequest.Authenticate') ∗
+    "HAuthUserAdd" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthUserAdd"]{dq} v.(InternalRaftRequest.AuthUserAdd') ∗
+    "HAuthUserDelete" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthUserDelete"]{dq} v.(InternalRaftRequest.AuthUserDelete') ∗
+    "HAuthUserGet" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthUserGet"]{dq} v.(InternalRaftRequest.AuthUserGet') ∗
+    "HAuthUserChangePassword" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthUserChangePassword"]{dq} v.(InternalRaftRequest.AuthUserChangePassword') ∗
+    "HAuthUserGrantRole" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthUserGrantRole"]{dq} v.(InternalRaftRequest.AuthUserGrantRole') ∗
+    "HAuthUserRevokeRole" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthUserRevokeRole"]{dq} v.(InternalRaftRequest.AuthUserRevokeRole') ∗
+    "HAuthUserList" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthUserList"]{dq} v.(InternalRaftRequest.AuthUserList') ∗
+    "HAuthRoleList" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthRoleList"]{dq} v.(InternalRaftRequest.AuthRoleList') ∗
+    "HAuthRoleAdd" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthRoleAdd"]{dq} v.(InternalRaftRequest.AuthRoleAdd') ∗
+    "HAuthRoleDelete" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthRoleDelete"]{dq} v.(InternalRaftRequest.AuthRoleDelete') ∗
+    "HAuthRoleGet" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthRoleGet"]{dq} v.(InternalRaftRequest.AuthRoleGet') ∗
+    "HAuthRoleGrantPermission" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthRoleGrantPermission"]{dq} v.(InternalRaftRequest.AuthRoleGrantPermission') ∗
+    "HAuthRoleRevokePermission" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "AuthRoleRevokePermission"]{dq} v.(InternalRaftRequest.AuthRoleRevokePermission') ∗
+    "HClusterVersionSet" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "ClusterVersionSet"]{dq} v.(InternalRaftRequest.ClusterVersionSet') ∗
+    "HClusterMemberAttrSet" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "ClusterMemberAttrSet"]{dq} v.(InternalRaftRequest.ClusterMemberAttrSet') ∗
+    "HDowngradeInfoSet" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "DowngradeInfoSet"]{dq} v.(InternalRaftRequest.DowngradeInfoSet') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "XXX_NoUnkeyedLiteral"]{dq} v.(InternalRaftRequest.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "XXX_unrecognized"]{dq} v.(InternalRaftRequest.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.InternalRaftRequest :: "XXX_sizecache"]{dq} v.(InternalRaftRequest.XXX_sizecache')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (InternalRaftRequest.Header' v)) (etcdserverpb.InternalRaftRequest) "Header"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.ID' v)) (etcdserverpb.InternalRaftRequest) "ID"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.V2' v)) (etcdserverpb.InternalRaftRequest) "V2"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.Range' v)) (etcdserverpb.InternalRaftRequest) "Range"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.Put' v)) (etcdserverpb.InternalRaftRequest) "Put"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.DeleteRange' v)) (etcdserverpb.InternalRaftRequest) "DeleteRange"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.Txn' v)) (etcdserverpb.InternalRaftRequest) "Txn"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.Compaction' v)) (etcdserverpb.InternalRaftRequest) "Compaction"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.LeaseGrant' v)) (etcdserverpb.InternalRaftRequest) "LeaseGrant"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.LeaseRevoke' v)) (etcdserverpb.InternalRaftRequest) "LeaseRevoke"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.Alarm' v)) (etcdserverpb.InternalRaftRequest) "Alarm"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.LeaseCheckpoint' v)) (etcdserverpb.InternalRaftRequest) "LeaseCheckpoint"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthEnable' v)) (etcdserverpb.InternalRaftRequest) "AuthEnable"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthDisable' v)) (etcdserverpb.InternalRaftRequest) "AuthDisable"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthStatus' v)) (etcdserverpb.InternalRaftRequest) "AuthStatus"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.Authenticate' v)) (etcdserverpb.InternalRaftRequest) "Authenticate"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthUserAdd' v)) (etcdserverpb.InternalRaftRequest) "AuthUserAdd"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthUserDelete' v)) (etcdserverpb.InternalRaftRequest) "AuthUserDelete"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthUserGet' v)) (etcdserverpb.InternalRaftRequest) "AuthUserGet"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthUserChangePassword' v)) (etcdserverpb.InternalRaftRequest) "AuthUserChangePassword"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthUserGrantRole' v)) (etcdserverpb.InternalRaftRequest) "AuthUserGrantRole"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthUserRevokeRole' v)) (etcdserverpb.InternalRaftRequest) "AuthUserRevokeRole"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthUserList' v)) (etcdserverpb.InternalRaftRequest) "AuthUserList"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthRoleList' v)) (etcdserverpb.InternalRaftRequest) "AuthRoleList"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthRoleAdd' v)) (etcdserverpb.InternalRaftRequest) "AuthRoleAdd"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthRoleDelete' v)) (etcdserverpb.InternalRaftRequest) "AuthRoleDelete"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthRoleGet' v)) (etcdserverpb.InternalRaftRequest) "AuthRoleGet"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthRoleGrantPermission' v)) (etcdserverpb.InternalRaftRequest) "AuthRoleGrantPermission"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.AuthRoleRevokePermission' v)) (etcdserverpb.InternalRaftRequest) "AuthRoleRevokePermission"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.ClusterVersionSet' v)) (etcdserverpb.InternalRaftRequest) "ClusterVersionSet"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.ClusterMemberAttrSet' v)) (etcdserverpb.InternalRaftRequest) "ClusterMemberAttrSet"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.DowngradeInfoSet' v)) (etcdserverpb.InternalRaftRequest) "DowngradeInfoSet"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.InternalRaftRequest) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (InternalRaftRequest.XXX_unrecognized' v)) (etcdserverpb.InternalRaftRequest) "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 (* type etcdserverpb.EmptyResponse *)
 Module EmptyResponse.

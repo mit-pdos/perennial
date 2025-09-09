@@ -631,6 +631,10 @@ End time.
 (* TEST *)
 Module empty_struct.
 Definition empty_struct : go_type := structT [].
+#[global] Typeclasses Opaque empty_struct.
+#[global] Opaque empty_struct.
+#[local] Transparent empty_struct.
+#[local] Typeclasses Transparent empty_struct.
 
 Module unit.
 Section def.

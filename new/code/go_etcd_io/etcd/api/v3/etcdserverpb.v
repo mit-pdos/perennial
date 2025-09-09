@@ -228,7 +228,46 @@ Definition RequestHeader : go_type := structT [
 
 Definition xxx_messageInfo_RequestHeader : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestHeader"%go.
 
-Axiom InternalRaftRequest : go_type.
+Definition InternalRaftRequest : go_type := structT [
+  "Header" :: ptrT;
+  "ID" :: uint64T;
+  "V2" :: ptrT;
+  "Range" :: ptrT;
+  "Put" :: ptrT;
+  "DeleteRange" :: ptrT;
+  "Txn" :: ptrT;
+  "Compaction" :: ptrT;
+  "LeaseGrant" :: ptrT;
+  "LeaseRevoke" :: ptrT;
+  "Alarm" :: ptrT;
+  "LeaseCheckpoint" :: ptrT;
+  "AuthEnable" :: ptrT;
+  "AuthDisable" :: ptrT;
+  "AuthStatus" :: ptrT;
+  "Authenticate" :: ptrT;
+  "AuthUserAdd" :: ptrT;
+  "AuthUserDelete" :: ptrT;
+  "AuthUserGet" :: ptrT;
+  "AuthUserChangePassword" :: ptrT;
+  "AuthUserGrantRole" :: ptrT;
+  "AuthUserRevokeRole" :: ptrT;
+  "AuthUserList" :: ptrT;
+  "AuthRoleList" :: ptrT;
+  "AuthRoleAdd" :: ptrT;
+  "AuthRoleDelete" :: ptrT;
+  "AuthRoleGet" :: ptrT;
+  "AuthRoleGrantPermission" :: ptrT;
+  "AuthRoleRevokePermission" :: ptrT;
+  "ClusterVersionSet" :: ptrT;
+  "ClusterMemberAttrSet" :: ptrT;
+  "DowngradeInfoSet" :: ptrT;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+#[global] Typeclasses Opaque InternalRaftRequest.
+#[global] Opaque InternalRaftRequest.
 
 Definition xxx_messageInfo_InternalRaftRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_InternalRaftRequest"%go.
 

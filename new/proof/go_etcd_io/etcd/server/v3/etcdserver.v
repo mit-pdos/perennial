@@ -53,12 +53,17 @@ Axiom wp_EtcdServer__getCommittedIndex : ∀ s γ,
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "getCommittedIndex" #()
   {{{ (a : w64), RET #a; True }}}.
 
-Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ (ctx : context.Context.t) (r : loc) :
-  {{{ is_pkg_init etcdserver ∗ is_EtcdServer s γ }}}
+Definition is_SimpleRequest r : iProp Σ :=
+  "%HAuthenticate" ∷ ⌜ r.(etcdserverpb.InternalRaftRequest.Authenticate') = null ⌝ ∗
+  "_" ∷ True
+.
+
+Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ (ctx : context.Context.t) r :
+  {{{ is_pkg_init etcdserver ∗ "#Hsrv" ∷ is_EtcdServer s γ ∗ "#Hreq" ∷ is_SimpleRequest r }}}
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "processInternalRaftRequestOnce" #ctx #r
   {{{ RET #(); True }}}.
 Proof.
-  wp_start as "#Hsrv".
+  wp_start. iNamed "Hpre".
   wp_apply wp_with_defer as "%defer Hdefer" . simpl subst.
   wp_auto. wp_apply (wp_EtcdServer__getAppliedIndex with "[$Hsrv]") as "%ai _".
   wp_apply (wp_EtcdServer__getCommittedIndex with "[$Hsrv]") as "%ci _".
@@ -73,15 +78,20 @@ Proof.
   wp_apply (wp_Generator__Next with "[]").
   { iFrame "#". }
   iIntros "%i _".
-  wp_pures.
-  rewrite -default_val_eq_zero_val.
-  rewrite -default_val_eq_zero_val.
-  rewrite -default_val_eq_zero_val.
   wp_auto.
-  wp_bind.
+  wp_alloc hdr_ptr as "hdr".
+  wp_auto.
+  iNamed "Hreq".
+  rewrite HAuthenticate.
+  wp_auto.
 
-  (* TODO: spec for `InternalRaftRequest.Marshal` *)
-
+  (* TODO: 
+     axiomatize AuthInfoFromCtx
+     axiomatize InternalRaftRequest.Marshal
+     axiomatize `wait` for now. Prove it later.
+     axiomatize prometheus Counter inc
+     axiomatize `parseProposeCtxErr`
+   *)
 Admitted.
 
 End wps.

@@ -4,6 +4,7 @@ translate = [
   "isCompare_TargetUnion",
   "ResponseHeader",
   "RequestHeader",
+  "InternalRaftRequest",
 
   "TxnRequest",
   "TxnResponse",
