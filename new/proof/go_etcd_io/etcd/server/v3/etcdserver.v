@@ -3,9 +3,14 @@ Require Export New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.proof.proof_prelude.
 From New.proof Require Import context log fmt go_etcd_io.etcd.pkg.v3.idutil.
 
+Class etcdserverG Σ :=
+  {
+    #[global] etcdserver_contextG :: contextG Σ;
+  }.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!etcdserverG Σ}.
 
 #[global] Instance : IsPkgInit proto := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit traceutil := define_is_pkg_init True%I.
@@ -32,16 +37,16 @@ Abort.
 Axiom EtcdServer_names : Type.
 Implicit Type γ : EtcdServer_names.
 
-Definition is_EtcdServer (s : loc) γ : iProp Σ :=
+Axiom is_EtcdServer : ∀ (s : loc) γ, iProp Σ.
+Axiom is_EtcdServer_access : ∀ s γ,
+  is_EtcdServer s γ -∗
   ∃ (reqIDGen : loc),
     "#reqIDGen" ∷ s ↦s[etcdserver.EtcdServer :: "reqIDGen"]□ reqIDGen ∗
     "#HreqIDGen" ∷ is_Generator reqIDGen (λ _, True)%I ∗
-    "_" ∷ True
-.
-#[global] Opaque is_EtcdServer.
-#[local] Transparent is_EtcdServer.
-Instance : ∀ s γ, Persistent (is_EtcdServer s γ).
-Proof. apply _. Qed.
+    "_" ∷ True.
+
+Axiom is_EtcdServer_pers : ∀ s γ, Persistent (is_EtcdServer s γ).
+Existing Instance is_EtcdServer_pers.
 
 Axiom wp_EtcdServer__getAppliedIndex : ∀ s γ,
   {{{ is_pkg_init etcdserver ∗ is_EtcdServer s γ }}}
@@ -58,10 +63,32 @@ Definition is_SimpleRequest r : iProp Σ :=
   "_" ∷ True
 .
 
-Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ (ctx : context.Context.t) r :
-  {{{ is_pkg_init etcdserver ∗ "#Hsrv" ∷ is_EtcdServer s γ ∗ "#Hreq" ∷ is_SimpleRequest r }}}
+Axiom wp_EtcdServer__AuthInfoFromCtx : ∀ s γ ctx ctx_desc,
+  {{{ is_EtcdServer s γ ∗ is_Context ctx ctx_desc }}}
+    s @ (ptrT.id etcdserver.EtcdServer.id) @ "AuthInfoFromCtx" #ctx
+  {{{ (a_ptr : loc) (err : interface.t), RET (#a_ptr, #err);
+      if decide (a_ptr = null) then
+        True
+      else
+        ∃ (a : auth.AuthInfo.t), a_ptr ↦ a
+  }}}.
+
+Theorem wp_optional (R: iProp Σ) e :
+  ∀ Φ, R -∗ (R -∗ WP e {{ v, ⌜ v = execute_val ⌝ ∗ R }}) -∗ (R -∗ Φ execute_val) -∗ WP e {{ Φ }}.
+Proof.
+  iIntros "% HR He HΦ".
+  iSpecialize ("He" with "[$]").
+  iApply (wp_wand with "He"). iFrame.
+  iIntros "* [-> HR]". iApply "HΦ"
+Qed.
+
+Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ (ctx : context.Context.t) ctx_desc r :
+  {{{ is_pkg_init etcdserver ∗
+      "#Hsrv" ∷ is_EtcdServer s γ ∗
+      "#Hreq" ∷ is_SimpleRequest r ∗
+      "#Hctx" ∷ is_Context ctx ctx_desc }}}
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "processInternalRaftRequestOnce" #ctx #r
-  {{{ RET #(); True }}}.
+  {{{ (a : loc) (err : interface.t), RET (#a, #err); True }}}.
 Proof.
   wp_start. iNamed "Hpre".
   wp_apply wp_with_defer as "%defer Hdefer" . simpl subst.
@@ -73,25 +100,37 @@ Proof.
     admit.
   }
   wp_auto.
-  iNamed "Hsrv".
+  iDestruct (is_EtcdServer_access with "Hsrv") as "H". iNamed "H".
+  wp_auto. wp_apply (wp_Generator__Next with "[]"). { iFrame "#". }
+  iIntros "%i _". wp_auto. wp_alloc hdr_ptr as "hdr". wp_auto.
+  iNamed "Hreq". rewrite HAuthenticate. wp_auto.
+  wp_apply (wp_EtcdServer__AuthInfoFromCtx with "[$Hctx]").
+  { iFrame "#". } iIntros "* Hauth". wp_auto.
+  case_bool_decide.
+  2:{ wp_auto. iApply "HΦ". done. }
+  wp_auto. wp_bind (if: _ then _ else _)%E.
+  iAssert ( ∃ hdr,
+      "hdr" ∷ hdr_ptr ↦ hdr ∗
+      "%hdr_id" ∷ ⌜ hdr.(etcdserverpb.RequestHeader.ID') = i ⌝)%I with "[$hdr //]" as "H".
+  wp_apply (wp_optional with "[-]").
+  { iNamedAccu. }
+  { iNamed 1. case_bool_decide; wp_auto.
+    - iSplitR; first done. iFrame.
+    - rewrite decide_False //. iNamed "Hauth". iNamed "H".
+      wp_auto. iSplitR; first done. iFrame. done.
+  }
+  iIntros "*". iNamed 1. iNamed "H".
   wp_auto.
-  wp_apply (wp_Generator__Next with "[]").
-  { iFrame "#". }
-  iIntros "%i _".
-  wp_auto.
-  wp_alloc hdr_ptr as "hdr".
-  wp_auto.
-  iNamed "Hreq".
-  rewrite HAuthenticate.
+  iClear "err". clear err_ptr.
   wp_auto.
 
-  (* TODO: 
-     axiomatize AuthInfoFromCtx
+  (* TODO:
      axiomatize InternalRaftRequest.Marshal
      axiomatize `wait` for now. Prove it later.
      axiomatize prometheus Counter inc
      axiomatize `parseProposeCtxErr`
    *)
+
 Admitted.
 
 End wps.

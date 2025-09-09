@@ -219,7 +219,7 @@ Proof.
   wp_auto.
   wp_bind (if: _ then _ else _)%E.
   iApply (wp_wand _ _ _ (λ v,
-                           (⌜ v = execute_val #tt ⌝ ∨
+                           (⌜ v = execute_val ⌝ ∨
                                     ⌜ v = return_val #tt ⌝) ∗
                            "session" ∷ _ ↦s[_::_]{#1/2} session ∗ _)%I with "[-]").
   {
@@ -263,7 +263,7 @@ Proof.
   wp_apply (wp_wand _ _ _
               (λ v,
                  ∃ sessionc,
-                   ⌜ v = execute_val #tt ⌝ ∗
+                   ⌜ v = execute_val ⌝ ∗
                    "sessionc" ∷ _ ↦s[_::_] sessionc ∗
                    "Hsessionc" ∷ own_closeable_chan sessionc (is_entries_ready γ) closeable.Open ∗
                    "lkv" ∷ lkv_ptr ↦ lkv
