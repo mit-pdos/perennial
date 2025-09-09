@@ -27,6 +27,8 @@ End Map.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Map_ty_wf : struct.Wf merkle.Map.
+Proof. apply _. Qed.
 
 Global Instance settable_Map : Settable Map.t :=
   settable! Map.mk < Map.root' >.
@@ -95,6 +97,8 @@ End node.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance node_ty_wf : struct.Wf merkle.node.
+Proof. apply _. Qed.
 
 Global Instance settable_node : Settable node.t :=
   settable! node.mk < node.nodeTy'; node.hash'; node.child0'; node.child1'; node.label'; node.val' >.
@@ -196,6 +200,8 @@ End MerkleProof.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance MerkleProof_ty_wf : struct.Wf merkle.MerkleProof.
+Proof. apply _. Qed.
 
 Global Instance settable_MerkleProof : Settable MerkleProof.t :=
   settable! MerkleProof.mk < MerkleProof.Siblings'; MerkleProof.IsOtherLeaf'; MerkleProof.LeafLabel'; MerkleProof.LeafVal' >.

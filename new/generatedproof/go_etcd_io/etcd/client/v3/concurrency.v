@@ -36,6 +36,8 @@ End Election.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Election_ty_wf : struct.Wf concurrency.Election.
+Proof. apply _. Qed.
 
 Global Instance settable_Election : Settable Election.t :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
@@ -138,6 +140,8 @@ End Mutex.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Mutex_ty_wf : struct.Wf concurrency.Mutex.
+Proof. apply _. Qed.
 
 Global Instance settable_Mutex : Settable Mutex.t :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
@@ -229,6 +233,8 @@ End lockerMutex.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance lockerMutex_ty_wf : struct.Wf concurrency.lockerMutex.
+Proof. apply _. Qed.
 
 Global Instance settable_lockerMutex : Settable lockerMutex.t :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
@@ -297,6 +303,8 @@ End Session.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Session_ty_wf : struct.Wf concurrency.Session.
+Proof. apply _. Qed.
 
 Global Instance settable_Session : Settable Session.t :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
@@ -397,6 +405,8 @@ End sessionOptions.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance sessionOptions_ty_wf : struct.Wf concurrency.sessionOptions.
+Proof. apply _. Qed.
 
 Global Instance settable_sessionOptions : Settable sessionOptions.t :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
@@ -507,6 +517,8 @@ End stmError.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance stmError_ty_wf : struct.Wf concurrency.stmError.
+Proof. apply _. Qed.
 
 Global Instance settable_stmError : Settable stmError.t :=
   settable! stmError.mk < stmError.err' >.
@@ -572,6 +584,8 @@ End stmOptions.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance stmOptions_ty_wf : struct.Wf concurrency.stmOptions.
+Proof. apply _. Qed.
 
 Global Instance settable_stmOptions : Settable stmOptions.t :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
@@ -661,6 +675,8 @@ End stmResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance stmResponse_ty_wf : struct.Wf concurrency.stmResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_stmResponse : Settable stmResponse.t :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
@@ -758,6 +774,8 @@ End stm.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance stm_ty_wf : struct.Wf concurrency.stm.
+Proof. apply _. Qed.
 
 Global Instance settable_stm : Settable stm.t :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
@@ -857,6 +875,8 @@ End stmPut.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance stmPut_ty_wf : struct.Wf concurrency.stmPut.
+Proof. apply _. Qed.
 
 Global Instance settable_stmPut : Settable stmPut.t :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
@@ -928,6 +948,8 @@ End stmSerializable.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance stmSerializable_ty_wf : struct.Wf concurrency.stmSerializable.
+Proof. apply _. Qed.
 
 Global Instance settable_stmSerializable : Settable stmSerializable.t :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.

@@ -78,6 +78,8 @@ End Entry.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Entry_ty_wf : struct.Wf raftpb.Entry.
+Proof. apply _. Qed.
 
 Global Instance settable_Entry : Settable Entry.t :=
   settable! Entry.mk < Entry.Term'; Entry.Index'; Entry.Type'; Entry.Data' >.
@@ -166,6 +168,8 @@ End ConfState.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ConfState_ty_wf : struct.Wf raftpb.ConfState.
+Proof. apply _. Qed.
 
 Global Instance settable_ConfState : Settable ConfState.t :=
   settable! ConfState.mk < ConfState.Voters'; ConfState.Learners'; ConfState.VotersOutgoing'; ConfState.LearnersNext'; ConfState.AutoLeave' >.
@@ -259,6 +263,8 @@ End SnapshotMetadata.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance SnapshotMetadata_ty_wf : struct.Wf raftpb.SnapshotMetadata.
+Proof. apply _. Qed.
 
 Global Instance settable_SnapshotMetadata : Settable SnapshotMetadata.t :=
   settable! SnapshotMetadata.mk < SnapshotMetadata.ConfState'; SnapshotMetadata.Index'; SnapshotMetadata.Term' >.
@@ -337,6 +343,8 @@ End Snapshot.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Snapshot_ty_wf : struct.Wf raftpb.Snapshot.
+Proof. apply _. Qed.
 
 Global Instance settable_Snapshot : Settable Snapshot.t :=
   settable! Snapshot.mk < Snapshot.Data'; Snapshot.Metadata' >.
@@ -420,6 +428,8 @@ End Message.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Message_ty_wf : struct.Wf raftpb.Message.
+Proof. apply _. Qed.
 
 Global Instance settable_Message : Settable Message.t :=
   settable! Message.mk < Message.Type'; Message.To'; Message.From'; Message.Term'; Message.LogTerm'; Message.Index'; Message.Entries'; Message.Commit'; Message.Vote'; Message.Snapshot'; Message.Reject'; Message.RejectHint'; Message.Context'; Message.Responses' >.
@@ -576,6 +586,8 @@ End HardState.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance HardState_ty_wf : struct.Wf raftpb.HardState.
+Proof. apply _. Qed.
 
 Global Instance settable_HardState : Settable HardState.t :=
   settable! HardState.mk < HardState.Term'; HardState.Vote'; HardState.Commit' >.
@@ -656,6 +668,8 @@ End ConfChange.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ConfChange_ty_wf : struct.Wf raftpb.ConfChange.
+Proof. apply _. Qed.
 
 Global Instance settable_ConfChange : Settable ConfChange.t :=
   settable! ConfChange.mk < ConfChange.Type'; ConfChange.NodeID'; ConfChange.Context'; ConfChange.ID' >.
@@ -759,6 +773,8 @@ End ConfChangeV2.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ConfChangeV2_ty_wf : struct.Wf raftpb.ConfChangeV2.
+Proof. apply _. Qed.
 
 Global Instance settable_ConfChangeV2 : Settable ConfChangeV2.t :=
   settable! ConfChangeV2.mk < ConfChangeV2.Transition'; ConfChangeV2.Changes'; ConfChangeV2.Context' >.

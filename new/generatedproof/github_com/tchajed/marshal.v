@@ -23,6 +23,8 @@ End Enc.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Enc_ty_wf : struct.Wf marshal.Enc.
+Proof. apply _. Qed.
 
 Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.b'; Enc.off' >.
@@ -94,6 +96,8 @@ End Dec.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Dec_ty_wf : struct.Wf marshal.Dec.
+Proof. apply _. Qed.
 
 Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.b'; Dec.off' >.

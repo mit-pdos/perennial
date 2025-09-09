@@ -460,6 +460,8 @@ End Field.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Field_ty_wf : struct.Wf zapcore.Field.
+Proof. apply _. Qed.
 
 Global Instance settable_Field : Settable Field.t :=
   settable! Field.mk < Field.Key'; Field.Type'; Field.Integer'; Field.String'; Field.Interface' >.

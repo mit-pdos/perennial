@@ -782,6 +782,8 @@ End OpResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance OpResponse_ty_wf : struct.Wf clientv3.OpResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_OpResponse : Settable OpResponse.t :=
   settable! OpResponse.mk < OpResponse.put'; OpResponse.get'; OpResponse.del'; OpResponse.txn' >.
@@ -914,6 +916,8 @@ End LeaseGrantResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance LeaseGrantResponse_ty_wf : struct.Wf clientv3.LeaseGrantResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_LeaseGrantResponse : Settable LeaseGrantResponse.t :=
   settable! LeaseGrantResponse.mk < LeaseGrantResponse.ResponseHeader'; LeaseGrantResponse.ID'; LeaseGrantResponse.TTL'; LeaseGrantResponse.Error' >.
@@ -1387,6 +1391,8 @@ End Op.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Op_ty_wf : struct.Wf clientv3.Op.
+Proof. apply _. Qed.
 
 Global Instance settable_Op : Settable Op.t :=
   settable! Op.mk < Op.t'; Op.key'; Op.end'; Op.limit'; Op.sort'; Op.serializable'; Op.keysOnly'; Op.countOnly'; Op.minModRev'; Op.maxModRev'; Op.minCreateRev'; Op.maxCreateRev'; Op.rev'; Op.prevKV'; Op.fragment'; Op.ignoreValue'; Op.ignoreLease'; Op.progressNotify'; Op.createdNotify'; Op.filterPut'; Op.filterDelete'; Op.val'; Op.leaseID'; Op.cmps'; Op.thenOps'; Op.elseOps'; Op.isOptsWithFromKey'; Op.isOptsWithPrefix' >.
@@ -1651,6 +1657,8 @@ End LeaseOp.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance LeaseOp_ty_wf : struct.Wf clientv3.LeaseOp.
+Proof. apply _. Qed.
 
 Global Instance settable_LeaseOp : Settable LeaseOp.t :=
   settable! LeaseOp.mk < LeaseOp.id'; LeaseOp.attachedKeys' >.
@@ -1925,6 +1933,8 @@ End SortOption.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance SortOption_ty_wf : struct.Wf clientv3.SortOption.
+Proof. apply _. Qed.
 
 Global Instance settable_SortOption : Settable SortOption.t :=
   settable! SortOption.mk < SortOption.Target'; SortOption.Order' >.
@@ -2062,6 +2072,8 @@ End WatchResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance WatchResponse_ty_wf : struct.Wf clientv3.WatchResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_WatchResponse : Settable WatchResponse.t :=
   settable! WatchResponse.mk < WatchResponse.Header'; WatchResponse.Events'; WatchResponse.CompactRevision'; WatchResponse.Canceled'; WatchResponse.Created'; WatchResponse.closeErr'; WatchResponse.cancelReason' >.

@@ -23,6 +23,8 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Server_ty_wf : struct.Wf advrpc.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.handlers' >.
@@ -86,6 +88,8 @@ End Client.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Client_ty_wf : struct.Wf advrpc.Client.
+Proof. apply _. Qed.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.conn' >.

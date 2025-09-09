@@ -39,6 +39,9 @@ End noCopy.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance noCopy_ty_wf : struct.Wf sync.noCopy.
+Proof. apply _. Qed.
+
 #[local] Transparent sync.noCopy.
 #[local] Typeclasses Transparent sync.noCopy.
 Global Instance into_val_noCopy : IntoVal noCopy.t :=
@@ -115,6 +118,8 @@ End Once.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Once_ty_wf : struct.Wf sync.Once.
+Proof. apply _. Qed.
 
 Global Instance settable_Once : Settable Once.t :=
   settable! Once.mk < Once._0'; Once.done'; Once.m' >.
@@ -349,6 +354,8 @@ End RWMutex.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RWMutex_ty_wf : struct.Wf sync.RWMutex.
+Proof. apply _. Qed.
 
 Global Instance settable_RWMutex : Settable RWMutex.t :=
   settable! RWMutex.mk < RWMutex.w'; RWMutex.writerSem'; RWMutex.readerSem'; RWMutex.readerCount'; RWMutex.readerWait' >.
@@ -453,6 +460,8 @@ End WaitGroup.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance WaitGroup_ty_wf : struct.Wf sync.WaitGroup.
+Proof. apply _. Qed.
 
 Global Instance settable_WaitGroup : Settable WaitGroup.t :=
   settable! WaitGroup.mk < WaitGroup.noCopy'; WaitGroup.state'; WaitGroup.sema' >.

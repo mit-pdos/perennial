@@ -51,6 +51,8 @@ End consistentIndex.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance consistentIndex_ty_wf : struct.Wf cindex.consistentIndex.
+Proof. apply _. Qed.
 
 Global Instance settable_consistentIndex : Settable consistentIndex.t :=
   settable! consistentIndex.mk < consistentIndex.consistentIndex'; consistentIndex.term'; consistentIndex.applyingIndex'; consistentIndex.applyingTerm'; consistentIndex.be'; consistentIndex.mutex' >.
@@ -150,6 +152,8 @@ End fakeConsistentIndex.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance fakeConsistentIndex_ty_wf : struct.Wf cindex.fakeConsistentIndex.
+Proof. apply _. Qed.
 
 Global Instance settable_fakeConsistentIndex : Settable fakeConsistentIndex.t :=
   settable! fakeConsistentIndex.mk < fakeConsistentIndex.index'; fakeConsistentIndex.term' >.

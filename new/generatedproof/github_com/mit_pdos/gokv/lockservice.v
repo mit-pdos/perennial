@@ -21,6 +21,8 @@ End LockClerk.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance LockClerk_ty_wf : struct.Wf lockservice.LockClerk.
+Proof. apply _. Qed.
 
 Global Instance settable_LockClerk : Settable LockClerk.t :=
   settable! LockClerk.mk < LockClerk.kv' >.

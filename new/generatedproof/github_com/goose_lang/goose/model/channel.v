@@ -52,7 +52,6 @@ Arguments Channel.t {_} T' {_ T _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-
 Global Instance Channel_ty_wf : struct.Wf (Channel.ty T).
 Proof. apply _. Qed.
 
@@ -181,7 +180,6 @@ Arguments SelectCase.t {_} T' {_ T _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-
 Global Instance SelectCase_ty_wf : struct.Wf (SelectCase.ty T).
 Proof. apply _. Qed.
 

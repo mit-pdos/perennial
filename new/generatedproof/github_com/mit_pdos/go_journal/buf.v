@@ -28,6 +28,8 @@ End Buf.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Buf_ty_wf : struct.Wf buf.Buf.
+Proof. apply _. Qed.
 
 Global Instance settable_Buf : Settable Buf.t :=
   settable! Buf.mk < Buf.Addr'; Buf.Sz'; Buf.Data'; Buf.dirty' >.
@@ -112,6 +114,8 @@ End BufMap.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance BufMap_ty_wf : struct.Wf buf.BufMap.
+Proof. apply _. Qed.
 
 Global Instance settable_BufMap : Settable BufMap.t :=
   settable! BufMap.mk < BufMap.addrs' >.

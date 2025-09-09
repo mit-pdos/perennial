@@ -23,6 +23,8 @@ End Alloc.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Alloc_ty_wf : struct.Wf alloc.Alloc.
+Proof. apply _. Qed.
 
 Global Instance settable_Alloc : Settable Alloc.t :=
   settable! Alloc.mk < Alloc.mu'; Alloc.next'; Alloc.bitmap' >.

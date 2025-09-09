@@ -35,6 +35,9 @@ End deadlineExceededError.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance deadlineExceededError_ty_wf : struct.Wf context.deadlineExceededError.
+Proof. apply _. Qed.
+
 #[local] Transparent context.deadlineExceededError.
 #[local] Typeclasses Transparent context.deadlineExceededError.
 Global Instance into_val_deadlineExceededError : IntoVal deadlineExceededError.t :=
@@ -74,6 +77,9 @@ End emptyCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance emptyCtx_ty_wf : struct.Wf context.emptyCtx.
+Proof. apply _. Qed.
+
 #[local] Transparent context.emptyCtx.
 #[local] Typeclasses Transparent context.emptyCtx.
 Global Instance into_val_emptyCtx : IntoVal emptyCtx.t :=
@@ -114,6 +120,8 @@ End backgroundCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance backgroundCtx_ty_wf : struct.Wf context.backgroundCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_backgroundCtx : Settable backgroundCtx.t :=
   settable! backgroundCtx.mk < backgroundCtx.emptyCtx' >.
@@ -177,6 +185,8 @@ End todoCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance todoCtx_ty_wf : struct.Wf context.todoCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_todoCtx : Settable todoCtx.t :=
   settable! todoCtx.mk < todoCtx.emptyCtx' >.
@@ -278,6 +288,8 @@ End cancelCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance cancelCtx_ty_wf : struct.Wf context.cancelCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_cancelCtx : Settable cancelCtx.t :=
   settable! cancelCtx.mk < cancelCtx.Context'; cancelCtx.mu'; cancelCtx.done'; cancelCtx.children'; cancelCtx.err'; cancelCtx.cause' >.
@@ -378,6 +390,8 @@ End afterFuncCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance afterFuncCtx_ty_wf : struct.Wf context.afterFuncCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_afterFuncCtx : Settable afterFuncCtx.t :=
   settable! afterFuncCtx.mk < afterFuncCtx.cancelCtx'; afterFuncCtx.once'; afterFuncCtx.f' >.
@@ -456,6 +470,8 @@ End stopCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance stopCtx_ty_wf : struct.Wf context.stopCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_stopCtx : Settable stopCtx.t :=
   settable! stopCtx.mk < stopCtx.Context'; stopCtx.stop' >.
@@ -548,6 +564,8 @@ End withoutCancelCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance withoutCancelCtx_ty_wf : struct.Wf context.withoutCancelCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_withoutCancelCtx : Settable withoutCancelCtx.t :=
   settable! withoutCancelCtx.mk < withoutCancelCtx.c' >.
@@ -613,6 +631,8 @@ End timerCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance timerCtx_ty_wf : struct.Wf context.timerCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_timerCtx : Settable timerCtx.t :=
   settable! timerCtx.mk < timerCtx.cancelCtx'; timerCtx.timer'; timerCtx.deadline' >.
@@ -692,6 +712,8 @@ End valueCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance valueCtx_ty_wf : struct.Wf context.valueCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_valueCtx : Settable valueCtx.t :=
   settable! valueCtx.mk < valueCtx.Context'; valueCtx.key'; valueCtx.val' >.

@@ -33,6 +33,8 @@ End list'.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance list'_ty_wf : struct.Wf wait.list'.
+Proof. apply _. Qed.
 
 Global Instance settable_list' : Settable list'.t :=
   settable! list'.mk < list'.e' >.
@@ -97,6 +99,8 @@ End listElement.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance listElement_ty_wf : struct.Wf wait.listElement.
+Proof. apply _. Qed.
 
 Global Instance settable_listElement : Settable listElement.t :=
   settable! listElement.mk < listElement.l'; listElement.m' >.
@@ -167,6 +171,8 @@ End waitWithResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance waitWithResponse_ty_wf : struct.Wf wait.waitWithResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_waitWithResponse : Settable waitWithResponse.t :=
   settable! waitWithResponse.mk < waitWithResponse.ch' >.
@@ -243,6 +249,8 @@ End timeList.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance timeList_ty_wf : struct.Wf wait.timeList.
+Proof. apply _. Qed.
 
 Global Instance settable_timeList : Settable timeList.t :=
   settable! timeList.mk < timeList.l'; timeList.lastTriggerDeadline'; timeList.m' >.

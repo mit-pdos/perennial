@@ -59,6 +59,8 @@ End RequestHeader.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RequestHeader_ty_wf : struct.Wf etcdserverpb.RequestHeader.
+Proof. apply _. Qed.
 
 Global Instance settable_RequestHeader : Settable RequestHeader.t :=
   settable! RequestHeader.mk < RequestHeader.ID'; RequestHeader.Username'; RequestHeader.AuthRevision'; RequestHeader.XXX_NoUnkeyedLiteral'; RequestHeader.XXX_unrecognized'; RequestHeader.XXX_sizecache' >.
@@ -411,6 +413,8 @@ End ResponseHeader.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ResponseHeader_ty_wf : struct.Wf etcdserverpb.ResponseHeader.
+Proof. apply _. Qed.
 
 Global Instance settable_ResponseHeader : Settable ResponseHeader.t :=
   settable! ResponseHeader.mk < ResponseHeader.ClusterId'; ResponseHeader.MemberId'; ResponseHeader.Revision'; ResponseHeader.RaftTerm'; ResponseHeader.XXX_NoUnkeyedLiteral'; ResponseHeader.XXX_unrecognized'; ResponseHeader.XXX_sizecache' >.
@@ -531,6 +535,8 @@ End RangeRequest.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RangeRequest_ty_wf : struct.Wf etcdserverpb.RangeRequest.
+Proof. apply _. Qed.
 
 Global Instance settable_RangeRequest : Settable RangeRequest.t :=
   settable! RangeRequest.mk < RangeRequest.Key'; RangeRequest.RangeEnd'; RangeRequest.Limit'; RangeRequest.Revision'; RangeRequest.SortOrder'; RangeRequest.SortTarget'; RangeRequest.Serializable'; RangeRequest.KeysOnly'; RangeRequest.CountOnly'; RangeRequest.MinModRevision'; RangeRequest.MaxModRevision'; RangeRequest.MinCreateRevision'; RangeRequest.MaxCreateRevision'; RangeRequest.XXX_NoUnkeyedLiteral'; RangeRequest.XXX_unrecognized'; RangeRequest.XXX_sizecache' >.
@@ -705,6 +711,8 @@ End RangeResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RangeResponse_ty_wf : struct.Wf etcdserverpb.RangeResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_RangeResponse : Settable RangeResponse.t :=
   settable! RangeResponse.mk < RangeResponse.Header'; RangeResponse.Kvs'; RangeResponse.More'; RangeResponse.Count'; RangeResponse.XXX_NoUnkeyedLiteral'; RangeResponse.XXX_unrecognized'; RangeResponse.XXX_sizecache' >.
@@ -818,6 +826,8 @@ End PutRequest.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance PutRequest_ty_wf : struct.Wf etcdserverpb.PutRequest.
+Proof. apply _. Qed.
 
 Global Instance settable_PutRequest : Settable PutRequest.t :=
   settable! PutRequest.mk < PutRequest.Key'; PutRequest.Value'; PutRequest.Lease'; PutRequest.PrevKv'; PutRequest.IgnoreValue'; PutRequest.IgnoreLease'; PutRequest.XXX_NoUnkeyedLiteral'; PutRequest.XXX_unrecognized'; PutRequest.XXX_sizecache' >.
@@ -941,6 +951,8 @@ End PutResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance PutResponse_ty_wf : struct.Wf etcdserverpb.PutResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_PutResponse : Settable PutResponse.t :=
   settable! PutResponse.mk < PutResponse.Header'; PutResponse.PrevKv'; PutResponse.XXX_NoUnkeyedLiteral'; PutResponse.XXX_unrecognized'; PutResponse.XXX_sizecache' >.
@@ -1037,6 +1049,8 @@ End DeleteRangeRequest.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance DeleteRangeRequest_ty_wf : struct.Wf etcdserverpb.DeleteRangeRequest.
+Proof. apply _. Qed.
 
 Global Instance settable_DeleteRangeRequest : Settable DeleteRangeRequest.t :=
   settable! DeleteRangeRequest.mk < DeleteRangeRequest.Key'; DeleteRangeRequest.RangeEnd'; DeleteRangeRequest.PrevKv'; DeleteRangeRequest.XXX_NoUnkeyedLiteral'; DeleteRangeRequest.XXX_unrecognized'; DeleteRangeRequest.XXX_sizecache' >.
@@ -1140,6 +1154,8 @@ End DeleteRangeResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance DeleteRangeResponse_ty_wf : struct.Wf etcdserverpb.DeleteRangeResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_DeleteRangeResponse : Settable DeleteRangeResponse.t :=
   settable! DeleteRangeResponse.mk < DeleteRangeResponse.Header'; DeleteRangeResponse.Deleted'; DeleteRangeResponse.PrevKvs'; DeleteRangeResponse.XXX_NoUnkeyedLiteral'; DeleteRangeResponse.XXX_unrecognized'; DeleteRangeResponse.XXX_sizecache' >.
@@ -1252,6 +1268,8 @@ End RequestOp.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RequestOp_ty_wf : struct.Wf etcdserverpb.RequestOp.
+Proof. apply _. Qed.
 
 Global Instance settable_RequestOp : Settable RequestOp.t :=
   settable! RequestOp.mk < RequestOp.Request'; RequestOp.XXX_NoUnkeyedLiteral'; RequestOp.XXX_unrecognized'; RequestOp.XXX_sizecache' >.
@@ -1336,6 +1354,8 @@ End RequestOp_RequestRange.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RequestOp_RequestRange_ty_wf : struct.Wf etcdserverpb.RequestOp_RequestRange.
+Proof. apply _. Qed.
 
 Global Instance settable_RequestOp_RequestRange : Settable RequestOp_RequestRange.t :=
   settable! RequestOp_RequestRange.mk < RequestOp_RequestRange.RequestRange' >.
@@ -1399,6 +1419,8 @@ End RequestOp_RequestPut.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RequestOp_RequestPut_ty_wf : struct.Wf etcdserverpb.RequestOp_RequestPut.
+Proof. apply _. Qed.
 
 Global Instance settable_RequestOp_RequestPut : Settable RequestOp_RequestPut.t :=
   settable! RequestOp_RequestPut.mk < RequestOp_RequestPut.RequestPut' >.
@@ -1462,6 +1484,8 @@ End RequestOp_RequestDeleteRange.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RequestOp_RequestDeleteRange_ty_wf : struct.Wf etcdserverpb.RequestOp_RequestDeleteRange.
+Proof. apply _. Qed.
 
 Global Instance settable_RequestOp_RequestDeleteRange : Settable RequestOp_RequestDeleteRange.t :=
   settable! RequestOp_RequestDeleteRange.mk < RequestOp_RequestDeleteRange.RequestDeleteRange' >.
@@ -1525,6 +1549,8 @@ End RequestOp_RequestTxn.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RequestOp_RequestTxn_ty_wf : struct.Wf etcdserverpb.RequestOp_RequestTxn.
+Proof. apply _. Qed.
 
 Global Instance settable_RequestOp_RequestTxn : Settable RequestOp_RequestTxn.t :=
   settable! RequestOp_RequestTxn.mk < RequestOp_RequestTxn.RequestTxn' >.
@@ -1602,6 +1628,8 @@ End ResponseOp.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ResponseOp_ty_wf : struct.Wf etcdserverpb.ResponseOp.
+Proof. apply _. Qed.
 
 Global Instance settable_ResponseOp : Settable ResponseOp.t :=
   settable! ResponseOp.mk < ResponseOp.Response'; ResponseOp.XXX_NoUnkeyedLiteral'; ResponseOp.XXX_unrecognized'; ResponseOp.XXX_sizecache' >.
@@ -1686,6 +1714,8 @@ End ResponseOp_ResponseRange.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ResponseOp_ResponseRange_ty_wf : struct.Wf etcdserverpb.ResponseOp_ResponseRange.
+Proof. apply _. Qed.
 
 Global Instance settable_ResponseOp_ResponseRange : Settable ResponseOp_ResponseRange.t :=
   settable! ResponseOp_ResponseRange.mk < ResponseOp_ResponseRange.ResponseRange' >.
@@ -1749,6 +1779,8 @@ End ResponseOp_ResponsePut.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ResponseOp_ResponsePut_ty_wf : struct.Wf etcdserverpb.ResponseOp_ResponsePut.
+Proof. apply _. Qed.
 
 Global Instance settable_ResponseOp_ResponsePut : Settable ResponseOp_ResponsePut.t :=
   settable! ResponseOp_ResponsePut.mk < ResponseOp_ResponsePut.ResponsePut' >.
@@ -1812,6 +1844,8 @@ End ResponseOp_ResponseDeleteRange.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ResponseOp_ResponseDeleteRange_ty_wf : struct.Wf etcdserverpb.ResponseOp_ResponseDeleteRange.
+Proof. apply _. Qed.
 
 Global Instance settable_ResponseOp_ResponseDeleteRange : Settable ResponseOp_ResponseDeleteRange.t :=
   settable! ResponseOp_ResponseDeleteRange.mk < ResponseOp_ResponseDeleteRange.ResponseDeleteRange' >.
@@ -1875,6 +1909,8 @@ End ResponseOp_ResponseTxn.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ResponseOp_ResponseTxn_ty_wf : struct.Wf etcdserverpb.ResponseOp_ResponseTxn.
+Proof. apply _. Qed.
 
 Global Instance settable_ResponseOp_ResponseTxn : Settable ResponseOp_ResponseTxn.t :=
   settable! ResponseOp_ResponseTxn.mk < ResponseOp_ResponseTxn.ResponseTxn' >.
@@ -1956,6 +1992,8 @@ End Compare.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Compare_ty_wf : struct.Wf etcdserverpb.Compare.
+Proof. apply _. Qed.
 
 Global Instance settable_Compare : Settable Compare.t :=
   settable! Compare.mk < Compare.Result'; Compare.Target'; Compare.Key'; Compare.TargetUnion'; Compare.RangeEnd'; Compare.XXX_NoUnkeyedLiteral'; Compare.XXX_unrecognized'; Compare.XXX_sizecache' >.
@@ -2068,6 +2106,8 @@ End Compare_Version.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Compare_Version_ty_wf : struct.Wf etcdserverpb.Compare_Version.
+Proof. apply _. Qed.
 
 Global Instance settable_Compare_Version : Settable Compare_Version.t :=
   settable! Compare_Version.mk < Compare_Version.Version' >.
@@ -2131,6 +2171,8 @@ End Compare_CreateRevision.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Compare_CreateRevision_ty_wf : struct.Wf etcdserverpb.Compare_CreateRevision.
+Proof. apply _. Qed.
 
 Global Instance settable_Compare_CreateRevision : Settable Compare_CreateRevision.t :=
   settable! Compare_CreateRevision.mk < Compare_CreateRevision.CreateRevision' >.
@@ -2194,6 +2236,8 @@ End Compare_ModRevision.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Compare_ModRevision_ty_wf : struct.Wf etcdserverpb.Compare_ModRevision.
+Proof. apply _. Qed.
 
 Global Instance settable_Compare_ModRevision : Settable Compare_ModRevision.t :=
   settable! Compare_ModRevision.mk < Compare_ModRevision.ModRevision' >.
@@ -2257,6 +2301,8 @@ End Compare_Value.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Compare_Value_ty_wf : struct.Wf etcdserverpb.Compare_Value.
+Proof. apply _. Qed.
 
 Global Instance settable_Compare_Value : Settable Compare_Value.t :=
   settable! Compare_Value.mk < Compare_Value.Value' >.
@@ -2320,6 +2366,8 @@ End Compare_Lease.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Compare_Lease_ty_wf : struct.Wf etcdserverpb.Compare_Lease.
+Proof. apply _. Qed.
 
 Global Instance settable_Compare_Lease : Settable Compare_Lease.t :=
   settable! Compare_Lease.mk < Compare_Lease.Lease' >.
@@ -2388,6 +2436,8 @@ End TxnRequest.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance TxnRequest_ty_wf : struct.Wf etcdserverpb.TxnRequest.
+Proof. apply _. Qed.
 
 Global Instance settable_TxnRequest : Settable TxnRequest.t :=
   settable! TxnRequest.mk < TxnRequest.Compare'; TxnRequest.Success'; TxnRequest.Failure'; TxnRequest.XXX_NoUnkeyedLiteral'; TxnRequest.XXX_unrecognized'; TxnRequest.XXX_sizecache' >.
@@ -2491,6 +2541,8 @@ End TxnResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance TxnResponse_ty_wf : struct.Wf etcdserverpb.TxnResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_TxnResponse : Settable TxnResponse.t :=
   settable! TxnResponse.mk < TxnResponse.Header'; TxnResponse.Succeeded'; TxnResponse.Responses'; TxnResponse.XXX_NoUnkeyedLiteral'; TxnResponse.XXX_unrecognized'; TxnResponse.XXX_sizecache' >.

@@ -25,6 +25,8 @@ End Op.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Op_ty_wf : struct.Wf jrnl.Op.
+Proof. apply _. Qed.
 
 Global Instance settable_Op : Settable Op.t :=
   settable! Op.mk < Op.log'; Op.bufs' >.

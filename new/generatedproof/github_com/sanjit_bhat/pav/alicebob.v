@@ -31,6 +31,8 @@ End histEntry.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance histEntry_ty_wf : struct.Wf alicebob.histEntry.
+Proof. apply _. Qed.
 
 Global Instance settable_histEntry : Settable histEntry.t :=
   settable! histEntry.mk < histEntry.isReg'; histEntry.pk' >.

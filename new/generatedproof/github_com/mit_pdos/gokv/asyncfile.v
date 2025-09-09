@@ -32,6 +32,8 @@ End AsyncFile.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance AsyncFile_ty_wf : struct.Wf asyncfile.AsyncFile.
+Proof. apply _. Qed.
 
 Global Instance settable_AsyncFile : Settable AsyncFile.t :=
   settable! AsyncFile.mk < AsyncFile.mu'; AsyncFile.data'; AsyncFile.filename'; AsyncFile.index'; AsyncFile.indexCond'; AsyncFile.durableIndex'; AsyncFile.durableIndexCond'; AsyncFile.closeRequested'; AsyncFile.closed'; AsyncFile.closedCond' >.

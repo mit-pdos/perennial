@@ -26,6 +26,8 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Server_ty_wf : struct.Wf urpc.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.handlers' >.
@@ -91,6 +93,8 @@ End Callback.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Callback_ty_wf : struct.Wf urpc.Callback.
+Proof. apply _. Qed.
 
 Global Instance settable_Callback : Settable Callback.t :=
   settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
@@ -171,6 +175,8 @@ End Client.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Client_ty_wf : struct.Wf urpc.Client.
+Proof. apply _. Qed.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.

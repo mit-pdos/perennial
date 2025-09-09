@@ -32,7 +32,6 @@ Arguments Box.t {_} T' {_ T _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-
 Global Instance Box_ty_wf : struct.Wf (Box.ty T).
 Proof. apply _. Qed.
 
@@ -122,7 +121,6 @@ Arguments Container.t {_} T' {_ T _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-
 Global Instance Container_ty_wf : struct.Wf (Container.ty T).
 Proof. apply _. Qed.
 
@@ -223,6 +221,8 @@ End UseContainer.
 #[local] Transparent UseContainer.ty.
 Section instances.
 Context `{ffi_syntax}.
+Global Instance UseContainer_ty_wf : struct.Wf (UseContainer.ty ).
+Proof. apply _. Qed.
 
 Global Instance settable_UseContainer : Settable (UseContainer.t ) :=
   settable! UseContainer.mk < UseContainer.X' >.
@@ -306,7 +306,6 @@ Arguments OnlyIndirect.t {_} T' {_ T _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-
 Global Instance OnlyIndirect_ty_wf : struct.Wf (OnlyIndirect.ty T).
 Proof. apply _. Qed.
 
@@ -399,7 +398,6 @@ Arguments MultiParam.t {_} A' {_ A _} B' {_ B _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B} .
-
 Global Instance MultiParam_ty_wf : struct.Wf (MultiParam.ty A B).
 Proof. apply _. Qed.
 

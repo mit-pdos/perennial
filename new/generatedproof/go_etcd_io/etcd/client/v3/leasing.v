@@ -36,6 +36,8 @@ End leaseCache.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance leaseCache_ty_wf : struct.Wf leasing.leaseCache.
+Proof. apply _. Qed.
 
 Global Instance settable_leaseCache : Settable leaseCache.t :=
   settable! leaseCache.mk < leaseCache.mu'; leaseCache.entries'; leaseCache.revokes'; leaseCache.header' >.
@@ -122,6 +124,8 @@ End leaseKey.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance leaseKey_ty_wf : struct.Wf leasing.leaseKey.
+Proof. apply _. Qed.
 
 Global Instance settable_leaseKey : Settable leaseKey.t :=
   settable! leaseKey.mk < leaseKey.response'; leaseKey.rev'; leaseKey.waitc' >.
@@ -208,6 +212,8 @@ End leasingKV.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance leasingKV_ty_wf : struct.Wf leasing.leasingKV.
+Proof. apply _. Qed.
 
 Global Instance settable_leasingKV : Settable leasingKV.t :=
   settable! leasingKV.mk < leasingKV.cl'; leasingKV.kv'; leasingKV.pfx'; leasingKV.leases'; leasingKV.ctx'; leasingKV.cancel'; leasingKV.wg'; leasingKV.sessionOpts'; leasingKV.session'; leasingKV.sessionc' >.
@@ -339,6 +345,8 @@ End txnLeasing.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance txnLeasing_ty_wf : struct.Wf leasing.txnLeasing.
+Proof. apply _. Qed.
 
 Global Instance settable_txnLeasing : Settable txnLeasing.t :=
   settable! txnLeasing.mk < txnLeasing.Txn'; txnLeasing.lkv'; txnLeasing.ctx'; txnLeasing.cs'; txnLeasing.opst'; txnLeasing.opse' >.

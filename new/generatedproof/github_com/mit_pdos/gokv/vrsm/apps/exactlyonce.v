@@ -30,6 +30,8 @@ End eStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance eStateMachine_ty_wf : struct.Wf exactlyonce.eStateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_eStateMachine : Settable eStateMachine.t :=
   settable! eStateMachine.mk < eStateMachine.lastSeq'; eStateMachine.lastReply'; eStateMachine.nextCID'; eStateMachine.sm'; eStateMachine.esmNextIndex' >.
@@ -123,6 +125,8 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Clerk_ty_wf : struct.Wf exactlyonce.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.ck'; Clerk.cid'; Clerk.seq' >.
@@ -203,6 +207,8 @@ End VersionedStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance VersionedStateMachine_ty_wf : struct.Wf exactlyonce.VersionedStateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_VersionedStateMachine : Settable VersionedStateMachine.t :=
   settable! VersionedStateMachine.mk < VersionedStateMachine.ApplyVolatile'; VersionedStateMachine.ApplyReadonly'; VersionedStateMachine.SetState'; VersionedStateMachine.GetState' >.

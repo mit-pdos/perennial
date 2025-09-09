@@ -29,6 +29,8 @@ End Log.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Log_ty_wf : struct.Wf obj.Log.
+Proof. apply _. Qed.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.mu'; Log.log'; Log.pos' >.

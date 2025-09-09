@@ -27,6 +27,8 @@ End Log.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Log_ty_wf : struct.Wf txn.Log.
+Proof. apply _. Qed.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.log'; Log.locks' >.
@@ -99,6 +101,8 @@ End Txn.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Txn_ty_wf : struct.Wf txn.Txn.
+Proof. apply _. Qed.
 
 Global Instance settable_Txn : Settable Txn.t :=
   settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.

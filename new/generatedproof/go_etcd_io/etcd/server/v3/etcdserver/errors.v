@@ -23,6 +23,8 @@ End DiscoveryError.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance DiscoveryError_ty_wf : struct.Wf errors.DiscoveryError.
+Proof. apply _. Qed.
 
 Global Instance settable_DiscoveryError : Settable DiscoveryError.t :=
   settable! DiscoveryError.mk < DiscoveryError.Op'; DiscoveryError.Err' >.

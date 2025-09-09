@@ -27,6 +27,8 @@ End ReconnectingClient.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ReconnectingClient_ty_wf : struct.Wf reconnectclient.ReconnectingClient.
+Proof. apply _. Qed.
 
 Global Instance settable_ReconnectingClient : Settable ReconnectingClient.t :=
   settable! ReconnectingClient.mk < ReconnectingClient.mu'; ReconnectingClient.valid'; ReconnectingClient.urpcCl'; ReconnectingClient.addr' >.

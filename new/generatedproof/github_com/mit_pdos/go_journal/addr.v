@@ -23,6 +23,8 @@ End Addr.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Addr_ty_wf : struct.Wf addr.Addr.
+Proof. apply _. Qed.
 
 Global Instance settable_Addr : Settable Addr.t :=
   settable! Addr.mk < Addr.Blkno'; Addr.Off' >.

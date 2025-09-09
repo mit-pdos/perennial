@@ -26,6 +26,8 @@ End inflight.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance inflight_ty_wf : struct.Wf tracker.inflight.
+Proof. apply _. Qed.
 
 Global Instance settable_inflight : Settable inflight.t :=
   settable! inflight.mk < inflight.index'; inflight.bytes' >.
@@ -101,6 +103,8 @@ End Inflights.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Inflights_ty_wf : struct.Wf tracker.Inflights.
+Proof. apply _. Qed.
 
 Global Instance settable_Inflights : Settable Inflights.t :=
   settable! Inflights.mk < Inflights.start'; Inflights.count'; Inflights.bytes'; Inflights.size'; Inflights.maxBytes'; Inflights.buffer' >.
@@ -218,6 +222,8 @@ End Progress.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Progress_ty_wf : struct.Wf tracker.Progress.
+Proof. apply _. Qed.
 
 Global Instance settable_Progress : Settable Progress.t :=
   settable! Progress.mk < Progress.Match'; Progress.Next'; Progress.sentCommit'; Progress.State'; Progress.PendingSnapshot'; Progress.RecentActive'; Progress.MsgAppFlowPaused'; Progress.Inflights'; Progress.IsLearner' >.
@@ -351,6 +357,8 @@ End Config.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Config_ty_wf : struct.Wf tracker.Config.
+Proof. apply _. Qed.
 
 Global Instance settable_Config : Settable Config.t :=
   settable! Config.mk < Config.Voters'; Config.AutoLeave'; Config.Learners'; Config.LearnersNext' >.
@@ -439,6 +447,8 @@ End ProgressTracker.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ProgressTracker_ty_wf : struct.Wf tracker.ProgressTracker.
+Proof. apply _. Qed.
 
 Global Instance settable_ProgressTracker : Settable ProgressTracker.t :=
   settable! ProgressTracker.mk < ProgressTracker.Config'; ProgressTracker.Progress'; ProgressTracker.Votes'; ProgressTracker.MaxInflight'; ProgressTracker.MaxInflightBytes' >.

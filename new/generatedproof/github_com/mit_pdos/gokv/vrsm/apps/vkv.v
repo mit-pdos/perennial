@@ -27,6 +27,8 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Clerk_ty_wf : struct.Wf vkv.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
@@ -92,6 +94,8 @@ End ClerkPool.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ClerkPool_ty_wf : struct.Wf vkv.ClerkPool.
+Proof. apply _. Qed.
 
 Global Instance settable_ClerkPool : Settable ClerkPool.t :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
@@ -171,6 +175,8 @@ End KVState.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance KVState_ty_wf : struct.Wf vkv.KVState.
+Proof. apply _. Qed.
 
 Global Instance settable_KVState : Settable KVState.t :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.
@@ -249,6 +255,8 @@ End PutArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance PutArgs_ty_wf : struct.Wf vkv.PutArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_PutArgs : Settable PutArgs.t :=
   settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
@@ -332,6 +340,8 @@ End CondPutArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance CondPutArgs_ty_wf : struct.Wf vkv.CondPutArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_CondPutArgs : Settable CondPutArgs.t :=
   settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.

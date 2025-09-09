@@ -32,6 +32,8 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Clerk_ty_wf : struct.Wf configservice.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.mu'; Clerk.cls'; Clerk.leader' >.
@@ -113,6 +115,8 @@ End state.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance state_ty_wf : struct.Wf configservice.state.
+Proof. apply _. Qed.
 
 Global Instance settable_state : Settable state.t :=
   settable! state.mk < state.epoch'; state.reservedEpoch'; state.leaseExpiration'; state.wantLeaseToExpire'; state.config' >.
@@ -204,6 +208,8 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Server_ty_wf : struct.Wf configservice.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.s' >.

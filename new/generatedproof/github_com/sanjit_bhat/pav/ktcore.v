@@ -36,6 +36,8 @@ End VrfSig.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance VrfSig_ty_wf : struct.Wf ktcore.VrfSig.
+Proof. apply _. Qed.
 
 Global Instance settable_VrfSig : Settable VrfSig.t :=
   settable! VrfSig.mk < VrfSig.SigTag'; VrfSig.VrfPk' >.
@@ -108,6 +110,8 @@ End LinkSig.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance LinkSig_ty_wf : struct.Wf ktcore.LinkSig.
+Proof. apply _. Qed.
 
 Global Instance settable_LinkSig : Settable LinkSig.t :=
   settable! LinkSig.mk < LinkSig.SigTag'; LinkSig.Epoch'; LinkSig.Link' >.
@@ -186,6 +190,8 @@ End MapLabel.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance MapLabel_ty_wf : struct.Wf ktcore.MapLabel.
+Proof. apply _. Qed.
 
 Global Instance settable_MapLabel : Settable MapLabel.t :=
   settable! MapLabel.mk < MapLabel.Uid'; MapLabel.Ver' >.
@@ -257,6 +263,8 @@ End CommitOpen.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance CommitOpen_ty_wf : struct.Wf ktcore.CommitOpen.
+Proof. apply _. Qed.
 
 Global Instance settable_CommitOpen : Settable CommitOpen.t :=
   settable! CommitOpen.mk < CommitOpen.Val'; CommitOpen.Rand' >.
@@ -329,6 +337,8 @@ End Memb.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Memb_ty_wf : struct.Wf ktcore.Memb.
+Proof. apply _. Qed.
 
 Global Instance settable_Memb : Settable Memb.t :=
   settable! Memb.mk < Memb.LabelProof'; Memb.PkOpen'; Memb.MerkleProof' >.
@@ -407,6 +417,8 @@ End NonMemb.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance NonMemb_ty_wf : struct.Wf ktcore.NonMemb.
+Proof. apply _. Qed.
 
 Global Instance settable_NonMemb : Settable NonMemb.t :=
   settable! NonMemb.mk < NonMemb.LabelProof'; NonMemb.MerkleProof' >.
@@ -478,6 +490,8 @@ End AuditProof.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance AuditProof_ty_wf : struct.Wf ktcore.AuditProof.
+Proof. apply _. Qed.
 
 Global Instance settable_AuditProof : Settable AuditProof.t :=
   settable! AuditProof.mk < AuditProof.Updates'; AuditProof.LinkSig' >.
@@ -550,6 +564,8 @@ End UpdateProof.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance UpdateProof_ty_wf : struct.Wf ktcore.UpdateProof.
+Proof. apply _. Qed.
 
 Global Instance settable_UpdateProof : Settable UpdateProof.t :=
   settable! UpdateProof.mk < UpdateProof.MapLabel'; UpdateProof.MapVal'; UpdateProof.NonMembProof' >.

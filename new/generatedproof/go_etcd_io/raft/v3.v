@@ -64,6 +64,8 @@ End unstable.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance unstable_ty_wf : struct.Wf raft.unstable.
+Proof. apply _. Qed.
 
 Global Instance settable_unstable : Settable unstable.t :=
   settable! unstable.mk < unstable.snapshot'; unstable.entries'; unstable.offset'; unstable.snapshotInProgress'; unstable.offsetInProgress'; unstable.logger' >.
@@ -181,6 +183,8 @@ End raftLog.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance raftLog_ty_wf : struct.Wf raft.raftLog.
+Proof. apply _. Qed.
 
 Global Instance settable_raftLog : Settable raftLog.t :=
   settable! raftLog.mk < raftLog.storage'; raftLog.unstable'; raftLog.committed'; raftLog.applying'; raftLog.applied'; raftLog.logger'; raftLog.maxApplyingEntsSize'; raftLog.applyingEntsSize'; raftLog.applyingEntsPaused' >.
@@ -301,6 +305,8 @@ End DefaultLogger.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance DefaultLogger_ty_wf : struct.Wf raft.DefaultLogger.
+Proof. apply _. Qed.
 
 Global Instance settable_DefaultLogger : Settable DefaultLogger.t :=
   settable! DefaultLogger.mk < DefaultLogger.Logger'; DefaultLogger.debug' >.
@@ -394,6 +400,8 @@ End SoftState.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance SoftState_ty_wf : struct.Wf raft.SoftState.
+Proof. apply _. Qed.
 
 Global Instance settable_SoftState : Settable SoftState.t :=
   settable! SoftState.mk < SoftState.Lead'; SoftState.RaftState' >.
@@ -471,6 +479,8 @@ End Ready.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Ready_ty_wf : struct.Wf raft.Ready.
+Proof. apply _. Qed.
 
 Global Instance settable_Ready : Settable Ready.t :=
   settable! Ready.mk < Ready.SoftState'; Ready.HardState'; Ready.ReadStates'; Ready.Entries'; Ready.Snapshot'; Ready.CommittedEntries'; Ready.Messages'; Ready.MustSync' >.
@@ -595,6 +605,8 @@ End Peer.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Peer_ty_wf : struct.Wf raft.Peer.
+Proof. apply _. Qed.
 
 Global Instance settable_Peer : Settable Peer.t :=
   settable! Peer.mk < Peer.ID'; Peer.Context' >.
@@ -666,6 +678,8 @@ End msgWithResult.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance msgWithResult_ty_wf : struct.Wf raft.msgWithResult.
+Proof. apply _. Qed.
 
 Global Instance settable_msgWithResult : Settable msgWithResult.t :=
   settable! msgWithResult.mk < msgWithResult.m'; msgWithResult.result' >.
@@ -746,6 +760,8 @@ End node.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance node_ty_wf : struct.Wf raft.node.
+Proof. apply _. Qed.
 
 Global Instance settable_node : Settable node.t :=
   settable! node.mk < node.propc'; node.recvc'; node.confc'; node.confstatec'; node.readyc'; node.advancec'; node.tickc'; node.done'; node.stop'; node.status'; node.rn' >.
@@ -890,6 +906,8 @@ End lockedRand.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance lockedRand_ty_wf : struct.Wf raft.lockedRand.
+Proof. apply _. Qed.
 
 Global Instance settable_lockedRand : Settable lockedRand.t :=
   settable! lockedRand.mk < lockedRand.mu' >.
@@ -993,6 +1011,8 @@ End Config.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Config_ty_wf : struct.Wf raft.Config.
+Proof. apply _. Qed.
 
 Global Instance settable_Config : Settable Config.t :=
   settable! Config.mk < Config.ID'; Config.ElectionTick'; Config.HeartbeatTick'; Config.Storage'; Config.Applied'; Config.AsyncStorageWrites'; Config.MaxSizePerMsg'; Config.MaxCommittedSizePerReady'; Config.MaxUncommittedEntriesSize'; Config.MaxInflightMsgs'; Config.MaxInflightBytes'; Config.CheckQuorum'; Config.PreVote'; Config.ReadOnlyOption'; Config.Logger'; Config.DisableProposalForwarding'; Config.DisableConfChangeValidation'; Config.StepDownOnRemoval'; Config.TraceLogger' >.
@@ -1235,6 +1255,8 @@ End raft.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance raft_ty_wf : struct.Wf raft.raft.
+Proof. apply _. Qed.
 
 Global Instance settable_raft : Settable raft.t :=
   settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tick'; raft.step'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
@@ -1519,6 +1541,8 @@ End RawNode.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RawNode_ty_wf : struct.Wf raft.RawNode.
+Proof. apply _. Qed.
 
 Global Instance settable_RawNode : Settable RawNode.t :=
   settable! RawNode.mk < RawNode.raft'; RawNode.asyncStorageWrites'; RawNode.prevSoftSt'; RawNode.prevHardSt'; RawNode.stepsOnAdvance' >.
@@ -1622,6 +1646,8 @@ End ReadState.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance ReadState_ty_wf : struct.Wf raft.ReadState.
+Proof. apply _. Qed.
 
 Global Instance settable_ReadState : Settable ReadState.t :=
   settable! ReadState.mk < ReadState.Index'; ReadState.RequestCtx' >.
@@ -1694,6 +1720,8 @@ End readIndexStatus.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance readIndexStatus_ty_wf : struct.Wf raft.readIndexStatus.
+Proof. apply _. Qed.
 
 Global Instance settable_readIndexStatus : Settable readIndexStatus.t :=
   settable! readIndexStatus.mk < readIndexStatus.req'; readIndexStatus.index'; readIndexStatus.acks' >.
@@ -1773,6 +1801,8 @@ End readOnly.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance readOnly_ty_wf : struct.Wf raft.readOnly.
+Proof. apply _. Qed.
 
 Global Instance settable_readOnly : Settable readOnly.t :=
   settable! readOnly.mk < readOnly.option'; readOnly.pendingReadIndex'; readOnly.readIndexQueue' >.
@@ -1849,6 +1879,9 @@ End TracingEvent.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance TracingEvent_ty_wf : struct.Wf raft.TracingEvent.
+Proof. apply _. Qed.
+
 #[local] Transparent raft.TracingEvent.
 #[local] Typeclasses Transparent raft.TracingEvent.
 Global Instance into_val_TracingEvent : IntoVal TracingEvent.t :=
@@ -1893,6 +1926,8 @@ End BasicStatus.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance BasicStatus_ty_wf : struct.Wf raft.BasicStatus.
+Proof. apply _. Qed.
 
 Global Instance settable_BasicStatus : Settable BasicStatus.t :=
   settable! BasicStatus.mk < BasicStatus.ID'; BasicStatus.HardState'; BasicStatus.SoftState'; BasicStatus.Applied'; BasicStatus.LeadTransferee' >.
@@ -1986,6 +2021,8 @@ End Status.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Status_ty_wf : struct.Wf raft.Status.
+Proof. apply _. Qed.
 
 Global Instance settable_Status : Settable Status.t :=
   settable! Status.mk < Status.BasicStatus'; Status.Config'; Status.Progress' >.
@@ -2068,6 +2105,8 @@ End inMemStorageCallStats.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance inMemStorageCallStats_ty_wf : struct.Wf raft.inMemStorageCallStats.
+Proof. apply _. Qed.
 
 Global Instance settable_inMemStorageCallStats : Settable inMemStorageCallStats.t :=
   settable! inMemStorageCallStats.mk < inMemStorageCallStats.initialState'; inMemStorageCallStats.firstIndex'; inMemStorageCallStats.lastIndex'; inMemStorageCallStats.entries'; inMemStorageCallStats.term'; inMemStorageCallStats.snapshot' >.
@@ -2170,6 +2209,8 @@ End MemoryStorage.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance MemoryStorage_ty_wf : struct.Wf raft.MemoryStorage.
+Proof. apply _. Qed.
 
 Global Instance settable_MemoryStorage : Settable MemoryStorage.t :=
   settable! MemoryStorage.mk < MemoryStorage.Mutex'; MemoryStorage.hardState'; MemoryStorage.snapshot'; MemoryStorage.ents'; MemoryStorage.callStats' >.
@@ -2262,6 +2303,8 @@ End entryID.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance entryID_ty_wf : struct.Wf raft.entryID.
+Proof. apply _. Qed.
 
 Global Instance settable_entryID : Settable entryID.t :=
   settable! entryID.mk < entryID.term'; entryID.index' >.
@@ -2334,6 +2377,8 @@ End logSlice.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance logSlice_ty_wf : struct.Wf raft.logSlice.
+Proof. apply _. Qed.
 
 Global Instance settable_logSlice : Settable logSlice.t :=
   settable! logSlice.mk < logSlice.term'; logSlice.prev'; logSlice.entries' >.

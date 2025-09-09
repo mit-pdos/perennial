@@ -36,6 +36,9 @@ End importantStruct.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance importantStruct_ty_wf : struct.Wf unittest.importantStruct.
+Proof. apply _. Qed.
+
 #[local] Transparent unittest.importantStruct.
 #[local] Typeclasses Transparent unittest.importantStruct.
 Global Instance into_val_importantStruct : IntoVal importantStruct.t :=
@@ -98,6 +101,8 @@ End diskWrapper.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance diskWrapper_ty_wf : struct.Wf unittest.diskWrapper.
+Proof. apply _. Qed.
 
 Global Instance settable_diskWrapper : Settable diskWrapper.t :=
   settable! diskWrapper.mk < diskWrapper.d' >.
@@ -161,6 +166,8 @@ End embedA.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance embedA_ty_wf : struct.Wf unittest.embedA.
+Proof. apply _. Qed.
 
 Global Instance settable_embedA : Settable embedA.t :=
   settable! embedA.mk < embedA.a' >.
@@ -224,6 +231,8 @@ End embedB.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance embedB_ty_wf : struct.Wf unittest.embedB.
+Proof. apply _. Qed.
 
 Global Instance settable_embedB : Settable embedB.t :=
   settable! embedB.mk < embedB.embedA' >.
@@ -287,6 +296,8 @@ End embedC.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance embedC_ty_wf : struct.Wf unittest.embedC.
+Proof. apply _. Qed.
 
 Global Instance settable_embedC : Settable embedC.t :=
   settable! embedC.mk < embedC.embedB' >.
@@ -350,6 +361,8 @@ End embedD.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance embedD_ty_wf : struct.Wf unittest.embedD.
+Proof. apply _. Qed.
 
 Global Instance settable_embedD : Settable embedD.t :=
   settable! embedD.mk < embedD.embedC' >.
@@ -413,6 +426,8 @@ End Enc.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Enc_ty_wf : struct.Wf unittest.Enc.
+Proof. apply _. Qed.
 
 Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.p' >.
@@ -476,6 +491,8 @@ End Dec.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Dec_ty_wf : struct.Wf unittest.Dec.
+Proof. apply _. Qed.
 
 Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.p' >.
@@ -572,6 +589,8 @@ End concreteFooer.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance concreteFooer_ty_wf : struct.Wf unittest.concreteFooer.
+Proof. apply _. Qed.
 
 Global Instance settable_concreteFooer : Settable concreteFooer.t :=
   settable! concreteFooer.mk < concreteFooer.a' >.
@@ -635,6 +654,8 @@ End FooerUser.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance FooerUser_ty_wf : struct.Wf unittest.FooerUser.
+Proof. apply _. Qed.
 
 Global Instance settable_FooerUser : Settable FooerUser.t :=
   settable! FooerUser.mk < FooerUser.f' >.
@@ -708,6 +729,9 @@ End concrete1.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance concrete1_ty_wf : struct.Wf unittest.concrete1.
+Proof. apply _. Qed.
+
 #[local] Transparent unittest.concrete1.
 #[local] Typeclasses Transparent unittest.concrete1.
 Global Instance into_val_concrete1 : IntoVal concrete1.t :=
@@ -772,6 +796,8 @@ End allTheLiterals.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance allTheLiterals_ty_wf : struct.Wf unittest.allTheLiterals.
+Proof. apply _. Qed.
 
 Global Instance settable_allTheLiterals : Settable allTheLiterals.t :=
   settable! allTheLiterals.mk < allTheLiterals.int'; allTheLiterals.s'; allTheLiterals.b' >.
@@ -849,6 +875,8 @@ End hasCondVar.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance hasCondVar_ty_wf : struct.Wf unittest.hasCondVar.
+Proof. apply _. Qed.
 
 Global Instance settable_hasCondVar : Settable hasCondVar.t :=
   settable! hasCondVar.mk < hasCondVar.cond' >.
@@ -935,6 +963,8 @@ End mapElem.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance mapElem_ty_wf : struct.Wf unittest.mapElem.
+Proof. apply _. Qed.
 
 Global Instance settable_mapElem : Settable mapElem.t :=
   settable! mapElem.mk < mapElem.a'; mapElem.b' >.
@@ -1005,6 +1035,8 @@ End containsPointer.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance containsPointer_ty_wf : struct.Wf unittest.containsPointer.
+Proof. apply _. Qed.
 
 Global Instance settable_containsPointer : Settable containsPointer.t :=
   settable! containsPointer.mk < containsPointer.s' >.
@@ -1068,6 +1100,8 @@ End wrapExternalStruct.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance wrapExternalStruct_ty_wf : struct.Wf unittest.wrapExternalStruct.
+Proof. apply _. Qed.
 
 Global Instance settable_wrapExternalStruct : Settable wrapExternalStruct.t :=
   settable! wrapExternalStruct.mk < wrapExternalStruct.j' >.
@@ -1131,6 +1165,8 @@ End typing.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance typing_ty_wf : struct.Wf unittest.typing.
+Proof. apply _. Qed.
 
 Global Instance settable_typing : Settable typing.t :=
   settable! typing.mk < typing.proph' >.
@@ -1195,6 +1231,8 @@ End composite.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance composite_ty_wf : struct.Wf unittest.composite.
+Proof. apply _. Qed.
 
 Global Instance settable_composite : Settable composite.t :=
   settable! composite.mk < composite.a'; composite.b' >.
@@ -1264,6 +1302,9 @@ End R.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance R_ty_wf : struct.Wf unittest.R.
+Proof. apply _. Qed.
+
 #[local] Transparent unittest.R.
 #[local] Typeclasses Transparent unittest.R.
 Global Instance into_val_R : IntoVal R.t :=
@@ -1304,6 +1345,8 @@ End Other.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Other_ty_wf : struct.Wf unittest.Other.
+Proof. apply _. Qed.
 
 Global Instance settable_Other : Settable Other.t :=
   settable! Other.mk < Other.RecursiveEmbedded' >.
@@ -1367,6 +1410,8 @@ End RecursiveEmbedded.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance RecursiveEmbedded_ty_wf : struct.Wf unittest.RecursiveEmbedded.
+Proof. apply _. Qed.
 
 Global Instance settable_RecursiveEmbedded : Settable RecursiveEmbedded.t :=
   settable! RecursiveEmbedded.mk < RecursiveEmbedded.Other' >.
@@ -1430,6 +1475,8 @@ End Block.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Block_ty_wf : struct.Wf unittest.Block.
+Proof. apply _. Qed.
 
 Global Instance settable_Block : Settable Block.t :=
   settable! Block.mk < Block.Value' >.
@@ -1504,6 +1551,8 @@ End thing.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance thing_ty_wf : struct.Wf unittest.thing.
+Proof. apply _. Qed.
 
 Global Instance settable_thing : Settable thing.t :=
   settable! thing.mk < thing.x' >.
@@ -1567,6 +1616,8 @@ End sliceOfThings.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance sliceOfThings_ty_wf : struct.Wf unittest.sliceOfThings.
+Proof. apply _. Qed.
 
 Global Instance settable_sliceOfThings : Settable sliceOfThings.t :=
   settable! sliceOfThings.mk < sliceOfThings.things' >.
@@ -1631,6 +1682,8 @@ End Point.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Point_ty_wf : struct.Wf unittest.Point.
+Proof. apply _. Qed.
 
 Global Instance settable_Point : Settable Point.t :=
   settable! Point.mk < Point.x'; Point.y' >.
@@ -1702,6 +1755,8 @@ End TwoInts.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance TwoInts_ty_wf : struct.Wf unittest.TwoInts.
+Proof. apply _. Qed.
 
 Global Instance settable_TwoInts : Settable TwoInts.t :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
@@ -1774,6 +1829,8 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance S_ty_wf : struct.Wf unittest.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.a'; S.b'; S.c' >.
@@ -1851,6 +1908,8 @@ End B.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance B_ty_wf : struct.Wf unittest.B.
+Proof. apply _. Qed.
 
 Global Instance settable_B : Settable B.t :=
   settable! B.mk < B.a' >.
@@ -1913,6 +1972,9 @@ End A.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance A_ty_wf : struct.Wf unittest.A.
+Proof. apply _. Qed.
+
 #[local] Transparent unittest.A.
 #[local] Typeclasses Transparent unittest.A.
 Global Instance into_val_A : IntoVal A.t :=

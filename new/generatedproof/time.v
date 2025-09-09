@@ -39,6 +39,8 @@ End Timer.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Timer_ty_wf : struct.Wf time.Timer.
+Proof. apply _. Qed.
 
 Global Instance settable_Timer : Settable Timer.t :=
   settable! Timer.mk < Timer.C'; Timer.initTimer' >.
@@ -128,6 +130,8 @@ End Time.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance Time_ty_wf : struct.Wf time.Time.
+Proof. apply _. Qed.
 
 Global Instance settable_Time : Settable Time.t :=
   settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.

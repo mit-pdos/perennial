@@ -23,6 +23,8 @@ End lockState.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance lockState_ty_wf : struct.Wf lockmap.lockState.
+Proof. apply _. Qed.
 
 Global Instance settable_lockState : Settable lockState.t :=
   settable! lockState.mk < lockState.held'; lockState.cond'; lockState.waiters' >.
@@ -101,6 +103,8 @@ End lockShard.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance lockShard_ty_wf : struct.Wf lockmap.lockShard.
+Proof. apply _. Qed.
 
 Global Instance settable_lockShard : Settable lockShard.t :=
   settable! lockShard.mk < lockShard.mu'; lockShard.state' >.
@@ -171,6 +175,8 @@ End LockMap.
 
 Section instances.
 Context `{ffi_syntax}.
+Global Instance LockMap_ty_wf : struct.Wf lockmap.LockMap.
+Proof. apply _. Qed.
 
 Global Instance settable_LockMap : Settable LockMap.t :=
   settable! LockMap.mk < LockMap.shards' >.
