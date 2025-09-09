@@ -15,6 +15,9 @@ Module context.
 
 (* type context.Context *)
 Module Context.
+
+#[global] Transparent context.Context.
+#[global] Typeclasses Transparent context.Context.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -32,6 +35,8 @@ End deadlineExceededError.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.deadlineExceededError.
+#[local] Typeclasses Transparent context.deadlineExceededError.
 Global Instance into_val_deadlineExceededError : IntoVal deadlineExceededError.t :=
   {| to_val_def v :=
     struct.val_aux context.deadlineExceededError [
@@ -69,6 +74,8 @@ End emptyCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.emptyCtx.
+#[local] Typeclasses Transparent context.emptyCtx.
 Global Instance into_val_emptyCtx : IntoVal emptyCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.emptyCtx [
@@ -110,6 +117,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_backgroundCtx : Settable backgroundCtx.t :=
   settable! backgroundCtx.mk < backgroundCtx.emptyCtx' >.
+#[local] Transparent context.backgroundCtx.
+#[local] Typeclasses Transparent context.backgroundCtx.
 Global Instance into_val_backgroundCtx : IntoVal backgroundCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.backgroundCtx [
@@ -171,6 +180,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_todoCtx : Settable todoCtx.t :=
   settable! todoCtx.mk < todoCtx.emptyCtx' >.
+#[local] Transparent context.todoCtx.
+#[local] Typeclasses Transparent context.todoCtx.
 Global Instance into_val_todoCtx : IntoVal todoCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.todoCtx [
@@ -219,6 +230,9 @@ End instances.
 
 (* type context.CancelFunc *)
 Module CancelFunc.
+
+#[global] Transparent context.CancelFunc.
+#[global] Typeclasses Transparent context.CancelFunc.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -227,6 +241,9 @@ End CancelFunc.
 
 (* type context.CancelCauseFunc *)
 Module CancelCauseFunc.
+
+#[global] Transparent context.CancelCauseFunc.
+#[global] Typeclasses Transparent context.CancelCauseFunc.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -235,6 +252,9 @@ End CancelCauseFunc.
 
 (* type context.afterFuncer *)
 Module afterFuncer.
+
+#[global] Transparent context.afterFuncer.
+#[global] Typeclasses Transparent context.afterFuncer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -261,6 +281,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_cancelCtx : Settable cancelCtx.t :=
   settable! cancelCtx.mk < cancelCtx.Context'; cancelCtx.mu'; cancelCtx.done'; cancelCtx.children'; cancelCtx.err'; cancelCtx.cause' >.
+#[local] Transparent context.cancelCtx.
+#[local] Typeclasses Transparent context.cancelCtx.
 Global Instance into_val_cancelCtx : IntoVal cancelCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.cancelCtx [
@@ -359,6 +381,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_afterFuncCtx : Settable afterFuncCtx.t :=
   settable! afterFuncCtx.mk < afterFuncCtx.cancelCtx'; afterFuncCtx.once'; afterFuncCtx.f' >.
+#[local] Transparent context.afterFuncCtx.
+#[local] Typeclasses Transparent context.afterFuncCtx.
 Global Instance into_val_afterFuncCtx : IntoVal afterFuncCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.afterFuncCtx [
@@ -435,6 +459,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stopCtx : Settable stopCtx.t :=
   settable! stopCtx.mk < stopCtx.Context'; stopCtx.stop' >.
+#[local] Transparent context.stopCtx.
+#[local] Typeclasses Transparent context.stopCtx.
 Global Instance into_val_stopCtx : IntoVal stopCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.stopCtx [
@@ -490,6 +516,9 @@ End instances.
 
 (* type context.canceler *)
 Module canceler.
+
+#[global] Transparent context.canceler.
+#[global] Typeclasses Transparent context.canceler.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -498,6 +527,9 @@ End canceler.
 
 (* type context.stringer *)
 Module stringer.
+
+#[global] Transparent context.stringer.
+#[global] Typeclasses Transparent context.stringer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -519,6 +551,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_withoutCancelCtx : Settable withoutCancelCtx.t :=
   settable! withoutCancelCtx.mk < withoutCancelCtx.c' >.
+#[local] Transparent context.withoutCancelCtx.
+#[local] Typeclasses Transparent context.withoutCancelCtx.
 Global Instance into_val_withoutCancelCtx : IntoVal withoutCancelCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.withoutCancelCtx [
@@ -582,6 +616,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_timerCtx : Settable timerCtx.t :=
   settable! timerCtx.mk < timerCtx.cancelCtx'; timerCtx.timer'; timerCtx.deadline' >.
+#[local] Transparent context.timerCtx.
+#[local] Typeclasses Transparent context.timerCtx.
 Global Instance into_val_timerCtx : IntoVal timerCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.timerCtx [
@@ -659,6 +695,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_valueCtx : Settable valueCtx.t :=
   settable! valueCtx.mk < valueCtx.Context'; valueCtx.key'; valueCtx.val' >.
+#[local] Transparent context.valueCtx.
+#[local] Typeclasses Transparent context.valueCtx.
 Global Instance into_val_valueCtx : IntoVal valueCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.valueCtx [

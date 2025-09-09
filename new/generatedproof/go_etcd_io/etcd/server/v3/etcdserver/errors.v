@@ -26,6 +26,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_DiscoveryError : Settable DiscoveryError.t :=
   settable! DiscoveryError.mk < DiscoveryError.Op'; DiscoveryError.Err' >.
+#[local] Transparent errors.DiscoveryError.
+#[local] Typeclasses Transparent errors.DiscoveryError.
 Global Instance into_val_DiscoveryError : IntoVal DiscoveryError.t :=
   {| to_val_def v :=
     struct.val_aux errors.DiscoveryError [

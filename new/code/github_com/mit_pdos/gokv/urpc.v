@@ -23,6 +23,8 @@ Section code.
 Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 (* go: urpc.go:19:20 *)
 Definition Server__rpcHandleⁱᵐᵖˡ : val :=
@@ -153,6 +155,8 @@ Definition Callback : go_type := structT [
   "state" :: ptrT;
   "cond" :: ptrT
 ].
+#[global] Typeclasses Opaque Callback.
+#[global] Opaque Callback.
 
 Definition Client : go_type := structT [
   "mu" :: ptrT;
@@ -160,6 +164,8 @@ Definition Client : go_type := structT [
   "seq" :: uint64T;
   "pending" :: mapT uint64T ptrT
 ].
+#[global] Typeclasses Opaque Client.
+#[global] Opaque Client.
 
 (* go: urpc.go:88:19 *)
 Definition Client__replyThreadⁱᵐᵖˡ : val :=
@@ -283,6 +289,8 @@ Definition MakeClientⁱᵐᵖˡ : val :=
     return: (![#ptrT] "cl")).
 
 Definition Error : go_type := uint64T.
+#[global] Typeclasses Opaque Error.
+#[global] Opaque Error.
 
 Definition ErrNone : val := #(W64 0).
 

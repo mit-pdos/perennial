@@ -46,18 +46,104 @@ Admitted.
 Module RequestHeader.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Record t := mk {
+  ID' : w64;
+  Username' : go_string;
+  AuthRevision' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
 End def.
 End RequestHeader.
 
-Global Instance bounded_size_RequestHeader : BoundedTypeSize etcdserverpb.RequestHeader.
-Admitted.
+Section instances.
+Context `{ffi_syntax}.
 
-Global Instance into_val_RequestHeader `{ffi_syntax} : IntoVal RequestHeader.t.
-Admitted.
+Global Instance settable_RequestHeader : Settable RequestHeader.t :=
+  settable! RequestHeader.mk < RequestHeader.ID'; RequestHeader.Username'; RequestHeader.AuthRevision'; RequestHeader.XXX_NoUnkeyedLiteral'; RequestHeader.XXX_unrecognized'; RequestHeader.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.RequestHeader.
+#[local] Typeclasses Transparent etcdserverpb.RequestHeader.
+Global Instance into_val_RequestHeader : IntoVal RequestHeader.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.RequestHeader [
+    "ID" ::= #(RequestHeader.ID' v);
+    "Username" ::= #(RequestHeader.Username' v);
+    "AuthRevision" ::= #(RequestHeader.AuthRevision' v);
+    "XXX_NoUnkeyedLiteral" ::= #(RequestHeader.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(RequestHeader.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(RequestHeader.XXX_sizecache' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_RequestHeader `{ffi_syntax} : IntoValTyped RequestHeader.t etcdserverpb.RequestHeader.
-Admitted.
+Global Program Instance into_val_typed_RequestHeader : IntoValTyped RequestHeader.t etcdserverpb.RequestHeader :=
+{|
+  default_val := RequestHeader.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_RequestHeader_ID : IntoValStructField "ID" etcdserverpb.RequestHeader RequestHeader.ID'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestHeader_Username : IntoValStructField "Username" etcdserverpb.RequestHeader RequestHeader.Username'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestHeader_AuthRevision : IntoValStructField "AuthRevision" etcdserverpb.RequestHeader RequestHeader.AuthRevision'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestHeader_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RequestHeader RequestHeader.XXX_NoUnkeyedLiteral'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestHeader_XXX_unrecognized : IntoValStructField "XXX_unrecognized" etcdserverpb.RequestHeader RequestHeader.XXX_unrecognized'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestHeader_XXX_sizecache : IntoValStructField "XXX_sizecache" etcdserverpb.RequestHeader RequestHeader.XXX_sizecache'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RequestHeader ID' Username' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make #etcdserverpb.RequestHeader (alist_val [
+      "ID" ::= #ID';
+      "Username" ::= #Username';
+      "AuthRevision" ::= #AuthRevision';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%struct
+    #(RequestHeader.mk ID' Username' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance RequestHeader_struct_fields_split dq l (v : RequestHeader.t) :
+  StructFieldsSplit dq l v (
+    "HID" ∷ l ↦s[etcdserverpb.RequestHeader :: "ID"]{dq} v.(RequestHeader.ID') ∗
+    "HUsername" ∷ l ↦s[etcdserverpb.RequestHeader :: "Username"]{dq} v.(RequestHeader.Username') ∗
+    "HAuthRevision" ∷ l ↦s[etcdserverpb.RequestHeader :: "AuthRevision"]{dq} v.(RequestHeader.AuthRevision') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.RequestHeader :: "XXX_NoUnkeyedLiteral"]{dq} v.(RequestHeader.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.RequestHeader :: "XXX_unrecognized"]{dq} v.(RequestHeader.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.RequestHeader :: "XXX_sizecache"]{dq} v.(RequestHeader.XXX_sizecache')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (RequestHeader.ID' v)) (etcdserverpb.RequestHeader) "ID"%go.
+  simpl_one_flatten_struct (# (RequestHeader.Username' v)) (etcdserverpb.RequestHeader) "Username"%go.
+  simpl_one_flatten_struct (# (RequestHeader.AuthRevision' v)) (etcdserverpb.RequestHeader) "AuthRevision"%go.
+  simpl_one_flatten_struct (# (RequestHeader.XXX_NoUnkeyedLiteral' v)) (etcdserverpb.RequestHeader) "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (RequestHeader.XXX_unrecognized' v)) (etcdserverpb.RequestHeader) "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 (* type etcdserverpb.InternalRaftRequest *)
 Module InternalRaftRequest.
@@ -214,6 +300,9 @@ Admitted.
 
 (* type etcdserverpb.RangeRequest_SortOrder *)
 Module RangeRequest_SortOrder.
+
+#[global] Transparent etcdserverpb.RangeRequest_SortOrder.
+#[global] Typeclasses Transparent etcdserverpb.RangeRequest_SortOrder.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -222,6 +311,9 @@ End RangeRequest_SortOrder.
 
 (* type etcdserverpb.RangeRequest_SortTarget *)
 Module RangeRequest_SortTarget.
+
+#[global] Transparent etcdserverpb.RangeRequest_SortTarget.
+#[global] Typeclasses Transparent etcdserverpb.RangeRequest_SortTarget.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -230,6 +322,9 @@ End RangeRequest_SortTarget.
 
 (* type etcdserverpb.Compare_CompareResult *)
 Module Compare_CompareResult.
+
+#[global] Transparent etcdserverpb.Compare_CompareResult.
+#[global] Typeclasses Transparent etcdserverpb.Compare_CompareResult.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -238,6 +333,9 @@ End Compare_CompareResult.
 
 (* type etcdserverpb.Compare_CompareTarget *)
 Module Compare_CompareTarget.
+
+#[global] Transparent etcdserverpb.Compare_CompareTarget.
+#[global] Typeclasses Transparent etcdserverpb.Compare_CompareTarget.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -316,6 +414,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ResponseHeader : Settable ResponseHeader.t :=
   settable! ResponseHeader.mk < ResponseHeader.ClusterId'; ResponseHeader.MemberId'; ResponseHeader.Revision'; ResponseHeader.RaftTerm'; ResponseHeader.XXX_NoUnkeyedLiteral'; ResponseHeader.XXX_unrecognized'; ResponseHeader.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.ResponseHeader.
+#[local] Typeclasses Transparent etcdserverpb.ResponseHeader.
 Global Instance into_val_ResponseHeader : IntoVal ResponseHeader.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.ResponseHeader [
@@ -434,6 +534,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RangeRequest : Settable RangeRequest.t :=
   settable! RangeRequest.mk < RangeRequest.Key'; RangeRequest.RangeEnd'; RangeRequest.Limit'; RangeRequest.Revision'; RangeRequest.SortOrder'; RangeRequest.SortTarget'; RangeRequest.Serializable'; RangeRequest.KeysOnly'; RangeRequest.CountOnly'; RangeRequest.MinModRevision'; RangeRequest.MaxModRevision'; RangeRequest.MinCreateRevision'; RangeRequest.MaxCreateRevision'; RangeRequest.XXX_NoUnkeyedLiteral'; RangeRequest.XXX_unrecognized'; RangeRequest.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.RangeRequest.
+#[local] Typeclasses Transparent etcdserverpb.RangeRequest.
 Global Instance into_val_RangeRequest : IntoVal RangeRequest.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.RangeRequest [
@@ -606,6 +708,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RangeResponse : Settable RangeResponse.t :=
   settable! RangeResponse.mk < RangeResponse.Header'; RangeResponse.Kvs'; RangeResponse.More'; RangeResponse.Count'; RangeResponse.XXX_NoUnkeyedLiteral'; RangeResponse.XXX_unrecognized'; RangeResponse.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.RangeResponse.
+#[local] Typeclasses Transparent etcdserverpb.RangeResponse.
 Global Instance into_val_RangeResponse : IntoVal RangeResponse.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.RangeResponse [
@@ -717,6 +821,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_PutRequest : Settable PutRequest.t :=
   settable! PutRequest.mk < PutRequest.Key'; PutRequest.Value'; PutRequest.Lease'; PutRequest.PrevKv'; PutRequest.IgnoreValue'; PutRequest.IgnoreLease'; PutRequest.XXX_NoUnkeyedLiteral'; PutRequest.XXX_unrecognized'; PutRequest.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.PutRequest.
+#[local] Typeclasses Transparent etcdserverpb.PutRequest.
 Global Instance into_val_PutRequest : IntoVal PutRequest.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.PutRequest [
@@ -838,6 +944,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_PutResponse : Settable PutResponse.t :=
   settable! PutResponse.mk < PutResponse.Header'; PutResponse.PrevKv'; PutResponse.XXX_NoUnkeyedLiteral'; PutResponse.XXX_unrecognized'; PutResponse.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.PutResponse.
+#[local] Typeclasses Transparent etcdserverpb.PutResponse.
 Global Instance into_val_PutResponse : IntoVal PutResponse.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.PutResponse [
@@ -932,6 +1040,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_DeleteRangeRequest : Settable DeleteRangeRequest.t :=
   settable! DeleteRangeRequest.mk < DeleteRangeRequest.Key'; DeleteRangeRequest.RangeEnd'; DeleteRangeRequest.PrevKv'; DeleteRangeRequest.XXX_NoUnkeyedLiteral'; DeleteRangeRequest.XXX_unrecognized'; DeleteRangeRequest.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.DeleteRangeRequest.
+#[local] Typeclasses Transparent etcdserverpb.DeleteRangeRequest.
 Global Instance into_val_DeleteRangeRequest : IntoVal DeleteRangeRequest.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.DeleteRangeRequest [
@@ -1033,6 +1143,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_DeleteRangeResponse : Settable DeleteRangeResponse.t :=
   settable! DeleteRangeResponse.mk < DeleteRangeResponse.Header'; DeleteRangeResponse.Deleted'; DeleteRangeResponse.PrevKvs'; DeleteRangeResponse.XXX_NoUnkeyedLiteral'; DeleteRangeResponse.XXX_unrecognized'; DeleteRangeResponse.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.DeleteRangeResponse.
+#[local] Typeclasses Transparent etcdserverpb.DeleteRangeResponse.
 Global Instance into_val_DeleteRangeResponse : IntoVal DeleteRangeResponse.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.DeleteRangeResponse [
@@ -1116,6 +1228,9 @@ End instances.
 
 (* type etcdserverpb.isRequestOp_Request *)
 Module isRequestOp_Request.
+
+#[global] Transparent etcdserverpb.isRequestOp_Request.
+#[global] Typeclasses Transparent etcdserverpb.isRequestOp_Request.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -1140,6 +1255,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RequestOp : Settable RequestOp.t :=
   settable! RequestOp.mk < RequestOp.Request'; RequestOp.XXX_NoUnkeyedLiteral'; RequestOp.XXX_unrecognized'; RequestOp.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.RequestOp.
+#[local] Typeclasses Transparent etcdserverpb.RequestOp.
 Global Instance into_val_RequestOp : IntoVal RequestOp.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.RequestOp [
@@ -1222,6 +1339,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RequestOp_RequestRange : Settable RequestOp_RequestRange.t :=
   settable! RequestOp_RequestRange.mk < RequestOp_RequestRange.RequestRange' >.
+#[local] Transparent etcdserverpb.RequestOp_RequestRange.
+#[local] Typeclasses Transparent etcdserverpb.RequestOp_RequestRange.
 Global Instance into_val_RequestOp_RequestRange : IntoVal RequestOp_RequestRange.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.RequestOp_RequestRange [
@@ -1283,6 +1402,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RequestOp_RequestPut : Settable RequestOp_RequestPut.t :=
   settable! RequestOp_RequestPut.mk < RequestOp_RequestPut.RequestPut' >.
+#[local] Transparent etcdserverpb.RequestOp_RequestPut.
+#[local] Typeclasses Transparent etcdserverpb.RequestOp_RequestPut.
 Global Instance into_val_RequestOp_RequestPut : IntoVal RequestOp_RequestPut.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.RequestOp_RequestPut [
@@ -1344,6 +1465,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RequestOp_RequestDeleteRange : Settable RequestOp_RequestDeleteRange.t :=
   settable! RequestOp_RequestDeleteRange.mk < RequestOp_RequestDeleteRange.RequestDeleteRange' >.
+#[local] Transparent etcdserverpb.RequestOp_RequestDeleteRange.
+#[local] Typeclasses Transparent etcdserverpb.RequestOp_RequestDeleteRange.
 Global Instance into_val_RequestOp_RequestDeleteRange : IntoVal RequestOp_RequestDeleteRange.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.RequestOp_RequestDeleteRange [
@@ -1405,6 +1528,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RequestOp_RequestTxn : Settable RequestOp_RequestTxn.t :=
   settable! RequestOp_RequestTxn.mk < RequestOp_RequestTxn.RequestTxn' >.
+#[local] Transparent etcdserverpb.RequestOp_RequestTxn.
+#[local] Typeclasses Transparent etcdserverpb.RequestOp_RequestTxn.
 Global Instance into_val_RequestOp_RequestTxn : IntoVal RequestOp_RequestTxn.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.RequestOp_RequestTxn [
@@ -1453,6 +1578,9 @@ End instances.
 
 (* type etcdserverpb.isResponseOp_Response *)
 Module isResponseOp_Response.
+
+#[global] Transparent etcdserverpb.isResponseOp_Response.
+#[global] Typeclasses Transparent etcdserverpb.isResponseOp_Response.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -1477,6 +1605,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ResponseOp : Settable ResponseOp.t :=
   settable! ResponseOp.mk < ResponseOp.Response'; ResponseOp.XXX_NoUnkeyedLiteral'; ResponseOp.XXX_unrecognized'; ResponseOp.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.ResponseOp.
+#[local] Typeclasses Transparent etcdserverpb.ResponseOp.
 Global Instance into_val_ResponseOp : IntoVal ResponseOp.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.ResponseOp [
@@ -1559,6 +1689,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ResponseOp_ResponseRange : Settable ResponseOp_ResponseRange.t :=
   settable! ResponseOp_ResponseRange.mk < ResponseOp_ResponseRange.ResponseRange' >.
+#[local] Transparent etcdserverpb.ResponseOp_ResponseRange.
+#[local] Typeclasses Transparent etcdserverpb.ResponseOp_ResponseRange.
 Global Instance into_val_ResponseOp_ResponseRange : IntoVal ResponseOp_ResponseRange.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.ResponseOp_ResponseRange [
@@ -1620,6 +1752,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ResponseOp_ResponsePut : Settable ResponseOp_ResponsePut.t :=
   settable! ResponseOp_ResponsePut.mk < ResponseOp_ResponsePut.ResponsePut' >.
+#[local] Transparent etcdserverpb.ResponseOp_ResponsePut.
+#[local] Typeclasses Transparent etcdserverpb.ResponseOp_ResponsePut.
 Global Instance into_val_ResponseOp_ResponsePut : IntoVal ResponseOp_ResponsePut.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.ResponseOp_ResponsePut [
@@ -1681,6 +1815,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ResponseOp_ResponseDeleteRange : Settable ResponseOp_ResponseDeleteRange.t :=
   settable! ResponseOp_ResponseDeleteRange.mk < ResponseOp_ResponseDeleteRange.ResponseDeleteRange' >.
+#[local] Transparent etcdserverpb.ResponseOp_ResponseDeleteRange.
+#[local] Typeclasses Transparent etcdserverpb.ResponseOp_ResponseDeleteRange.
 Global Instance into_val_ResponseOp_ResponseDeleteRange : IntoVal ResponseOp_ResponseDeleteRange.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.ResponseOp_ResponseDeleteRange [
@@ -1742,6 +1878,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ResponseOp_ResponseTxn : Settable ResponseOp_ResponseTxn.t :=
   settable! ResponseOp_ResponseTxn.mk < ResponseOp_ResponseTxn.ResponseTxn' >.
+#[local] Transparent etcdserverpb.ResponseOp_ResponseTxn.
+#[local] Typeclasses Transparent etcdserverpb.ResponseOp_ResponseTxn.
 Global Instance into_val_ResponseOp_ResponseTxn : IntoVal ResponseOp_ResponseTxn.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.ResponseOp_ResponseTxn [
@@ -1790,6 +1928,9 @@ End instances.
 
 (* type etcdserverpb.isCompare_TargetUnion *)
 Module isCompare_TargetUnion.
+
+#[global] Transparent etcdserverpb.isCompare_TargetUnion.
+#[global] Typeclasses Transparent etcdserverpb.isCompare_TargetUnion.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -1818,6 +1959,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Compare : Settable Compare.t :=
   settable! Compare.mk < Compare.Result'; Compare.Target'; Compare.Key'; Compare.TargetUnion'; Compare.RangeEnd'; Compare.XXX_NoUnkeyedLiteral'; Compare.XXX_unrecognized'; Compare.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.Compare.
+#[local] Typeclasses Transparent etcdserverpb.Compare.
 Global Instance into_val_Compare : IntoVal Compare.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.Compare [
@@ -1928,6 +2071,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Compare_Version : Settable Compare_Version.t :=
   settable! Compare_Version.mk < Compare_Version.Version' >.
+#[local] Transparent etcdserverpb.Compare_Version.
+#[local] Typeclasses Transparent etcdserverpb.Compare_Version.
 Global Instance into_val_Compare_Version : IntoVal Compare_Version.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.Compare_Version [
@@ -1989,6 +2134,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Compare_CreateRevision : Settable Compare_CreateRevision.t :=
   settable! Compare_CreateRevision.mk < Compare_CreateRevision.CreateRevision' >.
+#[local] Transparent etcdserverpb.Compare_CreateRevision.
+#[local] Typeclasses Transparent etcdserverpb.Compare_CreateRevision.
 Global Instance into_val_Compare_CreateRevision : IntoVal Compare_CreateRevision.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.Compare_CreateRevision [
@@ -2050,6 +2197,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Compare_ModRevision : Settable Compare_ModRevision.t :=
   settable! Compare_ModRevision.mk < Compare_ModRevision.ModRevision' >.
+#[local] Transparent etcdserverpb.Compare_ModRevision.
+#[local] Typeclasses Transparent etcdserverpb.Compare_ModRevision.
 Global Instance into_val_Compare_ModRevision : IntoVal Compare_ModRevision.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.Compare_ModRevision [
@@ -2111,6 +2260,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Compare_Value : Settable Compare_Value.t :=
   settable! Compare_Value.mk < Compare_Value.Value' >.
+#[local] Transparent etcdserverpb.Compare_Value.
+#[local] Typeclasses Transparent etcdserverpb.Compare_Value.
 Global Instance into_val_Compare_Value : IntoVal Compare_Value.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.Compare_Value [
@@ -2172,6 +2323,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Compare_Lease : Settable Compare_Lease.t :=
   settable! Compare_Lease.mk < Compare_Lease.Lease' >.
+#[local] Transparent etcdserverpb.Compare_Lease.
+#[local] Typeclasses Transparent etcdserverpb.Compare_Lease.
 Global Instance into_val_Compare_Lease : IntoVal Compare_Lease.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.Compare_Lease [
@@ -2238,6 +2391,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_TxnRequest : Settable TxnRequest.t :=
   settable! TxnRequest.mk < TxnRequest.Compare'; TxnRequest.Success'; TxnRequest.Failure'; TxnRequest.XXX_NoUnkeyedLiteral'; TxnRequest.XXX_unrecognized'; TxnRequest.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.TxnRequest.
+#[local] Typeclasses Transparent etcdserverpb.TxnRequest.
 Global Instance into_val_TxnRequest : IntoVal TxnRequest.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.TxnRequest [
@@ -2339,6 +2494,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_TxnResponse : Settable TxnResponse.t :=
   settable! TxnResponse.mk < TxnResponse.Header'; TxnResponse.Succeeded'; TxnResponse.Responses'; TxnResponse.XXX_NoUnkeyedLiteral'; TxnResponse.XXX_unrecognized'; TxnResponse.XXX_sizecache' >.
+#[local] Transparent etcdserverpb.TxnResponse.
+#[local] Typeclasses Transparent etcdserverpb.TxnResponse.
 Global Instance into_val_TxnResponse : IntoVal TxnResponse.t :=
   {| to_val_def v :=
     struct.val_aux etcdserverpb.TxnResponse [

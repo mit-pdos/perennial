@@ -30,6 +30,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.log'; Log.locks' >.
+#[local] Transparent txn.Log.
+#[local] Typeclasses Transparent txn.Log.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=
     struct.val_aux txn.Log [
@@ -100,6 +102,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Txn : Settable Txn.t :=
   settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.
+#[local] Transparent txn.Txn.
+#[local] Typeclasses Transparent txn.Txn.
 Global Instance into_val_Txn : IntoVal Txn.t :=
   {| to_val_def v :=
     struct.val_aux txn.Txn [

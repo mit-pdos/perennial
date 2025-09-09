@@ -26,6 +26,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.handlers' >.
+#[local] Transparent advrpc.Server.
+#[local] Typeclasses Transparent advrpc.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux advrpc.Server [
@@ -87,6 +89,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.conn' >.
+#[local] Transparent advrpc.Client.
+#[local] Typeclasses Transparent advrpc.Client.
 Global Instance into_val_Client : IntoVal Client.t :=
   {| to_val_def v :=
     struct.val_aux advrpc.Client [

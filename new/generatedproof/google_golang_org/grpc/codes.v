@@ -10,6 +10,9 @@ Module codes.
 
 (* type codes.Code *)
 Module Code.
+
+#[global] Transparent codes.Code.
+#[global] Typeclasses Transparent codes.Code.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.

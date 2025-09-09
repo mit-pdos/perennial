@@ -37,6 +37,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_StartReply : Settable StartReply.t :=
   settable! StartReply.mk < StartReply.StartEpochLen'; StartReply.StartLink'; StartReply.ChainProof'; StartReply.LinkSig'; StartReply.VrfPk'; StartReply.VrfSig' >.
+#[local] Transparent server.StartReply.
+#[local] Typeclasses Transparent server.StartReply.
 Global Instance into_val_StartReply : IntoVal StartReply.t :=
   {| to_val_def v :=
     struct.val_aux server.StartReply [
@@ -135,6 +137,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_PutArg : Settable PutArg.t :=
   settable! PutArg.mk < PutArg.Uid'; PutArg.Pk'; PutArg.Ver' >.
+#[local] Transparent server.PutArg.
+#[local] Typeclasses Transparent server.PutArg.
 Global Instance into_val_PutArg : IntoVal PutArg.t :=
   {| to_val_def v :=
     struct.val_aux server.PutArg [
@@ -212,6 +216,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_HistoryArg : Settable HistoryArg.t :=
   settable! HistoryArg.mk < HistoryArg.Uid'; HistoryArg.PrevEpoch'; HistoryArg.PrevVerLen' >.
+#[local] Transparent server.HistoryArg.
+#[local] Typeclasses Transparent server.HistoryArg.
 Global Instance into_val_HistoryArg : IntoVal HistoryArg.t :=
   {| to_val_def v :=
     struct.val_aux server.HistoryArg [
@@ -291,6 +297,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_HistoryReply : Settable HistoryReply.t :=
   settable! HistoryReply.mk < HistoryReply.ChainProof'; HistoryReply.LinkSig'; HistoryReply.Hist'; HistoryReply.Bound'; HistoryReply.Err' >.
+#[local] Transparent server.HistoryReply.
+#[local] Typeclasses Transparent server.HistoryReply.
 Global Instance into_val_HistoryReply : IntoVal HistoryReply.t :=
   {| to_val_def v :=
     struct.val_aux server.HistoryReply [
@@ -380,6 +388,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_AuditArg : Settable AuditArg.t :=
   settable! AuditArg.mk < AuditArg.PrevEpochLen' >.
+#[local] Transparent server.AuditArg.
+#[local] Typeclasses Transparent server.AuditArg.
 Global Instance into_val_AuditArg : IntoVal AuditArg.t :=
   {| to_val_def v :=
     struct.val_aux server.AuditArg [
@@ -442,6 +452,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_AuditReply : Settable AuditReply.t :=
   settable! AuditReply.mk < AuditReply.P'; AuditReply.Err' >.
+#[local] Transparent server.AuditReply.
+#[local] Typeclasses Transparent server.AuditReply.
 Global Instance into_val_AuditReply : IntoVal AuditReply.t :=
   {| to_val_def v :=
     struct.val_aux server.AuditReply [
@@ -514,6 +526,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.secs'; Server.keys'; Server.hist'; Server.workQ' >.
+#[local] Transparent server.Server.
+#[local] Typeclasses Transparent server.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux server.Server [
@@ -605,6 +619,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_secrets : Settable secrets.t :=
   settable! secrets.mk < secrets.sig'; secrets.vrf'; secrets.commit' >.
+#[local] Transparent server.secrets.
+#[local] Typeclasses Transparent server.secrets.
 Global Instance into_val_secrets : IntoVal secrets.t :=
   {| to_val_def v :=
     struct.val_aux server.secrets [
@@ -681,6 +697,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_keyStore : Settable keyStore.t :=
   settable! keyStore.mk < keyStore.hidden'; keyStore.plain' >.
+#[local] Transparent server.keyStore.
+#[local] Typeclasses Transparent server.keyStore.
 Global Instance into_val_keyStore : IntoVal keyStore.t :=
   {| to_val_def v :=
     struct.val_aux server.keyStore [
@@ -751,6 +769,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_history : Settable history.t :=
   settable! history.mk < history.chain'; history.audits'; history.vrfPkSig' >.
+#[local] Transparent server.history.
+#[local] Typeclasses Transparent server.history.
 Global Instance into_val_history : IntoVal history.t :=
   {| to_val_def v :=
     struct.val_aux server.history [
@@ -828,6 +848,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_WQReq : Settable WQReq.t :=
   settable! WQReq.mk < WQReq.Uid'; WQReq.Pk'; WQReq.Ver' >.
+#[local] Transparent server.WQReq.
+#[local] Typeclasses Transparent server.WQReq.
 Global Instance into_val_WQReq : IntoVal WQReq.t :=
   {| to_val_def v :=
     struct.val_aux server.WQReq [
@@ -903,6 +925,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_WQResp : Settable WQResp.t :=
   settable! WQResp.mk < WQResp.Err' >.
+#[local] Transparent server.WQResp.
+#[local] Typeclasses Transparent server.WQResp.
 Global Instance into_val_WQResp : IntoVal WQResp.t :=
   {| to_val_def v :=
     struct.val_aux server.WQResp [
@@ -965,6 +989,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_mapEntry : Settable mapEntry.t :=
   settable! mapEntry.mk < mapEntry.label'; mapEntry.val' >.
+#[local] Transparent server.mapEntry.
+#[local] Typeclasses Transparent server.mapEntry.
 Global Instance into_val_mapEntry : IntoVal mapEntry.t :=
   {| to_val_def v :=
     struct.val_aux server.mapEntry [
@@ -1037,6 +1063,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Work : Settable Work.t :=
   settable! Work.mk < Work.mu'; Work.cond'; Work.done'; Work.Req'; Work.Resp' >.
+#[local] Transparent server.Work.
+#[local] Typeclasses Transparent server.Work.
 Global Instance into_val_Work : IntoVal Work.t :=
   {| to_val_def v :=
     struct.val_aux server.Work [
@@ -1128,6 +1156,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_WorkQ : Settable WorkQ.t :=
   settable! WorkQ.mk < WorkQ.mu'; WorkQ.work'; WorkQ.cond' >.
+#[local] Transparent server.WorkQ.
+#[local] Typeclasses Transparent server.WorkQ.
 Global Instance into_val_WorkQ : IntoVal WorkQ.t :=
   {| to_val_def v :=
     struct.val_aux server.WorkQ [

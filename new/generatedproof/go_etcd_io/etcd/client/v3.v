@@ -522,6 +522,9 @@ Admitted.
 
 (* type clientv3.Cluster *)
 Module Cluster.
+
+#[global] Transparent clientv3.Cluster.
+#[global] Typeclasses Transparent clientv3.Cluster.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -615,6 +618,9 @@ Admitted.
 
 (* type clientv3.Cmp *)
 Module Cmp.
+
+#[global] Transparent clientv3.Cmp.
+#[global] Typeclasses Transparent clientv3.Cmp.
 Section def.
 Context `{ffi_syntax}.
 Definition t := etcdserverpb.Compare.t.
@@ -708,6 +714,9 @@ Admitted.
 
 (* type clientv3.PutResponse *)
 Module PutResponse.
+
+#[global] Transparent clientv3.PutResponse.
+#[global] Typeclasses Transparent clientv3.PutResponse.
 Section def.
 Context `{ffi_syntax}.
 Definition t := etcdserverpb.PutResponse.t.
@@ -716,6 +725,9 @@ End PutResponse.
 
 (* type clientv3.GetResponse *)
 Module GetResponse.
+
+#[global] Transparent clientv3.GetResponse.
+#[global] Typeclasses Transparent clientv3.GetResponse.
 Section def.
 Context `{ffi_syntax}.
 Definition t := etcdserverpb.RangeResponse.t.
@@ -724,6 +736,9 @@ End GetResponse.
 
 (* type clientv3.DeleteResponse *)
 Module DeleteResponse.
+
+#[global] Transparent clientv3.DeleteResponse.
+#[global] Typeclasses Transparent clientv3.DeleteResponse.
 Section def.
 Context `{ffi_syntax}.
 Definition t := etcdserverpb.DeleteRangeResponse.t.
@@ -732,6 +747,9 @@ End DeleteResponse.
 
 (* type clientv3.TxnResponse *)
 Module TxnResponse.
+
+#[global] Transparent clientv3.TxnResponse.
+#[global] Typeclasses Transparent clientv3.TxnResponse.
 Section def.
 Context `{ffi_syntax}.
 Definition t := etcdserverpb.TxnResponse.t.
@@ -740,6 +758,9 @@ End TxnResponse.
 
 (* type clientv3.KV *)
 Module KV.
+
+#[global] Transparent clientv3.KV.
+#[global] Typeclasses Transparent clientv3.KV.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -764,6 +785,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_OpResponse : Settable OpResponse.t :=
   settable! OpResponse.mk < OpResponse.put'; OpResponse.get'; OpResponse.del'; OpResponse.txn' >.
+#[local] Transparent clientv3.OpResponse.
+#[local] Typeclasses Transparent clientv3.OpResponse.
 Global Instance into_val_OpResponse : IntoVal OpResponse.t :=
   {| to_val_def v :=
     struct.val_aux clientv3.OpResponse [
@@ -867,6 +890,9 @@ Admitted.
 
 (* type clientv3.LeaseID *)
 Module LeaseID.
+
+#[global] Transparent clientv3.LeaseID.
+#[global] Typeclasses Transparent clientv3.LeaseID.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -891,6 +917,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_LeaseGrantResponse : Settable LeaseGrantResponse.t :=
   settable! LeaseGrantResponse.mk < LeaseGrantResponse.ResponseHeader'; LeaseGrantResponse.ID'; LeaseGrantResponse.TTL'; LeaseGrantResponse.Error' >.
+#[local] Transparent clientv3.LeaseGrantResponse.
+#[local] Typeclasses Transparent clientv3.LeaseGrantResponse.
 Global Instance into_val_LeaseGrantResponse : IntoVal LeaseGrantResponse.t :=
   {| to_val_def v :=
     struct.val_aux clientv3.LeaseGrantResponse [
@@ -1045,6 +1073,9 @@ Admitted.
 
 (* type clientv3.Lease *)
 Module Lease.
+
+#[global] Transparent clientv3.Lease.
+#[global] Typeclasses Transparent clientv3.Lease.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -1308,6 +1339,9 @@ Admitted.
 
 (* type clientv3.opType *)
 Module opType.
+
+#[global] Transparent clientv3.opType.
+#[global] Typeclasses Transparent clientv3.opType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -1356,6 +1390,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Op : Settable Op.t :=
   settable! Op.mk < Op.t'; Op.key'; Op.end'; Op.limit'; Op.sort'; Op.serializable'; Op.keysOnly'; Op.countOnly'; Op.minModRev'; Op.maxModRev'; Op.minCreateRev'; Op.maxCreateRev'; Op.rev'; Op.prevKV'; Op.fragment'; Op.ignoreValue'; Op.ignoreLease'; Op.progressNotify'; Op.createdNotify'; Op.filterPut'; Op.filterDelete'; Op.val'; Op.leaseID'; Op.cmps'; Op.thenOps'; Op.elseOps'; Op.isOptsWithFromKey'; Op.isOptsWithPrefix' >.
+#[local] Transparent clientv3.Op.
+#[local] Typeclasses Transparent clientv3.Op.
 Global Instance into_val_Op : IntoVal Op.t :=
   {| to_val_def v :=
     struct.val_aux clientv3.Op [
@@ -1593,6 +1629,9 @@ End instances.
 
 (* type clientv3.OpOption *)
 Module OpOption.
+
+#[global] Transparent clientv3.OpOption.
+#[global] Typeclasses Transparent clientv3.OpOption.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -1615,6 +1654,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_LeaseOp : Settable LeaseOp.t :=
   settable! LeaseOp.mk < LeaseOp.id'; LeaseOp.attachedKeys' >.
+#[local] Transparent clientv3.LeaseOp.
+#[local] Typeclasses Transparent clientv3.LeaseOp.
 Global Instance into_val_LeaseOp : IntoVal LeaseOp.t :=
   {| to_val_def v :=
     struct.val_aux clientv3.LeaseOp [
@@ -1670,6 +1711,9 @@ End instances.
 
 (* type clientv3.LeaseOption *)
 Module LeaseOption.
+
+#[global] Transparent clientv3.LeaseOption.
+#[global] Typeclasses Transparent clientv3.LeaseOption.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -1848,6 +1892,9 @@ Admitted.
 
 (* type clientv3.SortTarget *)
 Module SortTarget.
+
+#[global] Transparent clientv3.SortTarget.
+#[global] Typeclasses Transparent clientv3.SortTarget.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -1856,6 +1903,9 @@ End SortTarget.
 
 (* type clientv3.SortOrder *)
 Module SortOrder.
+
+#[global] Transparent clientv3.SortOrder.
+#[global] Typeclasses Transparent clientv3.SortOrder.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -1878,6 +1928,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_SortOption : Settable SortOption.t :=
   settable! SortOption.mk < SortOption.Target'; SortOption.Order' >.
+#[local] Transparent clientv3.SortOption.
+#[local] Typeclasses Transparent clientv3.SortOption.
 Global Instance into_val_SortOption : IntoVal SortOption.t :=
   {| to_val_def v :=
     struct.val_aux clientv3.SortOption [
@@ -1933,6 +1985,9 @@ End instances.
 
 (* type clientv3.Txn *)
 Module Txn.
+
+#[global] Transparent clientv3.Txn.
+#[global] Typeclasses Transparent clientv3.Txn.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -1958,6 +2013,9 @@ Admitted.
 
 (* type clientv3.Event *)
 Module Event.
+
+#[global] Transparent clientv3.Event.
+#[global] Typeclasses Transparent clientv3.Event.
 Section def.
 Context `{ffi_syntax}.
 Definition t := mvccpb.Event.t.
@@ -1966,6 +2024,9 @@ End Event.
 
 (* type clientv3.WatchChan *)
 Module WatchChan.
+
+#[global] Transparent clientv3.WatchChan.
+#[global] Typeclasses Transparent clientv3.WatchChan.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -1974,6 +2035,9 @@ End WatchChan.
 
 (* type clientv3.Watcher *)
 Module Watcher.
+
+#[global] Transparent clientv3.Watcher.
+#[global] Typeclasses Transparent clientv3.Watcher.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -2001,6 +2065,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_WatchResponse : Settable WatchResponse.t :=
   settable! WatchResponse.mk < WatchResponse.Header'; WatchResponse.Events'; WatchResponse.CompactRevision'; WatchResponse.Canceled'; WatchResponse.Created'; WatchResponse.closeErr'; WatchResponse.cancelReason' >.
+#[local] Transparent clientv3.WatchResponse.
+#[local] Typeclasses Transparent clientv3.WatchResponse.
 Global Instance into_val_WatchResponse : IntoVal WatchResponse.t :=
   {| to_val_def v :=
     struct.val_aux clientv3.WatchResponse [

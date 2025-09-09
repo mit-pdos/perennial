@@ -33,12 +33,16 @@ Definition Auditor : go_type := structT [
   "hist" :: sliceT;
   "serv" :: ptrT
 ].
+#[global] Typeclasses Opaque Auditor.
+#[global] Opaque Auditor.
 
 Definition history : go_type := structT [
   "link" :: sliceT;
   "servSig" :: sliceT;
   "adtrSig" :: sliceT
 ].
+#[global] Typeclasses Opaque history.
+#[global] Opaque history.
 
 Definition serv : go_type := structT [
   "cli" :: ptrT;
@@ -47,6 +51,8 @@ Definition serv : go_type := structT [
   "servVrfSig" :: sliceT;
   "adtrVrfSig" :: sliceT
 ].
+#[global] Typeclasses Opaque serv.
+#[global] Opaque serv.
 
 (* Update queries server for a new epoch update and applies it.
 
@@ -168,6 +174,8 @@ Definition GetReply : go_type := structT [
   "AdtrVrfSig" :: sliceT;
   "Err" :: ktcore.Blame
 ].
+#[global] Typeclasses Opaque GetReply.
+#[global] Opaque GetReply.
 
 (* Get returns the auditor's info for a particular epoch.
    it errors if the epoch is out of bounds.
@@ -355,6 +363,8 @@ Definition GetReplyEncode : go_string := "github.com/sanjit-bhat/pav/auditor.Get
 Definition GetArg : go_type := structT [
   "Epoch" :: uint64T
 ].
+#[global] Typeclasses Opaque GetArg.
+#[global] Opaque GetArg.
 
 Definition GetArgDecode : go_string := "github.com/sanjit-bhat/pav/auditor.GetArgDecode"%go.
 
@@ -363,6 +373,8 @@ Definition UpdateReplyEncode : go_string := "github.com/sanjit-bhat/pav/auditor.
 Definition UpdateReply : go_type := structT [
   "Err" :: ktcore.Blame
 ].
+#[global] Typeclasses Opaque UpdateReply.
+#[global] Opaque UpdateReply.
 
 (* go: rpc.go:13:6 *)
 Definition NewRpcAuditorⁱᵐᵖˡ : val :=

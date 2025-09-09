@@ -16,6 +16,8 @@ Definition Changer : go_type := structT [
   "Tracker" :: tracker.ProgressTracker;
   "LastIndex" :: uint64T
 ].
+#[global] Typeclasses Opaque Changer.
+#[global] Opaque Changer.
 
 Definition checkInvariants : go_string := "go.etcd.io/raft/v3/confchange.checkInvariants"%go.
 

@@ -23,6 +23,8 @@ Definition Op : go_type := structT [
   "log" :: ptrT;
   "bufs" :: ptrT
 ].
+#[global] Typeclasses Opaque Op.
+#[global] Opaque Op.
 
 Definition Begin : go_string := "github.com/mit-pdos/go-journal/jrnl.Begin"%go.
 

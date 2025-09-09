@@ -26,6 +26,8 @@ Definition eStateMachine : go_type := structT [
   "sm" :: ptrT;
   "esmNextIndex" :: uint64T
 ].
+#[global] Typeclasses Opaque eStateMachine.
+#[global] Opaque eStateMachine.
 
 Definition OPTYPE_RW : val := #(W8 0).
 
@@ -39,6 +41,8 @@ Definition VersionedStateMachine : go_type := structT [
   "SetState" :: funcT;
   "GetState" :: funcT
 ].
+#[global] Typeclasses Opaque VersionedStateMachine.
+#[global] Opaque VersionedStateMachine.
 
 (* go: sm.go:26:25 *)
 Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
@@ -255,6 +259,8 @@ Definition Clerk : go_type := structT [
   "cid" :: uint64T;
   "seq" :: uint64T
 ].
+#[global] Typeclasses Opaque Clerk.
+#[global] Opaque Clerk.
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeClerk"%go.
 

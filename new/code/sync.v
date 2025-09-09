@@ -39,6 +39,8 @@ Axiom copyChecker : go_type.
 
 Definition noCopy : go_type := structT [
 ].
+#[global] Typeclasses Opaque noCopy.
+#[global] Opaque noCopy.
 
 Axiom Map : go_type.
 
@@ -49,6 +51,8 @@ Definition Once : go_type := structT [
   "done" :: atomic.Uint32;
   "m" :: Mutex
 ].
+#[global] Typeclasses Opaque Once.
+#[global] Opaque Once.
 
 (* Do calls the function f if and only if Do is being called for the
    first time for this instance of [Once]. In other words, given
@@ -195,6 +199,8 @@ Definition RWMutex : go_type := structT [
   "readerCount" :: atomic.Int32;
   "readerWait" :: atomic.Int32
 ].
+#[global] Typeclasses Opaque RWMutex.
+#[global] Opaque RWMutex.
 
 Definition rwmutexMaxReaders : Z := 1073741824.
 
@@ -457,12 +463,16 @@ Definition RWMutex__RLockerⁱᵐᵖˡ : val :=
     return: (interface.make #(ptrT.id rlocker.id) (![#ptrT] "rw"))).
 
 Definition rlocker : go_type := RWMutex.
+#[global] Typeclasses Opaque rlocker.
+#[global] Opaque rlocker.
 
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
   "state" :: atomic.Uint64;
   "sema" :: uint32T
 ].
+#[global] Typeclasses Opaque WaitGroup.
+#[global] Opaque WaitGroup.
 
 (* Add adds delta, which may be negative, to the [WaitGroup] counter.
    If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.

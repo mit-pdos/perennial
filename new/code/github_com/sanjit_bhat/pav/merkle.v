@@ -39,6 +39,8 @@ Definition emptyHash : go_string := "github.com/sanjit-bhat/pav/merkle.emptyHash
 Definition Map : go_type := structT [
   "root" :: ptrT
 ].
+#[global] Typeclasses Opaque Map.
+#[global] Opaque Map.
 
 Definition node : go_type := structT [
   "nodeTy" :: byteT;
@@ -48,6 +50,8 @@ Definition node : go_type := structT [
   "label" :: sliceT;
   "val" :: sliceT
 ].
+#[global] Typeclasses Opaque node.
+#[global] Opaque node.
 
 Definition put : go_string := "github.com/sanjit-bhat/pav/merkle.put"%go.
 
@@ -505,6 +509,8 @@ Definition MerkleProof : go_type := structT [
   "LeafLabel" :: sliceT;
   "LeafVal" :: sliceT
 ].
+#[global] Typeclasses Opaque MerkleProof.
+#[global] Opaque MerkleProof.
 
 Definition newShell : go_string := "github.com/sanjit-bhat/pav/merkle.newShell"%go.
 

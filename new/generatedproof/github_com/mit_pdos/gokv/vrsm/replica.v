@@ -20,6 +20,9 @@ Module replica.
 
 (* type replica.Op *)
 Module Op.
+
+#[global] Transparent replica.Op.
+#[global] Typeclasses Transparent replica.Op.
 Section def.
 Context `{ffi_syntax}.
 Definition t := slice.t.
@@ -43,6 +46,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ApplyAsBackupArgs : Settable ApplyAsBackupArgs.t :=
   settable! ApplyAsBackupArgs.mk < ApplyAsBackupArgs.epoch'; ApplyAsBackupArgs.index'; ApplyAsBackupArgs.op' >.
+#[local] Transparent replica.ApplyAsBackupArgs.
+#[local] Typeclasses Transparent replica.ApplyAsBackupArgs.
 Global Instance into_val_ApplyAsBackupArgs : IntoVal ApplyAsBackupArgs.t :=
   {| to_val_def v :=
     struct.val_aux replica.ApplyAsBackupArgs [
@@ -121,6 +126,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_SetStateArgs : Settable SetStateArgs.t :=
   settable! SetStateArgs.mk < SetStateArgs.Epoch'; SetStateArgs.NextIndex'; SetStateArgs.CommittedNextIndex'; SetStateArgs.State' >.
+#[local] Transparent replica.SetStateArgs.
+#[local] Typeclasses Transparent replica.SetStateArgs.
 Global Instance into_val_SetStateArgs : IntoVal SetStateArgs.t :=
   {| to_val_def v :=
     struct.val_aux replica.SetStateArgs [
@@ -203,6 +210,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_GetStateArgs : Settable GetStateArgs.t :=
   settable! GetStateArgs.mk < GetStateArgs.Epoch' >.
+#[local] Transparent replica.GetStateArgs.
+#[local] Typeclasses Transparent replica.GetStateArgs.
 Global Instance into_val_GetStateArgs : IntoVal GetStateArgs.t :=
   {| to_val_def v :=
     struct.val_aux replica.GetStateArgs [
@@ -267,6 +276,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_GetStateReply : Settable GetStateReply.t :=
   settable! GetStateReply.mk < GetStateReply.Err'; GetStateReply.NextIndex'; GetStateReply.CommittedNextIndex'; GetStateReply.State' >.
+#[local] Transparent replica.GetStateReply.
+#[local] Typeclasses Transparent replica.GetStateReply.
 Global Instance into_val_GetStateReply : IntoVal GetStateReply.t :=
   {| to_val_def v :=
     struct.val_aux replica.GetStateReply [
@@ -350,6 +361,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_BecomePrimaryArgs : Settable BecomePrimaryArgs.t :=
   settable! BecomePrimaryArgs.mk < BecomePrimaryArgs.Epoch'; BecomePrimaryArgs.Replicas' >.
+#[local] Transparent replica.BecomePrimaryArgs.
+#[local] Typeclasses Transparent replica.BecomePrimaryArgs.
 Global Instance into_val_BecomePrimaryArgs : IntoVal BecomePrimaryArgs.t :=
   {| to_val_def v :=
     struct.val_aux replica.BecomePrimaryArgs [
@@ -419,6 +432,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ApplyReply : Settable ApplyReply.t :=
   settable! ApplyReply.mk < ApplyReply.Err'; ApplyReply.Reply' >.
+#[local] Transparent replica.ApplyReply.
+#[local] Typeclasses Transparent replica.ApplyReply.
 Global Instance into_val_ApplyReply : IntoVal ApplyReply.t :=
   {| to_val_def v :=
     struct.val_aux replica.ApplyReply [
@@ -474,6 +489,9 @@ End instances.
 
 (* type replica.IncreaseCommitArgs *)
 Module IncreaseCommitArgs.
+
+#[global] Transparent replica.IncreaseCommitArgs.
+#[global] Typeclasses Transparent replica.IncreaseCommitArgs.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -498,6 +516,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.StartApply'; StateMachine.ApplyReadonly'; StateMachine.SetStateAndUnseal'; StateMachine.GetStateAndSeal' >.
+#[local] Transparent replica.StateMachine.
+#[local] Typeclasses Transparent replica.StateMachine.
 Global Instance into_val_StateMachine : IntoVal StateMachine.t :=
   {| to_val_def v :=
     struct.val_aux replica.StateMachine [
@@ -583,6 +603,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_SyncStateMachine : Settable SyncStateMachine.t :=
   settable! SyncStateMachine.mk < SyncStateMachine.Apply'; SyncStateMachine.ApplyReadonly'; SyncStateMachine.SetStateAndUnseal'; SyncStateMachine.GetStateAndSeal' >.
+#[local] Transparent replica.SyncStateMachine.
+#[local] Typeclasses Transparent replica.SyncStateMachine.
 Global Instance into_val_SyncStateMachine : IntoVal SyncStateMachine.t :=
   {| to_val_def v :=
     struct.val_aux replica.SyncStateMachine [
@@ -665,6 +687,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
+#[local] Transparent replica.Clerk.
+#[local] Typeclasses Transparent replica.Clerk.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
     struct.val_aux replica.Clerk [
@@ -740,6 +764,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.epoch'; Server.sealed'; Server.sm'; Server.nextIndex'; Server.canBecomePrimary'; Server.isPrimary'; Server.clerks'; Server.isPrimary_cond'; Server.opAppliedConds'; Server.leaseExpiration'; Server.leaseValid'; Server.committedNextIndex'; Server.committedNextIndex_cond'; Server.confCk' >.
+#[local] Transparent replica.Server.
+#[local] Typeclasses Transparent replica.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux replica.Server [

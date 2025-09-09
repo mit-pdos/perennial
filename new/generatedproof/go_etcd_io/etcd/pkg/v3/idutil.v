@@ -27,6 +27,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Generator : Settable Generator.t :=
   settable! Generator.mk < Generator.prefix'; Generator.suffix' >.
+#[local] Transparent idutil.Generator.
+#[local] Typeclasses Transparent idutil.Generator.
 Global Instance into_val_Generator : IntoVal Generator.t :=
   {| to_val_def v :=
     struct.val_aux idutil.Generator [

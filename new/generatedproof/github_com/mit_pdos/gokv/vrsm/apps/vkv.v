@@ -30,6 +30,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
+#[local] Transparent vkv.Clerk.
+#[local] Typeclasses Transparent vkv.Clerk.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
     struct.val_aux vkv.Clerk [
@@ -93,6 +95,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ClerkPool : Settable ClerkPool.t :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
+#[local] Transparent vkv.ClerkPool.
+#[local] Typeclasses Transparent vkv.ClerkPool.
 Global Instance into_val_ClerkPool : IntoVal ClerkPool.t :=
   {| to_val_def v :=
     struct.val_aux vkv.ClerkPool [
@@ -170,6 +174,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_KVState : Settable KVState.t :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.
+#[local] Transparent vkv.KVState.
+#[local] Typeclasses Transparent vkv.KVState.
 Global Instance into_val_KVState : IntoVal KVState.t :=
   {| to_val_def v :=
     struct.val_aux vkv.KVState [
@@ -246,6 +252,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_PutArgs : Settable PutArgs.t :=
   settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
+#[local] Transparent vkv.PutArgs.
+#[local] Typeclasses Transparent vkv.PutArgs.
 Global Instance into_val_PutArgs : IntoVal PutArgs.t :=
   {| to_val_def v :=
     struct.val_aux vkv.PutArgs [
@@ -301,6 +309,9 @@ End instances.
 
 (* type vkv.getArgs *)
 Module getArgs.
+
+#[global] Transparent vkv.getArgs.
+#[global] Typeclasses Transparent vkv.getArgs.
 Section def.
 Context `{ffi_syntax}.
 Definition t := go_string.
@@ -324,6 +335,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_CondPutArgs : Settable CondPutArgs.t :=
   settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.
+#[local] Transparent vkv.CondPutArgs.
+#[local] Typeclasses Transparent vkv.CondPutArgs.
 Global Instance into_val_CondPutArgs : IntoVal CondPutArgs.t :=
   {| to_val_def v :=
     struct.val_aux vkv.CondPutArgs [

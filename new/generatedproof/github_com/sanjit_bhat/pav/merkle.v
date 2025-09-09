@@ -30,6 +30,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Map : Settable Map.t :=
   settable! Map.mk < Map.root' >.
+#[local] Transparent merkle.Map.
+#[local] Typeclasses Transparent merkle.Map.
 Global Instance into_val_Map : IntoVal Map.t :=
   {| to_val_def v :=
     struct.val_aux merkle.Map [
@@ -96,6 +98,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_node : Settable node.t :=
   settable! node.mk < node.nodeTy'; node.hash'; node.child0'; node.child1'; node.label'; node.val' >.
+#[local] Transparent merkle.node.
+#[local] Typeclasses Transparent merkle.node.
 Global Instance into_val_node : IntoVal node.t :=
   {| to_val_def v :=
     struct.val_aux merkle.node [
@@ -195,6 +199,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_MerkleProof : Settable MerkleProof.t :=
   settable! MerkleProof.mk < MerkleProof.Siblings'; MerkleProof.IsOtherLeaf'; MerkleProof.LeafLabel'; MerkleProof.LeafVal' >.
+#[local] Transparent merkle.MerkleProof.
+#[local] Typeclasses Transparent merkle.MerkleProof.
 Global Instance into_val_MerkleProof : IntoVal MerkleProof.t :=
   {| to_val_def v :=
     struct.val_aux merkle.MerkleProof [

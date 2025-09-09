@@ -29,6 +29,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_BankClerk : Settable BankClerk.t :=
   settable! BankClerk.mk < BankClerk.lck'; BankClerk.kvck'; BankClerk.accts' >.
+#[local] Transparent bank.BankClerk.
+#[local] Typeclasses Transparent bank.BankClerk.
 Global Instance into_val_BankClerk : IntoVal BankClerk.t :=
   {| to_val_def v :=
     struct.val_aux bank.BankClerk [

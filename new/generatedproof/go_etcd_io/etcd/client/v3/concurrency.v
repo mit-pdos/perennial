@@ -39,6 +39,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Election : Settable Election.t :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
+#[local] Transparent concurrency.Election.
+#[local] Typeclasses Transparent concurrency.Election.
 Global Instance into_val_Election : IntoVal Election.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.Election [
@@ -139,6 +141,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Mutex : Settable Mutex.t :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
+#[local] Transparent concurrency.Mutex.
+#[local] Typeclasses Transparent concurrency.Mutex.
 Global Instance into_val_Mutex : IntoVal Mutex.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.Mutex [
@@ -228,6 +232,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_lockerMutex : Settable lockerMutex.t :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
+#[local] Transparent concurrency.lockerMutex.
+#[local] Typeclasses Transparent concurrency.lockerMutex.
 Global Instance into_val_lockerMutex : IntoVal lockerMutex.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.lockerMutex [
@@ -294,6 +300,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Session : Settable Session.t :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
+#[local] Transparent concurrency.Session.
+#[local] Typeclasses Transparent concurrency.Session.
 Global Instance into_val_Session : IntoVal Session.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.Session [
@@ -392,6 +400,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_sessionOptions : Settable sessionOptions.t :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
+#[local] Transparent concurrency.sessionOptions.
+#[local] Typeclasses Transparent concurrency.sessionOptions.
 Global Instance into_val_sessionOptions : IntoVal sessionOptions.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.sessionOptions [
@@ -454,6 +464,9 @@ End instances.
 
 (* type concurrency.SessionOption *)
 Module SessionOption.
+
+#[global] Transparent concurrency.SessionOption.
+#[global] Typeclasses Transparent concurrency.SessionOption.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -462,6 +475,9 @@ End SessionOption.
 
 (* type concurrency.STM *)
 Module STM.
+
+#[global] Transparent concurrency.STM.
+#[global] Typeclasses Transparent concurrency.STM.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -470,6 +486,9 @@ End STM.
 
 (* type concurrency.Isolation *)
 Module Isolation.
+
+#[global] Transparent concurrency.Isolation.
+#[global] Typeclasses Transparent concurrency.Isolation.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -491,6 +510,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmError : Settable stmError.t :=
   settable! stmError.mk < stmError.err' >.
+#[local] Transparent concurrency.stmError.
+#[local] Typeclasses Transparent concurrency.stmError.
 Global Instance into_val_stmError : IntoVal stmError.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmError [
@@ -554,6 +575,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmOptions : Settable stmOptions.t :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
+#[local] Transparent concurrency.stmOptions.
+#[local] Typeclasses Transparent concurrency.stmOptions.
 Global Instance into_val_stmOptions : IntoVal stmOptions.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmOptions [
@@ -616,6 +639,9 @@ End instances.
 
 (* type concurrency.stmOption *)
 Module stmOption.
+
+#[global] Transparent concurrency.stmOption.
+#[global] Typeclasses Transparent concurrency.stmOption.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -638,6 +664,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmResponse : Settable stmResponse.t :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
+#[local] Transparent concurrency.stmResponse.
+#[local] Typeclasses Transparent concurrency.stmResponse.
 Global Instance into_val_stmResponse : IntoVal stmResponse.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmResponse [
@@ -693,6 +721,9 @@ End instances.
 
 (* type concurrency.readSet *)
 Module readSet.
+
+#[global] Transparent concurrency.readSet.
+#[global] Typeclasses Transparent concurrency.readSet.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -701,6 +732,9 @@ End readSet.
 
 (* type concurrency.writeSet *)
 Module writeSet.
+
+#[global] Transparent concurrency.writeSet.
+#[global] Typeclasses Transparent concurrency.writeSet.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -727,6 +761,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stm : Settable stm.t :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
+#[local] Transparent concurrency.stm.
+#[local] Typeclasses Transparent concurrency.stm.
 Global Instance into_val_stm : IntoVal stm.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stm [
@@ -824,6 +860,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmPut : Settable stmPut.t :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
+#[local] Transparent concurrency.stmPut.
+#[local] Typeclasses Transparent concurrency.stmPut.
 Global Instance into_val_stmPut : IntoVal stmPut.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmPut [
@@ -893,6 +931,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmSerializable : Settable stmSerializable.t :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.
+#[local] Transparent concurrency.stmSerializable.
+#[local] Typeclasses Transparent concurrency.stmSerializable.
 Global Instance into_val_stmSerializable : IntoVal stmSerializable.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmSerializable [

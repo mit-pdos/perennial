@@ -26,6 +26,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_lockState : Settable lockState.t :=
   settable! lockState.mk < lockState.held'; lockState.cond'; lockState.waiters' >.
+#[local] Transparent lockmap.lockState.
+#[local] Typeclasses Transparent lockmap.lockState.
 Global Instance into_val_lockState : IntoVal lockState.t :=
   {| to_val_def v :=
     struct.val_aux lockmap.lockState [
@@ -102,6 +104,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_lockShard : Settable lockShard.t :=
   settable! lockShard.mk < lockShard.mu'; lockShard.state' >.
+#[local] Transparent lockmap.lockShard.
+#[local] Typeclasses Transparent lockmap.lockShard.
 Global Instance into_val_lockShard : IntoVal lockShard.t :=
   {| to_val_def v :=
     struct.val_aux lockmap.lockShard [
@@ -170,6 +174,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_LockMap : Settable LockMap.t :=
   settable! LockMap.mk < LockMap.shards' >.
+#[local] Transparent lockmap.LockMap.
+#[local] Typeclasses Transparent lockmap.LockMap.
 Global Instance into_val_LockMap : IntoVal LockMap.t :=
   {| to_val_def v :=
     struct.val_aux lockmap.LockMap [

@@ -28,6 +28,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.m'; Log.sz'; Log.diskSz' >.
+#[local] Transparent append_log.Log.
+#[local] Typeclasses Transparent append_log.Log.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=
     struct.val_aux append_log.Log [

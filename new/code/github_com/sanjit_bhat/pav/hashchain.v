@@ -20,6 +20,8 @@ Definition HashChain : go_type := structT [
   "lastLink" :: sliceT;
   "vals" :: sliceT
 ].
+#[global] Typeclasses Opaque HashChain.
+#[global] Opaque HashChain.
 
 Definition GetNextLink : go_string := "github.com/sanjit-bhat/pav/hashchain.GetNextLink"%go.
 

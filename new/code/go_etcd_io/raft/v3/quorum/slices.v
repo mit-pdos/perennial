@@ -21,6 +21,8 @@ Definition Tup : go_type := structT [
   "Ok" :: boolT;
   "Bar" :: intT
 ].
+#[global] Typeclasses Opaque Tup.
+#[global] Opaque Tup.
 
 Definition SortFuncTup : go_string := "go.etcd.io/raft/v3/quorum/slices.SortFuncTup"%go.
 

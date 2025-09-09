@@ -19,8 +19,12 @@ Context `{ffi_syntax}.
 
 
 Definition Backend : go_type := interfaceT.
+#[global] Typeclasses Opaque Backend.
+#[global] Opaque Backend.
 
 Definition ConsistentIndexer : go_type := interfaceT.
+#[global] Typeclasses Opaque ConsistentIndexer.
+#[global] Opaque ConsistentIndexer.
 
 Definition consistentIndex : go_type := structT [
   "consistentIndex" :: uint64T;
@@ -30,6 +34,8 @@ Definition consistentIndex : go_type := structT [
   "be" :: Backend;
   "mutex" :: sync.Mutex
 ].
+#[global] Typeclasses Opaque consistentIndex.
+#[global] Opaque consistentIndex.
 
 Definition NewConsistentIndex : go_string := "go.etcd.io/etcd/server/v3/etcdserver/cindex.NewConsistentIndex"%go.
 
@@ -185,6 +191,8 @@ Definition fakeConsistentIndex : go_type := structT [
   "index" :: uint64T;
   "term" :: uint64T
 ].
+#[global] Typeclasses Opaque fakeConsistentIndex.
+#[global] Opaque fakeConsistentIndex.
 
 (* go: cindex.go:140:6 *)
 Definition NewFakeConsistentIndexⁱᵐᵖˡ : val :=

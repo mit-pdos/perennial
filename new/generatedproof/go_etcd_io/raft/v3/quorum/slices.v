@@ -26,6 +26,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Tup : Settable Tup.t :=
   settable! Tup.mk < Tup.ID'; Tup.Idx'; Tup.Ok'; Tup.Bar' >.
+#[local] Transparent slices.Tup.
+#[local] Typeclasses Transparent slices.Tup.
 Global Instance into_val_Tup : IntoVal Tup.t :=
   {| to_val_def v :=
     struct.val_aux slices.Tup [

@@ -14,6 +14,9 @@ Module cindex.
 
 (* type cindex.Backend *)
 Module Backend.
+
+#[global] Transparent cindex.Backend.
+#[global] Typeclasses Transparent cindex.Backend.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -22,6 +25,9 @@ End Backend.
 
 (* type cindex.ConsistentIndexer *)
 Module ConsistentIndexer.
+
+#[global] Transparent cindex.ConsistentIndexer.
+#[global] Typeclasses Transparent cindex.ConsistentIndexer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -48,6 +54,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_consistentIndex : Settable consistentIndex.t :=
   settable! consistentIndex.mk < consistentIndex.consistentIndex'; consistentIndex.term'; consistentIndex.applyingIndex'; consistentIndex.applyingTerm'; consistentIndex.be'; consistentIndex.mutex' >.
+#[local] Transparent cindex.consistentIndex.
+#[local] Typeclasses Transparent cindex.consistentIndex.
 Global Instance into_val_consistentIndex : IntoVal consistentIndex.t :=
   {| to_val_def v :=
     struct.val_aux cindex.consistentIndex [
@@ -145,6 +153,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_fakeConsistentIndex : Settable fakeConsistentIndex.t :=
   settable! fakeConsistentIndex.mk < fakeConsistentIndex.index'; fakeConsistentIndex.term' >.
+#[local] Transparent cindex.fakeConsistentIndex.
+#[local] Typeclasses Transparent cindex.fakeConsistentIndex.
 Global Instance into_val_fakeConsistentIndex : IntoVal fakeConsistentIndex.t :=
   {| to_val_def v :=
     struct.val_aux cindex.fakeConsistentIndex [

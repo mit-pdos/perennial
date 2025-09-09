@@ -22,6 +22,8 @@ End unit.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent semantics.unit.
+#[local] Typeclasses Transparent semantics.unit.
 Global Instance into_val_unit : IntoVal unit.t :=
   {| to_val_def v :=
     struct.val_aux semantics.unit [
@@ -50,6 +52,9 @@ End instances.
 
 (* type semantics.AdderType *)
 Module AdderType.
+
+#[global] Transparent semantics.AdderType.
+#[global] Typeclasses Transparent semantics.AdderType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -58,6 +63,9 @@ End AdderType.
 
 (* type semantics.MultipleArgsType *)
 Module MultipleArgsType.
+
+#[global] Transparent semantics.MultipleArgsType.
+#[global] Typeclasses Transparent semantics.MultipleArgsType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -79,6 +87,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.p' >.
+#[local] Transparent semantics.Enc.
+#[local] Typeclasses Transparent semantics.Enc.
 Global Instance into_val_Enc : IntoVal Enc.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Enc [
@@ -140,6 +150,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.p' >.
+#[local] Transparent semantics.Dec.
+#[local] Typeclasses Transparent semantics.Dec.
 Global Instance into_val_Dec : IntoVal Dec.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Dec [
@@ -202,6 +214,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Editor : Settable Editor.t :=
   settable! Editor.mk < Editor.s'; Editor.next_val' >.
+#[local] Transparent semantics.Editor.
+#[local] Typeclasses Transparent semantics.Editor.
 Global Instance into_val_Editor : IntoVal Editor.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Editor [
@@ -271,6 +285,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Pair : Settable Pair.t :=
   settable! Pair.mk < Pair.x'; Pair.y' >.
+#[local] Transparent semantics.Pair.
+#[local] Typeclasses Transparent semantics.Pair.
 Global Instance into_val_Pair : IntoVal Pair.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Pair [
@@ -326,6 +342,9 @@ End instances.
 
 (* type semantics.Uint32 *)
 Module Uint32.
+
+#[global] Transparent semantics.Uint32.
+#[global] Typeclasses Transparent semantics.Uint32.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -334,6 +353,9 @@ End Uint32.
 
 (* type semantics.geometryInterface *)
 Module geometryInterface.
+
+#[global] Transparent semantics.geometryInterface.
+#[global] Typeclasses Transparent semantics.geometryInterface.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -355,6 +377,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_SquareStruct : Settable SquareStruct.t :=
   settable! SquareStruct.mk < SquareStruct.Side' >.
+#[local] Transparent semantics.SquareStruct.
+#[local] Typeclasses Transparent semantics.SquareStruct.
 Global Instance into_val_SquareStruct : IntoVal SquareStruct.t :=
   {| to_val_def v :=
     struct.val_aux semantics.SquareStruct [
@@ -416,6 +440,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_LoopStruct : Settable LoopStruct.t :=
   settable! LoopStruct.mk < LoopStruct.loopNext' >.
+#[local] Transparent semantics.LoopStruct.
+#[local] Typeclasses Transparent semantics.LoopStruct.
 Global Instance into_val_LoopStruct : IntoVal LoopStruct.t :=
   {| to_val_def v :=
     struct.val_aux semantics.LoopStruct [
@@ -480,6 +506,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_BoolTest : Settable BoolTest.t :=
   settable! BoolTest.mk < BoolTest.t'; BoolTest.f'; BoolTest.tc'; BoolTest.fc' >.
+#[local] Transparent semantics.BoolTest.
+#[local] Typeclasses Transparent semantics.BoolTest.
 Global Instance into_val_BoolTest : IntoVal BoolTest.t :=
   {| to_val_def v :=
     struct.val_aux semantics.BoolTest [
@@ -563,6 +591,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ArrayEditor : Settable ArrayEditor.t :=
   settable! ArrayEditor.mk < ArrayEditor.s'; ArrayEditor.next_val' >.
+#[local] Transparent semantics.ArrayEditor.
+#[local] Typeclasses Transparent semantics.ArrayEditor.
 Global Instance into_val_ArrayEditor : IntoVal ArrayEditor.t :=
   {| to_val_def v :=
     struct.val_aux semantics.ArrayEditor [
@@ -632,6 +662,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Bar : Settable Bar.t :=
   settable! Bar.mk < Bar.a'; Bar.b' >.
+#[local] Transparent semantics.Bar.
+#[local] Typeclasses Transparent semantics.Bar.
 Global Instance into_val_Bar : IntoVal Bar.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Bar [
@@ -700,6 +732,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Foo : Settable Foo.t :=
   settable! Foo.mk < Foo.bar' >.
+#[local] Transparent semantics.Foo.
+#[local] Typeclasses Transparent semantics.Foo.
 Global Instance into_val_Foo : IntoVal Foo.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Foo [
@@ -762,6 +796,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_TwoInts : Settable TwoInts.t :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
+#[local] Transparent semantics.TwoInts.
+#[local] Typeclasses Transparent semantics.TwoInts.
 Global Instance into_val_TwoInts : IntoVal TwoInts.t :=
   {| to_val_def v :=
     struct.val_aux semantics.TwoInts [
@@ -832,6 +868,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.a'; S.b'; S.c' >.
+#[local] Transparent semantics.S.
+#[local] Typeclasses Transparent semantics.S.
 Global Instance into_val_S : IntoVal S.t :=
   {| to_val_def v :=
     struct.val_aux semantics.S [
@@ -907,6 +945,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_StructWrap : Settable StructWrap.t :=
   settable! StructWrap.mk < StructWrap.i' >.
+#[local] Transparent semantics.StructWrap.
+#[local] Typeclasses Transparent semantics.StructWrap.
 Global Instance into_val_StructWrap : IntoVal StructWrap.t :=
   {| to_val_def v :=
     struct.val_aux semantics.StructWrap [
@@ -968,6 +1008,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_StructWithFunc : Settable StructWithFunc.t :=
   settable! StructWithFunc.mk < StructWithFunc.fn' >.
+#[local] Transparent semantics.StructWithFunc.
+#[local] Typeclasses Transparent semantics.StructWithFunc.
 Global Instance into_val_StructWithFunc : IntoVal StructWithFunc.t :=
   {| to_val_def v :=
     struct.val_aux semantics.StructWithFunc [
@@ -1025,6 +1067,8 @@ End switchConcrete.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent semantics.switchConcrete.
+#[local] Typeclasses Transparent semantics.switchConcrete.
 Global Instance into_val_switchConcrete : IntoVal switchConcrete.t :=
   {| to_val_def v :=
     struct.val_aux semantics.switchConcrete [
@@ -1053,6 +1097,9 @@ End instances.
 
 (* type semantics.switchInterface *)
 Module switchInterface.
+
+#[global] Transparent semantics.switchInterface.
+#[global] Typeclasses Transparent semantics.switchInterface.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -1077,6 +1124,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.d'; Log.l'; Log.cache'; Log.length' >.
+#[local] Transparent semantics.Log.
+#[local] Typeclasses Transparent semantics.Log.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Log [

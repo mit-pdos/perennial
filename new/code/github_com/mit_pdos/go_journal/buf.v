@@ -23,6 +23,8 @@ Definition Buf : go_type := structT [
   "Data" :: sliceT;
   "dirty" :: boolT
 ].
+#[global] Typeclasses Opaque Buf.
+#[global] Opaque Buf.
 
 Definition MkBuf : go_string := "github.com/mit-pdos/go-journal/buf.MkBuf"%go.
 
@@ -257,6 +259,8 @@ Definition Buf__BnumPutⁱᵐᵖˡ : val :=
 Definition BufMap : go_type := structT [
   "addrs" :: mapT uint64T ptrT
 ].
+#[global] Typeclasses Opaque BufMap.
+#[global] Opaque BufMap.
 
 Definition MkBufMap : go_string := "github.com/mit-pdos/go-journal/buf.MkBufMap"%go.
 

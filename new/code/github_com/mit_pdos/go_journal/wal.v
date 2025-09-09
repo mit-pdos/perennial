@@ -39,11 +39,15 @@ Definition LOGHDR2 : val := #(W64 1).
 Definition LOGSTART : val := #(W64 2).
 
 Definition LogPosition : go_type := uint64T.
+#[global] Typeclasses Opaque LogPosition.
+#[global] Opaque LogPosition.
 
 Definition Update : go_type := structT [
   "Addr" :: uint64T;
   "Block" :: sliceT
 ].
+#[global] Typeclasses Opaque Update.
+#[global] Opaque Update.
 
 Definition MkBlockData : go_string := "github.com/mit-pdos/go-journal/wal.MkBlockData"%go.
 
@@ -65,6 +69,8 @@ Definition MkBlockDataⁱᵐᵖˡ : val :=
 Definition circularAppender : go_type := structT [
   "diskAddrs" :: sliceT
 ].
+#[global] Typeclasses Opaque circularAppender.
+#[global] Opaque circularAppender.
 
 Definition initCircular : go_string := "github.com/mit-pdos/go-journal/wal.initCircular"%go.
 
@@ -298,6 +304,8 @@ Definition sliding : go_type := structT [
   "needFlush" :: boolT;
   "addrPos" :: mapT uint64T LogPosition
 ].
+#[global] Typeclasses Opaque sliding.
+#[global] Opaque sliding.
 
 Definition mkSliding : go_string := "github.com/mit-pdos/go-journal/wal.mkSliding"%go.
 
@@ -555,6 +563,8 @@ Definition WalogState : go_type := structT [
   "shutdown" :: boolT;
   "nthread" :: uint64T
 ].
+#[global] Typeclasses Opaque WalogState.
+#[global] Opaque WalogState.
 
 (* go: 0waldefs.go:20:23 *)
 Definition WalogState__memEndⁱᵐᵖˡ : val :=
@@ -571,6 +581,8 @@ Definition Walog : go_type := structT [
   "condInstall" :: ptrT;
   "condShut" :: ptrT
 ].
+#[global] Typeclasses Opaque Walog.
+#[global] Opaque Walog.
 
 (* go: 0waldefs.go:37:17 *)
 Definition Walog__LogSzⁱᵐᵖˡ : val :=

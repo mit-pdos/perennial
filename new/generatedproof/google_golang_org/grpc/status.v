@@ -11,6 +11,9 @@ Module status.
 
 (* type status.Status *)
 Module Status.
+
+#[global] Transparent status.Status.
+#[global] Typeclasses Transparent status.Status.
 Section def.
 Context `{ffi_syntax}.
 Definition t := status.Status.t.

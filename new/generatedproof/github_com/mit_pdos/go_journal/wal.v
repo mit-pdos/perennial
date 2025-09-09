@@ -16,6 +16,9 @@ Module wal.
 
 (* type wal.LogPosition *)
 Module LogPosition.
+
+#[global] Transparent wal.LogPosition.
+#[global] Typeclasses Transparent wal.LogPosition.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -38,6 +41,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Update : Settable Update.t :=
   settable! Update.mk < Update.Addr'; Update.Block' >.
+#[local] Transparent wal.Update.
+#[local] Typeclasses Transparent wal.Update.
 Global Instance into_val_Update : IntoVal Update.t :=
   {| to_val_def v :=
     struct.val_aux wal.Update [
@@ -106,6 +111,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_circularAppender : Settable circularAppender.t :=
   settable! circularAppender.mk < circularAppender.diskAddrs' >.
+#[local] Transparent wal.circularAppender.
+#[local] Typeclasses Transparent wal.circularAppender.
 Global Instance into_val_circularAppender : IntoVal circularAppender.t :=
   {| to_val_def v :=
     struct.val_aux wal.circularAppender [
@@ -171,6 +178,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_sliding : Settable sliding.t :=
   settable! sliding.mk < sliding.log'; sliding.start'; sliding.mutable'; sliding.needFlush'; sliding.addrPos' >.
+#[local] Transparent wal.sliding.
+#[local] Typeclasses Transparent wal.sliding.
 Global Instance into_val_sliding : IntoVal sliding.t :=
   {| to_val_def v :=
     struct.val_aux wal.sliding [
@@ -263,6 +272,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_WalogState : Settable WalogState.t :=
   settable! WalogState.mk < WalogState.memLog'; WalogState.diskEnd'; WalogState.shutdown'; WalogState.nthread' >.
+#[local] Transparent wal.WalogState.
+#[local] Typeclasses Transparent wal.WalogState.
 Global Instance into_val_WalogState : IntoVal WalogState.t :=
   {| to_val_def v :=
     struct.val_aux wal.WalogState [
@@ -351,6 +362,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Walog : Settable Walog.t :=
   settable! Walog.mk < Walog.memLock'; Walog.d'; Walog.circ'; Walog.st'; Walog.condLogger'; Walog.condInstall'; Walog.condShut' >.
+#[local] Transparent wal.Walog.
+#[local] Typeclasses Transparent wal.Walog.
 Global Instance into_val_Walog : IntoVal Walog.t :=
   {| to_val_def v :=
     struct.val_aux wal.Walog [

@@ -10,6 +10,9 @@ Module mvccpb.
 
 (* type mvccpb.Event_EventType *)
 Module Event_EventType.
+
+#[global] Transparent mvccpb.Event_EventType.
+#[global] Typeclasses Transparent mvccpb.Event_EventType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -39,6 +42,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_KeyValue : Settable KeyValue.t :=
   settable! KeyValue.mk < KeyValue.Key'; KeyValue.CreateRevision'; KeyValue.ModRevision'; KeyValue.Version'; KeyValue.Value'; KeyValue.Lease'; KeyValue.XXX_NoUnkeyedLiteral'; KeyValue.XXX_unrecognized'; KeyValue.XXX_sizecache' >.
+#[local] Transparent mvccpb.KeyValue.
+#[local] Typeclasses Transparent mvccpb.KeyValue.
 Global Instance into_val_KeyValue : IntoVal KeyValue.t :=
   {| to_val_def v :=
     struct.val_aux mvccpb.KeyValue [
@@ -161,6 +166,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Event : Settable Event.t :=
   settable! Event.mk < Event.Type'; Event.Kv'; Event.PrevKv'; Event.XXX_NoUnkeyedLiteral'; Event.XXX_unrecognized'; Event.XXX_sizecache' >.
+#[local] Transparent mvccpb.Event.
+#[local] Typeclasses Transparent mvccpb.Event.
 Global Instance into_val_Event : IntoVal Event.t :=
   {| to_val_def v :=
     struct.val_aux mvccpb.Event [

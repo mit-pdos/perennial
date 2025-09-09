@@ -39,6 +39,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_leaseCache : Settable leaseCache.t :=
   settable! leaseCache.mk < leaseCache.mu'; leaseCache.entries'; leaseCache.revokes'; leaseCache.header' >.
+#[local] Transparent leasing.leaseCache.
+#[local] Typeclasses Transparent leasing.leaseCache.
 Global Instance into_val_leaseCache : IntoVal leaseCache.t :=
   {| to_val_def v :=
     struct.val_aux leasing.leaseCache [
@@ -123,6 +125,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_leaseKey : Settable leaseKey.t :=
   settable! leaseKey.mk < leaseKey.response'; leaseKey.rev'; leaseKey.waitc' >.
+#[local] Transparent leasing.leaseKey.
+#[local] Typeclasses Transparent leasing.leaseKey.
 Global Instance into_val_leaseKey : IntoVal leaseKey.t :=
   {| to_val_def v :=
     struct.val_aux leasing.leaseKey [
@@ -207,6 +211,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_leasingKV : Settable leasingKV.t :=
   settable! leasingKV.mk < leasingKV.cl'; leasingKV.kv'; leasingKV.pfx'; leasingKV.leases'; leasingKV.ctx'; leasingKV.cancel'; leasingKV.wg'; leasingKV.sessionOpts'; leasingKV.session'; leasingKV.sessionc' >.
+#[local] Transparent leasing.leasingKV.
+#[local] Typeclasses Transparent leasing.leasingKV.
 Global Instance into_val_leasingKV : IntoVal leasingKV.t :=
   {| to_val_def v :=
     struct.val_aux leasing.leasingKV [
@@ -336,6 +342,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_txnLeasing : Settable txnLeasing.t :=
   settable! txnLeasing.mk < txnLeasing.Txn'; txnLeasing.lkv'; txnLeasing.ctx'; txnLeasing.cs'; txnLeasing.opst'; txnLeasing.opse' >.
+#[local] Transparent leasing.txnLeasing.
+#[local] Typeclasses Transparent leasing.txnLeasing.
 Global Instance into_val_txnLeasing : IntoVal txnLeasing.t :=
   {| to_val_def v :=
     struct.val_aux leasing.txnLeasing [

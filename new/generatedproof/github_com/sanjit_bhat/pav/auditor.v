@@ -37,6 +37,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Auditor : Settable Auditor.t :=
   settable! Auditor.mk < Auditor.mu'; Auditor.sk'; Auditor.lastDig'; Auditor.hist'; Auditor.serv' >.
+#[local] Transparent auditor.Auditor.
+#[local] Typeclasses Transparent auditor.Auditor.
 Global Instance into_val_Auditor : IntoVal Auditor.t :=
   {| to_val_def v :=
     struct.val_aux auditor.Auditor [
@@ -128,6 +130,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_history : Settable history.t :=
   settable! history.mk < history.link'; history.servSig'; history.adtrSig' >.
+#[local] Transparent auditor.history.
+#[local] Typeclasses Transparent auditor.history.
 Global Instance into_val_history : IntoVal history.t :=
   {| to_val_def v :=
     struct.val_aux auditor.history [
@@ -207,6 +211,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_serv : Settable serv.t :=
   settable! serv.mk < serv.cli'; serv.sigPk'; serv.vrfPk'; serv.servVrfSig'; serv.adtrVrfSig' >.
+#[local] Transparent auditor.serv.
+#[local] Typeclasses Transparent auditor.serv.
 Global Instance into_val_serv : IntoVal serv.t :=
   {| to_val_def v :=
     struct.val_aux auditor.serv [
@@ -296,6 +302,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_UpdateReply : Settable UpdateReply.t :=
   settable! UpdateReply.mk < UpdateReply.Err' >.
+#[local] Transparent auditor.UpdateReply.
+#[local] Typeclasses Transparent auditor.UpdateReply.
 Global Instance into_val_UpdateReply : IntoVal UpdateReply.t :=
   {| to_val_def v :=
     struct.val_aux auditor.UpdateReply [
@@ -357,6 +365,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_GetArg : Settable GetArg.t :=
   settable! GetArg.mk < GetArg.Epoch' >.
+#[local] Transparent auditor.GetArg.
+#[local] Typeclasses Transparent auditor.GetArg.
 Global Instance into_val_GetArg : IntoVal GetArg.t :=
   {| to_val_def v :=
     struct.val_aux auditor.GetArg [
@@ -424,6 +434,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_GetReply : Settable GetReply.t :=
   settable! GetReply.mk < GetReply.Link'; GetReply.ServLinkSig'; GetReply.AdtrLinkSig'; GetReply.VrfPk'; GetReply.ServVrfSig'; GetReply.AdtrVrfSig'; GetReply.Err' >.
+#[local] Transparent auditor.GetReply.
+#[local] Typeclasses Transparent auditor.GetReply.
 Global Instance into_val_GetReply : IntoVal GetReply.t :=
   {| to_val_def v :=
     struct.val_aux auditor.GetReply [

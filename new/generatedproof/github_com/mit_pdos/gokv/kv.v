@@ -10,6 +10,9 @@ Module kv.
 
 (* type kv.Kv *)
 Module Kv.
+
+#[global] Transparent kv.Kv.
+#[global] Typeclasses Transparent kv.Kv.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -18,6 +21,9 @@ End Kv.
 
 (* type kv.KvCput *)
 Module KvCput.
+
+#[global] Transparent kv.KvCput.
+#[global] Typeclasses Transparent kv.KvCput.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.

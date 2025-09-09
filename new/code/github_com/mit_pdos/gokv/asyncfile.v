@@ -26,6 +26,8 @@ Definition AsyncFile : go_type := structT [
   "closed" :: boolT;
   "closedCond" :: ptrT
 ].
+#[global] Typeclasses Opaque AsyncFile.
+#[global] Opaque AsyncFile.
 
 (* go: storage.go:24:21 *)
 Definition AsyncFile__Writeⁱᵐᵖˡ : val :=

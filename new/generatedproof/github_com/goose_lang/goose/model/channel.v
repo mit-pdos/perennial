@@ -12,6 +12,9 @@ Module channel.
 
 (* type channel.OfferState *)
 Module OfferState.
+
+#[global] Transparent channel.OfferState.
+#[global] Typeclasses Transparent channel.OfferState.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -30,6 +33,8 @@ Definition ty (T : go_type) : go_type := structT [
   "cap" :: uint64T;
   "v" :: T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   lock' : loc;
   state' : OfferState.t;
@@ -40,6 +45,7 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Channel.
 
+#[local] Transparent Channel.ty.
 Arguments Channel.mk {_} { T' } {_ T _} .
 Arguments Channel.t {_} T' {_ T _} .
 
@@ -52,6 +58,8 @@ Proof. apply _. Qed.
 
 Global Instance settable_Channel : Settable (Channel.t T') :=
   settable! (Channel.mk (T:=T)) < Channel.lock'; Channel.state'; Channel.buffer'; Channel.cap'; Channel.v' >.
+#[local] Transparent channel.Channel.
+#[local] Typeclasses Transparent channel.Channel.
 Global Instance into_val_Channel : IntoVal (Channel.t T') :=
   {| to_val_def v :=
     struct.val_aux (Channel.ty T) [
@@ -135,6 +143,9 @@ End instances.
 
 (* type channel.SelectDir *)
 Module SelectDir.
+
+#[global] Transparent channel.SelectDir.
+#[global] Typeclasses Transparent channel.SelectDir.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -152,6 +163,8 @@ Definition ty (T : go_type) : go_type := structT [
   "Value" :: T;
   "Ok" :: boolT
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   channel' : loc;
   dir' : SelectDir.t;
@@ -161,6 +174,7 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End SelectCase.
 
+#[local] Transparent SelectCase.ty.
 Arguments SelectCase.mk {_} { T' } {_ T _} .
 Arguments SelectCase.t {_} T' {_ T _} .
 
@@ -173,6 +187,8 @@ Proof. apply _. Qed.
 
 Global Instance settable_SelectCase : Settable (SelectCase.t T') :=
   settable! (SelectCase.mk (T:=T)) < SelectCase.channel'; SelectCase.dir'; SelectCase.Value'; SelectCase.Ok' >.
+#[local] Transparent channel.SelectCase.
+#[local] Typeclasses Transparent channel.SelectCase.
 Global Instance into_val_SelectCase : IntoVal (SelectCase.t T') :=
   {| to_val_def v :=
     struct.val_aux (SelectCase.ty T) [

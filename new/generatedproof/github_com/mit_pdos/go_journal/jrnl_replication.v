@@ -33,6 +33,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RepBlock : Settable RepBlock.t :=
   settable! RepBlock.mk < RepBlock.txn'; RepBlock.m'; RepBlock.a0'; RepBlock.a1' >.
+#[local] Transparent replicated_block.RepBlock.
+#[local] Typeclasses Transparent replicated_block.RepBlock.
 Global Instance into_val_RepBlock : IntoVal RepBlock.t :=
   {| to_val_def v :=
     struct.val_aux replicated_block.RepBlock [

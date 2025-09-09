@@ -27,6 +27,8 @@ Definition partiallyApplyMeⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition Foo : go_type := stringT.
+#[global] Typeclasses Opaque Foo.
+#[global] Opaque Foo.
 
 (* go: examples.go:11:14 *)
 Definition Foo__someMethodⁱᵐᵖˡ : val :=

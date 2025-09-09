@@ -19,6 +19,8 @@ Definition Log : go_type := structT [
   "sz" :: uint64T;
   "diskSz" :: uint64T
 ].
+#[global] Typeclasses Opaque Log.
+#[global] Opaque Log.
 
 (* go: append_log.go:22:17 *)
 Definition Log__mkHdrⁱᵐᵖˡ : val :=

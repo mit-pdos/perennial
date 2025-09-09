@@ -29,6 +29,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_inflight : Settable inflight.t :=
   settable! inflight.mk < inflight.index'; inflight.bytes' >.
+#[local] Transparent tracker.inflight.
+#[local] Typeclasses Transparent tracker.inflight.
 Global Instance into_val_inflight : IntoVal inflight.t :=
   {| to_val_def v :=
     struct.val_aux tracker.inflight [
@@ -102,6 +104,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Inflights : Settable Inflights.t :=
   settable! Inflights.mk < Inflights.start'; Inflights.count'; Inflights.bytes'; Inflights.size'; Inflights.maxBytes'; Inflights.buffer' >.
+#[local] Transparent tracker.Inflights.
+#[local] Typeclasses Transparent tracker.Inflights.
 Global Instance into_val_Inflights : IntoVal Inflights.t :=
   {| to_val_def v :=
     struct.val_aux tracker.Inflights [
@@ -185,6 +189,9 @@ End instances.
 
 (* type tracker.StateType *)
 Module StateType.
+
+#[global] Transparent tracker.StateType.
+#[global] Typeclasses Transparent tracker.StateType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -214,6 +221,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Progress : Settable Progress.t :=
   settable! Progress.mk < Progress.Match'; Progress.Next'; Progress.sentCommit'; Progress.State'; Progress.PendingSnapshot'; Progress.RecentActive'; Progress.MsgAppFlowPaused'; Progress.Inflights'; Progress.IsLearner' >.
+#[local] Transparent tracker.Progress.
+#[local] Typeclasses Transparent tracker.Progress.
 Global Instance into_val_Progress : IntoVal Progress.t :=
   {| to_val_def v :=
     struct.val_aux tracker.Progress [
@@ -318,6 +327,9 @@ End instances.
 
 (* type tracker.ProgressMap *)
 Module ProgressMap.
+
+#[global] Transparent tracker.ProgressMap.
+#[global] Typeclasses Transparent tracker.ProgressMap.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -342,6 +354,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Config : Settable Config.t :=
   settable! Config.mk < Config.Voters'; Config.AutoLeave'; Config.Learners'; Config.LearnersNext' >.
+#[local] Transparent tracker.Config.
+#[local] Typeclasses Transparent tracker.Config.
 Global Instance into_val_Config : IntoVal Config.t :=
   {| to_val_def v :=
     struct.val_aux tracker.Config [
@@ -428,6 +442,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ProgressTracker : Settable ProgressTracker.t :=
   settable! ProgressTracker.mk < ProgressTracker.Config'; ProgressTracker.Progress'; ProgressTracker.Votes'; ProgressTracker.MaxInflight'; ProgressTracker.MaxInflightBytes' >.
+#[local] Transparent tracker.ProgressTracker.
+#[local] Typeclasses Transparent tracker.ProgressTracker.
 Global Instance into_val_ProgressTracker : IntoVal ProgressTracker.t :=
   {| to_val_def v :=
     struct.val_aux tracker.ProgressTracker [
@@ -504,6 +520,9 @@ End instances.
 
 (* type tracker.matchAckIndexer *)
 Module matchAckIndexer.
+
+#[global] Transparent tracker.matchAckIndexer.
+#[global] Typeclasses Transparent tracker.matchAckIndexer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.

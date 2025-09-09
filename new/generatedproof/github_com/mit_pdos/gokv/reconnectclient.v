@@ -30,6 +30,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ReconnectingClient : Settable ReconnectingClient.t :=
   settable! ReconnectingClient.mk < ReconnectingClient.mu'; ReconnectingClient.valid'; ReconnectingClient.urpcCl'; ReconnectingClient.addr' >.
+#[local] Transparent reconnectclient.ReconnectingClient.
+#[local] Typeclasses Transparent reconnectclient.ReconnectingClient.
 Global Instance into_val_ReconnectingClient : IntoVal ReconnectingClient.t :=
   {| to_val_def v :=
     struct.val_aux reconnectclient.ReconnectingClient [

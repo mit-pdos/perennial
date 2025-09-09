@@ -24,6 +24,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Builder : Settable Builder.t :=
   settable! Builder.mk < Builder.addr'; Builder.buf' >.
+#[local] Transparent strings.Builder.
+#[local] Typeclasses Transparent strings.Builder.
 Global Instance into_val_Builder : IntoVal Builder.t :=
   {| to_val_def v :=
     struct.val_aux strings.Builder [

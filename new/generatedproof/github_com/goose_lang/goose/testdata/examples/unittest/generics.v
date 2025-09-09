@@ -17,12 +17,15 @@ Context `{ffi_syntax}.
 Definition ty (T : go_type) : go_type := structT [
   "Value" :: T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   Value' : T';
 }.
 End def.
 End Box.
 
+#[local] Transparent Box.ty.
 Arguments Box.mk {_} { T' } {_ T _} .
 Arguments Box.t {_} T' {_ T _} .
 
@@ -35,6 +38,8 @@ Proof. apply _. Qed.
 
 Global Instance settable_Box : Settable (Box.t T') :=
   settable! (Box.mk (T:=T)) < Box.Value' >.
+#[local] Transparent generics.Box.
+#[local] Typeclasses Transparent generics.Box.
 Global Instance into_val_Box : IntoVal (Box.t T') :=
   {| to_val_def v :=
     struct.val_aux (Box.ty T) [
@@ -99,6 +104,8 @@ Definition ty (T : go_type) : go_type := structT [
   "Z" :: ptrT;
   "W" :: uint64T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   X' : T';
   Y' : loc;
@@ -108,6 +115,7 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Container.
 
+#[local] Transparent Container.ty.
 Arguments Container.mk {_} { T' } {_ T _} .
 Arguments Container.t {_} T' {_ T _} .
 
@@ -120,6 +128,8 @@ Proof. apply _. Qed.
 
 Global Instance settable_Container : Settable (Container.t T') :=
   settable! (Container.mk (T:=T)) < Container.X'; Container.Y'; Container.Z'; Container.W' >.
+#[local] Transparent generics.Container.
+#[local] Typeclasses Transparent generics.Container.
 Global Instance into_val_Container : IntoVal (Container.t T') :=
   {| to_val_def v :=
     struct.val_aux (Container.ty T) [
@@ -202,17 +212,22 @@ Context `{ffi_syntax}.
 Definition ty : go_type := structT [
   "X" :: generics.Container.ty uint64T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t := mk {
   X' : (Container.t w64);
 }.
 End def.
 End UseContainer.
 
+#[local] Transparent UseContainer.ty.
 Section instances.
 Context `{ffi_syntax}.
 
 Global Instance settable_UseContainer : Settable (UseContainer.t ) :=
   settable! UseContainer.mk < UseContainer.X' >.
+#[local] Transparent generics.UseContainer.
+#[local] Typeclasses Transparent generics.UseContainer.
 Global Instance into_val_UseContainer : IntoVal (UseContainer.t ) :=
   {| to_val_def v :=
     struct.val_aux (UseContainer.ty ) [
@@ -275,6 +290,8 @@ Definition ty (T : go_type) : go_type := structT [
   "X" :: sliceT;
   "Y" :: ptrT
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   X' : slice.t;
   Y' : loc;
@@ -282,6 +299,7 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End OnlyIndirect.
 
+#[local] Transparent OnlyIndirect.ty.
 Arguments OnlyIndirect.mk {_} { T' } {_ T _} .
 Arguments OnlyIndirect.t {_} T' {_ T _} .
 
@@ -294,6 +312,8 @@ Proof. apply _. Qed.
 
 Global Instance settable_OnlyIndirect : Settable (OnlyIndirect.t T') :=
   settable! (OnlyIndirect.mk (T:=T)) < OnlyIndirect.X'; OnlyIndirect.Y' >.
+#[local] Transparent generics.OnlyIndirect.
+#[local] Typeclasses Transparent generics.OnlyIndirect.
 Global Instance into_val_OnlyIndirect : IntoVal (OnlyIndirect.t T') :=
   {| to_val_def v :=
     struct.val_aux (OnlyIndirect.ty T) [
@@ -363,6 +383,8 @@ Definition ty (A B : go_type) : go_type := structT [
   "Y" :: B;
   "X" :: A
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B} := mk {
   Y' : B';
   X' : A';
@@ -370,6 +392,7 @@ Record t `{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' 
 End def.
 End MultiParam.
 
+#[local] Transparent MultiParam.ty.
 Arguments MultiParam.mk {_} { A' } {_ A _} { B' } {_ B _} .
 Arguments MultiParam.t {_} A' {_ A _} B' {_ B _} .
 
@@ -382,6 +405,8 @@ Proof. apply _. Qed.
 
 Global Instance settable_MultiParam : Settable (MultiParam.t A' B') :=
   settable! (MultiParam.mk (A:=A) (B:=B)) < MultiParam.Y'; MultiParam.X' >.
+#[local] Transparent generics.MultiParam.
+#[local] Typeclasses Transparent generics.MultiParam.
 Global Instance into_val_MultiParam : IntoVal (MultiParam.t A' B') :=
   {| to_val_def v :=
     struct.val_aux (MultiParam.ty A B) [

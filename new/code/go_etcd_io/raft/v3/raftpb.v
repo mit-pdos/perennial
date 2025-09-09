@@ -25,6 +25,8 @@ Context `{ffi_syntax}.
 
 
 Definition ConfChangeI : go_type := interfaceT.
+#[global] Typeclasses Opaque ConfChangeI.
+#[global] Opaque ConfChangeI.
 
 Definition MarshalConfChange : go_string := "go.etcd.io/raft/v3/raftpb.MarshalConfChange"%go.
 
@@ -33,6 +35,8 @@ Definition ConfChangesFromString : go_string := "go.etcd.io/raft/v3/raftpb.ConfC
 Definition ConfChangesToString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesToString"%go.
 
 Definition EntryType : go_type := int32T.
+#[global] Typeclasses Opaque EntryType.
+#[global] Opaque EntryType.
 
 Definition EntryNormal : val := #(W32 0).
 
@@ -49,6 +53,8 @@ Definition EntryType_value : go_string := "go.etcd.io/raft/v3/raftpb.EntryType_v
 Axiom EntryType_value'init : val.
 
 Definition MessageType : go_type := int32T.
+#[global] Typeclasses Opaque MessageType.
+#[global] Opaque MessageType.
 
 Definition MsgHup : val := #(W32 0).
 
@@ -107,6 +113,8 @@ Definition MessageType_value : go_string := "go.etcd.io/raft/v3/raftpb.MessageTy
 Axiom MessageType_value'init : val.
 
 Definition ConfChangeTransition : go_type := int32T.
+#[global] Typeclasses Opaque ConfChangeTransition.
+#[global] Opaque ConfChangeTransition.
 
 Axiom ConfChangeTransitionAuto : val.
 
@@ -123,6 +131,8 @@ Definition ConfChangeTransition_value : go_string := "go.etcd.io/raft/v3/raftpb.
 Axiom ConfChangeTransition_value'init : val.
 
 Definition ConfChangeType : go_type := int32T.
+#[global] Typeclasses Opaque ConfChangeType.
+#[global] Opaque ConfChangeType.
 
 Definition ConfChangeAddNode : val := #(W32 0).
 
@@ -146,6 +156,8 @@ Definition Entry : go_type := structT [
   "Type" :: EntryType;
   "Data" :: sliceT
 ].
+#[global] Typeclasses Opaque Entry.
+#[global] Opaque Entry.
 
 Definition xxx_messageInfo_Entry : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Entry"%go.
 
@@ -156,12 +168,16 @@ Definition ConfState : go_type := structT [
   "LearnersNext" :: sliceT;
   "AutoLeave" :: boolT
 ].
+#[global] Typeclasses Opaque ConfState.
+#[global] Opaque ConfState.
 
 Definition SnapshotMetadata : go_type := structT [
   "ConfState" :: ConfState;
   "Index" :: uint64T;
   "Term" :: uint64T
 ].
+#[global] Typeclasses Opaque SnapshotMetadata.
+#[global] Opaque SnapshotMetadata.
 
 Definition xxx_messageInfo_SnapshotMetadata : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_SnapshotMetadata"%go.
 
@@ -169,6 +185,8 @@ Definition Snapshot : go_type := structT [
   "Data" :: sliceT;
   "Metadata" :: SnapshotMetadata
 ].
+#[global] Typeclasses Opaque Snapshot.
+#[global] Opaque Snapshot.
 
 Definition xxx_messageInfo_Snapshot : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Snapshot"%go.
 
@@ -188,6 +206,8 @@ Definition Message : go_type := structT [
   "Context" :: sliceT;
   "Responses" :: sliceT
 ].
+#[global] Typeclasses Opaque Message.
+#[global] Opaque Message.
 
 Definition xxx_messageInfo_Message : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Message"%go.
 
@@ -196,6 +216,8 @@ Definition HardState : go_type := structT [
   "Vote" :: uint64T;
   "Commit" :: uint64T
 ].
+#[global] Typeclasses Opaque HardState.
+#[global] Opaque HardState.
 
 Definition xxx_messageInfo_HardState : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_HardState"%go.
 
@@ -207,6 +229,8 @@ Definition ConfChange : go_type := structT [
   "Context" :: sliceT;
   "ID" :: uint64T
 ].
+#[global] Typeclasses Opaque ConfChange.
+#[global] Opaque ConfChange.
 
 Definition xxx_messageInfo_ConfChange : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChange"%go.
 
@@ -219,6 +243,8 @@ Definition ConfChangeV2 : go_type := structT [
   "Changes" :: sliceT;
   "Context" :: sliceT
 ].
+#[global] Typeclasses Opaque ConfChangeV2.
+#[global] Opaque ConfChangeV2.
 
 Definition xxx_messageInfo_ConfChangeV2 : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeV2"%go.
 

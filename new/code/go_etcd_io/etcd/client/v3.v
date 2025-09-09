@@ -236,6 +236,8 @@ Axiom MemberUpdateResponse : go_type.
 Axiom MemberPromoteResponse : go_type.
 
 Definition Cluster : go_type := interfaceT.
+#[global] Typeclasses Opaque Cluster.
+#[global] Opaque Cluster.
 
 Axiom cluster : go_type.
 
@@ -264,6 +266,8 @@ Axiom CompareModified : val.
 Axiom CompareValue : val.
 
 Definition Cmp : go_type := etcdserverpb.Compare.
+#[global] Typeclasses Opaque Cmp.
+#[global] Opaque Cmp.
 
 Definition Compare : go_string := "go.etcd.io/etcd/client/v3.Compare"%go.
 
@@ -300,14 +304,24 @@ Definition withVersion : go_string := "go.etcd.io/etcd/client/v3.withVersion"%go
 Axiom CompactResponse : go_type.
 
 Definition PutResponse : go_type := etcdserverpb.PutResponse.
+#[global] Typeclasses Opaque PutResponse.
+#[global] Opaque PutResponse.
 
 Definition GetResponse : go_type := etcdserverpb.RangeResponse.
+#[global] Typeclasses Opaque GetResponse.
+#[global] Opaque GetResponse.
 
 Definition DeleteResponse : go_type := etcdserverpb.DeleteRangeResponse.
+#[global] Typeclasses Opaque DeleteResponse.
+#[global] Opaque DeleteResponse.
 
 Definition TxnResponse : go_type := etcdserverpb.TxnResponse.
+#[global] Typeclasses Opaque TxnResponse.
+#[global] Opaque TxnResponse.
 
 Definition KV : go_type := interfaceT.
+#[global] Typeclasses Opaque KV.
+#[global] Opaque KV.
 
 Definition OpResponse : go_type := structT [
   "put" :: ptrT;
@@ -315,6 +329,8 @@ Definition OpResponse : go_type := structT [
   "del" :: ptrT;
   "txn" :: ptrT
 ].
+#[global] Typeclasses Opaque OpResponse.
+#[global] Opaque OpResponse.
 
 Axiom kv : go_type.
 
@@ -325,6 +341,8 @@ Definition NewKVFromKVClient : go_string := "go.etcd.io/etcd/client/v3.NewKVFrom
 Axiom LeaseRevokeResponse : go_type.
 
 Definition LeaseID : go_type := int64T.
+#[global] Typeclasses Opaque LeaseID.
+#[global] Opaque LeaseID.
 
 Definition LeaseGrantResponse : go_type := structT [
   "ResponseHeader" :: ptrT;
@@ -332,6 +350,8 @@ Definition LeaseGrantResponse : go_type := structT [
   "TTL" :: int64T;
   "Error" :: stringT
 ].
+#[global] Typeclasses Opaque LeaseGrantResponse.
+#[global] Opaque LeaseGrantResponse.
 
 Axiom LeaseKeepAliveResponse : go_type.
 
@@ -354,6 +374,8 @@ Axiom LeaseResponseChSize'init : val.
 Axiom ErrKeepAliveHalted : go_type.
 
 Definition Lease : go_type := interfaceT.
+#[global] Typeclasses Opaque Lease.
+#[global] Opaque Lease.
 
 Axiom lessor : go_type.
 
@@ -406,6 +428,8 @@ Definition NewMaintenanceFromMaintenanceClient : go_string := "go.etcd.io/etcd/c
 Axiom snapshotReadCloser : go_type.
 
 Definition opType : go_type := intT.
+#[global] Typeclasses Opaque opType.
+#[global] Opaque opType.
 
 Definition tRange : val := #(W64 1).
 
@@ -449,6 +473,8 @@ Definition Op : go_type := structT [
   "isOptsWithFromKey" :: boolT;
   "isOptsWithPrefix" :: boolT
 ].
+#[global] Typeclasses Opaque Op.
+#[global] Opaque Op.
 
 (* IsTxn returns true if the "Op" type is transaction.
 
@@ -624,13 +650,19 @@ Definition Op__WithValueBytesⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition SortTarget : go_type := intT.
+#[global] Typeclasses Opaque SortTarget.
+#[global] Opaque SortTarget.
 
 Definition SortOrder : go_type := intT.
+#[global] Typeclasses Opaque SortOrder.
+#[global] Opaque SortOrder.
 
 Definition SortOption : go_type := structT [
   "Target" :: SortTarget;
   "Order" :: SortOrder
 ].
+#[global] Typeclasses Opaque SortOption.
+#[global] Opaque SortOption.
 
 (* go: op.go:152:14 *)
 Definition Op__toRangeRequestⁱᵐᵖˡ : val :=
@@ -1170,6 +1202,8 @@ Definition OpTxnⁱᵐᵖˡ : val :=
 Definition opWatch : go_string := "go.etcd.io/etcd/client/v3.opWatch"%go.
 
 Definition OpOption : go_type := funcT.
+#[global] Typeclasses Opaque OpOption.
+#[global] Opaque OpOption.
 
 (* go: op.go:330:15 *)
 Definition Op__applyOptsⁱᵐᵖˡ : val :=
@@ -1655,8 +1689,12 @@ Definition LeaseOp : go_type := structT [
   "id" :: LeaseID;
   "attachedKeys" :: boolT
 ].
+#[global] Typeclasses Opaque LeaseOp.
+#[global] Opaque LeaseOp.
 
 Definition LeaseOption : go_type := funcT.
+#[global] Typeclasses Opaque LeaseOption.
+#[global] Opaque LeaseOption.
 
 Definition WithAttachedKeys : go_string := "go.etcd.io/etcd/client/v3.WithAttachedKeys"%go.
 
@@ -1808,6 +1846,8 @@ Definition SortByVersion : val := #(W64 1).
 Definition SortByValue : val := #(W64 4).
 
 Definition Txn : go_type := interfaceT.
+#[global] Typeclasses Opaque Txn.
+#[global] Opaque Txn.
 
 Axiom txn : go_type.
 
@@ -1824,6 +1864,8 @@ Axiom AutoWatchID : Z.
 Axiom InvalidWatchID : Z.
 
 Definition Event : go_type := mvccpb.Event.
+#[global] Typeclasses Opaque Event.
+#[global] Opaque Event.
 
 Definition WatchResponse : go_type := structT [
   "Header" :: etcdserverpb.ResponseHeader;
@@ -1834,10 +1876,16 @@ Definition WatchResponse : go_type := structT [
   "closeErr" :: error;
   "cancelReason" :: stringT
 ].
+#[global] Typeclasses Opaque WatchResponse.
+#[global] Opaque WatchResponse.
 
 Definition WatchChan : go_type := chanT WatchResponse.
+#[global] Typeclasses Opaque WatchChan.
+#[global] Opaque WatchChan.
 
 Definition Watcher : go_type := interfaceT.
+#[global] Typeclasses Opaque Watcher.
+#[global] Opaque Watcher.
 
 Axiom watcher : go_type.
 

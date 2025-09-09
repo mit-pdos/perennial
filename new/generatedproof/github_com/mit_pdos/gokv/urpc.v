@@ -29,6 +29,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.handlers' >.
+#[local] Transparent urpc.Server.
+#[local] Typeclasses Transparent urpc.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux urpc.Server [
@@ -92,6 +94,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Callback : Settable Callback.t :=
   settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
+#[local] Transparent urpc.Callback.
+#[local] Typeclasses Transparent urpc.Callback.
 Global Instance into_val_Callback : IntoVal Callback.t :=
   {| to_val_def v :=
     struct.val_aux urpc.Callback [
@@ -170,6 +174,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.
+#[local] Transparent urpc.Client.
+#[local] Typeclasses Transparent urpc.Client.
 Global Instance into_val_Client : IntoVal Client.t :=
   {| to_val_def v :=
     struct.val_aux urpc.Client [
@@ -239,6 +245,9 @@ End instances.
 
 (* type urpc.Error *)
 Module Error.
+
+#[global] Transparent urpc.Error.
+#[global] Typeclasses Transparent urpc.Error.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.

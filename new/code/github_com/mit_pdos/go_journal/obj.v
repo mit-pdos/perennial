@@ -23,6 +23,8 @@ Definition Log : go_type := structT [
   "log" :: ptrT;
   "pos" :: wal.LogPosition
 ].
+#[global] Typeclasses Opaque Log.
+#[global] Opaque Log.
 
 Definition MkLog : go_string := "github.com/mit-pdos/go-journal/obj.MkLog"%go.
 

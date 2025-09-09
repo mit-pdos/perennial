@@ -23,8 +23,12 @@ Context `{ffi_syntax}.
 
 Definition MajorityConfig : go_type := mapT uint64T (structT [
 ]).
+#[global] Typeclasses Opaque MajorityConfig.
+#[global] Opaque MajorityConfig.
 
 Definition JointConfig : go_type := arrayT (W64 2) MajorityConfig.
+#[global] Typeclasses Opaque JointConfig.
+#[global] Opaque JointConfig.
 
 (* go: joint.go:21:22 *)
 Definition JointConfig__Stringⁱᵐᵖˡ : val :=
@@ -71,6 +75,8 @@ Definition JointConfig__IDsⁱᵐᵖˡ : val :=
      ])] "m")).
 
 Definition AckedIndexer : go_type := interfaceT.
+#[global] Typeclasses Opaque AckedIndexer.
+#[global] Opaque AckedIndexer.
 
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
@@ -84,6 +90,8 @@ Definition JointConfig__Describeⁱᵐᵖˡ : val :=
      (method_call #MajorityConfig.id #"Describe"%go ((method_call #JointConfig.id #"IDs"%go (![#JointConfig] "c")) #())) "$a0")).
 
 Definition Index : go_type := uint64T.
+#[global] Typeclasses Opaque Index.
+#[global] Opaque Index.
 
 (* CommittedIndex returns the largest committed index for the given joint
    quorum. An index is jointly committed if it is committed in both constituent
@@ -110,6 +118,8 @@ Definition JointConfig__CommittedIndexⁱᵐᵖˡ : val :=
 Definition VotePending : val := #(W8 1).
 
 Definition VoteResult : go_type := uint8T.
+#[global] Typeclasses Opaque VoteResult.
+#[global] Opaque VoteResult.
 
 Definition VoteLost : val := #(W8 2).
 
@@ -431,6 +441,8 @@ Definition Index__Stringⁱᵐᵖˡ : val :=
      (func_call #strconv.FormatUint) "$a0" "$a1")).
 
 Definition mapAckIndexer : go_type := mapT uint64T Index.
+#[global] Typeclasses Opaque mapAckIndexer.
+#[global] Opaque mapAckIndexer.
 
 (* go: quorum.go:40:24 *)
 Definition mapAckIndexer__AckedIndexⁱᵐᵖˡ : val :=

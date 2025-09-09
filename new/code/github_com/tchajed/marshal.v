@@ -18,6 +18,8 @@ Definition Enc : go_type := structT [
   "b" :: sliceT;
   "off" :: ptrT
 ].
+#[global] Typeclasses Opaque Enc.
+#[global] Opaque Enc.
 
 Definition NewEncFromSlice : go_string := "github.com/tchajed/marshal.NewEncFromSlice"%go.
 
@@ -29,6 +31,8 @@ Definition Dec : go_type := structT [
   "b" :: sliceT;
   "off" :: ptrT
 ].
+#[global] Typeclasses Opaque Dec.
+#[global] Opaque Dec.
 
 Definition NewDec : go_string := "github.com/tchajed/marshal.NewDec"%go.
 

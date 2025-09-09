@@ -17,6 +17,8 @@ Definition Alloc : go_type := structT [
   "next" :: uint64T;
   "bitmap" :: sliceT
 ].
+#[global] Typeclasses Opaque Alloc.
+#[global] Opaque Alloc.
 
 Definition MkAlloc : go_string := "github.com/mit-pdos/go-journal/alloc.MkAlloc"%go.
 

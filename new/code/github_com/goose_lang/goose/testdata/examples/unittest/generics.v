@@ -43,6 +43,8 @@ Definition Box : val :=
   λ: "T", type.structT [
     (#"Value"%go, "T")
   ].
+  #[global] Typeclasses Opaque Box.
+  #[global] Opaque Box.
 
 Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
 
@@ -107,6 +109,8 @@ Definition Container : val :=
     (#"Z"%go, #ptrT);
     (#"W"%go, #uint64T)
   ].
+  #[global] Typeclasses Opaque Container.
+  #[global] Opaque Container.
 
 Definition useContainer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
 
@@ -141,18 +145,24 @@ Definition UseContainer : val :=
   λ: <>, type.structT [
     (#"X"%go, Container #uint64T)
   ].
+  #[global] Typeclasses Opaque UseContainer.
+  #[global] Opaque UseContainer.
 
 Definition OnlyIndirect : val :=
   λ: "T", type.structT [
     (#"X"%go, #sliceT);
     (#"Y"%go, #ptrT)
   ].
+  #[global] Typeclasses Opaque OnlyIndirect.
+  #[global] Opaque OnlyIndirect.
 
 Definition MultiParam : val :=
   λ: "A" "B", type.structT [
     (#"Y"%go, "B");
     (#"X"%go, "A")
   ].
+  #[global] Typeclasses Opaque MultiParam.
+  #[global] Opaque MultiParam.
 
 Definition useMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
 

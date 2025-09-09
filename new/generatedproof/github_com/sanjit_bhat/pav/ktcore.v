@@ -14,6 +14,9 @@ Module ktcore.
 
 (* type ktcore.Blame *)
 Module Blame.
+
+#[global] Transparent ktcore.Blame.
+#[global] Typeclasses Transparent ktcore.Blame.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -36,6 +39,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_VrfSig : Settable VrfSig.t :=
   settable! VrfSig.mk < VrfSig.SigTag'; VrfSig.VrfPk' >.
+#[local] Transparent ktcore.VrfSig.
+#[local] Typeclasses Transparent ktcore.VrfSig.
 Global Instance into_val_VrfSig : IntoVal VrfSig.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.VrfSig [
@@ -106,6 +111,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_LinkSig : Settable LinkSig.t :=
   settable! LinkSig.mk < LinkSig.SigTag'; LinkSig.Epoch'; LinkSig.Link' >.
+#[local] Transparent ktcore.LinkSig.
+#[local] Typeclasses Transparent ktcore.LinkSig.
 Global Instance into_val_LinkSig : IntoVal LinkSig.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.LinkSig [
@@ -182,6 +189,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_MapLabel : Settable MapLabel.t :=
   settable! MapLabel.mk < MapLabel.Uid'; MapLabel.Ver' >.
+#[local] Transparent ktcore.MapLabel.
+#[local] Typeclasses Transparent ktcore.MapLabel.
 Global Instance into_val_MapLabel : IntoVal MapLabel.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.MapLabel [
@@ -251,6 +260,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_CommitOpen : Settable CommitOpen.t :=
   settable! CommitOpen.mk < CommitOpen.Val'; CommitOpen.Rand' >.
+#[local] Transparent ktcore.CommitOpen.
+#[local] Typeclasses Transparent ktcore.CommitOpen.
 Global Instance into_val_CommitOpen : IntoVal CommitOpen.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.CommitOpen [
@@ -321,6 +332,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Memb : Settable Memb.t :=
   settable! Memb.mk < Memb.LabelProof'; Memb.PkOpen'; Memb.MerkleProof' >.
+#[local] Transparent ktcore.Memb.
+#[local] Typeclasses Transparent ktcore.Memb.
 Global Instance into_val_Memb : IntoVal Memb.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.Memb [
@@ -397,6 +410,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_NonMemb : Settable NonMemb.t :=
   settable! NonMemb.mk < NonMemb.LabelProof'; NonMemb.MerkleProof' >.
+#[local] Transparent ktcore.NonMemb.
+#[local] Typeclasses Transparent ktcore.NonMemb.
 Global Instance into_val_NonMemb : IntoVal NonMemb.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.NonMemb [
@@ -466,6 +481,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_AuditProof : Settable AuditProof.t :=
   settable! AuditProof.mk < AuditProof.Updates'; AuditProof.LinkSig' >.
+#[local] Transparent ktcore.AuditProof.
+#[local] Typeclasses Transparent ktcore.AuditProof.
 Global Instance into_val_AuditProof : IntoVal AuditProof.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.AuditProof [
@@ -536,6 +553,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_UpdateProof : Settable UpdateProof.t :=
   settable! UpdateProof.mk < UpdateProof.MapLabel'; UpdateProof.MapVal'; UpdateProof.NonMembProof' >.
+#[local] Transparent ktcore.UpdateProof.
+#[local] Typeclasses Transparent ktcore.UpdateProof.
 Global Instance into_val_UpdateProof : IntoVal UpdateProof.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.UpdateProof [

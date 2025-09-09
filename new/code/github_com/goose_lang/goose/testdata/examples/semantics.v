@@ -37,6 +37,8 @@ Section code.
 
 Definition unit : go_type := structT [
 ].
+#[global] Typeclasses Opaque unit.
+#[global] Opaque unit.
 
 Definition findKey : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.findKey"%go.
 
@@ -196,8 +198,12 @@ Definition testMaxUint64ⁱᵐᵖˡ : val :=
      (maxUint64 2) "$a0" "$a1") = #(W64 10))).
 
 Definition AdderType : go_type := funcT.
+#[global] Typeclasses Opaque AdderType.
+#[global] Opaque AdderType.
 
 Definition MultipleArgsType : go_type := funcT.
+#[global] Typeclasses Opaque MultipleArgsType.
+#[global] Opaque MultipleArgsType.
 
 Definition adder : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.adder"%go.
 
@@ -523,6 +529,8 @@ Definition testDeferFuncLitⁱᵐᵖˡ : val :=
 Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
+#[global] Typeclasses Opaque Enc.
+#[global] Opaque Enc.
 
 (* go: encoding.go:10:15 *)
 Definition Enc__consumeⁱᵐᵖˡ : val :=
@@ -541,6 +549,8 @@ Definition Enc__consumeⁱᵐᵖˡ : val :=
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
+#[global] Typeclasses Opaque Dec.
+#[global] Opaque Dec.
 
 (* go: encoding.go:20:15 *)
 Definition Dec__consumeⁱᵐᵖˡ : val :=
@@ -747,6 +757,8 @@ Definition Editor : go_type := structT [
   "s" :: sliceT;
   "next_val" :: uint64T
 ].
+#[global] Typeclasses Opaque Editor.
+#[global] Opaque Editor.
 
 (* advances the array editor, and returns the value it wrote, storing
    "next" in next_val
@@ -786,6 +798,8 @@ Definition Pair : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
+#[global] Typeclasses Opaque Pair.
+#[global] Opaque Pair.
 
 Definition failing_testFunctionOrdering : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testFunctionOrdering"%go.
 
@@ -940,6 +954,8 @@ Definition testU32Lenⁱᵐᵖˡ : val :=
      slice.len "$a0")) = #(W32 100))).
 
 Definition Uint32 : go_type := uint32T.
+#[global] Typeclasses Opaque Uint32.
+#[global] Opaque Uint32.
 
 Definition failing_testU32NewtypeLen : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testU32NewtypeLen"%go.
 
@@ -955,6 +971,8 @@ Definition failing_testU32NewtypeLenⁱᵐᵖˡ : val :=
      slice.len "$a0")) = #(W32 20))).
 
 Definition geometryInterface : go_type := interfaceT.
+#[global] Typeclasses Opaque geometryInterface.
+#[global] Opaque geometryInterface.
 
 Definition measureArea : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureArea"%go.
 
@@ -985,6 +1003,8 @@ Definition measureVolumeⁱᵐᵖˡ : val :=
 Definition SquareStruct : go_type := structT [
   "Side" :: uint64T
 ].
+#[global] Typeclasses Opaque SquareStruct.
+#[global] Opaque SquareStruct.
 
 (* go: interfaces.go:28:23 *)
 Definition SquareStruct__Squareⁱᵐᵖˡ : val :=
@@ -1144,6 +1164,8 @@ Definition standardForLoopⁱᵐᵖˡ : val :=
 Definition LoopStruct : go_type := structT [
   "loopNext" :: ptrT
 ].
+#[global] Typeclasses Opaque LoopStruct.
+#[global] Opaque LoopStruct.
 
 (* go: loops.go:28:22 *)
 Definition LoopStruct__forLoopWaitⁱᵐᵖˡ : val :=
@@ -2003,6 +2025,8 @@ Definition BoolTest : go_type := structT [
   "tc" :: uint64T;
   "fc" :: uint64T
 ].
+#[global] Typeclasses Opaque BoolTest.
+#[global] Opaque BoolTest.
 
 Definition CheckTrue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckTrue"%go.
 
@@ -2124,6 +2148,8 @@ Definition ArrayEditor : go_type := structT [
   "s" :: sliceT;
   "next_val" :: uint64T
 ].
+#[global] Typeclasses Opaque ArrayEditor.
+#[global] Opaque ArrayEditor.
 
 (* go: slices.go:9:24 *)
 Definition ArrayEditor__Advanceⁱᵐᵖˡ : val :=
@@ -2350,10 +2376,14 @@ Definition Bar : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
+#[global] Typeclasses Opaque Bar.
+#[global] Opaque Bar.
 
 Definition Foo : go_type := structT [
   "bar" :: Bar
 ].
+#[global] Typeclasses Opaque Foo.
+#[global] Opaque Foo.
 
 (* go: struct_pointers.go:14:17 *)
 Definition Bar__mutateⁱᵐᵖˡ : val :=
@@ -2395,12 +2425,16 @@ Definition TwoInts : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
+#[global] Typeclasses Opaque TwoInts.
+#[global] Opaque TwoInts.
 
 Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition NewS : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.NewS"%go.
 
@@ -2611,6 +2645,8 @@ Definition testIncompleteStructⁱᵐᵖˡ : val :=
 Definition StructWrap : go_type := structT [
   "i" :: uint64T
 ].
+#[global] Typeclasses Opaque StructWrap.
+#[global] Opaque StructWrap.
 
 Definition testStoreInStructVar : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructVar"%go.
 
@@ -2675,6 +2711,8 @@ Definition testStoreSliceⁱᵐᵖˡ : val :=
 Definition StructWithFunc : go_type := structT [
   "fn" :: funcT
 ].
+#[global] Typeclasses Opaque StructWithFunc.
+#[global] Opaque StructWithFunc.
 
 Definition testStructFieldFunc : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructFieldFunc"%go.
 
@@ -2743,8 +2781,12 @@ Definition testSwitchDefaultTrueⁱᵐᵖˡ : val :=
 
 Definition switchConcrete : go_type := structT [
 ].
+#[global] Typeclasses Opaque switchConcrete.
+#[global] Opaque switchConcrete.
 
 Definition switchInterface : go_type := interfaceT.
+#[global] Typeclasses Opaque switchInterface.
+#[global] Opaque switchInterface.
 
 (* go: switch.go:45:26 *)
 Definition switchConcrete__markerⁱᵐᵖˡ : val :=
@@ -2819,6 +2861,8 @@ Definition Log : go_type := structT [
   "cache" :: mapT uint64T sliceT;
   "length" :: ptrT
 ].
+#[global] Typeclasses Opaque Log.
+#[global] Opaque Log.
 
 Definition intToBlock : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.intToBlock"%go.
 

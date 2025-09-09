@@ -37,6 +37,8 @@ End noCopy.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent atomic.noCopy.
+#[local] Typeclasses Transparent atomic.noCopy.
 Global Instance into_val_noCopy : IntoVal noCopy.t :=
   {| to_val_def v :=
     struct.val_aux atomic.noCopy [
@@ -73,6 +75,8 @@ Definition ty (T : go_type) : go_type := structT [
   "_1" :: atomic.noCopy;
   "v" :: ptrT
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   _0' : (vec loc (uint.nat (W64 0)));
   _1' : noCopy.t;
@@ -81,6 +85,7 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Pointer.
 
+#[local] Transparent Pointer.ty.
 Arguments Pointer.mk {_} { T' } {_ T _} .
 Arguments Pointer.t {_} T' {_ T _} .
 
@@ -93,6 +98,8 @@ Proof. apply _. Qed.
 
 Global Instance settable_Pointer : Settable (Pointer.t T') :=
   settable! (Pointer.mk (T:=T)) < Pointer._0'; Pointer._1'; Pointer.v' >.
+#[local] Transparent atomic.Pointer.
+#[local] Typeclasses Transparent atomic.Pointer.
 Global Instance into_val_Pointer : IntoVal (Pointer.t T') :=
   {| to_val_def v :=
     struct.val_aux (Pointer.ty T) [
@@ -176,6 +183,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Int32 : Settable Int32.t :=
   settable! Int32.mk < Int32._0'; Int32.v' >.
+#[local] Transparent atomic.Int32.
+#[local] Typeclasses Transparent atomic.Int32.
 Global Instance into_val_Int32 : IntoVal Int32.t :=
   {| to_val_def v :=
     struct.val_aux atomic.Int32 [
@@ -262,6 +271,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Uint32 : Settable Uint32.t :=
   settable! Uint32.mk < Uint32._0'; Uint32.v' >.
+#[local] Transparent atomic.Uint32.
+#[local] Typeclasses Transparent atomic.Uint32.
 Global Instance into_val_Uint32 : IntoVal Uint32.t :=
   {| to_val_def v :=
     struct.val_aux atomic.Uint32 [
@@ -326,6 +337,8 @@ End align64.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent atomic.align64.
+#[local] Typeclasses Transparent atomic.align64.
 Global Instance into_val_align64 : IntoVal align64.t :=
   {| to_val_def v :=
     struct.val_aux atomic.align64 [
@@ -369,6 +382,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Uint64 : Settable Uint64.t :=
   settable! Uint64.mk < Uint64._0'; Uint64._1'; Uint64.v' >.
+#[local] Transparent atomic.Uint64.
+#[local] Typeclasses Transparent atomic.Uint64.
 Global Instance into_val_Uint64 : IntoVal Uint64.t :=
   {| to_val_def v :=
     struct.val_aux atomic.Uint64 [
@@ -461,6 +476,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Value : Settable Value.t :=
   settable! Value.mk < Value.v' >.
+#[local] Transparent atomic.Value.
+#[local] Typeclasses Transparent atomic.Value.
 Global Instance into_val_Value : IntoVal Value.t :=
   {| to_val_def v :=
     struct.val_aux atomic.Value [
@@ -523,6 +540,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_efaceWords : Settable efaceWords.t :=
   settable! efaceWords.mk < efaceWords.typ'; efaceWords.data' >.
+#[local] Transparent atomic.efaceWords.
+#[local] Typeclasses Transparent atomic.efaceWords.
 Global Instance into_val_efaceWords : IntoVal efaceWords.t :=
   {| to_val_def v :=
     struct.val_aux atomic.efaceWords [

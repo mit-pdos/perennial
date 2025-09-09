@@ -26,6 +26,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.b'; Enc.off' >.
+#[local] Transparent marshal.Enc.
+#[local] Typeclasses Transparent marshal.Enc.
 Global Instance into_val_Enc : IntoVal Enc.t :=
   {| to_val_def v :=
     struct.val_aux marshal.Enc [
@@ -95,6 +97,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.b'; Dec.off' >.
+#[local] Transparent marshal.Dec.
+#[local] Typeclasses Transparent marshal.Dec.
 Global Instance into_val_Dec : IntoVal Dec.t :=
   {| to_val_def v :=
     struct.val_aux marshal.Dec [

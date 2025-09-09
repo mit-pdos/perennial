@@ -25,6 +25,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Changer : Settable Changer.t :=
   settable! Changer.mk < Changer.Tracker'; Changer.LastIndex' >.
+#[local] Transparent confchange.Changer.
+#[local] Typeclasses Transparent confchange.Changer.
 Global Instance into_val_Changer : IntoVal Changer.t :=
   {| to_val_def v :=
     struct.val_aux confchange.Changer [

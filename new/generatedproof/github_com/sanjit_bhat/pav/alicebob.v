@@ -34,6 +34,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_histEntry : Settable histEntry.t :=
   settable! histEntry.mk < histEntry.isReg'; histEntry.pk' >.
+#[local] Transparent alicebob.histEntry.
+#[local] Typeclasses Transparent alicebob.histEntry.
 Global Instance into_val_histEntry : IntoVal histEntry.t :=
   {| to_val_def v :=
     struct.val_aux alicebob.histEntry [

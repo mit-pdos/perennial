@@ -214,7 +214,17 @@ Definition ErrUnexpectedEndOfGroupEtcdserver : go_string := "go.etcd.io/etcd/api
 
 Axiom ErrUnexpectedEndOfGroupEtcdserver'init : val.
 
-Axiom RequestHeader : go_type.
+Definition RequestHeader : go_type := structT [
+  "ID" :: uint64T;
+  "Username" :: stringT;
+  "AuthRevision" :: uint64T;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+#[global] Typeclasses Opaque RequestHeader.
+#[global] Opaque RequestHeader.
 
 Definition xxx_messageInfo_RequestHeader : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestHeader"%go.
 
@@ -289,6 +299,8 @@ Definition AlarmType_value : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.A
 Axiom AlarmType_value'init : val.
 
 Definition RangeRequest_SortOrder : go_type := int32T.
+#[global] Typeclasses Opaque RangeRequest_SortOrder.
+#[global] Opaque RangeRequest_SortOrder.
 
 Definition RangeRequest_NONE : val := #(W32 0).
 
@@ -310,6 +322,8 @@ Definition RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ : val :=
      slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Definition RangeRequest_SortTarget : go_type := int32T.
+#[global] Typeclasses Opaque RangeRequest_SortTarget.
+#[global] Opaque RangeRequest_SortTarget.
 
 Definition RangeRequest_KEY : val := #(W32 0).
 
@@ -333,6 +347,8 @@ Definition RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ : val :=
      slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Definition Compare_CompareResult : go_type := int32T.
+#[global] Typeclasses Opaque Compare_CompareResult.
+#[global] Opaque Compare_CompareResult.
 
 Definition Compare_EQUAL : val := #(W32 0).
 
@@ -354,6 +370,8 @@ Definition Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ : val :=
      slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Definition Compare_CompareTarget : go_type := int32T.
+#[global] Typeclasses Opaque Compare_CompareTarget.
+#[global] Opaque Compare_CompareTarget.
 
 Definition Compare_VERSION : val := #(W32 0).
 
@@ -432,6 +450,8 @@ Definition ResponseHeader : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque ResponseHeader.
+#[global] Opaque ResponseHeader.
 
 Definition xxx_messageInfo_ResponseHeader : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_ResponseHeader"%go.
 
@@ -454,6 +474,8 @@ Definition RangeRequest : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque RangeRequest.
+#[global] Opaque RangeRequest.
 
 Definition xxx_messageInfo_RangeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RangeRequest"%go.
 
@@ -467,6 +489,8 @@ Definition RangeResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque RangeResponse.
+#[global] Opaque RangeResponse.
 
 Definition xxx_messageInfo_RangeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RangeResponse"%go.
 
@@ -482,6 +506,8 @@ Definition PutRequest : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque PutRequest.
+#[global] Opaque PutRequest.
 
 Definition xxx_messageInfo_PutRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_PutRequest"%go.
 
@@ -493,6 +519,8 @@ Definition PutResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque PutResponse.
+#[global] Opaque PutResponse.
 
 Definition xxx_messageInfo_PutResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_PutResponse"%go.
 
@@ -505,6 +533,8 @@ Definition DeleteRangeRequest : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque DeleteRangeRequest.
+#[global] Opaque DeleteRangeRequest.
 
 Definition xxx_messageInfo_DeleteRangeRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DeleteRangeRequest"%go.
 
@@ -517,10 +547,14 @@ Definition DeleteRangeResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque DeleteRangeResponse.
+#[global] Opaque DeleteRangeResponse.
 
 Definition xxx_messageInfo_DeleteRangeResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_DeleteRangeResponse"%go.
 
 Definition isRequestOp_Request : go_type := interfaceT.
+#[global] Typeclasses Opaque isRequestOp_Request.
+#[global] Opaque isRequestOp_Request.
 
 Definition RequestOp : go_type := structT [
   "Request" :: isRequestOp_Request;
@@ -529,24 +563,34 @@ Definition RequestOp : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque RequestOp.
+#[global] Opaque RequestOp.
 
 Definition xxx_messageInfo_RequestOp : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_RequestOp"%go.
 
 Definition RequestOp_RequestRange : go_type := structT [
   "RequestRange" :: ptrT
 ].
+#[global] Typeclasses Opaque RequestOp_RequestRange.
+#[global] Opaque RequestOp_RequestRange.
 
 Definition RequestOp_RequestPut : go_type := structT [
   "RequestPut" :: ptrT
 ].
+#[global] Typeclasses Opaque RequestOp_RequestPut.
+#[global] Opaque RequestOp_RequestPut.
 
 Definition RequestOp_RequestDeleteRange : go_type := structT [
   "RequestDeleteRange" :: ptrT
 ].
+#[global] Typeclasses Opaque RequestOp_RequestDeleteRange.
+#[global] Opaque RequestOp_RequestDeleteRange.
 
 Definition RequestOp_RequestTxn : go_type := structT [
   "RequestTxn" :: ptrT
 ].
+#[global] Typeclasses Opaque RequestOp_RequestTxn.
+#[global] Opaque RequestOp_RequestTxn.
 
 (* go: rpc.pb.go:955:32 *)
 Definition RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ : val :=
@@ -569,6 +613,8 @@ Definition RequestOp_RequestTxn__isRequestOp_Requestⁱᵐᵖˡ : val :=
     exception_do (do:  #()).
 
 Definition isResponseOp_Response : go_type := interfaceT.
+#[global] Typeclasses Opaque isResponseOp_Response.
+#[global] Opaque isResponseOp_Response.
 
 Definition ResponseOp : go_type := structT [
   "Response" :: isResponseOp_Response;
@@ -577,24 +623,34 @@ Definition ResponseOp : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque ResponseOp.
+#[global] Opaque ResponseOp.
 
 Definition xxx_messageInfo_ResponseOp : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_ResponseOp"%go.
 
 Definition ResponseOp_ResponseRange : go_type := structT [
   "ResponseRange" :: ptrT
 ].
+#[global] Typeclasses Opaque ResponseOp_ResponseRange.
+#[global] Opaque ResponseOp_ResponseRange.
 
 Definition ResponseOp_ResponsePut : go_type := structT [
   "ResponsePut" :: ptrT
 ].
+#[global] Typeclasses Opaque ResponseOp_ResponsePut.
+#[global] Opaque ResponseOp_ResponsePut.
 
 Definition ResponseOp_ResponseDeleteRange : go_type := structT [
   "ResponseDeleteRange" :: ptrT
 ].
+#[global] Typeclasses Opaque ResponseOp_ResponseDeleteRange.
+#[global] Opaque ResponseOp_ResponseDeleteRange.
 
 Definition ResponseOp_ResponseTxn : go_type := structT [
   "ResponseTxn" :: ptrT
 ].
+#[global] Typeclasses Opaque ResponseOp_ResponseTxn.
+#[global] Opaque ResponseOp_ResponseTxn.
 
 (* go: rpc.pb.go:1071:34 *)
 Definition ResponseOp_ResponseRange__isResponseOp_Responseⁱᵐᵖˡ : val :=
@@ -617,6 +673,8 @@ Definition ResponseOp_ResponseTxn__isResponseOp_Responseⁱᵐᵖˡ : val :=
     exception_do (do:  #()).
 
 Definition isCompare_TargetUnion : go_type := interfaceT.
+#[global] Typeclasses Opaque isCompare_TargetUnion.
+#[global] Opaque isCompare_TargetUnion.
 
 Definition Compare : go_type := structT [
   "Result" :: Compare_CompareResult;
@@ -629,28 +687,40 @@ Definition Compare : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque Compare.
+#[global] Opaque Compare.
 
 Definition xxx_messageInfo_Compare : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_Compare"%go.
 
 Definition Compare_Version : go_type := structT [
   "Version" :: int64T
 ].
+#[global] Typeclasses Opaque Compare_Version.
+#[global] Opaque Compare_Version.
 
 Definition Compare_CreateRevision : go_type := structT [
   "CreateRevision" :: int64T
 ].
+#[global] Typeclasses Opaque Compare_CreateRevision.
+#[global] Opaque Compare_CreateRevision.
 
 Definition Compare_ModRevision : go_type := structT [
   "ModRevision" :: int64T
 ].
+#[global] Typeclasses Opaque Compare_ModRevision.
+#[global] Opaque Compare_ModRevision.
 
 Definition Compare_Value : go_type := structT [
   "Value" :: sliceT
 ].
+#[global] Typeclasses Opaque Compare_Value.
+#[global] Opaque Compare_Value.
 
 Definition Compare_Lease : go_type := structT [
   "Lease" :: int64T
 ].
+#[global] Typeclasses Opaque Compare_Lease.
+#[global] Opaque Compare_Lease.
 
 (* go: rpc.pb.go:1198:25 *)
 Definition Compare_Version__isCompare_TargetUnionⁱᵐᵖˡ : val :=
@@ -686,6 +756,8 @@ Definition TxnRequest : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque TxnRequest.
+#[global] Opaque TxnRequest.
 
 Definition xxx_messageInfo_TxnRequest : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_TxnRequest"%go.
 
@@ -698,6 +770,8 @@ Definition TxnResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque TxnResponse.
+#[global] Opaque TxnResponse.
 
 Definition xxx_messageInfo_TxnResponse : go_string := "go.etcd.io/etcd/api/v3/etcdserverpb.xxx_messageInfo_TxnResponse"%go.
 

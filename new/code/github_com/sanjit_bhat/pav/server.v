@@ -50,10 +50,14 @@ Definition AuditReply : go_type := structT [
   "P" :: sliceT;
   "Err" :: ktcore.Blame
 ].
+#[global] Typeclasses Opaque AuditReply.
+#[global] Opaque AuditReply.
 
 Definition AuditArg : go_type := structT [
   "PrevEpochLen" :: uint64T
 ].
+#[global] Typeclasses Opaque AuditArg.
+#[global] Opaque AuditArg.
 
 Definition AuditArgDecode : go_string := "github.com/sanjit-bhat/pav/server.AuditArgDecode"%go.
 
@@ -66,12 +70,16 @@ Definition HistoryReply : go_type := structT [
   "Bound" :: ptrT;
   "Err" :: ktcore.Blame
 ].
+#[global] Typeclasses Opaque HistoryReply.
+#[global] Opaque HistoryReply.
 
 Definition HistoryArg : go_type := structT [
   "Uid" :: uint64T;
   "PrevEpoch" :: uint64T;
   "PrevVerLen" :: uint64T
 ].
+#[global] Typeclasses Opaque HistoryArg.
+#[global] Opaque HistoryArg.
 
 Definition HistoryArgDecode : go_string := "github.com/sanjit-bhat/pav/server.HistoryArgDecode"%go.
 
@@ -80,6 +88,8 @@ Definition PutArg : go_type := structT [
   "Pk" :: sliceT;
   "Ver" :: uint64T
 ].
+#[global] Typeclasses Opaque PutArg.
+#[global] Opaque PutArg.
 
 Definition PutArgDecode : go_string := "github.com/sanjit-bhat/pav/server.PutArgDecode"%go.
 
@@ -470,6 +480,8 @@ Definition StartReply : go_type := structT [
   "VrfPk" :: sliceT;
   "VrfSig" :: sliceT
 ].
+#[global] Typeclasses Opaque StartReply.
+#[global] Opaque StartReply.
 
 (* go: serde.out.go:11:6 *)
 Definition StartReplyEncodeⁱᵐᵖˡ : val :=
@@ -980,23 +992,31 @@ Definition Server : go_type := structT [
   "hist" :: ptrT;
   "workQ" :: ptrT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 Definition secrets : go_type := structT [
   "sig" :: ptrT;
   "vrf" :: ptrT;
   "commit" :: sliceT
 ].
+#[global] Typeclasses Opaque secrets.
+#[global] Opaque secrets.
 
 Definition keyStore : go_type := structT [
   "hidden" :: ptrT;
   "plain" :: mapT uint64T sliceT
 ].
+#[global] Typeclasses Opaque keyStore.
+#[global] Opaque keyStore.
 
 Definition history : go_type := structT [
   "chain" :: ptrT;
   "audits" :: sliceT;
   "vrfPkSig" :: sliceT
 ].
+#[global] Typeclasses Opaque history.
+#[global] Opaque history.
 
 (* Start bootstraps a party with knowledge of the hashchain and vrf.
 
@@ -1048,6 +1068,8 @@ Definition WQReq : go_type := structT [
   "Pk" :: sliceT;
   "Ver" :: uint64T
 ].
+#[global] Typeclasses Opaque WQReq.
+#[global] Opaque WQReq.
 
 (* Put queues pk (at the specified version) for insertion.
 
@@ -1173,11 +1195,15 @@ Definition Server__Auditⁱᵐᵖˡ : val :=
 Definition WQResp : go_type := structT [
   "Err" :: boolT
 ].
+#[global] Typeclasses Opaque WQResp.
+#[global] Opaque WQResp.
 
 Definition mapEntry : go_type := structT [
   "label" :: sliceT;
   "val" :: sliceT
 ].
+#[global] Typeclasses Opaque mapEntry.
+#[global] Opaque mapEntry.
 
 (* go: server.go:121:18 *)
 Definition Server__Workerⁱᵐᵖˡ : val :=
@@ -1326,6 +1352,8 @@ Definition Work : go_type := structT [
   "Req" :: ptrT;
   "Resp" :: ptrT
 ].
+#[global] Typeclasses Opaque Work.
+#[global] Opaque Work.
 
 (* go: server.go:167:18 *)
 Definition Server__checkRequestsⁱᵐᵖˡ : val :=
@@ -1675,6 +1703,8 @@ Definition WorkQ : go_type := structT [
   "work" :: sliceT;
   "cond" :: ptrT
 ].
+#[global] Typeclasses Opaque WorkQ.
+#[global] Opaque WorkQ.
 
 Definition NewWork : go_string := "github.com/sanjit-bhat/pav/server.NewWork"%go.
 

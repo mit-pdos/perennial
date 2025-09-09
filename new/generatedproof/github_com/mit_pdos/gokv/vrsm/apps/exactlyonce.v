@@ -33,6 +33,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_eStateMachine : Settable eStateMachine.t :=
   settable! eStateMachine.mk < eStateMachine.lastSeq'; eStateMachine.lastReply'; eStateMachine.nextCID'; eStateMachine.sm'; eStateMachine.esmNextIndex' >.
+#[local] Transparent exactlyonce.eStateMachine.
+#[local] Typeclasses Transparent exactlyonce.eStateMachine.
 Global Instance into_val_eStateMachine : IntoVal eStateMachine.t :=
   {| to_val_def v :=
     struct.val_aux exactlyonce.eStateMachine [
@@ -124,6 +126,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.ck'; Clerk.cid'; Clerk.seq' >.
+#[local] Transparent exactlyonce.Clerk.
+#[local] Typeclasses Transparent exactlyonce.Clerk.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
     struct.val_aux exactlyonce.Clerk [
@@ -202,6 +206,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_VersionedStateMachine : Settable VersionedStateMachine.t :=
   settable! VersionedStateMachine.mk < VersionedStateMachine.ApplyVolatile'; VersionedStateMachine.ApplyReadonly'; VersionedStateMachine.SetState'; VersionedStateMachine.GetState' >.
+#[local] Transparent exactlyonce.VersionedStateMachine.
+#[local] Typeclasses Transparent exactlyonce.VersionedStateMachine.
 Global Instance into_val_VersionedStateMachine : IntoVal VersionedStateMachine.t :=
   {| to_val_def v :=
     struct.val_aux exactlyonce.VersionedStateMachine [

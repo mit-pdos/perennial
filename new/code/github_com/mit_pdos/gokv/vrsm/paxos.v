@@ -36,6 +36,8 @@ Definition RPC_BECOME_LEADER : val := #(W64 2).
 Definition singleClerk : go_type := structT [
   "cl" :: ptrT
 ].
+#[global] Typeclasses Opaque singleClerk.
+#[global] Opaque singleClerk.
 
 Definition MakeSingleClerk : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.MakeSingleClerk"%go.
 
@@ -53,6 +55,8 @@ Definition MakeSingleClerkⁱᵐᵖˡ : val :=
     return: (![#ptrT] "ck")).
 
 Definition Error : go_type := uint64T.
+#[global] Typeclasses Opaque Error.
+#[global] Opaque Error.
 
 Definition enterNewEpochReply : go_type := structT [
   "err" :: Error;
@@ -60,6 +64,8 @@ Definition enterNewEpochReply : go_type := structT [
   "nextIndex" :: uint64T;
   "state" :: sliceT
 ].
+#[global] Typeclasses Opaque enterNewEpochReply.
+#[global] Opaque enterNewEpochReply.
 
 Definition ETimeout : val := #(W64 3).
 
@@ -102,6 +108,8 @@ Definition singleClerk__enterNewEpochⁱᵐᵖˡ : val :=
 Definition applyAsFollowerReply : go_type := structT [
   "err" :: Error
 ].
+#[global] Typeclasses Opaque applyAsFollowerReply.
+#[global] Opaque applyAsFollowerReply.
 
 Definition decodeApplyAsFollowerReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodeApplyAsFollowerReply"%go.
 
@@ -163,6 +171,8 @@ Definition applyAsFollowerArgs : go_type := structT [
   "nextIndex" :: uint64T;
   "state" :: sliceT
 ].
+#[global] Typeclasses Opaque applyAsFollowerArgs.
+#[global] Opaque applyAsFollowerArgs.
 
 (* go: marshal.go:21:6 *)
 Definition encodeApplyAsFollowerArgsⁱᵐᵖˡ : val :=
@@ -249,6 +259,8 @@ Definition encodeApplyAsFollowerReplyⁱᵐᵖˡ : val :=
 Definition enterNewEpochArgs : go_type := structT [
   "epoch" :: uint64T
 ].
+#[global] Typeclasses Opaque enterNewEpochArgs.
+#[global] Opaque enterNewEpochArgs.
 
 (* go: marshal.go:58:6 *)
 Definition encodeEnterNewEpochArgsⁱᵐᵖˡ : val :=
@@ -349,6 +361,8 @@ Definition applyReply : go_type := structT [
   "err" :: Error;
   "ret" :: sliceT
 ].
+#[global] Typeclasses Opaque applyReply.
+#[global] Opaque applyReply.
 
 Definition encodeApplyReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.encodeApplyReply"%go.
 
@@ -414,6 +428,8 @@ Definition paxosState : go_type := structT [
   "state" :: sliceT;
   "isLeader" :: boolT
 ].
+#[global] Typeclasses Opaque paxosState.
+#[global] Opaque paxosState.
 
 (* go: marshal.go:128:6 *)
 Definition encodePaxosStateⁱᵐᵖˡ : val :=
@@ -492,6 +508,8 @@ Definition Server : go_type := structT [
   "storage" :: ptrT;
   "clerks" :: sliceT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 (* go: server.go:28:18 *)
 Definition Server__withLockⁱᵐᵖˡ : val :=

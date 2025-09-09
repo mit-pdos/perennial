@@ -22,6 +22,8 @@ Definition BankClerk : go_type := structT [
   "kvck" :: kv.Kv;
   "accts" :: sliceT
 ].
+#[global] Typeclasses Opaque BankClerk.
+#[global] Opaque BankClerk.
 
 Definition acquire_two_good : go_string := "github.com/mit-pdos/gokv/bank.acquire_two_good"%go.
 

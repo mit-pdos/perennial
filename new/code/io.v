@@ -79,8 +79,12 @@ Definition ErrNoProgress : go_string := "io.ErrNoProgress"%go.
 Axiom ErrNoProgress'init : val.
 
 Definition Reader : go_type := interfaceT.
+#[global] Typeclasses Opaque Reader.
+#[global] Opaque Reader.
 
 Definition Writer : go_type := interfaceT.
+#[global] Typeclasses Opaque Writer.
+#[global] Opaque Writer.
 
 Axiom Closer : go_type.
 

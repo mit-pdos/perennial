@@ -22,12 +22,16 @@ Definition Log : go_type := structT [
   "log" :: ptrT;
   "locks" :: ptrT
 ].
+#[global] Typeclasses Opaque Log.
+#[global] Opaque Log.
 
 Definition Txn : go_type := structT [
   "buftxn" :: ptrT;
   "locks" :: ptrT;
   "acquired" :: mapT uint64T boolT
 ].
+#[global] Typeclasses Opaque Txn.
+#[global] Opaque Txn.
 
 Definition Init : go_string := "github.com/mit-pdos/go-journal/txn.Init"%go.
 

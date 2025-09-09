@@ -435,6 +435,9 @@ Admitted.
 
 (* type zapcore.FieldType *)
 Module FieldType.
+
+#[global] Transparent zapcore.FieldType.
+#[global] Typeclasses Transparent zapcore.FieldType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w8.
@@ -460,6 +463,8 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Field : Settable Field.t :=
   settable! Field.mk < Field.Key'; Field.Type'; Field.Integer'; Field.String'; Field.Interface' >.
+#[local] Transparent zapcore.Field.
+#[local] Typeclasses Transparent zapcore.Field.
 Global Instance into_val_Field : IntoVal Field.t :=
   {| to_val_def v :=
     struct.val_aux zapcore.Field [
