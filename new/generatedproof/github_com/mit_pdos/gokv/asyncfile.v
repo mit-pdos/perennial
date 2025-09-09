@@ -32,13 +32,14 @@ End AsyncFile.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance AsyncFile_ty_wf : struct.Wf asyncfile.AsyncFile.
+#[local] Transparent asyncfile.AsyncFile.
+#[local] Typeclasses Transparent asyncfile.AsyncFile.
+
+Global Instance AsyncFile_wf : struct.Wf asyncfile.AsyncFile.
 Proof. apply _. Qed.
 
 Global Instance settable_AsyncFile : Settable AsyncFile.t :=
   settable! AsyncFile.mk < AsyncFile.mu'; AsyncFile.data'; AsyncFile.filename'; AsyncFile.index'; AsyncFile.indexCond'; AsyncFile.durableIndex'; AsyncFile.durableIndexCond'; AsyncFile.closeRequested'; AsyncFile.closed'; AsyncFile.closedCond' >.
-#[local] Transparent asyncfile.AsyncFile.
-#[local] Typeclasses Transparent asyncfile.AsyncFile.
 Global Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
   {| to_val_def v :=
     struct.val_aux asyncfile.AsyncFile [

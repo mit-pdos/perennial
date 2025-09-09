@@ -33,13 +33,14 @@ End AppendOnlyFile.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance AppendOnlyFile_ty_wf : struct.Wf aof.AppendOnlyFile.
+#[local] Transparent aof.AppendOnlyFile.
+#[local] Typeclasses Transparent aof.AppendOnlyFile.
+
+Global Instance AppendOnlyFile_wf : struct.Wf aof.AppendOnlyFile.
 Proof. apply _. Qed.
 
 Global Instance settable_AppendOnlyFile : Settable AppendOnlyFile.t :=
   settable! AppendOnlyFile.mk < AppendOnlyFile.mu'; AppendOnlyFile.oldDurableCond'; AppendOnlyFile.durableCond'; AppendOnlyFile.lengthCond'; AppendOnlyFile.membuf'; AppendOnlyFile.length'; AppendOnlyFile.durableLength'; AppendOnlyFile.closeRequested'; AppendOnlyFile.closed'; AppendOnlyFile.closedCond' >.
-#[local] Transparent aof.AppendOnlyFile.
-#[local] Typeclasses Transparent aof.AppendOnlyFile.
 Global Instance into_val_AppendOnlyFile : IntoVal AppendOnlyFile.t :=
   {| to_val_def v :=
     struct.val_aux aof.AppendOnlyFile [

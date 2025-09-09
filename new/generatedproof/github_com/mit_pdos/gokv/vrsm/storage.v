@@ -28,13 +28,14 @@ End InMemoryStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance InMemoryStateMachine_ty_wf : struct.Wf storage.InMemoryStateMachine.
+#[local] Transparent storage.InMemoryStateMachine.
+#[local] Typeclasses Transparent storage.InMemoryStateMachine.
+
+Global Instance InMemoryStateMachine_wf : struct.Wf storage.InMemoryStateMachine.
 Proof. apply _. Qed.
 
 Global Instance settable_InMemoryStateMachine : Settable InMemoryStateMachine.t :=
   settable! InMemoryStateMachine.mk < InMemoryStateMachine.ApplyReadonly'; InMemoryStateMachine.ApplyVolatile'; InMemoryStateMachine.GetState'; InMemoryStateMachine.SetState' >.
-#[local] Transparent storage.InMemoryStateMachine.
-#[local] Typeclasses Transparent storage.InMemoryStateMachine.
 Global Instance into_val_InMemoryStateMachine : IntoVal InMemoryStateMachine.t :=
   {| to_val_def v :=
     struct.val_aux storage.InMemoryStateMachine [
@@ -120,13 +121,14 @@ End StateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance StateMachine_ty_wf : struct.Wf storage.StateMachine.
+#[local] Transparent storage.StateMachine.
+#[local] Typeclasses Transparent storage.StateMachine.
+
+Global Instance StateMachine_wf : struct.Wf storage.StateMachine.
 Proof. apply _. Qed.
 
 Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.fname'; StateMachine.logFile'; StateMachine.logsize'; StateMachine.sealed'; StateMachine.epoch'; StateMachine.nextIndex'; StateMachine.smMem' >.
-#[local] Transparent storage.StateMachine.
-#[local] Typeclasses Transparent storage.StateMachine.
 Global Instance into_val_StateMachine : IntoVal StateMachine.t :=
   {| to_val_def v :=
     struct.val_aux storage.StateMachine [

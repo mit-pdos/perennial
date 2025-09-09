@@ -39,11 +39,12 @@ End noCopy.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance noCopy_ty_wf : struct.Wf sync.noCopy.
-Proof. apply _. Qed.
-
 #[local] Transparent sync.noCopy.
 #[local] Typeclasses Transparent sync.noCopy.
+
+Global Instance noCopy_wf : struct.Wf sync.noCopy.
+Proof. apply _. Qed.
+
 Global Instance into_val_noCopy : IntoVal noCopy.t :=
   {| to_val_def v :=
     struct.val_aux sync.noCopy [
@@ -118,13 +119,14 @@ End Once.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Once_ty_wf : struct.Wf sync.Once.
+#[local] Transparent sync.Once.
+#[local] Typeclasses Transparent sync.Once.
+
+Global Instance Once_wf : struct.Wf sync.Once.
 Proof. apply _. Qed.
 
 Global Instance settable_Once : Settable Once.t :=
   settable! Once.mk < Once._0'; Once.done'; Once.m' >.
-#[local] Transparent sync.Once.
-#[local] Typeclasses Transparent sync.Once.
 Global Instance into_val_Once : IntoVal Once.t :=
   {| to_val_def v :=
     struct.val_aux sync.Once [
@@ -354,13 +356,14 @@ End RWMutex.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance RWMutex_ty_wf : struct.Wf sync.RWMutex.
+#[local] Transparent sync.RWMutex.
+#[local] Typeclasses Transparent sync.RWMutex.
+
+Global Instance RWMutex_wf : struct.Wf sync.RWMutex.
 Proof. apply _. Qed.
 
 Global Instance settable_RWMutex : Settable RWMutex.t :=
   settable! RWMutex.mk < RWMutex.w'; RWMutex.writerSem'; RWMutex.readerSem'; RWMutex.readerCount'; RWMutex.readerWait' >.
-#[local] Transparent sync.RWMutex.
-#[local] Typeclasses Transparent sync.RWMutex.
 Global Instance into_val_RWMutex : IntoVal RWMutex.t :=
   {| to_val_def v :=
     struct.val_aux sync.RWMutex [
@@ -460,13 +463,14 @@ End WaitGroup.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance WaitGroup_ty_wf : struct.Wf sync.WaitGroup.
+#[local] Transparent sync.WaitGroup.
+#[local] Typeclasses Transparent sync.WaitGroup.
+
+Global Instance WaitGroup_wf : struct.Wf sync.WaitGroup.
 Proof. apply _. Qed.
 
 Global Instance settable_WaitGroup : Settable WaitGroup.t :=
   settable! WaitGroup.mk < WaitGroup.noCopy'; WaitGroup.state'; WaitGroup.sema' >.
-#[local] Transparent sync.WaitGroup.
-#[local] Typeclasses Transparent sync.WaitGroup.
 Global Instance into_val_WaitGroup : IntoVal WaitGroup.t :=
   {| to_val_def v :=
     struct.val_aux sync.WaitGroup [

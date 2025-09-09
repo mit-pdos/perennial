@@ -22,11 +22,12 @@ End unit.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance unit_ty_wf : struct.Wf semantics.unit.
-Proof. apply _. Qed.
-
 #[local] Transparent semantics.unit.
 #[local] Typeclasses Transparent semantics.unit.
+
+Global Instance unit_wf : struct.Wf semantics.unit.
+Proof. apply _. Qed.
+
 Global Instance into_val_unit : IntoVal unit.t :=
   {| to_val_def v :=
     struct.val_aux semantics.unit [
@@ -87,13 +88,14 @@ End Enc.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Enc_ty_wf : struct.Wf semantics.Enc.
+#[local] Transparent semantics.Enc.
+#[local] Typeclasses Transparent semantics.Enc.
+
+Global Instance Enc_wf : struct.Wf semantics.Enc.
 Proof. apply _. Qed.
 
 Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.p' >.
-#[local] Transparent semantics.Enc.
-#[local] Typeclasses Transparent semantics.Enc.
 Global Instance into_val_Enc : IntoVal Enc.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Enc [
@@ -152,13 +154,14 @@ End Dec.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Dec_ty_wf : struct.Wf semantics.Dec.
+#[local] Transparent semantics.Dec.
+#[local] Typeclasses Transparent semantics.Dec.
+
+Global Instance Dec_wf : struct.Wf semantics.Dec.
 Proof. apply _. Qed.
 
 Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.p' >.
-#[local] Transparent semantics.Dec.
-#[local] Typeclasses Transparent semantics.Dec.
 Global Instance into_val_Dec : IntoVal Dec.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Dec [
@@ -218,13 +221,14 @@ End Editor.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Editor_ty_wf : struct.Wf semantics.Editor.
+#[local] Transparent semantics.Editor.
+#[local] Typeclasses Transparent semantics.Editor.
+
+Global Instance Editor_wf : struct.Wf semantics.Editor.
 Proof. apply _. Qed.
 
 Global Instance settable_Editor : Settable Editor.t :=
   settable! Editor.mk < Editor.s'; Editor.next_val' >.
-#[local] Transparent semantics.Editor.
-#[local] Typeclasses Transparent semantics.Editor.
 Global Instance into_val_Editor : IntoVal Editor.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Editor [
@@ -291,13 +295,14 @@ End Pair.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Pair_ty_wf : struct.Wf semantics.Pair.
+#[local] Transparent semantics.Pair.
+#[local] Typeclasses Transparent semantics.Pair.
+
+Global Instance Pair_wf : struct.Wf semantics.Pair.
 Proof. apply _. Qed.
 
 Global Instance settable_Pair : Settable Pair.t :=
   settable! Pair.mk < Pair.x'; Pair.y' >.
-#[local] Transparent semantics.Pair.
-#[local] Typeclasses Transparent semantics.Pair.
 Global Instance into_val_Pair : IntoVal Pair.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Pair [
@@ -385,13 +390,14 @@ End SquareStruct.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance SquareStruct_ty_wf : struct.Wf semantics.SquareStruct.
+#[local] Transparent semantics.SquareStruct.
+#[local] Typeclasses Transparent semantics.SquareStruct.
+
+Global Instance SquareStruct_wf : struct.Wf semantics.SquareStruct.
 Proof. apply _. Qed.
 
 Global Instance settable_SquareStruct : Settable SquareStruct.t :=
   settable! SquareStruct.mk < SquareStruct.Side' >.
-#[local] Transparent semantics.SquareStruct.
-#[local] Typeclasses Transparent semantics.SquareStruct.
 Global Instance into_val_SquareStruct : IntoVal SquareStruct.t :=
   {| to_val_def v :=
     struct.val_aux semantics.SquareStruct [
@@ -450,13 +456,14 @@ End LoopStruct.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance LoopStruct_ty_wf : struct.Wf semantics.LoopStruct.
+#[local] Transparent semantics.LoopStruct.
+#[local] Typeclasses Transparent semantics.LoopStruct.
+
+Global Instance LoopStruct_wf : struct.Wf semantics.LoopStruct.
 Proof. apply _. Qed.
 
 Global Instance settable_LoopStruct : Settable LoopStruct.t :=
   settable! LoopStruct.mk < LoopStruct.loopNext' >.
-#[local] Transparent semantics.LoopStruct.
-#[local] Typeclasses Transparent semantics.LoopStruct.
 Global Instance into_val_LoopStruct : IntoVal LoopStruct.t :=
   {| to_val_def v :=
     struct.val_aux semantics.LoopStruct [
@@ -518,13 +525,14 @@ End BoolTest.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance BoolTest_ty_wf : struct.Wf semantics.BoolTest.
+#[local] Transparent semantics.BoolTest.
+#[local] Typeclasses Transparent semantics.BoolTest.
+
+Global Instance BoolTest_wf : struct.Wf semantics.BoolTest.
 Proof. apply _. Qed.
 
 Global Instance settable_BoolTest : Settable BoolTest.t :=
   settable! BoolTest.mk < BoolTest.t'; BoolTest.f'; BoolTest.tc'; BoolTest.fc' >.
-#[local] Transparent semantics.BoolTest.
-#[local] Typeclasses Transparent semantics.BoolTest.
 Global Instance into_val_BoolTest : IntoVal BoolTest.t :=
   {| to_val_def v :=
     struct.val_aux semantics.BoolTest [
@@ -605,13 +613,14 @@ End ArrayEditor.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance ArrayEditor_ty_wf : struct.Wf semantics.ArrayEditor.
+#[local] Transparent semantics.ArrayEditor.
+#[local] Typeclasses Transparent semantics.ArrayEditor.
+
+Global Instance ArrayEditor_wf : struct.Wf semantics.ArrayEditor.
 Proof. apply _. Qed.
 
 Global Instance settable_ArrayEditor : Settable ArrayEditor.t :=
   settable! ArrayEditor.mk < ArrayEditor.s'; ArrayEditor.next_val' >.
-#[local] Transparent semantics.ArrayEditor.
-#[local] Typeclasses Transparent semantics.ArrayEditor.
 Global Instance into_val_ArrayEditor : IntoVal ArrayEditor.t :=
   {| to_val_def v :=
     struct.val_aux semantics.ArrayEditor [
@@ -678,13 +687,14 @@ End Bar.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Bar_ty_wf : struct.Wf semantics.Bar.
+#[local] Transparent semantics.Bar.
+#[local] Typeclasses Transparent semantics.Bar.
+
+Global Instance Bar_wf : struct.Wf semantics.Bar.
 Proof. apply _. Qed.
 
 Global Instance settable_Bar : Settable Bar.t :=
   settable! Bar.mk < Bar.a'; Bar.b' >.
-#[local] Transparent semantics.Bar.
-#[local] Typeclasses Transparent semantics.Bar.
 Global Instance into_val_Bar : IntoVal Bar.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Bar [
@@ -750,13 +760,14 @@ End Foo.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Foo_ty_wf : struct.Wf semantics.Foo.
+#[local] Transparent semantics.Foo.
+#[local] Typeclasses Transparent semantics.Foo.
+
+Global Instance Foo_wf : struct.Wf semantics.Foo.
 Proof. apply _. Qed.
 
 Global Instance settable_Foo : Settable Foo.t :=
   settable! Foo.mk < Foo.bar' >.
-#[local] Transparent semantics.Foo.
-#[local] Typeclasses Transparent semantics.Foo.
 Global Instance into_val_Foo : IntoVal Foo.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Foo [
@@ -816,13 +827,14 @@ End TwoInts.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance TwoInts_ty_wf : struct.Wf semantics.TwoInts.
+#[local] Transparent semantics.TwoInts.
+#[local] Typeclasses Transparent semantics.TwoInts.
+
+Global Instance TwoInts_wf : struct.Wf semantics.TwoInts.
 Proof. apply _. Qed.
 
 Global Instance settable_TwoInts : Settable TwoInts.t :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
-#[local] Transparent semantics.TwoInts.
-#[local] Typeclasses Transparent semantics.TwoInts.
 Global Instance into_val_TwoInts : IntoVal TwoInts.t :=
   {| to_val_def v :=
     struct.val_aux semantics.TwoInts [
@@ -890,13 +902,14 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance S_ty_wf : struct.Wf semantics.S.
+#[local] Transparent semantics.S.
+#[local] Typeclasses Transparent semantics.S.
+
+Global Instance S_wf : struct.Wf semantics.S.
 Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.a'; S.b'; S.c' >.
-#[local] Transparent semantics.S.
-#[local] Typeclasses Transparent semantics.S.
 Global Instance into_val_S : IntoVal S.t :=
   {| to_val_def v :=
     struct.val_aux semantics.S [
@@ -969,13 +982,14 @@ End StructWrap.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance StructWrap_ty_wf : struct.Wf semantics.StructWrap.
+#[local] Transparent semantics.StructWrap.
+#[local] Typeclasses Transparent semantics.StructWrap.
+
+Global Instance StructWrap_wf : struct.Wf semantics.StructWrap.
 Proof. apply _. Qed.
 
 Global Instance settable_StructWrap : Settable StructWrap.t :=
   settable! StructWrap.mk < StructWrap.i' >.
-#[local] Transparent semantics.StructWrap.
-#[local] Typeclasses Transparent semantics.StructWrap.
 Global Instance into_val_StructWrap : IntoVal StructWrap.t :=
   {| to_val_def v :=
     struct.val_aux semantics.StructWrap [
@@ -1034,13 +1048,14 @@ End StructWithFunc.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance StructWithFunc_ty_wf : struct.Wf semantics.StructWithFunc.
+#[local] Transparent semantics.StructWithFunc.
+#[local] Typeclasses Transparent semantics.StructWithFunc.
+
+Global Instance StructWithFunc_wf : struct.Wf semantics.StructWithFunc.
 Proof. apply _. Qed.
 
 Global Instance settable_StructWithFunc : Settable StructWithFunc.t :=
   settable! StructWithFunc.mk < StructWithFunc.fn' >.
-#[local] Transparent semantics.StructWithFunc.
-#[local] Typeclasses Transparent semantics.StructWithFunc.
 Global Instance into_val_StructWithFunc : IntoVal StructWithFunc.t :=
   {| to_val_def v :=
     struct.val_aux semantics.StructWithFunc [
@@ -1098,11 +1113,12 @@ End switchConcrete.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance switchConcrete_ty_wf : struct.Wf semantics.switchConcrete.
-Proof. apply _. Qed.
-
 #[local] Transparent semantics.switchConcrete.
 #[local] Typeclasses Transparent semantics.switchConcrete.
+
+Global Instance switchConcrete_wf : struct.Wf semantics.switchConcrete.
+Proof. apply _. Qed.
+
 Global Instance into_val_switchConcrete : IntoVal switchConcrete.t :=
   {| to_val_def v :=
     struct.val_aux semantics.switchConcrete [
@@ -1155,13 +1171,14 @@ End Log.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Log_ty_wf : struct.Wf semantics.Log.
+#[local] Transparent semantics.Log.
+#[local] Typeclasses Transparent semantics.Log.
+
+Global Instance Log_wf : struct.Wf semantics.Log.
 Proof. apply _. Qed.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.d'; Log.l'; Log.cache'; Log.length' >.
-#[local] Transparent semantics.Log.
-#[local] Typeclasses Transparent semantics.Log.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=
     struct.val_aux semantics.Log [

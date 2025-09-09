@@ -28,13 +28,14 @@ End singleClerk.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance singleClerk_ty_wf : struct.Wf paxos.singleClerk.
+#[local] Transparent paxos.singleClerk.
+#[local] Typeclasses Transparent paxos.singleClerk.
+
+Global Instance singleClerk_wf : struct.Wf paxos.singleClerk.
 Proof. apply _. Qed.
 
 Global Instance settable_singleClerk : Settable singleClerk.t :=
   settable! singleClerk.mk < singleClerk.cl' >.
-#[local] Transparent paxos.singleClerk.
-#[local] Typeclasses Transparent paxos.singleClerk.
 Global Instance into_val_singleClerk : IntoVal singleClerk.t :=
   {| to_val_def v :=
     struct.val_aux paxos.singleClerk [
@@ -106,13 +107,14 @@ End applyAsFollowerArgs.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance applyAsFollowerArgs_ty_wf : struct.Wf paxos.applyAsFollowerArgs.
+#[local] Transparent paxos.applyAsFollowerArgs.
+#[local] Typeclasses Transparent paxos.applyAsFollowerArgs.
+
+Global Instance applyAsFollowerArgs_wf : struct.Wf paxos.applyAsFollowerArgs.
 Proof. apply _. Qed.
 
 Global Instance settable_applyAsFollowerArgs : Settable applyAsFollowerArgs.t :=
   settable! applyAsFollowerArgs.mk < applyAsFollowerArgs.epoch'; applyAsFollowerArgs.nextIndex'; applyAsFollowerArgs.state' >.
-#[local] Transparent paxos.applyAsFollowerArgs.
-#[local] Typeclasses Transparent paxos.applyAsFollowerArgs.
 Global Instance into_val_applyAsFollowerArgs : IntoVal applyAsFollowerArgs.t :=
   {| to_val_def v :=
     struct.val_aux paxos.applyAsFollowerArgs [
@@ -185,13 +187,14 @@ End applyAsFollowerReply.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance applyAsFollowerReply_ty_wf : struct.Wf paxos.applyAsFollowerReply.
+#[local] Transparent paxos.applyAsFollowerReply.
+#[local] Typeclasses Transparent paxos.applyAsFollowerReply.
+
+Global Instance applyAsFollowerReply_wf : struct.Wf paxos.applyAsFollowerReply.
 Proof. apply _. Qed.
 
 Global Instance settable_applyAsFollowerReply : Settable applyAsFollowerReply.t :=
   settable! applyAsFollowerReply.mk < applyAsFollowerReply.err' >.
-#[local] Transparent paxos.applyAsFollowerReply.
-#[local] Typeclasses Transparent paxos.applyAsFollowerReply.
 Global Instance into_val_applyAsFollowerReply : IntoVal applyAsFollowerReply.t :=
   {| to_val_def v :=
     struct.val_aux paxos.applyAsFollowerReply [
@@ -250,13 +253,14 @@ End enterNewEpochArgs.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance enterNewEpochArgs_ty_wf : struct.Wf paxos.enterNewEpochArgs.
+#[local] Transparent paxos.enterNewEpochArgs.
+#[local] Typeclasses Transparent paxos.enterNewEpochArgs.
+
+Global Instance enterNewEpochArgs_wf : struct.Wf paxos.enterNewEpochArgs.
 Proof. apply _. Qed.
 
 Global Instance settable_enterNewEpochArgs : Settable enterNewEpochArgs.t :=
   settable! enterNewEpochArgs.mk < enterNewEpochArgs.epoch' >.
-#[local] Transparent paxos.enterNewEpochArgs.
-#[local] Typeclasses Transparent paxos.enterNewEpochArgs.
 Global Instance into_val_enterNewEpochArgs : IntoVal enterNewEpochArgs.t :=
   {| to_val_def v :=
     struct.val_aux paxos.enterNewEpochArgs [
@@ -318,13 +322,14 @@ End enterNewEpochReply.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance enterNewEpochReply_ty_wf : struct.Wf paxos.enterNewEpochReply.
+#[local] Transparent paxos.enterNewEpochReply.
+#[local] Typeclasses Transparent paxos.enterNewEpochReply.
+
+Global Instance enterNewEpochReply_wf : struct.Wf paxos.enterNewEpochReply.
 Proof. apply _. Qed.
 
 Global Instance settable_enterNewEpochReply : Settable enterNewEpochReply.t :=
   settable! enterNewEpochReply.mk < enterNewEpochReply.err'; enterNewEpochReply.acceptedEpoch'; enterNewEpochReply.nextIndex'; enterNewEpochReply.state' >.
-#[local] Transparent paxos.enterNewEpochReply.
-#[local] Typeclasses Transparent paxos.enterNewEpochReply.
 Global Instance into_val_enterNewEpochReply : IntoVal enterNewEpochReply.t :=
   {| to_val_def v :=
     struct.val_aux paxos.enterNewEpochReply [
@@ -405,13 +410,14 @@ End applyReply.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance applyReply_ty_wf : struct.Wf paxos.applyReply.
+#[local] Transparent paxos.applyReply.
+#[local] Typeclasses Transparent paxos.applyReply.
+
+Global Instance applyReply_wf : struct.Wf paxos.applyReply.
 Proof. apply _. Qed.
 
 Global Instance settable_applyReply : Settable applyReply.t :=
   settable! applyReply.mk < applyReply.err'; applyReply.ret' >.
-#[local] Transparent paxos.applyReply.
-#[local] Typeclasses Transparent paxos.applyReply.
 Global Instance into_val_applyReply : IntoVal applyReply.t :=
   {| to_val_def v :=
     struct.val_aux paxos.applyReply [
@@ -481,13 +487,14 @@ End paxosState.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance paxosState_ty_wf : struct.Wf paxos.paxosState.
+#[local] Transparent paxos.paxosState.
+#[local] Typeclasses Transparent paxos.paxosState.
+
+Global Instance paxosState_wf : struct.Wf paxos.paxosState.
 Proof. apply _. Qed.
 
 Global Instance settable_paxosState : Settable paxosState.t :=
   settable! paxosState.mk < paxosState.epoch'; paxosState.acceptedEpoch'; paxosState.nextIndex'; paxosState.state'; paxosState.isLeader' >.
-#[local] Transparent paxos.paxosState.
-#[local] Typeclasses Transparent paxos.paxosState.
 Global Instance into_val_paxosState : IntoVal paxosState.t :=
   {| to_val_def v :=
     struct.val_aux paxos.paxosState [
@@ -577,13 +584,14 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Server_ty_wf : struct.Wf paxos.Server.
+#[local] Transparent paxos.Server.
+#[local] Typeclasses Transparent paxos.Server.
+
+Global Instance Server_wf : struct.Wf paxos.Server.
 Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.ps'; Server.storage'; Server.clerks' >.
-#[local] Transparent paxos.Server.
-#[local] Typeclasses Transparent paxos.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux paxos.Server [

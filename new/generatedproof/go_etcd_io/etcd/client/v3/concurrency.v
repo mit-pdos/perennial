@@ -36,13 +36,14 @@ End Election.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Election_ty_wf : struct.Wf concurrency.Election.
+#[local] Transparent concurrency.Election.
+#[local] Typeclasses Transparent concurrency.Election.
+
+Global Instance Election_wf : struct.Wf concurrency.Election.
 Proof. apply _. Qed.
 
 Global Instance settable_Election : Settable Election.t :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
-#[local] Transparent concurrency.Election.
-#[local] Typeclasses Transparent concurrency.Election.
 Global Instance into_val_Election : IntoVal Election.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.Election [
@@ -140,13 +141,14 @@ End Mutex.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Mutex_ty_wf : struct.Wf concurrency.Mutex.
+#[local] Transparent concurrency.Mutex.
+#[local] Typeclasses Transparent concurrency.Mutex.
+
+Global Instance Mutex_wf : struct.Wf concurrency.Mutex.
 Proof. apply _. Qed.
 
 Global Instance settable_Mutex : Settable Mutex.t :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
-#[local] Transparent concurrency.Mutex.
-#[local] Typeclasses Transparent concurrency.Mutex.
 Global Instance into_val_Mutex : IntoVal Mutex.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.Mutex [
@@ -233,13 +235,14 @@ End lockerMutex.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance lockerMutex_ty_wf : struct.Wf concurrency.lockerMutex.
+#[local] Transparent concurrency.lockerMutex.
+#[local] Typeclasses Transparent concurrency.lockerMutex.
+
+Global Instance lockerMutex_wf : struct.Wf concurrency.lockerMutex.
 Proof. apply _. Qed.
 
 Global Instance settable_lockerMutex : Settable lockerMutex.t :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
-#[local] Transparent concurrency.lockerMutex.
-#[local] Typeclasses Transparent concurrency.lockerMutex.
 Global Instance into_val_lockerMutex : IntoVal lockerMutex.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.lockerMutex [
@@ -303,13 +306,14 @@ End Session.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Session_ty_wf : struct.Wf concurrency.Session.
+#[local] Transparent concurrency.Session.
+#[local] Typeclasses Transparent concurrency.Session.
+
+Global Instance Session_wf : struct.Wf concurrency.Session.
 Proof. apply _. Qed.
 
 Global Instance settable_Session : Settable Session.t :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
-#[local] Transparent concurrency.Session.
-#[local] Typeclasses Transparent concurrency.Session.
 Global Instance into_val_Session : IntoVal Session.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.Session [
@@ -405,13 +409,14 @@ End sessionOptions.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance sessionOptions_ty_wf : struct.Wf concurrency.sessionOptions.
+#[local] Transparent concurrency.sessionOptions.
+#[local] Typeclasses Transparent concurrency.sessionOptions.
+
+Global Instance sessionOptions_wf : struct.Wf concurrency.sessionOptions.
 Proof. apply _. Qed.
 
 Global Instance settable_sessionOptions : Settable sessionOptions.t :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
-#[local] Transparent concurrency.sessionOptions.
-#[local] Typeclasses Transparent concurrency.sessionOptions.
 Global Instance into_val_sessionOptions : IntoVal sessionOptions.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.sessionOptions [
@@ -517,13 +522,14 @@ End stmError.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance stmError_ty_wf : struct.Wf concurrency.stmError.
+#[local] Transparent concurrency.stmError.
+#[local] Typeclasses Transparent concurrency.stmError.
+
+Global Instance stmError_wf : struct.Wf concurrency.stmError.
 Proof. apply _. Qed.
 
 Global Instance settable_stmError : Settable stmError.t :=
   settable! stmError.mk < stmError.err' >.
-#[local] Transparent concurrency.stmError.
-#[local] Typeclasses Transparent concurrency.stmError.
 Global Instance into_val_stmError : IntoVal stmError.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmError [
@@ -584,13 +590,14 @@ End stmOptions.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance stmOptions_ty_wf : struct.Wf concurrency.stmOptions.
+#[local] Transparent concurrency.stmOptions.
+#[local] Typeclasses Transparent concurrency.stmOptions.
+
+Global Instance stmOptions_wf : struct.Wf concurrency.stmOptions.
 Proof. apply _. Qed.
 
 Global Instance settable_stmOptions : Settable stmOptions.t :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
-#[local] Transparent concurrency.stmOptions.
-#[local] Typeclasses Transparent concurrency.stmOptions.
 Global Instance into_val_stmOptions : IntoVal stmOptions.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmOptions [
@@ -675,13 +682,14 @@ End stmResponse.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance stmResponse_ty_wf : struct.Wf concurrency.stmResponse.
+#[local] Transparent concurrency.stmResponse.
+#[local] Typeclasses Transparent concurrency.stmResponse.
+
+Global Instance stmResponse_wf : struct.Wf concurrency.stmResponse.
 Proof. apply _. Qed.
 
 Global Instance settable_stmResponse : Settable stmResponse.t :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
-#[local] Transparent concurrency.stmResponse.
-#[local] Typeclasses Transparent concurrency.stmResponse.
 Global Instance into_val_stmResponse : IntoVal stmResponse.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmResponse [
@@ -774,13 +782,14 @@ End stm.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance stm_ty_wf : struct.Wf concurrency.stm.
+#[local] Transparent concurrency.stm.
+#[local] Typeclasses Transparent concurrency.stm.
+
+Global Instance stm_wf : struct.Wf concurrency.stm.
 Proof. apply _. Qed.
 
 Global Instance settable_stm : Settable stm.t :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
-#[local] Transparent concurrency.stm.
-#[local] Typeclasses Transparent concurrency.stm.
 Global Instance into_val_stm : IntoVal stm.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stm [
@@ -875,13 +884,14 @@ End stmPut.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance stmPut_ty_wf : struct.Wf concurrency.stmPut.
+#[local] Transparent concurrency.stmPut.
+#[local] Typeclasses Transparent concurrency.stmPut.
+
+Global Instance stmPut_wf : struct.Wf concurrency.stmPut.
 Proof. apply _. Qed.
 
 Global Instance settable_stmPut : Settable stmPut.t :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
-#[local] Transparent concurrency.stmPut.
-#[local] Typeclasses Transparent concurrency.stmPut.
 Global Instance into_val_stmPut : IntoVal stmPut.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmPut [
@@ -948,13 +958,14 @@ End stmSerializable.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance stmSerializable_ty_wf : struct.Wf concurrency.stmSerializable.
+#[local] Transparent concurrency.stmSerializable.
+#[local] Typeclasses Transparent concurrency.stmSerializable.
+
+Global Instance stmSerializable_wf : struct.Wf concurrency.stmSerializable.
 Proof. apply _. Qed.
 
 Global Instance settable_stmSerializable : Settable stmSerializable.t :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.
-#[local] Transparent concurrency.stmSerializable.
-#[local] Typeclasses Transparent concurrency.stmSerializable.
 Global Instance into_val_stmSerializable : IntoVal stmSerializable.t :=
   {| to_val_def v :=
     struct.val_aux concurrency.stmSerializable [

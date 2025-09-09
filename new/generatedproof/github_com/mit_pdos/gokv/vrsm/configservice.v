@@ -32,13 +32,14 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Clerk_ty_wf : struct.Wf configservice.Clerk.
+#[local] Transparent configservice.Clerk.
+#[local] Typeclasses Transparent configservice.Clerk.
+
+Global Instance Clerk_wf : struct.Wf configservice.Clerk.
 Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.mu'; Clerk.cls'; Clerk.leader' >.
-#[local] Transparent configservice.Clerk.
-#[local] Typeclasses Transparent configservice.Clerk.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
     struct.val_aux configservice.Clerk [
@@ -115,13 +116,14 @@ End state.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance state_ty_wf : struct.Wf configservice.state.
+#[local] Transparent configservice.state.
+#[local] Typeclasses Transparent configservice.state.
+
+Global Instance state_wf : struct.Wf configservice.state.
 Proof. apply _. Qed.
 
 Global Instance settable_state : Settable state.t :=
   settable! state.mk < state.epoch'; state.reservedEpoch'; state.leaseExpiration'; state.wantLeaseToExpire'; state.config' >.
-#[local] Transparent configservice.state.
-#[local] Typeclasses Transparent configservice.state.
 Global Instance into_val_state : IntoVal state.t :=
   {| to_val_def v :=
     struct.val_aux configservice.state [
@@ -208,13 +210,14 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Server_ty_wf : struct.Wf configservice.Server.
+#[local] Transparent configservice.Server.
+#[local] Typeclasses Transparent configservice.Server.
+
+Global Instance Server_wf : struct.Wf configservice.Server.
 Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.s' >.
-#[local] Transparent configservice.Server.
-#[local] Typeclasses Transparent configservice.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux configservice.Server [

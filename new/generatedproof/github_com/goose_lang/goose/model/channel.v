@@ -52,13 +52,14 @@ Arguments Channel.t {_} T' {_ T _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-Global Instance Channel_ty_wf : struct.Wf (Channel.ty T).
+#[local] Transparent channel.Channel.
+#[local] Typeclasses Transparent channel.Channel.
+
+Global Instance Channel_wf : struct.Wf (Channel.ty T).
 Proof. apply _. Qed.
 
 Global Instance settable_Channel : Settable (Channel.t T') :=
   settable! (Channel.mk (T:=T)) < Channel.lock'; Channel.state'; Channel.buffer'; Channel.cap'; Channel.v' >.
-#[local] Transparent channel.Channel.
-#[local] Typeclasses Transparent channel.Channel.
 Global Instance into_val_Channel : IntoVal (Channel.t T') :=
   {| to_val_def v :=
     struct.val_aux (Channel.ty T) [
@@ -180,13 +181,14 @@ Arguments SelectCase.t {_} T' {_ T _} .
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-Global Instance SelectCase_ty_wf : struct.Wf (SelectCase.ty T).
+#[local] Transparent channel.SelectCase.
+#[local] Typeclasses Transparent channel.SelectCase.
+
+Global Instance SelectCase_wf : struct.Wf (SelectCase.ty T).
 Proof. apply _. Qed.
 
 Global Instance settable_SelectCase : Settable (SelectCase.t T') :=
   settable! (SelectCase.mk (T:=T)) < SelectCase.channel'; SelectCase.dir'; SelectCase.Value'; SelectCase.Ok' >.
-#[local] Transparent channel.SelectCase.
-#[local] Typeclasses Transparent channel.SelectCase.
 Global Instance into_val_SelectCase : IntoVal (SelectCase.t T') :=
   {| to_val_def v :=
     struct.val_aux (SelectCase.ty T) [

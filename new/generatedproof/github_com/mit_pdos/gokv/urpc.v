@@ -26,13 +26,14 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Server_ty_wf : struct.Wf urpc.Server.
+#[local] Transparent urpc.Server.
+#[local] Typeclasses Transparent urpc.Server.
+
+Global Instance Server_wf : struct.Wf urpc.Server.
 Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.handlers' >.
-#[local] Transparent urpc.Server.
-#[local] Typeclasses Transparent urpc.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux urpc.Server [
@@ -93,13 +94,14 @@ End Callback.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Callback_ty_wf : struct.Wf urpc.Callback.
+#[local] Transparent urpc.Callback.
+#[local] Typeclasses Transparent urpc.Callback.
+
+Global Instance Callback_wf : struct.Wf urpc.Callback.
 Proof. apply _. Qed.
 
 Global Instance settable_Callback : Settable Callback.t :=
   settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
-#[local] Transparent urpc.Callback.
-#[local] Typeclasses Transparent urpc.Callback.
 Global Instance into_val_Callback : IntoVal Callback.t :=
   {| to_val_def v :=
     struct.val_aux urpc.Callback [
@@ -175,13 +177,14 @@ End Client.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Client_ty_wf : struct.Wf urpc.Client.
+#[local] Transparent urpc.Client.
+#[local] Typeclasses Transparent urpc.Client.
+
+Global Instance Client_wf : struct.Wf urpc.Client.
 Proof. apply _. Qed.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.
-#[local] Transparent urpc.Client.
-#[local] Typeclasses Transparent urpc.Client.
 Global Instance into_val_Client : IntoVal Client.t :=
   {| to_val_def v :=
     struct.val_aux urpc.Client [

@@ -29,13 +29,14 @@ End Log.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Log_ty_wf : struct.Wf obj.Log.
+#[local] Transparent obj.Log.
+#[local] Typeclasses Transparent obj.Log.
+
+Global Instance Log_wf : struct.Wf obj.Log.
 Proof. apply _. Qed.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.mu'; Log.log'; Log.pos' >.
-#[local] Transparent obj.Log.
-#[local] Typeclasses Transparent obj.Log.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=
     struct.val_aux obj.Log [

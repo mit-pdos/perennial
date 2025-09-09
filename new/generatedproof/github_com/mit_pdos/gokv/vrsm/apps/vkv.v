@@ -27,13 +27,14 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Clerk_ty_wf : struct.Wf vkv.Clerk.
+#[local] Transparent vkv.Clerk.
+#[local] Typeclasses Transparent vkv.Clerk.
+
+Global Instance Clerk_wf : struct.Wf vkv.Clerk.
 Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
-#[local] Transparent vkv.Clerk.
-#[local] Typeclasses Transparent vkv.Clerk.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
     struct.val_aux vkv.Clerk [
@@ -94,13 +95,14 @@ End ClerkPool.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance ClerkPool_ty_wf : struct.Wf vkv.ClerkPool.
+#[local] Transparent vkv.ClerkPool.
+#[local] Typeclasses Transparent vkv.ClerkPool.
+
+Global Instance ClerkPool_wf : struct.Wf vkv.ClerkPool.
 Proof. apply _. Qed.
 
 Global Instance settable_ClerkPool : Settable ClerkPool.t :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
-#[local] Transparent vkv.ClerkPool.
-#[local] Typeclasses Transparent vkv.ClerkPool.
 Global Instance into_val_ClerkPool : IntoVal ClerkPool.t :=
   {| to_val_def v :=
     struct.val_aux vkv.ClerkPool [
@@ -175,13 +177,14 @@ End KVState.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance KVState_ty_wf : struct.Wf vkv.KVState.
+#[local] Transparent vkv.KVState.
+#[local] Typeclasses Transparent vkv.KVState.
+
+Global Instance KVState_wf : struct.Wf vkv.KVState.
 Proof. apply _. Qed.
 
 Global Instance settable_KVState : Settable KVState.t :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.
-#[local] Transparent vkv.KVState.
-#[local] Typeclasses Transparent vkv.KVState.
 Global Instance into_val_KVState : IntoVal KVState.t :=
   {| to_val_def v :=
     struct.val_aux vkv.KVState [
@@ -255,13 +258,14 @@ End PutArgs.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance PutArgs_ty_wf : struct.Wf vkv.PutArgs.
+#[local] Transparent vkv.PutArgs.
+#[local] Typeclasses Transparent vkv.PutArgs.
+
+Global Instance PutArgs_wf : struct.Wf vkv.PutArgs.
 Proof. apply _. Qed.
 
 Global Instance settable_PutArgs : Settable PutArgs.t :=
   settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
-#[local] Transparent vkv.PutArgs.
-#[local] Typeclasses Transparent vkv.PutArgs.
 Global Instance into_val_PutArgs : IntoVal PutArgs.t :=
   {| to_val_def v :=
     struct.val_aux vkv.PutArgs [
@@ -340,13 +344,14 @@ End CondPutArgs.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance CondPutArgs_ty_wf : struct.Wf vkv.CondPutArgs.
+#[local] Transparent vkv.CondPutArgs.
+#[local] Typeclasses Transparent vkv.CondPutArgs.
+
+Global Instance CondPutArgs_wf : struct.Wf vkv.CondPutArgs.
 Proof. apply _. Qed.
 
 Global Instance settable_CondPutArgs : Settable CondPutArgs.t :=
   settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.
-#[local] Transparent vkv.CondPutArgs.
-#[local] Typeclasses Transparent vkv.CondPutArgs.
 Global Instance into_val_CondPutArgs : IntoVal CondPutArgs.t :=
   {| to_val_def v :=
     struct.val_aux vkv.CondPutArgs [

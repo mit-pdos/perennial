@@ -36,13 +36,14 @@ End VrfSig.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance VrfSig_ty_wf : struct.Wf ktcore.VrfSig.
+#[local] Transparent ktcore.VrfSig.
+#[local] Typeclasses Transparent ktcore.VrfSig.
+
+Global Instance VrfSig_wf : struct.Wf ktcore.VrfSig.
 Proof. apply _. Qed.
 
 Global Instance settable_VrfSig : Settable VrfSig.t :=
   settable! VrfSig.mk < VrfSig.SigTag'; VrfSig.VrfPk' >.
-#[local] Transparent ktcore.VrfSig.
-#[local] Typeclasses Transparent ktcore.VrfSig.
 Global Instance into_val_VrfSig : IntoVal VrfSig.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.VrfSig [
@@ -110,13 +111,14 @@ End LinkSig.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance LinkSig_ty_wf : struct.Wf ktcore.LinkSig.
+#[local] Transparent ktcore.LinkSig.
+#[local] Typeclasses Transparent ktcore.LinkSig.
+
+Global Instance LinkSig_wf : struct.Wf ktcore.LinkSig.
 Proof. apply _. Qed.
 
 Global Instance settable_LinkSig : Settable LinkSig.t :=
   settable! LinkSig.mk < LinkSig.SigTag'; LinkSig.Epoch'; LinkSig.Link' >.
-#[local] Transparent ktcore.LinkSig.
-#[local] Typeclasses Transparent ktcore.LinkSig.
 Global Instance into_val_LinkSig : IntoVal LinkSig.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.LinkSig [
@@ -190,13 +192,14 @@ End MapLabel.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance MapLabel_ty_wf : struct.Wf ktcore.MapLabel.
+#[local] Transparent ktcore.MapLabel.
+#[local] Typeclasses Transparent ktcore.MapLabel.
+
+Global Instance MapLabel_wf : struct.Wf ktcore.MapLabel.
 Proof. apply _. Qed.
 
 Global Instance settable_MapLabel : Settable MapLabel.t :=
   settable! MapLabel.mk < MapLabel.Uid'; MapLabel.Ver' >.
-#[local] Transparent ktcore.MapLabel.
-#[local] Typeclasses Transparent ktcore.MapLabel.
 Global Instance into_val_MapLabel : IntoVal MapLabel.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.MapLabel [
@@ -263,13 +266,14 @@ End CommitOpen.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance CommitOpen_ty_wf : struct.Wf ktcore.CommitOpen.
+#[local] Transparent ktcore.CommitOpen.
+#[local] Typeclasses Transparent ktcore.CommitOpen.
+
+Global Instance CommitOpen_wf : struct.Wf ktcore.CommitOpen.
 Proof. apply _. Qed.
 
 Global Instance settable_CommitOpen : Settable CommitOpen.t :=
   settable! CommitOpen.mk < CommitOpen.Val'; CommitOpen.Rand' >.
-#[local] Transparent ktcore.CommitOpen.
-#[local] Typeclasses Transparent ktcore.CommitOpen.
 Global Instance into_val_CommitOpen : IntoVal CommitOpen.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.CommitOpen [
@@ -337,13 +341,14 @@ End Memb.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Memb_ty_wf : struct.Wf ktcore.Memb.
+#[local] Transparent ktcore.Memb.
+#[local] Typeclasses Transparent ktcore.Memb.
+
+Global Instance Memb_wf : struct.Wf ktcore.Memb.
 Proof. apply _. Qed.
 
 Global Instance settable_Memb : Settable Memb.t :=
   settable! Memb.mk < Memb.LabelProof'; Memb.PkOpen'; Memb.MerkleProof' >.
-#[local] Transparent ktcore.Memb.
-#[local] Typeclasses Transparent ktcore.Memb.
 Global Instance into_val_Memb : IntoVal Memb.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.Memb [
@@ -417,13 +422,14 @@ End NonMemb.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance NonMemb_ty_wf : struct.Wf ktcore.NonMemb.
+#[local] Transparent ktcore.NonMemb.
+#[local] Typeclasses Transparent ktcore.NonMemb.
+
+Global Instance NonMemb_wf : struct.Wf ktcore.NonMemb.
 Proof. apply _. Qed.
 
 Global Instance settable_NonMemb : Settable NonMemb.t :=
   settable! NonMemb.mk < NonMemb.LabelProof'; NonMemb.MerkleProof' >.
-#[local] Transparent ktcore.NonMemb.
-#[local] Typeclasses Transparent ktcore.NonMemb.
 Global Instance into_val_NonMemb : IntoVal NonMemb.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.NonMemb [
@@ -490,13 +496,14 @@ End AuditProof.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance AuditProof_ty_wf : struct.Wf ktcore.AuditProof.
+#[local] Transparent ktcore.AuditProof.
+#[local] Typeclasses Transparent ktcore.AuditProof.
+
+Global Instance AuditProof_wf : struct.Wf ktcore.AuditProof.
 Proof. apply _. Qed.
 
 Global Instance settable_AuditProof : Settable AuditProof.t :=
   settable! AuditProof.mk < AuditProof.Updates'; AuditProof.LinkSig' >.
-#[local] Transparent ktcore.AuditProof.
-#[local] Typeclasses Transparent ktcore.AuditProof.
 Global Instance into_val_AuditProof : IntoVal AuditProof.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.AuditProof [
@@ -564,13 +571,14 @@ End UpdateProof.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance UpdateProof_ty_wf : struct.Wf ktcore.UpdateProof.
+#[local] Transparent ktcore.UpdateProof.
+#[local] Typeclasses Transparent ktcore.UpdateProof.
+
+Global Instance UpdateProof_wf : struct.Wf ktcore.UpdateProof.
 Proof. apply _. Qed.
 
 Global Instance settable_UpdateProof : Settable UpdateProof.t :=
   settable! UpdateProof.mk < UpdateProof.MapLabel'; UpdateProof.MapVal'; UpdateProof.NonMembProof' >.
-#[local] Transparent ktcore.UpdateProof.
-#[local] Typeclasses Transparent ktcore.UpdateProof.
 Global Instance into_val_UpdateProof : IntoVal UpdateProof.t :=
   {| to_val_def v :=
     struct.val_aux ktcore.UpdateProof [

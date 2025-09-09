@@ -51,13 +51,14 @@ End consistentIndex.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance consistentIndex_ty_wf : struct.Wf cindex.consistentIndex.
+#[local] Transparent cindex.consistentIndex.
+#[local] Typeclasses Transparent cindex.consistentIndex.
+
+Global Instance consistentIndex_wf : struct.Wf cindex.consistentIndex.
 Proof. apply _. Qed.
 
 Global Instance settable_consistentIndex : Settable consistentIndex.t :=
   settable! consistentIndex.mk < consistentIndex.consistentIndex'; consistentIndex.term'; consistentIndex.applyingIndex'; consistentIndex.applyingTerm'; consistentIndex.be'; consistentIndex.mutex' >.
-#[local] Transparent cindex.consistentIndex.
-#[local] Typeclasses Transparent cindex.consistentIndex.
 Global Instance into_val_consistentIndex : IntoVal consistentIndex.t :=
   {| to_val_def v :=
     struct.val_aux cindex.consistentIndex [
@@ -152,13 +153,14 @@ End fakeConsistentIndex.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance fakeConsistentIndex_ty_wf : struct.Wf cindex.fakeConsistentIndex.
+#[local] Transparent cindex.fakeConsistentIndex.
+#[local] Typeclasses Transparent cindex.fakeConsistentIndex.
+
+Global Instance fakeConsistentIndex_wf : struct.Wf cindex.fakeConsistentIndex.
 Proof. apply _. Qed.
 
 Global Instance settable_fakeConsistentIndex : Settable fakeConsistentIndex.t :=
   settable! fakeConsistentIndex.mk < fakeConsistentIndex.index'; fakeConsistentIndex.term' >.
-#[local] Transparent cindex.fakeConsistentIndex.
-#[local] Typeclasses Transparent cindex.fakeConsistentIndex.
 Global Instance into_val_fakeConsistentIndex : IntoVal fakeConsistentIndex.t :=
   {| to_val_def v :=
     struct.val_aux cindex.fakeConsistentIndex [

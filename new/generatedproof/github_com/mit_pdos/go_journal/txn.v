@@ -27,13 +27,14 @@ End Log.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Log_ty_wf : struct.Wf txn.Log.
+#[local] Transparent txn.Log.
+#[local] Typeclasses Transparent txn.Log.
+
+Global Instance Log_wf : struct.Wf txn.Log.
 Proof. apply _. Qed.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.log'; Log.locks' >.
-#[local] Transparent txn.Log.
-#[local] Typeclasses Transparent txn.Log.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=
     struct.val_aux txn.Log [
@@ -101,13 +102,14 @@ End Txn.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Txn_ty_wf : struct.Wf txn.Txn.
+#[local] Transparent txn.Txn.
+#[local] Typeclasses Transparent txn.Txn.
+
+Global Instance Txn_wf : struct.Wf txn.Txn.
 Proof. apply _. Qed.
 
 Global Instance settable_Txn : Settable Txn.t :=
   settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.
-#[local] Transparent txn.Txn.
-#[local] Typeclasses Transparent txn.Txn.
 Global Instance into_val_Txn : IntoVal Txn.t :=
   {| to_val_def v :=
     struct.val_aux txn.Txn [

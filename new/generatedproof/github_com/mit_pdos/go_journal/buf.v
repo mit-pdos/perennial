@@ -28,13 +28,14 @@ End Buf.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Buf_ty_wf : struct.Wf buf.Buf.
+#[local] Transparent buf.Buf.
+#[local] Typeclasses Transparent buf.Buf.
+
+Global Instance Buf_wf : struct.Wf buf.Buf.
 Proof. apply _. Qed.
 
 Global Instance settable_Buf : Settable Buf.t :=
   settable! Buf.mk < Buf.Addr'; Buf.Sz'; Buf.Data'; Buf.dirty' >.
-#[local] Transparent buf.Buf.
-#[local] Typeclasses Transparent buf.Buf.
 Global Instance into_val_Buf : IntoVal Buf.t :=
   {| to_val_def v :=
     struct.val_aux buf.Buf [
@@ -114,13 +115,14 @@ End BufMap.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance BufMap_ty_wf : struct.Wf buf.BufMap.
+#[local] Transparent buf.BufMap.
+#[local] Typeclasses Transparent buf.BufMap.
+
+Global Instance BufMap_wf : struct.Wf buf.BufMap.
 Proof. apply _. Qed.
 
 Global Instance settable_BufMap : Settable BufMap.t :=
   settable! BufMap.mk < BufMap.addrs' >.
-#[local] Transparent buf.BufMap.
-#[local] Typeclasses Transparent buf.BufMap.
 Global Instance into_val_BufMap : IntoVal BufMap.t :=
   {| to_val_def v :=
     struct.val_aux buf.BufMap [

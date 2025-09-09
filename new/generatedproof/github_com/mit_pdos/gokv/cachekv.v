@@ -25,13 +25,14 @@ End cacheValue.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance cacheValue_ty_wf : struct.Wf cachekv.cacheValue.
+#[local] Transparent cachekv.cacheValue.
+#[local] Typeclasses Transparent cachekv.cacheValue.
+
+Global Instance cacheValue_wf : struct.Wf cachekv.cacheValue.
 Proof. apply _. Qed.
 
 Global Instance settable_cacheValue : Settable cacheValue.t :=
   settable! cacheValue.mk < cacheValue.v'; cacheValue.l' >.
-#[local] Transparent cachekv.cacheValue.
-#[local] Typeclasses Transparent cachekv.cacheValue.
 Global Instance into_val_cacheValue : IntoVal cacheValue.t :=
   {| to_val_def v :=
     struct.val_aux cachekv.cacheValue [
@@ -99,13 +100,14 @@ End CacheKv.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance CacheKv_ty_wf : struct.Wf cachekv.CacheKv.
+#[local] Transparent cachekv.CacheKv.
+#[local] Typeclasses Transparent cachekv.CacheKv.
+
+Global Instance CacheKv_wf : struct.Wf cachekv.CacheKv.
 Proof. apply _. Qed.
 
 Global Instance settable_CacheKv : Settable CacheKv.t :=
   settable! CacheKv.mk < CacheKv.kv'; CacheKv.mu'; CacheKv.cache' >.
-#[local] Transparent cachekv.CacheKv.
-#[local] Typeclasses Transparent cachekv.CacheKv.
 Global Instance into_val_CacheKv : IntoVal CacheKv.t :=
   {| to_val_def v :=
     struct.val_aux cachekv.CacheKv [

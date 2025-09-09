@@ -33,13 +33,14 @@ End list'.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance list'_ty_wf : struct.Wf wait.list'.
+#[local] Transparent wait.list'.
+#[local] Typeclasses Transparent wait.list'.
+
+Global Instance list'_wf : struct.Wf wait.list'.
 Proof. apply _. Qed.
 
 Global Instance settable_list' : Settable list'.t :=
   settable! list'.mk < list'.e' >.
-#[local] Transparent wait.list'.
-#[local] Typeclasses Transparent wait.list'.
 Global Instance into_val_list' : IntoVal list'.t :=
   {| to_val_def v :=
     struct.val_aux wait.list' [
@@ -99,13 +100,14 @@ End listElement.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance listElement_ty_wf : struct.Wf wait.listElement.
+#[local] Transparent wait.listElement.
+#[local] Typeclasses Transparent wait.listElement.
+
+Global Instance listElement_wf : struct.Wf wait.listElement.
 Proof. apply _. Qed.
 
 Global Instance settable_listElement : Settable listElement.t :=
   settable! listElement.mk < listElement.l'; listElement.m' >.
-#[local] Transparent wait.listElement.
-#[local] Typeclasses Transparent wait.listElement.
 Global Instance into_val_listElement : IntoVal listElement.t :=
   {| to_val_def v :=
     struct.val_aux wait.listElement [
@@ -171,13 +173,14 @@ End waitWithResponse.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance waitWithResponse_ty_wf : struct.Wf wait.waitWithResponse.
+#[local] Transparent wait.waitWithResponse.
+#[local] Typeclasses Transparent wait.waitWithResponse.
+
+Global Instance waitWithResponse_wf : struct.Wf wait.waitWithResponse.
 Proof. apply _. Qed.
 
 Global Instance settable_waitWithResponse : Settable waitWithResponse.t :=
   settable! waitWithResponse.mk < waitWithResponse.ch' >.
-#[local] Transparent wait.waitWithResponse.
-#[local] Typeclasses Transparent wait.waitWithResponse.
 Global Instance into_val_waitWithResponse : IntoVal waitWithResponse.t :=
   {| to_val_def v :=
     struct.val_aux wait.waitWithResponse [
@@ -249,13 +252,14 @@ End timeList.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance timeList_ty_wf : struct.Wf wait.timeList.
+#[local] Transparent wait.timeList.
+#[local] Typeclasses Transparent wait.timeList.
+
+Global Instance timeList_wf : struct.Wf wait.timeList.
 Proof. apply _. Qed.
 
 Global Instance settable_timeList : Settable timeList.t :=
   settable! timeList.mk < timeList.l'; timeList.lastTriggerDeadline'; timeList.m' >.
-#[local] Transparent wait.timeList.
-#[local] Typeclasses Transparent wait.timeList.
 Global Instance into_val_timeList : IntoVal timeList.t :=
   {| to_val_def v :=
     struct.val_aux wait.timeList [

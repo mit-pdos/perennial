@@ -78,13 +78,14 @@ End Entry.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Entry_ty_wf : struct.Wf raftpb.Entry.
+#[local] Transparent raftpb.Entry.
+#[local] Typeclasses Transparent raftpb.Entry.
+
+Global Instance Entry_wf : struct.Wf raftpb.Entry.
 Proof. apply _. Qed.
 
 Global Instance settable_Entry : Settable Entry.t :=
   settable! Entry.mk < Entry.Term'; Entry.Index'; Entry.Type'; Entry.Data' >.
-#[local] Transparent raftpb.Entry.
-#[local] Typeclasses Transparent raftpb.Entry.
 Global Instance into_val_Entry : IntoVal Entry.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.Entry [
@@ -168,13 +169,14 @@ End ConfState.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance ConfState_ty_wf : struct.Wf raftpb.ConfState.
+#[local] Transparent raftpb.ConfState.
+#[local] Typeclasses Transparent raftpb.ConfState.
+
+Global Instance ConfState_wf : struct.Wf raftpb.ConfState.
 Proof. apply _. Qed.
 
 Global Instance settable_ConfState : Settable ConfState.t :=
   settable! ConfState.mk < ConfState.Voters'; ConfState.Learners'; ConfState.VotersOutgoing'; ConfState.LearnersNext'; ConfState.AutoLeave' >.
-#[local] Transparent raftpb.ConfState.
-#[local] Typeclasses Transparent raftpb.ConfState.
 Global Instance into_val_ConfState : IntoVal ConfState.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.ConfState [
@@ -263,13 +265,14 @@ End SnapshotMetadata.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance SnapshotMetadata_ty_wf : struct.Wf raftpb.SnapshotMetadata.
+#[local] Transparent raftpb.SnapshotMetadata.
+#[local] Typeclasses Transparent raftpb.SnapshotMetadata.
+
+Global Instance SnapshotMetadata_wf : struct.Wf raftpb.SnapshotMetadata.
 Proof. apply _. Qed.
 
 Global Instance settable_SnapshotMetadata : Settable SnapshotMetadata.t :=
   settable! SnapshotMetadata.mk < SnapshotMetadata.ConfState'; SnapshotMetadata.Index'; SnapshotMetadata.Term' >.
-#[local] Transparent raftpb.SnapshotMetadata.
-#[local] Typeclasses Transparent raftpb.SnapshotMetadata.
 Global Instance into_val_SnapshotMetadata : IntoVal SnapshotMetadata.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.SnapshotMetadata [
@@ -343,13 +346,14 @@ End Snapshot.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Snapshot_ty_wf : struct.Wf raftpb.Snapshot.
+#[local] Transparent raftpb.Snapshot.
+#[local] Typeclasses Transparent raftpb.Snapshot.
+
+Global Instance Snapshot_wf : struct.Wf raftpb.Snapshot.
 Proof. apply _. Qed.
 
 Global Instance settable_Snapshot : Settable Snapshot.t :=
   settable! Snapshot.mk < Snapshot.Data'; Snapshot.Metadata' >.
-#[local] Transparent raftpb.Snapshot.
-#[local] Typeclasses Transparent raftpb.Snapshot.
 Global Instance into_val_Snapshot : IntoVal Snapshot.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.Snapshot [
@@ -428,13 +432,14 @@ End Message.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Message_ty_wf : struct.Wf raftpb.Message.
+#[local] Transparent raftpb.Message.
+#[local] Typeclasses Transparent raftpb.Message.
+
+Global Instance Message_wf : struct.Wf raftpb.Message.
 Proof. apply _. Qed.
 
 Global Instance settable_Message : Settable Message.t :=
   settable! Message.mk < Message.Type'; Message.To'; Message.From'; Message.Term'; Message.LogTerm'; Message.Index'; Message.Entries'; Message.Commit'; Message.Vote'; Message.Snapshot'; Message.Reject'; Message.RejectHint'; Message.Context'; Message.Responses' >.
-#[local] Transparent raftpb.Message.
-#[local] Typeclasses Transparent raftpb.Message.
 Global Instance into_val_Message : IntoVal Message.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.Message [
@@ -586,13 +591,14 @@ End HardState.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance HardState_ty_wf : struct.Wf raftpb.HardState.
+#[local] Transparent raftpb.HardState.
+#[local] Typeclasses Transparent raftpb.HardState.
+
+Global Instance HardState_wf : struct.Wf raftpb.HardState.
 Proof. apply _. Qed.
 
 Global Instance settable_HardState : Settable HardState.t :=
   settable! HardState.mk < HardState.Term'; HardState.Vote'; HardState.Commit' >.
-#[local] Transparent raftpb.HardState.
-#[local] Typeclasses Transparent raftpb.HardState.
 Global Instance into_val_HardState : IntoVal HardState.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.HardState [
@@ -668,13 +674,14 @@ End ConfChange.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance ConfChange_ty_wf : struct.Wf raftpb.ConfChange.
+#[local] Transparent raftpb.ConfChange.
+#[local] Typeclasses Transparent raftpb.ConfChange.
+
+Global Instance ConfChange_wf : struct.Wf raftpb.ConfChange.
 Proof. apply _. Qed.
 
 Global Instance settable_ConfChange : Settable ConfChange.t :=
   settable! ConfChange.mk < ConfChange.Type'; ConfChange.NodeID'; ConfChange.Context'; ConfChange.ID' >.
-#[local] Transparent raftpb.ConfChange.
-#[local] Typeclasses Transparent raftpb.ConfChange.
 Global Instance into_val_ConfChange : IntoVal ConfChange.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.ConfChange [
@@ -773,13 +780,14 @@ End ConfChangeV2.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance ConfChangeV2_ty_wf : struct.Wf raftpb.ConfChangeV2.
+#[local] Transparent raftpb.ConfChangeV2.
+#[local] Typeclasses Transparent raftpb.ConfChangeV2.
+
+Global Instance ConfChangeV2_wf : struct.Wf raftpb.ConfChangeV2.
 Proof. apply _. Qed.
 
 Global Instance settable_ConfChangeV2 : Settable ConfChangeV2.t :=
   settable! ConfChangeV2.mk < ConfChangeV2.Transition'; ConfChangeV2.Changes'; ConfChangeV2.Context' >.
-#[local] Transparent raftpb.ConfChangeV2.
-#[local] Typeclasses Transparent raftpb.ConfChangeV2.
 Global Instance into_val_ConfChangeV2 : IntoVal ConfChangeV2.t :=
   {| to_val_def v :=
     struct.val_aux raftpb.ConfChangeV2 [

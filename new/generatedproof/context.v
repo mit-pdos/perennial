@@ -35,11 +35,12 @@ End deadlineExceededError.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance deadlineExceededError_ty_wf : struct.Wf context.deadlineExceededError.
-Proof. apply _. Qed.
-
 #[local] Transparent context.deadlineExceededError.
 #[local] Typeclasses Transparent context.deadlineExceededError.
+
+Global Instance deadlineExceededError_wf : struct.Wf context.deadlineExceededError.
+Proof. apply _. Qed.
+
 Global Instance into_val_deadlineExceededError : IntoVal deadlineExceededError.t :=
   {| to_val_def v :=
     struct.val_aux context.deadlineExceededError [
@@ -77,11 +78,12 @@ End emptyCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance emptyCtx_ty_wf : struct.Wf context.emptyCtx.
-Proof. apply _. Qed.
-
 #[local] Transparent context.emptyCtx.
 #[local] Typeclasses Transparent context.emptyCtx.
+
+Global Instance emptyCtx_wf : struct.Wf context.emptyCtx.
+Proof. apply _. Qed.
+
 Global Instance into_val_emptyCtx : IntoVal emptyCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.emptyCtx [
@@ -120,13 +122,14 @@ End backgroundCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance backgroundCtx_ty_wf : struct.Wf context.backgroundCtx.
+#[local] Transparent context.backgroundCtx.
+#[local] Typeclasses Transparent context.backgroundCtx.
+
+Global Instance backgroundCtx_wf : struct.Wf context.backgroundCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_backgroundCtx : Settable backgroundCtx.t :=
   settable! backgroundCtx.mk < backgroundCtx.emptyCtx' >.
-#[local] Transparent context.backgroundCtx.
-#[local] Typeclasses Transparent context.backgroundCtx.
 Global Instance into_val_backgroundCtx : IntoVal backgroundCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.backgroundCtx [
@@ -185,13 +188,14 @@ End todoCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance todoCtx_ty_wf : struct.Wf context.todoCtx.
+#[local] Transparent context.todoCtx.
+#[local] Typeclasses Transparent context.todoCtx.
+
+Global Instance todoCtx_wf : struct.Wf context.todoCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_todoCtx : Settable todoCtx.t :=
   settable! todoCtx.mk < todoCtx.emptyCtx' >.
-#[local] Transparent context.todoCtx.
-#[local] Typeclasses Transparent context.todoCtx.
 Global Instance into_val_todoCtx : IntoVal todoCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.todoCtx [
@@ -288,13 +292,14 @@ End cancelCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance cancelCtx_ty_wf : struct.Wf context.cancelCtx.
+#[local] Transparent context.cancelCtx.
+#[local] Typeclasses Transparent context.cancelCtx.
+
+Global Instance cancelCtx_wf : struct.Wf context.cancelCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_cancelCtx : Settable cancelCtx.t :=
   settable! cancelCtx.mk < cancelCtx.Context'; cancelCtx.mu'; cancelCtx.done'; cancelCtx.children'; cancelCtx.err'; cancelCtx.cause' >.
-#[local] Transparent context.cancelCtx.
-#[local] Typeclasses Transparent context.cancelCtx.
 Global Instance into_val_cancelCtx : IntoVal cancelCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.cancelCtx [
@@ -390,13 +395,14 @@ End afterFuncCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance afterFuncCtx_ty_wf : struct.Wf context.afterFuncCtx.
+#[local] Transparent context.afterFuncCtx.
+#[local] Typeclasses Transparent context.afterFuncCtx.
+
+Global Instance afterFuncCtx_wf : struct.Wf context.afterFuncCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_afterFuncCtx : Settable afterFuncCtx.t :=
   settable! afterFuncCtx.mk < afterFuncCtx.cancelCtx'; afterFuncCtx.once'; afterFuncCtx.f' >.
-#[local] Transparent context.afterFuncCtx.
-#[local] Typeclasses Transparent context.afterFuncCtx.
 Global Instance into_val_afterFuncCtx : IntoVal afterFuncCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.afterFuncCtx [
@@ -470,13 +476,14 @@ End stopCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance stopCtx_ty_wf : struct.Wf context.stopCtx.
+#[local] Transparent context.stopCtx.
+#[local] Typeclasses Transparent context.stopCtx.
+
+Global Instance stopCtx_wf : struct.Wf context.stopCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_stopCtx : Settable stopCtx.t :=
   settable! stopCtx.mk < stopCtx.Context'; stopCtx.stop' >.
-#[local] Transparent context.stopCtx.
-#[local] Typeclasses Transparent context.stopCtx.
 Global Instance into_val_stopCtx : IntoVal stopCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.stopCtx [
@@ -564,13 +571,14 @@ End withoutCancelCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance withoutCancelCtx_ty_wf : struct.Wf context.withoutCancelCtx.
+#[local] Transparent context.withoutCancelCtx.
+#[local] Typeclasses Transparent context.withoutCancelCtx.
+
+Global Instance withoutCancelCtx_wf : struct.Wf context.withoutCancelCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_withoutCancelCtx : Settable withoutCancelCtx.t :=
   settable! withoutCancelCtx.mk < withoutCancelCtx.c' >.
-#[local] Transparent context.withoutCancelCtx.
-#[local] Typeclasses Transparent context.withoutCancelCtx.
 Global Instance into_val_withoutCancelCtx : IntoVal withoutCancelCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.withoutCancelCtx [
@@ -631,13 +639,14 @@ End timerCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance timerCtx_ty_wf : struct.Wf context.timerCtx.
+#[local] Transparent context.timerCtx.
+#[local] Typeclasses Transparent context.timerCtx.
+
+Global Instance timerCtx_wf : struct.Wf context.timerCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_timerCtx : Settable timerCtx.t :=
   settable! timerCtx.mk < timerCtx.cancelCtx'; timerCtx.timer'; timerCtx.deadline' >.
-#[local] Transparent context.timerCtx.
-#[local] Typeclasses Transparent context.timerCtx.
 Global Instance into_val_timerCtx : IntoVal timerCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.timerCtx [
@@ -712,13 +721,14 @@ End valueCtx.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance valueCtx_ty_wf : struct.Wf context.valueCtx.
+#[local] Transparent context.valueCtx.
+#[local] Typeclasses Transparent context.valueCtx.
+
+Global Instance valueCtx_wf : struct.Wf context.valueCtx.
 Proof. apply _. Qed.
 
 Global Instance settable_valueCtx : Settable valueCtx.t :=
   settable! valueCtx.mk < valueCtx.Context'; valueCtx.key'; valueCtx.val' >.
-#[local] Transparent context.valueCtx.
-#[local] Typeclasses Transparent context.valueCtx.
 Global Instance into_val_valueCtx : IntoVal valueCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.valueCtx [

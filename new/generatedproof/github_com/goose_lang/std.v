@@ -26,13 +26,14 @@ End JoinHandle.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance JoinHandle_ty_wf : struct.Wf std.JoinHandle.
+#[local] Transparent std.JoinHandle.
+#[local] Typeclasses Transparent std.JoinHandle.
+
+Global Instance JoinHandle_wf : struct.Wf std.JoinHandle.
 Proof. apply _. Qed.
 
 Global Instance settable_JoinHandle : Settable JoinHandle.t :=
   settable! JoinHandle.mk < JoinHandle.mu'; JoinHandle.done'; JoinHandle.cond' >.
-#[local] Transparent std.JoinHandle.
-#[local] Typeclasses Transparent std.JoinHandle.
 Global Instance into_val_JoinHandle : IntoVal JoinHandle.t :=
   {| to_val_def v :=
     struct.val_aux std.JoinHandle [

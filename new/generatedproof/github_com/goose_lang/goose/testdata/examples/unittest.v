@@ -36,11 +36,12 @@ End importantStruct.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance importantStruct_ty_wf : struct.Wf unittest.importantStruct.
-Proof. apply _. Qed.
-
 #[local] Transparent unittest.importantStruct.
 #[local] Typeclasses Transparent unittest.importantStruct.
+
+Global Instance importantStruct_wf : struct.Wf unittest.importantStruct.
+Proof. apply _. Qed.
+
 Global Instance into_val_importantStruct : IntoVal importantStruct.t :=
   {| to_val_def v :=
     struct.val_aux unittest.importantStruct [
@@ -101,13 +102,14 @@ End diskWrapper.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance diskWrapper_ty_wf : struct.Wf unittest.diskWrapper.
+#[local] Transparent unittest.diskWrapper.
+#[local] Typeclasses Transparent unittest.diskWrapper.
+
+Global Instance diskWrapper_wf : struct.Wf unittest.diskWrapper.
 Proof. apply _. Qed.
 
 Global Instance settable_diskWrapper : Settable diskWrapper.t :=
   settable! diskWrapper.mk < diskWrapper.d' >.
-#[local] Transparent unittest.diskWrapper.
-#[local] Typeclasses Transparent unittest.diskWrapper.
 Global Instance into_val_diskWrapper : IntoVal diskWrapper.t :=
   {| to_val_def v :=
     struct.val_aux unittest.diskWrapper [
@@ -166,13 +168,14 @@ End embedA.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance embedA_ty_wf : struct.Wf unittest.embedA.
+#[local] Transparent unittest.embedA.
+#[local] Typeclasses Transparent unittest.embedA.
+
+Global Instance embedA_wf : struct.Wf unittest.embedA.
 Proof. apply _. Qed.
 
 Global Instance settable_embedA : Settable embedA.t :=
   settable! embedA.mk < embedA.a' >.
-#[local] Transparent unittest.embedA.
-#[local] Typeclasses Transparent unittest.embedA.
 Global Instance into_val_embedA : IntoVal embedA.t :=
   {| to_val_def v :=
     struct.val_aux unittest.embedA [
@@ -231,13 +234,14 @@ End embedB.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance embedB_ty_wf : struct.Wf unittest.embedB.
+#[local] Transparent unittest.embedB.
+#[local] Typeclasses Transparent unittest.embedB.
+
+Global Instance embedB_wf : struct.Wf unittest.embedB.
 Proof. apply _. Qed.
 
 Global Instance settable_embedB : Settable embedB.t :=
   settable! embedB.mk < embedB.embedA' >.
-#[local] Transparent unittest.embedB.
-#[local] Typeclasses Transparent unittest.embedB.
 Global Instance into_val_embedB : IntoVal embedB.t :=
   {| to_val_def v :=
     struct.val_aux unittest.embedB [
@@ -296,13 +300,14 @@ End embedC.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance embedC_ty_wf : struct.Wf unittest.embedC.
+#[local] Transparent unittest.embedC.
+#[local] Typeclasses Transparent unittest.embedC.
+
+Global Instance embedC_wf : struct.Wf unittest.embedC.
 Proof. apply _. Qed.
 
 Global Instance settable_embedC : Settable embedC.t :=
   settable! embedC.mk < embedC.embedB' >.
-#[local] Transparent unittest.embedC.
-#[local] Typeclasses Transparent unittest.embedC.
 Global Instance into_val_embedC : IntoVal embedC.t :=
   {| to_val_def v :=
     struct.val_aux unittest.embedC [
@@ -361,13 +366,14 @@ End embedD.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance embedD_ty_wf : struct.Wf unittest.embedD.
+#[local] Transparent unittest.embedD.
+#[local] Typeclasses Transparent unittest.embedD.
+
+Global Instance embedD_wf : struct.Wf unittest.embedD.
 Proof. apply _. Qed.
 
 Global Instance settable_embedD : Settable embedD.t :=
   settable! embedD.mk < embedD.embedC' >.
-#[local] Transparent unittest.embedD.
-#[local] Typeclasses Transparent unittest.embedD.
 Global Instance into_val_embedD : IntoVal embedD.t :=
   {| to_val_def v :=
     struct.val_aux unittest.embedD [
@@ -426,13 +432,14 @@ End Enc.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Enc_ty_wf : struct.Wf unittest.Enc.
+#[local] Transparent unittest.Enc.
+#[local] Typeclasses Transparent unittest.Enc.
+
+Global Instance Enc_wf : struct.Wf unittest.Enc.
 Proof. apply _. Qed.
 
 Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.p' >.
-#[local] Transparent unittest.Enc.
-#[local] Typeclasses Transparent unittest.Enc.
 Global Instance into_val_Enc : IntoVal Enc.t :=
   {| to_val_def v :=
     struct.val_aux unittest.Enc [
@@ -491,13 +498,14 @@ End Dec.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Dec_ty_wf : struct.Wf unittest.Dec.
+#[local] Transparent unittest.Dec.
+#[local] Typeclasses Transparent unittest.Dec.
+
+Global Instance Dec_wf : struct.Wf unittest.Dec.
 Proof. apply _. Qed.
 
 Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.p' >.
-#[local] Transparent unittest.Dec.
-#[local] Typeclasses Transparent unittest.Dec.
 Global Instance into_val_Dec : IntoVal Dec.t :=
   {| to_val_def v :=
     struct.val_aux unittest.Dec [
@@ -589,13 +597,14 @@ End concreteFooer.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance concreteFooer_ty_wf : struct.Wf unittest.concreteFooer.
+#[local] Transparent unittest.concreteFooer.
+#[local] Typeclasses Transparent unittest.concreteFooer.
+
+Global Instance concreteFooer_wf : struct.Wf unittest.concreteFooer.
 Proof. apply _. Qed.
 
 Global Instance settable_concreteFooer : Settable concreteFooer.t :=
   settable! concreteFooer.mk < concreteFooer.a' >.
-#[local] Transparent unittest.concreteFooer.
-#[local] Typeclasses Transparent unittest.concreteFooer.
 Global Instance into_val_concreteFooer : IntoVal concreteFooer.t :=
   {| to_val_def v :=
     struct.val_aux unittest.concreteFooer [
@@ -654,13 +663,14 @@ End FooerUser.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance FooerUser_ty_wf : struct.Wf unittest.FooerUser.
+#[local] Transparent unittest.FooerUser.
+#[local] Typeclasses Transparent unittest.FooerUser.
+
+Global Instance FooerUser_wf : struct.Wf unittest.FooerUser.
 Proof. apply _. Qed.
 
 Global Instance settable_FooerUser : Settable FooerUser.t :=
   settable! FooerUser.mk < FooerUser.f' >.
-#[local] Transparent unittest.FooerUser.
-#[local] Typeclasses Transparent unittest.FooerUser.
 Global Instance into_val_FooerUser : IntoVal FooerUser.t :=
   {| to_val_def v :=
     struct.val_aux unittest.FooerUser [
@@ -729,11 +739,12 @@ End concrete1.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance concrete1_ty_wf : struct.Wf unittest.concrete1.
-Proof. apply _. Qed.
-
 #[local] Transparent unittest.concrete1.
 #[local] Typeclasses Transparent unittest.concrete1.
+
+Global Instance concrete1_wf : struct.Wf unittest.concrete1.
+Proof. apply _. Qed.
+
 Global Instance into_val_concrete1 : IntoVal concrete1.t :=
   {| to_val_def v :=
     struct.val_aux unittest.concrete1 [
@@ -796,13 +807,14 @@ End allTheLiterals.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance allTheLiterals_ty_wf : struct.Wf unittest.allTheLiterals.
+#[local] Transparent unittest.allTheLiterals.
+#[local] Typeclasses Transparent unittest.allTheLiterals.
+
+Global Instance allTheLiterals_wf : struct.Wf unittest.allTheLiterals.
 Proof. apply _. Qed.
 
 Global Instance settable_allTheLiterals : Settable allTheLiterals.t :=
   settable! allTheLiterals.mk < allTheLiterals.int'; allTheLiterals.s'; allTheLiterals.b' >.
-#[local] Transparent unittest.allTheLiterals.
-#[local] Typeclasses Transparent unittest.allTheLiterals.
 Global Instance into_val_allTheLiterals : IntoVal allTheLiterals.t :=
   {| to_val_def v :=
     struct.val_aux unittest.allTheLiterals [
@@ -875,13 +887,14 @@ End hasCondVar.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance hasCondVar_ty_wf : struct.Wf unittest.hasCondVar.
+#[local] Transparent unittest.hasCondVar.
+#[local] Typeclasses Transparent unittest.hasCondVar.
+
+Global Instance hasCondVar_wf : struct.Wf unittest.hasCondVar.
 Proof. apply _. Qed.
 
 Global Instance settable_hasCondVar : Settable hasCondVar.t :=
   settable! hasCondVar.mk < hasCondVar.cond' >.
-#[local] Transparent unittest.hasCondVar.
-#[local] Typeclasses Transparent unittest.hasCondVar.
 Global Instance into_val_hasCondVar : IntoVal hasCondVar.t :=
   {| to_val_def v :=
     struct.val_aux unittest.hasCondVar [
@@ -963,13 +976,14 @@ End mapElem.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance mapElem_ty_wf : struct.Wf unittest.mapElem.
+#[local] Transparent unittest.mapElem.
+#[local] Typeclasses Transparent unittest.mapElem.
+
+Global Instance mapElem_wf : struct.Wf unittest.mapElem.
 Proof. apply _. Qed.
 
 Global Instance settable_mapElem : Settable mapElem.t :=
   settable! mapElem.mk < mapElem.a'; mapElem.b' >.
-#[local] Transparent unittest.mapElem.
-#[local] Typeclasses Transparent unittest.mapElem.
 Global Instance into_val_mapElem : IntoVal mapElem.t :=
   {| to_val_def v :=
     struct.val_aux unittest.mapElem [
@@ -1035,13 +1049,14 @@ End containsPointer.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance containsPointer_ty_wf : struct.Wf unittest.containsPointer.
+#[local] Transparent unittest.containsPointer.
+#[local] Typeclasses Transparent unittest.containsPointer.
+
+Global Instance containsPointer_wf : struct.Wf unittest.containsPointer.
 Proof. apply _. Qed.
 
 Global Instance settable_containsPointer : Settable containsPointer.t :=
   settable! containsPointer.mk < containsPointer.s' >.
-#[local] Transparent unittest.containsPointer.
-#[local] Typeclasses Transparent unittest.containsPointer.
 Global Instance into_val_containsPointer : IntoVal containsPointer.t :=
   {| to_val_def v :=
     struct.val_aux unittest.containsPointer [
@@ -1100,13 +1115,14 @@ End wrapExternalStruct.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance wrapExternalStruct_ty_wf : struct.Wf unittest.wrapExternalStruct.
+#[local] Transparent unittest.wrapExternalStruct.
+#[local] Typeclasses Transparent unittest.wrapExternalStruct.
+
+Global Instance wrapExternalStruct_wf : struct.Wf unittest.wrapExternalStruct.
 Proof. apply _. Qed.
 
 Global Instance settable_wrapExternalStruct : Settable wrapExternalStruct.t :=
   settable! wrapExternalStruct.mk < wrapExternalStruct.j' >.
-#[local] Transparent unittest.wrapExternalStruct.
-#[local] Typeclasses Transparent unittest.wrapExternalStruct.
 Global Instance into_val_wrapExternalStruct : IntoVal wrapExternalStruct.t :=
   {| to_val_def v :=
     struct.val_aux unittest.wrapExternalStruct [
@@ -1165,13 +1181,14 @@ End typing.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance typing_ty_wf : struct.Wf unittest.typing.
+#[local] Transparent unittest.typing.
+#[local] Typeclasses Transparent unittest.typing.
+
+Global Instance typing_wf : struct.Wf unittest.typing.
 Proof. apply _. Qed.
 
 Global Instance settable_typing : Settable typing.t :=
   settable! typing.mk < typing.proph' >.
-#[local] Transparent unittest.typing.
-#[local] Typeclasses Transparent unittest.typing.
 Global Instance into_val_typing : IntoVal typing.t :=
   {| to_val_def v :=
     struct.val_aux unittest.typing [
@@ -1231,13 +1248,14 @@ End composite.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance composite_ty_wf : struct.Wf unittest.composite.
+#[local] Transparent unittest.composite.
+#[local] Typeclasses Transparent unittest.composite.
+
+Global Instance composite_wf : struct.Wf unittest.composite.
 Proof. apply _. Qed.
 
 Global Instance settable_composite : Settable composite.t :=
   settable! composite.mk < composite.a'; composite.b' >.
-#[local] Transparent unittest.composite.
-#[local] Typeclasses Transparent unittest.composite.
 Global Instance into_val_composite : IntoVal composite.t :=
   {| to_val_def v :=
     struct.val_aux unittest.composite [
@@ -1302,11 +1320,12 @@ End R.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance R_ty_wf : struct.Wf unittest.R.
-Proof. apply _. Qed.
-
 #[local] Transparent unittest.R.
 #[local] Typeclasses Transparent unittest.R.
+
+Global Instance R_wf : struct.Wf unittest.R.
+Proof. apply _. Qed.
+
 Global Instance into_val_R : IntoVal R.t :=
   {| to_val_def v :=
     struct.val_aux unittest.R [
@@ -1345,13 +1364,14 @@ End Other.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Other_ty_wf : struct.Wf unittest.Other.
+#[local] Transparent unittest.Other.
+#[local] Typeclasses Transparent unittest.Other.
+
+Global Instance Other_wf : struct.Wf unittest.Other.
 Proof. apply _. Qed.
 
 Global Instance settable_Other : Settable Other.t :=
   settable! Other.mk < Other.RecursiveEmbedded' >.
-#[local] Transparent unittest.Other.
-#[local] Typeclasses Transparent unittest.Other.
 Global Instance into_val_Other : IntoVal Other.t :=
   {| to_val_def v :=
     struct.val_aux unittest.Other [
@@ -1410,13 +1430,14 @@ End RecursiveEmbedded.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance RecursiveEmbedded_ty_wf : struct.Wf unittest.RecursiveEmbedded.
+#[local] Transparent unittest.RecursiveEmbedded.
+#[local] Typeclasses Transparent unittest.RecursiveEmbedded.
+
+Global Instance RecursiveEmbedded_wf : struct.Wf unittest.RecursiveEmbedded.
 Proof. apply _. Qed.
 
 Global Instance settable_RecursiveEmbedded : Settable RecursiveEmbedded.t :=
   settable! RecursiveEmbedded.mk < RecursiveEmbedded.Other' >.
-#[local] Transparent unittest.RecursiveEmbedded.
-#[local] Typeclasses Transparent unittest.RecursiveEmbedded.
 Global Instance into_val_RecursiveEmbedded : IntoVal RecursiveEmbedded.t :=
   {| to_val_def v :=
     struct.val_aux unittest.RecursiveEmbedded [
@@ -1475,13 +1496,14 @@ End Block.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Block_ty_wf : struct.Wf unittest.Block.
+#[local] Transparent unittest.Block.
+#[local] Typeclasses Transparent unittest.Block.
+
+Global Instance Block_wf : struct.Wf unittest.Block.
 Proof. apply _. Qed.
 
 Global Instance settable_Block : Settable Block.t :=
   settable! Block.mk < Block.Value' >.
-#[local] Transparent unittest.Block.
-#[local] Typeclasses Transparent unittest.Block.
 Global Instance into_val_Block : IntoVal Block.t :=
   {| to_val_def v :=
     struct.val_aux unittest.Block [
@@ -1551,13 +1573,14 @@ End thing.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance thing_ty_wf : struct.Wf unittest.thing.
+#[local] Transparent unittest.thing.
+#[local] Typeclasses Transparent unittest.thing.
+
+Global Instance thing_wf : struct.Wf unittest.thing.
 Proof. apply _. Qed.
 
 Global Instance settable_thing : Settable thing.t :=
   settable! thing.mk < thing.x' >.
-#[local] Transparent unittest.thing.
-#[local] Typeclasses Transparent unittest.thing.
 Global Instance into_val_thing : IntoVal thing.t :=
   {| to_val_def v :=
     struct.val_aux unittest.thing [
@@ -1616,13 +1639,14 @@ End sliceOfThings.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance sliceOfThings_ty_wf : struct.Wf unittest.sliceOfThings.
+#[local] Transparent unittest.sliceOfThings.
+#[local] Typeclasses Transparent unittest.sliceOfThings.
+
+Global Instance sliceOfThings_wf : struct.Wf unittest.sliceOfThings.
 Proof. apply _. Qed.
 
 Global Instance settable_sliceOfThings : Settable sliceOfThings.t :=
   settable! sliceOfThings.mk < sliceOfThings.things' >.
-#[local] Transparent unittest.sliceOfThings.
-#[local] Typeclasses Transparent unittest.sliceOfThings.
 Global Instance into_val_sliceOfThings : IntoVal sliceOfThings.t :=
   {| to_val_def v :=
     struct.val_aux unittest.sliceOfThings [
@@ -1682,13 +1706,14 @@ End Point.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Point_ty_wf : struct.Wf unittest.Point.
+#[local] Transparent unittest.Point.
+#[local] Typeclasses Transparent unittest.Point.
+
+Global Instance Point_wf : struct.Wf unittest.Point.
 Proof. apply _. Qed.
 
 Global Instance settable_Point : Settable Point.t :=
   settable! Point.mk < Point.x'; Point.y' >.
-#[local] Transparent unittest.Point.
-#[local] Typeclasses Transparent unittest.Point.
 Global Instance into_val_Point : IntoVal Point.t :=
   {| to_val_def v :=
     struct.val_aux unittest.Point [
@@ -1755,13 +1780,14 @@ End TwoInts.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance TwoInts_ty_wf : struct.Wf unittest.TwoInts.
+#[local] Transparent unittest.TwoInts.
+#[local] Typeclasses Transparent unittest.TwoInts.
+
+Global Instance TwoInts_wf : struct.Wf unittest.TwoInts.
 Proof. apply _. Qed.
 
 Global Instance settable_TwoInts : Settable TwoInts.t :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
-#[local] Transparent unittest.TwoInts.
-#[local] Typeclasses Transparent unittest.TwoInts.
 Global Instance into_val_TwoInts : IntoVal TwoInts.t :=
   {| to_val_def v :=
     struct.val_aux unittest.TwoInts [
@@ -1829,13 +1855,14 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance S_ty_wf : struct.Wf unittest.S.
+#[local] Transparent unittest.S.
+#[local] Typeclasses Transparent unittest.S.
+
+Global Instance S_wf : struct.Wf unittest.S.
 Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.a'; S.b'; S.c' >.
-#[local] Transparent unittest.S.
-#[local] Typeclasses Transparent unittest.S.
 Global Instance into_val_S : IntoVal S.t :=
   {| to_val_def v :=
     struct.val_aux unittest.S [
@@ -1908,13 +1935,14 @@ End B.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance B_ty_wf : struct.Wf unittest.B.
+#[local] Transparent unittest.B.
+#[local] Typeclasses Transparent unittest.B.
+
+Global Instance B_wf : struct.Wf unittest.B.
 Proof. apply _. Qed.
 
 Global Instance settable_B : Settable B.t :=
   settable! B.mk < B.a' >.
-#[local] Transparent unittest.B.
-#[local] Typeclasses Transparent unittest.B.
 Global Instance into_val_B : IntoVal B.t :=
   {| to_val_def v :=
     struct.val_aux unittest.B [
@@ -1972,11 +2000,12 @@ End A.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance A_ty_wf : struct.Wf unittest.A.
-Proof. apply _. Qed.
-
 #[local] Transparent unittest.A.
 #[local] Typeclasses Transparent unittest.A.
+
+Global Instance A_wf : struct.Wf unittest.A.
+Proof. apply _. Qed.
+
 Global Instance into_val_A : IntoVal A.t :=
   {| to_val_def v :=
     struct.val_aux unittest.A [

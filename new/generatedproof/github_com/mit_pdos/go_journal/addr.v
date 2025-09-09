@@ -23,13 +23,14 @@ End Addr.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Addr_ty_wf : struct.Wf addr.Addr.
+#[local] Transparent addr.Addr.
+#[local] Typeclasses Transparent addr.Addr.
+
+Global Instance Addr_wf : struct.Wf addr.Addr.
 Proof. apply _. Qed.
 
 Global Instance settable_Addr : Settable Addr.t :=
   settable! Addr.mk < Addr.Blkno'; Addr.Off' >.
-#[local] Transparent addr.Addr.
-#[local] Typeclasses Transparent addr.Addr.
 Global Instance into_val_Addr : IntoVal Addr.t :=
   {| to_val_def v :=
     struct.val_aux addr.Addr [

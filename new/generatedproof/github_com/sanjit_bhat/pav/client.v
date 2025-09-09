@@ -32,13 +32,14 @@ End Client.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Client_ty_wf : struct.Wf client.Client.
+#[local] Transparent client.Client.
+#[local] Typeclasses Transparent client.Client.
+
+Global Instance Client_wf : struct.Wf client.Client.
 Proof. apply _. Qed.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.uid'; Client.pend'; Client.last'; Client.serv' >.
-#[local] Transparent client.Client.
-#[local] Typeclasses Transparent client.Client.
 Global Instance into_val_Client : IntoVal Client.t :=
   {| to_val_def v :=
     struct.val_aux client.Client [
@@ -120,13 +121,14 @@ End pending.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance pending_ty_wf : struct.Wf client.pending.
+#[local] Transparent client.pending.
+#[local] Typeclasses Transparent client.pending.
+
+Global Instance pending_wf : struct.Wf client.pending.
 Proof. apply _. Qed.
 
 Global Instance settable_pending : Settable pending.t :=
   settable! pending.mk < pending.nextVer'; pending.isPending'; pending.pk' >.
-#[local] Transparent client.pending.
-#[local] Typeclasses Transparent client.pending.
 Global Instance into_val_pending : IntoVal pending.t :=
   {| to_val_def v :=
     struct.val_aux client.pending [
@@ -202,13 +204,14 @@ End epoch.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance epoch_ty_wf : struct.Wf client.epoch.
+#[local] Transparent client.epoch.
+#[local] Typeclasses Transparent client.epoch.
+
+Global Instance epoch_wf : struct.Wf client.epoch.
 Proof. apply _. Qed.
 
 Global Instance settable_epoch : Settable epoch.t :=
   settable! epoch.mk < epoch.epoch'; epoch.dig'; epoch.link'; epoch.sig' >.
-#[local] Transparent client.epoch.
-#[local] Typeclasses Transparent client.epoch.
 Global Instance into_val_epoch : IntoVal epoch.t :=
   {| to_val_def v :=
     struct.val_aux client.epoch [
@@ -291,13 +294,14 @@ End serv.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance serv_ty_wf : struct.Wf client.serv.
+#[local] Transparent client.serv.
+#[local] Typeclasses Transparent client.serv.
+
+Global Instance serv_wf : struct.Wf client.serv.
 Proof. apply _. Qed.
 
 Global Instance settable_serv : Settable serv.t :=
   settable! serv.mk < serv.cli'; serv.sigPk'; serv.vrfPk'; serv.vrfSig' >.
-#[local] Transparent client.serv.
-#[local] Typeclasses Transparent client.serv.
 Global Instance into_val_serv : IntoVal serv.t :=
   {| to_val_def v :=
     struct.val_aux client.serv [
@@ -378,13 +382,14 @@ End Evid.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Evid_ty_wf : struct.Wf client.Evid.
+#[local] Transparent client.Evid.
+#[local] Typeclasses Transparent client.Evid.
+
+Global Instance Evid_wf : struct.Wf client.Evid.
 Proof. apply _. Qed.
 
 Global Instance settable_Evid : Settable Evid.t :=
   settable! Evid.mk < Evid.vrf'; Evid.link' >.
-#[local] Transparent client.Evid.
-#[local] Typeclasses Transparent client.Evid.
 Global Instance into_val_Evid : IntoVal Evid.t :=
   {| to_val_def v :=
     struct.val_aux client.Evid [
@@ -453,13 +458,14 @@ End evidVrf.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance evidVrf_ty_wf : struct.Wf client.evidVrf.
+#[local] Transparent client.evidVrf.
+#[local] Typeclasses Transparent client.evidVrf.
+
+Global Instance evidVrf_wf : struct.Wf client.evidVrf.
 Proof. apply _. Qed.
 
 Global Instance settable_evidVrf : Settable evidVrf.t :=
   settable! evidVrf.mk < evidVrf.vrfPk0'; evidVrf.sig0'; evidVrf.vrfPk1'; evidVrf.sig1' >.
-#[local] Transparent client.evidVrf.
-#[local] Typeclasses Transparent client.evidVrf.
 Global Instance into_val_evidVrf : IntoVal evidVrf.t :=
   {| to_val_def v :=
     struct.val_aux client.evidVrf [
@@ -543,13 +549,14 @@ End evidLink.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance evidLink_ty_wf : struct.Wf client.evidLink.
+#[local] Transparent client.evidLink.
+#[local] Typeclasses Transparent client.evidLink.
+
+Global Instance evidLink_wf : struct.Wf client.evidLink.
 Proof. apply _. Qed.
 
 Global Instance settable_evidLink : Settable evidLink.t :=
   settable! evidLink.mk < evidLink.epoch'; evidLink.link0'; evidLink.sig0'; evidLink.link1'; evidLink.sig1' >.
-#[local] Transparent client.evidLink.
-#[local] Typeclasses Transparent client.evidLink.
 Global Instance into_val_evidLink : IntoVal evidLink.t :=
   {| to_val_def v :=
     struct.val_aux client.evidLink [

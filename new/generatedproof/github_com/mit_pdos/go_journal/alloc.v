@@ -23,13 +23,14 @@ End Alloc.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Alloc_ty_wf : struct.Wf alloc.Alloc.
+#[local] Transparent alloc.Alloc.
+#[local] Typeclasses Transparent alloc.Alloc.
+
+Global Instance Alloc_wf : struct.Wf alloc.Alloc.
 Proof. apply _. Qed.
 
 Global Instance settable_Alloc : Settable Alloc.t :=
   settable! Alloc.mk < Alloc.mu'; Alloc.next'; Alloc.bitmap' >.
-#[local] Transparent alloc.Alloc.
-#[local] Typeclasses Transparent alloc.Alloc.
 Global Instance into_val_Alloc : IntoVal Alloc.t :=
   {| to_val_def v :=
     struct.val_aux alloc.Alloc [

@@ -34,13 +34,14 @@ End StartReply.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance StartReply_ty_wf : struct.Wf server.StartReply.
+#[local] Transparent server.StartReply.
+#[local] Typeclasses Transparent server.StartReply.
+
+Global Instance StartReply_wf : struct.Wf server.StartReply.
 Proof. apply _. Qed.
 
 Global Instance settable_StartReply : Settable StartReply.t :=
   settable! StartReply.mk < StartReply.StartEpochLen'; StartReply.StartLink'; StartReply.ChainProof'; StartReply.LinkSig'; StartReply.VrfPk'; StartReply.VrfSig' >.
-#[local] Transparent server.StartReply.
-#[local] Typeclasses Transparent server.StartReply.
 Global Instance into_val_StartReply : IntoVal StartReply.t :=
   {| to_val_def v :=
     struct.val_aux server.StartReply [
@@ -136,13 +137,14 @@ End PutArg.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance PutArg_ty_wf : struct.Wf server.PutArg.
+#[local] Transparent server.PutArg.
+#[local] Typeclasses Transparent server.PutArg.
+
+Global Instance PutArg_wf : struct.Wf server.PutArg.
 Proof. apply _. Qed.
 
 Global Instance settable_PutArg : Settable PutArg.t :=
   settable! PutArg.mk < PutArg.Uid'; PutArg.Pk'; PutArg.Ver' >.
-#[local] Transparent server.PutArg.
-#[local] Typeclasses Transparent server.PutArg.
 Global Instance into_val_PutArg : IntoVal PutArg.t :=
   {| to_val_def v :=
     struct.val_aux server.PutArg [
@@ -217,13 +219,14 @@ End HistoryArg.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance HistoryArg_ty_wf : struct.Wf server.HistoryArg.
+#[local] Transparent server.HistoryArg.
+#[local] Typeclasses Transparent server.HistoryArg.
+
+Global Instance HistoryArg_wf : struct.Wf server.HistoryArg.
 Proof. apply _. Qed.
 
 Global Instance settable_HistoryArg : Settable HistoryArg.t :=
   settable! HistoryArg.mk < HistoryArg.Uid'; HistoryArg.PrevEpoch'; HistoryArg.PrevVerLen' >.
-#[local] Transparent server.HistoryArg.
-#[local] Typeclasses Transparent server.HistoryArg.
 Global Instance into_val_HistoryArg : IntoVal HistoryArg.t :=
   {| to_val_def v :=
     struct.val_aux server.HistoryArg [
@@ -300,13 +303,14 @@ End HistoryReply.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance HistoryReply_ty_wf : struct.Wf server.HistoryReply.
+#[local] Transparent server.HistoryReply.
+#[local] Typeclasses Transparent server.HistoryReply.
+
+Global Instance HistoryReply_wf : struct.Wf server.HistoryReply.
 Proof. apply _. Qed.
 
 Global Instance settable_HistoryReply : Settable HistoryReply.t :=
   settable! HistoryReply.mk < HistoryReply.ChainProof'; HistoryReply.LinkSig'; HistoryReply.Hist'; HistoryReply.Bound'; HistoryReply.Err' >.
-#[local] Transparent server.HistoryReply.
-#[local] Typeclasses Transparent server.HistoryReply.
 Global Instance into_val_HistoryReply : IntoVal HistoryReply.t :=
   {| to_val_def v :=
     struct.val_aux server.HistoryReply [
@@ -393,13 +397,14 @@ End AuditArg.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance AuditArg_ty_wf : struct.Wf server.AuditArg.
+#[local] Transparent server.AuditArg.
+#[local] Typeclasses Transparent server.AuditArg.
+
+Global Instance AuditArg_wf : struct.Wf server.AuditArg.
 Proof. apply _. Qed.
 
 Global Instance settable_AuditArg : Settable AuditArg.t :=
   settable! AuditArg.mk < AuditArg.PrevEpochLen' >.
-#[local] Transparent server.AuditArg.
-#[local] Typeclasses Transparent server.AuditArg.
 Global Instance into_val_AuditArg : IntoVal AuditArg.t :=
   {| to_val_def v :=
     struct.val_aux server.AuditArg [
@@ -459,13 +464,14 @@ End AuditReply.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance AuditReply_ty_wf : struct.Wf server.AuditReply.
+#[local] Transparent server.AuditReply.
+#[local] Typeclasses Transparent server.AuditReply.
+
+Global Instance AuditReply_wf : struct.Wf server.AuditReply.
 Proof. apply _. Qed.
 
 Global Instance settable_AuditReply : Settable AuditReply.t :=
   settable! AuditReply.mk < AuditReply.P'; AuditReply.Err' >.
-#[local] Transparent server.AuditReply.
-#[local] Typeclasses Transparent server.AuditReply.
 Global Instance into_val_AuditReply : IntoVal AuditReply.t :=
   {| to_val_def v :=
     struct.val_aux server.AuditReply [
@@ -535,13 +541,14 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Server_ty_wf : struct.Wf server.Server.
+#[local] Transparent server.Server.
+#[local] Typeclasses Transparent server.Server.
+
+Global Instance Server_wf : struct.Wf server.Server.
 Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.secs'; Server.keys'; Server.hist'; Server.workQ' >.
-#[local] Transparent server.Server.
-#[local] Typeclasses Transparent server.Server.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
     struct.val_aux server.Server [
@@ -630,13 +637,14 @@ End secrets.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance secrets_ty_wf : struct.Wf server.secrets.
+#[local] Transparent server.secrets.
+#[local] Typeclasses Transparent server.secrets.
+
+Global Instance secrets_wf : struct.Wf server.secrets.
 Proof. apply _. Qed.
 
 Global Instance settable_secrets : Settable secrets.t :=
   settable! secrets.mk < secrets.sig'; secrets.vrf'; secrets.commit' >.
-#[local] Transparent server.secrets.
-#[local] Typeclasses Transparent server.secrets.
 Global Instance into_val_secrets : IntoVal secrets.t :=
   {| to_val_def v :=
     struct.val_aux server.secrets [
@@ -710,13 +718,14 @@ End keyStore.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance keyStore_ty_wf : struct.Wf server.keyStore.
+#[local] Transparent server.keyStore.
+#[local] Typeclasses Transparent server.keyStore.
+
+Global Instance keyStore_wf : struct.Wf server.keyStore.
 Proof. apply _. Qed.
 
 Global Instance settable_keyStore : Settable keyStore.t :=
   settable! keyStore.mk < keyStore.hidden'; keyStore.plain' >.
-#[local] Transparent server.keyStore.
-#[local] Typeclasses Transparent server.keyStore.
 Global Instance into_val_keyStore : IntoVal keyStore.t :=
   {| to_val_def v :=
     struct.val_aux server.keyStore [
@@ -784,13 +793,14 @@ End history.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance history_ty_wf : struct.Wf server.history.
+#[local] Transparent server.history.
+#[local] Typeclasses Transparent server.history.
+
+Global Instance history_wf : struct.Wf server.history.
 Proof. apply _. Qed.
 
 Global Instance settable_history : Settable history.t :=
   settable! history.mk < history.chain'; history.audits'; history.vrfPkSig' >.
-#[local] Transparent server.history.
-#[local] Typeclasses Transparent server.history.
 Global Instance into_val_history : IntoVal history.t :=
   {| to_val_def v :=
     struct.val_aux server.history [
@@ -865,13 +875,14 @@ End WQReq.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance WQReq_ty_wf : struct.Wf server.WQReq.
+#[local] Transparent server.WQReq.
+#[local] Typeclasses Transparent server.WQReq.
+
+Global Instance WQReq_wf : struct.Wf server.WQReq.
 Proof. apply _. Qed.
 
 Global Instance settable_WQReq : Settable WQReq.t :=
   settable! WQReq.mk < WQReq.Uid'; WQReq.Pk'; WQReq.Ver' >.
-#[local] Transparent server.WQReq.
-#[local] Typeclasses Transparent server.WQReq.
 Global Instance into_val_WQReq : IntoVal WQReq.t :=
   {| to_val_def v :=
     struct.val_aux server.WQReq [
@@ -944,13 +955,14 @@ End WQResp.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance WQResp_ty_wf : struct.Wf server.WQResp.
+#[local] Transparent server.WQResp.
+#[local] Typeclasses Transparent server.WQResp.
+
+Global Instance WQResp_wf : struct.Wf server.WQResp.
 Proof. apply _. Qed.
 
 Global Instance settable_WQResp : Settable WQResp.t :=
   settable! WQResp.mk < WQResp.Err' >.
-#[local] Transparent server.WQResp.
-#[local] Typeclasses Transparent server.WQResp.
 Global Instance into_val_WQResp : IntoVal WQResp.t :=
   {| to_val_def v :=
     struct.val_aux server.WQResp [
@@ -1010,13 +1022,14 @@ End mapEntry.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance mapEntry_ty_wf : struct.Wf server.mapEntry.
+#[local] Transparent server.mapEntry.
+#[local] Typeclasses Transparent server.mapEntry.
+
+Global Instance mapEntry_wf : struct.Wf server.mapEntry.
 Proof. apply _. Qed.
 
 Global Instance settable_mapEntry : Settable mapEntry.t :=
   settable! mapEntry.mk < mapEntry.label'; mapEntry.val' >.
-#[local] Transparent server.mapEntry.
-#[local] Typeclasses Transparent server.mapEntry.
 Global Instance into_val_mapEntry : IntoVal mapEntry.t :=
   {| to_val_def v :=
     struct.val_aux server.mapEntry [
@@ -1086,13 +1099,14 @@ End Work.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Work_ty_wf : struct.Wf server.Work.
+#[local] Transparent server.Work.
+#[local] Typeclasses Transparent server.Work.
+
+Global Instance Work_wf : struct.Wf server.Work.
 Proof. apply _. Qed.
 
 Global Instance settable_Work : Settable Work.t :=
   settable! Work.mk < Work.mu'; Work.cond'; Work.done'; Work.Req'; Work.Resp' >.
-#[local] Transparent server.Work.
-#[local] Typeclasses Transparent server.Work.
 Global Instance into_val_Work : IntoVal Work.t :=
   {| to_val_def v :=
     struct.val_aux server.Work [
@@ -1181,13 +1195,14 @@ End WorkQ.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance WorkQ_ty_wf : struct.Wf server.WorkQ.
+#[local] Transparent server.WorkQ.
+#[local] Typeclasses Transparent server.WorkQ.
+
+Global Instance WorkQ_wf : struct.Wf server.WorkQ.
 Proof. apply _. Qed.
 
 Global Instance settable_WorkQ : Settable WorkQ.t :=
   settable! WorkQ.mk < WorkQ.mu'; WorkQ.work'; WorkQ.cond' >.
-#[local] Transparent server.WorkQ.
-#[local] Typeclasses Transparent server.WorkQ.
 Global Instance into_val_WorkQ : IntoVal WorkQ.t :=
   {| to_val_def v :=
     struct.val_aux server.WorkQ [

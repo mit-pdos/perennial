@@ -38,13 +38,14 @@ End Update.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Update_ty_wf : struct.Wf wal.Update.
+#[local] Transparent wal.Update.
+#[local] Typeclasses Transparent wal.Update.
+
+Global Instance Update_wf : struct.Wf wal.Update.
 Proof. apply _. Qed.
 
 Global Instance settable_Update : Settable Update.t :=
   settable! Update.mk < Update.Addr'; Update.Block' >.
-#[local] Transparent wal.Update.
-#[local] Typeclasses Transparent wal.Update.
 Global Instance into_val_Update : IntoVal Update.t :=
   {| to_val_def v :=
     struct.val_aux wal.Update [
@@ -110,13 +111,14 @@ End circularAppender.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance circularAppender_ty_wf : struct.Wf wal.circularAppender.
+#[local] Transparent wal.circularAppender.
+#[local] Typeclasses Transparent wal.circularAppender.
+
+Global Instance circularAppender_wf : struct.Wf wal.circularAppender.
 Proof. apply _. Qed.
 
 Global Instance settable_circularAppender : Settable circularAppender.t :=
   settable! circularAppender.mk < circularAppender.diskAddrs' >.
-#[local] Transparent wal.circularAppender.
-#[local] Typeclasses Transparent wal.circularAppender.
 Global Instance into_val_circularAppender : IntoVal circularAppender.t :=
   {| to_val_def v :=
     struct.val_aux wal.circularAppender [
@@ -179,13 +181,14 @@ End sliding.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance sliding_ty_wf : struct.Wf wal.sliding.
+#[local] Transparent wal.sliding.
+#[local] Typeclasses Transparent wal.sliding.
+
+Global Instance sliding_wf : struct.Wf wal.sliding.
 Proof. apply _. Qed.
 
 Global Instance settable_sliding : Settable sliding.t :=
   settable! sliding.mk < sliding.log'; sliding.start'; sliding.mutable'; sliding.needFlush'; sliding.addrPos' >.
-#[local] Transparent wal.sliding.
-#[local] Typeclasses Transparent wal.sliding.
 Global Instance into_val_sliding : IntoVal sliding.t :=
   {| to_val_def v :=
     struct.val_aux wal.sliding [
@@ -275,13 +278,14 @@ End WalogState.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance WalogState_ty_wf : struct.Wf wal.WalogState.
+#[local] Transparent wal.WalogState.
+#[local] Typeclasses Transparent wal.WalogState.
+
+Global Instance WalogState_wf : struct.Wf wal.WalogState.
 Proof. apply _. Qed.
 
 Global Instance settable_WalogState : Settable WalogState.t :=
   settable! WalogState.mk < WalogState.memLog'; WalogState.diskEnd'; WalogState.shutdown'; WalogState.nthread' >.
-#[local] Transparent wal.WalogState.
-#[local] Typeclasses Transparent wal.WalogState.
 Global Instance into_val_WalogState : IntoVal WalogState.t :=
   {| to_val_def v :=
     struct.val_aux wal.WalogState [
@@ -367,13 +371,14 @@ End Walog.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Walog_ty_wf : struct.Wf wal.Walog.
+#[local] Transparent wal.Walog.
+#[local] Typeclasses Transparent wal.Walog.
+
+Global Instance Walog_wf : struct.Wf wal.Walog.
 Proof. apply _. Qed.
 
 Global Instance settable_Walog : Settable Walog.t :=
   settable! Walog.mk < Walog.memLock'; Walog.d'; Walog.circ'; Walog.st'; Walog.condLogger'; Walog.condInstall'; Walog.condShut' >.
-#[local] Transparent wal.Walog.
-#[local] Typeclasses Transparent wal.Walog.
 Global Instance into_val_Walog : IntoVal Walog.t :=
   {| to_val_def v :=
     struct.val_aux wal.Walog [

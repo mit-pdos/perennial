@@ -30,13 +30,14 @@ End eStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance eStateMachine_ty_wf : struct.Wf exactlyonce.eStateMachine.
+#[local] Transparent exactlyonce.eStateMachine.
+#[local] Typeclasses Transparent exactlyonce.eStateMachine.
+
+Global Instance eStateMachine_wf : struct.Wf exactlyonce.eStateMachine.
 Proof. apply _. Qed.
 
 Global Instance settable_eStateMachine : Settable eStateMachine.t :=
   settable! eStateMachine.mk < eStateMachine.lastSeq'; eStateMachine.lastReply'; eStateMachine.nextCID'; eStateMachine.sm'; eStateMachine.esmNextIndex' >.
-#[local] Transparent exactlyonce.eStateMachine.
-#[local] Typeclasses Transparent exactlyonce.eStateMachine.
 Global Instance into_val_eStateMachine : IntoVal eStateMachine.t :=
   {| to_val_def v :=
     struct.val_aux exactlyonce.eStateMachine [
@@ -125,13 +126,14 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Clerk_ty_wf : struct.Wf exactlyonce.Clerk.
+#[local] Transparent exactlyonce.Clerk.
+#[local] Typeclasses Transparent exactlyonce.Clerk.
+
+Global Instance Clerk_wf : struct.Wf exactlyonce.Clerk.
 Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.ck'; Clerk.cid'; Clerk.seq' >.
-#[local] Transparent exactlyonce.Clerk.
-#[local] Typeclasses Transparent exactlyonce.Clerk.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
     struct.val_aux exactlyonce.Clerk [
@@ -207,13 +209,14 @@ End VersionedStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance VersionedStateMachine_ty_wf : struct.Wf exactlyonce.VersionedStateMachine.
+#[local] Transparent exactlyonce.VersionedStateMachine.
+#[local] Typeclasses Transparent exactlyonce.VersionedStateMachine.
+
+Global Instance VersionedStateMachine_wf : struct.Wf exactlyonce.VersionedStateMachine.
 Proof. apply _. Qed.
 
 Global Instance settable_VersionedStateMachine : Settable VersionedStateMachine.t :=
   settable! VersionedStateMachine.mk < VersionedStateMachine.ApplyVolatile'; VersionedStateMachine.ApplyReadonly'; VersionedStateMachine.SetState'; VersionedStateMachine.GetState' >.
-#[local] Transparent exactlyonce.VersionedStateMachine.
-#[local] Typeclasses Transparent exactlyonce.VersionedStateMachine.
 Global Instance into_val_VersionedStateMachine : IntoVal VersionedStateMachine.t :=
   {| to_val_def v :=
     struct.val_aux exactlyonce.VersionedStateMachine [

@@ -39,13 +39,14 @@ End Timer.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Timer_ty_wf : struct.Wf time.Timer.
+#[local] Transparent time.Timer.
+#[local] Typeclasses Transparent time.Timer.
+
+Global Instance Timer_wf : struct.Wf time.Timer.
 Proof. apply _. Qed.
 
 Global Instance settable_Timer : Settable Timer.t :=
   settable! Timer.mk < Timer.C'; Timer.initTimer' >.
-#[local] Transparent time.Timer.
-#[local] Typeclasses Transparent time.Timer.
 Global Instance into_val_Timer : IntoVal Timer.t :=
   {| to_val_def v :=
     struct.val_aux time.Timer [
@@ -130,13 +131,14 @@ End Time.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Time_ty_wf : struct.Wf time.Time.
+#[local] Transparent time.Time.
+#[local] Typeclasses Transparent time.Time.
+
+Global Instance Time_wf : struct.Wf time.Time.
 Proof. apply _. Qed.
 
 Global Instance settable_Time : Settable Time.t :=
   settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
-#[local] Transparent time.Time.
-#[local] Typeclasses Transparent time.Time.
 Global Instance into_val_Time : IntoVal Time.t :=
   {| to_val_def v :=
     struct.val_aux time.Time [

@@ -460,13 +460,14 @@ End Field.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Field_ty_wf : struct.Wf zapcore.Field.
+#[local] Transparent zapcore.Field.
+#[local] Typeclasses Transparent zapcore.Field.
+
+Global Instance Field_wf : struct.Wf zapcore.Field.
 Proof. apply _. Qed.
 
 Global Instance settable_Field : Settable Field.t :=
   settable! Field.mk < Field.Key'; Field.Type'; Field.Integer'; Field.String'; Field.Interface' >.
-#[local] Transparent zapcore.Field.
-#[local] Typeclasses Transparent zapcore.Field.
 Global Instance into_val_Field : IntoVal Field.t :=
   {| to_val_def v :=
     struct.val_aux zapcore.Field [

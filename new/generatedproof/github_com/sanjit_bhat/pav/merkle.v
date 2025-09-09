@@ -27,13 +27,14 @@ End Map.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Map_ty_wf : struct.Wf merkle.Map.
+#[local] Transparent merkle.Map.
+#[local] Typeclasses Transparent merkle.Map.
+
+Global Instance Map_wf : struct.Wf merkle.Map.
 Proof. apply _. Qed.
 
 Global Instance settable_Map : Settable Map.t :=
   settable! Map.mk < Map.root' >.
-#[local] Transparent merkle.Map.
-#[local] Typeclasses Transparent merkle.Map.
 Global Instance into_val_Map : IntoVal Map.t :=
   {| to_val_def v :=
     struct.val_aux merkle.Map [
@@ -97,13 +98,14 @@ End node.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance node_ty_wf : struct.Wf merkle.node.
+#[local] Transparent merkle.node.
+#[local] Typeclasses Transparent merkle.node.
+
+Global Instance node_wf : struct.Wf merkle.node.
 Proof. apply _. Qed.
 
 Global Instance settable_node : Settable node.t :=
   settable! node.mk < node.nodeTy'; node.hash'; node.child0'; node.child1'; node.label'; node.val' >.
-#[local] Transparent merkle.node.
-#[local] Typeclasses Transparent merkle.node.
 Global Instance into_val_node : IntoVal node.t :=
   {| to_val_def v :=
     struct.val_aux merkle.node [
@@ -200,13 +202,14 @@ End MerkleProof.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance MerkleProof_ty_wf : struct.Wf merkle.MerkleProof.
+#[local] Transparent merkle.MerkleProof.
+#[local] Typeclasses Transparent merkle.MerkleProof.
+
+Global Instance MerkleProof_wf : struct.Wf merkle.MerkleProof.
 Proof. apply _. Qed.
 
 Global Instance settable_MerkleProof : Settable MerkleProof.t :=
   settable! MerkleProof.mk < MerkleProof.Siblings'; MerkleProof.IsOtherLeaf'; MerkleProof.LeafLabel'; MerkleProof.LeafVal' >.
-#[local] Transparent merkle.MerkleProof.
-#[local] Typeclasses Transparent merkle.MerkleProof.
 Global Instance into_val_MerkleProof : IntoVal MerkleProof.t :=
   {| to_val_def v :=
     struct.val_aux merkle.MerkleProof [

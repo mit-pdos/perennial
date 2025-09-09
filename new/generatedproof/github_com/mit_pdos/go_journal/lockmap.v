@@ -23,13 +23,14 @@ End lockState.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance lockState_ty_wf : struct.Wf lockmap.lockState.
+#[local] Transparent lockmap.lockState.
+#[local] Typeclasses Transparent lockmap.lockState.
+
+Global Instance lockState_wf : struct.Wf lockmap.lockState.
 Proof. apply _. Qed.
 
 Global Instance settable_lockState : Settable lockState.t :=
   settable! lockState.mk < lockState.held'; lockState.cond'; lockState.waiters' >.
-#[local] Transparent lockmap.lockState.
-#[local] Typeclasses Transparent lockmap.lockState.
 Global Instance into_val_lockState : IntoVal lockState.t :=
   {| to_val_def v :=
     struct.val_aux lockmap.lockState [
@@ -103,13 +104,14 @@ End lockShard.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance lockShard_ty_wf : struct.Wf lockmap.lockShard.
+#[local] Transparent lockmap.lockShard.
+#[local] Typeclasses Transparent lockmap.lockShard.
+
+Global Instance lockShard_wf : struct.Wf lockmap.lockShard.
 Proof. apply _. Qed.
 
 Global Instance settable_lockShard : Settable lockShard.t :=
   settable! lockShard.mk < lockShard.mu'; lockShard.state' >.
-#[local] Transparent lockmap.lockShard.
-#[local] Typeclasses Transparent lockmap.lockShard.
 Global Instance into_val_lockShard : IntoVal lockShard.t :=
   {| to_val_def v :=
     struct.val_aux lockmap.lockShard [
@@ -175,13 +177,14 @@ End LockMap.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance LockMap_ty_wf : struct.Wf lockmap.LockMap.
+#[local] Transparent lockmap.LockMap.
+#[local] Typeclasses Transparent lockmap.LockMap.
+
+Global Instance LockMap_wf : struct.Wf lockmap.LockMap.
 Proof. apply _. Qed.
 
 Global Instance settable_LockMap : Settable LockMap.t :=
   settable! LockMap.mk < LockMap.shards' >.
-#[local] Transparent lockmap.LockMap.
-#[local] Typeclasses Transparent lockmap.LockMap.
 Global Instance into_val_LockMap : IntoVal LockMap.t :=
   {| to_val_def v :=
     struct.val_aux lockmap.LockMap [

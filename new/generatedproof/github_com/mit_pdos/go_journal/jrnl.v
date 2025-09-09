@@ -25,13 +25,14 @@ End Op.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance Op_ty_wf : struct.Wf jrnl.Op.
+#[local] Transparent jrnl.Op.
+#[local] Typeclasses Transparent jrnl.Op.
+
+Global Instance Op_wf : struct.Wf jrnl.Op.
 Proof. apply _. Qed.
 
 Global Instance settable_Op : Settable Op.t :=
   settable! Op.mk < Op.log'; Op.bufs' >.
-#[local] Transparent jrnl.Op.
-#[local] Typeclasses Transparent jrnl.Op.
 Global Instance into_val_Op : IntoVal Op.t :=
   {| to_val_def v :=
     struct.val_aux jrnl.Op [
