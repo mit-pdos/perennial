@@ -27,6 +27,8 @@ Definition Builder : go_type := structT [
   "addr" :: ptrT;
   "buf" :: sliceT
 ].
+#[global] Typeclasses Opaque Builder.
+#[global] Opaque Builder.
 
 Definition Clone : go_string := "strings.Clone"%go.
 

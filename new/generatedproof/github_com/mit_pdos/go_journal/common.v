@@ -11,6 +11,9 @@ Module common.
 
 (* type common.Inum *)
 Module Inum.
+
+#[global] Transparent common.Inum.
+#[global] Typeclasses Transparent common.Inum.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -19,6 +22,9 @@ End Inum.
 
 (* type common.Bnum *)
 Module Bnum.
+
+#[global] Transparent common.Bnum.
+#[global] Typeclasses Transparent common.Bnum.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.

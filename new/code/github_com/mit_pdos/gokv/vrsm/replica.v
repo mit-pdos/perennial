@@ -33,12 +33,16 @@ Section code.
 
 
 Definition Op : go_type := sliceT.
+#[global] Typeclasses Opaque Op.
+#[global] Opaque Op.
 
 Definition ApplyAsBackupArgs : go_type := structT [
   "epoch" :: uint64T;
   "index" :: uint64T;
   "op" :: sliceT
 ].
+#[global] Typeclasses Opaque ApplyAsBackupArgs.
+#[global] Opaque ApplyAsBackupArgs.
 
 Definition EncodeApplyAsBackupArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeApplyAsBackupArgs"%go.
 
@@ -98,6 +102,8 @@ Definition SetStateArgs : go_type := structT [
   "CommittedNextIndex" :: uint64T;
   "State" :: sliceT
 ].
+#[global] Typeclasses Opaque SetStateArgs.
+#[global] Opaque SetStateArgs.
 
 Definition EncodeSetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeSetStateArgs"%go.
 
@@ -164,6 +170,8 @@ Definition DecodeSetStateArgsⁱᵐᵖˡ : val :=
 Definition GetStateArgs : go_type := structT [
   "Epoch" :: uint64T
 ].
+#[global] Typeclasses Opaque GetStateArgs.
+#[global] Opaque GetStateArgs.
 
 Definition EncodeGetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeGetStateArgs"%go.
 
@@ -203,6 +211,8 @@ Definition GetStateReply : go_type := structT [
   "CommittedNextIndex" :: uint64T;
   "State" :: sliceT
 ].
+#[global] Typeclasses Opaque GetStateReply.
+#[global] Opaque GetStateReply.
 
 Definition EncodeGetStateReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeGetStateReply"%go.
 
@@ -270,6 +280,8 @@ Definition BecomePrimaryArgs : go_type := structT [
   "Epoch" :: uint64T;
   "Replicas" :: sliceT
 ].
+#[global] Typeclasses Opaque BecomePrimaryArgs.
+#[global] Opaque BecomePrimaryArgs.
 
 Definition EncodeBecomePrimaryArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeBecomePrimaryArgs"%go.
 
@@ -344,6 +356,8 @@ Definition ApplyReply : go_type := structT [
   "Err" :: uint64T;
   "Reply" :: sliceT
 ].
+#[global] Typeclasses Opaque ApplyReply.
+#[global] Opaque ApplyReply.
 
 Definition EncodeApplyReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeApplyReply"%go.
 
@@ -388,6 +402,8 @@ Definition DecodeApplyReplyⁱᵐᵖˡ : val :=
     return: (![#ptrT] "reply")).
 
 Definition IncreaseCommitArgs : go_type := uint64T.
+#[global] Typeclasses Opaque IncreaseCommitArgs.
+#[global] Opaque IncreaseCommitArgs.
 
 Definition EncodeIncreaseCommitArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeIncreaseCommitArgs"%go.
 
@@ -420,6 +436,8 @@ Definition StateMachine : go_type := structT [
   "SetStateAndUnseal" :: funcT;
   "GetStateAndSeal" :: funcT
 ].
+#[global] Typeclasses Opaque StateMachine.
+#[global] Opaque StateMachine.
 
 Definition SyncStateMachine : go_type := structT [
   "Apply" :: funcT;
@@ -427,10 +445,14 @@ Definition SyncStateMachine : go_type := structT [
   "SetStateAndUnseal" :: funcT;
   "GetStateAndSeal" :: funcT
 ].
+#[global] Typeclasses Opaque SyncStateMachine.
+#[global] Opaque SyncStateMachine.
 
 Definition Clerk : go_type := structT [
   "cl" :: ptrT
 ].
+#[global] Typeclasses Opaque Clerk.
+#[global] Opaque Clerk.
 
 Definition RPC_APPLYASBACKUP : val := #(W64 0).
 
@@ -630,6 +652,8 @@ Definition Server : go_type := structT [
   "committedNextIndex_cond" :: ptrT;
   "confCk" :: ptrT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 (* Applies the RO op immediately, but then waits for it to be committed before
    replying to client.

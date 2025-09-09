@@ -463,7 +463,6 @@ Proof.
     iFrame "∗#".
     iExists [].
     list_simplifier.
-    (* TODO(goose): [is_pkg_init] gets unfolded after [list_simplifier]. *)
     iFrame "#".
     rewrite take_0'; [|word].
     iPureIntro.

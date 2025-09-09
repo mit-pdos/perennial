@@ -34,6 +34,11 @@ End Auditor.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent auditor.Auditor.
+#[local] Typeclasses Transparent auditor.Auditor.
+
+Global Instance Auditor_wf : struct.Wf auditor.Auditor.
+Proof. apply _. Qed.
 
 Global Instance settable_Auditor : Settable Auditor.t :=
   settable! Auditor.mk < Auditor.mu'; Auditor.sk'; Auditor.lastDig'; Auditor.hist'; Auditor.serv' >.
@@ -125,6 +130,11 @@ End history.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent auditor.history.
+#[local] Typeclasses Transparent auditor.history.
+
+Global Instance history_wf : struct.Wf auditor.history.
+Proof. apply _. Qed.
 
 Global Instance settable_history : Settable history.t :=
   settable! history.mk < history.link'; history.servSig'; history.adtrSig' >.
@@ -204,6 +214,11 @@ End serv.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent auditor.serv.
+#[local] Typeclasses Transparent auditor.serv.
+
+Global Instance serv_wf : struct.Wf auditor.serv.
+Proof. apply _. Qed.
 
 Global Instance settable_serv : Settable serv.t :=
   settable! serv.mk < serv.cli'; serv.sigPk'; serv.vrfPk'; serv.servVrfSig'; serv.adtrVrfSig' >.
@@ -293,6 +308,11 @@ End UpdateReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent auditor.UpdateReply.
+#[local] Typeclasses Transparent auditor.UpdateReply.
+
+Global Instance UpdateReply_wf : struct.Wf auditor.UpdateReply.
+Proof. apply _. Qed.
 
 Global Instance settable_UpdateReply : Settable UpdateReply.t :=
   settable! UpdateReply.mk < UpdateReply.Err' >.
@@ -354,6 +374,11 @@ End GetArg.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent auditor.GetArg.
+#[local] Typeclasses Transparent auditor.GetArg.
+
+Global Instance GetArg_wf : struct.Wf auditor.GetArg.
+Proof. apply _. Qed.
 
 Global Instance settable_GetArg : Settable GetArg.t :=
   settable! GetArg.mk < GetArg.Epoch' >.
@@ -421,6 +446,11 @@ End GetReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent auditor.GetReply.
+#[local] Typeclasses Transparent auditor.GetReply.
+
+Global Instance GetReply_wf : struct.Wf auditor.GetReply.
+Proof. apply _. Qed.
 
 Global Instance settable_GetReply : Settable GetReply.t :=
   settable! GetReply.mk < GetReply.Link'; GetReply.ServLinkSig'; GetReply.AdtrLinkSig'; GetReply.VrfPk'; GetReply.ServVrfSig'; GetReply.AdtrVrfSig'; GetReply.Err' >.

@@ -24,6 +24,8 @@ Definition Generator : go_type := structT [
   "prefix" :: uint64T;
   "suffix" :: uint64T
 ].
+#[global] Typeclasses Opaque Generator.
+#[global] Opaque Generator.
 
 Definition NewGenerator : go_string := "go.etcd.io/etcd/pkg/v3/idutil.NewGenerator"%go.
 

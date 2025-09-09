@@ -61,6 +61,8 @@ Definition DiscoveryError : go_type := structT [
   "Op" :: stringT;
   "Err" :: error
 ].
+#[global] Typeclasses Opaque DiscoveryError.
+#[global] Opaque DiscoveryError.
 
 (* go: errors.go:52:25 *)
 Definition DiscoveryError__Errorⁱᵐᵖˡ : val :=

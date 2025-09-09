@@ -12,6 +12,9 @@ Module channel.
 
 (* type channel.OfferState *)
 Module OfferState.
+
+#[global] Transparent channel.OfferState.
+#[global] Typeclasses Transparent channel.OfferState.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -30,6 +33,8 @@ Definition ty (T : go_type) : go_type := structT [
   "cap" :: uint64T;
   "v" :: T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   lock' : loc;
   state' : OfferState.t;
@@ -40,14 +45,17 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Channel.
 
+#[local] Transparent Channel.ty.
 Arguments Channel.mk {_} { T' } {_ T _} .
 Arguments Channel.t {_} T' {_ T _} .
 
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
+#[local] Transparent channel.Channel.
+#[local] Typeclasses Transparent channel.Channel.
 
-Global Instance Channel_ty_wf : struct.Wf (Channel.ty T).
+Global Instance Channel_wf : struct.Wf (Channel.ty T).
 Proof. apply _. Qed.
 
 Global Instance settable_Channel : Settable (Channel.t T') :=
@@ -135,6 +143,9 @@ End instances.
 
 (* type channel.SelectDir *)
 Module SelectDir.
+
+#[global] Transparent channel.SelectDir.
+#[global] Typeclasses Transparent channel.SelectDir.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -152,6 +163,8 @@ Definition ty (T : go_type) : go_type := structT [
   "Value" :: T;
   "Ok" :: boolT
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   channel' : loc;
   dir' : SelectDir.t;
@@ -161,14 +174,17 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End SelectCase.
 
+#[local] Transparent SelectCase.ty.
 Arguments SelectCase.mk {_} { T' } {_ T _} .
 Arguments SelectCase.t {_} T' {_ T _} .
 
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
+#[local] Transparent channel.SelectCase.
+#[local] Typeclasses Transparent channel.SelectCase.
 
-Global Instance SelectCase_ty_wf : struct.Wf (SelectCase.ty T).
+Global Instance SelectCase_wf : struct.Wf (SelectCase.ty T).
 Proof. apply _. Qed.
 
 Global Instance settable_SelectCase : Settable (SelectCase.t T') :=

@@ -12,6 +12,9 @@ Module wait.
 
 (* type wait.Wait *)
 Module Wait.
+
+#[global] Transparent wait.Wait.
+#[global] Typeclasses Transparent wait.Wait.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -30,6 +33,11 @@ End list'.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wait.list'.
+#[local] Typeclasses Transparent wait.list'.
+
+Global Instance list'_wf : struct.Wf wait.list'.
+Proof. apply _. Qed.
 
 Global Instance settable_list' : Settable list'.t :=
   settable! list'.mk < list'.e' >.
@@ -92,6 +100,11 @@ End listElement.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wait.listElement.
+#[local] Typeclasses Transparent wait.listElement.
+
+Global Instance listElement_wf : struct.Wf wait.listElement.
+Proof. apply _. Qed.
 
 Global Instance settable_listElement : Settable listElement.t :=
   settable! listElement.mk < listElement.l'; listElement.m' >.
@@ -160,6 +173,11 @@ End waitWithResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wait.waitWithResponse.
+#[local] Typeclasses Transparent wait.waitWithResponse.
+
+Global Instance waitWithResponse_wf : struct.Wf wait.waitWithResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_waitWithResponse : Settable waitWithResponse.t :=
   settable! waitWithResponse.mk < waitWithResponse.ch' >.
@@ -211,6 +229,9 @@ End instances.
 
 (* type wait.WaitTime *)
 Module WaitTime.
+
+#[global] Transparent wait.WaitTime.
+#[global] Typeclasses Transparent wait.WaitTime.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -231,6 +252,11 @@ End timeList.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wait.timeList.
+#[local] Typeclasses Transparent wait.timeList.
+
+Global Instance timeList_wf : struct.Wf wait.timeList.
+Proof. apply _. Qed.
 
 Global Instance settable_timeList : Settable timeList.t :=
   settable! timeList.mk < timeList.l'; timeList.lastTriggerDeadline'; timeList.m' >.

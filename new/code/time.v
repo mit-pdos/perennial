@@ -279,11 +279,15 @@ Definition Time : go_type := structT [
   "ext" :: int64T;
   "loc" :: ptrT
 ].
+#[global] Typeclasses Opaque Time.
+#[global] Opaque Time.
 
 Definition Timer : go_type := structT [
   "C" :: chanT Time;
   "initTimer" :: boolT
 ].
+#[global] Typeclasses Opaque Timer.
+#[global] Opaque Timer.
 
 Definition NewTimer : go_string := "time.NewTimer"%go.
 
@@ -439,6 +443,8 @@ Axiom absJanFeb : go_type.
 Definition dateToAbsDays : go_string := "time.dateToAbsDays"%go.
 
 Definition Duration : go_type := int64T.
+#[global] Typeclasses Opaque Duration.
+#[global] Opaque Duration.
 
 Axiom minDuration : val.
 

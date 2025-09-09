@@ -14,6 +14,9 @@ Module ktcore.
 
 (* type ktcore.Blame *)
 Module Blame.
+
+#[global] Transparent ktcore.Blame.
+#[global] Typeclasses Transparent ktcore.Blame.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -33,6 +36,11 @@ End VrfSig.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.VrfSig.
+#[local] Typeclasses Transparent ktcore.VrfSig.
+
+Global Instance VrfSig_wf : struct.Wf ktcore.VrfSig.
+Proof. apply _. Qed.
 
 Global Instance settable_VrfSig : Settable VrfSig.t :=
   settable! VrfSig.mk < VrfSig.SigTag'; VrfSig.VrfPk' >.
@@ -103,6 +111,11 @@ End LinkSig.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.LinkSig.
+#[local] Typeclasses Transparent ktcore.LinkSig.
+
+Global Instance LinkSig_wf : struct.Wf ktcore.LinkSig.
+Proof. apply _. Qed.
 
 Global Instance settable_LinkSig : Settable LinkSig.t :=
   settable! LinkSig.mk < LinkSig.SigTag'; LinkSig.Epoch'; LinkSig.Link' >.
@@ -179,6 +192,11 @@ End MapLabel.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.MapLabel.
+#[local] Typeclasses Transparent ktcore.MapLabel.
+
+Global Instance MapLabel_wf : struct.Wf ktcore.MapLabel.
+Proof. apply _. Qed.
 
 Global Instance settable_MapLabel : Settable MapLabel.t :=
   settable! MapLabel.mk < MapLabel.Uid'; MapLabel.Ver' >.
@@ -248,6 +266,11 @@ End CommitOpen.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.CommitOpen.
+#[local] Typeclasses Transparent ktcore.CommitOpen.
+
+Global Instance CommitOpen_wf : struct.Wf ktcore.CommitOpen.
+Proof. apply _. Qed.
 
 Global Instance settable_CommitOpen : Settable CommitOpen.t :=
   settable! CommitOpen.mk < CommitOpen.Val'; CommitOpen.Rand' >.
@@ -318,6 +341,11 @@ End Memb.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.Memb.
+#[local] Typeclasses Transparent ktcore.Memb.
+
+Global Instance Memb_wf : struct.Wf ktcore.Memb.
+Proof. apply _. Qed.
 
 Global Instance settable_Memb : Settable Memb.t :=
   settable! Memb.mk < Memb.LabelProof'; Memb.PkOpen'; Memb.MerkleProof' >.
@@ -394,6 +422,11 @@ End NonMemb.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.NonMemb.
+#[local] Typeclasses Transparent ktcore.NonMemb.
+
+Global Instance NonMemb_wf : struct.Wf ktcore.NonMemb.
+Proof. apply _. Qed.
 
 Global Instance settable_NonMemb : Settable NonMemb.t :=
   settable! NonMemb.mk < NonMemb.LabelProof'; NonMemb.MerkleProof' >.
@@ -463,6 +496,11 @@ End AuditProof.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.AuditProof.
+#[local] Typeclasses Transparent ktcore.AuditProof.
+
+Global Instance AuditProof_wf : struct.Wf ktcore.AuditProof.
+Proof. apply _. Qed.
 
 Global Instance settable_AuditProof : Settable AuditProof.t :=
   settable! AuditProof.mk < AuditProof.Updates'; AuditProof.LinkSig' >.
@@ -533,6 +571,11 @@ End UpdateProof.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent ktcore.UpdateProof.
+#[local] Typeclasses Transparent ktcore.UpdateProof.
+
+Global Instance UpdateProof_wf : struct.Wf ktcore.UpdateProof.
+Proof. apply _. Qed.
 
 Global Instance settable_UpdateProof : Settable UpdateProof.t :=
   settable! UpdateProof.mk < UpdateProof.MapLabel'; UpdateProof.MapVal'; UpdateProof.NonMembProof' >.

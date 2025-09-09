@@ -13,6 +13,8 @@ Context `{ffi_syntax}.
 
 
 Definition Error : go_type := uint64T.
+#[global] Typeclasses Opaque Error.
+#[global] Opaque Error.
 
 Definition None : val := #(W64 0).
 

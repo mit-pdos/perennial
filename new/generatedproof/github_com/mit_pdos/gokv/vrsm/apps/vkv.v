@@ -27,6 +27,11 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.Clerk.
+#[local] Typeclasses Transparent vkv.Clerk.
+
+Global Instance Clerk_wf : struct.Wf vkv.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
@@ -90,6 +95,11 @@ End ClerkPool.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.ClerkPool.
+#[local] Typeclasses Transparent vkv.ClerkPool.
+
+Global Instance ClerkPool_wf : struct.Wf vkv.ClerkPool.
+Proof. apply _. Qed.
 
 Global Instance settable_ClerkPool : Settable ClerkPool.t :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
@@ -167,6 +177,11 @@ End KVState.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.KVState.
+#[local] Typeclasses Transparent vkv.KVState.
+
+Global Instance KVState_wf : struct.Wf vkv.KVState.
+Proof. apply _. Qed.
 
 Global Instance settable_KVState : Settable KVState.t :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.
@@ -243,6 +258,11 @@ End PutArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.PutArgs.
+#[local] Typeclasses Transparent vkv.PutArgs.
+
+Global Instance PutArgs_wf : struct.Wf vkv.PutArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_PutArgs : Settable PutArgs.t :=
   settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
@@ -301,6 +321,9 @@ End instances.
 
 (* type vkv.getArgs *)
 Module getArgs.
+
+#[global] Transparent vkv.getArgs.
+#[global] Typeclasses Transparent vkv.getArgs.
 Section def.
 Context `{ffi_syntax}.
 Definition t := go_string.
@@ -321,6 +344,11 @@ End CondPutArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.CondPutArgs.
+#[local] Typeclasses Transparent vkv.CondPutArgs.
+
+Global Instance CondPutArgs_wf : struct.Wf vkv.CondPutArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_CondPutArgs : Settable CondPutArgs.t :=
   settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.

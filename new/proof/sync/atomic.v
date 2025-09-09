@@ -21,7 +21,6 @@ Proof.
   wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto. wp_call.
-  Typeclasses Opaque atomic.noCopy.
   iEval (rewrite is_pkg_init_unfold /=). wp_auto.
   wp_bind.
   simpl.

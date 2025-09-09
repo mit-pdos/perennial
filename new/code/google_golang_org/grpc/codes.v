@@ -16,6 +16,8 @@ Definition init : go_string := "google.golang.org/grpc/codes.init"%go.
 Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonicalString"%go.
 
 Definition Code : go_type := uint32T.
+#[global] Typeclasses Opaque Code.
+#[global] Opaque Code.
 
 Axiom OK : val.
 

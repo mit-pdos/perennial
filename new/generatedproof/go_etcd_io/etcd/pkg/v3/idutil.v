@@ -24,6 +24,11 @@ End Generator.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent idutil.Generator.
+#[local] Typeclasses Transparent idutil.Generator.
+
+Global Instance Generator_wf : struct.Wf idutil.Generator.
+Proof. apply _. Qed.
 
 Global Instance settable_Generator : Settable Generator.t :=
   settable! Generator.mk < Generator.prefix'; Generator.suffix' >.

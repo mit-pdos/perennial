@@ -26,6 +26,11 @@ End HashChain.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent hashchain.HashChain.
+#[local] Typeclasses Transparent hashchain.HashChain.
+
+Global Instance HashChain_wf : struct.Wf hashchain.HashChain.
+Proof. apply _. Qed.
 
 Global Instance settable_HashChain : Settable HashChain.t :=
   settable! HashChain.mk < HashChain.predLastLink'; HashChain.lastLink'; HashChain.vals' >.

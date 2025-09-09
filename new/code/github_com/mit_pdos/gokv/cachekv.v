@@ -20,12 +20,16 @@ Definition cacheValue : go_type := structT [
   "v" :: stringT;
   "l" :: uint64T
 ].
+#[global] Typeclasses Opaque cacheValue.
+#[global] Opaque cacheValue.
 
 Definition CacheKv : go_type := structT [
   "kv" :: kv.KvCput;
   "mu" :: ptrT;
   "cache" :: mapT stringT cacheValue
 ].
+#[global] Typeclasses Opaque CacheKv.
+#[global] Opaque CacheKv.
 
 Definition DecodeValue : go_string := "github.com/mit-pdos/gokv/cachekv.DecodeValue"%go.
 

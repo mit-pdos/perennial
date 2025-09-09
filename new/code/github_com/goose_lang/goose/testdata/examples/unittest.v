@@ -62,6 +62,8 @@ Section code.
 
 
 Definition Foo : go_type := arrayT (W64 10) uint64T.
+#[global] Typeclasses Opaque Foo.
+#[global] Opaque Foo.
 
 Definition takesArray : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.takesArray"%go.
 
@@ -309,6 +311,8 @@ Definition chanRangeⁱᵐᵖˡ : val :=
 
 Definition importantStruct : go_type := structT [
 ].
+#[global] Typeclasses Opaque importantStruct.
+#[global] Opaque importantStruct.
 
 Definition doSubtleThings : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.doSubtleThings"%go.
 
@@ -527,6 +531,8 @@ Definition ifStmtInitializationⁱᵐᵖˡ : val :=
     else return: ((![#uint64T] "y") - #(W64 1))))).
 
 Definition stringWrapper : go_type := stringT.
+#[global] Typeclasses Opaque stringWrapper.
+#[global] Opaque stringWrapper.
 
 Definition typedLiteral : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.typedLiteral"%go.
 
@@ -593,6 +599,8 @@ Definition stringWrapperToStringⁱᵐᵖˡ : val :=
     return: (![#stringWrapper] "s")).
 
 Definition Uint32 : go_type := uint32T.
+#[global] Typeclasses Opaque Uint32.
+#[global] Opaque Uint32.
 
 Definition testU32NewtypeLen : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.testU32NewtypeLen"%go.
 
@@ -802,6 +810,8 @@ Definition getRandomⁱᵐᵖˡ : val :=
 Definition diskWrapper : go_type := structT [
   "d" :: disk.Disk
 ].
+#[global] Typeclasses Opaque diskWrapper.
+#[global] Opaque diskWrapper.
 
 Definition diskArgument : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.diskArgument"%go.
 
@@ -821,18 +831,26 @@ Definition diskArgumentⁱᵐᵖˡ : val :=
 Definition embedA : go_type := structT [
   "a" :: uint64T
 ].
+#[global] Typeclasses Opaque embedA.
+#[global] Opaque embedA.
 
 Definition embedB : go_type := structT [
   "embedA" :: embedA
 ].
+#[global] Typeclasses Opaque embedB.
+#[global] Opaque embedB.
 
 Definition embedC : go_type := structT [
   "embedB" :: ptrT
 ].
+#[global] Typeclasses Opaque embedC.
+#[global] Opaque embedC.
 
 Definition embedD : go_type := structT [
   "embedC" :: embedC
 ].
+#[global] Typeclasses Opaque embedD.
+#[global] Opaque embedD.
 
 (* go: embedded.go:19:17 *)
 Definition embedA__Fooⁱᵐᵖˡ : val :=
@@ -959,6 +977,8 @@ Definition anonymousParamⁱᵐᵖˡ : val :=
 Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
+#[global] Typeclasses Opaque Enc.
+#[global] Opaque Enc.
 
 (* go: encoding.go:9:15 *)
 Definition Enc__consumeⁱᵐᵖˡ : val :=
@@ -999,6 +1019,8 @@ Definition Enc__UInt32ⁱᵐᵖˡ : val :=
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
+#[global] Typeclasses Opaque Dec.
+#[global] Opaque Dec.
 
 (* go: encoding.go:27:15 *)
 Definition Dec__consumeⁱᵐᵖˡ : val :=
@@ -1031,6 +1053,8 @@ Definition Dec__UInt32ⁱᵐᵖˡ : val :=
      (func_call #primitive.UInt32Get) "$a0")).
 
 Definition Enum1 : go_type := uint64T.
+#[global] Typeclasses Opaque Enum1.
+#[global] Opaque Enum1.
 
 Definition Enum1A : val := #(W64 0).
 
@@ -1039,6 +1063,8 @@ Definition Enum1B : val := #(W64 1).
 Definition Enum1C : val := #(W64 2).
 
 Definition Enum2 : go_type := intT.
+#[global] Typeclasses Opaque Enum2.
+#[global] Opaque Enum2.
 
 (* line comment 1 *)
 Definition Enum2A : val := #(W64 1).
@@ -1153,14 +1179,20 @@ Definition FuncVarⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition Fooer : go_type := interfaceT.
+#[global] Typeclasses Opaque Fooer.
+#[global] Opaque Fooer.
 
 Definition concreteFooer : go_type := structT [
   "a" :: uint64T
 ].
+#[global] Typeclasses Opaque concreteFooer.
+#[global] Opaque concreteFooer.
 
 Definition FooerUser : go_type := structT [
   "f" :: Fooer
 ].
+#[global] Typeclasses Opaque FooerUser.
+#[global] Opaque FooerUser.
 
 (* go: interfaces.go:15:25 *)
 Definition concreteFooer__Fooⁱᵐᵖˡ : val :=
@@ -1365,9 +1397,13 @@ Definition testConversionInMultiplePassThroughⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition PointerInterface : go_type := interfaceT.
+#[global] Typeclasses Opaque PointerInterface.
+#[global] Opaque PointerInterface.
 
 Definition concrete1 : go_type := structT [
 ].
+#[global] Typeclasses Opaque concrete1.
+#[global] Opaque concrete1.
 
 (* go: interfaces.go:106:20 *)
 Definition concrete1__Fooⁱᵐᵖˡ : val :=
@@ -1427,8 +1463,12 @@ Definition signedMidpointⁱᵐᵖˡ : val :=
     return: (((![#intT] "x") + (![#intT] "y")) `quots` #(W64 2))).
 
 Definition my_u32 : go_type := uint32T.
+#[global] Typeclasses Opaque my_u32.
+#[global] Opaque my_u32.
 
 Definition also_u32 : go_type := my_u32.
+#[global] Typeclasses Opaque also_u32.
+#[global] Opaque also_u32.
 
 Definition ConstWithAbbrevType : val := #(W32 3).
 
@@ -1437,6 +1477,8 @@ Definition allTheLiterals : go_type := structT [
   "s" :: stringT;
   "b" :: boolT
 ].
+#[global] Typeclasses Opaque allTheLiterals.
+#[global] Opaque allTheLiterals.
 
 Definition normalLiterals : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.normalLiterals"%go.
 
@@ -1538,6 +1580,8 @@ Definition useCondVarⁱᵐᵖˡ : val :=
 Definition hasCondVar : go_type := structT [
   "cond" :: ptrT
 ].
+#[global] Typeclasses Opaque hasCondVar.
+#[global] Opaque hasCondVar.
 
 Definition ToBeDebugged : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.ToBeDebugged"%go.
 
@@ -1828,8 +1872,12 @@ Definition MapSizeⁱᵐᵖˡ : val :=
      map.len "$a0"))).
 
 Definition IntWrapper : go_type := uint64T.
+#[global] Typeclasses Opaque IntWrapper.
+#[global] Opaque IntWrapper.
 
 Definition MapWrapper : go_type := mapT uint64T boolT.
+#[global] Typeclasses Opaque MapWrapper.
+#[global] Opaque MapWrapper.
 
 Definition MapTypeAliases : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.MapTypeAliases"%go.
 
@@ -1854,6 +1902,8 @@ Definition mapElem : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
+#[global] Typeclasses Opaque mapElem.
+#[global] Opaque mapElem.
 
 Definition mapUpdateField : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapUpdateField"%go.
 
@@ -2003,6 +2053,8 @@ Definition ComparePointerToNilⁱᵐᵖˡ : val :=
 Definition containsPointer : go_type := structT [
   "s" :: ptrT
 ].
+#[global] Typeclasses Opaque containsPointer.
+#[global] Opaque containsPointer.
 
 Definition useNilField : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useNilField"%go.
 
@@ -2100,6 +2152,8 @@ Definition Negativeⁱᵐᵖˡ : val :=
 Definition wrapExternalStruct : go_type := structT [
   "j" :: ptrT
 ].
+#[global] Typeclasses Opaque wrapExternalStruct.
+#[global] Opaque wrapExternalStruct.
 
 (* go: package.go:13:29 *)
 Definition wrapExternalStruct__joinⁱᵐᵖˡ : val :=
@@ -2132,11 +2186,15 @@ Definition Oracleⁱᵐᵖˡ : val :=
 Definition typing : go_type := structT [
   "proph" :: ptrT
 ].
+#[global] Typeclasses Opaque typing.
+#[global] Opaque typing.
 
 Definition composite : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
+#[global] Typeclasses Opaque composite.
+#[global] Opaque composite.
 
 Definition ReassignVars : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.ReassignVars"%go.
 
@@ -2178,6 +2236,8 @@ Definition recurⁱᵐᵖˡ : val :=
 
 Definition R : go_type := structT [
 ].
+#[global] Typeclasses Opaque R.
+#[global] Opaque R.
 
 (* go: recursive.go:10:13 *)
 Definition R__recurMethodⁱᵐᵖˡ : val :=
@@ -2189,10 +2249,14 @@ Definition R__recurMethodⁱᵐᵖˡ : val :=
 Definition Other : go_type := structT [
   "RecursiveEmbedded" :: ptrT
 ].
+#[global] Typeclasses Opaque Other.
+#[global] Opaque Other.
 
 Definition RecursiveEmbedded : go_type := structT [
   "Other" :: Other
 ].
+#[global] Typeclasses Opaque RecursiveEmbedded.
+#[global] Opaque RecursiveEmbedded.
 
 (* go: recursive.go:22:29 *)
 Definition RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ : val :=
@@ -2214,6 +2278,8 @@ Definition useRenamedImportⁱᵐᵖˡ : val :=
 Definition Block : go_type := structT [
   "Value" :: uint64T
 ].
+#[global] Typeclasses Opaque Block.
+#[global] Opaque Block.
 
 Definition Disk1 : val := #(W64 0).
 
@@ -2435,6 +2501,8 @@ Definition VoidImplicitReturnInBranchⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition SliceAlias : go_type := sliceT.
+#[global] Typeclasses Opaque SliceAlias.
+#[global] Opaque SliceAlias.
 
 Definition sliceOps : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.sliceOps"%go.
 
@@ -2474,10 +2542,14 @@ Definition makeSingletonSliceⁱᵐᵖˡ : val :=
 Definition thing : go_type := structT [
   "x" :: uint64T
 ].
+#[global] Typeclasses Opaque thing.
+#[global] Opaque thing.
 
 Definition sliceOfThings : go_type := structT [
   "things" :: sliceT
 ].
+#[global] Typeclasses Opaque sliceOfThings.
+#[global] Opaque sliceOfThings.
 
 (* go: slices.go:26:25 *)
 Definition sliceOfThings__getThingRefⁱᵐᵖˡ : val :=
@@ -2596,6 +2668,8 @@ Definition Point : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
+#[global] Typeclasses Opaque Point.
+#[global] Opaque Point.
 
 (* go: struct_method.go:8:16 *)
 Definition Point__Addⁱᵐᵖˡ : val :=
@@ -2660,12 +2734,16 @@ Definition TwoInts : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
+#[global] Typeclasses Opaque TwoInts.
+#[global] Opaque TwoInts.
 
 Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition NewS : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.NewS"%go.
 
@@ -2812,9 +2890,13 @@ Definition sleepⁱᵐᵖˡ : val :=
 Definition B : go_type := structT [
   "a" :: sliceT
 ].
+#[global] Typeclasses Opaque B.
+#[global] Opaque B.
 
 Definition A : go_type := structT [
 ].
+#[global] Typeclasses Opaque A.
+#[global] Opaque A.
 
 Definition mkInt : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mkInt"%go.
 
@@ -2832,12 +2914,20 @@ Definition mkNothingⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition my_u64 : go_type := uint64T.
+#[global] Typeclasses Opaque my_u64.
+#[global] Opaque my_u64.
 
 Definition Timestamp : go_type := uint64T.
+#[global] Typeclasses Opaque Timestamp.
+#[global] Opaque Timestamp.
 
 Definition UseTypeAbbrev : go_type := uint64T.
+#[global] Typeclasses Opaque UseTypeAbbrev.
+#[global] Opaque UseTypeAbbrev.
 
 Definition UseNamedType : go_type := Timestamp.
+#[global] Typeclasses Opaque UseNamedType.
+#[global] Opaque UseNamedType.
 
 Definition convertToAlias : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.convertToAlias"%go.
 

@@ -23,6 +23,11 @@ End Tup.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent slices.Tup.
+#[local] Typeclasses Transparent slices.Tup.
+
+Global Instance Tup_wf : struct.Wf slices.Tup.
+Proof. apply _. Qed.
 
 Global Instance settable_Tup : Settable Tup.t :=
   settable! Tup.mk < Tup.ID'; Tup.Idx'; Tup.Ok'; Tup.Bar' >.

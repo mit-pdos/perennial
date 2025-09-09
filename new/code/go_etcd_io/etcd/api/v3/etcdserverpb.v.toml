@@ -3,6 +3,7 @@ translate = [
   "Compare_*",
   "isCompare_TargetUnion",
   "ResponseHeader",
+  "RequestHeader",
 
   "TxnRequest",
   "TxnResponse",

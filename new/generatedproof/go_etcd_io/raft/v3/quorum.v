@@ -15,6 +15,9 @@ Module quorum.
 
 (* type quorum.MajorityConfig *)
 Module MajorityConfig.
+
+#[global] Transparent quorum.MajorityConfig.
+#[global] Typeclasses Transparent quorum.MajorityConfig.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -23,6 +26,9 @@ End MajorityConfig.
 
 (* type quorum.JointConfig *)
 Module JointConfig.
+
+#[global] Transparent quorum.JointConfig.
+#[global] Typeclasses Transparent quorum.JointConfig.
 Section def.
 Context `{ffi_syntax}.
 Definition t := (vec MajorityConfig.t (uint.nat (W64 2))).
@@ -31,6 +37,9 @@ End JointConfig.
 
 (* type quorum.Index *)
 Module Index.
+
+#[global] Transparent quorum.Index.
+#[global] Typeclasses Transparent quorum.Index.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -39,6 +48,9 @@ End Index.
 
 (* type quorum.AckedIndexer *)
 Module AckedIndexer.
+
+#[global] Transparent quorum.AckedIndexer.
+#[global] Typeclasses Transparent quorum.AckedIndexer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -47,6 +59,9 @@ End AckedIndexer.
 
 (* type quorum.mapAckIndexer *)
 Module mapAckIndexer.
+
+#[global] Transparent quorum.mapAckIndexer.
+#[global] Typeclasses Transparent quorum.mapAckIndexer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -55,6 +70,9 @@ End mapAckIndexer.
 
 (* type quorum.VoteResult *)
 Module VoteResult.
+
+#[global] Transparent quorum.VoteResult.
+#[global] Typeclasses Transparent quorum.VoteResult.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w8.

@@ -28,6 +28,11 @@ End InMemoryStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent storage.InMemoryStateMachine.
+#[local] Typeclasses Transparent storage.InMemoryStateMachine.
+
+Global Instance InMemoryStateMachine_wf : struct.Wf storage.InMemoryStateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_InMemoryStateMachine : Settable InMemoryStateMachine.t :=
   settable! InMemoryStateMachine.mk < InMemoryStateMachine.ApplyReadonly'; InMemoryStateMachine.ApplyVolatile'; InMemoryStateMachine.GetState'; InMemoryStateMachine.SetState' >.
@@ -116,6 +121,11 @@ End StateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent storage.StateMachine.
+#[local] Typeclasses Transparent storage.StateMachine.
+
+Global Instance StateMachine_wf : struct.Wf storage.StateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.fname'; StateMachine.logFile'; StateMachine.logsize'; StateMachine.sealed'; StateMachine.epoch'; StateMachine.nextIndex'; StateMachine.smMem' >.

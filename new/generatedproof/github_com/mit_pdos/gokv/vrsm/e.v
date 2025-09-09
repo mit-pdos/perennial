@@ -11,6 +11,9 @@ Module e.
 
 (* type e.Error *)
 Module Error.
+
+#[global] Transparent e.Error.
+#[global] Typeclasses Transparent e.Error.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.

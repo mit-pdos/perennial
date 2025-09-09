@@ -23,6 +23,11 @@ End EtcdError.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent rpctypes.EtcdError.
+#[local] Typeclasses Transparent rpctypes.EtcdError.
+
+Global Instance EtcdError_wf : struct.Wf rpctypes.EtcdError.
+Proof. apply _. Qed.
 
 Global Instance settable_EtcdError : Settable EtcdError.t :=
   settable! EtcdError.mk < EtcdError.code'; EtcdError.desc' >.
@@ -90,6 +95,12 @@ End TokenFieldNameGRPCKey.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent rpctypes.TokenFieldNameGRPCKey.
+#[local] Typeclasses Transparent rpctypes.TokenFieldNameGRPCKey.
+
+Global Instance TokenFieldNameGRPCKey_wf : struct.Wf rpctypes.TokenFieldNameGRPCKey.
+Proof. apply _. Qed.
+
 Global Instance into_val_TokenFieldNameGRPCKey : IntoVal TokenFieldNameGRPCKey.t :=
   {| to_val_def v :=
     struct.val_aux rpctypes.TokenFieldNameGRPCKey [

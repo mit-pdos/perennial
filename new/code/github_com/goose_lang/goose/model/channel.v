@@ -17,6 +17,8 @@ Context `{ffi_syntax}.
 
 
 Definition OfferState : go_type := uint64T.
+#[global] Typeclasses Opaque OfferState.
+#[global] Opaque OfferState.
 
 Definition Buffered : val := #(W64 0).
 
@@ -40,6 +42,8 @@ Definition Channel : val :=
     (#"cap"%go, #uint64T);
     (#"v"%go, "T")
   ].
+  #[global] Typeclasses Opaque Channel.
+  #[global] Opaque Channel.
 
 Definition NewChannelRef : go_string := "github.com/goose-lang/goose/model/channel.NewChannelRef"%go.
 
@@ -386,6 +390,8 @@ Definition Channel__Capⁱᵐᵖˡ : val :=
     return: (![#uint64T] (struct.field_ref (Channel "T") #"cap"%go (![#ptrT] "c")))).
 
 Definition SelectDir : go_type := uint64T.
+#[global] Typeclasses Opaque SelectDir.
+#[global] Opaque SelectDir.
 
 (* case Chan <- Send *)
 Definition SelectSend : val := #(W64 0).
@@ -400,6 +406,8 @@ Definition SelectCase : val :=
     (#"Value"%go, "T");
     (#"Ok"%go, #boolT)
   ].
+  #[global] Typeclasses Opaque SelectCase.
+  #[global] Opaque SelectCase.
 
 Definition NewSendCase : go_string := "github.com/goose-lang/goose/model/channel.NewSendCase"%go.
 

@@ -22,6 +22,11 @@ End Changer.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent confchange.Changer.
+#[local] Typeclasses Transparent confchange.Changer.
+
+Global Instance Changer_wf : struct.Wf confchange.Changer.
+Proof. apply _. Qed.
 
 Global Instance settable_Changer : Settable Changer.t :=
   settable! Changer.mk < Changer.Tracker'; Changer.LastIndex' >.

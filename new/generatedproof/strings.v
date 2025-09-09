@@ -21,6 +21,11 @@ End Builder.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent strings.Builder.
+#[local] Typeclasses Transparent strings.Builder.
+
+Global Instance Builder_wf : struct.Wf strings.Builder.
+Proof. apply _. Qed.
 
 Global Instance settable_Builder : Settable Builder.t :=
   settable! Builder.mk < Builder.addr'; Builder.buf' >.

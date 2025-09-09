@@ -39,6 +39,12 @@ End noCopy.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sync.noCopy.
+#[local] Typeclasses Transparent sync.noCopy.
+
+Global Instance noCopy_wf : struct.Wf sync.noCopy.
+Proof. apply _. Qed.
+
 Global Instance into_val_noCopy : IntoVal noCopy.t :=
   {| to_val_def v :=
     struct.val_aux sync.noCopy [
@@ -113,6 +119,11 @@ End Once.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sync.Once.
+#[local] Typeclasses Transparent sync.Once.
+
+Global Instance Once_wf : struct.Wf sync.Once.
+Proof. apply _. Qed.
 
 Global Instance settable_Once : Settable Once.t :=
   settable! Once.mk < Once._0'; Once.done'; Once.m' >.
@@ -345,6 +356,11 @@ End RWMutex.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sync.RWMutex.
+#[local] Typeclasses Transparent sync.RWMutex.
+
+Global Instance RWMutex_wf : struct.Wf sync.RWMutex.
+Proof. apply _. Qed.
 
 Global Instance settable_RWMutex : Settable RWMutex.t :=
   settable! RWMutex.mk < RWMutex.w'; RWMutex.writerSem'; RWMutex.readerSem'; RWMutex.readerCount'; RWMutex.readerWait' >.
@@ -424,6 +440,9 @@ End instances.
 
 (* type sync.rlocker *)
 Module rlocker.
+
+#[global] Transparent sync.rlocker.
+#[global] Typeclasses Transparent sync.rlocker.
 Section def.
 Context `{ffi_syntax}.
 Definition t := RWMutex.t.
@@ -444,6 +463,11 @@ End WaitGroup.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sync.WaitGroup.
+#[local] Typeclasses Transparent sync.WaitGroup.
+
+Global Instance WaitGroup_wf : struct.Wf sync.WaitGroup.
+Proof. apply _. Qed.
 
 Global Instance settable_WaitGroup : Settable WaitGroup.t :=
   settable! WaitGroup.mk < WaitGroup.noCopy'; WaitGroup.state'; WaitGroup.sema' >.

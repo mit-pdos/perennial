@@ -27,6 +27,11 @@ End Log.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent txn.Log.
+#[local] Typeclasses Transparent txn.Log.
+
+Global Instance Log_wf : struct.Wf txn.Log.
+Proof. apply _. Qed.
 
 Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.log'; Log.locks' >.
@@ -97,6 +102,11 @@ End Txn.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent txn.Txn.
+#[local] Typeclasses Transparent txn.Txn.
+
+Global Instance Txn_wf : struct.Wf txn.Txn.
+Proof. apply _. Qed.
 
 Global Instance settable_Txn : Settable Txn.t :=
   settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.

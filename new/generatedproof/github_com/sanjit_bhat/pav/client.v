@@ -32,6 +32,11 @@ End Client.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent client.Client.
+#[local] Typeclasses Transparent client.Client.
+
+Global Instance Client_wf : struct.Wf client.Client.
+Proof. apply _. Qed.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.uid'; Client.pend'; Client.last'; Client.serv' >.
@@ -116,6 +121,11 @@ End pending.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent client.pending.
+#[local] Typeclasses Transparent client.pending.
+
+Global Instance pending_wf : struct.Wf client.pending.
+Proof. apply _. Qed.
 
 Global Instance settable_pending : Settable pending.t :=
   settable! pending.mk < pending.nextVer'; pending.isPending'; pending.pk' >.
@@ -194,6 +204,11 @@ End epoch.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent client.epoch.
+#[local] Typeclasses Transparent client.epoch.
+
+Global Instance epoch_wf : struct.Wf client.epoch.
+Proof. apply _. Qed.
 
 Global Instance settable_epoch : Settable epoch.t :=
   settable! epoch.mk < epoch.epoch'; epoch.dig'; epoch.link'; epoch.sig' >.
@@ -279,6 +294,11 @@ End serv.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent client.serv.
+#[local] Typeclasses Transparent client.serv.
+
+Global Instance serv_wf : struct.Wf client.serv.
+Proof. apply _. Qed.
 
 Global Instance settable_serv : Settable serv.t :=
   settable! serv.mk < serv.cli'; serv.sigPk'; serv.vrfPk'; serv.vrfSig' >.
@@ -362,6 +382,11 @@ End Evid.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent client.Evid.
+#[local] Typeclasses Transparent client.Evid.
+
+Global Instance Evid_wf : struct.Wf client.Evid.
+Proof. apply _. Qed.
 
 Global Instance settable_Evid : Settable Evid.t :=
   settable! Evid.mk < Evid.vrf'; Evid.link' >.
@@ -433,6 +458,11 @@ End evidVrf.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent client.evidVrf.
+#[local] Typeclasses Transparent client.evidVrf.
+
+Global Instance evidVrf_wf : struct.Wf client.evidVrf.
+Proof. apply _. Qed.
 
 Global Instance settable_evidVrf : Settable evidVrf.t :=
   settable! evidVrf.mk < evidVrf.vrfPk0'; evidVrf.sig0'; evidVrf.vrfPk1'; evidVrf.sig1' >.
@@ -519,6 +549,11 @@ End evidLink.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent client.evidLink.
+#[local] Typeclasses Transparent client.evidLink.
+
+Global Instance evidLink_wf : struct.Wf client.evidLink.
+Proof. apply _. Qed.
 
 Global Instance settable_evidLink : Settable evidLink.t :=
   settable! evidLink.mk < evidLink.epoch'; evidLink.link0'; evidLink.sig0'; evidLink.link1'; evidLink.sig1' >.

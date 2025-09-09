@@ -141,6 +141,8 @@ Definition JoinHandle : go_type := structT [
   "done" :: boolT;
   "cond" :: ptrT
 ].
+#[global] Typeclasses Opaque JoinHandle.
+#[global] Opaque JoinHandle.
 
 Definition newJoinHandle : go_string := "github.com/goose-lang/std.newJoinHandle"%go.
 

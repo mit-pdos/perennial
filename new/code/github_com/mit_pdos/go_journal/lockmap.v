@@ -19,11 +19,15 @@ Definition lockState : go_type := structT [
   "cond" :: ptrT;
   "waiters" :: uint64T
 ].
+#[global] Typeclasses Opaque lockState.
+#[global] Opaque lockState.
 
 Definition lockShard : go_type := structT [
   "mu" :: ptrT;
   "state" :: mapT uint64T ptrT
 ].
+#[global] Typeclasses Opaque lockShard.
+#[global] Opaque lockShard.
 
 Definition mkLockShard : go_string := "github.com/mit-pdos/go-journal/lockmap.mkLockShard"%go.
 
@@ -130,6 +134,8 @@ Definition NSHARD : val := #(W64 65537).
 Definition LockMap : go_type := structT [
   "shards" :: sliceT
 ].
+#[global] Typeclasses Opaque LockMap.
+#[global] Opaque LockMap.
 
 Definition MkLockMap : go_string := "github.com/mit-pdos/go-journal/lockmap.MkLockMap"%go.
 

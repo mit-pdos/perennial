@@ -107,6 +107,8 @@ Definition b32 : go_string := "sync/atomic.b32"%go.
 
 Definition noCopy : go_type := structT [
 ].
+#[global] Typeclasses Opaque noCopy.
+#[global] Opaque noCopy.
 
 Definition Pointer : val :=
   λ: "T", type.structT [
@@ -114,11 +116,15 @@ Definition Pointer : val :=
     (#"_1"%go, #noCopy);
     (#"v"%go, #ptrT)
   ].
+  #[global] Typeclasses Opaque Pointer.
+  #[global] Opaque Pointer.
 
 Definition Int32 : go_type := structT [
   "_0" :: noCopy;
   "v" :: int32T
 ].
+#[global] Typeclasses Opaque Int32.
+#[global] Opaque Int32.
 
 (* Load atomically loads and returns the value stored in x.
 
@@ -211,6 +217,8 @@ Definition Uint32 : go_type := structT [
   "_0" :: noCopy;
   "v" :: uint32T
 ].
+#[global] Typeclasses Opaque Uint32.
+#[global] Opaque Uint32.
 
 (* Load atomically loads and returns the value stored in x.
 
@@ -299,12 +307,16 @@ Definition Uint32__Orⁱᵐᵖˡ : val :=
 
 Definition align64 : go_type := structT [
 ].
+#[global] Typeclasses Opaque align64.
+#[global] Opaque align64.
 
 Definition Uint64 : go_type := structT [
   "_0" :: noCopy;
   "_1" :: align64;
   "v" :: uint64T
 ].
+#[global] Typeclasses Opaque Uint64.
+#[global] Opaque Uint64.
 
 (* Load atomically loads and returns the value stored in x.
 
@@ -396,11 +408,15 @@ Axiom Uintptr : go_type.
 Definition Value : go_type := structT [
   "v" :: interfaceT
 ].
+#[global] Typeclasses Opaque Value.
+#[global] Opaque Value.
 
 Definition efaceWords : go_type := structT [
   "typ" :: ptrT;
   "data" :: ptrT
 ].
+#[global] Typeclasses Opaque efaceWords.
+#[global] Opaque efaceWords.
 
 Definition firstStoreInProgress : go_string := "sync/atomic.firstStoreInProgress"%go.
 

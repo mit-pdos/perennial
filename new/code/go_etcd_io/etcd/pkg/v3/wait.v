@@ -21,15 +21,21 @@ Context `{ffi_syntax}.
 Definition defaultListElementLength : Z := 64.
 
 Definition Wait : go_type := interfaceT.
+#[global] Typeclasses Opaque Wait.
+#[global] Opaque Wait.
 
 Definition list' : go_type := structT [
   "e" :: sliceT
 ].
+#[global] Typeclasses Opaque list'.
+#[global] Opaque list'.
 
 Definition listElement : go_type := structT [
   "l" :: sync.RWMutex;
   "m" :: mapT uint64T (chanT interfaceT)
 ].
+#[global] Typeclasses Opaque listElement.
+#[global] Opaque listElement.
 
 Definition New : go_string := "go.etcd.io/etcd/pkg/v3/wait.New"%go.
 
@@ -141,6 +147,8 @@ Definition list__IsRegisteredⁱᵐᵖˡ : val :=
 Definition waitWithResponse : go_type := structT [
   "ch" :: chanT interfaceT
 ].
+#[global] Typeclasses Opaque waitWithResponse.
+#[global] Opaque waitWithResponse.
 
 Definition NewWithResponse : go_string := "go.etcd.io/etcd/pkg/v3/wait.NewWithResponse"%go.
 
@@ -177,6 +185,8 @@ Definition waitWithResponse__IsRegisteredⁱᵐᵖˡ : val :=
     Panic "$a0")).
 
 Definition WaitTime : go_type := interfaceT.
+#[global] Typeclasses Opaque WaitTime.
+#[global] Opaque WaitTime.
 
 Definition closec : go_string := "go.etcd.io/etcd/pkg/v3/wait.closec"%go.
 
@@ -186,6 +196,8 @@ Definition timeList : go_type := structT [
   "m" :: mapT uint64T (chanT (structT [
   ]))
 ].
+#[global] Typeclasses Opaque timeList.
+#[global] Opaque timeList.
 
 Definition NewTimeList : go_string := "go.etcd.io/etcd/pkg/v3/wait.NewTimeList"%go.
 

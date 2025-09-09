@@ -18,6 +18,8 @@ Context `{ffi_syntax}.
 Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 (* go: advrpc.go:19:18 *)
 Definition Server__handleⁱᵐᵖˡ : val :=
@@ -125,6 +127,8 @@ Definition NewServerⁱᵐᵖˡ : val :=
 Definition Client : go_type := structT [
   "conn" :: ptrT
 ].
+#[global] Typeclasses Opaque Client.
+#[global] Opaque Client.
 
 Definition Dial : go_string := "github.com/sanjit-bhat/pav/advrpc.Dial"%go.
 

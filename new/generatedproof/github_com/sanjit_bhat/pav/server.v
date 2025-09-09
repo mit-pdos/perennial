@@ -34,6 +34,11 @@ End StartReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.StartReply.
+#[local] Typeclasses Transparent server.StartReply.
+
+Global Instance StartReply_wf : struct.Wf server.StartReply.
+Proof. apply _. Qed.
 
 Global Instance settable_StartReply : Settable StartReply.t :=
   settable! StartReply.mk < StartReply.StartEpochLen'; StartReply.StartLink'; StartReply.ChainProof'; StartReply.LinkSig'; StartReply.VrfPk'; StartReply.VrfSig' >.
@@ -132,6 +137,11 @@ End PutArg.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.PutArg.
+#[local] Typeclasses Transparent server.PutArg.
+
+Global Instance PutArg_wf : struct.Wf server.PutArg.
+Proof. apply _. Qed.
 
 Global Instance settable_PutArg : Settable PutArg.t :=
   settable! PutArg.mk < PutArg.Uid'; PutArg.Pk'; PutArg.Ver' >.
@@ -209,6 +219,11 @@ End HistoryArg.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.HistoryArg.
+#[local] Typeclasses Transparent server.HistoryArg.
+
+Global Instance HistoryArg_wf : struct.Wf server.HistoryArg.
+Proof. apply _. Qed.
 
 Global Instance settable_HistoryArg : Settable HistoryArg.t :=
   settable! HistoryArg.mk < HistoryArg.Uid'; HistoryArg.PrevEpoch'; HistoryArg.PrevVerLen' >.
@@ -288,6 +303,11 @@ End HistoryReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.HistoryReply.
+#[local] Typeclasses Transparent server.HistoryReply.
+
+Global Instance HistoryReply_wf : struct.Wf server.HistoryReply.
+Proof. apply _. Qed.
 
 Global Instance settable_HistoryReply : Settable HistoryReply.t :=
   settable! HistoryReply.mk < HistoryReply.ChainProof'; HistoryReply.LinkSig'; HistoryReply.Hist'; HistoryReply.Bound'; HistoryReply.Err' >.
@@ -377,6 +397,11 @@ End AuditArg.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.AuditArg.
+#[local] Typeclasses Transparent server.AuditArg.
+
+Global Instance AuditArg_wf : struct.Wf server.AuditArg.
+Proof. apply _. Qed.
 
 Global Instance settable_AuditArg : Settable AuditArg.t :=
   settable! AuditArg.mk < AuditArg.PrevEpochLen' >.
@@ -439,6 +464,11 @@ End AuditReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.AuditReply.
+#[local] Typeclasses Transparent server.AuditReply.
+
+Global Instance AuditReply_wf : struct.Wf server.AuditReply.
+Proof. apply _. Qed.
 
 Global Instance settable_AuditReply : Settable AuditReply.t :=
   settable! AuditReply.mk < AuditReply.P'; AuditReply.Err' >.
@@ -511,6 +541,11 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.Server.
+#[local] Typeclasses Transparent server.Server.
+
+Global Instance Server_wf : struct.Wf server.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.secs'; Server.keys'; Server.hist'; Server.workQ' >.
@@ -602,6 +637,11 @@ End secrets.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.secrets.
+#[local] Typeclasses Transparent server.secrets.
+
+Global Instance secrets_wf : struct.Wf server.secrets.
+Proof. apply _. Qed.
 
 Global Instance settable_secrets : Settable secrets.t :=
   settable! secrets.mk < secrets.sig'; secrets.vrf'; secrets.commit' >.
@@ -678,6 +718,11 @@ End keyStore.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.keyStore.
+#[local] Typeclasses Transparent server.keyStore.
+
+Global Instance keyStore_wf : struct.Wf server.keyStore.
+Proof. apply _. Qed.
 
 Global Instance settable_keyStore : Settable keyStore.t :=
   settable! keyStore.mk < keyStore.hidden'; keyStore.plain' >.
@@ -748,6 +793,11 @@ End history.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.history.
+#[local] Typeclasses Transparent server.history.
+
+Global Instance history_wf : struct.Wf server.history.
+Proof. apply _. Qed.
 
 Global Instance settable_history : Settable history.t :=
   settable! history.mk < history.chain'; history.audits'; history.vrfPkSig' >.
@@ -825,6 +875,11 @@ End WQReq.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.WQReq.
+#[local] Typeclasses Transparent server.WQReq.
+
+Global Instance WQReq_wf : struct.Wf server.WQReq.
+Proof. apply _. Qed.
 
 Global Instance settable_WQReq : Settable WQReq.t :=
   settable! WQReq.mk < WQReq.Uid'; WQReq.Pk'; WQReq.Ver' >.
@@ -900,6 +955,11 @@ End WQResp.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.WQResp.
+#[local] Typeclasses Transparent server.WQResp.
+
+Global Instance WQResp_wf : struct.Wf server.WQResp.
+Proof. apply _. Qed.
 
 Global Instance settable_WQResp : Settable WQResp.t :=
   settable! WQResp.mk < WQResp.Err' >.
@@ -962,6 +1022,11 @@ End mapEntry.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.mapEntry.
+#[local] Typeclasses Transparent server.mapEntry.
+
+Global Instance mapEntry_wf : struct.Wf server.mapEntry.
+Proof. apply _. Qed.
 
 Global Instance settable_mapEntry : Settable mapEntry.t :=
   settable! mapEntry.mk < mapEntry.label'; mapEntry.val' >.
@@ -1034,6 +1099,11 @@ End Work.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.Work.
+#[local] Typeclasses Transparent server.Work.
+
+Global Instance Work_wf : struct.Wf server.Work.
+Proof. apply _. Qed.
 
 Global Instance settable_Work : Settable Work.t :=
   settable! Work.mk < Work.mu'; Work.cond'; Work.done'; Work.Req'; Work.Resp' >.
@@ -1125,6 +1195,11 @@ End WorkQ.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent server.WorkQ.
+#[local] Typeclasses Transparent server.WorkQ.
+
+Global Instance WorkQ_wf : struct.Wf server.WorkQ.
+Proof. apply _. Qed.
 
 Global Instance settable_WorkQ : Settable WorkQ.t :=
   settable! WorkQ.mk < WorkQ.mu'; WorkQ.work'; WorkQ.cond' >.

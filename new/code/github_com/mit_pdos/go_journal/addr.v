@@ -17,6 +17,8 @@ Definition Addr : go_type := structT [
   "Blkno" :: uint64T;
   "Off" :: uint64T
 ].
+#[global] Typeclasses Opaque Addr.
+#[global] Opaque Addr.
 
 (* go: addr.go:19:15 *)
 Definition Addr__Flatidⁱᵐᵖˡ : val :=

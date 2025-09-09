@@ -30,6 +30,11 @@ End RepBlock.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replicated_block.RepBlock.
+#[local] Typeclasses Transparent replicated_block.RepBlock.
+
+Global Instance RepBlock_wf : struct.Wf replicated_block.RepBlock.
+Proof. apply _. Qed.
 
 Global Instance settable_RepBlock : Settable RepBlock.t :=
   settable! RepBlock.mk < RepBlock.txn'; RepBlock.m'; RepBlock.a0'; RepBlock.a1' >.

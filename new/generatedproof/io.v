@@ -12,6 +12,9 @@ Module io.
 
 (* type io.Reader *)
 Module Reader.
+
+#[global] Transparent io.Reader.
+#[global] Typeclasses Transparent io.Reader.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -20,6 +23,9 @@ End Reader.
 
 (* type io.Writer *)
 Module Writer.
+
+#[global] Transparent io.Writer.
+#[global] Typeclasses Transparent io.Writer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.

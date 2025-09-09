@@ -69,23 +69,39 @@ Definition RawNode : go_type := structT [
   "prevHardSt" :: raftpb.HardState;
   "stepsOnAdvance" :: sliceT
 ].
+#[global] Typeclasses Opaque RawNode.
+#[global] Opaque RawNode.
 
 Definition Peer : go_type := structT [
   "ID" :: uint64T;
   "Context" :: sliceT
 ].
+#[global] Typeclasses Opaque Peer.
+#[global] Opaque Peer.
 
 Definition entryEncodingSize : go_type := uint64T.
+#[global] Typeclasses Opaque entryEncodingSize.
+#[global] Opaque entryEncodingSize.
 
 Definition entryPayloadSize : go_type := uint64T.
+#[global] Typeclasses Opaque entryPayloadSize.
+#[global] Opaque entryPayloadSize.
 
 Definition StateType : go_type := uint64T.
+#[global] Typeclasses Opaque StateType.
+#[global] Opaque StateType.
 
 Definition stepFunc : go_type := funcT.
+#[global] Typeclasses Opaque stepFunc.
+#[global] Opaque stepFunc.
 
 Definition Logger : go_type := interfaceT.
+#[global] Typeclasses Opaque Logger.
+#[global] Opaque Logger.
 
 Definition TraceLogger : go_type := interfaceT.
+#[global] Typeclasses Opaque TraceLogger.
+#[global] Opaque TraceLogger.
 
 Definition raft : go_type := structT [
   "id" :: uint64T;
@@ -121,8 +137,12 @@ Definition raft : go_type := structT [
   "pendingReadIndexMessages" :: sliceT;
   "traceLogger" :: TraceLogger
 ].
+#[global] Typeclasses Opaque raft.
+#[global] Opaque raft.
 
 Definition Storage : go_type := interfaceT.
+#[global] Typeclasses Opaque Storage.
+#[global] Opaque Storage.
 
 Definition unstable : go_type := structT [
   "snapshot" :: ptrT;
@@ -132,6 +152,8 @@ Definition unstable : go_type := structT [
   "offsetInProgress" :: uint64T;
   "logger" :: Logger
 ].
+#[global] Typeclasses Opaque unstable.
+#[global] Opaque unstable.
 
 Definition raftLog : go_type := structT [
   "storage" :: Storage;
@@ -144,6 +166,8 @@ Definition raftLog : go_type := structT [
   "applyingEntsSize" :: entryEncodingSize;
   "applyingEntsPaused" :: boolT
 ].
+#[global] Typeclasses Opaque raftLog.
+#[global] Opaque raftLog.
 
 Definition None : val := #(W64 0).
 
@@ -351,12 +375,16 @@ Definition entryID : go_type := structT [
   "term" :: uint64T;
   "index" :: uint64T
 ].
+#[global] Typeclasses Opaque entryID.
+#[global] Opaque entryID.
 
 Definition logSlice : go_type := structT [
   "term" :: uint64T;
   "prev" :: entryID;
   "entries" :: sliceT
 ].
+#[global] Typeclasses Opaque logSlice.
+#[global] Opaque logSlice.
 
 (* maybeAppend returns (0, false) if the entries cannot be appended. Otherwise,
    it returns (last index of new entries, true).
@@ -1627,6 +1655,8 @@ Definition DefaultLogger : go_type := structT [
   "Logger" :: ptrT;
   "debug" :: boolT
 ].
+#[global] Typeclasses Opaque DefaultLogger.
+#[global] Opaque DefaultLogger.
 
 (* go: logger.go:78:25 *)
 Definition DefaultLogger__EnableTimestampsⁱᵐᵖˡ : val :=
@@ -1828,6 +1858,8 @@ Definition headerⁱᵐᵖˡ : val :=
      (func_call #fmt.Sprintf) "$a0" "$a1")).
 
 Definition SnapshotStatus : go_type := intT.
+#[global] Typeclasses Opaque SnapshotStatus.
+#[global] Opaque SnapshotStatus.
 
 Definition SnapshotFinish : val := #(W64 1).
 
@@ -1839,6 +1871,8 @@ Definition SoftState : go_type := structT [
   "Lead" :: uint64T;
   "RaftState" :: StateType
 ].
+#[global] Typeclasses Opaque SoftState.
+#[global] Opaque SoftState.
 
 (* go: node.go:45:21 *)
 Definition SoftState__equalⁱᵐᵖˡ : val :=
@@ -1857,6 +1891,8 @@ Definition Ready : go_type := structT [
   "Messages" :: sliceT;
   "MustSync" :: boolT
 ].
+#[global] Typeclasses Opaque Ready.
+#[global] Opaque Ready.
 
 Definition isHardStateEqual : go_string := "go.etcd.io/raft/v3.isHardStateEqual"%go.
 
@@ -1890,6 +1926,8 @@ Definition IsEmptySnapⁱᵐᵖˡ : val :=
     return: ((![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "sp"))) = #(W64 0))).
 
 Definition Node : go_type := interfaceT.
+#[global] Typeclasses Opaque Node.
+#[global] Opaque Node.
 
 Definition setupNode : go_string := "go.etcd.io/raft/v3.setupNode"%go.
 
@@ -1897,6 +1935,8 @@ Definition msgWithResult : go_type := structT [
   "m" :: raftpb.Message;
   "result" :: chanT error
 ].
+#[global] Typeclasses Opaque msgWithResult.
+#[global] Opaque msgWithResult.
 
 Definition BasicStatus : go_type := structT [
   "ID" :: uint64T;
@@ -1905,12 +1945,16 @@ Definition BasicStatus : go_type := structT [
   "Applied" :: uint64T;
   "LeadTransferee" :: uint64T
 ].
+#[global] Typeclasses Opaque BasicStatus.
+#[global] Opaque BasicStatus.
 
 Definition Status : go_type := structT [
   "BasicStatus" :: BasicStatus;
   "Config" :: tracker.Config;
   "Progress" :: mapT uint64T tracker.Progress
 ].
+#[global] Typeclasses Opaque Status.
+#[global] Opaque Status.
 
 Definition node : go_type := structT [
   "propc" :: chanT msgWithResult;
@@ -1929,10 +1973,14 @@ Definition node : go_type := structT [
   "status" :: chanT (chanT Status);
   "rn" :: ptrT
 ].
+#[global] Typeclasses Opaque node.
+#[global] Opaque node.
 
 Definition newNode : go_string := "go.etcd.io/raft/v3.newNode"%go.
 
 Definition ReadOnlyOption : go_type := intT.
+#[global] Typeclasses Opaque ReadOnlyOption.
+#[global] Opaque ReadOnlyOption.
 
 Definition Config : go_type := structT [
   "ID" :: uint64T;
@@ -1955,6 +2003,8 @@ Definition Config : go_type := structT [
   "StepDownOnRemoval" :: boolT;
   "TraceLogger" :: TraceLogger
 ].
+#[global] Typeclasses Opaque Config.
+#[global] Opaque Config.
 
 Definition NewRawNode : go_string := "go.etcd.io/raft/v3.NewRawNode"%go.
 
@@ -2829,6 +2879,8 @@ Definition ErrProposalDropped : go_string := "go.etcd.io/raft/v3.ErrProposalDrop
 Definition lockedRand : go_type := structT [
   "mu" :: sync.Mutex
 ].
+#[global] Typeclasses Opaque lockedRand.
+#[global] Opaque lockedRand.
 
 (* go: raft.go:95:22 *)
 Definition lockedRand__Intnⁱᵐᵖˡ : val :=
@@ -2851,6 +2903,8 @@ Definition lockedRand__Intnⁱᵐᵖˡ : val :=
 Definition globalRand : go_string := "go.etcd.io/raft/v3.globalRand"%go.
 
 Definition CampaignType : go_type := stringT.
+#[global] Typeclasses Opaque CampaignType.
+#[global] Opaque CampaignType.
 
 Definition stmap : go_string := "go.etcd.io/raft/v3.stmap"%go.
 
@@ -3587,6 +3641,8 @@ Definition readOnly : go_type := structT [
   "pendingReadIndex" :: mapT stringT ptrT;
   "readIndexQueue" :: sliceT
 ].
+#[global] Typeclasses Opaque readOnly.
+#[global] Opaque readOnly.
 
 (* go: raft.go:784:16 *)
 Definition raft__resetⁱᵐᵖˡ : val :=
@@ -4544,6 +4600,8 @@ Definition readIndexStatus : go_type := structT [
   "index" :: uint64T;
   "acks" :: mapT uint64T boolT
 ].
+#[global] Typeclasses Opaque readIndexStatus.
+#[global] Opaque readIndexStatus.
 
 Definition releasePendingReadIndexMessages : go_string := "go.etcd.io/raft/v3.releasePendingReadIndexMessages"%go.
 
@@ -5113,6 +5171,8 @@ Definition ReadState : go_type := structT [
   "Index" :: uint64T;
   "RequestCtx" :: sliceT
 ].
+#[global] Typeclasses Opaque ReadState.
+#[global] Opaque ReadState.
 
 (* go: raft.go:1713:6 *)
 Definition stepFollowerⁱᵐᵖˡ : val :=
@@ -6838,6 +6898,8 @@ Definition RawNode__BasicStatusⁱᵐᵖˡ : val :=
      (func_call #getBasicStatus) "$a0")).
 
 Definition ProgressType : go_type := byteT.
+#[global] Typeclasses Opaque ProgressType.
+#[global] Opaque ProgressType.
 
 Definition ProgressTypePeer : val := #(W8 0).
 
@@ -7187,6 +7249,8 @@ Definition StateTraceDeployed : val := #false.
 
 Definition TracingEvent : go_type := structT [
 ].
+#[global] Typeclasses Opaque TracingEvent.
+#[global] Opaque TracingEvent.
 
 (* go: state_trace_nop.go:30:6 *)
 Definition traceInitStateⁱᵐᵖˡ : val :=
@@ -7391,6 +7455,8 @@ Definition inMemStorageCallStats : go_type := structT [
   "term" :: intT;
   "snapshot" :: intT
 ].
+#[global] Typeclasses Opaque inMemStorageCallStats.
+#[global] Opaque inMemStorageCallStats.
 
 Definition MemoryStorage : go_type := structT [
   "Mutex" :: sync.Mutex;
@@ -7399,6 +7465,8 @@ Definition MemoryStorage : go_type := structT [
   "ents" :: sliceT;
   "callStats" :: inMemStorageCallStats
 ].
+#[global] Typeclasses Opaque MemoryStorage.
+#[global] Opaque MemoryStorage.
 
 Definition NewMemoryStorage : go_string := "go.etcd.io/raft/v3.NewMemoryStorage"%go.
 
@@ -8004,6 +8072,8 @@ Definition DescribeReady : go_string := "go.etcd.io/raft/v3.DescribeReady"%go.
 Definition DescribeMessage : go_string := "go.etcd.io/raft/v3.DescribeMessage"%go.
 
 Definition EntryFormatter : go_type := funcT.
+#[global] Typeclasses Opaque EntryFormatter.
+#[global] Opaque EntryFormatter.
 
 Definition DescribeEntries : go_string := "go.etcd.io/raft/v3.DescribeEntries"%go.
 

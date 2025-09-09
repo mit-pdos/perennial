@@ -32,12 +32,16 @@ Definition Client : go_type := structT [
   "last" :: ptrT;
   "serv" :: ptrT
 ].
+#[global] Typeclasses Opaque Client.
+#[global] Opaque Client.
 
 Definition pending : go_type := structT [
   "nextVer" :: uint64T;
   "isPending" :: boolT;
   "pk" :: sliceT
 ].
+#[global] Typeclasses Opaque pending.
+#[global] Opaque pending.
 
 Definition epoch : go_type := structT [
   "epoch" :: uint64T;
@@ -45,6 +49,8 @@ Definition epoch : go_type := structT [
   "link" :: sliceT;
   "sig" :: sliceT
 ].
+#[global] Typeclasses Opaque epoch.
+#[global] Opaque epoch.
 
 Definition serv : go_type := structT [
   "cli" :: ptrT;
@@ -52,6 +58,8 @@ Definition serv : go_type := structT [
   "vrfPk" :: ptrT;
   "vrfSig" :: sliceT
 ].
+#[global] Typeclasses Opaque serv.
+#[global] Opaque serv.
 
 (* Put queues pk for insertion.
    if we have a pending Put, it requires the pk to be the same.
@@ -294,6 +302,8 @@ Definition Evid : go_type := structT [
   "vrf" :: ptrT;
   "link" :: ptrT
 ].
+#[global] Typeclasses Opaque Evid.
+#[global] Opaque Evid.
 
 Definition evidLink : go_type := structT [
   "epoch" :: uint64T;
@@ -302,6 +312,8 @@ Definition evidLink : go_type := structT [
   "link1" :: sliceT;
   "sig1" :: sliceT
 ].
+#[global] Typeclasses Opaque evidLink.
+#[global] Opaque evidLink.
 
 Definition evidVrf : go_type := structT [
   "vrfPk0" :: sliceT;
@@ -309,6 +321,8 @@ Definition evidVrf : go_type := structT [
   "vrfPk1" :: sliceT;
   "sig1" :: sliceT
 ].
+#[global] Typeclasses Opaque evidVrf.
+#[global] Opaque evidVrf.
 
 (* go: client.go:148:18 *)
 Definition Client__Auditⁱᵐᵖˡ : val :=

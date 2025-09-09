@@ -27,6 +27,8 @@ Definition inflight : go_type := structT [
   "index" :: uint64T;
   "bytes" :: uint64T
 ].
+#[global] Typeclasses Opaque inflight.
+#[global] Opaque inflight.
 
 Definition Inflights : go_type := structT [
   "start" :: intT;
@@ -36,6 +38,8 @@ Definition Inflights : go_type := structT [
   "maxBytes" :: uint64T;
   "buffer" :: sliceT
 ].
+#[global] Typeclasses Opaque Inflights.
+#[global] Opaque Inflights.
 
 Definition NewInflights : go_string := "go.etcd.io/raft/v3/tracker.NewInflights"%go.
 
@@ -219,6 +223,8 @@ Definition Inflights__resetⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition StateType : go_type := uint64T.
+#[global] Typeclasses Opaque StateType.
+#[global] Opaque StateType.
 
 Definition Progress : go_type := structT [
   "Match" :: uint64T;
@@ -231,6 +237,8 @@ Definition Progress : go_type := structT [
   "Inflights" :: ptrT;
   "IsLearner" :: boolT
 ].
+#[global] Typeclasses Opaque Progress.
+#[global] Opaque Progress.
 
 (* ResetState moves the Progress into the specified State, resetting MsgAppFlowPaused,
    PendingSnapshot, and Inflights.
@@ -531,6 +539,8 @@ Definition Progress__Stringⁱᵐᵖˡ : val :=
     return: ((method_call #(ptrT.id strings.Builder.id) #"String"%go "buf") #())).
 
 Definition ProgressMap : go_type := mapT uint64T ptrT.
+#[global] Typeclasses Opaque ProgressMap.
+#[global] Opaque ProgressMap.
 
 (* String prints the ProgressMap in sorted key order, one Progress per line.
 
@@ -584,6 +594,8 @@ Definition Config : go_type := structT [
   "LearnersNext" :: mapT uint64T (structT [
   ])
 ].
+#[global] Typeclasses Opaque Config.
+#[global] Opaque Config.
 
 (* go: tracker.go:80:17 *)
 Definition Config__Stringⁱᵐᵖˡ : val :=
@@ -682,6 +694,8 @@ Definition ProgressTracker : go_type := structT [
   "MaxInflight" :: intT;
   "MaxInflightBytes" :: uint64T
 ].
+#[global] Typeclasses Opaque ProgressTracker.
+#[global] Opaque ProgressTracker.
 
 Definition MakeProgressTracker : go_string := "go.etcd.io/raft/v3/tracker.MakeProgressTracker"%go.
 
@@ -752,6 +766,8 @@ Definition ProgressTracker__IsSingletonⁱᵐᵖˡ : val :=
      map.len "$a0") = #(W64 0)))).
 
 Definition matchAckIndexer : go_type := mapT uint64T ptrT.
+#[global] Typeclasses Opaque matchAckIndexer.
+#[global] Opaque matchAckIndexer.
 
 (* AckedIndex implements IndexLookuper.
 

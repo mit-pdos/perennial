@@ -34,7 +34,8 @@ Implicit Type γ : EtcdServer_names.
 
 Definition is_EtcdServer (s : loc) γ : iProp Σ :=
   ∃ (reqIDGen : loc),
-    "reqIDGen" ∷ s ↦s[etcdserver.EtcdServer :: "reqIDGen"]□ reqIDGen ∗
+    "#reqIDGen" ∷ s ↦s[etcdserver.EtcdServer :: "reqIDGen"]□ reqIDGen ∗
+    "#HreqIDGen" ∷ is_Generator reqIDGen (λ _, True)%I ∗
     "_" ∷ True
 .
 #[global] Opaque is_EtcdServer.
@@ -69,7 +70,18 @@ Proof.
   wp_auto.
   iNamed "Hsrv".
   wp_auto.
-  (* FIXME: verify [idutil] library. *)
+  wp_apply (wp_Generator__Next with "[]").
+  { iFrame "#". }
+  iIntros "%i _".
+  wp_pures.
+  rewrite -default_val_eq_zero_val.
+  rewrite -default_val_eq_zero_val.
+  rewrite -default_val_eq_zero_val.
+  wp_auto.
+  wp_bind.
+
+  (* TODO: spec for `InternalRaftRequest.Marshal` *)
+
 Admitted.
 
 End wps.

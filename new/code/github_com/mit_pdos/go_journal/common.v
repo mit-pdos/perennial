@@ -31,8 +31,12 @@ Definition HDRADDRS : val := #(W64 511).
 Definition LOGSIZE : val := #(W64 513).
 
 Definition Inum : go_type := uint64T.
+#[global] Typeclasses Opaque Inum.
+#[global] Opaque Inum.
 
 Definition Bnum : go_type := uint64T.
+#[global] Typeclasses Opaque Bnum.
+#[global] Opaque Bnum.
 
 Definition NULLINUM : val := #(W64 0).
 

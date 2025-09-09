@@ -24,6 +24,8 @@ Definition RepBlock : go_type := structT [
   "a0" :: addr.Addr;
   "a1" :: addr.Addr
 ].
+#[global] Typeclasses Opaque RepBlock.
+#[global] Opaque RepBlock.
 
 Definition Open : go_string := "github.com/mit-pdos/go-journal/jrnl_replication.Open"%go.
 

@@ -23,6 +23,8 @@ Definition InMemoryStateMachine : go_type := structT [
   "GetState" :: funcT;
   "SetState" :: funcT
 ].
+#[global] Typeclasses Opaque InMemoryStateMachine.
+#[global] Opaque InMemoryStateMachine.
 
 Definition MAX_LOG_SIZE : val := #(W64 68719476736).
 
@@ -35,6 +37,8 @@ Definition StateMachine : go_type := structT [
   "nextIndex" :: uint64T;
   "smMem" :: ptrT
 ].
+#[global] Typeclasses Opaque StateMachine.
+#[global] Opaque StateMachine.
 
 (* FIXME: better name; this isn't the same as "MakeDurable"
 

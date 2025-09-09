@@ -13,6 +13,8 @@ Context `{ffi_syntax}.
 
 
 Definition Status : go_type := status.Status.
+#[global] Typeclasses Opaque Status.
+#[global] Opaque Status.
 
 Definition New : go_string := "google.golang.org/grpc/status.New"%go.
 

@@ -14,6 +14,8 @@ Context `{ffi_syntax}.
 
 
 Definition Event_EventType : go_type := int32T.
+#[global] Typeclasses Opaque Event_EventType.
+#[global] Opaque Event_EventType.
 
 Definition PUT : val := #(W32 0).
 
@@ -39,6 +41,8 @@ Definition KeyValue : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque KeyValue.
+#[global] Opaque KeyValue.
 
 Definition xxx_messageInfo_KeyValue : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_KeyValue"%go.
 
@@ -51,6 +55,8 @@ Definition Event : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+#[global] Typeclasses Opaque Event.
+#[global] Opaque Event.
 
 Definition xxx_messageInfo_Event : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_Event"%go.
 

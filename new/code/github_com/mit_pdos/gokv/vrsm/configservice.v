@@ -87,6 +87,8 @@ Definition Clerk : go_type := structT [
   "cls" :: sliceT;
   "leader" :: uint64T
 ].
+#[global] Typeclasses Opaque Clerk.
+#[global] Opaque Clerk.
 
 Definition RPC_RESERVEEPOCH : val := #(W64 0).
 
@@ -357,6 +359,8 @@ Definition state : go_type := structT [
   "wantLeaseToExpire" :: boolT;
   "config" :: sliceT
 ].
+#[global] Typeclasses Opaque state.
+#[global] Opaque state.
 
 Definition encodeState : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.encodeState"%go.
 
@@ -442,6 +446,8 @@ Definition decodeStateⁱᵐᵖˡ : val :=
 Definition Server : go_type := structT [
   "s" :: ptrT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 (* go: server.go:56:18 *)
 Definition Server__tryAcquireⁱᵐᵖˡ : val :=

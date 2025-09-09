@@ -17,20 +17,25 @@ Context `{ffi_syntax}.
 Definition ty (T : go_type) : go_type := structT [
   "Value" :: T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   Value' : T';
 }.
 End def.
 End Box.
 
+#[local] Transparent Box.ty.
 Arguments Box.mk {_} { T' } {_ T _} .
 Arguments Box.t {_} T' {_ T _} .
 
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
+#[local] Transparent generics.Box.
+#[local] Typeclasses Transparent generics.Box.
 
-Global Instance Box_ty_wf : struct.Wf (Box.ty T).
+Global Instance Box_wf : struct.Wf (Box.ty T).
 Proof. apply _. Qed.
 
 Global Instance settable_Box : Settable (Box.t T') :=
@@ -99,6 +104,8 @@ Definition ty (T : go_type) : go_type := structT [
   "Z" :: ptrT;
   "W" :: uint64T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   X' : T';
   Y' : loc;
@@ -108,14 +115,17 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Container.
 
+#[local] Transparent Container.ty.
 Arguments Container.mk {_} { T' } {_ T _} .
 Arguments Container.t {_} T' {_ T _} .
 
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
+#[local] Transparent generics.Container.
+#[local] Typeclasses Transparent generics.Container.
 
-Global Instance Container_ty_wf : struct.Wf (Container.ty T).
+Global Instance Container_wf : struct.Wf (Container.ty T).
 Proof. apply _. Qed.
 
 Global Instance settable_Container : Settable (Container.t T') :=
@@ -202,14 +212,22 @@ Context `{ffi_syntax}.
 Definition ty : go_type := structT [
   "X" :: generics.Container.ty uint64T
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t := mk {
   X' : (Container.t w64);
 }.
 End def.
 End UseContainer.
 
+#[local] Transparent UseContainer.ty.
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent generics.UseContainer.
+#[local] Typeclasses Transparent generics.UseContainer.
+
+Global Instance UseContainer_wf : struct.Wf (UseContainer.ty ).
+Proof. apply _. Qed.
 
 Global Instance settable_UseContainer : Settable (UseContainer.t ) :=
   settable! UseContainer.mk < UseContainer.X' >.
@@ -275,6 +293,8 @@ Definition ty (T : go_type) : go_type := structT [
   "X" :: sliceT;
   "Y" :: ptrT
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   X' : slice.t;
   Y' : loc;
@@ -282,14 +302,17 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End OnlyIndirect.
 
+#[local] Transparent OnlyIndirect.ty.
 Arguments OnlyIndirect.mk {_} { T' } {_ T _} .
 Arguments OnlyIndirect.t {_} T' {_ T _} .
 
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal T'} `{!IntoValTyped T' T} .
+#[local] Transparent generics.OnlyIndirect.
+#[local] Typeclasses Transparent generics.OnlyIndirect.
 
-Global Instance OnlyIndirect_ty_wf : struct.Wf (OnlyIndirect.ty T).
+Global Instance OnlyIndirect_wf : struct.Wf (OnlyIndirect.ty T).
 Proof. apply _. Qed.
 
 Global Instance settable_OnlyIndirect : Settable (OnlyIndirect.t T') :=
@@ -363,6 +386,8 @@ Definition ty (A B : go_type) : go_type := structT [
   "Y" :: B;
   "X" :: A
 ]%struct.
+#[global] Typeclasses Opaque ty.
+#[global] Opaque ty.
 Record t `{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B} := mk {
   Y' : B';
   X' : A';
@@ -370,14 +395,17 @@ Record t `{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' 
 End def.
 End MultiParam.
 
+#[local] Transparent MultiParam.ty.
 Arguments MultiParam.mk {_} { A' } {_ A _} { B' } {_ B _} .
 Arguments MultiParam.t {_} A' {_ A _} B' {_ B _} .
 
 Section instances.
 Context `{ffi_syntax}.
 Context`{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B} .
+#[local] Transparent generics.MultiParam.
+#[local] Typeclasses Transparent generics.MultiParam.
 
-Global Instance MultiParam_ty_wf : struct.Wf (MultiParam.ty A B).
+Global Instance MultiParam_wf : struct.Wf (MultiParam.ty A B).
 Proof. apply _. Qed.
 
 Global Instance settable_MultiParam : Settable (MultiParam.t A' B') :=

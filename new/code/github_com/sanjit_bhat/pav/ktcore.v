@@ -24,6 +24,8 @@ Context `{ffi_syntax}.
 
 
 Definition Blame : go_type := uint64T.
+#[global] Typeclasses Opaque Blame.
+#[global] Opaque Blame.
 
 Definition BlameNone : val := #(W64 0).
 
@@ -66,6 +68,8 @@ Definition VrfSig : go_type := structT [
   "SigTag" :: byteT;
   "VrfPk" :: sliceT
 ].
+#[global] Typeclasses Opaque VrfSig.
+#[global] Opaque VrfSig.
 
 Definition VrfSigTag : val := #(W8 0).
 
@@ -126,6 +130,8 @@ Definition LinkSig : go_type := structT [
   "Epoch" :: uint64T;
   "Link" :: sliceT
 ].
+#[global] Typeclasses Opaque LinkSig.
+#[global] Opaque LinkSig.
 
 Definition LinkSigTag : val := #(W8 1).
 
@@ -191,6 +197,8 @@ Definition MapLabel : go_type := structT [
   "Uid" :: uint64T;
   "Ver" :: uint64T
 ].
+#[global] Typeclasses Opaque MapLabel.
+#[global] Opaque MapLabel.
 
 (* go: ktcore.go:68:6 *)
 Definition ProveMapLabelⁱᵐᵖˡ : val :=
@@ -276,6 +284,8 @@ Definition CommitOpen : go_type := structT [
   "Val" :: sliceT;
   "Rand" :: sliceT
 ].
+#[global] Typeclasses Opaque CommitOpen.
+#[global] Opaque CommitOpen.
 
 (* go: ktcore.go:86:6 *)
 Definition GetMapValⁱᵐᵖˡ : val :=
@@ -319,22 +329,30 @@ Definition Memb : go_type := structT [
   "PkOpen" :: ptrT;
   "MerkleProof" :: sliceT
 ].
+#[global] Typeclasses Opaque Memb.
+#[global] Opaque Memb.
 
 Definition NonMemb : go_type := structT [
   "LabelProof" :: sliceT;
   "MerkleProof" :: sliceT
 ].
+#[global] Typeclasses Opaque NonMemb.
+#[global] Opaque NonMemb.
 
 Definition AuditProof : go_type := structT [
   "Updates" :: sliceT;
   "LinkSig" :: sliceT
 ].
+#[global] Typeclasses Opaque AuditProof.
+#[global] Opaque AuditProof.
 
 Definition UpdateProof : go_type := structT [
   "MapLabel" :: sliceT;
   "MapVal" :: sliceT;
   "NonMembProof" :: sliceT
 ].
+#[global] Typeclasses Opaque UpdateProof.
+#[global] Opaque UpdateProof.
 
 (* go: serde.out.go:10:6 *)
 Definition VrfSigEncodeⁱᵐᵖˡ : val :=

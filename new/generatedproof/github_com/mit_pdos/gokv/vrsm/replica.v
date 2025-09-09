@@ -20,6 +20,9 @@ Module replica.
 
 (* type replica.Op *)
 Module Op.
+
+#[global] Transparent replica.Op.
+#[global] Typeclasses Transparent replica.Op.
 Section def.
 Context `{ffi_syntax}.
 Definition t := slice.t.
@@ -40,6 +43,11 @@ End ApplyAsBackupArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.ApplyAsBackupArgs.
+#[local] Typeclasses Transparent replica.ApplyAsBackupArgs.
+
+Global Instance ApplyAsBackupArgs_wf : struct.Wf replica.ApplyAsBackupArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_ApplyAsBackupArgs : Settable ApplyAsBackupArgs.t :=
   settable! ApplyAsBackupArgs.mk < ApplyAsBackupArgs.epoch'; ApplyAsBackupArgs.index'; ApplyAsBackupArgs.op' >.
@@ -118,6 +126,11 @@ End SetStateArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.SetStateArgs.
+#[local] Typeclasses Transparent replica.SetStateArgs.
+
+Global Instance SetStateArgs_wf : struct.Wf replica.SetStateArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_SetStateArgs : Settable SetStateArgs.t :=
   settable! SetStateArgs.mk < SetStateArgs.Epoch'; SetStateArgs.NextIndex'; SetStateArgs.CommittedNextIndex'; SetStateArgs.State' >.
@@ -200,6 +213,11 @@ End GetStateArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.GetStateArgs.
+#[local] Typeclasses Transparent replica.GetStateArgs.
+
+Global Instance GetStateArgs_wf : struct.Wf replica.GetStateArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_GetStateArgs : Settable GetStateArgs.t :=
   settable! GetStateArgs.mk < GetStateArgs.Epoch' >.
@@ -264,6 +282,11 @@ End GetStateReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.GetStateReply.
+#[local] Typeclasses Transparent replica.GetStateReply.
+
+Global Instance GetStateReply_wf : struct.Wf replica.GetStateReply.
+Proof. apply _. Qed.
 
 Global Instance settable_GetStateReply : Settable GetStateReply.t :=
   settable! GetStateReply.mk < GetStateReply.Err'; GetStateReply.NextIndex'; GetStateReply.CommittedNextIndex'; GetStateReply.State' >.
@@ -347,6 +370,11 @@ End BecomePrimaryArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.BecomePrimaryArgs.
+#[local] Typeclasses Transparent replica.BecomePrimaryArgs.
+
+Global Instance BecomePrimaryArgs_wf : struct.Wf replica.BecomePrimaryArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_BecomePrimaryArgs : Settable BecomePrimaryArgs.t :=
   settable! BecomePrimaryArgs.mk < BecomePrimaryArgs.Epoch'; BecomePrimaryArgs.Replicas' >.
@@ -416,6 +444,11 @@ End ApplyReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.ApplyReply.
+#[local] Typeclasses Transparent replica.ApplyReply.
+
+Global Instance ApplyReply_wf : struct.Wf replica.ApplyReply.
+Proof. apply _. Qed.
 
 Global Instance settable_ApplyReply : Settable ApplyReply.t :=
   settable! ApplyReply.mk < ApplyReply.Err'; ApplyReply.Reply' >.
@@ -474,6 +507,9 @@ End instances.
 
 (* type replica.IncreaseCommitArgs *)
 Module IncreaseCommitArgs.
+
+#[global] Transparent replica.IncreaseCommitArgs.
+#[global] Typeclasses Transparent replica.IncreaseCommitArgs.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -495,6 +531,11 @@ End StateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.StateMachine.
+#[local] Typeclasses Transparent replica.StateMachine.
+
+Global Instance StateMachine_wf : struct.Wf replica.StateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.StartApply'; StateMachine.ApplyReadonly'; StateMachine.SetStateAndUnseal'; StateMachine.GetStateAndSeal' >.
@@ -580,6 +621,11 @@ End SyncStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.SyncStateMachine.
+#[local] Typeclasses Transparent replica.SyncStateMachine.
+
+Global Instance SyncStateMachine_wf : struct.Wf replica.SyncStateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_SyncStateMachine : Settable SyncStateMachine.t :=
   settable! SyncStateMachine.mk < SyncStateMachine.Apply'; SyncStateMachine.ApplyReadonly'; SyncStateMachine.SetStateAndUnseal'; SyncStateMachine.GetStateAndSeal' >.
@@ -662,6 +708,11 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.Clerk.
+#[local] Typeclasses Transparent replica.Clerk.
+
+Global Instance Clerk_wf : struct.Wf replica.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
@@ -737,6 +788,11 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.Server.
+#[local] Typeclasses Transparent replica.Server.
+
+Global Instance Server_wf : struct.Wf replica.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.epoch'; Server.sealed'; Server.sm'; Server.nextIndex'; Server.canBecomePrimary'; Server.isPrimary'; Server.clerks'; Server.isPrimary_cond'; Server.opAppliedConds'; Server.leaseExpiration'; Server.leaseValid'; Server.committedNextIndex'; Server.committedNextIndex_cond'; Server.confCk' >.

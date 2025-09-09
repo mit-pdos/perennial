@@ -28,6 +28,11 @@ End Buf.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent buf.Buf.
+#[local] Typeclasses Transparent buf.Buf.
+
+Global Instance Buf_wf : struct.Wf buf.Buf.
+Proof. apply _. Qed.
 
 Global Instance settable_Buf : Settable Buf.t :=
   settable! Buf.mk < Buf.Addr'; Buf.Sz'; Buf.Data'; Buf.dirty' >.
@@ -110,6 +115,11 @@ End BufMap.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent buf.BufMap.
+#[local] Typeclasses Transparent buf.BufMap.
+
+Global Instance BufMap_wf : struct.Wf buf.BufMap.
+Proof. apply _. Qed.
 
 Global Instance settable_BufMap : Settable BufMap.t :=
   settable! BufMap.mk < BufMap.addrs' >.

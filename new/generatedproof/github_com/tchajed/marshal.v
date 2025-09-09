@@ -23,6 +23,11 @@ End Enc.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent marshal.Enc.
+#[local] Typeclasses Transparent marshal.Enc.
+
+Global Instance Enc_wf : struct.Wf marshal.Enc.
+Proof. apply _. Qed.
 
 Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.b'; Enc.off' >.
@@ -92,6 +97,11 @@ End Dec.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent marshal.Dec.
+#[local] Typeclasses Transparent marshal.Dec.
+
+Global Instance Dec_wf : struct.Wf marshal.Dec.
+Proof. apply _. Qed.
 
 Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.b'; Dec.off' >.

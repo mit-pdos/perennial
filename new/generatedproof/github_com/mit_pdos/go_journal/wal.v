@@ -16,6 +16,9 @@ Module wal.
 
 (* type wal.LogPosition *)
 Module LogPosition.
+
+#[global] Transparent wal.LogPosition.
+#[global] Typeclasses Transparent wal.LogPosition.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -35,6 +38,11 @@ End Update.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wal.Update.
+#[local] Typeclasses Transparent wal.Update.
+
+Global Instance Update_wf : struct.Wf wal.Update.
+Proof. apply _. Qed.
 
 Global Instance settable_Update : Settable Update.t :=
   settable! Update.mk < Update.Addr'; Update.Block' >.
@@ -103,6 +111,11 @@ End circularAppender.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wal.circularAppender.
+#[local] Typeclasses Transparent wal.circularAppender.
+
+Global Instance circularAppender_wf : struct.Wf wal.circularAppender.
+Proof. apply _. Qed.
 
 Global Instance settable_circularAppender : Settable circularAppender.t :=
   settable! circularAppender.mk < circularAppender.diskAddrs' >.
@@ -168,6 +181,11 @@ End sliding.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wal.sliding.
+#[local] Typeclasses Transparent wal.sliding.
+
+Global Instance sliding_wf : struct.Wf wal.sliding.
+Proof. apply _. Qed.
 
 Global Instance settable_sliding : Settable sliding.t :=
   settable! sliding.mk < sliding.log'; sliding.start'; sliding.mutable'; sliding.needFlush'; sliding.addrPos' >.
@@ -260,6 +278,11 @@ End WalogState.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wal.WalogState.
+#[local] Typeclasses Transparent wal.WalogState.
+
+Global Instance WalogState_wf : struct.Wf wal.WalogState.
+Proof. apply _. Qed.
 
 Global Instance settable_WalogState : Settable WalogState.t :=
   settable! WalogState.mk < WalogState.memLog'; WalogState.diskEnd'; WalogState.shutdown'; WalogState.nthread' >.
@@ -348,6 +371,11 @@ End Walog.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent wal.Walog.
+#[local] Typeclasses Transparent wal.Walog.
+
+Global Instance Walog_wf : struct.Wf wal.Walog.
+Proof. apply _. Qed.
 
 Global Instance settable_Walog : Settable Walog.t :=
   settable! Walog.mk < Walog.memLock'; Walog.d'; Walog.circ'; Walog.st'; Walog.condLogger'; Walog.condInstall'; Walog.condShut' >.

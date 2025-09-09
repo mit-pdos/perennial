@@ -36,6 +36,11 @@ End Election.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.Election.
+#[local] Typeclasses Transparent concurrency.Election.
+
+Global Instance Election_wf : struct.Wf concurrency.Election.
+Proof. apply _. Qed.
 
 Global Instance settable_Election : Settable Election.t :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
@@ -136,6 +141,11 @@ End Mutex.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.Mutex.
+#[local] Typeclasses Transparent concurrency.Mutex.
+
+Global Instance Mutex_wf : struct.Wf concurrency.Mutex.
+Proof. apply _. Qed.
 
 Global Instance settable_Mutex : Settable Mutex.t :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
@@ -225,6 +235,11 @@ End lockerMutex.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.lockerMutex.
+#[local] Typeclasses Transparent concurrency.lockerMutex.
+
+Global Instance lockerMutex_wf : struct.Wf concurrency.lockerMutex.
+Proof. apply _. Qed.
 
 Global Instance settable_lockerMutex : Settable lockerMutex.t :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
@@ -291,6 +306,11 @@ End Session.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.Session.
+#[local] Typeclasses Transparent concurrency.Session.
+
+Global Instance Session_wf : struct.Wf concurrency.Session.
+Proof. apply _. Qed.
 
 Global Instance settable_Session : Settable Session.t :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
@@ -389,6 +409,11 @@ End sessionOptions.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.sessionOptions.
+#[local] Typeclasses Transparent concurrency.sessionOptions.
+
+Global Instance sessionOptions_wf : struct.Wf concurrency.sessionOptions.
+Proof. apply _. Qed.
 
 Global Instance settable_sessionOptions : Settable sessionOptions.t :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
@@ -454,6 +479,9 @@ End instances.
 
 (* type concurrency.SessionOption *)
 Module SessionOption.
+
+#[global] Transparent concurrency.SessionOption.
+#[global] Typeclasses Transparent concurrency.SessionOption.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -462,6 +490,9 @@ End SessionOption.
 
 (* type concurrency.STM *)
 Module STM.
+
+#[global] Transparent concurrency.STM.
+#[global] Typeclasses Transparent concurrency.STM.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -470,6 +501,9 @@ End STM.
 
 (* type concurrency.Isolation *)
 Module Isolation.
+
+#[global] Transparent concurrency.Isolation.
+#[global] Typeclasses Transparent concurrency.Isolation.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -488,6 +522,11 @@ End stmError.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.stmError.
+#[local] Typeclasses Transparent concurrency.stmError.
+
+Global Instance stmError_wf : struct.Wf concurrency.stmError.
+Proof. apply _. Qed.
 
 Global Instance settable_stmError : Settable stmError.t :=
   settable! stmError.mk < stmError.err' >.
@@ -551,6 +590,11 @@ End stmOptions.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.stmOptions.
+#[local] Typeclasses Transparent concurrency.stmOptions.
+
+Global Instance stmOptions_wf : struct.Wf concurrency.stmOptions.
+Proof. apply _. Qed.
 
 Global Instance settable_stmOptions : Settable stmOptions.t :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
@@ -616,6 +660,9 @@ End instances.
 
 (* type concurrency.stmOption *)
 Module stmOption.
+
+#[global] Transparent concurrency.stmOption.
+#[global] Typeclasses Transparent concurrency.stmOption.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -635,6 +682,11 @@ End stmResponse.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.stmResponse.
+#[local] Typeclasses Transparent concurrency.stmResponse.
+
+Global Instance stmResponse_wf : struct.Wf concurrency.stmResponse.
+Proof. apply _. Qed.
 
 Global Instance settable_stmResponse : Settable stmResponse.t :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
@@ -693,6 +745,9 @@ End instances.
 
 (* type concurrency.readSet *)
 Module readSet.
+
+#[global] Transparent concurrency.readSet.
+#[global] Typeclasses Transparent concurrency.readSet.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -701,6 +756,9 @@ End readSet.
 
 (* type concurrency.writeSet *)
 Module writeSet.
+
+#[global] Transparent concurrency.writeSet.
+#[global] Typeclasses Transparent concurrency.writeSet.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -724,6 +782,11 @@ End stm.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.stm.
+#[local] Typeclasses Transparent concurrency.stm.
+
+Global Instance stm_wf : struct.Wf concurrency.stm.
+Proof. apply _. Qed.
 
 Global Instance settable_stm : Settable stm.t :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
@@ -821,6 +884,11 @@ End stmPut.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.stmPut.
+#[local] Typeclasses Transparent concurrency.stmPut.
+
+Global Instance stmPut_wf : struct.Wf concurrency.stmPut.
+Proof. apply _. Qed.
 
 Global Instance settable_stmPut : Settable stmPut.t :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
@@ -890,6 +958,11 @@ End stmSerializable.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrency.stmSerializable.
+#[local] Typeclasses Transparent concurrency.stmSerializable.
+
+Global Instance stmSerializable_wf : struct.Wf concurrency.stmSerializable.
+Proof. apply _. Qed.
 
 Global Instance settable_stmSerializable : Settable stmSerializable.t :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.

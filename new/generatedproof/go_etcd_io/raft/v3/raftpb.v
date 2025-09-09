@@ -10,6 +10,9 @@ Module raftpb.
 
 (* type raftpb.ConfChangeI *)
 Module ConfChangeI.
+
+#[global] Transparent raftpb.ConfChangeI.
+#[global] Typeclasses Transparent raftpb.ConfChangeI.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -18,6 +21,9 @@ End ConfChangeI.
 
 (* type raftpb.EntryType *)
 Module EntryType.
+
+#[global] Transparent raftpb.EntryType.
+#[global] Typeclasses Transparent raftpb.EntryType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -26,6 +32,9 @@ End EntryType.
 
 (* type raftpb.MessageType *)
 Module MessageType.
+
+#[global] Transparent raftpb.MessageType.
+#[global] Typeclasses Transparent raftpb.MessageType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -34,6 +43,9 @@ End MessageType.
 
 (* type raftpb.ConfChangeTransition *)
 Module ConfChangeTransition.
+
+#[global] Transparent raftpb.ConfChangeTransition.
+#[global] Typeclasses Transparent raftpb.ConfChangeTransition.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -42,6 +54,9 @@ End ConfChangeTransition.
 
 (* type raftpb.ConfChangeType *)
 Module ConfChangeType.
+
+#[global] Transparent raftpb.ConfChangeType.
+#[global] Typeclasses Transparent raftpb.ConfChangeType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
@@ -63,6 +78,11 @@ End Entry.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.Entry.
+#[local] Typeclasses Transparent raftpb.Entry.
+
+Global Instance Entry_wf : struct.Wf raftpb.Entry.
+Proof. apply _. Qed.
 
 Global Instance settable_Entry : Settable Entry.t :=
   settable! Entry.mk < Entry.Term'; Entry.Index'; Entry.Type'; Entry.Data' >.
@@ -149,6 +169,11 @@ End ConfState.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.ConfState.
+#[local] Typeclasses Transparent raftpb.ConfState.
+
+Global Instance ConfState_wf : struct.Wf raftpb.ConfState.
+Proof. apply _. Qed.
 
 Global Instance settable_ConfState : Settable ConfState.t :=
   settable! ConfState.mk < ConfState.Voters'; ConfState.Learners'; ConfState.VotersOutgoing'; ConfState.LearnersNext'; ConfState.AutoLeave' >.
@@ -240,6 +265,11 @@ End SnapshotMetadata.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.SnapshotMetadata.
+#[local] Typeclasses Transparent raftpb.SnapshotMetadata.
+
+Global Instance SnapshotMetadata_wf : struct.Wf raftpb.SnapshotMetadata.
+Proof. apply _. Qed.
 
 Global Instance settable_SnapshotMetadata : Settable SnapshotMetadata.t :=
   settable! SnapshotMetadata.mk < SnapshotMetadata.ConfState'; SnapshotMetadata.Index'; SnapshotMetadata.Term' >.
@@ -316,6 +346,11 @@ End Snapshot.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.Snapshot.
+#[local] Typeclasses Transparent raftpb.Snapshot.
+
+Global Instance Snapshot_wf : struct.Wf raftpb.Snapshot.
+Proof. apply _. Qed.
 
 Global Instance settable_Snapshot : Settable Snapshot.t :=
   settable! Snapshot.mk < Snapshot.Data'; Snapshot.Metadata' >.
@@ -397,6 +432,11 @@ End Message.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.Message.
+#[local] Typeclasses Transparent raftpb.Message.
+
+Global Instance Message_wf : struct.Wf raftpb.Message.
+Proof. apply _. Qed.
 
 Global Instance settable_Message : Settable Message.t :=
   settable! Message.mk < Message.Type'; Message.To'; Message.From'; Message.Term'; Message.LogTerm'; Message.Index'; Message.Entries'; Message.Commit'; Message.Vote'; Message.Snapshot'; Message.Reject'; Message.RejectHint'; Message.Context'; Message.Responses' >.
@@ -551,6 +591,11 @@ End HardState.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.HardState.
+#[local] Typeclasses Transparent raftpb.HardState.
+
+Global Instance HardState_wf : struct.Wf raftpb.HardState.
+Proof. apply _. Qed.
 
 Global Instance settable_HardState : Settable HardState.t :=
   settable! HardState.mk < HardState.Term'; HardState.Vote'; HardState.Commit' >.
@@ -629,6 +674,11 @@ End ConfChange.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.ConfChange.
+#[local] Typeclasses Transparent raftpb.ConfChange.
+
+Global Instance ConfChange_wf : struct.Wf raftpb.ConfChange.
+Proof. apply _. Qed.
 
 Global Instance settable_ConfChange : Settable ConfChange.t :=
   settable! ConfChange.mk < ConfChange.Type'; ConfChange.NodeID'; ConfChange.Context'; ConfChange.ID' >.
@@ -730,6 +780,11 @@ End ConfChangeV2.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent raftpb.ConfChangeV2.
+#[local] Typeclasses Transparent raftpb.ConfChangeV2.
+
+Global Instance ConfChangeV2_wf : struct.Wf raftpb.ConfChangeV2.
+Proof. apply _. Qed.
 
 Global Instance settable_ConfChangeV2 : Settable ConfChangeV2.t :=
   settable! ConfChangeV2.mk < ConfChangeV2.Transition'; ConfChangeV2.Changes'; ConfChangeV2.Context' >.

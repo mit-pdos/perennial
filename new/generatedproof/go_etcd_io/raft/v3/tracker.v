@@ -26,6 +26,11 @@ End inflight.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent tracker.inflight.
+#[local] Typeclasses Transparent tracker.inflight.
+
+Global Instance inflight_wf : struct.Wf tracker.inflight.
+Proof. apply _. Qed.
 
 Global Instance settable_inflight : Settable inflight.t :=
   settable! inflight.mk < inflight.index'; inflight.bytes' >.
@@ -99,6 +104,11 @@ End Inflights.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent tracker.Inflights.
+#[local] Typeclasses Transparent tracker.Inflights.
+
+Global Instance Inflights_wf : struct.Wf tracker.Inflights.
+Proof. apply _. Qed.
 
 Global Instance settable_Inflights : Settable Inflights.t :=
   settable! Inflights.mk < Inflights.start'; Inflights.count'; Inflights.bytes'; Inflights.size'; Inflights.maxBytes'; Inflights.buffer' >.
@@ -185,6 +195,9 @@ End instances.
 
 (* type tracker.StateType *)
 Module StateType.
+
+#[global] Transparent tracker.StateType.
+#[global] Typeclasses Transparent tracker.StateType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -211,6 +224,11 @@ End Progress.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent tracker.Progress.
+#[local] Typeclasses Transparent tracker.Progress.
+
+Global Instance Progress_wf : struct.Wf tracker.Progress.
+Proof. apply _. Qed.
 
 Global Instance settable_Progress : Settable Progress.t :=
   settable! Progress.mk < Progress.Match'; Progress.Next'; Progress.sentCommit'; Progress.State'; Progress.PendingSnapshot'; Progress.RecentActive'; Progress.MsgAppFlowPaused'; Progress.Inflights'; Progress.IsLearner' >.
@@ -318,6 +336,9 @@ End instances.
 
 (* type tracker.ProgressMap *)
 Module ProgressMap.
+
+#[global] Transparent tracker.ProgressMap.
+#[global] Typeclasses Transparent tracker.ProgressMap.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.
@@ -339,6 +360,11 @@ End Config.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent tracker.Config.
+#[local] Typeclasses Transparent tracker.Config.
+
+Global Instance Config_wf : struct.Wf tracker.Config.
+Proof. apply _. Qed.
 
 Global Instance settable_Config : Settable Config.t :=
   settable! Config.mk < Config.Voters'; Config.AutoLeave'; Config.Learners'; Config.LearnersNext' >.
@@ -425,6 +451,11 @@ End ProgressTracker.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent tracker.ProgressTracker.
+#[local] Typeclasses Transparent tracker.ProgressTracker.
+
+Global Instance ProgressTracker_wf : struct.Wf tracker.ProgressTracker.
+Proof. apply _. Qed.
 
 Global Instance settable_ProgressTracker : Settable ProgressTracker.t :=
   settable! ProgressTracker.mk < ProgressTracker.Config'; ProgressTracker.Progress'; ProgressTracker.Votes'; ProgressTracker.MaxInflight'; ProgressTracker.MaxInflightBytes' >.
@@ -504,6 +535,9 @@ End instances.
 
 (* type tracker.matchAckIndexer *)
 Module matchAckIndexer.
+
+#[global] Transparent tracker.matchAckIndexer.
+#[global] Typeclasses Transparent tracker.matchAckIndexer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.

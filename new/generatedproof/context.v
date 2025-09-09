@@ -15,6 +15,9 @@ Module context.
 
 (* type context.Context *)
 Module Context.
+
+#[global] Transparent context.Context.
+#[global] Typeclasses Transparent context.Context.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -32,6 +35,12 @@ End deadlineExceededError.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.deadlineExceededError.
+#[local] Typeclasses Transparent context.deadlineExceededError.
+
+Global Instance deadlineExceededError_wf : struct.Wf context.deadlineExceededError.
+Proof. apply _. Qed.
+
 Global Instance into_val_deadlineExceededError : IntoVal deadlineExceededError.t :=
   {| to_val_def v :=
     struct.val_aux context.deadlineExceededError [
@@ -69,6 +78,12 @@ End emptyCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.emptyCtx.
+#[local] Typeclasses Transparent context.emptyCtx.
+
+Global Instance emptyCtx_wf : struct.Wf context.emptyCtx.
+Proof. apply _. Qed.
+
 Global Instance into_val_emptyCtx : IntoVal emptyCtx.t :=
   {| to_val_def v :=
     struct.val_aux context.emptyCtx [
@@ -107,6 +122,11 @@ End backgroundCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.backgroundCtx.
+#[local] Typeclasses Transparent context.backgroundCtx.
+
+Global Instance backgroundCtx_wf : struct.Wf context.backgroundCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_backgroundCtx : Settable backgroundCtx.t :=
   settable! backgroundCtx.mk < backgroundCtx.emptyCtx' >.
@@ -168,6 +188,11 @@ End todoCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.todoCtx.
+#[local] Typeclasses Transparent context.todoCtx.
+
+Global Instance todoCtx_wf : struct.Wf context.todoCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_todoCtx : Settable todoCtx.t :=
   settable! todoCtx.mk < todoCtx.emptyCtx' >.
@@ -219,6 +244,9 @@ End instances.
 
 (* type context.CancelFunc *)
 Module CancelFunc.
+
+#[global] Transparent context.CancelFunc.
+#[global] Typeclasses Transparent context.CancelFunc.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -227,6 +255,9 @@ End CancelFunc.
 
 (* type context.CancelCauseFunc *)
 Module CancelCauseFunc.
+
+#[global] Transparent context.CancelCauseFunc.
+#[global] Typeclasses Transparent context.CancelCauseFunc.
 Section def.
 Context `{ffi_syntax}.
 Definition t := func.t.
@@ -235,6 +266,9 @@ End CancelCauseFunc.
 
 (* type context.afterFuncer *)
 Module afterFuncer.
+
+#[global] Transparent context.afterFuncer.
+#[global] Typeclasses Transparent context.afterFuncer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -258,6 +292,11 @@ End cancelCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.cancelCtx.
+#[local] Typeclasses Transparent context.cancelCtx.
+
+Global Instance cancelCtx_wf : struct.Wf context.cancelCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_cancelCtx : Settable cancelCtx.t :=
   settable! cancelCtx.mk < cancelCtx.Context'; cancelCtx.mu'; cancelCtx.done'; cancelCtx.children'; cancelCtx.err'; cancelCtx.cause' >.
@@ -356,6 +395,11 @@ End afterFuncCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.afterFuncCtx.
+#[local] Typeclasses Transparent context.afterFuncCtx.
+
+Global Instance afterFuncCtx_wf : struct.Wf context.afterFuncCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_afterFuncCtx : Settable afterFuncCtx.t :=
   settable! afterFuncCtx.mk < afterFuncCtx.cancelCtx'; afterFuncCtx.once'; afterFuncCtx.f' >.
@@ -432,6 +476,11 @@ End stopCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.stopCtx.
+#[local] Typeclasses Transparent context.stopCtx.
+
+Global Instance stopCtx_wf : struct.Wf context.stopCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_stopCtx : Settable stopCtx.t :=
   settable! stopCtx.mk < stopCtx.Context'; stopCtx.stop' >.
@@ -490,6 +539,9 @@ End instances.
 
 (* type context.canceler *)
 Module canceler.
+
+#[global] Transparent context.canceler.
+#[global] Typeclasses Transparent context.canceler.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -498,6 +550,9 @@ End canceler.
 
 (* type context.stringer *)
 Module stringer.
+
+#[global] Transparent context.stringer.
+#[global] Typeclasses Transparent context.stringer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -516,6 +571,11 @@ End withoutCancelCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.withoutCancelCtx.
+#[local] Typeclasses Transparent context.withoutCancelCtx.
+
+Global Instance withoutCancelCtx_wf : struct.Wf context.withoutCancelCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_withoutCancelCtx : Settable withoutCancelCtx.t :=
   settable! withoutCancelCtx.mk < withoutCancelCtx.c' >.
@@ -579,6 +639,11 @@ End timerCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.timerCtx.
+#[local] Typeclasses Transparent context.timerCtx.
+
+Global Instance timerCtx_wf : struct.Wf context.timerCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_timerCtx : Settable timerCtx.t :=
   settable! timerCtx.mk < timerCtx.cancelCtx'; timerCtx.timer'; timerCtx.deadline' >.
@@ -656,6 +721,11 @@ End valueCtx.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent context.valueCtx.
+#[local] Typeclasses Transparent context.valueCtx.
+
+Global Instance valueCtx_wf : struct.Wf context.valueCtx.
+Proof. apply _. Qed.
 
 Global Instance settable_valueCtx : Settable valueCtx.t :=
   settable! valueCtx.mk < valueCtx.Context'; valueCtx.key'; valueCtx.val' >.

@@ -215,6 +215,8 @@ Definition histEntry : go_type := structT [
   "isReg" :: boolT;
   "pk" :: sliceT
 ].
+#[global] Typeclasses Opaque histEntry.
+#[global] Opaque histEntry.
 
 (* go: alicebob.go:109:6 *)
 Definition equalⁱᵐᵖˡ : val :=

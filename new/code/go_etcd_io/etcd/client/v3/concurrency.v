@@ -50,6 +50,8 @@ Definition Election : go_type := structT [
   "leaderSession" :: ptrT;
   "hdr" :: ptrT
 ].
+#[global] Typeclasses Opaque Election.
+#[global] Opaque Election.
 
 Definition NewElection : go_string := "go.etcd.io/etcd/client/v3/concurrency.NewElection"%go.
 
@@ -669,6 +671,8 @@ Definition Mutex : go_type := structT [
   "myRev" :: int64T;
   "hdr" :: ptrT
 ].
+#[global] Typeclasses Opaque Mutex.
+#[global] Opaque Mutex.
 
 Definition NewMutex : go_string := "go.etcd.io/etcd/client/v3/concurrency.NewMutex"%go.
 
@@ -940,6 +944,8 @@ Definition Mutex__Headerⁱᵐᵖˡ : val :=
 Definition lockerMutex : go_type := structT [
   "Mutex" :: ptrT
 ].
+#[global] Typeclasses Opaque lockerMutex.
+#[global] Opaque lockerMutex.
 
 (* go: mutex.go:163:24 *)
 Definition lockerMutex__Lockⁱᵐᵖˡ : val :=
@@ -1003,6 +1009,8 @@ Definition Session : go_type := structT [
   "donec" :: chanT (structT [
   ])
 ].
+#[global] Typeclasses Opaque Session.
+#[global] Opaque Session.
 
 Definition NewSession : go_string := "go.etcd.io/etcd/client/v3/concurrency.NewSession"%go.
 
@@ -1011,8 +1019,12 @@ Definition sessionOptions : go_type := structT [
   "leaseID" :: clientv3.LeaseID;
   "ctx" :: context.Context
 ].
+#[global] Typeclasses Opaque sessionOptions.
+#[global] Opaque sessionOptions.
 
 Definition SessionOption : go_type := funcT.
+#[global] Typeclasses Opaque SessionOption.
+#[global] Opaque SessionOption.
 
 (* NewSession gets the leased session for a client.
 
@@ -1265,8 +1277,12 @@ Definition WithContextⁱᵐᵖˡ : val :=
        ))).
 
 Definition STM : go_type := interfaceT.
+#[global] Typeclasses Opaque STM.
+#[global] Opaque STM.
 
 Definition Isolation : go_type := intT.
+#[global] Typeclasses Opaque Isolation.
+#[global] Opaque Isolation.
 
 Definition SerializableSnapshot : val := #(W64 0).
 
@@ -1279,14 +1295,20 @@ Definition ReadCommitted : val := #(W64 3).
 Definition stmError : go_type := structT [
   "err" :: error
 ].
+#[global] Typeclasses Opaque stmError.
+#[global] Opaque stmError.
 
 Definition stmOptions : go_type := structT [
   "iso" :: Isolation;
   "ctx" :: context.Context;
   "prefetch" :: sliceT
 ].
+#[global] Typeclasses Opaque stmOptions.
+#[global] Opaque stmOptions.
 
 Definition stmOption : go_type := funcT.
+#[global] Typeclasses Opaque stmOption.
+#[global] Opaque stmOption.
 
 Definition WithIsolation : go_string := "go.etcd.io/etcd/client/v3/concurrency.WithIsolation"%go.
 
@@ -1390,13 +1412,19 @@ Definition NewSTMⁱᵐᵖˡ : val :=
     return: ("$ret0", "$ret1")).
 
 Definition readSet : go_type := mapT stringT ptrT.
+#[global] Typeclasses Opaque readSet.
+#[global] Opaque readSet.
 
 Definition stmPut : go_type := structT [
   "val" :: stringT;
   "op" :: clientv3.Op
 ].
+#[global] Typeclasses Opaque stmPut.
+#[global] Opaque stmPut.
 
 Definition writeSet : go_type := mapT stringT stmPut.
+#[global] Typeclasses Opaque writeSet.
+#[global] Opaque writeSet.
 
 Definition stm : go_type := structT [
   "client" :: ptrT;
@@ -1406,11 +1434,15 @@ Definition stm : go_type := structT [
   "getOpts" :: sliceT;
   "conflicts" :: funcT
 ].
+#[global] Typeclasses Opaque stm.
+#[global] Opaque stm.
 
 Definition stmSerializable : go_type := structT [
   "stm" :: stm;
   "prefetch" :: mapT stringT ptrT
 ].
+#[global] Typeclasses Opaque stmSerializable.
+#[global] Opaque stmSerializable.
 
 (* go: stm.go:104:6 *)
 Definition mkSTMⁱᵐᵖˡ : val :=
@@ -1522,6 +1554,8 @@ Definition stmResponse : go_type := structT [
   "resp" :: ptrT;
   "err" :: error
 ].
+#[global] Typeclasses Opaque stmResponse.
+#[global] Opaque stmResponse.
 
 (* go: stm.go:140:6 *)
 Definition runSTMⁱᵐᵖˡ : val :=

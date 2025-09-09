@@ -32,6 +32,8 @@ Context `{ffi_syntax}.
 
 
 Definition Context : go_type := interfaceT.
+#[global] Typeclasses Opaque Context.
+#[global] Opaque Context.
 
 Definition Canceled : go_string := "context.Canceled"%go.
 
@@ -39,6 +41,8 @@ Definition DeadlineExceeded : go_string := "context.DeadlineExceeded"%go.
 
 Definition deadlineExceededError : go_type := structT [
 ].
+#[global] Typeclasses Opaque deadlineExceededError.
+#[global] Opaque deadlineExceededError.
 
 (* go: context.go:175:30 *)
 Definition deadlineExceededError__Errorⁱᵐᵖˡ : val :=
@@ -57,6 +61,8 @@ Definition deadlineExceededError__Temporaryⁱᵐᵖˡ : val :=
 
 Definition emptyCtx : go_type := structT [
 ].
+#[global] Typeclasses Opaque emptyCtx.
+#[global] Opaque emptyCtx.
 
 (* go: context.go:183:17 *)
 Definition emptyCtx__Deadlineⁱᵐᵖˡ : val :=
@@ -84,6 +90,8 @@ Definition emptyCtx__Valueⁱᵐᵖˡ : val :=
 Definition backgroundCtx : go_type := structT [
   "emptyCtx" :: emptyCtx
 ].
+#[global] Typeclasses Opaque backgroundCtx.
+#[global] Opaque backgroundCtx.
 
 (* go: context.go:201:22 *)
 Definition backgroundCtx__Stringⁱᵐᵖˡ : val :=
@@ -93,6 +101,8 @@ Definition backgroundCtx__Stringⁱᵐᵖˡ : val :=
 Definition todoCtx : go_type := structT [
   "emptyCtx" :: emptyCtx
 ].
+#[global] Typeclasses Opaque todoCtx.
+#[global] Opaque todoCtx.
 
 (* go: context.go:207:16 *)
 Definition todoCtx__Stringⁱᵐᵖˡ : val :=
@@ -128,6 +138,8 @@ Definition TODOⁱᵐᵖˡ : val :=
      }]))).
 
 Definition CancelFunc : go_type := funcT.
+#[global] Typeclasses Opaque CancelFunc.
+#[global] Opaque CancelFunc.
 
 Definition WithCancel : go_string := "context.WithCancel"%go.
 
@@ -160,6 +172,8 @@ Definition WithCancelⁱᵐᵖˡ : val :=
        ))).
 
 Definition CancelCauseFunc : go_type := funcT.
+#[global] Typeclasses Opaque CancelCauseFunc.
+#[global] Opaque CancelCauseFunc.
 
 Definition WithCancelCause : go_string := "context.WithCancelCause"%go.
 
@@ -195,6 +209,8 @@ Definition WithCancelCauseⁱᵐᵖˡ : val :=
        ))).
 
 Definition canceler : go_type := interfaceT.
+#[global] Typeclasses Opaque canceler.
+#[global] Opaque canceler.
 
 Definition cancelCtx : go_type := structT [
   "Context" :: Context;
@@ -205,6 +221,8 @@ Definition cancelCtx : go_type := structT [
   "err" :: error;
   "cause" :: error
 ].
+#[global] Typeclasses Opaque cancelCtx.
+#[global] Opaque cancelCtx.
 
 (* go: context.go:273:6 *)
 Definition withCancelⁱᵐᵖˡ : val :=
@@ -274,6 +292,8 @@ Definition afterFuncCtx : go_type := structT [
   "once" :: sync.Once;
   "f" :: funcT
 ].
+#[global] Typeclasses Opaque afterFuncCtx.
+#[global] Opaque afterFuncCtx.
 
 (* AfterFunc arranges to call f in its own goroutine after ctx is canceled.
    If ctx is already canceled, AfterFunc calls f immediately in its own goroutine.
@@ -331,6 +351,8 @@ Definition AfterFuncⁱᵐᵖˡ : val :=
        ))).
 
 Definition afterFuncer : go_type := interfaceT.
+#[global] Typeclasses Opaque afterFuncer.
+#[global] Opaque afterFuncer.
 
 Definition removeChild : go_string := "context.removeChild"%go.
 
@@ -363,6 +385,8 @@ Definition stopCtx : go_type := structT [
   "Context" :: Context;
   "stop" :: funcT
 ].
+#[global] Typeclasses Opaque stopCtx.
+#[global] Opaque stopCtx.
 
 Definition goroutines : go_string := "context.goroutines"%go.
 
@@ -629,6 +653,8 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
     return: #()).
 
 Definition stringer : go_type := interfaceT.
+#[global] Typeclasses Opaque stringer.
+#[global] Opaque stringer.
 
 Definition contextName : go_string := "context.contextName"%go.
 
@@ -732,6 +758,8 @@ Definition WithoutCancel : go_string := "context.WithoutCancel"%go.
 Definition withoutCancelCtx : go_type := structT [
   "c" :: Context
 ].
+#[global] Typeclasses Opaque withoutCancelCtx.
+#[global] Opaque withoutCancelCtx.
 
 (* WithoutCancel returns a derived context that points to the parent context
    and is not canceled when parent is canceled.
@@ -814,6 +842,8 @@ Definition timerCtx : go_type := structT [
   "timer" :: ptrT;
   "deadline" :: time.Time
 ].
+#[global] Typeclasses Opaque timerCtx.
+#[global] Opaque timerCtx.
 
 (* WithDeadlineCause behaves like [WithDeadline] but also sets the cause of the
    returned Context when the deadline is exceeded. The returned [CancelFunc] does
@@ -994,6 +1024,8 @@ Definition valueCtx : go_type := structT [
   "key" :: interfaceT;
   "val" :: interfaceT
 ].
+#[global] Typeclasses Opaque valueCtx.
+#[global] Opaque valueCtx.
 
 (* WithValue returns a derived context that points to the parent Context.
    In the derived context, the value associated with key is val.

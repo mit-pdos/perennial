@@ -26,6 +26,8 @@ Section code.
 Definition Clerk : go_type := structT [
   "cl" :: ptrT
 ].
+#[global] Typeclasses Opaque Clerk.
+#[global] Opaque Clerk.
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeClerk"%go.
 
@@ -45,6 +47,8 @@ Definition PutArgs : go_type := structT [
   "Key" :: stringT;
   "Val" :: stringT
 ].
+#[global] Typeclasses Opaque PutArgs.
+#[global] Opaque PutArgs.
 
 (* go: clerk.go:16:18 *)
 Definition Clerk__Putⁱᵐᵖˡ : val :=
@@ -83,6 +87,8 @@ Definition CondPutArgs : go_type := structT [
   "Expect" :: stringT;
   "Val" :: stringT
 ].
+#[global] Typeclasses Opaque CondPutArgs.
+#[global] Opaque CondPutArgs.
 
 (* go: clerk.go:28:18 *)
 Definition Clerk__CondPutⁱᵐᵖˡ : val :=
@@ -110,6 +116,8 @@ Definition ClerkPool : go_type := structT [
   "cls" :: sliceT;
   "confHosts" :: sliceT
 ].
+#[global] Typeclasses Opaque ClerkPool.
+#[global] Opaque ClerkPool.
 
 Definition MakeClerkPool : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeClerkPool"%go.
 
@@ -240,6 +248,8 @@ Definition KVState : go_type := structT [
   "vnums" :: mapT stringT uint64T;
   "minVnum" :: uint64T
 ].
+#[global] Typeclasses Opaque KVState.
+#[global] Opaque KVState.
 
 Definition OP_PUT : val := #(W8 0).
 
@@ -300,6 +310,8 @@ Definition decodePutArgsⁱᵐᵖˡ : val :=
     return: (![#ptrT] "args")).
 
 Definition getArgs : go_type := stringT.
+#[global] Typeclasses Opaque getArgs.
+#[global] Opaque getArgs.
 
 (* go: server.go:60:6 *)
 Definition encodeGetArgsⁱᵐᵖˡ : val :=

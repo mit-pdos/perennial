@@ -203,6 +203,8 @@ Axiom errArrayElem : go_type.
 Definition newErrArrayElem : go_string := "go.uber.org/zap/zapcore.newErrArrayElem"%go.
 
 Definition FieldType : go_type := uint8T.
+#[global] Typeclasses Opaque FieldType.
+#[global] Opaque FieldType.
 
 Axiom UnknownType : val.
 
@@ -269,6 +271,8 @@ Definition Field : go_type := structT [
   "String" :: stringT;
   "Interface" :: interfaceT
 ].
+#[global] Typeclasses Opaque Field.
+#[global] Opaque Field.
 
 Definition addFields : go_string := "go.uber.org/zap/zapcore.addFields"%go.
 

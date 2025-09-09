@@ -28,6 +28,11 @@ End singleClerk.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.singleClerk.
+#[local] Typeclasses Transparent paxos.singleClerk.
+
+Global Instance singleClerk_wf : struct.Wf paxos.singleClerk.
+Proof. apply _. Qed.
 
 Global Instance settable_singleClerk : Settable singleClerk.t :=
   settable! singleClerk.mk < singleClerk.cl' >.
@@ -79,6 +84,9 @@ End instances.
 
 (* type paxos.Error *)
 Module Error.
+
+#[global] Transparent paxos.Error.
+#[global] Typeclasses Transparent paxos.Error.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
@@ -99,6 +107,11 @@ End applyAsFollowerArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.applyAsFollowerArgs.
+#[local] Typeclasses Transparent paxos.applyAsFollowerArgs.
+
+Global Instance applyAsFollowerArgs_wf : struct.Wf paxos.applyAsFollowerArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_applyAsFollowerArgs : Settable applyAsFollowerArgs.t :=
   settable! applyAsFollowerArgs.mk < applyAsFollowerArgs.epoch'; applyAsFollowerArgs.nextIndex'; applyAsFollowerArgs.state' >.
@@ -174,6 +187,11 @@ End applyAsFollowerReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.applyAsFollowerReply.
+#[local] Typeclasses Transparent paxos.applyAsFollowerReply.
+
+Global Instance applyAsFollowerReply_wf : struct.Wf paxos.applyAsFollowerReply.
+Proof. apply _. Qed.
 
 Global Instance settable_applyAsFollowerReply : Settable applyAsFollowerReply.t :=
   settable! applyAsFollowerReply.mk < applyAsFollowerReply.err' >.
@@ -235,6 +253,11 @@ End enterNewEpochArgs.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.enterNewEpochArgs.
+#[local] Typeclasses Transparent paxos.enterNewEpochArgs.
+
+Global Instance enterNewEpochArgs_wf : struct.Wf paxos.enterNewEpochArgs.
+Proof. apply _. Qed.
 
 Global Instance settable_enterNewEpochArgs : Settable enterNewEpochArgs.t :=
   settable! enterNewEpochArgs.mk < enterNewEpochArgs.epoch' >.
@@ -299,6 +322,11 @@ End enterNewEpochReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.enterNewEpochReply.
+#[local] Typeclasses Transparent paxos.enterNewEpochReply.
+
+Global Instance enterNewEpochReply_wf : struct.Wf paxos.enterNewEpochReply.
+Proof. apply _. Qed.
 
 Global Instance settable_enterNewEpochReply : Settable enterNewEpochReply.t :=
   settable! enterNewEpochReply.mk < enterNewEpochReply.err'; enterNewEpochReply.acceptedEpoch'; enterNewEpochReply.nextIndex'; enterNewEpochReply.state' >.
@@ -382,6 +410,11 @@ End applyReply.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.applyReply.
+#[local] Typeclasses Transparent paxos.applyReply.
+
+Global Instance applyReply_wf : struct.Wf paxos.applyReply.
+Proof. apply _. Qed.
 
 Global Instance settable_applyReply : Settable applyReply.t :=
   settable! applyReply.mk < applyReply.err'; applyReply.ret' >.
@@ -454,6 +487,11 @@ End paxosState.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.paxosState.
+#[local] Typeclasses Transparent paxos.paxosState.
+
+Global Instance paxosState_wf : struct.Wf paxos.paxosState.
+Proof. apply _. Qed.
 
 Global Instance settable_paxosState : Settable paxosState.t :=
   settable! paxosState.mk < paxosState.epoch'; paxosState.acceptedEpoch'; paxosState.nextIndex'; paxosState.state'; paxosState.isLeader' >.
@@ -546,6 +584,11 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.Server.
+#[local] Typeclasses Transparent paxos.Server.
+
+Global Instance Server_wf : struct.Wf paxos.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.ps'; Server.storage'; Server.clerks' >.

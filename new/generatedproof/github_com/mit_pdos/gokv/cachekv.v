@@ -25,6 +25,11 @@ End cacheValue.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent cachekv.cacheValue.
+#[local] Typeclasses Transparent cachekv.cacheValue.
+
+Global Instance cacheValue_wf : struct.Wf cachekv.cacheValue.
+Proof. apply _. Qed.
 
 Global Instance settable_cacheValue : Settable cacheValue.t :=
   settable! cacheValue.mk < cacheValue.v'; cacheValue.l' >.
@@ -95,6 +100,11 @@ End CacheKv.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent cachekv.CacheKv.
+#[local] Typeclasses Transparent cachekv.CacheKv.
+
+Global Instance CacheKv_wf : struct.Wf cachekv.CacheKv.
+Proof. apply _. Qed.
 
 Global Instance settable_CacheKv : Settable CacheKv.t :=
   settable! CacheKv.mk < CacheKv.kv'; CacheKv.mu'; CacheKv.cache' >.

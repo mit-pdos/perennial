@@ -14,6 +14,9 @@ Module cindex.
 
 (* type cindex.Backend *)
 Module Backend.
+
+#[global] Transparent cindex.Backend.
+#[global] Typeclasses Transparent cindex.Backend.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -22,6 +25,9 @@ End Backend.
 
 (* type cindex.ConsistentIndexer *)
 Module ConsistentIndexer.
+
+#[global] Transparent cindex.ConsistentIndexer.
+#[global] Typeclasses Transparent cindex.ConsistentIndexer.
 Section def.
 Context `{ffi_syntax}.
 Definition t := interface.t.
@@ -45,6 +51,11 @@ End consistentIndex.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent cindex.consistentIndex.
+#[local] Typeclasses Transparent cindex.consistentIndex.
+
+Global Instance consistentIndex_wf : struct.Wf cindex.consistentIndex.
+Proof. apply _. Qed.
 
 Global Instance settable_consistentIndex : Settable consistentIndex.t :=
   settable! consistentIndex.mk < consistentIndex.consistentIndex'; consistentIndex.term'; consistentIndex.applyingIndex'; consistentIndex.applyingTerm'; consistentIndex.be'; consistentIndex.mutex' >.
@@ -142,6 +153,11 @@ End fakeConsistentIndex.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent cindex.fakeConsistentIndex.
+#[local] Typeclasses Transparent cindex.fakeConsistentIndex.
+
+Global Instance fakeConsistentIndex_wf : struct.Wf cindex.fakeConsistentIndex.
+Proof. apply _. Qed.
 
 Global Instance settable_fakeConsistentIndex : Settable fakeConsistentIndex.t :=
   settable! fakeConsistentIndex.mk < fakeConsistentIndex.index'; fakeConsistentIndex.term' >.
