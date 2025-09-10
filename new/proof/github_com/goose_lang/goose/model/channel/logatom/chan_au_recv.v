@@ -46,7 +46,7 @@ Definition chan_try_blocking_receive_atomic_update
                   own_channel ch (chan_rep.Closed []) 0 γ ={∅,⊤}=∗ Φsuccess (default_val V) false
               | chan_rep.RcvWait =>
                   own_channel ch chan_rep.Idle 0 γ ={∅,⊤}=∗ Φnotready
-              | _ => |={∅,⊤}=> True (* Offer rescinded/no progress *)
+              | _ => True (* Offer rescinded/no progress *)
               end))
      | chan_rep.Closed draining =>
          (match draining with
@@ -176,6 +176,7 @@ Proof.
       iIntros "Hoc". iMod "Hc". iModIntro.
       iApply fupd_mask_intro; first done. iIntros "Hc2".
       iModIntro. iFrame. done. }
+    destruct draining; done.
     -
      iFrame. done.
     - iFrame.
