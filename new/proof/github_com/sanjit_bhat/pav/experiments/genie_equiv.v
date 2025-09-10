@@ -7,6 +7,11 @@ Context (wish : nat → iProp Σ).
 Context (post : nat → iProp Σ).
 #[global] Instance wish_pers x : Persistent (wish x).
 Proof. Admitted.
+(* [Plain wish] is somewhat unfortunate.
+if it doesn't hold with [is_hash], then spec0 strictly stronger than spec1.
+
+that withstanding, prob won't need [Plain wish] outside this equiv file,
+since can use [¬ wish] immediately, without needing to make it persistent. *)
 #[global] Instance wish_plainly x : Plain (wish x).
 Proof. Admitted.
 
