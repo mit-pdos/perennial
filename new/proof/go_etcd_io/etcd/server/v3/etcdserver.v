@@ -1,7 +1,9 @@
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.proof.proof_prelude.
-From New.proof Require Import context log fmt go_etcd_io.etcd.pkg.v3.idutil
+From New.proof Require Import context log fmt
+  go_etcd_io.etcd.pkg.v3.idutil
+  go_etcd_io.etcd.pkg.v3.wait
   go_etcd_io.etcd.api.v3.etcdserverpb.
 
 Class etcdserverG Σ :=
@@ -37,28 +39,56 @@ Abort.
 Axiom EtcdServer_names : Type.
 Implicit Type γ : EtcdServer_names.
 
-Axiom is_EtcdServer : ∀ (s : loc) γ, iProp Σ.
+Definition waitR (id' : w64) v : iProp Σ :=
+  (⌜ v = interface.nil ⌝) ∨
+    ∃ res_ptr (res : apply.Result.t),
+      ⌜ v = interface.mk (apply.Result.id) #res_ptr ⌝ ∗ res_ptr ↦ res.
+
 Axiom own_ID : ∀ γ (i : w64), iProp Σ.
-Axiom is_EtcdServer_access : ∀ s γ,
-  is_EtcdServer s γ -∗
-  ∃ (reqIDGen : loc) (max : w64),
+Axiom own_EtcdServer : ∀ (s : loc) γ, iProp Σ.
+#[local] Axiom is_EtcdServer_internal : ∀ (s : loc) γ, iProp Σ.
+Axiom own_EtcdServer_access : ∀ s γ,
+  own_EtcdServer s γ -∗
+  ∃ (reqIDGen : loc) (MaxRequestBytes : w64) w γw,
     "#reqIDGen" ∷ s ↦s[etcdserver.EtcdServer :: "reqIDGen"]□ reqIDGen ∗
     "#HreqIDGen" ∷ is_Generator reqIDGen (own_ID γ) ∗
     "#Cfg_MaxRequestBytes" ∷
       (struct.field_ref_f config.ServerConfig "MaxRequestBytes"
-         (struct.field_ref_f etcdserver.EtcdServer "Cfg" s)) ↦□ max ∗
-    "_" ∷ True.
+         (struct.field_ref_f etcdserver.EtcdServer "Cfg" s)) ↦□ MaxRequestBytes ∗
+    "#w" ∷ s ↦s[etcdserver.EtcdServer :: "w"]□ w ∗
+    "#Hinternal" ∷ is_EtcdServer_internal s γ ∗
+    "Hw" ∷ own_Wait γw w waitR ∗
+    "Hclose" ∷ (own_Wait γw w waitR -∗ own_EtcdServer s γ).
+Axiom is_EtcdServer_internal_pers : ∀ s γ, Persistent (is_EtcdServer_internal s γ).
+Existing Instance is_EtcdServer_internal_pers.
 
-Axiom is_EtcdServer_pers : ∀ s γ, Persistent (is_EtcdServer s γ).
-Existing Instance is_EtcdServer_pers.
+(* `own_EtcdServer` can't be persistent because it has a `wait.Wait` inside of it,
+   and the implementation of `wait.Wait` uses `RWMutex`, so there can't be a
+   persistent `is_Wait`. Moreover, the `own_Wait` depends on the value on the
+   RHS of the persistent points-to for field `w`. That means that we can't even
+   have a persistent `is_EtcdServer s γ` contained inside of `own_EtcdServer` to
+   encapsulate all the persistent things, since an existential variable in the
+   persistent part must be referred to in the exclusive part.
+
+   This would make using helper functions like `getAppliedIndex` and
+   `getCommittedIndex` annoying if their precondition were the standard
+   `own_EtcdServer`. So, instead, they are given weaker preconditions that are
+   persistent, and abstract away whatever knowledge they require.
+
+   AuthInfoFromCtx is trickier, because its callstack is harder to audit.
+   That being said, there is at least one RWMutex required by
+   `EtcdServer.AuthInfoFromCtx -> AuthStore.AuthInfoFromCtx -> authStore.AuthInfoFromCtx ->
+   authStore.IsAuthEnabled -> RWMutex.RLock`, so its precondition is the full
+   `own_EtcdServer`.
+ *)
 
 Axiom wp_EtcdServer__getAppliedIndex : ∀ s γ,
-  {{{ is_pkg_init etcdserver ∗ is_EtcdServer s γ }}}
+  {{{ is_pkg_init etcdserver ∗ is_EtcdServer_internal s γ }}}
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "getAppliedIndex" #()
   {{{ (a : w64), RET #a; True }}}.
 
 Axiom wp_EtcdServer__getCommittedIndex : ∀ s γ,
-  {{{ is_pkg_init etcdserver ∗ is_EtcdServer s γ }}}
+  {{{ is_pkg_init etcdserver ∗ is_EtcdServer_internal s γ }}}
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "getCommittedIndex" #()
   {{{ (a : w64), RET #a; True }}}.
 
@@ -69,9 +99,10 @@ Definition is_SimpleRequest r : iProp Σ :=
 .
 
 Axiom wp_EtcdServer__AuthInfoFromCtx : ∀ s γ ctx ctx_desc,
-  {{{ is_pkg_init etcdserver ∗ is_EtcdServer s γ ∗ is_Context ctx ctx_desc }}}
+  {{{ is_pkg_init etcdserver ∗ own_EtcdServer s γ ∗ is_Context ctx ctx_desc }}}
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "AuthInfoFromCtx" #ctx
   {{{ (a_ptr : loc) (err : interface.t), RET (#a_ptr, #err);
+      own_EtcdServer s γ ∗
       if decide (a_ptr = null) then
         True
       else
@@ -89,30 +120,31 @@ Qed.
 
 Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ (ctx : context.Context.t) ctx_desc req req_abs :
   {{{ is_pkg_init etcdserver ∗
-      "#Hsrv" ∷ is_EtcdServer s γ ∗
+      "Hsrv" ∷ own_EtcdServer s γ ∗
       "req" ∷ own_InternalRaftRequest req req_abs ∗
       "#Hsimple" ∷ is_SimpleRequest req ∗
       "#Hctx" ∷ is_Context ctx ctx_desc
   }}}
     s @ (ptrT.id etcdserver.EtcdServer.id) @ "processInternalRaftRequestOnce" #ctx #req
-  {{{ (a : loc) (err : interface.t), RET (#a, #err); True }}}.
+  {{{ (a : loc) (err : interface.t), RET (#a, #err); own_EtcdServer s γ }}}.
 Proof.
   wp_start. iNamed "Hpre".
   wp_apply wp_with_defer as "%defer Hdefer" . simpl subst.
-  wp_auto. wp_apply (wp_EtcdServer__getAppliedIndex with "[$Hsrv]") as "%ai _".
-  wp_apply (wp_EtcdServer__getCommittedIndex with "[$Hsrv]") as "%ci _".
+  wp_auto.
+  iDestruct (own_EtcdServer_access with "Hsrv") as "H". iNamed "H".
+  wp_apply (wp_EtcdServer__getAppliedIndex with "[$Hinternal]") as "%ai _".
+  wp_apply (wp_EtcdServer__getCommittedIndex with "[$Hinternal]") as "%ci _".
   wp_if_destruct.
   {
     (* FIXME: declare then access init predicate of errors. *)
     admit.
   }
-  wp_auto.
-  iDestruct (is_EtcdServer_access with "Hsrv") as "H". iNamed "H".
   wp_auto. wp_apply (wp_Generator__Next with "[]"). { iFrame "#". }
   iIntros "%i Hid". wp_auto. wp_alloc hdr_ptr as "hdr". wp_auto.
   iNamed "Hsimple". rewrite HAuthenticate. wp_auto.
-  wp_apply (wp_EtcdServer__AuthInfoFromCtx with "[$Hctx]").
-  { iFrame "#". } iIntros "* Hauth". wp_auto.
+  iDestruct ("Hclose" with "[$]") as "Hsrv".
+  wp_apply (wp_EtcdServer__AuthInfoFromCtx with "[$Hctx $Hsrv]").
+  iIntros "* (Hsrv & Hauth)". wp_auto.
   case_bool_decide.
   2:{ wp_auto. iApply "HΦ". done. }
   wp_auto. wp_bind (if: _ then _ else _)%E.
@@ -133,11 +165,10 @@ Proof.
   iDestruct (own_InternalRaftRequest_new_header with "[$] [$]") as "[%req_abs' req]".
   wp_apply (wp_InternalRaftRequest__Marshal with "[$r $req]").
   clear dependent err. iIntros "* Hmarshal". wp_auto.
-  wp_if_destruct.
-  2:{ rewrite bool_decide_false //. wp_auto. iApply "HΦ". done. }
+  case_bool_decide.
+  2:{ wp_auto. iApply "HΦ". done. }
   iEval (rewrite decide_True //) in "Hmarshal".
   iDestruct "Hmarshal" as "(req_ptr & req & %data & data_sl & %Hmarshal)".
-  rewrite bool_decide_true //.
   wp_auto.
   wp_if_destruct.
   { wp_bind. (* FIXME: access errors init predicate *) admit. }
@@ -152,10 +183,19 @@ Proof.
                     )%I).
     admit.
   }
-  iIntros "*". iNamed 1. wp_auto.
+  iIntros "*". iNamed 1.
+  iDestruct (own_EtcdServer_access with "Hsrv") as "H".
+  iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal".
+  clear dependent reqIDGen MaxRequestBytes w γw.
+  iNamed "H".
+  wp_auto.
+  wp_apply (wp_Wait__Register with "[Hw]").
+  { iFrame. admit. } (* FIXME: own_unregistered as postcondition of idutil.Generator.Next() *)
+  iIntros (ch) "(Hw & Hch)". wp_auto.
 
   (* TODO:
-     axiomatize `wait` for now. Prove it later.
+     is ServerConfig goosable without bringing in too many other packages?
+     axiomatize/prove ServerConfig.ReqTimeout
      axiomatize prometheus Counter inc
      axiomatize `parseProposeCtxErr`
    *)
