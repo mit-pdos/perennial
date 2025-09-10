@@ -7,7 +7,6 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-#[global] Instance : IsPkgInit math := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit idutil := define_is_pkg_init True%I.
 
 (* FIXME: id.go says that the overflowing of cnt into timestamp is intentional
