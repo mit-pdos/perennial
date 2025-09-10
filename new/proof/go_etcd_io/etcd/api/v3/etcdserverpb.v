@@ -27,6 +27,7 @@ Axiom wp_InternalRaftRequest__Marshal : ∀ m_ptr m msg,
     m_ptr @ (ptrT.id etcdserverpb.InternalRaftRequest.id) @ "Marshal" #()
   {{{ dAtA_sl (err : error.t), RET (#dAtA_sl, #err);
       m_ptr ↦ m ∗
+      own_InternalRaftRequest m msg ∗
       if decide (err = interface.nil) then
         ∃ dAtA, dAtA_sl ↦*□ dAtA ∧ ⌜ is_RaftRequest_marshalled msg dAtA ⌝
       else

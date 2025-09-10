@@ -38,11 +38,12 @@ Axiom EtcdServer_names : Type.
 Implicit Type γ : EtcdServer_names.
 
 Axiom is_EtcdServer : ∀ (s : loc) γ, iProp Σ.
+Axiom own_ID : ∀ γ (i : w64), iProp Σ.
 Axiom is_EtcdServer_access : ∀ s γ,
   is_EtcdServer s γ -∗
   ∃ (reqIDGen : loc) (max : w64),
     "#reqIDGen" ∷ s ↦s[etcdserver.EtcdServer :: "reqIDGen"]□ reqIDGen ∗
-    "#HreqIDGen" ∷ is_Generator reqIDGen (λ _, True)%I ∗
+    "#HreqIDGen" ∷ is_Generator reqIDGen (own_ID γ) ∗
     "#Cfg_MaxRequestBytes" ∷
       (struct.field_ref_f config.ServerConfig "MaxRequestBytes"
          (struct.field_ref_f etcdserver.EtcdServer "Cfg" s)) ↦□ max ∗
@@ -108,7 +109,7 @@ Proof.
   wp_auto.
   iDestruct (is_EtcdServer_access with "Hsrv") as "H". iNamed "H".
   wp_auto. wp_apply (wp_Generator__Next with "[]"). { iFrame "#". }
-  iIntros "%i _". wp_auto. wp_alloc hdr_ptr as "hdr". wp_auto.
+  iIntros "%i Hid". wp_auto. wp_alloc hdr_ptr as "hdr". wp_auto.
   iNamed "Hsimple". rewrite HAuthenticate. wp_auto.
   wp_apply (wp_EtcdServer__AuthInfoFromCtx with "[$Hctx]").
   { iFrame "#". } iIntros "* Hauth". wp_auto.
@@ -135,7 +136,7 @@ Proof.
   wp_if_destruct.
   2:{ rewrite bool_decide_false //. wp_auto. iApply "HΦ". done. }
   iEval (rewrite decide_True //) in "Hmarshal".
-  iDestruct "Hmarshal" as "(req_ptr & %data & data_sl & %Hmarshal)".
+  iDestruct "Hmarshal" as "(req_ptr & req & %data & data_sl & %Hmarshal)".
   rewrite bool_decide_true //.
   wp_auto.
   wp_if_destruct.
@@ -143,9 +144,17 @@ Proof.
   wp_auto.
   rewrite HID.
   wp_auto.
+  wp_bind.
+  wp_apply (wp_wand with "[req]").
+  {
+    instantiate (1:=(λ v, "->" ∷ ⌜ v = #hdr.(etcdserverpb.RequestHeader.ID') ⌝ ∗
+                        "req" ∷ own_InternalRaftRequest (req <| etcdserverpb.InternalRaftRequest.Header' := hdr_ptr |>) req_abs'
+                    )%I).
+    admit.
+  }
+  iIntros "*". iNamed 1. wp_auto.
 
   (* TODO:
-     axiomatize InternalRaftRequest.Marshal
      axiomatize `wait` for now. Prove it later.
      axiomatize prometheus Counter inc
      axiomatize `parseProposeCtxErr`
