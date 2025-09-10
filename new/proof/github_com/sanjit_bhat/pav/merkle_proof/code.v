@@ -402,8 +402,8 @@ Proof.
 Qed.
 
 (* for goals of the form:
-"Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ quants, wish quants) ∗
-"Herr" ∷ (∀ quants, wish quants -∗ post quants)
+"Hgenie" ∷ ⌜err = false⌝ ∗-∗ ∃ quants, wish quants ∗
+"Herr" ∷ ∀ quants, wish quants -∗ post quants
 
 this tactic reduces the err = true case down to these goals,
 which are equivalent and proved from having contradictory wish info in ctx:
@@ -428,15 +428,27 @@ Tactic Notation "genie_err" :=
     iIntros (?) "*"; iNamed 1; iExFalso
   ];
   (* use genies from sub-routine calls. *)
-  try (iDestruct "Hgenie" as "[_ Hgenie]";
-    iDestruct ("Hgenie" with "[]") as %?; [|done]).
+  try (iDestruct "Hgenie" as "[_ H]";
+    iDestruct ("H" with "[]") as %?; [|done]).
+
+(* a sub-routine doesn't have an err. simplify.
+context should have:
+"Hgenie" ∷ ⌜false = false⌝ ∗-∗ ∃ quants, wish quants
+"Herr" ∷ ∀ quants, wish quants -∗ postcond quants
+*)
+Tactic Notation "genie_sub_nerr" :=
+  iDestruct "Hgenie" as "[H _]";
+  iDestruct ("H" with "[//]") as "@";
+  iDestruct ("Herr" with "[]") as "@".
 
 Definition wish_proofToTree label sibs oleaf proof_enc : iProp Σ :=
   let IsOtherLeaf := match oleaf with None => false | _ => true end in
   let LeafLabel := match oleaf with None => [] | Some (l, _) => l end in
   let LeafVal := match oleaf with None => [] | Some (_, v) => v end in
   let proof := MerkleProof.mk' (mjoin (reverse sibs)) IsOtherLeaf LeafLabel LeafVal in
-  "%Henc_proof" ∷ ⌜MerkleProof.encodes proof proof_enc⌝ ∗
+  ∃ obj_enc tail,
+  "%Htail" ∷ ⌜proof_enc = obj_enc ++ tail⌝ ∗
+  "%Henc_proof" ∷ ⌜MerkleProof.encodes proof obj_enc⌝ ∗
   "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
   "%Heq_depth" ∷ ⌜length sibs ≤ max_depth⌝ ∗
   "%Hlen_label" ∷ ⌜length label = Z.to_nat (cryptoffi.hash_len)⌝ ∗
@@ -471,9 +483,14 @@ Proof.
     - word. }
   wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* @".
   destruct err; wp_auto.
-  { iClear "Herr". iApply "HΦ". genie_err.
-    - iFrame "%". iExists []. by list_simplifier.
-    - iFrame "%". iExists []. by list_simplifier. }
+  (* NOTE: bc code doesn't check tail, strongpre can't say tail=[]. *)
+  { iApply "HΦ". genie_err.
+    - iFrame "%".
+    - iFrame "%". }
+  genie_sub_nerr.
+  { iFrame "%". }
+  iNamed "Hown_obj".
+  wp_auto.
 Admitted.
 
 Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
