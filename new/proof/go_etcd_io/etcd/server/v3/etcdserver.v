@@ -1,7 +1,8 @@
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.proof.proof_prelude.
-From New.proof Require Import context log fmt go_etcd_io.etcd.pkg.v3.idutil.
+From New.proof Require Import context log fmt go_etcd_io.etcd.pkg.v3.idutil
+  go_etcd_io.etcd.api.v3.etcdserverpb.
 
 Class etcdserverG Σ :=
   {
@@ -14,7 +15,6 @@ Context `{!etcdserverG Σ}.
 
 #[global] Instance : IsPkgInit proto := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit traceutil := define_is_pkg_init True%I.
-#[global] Instance : IsPkgInit etcdserverpb := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit apply.apply := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit v3.auth.auth := define_is_pkg_init True%I.
 #[global] Instance : IsPkgInit wait := define_is_pkg_init True%I.
@@ -40,9 +40,12 @@ Implicit Type γ : EtcdServer_names.
 Axiom is_EtcdServer : ∀ (s : loc) γ, iProp Σ.
 Axiom is_EtcdServer_access : ∀ s γ,
   is_EtcdServer s γ -∗
-  ∃ (reqIDGen : loc),
+  ∃ (reqIDGen : loc) (max : w64),
     "#reqIDGen" ∷ s ↦s[etcdserver.EtcdServer :: "reqIDGen"]□ reqIDGen ∗
     "#HreqIDGen" ∷ is_Generator reqIDGen (λ _, True)%I ∗
+    "#Cfg_MaxRequestBytes" ∷
+      (struct.field_ref_f config.ServerConfig "MaxRequestBytes"
+         (struct.field_ref_f etcdserver.EtcdServer "Cfg" s)) ↦□ max ∗
     "_" ∷ True.
 
 Axiom is_EtcdServer_pers : ∀ s γ, Persistent (is_EtcdServer s γ).
@@ -60,6 +63,7 @@ Axiom wp_EtcdServer__getCommittedIndex : ∀ s γ,
 
 Definition is_SimpleRequest r : iProp Σ :=
   "%HAuthenticate" ∷ ⌜ r.(etcdserverpb.InternalRaftRequest.Authenticate') = null ⌝ ∗
+  "%HID" ∷ ⌜ r.(etcdserverpb.InternalRaftRequest.ID') = W64 0 ⌝ ∗
   "_" ∷ True
 .
 
@@ -79,15 +83,17 @@ Proof.
   iIntros "% HR He HΦ".
   iSpecialize ("He" with "[$]").
   iApply (wp_wand with "He"). iFrame.
-  iIntros "* [-> HR]". iApply "HΦ"
+  iIntros "* [-> HR]". iApply "HΦ". done.
 Qed.
 
-Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ (ctx : context.Context.t) ctx_desc r :
+Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ (ctx : context.Context.t) ctx_desc req req_abs :
   {{{ is_pkg_init etcdserver ∗
       "#Hsrv" ∷ is_EtcdServer s γ ∗
-      "#Hreq" ∷ is_SimpleRequest r ∗
-      "#Hctx" ∷ is_Context ctx ctx_desc }}}
-    s @ (ptrT.id etcdserver.EtcdServer.id) @ "processInternalRaftRequestOnce" #ctx #r
+      "req" ∷ own_InternalRaftRequest req req_abs ∗
+      "#Hsimple" ∷ is_SimpleRequest req ∗
+      "#Hctx" ∷ is_Context ctx ctx_desc
+  }}}
+    s @ (ptrT.id etcdserver.EtcdServer.id) @ "processInternalRaftRequestOnce" #ctx #req
   {{{ (a : loc) (err : interface.t), RET (#a, #err); True }}}.
 Proof.
   wp_start. iNamed "Hpre".
@@ -103,7 +109,7 @@ Proof.
   iDestruct (is_EtcdServer_access with "Hsrv") as "H". iNamed "H".
   wp_auto. wp_apply (wp_Generator__Next with "[]"). { iFrame "#". }
   iIntros "%i _". wp_auto. wp_alloc hdr_ptr as "hdr". wp_auto.
-  iNamed "Hreq". rewrite HAuthenticate. wp_auto.
+  iNamed "Hsimple". rewrite HAuthenticate. wp_auto.
   wp_apply (wp_EtcdServer__AuthInfoFromCtx with "[$Hctx]").
   { iFrame "#". } iIntros "* Hauth". wp_auto.
   case_bool_decide.
@@ -117,11 +123,25 @@ Proof.
   { iNamed 1. case_bool_decide; wp_auto.
     - iSplitR; first done. iFrame.
     - rewrite decide_False //. iNamed "Hauth". iNamed "H".
-      wp_auto. iSplitR; first done. iFrame. done.
-  }
+      wp_auto. iSplitR; first done. iFrame. done. }
   iIntros "*". iNamed 1. iNamed "H".
   wp_auto.
   iClear "err". clear err_ptr.
+  wp_auto.
+
+  iDestruct (own_InternalRaftRequest_new_header with "[$] [$]") as "[%req_abs' req]".
+  wp_apply (wp_InternalRaftRequest__Marshal with "[$r $req]").
+  clear dependent err. iIntros "* Hmarshal". wp_auto.
+  wp_if_destruct.
+  2:{ rewrite bool_decide_false //. wp_auto. iApply "HΦ". done. }
+  iEval (rewrite decide_True //) in "Hmarshal".
+  iDestruct "Hmarshal" as "(req_ptr & %data & data_sl & %Hmarshal)".
+  rewrite bool_decide_true //.
+  wp_auto.
+  wp_if_destruct.
+  { wp_bind. (* FIXME: access errors init predicate *) admit. }
+  wp_auto.
+  rewrite HID.
   wp_auto.
 
   (* TODO:
