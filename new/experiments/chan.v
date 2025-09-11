@@ -1,146 +1,182 @@
 From iris.proofmode Require Import proofmode.
-From iris.base_logic.lib Require Import iprop invariants ghost_var.
 From RecordUpdate Require Import RecordSet.
 From Perennial Require Import NamedProps.
+From New.experiments Require Import glob.
+From iris.base_logic.lib Require Import iprop invariants ghost_var ghost_map token mono_nat.
+From Perennial.base_logic.lib Require Import mono_list.
 Import RecordSetNotations.
 
 Module chanstate.
 Record t (V : Type) :=
   mk {
-    closed : bool;
     sent : list V;
     received : nat; (* ≃ (list unit) *)
   }.
 Global Arguments mk {V}.
-Global Arguments closed {V} (_).
 Global Arguments sent {V} (_).
 Global Arguments received {V} (_).
 Global Instance settable (V : Type) : Settable (t V) :=
-  settable! (mk (V:=V)) < closed; sent; received >.
+  settable! (mk (V:=V)) < sent; received >.
 End chanstate.
 
 Module unbuf_chan_from_exchange.
 Section proof.
+
 Context `{!invGS Σ}.
 Context (V : Type).
 Record chan_params :=
   mk_chan_params
     {
       Sd : V → iProp Σ;
-      Rv : iProp Σ
+      Rv : iProp Σ;
+      own_sender : iProp Σ;
+      own_receiver : iProp Σ;
     }.
 
-Axiom own_close : iProp Σ.
-Axiom is_closed : iProp Σ.
 Axiom default_v : V.
 
 Definition N := nroot.@"chan".
 
 Definition chan_send_spec ρ v Φ : iProp Σ :=
-  £ 3 -∗ |={⊤,∅}=> (own_close ∗ ρ.(Sd) v ∗ (own_close ={∅,⊤}=∗ ρ.(Rv) ={⊤}=∗ Φ)).
+  own_sender ρ ={⊤}=∗ Sd ρ v ∗ (ρ.(Rv) ={⊤}=∗ own_sender ρ ∗ Φ).
 
 Definition chan_receive_spec ρ Φ : iProp Σ :=
-  £ 3 -∗ |={⊤}=> (ρ.(Rv) ∗
-            (∀ v, ρ.(Sd) v ={⊤}=∗ Φ (v, true)) ∧
-            (is_closed ={⊤}=∗ Φ (default_v, false))).
+  own_receiver ρ ={⊤}=∗ Rv ρ ∗ ∀ v, Sd ρ v ={⊤}=∗ own_receiver ρ ∗ Φ v.
 
 Definition goal_send_spec own_chan (v : V) Φ : iProp Σ :=
   (* send the value *)
   |={⊤,↑N}=>
-    ▷∃ s, own_chan s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
-          (own_chan (s <| chanstate.sent := s.(chanstate.sent) ++ [v] |>) ={↑N,⊤}=∗
-           (* get notified that there was enough space of the buffer for it *)
-           (|={⊤,↑N}=>
-              ▷∃ (s' : chanstate.t V),
-                  own_chan s' ∗
-                  (⌜ length s.(chanstate.sent) ≤ s'.(chanstate.received)  ⌝ -∗
-                   own_chan s' ={↑N,⊤}=∗ Φ))).
+    ∃ s, own_chan s ∗
+           (own_chan (s <| chanstate.sent := s.(chanstate.sent) ++ [v] |>) ={↑N,⊤}=∗
+            (* get notified that there was enough space of the buffer for it *)
+            (|={⊤,↑N}=>
+               ∃ (s' : chanstate.t V),
+               own_chan s' ∗
+               (⌜ length s.(chanstate.sent) ≤ s'.(chanstate.received)  ⌝ -∗
+                own_chan s' ={↑N,⊤}=∗ Φ))).
 
 Definition goal_receive_spec own_chan Φ : iProp Σ :=
   |={⊤,↑N}=>
-    ▷∃ s, own_chan s ∗
-          if decide (s.(chanstate.closed) = true ∧ length s.(chanstate.sent) ≤ s.(chanstate.received)) then
-            (* the channel is closed and empty, so return the zero value and false *)
-            (own_chan s ={↑N,⊤}=∗ (Φ (default_v, false)))
-          else
-            (* notify the sender that this thread is receiving *)
-            (own_chan (set chanstate.received S s) ={↑N,⊤}=∗
-             (* receive the value from the sender *)
-             (|={⊤,↑N}=> ▷∃ (s' : chanstate.t V),
-                           own_chan s' ∗
-                           (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
-                                 own_chan s' ={↑N,⊤}=∗ Φ (v, true)))).
+    ∃ s, own_chan s ∗
+         (* notify the sender that this thread is receiving *)
+         (own_chan (set chanstate.received S s) ={↑N,⊤}=∗
+          (* receive the value from the sender *)
+          (|={⊤,↑N}=> ▷∃ (s' : chanstate.t V),
+                         own_chan s' ∗
+                         (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
+                               own_chan s' ={↑N,⊤}=∗ Φ v))).
 
 Context `{!ghost_varG Σ (chanstate.t V)}.
+Context `{!ghost_varG Σ nat}.
+Context `{!tokenG Σ}.
+Context `{!ghost_mapG Σ string string}.
+Context `{!mono_listG V Σ}.
+Context `{!mono_natG Σ}.
+
+Notation "5" := (pos_to_Qp 5) : Qp_scope.
+Lemma split_to_fifths :
+  (1 = 1/5 + 2/5 + 2/5)%Qp.
+Proof. compute_done. Qed.
+
 Lemma fact :
-  ⊢ own_close ={⊤}=∗
-    ∃ ρ own_chan,
-        own_chan (chanstate.mk false [] 0) ∗
-        □ (∀ v Φ, goal_send_spec own_chan v Φ -∗ chan_send_spec ρ v Φ) ∗
-        □ (∀ Φ, goal_receive_spec own_chan Φ -∗ chan_receive_spec ρ Φ).
+  ⊢ |={⊤}=>
+        ∃ ρ own_chan,
+  own_sender ρ ∗
+  own_receiver ρ ∗
+  own_chan (chanstate.mk [] 0) ∗
+  □ (∀ v Φ, goal_send_spec own_chan v Φ -∗ chan_send_spec ρ v Φ) ∗
+  □ (∀ Φ, goal_receive_spec own_chan Φ -∗ chan_receive_spec ρ Φ).
 Proof.
-  iIntros "Hcc".
-  iMod (ghost_var_alloc (chanstate.mk false [] 0)) as (γ) "[H Hc]".
+  iMod (ghost_var_alloc (chanstate.mk [] 0)) as (γ) "[H Hc]".
+  iMod (token_alloc) as (γsend) "Hsend".
+  iMod (token_alloc) as (γreceive) "Hreceive".
+  iMod (token_alloc) as (γcosend) "Hcosend".
+  iMod (token_alloc) as (γcoreceive) "Hcoreceive".
+  iMod (ghost_var_alloc 0) as (γcom) "Hcom".
+  iMod (mono_list_own_alloc []) as (γsent) "[Hsent● _]".
+  iMod (mono_nat_own_alloc 0) as (γreceived) "[Hreceived● _]".
+  set (own_sender := token γsend).
+  set (own_receiver := token γreceive).
   set (own_chan (s : chanstate.t V) := ghost_var γ (1/2) s).
+  set (Sd (v : V) := (∃ committed,
+                         ghost_var γcom (1/5)%Qp committed ∗
+                         mono_list_idx_own γsent committed v
+                     )%I).
+  set (Rv := (∃ committed,
+                 ghost_var γcom (1/5)%Qp committed ∗
+                 mono_nat_lb_own γreceived committed
+             )%I).
+
   iMod (inv_alloc (nroot.@"chan") _ (
             ∃ st,
-              "Hc" ∷ own_chan st ∗
-              "Hclosed" ∷ (match st.(chanstate.closed) with
-                           | false => own_close
-                           | true => is_closed
-                           end) ∗
-              "Hsent" ∷ (True)
-          )%I with "[H Hcc]") as "#Hinv".
-  { iFrame. simpl. iFrame. }
+              let committed := (min st.(chanstate.received) (length st.(chanstate.sent))) in
+              "Hoc" ∷ own_chan st ∗
+              "Hcom" ∷ ghost_var γcom (1/5) committed ∗
+
+              "Hsent" ∷ mono_list_auth_own γsent 1 st.(chanstate.sent) ∗
+              "Hrecevied" ∷ mono_nat_auth_own γreceived 1 st.(chanstate.received) ∗
+
+              "Hsend" ∷ (
+                  ("Hno_sender" ∷ token γcosend ∗
+                   "Hcom_sender" ∷ ghost_var γcom (2/5) committed ∗
+                    "%Hsent_eq_com" ∷ ⌜ length st.(chanstate.sent) = committed ⌝) ∨
+                  ("Hsender" ∷ own_sender ∗
+                   "%Hsent_eq_com_S" ∷ ⌜ length st.(chanstate.sent) = S committed ⌝)
+                ) ∗
+
+              "Hreceive" ∷ (
+                  ("Hno_receiveer" ∷ token γcoreceive ∗
+                   "Hcom_receiveer" ∷ ghost_var γcom (2/5) committed ∗
+                    "%Hreceived_eq_com" ∷ ⌜ st.(chanstate.received) = committed ⌝) ∨
+                  ("Hreceiveer" ∷ own_receiver ∗
+                   "%Hreceived_eq_com_S" ∷ ⌜ st.(chanstate.received) = S committed ⌝)
+                )
+          )%I with "[-H Hsend Hreceive]") as "#Hinv".
+  { iFrame.
+    iEval (rewrite split_to_fifths) in "Hcom".
+    iDestruct "Hcom" as "[[? Hs] Hr]". iFrame.
+    iSplitL "Hcosend Hs".
+    { iLeft. iFrame. simpl. done. }
+    { iLeft. iFrame. simpl. done. }
+  }
   iModIntro.
-  iExists (mk_chan_params ?[Sd] ?[Rv]).
-  iExists own_chan. iFrame "Hc".
+  iExists (mk_chan_params Sd Rv own_sender own_receiver).
+  iExists own_chan. simpl. iFrame.
   iSplit.
   - (* send *)
-    iIntros "!# * Hau (Hlc & Hlc2 & Hlc3)".
+    iIntros "!# * Hau Hsender".
+    simpl.
     iMod "Hau". iInv "Hinv" as "Hi" "Hclose".
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iMod (lc_fupd_elim_later with "[$] Hau") as "Hau".
-    iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
-    iDestruct "Hau" as "(% & Hc2 & %Hclose & Hau)".
-    iNamed "Hi".
-    iCombine "Hc Hc2" gives %[_ ->]. rewrite Hclose.
-    iFrame "Hclosed". simpl.
-    iSplitR. { admit. }
-    iIntros "Hclosed".
-    iMod (ghost_var_update_2 with "Hc Hc2") as "[Hc Hc2]".
+    iMod (lc_fupd_elim_later with "[] Hi") as "Hi".
+    { admit. } (* lc *)
+    iMod (lc_fupd_elim_later with "[] Hau") as "Hau".
+    { admit. } (* lc *)
+    iNamedSuffix "Hi" "_inv".
+    iDestruct "Hsend_inv" as "[HH | Hbad]".
+    2:{
+      iNamedSuffix "Hbad" "_bad".
+      iCombine "Hsender Hsender_bad" gives %[].
+    }
+    iNamed "HH".
+    iRename "Hsender" into "Hsender_inv".
+    iMod (mono_list_auth_own_update (st.(chanstate.sent) ++ [v]) with "Hsent_inv") as "[Hsent_inv #Hsent_lb]".
+    { apply prefix_app_r. done. }
+    iDestruct "Hau" as "(% & Hoc & Hau)".
+    iCombine "Hoc_inv Hoc" gives %[_ ->].
+    iMod (ghost_var_update_2 with "Hoc Hoc_inv") as "[Hoc Hoc_inv]".
     { rewrite Qp.half_half //. }
-    iMod "Hmask" as "_".
-    iSpecialize ("Hau" with "[$]").
-    iMod ("Hclose" with "[-Hau Hlc]") as "_".
-    { iNext. iFrame.  simpl. rewrite Hclose. iFrame. }
-    iMod "Hau". iModIntro.
-    iIntros "HRv".
-    iMod "Hau".
-    iMod (lc_fupd_elim_later with "[$] Hau") as "(%s' & Hc & Hau)".
-    admit.
-  - (* receive *)
-    iIntros "!# * Hau (Hlc & Hlc2 & Hlc3)".
-    iMod "Hau". iInv "Hinv" as "Hi" "Hclose".
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iMod (lc_fupd_elim_later with "[$] Hau") as "Hau".
-    iDestruct "Hau" as "(% & Hc2 & Hau)". iNamed "Hi".
-    iCombine "Hc Hc2" gives %[_ ->].
-    destruct_decide (decide (chanstate.closed s = true)) as Hclose.
-    + rewrite Hclose. admit.
-    + apply not_true_is_false in Hclose. rewrite Hclose /=.
-      iMod (ghost_var_update_2 with "Hc Hc2") as "[Hc Hc2]".
-      { rewrite Qp.half_half //. }
-      iSpecialize ("Hau" with "[$]").
-      iMod ("Hclose" with "[-Hau Hlc]") as "_".
-      { iNext. iFrame.  simpl. rewrite Hclose. iFrame. }
-      iMod "Hau". iModIntro.
-      iSplitR. { admit. }
-      iSplit.
-      2:{ admit. }
-      iIntros "%v HSd".
-Abort.
+    iSpecialize ("Hau" with "[$Hoc]").
+    iCombineNamed "*_inv" as "Hi".
+    iMod ("Hclose" with "[Hi]").
+    {
+      iNamed "Hi". iFrame "Hoc_inv". "Hsent_inv". iNext. iRight. iFrame.
+    }
+    iDestruct "Hcom_sender" as "[Hcom_sender Hcom_sender2]".
+
+
 End proof.
 End unbuf_chan_from_exchange.
 
-
+chan is idle ∨
+(offer from receiver ∗ receiver's atomic update) ∨
+(offer from sender ∗ sender's atomic update)
