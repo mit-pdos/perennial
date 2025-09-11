@@ -680,7 +680,7 @@ Definition pure_proofToTree label sibs oleaf :=
   | Some (l, v) => pure_put t l v
   end.
 
-(** invariants on gallina ops. *)
+(** invariants on [pure_put]. *)
 
 (* [pure_put] definitionally guarantees [limit] down the put path.
 for [Inner] nodes down the opposite path, it preserves [limit]. *)
@@ -880,6 +880,63 @@ Proof.
     replace (S _) with (length $ pref_ext pref label) in * by len.
     eapply IH; repeat case_match; try done; [..|len|len];
       by eapply prefix_total_snoc.
+Qed.
+
+(** invariants on [pure_newShell]. *)
+
+Lemma limit_on_newShell label sibs :
+  length sibs ≤ max_depth →
+  is_limit (pure_newShell label sibs).
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit.
+  remember 0%nat as depth.
+  assert (depth + limit ≤ max_depth) by lia.
+  clear Heqlimit Heqdepth.
+  generalize dependent depth.
+  revert limit.
+  induction sibs; try done.
+  simpl. intros.
+  destruct limit; try done.
+  opose proof (IHsibs limit (S depth) _ _); [lia..|].
+  by case_match.
+Qed.
+
+Lemma const_label_on_newShell label sibs :
+  is_const_label_len (pure_newShell label sibs).
+Proof.
+  autounfold with merkle.
+  remember 0%nat as depth. clear Heqdepth.
+  revert depth.
+  induction sibs; try done.
+  simpl. intros.
+  by case_match.
+Qed.
+
+Lemma sorted_on_newShell label sibs :
+  is_sorted (pure_newShell label sibs).
+Proof.
+  autounfold with merkle.
+  remember [] as pref.
+  replace 0%nat with (length pref) by (by subst).
+  clear Heqpref.
+  revert pref.
+  induction sibs; try done.
+  simpl. intros.
+  opose proof (IHsibs (pref ++ [if get_bit label (length pref) then true else false])).
+  replace (length (_ ++ _)) with (S (length pref)) in * by len.
+  by case_match.
+Qed.
+
+Lemma cutless_on_newShell label sibs :
+  is_cutless_path (pure_newShell label sibs) label.
+Proof.
+  autounfold with merkle.
+  remember 0%nat as depth. clear Heqdepth.
+  revert depth.
+  induction sibs; try done.
+  simpl. intros.
+  by case_match.
 Qed.
 
 (** tree proofs. *)

@@ -1,6 +1,7 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
 From Perennial.Helpers Require Import bytes NamedProps.
+From Stdlib.micromega Require Import ZifyNat.
 
 From New.proof Require Import bytes.
 From New.proof.github_com.goose_lang Require Import primitive std.
@@ -307,272 +308,6 @@ Lemma wp_getProofCap (depth : nat) :
   }}}.
 Proof. rewrite /max_depth. wp_start as "@". wp_auto. iApply "HΦ". word. Qed.
 
-(* make def to prevent unfolding the nat. *)
-Definition w64_len := 8%nat.
-Hint Unfold w64_len : len.
-
-Lemma wp_newShell sl_label label sl_sibs sibs_enc (depth depth_rem : nat) :
-  {{{
-    is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
-    "#Hsl_label" ∷ sl_label ↦*□ label ∗
-    "#Hsl_sibs" ∷ sl_sibs ↦*□ sibs_enc ∗
-    "%Hlen_sibs" ∷ ⌜length sibs_enc = (depth_rem * Z.to_nat cryptoffi.hash_len)%nat⌝ ∗
-    "%Heq_depth" ∷ ⌜depth + depth_rem ≤ max_depth⌝
-  }}}
-  @! merkle.newShell #(W64 depth) #sl_label #sl_sibs
-  {{{
-    sibs n, RET #n;
-    "%Henc_sibs" ∷ ⌜sibs_enc = mjoin (reverse sibs)⌝ ∗
-    "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
-    "Hown_tree" ∷ own_tree n (pure_newShell' depth label sibs) 1
-  }}}.
-Proof.
-  iLöb as "IH" forall (sl_sibs sibs_enc depth depth_rem).
-  wp_start as "@". wp_auto.
-  iDestruct (own_slice_len with "Hsl_sibs") as %[].
-
-  wp_if_destruct; wp_auto.
-  { iApply "HΦ".
-    destruct sibs_enc. 2: { simpl in *. word. }
-    instantiate (1:=[]).
-    repeat iSplit; try done.
-    rewrite /is_initialized. iNamed "Hinit".
-    by iFrame "#". }
-  destruct depth_rem; [word|].
-
-  replace (Z.to_nat 32) with (32%nat) in * by lia.
-  iDestruct (own_slice_wf with "Hsl_sibs") as %?.
-  wp_apply (wp_slice_slice with "[$Hsl_sibs]")
-    as "{Hsl_sibs} (_&#Hsplit_l&#Hsplit_r)"; [word|].
-  wp_pure; [word|].
-  wp_auto.
-  wp_apply wp_alloc as "* Hcut".
-  wp_apply wp_alloc as "* Hinner".
-  wp_apply (wp_node_getChild with "[$Hinner]").
-  { iFrame "#". }
-  iIntros "* [_ @]". wp_auto.
-
-  replace (sint.nat (W64 0)) with 0%nat by word.
-  rewrite subslice_from_start.
-  replace (sint.nat (word.sub _ _)) with (depth_rem * 32)%nat.
-  2: { simpl in *. word. }
-  replace (word.add _ _) with (W64 (S depth)) by word.
-  wp_apply "IH" as "* @".
-  { iFrame "#".
-    instantiate (1:=depth_rem).
-    rewrite length_take.
-    word. }
-  replace (uint.nat (W64 _)) with depth by word.
-  iDestruct ("Hclose" with "Hcb Hcnb") as "@".
-  wp_auto.
-
-  iDestruct (condition_bool (get_bit label depth)
-    with "[Hcut] [Hown_tree]") as "[Htree_l Htree_r]"; [iAccu..|].
-  wp_apply (wp_node_getHash
-    (if get_bit label depth then Cut _ else _)
-    with "[Htree_l]").
-  { iFrame "#". case_match; [|iFrame].
-    iFrame "∗#".
-    iPureIntro. intuition.
-    rewrite length_drop. lia. }
-  iIntros "*". iNamedSuffix 1 "0". wp_auto.
-  wp_apply (wp_node_getHash
-    (if get_bit label depth then _ else Cut _)
-    with "[Htree_r]").
-  { iFrame "#". case_match; [iFrame|].
-    iFrame "∗#".
-    iPureIntro. intuition.
-    rewrite length_drop. lia. }
-  iIntros "*". iNamedSuffix 1 "1". wp_auto.
-
-  wp_apply wp_compInnerHash. { iFrame "#". }
-  iIntros "*". iNamedSuffix 1 "_inner".
-  iPersist "Hsl_hash_inner". wp_auto.
-  iApply "HΦ".
-  instantiate (1:=drop (depth_rem * 32) sibs_enc :: sibs).
-  repeat iSplit; try iPureIntro.
-  - rewrite reverse_cons join_app join_singleton -Henc_sibs take_drop //.
-  - apply Forall_cons; [|done]. rewrite length_drop. lia.
-  - iFrame "∗#".
-Qed.
-
-Definition wish_proofToTree label proof_enc sibs oleaf : iProp Σ :=
-  let IsOtherLeaf := match oleaf with None => false | _ => true end in
-  let LeafLabel := match oleaf with None => [] | Some (l, _) => l end in
-  let LeafVal := match oleaf with None => [] | Some (_, v) => v end in
-  let proof := MerkleProof.mk' (mjoin (reverse sibs)) IsOtherLeaf LeafLabel LeafVal in
-  ∃ tail,
-  "%Hlen_label" ∷ ⌜length label = Z.to_nat (cryptoffi.hash_len)⌝ ∗
-  "Henc_proof" ∷ MerkleProof.wish proof_enc proof tail ∗
-  "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
-  "%Heq_depth" ∷ ⌜length sibs ≤ max_depth⌝ ∗
-  "%Hlen_olabel" ∷ ⌜match oleaf with None => True | Some (l, _) =>
-    length l = Z.to_nat $ cryptoffi.hash_len end⌝ ∗
-  "%Heq_olabel" ∷ ⌜match oleaf with None => True | Some (l, _) =>
-    label ≠ l end⌝.
-
-Tactic Notation "intro_wish" := iIntros "(%&%&@)".
-
-Lemma wp_proofToTree sl_label label sl_proof proof :
-  {{{
-    is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
-    "#Hsl_label" ∷ sl_label ↦*□ label ∗
-    "#Hsl_proof" ∷ sl_proof ↦*□ proof
-  }}}
-  @! merkle.proofToTree #sl_label #sl_proof
-  {{{
-    tr err, RET (#tr, #err);
-    match err with
-    | true => ¬ ∃ sibs oleaf, wish_proofToTree label proof sibs oleaf
-    | false =>
-      ∃ sibs oleaf t,
-      "Hwish" ∷ wish_proofToTree label proof sibs oleaf ∗
-      "%HSome_tree" ∷ ⌜pure_proofToTree label sibs oleaf = Some t⌝ ∗
-      "Hown_tree" ∷ own_tree tr t 1
-    end
-  }}}.
-Proof.
-  wp_start as "@". wp_auto.
-  iDestruct (own_slice_len with "Hsl_label") as %[].
-  wp_if_destruct; wp_auto.
-  2: { iApply "HΦ". intro_wish. word. }
-  wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* Hpost".
-  destruct err; wp_auto.
-  { iApply "HΦ". intro_wish. iApply "Hpost". iFrame. }
-  iNamedSuffix "Hpost" "_dec".
-  iNamed "Hown_obj_dec".
-  iDestruct (own_slice_len with "Hsl_Siblings") as %[].
-  wp_auto.
-  wp_if_destruct; wp_auto.
-  2: { iApply "HΦ". intro_wish.
-    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
-    iClear "Hwish_dec". simpl in *.
-    apply join_same_len_length in Hlen_sibs.
-    rewrite -join_length_reverse in Hlen_sibs.
-    word. }
-  wp_if_destruct; wp_auto.
-  { iApply "HΦ". intro_wish.
-    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
-    iClear "Hwish_dec". simpl in *.
-    apply join_same_len_length in Hlen_sibs.
-    rewrite -join_length_reverse in Hlen_sibs.
-    word. }
-Admitted.
-
-Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
-  (* limit needed to prevent depth overflow. *)
-  is_limit t →
-  is_cutless_path t label →
-  {{{
-    is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
-    "Hown_tree" ∷ own_tree n t d0 ∗
-    "Hsl_label_in" ∷ sl_label ↦*{d1} label
-  }}}
-  n @ (ptrT.id merkle.node.id) @ "find" #(W64 0) #sl_label #getProof
-  {{{
-    (found : bool) sl_foundLabel foundLabel sl_foundVal foundVal sl_sibs sibs_enc,
-    RET (#found, #sl_foundLabel, #sl_foundVal, #sl_sibs);
-    "Hown_tree" ∷ own_tree n t d0 ∗
-    "Hsl_label" ∷ sl_label ↦*{d1} label ∗
-
-    "#Hsl_foundLabel" ∷ sl_foundLabel ↦*□ foundLabel ∗
-    "#Hsl_foundVal" ∷ sl_foundVal ↦*□ foundVal ∗
-    "Hsl_sibs" ∷ sl_sibs ↦* sibs_enc ∗
-    "Hcap_sibs" ∷ own_slice_cap w8 sl_sibs 1 ∗
-
-    "%Heq_found" ∷ ⌜ find t label = if found then Some (foundLabel, foundVal) else None ⌝ ∗
-    "Hproof" ∷ (if negb getProof then True else
-      ∃ sibsLen sibs,
-      "#His_sibs" ∷ is_sibs t label sibs ∗
-      "%Henc_sibs" ∷ ⌜sibs_enc = sibsLen ++ mjoin (reverse sibs)⌝ ∗
-      "%Hlen_sibsLen" ∷ ⌜length sibsLen = w64_len⌝)
-  }}}.
-Proof.
-  autounfold with merkle.
-  intros Hlimit Hcutless.
-  remember max_depth as limit.
-  remember 0%nat as depth.
-  replace (W64 0) with (W64 depth) by word.
-  assert (depth + limit = max_depth) as Heq_depth; [word|].
-  clear Heqlimit Heqdepth.
-  iLöb as "IH" forall (t limit depth n Hcutless Hlimit Heq_depth).
-  iIntros (Φ) "(#?&@) HΦ".
-  wp_method_call. wp_call. wp_auto.
-  wp_if_destruct.
-
-  { iClear "IH".
-    iDestruct (own_empty_tree with "Hown_tree") as %->.
-    wp_auto.
-    (* TODO(goose): wp_if_destruct could destruct bool's. *)
-    destruct getProof; wp_auto.
-    + wp_apply wp_getProofCap as "* %"; [word|].
-      wp_apply wp_slice_make3 as "* (Hsl_sibs&Hcap_sibs&_)"; [word|].
-      iApply "HΦ". iFrame.
-      iDestruct own_slice_nil as "$".
-      repeat (iSplit || iExists _); try done;
-        [by list_simplifier | len].
-    + iApply "HΦ". iFrame.
-      iDestruct own_slice_nil as "$".
-      iDestruct own_slice_nil as "$".
-      by iDestruct own_slice_cap_nil as "$". }
-
-  destruct t; simpl in *; iNamed "Hown_tree"; try done;
-    iNamed "Hown_tree"; wp_auto.
-
-  - iClear "IH".
-    destruct getProof; wp_auto.
-    + wp_apply wp_getProofCap as "* %"; [word|].
-      wp_apply wp_slice_make3 as "* (Hsl_sibs&Hcap_sibs&_)"; [word|].
-      iApply "HΦ". iFrame "∗#".
-      repeat (iSplit || iExists _); try done;
-        [by list_simplifier | len].
-    + iApply "HΦ". iFrame "∗#".
-      iDestruct own_slice_nil as "$".
-      by iDestruct own_slice_cap_nil as "$".
-
-  - destruct limit; [done|]. intuition.
-    wp_apply (wp_node_getChild with "[$Hnode $Hsl_label_in]") as "*".
-    iIntros "[Hsl_label_in H]". iNamed "H". wp_auto.
-    replace (uint.nat (W64 depth)) with depth by word.
-    iDestruct (condition_bool (get_bit label depth)
-      with "[Hown_child1] [Hown_child0]")
-      as "[Hown_child_l Hown_child_r]"; [iAccu..|].
-    replace (word.add _ _) with (W64 (S depth)) by word.
-    wp_apply ("IH" with "[//] [] [] [Hown_child_l Hsl_label_in]") as "* @".
-    { by case_match. }
-    { word. }
-    { iFrame "∗#". case_match; iFrame. }
-    iClear "IH".
-    assert (∀ (b : bool) T (x0 x1 : T),
-      (if b then if b then x0 else x1 else if b then x1 else x0) = x0) as Hif.
-    { intros. by repeat case_match. }
-
-    destruct getProof; wp_auto; simpl in *; iNamed "Hproof".
-    + iDestruct ("Hclose" with "Hcb Hcnb") as "@".
-      rewrite !{}Hif.
-      wp_apply (wp_node_getHash (if get_bit label depth then _ else _)
-        with "[Hown_child_r]") as "* H".
-      { iFrame "#". case_match; iFrame. }
-      iNamedSuffix "H" "0".
-      wp_apply (wp_slice_append with "[$Hsl_sibs $Hcap_sibs]")
-        as "* (Hsl_sibs & Hcap_sibs & _)".
-      { iFrame "#". }
-      iApply "HΦ". iFrame "∗#".
-      iSplitL. { case_match; iFrame. }
-      repeat (iSplit || iExists _); try done.
-      iPureIntro. list_simplifier. f_equal.
-      rewrite reverse_cons join_app.
-      by list_simplifier.
-    + iDestruct ("Hclose" with "Hcb Hcnb") as "@".
-      rewrite !{}Hif.
-      iApply "HΦ". iFrame "∗#".
-      iSplit; [|done].
-      case_match; iFrame.
-Qed.
-
 Lemma wp_put n0 n t sl_label sl_val label val :
   (* for max depth. *)
   is_limit t →
@@ -827,6 +562,314 @@ Proof.
     simpl.
     iFrame "Hnode".
     iFrame "∗#".
+Qed.
+
+Lemma wp_newShell sl_label label sl_sibs sibs_enc (depth depth_rem : nat) :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "#Hsl_label" ∷ sl_label ↦*□ label ∗
+    "#Hsl_sibs" ∷ sl_sibs ↦*□ sibs_enc ∗
+    "%Hlen_sibs" ∷ ⌜length sibs_enc = (depth_rem * Z.to_nat cryptoffi.hash_len)%nat⌝ ∗
+    "%Heq_depth" ∷ ⌜depth + depth_rem ≤ max_depth⌝
+  }}}
+  @! merkle.newShell #(W64 depth) #sl_label #sl_sibs
+  {{{
+    sibs n, RET #n;
+    "%Henc_sibs" ∷ ⌜sibs_enc = mjoin (reverse sibs)⌝ ∗
+    "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
+    "Hown_tree" ∷ own_tree n (pure_newShell' depth label sibs) 1
+  }}}.
+Proof.
+  iLöb as "IH" forall (sl_sibs sibs_enc depth depth_rem).
+  wp_start as "@". wp_auto.
+  iDestruct (own_slice_len with "Hsl_sibs") as %[].
+
+  wp_if_destruct; wp_auto.
+  { iApply "HΦ".
+    destruct sibs_enc. 2: { simpl in *. word. }
+    instantiate (1:=[]).
+    repeat iSplit; try done.
+    rewrite /is_initialized. iNamed "Hinit".
+    by iFrame "#". }
+  destruct depth_rem; [word|].
+
+  replace (Z.to_nat 32) with (32%nat) in * by lia.
+  iDestruct (own_slice_wf with "Hsl_sibs") as %?.
+  wp_apply (wp_slice_slice with "[$Hsl_sibs]")
+    as "{Hsl_sibs} (_&#Hsplit_l&#Hsplit_r)"; [word|].
+  wp_pure; [word|].
+  wp_auto.
+  wp_apply wp_alloc as "* Hcut".
+  wp_apply wp_alloc as "* Hinner".
+  wp_apply (wp_node_getChild with "[$Hinner]").
+  { iFrame "#". }
+  iIntros "* [_ @]". wp_auto.
+
+  replace (sint.nat (W64 0)) with 0%nat by word.
+  rewrite subslice_from_start.
+  replace (sint.nat (word.sub _ _)) with (depth_rem * 32)%nat.
+  2: { simpl in *. word. }
+  replace (word.add _ _) with (W64 (S depth)) by word.
+  wp_apply "IH" as "* @".
+  { iFrame "#".
+    instantiate (1:=depth_rem).
+    rewrite length_take.
+    word. }
+  replace (uint.nat (W64 _)) with depth by word.
+  iDestruct ("Hclose" with "Hcb Hcnb") as "@".
+  wp_auto.
+
+  iDestruct (condition_bool (get_bit label depth)
+    with "[Hcut] [Hown_tree]") as "[Htree_l Htree_r]"; [iAccu..|].
+  wp_apply (wp_node_getHash
+    (if get_bit label depth then Cut _ else _)
+    with "[Htree_l]").
+  { iFrame "#". case_match; [|iFrame].
+    iFrame "∗#".
+    iPureIntro. intuition.
+    rewrite length_drop. lia. }
+  iIntros "*". iNamedSuffix 1 "0". wp_auto.
+  wp_apply (wp_node_getHash
+    (if get_bit label depth then _ else Cut _)
+    with "[Htree_r]").
+  { iFrame "#". case_match; [iFrame|].
+    iFrame "∗#".
+    iPureIntro. intuition.
+    rewrite length_drop. lia. }
+  iIntros "*". iNamedSuffix 1 "1". wp_auto.
+
+  wp_apply wp_compInnerHash. { iFrame "#". }
+  iIntros "*". iNamedSuffix 1 "_inner".
+  iPersist "Hsl_hash_inner". wp_auto.
+  iApply "HΦ".
+  instantiate (1:=drop (depth_rem * 32) sibs_enc :: sibs).
+  repeat iSplit; try iPureIntro.
+  - rewrite reverse_cons join_app join_singleton -Henc_sibs take_drop //.
+  - apply Forall_cons; [|done]. rewrite length_drop. lia.
+  - iFrame "∗#".
+Qed.
+
+Definition wish_proofToTree label proof_enc sibs oleaf : iProp Σ :=
+  ∃ LeafLabel LeafVal tail,
+  let IsOtherLeaf := match oleaf with None => false | _ => true end in
+  let proof := MerkleProof.mk' (mjoin (reverse sibs)) IsOtherLeaf LeafLabel LeafVal in
+  "%Hlen_label" ∷ ⌜length label = Z.to_nat (cryptoffi.hash_len)⌝ ∗
+  "Henc_proof" ∷ MerkleProof.wish proof_enc proof tail ∗
+  "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
+  "%Heq_depth" ∷ ⌜length sibs ≤ max_depth⌝ ∗
+  "Holeaf" ∷ match oleaf with None => True | Some (l, v) =>
+    "%Hlen_olabel" ∷ ⌜length l = Z.to_nat $ cryptoffi.hash_len⌝ ∗
+    "%Heq_olabel" ∷ ⌜label ≠ l⌝ ∗
+    "->" ∷ ⌜LeafLabel = l⌝ ∗
+    "->" ∷ ⌜LeafVal = v⌝
+    end.
+
+Tactic Notation "intro_wish" := iIntros "(%&%&@)".
+
+Lemma wp_proofToTree sl_label label sl_proof proof :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "#Hsl_label" ∷ sl_label ↦*□ label ∗
+    "#Hsl_proof" ∷ sl_proof ↦*□ proof
+  }}}
+  @! merkle.proofToTree #sl_label #sl_proof
+  {{{
+    tr err, RET (#tr, #err);
+    match err with
+    | true => ¬ ∃ sibs oleaf, wish_proofToTree label proof sibs oleaf
+    | false =>
+      ∃ sibs oleaf t,
+      "Hwish" ∷ wish_proofToTree label proof sibs oleaf ∗
+      "%HSome_tree" ∷ ⌜pure_proofToTree label sibs oleaf = Some t⌝ ∗
+      "Hown_tree" ∷ own_tree tr t 1
+    end
+  }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  iDestruct (own_slice_len with "Hsl_label") as %[].
+  wp_if_destruct; wp_auto.
+  2: { iApply "HΦ". intro_wish. word. }
+  wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* Hpost".
+  destruct err; wp_auto.
+  { iApply "HΦ". intro_wish. iApply "Hpost". iFrame. }
+  iNamedSuffix "Hpost" "_dec".
+  iNamed "Hown_obj_dec".
+  iDestruct (own_slice_len with "Hsl_Siblings") as %[Hlen_sl_sibs ?].
+  wp_auto.
+  wp_if_destruct; wp_auto.
+  2: { iApply "HΦ". intro_wish.
+    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
+    iClear "Hwish_dec". simpl in *.
+    apply join_same_len_length in Hlen_sibs.
+    rewrite -join_length_reverse in Hlen_sibs.
+    word. }
+  wp_if_destruct; wp_auto.
+  { iApply "HΦ". intro_wish.
+    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
+    iClear "Hwish_dec". simpl in *.
+    apply join_same_len_length in Hlen_sibs.
+    rewrite -join_length_reverse in Hlen_sibs.
+    word. }
+
+  replace (W64 0) with (W64 0%nat) by word.
+  iDestruct "Hsl_Siblings" as "#Hsl_Siblings".
+  wp_apply wp_newShell as "* @".
+  { iFrame "#".
+    instantiate (1:=(length obj.(MerkleProof.Siblings) `div` 32)%nat).
+    (* Require ZifyNat for Nat.div reasoning. *)
+    word. }
+  destruct obj. simplify_eq/=.
+  rewrite join_length_reverse in Hlen_sl_sibs.
+  apply join_same_len_length in Hlen_sibs as ?.
+  destruct IsOtherLeaf; wp_auto.
+  2: { iApply "HΦ".
+    iExists _, None. iFrame.
+    iPureIntro; repeat split; try done; word. }
+  replace (pure_newShell' _ _ _) with (pure_newShell label sibs) by done.
+
+  iDestruct (own_slice_len with "Hsl_LeafLabel") as %[].
+  wp_if_destruct; wp_auto.
+  2: { iApply "HΦ". intro_wish.
+    destruct oleaf as [[]|].
+    2: { iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] _]. }
+    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] ->].
+    iNamed "Holeaf". simplify_eq/=. word. }
+
+  iPersist "Hsl_LeafLabel Hsl_LeafVal".
+  wp_apply bytes.wp_Equal as "_".
+  { iFrame "#". }
+  wp_if_destruct; wp_auto.
+  { iApply "HΦ". intro_wish.
+    destruct oleaf as [[]|].
+    2: { iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] _]. }
+    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] ->].
+    by iNamed "Holeaf". }
+
+  wp_apply (wp_put with "[$tr $Hown_tree]").
+  6: { iFrame "#". }
+  { apply limit_on_newShell. word. }
+  { word. }
+  { apply const_label_on_newShell. }
+  { apply sorted_on_newShell. }
+  { Fail apply cutless_on_newShell.
+Admitted.
+
+(* make def to prevent unfolding the nat. *)
+Definition w64_len := 8%nat.
+Hint Unfold w64_len : len.
+
+Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
+  (* limit needed to prevent depth overflow. *)
+  is_limit t →
+  is_cutless_path t label →
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "Hown_tree" ∷ own_tree n t d0 ∗
+    "Hsl_label_in" ∷ sl_label ↦*{d1} label
+  }}}
+  n @ (ptrT.id merkle.node.id) @ "find" #(W64 0) #sl_label #getProof
+  {{{
+    (found : bool) sl_foundLabel foundLabel sl_foundVal foundVal sl_sibs sibs_enc,
+    RET (#found, #sl_foundLabel, #sl_foundVal, #sl_sibs);
+    "Hown_tree" ∷ own_tree n t d0 ∗
+    "Hsl_label" ∷ sl_label ↦*{d1} label ∗
+
+    "#Hsl_foundLabel" ∷ sl_foundLabel ↦*□ foundLabel ∗
+    "#Hsl_foundVal" ∷ sl_foundVal ↦*□ foundVal ∗
+    "Hsl_sibs" ∷ sl_sibs ↦* sibs_enc ∗
+    "Hcap_sibs" ∷ own_slice_cap w8 sl_sibs 1 ∗
+
+    "%Heq_found" ∷ ⌜ find t label = if found then Some (foundLabel, foundVal) else None ⌝ ∗
+    "Hproof" ∷ (if negb getProof then True else
+      ∃ sibsLen sibs,
+      "#His_sibs" ∷ is_sibs t label sibs ∗
+      "%Henc_sibs" ∷ ⌜sibs_enc = sibsLen ++ mjoin (reverse sibs)⌝ ∗
+      "%Hlen_sibsLen" ∷ ⌜length sibsLen = w64_len⌝)
+  }}}.
+Proof.
+  autounfold with merkle.
+  intros Hlimit Hcutless.
+  remember max_depth as limit.
+  remember 0%nat as depth.
+  replace (W64 0) with (W64 depth) by word.
+  assert (depth + limit = max_depth) as Heq_depth; [word|].
+  clear Heqlimit Heqdepth.
+  iLöb as "IH" forall (t limit depth n Hcutless Hlimit Heq_depth).
+  iIntros (Φ) "(#?&@) HΦ".
+  wp_method_call. wp_call. wp_auto.
+  wp_if_destruct.
+
+  { iClear "IH".
+    iDestruct (own_empty_tree with "Hown_tree") as %->.
+    wp_auto.
+    (* TODO(goose): wp_if_destruct could destruct bool's. *)
+    destruct getProof; wp_auto.
+    + wp_apply wp_getProofCap as "* %"; [word|].
+      wp_apply wp_slice_make3 as "* (Hsl_sibs&Hcap_sibs&_)"; [word|].
+      iApply "HΦ". iFrame.
+      iDestruct own_slice_nil as "$".
+      repeat (iSplit || iExists _); try done;
+        [by list_simplifier | len].
+    + iApply "HΦ". iFrame.
+      iDestruct own_slice_nil as "$".
+      iDestruct own_slice_nil as "$".
+      by iDestruct own_slice_cap_nil as "$". }
+
+  destruct t; simpl in *; iNamed "Hown_tree"; try done;
+    iNamed "Hown_tree"; wp_auto.
+
+  - iClear "IH".
+    destruct getProof; wp_auto.
+    + wp_apply wp_getProofCap as "* %"; [word|].
+      wp_apply wp_slice_make3 as "* (Hsl_sibs&Hcap_sibs&_)"; [word|].
+      iApply "HΦ". iFrame "∗#".
+      repeat (iSplit || iExists _); try done;
+        [by list_simplifier | len].
+    + iApply "HΦ". iFrame "∗#".
+      iDestruct own_slice_nil as "$".
+      by iDestruct own_slice_cap_nil as "$".
+
+  - destruct limit; [done|]. intuition.
+    wp_apply (wp_node_getChild with "[$Hnode $Hsl_label_in]") as "*".
+    iIntros "[Hsl_label_in H]". iNamed "H". wp_auto.
+    replace (uint.nat (W64 depth)) with depth by word.
+    iDestruct (condition_bool (get_bit label depth)
+      with "[Hown_child1] [Hown_child0]")
+      as "[Hown_child_l Hown_child_r]"; [iAccu..|].
+    replace (word.add _ _) with (W64 (S depth)) by word.
+    wp_apply ("IH" with "[//] [] [] [Hown_child_l Hsl_label_in]") as "* @".
+    { by case_match. }
+    { word. }
+    { iFrame "∗#". case_match; iFrame. }
+    iClear "IH".
+    assert (∀ (b : bool) T (x0 x1 : T),
+      (if b then if b then x0 else x1 else if b then x1 else x0) = x0) as Hif.
+    { intros. by repeat case_match. }
+
+    destruct getProof; wp_auto; simpl in *; iNamed "Hproof".
+    + iDestruct ("Hclose" with "Hcb Hcnb") as "@".
+      rewrite !{}Hif.
+      wp_apply (wp_node_getHash (if get_bit label depth then _ else _)
+        with "[Hown_child_r]") as "* H".
+      { iFrame "#". case_match; iFrame. }
+      iNamedSuffix "H" "0".
+      wp_apply (wp_slice_append with "[$Hsl_sibs $Hcap_sibs]")
+        as "* (Hsl_sibs & Hcap_sibs & _)".
+      { iFrame "#". }
+      iApply "HΦ". iFrame "∗#".
+      iSplitL. { case_match; iFrame. }
+      repeat (iSplit || iExists _); try done.
+      iPureIntro. list_simplifier. f_equal.
+      rewrite reverse_cons join_app.
+      by list_simplifier.
+    + iDestruct ("Hclose" with "Hcb Hcnb") as "@".
+      rewrite !{}Hif.
+      iApply "HΦ". iFrame "∗#".
+      iSplit; [|done].
+      case_match; iFrame.
 Qed.
 
 (*
