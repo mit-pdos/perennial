@@ -304,6 +304,23 @@ Definition own ptr obj d : iProp Σ :=
   "Hsl_LeafLabel" ∷ sl_LeafLabel ↦*{d} obj.(LeafLabel) ∗
   "Hsl_LeafVal" ∷ sl_LeafVal ↦*{d} obj.(LeafVal).
 
+Definition wish b obj tail : iProp Σ :=
+  ∃ enc,
+  "%Henc_obj" ∷ ⌜ encodes obj enc ⌝ ∗
+  "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝.
+
+Lemma wish_det b obj0 obj1 tail0 tail1 :
+  wish b obj0 tail0 -∗
+  wish b obj1 tail1 -∗
+  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
+Proof.
+  iNamedSuffix 1 "0".
+  iNamedSuffix 1 "1".
+  opose proof (inj _ Henc_obj0 Henc_obj1) as ?.
+  { by subst. }
+  naive_solver.
+Qed.
+
 Lemma wp_dec sl_b d b :
   {{{
     is_pkg_init merkle ∗
@@ -312,16 +329,14 @@ Lemma wp_dec sl_b d b :
   @! merkle.MerkleProofDecode #sl_b
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
-    let wish := (λ enc obj tail,
-      ("%Henc_obj" ∷ ⌜ encodes obj enc ⌝ ∗
-      "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝) : iProp Σ) in
-    "Hgenie" ∷
-      (⌜ err = false ⌝ ∗-∗
-      ∃ enc obj tail, wish enc obj tail) ∗
-    "Herr" ∷
-      (∀ enc obj tail, wish enc obj tail -∗
+    match err with
+    | true => ¬ ∃ obj tail, wish b obj tail
+    | false =>
+      ∃ obj tail,
+      "Hwish" ∷ wish b obj tail ∗
       "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail)
+      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+    end
   }}}.
 Proof. Admitted.
 

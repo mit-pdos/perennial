@@ -401,61 +401,22 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-(* for goals of the form:
-"Hgenie" ∷ ⌜err = false⌝ ∗-∗ ∃ quants, wish quants ∗
-"Herr" ∷ ∀ quants, wish quants -∗ post quants
-
-this tactic reduces the err = true case down to these goals,
-which are equivalent and proved from having contradictory wish info in ctx:
-1. (∃ quants, wish quants) -∗ False
-2. ∀ quants, wish quants -∗ False
-
-note that for err = false, we can reduce to these goals.
-1. ∃ quants, wish quants
-  proved from having wish in ctx.
-2. ∀ quants, wish quants -∗ post quants
-  have wish q0 in ctx. might always need [wish q0 -∗ wish q1 -∗ q0 = q1] lemma.
-
-it's an implementation restriction that the wish must have at least one quant.
-see [iIntros (?) "*"] and
-https://github.com/tchajed/iris-named-props/issues/18 *)
-Tactic Notation "genie_err" :=
-  iSplit; [
-    iSplit;
-      [by iIntros "%"|];
-      iIntros "H"; repeat iDestruct "H" as (?) "H"; iNamed "H"; iExFalso
-    |
-    iIntros (?) "*"; iNamed 1; iExFalso
-  ];
-  (* use genies from sub-routine calls. *)
-  try (iDestruct "Hgenie" as "[_ H]";
-    iDestruct ("H" with "[]") as %?; [|done]).
-
-(* a sub-routine doesn't have an err. simplify.
-context should have:
-"Hgenie" ∷ ⌜false = false⌝ ∗-∗ ∃ quants, wish quants
-"Herr" ∷ ∀ quants, wish quants -∗ postcond quants
-*)
-Tactic Notation "genie_sub_nerr" :=
-  iDestruct "Hgenie" as "[H _]";
-  iDestruct ("H" with "[//]") as "@";
-  iDestruct ("Herr" with "[]") as "@".
-
-Definition wish_proofToTree label sibs oleaf proof_enc : iProp Σ :=
+Definition wish_proofToTree label proof_enc sibs oleaf : iProp Σ :=
   let IsOtherLeaf := match oleaf with None => false | _ => true end in
   let LeafLabel := match oleaf with None => [] | Some (l, _) => l end in
   let LeafVal := match oleaf with None => [] | Some (_, v) => v end in
   let proof := MerkleProof.mk' (mjoin (reverse sibs)) IsOtherLeaf LeafLabel LeafVal in
-  ∃ obj_enc tail,
-  "%Htail" ∷ ⌜proof_enc = obj_enc ++ tail⌝ ∗
-  "%Henc_proof" ∷ ⌜MerkleProof.encodes proof obj_enc⌝ ∗
+  ∃ tail,
+  "%Hlen_label" ∷ ⌜length label = Z.to_nat (cryptoffi.hash_len)⌝ ∗
+  "Henc_proof" ∷ MerkleProof.wish proof_enc proof tail ∗
   "%Hlen_sibs" ∷ ⌜Forall (λ x, length x = Z.to_nat $ cryptoffi.hash_len) sibs⌝ ∗
   "%Heq_depth" ∷ ⌜length sibs ≤ max_depth⌝ ∗
-  "%Hlen_label" ∷ ⌜length label = Z.to_nat (cryptoffi.hash_len)⌝ ∗
   "%Hlen_olabel" ∷ ⌜match oleaf with None => True | Some (l, _) =>
-    length l = Z.to_nat $ cryptoffi.hash_len end ⌝ ∗
+    length l = Z.to_nat $ cryptoffi.hash_len end⌝ ∗
   "%Heq_olabel" ∷ ⌜match oleaf with None => True | Some (l, _) =>
     label ≠ l end⌝.
+
+Tactic Notation "intro_wish" := iIntros "(%&%&@)".
 
 Lemma wp_proofToTree sl_label label sl_proof proof :
   {{{
@@ -467,30 +428,41 @@ Lemma wp_proofToTree sl_label label sl_proof proof :
   @! merkle.proofToTree #sl_label #sl_proof
   {{{
     tr err, RET (#tr, #err);
-    "Hgenie" ∷ (⌜err = false⌝ ∗-∗
-      ∃ sibs oleaf, wish_proofToTree label sibs oleaf proof) ∗
-    "Herr" ∷ (∀ sibs oleaf, wish_proofToTree label sibs oleaf proof -∗
-      ∃ t,
+    match err with
+    | true => ¬ ∃ sibs oleaf, wish_proofToTree label proof sibs oleaf
+    | false =>
+      ∃ sibs oleaf t,
+      "Hwish" ∷ wish_proofToTree label proof sibs oleaf ∗
       "%HSome_tree" ∷ ⌜pure_proofToTree label sibs oleaf = Some t⌝ ∗
-      "Hown_tree" ∷ own_tree tr t 1)
+      "Hown_tree" ∷ own_tree tr t 1
+    end
   }}}.
 Proof.
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_label") as %[].
   wp_if_destruct; wp_auto.
-  2: { iApply "HΦ". genie_err.
-    - word.
-    - word. }
-  wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* @".
+  2: { iApply "HΦ". intro_wish. word. }
+  wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* Hpost".
   destruct err; wp_auto.
-  (* NOTE: bc code doesn't check tail, strongpre can't say tail=[]. *)
-  { iApply "HΦ". genie_err.
-    - iFrame "%".
-    - iFrame "%". }
-  genie_sub_nerr.
-  { iFrame "%". }
-  iNamed "Hown_obj".
+  { iApply "HΦ". intro_wish. iApply "Hpost". iFrame. }
+  iNamedSuffix "Hpost" "_dec".
+  iNamed "Hown_obj_dec".
+  iDestruct (own_slice_len with "Hsl_Siblings") as %[].
   wp_auto.
+  wp_if_destruct; wp_auto.
+  2: { iApply "HΦ". intro_wish.
+    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
+    iClear "Hwish_dec". simpl in *.
+    apply join_same_len_length in Hlen_sibs.
+    rewrite -join_length_reverse in Hlen_sibs.
+    word. }
+  wp_if_destruct; wp_auto.
+  { iApply "HΦ". intro_wish.
+    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
+    iClear "Hwish_dec". simpl in *.
+    apply join_same_len_length in Hlen_sibs.
+    rewrite -join_length_reverse in Hlen_sibs.
+    word. }
 Admitted.
 
 Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
