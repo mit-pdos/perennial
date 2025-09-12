@@ -314,8 +314,6 @@ Lemma wp_put n0 n t sl_label sl_val label val :
   Z.of_nat (length label) = cryptoffi.hash_len →
   is_const_label_len t →
   is_sorted t →
-  (* for no Cut. *)
-  is_cutless_path t label →
   {{{
     is_pkg_init merkle ∗
     "#Hinit" ∷ is_initialized ∗
@@ -326,10 +324,16 @@ Lemma wp_put n0 n t sl_label sl_val label val :
   }}}
   @! merkle.put #n0 #(W64 0) #sl_label #sl_val
   {{{
-    n' t', RET #();
+    n' err, RET #err;
     "Hn0" ∷ n0 ↦ n' ∗
-    "%HSome_tree" ∷ ⌜ pure_put t label val = Some t' ⌝ ∗
-    "Hown_tree" ∷ own_tree n' t' 1
+    "Herr" ∷ match err with
+      | true =>
+        "%Hvalid" ∷ ¬ ⌜is_cutless_path t label⌝
+      | false =>
+        ∃ t',
+        "%HSome_tree" ∷ ⌜ pure_put t label val = Some t' ⌝ ∗
+        "Hown_tree" ∷ own_tree n' t' 1
+      end
   }}}.
 Proof.
   autounfold with merkle.
@@ -370,7 +374,7 @@ Proof.
     { iFrame "#". }
     iPersist "Hsl_hash". iModIntro.
     iApply "HΦ".
-    iFrame. iSplit; [done|].
+    iFrame. iExists _. iSplit; [done|].
     iFrame "∗#".
     iPureIntro. split; word. }
 
@@ -389,7 +393,7 @@ Proof.
       { iFrame "#". }
       iPersist "Hsl_hash". iModIntro.
       iApply "HΦ".
-      iFrame. iSplit; [done|].
+      iFrame. iExists _. iSplit; [done|].
       iFrame "∗#".
       iPureIntro. split; word. }
     case_decide; [done|].
@@ -427,19 +431,21 @@ Proof.
     iDestruct (condition_prop cond with "[Hnode_old] []")
       as "[Hown_n_left Hown_n_right]"; [iAccu..|].
     wp_apply ("IH" $! _ _ _ (if cond then (Leaf label0 val0) else Empty)
-      with "[][][][][][][Hcb Hown_n_left]") as "* @"; try iPureIntro.
+      with "[][][][][][Hcb Hown_n_left]") as "* @"; try iPureIntro.
     { by repeat case_match. }
     { by repeat case_match. }
     { by eapply prefix_total_snoc. }
     { len. }
     { repeat case_match; try done;
         by eapply prefix_total_snoc. }
-    { by repeat case_match. }
     { iFrame "∗#".
       case_match.
       - iFrame "∗#".
       - rewrite /is_initialized. iNamed "Hinit".
         by iFrame "#". }
+    destruct err; iNamed "Herr".
+    { exfalso. apply Hvalid. by case_match. }
+    wp_apply std.wp_Assert; [done|].
     rewrite HSome_tree.
     iClear "IH".
     iDestruct ("Hclose" with "Hn0 Hcnb") as "@".
@@ -480,7 +486,7 @@ Proof.
     iPersist "Hsl_hash".
     iModIntro. iApply "HΦ".
     iFrame "Hn0_in".
-    iSplit; [done|].
+    iExists _. iSplit; [done|].
     simpl.
     iFrame "Hnode #".
 
@@ -510,15 +516,16 @@ Proof.
       with "[Hown_child1_old] [Hown_child0_old]")
       as "[Hown_child_left Hown_child_right]"; [iAccu..|].
     wp_apply ("IH" $! _ _ _ (if get_bit label (length pref) then t2 else t1)
-      with "[][][][][][][Hcb Hown_child_left]") as "* @"; try iPureIntro.
+      with "[][][][][][Hcb Hown_child_left]") as "* @"; try iPureIntro.
     { by repeat case_match. }
     { by repeat case_match. }
     { by eapply prefix_total_snoc. }
     { len. }
     { by repeat case_match. }
-    { by repeat case_match. }
     { iFrame "∗#".
       case_match; iFrame. }
+    destruct err; iNamed "Herr"; wp_auto.
+    { iApply "HΦ".  by iFrame. }
     rewrite HSome_tree.
     iClear "IH".
     iDestruct ("Hclose" with "Hn0 Hcnb") as "@".
@@ -558,10 +565,15 @@ Proof.
     iPersist "Hsl_hash".
     iModIntro. iApply "HΦ".
     iFrame "Hn0_in".
-    iSplit; [done|].
+    iExists _. iSplit; [done|].
     simpl.
     iFrame "Hnode".
     iFrame "∗#".
+
+  (* cut. *)
+  - wp_auto.
+    wp_apply std.wp_Assert; [done|].
+    iApply "HΦ". by iFrame.
 Qed.
 
 Lemma wp_newShell sl_label label sl_sibs sibs_enc (depth depth_rem : nat) :
@@ -661,9 +673,31 @@ Definition wish_proofToTree label proof_enc sibs oleaf : iProp Σ :=
   "Holeaf" ∷ match oleaf with None => True | Some (l, v) =>
     "%Hlen_olabel" ∷ ⌜length l = Z.to_nat $ cryptoffi.hash_len⌝ ∗
     "%Heq_olabel" ∷ ⌜label ≠ l⌝ ∗
+    "%Hcutless" ∷ ⌜is_cutless_path (pure_newShell label sibs) l⌝ ∗
     "->" ∷ ⌜LeafLabel = l⌝ ∗
     "->" ∷ ⌜LeafVal = v⌝
     end.
+
+Lemma wish_proofToTree_det l p s0 s1 o0 o1 :
+  wish_proofToTree l p s0 o0 -∗
+  wish_proofToTree l p s1 o1 -∗
+  ⌜s0 = s1 ∧ o0 = o1⌝.
+Proof.
+  iNamedSuffix 1 "0".
+  iNamedSuffix 1 "1".
+  iDestruct (MerkleProof.wish_det with "Henc_proof0 Henc_proof1") as %[[=] ->].
+  opose proof (join_same_len_inj _ (reverse _) (reverse _) _ _ _ _)
+    as Heq_s; try done.
+  2: { by apply Forall_reverse. }
+  2: { by apply Forall_reverse. }
+  { lia. }
+  apply (inj _) in Heq_s.
+  destruct o0 as [[]|]; [|by case_match].
+  iNamedSuffix "Holeaf0" "0".
+  destruct o1 as [[]|]; [|done].
+  iNamedSuffix "Holeaf1" "1".
+  by subst.
+Qed.
 
 Tactic Notation "intro_wish" := iIntros "(%&%&@)".
 
@@ -718,7 +752,7 @@ Proof.
   wp_apply wp_newShell as "* @".
   { iFrame "#".
     instantiate (1:=(length obj.(MerkleProof.Siblings) `div` 32)%nat).
-    (* Require ZifyNat for Nat.div reasoning. *)
+    (* [Require ZifyNat] for [Nat.div] reasoning. *)
     word. }
   destruct obj. simplify_eq/=.
   rewrite join_length_reverse in Hlen_sl_sibs.
@@ -747,14 +781,32 @@ Proof.
     iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] ->].
     by iNamed "Holeaf". }
 
-  wp_apply (wp_put with "[$tr $Hown_tree]").
-  6: { iFrame "#". }
+  wp_apply (wp_put with "[$tr $Hown_tree]") as "* @".
+  5: { iFrame "#". }
   { apply limit_on_newShell. word. }
   { word. }
   { apply const_label_on_newShell. }
   { apply sorted_on_newShell. }
-  { Fail apply cutless_on_newShell.
-Admitted.
+  destruct err; iNamed "Herr"; wp_auto.
+  { iApply "HΦ". intro_wish.
+    destruct oleaf as [[]|].
+    2: { iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] _]. }
+    iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] ->].
+    iNamed "Holeaf". simplify_eq/=.
+    opose proof (join_same_len_inj _ (reverse _) (reverse _) _ _ _ _)
+      as Heq_s; try done.
+    2: { by apply Forall_reverse. }
+    2: { by apply Forall_reverse. }
+    { lia. }
+    apply (inj _) in Heq_s.
+    by subst. }
+
+  iApply "HΦ".
+  iExists _, (Some (_, _)).
+  iFrame.
+  iPureIntro. repeat split; try done; [word..|].
+  by eapply cutless_on_put.
+Qed.
 
 (* make def to prevent unfolding the nat. *)
 Definition w64_len := 8%nat.

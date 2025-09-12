@@ -659,7 +659,7 @@ Lemma pure_put_unfold t depth label val limit :
   end.
 Proof. by destruct limit. Qed.
 
-(* [sibs] order reversed from code. *)
+(* [sibs] order reversed from code for easier fixpoint. *)
 Fixpoint pure_newShell' depth label (sibs : list $ list w8) :=
   match sibs with
   | [] => Empty
@@ -681,6 +681,22 @@ Definition pure_proofToTree label sibs oleaf :=
   end.
 
 (** invariants on [pure_put]. *)
+
+Lemma cutless_on_put t label val :
+  is_Some (pure_put t label val) →
+  is_cutless_path t label.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t depth.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros; try done.
+  case_match; try done.
+  case_match; try done.
+  eapply (IH n); [lia|done].
+Qed.
 
 (* [pure_put] definitionally guarantees [limit] down the put path.
 for [Inner] nodes down the opposite path, it preserves [limit]. *)
@@ -803,6 +819,7 @@ Proof.
       simplify_eq/=; rw_get_bit; naive_solver.
 Qed.
 
+(* easier [map_eq] extensional proof vs. using fin_map reductions. *)
 Lemma to_map_over_put t t' label val :
   is_sorted t →
   pure_put t label val = Some t' →
