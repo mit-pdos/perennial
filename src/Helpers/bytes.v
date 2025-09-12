@@ -129,7 +129,7 @@ Instance bytes_to_bits_inj : Inj (=) (=) bytes_to_bits.
 Proof.
   rewrite /bytes_to_bits.
   intros ?? Heq.
-  eapply list_join_inj in Heq.
+  eapply join_same_len_inj in Heq.
   3: { apply Forall_fmap, Forall_true. naive_solver. }
   3: { apply Forall_fmap, Forall_true. naive_solver. }
   2: lia.
