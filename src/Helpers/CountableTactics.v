@@ -107,6 +107,11 @@ Local Ltac count t_rec :=
   go constr:(0%nat) constr:(t_rec (fun _ => nat)).
 
 Local Ltac match_n num :=
+  let num := lazymatch type of num with
+             | nat => num
+             | Z => let x := eval cbv in (Z.to_nat num) in x
+             | ?T => fail "unexpected type for num: " T
+            end in
   lazymatch num with
   | 0%nat => uconstr:(fun (n:nat) => _)
   | _ => let num' := (eval cbv in (Nat.pred num)) in
@@ -139,6 +144,11 @@ Module tests.
   Qed.
 
   Definition Three_countable' : Countable Three.
+  Proof.
+    solve_countable Three_rec 3%Z.
+  Qed.
+
+  Definition Three_countable'' : Countable Three.
   Proof.
     solve_countable Three_rec 5.
   Qed.
