@@ -682,7 +682,7 @@ Definition pure_proofToTree label sibs oleaf :=
 
 (** invariants on [pure_put]. *)
 
-Lemma cutless_on_put t label val :
+Lemma cutless_new_put t label val :
   is_Some (pure_put t label val) →
   is_cutless_path t label.
 Proof.
@@ -696,6 +696,27 @@ Proof.
   case_match; try done.
   case_match; try done.
   eapply (IH n); [lia|done].
+Qed.
+
+Lemma cutless_over_put t t' label0 label1 val :
+  is_cutless_path t label0 →
+  pure_put t label1 val = Some t' →
+  is_cutless_path t' label0.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t t' depth.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match; try case_match;
+    simplify_eq/=; try done.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; try done;
+      (by eapply IH; [|done]).
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; try done; (by eapply IH; [|done]).
 Qed.
 
 (* [pure_put] definitionally guarantees [limit] down the put path.
@@ -954,6 +975,35 @@ Proof.
   induction sibs; try done.
   simpl. intros.
   by case_match.
+Qed.
+
+Lemma newShell_None label sibs :
+  is_entry (pure_newShell label sibs) label None.
+Proof.
+  exists None. split; [|done].
+  autounfold with merkle.
+  remember 0%nat as depth. clear Heqdepth.
+  revert depth.
+  induction sibs; try done.
+  simpl. intros.
+  by case_match.
+Qed.
+
+(** invariants on [pure_proofToTree]. *)
+
+#[local] Opaque pure_put.
+
+Lemma proofToTree_None label sibs oleaf t :
+  match oleaf with None => True | Some (l, _) => label ≠ l end →
+  pure_proofToTree label sibs oleaf = Some t →
+  is_entry t label None.
+Proof.
+  intros.
+  opose proof (newShell_None label sibs).
+  destruct oleaf as [[]|]; simpl in *.
+  - by eapply old_entry_over_put.
+  - by simplify_eq/=.
+  (* [Opaque pure_put], otherwise long Qed. *)
 Qed.
 
 (** tree proofs. *)
