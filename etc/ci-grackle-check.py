@@ -58,7 +58,7 @@ sp.run(
 print("\nRunning New Grackle")
 sp.run(
     [
-        "new/etc/update-grackle.sh",
+        "new/etc/update-grackle-new.sh",
         "--gokv",
         projs["gokv-new"].path(),
     ],
