@@ -13,12 +13,8 @@ Context `{ffi_syntax}.
 
 
 Definition Kv : go_type := interfaceT.
-#[global] Typeclasses Opaque Kv.
-#[global] Opaque Kv.
 
 Definition KvCput : go_type := interfaceT.
-#[global] Typeclasses Opaque KvCput.
-#[global] Opaque KvCput.
 
 Definition vars' : list (go_string * go_type) := [].
 

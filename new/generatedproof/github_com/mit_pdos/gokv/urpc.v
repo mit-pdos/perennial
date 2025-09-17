@@ -26,11 +26,6 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
-#[local] Transparent urpc.Server.
-#[local] Typeclasses Transparent urpc.Server.
-
-Global Instance Server_wf : struct.Wf urpc.Server.
-Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.handlers' >.
@@ -94,11 +89,6 @@ End Callback.
 
 Section instances.
 Context `{ffi_syntax}.
-#[local] Transparent urpc.Callback.
-#[local] Typeclasses Transparent urpc.Callback.
-
-Global Instance Callback_wf : struct.Wf urpc.Callback.
-Proof. apply _. Qed.
 
 Global Instance settable_Callback : Settable Callback.t :=
   settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
@@ -177,11 +167,6 @@ End Client.
 
 Section instances.
 Context `{ffi_syntax}.
-#[local] Transparent urpc.Client.
-#[local] Typeclasses Transparent urpc.Client.
-
-Global Instance Client_wf : struct.Wf urpc.Client.
-Proof. apply _. Qed.
 
 Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.
@@ -254,9 +239,6 @@ End instances.
 
 (* type urpc.Error *)
 Module Error.
-
-#[global] Transparent urpc.Error.
-#[global] Typeclasses Transparent urpc.Error.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.

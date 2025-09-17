@@ -15,8 +15,6 @@ Context `{ffi_syntax}.
 Definition LockClerk : go_type := structT [
   "kv" :: kv.KvCput
 ].
-#[global] Typeclasses Opaque LockClerk.
-#[global] Opaque LockClerk.
 
 (* go: lock_clerk.go:11:22 *)
 Definition LockClerk__Lockⁱᵐᵖˡ : val :=

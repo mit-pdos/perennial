@@ -21,8 +21,6 @@ Definition ReconnectingClient : go_type := structT [
   "urpcCl" :: ptrT;
   "addr" :: uint64T
 ].
-#[global] Typeclasses Opaque ReconnectingClient.
-#[global] Opaque ReconnectingClient.
 
 Definition MakeReconnectingClient : go_string := "github.com/mit-pdos/gokv/reconnectclient.MakeReconnectingClient"%go.
 

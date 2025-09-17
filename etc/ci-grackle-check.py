@@ -45,10 +45,19 @@ def checkout(proj: Proj):
 for proj in projs.values():
     checkout(proj)
 
-print("\nRunning Grackle")
+print("\nRunning Old Grackle")
 sp.run(
     [
         "etc/update-grackle.sh",
+        "--gokv",
+        projs["gokv"].path(),
+    ],
+    check=True,
+)
+print("\nRunning New Grackle")
+sp.run(
+    [
+        "new/etc/update-grackle.sh",
         "--gokv",
         projs["gokv"].path(),
     ],
