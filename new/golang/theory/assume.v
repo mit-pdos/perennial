@@ -1,6 +1,6 @@
 From New Require Export notation.
 From New.golang.defn Require Export builtin assume.
-From New.golang.theory Require Export typing proofmode.
+From New.golang.theory Require Export builtin typing proofmode.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -34,8 +34,7 @@ Proof.
   apply bool_decide_eq_true in H.
   wp_pures.
   iApply "HΦ".
-  iPureIntro.
-  move: H; word.
+  word.
 Qed.
 
 Lemma wp_sum_assume_no_overflow (x y: w64) stk E Φ :
@@ -45,6 +44,37 @@ Proof.
   iIntros "HΦ".
   wp_call.
   wp_apply wp_assume_sum_no_overflow.
+  iIntros (H).
+  wp_pures.
+  iApply "HΦ".
+  auto.
+Qed.
+
+Lemma wp_assume_sum_no_overflow_signed (x y: w64) stk E Φ :
+  (⌜-2^63 ≤ sint.Z x + sint.Z y < 2^63⌝ -∗ Φ #()) -∗
+  WP assume_sum_no_overflow_signed #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  repeat lazymatch goal with
+         | |- context[bool_decide ?P] => destruct (bool_decide_reflect P); wp_pures;
+                                         try (wp_apply wp_assume; iIntros (H);
+                                              wp_pures; try congruence)
+         end.
+  - iApply "HΦ"; word.
+  - apply bool_decide_eq_true in H.
+    word.
+  - apply bool_decide_eq_true in H.
+    iApply "HΦ"; word.
+Qed.
+
+Lemma wp_sum_assume_no_overflow_signed (x y: w64) stk E Φ :
+  (⌜-2^63 ≤ sint.Z x + sint.Z y < 2^63⌝ -∗ Φ #(word.add x y)) -∗
+  WP sum_assume_no_overflow_signed #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  wp_apply wp_assume_sum_no_overflow_signed.
   iIntros (H).
   wp_pures.
   iApply "HΦ".

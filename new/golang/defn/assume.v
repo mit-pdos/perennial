@@ -1,5 +1,5 @@
 From New Require Import notation.
-From New.golang.defn Require Import exception.
+From New.golang.defn Require Import exception builtin.
 From Perennial Require Import base.
 
 Section defn.
@@ -18,6 +18,19 @@ Definition assume_sum_no_overflow : val :=
 (** Assume "a" + "b" doesn't overflow and return the sum. *)
 Definition sum_assume_no_overflow : val :=
   λ: "a" "b", assume_sum_no_overflow "a" "b";;
+              "a" + "b".
+
+(** Assume "x" + "y" doesn't overflow. *)
+Definition assume_sum_no_overflow_signed : val :=
+  λ: "x" "y",
+  let: "max_int" := #(W64 (2^63-1)) in
+  let: "min_int" := #(W64 (-2^63)) in
+  assume ((int_leq #(W64 0) "y" && int_lt "x" ("max_int"-"y")) ||
+    (int_lt "y" #(W64 0) && int_leq ("min_int"-"y") "x")).
+
+(** Assume "x" + "y" doesn't overflow and return the sum. *)
+Definition sum_assume_no_overflow_signed : val :=
+  λ: "a" "b", assume_sum_no_overflow_signed "a" "b";;
               "a" + "b".
 
 Definition mul_overflows : val :=

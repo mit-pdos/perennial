@@ -68,9 +68,16 @@ Definition copy : val :=
   ![#int64T] "i"
 .
 
+(* only for internal use, not an external model *)
+Definition _new_cap : val :=
+  λ: "len",
+    let: "extra" := ArbitraryInt in
+    if: int_leq "len" ("len" + "extra") then "len" + "extra"
+    else "len".
+
 Definition append : val :=
   λ: "t" "s" "x",
-  let: "new_len" := sum_assume_no_overflow (len "s") (len "x") in
+  let: "new_len" := sum_assume_no_overflow_signed (len "s") (len "x") in
   if: (cap "s") ≥ "new_len" then
     (* "grow" s to include its capacity *)
     let: "s_new" := slice "t" "s" #(W64 0) "new_len" in
@@ -78,8 +85,7 @@ Definition append : val :=
     copy "t" (slice "t" "s_new" (len "s") "new_len") "x";;
     "s_new"
   else
-    let: "extra" := ArbitraryInt in
-    let: "new_cap" := sum_assume_no_overflow "new_len" "extra" in
+    let: "new_cap" := _new_cap "new_len" in
     let: "s_new" := make3 "t" "new_len" "new_cap" in
     copy "t" "s_new" "s" ;;
     copy "t" (slice "t" "s_new" (len "s") "new_len") "x" ;;
@@ -106,4 +112,4 @@ End slice.
 
 Global Opaque slice.ptr slice.len slice.cap slice.make3 slice.make2
   slice.elem_ref slice.slice slice.full_slice slice.for_range
-  slice.copy slice.append slice.literal.
+  slice.copy slice._new_cap slice.append slice.literal.
