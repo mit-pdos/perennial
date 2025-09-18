@@ -10,9 +10,6 @@ Module main.
 
 (* type main.Foo *)
 Module Foo.
-
-#[global] Transparent main.Foo.
-#[global] Typeclasses Transparent main.Foo.
 Section def.
 Context `{ffi_syntax}.
 Definition t := go_string.

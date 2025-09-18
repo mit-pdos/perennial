@@ -4,9 +4,14 @@ Require Export New.generatedproof.log.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.reconfig.replica.becomeprimaryargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.reconfig.replica.configuration_gk.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.configservice.
-Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.e.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.configservice.config_gk.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.err_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.getstateargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.setstateargs_gk.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.reconfig.
@@ -30,9 +35,14 @@ Global Instance is_pkg_defined_pure_reconfig : IsPkgDefinedPure reconfig :=
       is_pkg_defined_pure code.sync.sync ∧
       is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.reconfig.replica.becomeprimaryargs_gk.becomeprimaryargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.reconfig.replica.configuration_gk.configuration_gk ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.e.e ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.replica;
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.configservice.config_gk.config_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.replica ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.getstateargs_gk.getstateargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.setstateargs_gk.setstateargs_gk;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -44,9 +54,14 @@ Global Program Instance is_pkg_defined_reconfig : IsPkgDefined reconfig :=
        is_pkg_defined code.sync.sync ∗
        is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.reconfig.replica.becomeprimaryargs_gk.becomeprimaryargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.reconfig.replica.configuration_gk.configuration_gk ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.e.e ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.replica)%I
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.configservice.config_gk.config_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.replica ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.getstateargs_gk.getstateargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.setstateargs_gk.setstateargs_gk)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

@@ -27,8 +27,6 @@ Definition AppendOnlyFile : go_type := structT [
   "closed" :: boolT;
   "closedCond" :: ptrT
 ].
-#[global] Typeclasses Opaque AppendOnlyFile.
-#[global] Opaque AppendOnlyFile.
 
 Definition CreateAppendOnlyFile : go_string := "github.com/mit-pdos/gokv/aof.CreateAppendOnlyFile"%go.
 

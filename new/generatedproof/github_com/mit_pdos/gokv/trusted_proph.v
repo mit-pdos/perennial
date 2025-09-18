@@ -12,9 +12,6 @@ Module trusted_proph.
 
 (* type trusted_proph.ProphId *)
 Module ProphId.
-
-#[global] Transparent trusted_proph.ProphId.
-#[global] Typeclasses Transparent trusted_proph.ProphId.
 Section def.
 Context `{ffi_syntax}.
 Definition t := loc.

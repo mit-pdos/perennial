@@ -23,8 +23,6 @@ Section code.
 Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
-#[global] Typeclasses Opaque Server.
-#[global] Opaque Server.
 
 (* go: urpc.go:19:20 *)
 Definition Server__rpcHandleⁱᵐᵖˡ : val :=
@@ -144,19 +142,17 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
     do:  (Fork ("$go" #()));;;
     return: #()).
 
-Definition callbackStateWaiting : val := #(W64 0).
+Definition callbackStateWaiting : expr := #(W64 0).
 
-Definition callbackStateDone : val := #(W64 1).
+Definition callbackStateDone : expr := #(W64 1).
 
-Definition callbackStateAborted : val := #(W64 2).
+Definition callbackStateAborted : expr := #(W64 2).
 
 Definition Callback : go_type := structT [
   "reply" :: ptrT;
   "state" :: ptrT;
   "cond" :: ptrT
 ].
-#[global] Typeclasses Opaque Callback.
-#[global] Opaque Callback.
 
 Definition Client : go_type := structT [
   "mu" :: ptrT;
@@ -164,8 +160,6 @@ Definition Client : go_type := structT [
   "seq" :: uint64T;
   "pending" :: mapT uint64T ptrT
 ].
-#[global] Typeclasses Opaque Client.
-#[global] Opaque Client.
 
 (* go: urpc.go:88:19 *)
 Definition Client__replyThreadⁱᵐᵖˡ : val :=
@@ -289,14 +283,12 @@ Definition MakeClientⁱᵐᵖˡ : val :=
     return: (![#ptrT] "cl")).
 
 Definition Error : go_type := uint64T.
-#[global] Typeclasses Opaque Error.
-#[global] Opaque Error.
 
-Definition ErrNone : val := #(W64 0).
+Definition ErrNone : expr := #(W64 0).
 
-Definition ErrTimeout : val := #(W64 1).
+Definition ErrTimeout : expr := #(W64 1).
 
-Definition ErrDisconnect : val := #(W64 2).
+Definition ErrDisconnect : expr := #(W64 2).
 
 (* go: urpc.go:155:19 *)
 Definition Client__CallStartⁱᵐᵖˡ : val :=

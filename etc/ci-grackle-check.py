@@ -17,6 +17,7 @@ class Proj:
 
 projs = {
     "gokv": Proj("gokv", "https://github.com/mit-pdos/gokv", "main"),
+    "gokv-new": Proj("gokv", "https://github.com/mit-pdos/gokv", "new"),
 }
 
 
@@ -45,12 +46,21 @@ def checkout(proj: Proj):
 for proj in projs.values():
     checkout(proj)
 
-print("\nRunning Grackle")
+print("\nRunning Old Grackle")
 sp.run(
     [
         "etc/update-grackle.sh",
         "--gokv",
         projs["gokv"].path(),
+    ],
+    check=True,
+)
+print("\nRunning New Grackle")
+sp.run(
+    [
+        "new/etc/update-grackle-new.sh",
+        "--gokv",
+        projs["gokv-new"].path(),
     ],
     check=True,
 )
