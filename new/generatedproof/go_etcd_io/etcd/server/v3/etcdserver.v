@@ -2,8 +2,10 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.context.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.etcdserverpb.
+Require Export New.generatedproof.time.
 Require Export New.generatedproof.go_etcd_io.etcd.server.v3.config.
 Require Export New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.errors.
+Require Export New.generatedproof.go_etcd_io.raft.v3.
 Require Export New.generatedproof.github_com.prometheus.client_golang.prometheus.
 Require Export New.generatedproof.go_etcd_io.etcd.pkg.v3.idutil.
 Require Export New.generatedproof.go_etcd_io.etcd.pkg.v3.traceutil.
@@ -661,8 +663,10 @@ Global Instance is_pkg_defined_pure_etcdserver : IsPkgDefinedPure etcdserver :=
       is_pkg_defined_pure_single etcdserver ∧
       is_pkg_defined_pure code.context.context ∧
       is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
+      is_pkg_defined_pure code.time.time ∧
       is_pkg_defined_pure code.go_etcd_io.etcd.server.v3.config.config ∧
       is_pkg_defined_pure code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors ∧
+      is_pkg_defined_pure code.go_etcd_io.raft.v3.raft ∧
       is_pkg_defined_pure code.github_com.prometheus.client_golang.prometheus.prometheus ∧
       is_pkg_defined_pure code.go_etcd_io.etcd.pkg.v3.idutil.idutil ∧
       is_pkg_defined_pure code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil ∧
@@ -679,8 +683,10 @@ Global Program Instance is_pkg_defined_etcdserver : IsPkgDefined etcdserver :=
       (is_pkg_defined_single etcdserver ∗
        is_pkg_defined code.context.context ∗
        is_pkg_defined code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
+       is_pkg_defined code.time.time ∗
        is_pkg_defined code.go_etcd_io.etcd.server.v3.config.config ∗
        is_pkg_defined code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors ∗
+       is_pkg_defined code.go_etcd_io.raft.v3.raft ∗
        is_pkg_defined code.github_com.prometheus.client_golang.prometheus.prometheus ∗
        is_pkg_defined code.go_etcd_io.etcd.pkg.v3.idutil.idutil ∗
        is_pkg_defined code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil ∗

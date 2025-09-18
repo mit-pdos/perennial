@@ -10,6 +10,8 @@ Require Export New.code.go_etcd_io.etcd.server.v3.auth.
 Require Export New.code.go_etcd_io.etcd.server.v3.config.
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.apply.
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.errors.
+Require Export New.code.go_etcd_io.raft.v3.
+Require Export New.code.time.
 
 From New.golang Require Import defn.
 Definition etcdserver : go_string := "go.etcd.io/etcd/server/v3/etcdserver".
@@ -1809,7 +1811,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(serverVersi
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.context.context; code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; code.go_etcd_io.etcd.server.v3.config.config; code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors; code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors; code.github_com.prometheus.client_golang.prometheus.prometheus; code.go_etcd_io.etcd.pkg.v3.idutil.idutil; code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil; code.go_etcd_io.etcd.pkg.v3.wait.wait; code.go_etcd_io.etcd.server.v3.auth.auth; code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply; code.github_com.gogo.protobuf.proto.proto; code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply];
+    pkg_imported_pkgs := [code.context.context; code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; code.time.time; code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb; code.go_etcd_io.etcd.server.v3.config.config; code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors; code.go_etcd_io.raft.v3.raft; code.go_etcd_io.etcd.server.v3.etcdserver.errors.errors; code.github_com.prometheus.client_golang.prometheus.prometheus; code.go_etcd_io.etcd.pkg.v3.idutil.idutil; code.go_etcd_io.etcd.pkg.v3.traceutil.traceutil; code.go_etcd_io.etcd.pkg.v3.wait.wait; code.go_etcd_io.etcd.server.v3.auth.auth; code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply; code.github_com.gogo.protobuf.proto.proto; code.go_etcd_io.etcd.server.v3.etcdserver.apply.apply];
   |}.
 
 Axiom _'init : val.
@@ -1826,9 +1828,11 @@ Definition initialize' : val :=
       do:  (idutil.initialize' #());;;
       do:  (prometheus.initialize' #());;;
       do:  (errors.initialize' #());;;
+      do:  (raft.initialize' #());;;
       do:  (errors.initialize' #());;;
       do:  (config.initialize' #());;;
       do:  (etcdserverpb.initialize' #());;;
+      do:  (time.initialize' #());;;
       do:  (etcdserverpb.initialize' #());;;
       do:  (context.initialize' #());;;
       do:  (package.alloc etcdserver.etcdserver #());;;

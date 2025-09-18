@@ -43,4 +43,14 @@ Proof.
   wp_apply (wp_Time__nsec with "[$]") as "% ?". by iApply "HΦ".
 Qed.
 
+Axiom wp_Now :
+  {{{ is_pkg_init time }}}
+    @! time.Now #()
+  {{{ (t : time.Time.t), RET #t; True }}}.
+
+Axiom wp_Time__Add : ∀ (t : time.Time.t) (d : time.Duration.t),
+  {{{ is_pkg_init time }}}
+    t @ time.Time.id @ "Add" #d
+  {{{ (t : time.Time.t), RET #t; True }}}.
+
 End wps.

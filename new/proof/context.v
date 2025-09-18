@@ -24,9 +24,7 @@ Record t :=
   mk
     {
       Values : gmap interface.t interface.t;
-      (* FIXME: *)
-      (* Deadline : time.Time.t  *)
-      Deadline : option w64;
+      Deadline : option time.Time.t;
       Done: chan.t;
       PDone: PROP;
     }.
@@ -35,7 +33,7 @@ Global Instance eta : Settable _ :=
 End defn.
 End Context_desc.
 
-Section definitions.
+Section wps.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -49,10 +47,11 @@ Context `{contextG Σ}.
 
 Import Context_desc.
 Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
+  "%Hnotnil" ∷ ⌜ c ≠ interface.nil ⌝ ∗
   "#HDeadline" ∷
     {{{ True }}}
       interface.get #"Deadline" #c #()
-    {{{ RET (#(default (W64 0) s.(Deadline)),
+    {{{ RET (#(default (default_val time.Time.t) s.(Deadline)),
              #(match s.(Deadline) with | None => false | _ => true end));
         True
     }}} ∗
@@ -72,26 +71,83 @@ Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
         end
     }}}) ∗
   "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(PDone) closeable.Unknown.
+#[global] Typeclasses Opaque is_Context.
+#[global] Opaque is_Context.
 
-(*
-From the docs for `WithCancel`:
- The returned context's Done channel is closed when the returned cancel function
- is called or when the parent context's Done channel is closed, whichever happens
- first.
+#[global] Transparent is_Context.
+#[global] Typeclasses Transparent is_Context.
 
-From Context.Done() docs:
- The close of the Done channel may happen asynchronously,
- after the cancel function returns.
+Lemma wp_propagateCancel (c : loc) (parent : context.Context.t) parent_desc
+  (child : context.canceler.t) :
+  {{{
+        is_pkg_init context ∗
+        "Hparent" ∷ is_Context parent parent_desc ∗
+        "Hc" ∷ c ↦ (default_val context.cancelCtx.t)
+  }}}
+    c @ (ptrT.id context.cancelCtx.id) @ "propagateCancel" #parent #child
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto.
+  iNamed "Hparent".
+  wp_apply "HDone".
+  rewrite bool_decide_decide. case_decide.
+  { wp_auto. by iApply "HΦ". }
+  wp_auto.
+  wp_apply (wp_chan_select_nonblocking [True]%I).
+  { done. }
+  iSplit.
+  {
+    simpl. iSplit; last done.
+    iExists unit, _, _, _.
+    iApply own_closeable_chan_nonblocking_receive.
+    { iFrame "#". }
+    simpl.
+    iClear "HDone_ch". iSplit. 2:{ iIntros "_". done. } iIntros "#HDone_ch".
+    wp_auto. wp_apply "HErr". { iFrame "#". } iIntros "% %Herr". wp_auto.
+  (* TODO: interesting pattern with interfaces. In a slightly more general form
+     than it appears here:
+     Package A defines an interface type `IT`. Package B defines a private type
+     `b` that implements the interface. It defines some functions that take an
+     `IT` and cast it into a `b`. The interface representation predicate would,
+     in that case, have to contain the representation predicate for b inside it.
+     One could coordinate this by having a a ghost resource track the per-type
+     repr predicate, and conversion to an interface requires knowledge of tha
+     typeId's predicate. This would be unfortunate for all the cases that have a
+     trivial predicate.
 
-So, cannot prove that calling `cancel` actually causes anything to happen; that
-would be a liveness property. But should be able to do the converse.
+     In this particular proof, the definition of `is_Context` can include
+     special cases for the types defined within this pacakge. The more general
+     thing would be needed if a higher-level package defined a new private
+     implementation of `Context` and relied on type casting.
+   *)
+  (* FIXME: bug in goose. Goose is translating type assertion to a named type
+     with underyling interface type as a type assertion to a non-interface type. E.g. it emits
+     a typeId `context.afterFuncer.id`, which should not happen because
+     `afterFuncer`'s underlying type is an interface.
+   *)
+Abort.
 
-Should be able to prove that if the returned context's Done channel is closed,
-then (cancel was run) ∨ (chan.is_closed ctx.Done). *)
+Lemma wp_withCancel PDone' (ctx : interface.t) ctx_desc :
+  {{{
+        is_pkg_init context ∗ is_Context ctx ctx_desc
+  }}}
+    @! context.withCancel #ctx
+  {{{
+        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto.
+  rewrite bool_decide_false //. wp_auto.
+  wp_alloc c as "Hc". wp_auto.
+Abort.
 
 Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
   {{{
-        is_Context ctx ctx_desc
+        is_pkg_init context ∗ is_Context ctx ctx_desc
   }}}
     @! context.WithCancel #ctx
   {{{
@@ -100,6 +156,50 @@ Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
         is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
   }}}.
 Proof.
+  wp_start. wp_auto.
 Admitted.
 
-End definitions.
+Lemma wp_WithDeadlineCause (parent: interface.t) parent_desc (d : time.Time.t) (cause : error.t):
+  {{{
+        is_pkg_init context ∗ is_Context parent parent_desc
+  }}}
+    @! context.WithDeadlineCause #parent #d #cause
+  {{{
+        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_WithDeadline (parent: interface.t) parent_desc (d : time.Time.t) :
+  {{{
+        is_pkg_init context ∗ is_Context parent parent_desc
+  }}}
+    @! context.WithDeadline #parent #d
+  {{{
+        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
+  }}}.
+Proof.
+  wp_start. wp_auto. wp_apply (wp_WithDeadlineCause with "[$]"). iIntros "* [? ?]".
+  wp_auto. iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_WithTimeout (parent: interface.t) parent_desc (timeout : time.Duration.t) :
+  {{{
+        is_pkg_init context ∗ is_Context parent parent_desc
+  }}}
+    @! context.WithTimeout #parent #timeout
+  {{{
+        ctx' done' (cancel : func.t) d, RET (#ctx', #cancel);
+        {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
+  }}}.
+Proof.
+  wp_start. wp_auto. wp_apply wp_Now as "% _". wp_apply wp_Time__Add as "% _".
+  wp_apply (wp_WithDeadline with "[$]"). iIntros "* [? ?]". wp_auto. iApply "HΦ". iFrame.
+Qed.
+
+End wps.

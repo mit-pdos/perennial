@@ -60,19 +60,19 @@ Definition own_propose_message γraft (pm : raft.msgWithResult.t) : iProp Σ :=
   "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True)) ∗
   "Hresult" ∷ inv nroot (∃ (s : chanstate.t error.t), own_chan pm.(raft.msgWithResult.result') s).
 
-Local Definition is_Node_inner γraft (n : raft.node.t) : iProp Σ :=
+Local Definition is_node_inner γraft (n : raft.node.t) : iProp Σ :=
   "#Hpropc" ∷ inv nroot
     (∃ s, own_chan n.(raft.node.propc') s ∗ [∗ list] v ∈ (unreceived s), own_propose_message γraft v) ∗
   "#Hadvancec" ∷ inv nroot (∃ (s : chanstate.t unit), own_chan n.(raft.node.advancec') s) ∗
   "#Hdone" ∷ own_closeable_chan n.(raft.node.done') True closeable.Unknown.
 
-Definition is_Node γraft (n : loc) : iProp Σ :=
+Definition is_node γraft (n : loc) : iProp Σ :=
   ∃ nd,
   "n_ptr" ∷ n ↦□ nd ∗
-  "Hinner" ∷ is_Node_inner γraft nd.
+  "Hinner" ∷ is_node_inner γraft nd.
 
 Lemma wp_node__Ready γraft (n : loc) :
-  {{{ is_pkg_init raft ∗ is_Node γraft n }}}
+  {{{ is_pkg_init raft ∗ is_node γraft n }}}
     n @ (ptrT.id raft.node.id) @ "Ready" #()
   {{{ (ready : chan.t), RET #ready; True }}}.
 Proof.
@@ -91,7 +91,7 @@ Proof.
 Qed.
 
 Lemma wp_node__Advance γraft (n : loc) :
-  {{{ is_pkg_init raft ∗ is_Node γraft n }}}
+  {{{ is_pkg_init raft ∗ is_node γraft n }}}
     n @ (ptrT.id raft.node.id) @ "Advance" #()
   {{{ RET #(); True }}}.
 Proof.
@@ -113,7 +113,7 @@ Admitted.
 Lemma wp_node__Propose γraft n (ctx : context.Context.t) ctx_desc (data_sl : slice.t) (data : list w8) :
   {{{ is_pkg_init raft ∗
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
-      "#Hnode" ∷ is_Node γraft n ∗
+      "#Hnode" ∷ is_node γraft n ∗
       "data_sl" ∷ data_sl ↦* data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}

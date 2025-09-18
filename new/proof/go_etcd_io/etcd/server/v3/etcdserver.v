@@ -1,10 +1,11 @@
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.proof.proof_prelude.
-From New.proof Require Import context log fmt
+From New.proof Require Import context log fmt time
   go_etcd_io.etcd.pkg.v3.idutil
   go_etcd_io.etcd.pkg.v3.wait
-  go_etcd_io.etcd.api.v3.etcdserverpb.
+  go_etcd_io.etcd.api.v3.etcdserverpb
+  go_etcd_io.raft.v3.
 
 Class etcdserverG Σ :=
   {
@@ -37,6 +38,7 @@ Proof.
 Abort.
 
 Axiom EtcdServer_names : Type.
+Axiom raft_gn : EtcdServer_names → raft_names.
 Implicit Type γ : EtcdServer_names.
 
 Definition waitR (id' : w64) v : iProp Σ :=
@@ -49,7 +51,7 @@ Axiom own_EtcdServer : ∀ (s : loc) γ, iProp Σ.
 #[local] Axiom is_EtcdServer_internal : ∀ (s : loc) γ, iProp Σ.
 Axiom own_EtcdServer_access : ∀ s γ,
   own_EtcdServer s γ -∗
-  ∃ (reqIDGen : loc) (MaxRequestBytes : w64) w γw,
+  ∃ (reqIDGen : loc) (MaxRequestBytes : w64) w γw rn,
     "#reqIDGen" ∷ s ↦s[etcdserver.EtcdServer :: "reqIDGen"]□ reqIDGen ∗
     "#HreqIDGen" ∷ is_Generator reqIDGen (own_ID γ) ∗
     "#Cfg_MaxRequestBytes" ∷
@@ -57,8 +59,15 @@ Axiom own_EtcdServer_access : ∀ s γ,
          (struct.field_ref_f etcdserver.EtcdServer "Cfg" s)) ↦□ MaxRequestBytes ∗
     "#w" ∷ s ↦s[etcdserver.EtcdServer :: "w"]□ w ∗
     "#Hinternal" ∷ is_EtcdServer_internal s γ ∗
+    "#r" ∷
+      (struct.field_ref_f etcdserver.raftNodeConfig "Node"
+         (struct.field_ref_f etcdserver.raftNode "raftNodeConfig"
+            (struct.field_ref_f etcdserver.EtcdServer "r" s))) ↦□ rn ∗
+    "#Hr" ∷ is_Node (raft_gn γ) rn ∗
     "Hw" ∷ own_Wait γw w waitR ∗
-    "Hclose" ∷ (own_Wait γw w waitR -∗ own_EtcdServer s γ).
+    "Hclose" ∷ (own_Wait γw w waitR -∗ own_EtcdServer s γ)
+.
+
 Axiom is_EtcdServer_internal_pers : ∀ s γ, Persistent (is_EtcdServer_internal s γ).
 Existing Instance is_EtcdServer_internal_pers.
 
@@ -169,13 +178,9 @@ Proof.
   2:{ wp_auto. iApply "HΦ". done. }
   iEval (rewrite decide_True //) in "Hmarshal".
   iDestruct "Hmarshal" as "(req_ptr & req & %data & data_sl & %Hmarshal)".
-  wp_auto.
-  wp_if_destruct.
+  wp_auto. wp_if_destruct.
   { wp_bind. (* FIXME: access errors init predicate *) admit. }
-  wp_auto.
-  rewrite HID.
-  wp_auto.
-  wp_bind.
+  wp_auto. rewrite HID. wp_auto. wp_bind.
   wp_apply (wp_wand with "[req]").
   {
     instantiate (1:=(λ v, "->" ∷ ⌜ v = #hdr.(etcdserverpb.RequestHeader.ID') ⌝ ∗
@@ -188,14 +193,25 @@ Proof.
   iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal".
   clear dependent reqIDGen MaxRequestBytes w γw.
   iNamed "H".
-  wp_auto.
-  wp_apply (wp_Wait__Register with "[Hw]").
+  wp_auto. wp_apply (wp_Wait__Register with "[Hw]").
   { iFrame. admit. } (* FIXME: own_unregistered as postcondition of idutil.Generator.Next() *)
-  iIntros (ch) "(Hw & Hch)". wp_auto.
+  iIntros (ch) "(Hw & Hch)". wp_auto. wp_bind. wp_apply wp_wand.
+  { instantiate (1:=λ v, (∃ (t : time.Duration.t), ⌜ v = #t ⌝)%I). admit. }
+  iIntros "% [% ->]".
+  wp_auto. wp_apply wp_WithTimeout. { iFrame "#". } iIntros "* (Hcancel & #Hcctx)".
+  wp_auto. wp_apply wp_Now as "% _".
+  wp_bind.
+
+  (* FIXME: this is loading the entire `raftNode` struct for calling the
+     embedded Propose method. Really, Go does *not* copy the entire struct until
+     getting to the bottom. I.e. we should read this sentence of the Go spec very strictly:
+     > If x is addressable and &x's method set contains m, x.m() is shorthand for (&x).m():
+     Here, s.r.Propose means (&s.r).Propose because (s.r) is addressable and
+     (&s.r) contains Propose. That might make stuff work out OK.
+   *)
 
   (* TODO:
-     is ServerConfig goosable without bringing in too many other packages?
-     axiomatize/prove ServerConfig.ReqTimeout
+     spec for context.WithTimeout
      axiomatize prometheus Counter inc
      axiomatize `parseProposeCtxErr`
    *)

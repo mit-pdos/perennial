@@ -16,4 +16,6 @@ imports = [
   "go.etcd.io/etcd/server/v3/config",
   "go.etcd.io/etcd/server/v3/auth",
   "go.etcd.io/etcd/pkg/v3/idutil",
+  "go.etcd.io/raft/v3",
+  "time",
 ]
