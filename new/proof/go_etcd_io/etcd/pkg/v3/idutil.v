@@ -107,7 +107,9 @@ Lemma wp_NewGenerator R (memberID : w16) (now : time.Time.t) :
   {{{ g, RET #g; is_Generator g R }}}.
 Proof.
   wp_start as "HR". wp_auto.
-  wp_apply wp_Time__UnixNano as "%nowNano _".
+  wp_method_call.
+  { rewrite is_pkg_init_unfold /=. iPkgInit. }
+  wp_auto. wp_apply wp_Time__UnixNano as "%nowNano _".
   rewrite /idutil.tsLen /idutil.cntLen /idutil.suffixLen.
   wp_apply wp_lowbit; first word. wp_alloc g as "Hg".
   iApply wp_fupd. wp_auto. iApply "HΦ". iFrame "∗#".

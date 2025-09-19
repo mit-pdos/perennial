@@ -2,7 +2,7 @@ Require Export New.code.sync.
 From New.proof Require Export proof_prelude.
 Require Export New.generatedproof.sync.
 
-From New.proof Require Export sync.atomic internal.race.
+From New.proof Require Export sync.atomic internal.race internal.synctest.
 From New.proof Require Export tok_set.
 
 From New.experiments Require Export glob.
@@ -36,9 +36,6 @@ Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
-#[global] Instance : IsPkgInit synctest := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf synctest := build_get_is_pkg_init_wf.
-
 #[global] Instance : IsPkgInit sync := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init_wf.
 
@@ -52,6 +49,9 @@ Proof.
   wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
+  wp_apply (synctest.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
   wp_apply (race.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
