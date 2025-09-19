@@ -989,7 +989,7 @@ Proof.
   iFrame "∗#%".
 
   iNamed "His_map".
-  iDestruct (full_entry_txfer with "His_hash His_tree") as %?; [done|..].
+  iDestruct (full_entry_txfer with "[$]") as %?; [done|..].
   (* TODO: shift these props to proofToTree WP.
   (1) they rely on valid rsrc and (2) are short that it's reasonable to do
   them in-line with WP. *)
@@ -999,8 +999,7 @@ Proof.
     - by simplify_eq/=. }
   { admit. }
   subst. iPureIntro.
-  apply entry_eq_lookup; [|done].
-  (* stuck bc full_tree isn't sorted. *)
+  apply entry_eq_lookup.
 Abort.
 
 End proof.

@@ -127,45 +127,22 @@ Hint Unfold is_entry : merkle.
 
 (** relation between trees and maps. *)
 
-Fixpoint to_map t : gmap (list w8) (list w8) :=
-  match t with
-  | Leaf label val => {[label := val ]}
-  | Inner child0 child1 => to_map child0 ∪ to_map child1
-  | _ => ∅
-  end.
-
-Fixpoint is_sorted' t pref :=
-  match t with
+Fixpoint to_map' t pref : gmap (list w8) (list w8) :=
   (* using [prefix_total] allows other preds (e.g., [is_entry])
   to operate under an easier (and weaker), length-extended leaf model.
   this reduces proof burden.
   e.g., [find] doesn't need to track depth bounds. *)
-  | Leaf label val => prefix_total pref (bytes_to_bits label)
-  | Inner c0 c1 =>
-    is_sorted' c0 (pref ++ [false]) ∧
-    is_sorted' c1 (pref ++ [true])
-  | _ => True
+  match t with
+  | Leaf label val =>
+    if decide (prefix_total pref (bytes_to_bits label))
+      then {[label := val ]} else ∅
+  | Inner child0 child1 =>
+    to_map' child0 (pref ++ [false]) ∪
+    to_map' child1 (pref ++ [true])
+  | _ => ∅
   end.
-Definition is_sorted t := is_sorted' t [].
-Hint Unfold is_sorted : merkle.
-
-Lemma to_map_None_strong t pref label :
-  is_sorted' t pref →
-  ¬ prefix_total pref (bytes_to_bits label) →
-  to_map t !! label = None.
-Proof.
-  revert pref.
-  induction t; simpl; intros; try done.
-  - opose proof (prefix_total_neq _ _ _ _ _) as Heq; [done..|].
-    rewrite inj_iff in Heq.
-    by simpl_map.
-  - intuition.
-    apply lookup_union_None_2.
-    + eapply IHt1; [done|].
-      by intros ?%prefix_total_app_l.
-    + eapply IHt2; [done|].
-      by intros ?%prefix_total_app_l.
-Qed.
+Definition to_map t := to_map' t [].
+Hint Unfold to_map : merkle.
 
 Tactic Notation "solve_bool" :=
   match goal with
@@ -175,13 +152,48 @@ Tactic Notation "solve_bool" :=
   | |- negb ?x ≠ ?x => by destruct x
   end.
 
+Lemma to_map_Some t pref label :
+  is_Some (to_map' t pref !! label) →
+  prefix_total pref (bytes_to_bits label).
+Proof.
+  revert pref.
+  induction t; simpl; intros ? Hsome.
+  - by simpl_map.
+  - case_decide; [|by simpl_map].
+    destruct (decide (label0 = label)).
+    + by subst.
+    + by simpl_map.
+  - apply lookup_union_is_Some in Hsome.
+    destruct_or!.
+    + apply IHt1 in Hsome.
+      by eapply prefix_total_app_l.
+    + apply IHt2 in Hsome.
+      by eapply prefix_total_app_l.
+  - by simpl_map.
+Qed.
+
+Lemma to_map_None_strong t pref label :
+  ¬ prefix_total pref (bytes_to_bits label) →
+  to_map' t pref !! label = None.
+Proof.
+  revert pref.
+  induction t; simpl; intros; try done.
+  - case_decide; [|done].
+    by destruct (decide (label = label0)); subst; simpl_map.
+  - intuition.
+    apply lookup_union_None_2.
+    + eapply IHt1.
+      by intros ?%prefix_total_app_l.
+    + eapply IHt2.
+      by intros ?%prefix_total_app_l.
+Qed.
+
 Lemma to_map_None t pref bit label :
-  is_sorted' t (pref ++ [bit]) →
   get_bit label (length pref) = negb bit →
-  to_map t !! label = None.
+  to_map' t (pref ++ [bit]) !! label = None.
 Proof.
   intros.
-  eapply to_map_None_strong; [done|].
+  eapply to_map_None_strong.
   intros ?%prefix_total_snoc_inv.
   intuition. subst. solve_bool.
 Qed.
@@ -189,38 +201,36 @@ Qed.
 Notation pref_ext p l := (p ++ [get_bit l (length p)]) (only parsing).
 
 Lemma entry_to_lookup t label oval :
-  is_sorted t →
   is_entry t label oval →
   to_map t !! label = oval.
 Proof.
   autounfold with merkle.
   remember ([]) as pref.
   replace (0%nat) with (length pref) by (by subst).
-  intros ? (?&?&?).
+  intros (?&?&?).
   assert (prefix_total pref (bytes_to_bits label)).
   { subst. apply prefix_total_nil. }
   clear Heqpref.
   generalize dependent pref.
 
   induction t; simpl; intros.
-  - simpl_map. case_match; by subst.
-  - case_match; simplify_eq/=; by simpl_map.
+  - case_match; by subst.
+  - case_match; case_decide; simplify_eq/=; by simpl_map.
   - replace (S _) with (length $ pref_ext pref label) in * by len.
     intuition. rewrite lookup_union.
     case_match.
     + erewrite (to_map_None t1); [|done..].
-      erewrite IHt2; cycle 1; [done|done|..].
+      erewrite IHt2; cycle 1; [done|..].
       { by apply prefix_total_snoc. }
       by simplify_option_eq.
     + erewrite (to_map_None t2); [|done..].
-      erewrite IHt1; cycle 1; [done|done|..].
+      erewrite IHt1; cycle 1; [done|..].
       { by apply prefix_total_snoc. }
       by simplify_option_eq.
   - simpl_map. case_match; by subst.
 Qed.
 
 Lemma lookup_to_entry t label :
-  is_sorted t →
   is_entry t label (to_map t !! label).
 Proof.
   autounfold with merkle.
@@ -234,15 +244,15 @@ Proof.
   induction t; simpl; intros.
   - simpl_map. naive_solver.
   - eexists. intuition.
-    destruct (decide (label = label0)); subst; by simpl_map.
+    case_decide; destruct (decide (label = label0)); subst; by simpl_map.
   - replace (S _) with (length $ pref_ext pref label) in * by len.
     intuition. rewrite lookup_union.
     destruct (get_bit _ _) eqn:?.
-    + erewrite (to_map_None t1); [|done..].
+    + erewrite (to_map_None t1); [|done].
       rewrite left_id.
       eapply IHt2; try done.
       by apply prefix_total_snoc.
-    + erewrite (to_map_None t2); [|done..].
+    + erewrite (to_map_None t2); [|done].
       rewrite right_id.
       eapply IHt1; try done.
       by apply prefix_total_snoc.
@@ -250,7 +260,6 @@ Proof.
 Qed.
 
 Lemma entry_eq_lookup t label oval :
-  is_sorted t →
   is_entry t label oval ↔ to_map t !! label = oval.
 Proof.
   split.
@@ -526,34 +535,105 @@ Proof.
   naive_solver lia.
 Qed.
 
+Definition cut_full_reln' ct ft lim h : iProp Σ :=
+  "#Hct" ∷ is_cut_tree ct h ∗
+  "#Hft" ∷ is_full_tree' ft h lim.
+Definition cut_full_reln ct ft h := cut_full_reln' ct ft max_depth h.
+Hint Unfold cut_full_reln : merkle.
+
+Lemma cut_full_reln_Empty ft lim h :
+  cut_full_reln' Empty ft lim h -∗ ⌜ft = Empty⌝.
+Proof.
+  iNamed 1.
+  simpl. iNamedSuffix "Hct" "_ct".
+  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
+  iNamedSuffix "Hft" "_ft".
+  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
+  rewrite decode_empty_det. by iNamed "Hdecode_ft".
+Qed.
+
+Lemma cut_full_reln_Leaf {label val} ft lim h :
+  cut_full_reln' (Leaf label val) ft lim h -∗ ⌜ft = Leaf label val⌝.
+Proof.
+  iNamed 1.
+  simpl. iNamedSuffix "Hct" "_ct".
+  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
+  iNamedSuffix "Hft" "_ft".
+  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
+  rewrite decode_leaf_det; [|done..]. by iNamed "Hdecode_ft".
+Qed.
+
+Lemma cut_full_reln_Inner ft t0 t1 lim h :
+  cut_full_reln' (Inner t0 t1) ft (S lim) h -∗
+  (∃ t2 t3 h0 h1,
+  ⌜ft = Inner t2 t3⌝ ∗
+  is_cut_tree t0 h0 ∗
+  is_cut_tree t1 h1 ∗
+  is_full_tree' t2 h0 lim ∗
+  is_full_tree' t3 h1 lim).
+Proof.
+  iNamed 1. simpl. iNamedSuffix "Hct" "_ct".
+  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
+  iNamedSuffix "Hft" "_ft".
+  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
+  iDestruct (is_cut_tree_len with "Hchild0_ct") as %?.
+  iDestruct (is_cut_tree_len with "Hchild1_ct") as %?.
+  rewrite decode_inner_det; [|done..]. iNamed "Hdecode_ft".
+  iFrame "%#".
+Qed.
+
+Lemma init_to_reln_Empty lim :
+  is_initialized -∗
+  ∃ h, cut_full_reln' Empty Empty lim h.
+Proof.
+  rewrite /is_initialized. iNamed 1.
+  rewrite /cut_full_reln'.
+  iEval (setoid_rewrite is_full_tree_unfold).
+  iFrame "#".
+  by rewrite decode_empty_det.
+Qed.
+
+Lemma cut_to_full_Empty lim h :
+  is_cut_tree Empty h -∗
+  is_full_tree' Empty h lim.
+Proof.
+  simpl. iNamed 1.
+  iEval (setoid_rewrite is_full_tree_unfold).
+  iFrame "#".
+  by rewrite decode_empty_det.
+Qed.
+
+Lemma cut_to_full_Leaf lim l v h :
+  is_cut_tree (Leaf l v) h -∗
+  is_full_tree' (Leaf l v) h lim.
+Proof.
+  simpl. iNamed 1.
+  iEval (setoid_rewrite is_full_tree_unfold).
+  iFrame "#".
+  by rewrite decode_leaf_det.
+Qed.
+
 Lemma full_entry_txfer t0 t1 h label oval :
   is_entry t0 label oval →
   is_cutless_path t0 label →
   is_limit t0 →
-  is_cut_tree t0 h -∗
-  is_full_tree t1 h -∗
+  cut_full_reln t0 t1 h -∗
   ⌜ is_entry t1 label oval ⌝.
 Proof.
   autounfold with merkle.
   remember max_depth as limit. clear Heqlimit.
   remember 0%nat as depth. clear Heqdepth.
-  iInduction t0 as [] forall (t1 h limit depth); simpl; iIntros "*";
-    iEval (setoid_rewrite is_full_tree_unfold);
-    iNamedSuffix 1 "0";
-    iNamedSuffix 1 "1"; try done;
-    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
-  - rewrite decode_empty_det. iNamed "Hdecode1". naive_solver.
-  - rewrite decode_leaf_det; [|done..]. iNamed "Hdecode1". naive_solver.
-  - iDestruct (is_cut_tree_len with "Hchild00") as %?.
-    iDestruct (is_cut_tree_len with "Hchild10") as %?.
-    rewrite decode_inner_det; [|done..].
-    case_match; [done|].
-    intuition.
-    iNamedSuffix "Hdecode1" "1".
-    subst. simpl.
+  iInduction t0 as [] forall (t1 h limit depth); simpl;
+    iIntros "* #Hreln"; try done.
+  - iDestruct (cut_full_reln_Empty with "[$]") as %->. naive_solver.
+  - iDestruct (cut_full_reln_Leaf with "[$]") as %->. naive_solver.
+  - case_match; try done.
+    iDestruct (cut_full_reln_Inner with "[$]") as
+      "{Hreln} (%&%&%&%&%& #Hchild0_ct & #Hchild1_ct & #Hchild0_ft & #Hchild1_ft)".
+    intuition. simplify_eq/=.
     case_match.
-    + by iApply "IHt0_2".
-    + by iApply "IHt0_1".
+    + iApply "IHt0_2"; try done. iFrame "#".
+    + iApply "IHt0_1"; try done. iFrame "#".
 Qed.
 
 Lemma cut_to_full t h :
@@ -681,6 +761,26 @@ Definition pure_proofToTree label sibs oleaf :=
   end.
 
 (** invariants on [pure_put]. *)
+
+(* needed for WP proof of pure_put = Some. *)
+Fixpoint is_sorted' t pref :=
+  match t with
+  | Leaf label val => prefix_total pref (bytes_to_bits label)
+  | Inner c0 c1 =>
+    is_sorted' c0 (pref ++ [false]) ∧
+    is_sorted' c1 (pref ++ [true])
+  | _ => True
+  end.
+Definition is_sorted t := is_sorted' t [].
+Hint Unfold is_sorted : merkle.
+
+(* needed for WP proof of pure_put = Some. *)
+Fixpoint is_const_label_len t :=
+  match t with
+  | Leaf label val => Z.of_nat (length label) = cryptoffi.hash_len
+  | Inner c0 c1 => is_const_label_len c0 ∧ is_const_label_len c1
+  | _ => True
+  end.
 
 Lemma cutless_new_put t label val :
   is_Some (pure_put t label val) →
@@ -840,84 +940,6 @@ Proof.
       simplify_eq/=; rw_get_bit; naive_solver.
 Qed.
 
-Definition cut_full_reln' ct ft lim h : iProp Σ :=
-  "#Hct" ∷ is_cut_tree ct h ∗
-  "#Hft" ∷ is_full_tree' ft h lim.
-Definition cut_full_reln ct ft h := cut_full_reln' ct ft max_depth h.
-Hint Unfold cut_full_reln : merkle.
-
-Lemma cut_full_reln_Empty ft lim h :
-  cut_full_reln' Empty ft lim h -∗ ⌜ft = Empty⌝.
-Proof.
-  iNamed 1.
-  simpl. iNamedSuffix "Hct" "_ct".
-  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
-  iNamedSuffix "Hft" "_ft".
-  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
-  rewrite decode_empty_det. by iNamed "Hdecode_ft".
-Qed.
-
-Lemma cut_full_reln_Leaf {label val} ft lim h :
-  cut_full_reln' (Leaf label val) ft lim h -∗ ⌜ft = Leaf label val⌝.
-Proof.
-  iNamed 1.
-  simpl. iNamedSuffix "Hct" "_ct".
-  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
-  iNamedSuffix "Hft" "_ft".
-  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
-  rewrite decode_leaf_det; [|done..]. by iNamed "Hdecode_ft".
-Qed.
-
-Lemma cut_full_reln_Inner ft t0 t1 lim h :
-  cut_full_reln' (Inner t0 t1) ft (S lim) h -∗
-  (∃ t2 t3 h0 h1,
-  ⌜ft = Inner t2 t3⌝ ∗
-  is_cut_tree t0 h0 ∗
-  is_cut_tree t1 h1 ∗
-  is_full_tree' t2 h0 lim ∗
-  is_full_tree' t3 h1 lim).
-Proof.
-  iNamed 1. simpl. iNamedSuffix "Hct" "_ct".
-  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
-  iNamedSuffix "Hft" "_ft".
-  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
-  iDestruct (is_cut_tree_len with "Hchild0_ct") as %?.
-  iDestruct (is_cut_tree_len with "Hchild1_ct") as %?.
-  rewrite decode_inner_det; [|done..]. iNamed "Hdecode_ft".
-  iFrame "%#".
-Qed.
-
-Lemma init_to_reln_Empty lim :
-  is_initialized -∗
-  ∃ h, cut_full_reln' Empty Empty lim h.
-Proof.
-  rewrite /is_initialized. iNamed 1.
-  rewrite /cut_full_reln'.
-  iEval (setoid_rewrite is_full_tree_unfold).
-  iFrame "#".
-  by rewrite decode_empty_det.
-Qed.
-
-Lemma cut_to_full_Empty lim h :
-  is_cut_tree Empty h -∗
-  is_full_tree' Empty h lim.
-Proof.
-  simpl. iNamed 1.
-  iEval (setoid_rewrite is_full_tree_unfold).
-  iFrame "#".
-  by rewrite decode_empty_det.
-Qed.
-
-Lemma cut_to_full_Leaf lim l v h :
-  is_cut_tree (Leaf l v) h -∗
-  is_full_tree' (Leaf l v) h lim.
-Proof.
-  simpl. iNamed 1.
-  iEval (setoid_rewrite is_full_tree_unfold).
-  iFrame "#".
-  by rewrite decode_leaf_det.
-Qed.
-
 (* note: since put is pure, this lemma can't *give* post-put hash resources.
 instead it requires them. *)
 Lemma cut_full_over_put t0 t0' t1 t1' h0 h1 label val :
@@ -1058,82 +1080,16 @@ Qed.
 
 (* easier [map_eq] extensional proof vs. using fin_map reductions. *)
 Lemma to_map_over_put t t' label val :
-  is_sorted t →
   pure_put t label val = Some t' →
   to_map t' = <[label:=val]>(to_map t).
 Proof.
   intros. apply map_eq. intros.
-  opose proof (is_sorted_over_put _ _ _ _ _ _); [done..|].
   destruct (decide (label = i)); subst; simpl_map.
-  - apply entry_eq_lookup; [done|].
+  - apply entry_eq_lookup.
     by eapply put_new_entry.
-  - rewrite -entry_eq_lookup; [|done].
+  - rewrite -entry_eq_lookup.
     eapply old_entry_over_put; [|done..].
     by apply entry_eq_lookup.
-Qed.
-
-Fixpoint is_const_label_len t :=
-  match t with
-  | Leaf label val => Z.of_nat (length label) = cryptoffi.hash_len
-  | Inner c0 c1 => is_const_label_len c0 ∧ is_const_label_len c1
-  | _ => True
-  end.
-
-Tactic Notation "rw_pure_put" := repeat
-  match goal with
-  | H : pure_put' _ _ _ _ _ = None |- _ => rewrite -{}H
-  end.
-
-Lemma put_Some t label val :
-  (* for max depth. *)
-  is_limit t →
-  Z.of_nat (length label) = cryptoffi.hash_len →
-  is_const_label_len t →
-  is_sorted t →
-  (* for no Cut. *)
-  is_cutless_path t label →
-  is_Some (pure_put t label val).
-Proof.
-  autounfold with merkle.
-  assert (∃ x, x = max_depth) as [limit Heq]; [by eexists|].
-  rewrite -[in is_limit' _ _]Heq.
-  rewrite -[in pure_put' _ _ _ _ _]Heq.
-  remember [] as pref.
-  assert (prefix_total pref (bytes_to_bits label)).
-  { subst. apply prefix_total_nil. }
-  replace 0%nat with (length pref); [|by subst].
-  assert (length pref + limit = max_depth)%nat.
-  { subst. simpl. lia. }
-  clear Heq Heqpref.
-  intros.
-  generalize dependent t.
-  generalize dependent pref.
-
-  induction limit as [? IH] using lt_wf_ind.
-  intros. rewrite pure_put_unfold.
-  destruct t; simpl in *; try done.
-
-  - case_decide; [done|].
-    destruct limit.
-    (* limit=0. show labels actually equal. *)
-    { opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
-        [|done|]; [by len|].
-      opose proof (prefix_total_full _ (bytes_to_bits label0) _ _);
-        [|done|]; [by len|].
-      simplify_eq/=. }
-
-    ospecialize (IH limit _); [lia|].
-    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
-    replace (S _) with (length $ pref_ext pref label) in * by len.
-    eapply IH; repeat case_match; try done; [|len|..];
-      by eapply prefix_total_snoc.
-  - destruct limit; [done|].
-    ospecialize (IH limit _); [lia|].
-    intuition.
-    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
-    replace (S _) with (length $ pref_ext pref label) in * by len.
-    eapply IH; repeat case_match; try done; [..|len|len];
-      by eapply prefix_total_snoc.
 Qed.
 
 (** invariants on [pure_newShell]. *)
@@ -1203,23 +1159,6 @@ Proof.
   induction sibs; try done.
   simpl. intros.
   by case_match.
-Qed.
-
-(** invariants on [pure_proofToTree]. *)
-
-#[local] Opaque pure_put.
-
-Lemma proofToTree_None label sibs oleaf t :
-  match oleaf with None => True | Some (l, _) => label ≠ l end →
-  pure_proofToTree label sibs oleaf = Some t →
-  is_entry t label None.
-Proof.
-  intros.
-  opose proof (newShell_None label sibs).
-  destruct oleaf as [[]|]; simpl in *.
-  - by eapply old_entry_over_put.
-  - by simplify_eq/=.
-  (* [Opaque pure_put], otherwise long Qed. *)
 Qed.
 
 (** tree proofs. *)
@@ -1446,5 +1385,5 @@ Qed.
 
 End proof.
 
-Hint Unfold find is_entry is_sorted is_full_tree is_map is_cutless_path
+Hint Unfold find is_entry to_map is_sorted is_full_tree is_map is_cutless_path
   is_limit cut_full_reln pure_put pure_newShell is_sibs : merkle.
