@@ -840,6 +840,222 @@ Proof.
       simplify_eq/=; rw_get_bit; naive_solver.
 Qed.
 
+Definition cut_full_reln' ct ft lim h : iProp Σ :=
+  "#Hct" ∷ is_cut_tree ct h ∗
+  "#Hft" ∷ is_full_tree' ft h lim.
+Definition cut_full_reln ct ft h := cut_full_reln' ct ft max_depth h.
+Hint Unfold cut_full_reln : merkle.
+
+Lemma cut_full_reln_Empty ft lim h :
+  cut_full_reln' Empty ft lim h -∗ ⌜ft = Empty⌝.
+Proof.
+  iNamed 1.
+  simpl. iNamedSuffix "Hct" "_ct".
+  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
+  iNamedSuffix "Hft" "_ft".
+  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
+  rewrite decode_empty_det. by iNamed "Hdecode_ft".
+Qed.
+
+Lemma cut_full_reln_Leaf {label val} ft lim h :
+  cut_full_reln' (Leaf label val) ft lim h -∗ ⌜ft = Leaf label val⌝.
+Proof.
+  iNamed 1.
+  simpl. iNamedSuffix "Hct" "_ct".
+  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
+  iNamedSuffix "Hft" "_ft".
+  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
+  rewrite decode_leaf_det; [|done..]. by iNamed "Hdecode_ft".
+Qed.
+
+Lemma cut_full_reln_Inner ft t0 t1 lim h :
+  cut_full_reln' (Inner t0 t1) ft (S lim) h -∗
+  (∃ t2 t3 h0 h1,
+  ⌜ft = Inner t2 t3⌝ ∗
+  is_cut_tree t0 h0 ∗
+  is_cut_tree t1 h1 ∗
+  is_full_tree' t2 h0 lim ∗
+  is_full_tree' t3 h1 lim).
+Proof.
+  iNamed 1. simpl. iNamedSuffix "Hct" "_ct".
+  iEval (setoid_rewrite is_full_tree_unfold) in "Hft".
+  iNamedSuffix "Hft" "_ft".
+  iDestruct (cryptoffi.is_hash_inj with "His_hash_ft His_hash_ct") as %->.
+  iDestruct (is_cut_tree_len with "Hchild0_ct") as %?.
+  iDestruct (is_cut_tree_len with "Hchild1_ct") as %?.
+  rewrite decode_inner_det; [|done..]. iNamed "Hdecode_ft".
+  iFrame "%#".
+Qed.
+
+Lemma init_to_reln_Empty lim :
+  is_initialized -∗
+  ∃ h, cut_full_reln' Empty Empty lim h.
+Proof.
+  rewrite /is_initialized. iNamed 1.
+  rewrite /cut_full_reln'.
+  iEval (setoid_rewrite is_full_tree_unfold).
+  iFrame "#".
+  by rewrite decode_empty_det.
+Qed.
+
+Lemma cut_to_full_Empty lim h :
+  is_cut_tree Empty h -∗
+  is_full_tree' Empty h lim.
+Proof.
+  simpl. iNamed 1.
+  iEval (setoid_rewrite is_full_tree_unfold).
+  iFrame "#".
+  by rewrite decode_empty_det.
+Qed.
+
+Lemma cut_to_full_Leaf lim l v h :
+  is_cut_tree (Leaf l v) h -∗
+  is_full_tree' (Leaf l v) h lim.
+Proof.
+  simpl. iNamed 1.
+  iEval (setoid_rewrite is_full_tree_unfold).
+  iFrame "#".
+  by rewrite decode_leaf_det.
+Qed.
+
+(* note: since put is pure, this lemma can't *give* post-put hash resources.
+instead it requires them. *)
+Lemma cut_full_over_put t0 t0' t1 t1' h0 h1 label val :
+  (* to demonstrate Empty hash. *)
+  is_initialized -∗
+  cut_full_reln t0 t0' h0 -∗
+  ⌜pure_put t0 label val = Some t1⌝ -∗
+  cut_full_reln t1 t1' h1 -∗
+  ⌜pure_put t0' label val = Some t1'⌝.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  iIntros "#Hinit".
+  iInduction limit as [? IH] using lt_wf_ind forall (t0 t0' t1 t1' h0 h1 depth).
+  iNamedSuffix 1 "0". iIntros "%Hput". iNamedSuffix 1 "1".
+
+  rewrite pure_put_unfold in Hput.
+  destruct t0; try done.
+  - (* get t0'. *)
+    iDestruct (cut_full_reln_Empty t0' with "[$]") as %->.
+    rewrite pure_put_unfold.
+    simplify_eq/=.
+    (* get t1'. *)
+    by iDestruct (cut_full_reln_Leaf t1' with "[$]") as %->.
+
+  - (* get t0'. *)
+    iDestruct (cut_full_reln_Leaf t0' with "[$]") as %->.
+    rewrite pure_put_unfold.
+    simplify_eq/=. rewrite Hput.
+    (* t1 casework, to get t1'. *)
+    case_decide; try case_match; simplify_eq/=.
+    { by iDestruct (cut_full_reln_Leaf t1' with "[$]") as %->. }
+    iSpecialize ("IH" $! n with "[]"); [word|].
+    case_match; try done.
+    simplify_eq/=.
+    iDestruct (cut_full_reln_Inner with "[$]") as
+      "{Hct1 Hft1} (%&%&%&%&%& #Hchild0_ct1 & #Hchild1_ct1 & #Hchild0_ft1 & #Hchild1_ft1)".
+    simplify_eq/=.
+
+    (* t1=Inner case. very tricky. *)
+    (* TODO: upstream. this doesn't support [occurrence] clauses like [in *]. *)
+    Tactic Notation "ereplace0" open_constr(x) "with" open_constr(y) "in" constr(z) :=
+      replace x with y in z.
+    ereplace0
+      (if get_bit label depth
+        then if get_bit label0 depth then ?[a] else ?[b]
+        else if get_bit label0 depth then ?b else ?a)
+      with
+      (if decide (get_bit label depth = get_bit label0 depth) then ?a else ?b) in H0.
+    2: { by repeat case_match. }
+
+    (* massage full tree children to look like cut tree children. *)
+    iAssert (∃ t0', is_full_tree' (if get_bit label depth then
+      if get_bit label0 depth then Empty else Leaf label0 val0 else t0') h2 n)%I as "[% Ht0]".
+    { destruct (get_bit label _).
+      2: { iFrame "#". }
+      destruct (get_bit label0 depth).
+      { by iDestruct (cut_to_full_Empty with "[$]") as "$". }
+      { by iDestruct (cut_to_full_Leaf with "[$]") as "$". } }
+
+    iAssert (∃ t1', is_full_tree' (if get_bit label depth then t1'
+      else if get_bit label0 depth then Leaf label0 val0 else Empty) h3 n)%I as "[% Ht1]".
+    { destruct (get_bit label _).
+      { iFrame "#". }
+      destruct (get_bit label0 depth).
+      { by iDestruct (cut_to_full_Leaf with "[$]") as "$". }
+      { by iDestruct (cut_to_full_Empty with "[$]") as "$". } }
+
+    iDestruct (is_full_tree_inj with "Hchild0_ft1 Ht0") as %->.
+    iDestruct (is_full_tree_inj with "Hchild1_ft1 Ht1") as %->.
+    iClear "Ht0 Ht1".
+
+    (* learn that t0 recursive put call gives massaged form. *)
+    iDestruct (init_to_reln_Empty with "[$]") as "[% #Hreln_Empty]".
+    iDestruct ("IH" $! _
+      (if decide (get_bit label depth = get_bit label0 depth) then _ else _)
+      _
+      (if get_bit label depth then _ else _)
+      (if decide (get_bit label depth = get_bit label0 depth) then _ else _)
+      (* dep label, recur out is some child. *)
+      (if get_bit label depth then h3 else h2)
+      with "[][//][]") as "%".
+    { case_decide.
+      - iFrame "Hct0".
+        iDestruct (cut_to_full_Leaf with "[$]") as "$".
+      - iFrame "#". }
+    { destruct (get_bit label _); iFrame "#". }
+
+    iPureIntro. simplify_eq/=. by repeat case_match.
+
+  - (* get t0'. *)
+    case_match; try done.
+    iSpecialize ("IH" $! n with "[]"); [word|].
+
+    iDestruct (cut_full_reln_Inner with "[]") as
+      "{Hct0 Hft0} (%&%&%&%&%& #Hchild0_ct0 & #Hchild1_ct0 & #Hchild0_ft0 & #Hchild1_ft0)".
+    { iFrame "Hct0 #". }
+    simpl in *. case_match; try done. simplify_eq/=.
+
+    (* get t1'. *)
+    iDestruct (cut_full_reln_Inner with "[]") as
+      "{Hct1 Hft1} (%&%&%&%&%& #Hchild0_ct1 & #Hchild1_ct1 & #Hchild0_ft1 & #Hchild1_ft1)".
+    { iFrame "Hct1 #". }
+    simplify_eq/=.
+
+    (* t0 / t1 (the final full tree children) aren't just the recur put out.
+    they correspond to additional branching, as shown in the final cut trees.
+    we need to make the branching structure evident. *)
+    iAssert (∃ t0', is_full_tree'
+      (if get_bit label depth then t2 else t0') h4 n)%I as "[% Ht0]".
+    { destruct (get_bit label _).
+      2: { iFrame "#". }
+      iDestruct (is_cut_tree_det with "Hchild0_ct0 Hchild0_ct1") as %->.
+      by iFrame "#". }
+    iAssert (∃ t1', is_full_tree'
+      (if get_bit label depth then t1' else t3) h5 n)%I as "[% Ht1]".
+    { destruct (get_bit label _).
+      { iFrame "#". }
+      iDestruct (is_cut_tree_det with "Hchild1_ct0 Hchild1_ct1") as %->.
+      by iFrame "#". }
+    iDestruct (is_full_tree_inj with "Hchild0_ft1 Ht0") as %->.
+    iDestruct (is_full_tree_inj with "Hchild1_ft1 Ht1") as %->.
+    iClear "Ht0 Ht1".
+
+    iDestruct ("IH" $! _
+      (if get_bit label depth then _ else _)
+      _
+      (if get_bit label depth then _ else _)
+      (if get_bit label depth then h3 else h2)
+      (if get_bit label depth then h5 else h4)
+      with "[][//][]") as "->".
+    { case_match; iFrame "#". }
+    { case_match; iFrame "#". }
+
+    simplify_eq/=. iPureIntro. by case_match.
+Qed.
+
 (* easier [map_eq] extensional proof vs. using fin_map reductions. *)
 Lemma to_map_over_put t t' label val :
   is_sorted t →
@@ -1231,4 +1447,4 @@ Qed.
 End proof.
 
 Hint Unfold find is_entry is_sorted is_full_tree is_map is_cutless_path
-  is_limit pure_put pure_newShell is_sibs : merkle.
+  is_limit cut_full_reln pure_put pure_newShell is_sibs : merkle.
