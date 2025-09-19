@@ -128,7 +128,7 @@ Definition Int32 : go_type := structT [
 
 (* Load atomically loads and returns the value stored in x.
 
-   go: type.go:74:17 *)
+   go: type.go:80:17 *)
 Definition Int32__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
     exception_do (let: "x" := (mem.alloc "x") in
@@ -137,7 +137,7 @@ Definition Int32__Loadⁱᵐᵖˡ : val :=
 
 (* Store atomically stores val into x.
 
-   go: type.go:77:17 *)
+   go: type.go:83:17 *)
 Definition Int32__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
     exception_do (let: "x" := (mem.alloc "x") in
@@ -149,7 +149,7 @@ Definition Int32__Storeⁱᵐᵖˡ : val :=
 
 (* Swap atomically stores new into x and returns the previous value.
 
-   go: type.go:80:17 *)
+   go: type.go:86:17 *)
 Definition Int32__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
     exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
@@ -161,7 +161,7 @@ Definition Int32__Swapⁱᵐᵖˡ : val :=
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
-   go: type.go:83:17 *)
+   go: type.go:89:17 *)
 Definition Int32__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
     exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
@@ -175,7 +175,7 @@ Definition Int32__CompareAndSwapⁱᵐᵖˡ : val :=
 
 (* Add atomically adds delta to x and returns the new value.
 
-   go: type.go:88:17 *)
+   go: type.go:94:17 *)
 Definition Int32__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
     exception_do (let: "new" := (mem.alloc (type.zero_val #int32T)) in
@@ -188,7 +188,7 @@ Definition Int32__Addⁱᵐᵖˡ : val :=
 (* And atomically performs a bitwise AND operation on x using the bitmask
    provided as mask and returns the old value.
 
-   go: type.go:92:17 *)
+   go: type.go:98:17 *)
 Definition Int32__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
@@ -201,7 +201,7 @@ Definition Int32__Andⁱᵐᵖˡ : val :=
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
 
-   go: type.go:96:17 *)
+   go: type.go:102:17 *)
 Definition Int32__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
@@ -222,7 +222,7 @@ Definition Uint32 : go_type := structT [
 
 (* Load atomically loads and returns the value stored in x.
 
-   go: type.go:137:18 *)
+   go: type.go:147:18 *)
 Definition Uint32__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
     exception_do (let: "x" := (mem.alloc "x") in
@@ -231,7 +231,7 @@ Definition Uint32__Loadⁱᵐᵖˡ : val :=
 
 (* Store atomically stores val into x.
 
-   go: type.go:140:18 *)
+   go: type.go:150:18 *)
 Definition Uint32__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
     exception_do (let: "x" := (mem.alloc "x") in
@@ -243,7 +243,7 @@ Definition Uint32__Storeⁱᵐᵖˡ : val :=
 
 (* Swap atomically stores new into x and returns the previous value.
 
-   go: type.go:143:18 *)
+   go: type.go:153:18 *)
 Definition Uint32__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
     exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
@@ -255,7 +255,7 @@ Definition Uint32__Swapⁱᵐᵖˡ : val :=
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
-   go: type.go:146:18 *)
+   go: type.go:156:18 *)
 Definition Uint32__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
     exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
@@ -269,7 +269,7 @@ Definition Uint32__CompareAndSwapⁱᵐᵖˡ : val :=
 
 (* Add atomically adds delta to x and returns the new value.
 
-   go: type.go:151:18 *)
+   go: type.go:161:18 *)
 Definition Uint32__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
     exception_do (let: "new" := (mem.alloc (type.zero_val #uint32T)) in
@@ -282,7 +282,7 @@ Definition Uint32__Addⁱᵐᵖˡ : val :=
 (* And atomically performs a bitwise AND operation on x using the bitmask
    provided as mask and returns the old value.
 
-   go: type.go:155:18 *)
+   go: type.go:165:18 *)
 Definition Uint32__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
@@ -295,7 +295,7 @@ Definition Uint32__Andⁱᵐᵖˡ : val :=
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
 
-   go: type.go:159:18 *)
+   go: type.go:169:18 *)
 Definition Uint32__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
@@ -320,7 +320,7 @@ Definition Uint64 : go_type := structT [
 
 (* Load atomically loads and returns the value stored in x.
 
-   go: type.go:169:18 *)
+   go: type.go:181:18 *)
 Definition Uint64__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
     exception_do (let: "x" := (mem.alloc "x") in
@@ -329,7 +329,7 @@ Definition Uint64__Loadⁱᵐᵖˡ : val :=
 
 (* Store atomically stores val into x.
 
-   go: type.go:172:18 *)
+   go: type.go:184:18 *)
 Definition Uint64__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
     exception_do (let: "x" := (mem.alloc "x") in
@@ -341,7 +341,7 @@ Definition Uint64__Storeⁱᵐᵖˡ : val :=
 
 (* Swap atomically stores new into x and returns the previous value.
 
-   go: type.go:175:18 *)
+   go: type.go:187:18 *)
 Definition Uint64__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
     exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
@@ -353,7 +353,7 @@ Definition Uint64__Swapⁱᵐᵖˡ : val :=
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
-   go: type.go:178:18 *)
+   go: type.go:190:18 *)
 Definition Uint64__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
     exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
@@ -367,7 +367,7 @@ Definition Uint64__CompareAndSwapⁱᵐᵖˡ : val :=
 
 (* Add atomically adds delta to x and returns the new value.
 
-   go: type.go:183:18 *)
+   go: type.go:195:18 *)
 Definition Uint64__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
     exception_do (let: "new" := (mem.alloc (type.zero_val #uint64T)) in
@@ -380,7 +380,7 @@ Definition Uint64__Addⁱᵐᵖˡ : val :=
 (* And atomically performs a bitwise AND operation on x using the bitmask
    provided as mask and returns the old value.
 
-   go: type.go:187:18 *)
+   go: type.go:199:18 *)
 Definition Uint64__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
@@ -393,7 +393,7 @@ Definition Uint64__Andⁱᵐᵖˡ : val :=
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
 
-   go: type.go:191:18 *)
+   go: type.go:203:18 *)
 Definition Uint64__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in

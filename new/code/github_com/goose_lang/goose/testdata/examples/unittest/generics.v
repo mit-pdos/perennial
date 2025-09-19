@@ -100,7 +100,7 @@ Definition useBoxGetⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := #(W64 42) in
     ((func_call #makeGenericBox) #uint64T) "$a0") in
     do:  ("x" <-[Box #uint64T] "$r0");;;
-    return: ((method_call #Box.id #"Get"%go (![Box #uint64T] "x") #uint64T) #())).
+    return: ((method_call #(ptrT.id Box.id) #"Get"%go "x" #uint64T) #())).
 
 Definition Container : val :=
   λ: "T", type.structT [

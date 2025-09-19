@@ -12,9 +12,9 @@ Module timeout. Definition id : go_string := "os.timeout"%go. End timeout.
 Module PathError. Axiom id : go_string. End PathError.
 Module SyscallError. Definition id : go_string := "os.SyscallError"%go. End SyscallError.
 Module syscallErrorType. Axiom id : go_string. End syscallErrorType.
-Module processMode. Definition id : go_string := "os.processMode"%go. End processMode.
 Module processStatus. Definition id : go_string := "os.processStatus"%go. End processStatus.
 Module Process. Definition id : go_string := "os.Process"%go. End Process.
+Module processHandle. Definition id : go_string := "os.processHandle"%go. End processHandle.
 Module ProcAttr. Definition id : go_string := "os.ProcAttr"%go. End ProcAttr.
 Module Signal. Definition id : go_string := "os.Signal"%go. End Signal.
 Module ProcessState. Definition id : go_string := "os.ProcessState"%go. End ProcessState.
@@ -51,8 +51,6 @@ Axiom readdirDirEntry : val.
 Axiom readdirFileInfo : val.
 
 Axiom DirEntry : go_type.
-
-Definition testingForceReadDirLstat : go_string := "os.testingForceReadDirLstat"%go.
 
 Definition ReadDir : go_string := "os.ReadDir"%go.
 
@@ -168,12 +166,6 @@ Definition ErrProcessDone : go_string := "os.ErrProcessDone"%go.
 
 Axiom ErrProcessDone'init : val.
 
-Axiom processMode : go_type.
-
-Axiom modePID : val.
-
-Axiom modeHandle : val.
-
 Axiom processStatus : go_type.
 
 Axiom statusOK : val.
@@ -182,9 +174,9 @@ Axiom statusDone : val.
 
 Axiom statusReleased : val.
 
-Axiom processStatusMask : Z.
-
 Axiom Process : go_type.
+
+Axiom processHandle : go_type.
 
 Definition newPIDProcess : go_string := "os.newPIDProcess"%go.
 
@@ -264,6 +256,8 @@ Axiom SEEK_END : val.
 
 Axiom LinkError : go_type.
 
+Definition NewFile : go_string := "os.NewFile"%go.
+
 Axiom noReadFrom : go_type.
 
 Axiom fileWithoutReadFrom : go_type.
@@ -328,6 +322,8 @@ Axiom dirFS : go_type.
 
 Definition ReadFile : go_string := "os.ReadFile"%go.
 
+Definition statOrZero : go_string := "os.statOrZero"%go.
+
 Definition readFileContents : go_string := "os.readFileContents"%go.
 
 Definition WriteFile : go_string := "os.WriteFile"%go.
@@ -344,6 +340,8 @@ Definition Lchown : go_string := "os.Lchown"%go.
 
 Definition Chtimes : go_string := "os.Chtimes"%go.
 
+Definition chtimesUtimes : go_string := "os.chtimesUtimes"%go.
+
 Definition ignoringEINTR : go_string := "os.ignoringEINTR"%go.
 
 Definition ignoringEINTR2 : go_string := "os.ignoringEINTR2"%go.
@@ -356,7 +354,7 @@ Definition rename : go_string := "os.rename"%go.
 
 Axiom file : go_type.
 
-Definition NewFile : go_string := "os.NewFile"%go.
+Definition newFileFromNewFile : go_string := "os.newFileFromNewFile"%go.
 
 Definition net_newUnixFile : go_string := "os.net_newUnixFile"%go.
 
@@ -470,6 +468,10 @@ Definition removeAllFrom : go_string := "os.removeAllFrom"%go.
 
 Definition openDirAt : go_string := "os.openDirAt"%go.
 
+Definition isErrNoFollow : go_string := "os.isErrNoFollow"%go.
+
+Definition newDirFile : go_string := "os.newDirFile"%go.
+
 Definition OpenInRoot : go_string := "os.OpenInRoot"%go.
 
 Axiom Root : go_type.
@@ -488,9 +490,27 @@ Definition rootCleanPath : go_string := "os.rootCleanPath"%go.
 
 Axiom root : go_type.
 
+Definition rootChmod : go_string := "os.rootChmod"%go.
+
+Definition rootChown : go_string := "os.rootChown"%go.
+
+Definition rootLchown : go_string := "os.rootLchown"%go.
+
+Definition rootChtimes : go_string := "os.rootChtimes"%go.
+
 Definition rootMkdir : go_string := "os.rootMkdir"%go.
 
+Definition rootMkdirAll : go_string := "os.rootMkdirAll"%go.
+
+Definition rootReadlink : go_string := "os.rootReadlink"%go.
+
 Definition rootRemove : go_string := "os.rootRemove"%go.
+
+Definition rootRemoveAll : go_string := "os.rootRemoveAll"%go.
+
+Definition rootRename : go_string := "os.rootRename"%go.
+
+Definition rootLink : go_string := "os.rootLink"%go.
 
 Definition doInRoot : go_string := "os.doInRoot"%go.
 
@@ -510,9 +530,33 @@ Definition rootOpenDir : go_string := "os.rootOpenDir"%go.
 
 Definition rootStat : go_string := "os.rootStat"%go.
 
+Definition rootSymlink : go_string := "os.rootSymlink"%go.
+
+Definition afterResolvingSymlink : go_string := "os.afterResolvingSymlink"%go.
+
+Definition chmodat : go_string := "os.chmodat"%go.
+
+Definition chownat : go_string := "os.chownat"%go.
+
+Definition lchownat : go_string := "os.lchownat"%go.
+
+Definition chtimesat : go_string := "os.chtimesat"%go.
+
 Definition mkdirat : go_string := "os.mkdirat"%go.
 
 Definition removeat : go_string := "os.removeat"%go.
+
+Definition removefileat : go_string := "os.removefileat"%go.
+
+Definition removedirat : go_string := "os.removedirat"%go.
+
+Definition renameat : go_string := "os.renameat"%go.
+
+Definition linkat : go_string := "os.linkat"%go.
+
+Definition symlinkat : go_string := "os.symlinkat"%go.
+
+Definition modeAt : go_string := "os.modeAt"%go.
 
 Definition checkSymlink : go_string := "os.checkSymlink"%go.
 
@@ -700,6 +744,8 @@ Axiom Executableⁱᵐᵖˡ : val.
 
 Axiom executableⁱᵐᵖˡ : val.
 
+Axiom NewFileⁱᵐᵖˡ : val.
+
 Axiom genericReadFromⁱᵐᵖˡ : val.
 
 Axiom genericWriteToⁱᵐᵖˡ : val.
@@ -738,6 +784,8 @@ Axiom DirFSⁱᵐᵖˡ : val.
 
 Axiom ReadFileⁱᵐᵖˡ : val.
 
+Axiom statOrZeroⁱᵐᵖˡ : val.
+
 Axiom readFileContentsⁱᵐᵖˡ : val.
 
 Axiom WriteFileⁱᵐᵖˡ : val.
@@ -754,6 +802,8 @@ Axiom Lchownⁱᵐᵖˡ : val.
 
 Axiom Chtimesⁱᵐᵖˡ : val.
 
+Axiom chtimesUtimesⁱᵐᵖˡ : val.
+
 Axiom ignoringEINTRⁱᵐᵖˡ : val.
 
 Axiom ignoringEINTR2ⁱᵐᵖˡ : val.
@@ -762,7 +812,7 @@ Axiom fixLongPathⁱᵐᵖˡ : val.
 
 Axiom renameⁱᵐᵖˡ : val.
 
-Axiom NewFileⁱᵐᵖˡ : val.
+Axiom newFileFromNewFileⁱᵐᵖˡ : val.
 
 Axiom net_newUnixFileⁱᵐᵖˡ : val.
 
@@ -844,6 +894,10 @@ Axiom removeAllFromⁱᵐᵖˡ : val.
 
 Axiom openDirAtⁱᵐᵖˡ : val.
 
+Axiom isErrNoFollowⁱᵐᵖˡ : val.
+
+Axiom newDirFileⁱᵐᵖˡ : val.
+
 Axiom OpenInRootⁱᵐᵖˡ : val.
 
 Axiom OpenRootⁱᵐᵖˡ : val.
@@ -854,9 +908,27 @@ Axiom isValidRootFSPathⁱᵐᵖˡ : val.
 
 Axiom rootCleanPathⁱᵐᵖˡ : val.
 
+Axiom rootChmodⁱᵐᵖˡ : val.
+
+Axiom rootChownⁱᵐᵖˡ : val.
+
+Axiom rootLchownⁱᵐᵖˡ : val.
+
+Axiom rootChtimesⁱᵐᵖˡ : val.
+
 Axiom rootMkdirⁱᵐᵖˡ : val.
 
+Axiom rootMkdirAllⁱᵐᵖˡ : val.
+
+Axiom rootReadlinkⁱᵐᵖˡ : val.
+
 Axiom rootRemoveⁱᵐᵖˡ : val.
+
+Axiom rootRemoveAllⁱᵐᵖˡ : val.
+
+Axiom rootRenameⁱᵐᵖˡ : val.
+
+Axiom rootLinkⁱᵐᵖˡ : val.
 
 Axiom doInRootⁱᵐᵖˡ : val.
 
@@ -872,9 +944,33 @@ Axiom rootOpenDirⁱᵐᵖˡ : val.
 
 Axiom rootStatⁱᵐᵖˡ : val.
 
+Axiom rootSymlinkⁱᵐᵖˡ : val.
+
+Axiom afterResolvingSymlinkⁱᵐᵖˡ : val.
+
+Axiom chmodatⁱᵐᵖˡ : val.
+
+Axiom chownatⁱᵐᵖˡ : val.
+
+Axiom lchownatⁱᵐᵖˡ : val.
+
+Axiom chtimesatⁱᵐᵖˡ : val.
+
 Axiom mkdiratⁱᵐᵖˡ : val.
 
 Axiom removeatⁱᵐᵖˡ : val.
+
+Axiom removefileatⁱᵐᵖˡ : val.
+
+Axiom removediratⁱᵐᵖˡ : val.
+
+Axiom renameatⁱᵐᵖˡ : val.
+
+Axiom linkatⁱᵐᵖˡ : val.
+
+Axiom symlinkatⁱᵐᵖˡ : val.
+
+Axiom modeAtⁱᵐᵖˡ : val.
 
 Axiom checkSymlinkⁱᵐᵖˡ : val.
 
@@ -922,7 +1018,7 @@ Axiom wrapSyscallErrorⁱᵐᵖˡ : val.
 
 Axiom tryLimitedReaderⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(ReadDir, ReadDirⁱᵐᵖˡ); (CopyFS, CopyFSⁱᵐᵖˡ); (readInt, readIntⁱᵐᵖˡ); (readIntBE, readIntBEⁱᵐᵖˡ); (readIntLE, readIntLEⁱᵐᵖˡ); (direntIno, direntInoⁱᵐᵖˡ); (direntReclen, direntReclenⁱᵐᵖˡ); (direntNamlen, direntNamlenⁱᵐᵖˡ); (direntType, direntTypeⁱᵐᵖˡ); (isNoFollowErr, isNoFollowErrⁱᵐᵖˡ); (Expand, Expandⁱᵐᵖˡ); (ExpandEnv, ExpandEnvⁱᵐᵖˡ); (isShellSpecialVar, isShellSpecialVarⁱᵐᵖˡ); (isAlphaNum, isAlphaNumⁱᵐᵖˡ); (getShellName, getShellNameⁱᵐᵖˡ); (Getenv, Getenvⁱᵐᵖˡ); (LookupEnv, LookupEnvⁱᵐᵖˡ); (Setenv, Setenvⁱᵐᵖˡ); (Unsetenv, Unsetenvⁱᵐᵖˡ); (Clearenv, Clearenvⁱᵐᵖˡ); (Environ, Environⁱᵐᵖˡ); (errNoDeadline, errNoDeadlineⁱᵐᵖˡ); (errDeadlineExceeded, errDeadlineExceededⁱᵐᵖˡ); (NewSyscallError, NewSyscallErrorⁱᵐᵖˡ); (IsExist, IsExistⁱᵐᵖˡ); (IsNotExist, IsNotExistⁱᵐᵖˡ); (IsPermission, IsPermissionⁱᵐᵖˡ); (IsTimeout, IsTimeoutⁱᵐᵖˡ); (underlyingErrorIs, underlyingErrorIsⁱᵐᵖˡ); (underlyingError, underlyingErrorⁱᵐᵖˡ); (newPIDProcess, newPIDProcessⁱᵐᵖˡ); (newHandleProcess, newHandleProcessⁱᵐᵖˡ); (newDoneProcess, newDoneProcessⁱᵐᵖˡ); (Getpid, Getpidⁱᵐᵖˡ); (Getppid, Getppidⁱᵐᵖˡ); (FindProcess, FindProcessⁱᵐᵖˡ); (StartProcess, StartProcessⁱᵐᵖˡ); (startProcess, startProcessⁱᵐᵖˡ); (convertESRCH, convertESRCHⁱᵐᵖˡ); (findProcess, findProcessⁱᵐᵖˡ); (Executable, Executableⁱᵐᵖˡ); (executable, executableⁱᵐᵖˡ); (genericReadFrom, genericReadFromⁱᵐᵖˡ); (genericWriteTo, genericWriteToⁱᵐᵖˡ); (Mkdir, Mkdirⁱᵐᵖˡ); (setStickyBit, setStickyBitⁱᵐᵖˡ); (Chdir, Chdirⁱᵐᵖˡ); (Open, Openⁱᵐᵖˡ); (Create, Createⁱᵐᵖˡ); (OpenFile, OpenFileⁱᵐᵖˡ); (openDir, openDirⁱᵐᵖˡ); (Rename, Renameⁱᵐᵖˡ); (Readlink, Readlinkⁱᵐᵖˡ); (fixCount, fixCountⁱᵐᵖˡ); (TempDir, TempDirⁱᵐᵖˡ); (UserCacheDir, UserCacheDirⁱᵐᵖˡ); (UserConfigDir, UserConfigDirⁱᵐᵖˡ); (UserHomeDir, UserHomeDirⁱᵐᵖˡ); (Chmod, Chmodⁱᵐᵖˡ); (DirFS, DirFSⁱᵐᵖˡ); (ReadFile, ReadFileⁱᵐᵖˡ); (readFileContents, readFileContentsⁱᵐᵖˡ); (WriteFile, WriteFileⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (syscallMode, syscallModeⁱᵐᵖˡ); (chmod, chmodⁱᵐᵖˡ); (Chown, Chownⁱᵐᵖˡ); (Lchown, Lchownⁱᵐᵖˡ); (Chtimes, Chtimesⁱᵐᵖˡ); (ignoringEINTR, ignoringEINTRⁱᵐᵖˡ); (ignoringEINTR2, ignoringEINTR2ⁱᵐᵖˡ); (fixLongPath, fixLongPathⁱᵐᵖˡ); (rename, renameⁱᵐᵖˡ); (NewFile, NewFileⁱᵐᵖˡ); (net_newUnixFile, net_newUnixFileⁱᵐᵖˡ); (newFile, newFileⁱᵐᵖˡ); (sigpipe, sigpipeⁱᵐᵖˡ); (epipecheck, epipecheckⁱᵐᵖˡ); (openFileNolog, openFileNologⁱᵐᵖˡ); (openDirNolog, openDirNologⁱᵐᵖˡ); (Truncate, Truncateⁱᵐᵖˡ); (Remove, Removeⁱᵐᵖˡ); (tempDir, tempDirⁱᵐᵖˡ); (Link, Linkⁱᵐᵖˡ); (Symlink, Symlinkⁱᵐᵖˡ); (readlink, readlinkⁱᵐᵖˡ); (newUnixDirent, newUnixDirentⁱᵐᵖˡ); (Getwd, Getwdⁱᵐᵖˡ); (MkdirAll, MkdirAllⁱᵐᵖˡ); (RemoveAll, RemoveAllⁱᵐᵖˡ); (endsWithDot, endsWithDotⁱᵐᵖˡ); (IsPathSeparator, IsPathSeparatorⁱᵐᵖˡ); (splitPath, splitPathⁱᵐᵖˡ); (ensurePidfd, ensurePidfdⁱᵐᵖˡ); (getPidfd, getPidfdⁱᵐᵖˡ); (pidfdFind, pidfdFindⁱᵐᵖˡ); (pidfdWorks, pidfdWorksⁱᵐᵖˡ); (checkPidfd, checkPidfdⁱᵐᵖˡ); (checkClonePidfd, checkClonePidfdⁱᵐᵖˡ); (ignoreSIGSYS, ignoreSIGSYSⁱᵐᵖˡ); (restoreSIGSYS, restoreSIGSYSⁱᵐᵖˡ); (Pipe, Pipeⁱᵐᵖˡ); (runtime_args, runtime_argsⁱᵐᵖˡ); (Getuid, Getuidⁱᵐᵖˡ); (Geteuid, Geteuidⁱᵐᵖˡ); (Getgid, Getgidⁱᵐᵖˡ); (Getegid, Getegidⁱᵐᵖˡ); (Getgroups, Getgroupsⁱᵐᵖˡ); (Exit, Exitⁱᵐᵖˡ); (runtime_beforeExit, runtime_beforeExitⁱᵐᵖˡ); (newRawConn, newRawConnⁱᵐᵖˡ); (removeAll, removeAllⁱᵐᵖˡ); (removeAllFrom, removeAllFromⁱᵐᵖˡ); (openDirAt, openDirAtⁱᵐᵖˡ); (OpenInRoot, OpenInRootⁱᵐᵖˡ); (OpenRoot, OpenRootⁱᵐᵖˡ); (splitPathInRoot, splitPathInRootⁱᵐᵖˡ); (isValidRootFSPath, isValidRootFSPathⁱᵐᵖˡ); (rootCleanPath, rootCleanPathⁱᵐᵖˡ); (rootMkdir, rootMkdirⁱᵐᵖˡ); (rootRemove, rootRemoveⁱᵐᵖˡ); (doInRoot, doInRootⁱᵐᵖˡ); (openRootNolog, openRootNologⁱᵐᵖˡ); (newRoot, newRootⁱᵐᵖˡ); (openRootInRoot, openRootInRootⁱᵐᵖˡ); (rootOpenFileNolog, rootOpenFileNologⁱᵐᵖˡ); (rootOpenDir, rootOpenDirⁱᵐᵖˡ); (rootStat, rootStatⁱᵐᵖˡ); (mkdirat, mkdiratⁱᵐᵖˡ); (removeat, removeatⁱᵐᵖˡ); (checkSymlink, checkSymlinkⁱᵐᵖˡ); (readlinkat, readlinkatⁱᵐᵖˡ); (Stat, Statⁱᵐᵖˡ); (Lstat, Lstatⁱᵐᵖˡ); (fillFileStatFromSys, fillFileStatFromSysⁱᵐᵖˡ); (atime, atimeⁱᵐᵖˡ); (statNolog, statNologⁱᵐᵖˡ); (lstatNolog, lstatNologⁱᵐᵖˡ); (Hostname, Hostnameⁱᵐᵖˡ); (hostname, hostnameⁱᵐᵖˡ); (runtime_rand, runtime_randⁱᵐᵖˡ); (nextRandom, nextRandomⁱᵐᵖˡ); (CreateTemp, CreateTempⁱᵐᵖˡ); (prefixAndSuffix, prefixAndSuffixⁱᵐᵖˡ); (MkdirTemp, MkdirTempⁱᵐᵖˡ); (joinPath, joinPathⁱᵐᵖˡ); (Getpagesize, Getpagesizeⁱᵐᵖˡ); (SameFile, SameFileⁱᵐᵖˡ); (sameFile, sameFileⁱᵐᵖˡ); (getPollFDAndNetwork, getPollFDAndNetworkⁱᵐᵖˡ); (isUnixOrTCP, isUnixOrTCPⁱᵐᵖˡ); (wrapSyscallError, wrapSyscallErrorⁱᵐᵖˡ); (tryLimitedReader, tryLimitedReaderⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(ReadDir, ReadDirⁱᵐᵖˡ); (CopyFS, CopyFSⁱᵐᵖˡ); (readInt, readIntⁱᵐᵖˡ); (readIntBE, readIntBEⁱᵐᵖˡ); (readIntLE, readIntLEⁱᵐᵖˡ); (direntIno, direntInoⁱᵐᵖˡ); (direntReclen, direntReclenⁱᵐᵖˡ); (direntNamlen, direntNamlenⁱᵐᵖˡ); (direntType, direntTypeⁱᵐᵖˡ); (isNoFollowErr, isNoFollowErrⁱᵐᵖˡ); (Expand, Expandⁱᵐᵖˡ); (ExpandEnv, ExpandEnvⁱᵐᵖˡ); (isShellSpecialVar, isShellSpecialVarⁱᵐᵖˡ); (isAlphaNum, isAlphaNumⁱᵐᵖˡ); (getShellName, getShellNameⁱᵐᵖˡ); (Getenv, Getenvⁱᵐᵖˡ); (LookupEnv, LookupEnvⁱᵐᵖˡ); (Setenv, Setenvⁱᵐᵖˡ); (Unsetenv, Unsetenvⁱᵐᵖˡ); (Clearenv, Clearenvⁱᵐᵖˡ); (Environ, Environⁱᵐᵖˡ); (errNoDeadline, errNoDeadlineⁱᵐᵖˡ); (errDeadlineExceeded, errDeadlineExceededⁱᵐᵖˡ); (NewSyscallError, NewSyscallErrorⁱᵐᵖˡ); (IsExist, IsExistⁱᵐᵖˡ); (IsNotExist, IsNotExistⁱᵐᵖˡ); (IsPermission, IsPermissionⁱᵐᵖˡ); (IsTimeout, IsTimeoutⁱᵐᵖˡ); (underlyingErrorIs, underlyingErrorIsⁱᵐᵖˡ); (underlyingError, underlyingErrorⁱᵐᵖˡ); (newPIDProcess, newPIDProcessⁱᵐᵖˡ); (newHandleProcess, newHandleProcessⁱᵐᵖˡ); (newDoneProcess, newDoneProcessⁱᵐᵖˡ); (Getpid, Getpidⁱᵐᵖˡ); (Getppid, Getppidⁱᵐᵖˡ); (FindProcess, FindProcessⁱᵐᵖˡ); (StartProcess, StartProcessⁱᵐᵖˡ); (startProcess, startProcessⁱᵐᵖˡ); (convertESRCH, convertESRCHⁱᵐᵖˡ); (findProcess, findProcessⁱᵐᵖˡ); (Executable, Executableⁱᵐᵖˡ); (executable, executableⁱᵐᵖˡ); (NewFile, NewFileⁱᵐᵖˡ); (genericReadFrom, genericReadFromⁱᵐᵖˡ); (genericWriteTo, genericWriteToⁱᵐᵖˡ); (Mkdir, Mkdirⁱᵐᵖˡ); (setStickyBit, setStickyBitⁱᵐᵖˡ); (Chdir, Chdirⁱᵐᵖˡ); (Open, Openⁱᵐᵖˡ); (Create, Createⁱᵐᵖˡ); (OpenFile, OpenFileⁱᵐᵖˡ); (openDir, openDirⁱᵐᵖˡ); (Rename, Renameⁱᵐᵖˡ); (Readlink, Readlinkⁱᵐᵖˡ); (fixCount, fixCountⁱᵐᵖˡ); (TempDir, TempDirⁱᵐᵖˡ); (UserCacheDir, UserCacheDirⁱᵐᵖˡ); (UserConfigDir, UserConfigDirⁱᵐᵖˡ); (UserHomeDir, UserHomeDirⁱᵐᵖˡ); (Chmod, Chmodⁱᵐᵖˡ); (DirFS, DirFSⁱᵐᵖˡ); (ReadFile, ReadFileⁱᵐᵖˡ); (statOrZero, statOrZeroⁱᵐᵖˡ); (readFileContents, readFileContentsⁱᵐᵖˡ); (WriteFile, WriteFileⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (syscallMode, syscallModeⁱᵐᵖˡ); (chmod, chmodⁱᵐᵖˡ); (Chown, Chownⁱᵐᵖˡ); (Lchown, Lchownⁱᵐᵖˡ); (Chtimes, Chtimesⁱᵐᵖˡ); (chtimesUtimes, chtimesUtimesⁱᵐᵖˡ); (ignoringEINTR, ignoringEINTRⁱᵐᵖˡ); (ignoringEINTR2, ignoringEINTR2ⁱᵐᵖˡ); (fixLongPath, fixLongPathⁱᵐᵖˡ); (rename, renameⁱᵐᵖˡ); (newFileFromNewFile, newFileFromNewFileⁱᵐᵖˡ); (net_newUnixFile, net_newUnixFileⁱᵐᵖˡ); (newFile, newFileⁱᵐᵖˡ); (sigpipe, sigpipeⁱᵐᵖˡ); (epipecheck, epipecheckⁱᵐᵖˡ); (openFileNolog, openFileNologⁱᵐᵖˡ); (openDirNolog, openDirNologⁱᵐᵖˡ); (Truncate, Truncateⁱᵐᵖˡ); (Remove, Removeⁱᵐᵖˡ); (tempDir, tempDirⁱᵐᵖˡ); (Link, Linkⁱᵐᵖˡ); (Symlink, Symlinkⁱᵐᵖˡ); (readlink, readlinkⁱᵐᵖˡ); (newUnixDirent, newUnixDirentⁱᵐᵖˡ); (Getwd, Getwdⁱᵐᵖˡ); (MkdirAll, MkdirAllⁱᵐᵖˡ); (RemoveAll, RemoveAllⁱᵐᵖˡ); (endsWithDot, endsWithDotⁱᵐᵖˡ); (IsPathSeparator, IsPathSeparatorⁱᵐᵖˡ); (splitPath, splitPathⁱᵐᵖˡ); (ensurePidfd, ensurePidfdⁱᵐᵖˡ); (getPidfd, getPidfdⁱᵐᵖˡ); (pidfdFind, pidfdFindⁱᵐᵖˡ); (pidfdWorks, pidfdWorksⁱᵐᵖˡ); (checkPidfd, checkPidfdⁱᵐᵖˡ); (checkClonePidfd, checkClonePidfdⁱᵐᵖˡ); (ignoreSIGSYS, ignoreSIGSYSⁱᵐᵖˡ); (restoreSIGSYS, restoreSIGSYSⁱᵐᵖˡ); (Pipe, Pipeⁱᵐᵖˡ); (runtime_args, runtime_argsⁱᵐᵖˡ); (Getuid, Getuidⁱᵐᵖˡ); (Geteuid, Geteuidⁱᵐᵖˡ); (Getgid, Getgidⁱᵐᵖˡ); (Getegid, Getegidⁱᵐᵖˡ); (Getgroups, Getgroupsⁱᵐᵖˡ); (Exit, Exitⁱᵐᵖˡ); (runtime_beforeExit, runtime_beforeExitⁱᵐᵖˡ); (newRawConn, newRawConnⁱᵐᵖˡ); (removeAll, removeAllⁱᵐᵖˡ); (removeAllFrom, removeAllFromⁱᵐᵖˡ); (openDirAt, openDirAtⁱᵐᵖˡ); (isErrNoFollow, isErrNoFollowⁱᵐᵖˡ); (newDirFile, newDirFileⁱᵐᵖˡ); (OpenInRoot, OpenInRootⁱᵐᵖˡ); (OpenRoot, OpenRootⁱᵐᵖˡ); (splitPathInRoot, splitPathInRootⁱᵐᵖˡ); (isValidRootFSPath, isValidRootFSPathⁱᵐᵖˡ); (rootCleanPath, rootCleanPathⁱᵐᵖˡ); (rootChmod, rootChmodⁱᵐᵖˡ); (rootChown, rootChownⁱᵐᵖˡ); (rootLchown, rootLchownⁱᵐᵖˡ); (rootChtimes, rootChtimesⁱᵐᵖˡ); (rootMkdir, rootMkdirⁱᵐᵖˡ); (rootMkdirAll, rootMkdirAllⁱᵐᵖˡ); (rootReadlink, rootReadlinkⁱᵐᵖˡ); (rootRemove, rootRemoveⁱᵐᵖˡ); (rootRemoveAll, rootRemoveAllⁱᵐᵖˡ); (rootRename, rootRenameⁱᵐᵖˡ); (rootLink, rootLinkⁱᵐᵖˡ); (doInRoot, doInRootⁱᵐᵖˡ); (openRootNolog, openRootNologⁱᵐᵖˡ); (newRoot, newRootⁱᵐᵖˡ); (openRootInRoot, openRootInRootⁱᵐᵖˡ); (rootOpenFileNolog, rootOpenFileNologⁱᵐᵖˡ); (rootOpenDir, rootOpenDirⁱᵐᵖˡ); (rootStat, rootStatⁱᵐᵖˡ); (rootSymlink, rootSymlinkⁱᵐᵖˡ); (afterResolvingSymlink, afterResolvingSymlinkⁱᵐᵖˡ); (chmodat, chmodatⁱᵐᵖˡ); (chownat, chownatⁱᵐᵖˡ); (lchownat, lchownatⁱᵐᵖˡ); (chtimesat, chtimesatⁱᵐᵖˡ); (mkdirat, mkdiratⁱᵐᵖˡ); (removeat, removeatⁱᵐᵖˡ); (removefileat, removefileatⁱᵐᵖˡ); (removedirat, removediratⁱᵐᵖˡ); (renameat, renameatⁱᵐᵖˡ); (linkat, linkatⁱᵐᵖˡ); (symlinkat, symlinkatⁱᵐᵖˡ); (modeAt, modeAtⁱᵐᵖˡ); (checkSymlink, checkSymlinkⁱᵐᵖˡ); (readlinkat, readlinkatⁱᵐᵖˡ); (Stat, Statⁱᵐᵖˡ); (Lstat, Lstatⁱᵐᵖˡ); (fillFileStatFromSys, fillFileStatFromSysⁱᵐᵖˡ); (atime, atimeⁱᵐᵖˡ); (statNolog, statNologⁱᵐᵖˡ); (lstatNolog, lstatNologⁱᵐᵖˡ); (Hostname, Hostnameⁱᵐᵖˡ); (hostname, hostnameⁱᵐᵖˡ); (runtime_rand, runtime_randⁱᵐᵖˡ); (nextRandom, nextRandomⁱᵐᵖˡ); (CreateTemp, CreateTempⁱᵐᵖˡ); (prefixAndSuffix, prefixAndSuffixⁱᵐᵖˡ); (MkdirTemp, MkdirTempⁱᵐᵖˡ); (joinPath, joinPathⁱᵐᵖˡ); (Getpagesize, Getpagesizeⁱᵐᵖˡ); (SameFile, SameFileⁱᵐᵖˡ); (sameFile, sameFileⁱᵐᵖˡ); (getPollFDAndNetwork, getPollFDAndNetworkⁱᵐᵖˡ); (isUnixOrTCP, isUnixOrTCPⁱᵐᵖˡ); (wrapSyscallError, wrapSyscallErrorⁱᵐᵖˡ); (tryLimitedReader, tryLimitedReaderⁱᵐᵖˡ)].
 
 Axiom dirInfo__closeⁱᵐᵖˡ : val.
 
@@ -942,17 +1038,13 @@ Axiom Process__Waitⁱᵐᵖˡ : val.
 
 Axiom Process__blockUntilWaitableⁱᵐᵖˡ : val.
 
-Axiom Process__closeHandleⁱᵐᵖˡ : val.
-
-Axiom Process__handlePersistentReleaseⁱᵐᵖˡ : val.
+Axiom Process__doReleaseⁱᵐᵖˡ : val.
 
 Axiom Process__handleTransientAcquireⁱᵐᵖˡ : val.
 
 Axiom Process__handleTransientReleaseⁱᵐᵖˡ : val.
 
 Axiom Process__killⁱᵐᵖˡ : val.
-
-Axiom Process__pidDeactivateⁱᵐᵖˡ : val.
 
 Axiom Process__pidSignalⁱᵐᵖˡ : val.
 
@@ -964,11 +1056,15 @@ Axiom Process__pidfdSendSignalⁱᵐᵖˡ : val.
 
 Axiom Process__pidfdWaitⁱᵐᵖˡ : val.
 
-Axiom Process__releaseⁱᵐᵖˡ : val.
-
 Axiom Process__signalⁱᵐᵖˡ : val.
 
 Axiom Process__waitⁱᵐᵖˡ : val.
+
+Axiom processHandle__acquireⁱᵐᵖˡ : val.
+
+Axiom processHandle__closeHandleⁱᵐᵖˡ : val.
+
+Axiom processHandle__releaseⁱᵐᵖˡ : val.
 
 Axiom ProcessState__ExitCodeⁱᵐᵖˡ : val.
 
@@ -1060,6 +1156,8 @@ Axiom fileWithoutReadFrom__closeⁱᵐᵖˡ : val.
 
 Axiom fileWithoutReadFrom__copyFileRangeⁱᵐᵖˡ : val.
 
+Axiom fileWithoutReadFrom__fdⁱᵐᵖˡ : val.
+
 Axiom fileWithoutReadFrom__preadⁱᵐᵖˡ : val.
 
 Axiom fileWithoutReadFrom__pwriteⁱᵐᵖˡ : val.
@@ -1142,6 +1240,8 @@ Axiom fileWithoutWriteTo__closeⁱᵐᵖˡ : val.
 
 Axiom fileWithoutWriteTo__copyFileRangeⁱᵐᵖˡ : val.
 
+Axiom fileWithoutWriteTo__fdⁱᵐᵖˡ : val.
+
 Axiom fileWithoutWriteTo__preadⁱᵐᵖˡ : val.
 
 Axiom fileWithoutWriteTo__pwriteⁱᵐᵖˡ : val.
@@ -1168,11 +1268,15 @@ Axiom fileWithoutWriteTo__writeⁱᵐᵖˡ : val.
 
 Axiom fileWithoutWriteTo__writeToⁱᵐᵖˡ : val.
 
+Axiom dirFS__Lstatⁱᵐᵖˡ : val.
+
 Axiom dirFS__Openⁱᵐᵖˡ : val.
 
 Axiom dirFS__ReadDirⁱᵐᵖˡ : val.
 
 Axiom dirFS__ReadFileⁱᵐᵖˡ : val.
+
+Axiom dirFS__ReadLinkⁱᵐᵖˡ : val.
 
 Axiom dirFS__Statⁱᵐᵖˡ : val.
 
@@ -1196,15 +1300,27 @@ Axiom rawConn__Readⁱᵐᵖˡ : val.
 
 Axiom rawConn__Writeⁱᵐᵖˡ : val.
 
+Axiom Root__Chmodⁱᵐᵖˡ : val.
+
+Axiom Root__Chownⁱᵐᵖˡ : val.
+
+Axiom Root__Chtimesⁱᵐᵖˡ : val.
+
 Axiom Root__Closeⁱᵐᵖˡ : val.
 
 Axiom Root__Createⁱᵐᵖˡ : val.
 
 Axiom Root__FSⁱᵐᵖˡ : val.
 
+Axiom Root__Lchownⁱᵐᵖˡ : val.
+
+Axiom Root__Linkⁱᵐᵖˡ : val.
+
 Axiom Root__Lstatⁱᵐᵖˡ : val.
 
 Axiom Root__Mkdirⁱᵐᵖˡ : val.
+
+Axiom Root__MkdirAllⁱᵐᵖˡ : val.
 
 Axiom Root__Nameⁱᵐᵖˡ : val.
 
@@ -1214,19 +1330,35 @@ Axiom Root__OpenFileⁱᵐᵖˡ : val.
 
 Axiom Root__OpenRootⁱᵐᵖˡ : val.
 
+Axiom Root__ReadFileⁱᵐᵖˡ : val.
+
+Axiom Root__Readlinkⁱᵐᵖˡ : val.
+
 Axiom Root__Removeⁱᵐᵖˡ : val.
 
+Axiom Root__RemoveAllⁱᵐᵖˡ : val.
+
+Axiom Root__Renameⁱᵐᵖˡ : val.
+
 Axiom Root__Statⁱᵐᵖˡ : val.
+
+Axiom Root__Symlinkⁱᵐᵖˡ : val.
+
+Axiom Root__WriteFileⁱᵐᵖˡ : val.
 
 Axiom Root__logOpenⁱᵐᵖˡ : val.
 
 Axiom Root__logStatⁱᵐᵖˡ : val.
+
+Axiom rootFS__Lstatⁱᵐᵖˡ : val.
 
 Axiom rootFS__Openⁱᵐᵖˡ : val.
 
 Axiom rootFS__ReadDirⁱᵐᵖˡ : val.
 
 Axiom rootFS__ReadFileⁱᵐᵖˡ : val.
+
+Axiom rootFS__ReadLinkⁱᵐᵖˡ : val.
 
 Axiom rootFS__Statⁱᵐᵖˡ : val.
 
@@ -1296,6 +1428,8 @@ Axiom File__closeⁱᵐᵖˡ : val.
 
 Axiom File__copyFileRangeⁱᵐᵖˡ : val.
 
+Axiom File__fdⁱᵐᵖˡ : val.
+
 Axiom File__preadⁱᵐᵖˡ : val.
 
 Axiom File__pwriteⁱᵐᵖˡ : val.
@@ -1334,7 +1468,7 @@ Axiom fileStat__Sizeⁱᵐᵖˡ : val.
 
 Axiom fileStat__Sysⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(readdirMode.id, []); (ptrT.id readdirMode.id, []); (dirInfo.id, []); (ptrT.id dirInfo.id, [("close"%go, dirInfo__closeⁱᵐᵖˡ)]); (SyscallError.id, []); (ptrT.id SyscallError.id, [("Error"%go, SyscallError__Errorⁱᵐᵖˡ); ("Timeout"%go, SyscallError__Timeoutⁱᵐᵖˡ); ("Unwrap"%go, SyscallError__Unwrapⁱᵐᵖˡ)]); (processMode.id, []); (ptrT.id processMode.id, []); (processStatus.id, []); (ptrT.id processStatus.id, []); (Process.id, []); (ptrT.id Process.id, [("Kill"%go, Process__Killⁱᵐᵖˡ); ("Release"%go, Process__Releaseⁱᵐᵖˡ); ("Signal"%go, Process__Signalⁱᵐᵖˡ); ("Wait"%go, Process__Waitⁱᵐᵖˡ); ("blockUntilWaitable"%go, Process__blockUntilWaitableⁱᵐᵖˡ); ("closeHandle"%go, Process__closeHandleⁱᵐᵖˡ); ("handlePersistentRelease"%go, Process__handlePersistentReleaseⁱᵐᵖˡ); ("handleTransientAcquire"%go, Process__handleTransientAcquireⁱᵐᵖˡ); ("handleTransientRelease"%go, Process__handleTransientReleaseⁱᵐᵖˡ); ("kill"%go, Process__killⁱᵐᵖˡ); ("pidDeactivate"%go, Process__pidDeactivateⁱᵐᵖˡ); ("pidSignal"%go, Process__pidSignalⁱᵐᵖˡ); ("pidStatus"%go, Process__pidStatusⁱᵐᵖˡ); ("pidWait"%go, Process__pidWaitⁱᵐᵖˡ); ("pidfdSendSignal"%go, Process__pidfdSendSignalⁱᵐᵖˡ); ("pidfdWait"%go, Process__pidfdWaitⁱᵐᵖˡ); ("release"%go, Process__releaseⁱᵐᵖˡ); ("signal"%go, Process__signalⁱᵐᵖˡ); ("wait"%go, Process__waitⁱᵐᵖˡ)]); (ProcAttr.id, []); (ptrT.id ProcAttr.id, []); (ProcessState.id, []); (ptrT.id ProcessState.id, [("ExitCode"%go, ProcessState__ExitCodeⁱᵐᵖˡ); ("Exited"%go, ProcessState__Exitedⁱᵐᵖˡ); ("Pid"%go, ProcessState__Pidⁱᵐᵖˡ); ("String"%go, ProcessState__Stringⁱᵐᵖˡ); ("Success"%go, ProcessState__Successⁱᵐᵖˡ); ("Sys"%go, ProcessState__Sysⁱᵐᵖˡ); ("SysUsage"%go, ProcessState__SysUsageⁱᵐᵖˡ); ("SystemTime"%go, ProcessState__SystemTimeⁱᵐᵖˡ); ("UserTime"%go, ProcessState__UserTimeⁱᵐᵖˡ); ("exited"%go, ProcessState__exitedⁱᵐᵖˡ); ("success"%go, ProcessState__successⁱᵐᵖˡ); ("sys"%go, ProcessState__sysⁱᵐᵖˡ); ("sysUsage"%go, ProcessState__sysUsageⁱᵐᵖˡ); ("systemTime"%go, ProcessState__systemTimeⁱᵐᵖˡ); ("userTime"%go, ProcessState__userTimeⁱᵐᵖˡ)]); (LinkError.id, []); (ptrT.id LinkError.id, [("Error"%go, LinkError__Errorⁱᵐᵖˡ); ("Unwrap"%go, LinkError__Unwrapⁱᵐᵖˡ)]); (noReadFrom.id, [("ReadFrom"%go, noReadFrom__ReadFromⁱᵐᵖˡ)]); (ptrT.id noReadFrom.id, [("ReadFrom"%go, noReadFrom__ReadFromⁱᵐᵖˡ)]); (fileWithoutReadFrom.id, [("Chdir"%go, fileWithoutReadFrom__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutReadFrom__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutReadFrom__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutReadFrom__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutReadFrom__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutReadFrom__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutReadFrom__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutReadFrom__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutReadFrom__ReadDirⁱᵐᵖˡ); ("Readdir"%go, fileWithoutReadFrom__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutReadFrom__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutReadFrom__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutReadFrom__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutReadFrom__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutReadFrom__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutReadFrom__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutReadFrom__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutReadFrom__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutReadFrom__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutReadFrom__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutReadFrom__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutReadFrom__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, fileWithoutReadFrom__WriteToⁱᵐᵖˡ); ("checkValid"%go, fileWithoutReadFrom__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutReadFrom__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutReadFrom__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutReadFrom__copyFileRangeⁱᵐᵖˡ); ("pread"%go, fileWithoutReadFrom__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutReadFrom__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutReadFrom__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutReadFrom__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutReadFrom__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutReadFrom__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutReadFrom__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutReadFrom__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutReadFrom__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutReadFrom__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutReadFrom__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutReadFrom__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutReadFrom__writeToⁱᵐᵖˡ)]); (ptrT.id fileWithoutReadFrom.id, [("Chdir"%go, fileWithoutReadFrom__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutReadFrom__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutReadFrom__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutReadFrom__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutReadFrom__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutReadFrom__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutReadFrom__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutReadFrom__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutReadFrom__ReadDirⁱᵐᵖˡ); ("Readdir"%go, fileWithoutReadFrom__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutReadFrom__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutReadFrom__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutReadFrom__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutReadFrom__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutReadFrom__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutReadFrom__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutReadFrom__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutReadFrom__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutReadFrom__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutReadFrom__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutReadFrom__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutReadFrom__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, fileWithoutReadFrom__WriteToⁱᵐᵖˡ); ("checkValid"%go, fileWithoutReadFrom__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutReadFrom__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutReadFrom__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutReadFrom__copyFileRangeⁱᵐᵖˡ); ("pread"%go, fileWithoutReadFrom__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutReadFrom__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutReadFrom__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutReadFrom__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutReadFrom__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutReadFrom__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutReadFrom__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutReadFrom__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutReadFrom__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutReadFrom__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutReadFrom__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutReadFrom__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutReadFrom__writeToⁱᵐᵖˡ)]); (noWriteTo.id, [("WriteTo"%go, noWriteTo__WriteToⁱᵐᵖˡ)]); (ptrT.id noWriteTo.id, [("WriteTo"%go, noWriteTo__WriteToⁱᵐᵖˡ)]); (fileWithoutWriteTo.id, [("Chdir"%go, fileWithoutWriteTo__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutWriteTo__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutWriteTo__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutWriteTo__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutWriteTo__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutWriteTo__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutWriteTo__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutWriteTo__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutWriteTo__ReadDirⁱᵐᵖˡ); ("ReadFrom"%go, fileWithoutWriteTo__ReadFromⁱᵐᵖˡ); ("Readdir"%go, fileWithoutWriteTo__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutWriteTo__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutWriteTo__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutWriteTo__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutWriteTo__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutWriteTo__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutWriteTo__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutWriteTo__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutWriteTo__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutWriteTo__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutWriteTo__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutWriteTo__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutWriteTo__WriteStringⁱᵐᵖˡ); ("checkValid"%go, fileWithoutWriteTo__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutWriteTo__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutWriteTo__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutWriteTo__copyFileRangeⁱᵐᵖˡ); ("pread"%go, fileWithoutWriteTo__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutWriteTo__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutWriteTo__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutWriteTo__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutWriteTo__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutWriteTo__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutWriteTo__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutWriteTo__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutWriteTo__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutWriteTo__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutWriteTo__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutWriteTo__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutWriteTo__writeToⁱᵐᵖˡ)]); (ptrT.id fileWithoutWriteTo.id, [("Chdir"%go, fileWithoutWriteTo__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutWriteTo__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutWriteTo__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutWriteTo__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutWriteTo__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutWriteTo__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutWriteTo__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutWriteTo__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutWriteTo__ReadDirⁱᵐᵖˡ); ("ReadFrom"%go, fileWithoutWriteTo__ReadFromⁱᵐᵖˡ); ("Readdir"%go, fileWithoutWriteTo__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutWriteTo__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutWriteTo__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutWriteTo__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutWriteTo__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutWriteTo__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutWriteTo__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutWriteTo__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutWriteTo__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutWriteTo__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutWriteTo__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutWriteTo__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutWriteTo__WriteStringⁱᵐᵖˡ); ("checkValid"%go, fileWithoutWriteTo__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutWriteTo__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutWriteTo__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutWriteTo__copyFileRangeⁱᵐᵖˡ); ("pread"%go, fileWithoutWriteTo__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutWriteTo__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutWriteTo__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutWriteTo__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutWriteTo__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutWriteTo__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutWriteTo__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutWriteTo__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutWriteTo__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutWriteTo__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutWriteTo__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutWriteTo__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutWriteTo__writeToⁱᵐᵖˡ)]); (dirFS.id, [("Open"%go, dirFS__Openⁱᵐᵖˡ); ("ReadDir"%go, dirFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, dirFS__ReadFileⁱᵐᵖˡ); ("Stat"%go, dirFS__Statⁱᵐᵖˡ); ("join"%go, dirFS__joinⁱᵐᵖˡ)]); (ptrT.id dirFS.id, [("Open"%go, dirFS__Openⁱᵐᵖˡ); ("ReadDir"%go, dirFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, dirFS__ReadFileⁱᵐᵖˡ); ("Stat"%go, dirFS__Statⁱᵐᵖˡ); ("join"%go, dirFS__joinⁱᵐᵖˡ)]); (file.id, []); (ptrT.id file.id, [("close"%go, file__closeⁱᵐᵖˡ)]); (newFileKind.id, []); (ptrT.id newFileKind.id, []); (unixDirent.id, []); (ptrT.id unixDirent.id, [("Info"%go, unixDirent__Infoⁱᵐᵖˡ); ("IsDir"%go, unixDirent__IsDirⁱᵐᵖˡ); ("Name"%go, unixDirent__Nameⁱᵐᵖˡ); ("String"%go, unixDirent__Stringⁱᵐᵖˡ); ("Type"%go, unixDirent__Typeⁱᵐᵖˡ)]); (rawConn.id, []); (ptrT.id rawConn.id, [("Control"%go, rawConn__Controlⁱᵐᵖˡ); ("Read"%go, rawConn__Readⁱᵐᵖˡ); ("Write"%go, rawConn__Writeⁱᵐᵖˡ)]); (Root.id, []); (ptrT.id Root.id, [("Close"%go, Root__Closeⁱᵐᵖˡ); ("Create"%go, Root__Createⁱᵐᵖˡ); ("FS"%go, Root__FSⁱᵐᵖˡ); ("Lstat"%go, Root__Lstatⁱᵐᵖˡ); ("Mkdir"%go, Root__Mkdirⁱᵐᵖˡ); ("Name"%go, Root__Nameⁱᵐᵖˡ); ("Open"%go, Root__Openⁱᵐᵖˡ); ("OpenFile"%go, Root__OpenFileⁱᵐᵖˡ); ("OpenRoot"%go, Root__OpenRootⁱᵐᵖˡ); ("Remove"%go, Root__Removeⁱᵐᵖˡ); ("Stat"%go, Root__Statⁱᵐᵖˡ); ("logOpen"%go, Root__logOpenⁱᵐᵖˡ); ("logStat"%go, Root__logStatⁱᵐᵖˡ)]); (rootFS.id, []); (ptrT.id rootFS.id, [("Open"%go, rootFS__Openⁱᵐᵖˡ); ("ReadDir"%go, rootFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, rootFS__ReadFileⁱᵐᵖˡ); ("Stat"%go, rootFS__Statⁱᵐᵖˡ)]); (root.id, []); (ptrT.id root.id, [("Close"%go, root__Closeⁱᵐᵖˡ); ("Name"%go, root__Nameⁱᵐᵖˡ); ("decref"%go, root__decrefⁱᵐᵖˡ); ("incref"%go, root__increfⁱᵐᵖˡ)]); (errSymlink.id, [("Error"%go, errSymlink__Errorⁱᵐᵖˡ)]); (ptrT.id errSymlink.id, [("Error"%go, errSymlink__Errorⁱᵐᵖˡ)]); (File.id, [("close"%go, File__closeⁱᵐᵖˡ)]); (ptrT.id File.id, [("Chdir"%go, File__Chdirⁱᵐᵖˡ); ("Chmod"%go, File__Chmodⁱᵐᵖˡ); ("Chown"%go, File__Chownⁱᵐᵖˡ); ("Close"%go, File__Closeⁱᵐᵖˡ); ("Fd"%go, File__Fdⁱᵐᵖˡ); ("Name"%go, File__Nameⁱᵐᵖˡ); ("Read"%go, File__Readⁱᵐᵖˡ); ("ReadAt"%go, File__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, File__ReadDirⁱᵐᵖˡ); ("ReadFrom"%go, File__ReadFromⁱᵐᵖˡ); ("Readdir"%go, File__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, File__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, File__Seekⁱᵐᵖˡ); ("SetDeadline"%go, File__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, File__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, File__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, File__Statⁱᵐᵖˡ); ("Sync"%go, File__Syncⁱᵐᵖˡ); ("SyscallConn"%go, File__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, File__Truncateⁱᵐᵖˡ); ("Write"%go, File__Writeⁱᵐᵖˡ); ("WriteAt"%go, File__WriteAtⁱᵐᵖˡ); ("WriteString"%go, File__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, File__WriteToⁱᵐᵖˡ); ("checkValid"%go, File__checkValidⁱᵐᵖˡ); ("chmod"%go, File__chmodⁱᵐᵖˡ); ("close"%go, File__closeⁱᵐᵖˡ); ("copyFileRange"%go, File__copyFileRangeⁱᵐᵖˡ); ("pread"%go, File__preadⁱᵐᵖˡ); ("pwrite"%go, File__pwriteⁱᵐᵖˡ); ("read"%go, File__readⁱᵐᵖˡ); ("readFrom"%go, File__readFromⁱᵐᵖˡ); ("readdir"%go, File__readdirⁱᵐᵖˡ); ("seek"%go, File__seekⁱᵐᵖˡ); ("setDeadline"%go, File__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, File__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, File__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, File__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, File__wrapErrⁱᵐᵖˡ); ("write"%go, File__writeⁱᵐᵖˡ); ("writeTo"%go, File__writeToⁱᵐᵖˡ)]); (fileStat.id, []); (ptrT.id fileStat.id, [("IsDir"%go, fileStat__IsDirⁱᵐᵖˡ); ("ModTime"%go, fileStat__ModTimeⁱᵐᵖˡ); ("Mode"%go, fileStat__Modeⁱᵐᵖˡ); ("Name"%go, fileStat__Nameⁱᵐᵖˡ); ("Size"%go, fileStat__Sizeⁱᵐᵖˡ); ("Sys"%go, fileStat__Sysⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(readdirMode.id, []); (ptrT.id readdirMode.id, []); (dirInfo.id, []); (ptrT.id dirInfo.id, [("close"%go, dirInfo__closeⁱᵐᵖˡ)]); (SyscallError.id, []); (ptrT.id SyscallError.id, [("Error"%go, SyscallError__Errorⁱᵐᵖˡ); ("Timeout"%go, SyscallError__Timeoutⁱᵐᵖˡ); ("Unwrap"%go, SyscallError__Unwrapⁱᵐᵖˡ)]); (processStatus.id, []); (ptrT.id processStatus.id, []); (Process.id, []); (ptrT.id Process.id, [("Kill"%go, Process__Killⁱᵐᵖˡ); ("Release"%go, Process__Releaseⁱᵐᵖˡ); ("Signal"%go, Process__Signalⁱᵐᵖˡ); ("Wait"%go, Process__Waitⁱᵐᵖˡ); ("blockUntilWaitable"%go, Process__blockUntilWaitableⁱᵐᵖˡ); ("doRelease"%go, Process__doReleaseⁱᵐᵖˡ); ("handleTransientAcquire"%go, Process__handleTransientAcquireⁱᵐᵖˡ); ("handleTransientRelease"%go, Process__handleTransientReleaseⁱᵐᵖˡ); ("kill"%go, Process__killⁱᵐᵖˡ); ("pidSignal"%go, Process__pidSignalⁱᵐᵖˡ); ("pidStatus"%go, Process__pidStatusⁱᵐᵖˡ); ("pidWait"%go, Process__pidWaitⁱᵐᵖˡ); ("pidfdSendSignal"%go, Process__pidfdSendSignalⁱᵐᵖˡ); ("pidfdWait"%go, Process__pidfdWaitⁱᵐᵖˡ); ("signal"%go, Process__signalⁱᵐᵖˡ); ("wait"%go, Process__waitⁱᵐᵖˡ)]); (processHandle.id, []); (ptrT.id processHandle.id, [("acquire"%go, processHandle__acquireⁱᵐᵖˡ); ("closeHandle"%go, processHandle__closeHandleⁱᵐᵖˡ); ("release"%go, processHandle__releaseⁱᵐᵖˡ)]); (ProcAttr.id, []); (ptrT.id ProcAttr.id, []); (ProcessState.id, []); (ptrT.id ProcessState.id, [("ExitCode"%go, ProcessState__ExitCodeⁱᵐᵖˡ); ("Exited"%go, ProcessState__Exitedⁱᵐᵖˡ); ("Pid"%go, ProcessState__Pidⁱᵐᵖˡ); ("String"%go, ProcessState__Stringⁱᵐᵖˡ); ("Success"%go, ProcessState__Successⁱᵐᵖˡ); ("Sys"%go, ProcessState__Sysⁱᵐᵖˡ); ("SysUsage"%go, ProcessState__SysUsageⁱᵐᵖˡ); ("SystemTime"%go, ProcessState__SystemTimeⁱᵐᵖˡ); ("UserTime"%go, ProcessState__UserTimeⁱᵐᵖˡ); ("exited"%go, ProcessState__exitedⁱᵐᵖˡ); ("success"%go, ProcessState__successⁱᵐᵖˡ); ("sys"%go, ProcessState__sysⁱᵐᵖˡ); ("sysUsage"%go, ProcessState__sysUsageⁱᵐᵖˡ); ("systemTime"%go, ProcessState__systemTimeⁱᵐᵖˡ); ("userTime"%go, ProcessState__userTimeⁱᵐᵖˡ)]); (LinkError.id, []); (ptrT.id LinkError.id, [("Error"%go, LinkError__Errorⁱᵐᵖˡ); ("Unwrap"%go, LinkError__Unwrapⁱᵐᵖˡ)]); (noReadFrom.id, [("ReadFrom"%go, noReadFrom__ReadFromⁱᵐᵖˡ)]); (ptrT.id noReadFrom.id, [("ReadFrom"%go, noReadFrom__ReadFromⁱᵐᵖˡ)]); (fileWithoutReadFrom.id, [("Chdir"%go, fileWithoutReadFrom__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutReadFrom__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutReadFrom__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutReadFrom__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutReadFrom__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutReadFrom__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutReadFrom__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutReadFrom__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutReadFrom__ReadDirⁱᵐᵖˡ); ("Readdir"%go, fileWithoutReadFrom__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutReadFrom__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutReadFrom__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutReadFrom__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutReadFrom__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutReadFrom__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutReadFrom__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutReadFrom__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutReadFrom__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutReadFrom__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutReadFrom__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutReadFrom__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutReadFrom__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, fileWithoutReadFrom__WriteToⁱᵐᵖˡ); ("checkValid"%go, fileWithoutReadFrom__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutReadFrom__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutReadFrom__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutReadFrom__copyFileRangeⁱᵐᵖˡ); ("fd"%go, fileWithoutReadFrom__fdⁱᵐᵖˡ); ("pread"%go, fileWithoutReadFrom__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutReadFrom__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutReadFrom__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutReadFrom__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutReadFrom__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutReadFrom__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutReadFrom__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutReadFrom__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutReadFrom__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutReadFrom__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutReadFrom__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutReadFrom__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutReadFrom__writeToⁱᵐᵖˡ)]); (ptrT.id fileWithoutReadFrom.id, [("Chdir"%go, fileWithoutReadFrom__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutReadFrom__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutReadFrom__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutReadFrom__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutReadFrom__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutReadFrom__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutReadFrom__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutReadFrom__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutReadFrom__ReadDirⁱᵐᵖˡ); ("Readdir"%go, fileWithoutReadFrom__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutReadFrom__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutReadFrom__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutReadFrom__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutReadFrom__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutReadFrom__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutReadFrom__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutReadFrom__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutReadFrom__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutReadFrom__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutReadFrom__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutReadFrom__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutReadFrom__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, fileWithoutReadFrom__WriteToⁱᵐᵖˡ); ("checkValid"%go, fileWithoutReadFrom__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutReadFrom__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutReadFrom__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutReadFrom__copyFileRangeⁱᵐᵖˡ); ("fd"%go, fileWithoutReadFrom__fdⁱᵐᵖˡ); ("pread"%go, fileWithoutReadFrom__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutReadFrom__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutReadFrom__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutReadFrom__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutReadFrom__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutReadFrom__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutReadFrom__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutReadFrom__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutReadFrom__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutReadFrom__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutReadFrom__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutReadFrom__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutReadFrom__writeToⁱᵐᵖˡ)]); (noWriteTo.id, [("WriteTo"%go, noWriteTo__WriteToⁱᵐᵖˡ)]); (ptrT.id noWriteTo.id, [("WriteTo"%go, noWriteTo__WriteToⁱᵐᵖˡ)]); (fileWithoutWriteTo.id, [("Chdir"%go, fileWithoutWriteTo__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutWriteTo__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutWriteTo__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutWriteTo__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutWriteTo__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutWriteTo__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutWriteTo__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutWriteTo__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutWriteTo__ReadDirⁱᵐᵖˡ); ("ReadFrom"%go, fileWithoutWriteTo__ReadFromⁱᵐᵖˡ); ("Readdir"%go, fileWithoutWriteTo__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutWriteTo__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutWriteTo__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutWriteTo__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutWriteTo__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutWriteTo__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutWriteTo__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutWriteTo__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutWriteTo__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutWriteTo__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutWriteTo__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutWriteTo__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutWriteTo__WriteStringⁱᵐᵖˡ); ("checkValid"%go, fileWithoutWriteTo__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutWriteTo__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutWriteTo__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutWriteTo__copyFileRangeⁱᵐᵖˡ); ("fd"%go, fileWithoutWriteTo__fdⁱᵐᵖˡ); ("pread"%go, fileWithoutWriteTo__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutWriteTo__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutWriteTo__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutWriteTo__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutWriteTo__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutWriteTo__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutWriteTo__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutWriteTo__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutWriteTo__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutWriteTo__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutWriteTo__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutWriteTo__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutWriteTo__writeToⁱᵐᵖˡ)]); (ptrT.id fileWithoutWriteTo.id, [("Chdir"%go, fileWithoutWriteTo__Chdirⁱᵐᵖˡ); ("Chmod"%go, fileWithoutWriteTo__Chmodⁱᵐᵖˡ); ("Chown"%go, fileWithoutWriteTo__Chownⁱᵐᵖˡ); ("Close"%go, fileWithoutWriteTo__Closeⁱᵐᵖˡ); ("Fd"%go, fileWithoutWriteTo__Fdⁱᵐᵖˡ); ("Name"%go, fileWithoutWriteTo__Nameⁱᵐᵖˡ); ("Read"%go, fileWithoutWriteTo__Readⁱᵐᵖˡ); ("ReadAt"%go, fileWithoutWriteTo__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, fileWithoutWriteTo__ReadDirⁱᵐᵖˡ); ("ReadFrom"%go, fileWithoutWriteTo__ReadFromⁱᵐᵖˡ); ("Readdir"%go, fileWithoutWriteTo__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, fileWithoutWriteTo__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, fileWithoutWriteTo__Seekⁱᵐᵖˡ); ("SetDeadline"%go, fileWithoutWriteTo__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, fileWithoutWriteTo__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, fileWithoutWriteTo__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, fileWithoutWriteTo__Statⁱᵐᵖˡ); ("Sync"%go, fileWithoutWriteTo__Syncⁱᵐᵖˡ); ("SyscallConn"%go, fileWithoutWriteTo__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, fileWithoutWriteTo__Truncateⁱᵐᵖˡ); ("Write"%go, fileWithoutWriteTo__Writeⁱᵐᵖˡ); ("WriteAt"%go, fileWithoutWriteTo__WriteAtⁱᵐᵖˡ); ("WriteString"%go, fileWithoutWriteTo__WriteStringⁱᵐᵖˡ); ("checkValid"%go, fileWithoutWriteTo__checkValidⁱᵐᵖˡ); ("chmod"%go, fileWithoutWriteTo__chmodⁱᵐᵖˡ); ("close"%go, fileWithoutWriteTo__closeⁱᵐᵖˡ); ("copyFileRange"%go, fileWithoutWriteTo__copyFileRangeⁱᵐᵖˡ); ("fd"%go, fileWithoutWriteTo__fdⁱᵐᵖˡ); ("pread"%go, fileWithoutWriteTo__preadⁱᵐᵖˡ); ("pwrite"%go, fileWithoutWriteTo__pwriteⁱᵐᵖˡ); ("read"%go, fileWithoutWriteTo__readⁱᵐᵖˡ); ("readFrom"%go, fileWithoutWriteTo__readFromⁱᵐᵖˡ); ("readdir"%go, fileWithoutWriteTo__readdirⁱᵐᵖˡ); ("seek"%go, fileWithoutWriteTo__seekⁱᵐᵖˡ); ("setDeadline"%go, fileWithoutWriteTo__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, fileWithoutWriteTo__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, fileWithoutWriteTo__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, fileWithoutWriteTo__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, fileWithoutWriteTo__wrapErrⁱᵐᵖˡ); ("write"%go, fileWithoutWriteTo__writeⁱᵐᵖˡ); ("writeTo"%go, fileWithoutWriteTo__writeToⁱᵐᵖˡ)]); (dirFS.id, [("Lstat"%go, dirFS__Lstatⁱᵐᵖˡ); ("Open"%go, dirFS__Openⁱᵐᵖˡ); ("ReadDir"%go, dirFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, dirFS__ReadFileⁱᵐᵖˡ); ("ReadLink"%go, dirFS__ReadLinkⁱᵐᵖˡ); ("Stat"%go, dirFS__Statⁱᵐᵖˡ); ("join"%go, dirFS__joinⁱᵐᵖˡ)]); (ptrT.id dirFS.id, [("Lstat"%go, dirFS__Lstatⁱᵐᵖˡ); ("Open"%go, dirFS__Openⁱᵐᵖˡ); ("ReadDir"%go, dirFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, dirFS__ReadFileⁱᵐᵖˡ); ("ReadLink"%go, dirFS__ReadLinkⁱᵐᵖˡ); ("Stat"%go, dirFS__Statⁱᵐᵖˡ); ("join"%go, dirFS__joinⁱᵐᵖˡ)]); (file.id, []); (ptrT.id file.id, [("close"%go, file__closeⁱᵐᵖˡ)]); (newFileKind.id, []); (ptrT.id newFileKind.id, []); (unixDirent.id, []); (ptrT.id unixDirent.id, [("Info"%go, unixDirent__Infoⁱᵐᵖˡ); ("IsDir"%go, unixDirent__IsDirⁱᵐᵖˡ); ("Name"%go, unixDirent__Nameⁱᵐᵖˡ); ("String"%go, unixDirent__Stringⁱᵐᵖˡ); ("Type"%go, unixDirent__Typeⁱᵐᵖˡ)]); (rawConn.id, []); (ptrT.id rawConn.id, [("Control"%go, rawConn__Controlⁱᵐᵖˡ); ("Read"%go, rawConn__Readⁱᵐᵖˡ); ("Write"%go, rawConn__Writeⁱᵐᵖˡ)]); (Root.id, []); (ptrT.id Root.id, [("Chmod"%go, Root__Chmodⁱᵐᵖˡ); ("Chown"%go, Root__Chownⁱᵐᵖˡ); ("Chtimes"%go, Root__Chtimesⁱᵐᵖˡ); ("Close"%go, Root__Closeⁱᵐᵖˡ); ("Create"%go, Root__Createⁱᵐᵖˡ); ("FS"%go, Root__FSⁱᵐᵖˡ); ("Lchown"%go, Root__Lchownⁱᵐᵖˡ); ("Link"%go, Root__Linkⁱᵐᵖˡ); ("Lstat"%go, Root__Lstatⁱᵐᵖˡ); ("Mkdir"%go, Root__Mkdirⁱᵐᵖˡ); ("MkdirAll"%go, Root__MkdirAllⁱᵐᵖˡ); ("Name"%go, Root__Nameⁱᵐᵖˡ); ("Open"%go, Root__Openⁱᵐᵖˡ); ("OpenFile"%go, Root__OpenFileⁱᵐᵖˡ); ("OpenRoot"%go, Root__OpenRootⁱᵐᵖˡ); ("ReadFile"%go, Root__ReadFileⁱᵐᵖˡ); ("Readlink"%go, Root__Readlinkⁱᵐᵖˡ); ("Remove"%go, Root__Removeⁱᵐᵖˡ); ("RemoveAll"%go, Root__RemoveAllⁱᵐᵖˡ); ("Rename"%go, Root__Renameⁱᵐᵖˡ); ("Stat"%go, Root__Statⁱᵐᵖˡ); ("Symlink"%go, Root__Symlinkⁱᵐᵖˡ); ("WriteFile"%go, Root__WriteFileⁱᵐᵖˡ); ("logOpen"%go, Root__logOpenⁱᵐᵖˡ); ("logStat"%go, Root__logStatⁱᵐᵖˡ)]); (rootFS.id, []); (ptrT.id rootFS.id, [("Lstat"%go, rootFS__Lstatⁱᵐᵖˡ); ("Open"%go, rootFS__Openⁱᵐᵖˡ); ("ReadDir"%go, rootFS__ReadDirⁱᵐᵖˡ); ("ReadFile"%go, rootFS__ReadFileⁱᵐᵖˡ); ("ReadLink"%go, rootFS__ReadLinkⁱᵐᵖˡ); ("Stat"%go, rootFS__Statⁱᵐᵖˡ)]); (root.id, []); (ptrT.id root.id, [("Close"%go, root__Closeⁱᵐᵖˡ); ("Name"%go, root__Nameⁱᵐᵖˡ); ("decref"%go, root__decrefⁱᵐᵖˡ); ("incref"%go, root__increfⁱᵐᵖˡ)]); (errSymlink.id, [("Error"%go, errSymlink__Errorⁱᵐᵖˡ)]); (ptrT.id errSymlink.id, [("Error"%go, errSymlink__Errorⁱᵐᵖˡ)]); (File.id, [("close"%go, File__closeⁱᵐᵖˡ)]); (ptrT.id File.id, [("Chdir"%go, File__Chdirⁱᵐᵖˡ); ("Chmod"%go, File__Chmodⁱᵐᵖˡ); ("Chown"%go, File__Chownⁱᵐᵖˡ); ("Close"%go, File__Closeⁱᵐᵖˡ); ("Fd"%go, File__Fdⁱᵐᵖˡ); ("Name"%go, File__Nameⁱᵐᵖˡ); ("Read"%go, File__Readⁱᵐᵖˡ); ("ReadAt"%go, File__ReadAtⁱᵐᵖˡ); ("ReadDir"%go, File__ReadDirⁱᵐᵖˡ); ("ReadFrom"%go, File__ReadFromⁱᵐᵖˡ); ("Readdir"%go, File__Readdirⁱᵐᵖˡ); ("Readdirnames"%go, File__Readdirnamesⁱᵐᵖˡ); ("Seek"%go, File__Seekⁱᵐᵖˡ); ("SetDeadline"%go, File__SetDeadlineⁱᵐᵖˡ); ("SetReadDeadline"%go, File__SetReadDeadlineⁱᵐᵖˡ); ("SetWriteDeadline"%go, File__SetWriteDeadlineⁱᵐᵖˡ); ("Stat"%go, File__Statⁱᵐᵖˡ); ("Sync"%go, File__Syncⁱᵐᵖˡ); ("SyscallConn"%go, File__SyscallConnⁱᵐᵖˡ); ("Truncate"%go, File__Truncateⁱᵐᵖˡ); ("Write"%go, File__Writeⁱᵐᵖˡ); ("WriteAt"%go, File__WriteAtⁱᵐᵖˡ); ("WriteString"%go, File__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, File__WriteToⁱᵐᵖˡ); ("checkValid"%go, File__checkValidⁱᵐᵖˡ); ("chmod"%go, File__chmodⁱᵐᵖˡ); ("close"%go, File__closeⁱᵐᵖˡ); ("copyFileRange"%go, File__copyFileRangeⁱᵐᵖˡ); ("fd"%go, File__fdⁱᵐᵖˡ); ("pread"%go, File__preadⁱᵐᵖˡ); ("pwrite"%go, File__pwriteⁱᵐᵖˡ); ("read"%go, File__readⁱᵐᵖˡ); ("readFrom"%go, File__readFromⁱᵐᵖˡ); ("readdir"%go, File__readdirⁱᵐᵖˡ); ("seek"%go, File__seekⁱᵐᵖˡ); ("setDeadline"%go, File__setDeadlineⁱᵐᵖˡ); ("setReadDeadline"%go, File__setReadDeadlineⁱᵐᵖˡ); ("setWriteDeadline"%go, File__setWriteDeadlineⁱᵐᵖˡ); ("spliceToFile"%go, File__spliceToFileⁱᵐᵖˡ); ("wrapErr"%go, File__wrapErrⁱᵐᵖˡ); ("write"%go, File__writeⁱᵐᵖˡ); ("writeTo"%go, File__writeToⁱᵐᵖˡ)]); (fileStat.id, []); (ptrT.id fileStat.id, [("IsDir"%go, fileStat__IsDirⁱᵐᵖˡ); ("ModTime"%go, fileStat__ModTimeⁱᵐᵖˡ); ("Mode"%go, fileStat__Modeⁱᵐᵖˡ); ("Name"%go, fileStat__Nameⁱᵐᵖˡ); ("Size"%go, fileStat__Sizeⁱᵐᵖˡ); ("Sys"%go, fileStat__Sysⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo os.os :=
   {|
@@ -1368,6 +1502,10 @@ Definition initialize' : val :=
       do:  (errPathEscapes'init #());;;
       do:  (lstat'init #());;;
       do:  (checkWrapErr'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
       do:  (checkPidfdOnce'init #());;;
       do:  (errPatternHasSeparator'init #());;;
       do:  (pollCopyFileRange'init #());;;

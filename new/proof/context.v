@@ -39,9 +39,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{contextG Σ}.
 
-#[global] Instance : IsPkgInit reflectlite := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf reflectlite := build_get_is_pkg_init_wf.
-
 #[global] Instance : IsPkgInit context := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf context := build_get_is_pkg_init_wf.
 

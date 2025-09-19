@@ -31,10 +31,10 @@ Definition Log__mkHdrⁱᵐᵖˡ : val :=
     (func_call #marshal.NewEnc) "$a0") in
     do:  ("enc" <-[#marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] (struct.field_ref #Log #"sz"%go (![#ptrT] "log"))) in
-    (method_call #marshal.Enc.id #"PutInt"%go (![#marshal.Enc] "enc")) "$a0");;;
+    (method_call #(ptrT.id marshal.Enc.id) #"PutInt"%go "enc") "$a0");;;
     do:  (let: "$a0" := (![#uint64T] (struct.field_ref #Log #"diskSz"%go (![#ptrT] "log"))) in
-    (method_call #marshal.Enc.id #"PutInt"%go (![#marshal.Enc] "enc")) "$a0");;;
-    return: ((method_call #marshal.Enc.id #"Finish"%go (![#marshal.Enc] "enc")) #())).
+    (method_call #(ptrT.id marshal.Enc.id) #"PutInt"%go "enc") "$a0");;;
+    return: ((method_call #(ptrT.id marshal.Enc.id) #"Finish"%go "enc") #())).
 
 (* go: append_log.go:29:17 *)
 Definition Log__writeHdrⁱᵐᵖˡ : val :=
@@ -89,10 +89,10 @@ Definition Openⁱᵐᵖˡ : val :=
     (func_call #marshal.NewDec) "$a0") in
     do:  ("dec" <-[#marshal.Dec] "$r0");;;
     let: "sz" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #marshal.Dec.id #"GetInt"%go (![#marshal.Dec] "dec")) #()) in
+    let: "$r0" := ((method_call #(ptrT.id marshal.Dec.id) #"GetInt"%go "dec") #()) in
     do:  ("sz" <-[#uint64T] "$r0");;;
     let: "diskSz" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #marshal.Dec.id #"GetInt"%go (![#marshal.Dec] "dec")) #()) in
+    let: "$r0" := ((method_call #(ptrT.id marshal.Dec.id) #"GetInt"%go "dec") #()) in
     do:  ("diskSz" <-[#uint64T] "$r0");;;
     return: (mem.alloc (let: "$m" := (mem.alloc (type.zero_val #sync.Mutex)) in
      let: "$sz" := (![#uint64T] "sz") in

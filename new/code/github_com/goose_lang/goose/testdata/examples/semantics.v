@@ -1213,7 +1213,7 @@ Definition testForLoopWaitⁱᵐᵖˡ : val :=
     }]) in
     do:  ("ls" <-[#LoopStruct] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
-    (method_call #LoopStruct.id #"forLoopWait"%go (![#LoopStruct] "ls")) "$a0");;;
+    (method_call #(ptrT.id LoopStruct.id) #"forLoopWait"%go "ls") "$a0");;;
     return: ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) = #(W64 4))).
 
 Definition testBreakFromLoopWithContinue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopWithContinue"%go.
@@ -2959,16 +2959,16 @@ Definition Log__unlockⁱᵐᵖˡ : val :=
 Definition Log__BeginTxnⁱᵐᵖˡ : val :=
   λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"lock"%go "l") #());;;
     let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "length") = #(W64 0)
     then
-      do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+      do:  ((method_call #(ptrT.id Log.id) #"unlock"%go "l") #());;;
       return: (#true)
     else do:  #());;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"unlock"%go "l") #());;;
     return: (#false)).
 
 (* Read from the logical disk.
@@ -2980,7 +2980,7 @@ Definition Log__Readⁱᵐᵖˡ : val :=
   λ: "l" "a",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "a" := (mem.alloc "a") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"lock"%go "l") #());;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "v" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a")) in
@@ -2990,10 +2990,10 @@ Definition Log__Readⁱᵐᵖˡ : val :=
     do:  ("ok" <-[#boolT] "$r1");;;
     (if: ![#boolT] "ok"
     then
-      do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+      do:  ((method_call #(ptrT.id Log.id) #"unlock"%go "l") #());;;
       return: (![#sliceT] "v")
     else do:  #());;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"unlock"%go "l") #());;;
     let: "dv" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (logLength + (![#uint64T] "a")) in
     (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0") in
@@ -3017,7 +3017,7 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
     exception_do (let: "l" := (mem.alloc "l") in
     let: "v" := (mem.alloc "v") in
     let: "a" := (mem.alloc "a") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"lock"%go "l") #());;;
     let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
@@ -3043,7 +3043,7 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
     do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a") "$r0");;;
     let: "$r0" := ((![#uint64T] "length") + #(W64 1)) in
     do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"unlock"%go "l") #());;;
     return: #()).
 
 (* Commit the current transaction.
@@ -3052,11 +3052,11 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
 Definition Log__Commitⁱᵐᵖˡ : val :=
   λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"lock"%go "l") #());;;
     let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"unlock"%go "l") #());;;
     let: "header" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "length") in
     (func_call #intToBlock) "$a0") in
@@ -3147,7 +3147,7 @@ Definition clearLogⁱᵐᵖˡ : val :=
 Definition Log__Applyⁱᵐᵖˡ : val :=
   λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"lock"%go "l") #());;;
     let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
@@ -3158,7 +3158,7 @@ Definition Log__Applyⁱᵐᵖˡ : val :=
     (func_call #clearLog) "$a0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"unlock"%go "l") #());;;
     return: #()).
 
 Definition Open : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Open"%go.
@@ -3219,27 +3219,27 @@ Definition disabled_testWalⁱᵐᵖˡ : val :=
     let: "lg" := (mem.alloc (type.zero_val #Log)) in
     let: "$r0" := ((func_call #New) #()) in
     do:  ("lg" <-[#Log] "$r0");;;
-    (if: (method_call #Log.id #"BeginTxn"%go (![#Log] "lg")) #()
+    (if: (method_call #(ptrT.id Log.id) #"BeginTxn"%go "lg") #()
     then
       do:  (let: "$a0" := #(W64 2) in
       let: "$a1" := (let: "$a0" := #(W64 11) in
       (func_call #intToBlock) "$a0") in
-      (method_call #Log.id #"Write"%go (![#Log] "lg")) "$a0" "$a1")
+      (method_call #(ptrT.id Log.id) #"Write"%go "lg") "$a0" "$a1")
     else do:  #());;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 2) in
-    (method_call #Log.id #"Read"%go (![#Log] "lg")) "$a0") in
+    (method_call #(ptrT.id Log.id) #"Read"%go "lg") "$a0") in
     (func_call #blockToInt) "$a0") = #(W64 11))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
     (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
     (func_call #blockToInt) "$a0") = #(W64 0))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #Log.id #"Commit"%go (![#Log] "lg")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"Commit"%go "lg") #());;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
     (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
     (func_call #blockToInt) "$a0") = #(W64 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #Log.id #"Apply"%go (![#Log] "lg")) #());;;
+    do:  ((method_call #(ptrT.id Log.id) #"Apply"%go "lg") #());;;
     let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "lg"))) = #(W64 0))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).

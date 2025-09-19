@@ -527,7 +527,7 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ : val :=
     do:  ("start" <-[#time.Time] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#context.Context] "cctx") in
     let: "$a1" := (![#sliceT] "data") in
-    (method_call #raftNode.id #"Propose"%go (![#raftNode] (struct.field_ref #EtcdServer #"r"%go (![#ptrT] "s")))) "$a0" "$a1") in
+    (method_call #(ptrT.id raftNode.id) #"Propose"%go (struct.field_ref #EtcdServer #"r"%go (![#ptrT] "s"))) "$a0" "$a1") in
     do:  ("err" <-[#error] "$r0");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then

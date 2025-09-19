@@ -15,6 +15,7 @@ translate = [
 imports = [
   "sync/atomic",
   "internal/race",
+  "internal/synctest",
 ]
 
 trusted = [

@@ -1470,9 +1470,9 @@ Definition mkSTMⁱᵐᵖˡ : val :=
       }])) in
       do:  ("s" <-[#ptrT] "$r0");;;
       let: "$r0" := (λ: <>,
-        exception_do (return: (let: "$a0" := ((method_call #readSet.id #"cmps"%go (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) #()) in
-         let: "$a1" := (let: "$a0" := (((method_call #readSet.id #"first"%go (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) #()) + #(W64 1)) in
-         (method_call #writeSet.id #"cmps"%go (![#writeSet] (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) "$a0") in
+        exception_do (return: (let: "$a0" := ((method_call #(ptrT.id readSet.id) #"cmps"%go (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) #()) in
+         let: "$a1" := (let: "$a0" := (((method_call #(ptrT.id readSet.id) #"first"%go (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) #()) + #(W64 1)) in
+         (method_call #(ptrT.id writeSet.id) #"cmps"%go (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) "$a0") in
          (slice.append #clientv3.Cmp) "$a0" "$a1"))
         ) in
       do:  ((struct.field_ref #stm #"conflicts"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) <-[#funcT] "$r0");;;
@@ -1498,7 +1498,7 @@ Definition mkSTMⁱᵐᵖˡ : val :=
         }])) in
         do:  ("s" <-[#ptrT] "$r0");;;
         let: "$r0" := (λ: <>,
-          exception_do (return: ((method_call #readSet.id #"cmps"%go (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) #()))
+          exception_do (return: ((method_call #(ptrT.id readSet.id) #"cmps"%go (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) #()))
           ) in
         do:  ((struct.field_ref #stm #"conflicts"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) <-[#funcT] "$r0");;;
         return: (interface.make #(ptrT.id stmSerializable.id) (![#ptrT] "s"))
@@ -1520,7 +1520,7 @@ Definition mkSTMⁱᵐᵖˡ : val :=
           }])) in
           do:  ("s" <-[#ptrT] "$r0");;;
           let: "$r0" := (λ: <>,
-            exception_do (return: ((method_call #readSet.id #"cmps"%go (![#readSet] (struct.field_ref #stm #"rset"%go (![#ptrT] "s")))) #()))
+            exception_do (return: ((method_call #(ptrT.id readSet.id) #"cmps"%go (struct.field_ref #stm #"rset"%go (![#ptrT] "s"))) #()))
             ) in
           do:  ((struct.field_ref #stm #"conflicts"%go (![#ptrT] "s")) <-[#funcT] "$r0");;;
           return: (interface.make #(ptrT.id stm.id) (![#ptrT] "s"))
@@ -1769,7 +1769,7 @@ Definition stm__Getⁱᵐᵖˡ : val :=
     let: "keys" := (mem.alloc "keys") in
     (let: "wv" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
-    (method_call #writeSet.id #"get"%go (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s")))) "$a0") in
+    (method_call #(ptrT.id writeSet.id) #"get"%go (struct.field_ref #stm #"wset"%go (![#ptrT] "s"))) "$a0") in
     do:  ("wv" <-[#ptrT] "$r0");;;
     (if: (![#ptrT] "wv") ≠ #null
     then return: (![#stringT] (struct.field_ref #stmPut #"val"%go (![#ptrT] "wv")))
@@ -1831,7 +1831,7 @@ Definition stm__commitⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "txnresp" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((method_call #writeSet.id #"puts"%go (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s")))) #()) in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((method_call #(ptrT.id writeSet.id) #"puts"%go (struct.field_ref #stm #"wset"%go (![#ptrT] "s"))) #()) in
     (interface.get #"Then"%go (let: "$a0" := ((![#funcT] (struct.field_ref #stm #"conflicts"%go (![#ptrT] "s"))) #()) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] (struct.field_ref #stm #"ctx"%go (![#ptrT] "s"))) in
     (method_call #(ptrT.id clientv3.Client.id) #"Txn"%go (![#ptrT] (struct.field_ref #stm #"client"%go (![#ptrT] "s")))) "$a0")) "$a0")) "$a0")) #()) in
@@ -1902,7 +1902,7 @@ Definition stm__fetchⁱᵐᵖˡ : val :=
     else do:  #());;;
     do:  (let: "$a0" := (![#sliceT] "keys") in
     let: "$a1" := (![#ptrT] "txnresp") in
-    (method_call #readSet.id #"add"%go (![#readSet] (struct.field_ref #stm #"rset"%go (![#ptrT] "s")))) "$a0" "$a1");;;
+    (method_call #(ptrT.id readSet.id) #"add"%go (struct.field_ref #stm #"rset"%go (![#ptrT] "s"))) "$a0" "$a1");;;
     return: ((method_call #(ptrT.id etcdserverpb.ResponseOp.id) #"GetResponseRange"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.TxnResponse #"Responses"%go (![#ptrT] "txnresp"))) #(W64 0)))) #())).
 
 (* go: stm.go:295:15 *)
@@ -1926,7 +1926,7 @@ Definition stmSerializable__Getⁱᵐᵖˡ : val :=
     else do:  #());;;
     (let: "wv" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
-    (method_call #writeSet.id #"get"%go (![#writeSet] (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) "$a0") in
+    (method_call #(ptrT.id writeSet.id) #"get"%go (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) "$a0") in
     do:  ("wv" <-[#ptrT] "$r0");;;
     (if: (![#ptrT] "wv") ≠ #null
     then return: (![#stringT] (struct.field_ref #stmPut #"val"%go (![#ptrT] "wv")))
@@ -2023,7 +2023,7 @@ Definition stmSerializable__commitⁱᵐᵖˡ : val :=
     do:  ("keys" <-[#sliceT] "$r0");;;
     do:  ("getops" <-[#sliceT] "$r1");;;
     let: "txn" := (mem.alloc (type.zero_val #clientv3.Txn)) in
-    let: "$r0" := (let: "$a0" := ((method_call #writeSet.id #"puts"%go (![#writeSet] (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) #()) in
+    let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id writeSet.id) #"puts"%go (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) #()) in
     (interface.get #"Then"%go (let: "$a0" := ((![#funcT] (struct.field_ref #stm #"conflicts"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) #()) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] (struct.field_ref #stm #"ctx"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
     (method_call #(ptrT.id clientv3.Client.id) #"Txn"%go (![#ptrT] (struct.field_ref #stm #"client"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) "$a0")) "$a0")) "$a0") in
@@ -2048,7 +2048,7 @@ Definition stmSerializable__commitⁱᵐᵖˡ : val :=
     else do:  #());;;
     do:  (let: "$a0" := (![#sliceT] "keys") in
     let: "$a1" := (![#ptrT] "txnresp") in
-    (method_call #readSet.id #"add"%go (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
+    (method_call #(ptrT.id readSet.id) #"add"%go (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) "$a0" "$a1");;;
     let: "$r0" := (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
     do:  ((struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s")) <-[type.mapT #stringT #ptrT] "$r0");;;
     let: "$r0" := #slice.nil in

@@ -36,8 +36,6 @@ Definition Compare : go_string := "strings.Compare"%go.
 
 Definition Lines : go_string := "strings.Lines"%go.
 
-Definition explodeSeq : go_string := "strings.explodeSeq"%go.
-
 Definition splitSeq : go_string := "strings.splitSeq"%go.
 
 Definition SplitSeq : go_string := "strings.SplitSeq"%go.
@@ -232,8 +230,6 @@ Axiom Compareⁱᵐᵖˡ : val.
 
 Axiom Linesⁱᵐᵖˡ : val.
 
-Axiom explodeSeqⁱᵐᵖˡ : val.
-
 Axiom splitSeqⁱᵐᵖˡ : val.
 
 Axiom SplitSeqⁱᵐᵖˡ : val.
@@ -378,7 +374,7 @@ Axiom CutPrefixⁱᵐᵖˡ : val.
 
 Axiom CutSuffixⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(Clone, Cloneⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (Lines, Linesⁱᵐᵖˡ); (explodeSeq, explodeSeqⁱᵐᵖˡ); (splitSeq, splitSeqⁱᵐᵖˡ); (SplitSeq, SplitSeqⁱᵐᵖˡ); (SplitAfterSeq, SplitAfterSeqⁱᵐᵖˡ); (FieldsSeq, FieldsSeqⁱᵐᵖˡ); (FieldsFuncSeq, FieldsFuncSeqⁱᵐᵖˡ); (NewReader, NewReaderⁱᵐᵖˡ); (NewReplacer, NewReplacerⁱᵐᵖˡ); (makeGenericReplacer, makeGenericReplacerⁱᵐᵖˡ); (getStringWriter, getStringWriterⁱᵐᵖˡ); (makeSingleStringReplacer, makeSingleStringReplacerⁱᵐᵖˡ); (makeStringFinder, makeStringFinderⁱᵐᵖˡ); (longestCommonSuffix, longestCommonSuffixⁱᵐᵖˡ); (explode, explodeⁱᵐᵖˡ); (Count, Countⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsAny, ContainsAnyⁱᵐᵖˡ); (ContainsRune, ContainsRuneⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (LastIndex, LastIndexⁱᵐᵖˡ); (IndexByte, IndexByteⁱᵐᵖˡ); (IndexRune, IndexRuneⁱᵐᵖˡ); (IndexAny, IndexAnyⁱᵐᵖˡ); (LastIndexAny, LastIndexAnyⁱᵐᵖˡ); (LastIndexByte, LastIndexByteⁱᵐᵖˡ); (genSplit, genSplitⁱᵐᵖˡ); (SplitN, SplitNⁱᵐᵖˡ); (SplitAfterN, SplitAfterNⁱᵐᵖˡ); (Split, Splitⁱᵐᵖˡ); (SplitAfter, SplitAfterⁱᵐᵖˡ); (Fields, Fieldsⁱᵐᵖˡ); (FieldsFunc, FieldsFuncⁱᵐᵖˡ); (Join, Joinⁱᵐᵖˡ); (HasPrefix, HasPrefixⁱᵐᵖˡ); (HasSuffix, HasSuffixⁱᵐᵖˡ); (Map, Mapⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (ToUpper, ToUpperⁱᵐᵖˡ); (ToLower, ToLowerⁱᵐᵖˡ); (ToTitle, ToTitleⁱᵐᵖˡ); (ToUpperSpecial, ToUpperSpecialⁱᵐᵖˡ); (ToLowerSpecial, ToLowerSpecialⁱᵐᵖˡ); (ToTitleSpecial, ToTitleSpecialⁱᵐᵖˡ); (ToValidUTF8, ToValidUTF8ⁱᵐᵖˡ); (isSeparator, isSeparatorⁱᵐᵖˡ); (Title, Titleⁱᵐᵖˡ); (TrimLeftFunc, TrimLeftFuncⁱᵐᵖˡ); (TrimRightFunc, TrimRightFuncⁱᵐᵖˡ); (TrimFunc, TrimFuncⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (LastIndexFunc, LastIndexFuncⁱᵐᵖˡ); (indexFunc, indexFuncⁱᵐᵖˡ); (lastIndexFunc, lastIndexFuncⁱᵐᵖˡ); (makeASCIISet, makeASCIISetⁱᵐᵖˡ); (Trim, Trimⁱᵐᵖˡ); (TrimLeft, TrimLeftⁱᵐᵖˡ); (trimLeftByte, trimLeftByteⁱᵐᵖˡ); (trimLeftASCII, trimLeftASCIIⁱᵐᵖˡ); (trimLeftUnicode, trimLeftUnicodeⁱᵐᵖˡ); (TrimRight, TrimRightⁱᵐᵖˡ); (trimRightByte, trimRightByteⁱᵐᵖˡ); (trimRightASCII, trimRightASCIIⁱᵐᵖˡ); (trimRightUnicode, trimRightUnicodeⁱᵐᵖˡ); (TrimSpace, TrimSpaceⁱᵐᵖˡ); (TrimPrefix, TrimPrefixⁱᵐᵖˡ); (TrimSuffix, TrimSuffixⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (ReplaceAll, ReplaceAllⁱᵐᵖˡ); (EqualFold, EqualFoldⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (Cut, Cutⁱᵐᵖˡ); (CutPrefix, CutPrefixⁱᵐᵖˡ); (CutSuffix, CutSuffixⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(Clone, Cloneⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (Lines, Linesⁱᵐᵖˡ); (splitSeq, splitSeqⁱᵐᵖˡ); (SplitSeq, SplitSeqⁱᵐᵖˡ); (SplitAfterSeq, SplitAfterSeqⁱᵐᵖˡ); (FieldsSeq, FieldsSeqⁱᵐᵖˡ); (FieldsFuncSeq, FieldsFuncSeqⁱᵐᵖˡ); (NewReader, NewReaderⁱᵐᵖˡ); (NewReplacer, NewReplacerⁱᵐᵖˡ); (makeGenericReplacer, makeGenericReplacerⁱᵐᵖˡ); (getStringWriter, getStringWriterⁱᵐᵖˡ); (makeSingleStringReplacer, makeSingleStringReplacerⁱᵐᵖˡ); (makeStringFinder, makeStringFinderⁱᵐᵖˡ); (longestCommonSuffix, longestCommonSuffixⁱᵐᵖˡ); (explode, explodeⁱᵐᵖˡ); (Count, Countⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsAny, ContainsAnyⁱᵐᵖˡ); (ContainsRune, ContainsRuneⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (LastIndex, LastIndexⁱᵐᵖˡ); (IndexByte, IndexByteⁱᵐᵖˡ); (IndexRune, IndexRuneⁱᵐᵖˡ); (IndexAny, IndexAnyⁱᵐᵖˡ); (LastIndexAny, LastIndexAnyⁱᵐᵖˡ); (LastIndexByte, LastIndexByteⁱᵐᵖˡ); (genSplit, genSplitⁱᵐᵖˡ); (SplitN, SplitNⁱᵐᵖˡ); (SplitAfterN, SplitAfterNⁱᵐᵖˡ); (Split, Splitⁱᵐᵖˡ); (SplitAfter, SplitAfterⁱᵐᵖˡ); (Fields, Fieldsⁱᵐᵖˡ); (FieldsFunc, FieldsFuncⁱᵐᵖˡ); (Join, Joinⁱᵐᵖˡ); (HasPrefix, HasPrefixⁱᵐᵖˡ); (HasSuffix, HasSuffixⁱᵐᵖˡ); (Map, Mapⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (ToUpper, ToUpperⁱᵐᵖˡ); (ToLower, ToLowerⁱᵐᵖˡ); (ToTitle, ToTitleⁱᵐᵖˡ); (ToUpperSpecial, ToUpperSpecialⁱᵐᵖˡ); (ToLowerSpecial, ToLowerSpecialⁱᵐᵖˡ); (ToTitleSpecial, ToTitleSpecialⁱᵐᵖˡ); (ToValidUTF8, ToValidUTF8ⁱᵐᵖˡ); (isSeparator, isSeparatorⁱᵐᵖˡ); (Title, Titleⁱᵐᵖˡ); (TrimLeftFunc, TrimLeftFuncⁱᵐᵖˡ); (TrimRightFunc, TrimRightFuncⁱᵐᵖˡ); (TrimFunc, TrimFuncⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (LastIndexFunc, LastIndexFuncⁱᵐᵖˡ); (indexFunc, indexFuncⁱᵐᵖˡ); (lastIndexFunc, lastIndexFuncⁱᵐᵖˡ); (makeASCIISet, makeASCIISetⁱᵐᵖˡ); (Trim, Trimⁱᵐᵖˡ); (TrimLeft, TrimLeftⁱᵐᵖˡ); (trimLeftByte, trimLeftByteⁱᵐᵖˡ); (trimLeftASCII, trimLeftASCIIⁱᵐᵖˡ); (trimLeftUnicode, trimLeftUnicodeⁱᵐᵖˡ); (TrimRight, TrimRightⁱᵐᵖˡ); (trimRightByte, trimRightByteⁱᵐᵖˡ); (trimRightASCII, trimRightASCIIⁱᵐᵖˡ); (trimRightUnicode, trimRightUnicodeⁱᵐᵖˡ); (TrimSpace, TrimSpaceⁱᵐᵖˡ); (TrimPrefix, TrimPrefixⁱᵐᵖˡ); (TrimSuffix, TrimSuffixⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (ReplaceAll, ReplaceAllⁱᵐᵖˡ); (EqualFold, EqualFoldⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (Cut, Cutⁱᵐᵖˡ); (CutPrefix, CutPrefixⁱᵐᵖˡ); (CutSuffix, CutSuffixⁱᵐᵖˡ)].
 
 Axiom Builder__Capⁱᵐᵖˡ : val.
 

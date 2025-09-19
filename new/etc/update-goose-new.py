@@ -346,6 +346,7 @@ def main():
             "strings",
             "sync",
             "sync/atomic",
+            "internal/synctest",
             "internal/race",
             "time",
             "fmt",

@@ -111,11 +111,11 @@ Definition decodeHdr1ⁱᵐᵖˡ : val :=
     (func_call #marshal.NewDec) "$a0") in
     do:  ("dec1" <-[#marshal.Dec] "$r0");;;
     let: "end" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #marshal.Dec.id #"GetInt"%go (![#marshal.Dec] "dec1")) #()) in
+    let: "$r0" := ((method_call #(ptrT.id marshal.Dec.id) #"GetInt"%go "dec1") #()) in
     do:  ("end" <-[#uint64T] "$r0");;;
     let: "addrs" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := HDRADDRS in
-    (method_call #marshal.Dec.id #"GetInts"%go (![#marshal.Dec] "dec1")) "$a0") in
+    (method_call #(ptrT.id marshal.Dec.id) #"GetInts"%go "dec1") "$a0") in
     do:  ("addrs" <-[#sliceT] "$r0");;;
     return: (![#uint64T] "end", ![#sliceT] "addrs")).
 
@@ -132,7 +132,7 @@ Definition decodeHdr2ⁱᵐᵖˡ : val :=
     (func_call #marshal.NewDec) "$a0") in
     do:  ("dec2" <-[#marshal.Dec] "$r0");;;
     let: "start" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #marshal.Dec.id #"GetInt"%go (![#marshal.Dec] "dec2")) #()) in
+    let: "$r0" := ((method_call #(ptrT.id marshal.Dec.id) #"GetInt"%go "dec2") #()) in
     do:  ("start" <-[#uint64T] "$r0");;;
     return: (![#uint64T] "start")).
 
@@ -199,10 +199,10 @@ Definition circularAppender__hdr1ⁱᵐᵖˡ : val :=
     (func_call #marshal.NewEnc) "$a0") in
     do:  ("enc" <-[#marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![#LogPosition] "end") in
-    (method_call #marshal.Enc.id #"PutInt"%go (![#marshal.Enc] "enc")) "$a0");;;
+    (method_call #(ptrT.id marshal.Enc.id) #"PutInt"%go "enc") "$a0");;;
     do:  (let: "$a0" := (![#sliceT] (struct.field_ref #circularAppender #"diskAddrs"%go (![#ptrT] "c"))) in
-    (method_call #marshal.Enc.id #"PutInts"%go (![#marshal.Enc] "enc")) "$a0");;;
-    return: ((method_call #marshal.Enc.id #"Finish"%go (![#marshal.Enc] "enc")) #())).
+    (method_call #(ptrT.id marshal.Enc.id) #"PutInts"%go "enc") "$a0");;;
+    return: ((method_call #(ptrT.id marshal.Enc.id) #"Finish"%go "enc") #())).
 
 Definition hdr2 : go_string := "github.com/mit-pdos/go-journal/wal.hdr2"%go.
 
@@ -215,8 +215,8 @@ Definition hdr2ⁱᵐᵖˡ : val :=
     (func_call #marshal.NewEnc) "$a0") in
     do:  ("enc" <-[#marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![#LogPosition] "start") in
-    (method_call #marshal.Enc.id #"PutInt"%go (![#marshal.Enc] "enc")) "$a0");;;
-    return: ((method_call #marshal.Enc.id #"Finish"%go (![#marshal.Enc] "enc")) #())).
+    (method_call #(ptrT.id marshal.Enc.id) #"PutInt"%go "enc") "$a0");;;
+    return: ((method_call #(ptrT.id marshal.Enc.id) #"Finish"%go "enc") #())).
 
 (* go: 0circular.go:83:28 *)
 Definition circularAppender__logBlocksⁱᵐᵖˡ : val :=

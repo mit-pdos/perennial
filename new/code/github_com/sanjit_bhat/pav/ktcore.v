@@ -119,7 +119,7 @@ Definition VerifyVrfSigⁱᵐᵖˡ : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
      let: "$a1" := (![#sliceT] "sig") in
-     (method_call #cryptoffi.SigPublicKey.id #"Verify"%go (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+     (method_call #(ptrT.id cryptoffi.SigPublicKey.id) #"Verify"%go "pk") "$a0" "$a1")).
 
 Definition SignLink : go_string := "github.com/sanjit-bhat/pav/ktcore.SignLink"%go.
 
@@ -187,7 +187,7 @@ Definition VerifyLinkSigⁱᵐᵖˡ : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
      let: "$a1" := (![#sliceT] "sig") in
-     (method_call #cryptoffi.SigPublicKey.id #"Verify"%go (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+     (method_call #(ptrT.id cryptoffi.SigPublicKey.id) #"Verify"%go "pk") "$a0" "$a1")).
 
 Definition ProveMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.ProveMapLabel"%go.
 

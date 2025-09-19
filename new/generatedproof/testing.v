@@ -467,6 +467,23 @@ Admitted.
 Global Instance into_val_typed_T `{ffi_syntax} : IntoValTyped T.t testing.T.
 Admitted.
 
+(* type testing.outputWriter *)
+Module outputWriter.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End outputWriter.
+
+Global Instance bounded_size_outputWriter : BoundedTypeSize testing.outputWriter.
+Admitted.
+
+Global Instance into_val_outputWriter `{ffi_syntax} : IntoVal outputWriter.t.
+Admitted.
+
+Global Instance into_val_typed_outputWriter `{ffi_syntax} : IntoValTyped outputWriter.t testing.outputWriter.
+Admitted.
+
 (* type testing.panicHandling *)
 Module panicHandling.
 Section def.

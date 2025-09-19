@@ -178,6 +178,23 @@ Admitted.
 Global Instance into_val_typed_nat `{ffi_syntax} : IntoValTyped nat.t big.nat.
 Admitted.
 
+(* type big.stack *)
+Module stack.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End stack.
+
+Global Instance bounded_size_stack : BoundedTypeSize big.stack.
+Admitted.
+
+Global Instance into_val_stack `{ffi_syntax} : IntoVal stack.t.
+Admitted.
+
+Global Instance into_val_typed_stack `{ffi_syntax} : IntoValTyped stack.t big.stack.
+Admitted.
+
 (* type big.divisor *)
 Module divisor.
 Section def.

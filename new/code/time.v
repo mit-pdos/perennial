@@ -484,6 +484,8 @@ Definition runtimeNow : go_string := "time.runtimeNow"%go.
 
 Definition runtimeNano : go_string := "time.runtimeNano"%go.
 
+Definition runtimeIsBubbled : go_string := "time.runtimeIsBubbled"%go.
+
 Definition startNano : go_string := "time.startNano"%go.
 
 Axiom startNano'init : val.
@@ -499,7 +501,7 @@ Definition unixTime : go_string := "time.unixTime"%go.
    on the zero Time is undefined. The result does not depend on the
    location associated with t.
 
-   go: time.go:1453:15 *)
+   go: time.go:1456:15 *)
 Definition Time__UnixNanoⁱᵐᵖˡ : val :=
   λ: "t" <>,
     exception_do (let: "t" := (mem.alloc "t") in
@@ -761,6 +763,8 @@ Axiom nowⁱᵐᵖˡ : val.
 
 Axiom runtimeNowⁱᵐᵖˡ : val.
 
+Axiom runtimeIsBubbledⁱᵐᵖˡ : val.
+
 Axiom Nowⁱᵐᵖˡ : val.
 
 Axiom unixTimeⁱᵐᵖˡ : val.
@@ -831,7 +835,7 @@ Axiom readFileⁱᵐᵖˡ : val.
 
 Axiom initLocalⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(startsWithLowerCase, startsWithLowerCaseⁱᵐᵖˡ); (nextStdChunk, nextStdChunkⁱᵐᵖˡ); (match', matchⁱᵐᵖˡ); (lookup', lookupⁱᵐᵖˡ); (appendInt, appendIntⁱᵐᵖˡ); (atoi, atoiⁱᵐᵖˡ); (stdFracSecond, stdFracSecondⁱᵐᵖˡ); (digitsLen, digitsLenⁱᵐᵖˡ); (separator, separatorⁱᵐᵖˡ); (appendNano, appendNanoⁱᵐᵖˡ); (newParseError, newParseErrorⁱᵐᵖˡ); (quote, quoteⁱᵐᵖˡ); (isDigit, isDigitⁱᵐᵖˡ); (getnum, getnumⁱᵐᵖˡ); (getnum3, getnum3ⁱᵐᵖˡ); (cutspace, cutspaceⁱᵐᵖˡ); (skip, skipⁱᵐᵖˡ); (Parse, Parseⁱᵐᵖˡ); (ParseInLocation, ParseInLocationⁱᵐᵖˡ); (parse, parseⁱᵐᵖˡ); (parseTimeZone, parseTimeZoneⁱᵐᵖˡ); (parseGMT, parseGMTⁱᵐᵖˡ); (parseSignedOffset, parseSignedOffsetⁱᵐᵖˡ); (commaOrPeriod, commaOrPeriodⁱᵐᵖˡ); (parseNanoseconds, parseNanosecondsⁱᵐᵖˡ); (leadingInt, leadingIntⁱᵐᵖˡ); (leadingFraction, leadingFractionⁱᵐᵖˡ); (ParseDuration, ParseDurationⁱᵐᵖˡ); (parseRFC3339, parseRFC3339ⁱᵐᵖˡ); (parseStrictRFC3339, parseStrictRFC3339ⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (syncTimer, syncTimerⁱᵐᵖˡ); (when, whenⁱᵐᵖˡ); (newTimer, newTimerⁱᵐᵖˡ); (stopTimer, stopTimerⁱᵐᵖˡ); (resetTimer, resetTimerⁱᵐᵖˡ); (NewTimer, NewTimerⁱᵐᵖˡ); (sendTime, sendTimeⁱᵐᵖˡ); (After, Afterⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (goFunc, goFuncⁱᵐᵖˡ); (interrupt, interruptⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (read, readⁱᵐᵖˡ); (closefd, closefdⁱᵐᵖˡ); (preadn, preadnⁱᵐᵖˡ); (NewTicker, NewTickerⁱᵐᵖˡ); (Tick, Tickⁱᵐᵖˡ); (dateToAbsDays, dateToAbsDaysⁱᵐᵖˡ); (fmtFrac, fmtFracⁱᵐᵖˡ); (fmtInt, fmtIntⁱᵐᵖˡ); (lessThanHalf, lessThanHalfⁱᵐᵖˡ); (subMono, subMonoⁱᵐᵖˡ); (Since, Sinceⁱᵐᵖˡ); (Until, Untilⁱᵐᵖˡ); (daysBefore, daysBeforeⁱᵐᵖˡ); (daysIn, daysInⁱᵐᵖˡ); (now, nowⁱᵐᵖˡ); (runtimeNow, runtimeNowⁱᵐᵖˡ); (runtimeNano, runtimeNanoⁱᵐᵖˡ); (Now, Nowⁱᵐᵖˡ); (unixTime, unixTimeⁱᵐᵖˡ); (Unix, Unixⁱᵐᵖˡ); (UnixMilli, UnixMilliⁱᵐᵖˡ); (UnixMicro, UnixMicroⁱᵐᵖˡ); (isLeap, isLeapⁱᵐᵖˡ); (norm, normⁱᵐᵖˡ); (Date, Dateⁱᵐᵖˡ); (div, divⁱᵐᵖˡ); (legacyTimeTimeAbs, legacyTimeTimeAbsⁱᵐᵖˡ); (legacyAbsClock, legacyAbsClockⁱᵐᵖˡ); (legacyAbsDate, legacyAbsDateⁱᵐᵖˡ); (FixedZone, FixedZoneⁱᵐᵖˡ); (fixedZone, fixedZoneⁱᵐᵖˡ); (tzset, tzsetⁱᵐᵖˡ); (tzsetName, tzsetNameⁱᵐᵖˡ); (tzsetOffset, tzsetOffsetⁱᵐᵖˡ); (tzsetRule, tzsetRuleⁱᵐᵖˡ); (tzsetNum, tzsetNumⁱᵐᵖˡ); (tzruleTime, tzruleTimeⁱᵐᵖˡ); (LoadLocation, LoadLocationⁱᵐᵖˡ); (containsDotDot, containsDotDotⁱᵐᵖˡ); (gorootZoneSource, gorootZoneSourceⁱᵐᵖˡ); (registerLoadFromEmbeddedTZData, registerLoadFromEmbeddedTZDataⁱᵐᵖˡ); (byteString, byteStringⁱᵐᵖˡ); (LoadLocationFromTZData, LoadLocationFromTZDataⁱᵐᵖˡ); (findZone, findZoneⁱᵐᵖˡ); (loadTzinfoFromDirOrZip, loadTzinfoFromDirOrZipⁱᵐᵖˡ); (get4, get4ⁱᵐᵖˡ); (get2, get2ⁱᵐᵖˡ); (loadTzinfoFromZip, loadTzinfoFromZipⁱᵐᵖˡ); (loadTzinfo, loadTzinfoⁱᵐᵖˡ); (loadLocation, loadLocationⁱᵐᵖˡ); (readFile, readFileⁱᵐᵖˡ); (initLocal, initLocalⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(startsWithLowerCase, startsWithLowerCaseⁱᵐᵖˡ); (nextStdChunk, nextStdChunkⁱᵐᵖˡ); (match', matchⁱᵐᵖˡ); (lookup', lookupⁱᵐᵖˡ); (appendInt, appendIntⁱᵐᵖˡ); (atoi, atoiⁱᵐᵖˡ); (stdFracSecond, stdFracSecondⁱᵐᵖˡ); (digitsLen, digitsLenⁱᵐᵖˡ); (separator, separatorⁱᵐᵖˡ); (appendNano, appendNanoⁱᵐᵖˡ); (newParseError, newParseErrorⁱᵐᵖˡ); (quote, quoteⁱᵐᵖˡ); (isDigit, isDigitⁱᵐᵖˡ); (getnum, getnumⁱᵐᵖˡ); (getnum3, getnum3ⁱᵐᵖˡ); (cutspace, cutspaceⁱᵐᵖˡ); (skip, skipⁱᵐᵖˡ); (Parse, Parseⁱᵐᵖˡ); (ParseInLocation, ParseInLocationⁱᵐᵖˡ); (parse, parseⁱᵐᵖˡ); (parseTimeZone, parseTimeZoneⁱᵐᵖˡ); (parseGMT, parseGMTⁱᵐᵖˡ); (parseSignedOffset, parseSignedOffsetⁱᵐᵖˡ); (commaOrPeriod, commaOrPeriodⁱᵐᵖˡ); (parseNanoseconds, parseNanosecondsⁱᵐᵖˡ); (leadingInt, leadingIntⁱᵐᵖˡ); (leadingFraction, leadingFractionⁱᵐᵖˡ); (ParseDuration, ParseDurationⁱᵐᵖˡ); (parseRFC3339, parseRFC3339ⁱᵐᵖˡ); (parseStrictRFC3339, parseStrictRFC3339ⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (syncTimer, syncTimerⁱᵐᵖˡ); (when, whenⁱᵐᵖˡ); (newTimer, newTimerⁱᵐᵖˡ); (stopTimer, stopTimerⁱᵐᵖˡ); (resetTimer, resetTimerⁱᵐᵖˡ); (NewTimer, NewTimerⁱᵐᵖˡ); (sendTime, sendTimeⁱᵐᵖˡ); (After, Afterⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (goFunc, goFuncⁱᵐᵖˡ); (interrupt, interruptⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (read, readⁱᵐᵖˡ); (closefd, closefdⁱᵐᵖˡ); (preadn, preadnⁱᵐᵖˡ); (NewTicker, NewTickerⁱᵐᵖˡ); (Tick, Tickⁱᵐᵖˡ); (dateToAbsDays, dateToAbsDaysⁱᵐᵖˡ); (fmtFrac, fmtFracⁱᵐᵖˡ); (fmtInt, fmtIntⁱᵐᵖˡ); (lessThanHalf, lessThanHalfⁱᵐᵖˡ); (subMono, subMonoⁱᵐᵖˡ); (Since, Sinceⁱᵐᵖˡ); (Until, Untilⁱᵐᵖˡ); (daysBefore, daysBeforeⁱᵐᵖˡ); (daysIn, daysInⁱᵐᵖˡ); (now, nowⁱᵐᵖˡ); (runtimeNow, runtimeNowⁱᵐᵖˡ); (runtimeNano, runtimeNanoⁱᵐᵖˡ); (runtimeIsBubbled, runtimeIsBubbledⁱᵐᵖˡ); (Now, Nowⁱᵐᵖˡ); (unixTime, unixTimeⁱᵐᵖˡ); (Unix, Unixⁱᵐᵖˡ); (UnixMilli, UnixMilliⁱᵐᵖˡ); (UnixMicro, UnixMicroⁱᵐᵖˡ); (isLeap, isLeapⁱᵐᵖˡ); (norm, normⁱᵐᵖˡ); (Date, Dateⁱᵐᵖˡ); (div, divⁱᵐᵖˡ); (legacyTimeTimeAbs, legacyTimeTimeAbsⁱᵐᵖˡ); (legacyAbsClock, legacyAbsClockⁱᵐᵖˡ); (legacyAbsDate, legacyAbsDateⁱᵐᵖˡ); (FixedZone, FixedZoneⁱᵐᵖˡ); (fixedZone, fixedZoneⁱᵐᵖˡ); (tzset, tzsetⁱᵐᵖˡ); (tzsetName, tzsetNameⁱᵐᵖˡ); (tzsetOffset, tzsetOffsetⁱᵐᵖˡ); (tzsetRule, tzsetRuleⁱᵐᵖˡ); (tzsetNum, tzsetNumⁱᵐᵖˡ); (tzruleTime, tzruleTimeⁱᵐᵖˡ); (LoadLocation, LoadLocationⁱᵐᵖˡ); (containsDotDot, containsDotDotⁱᵐᵖˡ); (gorootZoneSource, gorootZoneSourceⁱᵐᵖˡ); (registerLoadFromEmbeddedTZData, registerLoadFromEmbeddedTZDataⁱᵐᵖˡ); (byteString, byteStringⁱᵐᵖˡ); (LoadLocationFromTZData, LoadLocationFromTZDataⁱᵐᵖˡ); (findZone, findZoneⁱᵐᵖˡ); (loadTzinfoFromDirOrZip, loadTzinfoFromDirOrZipⁱᵐᵖˡ); (get4, get4ⁱᵐᵖˡ); (get2, get2ⁱᵐᵖˡ); (loadTzinfoFromZip, loadTzinfoFromZipⁱᵐᵖˡ); (loadTzinfo, loadTzinfoⁱᵐᵖˡ); (loadLocation, loadLocationⁱᵐᵖˡ); (readFile, readFileⁱᵐᵖˡ); (initLocal, initLocalⁱᵐᵖˡ)].
 
 Axiom ParseError__Errorⁱᵐᵖˡ : val.
 

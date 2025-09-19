@@ -127,23 +127,6 @@ Admitted.
 Global Instance into_val_typed_syscallErrorType `{ffi_syntax} : IntoValTyped syscallErrorType.t os.syscallErrorType.
 Admitted.
 
-(* type os.processMode *)
-Module processMode.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End processMode.
-
-Global Instance bounded_size_processMode : BoundedTypeSize os.processMode.
-Admitted.
-
-Global Instance into_val_processMode `{ffi_syntax} : IntoVal processMode.t.
-Admitted.
-
-Global Instance into_val_typed_processMode `{ffi_syntax} : IntoValTyped processMode.t os.processMode.
-Admitted.
-
 (* type os.processStatus *)
 Module processStatus.
 Section def.
@@ -176,6 +159,23 @@ Global Instance into_val_Process `{ffi_syntax} : IntoVal Process.t.
 Admitted.
 
 Global Instance into_val_typed_Process `{ffi_syntax} : IntoValTyped Process.t os.Process.
+Admitted.
+
+(* type os.processHandle *)
+Module processHandle.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End processHandle.
+
+Global Instance bounded_size_processHandle : BoundedTypeSize os.processHandle.
+Admitted.
+
+Global Instance into_val_processHandle `{ffi_syntax} : IntoVal processHandle.t.
+Admitted.
+
+Global Instance into_val_typed_processHandle `{ffi_syntax} : IntoValTyped processHandle.t os.processHandle.
 Admitted.
 
 (* type os.ProcAttr *)

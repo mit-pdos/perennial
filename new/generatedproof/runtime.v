@@ -1267,6 +1267,57 @@ Admitted.
 Global Instance into_val_typed_Cleanup `{ffi_syntax} : IntoValTyped Cleanup.t runtime.Cleanup.
 Admitted.
 
+(* type runtime.cleanupBlock *)
+Module cleanupBlock.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End cleanupBlock.
+
+Global Instance bounded_size_cleanupBlock : BoundedTypeSize runtime.cleanupBlock.
+Admitted.
+
+Global Instance into_val_cleanupBlock `{ffi_syntax} : IntoVal cleanupBlock.t.
+Admitted.
+
+Global Instance into_val_typed_cleanupBlock `{ffi_syntax} : IntoValTyped cleanupBlock.t runtime.cleanupBlock.
+Admitted.
+
+(* type runtime.cleanupBlockHeader *)
+Module cleanupBlockHeader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End cleanupBlockHeader.
+
+Global Instance bounded_size_cleanupBlockHeader : BoundedTypeSize runtime.cleanupBlockHeader.
+Admitted.
+
+Global Instance into_val_cleanupBlockHeader `{ffi_syntax} : IntoVal cleanupBlockHeader.t.
+Admitted.
+
+Global Instance into_val_typed_cleanupBlockHeader `{ffi_syntax} : IntoValTyped cleanupBlockHeader.t runtime.cleanupBlockHeader.
+Admitted.
+
+(* type runtime.cleanupQueue *)
+Module cleanupQueue.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End cleanupQueue.
+
+Global Instance bounded_size_cleanupQueue : BoundedTypeSize runtime.cleanupQueue.
+Admitted.
+
+Global Instance into_val_cleanupQueue `{ffi_syntax} : IntoVal cleanupQueue.t.
+Admitted.
+
+Global Instance into_val_typed_cleanupQueue `{ffi_syntax} : IntoValTyped cleanupQueue.t runtime.cleanupQueue.
+Admitted.
+
 (* type runtime.metricData *)
 Module metricData.
 Section def.
@@ -1505,21 +1556,21 @@ Admitted.
 Global Instance into_val_typed_metricName `{ffi_syntax} : IntoValTyped metricName.t runtime.metricName.
 Admitted.
 
-(* type runtime.finblock *)
-Module finblock.
+(* type runtime.finBlock *)
+Module finBlock.
 Section def.
 Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
-End finblock.
+End finBlock.
 
-Global Instance bounded_size_finblock : BoundedTypeSize runtime.finblock.
+Global Instance bounded_size_finBlock : BoundedTypeSize runtime.finBlock.
 Admitted.
 
-Global Instance into_val_finblock `{ffi_syntax} : IntoVal finblock.t.
+Global Instance into_val_finBlock `{ffi_syntax} : IntoVal finBlock.t.
 Admitted.
 
-Global Instance into_val_typed_finblock `{ffi_syntax} : IntoValTyped finblock.t runtime.finblock.
+Global Instance into_val_typed_finBlock `{ffi_syntax} : IntoValTyped finBlock.t runtime.finBlock.
 Admitted.
 
 (* type runtime.finalizer *)
@@ -1675,6 +1726,23 @@ Admitted.
 Global Instance into_val_typed_gcBgMarkWorkerNode `{ffi_syntax} : IntoValTyped gcBgMarkWorkerNode.t runtime.gcBgMarkWorkerNode.
 Admitted.
 
+(* type runtime.gcBgMarkWorkerNodePadded *)
+Module gcBgMarkWorkerNodePadded.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End gcBgMarkWorkerNodePadded.
+
+Global Instance bounded_size_gcBgMarkWorkerNodePadded : BoundedTypeSize runtime.gcBgMarkWorkerNodePadded.
+Admitted.
+
+Global Instance into_val_gcBgMarkWorkerNodePadded `{ffi_syntax} : IntoVal gcBgMarkWorkerNodePadded.t.
+Admitted.
+
+Global Instance into_val_typed_gcBgMarkWorkerNodePadded `{ffi_syntax} : IntoValTyped gcBgMarkWorkerNodePadded.t runtime.gcBgMarkWorkerNodePadded.
+Admitted.
+
 (* type runtime.gcCPULimiterState *)
 Module gcCPULimiterState.
 Section def.
@@ -1758,6 +1826,91 @@ Global Instance into_val_gcDrainFlags `{ffi_syntax} : IntoVal gcDrainFlags.t.
 Admitted.
 
 Global Instance into_val_typed_gcDrainFlags `{ffi_syntax} : IntoValTyped gcDrainFlags.t runtime.gcDrainFlags.
+Admitted.
+
+(* type runtime.spanInlineMarkBits *)
+Module spanInlineMarkBits.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End spanInlineMarkBits.
+
+Global Instance bounded_size_spanInlineMarkBits : BoundedTypeSize runtime.spanInlineMarkBits.
+Admitted.
+
+Global Instance into_val_spanInlineMarkBits `{ffi_syntax} : IntoVal spanInlineMarkBits.t.
+Admitted.
+
+Global Instance into_val_typed_spanInlineMarkBits `{ffi_syntax} : IntoValTyped spanInlineMarkBits.t runtime.spanInlineMarkBits.
+Admitted.
+
+(* type runtime.spanQueue *)
+Module spanQueue.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End spanQueue.
+
+Global Instance bounded_size_spanQueue : BoundedTypeSize runtime.spanQueue.
+Admitted.
+
+Global Instance into_val_spanQueue `{ffi_syntax} : IntoVal spanQueue.t.
+Admitted.
+
+Global Instance into_val_typed_spanQueue `{ffi_syntax} : IntoValTyped spanQueue.t runtime.spanQueue.
+Admitted.
+
+(* type runtime.localSpanQueue *)
+Module localSpanQueue.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End localSpanQueue.
+
+Global Instance bounded_size_localSpanQueue : BoundedTypeSize runtime.localSpanQueue.
+Admitted.
+
+Global Instance into_val_localSpanQueue `{ffi_syntax} : IntoVal localSpanQueue.t.
+Admitted.
+
+Global Instance into_val_typed_localSpanQueue `{ffi_syntax} : IntoValTyped localSpanQueue.t runtime.localSpanQueue.
+Admitted.
+
+(* type runtime.objptr *)
+Module objptr.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End objptr.
+
+Global Instance bounded_size_objptr : BoundedTypeSize runtime.objptr.
+Admitted.
+
+Global Instance into_val_objptr `{ffi_syntax} : IntoVal objptr.t.
+Admitted.
+
+Global Instance into_val_typed_objptr `{ffi_syntax} : IntoValTyped objptr.t runtime.objptr.
+Admitted.
+
+(* type runtime.sizeClassScanStats *)
+Module sizeClassScanStats.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End sizeClassScanStats.
+
+Global Instance bounded_size_sizeClassScanStats : BoundedTypeSize runtime.sizeClassScanStats.
+Admitted.
+
+Global Instance into_val_sizeClassScanStats `{ffi_syntax} : IntoVal sizeClassScanStats.t.
+Admitted.
+
+Global Instance into_val_typed_sizeClassScanStats `{ffi_syntax} : IntoValTyped sizeClassScanStats.t runtime.sizeClassScanStats.
 Admitted.
 
 (* type runtime.gcControllerState *)
@@ -2202,23 +2355,6 @@ Admitted.
 Global Instance into_val_typed_mSpanStateBox `{ffi_syntax} : IntoValTyped mSpanStateBox.t runtime.mSpanStateBox.
 Admitted.
 
-(* type runtime.mSpanList *)
-Module mSpanList.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End mSpanList.
-
-Global Instance bounded_size_mSpanList : BoundedTypeSize runtime.mSpanList.
-Admitted.
-
-Global Instance into_val_mSpanList `{ffi_syntax} : IntoVal mSpanList.t.
-Admitted.
-
-Global Instance into_val_typed_mSpanList `{ffi_syntax} : IntoValTyped mSpanList.t runtime.mSpanList.
-Admitted.
-
 (* type runtime.mspan *)
 Module mspan.
 Section def.
@@ -2287,6 +2423,40 @@ Admitted.
 Global Instance into_val_typed_spanAllocType `{ffi_syntax} : IntoValTyped spanAllocType.t runtime.spanAllocType.
 Admitted.
 
+(* type runtime.mSpanList *)
+Module mSpanList.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End mSpanList.
+
+Global Instance bounded_size_mSpanList : BoundedTypeSize runtime.mSpanList.
+Admitted.
+
+Global Instance into_val_mSpanList `{ffi_syntax} : IntoVal mSpanList.t.
+Admitted.
+
+Global Instance into_val_typed_mSpanList `{ffi_syntax} : IntoValTyped mSpanList.t runtime.mSpanList.
+Admitted.
+
+(* type runtime.mSpanQueue *)
+Module mSpanQueue.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End mSpanQueue.
+
+Global Instance bounded_size_mSpanQueue : BoundedTypeSize runtime.mSpanQueue.
+Admitted.
+
+Global Instance into_val_mSpanQueue `{ffi_syntax} : IntoVal mSpanQueue.t.
+Admitted.
+
+Global Instance into_val_typed_mSpanQueue `{ffi_syntax} : IntoValTyped mSpanQueue.t runtime.mSpanQueue.
+Admitted.
+
 (* type runtime.special *)
 Module special.
 Section def.
@@ -2338,6 +2508,40 @@ Admitted.
 Global Instance into_val_typed_specialCleanup `{ffi_syntax} : IntoValTyped specialCleanup.t runtime.specialCleanup.
 Admitted.
 
+(* type runtime.specialCheckFinalizer *)
+Module specialCheckFinalizer.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End specialCheckFinalizer.
+
+Global Instance bounded_size_specialCheckFinalizer : BoundedTypeSize runtime.specialCheckFinalizer.
+Admitted.
+
+Global Instance into_val_specialCheckFinalizer `{ffi_syntax} : IntoVal specialCheckFinalizer.t.
+Admitted.
+
+Global Instance into_val_typed_specialCheckFinalizer `{ffi_syntax} : IntoValTyped specialCheckFinalizer.t runtime.specialCheckFinalizer.
+Admitted.
+
+(* type runtime.specialTinyBlock *)
+Module specialTinyBlock.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End specialTinyBlock.
+
+Global Instance bounded_size_specialTinyBlock : BoundedTypeSize runtime.specialTinyBlock.
+Admitted.
+
+Global Instance into_val_specialTinyBlock `{ffi_syntax} : IntoVal specialTinyBlock.t.
+Admitted.
+
+Global Instance into_val_typed_specialTinyBlock `{ffi_syntax} : IntoValTyped specialTinyBlock.t runtime.specialTinyBlock.
+Admitted.
+
 (* type runtime.specialWeakHandle *)
 Module specialWeakHandle.
 Section def.
@@ -2353,6 +2557,40 @@ Global Instance into_val_specialWeakHandle `{ffi_syntax} : IntoVal specialWeakHa
 Admitted.
 
 Global Instance into_val_typed_specialWeakHandle `{ffi_syntax} : IntoValTyped specialWeakHandle.t runtime.specialWeakHandle.
+Admitted.
+
+(* type runtime.immortalWeakHandleMap *)
+Module immortalWeakHandleMap.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End immortalWeakHandleMap.
+
+Global Instance bounded_size_immortalWeakHandleMap : BoundedTypeSize runtime.immortalWeakHandleMap.
+Admitted.
+
+Global Instance into_val_immortalWeakHandleMap `{ffi_syntax} : IntoVal immortalWeakHandleMap.t.
+Admitted.
+
+Global Instance into_val_typed_immortalWeakHandleMap `{ffi_syntax} : IntoValTyped immortalWeakHandleMap.t runtime.immortalWeakHandleMap.
+Admitted.
+
+(* type runtime.immortalWeakHandle *)
+Module immortalWeakHandle.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End immortalWeakHandle.
+
+Global Instance bounded_size_immortalWeakHandle : BoundedTypeSize runtime.immortalWeakHandle.
+Admitted.
+
+Global Instance into_val_immortalWeakHandle `{ffi_syntax} : IntoVal immortalWeakHandle.t.
+Admitted.
+
+Global Instance into_val_typed_immortalWeakHandle `{ffi_syntax} : IntoValTyped immortalWeakHandle.t runtime.immortalWeakHandle.
 Admitted.
 
 (* type runtime.specialprofile *)
@@ -2729,23 +2967,6 @@ Admitted.
 Global Instance into_val_typed_mProfCycleHolder `{ffi_syntax} : IntoValTyped mProfCycleHolder.t runtime.mProfCycleHolder.
 Admitted.
 
-(* type runtime.lockTimer *)
-Module lockTimer.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End lockTimer.
-
-Global Instance bounded_size_lockTimer : BoundedTypeSize runtime.lockTimer.
-Admitted.
-
-Global Instance into_val_lockTimer `{ffi_syntax} : IntoVal lockTimer.t.
-Admitted.
-
-Global Instance into_val_typed_lockTimer `{ffi_syntax} : IntoValTyped lockTimer.t runtime.lockTimer.
-Admitted.
-
 (* type runtime.mLockProfile *)
 Module mLockProfile.
 Section def.
@@ -2931,6 +3152,40 @@ Global Instance into_val_spanSet `{ffi_syntax} : IntoVal spanSet.t.
 Admitted.
 
 Global Instance into_val_typed_spanSet `{ffi_syntax} : IntoValTyped spanSet.t runtime.spanSet.
+Admitted.
+
+(* type runtime.spanSetBlockHeader *)
+Module spanSetBlockHeader.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End spanSetBlockHeader.
+
+Global Instance bounded_size_spanSetBlockHeader : BoundedTypeSize runtime.spanSetBlockHeader.
+Admitted.
+
+Global Instance into_val_spanSetBlockHeader `{ffi_syntax} : IntoVal spanSetBlockHeader.t.
+Admitted.
+
+Global Instance into_val_typed_spanSetBlockHeader `{ffi_syntax} : IntoValTyped spanSetBlockHeader.t runtime.spanSetBlockHeader.
+Admitted.
+
+(* type runtime.spanSetBlockHeader2 *)
+Module spanSetBlockHeader2.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End spanSetBlockHeader2.
+
+Global Instance bounded_size_spanSetBlockHeader2 : BoundedTypeSize runtime.spanSetBlockHeader2.
+Admitted.
+
+Global Instance into_val_spanSetBlockHeader2 `{ffi_syntax} : IntoVal spanSetBlockHeader2.t.
+Admitted.
+
+Global Instance into_val_typed_spanSetBlockHeader2 `{ffi_syntax} : IntoValTyped spanSetBlockHeader2.t runtime.spanSetBlockHeader2.
 Admitted.
 
 (* type runtime.spanSetBlock *)
@@ -3528,6 +3783,23 @@ Admitted.
 Global Instance into_val_typed_sysmontick `{ffi_syntax} : IntoValTyped sysmontick.t runtime.sysmontick.
 Admitted.
 
+(* type runtime.updateMaxProcsGState *)
+Module updateMaxProcsGState.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End updateMaxProcsGState.
+
+Global Instance bounded_size_updateMaxProcsGState : BoundedTypeSize runtime.updateMaxProcsGState.
+Admitted.
+
+Global Instance into_val_updateMaxProcsGState `{ffi_syntax} : IntoVal updateMaxProcsGState.t.
+Admitted.
+
+Global Instance into_val_typed_updateMaxProcsGState `{ffi_syntax} : IntoValTyped updateMaxProcsGState.t runtime.updateMaxProcsGState.
+Admitted.
+
 (* type runtime.pMask *)
 Module pMask.
 Section def.
@@ -4002,6 +4274,23 @@ Global Instance into_val_m `{ffi_syntax} : IntoVal m.t.
 Admitted.
 
 Global Instance into_val_typed_m `{ffi_syntax} : IntoValTyped m.t runtime.m.
+Admitted.
+
+(* type runtime.mPadded *)
+Module mPadded.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End mPadded.
+
+Global Instance bounded_size_mPadded : BoundedTypeSize runtime.mPadded.
+Admitted.
+
+Global Instance into_val_mPadded `{ffi_syntax} : IntoVal mPadded.t.
+Admitted.
+
+Global Instance into_val_typed_mPadded `{ffi_syntax} : IntoValTyped mPadded.t runtime.mPadded.
 Admitted.
 
 (* type runtime.p *)
@@ -4888,21 +5177,55 @@ Admitted.
 Global Instance into_val_typed_inlineFrame `{ffi_syntax} : IntoValTyped inlineFrame.t runtime.inlineFrame.
 Admitted.
 
-(* type runtime.synctestGroup *)
-Module synctestGroup.
+(* type runtime.synctestBubble *)
+Module synctestBubble.
 Section def.
 Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
-End synctestGroup.
+End synctestBubble.
 
-Global Instance bounded_size_synctestGroup : BoundedTypeSize runtime.synctestGroup.
+Global Instance bounded_size_synctestBubble : BoundedTypeSize runtime.synctestBubble.
 Admitted.
 
-Global Instance into_val_synctestGroup `{ffi_syntax} : IntoVal synctestGroup.t.
+Global Instance into_val_synctestBubble `{ffi_syntax} : IntoVal synctestBubble.t.
 Admitted.
 
-Global Instance into_val_typed_synctestGroup `{ffi_syntax} : IntoValTyped synctestGroup.t runtime.synctestGroup.
+Global Instance into_val_typed_synctestBubble `{ffi_syntax} : IntoValTyped synctestBubble.t runtime.synctestBubble.
+Admitted.
+
+(* type runtime.synctestDeadlockError *)
+Module synctestDeadlockError.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End synctestDeadlockError.
+
+Global Instance bounded_size_synctestDeadlockError : BoundedTypeSize runtime.synctestDeadlockError.
+Admitted.
+
+Global Instance into_val_synctestDeadlockError `{ffi_syntax} : IntoVal synctestDeadlockError.t.
+Admitted.
+
+Global Instance into_val_typed_synctestDeadlockError `{ffi_syntax} : IntoValTyped synctestDeadlockError.t runtime.synctestDeadlockError.
+Admitted.
+
+(* type runtime.specialBubble *)
+Module specialBubble.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End specialBubble.
+
+Global Instance bounded_size_specialBubble : BoundedTypeSize runtime.specialBubble.
+Admitted.
+
+Global Instance into_val_specialBubble `{ffi_syntax} : IntoVal specialBubble.t.
+Admitted.
+
+Global Instance into_val_typed_specialBubble `{ffi_syntax} : IntoValTyped specialBubble.t runtime.specialBubble.
 Admitted.
 
 (* type runtime.taggedPointer *)
@@ -5177,23 +5500,6 @@ Admitted.
 Global Instance into_val_typed_traceBuf `{ffi_syntax} : IntoValTyped traceBuf.t runtime.traceBuf.
 Admitted.
 
-(* type runtime.traceEv *)
-Module traceEv.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceEv.
-
-Global Instance bounded_size_traceEv : BoundedTypeSize runtime.traceEv.
-Admitted.
-
-Global Instance into_val_traceEv `{ffi_syntax} : IntoVal traceEv.t.
-Admitted.
-
-Global Instance into_val_typed_traceEv `{ffi_syntax} : IntoValTyped traceEv.t runtime.traceEv.
-Admitted.
-
 (* type runtime.traceArg *)
 Module traceArg.
 Section def.
@@ -5226,23 +5532,6 @@ Global Instance into_val_traceEventWriter `{ffi_syntax} : IntoVal traceEventWrit
 Admitted.
 
 Global Instance into_val_typed_traceEventWriter `{ffi_syntax} : IntoValTyped traceEventWriter.t runtime.traceEventWriter.
-Admitted.
-
-(* type runtime.traceExperiment *)
-Module traceExperiment.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceExperiment.
-
-Global Instance bounded_size_traceExperiment : BoundedTypeSize runtime.traceExperiment.
-Admitted.
-
-Global Instance into_val_traceExperiment `{ffi_syntax} : IntoVal traceExperiment.t.
-Admitted.
-
-Global Instance into_val_typed_traceExperiment `{ffi_syntax} : IntoValTyped traceExperiment.t runtime.traceExperiment.
 Admitted.
 
 (* type runtime.traceMap *)
@@ -5464,40 +5753,6 @@ Global Instance into_val_traceFrame `{ffi_syntax} : IntoVal traceFrame.t.
 Admitted.
 
 Global Instance into_val_typed_traceFrame `{ffi_syntax} : IntoValTyped traceFrame.t runtime.traceFrame.
-Admitted.
-
-(* type runtime.traceGoStatus *)
-Module traceGoStatus.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceGoStatus.
-
-Global Instance bounded_size_traceGoStatus : BoundedTypeSize runtime.traceGoStatus.
-Admitted.
-
-Global Instance into_val_traceGoStatus `{ffi_syntax} : IntoVal traceGoStatus.t.
-Admitted.
-
-Global Instance into_val_typed_traceGoStatus `{ffi_syntax} : IntoValTyped traceGoStatus.t runtime.traceGoStatus.
-Admitted.
-
-(* type runtime.traceProcStatus *)
-Module traceProcStatus.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceProcStatus.
-
-Global Instance bounded_size_traceProcStatus : BoundedTypeSize runtime.traceProcStatus.
-Admitted.
-
-Global Instance into_val_traceProcStatus `{ffi_syntax} : IntoVal traceProcStatus.t.
-Admitted.
-
-Global Instance into_val_typed_traceProcStatus `{ffi_syntax} : IntoValTyped traceProcStatus.t runtime.traceProcStatus.
 Admitted.
 
 (* type runtime.traceSchedResourceState *)

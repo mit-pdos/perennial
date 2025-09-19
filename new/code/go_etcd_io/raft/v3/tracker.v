@@ -739,8 +739,8 @@ Definition MakeProgressTrackerⁱᵐᵖˡ : val :=
 Definition ProgressTracker__ConfStateⁱᵐᵖˡ : val :=
   λ: "p" <>,
     exception_do (let: "p" := (mem.alloc "p") in
-    return: (let: "$Voters" := ((method_call #quorum.MajorityConfig.id #"Slice"%go (![#quorum.MajorityConfig] (array.elem_ref #quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 0)))) #()) in
-     let: "$VotersOutgoing" := ((method_call #quorum.MajorityConfig.id #"Slice"%go (![#quorum.MajorityConfig] (array.elem_ref #quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 1)))) #()) in
+    return: (let: "$Voters" := ((method_call #(ptrT.id quorum.MajorityConfig.id) #"Slice"%go (array.elem_ref #quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 0))) #()) in
+     let: "$VotersOutgoing" := ((method_call #(ptrT.id quorum.MajorityConfig.id) #"Slice"%go (array.elem_ref #quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 1))) #()) in
      let: "$Learners" := ((method_call #quorum.MajorityConfig.id #"Slice"%go (![type.mapT #uint64T (type.structT [
      ])] (struct.field_ref #Config #"Learners"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) #()) in
      let: "$LearnersNext" := ((method_call #quorum.MajorityConfig.id #"Slice"%go (![type.mapT #uint64T (type.structT [
@@ -796,7 +796,7 @@ Definition ProgressTracker__Committedⁱᵐᵖˡ : val :=
   λ: "p" <>,
     exception_do (let: "p" := (mem.alloc "p") in
     return: (let: "$a0" := (interface.make #matchAckIndexer.id (![#ProgressMap] (struct.field_ref #ProgressTracker #"Progress"%go (![#ptrT] "p")))) in
-     (method_call #quorum.JointConfig.id #"CommittedIndex"%go (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) "$a0")).
+     (method_call #(ptrT.id quorum.JointConfig.id) #"CommittedIndex"%go (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) "$a0")).
 
 (* Visit invokes the supplied closure for all tracked progresses in stable order.
 
@@ -860,7 +860,7 @@ Definition ProgressTracker__QuorumActiveⁱᵐᵖˡ : val :=
       ) in
     (method_call #(ptrT.id ProgressTracker.id) #"Visit"%go (![#ptrT] "p")) "$a0");;;
     return: ((let: "$a0" := (![type.mapT #uint64T #boolT] "votes") in
-     (method_call #quorum.JointConfig.id #"VoteResult"%go (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) "$a0") = quorum.VoteWon)).
+     (method_call #(ptrT.id quorum.JointConfig.id) #"VoteResult"%go (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) "$a0") = quorum.VoteWon)).
 
 (* VoterNodes returns a sorted slice of voters.
 
@@ -870,7 +870,7 @@ Definition ProgressTracker__VoterNodesⁱᵐᵖˡ : val :=
     exception_do (let: "p" := (mem.alloc "p") in
     let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T (type.structT [
     ])))) in
-    let: "$r0" := ((method_call #quorum.JointConfig.id #"IDs"%go (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) #()) in
+    let: "$r0" := ((method_call #(ptrT.id quorum.JointConfig.id) #"IDs"%go (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #()) in
     do:  ("m" <-[type.mapT #uint64T (type.structT [
     ])] "$r0");;;
     let: "nodes" := (mem.alloc (type.zero_val #sliceT)) in
@@ -988,7 +988,7 @@ Definition ProgressTracker__TallyVotesⁱᵐᵖˡ : val :=
       else do:  ("rejected" <-[#intT] ((![#intT] "rejected") + #(W64 1))))));;;
     let: "result" := (mem.alloc (type.zero_val #quorum.VoteResult)) in
     let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #boolT] (struct.field_ref #ProgressTracker #"Votes"%go (![#ptrT] "p"))) in
-    (method_call #quorum.JointConfig.id #"VoteResult"%go (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) "$a0") in
+    (method_call #(ptrT.id quorum.JointConfig.id) #"VoteResult"%go (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) "$a0") in
     do:  ("result" <-[#quorum.VoteResult] "$r0");;;
     return: (![#intT] "granted", ![#intT] "rejected", ![#quorum.VoteResult] "result")).
 

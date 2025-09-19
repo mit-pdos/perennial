@@ -934,7 +934,7 @@ Definition useEmbeddedMethod : go_string := "github.com/goose-lang/goose/testdat
 Definition useEmbeddedMethodⁱᵐᵖˡ : val :=
   λ: "d",
     exception_do (let: "d" := (mem.alloc "d") in
-    return: (((method_call #embedD.id #"Foo"%go (![#embedD] "d")) #()) = ((method_call #embedA.id #"Foo"%go (![#embedA] (struct.field_ref #embedB #"embedA"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d")))))) #()))).
+    return: (((method_call #(ptrT.id embedD.id) #"Foo"%go "d") #()) = ((method_call #(ptrT.id embedA.id) #"Foo"%go (struct.field_ref #embedB #"embedA"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d"))))) #()))).
 
 Definition useEmbeddedMethod2 : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useEmbeddedMethod2"%go.
 
@@ -942,8 +942,8 @@ Definition useEmbeddedMethod2 : go_string := "github.com/goose-lang/goose/testda
 Definition useEmbeddedMethod2ⁱᵐᵖˡ : val :=
   λ: "d",
     exception_do (let: "d" := (mem.alloc "d") in
-    do:  ((method_call #embedD.id #"Car"%go (![#embedD] "d")) #());;;
-    return: (((method_call #embedD.id #"Bar"%go (![#embedD] "d")) #()) = ((method_call #(ptrT.id embedB.id) #"Bar"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d")))) #()))).
+    do:  ((method_call #(ptrT.id embedD.id) #"Car"%go "d") #());;;
+    return: (((method_call #(ptrT.id embedD.id) #"Bar"%go "d") #()) = ((method_call #(ptrT.id embedB.id) #"Bar"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d")))) #()))).
 
 Definition empty : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.empty"%go.
 
@@ -2262,7 +2262,7 @@ Definition RecursiveEmbedded : go_type := structT [
 Definition RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ : val :=
   λ: "r" <>,
     exception_do (let: "r" := (mem.alloc "r") in
-    do:  ((method_call #Other.id #"recurEmbeddedMethod"%go (![#Other] (struct.field_ref #RecursiveEmbedded #"Other"%go (![#ptrT] "r")))) #());;;
+    do:  ((method_call #(ptrT.id Other.id) #"recurEmbeddedMethod"%go (struct.field_ref #RecursiveEmbedded #"Other"%go (![#ptrT] "r"))) #());;;
     return: #()).
 
 Definition useRenamedImport : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useRenamedImport"%go.
@@ -2705,7 +2705,7 @@ Definition UseAddⁱᵐᵖˡ : val :=
     do:  ("c" <-[#Point] "$r0");;;
     let: "r" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (method_call #Point.id #"Add"%go (![#Point] "c")) "$a0") in
+    (method_call #(ptrT.id Point.id) #"Add"%go "c") "$a0") in
     do:  ("r" <-[#uint64T] "$r0");;;
     return: (![#uint64T] "r")).
 

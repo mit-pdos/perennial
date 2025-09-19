@@ -40,7 +40,7 @@ Definition NewGeneratorⁱᵐᵖˡ : val :=
     let: "$r0" := ((u_to_w64 (![#uint16T] "memberID")) ≪ #(W64 suffixLen)) in
     do:  ("prefix" <-[#uint64T] "$r0");;;
     let: "unixMilli" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((s_to_w64 ((method_call #time.Time.id #"UnixNano"%go (![#time.Time] "now")) #())) `quot` (s_to_w64 (time.Millisecond `quots` time.Nanosecond))) in
+    let: "$r0" := ((s_to_w64 ((method_call #(ptrT.id time.Time.id) #"UnixNano"%go "now") #())) `quot` (s_to_w64 (time.Millisecond `quots` time.Nanosecond))) in
     do:  ("unixMilli" <-[#uint64T] "$r0");;;
     let: "suffix" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((let: "$a0" := (![#uint64T] "unixMilli") in

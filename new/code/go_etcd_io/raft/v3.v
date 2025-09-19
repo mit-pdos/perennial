@@ -4155,7 +4155,7 @@ Definition raft__campaignⁱᵐᵖˡ : val :=
     let: "ids" := (mem.alloc (type.zero_val #sliceT)) in
     let: "idMap" := (mem.alloc (type.zero_val (type.mapT #uint64T (type.structT [
     ])))) in
-    let: "$r0" := ((method_call #quorum.JointConfig.id #"IDs"%go (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))))) #()) in
+    let: "$r0" := ((method_call #(ptrT.id quorum.JointConfig.id) #"IDs"%go (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) #()) in
     do:  ("idMap" <-[type.mapT #uint64T (type.structT [
     ])] "$r0");;;
     let: "$r0" := (slice.make3 #uint64T #(W64 0) (let: "$a0" := (![type.mapT #uint64T (type.structT [
@@ -4932,7 +4932,7 @@ Definition stepLeaderⁱᵐᵖˡ : val :=
         (if: (let: "$a0" := (let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) in
         let: "$a1" := (![#sliceT] (struct.field_ref #raftpb.Message #"Context"%go "m")) in
         (method_call #(ptrT.id readOnly.id) #"recvAck"%go (![#ptrT] (struct.field_ref #raft #"readOnly"%go (![#ptrT] "r")))) "$a0" "$a1") in
-        (method_call #quorum.JointConfig.id #"VoteResult"%go (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))))) "$a0") ≠ quorum.VoteWon
+        (method_call #(ptrT.id quorum.JointConfig.id) #"VoteResult"%go (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) "$a0") ≠ quorum.VoteWon
         then return: (#interface.nil)
         else do:  #());;;
         let: "rss" := (mem.alloc (type.zero_val #sliceT)) in
@@ -5737,14 +5737,14 @@ Definition raft__applyConfChangeⁱᵐᵖˡ : val :=
         "LastIndex" ::= "$LastIndex"
       }]) in
       do:  ("changer" <-[#confchange.Changer] "$r0");;;
-      (if: (method_call #raftpb.ConfChangeV2.id #"LeaveJoint"%go (![#raftpb.ConfChangeV2] "cc")) #()
+      (if: (method_call #(ptrT.id raftpb.ConfChangeV2.id) #"LeaveJoint"%go "cc") #()
       then
-        let: (("$ret0", "$ret1"), "$ret2") := (((method_call #confchange.Changer.id #"LeaveJoint"%go (![#confchange.Changer] "changer")) #())) in
+        let: (("$ret0", "$ret1"), "$ret2") := (((method_call #(ptrT.id confchange.Changer.id) #"LeaveJoint"%go "changer") #())) in
         return: ("$ret0", "$ret1", "$ret2")
       else
         (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
         let: "autoLeave" := (mem.alloc (type.zero_val #boolT)) in
-        let: ("$ret0", "$ret1") := ((method_call #raftpb.ConfChangeV2.id #"EnterJoint"%go (![#raftpb.ConfChangeV2] "cc")) #()) in
+        let: ("$ret0", "$ret1") := ((method_call #(ptrT.id raftpb.ConfChangeV2.id) #"EnterJoint"%go "cc") #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("autoLeave" <-[#boolT] "$r0");;;
@@ -5753,11 +5753,11 @@ Definition raft__applyConfChangeⁱᵐᵖˡ : val :=
         then
           let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![#boolT] "autoLeave") in
           let: "$a1" := (![#sliceT] (struct.field_ref #raftpb.ConfChangeV2 #"Changes"%go "cc")) in
-          (method_call #confchange.Changer.id #"EnterJoint"%go (![#confchange.Changer] "changer")) "$a0" "$a1")) in
+          (method_call #(ptrT.id confchange.Changer.id) #"EnterJoint"%go "changer") "$a0" "$a1")) in
           return: ("$ret0", "$ret1", "$ret2")
         else do:  #())));;;
       let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.ConfChangeV2 #"Changes"%go "cc")) in
-      (method_call #confchange.Changer.id #"Simple"%go (![#confchange.Changer] "changer")) "$a0")) in
+      (method_call #(ptrT.id confchange.Changer.id) #"Simple"%go "changer") "$a0")) in
       return: ("$ret0", "$ret1", "$ret2"))
       ) #()) in
     let: "$r0" := "$ret0" in
@@ -5843,7 +5843,7 @@ Definition raft__switchToConfigⁱᵐᵖˡ : val :=
         ) in
       (method_call #(ptrT.id tracker.ProgressTracker.id) #"Visit"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) "$a0"));;;
     (let: "tOK" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (map.get ((method_call #quorum.JointConfig.id #"IDs"%go (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))))) #()) (![#uint64T] (struct.field_ref #raft #"leadTransferee"%go (![#ptrT] "r")))) in
+    let: ("$ret0", "$ret1") := (map.get ((method_call #(ptrT.id quorum.JointConfig.id) #"IDs"%go (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) #()) (![#uint64T] (struct.field_ref #raft #"leadTransferee"%go (![#ptrT] "r")))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
@@ -7431,7 +7431,7 @@ Definition Status__Stringⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := ((method_call #Status.id #"MarshalJSON"%go (![#Status] "s")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id Status.id) #"MarshalJSON"%go "s") #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("b" <-[#sliceT] "$r0");;;
@@ -7932,7 +7932,7 @@ Definition StateType__MarshalJSONⁱᵐᵖˡ : val :=
   λ: "st" <>,
     exception_do (let: "st" := (mem.alloc "st") in
     return: (string.to_bytes (let: "$a0" := #"%q"%go in
-     let: "$a1" := ((let: "$sl0" := (interface.make #stringT.id ((method_call #StateType.id #"String"%go (![#StateType] "st")) #())) in
+     let: "$a1" := ((let: "$sl0" := (interface.make #stringT.id ((method_call #(ptrT.id StateType.id) #"String"%go "st") #())) in
      slice.literal #interfaceT ["$sl0"])) in
      (func_call #fmt.Sprintf) "$a0" "$a1"), #interface.nil)).
 
@@ -8533,7 +8533,7 @@ Definition assertConfStatesEquivalentⁱᵐᵖˡ : val :=
     let: "l" := (mem.alloc "l") in
     let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := (let: "$a0" := (![#raftpb.ConfState] "cs2") in
-    (method_call #raftpb.ConfState.id #"Equivalent"%go (![#raftpb.ConfState] "cs1")) "$a0") in
+    (method_call #(ptrT.id raftpb.ConfState.id) #"Equivalent"%go "cs1") "$a0") in
     do:  ("err" <-[#error] "$r0");;;
     (if: interface.eq (![#error] "err") #interface.nil
     then return: (#())

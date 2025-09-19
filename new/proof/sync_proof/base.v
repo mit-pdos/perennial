@@ -36,6 +36,9 @@ Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
+#[global] Instance : IsPkgInit synctest := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf synctest := build_get_is_pkg_init_wf.
+
 #[global] Instance : IsPkgInit sync := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init_wf.
 

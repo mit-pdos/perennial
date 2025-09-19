@@ -728,7 +728,7 @@ Definition Op__toTxnRequestⁱᵐᵖˡ : val :=
     slice.for_range #Op "$range" (λ: "$key" "$value",
       do:  ("tOp" <-[#Op] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
-      let: "$r0" := ((method_call #Op.id #"toRequestOp"%go (![#Op] "tOp")) #()) in
+      let: "$r0" := ((method_call #(ptrT.id Op.id) #"toRequestOp"%go "tOp") #()) in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "thenOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
     let: "elseOps" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
@@ -740,7 +740,7 @@ Definition Op__toTxnRequestⁱᵐᵖˡ : val :=
     slice.for_range #Op "$range" (λ: "$key" "$value",
       do:  ("eOp" <-[#Op] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
-      let: "$r0" := ((method_call #Op.id #"toRequestOp"%go (![#Op] "eOp")) #()) in
+      let: "$r0" := ((method_call #(ptrT.id Op.id) #"toRequestOp"%go "eOp") #()) in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "elseOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
     let: "cmps" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) in
@@ -772,7 +772,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
     let: "$sw" := (![#opType] (struct.field_ref #Op #"t"%go "op")) in
     (if: "$sw" = tRange
     then
-      return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestRange.id) (mem.alloc (let: "$RequestRange" := ((method_call #Op.id #"toRangeRequest"%go (![#Op] "op")) #()) in
+      return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestRange.id) (mem.alloc (let: "$RequestRange" := ((method_call #(ptrT.id Op.id) #"toRangeRequest"%go "op") #()) in
        struct.make #etcdserverpb.RequestOp_RequestRange [{
          "RequestRange" ::= "$RequestRange"
        }]))) in
@@ -848,7 +848,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
         else
           (if: "$sw" = tTxn
           then
-            return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestTxn.id) (mem.alloc (let: "$RequestTxn" := ((method_call #Op.id #"toTxnRequest"%go (![#Op] "op")) #()) in
+            return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestTxn.id) (mem.alloc (let: "$RequestTxn" := ((method_call #(ptrT.id Op.id) #"toTxnRequest"%go "op") #()) in
              struct.make #etcdserverpb.RequestOp_RequestTxn [{
                "RequestTxn" ::= "$RequestTxn"
              }]))) in
@@ -874,7 +874,7 @@ Definition Op__isWriteⁱᵐᵖˡ : val :=
       slice.for_range #Op "$range" (λ: "$key" "$value",
         do:  ("tOp" <-[#Op] "$value");;;
         do:  "$key";;;
-        (if: (method_call #Op.id #"isWrite"%go (![#Op] "tOp")) #()
+        (if: (method_call #(ptrT.id Op.id) #"isWrite"%go "tOp") #()
         then return: (#true)
         else do:  #())));;;
       let: "$range" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
@@ -882,7 +882,7 @@ Definition Op__isWriteⁱᵐᵖˡ : val :=
       slice.for_range #Op "$range" (λ: "$key" "$value",
         do:  ("tOp" <-[#Op] "$value");;;
         do:  "$key";;;
-        (if: (method_call #Op.id #"isWrite"%go (![#Op] "tOp")) #()
+        (if: (method_call #(ptrT.id Op.id) #"isWrite"%go "tOp") #()
         then return: (#true)
         else do:  #())));;;
       return: (#false)

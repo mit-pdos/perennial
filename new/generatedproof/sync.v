@@ -3,6 +3,7 @@ Require Export New.proof.proof_prelude.
 Require Export New.manualproof.sync.
 Require Export New.generatedproof.sync.atomic.
 Require Export New.generatedproof.internal.race.
+Require Export New.generatedproof.internal.synctest.
 Require Export New.golang.theory.
 
 Require Export New.code.sync.
@@ -111,7 +112,7 @@ Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   _0' : noCopy.t;
-  done' : atomic.Uint32.t;
+  done' : atomic.Bool.t;
   m' : Mutex.t;
 }.
 End def.
@@ -543,7 +544,8 @@ Global Instance is_pkg_defined_pure_sync : IsPkgDefinedPure sync :=
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single sync ∧
       is_pkg_defined_pure code.sync.atomic.atomic ∧
-      is_pkg_defined_pure code.internal.race.race;
+      is_pkg_defined_pure code.internal.race.race ∧
+      is_pkg_defined_pure code.internal.synctest.synctest;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -552,7 +554,8 @@ Global Program Instance is_pkg_defined_sync : IsPkgDefined sync :=
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single sync ∗
        is_pkg_defined code.sync.atomic.atomic ∗
-       is_pkg_defined code.internal.race.race)%I
+       is_pkg_defined code.internal.race.race ∗
+       is_pkg_defined code.internal.synctest.synctest)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
@@ -651,6 +654,10 @@ Global Instance wp_method_call_WaitGroup'ptr_Add :
 
 Global Instance wp_method_call_WaitGroup'ptr_Done :
   WpMethodCall (ptrT.id sync.WaitGroup.id) "Done" _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_WaitGroup'ptr_Go :
+  WpMethodCall (ptrT.id sync.WaitGroup.id) "Go" _ (is_pkg_defined sync) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_WaitGroup'ptr_Wait :

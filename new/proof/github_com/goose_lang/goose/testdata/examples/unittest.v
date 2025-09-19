@@ -320,4 +320,15 @@ Proof.
   - wp_auto. iApply "HΦ". iFrame.
 Qed.
 
+Lemma wp_useEmbeddedMethod (d : unittest.embedD.t) :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.useEmbeddedMethod #d
+  {{{ RET #true; True }}}.
+Proof.
+  wp_start. wp_auto.
+  wp_method_call. wp_auto.
+  Search struct.field_get.
+  (* FIXME: struct.field_get WP *)
+  wp_method_call.
+Qed.
 End proof.

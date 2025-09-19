@@ -90,7 +90,7 @@ Definition Txn__acquireNoCheckⁱᵐᵖˡ : val :=
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "addr" := (mem.alloc "addr") in
     let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #addr.Addr.id #"Flatid"%go (![#addr.Addr] "addr")) #()) in
+    let: "$r0" := ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go "addr") #()) in
     do:  ("flatAddr" <-[#uint64T] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "flatAddr") in
     (method_call #(ptrT.id lockmap.LockMap.id) #"Acquire"%go (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0");;;
@@ -104,7 +104,7 @@ Definition Txn__isAlreadyAcquiredⁱᵐᵖˡ : val :=
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "addr" := (mem.alloc "addr") in
     let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #addr.Addr.id #"Flatid"%go (![#addr.Addr] "addr")) #()) in
+    let: "$r0" := ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go "addr") #()) in
     do:  ("flatAddr" <-[#uint64T] "$r0");;;
     return: (Fst (map.get (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr")))).
 

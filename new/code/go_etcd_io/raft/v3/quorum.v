@@ -36,9 +36,9 @@ Definition JointConfig__Stringⁱᵐᵖˡ : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     (if: int_gt (let: "$a0" := (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1))) in
     map.len "$a0") #(W64 0)
-    then return: ((((method_call #MajorityConfig.id #"String"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) #()) + #"&&"%go) + ((method_call #MajorityConfig.id #"String"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) #()))
+    then return: ((((method_call #(ptrT.id MajorityConfig.id) #"String"%go (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0))) #()) + #"&&"%go) + ((method_call #(ptrT.id MajorityConfig.id) #"String"%go (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1))) #()))
     else do:  #());;;
-    return: ((method_call #MajorityConfig.id #"String"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) #())).
+    return: ((method_call #(ptrT.id MajorityConfig.id) #"String"%go (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0))) #())).
 
 (* IDs returns a newly initialized map representing the set of voters present
    in the joint configuration.
@@ -87,7 +87,7 @@ Definition JointConfig__Describeⁱᵐᵖˡ : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     let: "l" := (mem.alloc "l") in
     return: (let: "$a0" := (![#AckedIndexer] "l") in
-     (method_call #MajorityConfig.id #"Describe"%go ((method_call #JointConfig.id #"IDs"%go (![#JointConfig] "c")) #())) "$a0")).
+     (method_call #MajorityConfig.id #"Describe"%go ((method_call #(ptrT.id JointConfig.id) #"IDs"%go "c") #())) "$a0")).
 
 Definition Index : go_type := uint64T.
 #[global] Typeclasses Opaque Index.
@@ -104,11 +104,11 @@ Definition JointConfig__CommittedIndexⁱᵐᵖˡ : val :=
     let: "l" := (mem.alloc "l") in
     let: "idx0" := (mem.alloc (type.zero_val #Index)) in
     let: "$r0" := (let: "$a0" := (![#AckedIndexer] "l") in
-    (method_call #MajorityConfig.id #"CommittedIndex"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call #(ptrT.id MajorityConfig.id) #"CommittedIndex"%go (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0))) "$a0") in
     do:  ("idx0" <-[#Index] "$r0");;;
     let: "idx1" := (mem.alloc (type.zero_val #Index)) in
     let: "$r0" := (let: "$a0" := (![#AckedIndexer] "l") in
-    (method_call #MajorityConfig.id #"CommittedIndex"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call #(ptrT.id MajorityConfig.id) #"CommittedIndex"%go (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1))) "$a0") in
     do:  ("idx1" <-[#Index] "$r0");;;
     (if: (![#Index] "idx0") < (![#Index] "idx1")
     then return: (![#Index] "idx0")
@@ -134,11 +134,11 @@ Definition JointConfig__VoteResultⁱᵐᵖˡ : val :=
     let: "votes" := (mem.alloc "votes") in
     let: "r1" := (mem.alloc (type.zero_val #VoteResult)) in
     let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #boolT] "votes") in
-    (method_call #MajorityConfig.id #"VoteResult"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call #(ptrT.id MajorityConfig.id) #"VoteResult"%go (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0))) "$a0") in
     do:  ("r1" <-[#VoteResult] "$r0");;;
     let: "r2" := (mem.alloc (type.zero_val #VoteResult)) in
     let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #boolT] "votes") in
-    (method_call #MajorityConfig.id #"VoteResult"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call #(ptrT.id MajorityConfig.id) #"VoteResult"%go (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1))) "$a0") in
     do:  ("r2" <-[#VoteResult] "$r0");;;
     (if: (![#VoteResult] "r1") = (![#VoteResult] "r2")
     then return: (![#VoteResult] "r1")
