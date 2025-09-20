@@ -444,8 +444,8 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
   ∀ Φ,
   is_pkg_init sync ∗ is_WaitGroup wg γ N ∗ own_WaitGroup_wait_token γ -∗
   (|={⊤∖↑N, ∅}=>
-     ∃ oldc,
-       own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
+     ∃ counter,
+       own_WaitGroup γ counter ∗ (⌜ counter = 0 ⌝ → own_WaitGroup γ counter ={∅,⊤∖↑N}=∗
                                own_WaitGroup_wait_token γ -∗ Φ #())
   ) -∗
   WP wg @ (ptrT.id sync.WaitGroup.id) @ "Wait" #() {{ Φ }}.
@@ -458,7 +458,7 @@ Proof.
   wp_apply (wp_Uint64__Load).
   iInv "Hinv" as ">Hi" "Hclose".
   iNamedSuffix "Hi" "_wg".
-  destruct (decide (counter = W32 0)).
+  destruct (decide (counter = 0)).
   { (* counter is zero, so can return. *)
     subst.
 
@@ -471,14 +471,20 @@ Proof.
     iIntros "Hptsto_wg".
     iMod ("HΦ" with "[//] [$Hwg]") as "HΦ".
     iMod "Hmask" as "_".
+    iCombine "Hwaiters_bounded_wg Hwait_toks_wg" gives %Hwaiters_bounded.
     iCombineNamed "*_wg" as "Hi".
     iMod ("Hclose" with "[Hi]").
     { iNamed "Hi". by iFrame. }
     iModIntro.
-    wp_auto. rewrite enc_get_high enc_get_low bool_decide_true //=.
     wp_auto.
-    wp_for_post.
-    by iApply "HΦ".
+    rewrite enc_get_counter; [|word..].
+    rewrite enc_get_waiters; [|word..].
+    wp_auto.
+    wp_bind (if: if: if: _ then _ else _ then _ else _ then _ else _)%E.
+    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗ _)%I with "[-]").
+    { wp_if_destruct. 2:{ iSplitR; first done. iNamedAccu. } wp_auto.
+      rewrite enc_get_bubble; [ | word.. ]. wp_auto. iFrame. done. }
+    iIntros "% [-> H]". iNamed "H". wp_auto. wp_for_post. by iApply "HΦ".
   }
   (* actually go to sleep *)
   iApply fupd_mask_intro.
@@ -496,10 +502,11 @@ Proof.
   { iNamed "Hi". by iFrame. }
   iModIntro.
   wp_auto.
-  rewrite enc_get_high enc_get_low bool_decide_false //.
+  rewrite enc_get_counter; [|word..].
+  rewrite enc_get_waiters; [|word..].
+  rewrite bool_decide_false; [|word..].
   wp_auto.
-  replace (1%Z) with (sint.Z (W32 1)) by reflexivity.
-  rewrite -> enc_add_low by word.
+  rewrite enc_add_waiters; [|word..].
   wp_apply (wp_Uint64__CompareAndSwap).
   iInv "Hinv" as ">Hi" "Hclose".
   iNamedSuffix "Hi" "_wg".
@@ -510,7 +517,8 @@ Proof.
   iExists (enc waiters0 counter0).
   destruct (decide (_ = _)) as [Heq|Hneq].
   {
-    apply enc_inj in Heq as [-> ->].
+    iCombine "Hwaiters_bounded_wg Hwait_toks_wg" gives %Hwaiters0_bounded.
+    apply enc_inj in Heq as [-> ->]; [|word..].
     rewrite decide_False.
     2:{ naive_solver. }
     iCombine "Hptsto_wg Hptsto2_wg" as "$".
@@ -522,18 +530,18 @@ Proof.
     iMod ("Hclose" with "[Hi]") as "_".
     {
       iNext. iNamed "Hi". repeat iExists _. iFrame "Hptsto_wg ∗".
-      replace (uint.nat (word.add waiters (W32 1))) with (1 + uint.nat waiters)%nat by word.
-      simpl. iFrame.
-      iSplitL.
+      replace (Z.to_nat (waiters + sint.Z (W64 1))) with (1 + Z.to_nat waiters)%nat by word.
+      simpl. iFrame. iSplitL.
       { by destruct decide. }
-      iPureIntro. split; last done.
-      intros Hun. exfalso. naive_solver.
+      iPureIntro. word.
     }
     iModIntro.
     wp_auto.
     clear sema n unfinished_waiters Hunfinished_zero_wg Hunfinished_bound_wg
                unfinished_waiters0 Hunfinished_zero_wg0 Hunfinished_bound_wg0.
 
+    rewrite enc_get_bubble; [ | word.. ]. wp_auto.
+    (* FIXME: extra argument to [runtime_SemacquireWaitGroup] for synctest *)
     wp_apply (wp_runtime_SemacquireWaitGroup with "[$]").
     iInv "Hinv" as ">Hi" "Hclose".
     iNamedSuffix "Hi" "_wg".
