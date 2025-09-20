@@ -90,7 +90,7 @@ Lemma wp_runtime_SemacquireWaitGroup (sema : loc) γ N :
   ∀ Φ,
   is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP @! sync.runtime_SemacquireWaitGroup #sema {{ Φ }}.
+  WP @! sync.runtime_SemacquireWaitGroup #sema #false {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_apply (wp_runtime_Semacquire with "[$]").

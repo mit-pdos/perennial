@@ -13,7 +13,6 @@ Definition Mutex : go_type := structT [
     "state" :: boolT
   ].
 
-
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
   λ: "m" <>, Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true).
 
@@ -74,9 +73,9 @@ Definition runtime_Semreleaseⁱᵐᵖˡ : val :=
   λ: "addr" "_handoff" "_skipframes", AtomicOp PlusOp "addr" #(W32 1);; #().
 
 (* differs from runtime_Semacquire only in the park "reason", used for internal
-concurrency testing *)
+   concurrency testing *)
 Definition runtime_SemacquireWaitGroupⁱᵐᵖˡ : val :=
-  λ: "addr", func_call #"sync.runtime_Semacquire" "addr".
+  λ: "addr" "_synctestDurable", func_call #"sync.runtime_Semacquire" "addr".
 
 Definition runtime_SemacquireRWMutexRⁱᵐᵖˡ : val :=
   λ: "addr" "_lifo" "_skipframes", func_call #"sync.runtime_Semacquire" "addr".

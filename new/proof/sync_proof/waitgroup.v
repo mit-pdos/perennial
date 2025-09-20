@@ -451,11 +451,7 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
   WP wg @ (ptrT.id sync.WaitGroup.id) @ "Wait" #() {{ Φ }}.
 Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
-  wp_auto.
-  wp_for_core. (* TODO: need to set later credits *)
-  wp_auto.
-  rewrite decide_True //. wp_auto.
-  wp_apply (wp_Uint64__Load).
+  wp_auto. wp_for. wp_apply (wp_Uint64__Load).
   iInv "Hinv" as ">Hi" "Hclose".
   iNamedSuffix "Hi" "_wg".
   destruct (decide (counter = 0)).
@@ -541,7 +537,6 @@ Proof.
                unfinished_waiters0 Hunfinished_zero_wg0 Hunfinished_bound_wg0.
 
     rewrite enc_get_bubble; [ | word.. ]. wp_auto.
-    (* FIXME: extra argument to [runtime_SemacquireWaitGroup] for synctest *)
     wp_apply (wp_runtime_SemacquireWaitGroup with "[$]").
     iInv "Hinv" as ">Hi" "Hclose".
     iNamedSuffix "Hi" "_wg".
@@ -566,7 +561,7 @@ Proof.
     wp_auto.
     wp_apply (wp_Uint64__Load).
     iInv "Hinv" as ">Hi" "Hclose".
-    iClear "v w state". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
+    iClear "v w state". clear dependent v_ptr counter w_ptr waiters state_ptr.
     clear unfinished_waiters sema n Hsema Hsem Hunfinished_zero_wg Hunfinished_bound_wg.
     iNamedSuffix "Hi" "_wg".
     iApply fupd_mask_intro.
