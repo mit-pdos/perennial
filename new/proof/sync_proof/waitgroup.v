@@ -419,12 +419,12 @@ Lemma wp_WaitGroup__Done (wg : loc) γ N :
   ∀ Φ,
   is_pkg_init sync ∗ is_WaitGroup wg γ N -∗
   (|={⊤,↑N}=>
-     ∃ oldc,
-       "Hwg" ∷ own_WaitGroup γ oldc ∗
-       "%Hbounds" ∷ ⌜ 0 ≤ sint.Z oldc - 1 < 2^31 ⌝ ∗
-       "HnoWaiters" ∷ (⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) ∗
-       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
-               own_WaitGroup γ (word.sub oldc (W32 1)) ={↑N,⊤}=∗ Φ #())
+     ∃ counter,
+       "Hwg" ∷ own_WaitGroup γ counter ∗
+       "%Hbounds" ∷ ⌜ 0 ≤ counter - 1 < 2^31 ⌝ ∗
+       "HnoWaiters" ∷ (⌜ counter ≠ 0 ⌝ ∨ own_WaitGroup_waiters γ 0) ∗
+       "HΦ" ∷ ((⌜ counter ≠ 0 ⌝ ∨ own_WaitGroup_waiters γ 0) -∗
+               own_WaitGroup γ (counter - 1) ={↑N,⊤}=∗ Φ #())
   ) -∗
   WP wg @ (ptrT.id sync.WaitGroup.id) @ "Done" #() {{ Φ }}.
 Proof.
@@ -432,13 +432,11 @@ Proof.
   wp_auto.
   wp_apply (wp_WaitGroup__Add with "[$]").
   iMod "HΦ". iNamed "HΦ".
-  replace (W32 (uint.Z (W64 (-1)))) with (W32 (-1)) by done.
-  replace (sint.Z (W32 (-1))) with (-1) by done.
+  change (sint.Z (W64 (-1))) with (-1).
   iModIntro. iFrame "Hwg HnoWaiters". iSplitR.
   { word. }
   iIntros "Hw Hctr".
-  iMod ("HΦ" with "[$] [Hctr]") as "HΦ".
-  { iExactEq "Hctr". repeat f_equal. word. }
+  iMod ("HΦ" with "[$] [$]") as "HΦ".
   iModIntro. wp_auto. iApply "HΦ".
 Qed.
 
