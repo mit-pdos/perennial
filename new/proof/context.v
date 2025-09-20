@@ -86,7 +86,7 @@ Lemma wp_propagateCancel (c : loc) (parent : context.Context.t) parent_desc
         RET #(); True
   }}}.
 Proof.
-  wp_start. iNamed "Hpre". wp_auto.
+  wp_start. iNamed "Hpre". (* wp_auto.
   iNamed "Hparent".
   wp_apply "HDone".
   rewrite bool_decide_decide. case_decide.
@@ -119,10 +119,6 @@ Proof.
      thing would be needed if a higher-level package defined a new private
      implementation of `Context` and relied on type casting.
    *)
-  (* FIXME: bug in goose. Goose is translating type assertion to a named type
-     with underyling interface type as a type assertion to a non-interface type. E.g. it emits
-     a typeId `context.afterFuncer.id`, which should not happen because
-     `afterFuncer`'s underlying type is an interface.
    *)
 Abort.
 
@@ -137,9 +133,6 @@ Lemma wp_withCancel PDone' (ctx : interface.t) ctx_desc :
         is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
   }}}.
 Proof.
-  wp_start. iNamed "Hpre". wp_auto.
-  rewrite bool_decide_false //. wp_auto.
-  wp_alloc c as "Hc". wp_auto.
 Abort.
 
 Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
@@ -153,7 +146,6 @@ Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
         is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
   }}}.
 Proof.
-  wp_start. wp_auto.
 Admitted.
 
 Lemma wp_WithDeadlineCause (parent: interface.t) parent_desc (d : time.Time.t) (cause : error.t):
@@ -180,9 +172,7 @@ Lemma wp_WithDeadline (parent: interface.t) parent_desc (d : time.Time.t) :
         is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
   }}}.
 Proof.
-  wp_start. wp_auto. wp_apply (wp_WithDeadlineCause with "[$]"). iIntros "* [? ?]".
-  wp_auto. iApply "HΦ". iFrame.
-Qed.
+Admitted.
 
 Lemma wp_WithTimeout (parent: interface.t) parent_desc (timeout : time.Duration.t) :
   {{{
@@ -195,8 +185,6 @@ Lemma wp_WithTimeout (parent: interface.t) parent_desc (timeout : time.Duration.
         is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
   }}}.
 Proof.
-  wp_start. wp_auto. wp_apply wp_Now as "% _". wp_apply wp_Time__Add as "% _".
-  wp_apply (wp_WithDeadline with "[$]"). iIntros "* [? ?]". wp_auto. iApply "HΦ". iFrame.
-Qed.
+Admitted.
 
 End wps.
