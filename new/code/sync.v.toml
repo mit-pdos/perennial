@@ -6,6 +6,7 @@ translate = [
 
   "WaitGroup",
   "WaitGroup.*",
+  "waitGroupBubbleFlag",
   "noCopy",
   "rlocker",
   "Once",

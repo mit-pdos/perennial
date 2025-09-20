@@ -20,14 +20,15 @@ Inductive wlock_state :=
 
 Class syncG Σ := {
     #[global] tokG :: tok_setG Σ;
-    #[global] wg_totalG :: ghost_varG Σ w32;
+    #[global] semaG :: ghost_varG Σ w32;
+    #[global] wg_totalG :: ghost_varG Σ Z;
 
     #[global] rw_ghost_varG :: ghost_varG Σ ();
     #[global] rw_ghost_wlG :: ghost_varG Σ wlock_state;
     #[global] rw_ghost_rwmutexG :: ghost_varG Σ rwmutex;
   }.
 
-Definition syncΣ := #[tok_setΣ; ghost_varΣ w32; ghost_varΣ (); ghost_varΣ wlock_state; ghost_varΣ rwmutex].
+Definition syncΣ := #[tok_setΣ; ghost_varΣ w32; ghost_varΣ Z; ghost_varΣ (); ghost_varΣ wlock_state; ghost_varΣ rwmutex].
 Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
 Proof. solve_inG. Qed.
 

@@ -475,7 +475,7 @@ Definition WaitGroup : go_type := structT [
 #[global] Typeclasses Opaque WaitGroup.
 #[global] Opaque WaitGroup.
 
-Axiom waitGroupBubbleFlag : Z.
+Definition waitGroupBubbleFlag : Z := 2147483648.
 
 (* Add adds delta, which may be negative, to the [WaitGroup] task counter.
    If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
