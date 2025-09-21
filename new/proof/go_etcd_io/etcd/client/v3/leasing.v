@@ -470,7 +470,7 @@ Proof.
     iApply closeable_chan_receive. { iFrame "#". }
     iIntros "#[Hready Hclosed]".
     wp_auto. iApply "HΦ". rewrite (decide_True (P:=interface.nil = _)) //.
-    iFrame "∗#".
+    iFrame "∗#%".
   }
   iSplit.
   {
@@ -479,7 +479,7 @@ Proof.
              with "[$HDone_ch_lkv]"). (* FIXME: multiple [inG]s *)
     iIntros "[_ #Hclosed]". wp_auto. wp_apply ("HErr_lkv" with "[$Hclosed]").
     iIntros "* %Herr". wp_auto. iApply "HΦ".
-    rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#".
+    rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#%".
   }
   {
     repeat iExists _.
@@ -487,7 +487,7 @@ Proof.
              with "[$HDone_ch]"). (* FIXME: multiple [inG]s *)
     iIntros "[_ #Hclosed]". wp_auto. wp_apply ("HErr" with "[$Hclosed]").
     iIntros "* %Herr". wp_auto. iApply "HΦ".
-    rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#".
+    rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#%".
   }
 Qed.
 
@@ -664,7 +664,7 @@ Proof using Type*.
   wp_auto.
   iDestruct (is_Client_to_pub with "[$]") as "#Hclient_pub".
   iNamed "Hclient_pub".
-  wp_apply (wp_WithCancel True with "Hclient_ctx").
+  wp_apply (wp_WithCancel True with "[$Hclient_ctx]").
   iIntros "* #[Hcancel_fn Hctx']".
   wp_auto.
   unshelve wp_apply wp_map_make as "%revokes revokes"; try tc_solve; try tc_solve.

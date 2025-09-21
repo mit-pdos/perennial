@@ -59,7 +59,7 @@ Axiom own_EtcdServer_access : ∀ s γ,
          (struct.field_ref_f etcdserver.EtcdServer "Cfg" s)) ↦□ MaxRequestBytes ∗
     "#w" ∷ s ↦s[etcdserver.EtcdServer :: "w"]□ w ∗
     "#Hinternal" ∷ is_EtcdServer_internal s γ ∗
-    "#r" ∷
+    "#raftNode" ∷
       (struct.field_ref_f etcdserver.raftNodeConfig "Node"
          (struct.field_ref_f etcdserver.raftNode "raftNodeConfig"
             (struct.field_ref_f etcdserver.EtcdServer "r" s))) ↦□ rn ∗
@@ -190,7 +190,7 @@ Proof.
   }
   iIntros "*". iNamed 1.
   iDestruct (own_EtcdServer_access with "Hsrv") as "H".
-  iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal".
+  iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal Hr raftNode".
   clear dependent reqIDGen MaxRequestBytes w γw.
   iNamed "H".
   wp_auto. wp_apply (wp_Wait__Register with "[Hw]").
@@ -211,11 +211,9 @@ Proof.
    *)
 
   (* TODO:
-     spec for context.WithTimeout
      axiomatize prometheus Counter inc
      axiomatize `parseProposeCtxErr`
    *)
-
 Admitted.
 
 End wps.
