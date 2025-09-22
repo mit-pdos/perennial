@@ -589,6 +589,10 @@ Section tac_lemmas.
       points_to_update_eq : P' v ⊣⊢ P;
     }.
 
+  Global Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t} dq
+    : PointsToAccess l v dq (l ↦{dq} v)%I (λ v', l ↦{dq} v')%I.
+  Proof. constructor; [eauto with iFrame|done]. Qed.
+
   Lemma tac_wp_load {V t} `{!IntoVal V} `{!IntoValTyped V t}
     K (l : loc) (v : V) Δ s E i dq Φ is_pers
     `{!PointsToAccess l v dq P P'} :
@@ -696,7 +700,7 @@ Ltac2 wp_alloc_auto_visit e k :=
   lazy_match! e with
   (* Manually writing out [let: ?var_name := (ref_ty _ (Val _)) in ?e1] to get
      pattern matching to work. *)
-  | (App (Rec BAnon (BNamed ?var_name) ?e1) (App (Val (mem.alloc _)) #())) =>
+  | (App (Rec BAnon (BNamed ?var_name) ?e1) (App (Val (mem.alloc _)) (Val #()))) =>
       let let_expr1 := '(Rec BAnon (BNamed $var_name) $e1) in
       let ptr_name := Std.eval_vm None constr:($var_name +:+ "_ptr") in
       let k := constr:(@AppRCtx _ $let_expr1 :: $k) in

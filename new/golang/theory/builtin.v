@@ -1,6 +1,6 @@
 From New Require Export notation.
 From New.golang.defn Require Export builtin.
-From New.golang.theory Require Export typing proofmode.
+From New.golang.theory Require Export proofmode typing.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".

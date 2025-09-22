@@ -1,4 +1,4 @@
-From New.golang.defn Require Import loop assume exception typing list dynamic_typing mem builtin.
+From New.golang.defn Require Import loop assume exception typing list mem builtin.
 From Perennial Require Import base.
 
 Module slice.
@@ -18,15 +18,15 @@ Definition cap : val := λ: "s",
 
 (* XXX: this computes a nondeterministic unallocated address by using
    "(Loc 1 0) +ₗ ArbiraryInt"*)
-Definition make3 : val :=
-  λ: "t" "sz" "cap",
+Definition make3 t : val :=
+  λ: "sz" "cap",
   if: int_lt "cap" "sz" then Panic "NewSlice with cap smaller than len"
   else if: "cap" = #(W64 0) then InjL (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
-  else let: "p" := AllocN "cap" (type.zero_val "t") in
+  else let: "p" := AllocN "cap" (zero_val t) in
        InjL ("p", "sz", "cap").
 
-Definition make2 : val :=
-  λ: "t" "sz", make3 "t" "sz" "sz".
+Definition make2 t : val :=
+  λ: "sz", make3 t "sz" "sz".
 
 (* computes `&s[i]` *)
 Definition elem_ref (t : go_type) : val :=
@@ -52,14 +52,14 @@ Definition full_slice t : val :=
 
 Definition for_range t : val :=
   λ: "s" "body",
-  let: "i" := mem.alloc int64T in
+  let: "i" := mem.alloc int64T #() in
   for: (λ: <>, int_lt (![int64T] "i") (len "s")) ; (λ: <>, "i" <-[int64T] (![int64T] "i") + #(W64 1)) :=
     (λ: <>, "body" (![int64T] "i") (![t] (elem_ref t "s" (![int64T] "i"))))
 .
 
 Definition copy t : val :=
   λ: "dst" "src",
-  let: "i" := mem.alloc int64T in
+  let: "i" := mem.alloc int64T #() in
   (for: (λ: <>, int_lt (![int64T] "i") (len "dst") && (int_lt (![int64T] "i") (len "src"))) ; (λ: <>, Skip) :=
     (λ: <>,
     do: (let: "i_val" := ![int64T] "i" in
@@ -86,7 +86,7 @@ Definition append t : val :=
     "s_new"
   else
     let: "new_cap" := _new_cap "new_len" in
-    let: "s_new" := make3 "t" "new_len" "new_cap" in
+    let: "s_new" := make3 t "new_len" "new_cap" in
     copy t "s_new" "s" ;;
     copy t (slice t "s_new" (len "s") "new_len") "x" ;;
     "s_new".
@@ -95,9 +95,9 @@ Definition append t : val :=
 Definition literal t : val :=
   λ: "elems",
   let: "len" := list.Length "elems" in
-  let: "s" := make2 "t" "len" in
+  let: "s" := make2 t "len" in
   let: "l" := ref "elems" in
-  let: "i" := mem.alloc int64T in
+  let: "i" := mem.alloc int64T #() in
   (for: (λ: <>, int_lt (![int64T] "i") "len") ; (λ: <>, "i" <-[int64T] ![int64T] "i" + #(W64 1)) :=
      (λ: <>,
         do: (list.Match !"l" (λ: <>, #())

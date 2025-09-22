@@ -113,7 +113,7 @@ Definition nonblocking_send_atomic_update ch (v : V) Φok Φnotready : iProp Σ 
 
 Lemma wp_chan_make cap :
   {{{ True }}}
-    chan.make #t #cap
+    chan.make t #cap
   {{{ (c : chan.t) (init : list V), RET #c; own_chan c (chanstate.mk cap false init (length init)) }}}.
 Proof.
 Admitted.

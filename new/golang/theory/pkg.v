@@ -19,13 +19,23 @@ Proof.
 Qed.
 End wps.
 
-(** [GoContext] contains the global state of a node running Go code. It is a
-    typeclass so that [global_addr] can be conveniently used in proofs that have
-    a section variable of type [GoContext]. A new [global_addr] is (angelically)
-    nondeterministically chosen on reboot. This choice is angelic in the sense
-    that future code (package.alloc) will actually allocate on the heap and
-    angelically assumes that the allocated location matches the [global_addr]
-    map.
+(** [GoContext] contains the immutable global state of a node running Go code.
+    It is a typeclass so that [global_addr] can be conveniently used in proofs
+    that have a section variable of type [GoContext]. A new [global_addr] is
+    (angelically) nondeterministically chosen on reboot. This choice is angelic
+    in the sense that future code (package.alloc) will actually allocate on the
+    heap and angelically assumes that the allocated location matches the
+    [global_addr] map.
+
+    This also contains `__mem_type`, which is not actually global state as far
+    as execution semantics are concerned. Instead, this serves as the
+    interaction point by which package A can define a generic function that
+    takes in any type `T`, and package B can define the relationship between
+    `T.id : go_string` and `T : go_type` and know that `A` generic function has
+    been monomorphized so that `T.id` connects to `T : go_type`. I.e. the
+    `__mem_type` makes it easier to state local assumptions about the other maps
+    (like the __functions map) that allow for types in one package to be used
+    with generic functions/methods in another package.
  *)
 Class GoContext {ext : ffi_syntax} :=
   {

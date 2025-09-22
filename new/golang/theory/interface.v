@@ -101,7 +101,7 @@ Lemma wp_interface_checked_type_assert (i : interface.t) {V} `{!IntoVal V} t `{!
           ∃ (v: V), v0 = #v
       |  interface.nil => True
       end ⌝ }}}
-    interface.checked_type_assert #t #i #type_id
+    interface.checked_type_assert t #i #type_id
   {{{ (y: V) (ok: bool), RET (#y, #ok);
       ⌜if ok then i = interface.mk type_id #y
       else match i with
@@ -117,9 +117,7 @@ Proof.
   destruct ok; subst; wp_pures.
   - destruct Htype as [v ?]; subst; auto.
     by iApply "HΦ".
-  - rewrite -default_val_eq_zero_val.
-    iApply "HΦ".
-    iPureIntro; auto.
+  - iApply "HΦ". iPureIntro; auto.
 Qed.
 
 #[export] Typeclasses Opaque interface.type_assert interface.checked_type_assert.
