@@ -42,11 +42,11 @@ Definition Cond__Signalⁱᵐᵖˡ : val := λ: "c" <>, #().
 
 Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
   λ: "l", ArbitraryInt.
-Definition runtime_notifyListWait : val :=
+Definition runtime_notifyListWaitⁱᵐᵖˡ : val :=
   λ: "l" "t", #().
-Definition runtime_notifyListNotifyAll : val :=
+Definition runtime_notifyListNotifyAllⁱᵐᵖˡ : val :=
   λ: "l", #().
-Definition runtime_notifyListNotifyOne : val :=
+Definition runtime_notifyListNotifyOneⁱᵐᵖˡ : val :=
   λ: "l", #().
 
 Definition runtime_Semacquireⁱᵐᵖˡ : val :=
