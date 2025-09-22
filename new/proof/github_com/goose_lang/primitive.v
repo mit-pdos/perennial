@@ -86,6 +86,7 @@ Qed.
 Hint Rewrite word.unsigned_of_Z : word.
 Hint Rewrite word.unsigned_sru : word.
 
+(* TODO: should prob go in shared Word / byte helpers. *)
 Lemma word64_byte_extract (x:u64) k :
   0 <= k < 8 ->
   word.of_Z (uint.Z x ≫ (k*8)) = W8 (uint.Z (word.sru x (W64 (k*8)))).
