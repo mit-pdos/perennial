@@ -30,8 +30,9 @@ End wps.
 Class GoContext {ext : ffi_syntax} :=
   {
     global_addr_def : go_string → loc;
-    __function : list (go_string * val);
-    __method : list (go_string * (list (go_string * val)));
+    __function : go_string → option val;
+    __method : go_string → option (list (go_string * val));
+    __mem_type : go_string → go_type;
   }.
 
 (* NOTE: To avoid printing the [GoContext] instance when printing [global_addr].
@@ -43,32 +44,52 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoC
 
 (** [is_init] holds when a node boots up and is used as an assumption in closed theorems. *)
 Definition is_init (σ : state) : Prop :=
-  ∃ (global_addr_val : list (_ * loc)),
-  (∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name) ∧
-  σ.(globals) !! "__global_vars"%go = Some $ alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val) ∧
-  σ.(globals) !! "__functions"%go = Some $ alist_val __function ∧
-  σ.(globals) !! "__msets"%go = Some $ alist_val ((λ '(a, b), (a, alist_val b)) <$> __method) ∧
-  σ.(globals) !! "__packages"%go = Some $ alist_val [].
+  (∀ var_name, σ.(globals) ("V" ++ var_name)%go = Some #(global_addr var_name)) ∧
+  (∀ func_name, σ.(globals) ("F" ++ func_name)%go = (__function func_name)) ∧
+  (∀ type_id, σ.(globals) ("M" ++ type_id)%go = (alist_val <$> __method type_id)) ∧
+  (∀ pkg_name, σ.(globals) ("P" ++ pkg_name)%go = None).
 #[global] Opaque is_init.
 #[local] Opaque is_init.
 
+(* Problem:
+   Generic functions and methods require both the typeId and the go_type for its
+   input arguments. Can use strings for the typeId, but can't easily put the
+   go_type into that string.
+
+   What if the `go_type` become `mem_type`, and there was dynamic lookup to go
+   from typeId -> mem_type? That would require the globals state to have even
+   more stuff in it. It would require all type-related operations to be impure,
+   since they would have this precondition. Just doing wp_load/wp_store would
+   have non-trivial preconditions now. That could be really slow. On the other
+   hand, loading and storing already require an iris prop so maybe this is fine.
+   iPkgInit would be used *all* the time.
+
+   This would require dynamic mem_types.
+
+   Can we do the monomorphization more statically? Would need to say,
+   (∀ T_id, __functions ("someFunc[" + T_id + "]") = someFuncⁱᵐᵖˡ T_id (__mem_type T_id))
+
+   (func_callv (func_id T_id)
+   (method_callv (type_id)
+
+   What about forking gooselang? Could define it in new/golang/defn. Annoying
+   part would be copying the gooselang-specific program logic stuff.
+*)
+
 Local Definition is_init_inv get_is_pkg_init : iProp Σ :=
   inv nroot (
-      ∃ (global_addr_val : list (_ * loc)) (package_inited_val : list (_ * go_string))
-        package_started package_inited,
-        "Hg" ∷ own_globals (DfracOwn (1/2))
-          {[ "__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val);
-             "__functions"%go := alist_val __function;
-             "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
-             "__packages"%go := alist_val ((λ '(a, b), (a, #b)) <$> package_inited_val) ]} ∗
-        "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, get_is_pkg_init pkg_name) ∗
+      ∃ g package_started package_inited,
+        "Hg" ∷ own_globals (DfracOwn (1/2)) g ∗
         (* NOTE: could own an auth that has precisely the "started" keys, and
            the exclusive pointstos can be given to program proofs to help escrow
            resources into initialization. *)
-        "%Hglobal_addr" ∷ (⌜ ∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name ⌝) ∗
-        "%Hpackage_inited" ∷ (⌜ ∀ pkg_name,
-                                alist_lookup_f pkg_name package_inited_val =
-                                ((gset_to_gmap "initialized"%go package_inited) ∪
+        "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, get_is_pkg_init pkg_name) ∗
+        "%Hglobal_addr" ∷ (⌜ ∀ var_name, g ("V" ++ var_name)%go = Some #(global_addr var_name) ⌝) ∗
+        "%Hfunction" ∷ (⌜ ∀ func_name, g ("F" ++ func_name)%go = (__function func_name) ⌝) ∗
+        "%Hmethod" ∷ (⌜ ∀ type_id, g ("M" ++ type_id)%go = (alist_val <$> __method type_id) ⌝) ∗
+
+        "%Hpackage_inited" ∷ (⌜ ∀ pkg_name, g ("P" ++ pkg_name)%go =
+                                # <$> ((gset_to_gmap "initialized"%go package_inited) ∪
                                    (gset_to_gmap "started"%go package_started)) !! pkg_name
                                   ⌝)
     ).
@@ -98,12 +119,12 @@ Lemma go_init get_is_pkg_init σ :
   own_globals (DfracOwn 1) σ.(globals) ={⊤}=∗
   own_initializing get_is_pkg_init ∗ is_go_context.
 Proof.
-  intros (? & Haddrs & ->).
+  intros (Hvard & Hfuncs & Hmethod & Hpkg).
   iIntros "[Hg Hg2]".
   iFrame. iMod (inv_alloc with "[-]") as "#H".
   2:{ by iFrame "H". }
-  iExists _, [], ∅, ∅. iFrame. rewrite big_sepS_empty. iFrame "#%".
-  iSplit; first done. iPureIntro. done.
+  iExists _, ∅, ∅. iFrame. rewrite big_sepS_empty. iFrame "#%".
+  done.
 Qed.
 
 End init_defns.
@@ -162,13 +183,11 @@ Notation is_pkg_defined := is_pkg_defined_def.
     package [pkg_name] are part of the implicit [GoContext]. *)
 Definition is_pkg_defined_pure_single_def pkg_name `{!PkgInfo pkg_name} : Prop :=
   (∀ func_name func,
-     (alist_lookup_f func_name (pkg_functions pkg_name)) = Some func →
-     (alist_lookup_f func_name __function) = Some func) ∧
+     (pkg_functions pkg_name) func_name = Some func →
+     (__function func_name) = Some func) ∧
   (∀ type_name method_name m,
-     (alist_lookup_f type_name (pkg_msets pkg_name)) ≫=
-     (alist_lookup_f method_name) = Some m →
-     (alist_lookup_f type_name __method) ≫=
-     (alist_lookup_f method_name) = Some m).
+     ((pkg_msets pkg_name) type_name) ≫= (alist_lookup_f method_name) = Some m →
+     (__method type_name) ≫= (alist_lookup_f method_name) = Some m).
 (* XXX: sealing because of a unification problem *)
 Program Definition is_pkg_defined_pure_single := sealed is_pkg_defined_pure_single_def.
 Definition is_pkg_defined_pure_single_unseal : is_pkg_defined_pure_single = _ := seal_eq _.
@@ -314,13 +333,13 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!GoContext}
 
 Definition func_callv_def (func_name : go_string) : func.t :=
   {|
-    func.f := <>; func.x := "firstArg";
-    func.e :=
-      option.unwrap (alist_lookup (# func_name) (option.unwrap (GlobalGet (# "__functions"%go))))
-        "firstArg"
+    func.f := <>;
+                func.x := "firstArg";
+    func.e := option.unwrap (GlobalGet (# "F"%go + # func_name)) "firstArg"
   |}.
 Program Definition func_callv := sealed @func_callv_def.
 Definition func_callv_unseal : func_callv = _ := seal_eq _.
+
 
 Global Instance wp_func_callv (func_name : go_string) :
   PureWp True (func_call #func_name)%E #(func_callv func_name)%E.
@@ -330,17 +349,17 @@ Proof.
   wp_pures. by iApply "Hwp".
 Qed.
 
-Definition method_callv_def (type_name method_name : go_string) (receiver : val) : func.t :=
+Definition method_callv_def (type_id method_name : go_string) (receiver : val) : func.t :=
   {|
-    func.f := <>; func.x := "firstArg";
+    func.f := <>;
+                func.x := "firstArg";
     func.e :=
-      let: "method_set" := option.unwrap
-                             (alist_lookup (# type_name) (option.unwrap (GlobalGet #"__msets"))) in
+      let: "method_set" := option.unwrap (GlobalGet (# "M"%go + # type_id)) in
       option.unwrap (alist_lookup (# method_name) "method_set") receiver "firstArg"
   |}.
-
 Program Definition method_callv := sealed @method_callv_def.
 Definition method_callv_unseal : method_callv = _ := seal_eq _.
+
 
 Global Instance wp_method_callv (type_name method_name : go_string) (receiver : val) :
   PureWp True (method_call #type_name #method_name receiver) #(method_callv type_name method_name receiver).
@@ -383,53 +402,47 @@ Proof.
   iNamed "Hctx". wp_call_lc "Hlc". wp_bind. iNamed "Hctx".
   iInv "Hctx" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
-  rewrite [in # "__global_vars"]to_val_unseal.
+  rewrite [in #(_ :: var_name)]to_val_unseal.
   wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg".
   iMod ("Hclose" with "[Hg Hinit]").
   { iFrame "∗#%". }
   iModIntro.
-  rewrite lookup_insert_eq.
-  wp_pures. specialize (Hglobal_addr var_name).
-  rewrite alist_lookup_f_fmap.
-  destruct alist_lookup_f.
-  { simpl in *. subst. wp_pures. by iApply "HΦ". }
-  { simpl in *. wp_pures. rewrite <-Hglobal_addr. by iApply "HΦ". }
+  rewrite Hglobal_addr.
+  wp_pures. by iApply "HΦ".
 Qed.
 
 #[local] Transparent is_pkg_defined_single.
 
 (** Internal to Goose. Used in generatedproofs to establish [WpFuncCall]. *)
 Lemma wp_func_call' {func_name func} `{!PkgInfo pkg_name} P :
-  alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
+  (pkg_functions pkg_name) func_name = Some func →
   (P -∗ is_pkg_defined_single pkg_name) →
   WpFuncCall func_name func P.
 Proof.
   intros Hlookup HP. rewrite /WpFuncCall. iIntros "* Hdef HΦ". rewrite func_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. iDestruct (HP with "Hdef") as "Hdef". iNamed "Hdef". iNamed "Hctx".
+  wp_pure_lc "Hlc". wp_pures. wp_bind. iDestruct (HP with "Hdef") as "Hdef". iNamed "Hdef". iNamed "Hctx".
   iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-  iNamed "Hi". rewrite [in # "__functions"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
+  iNamed "Hi". rewrite [in #(_ :: _)]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
-  iModIntro. rewrite lookup_insert_ne // lookup_insert_eq. wp_pures.
-  rewrite is_pkg_defined_pure_single_unseal in Hdefined.
-  destruct Hdefined as [Hfunction Hmethod]. erewrite Hfunction; last done. wp_pures. iApply "HΦ".
+  iModIntro. rewrite Hfunction. rewrite is_pkg_defined_pure_single_unseal in Hdefined.
+  destruct Hdefined as [Hfunction' Hmethod']. erewrite Hfunction'; last done. wp_pures. iApply "HΦ".
 Qed.
 
 (** Internal to Goose. Used in generatedproofs to establish [WpMethodCall]. *)
-Lemma wp_method_call' {type_name method_name m} `{!PkgInfo pkg_name} P :
-  (alist_lookup_f type_name (pkg_msets pkg_name)) ≫= (alist_lookup_f method_name) = (Some m) →
+Lemma wp_method_call' {type_id method_name m} `{!PkgInfo pkg_name} P :
+  ((pkg_msets pkg_name) type_id) ≫= (alist_lookup_f method_name) = (Some m) →
   (P -∗ is_pkg_defined_single pkg_name) →
-  WpMethodCall type_name method_name m P.
+  WpMethodCall type_id method_name m P.
 Proof.
   intros Hlookup HP. rewrite /WpMethodCall. iIntros "* Hdef HΦ". rewrite method_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. iDestruct (HP with "Hdef") as "Hdef". iNamed "Hdef".
+  wp_pure_lc "Hlc". wp_pures. wp_bind. iDestruct (HP with "Hdef") as "Hdef". iNamed "Hdef".
   iNamed "Hctx". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-  iNamed "Hi". rewrite [in # "__msets"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
+  iNamed "Hi". rewrite [in # (_ :: _)]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
-  iModIntro. do 2 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
-  wp_pures. rewrite alist_lookup_f_fmap. rewrite is_pkg_defined_pure_single_unseal in Hdefined.
-  destruct Hdefined as [Hfunction Hmethod].
-  specialize (Hmethod _ _ _ Hlookup). destruct (alist_lookup_f type_name __method); last by exfalso.
+  iModIntro. rewrite Hmethod. rewrite is_pkg_defined_pure_single_unseal in Hdefined.
+  destruct Hdefined as [Hfunction' Hmethod']. specialize (Hmethod' _ _ _ Hlookup).
+  destruct (__method type_id); last by exfalso.
   wp_pures. simpl in *. destruct (alist_lookup_f method_name l); last by exfalso.
   wp_pures. simplify_eq. iApply "HΦ".
 Qed.
@@ -518,93 +531,71 @@ Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : v
   get_is_pkg_init pkg_name = is_pkg_init →
   (own_initializing get_is_pkg_init ∗ (own_initializing get_is_pkg_init -∗ WP init_func #() {{ _, □ is_pkg_init ∗ own_initializing get_is_pkg_init }})) -∗
   (own_initializing get_is_pkg_init ∗ is_pkg_init -∗ Φ #()) -∗
-  WP package.init #pkg_name init_func {{ Φ }}.
+  WP package.init pkg_name init_func #() {{ Φ }}.
 Proof.
   intros ? Heq. subst. iIntros "(Hown & Hpre) HΦ". rewrite package.init_unseal.
   wp_call. wp_call_lc "Hlc".
   wp_bind. iNamed "Hown". iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iRename "Hg" into "Hg2". iNamed "Hi".
-  rewrite [in #"__packages"]to_val_unseal.
+  rewrite [in #(_ :: _)]to_val_unseal.
   wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg".
   iCombine "Hg Hg2" gives %[_ Heq]. subst.
   iMod ("Hclose" with "[Hg Hinit]") as "_". { iFrame "∗#%". }
-  iModIntro. do 3 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
-  wp_pures. rewrite alist_lookup_f_fmap /=.
-  destruct (alist_lookup_f pkg_name) eqn:Hstatus.
-  - simpl. wp_pures. wp_apply wp_assume. iIntros "%Hstarted_ne".
+  iModIntro. rewrite Hpackage_inited.
+  destruct (lookup) eqn:Hstatus.
+ - simpl. wp_pures. wp_apply wp_assume. iIntros "%Hstarted_ne".
     rewrite bool_decide_decide in Hstarted_ne; try done.
     destruct decide as [|] in Hstarted_ne; try done.
     wp_pures. iApply "HΦ".
     iFrame "∗#". iDestruct (big_sepS_elem_of_acc with "Hinit") as "[$ _]".
     specialize (Hpackage_inited pkg_name).
-    rewrite Hstatus lookup_union in Hpackage_inited.
-    destruct lookup eqn:Hlookup in Hpackage_inited.
+    rewrite lookup_union in Hstatus.
+    destruct lookup eqn:Hlookup in Hstatus.
     { rewrite lookup_gset_to_gmap_Some in Hlookup. set_solver. }
-    rewrite left_id in Hpackage_inited.
-    symmetry in Hpackage_inited. rewrite lookup_gset_to_gmap_Some in Hpackage_inited.
+    rewrite left_id in Hstatus.
+    symmetry in Hpackage_inited. rewrite lookup_gset_to_gmap_Some in Hstatus.
     naive_solver.
   - simpl. wp_pure_lc "Hlc". wp_pures. wp_bind.
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
     iAssert (∃ g, own_globals (DfracOwn (1/2)) g)%I with "[Hi]" as "[% Hg]".
     { iNamedSuffix "Hi" "_tmp". iFrame. }
-    iCombine "Hg2 Hg" gives %[_ Heq]. subst.
-    iCombine "Hg2 Hg" as "Hg".
+    iCombine "Hg Hg2" gives %[_ Heq]. subst.
+    iCombine "Hg Hg2" as "Hg".
     wp_apply (wp_GlobalPut with "[$]").
     iIntros "[Hown Hg]".
     iMod ("Hclose" with "[Hg]") as "_".
     {
-      do 3 rewrite (insert_insert_ne _ "__packages"%go) //.
-      rewrite insert_insert_eq. rewrite insert_empty.
-      iNext. repeat iExists _, ((_, _) :: _), _, _.
-      rewrite fmap_cons. iFrame "Hg".
-      iFrame "#%". iPureIntro.
-      instantiate (1:=({[pkg_name]} ∪ package_started)).
-      intros pkg_name'. specialize (Hpackage_inited pkg_name').
-      rewrite gset_to_gmap_union_singleton !lookup_union.
-      destruct (decide (pkg_name = pkg_name')).
-      { subst. rewrite lookup_insert_eq. rewrite /= ByteString.eqb_refl.
-        symmetry in Hpackage_inited. rewrite Hstatus lookup_union_None in Hpackage_inited.
-        by destruct Hpackage_inited as [-> ?]. }
-      rewrite lookup_insert_ne //.
-      rewrite !lookup_union in Hpackage_inited.
-      simpl. rewrite ByteString.eqb_ne //.
+      iFrame "∗#%".
+      iExists ({[ pkg_name ]} ∪ package_started). iPureIntro.
+      rewrite lookup_union union_None in Hstatus. destruct Hstatus as [Hinit Hstarted].
+      intros pkg_name'. rewrite /globals_insert lookup_union gset_to_gmap_union_singleton.
+      destruct decide as [Heq|Hneq].
+      { simpl in Heq. simplify_eq. rewrite lookup_insert_eq Hinit //. }
+      { simpl in Hneq. rewrite Hpackage_inited lookup_union. rewrite lookup_insert_ne //. congruence. }
     }
     iModIntro. wp_pures. wp_bind.
     wp_apply (wp_wand with "[Hpre Hown]").
-    { iApply ("Hpre" with "[$Hown $Hinv]"). }
+    { iApply ("Hpre" with "[$Hown]"). iFrame "#". }
     iClear "Hinit". iIntros (?) "[#? Hown]". iClear "Hinv". iNamed "Hown". wp_pures.
     wp_call_lc "Hlc". wp_bind. iInv "Hinv" as "Hi" "Hclose".
-    clear dependent package_started package_inited package_inited_val global_addr_val.
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iRename "Hg" into "Hg2". iNamed "Hi".
-    rewrite [in #"__packages"]to_val_unseal.
-    wp_apply (wp_GlobalGet with "[$]"). iIntros "Hg".
-    iCombine "Hg Hg2" gives %[_ Heq]. subst.
-    do 3 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
-    iMod ("Hclose" with "[Hg]") as "_".
-    { iFrame "∗#%". }
-    iModIntro. wp_pure_lc "Hlc". wp_pures. wp_bind. iInv "Hinv" as "Hi" "Hclose".
+    clear dependent package_started package_inited.
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iAssert (∃ g, own_globals (DfracOwn (1/2)) g)%I with "[Hi]" as "[% Hg]".
-    { iNamedSuffix "Hi" "_tmp". iFrame. }
+    iRename "Hg" into "Hg2". iNamed "Hi".
+    rewrite [in #(_::_)]to_val_unseal.
     iCombine "Hg Hg2" gives %[_ Heq]. subst.
     iCombine "Hg Hg2" as "Hg".
-    wp_apply (wp_GlobalPut with "[$]"). iIntros "[Hown Hg]".
-    iMod ("Hclose" with "[Hg]") as "_".
+    wp_apply (wp_GlobalPut with "[$]"). iIntros "[Hg Hown]".
+    iMod ("Hclose" with "[Hg]").
     {
-      do 3 rewrite (insert_insert_ne _ "__packages"%go) //.
-      rewrite insert_insert_eq. rewrite insert_empty.
-      iNext. repeat iExists _, ((_, _) :: _), package_started, ({[pkg_name]} ∪ package_inited). iFrame.
-      iSplit. { iModIntro. iApply big_sepS_insert_2; iFrame "#". }
-      iFrame "%". iPureIntro. intros pkg_name'. specialize (Hpackage_inited pkg_name').
-      simpl. rewrite gset_to_gmap_union_singleton !lookup_union.
-      destruct (decide (pkg_name = pkg_name')).
-      { subst. rewrite ByteString.eqb_refl lookup_insert_eq //.
-        erewrite left_absorb; try done.
-        rewrite /LeftAbsorb. by intros []. }
-      rewrite ByteString.eqb_ne //. rewrite lookup_insert_ne //.
-      rewrite !lookup_union // in Hpackage_inited.
+      iExists _, package_started, ({[ pkg_name ]} ∪ package_inited).
+      iFrame "∗#%". iSplit.
+      { iModIntro. iModIntro. iApply big_sepS_insert_2; done. }
+      iPureIntro. intros pkg_name'. rewrite /globals_insert lookup_union gset_to_gmap_union_singleton.
+      destruct decide.
+      { simpl in *; simplify_eq. rewrite lookup_insert_eq union_Some_l //. }
+      { simpl in *; rewrite Hpackage_inited lookup_union lookup_insert_ne //. congruence. }
     }
     rewrite to_val_unseal.
     iApply "HΦ". iFrame "∗#". done.

@@ -4,8 +4,8 @@ From Perennial Require Import base.
 (** [PkgInfo] associates a pkg_name to its static information. *)
 Class PkgInfo (pkg_name: go_string) `{ffi_syntax} := {
     pkg_vars : list (go_string * go_type);
-    pkg_functions : go_string → val → bool;
-    pkg_msets : go_string → list (go_string * val) → bool;
+    pkg_functions : go_string → option val;
+    pkg_msets : go_string → option (list (go_string * val));
     pkg_imported_pkgs : list go_string;
   }.
 

@@ -37,6 +37,17 @@ Proof using Hbounded.
   iApply "HΦ"; done.
 Qed.
 
+Lemma wp_Box__Get' (b: generics.Box.t T') :
+  {{{ is_pkg_init generics }}}
+    b @ (ptrT.id generics.Box.id) @ "Get" #T #()
+  {{{ RET #(generics.Box.Value' b); True }}}.
+Proof using Hbounded.
+  wp_start as "_"; try wp_auto. wp_method_call.
+  iApply struct_fields_split in "b"; iNamed "b".
+  wp_auto.
+  iApply "HΦ"; done.
+Qed.
+
 Lemma wp_makeGenericBox (value: T') :
   {{{ is_pkg_init generics }}}
     @! generics.makeGenericBox #T #value
@@ -82,11 +93,11 @@ Proof.
   unshelve wp_apply wp_makeGenericBox --no-auto. { apply _. }
   (* TODO: it's a [wp_load] inside the auto causing the typeclass goal. *)
   wp_auto.
+  wp_bind.
   wp_method_call.
   wp_auto.
-  wp_bind.
-  Search generics.Box.
-  wp_pure.
+  wp_auto.
+  wp_apply wp_Box__Get.
   unshelve wp_apply wp_Box__Get --no-auto. { apply _. }
   wp_auto. iApply "HΦ"; done.
 Qed.
