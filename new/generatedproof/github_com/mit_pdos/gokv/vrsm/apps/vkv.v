@@ -2,11 +2,13 @@
 Require Export New.proof.grove_prelude.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.vkv.condputargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.vkv.getargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.vkv.putargs_gk.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.kv.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.map_string_marshal.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.storage.
-Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.vkv.
@@ -245,173 +247,6 @@ Qed.
 
 End instances.
 
-(* type vkv.PutArgs *)
-Module PutArgs.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Key' : go_string;
-  Val' : go_string;
-}.
-End def.
-End PutArgs.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent vkv.PutArgs.
-#[local] Typeclasses Transparent vkv.PutArgs.
-
-Global Instance PutArgs_wf : struct.Wf vkv.PutArgs.
-Proof. apply _. Qed.
-
-Global Instance settable_PutArgs : Settable PutArgs.t :=
-  settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
-Global Instance into_val_PutArgs : IntoVal PutArgs.t :=
-  {| to_val_def v :=
-    struct.val_aux vkv.PutArgs [
-    "Key" ::= #(PutArgs.Key' v);
-    "Val" ::= #(PutArgs.Val' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_PutArgs : IntoValTyped PutArgs.t vkv.PutArgs :=
-{|
-  default_val := PutArgs.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_PutArgs_Key : IntoValStructField "Key" vkv.PutArgs PutArgs.Key'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_PutArgs_Val : IntoValStructField "Val" vkv.PutArgs PutArgs.Val'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_PutArgs Key' Val':
-  PureWp True
-    (struct.make #vkv.PutArgs (alist_val [
-      "Key" ::= #Key';
-      "Val" ::= #Val'
-    ]))%struct
-    #(PutArgs.mk Key' Val').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance PutArgs_struct_fields_split dq l (v : PutArgs.t) :
-  StructFieldsSplit dq l v (
-    "HKey" ∷ l ↦s[vkv.PutArgs :: "Key"]{dq} v.(PutArgs.Key') ∗
-    "HVal" ∷ l ↦s[vkv.PutArgs :: "Val"]{dq} v.(PutArgs.Val')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (PutArgs.Key' v)) (vkv.PutArgs) "Key"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type vkv.getArgs *)
-Module getArgs.
-
-#[global] Transparent vkv.getArgs.
-#[global] Typeclasses Transparent vkv.getArgs.
-Section def.
-Context `{ffi_syntax}.
-Definition t := go_string.
-End def.
-End getArgs.
-
-(* type vkv.CondPutArgs *)
-Module CondPutArgs.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Key' : go_string;
-  Expect' : go_string;
-  Val' : go_string;
-}.
-End def.
-End CondPutArgs.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent vkv.CondPutArgs.
-#[local] Typeclasses Transparent vkv.CondPutArgs.
-
-Global Instance CondPutArgs_wf : struct.Wf vkv.CondPutArgs.
-Proof. apply _. Qed.
-
-Global Instance settable_CondPutArgs : Settable CondPutArgs.t :=
-  settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.
-Global Instance into_val_CondPutArgs : IntoVal CondPutArgs.t :=
-  {| to_val_def v :=
-    struct.val_aux vkv.CondPutArgs [
-    "Key" ::= #(CondPutArgs.Key' v);
-    "Expect" ::= #(CondPutArgs.Expect' v);
-    "Val" ::= #(CondPutArgs.Val' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_CondPutArgs : IntoValTyped CondPutArgs.t vkv.CondPutArgs :=
-{|
-  default_val := CondPutArgs.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_CondPutArgs_Key : IntoValStructField "Key" vkv.CondPutArgs CondPutArgs.Key'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_CondPutArgs_Expect : IntoValStructField "Expect" vkv.CondPutArgs CondPutArgs.Expect'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_CondPutArgs_Val : IntoValStructField "Val" vkv.CondPutArgs CondPutArgs.Val'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_CondPutArgs Key' Expect' Val':
-  PureWp True
-    (struct.make #vkv.CondPutArgs (alist_val [
-      "Key" ::= #Key';
-      "Expect" ::= #Expect';
-      "Val" ::= #Val'
-    ]))%struct
-    #(CondPutArgs.mk Key' Expect' Val').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance CondPutArgs_struct_fields_split dq l (v : CondPutArgs.t) :
-  StructFieldsSplit dq l v (
-    "HKey" ∷ l ↦s[vkv.CondPutArgs :: "Key"]{dq} v.(CondPutArgs.Key') ∗
-    "HExpect" ∷ l ↦s[vkv.CondPutArgs :: "Expect"]{dq} v.(CondPutArgs.Expect') ∗
-    "HVal" ∷ l ↦s[vkv.CondPutArgs :: "Val"]{dq} v.(CondPutArgs.Val')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (CondPutArgs.Key' v)) (vkv.CondPutArgs) "Key"%go.
-  simpl_one_flatten_struct (# (CondPutArgs.Expect' v)) (vkv.CondPutArgs) "Expect"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
 Section names.
 
 Context `{!heapGS Σ}.
@@ -425,11 +260,13 @@ Global Instance is_pkg_defined_pure_vkv : IsPkgDefinedPure vkv :=
       is_pkg_defined_pure_single vkv ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.vkv.condputargs_gk.condputargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.vkv.getargs_gk.getargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.vkv.putargs_gk.putargs_gk ∧
       is_pkg_defined_pure code.sync.sync ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.kv.kv ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.storage.storage ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.storage.storage;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -439,11 +276,13 @@ Global Program Instance is_pkg_defined_vkv : IsPkgDefined vkv :=
       (is_pkg_defined_single vkv ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.vkv.condputargs_gk.condputargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.vkv.getargs_gk.getargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.vkv.putargs_gk.putargs_gk ∗
        is_pkg_defined code.sync.sync ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.kv.kv ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.storage.storage ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.storage.storage)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
@@ -458,30 +297,6 @@ Global Instance wp_func_call_MakeClerkPool :
 
 Global Instance wp_func_call_MakeKv :
   WpFuncCall vkv.MakeKv _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodePutArgs :
-  WpFuncCall vkv.encodePutArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodePutArgs :
-  WpFuncCall vkv.decodePutArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeGetArgs :
-  WpFuncCall vkv.encodeGetArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeGetArgs :
-  WpFuncCall vkv.decodeGetArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeCondPutArgs :
-  WpFuncCall vkv.encodeCondPutArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeCondPutArgs :
-  WpFuncCall vkv.decodeCondPutArgs _ (is_pkg_defined vkv) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeVersionedStateMachine :

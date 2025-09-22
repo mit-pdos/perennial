@@ -4,8 +4,9 @@ Require Export New.code.github_com.goose_lang.std.
 Require Export New.code.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.code.github_com.mit_pdos.gokv.reconnectclient.
 Require Export New.code.github_com.mit_pdos.gokv.urpc.
-Require Export New.code.github_com.mit_pdos.gokv.vrsm.e.
+Require Export New.code.github_com.mit_pdos.gokv.vrsm.configservice.config_gk.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.paxos.
+Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.
 Require Export New.code.github_com.tchajed.marshal.
 Require Export New.code.log.
 Require Export New.code.sync.
@@ -22,65 +23,6 @@ Module Server. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/confi
 
 Section code.
 
-
-Definition EncodeConfig : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.EncodeConfig"%go.
-
-(* go: 0_marshal.go:8:6 *)
-Definition EncodeConfigⁱᵐᵖˡ : val :=
-  λ: "config",
-    exception_do (let: "config" := (mem.alloc "config") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (#(W64 8) * (s_to_w64 (let: "$a0" := (![#sliceT] "config") in
-    slice.len "$a0"))))) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "config") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#sliceT] "config") in
-    (let: "h" := (mem.alloc (type.zero_val #uint64T)) in
-    slice.for_range #uint64T "$range" (λ: "$key" "$value",
-      do:  ("h" <-[#uint64T] "$value");;;
-      do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-      let: "$a1" := (![#uint64T] "h") in
-      (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("enc" <-[#sliceT] "$r0")));;;
-    return: (![#sliceT] "enc")).
-
-Definition DecodeConfig : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.DecodeConfig"%go.
-
-(* go: 0_marshal.go:17:6 *)
-Definition DecodeConfigⁱᵐᵖˡ : val :=
-  λ: "enc_config",
-    exception_do (let: "enc_config" := (mem.alloc "enc_config") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] "enc_config") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "configLen" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.ReadInt) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  ("configLen" <-[#uint64T] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T (![#uint64T] "configLen")) in
-    do:  ("config" <-[#sliceT] "$r0");;;
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "config") in
-    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      (func_call #marshal.ReadInt) "$a0") in
-      let: "$r0" := "$ret0" in
-      let: "$r1" := "$ret1" in
-      do:  ((slice.elem_ref #uint64T (![#sliceT] "config") (![#uint64T] "i")) <-[#uint64T] "$r0");;;
-      do:  ("enc" <-[#sliceT] "$r1");;;
-      do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
-    return: (![#sliceT] "config")).
 
 Definition Clerk : go_type := structT [
   "mu" :: ptrT;
@@ -100,7 +42,7 @@ Definition RPC_GETLEASE : val := #(W64 3).
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.MakeClerk"%go.
 
-(* go: client.go:26:6 *)
+(* go: client.go:27:6 *)
 Definition MakeClerkⁱᵐᵖˡ : val :=
   λ: "hosts",
     exception_do (let: "hosts" := (mem.alloc "hosts") in
@@ -126,7 +68,7 @@ Definition MakeClerkⁱᵐᵖˡ : val :=
        "leader" ::= type.zero_val #uint64T
      }]))).
 
-(* go: client.go:34:18 *)
+(* go: client.go:35:18 *)
 Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
   λ: "ck" <>,
     exception_do (let: "ck" := (mem.alloc "ck") in
@@ -149,14 +91,14 @@ Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
       (if: (![#uint64T] "err") ≠ #(W64 0)
       then continue: #()
       else do:  #());;;
-      let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "err2" := (mem.alloc (type.zero_val #err_gk.E)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-      (func_call #marshal.ReadInt) "$a0") in
+      (func_call #err_gk.Unmarshal) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("err2" <-[#uint64T] "$r0");;;
+      do:  ("err2" <-[#err_gk.E] "$r0");;;
       do:  ((![#ptrT] "reply") <-[#sliceT] "$r1");;;
-      (if: (![#uint64T] "err2") = e.NotLeader
+      (if: (![#err_gk.E] "err2") = err_gk.NotLeader
       then
         do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
         (if: (![#uint64T] "l") = (![#uint64T] (struct.field_ref #Clerk #"leader"%go (![#ptrT] "ck")))
@@ -168,7 +110,7 @@ Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
         do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
         continue: #()
       else do:  #());;;
-      (if: (![#uint64T] "err2") = e.None
+      (if: (![#err_gk.E] "err2") = err_gk.None
       then break: #()
       else do:  #()));;;
     let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
@@ -178,13 +120,16 @@ Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
     let: "$r1" := "$ret1" in
     do:  ("epoch" <-[#uint64T] "$r0");;;
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r1");;;
-    let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #DecodeConfig) "$a0") in
-    do:  ("config" <-[#sliceT] "$r0");;;
-    return: (![#uint64T] "epoch", ![#sliceT] "config")).
+    let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
+    (func_call #config_gk.Unmarshal) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("config" <-[#config_gk.S] "$r0");;;
+    do:  "$r1";;;
+    return: (![#uint64T] "epoch", ![#config_gk.S] "config")).
 
-(* go: client.go:67:18 *)
+(* go: client.go:68:18 *)
 Definition Clerk__GetConfigⁱᵐᵖˡ : val :=
   λ: "ck" <>,
     exception_do (let: "ck" := (mem.alloc "ck") in
@@ -207,13 +152,16 @@ Definition Clerk__GetConfigⁱᵐᵖˡ : val :=
       then break: #()
       else do:  #());;;
       continue: #());;;
-    let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #DecodeConfig) "$a0") in
-    do:  ("config" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "config")).
+    let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
+    (func_call #config_gk.Unmarshal) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("config" <-[#config_gk.S] "$r0");;;
+    do:  "$r1";;;
+    return: (![#config_gk.S] "config")).
 
-(* go: client.go:81:18 *)
+(* go: client.go:82:18 *)
 Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
   λ: "ck" "epoch" "config",
     exception_do (let: "ck" := (mem.alloc "ck") in
@@ -223,7 +171,7 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ("reply" <-[#ptrT] "$r0");;;
     let: "args" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (#(W64 8) * (let: "$a0" := (![#sliceT] "config") in
+    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (#(W64 8) * (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
     slice.len "$a0")))) in
     do:  ("args" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
@@ -231,9 +179,8 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
     (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("args" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
-    let: "$a1" := (let: "$a0" := (![#sliceT] "config") in
-    (func_call #EncodeConfig) "$a0") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
+    let: "$a1" := (![#config_gk.S] "config") in
+    (func_call #config_gk.Marshal) "$a0" "$a1") in
     do:  ("args" <-[#sliceT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
@@ -251,14 +198,14 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
       (if: (![#uint64T] "err") ≠ #(W64 0)
       then continue: #()
       else do:  #());;;
-      let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "err2" := (mem.alloc (type.zero_val #err_gk.E)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-      (func_call #marshal.ReadInt) "$a0") in
+      (func_call #err_gk.Unmarshal) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("err2" <-[#uint64T] "$r0");;;
+      do:  ("err2" <-[#err_gk.E] "$r0");;;
       do:  "$r1";;;
-      (if: (![#uint64T] "err2") = e.NotLeader
+      (if: (![#err_gk.E] "err2") = err_gk.NotLeader
       then
         do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
         (if: (![#uint64T] "l") = (![#uint64T] (struct.field_ref #Clerk #"leader"%go (![#ptrT] "ck")))
@@ -270,19 +217,19 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
         do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
         continue: #()
       else break: #()));;;
-    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #err_gk.E)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #marshal.ReadInt) "$a0") in
+    (func_call #err_gk.Unmarshal) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("err" <-[#uint64T] "$r0");;;
+    do:  ("err" <-[#err_gk.E] "$r0");;;
     do:  "$r1";;;
-    return: (![#uint64T] "err")).
+    return: (![#err_gk.E] "err")).
 
 (* returns e.None if the lease was granted for the given epoch, and a conservative
    guess on when the lease expires.
 
-   go: client.go:117:18 *)
+   go: client.go:118:18 *)
 Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
   λ: "ck" "epoch",
     exception_do (let: "ck" := (mem.alloc "ck") in
@@ -313,14 +260,14 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
       (if: (![#uint64T] "err") ≠ #(W64 0)
       then continue: #()
       else do:  #());;;
-      let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "err2" := (mem.alloc (type.zero_val #err_gk.E)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-      (func_call #marshal.ReadInt) "$a0") in
+      (func_call #err_gk.Unmarshal) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("err2" <-[#uint64T] "$r0");;;
+      do:  ("err2" <-[#err_gk.E] "$r0");;;
       do:  "$r1";;;
-      (if: (![#uint64T] "err2") = e.NotLeader
+      (if: (![#err_gk.E] "err2") = err_gk.NotLeader
       then
         do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
         (if: (![#uint64T] "l") = (![#uint64T] (struct.field_ref #Clerk #"leader"%go (![#ptrT] "ck")))
@@ -333,12 +280,12 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
         continue: #()
       else break: #()));;;
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "err2" := (mem.alloc (type.zero_val #err_gk.E)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #marshal.ReadInt) "$a0") in
+    (func_call #err_gk.Unmarshal) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("err2" <-[#uint64T] "$r0");;;
+    do:  ("err2" <-[#err_gk.E] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: "leaseExpiration" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
@@ -347,7 +294,7 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
     let: "$r1" := "$ret1" in
     do:  ("leaseExpiration" <-[#uint64T] "$r0");;;
     do:  "$r1";;;
-    return: (![#uint64T] "err2", ![#uint64T] "leaseExpiration")).
+    return: (![#err_gk.E] "err2", ![#uint64T] "leaseExpiration")).
 
 (* 1 second *)
 Definition LeaseInterval : val := #(W64 1000000000).
@@ -357,14 +304,14 @@ Definition state : go_type := structT [
   "reservedEpoch" :: uint64T;
   "leaseExpiration" :: uint64T;
   "wantLeaseToExpire" :: boolT;
-  "config" :: sliceT
+  "config" :: config_gk.S
 ].
 #[global] Typeclasses Opaque state.
 #[global] Opaque state.
 
 Definition encodeState : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.encodeState"%go.
 
-(* go: server.go:25:6 *)
+(* go: server.go:26:6 *)
 Definition encodeStateⁱᵐᵖˡ : val :=
   λ: "st",
     exception_do (let: "st" := (mem.alloc "st") in
@@ -393,15 +340,14 @@ Definition encodeStateⁱᵐᵖˡ : val :=
       (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("e" <-[#sliceT] "$r0"));;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
-    let: "$a1" := (let: "$a0" := (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
-    (func_call #EncodeConfig) "$a0") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
+    let: "$a1" := (![#config_gk.S] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
+    (func_call #config_gk.Marshal) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "e")).
 
 Definition decodeState : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.decodeState"%go.
 
-(* go: server.go:39:6 *)
+(* go: server.go:40:6 *)
 Definition decodeStateⁱᵐᵖˡ : val :=
   λ: "e",
     exception_do (let: "e" := (mem.alloc "e") in
@@ -438,9 +384,12 @@ Definition decodeStateⁱᵐᵖˡ : val :=
     do:  ("e2" <-[#sliceT] "$r1");;;
     let: "$r0" := ((![#uint64T] "wantExp") = #(W64 1)) in
     do:  ((struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st")) <-[#boolT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "e2") in
-    (func_call #DecodeConfig) "$a0") in
-    do:  ((struct.field_ref #state #"config"%go (![#ptrT] "st")) <-[#sliceT] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e2") in
+    (func_call #config_gk.Unmarshal) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ((struct.field_ref #state #"config"%go (![#ptrT] "st")) <-[#config_gk.S] "$r0");;;
+    do:  "$r1";;;
     return: (![#ptrT] "st")).
 
 Definition Server : go_type := structT [
@@ -449,21 +398,21 @@ Definition Server : go_type := structT [
 #[global] Typeclasses Opaque Server.
 #[global] Opaque Server.
 
-(* go: server.go:56:18 *)
+(* go: server.go:57:18 *)
 Definition Server__tryAcquireⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "relF" := (mem.alloc (type.zero_val #funcT)) in
     let: "e" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "err" := (mem.alloc (type.zero_val #paxos.Error)) in
+    let: "err" := (mem.alloc (type.zero_val #error_gk.E)) in
     let: (("$ret0", "$ret1"), "$ret2") := ((method_call #(ptrT.id paxos.Server.id) #"TryAcquire"%go (![#ptrT] (struct.field_ref #Server #"s"%go (![#ptrT] "s")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("err" <-[#paxos.Error] "$r0");;;
+    do:  ("err" <-[#error_gk.E] "$r0");;;
     do:  ("e" <-[#ptrT] "$r1");;;
     do:  ("relF" <-[#funcT] "$r2");;;
-    (if: (![#paxos.Error] "err") ≠ #(W64 0)
+    (if: (![#error_gk.E] "err") ≠ #(W32 0)
     then
       let: "p" := (mem.alloc (type.zero_val #ptrT)) in
       return: (#false, ![#ptrT] "p", #func.nil)
@@ -477,20 +426,20 @@ Definition Server__tryAcquireⁱᵐᵖˡ : val :=
       exception_do (let: "$r0" := (let: "$a0" := (![#ptrT] "st") in
       (func_call #encodeState) "$a0") in
       do:  ((![#ptrT] "e") <-[#sliceT] "$r0");;;
-      return: (((![#funcT] "relF") #()) = #(W64 0)))
+      return: (((![#funcT] "relF") #()) = #(W32 0)))
       ) in
     do:  ("releaseFn" <-[#funcT] "$r0");;;
     return: (#true, ![#ptrT] "st", ![#funcT] "releaseFn")).
 
-(* go: server.go:70:18 *)
+(* go: server.go:71:18 *)
 Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
   λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
-    let: "$r0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := e.NotLeader in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
+    let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+    let: "$a1" := err_gk.NotLeader in
+    (func_call #err_gk.Marshal) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "tryReleaseFn" := (mem.alloc (type.zero_val #funcT)) in
     let: "st" := (mem.alloc (type.zero_val #ptrT)) in
@@ -509,34 +458,33 @@ Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
     let: "$a1" := #(W64 1) in
     (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st")) <-[#uint64T] "$r0");;;
-    let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
-    do:  ("config" <-[#sliceT] "$r0");;;
+    let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
+    let: "$r0" := (![#config_gk.S] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
+    do:  ("config" <-[#config_gk.S] "$r0");;;
     let: "reservedEpoch" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st"))) in
     do:  ("reservedEpoch" <-[#uint64T] "$r0");;;
     (if: (~ ((![#funcT] "tryReleaseFn") #()))
     then return: (#())
     else do:  #());;;
-    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (#(W64 8) * (let: "$a0" := (![#sliceT] "config") in
+    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (#(W64 8) * (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
     slice.len "$a0")))) in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    let: "$a1" := e.None in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
+    let: "$a1" := err_gk.None in
+    (func_call #err_gk.Marshal) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := (![#uint64T] "reservedEpoch") in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    let: "$a1" := (let: "$a0" := (![#sliceT] "config") in
-    (func_call #EncodeConfig) "$a0") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
+    let: "$a1" := (![#config_gk.S] "config") in
+    (func_call #config_gk.Marshal) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     return: #()).
 
-(* go: server.go:88:18 *)
+(* go: server.go:89:18 *)
 Definition Server__GetConfigⁱᵐᵖˡ : val :=
   λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -546,20 +494,21 @@ Definition Server__GetConfigⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id paxos.Server.id) #"WeakRead"%go (![#ptrT] (struct.field_ref #Server #"s"%go (![#ptrT] "s")))) #()) in
     (func_call #decodeState) "$a0") in
     do:  ("st" <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
-    (func_call #EncodeConfig) "$a0") in
+    let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+    let: "$a1" := (![#config_gk.S] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
+    (func_call #config_gk.Marshal) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     return: #()).
 
-(* go: server.go:93:18 *)
+(* go: server.go:94:18 *)
 Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
   λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
-    let: "$r0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := e.NotLeader in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
+    let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+    let: "$a1" := err_gk.NotLeader in
+    (func_call #err_gk.Marshal) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
@@ -569,10 +518,13 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
     let: "$r1" := "$ret1" in
     do:  ("epoch" <-[#uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
-    let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #DecodeConfig) "$a0") in
-    do:  ("config" <-[#sliceT] "$r0");;;
+    let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    (func_call #config_gk.Unmarshal) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("config" <-[#config_gk.S] "$r0");;;
+    do:  "$r1";;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "tryReleaseFn" := (mem.alloc (type.zero_val #funcT)) in
       let: "st" := (mem.alloc (type.zero_val #ptrT)) in
@@ -592,9 +544,9 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
         (if: (~ ((![#funcT] "tryReleaseFn") #()))
         then break: #()
         else do:  #());;;
-        let: "$r0" := (let: "$a0" := #slice.nil in
-        let: "$a1" := e.Stale in
-        (func_call #marshal.WriteInt) "$a0" "$a1") in
+        let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+        let: "$a1" := err_gk.Stale in
+        (func_call #err_gk.Marshal) "$a0" "$a1") in
         do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
         do:  (let: "$a0" := #"Stale: %d < %d"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "epoch")) in
@@ -617,18 +569,18 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
             do:  ((struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st")) <-[#boolT] "$r0");;;
             let: "$r0" := (![#uint64T] "epoch") in
             do:  ((struct.field_ref #state #"epoch"%go (![#ptrT] "st")) <-[#uint64T] "$r0");;;
-            let: "$r0" := (![#sliceT] "config") in
-            do:  ((struct.field_ref #state #"config"%go (![#ptrT] "st")) <-[#sliceT] "$r0");;;
+            let: "$r0" := (![#config_gk.S] "config") in
+            do:  ((struct.field_ref #state #"config"%go (![#ptrT] "st")) <-[#config_gk.S] "$r0");;;
             (if: (~ ((![#funcT] "tryReleaseFn") #()))
             then break: #()
             else do:  #());;;
             do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"New config is:"%go) in
-            let: "$sl1" := (interface.make #(sliceT.id uint64T.id) (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st")))) in
+            let: "$sl1" := (interface.make #config_gk.S.id (![#config_gk.S] (struct.field_ref #state #"config"%go (![#ptrT] "st")))) in
             slice.literal #interfaceT ["$sl0"; "$sl1"])) in
             (func_call #log.Println) "$a0");;;
-            let: "$r0" := (let: "$a0" := #slice.nil in
-            let: "$a1" := e.None in
-            (func_call #marshal.WriteInt) "$a0" "$a1") in
+            let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+            let: "$a1" := err_gk.None in
+            (func_call #err_gk.Marshal) "$a0" "$a1") in
             do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
             break: #()
           else
@@ -644,27 +596,27 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
             (func_call #primitive.Sleep) "$a0");;;
             continue: #())
         else
-          let: "$r0" := (![#sliceT] "config") in
-          do:  ((struct.field_ref #state #"config"%go (![#ptrT] "st")) <-[#sliceT] "$r0");;;
+          let: "$r0" := (![#config_gk.S] "config") in
+          do:  ((struct.field_ref #state #"config"%go (![#ptrT] "st")) <-[#config_gk.S] "$r0");;;
           (if: (~ ((![#funcT] "tryReleaseFn") #()))
           then break: #()
           else do:  #());;;
-          let: "$r0" := (let: "$a0" := #slice.nil in
-          let: "$a1" := e.None in
-          (func_call #marshal.WriteInt) "$a0" "$a1") in
+          let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+          let: "$a1" := err_gk.None in
+          (func_call #err_gk.Marshal) "$a0" "$a1") in
           do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
           break: #())));;;
     return: #()).
 
-(* go: server.go:145:18 *)
+(* go: server.go:146:18 *)
 Definition Server__GetLeaseⁱᵐᵖˡ : val :=
   λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
-    let: "$r0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := e.NotLeader in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
+    let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+    let: "$a1" := err_gk.NotLeader in
+    (func_call #err_gk.Marshal) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := #(W64 0) in
@@ -701,9 +653,9 @@ Definition Server__GetLeaseⁱᵐᵖˡ : val :=
       (if: (~ ((![#funcT] "tryReleaseFn") #()))
       then return: (#())
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := #slice.nil in
-      let: "$a1" := e.Stale in
-      (func_call #marshal.WriteInt) "$a0" "$a1") in
+      let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+      let: "$a1" := err_gk.Stale in
+      (func_call #err_gk.Marshal) "$a0" "$a1") in
       do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
       let: "$a1" := #(W64 0) in
@@ -728,9 +680,9 @@ Definition Server__GetLeaseⁱᵐᵖˡ : val :=
     (if: (~ ((![#funcT] "tryReleaseFn") #()))
     then return: (#())
     else do:  #());;;
-    let: "$r0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := e.None in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
+    let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 0)) in
+    let: "$a1" := err_gk.None in
+    (func_call #err_gk.Marshal) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := (![#uint64T] "newLeaseExpiration") in
@@ -740,7 +692,7 @@ Definition Server__GetLeaseⁱᵐᵖˡ : val :=
 
 Definition makeServer : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.makeServer"%go.
 
-(* go: server.go:177:6 *)
+(* go: server.go:178:6 *)
 Definition makeServerⁱᵐᵖˡ : val :=
   λ: "fname" "paxosMe" "hosts" "initconfig",
     exception_do (let: "initconfig" := (mem.alloc "initconfig") in
@@ -751,7 +703,10 @@ Definition makeServerⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #Server)) in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "initEnc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (mem.alloc (let: "$config" := (![#sliceT] "initconfig") in
+    let: "$r0" := (let: "$a0" := (mem.alloc (let: "$config" := (let: "$Addrs" := (![#sliceT] "initconfig") in
+    struct.make #config_gk.S [{
+      "Addrs" ::= "$Addrs"
+    }]) in
     struct.make #state [{
       "epoch" ::= type.zero_val #uint64T;
       "reservedEpoch" ::= type.zero_val #uint64T;
@@ -771,7 +726,7 @@ Definition makeServerⁱᵐᵖˡ : val :=
 
 Definition StartServer : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.StartServer"%go.
 
-(* go: server.go:187:6 *)
+(* go: server.go:188:6 *)
 Definition StartServerⁱᵐᵖˡ : val :=
   λ: "fname" "me" "paxosMe" "hosts" "initconfig",
     exception_do (let: "initconfig" := (mem.alloc "initconfig") in
@@ -807,7 +762,7 @@ Definition StartServerⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(EncodeConfig, EncodeConfigⁱᵐᵖˡ); (DecodeConfig, DecodeConfigⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ); (encodeState, encodeStateⁱᵐᵖˡ); (decodeState, decodeStateⁱᵐᵖˡ); (makeServer, makeServerⁱᵐᵖˡ); (StartServer, StartServerⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(MakeClerk, MakeClerkⁱᵐᵖˡ); (encodeState, encodeStateⁱᵐᵖˡ); (decodeState, decodeStateⁱᵐᵖˡ); (makeServer, makeServerⁱᵐᵖˡ); (StartServer, StartServerⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Clerk.id, []); (ptrT.id Clerk.id, [("GetConfig"%go, Clerk__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Clerk__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Clerk__TryWriteConfigⁱᵐᵖˡ)]); (state.id, []); (ptrT.id state.id, []); (Server.id, []); (ptrT.id Server.id, [("GetConfig"%go, Server__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Server__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Server__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Server__TryWriteConfigⁱᵐᵖˡ); ("tryAcquire"%go, Server__tryAcquireⁱᵐᵖˡ)])].
 
@@ -816,7 +771,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Clerk.id, [
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.tchajed.marshal.marshal; code.sync.sync; code.github_com.goose_lang.primitive.primitive; code.github_com.mit_pdos.gokv.reconnectclient.reconnectclient; code.github_com.mit_pdos.gokv.vrsm.e.e; code.log.log; code.github_com.goose_lang.std.std; code.github_com.mit_pdos.gokv.urpc.urpc; code.github_com.mit_pdos.gokv.vrsm.paxos.paxos];
+    pkg_imported_pkgs := [code.sync.sync; code.github_com.goose_lang.primitive.primitive; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.reconnectclient.reconnectclient; code.github_com.mit_pdos.gokv.vrsm.configservice.config_gk.config_gk; code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk; code.github_com.tchajed.marshal.marshal; code.log.log; code.github_com.goose_lang.std.std; code.github_com.mit_pdos.gokv.urpc.urpc; code.github_com.mit_pdos.gokv.vrsm.paxos.paxos];
   |}.
 
 Definition initialize' : val :=
@@ -826,12 +781,13 @@ Definition initialize' : val :=
       do:  (urpc.initialize' #());;;
       do:  (std.initialize' #());;;
       do:  (log.initialize' #());;;
-      do:  (e.initialize' #());;;
+      do:  (marshal.initialize' #());;;
+      do:  (err_gk.initialize' #());;;
+      do:  (config_gk.initialize' #());;;
       do:  (reconnectclient.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
       do:  (primitive.initialize' #());;;
       do:  (sync.initialize' #());;;
-      do:  (marshal.initialize' #());;;
-      do:  (grove_ffi.initialize' #());;;
       do:  (package.alloc configservice.configservice #()))
       ).
 
