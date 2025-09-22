@@ -314,10 +314,7 @@ def main():
     if args.goose_examples:
         run_goose(
             path.join(goose_dir, "testdata/examples"),
-            "./append_log",
-            "./semantics",
-            "./unittest/...",
-            "./channel",
+            "./...",
         )
 
     if args.channel:
