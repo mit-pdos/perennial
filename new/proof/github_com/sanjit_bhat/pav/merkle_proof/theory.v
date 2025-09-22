@@ -782,7 +782,31 @@ Fixpoint is_const_label_len t :=
   | _ => True
   end.
 
-Lemma cutless_new_put t label val :
+Lemma const_label_len_over_put t t' label val :
+  is_const_label_len t →
+  pure_put t label val = Some t' →
+  length label = Z.to_nat (cryptoffi.hash_len) →
+  is_const_label_len t'.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t t' depth.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match;
+    simplify_eq/=; try done.
+  - word.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match;
+      simplify_eq/=; intuition;
+      by (eapply IH; [|done..]).
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; try done; naive_solver.
+Qed.
+
+Lemma put_impl_cutless t label val :
   is_Some (pure_put t label val) →
   is_cutless_path t label.
 Proof.
@@ -796,6 +820,25 @@ Proof.
   case_match; try done.
   case_match; try done.
   eapply (IH n); [lia|done].
+Qed.
+
+Lemma cutless_new_put t t' label val :
+  pure_put t label val = Some t' →
+  is_cutless_path t' label.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t t' depth.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match; try case_match;
+    simplify_eq/=; try done.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; by eapply IH.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; by eapply IH.
 Qed.
 
 Lemma cutless_over_put t t' label0 label1 val :

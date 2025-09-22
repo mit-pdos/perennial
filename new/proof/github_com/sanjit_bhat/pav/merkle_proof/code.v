@@ -94,7 +94,6 @@ Lemma wp_compLeafHash sl_label sl_val (label val : list w8) :
       hash
   }}}.
 Proof.
-Admitted. (*
   wp_start as "@". wp_auto.
   wp_apply cryptoffi.wp_NewHasher as "* @".
   wp_apply wp_slice_literal as "* Hsl_b".
@@ -124,7 +123,6 @@ Admitted. (*
   iExactEq "His_hash".
   rewrite /named. repeat f_equal; word.
 Qed.
-*)
 
 Lemma wp_compInnerHash sl_child0 sl_child1 (child0 child1 : list w8) :
   {{{
@@ -338,7 +336,6 @@ Lemma wp_put n0 n t sl_label sl_val label val :
       end
   }}}.
 Proof.
-Admitted. (*
   autounfold with merkle.
   assert (∃ x, x = max_depth) as [limit Heq]; [by eexists|].
   rewrite -[in is_limit' _ _]Heq.
@@ -578,7 +575,6 @@ Admitted. (*
     wp_apply std.wp_Assert; [done|].
     iApply "HΦ". by iFrame.
 Qed.
-*)
 
 Lemma wp_newShell sl_label label sl_sibs sibs_enc (depth depth_rem : nat) :
   {{{
@@ -597,7 +593,6 @@ Lemma wp_newShell sl_label label sl_sibs sibs_enc (depth depth_rem : nat) :
     "Hown_tree" ∷ own_tree n (pure_newShell' depth label sibs) 1
   }}}.
 Proof.
-Admitted. (*
   iLöb as "IH" forall (sl_sibs sibs_enc depth depth_rem).
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_sibs") as %[].
@@ -666,7 +661,6 @@ Admitted. (*
   - apply Forall_cons; [|done]. rewrite length_drop. lia.
   - iFrame "∗#".
 Qed.
-*)
 
 Definition wish_proofToTree label proof_enc sibs oleaf : iProp Σ :=
   ∃ LeafLabel LeafVal tail,
@@ -723,12 +717,17 @@ Lemma wp_proofToTree sl_label label sl_proof proof :
         ∃ sibs oleaf t,
         "Hwish" ∷ wish_proofToTree label proof sibs oleaf ∗
         "%HSome_tree" ∷ ⌜pure_proofToTree label sibs oleaf = Some t⌝ ∗
+        "Hown_tree" ∷ own_tree tr t 1 ∗
+
+        (* necessary for subsequent put's. *)
         "%Hlabel_None" ∷ ⌜is_entry t label None⌝ ∗
-        "Hown_tree" ∷ own_tree tr t 1
+        "%Hcutless" ∷ ⌜is_cutless_path t label⌝ ∗
+        "%Hlimit" ∷ ⌜is_limit t⌝ ∗
+        "%Hsorted" ∷ ⌜is_sorted t⌝ ∗
+        "%Hconst_label_len" ∷ ⌜is_const_label_len t⌝
       end
   }}}.
 Proof.
-Admitted. (*
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_label") as %[].
   wp_if_destruct; wp_auto.
@@ -759,17 +758,23 @@ Admitted. (*
   iDestruct "Hsl_Siblings" as "#Hsl_Siblings".
   wp_apply wp_newShell as "* @".
   { iFrame "#".
-    instantiate (1:=(length obj.(MerkleProof.Siblings) `div` 32)%nat).
     (* [Require ZifyNat] for [Nat.div] reasoning. *)
+    instantiate (1:=(length obj.(MerkleProof.Siblings) `div` 32)%nat).
     word. }
   destruct obj. simplify_eq/=.
   rewrite join_length_reverse in Hlen_sl_sibs.
   apply join_same_len_length in Hlen_sibs as ?.
+  opose proof (newShell_None label sibs).
+  opose proof (cutless_on_newShell label sibs).
+  opose proof (limit_on_newShell label sibs _); [word|].
+  opose proof (sorted_on_newShell label sibs).
+  opose proof (const_label_on_newShell label sibs).
+  replace (pure_newShell' _ _ _) with (pure_newShell label sibs) by done.
+
   destruct IsOtherLeaf; wp_auto.
   2: { iApply "HΦ".
     iExists _, None. iFrame.
     iPureIntro; repeat split; try done; word. }
-  replace (pure_newShell' _ _ _) with (pure_newShell label sibs) by done.
 
   iDestruct (own_slice_len with "Hsl_LeafLabel") as %[].
   wp_if_destruct; wp_auto.
@@ -812,12 +817,16 @@ Admitted. (*
   iApply "HΦ".
   iExists _, (Some (_, _)).
   iFrame.
-  iPureIntro. repeat split; try done; [word..|].
-  by eapply cutless_on_put.
+  eapply old_entry_over_put in HSome_tree as ?; [|done..].
+  eapply cutless_over_put in HSome_tree as ?; [|done].
+  eapply is_limit_over_put in HSome_tree as ?; [|done].
+  eapply is_sorted_over_put in HSome_tree as ?; [|done].
+  eapply const_label_len_over_put in HSome_tree as ?; [|done|word].
+  opose proof (put_impl_cutless _ _ _ _); [done|].
+  iPureIntro. repeat split; try done; word.
 Qed.
-*)
 
-(* make def to prevent unfolding the nat. *)
+(* make defn to prevent unfolding the nat. *)
 Definition w64_len := 8%nat.
 Hint Unfold w64_len : len.
 
@@ -851,7 +860,6 @@ Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
       "%Hlen_sibsLen" ∷ ⌜length sibsLen = w64_len⌝)
   }}}.
 Proof.
-Admitted. (*
   autounfold with merkle.
   intros Hlimit Hcutless.
   remember max_depth as limit.
@@ -933,17 +941,16 @@ Admitted. (*
       iSplit; [|done].
       case_match; iFrame.
 Qed.
-*)
 
-Definition valid_proof label proof hash m : iProp Σ :=
+Definition is_non_memb_proof label proof hash m : iProp Σ :=
   ∃ sibs oleaf t,
   "Hvalid_toTree" ∷ wish_proofToTree label proof sibs oleaf ∗
   "%HSome_toTree" ∷ ⌜pure_proofToTree label sibs oleaf = Some t⌝ ∗
   "#His_hash" ∷ is_cut_tree t hash ∗
   "#His_map" ∷ is_map m hash.
 
-Lemma valid_proof_det l p h0 h1 m0 m1 :
-  valid_proof l p h0 m0 -∗ valid_proof l p h1 m1 -∗ ⌜h0 = h1 ∧ m0 = m1⌝.
+Lemma is_non_memb_proof_det l p h0 h1 m0 m1 :
+  is_non_memb_proof l p h0 m0 -∗ is_non_memb_proof l p h1 m1 -∗ ⌜h0 = h1 ∧ m0 = m1⌝.
 Proof.
   iNamedSuffix 1 "0".
   iNamedSuffix 1 "1".
@@ -965,10 +972,10 @@ Lemma wp_VerifyNonMemb sl_label label sl_proof proof :
     sl_hash hash err, RET (#sl_hash, #err);
     "#Hsl_hash" ∷ sl_hash ↦*□ hash ∗
     "Hgenie" ∷ match err with
-      | true => ¬ ∃ hash m, valid_proof label proof hash m
+      | true => ¬ ∃ hash m, is_non_memb_proof label proof hash m
       | false =>
         ∃ m,
-        "#His_proof" ∷ valid_proof label proof hash m ∗
+        "#His_proof" ∷ is_non_memb_proof label proof hash m ∗
         "%Hlook" ∷ ⌜m !! label = None⌝
       end
   }}}.
@@ -989,17 +996,181 @@ Proof.
   iFrame "∗#%".
 
   iNamed "His_map".
-  iDestruct (full_entry_txfer with "[$]") as %?; [done|..].
-  (* TODO: shift these props to proofToTree WP.
-  (1) they rely on valid rsrc and (2) are short that it's reasonable to do
-  them in-line with WP. *)
-  { opose proof (cutless_on_newShell label sibs).
-    destruct oleaf as [[]|]; simpl in *.
-    - by eapply cutless_over_put.
-    - by simplify_eq/=. }
-  { admit. }
+  iDestruct (full_entry_txfer with "[$]") as %?; [done..|].
   subst. iPureIntro.
-  apply entry_eq_lookup.
-Abort.
+  by rewrite -entry_eq_lookup.
+Qed.
+
+Definition is_memb_proof label val proof hash m : iProp Σ :=
+  ∃ sibs oleaf t0 t1,
+  "Hvalid_toTree" ∷ wish_proofToTree label proof sibs oleaf ∗
+  "%HSome_toTree" ∷ ⌜pure_proofToTree label sibs oleaf = Some t0⌝ ∗
+  "%HSome_put" ∷ ⌜pure_put t0 label val = Some t1⌝ ∗
+  "#His_hash" ∷ is_cut_tree t1 hash ∗
+  "#His_map" ∷ is_map m hash.
+
+Lemma is_memb_proof_det l v p h0 h1 m0 m1 :
+  is_memb_proof l v p h0 m0 -∗ is_memb_proof l v p h1 m1 -∗ ⌜h0 = h1 ∧ m0 = m1⌝.
+Proof.
+  iNamedSuffix 1 "0".
+  iNamedSuffix 1 "1".
+  iDestruct (wish_proofToTree_det with "Hvalid_toTree0 Hvalid_toTree1") as %[].
+  simplify_eq/=.
+  iDestruct (is_cut_tree_det with "His_hash0 His_hash1") as %->.
+  by iDestruct (is_map_inj with "His_map0 His_map1") as %->.
+Qed.
+
+Lemma wp_VerifyMemb sl_label label sl_val val sl_proof proof :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "#Hsl_label" ∷ sl_label ↦*□ label ∗
+    "#Hsl_val" ∷ sl_val ↦*□ val ∗
+    "#Hsl_proof" ∷ sl_proof ↦*□ proof
+  }}}
+  @! merkle.VerifyMemb #sl_label #sl_val #sl_proof
+  {{{
+    sl_hash hash err, RET (#sl_hash, #err);
+    "#Hsl_hash" ∷ sl_hash ↦*□ hash ∗
+    "Hgenie" ∷ match err with
+      | true => ¬ ∃ hash m, is_memb_proof label val proof hash m
+      | false =>
+        ∃ m,
+        "#His_proof" ∷ is_memb_proof label val proof hash m ∗
+        "%Hlook" ∷ ⌜m !! label = Some val⌝
+      end
+  }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  wp_apply wp_proofToTree as "* @".
+  { iFrame "#". }
+  destruct err; wp_auto.
+  { iApply "HΦ".
+    iDestruct own_slice_nil as "$".
+    intro_wish. iApply "Hgenie". iFrame. }
+  iNamed "Hgenie".
+  iNamed "Hwish".
+
+  wp_apply (wp_put with "[$tr $Hown_tree]") as "* @"; try done.
+  2: { iFrame "#". }
+  { word. }
+  destruct err; iNamed "Herr"; [done|].
+  wp_apply wp_Assert; [done|].
+
+  wp_apply (wp_node_getHash with "[$Hown_tree]") as "* @".
+  { iFrame "#". }
+  iApply "HΦ".
+  iDestruct (is_cut_tree_len with "His_hash") as %?.
+  iDestruct (is_map_invert hash) as "[% #His_map]"; [done|].
+  iFrame "∗#%".
+
+  iNamed "His_map".
+  iDestruct (full_entry_txfer with "[$]") as %?.
+  { by eapply put_new_entry. }
+  { by eapply cutless_new_put. }
+  { by eapply is_limit_over_put. }
+  subst. iPureIntro.
+  by rewrite -entry_eq_lookup.
+Qed.
+
+Definition is_upd_proof label val proof hashOld hashNew mOld mNew : iProp Σ :=
+  ∃ sibs oleaf tOld tNew,
+  "Hvalid_toTree" ∷ wish_proofToTree label proof sibs oleaf ∗
+  "%HSome_toTree" ∷ ⌜pure_proofToTree label sibs oleaf = Some tOld⌝ ∗
+  "%HSome_put" ∷ ⌜pure_put tOld label val = Some tNew⌝ ∗
+  "#His_hash_old" ∷ is_cut_tree tOld hashOld ∗
+  "#His_map_old" ∷ is_map mOld hashOld ∗
+  "#His_hash_new" ∷ is_cut_tree tNew hashNew ∗
+  "#His_map_new" ∷ is_map mNew hashNew.
+
+Lemma is_upd_proof_det l v p hO0 hO1 hN0 hN1 mO0 mO1 mN0 mN1 :
+  is_upd_proof l v p hO0 hN0 mO0 mN0 -∗
+  is_upd_proof l v p hO1 hN1 mO1 mN1 -∗
+  ⌜hO0 = hO1 ∧ hN0 = hN1 ∧ mO0 = mO1 ∧ mN0 = mN1⌝.
+Proof.
+  iNamedSuffix 1 "0".
+  iNamedSuffix 1 "1".
+  iDestruct (wish_proofToTree_det with "Hvalid_toTree0 Hvalid_toTree1") as %[].
+  simplify_eq/=.
+  iDestruct (is_cut_tree_det with "His_hash_old0 His_hash_old1") as %->.
+  iDestruct (is_cut_tree_det with "His_hash_new0 His_hash_new1") as %->.
+  iDestruct (is_map_inj with "His_map_old0 His_map_old1") as %->.
+  by iDestruct (is_map_inj with "His_map_new0 His_map_new1") as %->.
+Qed.
+
+Lemma wp_VerifyUpdate sl_label label sl_val val sl_proof proof :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "#Hsl_label" ∷ sl_label ↦*□ label ∗
+    "#Hsl_val" ∷ sl_val ↦*□ val ∗
+    "#Hsl_proof" ∷ sl_proof ↦*□ proof
+  }}}
+  @! merkle.VerifyUpdate #sl_label #sl_val #sl_proof
+  {{{
+    sl_oldHash oldHash sl_newHash newHash err,
+    RET (#sl_oldHash, #sl_newHash, #err);
+    "#Hsl_oldHash" ∷ sl_oldHash ↦*□ oldHash ∗
+    "#Hsl_newHash" ∷ sl_newHash ↦*□ newHash ∗
+    "Hgenie" ∷ match err with
+      | true => ¬ ∃ hO hN mO mN, is_upd_proof label val proof hO hN mO mN
+      | false =>
+        ∃ mOld mNew,
+        "#His_proof" ∷ is_upd_proof label val proof oldHash newHash mOld mNew ∗
+        "->" ∷ ⌜mNew = <[label:=val]>mOld⌝ ∗
+        "%Hlook" ∷ ⌜mOld !! label = None⌝
+      end
+  }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  wp_apply wp_proofToTree as "* @".
+  { iFrame "#". }
+  destruct err; wp_auto.
+  { iApply "HΦ".
+    iDestruct own_slice_nil as "$".
+    intro_wish. iApply "Hgenie". iFrame. }
+  iNamed "Hgenie".
+  iNamed "Hwish".
+
+  wp_apply (wp_node_getHash with "[$Hown_tree]") as "*".
+  { iFrame "#". }
+  iNamedSuffix 1 "_old". wp_auto.
+  wp_apply (wp_put with "[$tr $Hown_tree_old]") as "* @"; try done.
+  2: { iFrame "#". }
+  { word. }
+  destruct err; iNamed "Herr"; [done|].
+  wp_apply wp_Assert; [done|].
+  wp_apply (wp_node_getHash with "[$Hown_tree]") as "*".
+  { iFrame "#". }
+  iNamedSuffix 1 "_new". wp_auto.
+
+  iApply "HΦ".
+  iDestruct (is_cut_tree_len with "His_hash_old") as %?.
+  iDestruct (is_cut_tree_len with "His_hash_new") as %?.
+  iDestruct (is_map_invert hash) as "[% #His_map_old]"; [done|].
+  iDestruct (is_map_invert hash0) as "[% #His_map_new]"; [done|].
+  iFrame "Hsl_hash_old Hsl_hash_new".
+  iFrame "∗#%".
+
+  iNamedSuffix "His_map_old" "_old".
+  iNamedSuffix "His_map_new" "_new".
+  simplify_eq/=. iSplit.
+  - rewrite map_eq_iff. iIntros (label').
+    destruct (decide (label = label')); subst; simpl_map.
+    + rewrite -entry_eq_lookup.
+      iApply full_entry_txfer; [..|by iFrame "#"].
+      { by eapply put_new_entry. }
+      { by eapply cutless_new_put. }
+      { by eapply is_limit_over_put. }
+    + remember (to_map t0 !! label') as e. symmetry in Heqe.
+      rewrite -!entry_eq_lookup in Heqe |-*.
+      iDestruct (cut_full_over_put _ t0 _ t1 with "[$][][//][]") as %?.
+      { iFrame "#". }
+      { iFrame "#". }
+      iPureIntro.
+      by eapply old_entry_over_put.
+  - rewrite -entry_eq_lookup.
+    by iApply full_entry_txfer; [..|by iFrame "#"].
+Qed.
 
 End proof.
