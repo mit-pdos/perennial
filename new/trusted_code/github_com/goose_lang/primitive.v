@@ -34,8 +34,8 @@ this in GooseLang, so we just loop. *)
       do: (slice.elem_ref #uint8T "p" #(W64 4)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (4*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 5)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (5*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 6)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (6*8)));;;
-      do: (slice.elem_ref #uint8T "p" #(W64 7)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (7*8)))
-    .
+      do: (slice.elem_ref #uint8T "p" #(W64 7)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (7*8)));;;
+      #().
 
   Definition UInt64Getⁱᵐᵖˡ : val := λ: "p",
       let: "v0" := to_u64 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 0)) in
@@ -54,8 +54,8 @@ this in GooseLang, so we just loop. *)
       do: (slice.elem_ref #uint8T "p" #(W64 0)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (0*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 1)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (1*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 2)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (2*8)));;;
-      do: (slice.elem_ref #uint8T "p" #(W64 3)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (3*8)))
-    .
+      do: (slice.elem_ref #uint8T "p" #(W64 3)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (3*8)));;;
+      #().
 
   Definition UInt32Getⁱᵐᵖˡ : val := λ: "p",
       let: "v0" := to_u32 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 0)) in
