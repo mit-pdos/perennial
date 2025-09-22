@@ -13,18 +13,20 @@ Context `{ffi_syntax}.
 
 
 Definition E : go_type := uint32T.
+#[global] Typeclasses Opaque E.
+#[global] Opaque E.
 
-Definition ENone : expr := #(W32 0).
+Definition ENone : val := #(W32 0).
 
-Definition ENotPrimary : expr := #(W32 1).
+Definition ENotPrimary : val := #(W32 1).
 
-Definition EStale : expr := #(W32 2).
+Definition EStale : val := #(W32 2).
 
-Definition EAppendOutOfOrder : expr := #(W32 3).
+Definition EAppendOutOfOrder : val := #(W32 3).
 
-Definition ETruncated : expr := #(W32 4).
+Definition ETruncated : val := #(W32 4).
 
-Definition EIncompleteLog : expr := #(W32 5).
+Definition EIncompleteLog : val := #(W32 5).
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/reconfig/replica/error_gk.Marshal"%go.
 

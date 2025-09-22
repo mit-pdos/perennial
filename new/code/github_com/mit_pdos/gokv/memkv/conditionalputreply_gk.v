@@ -17,6 +17,8 @@ Definition S : go_type := structT [
   "Err" :: error_gk.E;
   "Success" :: boolT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/memkv/conditionalputreply_gk.Marshal"%go.
 

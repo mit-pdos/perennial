@@ -20,6 +20,8 @@ Definition S : go_type := structT [
   "ExpectedVal" :: stringT;
   "NewVal" :: stringT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk.Marshal"%go.
 

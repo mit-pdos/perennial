@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "Addr" :: uint64T;
   "ContentHash" :: stringT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/chunkhandle_gk.Marshal"%go.
 

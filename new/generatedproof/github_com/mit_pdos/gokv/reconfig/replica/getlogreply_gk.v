@@ -25,6 +25,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent getlogreply_gk.S.
+#[local] Typeclasses Transparent getlogreply_gk.S.
+
+Global Instance S_wf : struct.Wf getlogreply_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Err'; S.Log'; S.StartIndex' >.

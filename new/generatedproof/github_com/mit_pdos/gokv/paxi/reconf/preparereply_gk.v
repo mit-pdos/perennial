@@ -25,6 +25,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent preparereply_gk.S.
+#[local] Typeclasses Transparent preparereply_gk.S.
+
+Global Instance S_wf : struct.Wf preparereply_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Err'; S.Term'; S.Val' >.

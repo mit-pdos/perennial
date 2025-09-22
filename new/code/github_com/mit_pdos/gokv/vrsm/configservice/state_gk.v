@@ -19,6 +19,8 @@ Definition S : go_type := structT [
   "WantLeaseToExpire" :: boolT;
   "Config" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/configservice/state_gk.Marshal"%go.
 

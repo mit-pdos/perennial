@@ -25,6 +25,8 @@ Section code.
 Definition Clerk : go_type := structT [
   "cl" :: ptrT
 ].
+#[global] Typeclasses Opaque Clerk.
+#[global] Opaque Clerk.
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeClerk"%go.
 
@@ -101,6 +103,8 @@ Definition ClerkPool : go_type := structT [
   "cls" :: sliceT;
   "confHosts" :: sliceT
 ].
+#[global] Typeclasses Opaque ClerkPool.
+#[global] Opaque ClerkPool.
 
 Definition MakeClerkPool : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeClerkPool"%go.
 
@@ -231,12 +235,14 @@ Definition KVState : go_type := structT [
   "vnums" :: mapT stringT uint64T;
   "minVnum" :: uint64T
 ].
+#[global] Typeclasses Opaque KVState.
+#[global] Opaque KVState.
 
-Definition OP_PUT : expr := #(W8 0).
+Definition OP_PUT : val := #(W8 0).
 
-Definition OP_GET : expr := #(W8 1).
+Definition OP_GET : val := #(W8 1).
 
-Definition OP_COND_PUT : expr := #(W8 2).
+Definition OP_COND_PUT : val := #(W8 2).
 
 (* go: server.go:31:19 *)
 Definition KVState__putⁱᵐᵖˡ : val :=

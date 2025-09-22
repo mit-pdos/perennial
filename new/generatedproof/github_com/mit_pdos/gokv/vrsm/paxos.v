@@ -33,6 +33,11 @@ End singleClerk.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.singleClerk.
+#[local] Typeclasses Transparent paxos.singleClerk.
+
+Global Instance singleClerk_wf : struct.Wf paxos.singleClerk.
+Proof. apply _. Qed.
 
 Global Instance settable_singleClerk : Settable singleClerk.t :=
   settable! singleClerk.mk < singleClerk.cl' >.
@@ -97,6 +102,11 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxos.Server.
+#[local] Typeclasses Transparent paxos.Server.
+
+Global Instance Server_wf : struct.Wf paxos.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.ps'; Server.storage'; Server.clerks' >.

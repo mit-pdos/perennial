@@ -15,13 +15,15 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition BAL_TOTAL : expr := #(W64 1000).
+Definition BAL_TOTAL : val := #(W64 1000).
 
 Definition BankClerk : go_type := structT [
   "lck" :: ptrT;
   "kvck" :: kv.Kv;
   "accts" :: sliceT
 ].
+#[global] Typeclasses Opaque BankClerk.
+#[global] Opaque BankClerk.
 
 Definition acquire_two_good : go_string := "github.com/mit-pdos/gokv/bank.acquire_two_good"%go.
 

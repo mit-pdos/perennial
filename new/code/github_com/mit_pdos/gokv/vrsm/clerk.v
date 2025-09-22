@@ -18,7 +18,7 @@ Section code.
 
 
 (* 1 second *)
-Definition PreferenceRefreshTime : expr := #(W64 1000000000).
+Definition PreferenceRefreshTime : val := #(W64 1000000000).
 
 Definition Clerk : go_type := structT [
   "confCk" :: ptrT;
@@ -26,6 +26,8 @@ Definition Clerk : go_type := structT [
   "preferredReplica" :: uint64T;
   "lastPreferenceRefresh" :: uint64T
 ].
+#[global] Typeclasses Opaque Clerk.
+#[global] Opaque Clerk.
 
 Definition makeClerks : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.makeClerks"%go.
 

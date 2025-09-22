@@ -16,6 +16,8 @@ Definition S : go_type := structT [
   "Sid" :: uint64T;
   "Dst" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/memkv/moveshardrequest_gk.Marshal"%go.
 

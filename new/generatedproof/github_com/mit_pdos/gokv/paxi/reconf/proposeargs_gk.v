@@ -23,6 +23,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent proposeargs_gk.S.
+#[local] Typeclasses Transparent proposeargs_gk.S.
+
+Global Instance S_wf : struct.Wf proposeargs_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Term'; S.Val' >.

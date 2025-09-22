@@ -16,6 +16,8 @@ Definition S : go_type := structT [
   "Id" :: uint64T;
   "ChunkAddrs" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/preparedwrite_gk.Marshal"%go.
 

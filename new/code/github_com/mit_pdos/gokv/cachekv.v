@@ -20,6 +20,8 @@ Definition CacheKv : go_type := structT [
   "mu" :: ptrT;
   "cache" :: mapT stringT cachevalue_gk.S
 ].
+#[global] Typeclasses Opaque CacheKv.
+#[global] Opaque CacheKv.
 
 Definition max : go_string := "github.com/mit-pdos/gokv/cachekv.max"%go.
 

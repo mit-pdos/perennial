@@ -13,18 +13,20 @@ Context `{ffi_syntax}.
 
 
 Definition E : go_type := uint32T.
+#[global] Typeclasses Opaque E.
+#[global] Opaque E.
 
-Definition KV_FRESHCID : expr := #(W32 0).
+Definition KV_FRESHCID : val := #(W32 0).
 
-Definition KV_PUT : expr := #(W32 1).
+Definition KV_PUT : val := #(W32 1).
 
-Definition KV_GET : expr := #(W32 2).
+Definition KV_GET : val := #(W32 2).
 
-Definition KV_CONDITIONAL_PUT : expr := #(W32 3).
+Definition KV_CONDITIONAL_PUT : val := #(W32 3).
 
-Definition KV_INS_SHARD : expr := #(W32 4).
+Definition KV_INS_SHARD : val := #(W32 4).
 
-Definition KV_MOV_SHARD : expr := #(W32 5).
+Definition KV_MOV_SHARD : val := #(W32 5).
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/memkv/kvop_gk.Marshal"%go.
 

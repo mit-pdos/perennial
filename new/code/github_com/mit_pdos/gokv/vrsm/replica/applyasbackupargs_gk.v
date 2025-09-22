@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "Index" :: uint64T;
   "Op" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/replica/applyasbackupargs_gk.Marshal"%go.
 

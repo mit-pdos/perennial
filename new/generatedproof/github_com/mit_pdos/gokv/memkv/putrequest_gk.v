@@ -23,6 +23,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent putrequest_gk.S.
+#[local] Typeclasses Transparent putrequest_gk.S.
+
+Global Instance S_wf : struct.Wf putrequest_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Key'; S.Value' >.

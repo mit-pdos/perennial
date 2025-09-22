@@ -16,6 +16,8 @@ Definition S : go_type := structT [
   "Epoch" :: uint64T;
   "V" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/fencing/ctr/putargs_gk.Marshal"%go.
 

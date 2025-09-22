@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "Key" :: stringT;
   "Val" :: stringT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv/putargs_gk.Marshal"%go.
 

@@ -15,6 +15,8 @@ Context `{ffi_syntax}.
 Definition S : go_type := structT [
   "Shards" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/memkv/shardmap_gk.Marshal"%go.
 

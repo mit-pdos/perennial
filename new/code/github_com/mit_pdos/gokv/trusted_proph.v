@@ -15,6 +15,8 @@ Context `{ffi_syntax}.
 
 
 Definition ProphId : go_type := ptrT.
+#[global] Typeclasses Opaque ProphId.
+#[global] Opaque ProphId.
 
 Definition NewProph : go_string := "github.com/mit-pdos/gokv/trusted_proph.NewProph"%go.
 

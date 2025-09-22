@@ -13,16 +13,18 @@ Context `{ffi_syntax}.
 
 
 Definition E : go_type := uint32T.
+#[global] Typeclasses Opaque E.
+#[global] Opaque E.
 
-Definition ENone : expr := #(W32 0).
+Definition ENone : val := #(W32 0).
 
-Definition EEpochStale : expr := #(W32 1).
+Definition EEpochStale : val := #(W32 1).
 
-Definition EOutOfOrder : expr := #(W32 2).
+Definition EOutOfOrder : val := #(W32 2).
 
-Definition ETimeout : expr := #(W32 3).
+Definition ETimeout : val := #(W32 3).
 
-Definition ENotLeader : expr := #(W32 4).
+Definition ENotLeader : val := #(W32 4).
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/paxos/error_gk.Marshal"%go.
 

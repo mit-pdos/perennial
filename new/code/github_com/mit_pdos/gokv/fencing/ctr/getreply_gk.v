@@ -17,6 +17,8 @@ Definition S : go_type := structT [
   "Err" :: error_gk.E;
   "Val" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/fencing/ctr/getreply_gk.Marshal"%go.
 

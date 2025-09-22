@@ -26,6 +26,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent paxosstate_gk.S.
+#[local] Typeclasses Transparent paxosstate_gk.S.
+
+Global Instance S_wf : struct.Wf paxosstate_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Epoch'; S.AcceptedEpoch'; S.NextIndex'; S.State'; S.IsLeader' >.

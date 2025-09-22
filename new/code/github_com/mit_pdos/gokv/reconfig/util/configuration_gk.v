@@ -15,6 +15,8 @@ Context `{ffi_syntax}.
 Definition S : go_type := structT [
   "Addrs" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/reconfig/util/configuration_gk.Marshal"%go.
 

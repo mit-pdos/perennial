@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "Entry" :: logentry_gk.S;
   "Index" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/reconfig/replica/appendargs_gk.Marshal"%go.
 

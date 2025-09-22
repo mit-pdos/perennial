@@ -33,6 +33,8 @@ Section code.
 
 
 Definition Op : go_type := sliceT.
+#[global] Typeclasses Opaque Op.
+#[global] Opaque Op.
 
 Definition StateMachine : go_type := structT [
   "StartApply" :: funcT;
@@ -40,6 +42,8 @@ Definition StateMachine : go_type := structT [
   "SetStateAndUnseal" :: funcT;
   "GetStateAndSeal" :: funcT
 ].
+#[global] Typeclasses Opaque StateMachine.
+#[global] Opaque StateMachine.
 
 Definition SyncStateMachine : go_type := structT [
   "Apply" :: funcT;
@@ -47,24 +51,28 @@ Definition SyncStateMachine : go_type := structT [
   "SetStateAndUnseal" :: funcT;
   "GetStateAndSeal" :: funcT
 ].
+#[global] Typeclasses Opaque SyncStateMachine.
+#[global] Opaque SyncStateMachine.
 
 Definition Clerk : go_type := structT [
   "cl" :: ptrT
 ].
+#[global] Typeclasses Opaque Clerk.
+#[global] Opaque Clerk.
 
-Definition RPC_APPLYASBACKUP : expr := #(W64 0).
+Definition RPC_APPLYASBACKUP : val := #(W64 0).
 
-Definition RPC_SETSTATE : expr := #(W64 1).
+Definition RPC_SETSTATE : val := #(W64 1).
 
-Definition RPC_GETSTATE : expr := #(W64 2).
+Definition RPC_GETSTATE : val := #(W64 2).
 
-Definition RPC_BECOMEPRIMARY : expr := #(W64 3).
+Definition RPC_BECOMEPRIMARY : val := #(W64 3).
 
-Definition RPC_PRIMARYAPPLY : expr := #(W64 4).
+Definition RPC_PRIMARYAPPLY : val := #(W64 4).
 
-Definition RPC_ROPRIMARYAPPLY : expr := #(W64 6).
+Definition RPC_ROPRIMARYAPPLY : val := #(W64 6).
 
-Definition RPC_INCREASECOMMIT : expr := #(W64 7).
+Definition RPC_INCREASECOMMIT : val := #(W64 7).
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/replica.MakeClerk"%go.
 
@@ -288,6 +296,8 @@ Definition Server : go_type := structT [
   "committedNextIndex_cond" :: ptrT;
   "confCk" :: ptrT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 (* Applies the RO op immediately, but then waits for it to be committed before
    replying to client.

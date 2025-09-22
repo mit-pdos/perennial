@@ -27,6 +27,9 @@ Module replica.
 
 (* type replica.Op *)
 Module Op.
+
+#[global] Transparent replica.Op.
+#[global] Typeclasses Transparent replica.Op.
 Section def.
 Context `{ffi_syntax}.
 Definition t := slice.t.
@@ -48,6 +51,11 @@ End StateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.StateMachine.
+#[local] Typeclasses Transparent replica.StateMachine.
+
+Global Instance StateMachine_wf : struct.Wf replica.StateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.StartApply'; StateMachine.ApplyReadonly'; StateMachine.SetStateAndUnseal'; StateMachine.GetStateAndSeal' >.
@@ -133,6 +141,11 @@ End SyncStateMachine.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.SyncStateMachine.
+#[local] Typeclasses Transparent replica.SyncStateMachine.
+
+Global Instance SyncStateMachine_wf : struct.Wf replica.SyncStateMachine.
+Proof. apply _. Qed.
 
 Global Instance settable_SyncStateMachine : Settable SyncStateMachine.t :=
   settable! SyncStateMachine.mk < SyncStateMachine.Apply'; SyncStateMachine.ApplyReadonly'; SyncStateMachine.SetStateAndUnseal'; SyncStateMachine.GetStateAndSeal' >.
@@ -215,6 +228,11 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.Clerk.
+#[local] Typeclasses Transparent replica.Clerk.
+
+Global Instance Clerk_wf : struct.Wf replica.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
@@ -290,6 +308,11 @@ End Server.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent replica.Server.
+#[local] Typeclasses Transparent replica.Server.
+
+Global Instance Server_wf : struct.Wf replica.Server.
+Proof. apply _. Qed.
 
 Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.epoch'; Server.sealed'; Server.sm'; Server.nextIndex'; Server.canBecomePrimary'; Server.isPrimary'; Server.clerks'; Server.isPrimary_cond'; Server.opAppliedConds'; Server.leaseExpiration'; Server.leaseValid'; Server.committedNextIndex'; Server.committedNextIndex_cond'; Server.confCk' >.

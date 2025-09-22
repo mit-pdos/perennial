@@ -74,7 +74,10 @@ grackle_gokv() {
     )
 
     for gopkg in "${gokv_packages[@]}"; do
-        run_grackle "$gopkg" "$1" "github.com/mit-pdos/gokv"
+        if ! run_grackle "$gopkg" "$1" "github.com/mit-pdos/gokv"; then
+            echo "Failed to run grackle on $gopkg"
+            exit 1
+        fi
     done
 }
 

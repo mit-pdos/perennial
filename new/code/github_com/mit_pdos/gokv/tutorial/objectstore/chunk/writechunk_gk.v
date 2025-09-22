@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "Chunk" :: sliceT;
   "Index" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/chunk/writechunk_gk.Marshal"%go.
 

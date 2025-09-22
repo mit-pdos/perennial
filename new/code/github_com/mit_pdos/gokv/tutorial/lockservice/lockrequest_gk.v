@@ -15,6 +15,8 @@ Context `{ffi_syntax}.
 Definition S : go_type := structT [
   "Id" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/lockservice/lockrequest_gk.Marshal"%go.
 

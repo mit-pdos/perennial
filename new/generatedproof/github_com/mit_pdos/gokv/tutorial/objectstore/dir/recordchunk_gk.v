@@ -26,6 +26,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent recordchunk_gk.S.
+#[local] Typeclasses Transparent recordchunk_gk.S.
+
+Global Instance S_wf : struct.Wf recordchunk_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.WriteId'; S.Server'; S.ContentHash'; S.Index' >.

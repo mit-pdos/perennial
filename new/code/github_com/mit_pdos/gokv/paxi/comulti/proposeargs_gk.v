@@ -17,6 +17,8 @@ Definition S : go_type := structT [
   "CommitIndex" :: uint64T;
   "Log" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/paxi/comulti/proposeargs_gk.Marshal"%go.
 

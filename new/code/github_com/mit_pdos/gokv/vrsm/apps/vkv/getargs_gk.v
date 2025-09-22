@@ -17,6 +17,8 @@ Context `{ffi_syntax}.
 Definition S : go_type := structT [
   "Get" :: stringT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv/getargs_gk.Marshal"%go.
 

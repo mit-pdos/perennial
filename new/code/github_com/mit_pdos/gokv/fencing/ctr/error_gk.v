@@ -13,10 +13,12 @@ Context `{ffi_syntax}.
 
 
 Definition E : go_type := uint32T.
+#[global] Typeclasses Opaque E.
+#[global] Opaque E.
 
-Definition ENone : expr := #(W32 0).
+Definition ENone : val := #(W32 0).
 
-Definition EStale : expr := #(W32 1).
+Definition EStale : val := #(W32 1).
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/fencing/ctr/error_gk.Marshal"%go.
 

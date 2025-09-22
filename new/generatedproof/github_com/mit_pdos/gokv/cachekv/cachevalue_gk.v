@@ -24,6 +24,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent cachevalue_gk.S.
+#[local] Typeclasses Transparent cachevalue_gk.S.
+
+Global Instance S_wf : struct.Wf cachevalue_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.V'; S.L' >.

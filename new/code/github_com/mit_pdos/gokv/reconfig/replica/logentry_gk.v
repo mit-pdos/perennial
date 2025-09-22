@@ -16,6 +16,8 @@ Context `{ffi_syntax}.
 Definition S : go_type := structT [
   "Entry" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/reconfig/replica/logentry_gk.Marshal"%go.
 

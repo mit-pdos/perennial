@@ -20,6 +20,8 @@ Definition S : go_type := structT [
   "State" :: sliceT;
   "IsLeader" :: boolT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/paxos/paxosstate_gk.Marshal"%go.
 

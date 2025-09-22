@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "Err" :: error_gk.E;
   "Value" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/memkv/getreply_gk.Marshal"%go.
 

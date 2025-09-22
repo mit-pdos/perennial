@@ -21,6 +21,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent enternewepochargs_gk.S.
+#[local] Typeclasses Transparent enternewepochargs_gk.S.
+
+Global Instance S_wf : struct.Wf enternewepochargs_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Epoch' >.

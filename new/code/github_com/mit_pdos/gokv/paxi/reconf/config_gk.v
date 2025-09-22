@@ -16,6 +16,8 @@ Definition S : go_type := structT [
   "Members" :: sliceT;
   "NextMembers" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/paxi/reconf/config_gk.Marshal"%go.
 

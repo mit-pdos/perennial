@@ -15,6 +15,8 @@ Context `{ffi_syntax}.
 Definition S : go_type := structT [
   "Epoch" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/replica/getstateargs_gk.Marshal"%go.
 

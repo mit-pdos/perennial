@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "ExpectedValue" :: sliceT;
   "NewValue" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/memkv/conditionalputrequest_gk.Marshal"%go.
 

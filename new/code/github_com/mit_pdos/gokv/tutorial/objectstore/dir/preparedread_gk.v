@@ -16,6 +16,8 @@ Context `{ffi_syntax}.
 Definition S : go_type := structT [
   "Handles" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/preparedread_gk.Marshal"%go.
 

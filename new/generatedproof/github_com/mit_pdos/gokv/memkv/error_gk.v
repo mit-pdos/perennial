@@ -11,6 +11,9 @@ Module error_gk.
 
 (* type error_gk.E *)
 Module E.
+
+#[global] Transparent error_gk.E.
+#[global] Typeclasses Transparent error_gk.E.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.

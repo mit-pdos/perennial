@@ -20,6 +20,8 @@ Definition S : go_type := structT [
   "NextIndex" :: uint64T;
   "State" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/paxos/enternewepochreply_gk.Marshal"%go.
 

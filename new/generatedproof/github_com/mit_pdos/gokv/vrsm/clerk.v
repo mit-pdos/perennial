@@ -29,6 +29,11 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent clerk.Clerk.
+#[local] Typeclasses Transparent clerk.Clerk.
+
+Global Instance Clerk_wf : struct.Wf clerk.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.confCk'; Clerk.replicaClerks'; Clerk.preferredReplica'; Clerk.lastPreferenceRefresh' >.

@@ -25,15 +25,17 @@ Module Server. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/paxos
 Section code.
 
 
-Definition RPC_APPLY_AS_FOLLOWER : expr := #(W64 0).
+Definition RPC_APPLY_AS_FOLLOWER : val := #(W64 0).
 
-Definition RPC_ENTER_NEW_EPOCH : expr := #(W64 1).
+Definition RPC_ENTER_NEW_EPOCH : val := #(W64 1).
 
-Definition RPC_BECOME_LEADER : expr := #(W64 2).
+Definition RPC_BECOME_LEADER : val := #(W64 2).
 
 Definition singleClerk : go_type := structT [
   "cl" :: ptrT
 ].
+#[global] Typeclasses Opaque singleClerk.
+#[global] Opaque singleClerk.
 
 Definition MakeSingleClerk : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.MakeSingleClerk"%go.
 
@@ -145,6 +147,8 @@ Definition Server : go_type := structT [
   "storage" :: ptrT;
   "clerks" :: sliceT
 ].
+#[global] Typeclasses Opaque Server.
+#[global] Opaque Server.
 
 (* go: server.go:26:18 *)
 Definition Server__withLockⁱᵐᵖˡ : val :=

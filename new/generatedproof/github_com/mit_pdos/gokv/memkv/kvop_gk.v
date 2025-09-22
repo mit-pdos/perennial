@@ -11,6 +11,9 @@ Module kvop_gk.
 
 (* type kvop_gk.E *)
 Module E.
+
+#[global] Transparent kvop_gk.E.
+#[global] Typeclasses Transparent kvop_gk.E.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.

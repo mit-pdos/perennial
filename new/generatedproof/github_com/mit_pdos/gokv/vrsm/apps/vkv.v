@@ -29,6 +29,11 @@ End Clerk.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.Clerk.
+#[local] Typeclasses Transparent vkv.Clerk.
+
+Global Instance Clerk_wf : struct.Wf vkv.Clerk.
+Proof. apply _. Qed.
 
 Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
@@ -92,6 +97,11 @@ End ClerkPool.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.ClerkPool.
+#[local] Typeclasses Transparent vkv.ClerkPool.
+
+Global Instance ClerkPool_wf : struct.Wf vkv.ClerkPool.
+Proof. apply _. Qed.
 
 Global Instance settable_ClerkPool : Settable ClerkPool.t :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
@@ -169,6 +179,11 @@ End KVState.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent vkv.KVState.
+#[local] Typeclasses Transparent vkv.KVState.
+
+Global Instance KVState_wf : struct.Wf vkv.KVState.
+Proof. apply _. Qed.
 
 Global Instance settable_KVState : Settable KVState.t :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.

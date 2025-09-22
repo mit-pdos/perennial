@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "V" :: stringT;
   "L" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/cachekv/cachevalue_gk.Marshal"%go.
 

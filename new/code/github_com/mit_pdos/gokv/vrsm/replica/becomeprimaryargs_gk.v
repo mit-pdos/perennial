@@ -16,6 +16,8 @@ Definition S : go_type := structT [
   "Epoch" :: uint64T;
   "Replicas" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/replica/becomeprimaryargs_gk.Marshal"%go.
 

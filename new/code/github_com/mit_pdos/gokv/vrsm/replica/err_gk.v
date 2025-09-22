@@ -13,24 +13,26 @@ Context `{ffi_syntax}.
 
 
 Definition E : go_type := uint32T.
+#[global] Typeclasses Opaque E.
+#[global] Opaque E.
 
-Definition None : expr := #(W32 0).
+Definition None : val := #(W32 0).
 
-Definition Stale : expr := #(W32 1).
+Definition Stale : val := #(W32 1).
 
-Definition OutOfOrder : expr := #(W32 2).
+Definition OutOfOrder : val := #(W32 2).
 
-Definition Timeout : expr := #(W32 3).
+Definition Timeout : val := #(W32 3).
 
-Definition EmptyConfig : expr := #(W32 4).
+Definition EmptyConfig : val := #(W32 4).
 
-Definition NotLeader : expr := #(W32 5).
+Definition NotLeader : val := #(W32 5).
 
-Definition Sealed : expr := #(W32 6).
+Definition Sealed : val := #(W32 6).
 
-Definition LeaseExpired : expr := #(W32 7).
+Definition LeaseExpired : val := #(W32 7).
 
-Definition Leased : expr := #(W32 8).
+Definition Leased : val := #(W32 8).
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/replica/err_gk.Marshal"%go.
 

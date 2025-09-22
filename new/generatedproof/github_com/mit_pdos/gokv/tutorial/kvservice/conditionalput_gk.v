@@ -26,6 +26,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent conditionalput_gk.S.
+#[local] Typeclasses Transparent conditionalput_gk.S.
+
+Global Instance S_wf : struct.Wf conditionalput_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.OpId'; S.Key'; S.ExpectedVal'; S.NewVal' >.

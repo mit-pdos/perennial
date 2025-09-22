@@ -19,6 +19,8 @@ Definition S : go_type := structT [
   "CommittedNextIndex" :: uint64T;
   "State" :: sliceT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/vrsm/replica/setstateargs_gk.Marshal"%go.
 

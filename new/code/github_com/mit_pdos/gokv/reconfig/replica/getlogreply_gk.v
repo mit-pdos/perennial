@@ -19,6 +19,8 @@ Definition S : go_type := structT [
   "Log" :: sliceT;
   "StartIndex" :: uint64T
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/reconfig/replica/getlogreply_gk.Marshal"%go.
 

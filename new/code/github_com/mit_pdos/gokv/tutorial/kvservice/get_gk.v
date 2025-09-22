@@ -18,6 +18,8 @@ Definition S : go_type := structT [
   "OpId" :: uint64T;
   "Key" :: stringT
 ].
+#[global] Typeclasses Opaque S.
+#[global] Opaque S.
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/get_gk.Marshal"%go.
 

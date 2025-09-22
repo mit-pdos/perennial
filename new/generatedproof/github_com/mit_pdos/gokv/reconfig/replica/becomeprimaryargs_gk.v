@@ -23,6 +23,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent becomeprimaryargs_gk.S.
+#[local] Typeclasses Transparent becomeprimaryargs_gk.S.
+
+Global Instance S_wf : struct.Wf becomeprimaryargs_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Epoch'; S.Conf' >.

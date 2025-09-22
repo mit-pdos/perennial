@@ -25,6 +25,11 @@ End S.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent monotonicvalue_gk.S.
+#[local] Typeclasses Transparent monotonicvalue_gk.S.
+
+Global Instance S_wf : struct.Wf monotonicvalue_gk.S.
+Proof. apply _. Qed.
 
 Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.Version'; S.Val'; S.Conf' >.

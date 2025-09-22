@@ -13,14 +13,16 @@ Context `{ffi_syntax}.
 
 
 Definition E : go_type := uint32T.
+#[global] Typeclasses Opaque E.
+#[global] Opaque E.
 
-Definition ENone : expr := #(W32 0).
+Definition ENone : val := #(W32 0).
 
-Definition ETermStale : expr := #(W32 1).
+Definition ETermStale : val := #(W32 1).
 
-Definition ENotLeader : expr := #(W32 2).
+Definition ENotLeader : val := #(W32 2).
 
-Definition EQuorumFailed : expr := #(W32 3).
+Definition EQuorumFailed : val := #(W32 3).
 
 Definition Marshal : go_string := "github.com/mit-pdos/gokv/paxi/reconf/error_gk.Marshal"%go.
 
