@@ -477,8 +477,8 @@ Definition VerifyUpdate : go_string := "github.com/sanjit-bhat/pav/merkle.Verify
 Definition VerifyUpdateⁱᵐᵖˡ : val :=
   λ: "label" "val" "proof",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "newHash" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "oldHash" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "hashNew" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "hashOld" := (mem.alloc (type.zero_val #sliceT)) in
     let: "proof" := (mem.alloc "proof") in
     let: "val" := (mem.alloc "val") in
     let: "label" := (mem.alloc "label") in
@@ -491,10 +491,10 @@ Definition VerifyUpdateⁱᵐᵖˡ : val :=
     do:  ("tr" <-[#ptrT] "$r0");;;
     do:  ("err" <-[#boolT] "$r1");;;
     (if: ![#boolT] "err"
-    then return: (![#sliceT] "oldHash", ![#sliceT] "newHash", ![#boolT] "err")
+    then return: (![#sliceT] "hashOld", ![#sliceT] "hashNew", ![#boolT] "err")
     else do:  #());;;
     let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] "tr")) #()) in
-    do:  ("oldHash" <-[#sliceT] "$r0");;;
+    do:  ("hashOld" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (~ (let: "$a0" := "tr" in
     let: "$a1" := #(W64 0) in
     let: "$a2" := (![#sliceT] "label") in
@@ -502,8 +502,8 @@ Definition VerifyUpdateⁱᵐᵖˡ : val :=
     (func_call #put) "$a0" "$a1" "$a2" "$a3")) in
     (func_call #std.Assert) "$a0");;;
     let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] "tr")) #()) in
-    do:  ("newHash" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "oldHash", ![#sliceT] "newHash", ![#boolT] "err")).
+    do:  ("hashNew" <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "hashOld", ![#sliceT] "hashNew", ![#boolT] "err")).
 
 (* go: merkle.go:236:15 *)
 Definition Map__Hashⁱᵐᵖˡ : val :=
