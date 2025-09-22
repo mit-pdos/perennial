@@ -29,9 +29,9 @@ Definition make2 : val :=
   λ: "t" "sz", make3 "t" "sz" "sz".
 
 (* computes `&s[i]` *)
-Definition elem_ref : val :=
-  λ: "t" "s" "i", if: int_lt "i" (len "s")
-              then (array_loc_add "t" (ptr "s") "i")
+Definition elem_ref (t : go_type) : val :=
+  λ: "s" "i", if: int_lt "i" (len "s")
+              then ((ptr "s") "i")
               else Panic "slice index out-of-bounds".
 
 (* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)

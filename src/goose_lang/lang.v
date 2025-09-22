@@ -230,7 +230,7 @@ Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0)
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc (nonAtomic val);
-  globals : gmap byte_string val;
+  globals : byte_string → option val;
   world: ffi_state;
   trace: Trace;
   oracle: Oracle;
@@ -269,7 +269,7 @@ Inductive goose_crash : state -> state -> Prop :=
   | GooseCrash σ w w' :
      w = σ.(world) ->
      ffi_crash_step w w' ->
-     goose_crash σ (set globals (fun _ => ∅) (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ))))
+     goose_crash σ (set globals (fun _ => const None) (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ))))
 .
 
 
@@ -1262,13 +1262,14 @@ Definition base_trans (e: expr) :
       (modifyσ (set trace (add_event (Out_ev v)));;
        ret $ LitV $ LitUnit)
   | GlobalGet (Val (LitV (LitString k))) =>
-      atomically (x ← reads (λ '(σ, g), σ.(globals) !! k);
+      atomically (x ← reads (λ '(σ, g), σ.(globals) k);
                   ret (match x with
                        | Some x => (InjRV x)
                        | None => (InjLV (LitV LitUnit))
                        end))
   | GlobalPut (Val (LitV (LitString k))) (Val v) =>
-      atomically (modifyσ (set globals <[k := v]>);; ret $ LitV $ LitUnit)
+      atomically (modifyσ (set globals (λ old k', if decide (k' = k) then Some v else old k'));;
+                  ret $ LitV $ LitUnit)
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
     atomically
       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;

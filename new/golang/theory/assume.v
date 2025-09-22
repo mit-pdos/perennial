@@ -9,9 +9,9 @@ Section wps.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Lemma wp_assume (b: bool) stk E Φ :
+Lemma wp_assume (b: bool) Φ :
   (⌜b = true⌝ -∗ Φ #()) -∗
-  WP assume #b @ stk; E {{ Φ }}.
+  WP assume #b {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -23,9 +23,9 @@ Proof.
     iApply "IH".
 Qed.
 
-Lemma wp_assume_sum_no_overflow (x y: w64) stk E Φ :
+Lemma wp_assume_sum_no_overflow (x y: w64) Φ :
   (⌜uint.Z x + uint.Z y < 2^64⌝ -∗ Φ #()) -∗
-  WP assume_sum_no_overflow #x #y @ stk; E {{ Φ }}.
+  WP assume_sum_no_overflow #x #y {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -37,9 +37,9 @@ Proof.
   word.
 Qed.
 
-Lemma wp_sum_assume_no_overflow (x y: w64) stk E Φ :
+Lemma wp_sum_assume_no_overflow (x y: w64) Φ :
   (⌜uint.Z x + uint.Z y < 2^64⌝ -∗ Φ #(word.add x y)) -∗
-  WP sum_assume_no_overflow #x #y @ stk; E {{ Φ }}.
+  WP sum_assume_no_overflow #x #y {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -108,25 +108,24 @@ Proof.
   apply bool_decide_ext.
   rewrite word.unsigned_divu_nowrap; [ | word ].
   change (uint.Z (W64 (2^64-1))) with (2^64-1).
-  pose proof (mul_overflow_check_correct x y ltac:(word)).
+  pose proof (mul_overflow_check_correct x y n n0).
   word.
 Qed.
 
-Lemma wp_assume_mul_no_overflow (x y: w64) stk E Φ :
+Lemma wp_assume_mul_no_overflow (x y: w64) Φ :
   (⌜uint.Z x * uint.Z y < 2^64⌝ → Φ #()) -∗
-  WP assume_mul_no_overflow #x #y @ stk; E {{ Φ }}.
+  WP assume_mul_no_overflow #x #y {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
   wp_apply wp_mul_overflows.
   wp_pures.
   wp_apply wp_assume.
-  match goal with
-  | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
-  end.
-  { iIntros (?); congruence. }
+  wp_if_destruct.
+  { iIntros (H); congruence. }
   iIntros (_). iApply "HΦ".
-  iPureIntro. lia.
+  iPureIntro.
+  lia.
 Qed.
 
 End wps.

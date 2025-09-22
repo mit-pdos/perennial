@@ -8,8 +8,6 @@ Bind Scope byte_string_scope with go_string.
 ByteString.v *)
 (* Delimit Scope byte_char_scope with go_byte. *)
 
-Set Default Proof Using "Type".
-
 Inductive go_type :=
 (* Boolean *)
 | boolT
@@ -26,11 +24,11 @@ Inductive go_type :=
 | int64T *)
 
 | stringT
-| arrayT (n: w64) (elem : go_type)
+| arrayT (n : nat) (elem : go_type)
 | sliceT
 | interfaceT
 | structT (decls : list (go_string * go_type)) (* What if this were a gmap? *)
-| ptrT (* Untyped pointer *)
+| ptrT (* Untyped pointer; convenient to support recursion in structs *)
 | funcT
 .
 
@@ -62,7 +60,7 @@ Arguments to_val {_ _ _} v.
 Global Notation "# x" := (to_val x%go).
 Global Notation "#" := to_val.
 
-(* [V] is an input to this TC search *)
+(* One of [V] or [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoVal - ! : typeclass_instances.
 
 Module func.
@@ -190,7 +188,7 @@ Section val_types.
     | uint64T => #(W64 0)
 
     | stringT => #""%V
-    | arrayT n elem => fold_right PairV #() (replicate (uint.nat n) (zero_val_def elem))
+    | arrayT n elem => fold_right PairV #() (replicate n (zero_val_def elem))
     | sliceT => #slice.nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => #null
@@ -200,7 +198,6 @@ Section val_types.
   Program Definition zero_val := sealed @zero_val_def.
   Definition zero_val_unseal : zero_val = _ := seal_eq _.
 
-  (* TODO: could this be a Z instead of nat? *)
   Fixpoint go_type_size_def (t : go_type) : nat :=
     match t with
     | structT d =>
@@ -210,7 +207,7 @@ Section val_types.
            | (_,t) :: d => (go_type_size_def t + go_type_size_struct d)%nat
            end
         ) d
-    | arrayT n e => uint.nat n * (go_type_size_def e)
+    | arrayT n e => n * (go_type_size_def e)
     | _ => 1
     end.
   Program Definition go_type_size := sealed @go_type_size_def.

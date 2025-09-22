@@ -1,11 +1,11 @@
-From New.golang.defn Require Import mem typing list assume.
+From New.golang.defn Require Import mem list assume typing.
 From Perennial Require Import base.
 
 (** [PkgInfo] associates a pkg_name to its static information. *)
 Class PkgInfo (pkg_name: go_string) `{ffi_syntax} := {
     pkg_vars : list (go_string * go_type);
-    pkg_functions : list (go_string * val);
-    pkg_msets : list (go_string * (list (go_string * val)));
+    pkg_functions : go_string → val → bool;
+    pkg_msets : go_string → list (go_string * val) → bool;
     pkg_imported_pkgs : list go_string;
   }.
 
@@ -34,10 +34,7 @@ Section defns.
 Context `{ffi_syntax}.
 
 Definition get_def : val :=
-  λ: "var_name", match: alist_lookup "var_name" (option.unwrap $ GlobalGet #"__global_vars") with
-                   NONE => #null
-                 | SOME "v" => "v"
-                 end .
+  λ: "var_name", (option.unwrap $ GlobalGet (#"V" + "var_name")).
 Program Definition get := sealed @get_def.
 Definition get_unseal : get = _ := seal_eq _.
 
@@ -56,43 +53,30 @@ Definition alloc pkg_name `{!PkgInfo pkg_name} : val :=
            (match vars with
             | Datatypes.nil => #()
             | (pair name t) :: vars =>
-                let: "addr" := mem.alloc (zero_val t) in
+                let: "addr" := mem.alloc t (zero_val t) in
                 assume (globals.get #name = "addr");;
                 alloc vars
             end)%E) (pkg_vars pkg_name).
 
 Local Definition check_status (pkg_name : go_string) : val :=
-  λ: <>, match: GlobalGet #"__packages" with
-      SOME "initmap" =>
-        match: (alist_lookup #pkg_name "initmap") with
-          SOME "status" => "status" = #"done"
-        | NONE => #false
-        end
+  λ: <>, match: GlobalGet #("P" ++ pkg_name)%go with
+      SOME "status" => "status" = #"done"
     | NONE => #false
     end.
 
-Local Definition try_start_initialization : val :=
-  λ: "pkg_name",
-    let: "initmap" := option.unwrap $ GlobalGet #"__packages" in
-    let: "status" := (alist_lookup "pkg_name" "initmap") in
-    match: "status" with
-      SOME "s" =>
-          assume ("s" ≠ #"started");;
-          #false
-    | NONE =>
-      GlobalPut #"__packages" (list.Cons ("pkg_name", #"started") "initmap");;
-      #true
+Local Definition try_start_initialization (pkg_name : go_string) : val :=
+  λ: <>, match: GlobalGet #("P" ++ pkg_name)%go with
+      SOME "status" => assume ("status" ≠ #"started");; #false
+    | NONE => GlobalPut #("P" ++ pkg_name) #"started";; #true
     end.
 
-Local Definition mark_initialized : val :=
-  λ: "pkg_name",
-    let: "initmap" := option.unwrap $ GlobalGet #"__packages" in
-    GlobalPut #"__packages" (list.Cons ("pkg_name", #"initialized") "initmap").
+Local Definition mark_initialized (pkg_name : go_string) : val :=
+  λ: <>, GlobalPut #("P" ++ pkg_name) #"initialized".
 
-Definition init_def : val :=
-  λ: "pkg_name" "init",
-    if: try_start_initialization "pkg_name" then
-      "init" #();; mark_initialized "pkg_name"
+Definition init_def (pkg_name : go_string) (init_fn : val) : val :=
+  λ: <>,
+    if: try_start_initialization pkg_name #() then
+      init_fn #();; mark_initialized pkg_name #()
     else #().
 Program Definition init := sealed @init_def.
 Definition init_unseal : init = _ := seal_eq _.
@@ -105,14 +89,14 @@ Context `{ffi_syntax}.
 Definition func_call_def : val :=
   λ: "func_name",
     (λ: "firstArg",
-       (option.unwrap $ alist_lookup "func_name" (option.unwrap $ GlobalGet #"__functions")) "firstArg").
+       (option.unwrap $ GlobalGet (#"F" + "func_name")) "firstArg").
 Program Definition func_call := sealed @func_call_def.
 Definition func_call_unseal : func_call = _ := seal_eq _.
 
 Definition method_call_def : val :=
   λ: "type_id" "method_name" "receiver",
     λ: "firstArg",
-       let: "method_set" := option.unwrap $ alist_lookup "type_id" (option.unwrap $ GlobalGet #"__msets") in
+       let: "method_set" := option.unwrap $ GlobalGet (#"M" + "type_id") in
        (option.unwrap $ alist_lookup "method_name" "method_set") "receiver" "firstArg"
     .
 Program Definition method_call := sealed @method_call_def.

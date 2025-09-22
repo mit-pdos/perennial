@@ -7,8 +7,6 @@ From New.golang.theory Require Import proofmode pkg loop chan.
 From New.golang.theory Require Import mem.
 From Perennial Require Import base.
 
-#[local] Open Scope general_if_scope.
-
 (* TODO: iFrame # is only for backwards compatibility *)
 Tactic Notation "wp_globals_get" :=
   wp_globals_get_core; try iPkgInit; try iFrame "#".
@@ -79,8 +77,7 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
       repeat (first [ wp_pure_maybe_lc ()
                     | wp_load ()
                     | wp_store ()
-                    | wp_alloc_auto ()
-                    | ltac1:(rewrite <- !default_val_eq_zero_val) ]);
+                    | wp_alloc_auto ()]);
       if (Int.gt (Ref.get num_lc_wanted) 0) then
         Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"
       else
