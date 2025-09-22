@@ -65,7 +65,7 @@ Qed.
 
 Lemma wp_map_literal_val (l:list (K * V)):
   {{{ True }}}
-    map.literal_val #kt #vt #l
+    map.literal_val vt #l
   {{{ v, RET v; ⌜ is_map_val v (list_to_map l) ⌝ }}}.
 Proof. 
   iIntros (?) "% HΦ".
@@ -74,11 +74,9 @@ Proof.
     iApply "HΦ".
     iPureIntro.
     unfold is_map_val. 
-    split.
-    - done.
-    - symmetry. apply default_val_eq_zero_val.
+    done.
   + wp_call.
-    wp_bind (map.literal_val _ _ _)%E. 
+    wp_bind (map.literal_val _ _)%E.
     iApply ("IH" with "[HΦ]"). iNext.
     iIntros (?) "%Htl_map".
     wp_pures.
@@ -99,7 +97,7 @@ Qed.
      
 Lemma wp_map_literal (l:list (K * V)):
   {{{ ⌜ is_comparable_go_type kt = true ⌝ }}}
-    map.literal #kt #vt #l
+    map.literal vt #l
   {{{ (l_ptr : loc), RET #l_ptr; l_ptr ↦$ (list_to_map l) }}}.
 Proof.
   iIntros (?) "%Hcomp HΦ".
@@ -231,7 +229,6 @@ Proof.
   replace (LitV l) with #l; last by rewrite to_val_unseal.
   iApply "HΦ".
   iFrame. iPureIntro.
-  rewrite -default_val_eq_zero_val.
   naive_solver.
 Qed.
 

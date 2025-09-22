@@ -9,9 +9,9 @@ Section wps.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Lemma wp_assume (b: bool) Φ :
+Lemma wp_assume (b: bool) Φ stk E:
   (⌜b = true⌝ -∗ Φ #()) -∗
-  WP assume #b {{ Φ }}.
+  WP assume #b @ stk; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -121,8 +121,8 @@ Proof.
   wp_apply wp_mul_overflows.
   wp_pures.
   wp_apply wp_assume.
-  wp_if_destruct.
-  { iIntros (H); congruence. }
+  case_bool_decide.
+  { iIntros (?); congruence. }
   iIntros (_). iApply "HΦ".
   iPureIntro.
   lia.

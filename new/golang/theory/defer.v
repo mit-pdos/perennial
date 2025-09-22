@@ -13,8 +13,10 @@ Section proof.
   Proof.
     iIntros "Hwp".
     wp_call.
-    wp_apply wp_ref_ty. iIntros (defer) "Hdefer". wp_pures.
-    iApply "Hwp". iFrame.
+    wp_alloc defer as "defer". wp_pures.
+    wp_bind.
+    wp_apply (wp_mem_store with "defer"). iIntros "?".
+    wp_pures. iApply "Hwp". iFrame.
   Qed.
 
 End proof.

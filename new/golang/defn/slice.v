@@ -31,41 +31,41 @@ Definition make2 : val :=
 (* computes `&s[i]` *)
 Definition elem_ref (t : go_type) : val :=
   λ: "s" "i", if: int_lt "i" (len "s")
-              then ((ptr "s") "i")
+              then ((ptr "s") +ₗ[t] "i")
               else Panic "slice index out-of-bounds".
 
 (* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)
-Definition slice : val :=
-  λ: "t" "s" "low" "high",
+Definition slice t : val :=
+  λ: "s" "low" "high",
   if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" (cap "s")) then
-    InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", cap "s" - "low")
+    InjL ((ptr "s") +ₗ[t] "low", "high" - "low", cap "s" - "low")
   else Panic "slice indices out of order"
 .
 
 (* s[a:b:c] (picking a specific capacity c) *)
-Definition full_slice : val :=
-  λ: "t" "s" "low" "high" "max",
+Definition full_slice t : val :=
+  λ: "s" "low" "high" "max",
   if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" "max") && (int_leq "max" (cap "s")) then
-    InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", "max" - "low")
+    InjL ((ptr "s") +ₗ[t] "low", "high" - "low", "max" - "low")
   else Panic "slice indices out of order"
 .
 
-Definition for_range : val :=
-  λ: "t" "s" "body",
-  let: "i" := alloc #(W64 0) in
-  for: (λ: <>, int_lt (![#int64T] "i") (len "s")) ; (λ: <>, "i" <-[#int64T] (![#int64T] "i") + #(W64 1)) :=
-    (λ: <>, "body" (![#int64T] "i") (!["t"] (elem_ref "t" "s" (![#int64T] "i"))))
+Definition for_range t : val :=
+  λ: "s" "body",
+  let: "i" := mem.alloc int64T in
+  for: (λ: <>, int_lt (![int64T] "i") (len "s")) ; (λ: <>, "i" <-[int64T] (![int64T] "i") + #(W64 1)) :=
+    (λ: <>, "body" (![int64T] "i") (![t] (elem_ref t "s" (![int64T] "i"))))
 .
 
-Definition copy : val :=
-  λ: "t" "dst" "src",
-  let: "i" := alloc (zero_val uint64T) in
-  (for: (λ: <>, int_lt (![#int64T] "i") (len "dst") && (int_lt (![#int64T] "i") (len "src"))) ; (λ: <>, Skip) :=
+Definition copy t : val :=
+  λ: "dst" "src",
+  let: "i" := mem.alloc int64T in
+  (for: (λ: <>, int_lt (![int64T] "i") (len "dst") && (int_lt (![int64T] "i") (len "src"))) ; (λ: <>, Skip) :=
     (λ: <>,
-    do: (let: "i_val" := ![#int64T] "i" in
-      elem_ref "t" "dst" "i_val" <-["t"] !["t"] (elem_ref "t" "src" "i_val");;
-      "i" <-[#int64T] "i_val" + #(W64 1))));;
-  ![#int64T] "i"
+    do: (let: "i_val" := ![int64T] "i" in
+      elem_ref t "dst" "i_val" <-[t] ![t] (elem_ref t "src" "i_val");;
+      "i" <-[int64T] "i_val" + #(W64 1))));;
+  ![int64T] "i"
 .
 
 (* only for internal use, not an external model *)
@@ -75,35 +75,35 @@ Definition _new_cap : val :=
     if: int_leq "len" ("len" + "extra") then "len" + "extra"
     else "len".
 
-Definition append : val :=
-  λ: "t" "s" "x",
+Definition append t : val :=
+  λ: "s" "x",
   let: "new_len" := sum_assume_no_overflow_signed (len "s") (len "x") in
   if: (cap "s") ≥ "new_len" then
     (* "grow" s to include its capacity *)
-    let: "s_new" := slice "t" "s" #(W64 0) "new_len" in
+    let: "s_new" := slice t "s" #(W64 0) "new_len" in
     (* copy "x" past the original "s" *)
-    copy "t" (slice "t" "s_new" (len "s") "new_len") "x";;
+    copy t (slice t "s_new" (len "s") "new_len") "x";;
     "s_new"
   else
     let: "new_cap" := _new_cap "new_len" in
     let: "s_new" := make3 "t" "new_len" "new_cap" in
-    copy "t" "s_new" "s" ;;
-    copy "t" (slice "t" "s_new" (len "s") "new_len") "x" ;;
+    copy t "s_new" "s" ;;
+    copy t (slice t "s_new" (len "s") "new_len") "x" ;;
     "s_new".
 
 (* Takes in a list as input, and turns it into a heap-allocated slice. *)
-Definition literal : val :=
-  λ: "t" "elems",
+Definition literal t : val :=
+  λ: "elems",
   let: "len" := list.Length "elems" in
   let: "s" := make2 "t" "len" in
   let: "l" := ref "elems" in
-  let: "i" := alloc (zero_val uint64T) in
-  (for: (λ: <>, int_lt (![#int64T] "i") "len") ; (λ: <>, "i" <-[#int64T] ![#int64T] "i" + #(W64 1)) :=
+  let: "i" := mem.alloc int64T in
+  (for: (λ: <>, int_lt (![int64T] "i") "len") ; (λ: <>, "i" <-[int64T] ![int64T] "i" + #(W64 1)) :=
      (λ: <>,
         do: (list.Match !"l" (λ: <>, #())
                (λ: "elem" "l_tail",
                   "l" <- "l_tail" ;;
-                  elem_ref "t" "s" (![#int64T] "i") <-["t"] "elem")))) ;;
+                  elem_ref t "s" (![int64T] "i") <-[t] "elem")))) ;;
   "s"
 .
 

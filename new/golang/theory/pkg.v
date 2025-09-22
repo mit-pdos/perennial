@@ -45,10 +45,10 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoC
 Definition is_init (σ : state) : Prop :=
   ∃ (global_addr_val : list (_ * loc)),
   (∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name) ∧
-  σ.(globals) = {[ "__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val);
-     "__functions"%go := alist_val __function;
-     "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
-     "__packages"%go := alist_val [] ]}.
+  σ.(globals) !! "__global_vars"%go = Some $ alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val) ∧
+  σ.(globals) !! "__functions"%go = Some $ alist_val __function ∧
+  σ.(globals) !! "__msets"%go = Some $ alist_val ((λ '(a, b), (a, alist_val b)) <$> __method) ∧
+  σ.(globals) !! "__packages"%go = Some $ alist_val [].
 #[global] Opaque is_init.
 #[local] Opaque is_init.
 
