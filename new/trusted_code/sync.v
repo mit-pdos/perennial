@@ -35,6 +35,8 @@ Definition runtime_notifyListNotifyAllⁱᵐᵖˡ : val :=
   λ: "l", #().
 Definition runtime_notifyListNotifyOneⁱᵐᵖˡ : val :=
   λ: "l", #().
+Definition runtime_notifyListCheckⁱᵐᵖˡ : val :=
+  λ: "l", #().
 
 Definition runtime_Semacquireⁱᵐᵖˡ : val :=
   (* inspired by runtime/sema.go:272:

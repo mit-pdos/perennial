@@ -681,6 +681,10 @@ Global Instance wp_func_call_runtime_notifyListNotifyOne :
   WpFuncCall sync.runtime_notifyListNotifyOne _ (is_pkg_defined sync) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_runtime_notifyListCheck :
+  WpFuncCall sync.runtime_notifyListCheck _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_method_call_Cond'ptr_Broadcast :
   WpMethodCall (ptrT.id sync.Cond.id) "Broadcast" _ (is_pkg_defined sync) :=
   ltac:(solve_wp_method_call).

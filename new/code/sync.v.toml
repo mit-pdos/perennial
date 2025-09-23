@@ -36,14 +36,8 @@ trusted = [
   "Mutex",
   "Mutex.*",
 
-  "runtime_notifyListAdd",
-  "runtime_notifyListWait",
-  "runtime_notifyListNotifyOne",
-  "runtime_notifyListNotifyAll",
+  "runtime_notifyList*",
 
-  "runtime_Semacquire",
-  "runtime_SemacquireWaitGroup",
-  "runtime_SemacquireRWMutexR",
-  "runtime_SemacquireRWMutex",
+  "runtime_Semacquire*",
   "runtime_Semrelease",
 ]

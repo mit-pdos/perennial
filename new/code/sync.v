@@ -729,8 +729,6 @@ Axiom runtime_LoadAcquintptrⁱᵐᵖˡ : val.
 
 Axiom runtime_StoreReluintptrⁱᵐᵖˡ : val.
 
-Axiom runtime_notifyListCheckⁱᵐᵖˡ : val.
-
 Axiom throwⁱᵐᵖˡ : val.
 
 Axiom fatalⁱᵐᵖˡ : val.
