@@ -2,7 +2,6 @@ From New.golang Require Import defn.
 
 Module sync.
 Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
-Module Cond. Definition id : go_string := "sync.Cond". End Cond.
 
 Section code.
 Context `{ffi_syntax}.
@@ -27,18 +26,6 @@ Definition Mutex__Lockⁱᵐᵖˡ : val :=
 Definition Mutex__Unlockⁱᵐᵖˡ : val :=
   λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref #Mutex #"state"%go "m") #true #false ;;; return: #())
 .
-
-Definition Cond : go_type := structT [
-    "L" :: interfaceT
-  ].
-
-Definition NewCondⁱᵐᵖˡ : val := λ: "m", alloc (struct.make #Cond [{ (#"L", "m") }]).
-Definition Cond__Waitⁱᵐᵖˡ : val := λ: "c" <>, exception_do (
-                                 do: interface.get #"Unlock"%go (![#interfaceT] (struct.field_ref #Cond #"L"%go "c")) #() ;;;
-                                 do: interface.get #"Lock"%go (![#interfaceT] (struct.field_ref #Cond #"L"%go "c")) #()
-                               ).
-Definition Cond__Broadcastⁱᵐᵖˡ : val := λ: "c" <>, #().
-Definition Cond__Signalⁱᵐᵖˡ : val := λ: "c" <>, #().
 
 Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
   λ: "l", u_to_w32 ArbitraryInt.
