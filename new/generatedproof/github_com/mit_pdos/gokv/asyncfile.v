@@ -15,6 +15,7 @@ Module asyncfile.
 Module AsyncFile.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   data' : slice.t;
@@ -97,22 +98,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_AsyncFile mu' data' filename' index' indexCond' durableIndex' durableIndexCond' closeRequested' closed' closedCond':
-  PureWp True
-    (struct.make #asyncfile.AsyncFile (alist_val [
-      "mu" ::= #mu';
-      "data" ::= #data';
-      "filename" ::= #filename';
-      "index" ::= #index';
-      "indexCond" ::= #indexCond';
-      "durableIndex" ::= #durableIndex';
-      "durableIndexCond" ::= #durableIndexCond';
-      "closeRequested" ::= #closeRequested';
-      "closed" ::= #closed';
-      "closedCond" ::= #closedCond'
-    ]))%struct
-    #(AsyncFile.mk mu' data' filename' index' indexCond' durableIndex' durableIndexCond' closeRequested' closed' closedCond').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AsyncFile_struct_fields_split dq l (v : AsyncFile.t) :

@@ -18,6 +18,7 @@ Module exactlyonce.
 Module eStateMachine.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   lastSeq' : loc;
   lastReply' : loc;
@@ -75,17 +76,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_eStateMachine lastSeq' lastReply' nextCID' sm' esmNextIndex':
-  PureWp True
-    (struct.make #exactlyonce.eStateMachine (alist_val [
-      "lastSeq" ::= #lastSeq';
-      "lastReply" ::= #lastReply';
-      "nextCID" ::= #nextCID';
-      "sm" ::= #sm';
-      "esmNextIndex" ::= #esmNextIndex'
-    ]))%struct
-    #(eStateMachine.mk lastSeq' lastReply' nextCID' sm' esmNextIndex').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance eStateMachine_struct_fields_split dq l (v : eStateMachine.t) :
@@ -116,6 +106,7 @@ End instances.
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ck' : loc;
   cid' : w64;
@@ -163,15 +154,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk ck' cid' seq':
-  PureWp True
-    (struct.make #exactlyonce.Clerk (alist_val [
-      "ck" ::= #ck';
-      "cid" ::= #cid';
-      "seq" ::= #seq'
-    ]))%struct
-    #(Clerk.mk ck' cid' seq').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
@@ -198,6 +180,7 @@ End instances.
 Module VersionedStateMachine.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ApplyVolatile' : func.t;
   ApplyReadonly' : func.t;
@@ -250,16 +233,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_VersionedStateMachine ApplyVolatile' ApplyReadonly' SetState' GetState':
-  PureWp True
-    (struct.make #exactlyonce.VersionedStateMachine (alist_val [
-      "ApplyVolatile" ::= #ApplyVolatile';
-      "ApplyReadonly" ::= #ApplyReadonly';
-      "SetState" ::= #SetState';
-      "GetState" ::= #GetState'
-    ]))%struct
-    #(VersionedStateMachine.mk ApplyVolatile' ApplyReadonly' SetState' GetState').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance VersionedStateMachine_struct_fields_split dq l (v : VersionedStateMachine.t) :

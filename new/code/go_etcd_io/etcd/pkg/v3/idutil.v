@@ -36,20 +36,20 @@ Definition NewGeneratorⁱᵐᵖˡ : val :=
   λ: "memberID" "now",
     exception_do (let: "now" := (mem.alloc "now") in
     let: "memberID" := (mem.alloc "memberID") in
-    let: "prefix" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((u_to_w64 (![#uint16T] "memberID")) ≪ #(W64 suffixLen)) in
-    do:  ("prefix" <-[#uint64T] "$r0");;;
-    let: "unixMilli" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "prefix" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((u_to_w64 (![uint16T] "memberID")) ≪ #(W64 suffixLen)) in
+    do:  ("prefix" <-[uint64T] "$r0");;;
+    let: "unixMilli" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := ((s_to_w64 ((method_call #(ptrT.id time.Time.id) #"UnixNano"%go "now") #())) `quot` (s_to_w64 (time.Millisecond `quots` time.Nanosecond))) in
-    do:  ("unixMilli" <-[#uint64T] "$r0");;;
-    let: "suffix" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((let: "$a0" := (![#uint64T] "unixMilli") in
+    do:  ("unixMilli" <-[uint64T] "$r0");;;
+    let: "suffix" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((let: "$a0" := (![uint64T] "unixMilli") in
     let: "$a1" := #(W64 tsLen) in
     (func_call #lowbit) "$a0" "$a1") ≪ #(W64 cntLen)) in
-    do:  ("suffix" <-[#uint64T] "$r0");;;
-    return: (mem.alloc (let: "$prefix" := (![#uint64T] "prefix") in
-     let: "$suffix" := (![#uint64T] "suffix") in
-     struct.make #Generator [{
+    do:  ("suffix" <-[uint64T] "$r0");;;
+    return: (mem.alloc (let: "$prefix" := (![uint64T] "prefix") in
+     let: "$suffix" := (![uint64T] "suffix") in
+     struct.make Generator [{
        "prefix" ::= "$prefix";
        "suffix" ::= "$suffix"
      }]))).
@@ -60,24 +60,24 @@ Definition NewGeneratorⁱᵐᵖˡ : val :=
 Definition Generator__Nextⁱᵐᵖˡ : val :=
   λ: "g" <>,
     exception_do (let: "g" := (mem.alloc "g") in
-    let: "suffix" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref #Generator #"suffix"%go (![#ptrT] "g")) in
+    let: "suffix" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref ptrT #"suffix"%go (![ptrT] "g")) in
     let: "$a1" := #(W64 1) in
     (func_call #atomic.AddUint64) "$a0" "$a1") in
-    do:  ("suffix" <-[#uint64T] "$r0");;;
-    let: "id" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] (struct.field_ref #Generator #"prefix"%go (![#ptrT] "g"))) `or` (let: "$a0" := (![#uint64T] "suffix") in
+    do:  ("suffix" <-[uint64T] "$r0");;;
+    let: "id" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] (struct.field_ref ptrT #"prefix"%go (![ptrT] "g"))) `or` (let: "$a0" := (![uint64T] "suffix") in
     let: "$a1" := #(W64 suffixLen) in
     (func_call #lowbit) "$a0" "$a1")) in
-    do:  ("id" <-[#uint64T] "$r0");;;
-    return: (![#uint64T] "id")).
+    do:  ("id" <-[uint64T] "$r0");;;
+    return: (![uint64T] "id")).
 
 (* go: id.go:73:6 *)
 Definition lowbitⁱᵐᵖˡ : val :=
   λ: "x" "n",
     exception_do (let: "n" := (mem.alloc "n") in
     let: "x" := (mem.alloc "x") in
-    return: ((![#uint64T] "x") `and` (#(W64 math.MaxUint64) ≫ (u_to_w64 (#(W64 64) - (![#uintT] "n")))))).
+    return: ((![uint64T] "x") `and` (#(W64 math.MaxUint64) ≫ (u_to_w64 (#(W64 64) - (![uintT] "n")))))).
 
 Definition vars' : list (go_string * go_type) := [].
 

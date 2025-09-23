@@ -29,6 +29,7 @@ End LogPosition.
 Module Update.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Addr' : w64;
   Block' : slice.t;
@@ -71,14 +72,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Update Addr' Block':
-  PureWp True
-    (struct.make #wal.Update (alist_val [
-      "Addr" ::= #Addr';
-      "Block" ::= #Block'
-    ]))%struct
-    #(Update.mk Addr' Block').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Update_struct_fields_split dq l (v : Update.t) :
@@ -103,6 +96,7 @@ End instances.
 Module circularAppender.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   diskAddrs' : slice.t;
 }.
@@ -140,13 +134,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_circularAppender diskAddrs':
-  PureWp True
-    (struct.make #wal.circularAppender (alist_val [
-      "diskAddrs" ::= #diskAddrs'
-    ]))%struct
-    #(circularAppender.mk diskAddrs').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance circularAppender_struct_fields_split dq l (v : circularAppender.t) :
@@ -169,6 +156,7 @@ End instances.
 Module sliding.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   log' : slice.t;
   start' : LogPosition.t;
@@ -226,17 +214,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_sliding log' start' mutable' needFlush' addrPos':
-  PureWp True
-    (struct.make #wal.sliding (alist_val [
-      "log" ::= #log';
-      "start" ::= #start';
-      "mutable" ::= #mutable';
-      "needFlush" ::= #needFlush';
-      "addrPos" ::= #addrPos'
-    ]))%struct
-    #(sliding.mk log' start' mutable' needFlush' addrPos').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance sliding_struct_fields_split dq l (v : sliding.t) :
@@ -267,6 +244,7 @@ End instances.
 Module WalogState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   memLog' : loc;
   diskEnd' : LogPosition.t;
@@ -319,16 +297,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WalogState memLog' diskEnd' shutdown' nthread':
-  PureWp True
-    (struct.make #wal.WalogState (alist_val [
-      "memLog" ::= #memLog';
-      "diskEnd" ::= #diskEnd';
-      "shutdown" ::= #shutdown';
-      "nthread" ::= #nthread'
-    ]))%struct
-    #(WalogState.mk memLog' diskEnd' shutdown' nthread').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WalogState_struct_fields_split dq l (v : WalogState.t) :
@@ -357,6 +325,7 @@ End instances.
 Module Walog.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   memLock' : loc;
   d' : disk.Disk.t;
@@ -424,19 +393,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Walog memLock' d' circ' st' condLogger' condInstall' condShut':
-  PureWp True
-    (struct.make #wal.Walog (alist_val [
-      "memLock" ::= #memLock';
-      "d" ::= #d';
-      "circ" ::= #circ';
-      "st" ::= #st';
-      "condLogger" ::= #condLogger';
-      "condInstall" ::= #condInstall';
-      "condShut" ::= #condShut'
-    ]))%struct
-    #(Walog.mk memLock' d' circ' st' condLogger' condInstall' condShut').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Walog_struct_fields_split dq l (v : Walog.t) :

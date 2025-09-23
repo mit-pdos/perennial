@@ -16,6 +16,7 @@ Module std.
 Module JoinHandle.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   done' : bool;
@@ -63,15 +64,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_JoinHandle mu' done' cond':
-  PureWp True
-    (struct.make #std.JoinHandle (alist_val [
-      "mu" ::= #mu';
-      "done" ::= #done';
-      "cond" ::= #cond'
-    ]))%struct
-    #(JoinHandle.mk mu' done' cond').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance JoinHandle_struct_fields_split dq l (v : JoinHandle.t) :

@@ -25,6 +25,7 @@ Module leasing.
 Module leaseCache.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : sync.RWMutex.t;
   entries' : loc;
@@ -77,16 +78,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leaseCache mu' entries' revokes' header':
-  PureWp True
-    (struct.make #leasing.leaseCache (alist_val [
-      "mu" ::= #mu';
-      "entries" ::= #entries';
-      "revokes" ::= #revokes';
-      "header" ::= #header'
-    ]))%struct
-    #(leaseCache.mk mu' entries' revokes' header').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance leaseCache_struct_fields_split dq l (v : leaseCache.t) :
@@ -115,6 +106,7 @@ End instances.
 Module leaseKey.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   response' : loc;
   rev' : w64;
@@ -162,15 +154,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leaseKey response' rev' waitc':
-  PureWp True
-    (struct.make #leasing.leaseKey (alist_val [
-      "response" ::= #response';
-      "rev" ::= #rev';
-      "waitc" ::= #waitc'
-    ]))%struct
-    #(leaseKey.mk response' rev' waitc').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance leaseKey_struct_fields_split dq l (v : leaseKey.t) :
@@ -197,6 +180,7 @@ End instances.
 Module leasingKV.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   cl' : loc;
   kv' : clientv3.KV.t;
@@ -279,22 +263,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leasingKV cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc':
-  PureWp True
-    (struct.make #leasing.leasingKV (alist_val [
-      "cl" ::= #cl';
-      "kv" ::= #kv';
-      "pfx" ::= #pfx';
-      "leases" ::= #leases';
-      "ctx" ::= #ctx';
-      "cancel" ::= #cancel';
-      "wg" ::= #wg';
-      "sessionOpts" ::= #sessionOpts';
-      "session" ::= #session';
-      "sessionc" ::= #sessionc'
-    ]))%struct
-    #(leasingKV.mk cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance leasingKV_struct_fields_split dq l (v : leasingKV.t) :
@@ -335,6 +303,7 @@ End instances.
 Module txnLeasing.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Txn' : clientv3.Txn.t;
   lkv' : loc;
@@ -397,18 +366,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_txnLeasing Txn' lkv' ctx' cs' opst' opse':
-  PureWp True
-    (struct.make #leasing.txnLeasing (alist_val [
-      "Txn" ::= #Txn';
-      "lkv" ::= #lkv';
-      "ctx" ::= #ctx';
-      "cs" ::= #cs';
-      "opst" ::= #opst';
-      "opse" ::= #opse'
-    ]))%struct
-    #(txnLeasing.mk Txn' lkv' ctx' cs' opst' opse').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance txnLeasing_struct_fields_split dq l (v : txnLeasing.t) :

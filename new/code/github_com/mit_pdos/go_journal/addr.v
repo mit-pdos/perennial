@@ -24,7 +24,7 @@ Definition Addr : go_type := structT [
 Definition Addr__Flatidⁱᵐᵖˡ : val :=
   λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
-    return: (((![#uint64T] (struct.field_ref #Addr #"Blkno"%go "a")) * (disk.BlockSize * #(W64 8))) + (![#uint64T] (struct.field_ref #Addr #"Off"%go "a")))).
+    return: (((![uint64T] (struct.field_ref Addr #"Blkno"%go "a")) * (disk.BlockSize * #(W64 8))) + (![uint64T] (struct.field_ref Addr #"Off"%go "a")))).
 
 Definition MkAddr : go_string := "github.com/mit-pdos/go-journal/addr.MkAddr"%go.
 
@@ -33,9 +33,9 @@ Definition MkAddrⁱᵐᵖˡ : val :=
   λ: "blkno" "off",
     exception_do (let: "off" := (mem.alloc "off") in
     let: "blkno" := (mem.alloc "blkno") in
-    return: (let: "$Blkno" := (![#uint64T] "blkno") in
-     let: "$Off" := (![#uint64T] "off") in
-     struct.make #Addr [{
+    return: (let: "$Blkno" := (![uint64T] "blkno") in
+     let: "$Off" := (![uint64T] "off") in
+     struct.make Addr [{
        "Blkno" ::= "$Blkno";
        "Off" ::= "$Off"
      }])).
@@ -47,25 +47,25 @@ Definition MkBitAddrⁱᵐᵖˡ : val :=
   λ: "start" "n",
     exception_do (let: "n" := (mem.alloc "n") in
     let: "start" := (mem.alloc "start") in
-    let: "bit" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "n") `rem` common.NBITBLOCK) in
-    do:  ("bit" <-[#uint64T] "$r0");;;
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "n") `quot` common.NBITBLOCK) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    let: "addr" := (mem.alloc (type.zero_val #Addr)) in
-    let: "$r0" := (let: "$a0" := ((![#uint64T] "start") + (![#uint64T] "i")) in
-    let: "$a1" := (![#uint64T] "bit") in
+    let: "bit" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "n") `rem` common.NBITBLOCK) in
+    do:  ("bit" <-[uint64T] "$r0");;;
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "n") `quot` common.NBITBLOCK) in
+    do:  ("i" <-[uint64T] "$r0");;;
+    let: "addr" := (mem.alloc (type.zero_val Addr)) in
+    let: "$r0" := (let: "$a0" := ((![uint64T] "start") + (![uint64T] "i")) in
+    let: "$a1" := (![uint64T] "bit") in
     (func_call #MkAddr) "$a0" "$a1") in
-    do:  ("addr" <-[#Addr] "$r0");;;
-    return: (![#Addr] "addr")).
+    do:  ("addr" <-[Addr] "$r0");;;
+    return: (![Addr] "addr")).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MkAddr, MkAddrⁱᵐᵖˡ); (MkBitAddr, MkBitAddrⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [("Flatid"%go, Addr__Flatidⁱᵐᵖˡ)]); (ptrT.id Addr.id, [("Flatid"%go, (λ: "$r",
-                 method_call #Addr.id #"Flatid"%go (![#Addr] "$r")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Addr.id, [("Flatid"%go, Addr__Flatidⁱᵐᵖˡ)]); (ptrT.id Addr.id, [("Flatid"%go, (λ: "$r0",
+                 method_call #Addr.id #"Flatid"%go (![Addr] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo addr.addr :=

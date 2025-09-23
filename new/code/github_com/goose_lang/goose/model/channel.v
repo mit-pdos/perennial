@@ -34,16 +34,15 @@ Definition RcvDone : val := #(W64 5).
 
 Definition Closed : val := #(W64 6).
 
-Definition Channel : val :=
-  λ: "T", type.structT [
-    (#"lock"%go, #ptrT);
-    (#"state"%go, #OfferState);
-    (#"buffer"%go, #sliceT);
-    (#"cap"%go, #uint64T);
-    (#"v"%go, "T")
-  ].
-  #[global] Typeclasses Opaque Channel.
-  #[global] Opaque Channel.
+Definition Channel (T : go_type) : go_type := structT [
+  "lock" :: ptrT;
+  "state" :: OfferState;
+  "buffer" :: sliceT;
+  "cap" :: uint64T;
+  "v" :: T
+].
+#[global] Typeclasses Opaque Channel.
+#[global] Opaque Channel.
 
 Definition NewChannelRef : go_string := "github.com/goose-lang/goose/model/channel.NewChannelRef"%go.
 
@@ -53,24 +52,24 @@ Definition NewChannelRef : go_string := "github.com/goose-lang/goose/model/chann
 Definition NewChannelRefⁱᵐᵖˡ : val :=
   λ: "T" "buffer_size",
     exception_do (let: "buffer_size" := (mem.alloc "buffer_size") in
-    let: "local_state" := (mem.alloc (type.zero_val #OfferState)) in
+    let: "local_state" := (mem.alloc (type.zero_val OfferState)) in
     let: "$r0" := Idle in
-    do:  ("local_state" <-[#OfferState] "$r0");;;
-    (if: (![#uint64T] "buffer_size") > #(W64 0)
+    do:  ("local_state" <-[OfferState] "$r0");;;
+    (if: (![uint64T] "buffer_size") > #(W64 0)
     then
       let: "$r0" := Buffered in
-      do:  ("local_state" <-[#OfferState] "$r0")
+      do:  ("local_state" <-[OfferState] "$r0")
     else do:  #());;;
-    return: (mem.alloc (let: "$buffer" := (slice.make2 "T" #(W64 0)) in
-     let: "$lock" := (mem.alloc (type.zero_val #sync.Mutex)) in
-     let: "$cap" := (![#uint64T] "buffer_size") in
-     let: "$state" := (![#OfferState] "local_state") in
-     struct.make (Channel "T") [{
+    return: (mem.alloc (let: "$buffer" := (slice.make2 T #(W64 0)) in
+     let: "$lock" := (mem.alloc (type.zero_val sync.Mutex)) in
+     let: "$cap" := (![uint64T] "buffer_size") in
+     let: "$state" := (![OfferState] "local_state") in
+     struct.make (Channel T) [{
        "lock" ::= "$lock";
        "state" ::= "$state";
        "buffer" ::= "$buffer";
        "cap" ::= "$cap";
-       "v" ::= type.zero_val "T"
+       "v" ::= type.zero_val T
      }]))).
 
 (* c.Send(val)
@@ -84,14 +83,14 @@ Definition Channel__Sendⁱᵐᵖˡ : val :=
   λ: "c" "T" "v",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "v" := (mem.alloc "v") in
-    (if: (![#ptrT] "c") = #null
+    (if: (![ptrT] "c") = #null
     then
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
     else do:  #());;;
-    (for: (λ: <>, (~ (let: "$a0" := (!["T"] "v") in
+    (for: (λ: <>, (~ (let: "$a0" := (![T] "v") in
     let: "$a1" := #true in
-    (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "c") "T") "$a0" "$a1"))); (λ: <>, #()) := λ: <>,
+    (method_call #(ptrT.id Channel.id) #"TrySend"%go (![ptrT] "c") T) "$a0" "$a1"))); (λ: <>, #()) := λ: <>,
       do:  #());;;
     return: #()).
 
@@ -99,25 +98,25 @@ Definition Channel__Sendⁱᵐᵖˡ : val :=
 Definition Channel__Receiveⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+    (if: (![ptrT] "c") = #null
     then
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "v" := (mem.alloc (type.zero_val "T")) in
-      let: "success" := (mem.alloc (type.zero_val #boolT)) in
+      let: "ok" := (mem.alloc (type.zero_val boolT)) in
+      let: "v" := (mem.alloc (type.zero_val T)) in
+      let: "success" := (mem.alloc (type.zero_val boolT)) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-      (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "c") "T") "$a0") in
+      (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![ptrT] "c") T) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("success" <-[#boolT] "$r0");;;
-      do:  ("v" <-["T"] "$r1");;;
-      do:  ("ok" <-[#boolT] "$r2");;;
-      (if: ![#boolT] "success"
-      then return: (!["T"] "v", ![#boolT] "ok")
+      do:  ("success" <-[boolT] "$r0");;;
+      do:  ("v" <-[T] "$r1");;;
+      do:  ("ok" <-[boolT] "$r2");;;
+      (if: ![boolT] "success"
+      then return: (![T] "v", ![boolT] "ok")
       else do:  #()))).
 
 (* This is a non-blocking attempt at closing. The only reason close blocks ever is because there
@@ -128,8 +127,8 @@ Definition Channel__Receiveⁱᵐᵖˡ : val :=
 Definition Channel__TryCloseⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-    let: "$sw" := (![#OfferState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+    let: "$sw" := (![OfferState] (struct.field_ref ptrT #"state"%go (![ptrT] "c"))) in
     (if: "$sw" = Closed
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"close of closed channel"%go) in
@@ -138,11 +137,11 @@ Definition Channel__TryCloseⁱᵐᵖˡ : val :=
       (if: ("$sw" = Buffered) || ("$sw" = Idle)
       then
         let: "$r0" := Closed in
-        do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+        do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
         return: (#true)
       else
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
         return: (#false)))).
 
 (* c.Close()
@@ -155,12 +154,12 @@ Definition Channel__TryCloseⁱᵐᵖˡ : val :=
 Definition Channel__Closeⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+    (if: (![ptrT] "c") = #null
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"close of nil channel"%go) in
       Panic "$a0")
     else do:  #());;;
-    (for: (λ: <>, (~ ((method_call #(ptrT.id Channel.id) #"TryClose"%go (![#ptrT] "c") "T") #()))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (~ ((method_call #(ptrT.id Channel.id) #"TryClose"%go (![ptrT] "c") T) #()))); (λ: <>, #()) := λ: <>,
       do:  #());;;
     return: #()).
 
@@ -175,13 +174,13 @@ Definition Channel__Closeⁱᵐᵖˡ : val :=
 Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    let: "return_val" := (mem.alloc (type.zero_val "T")) in
-    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id Channel.id) #"Receive"%go (![#ptrT] "c") "T") #()) in
+    let: "return_val" := (mem.alloc (type.zero_val T)) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id Channel.id) #"Receive"%go (![ptrT] "c") T) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("return_val" <-["T"] "$r0");;;
+    do:  ("return_val" <-[T] "$r0");;;
     do:  "$r1";;;
-    return: (!["T"] "return_val")).
+    return: (![T] "return_val")).
 
 (* Non-blocking receive function used for select statements.
    The blocking parameter here is used to determine whether or not we will make an offer to a
@@ -194,86 +193,86 @@ Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
   λ: "c" "T" "blocking",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "blocking" := (mem.alloc "blocking") in
-    let: "local_val" := (mem.alloc (type.zero_val "T")) in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-    let: "$sw" := (![#OfferState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
+    let: "local_val" := (mem.alloc (type.zero_val T)) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+    let: "$sw" := (![OfferState] (struct.field_ref ptrT #"state"%go (![ptrT] "c"))) in
     (if: "$sw" = Buffered
     then
-      let: "v" := (mem.alloc (type.zero_val "T")) in
-      (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
+      let: "v" := (mem.alloc (type.zero_val T)) in
+      (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) in
       slice.len "$a0") #(W64 0)
       then
-        let: "val_copy" := (mem.alloc (type.zero_val "T")) in
-        let: "$r0" := (!["T"] (slice.elem_ref "T" (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) #(W64 0))) in
-        do:  ("val_copy" <-["T"] "$r0");;;
-        let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-        slice.slice "T" "$s" #(W64 1) (slice.len "$s")) in
-        do:  ((struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c")) <-[#sliceT] "$r0");;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-        return: (#true, !["T"] "val_copy", #true)
+        let: "val_copy" := (mem.alloc (type.zero_val T)) in
+        let: "$r0" := (![T] (slice.elem_ref T (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) #(W64 0))) in
+        do:  ("val_copy" <-[T] "$r0");;;
+        let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) in
+        slice.slice T "$s" #(W64 1) (slice.len "$s")) in
+        do:  ((struct.field_ref ptrT #"buffer"%go (![ptrT] "c")) <-[sliceT] "$r0");;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+        return: (#true, ![T] "val_copy", #true)
       else do:  #());;;
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-      return: (#false, !["T"] "v", #true)
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+      return: (#false, ![T] "v", #true)
     else
       (if: "$sw" = Closed
       then
-        (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
+        (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) in
         slice.len "$a0") #(W64 0)
         then
-          let: "val_copy" := (mem.alloc (type.zero_val "T")) in
-          let: "$r0" := (!["T"] (slice.elem_ref "T" (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) #(W64 0))) in
-          do:  ("val_copy" <-["T"] "$r0");;;
-          let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-          slice.slice "T" "$s" #(W64 1) (slice.len "$s")) in
-          do:  ((struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c")) <-[#sliceT] "$r0");;;
-          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-          return: (#true, !["T"] "val_copy", #true)
+          let: "val_copy" := (mem.alloc (type.zero_val T)) in
+          let: "$r0" := (![T] (slice.elem_ref T (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) #(W64 0))) in
+          do:  ("val_copy" <-[T] "$r0");;;
+          let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) in
+          slice.slice T "$s" #(W64 1) (slice.len "$s")) in
+          do:  ((struct.field_ref ptrT #"buffer"%go (![ptrT] "c")) <-[sliceT] "$r0");;;
+          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+          return: (#true, ![T] "val_copy", #true)
         else do:  #());;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-        return: (#true, !["T"] "local_val", #false)
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+        return: (#true, ![T] "local_val", #false)
       else
         (if: "$sw" = SndWait
         then
-          let: "$r0" := (!["T"] (struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c"))) in
-          do:  ("local_val" <-["T"] "$r0");;;
+          let: "$r0" := (![T] (struct.field_ref ptrT #"v"%go (![ptrT] "c"))) in
+          do:  ("local_val" <-[T] "$r0");;;
           let: "$r0" := RcvDone in
-          do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-          return: (#true, !["T"] "local_val", #true)
+          do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+          return: (#true, ![T] "local_val", #true)
         else
           (if: "$sw" = Idle
           then
-            (if: ![#boolT] "blocking"
+            (if: ![boolT] "blocking"
             then
               let: "$r0" := RcvWait in
-              do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-              let: "$sw" := (![#OfferState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
+              do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+              let: "$sw" := (![OfferState] (struct.field_ref ptrT #"state"%go (![ptrT] "c"))) in
               (if: "$sw" = RcvWait
               then
                 let: "$r0" := Idle in
-                do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-                do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-                return: (#false, !["T"] "local_val", #true)
+                do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+                do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+                return: (#false, ![T] "local_val", #true)
               else
                 (if: "$sw" = SndDone
                 then
                   let: "$r0" := Idle in
-                  do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-                  let: "$r0" := (!["T"] (struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c"))) in
-                  do:  ("local_val" <-["T"] "$r0");;;
-                  do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-                  return: (#true, !["T"] "local_val", #true)
+                  do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+                  let: "$r0" := (![T] (struct.field_ref ptrT #"v"%go (![ptrT] "c"))) in
+                  do:  ("local_val" <-[T] "$r0");;;
+                  do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+                  return: (#true, ![T] "local_val", #true)
                 else
                   do:  (let: "$a0" := (interface.make #stringT.id #"not supposed to be here!"%go) in
                   Panic "$a0")))
             else do:  #());;;
-            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-            return: (#false, !["T"] "local_val", #true)
+            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+            return: (#false, ![T] "local_val", #true)
           else
-            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-            return: (#false, !["T"] "local_val", #true)))))).
+            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+            return: (#false, ![T] "local_val", #true)))))).
 
 (* Non-Blocking send operation for select statements. Blocking send and blocking select
    statements simply call this in a for loop until it returns true.
@@ -284,8 +283,8 @@ Definition Channel__TrySendⁱᵐᵖˡ : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     let: "blocking" := (mem.alloc "blocking") in
     let: "val" := (mem.alloc "val") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-    let: "$sw" := (![#OfferState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+    let: "$sw" := (![OfferState] (struct.field_ref ptrT #"state"%go (![ptrT] "c"))) in
     (if: "$sw" = Closed
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"send on closed channel"%go) in
@@ -293,61 +292,61 @@ Definition Channel__TrySendⁱᵐᵖˡ : val :=
     else
       (if: "$sw" = Buffered
       then
-        (if: int_lt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-        slice.len "$a0") (u_to_w64 (![#uint64T] (struct.field_ref (Channel "T") #"cap"%go (![#ptrT] "c"))))
+        (if: int_lt (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) in
+        slice.len "$a0") (u_to_w64 (![uint64T] (struct.field_ref ptrT #"cap"%go (![ptrT] "c"))))
         then
-          let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-          let: "$a1" := ((let: "$sl0" := (!["T"] "val") in
-          slice.literal "T" ["$sl0"])) in
-          (slice.append "T") "$a0" "$a1") in
-          do:  ((struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c")) <-[#sliceT] "$r0");;;
-          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+          let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) in
+          let: "$a1" := ((let: "$sl0" := (![T] "val") in
+          slice.literal T ["$sl0"])) in
+          (slice.append T) "$a0" "$a1") in
+          do:  ((struct.field_ref ptrT #"buffer"%go (![ptrT] "c")) <-[sliceT] "$r0");;;
+          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
           return: (#true)
         else do:  #());;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
         return: (#false)
       else
         (if: "$sw" = RcvWait
         then
           let: "$r0" := SndDone in
-          do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-          let: "$r0" := (!["T"] "val") in
-          do:  ((struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c")) <-["T"] "$r0");;;
-          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+          do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+          let: "$r0" := (![T] "val") in
+          do:  ((struct.field_ref ptrT #"v"%go (![ptrT] "c")) <-[T] "$r0");;;
+          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
           return: (#true)
         else
           (if: "$sw" = Idle
           then
-            (if: ![#boolT] "blocking"
+            (if: ![boolT] "blocking"
             then
               let: "$r0" := SndWait in
-              do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-              let: "$r0" := (!["T"] "val") in
-              do:  ((struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c")) <-["T"] "$r0");;;
-              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-              let: "$sw" := (![#OfferState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
+              do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+              let: "$r0" := (![T] "val") in
+              do:  ((struct.field_ref ptrT #"v"%go (![ptrT] "c")) <-[T] "$r0");;;
+              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+              do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+              let: "$sw" := (![OfferState] (struct.field_ref ptrT #"state"%go (![ptrT] "c"))) in
               (if: "$sw" = RcvDone
               then
                 let: "$r0" := Idle in
-                do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-                do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+                do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+                do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
                 return: (#true)
               else
                 (if: "$sw" = SndWait
                 then
                   let: "$r0" := Idle in
-                  do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#OfferState] "$r0");;;
-                  do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+                  do:  ((struct.field_ref ptrT #"state"%go (![ptrT] "c")) <-[OfferState] "$r0");;;
+                  do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
                   return: (#false)
                 else
                   do:  (let: "$a0" := (interface.make #stringT.id #"Invalid state transition with open receive offer"%go) in
                   Panic "$a0")))
             else do:  #());;;
-            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
             return: (#false)
           else
-            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
+            do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
             return: (#false)))))).
 
 (* c.Len()
@@ -362,18 +361,18 @@ Definition Channel__TrySendⁱᵐᵖˡ : val :=
 Definition Channel__Lenⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+    (if: (![ptrT] "c") = #null
     then return: (#(W64 0))
     else do:  #());;;
-    let: "chan_len" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "chan_len" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("chan_len" <-[#uint64T] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
+    do:  ("chan_len" <-[uint64T] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"buffer"%go (![ptrT] "c"))) in
     slice.len "$a0")) in
-    do:  ("chan_len" <-[#uint64T] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
-    return: (![#uint64T] "chan_len")).
+    do:  ("chan_len" <-[uint64T] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lock"%go (![ptrT] "c")))) #());;;
+    return: (![uint64T] "chan_len")).
 
 (* c.Cap()
 
@@ -384,10 +383,10 @@ Definition Channel__Lenⁱᵐᵖˡ : val :=
 Definition Channel__Capⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+    (if: (![ptrT] "c") = #null
     then return: (#(W64 0))
     else do:  #());;;
-    return: (![#uint64T] (struct.field_ref (Channel "T") #"cap"%go (![#ptrT] "c")))).
+    return: (![uint64T] (struct.field_ref ptrT #"cap"%go (![ptrT] "c")))).
 
 Definition SelectDir : go_type := uint64T.
 #[global] Typeclasses Opaque SelectDir.
@@ -399,15 +398,14 @@ Definition SelectSend : val := #(W64 0).
 (* case <-Chan: *)
 Definition SelectRecv : val := #(W64 1).
 
-Definition SelectCase : val :=
-  λ: "T", type.structT [
-    (#"channel"%go, #ptrT);
-    (#"dir"%go, #SelectDir);
-    (#"Value"%go, "T");
-    (#"Ok"%go, #boolT)
-  ].
-  #[global] Typeclasses Opaque SelectCase.
-  #[global] Opaque SelectCase.
+Definition SelectCase (T : go_type) : go_type := structT [
+  "channel" :: ptrT;
+  "dir" :: SelectDir;
+  "Value" :: T;
+  "Ok" :: boolT
+].
+#[global] Typeclasses Opaque SelectCase.
+#[global] Opaque SelectCase.
 
 Definition NewSendCase : go_string := "github.com/goose-lang/goose/model/channel.NewSendCase"%go.
 
@@ -416,14 +414,14 @@ Definition NewSendCaseⁱᵐᵖˡ : val :=
   λ: "T" "channel" "value",
     exception_do (let: "value" := (mem.alloc "value") in
     let: "channel" := (mem.alloc "channel") in
-    return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
+    return: (mem.alloc (let: "$channel" := (![ptrT] "channel") in
      let: "$dir" := SelectSend in
-     let: "$Value" := (!["T"] "value") in
-     struct.make (SelectCase "T") [{
+     let: "$Value" := (![T] "value") in
+     struct.make (SelectCase T) [{
        "channel" ::= "$channel";
        "dir" ::= "$dir";
        "Value" ::= "$Value";
-       "Ok" ::= type.zero_val #boolT
+       "Ok" ::= type.zero_val boolT
      }]))).
 
 Definition NewRecvCase : go_string := "github.com/goose-lang/goose/model/channel.NewRecvCase"%go.
@@ -432,13 +430,13 @@ Definition NewRecvCase : go_string := "github.com/goose-lang/goose/model/channel
 Definition NewRecvCaseⁱᵐᵖˡ : val :=
   λ: "T" "channel",
     exception_do (let: "channel" := (mem.alloc "channel") in
-    return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
+    return: (mem.alloc (let: "$channel" := (![ptrT] "channel") in
      let: "$dir" := SelectRecv in
-     struct.make (SelectCase "T") [{
+     struct.make (SelectCase T) [{
        "channel" ::= "$channel";
        "dir" ::= "$dir";
-       "Value" ::= type.zero_val "T";
-       "Ok" ::= type.zero_val #boolT
+       "Value" ::= type.zero_val T;
+       "Ok" ::= type.zero_val boolT
      }]))).
 
 Definition TrySelect : go_string := "github.com/goose-lang/goose/model/channel.TrySelect"%go.
@@ -451,36 +449,36 @@ Definition TrySelectⁱᵐᵖˡ : val :=
   λ: "T" "select_case" "blocking",
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "select_case" := (mem.alloc "select_case") in
-    let: "channel" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] (struct.field_ref (SelectCase "T") #"channel"%go (![#ptrT] "select_case"))) in
-    do:  ("channel" <-[#ptrT] "$r0");;;
-    (if: (![#ptrT] "channel") = #null
+    let: "channel" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (![ptrT] (struct.field_ref ptrT #"channel"%go (![ptrT] "select_case"))) in
+    do:  ("channel" <-[ptrT] "$r0");;;
+    (if: (![ptrT] "channel") = #null
     then return: (#false)
     else do:  #());;;
-    (if: (![#SelectDir] (struct.field_ref (SelectCase "T") #"dir"%go (![#ptrT] "select_case"))) = SelectSend
+    (if: (![SelectDir] (struct.field_ref ptrT #"dir"%go (![ptrT] "select_case"))) = SelectSend
     then
-      return: (let: "$a0" := (!["T"] (struct.field_ref (SelectCase "T") #"Value"%go (![#ptrT] "select_case"))) in
-       let: "$a1" := (![#boolT] "blocking") in
-       (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "channel") "T") "$a0" "$a1")
+      return: (let: "$a0" := (![T] (struct.field_ref ptrT #"Value"%go (![ptrT] "select_case"))) in
+       let: "$a1" := (![boolT] "blocking") in
+       (method_call #(ptrT.id Channel.id) #"TrySend"%go (![ptrT] "channel") T) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#SelectDir] (struct.field_ref (SelectCase "T") #"dir"%go (![#ptrT] "select_case"))) = SelectRecv
+    (if: (![SelectDir] (struct.field_ref ptrT #"dir"%go (![ptrT] "select_case"))) = SelectRecv
     then
-      let: "item" := (mem.alloc (type.zero_val "T")) in
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#boolT] "blocking") in
-      (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "channel") "T") "$a0") in
+      let: "item" := (mem.alloc (type.zero_val T)) in
+      let: "ok" := (mem.alloc (type.zero_val boolT)) in
+      let: "selected" := (mem.alloc (type.zero_val boolT)) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![boolT] "blocking") in
+      (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![ptrT] "channel") T) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("selected" <-[#boolT] "$r0");;;
-      do:  ("item" <-["T"] "$r1");;;
-      do:  ("ok" <-[#boolT] "$r2");;;
-      let: "$r0" := (!["T"] "item") in
-      do:  ((struct.field_ref (SelectCase "T") #"Value"%go (![#ptrT] "select_case")) <-["T"] "$r0");;;
-      let: "$r0" := (![#boolT] "ok") in
-      do:  ((struct.field_ref (SelectCase "T") #"Ok"%go (![#ptrT] "select_case")) <-[#boolT] "$r0");;;
-      return: (![#boolT] "selected")
+      do:  ("selected" <-[boolT] "$r0");;;
+      do:  ("item" <-[T] "$r1");;;
+      do:  ("ok" <-[boolT] "$r2");;;
+      let: "$r0" := (![T] "item") in
+      do:  ((struct.field_ref ptrT #"Value"%go (![ptrT] "select_case")) <-[T] "$r0");;;
+      let: "$r0" := (![boolT] "ok") in
+      do:  ((struct.field_ref ptrT #"Ok"%go (![ptrT] "select_case")) <-[boolT] "$r0");;;
+      return: (![boolT] "selected")
     else do:  #());;;
     return: (#false)).
 
@@ -495,16 +493,16 @@ Definition Select1ⁱᵐᵖˡ : val :=
   λ: "T1" "case1" "blocking",
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "case1" := (mem.alloc "case1") in
-    let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+    let: "selected" := (mem.alloc (type.zero_val boolT)) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "$r0" := (let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1") in
-      do:  ("selected" <-[#boolT] "$r0");;;
-      (if: (![#boolT] "selected") || (~ (![#boolT] "blocking"))
+      let: "$r0" := (let: "$a0" := (![ptrT] "case1") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T1) "$a0" "$a1") in
+      do:  ("selected" <-[boolT] "$r0");;;
+      (if: (![boolT] "selected") || (~ (![boolT] "blocking"))
       then break: #()
       else do:  #()));;;
-    return: (![#boolT] "selected")).
+    return: (![boolT] "selected")).
 
 Definition TrySelectCase2 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase2"%go.
 
@@ -515,17 +513,17 @@ Definition TrySelectCase2ⁱᵐᵖˡ : val :=
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
+    (if: (![uint64T] "index") = #(W64 0)
     then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case1") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T1) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
+    (if: (![uint64T] "index") = #(W64 1)
     then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case2") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T2) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0 or 1"%go) in
     Panic "$a0")).
@@ -538,28 +536,28 @@ Definition Select2ⁱᵐᵖˡ : val :=
     exception_do (let: "blocking" := (mem.alloc "blocking") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 2)) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase2) "T1" "T2") "$a0" "$a1" "$a2" "$a3"
-    then return: (![#uint64T] "i")
+    do:  ("i" <-[uint64T] "$r0");;;
+    (if: let: "$a0" := (![uint64T] "i") in
+    let: "$a1" := (![ptrT] "case1") in
+    let: "$a2" := (![ptrT] "case2") in
+    let: "$a3" := (![boolT] "blocking") in
+    ((func_call #TrySelectCase2) T1 T2) "$a0" "$a1" "$a2" "$a3"
+    then return: (![uint64T] "i")
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case1") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T1) "$a0" "$a1"
       then return: (#(W64 0))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case2") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T2) "$a0" "$a1"
       then return: (#(W64 1))
       else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
+      (if: (~ (![boolT] "blocking"))
       then return: (#(W64 2))
       else do:  #()))).
 
@@ -573,23 +571,23 @@ Definition TrySelectCase3ⁱᵐᵖˡ : val :=
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
+    (if: (![uint64T] "index") = #(W64 0)
     then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case1") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T1) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
+    (if: (![uint64T] "index") = #(W64 1)
     then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case2") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T2) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 2)
+    (if: (![uint64T] "index") = #(W64 2)
     then
-      return: (let: "$a0" := (![#ptrT] "case3") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T3") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case3") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T3) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0, 1 or 2"%go) in
     Panic "$a0")).
@@ -603,34 +601,34 @@ Definition Select3ⁱᵐᵖˡ : val :=
     let: "case3" := (mem.alloc "case3") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 3)) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#ptrT] "case3") in
-    let: "$a4" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase3) "T1" "T2" "T3") "$a0" "$a1" "$a2" "$a3" "$a4"
-    then return: (![#uint64T] "i")
+    do:  ("i" <-[uint64T] "$r0");;;
+    (if: let: "$a0" := (![uint64T] "i") in
+    let: "$a1" := (![ptrT] "case1") in
+    let: "$a2" := (![ptrT] "case2") in
+    let: "$a3" := (![ptrT] "case3") in
+    let: "$a4" := (![boolT] "blocking") in
+    ((func_call #TrySelectCase3) T1 T2 T3) "$a0" "$a1" "$a2" "$a3" "$a4"
+    then return: (![uint64T] "i")
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case1") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T1) "$a0" "$a1"
       then return: (#(W64 0))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case2") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T2) "$a0" "$a1"
       then return: (#(W64 1))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case3") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T3") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case3") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T3) "$a0" "$a1"
       then return: (#(W64 2))
       else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
+      (if: (~ (![boolT] "blocking"))
       then return: (#(W64 3))
       else do:  #()))).
 
@@ -645,29 +643,29 @@ Definition TrySelectCase4ⁱᵐᵖˡ : val :=
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
+    (if: (![uint64T] "index") = #(W64 0)
     then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case1") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T1) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
+    (if: (![uint64T] "index") = #(W64 1)
     then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case2") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T2) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 2)
+    (if: (![uint64T] "index") = #(W64 2)
     then
-      return: (let: "$a0" := (![#ptrT] "case3") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T3") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case3") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T3) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 3)
+    (if: (![uint64T] "index") = #(W64 3)
     then
-      return: (let: "$a0" := (![#ptrT] "case4") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T4") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case4") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T4) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0, 1, 2 or 3"%go) in
     Panic "$a0")).
@@ -682,40 +680,40 @@ Definition Select4ⁱᵐᵖˡ : val :=
     let: "case3" := (mem.alloc "case3") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 4)) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#ptrT] "case3") in
-    let: "$a4" := (![#ptrT] "case4") in
-    let: "$a5" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase4) "T1" "T2" "T3" "T4") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5"
-    then return: (![#uint64T] "i")
+    do:  ("i" <-[uint64T] "$r0");;;
+    (if: let: "$a0" := (![uint64T] "i") in
+    let: "$a1" := (![ptrT] "case1") in
+    let: "$a2" := (![ptrT] "case2") in
+    let: "$a3" := (![ptrT] "case3") in
+    let: "$a4" := (![ptrT] "case4") in
+    let: "$a5" := (![boolT] "blocking") in
+    ((func_call #TrySelectCase4) T1 T2 T3 T4) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5"
+    then return: (![uint64T] "i")
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case1") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T1) "$a0" "$a1"
       then return: (#(W64 0))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case2") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T2) "$a0" "$a1"
       then return: (#(W64 1))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case3") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T3") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case3") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T3) "$a0" "$a1"
       then return: (#(W64 2))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case4") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T4") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case4") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T4) "$a0" "$a1"
       then return: (#(W64 3))
       else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
+      (if: (~ (![boolT] "blocking"))
       then return: (#(W64 4))
       else do:  #()))).
 
@@ -731,35 +729,35 @@ Definition TrySelectCase5ⁱᵐᵖˡ : val :=
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
     let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
+    (if: (![uint64T] "index") = #(W64 0)
     then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case1") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T1) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
+    (if: (![uint64T] "index") = #(W64 1)
     then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case2") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T2) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 2)
+    (if: (![uint64T] "index") = #(W64 2)
     then
-      return: (let: "$a0" := (![#ptrT] "case3") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T3") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case3") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T3) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 3)
+    (if: (![uint64T] "index") = #(W64 3)
     then
-      return: (let: "$a0" := (![#ptrT] "case4") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T4") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case4") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T4) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 4)
+    (if: (![uint64T] "index") = #(W64 4)
     then
-      return: (let: "$a0" := (![#ptrT] "case5") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T5") "$a0" "$a1")
+      return: (let: "$a0" := (![ptrT] "case5") in
+       let: "$a1" := (![boolT] "blocking") in
+       ((func_call #TrySelect) T5) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0, 1, 2, 3 or 4"%go) in
     Panic "$a0")).
@@ -775,46 +773,46 @@ Definition Select5ⁱᵐᵖˡ : val :=
     let: "case3" := (mem.alloc "case3") in
     let: "case2" := (mem.alloc "case2") in
     let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 5)) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#ptrT] "case3") in
-    let: "$a4" := (![#ptrT] "case4") in
-    let: "$a5" := (![#ptrT] "case5") in
-    let: "$a6" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase5) "T1" "T2" "T3" "T4" "T5") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5" "$a6"
-    then return: (![#uint64T] "i")
+    do:  ("i" <-[uint64T] "$r0");;;
+    (if: let: "$a0" := (![uint64T] "i") in
+    let: "$a1" := (![ptrT] "case1") in
+    let: "$a2" := (![ptrT] "case2") in
+    let: "$a3" := (![ptrT] "case3") in
+    let: "$a4" := (![ptrT] "case4") in
+    let: "$a5" := (![ptrT] "case5") in
+    let: "$a6" := (![boolT] "blocking") in
+    ((func_call #TrySelectCase5) T1 T2 T3 T4 T5) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5" "$a6"
+    then return: (![uint64T] "i")
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case1") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T1) "$a0" "$a1"
       then return: (#(W64 0))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case2") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T2) "$a0" "$a1"
       then return: (#(W64 1))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case3") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T3") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case3") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T3) "$a0" "$a1"
       then return: (#(W64 2))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case4") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T4") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case4") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T4) "$a0" "$a1"
       then return: (#(W64 3))
       else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case5") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T5") "$a0" "$a1"
+      (if: let: "$a0" := (![ptrT] "case5") in
+      let: "$a1" := (![boolT] "blocking") in
+      ((func_call #TrySelect) T5) "$a0" "$a1"
       then return: (#(W64 4))
       else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
+      (if: (~ (![boolT] "blocking"))
       then return: (#(W64 5))
       else do:  #()))).
 

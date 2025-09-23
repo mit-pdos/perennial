@@ -14,6 +14,7 @@ Module errors.
 Module DiscoveryError.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Op' : go_string;
   Err' : error.t;
@@ -56,14 +57,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_DiscoveryError Op' Err':
-  PureWp True
-    (struct.make #errors.DiscoveryError (alist_val [
-      "Op" ::= #Op';
-      "Err" ::= #Err'
-    ]))%struct
-    #(DiscoveryError.mk Op' Err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance DiscoveryError_struct_fields_split dq l (v : DiscoveryError.t) :

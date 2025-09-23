@@ -16,6 +16,7 @@ Module cachekv.
 Module cacheValue.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   v' : go_string;
   l' : w64;
@@ -58,14 +59,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_cacheValue v' l':
-  PureWp True
-    (struct.make #cachekv.cacheValue (alist_val [
-      "v" ::= #v';
-      "l" ::= #l'
-    ]))%struct
-    #(cacheValue.mk v' l').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance cacheValue_struct_fields_split dq l (v : cacheValue.t) :
@@ -90,6 +83,7 @@ End instances.
 Module CacheKv.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   kv' : kv.KvCput.t;
   mu' : loc;
@@ -137,15 +131,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_CacheKv kv' mu' cache':
-  PureWp True
-    (struct.make #cachekv.CacheKv (alist_val [
-      "kv" ::= #kv';
-      "mu" ::= #mu';
-      "cache" ::= #cache'
-    ]))%struct
-    #(CacheKv.mk kv' mu' cache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance CacheKv_struct_fields_split dq l (v : CacheKv.t) :

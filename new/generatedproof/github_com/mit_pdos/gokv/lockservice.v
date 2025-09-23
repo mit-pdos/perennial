@@ -13,6 +13,7 @@ Module lockservice.
 Module LockClerk.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   kv' : kv.KvCput.t;
 }.
@@ -50,13 +51,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LockClerk kv':
-  PureWp True
-    (struct.make #lockservice.LockClerk (alist_val [
-      "kv" ::= #kv'
-    ]))%struct
-    #(LockClerk.mk kv').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LockClerk_struct_fields_split dq l (v : LockClerk.t) :

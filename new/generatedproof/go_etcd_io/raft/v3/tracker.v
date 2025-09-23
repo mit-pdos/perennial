@@ -17,6 +17,7 @@ Module tracker.
 Module inflight.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   index' : w64;
   bytes' : w64;
@@ -59,14 +60,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_inflight index' bytes':
-  PureWp True
-    (struct.make #tracker.inflight (alist_val [
-      "index" ::= #index';
-      "bytes" ::= #bytes'
-    ]))%struct
-    #(inflight.mk index' bytes').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance inflight_struct_fields_split dq l (v : inflight.t) :
@@ -91,6 +84,7 @@ End instances.
 Module Inflights.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   start' : w64;
   count' : w64;
@@ -153,18 +147,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Inflights start' count' bytes' size' maxBytes' buffer':
-  PureWp True
-    (struct.make #tracker.Inflights (alist_val [
-      "start" ::= #start';
-      "count" ::= #count';
-      "bytes" ::= #bytes';
-      "size" ::= #size';
-      "maxBytes" ::= #maxBytes';
-      "buffer" ::= #buffer'
-    ]))%struct
-    #(Inflights.mk start' count' bytes' size' maxBytes' buffer').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Inflights_struct_fields_split dq l (v : Inflights.t) :
@@ -208,6 +190,7 @@ End StateType.
 Module Progress.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Match' : w64;
   Next' : w64;
@@ -285,21 +268,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Progress Match' Next' sentCommit' State' PendingSnapshot' RecentActive' MsgAppFlowPaused' Inflights' IsLearner':
-  PureWp True
-    (struct.make #tracker.Progress (alist_val [
-      "Match" ::= #Match';
-      "Next" ::= #Next';
-      "sentCommit" ::= #sentCommit';
-      "State" ::= #State';
-      "PendingSnapshot" ::= #PendingSnapshot';
-      "RecentActive" ::= #RecentActive';
-      "MsgAppFlowPaused" ::= #MsgAppFlowPaused';
-      "Inflights" ::= #Inflights';
-      "IsLearner" ::= #IsLearner'
-    ]))%struct
-    #(Progress.mk Match' Next' sentCommit' State' PendingSnapshot' RecentActive' MsgAppFlowPaused' Inflights' IsLearner').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Progress_struct_fields_split dq l (v : Progress.t) :
@@ -349,6 +317,7 @@ End ProgressMap.
 Module Config.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Voters' : quorum.JointConfig.t;
   AutoLeave' : bool;
@@ -401,16 +370,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Config Voters' AutoLeave' Learners' LearnersNext':
-  PureWp True
-    (struct.make #tracker.Config (alist_val [
-      "Voters" ::= #Voters';
-      "AutoLeave" ::= #AutoLeave';
-      "Learners" ::= #Learners';
-      "LearnersNext" ::= #LearnersNext'
-    ]))%struct
-    #(Config.mk Voters' AutoLeave' Learners' LearnersNext').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Config_struct_fields_split dq l (v : Config.t) :
@@ -439,6 +398,7 @@ End instances.
 Module ProgressTracker.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Config' : Config.t;
   Progress' : ProgressMap.t;
@@ -496,17 +456,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ProgressTracker Config' Progress' Votes' MaxInflight' MaxInflightBytes':
-  PureWp True
-    (struct.make #tracker.ProgressTracker (alist_val [
-      "Config" ::= #Config';
-      "Progress" ::= #Progress';
-      "Votes" ::= #Votes';
-      "MaxInflight" ::= #MaxInflight';
-      "MaxInflightBytes" ::= #MaxInflightBytes'
-    ]))%struct
-    #(ProgressTracker.mk Config' Progress' Votes' MaxInflight' MaxInflightBytes').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ProgressTracker_struct_fields_split dq l (v : ProgressTracker.t) :

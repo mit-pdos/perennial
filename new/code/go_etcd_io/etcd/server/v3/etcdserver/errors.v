@@ -69,17 +69,17 @@ Definition DiscoveryError__Errorⁱᵐᵖˡ : val :=
   λ: "e" <>,
     exception_do (let: "e" := (mem.alloc "e") in
     return: (let: "$a0" := #"failed to %s discovery cluster (%v)"%go in
-     let: "$a1" := ((let: "$sl0" := (interface.make #stringT.id (![#stringT] (struct.field_ref #DiscoveryError #"Op"%go "e"))) in
-     let: "$sl1" := (![#error] (struct.field_ref #DiscoveryError #"Err"%go "e")) in
-     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
+     let: "$a1" := ((let: "$sl0" := (interface.make #stringT.id (![stringT] (struct.field_ref DiscoveryError #"Op"%go "e"))) in
+     let: "$sl1" := (![error] (struct.field_ref DiscoveryError #"Err"%go "e")) in
+     slice.literal interfaceT ["$sl0"; "$sl1"])) in
      (func_call #fmt.Sprintf) "$a0" "$a1")).
 
 Definition vars' : list (go_string * go_type) := [(ErrUnknownMethod, error); (ErrStopped, error); (ErrCanceled, error); (ErrTimeout, error); (ErrTimeoutDueToLeaderFail, error); (ErrTimeoutDueToConnectionLost, error); (ErrTimeoutLeaderTransfer, error); (ErrTimeoutWaitAppliedIndex, error); (ErrLeaderChanged, error); (ErrNotEnoughStartedMembers, error); (ErrLearnerNotReady, error); (ErrNoLeader, error); (ErrNotLeader, error); (ErrRequestTooLarge, error); (ErrNoSpace, error); (ErrTooManyRequests, error); (ErrUnhealthy, error); (ErrCorrupt, error); (ErrBadLeaderTransferee, error); (ErrClusterVersionUnavailable, error); (ErrWrongDowngradeVersionFormat, error); (ErrKeyNotFound, error)].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(DiscoveryError.id, [("Error"%go, DiscoveryError__Errorⁱᵐᵖˡ)]); (ptrT.id DiscoveryError.id, [("Error"%go, (λ: "$r",
-                 method_call #DiscoveryError.id #"Error"%go (![#DiscoveryError] "$r")
+Definition msets' : list (go_string * (list (go_string * val))) := [(DiscoveryError.id, [("Error"%go, DiscoveryError__Errorⁱᵐᵖˡ)]); (ptrT.id DiscoveryError.id, [("Error"%go, (λ: "$r0",
+                 method_call #DiscoveryError.id #"Error"%go (![DiscoveryError] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo errors.errors :=
@@ -98,70 +98,70 @@ Definition initialize' : val :=
       do:  (package.alloc errors.errors #());;;
       let: "$r0" := (let: "$a0" := #"etcdserver: unknown method"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrUnknownMethod) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrUnknownMethod) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: server stopped"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrStopped) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrStopped) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request cancelled"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrCanceled) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrCanceled) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrTimeout) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrTimeout) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, possibly due to previous leader failure"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrTimeoutDueToLeaderFail) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrTimeoutDueToLeaderFail) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, possibly due to connection lost"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrTimeoutDueToConnectionLost) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrTimeoutDueToConnectionLost) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, leader transfer took too long"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrTimeoutLeaderTransfer) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrTimeoutLeaderTransfer) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request timed out, waiting for the applied index took too long"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrTimeoutWaitAppliedIndex) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrTimeoutWaitAppliedIndex) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: leader changed"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrLeaderChanged) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrLeaderChanged) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: re-configuration failed due to not enough started members"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrNotEnoughStartedMembers) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrNotEnoughStartedMembers) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: can only promote a learner member which is in sync with leader"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrLearnerNotReady) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrLearnerNotReady) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: no leader"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrNoLeader) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrNoLeader) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: not leader"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrNotLeader) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrNotLeader) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: request is too large"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrRequestTooLarge) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrRequestTooLarge) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: no space"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrNoSpace) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrNoSpace) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: too many requests"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrTooManyRequests) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrTooManyRequests) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: unhealthy cluster"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrUnhealthy) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrUnhealthy) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: corrupt cluster"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrCorrupt) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrCorrupt) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: bad leader transferee"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrBadLeaderTransferee) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrBadLeaderTransferee) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: cluster version not found during downgrade"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrClusterVersionUnavailable) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrClusterVersionUnavailable) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: wrong downgrade target version format"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrWrongDowngradeVersionFormat) <-[#error] "$r0");;;
+      do:  ((globals.get #ErrWrongDowngradeVersionFormat) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"etcdserver: key not found"%go in
       (func_call #errors.New) "$a0") in
-      do:  ((globals.get #ErrKeyNotFound) <-[#error] "$r0"))
+      do:  ((globals.get #ErrKeyNotFound) <-[error] "$r0"))
       ).
 
 End code.

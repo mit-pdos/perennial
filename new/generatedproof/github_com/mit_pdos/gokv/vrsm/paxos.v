@@ -20,6 +20,7 @@ Module paxos.
 Module singleClerk.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   cl' : loc;
 }.
@@ -57,13 +58,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_singleClerk cl':
-  PureWp True
-    (struct.make #paxos.singleClerk (alist_val [
-      "cl" ::= #cl'
-    ]))%struct
-    #(singleClerk.mk cl').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance singleClerk_struct_fields_split dq l (v : singleClerk.t) :
@@ -97,6 +91,7 @@ End Error.
 Module applyAsFollowerArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   epoch' : w64;
   nextIndex' : w64;
@@ -144,15 +139,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_applyAsFollowerArgs epoch' nextIndex' state':
-  PureWp True
-    (struct.make #paxos.applyAsFollowerArgs (alist_val [
-      "epoch" ::= #epoch';
-      "nextIndex" ::= #nextIndex';
-      "state" ::= #state'
-    ]))%struct
-    #(applyAsFollowerArgs.mk epoch' nextIndex' state').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance applyAsFollowerArgs_struct_fields_split dq l (v : applyAsFollowerArgs.t) :
@@ -179,6 +165,7 @@ End instances.
 Module applyAsFollowerReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   err' : Error.t;
 }.
@@ -216,13 +203,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_applyAsFollowerReply err':
-  PureWp True
-    (struct.make #paxos.applyAsFollowerReply (alist_val [
-      "err" ::= #err'
-    ]))%struct
-    #(applyAsFollowerReply.mk err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance applyAsFollowerReply_struct_fields_split dq l (v : applyAsFollowerReply.t) :
@@ -245,6 +225,7 @@ End instances.
 Module enterNewEpochArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   epoch' : w64;
 }.
@@ -282,13 +263,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_enterNewEpochArgs epoch':
-  PureWp True
-    (struct.make #paxos.enterNewEpochArgs (alist_val [
-      "epoch" ::= #epoch'
-    ]))%struct
-    #(enterNewEpochArgs.mk epoch').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance enterNewEpochArgs_struct_fields_split dq l (v : enterNewEpochArgs.t) :
@@ -311,6 +285,7 @@ End instances.
 Module enterNewEpochReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   err' : Error.t;
   acceptedEpoch' : w64;
@@ -363,16 +338,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_enterNewEpochReply err' acceptedEpoch' nextIndex' state':
-  PureWp True
-    (struct.make #paxos.enterNewEpochReply (alist_val [
-      "err" ::= #err';
-      "acceptedEpoch" ::= #acceptedEpoch';
-      "nextIndex" ::= #nextIndex';
-      "state" ::= #state'
-    ]))%struct
-    #(enterNewEpochReply.mk err' acceptedEpoch' nextIndex' state').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance enterNewEpochReply_struct_fields_split dq l (v : enterNewEpochReply.t) :
@@ -401,6 +366,7 @@ End instances.
 Module applyReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   err' : Error.t;
   ret' : slice.t;
@@ -443,14 +409,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_applyReply err' ret':
-  PureWp True
-    (struct.make #paxos.applyReply (alist_val [
-      "err" ::= #err';
-      "ret" ::= #ret'
-    ]))%struct
-    #(applyReply.mk err' ret').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance applyReply_struct_fields_split dq l (v : applyReply.t) :
@@ -475,6 +433,7 @@ End instances.
 Module paxosState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   epoch' : w64;
   acceptedEpoch' : w64;
@@ -532,17 +491,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_paxosState epoch' acceptedEpoch' nextIndex' state' isLeader':
-  PureWp True
-    (struct.make #paxos.paxosState (alist_val [
-      "epoch" ::= #epoch';
-      "acceptedEpoch" ::= #acceptedEpoch';
-      "nextIndex" ::= #nextIndex';
-      "state" ::= #state';
-      "isLeader" ::= #isLeader'
-    ]))%struct
-    #(paxosState.mk epoch' acceptedEpoch' nextIndex' state' isLeader').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance paxosState_struct_fields_split dq l (v : paxosState.t) :
@@ -573,6 +521,7 @@ End instances.
 Module Server.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   ps' : loc;
@@ -625,16 +574,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server mu' ps' storage' clerks':
-  PureWp True
-    (struct.make #paxos.Server (alist_val [
-      "mu" ::= #mu';
-      "ps" ::= #ps';
-      "storage" ::= #storage';
-      "clerks" ::= #clerks'
-    ]))%struct
-    #(Server.mk mu' ps' storage' clerks').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :

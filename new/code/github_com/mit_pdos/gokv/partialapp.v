@@ -18,8 +18,8 @@ Definition partiallyApplyMeⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
-    (if: (let: "$a0" := (![#stringT] "x") in
-    StringLength "$a0") ≠ (![#intT] "y")
+    (if: (let: "$a0" := (![stringT] "x") in
+    StringLength "$a0") ≠ (![intT] "y")
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"not allowed"%go) in
       Panic "$a0")
@@ -42,8 +42,8 @@ Definition Foo__someMethodWithArgsⁱᵐᵖˡ : val :=
     exception_do (let: "f" := (mem.alloc "f") in
     let: "z" := (mem.alloc "z") in
     let: "y" := (mem.alloc "y") in
-    do:  (let: "$a0" := ((![#Foo] "f") + (![#stringT] "y")) in
-    let: "$a1" := (![#intT] "z") in
+    do:  (let: "$a0" := ((![Foo] "f") + (![stringT] "y")) in
+    let: "$a1" := (![intT] "z") in
     (func_call #partiallyApplyMe) "$a0" "$a1");;;
     return: #()).
 
@@ -52,16 +52,16 @@ Definition main : go_string := "github.com/mit-pdos/gokv/partialapp.main"%go.
 (* go: examples.go:18:6 *)
 Definition mainⁱᵐᵖˡ : val :=
   λ: <>,
-    with_defer: (let: "x" := (mem.alloc (type.zero_val #funcT)) in
+    with_defer: (let: "x" := (mem.alloc (type.zero_val funcT)) in
     let: "$r0" := (func_call #partiallyApplyMe) in
-    do:  ("x" <-[#funcT] "$r0");;;
+    do:  ("x" <-[funcT] "$r0");;;
     do:  (let: "$a0" := #"blah"%go in
     let: "$a1" := #(W64 4) in
-    (![#funcT] "x") "$a0" "$a1");;;
+    (![funcT] "x") "$a0" "$a1");;;
     do:  (let: "$a0" := #"ok"%go in
     let: "$a1" := #(W64 2) in
-    let: "$f" := (![#funcT] "x") in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    let: "$f" := (![funcT] "x") in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" "$a0" "$a1";;
       "$oldf" #()
@@ -69,20 +69,20 @@ Definition mainⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #"abc"%go in
     let: "$a1" := #(W64 3) in
     let: "$f" := (func_call #partiallyApplyMe) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" "$a0" "$a1";;
       "$oldf" #()
       )));;;
-    let: "f" := (mem.alloc (type.zero_val #Foo)) in
+    let: "f" := (mem.alloc (type.zero_val Foo)) in
     let: "$r0" := #"a"%go in
-    do:  ("f" <-[#Foo] "$r0");;;
+    do:  ("f" <-[Foo] "$r0");;;
     do:  ((method_call #(ptrT.id Foo.id) #"someMethod"%go "f") #());;;
     let: "$r0" := (method_call #(ptrT.id Foo.id) #"someMethodWithArgs"%go "f") in
-    do:  ("x" <-[#funcT] "$r0");;;
+    do:  ("x" <-[funcT] "$r0");;;
     do:  (let: "$a0" := #"b"%go in
     let: "$a1" := #(W64 2) in
-    (![#funcT] "x") "$a0" "$a1");;;
+    (![funcT] "x") "$a0" "$a1");;;
     do:  (let: "$a0" := #"bc"%go in
     let: "$a1" := #(W64 3) in
     (method_call #(ptrT.id Foo.id) #"someMethodWithArgs"%go "f") "$a0" "$a1");;;
@@ -92,10 +92,10 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(partiallyApplyMe, partiallyApplyMeⁱᵐᵖˡ); (main, mainⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, [("someMethod"%go, Foo__someMethodⁱᵐᵖˡ); ("someMethodWithArgs"%go, Foo__someMethodWithArgsⁱᵐᵖˡ)]); (ptrT.id Foo.id, [("someMethod"%go, (λ: "$r",
-                 method_call #Foo.id #"someMethod"%go (![#Foo] "$r")
-                 )%V); ("someMethodWithArgs"%go, (λ: "$r",
-                 method_call #Foo.id #"someMethodWithArgs"%go (![#Foo] "$r")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, [("someMethod"%go, Foo__someMethodⁱᵐᵖˡ); ("someMethodWithArgs"%go, Foo__someMethodWithArgsⁱᵐᵖˡ)]); (ptrT.id Foo.id, [("someMethod"%go, (λ: "$r0",
+                 method_call #Foo.id #"someMethod"%go (![Foo] "$r")
+                 )%V); ("someMethodWithArgs"%go, (λ: "$r0",
+                 method_call #Foo.id #"someMethodWithArgs"%go (![Foo] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo partialapp.main :=

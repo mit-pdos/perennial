@@ -33,6 +33,7 @@ Admitted.
 Module noCopy.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -63,12 +64,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_noCopy:
-  PureWp True
-    (struct.make #sync.noCopy (alist_val [
-    ]))%struct
-    #(noCopy.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -110,6 +105,7 @@ Admitted.
 Module Once.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   _0' : noCopy.t;
   done' : atomic.Bool.t;
@@ -157,15 +153,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Once _0' done' m':
-  PureWp True
-    (struct.make #sync.Once (alist_val [
-      "_0" ::= #_0';
-      "done" ::= #done';
-      "m" ::= #m'
-    ]))%struct
-    #(Once.mk _0' done' m').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Once_struct_fields_split dq l (v : Once.t) :
@@ -345,6 +332,7 @@ Admitted.
 Module RWMutex.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   w' : Mutex.t;
   writerSem' : w32;
@@ -402,17 +390,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RWMutex w' writerSem' readerSem' readerCount' readerWait':
-  PureWp True
-    (struct.make #sync.RWMutex (alist_val [
-      "w" ::= #w';
-      "writerSem" ::= #writerSem';
-      "readerSem" ::= #readerSem';
-      "readerCount" ::= #readerCount';
-      "readerWait" ::= #readerWait'
-    ]))%struct
-    #(RWMutex.mk w' writerSem' readerSem' readerCount' readerWait').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RWMutex_struct_fields_split dq l (v : RWMutex.t) :
@@ -454,6 +431,7 @@ End rlocker.
 Module WaitGroup.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   noCopy' : noCopy.t;
   state' : atomic.Uint64.t;
@@ -501,15 +479,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WaitGroup noCopy' state' sema':
-  PureWp True
-    (struct.make #sync.WaitGroup (alist_val [
-      "noCopy" ::= #noCopy';
-      "state" ::= #state';
-      "sema" ::= #sema'
-    ]))%struct
-    #(WaitGroup.mk noCopy' state' sema').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WaitGroup_struct_fields_split dq l (v : WaitGroup.t) :

@@ -17,6 +17,7 @@ Module storage.
 Module InMemoryStateMachine.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ApplyReadonly' : func.t;
   ApplyVolatile' : func.t;
@@ -69,16 +70,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_InMemoryStateMachine ApplyReadonly' ApplyVolatile' GetState' SetState':
-  PureWp True
-    (struct.make #storage.InMemoryStateMachine (alist_val [
-      "ApplyReadonly" ::= #ApplyReadonly';
-      "ApplyVolatile" ::= #ApplyVolatile';
-      "GetState" ::= #GetState';
-      "SetState" ::= #SetState'
-    ]))%struct
-    #(InMemoryStateMachine.mk ApplyReadonly' ApplyVolatile' GetState' SetState').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance InMemoryStateMachine_struct_fields_split dq l (v : InMemoryStateMachine.t) :
@@ -107,6 +98,7 @@ End instances.
 Module StateMachine.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   fname' : go_string;
   logFile' : loc;
@@ -174,19 +166,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StateMachine fname' logFile' logsize' sealed' epoch' nextIndex' smMem':
-  PureWp True
-    (struct.make #storage.StateMachine (alist_val [
-      "fname" ::= #fname';
-      "logFile" ::= #logFile';
-      "logsize" ::= #logsize';
-      "sealed" ::= #sealed';
-      "epoch" ::= #epoch';
-      "nextIndex" ::= #nextIndex';
-      "smMem" ::= #smMem'
-    ]))%struct
-    #(StateMachine.mk fname' logFile' logsize' sealed' epoch' nextIndex' smMem').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :

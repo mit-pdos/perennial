@@ -30,6 +30,7 @@ Admitted.
 Module noCopy.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -60,12 +61,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_noCopy:
-  PureWp True
-    (struct.make #atomic.noCopy (alist_val [
-    ]))%struct
-    #(noCopy.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -74,13 +69,6 @@ Module Pointer.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty (T : go_type) : go_type := structT [
-  "_0" :: arrayT (W64 0) ptrT;
-  "_1" :: atomic.noCopy;
-  "v" :: ptrT
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   _0' : (vec loc (uint.nat (W64 0)));
   _1' : noCopy.t;
@@ -89,7 +77,6 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Pointer.
 
-#[local] Transparent Pointer.ty.
 Arguments Pointer.mk {_} { T' } {_ T _} .
 Arguments Pointer.t {_} T' {_ T _} .
 
@@ -99,21 +86,21 @@ Context`{!IntoVal T'} `{!IntoValTyped T' T} .
 #[local] Transparent atomic.Pointer.
 #[local] Typeclasses Transparent atomic.Pointer.
 
-Global Instance Pointer_wf : struct.Wf (Pointer.ty T).
+Global Instance Pointer_wf : struct.Wf atomic.Pointer.
 Proof. apply _. Qed.
 
-Global Instance settable_Pointer : Settable (Pointer.t T') :=
+Global Instance settable_Pointer : Settable Pointer.t :=
   settable! (Pointer.mk (T:=T)) < Pointer._0'; Pointer._1'; Pointer.v' >.
-Global Instance into_val_Pointer : IntoVal (Pointer.t T') :=
+Global Instance into_val_Pointer : IntoVal Pointer.t :=
   {| to_val_def v :=
-    struct.val_aux (Pointer.ty T) [
+    struct.val_aux atomic.Pointer [
     "_0" ::= #(Pointer._0' v);
     "_1" ::= #(Pointer._1' v);
     "v" ::= #(Pointer.v' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_Pointer : IntoValTyped (Pointer.t T') (Pointer.ty T) :=
+Global Program Instance into_val_typed_Pointer : IntoValTyped Pointer.t atomic.Pointer :=
 {|
   default_val := Pointer.mk (default_val _) (default_val _) (default_val _);
 |}.
@@ -122,40 +109,24 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Pointer__0 : IntoValStructField "_0" (Pointer.ty T) Pointer._0'.
+Global Instance into_val_struct_field_Pointer__0 : IntoValStructField "_0" atomic.Pointer Pointer._0'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Pointer__1 : IntoValStructField "_1" (Pointer.ty T) Pointer._1'.
+Global Instance into_val_struct_field_Pointer__1 : IntoValStructField "_1" atomic.Pointer Pointer._1'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Pointer_v : IntoValStructField "v" (Pointer.ty T) Pointer.v'.
+Global Instance into_val_struct_field_Pointer_v : IntoValStructField "v" atomic.Pointer Pointer.v'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_Pointer :
-  PureWp True
-    (atomic.Pointer #T)
-    #(Pointer.ty T).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_Pointer _0' _1' v':
-  PureWp True
-    (struct.make #(Pointer.ty T) (alist_val [
-      "_0" ::= #_0';
-      "_1" ::= #_1';
-      "v" ::= #v'
-    ]))%struct
-    #(Pointer.mk _0' _1' v').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Pointer_struct_fields_split `{!BoundedTypeSize T} dq l (v : (Pointer.t T')) :
+Global Instance Pointer_struct_fields_split `{!BoundedTypeSize T} dq l (v : Pointer.t) :
   StructFieldsSplit dq l v (
-    "H_0" ∷ l ↦s[(Pointer.ty T) :: "_0"]{dq} v.(Pointer._0') ∗
-    "H_1" ∷ l ↦s[(Pointer.ty T) :: "_1"]{dq} v.(Pointer._1') ∗
-    "Hv" ∷ l ↦s[(Pointer.ty T) :: "v"]{dq} v.(Pointer.v')
+    "H_0" ∷ l ↦s[atomic.Pointer :: "_0"]{dq} v.(Pointer._0') ∗
+    "H_1" ∷ l ↦s[atomic.Pointer :: "_1"]{dq} v.(Pointer._1') ∗
+    "Hv" ∷ l ↦s[atomic.Pointer :: "v"]{dq} v.(Pointer.v')
   ).
 Proof.
   rewrite /named.
@@ -163,8 +134,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Pointer._0' v)) ((Pointer.ty T)) "_0"%go.
-  simpl_one_flatten_struct (# (Pointer._1' v)) ((Pointer.ty T)) "_1"%go.
+  simpl_one_flatten_struct (# (Pointer._0' v)) (atomic.Pointer) "_0"%go.
+  simpl_one_flatten_struct (# (Pointer._1' v)) (atomic.Pointer) "_1"%go.
 
   solve_field_ref_f.
 Qed.
@@ -175,6 +146,7 @@ End instances.
 Module Int32.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   _0' : noCopy.t;
   v' : w32;
@@ -217,14 +189,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Int32 _0' v':
-  PureWp True
-    (struct.make #atomic.Int32 (alist_val [
-      "_0" ::= #_0';
-      "v" ::= #v'
-    ]))%struct
-    #(Int32.mk _0' v').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Int32_struct_fields_split dq l (v : Int32.t) :
@@ -266,6 +230,7 @@ Admitted.
 Module Uint32.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   _0' : noCopy.t;
   v' : w32;
@@ -308,14 +273,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Uint32 _0' v':
-  PureWp True
-    (struct.make #atomic.Uint32 (alist_val [
-      "_0" ::= #_0';
-      "v" ::= #v'
-    ]))%struct
-    #(Uint32.mk _0' v').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Uint32_struct_fields_split dq l (v : Uint32.t) :
@@ -340,6 +297,7 @@ End instances.
 Module align64.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -370,12 +328,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_align64:
-  PureWp True
-    (struct.make #atomic.align64 (alist_val [
-    ]))%struct
-    #(align64.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -383,6 +335,7 @@ End instances.
 Module Uint64.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   _0' : noCopy.t;
   _1' : align64.t;
@@ -430,15 +383,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Uint64 _0' _1' v':
-  PureWp True
-    (struct.make #atomic.Uint64 (alist_val [
-      "_0" ::= #_0';
-      "_1" ::= #_1';
-      "v" ::= #v'
-    ]))%struct
-    #(Uint64.mk _0' _1' v').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Uint64_struct_fields_split dq l (v : Uint64.t) :
@@ -482,6 +426,7 @@ Admitted.
 Module Value.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   v' : interface.t;
 }.
@@ -519,13 +464,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Value v':
-  PureWp True
-    (struct.make #atomic.Value (alist_val [
-      "v" ::= #v'
-    ]))%struct
-    #(Value.mk v').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Value_struct_fields_split dq l (v : Value.t) :
@@ -548,6 +486,7 @@ End instances.
 Module efaceWords.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   typ' : loc;
   data' : loc;
@@ -590,14 +529,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_efaceWords typ' data':
-  PureWp True
-    (struct.make #atomic.efaceWords (alist_val [
-      "typ" ::= #typ';
-      "data" ::= #data'
-    ]))%struct
-    #(efaceWords.mk typ' data').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance efaceWords_struct_fields_split dq l (v : efaceWords.t) :

@@ -46,70 +46,70 @@ Definition NewConsistentIndex : go_string := "go.etcd.io/etcd/server/v3/etcdserv
 Definition NewConsistentIndexⁱᵐᵖˡ : val :=
   λ: "be",
     exception_do (let: "be" := (mem.alloc "be") in
-    return: (interface.make #(ptrT.id consistentIndex.id) (mem.alloc (let: "$be" := (![#Backend] "be") in
-     struct.make #consistentIndex [{
-       "consistentIndex" ::= type.zero_val #uint64T;
-       "term" ::= type.zero_val #uint64T;
-       "applyingIndex" ::= type.zero_val #uint64T;
-       "applyingTerm" ::= type.zero_val #uint64T;
+    return: (interface.make #(ptrT.id consistentIndex.id) (mem.alloc (let: "$be" := (![Backend] "be") in
+     struct.make consistentIndex [{
+       "consistentIndex" ::= type.zero_val uint64T;
+       "term" ::= type.zero_val uint64T;
+       "applyingIndex" ::= type.zero_val uint64T;
+       "applyingTerm" ::= type.zero_val uint64T;
        "be" ::= "$be";
-       "mutex" ::= type.zero_val #sync.Mutex
+       "mutex" ::= type.zero_val sync.Mutex
      }])))).
 
 (* go: cindex.go:90:28 *)
 Definition consistentIndex__ConsistentIndexⁱᵐᵖˡ : val :=
   λ: "ci" <>,
     with_defer: (let: "ci" := (mem.alloc "ci") in
-    (let: "index" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref #consistentIndex #"consistentIndex"%go (![#ptrT] "ci")) in
+    (let: "index" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref ptrT #"consistentIndex"%go (![ptrT] "ci")) in
     (func_call #atomic.LoadUint64) "$a0") in
-    do:  ("index" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "index") > #(W64 0)
-    then return: (![#uint64T] "index")
+    do:  ("index" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "index") > #(W64 0)
+    then return: (![uint64T] "index")
     else do:  #()));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #consistentIndex #"mutex"%go (![#ptrT] "ci"))) #());;;
-    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #consistentIndex #"mutex"%go (![#ptrT] "ci"))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref ptrT #"mutex"%go (![ptrT] "ci"))) #());;;
+    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref ptrT #"mutex"%go (![ptrT] "ci"))) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "term" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "v" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := ((interface.get #"ReadTx"%go (![#Backend] (struct.field_ref #consistentIndex #"be"%go (![#ptrT] "ci")))) #()) in
+    let: "term" := (mem.alloc (type.zero_val uint64T)) in
+    let: "v" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := ((interface.get #"ReadTx"%go (![Backend] (struct.field_ref ptrT #"be"%go (![ptrT] "ci")))) #()) in
     (func_call #schema.ReadConsistentIndex) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[#uint64T] "$r0");;;
-    do:  ("term" <-[#uint64T] "$r1");;;
-    do:  (let: "$a0" := (![#uint64T] "v") in
-    let: "$a1" := (![#uint64T] "term") in
-    (method_call #(ptrT.id consistentIndex.id) #"SetConsistentIndex"%go (![#ptrT] "ci")) "$a0" "$a1");;;
-    return: (![#uint64T] "v")).
+    do:  ("v" <-[uint64T] "$r0");;;
+    do:  ("term" <-[uint64T] "$r1");;;
+    do:  (let: "$a0" := (![uint64T] "v") in
+    let: "$a1" := (![uint64T] "term") in
+    (method_call #(ptrT.id consistentIndex.id) #"SetConsistentIndex"%go (![ptrT] "ci")) "$a0" "$a1");;;
+    return: (![uint64T] "v")).
 
 (* go: cindex.go:102:28 *)
 Definition consistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ : val :=
   λ: "ci" <>,
     exception_do (let: "ci" := (mem.alloc "ci") in
-    (let: "index" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref #consistentIndex #"consistentIndex"%go (![#ptrT] "ci")) in
+    (let: "index" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref ptrT #"consistentIndex"%go (![ptrT] "ci")) in
     (func_call #atomic.LoadUint64) "$a0") in
-    do:  ("index" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "index") > #(W64 0)
-    then return: (![#uint64T] "index")
+    do:  ("index" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "index") > #(W64 0)
+    then return: (![uint64T] "index")
     else do:  #()));;;
-    let: "term" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "v" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := ((interface.get #"ReadTx"%go (![#Backend] (struct.field_ref #consistentIndex #"be"%go (![#ptrT] "ci")))) #()) in
+    let: "term" := (mem.alloc (type.zero_val uint64T)) in
+    let: "v" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := ((interface.get #"ReadTx"%go (![Backend] (struct.field_ref ptrT #"be"%go (![ptrT] "ci")))) #()) in
     (func_call #schema.UnsafeReadConsistentIndex) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[#uint64T] "$r0");;;
-    do:  ("term" <-[#uint64T] "$r1");;;
-    do:  (let: "$a0" := (![#uint64T] "v") in
-    let: "$a1" := (![#uint64T] "term") in
-    (method_call #(ptrT.id consistentIndex.id) #"SetConsistentIndex"%go (![#ptrT] "ci")) "$a0" "$a1");;;
-    return: (![#uint64T] "v")).
+    do:  ("v" <-[uint64T] "$r0");;;
+    do:  ("term" <-[uint64T] "$r1");;;
+    do:  (let: "$a0" := (![uint64T] "v") in
+    let: "$a1" := (![uint64T] "term") in
+    (method_call #(ptrT.id consistentIndex.id) #"SetConsistentIndex"%go (![ptrT] "ci")) "$a0" "$a1");;;
+    return: (![uint64T] "v")).
 
 (* go: cindex.go:112:28 *)
 Definition consistentIndex__SetConsistentIndexⁱᵐᵖˡ : val :=
@@ -117,11 +117,11 @@ Definition consistentIndex__SetConsistentIndexⁱᵐᵖˡ : val :=
     exception_do (let: "ci" := (mem.alloc "ci") in
     let: "term" := (mem.alloc "term") in
     let: "v" := (mem.alloc "v") in
-    do:  (let: "$a0" := (struct.field_ref #consistentIndex #"consistentIndex"%go (![#ptrT] "ci")) in
-    let: "$a1" := (![#uint64T] "v") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"consistentIndex"%go (![ptrT] "ci")) in
+    let: "$a1" := (![uint64T] "v") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
-    do:  (let: "$a0" := (struct.field_ref #consistentIndex #"term"%go (![#ptrT] "ci")) in
-    let: "$a1" := (![#uint64T] "term") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"term"%go (![ptrT] "ci")) in
+    let: "$a1" := (![uint64T] "term") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
     return: #()).
 
@@ -130,17 +130,17 @@ Definition consistentIndex__UnsafeSaveⁱᵐᵖˡ : val :=
   λ: "ci" "tx",
     exception_do (let: "ci" := (mem.alloc "ci") in
     let: "tx" := (mem.alloc "tx") in
-    let: "index" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref #consistentIndex #"consistentIndex"%go (![#ptrT] "ci")) in
+    let: "index" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref ptrT #"consistentIndex"%go (![ptrT] "ci")) in
     (func_call #atomic.LoadUint64) "$a0") in
-    do:  ("index" <-[#uint64T] "$r0");;;
-    let: "term" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref #consistentIndex #"term"%go (![#ptrT] "ci")) in
+    do:  ("index" <-[uint64T] "$r0");;;
+    let: "term" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref ptrT #"term"%go (![ptrT] "ci")) in
     (func_call #atomic.LoadUint64) "$a0") in
-    do:  ("term" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (![#backend.UnsafeReadWriter] "tx") in
-    let: "$a1" := (![#uint64T] "index") in
-    let: "$a2" := (![#uint64T] "term") in
+    do:  ("term" <-[uint64T] "$r0");;;
+    do:  (let: "$a0" := (![backend.UnsafeReadWriter] "tx") in
+    let: "$a1" := (![uint64T] "index") in
+    let: "$a2" := (![uint64T] "term") in
     (func_call #schema.UnsafeUpdateConsistentIndex) "$a0" "$a1" "$a2");;;
     return: #()).
 
@@ -149,26 +149,26 @@ Definition consistentIndex__SetBackendⁱᵐᵖˡ : val :=
   λ: "ci" "be",
     with_defer: (let: "ci" := (mem.alloc "ci") in
     let: "be" := (mem.alloc "be") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #consistentIndex #"mutex"%go (![#ptrT] "ci"))) #());;;
-    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #consistentIndex #"mutex"%go (![#ptrT] "ci"))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref ptrT #"mutex"%go (![ptrT] "ci"))) #());;;
+    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref ptrT #"mutex"%go (![ptrT] "ci"))) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "$r0" := (![#Backend] "be") in
-    do:  ((struct.field_ref #consistentIndex #"be"%go (![#ptrT] "ci")) <-[#Backend] "$r0");;;
+    let: "$r0" := (![Backend] "be") in
+    do:  ((struct.field_ref ptrT #"be"%go (![ptrT] "ci")) <-[Backend] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := #(W64 0) in
-    (method_call #(ptrT.id consistentIndex.id) #"SetConsistentIndex"%go (![#ptrT] "ci")) "$a0" "$a1");;;
+    (method_call #(ptrT.id consistentIndex.id) #"SetConsistentIndex"%go (![ptrT] "ci")) "$a0" "$a1");;;
     return: #()).
 
 (* go: cindex.go:131:28 *)
 Definition consistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ : val :=
   λ: "ci" <>,
     exception_do (let: "ci" := (mem.alloc "ci") in
-    return: (let: "$a0" := (struct.field_ref #consistentIndex #"applyingIndex"%go (![#ptrT] "ci")) in
-     (func_call #atomic.LoadUint64) "$a0", let: "$a0" := (struct.field_ref #consistentIndex #"applyingTerm"%go (![#ptrT] "ci")) in
+    return: (let: "$a0" := (struct.field_ref ptrT #"applyingIndex"%go (![ptrT] "ci")) in
+     (func_call #atomic.LoadUint64) "$a0", let: "$a0" := (struct.field_ref ptrT #"applyingTerm"%go (![ptrT] "ci")) in
      (func_call #atomic.LoadUint64) "$a0")).
 
 (* go: cindex.go:135:28 *)
@@ -177,11 +177,11 @@ Definition consistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ : val :=
     exception_do (let: "ci" := (mem.alloc "ci") in
     let: "term" := (mem.alloc "term") in
     let: "v" := (mem.alloc "v") in
-    do:  (let: "$a0" := (struct.field_ref #consistentIndex #"applyingIndex"%go (![#ptrT] "ci")) in
-    let: "$a1" := (![#uint64T] "v") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"applyingIndex"%go (![ptrT] "ci")) in
+    let: "$a1" := (![uint64T] "v") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
-    do:  (let: "$a0" := (struct.field_ref #consistentIndex #"applyingTerm"%go (![#ptrT] "ci")) in
-    let: "$a1" := (![#uint64T] "term") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"applyingTerm"%go (![ptrT] "ci")) in
+    let: "$a1" := (![uint64T] "term") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
     return: #()).
 
@@ -198,32 +198,32 @@ Definition fakeConsistentIndex : go_type := structT [
 Definition NewFakeConsistentIndexⁱᵐᵖˡ : val :=
   λ: "index",
     exception_do (let: "index" := (mem.alloc "index") in
-    return: (interface.make #(ptrT.id fakeConsistentIndex.id) (mem.alloc (let: "$index" := (![#uint64T] "index") in
-     struct.make #fakeConsistentIndex [{
+    return: (interface.make #(ptrT.id fakeConsistentIndex.id) (mem.alloc (let: "$index" := (![uint64T] "index") in
+     struct.make fakeConsistentIndex [{
        "index" ::= "$index";
-       "term" ::= type.zero_val #uint64T
+       "term" ::= type.zero_val uint64T
      }])))).
 
 (* go: cindex.go:149:31 *)
 Definition fakeConsistentIndex__ConsistentIndexⁱᵐᵖˡ : val :=
   λ: "f" <>,
     exception_do (let: "f" := (mem.alloc "f") in
-    return: (let: "$a0" := (struct.field_ref #fakeConsistentIndex #"index"%go (![#ptrT] "f")) in
+    return: (let: "$a0" := (struct.field_ref ptrT #"index"%go (![ptrT] "f")) in
      (func_call #atomic.LoadUint64) "$a0")).
 
 (* go: cindex.go:153:31 *)
 Definition fakeConsistentIndex__ConsistentApplyingIndexⁱᵐᵖˡ : val :=
   λ: "f" <>,
     exception_do (let: "f" := (mem.alloc "f") in
-    return: (let: "$a0" := (struct.field_ref #fakeConsistentIndex #"index"%go (![#ptrT] "f")) in
-     (func_call #atomic.LoadUint64) "$a0", let: "$a0" := (struct.field_ref #fakeConsistentIndex #"term"%go (![#ptrT] "f")) in
+    return: (let: "$a0" := (struct.field_ref ptrT #"index"%go (![ptrT] "f")) in
+     (func_call #atomic.LoadUint64) "$a0", let: "$a0" := (struct.field_ref ptrT #"term"%go (![ptrT] "f")) in
      (func_call #atomic.LoadUint64) "$a0")).
 
 (* go: cindex.go:157:31 *)
 Definition fakeConsistentIndex__UnsafeConsistentIndexⁱᵐᵖˡ : val :=
   λ: "f" <>,
     exception_do (let: "f" := (mem.alloc "f") in
-    return: (let: "$a0" := (struct.field_ref #fakeConsistentIndex #"index"%go (![#ptrT] "f")) in
+    return: (let: "$a0" := (struct.field_ref ptrT #"index"%go (![ptrT] "f")) in
      (func_call #atomic.LoadUint64) "$a0")).
 
 (* go: cindex.go:161:31 *)
@@ -232,11 +232,11 @@ Definition fakeConsistentIndex__SetConsistentIndexⁱᵐᵖˡ : val :=
     exception_do (let: "f" := (mem.alloc "f") in
     let: "term" := (mem.alloc "term") in
     let: "index" := (mem.alloc "index") in
-    do:  (let: "$a0" := (struct.field_ref #fakeConsistentIndex #"index"%go (![#ptrT] "f")) in
-    let: "$a1" := (![#uint64T] "index") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"index"%go (![ptrT] "f")) in
+    let: "$a1" := (![uint64T] "index") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
-    do:  (let: "$a0" := (struct.field_ref #fakeConsistentIndex #"term"%go (![#ptrT] "f")) in
-    let: "$a1" := (![#uint64T] "term") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"term"%go (![ptrT] "f")) in
+    let: "$a1" := (![uint64T] "term") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
     return: #()).
 
@@ -246,11 +246,11 @@ Definition fakeConsistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ : val :=
     exception_do (let: "f" := (mem.alloc "f") in
     let: "term" := (mem.alloc "term") in
     let: "index" := (mem.alloc "index") in
-    do:  (let: "$a0" := (struct.field_ref #fakeConsistentIndex #"index"%go (![#ptrT] "f")) in
-    let: "$a1" := (![#uint64T] "index") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"index"%go (![ptrT] "f")) in
+    let: "$a1" := (![uint64T] "index") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
-    do:  (let: "$a0" := (struct.field_ref #fakeConsistentIndex #"term"%go (![#ptrT] "f")) in
-    let: "$a1" := (![#uint64T] "term") in
+    do:  (let: "$a0" := (struct.field_ref ptrT #"term"%go (![ptrT] "f")) in
+    let: "$a1" := (![uint64T] "term") in
     (func_call #atomic.StoreUint64) "$a0" "$a1");;;
     return: #()).
 
@@ -274,16 +274,16 @@ Definition UpdateConsistentIndexForceⁱᵐᵖˡ : val :=
     with_defer: (let: "term" := (mem.alloc "term") in
     let: "index" := (mem.alloc "index") in
     let: "tx" := (mem.alloc "tx") in
-    do:  ((interface.get #"LockOutsideApply"%go (![#backend.BatchTx] "tx")) #());;;
-    do:  (let: "$f" := (interface.get #"Unlock"%go (![#backend.BatchTx] "tx")) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    do:  ((interface.get #"LockOutsideApply"%go (![backend.BatchTx] "tx")) #());;;
+    do:  (let: "$f" := (interface.get #"Unlock"%go (![backend.BatchTx] "tx")) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    do:  (let: "$a0" := (![#backend.BatchTx] "tx") in
-    let: "$a1" := (![#uint64T] "index") in
-    let: "$a2" := (![#uint64T] "term") in
+    do:  (let: "$a0" := (![backend.BatchTx] "tx") in
+    let: "$a1" := (![uint64T] "index") in
+    let: "$a2" := (![uint64T] "term") in
     (func_call #schema.UnsafeUpdateConsistentIndexForce) "$a0" "$a1" "$a2");;;
     return: #()).
 

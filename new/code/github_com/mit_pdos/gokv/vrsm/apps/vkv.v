@@ -35,9 +35,9 @@ Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.Make
 Definition MakeClerkⁱᵐᵖˡ : val :=
   λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    return: (mem.alloc (let: "$cl" := (let: "$a0" := (![#sliceT] "confHosts") in
+    return: (mem.alloc (let: "$cl" := (let: "$a0" := (![sliceT] "confHosts") in
      (func_call #exactlyonce.MakeClerk) "$a0") in
-     struct.make #Clerk [{
+     struct.make Clerk [{
        "cl" ::= "$cl"
      }]))).
 
@@ -56,17 +56,17 @@ Definition Clerk__Putⁱᵐᵖˡ : val :=
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "val" := (mem.alloc "val") in
     let: "key" := (mem.alloc "key") in
-    let: "args" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$Key" := (![#stringT] "key") in
-    let: "$Val" := (![#stringT] "val") in
-    struct.make #PutArgs [{
+    let: "args" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$Key" := (![stringT] "key") in
+    let: "$Val" := (![stringT] "val") in
+    struct.make PutArgs [{
       "Key" ::= "$Key";
       "Val" ::= "$Val"
     }])) in
-    do:  ("args" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (let: "$a0" := (![#ptrT] "args") in
+    do:  ("args" <-[ptrT] "$r0");;;
+    do:  (let: "$a0" := (let: "$a0" := (![ptrT] "args") in
     (func_call #encodePutArgs) "$a0") in
-    (method_call #(ptrT.id exactlyonce.Clerk.id) #"ApplyExactlyOnce"%go (![#ptrT] (struct.field_ref #Clerk #"cl"%go (![#ptrT] "ck")))) "$a0");;;
+    (method_call #(ptrT.id exactlyonce.Clerk.id) #"ApplyExactlyOnce"%go (![ptrT] (struct.field_ref ptrT #"cl"%go (![ptrT] "ck")))) "$a0");;;
     return: #()).
 
 Definition encodeGetArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.encodeGetArgs"%go.
@@ -76,9 +76,9 @@ Definition Clerk__Getⁱᵐᵖˡ : val :=
   λ: "ck" "key",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "key" := (mem.alloc "key") in
-    return: (string.from_bytes (let: "$a0" := (let: "$a0" := (![#stringT] "key") in
+    return: (string.from_bytes (let: "$a0" := (let: "$a0" := (![stringT] "key") in
      (func_call #encodeGetArgs) "$a0") in
-     (method_call #(ptrT.id exactlyonce.Clerk.id) #"ApplyReadonly"%go (![#ptrT] (struct.field_ref #Clerk #"cl"%go (![#ptrT] "ck")))) "$a0"))).
+     (method_call #(ptrT.id exactlyonce.Clerk.id) #"ApplyReadonly"%go (![ptrT] (struct.field_ref ptrT #"cl"%go (![ptrT] "ck")))) "$a0"))).
 
 Definition encodeCondPutArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.encodeCondPutArgs"%go.
 
@@ -97,19 +97,19 @@ Definition Clerk__CondPutⁱᵐᵖˡ : val :=
     let: "val" := (mem.alloc "val") in
     let: "expect" := (mem.alloc "expect") in
     let: "key" := (mem.alloc "key") in
-    let: "args" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$Key" := (![#stringT] "key") in
-    let: "$Expect" := (![#stringT] "expect") in
-    let: "$Val" := (![#stringT] "val") in
-    struct.make #CondPutArgs [{
+    let: "args" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$Key" := (![stringT] "key") in
+    let: "$Expect" := (![stringT] "expect") in
+    let: "$Val" := (![stringT] "val") in
+    struct.make CondPutArgs [{
       "Key" ::= "$Key";
       "Expect" ::= "$Expect";
       "Val" ::= "$Val"
     }])) in
-    do:  ("args" <-[#ptrT] "$r0");;;
-    return: (string.from_bytes (let: "$a0" := (let: "$a0" := (![#ptrT] "args") in
+    do:  ("args" <-[ptrT] "$r0");;;
+    return: (string.from_bytes (let: "$a0" := (let: "$a0" := (![ptrT] "args") in
      (func_call #encodeCondPutArgs) "$a0") in
-     (method_call #(ptrT.id exactlyonce.Clerk.id) #"ApplyExactlyOnce"%go (![#ptrT] (struct.field_ref #Clerk #"cl"%go (![#ptrT] "ck")))) "$a0"))).
+     (method_call #(ptrT.id exactlyonce.Clerk.id) #"ApplyExactlyOnce"%go (![ptrT] (struct.field_ref ptrT #"cl"%go (![ptrT] "ck")))) "$a0"))).
 
 Definition ClerkPool : go_type := structT [
   "mu" :: ptrT;
@@ -125,10 +125,10 @@ Definition MakeClerkPool : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.
 Definition MakeClerkPoolⁱᵐᵖˡ : val :=
   λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    return: (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
-     let: "$cls" := (slice.make2 #ptrT #(W64 0)) in
-     let: "$confHosts" := (![#sliceT] "confHosts") in
-     struct.make #ClerkPool [{
+    return: (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val sync.Mutex)) in
+     let: "$cls" := (slice.make2 ptrT #(W64 0)) in
+     let: "$confHosts" := (![sliceT] "confHosts") in
+     struct.make ClerkPool [{
        "mu" ::= "$mu";
        "cls" ::= "$cls";
        "confHosts" ::= "$confHosts"
@@ -143,40 +143,40 @@ Definition ClerkPool__doWithClerkⁱᵐᵖˡ : val :=
   λ: "ck" "f",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "f" := (mem.alloc "f") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #());;;
-    let: "cl" := (mem.alloc (type.zero_val #ptrT)) in
-    (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck"))) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "ck")))) #());;;
+    let: "cl" := (mem.alloc (type.zero_val ptrT)) in
+    (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"cls"%go (![ptrT] "ck"))) in
     slice.len "$a0") #(W64 0)
     then
-      let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck"))) #(W64 0))) in
-      do:  ("cl" <-[#ptrT] "$r0");;;
-      let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck"))) in
-      slice.slice #ptrT "$s" #(W64 1) (slice.len "$s")) in
-      do:  ((struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #());;;
-      do:  (let: "$a0" := (![#ptrT] "cl") in
-      (![#funcT] "f") "$a0");;;
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #());;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck"))) in
-      let: "$a1" := ((let: "$sl0" := (![#ptrT] "cl") in
-      slice.literal #ptrT ["$sl0"])) in
-      (slice.append #ptrT) "$a0" "$a1") in
-      do:  ((struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #())
+      let: "$r0" := (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"cls"%go (![ptrT] "ck"))) #(W64 0))) in
+      do:  ("cl" <-[ptrT] "$r0");;;
+      let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"cls"%go (![ptrT] "ck"))) in
+      slice.slice ptrT "$s" #(W64 1) (slice.len "$s")) in
+      do:  ((struct.field_ref ptrT #"cls"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "ck")))) #());;;
+      do:  (let: "$a0" := (![ptrT] "cl") in
+      (![funcT] "f") "$a0");;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "ck")))) #());;;
+      let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"cls"%go (![ptrT] "ck"))) in
+      let: "$a1" := ((let: "$sl0" := (![ptrT] "cl") in
+      slice.literal ptrT ["$sl0"])) in
+      (slice.append ptrT) "$a0" "$a1") in
+      do:  ((struct.field_ref ptrT #"cls"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "ck")))) #())
     else
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #());;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #ClerkPool #"confHosts"%go (![#ptrT] "ck"))) in
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "ck")))) #());;;
+      let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"confHosts"%go (![ptrT] "ck"))) in
       (func_call #MakeClerk) "$a0") in
-      do:  ("cl" <-[#ptrT] "$r0");;;
-      do:  (let: "$a0" := (![#ptrT] "cl") in
-      (![#funcT] "f") "$a0");;;
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #());;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck"))) in
-      let: "$a1" := ((let: "$sl0" := (![#ptrT] "cl") in
-      slice.literal #ptrT ["$sl0"])) in
-      (slice.append #ptrT) "$a0" "$a1") in
-      do:  ((struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #()));;;
+      do:  ("cl" <-[ptrT] "$r0");;;
+      do:  (let: "$a0" := (![ptrT] "cl") in
+      (![funcT] "f") "$a0");;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "ck")))) #());;;
+      let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"cls"%go (![ptrT] "ck"))) in
+      let: "$a1" := ((let: "$sl0" := (![ptrT] "cl") in
+      slice.literal ptrT ["$sl0"])) in
+      (slice.append ptrT) "$a0" "$a1") in
+      do:  ((struct.field_ref ptrT #"cls"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "ck")))) #()));;;
     return: #()).
 
 (* go: clerkpool.go:55:22 *)
@@ -187,12 +187,12 @@ Definition ClerkPool__Putⁱᵐᵖˡ : val :=
     let: "key" := (mem.alloc "key") in
     do:  (let: "$a0" := (λ: "ck",
       exception_do (let: "ck" := (mem.alloc "ck") in
-      do:  (let: "$a0" := (![#stringT] "key") in
-      let: "$a1" := (![#stringT] "val") in
-      (method_call #(ptrT.id Clerk.id) #"Put"%go (![#ptrT] "ck")) "$a0" "$a1");;;
+      do:  (let: "$a0" := (![stringT] "key") in
+      let: "$a1" := (![stringT] "val") in
+      (method_call #(ptrT.id Clerk.id) #"Put"%go (![ptrT] "ck")) "$a0" "$a1");;;
       return: #())
       ) in
-    (method_call #(ptrT.id ClerkPool.id) #"doWithClerk"%go (![#ptrT] "ck")) "$a0");;;
+    (method_call #(ptrT.id ClerkPool.id) #"doWithClerk"%go (![ptrT] "ck")) "$a0");;;
     return: #()).
 
 (* go: clerkpool.go:61:22 *)
@@ -200,16 +200,16 @@ Definition ClerkPool__Getⁱᵐᵖˡ : val :=
   λ: "ck" "key",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "key" := (mem.alloc "key") in
-    let: "ret" := (mem.alloc (type.zero_val #stringT)) in
+    let: "ret" := (mem.alloc (type.zero_val stringT)) in
     do:  (let: "$a0" := (λ: "ck",
       exception_do (let: "ck" := (mem.alloc "ck") in
-      let: "$r0" := (let: "$a0" := (![#stringT] "key") in
-      (method_call #(ptrT.id Clerk.id) #"Get"%go (![#ptrT] "ck")) "$a0") in
-      do:  ("ret" <-[#stringT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![stringT] "key") in
+      (method_call #(ptrT.id Clerk.id) #"Get"%go (![ptrT] "ck")) "$a0") in
+      do:  ("ret" <-[stringT] "$r0");;;
       return: #())
       ) in
-    (method_call #(ptrT.id ClerkPool.id) #"doWithClerk"%go (![#ptrT] "ck")) "$a0");;;
-    return: (![#stringT] "ret")).
+    (method_call #(ptrT.id ClerkPool.id) #"doWithClerk"%go (![ptrT] "ck")) "$a0");;;
+    return: (![stringT] "ret")).
 
 (* go: clerkpool.go:69:22 *)
 Definition ClerkPool__ConditionalPutⁱᵐᵖˡ : val :=
@@ -218,18 +218,18 @@ Definition ClerkPool__ConditionalPutⁱᵐᵖˡ : val :=
     let: "val" := (mem.alloc "val") in
     let: "expect" := (mem.alloc "expect") in
     let: "key" := (mem.alloc "key") in
-    let: "ret" := (mem.alloc (type.zero_val #stringT)) in
+    let: "ret" := (mem.alloc (type.zero_val stringT)) in
     do:  (let: "$a0" := (λ: "ck",
       exception_do (let: "ck" := (mem.alloc "ck") in
-      let: "$r0" := (let: "$a0" := (![#stringT] "key") in
-      let: "$a1" := (![#stringT] "expect") in
-      let: "$a2" := (![#stringT] "val") in
-      (method_call #(ptrT.id Clerk.id) #"CondPut"%go (![#ptrT] "ck")) "$a0" "$a1" "$a2") in
-      do:  ("ret" <-[#stringT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![stringT] "key") in
+      let: "$a1" := (![stringT] "expect") in
+      let: "$a2" := (![stringT] "val") in
+      (method_call #(ptrT.id Clerk.id) #"CondPut"%go (![ptrT] "ck")) "$a0" "$a1" "$a2") in
+      do:  ("ret" <-[stringT] "$r0");;;
       return: #())
       ) in
-    (method_call #(ptrT.id ClerkPool.id) #"doWithClerk"%go (![#ptrT] "ck")) "$a0");;;
-    return: (![#stringT] "ret")).
+    (method_call #(ptrT.id ClerkPool.id) #"doWithClerk"%go (![ptrT] "ck")) "$a0");;;
+    return: (![stringT] "ret")).
 
 Definition MakeKv : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeKv"%go.
 
@@ -237,11 +237,11 @@ Definition MakeKv : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeKv"
 Definition MakeKvⁱᵐᵖˡ : val :=
   λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
+    let: "ck" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "confHosts") in
     (func_call #MakeClerkPool) "$a0") in
-    do:  ("ck" <-[#ptrT] "$r0");;;
-    return: (interface.make #(ptrT.id ClerkPool.id) (![#ptrT] "ck"))).
+    do:  ("ck" <-[ptrT] "$r0");;;
+    return: (interface.make #(ptrT.id ClerkPool.id) (![ptrT] "ck"))).
 
 Definition KVState : go_type := structT [
   "kvs" :: mapT stringT stringT;
@@ -261,25 +261,25 @@ Definition OP_COND_PUT : val := #(W8 2).
 Definition encodePutArgsⁱᵐᵖˡ : val :=
   λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 1) #(W64 (1 + 8))) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 1) #(W64 (1 + 8))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
     let: "$r0" := OP_PUT in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args"))) in
+    do:  ((slice.elem_ref byteT (![sliceT] "enc") #(W64 0)) <-[byteT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args"))) in
     StringLength "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args")))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (string.to_bytes (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args")))) in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #PutArgs #"Val"%go (![#ptrT] "args")))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (string.to_bytes (![stringT] (struct.field_ref ptrT #"Val"%go (![ptrT] "args")))) in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "enc")).
+    do:  ("enc" <-[sliceT] "$r0");;;
+    return: (![sliceT] "enc")).
 
 Definition decodePutArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.decodePutArgs"%go.
 
@@ -287,27 +287,27 @@ Definition decodePutArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.
 Definition decodePutArgsⁱᵐᵖˡ : val :=
   λ: "raw_args",
     exception_do (let: "raw_args" := (mem.alloc "raw_args") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "raw_args") in
-    slice.slice #byteT "$s" #(W64 1) (slice.len "$s")) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "args" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #PutArgs)) in
-    do:  ("args" <-[#ptrT] "$r0");;;
-    let: "l" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "raw_args") in
+    slice.slice byteT "$s" #(W64 1) (slice.len "$s")) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "args" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val PutArgs)) in
+    do:  ("args" <-[ptrT] "$r0");;;
+    let: "l" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
     (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("l" <-[#uint64T] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    let: "$r0" := (string.from_bytes (let: "$s" := (![#sliceT] "enc") in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "l"))) in
-    do:  ((struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args")) <-[#stringT] "$r0");;;
-    let: "$r0" := (string.from_bytes (let: "$s" := (![#sliceT] "enc") in
-    slice.slice #byteT "$s" (![#uint64T] "l") (slice.len "$s"))) in
-    do:  ((struct.field_ref #PutArgs #"Val"%go (![#ptrT] "args")) <-[#stringT] "$r0");;;
-    return: (![#ptrT] "args")).
+    do:  ("l" <-[uint64T] "$r0");;;
+    do:  ("enc" <-[sliceT] "$r1");;;
+    let: "$r0" := (string.from_bytes (let: "$s" := (![sliceT] "enc") in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "l"))) in
+    do:  ((struct.field_ref ptrT #"Key"%go (![ptrT] "args")) <-[stringT] "$r0");;;
+    let: "$r0" := (string.from_bytes (let: "$s" := (![sliceT] "enc") in
+    slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"))) in
+    do:  ((struct.field_ref ptrT #"Val"%go (![ptrT] "args")) <-[stringT] "$r0");;;
+    return: (![ptrT] "args")).
 
 Definition getArgs : go_type := stringT.
 #[global] Typeclasses Opaque getArgs.
@@ -317,16 +317,16 @@ Definition getArgs : go_type := stringT.
 Definition encodeGetArgsⁱᵐᵖˡ : val :=
   λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 1) #(W64 1)) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 1) #(W64 1)) in
+    do:  ("enc" <-[sliceT] "$r0");;;
     let: "$r0" := OP_GET in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] "args")) in
+    do:  ((slice.elem_ref byteT (![sliceT] "enc") #(W64 0)) <-[byteT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (string.to_bytes (![stringT] "args")) in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "enc")).
+    do:  ("enc" <-[sliceT] "$r0");;;
+    return: (![sliceT] "enc")).
 
 Definition decodeGetArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.decodeGetArgs"%go.
 
@@ -334,41 +334,41 @@ Definition decodeGetArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.
 Definition decodeGetArgsⁱᵐᵖˡ : val :=
   λ: "raw_args",
     exception_do (let: "raw_args" := (mem.alloc "raw_args") in
-    return: (string.from_bytes (let: "$s" := (![#sliceT] "raw_args") in
-     slice.slice #byteT "$s" #(W64 1) (slice.len "$s")))).
+    return: (string.from_bytes (let: "$s" := (![sliceT] "raw_args") in
+     slice.slice byteT "$s" #(W64 1) (slice.len "$s")))).
 
 (* go: server.go:78:6 *)
 Definition encodeCondPutArgsⁱᵐᵖˡ : val :=
   λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 1) #(W64 (1 + 8))) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 1) #(W64 (1 + 8))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
     let: "$r0" := OP_COND_PUT in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))) in
+    do:  ((slice.elem_ref byteT (![sliceT] "enc") #(W64 0)) <-[byteT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args"))) in
     StringLength "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args")))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (string.to_bytes (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args")))) in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#stringT] (struct.field_ref #CondPutArgs #"Expect"%go (![#ptrT] "args"))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![stringT] (struct.field_ref ptrT #"Expect"%go (![ptrT] "args"))) in
     StringLength "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #CondPutArgs #"Expect"%go (![#ptrT] "args")))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (string.to_bytes (![stringT] (struct.field_ref ptrT #"Expect"%go (![ptrT] "args")))) in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #CondPutArgs #"Val"%go (![#ptrT] "args")))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (string.to_bytes (![stringT] (struct.field_ref ptrT #"Val"%go (![ptrT] "args")))) in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "enc")).
+    do:  ("enc" <-[sliceT] "$r0");;;
+    return: (![sliceT] "enc")).
 
 Definition decodeCondPutArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.decodeCondPutArgs"%go.
 
@@ -376,44 +376,44 @@ Definition decodeCondPutArgs : go_string := "github.com/mit-pdos/gokv/vrsm/apps/
 Definition decodeCondPutArgsⁱᵐᵖˡ : val :=
   λ: "raw_args",
     exception_do (let: "raw_args" := (mem.alloc "raw_args") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "raw_args") in
-    slice.slice #byteT "$s" #(W64 1) (slice.len "$s")) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "args" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #CondPutArgs)) in
-    do:  ("args" <-[#ptrT] "$r0");;;
-    let: "l" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "raw_args") in
+    slice.slice byteT "$s" #(W64 1) (slice.len "$s")) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "args" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val CondPutArgs)) in
+    do:  ("args" <-[ptrT] "$r0");;;
+    let: "l" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
     (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("l" <-[#uint64T] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "keybytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] "l") in
+    do:  ("l" <-[uint64T] "$r0");;;
+    do:  ("enc" <-[sliceT] "$r1");;;
+    let: "enc2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "keybytes" := (mem.alloc (type.zero_val sliceT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![uint64T] "l") in
     (func_call #marshal.ReadBytes) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("keybytes" <-[#sliceT] "$r0");;;
-    do:  ("enc2" <-[#sliceT] "$r1");;;
-    let: "$r0" := (string.from_bytes (![#sliceT] "keybytes")) in
-    do:  ((struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args")) <-[#stringT] "$r0");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc2") in
+    do:  ("keybytes" <-[sliceT] "$r0");;;
+    do:  ("enc2" <-[sliceT] "$r1");;;
+    let: "$r0" := (string.from_bytes (![sliceT] "keybytes")) in
+    do:  ((struct.field_ref ptrT #"Key"%go (![ptrT] "args")) <-[stringT] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc2") in
     (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("l" <-[#uint64T] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    let: "$r0" := (string.from_bytes (let: "$s" := (![#sliceT] "enc") in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "l"))) in
-    do:  ((struct.field_ref #CondPutArgs #"Expect"%go (![#ptrT] "args")) <-[#stringT] "$r0");;;
-    let: "$r0" := (string.from_bytes (let: "$s" := (![#sliceT] "enc") in
-    slice.slice #byteT "$s" (![#uint64T] "l") (slice.len "$s"))) in
-    do:  ((struct.field_ref #CondPutArgs #"Val"%go (![#ptrT] "args")) <-[#stringT] "$r0");;;
-    return: (![#ptrT] "args")).
+    do:  ("l" <-[uint64T] "$r0");;;
+    do:  ("enc" <-[sliceT] "$r1");;;
+    let: "$r0" := (string.from_bytes (let: "$s" := (![sliceT] "enc") in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "l"))) in
+    do:  ((struct.field_ref ptrT #"Expect"%go (![ptrT] "args")) <-[stringT] "$r0");;;
+    let: "$r0" := (string.from_bytes (let: "$s" := (![sliceT] "enc") in
+    slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"))) in
+    do:  ((struct.field_ref ptrT #"Val"%go (![ptrT] "args")) <-[stringT] "$r0");;;
+    return: (![ptrT] "args")).
 
 (* end of marshalling
 
@@ -422,16 +422,16 @@ Definition KVState__putⁱᵐᵖˡ : val :=
   λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
-    let: "$r0" := (![#stringT] (struct.field_ref #PutArgs #"Val"%go (![#ptrT] "args"))) in
-    do:  (map.insert (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
-    return: (slice.make2 #byteT #(W64 0))).
+    let: "$r0" := (![stringT] (struct.field_ref ptrT #"Val"%go (![ptrT] "args"))) in
+    do:  (map.insert (![mapT stringT stringT] (struct.field_ref ptrT #"kvs"%go (![ptrT] "s"))) (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args"))) "$r0");;;
+    return: (slice.make2 byteT #(W64 0))).
 
 (* go: server.go:112:19 *)
 Definition KVState__getⁱᵐᵖˡ : val :=
   λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
-    return: (string.to_bytes (Fst (map.get (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] "args"))))).
+    return: (string.to_bytes (Fst (map.get (![mapT stringT stringT] (struct.field_ref ptrT #"kvs"%go (![ptrT] "s"))) (![stringT] "args"))))).
 
 (* go: server.go:116:19 *)
 Definition KVState__applyⁱᵐᵖˡ : val :=
@@ -439,40 +439,40 @@ Definition KVState__applyⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "vnum" := (mem.alloc "vnum") in
     let: "args" := (mem.alloc "args") in
-    (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "args") #(W64 0))) = OP_PUT
+    (if: (![byteT] (slice.elem_ref byteT (![sliceT] "args") #(W64 0))) = OP_PUT
     then
-      let: "args" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
+      let: "args" := (mem.alloc (type.zero_val ptrT)) in
+      let: "$r0" := (let: "$a0" := (![sliceT] "args") in
       (func_call #decodePutArgs) "$a0") in
-      do:  ("args" <-[#ptrT] "$r0");;;
-      let: "$r0" := (![#uint64T] "vnum") in
-      do:  (map.insert (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
-      return: (let: "$a0" := (![#ptrT] "args") in
-       (method_call #(ptrT.id KVState.id) #"put"%go (![#ptrT] "s")) "$a0")
+      do:  ("args" <-[ptrT] "$r0");;;
+      let: "$r0" := (![uint64T] "vnum") in
+      do:  (map.insert (![mapT stringT uint64T] (struct.field_ref ptrT #"vnums"%go (![ptrT] "s"))) (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args"))) "$r0");;;
+      return: (let: "$a0" := (![ptrT] "args") in
+       (method_call #(ptrT.id KVState.id) #"put"%go (![ptrT] "s")) "$a0")
     else
-      (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "args") #(W64 0))) = OP_GET
+      (if: (![byteT] (slice.elem_ref byteT (![sliceT] "args") #(W64 0))) = OP_GET
       then
-        let: "key" := (mem.alloc (type.zero_val #stringT)) in
-        let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
+        let: "key" := (mem.alloc (type.zero_val stringT)) in
+        let: "$r0" := (let: "$a0" := (![sliceT] "args") in
         (func_call #decodeGetArgs) "$a0") in
-        do:  ("key" <-[#stringT] "$r0");;;
-        let: "$r0" := (![#uint64T] "vnum") in
-        do:  (map.insert (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] "key") "$r0");;;
-        return: (let: "$a0" := (![#stringT] "key") in
-         (method_call #(ptrT.id KVState.id) #"get"%go (![#ptrT] "s")) "$a0")
+        do:  ("key" <-[stringT] "$r0");;;
+        let: "$r0" := (![uint64T] "vnum") in
+        do:  (map.insert (![mapT stringT uint64T] (struct.field_ref ptrT #"vnums"%go (![ptrT] "s"))) (![stringT] "key") "$r0");;;
+        return: (let: "$a0" := (![stringT] "key") in
+         (method_call #(ptrT.id KVState.id) #"get"%go (![ptrT] "s")) "$a0")
       else
-        (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "args") #(W64 0))) = OP_COND_PUT
+        (if: (![byteT] (slice.elem_ref byteT (![sliceT] "args") #(W64 0))) = OP_COND_PUT
         then
-          let: "args" := (mem.alloc (type.zero_val #ptrT)) in
-          let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
+          let: "args" := (mem.alloc (type.zero_val ptrT)) in
+          let: "$r0" := (let: "$a0" := (![sliceT] "args") in
           (func_call #decodeCondPutArgs) "$a0") in
-          do:  ("args" <-[#ptrT] "$r0");;;
-          (if: (Fst (map.get (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))))) = (![#stringT] (struct.field_ref #CondPutArgs #"Expect"%go (![#ptrT] "args")))
+          do:  ("args" <-[ptrT] "$r0");;;
+          (if: (Fst (map.get (![mapT stringT stringT] (struct.field_ref ptrT #"kvs"%go (![ptrT] "s"))) (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args"))))) = (![stringT] (struct.field_ref ptrT #"Expect"%go (![ptrT] "args")))
           then
-            let: "$r0" := (![#uint64T] "vnum") in
-            do:  (map.insert (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
-            let: "$r0" := (![#stringT] (struct.field_ref #CondPutArgs #"Val"%go (![#ptrT] "args"))) in
-            do:  (map.insert (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
+            let: "$r0" := (![uint64T] "vnum") in
+            do:  (map.insert (![mapT stringT uint64T] (struct.field_ref ptrT #"vnums"%go (![ptrT] "s"))) (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args"))) "$r0");;;
+            let: "$r0" := (![stringT] (struct.field_ref ptrT #"Val"%go (![ptrT] "args"))) in
+            do:  (map.insert (![mapT stringT stringT] (struct.field_ref ptrT #"kvs"%go (![ptrT] "s"))) (![stringT] (struct.field_ref ptrT #"Key"%go (![ptrT] "args"))) "$r0");;;
             return: (string.to_bytes #"ok"%go)
           else do:  #());;;
           return: (string.to_bytes #""%go)
@@ -485,35 +485,35 @@ Definition KVState__applyReadonlyⁱᵐᵖˡ : val :=
   λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
-    (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "args") #(W64 0))) ≠ OP_GET
+    (if: (![byteT] (slice.elem_ref byteT (![sliceT] "args") #(W64 0))) ≠ OP_GET
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"expected a GET as readonly-operation"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "key" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
+    let: "key" := (mem.alloc (type.zero_val stringT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "args") in
     (func_call #decodeGetArgs) "$a0") in
-    do:  ("key" <-[#stringT] "$r0");;;
-    let: "reply" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#stringT] "key") in
-    (method_call #(ptrT.id KVState.id) #"get"%go (![#ptrT] "s")) "$a0") in
-    do:  ("reply" <-[#sliceT] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "vnum" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] "key")) in
+    do:  ("key" <-[stringT] "$r0");;;
+    let: "reply" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![stringT] "key") in
+    (method_call #(ptrT.id KVState.id) #"get"%go (![ptrT] "s")) "$a0") in
+    do:  ("reply" <-[sliceT] "$r0");;;
+    let: "ok" := (mem.alloc (type.zero_val boolT)) in
+    let: "vnum" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (map.get (![mapT stringT uint64T] (struct.field_ref ptrT #"vnums"%go (![ptrT] "s"))) (![stringT] "key")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("vnum" <-[#uint64T] "$r0");;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    (if: ![#boolT] "ok"
-    then return: (![#uint64T] "vnum", ![#sliceT] "reply")
-    else return: (![#uint64T] (struct.field_ref #KVState #"minVnum"%go (![#ptrT] "s")), ![#sliceT] "reply"))).
+    do:  ("vnum" <-[uint64T] "$r0");;;
+    do:  ("ok" <-[boolT] "$r1");;;
+    (if: ![boolT] "ok"
+    then return: (![uint64T] "vnum", ![sliceT] "reply")
+    else return: (![uint64T] (struct.field_ref ptrT #"minVnum"%go (![ptrT] "s")), ![sliceT] "reply"))).
 
 (* go: server.go:152:19 *)
 Definition KVState__getStateⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
-    return: (let: "$a0" := (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) in
+    return: (let: "$a0" := (![mapT stringT stringT] (struct.field_ref ptrT #"kvs"%go (![ptrT] "s"))) in
      (func_call #map_string_marshal.EncodeStringMap) "$a0")).
 
 (* go: server.go:156:19 *)
@@ -522,13 +522,13 @@ Definition KVState__setStateⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "nextIndex" := (mem.alloc "nextIndex") in
     let: "snap" := (mem.alloc "snap") in
-    let: "$r0" := (![#uint64T] "nextIndex") in
-    do:  ((struct.field_ref #KVState #"minVnum"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (map.make #stringT #uint64T) in
-    do:  ((struct.field_ref #KVState #"vnums"%go (![#ptrT] "s")) <-[type.mapT #stringT #uint64T] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "snap") in
+    let: "$r0" := (![uint64T] "nextIndex") in
+    do:  ((struct.field_ref ptrT #"minVnum"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
+    let: "$r0" := (map.make stringT uint64T) in
+    do:  ((struct.field_ref ptrT #"vnums"%go (![ptrT] "s")) <-[mapT stringT uint64T] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "snap") in
     (func_call #map_string_marshal.DecodeStringMap) "$a0") in
-    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[type.mapT #stringT #stringT] "$r0");;;
+    do:  ((struct.field_ref ptrT #"kvs"%go (![ptrT] "s")) <-[mapT stringT stringT] "$r0");;;
     return: #()).
 
 Definition makeVersionedStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.makeVersionedStateMachine"%go.
@@ -536,20 +536,20 @@ Definition makeVersionedStateMachine : go_string := "github.com/mit-pdos/gokv/vr
 (* go: server.go:175:6 *)
 Definition makeVersionedStateMachineⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #KVState)) in
-    do:  ("s" <-[#ptrT] "$r0");;;
-    let: "$r0" := (map.make #stringT #stringT) in
-    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[type.mapT #stringT #stringT] "$r0");;;
-    let: "$r0" := (map.make #stringT #uint64T) in
-    do:  ((struct.field_ref #KVState #"vnums"%go (![#ptrT] "s")) <-[type.mapT #stringT #uint64T] "$r0");;;
-    return: (mem.alloc (let: "$ApplyVolatile" := (method_call #(ptrT.id KVState.id) #"apply"%go (![#ptrT] "s")) in
-     let: "$ApplyReadonly" := (method_call #(ptrT.id KVState.id) #"applyReadonly"%go (![#ptrT] "s")) in
+    exception_do (let: "s" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val KVState)) in
+    do:  ("s" <-[ptrT] "$r0");;;
+    let: "$r0" := (map.make stringT stringT) in
+    do:  ((struct.field_ref ptrT #"kvs"%go (![ptrT] "s")) <-[mapT stringT stringT] "$r0");;;
+    let: "$r0" := (map.make stringT uint64T) in
+    do:  ((struct.field_ref ptrT #"vnums"%go (![ptrT] "s")) <-[mapT stringT uint64T] "$r0");;;
+    return: (mem.alloc (let: "$ApplyVolatile" := (method_call #(ptrT.id KVState.id) #"apply"%go (![ptrT] "s")) in
+     let: "$ApplyReadonly" := (method_call #(ptrT.id KVState.id) #"applyReadonly"%go (![ptrT] "s")) in
      let: "$GetState" := (λ: <>,
-       exception_do (return: ((method_call #(ptrT.id KVState.id) #"getState"%go (![#ptrT] "s")) #()))
+       exception_do (return: ((method_call #(ptrT.id KVState.id) #"getState"%go (![ptrT] "s")) #()))
        ) in
-     let: "$SetState" := (method_call #(ptrT.id KVState.id) #"setState"%go (![#ptrT] "s")) in
-     struct.make #exactlyonce.VersionedStateMachine [{
+     let: "$SetState" := (method_call #(ptrT.id KVState.id) #"setState"%go (![ptrT] "s")) in
+     struct.make exactlyonce.VersionedStateMachine [{
        "ApplyVolatile" ::= "$ApplyVolatile";
        "ApplyReadonly" ::= "$ApplyReadonly";
        "SetState" ::= "$SetState";
@@ -564,11 +564,11 @@ Definition Startⁱᵐᵖˡ : val :=
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
     let: "host" := (mem.alloc "host") in
     let: "fname" := (mem.alloc "fname") in
-    do:  (let: "$a0" := (![#uint64T] "host") in
+    do:  (let: "$a0" := (![uint64T] "host") in
     (method_call #(ptrT.id replica.Server.id) #"Serve"%go (let: "$a0" := (let: "$a0" := ((func_call #makeVersionedStateMachine) #()) in
     (func_call #exactlyonce.MakeExactlyOnceStateMachine) "$a0") in
-    let: "$a1" := (![#stringT] "fname") in
-    let: "$a2" := (![#sliceT] "confHosts") in
+    let: "$a1" := (![stringT] "fname") in
+    let: "$a2" := (![sliceT] "confHosts") in
     (func_call #storage.MakePbServer) "$a0" "$a1" "$a2")) "$a0");;;
     return: #()).
 

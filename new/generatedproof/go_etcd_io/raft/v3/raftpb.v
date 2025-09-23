@@ -67,6 +67,7 @@ End ConfChangeType.
 Module Entry.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Term' : w64;
   Index' : w64;
@@ -119,16 +120,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Entry Term' Index' Type' Data':
-  PureWp True
-    (struct.make #raftpb.Entry (alist_val [
-      "Term" ::= #Term';
-      "Index" ::= #Index';
-      "Type" ::= #Type';
-      "Data" ::= #Data'
-    ]))%struct
-    #(Entry.mk Term' Index' Type' Data').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Entry_struct_fields_split dq l (v : Entry.t) :
@@ -157,6 +148,7 @@ End instances.
 Module ConfState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Voters' : slice.t;
   Learners' : slice.t;
@@ -214,17 +206,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ConfState Voters' Learners' VotersOutgoing' LearnersNext' AutoLeave':
-  PureWp True
-    (struct.make #raftpb.ConfState (alist_val [
-      "Voters" ::= #Voters';
-      "Learners" ::= #Learners';
-      "VotersOutgoing" ::= #VotersOutgoing';
-      "LearnersNext" ::= #LearnersNext';
-      "AutoLeave" ::= #AutoLeave'
-    ]))%struct
-    #(ConfState.mk Voters' Learners' VotersOutgoing' LearnersNext' AutoLeave').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ConfState_struct_fields_split dq l (v : ConfState.t) :
@@ -255,6 +236,7 @@ End instances.
 Module SnapshotMetadata.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ConfState' : ConfState.t;
   Index' : w64;
@@ -302,15 +284,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SnapshotMetadata ConfState' Index' Term':
-  PureWp True
-    (struct.make #raftpb.SnapshotMetadata (alist_val [
-      "ConfState" ::= #ConfState';
-      "Index" ::= #Index';
-      "Term" ::= #Term'
-    ]))%struct
-    #(SnapshotMetadata.mk ConfState' Index' Term').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SnapshotMetadata_struct_fields_split dq l (v : SnapshotMetadata.t) :
@@ -337,6 +310,7 @@ End instances.
 Module Snapshot.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Data' : slice.t;
   Metadata' : SnapshotMetadata.t;
@@ -379,14 +353,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Snapshot Data' Metadata':
-  PureWp True
-    (struct.make #raftpb.Snapshot (alist_val [
-      "Data" ::= #Data';
-      "Metadata" ::= #Metadata'
-    ]))%struct
-    #(Snapshot.mk Data' Metadata').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Snapshot_struct_fields_split dq l (v : Snapshot.t) :
@@ -411,6 +377,7 @@ End instances.
 Module Message.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Type' : MessageType.t;
   To' : w64;
@@ -513,26 +480,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Message Type' To' From' Term' LogTerm' Index' Entries' Commit' Vote' Snapshot' Reject' RejectHint' Context' Responses':
-  PureWp True
-    (struct.make #raftpb.Message (alist_val [
-      "Type" ::= #Type';
-      "To" ::= #To';
-      "From" ::= #From';
-      "Term" ::= #Term';
-      "LogTerm" ::= #LogTerm';
-      "Index" ::= #Index';
-      "Entries" ::= #Entries';
-      "Commit" ::= #Commit';
-      "Vote" ::= #Vote';
-      "Snapshot" ::= #Snapshot';
-      "Reject" ::= #Reject';
-      "RejectHint" ::= #RejectHint';
-      "Context" ::= #Context';
-      "Responses" ::= #Responses'
-    ]))%struct
-    #(Message.mk Type' To' From' Term' LogTerm' Index' Entries' Commit' Vote' Snapshot' Reject' RejectHint' Context' Responses').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Message_struct_fields_split dq l (v : Message.t) :
@@ -581,6 +528,7 @@ End instances.
 Module HardState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Term' : w64;
   Vote' : w64;
@@ -628,15 +576,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_HardState Term' Vote' Commit':
-  PureWp True
-    (struct.make #raftpb.HardState (alist_val [
-      "Term" ::= #Term';
-      "Vote" ::= #Vote';
-      "Commit" ::= #Commit'
-    ]))%struct
-    #(HardState.mk Term' Vote' Commit').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance HardState_struct_fields_split dq l (v : HardState.t) :
@@ -663,6 +602,7 @@ End instances.
 Module ConfChange.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Type' : ConfChangeType.t;
   NodeID' : w64;
@@ -715,16 +655,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ConfChange Type' NodeID' Context' ID':
-  PureWp True
-    (struct.make #raftpb.ConfChange (alist_val [
-      "Type" ::= #Type';
-      "NodeID" ::= #NodeID';
-      "Context" ::= #Context';
-      "ID" ::= #ID'
-    ]))%struct
-    #(ConfChange.mk Type' NodeID' Context' ID').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ConfChange_struct_fields_split dq l (v : ConfChange.t) :
@@ -770,6 +700,7 @@ Admitted.
 Module ConfChangeV2.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Transition' : ConfChangeTransition.t;
   Changes' : slice.t;
@@ -817,15 +748,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ConfChangeV2 Transition' Changes' Context':
-  PureWp True
-    (struct.make #raftpb.ConfChangeV2 (alist_val [
-      "Transition" ::= #Transition';
-      "Changes" ::= #Changes';
-      "Context" ::= #Context'
-    ]))%struct
-    #(ConfChangeV2.mk Transition' Changes' Context').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ConfChangeV2_struct_fields_split dq l (v : ConfChangeV2.t) :

@@ -448,6 +448,7 @@ End FieldType.
 Module Field.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Key' : go_string;
   Type' : FieldType.t;
@@ -505,17 +506,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Field Key' Type' Integer' String' Interface':
-  PureWp True
-    (struct.make #zapcore.Field (alist_val [
-      "Key" ::= #Key';
-      "Type" ::= #Type';
-      "Integer" ::= #Integer';
-      "String" ::= #String';
-      "Interface" ::= #Interface'
-    ]))%struct
-    #(Field.mk Key' Type' Integer' String' Interface').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Field_struct_fields_split dq l (v : Field.t) :

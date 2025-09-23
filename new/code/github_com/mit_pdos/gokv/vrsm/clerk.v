@@ -35,20 +35,20 @@ Definition makeClerks : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.makeCl
 Definition makeClerksⁱᵐᵖˡ : val :=
   λ: "servers",
     exception_do (let: "servers" := (mem.alloc "servers") in
-    let: "clerks" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] "servers") in
+    let: "clerks" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] "servers") in
     slice.len "$a0")) in
-    do:  ("clerks" <-[#sliceT] "$r0");;;
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("clerks" <-[sliceT] "$r0");;;
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
     slice.len "$a0"))); (λ: <>, #()) := λ: <>,
-      let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "servers") (![#uint64T] "i"))) in
+      let: "$r0" := (let: "$a0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "servers") (![uint64T] "i"))) in
       (func_call #replica.MakeClerk) "$a0") in
-      do:  ((slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i")) <-[#ptrT] "$r0");;;
-      do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
-    return: (![#sliceT] "clerks")).
+      do:  ((slice.elem_ref ptrT (![sliceT] "clerks") (![uint64T] "i")) <-[ptrT] "$r0");;;
+      do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1))));;;
+    return: (![sliceT] "clerks")).
 
 Definition Make : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Make"%go.
 
@@ -56,33 +56,33 @@ Definition Make : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Make"%go.
 Definition Makeⁱᵐᵖˡ : val :=
   λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #Clerk)) in
-    do:  ("ck" <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
+    let: "ck" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val Clerk)) in
+    do:  ("ck" <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "confHosts") in
     (func_call #configservice.MakeClerk) "$a0") in
-    do:  ((struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")) <-[#ptrT] "$r0");;;
+    do:  ((struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")) <-[ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
-      do:  ("config" <-[#sliceT] "$r0");;;
-      (if: (let: "$a0" := (![#sliceT] "config") in
+      let: "config" := (mem.alloc (type.zero_val sliceT)) in
+      let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
+      do:  ("config" <-[sliceT] "$r0");;;
+      (if: (let: "$a0" := (![sliceT] "config") in
       slice.len "$a0") = #(W64 0)
       then continue: #()
       else
-        let: "$r0" := (let: "$a0" := (![#sliceT] "config") in
+        let: "$r0" := (let: "$a0" := (![sliceT] "config") in
         (func_call #makeClerks) "$a0") in
-        do:  ((struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
+        do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
         break: #()));;;
-    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
     slice.len "$a0"))) in
-    do:  ((struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
     let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
     do:  "$r1";;;
-    return: (![#ptrT] "ck")).
+    return: (![ptrT] "ck")).
 
 (* will retry forever
 
@@ -91,52 +91,52 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
   λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
-    let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "ret" := (mem.alloc (type.zero_val sliceT)) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "err" := (mem.alloc (type.zero_val #uint64T)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "op") in
-      (method_call #(ptrT.id replica.Clerk.id) #"Apply"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) #(W64 0)))) "$a0") in
+      let: "err" := (mem.alloc (type.zero_val uint64T)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "op") in
+      (method_call #(ptrT.id replica.Clerk.id) #"Apply"%go (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) #(W64 0)))) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("err" <-[#uint64T] "$r0");;;
-      do:  ("ret" <-[#sliceT] "$r1");;;
-      (if: (![#uint64T] "err") = e.None
+      do:  ("err" <-[uint64T] "$r0");;;
+      do:  ("ret" <-[sliceT] "$r1");;;
+      (if: (![uint64T] "err") = e.None
       then break: #()
       else
         do:  (let: "$a0" := (#(W64 100) * #(W64 1000000)) in
         (func_call #primitive.Sleep) "$a0");;;
-        let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
-        do:  ("config" <-[#sliceT] "$r0");;;
-        (if: int_gt (let: "$a0" := (![#sliceT] "config") in
+        let: "config" := (mem.alloc (type.zero_val sliceT)) in
+        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
+        do:  ("config" <-[sliceT] "$r0");;;
+        (if: int_gt (let: "$a0" := (![sliceT] "config") in
         slice.len "$a0") #(W64 0)
         then
-          let: "$r0" := (let: "$a0" := (![#sliceT] "config") in
+          let: "$r0" := (let: "$a0" := (![sliceT] "config") in
           (func_call #makeClerks) "$a0") in
-          do:  ((struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck")) <-[#sliceT] "$r0")
+          do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0")
         else do:  #());;;
         continue: #()));;;
-    return: (![#sliceT] "ret")).
+    return: (![sliceT] "ret")).
 
 (* go: clerk.go:71:18 *)
 Definition Clerk__maybeRefreshPreferenceⁱᵐᵖˡ : val :=
   λ: "ck" <>,
     exception_do (let: "ck" := (mem.alloc "ck") in
-    let: "now" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "now" := (mem.alloc (type.zero_val uint64T)) in
     let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("now" <-[#uint64T] "$r0");;;
+    do:  ("now" <-[uint64T] "$r0");;;
     do:  "$r1";;;
-    (if: (![#uint64T] "now") > ((![#uint64T] (struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck"))) + PreferenceRefreshTime)
+    (if: (![uint64T] "now") > ((![uint64T] (struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck"))) + PreferenceRefreshTime)
     then
-      let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+      let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
       slice.len "$a0"))) in
-      do:  ((struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+      do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
       let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+      do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
       do:  "$r1"
     else do:  #());;;
     return: #()).
@@ -146,84 +146,84 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
   λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
-    let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
-    do:  ((method_call #(ptrT.id Clerk.id) #"maybeRefreshPreference"%go (![#ptrT] "ck")) #());;;
+    let: "ret" := (mem.alloc (type.zero_val sliceT)) in
+    do:  ((method_call #(ptrT.id Clerk.id) #"maybeRefreshPreference"%go (![ptrT] "ck")) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck"))) in
-      do:  ("offset" <-[#uint64T] "$r0");;;
-      let: "err" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-      (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+      let: "offset" := (mem.alloc (type.zero_val uint64T)) in
+      let: "$r0" := (![uint64T] (struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck"))) in
+      do:  ("offset" <-[uint64T] "$r0");;;
+      let: "err" := (mem.alloc (type.zero_val uint64T)) in
+      let: "i" := (mem.alloc (type.zero_val uint64T)) in
+      (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
       slice.len "$a0"))); (λ: <>, #()) := λ: <>,
-        let: "k" := (mem.alloc (type.zero_val #uint64T)) in
-        let: "$r0" := (((![#uint64T] "i") + (![#uint64T] "offset")) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+        let: "k" := (mem.alloc (type.zero_val uint64T)) in
+        let: "$r0" := (((![uint64T] "i") + (![uint64T] "offset")) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
         slice.len "$a0"))) in
-        do:  ("k" <-[#uint64T] "$r0");;;
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "op") in
-        (method_call #(ptrT.id replica.Clerk.id) #"ApplyRo"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) (![#uint64T] "k")))) "$a0") in
+        do:  ("k" <-[uint64T] "$r0");;;
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "op") in
+        (method_call #(ptrT.id replica.Clerk.id) #"ApplyRo"%go (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) (![uint64T] "k")))) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("err" <-[#uint64T] "$r0");;;
-        do:  ("ret" <-[#sliceT] "$r1");;;
-        (if: (![#uint64T] "err") = e.None
+        do:  ("err" <-[uint64T] "$r0");;;
+        do:  ("ret" <-[sliceT] "$r1");;;
+        (if: (![uint64T] "err") = e.None
         then
-          let: "$r0" := (![#uint64T] "k") in
-          do:  ((struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+          let: "$r0" := (![uint64T] "k") in
+          do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
           break: #()
         else do:  #());;;
-        do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)));;;
+        do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)));;;
         let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+        do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
         do:  "$r1";;;
         continue: #());;;
-      (if: (![#uint64T] "err") = e.None
+      (if: (![uint64T] "err") = e.None
       then break: #()
       else
-        let: "timeToSleep" := (mem.alloc (type.zero_val #uint64T)) in
+        let: "timeToSleep" := (mem.alloc (type.zero_val uint64T)) in
         let: "$r0" := (#(W64 5) + (((func_call #primitive.RandomUint64) #()) `rem` #(W64 10))) in
-        do:  ("timeToSleep" <-[#uint64T] "$r0");;;
-        do:  (let: "$a0" := ((![#uint64T] "timeToSleep") * #(W64 1000000)) in
+        do:  ("timeToSleep" <-[uint64T] "$r0");;;
+        do:  (let: "$a0" := ((![uint64T] "timeToSleep") * #(W64 1000000)) in
         (func_call #primitive.Sleep) "$a0");;;
-        let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
-        do:  ("config" <-[#sliceT] "$r0");;;
-        (if: int_gt (let: "$a0" := (![#sliceT] "config") in
+        let: "config" := (mem.alloc (type.zero_val sliceT)) in
+        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
+        do:  ("config" <-[sliceT] "$r0");;;
+        (if: int_gt (let: "$a0" := (![sliceT] "config") in
         slice.len "$a0") #(W64 0)
         then
-          let: "$r0" := (let: "$a0" := (![#sliceT] "config") in
+          let: "$r0" := (let: "$a0" := (![sliceT] "config") in
           (func_call #makeClerks) "$a0") in
-          do:  ((struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
+          do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
           let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
-          do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+          do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
           do:  "$r1";;;
-          let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+          let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
           slice.len "$a0"))) in
-          do:  ((struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck")) <-[#uint64T] "$r0")
+          do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0")
         else do:  #());;;
         continue: #()));;;
-    return: (![#sliceT] "ret")).
+    return: (![sliceT] "ret")).
 
 (* go: clerk.go:118:18 *)
 Definition Clerk__ApplyRoⁱᵐᵖˡ : val :=
   λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
-    let: "p" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "p" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := ((func_call #trusted_proph.NewProph) #()) in
-    do:  ("p" <-[#ptrT] "$r0");;;
-    let: "v" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "op") in
-    (method_call #(ptrT.id Clerk.id) #"ApplyRo2"%go (![#ptrT] "ck")) "$a0") in
-    do:  ("v" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#ptrT] "p") in
-    let: "$a1" := (![#sliceT] "v") in
+    do:  ("p" <-[ptrT] "$r0");;;
+    let: "v" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "op") in
+    (method_call #(ptrT.id Clerk.id) #"ApplyRo2"%go (![ptrT] "ck")) "$a0") in
+    do:  ("v" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (![ptrT] "p") in
+    let: "$a1" := (![sliceT] "v") in
     (func_call #trusted_proph.ResolveBytes) "$a0" "$a1");;;
-    return: (![#sliceT] "v")).
+    return: (![sliceT] "v")).
 
 Definition vars' : list (go_string * go_type) := [].
 

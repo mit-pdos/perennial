@@ -29,6 +29,7 @@ End Foo.
 Module importantStruct.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -59,12 +60,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_importantStruct:
-  PureWp True
-    (struct.make #unittest.importantStruct (alist_val [
-    ]))%struct
-    #(importantStruct.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -94,6 +89,7 @@ End Uint32.
 Module diskWrapper.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   d' : disk.Disk.t;
 }.
@@ -131,13 +127,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_diskWrapper d':
-  PureWp True
-    (struct.make #unittest.diskWrapper (alist_val [
-      "d" ::= #d'
-    ]))%struct
-    #(diskWrapper.mk d').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance diskWrapper_struct_fields_split dq l (v : diskWrapper.t) :
@@ -160,6 +149,7 @@ End instances.
 Module embedA.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   a' : w64;
 }.
@@ -197,13 +187,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_embedA a':
-  PureWp True
-    (struct.make #unittest.embedA (alist_val [
-      "a" ::= #a'
-    ]))%struct
-    #(embedA.mk a').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance embedA_struct_fields_split dq l (v : embedA.t) :
@@ -226,6 +209,7 @@ End instances.
 Module embedB.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   embedA' : embedA.t;
 }.
@@ -263,13 +247,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_embedB embedA':
-  PureWp True
-    (struct.make #unittest.embedB (alist_val [
-      "embedA" ::= #embedA'
-    ]))%struct
-    #(embedB.mk embedA').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance embedB_struct_fields_split dq l (v : embedB.t) :
@@ -292,6 +269,7 @@ End instances.
 Module embedC.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   embedB' : loc;
 }.
@@ -329,13 +307,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_embedC embedB':
-  PureWp True
-    (struct.make #unittest.embedC (alist_val [
-      "embedB" ::= #embedB'
-    ]))%struct
-    #(embedC.mk embedB').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance embedC_struct_fields_split dq l (v : embedC.t) :
@@ -358,6 +329,7 @@ End instances.
 Module embedD.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   embedC' : embedC.t;
 }.
@@ -395,13 +367,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_embedD embedC':
-  PureWp True
-    (struct.make #unittest.embedD (alist_val [
-      "embedC" ::= #embedC'
-    ]))%struct
-    #(embedD.mk embedC').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance embedD_struct_fields_split dq l (v : embedD.t) :
@@ -424,6 +389,7 @@ End instances.
 Module Enc.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   p' : slice.t;
 }.
@@ -461,13 +427,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Enc p':
-  PureWp True
-    (struct.make #unittest.Enc (alist_val [
-      "p" ::= #p'
-    ]))%struct
-    #(Enc.mk p').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
@@ -490,6 +449,7 @@ End instances.
 Module Dec.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   p' : slice.t;
 }.
@@ -527,13 +487,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Dec p':
-  PureWp True
-    (struct.make #unittest.Dec (alist_val [
-      "p" ::= #p'
-    ]))%struct
-    #(Dec.mk p').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Dec_struct_fields_split dq l (v : Dec.t) :
@@ -589,6 +542,7 @@ End Fooer.
 Module concreteFooer.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   a' : w64;
 }.
@@ -626,13 +580,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_concreteFooer a':
-  PureWp True
-    (struct.make #unittest.concreteFooer (alist_val [
-      "a" ::= #a'
-    ]))%struct
-    #(concreteFooer.mk a').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance concreteFooer_struct_fields_split dq l (v : concreteFooer.t) :
@@ -655,6 +602,7 @@ End instances.
 Module FooerUser.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   f' : Fooer.t;
 }.
@@ -692,13 +640,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_FooerUser f':
-  PureWp True
-    (struct.make #unittest.FooerUser (alist_val [
-      "f" ::= #f'
-    ]))%struct
-    #(FooerUser.mk f').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance FooerUser_struct_fields_split dq l (v : FooerUser.t) :
@@ -732,6 +673,7 @@ End PointerInterface.
 Module concrete1.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -762,12 +704,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_concrete1:
-  PureWp True
-    (struct.make #unittest.concrete1 (alist_val [
-    ]))%struct
-    #(concrete1.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -797,6 +733,7 @@ End also_u32.
 Module allTheLiterals.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   int' : w64;
   s' : go_string;
@@ -844,15 +781,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_allTheLiterals int' s' b':
-  PureWp True
-    (struct.make #unittest.allTheLiterals (alist_val [
-      "int" ::= #int';
-      "s" ::= #s';
-      "b" ::= #b'
-    ]))%struct
-    #(allTheLiterals.mk int' s' b').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance allTheLiterals_struct_fields_split dq l (v : allTheLiterals.t) :
@@ -879,6 +807,7 @@ End instances.
 Module hasCondVar.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   cond' : loc;
 }.
@@ -916,13 +845,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_hasCondVar cond':
-  PureWp True
-    (struct.make #unittest.hasCondVar (alist_val [
-      "cond" ::= #cond'
-    ]))%struct
-    #(hasCondVar.mk cond').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance hasCondVar_struct_fields_split dq l (v : hasCondVar.t) :
@@ -967,6 +889,7 @@ End MapWrapper.
 Module mapElem.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   a' : w64;
   b' : w64;
@@ -1009,14 +932,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_mapElem a' b':
-  PureWp True
-    (struct.make #unittest.mapElem (alist_val [
-      "a" ::= #a';
-      "b" ::= #b'
-    ]))%struct
-    #(mapElem.mk a' b').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance mapElem_struct_fields_split dq l (v : mapElem.t) :
@@ -1041,6 +956,7 @@ End instances.
 Module containsPointer.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   s' : loc;
 }.
@@ -1078,13 +994,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_containsPointer s':
-  PureWp True
-    (struct.make #unittest.containsPointer (alist_val [
-      "s" ::= #s'
-    ]))%struct
-    #(containsPointer.mk s').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance containsPointer_struct_fields_split dq l (v : containsPointer.t) :
@@ -1107,6 +1016,7 @@ End instances.
 Module wrapExternalStruct.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   j' : loc;
 }.
@@ -1144,13 +1054,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_wrapExternalStruct j':
-  PureWp True
-    (struct.make #unittest.wrapExternalStruct (alist_val [
-      "j" ::= #j'
-    ]))%struct
-    #(wrapExternalStruct.mk j').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance wrapExternalStruct_struct_fields_split dq l (v : wrapExternalStruct.t) :
@@ -1173,6 +1076,7 @@ End instances.
 Module typing.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   proph' : loc;
 }.
@@ -1210,13 +1114,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_typing proph':
-  PureWp True
-    (struct.make #unittest.typing (alist_val [
-      "proph" ::= #proph'
-    ]))%struct
-    #(typing.mk proph').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance typing_struct_fields_split dq l (v : typing.t) :
@@ -1239,6 +1136,7 @@ End instances.
 Module composite.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   a' : w64;
   b' : w64;
@@ -1281,14 +1179,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_composite a' b':
-  PureWp True
-    (struct.make #unittest.composite (alist_val [
-      "a" ::= #a';
-      "b" ::= #b'
-    ]))%struct
-    #(composite.mk a' b').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance composite_struct_fields_split dq l (v : composite.t) :
@@ -1313,6 +1203,7 @@ End instances.
 Module R.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -1343,12 +1234,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_R:
-  PureWp True
-    (struct.make #unittest.R (alist_val [
-    ]))%struct
-    #(R.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -1356,6 +1241,7 @@ End instances.
 Module Other.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   RecursiveEmbedded' : loc;
 }.
@@ -1393,13 +1279,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Other RecursiveEmbedded':
-  PureWp True
-    (struct.make #unittest.Other (alist_val [
-      "RecursiveEmbedded" ::= #RecursiveEmbedded'
-    ]))%struct
-    #(Other.mk RecursiveEmbedded').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Other_struct_fields_split dq l (v : Other.t) :
@@ -1422,6 +1301,7 @@ End instances.
 Module RecursiveEmbedded.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Other' : Other.t;
 }.
@@ -1459,13 +1339,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RecursiveEmbedded Other':
-  PureWp True
-    (struct.make #unittest.RecursiveEmbedded (alist_val [
-      "Other" ::= #Other'
-    ]))%struct
-    #(RecursiveEmbedded.mk Other').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RecursiveEmbedded_struct_fields_split dq l (v : RecursiveEmbedded.t) :
@@ -1488,6 +1361,7 @@ End instances.
 Module Block.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Value' : w64;
 }.
@@ -1525,13 +1399,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Block Value':
-  PureWp True
-    (struct.make #unittest.Block (alist_val [
-      "Value" ::= #Value'
-    ]))%struct
-    #(Block.mk Value').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Block_struct_fields_split dq l (v : Block.t) :
@@ -1565,6 +1432,7 @@ End SliceAlias.
 Module thing.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   x' : w64;
 }.
@@ -1602,13 +1470,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_thing x':
-  PureWp True
-    (struct.make #unittest.thing (alist_val [
-      "x" ::= #x'
-    ]))%struct
-    #(thing.mk x').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance thing_struct_fields_split dq l (v : thing.t) :
@@ -1631,6 +1492,7 @@ End instances.
 Module sliceOfThings.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   things' : slice.t;
 }.
@@ -1668,13 +1530,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_sliceOfThings things':
-  PureWp True
-    (struct.make #unittest.sliceOfThings (alist_val [
-      "things" ::= #things'
-    ]))%struct
-    #(sliceOfThings.mk things').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance sliceOfThings_struct_fields_split dq l (v : sliceOfThings.t) :
@@ -1697,6 +1552,7 @@ End instances.
 Module Point.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   x' : w64;
   y' : w64;
@@ -1739,14 +1595,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Point x' y':
-  PureWp True
-    (struct.make #unittest.Point (alist_val [
-      "x" ::= #x';
-      "y" ::= #y'
-    ]))%struct
-    #(Point.mk x' y').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Point_struct_fields_split dq l (v : Point.t) :
@@ -1771,6 +1619,7 @@ End instances.
 Module TwoInts.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   x' : w64;
   y' : w64;
@@ -1813,14 +1662,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TwoInts x' y':
-  PureWp True
-    (struct.make #unittest.TwoInts (alist_val [
-      "x" ::= #x';
-      "y" ::= #y'
-    ]))%struct
-    #(TwoInts.mk x' y').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance TwoInts_struct_fields_split dq l (v : TwoInts.t) :
@@ -1845,6 +1686,7 @@ End instances.
 Module S.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   a' : w64;
   b' : TwoInts.t;
@@ -1892,15 +1734,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S a' b' c':
-  PureWp True
-    (struct.make #unittest.S (alist_val [
-      "a" ::= #a';
-      "b" ::= #b';
-      "c" ::= #c'
-    ]))%struct
-    #(S.mk a' b' c').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance S_struct_fields_split dq l (v : S.t) :
@@ -1927,6 +1760,7 @@ End instances.
 Module B.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   a' : slice.t;
 }.
@@ -1964,13 +1798,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_B a':
-  PureWp True
-    (struct.make #unittest.B (alist_val [
-      "a" ::= #a'
-    ]))%struct
-    #(B.mk a').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance B_struct_fields_split dq l (v : B.t) :
@@ -1993,6 +1820,7 @@ End instances.
 Module A.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -2023,12 +1851,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_A:
-  PureWp True
-    (struct.make #unittest.A (alist_val [
-    ]))%struct
-    #(A.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 

@@ -23,6 +23,7 @@ Module concurrency.
 Module Election.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   session' : loc;
   keyPrefix' : go_string;
@@ -85,18 +86,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Election session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr':
-  PureWp True
-    (struct.make #concurrency.Election (alist_val [
-      "session" ::= #session';
-      "keyPrefix" ::= #keyPrefix';
-      "leaderKey" ::= #leaderKey';
-      "leaderRev" ::= #leaderRev';
-      "leaderSession" ::= #leaderSession';
-      "hdr" ::= #hdr'
-    ]))%struct
-    #(Election.mk session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Election_struct_fields_split dq l (v : Election.t) :
@@ -129,6 +118,7 @@ End instances.
 Module Mutex.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   s' : loc;
   pfx' : go_string;
@@ -186,17 +176,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Mutex s' pfx' myKey' myRev' hdr':
-  PureWp True
-    (struct.make #concurrency.Mutex (alist_val [
-      "s" ::= #s';
-      "pfx" ::= #pfx';
-      "myKey" ::= #myKey';
-      "myRev" ::= #myRev';
-      "hdr" ::= #hdr'
-    ]))%struct
-    #(Mutex.mk s' pfx' myKey' myRev' hdr').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Mutex_struct_fields_split dq l (v : Mutex.t) :
@@ -227,6 +206,7 @@ End instances.
 Module lockerMutex.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Mutex' : loc;
 }.
@@ -264,13 +244,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockerMutex Mutex':
-  PureWp True
-    (struct.make #concurrency.lockerMutex (alist_val [
-      "Mutex" ::= #Mutex'
-    ]))%struct
-    #(lockerMutex.mk Mutex').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockerMutex_struct_fields_split dq l (v : lockerMutex.t) :
@@ -293,6 +266,7 @@ End instances.
 Module Session.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   client' : loc;
   opts' : loc;
@@ -355,18 +329,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Session client' opts' id' ctx' cancel' donec':
-  PureWp True
-    (struct.make #concurrency.Session (alist_val [
-      "client" ::= #client';
-      "opts" ::= #opts';
-      "id" ::= #id';
-      "ctx" ::= #ctx';
-      "cancel" ::= #cancel';
-      "donec" ::= #donec'
-    ]))%struct
-    #(Session.mk client' opts' id' ctx' cancel' donec').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Session_struct_fields_split dq l (v : Session.t) :
@@ -399,6 +361,7 @@ End instances.
 Module sessionOptions.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ttl' : w64;
   leaseID' : clientv3.LeaseID.t;
@@ -446,15 +409,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_sessionOptions ttl' leaseID' ctx':
-  PureWp True
-    (struct.make #concurrency.sessionOptions (alist_val [
-      "ttl" ::= #ttl';
-      "leaseID" ::= #leaseID';
-      "ctx" ::= #ctx'
-    ]))%struct
-    #(sessionOptions.mk ttl' leaseID' ctx').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance sessionOptions_struct_fields_split dq l (v : sessionOptions.t) :
@@ -514,6 +468,7 @@ End Isolation.
 Module stmError.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   err' : error.t;
 }.
@@ -551,13 +506,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmError err':
-  PureWp True
-    (struct.make #concurrency.stmError (alist_val [
-      "err" ::= #err'
-    ]))%struct
-    #(stmError.mk err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmError_struct_fields_split dq l (v : stmError.t) :
@@ -580,6 +528,7 @@ End instances.
 Module stmOptions.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   iso' : Isolation.t;
   ctx' : context.Context.t;
@@ -627,15 +576,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmOptions iso' ctx' prefetch':
-  PureWp True
-    (struct.make #concurrency.stmOptions (alist_val [
-      "iso" ::= #iso';
-      "ctx" ::= #ctx';
-      "prefetch" ::= #prefetch'
-    ]))%struct
-    #(stmOptions.mk iso' ctx' prefetch').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmOptions_struct_fields_split dq l (v : stmOptions.t) :
@@ -673,6 +613,7 @@ End stmOption.
 Module stmResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   resp' : loc;
   err' : error.t;
@@ -715,14 +656,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmResponse resp' err':
-  PureWp True
-    (struct.make #concurrency.stmResponse (alist_val [
-      "resp" ::= #resp';
-      "err" ::= #err'
-    ]))%struct
-    #(stmResponse.mk resp' err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmResponse_struct_fields_split dq l (v : stmResponse.t) :
@@ -769,6 +702,7 @@ End writeSet.
 Module stm.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   client' : loc;
   ctx' : context.Context.t;
@@ -831,18 +765,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stm client' ctx' rset' wset' getOpts' conflicts':
-  PureWp True
-    (struct.make #concurrency.stm (alist_val [
-      "client" ::= #client';
-      "ctx" ::= #ctx';
-      "rset" ::= #rset';
-      "wset" ::= #wset';
-      "getOpts" ::= #getOpts';
-      "conflicts" ::= #conflicts'
-    ]))%struct
-    #(stm.mk client' ctx' rset' wset' getOpts' conflicts').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stm_struct_fields_split dq l (v : stm.t) :
@@ -875,6 +797,7 @@ End instances.
 Module stmPut.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   val' : go_string;
   op' : clientv3.Op.t;
@@ -917,14 +840,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmPut val' op':
-  PureWp True
-    (struct.make #concurrency.stmPut (alist_val [
-      "val" ::= #val';
-      "op" ::= #op'
-    ]))%struct
-    #(stmPut.mk val' op').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmPut_struct_fields_split dq l (v : stmPut.t) :
@@ -949,6 +864,7 @@ End instances.
 Module stmSerializable.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   stm' : stm.t;
   prefetch' : loc;
@@ -991,14 +907,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmSerializable stm' prefetch':
-  PureWp True
-    (struct.make #concurrency.stmSerializable (alist_val [
-      "stm" ::= #stm';
-      "prefetch" ::= #prefetch'
-    ]))%struct
-    #(stmSerializable.mk stm' prefetch').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmSerializable_struct_fields_split dq l (v : stmSerializable.t) :

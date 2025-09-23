@@ -22,6 +22,7 @@ Module alicebob.
 Module histEntry.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   isReg' : bool;
   pk' : slice.t;
@@ -64,14 +65,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_histEntry isReg' pk':
-  PureWp True
-    (struct.make #alicebob.histEntry (alist_val [
-      "isReg" ::= #isReg';
-      "pk" ::= #pk'
-    ]))%struct
-    #(histEntry.mk isReg' pk').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance histEntry_struct_fields_split dq l (v : histEntry.t) :

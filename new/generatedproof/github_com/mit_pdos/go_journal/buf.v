@@ -17,6 +17,7 @@ Module buf.
 Module Buf.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Addr' : addr.Addr.t;
   Sz' : w64;
@@ -69,16 +70,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Buf Addr' Sz' Data' dirty':
-  PureWp True
-    (struct.make #buf.Buf (alist_val [
-      "Addr" ::= #Addr';
-      "Sz" ::= #Sz';
-      "Data" ::= #Data';
-      "dirty" ::= #dirty'
-    ]))%struct
-    #(Buf.mk Addr' Sz' Data' dirty').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Buf_struct_fields_split dq l (v : Buf.t) :
@@ -107,6 +98,7 @@ End instances.
 Module BufMap.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   addrs' : loc;
 }.
@@ -144,13 +136,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BufMap addrs':
-  PureWp True
-    (struct.make #buf.BufMap (alist_val [
-      "addrs" ::= #addrs'
-    ]))%struct
-    #(BufMap.mk addrs').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance BufMap_struct_fields_split dq l (v : BufMap.t) :

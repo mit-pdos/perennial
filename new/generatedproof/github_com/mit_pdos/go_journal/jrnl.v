@@ -16,6 +16,7 @@ Module jrnl.
 Module Op.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   log' : loc;
   bufs' : loc;
@@ -58,14 +59,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Op log' bufs':
-  PureWp True
-    (struct.make #jrnl.Op (alist_val [
-      "log" ::= #log';
-      "bufs" ::= #bufs'
-    ]))%struct
-    #(Op.mk log' bufs').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Op_struct_fields_split dq l (v : Op.t) :

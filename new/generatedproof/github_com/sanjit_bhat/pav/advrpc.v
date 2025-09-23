@@ -15,6 +15,7 @@ Module advrpc.
 Module Server.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   handlers' : loc;
 }.
@@ -52,13 +53,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server handlers':
-  PureWp True
-    (struct.make #advrpc.Server (alist_val [
-      "handlers" ::= #handlers'
-    ]))%struct
-    #(Server.mk handlers').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :
@@ -81,6 +75,7 @@ End instances.
 Module Client.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   conn' : loc;
 }.
@@ -118,13 +113,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Client conn':
-  PureWp True
-    (struct.make #advrpc.Client (alist_val [
-      "conn" ::= #conn'
-    ]))%struct
-    #(Client.mk conn').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Client_struct_fields_split dq l (v : Client.t) :

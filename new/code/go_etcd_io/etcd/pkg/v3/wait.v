@@ -44,19 +44,19 @@ Definition New : go_string := "go.etcd.io/etcd/pkg/v3/wait.New"%go.
    go: wait.go:53:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "res" := (mem.alloc (type.zero_val #list')) in
-    let: "$r0" := (let: "$e" := (slice.make2 #listElement #(W64 defaultListElementLength)) in
-    struct.make #list' [{
+    exception_do (let: "res" := (mem.alloc (type.zero_val list)) in
+    let: "$r0" := (let: "$e" := (slice.make2 listElement #(W64 defaultListElementLength)) in
+    struct.make list [{
       "e" ::= "$e"
     }]) in
-    do:  ("res" <-[#list'] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
+    do:  ("res" <-[list] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val intT)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "i") (let: "$a0" := (![#sliceT] (struct.field_ref #list' #"e"%go "res")) in
-    slice.len "$a0")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (map.make #uint64T (type.chanT #interfaceT)) in
-      do:  ((struct.field_ref #listElement #"m"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go "res")) (![#intT] "i"))) <-[type.mapT #uint64T (type.chanT #interfaceT)] "$r0")));;;
+    do:  ("i" <-[intT] "$r0");;;
+    (for: (λ: <>, int_lt (![intT] "i") (let: "$a0" := (![sliceT] (struct.field_ref list #"e"%go "res")) in
+    slice.len "$a0")); (λ: <>, do:  ("i" <-[intT] ((![intT] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (map.make uint64T (chanT interfaceT)) in
+      do:  ((struct.field_ref listElement #"m"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref list #"e"%go "res")) (![intT] "i"))) <-[mapT uint64T (chanT interfaceT)] "$r0")));;;
     return: (interface.make #(ptrT.id list'.id) "res")).
 
 (* go: wait.go:63:16 *)
@@ -64,35 +64,35 @@ Definition list__Registerⁱᵐᵖˡ : val :=
   λ: "w" "id",
     with_defer: (let: "w" := (mem.alloc "w") in
     let: "id" := (mem.alloc "id") in
-    let: "idx" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "id") `rem` #(W64 defaultListElementLength)) in
-    do:  ("idx" <-[#uint64T] "$r0");;;
-    let: "newCh" := (mem.alloc (type.zero_val (type.chanT #interfaceT))) in
-    let: "$r0" := (chan.make #interfaceT #(W64 1)) in
-    do:  ("newCh" <-[type.chanT #interfaceT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"Lock"%go (struct.field_ref #listElement #"l"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) #());;;
-    do:  (let: "$f" := (method_call #(ptrT.id sync.RWMutex.id) #"Unlock"%go (struct.field_ref #listElement #"l"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    let: "idx" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "id") `rem` #(W64 defaultListElementLength)) in
+    do:  ("idx" <-[uint64T] "$r0");;;
+    let: "newCh" := (mem.alloc (type.zero_val (chanT interfaceT))) in
+    let: "$r0" := (chan.make interfaceT #(W64 1)) in
+    do:  ("newCh" <-[chanT interfaceT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"Lock"%go (struct.field_ref listElement #"l"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) #());;;
+    do:  (let: "$f" := (method_call #(ptrT.id sync.RWMutex.id) #"Unlock"%go (struct.field_ref listElement #"l"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T (type.chanT #interfaceT)] (struct.field_ref #listElement #"m"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) (![#uint64T] "id")) in
+    (let: "ok" := (mem.alloc (type.zero_val boolT)) in
+    let: ("$ret0", "$ret1") := (map.get (![mapT uint64T (chanT interfaceT)] (struct.field_ref listElement #"m"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) (![uint64T] "id")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    (if: (~ (![#boolT] "ok"))
+    do:  ("ok" <-[boolT] "$r1");;;
+    (if: (~ (![boolT] "ok"))
     then
-      let: "$r0" := (![type.chanT #interfaceT] "newCh") in
-      do:  (map.insert (![type.mapT #uint64T (type.chanT #interfaceT)] (struct.field_ref #listElement #"m"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) (![#uint64T] "id") "$r0")
+      let: "$r0" := (![chanT interfaceT] "newCh") in
+      do:  (map.insert (![mapT uint64T (chanT interfaceT)] (struct.field_ref listElement #"m"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) (![uint64T] "id") "$r0")
     else
       do:  (let: "$a0" := #"dup id %x"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "id")) in
-      slice.literal #interfaceT ["$sl0"])) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #uint64T.id (![uint64T] "id")) in
+      slice.literal interfaceT ["$sl0"])) in
       (func_call #log.Panicf) "$a0" "$a1")));;;
-    return: (![type.chanT #interfaceT] "newCh")).
+    return: (![chanT interfaceT] "newCh")).
 
 (* go: wait.go:76:16 *)
 Definition list__Triggerⁱᵐᵖˡ : val :=
@@ -100,23 +100,23 @@ Definition list__Triggerⁱᵐᵖˡ : val :=
     exception_do (let: "w" := (mem.alloc "w") in
     let: "x" := (mem.alloc "x") in
     let: "id" := (mem.alloc "id") in
-    let: "idx" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "id") `rem` #(W64 defaultListElementLength)) in
-    do:  ("idx" <-[#uint64T] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"Lock"%go (struct.field_ref #listElement #"l"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) #());;;
-    let: "ch" := (mem.alloc (type.zero_val (type.chanT #interfaceT))) in
-    let: "$r0" := (Fst (map.get (![type.mapT #uint64T (type.chanT #interfaceT)] (struct.field_ref #listElement #"m"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) (![#uint64T] "id"))) in
-    do:  ("ch" <-[type.chanT #interfaceT] "$r0");;;
-    do:  (let: "$a0" := (![type.mapT #uint64T (type.chanT #interfaceT)] (struct.field_ref #listElement #"m"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) in
-    let: "$a1" := (![#uint64T] "id") in
+    let: "idx" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "id") `rem` #(W64 defaultListElementLength)) in
+    do:  ("idx" <-[uint64T] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"Lock"%go (struct.field_ref listElement #"l"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) #());;;
+    let: "ch" := (mem.alloc (type.zero_val (chanT interfaceT))) in
+    let: "$r0" := (Fst (map.get (![mapT uint64T (chanT interfaceT)] (struct.field_ref listElement #"m"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) (![uint64T] "id"))) in
+    do:  ("ch" <-[chanT interfaceT] "$r0");;;
+    do:  (let: "$a0" := (![mapT uint64T (chanT interfaceT)] (struct.field_ref listElement #"m"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) in
+    let: "$a1" := (![uint64T] "id") in
     map.delete "$a0" "$a1");;;
-    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"Unlock"%go (struct.field_ref #listElement #"l"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) #());;;
-    (if: (![type.chanT #interfaceT] "ch") ≠ #null
+    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"Unlock"%go (struct.field_ref listElement #"l"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) #());;;
+    (if: (![chanT interfaceT] "ch") ≠ #null
     then
-      do:  (let: "$chan" := (![type.chanT #interfaceT] "ch") in
-      let: "$v" := (![#interfaceT] "x") in
+      do:  (let: "$chan" := (![chanT interfaceT] "ch") in
+      let: "$v" := (![interfaceT] "x") in
       chan.send "$chan" "$v");;;
-      do:  (let: "$a0" := (![type.chanT #interfaceT] "ch") in
+      do:  (let: "$a0" := (![chanT interfaceT] "ch") in
       chan.close "$a0")
     else do:  #());;;
     return: #()).
@@ -126,23 +126,23 @@ Definition list__IsRegisteredⁱᵐᵖˡ : val :=
   λ: "w" "id",
     with_defer: (let: "w" := (mem.alloc "w") in
     let: "id" := (mem.alloc "id") in
-    let: "idx" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "id") `rem` #(W64 defaultListElementLength)) in
-    do:  ("idx" <-[#uint64T] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"RLock"%go (struct.field_ref #listElement #"l"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) #());;;
-    do:  (let: "$f" := (method_call #(ptrT.id sync.RWMutex.id) #"RUnlock"%go (struct.field_ref #listElement #"l"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    let: "idx" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "id") `rem` #(W64 defaultListElementLength)) in
+    do:  ("idx" <-[uint64T] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.RWMutex.id) #"RLock"%go (struct.field_ref listElement #"l"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) #());;;
+    do:  (let: "$f" := (method_call #(ptrT.id sync.RWMutex.id) #"RUnlock"%go (struct.field_ref listElement #"l"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T (type.chanT #interfaceT)] (struct.field_ref #listElement #"m"%go (slice.elem_ref #listElement (![#sliceT] (struct.field_ref #list' #"e"%go (![#ptrT] "w"))) (![#uint64T] "idx")))) (![#uint64T] "id")) in
+    let: "ok" := (mem.alloc (type.zero_val boolT)) in
+    let: ("$ret0", "$ret1") := (map.get (![mapT uint64T (chanT interfaceT)] (struct.field_ref listElement #"m"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) (![uint64T] "id")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[boolT] "$r1");;;
+    return: (![boolT] "ok")).
 
 Definition waitWithResponse : go_type := structT [
   "ch" :: chanT interfaceT
@@ -156,8 +156,8 @@ Definition NewWithResponse : go_string := "go.etcd.io/etcd/pkg/v3/wait.NewWithRe
 Definition NewWithResponseⁱᵐᵖˡ : val :=
   λ: "ch",
     exception_do (let: "ch" := (mem.alloc "ch") in
-    return: (interface.make #(ptrT.id waitWithResponse.id) (mem.alloc (let: "$ch" := (![type.chanT #interfaceT] "ch") in
-     struct.make #waitWithResponse [{
+    return: (interface.make #(ptrT.id waitWithResponse.id) (mem.alloc (let: "$ch" := (![chanT interfaceT] "ch") in
+     struct.make waitWithResponse [{
        "ch" ::= "$ch"
      }])))).
 
@@ -166,7 +166,7 @@ Definition waitWithResponse__Registerⁱᵐᵖˡ : val :=
   λ: "w" "id",
     exception_do (let: "w" := (mem.alloc "w") in
     let: "id" := (mem.alloc "id") in
-    return: (![type.chanT #interfaceT] (struct.field_ref #waitWithResponse #"ch"%go (![#ptrT] "w")))).
+    return: (![chanT interfaceT] (struct.field_ref ptrT #"ch"%go (![ptrT] "w")))).
 
 (* go: wait.go:107:28 *)
 Definition waitWithResponse__Triggerⁱᵐᵖˡ : val :=
@@ -204,11 +204,11 @@ Definition NewTimeList : go_string := "go.etcd.io/etcd/pkg/v3/wait.NewTimeList"%
 (* go: wait_time.go:38:6 *)
 Definition NewTimeListⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (mem.alloc (let: "$m" := (map.make #uint64T (type.chanT (type.structT [
+    exception_do (return: (mem.alloc (let: "$m" := (map.make uint64T (chanT (structT [
      ]))) in
-     struct.make #timeList [{
-       "l" ::= type.zero_val #sync.Mutex;
-       "lastTriggerDeadline" ::= type.zero_val #uint64T;
+     struct.make timeList [{
+       "l" ::= type.zero_val sync.Mutex;
+       "lastTriggerDeadline" ::= type.zero_val uint64T;
        "m" ::= "$m"
      }]))).
 
@@ -217,37 +217,37 @@ Definition timeList__Waitⁱᵐᵖˡ : val :=
   λ: "tl" "deadline",
     with_defer: (let: "tl" := (mem.alloc "tl") in
     let: "deadline" := (mem.alloc "deadline") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #timeList #"l"%go (![#ptrT] "tl"))) #());;;
-    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #timeList #"l"%go (![#ptrT] "tl"))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref ptrT #"l"%go (![ptrT] "tl"))) #());;;
+    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref ptrT #"l"%go (![ptrT] "tl"))) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    (if: (![#uint64T] (struct.field_ref #timeList #"lastTriggerDeadline"%go (![#ptrT] "tl"))) ≥ (![#uint64T] "deadline")
+    (if: (![uint64T] (struct.field_ref ptrT #"lastTriggerDeadline"%go (![ptrT] "tl"))) ≥ (![uint64T] "deadline")
     then
-      return: (![type.chanT (type.structT [
+      return: (![chanT (structT [
        ])] (globals.get #closec))
     else do:  #());;;
-    let: "ch" := (mem.alloc (type.zero_val (type.chanT (type.structT [
+    let: "ch" := (mem.alloc (type.zero_val (chanT (structT [
     ])))) in
-    let: "$r0" := (Fst (map.get (![type.mapT #uint64T (type.chanT (type.structT [
-    ]))] (struct.field_ref #timeList #"m"%go (![#ptrT] "tl"))) (![#uint64T] "deadline"))) in
-    do:  ("ch" <-[type.chanT (type.structT [
+    let: "$r0" := (Fst (map.get (![mapT uint64T (chanT (structT [
+    ]))] (struct.field_ref ptrT #"m"%go (![ptrT] "tl"))) (![uint64T] "deadline"))) in
+    do:  ("ch" <-[chanT (structT [
     ])] "$r0");;;
-    (if: (![type.chanT (type.structT [
+    (if: (![chanT (structT [
     ])] "ch") = #null
     then
-      let: "$r0" := (chan.make (type.structT [
+      let: "$r0" := (chan.make (structT [
       ]) #(W64 0)) in
-      do:  ("ch" <-[type.chanT (type.structT [
+      do:  ("ch" <-[chanT (structT [
       ])] "$r0");;;
-      let: "$r0" := (![type.chanT (type.structT [
+      let: "$r0" := (![chanT (structT [
       ])] "ch") in
-      do:  (map.insert (![type.mapT #uint64T (type.chanT (type.structT [
-      ]))] (struct.field_ref #timeList #"m"%go (![#ptrT] "tl"))) (![#uint64T] "deadline") "$r0")
+      do:  (map.insert (![mapT uint64T (chanT (structT [
+      ]))] (struct.field_ref ptrT #"m"%go (![ptrT] "tl"))) (![uint64T] "deadline") "$r0")
     else do:  #());;;
-    return: (![type.chanT (type.structT [
+    return: (![chanT (structT [
      ])] "ch")).
 
 (* go: wait_time.go:56:21 *)
@@ -255,31 +255,31 @@ Definition timeList__Triggerⁱᵐᵖˡ : val :=
   λ: "tl" "deadline",
     with_defer: (let: "tl" := (mem.alloc "tl") in
     let: "deadline" := (mem.alloc "deadline") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #timeList #"l"%go (![#ptrT] "tl"))) #());;;
-    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #timeList #"l"%go (![#ptrT] "tl"))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref ptrT #"l"%go (![ptrT] "tl"))) #());;;
+    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref ptrT #"l"%go (![ptrT] "tl"))) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "$r0" := (![#uint64T] "deadline") in
-    do:  ((struct.field_ref #timeList #"lastTriggerDeadline"%go (![#ptrT] "tl")) <-[#uint64T] "$r0");;;
-    let: "$range" := (![type.mapT #uint64T (type.chanT (type.structT [
-    ]))] (struct.field_ref #timeList #"m"%go (![#ptrT] "tl"))) in
-    (let: "ch" := (mem.alloc (type.zero_val (type.chanT (type.structT [
+    let: "$r0" := (![uint64T] "deadline") in
+    do:  ((struct.field_ref ptrT #"lastTriggerDeadline"%go (![ptrT] "tl")) <-[uint64T] "$r0");;;
+    let: "$range" := (![mapT uint64T (chanT (structT [
+    ]))] (struct.field_ref ptrT #"m"%go (![ptrT] "tl"))) in
+    (let: "ch" := (mem.alloc (type.zero_val (chanT (structT [
     ])))) in
-    let: "t" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "t" := (mem.alloc (type.zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("ch" <-[type.chanT (type.structT [
+      do:  ("ch" <-[chanT (structT [
       ])] "$value");;;
-      do:  ("t" <-[#uint64T] "$key");;;
-      (if: (![#uint64T] "t") ≤ (![#uint64T] "deadline")
+      do:  ("t" <-[uint64T] "$key");;;
+      (if: (![uint64T] "t") ≤ (![uint64T] "deadline")
       then
-        do:  (let: "$a0" := (![type.mapT #uint64T (type.chanT (type.structT [
-        ]))] (struct.field_ref #timeList #"m"%go (![#ptrT] "tl"))) in
-        let: "$a1" := (![#uint64T] "t") in
+        do:  (let: "$a0" := (![mapT uint64T (chanT (structT [
+        ]))] (struct.field_ref ptrT #"m"%go (![ptrT] "tl"))) in
+        let: "$a1" := (![uint64T] "t") in
         map.delete "$a0" "$a1");;;
-        do:  (let: "$a0" := (![type.chanT (type.structT [
+        do:  (let: "$a0" := (![chanT (structT [
         ])] "ch") in
         chan.close "$a0")
       else do:  #())));;;
@@ -307,11 +307,11 @@ Definition initialize' : val :=
       do:  (log.initialize' #());;;
       do:  (package.alloc wait.wait #());;;
       do:  ((λ: <>,
-        exception_do (let: "$r0" := (chan.make (type.structT [
+        exception_do (let: "$r0" := (chan.make (structT [
         ]) #(W64 0)) in
-        do:  ((globals.get #closec) <-[type.chanT (type.structT [
+        do:  ((globals.get #closec) <-[chanT (structT [
         ])] "$r0");;;
-        do:  (let: "$a0" := (![type.chanT (type.structT [
+        do:  (let: "$a0" := (![chanT (structT [
         ])] (globals.get #closec)) in
         chan.close "$a0");;;
         return: #())

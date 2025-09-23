@@ -18,6 +18,7 @@ Module txn.
 Module Log.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   log' : loc;
   locks' : loc;
@@ -60,14 +61,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log log' locks':
-  PureWp True
-    (struct.make #txn.Log (alist_val [
-      "log" ::= #log';
-      "locks" ::= #locks'
-    ]))%struct
-    #(Log.mk log' locks').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Log_struct_fields_split dq l (v : Log.t) :
@@ -92,6 +85,7 @@ End instances.
 Module Txn.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   buftxn' : loc;
   locks' : loc;
@@ -139,15 +133,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Txn buftxn' locks' acquired':
-  PureWp True
-    (struct.make #txn.Txn (alist_val [
-      "buftxn" ::= #buftxn';
-      "locks" ::= #locks';
-      "acquired" ::= #acquired'
-    ]))%struct
-    #(Txn.mk buftxn' locks' acquired').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Txn_struct_fields_split dq l (v : Txn.t) :

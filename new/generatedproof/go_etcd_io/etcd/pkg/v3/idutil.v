@@ -15,6 +15,7 @@ Module idutil.
 Module Generator.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   prefix' : w64;
   suffix' : w64;
@@ -57,14 +58,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Generator prefix' suffix':
-  PureWp True
-    (struct.make #idutil.Generator (alist_val [
-      "prefix" ::= #prefix';
-      "suffix" ::= #suffix'
-    ]))%struct
-    #(Generator.mk prefix' suffix').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Generator_struct_fields_split dq l (v : Generator.t) :

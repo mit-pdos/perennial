@@ -19,6 +19,7 @@ Module vkv.
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   cl' : loc;
 }.
@@ -56,13 +57,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk cl':
-  PureWp True
-    (struct.make #vkv.Clerk (alist_val [
-      "cl" ::= #cl'
-    ]))%struct
-    #(Clerk.mk cl').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
@@ -85,6 +79,7 @@ End instances.
 Module ClerkPool.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   cls' : slice.t;
@@ -132,15 +127,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ClerkPool mu' cls' confHosts':
-  PureWp True
-    (struct.make #vkv.ClerkPool (alist_val [
-      "mu" ::= #mu';
-      "cls" ::= #cls';
-      "confHosts" ::= #confHosts'
-    ]))%struct
-    #(ClerkPool.mk mu' cls' confHosts').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ClerkPool_struct_fields_split dq l (v : ClerkPool.t) :
@@ -167,6 +153,7 @@ End instances.
 Module KVState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   kvs' : loc;
   vnums' : loc;
@@ -214,15 +201,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_KVState kvs' vnums' minVnum':
-  PureWp True
-    (struct.make #vkv.KVState (alist_val [
-      "kvs" ::= #kvs';
-      "vnums" ::= #vnums';
-      "minVnum" ::= #minVnum'
-    ]))%struct
-    #(KVState.mk kvs' vnums' minVnum').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance KVState_struct_fields_split dq l (v : KVState.t) :
@@ -249,6 +227,7 @@ End instances.
 Module PutArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Key' : go_string;
   Val' : go_string;
@@ -291,14 +270,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_PutArgs Key' Val':
-  PureWp True
-    (struct.make #vkv.PutArgs (alist_val [
-      "Key" ::= #Key';
-      "Val" ::= #Val'
-    ]))%struct
-    #(PutArgs.mk Key' Val').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance PutArgs_struct_fields_split dq l (v : PutArgs.t) :
@@ -334,6 +305,7 @@ End getArgs.
 Module CondPutArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Key' : go_string;
   Expect' : go_string;
@@ -381,15 +353,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_CondPutArgs Key' Expect' Val':
-  PureWp True
-    (struct.make #vkv.CondPutArgs (alist_val [
-      "Key" ::= #Key';
-      "Expect" ::= #Expect';
-      "Val" ::= #Val'
-    ]))%struct
-    #(CondPutArgs.mk Key' Expect' Val').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance CondPutArgs_struct_fields_split dq l (v : CondPutArgs.t) :

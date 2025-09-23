@@ -13,6 +13,7 @@ Module lockmap.
 Module lockState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   held' : bool;
   cond' : loc;
@@ -60,15 +61,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockState held' cond' waiters':
-  PureWp True
-    (struct.make #lockmap.lockState (alist_val [
-      "held" ::= #held';
-      "cond" ::= #cond';
-      "waiters" ::= #waiters'
-    ]))%struct
-    #(lockState.mk held' cond' waiters').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockState_struct_fields_split dq l (v : lockState.t) :
@@ -95,6 +87,7 @@ End instances.
 Module lockShard.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   state' : loc;
@@ -137,14 +130,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockShard mu' state':
-  PureWp True
-    (struct.make #lockmap.lockShard (alist_val [
-      "mu" ::= #mu';
-      "state" ::= #state'
-    ]))%struct
-    #(lockShard.mk mu' state').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockShard_struct_fields_split dq l (v : lockShard.t) :
@@ -169,6 +154,7 @@ End instances.
 Module LockMap.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   shards' : slice.t;
 }.
@@ -206,13 +192,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LockMap shards':
-  PureWp True
-    (struct.make #lockmap.LockMap (alist_val [
-      "shards" ::= #shards'
-    ]))%struct
-    #(LockMap.mk shards').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LockMap_struct_fields_split dq l (v : LockMap.t) :

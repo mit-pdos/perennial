@@ -771,6 +771,7 @@ End KV.
 Module OpResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   put' : loc;
   get' : loc;
@@ -823,16 +824,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_OpResponse put' get' del' txn':
-  PureWp True
-    (struct.make #clientv3.OpResponse (alist_val [
-      "put" ::= #put';
-      "get" ::= #get';
-      "del" ::= #del';
-      "txn" ::= #txn'
-    ]))%struct
-    #(OpResponse.mk put' get' del' txn').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance OpResponse_struct_fields_split dq l (v : OpResponse.t) :
@@ -906,6 +897,7 @@ End LeaseID.
 Module LeaseGrantResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ResponseHeader' : loc;
   ID' : LeaseID.t;
@@ -958,16 +950,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LeaseGrantResponse ResponseHeader' ID' TTL' Error':
-  PureWp True
-    (struct.make #clientv3.LeaseGrantResponse (alist_val [
-      "ResponseHeader" ::= #ResponseHeader';
-      "ID" ::= #ID';
-      "TTL" ::= #TTL';
-      "Error" ::= #Error'
-    ]))%struct
-    #(LeaseGrantResponse.mk ResponseHeader' ID' TTL' Error').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LeaseGrantResponse_struct_fields_split dq l (v : LeaseGrantResponse.t) :
@@ -1358,6 +1340,7 @@ End opType.
 Module Op.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   t' : opType.t;
   key' : slice.t;
@@ -1530,40 +1513,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Op t' key' end' limit' sort' serializable' keysOnly' countOnly' minModRev' maxModRev' minCreateRev' maxCreateRev' rev' prevKV' fragment' ignoreValue' ignoreLease' progressNotify' createdNotify' filterPut' filterDelete' val' leaseID' cmps' thenOps' elseOps' isOptsWithFromKey' isOptsWithPrefix':
-  PureWp True
-    (struct.make #clientv3.Op (alist_val [
-      "t" ::= #t';
-      "key" ::= #key';
-      "end" ::= #end';
-      "limit" ::= #limit';
-      "sort" ::= #sort';
-      "serializable" ::= #serializable';
-      "keysOnly" ::= #keysOnly';
-      "countOnly" ::= #countOnly';
-      "minModRev" ::= #minModRev';
-      "maxModRev" ::= #maxModRev';
-      "minCreateRev" ::= #minCreateRev';
-      "maxCreateRev" ::= #maxCreateRev';
-      "rev" ::= #rev';
-      "prevKV" ::= #prevKV';
-      "fragment" ::= #fragment';
-      "ignoreValue" ::= #ignoreValue';
-      "ignoreLease" ::= #ignoreLease';
-      "progressNotify" ::= #progressNotify';
-      "createdNotify" ::= #createdNotify';
-      "filterPut" ::= #filterPut';
-      "filterDelete" ::= #filterDelete';
-      "val" ::= #val';
-      "leaseID" ::= #leaseID';
-      "cmps" ::= #cmps';
-      "thenOps" ::= #thenOps';
-      "elseOps" ::= #elseOps';
-      "isOptsWithFromKey" ::= #isOptsWithFromKey';
-      "isOptsWithPrefix" ::= #isOptsWithPrefix'
-    ]))%struct
-    #(Op.mk t' key' end' limit' sort' serializable' keysOnly' countOnly' minModRev' maxModRev' minCreateRev' maxCreateRev' rev' prevKV' fragment' ignoreValue' ignoreLease' progressNotify' createdNotify' filterPut' filterDelete' val' leaseID' cmps' thenOps' elseOps' isOptsWithFromKey' isOptsWithPrefix').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Op_struct_fields_split dq l (v : Op.t) :
@@ -1651,6 +1600,7 @@ End OpOption.
 Module LeaseOp.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   id' : LeaseID.t;
   attachedKeys' : bool;
@@ -1693,14 +1643,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LeaseOp id' attachedKeys':
-  PureWp True
-    (struct.make #clientv3.LeaseOp (alist_val [
-      "id" ::= #id';
-      "attachedKeys" ::= #attachedKeys'
-    ]))%struct
-    #(LeaseOp.mk id' attachedKeys').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LeaseOp_struct_fields_split dq l (v : LeaseOp.t) :
@@ -1928,6 +1870,7 @@ End SortOrder.
 Module SortOption.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Target' : SortTarget.t;
   Order' : SortOrder.t;
@@ -1970,14 +1913,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SortOption Target' Order':
-  PureWp True
-    (struct.make #clientv3.SortOption (alist_val [
-      "Target" ::= #Target';
-      "Order" ::= #Order'
-    ]))%struct
-    #(SortOption.mk Target' Order').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SortOption_struct_fields_split dq l (v : SortOption.t) :
@@ -2063,6 +1998,7 @@ End Watcher.
 Module WatchResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Header' : etcdserverpb.ResponseHeader.t;
   Events' : slice.t;
@@ -2130,19 +2066,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WatchResponse Header' Events' CompactRevision' Canceled' Created' closeErr' cancelReason':
-  PureWp True
-    (struct.make #clientv3.WatchResponse (alist_val [
-      "Header" ::= #Header';
-      "Events" ::= #Events';
-      "CompactRevision" ::= #CompactRevision';
-      "Canceled" ::= #Canceled';
-      "Created" ::= #Created';
-      "closeErr" ::= #closeErr';
-      "cancelReason" ::= #cancelReason'
-    ]))%struct
-    #(WatchResponse.mk Header' Events' CompactRevision' Canceled' Created' closeErr' cancelReason').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WatchResponse_struct_fields_split dq l (v : WatchResponse.t) :

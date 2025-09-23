@@ -30,6 +30,7 @@ Admitted.
 Module Timer.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   C' : loc;
   initTimer' : bool;
@@ -72,14 +73,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Timer C' initTimer':
-  PureWp True
-    (struct.make #time.Timer (alist_val [
-      "C" ::= #C';
-      "initTimer" ::= #initTimer'
-    ]))%struct
-    #(Timer.mk C' initTimer').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Timer_struct_fields_split dq l (v : Timer.t) :
@@ -121,6 +114,7 @@ Admitted.
 Module Time.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   wall' : w64;
   ext' : w64;
@@ -168,15 +162,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Time wall' ext' loc':
-  PureWp True
-    (struct.make #time.Time (alist_val [
-      "wall" ::= #wall';
-      "ext" ::= #ext';
-      "loc" ::= #loc'
-    ]))%struct
-    #(Time.mk wall' ext' loc').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Time_struct_fields_split dq l (v : Time.t) :

@@ -9,7 +9,7 @@ Definition NewProphⁱᵐᵖˡ : val :=
 Local Definition BytesToVal : val :=
   λ: "sl",
     let: "res" := ref list.Nil in
-    slice.for_range #byteT "slice" (λ: "idx" "val",
+    slice.for_range byteT "slice" (λ: "idx" "val",
       "res" <- list.Cons "val" (!"res")
     ) "slice";;;
     !"res".

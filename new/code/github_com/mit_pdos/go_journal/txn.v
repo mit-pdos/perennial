@@ -39,16 +39,16 @@ Definition Init : go_string := "github.com/mit-pdos/go-journal/txn.Init"%go.
 Definition Initⁱᵐᵖˡ : val :=
   λ: "d",
     exception_do (let: "d" := (mem.alloc "d") in
-    let: "twophasePre" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$log" := (let: "$a0" := (![#disk.Disk] "d") in
+    let: "twophasePre" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$log" := (let: "$a0" := (![disk.Disk] "d") in
     (func_call #obj.MkLog) "$a0") in
     let: "$locks" := ((func_call #lockmap.MkLockMap) #()) in
-    struct.make #Log [{
+    struct.make Log [{
       "log" ::= "$log";
       "locks" ::= "$locks"
     }])) in
-    do:  ("twophasePre" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "twophasePre")).
+    do:  ("twophasePre" <-[ptrT] "$r0");;;
+    return: (![ptrT] "twophasePre")).
 
 Definition Begin : go_string := "github.com/mit-pdos/go-journal/txn.Begin"%go.
 
@@ -58,30 +58,30 @@ Definition Begin : go_string := "github.com/mit-pdos/go-journal/txn.Begin"%go.
 Definition Beginⁱᵐᵖˡ : val :=
   λ: "tsys",
     exception_do (let: "tsys" := (mem.alloc "tsys") in
-    let: "trans" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$buftxn" := (let: "$a0" := (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "tsys"))) in
+    let: "trans" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$buftxn" := (let: "$a0" := (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "tsys"))) in
     (func_call #jrnl.Begin) "$a0") in
-    let: "$locks" := (![#ptrT] (struct.field_ref #Log #"locks"%go (![#ptrT] "tsys"))) in
-    let: "$acquired" := (map.make #uint64T #boolT) in
-    struct.make #Txn [{
+    let: "$locks" := (![ptrT] (struct.field_ref ptrT #"locks"%go (![ptrT] "tsys"))) in
+    let: "$acquired" := (map.make uint64T boolT) in
+    struct.make Txn [{
       "buftxn" ::= "$buftxn";
       "locks" ::= "$locks";
       "acquired" ::= "$acquired"
     }])) in
-    do:  ("trans" <-[#ptrT] "$r0");;;
+    do:  ("trans" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Txn.id) (![#ptrT] "trans")) in
-    slice.literal #interfaceT ["$sl0"])) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Txn.id) (![ptrT] "trans")) in
+    slice.literal interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    return: (![#ptrT] "trans")).
+    return: (![ptrT] "trans")).
 
 (* go: txn.go:48:18 *)
 Definition Log__Flushⁱᵐᵖˡ : val :=
   λ: "tsys" <>,
     exception_do (let: "tsys" := (mem.alloc "tsys") in
-    do:  ((method_call #(ptrT.id obj.Log.id) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "tsys")))) #());;;
+    do:  ((method_call #(ptrT.id obj.Log.id) #"Flush"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "tsys")))) #());;;
     return: #()).
 
 (* go: txn.go:52:17 *)
@@ -89,13 +89,13 @@ Definition Txn__acquireNoCheckⁱᵐᵖˡ : val :=
   λ: "txn" "addr",
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "addr" := (mem.alloc "addr") in
-    let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "flatAddr" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go "addr") #()) in
-    do:  ("flatAddr" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "flatAddr") in
-    (method_call #(ptrT.id lockmap.LockMap.id) #"Acquire"%go (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0");;;
+    do:  ("flatAddr" <-[uint64T] "$r0");;;
+    do:  (let: "$a0" := (![uint64T] "flatAddr") in
+    (method_call #(ptrT.id lockmap.LockMap.id) #"Acquire"%go (![ptrT] (struct.field_ref ptrT #"locks"%go (![ptrT] "txn")))) "$a0");;;
     let: "$r0" := #true in
-    do:  (map.insert (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr") "$r0");;;
+    do:  (map.insert (![mapT uint64T boolT] (struct.field_ref ptrT #"acquired"%go (![ptrT] "txn"))) (![uint64T] "flatAddr") "$r0");;;
     return: #()).
 
 (* go: txn.go:58:17 *)
@@ -103,24 +103,24 @@ Definition Txn__isAlreadyAcquiredⁱᵐᵖˡ : val :=
   λ: "txn" "addr",
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "addr" := (mem.alloc "addr") in
-    let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "flatAddr" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go "addr") #()) in
-    do:  ("flatAddr" <-[#uint64T] "$r0");;;
-    return: (Fst (map.get (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr")))).
+    do:  ("flatAddr" <-[uint64T] "$r0");;;
+    return: (Fst (map.get (![mapT uint64T boolT] (struct.field_ref ptrT #"acquired"%go (![ptrT] "txn"))) (![uint64T] "flatAddr")))).
 
 (* go: txn.go:63:17 *)
 Definition Txn__Acquireⁱᵐᵖˡ : val :=
   λ: "txn" "addr",
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "addr" := (mem.alloc "addr") in
-    let: "already_acquired" := (mem.alloc (type.zero_val #boolT)) in
-    let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrT.id Txn.id) #"isAlreadyAcquired"%go (![#ptrT] "txn")) "$a0") in
-    do:  ("already_acquired" <-[#boolT] "$r0");;;
-    (if: (~ (![#boolT] "already_acquired"))
+    let: "already_acquired" := (mem.alloc (type.zero_val boolT)) in
+    let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
+    (method_call #(ptrT.id Txn.id) #"isAlreadyAcquired"%go (![ptrT] "txn")) "$a0") in
+    do:  ("already_acquired" <-[boolT] "$r0");;;
+    (if: (~ (![boolT] "already_acquired"))
     then
-      do:  (let: "$a0" := (![#addr.Addr] "addr") in
-      (method_call #(ptrT.id Txn.id) #"acquireNoCheck"%go (![#ptrT] "txn")) "$a0")
+      do:  (let: "$a0" := (![addr.Addr] "addr") in
+      (method_call #(ptrT.id Txn.id) #"acquireNoCheck"%go (![ptrT] "txn")) "$a0")
     else do:  #());;;
     return: #()).
 
@@ -128,12 +128,12 @@ Definition Txn__Acquireⁱᵐᵖˡ : val :=
 Definition Txn__ReleaseAllⁱᵐᵖˡ : val :=
   λ: "txn" <>,
     exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "$range" := (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) in
-    (let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$range" := (![mapT uint64T boolT] (struct.field_ref ptrT #"acquired"%go (![ptrT] "txn"))) in
+    (let: "flatAddr" := (mem.alloc (type.zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("flatAddr" <-[#uint64T] "$key");;;
-      do:  (let: "$a0" := (![#uint64T] "flatAddr") in
-      (method_call #(ptrT.id lockmap.LockMap.id) #"Release"%go (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0")));;;
+      do:  ("flatAddr" <-[uint64T] "$key");;;
+      do:  (let: "$a0" := (![uint64T] "flatAddr") in
+      (method_call #(ptrT.id lockmap.LockMap.id) #"Release"%go (![ptrT] (struct.field_ref ptrT #"locks"%go (![ptrT] "txn")))) "$a0")));;;
     return: #()).
 
 (* go: txn.go:76:17 *)
@@ -142,13 +142,13 @@ Definition Txn__readBufNoAcquireⁱᵐᵖˡ : val :=
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
-    let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #buf.Buf #"Data"%go (let: "$a0" := (![#addr.Addr] "addr") in
-    let: "$a1" := (![#uint64T] "sz") in
-    (method_call #(ptrT.id jrnl.Op.id) #"ReadBuf"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0" "$a1"))) in
+    let: "s" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref buf.Buf #"Data"%go (let: "$a0" := (![addr.Addr] "addr") in
+    let: "$a1" := (![uint64T] "sz") in
+    (method_call #(ptrT.id jrnl.Op.id) #"ReadBuf"%go (![ptrT] (struct.field_ref ptrT #"buftxn"%go (![ptrT] "txn")))) "$a0" "$a1"))) in
     (func_call #util.CloneByteSlice) "$a0") in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "s")).
+    do:  ("s" <-[sliceT] "$r0");;;
+    return: (![sliceT] "s")).
 
 (* go: txn.go:85:17 *)
 Definition Txn__ReadBufⁱᵐᵖˡ : val :=
@@ -156,11 +156,11 @@ Definition Txn__ReadBufⁱᵐᵖˡ : val :=
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrT.id Txn.id) #"Acquire"%go (![#ptrT] "txn")) "$a0");;;
-    return: (let: "$a0" := (![#addr.Addr] "addr") in
-     let: "$a1" := (![#uint64T] "sz") in
-     (method_call #(ptrT.id Txn.id) #"readBufNoAcquire"%go (![#ptrT] "txn")) "$a0" "$a1")).
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
+    (method_call #(ptrT.id Txn.id) #"Acquire"%go (![ptrT] "txn")) "$a0");;;
+    return: (let: "$a0" := (![addr.Addr] "addr") in
+     let: "$a1" := (![uint64T] "sz") in
+     (method_call #(ptrT.id Txn.id) #"readBufNoAcquire"%go (![ptrT] "txn")) "$a0" "$a1")).
 
 (* OverWrite writes an object to addr
 
@@ -171,12 +171,12 @@ Definition Txn__OverWriteⁱᵐᵖˡ : val :=
     let: "data" := (mem.alloc "data") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrT.id Txn.id) #"Acquire"%go (![#ptrT] "txn")) "$a0");;;
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
-    let: "$a1" := (![#uint64T] "sz") in
-    let: "$a2" := (![#sliceT] "data") in
-    (method_call #(ptrT.id jrnl.Op.id) #"OverWrite"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0" "$a1" "$a2");;;
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
+    (method_call #(ptrT.id Txn.id) #"Acquire"%go (![ptrT] "txn")) "$a0");;;
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
+    let: "$a1" := (![uint64T] "sz") in
+    let: "$a2" := (![sliceT] "data") in
+    (method_call #(ptrT.id jrnl.Op.id) #"OverWrite"%go (![ptrT] (struct.field_ref ptrT #"buftxn"%go (![ptrT] "txn")))) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* go: txn.go:96:17 *)
@@ -184,12 +184,12 @@ Definition Txn__ReadBufBitⁱᵐᵖˡ : val :=
   λ: "txn" "addr",
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "addr" := (mem.alloc "addr") in
-    let: "dataByte" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (![#byteT] (slice.elem_ref #byteT (let: "$a0" := (![#addr.Addr] "addr") in
+    let: "dataByte" := (mem.alloc (type.zero_val byteT)) in
+    let: "$r0" := (![byteT] (slice.elem_ref byteT (let: "$a0" := (![addr.Addr] "addr") in
     let: "$a1" := #(W64 1) in
-    (method_call #(ptrT.id Txn.id) #"ReadBuf"%go (![#ptrT] "txn")) "$a0" "$a1") #(W64 0))) in
-    do:  ("dataByte" <-[#byteT] "$r0");;;
-    return: (#(W8 1) = (((![#byteT] "dataByte") ≫ (u_to_w8 ((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go "addr")) `rem` #(W64 8)))) `and` #(W8 1)))).
+    (method_call #(ptrT.id Txn.id) #"ReadBuf"%go (![ptrT] "txn")) "$a0" "$a1") #(W64 0))) in
+    do:  ("dataByte" <-[byteT] "$r0");;;
+    return: (#(W8 1) = (((![byteT] "dataByte") ≫ (u_to_w8 ((![uint64T] (struct.field_ref addr.Addr #"Off"%go "addr")) `rem` #(W64 8)))) `and` #(W8 1)))).
 
 Definition bitToByte : go_string := "github.com/mit-pdos/go-journal/txn.bitToByte"%go.
 
@@ -198,8 +198,8 @@ Definition bitToByteⁱᵐᵖˡ : val :=
   λ: "off" "data",
     exception_do (let: "data" := (mem.alloc "data") in
     let: "off" := (mem.alloc "off") in
-    (if: ![#boolT] "data"
-    then return: (#(W8 1) ≪ (u_to_w8 (![#uint64T] "off")))
+    (if: ![boolT] "data"
+    then return: (#(W8 1) ≪ (u_to_w8 (![uint64T] "off")))
     else return: (#(W8 0)))).
 
 (* go: txn.go:109:17 *)
@@ -208,17 +208,17 @@ Definition Txn__OverWriteBitⁱᵐᵖˡ : val :=
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "data" := (mem.alloc "data") in
     let: "addr" := (mem.alloc "addr") in
-    let: "dataBytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 1)) in
-    do:  ("dataBytes" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := ((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go "addr")) `rem` #(W64 8)) in
-    let: "$a1" := (![#boolT] "data") in
+    let: "dataBytes" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 byteT #(W64 1)) in
+    do:  ("dataBytes" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := ((![uint64T] (struct.field_ref addr.Addr #"Off"%go "addr")) `rem` #(W64 8)) in
+    let: "$a1" := (![boolT] "data") in
     (func_call #bitToByte) "$a0" "$a1") in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "dataBytes") #(W64 0)) <-[#byteT] "$r0");;;
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
+    do:  ((slice.elem_ref byteT (![sliceT] "dataBytes") #(W64 0)) <-[byteT] "$r0");;;
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
     let: "$a1" := #(W64 1) in
-    let: "$a2" := (![#sliceT] "dataBytes") in
-    (method_call #(ptrT.id Txn.id) #"OverWrite"%go (![#ptrT] "txn")) "$a0" "$a1" "$a2");;;
+    let: "$a2" := (![sliceT] "dataBytes") in
+    (method_call #(ptrT.id Txn.id) #"OverWrite"%go (![ptrT] "txn")) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
@@ -232,7 +232,7 @@ Definition Txn__OverWriteBitⁱᵐᵖˡ : val :=
 Definition Txn__NDirtyⁱᵐᵖˡ : val :=
   λ: "txn" <>,
     exception_do (let: "txn" := (mem.alloc "txn") in
-    return: ((method_call #(ptrT.id jrnl.Op.id) #"NDirty"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) #())).
+    return: ((method_call #(ptrT.id jrnl.Op.id) #"NDirty"%go (![ptrT] (struct.field_ref ptrT #"buftxn"%go (![ptrT] "txn")))) #())).
 
 (* go: txn.go:125:17 *)
 Definition Txn__commitNoReleaseⁱᵐᵖˡ : val :=
@@ -242,23 +242,23 @@ Definition Txn__commitNoReleaseⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Commit %p
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Txn.id) (![#ptrT] "txn")) in
-    slice.literal #interfaceT ["$sl0"])) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Txn.id) (![ptrT] "txn")) in
+    slice.literal interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    return: (let: "$a0" := (![#boolT] "wait") in
-     (method_call #(ptrT.id jrnl.Op.id) #"CommitWait"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0")).
+    return: (let: "$a0" := (![boolT] "wait") in
+     (method_call #(ptrT.id jrnl.Op.id) #"CommitWait"%go (![ptrT] (struct.field_ref ptrT #"buftxn"%go (![ptrT] "txn")))) "$a0")).
 
 (* go: txn.go:130:17 *)
 Definition Txn__Commitⁱᵐᵖˡ : val :=
   λ: "txn" "wait",
     exception_do (let: "txn" := (mem.alloc "txn") in
     let: "wait" := (mem.alloc "wait") in
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "$r0" := (let: "$a0" := (![#boolT] "wait") in
-    (method_call #(ptrT.id Txn.id) #"commitNoRelease"%go (![#ptrT] "txn")) "$a0") in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrT.id Txn.id) #"ReleaseAll"%go (![#ptrT] "txn")) #());;;
-    return: (![#boolT] "ok")).
+    let: "ok" := (mem.alloc (type.zero_val boolT)) in
+    let: "$r0" := (let: "$a0" := (![boolT] "wait") in
+    (method_call #(ptrT.id Txn.id) #"commitNoRelease"%go (![ptrT] "txn")) "$a0") in
+    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ((method_call #(ptrT.id Txn.id) #"ReleaseAll"%go (![ptrT] "txn")) #());;;
+    return: (![boolT] "ok")).
 
 Definition vars' : list (go_string * go_type) := [].
 

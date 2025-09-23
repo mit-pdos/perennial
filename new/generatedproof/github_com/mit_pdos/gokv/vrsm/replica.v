@@ -33,6 +33,7 @@ End Op.
 Module ApplyAsBackupArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   epoch' : w64;
   index' : w64;
@@ -80,15 +81,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ApplyAsBackupArgs epoch' index' op':
-  PureWp True
-    (struct.make #replica.ApplyAsBackupArgs (alist_val [
-      "epoch" ::= #epoch';
-      "index" ::= #index';
-      "op" ::= #op'
-    ]))%struct
-    #(ApplyAsBackupArgs.mk epoch' index' op').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ApplyAsBackupArgs_struct_fields_split dq l (v : ApplyAsBackupArgs.t) :
@@ -115,6 +107,7 @@ End instances.
 Module SetStateArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Epoch' : w64;
   NextIndex' : w64;
@@ -167,16 +160,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SetStateArgs Epoch' NextIndex' CommittedNextIndex' State':
-  PureWp True
-    (struct.make #replica.SetStateArgs (alist_val [
-      "Epoch" ::= #Epoch';
-      "NextIndex" ::= #NextIndex';
-      "CommittedNextIndex" ::= #CommittedNextIndex';
-      "State" ::= #State'
-    ]))%struct
-    #(SetStateArgs.mk Epoch' NextIndex' CommittedNextIndex' State').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SetStateArgs_struct_fields_split dq l (v : SetStateArgs.t) :
@@ -205,6 +188,7 @@ End instances.
 Module GetStateArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Epoch' : w64;
 }.
@@ -242,13 +226,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetStateArgs Epoch':
-  PureWp True
-    (struct.make #replica.GetStateArgs (alist_val [
-      "Epoch" ::= #Epoch'
-    ]))%struct
-    #(GetStateArgs.mk Epoch').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance GetStateArgs_struct_fields_split dq l (v : GetStateArgs.t) :
@@ -271,6 +248,7 @@ End instances.
 Module GetStateReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Err' : w64;
   NextIndex' : w64;
@@ -323,16 +301,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetStateReply Err' NextIndex' CommittedNextIndex' State':
-  PureWp True
-    (struct.make #replica.GetStateReply (alist_val [
-      "Err" ::= #Err';
-      "NextIndex" ::= #NextIndex';
-      "CommittedNextIndex" ::= #CommittedNextIndex';
-      "State" ::= #State'
-    ]))%struct
-    #(GetStateReply.mk Err' NextIndex' CommittedNextIndex' State').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance GetStateReply_struct_fields_split dq l (v : GetStateReply.t) :
@@ -361,6 +329,7 @@ End instances.
 Module BecomePrimaryArgs.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Epoch' : w64;
   Replicas' : slice.t;
@@ -403,14 +372,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BecomePrimaryArgs Epoch' Replicas':
-  PureWp True
-    (struct.make #replica.BecomePrimaryArgs (alist_val [
-      "Epoch" ::= #Epoch';
-      "Replicas" ::= #Replicas'
-    ]))%struct
-    #(BecomePrimaryArgs.mk Epoch' Replicas').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance BecomePrimaryArgs_struct_fields_split dq l (v : BecomePrimaryArgs.t) :
@@ -435,6 +396,7 @@ End instances.
 Module ApplyReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Err' : w64;
   Reply' : slice.t;
@@ -477,14 +439,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ApplyReply Err' Reply':
-  PureWp True
-    (struct.make #replica.ApplyReply (alist_val [
-      "Err" ::= #Err';
-      "Reply" ::= #Reply'
-    ]))%struct
-    #(ApplyReply.mk Err' Reply').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ApplyReply_struct_fields_split dq l (v : ApplyReply.t) :
@@ -520,6 +474,7 @@ End IncreaseCommitArgs.
 Module StateMachine.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   StartApply' : func.t;
   ApplyReadonly' : func.t;
@@ -572,16 +527,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StateMachine StartApply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
-  PureWp True
-    (struct.make #replica.StateMachine (alist_val [
-      "StartApply" ::= #StartApply';
-      "ApplyReadonly" ::= #ApplyReadonly';
-      "SetStateAndUnseal" ::= #SetStateAndUnseal';
-      "GetStateAndSeal" ::= #GetStateAndSeal'
-    ]))%struct
-    #(StateMachine.mk StartApply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :
@@ -610,6 +555,7 @@ End instances.
 Module SyncStateMachine.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Apply' : func.t;
   ApplyReadonly' : func.t;
@@ -662,16 +608,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SyncStateMachine Apply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
-  PureWp True
-    (struct.make #replica.SyncStateMachine (alist_val [
-      "Apply" ::= #Apply';
-      "ApplyReadonly" ::= #ApplyReadonly';
-      "SetStateAndUnseal" ::= #SetStateAndUnseal';
-      "GetStateAndSeal" ::= #GetStateAndSeal'
-    ]))%struct
-    #(SyncStateMachine.mk Apply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SyncStateMachine_struct_fields_split dq l (v : SyncStateMachine.t) :
@@ -700,6 +636,7 @@ End instances.
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   cl' : loc;
 }.
@@ -737,13 +674,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk cl':
-  PureWp True
-    (struct.make #replica.Clerk (alist_val [
-      "cl" ::= #cl'
-    ]))%struct
-    #(Clerk.mk cl').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
@@ -766,6 +696,7 @@ End instances.
 Module Server.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   epoch' : w64;
@@ -873,27 +804,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server mu' epoch' sealed' sm' nextIndex' canBecomePrimary' isPrimary' clerks' isPrimary_cond' opAppliedConds' leaseExpiration' leaseValid' committedNextIndex' committedNextIndex_cond' confCk':
-  PureWp True
-    (struct.make #replica.Server (alist_val [
-      "mu" ::= #mu';
-      "epoch" ::= #epoch';
-      "sealed" ::= #sealed';
-      "sm" ::= #sm';
-      "nextIndex" ::= #nextIndex';
-      "canBecomePrimary" ::= #canBecomePrimary';
-      "isPrimary" ::= #isPrimary';
-      "clerks" ::= #clerks';
-      "isPrimary_cond" ::= #isPrimary_cond';
-      "opAppliedConds" ::= #opAppliedConds';
-      "leaseExpiration" ::= #leaseExpiration';
-      "leaseValid" ::= #leaseValid';
-      "committedNextIndex" ::= #committedNextIndex';
-      "committedNextIndex_cond" ::= #committedNextIndex_cond';
-      "confCk" ::= #confCk'
-    ]))%struct
-    #(Server.mk mu' epoch' sealed' sm' nextIndex' canBecomePrimary' isPrimary' clerks' isPrimary_cond' opAppliedConds' leaseExpiration' leaseValid' committedNextIndex' committedNextIndex_cond' confCk').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :

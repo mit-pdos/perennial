@@ -23,10 +23,10 @@ Definition LockClerk__Lockⁱᵐᵖˡ : val :=
   λ: "ck" "key",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "key" := (mem.alloc "key") in
-    (for: (λ: <>, (let: "$a0" := (![#stringT] "key") in
+    (for: (λ: <>, (let: "$a0" := (![stringT] "key") in
     let: "$a1" := #""%go in
     let: "$a2" := #"1"%go in
-    (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1" "$a2") ≠ #"ok"%go); (λ: <>, #()) := λ: <>,
+    (interface.get #"ConditionalPut"%go (![kv.KvCput] (struct.field_ref ptrT #"kv"%go (![ptrT] "ck")))) "$a0" "$a1" "$a2") ≠ #"ok"%go); (λ: <>, #()) := λ: <>,
       do:  #());;;
     return: #()).
 
@@ -35,9 +35,9 @@ Definition LockClerk__Unlockⁱᵐᵖˡ : val :=
   λ: "ck" "key",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "key" := (mem.alloc "key") in
-    do:  (let: "$a0" := (![#stringT] "key") in
+    do:  (let: "$a0" := (![stringT] "key") in
     let: "$a1" := #""%go in
-    (interface.get #"Put"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1");;;
+    (interface.get #"Put"%go (![kv.KvCput] (struct.field_ref ptrT #"kv"%go (![ptrT] "ck")))) "$a0" "$a1");;;
     return: #()).
 
 Definition MakeLockClerk : go_string := "github.com/mit-pdos/gokv/lockservice.MakeLockClerk"%go.
@@ -46,8 +46,8 @@ Definition MakeLockClerk : go_string := "github.com/mit-pdos/gokv/lockservice.Ma
 Definition MakeLockClerkⁱᵐᵖˡ : val :=
   λ: "kv",
     exception_do (let: "kv" := (mem.alloc "kv") in
-    return: (mem.alloc (let: "$kv" := (![#kv.KvCput] "kv") in
-     struct.make #LockClerk [{
+    return: (mem.alloc (let: "$kv" := (![kv.KvCput] "kv") in
+     struct.make LockClerk [{
        "kv" ::= "$kv"
      }]))).
 

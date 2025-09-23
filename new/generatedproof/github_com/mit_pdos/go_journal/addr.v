@@ -14,6 +14,7 @@ Module addr.
 Module Addr.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Blkno' : w64;
   Off' : w64;
@@ -56,14 +57,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Addr Blkno' Off':
-  PureWp True
-    (struct.make #addr.Addr (alist_val [
-      "Blkno" ::= #Blkno';
-      "Off" ::= #Off'
-    ]))%struct
-    #(Addr.mk Blkno' Off').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Addr_struct_fields_split dq l (v : Addr.t) :

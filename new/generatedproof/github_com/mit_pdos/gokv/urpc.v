@@ -18,6 +18,7 @@ Module urpc.
 Module Server.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   handlers' : loc;
 }.
@@ -55,13 +56,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server handlers':
-  PureWp True
-    (struct.make #urpc.Server (alist_val [
-      "handlers" ::= #handlers'
-    ]))%struct
-    #(Server.mk handlers').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :
@@ -84,6 +78,7 @@ End instances.
 Module Callback.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   reply' : loc;
   state' : loc;
@@ -131,15 +126,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Callback reply' state' cond':
-  PureWp True
-    (struct.make #urpc.Callback (alist_val [
-      "reply" ::= #reply';
-      "state" ::= #state';
-      "cond" ::= #cond'
-    ]))%struct
-    #(Callback.mk reply' state' cond').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Callback_struct_fields_split dq l (v : Callback.t) :
@@ -166,6 +152,7 @@ End instances.
 Module Client.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   conn' : grove_ffi.Connection.t;
@@ -218,16 +205,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Client mu' conn' seq' pending':
-  PureWp True
-    (struct.make #urpc.Client (alist_val [
-      "mu" ::= #mu';
-      "conn" ::= #conn';
-      "seq" ::= #seq';
-      "pending" ::= #pending'
-    ]))%struct
-    #(Client.mk mu' conn' seq' pending').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Client_struct_fields_split dq l (v : Client.t) :

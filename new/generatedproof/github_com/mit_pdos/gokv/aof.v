@@ -16,6 +16,7 @@ Module aof.
 Module AppendOnlyFile.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   oldDurableCond' : loc;
@@ -98,22 +99,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_AppendOnlyFile mu' oldDurableCond' durableCond' lengthCond' membuf' length' durableLength' closeRequested' closed' closedCond':
-  PureWp True
-    (struct.make #aof.AppendOnlyFile (alist_val [
-      "mu" ::= #mu';
-      "oldDurableCond" ::= #oldDurableCond';
-      "durableCond" ::= #durableCond';
-      "lengthCond" ::= #lengthCond';
-      "membuf" ::= #membuf';
-      "length" ::= #length';
-      "durableLength" ::= #durableLength';
-      "closeRequested" ::= #closeRequested';
-      "closed" ::= #closed';
-      "closedCond" ::= #closedCond'
-    ]))%struct
-    #(AppendOnlyFile.mk mu' oldDurableCond' durableCond' lengthCond' membuf' length' durableLength' closeRequested' closed' closedCond').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AppendOnlyFile_struct_fields_split dq l (v : AppendOnlyFile.t) :

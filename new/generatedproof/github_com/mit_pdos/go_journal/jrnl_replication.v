@@ -19,6 +19,7 @@ Module replicated_block.
 Module RepBlock.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   txn' : loc;
   m' : loc;
@@ -71,16 +72,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RepBlock txn' m' a0' a1':
-  PureWp True
-    (struct.make #replicated_block.RepBlock (alist_val [
-      "txn" ::= #txn';
-      "m" ::= #m';
-      "a0" ::= #a0';
-      "a1" ::= #a1'
-    ]))%struct
-    #(RepBlock.mk txn' m' a0' a1').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RepBlock_struct_fields_split dq l (v : RepBlock.t) :

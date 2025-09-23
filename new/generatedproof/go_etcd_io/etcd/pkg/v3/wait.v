@@ -25,6 +25,7 @@ End Wait.
 Module list'.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   e' : slice.t;
 }.
@@ -62,13 +63,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_list' e':
-  PureWp True
-    (struct.make #wait.list' (alist_val [
-      "e" ::= #e'
-    ]))%struct
-    #(list'.mk e').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance list'_struct_fields_split dq l (v : list'.t) :
@@ -91,6 +85,7 @@ End instances.
 Module listElement.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   l' : sync.RWMutex.t;
   m' : loc;
@@ -133,14 +128,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_listElement l' m':
-  PureWp True
-    (struct.make #wait.listElement (alist_val [
-      "l" ::= #l';
-      "m" ::= #m'
-    ]))%struct
-    #(listElement.mk l' m').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance listElement_struct_fields_split dq l (v : listElement.t) :
@@ -165,6 +152,7 @@ End instances.
 Module waitWithResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ch' : loc;
 }.
@@ -202,13 +190,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_waitWithResponse ch':
-  PureWp True
-    (struct.make #wait.waitWithResponse (alist_val [
-      "ch" ::= #ch'
-    ]))%struct
-    #(waitWithResponse.mk ch').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance waitWithResponse_struct_fields_split dq l (v : waitWithResponse.t) :
@@ -242,6 +223,7 @@ End WaitTime.
 Module timeList.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   l' : sync.Mutex.t;
   lastTriggerDeadline' : w64;
@@ -289,15 +271,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_timeList l' lastTriggerDeadline' m':
-  PureWp True
-    (struct.make #wait.timeList (alist_val [
-      "l" ::= #l';
-      "lastTriggerDeadline" ::= #lastTriggerDeadline';
-      "m" ::= #m'
-    ]))%struct
-    #(timeList.mk l' lastTriggerDeadline' m').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance timeList_struct_fields_split dq l (v : timeList.t) :

@@ -14,18 +14,12 @@ Module Box.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty (T : go_type) : go_type := structT [
-  "Value" :: T
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   Value' : T';
 }.
 End def.
 End Box.
 
-#[local] Transparent Box.ty.
 Arguments Box.mk {_} { T' } {_ T _} .
 Arguments Box.t {_} T' {_ T _} .
 
@@ -35,19 +29,19 @@ Context`{!IntoVal T'} `{!IntoValTyped T' T} .
 #[local] Transparent generics.Box.
 #[local] Typeclasses Transparent generics.Box.
 
-Global Instance Box_wf : struct.Wf (Box.ty T).
+Global Instance Box_wf : struct.Wf generics.Box.
 Proof. apply _. Qed.
 
-Global Instance settable_Box : Settable (Box.t T') :=
+Global Instance settable_Box : Settable Box.t :=
   settable! (Box.mk (T:=T)) < Box.Value' >.
-Global Instance into_val_Box : IntoVal (Box.t T') :=
+Global Instance into_val_Box : IntoVal Box.t :=
   {| to_val_def v :=
-    struct.val_aux (Box.ty T) [
+    struct.val_aux generics.Box [
     "Value" ::= #(Box.Value' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_Box : IntoValTyped (Box.t T') (Box.ty T) :=
+Global Program Instance into_val_typed_Box : IntoValTyped Box.t generics.Box :=
 {|
   default_val := Box.mk (default_val _);
 |}.
@@ -56,30 +50,16 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Box_Value : IntoValStructField "Value" (Box.ty T) Box.Value'.
+Global Instance into_val_struct_field_Box_Value : IntoValStructField "Value" generics.Box Box.Value'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_Box :
-  PureWp True
-    (generics.Box #T)
-    #(Box.ty T).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_Box Value':
-  PureWp True
-    (struct.make #(Box.ty T) (alist_val [
-      "Value" ::= #Value'
-    ]))%struct
-    #(Box.mk Value').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Box_struct_fields_split `{!BoundedTypeSize T} dq l (v : (Box.t T')) :
+Global Instance Box_struct_fields_split `{!BoundedTypeSize T} dq l (v : Box.t) :
   StructFieldsSplit dq l v (
-    "HValue" ∷ l ↦s[(Box.ty T) :: "Value"]{dq} v.(Box.Value')
+    "HValue" ∷ l ↦s[generics.Box :: "Value"]{dq} v.(Box.Value')
   ).
 Proof.
   rewrite /named.
@@ -98,14 +78,6 @@ Module Container.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty (T : go_type) : go_type := structT [
-  "X" :: T;
-  "Y" :: mapT intT T;
-  "Z" :: ptrT;
-  "W" :: uint64T
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   X' : T';
   Y' : loc;
@@ -115,7 +87,6 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Container.
 
-#[local] Transparent Container.ty.
 Arguments Container.mk {_} { T' } {_ T _} .
 Arguments Container.t {_} T' {_ T _} .
 
@@ -125,14 +96,14 @@ Context`{!IntoVal T'} `{!IntoValTyped T' T} .
 #[local] Transparent generics.Container.
 #[local] Typeclasses Transparent generics.Container.
 
-Global Instance Container_wf : struct.Wf (Container.ty T).
+Global Instance Container_wf : struct.Wf generics.Container.
 Proof. apply _. Qed.
 
-Global Instance settable_Container : Settable (Container.t T') :=
+Global Instance settable_Container : Settable Container.t :=
   settable! (Container.mk (T:=T)) < Container.X'; Container.Y'; Container.Z'; Container.W' >.
-Global Instance into_val_Container : IntoVal (Container.t T') :=
+Global Instance into_val_Container : IntoVal Container.t :=
   {| to_val_def v :=
-    struct.val_aux (Container.ty T) [
+    struct.val_aux generics.Container [
     "X" ::= #(Container.X' v);
     "Y" ::= #(Container.Y' v);
     "Z" ::= #(Container.Z' v);
@@ -140,7 +111,7 @@ Global Instance into_val_Container : IntoVal (Container.t T') :=
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_Container : IntoValTyped (Container.t T') (Container.ty T) :=
+Global Program Instance into_val_typed_Container : IntoValTyped Container.t generics.Container :=
 {|
   default_val := Container.mk (default_val _) (default_val _) (default_val _) (default_val _);
 |}.
@@ -149,45 +120,28 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Container_X : IntoValStructField "X" (Container.ty T) Container.X'.
+Global Instance into_val_struct_field_Container_X : IntoValStructField "X" generics.Container Container.X'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Container_Y : IntoValStructField "Y" (Container.ty T) Container.Y'.
+Global Instance into_val_struct_field_Container_Y : IntoValStructField "Y" generics.Container Container.Y'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Container_Z : IntoValStructField "Z" (Container.ty T) Container.Z'.
+Global Instance into_val_struct_field_Container_Z : IntoValStructField "Z" generics.Container Container.Z'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Container_W : IntoValStructField "W" (Container.ty T) Container.W'.
+Global Instance into_val_struct_field_Container_W : IntoValStructField "W" generics.Container Container.W'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_Container :
-  PureWp True
-    (generics.Container #T)
-    #(Container.ty T).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_Container X' Y' Z' W':
-  PureWp True
-    (struct.make #(Container.ty T) (alist_val [
-      "X" ::= #X';
-      "Y" ::= #Y';
-      "Z" ::= #Z';
-      "W" ::= #W'
-    ]))%struct
-    #(Container.mk X' Y' Z' W').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Container_struct_fields_split `{!BoundedTypeSize T} dq l (v : (Container.t T')) :
+Global Instance Container_struct_fields_split `{!BoundedTypeSize T} dq l (v : Container.t) :
   StructFieldsSplit dq l v (
-    "HX" ∷ l ↦s[(Container.ty T) :: "X"]{dq} v.(Container.X') ∗
-    "HY" ∷ l ↦s[(Container.ty T) :: "Y"]{dq} v.(Container.Y') ∗
-    "HZ" ∷ l ↦s[(Container.ty T) :: "Z"]{dq} v.(Container.Z') ∗
-    "HW" ∷ l ↦s[(Container.ty T) :: "W"]{dq} v.(Container.W')
+    "HX" ∷ l ↦s[generics.Container :: "X"]{dq} v.(Container.X') ∗
+    "HY" ∷ l ↦s[generics.Container :: "Y"]{dq} v.(Container.Y') ∗
+    "HZ" ∷ l ↦s[generics.Container :: "Z"]{dq} v.(Container.Z') ∗
+    "HW" ∷ l ↦s[generics.Container :: "W"]{dq} v.(Container.W')
   ).
 Proof.
   rewrite /named.
@@ -195,9 +149,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Container.X' v)) ((Container.ty T)) "X"%go.
-  simpl_one_flatten_struct (# (Container.Y' v)) ((Container.ty T)) "Y"%go.
-  simpl_one_flatten_struct (# (Container.Z' v)) ((Container.ty T)) "Z"%go.
+  simpl_one_flatten_struct (# (Container.X' v)) (generics.Container) "X"%go.
+  simpl_one_flatten_struct (# (Container.Y' v)) (generics.Container) "Y"%go.
+  simpl_one_flatten_struct (# (Container.Z' v)) (generics.Container) "Z"%go.
 
   solve_field_ref_f.
 Qed.
@@ -209,36 +163,30 @@ Module UseContainer.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty : go_type := structT [
-  "X" :: generics.Container.ty uint64T
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t := mk {
   X' : (Container.t w64);
 }.
 End def.
 End UseContainer.
 
-#[local] Transparent UseContainer.ty.
 Section instances.
 Context `{ffi_syntax}.
 #[local] Transparent generics.UseContainer.
 #[local] Typeclasses Transparent generics.UseContainer.
 
-Global Instance UseContainer_wf : struct.Wf (UseContainer.ty ).
+Global Instance UseContainer_wf : struct.Wf generics.UseContainer.
 Proof. apply _. Qed.
 
-Global Instance settable_UseContainer : Settable (UseContainer.t ) :=
+Global Instance settable_UseContainer : Settable UseContainer.t :=
   settable! UseContainer.mk < UseContainer.X' >.
-Global Instance into_val_UseContainer : IntoVal (UseContainer.t ) :=
+Global Instance into_val_UseContainer : IntoVal UseContainer.t :=
   {| to_val_def v :=
-    struct.val_aux (UseContainer.ty ) [
+    struct.val_aux generics.UseContainer [
     "X" ::= #(UseContainer.X' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_UseContainer : IntoValTyped (UseContainer.t ) (UseContainer.ty ) :=
+Global Program Instance into_val_typed_UseContainer : IntoValTyped UseContainer.t generics.UseContainer :=
 {|
   default_val := UseContainer.mk (default_val _);
 |}.
@@ -247,30 +195,16 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_UseContainer_X : IntoValStructField "X" (UseContainer.ty ) UseContainer.X'.
+Global Instance into_val_struct_field_UseContainer_X : IntoValStructField "X" generics.UseContainer UseContainer.X'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_UseContainer :
-  PureWp True
-    (generics.UseContainer #())
-    #(UseContainer.ty ).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_UseContainer X':
-  PureWp True
-    (struct.make #(UseContainer.ty ) (alist_val [
-      "X" ::= #X'
-    ]))%struct
-    #(UseContainer.mk X').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance UseContainer_struct_fields_split dq l (v : (UseContainer.t )) :
+Global Instance UseContainer_struct_fields_split dq l (v : UseContainer.t) :
   StructFieldsSplit dq l v (
-    "HX" ∷ l ↦s[(UseContainer.ty ) :: "X"]{dq} v.(UseContainer.X')
+    "HX" ∷ l ↦s[generics.UseContainer :: "X"]{dq} v.(UseContainer.X')
   ).
 Proof.
   rewrite /named.
@@ -289,12 +223,6 @@ Module OnlyIndirect.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty (T : go_type) : go_type := structT [
-  "X" :: sliceT;
-  "Y" :: ptrT
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   X' : slice.t;
   Y' : loc;
@@ -302,7 +230,6 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End OnlyIndirect.
 
-#[local] Transparent OnlyIndirect.ty.
 Arguments OnlyIndirect.mk {_} { T' } {_ T _} .
 Arguments OnlyIndirect.t {_} T' {_ T _} .
 
@@ -312,20 +239,20 @@ Context`{!IntoVal T'} `{!IntoValTyped T' T} .
 #[local] Transparent generics.OnlyIndirect.
 #[local] Typeclasses Transparent generics.OnlyIndirect.
 
-Global Instance OnlyIndirect_wf : struct.Wf (OnlyIndirect.ty T).
+Global Instance OnlyIndirect_wf : struct.Wf generics.OnlyIndirect.
 Proof. apply _. Qed.
 
-Global Instance settable_OnlyIndirect : Settable (OnlyIndirect.t T') :=
+Global Instance settable_OnlyIndirect : Settable OnlyIndirect.t :=
   settable! (OnlyIndirect.mk (T:=T)) < OnlyIndirect.X'; OnlyIndirect.Y' >.
-Global Instance into_val_OnlyIndirect : IntoVal (OnlyIndirect.t T') :=
+Global Instance into_val_OnlyIndirect : IntoVal OnlyIndirect.t :=
   {| to_val_def v :=
-    struct.val_aux (OnlyIndirect.ty T) [
+    struct.val_aux generics.OnlyIndirect [
     "X" ::= #(OnlyIndirect.X' v);
     "Y" ::= #(OnlyIndirect.Y' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_OnlyIndirect : IntoValTyped (OnlyIndirect.t T') (OnlyIndirect.ty T) :=
+Global Program Instance into_val_typed_OnlyIndirect : IntoValTyped OnlyIndirect.t generics.OnlyIndirect :=
 {|
   default_val := OnlyIndirect.mk (default_val _) (default_val _);
 |}.
@@ -334,35 +261,20 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_OnlyIndirect_X : IntoValStructField "X" (OnlyIndirect.ty T) OnlyIndirect.X'.
+Global Instance into_val_struct_field_OnlyIndirect_X : IntoValStructField "X" generics.OnlyIndirect OnlyIndirect.X'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_OnlyIndirect_Y : IntoValStructField "Y" (OnlyIndirect.ty T) OnlyIndirect.Y'.
+Global Instance into_val_struct_field_OnlyIndirect_Y : IntoValStructField "Y" generics.OnlyIndirect OnlyIndirect.Y'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_OnlyIndirect :
-  PureWp True
-    (generics.OnlyIndirect #T)
-    #(OnlyIndirect.ty T).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_OnlyIndirect X' Y':
-  PureWp True
-    (struct.make #(OnlyIndirect.ty T) (alist_val [
-      "X" ::= #X';
-      "Y" ::= #Y'
-    ]))%struct
-    #(OnlyIndirect.mk X' Y').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance OnlyIndirect_struct_fields_split `{!BoundedTypeSize T} dq l (v : (OnlyIndirect.t T')) :
+Global Instance OnlyIndirect_struct_fields_split `{!BoundedTypeSize T} dq l (v : OnlyIndirect.t) :
   StructFieldsSplit dq l v (
-    "HX" ∷ l ↦s[(OnlyIndirect.ty T) :: "X"]{dq} v.(OnlyIndirect.X') ∗
-    "HY" ∷ l ↦s[(OnlyIndirect.ty T) :: "Y"]{dq} v.(OnlyIndirect.Y')
+    "HX" ∷ l ↦s[generics.OnlyIndirect :: "X"]{dq} v.(OnlyIndirect.X') ∗
+    "HY" ∷ l ↦s[generics.OnlyIndirect :: "Y"]{dq} v.(OnlyIndirect.Y')
   ).
 Proof.
   rewrite /named.
@@ -370,7 +282,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (OnlyIndirect.X' v)) ((OnlyIndirect.ty T)) "X"%go.
+  simpl_one_flatten_struct (# (OnlyIndirect.X' v)) (generics.OnlyIndirect) "X"%go.
 
   solve_field_ref_f.
 Qed.
@@ -382,12 +294,6 @@ Module MultiParam.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty (A B : go_type) : go_type := structT [
-  "Y" :: B;
-  "X" :: A
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t `{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B} := mk {
   Y' : B';
   X' : A';
@@ -395,7 +301,6 @@ Record t `{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' 
 End def.
 End MultiParam.
 
-#[local] Transparent MultiParam.ty.
 Arguments MultiParam.mk {_} { A' } {_ A _} { B' } {_ B _} .
 Arguments MultiParam.t {_} A' {_ A _} B' {_ B _} .
 
@@ -405,20 +310,20 @@ Context`{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B}
 #[local] Transparent generics.MultiParam.
 #[local] Typeclasses Transparent generics.MultiParam.
 
-Global Instance MultiParam_wf : struct.Wf (MultiParam.ty A B).
+Global Instance MultiParam_wf : struct.Wf generics.MultiParam.
 Proof. apply _. Qed.
 
-Global Instance settable_MultiParam : Settable (MultiParam.t A' B') :=
+Global Instance settable_MultiParam : Settable MultiParam.t :=
   settable! (MultiParam.mk (A:=A) (B:=B)) < MultiParam.Y'; MultiParam.X' >.
-Global Instance into_val_MultiParam : IntoVal (MultiParam.t A' B') :=
+Global Instance into_val_MultiParam : IntoVal MultiParam.t :=
   {| to_val_def v :=
-    struct.val_aux (MultiParam.ty A B) [
+    struct.val_aux generics.MultiParam [
     "Y" ::= #(MultiParam.Y' v);
     "X" ::= #(MultiParam.X' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_MultiParam : IntoValTyped (MultiParam.t A' B') (MultiParam.ty A B) :=
+Global Program Instance into_val_typed_MultiParam : IntoValTyped MultiParam.t generics.MultiParam :=
 {|
   default_val := MultiParam.mk (default_val _) (default_val _);
 |}.
@@ -427,35 +332,20 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_MultiParam_Y : IntoValStructField "Y" (MultiParam.ty A B) MultiParam.Y'.
+Global Instance into_val_struct_field_MultiParam_Y : IntoValStructField "Y" generics.MultiParam MultiParam.Y'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_MultiParam_X : IntoValStructField "X" (MultiParam.ty A B) MultiParam.X'.
+Global Instance into_val_struct_field_MultiParam_X : IntoValStructField "X" generics.MultiParam MultiParam.X'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_MultiParam :
-  PureWp True
-    (generics.MultiParam #A #B)
-    #(MultiParam.ty A B).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_MultiParam Y' X':
-  PureWp True
-    (struct.make #(MultiParam.ty A B) (alist_val [
-      "Y" ::= #Y';
-      "X" ::= #X'
-    ]))%struct
-    #(MultiParam.mk Y' X').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance MultiParam_struct_fields_split `{!BoundedTypeSize A} `{!BoundedTypeSize B} dq l (v : (MultiParam.t A' B')) :
+Global Instance MultiParam_struct_fields_split `{!BoundedTypeSize A} `{!BoundedTypeSize B} dq l (v : MultiParam.t) :
   StructFieldsSplit dq l v (
-    "HY" ∷ l ↦s[(MultiParam.ty A B) :: "Y"]{dq} v.(MultiParam.Y') ∗
-    "HX" ∷ l ↦s[(MultiParam.ty A B) :: "X"]{dq} v.(MultiParam.X')
+    "HY" ∷ l ↦s[generics.MultiParam :: "Y"]{dq} v.(MultiParam.Y') ∗
+    "HX" ∷ l ↦s[generics.MultiParam :: "X"]{dq} v.(MultiParam.X')
   ).
 Proof.
   rewrite /named.
@@ -463,7 +353,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MultiParam.Y' v)) ((MultiParam.ty A B)) "Y"%go.
+  simpl_one_flatten_struct (# (MultiParam.Y' v)) (generics.MultiParam) "Y"%go.
 
   solve_field_ref_f.
 Qed.

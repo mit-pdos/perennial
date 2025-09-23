@@ -30,7 +30,7 @@ Definition other : go_string := "github.com/mit-pdos/gokv/globals_test.other"%go
 Definition otherⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "$r0" := #"ok"%go in
-    do:  ((globals.get #globalY) <-[#stringT] "$r0");;;
+    do:  ((globals.get #globalY) <-[stringT] "$r0");;;
     return: #()).
 
 Definition bar : go_string := "github.com/mit-pdos/gokv/globals_test.bar"%go.
@@ -39,7 +39,7 @@ Definition bar : go_string := "github.com/mit-pdos/gokv/globals_test.bar"%go.
 Definition barⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (do:  ((func_call #other) #());;;
-    (if: ((![#uint64T] (globals.get #GlobalX)) ≠ #(W64 10)) || ((![#stringT] (globals.get #globalY)) ≠ #"ok"%go)
+    (if: ((![uint64T] (globals.get #GlobalX)) ≠ #(W64 10)) || ((![stringT] (globals.get #globalY)) ≠ #"ok"%go)
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
       Panic "$a0")
@@ -73,19 +73,19 @@ Definition initialize' : val :=
     package.init #globals_test.main (λ: <>,
       exception_do (do:  (package.alloc globals_test.main #());;;
       let: "$r0" := ((func_call #foo) #()) in
-      do:  ((globals.get #GlobalX) <-[#uint64T] "$r0");;;
+      do:  ((globals.get #GlobalX) <-[uint64T] "$r0");;;
       let: "$r0" := #"a"%go in
-      do:  ((globals.get #globalA) <-[#stringT] "$r0");;;
+      do:  ((globals.get #globalA) <-[stringT] "$r0");;;
       let: "$r0" := #"b"%go in
-      do:  ((globals.get #globalB) <-[#stringT] "$r0");;;
+      do:  ((globals.get #globalB) <-[stringT] "$r0");;;
       do:  ((λ: <>,
-        exception_do (let: "$r0" := ((![#uint64T] (globals.get #GlobalX)) + #(W64 0)) in
-        do:  ((globals.get #GlobalX) <-[#uint64T] "$r0");;;
+        exception_do (let: "$r0" := ((![uint64T] (globals.get #GlobalX)) + #(W64 0)) in
+        do:  ((globals.get #GlobalX) <-[uint64T] "$r0");;;
         return: #())
         ) #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := #""%go in
-        do:  ((globals.get #globalY) <-[#stringT] "$r0");;;
+        do:  ((globals.get #globalY) <-[stringT] "$r0");;;
         return: #())
         ) #()))
       ).

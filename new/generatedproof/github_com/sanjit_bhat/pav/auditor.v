@@ -22,6 +22,7 @@ Module auditor.
 Module Auditor.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   sk' : loc;
@@ -79,17 +80,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Auditor mu' sk' lastDig' hist' serv':
-  PureWp True
-    (struct.make #auditor.Auditor (alist_val [
-      "mu" ::= #mu';
-      "sk" ::= #sk';
-      "lastDig" ::= #lastDig';
-      "hist" ::= #hist';
-      "serv" ::= #serv'
-    ]))%struct
-    #(Auditor.mk mu' sk' lastDig' hist' serv').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Auditor_struct_fields_split dq l (v : Auditor.t) :
@@ -120,6 +110,7 @@ End instances.
 Module history.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   link' : slice.t;
   servSig' : slice.t;
@@ -167,15 +158,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_history link' servSig' adtrSig':
-  PureWp True
-    (struct.make #auditor.history (alist_val [
-      "link" ::= #link';
-      "servSig" ::= #servSig';
-      "adtrSig" ::= #adtrSig'
-    ]))%struct
-    #(history.mk link' servSig' adtrSig').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance history_struct_fields_split dq l (v : history.t) :
@@ -202,6 +184,7 @@ End instances.
 Module serv.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   cli' : loc;
   sigPk' : cryptoffi.SigPublicKey.t;
@@ -259,17 +242,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_serv cli' sigPk' vrfPk' servVrfSig' adtrVrfSig':
-  PureWp True
-    (struct.make #auditor.serv (alist_val [
-      "cli" ::= #cli';
-      "sigPk" ::= #sigPk';
-      "vrfPk" ::= #vrfPk';
-      "servVrfSig" ::= #servVrfSig';
-      "adtrVrfSig" ::= #adtrVrfSig'
-    ]))%struct
-    #(serv.mk cli' sigPk' vrfPk' servVrfSig' adtrVrfSig').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance serv_struct_fields_split dq l (v : serv.t) :
@@ -300,6 +272,7 @@ End instances.
 Module UpdateReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Err' : ktcore.Blame.t;
 }.
@@ -337,13 +310,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_UpdateReply Err':
-  PureWp True
-    (struct.make #auditor.UpdateReply (alist_val [
-      "Err" ::= #Err'
-    ]))%struct
-    #(UpdateReply.mk Err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance UpdateReply_struct_fields_split dq l (v : UpdateReply.t) :
@@ -366,6 +332,7 @@ End instances.
 Module GetArg.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Epoch' : w64;
 }.
@@ -403,13 +370,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetArg Epoch':
-  PureWp True
-    (struct.make #auditor.GetArg (alist_val [
-      "Epoch" ::= #Epoch'
-    ]))%struct
-    #(GetArg.mk Epoch').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance GetArg_struct_fields_split dq l (v : GetArg.t) :
@@ -432,6 +392,7 @@ End instances.
 Module GetReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Link' : slice.t;
   ServLinkSig' : slice.t;
@@ -499,19 +460,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetReply Link' ServLinkSig' AdtrLinkSig' VrfPk' ServVrfSig' AdtrVrfSig' Err':
-  PureWp True
-    (struct.make #auditor.GetReply (alist_val [
-      "Link" ::= #Link';
-      "ServLinkSig" ::= #ServLinkSig';
-      "AdtrLinkSig" ::= #AdtrLinkSig';
-      "VrfPk" ::= #VrfPk';
-      "ServVrfSig" ::= #ServVrfSig';
-      "AdtrVrfSig" ::= #AdtrVrfSig';
-      "Err" ::= #Err'
-    ]))%struct
-    #(GetReply.mk Link' ServLinkSig' AdtrLinkSig' VrfPk' ServVrfSig' AdtrVrfSig' Err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance GetReply_struct_fields_split dq l (v : GetReply.t) :

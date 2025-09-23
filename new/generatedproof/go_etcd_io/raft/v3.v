@@ -51,6 +51,7 @@ End Logger.
 Module unstable.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   snapshot' : loc;
   entries' : slice.t;
@@ -113,18 +114,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_unstable snapshot' entries' offset' snapshotInProgress' offsetInProgress' logger':
-  PureWp True
-    (struct.make #raft.unstable (alist_val [
-      "snapshot" ::= #snapshot';
-      "entries" ::= #entries';
-      "offset" ::= #offset';
-      "snapshotInProgress" ::= #snapshotInProgress';
-      "offsetInProgress" ::= #offsetInProgress';
-      "logger" ::= #logger'
-    ]))%struct
-    #(unstable.mk snapshot' entries' offset' snapshotInProgress' offsetInProgress' logger').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance unstable_struct_fields_split dq l (v : unstable.t) :
@@ -168,6 +157,7 @@ End entryEncodingSize.
 Module raftLog.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   storage' : Storage.t;
   unstable' : unstable.t;
@@ -245,21 +235,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_raftLog storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused':
-  PureWp True
-    (struct.make #raft.raftLog (alist_val [
-      "storage" ::= #storage';
-      "unstable" ::= #unstable';
-      "committed" ::= #committed';
-      "applying" ::= #applying';
-      "applied" ::= #applied';
-      "logger" ::= #logger';
-      "maxApplyingEntsSize" ::= #maxApplyingEntsSize';
-      "applyingEntsSize" ::= #applyingEntsSize';
-      "applyingEntsPaused" ::= #applyingEntsPaused'
-    ]))%struct
-    #(raftLog.mk storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance raftLog_struct_fields_split dq l (v : raftLog.t) :
@@ -298,6 +273,7 @@ End instances.
 Module DefaultLogger.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Logger' : loc;
   debug' : bool;
@@ -340,14 +316,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_DefaultLogger Logger' debug':
-  PureWp True
-    (struct.make #raft.DefaultLogger (alist_val [
-      "Logger" ::= #Logger';
-      "debug" ::= #debug'
-    ]))%struct
-    #(DefaultLogger.mk Logger' debug').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance DefaultLogger_struct_fields_split dq l (v : DefaultLogger.t) :
@@ -394,6 +362,7 @@ End StateType.
 Module SoftState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Lead' : w64;
   RaftState' : StateType.t;
@@ -436,14 +405,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SoftState Lead' RaftState':
-  PureWp True
-    (struct.make #raft.SoftState (alist_val [
-      "Lead" ::= #Lead';
-      "RaftState" ::= #RaftState'
-    ]))%struct
-    #(SoftState.mk Lead' RaftState').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SoftState_struct_fields_split dq l (v : SoftState.t) :
@@ -468,6 +429,7 @@ End instances.
 Module Ready.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   SoftState' : loc;
   HardState' : raftpb.HardState.t;
@@ -540,20 +502,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Ready SoftState' HardState' ReadStates' Entries' Snapshot' CommittedEntries' Messages' MustSync':
-  PureWp True
-    (struct.make #raft.Ready (alist_val [
-      "SoftState" ::= #SoftState';
-      "HardState" ::= #HardState';
-      "ReadStates" ::= #ReadStates';
-      "Entries" ::= #Entries';
-      "Snapshot" ::= #Snapshot';
-      "CommittedEntries" ::= #CommittedEntries';
-      "Messages" ::= #Messages';
-      "MustSync" ::= #MustSync'
-    ]))%struct
-    #(Ready.mk SoftState' HardState' ReadStates' Entries' Snapshot' CommittedEntries' Messages' MustSync').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Ready_struct_fields_split dq l (v : Ready.t) :
@@ -601,6 +549,7 @@ End Node.
 Module Peer.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ID' : w64;
   Context' : slice.t;
@@ -643,14 +592,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Peer ID' Context':
-  PureWp True
-    (struct.make #raft.Peer (alist_val [
-      "ID" ::= #ID';
-      "Context" ::= #Context'
-    ]))%struct
-    #(Peer.mk ID' Context').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Peer_struct_fields_split dq l (v : Peer.t) :
@@ -675,6 +616,7 @@ End instances.
 Module msgWithResult.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   m' : raftpb.Message.t;
   result' : loc;
@@ -717,14 +659,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_msgWithResult m' result':
-  PureWp True
-    (struct.make #raft.msgWithResult (alist_val [
-      "m" ::= #m';
-      "result" ::= #result'
-    ]))%struct
-    #(msgWithResult.mk m' result').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance msgWithResult_struct_fields_split dq l (v : msgWithResult.t) :
@@ -749,6 +683,7 @@ End instances.
 Module node.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   propc' : loc;
   recvc' : loc;
@@ -836,23 +771,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_node propc' recvc' confc' confstatec' readyc' advancec' tickc' done' stop' status' rn':
-  PureWp True
-    (struct.make #raft.node (alist_val [
-      "propc" ::= #propc';
-      "recvc" ::= #recvc';
-      "confc" ::= #confc';
-      "confstatec" ::= #confstatec';
-      "readyc" ::= #readyc';
-      "advancec" ::= #advancec';
-      "tickc" ::= #tickc';
-      "done" ::= #done';
-      "stop" ::= #stop';
-      "status" ::= #status';
-      "rn" ::= #rn'
-    ]))%struct
-    #(node.mk propc' recvc' confc' confstatec' readyc' advancec' tickc' done' stop' status' rn').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance node_struct_fields_split dq l (v : node.t) :
@@ -906,6 +824,7 @@ End ReadOnlyOption.
 Module lockedRand.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : sync.Mutex.t;
 }.
@@ -943,13 +862,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockedRand mu':
-  PureWp True
-    (struct.make #raft.lockedRand (alist_val [
-      "mu" ::= #mu'
-    ]))%struct
-    #(lockedRand.mk mu').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockedRand_struct_fields_split dq l (v : lockedRand.t) :
@@ -994,6 +906,7 @@ End TraceLogger.
 Module Config.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ID' : w64;
   ElectionTick' : w64;
@@ -1121,31 +1034,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Config ID' ElectionTick' HeartbeatTick' Storage' Applied' AsyncStorageWrites' MaxSizePerMsg' MaxCommittedSizePerReady' MaxUncommittedEntriesSize' MaxInflightMsgs' MaxInflightBytes' CheckQuorum' PreVote' ReadOnlyOption' Logger' DisableProposalForwarding' DisableConfChangeValidation' StepDownOnRemoval' TraceLogger':
-  PureWp True
-    (struct.make #raft.Config (alist_val [
-      "ID" ::= #ID';
-      "ElectionTick" ::= #ElectionTick';
-      "HeartbeatTick" ::= #HeartbeatTick';
-      "Storage" ::= #Storage';
-      "Applied" ::= #Applied';
-      "AsyncStorageWrites" ::= #AsyncStorageWrites';
-      "MaxSizePerMsg" ::= #MaxSizePerMsg';
-      "MaxCommittedSizePerReady" ::= #MaxCommittedSizePerReady';
-      "MaxUncommittedEntriesSize" ::= #MaxUncommittedEntriesSize';
-      "MaxInflightMsgs" ::= #MaxInflightMsgs';
-      "MaxInflightBytes" ::= #MaxInflightBytes';
-      "CheckQuorum" ::= #CheckQuorum';
-      "PreVote" ::= #PreVote';
-      "ReadOnlyOption" ::= #ReadOnlyOption';
-      "Logger" ::= #Logger';
-      "DisableProposalForwarding" ::= #DisableProposalForwarding';
-      "DisableConfChangeValidation" ::= #DisableConfChangeValidation';
-      "StepDownOnRemoval" ::= #StepDownOnRemoval';
-      "TraceLogger" ::= #TraceLogger'
-    ]))%struct
-    #(Config.mk ID' ElectionTick' HeartbeatTick' Storage' Applied' AsyncStorageWrites' MaxSizePerMsg' MaxCommittedSizePerReady' MaxUncommittedEntriesSize' MaxInflightMsgs' MaxInflightBytes' CheckQuorum' PreVote' ReadOnlyOption' Logger' DisableProposalForwarding' DisableConfChangeValidation' StepDownOnRemoval' TraceLogger').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Config_struct_fields_split dq l (v : Config.t) :
@@ -1226,6 +1114,7 @@ End stepFunc.
 Module raft.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   id' : w64;
   Term' : w64;
@@ -1418,44 +1307,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_raft id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger':
-  PureWp True
-    (struct.make #raft.raft (alist_val [
-      "id" ::= #id';
-      "Term" ::= #Term';
-      "Vote" ::= #Vote';
-      "readStates" ::= #readStates';
-      "raftLog" ::= #raftLog';
-      "maxMsgSize" ::= #maxMsgSize';
-      "maxUncommittedSize" ::= #maxUncommittedSize';
-      "trk" ::= #trk';
-      "state" ::= #state';
-      "isLearner" ::= #isLearner';
-      "msgs" ::= #msgs';
-      "msgsAfterAppend" ::= #msgsAfterAppend';
-      "lead" ::= #lead';
-      "leadTransferee" ::= #leadTransferee';
-      "pendingConfIndex" ::= #pendingConfIndex';
-      "disableConfChangeValidation" ::= #disableConfChangeValidation';
-      "uncommittedSize" ::= #uncommittedSize';
-      "readOnly" ::= #readOnly';
-      "electionElapsed" ::= #electionElapsed';
-      "heartbeatElapsed" ::= #heartbeatElapsed';
-      "checkQuorum" ::= #checkQuorum';
-      "preVote" ::= #preVote';
-      "heartbeatTimeout" ::= #heartbeatTimeout';
-      "electionTimeout" ::= #electionTimeout';
-      "randomizedElectionTimeout" ::= #randomizedElectionTimeout';
-      "disableProposalForwarding" ::= #disableProposalForwarding';
-      "stepDownOnRemoval" ::= #stepDownOnRemoval';
-      "tick" ::= #tick';
-      "step" ::= #step';
-      "logger" ::= #logger';
-      "pendingReadIndexMessages" ::= #pendingReadIndexMessages';
-      "traceLogger" ::= #traceLogger'
-    ]))%struct
-    #(raft.mk id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance raft_struct_fields_split dq l (v : raft.t) :
@@ -1540,6 +1391,7 @@ End instances.
 Module RawNode.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   raft' : loc;
   asyncStorageWrites' : bool;
@@ -1597,17 +1449,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RawNode raft' asyncStorageWrites' prevSoftSt' prevHardSt' stepsOnAdvance':
-  PureWp True
-    (struct.make #raft.RawNode (alist_val [
-      "raft" ::= #raft';
-      "asyncStorageWrites" ::= #asyncStorageWrites';
-      "prevSoftSt" ::= #prevSoftSt';
-      "prevHardSt" ::= #prevHardSt';
-      "stepsOnAdvance" ::= #stepsOnAdvance'
-    ]))%struct
-    #(RawNode.mk raft' asyncStorageWrites' prevSoftSt' prevHardSt' stepsOnAdvance').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RawNode_struct_fields_split dq l (v : RawNode.t) :
@@ -1649,6 +1490,7 @@ End ProgressType.
 Module ReadState.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Index' : w64;
   RequestCtx' : slice.t;
@@ -1691,14 +1533,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ReadState Index' RequestCtx':
-  PureWp True
-    (struct.make #raft.ReadState (alist_val [
-      "Index" ::= #Index';
-      "RequestCtx" ::= #RequestCtx'
-    ]))%struct
-    #(ReadState.mk Index' RequestCtx').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ReadState_struct_fields_split dq l (v : ReadState.t) :
@@ -1723,6 +1557,7 @@ End instances.
 Module readIndexStatus.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   req' : raftpb.Message.t;
   index' : w64;
@@ -1770,15 +1605,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_readIndexStatus req' index' acks':
-  PureWp True
-    (struct.make #raft.readIndexStatus (alist_val [
-      "req" ::= #req';
-      "index" ::= #index';
-      "acks" ::= #acks'
-    ]))%struct
-    #(readIndexStatus.mk req' index' acks').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance readIndexStatus_struct_fields_split dq l (v : readIndexStatus.t) :
@@ -1805,6 +1631,7 @@ End instances.
 Module readOnly.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   option' : ReadOnlyOption.t;
   pendingReadIndex' : loc;
@@ -1852,15 +1679,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_readOnly option' pendingReadIndex' readIndexQueue':
-  PureWp True
-    (struct.make #raft.readOnly (alist_val [
-      "option" ::= #option';
-      "pendingReadIndex" ::= #pendingReadIndex';
-      "readIndexQueue" ::= #readIndexQueue'
-    ]))%struct
-    #(readOnly.mk option' pendingReadIndex' readIndexQueue').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance readOnly_struct_fields_split dq l (v : readOnly.t) :
@@ -1887,6 +1705,7 @@ End instances.
 Module TracingEvent.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -1917,12 +1736,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TracingEvent:
-  PureWp True
-    (struct.make #raft.TracingEvent (alist_val [
-    ]))%struct
-    #(TracingEvent.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -1930,6 +1743,7 @@ End instances.
 Module BasicStatus.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ID' : w64;
   HardState' : raftpb.HardState.t;
@@ -1987,17 +1801,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BasicStatus ID' HardState' SoftState' Applied' LeadTransferee':
-  PureWp True
-    (struct.make #raft.BasicStatus (alist_val [
-      "ID" ::= #ID';
-      "HardState" ::= #HardState';
-      "SoftState" ::= #SoftState';
-      "Applied" ::= #Applied';
-      "LeadTransferee" ::= #LeadTransferee'
-    ]))%struct
-    #(BasicStatus.mk ID' HardState' SoftState' Applied' LeadTransferee').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance BasicStatus_struct_fields_split dq l (v : BasicStatus.t) :
@@ -2028,6 +1831,7 @@ End instances.
 Module Status.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   BasicStatus' : BasicStatus.t;
   Config' : tracker.Config.t;
@@ -2075,15 +1879,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Status BasicStatus' Config' Progress':
-  PureWp True
-    (struct.make #raft.Status (alist_val [
-      "BasicStatus" ::= #BasicStatus';
-      "Config" ::= #Config';
-      "Progress" ::= #Progress'
-    ]))%struct
-    #(Status.mk BasicStatus' Config' Progress').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Status_struct_fields_split dq l (v : Status.t) :
@@ -2110,6 +1905,7 @@ End instances.
 Module inMemStorageCallStats.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   initialState' : w64;
   firstIndex' : w64;
@@ -2172,18 +1968,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_inMemStorageCallStats initialState' firstIndex' lastIndex' entries' term' snapshot':
-  PureWp True
-    (struct.make #raft.inMemStorageCallStats (alist_val [
-      "initialState" ::= #initialState';
-      "firstIndex" ::= #firstIndex';
-      "lastIndex" ::= #lastIndex';
-      "entries" ::= #entries';
-      "term" ::= #term';
-      "snapshot" ::= #snapshot'
-    ]))%struct
-    #(inMemStorageCallStats.mk initialState' firstIndex' lastIndex' entries' term' snapshot').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance inMemStorageCallStats_struct_fields_split dq l (v : inMemStorageCallStats.t) :
@@ -2216,6 +2000,7 @@ End instances.
 Module MemoryStorage.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Mutex' : sync.Mutex.t;
   hardState' : raftpb.HardState.t;
@@ -2273,17 +2058,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_MemoryStorage Mutex' hardState' snapshot' ents' callStats':
-  PureWp True
-    (struct.make #raft.MemoryStorage (alist_val [
-      "Mutex" ::= #Mutex';
-      "hardState" ::= #hardState';
-      "snapshot" ::= #snapshot';
-      "ents" ::= #ents';
-      "callStats" ::= #callStats'
-    ]))%struct
-    #(MemoryStorage.mk Mutex' hardState' snapshot' ents' callStats').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance MemoryStorage_struct_fields_split dq l (v : MemoryStorage.t) :
@@ -2314,6 +2088,7 @@ End instances.
 Module entryID.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   term' : w64;
   index' : w64;
@@ -2356,14 +2131,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_entryID term' index':
-  PureWp True
-    (struct.make #raft.entryID (alist_val [
-      "term" ::= #term';
-      "index" ::= #index'
-    ]))%struct
-    #(entryID.mk term' index').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance entryID_struct_fields_split dq l (v : entryID.t) :
@@ -2388,6 +2155,7 @@ End instances.
 Module logSlice.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   term' : w64;
   prev' : entryID.t;
@@ -2435,15 +2203,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_logSlice term' prev' entries':
-  PureWp True
-    (struct.make #raft.logSlice (alist_val [
-      "term" ::= #term';
-      "prev" ::= #prev';
-      "entries" ::= #entries'
-    ]))%struct
-    #(logSlice.mk term' prev' entries').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance logSlice_struct_fields_split dq l (v : logSlice.t) :

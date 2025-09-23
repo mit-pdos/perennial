@@ -27,13 +27,13 @@ End wps.
     heap and angelically assumes that the allocated location matches the
     [global_addr] map.
 
-    This also contains `__mem_type`, which is not actually global state as far
+    This also contains `to_mem_type`, which is not actually global state as far
     as execution semantics are concerned. Instead, this serves as the
     interaction point by which package A can define a generic function that
     takes in any type `T`, and package B can define the relationship between
     `T.id : go_string` and `T : go_type` and know that `A` generic function has
     been monomorphized so that `T.id` connects to `T : go_type`. I.e. the
-    `__mem_type` makes it easier to state local assumptions about the other maps
+    `to_mem_type` makes it easier to state local assumptions about the other maps
     (like the __functions map) that allow for types in one package to be used
     with generic functions/methods in another package.
  *)
@@ -42,7 +42,7 @@ Class GoContext {ext : ffi_syntax} :=
     global_addr_def : go_string → loc;
     __function : go_string → option val;
     __method : go_string → option (list (go_string * val));
-    __mem_type : go_string → go_type;
+    to_mem_type : go_string → go_type;
   }.
 
 (* NOTE: To avoid printing the [GoContext] instance when printing [global_addr].
@@ -60,31 +60,6 @@ Definition is_init (σ : state) : Prop :=
   (∀ pkg_name, σ.(globals) ("P" ++ pkg_name)%go = None).
 #[global] Opaque is_init.
 #[local] Opaque is_init.
-
-(* Problem:
-   Generic functions and methods require both the typeId and the go_type for its
-   input arguments. Can use strings for the typeId, but can't easily put the
-   go_type into that string.
-
-   What if the `go_type` become `mem_type`, and there was dynamic lookup to go
-   from typeId -> mem_type? That would require the globals state to have even
-   more stuff in it. It would require all type-related operations to be impure,
-   since they would have this precondition. Just doing wp_load/wp_store would
-   have non-trivial preconditions now. That could be really slow. On the other
-   hand, loading and storing already require an iris prop so maybe this is fine.
-   iPkgInit would be used *all* the time.
-
-   This would require dynamic mem_types.
-
-   Can we do the monomorphization more statically? Would need to say,
-   (∀ T_id, __functions ("someFunc[" + T_id + "]") = someFuncⁱᵐᵖˡ T_id (__mem_type T_id))
-
-   (func_callv (func_id T_id)
-   (method_callv (type_id)
-
-   What about forking gooselang? Could define it in new/golang/defn. Annoying
-   part would be copying the gooselang-specific program logic stuff.
-*)
 
 Local Definition is_init_inv get_is_pkg_init : iProp Σ :=
   inv nroot (

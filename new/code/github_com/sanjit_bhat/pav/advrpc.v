@@ -28,24 +28,24 @@ Definition Server__handleⁱᵐᵖˡ : val :=
     let: "data" := (mem.alloc "data") in
     let: "rpcId" := (mem.alloc "rpcId") in
     let: "conn" := (mem.alloc "conn") in
-    let: "ok0" := (mem.alloc (type.zero_val #boolT)) in
-    let: "f" := (mem.alloc (type.zero_val #funcT)) in
-    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #funcT] (struct.field_ref #Server #"handlers"%go (![#ptrT] "s"))) (![#uint64T] "rpcId")) in
+    let: "ok0" := (mem.alloc (type.zero_val boolT)) in
+    let: "f" := (mem.alloc (type.zero_val funcT)) in
+    let: ("$ret0", "$ret1") := (map.get (![mapT uint64T funcT] (struct.field_ref ptrT #"handlers"%go (![ptrT] "s"))) (![uint64T] "rpcId")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("f" <-[#funcT] "$r0");;;
-    do:  ("ok0" <-[#boolT] "$r1");;;
-    (if: (~ (![#boolT] "ok0"))
+    do:  ("f" <-[funcT] "$r0");;;
+    do:  ("ok0" <-[boolT] "$r1");;;
+    (if: (~ (![boolT] "ok0"))
     then return: (#())
     else do:  #());;;
-    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
-    do:  ("resp" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "data") in
-    let: "$a1" := (![#ptrT] "resp") in
-    (![#funcT] "f") "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#sliceT] (![#ptrT] "resp")) in
-    (method_call #(ptrT.id netffi.Conn.id) #"Send"%go (![#ptrT] "conn")) "$a0");;;
+    let: "resp" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val sliceT)) in
+    do:  ("resp" <-[ptrT] "$r0");;;
+    do:  (let: "$a0" := (![sliceT] "data") in
+    let: "$a1" := (![ptrT] "resp") in
+    (![funcT] "f") "$a0" "$a1");;;
+    do:  (let: "$a0" := (![sliceT] (![ptrT] "resp")) in
+    (method_call #(ptrT.id netffi.Conn.id) #"Send"%go (![ptrT] "conn")) "$a0");;;
     return: #()).
 
 (* go: advrpc.go:31:18 *)
@@ -54,35 +54,35 @@ Definition Server__readⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "conn" := (mem.alloc "conn") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "err0" := (mem.alloc (type.zero_val #boolT)) in
-      let: "req" := (mem.alloc (type.zero_val #sliceT)) in
-      let: ("$ret0", "$ret1") := ((method_call #(ptrT.id netffi.Conn.id) #"Receive"%go (![#ptrT] "conn")) #()) in
+      let: "err0" := (mem.alloc (type.zero_val boolT)) in
+      let: "req" := (mem.alloc (type.zero_val sliceT)) in
+      let: ("$ret0", "$ret1") := ((method_call #(ptrT.id netffi.Conn.id) #"Receive"%go (![ptrT] "conn")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("req" <-[#sliceT] "$r0");;;
-      do:  ("err0" <-[#boolT] "$r1");;;
-      (if: ![#boolT] "err0"
+      do:  ("req" <-[sliceT] "$r0");;;
+      do:  ("err0" <-[boolT] "$r1");;;
+      (if: ![boolT] "err0"
       then break: #()
       else do:  #());;;
-      let: "err1" := (mem.alloc (type.zero_val #boolT)) in
-      let: "data" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "rpcId" := (mem.alloc (type.zero_val #uint64T)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "req") in
+      let: "err1" := (mem.alloc (type.zero_val boolT)) in
+      let: "data" := (mem.alloc (type.zero_val sliceT)) in
+      let: "rpcId" := (mem.alloc (type.zero_val uint64T)) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "req") in
       (func_call #safemarshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("rpcId" <-[#uint64T] "$r0");;;
-      do:  ("data" <-[#sliceT] "$r1");;;
-      do:  ("err1" <-[#boolT] "$r2");;;
-      (if: ![#boolT] "err1"
+      do:  ("rpcId" <-[uint64T] "$r0");;;
+      do:  ("data" <-[sliceT] "$r1");;;
+      do:  ("err1" <-[boolT] "$r2");;;
+      (if: ![boolT] "err1"
       then continue: #()
       else do:  #());;;
       let: "$go" := (λ: <>,
-        exception_do (do:  (let: "$a0" := (![#ptrT] "conn") in
-        let: "$a1" := (![#uint64T] "rpcId") in
-        let: "$a2" := (![#sliceT] "data") in
-        (method_call #(ptrT.id Server.id) #"handle"%go (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
+        exception_do (do:  (let: "$a0" := (![ptrT] "conn") in
+        let: "$a1" := (![uint64T] "rpcId") in
+        let: "$a2" := (![sliceT] "data") in
+        (method_call #(ptrT.id Server.id) #"handle"%go (![ptrT] "s")) "$a0" "$a1" "$a2");;;
         return: #())
         ) in
       do:  (Fork ("$go" #())));;;
@@ -93,18 +93,18 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
   λ: "s" "addr",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "addr" := (mem.alloc "addr") in
-    let: "l" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "addr") in
+    let: "l" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![uint64T] "addr") in
     (func_call #netffi.Listen) "$a0") in
-    do:  ("l" <-[#ptrT] "$r0");;;
+    do:  ("l" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-        let: "conn" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := ((method_call #(ptrT.id netffi.Listener.id) #"Accept"%go (![#ptrT] "l")) #()) in
-        do:  ("conn" <-[#ptrT] "$r0");;;
+        let: "conn" := (mem.alloc (type.zero_val ptrT)) in
+        let: "$r0" := ((method_call #(ptrT.id netffi.Listener.id) #"Accept"%go (![ptrT] "l")) #()) in
+        do:  ("conn" <-[ptrT] "$r0");;;
         let: "$go" := (λ: <>,
-          exception_do (do:  (let: "$a0" := (![#ptrT] "conn") in
-          (method_call #(ptrT.id Server.id) #"read"%go (![#ptrT] "s")) "$a0");;;
+          exception_do (do:  (let: "$a0" := (![ptrT] "conn") in
+          (method_call #(ptrT.id Server.id) #"read"%go (![ptrT] "s")) "$a0");;;
           return: #())
           ) in
         do:  (Fork ("$go" #())));;;
@@ -119,8 +119,8 @@ Definition NewServer : go_string := "github.com/sanjit-bhat/pav/advrpc.NewServer
 Definition NewServerⁱᵐᵖˡ : val :=
   λ: "handlers",
     exception_do (let: "handlers" := (mem.alloc "handlers") in
-    return: (mem.alloc (let: "$handlers" := (![type.mapT #uint64T #funcT] "handlers") in
-     struct.make #Server [{
+    return: (mem.alloc (let: "$handlers" := (![mapT uint64T funcT] "handlers") in
+     struct.make Server [{
        "handlers" ::= "$handlers"
      }]))).
 
@@ -136,12 +136,12 @@ Definition Dial : go_string := "github.com/sanjit-bhat/pav/advrpc.Dial"%go.
 Definition Dialⁱᵐᵖˡ : val :=
   λ: "addr",
     exception_do (let: "addr" := (mem.alloc "addr") in
-    let: "c" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "addr") in
+    let: "c" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![uint64T] "addr") in
     (func_call #netffi.Dial) "$a0") in
-    do:  ("c" <-[#ptrT] "$r0");;;
-    return: (mem.alloc (let: "$conn" := (![#ptrT] "c") in
-     struct.make #Client [{
+    do:  ("c" <-[ptrT] "$r0");;;
+    return: (mem.alloc (let: "$conn" := (![ptrT] "c") in
+     struct.make Client [{
        "conn" ::= "$conn"
      }]))).
 
@@ -150,41 +150,41 @@ Definition Dialⁱᵐᵖˡ : val :=
    go: advrpc.go:78:18 *)
 Definition Client__Callⁱᵐᵖˡ : val :=
   λ: "c" "rpcId" "args" "reply",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
     let: "c" := (mem.alloc "c") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
     let: "rpcId" := (mem.alloc "rpcId") in
-    let: "req0" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![#sliceT] "args") in
+    let: "req0" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![sliceT] "args") in
     slice.len "$a0"))) in
-    do:  ("req0" <-[#sliceT] "$r0");;;
-    let: "req1" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "req0") in
-    let: "$a1" := (![#uint64T] "rpcId") in
+    do:  ("req0" <-[sliceT] "$r0");;;
+    let: "req1" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "req0") in
+    let: "$a1" := (![uint64T] "rpcId") in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("req1" <-[#sliceT] "$r0");;;
-    let: "req2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "req1") in
-    let: "$a1" := (![#sliceT] "args") in
+    do:  ("req1" <-[sliceT] "$r0");;;
+    let: "req2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "req1") in
+    let: "$a1" := (![sliceT] "args") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("req2" <-[#sliceT] "$r0");;;
-    (if: let: "$a0" := (![#sliceT] "req2") in
-    (method_call #(ptrT.id netffi.Conn.id) #"Send"%go (![#ptrT] (struct.field_ref #Client #"conn"%go (![#ptrT] "c")))) "$a0"
+    do:  ("req2" <-[sliceT] "$r0");;;
+    (if: let: "$a0" := (![sliceT] "req2") in
+    (method_call #(ptrT.id netffi.Conn.id) #"Send"%go (![ptrT] (struct.field_ref ptrT #"conn"%go (![ptrT] "c")))) "$a0"
     then return: (#true)
     else do:  #());;;
-    let: "err0" := (mem.alloc (type.zero_val #boolT)) in
-    let: "resp" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id netffi.Conn.id) #"Receive"%go (![#ptrT] (struct.field_ref #Client #"conn"%go (![#ptrT] "c")))) #()) in
+    let: "err0" := (mem.alloc (type.zero_val boolT)) in
+    let: "resp" := (mem.alloc (type.zero_val sliceT)) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id netffi.Conn.id) #"Receive"%go (![ptrT] (struct.field_ref ptrT #"conn"%go (![ptrT] "c")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[#sliceT] "$r0");;;
-    do:  ("err0" <-[#boolT] "$r1");;;
-    (if: ![#boolT] "err0"
+    do:  ("resp" <-[sliceT] "$r0");;;
+    do:  ("err0" <-[boolT] "$r1");;;
+    (if: ![boolT] "err0"
     then return: (#true)
     else do:  #());;;
-    let: "$r0" := (![#sliceT] "resp") in
-    do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+    let: "$r0" := (![sliceT] "resp") in
+    do:  ((![ptrT] "reply") <-[sliceT] "$r0");;;
     return: (#false)).
 
 Definition vars' : list (go_string * go_type) := [].

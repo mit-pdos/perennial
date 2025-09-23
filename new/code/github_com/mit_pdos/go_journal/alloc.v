@@ -30,33 +30,33 @@ Definition MkAlloc : go_string := "github.com/mit-pdos/go-journal/alloc.MkAlloc"
 Definition MkAllocⁱᵐᵖˡ : val :=
   λ: "bitmap",
     exception_do (let: "bitmap" := (mem.alloc "bitmap") in
-    let: "a" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
+    let: "a" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val sync.Mutex)) in
     let: "$next" := #(W64 0) in
-    let: "$bitmap" := (![#sliceT] "bitmap") in
-    struct.make #Alloc [{
+    let: "$bitmap" := (![sliceT] "bitmap") in
+    struct.make Alloc [{
       "mu" ::= "$mu";
       "next" ::= "$next";
       "bitmap" ::= "$bitmap"
     }])) in
-    do:  ("a" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "a")).
+    do:  ("a" <-[ptrT] "$r0");;;
+    return: (![ptrT] "a")).
 
 (* go: alloc.go:27:17 *)
 Definition Alloc__MarkUsedⁱᵐᵖˡ : val :=
   λ: "a" "bn",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "bn" := (mem.alloc "bn") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
-    let: "byte" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "bn") `quot` #(W64 8)) in
-    do:  ("byte" <-[#uint64T] "$r0");;;
-    let: "bit" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "bn") `rem` #(W64 8)) in
-    do:  ("bit" <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#byteT] (slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte"))) `or` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit")))) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte")) <-[#byteT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    let: "byte" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "bn") `quot` #(W64 8)) in
+    do:  ("byte" <-[uint64T] "$r0");;;
+    let: "bit" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "bn") `rem` #(W64 8)) in
+    do:  ("bit" <-[uint64T] "$r0");;;
+    let: "$r0" := ((![byteT] (slice.elem_ref byteT (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) (![uint64T] "byte"))) `or` (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit")))) in
+    do:  ((slice.elem_ref byteT (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) (![uint64T] "byte")) <-[byteT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
     return: #()).
 
 Definition MkMaxAlloc : go_string := "github.com/mit-pdos/go-journal/alloc.MkMaxAlloc"%go.
@@ -70,35 +70,35 @@ Definition MkMaxAlloc : go_string := "github.com/mit-pdos/go-journal/alloc.MkMax
 Definition MkMaxAllocⁱᵐᵖˡ : val :=
   λ: "max",
     exception_do (let: "max" := (mem.alloc "max") in
-    (if: (~ ((#(W64 0) < (![#uint64T] "max")) && (((![#uint64T] "max") `rem` #(W64 8)) = #(W64 0))))
+    (if: (~ ((#(W64 0) < (![uint64T] "max")) && (((![uint64T] "max") `rem` #(W64 8)) = #(W64 0))))
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"invalid max, must be at least 0 and divisible by 8"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "bitmap" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT ((![#uint64T] "max") `quot` #(W64 8))) in
-    do:  ("bitmap" <-[#sliceT] "$r0");;;
-    let: "a" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "bitmap") in
+    let: "bitmap" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 byteT ((![uint64T] "max") `quot` #(W64 8))) in
+    do:  ("bitmap" <-[sliceT] "$r0");;;
+    let: "a" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "bitmap") in
     (func_call #MkAlloc) "$a0") in
-    do:  ("a" <-[#ptrT] "$r0");;;
+    do:  ("a" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    (method_call #(ptrT.id Alloc.id) #"MarkUsed"%go (![#ptrT] "a")) "$a0");;;
-    return: (![#ptrT] "a")).
+    (method_call #(ptrT.id Alloc.id) #"MarkUsed"%go (![ptrT] "a")) "$a0");;;
+    return: (![ptrT] "a")).
 
 (* go: alloc.go:49:17 *)
 Definition Alloc__incNextⁱᵐᵖˡ : val :=
   λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
-    let: "$r0" := ((![#uint64T] (struct.field_ref #Alloc #"next"%go (![#ptrT] "a"))) + #(W64 1)) in
-    do:  ((struct.field_ref #Alloc #"next"%go (![#ptrT] "a")) <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] (struct.field_ref #Alloc #"next"%go (![#ptrT] "a"))) ≥ (s_to_w64 ((let: "$a0" := (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) in
+    let: "$r0" := ((![uint64T] (struct.field_ref ptrT #"next"%go (![ptrT] "a"))) + #(W64 1)) in
+    do:  ((struct.field_ref ptrT #"next"%go (![ptrT] "a")) <-[uint64T] "$r0");;;
+    (if: (![uint64T] (struct.field_ref ptrT #"next"%go (![ptrT] "a"))) ≥ (s_to_w64 ((let: "$a0" := (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) in
     slice.len "$a0") * #(W64 8)))
     then
       let: "$r0" := #(W64 0) in
-      do:  ((struct.field_ref #Alloc #"next"%go (![#ptrT] "a")) <-[#uint64T] "$r0")
+      do:  ((struct.field_ref ptrT #"next"%go (![ptrT] "a")) <-[uint64T] "$r0")
     else do:  #());;;
-    return: (![#uint64T] (struct.field_ref #Alloc #"next"%go (![#ptrT] "a")))).
+    return: (![uint64T] (struct.field_ref ptrT #"next"%go (![ptrT] "a")))).
 
 (* Returns a free number in the bitmap
 
@@ -106,76 +106,76 @@ Definition Alloc__incNextⁱᵐᵖˡ : val :=
 Definition Alloc__allocBitⁱᵐᵖˡ : val :=
   λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
-    let: "num" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
-    let: "$r0" := ((method_call #(ptrT.id Alloc.id) #"incNext"%go (![#ptrT] "a")) #()) in
-    do:  ("num" <-[#uint64T] "$r0");;;
-    let: "start" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] "num") in
-    do:  ("start" <-[#uint64T] "$r0");;;
+    let: "num" := (mem.alloc (type.zero_val uint64T)) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    let: "$r0" := ((method_call #(ptrT.id Alloc.id) #"incNext"%go (![ptrT] "a")) #()) in
+    do:  ("num" <-[uint64T] "$r0");;;
+    let: "start" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (![uint64T] "num") in
+    do:  ("start" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "bit" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((![#uint64T] "num") `rem` #(W64 8)) in
-      do:  ("bit" <-[#uint64T] "$r0");;;
-      let: "byte" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((![#uint64T] "num") `quot` #(W64 8)) in
-      do:  ("byte" <-[#uint64T] "$r0");;;
-      (if: ((![#byteT] (slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte"))) `and` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit")))) = #(W8 0)
+      let: "bit" := (mem.alloc (type.zero_val uint64T)) in
+      let: "$r0" := ((![uint64T] "num") `rem` #(W64 8)) in
+      do:  ("bit" <-[uint64T] "$r0");;;
+      let: "byte" := (mem.alloc (type.zero_val uint64T)) in
+      let: "$r0" := ((![uint64T] "num") `quot` #(W64 8)) in
+      do:  ("byte" <-[uint64T] "$r0");;;
+      (if: ((![byteT] (slice.elem_ref byteT (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) (![uint64T] "byte"))) `and` (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit")))) = #(W8 0)
       then
-        let: "$r0" := ((![#byteT] (slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte"))) `or` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit")))) in
-        do:  ((slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte")) <-[#byteT] "$r0");;;
+        let: "$r0" := ((![byteT] (slice.elem_ref byteT (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) (![uint64T] "byte"))) `or` (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit")))) in
+        do:  ((slice.elem_ref byteT (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) (![uint64T] "byte")) <-[byteT] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := ((method_call #(ptrT.id Alloc.id) #"incNext"%go (![#ptrT] "a")) #()) in
-      do:  ("num" <-[#uint64T] "$r0");;;
-      (if: (![#uint64T] "num") = (![#uint64T] "start")
+      let: "$r0" := ((method_call #(ptrT.id Alloc.id) #"incNext"%go (![ptrT] "a")) #()) in
+      do:  ("num" <-[uint64T] "$r0");;;
+      (if: (![uint64T] "num") = (![uint64T] "start")
       then
         let: "$r0" := #(W64 0) in
-        do:  ("num" <-[#uint64T] "$r0");;;
+        do:  ("num" <-[uint64T] "$r0");;;
         break: #()
       else do:  #());;;
       continue: #());;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
-    return: (![#uint64T] "num")).
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    return: (![uint64T] "num")).
 
 (* go: alloc.go:82:17 *)
 Definition Alloc__freeBitⁱᵐᵖˡ : val :=
   λ: "a" "bn",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "bn" := (mem.alloc "bn") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
-    let: "byte" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "bn") `quot` #(W64 8)) in
-    do:  ("byte" <-[#uint64T] "$r0");;;
-    let: "bit" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "bn") `rem` #(W64 8)) in
-    do:  ("bit" <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#byteT] (slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte"))) `and` (~ (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit"))))) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte")) <-[#byteT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    let: "byte" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "bn") `quot` #(W64 8)) in
+    do:  ("byte" <-[uint64T] "$r0");;;
+    let: "bit" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "bn") `rem` #(W64 8)) in
+    do:  ("bit" <-[uint64T] "$r0");;;
+    let: "$r0" := ((![byteT] (slice.elem_ref byteT (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) (![uint64T] "byte"))) `and` (~ (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit"))))) in
+    do:  ((slice.elem_ref byteT (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) (![uint64T] "byte")) <-[byteT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
     return: #()).
 
 (* go: alloc.go:90:17 *)
 Definition Alloc__AllocNumⁱᵐᵖˡ : val :=
   λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
-    let: "num" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #(ptrT.id Alloc.id) #"allocBit"%go (![#ptrT] "a")) #()) in
-    do:  ("num" <-[#uint64T] "$r0");;;
-    return: (![#uint64T] "num")).
+    let: "num" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((method_call #(ptrT.id Alloc.id) #"allocBit"%go (![ptrT] "a")) #()) in
+    do:  ("num" <-[uint64T] "$r0");;;
+    return: (![uint64T] "num")).
 
 (* go: alloc.go:95:17 *)
 Definition Alloc__FreeNumⁱᵐᵖˡ : val :=
   λ: "a" "num",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "num" := (mem.alloc "num") in
-    (if: (![#uint64T] "num") = #(W64 0)
+    (if: (![uint64T] "num") = #(W64 0)
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"FreeNum"%go) in
       Panic "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (![#uint64T] "num") in
-    (method_call #(ptrT.id Alloc.id) #"freeBit"%go (![#ptrT] "a")) "$a0");;;
+    do:  (let: "$a0" := (![uint64T] "num") in
+    (method_call #(ptrT.id Alloc.id) #"freeBit"%go (![ptrT] "a")) "$a0");;;
     return: #()).
 
 Definition popCnt : go_string := "github.com/mit-pdos/go-journal/alloc.popCnt"%go.
@@ -184,38 +184,38 @@ Definition popCnt : go_string := "github.com/mit-pdos/go-journal/alloc.popCnt"%g
 Definition popCntⁱᵐᵖˡ : val :=
   λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    let: "count" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "x" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (![#byteT] "b") in
-    do:  ("x" <-[#byteT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "count" := (mem.alloc (type.zero_val uint64T)) in
+    let: "x" := (mem.alloc (type.zero_val byteT)) in
+    let: "$r0" := (![byteT] "b") in
+    do:  ("x" <-[byteT] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 8)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      do:  ("count" <-[#uint64T] ((![#uint64T] "count") + (u_to_w64 ((![#byteT] "x") `and` #(W8 1)))));;;
-      let: "$r0" := ((![#byteT] "x") ≫ #(W8 1)) in
-      do:  ("x" <-[#byteT] "$r0")));;;
-    return: (![#uint64T] "count")).
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < #(W64 8)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+      do:  ("count" <-[uint64T] ((![uint64T] "count") + (u_to_w64 ((![byteT] "x") `and` #(W8 1)))));;;
+      let: "$r0" := ((![byteT] "x") ≫ #(W8 1)) in
+      do:  ("x" <-[byteT] "$r0")));;;
+    return: (![uint64T] "count")).
 
 (* go: alloc.go:112:17 *)
 Definition Alloc__NumFreeⁱᵐᵖˡ : val :=
   λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
-    let: "total" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (#(W64 8) * (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    let: "total" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (#(W64 8) * (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) in
     slice.len "$a0"))) in
-    do:  ("total" <-[#uint64T] "$r0");;;
-    let: "count" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$range" := (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) in
-    (let: "b" := (mem.alloc (type.zero_val #byteT)) in
-    slice.for_range #byteT "$range" (λ: "$key" "$value",
-      do:  ("b" <-[#byteT] "$value");;;
+    do:  ("total" <-[uint64T] "$r0");;;
+    let: "count" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$range" := (![sliceT] (struct.field_ref ptrT #"bitmap"%go (![ptrT] "a"))) in
+    (let: "b" := (mem.alloc (type.zero_val byteT)) in
+    slice.for_range byteT "$range" (λ: "$key" "$value",
+      do:  ("b" <-[byteT] "$value");;;
       do:  "$key";;;
-      do:  ("count" <-[#uint64T] ((![#uint64T] "count") + (let: "$a0" := (![#byteT] "b") in
+      do:  ("count" <-[uint64T] ((![uint64T] "count") + (let: "$a0" := (![byteT] "b") in
       (func_call #popCnt) "$a0")))));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
-    return: ((![#uint64T] "total") - (![#uint64T] "count"))).
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    return: ((![uint64T] "total") - (![uint64T] "count"))).
 
 Definition vars' : list (go_string * go_type) := [].
 

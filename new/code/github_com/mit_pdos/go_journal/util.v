@@ -20,10 +20,10 @@ Definition DPrintfⁱᵐᵖˡ : val :=
     exception_do (let: "a" := (mem.alloc "a") in
     let: "format" := (mem.alloc "format") in
     let: "level" := (mem.alloc "level") in
-    (if: (![#uint64T] "level") ≤ (![#uint64T] (globals.get #Debug))
+    (if: (![uint64T] "level") ≤ (![uint64T] (globals.get #Debug))
     then
-      do:  (let: "$a0" := (![#stringT] "format") in
-      let: "$a1" := (![#sliceT] "a") in
+      do:  (let: "$a0" := (![stringT] "format") in
+      let: "$a1" := (![sliceT] "a") in
       (func_call #log.Printf) "$a0" "$a1")
     else do:  #());;;
     return: #()).
@@ -35,7 +35,7 @@ Definition RoundUpⁱᵐᵖˡ : val :=
   λ: "n" "sz",
     exception_do (let: "sz" := (mem.alloc "sz") in
     let: "n" := (mem.alloc "n") in
-    return: ((((![#uint64T] "n") + (![#uint64T] "sz")) - #(W64 1)) `quot` (![#uint64T] "sz"))).
+    return: ((((![uint64T] "n") + (![uint64T] "sz")) - #(W64 1)) `quot` (![uint64T] "sz"))).
 
 Definition Min : go_string := "github.com/mit-pdos/go-journal/util.Min"%go.
 
@@ -44,9 +44,9 @@ Definition Minⁱᵐᵖˡ : val :=
   λ: "n" "m",
     exception_do (let: "m" := (mem.alloc "m") in
     let: "n" := (mem.alloc "n") in
-    (if: (![#uint64T] "n") < (![#uint64T] "m")
-    then return: (![#uint64T] "n")
-    else return: (![#uint64T] "m"))).
+    (if: (![uint64T] "n") < (![uint64T] "m")
+    then return: (![uint64T] "n")
+    else return: (![uint64T] "m"))).
 
 Definition SumOverflows : go_string := "github.com/mit-pdos/go-journal/util.SumOverflows"%go.
 
@@ -57,7 +57,7 @@ Definition SumOverflowsⁱᵐᵖˡ : val :=
   λ: "n" "m",
     exception_do (let: "m" := (mem.alloc "m") in
     let: "n" := (mem.alloc "n") in
-    return: (((![#uint64T] "n") + (![#uint64T] "m")) < (![#uint64T] "n"))).
+    return: (((![uint64T] "n") + (![uint64T] "m")) < (![uint64T] "n"))).
 
 Definition SumOverflows32 : go_string := "github.com/mit-pdos/go-journal/util.SumOverflows32"%go.
 
@@ -66,7 +66,7 @@ Definition SumOverflows32ⁱᵐᵖˡ : val :=
   λ: "n" "m",
     exception_do (let: "m" := (mem.alloc "m") in
     let: "n" := (mem.alloc "n") in
-    return: (((![#uint32T] "n") + (![#uint32T] "m")) < (![#uint32T] "n"))).
+    return: (((![uint32T] "n") + (![uint32T] "m")) < (![uint32T] "n"))).
 
 Definition CloneByteSlice : go_string := "github.com/mit-pdos/go-journal/util.CloneByteSlice"%go.
 
@@ -74,14 +74,14 @@ Definition CloneByteSlice : go_string := "github.com/mit-pdos/go-journal/util.Cl
 Definition CloneByteSliceⁱᵐᵖˡ : val :=
   λ: "s",
     exception_do (let: "s" := (mem.alloc "s") in
-    let: "s2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT (let: "$a0" := (![#sliceT] "s") in
+    let: "s2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 byteT (let: "$a0" := (![sliceT] "s") in
     slice.len "$a0")) in
-    do:  ("s2" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "s2") in
-    let: "$a1" := (![#sliceT] "s") in
-    (slice.copy #byteT) "$a0" "$a1");;;
-    return: (![#sliceT] "s2")).
+    do:  ("s2" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (![sliceT] "s2") in
+    let: "$a1" := (![sliceT] "s") in
+    (slice.copy byteT) "$a0" "$a1");;;
+    return: (![sliceT] "s2")).
 
 Definition vars' : list (go_string * go_type) := [(Debug, uint64T)].
 
@@ -103,7 +103,7 @@ Definition initialize' : val :=
       exception_do (do:  (log.initialize' #());;;
       do:  (package.alloc util.util #());;;
       let: "$r0" := #(W64 0) in
-      do:  ((globals.get #Debug) <-[#uint64T] "$r0"))
+      do:  ((globals.get #Debug) <-[uint64T] "$r0"))
       ).
 
 End code.

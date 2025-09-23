@@ -18,6 +18,7 @@ Module clerk.
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   confCk' : loc;
   replicaClerks' : slice.t;
@@ -70,16 +71,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk confCk' replicaClerks' preferredReplica' lastPreferenceRefresh':
-  PureWp True
-    (struct.make #clerk.Clerk (alist_val [
-      "confCk" ::= #confCk';
-      "replicaClerks" ::= #replicaClerks';
-      "preferredReplica" ::= #preferredReplica';
-      "lastPreferenceRefresh" ::= #lastPreferenceRefresh'
-    ]))%struct
-    #(Clerk.mk confCk' replicaClerks' preferredReplica' lastPreferenceRefresh').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :

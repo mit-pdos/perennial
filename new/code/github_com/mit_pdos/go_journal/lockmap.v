@@ -34,79 +34,79 @@ Definition mkLockShard : go_string := "github.com/mit-pdos/go-journal/lockmap.mk
 (* go: lock.go:30:6 *)
 Definition mkLockShardⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "state" := (mem.alloc (type.zero_val (type.mapT #uint64T #ptrT))) in
-    let: "$r0" := (map.make #uint64T #ptrT) in
-    do:  ("state" <-[type.mapT #uint64T #ptrT] "$r0");;;
-    let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("mu" <-[#ptrT] "$r0");;;
-    let: "a" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$mu" := (![#ptrT] "mu") in
-    let: "$state" := (![type.mapT #uint64T #ptrT] "state") in
-    struct.make #lockShard [{
+    exception_do (let: "state" := (mem.alloc (type.zero_val (mapT uint64T ptrT))) in
+    let: "$r0" := (map.make uint64T ptrT) in
+    do:  ("state" <-[mapT uint64T ptrT] "$r0");;;
+    let: "mu" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val sync.Mutex)) in
+    do:  ("mu" <-[ptrT] "$r0");;;
+    let: "a" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$mu" := (![ptrT] "mu") in
+    let: "$state" := (![mapT uint64T ptrT] "state") in
+    struct.make lockShard [{
       "mu" ::= "$mu";
       "state" ::= "$state"
     }])) in
-    do:  ("a" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "a")).
+    do:  ("a" <-[ptrT] "$r0");;;
+    return: (![ptrT] "a")).
 
 (* go: lock.go:40:24 *)
 Definition lockShard__acquireⁱᵐᵖˡ : val :=
   λ: "lmap" "addr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "addr" := (mem.alloc "addr") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "lmap")))) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "state" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "ok1" := (mem.alloc (type.zero_val #boolT)) in
-      let: "state1" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) (![#uint64T] "addr")) in
+      let: "state" := (mem.alloc (type.zero_val ptrT)) in
+      let: "ok1" := (mem.alloc (type.zero_val boolT)) in
+      let: "state1" := (mem.alloc (type.zero_val ptrT)) in
+      let: ("$ret0", "$ret1") := (map.get (![mapT uint64T ptrT] (struct.field_ref ptrT #"state"%go (![ptrT] "lmap"))) (![uint64T] "addr")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("state1" <-[#ptrT] "$r0");;;
-      do:  ("ok1" <-[#boolT] "$r1");;;
-      (if: ![#boolT] "ok1"
+      do:  ("state1" <-[ptrT] "$r0");;;
+      do:  ("ok1" <-[boolT] "$r1");;;
+      (if: ![boolT] "ok1"
       then
-        let: "$r0" := (![#ptrT] "state1") in
-        do:  ("state" <-[#ptrT] "$r0")
+        let: "$r0" := (![ptrT] "state1") in
+        do:  ("state" <-[ptrT] "$r0")
       else
         let: "$r0" := (mem.alloc (let: "$held" := #false in
-        let: "$cond" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
+        let: "$cond" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "lmap")))) in
         (func_call #sync.NewCond) "$a0") in
         let: "$waiters" := #(W64 0) in
-        struct.make #lockState [{
+        struct.make lockState [{
           "held" ::= "$held";
           "cond" ::= "$cond";
           "waiters" ::= "$waiters"
         }])) in
-        do:  ("state" <-[#ptrT] "$r0");;;
-        let: "$r0" := (![#ptrT] "state") in
-        do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) (![#uint64T] "addr") "$r0"));;;
-      let: "acquired" := (mem.alloc (type.zero_val #boolT)) in
-      (if: (~ (![#boolT] (struct.field_ref #lockState #"held"%go (![#ptrT] "state"))))
+        do:  ("state" <-[ptrT] "$r0");;;
+        let: "$r0" := (![ptrT] "state") in
+        do:  (map.insert (![mapT uint64T ptrT] (struct.field_ref ptrT #"state"%go (![ptrT] "lmap"))) (![uint64T] "addr") "$r0"));;;
+      let: "acquired" := (mem.alloc (type.zero_val boolT)) in
+      (if: (~ (![boolT] (struct.field_ref ptrT #"held"%go (![ptrT] "state"))))
       then
         let: "$r0" := #true in
-        do:  ((struct.field_ref #lockState #"held"%go (![#ptrT] "state")) <-[#boolT] "$r0");;;
+        do:  ((struct.field_ref ptrT #"held"%go (![ptrT] "state")) <-[boolT] "$r0");;;
         let: "$r0" := #true in
-        do:  ("acquired" <-[#boolT] "$r0")
+        do:  ("acquired" <-[boolT] "$r0")
       else
-        do:  ((struct.field_ref #lockState #"waiters"%go (![#ptrT] "state")) <-[#uint64T] ((![#uint64T] (struct.field_ref #lockState #"waiters"%go (![#ptrT] "state"))) + #(W64 1)));;;
-        do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] (struct.field_ref #lockState #"cond"%go (![#ptrT] "state")))) #());;;
-        let: "ok2" := (mem.alloc (type.zero_val #boolT)) in
-        let: "state2" := (mem.alloc (type.zero_val #ptrT)) in
-        let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) (![#uint64T] "addr")) in
+        do:  ((struct.field_ref ptrT #"waiters"%go (![ptrT] "state")) <-[uint64T] ((![uint64T] (struct.field_ref ptrT #"waiters"%go (![ptrT] "state"))) + #(W64 1)));;;
+        do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![ptrT] (struct.field_ref ptrT #"cond"%go (![ptrT] "state")))) #());;;
+        let: "ok2" := (mem.alloc (type.zero_val boolT)) in
+        let: "state2" := (mem.alloc (type.zero_val ptrT)) in
+        let: ("$ret0", "$ret1") := (map.get (![mapT uint64T ptrT] (struct.field_ref ptrT #"state"%go (![ptrT] "lmap"))) (![uint64T] "addr")) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("state2" <-[#ptrT] "$r0");;;
-        do:  ("ok2" <-[#boolT] "$r1");;;
-        (if: ![#boolT] "ok2"
-        then do:  ((struct.field_ref #lockState #"waiters"%go (![#ptrT] "state2")) <-[#uint64T] ((![#uint64T] (struct.field_ref #lockState #"waiters"%go (![#ptrT] "state2"))) - #(W64 1)))
+        do:  ("state2" <-[ptrT] "$r0");;;
+        do:  ("ok2" <-[boolT] "$r1");;;
+        (if: ![boolT] "ok2"
+        then do:  ((struct.field_ref ptrT #"waiters"%go (![ptrT] "state2")) <-[uint64T] ((![uint64T] (struct.field_ref ptrT #"waiters"%go (![ptrT] "state2"))) - #(W64 1)))
         else do:  #()));;;
-      (if: ![#boolT] "acquired"
+      (if: ![boolT] "acquired"
       then break: #()
       else do:  #());;;
       continue: #());;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "lmap")))) #());;;
     return: #()).
 
 (* go: lock.go:81:24 *)
@@ -114,19 +114,19 @@ Definition lockShard__releaseⁱᵐᵖˡ : val :=
   λ: "lmap" "addr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "addr" := (mem.alloc "addr") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
-    let: "state" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (Fst (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) (![#uint64T] "addr"))) in
-    do:  ("state" <-[#ptrT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "lmap")))) #());;;
+    let: "state" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (Fst (map.get (![mapT uint64T ptrT] (struct.field_ref ptrT #"state"%go (![ptrT] "lmap"))) (![uint64T] "addr"))) in
+    do:  ("state" <-[ptrT] "$r0");;;
     let: "$r0" := #false in
-    do:  ((struct.field_ref #lockState #"held"%go (![#ptrT] "state")) <-[#boolT] "$r0");;;
-    (if: (![#uint64T] (struct.field_ref #lockState #"waiters"%go (![#ptrT] "state"))) > #(W64 0)
-    then do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] (struct.field_ref #lockState #"cond"%go (![#ptrT] "state")))) #())
+    do:  ((struct.field_ref ptrT #"held"%go (![ptrT] "state")) <-[boolT] "$r0");;;
+    (if: (![uint64T] (struct.field_ref ptrT #"waiters"%go (![ptrT] "state"))) > #(W64 0)
+    then do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![ptrT] (struct.field_ref ptrT #"cond"%go (![ptrT] "state")))) #())
     else
-      do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) in
-      let: "$a1" := (![#uint64T] "addr") in
+      do:  (let: "$a0" := (![mapT uint64T ptrT] (struct.field_ref ptrT #"state"%go (![ptrT] "lmap"))) in
+      let: "$a1" := (![uint64T] "addr") in
       map.delete "$a0" "$a1"));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "lmap")))) #());;;
     return: #()).
 
 Definition NSHARD : val := #(W64 65537).
@@ -142,34 +142,34 @@ Definition MkLockMap : go_string := "github.com/mit-pdos/go-journal/lockmap.MkLo
 (* go: lock.go:99:6 *)
 Definition MkLockMapⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "shards" := (mem.alloc (type.zero_val #sliceT)) in
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "shards" := (mem.alloc (type.zero_val sliceT)) in
+    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < NSHARD); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (let: "$a0" := (![#sliceT] "shards") in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < NSHARD); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (let: "$a0" := (![sliceT] "shards") in
       let: "$a1" := ((let: "$sl0" := ((func_call #mkLockShard) #()) in
-      slice.literal #ptrT ["$sl0"])) in
-      (slice.append #ptrT) "$a0" "$a1") in
-      do:  ("shards" <-[#sliceT] "$r0")));;;
-    let: "a" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$shards" := (![#sliceT] "shards") in
-    struct.make #LockMap [{
+      slice.literal ptrT ["$sl0"])) in
+      (slice.append ptrT) "$a0" "$a1") in
+      do:  ("shards" <-[sliceT] "$r0")));;;
+    let: "a" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$shards" := (![sliceT] "shards") in
+    struct.make LockMap [{
       "shards" ::= "$shards"
     }])) in
-    do:  ("a" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "a")).
+    do:  ("a" <-[ptrT] "$r0");;;
+    return: (![ptrT] "a")).
 
 (* go: lock.go:110:22 *)
 Definition LockMap__Acquireⁱᵐᵖˡ : val :=
   λ: "lmap" "flataddr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "flataddr" := (mem.alloc "flataddr") in
-    let: "shard" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #LockMap #"shards"%go (![#ptrT] "lmap"))) ((![#uint64T] "flataddr") `rem` NSHARD))) in
-    do:  ("shard" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "flataddr") in
-    (method_call #(ptrT.id lockShard.id) #"acquire"%go (![#ptrT] "shard")) "$a0");;;
+    let: "shard" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"shards"%go (![ptrT] "lmap"))) ((![uint64T] "flataddr") `rem` NSHARD))) in
+    do:  ("shard" <-[ptrT] "$r0");;;
+    do:  (let: "$a0" := (![uint64T] "flataddr") in
+    (method_call #(ptrT.id lockShard.id) #"acquire"%go (![ptrT] "shard")) "$a0");;;
     return: #()).
 
 (* go: lock.go:115:22 *)
@@ -177,11 +177,11 @@ Definition LockMap__Releaseⁱᵐᵖˡ : val :=
   λ: "lmap" "flataddr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "flataddr" := (mem.alloc "flataddr") in
-    let: "shard" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #LockMap #"shards"%go (![#ptrT] "lmap"))) ((![#uint64T] "flataddr") `rem` NSHARD))) in
-    do:  ("shard" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "flataddr") in
-    (method_call #(ptrT.id lockShard.id) #"release"%go (![#ptrT] "shard")) "$a0");;;
+    let: "shard" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"shards"%go (![ptrT] "lmap"))) ((![uint64T] "flataddr") `rem` NSHARD))) in
+    do:  ("shard" <-[ptrT] "$r0");;;
+    do:  (let: "$a0" := (![uint64T] "flataddr") in
+    (method_call #(ptrT.id lockShard.id) #"release"%go (![ptrT] "shard")) "$a0");;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

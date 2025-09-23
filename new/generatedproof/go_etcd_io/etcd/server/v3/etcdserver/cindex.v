@@ -38,6 +38,7 @@ End ConsistentIndexer.
 Module consistentIndex.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   consistentIndex' : w64;
   term' : w64;
@@ -100,18 +101,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_consistentIndex consistentIndex' term' applyingIndex' applyingTerm' be' mutex':
-  PureWp True
-    (struct.make #cindex.consistentIndex (alist_val [
-      "consistentIndex" ::= #consistentIndex';
-      "term" ::= #term';
-      "applyingIndex" ::= #applyingIndex';
-      "applyingTerm" ::= #applyingTerm';
-      "be" ::= #be';
-      "mutex" ::= #mutex'
-    ]))%struct
-    #(consistentIndex.mk consistentIndex' term' applyingIndex' applyingTerm' be' mutex').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance consistentIndex_struct_fields_split dq l (v : consistentIndex.t) :
@@ -144,6 +133,7 @@ End instances.
 Module fakeConsistentIndex.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   index' : w64;
   term' : w64;
@@ -186,14 +176,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_fakeConsistentIndex index' term':
-  PureWp True
-    (struct.make #cindex.fakeConsistentIndex (alist_val [
-      "index" ::= #index';
-      "term" ::= #term'
-    ]))%struct
-    #(fakeConsistentIndex.mk index' term').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance fakeConsistentIndex_struct_fields_split dq l (v : fakeConsistentIndex.t) :

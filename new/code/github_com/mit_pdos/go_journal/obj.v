@@ -35,18 +35,18 @@ Definition MkLog : go_string := "github.com/mit-pdos/go-journal/obj.MkLog"%go.
 Definition MkLogⁱᵐᵖˡ : val :=
   λ: "d",
     exception_do (let: "d" := (mem.alloc "d") in
-    let: "log" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    let: "$log" := (let: "$a0" := (![#disk.Disk] "d") in
+    let: "log" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val sync.Mutex)) in
+    let: "$log" := (let: "$a0" := (![disk.Disk] "d") in
     (func_call #wal.MkLog) "$a0") in
     let: "$pos" := #(W64 0) in
-    struct.make #Log [{
+    struct.make Log [{
       "mu" ::= "$mu";
       "log" ::= "$log";
       "pos" ::= "$pos"
     }])) in
-    do:  ("log" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "log")).
+    do:  ("log" <-[ptrT] "$r0");;;
+    return: (![ptrT] "log")).
 
 (* Read a disk object into buf
 
@@ -56,17 +56,17 @@ Definition Log__Loadⁱᵐᵖˡ : val :=
     exception_do (let: "l" := (mem.alloc "l") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
-    let: "blk" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go "addr")) in
-    (method_call #(ptrT.id wal.Walog.id) #"Read"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
-    do:  ("blk" <-[#sliceT] "$r0");;;
-    let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
-    let: "$a1" := (![#uint64T] "sz") in
-    let: "$a2" := (![#sliceT] "blk") in
+    let: "blk" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go "addr")) in
+    (method_call #(ptrT.id wal.Walog.id) #"Read"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "l")))) "$a0") in
+    do:  ("blk" <-[sliceT] "$r0");;;
+    let: "b" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
+    let: "$a1" := (![uint64T] "sz") in
+    let: "$a2" := (![sliceT] "blk") in
     (func_call #buf.MkBufLoad) "$a0" "$a1" "$a2") in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "b")).
+    do:  ("b" <-[ptrT] "$r0");;;
+    return: (![ptrT] "b")).
 
 (* Installs bufs into their blocks and returns the blocks.
    A buf may only partially update a disk block and several bufs may
@@ -77,68 +77,68 @@ Definition Log__installBufsMapⁱᵐᵖˡ : val :=
   λ: "l" "bufs",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
-    let: "blks" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
-    let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("blks" <-[type.mapT #uint64T #sliceT] "$r0");;;
-    let: "$range" := (![#sliceT] "bufs") in
-    (let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    slice.for_range #ptrT "$range" (λ: "$key" "$value",
-      do:  ("b" <-[#ptrT] "$value");;;
+    let: "blks" := (mem.alloc (type.zero_val (mapT uint64T sliceT))) in
+    let: "$r0" := (map.make uint64T sliceT) in
+    do:  ("blks" <-[mapT uint64T sliceT] "$r0");;;
+    let: "$range" := (![sliceT] "bufs") in
+    (let: "b" := (mem.alloc (type.zero_val ptrT)) in
+    slice.for_range ptrT "$range" (λ: "$key" "$value",
+      do:  ("b" <-[ptrT] "$value");;;
       do:  "$key";;;
-      (if: (![#uint64T] (struct.field_ref #buf.Buf #"Sz"%go (![#ptrT] "b"))) = common.NBITBLOCK
+      (if: (![uint64T] (struct.field_ref ptrT #"Sz"%go (![ptrT] "b"))) = common.NBITBLOCK
       then
-        let: "$r0" := (![#sliceT] (struct.field_ref #buf.Buf #"Data"%go (![#ptrT] "b"))) in
-        do:  (map.insert (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0")
+        let: "$r0" := (![sliceT] (struct.field_ref ptrT #"Data"%go (![ptrT] "b"))) in
+        do:  (map.insert (![mapT uint64T sliceT] "blks") (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "b")))) "$r0")
       else
-        let: "blk" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-        let: "mapblk" := (mem.alloc (type.zero_val #sliceT)) in
-        let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b"))))) in
+        let: "blk" := (mem.alloc (type.zero_val sliceT)) in
+        let: "ok" := (mem.alloc (type.zero_val boolT)) in
+        let: "mapblk" := (mem.alloc (type.zero_val sliceT)) in
+        let: ("$ret0", "$ret1") := (map.get (![mapT uint64T sliceT] "blks") (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "b"))))) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("mapblk" <-[#sliceT] "$r0");;;
-        do:  ("ok" <-[#boolT] "$r1");;;
-        (if: ![#boolT] "ok"
+        do:  ("mapblk" <-[sliceT] "$r0");;;
+        do:  ("ok" <-[boolT] "$r1");;;
+        (if: ![boolT] "ok"
         then
-          let: "$r0" := (![#sliceT] "mapblk") in
-          do:  ("blk" <-[#sliceT] "$r0")
+          let: "$r0" := (![sliceT] "mapblk") in
+          do:  ("blk" <-[sliceT] "$r0")
         else
-          let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) in
-          (method_call #(ptrT.id wal.Walog.id) #"Read"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
-          do:  ("blk" <-[#sliceT] "$r0");;;
-          let: "$r0" := (![#sliceT] "blk") in
-          do:  (map.insert (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0"));;;
-        do:  (let: "$a0" := (![#sliceT] "blk") in
-        (method_call #(ptrT.id buf.Buf.id) #"Install"%go (![#ptrT] "b")) "$a0"))));;;
-    return: (![type.mapT #uint64T #sliceT] "blks")).
+          let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "b")))) in
+          (method_call #(ptrT.id wal.Walog.id) #"Read"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "l")))) "$a0") in
+          do:  ("blk" <-[sliceT] "$r0");;;
+          let: "$r0" := (![sliceT] "blk") in
+          do:  (map.insert (![mapT uint64T sliceT] "blks") (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "b")))) "$r0"));;;
+        do:  (let: "$a0" := (![sliceT] "blk") in
+        (method_call #(ptrT.id buf.Buf.id) #"Install"%go (![ptrT] "b")) "$a0"))));;;
+    return: (![mapT uint64T sliceT] "blks")).
 
 (* go: obj.go:70:15 *)
 Definition Log__installBufsⁱᵐᵖˡ : val :=
   λ: "l" "bufs",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
-    let: "bufmap" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
-    (method_call #(ptrT.id Log.id) #"installBufsMap"%go (![#ptrT] "l")) "$a0") in
-    do:  ("bufmap" <-[type.mapT #uint64T #sliceT] "$r0");;;
-    let: "blks" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #wal.Update #(W64 0) (let: "$a0" := (![type.mapT #uint64T #sliceT] "bufmap") in
+    let: "bufmap" := (mem.alloc (type.zero_val (mapT uint64T sliceT))) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "bufs") in
+    (method_call #(ptrT.id Log.id) #"installBufsMap"%go (![ptrT] "l")) "$a0") in
+    do:  ("bufmap" <-[mapT uint64T sliceT] "$r0");;;
+    let: "blks" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 wal.Update #(W64 0) (let: "$a0" := (![mapT uint64T sliceT] "bufmap") in
     map.len "$a0")) in
-    do:  ("blks" <-[#sliceT] "$r0");;;
-    let: "$range" := (![type.mapT #uint64T #sliceT] "bufmap") in
-    (let: "data" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "blkno" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("blks" <-[sliceT] "$r0");;;
+    let: "$range" := (![mapT uint64T sliceT] "bufmap") in
+    (let: "data" := (mem.alloc (type.zero_val sliceT)) in
+    let: "blkno" := (mem.alloc (type.zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("data" <-[#sliceT] "$value");;;
-      do:  ("blkno" <-[#uint64T] "$key");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "blks") in
-      let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#uint64T] "blkno") in
-      let: "$a1" := (![#sliceT] "data") in
+      do:  ("data" <-[sliceT] "$value");;;
+      do:  ("blkno" <-[uint64T] "$key");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "blks") in
+      let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![uint64T] "blkno") in
+      let: "$a1" := (![sliceT] "data") in
       (func_call #wal.MkBlockData) "$a0" "$a1") in
-      slice.literal #wal.Update ["$sl0"])) in
-      (slice.append #wal.Update) "$a0" "$a1") in
-      do:  ("blks" <-[#sliceT] "$r0")));;;
-    return: (![#sliceT] "blks")).
+      slice.literal wal.Update ["$sl0"])) in
+      (slice.append wal.Update) "$a0" "$a1") in
+      do:  ("blks" <-[sliceT] "$r0")));;;
+    return: (![sliceT] "blks")).
 
 (* Acquires the commit log, installs the buffers into their
    blocks, and appends the blocks to the in-memory log.
@@ -148,30 +148,30 @@ Definition Log__doCommitⁱᵐᵖˡ : val :=
   λ: "l" "bufs",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    let: "blks" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
-    (method_call #(ptrT.id Log.id) #"installBufs"%go (![#ptrT] "l")) "$a0") in
-    do:  ("blks" <-[#sliceT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "l")))) #());;;
+    let: "blks" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "bufs") in
+    (method_call #(ptrT.id Log.id) #"installBufs"%go (![ptrT] "l")) "$a0") in
+    do:  ("blks" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"doCommit: %v bufs
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #intT.id (let: "$a0" := (![#sliceT] "blks") in
+    let: "$a2" := ((let: "$sl0" := (interface.make #intT.id (let: "$a0" := (![sliceT] "blks") in
     slice.len "$a0")) in
-    slice.literal #interfaceT ["$sl0"])) in
+    slice.literal interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "n" := (mem.alloc (type.zero_val #wal.LogPosition)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "blks") in
-    (method_call #(ptrT.id wal.Walog.id) #"MemAppend"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
+    let: "ok" := (mem.alloc (type.zero_val boolT)) in
+    let: "n" := (mem.alloc (type.zero_val wal.LogPosition)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "blks") in
+    (method_call #(ptrT.id wal.Walog.id) #"MemAppend"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "l")))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("n" <-[#wal.LogPosition] "$r0");;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    let: "$r0" := (![#wal.LogPosition] "n") in
-    do:  ((struct.field_ref #Log #"pos"%go (![#ptrT] "l")) <-[#wal.LogPosition] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    return: (![#wal.LogPosition] "n", ![#boolT] "ok")).
+    do:  ("n" <-[wal.LogPosition] "$r0");;;
+    do:  ("ok" <-[boolT] "$r1");;;
+    let: "$r0" := (![wal.LogPosition] "n") in
+    do:  ((struct.field_ref ptrT #"pos"%go (![ptrT] "l")) <-[wal.LogPosition] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "l")))) #());;;
+    return: (![wal.LogPosition] "n", ![boolT] "ok")).
 
 (* Commit dirty bufs of the transaction into the log, and perhaps wait.
 
@@ -181,21 +181,21 @@ Definition Log__CommitWaitⁱᵐᵖˡ : val :=
     exception_do (let: "l" := (mem.alloc "l") in
     let: "wait" := (mem.alloc "wait") in
     let: "bufs" := (mem.alloc "bufs") in
-    let: "commit" := (mem.alloc (type.zero_val #boolT)) in
+    let: "commit" := (mem.alloc (type.zero_val boolT)) in
     let: "$r0" := #true in
-    do:  ("commit" <-[#boolT] "$r0");;;
-    (if: int_gt (let: "$a0" := (![#sliceT] "bufs") in
+    do:  ("commit" <-[boolT] "$r0");;;
+    (if: int_gt (let: "$a0" := (![sliceT] "bufs") in
     slice.len "$a0") #(W64 0)
     then
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "n" := (mem.alloc (type.zero_val #wal.LogPosition)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "bufs") in
-      (method_call #(ptrT.id Log.id) #"doCommit"%go (![#ptrT] "l")) "$a0") in
+      let: "ok" := (mem.alloc (type.zero_val boolT)) in
+      let: "n" := (mem.alloc (type.zero_val wal.LogPosition)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "bufs") in
+      (method_call #(ptrT.id Log.id) #"doCommit"%go (![ptrT] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("n" <-[#wal.LogPosition] "$r0");;;
-      do:  ("ok" <-[#boolT] "$r1");;;
-      (if: (~ (![#boolT] "ok"))
+      do:  ("n" <-[wal.LogPosition] "$r0");;;
+      do:  ("ok" <-[boolT] "$r1");;;
+      (if: (~ (![boolT] "ok"))
       then
         do:  (let: "$a0" := #(W64 10) in
         let: "$a1" := #"memappend failed; log is too small
@@ -203,12 +203,12 @@ Definition Log__CommitWaitⁱᵐᵖˡ : val :=
         let: "$a2" := #slice.nil in
         (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
         let: "$r0" := #false in
-        do:  ("commit" <-[#boolT] "$r0")
+        do:  ("commit" <-[boolT] "$r0")
       else
-        (if: ![#boolT] "wait"
+        (if: ![boolT] "wait"
         then
-          do:  (let: "$a0" := (![#wal.LogPosition] "n") in
-          (method_call #(ptrT.id wal.Walog.id) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0")
+          do:  (let: "$a0" := (![wal.LogPosition] "n") in
+          (method_call #(ptrT.id wal.Walog.id) #"Flush"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "l")))) "$a0")
         else do:  #()))
     else
       do:  (let: "$a0" := #(W64 5) in
@@ -216,7 +216,7 @@ Definition Log__CommitWaitⁱᵐᵖˡ : val :=
       "%go in
       let: "$a2" := #slice.nil in
       (func_call #util.DPrintf) "$a0" "$a1" "$a2"));;;
-    return: (![#boolT] "commit")).
+    return: (![boolT] "commit")).
 
 (* NOTE: this is coarse-grained and unattached to the transaction ID
 
@@ -224,13 +224,13 @@ Definition Log__CommitWaitⁱᵐᵖˡ : val :=
 Definition Log__Flushⁱᵐᵖˡ : val :=
   λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    let: "pos" := (mem.alloc (type.zero_val #wal.LogPosition)) in
-    let: "$r0" := (![#wal.LogPosition] (struct.field_ref #Log #"pos"%go (![#ptrT] "l"))) in
-    do:  ("pos" <-[#wal.LogPosition] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    do:  (let: "$a0" := (![#wal.LogPosition] "pos") in
-    (method_call #(ptrT.id wal.Walog.id) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "l")))) #());;;
+    let: "pos" := (mem.alloc (type.zero_val wal.LogPosition)) in
+    let: "$r0" := (![wal.LogPosition] (struct.field_ref ptrT #"pos"%go (![ptrT] "l"))) in
+    do:  ("pos" <-[wal.LogPosition] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "l")))) #());;;
+    do:  (let: "$a0" := (![wal.LogPosition] "pos") in
+    (method_call #(ptrT.id wal.Walog.id) #"Flush"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "l")))) "$a0");;;
     return: (#true)).
 
 (* LogSz returns 511 (the size of the wal log)
@@ -245,7 +245,7 @@ Definition Log__LogSzⁱᵐᵖˡ : val :=
 Definition Log__Shutdownⁱᵐᵖˡ : val :=
   λ: "l" <>,
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #(ptrT.id wal.Walog.id) #"Shutdown"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) #());;;
+    do:  ((method_call #(ptrT.id wal.Walog.id) #"Shutdown"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "l")))) #());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

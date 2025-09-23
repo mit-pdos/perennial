@@ -15,6 +15,7 @@ Module append_log.
 Module Log.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   m' : loc;
   sz' : w64;
@@ -62,15 +63,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log m' sz' diskSz':
-  PureWp True
-    (struct.make #append_log.Log (alist_val [
-      "m" ::= #m';
-      "sz" ::= #sz';
-      "diskSz" ::= #diskSz'
-    ]))%struct
-    #(Log.mk m' sz' diskSz').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Log_struct_fields_split dq l (v : Log.t) :

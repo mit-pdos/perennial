@@ -14,6 +14,7 @@ Module marshal.
 Module Enc.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   b' : slice.t;
   off' : loc;
@@ -56,14 +57,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Enc b' off':
-  PureWp True
-    (struct.make #marshal.Enc (alist_val [
-      "b" ::= #b';
-      "off" ::= #off'
-    ]))%struct
-    #(Enc.mk b' off').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
@@ -88,6 +81,7 @@ End instances.
 Module Dec.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   b' : slice.t;
   off' : loc;
@@ -130,14 +124,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Dec b' off':
-  PureWp True
-    (struct.make #marshal.Dec (alist_val [
-      "b" ::= #b';
-      "off" ::= #off'
-    ]))%struct
-    #(Dec.mk b' off').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Dec_struct_fields_split dq l (v : Dec.t) :

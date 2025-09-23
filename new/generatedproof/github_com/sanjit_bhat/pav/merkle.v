@@ -19,6 +19,7 @@ Module merkle.
 Module Map.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   root' : loc;
 }.
@@ -56,13 +57,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Map root':
-  PureWp True
-    (struct.make #merkle.Map (alist_val [
-      "root" ::= #root'
-    ]))%struct
-    #(Map.mk root').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Map_struct_fields_split dq l (v : Map.t) :
@@ -85,6 +79,7 @@ End instances.
 Module node.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   nodeTy' : w8;
   hash' : slice.t;
@@ -147,18 +142,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_node nodeTy' hash' child0' child1' label' val':
-  PureWp True
-    (struct.make #merkle.node (alist_val [
-      "nodeTy" ::= #nodeTy';
-      "hash" ::= #hash';
-      "child0" ::= #child0';
-      "child1" ::= #child1';
-      "label" ::= #label';
-      "val" ::= #val'
-    ]))%struct
-    #(node.mk nodeTy' hash' child0' child1' label' val').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance node_struct_fields_split dq l (v : node.t) :
@@ -191,6 +174,7 @@ End instances.
 Module MerkleProof.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Siblings' : slice.t;
   IsOtherLeaf' : bool;
@@ -243,16 +227,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_MerkleProof Siblings' IsOtherLeaf' LeafLabel' LeafVal':
-  PureWp True
-    (struct.make #merkle.MerkleProof (alist_val [
-      "Siblings" ::= #Siblings';
-      "IsOtherLeaf" ::= #IsOtherLeaf';
-      "LeafLabel" ::= #LeafLabel';
-      "LeafVal" ::= #LeafVal'
-    ]))%struct
-    #(MerkleProof.mk Siblings' IsOtherLeaf' LeafLabel' LeafVal').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance MerkleProof_struct_fields_split dq l (v : MerkleProof.t) :

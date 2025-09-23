@@ -23,142 +23,142 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
   λ: "configHosts" "servers",
     exception_do (let: "servers" := (mem.alloc "servers") in
     let: "configHosts" := (mem.alloc "configHosts") in
-    (if: (let: "$a0" := (![#sliceT] "servers") in
+    (if: (let: "$a0" := (![sliceT] "servers") in
     slice.len "$a0") = #(W64 0)
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"Tried creating empty config"%go) in
-      slice.literal #interfaceT ["$sl0"])) in
+      slice.literal interfaceT ["$sl0"])) in
       (func_call #log.Println) "$a0");;;
       return: (e.EmptyConfig)
     else do:  #());;;
-    let: "configCk" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "configHosts") in
+    let: "configCk" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "configHosts") in
     (func_call #configservice.MakeClerk) "$a0") in
-    do:  ("configCk" <-[#ptrT] "$r0");;;
-    let: "oldServers" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id configservice.Clerk.id) #"ReserveEpochAndGetConfig"%go (![#ptrT] "configCk")) #()) in
+    do:  ("configCk" <-[ptrT] "$r0");;;
+    let: "oldServers" := (mem.alloc (type.zero_val sliceT)) in
+    let: "epoch" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id configservice.Clerk.id) #"ReserveEpochAndGetConfig"%go (![ptrT] "configCk")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("epoch" <-[#uint64T] "$r0");;;
-    do:  ("oldServers" <-[#sliceT] "$r1");;;
+    do:  ("epoch" <-[uint64T] "$r0");;;
+    do:  ("oldServers" <-[sliceT] "$r1");;;
     do:  (let: "$a0" := #"Reserved %d"%go in
-    let: "$a1" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "epoch")) in
-    slice.literal #interfaceT ["$sl0"])) in
+    let: "$a1" := ((let: "$sl0" := (interface.make #uint64T.id (![uint64T] "epoch")) in
+    slice.literal interfaceT ["$sl0"])) in
     (func_call #log.Printf) "$a0" "$a1");;;
-    let: "id" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((((func_call #primitive.RandomUint64) #()) + #(W64 1)) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] "oldServers") in
+    let: "id" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((((func_call #primitive.RandomUint64) #()) + #(W64 1)) `rem` (s_to_w64 (let: "$a0" := (![sliceT] "oldServers") in
     slice.len "$a0"))) in
-    do:  ("id" <-[#uint64T] "$r0");;;
-    let: "oldClerk" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "oldServers") (![#uint64T] "id"))) in
+    do:  ("id" <-[uint64T] "$r0");;;
+    let: "oldClerk" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "oldServers") (![uint64T] "id"))) in
     (func_call #replica.MakeClerk) "$a0") in
-    do:  ("oldClerk" <-[#ptrT] "$r0");;;
-    let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (mem.alloc (let: "$Epoch" := (![#uint64T] "epoch") in
-    struct.make #replica.GetStateArgs [{
+    do:  ("oldClerk" <-[ptrT] "$r0");;;
+    let: "reply" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (mem.alloc (let: "$Epoch" := (![uint64T] "epoch") in
+    struct.make replica.GetStateArgs [{
       "Epoch" ::= "$Epoch"
     }])) in
-    (method_call #(ptrT.id replica.Clerk.id) #"GetState"%go (![#ptrT] "oldClerk")) "$a0") in
-    do:  ("reply" <-[#ptrT] "$r0");;;
-    (if: (![#uint64T] (struct.field_ref #replica.GetStateReply #"Err"%go (![#ptrT] "reply"))) ≠ e.None
+    (method_call #(ptrT.id replica.Clerk.id) #"GetState"%go (![ptrT] "oldClerk")) "$a0") in
+    do:  ("reply" <-[ptrT] "$r0");;;
+    (if: (![uint64T] (struct.field_ref ptrT #"Err"%go (![ptrT] "reply"))) ≠ e.None
     then
       do:  (let: "$a0" := #"Error while getting state and sealing in epoch %d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "epoch")) in
-      slice.literal #interfaceT ["$sl0"])) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #uint64T.id (![uint64T] "epoch")) in
+      slice.literal interfaceT ["$sl0"])) in
       (func_call #log.Printf) "$a0" "$a1");;;
-      return: (![#uint64T] (struct.field_ref #replica.GetStateReply #"Err"%go (![#ptrT] "reply")))
+      return: (![uint64T] (struct.field_ref ptrT #"Err"%go (![ptrT] "reply")))
     else do:  #());;;
-    let: "clerks" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] "servers") in
+    let: "clerks" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] "servers") in
     slice.len "$a0")) in
-    do:  ("clerks" <-[#sliceT] "$r0");;;
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("clerks" <-[sliceT] "$r0");;;
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
     slice.len "$a0"))); (λ: <>, #()) := λ: <>,
-      let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "servers") (![#uint64T] "i"))) in
+      let: "$r0" := (let: "$a0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "servers") (![uint64T] "i"))) in
       (func_call #replica.MakeClerk) "$a0") in
-      do:  ((slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i")) <-[#ptrT] "$r0");;;
-      do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
-    let: "wg" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.WaitGroup)) in
-    do:  ("wg" <-[#ptrT] "$r0");;;
-    let: "errs" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T (let: "$a0" := (![#sliceT] "clerks") in
+      do:  ((slice.elem_ref ptrT (![sliceT] "clerks") (![uint64T] "i")) <-[ptrT] "$r0");;;
+      do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1))));;;
+    let: "wg" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val sync.WaitGroup)) in
+    do:  ("wg" <-[ptrT] "$r0");;;
+    let: "errs" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T (let: "$a0" := (![sliceT] "clerks") in
     slice.len "$a0")) in
-    do:  ("errs" <-[#sliceT] "$r0");;;
+    do:  ("errs" <-[sliceT] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
     slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       do:  (let: "$a0" := #(W64 1) in
-      (method_call #(ptrT.id sync.WaitGroup.id) #"Add"%go (![#ptrT] "wg")) "$a0");;;
-      let: "clerk" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i"))) in
-      do:  ("clerk" <-[#ptrT] "$r0");;;
-      let: "locali" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (![#uint64T] "i") in
-      do:  ("locali" <-[#uint64T] "$r0");;;
+      (method_call #(ptrT.id sync.WaitGroup.id) #"Add"%go (![ptrT] "wg")) "$a0");;;
+      let: "clerk" := (mem.alloc (type.zero_val ptrT)) in
+      let: "$r0" := (![ptrT] (slice.elem_ref ptrT (![sliceT] "clerks") (![uint64T] "i"))) in
+      do:  ("clerk" <-[ptrT] "$r0");;;
+      let: "locali" := (mem.alloc (type.zero_val uint64T)) in
+      let: "$r0" := (![uint64T] "i") in
+      do:  ("locali" <-[uint64T] "$r0");;;
       let: "$go" := (λ: <>,
-        exception_do (let: "$r0" := (let: "$a0" := (mem.alloc (let: "$Epoch" := (![#uint64T] "epoch") in
-        let: "$State" := (![#sliceT] (struct.field_ref #replica.GetStateReply #"State"%go (![#ptrT] "reply"))) in
-        let: "$NextIndex" := (![#uint64T] (struct.field_ref #replica.GetStateReply #"NextIndex"%go (![#ptrT] "reply"))) in
-        let: "$CommittedNextIndex" := (![#uint64T] (struct.field_ref #replica.GetStateReply #"CommittedNextIndex"%go (![#ptrT] "reply"))) in
-        struct.make #replica.SetStateArgs [{
+        exception_do (let: "$r0" := (let: "$a0" := (mem.alloc (let: "$Epoch" := (![uint64T] "epoch") in
+        let: "$State" := (![sliceT] (struct.field_ref ptrT #"State"%go (![ptrT] "reply"))) in
+        let: "$NextIndex" := (![uint64T] (struct.field_ref ptrT #"NextIndex"%go (![ptrT] "reply"))) in
+        let: "$CommittedNextIndex" := (![uint64T] (struct.field_ref ptrT #"CommittedNextIndex"%go (![ptrT] "reply"))) in
+        struct.make replica.SetStateArgs [{
           "Epoch" ::= "$Epoch";
           "NextIndex" ::= "$NextIndex";
           "CommittedNextIndex" ::= "$CommittedNextIndex";
           "State" ::= "$State"
         }])) in
-        (method_call #(ptrT.id replica.Clerk.id) #"SetState"%go (![#ptrT] "clerk")) "$a0") in
-        do:  ((slice.elem_ref #uint64T (![#sliceT] "errs") (![#uint64T] "locali")) <-[#uint64T] "$r0");;;
-        do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Done"%go (![#ptrT] "wg")) #());;;
+        (method_call #(ptrT.id replica.Clerk.id) #"SetState"%go (![ptrT] "clerk")) "$a0") in
+        do:  ((slice.elem_ref uint64T (![sliceT] "errs") (![uint64T] "locali")) <-[uint64T] "$r0");;;
+        do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Done"%go (![ptrT] "wg")) #());;;
         return: #())
         ) in
       do:  (Fork ("$go" #()));;;
-      do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
-    do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Wait"%go (![#ptrT] "wg")) #());;;
-    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
+      do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1))));;;
+    do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Wait"%go (![ptrT] "wg")) #());;;
+    let: "err" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := e.None in
-    do:  ("err" <-[#uint64T] "$r0");;;
+    do:  ("err" <-[uint64T] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "errs") in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "errs") in
     slice.len "$a0"))); (λ: <>, #()) := λ: <>,
-      let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "errs") (![#uint64T] "i"))) in
-      do:  ("err2" <-[#uint64T] "$r0");;;
-      (if: (![#uint64T] "err2") ≠ e.None
+      let: "err2" := (mem.alloc (type.zero_val uint64T)) in
+      let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "errs") (![uint64T] "i"))) in
+      do:  ("err2" <-[uint64T] "$r0");;;
+      (if: (![uint64T] "err2") ≠ e.None
       then
-        let: "$r0" := (![#uint64T] "err2") in
-        do:  ("err" <-[#uint64T] "$r0")
+        let: "$r0" := (![uint64T] "err2") in
+        do:  ("err" <-[uint64T] "$r0")
       else do:  #());;;
-      do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
-    (if: (![#uint64T] "err") ≠ e.None
+      do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1))));;;
+    (if: (![uint64T] "err") ≠ e.None
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"Error while setting state and entering new epoch"%go) in
-      slice.literal #interfaceT ["$sl0"])) in
+      slice.literal interfaceT ["$sl0"])) in
       (func_call #log.Println) "$a0");;;
-      return: (![#uint64T] "err")
+      return: (![uint64T] "err")
     else do:  #());;;
-    (if: (let: "$a0" := (![#uint64T] "epoch") in
-    let: "$a1" := (![#sliceT] "servers") in
-    (method_call #(ptrT.id configservice.Clerk.id) #"TryWriteConfig"%go (![#ptrT] "configCk")) "$a0" "$a1") ≠ e.None
+    (if: (let: "$a0" := (![uint64T] "epoch") in
+    let: "$a1" := (![sliceT] "servers") in
+    (method_call #(ptrT.id configservice.Clerk.id) #"TryWriteConfig"%go (![ptrT] "configCk")) "$a0" "$a1") ≠ e.None
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"Error while writing to config service"%go) in
-      slice.literal #interfaceT ["$sl0"])) in
+      slice.literal interfaceT ["$sl0"])) in
       (func_call #log.Println) "$a0");;;
       return: (e.Stale)
     else do:  #());;;
-    do:  (let: "$a0" := (mem.alloc (let: "$Epoch" := (![#uint64T] "epoch") in
-    let: "$Replicas" := (![#sliceT] "servers") in
-    struct.make #replica.BecomePrimaryArgs [{
+    do:  (let: "$a0" := (mem.alloc (let: "$Epoch" := (![uint64T] "epoch") in
+    let: "$Replicas" := (![sliceT] "servers") in
+    struct.make replica.BecomePrimaryArgs [{
       "Epoch" ::= "$Epoch";
       "Replicas" ::= "$Replicas"
     }])) in
-    (method_call #(ptrT.id replica.Clerk.id) #"BecomePrimary"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "clerks") #(W64 0)))) "$a0");;;
+    (method_call #(ptrT.id replica.Clerk.id) #"BecomePrimary"%go (![ptrT] (slice.elem_ref ptrT (![sliceT] "clerks") #(W64 0)))) "$a0");;;
     return: (e.None)).
 
 Definition InitializeSystem : go_string := "github.com/mit-pdos/gokv/vrsm/reconfig.InitializeSystem"%go.
@@ -168,15 +168,15 @@ Definition InitializeSystemⁱᵐᵖˡ : val :=
   λ: "configHosts" "servers",
     exception_do (let: "servers" := (mem.alloc "servers") in
     let: "configHosts" := (mem.alloc "configHosts") in
-    let: "configCk" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "configHosts") in
+    let: "configCk" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "configHosts") in
     (func_call #configservice.MakeClerk) "$a0") in
-    do:  ("configCk" <-[#ptrT] "$r0");;;
+    do:  ("configCk" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![#sliceT] "servers") in
-    (method_call #(ptrT.id configservice.Clerk.id) #"TryWriteConfig"%go (![#ptrT] "configCk")) "$a0" "$a1");;;
-    return: (let: "$a0" := (![#sliceT] "configHosts") in
-     let: "$a1" := (![#sliceT] "servers") in
+    let: "$a1" := (![sliceT] "servers") in
+    (method_call #(ptrT.id configservice.Clerk.id) #"TryWriteConfig"%go (![ptrT] "configCk")) "$a0" "$a1");;;
+    return: (let: "$a0" := (![sliceT] "configHosts") in
+     let: "$a1" := (![sliceT] "servers") in
      (func_call #EnterNewConfig) "$a0" "$a1")).
 
 Definition vars' : list (go_string * go_type) := [].

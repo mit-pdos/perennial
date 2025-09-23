@@ -22,6 +22,7 @@ Module configservice.
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   cls' : slice.t;
@@ -69,15 +70,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk mu' cls' leader':
-  PureWp True
-    (struct.make #configservice.Clerk (alist_val [
-      "mu" ::= #mu';
-      "cls" ::= #cls';
-      "leader" ::= #leader'
-    ]))%struct
-    #(Clerk.mk mu' cls' leader').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
@@ -104,6 +96,7 @@ End instances.
 Module state.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   epoch' : w64;
   reservedEpoch' : w64;
@@ -161,17 +154,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_state epoch' reservedEpoch' leaseExpiration' wantLeaseToExpire' config':
-  PureWp True
-    (struct.make #configservice.state (alist_val [
-      "epoch" ::= #epoch';
-      "reservedEpoch" ::= #reservedEpoch';
-      "leaseExpiration" ::= #leaseExpiration';
-      "wantLeaseToExpire" ::= #wantLeaseToExpire';
-      "config" ::= #config'
-    ]))%struct
-    #(state.mk epoch' reservedEpoch' leaseExpiration' wantLeaseToExpire' config').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance state_struct_fields_split dq l (v : state.t) :
@@ -202,6 +184,7 @@ End instances.
 Module Server.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   s' : loc;
 }.
@@ -239,13 +222,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server s':
-  PureWp True
-    (struct.make #configservice.Server (alist_val [
-      "s" ::= #s'
-    ]))%struct
-    #(Server.mk s').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :

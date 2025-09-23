@@ -35,160 +35,151 @@ Definition OPTYPE_GETFRESHCID : val := #(W8 1).
 
 Definition OPTYPE_RO : val := #(W8 2).
 
-Definition VersionedStateMachine : go_type := structT [
-  "ApplyVolatile" :: funcT;
-  "ApplyReadonly" :: funcT;
-  "SetState" :: funcT;
-  "GetState" :: funcT
-].
-#[global] Typeclasses Opaque VersionedStateMachine.
-#[global] Opaque VersionedStateMachine.
-
 (* go: sm.go:26:25 *)
 Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
   λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
-    let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s"))) in
+    let: "ret" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
     (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-    do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
-    (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
+    do:  ((struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
+    (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
-      let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
-      do:  ("ret" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "ret") in
-      let: "$a1" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
+      let: "$r0" := (slice.make3 byteT #(W64 0) #(W64 8)) in
+      do:  ("ret" <-[sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "ret") in
+      let: "$a1" := (![uint64T] (struct.field_ref ptrT #"nextCID"%go (![ptrT] "s"))) in
       (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("ret" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
+      do:  ("ret" <-[sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"nextCID"%go (![ptrT] "s"))) in
       let: "$a1" := #(W64 1) in
       (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-      do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0")
+      do:  ((struct.field_ref ptrT #"nextCID"%go (![ptrT] "s")) <-[uint64T] "$r0")
     else
-      (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
+      (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_RW
       then
-        let: "n" := (mem.alloc (type.zero_val #intT)) in
-        let: "$r0" := (let: "$a0" := (![#sliceT] "op") in
+        let: "n" := (mem.alloc (type.zero_val intT)) in
+        let: "$r0" := (let: "$a0" := (![sliceT] "op") in
         slice.len "$a0") in
-        do:  ("n" <-[#intT] "$r0");;;
-        let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "$r0" := (let: "$s" := (![#sliceT] "op") in
-        slice.slice #byteT "$s" #(W64 1) (![#intT] "n")) in
-        do:  ("enc" <-[#sliceT] "$r0");;;
-        let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "cid" := (mem.alloc (type.zero_val #uint64T)) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+        do:  ("n" <-[intT] "$r0");;;
+        let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+        let: "$r0" := (let: "$s" := (![sliceT] "op") in
+        slice.slice byteT "$s" #(W64 1) (![intT] "n")) in
+        do:  ("enc" <-[sliceT] "$r0");;;
+        let: "enc2" := (mem.alloc (type.zero_val sliceT)) in
+        let: "cid" := (mem.alloc (type.zero_val uint64T)) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
         (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("cid" <-[#uint64T] "$r0");;;
-        do:  ("enc2" <-[#sliceT] "$r1");;;
-        let: "realOp" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "seq" := (mem.alloc (type.zero_val #uint64T)) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc2") in
+        do:  ("cid" <-[uint64T] "$r0");;;
+        do:  ("enc2" <-[sliceT] "$r1");;;
+        let: "realOp" := (mem.alloc (type.zero_val sliceT)) in
+        let: "seq" := (mem.alloc (type.zero_val uint64T)) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc2") in
         (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("seq" <-[#uint64T] "$r0");;;
-        do:  ("realOp" <-[#sliceT] "$r1");;;
-        (if: (Fst (map.get (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) (![#uint64T] "cid"))) ≥ (![#uint64T] "seq")
+        do:  ("seq" <-[uint64T] "$r0");;;
+        do:  ("realOp" <-[sliceT] "$r1");;;
+        (if: (Fst (map.get (![mapT uint64T uint64T] (struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s"))) (![uint64T] "cid"))) ≥ (![uint64T] "seq")
         then
-          let: "$r0" := (Fst (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) (![#uint64T] "cid"))) in
-          do:  ("ret" <-[#sliceT] "$r0")
+          let: "$r0" := (Fst (map.get (![mapT uint64T sliceT] (struct.field_ref ptrT #"lastReply"%go (![ptrT] "s"))) (![uint64T] "cid"))) in
+          do:  ("ret" <-[sliceT] "$r0")
         else
-          let: "$r0" := (let: "$a0" := (![#sliceT] "realOp") in
-          let: "$a1" := (![#uint64T] (struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s"))) in
-          (![#funcT] (struct.field_ref #VersionedStateMachine #"ApplyVolatile"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) "$a0" "$a1") in
-          do:  ("ret" <-[#sliceT] "$r0");;;
-          let: "$r0" := (![#sliceT] "ret") in
-          do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) (![#uint64T] "cid") "$r0");;;
-          let: "$r0" := (![#uint64T] "seq") in
-          do:  (map.insert (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) (![#uint64T] "cid") "$r0"))
+          let: "$r0" := (let: "$a0" := (![sliceT] "realOp") in
+          let: "$a1" := (![uint64T] (struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s"))) in
+          (![funcT] (struct.field_ref ptrT #"ApplyVolatile"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0" "$a1") in
+          do:  ("ret" <-[sliceT] "$r0");;;
+          let: "$r0" := (![sliceT] "ret") in
+          do:  (map.insert (![mapT uint64T sliceT] (struct.field_ref ptrT #"lastReply"%go (![ptrT] "s"))) (![uint64T] "cid") "$r0");;;
+          let: "$r0" := (![uint64T] "seq") in
+          do:  (map.insert (![mapT uint64T uint64T] (struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s"))) (![uint64T] "cid") "$r0"))
       else
-        (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RO
+        (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_RO
         then
-          let: "n" := (mem.alloc (type.zero_val #intT)) in
-          let: "$r0" := (let: "$a0" := (![#sliceT] "op") in
+          let: "n" := (mem.alloc (type.zero_val intT)) in
+          let: "$r0" := (let: "$a0" := (![sliceT] "op") in
           slice.len "$a0") in
-          do:  ("n" <-[#intT] "$r0");;;
-          let: "realOp" := (mem.alloc (type.zero_val #sliceT)) in
-          let: "$r0" := (let: "$s" := (![#sliceT] "op") in
-          slice.slice #byteT "$s" #(W64 1) (![#intT] "n")) in
-          do:  ("realOp" <-[#sliceT] "$r0");;;
-          let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "realOp") in
-          (![#funcT] (struct.field_ref #VersionedStateMachine #"ApplyReadonly"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) "$a0") in
+          do:  ("n" <-[intT] "$r0");;;
+          let: "realOp" := (mem.alloc (type.zero_val sliceT)) in
+          let: "$r0" := (let: "$s" := (![sliceT] "op") in
+          slice.slice byteT "$s" #(W64 1) (![intT] "n")) in
+          do:  ("realOp" <-[sliceT] "$r0");;;
+          let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "realOp") in
+          (![funcT] (struct.field_ref ptrT #"ApplyReadonly"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  "$r0";;;
-          do:  ("ret" <-[#sliceT] "$r1")
+          do:  ("ret" <-[sliceT] "$r1")
         else
           do:  (let: "$a0" := (interface.make #stringT.id #"unexpected ee op type"%go) in
           Panic "$a0"))));;;
-    return: (![#sliceT] "ret")).
+    return: (![sliceT] "ret")).
 
 (* go: sm.go:58:25 *)
 Definition eStateMachine__applyReadonlyⁱᵐᵖˡ : val :=
   λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
-    (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
+    (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"Got GETFRESHCID as a read-only op"%go) in
       Panic "$a0")
     else
-      (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
+      (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_RW
       then
         do:  (let: "$a0" := (interface.make #stringT.id #"Got RW as a read-only op"%go) in
         Panic "$a0")
       else
-        (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) ≠ OPTYPE_RO
+        (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) ≠ OPTYPE_RO
         then
           do:  (let: "$a0" := (interface.make #stringT.id #"unexpected ee op type"%go) in
           Panic "$a0")
         else do:  #())));;;
-    let: "n" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "op") in
+    let: "n" := (mem.alloc (type.zero_val intT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "op") in
     slice.len "$a0") in
-    do:  ("n" <-[#intT] "$r0");;;
-    let: "realOp" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "op") in
-    slice.slice #byteT "$s" #(W64 1) (![#intT] "n")) in
-    do:  ("realOp" <-[#sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "realOp") in
-    (![#funcT] (struct.field_ref #VersionedStateMachine #"ApplyReadonly"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) "$a0")) in
+    do:  ("n" <-[intT] "$r0");;;
+    let: "realOp" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "op") in
+    slice.slice byteT "$s" #(W64 1) (![intT] "n")) in
+    do:  ("realOp" <-[sliceT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "realOp") in
+    (![funcT] (struct.field_ref ptrT #"ApplyReadonly"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0")) in
     return: ("$ret0", "$ret1")).
 
 (* go: sm.go:72:25 *)
 Definition eStateMachine__getStateⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
-    let: "appState" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((![#funcT] (struct.field_ref #VersionedStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) #()) in
-    do:  ("appState" <-[#sliceT] "$r0");;;
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 0)) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
+    let: "appState" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := ((![funcT] (struct.field_ref ptrT #"GetState"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) #()) in
+    do:  ("appState" <-[sliceT] "$r0");;;
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 0) #(W64 0)) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"nextCID"%go (![ptrT] "s"))) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (let: "$a0" := (![mapT uint64T uint64T] (struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s"))) in
     (func_call #map_marshal.EncodeMapU64ToU64) "$a0") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (let: "$a0" := (![mapT uint64T sliceT] (struct.field_ref ptrT #"lastReply"%go (![ptrT] "s"))) in
     (func_call #map_marshal.EncodeMapU64ToBytes) "$a0") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#sliceT] "appState") in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![sliceT] "appState") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "enc")).
+    do:  ("enc" <-[sliceT] "$r0");;;
+    return: (![sliceT] "enc")).
 
 (* go: sm.go:85:25 *)
 Definition eStateMachine__setStateⁱᵐᵖˡ : val :=
@@ -196,32 +187,32 @@ Definition eStateMachine__setStateⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "nextIndex" := (mem.alloc "nextIndex") in
     let: "state" := (mem.alloc "state") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] "state") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (![sliceT] "state") in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
     (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    do:  ((struct.field_ref ptrT #"nextCID"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
+    do:  ("enc" <-[sliceT] "$r1");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
     (func_call #map_marshal.DecodeMapU64ToU64) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[type.mapT #uint64T #uint64T] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    do:  ((struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s")) <-[mapT uint64T uint64T] "$r0");;;
+    do:  ("enc" <-[sliceT] "$r1");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
     (func_call #map_marshal.DecodeMapU64ToBytes) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[type.mapT #uint64T #sliceT] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    do:  (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] "nextIndex") in
-    (![#funcT] (struct.field_ref #VersionedStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
-    let: "$r0" := (![#uint64T] "nextIndex") in
-    do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref ptrT #"lastReply"%go (![ptrT] "s")) <-[mapT uint64T sliceT] "$r0");;;
+    do:  ("enc" <-[sliceT] "$r1");;;
+    do:  (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![uint64T] "nextIndex") in
+    (![funcT] (struct.field_ref ptrT #"SetState"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0" "$a1");;;
+    let: "$r0" := (![uint64T] "nextIndex") in
+    do:  ((struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
     return: #()).
 
 Definition MakeExactlyOnceStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeExactlyOnceStateMachine"%go.
@@ -230,24 +221,24 @@ Definition MakeExactlyOnceStateMachine : go_string := "github.com/mit-pdos/gokv/
 Definition MakeExactlyOnceStateMachineⁱᵐᵖˡ : val :=
   λ: "sm",
     exception_do (let: "sm" := (mem.alloc "sm") in
-    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #eStateMachine)) in
-    do:  ("s" <-[#ptrT] "$r0");;;
-    let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[type.mapT #uint64T #uint64T] "$r0");;;
-    let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[type.mapT #uint64T #sliceT] "$r0");;;
+    let: "s" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val eStateMachine)) in
+    do:  ("s" <-[ptrT] "$r0");;;
+    let: "$r0" := (map.make uint64T uint64T) in
+    do:  ((struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s")) <-[mapT uint64T uint64T] "$r0");;;
+    let: "$r0" := (map.make uint64T sliceT) in
+    do:  ((struct.field_ref ptrT #"lastReply"%go (![ptrT] "s")) <-[mapT uint64T sliceT] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (![#ptrT] "sm") in
-    do:  ((struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    return: (mem.alloc (let: "$ApplyReadonly" := (method_call #(ptrT.id eStateMachine.id) #"applyReadonly"%go (![#ptrT] "s")) in
-     let: "$ApplyVolatile" := (method_call #(ptrT.id eStateMachine.id) #"applyVolatile"%go (![#ptrT] "s")) in
+    do:  ((struct.field_ref ptrT #"nextCID"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
+    let: "$r0" := (![ptrT] "sm") in
+    do:  ((struct.field_ref ptrT #"sm"%go (![ptrT] "s")) <-[ptrT] "$r0");;;
+    return: (mem.alloc (let: "$ApplyReadonly" := (method_call #(ptrT.id eStateMachine.id) #"applyReadonly"%go (![ptrT] "s")) in
+     let: "$ApplyVolatile" := (method_call #(ptrT.id eStateMachine.id) #"applyVolatile"%go (![ptrT] "s")) in
      let: "$GetState" := (λ: <>,
-       exception_do (return: ((method_call #(ptrT.id eStateMachine.id) #"getState"%go (![#ptrT] "s")) #()))
+       exception_do (return: ((method_call #(ptrT.id eStateMachine.id) #"getState"%go (![ptrT] "s")) #()))
        ) in
-     let: "$SetState" := (method_call #(ptrT.id eStateMachine.id) #"setState"%go (![#ptrT] "s")) in
-     struct.make #storage.InMemoryStateMachine [{
+     let: "$SetState" := (method_call #(ptrT.id eStateMachine.id) #"setState"%go (![ptrT] "s")) in
+     struct.make storage.InMemoryStateMachine [{
        "ApplyReadonly" ::= "$ApplyReadonly";
        "ApplyVolatile" ::= "$ApplyVolatile";
        "GetState" ::= "$GetState";
@@ -268,76 +259,85 @@ Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyo
 Definition MakeClerkⁱᵐᵖˡ : val :=
   λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #Clerk)) in
-    do:  ("ck" <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
+    let: "ck" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val Clerk)) in
+    do:  ("ck" <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "confHosts") in
     (func_call #clerk.Make) "$a0") in
-    do:  ((struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")) <-[#ptrT] "$r0");;;
-    let: "v" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 1)) in
-    do:  ("v" <-[#sliceT] "$r0");;;
+    do:  ((struct.field_ref ptrT #"ck"%go (![ptrT] "ck")) <-[ptrT] "$r0");;;
+    let: "v" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 byteT #(W64 1)) in
+    do:  ("v" <-[sliceT] "$r0");;;
     let: "$r0" := OPTYPE_GETFRESHCID in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "v") #(W64 0)) <-[#byteT] "$r0");;;
-    let: "cidEnc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "v") in
-    (method_call #(ptrT.id clerk.Clerk.id) #"Apply"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0") in
-    do:  ("cidEnc" <-[#sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "cidEnc") in
+    do:  ((slice.elem_ref byteT (![sliceT] "v") #(W64 0)) <-[byteT] "$r0");;;
+    let: "cidEnc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "v") in
+    (method_call #(ptrT.id clerk.Clerk.id) #"Apply"%go (![ptrT] (struct.field_ref ptrT #"ck"%go (![ptrT] "ck")))) "$a0") in
+    do:  ("cidEnc" <-[sliceT] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "cidEnc") in
     (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref #Clerk #"cid"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref ptrT #"cid"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
     do:  "$r1";;;
     let: "$r0" := #(W64 1) in
-    do:  ((struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
-    return: (![#ptrT] "ck")).
+    do:  ((struct.field_ref ptrT #"seq"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+    return: (![ptrT] "ck")).
 
 (* go: sm.go:127:18 *)
 Definition Clerk__ApplyExactlyOnceⁱᵐᵖˡ : val :=
   λ: "ck" "req",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "req" := (mem.alloc "req") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 1) #(W64 1)) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 1) #(W64 1)) in
+    do:  ("enc" <-[sliceT] "$r0");;;
     let: "$r0" := OPTYPE_RW in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] (struct.field_ref #Clerk #"cid"%go (![#ptrT] "ck"))) in
+    do:  ((slice.elem_ref byteT (![sliceT] "enc") #(W64 0)) <-[byteT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"cid"%go (![ptrT] "ck"))) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] (struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck"))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"seq"%go (![ptrT] "ck"))) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#sliceT] "req") in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![sliceT] "req") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck"))) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"seq"%go (![ptrT] "ck"))) in
     let: "$a1" := #(W64 1) in
     (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-    do:  ((struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
-    return: (let: "$a0" := (![#sliceT] "enc") in
-     (method_call #(ptrT.id clerk.Clerk.id) #"Apply"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+    do:  ((struct.field_ref ptrT #"seq"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+    return: (let: "$a0" := (![sliceT] "enc") in
+     (method_call #(ptrT.id clerk.Clerk.id) #"Apply"%go (![ptrT] (struct.field_ref ptrT #"ck"%go (![ptrT] "ck")))) "$a0")).
 
 (* go: sm.go:138:18 *)
 Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
   λ: "ck" "req",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "req" := (mem.alloc "req") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 1) #(W64 1)) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make3 byteT #(W64 1) #(W64 1)) in
+    do:  ("enc" <-[sliceT] "$r0");;;
     let: "$r0" := OPTYPE_RO in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#sliceT] "req") in
+    do:  ((slice.elem_ref byteT (![sliceT] "enc") #(W64 0)) <-[byteT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (![sliceT] "req") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    return: (let: "$a0" := (![#sliceT] "enc") in
-     (method_call #(ptrT.id clerk.Clerk.id) #"ApplyRo"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+    do:  ("enc" <-[sliceT] "$r0");;;
+    return: (let: "$a0" := (![sliceT] "enc") in
+     (method_call #(ptrT.id clerk.Clerk.id) #"ApplyRo"%go (![ptrT] (struct.field_ref ptrT #"ck"%go (![ptrT] "ck")))) "$a0")).
+
+Definition VersionedStateMachine : go_type := structT [
+  "ApplyVolatile" :: funcT;
+  "ApplyReadonly" :: funcT;
+  "SetState" :: funcT;
+  "GetState" :: funcT
+].
+#[global] Typeclasses Opaque VersionedStateMachine.
+#[global] Opaque VersionedStateMachine.
 
 Definition vars' : list (go_string * go_type) := [].
 

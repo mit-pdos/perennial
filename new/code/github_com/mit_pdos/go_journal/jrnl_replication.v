@@ -34,15 +34,15 @@ Definition Openⁱᵐᵖˡ : val :=
   λ: "txn" "a",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "txn" := (mem.alloc "txn") in
-    return: (mem.alloc (let: "$txn" := (![#ptrT] "txn") in
-     let: "$m" := (mem.alloc (type.zero_val #sync.Mutex)) in
-     let: "$a0" := (let: "$a0" := (![#uint64T] "a") in
+    return: (mem.alloc (let: "$txn" := (![ptrT] "txn") in
+     let: "$m" := (mem.alloc (type.zero_val sync.Mutex)) in
+     let: "$a0" := (let: "$a0" := (![uint64T] "a") in
      let: "$a1" := #(W64 0) in
      (func_call #addr.MkAddr) "$a0" "$a1") in
-     let: "$a1" := (let: "$a0" := ((![#uint64T] "a") + #(W64 1)) in
+     let: "$a1" := (let: "$a0" := ((![uint64T] "a") + #(W64 1)) in
      let: "$a1" := #(W64 0) in
      (func_call #addr.MkAddr) "$a0" "$a1") in
-     struct.make #RepBlock [{
+     struct.make RepBlock [{
        "txn" ::= "$txn";
        "m" ::= "$m";
        "a0" ::= "$a0";
@@ -56,51 +56,51 @@ Definition Openⁱᵐᵖˡ : val :=
 Definition RepBlock__Readⁱᵐᵖˡ : val :=
   λ: "rb" <>,
     exception_do (let: "rb" := (mem.alloc "rb") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #RepBlock #"m"%go (![#ptrT] "rb")))) #());;;
-    let: "tx" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #RepBlock #"txn"%go (![#ptrT] "rb"))) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"m"%go (![ptrT] "rb")))) #());;;
+    let: "tx" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![ptrT] (struct.field_ref ptrT #"txn"%go (![ptrT] "rb"))) in
     (func_call #jrnl.Begin) "$a0") in
-    do:  ("tx" <-[#ptrT] "$r0");;;
-    let: "buf" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#addr.Addr] (struct.field_ref #RepBlock #"a0"%go (![#ptrT] "rb"))) in
+    do:  ("tx" <-[ptrT] "$r0");;;
+    let: "buf" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![addr.Addr] (struct.field_ref ptrT #"a0"%go (![ptrT] "rb"))) in
     let: "$a1" := (#(W64 8) * disk.BlockSize) in
-    (method_call #(ptrT.id jrnl.Op.id) #"ReadBuf"%go (![#ptrT] "tx")) "$a0" "$a1") in
-    do:  ("buf" <-[#ptrT] "$r0");;;
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #buf.Buf #"Data"%go (![#ptrT] "buf"))) in
+    (method_call #(ptrT.id jrnl.Op.id) #"ReadBuf"%go (![ptrT] "tx")) "$a0" "$a1") in
+    do:  ("buf" <-[ptrT] "$r0");;;
+    let: "b" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"Data"%go (![ptrT] "buf"))) in
     (func_call #util.CloneByteSlice) "$a0") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("b" <-[sliceT] "$r0");;;
+    let: "ok" := (mem.alloc (type.zero_val boolT)) in
     let: "$r0" := (let: "$a0" := #true in
-    (method_call #(ptrT.id jrnl.Op.id) #"CommitWait"%go (![#ptrT] "tx")) "$a0") in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #RepBlock #"m"%go (![#ptrT] "rb")))) #());;;
-    return: (![#sliceT] "b", ![#boolT] "ok")).
+    (method_call #(ptrT.id jrnl.Op.id) #"CommitWait"%go (![ptrT] "tx")) "$a0") in
+    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"m"%go (![ptrT] "rb")))) #());;;
+    return: (![sliceT] "b", ![boolT] "ok")).
 
 (* go: jrnl_replication.go:45:21 *)
 Definition RepBlock__Writeⁱᵐᵖˡ : val :=
   λ: "rb" "b",
     exception_do (let: "rb" := (mem.alloc "rb") in
     let: "b" := (mem.alloc "b") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #RepBlock #"m"%go (![#ptrT] "rb")))) #());;;
-    let: "tx" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #RepBlock #"txn"%go (![#ptrT] "rb"))) in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"m"%go (![ptrT] "rb")))) #());;;
+    let: "tx" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (let: "$a0" := (![ptrT] (struct.field_ref ptrT #"txn"%go (![ptrT] "rb"))) in
     (func_call #jrnl.Begin) "$a0") in
-    do:  ("tx" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#addr.Addr] (struct.field_ref #RepBlock #"a0"%go (![#ptrT] "rb"))) in
+    do:  ("tx" <-[ptrT] "$r0");;;
+    do:  (let: "$a0" := (![addr.Addr] (struct.field_ref ptrT #"a0"%go (![ptrT] "rb"))) in
     let: "$a1" := (#(W64 8) * disk.BlockSize) in
-    let: "$a2" := (![#sliceT] "b") in
-    (method_call #(ptrT.id jrnl.Op.id) #"OverWrite"%go (![#ptrT] "tx")) "$a0" "$a1" "$a2");;;
-    do:  (let: "$a0" := (![#addr.Addr] (struct.field_ref #RepBlock #"a1"%go (![#ptrT] "rb"))) in
+    let: "$a2" := (![sliceT] "b") in
+    (method_call #(ptrT.id jrnl.Op.id) #"OverWrite"%go (![ptrT] "tx")) "$a0" "$a1" "$a2");;;
+    do:  (let: "$a0" := (![addr.Addr] (struct.field_ref ptrT #"a1"%go (![ptrT] "rb"))) in
     let: "$a1" := (#(W64 8) * disk.BlockSize) in
-    let: "$a2" := (![#sliceT] "b") in
-    (method_call #(ptrT.id jrnl.Op.id) #"OverWrite"%go (![#ptrT] "tx")) "$a0" "$a1" "$a2");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "$a2" := (![sliceT] "b") in
+    (method_call #(ptrT.id jrnl.Op.id) #"OverWrite"%go (![ptrT] "tx")) "$a0" "$a1" "$a2");;;
+    let: "ok" := (mem.alloc (type.zero_val boolT)) in
     let: "$r0" := (let: "$a0" := #true in
-    (method_call #(ptrT.id jrnl.Op.id) #"CommitWait"%go (![#ptrT] "tx")) "$a0") in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #RepBlock #"m"%go (![#ptrT] "rb")))) #());;;
-    return: (![#boolT] "ok")).
+    (method_call #(ptrT.id jrnl.Op.id) #"CommitWait"%go (![ptrT] "tx")) "$a0") in
+    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"m"%go (![ptrT] "rb")))) #());;;
+    return: (![boolT] "ok")).
 
 Definition vars' : list (go_string * go_type) := [].
 

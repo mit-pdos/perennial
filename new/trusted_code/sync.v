@@ -14,27 +14,29 @@ Definition Mutex : go_type := structT [
   ].
 
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
-  λ: "m" <>, Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true).
+  λ: "m" <>, Snd (CmpXchg (struct.field_ref Mutex "state"%go "m") #false #true).
 
 Definition Mutex__Lockⁱᵐᵖˡ : val :=
   λ: "m" <>,
-    if: Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true) then
+    if: Snd (CmpXchg (struct.field_ref Mutex "state"%go "m") #false #true) then
       #()
     else
       method_call #(ptrT.id Mutex.id) #"Lock" "m" #().
 
 Definition Mutex__Unlockⁱᵐᵖˡ : val :=
-  λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref #Mutex #"state"%go "m") #true #false ;;; return: #())
+  λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref Mutex "state"%go "m") #true #false ;;; return: #())
 .
 
 Definition Cond : go_type := structT [
     "L" :: interfaceT
   ].
 
-Definition NewCondⁱᵐᵖˡ : val := λ: "m", alloc (struct.make #Cond [{ (#"L", "m") }]).
+Definition NewCondⁱᵐᵖˡ : val := λ: "m", let: "x" := mem.alloc Cond in
+                                        "x" <-[Cond] (struct.make Cond [{ (#"L", "m") }]);;
+                                        "x".
 Definition Cond__Waitⁱᵐᵖˡ : val := λ: "c" <>, exception_do (
-                                 do: interface.get #"Unlock"%go (![#interfaceT] (struct.field_ref #Cond #"L"%go "c")) #() ;;;
-                                 do: interface.get #"Lock"%go (![#interfaceT] (struct.field_ref #Cond #"L"%go "c")) #()
+                                 do: interface.get #"Unlock"%go (![interfaceT] (struct.field_ref Cond "L"%go "c")) #() ;;;
+                                 do: interface.get #"Lock"%go (![interfaceT] (struct.field_ref Cond "L"%go "c")) #()
                                ).
 Definition Cond__Broadcastⁱᵐᵖˡ : val := λ: "c" <>, #().
 Definition Cond__Signalⁱᵐᵖˡ : val := λ: "c" <>, #().

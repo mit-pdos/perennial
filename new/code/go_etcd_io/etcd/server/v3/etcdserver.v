@@ -376,63 +376,63 @@ Definition EtcdServer__Putⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "r" := (mem.alloc "r") in
     let: "ctx" := (mem.alloc "ctx") in
-    let: "$r0" := (let: "$a0" := (![#context.Context] "ctx") in
-    let: "$a1" := (interface.make #traceutil.StartTimeKey.id (struct.make #traceutil.StartTimeKey [{
+    let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+    let: "$a1" := (interface.make #traceutil.StartTimeKey.id (struct.make traceutil.StartTimeKey [{
     }])) in
     let: "$a2" := (interface.make #time.Time.id ((func_call #time.Now) #())) in
     (func_call #context.WithValue) "$a0" "$a1" "$a2") in
-    do:  ("ctx" <-[#context.Context] "$r0");;;
-    let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: "resp" := (mem.alloc (type.zero_val #proto.Message)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
-    let: "$a1" := (let: "$Put" := (![#ptrT] "r") in
-    struct.make #etcdserverpb.InternalRaftRequest [{
-      "Header" ::= type.zero_val #ptrT;
-      "ID" ::= type.zero_val #uint64T;
-      "V2" ::= type.zero_val #ptrT;
-      "Range" ::= type.zero_val #ptrT;
+    do:  ("ctx" <-[context.Context] "$r0");;;
+    let: "err" := (mem.alloc (type.zero_val error)) in
+    let: "resp" := (mem.alloc (type.zero_val proto.Message)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+    let: "$a1" := (let: "$Put" := (![ptrT] "r") in
+    struct.make etcdserverpb.InternalRaftRequest [{
+      "Header" ::= type.zero_val ptrT;
+      "ID" ::= type.zero_val uint64T;
+      "V2" ::= type.zero_val ptrT;
+      "Range" ::= type.zero_val ptrT;
       "Put" ::= "$Put";
-      "DeleteRange" ::= type.zero_val #ptrT;
-      "Txn" ::= type.zero_val #ptrT;
-      "Compaction" ::= type.zero_val #ptrT;
-      "LeaseGrant" ::= type.zero_val #ptrT;
-      "LeaseRevoke" ::= type.zero_val #ptrT;
-      "Alarm" ::= type.zero_val #ptrT;
-      "LeaseCheckpoint" ::= type.zero_val #ptrT;
-      "AuthEnable" ::= type.zero_val #ptrT;
-      "AuthDisable" ::= type.zero_val #ptrT;
-      "AuthStatus" ::= type.zero_val #ptrT;
-      "Authenticate" ::= type.zero_val #ptrT;
-      "AuthUserAdd" ::= type.zero_val #ptrT;
-      "AuthUserDelete" ::= type.zero_val #ptrT;
-      "AuthUserGet" ::= type.zero_val #ptrT;
-      "AuthUserChangePassword" ::= type.zero_val #ptrT;
-      "AuthUserGrantRole" ::= type.zero_val #ptrT;
-      "AuthUserRevokeRole" ::= type.zero_val #ptrT;
-      "AuthUserList" ::= type.zero_val #ptrT;
-      "AuthRoleList" ::= type.zero_val #ptrT;
-      "AuthRoleAdd" ::= type.zero_val #ptrT;
-      "AuthRoleDelete" ::= type.zero_val #ptrT;
-      "AuthRoleGet" ::= type.zero_val #ptrT;
-      "AuthRoleGrantPermission" ::= type.zero_val #ptrT;
-      "AuthRoleRevokePermission" ::= type.zero_val #ptrT;
-      "ClusterVersionSet" ::= type.zero_val #ptrT;
-      "ClusterMemberAttrSet" ::= type.zero_val #ptrT;
-      "DowngradeInfoSet" ::= type.zero_val #ptrT;
-      "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+      "DeleteRange" ::= type.zero_val ptrT;
+      "Txn" ::= type.zero_val ptrT;
+      "Compaction" ::= type.zero_val ptrT;
+      "LeaseGrant" ::= type.zero_val ptrT;
+      "LeaseRevoke" ::= type.zero_val ptrT;
+      "Alarm" ::= type.zero_val ptrT;
+      "LeaseCheckpoint" ::= type.zero_val ptrT;
+      "AuthEnable" ::= type.zero_val ptrT;
+      "AuthDisable" ::= type.zero_val ptrT;
+      "AuthStatus" ::= type.zero_val ptrT;
+      "Authenticate" ::= type.zero_val ptrT;
+      "AuthUserAdd" ::= type.zero_val ptrT;
+      "AuthUserDelete" ::= type.zero_val ptrT;
+      "AuthUserGet" ::= type.zero_val ptrT;
+      "AuthUserChangePassword" ::= type.zero_val ptrT;
+      "AuthUserGrantRole" ::= type.zero_val ptrT;
+      "AuthUserRevokeRole" ::= type.zero_val ptrT;
+      "AuthUserList" ::= type.zero_val ptrT;
+      "AuthRoleList" ::= type.zero_val ptrT;
+      "AuthRoleAdd" ::= type.zero_val ptrT;
+      "AuthRoleDelete" ::= type.zero_val ptrT;
+      "AuthRoleGet" ::= type.zero_val ptrT;
+      "AuthRoleGrantPermission" ::= type.zero_val ptrT;
+      "AuthRoleRevokePermission" ::= type.zero_val ptrT;
+      "ClusterVersionSet" ::= type.zero_val ptrT;
+      "ClusterMemberAttrSet" ::= type.zero_val ptrT;
+      "DowngradeInfoSet" ::= type.zero_val ptrT;
+      "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
       ]);
-      "XXX_unrecognized" ::= type.zero_val #sliceT;
-      "XXX_sizecache" ::= type.zero_val #int32T
+      "XXX_unrecognized" ::= type.zero_val sliceT;
+      "XXX_sizecache" ::= type.zero_val int32T
     }]) in
-    (method_call #(ptrT.id EtcdServer.id) #"raftRequest"%go (![#ptrT] "s")) "$a0" "$a1") in
+    (method_call #(ptrT.id EtcdServer.id) #"raftRequest"%go (![ptrT] "s")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[#proto.Message] "$r0");;;
-    do:  ("err" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil))
-    then return: (#null, ![#error] "err")
+    do:  ("resp" <-[proto.Message] "$r0");;;
+    do:  ("err" <-[error] "$r1");;;
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
+    then return: (#null, ![error] "err")
     else do:  #());;;
-    return: (interface.type_assert (![#proto.Message] "resp") #(ptrT.id etcdserverpb.PutResponse.id), #interface.nil)).
+    return: (interface.type_assert (![proto.Message] "resp") #(ptrT.id etcdserverpb.PutResponse.id), #interface.nil)).
 
 (* go: v3_server.go:738:22 *)
 Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ : val :=
@@ -440,126 +440,126 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ : val :=
     with_defer: (let: "s" := (mem.alloc "s") in
     let: "r" := (mem.alloc "r") in
     let: "ctx" := (mem.alloc "ctx") in
-    let: "ai" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #(ptrT.id EtcdServer.id) #"getAppliedIndex"%go (![#ptrT] "s")) #()) in
-    do:  ("ai" <-[#uint64T] "$r0");;;
-    let: "ci" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #(ptrT.id EtcdServer.id) #"getCommittedIndex"%go (![#ptrT] "s")) #()) in
-    do:  ("ci" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "ci") > ((![#uint64T] "ai") + #(W64 maxGapBetweenApplyAndCommitIndex))
-    then return: (#null, ![#error] (globals.get #errors.ErrTooManyRequests))
+    let: "ai" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((method_call #(ptrT.id EtcdServer.id) #"getAppliedIndex"%go (![ptrT] "s")) #()) in
+    do:  ("ai" <-[uint64T] "$r0");;;
+    let: "ci" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((method_call #(ptrT.id EtcdServer.id) #"getCommittedIndex"%go (![ptrT] "s")) #()) in
+    do:  ("ci" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "ci") > ((![uint64T] "ai") + #(W64 maxGapBetweenApplyAndCommitIndex))
+    then return: (#null, ![error] (globals.get #errors.ErrTooManyRequests))
     else do:  #());;;
-    let: "$r0" := (mem.alloc (let: "$ID" := ((method_call #(ptrT.id idutil.Generator.id) #"Next"%go (![#ptrT] (struct.field_ref #EtcdServer #"reqIDGen"%go (![#ptrT] "s")))) #()) in
-    struct.make #etcdserverpb.RequestHeader [{
+    let: "$r0" := (mem.alloc (let: "$ID" := ((method_call #(ptrT.id idutil.Generator.id) #"Next"%go (![ptrT] (struct.field_ref ptrT #"reqIDGen"%go (![ptrT] "s")))) #()) in
+    struct.make etcdserverpb.RequestHeader [{
       "ID" ::= "$ID";
-      "Username" ::= type.zero_val #stringT;
-      "AuthRevision" ::= type.zero_val #uint64T;
-      "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+      "Username" ::= type.zero_val stringT;
+      "AuthRevision" ::= type.zero_val uint64T;
+      "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
       ]);
-      "XXX_unrecognized" ::= type.zero_val #sliceT;
-      "XXX_sizecache" ::= type.zero_val #int32T
+      "XXX_unrecognized" ::= type.zero_val sliceT;
+      "XXX_sizecache" ::= type.zero_val int32T
     }])) in
-    do:  ((struct.field_ref #etcdserverpb.InternalRaftRequest #"Header"%go "r") <-[#ptrT] "$r0");;;
-    (if: (![#ptrT] (struct.field_ref #etcdserverpb.InternalRaftRequest #"Authenticate"%go "r")) = #null
+    do:  ((struct.field_ref etcdserverpb.InternalRaftRequest #"Header"%go "r") <-[ptrT] "$r0");;;
+    (if: (![ptrT] (struct.field_ref etcdserverpb.InternalRaftRequest #"Authenticate"%go "r")) = #null
     then
-      let: "err" := (mem.alloc (type.zero_val #error)) in
-      let: "authInfo" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
-      (method_call #(ptrT.id EtcdServer.id) #"AuthInfoFromCtx"%go (![#ptrT] "s")) "$a0") in
+      let: "err" := (mem.alloc (type.zero_val error)) in
+      let: "authInfo" := (mem.alloc (type.zero_val ptrT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+      (method_call #(ptrT.id EtcdServer.id) #"AuthInfoFromCtx"%go (![ptrT] "s")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("authInfo" <-[#ptrT] "$r0");;;
-      do:  ("err" <-[#error] "$r1");;;
-      (if: (~ (interface.eq (![#error] "err") #interface.nil))
-      then return: (#null, ![#error] "err")
+      do:  ("authInfo" <-[ptrT] "$r0");;;
+      do:  ("err" <-[error] "$r1");;;
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
+      then return: (#null, ![error] "err")
       else do:  #());;;
-      (if: (![#ptrT] "authInfo") ≠ #null
+      (if: (![ptrT] "authInfo") ≠ #null
       then
-        let: "$r0" := (![#stringT] (struct.field_ref #auth.AuthInfo #"Username"%go (![#ptrT] "authInfo"))) in
-        do:  ((struct.field_ref #etcdserverpb.RequestHeader #"Username"%go (![#ptrT] (struct.field_ref #etcdserverpb.InternalRaftRequest #"Header"%go "r"))) <-[#stringT] "$r0");;;
-        let: "$r0" := (![#uint64T] (struct.field_ref #auth.AuthInfo #"Revision"%go (![#ptrT] "authInfo"))) in
-        do:  ((struct.field_ref #etcdserverpb.RequestHeader #"AuthRevision"%go (![#ptrT] (struct.field_ref #etcdserverpb.InternalRaftRequest #"Header"%go "r"))) <-[#uint64T] "$r0")
+        let: "$r0" := (![stringT] (struct.field_ref ptrT #"Username"%go (![ptrT] "authInfo"))) in
+        do:  ((struct.field_ref ptrT #"Username"%go (![ptrT] (struct.field_ref etcdserverpb.InternalRaftRequest #"Header"%go "r"))) <-[stringT] "$r0");;;
+        let: "$r0" := (![uint64T] (struct.field_ref ptrT #"Revision"%go (![ptrT] "authInfo"))) in
+        do:  ((struct.field_ref ptrT #"AuthRevision"%go (![ptrT] (struct.field_ref etcdserverpb.InternalRaftRequest #"Header"%go "r"))) <-[uint64T] "$r0")
       else do:  #())
     else do:  #());;;
-    let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: "data" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "err" := (mem.alloc (type.zero_val error)) in
+    let: "data" := (mem.alloc (type.zero_val sliceT)) in
     let: ("$ret0", "$ret1") := ((method_call #(ptrT.id etcdserverpb.InternalRaftRequest.id) #"Marshal"%go "r") #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("data" <-[#sliceT] "$r0");;;
-    do:  ("err" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil))
-    then return: (#null, ![#error] "err")
+    do:  ("data" <-[sliceT] "$r0");;;
+    do:  ("err" <-[error] "$r1");;;
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
+    then return: (#null, ![error] "err")
     else do:  #());;;
-    (if: int_gt (let: "$a0" := (![#sliceT] "data") in
-    slice.len "$a0") (u_to_w64 (![#uintT] (struct.field_ref #config.ServerConfig #"MaxRequestBytes"%go (struct.field_ref #EtcdServer #"Cfg"%go (![#ptrT] "s")))))
-    then return: (#null, ![#error] (globals.get #errors.ErrRequestTooLarge))
+    (if: int_gt (let: "$a0" := (![sliceT] "data") in
+    slice.len "$a0") (u_to_w64 (![uintT] (struct.field_ref config.ServerConfig #"MaxRequestBytes"%go (struct.field_ref ptrT #"Cfg"%go (![ptrT] "s")))))
+    then return: (#null, ![error] (globals.get #errors.ErrRequestTooLarge))
     else do:  #());;;
-    let: "id" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (struct.field_ref #etcdserverpb.InternalRaftRequest #"ID"%go "r")) in
-    do:  ("id" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "id") = #(W64 0)
+    let: "id" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (![uint64T] (struct.field_ref etcdserverpb.InternalRaftRequest #"ID"%go "r")) in
+    do:  ("id" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "id") = #(W64 0)
     then
-      let: "$r0" := (![#uint64T] (struct.field_ref #etcdserverpb.RequestHeader #"ID"%go (![#ptrT] (struct.field_ref #etcdserverpb.InternalRaftRequest #"Header"%go "r")))) in
-      do:  ("id" <-[#uint64T] "$r0")
+      let: "$r0" := (![uint64T] (struct.field_ref ptrT #"ID"%go (![ptrT] (struct.field_ref etcdserverpb.InternalRaftRequest #"Header"%go "r")))) in
+      do:  ("id" <-[uint64T] "$r0")
     else do:  #());;;
-    let: "ch" := (mem.alloc (type.zero_val (type.chanT #interfaceT))) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "id") in
-    (interface.get #"Register"%go (![#wait.Wait] (struct.field_ref #EtcdServer #"w"%go (![#ptrT] "s")))) "$a0") in
-    do:  ("ch" <-[type.chanT #interfaceT] "$r0");;;
-    let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
-    let: "cctx" := (mem.alloc (type.zero_val #context.Context)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
-    let: "$a1" := ((method_call #(ptrT.id config.ServerConfig.id) #"ReqTimeout"%go (struct.field_ref #EtcdServer #"Cfg"%go (![#ptrT] "s"))) #()) in
+    let: "ch" := (mem.alloc (type.zero_val (chanT interfaceT))) in
+    let: "$r0" := (let: "$a0" := (![uint64T] "id") in
+    (interface.get #"Register"%go (![wait.Wait] (struct.field_ref ptrT #"w"%go (![ptrT] "s")))) "$a0") in
+    do:  ("ch" <-[chanT interfaceT] "$r0");;;
+    let: "cancel" := (mem.alloc (type.zero_val context.CancelFunc)) in
+    let: "cctx" := (mem.alloc (type.zero_val context.Context)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+    let: "$a1" := ((method_call #(ptrT.id config.ServerConfig.id) #"ReqTimeout"%go (struct.field_ref ptrT #"Cfg"%go (![ptrT] "s"))) #()) in
     (func_call #context.WithTimeout) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("cctx" <-[#context.Context] "$r0");;;
-    do:  ("cancel" <-[#context.CancelFunc] "$r1");;;
-    do:  (let: "$f" := (![#context.CancelFunc] "cancel") in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    do:  ("cctx" <-[context.Context] "$r0");;;
+    do:  ("cancel" <-[context.CancelFunc] "$r1");;;
+    do:  (let: "$f" := (![context.CancelFunc] "cancel") in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "start" := (mem.alloc (type.zero_val #time.Time)) in
+    let: "start" := (mem.alloc (type.zero_val time.Time)) in
     let: "$r0" := ((func_call #time.Now) #()) in
-    do:  ("start" <-[#time.Time] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#context.Context] "cctx") in
-    let: "$a1" := (![#sliceT] "data") in
-    (method_call #(ptrT.id raftNode.id) #"Propose"%go (struct.field_ref #EtcdServer #"r"%go (![#ptrT] "s"))) "$a0" "$a1") in
-    do:  ("err" <-[#error] "$r0");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil))
+    do:  ("start" <-[time.Time] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![context.Context] "cctx") in
+    let: "$a1" := (![sliceT] "data") in
+    (method_call #(ptrT.id raftNode.id) #"Propose"%go (struct.field_ref ptrT #"r"%go (![ptrT] "s"))) "$a0" "$a1") in
+    do:  ("err" <-[error] "$r0");;;
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
-      do:  ((interface.get #"Inc"%go (![#prometheus.Counter] (globals.get #proposalsFailed))) #());;;
-      do:  (let: "$a0" := (![#uint64T] "id") in
+      do:  ((interface.get #"Inc"%go (![prometheus.Counter] (globals.get #proposalsFailed))) #());;;
+      do:  (let: "$a0" := (![uint64T] "id") in
       let: "$a1" := #interface.nil in
-      (interface.get #"Trigger"%go (![#wait.Wait] (struct.field_ref #EtcdServer #"w"%go (![#ptrT] "s")))) "$a0" "$a1");;;
-      return: (#null, ![#error] "err")
+      (interface.get #"Trigger"%go (![wait.Wait] (struct.field_ref ptrT #"w"%go (![ptrT] "s")))) "$a0" "$a1");;;
+      return: (#null, ![error] "err")
     else do:  #());;;
-    do:  ((interface.get #"Inc"%go (![#prometheus.Gauge] (globals.get #proposalsPending))) #());;;
-    do:  (let: "$f" := (interface.get #"Dec"%go (![#prometheus.Gauge] (globals.get #proposalsPending))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    do:  ((interface.get #"Inc"%go (![prometheus.Gauge] (globals.get #proposalsPending))) #());;;
+    do:  (let: "$f" := (interface.get #"Dec"%go (![prometheus.Gauge] (globals.get #proposalsPending))) in
+    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    chan.select [chan.select_receive (![type.chanT #interfaceT] "ch") (λ: "$recvVal",
-       let: "x" := (mem.alloc (type.zero_val #interfaceT)) in
+    chan.select [chan.select_receive (![chanT interfaceT] "ch") (λ: "$recvVal",
+       let: "x" := (mem.alloc (type.zero_val interfaceT)) in
        let: "$r0" := (Fst "$recvVal") in
-       do:  ("x" <-[#interfaceT] "$r0");;;
-       return: (interface.type_assert (![#interfaceT] "x") #(ptrT.id apply.Result.id), #interface.nil)
-       ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "cctx")) #()) (λ: "$recvVal",
-       do:  ((interface.get #"Inc"%go (![#prometheus.Counter] (globals.get #proposalsFailed))) #());;;
-       do:  (let: "$a0" := (![#uint64T] "id") in
+       do:  ("x" <-[interfaceT] "$r0");;;
+       return: (interface.type_assert (![interfaceT] "x") #(ptrT.id apply.Result.id), #interface.nil)
+       ); chan.select_receive ((interface.get #"Done"%go (![context.Context] "cctx")) #()) (λ: "$recvVal",
+       do:  ((interface.get #"Inc"%go (![prometheus.Counter] (globals.get #proposalsFailed))) #());;;
+       do:  (let: "$a0" := (![uint64T] "id") in
        let: "$a1" := #interface.nil in
-       (interface.get #"Trigger"%go (![#wait.Wait] (struct.field_ref #EtcdServer #"w"%go (![#ptrT] "s")))) "$a0" "$a1");;;
-       return: (#null, let: "$a0" := ((interface.get #"Err"%go (![#context.Context] "cctx")) #()) in
-        let: "$a1" := (![#time.Time] "start") in
-        (method_call #(ptrT.id EtcdServer.id) #"parseProposeCtxErr"%go (![#ptrT] "s")) "$a0" "$a1")
-       ); chan.select_receive (![type.chanT (type.structT [
-     ])] (struct.field_ref #EtcdServer #"done"%go (![#ptrT] "s"))) (λ: "$recvVal",
-       return: (#null, ![#error] (globals.get #errors.ErrStopped))
+       (interface.get #"Trigger"%go (![wait.Wait] (struct.field_ref ptrT #"w"%go (![ptrT] "s")))) "$a0" "$a1");;;
+       return: (#null, let: "$a0" := ((interface.get #"Err"%go (![context.Context] "cctx")) #()) in
+        let: "$a1" := (![time.Time] "start") in
+        (method_call #(ptrT.id EtcdServer.id) #"parseProposeCtxErr"%go (![ptrT] "s")) "$a0" "$a1")
+       ); chan.select_receive (![chanT (structT [
+     ])] (struct.field_ref ptrT #"done"%go (![ptrT] "s"))) (λ: "$recvVal",
+       return: (#null, ![error] (globals.get #errors.ErrStopped))
        )] chan.select_no_default).
 
 Definition isStopped : go_string := "go.etcd.io/etcd/server/v3/etcdserver.isStopped"%go.

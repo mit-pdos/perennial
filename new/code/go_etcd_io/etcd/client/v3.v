@@ -202,8 +202,8 @@ Definition WithZapLoggerⁱᵐᵖˡ : val :=
     exception_do (let: "lg" := (mem.alloc "lg") in
     return: ((λ: "c",
        exception_do (let: "c" := (mem.alloc "c") in
-       let: "$r0" := (![#ptrT] "lg") in
-       do:  ((struct.field_ref #Client #"lg"%go (![#ptrT] "c")) <-[#ptrT] "$r0");;;
+       let: "$r0" := (![ptrT] "lg") in
+       do:  ((struct.field_ref ptrT #"lg"%go (![ptrT] "c")) <-[ptrT] "$r0");;;
        return: #())
        ))).
 
@@ -482,7 +482,7 @@ Definition Op : go_type := structT [
 Definition Op__IsTxnⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tTxn)).
+    return: ((![opType] (struct.field_ref Op #"t"%go "op")) = tTxn)).
 
 (* Txn returns the comparison(if) operations, "then" operations, and "else" operations.
 
@@ -490,7 +490,7 @@ Definition Op__IsTxnⁱᵐᵖˡ : val :=
 Definition Op__Txnⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#sliceT] (struct.field_ref #Op #"cmps"%go "op"), ![#sliceT] (struct.field_ref #Op #"thenOps"%go "op"), ![#sliceT] (struct.field_ref #Op #"elseOps"%go "op"))).
+    return: (![sliceT] (struct.field_ref Op #"cmps"%go "op"), ![sliceT] (struct.field_ref Op #"thenOps"%go "op"), ![sliceT] (struct.field_ref Op #"elseOps"%go "op"))).
 
 (* KeyBytes returns the byte slice holding the Op's key.
 
@@ -498,7 +498,7 @@ Definition Op__Txnⁱᵐᵖˡ : val :=
 Definition Op__KeyBytesⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#sliceT] (struct.field_ref #Op #"key"%go "op"))).
+    return: (![sliceT] (struct.field_ref Op #"key"%go "op"))).
 
 (* WithKeyBytes sets the byte slice for the Op's key.
 
@@ -507,8 +507,8 @@ Definition Op__WithKeyBytesⁱᵐᵖˡ : val :=
   λ: "op" "key",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "key" := (mem.alloc "key") in
-    let: "$r0" := (![#sliceT] "key") in
-    do:  ((struct.field_ref #Op #"key"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+    let: "$r0" := (![sliceT] "key") in
+    do:  ((struct.field_ref ptrT #"key"%go (![ptrT] "op")) <-[sliceT] "$r0");;;
     return: #()).
 
 (* RangeBytes returns the byte slice holding with the Op's range end, if any.
@@ -517,7 +517,7 @@ Definition Op__WithKeyBytesⁱᵐᵖˡ : val :=
 Definition Op__RangeBytesⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#sliceT] (struct.field_ref #Op #"end"%go "op"))).
+    return: (![sliceT] (struct.field_ref Op #"end"%go "op"))).
 
 (* Rev returns the requested revision, if any.
 
@@ -525,7 +525,7 @@ Definition Op__RangeBytesⁱᵐᵖˡ : val :=
 Definition Op__Revⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#int64T] (struct.field_ref #Op #"rev"%go "op"))).
+    return: (![int64T] (struct.field_ref Op #"rev"%go "op"))).
 
 (* IsPut returns true iff the operation is a Put.
 
@@ -533,7 +533,7 @@ Definition Op__Revⁱᵐᵖˡ : val :=
 Definition Op__IsPutⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tPut)).
+    return: ((![opType] (struct.field_ref Op #"t"%go "op")) = tPut)).
 
 (* IsGet returns true iff the operation is a Get.
 
@@ -541,7 +541,7 @@ Definition Op__IsPutⁱᵐᵖˡ : val :=
 Definition Op__IsGetⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tRange)).
+    return: ((![opType] (struct.field_ref Op #"t"%go "op")) = tRange)).
 
 (* IsDelete returns true iff the operation is a Delete.
 
@@ -549,7 +549,7 @@ Definition Op__IsGetⁱᵐᵖˡ : val :=
 Definition Op__IsDeleteⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tDeleteRange)).
+    return: ((![opType] (struct.field_ref Op #"t"%go "op")) = tDeleteRange)).
 
 (* IsSerializable returns true if the serializable field is true.
 
@@ -557,7 +557,7 @@ Definition Op__IsDeleteⁱᵐᵖˡ : val :=
 Definition Op__IsSerializableⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#boolT] (struct.field_ref #Op #"serializable"%go "op"))).
+    return: (![boolT] (struct.field_ref Op #"serializable"%go "op"))).
 
 (* IsKeysOnly returns whether keysOnly is set.
 
@@ -565,7 +565,7 @@ Definition Op__IsSerializableⁱᵐᵖˡ : val :=
 Definition Op__IsKeysOnlyⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#boolT] (struct.field_ref #Op #"keysOnly"%go "op"))).
+    return: (![boolT] (struct.field_ref Op #"keysOnly"%go "op"))).
 
 (* IsCountOnly returns whether countOnly is set.
 
@@ -573,19 +573,19 @@ Definition Op__IsKeysOnlyⁱᵐᵖˡ : val :=
 Definition Op__IsCountOnlyⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#boolT] (struct.field_ref #Op #"countOnly"%go "op"))).
+    return: (![boolT] (struct.field_ref Op #"countOnly"%go "op"))).
 
 (* go: op.go:127:14 *)
 Definition Op__IsOptsWithFromKeyⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#boolT] (struct.field_ref #Op #"isOptsWithFromKey"%go "op"))).
+    return: (![boolT] (struct.field_ref Op #"isOptsWithFromKey"%go "op"))).
 
 (* go: op.go:129:14 *)
 Definition Op__IsOptsWithPrefixⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#boolT] (struct.field_ref #Op #"isOptsWithPrefix"%go "op"))).
+    return: (![boolT] (struct.field_ref Op #"isOptsWithPrefix"%go "op"))).
 
 (* MinModRev returns the operation's minimum modify revision.
 
@@ -593,7 +593,7 @@ Definition Op__IsOptsWithPrefixⁱᵐᵖˡ : val :=
 Definition Op__MinModRevⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#int64T] (struct.field_ref #Op #"minModRev"%go "op"))).
+    return: (![int64T] (struct.field_ref Op #"minModRev"%go "op"))).
 
 (* MaxModRev returns the operation's maximum modify revision.
 
@@ -601,7 +601,7 @@ Definition Op__MinModRevⁱᵐᵖˡ : val :=
 Definition Op__MaxModRevⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#int64T] (struct.field_ref #Op #"maxModRev"%go "op"))).
+    return: (![int64T] (struct.field_ref Op #"maxModRev"%go "op"))).
 
 (* MinCreateRev returns the operation's minimum create revision.
 
@@ -609,7 +609,7 @@ Definition Op__MaxModRevⁱᵐᵖˡ : val :=
 Definition Op__MinCreateRevⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#int64T] (struct.field_ref #Op #"minCreateRev"%go "op"))).
+    return: (![int64T] (struct.field_ref Op #"minCreateRev"%go "op"))).
 
 (* MaxCreateRev returns the operation's maximum create revision.
 
@@ -617,7 +617,7 @@ Definition Op__MinCreateRevⁱᵐᵖˡ : val :=
 Definition Op__MaxCreateRevⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "op"))).
+    return: (![int64T] (struct.field_ref Op #"maxCreateRev"%go "op"))).
 
 (* WithRangeBytes sets the byte slice for the Op's range end.
 
@@ -626,8 +626,8 @@ Definition Op__WithRangeBytesⁱᵐᵖˡ : val :=
   λ: "op" "end",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "end" := (mem.alloc "end") in
-    let: "$r0" := (![#sliceT] "end") in
-    do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+    let: "$r0" := (![sliceT] "end") in
+    do:  ((struct.field_ref ptrT #"end"%go (![ptrT] "op")) <-[sliceT] "$r0");;;
     return: #()).
 
 (* ValueBytes returns the byte slice holding the Op's value, if any.
@@ -636,7 +636,7 @@ Definition Op__WithRangeBytesⁱᵐᵖˡ : val :=
 Definition Op__ValueBytesⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    return: (![#sliceT] (struct.field_ref #Op #"val"%go "op"))).
+    return: (![sliceT] (struct.field_ref Op #"val"%go "op"))).
 
 (* WithValueBytes sets the byte slice for the Op's value.
 
@@ -645,8 +645,8 @@ Definition Op__WithValueBytesⁱᵐᵖˡ : val :=
   λ: "op" "v",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "v" := (mem.alloc "v") in
-    let: "$r0" := (![#sliceT] "v") in
-    do:  ((struct.field_ref #Op #"val"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+    let: "$r0" := (![sliceT] "v") in
+    do:  ((struct.field_ref ptrT #"val"%go (![ptrT] "op")) <-[sliceT] "$r0");;;
     return: #()).
 
 Definition SortTarget : go_type := intT.
@@ -657,41 +657,34 @@ Definition SortOrder : go_type := intT.
 #[global] Typeclasses Opaque SortOrder.
 #[global] Opaque SortOrder.
 
-Definition SortOption : go_type := structT [
-  "Target" :: SortTarget;
-  "Order" :: SortOrder
-].
-#[global] Typeclasses Opaque SortOption.
-#[global] Opaque SortOption.
-
 (* go: op.go:152:14 *)
 Definition Op__toRangeRequestⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    (if: (![#opType] (struct.field_ref #Op #"t"%go "op")) ≠ tRange
+    (if: (![opType] (struct.field_ref Op #"t"%go "op")) ≠ tRange
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"op.t != tRange"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$Key" := (![#sliceT] (struct.field_ref #Op #"key"%go "op")) in
-    let: "$RangeEnd" := (![#sliceT] (struct.field_ref #Op #"end"%go "op")) in
-    let: "$Limit" := (![#int64T] (struct.field_ref #Op #"limit"%go "op")) in
-    let: "$Revision" := (![#int64T] (struct.field_ref #Op #"rev"%go "op")) in
-    let: "$Serializable" := (![#boolT] (struct.field_ref #Op #"serializable"%go "op")) in
-    let: "$KeysOnly" := (![#boolT] (struct.field_ref #Op #"keysOnly"%go "op")) in
-    let: "$CountOnly" := (![#boolT] (struct.field_ref #Op #"countOnly"%go "op")) in
-    let: "$MinModRevision" := (![#int64T] (struct.field_ref #Op #"minModRev"%go "op")) in
-    let: "$MaxModRevision" := (![#int64T] (struct.field_ref #Op #"maxModRev"%go "op")) in
-    let: "$MinCreateRevision" := (![#int64T] (struct.field_ref #Op #"minCreateRev"%go "op")) in
-    let: "$MaxCreateRevision" := (![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "op")) in
-    struct.make #etcdserverpb.RangeRequest [{
+    let: "r" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$Key" := (![sliceT] (struct.field_ref Op #"key"%go "op")) in
+    let: "$RangeEnd" := (![sliceT] (struct.field_ref Op #"end"%go "op")) in
+    let: "$Limit" := (![int64T] (struct.field_ref Op #"limit"%go "op")) in
+    let: "$Revision" := (![int64T] (struct.field_ref Op #"rev"%go "op")) in
+    let: "$Serializable" := (![boolT] (struct.field_ref Op #"serializable"%go "op")) in
+    let: "$KeysOnly" := (![boolT] (struct.field_ref Op #"keysOnly"%go "op")) in
+    let: "$CountOnly" := (![boolT] (struct.field_ref Op #"countOnly"%go "op")) in
+    let: "$MinModRevision" := (![int64T] (struct.field_ref Op #"minModRev"%go "op")) in
+    let: "$MaxModRevision" := (![int64T] (struct.field_ref Op #"maxModRev"%go "op")) in
+    let: "$MinCreateRevision" := (![int64T] (struct.field_ref Op #"minCreateRev"%go "op")) in
+    let: "$MaxCreateRevision" := (![int64T] (struct.field_ref Op #"maxCreateRev"%go "op")) in
+    struct.make etcdserverpb.RangeRequest [{
       "Key" ::= "$Key";
       "RangeEnd" ::= "$RangeEnd";
       "Limit" ::= "$Limit";
       "Revision" ::= "$Revision";
-      "SortOrder" ::= type.zero_val #etcdserverpb.RangeRequest_SortOrder;
-      "SortTarget" ::= type.zero_val #etcdserverpb.RangeRequest_SortTarget;
+      "SortOrder" ::= type.zero_val etcdserverpb.RangeRequest_SortOrder;
+      "SortTarget" ::= type.zero_val etcdserverpb.RangeRequest_SortTarget;
       "Serializable" ::= "$Serializable";
       "KeysOnly" ::= "$KeysOnly";
       "CountOnly" ::= "$CountOnly";
@@ -699,165 +692,165 @@ Definition Op__toRangeRequestⁱᵐᵖˡ : val :=
       "MaxModRevision" ::= "$MaxModRevision";
       "MinCreateRevision" ::= "$MinCreateRevision";
       "MaxCreateRevision" ::= "$MaxCreateRevision";
-      "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+      "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
       ]);
-      "XXX_unrecognized" ::= type.zero_val #sliceT;
-      "XXX_sizecache" ::= type.zero_val #int32T
+      "XXX_unrecognized" ::= type.zero_val sliceT;
+      "XXX_sizecache" ::= type.zero_val int32T
     }])) in
-    do:  ("r" <-[#ptrT] "$r0");;;
-    (if: (![#ptrT] (struct.field_ref #Op #"sort"%go "op")) ≠ #null
+    do:  ("r" <-[ptrT] "$r0");;;
+    (if: (![ptrT] (struct.field_ref Op #"sort"%go "op")) ≠ #null
     then
-      let: "$r0" := (s_to_w32 (![#SortOrder] (struct.field_ref #SortOption #"Order"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
-      do:  ((struct.field_ref #etcdserverpb.RangeRequest #"SortOrder"%go (![#ptrT] "r")) <-[#etcdserverpb.RangeRequest_SortOrder] "$r0");;;
-      let: "$r0" := (s_to_w32 (![#SortTarget] (struct.field_ref #SortOption #"Target"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
-      do:  ((struct.field_ref #etcdserverpb.RangeRequest #"SortTarget"%go (![#ptrT] "r")) <-[#etcdserverpb.RangeRequest_SortTarget] "$r0")
+      let: "$r0" := (s_to_w32 (![SortOrder] (struct.field_ref ptrT #"Order"%go (![ptrT] (struct.field_ref Op #"sort"%go "op"))))) in
+      do:  ((struct.field_ref ptrT #"SortOrder"%go (![ptrT] "r")) <-[etcdserverpb.RangeRequest_SortOrder] "$r0");;;
+      let: "$r0" := (s_to_w32 (![SortTarget] (struct.field_ref ptrT #"Target"%go (![ptrT] (struct.field_ref Op #"sort"%go "op"))))) in
+      do:  ((struct.field_ref ptrT #"SortTarget"%go (![ptrT] "r")) <-[etcdserverpb.RangeRequest_SortTarget] "$r0")
     else do:  #());;;
-    return: (![#ptrT] "r")).
+    return: (![ptrT] "r")).
 
 (* go: op.go:176:14 *)
 Definition Op__toTxnRequestⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    let: "thenOps" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"thenOps"%go "op")) in
+    let: "thenOps" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] (struct.field_ref Op #"thenOps"%go "op")) in
     slice.len "$a0")) in
-    do:  ("thenOps" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#sliceT] (struct.field_ref #Op #"thenOps"%go "op")) in
-    (let: "tOp" := (mem.alloc (type.zero_val #Op)) in
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    slice.for_range #Op "$range" (λ: "$key" "$value",
-      do:  ("tOp" <-[#Op] "$value");;;
-      do:  ("i" <-[#intT] "$key");;;
+    do:  ("thenOps" <-[sliceT] "$r0");;;
+    let: "$range" := (![sliceT] (struct.field_ref Op #"thenOps"%go "op")) in
+    (let: "tOp" := (mem.alloc (type.zero_val Op)) in
+    let: "i" := (mem.alloc (type.zero_val intT)) in
+    slice.for_range Op "$range" (λ: "$key" "$value",
+      do:  ("tOp" <-[Op] "$value");;;
+      do:  ("i" <-[intT] "$key");;;
       let: "$r0" := ((method_call #(ptrT.id Op.id) #"toRequestOp"%go "tOp") #()) in
-      do:  ((slice.elem_ref #ptrT (![#sliceT] "thenOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
-    let: "elseOps" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
+      do:  ((slice.elem_ref ptrT (![sliceT] "thenOps") (![intT] "i")) <-[ptrT] "$r0")));;;
+    let: "elseOps" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] (struct.field_ref Op #"elseOps"%go "op")) in
     slice.len "$a0")) in
-    do:  ("elseOps" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
-    (let: "eOp" := (mem.alloc (type.zero_val #Op)) in
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    slice.for_range #Op "$range" (λ: "$key" "$value",
-      do:  ("eOp" <-[#Op] "$value");;;
-      do:  ("i" <-[#intT] "$key");;;
+    do:  ("elseOps" <-[sliceT] "$r0");;;
+    let: "$range" := (![sliceT] (struct.field_ref Op #"elseOps"%go "op")) in
+    (let: "eOp" := (mem.alloc (type.zero_val Op)) in
+    let: "i" := (mem.alloc (type.zero_val intT)) in
+    slice.for_range Op "$range" (λ: "$key" "$value",
+      do:  ("eOp" <-[Op] "$value");;;
+      do:  ("i" <-[intT] "$key");;;
       let: "$r0" := ((method_call #(ptrT.id Op.id) #"toRequestOp"%go "eOp") #()) in
-      do:  ((slice.elem_ref #ptrT (![#sliceT] "elseOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
-    let: "cmps" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) in
+      do:  ((slice.elem_ref ptrT (![sliceT] "elseOps") (![intT] "i")) <-[ptrT] "$r0")));;;
+    let: "cmps" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] (struct.field_ref Op #"cmps"%go "op")) in
     slice.len "$a0")) in
-    do:  ("cmps" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) in
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    slice.for_range #Cmp "$range" (λ: "$key" "$value",
-      do:  ("i" <-[#intT] "$key");;;
-      let: "$r0" := (slice.elem_ref #Cmp (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) (![#intT] "i")) in
-      do:  ((slice.elem_ref #ptrT (![#sliceT] "cmps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
-    return: (mem.alloc (let: "$Compare" := (![#sliceT] "cmps") in
-     let: "$Success" := (![#sliceT] "thenOps") in
-     let: "$Failure" := (![#sliceT] "elseOps") in
-     struct.make #etcdserverpb.TxnRequest [{
+    do:  ("cmps" <-[sliceT] "$r0");;;
+    let: "$range" := (![sliceT] (struct.field_ref Op #"cmps"%go "op")) in
+    (let: "i" := (mem.alloc (type.zero_val intT)) in
+    slice.for_range Cmp "$range" (λ: "$key" "$value",
+      do:  ("i" <-[intT] "$key");;;
+      let: "$r0" := (slice.elem_ref Cmp (![sliceT] (struct.field_ref Op #"cmps"%go "op")) (![intT] "i")) in
+      do:  ((slice.elem_ref ptrT (![sliceT] "cmps") (![intT] "i")) <-[ptrT] "$r0")));;;
+    return: (mem.alloc (let: "$Compare" := (![sliceT] "cmps") in
+     let: "$Success" := (![sliceT] "thenOps") in
+     let: "$Failure" := (![sliceT] "elseOps") in
+     struct.make etcdserverpb.TxnRequest [{
        "Compare" ::= "$Compare";
        "Success" ::= "$Success";
        "Failure" ::= "$Failure";
-       "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+       "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
        ]);
-       "XXX_unrecognized" ::= type.zero_val #sliceT;
-       "XXX_sizecache" ::= type.zero_val #int32T
+       "XXX_unrecognized" ::= type.zero_val sliceT;
+       "XXX_sizecache" ::= type.zero_val int32T
      }]))).
 
 (* go: op.go:192:14 *)
 Definition Op__toRequestOpⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    let: "$sw" := (![#opType] (struct.field_ref #Op #"t"%go "op")) in
+    let: "$sw" := (![opType] (struct.field_ref Op #"t"%go "op")) in
     (if: "$sw" = tRange
     then
       return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestRange.id) (mem.alloc (let: "$RequestRange" := ((method_call #(ptrT.id Op.id) #"toRangeRequest"%go "op") #()) in
-       struct.make #etcdserverpb.RequestOp_RequestRange [{
+       struct.make etcdserverpb.RequestOp_RequestRange [{
          "RequestRange" ::= "$RequestRange"
        }]))) in
-       struct.make #etcdserverpb.RequestOp [{
+       struct.make etcdserverpb.RequestOp [{
          "Request" ::= "$Request";
-         "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+         "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
          ]);
-         "XXX_unrecognized" ::= type.zero_val #sliceT;
-         "XXX_sizecache" ::= type.zero_val #int32T
+         "XXX_unrecognized" ::= type.zero_val sliceT;
+         "XXX_sizecache" ::= type.zero_val int32T
        }]))
     else
       (if: "$sw" = tPut
       then
-        let: "r" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := (mem.alloc (let: "$Key" := (![#sliceT] (struct.field_ref #Op #"key"%go "op")) in
-        let: "$Value" := (![#sliceT] (struct.field_ref #Op #"val"%go "op")) in
-        let: "$Lease" := (![#LeaseID] (struct.field_ref #Op #"leaseID"%go "op")) in
-        let: "$PrevKv" := (![#boolT] (struct.field_ref #Op #"prevKV"%go "op")) in
-        let: "$IgnoreValue" := (![#boolT] (struct.field_ref #Op #"ignoreValue"%go "op")) in
-        let: "$IgnoreLease" := (![#boolT] (struct.field_ref #Op #"ignoreLease"%go "op")) in
-        struct.make #etcdserverpb.PutRequest [{
+        let: "r" := (mem.alloc (type.zero_val ptrT)) in
+        let: "$r0" := (mem.alloc (let: "$Key" := (![sliceT] (struct.field_ref Op #"key"%go "op")) in
+        let: "$Value" := (![sliceT] (struct.field_ref Op #"val"%go "op")) in
+        let: "$Lease" := (![LeaseID] (struct.field_ref Op #"leaseID"%go "op")) in
+        let: "$PrevKv" := (![boolT] (struct.field_ref Op #"prevKV"%go "op")) in
+        let: "$IgnoreValue" := (![boolT] (struct.field_ref Op #"ignoreValue"%go "op")) in
+        let: "$IgnoreLease" := (![boolT] (struct.field_ref Op #"ignoreLease"%go "op")) in
+        struct.make etcdserverpb.PutRequest [{
           "Key" ::= "$Key";
           "Value" ::= "$Value";
           "Lease" ::= "$Lease";
           "PrevKv" ::= "$PrevKv";
           "IgnoreValue" ::= "$IgnoreValue";
           "IgnoreLease" ::= "$IgnoreLease";
-          "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+          "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
           ]);
-          "XXX_unrecognized" ::= type.zero_val #sliceT;
-          "XXX_sizecache" ::= type.zero_val #int32T
+          "XXX_unrecognized" ::= type.zero_val sliceT;
+          "XXX_sizecache" ::= type.zero_val int32T
         }])) in
-        do:  ("r" <-[#ptrT] "$r0");;;
-        return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestPut.id) (mem.alloc (let: "$RequestPut" := (![#ptrT] "r") in
-         struct.make #etcdserverpb.RequestOp_RequestPut [{
+        do:  ("r" <-[ptrT] "$r0");;;
+        return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestPut.id) (mem.alloc (let: "$RequestPut" := (![ptrT] "r") in
+         struct.make etcdserverpb.RequestOp_RequestPut [{
            "RequestPut" ::= "$RequestPut"
          }]))) in
-         struct.make #etcdserverpb.RequestOp [{
+         struct.make etcdserverpb.RequestOp [{
            "Request" ::= "$Request";
-           "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+           "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
            ]);
-           "XXX_unrecognized" ::= type.zero_val #sliceT;
-           "XXX_sizecache" ::= type.zero_val #int32T
+           "XXX_unrecognized" ::= type.zero_val sliceT;
+           "XXX_sizecache" ::= type.zero_val int32T
          }]))
       else
         (if: "$sw" = tDeleteRange
         then
-          let: "r" := (mem.alloc (type.zero_val #ptrT)) in
-          let: "$r0" := (mem.alloc (let: "$Key" := (![#sliceT] (struct.field_ref #Op #"key"%go "op")) in
-          let: "$RangeEnd" := (![#sliceT] (struct.field_ref #Op #"end"%go "op")) in
-          let: "$PrevKv" := (![#boolT] (struct.field_ref #Op #"prevKV"%go "op")) in
-          struct.make #etcdserverpb.DeleteRangeRequest [{
+          let: "r" := (mem.alloc (type.zero_val ptrT)) in
+          let: "$r0" := (mem.alloc (let: "$Key" := (![sliceT] (struct.field_ref Op #"key"%go "op")) in
+          let: "$RangeEnd" := (![sliceT] (struct.field_ref Op #"end"%go "op")) in
+          let: "$PrevKv" := (![boolT] (struct.field_ref Op #"prevKV"%go "op")) in
+          struct.make etcdserverpb.DeleteRangeRequest [{
             "Key" ::= "$Key";
             "RangeEnd" ::= "$RangeEnd";
             "PrevKv" ::= "$PrevKv";
-            "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+            "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
             ]);
-            "XXX_unrecognized" ::= type.zero_val #sliceT;
-            "XXX_sizecache" ::= type.zero_val #int32T
+            "XXX_unrecognized" ::= type.zero_val sliceT;
+            "XXX_sizecache" ::= type.zero_val int32T
           }])) in
-          do:  ("r" <-[#ptrT] "$r0");;;
-          return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestDeleteRange.id) (mem.alloc (let: "$RequestDeleteRange" := (![#ptrT] "r") in
-           struct.make #etcdserverpb.RequestOp_RequestDeleteRange [{
+          do:  ("r" <-[ptrT] "$r0");;;
+          return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestDeleteRange.id) (mem.alloc (let: "$RequestDeleteRange" := (![ptrT] "r") in
+           struct.make etcdserverpb.RequestOp_RequestDeleteRange [{
              "RequestDeleteRange" ::= "$RequestDeleteRange"
            }]))) in
-           struct.make #etcdserverpb.RequestOp [{
+           struct.make etcdserverpb.RequestOp [{
              "Request" ::= "$Request";
-             "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+             "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
              ]);
-             "XXX_unrecognized" ::= type.zero_val #sliceT;
-             "XXX_sizecache" ::= type.zero_val #int32T
+             "XXX_unrecognized" ::= type.zero_val sliceT;
+             "XXX_sizecache" ::= type.zero_val int32T
            }]))
         else
           (if: "$sw" = tTxn
           then
             return: (mem.alloc (let: "$Request" := (interface.make #(ptrT.id etcdserverpb.RequestOp_RequestTxn.id) (mem.alloc (let: "$RequestTxn" := ((method_call #(ptrT.id Op.id) #"toTxnRequest"%go "op") #()) in
-             struct.make #etcdserverpb.RequestOp_RequestTxn [{
+             struct.make etcdserverpb.RequestOp_RequestTxn [{
                "RequestTxn" ::= "$RequestTxn"
              }]))) in
-             struct.make #etcdserverpb.RequestOp [{
+             struct.make etcdserverpb.RequestOp [{
                "Request" ::= "$Request";
-               "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+               "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
                ]);
-               "XXX_unrecognized" ::= type.zero_val #sliceT;
-               "XXX_sizecache" ::= type.zero_val #int32T
+               "XXX_unrecognized" ::= type.zero_val sliceT;
+               "XXX_sizecache" ::= type.zero_val int32T
              }]))
           else
             do:  (let: "$a0" := (interface.make #stringT.id #"Unknown Op"%go) in
@@ -867,27 +860,27 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
 Definition Op__isWriteⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    (if: (![#opType] (struct.field_ref #Op #"t"%go "op")) = tTxn
+    (if: (![opType] (struct.field_ref Op #"t"%go "op")) = tTxn
     then
-      let: "$range" := (![#sliceT] (struct.field_ref #Op #"thenOps"%go "op")) in
-      (let: "tOp" := (mem.alloc (type.zero_val #Op)) in
-      slice.for_range #Op "$range" (λ: "$key" "$value",
-        do:  ("tOp" <-[#Op] "$value");;;
+      let: "$range" := (![sliceT] (struct.field_ref Op #"thenOps"%go "op")) in
+      (let: "tOp" := (mem.alloc (type.zero_val Op)) in
+      slice.for_range Op "$range" (λ: "$key" "$value",
+        do:  ("tOp" <-[Op] "$value");;;
         do:  "$key";;;
         (if: (method_call #(ptrT.id Op.id) #"isWrite"%go "tOp") #()
         then return: (#true)
         else do:  #())));;;
-      let: "$range" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
-      (let: "tOp" := (mem.alloc (type.zero_val #Op)) in
-      slice.for_range #Op "$range" (λ: "$key" "$value",
-        do:  ("tOp" <-[#Op] "$value");;;
+      let: "$range" := (![sliceT] (struct.field_ref Op #"elseOps"%go "op")) in
+      (let: "tOp" := (mem.alloc (type.zero_val Op)) in
+      slice.for_range Op "$range" (λ: "$key" "$value",
+        do:  ("tOp" <-[Op] "$value");;;
         do:  "$key";;;
         (if: (method_call #(ptrT.id Op.id) #"isWrite"%go "tOp") #()
         then return: (#true)
         else do:  #())));;;
       return: (#false)
     else do:  #());;;
-    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) ≠ tRange)).
+    return: ((![opType] (struct.field_ref Op #"t"%go "op")) ≠ tRange)).
 
 Definition NewOp : go_string := "go.etcd.io/etcd/client/v3.NewOp"%go.
 
@@ -904,50 +897,50 @@ Definition OpGetⁱᵐᵖˡ : val :=
   λ: "key" "opts",
     exception_do (let: "opts" := (mem.alloc "opts") in
     let: "key" := (mem.alloc "key") in
-    (if: (let: "$a0" := (![#sliceT] "opts") in
-    (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
+    (if: (let: "$a0" := (![sliceT] "opts") in
+    (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![sliceT] "opts") in
     (func_call #IsOptsWithFromKey) "$a0")
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "ret" := (mem.alloc (type.zero_val #Op)) in
+    let: "ret" := (mem.alloc (type.zero_val Op)) in
     let: "$r0" := (let: "$t" := tRange in
-    let: "$key" := (string.to_bytes (![#stringT] "key")) in
-    struct.make #Op [{
+    let: "$key" := (string.to_bytes (![stringT] "key")) in
+    struct.make Op [{
       "t" ::= "$t";
       "key" ::= "$key";
-      "end" ::= type.zero_val #sliceT;
-      "limit" ::= type.zero_val #int64T;
-      "sort" ::= type.zero_val #ptrT;
-      "serializable" ::= type.zero_val #boolT;
-      "keysOnly" ::= type.zero_val #boolT;
-      "countOnly" ::= type.zero_val #boolT;
-      "minModRev" ::= type.zero_val #int64T;
-      "maxModRev" ::= type.zero_val #int64T;
-      "minCreateRev" ::= type.zero_val #int64T;
-      "maxCreateRev" ::= type.zero_val #int64T;
-      "rev" ::= type.zero_val #int64T;
-      "prevKV" ::= type.zero_val #boolT;
-      "fragment" ::= type.zero_val #boolT;
-      "ignoreValue" ::= type.zero_val #boolT;
-      "ignoreLease" ::= type.zero_val #boolT;
-      "progressNotify" ::= type.zero_val #boolT;
-      "createdNotify" ::= type.zero_val #boolT;
-      "filterPut" ::= type.zero_val #boolT;
-      "filterDelete" ::= type.zero_val #boolT;
-      "val" ::= type.zero_val #sliceT;
-      "leaseID" ::= type.zero_val #LeaseID;
-      "cmps" ::= type.zero_val #sliceT;
-      "thenOps" ::= type.zero_val #sliceT;
-      "elseOps" ::= type.zero_val #sliceT;
-      "isOptsWithFromKey" ::= type.zero_val #boolT;
-      "isOptsWithPrefix" ::= type.zero_val #boolT
+      "end" ::= type.zero_val sliceT;
+      "limit" ::= type.zero_val int64T;
+      "sort" ::= type.zero_val ptrT;
+      "serializable" ::= type.zero_val boolT;
+      "keysOnly" ::= type.zero_val boolT;
+      "countOnly" ::= type.zero_val boolT;
+      "minModRev" ::= type.zero_val int64T;
+      "maxModRev" ::= type.zero_val int64T;
+      "minCreateRev" ::= type.zero_val int64T;
+      "maxCreateRev" ::= type.zero_val int64T;
+      "rev" ::= type.zero_val int64T;
+      "prevKV" ::= type.zero_val boolT;
+      "fragment" ::= type.zero_val boolT;
+      "ignoreValue" ::= type.zero_val boolT;
+      "ignoreLease" ::= type.zero_val boolT;
+      "progressNotify" ::= type.zero_val boolT;
+      "createdNotify" ::= type.zero_val boolT;
+      "filterPut" ::= type.zero_val boolT;
+      "filterDelete" ::= type.zero_val boolT;
+      "val" ::= type.zero_val sliceT;
+      "leaseID" ::= type.zero_val LeaseID;
+      "cmps" ::= type.zero_val sliceT;
+      "thenOps" ::= type.zero_val sliceT;
+      "elseOps" ::= type.zero_val sliceT;
+      "isOptsWithFromKey" ::= type.zero_val boolT;
+      "isOptsWithPrefix" ::= type.zero_val boolT
     }]) in
-    do:  ("ret" <-[#Op] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "opts") in
+    do:  ("ret" <-[Op] "$r0");;;
+    do:  (let: "$a0" := (![sliceT] "opts") in
     (method_call #(ptrT.id Op.id) #"applyOpts"%go "ret") "$a0");;;
-    return: (![#Op] "ret")).
+    return: (![Op] "ret")).
 
 Definition OpDelete : go_string := "go.etcd.io/etcd/client/v3.OpDelete"%go.
 
@@ -958,101 +951,101 @@ Definition OpDeleteⁱᵐᵖˡ : val :=
   λ: "key" "opts",
     exception_do (let: "opts" := (mem.alloc "opts") in
     let: "key" := (mem.alloc "key") in
-    (if: (let: "$a0" := (![#sliceT] "opts") in
-    (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
+    (if: (let: "$a0" := (![sliceT] "opts") in
+    (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![sliceT] "opts") in
     (func_call #IsOptsWithFromKey) "$a0")
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "ret" := (mem.alloc (type.zero_val #Op)) in
+    let: "ret" := (mem.alloc (type.zero_val Op)) in
     let: "$r0" := (let: "$t" := tDeleteRange in
-    let: "$key" := (string.to_bytes (![#stringT] "key")) in
-    struct.make #Op [{
+    let: "$key" := (string.to_bytes (![stringT] "key")) in
+    struct.make Op [{
       "t" ::= "$t";
       "key" ::= "$key";
-      "end" ::= type.zero_val #sliceT;
-      "limit" ::= type.zero_val #int64T;
-      "sort" ::= type.zero_val #ptrT;
-      "serializable" ::= type.zero_val #boolT;
-      "keysOnly" ::= type.zero_val #boolT;
-      "countOnly" ::= type.zero_val #boolT;
-      "minModRev" ::= type.zero_val #int64T;
-      "maxModRev" ::= type.zero_val #int64T;
-      "minCreateRev" ::= type.zero_val #int64T;
-      "maxCreateRev" ::= type.zero_val #int64T;
-      "rev" ::= type.zero_val #int64T;
-      "prevKV" ::= type.zero_val #boolT;
-      "fragment" ::= type.zero_val #boolT;
-      "ignoreValue" ::= type.zero_val #boolT;
-      "ignoreLease" ::= type.zero_val #boolT;
-      "progressNotify" ::= type.zero_val #boolT;
-      "createdNotify" ::= type.zero_val #boolT;
-      "filterPut" ::= type.zero_val #boolT;
-      "filterDelete" ::= type.zero_val #boolT;
-      "val" ::= type.zero_val #sliceT;
-      "leaseID" ::= type.zero_val #LeaseID;
-      "cmps" ::= type.zero_val #sliceT;
-      "thenOps" ::= type.zero_val #sliceT;
-      "elseOps" ::= type.zero_val #sliceT;
-      "isOptsWithFromKey" ::= type.zero_val #boolT;
-      "isOptsWithPrefix" ::= type.zero_val #boolT
+      "end" ::= type.zero_val sliceT;
+      "limit" ::= type.zero_val int64T;
+      "sort" ::= type.zero_val ptrT;
+      "serializable" ::= type.zero_val boolT;
+      "keysOnly" ::= type.zero_val boolT;
+      "countOnly" ::= type.zero_val boolT;
+      "minModRev" ::= type.zero_val int64T;
+      "maxModRev" ::= type.zero_val int64T;
+      "minCreateRev" ::= type.zero_val int64T;
+      "maxCreateRev" ::= type.zero_val int64T;
+      "rev" ::= type.zero_val int64T;
+      "prevKV" ::= type.zero_val boolT;
+      "fragment" ::= type.zero_val boolT;
+      "ignoreValue" ::= type.zero_val boolT;
+      "ignoreLease" ::= type.zero_val boolT;
+      "progressNotify" ::= type.zero_val boolT;
+      "createdNotify" ::= type.zero_val boolT;
+      "filterPut" ::= type.zero_val boolT;
+      "filterDelete" ::= type.zero_val boolT;
+      "val" ::= type.zero_val sliceT;
+      "leaseID" ::= type.zero_val LeaseID;
+      "cmps" ::= type.zero_val sliceT;
+      "thenOps" ::= type.zero_val sliceT;
+      "elseOps" ::= type.zero_val sliceT;
+      "isOptsWithFromKey" ::= type.zero_val boolT;
+      "isOptsWithPrefix" ::= type.zero_val boolT
     }]) in
-    do:  ("ret" <-[#Op] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "opts") in
+    do:  ("ret" <-[Op] "$r0");;;
+    do:  (let: "$a0" := (![sliceT] "opts") in
     (method_call #(ptrT.id Op.id) #"applyOpts"%go "ret") "$a0");;;
     let: "$sw" := #true in
-    (if: "$sw" = ((![#LeaseID] (struct.field_ref #Op #"leaseID"%go "ret")) ≠ #(W64 0))
+    (if: "$sw" = ((![LeaseID] (struct.field_ref Op #"leaseID"%go "ret")) ≠ #(W64 0))
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"unexpected lease in delete"%go) in
       Panic "$a0")
     else
-      (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"limit"%go "ret")) ≠ #(W64 0))
+      (if: "$sw" = ((![int64T] (struct.field_ref Op #"limit"%go "ret")) ≠ #(W64 0))
       then
         do:  (let: "$a0" := (interface.make #stringT.id #"unexpected limit in delete"%go) in
         Panic "$a0")
       else
-        (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"rev"%go "ret")) ≠ #(W64 0))
+        (if: "$sw" = ((![int64T] (struct.field_ref Op #"rev"%go "ret")) ≠ #(W64 0))
         then
           do:  (let: "$a0" := (interface.make #stringT.id #"unexpected revision in delete"%go) in
           Panic "$a0")
         else
-          (if: "$sw" = ((![#ptrT] (struct.field_ref #Op #"sort"%go "ret")) ≠ #null)
+          (if: "$sw" = ((![ptrT] (struct.field_ref Op #"sort"%go "ret")) ≠ #null)
           then
             do:  (let: "$a0" := (interface.make #stringT.id #"unexpected sort in delete"%go) in
             Panic "$a0")
           else
-            (if: "$sw" = (![#boolT] (struct.field_ref #Op #"serializable"%go "ret"))
+            (if: "$sw" = (![boolT] (struct.field_ref Op #"serializable"%go "ret"))
             then
               do:  (let: "$a0" := (interface.make #stringT.id #"unexpected serializable in delete"%go) in
               Panic "$a0")
             else
-              (if: "$sw" = (![#boolT] (struct.field_ref #Op #"countOnly"%go "ret"))
+              (if: "$sw" = (![boolT] (struct.field_ref Op #"countOnly"%go "ret"))
               then
                 do:  (let: "$a0" := (interface.make #stringT.id #"unexpected countOnly in delete"%go) in
                 Panic "$a0")
               else
-                (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minModRev"%go "ret")) ≠ #(W64 0)))
+                (if: ("$sw" = ((![int64T] (struct.field_ref Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![int64T] (struct.field_ref Op #"minModRev"%go "ret")) ≠ #(W64 0)))
                 then
                   do:  (let: "$a0" := (interface.make #stringT.id #"unexpected mod revision filter in delete"%go) in
                   Panic "$a0")
                 else
-                  (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
+                  (if: ("$sw" = ((![int64T] (struct.field_ref Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![int64T] (struct.field_ref Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
                   then
                     do:  (let: "$a0" := (interface.make #stringT.id #"unexpected create revision filter in delete"%go) in
                     Panic "$a0")
                   else
-                    (if: ("$sw" = (![#boolT] (struct.field_ref #Op #"filterPut"%go "ret"))) || ("$sw" = (![#boolT] (struct.field_ref #Op #"filterDelete"%go "ret")))
+                    (if: ("$sw" = (![boolT] (struct.field_ref Op #"filterPut"%go "ret"))) || ("$sw" = (![boolT] (struct.field_ref Op #"filterDelete"%go "ret")))
                     then
                       do:  (let: "$a0" := (interface.make #stringT.id #"unexpected filter in delete"%go) in
                       Panic "$a0")
                     else
-                      (if: "$sw" = (![#boolT] (struct.field_ref #Op #"createdNotify"%go "ret"))
+                      (if: "$sw" = (![boolT] (struct.field_ref Op #"createdNotify"%go "ret"))
                       then
                         do:  (let: "$a0" := (interface.make #stringT.id #"unexpected createdNotify in delete"%go) in
                         Panic "$a0")
                       else do:  #()))))))))));;;
-    return: (![#Op] "ret")).
+    return: (![Op] "ret")).
 
 Definition OpPut : go_string := "go.etcd.io/etcd/client/v3.OpPut"%go.
 
@@ -1064,95 +1057,95 @@ Definition OpPutⁱᵐᵖˡ : val :=
     exception_do (let: "opts" := (mem.alloc "opts") in
     let: "val" := (mem.alloc "val") in
     let: "key" := (mem.alloc "key") in
-    let: "ret" := (mem.alloc (type.zero_val #Op)) in
+    let: "ret" := (mem.alloc (type.zero_val Op)) in
     let: "$r0" := (let: "$t" := tPut in
-    let: "$key" := (string.to_bytes (![#stringT] "key")) in
-    let: "$val" := (string.to_bytes (![#stringT] "val")) in
-    struct.make #Op [{
+    let: "$key" := (string.to_bytes (![stringT] "key")) in
+    let: "$val" := (string.to_bytes (![stringT] "val")) in
+    struct.make Op [{
       "t" ::= "$t";
       "key" ::= "$key";
-      "end" ::= type.zero_val #sliceT;
-      "limit" ::= type.zero_val #int64T;
-      "sort" ::= type.zero_val #ptrT;
-      "serializable" ::= type.zero_val #boolT;
-      "keysOnly" ::= type.zero_val #boolT;
-      "countOnly" ::= type.zero_val #boolT;
-      "minModRev" ::= type.zero_val #int64T;
-      "maxModRev" ::= type.zero_val #int64T;
-      "minCreateRev" ::= type.zero_val #int64T;
-      "maxCreateRev" ::= type.zero_val #int64T;
-      "rev" ::= type.zero_val #int64T;
-      "prevKV" ::= type.zero_val #boolT;
-      "fragment" ::= type.zero_val #boolT;
-      "ignoreValue" ::= type.zero_val #boolT;
-      "ignoreLease" ::= type.zero_val #boolT;
-      "progressNotify" ::= type.zero_val #boolT;
-      "createdNotify" ::= type.zero_val #boolT;
-      "filterPut" ::= type.zero_val #boolT;
-      "filterDelete" ::= type.zero_val #boolT;
+      "end" ::= type.zero_val sliceT;
+      "limit" ::= type.zero_val int64T;
+      "sort" ::= type.zero_val ptrT;
+      "serializable" ::= type.zero_val boolT;
+      "keysOnly" ::= type.zero_val boolT;
+      "countOnly" ::= type.zero_val boolT;
+      "minModRev" ::= type.zero_val int64T;
+      "maxModRev" ::= type.zero_val int64T;
+      "minCreateRev" ::= type.zero_val int64T;
+      "maxCreateRev" ::= type.zero_val int64T;
+      "rev" ::= type.zero_val int64T;
+      "prevKV" ::= type.zero_val boolT;
+      "fragment" ::= type.zero_val boolT;
+      "ignoreValue" ::= type.zero_val boolT;
+      "ignoreLease" ::= type.zero_val boolT;
+      "progressNotify" ::= type.zero_val boolT;
+      "createdNotify" ::= type.zero_val boolT;
+      "filterPut" ::= type.zero_val boolT;
+      "filterDelete" ::= type.zero_val boolT;
       "val" ::= "$val";
-      "leaseID" ::= type.zero_val #LeaseID;
-      "cmps" ::= type.zero_val #sliceT;
-      "thenOps" ::= type.zero_val #sliceT;
-      "elseOps" ::= type.zero_val #sliceT;
-      "isOptsWithFromKey" ::= type.zero_val #boolT;
-      "isOptsWithPrefix" ::= type.zero_val #boolT
+      "leaseID" ::= type.zero_val LeaseID;
+      "cmps" ::= type.zero_val sliceT;
+      "thenOps" ::= type.zero_val sliceT;
+      "elseOps" ::= type.zero_val sliceT;
+      "isOptsWithFromKey" ::= type.zero_val boolT;
+      "isOptsWithPrefix" ::= type.zero_val boolT
     }]) in
-    do:  ("ret" <-[#Op] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "opts") in
+    do:  ("ret" <-[Op] "$r0");;;
+    do:  (let: "$a0" := (![sliceT] "opts") in
     (method_call #(ptrT.id Op.id) #"applyOpts"%go "ret") "$a0");;;
     let: "$sw" := #true in
-    (if: "$sw" = ((![#sliceT] (struct.field_ref #Op #"end"%go "ret")) ≠ #slice.nil)
+    (if: "$sw" = ((![sliceT] (struct.field_ref Op #"end"%go "ret")) ≠ #slice.nil)
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"unexpected range in put"%go) in
       Panic "$a0")
     else
-      (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"limit"%go "ret")) ≠ #(W64 0))
+      (if: "$sw" = ((![int64T] (struct.field_ref Op #"limit"%go "ret")) ≠ #(W64 0))
       then
         do:  (let: "$a0" := (interface.make #stringT.id #"unexpected limit in put"%go) in
         Panic "$a0")
       else
-        (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"rev"%go "ret")) ≠ #(W64 0))
+        (if: "$sw" = ((![int64T] (struct.field_ref Op #"rev"%go "ret")) ≠ #(W64 0))
         then
           do:  (let: "$a0" := (interface.make #stringT.id #"unexpected revision in put"%go) in
           Panic "$a0")
         else
-          (if: "$sw" = ((![#ptrT] (struct.field_ref #Op #"sort"%go "ret")) ≠ #null)
+          (if: "$sw" = ((![ptrT] (struct.field_ref Op #"sort"%go "ret")) ≠ #null)
           then
             do:  (let: "$a0" := (interface.make #stringT.id #"unexpected sort in put"%go) in
             Panic "$a0")
           else
-            (if: "$sw" = (![#boolT] (struct.field_ref #Op #"serializable"%go "ret"))
+            (if: "$sw" = (![boolT] (struct.field_ref Op #"serializable"%go "ret"))
             then
               do:  (let: "$a0" := (interface.make #stringT.id #"unexpected serializable in put"%go) in
               Panic "$a0")
             else
-              (if: "$sw" = (![#boolT] (struct.field_ref #Op #"countOnly"%go "ret"))
+              (if: "$sw" = (![boolT] (struct.field_ref Op #"countOnly"%go "ret"))
               then
                 do:  (let: "$a0" := (interface.make #stringT.id #"unexpected countOnly in put"%go) in
                 Panic "$a0")
               else
-                (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minModRev"%go "ret")) ≠ #(W64 0)))
+                (if: ("$sw" = ((![int64T] (struct.field_ref Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![int64T] (struct.field_ref Op #"minModRev"%go "ret")) ≠ #(W64 0)))
                 then
                   do:  (let: "$a0" := (interface.make #stringT.id #"unexpected mod revision filter in put"%go) in
                   Panic "$a0")
                 else
-                  (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
+                  (if: ("$sw" = ((![int64T] (struct.field_ref Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![int64T] (struct.field_ref Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
                   then
                     do:  (let: "$a0" := (interface.make #stringT.id #"unexpected create revision filter in put"%go) in
                     Panic "$a0")
                   else
-                    (if: ("$sw" = (![#boolT] (struct.field_ref #Op #"filterPut"%go "ret"))) || ("$sw" = (![#boolT] (struct.field_ref #Op #"filterDelete"%go "ret")))
+                    (if: ("$sw" = (![boolT] (struct.field_ref Op #"filterPut"%go "ret"))) || ("$sw" = (![boolT] (struct.field_ref Op #"filterDelete"%go "ret")))
                     then
                       do:  (let: "$a0" := (interface.make #stringT.id #"unexpected filter in put"%go) in
                       Panic "$a0")
                     else
-                      (if: "$sw" = (![#boolT] (struct.field_ref #Op #"createdNotify"%go "ret"))
+                      (if: "$sw" = (![boolT] (struct.field_ref Op #"createdNotify"%go "ret"))
                       then
                         do:  (let: "$a0" := (interface.make #stringT.id #"unexpected createdNotify in put"%go) in
                         Panic "$a0")
                       else do:  #()))))))))));;;
-    return: (![#Op] "ret")).
+    return: (![Op] "ret")).
 
 Definition OpTxn : go_string := "go.etcd.io/etcd/client/v3.OpTxn"%go.
 
@@ -1165,38 +1158,38 @@ Definition OpTxnⁱᵐᵖˡ : val :=
     let: "thenOps" := (mem.alloc "thenOps") in
     let: "cmps" := (mem.alloc "cmps") in
     return: (let: "$t" := tTxn in
-     let: "$cmps" := (![#sliceT] "cmps") in
-     let: "$thenOps" := (![#sliceT] "thenOps") in
-     let: "$elseOps" := (![#sliceT] "elseOps") in
-     struct.make #Op [{
+     let: "$cmps" := (![sliceT] "cmps") in
+     let: "$thenOps" := (![sliceT] "thenOps") in
+     let: "$elseOps" := (![sliceT] "elseOps") in
+     struct.make Op [{
        "t" ::= "$t";
-       "key" ::= type.zero_val #sliceT;
-       "end" ::= type.zero_val #sliceT;
-       "limit" ::= type.zero_val #int64T;
-       "sort" ::= type.zero_val #ptrT;
-       "serializable" ::= type.zero_val #boolT;
-       "keysOnly" ::= type.zero_val #boolT;
-       "countOnly" ::= type.zero_val #boolT;
-       "minModRev" ::= type.zero_val #int64T;
-       "maxModRev" ::= type.zero_val #int64T;
-       "minCreateRev" ::= type.zero_val #int64T;
-       "maxCreateRev" ::= type.zero_val #int64T;
-       "rev" ::= type.zero_val #int64T;
-       "prevKV" ::= type.zero_val #boolT;
-       "fragment" ::= type.zero_val #boolT;
-       "ignoreValue" ::= type.zero_val #boolT;
-       "ignoreLease" ::= type.zero_val #boolT;
-       "progressNotify" ::= type.zero_val #boolT;
-       "createdNotify" ::= type.zero_val #boolT;
-       "filterPut" ::= type.zero_val #boolT;
-       "filterDelete" ::= type.zero_val #boolT;
-       "val" ::= type.zero_val #sliceT;
-       "leaseID" ::= type.zero_val #LeaseID;
+       "key" ::= type.zero_val sliceT;
+       "end" ::= type.zero_val sliceT;
+       "limit" ::= type.zero_val int64T;
+       "sort" ::= type.zero_val ptrT;
+       "serializable" ::= type.zero_val boolT;
+       "keysOnly" ::= type.zero_val boolT;
+       "countOnly" ::= type.zero_val boolT;
+       "minModRev" ::= type.zero_val int64T;
+       "maxModRev" ::= type.zero_val int64T;
+       "minCreateRev" ::= type.zero_val int64T;
+       "maxCreateRev" ::= type.zero_val int64T;
+       "rev" ::= type.zero_val int64T;
+       "prevKV" ::= type.zero_val boolT;
+       "fragment" ::= type.zero_val boolT;
+       "ignoreValue" ::= type.zero_val boolT;
+       "ignoreLease" ::= type.zero_val boolT;
+       "progressNotify" ::= type.zero_val boolT;
+       "createdNotify" ::= type.zero_val boolT;
+       "filterPut" ::= type.zero_val boolT;
+       "filterDelete" ::= type.zero_val boolT;
+       "val" ::= type.zero_val sliceT;
+       "leaseID" ::= type.zero_val LeaseID;
        "cmps" ::= "$cmps";
        "thenOps" ::= "$thenOps";
        "elseOps" ::= "$elseOps";
-       "isOptsWithFromKey" ::= type.zero_val #boolT;
-       "isOptsWithPrefix" ::= type.zero_val #boolT
+       "isOptsWithFromKey" ::= type.zero_val boolT;
+       "isOptsWithPrefix" ::= type.zero_val boolT
      }])).
 
 Definition opWatch : go_string := "go.etcd.io/etcd/client/v3.opWatch"%go.
@@ -1210,13 +1203,13 @@ Definition Op__applyOptsⁱᵐᵖˡ : val :=
   λ: "op" "opts",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "opts" := (mem.alloc "opts") in
-    let: "$range" := (![#sliceT] "opts") in
-    (let: "opt" := (mem.alloc (type.zero_val #OpOption)) in
-    slice.for_range #OpOption "$range" (λ: "$key" "$value",
-      do:  ("opt" <-[#OpOption] "$value");;;
+    let: "$range" := (![sliceT] "opts") in
+    (let: "opt" := (mem.alloc (type.zero_val OpOption)) in
+    slice.for_range OpOption "$range" (λ: "$key" "$value",
+      do:  ("opt" <-[OpOption] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := (![#ptrT] "op") in
-      (![#OpOption] "opt") "$a0")));;;
+      do:  (let: "$a0" := (![ptrT] "op") in
+      (![OpOption] "opt") "$a0")));;;
     return: #()).
 
 Definition WithLease : go_string := "go.etcd.io/etcd/client/v3.WithLease"%go.
@@ -1229,8 +1222,8 @@ Definition WithLeaseⁱᵐᵖˡ : val :=
     exception_do (let: "leaseID" := (mem.alloc "leaseID") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (![#LeaseID] "leaseID") in
-       do:  ((struct.field_ref #Op #"leaseID"%go (![#ptrT] "op")) <-[#LeaseID] "$r0");;;
+       let: "$r0" := (![LeaseID] "leaseID") in
+       do:  ((struct.field_ref ptrT #"leaseID"%go (![ptrT] "op")) <-[LeaseID] "$r0");;;
        return: #())
        ))).
 
@@ -1245,8 +1238,8 @@ Definition WithLimitⁱᵐᵖˡ : val :=
     exception_do (let: "n" := (mem.alloc "n") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (![#int64T] "n") in
-       do:  ((struct.field_ref #Op #"limit"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       let: "$r0" := (![int64T] "n") in
+       do:  ((struct.field_ref ptrT #"limit"%go (![ptrT] "op")) <-[int64T] "$r0");;;
        return: #())
        ))).
 
@@ -1261,12 +1254,19 @@ Definition WithRevⁱᵐᵖˡ : val :=
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (![#int64T] "rev") in
-       do:  ((struct.field_ref #Op #"rev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       let: "$r0" := (![int64T] "rev") in
+       do:  ((struct.field_ref ptrT #"rev"%go (![ptrT] "op")) <-[int64T] "$r0");;;
        return: #())
        ))).
 
 Definition WithSort : go_string := "go.etcd.io/etcd/client/v3.WithSort"%go.
+
+Definition SortOption : go_type := structT [
+  "Target" :: SortTarget;
+  "Order" :: SortOrder
+].
+#[global] Typeclasses Opaque SortOption.
+#[global] Opaque SortOption.
 
 Definition SortByKey : val := #(W64 0).
 
@@ -1286,16 +1286,16 @@ Definition WithSortⁱᵐᵖˡ : val :=
     let: "target" := (mem.alloc "target") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       (if: ((![#SortTarget] "target") = SortByKey) && ((![#SortOrder] "order") = SortAscend)
+       (if: ((![SortTarget] "target") = SortByKey) && ((![SortOrder] "order") = SortAscend)
        then
          let: "$r0" := SortNone in
-         do:  ("order" <-[#SortOrder] "$r0")
+         do:  ("order" <-[SortOrder] "$r0")
        else do:  #());;;
-       let: "$r0" := (mem.alloc (struct.make #SortOption [{
-         "Target" ::= ![#SortTarget] "target";
-         "Order" ::= ![#SortOrder] "order"
+       let: "$r0" := (mem.alloc (struct.make SortOption [{
+         "Target" ::= ![SortTarget] "target";
+         "Order" ::= ![SortOrder] "order"
        }])) in
-       do:  ((struct.field_ref #Op #"sort"%go (![#ptrT] "op")) <-[#ptrT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"sort"%go (![ptrT] "op")) <-[ptrT] "$r0");;;
        return: #())
        ))).
 
@@ -1315,21 +1315,21 @@ Definition WithPrefixⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"isOptsWithPrefix"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
-       (if: (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
+       do:  ((struct.field_ref ptrT #"isOptsWithPrefix"%go (![ptrT] "op")) <-[boolT] "$r0");;;
+       (if: (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"key"%go (![ptrT] "op"))) in
        slice.len "$a0") = #(W64 0)
        then
          let: "$r0" := ((let: "$sl0" := #(W8 0) in
-         slice.literal #byteT ["$sl0"])) in
+         slice.literal byteT ["$sl0"])) in
          let: "$r1" := ((let: "$sl0" := #(W8 0) in
-         slice.literal #byteT ["$sl0"])) in
-         do:  ((struct.field_ref #Op #"key"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
-         do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r1");;;
+         slice.literal byteT ["$sl0"])) in
+         do:  ((struct.field_ref ptrT #"key"%go (![ptrT] "op")) <-[sliceT] "$r0");;;
+         do:  ((struct.field_ref ptrT #"end"%go (![ptrT] "op")) <-[sliceT] "$r1");;;
          return: (#())
        else do:  #());;;
-       let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
+       let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"key"%go (![ptrT] "op"))) in
        (func_call #getPrefix) "$a0") in
-       do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"end"%go (![ptrT] "op")) <-[sliceT] "$r0");;;
        return: #())
        ))).
 
@@ -1346,8 +1346,8 @@ Definition WithRangeⁱᵐᵖˡ : val :=
     exception_do (let: "endKey" := (mem.alloc "endKey") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (string.to_bytes (![#stringT] "endKey")) in
-       do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+       let: "$r0" := (string.to_bytes (![stringT] "endKey")) in
+       do:  ((struct.field_ref ptrT #"end"%go (![ptrT] "op")) <-[sliceT] "$r0");;;
        return: #())
        ))).
 
@@ -1361,17 +1361,17 @@ Definition WithFromKeyⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       (if: (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
+       (if: (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"key"%go (![ptrT] "op"))) in
        slice.len "$a0") = #(W64 0)
        then
          let: "$r0" := ((let: "$sl0" := #(W8 0) in
-         slice.literal #byteT ["$sl0"])) in
-         do:  ((struct.field_ref #Op #"key"%go (![#ptrT] "op")) <-[#sliceT] "$r0")
+         slice.literal byteT ["$sl0"])) in
+         do:  ((struct.field_ref ptrT #"key"%go (![ptrT] "op")) <-[sliceT] "$r0")
        else do:  #());;;
        let: "$r0" := (string.to_bytes #" "%go) in
-       do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"end"%go (![ptrT] "op")) <-[sliceT] "$r0");;;
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"isOptsWithFromKey"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"isOptsWithFromKey"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1393,7 +1393,7 @@ Definition WithSerializableⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"serializable"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"serializable"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1408,7 +1408,7 @@ Definition WithKeysOnlyⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"keysOnly"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"keysOnly"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1422,7 +1422,7 @@ Definition WithCountOnlyⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"countOnly"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"countOnly"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1436,8 +1436,8 @@ Definition WithMinModRevⁱᵐᵖˡ : val :=
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (![#int64T] "rev") in
-       do:  ((struct.field_ref #Op #"minModRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       let: "$r0" := (![int64T] "rev") in
+       do:  ((struct.field_ref ptrT #"minModRev"%go (![ptrT] "op")) <-[int64T] "$r0");;;
        return: #())
        ))).
 
@@ -1451,8 +1451,8 @@ Definition WithMaxModRevⁱᵐᵖˡ : val :=
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (![#int64T] "rev") in
-       do:  ((struct.field_ref #Op #"maxModRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       let: "$r0" := (![int64T] "rev") in
+       do:  ((struct.field_ref ptrT #"maxModRev"%go (![ptrT] "op")) <-[int64T] "$r0");;;
        return: #())
        ))).
 
@@ -1466,8 +1466,8 @@ Definition WithMinCreateRevⁱᵐᵖˡ : val :=
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (![#int64T] "rev") in
-       do:  ((struct.field_ref #Op #"minCreateRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       let: "$r0" := (![int64T] "rev") in
+       do:  ((struct.field_ref ptrT #"minCreateRev"%go (![ptrT] "op")) <-[int64T] "$r0");;;
        return: #())
        ))).
 
@@ -1481,8 +1481,8 @@ Definition WithMaxCreateRevⁱᵐᵖˡ : val :=
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
-       let: "$r0" := (![#int64T] "rev") in
-       do:  ((struct.field_ref #Op #"maxCreateRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       let: "$r0" := (![int64T] "rev") in
+       do:  ((struct.field_ref ptrT #"maxCreateRev"%go (![ptrT] "op")) <-[int64T] "$r0");;;
        return: #())
        ))).
 
@@ -1572,7 +1572,7 @@ Definition WithProgressNotifyⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"progressNotify"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"progressNotify"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1586,7 +1586,7 @@ Definition WithCreatedNotifyⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"createdNotify"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"createdNotify"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1600,7 +1600,7 @@ Definition WithFilterPutⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"filterPut"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"filterPut"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1614,7 +1614,7 @@ Definition WithFilterDeleteⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"filterDelete"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"filterDelete"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1629,7 +1629,7 @@ Definition WithPrevKVⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"prevKV"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"prevKV"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1649,7 +1649,7 @@ Definition WithFragmentⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"fragment"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"fragment"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1665,7 +1665,7 @@ Definition WithIgnoreValueⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"ignoreValue"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"ignoreValue"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1681,7 +1681,7 @@ Definition WithIgnoreLeaseⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #Op #"ignoreLease"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"ignoreLease"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1706,7 +1706,7 @@ Definition WithAttachedKeysⁱᵐᵖˡ : val :=
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
-       do:  ((struct.field_ref #LeaseOp #"attachedKeys"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       do:  ((struct.field_ref ptrT #"attachedKeys"%go (![ptrT] "op")) <-[boolT] "$r0");;;
        return: #())
        ))).
 
@@ -1716,30 +1716,30 @@ Definition toLeaseTimeToLiveRequest : go_string := "go.etcd.io/etcd/client/v3.to
 Definition Op__IsSortOptionValidⁱᵐᵖˡ : val :=
   λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
-    (if: (![#ptrT] (struct.field_ref #Op #"sort"%go "op")) ≠ #null
+    (if: (![ptrT] (struct.field_ref Op #"sort"%go "op")) ≠ #null
     then
-      let: "sortOrder" := (mem.alloc (type.zero_val #int32T)) in
-      let: "$r0" := (s_to_w32 (![#SortOrder] (struct.field_ref #SortOption #"Order"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
-      do:  ("sortOrder" <-[#int32T] "$r0");;;
-      let: "sortTarget" := (mem.alloc (type.zero_val #int32T)) in
-      let: "$r0" := (s_to_w32 (![#SortTarget] (struct.field_ref #SortOption #"Target"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
-      do:  ("sortTarget" <-[#int32T] "$r0");;;
-      (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.RangeRequest_SortOrder_name)) (![#int32T] "sortOrder")) in
+      let: "sortOrder" := (mem.alloc (type.zero_val int32T)) in
+      let: "$r0" := (s_to_w32 (![SortOrder] (struct.field_ref ptrT #"Order"%go (![ptrT] (struct.field_ref Op #"sort"%go "op"))))) in
+      do:  ("sortOrder" <-[int32T] "$r0");;;
+      let: "sortTarget" := (mem.alloc (type.zero_val int32T)) in
+      let: "$r0" := (s_to_w32 (![SortTarget] (struct.field_ref ptrT #"Target"%go (![ptrT] (struct.field_ref Op #"sort"%go "op"))))) in
+      do:  ("sortTarget" <-[int32T] "$r0");;;
+      (let: "ok" := (mem.alloc (type.zero_val boolT)) in
+      let: ("$ret0", "$ret1") := (map.get (![mapT int32T stringT] (globals.get #etcdserverpb.RangeRequest_SortOrder_name)) (![int32T] "sortOrder")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
-      do:  ("ok" <-[#boolT] "$r1");;;
-      (if: (~ (![#boolT] "ok"))
+      do:  ("ok" <-[boolT] "$r1");;;
+      (if: (~ (![boolT] "ok"))
       then return: (#false)
       else do:  #()));;;
-      (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.RangeRequest_SortTarget_name)) (![#int32T] "sortTarget")) in
+      (let: "ok" := (mem.alloc (type.zero_val boolT)) in
+      let: ("$ret0", "$ret1") := (map.get (![mapT int32T stringT] (globals.get #etcdserverpb.RangeRequest_SortTarget_name)) (![int32T] "sortTarget")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
-      do:  ("ok" <-[#boolT] "$r1");;;
-      (if: (~ (![#boolT] "ok"))
+      do:  ("ok" <-[boolT] "$r1");;;
+      (if: (~ (![boolT] "ok"))
       then return: (#false)
       else do:  #()))
     else do:  #());;;
@@ -2675,52 +2675,52 @@ Axiom valCtx__Errⁱᵐᵖˡ : val.
 
 Axiom valCtx__Valueⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(AuthEnableResponse.id, []); (ptrT.id AuthEnableResponse.id, []); (AuthDisableResponse.id, []); (ptrT.id AuthDisableResponse.id, []); (AuthStatusResponse.id, []); (ptrT.id AuthStatusResponse.id, []); (AuthenticateResponse.id, []); (ptrT.id AuthenticateResponse.id, []); (AuthUserAddResponse.id, []); (ptrT.id AuthUserAddResponse.id, []); (AuthUserDeleteResponse.id, []); (ptrT.id AuthUserDeleteResponse.id, []); (AuthUserChangePasswordResponse.id, []); (ptrT.id AuthUserChangePasswordResponse.id, []); (AuthUserGrantRoleResponse.id, []); (ptrT.id AuthUserGrantRoleResponse.id, []); (AuthUserGetResponse.id, []); (ptrT.id AuthUserGetResponse.id, []); (AuthUserRevokeRoleResponse.id, []); (ptrT.id AuthUserRevokeRoleResponse.id, []); (AuthRoleAddResponse.id, []); (ptrT.id AuthRoleAddResponse.id, []); (AuthRoleGrantPermissionResponse.id, []); (ptrT.id AuthRoleGrantPermissionResponse.id, []); (AuthRoleGetResponse.id, []); (ptrT.id AuthRoleGetResponse.id, []); (AuthRoleRevokePermissionResponse.id, []); (ptrT.id AuthRoleRevokePermissionResponse.id, []); (AuthRoleDeleteResponse.id, []); (ptrT.id AuthRoleDeleteResponse.id, []); (AuthUserListResponse.id, []); (ptrT.id AuthUserListResponse.id, []); (AuthRoleListResponse.id, []); (ptrT.id AuthRoleListResponse.id, []); (PermissionType.id, []); (ptrT.id PermissionType.id, []); (Permission.id, []); (ptrT.id Permission.id, []); (UserAddOptions.id, []); (ptrT.id UserAddOptions.id, []); (authClient.id, []); (ptrT.id authClient.id, [("AuthDisable"%go, authClient__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, authClient__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, authClient__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, authClient__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, authClient__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, authClient__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, authClient__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, authClient__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, authClient__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, authClient__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, authClient__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, authClient__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, authClient__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, authClient__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, authClient__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, authClient__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, authClient__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, authClient__UserRevokeRoleⁱᵐᵖˡ)]); (Client.id, [("AlarmDisarm"%go, Client__AlarmDisarmⁱᵐᵖˡ); ("AlarmList"%go, Client__AlarmListⁱᵐᵖˡ); ("AuthDisable"%go, Client__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, Client__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, Client__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, Client__Authenticateⁱᵐᵖˡ); ("Compact"%go, Client__Compactⁱᵐᵖˡ); ("Defragment"%go, Client__Defragmentⁱᵐᵖˡ); ("Delete"%go, Client__Deleteⁱᵐᵖˡ); ("Do"%go, Client__Doⁱᵐᵖˡ); ("Downgrade"%go, Client__Downgradeⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Grant"%go, Client__Grantⁱᵐᵖˡ); ("HashKV"%go, Client__HashKVⁱᵐᵖˡ); ("KeepAlive"%go, Client__KeepAliveⁱᵐᵖˡ); ("KeepAliveOnce"%go, Client__KeepAliveOnceⁱᵐᵖˡ); ("Leases"%go, Client__Leasesⁱᵐᵖˡ); ("MemberAdd"%go, Client__MemberAddⁱᵐᵖˡ); ("MemberAddAsLearner"%go, Client__MemberAddAsLearnerⁱᵐᵖˡ); ("MemberList"%go, Client__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, Client__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, Client__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, Client__MemberUpdateⁱᵐᵖˡ); ("MoveLeader"%go, Client__MoveLeaderⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("RequestProgress"%go, Client__RequestProgressⁱᵐᵖˡ); ("Revoke"%go, Client__Revokeⁱᵐᵖˡ); ("RoleAdd"%go, Client__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, Client__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, Client__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, Client__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, Client__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, Client__RoleRevokePermissionⁱᵐᵖˡ); ("Snapshot"%go, Client__Snapshotⁱᵐᵖˡ); ("SnapshotWithVersion"%go, Client__SnapshotWithVersionⁱᵐᵖˡ); ("Status"%go, Client__Statusⁱᵐᵖˡ); ("TimeToLive"%go, Client__TimeToLiveⁱᵐᵖˡ); ("Txn"%go, Client__Txnⁱᵐᵖˡ); ("UserAdd"%go, Client__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, Client__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, Client__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, Client__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, Client__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, Client__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, Client__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, Client__UserRevokeRoleⁱᵐᵖˡ); ("Watch"%go, Client__Watchⁱᵐᵖˡ)]); (ptrT.id Client.id, [("ActiveConnection"%go, Client__ActiveConnectionⁱᵐᵖˡ); ("AlarmDisarm"%go, Client__AlarmDisarmⁱᵐᵖˡ); ("AlarmList"%go, Client__AlarmListⁱᵐᵖˡ); ("AuthDisable"%go, Client__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, Client__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, Client__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, Client__Authenticateⁱᵐᵖˡ); ("Close"%go, Client__Closeⁱᵐᵖˡ); ("Compact"%go, Client__Compactⁱᵐᵖˡ); ("Ctx"%go, Client__Ctxⁱᵐᵖˡ); ("Defragment"%go, Client__Defragmentⁱᵐᵖˡ); ("Delete"%go, Client__Deleteⁱᵐᵖˡ); ("Dial"%go, Client__Dialⁱᵐᵖˡ); ("Do"%go, Client__Doⁱᵐᵖˡ); ("Downgrade"%go, Client__Downgradeⁱᵐᵖˡ); ("Endpoints"%go, Client__Endpointsⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("GetLogger"%go, Client__GetLoggerⁱᵐᵖˡ); ("Grant"%go, Client__Grantⁱᵐᵖˡ); ("HashKV"%go, Client__HashKVⁱᵐᵖˡ); ("KeepAlive"%go, Client__KeepAliveⁱᵐᵖˡ); ("KeepAliveOnce"%go, Client__KeepAliveOnceⁱᵐᵖˡ); ("Leases"%go, Client__Leasesⁱᵐᵖˡ); ("MemberAdd"%go, Client__MemberAddⁱᵐᵖˡ); ("MemberAddAsLearner"%go, Client__MemberAddAsLearnerⁱᵐᵖˡ); ("MemberList"%go, Client__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, Client__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, Client__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, Client__MemberUpdateⁱᵐᵖˡ); ("MoveLeader"%go, Client__MoveLeaderⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("RequestProgress"%go, Client__RequestProgressⁱᵐᵖˡ); ("Revoke"%go, Client__Revokeⁱᵐᵖˡ); ("RoleAdd"%go, Client__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, Client__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, Client__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, Client__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, Client__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, Client__RoleRevokePermissionⁱᵐᵖˡ); ("SetEndpoints"%go, Client__SetEndpointsⁱᵐᵖˡ); ("Snapshot"%go, Client__Snapshotⁱᵐᵖˡ); ("SnapshotWithVersion"%go, Client__SnapshotWithVersionⁱᵐᵖˡ); ("Status"%go, Client__Statusⁱᵐᵖˡ); ("Sync"%go, Client__Syncⁱᵐᵖˡ); ("TimeToLive"%go, Client__TimeToLiveⁱᵐᵖˡ); ("Txn"%go, Client__Txnⁱᵐᵖˡ); ("UserAdd"%go, Client__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, Client__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, Client__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, Client__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, Client__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, Client__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, Client__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, Client__UserRevokeRoleⁱᵐᵖˡ); ("Watch"%go, Client__Watchⁱᵐᵖˡ); ("WithLogger"%go, Client__WithLoggerⁱᵐᵖˡ); ("autoSync"%go, Client__autoSyncⁱᵐᵖˡ); ("checkVersion"%go, Client__checkVersionⁱᵐᵖˡ); ("credentialsForEndpoint"%go, Client__credentialsForEndpointⁱᵐᵖˡ); ("dial"%go, Client__dialⁱᵐᵖˡ); ("dialSetupOpts"%go, Client__dialSetupOptsⁱᵐᵖˡ); ("dialWithBalancer"%go, Client__dialWithBalancerⁱᵐᵖˡ); ("getToken"%go, Client__getTokenⁱᵐᵖˡ); ("refreshToken"%go, Client__refreshTokenⁱᵐᵖˡ); ("roundRobinQuorumBackoff"%go, Client__roundRobinQuorumBackoffⁱᵐᵖˡ); ("shouldRefreshToken"%go, Client__shouldRefreshTokenⁱᵐᵖˡ); ("streamClientInterceptor"%go, Client__streamClientInterceptorⁱᵐᵖˡ); ("unaryClientInterceptor"%go, Client__unaryClientInterceptorⁱᵐᵖˡ)]); (Option.id, []); (ptrT.id Option.id, []); (Member.id, []); (ptrT.id Member.id, []); (MemberListResponse.id, []); (ptrT.id MemberListResponse.id, []); (MemberAddResponse.id, []); (ptrT.id MemberAddResponse.id, []); (MemberRemoveResponse.id, []); (ptrT.id MemberRemoveResponse.id, []); (MemberUpdateResponse.id, []); (ptrT.id MemberUpdateResponse.id, []); (MemberPromoteResponse.id, []); (ptrT.id MemberPromoteResponse.id, []); (cluster.id, []); (ptrT.id cluster.id, [("MemberAdd"%go, cluster__MemberAddⁱᵐᵖˡ); ("MemberAddAsLearner"%go, cluster__MemberAddAsLearnerⁱᵐᵖˡ); ("MemberList"%go, cluster__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, cluster__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, cluster__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, cluster__MemberUpdateⁱᵐᵖˡ); ("memberAdd"%go, cluster__memberAddⁱᵐᵖˡ)]); (CompactOp.id, [("toRequest"%go, CompactOp__toRequestⁱᵐᵖˡ)]); (ptrT.id CompactOp.id, [("applyCompactOpts"%go, CompactOp__applyCompactOptsⁱᵐᵖˡ); ("toRequest"%go, CompactOp__toRequestⁱᵐᵖˡ)]); (CompactOption.id, []); (ptrT.id CompactOption.id, []); (CompareTarget.id, []); (ptrT.id CompareTarget.id, []); (CompareResult.id, []); (ptrT.id CompareResult.id, []); (Cmp.id, [("WithPrefix"%go, Cmp__WithPrefixⁱᵐᵖˡ); ("WithRange"%go, Cmp__WithRangeⁱᵐᵖˡ)]); (ptrT.id Cmp.id, [("KeyBytes"%go, Cmp__KeyBytesⁱᵐᵖˡ); ("ValueBytes"%go, Cmp__ValueBytesⁱᵐᵖˡ); ("WithKeyBytes"%go, Cmp__WithKeyBytesⁱᵐᵖˡ); ("WithPrefix"%go, Cmp__WithPrefixⁱᵐᵖˡ); ("WithRange"%go, Cmp__WithRangeⁱᵐᵖˡ); ("WithValueBytes"%go, Cmp__WithValueBytesⁱᵐᵖˡ)]); (Config.id, []); (ptrT.id Config.id, []); (ConfigSpec.id, []); (ptrT.id ConfigSpec.id, [("Clone"%go, ConfigSpec__Cloneⁱᵐᵖˡ)]); (SecureConfig.id, []); (ptrT.id SecureConfig.id, []); (AuthConfig.id, [("Empty"%go, AuthConfig__Emptyⁱᵐᵖˡ)]); (ptrT.id AuthConfig.id, [("Empty"%go, AuthConfig__Emptyⁱᵐᵖˡ)]); (CompactResponse.id, []); (ptrT.id CompactResponse.id, []); (PutResponse.id, []); (ptrT.id PutResponse.id, [("OpResponse"%go, PutResponse__OpResponseⁱᵐᵖˡ)]); (GetResponse.id, []); (ptrT.id GetResponse.id, [("OpResponse"%go, GetResponse__OpResponseⁱᵐᵖˡ)]); (DeleteResponse.id, []); (ptrT.id DeleteResponse.id, [("OpResponse"%go, DeleteResponse__OpResponseⁱᵐᵖˡ)]); (TxnResponse.id, []); (ptrT.id TxnResponse.id, [("OpResponse"%go, TxnResponse__OpResponseⁱᵐᵖˡ)]); (OpResponse.id, [("Del"%go, OpResponse__Delⁱᵐᵖˡ); ("Get"%go, OpResponse__Getⁱᵐᵖˡ); ("Put"%go, OpResponse__Putⁱᵐᵖˡ); ("Txn"%go, OpResponse__Txnⁱᵐᵖˡ)]); (ptrT.id OpResponse.id, [("Del"%go, OpResponse__Delⁱᵐᵖˡ); ("Get"%go, OpResponse__Getⁱᵐᵖˡ); ("Put"%go, OpResponse__Putⁱᵐᵖˡ); ("Txn"%go, OpResponse__Txnⁱᵐᵖˡ)]); (kv.id, []); (ptrT.id kv.id, [("Compact"%go, kv__Compactⁱᵐᵖˡ); ("Delete"%go, kv__Deleteⁱᵐᵖˡ); ("Do"%go, kv__Doⁱᵐᵖˡ); ("Get"%go, kv__Getⁱᵐᵖˡ); ("Put"%go, kv__Putⁱᵐᵖˡ); ("Txn"%go, kv__Txnⁱᵐᵖˡ)]); (LeaseRevokeResponse.id, []); (ptrT.id LeaseRevokeResponse.id, []); (LeaseID.id, []); (ptrT.id LeaseID.id, []); (LeaseGrantResponse.id, [("Descriptor"%go, LeaseGrantResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseGrantResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseGrantResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseGrantResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseGrantResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseGrantResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseGrantResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseGrantResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseGrantResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseGrantResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseGrantResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseGrantResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseGrantResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseGrantResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseGrantResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseGrantResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseGrantResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseGrantResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseGrantResponse.id, [("Descriptor"%go, LeaseGrantResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseGrantResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseGrantResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseGrantResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseGrantResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseGrantResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseGrantResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseGrantResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseGrantResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseGrantResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseGrantResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseGrantResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseGrantResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseGrantResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseGrantResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseGrantResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseGrantResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseGrantResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseKeepAliveResponse.id, [("Descriptor"%go, LeaseKeepAliveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseKeepAliveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseKeepAliveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseKeepAliveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseKeepAliveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseKeepAliveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseKeepAliveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseKeepAliveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseKeepAliveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseKeepAliveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseKeepAliveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseKeepAliveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseKeepAliveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseKeepAliveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseKeepAliveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseKeepAliveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseKeepAliveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseKeepAliveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseKeepAliveResponse.id, [("Descriptor"%go, LeaseKeepAliveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseKeepAliveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseKeepAliveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseKeepAliveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseKeepAliveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseKeepAliveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseKeepAliveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseKeepAliveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseKeepAliveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseKeepAliveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseKeepAliveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseKeepAliveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseKeepAliveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseKeepAliveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseKeepAliveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseKeepAliveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseKeepAliveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseKeepAliveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseTimeToLiveResponse.id, [("Descriptor"%go, LeaseTimeToLiveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseTimeToLiveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseTimeToLiveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseTimeToLiveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseTimeToLiveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseTimeToLiveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseTimeToLiveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseTimeToLiveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseTimeToLiveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseTimeToLiveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseTimeToLiveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseTimeToLiveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseTimeToLiveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseTimeToLiveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseTimeToLiveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseTimeToLiveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseTimeToLiveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseTimeToLiveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseTimeToLiveResponse.id, [("Descriptor"%go, LeaseTimeToLiveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseTimeToLiveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseTimeToLiveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseTimeToLiveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseTimeToLiveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseTimeToLiveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseTimeToLiveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseTimeToLiveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseTimeToLiveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseTimeToLiveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseTimeToLiveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseTimeToLiveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseTimeToLiveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseTimeToLiveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseTimeToLiveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseTimeToLiveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseTimeToLiveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseTimeToLiveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseStatus.id, []); (ptrT.id LeaseStatus.id, []); (LeaseLeasesResponse.id, [("Descriptor"%go, LeaseLeasesResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseLeasesResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseLeasesResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseLeasesResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseLeasesResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseLeasesResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseLeasesResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseLeasesResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseLeasesResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseLeasesResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseLeasesResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseLeasesResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseLeasesResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseLeasesResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseLeasesResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseLeasesResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseLeasesResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseLeasesResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseLeasesResponse.id, [("Descriptor"%go, LeaseLeasesResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseLeasesResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseLeasesResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseLeasesResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseLeasesResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseLeasesResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseLeasesResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseLeasesResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseLeasesResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseLeasesResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseLeasesResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseLeasesResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseLeasesResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseLeasesResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseLeasesResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseLeasesResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseLeasesResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseLeasesResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ErrKeepAliveHalted.id, [("Error"%go, ErrKeepAliveHalted__Errorⁱᵐᵖˡ)]); (ptrT.id ErrKeepAliveHalted.id, [("Error"%go, ErrKeepAliveHalted__Errorⁱᵐᵖˡ)]); (lessor.id, []); (ptrT.id lessor.id, [("Close"%go, lessor__Closeⁱᵐᵖˡ); ("Grant"%go, lessor__Grantⁱᵐᵖˡ); ("KeepAlive"%go, lessor__KeepAliveⁱᵐᵖˡ); ("KeepAliveOnce"%go, lessor__KeepAliveOnceⁱᵐᵖˡ); ("Leases"%go, lessor__Leasesⁱᵐᵖˡ); ("Revoke"%go, lessor__Revokeⁱᵐᵖˡ); ("TimeToLive"%go, lessor__TimeToLiveⁱᵐᵖˡ); ("closeRequireLeader"%go, lessor__closeRequireLeaderⁱᵐᵖˡ); ("deadlineLoop"%go, lessor__deadlineLoopⁱᵐᵖˡ); ("keepAliveCtxCloser"%go, lessor__keepAliveCtxCloserⁱᵐᵖˡ); ("keepAliveOnce"%go, lessor__keepAliveOnceⁱᵐᵖˡ); ("recvKeepAlive"%go, lessor__recvKeepAliveⁱᵐᵖˡ); ("recvKeepAliveLoop"%go, lessor__recvKeepAliveLoopⁱᵐᵖˡ); ("resetRecv"%go, lessor__resetRecvⁱᵐᵖˡ); ("sendKeepAliveLoop"%go, lessor__sendKeepAliveLoopⁱᵐᵖˡ)]); (keepAlive.id, []); (ptrT.id keepAlive.id, [("close"%go, keepAlive__closeⁱᵐᵖˡ)]); (keepAliveCtxKey.id, []); (ptrT.id keepAliveCtxKey.id, []); (DefragmentResponse.id, []); (ptrT.id DefragmentResponse.id, []); (AlarmResponse.id, []); (ptrT.id AlarmResponse.id, []); (AlarmMember.id, []); (ptrT.id AlarmMember.id, []); (StatusResponse.id, []); (ptrT.id StatusResponse.id, []); (HashKVResponse.id, []); (ptrT.id HashKVResponse.id, []); (MoveLeaderResponse.id, []); (ptrT.id MoveLeaderResponse.id, []); (DowngradeResponse.id, []); (ptrT.id DowngradeResponse.id, []); (DowngradeAction.id, []); (ptrT.id DowngradeAction.id, []); (SnapshotResponse.id, []); (ptrT.id SnapshotResponse.id, []); (maintenance.id, []); (ptrT.id maintenance.id, [("AlarmDisarm"%go, maintenance__AlarmDisarmⁱᵐᵖˡ); ("AlarmList"%go, maintenance__AlarmListⁱᵐᵖˡ); ("Defragment"%go, maintenance__Defragmentⁱᵐᵖˡ); ("Downgrade"%go, maintenance__Downgradeⁱᵐᵖˡ); ("HashKV"%go, maintenance__HashKVⁱᵐᵖˡ); ("MoveLeader"%go, maintenance__MoveLeaderⁱᵐᵖˡ); ("Snapshot"%go, maintenance__Snapshotⁱᵐᵖˡ); ("SnapshotWithVersion"%go, maintenance__SnapshotWithVersionⁱᵐᵖˡ); ("Status"%go, maintenance__Statusⁱᵐᵖˡ); ("logAndCloseWithError"%go, maintenance__logAndCloseWithErrorⁱᵐᵖˡ); ("save"%go, maintenance__saveⁱᵐᵖˡ)]); (snapshotReadCloser.id, [("Close"%go, snapshotReadCloser__Closeⁱᵐᵖˡ)]); (ptrT.id snapshotReadCloser.id, [("Close"%go, snapshotReadCloser__Closeⁱᵐᵖˡ); ("Read"%go, snapshotReadCloser__Readⁱᵐᵖˡ)]); (opType.id, []); (ptrT.id opType.id, []); (Op.id, [("IsCountOnly"%go, Op__IsCountOnlyⁱᵐᵖˡ); ("IsDelete"%go, Op__IsDeleteⁱᵐᵖˡ); ("IsGet"%go, Op__IsGetⁱᵐᵖˡ); ("IsKeysOnly"%go, Op__IsKeysOnlyⁱᵐᵖˡ); ("IsOptsWithFromKey"%go, Op__IsOptsWithFromKeyⁱᵐᵖˡ); ("IsOptsWithPrefix"%go, Op__IsOptsWithPrefixⁱᵐᵖˡ); ("IsPut"%go, Op__IsPutⁱᵐᵖˡ); ("IsSerializable"%go, Op__IsSerializableⁱᵐᵖˡ); ("IsSortOptionValid"%go, Op__IsSortOptionValidⁱᵐᵖˡ); ("IsTxn"%go, Op__IsTxnⁱᵐᵖˡ); ("KeyBytes"%go, Op__KeyBytesⁱᵐᵖˡ); ("MaxCreateRev"%go, Op__MaxCreateRevⁱᵐᵖˡ); ("MaxModRev"%go, Op__MaxModRevⁱᵐᵖˡ); ("MinCreateRev"%go, Op__MinCreateRevⁱᵐᵖˡ); ("MinModRev"%go, Op__MinModRevⁱᵐᵖˡ); ("RangeBytes"%go, Op__RangeBytesⁱᵐᵖˡ); ("Rev"%go, Op__Revⁱᵐᵖˡ); ("Txn"%go, Op__Txnⁱᵐᵖˡ); ("ValueBytes"%go, Op__ValueBytesⁱᵐᵖˡ); ("isWrite"%go, Op__isWriteⁱᵐᵖˡ); ("toRangeRequest"%go, Op__toRangeRequestⁱᵐᵖˡ); ("toRequestOp"%go, Op__toRequestOpⁱᵐᵖˡ); ("toTxnRequest"%go, Op__toTxnRequestⁱᵐᵖˡ)]); (ptrT.id Op.id, [("IsCountOnly"%go, (λ: "$r",
-                 method_call #Op.id #"IsCountOnly"%go (![#Op] "$r")
-                 )%V); ("IsDelete"%go, (λ: "$r",
-                 method_call #Op.id #"IsDelete"%go (![#Op] "$r")
-                 )%V); ("IsGet"%go, (λ: "$r",
-                 method_call #Op.id #"IsGet"%go (![#Op] "$r")
-                 )%V); ("IsKeysOnly"%go, (λ: "$r",
-                 method_call #Op.id #"IsKeysOnly"%go (![#Op] "$r")
-                 )%V); ("IsOptsWithFromKey"%go, (λ: "$r",
-                 method_call #Op.id #"IsOptsWithFromKey"%go (![#Op] "$r")
-                 )%V); ("IsOptsWithPrefix"%go, (λ: "$r",
-                 method_call #Op.id #"IsOptsWithPrefix"%go (![#Op] "$r")
-                 )%V); ("IsPut"%go, (λ: "$r",
-                 method_call #Op.id #"IsPut"%go (![#Op] "$r")
-                 )%V); ("IsSerializable"%go, (λ: "$r",
-                 method_call #Op.id #"IsSerializable"%go (![#Op] "$r")
-                 )%V); ("IsSortOptionValid"%go, (λ: "$r",
-                 method_call #Op.id #"IsSortOptionValid"%go (![#Op] "$r")
-                 )%V); ("IsTxn"%go, (λ: "$r",
-                 method_call #Op.id #"IsTxn"%go (![#Op] "$r")
-                 )%V); ("KeyBytes"%go, (λ: "$r",
-                 method_call #Op.id #"KeyBytes"%go (![#Op] "$r")
-                 )%V); ("MaxCreateRev"%go, (λ: "$r",
-                 method_call #Op.id #"MaxCreateRev"%go (![#Op] "$r")
-                 )%V); ("MaxModRev"%go, (λ: "$r",
-                 method_call #Op.id #"MaxModRev"%go (![#Op] "$r")
-                 )%V); ("MinCreateRev"%go, (λ: "$r",
-                 method_call #Op.id #"MinCreateRev"%go (![#Op] "$r")
-                 )%V); ("MinModRev"%go, (λ: "$r",
-                 method_call #Op.id #"MinModRev"%go (![#Op] "$r")
-                 )%V); ("RangeBytes"%go, (λ: "$r",
-                 method_call #Op.id #"RangeBytes"%go (![#Op] "$r")
-                 )%V); ("Rev"%go, (λ: "$r",
-                 method_call #Op.id #"Rev"%go (![#Op] "$r")
-                 )%V); ("Txn"%go, (λ: "$r",
-                 method_call #Op.id #"Txn"%go (![#Op] "$r")
-                 )%V); ("ValueBytes"%go, (λ: "$r",
-                 method_call #Op.id #"ValueBytes"%go (![#Op] "$r")
-                 )%V); ("WithKeyBytes"%go, Op__WithKeyBytesⁱᵐᵖˡ); ("WithRangeBytes"%go, Op__WithRangeBytesⁱᵐᵖˡ); ("WithValueBytes"%go, Op__WithValueBytesⁱᵐᵖˡ); ("applyOpts"%go, Op__applyOptsⁱᵐᵖˡ); ("isWrite"%go, (λ: "$r",
-                 method_call #Op.id #"isWrite"%go (![#Op] "$r")
-                 )%V); ("toRangeRequest"%go, (λ: "$r",
-                 method_call #Op.id #"toRangeRequest"%go (![#Op] "$r")
-                 )%V); ("toRequestOp"%go, (λ: "$r",
-                 method_call #Op.id #"toRequestOp"%go (![#Op] "$r")
-                 )%V); ("toTxnRequest"%go, (λ: "$r",
-                 method_call #Op.id #"toTxnRequest"%go (![#Op] "$r")
+Definition msets' : list (go_string * (list (go_string * val))) := [(AuthEnableResponse.id, []); (ptrT.id AuthEnableResponse.id, []); (AuthDisableResponse.id, []); (ptrT.id AuthDisableResponse.id, []); (AuthStatusResponse.id, []); (ptrT.id AuthStatusResponse.id, []); (AuthenticateResponse.id, []); (ptrT.id AuthenticateResponse.id, []); (AuthUserAddResponse.id, []); (ptrT.id AuthUserAddResponse.id, []); (AuthUserDeleteResponse.id, []); (ptrT.id AuthUserDeleteResponse.id, []); (AuthUserChangePasswordResponse.id, []); (ptrT.id AuthUserChangePasswordResponse.id, []); (AuthUserGrantRoleResponse.id, []); (ptrT.id AuthUserGrantRoleResponse.id, []); (AuthUserGetResponse.id, []); (ptrT.id AuthUserGetResponse.id, []); (AuthUserRevokeRoleResponse.id, []); (ptrT.id AuthUserRevokeRoleResponse.id, []); (AuthRoleAddResponse.id, []); (ptrT.id AuthRoleAddResponse.id, []); (AuthRoleGrantPermissionResponse.id, []); (ptrT.id AuthRoleGrantPermissionResponse.id, []); (AuthRoleGetResponse.id, []); (ptrT.id AuthRoleGetResponse.id, []); (AuthRoleRevokePermissionResponse.id, []); (ptrT.id AuthRoleRevokePermissionResponse.id, []); (AuthRoleDeleteResponse.id, []); (ptrT.id AuthRoleDeleteResponse.id, []); (AuthUserListResponse.id, []); (ptrT.id AuthUserListResponse.id, []); (AuthRoleListResponse.id, []); (ptrT.id AuthRoleListResponse.id, []); (PermissionType.id, []); (ptrT.id PermissionType.id, []); (Permission.id, []); (ptrT.id Permission.id, []); (UserAddOptions.id, []); (ptrT.id UserAddOptions.id, []); (authClient.id, []); (ptrT.id authClient.id, [("AuthDisable"%go, authClient__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, authClient__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, authClient__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, authClient__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, authClient__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, authClient__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, authClient__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, authClient__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, authClient__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, authClient__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, authClient__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, authClient__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, authClient__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, authClient__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, authClient__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, authClient__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, authClient__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, authClient__UserRevokeRoleⁱᵐᵖˡ)]); (Client.id, [("AlarmDisarm"%go, Client__AlarmDisarmⁱᵐᵖˡ); ("AlarmList"%go, Client__AlarmListⁱᵐᵖˡ); ("AuthDisable"%go, Client__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, Client__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, Client__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, Client__Authenticateⁱᵐᵖˡ); ("Compact"%go, Client__Compactⁱᵐᵖˡ); ("Defragment"%go, Client__Defragmentⁱᵐᵖˡ); ("Delete"%go, Client__Deleteⁱᵐᵖˡ); ("Do"%go, Client__Doⁱᵐᵖˡ); ("Downgrade"%go, Client__Downgradeⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Grant"%go, Client__Grantⁱᵐᵖˡ); ("HashKV"%go, Client__HashKVⁱᵐᵖˡ); ("KeepAlive"%go, Client__KeepAliveⁱᵐᵖˡ); ("KeepAliveOnce"%go, Client__KeepAliveOnceⁱᵐᵖˡ); ("Leases"%go, Client__Leasesⁱᵐᵖˡ); ("MemberAdd"%go, Client__MemberAddⁱᵐᵖˡ); ("MemberAddAsLearner"%go, Client__MemberAddAsLearnerⁱᵐᵖˡ); ("MemberList"%go, Client__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, Client__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, Client__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, Client__MemberUpdateⁱᵐᵖˡ); ("MoveLeader"%go, Client__MoveLeaderⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("RequestProgress"%go, Client__RequestProgressⁱᵐᵖˡ); ("Revoke"%go, Client__Revokeⁱᵐᵖˡ); ("RoleAdd"%go, Client__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, Client__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, Client__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, Client__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, Client__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, Client__RoleRevokePermissionⁱᵐᵖˡ); ("Snapshot"%go, Client__Snapshotⁱᵐᵖˡ); ("SnapshotWithVersion"%go, Client__SnapshotWithVersionⁱᵐᵖˡ); ("Status"%go, Client__Statusⁱᵐᵖˡ); ("TimeToLive"%go, Client__TimeToLiveⁱᵐᵖˡ); ("Txn"%go, Client__Txnⁱᵐᵖˡ); ("UserAdd"%go, Client__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, Client__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, Client__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, Client__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, Client__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, Client__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, Client__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, Client__UserRevokeRoleⁱᵐᵖˡ); ("Watch"%go, Client__Watchⁱᵐᵖˡ)]); (ptrT.id Client.id, [("ActiveConnection"%go, Client__ActiveConnectionⁱᵐᵖˡ); ("AlarmDisarm"%go, Client__AlarmDisarmⁱᵐᵖˡ); ("AlarmList"%go, Client__AlarmListⁱᵐᵖˡ); ("AuthDisable"%go, Client__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, Client__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, Client__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, Client__Authenticateⁱᵐᵖˡ); ("Close"%go, Client__Closeⁱᵐᵖˡ); ("Compact"%go, Client__Compactⁱᵐᵖˡ); ("Ctx"%go, Client__Ctxⁱᵐᵖˡ); ("Defragment"%go, Client__Defragmentⁱᵐᵖˡ); ("Delete"%go, Client__Deleteⁱᵐᵖˡ); ("Dial"%go, Client__Dialⁱᵐᵖˡ); ("Do"%go, Client__Doⁱᵐᵖˡ); ("Downgrade"%go, Client__Downgradeⁱᵐᵖˡ); ("Endpoints"%go, Client__Endpointsⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("GetLogger"%go, Client__GetLoggerⁱᵐᵖˡ); ("Grant"%go, Client__Grantⁱᵐᵖˡ); ("HashKV"%go, Client__HashKVⁱᵐᵖˡ); ("KeepAlive"%go, Client__KeepAliveⁱᵐᵖˡ); ("KeepAliveOnce"%go, Client__KeepAliveOnceⁱᵐᵖˡ); ("Leases"%go, Client__Leasesⁱᵐᵖˡ); ("MemberAdd"%go, Client__MemberAddⁱᵐᵖˡ); ("MemberAddAsLearner"%go, Client__MemberAddAsLearnerⁱᵐᵖˡ); ("MemberList"%go, Client__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, Client__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, Client__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, Client__MemberUpdateⁱᵐᵖˡ); ("MoveLeader"%go, Client__MoveLeaderⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("RequestProgress"%go, Client__RequestProgressⁱᵐᵖˡ); ("Revoke"%go, Client__Revokeⁱᵐᵖˡ); ("RoleAdd"%go, Client__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, Client__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, Client__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, Client__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, Client__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, Client__RoleRevokePermissionⁱᵐᵖˡ); ("SetEndpoints"%go, Client__SetEndpointsⁱᵐᵖˡ); ("Snapshot"%go, Client__Snapshotⁱᵐᵖˡ); ("SnapshotWithVersion"%go, Client__SnapshotWithVersionⁱᵐᵖˡ); ("Status"%go, Client__Statusⁱᵐᵖˡ); ("Sync"%go, Client__Syncⁱᵐᵖˡ); ("TimeToLive"%go, Client__TimeToLiveⁱᵐᵖˡ); ("Txn"%go, Client__Txnⁱᵐᵖˡ); ("UserAdd"%go, Client__UserAddⁱᵐᵖˡ); ("UserAddWithOptions"%go, Client__UserAddWithOptionsⁱᵐᵖˡ); ("UserChangePassword"%go, Client__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, Client__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, Client__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, Client__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, Client__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, Client__UserRevokeRoleⁱᵐᵖˡ); ("Watch"%go, Client__Watchⁱᵐᵖˡ); ("WithLogger"%go, Client__WithLoggerⁱᵐᵖˡ); ("autoSync"%go, Client__autoSyncⁱᵐᵖˡ); ("checkVersion"%go, Client__checkVersionⁱᵐᵖˡ); ("credentialsForEndpoint"%go, Client__credentialsForEndpointⁱᵐᵖˡ); ("dial"%go, Client__dialⁱᵐᵖˡ); ("dialSetupOpts"%go, Client__dialSetupOptsⁱᵐᵖˡ); ("dialWithBalancer"%go, Client__dialWithBalancerⁱᵐᵖˡ); ("getToken"%go, Client__getTokenⁱᵐᵖˡ); ("refreshToken"%go, Client__refreshTokenⁱᵐᵖˡ); ("roundRobinQuorumBackoff"%go, Client__roundRobinQuorumBackoffⁱᵐᵖˡ); ("shouldRefreshToken"%go, Client__shouldRefreshTokenⁱᵐᵖˡ); ("streamClientInterceptor"%go, Client__streamClientInterceptorⁱᵐᵖˡ); ("unaryClientInterceptor"%go, Client__unaryClientInterceptorⁱᵐᵖˡ)]); (Option.id, []); (ptrT.id Option.id, []); (Member.id, []); (ptrT.id Member.id, []); (MemberListResponse.id, []); (ptrT.id MemberListResponse.id, []); (MemberAddResponse.id, []); (ptrT.id MemberAddResponse.id, []); (MemberRemoveResponse.id, []); (ptrT.id MemberRemoveResponse.id, []); (MemberUpdateResponse.id, []); (ptrT.id MemberUpdateResponse.id, []); (MemberPromoteResponse.id, []); (ptrT.id MemberPromoteResponse.id, []); (cluster.id, []); (ptrT.id cluster.id, [("MemberAdd"%go, cluster__MemberAddⁱᵐᵖˡ); ("MemberAddAsLearner"%go, cluster__MemberAddAsLearnerⁱᵐᵖˡ); ("MemberList"%go, cluster__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, cluster__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, cluster__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, cluster__MemberUpdateⁱᵐᵖˡ); ("memberAdd"%go, cluster__memberAddⁱᵐᵖˡ)]); (CompactOp.id, [("toRequest"%go, CompactOp__toRequestⁱᵐᵖˡ)]); (ptrT.id CompactOp.id, [("applyCompactOpts"%go, CompactOp__applyCompactOptsⁱᵐᵖˡ); ("toRequest"%go, CompactOp__toRequestⁱᵐᵖˡ)]); (CompactOption.id, []); (ptrT.id CompactOption.id, []); (CompareTarget.id, []); (ptrT.id CompareTarget.id, []); (CompareResult.id, []); (ptrT.id CompareResult.id, []); (Cmp.id, [("WithPrefix"%go, Cmp__WithPrefixⁱᵐᵖˡ); ("WithRange"%go, Cmp__WithRangeⁱᵐᵖˡ)]); (ptrT.id Cmp.id, [("KeyBytes"%go, Cmp__KeyBytesⁱᵐᵖˡ); ("ValueBytes"%go, Cmp__ValueBytesⁱᵐᵖˡ); ("WithKeyBytes"%go, Cmp__WithKeyBytesⁱᵐᵖˡ); ("WithPrefix"%go, Cmp__WithPrefixⁱᵐᵖˡ); ("WithRange"%go, Cmp__WithRangeⁱᵐᵖˡ); ("WithValueBytes"%go, Cmp__WithValueBytesⁱᵐᵖˡ)]); (Config.id, []); (ptrT.id Config.id, []); (ConfigSpec.id, []); (ptrT.id ConfigSpec.id, [("Clone"%go, ConfigSpec__Cloneⁱᵐᵖˡ)]); (SecureConfig.id, []); (ptrT.id SecureConfig.id, []); (AuthConfig.id, [("Empty"%go, AuthConfig__Emptyⁱᵐᵖˡ)]); (ptrT.id AuthConfig.id, [("Empty"%go, AuthConfig__Emptyⁱᵐᵖˡ)]); (CompactResponse.id, []); (ptrT.id CompactResponse.id, []); (PutResponse.id, []); (ptrT.id PutResponse.id, [("OpResponse"%go, PutResponse__OpResponseⁱᵐᵖˡ)]); (GetResponse.id, []); (ptrT.id GetResponse.id, [("OpResponse"%go, GetResponse__OpResponseⁱᵐᵖˡ)]); (DeleteResponse.id, []); (ptrT.id DeleteResponse.id, [("OpResponse"%go, DeleteResponse__OpResponseⁱᵐᵖˡ)]); (TxnResponse.id, []); (ptrT.id TxnResponse.id, [("OpResponse"%go, TxnResponse__OpResponseⁱᵐᵖˡ)]); (OpResponse.id, [("Del"%go, OpResponse__Delⁱᵐᵖˡ); ("Get"%go, OpResponse__Getⁱᵐᵖˡ); ("Put"%go, OpResponse__Putⁱᵐᵖˡ); ("Txn"%go, OpResponse__Txnⁱᵐᵖˡ)]); (ptrT.id OpResponse.id, [("Del"%go, OpResponse__Delⁱᵐᵖˡ); ("Get"%go, OpResponse__Getⁱᵐᵖˡ); ("Put"%go, OpResponse__Putⁱᵐᵖˡ); ("Txn"%go, OpResponse__Txnⁱᵐᵖˡ)]); (kv.id, []); (ptrT.id kv.id, [("Compact"%go, kv__Compactⁱᵐᵖˡ); ("Delete"%go, kv__Deleteⁱᵐᵖˡ); ("Do"%go, kv__Doⁱᵐᵖˡ); ("Get"%go, kv__Getⁱᵐᵖˡ); ("Put"%go, kv__Putⁱᵐᵖˡ); ("Txn"%go, kv__Txnⁱᵐᵖˡ)]); (LeaseRevokeResponse.id, []); (ptrT.id LeaseRevokeResponse.id, []); (LeaseID.id, []); (ptrT.id LeaseID.id, []); (LeaseGrantResponse.id, [("Descriptor"%go, LeaseGrantResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseGrantResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseGrantResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseGrantResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseGrantResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseGrantResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseGrantResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseGrantResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseGrantResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseGrantResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseGrantResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseGrantResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseGrantResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseGrantResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseGrantResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseGrantResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseGrantResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseGrantResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseGrantResponse.id, [("Descriptor"%go, LeaseGrantResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseGrantResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseGrantResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseGrantResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseGrantResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseGrantResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseGrantResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseGrantResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseGrantResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseGrantResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseGrantResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseGrantResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseGrantResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseGrantResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseGrantResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseGrantResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseGrantResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseGrantResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseKeepAliveResponse.id, [("Descriptor"%go, LeaseKeepAliveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseKeepAliveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseKeepAliveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseKeepAliveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseKeepAliveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseKeepAliveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseKeepAliveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseKeepAliveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseKeepAliveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseKeepAliveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseKeepAliveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseKeepAliveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseKeepAliveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseKeepAliveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseKeepAliveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseKeepAliveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseKeepAliveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseKeepAliveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseKeepAliveResponse.id, [("Descriptor"%go, LeaseKeepAliveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseKeepAliveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseKeepAliveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseKeepAliveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseKeepAliveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseKeepAliveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseKeepAliveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseKeepAliveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseKeepAliveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseKeepAliveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseKeepAliveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseKeepAliveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseKeepAliveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseKeepAliveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseKeepAliveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseKeepAliveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseKeepAliveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseKeepAliveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseTimeToLiveResponse.id, [("Descriptor"%go, LeaseTimeToLiveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseTimeToLiveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseTimeToLiveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseTimeToLiveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseTimeToLiveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseTimeToLiveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseTimeToLiveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseTimeToLiveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseTimeToLiveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseTimeToLiveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseTimeToLiveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseTimeToLiveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseTimeToLiveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseTimeToLiveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseTimeToLiveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseTimeToLiveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseTimeToLiveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseTimeToLiveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseTimeToLiveResponse.id, [("Descriptor"%go, LeaseTimeToLiveResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseTimeToLiveResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseTimeToLiveResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseTimeToLiveResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseTimeToLiveResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseTimeToLiveResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseTimeToLiveResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseTimeToLiveResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseTimeToLiveResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseTimeToLiveResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseTimeToLiveResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseTimeToLiveResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseTimeToLiveResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseTimeToLiveResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseTimeToLiveResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseTimeToLiveResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseTimeToLiveResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseTimeToLiveResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (LeaseStatus.id, []); (ptrT.id LeaseStatus.id, []); (LeaseLeasesResponse.id, [("Descriptor"%go, LeaseLeasesResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseLeasesResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseLeasesResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseLeasesResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseLeasesResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseLeasesResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseLeasesResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseLeasesResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseLeasesResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseLeasesResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseLeasesResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseLeasesResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseLeasesResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseLeasesResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseLeasesResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseLeasesResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseLeasesResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseLeasesResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ptrT.id LeaseLeasesResponse.id, [("Descriptor"%go, LeaseLeasesResponse__Descriptorⁱᵐᵖˡ); ("GetClusterId"%go, LeaseLeasesResponse__GetClusterIdⁱᵐᵖˡ); ("GetMemberId"%go, LeaseLeasesResponse__GetMemberIdⁱᵐᵖˡ); ("GetRaftTerm"%go, LeaseLeasesResponse__GetRaftTermⁱᵐᵖˡ); ("GetRevision"%go, LeaseLeasesResponse__GetRevisionⁱᵐᵖˡ); ("Marshal"%go, LeaseLeasesResponse__Marshalⁱᵐᵖˡ); ("MarshalTo"%go, LeaseLeasesResponse__MarshalToⁱᵐᵖˡ); ("MarshalToSizedBuffer"%go, LeaseLeasesResponse__MarshalToSizedBufferⁱᵐᵖˡ); ("ProtoMessage"%go, LeaseLeasesResponse__ProtoMessageⁱᵐᵖˡ); ("Reset"%go, LeaseLeasesResponse__Resetⁱᵐᵖˡ); ("Size"%go, LeaseLeasesResponse__Sizeⁱᵐᵖˡ); ("String"%go, LeaseLeasesResponse__Stringⁱᵐᵖˡ); ("Unmarshal"%go, LeaseLeasesResponse__Unmarshalⁱᵐᵖˡ); ("XXX_DiscardUnknown"%go, LeaseLeasesResponse__XXX_DiscardUnknownⁱᵐᵖˡ); ("XXX_Marshal"%go, LeaseLeasesResponse__XXX_Marshalⁱᵐᵖˡ); ("XXX_Merge"%go, LeaseLeasesResponse__XXX_Mergeⁱᵐᵖˡ); ("XXX_Size"%go, LeaseLeasesResponse__XXX_Sizeⁱᵐᵖˡ); ("XXX_Unmarshal"%go, LeaseLeasesResponse__XXX_Unmarshalⁱᵐᵖˡ)]); (ErrKeepAliveHalted.id, [("Error"%go, ErrKeepAliveHalted__Errorⁱᵐᵖˡ)]); (ptrT.id ErrKeepAliveHalted.id, [("Error"%go, ErrKeepAliveHalted__Errorⁱᵐᵖˡ)]); (lessor.id, []); (ptrT.id lessor.id, [("Close"%go, lessor__Closeⁱᵐᵖˡ); ("Grant"%go, lessor__Grantⁱᵐᵖˡ); ("KeepAlive"%go, lessor__KeepAliveⁱᵐᵖˡ); ("KeepAliveOnce"%go, lessor__KeepAliveOnceⁱᵐᵖˡ); ("Leases"%go, lessor__Leasesⁱᵐᵖˡ); ("Revoke"%go, lessor__Revokeⁱᵐᵖˡ); ("TimeToLive"%go, lessor__TimeToLiveⁱᵐᵖˡ); ("closeRequireLeader"%go, lessor__closeRequireLeaderⁱᵐᵖˡ); ("deadlineLoop"%go, lessor__deadlineLoopⁱᵐᵖˡ); ("keepAliveCtxCloser"%go, lessor__keepAliveCtxCloserⁱᵐᵖˡ); ("keepAliveOnce"%go, lessor__keepAliveOnceⁱᵐᵖˡ); ("recvKeepAlive"%go, lessor__recvKeepAliveⁱᵐᵖˡ); ("recvKeepAliveLoop"%go, lessor__recvKeepAliveLoopⁱᵐᵖˡ); ("resetRecv"%go, lessor__resetRecvⁱᵐᵖˡ); ("sendKeepAliveLoop"%go, lessor__sendKeepAliveLoopⁱᵐᵖˡ)]); (keepAlive.id, []); (ptrT.id keepAlive.id, [("close"%go, keepAlive__closeⁱᵐᵖˡ)]); (keepAliveCtxKey.id, []); (ptrT.id keepAliveCtxKey.id, []); (DefragmentResponse.id, []); (ptrT.id DefragmentResponse.id, []); (AlarmResponse.id, []); (ptrT.id AlarmResponse.id, []); (AlarmMember.id, []); (ptrT.id AlarmMember.id, []); (StatusResponse.id, []); (ptrT.id StatusResponse.id, []); (HashKVResponse.id, []); (ptrT.id HashKVResponse.id, []); (MoveLeaderResponse.id, []); (ptrT.id MoveLeaderResponse.id, []); (DowngradeResponse.id, []); (ptrT.id DowngradeResponse.id, []); (DowngradeAction.id, []); (ptrT.id DowngradeAction.id, []); (SnapshotResponse.id, []); (ptrT.id SnapshotResponse.id, []); (maintenance.id, []); (ptrT.id maintenance.id, [("AlarmDisarm"%go, maintenance__AlarmDisarmⁱᵐᵖˡ); ("AlarmList"%go, maintenance__AlarmListⁱᵐᵖˡ); ("Defragment"%go, maintenance__Defragmentⁱᵐᵖˡ); ("Downgrade"%go, maintenance__Downgradeⁱᵐᵖˡ); ("HashKV"%go, maintenance__HashKVⁱᵐᵖˡ); ("MoveLeader"%go, maintenance__MoveLeaderⁱᵐᵖˡ); ("Snapshot"%go, maintenance__Snapshotⁱᵐᵖˡ); ("SnapshotWithVersion"%go, maintenance__SnapshotWithVersionⁱᵐᵖˡ); ("Status"%go, maintenance__Statusⁱᵐᵖˡ); ("logAndCloseWithError"%go, maintenance__logAndCloseWithErrorⁱᵐᵖˡ); ("save"%go, maintenance__saveⁱᵐᵖˡ)]); (snapshotReadCloser.id, [("Close"%go, snapshotReadCloser__Closeⁱᵐᵖˡ)]); (ptrT.id snapshotReadCloser.id, [("Close"%go, snapshotReadCloser__Closeⁱᵐᵖˡ); ("Read"%go, snapshotReadCloser__Readⁱᵐᵖˡ)]); (opType.id, []); (ptrT.id opType.id, []); (Op.id, [("IsCountOnly"%go, Op__IsCountOnlyⁱᵐᵖˡ); ("IsDelete"%go, Op__IsDeleteⁱᵐᵖˡ); ("IsGet"%go, Op__IsGetⁱᵐᵖˡ); ("IsKeysOnly"%go, Op__IsKeysOnlyⁱᵐᵖˡ); ("IsOptsWithFromKey"%go, Op__IsOptsWithFromKeyⁱᵐᵖˡ); ("IsOptsWithPrefix"%go, Op__IsOptsWithPrefixⁱᵐᵖˡ); ("IsPut"%go, Op__IsPutⁱᵐᵖˡ); ("IsSerializable"%go, Op__IsSerializableⁱᵐᵖˡ); ("IsSortOptionValid"%go, Op__IsSortOptionValidⁱᵐᵖˡ); ("IsTxn"%go, Op__IsTxnⁱᵐᵖˡ); ("KeyBytes"%go, Op__KeyBytesⁱᵐᵖˡ); ("MaxCreateRev"%go, Op__MaxCreateRevⁱᵐᵖˡ); ("MaxModRev"%go, Op__MaxModRevⁱᵐᵖˡ); ("MinCreateRev"%go, Op__MinCreateRevⁱᵐᵖˡ); ("MinModRev"%go, Op__MinModRevⁱᵐᵖˡ); ("RangeBytes"%go, Op__RangeBytesⁱᵐᵖˡ); ("Rev"%go, Op__Revⁱᵐᵖˡ); ("Txn"%go, Op__Txnⁱᵐᵖˡ); ("ValueBytes"%go, Op__ValueBytesⁱᵐᵖˡ); ("isWrite"%go, Op__isWriteⁱᵐᵖˡ); ("toRangeRequest"%go, Op__toRangeRequestⁱᵐᵖˡ); ("toRequestOp"%go, Op__toRequestOpⁱᵐᵖˡ); ("toTxnRequest"%go, Op__toTxnRequestⁱᵐᵖˡ)]); (ptrT.id Op.id, [("IsCountOnly"%go, (λ: "$r0",
+                 method_call #Op.id #"IsCountOnly"%go (![Op] "$r")
+                 )%V); ("IsDelete"%go, (λ: "$r0",
+                 method_call #Op.id #"IsDelete"%go (![Op] "$r")
+                 )%V); ("IsGet"%go, (λ: "$r0",
+                 method_call #Op.id #"IsGet"%go (![Op] "$r")
+                 )%V); ("IsKeysOnly"%go, (λ: "$r0",
+                 method_call #Op.id #"IsKeysOnly"%go (![Op] "$r")
+                 )%V); ("IsOptsWithFromKey"%go, (λ: "$r0",
+                 method_call #Op.id #"IsOptsWithFromKey"%go (![Op] "$r")
+                 )%V); ("IsOptsWithPrefix"%go, (λ: "$r0",
+                 method_call #Op.id #"IsOptsWithPrefix"%go (![Op] "$r")
+                 )%V); ("IsPut"%go, (λ: "$r0",
+                 method_call #Op.id #"IsPut"%go (![Op] "$r")
+                 )%V); ("IsSerializable"%go, (λ: "$r0",
+                 method_call #Op.id #"IsSerializable"%go (![Op] "$r")
+                 )%V); ("IsSortOptionValid"%go, (λ: "$r0",
+                 method_call #Op.id #"IsSortOptionValid"%go (![Op] "$r")
+                 )%V); ("IsTxn"%go, (λ: "$r0",
+                 method_call #Op.id #"IsTxn"%go (![Op] "$r")
+                 )%V); ("KeyBytes"%go, (λ: "$r0",
+                 method_call #Op.id #"KeyBytes"%go (![Op] "$r")
+                 )%V); ("MaxCreateRev"%go, (λ: "$r0",
+                 method_call #Op.id #"MaxCreateRev"%go (![Op] "$r")
+                 )%V); ("MaxModRev"%go, (λ: "$r0",
+                 method_call #Op.id #"MaxModRev"%go (![Op] "$r")
+                 )%V); ("MinCreateRev"%go, (λ: "$r0",
+                 method_call #Op.id #"MinCreateRev"%go (![Op] "$r")
+                 )%V); ("MinModRev"%go, (λ: "$r0",
+                 method_call #Op.id #"MinModRev"%go (![Op] "$r")
+                 )%V); ("RangeBytes"%go, (λ: "$r0",
+                 method_call #Op.id #"RangeBytes"%go (![Op] "$r")
+                 )%V); ("Rev"%go, (λ: "$r0",
+                 method_call #Op.id #"Rev"%go (![Op] "$r")
+                 )%V); ("Txn"%go, (λ: "$r0",
+                 method_call #Op.id #"Txn"%go (![Op] "$r")
+                 )%V); ("ValueBytes"%go, (λ: "$r0",
+                 method_call #Op.id #"ValueBytes"%go (![Op] "$r")
+                 )%V); ("WithKeyBytes"%go, Op__WithKeyBytesⁱᵐᵖˡ); ("WithRangeBytes"%go, Op__WithRangeBytesⁱᵐᵖˡ); ("WithValueBytes"%go, Op__WithValueBytesⁱᵐᵖˡ); ("applyOpts"%go, Op__applyOptsⁱᵐᵖˡ); ("isWrite"%go, (λ: "$r0",
+                 method_call #Op.id #"isWrite"%go (![Op] "$r")
+                 )%V); ("toRangeRequest"%go, (λ: "$r0",
+                 method_call #Op.id #"toRangeRequest"%go (![Op] "$r")
+                 )%V); ("toRequestOp"%go, (λ: "$r0",
+                 method_call #Op.id #"toRequestOp"%go (![Op] "$r")
+                 )%V); ("toTxnRequest"%go, (λ: "$r0",
+                 method_call #Op.id #"toTxnRequest"%go (![Op] "$r")
                  )%V)]); (OpOption.id, []); (ptrT.id OpOption.id, []); (LeaseOp.id, []); (ptrT.id LeaseOp.id, [("applyOpts"%go, LeaseOp__applyOptsⁱᵐᵖˡ)]); (LeaseOption.id, []); (ptrT.id LeaseOption.id, []); (retryPolicy.id, [("String"%go, retryPolicy__Stringⁱᵐᵖˡ)]); (ptrT.id retryPolicy.id, [("String"%go, retryPolicy__Stringⁱᵐᵖˡ)]); (retryKVClient.id, []); (ptrT.id retryKVClient.id, [("Compact"%go, retryKVClient__Compactⁱᵐᵖˡ); ("DeleteRange"%go, retryKVClient__DeleteRangeⁱᵐᵖˡ); ("Put"%go, retryKVClient__Putⁱᵐᵖˡ); ("Range"%go, retryKVClient__Rangeⁱᵐᵖˡ); ("Txn"%go, retryKVClient__Txnⁱᵐᵖˡ)]); (retryLeaseClient.id, []); (ptrT.id retryLeaseClient.id, [("LeaseGrant"%go, retryLeaseClient__LeaseGrantⁱᵐᵖˡ); ("LeaseKeepAlive"%go, retryLeaseClient__LeaseKeepAliveⁱᵐᵖˡ); ("LeaseLeases"%go, retryLeaseClient__LeaseLeasesⁱᵐᵖˡ); ("LeaseRevoke"%go, retryLeaseClient__LeaseRevokeⁱᵐᵖˡ); ("LeaseTimeToLive"%go, retryLeaseClient__LeaseTimeToLiveⁱᵐᵖˡ)]); (retryClusterClient.id, []); (ptrT.id retryClusterClient.id, [("MemberAdd"%go, retryClusterClient__MemberAddⁱᵐᵖˡ); ("MemberList"%go, retryClusterClient__MemberListⁱᵐᵖˡ); ("MemberPromote"%go, retryClusterClient__MemberPromoteⁱᵐᵖˡ); ("MemberRemove"%go, retryClusterClient__MemberRemoveⁱᵐᵖˡ); ("MemberUpdate"%go, retryClusterClient__MemberUpdateⁱᵐᵖˡ)]); (retryMaintenanceClient.id, []); (ptrT.id retryMaintenanceClient.id, [("Alarm"%go, retryMaintenanceClient__Alarmⁱᵐᵖˡ); ("Defragment"%go, retryMaintenanceClient__Defragmentⁱᵐᵖˡ); ("Downgrade"%go, retryMaintenanceClient__Downgradeⁱᵐᵖˡ); ("Hash"%go, retryMaintenanceClient__Hashⁱᵐᵖˡ); ("HashKV"%go, retryMaintenanceClient__HashKVⁱᵐᵖˡ); ("MoveLeader"%go, retryMaintenanceClient__MoveLeaderⁱᵐᵖˡ); ("Snapshot"%go, retryMaintenanceClient__Snapshotⁱᵐᵖˡ); ("Status"%go, retryMaintenanceClient__Statusⁱᵐᵖˡ)]); (retryAuthClient.id, []); (ptrT.id retryAuthClient.id, [("AuthDisable"%go, retryAuthClient__AuthDisableⁱᵐᵖˡ); ("AuthEnable"%go, retryAuthClient__AuthEnableⁱᵐᵖˡ); ("AuthStatus"%go, retryAuthClient__AuthStatusⁱᵐᵖˡ); ("Authenticate"%go, retryAuthClient__Authenticateⁱᵐᵖˡ); ("RoleAdd"%go, retryAuthClient__RoleAddⁱᵐᵖˡ); ("RoleDelete"%go, retryAuthClient__RoleDeleteⁱᵐᵖˡ); ("RoleGet"%go, retryAuthClient__RoleGetⁱᵐᵖˡ); ("RoleGrantPermission"%go, retryAuthClient__RoleGrantPermissionⁱᵐᵖˡ); ("RoleList"%go, retryAuthClient__RoleListⁱᵐᵖˡ); ("RoleRevokePermission"%go, retryAuthClient__RoleRevokePermissionⁱᵐᵖˡ); ("UserAdd"%go, retryAuthClient__UserAddⁱᵐᵖˡ); ("UserChangePassword"%go, retryAuthClient__UserChangePasswordⁱᵐᵖˡ); ("UserDelete"%go, retryAuthClient__UserDeleteⁱᵐᵖˡ); ("UserGet"%go, retryAuthClient__UserGetⁱᵐᵖˡ); ("UserGrantRole"%go, retryAuthClient__UserGrantRoleⁱᵐᵖˡ); ("UserList"%go, retryAuthClient__UserListⁱᵐᵖˡ); ("UserRevokeRole"%go, retryAuthClient__UserRevokeRoleⁱᵐᵖˡ)]); (serverStreamingRetryingStream.id, [("Context"%go, serverStreamingRetryingStream__Contextⁱᵐᵖˡ)]); (ptrT.id serverStreamingRetryingStream.id, [("CloseSend"%go, serverStreamingRetryingStream__CloseSendⁱᵐᵖˡ); ("Context"%go, serverStreamingRetryingStream__Contextⁱᵐᵖˡ); ("Header"%go, serverStreamingRetryingStream__Headerⁱᵐᵖˡ); ("RecvMsg"%go, serverStreamingRetryingStream__RecvMsgⁱᵐᵖˡ); ("SendMsg"%go, serverStreamingRetryingStream__SendMsgⁱᵐᵖˡ); ("Trailer"%go, serverStreamingRetryingStream__Trailerⁱᵐᵖˡ); ("getStream"%go, serverStreamingRetryingStream__getStreamⁱᵐᵖˡ); ("receiveMsgAndIndicateRetry"%go, serverStreamingRetryingStream__receiveMsgAndIndicateRetryⁱᵐᵖˡ); ("reestablishStreamAndResendBuffer"%go, serverStreamingRetryingStream__reestablishStreamAndResendBufferⁱᵐᵖˡ); ("setStream"%go, serverStreamingRetryingStream__setStreamⁱᵐᵖˡ)]); (backoffFunc.id, []); (ptrT.id backoffFunc.id, []); (options.id, []); (ptrT.id options.id, []); (retryOption.id, [("after"%go, retryOption__afterⁱᵐᵖˡ); ("before"%go, retryOption__beforeⁱᵐᵖˡ)]); (ptrT.id retryOption.id, [("after"%go, retryOption__afterⁱᵐᵖˡ); ("before"%go, retryOption__beforeⁱᵐᵖˡ)]); (SortTarget.id, []); (ptrT.id SortTarget.id, []); (SortOrder.id, []); (ptrT.id SortOrder.id, []); (SortOption.id, []); (ptrT.id SortOption.id, []); (txn.id, []); (ptrT.id txn.id, [("Commit"%go, txn__Commitⁱᵐᵖˡ); ("Else"%go, txn__Elseⁱᵐᵖˡ); ("If"%go, txn__Ifⁱᵐᵖˡ); ("Then"%go, txn__Thenⁱᵐᵖˡ)]); (Event.id, []); (ptrT.id Event.id, [("IsCreate"%go, Event__IsCreateⁱᵐᵖˡ); ("IsModify"%go, Event__IsModifyⁱᵐᵖˡ)]); (WatchChan.id, []); (ptrT.id WatchChan.id, []); (WatchResponse.id, []); (ptrT.id WatchResponse.id, [("Err"%go, WatchResponse__Errⁱᵐᵖˡ); ("IsProgressNotify"%go, WatchResponse__IsProgressNotifyⁱᵐᵖˡ)]); (watcher.id, []); (ptrT.id watcher.id, [("Close"%go, watcher__Closeⁱᵐᵖˡ); ("RequestProgress"%go, watcher__RequestProgressⁱᵐᵖˡ); ("Watch"%go, watcher__Watchⁱᵐᵖˡ); ("closeStream"%go, watcher__closeStreamⁱᵐᵖˡ); ("newWatcherGRPCStream"%go, watcher__newWatcherGRPCStreamⁱᵐᵖˡ)]); (watchGRPCStream.id, []); (ptrT.id watchGRPCStream.id, [("addSubstream"%go, watchGRPCStream__addSubstreamⁱᵐᵖˡ); ("backoffIfUnavailable"%go, watchGRPCStream__backoffIfUnavailableⁱᵐᵖˡ); ("broadcastResponse"%go, watchGRPCStream__broadcastResponseⁱᵐᵖˡ); ("close"%go, watchGRPCStream__closeⁱᵐᵖˡ); ("closeSubstream"%go, watchGRPCStream__closeSubstreamⁱᵐᵖˡ); ("dispatchEvent"%go, watchGRPCStream__dispatchEventⁱᵐᵖˡ); ("joinSubstreams"%go, watchGRPCStream__joinSubstreamsⁱᵐᵖˡ); ("newWatchClient"%go, watchGRPCStream__newWatchClientⁱᵐᵖˡ); ("nextResume"%go, watchGRPCStream__nextResumeⁱᵐᵖˡ); ("openWatchClient"%go, watchGRPCStream__openWatchClientⁱᵐᵖˡ); ("run"%go, watchGRPCStream__runⁱᵐᵖˡ); ("sendCloseSubstream"%go, watchGRPCStream__sendCloseSubstreamⁱᵐᵖˡ); ("serveSubstream"%go, watchGRPCStream__serveSubstreamⁱᵐᵖˡ); ("serveWatchClient"%go, watchGRPCStream__serveWatchClientⁱᵐᵖˡ); ("unicastResponse"%go, watchGRPCStream__unicastResponseⁱᵐᵖˡ); ("waitCancelSubstreams"%go, watchGRPCStream__waitCancelSubstreamsⁱᵐᵖˡ)]); (watchRequest.id, []); (ptrT.id watchRequest.id, [("toPB"%go, watchRequest__toPBⁱᵐᵖˡ)]); (progressRequest.id, []); (ptrT.id progressRequest.id, [("toPB"%go, progressRequest__toPBⁱᵐᵖˡ)]); (watcherStream.id, []); (ptrT.id watcherStream.id, []); (valCtx.id, [("Value"%go, valCtx__Valueⁱᵐᵖˡ)]); (ptrT.id valCtx.id, [("Deadline"%go, valCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, valCtx__Doneⁱᵐᵖˡ); ("Err"%go, valCtx__Errⁱᵐᵖˡ); ("Value"%go, valCtx__Valueⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo v3.clientv3 :=

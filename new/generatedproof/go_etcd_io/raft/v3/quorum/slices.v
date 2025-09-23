@@ -12,6 +12,7 @@ Module slices.
 Module Tup.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ID' : w64;
   Idx' : w64;
@@ -64,16 +65,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Tup ID' Idx' Ok' Bar':
-  PureWp True
-    (struct.make #slices.Tup (alist_val [
-      "ID" ::= #ID';
-      "Idx" ::= #Idx';
-      "Ok" ::= #Ok';
-      "Bar" ::= #Bar'
-    ]))%struct
-    #(Tup.mk ID' Idx' Ok' Bar').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Tup_struct_fields_split dq l (v : Tup.t) :

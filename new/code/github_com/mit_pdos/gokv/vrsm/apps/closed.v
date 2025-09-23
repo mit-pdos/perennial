@@ -36,52 +36,52 @@ Definition mk_lconfig_hosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/c
 (* go: mains.go:28:6 *)
 Definition mk_lconfig_hostsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 0)) in
-    do:  ("configHosts" <-[#sliceT] "$r0");;;
-    return: (let: "$a0" := (![#sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
+    do:  ("configHosts" <-[sliceT] "$r0");;;
+    return: (let: "$a0" := (![sliceT] "configHosts") in
      let: "$a1" := ((let: "$sl0" := lconfigHost in
-     slice.literal #uint64T ["$sl0"])) in
-     (slice.append #uint64T) "$a0" "$a1")).
+     slice.literal uint64T ["$sl0"])) in
+     (slice.append uint64T) "$a0" "$a1")).
 
 Definition mk_dconfig_hosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_dconfig_hosts"%go.
 
 (* go: mains.go:33:6 *)
 Definition mk_dconfig_hostsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 0)) in
-    do:  ("configHosts" <-[#sliceT] "$r0");;;
-    return: (let: "$a0" := (![#sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
+    do:  ("configHosts" <-[sliceT] "$r0");;;
+    return: (let: "$a0" := (![sliceT] "configHosts") in
      let: "$a1" := ((let: "$sl0" := dconfigHost in
-     slice.literal #uint64T ["$sl0"])) in
-     (slice.append #uint64T) "$a0" "$a1")).
+     slice.literal uint64T ["$sl0"])) in
+     (slice.append uint64T) "$a0" "$a1")).
 
 Definition mk_lconfig_paxosHosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_lconfig_paxosHosts"%go.
 
 (* go: mains.go:38:6 *)
 Definition mk_lconfig_paxosHostsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 0)) in
-    do:  ("configHosts" <-[#sliceT] "$r0");;;
-    return: (let: "$a0" := (![#sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
+    do:  ("configHosts" <-[sliceT] "$r0");;;
+    return: (let: "$a0" := (![sliceT] "configHosts") in
      let: "$a1" := ((let: "$sl0" := lconfigHostPaxos in
-     slice.literal #uint64T ["$sl0"])) in
-     (slice.append #uint64T) "$a0" "$a1")).
+     slice.literal uint64T ["$sl0"])) in
+     (slice.append uint64T) "$a0" "$a1")).
 
 Definition mk_dconfig_paxosHosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_dconfig_paxosHosts"%go.
 
 (* go: mains.go:43:6 *)
 Definition mk_dconfig_paxosHostsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 0)) in
-    do:  ("configHosts" <-[#sliceT] "$r0");;;
-    return: (let: "$a0" := (![#sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
+    do:  ("configHosts" <-[sliceT] "$r0");;;
+    return: (let: "$a0" := (![sliceT] "configHosts") in
      let: "$a1" := ((let: "$sl0" := dconfigHostPaxos in
-     slice.literal #uint64T ["$sl0"])) in
-     (slice.append #uint64T) "$a0" "$a1")).
+     slice.literal uint64T ["$sl0"])) in
+     (slice.append uint64T) "$a0" "$a1")).
 
 Definition lconfig_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.lconfig_main"%go.
 
@@ -89,24 +89,24 @@ Definition lconfig_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/close
 Definition lconfig_mainⁱᵐᵖˡ : val :=
   λ: "fname",
     exception_do (let: "fname" := (mem.alloc "fname") in
-    let: "servers" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 0)) in
-    do:  ("servers" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "servers") in
+    let: "servers" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
+    do:  ("servers" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
     let: "$a1" := ((let: "$sl0" := lr1 in
-    slice.literal #uint64T ["$sl0"])) in
-    (slice.append #uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "servers") in
+    slice.literal uint64T ["$sl0"])) in
+    (slice.append uint64T) "$a0" "$a1") in
+    do:  ("servers" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
     let: "$a1" := ((let: "$sl0" := lr2 in
-    slice.literal #uint64T ["$sl0"])) in
-    (slice.append #uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#stringT] "fname") in
+    slice.literal uint64T ["$sl0"])) in
+    (slice.append uint64T) "$a0" "$a1") in
+    do:  ("servers" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (![stringT] "fname") in
     let: "$a1" := lconfigHost in
     let: "$a2" := lconfigHostPaxos in
     let: "$a3" := ((func_call #mk_lconfig_paxosHosts) #()) in
-    let: "$a4" := (![#sliceT] "servers") in
+    let: "$a4" := (![sliceT] "servers") in
     (func_call #configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
@@ -116,24 +116,24 @@ Definition dconfig_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/close
 Definition dconfig_mainⁱᵐᵖˡ : val :=
   λ: "fname",
     exception_do (let: "fname" := (mem.alloc "fname") in
-    let: "servers" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 0)) in
-    do:  ("servers" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "servers") in
+    let: "servers" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
+    do:  ("servers" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
     let: "$a1" := ((let: "$sl0" := dr1 in
-    slice.literal #uint64T ["$sl0"])) in
-    (slice.append #uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "servers") in
+    slice.literal uint64T ["$sl0"])) in
+    (slice.append uint64T) "$a0" "$a1") in
+    do:  ("servers" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
     let: "$a1" := ((let: "$sl0" := dr2 in
-    slice.literal #uint64T ["$sl0"])) in
-    (slice.append #uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#stringT] "fname") in
+    slice.literal uint64T ["$sl0"])) in
+    (slice.append uint64T) "$a0" "$a1") in
+    do:  ("servers" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (![stringT] "fname") in
     let: "$a1" := dconfigHost in
     let: "$a2" := dconfigHostPaxos in
     let: "$a3" := ((func_call #mk_dconfig_paxosHosts) #()) in
-    let: "$a4" := (![#sliceT] "servers") in
+    let: "$a4" := (![sliceT] "servers") in
     (func_call #configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
@@ -145,22 +145,22 @@ Definition kv_replica_mainⁱᵐᵖˡ : val :=
     exception_do (let: "configHost" := (mem.alloc "configHost") in
     let: "me" := (mem.alloc "me") in
     let: "fname" := (mem.alloc "fname") in
-    let: "x" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ("x" <-[#ptrT] "$r0");;;
+    let: "x" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val uint64T)) in
+    do:  ("x" <-[ptrT] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  ((![#ptrT] "x") <-[#uint64T] "$r0");;;
-    let: "configHosts" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 0)) in
-    do:  ("configHosts" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "configHosts") in
-    let: "$a1" := ((let: "$sl0" := (![#uint64T] "configHost") in
-    slice.literal #uint64T ["$sl0"])) in
-    (slice.append #uint64T) "$a0" "$a1") in
-    do:  ("configHosts" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#stringT] "fname") in
-    let: "$a1" := (![#uint64T] "me") in
-    let: "$a2" := (![#sliceT] "configHosts") in
+    do:  ((![ptrT] "x") <-[uint64T] "$r0");;;
+    let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
+    do:  ("configHosts" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "configHosts") in
+    let: "$a1" := ((let: "$sl0" := (![uint64T] "configHost") in
+    slice.literal uint64T ["$sl0"])) in
+    (slice.append uint64T) "$a0" "$a1") in
+    do:  ("configHosts" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (![stringT] "fname") in
+    let: "$a1" := (![uint64T] "me") in
+    let: "$a2" := (![sliceT] "configHosts") in
     (func_call #vkv.Start) "$a0" "$a1" "$a2");;;
     return: #()).
 
@@ -169,18 +169,18 @@ Definition makeBankClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/clos
 (* go: mains.go:70:6 *)
 Definition makeBankClerkⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "kvck" := (mem.alloc (type.zero_val #ptrT)) in
+    exception_do (let: "kvck" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_dconfig_hosts) #()) in
     (func_call #vkv.MakeKv) "$a0") in
     (func_call #cachekv.Make) "$a0") in
-    do:  ("kvck" <-[#ptrT] "$r0");;;
-    let: "lck" := (mem.alloc (type.zero_val #ptrT)) in
+    do:  ("kvck" <-[ptrT] "$r0");;;
+    let: "lck" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_lconfig_hosts) #()) in
     (func_call #vkv.MakeKv) "$a0") in
     (func_call #lockservice.MakeLockClerk) "$a0") in
-    do:  ("lck" <-[#ptrT] "$r0");;;
-    return: (let: "$a0" := (![#ptrT] "lck") in
-     let: "$a1" := (interface.make #(ptrT.id cachekv.CacheKv.id) (![#ptrT] "kvck")) in
+    do:  ("lck" <-[ptrT] "$r0");;;
+    return: (let: "$a0" := (![ptrT] "lck") in
+     let: "$a1" := (interface.make #(ptrT.id cachekv.CacheKv.id) (![ptrT] "kvck")) in
      let: "$a2" := #"init"%go in
      let: "$a3" := #"a1"%go in
      let: "$a4" := #"a2"%go in
@@ -191,11 +191,11 @@ Definition bank_transferer_main : go_string := "github.com/mit-pdos/gokv/vrsm/ap
 (* go: mains.go:77:6 *)
 Definition bank_transferer_mainⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "bck" := (mem.alloc (type.zero_val #ptrT)) in
+    exception_do (let: "bck" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := ((func_call #makeBankClerk) #()) in
-    do:  ("bck" <-[#ptrT] "$r0");;;
+    do:  ("bck" <-[ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrT.id bank.BankClerk.id) #"SimpleTransfer"%go (![#ptrT] "bck")) #()));;;
+      do:  ((method_call #(ptrT.id bank.BankClerk.id) #"SimpleTransfer"%go (![ptrT] "bck")) #()));;;
     return: #()).
 
 Definition bank_auditor_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_auditor_main"%go.
@@ -203,11 +203,11 @@ Definition bank_auditor_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/
 (* go: mains.go:84:6 *)
 Definition bank_auditor_mainⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "bck" := (mem.alloc (type.zero_val #ptrT)) in
+    exception_do (let: "bck" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := ((func_call #makeBankClerk) #()) in
-    do:  ("bck" <-[#ptrT] "$r0");;;
+    do:  ("bck" <-[ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrT.id bank.BankClerk.id) #"SimpleAudit"%go (![#ptrT] "bck")) #()));;;
+      do:  ((method_call #(ptrT.id bank.BankClerk.id) #"SimpleAudit"%go (![ptrT] "bck")) #()));;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

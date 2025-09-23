@@ -114,6 +114,7 @@ Admitted.
 Module AuthInfo.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Username' : go_string;
   Revision' : w64;
@@ -156,14 +157,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_AuthInfo Username' Revision':
-  PureWp True
-    (struct.make #auth.AuthInfo (alist_val [
-      "Username" ::= #Username';
-      "Revision" ::= #Revision'
-    ]))%struct
-    #(AuthInfo.mk Username' Revision').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AuthInfo_struct_fields_split dq l (v : AuthInfo.t) :

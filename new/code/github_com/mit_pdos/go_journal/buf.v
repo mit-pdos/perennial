@@ -34,19 +34,19 @@ Definition MkBufⁱᵐᵖˡ : val :=
     exception_do (let: "data" := (mem.alloc "data") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
-    let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$Addr" := (![#addr.Addr] "addr") in
-    let: "$Sz" := (![#uint64T] "sz") in
-    let: "$Data" := (![#sliceT] "data") in
+    let: "b" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$Addr" := (![addr.Addr] "addr") in
+    let: "$Sz" := (![uint64T] "sz") in
+    let: "$Data" := (![sliceT] "data") in
     let: "$dirty" := #false in
-    struct.make #Buf [{
+    struct.make Buf [{
       "Addr" ::= "$Addr";
       "Sz" ::= "$Sz";
       "Data" ::= "$Data";
       "dirty" ::= "$dirty"
     }])) in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "b")).
+    do:  ("b" <-[ptrT] "$r0");;;
+    return: (![ptrT] "b")).
 
 Definition MkBufLoad : go_string := "github.com/mit-pdos/go-journal/buf.MkBufLoad"%go.
 
@@ -58,29 +58,29 @@ Definition MkBufLoadⁱᵐᵖˡ : val :=
     exception_do (let: "blk" := (mem.alloc "blk") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
-    let: "bytefirst" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go "addr")) `quot` #(W64 8)) in
-    do:  ("bytefirst" <-[#uint64T] "$r0");;;
-    let: "bytelast" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go "addr")) + (![#uint64T] "sz")) - #(W64 1)) `quot` #(W64 8)) in
-    do:  ("bytelast" <-[#uint64T] "$r0");;;
-    let: "data" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "blk") in
-    slice.slice #byteT "$s" (![#uint64T] "bytefirst") ((![#uint64T] "bytelast") + #(W64 1))) in
-    do:  ("data" <-[#sliceT] "$r0");;;
-    let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$Addr" := (![#addr.Addr] "addr") in
-    let: "$Sz" := (![#uint64T] "sz") in
-    let: "$Data" := (![#sliceT] "data") in
+    let: "bytefirst" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] (struct.field_ref addr.Addr #"Off"%go "addr")) `quot` #(W64 8)) in
+    do:  ("bytefirst" <-[uint64T] "$r0");;;
+    let: "bytelast" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((((![uint64T] (struct.field_ref addr.Addr #"Off"%go "addr")) + (![uint64T] "sz")) - #(W64 1)) `quot` #(W64 8)) in
+    do:  ("bytelast" <-[uint64T] "$r0");;;
+    let: "data" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "blk") in
+    slice.slice byteT "$s" (![uint64T] "bytefirst") ((![uint64T] "bytelast") + #(W64 1))) in
+    do:  ("data" <-[sliceT] "$r0");;;
+    let: "b" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$Addr" := (![addr.Addr] "addr") in
+    let: "$Sz" := (![uint64T] "sz") in
+    let: "$Data" := (![sliceT] "data") in
     let: "$dirty" := #false in
-    struct.make #Buf [{
+    struct.make Buf [{
       "Addr" ::= "$Addr";
       "Sz" ::= "$Sz";
       "Data" ::= "$Data";
       "dirty" ::= "$dirty"
     }])) in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "b")).
+    do:  ("b" <-[ptrT] "$r0");;;
+    return: (![ptrT] "b")).
 
 Definition installOneBit : go_string := "github.com/mit-pdos/go-journal/buf.installOneBit"%go.
 
@@ -92,20 +92,20 @@ Definition installOneBitⁱᵐᵖˡ : val :=
     exception_do (let: "bit" := (mem.alloc "bit") in
     let: "dst" := (mem.alloc "dst") in
     let: "src" := (mem.alloc "src") in
-    let: "new" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (![#byteT] "dst") in
-    do:  ("new" <-[#byteT] "$r0");;;
-    (if: ((![#byteT] "src") `and` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit")))) ≠ ((![#byteT] "dst") `and` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit"))))
+    let: "new" := (mem.alloc (type.zero_val byteT)) in
+    let: "$r0" := (![byteT] "dst") in
+    do:  ("new" <-[byteT] "$r0");;;
+    (if: ((![byteT] "src") `and` (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit")))) ≠ ((![byteT] "dst") `and` (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit"))))
     then
-      (if: ((![#byteT] "src") `and` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit")))) = #(W8 0)
+      (if: ((![byteT] "src") `and` (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit")))) = #(W8 0)
       then
-        let: "$r0" := ((![#byteT] "new") `and` (~ (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit"))))) in
-        do:  ("new" <-[#byteT] "$r0")
+        let: "$r0" := ((![byteT] "new") `and` (~ (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit"))))) in
+        do:  ("new" <-[byteT] "$r0")
       else
-        let: "$r0" := ((![#byteT] "new") `or` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit")))) in
-        do:  ("new" <-[#byteT] "$r0"))
+        let: "$r0" := ((![byteT] "new") `or` (#(W8 1) ≪ (u_to_w8 (![uint64T] "bit")))) in
+        do:  ("new" <-[byteT] "$r0"))
     else do:  #());;;
-    return: (![#byteT] "new")).
+    return: (![byteT] "new")).
 
 Definition installBit : go_string := "github.com/mit-pdos/go-journal/buf.installBit"%go.
 
@@ -117,14 +117,14 @@ Definition installBitⁱᵐᵖˡ : val :=
     exception_do (let: "dstoff" := (mem.alloc "dstoff") in
     let: "dst" := (mem.alloc "dst") in
     let: "src" := (mem.alloc "src") in
-    let: "dstbyte" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "dstoff") `quot` #(W64 8)) in
-    do:  ("dstbyte" <-[#uint64T] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "src") #(W64 0))) in
-    let: "$a1" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "dstbyte"))) in
-    let: "$a2" := ((![#uint64T] "dstoff") `rem` #(W64 8)) in
+    let: "dstbyte" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "dstoff") `quot` #(W64 8)) in
+    do:  ("dstbyte" <-[uint64T] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![byteT] (slice.elem_ref byteT (![sliceT] "src") #(W64 0))) in
+    let: "$a1" := (![byteT] (slice.elem_ref byteT (![sliceT] "dst") (![uint64T] "dstbyte"))) in
+    let: "$a2" := ((![uint64T] "dstoff") `rem` #(W64 8)) in
     (func_call #installOneBit) "$a0" "$a1" "$a2") in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "dstbyte")) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref byteT (![sliceT] "dst") (![uint64T] "dstbyte")) <-[byteT] "$r0");;;
     return: #()).
 
 Definition installBytes : go_string := "github.com/mit-pdos/go-journal/buf.installBytes"%go.
@@ -138,14 +138,14 @@ Definition installBytesⁱᵐᵖˡ : val :=
     let: "dstoff" := (mem.alloc "dstoff") in
     let: "dst" := (mem.alloc "dst") in
     let: "src" := (mem.alloc "src") in
-    let: "sz" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "nbit") `quot` #(W64 8)) in
-    do:  ("sz" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (let: "$s" := (![#sliceT] "dst") in
-    slice.slice #byteT "$s" ((![#uint64T] "dstoff") `quot` #(W64 8)) (slice.len "$s")) in
-    let: "$a1" := (let: "$s" := (![#sliceT] "src") in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "sz")) in
-    (slice.copy #byteT) "$a0" "$a1");;;
+    let: "sz" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "nbit") `quot` #(W64 8)) in
+    do:  ("sz" <-[uint64T] "$r0");;;
+    do:  (let: "$a0" := (let: "$s" := (![sliceT] "dst") in
+    slice.slice byteT "$s" ((![uint64T] "dstoff") `quot` #(W64 8)) (slice.len "$s")) in
+    let: "$a1" := (let: "$s" := (![sliceT] "src") in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "sz")) in
+    (slice.copy byteT) "$a0" "$a1");;;
     return: (#());;;
     return: #()).
 
@@ -159,22 +159,22 @@ Definition Buf__Installⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"%v: install
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #addr.Addr.id (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
-    slice.literal #interfaceT ["$sl0"])) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #addr.Addr.id (![addr.Addr] (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf")))) in
+    slice.literal interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    (if: (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) = #(W64 1)
+    (if: (![uint64T] (struct.field_ref ptrT #"Sz"%go (![ptrT] "buf"))) = #(W64 1)
     then
-      do:  (let: "$a0" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
-      let: "$a1" := (![#sliceT] "blk") in
-      let: "$a2" := (![#uint64T] (struct.field_ref #addr.Addr #"Off"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
+      do:  (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"Data"%go (![ptrT] "buf"))) in
+      let: "$a1" := (![sliceT] "blk") in
+      let: "$a2" := (![uint64T] (struct.field_ref addr.Addr #"Off"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf")))) in
       (func_call #installBit) "$a0" "$a1" "$a2")
     else
-      (if: (((![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) `rem` #(W64 8)) = #(W64 0)) && (((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) `rem` #(W64 8)) = #(W64 0))
+      (if: (((![uint64T] (struct.field_ref ptrT #"Sz"%go (![ptrT] "buf"))) `rem` #(W64 8)) = #(W64 0)) && (((![uint64T] (struct.field_ref addr.Addr #"Off"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf")))) `rem` #(W64 8)) = #(W64 0))
       then
-        do:  (let: "$a0" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
-        let: "$a1" := (![#sliceT] "blk") in
-        let: "$a2" := (![#uint64T] (struct.field_ref #addr.Addr #"Off"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
-        let: "$a3" := (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) in
+        do:  (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"Data"%go (![ptrT] "buf"))) in
+        let: "$a1" := (![sliceT] "blk") in
+        let: "$a2" := (![uint64T] (struct.field_ref addr.Addr #"Off"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf")))) in
+        let: "$a3" := (![uint64T] (struct.field_ref ptrT #"Sz"%go (![ptrT] "buf"))) in
         (func_call #installBytes) "$a0" "$a1" "$a2" "$a3")
       else
         do:  (let: "$a0" := (interface.make #stringT.id #"Install unsupported
@@ -183,8 +183,8 @@ Definition Buf__Installⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 20) in
     let: "$a1" := #"install -> %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(sliceT.id byteT.id) (![#sliceT] "blk")) in
-    slice.literal #interfaceT ["$sl0"])) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(sliceT.id byteT.id) (![sliceT] "blk")) in
+    slice.literal interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     return: #()).
 
@@ -192,14 +192,14 @@ Definition Buf__Installⁱᵐᵖˡ : val :=
 Definition Buf__IsDirtyⁱᵐᵖˡ : val :=
   λ: "buf" <>,
     exception_do (let: "buf" := (mem.alloc "buf") in
-    return: (![#boolT] (struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf")))).
+    return: (![boolT] (struct.field_ref ptrT #"dirty"%go (![ptrT] "buf")))).
 
 (* go: buf.go:92:17 *)
 Definition Buf__SetDirtyⁱᵐᵖˡ : val :=
   λ: "buf" <>,
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "$r0" := #true in
-    do:  ((struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf")) <-[#boolT] "$r0");;;
+    do:  ((struct.field_ref ptrT #"dirty"%go (![ptrT] "buf")) <-[boolT] "$r0");;;
     return: #()).
 
 (* go: buf.go:96:17 *)
@@ -207,22 +207,22 @@ Definition Buf__WriteDirectⁱᵐᵖˡ : val :=
   λ: "buf" "d",
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "d" := (mem.alloc "d") in
-    do:  ((method_call #(ptrT.id Buf.id) #"SetDirty"%go (![#ptrT] "buf")) #());;;
-    (if: (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) = disk.BlockSize
+    do:  ((method_call #(ptrT.id Buf.id) #"SetDirty"%go (![ptrT] "buf")) #());;;
+    (if: (![uint64T] (struct.field_ref ptrT #"Sz"%go (![ptrT] "buf"))) = disk.BlockSize
     then
-      do:  (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
-      let: "$a1" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
-      (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1")
+      do:  (let: "$a0" := (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf")))) in
+      let: "$a1" := (![sliceT] (struct.field_ref ptrT #"Data"%go (![ptrT] "buf"))) in
+      (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1")
     else
-      let: "blk" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
-      (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
-      do:  ("blk" <-[#sliceT] "$r0");;;
-      do:  (let: "$a0" := (![#sliceT] "blk") in
-      (method_call #(ptrT.id Buf.id) #"Install"%go (![#ptrT] "buf")) "$a0");;;
-      do:  (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
-      let: "$a1" := (![#sliceT] "blk") in
-      (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1"));;;
+      let: "blk" := (mem.alloc (type.zero_val sliceT)) in
+      let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf")))) in
+      (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
+      do:  ("blk" <-[sliceT] "$r0");;;
+      do:  (let: "$a0" := (![sliceT] "blk") in
+      (method_call #(ptrT.id Buf.id) #"Install"%go (![ptrT] "buf")) "$a0");;;
+      do:  (let: "$a0" := (![uint64T] (struct.field_ref addr.Addr #"Blkno"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf")))) in
+      let: "$a1" := (![sliceT] "blk") in
+      (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1"));;;
     return: #()).
 
 (* go: buf.go:107:17 *)
@@ -230,11 +230,11 @@ Definition Buf__BnumGetⁱᵐᵖˡ : val :=
   λ: "buf" "off",
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "off" := (mem.alloc "off") in
-    let: "dec" := (mem.alloc (type.zero_val #marshal.Dec)) in
-    let: "$r0" := (let: "$a0" := (let: "$s" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
-    slice.slice #byteT "$s" (![#uint64T] "off") ((![#uint64T] "off") + #(W64 8))) in
+    let: "dec" := (mem.alloc (type.zero_val marshal.Dec)) in
+    let: "$r0" := (let: "$a0" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"Data"%go (![ptrT] "buf"))) in
+    slice.slice byteT "$s" (![uint64T] "off") ((![uint64T] "off") + #(W64 8))) in
     (func_call #marshal.NewDec) "$a0") in
-    do:  ("dec" <-[#marshal.Dec] "$r0");;;
+    do:  ("dec" <-[marshal.Dec] "$r0");;;
     return: ((method_call #(ptrT.id marshal.Dec.id) #"GetInt"%go "dec") #())).
 
 (* go: buf.go:112:17 *)
@@ -243,17 +243,17 @@ Definition Buf__BnumPutⁱᵐᵖˡ : val :=
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "v" := (mem.alloc "v") in
     let: "off" := (mem.alloc "off") in
-    let: "enc" := (mem.alloc (type.zero_val #marshal.Enc)) in
+    let: "enc" := (mem.alloc (type.zero_val marshal.Enc)) in
     let: "$r0" := (let: "$a0" := #(W64 8) in
     (func_call #marshal.NewEnc) "$a0") in
-    do:  ("enc" <-[#marshal.Enc] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "v") in
+    do:  ("enc" <-[marshal.Enc] "$r0");;;
+    do:  (let: "$a0" := (![uint64T] "v") in
     (method_call #(ptrT.id marshal.Enc.id) #"PutInt"%go "enc") "$a0");;;
-    do:  (let: "$a0" := (let: "$s" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
-    slice.slice #byteT "$s" (![#uint64T] "off") ((![#uint64T] "off") + #(W64 8))) in
+    do:  (let: "$a0" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"Data"%go (![ptrT] "buf"))) in
+    slice.slice byteT "$s" (![uint64T] "off") ((![uint64T] "off") + #(W64 8))) in
     let: "$a1" := ((method_call #(ptrT.id marshal.Enc.id) #"Finish"%go "enc") #()) in
-    (slice.copy #byteT) "$a0" "$a1");;;
-    do:  ((method_call #(ptrT.id Buf.id) #"SetDirty"%go (![#ptrT] "buf")) #());;;
+    (slice.copy byteT) "$a0" "$a1");;;
+    do:  ((method_call #(ptrT.id Buf.id) #"SetDirty"%go (![ptrT] "buf")) #());;;
     return: #()).
 
 Definition BufMap : go_type := structT [
@@ -267,21 +267,21 @@ Definition MkBufMap : go_string := "github.com/mit-pdos/go-journal/buf.MkBufMap"
 (* go: bufmap.go:15:6 *)
 Definition MkBufMapⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "a" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$addrs" := (map.make #uint64T #ptrT) in
-    struct.make #BufMap [{
+    exception_do (let: "a" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$addrs" := (map.make uint64T ptrT) in
+    struct.make BufMap [{
       "addrs" ::= "$addrs"
     }])) in
-    do:  ("a" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "a")).
+    do:  ("a" <-[ptrT] "$r0");;;
+    return: (![ptrT] "a")).
 
 (* go: bufmap.go:22:21 *)
 Definition BufMap__Insertⁱᵐᵖˡ : val :=
   λ: "bmap" "buf",
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "buf" := (mem.alloc "buf") in
-    let: "$r0" := (![#ptrT] "buf") in
-    do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf"))) #()) "$r0");;;
+    let: "$r0" := (![ptrT] "buf") in
+    do:  (map.insert (![mapT uint64T ptrT] (struct.field_ref ptrT #"addrs"%go (![ptrT] "bmap"))) ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go (struct.field_ref ptrT #"Addr"%go (![ptrT] "buf"))) #()) "$r0");;;
     return: #()).
 
 (* go: bufmap.go:26:21 *)
@@ -289,14 +289,14 @@ Definition BufMap__Lookupⁱᵐᵖˡ : val :=
   λ: "bmap" "addr",
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
-    return: (Fst (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go "addr") #())))).
+    return: (Fst (map.get (![mapT uint64T ptrT] (struct.field_ref ptrT #"addrs"%go (![ptrT] "bmap"))) ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go "addr") #())))).
 
 (* go: bufmap.go:30:21 *)
 Definition BufMap__Delⁱᵐᵖˡ : val :=
   λ: "bmap" "addr",
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
-    do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
+    do:  (let: "$a0" := (![mapT uint64T ptrT] (struct.field_ref ptrT #"addrs"%go (![ptrT] "bmap"))) in
     let: "$a1" := ((method_call #(ptrT.id addr.Addr.id) #"Flatid"%go "addr") #()) in
     map.delete "$a0" "$a1");;;
     return: #()).
@@ -305,41 +305,41 @@ Definition BufMap__Delⁱᵐᵖˡ : val :=
 Definition BufMap__Ndirtyⁱᵐᵖˡ : val :=
   λ: "bmap" <>,
     exception_do (let: "bmap" := (mem.alloc "bmap") in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![mapT uint64T ptrT] (struct.field_ref ptrT #"addrs"%go (![ptrT] "bmap"))) in
     map.len "$a0")) in
     do:  "$r0";;;
-    let: "n" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "n" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("n" <-[#uint64T] "$r0");;;
-    let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
-    (let: "buf" := (mem.alloc (type.zero_val #ptrT)) in
+    do:  ("n" <-[uint64T] "$r0");;;
+    let: "$range" := (![mapT uint64T ptrT] (struct.field_ref ptrT #"addrs"%go (![ptrT] "bmap"))) in
+    (let: "buf" := (mem.alloc (type.zero_val ptrT)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("buf" <-[#ptrT] "$value");;;
+      do:  ("buf" <-[ptrT] "$value");;;
       do:  "$key";;;
-      (if: ![#boolT] (struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf"))
-      then do:  ("n" <-[#uint64T] ((![#uint64T] "n") + #(W64 1)))
+      (if: ![boolT] (struct.field_ref ptrT #"dirty"%go (![ptrT] "buf"))
+      then do:  ("n" <-[uint64T] ((![uint64T] "n") + #(W64 1)))
       else do:  #())));;;
-    return: (![#uint64T] "n")).
+    return: (![uint64T] "n")).
 
 (* go: bufmap.go:46:21 *)
 Definition BufMap__DirtyBufsⁱᵐᵖˡ : val :=
   λ: "bmap" <>,
     exception_do (let: "bmap" := (mem.alloc "bmap") in
-    let: "bufs" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
-    (let: "buf" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "bufs" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$range" := (![mapT uint64T ptrT] (struct.field_ref ptrT #"addrs"%go (![ptrT] "bmap"))) in
+    (let: "buf" := (mem.alloc (type.zero_val ptrT)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("buf" <-[#ptrT] "$value");;;
+      do:  ("buf" <-[ptrT] "$value");;;
       do:  "$key";;;
-      (if: ![#boolT] (struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf"))
+      (if: ![boolT] (struct.field_ref ptrT #"dirty"%go (![ptrT] "buf"))
       then
-        let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
-        let: "$a1" := ((let: "$sl0" := (![#ptrT] "buf") in
-        slice.literal #ptrT ["$sl0"])) in
-        (slice.append #ptrT) "$a0" "$a1") in
-        do:  ("bufs" <-[#sliceT] "$r0")
+        let: "$r0" := (let: "$a0" := (![sliceT] "bufs") in
+        let: "$a1" := ((let: "$sl0" := (![ptrT] "buf") in
+        slice.literal ptrT ["$sl0"])) in
+        (slice.append ptrT) "$a0" "$a1") in
+        do:  ("bufs" <-[sliceT] "$r0")
       else do:  #())));;;
-    return: (![#sliceT] "bufs")).
+    return: (![sliceT] "bufs")).
 
 Definition vars' : list (go_string * go_type) := [].
 

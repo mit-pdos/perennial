@@ -23,6 +23,7 @@ End Event_EventType.
 Module KeyValue.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Key' : slice.t;
   CreateRevision' : w64;
@@ -100,21 +101,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_KeyValue Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #mvccpb.KeyValue (alist_val [
-      "Key" ::= #Key';
-      "CreateRevision" ::= #CreateRevision';
-      "ModRevision" ::= #ModRevision';
-      "Version" ::= #Version';
-      "Value" ::= #Value';
-      "Lease" ::= #Lease';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(KeyValue.mk Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance KeyValue_struct_fields_split dq l (v : KeyValue.t) :
@@ -153,6 +139,7 @@ End instances.
 Module Event.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Type' : Event_EventType.t;
   Kv' : loc;
@@ -215,18 +202,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Event Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #mvccpb.Event (alist_val [
-      "Type" ::= #Type';
-      "Kv" ::= #Kv';
-      "PrevKv" ::= #PrevKv';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(Event.mk Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Event_struct_fields_split dq l (v : Event.t) :

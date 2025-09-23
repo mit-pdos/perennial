@@ -21,6 +21,7 @@ Module server.
 Module StartReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   StartEpochLen' : w64;
   StartLink' : slice.t;
@@ -83,18 +84,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StartReply StartEpochLen' StartLink' ChainProof' LinkSig' VrfPk' VrfSig':
-  PureWp True
-    (struct.make #server.StartReply (alist_val [
-      "StartEpochLen" ::= #StartEpochLen';
-      "StartLink" ::= #StartLink';
-      "ChainProof" ::= #ChainProof';
-      "LinkSig" ::= #LinkSig';
-      "VrfPk" ::= #VrfPk';
-      "VrfSig" ::= #VrfSig'
-    ]))%struct
-    #(StartReply.mk StartEpochLen' StartLink' ChainProof' LinkSig' VrfPk' VrfSig').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance StartReply_struct_fields_split dq l (v : StartReply.t) :
@@ -127,6 +116,7 @@ End instances.
 Module PutArg.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Uid' : w64;
   Pk' : slice.t;
@@ -174,15 +164,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_PutArg Uid' Pk' Ver':
-  PureWp True
-    (struct.make #server.PutArg (alist_val [
-      "Uid" ::= #Uid';
-      "Pk" ::= #Pk';
-      "Ver" ::= #Ver'
-    ]))%struct
-    #(PutArg.mk Uid' Pk' Ver').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance PutArg_struct_fields_split dq l (v : PutArg.t) :
@@ -209,6 +190,7 @@ End instances.
 Module HistoryArg.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Uid' : w64;
   PrevEpoch' : w64;
@@ -256,15 +238,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_HistoryArg Uid' PrevEpoch' PrevVerLen':
-  PureWp True
-    (struct.make #server.HistoryArg (alist_val [
-      "Uid" ::= #Uid';
-      "PrevEpoch" ::= #PrevEpoch';
-      "PrevVerLen" ::= #PrevVerLen'
-    ]))%struct
-    #(HistoryArg.mk Uid' PrevEpoch' PrevVerLen').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance HistoryArg_struct_fields_split dq l (v : HistoryArg.t) :
@@ -291,6 +264,7 @@ End instances.
 Module HistoryReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ChainProof' : slice.t;
   LinkSig' : slice.t;
@@ -348,17 +322,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_HistoryReply ChainProof' LinkSig' Hist' Bound' Err':
-  PureWp True
-    (struct.make #server.HistoryReply (alist_val [
-      "ChainProof" ::= #ChainProof';
-      "LinkSig" ::= #LinkSig';
-      "Hist" ::= #Hist';
-      "Bound" ::= #Bound';
-      "Err" ::= #Err'
-    ]))%struct
-    #(HistoryReply.mk ChainProof' LinkSig' Hist' Bound' Err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance HistoryReply_struct_fields_split dq l (v : HistoryReply.t) :
@@ -389,6 +352,7 @@ End instances.
 Module AuditArg.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   PrevEpochLen' : w64;
 }.
@@ -426,13 +390,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_AuditArg PrevEpochLen':
-  PureWp True
-    (struct.make #server.AuditArg (alist_val [
-      "PrevEpochLen" ::= #PrevEpochLen'
-    ]))%struct
-    #(AuditArg.mk PrevEpochLen').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AuditArg_struct_fields_split dq l (v : AuditArg.t) :
@@ -455,6 +412,7 @@ End instances.
 Module AuditReply.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   P' : slice.t;
   Err' : ktcore.Blame.t;
@@ -497,14 +455,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_AuditReply P' Err':
-  PureWp True
-    (struct.make #server.AuditReply (alist_val [
-      "P" ::= #P';
-      "Err" ::= #Err'
-    ]))%struct
-    #(AuditReply.mk P' Err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AuditReply_struct_fields_split dq l (v : AuditReply.t) :
@@ -529,6 +479,7 @@ End instances.
 Module Server.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   secs' : loc;
@@ -586,17 +537,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server mu' secs' keys' hist' workQ':
-  PureWp True
-    (struct.make #server.Server (alist_val [
-      "mu" ::= #mu';
-      "secs" ::= #secs';
-      "keys" ::= #keys';
-      "hist" ::= #hist';
-      "workQ" ::= #workQ'
-    ]))%struct
-    #(Server.mk mu' secs' keys' hist' workQ').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :
@@ -627,6 +567,7 @@ End instances.
 Module secrets.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   sig' : loc;
   vrf' : loc;
@@ -674,15 +615,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_secrets sig' vrf' commit':
-  PureWp True
-    (struct.make #server.secrets (alist_val [
-      "sig" ::= #sig';
-      "vrf" ::= #vrf';
-      "commit" ::= #commit'
-    ]))%struct
-    #(secrets.mk sig' vrf' commit').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance secrets_struct_fields_split dq l (v : secrets.t) :
@@ -709,6 +641,7 @@ End instances.
 Module keyStore.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   hidden' : loc;
   plain' : loc;
@@ -751,14 +684,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_keyStore hidden' plain':
-  PureWp True
-    (struct.make #server.keyStore (alist_val [
-      "hidden" ::= #hidden';
-      "plain" ::= #plain'
-    ]))%struct
-    #(keyStore.mk hidden' plain').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance keyStore_struct_fields_split dq l (v : keyStore.t) :
@@ -783,6 +708,7 @@ End instances.
 Module history.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   chain' : loc;
   audits' : slice.t;
@@ -830,15 +756,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_history chain' audits' vrfPkSig':
-  PureWp True
-    (struct.make #server.history (alist_val [
-      "chain" ::= #chain';
-      "audits" ::= #audits';
-      "vrfPkSig" ::= #vrfPkSig'
-    ]))%struct
-    #(history.mk chain' audits' vrfPkSig').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance history_struct_fields_split dq l (v : history.t) :
@@ -865,6 +782,7 @@ End instances.
 Module WQReq.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Uid' : w64;
   Pk' : slice.t;
@@ -912,15 +830,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WQReq Uid' Pk' Ver':
-  PureWp True
-    (struct.make #server.WQReq (alist_val [
-      "Uid" ::= #Uid';
-      "Pk" ::= #Pk';
-      "Ver" ::= #Ver'
-    ]))%struct
-    #(WQReq.mk Uid' Pk' Ver').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WQReq_struct_fields_split dq l (v : WQReq.t) :
@@ -947,6 +856,7 @@ End instances.
 Module WQResp.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Err' : bool;
 }.
@@ -984,13 +894,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WQResp Err':
-  PureWp True
-    (struct.make #server.WQResp (alist_val [
-      "Err" ::= #Err'
-    ]))%struct
-    #(WQResp.mk Err').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WQResp_struct_fields_split dq l (v : WQResp.t) :
@@ -1013,6 +916,7 @@ End instances.
 Module mapEntry.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   label' : slice.t;
   val' : slice.t;
@@ -1055,14 +959,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_mapEntry label' val':
-  PureWp True
-    (struct.make #server.mapEntry (alist_val [
-      "label" ::= #label';
-      "val" ::= #val'
-    ]))%struct
-    #(mapEntry.mk label' val').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance mapEntry_struct_fields_split dq l (v : mapEntry.t) :
@@ -1087,6 +983,7 @@ End instances.
 Module Work.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   cond' : loc;
@@ -1144,17 +1041,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Work mu' cond' done' Req' Resp':
-  PureWp True
-    (struct.make #server.Work (alist_val [
-      "mu" ::= #mu';
-      "cond" ::= #cond';
-      "done" ::= #done';
-      "Req" ::= #Req';
-      "Resp" ::= #Resp'
-    ]))%struct
-    #(Work.mk mu' cond' done' Req' Resp').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Work_struct_fields_split dq l (v : Work.t) :
@@ -1185,6 +1071,7 @@ End instances.
 Module WorkQ.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   work' : slice.t;
@@ -1232,15 +1119,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WorkQ mu' work' cond':
-  PureWp True
-    (struct.make #server.WorkQ (alist_val [
-      "mu" ::= #mu';
-      "work" ::= #work';
-      "cond" ::= #cond'
-    ]))%struct
-    #(WorkQ.mk mu' work' cond').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WorkQ_struct_fields_split dq l (v : WorkQ.t) :

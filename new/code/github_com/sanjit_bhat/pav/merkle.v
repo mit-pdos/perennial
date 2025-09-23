@@ -65,13 +65,13 @@ Definition Map__Putⁱᵐᵖˡ : val :=
     exception_do (let: "m" := (mem.alloc "m") in
     let: "val" := (mem.alloc "val") in
     let: "label" := (mem.alloc "label") in
-    do:  (let: "$a0" := ((s_to_w64 (let: "$a0" := (![#sliceT] "label") in
+    do:  (let: "$a0" := ((s_to_w64 (let: "$a0" := (![sliceT] "label") in
     slice.len "$a0")) = cryptoffi.HashLen) in
     (func_call #std.Assert) "$a0");;;
-    do:  (let: "$a0" := (~ (let: "$a0" := (struct.field_ref #Map #"root"%go (![#ptrT] "m")) in
+    do:  (let: "$a0" := (~ (let: "$a0" := (struct.field_ref ptrT #"root"%go (![ptrT] "m")) in
     let: "$a1" := #(W64 0) in
-    let: "$a2" := (![#sliceT] "label") in
-    let: "$a3" := (![#sliceT] "val") in
+    let: "$a2" := (![sliceT] "label") in
+    let: "$a3" := (![sliceT] "val") in
     (func_call #put) "$a0" "$a1" "$a2" "$a3")) in
     (func_call #std.Assert) "$a0");;;
     return: #()).
@@ -87,122 +87,122 @@ Definition compLeafHash : go_string := "github.com/sanjit-bhat/pav/merkle.compLe
    go: merkle.go:69:6 *)
 Definition putⁱᵐᵖˡ : val :=
   λ: "n0" "depth" "label" "val",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
     let: "val" := (mem.alloc "val") in
     let: "label" := (mem.alloc "label") in
     let: "depth" := (mem.alloc "depth") in
     let: "n0" := (mem.alloc "n0") in
-    do:  (let: "$a0" := ((![#uint64T] "depth") ≤ maxDepth) in
+    do:  (let: "$a0" := ((![uint64T] "depth") ≤ maxDepth) in
     (func_call #std.Assert) "$a0");;;
-    let: "n" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] (![#ptrT] "n0")) in
-    do:  ("n" <-[#ptrT] "$r0");;;
-    (if: (![#ptrT] "n") = #null
+    let: "n" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (![ptrT] (![ptrT] "n0")) in
+    do:  ("n" <-[ptrT] "$r0");;;
+    (if: (![ptrT] "n") = #null
     then
-      let: "leaf" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "leaf" := (mem.alloc (type.zero_val ptrT)) in
       let: "$r0" := (mem.alloc (let: "$nodeTy" := leafNodeTy in
-      let: "$label" := (![#sliceT] "label") in
-      let: "$val" := (![#sliceT] "val") in
-      struct.make #node [{
+      let: "$label" := (![sliceT] "label") in
+      let: "$val" := (![sliceT] "val") in
+      struct.make node [{
         "nodeTy" ::= "$nodeTy";
-        "hash" ::= type.zero_val #sliceT;
-        "child0" ::= type.zero_val #ptrT;
-        "child1" ::= type.zero_val #ptrT;
+        "hash" ::= type.zero_val sliceT;
+        "child0" ::= type.zero_val ptrT;
+        "child1" ::= type.zero_val ptrT;
         "label" ::= "$label";
         "val" ::= "$val"
       }])) in
-      do:  ("leaf" <-[#ptrT] "$r0");;;
-      let: "$r0" := (![#ptrT] "leaf") in
-      do:  ((![#ptrT] "n0") <-[#ptrT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "label") in
-      let: "$a1" := (![#sliceT] "val") in
+      do:  ("leaf" <-[ptrT] "$r0");;;
+      let: "$r0" := (![ptrT] "leaf") in
+      do:  ((![ptrT] "n0") <-[ptrT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "label") in
+      let: "$a1" := (![sliceT] "val") in
       (func_call #compLeafHash) "$a0" "$a1") in
-      do:  ((struct.field_ref #node #"hash"%go (![#ptrT] "leaf")) <-[#sliceT] "$r0");;;
-      return: (![#boolT] "err")
+      do:  ((struct.field_ref ptrT #"hash"%go (![ptrT] "leaf")) <-[sliceT] "$r0");;;
+      return: (![boolT] "err")
     else do:  #());;;
-    (if: (![#byteT] (struct.field_ref #node #"nodeTy"%go (![#ptrT] "n"))) = leafNodeTy
+    (if: (![byteT] (struct.field_ref ptrT #"nodeTy"%go (![ptrT] "n"))) = leafNodeTy
     then
-      (if: let: "$a0" := (![#sliceT] (struct.field_ref #node #"label"%go (![#ptrT] "n"))) in
-      let: "$a1" := (![#sliceT] "label") in
+      (if: let: "$a0" := (![sliceT] (struct.field_ref ptrT #"label"%go (![ptrT] "n"))) in
+      let: "$a1" := (![sliceT] "label") in
       (func_call #bytes.Equal) "$a0" "$a1"
       then
-        let: "$r0" := (![#sliceT] "val") in
-        do:  ((struct.field_ref #node #"val"%go (![#ptrT] "n")) <-[#sliceT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "label") in
-        let: "$a1" := (![#sliceT] "val") in
+        let: "$r0" := (![sliceT] "val") in
+        do:  ((struct.field_ref ptrT #"val"%go (![ptrT] "n")) <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![sliceT] "label") in
+        let: "$a1" := (![sliceT] "val") in
         (func_call #compLeafHash) "$a0" "$a1") in
-        do:  ((struct.field_ref #node #"hash"%go (![#ptrT] "n")) <-[#sliceT] "$r0");;;
-        return: (![#boolT] "err")
+        do:  ((struct.field_ref ptrT #"hash"%go (![ptrT] "n")) <-[sliceT] "$r0");;;
+        return: (![boolT] "err")
       else do:  #());;;
-      let: "inner" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "inner" := (mem.alloc (type.zero_val ptrT)) in
       let: "$r0" := (mem.alloc (let: "$nodeTy" := innerNodeTy in
-      struct.make #node [{
+      struct.make node [{
         "nodeTy" ::= "$nodeTy";
-        "hash" ::= type.zero_val #sliceT;
-        "child0" ::= type.zero_val #ptrT;
-        "child1" ::= type.zero_val #ptrT;
-        "label" ::= type.zero_val #sliceT;
-        "val" ::= type.zero_val #sliceT
+        "hash" ::= type.zero_val sliceT;
+        "child0" ::= type.zero_val ptrT;
+        "child1" ::= type.zero_val ptrT;
+        "label" ::= type.zero_val sliceT;
+        "val" ::= type.zero_val sliceT
       }])) in
-      do:  ("inner" <-[#ptrT] "$r0");;;
-      let: "$r0" := (![#ptrT] "inner") in
-      do:  ((![#ptrT] "n0") <-[#ptrT] "$r0");;;
-      let: "oldChild" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (struct.field_ref #node #"label"%go (![#ptrT] "n"))) in
-      let: "$a1" := (![#uint64T] "depth") in
-      (method_call #(ptrT.id node.id) #"getChild"%go (![#ptrT] "inner")) "$a0" "$a1") in
+      do:  ("inner" <-[ptrT] "$r0");;;
+      let: "$r0" := (![ptrT] "inner") in
+      do:  ((![ptrT] "n0") <-[ptrT] "$r0");;;
+      let: "oldChild" := (mem.alloc (type.zero_val ptrT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"label"%go (![ptrT] "n"))) in
+      let: "$a1" := (![uint64T] "depth") in
+      (method_call #(ptrT.id node.id) #"getChild"%go (![ptrT] "inner")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("oldChild" <-[#ptrT] "$r0");;;
+      do:  ("oldChild" <-[ptrT] "$r0");;;
       do:  "$r1";;;
-      let: "$r0" := (![#ptrT] "n") in
-      do:  ((![#ptrT] "oldChild") <-[#ptrT] "$r0");;;
-      let: "newChild" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
-      let: "$a1" := (![#uint64T] "depth") in
-      (method_call #(ptrT.id node.id) #"getChild"%go (![#ptrT] "inner")) "$a0" "$a1") in
+      let: "$r0" := (![ptrT] "n") in
+      do:  ((![ptrT] "oldChild") <-[ptrT] "$r0");;;
+      let: "newChild" := (mem.alloc (type.zero_val ptrT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "label") in
+      let: "$a1" := (![uint64T] "depth") in
+      (method_call #(ptrT.id node.id) #"getChild"%go (![ptrT] "inner")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("newChild" <-[#ptrT] "$r0");;;
+      do:  ("newChild" <-[ptrT] "$r0");;;
       do:  "$r1";;;
-      do:  (let: "$a0" := (~ (let: "$a0" := (![#ptrT] "newChild") in
-      let: "$a1" := ((![#uint64T] "depth") + #(W64 1)) in
-      let: "$a2" := (![#sliceT] "label") in
-      let: "$a3" := (![#sliceT] "val") in
+      do:  (let: "$a0" := (~ (let: "$a0" := (![ptrT] "newChild") in
+      let: "$a1" := ((![uint64T] "depth") + #(W64 1)) in
+      let: "$a2" := (![sliceT] "label") in
+      let: "$a3" := (![sliceT] "val") in
       (func_call #put) "$a0" "$a1" "$a2" "$a3")) in
       (func_call #std.Assert) "$a0");;;
-      let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (struct.field_ref #node #"child0"%go (![#ptrT] "inner")))) #()) in
-      let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (struct.field_ref #node #"child1"%go (![#ptrT] "inner")))) #()) in
+      let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (struct.field_ref ptrT #"child0"%go (![ptrT] "inner")))) #()) in
+      let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (struct.field_ref ptrT #"child1"%go (![ptrT] "inner")))) #()) in
       (func_call #compInnerHash) "$a0" "$a1") in
-      do:  ((struct.field_ref #node #"hash"%go (![#ptrT] "inner")) <-[#sliceT] "$r0");;;
-      return: (![#boolT] "err")
+      do:  ((struct.field_ref ptrT #"hash"%go (![ptrT] "inner")) <-[sliceT] "$r0");;;
+      return: (![boolT] "err")
     else do:  #());;;
-    (if: (![#byteT] (struct.field_ref #node #"nodeTy"%go (![#ptrT] "n"))) = innerNodeTy
+    (if: (![byteT] (struct.field_ref ptrT #"nodeTy"%go (![ptrT] "n"))) = innerNodeTy
     then
-      let: "c" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
-      let: "$a1" := (![#uint64T] "depth") in
-      (method_call #(ptrT.id node.id) #"getChild"%go (![#ptrT] "n")) "$a0" "$a1") in
+      let: "c" := (mem.alloc (type.zero_val ptrT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "label") in
+      let: "$a1" := (![uint64T] "depth") in
+      (method_call #(ptrT.id node.id) #"getChild"%go (![ptrT] "n")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("c" <-[#ptrT] "$r0");;;
+      do:  ("c" <-[ptrT] "$r0");;;
       do:  "$r1";;;
-      (let: "$r0" := (let: "$a0" := (![#ptrT] "c") in
-      let: "$a1" := ((![#uint64T] "depth") + #(W64 1)) in
-      let: "$a2" := (![#sliceT] "label") in
-      let: "$a3" := (![#sliceT] "val") in
+      (let: "$r0" := (let: "$a0" := (![ptrT] "c") in
+      let: "$a1" := ((![uint64T] "depth") + #(W64 1)) in
+      let: "$a2" := (![sliceT] "label") in
+      let: "$a3" := (![sliceT] "val") in
       (func_call #put) "$a0" "$a1" "$a2" "$a3") in
-      do:  ("err" <-[#boolT] "$r0");;;
-      (if: ![#boolT] "err"
-      then return: (![#boolT] "err")
+      do:  ("err" <-[boolT] "$r0");;;
+      (if: ![boolT] "err"
+      then return: (![boolT] "err")
       else do:  #()));;;
-      let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (struct.field_ref #node #"child0"%go (![#ptrT] "n")))) #()) in
-      let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (struct.field_ref #node #"child1"%go (![#ptrT] "n")))) #()) in
+      let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (struct.field_ref ptrT #"child0"%go (![ptrT] "n")))) #()) in
+      let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (struct.field_ref ptrT #"child1"%go (![ptrT] "n")))) #()) in
       (func_call #compInnerHash) "$a0" "$a1") in
-      do:  ((struct.field_ref #node #"hash"%go (![#ptrT] "n")) <-[#sliceT] "$r0");;;
-      return: (![#boolT] "err")
+      do:  ((struct.field_ref ptrT #"hash"%go (![ptrT] "n")) <-[sliceT] "$r0");;;
+      return: (![boolT] "err")
     else do:  #());;;
-    do:  (let: "$a0" := ((![#byteT] (struct.field_ref #node #"nodeTy"%go (![#ptrT] "n"))) = cutNodeTy) in
+    do:  (let: "$a0" := ((![byteT] (struct.field_ref ptrT #"nodeTy"%go (![ptrT] "n"))) = cutNodeTy) in
     (func_call #std.Assert) "$a0");;;
     return: (#true)).
 
@@ -211,14 +211,14 @@ Definition putⁱᵐᵖˡ : val :=
    go: merkle.go:116:15 *)
 Definition Map__Proveⁱᵐᵖˡ : val :=
   λ: "m" "label",
-    exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "val" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "inMap" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "proof" := (mem.alloc (type.zero_val sliceT)) in
+    let: "val" := (mem.alloc (type.zero_val sliceT)) in
+    let: "inMap" := (mem.alloc (type.zero_val boolT)) in
     let: "m" := (mem.alloc "m") in
     let: "label" := (mem.alloc "label") in
-    let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![#sliceT] "label") in
+    let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![sliceT] "label") in
     let: "$a1" := #true in
-    (method_call #(ptrT.id node.id) #"prove"%go (![#ptrT] (struct.field_ref #Map #"root"%go (![#ptrT] "m")))) "$a0" "$a1")) in
+    (method_call #(ptrT.id node.id) #"prove"%go (![ptrT] (struct.field_ref ptrT #"root"%go (![ptrT] "m")))) "$a0" "$a1")) in
     return: ("$ret0", "$ret1", "$ret2")).
 
 (* prove expects no cut nodes along label.
@@ -226,101 +226,101 @@ Definition Map__Proveⁱᵐᵖˡ : val :=
    go: merkle.go:123:16 *)
 Definition node__proveⁱᵐᵖˡ : val :=
   λ: "n" "label" "getProof",
-    exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "val" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "inTree" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "proof" := (mem.alloc (type.zero_val sliceT)) in
+    let: "val" := (mem.alloc (type.zero_val sliceT)) in
+    let: "inTree" := (mem.alloc (type.zero_val boolT)) in
     let: "n" := (mem.alloc "n") in
     let: "getProof" := (mem.alloc "getProof") in
     let: "label" := (mem.alloc "label") in
-    let: "foundLabel" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "found" := (mem.alloc (type.zero_val #boolT)) in
+    let: "foundLabel" := (mem.alloc (type.zero_val sliceT)) in
+    let: "found" := (mem.alloc (type.zero_val boolT)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![#sliceT] "label") in
-    let: "$a2" := (![#boolT] "getProof") in
-    (method_call #(ptrT.id node.id) #"find"%go (![#ptrT] "n")) "$a0" "$a1" "$a2") in
+    let: "$a1" := (![sliceT] "label") in
+    let: "$a2" := (![boolT] "getProof") in
+    (method_call #(ptrT.id node.id) #"find"%go (![ptrT] "n")) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
     let: "$r3" := "$ret3" in
-    do:  ("found" <-[#boolT] "$r0");;;
-    do:  ("foundLabel" <-[#sliceT] "$r1");;;
-    do:  ("val" <-[#sliceT] "$r2");;;
-    do:  ("proof" <-[#sliceT] "$r3");;;
-    (if: ![#boolT] "getProof"
+    do:  ("found" <-[boolT] "$r0");;;
+    do:  ("foundLabel" <-[sliceT] "$r1");;;
+    do:  ("val" <-[sliceT] "$r2");;;
+    do:  ("proof" <-[sliceT] "$r3");;;
+    (if: ![boolT] "getProof"
     then
-      do:  (let: "$a0" := (![#sliceT] "proof") in
-      let: "$a1" := ((s_to_w64 (let: "$a0" := (![#sliceT] "proof") in
+      do:  (let: "$a0" := (![sliceT] "proof") in
+      let: "$a1" := ((s_to_w64 (let: "$a0" := (![sliceT] "proof") in
       slice.len "$a0")) - #(W64 8)) in
       (func_call #primitive.UInt64Put) "$a0" "$a1")
     else do:  #());;;
-    (if: (~ (![#boolT] "found"))
+    (if: (~ (![boolT] "found"))
     then
-      (if: ![#boolT] "getProof"
+      (if: ![boolT] "getProof"
       then
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
         let: "$a1" := #false in
         (func_call #marshal.WriteBool) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+        do:  ("proof" <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
         let: "$a1" := #(W64 0) in
         (func_call #marshal.WriteInt) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+        do:  ("proof" <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
         let: "$a1" := #(W64 0) in
         (func_call #marshal.WriteInt) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0")
+        do:  ("proof" <-[sliceT] "$r0")
       else do:  #());;;
-      return: (![#boolT] "inTree", ![#sliceT] "val", ![#sliceT] "proof")
+      return: (![boolT] "inTree", ![sliceT] "val", ![sliceT] "proof")
     else do:  #());;;
-    (if: (~ (let: "$a0" := (![#sliceT] "foundLabel") in
-    let: "$a1" := (![#sliceT] "label") in
+    (if: (~ (let: "$a0" := (![sliceT] "foundLabel") in
+    let: "$a1" := (![sliceT] "label") in
     (func_call #bytes.Equal) "$a0" "$a1"))
     then
-      (if: ![#boolT] "getProof"
+      (if: ![boolT] "getProof"
       then
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
         let: "$a1" := #true in
         (func_call #marshal.WriteBool) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
-        let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "foundLabel") in
+        do:  ("proof" <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
+        let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "foundLabel") in
         slice.len "$a0")) in
         (func_call #marshal.WriteInt) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
-        let: "$a1" := (![#sliceT] "foundLabel") in
+        do:  ("proof" <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
+        let: "$a1" := (![sliceT] "foundLabel") in
         (func_call #marshal.WriteBytes) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
-        let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "val") in
+        do:  ("proof" <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
+        let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "val") in
         slice.len "$a0")) in
         (func_call #marshal.WriteInt) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
-        let: "$a1" := (![#sliceT] "val") in
+        do:  ("proof" <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
+        let: "$a1" := (![sliceT] "val") in
         (func_call #marshal.WriteBytes) "$a0" "$a1") in
-        do:  ("proof" <-[#sliceT] "$r0")
+        do:  ("proof" <-[sliceT] "$r0")
       else do:  #());;;
-      return: (![#boolT] "inTree", ![#sliceT] "val", ![#sliceT] "proof")
+      return: (![boolT] "inTree", ![sliceT] "val", ![sliceT] "proof")
     else do:  #());;;
-    (if: ![#boolT] "getProof"
+    (if: ![boolT] "getProof"
     then
-      let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+      let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
       let: "$a1" := #false in
       (func_call #marshal.WriteBool) "$a0" "$a1") in
-      do:  ("proof" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+      do:  ("proof" <-[sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
       let: "$a1" := #(W64 0) in
       (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("proof" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+      do:  ("proof" <-[sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "proof") in
       let: "$a1" := #(W64 0) in
       (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("proof" <-[#sliceT] "$r0")
+      do:  ("proof" <-[sliceT] "$r0")
     else do:  #());;;
     let: "$r0" := #true in
-    do:  ("inTree" <-[#boolT] "$r0");;;
-    return: (![#boolT] "inTree", ![#sliceT] "val", ![#sliceT] "proof")).
+    do:  ("inTree" <-[boolT] "$r0");;;
+    return: (![boolT] "inTree", ![sliceT] "val", ![sliceT] "proof")).
 
 Definition getProofCap : go_string := "github.com/sanjit-bhat/pav/merkle.getProofCap"%go.
 
@@ -330,71 +330,71 @@ Definition getProofCap : go_string := "github.com/sanjit-bhat/pav/merkle.getProo
    go: merkle.go:158:16 *)
 Definition node__findⁱᵐᵖˡ : val :=
   λ: "n" "depth" "label" "getProof",
-    exception_do (let: "sibs" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "foundVal" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "foundLabel" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "found" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "sibs" := (mem.alloc (type.zero_val sliceT)) in
+    let: "foundVal" := (mem.alloc (type.zero_val sliceT)) in
+    let: "foundLabel" := (mem.alloc (type.zero_val sliceT)) in
+    let: "found" := (mem.alloc (type.zero_val boolT)) in
     let: "n" := (mem.alloc "n") in
     let: "getProof" := (mem.alloc "getProof") in
     let: "label" := (mem.alloc "label") in
     let: "depth" := (mem.alloc "depth") in
-    (if: (![#ptrT] "n") = #null
+    (if: (![ptrT] "n") = #null
     then
-      (if: ![#boolT] "getProof"
+      (if: ![boolT] "getProof"
       then
-        let: "$r0" := (slice.make3 #byteT #(W64 8) (let: "$a0" := (![#uint64T] "depth") in
+        let: "$r0" := (slice.make3 byteT #(W64 8) (let: "$a0" := (![uint64T] "depth") in
         (func_call #getProofCap) "$a0")) in
-        do:  ("sibs" <-[#sliceT] "$r0")
+        do:  ("sibs" <-[sliceT] "$r0")
       else do:  #());;;
-      return: (![#boolT] "found", ![#sliceT] "foundLabel", ![#sliceT] "foundVal", ![#sliceT] "sibs")
+      return: (![boolT] "found", ![sliceT] "foundLabel", ![sliceT] "foundVal", ![sliceT] "sibs")
     else do:  #());;;
-    (if: (![#byteT] (struct.field_ref #node #"nodeTy"%go (![#ptrT] "n"))) = leafNodeTy
+    (if: (![byteT] (struct.field_ref ptrT #"nodeTy"%go (![ptrT] "n"))) = leafNodeTy
     then
       let: "$r0" := #true in
-      do:  ("found" <-[#boolT] "$r0");;;
-      let: "$r0" := (![#sliceT] (struct.field_ref #node #"label"%go (![#ptrT] "n"))) in
-      do:  ("foundLabel" <-[#sliceT] "$r0");;;
-      let: "$r0" := (![#sliceT] (struct.field_ref #node #"val"%go (![#ptrT] "n"))) in
-      do:  ("foundVal" <-[#sliceT] "$r0");;;
-      (if: ![#boolT] "getProof"
+      do:  ("found" <-[boolT] "$r0");;;
+      let: "$r0" := (![sliceT] (struct.field_ref ptrT #"label"%go (![ptrT] "n"))) in
+      do:  ("foundLabel" <-[sliceT] "$r0");;;
+      let: "$r0" := (![sliceT] (struct.field_ref ptrT #"val"%go (![ptrT] "n"))) in
+      do:  ("foundVal" <-[sliceT] "$r0");;;
+      (if: ![boolT] "getProof"
       then
-        let: "$r0" := (slice.make3 #byteT #(W64 8) (let: "$a0" := (![#uint64T] "depth") in
+        let: "$r0" := (slice.make3 byteT #(W64 8) (let: "$a0" := (![uint64T] "depth") in
         (func_call #getProofCap) "$a0")) in
-        do:  ("sibs" <-[#sliceT] "$r0")
+        do:  ("sibs" <-[sliceT] "$r0")
       else do:  #());;;
-      return: (![#boolT] "found", ![#sliceT] "foundLabel", ![#sliceT] "foundVal", ![#sliceT] "sibs")
+      return: (![boolT] "found", ![sliceT] "foundLabel", ![sliceT] "foundVal", ![sliceT] "sibs")
     else do:  #());;;
-    (if: (![#byteT] (struct.field_ref #node #"nodeTy"%go (![#ptrT] "n"))) = innerNodeTy
+    (if: (![byteT] (struct.field_ref ptrT #"nodeTy"%go (![ptrT] "n"))) = innerNodeTy
     then
-      let: "sib" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "child" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
-      let: "$a1" := (![#uint64T] "depth") in
-      (method_call #(ptrT.id node.id) #"getChild"%go (![#ptrT] "n")) "$a0" "$a1") in
+      let: "sib" := (mem.alloc (type.zero_val ptrT)) in
+      let: "child" := (mem.alloc (type.zero_val ptrT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "label") in
+      let: "$a1" := (![uint64T] "depth") in
+      (method_call #(ptrT.id node.id) #"getChild"%go (![ptrT] "n")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("child" <-[#ptrT] "$r0");;;
-      do:  ("sib" <-[#ptrT] "$r1");;;
-      let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := ((![#uint64T] "depth") + #(W64 1)) in
-      let: "$a1" := (![#sliceT] "label") in
-      let: "$a2" := (![#boolT] "getProof") in
-      (method_call #(ptrT.id node.id) #"find"%go (![#ptrT] (![#ptrT] "child"))) "$a0" "$a1" "$a2") in
+      do:  ("child" <-[ptrT] "$r0");;;
+      do:  ("sib" <-[ptrT] "$r1");;;
+      let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := ((![uint64T] "depth") + #(W64 1)) in
+      let: "$a1" := (![sliceT] "label") in
+      let: "$a2" := (![boolT] "getProof") in
+      (method_call #(ptrT.id node.id) #"find"%go (![ptrT] (![ptrT] "child"))) "$a0" "$a1" "$a2") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
       let: "$r3" := "$ret3" in
-      do:  ("found" <-[#boolT] "$r0");;;
-      do:  ("foundLabel" <-[#sliceT] "$r1");;;
-      do:  ("foundVal" <-[#sliceT] "$r2");;;
-      do:  ("sibs" <-[#sliceT] "$r3");;;
-      (if: ![#boolT] "getProof"
+      do:  ("found" <-[boolT] "$r0");;;
+      do:  ("foundLabel" <-[sliceT] "$r1");;;
+      do:  ("foundVal" <-[sliceT] "$r2");;;
+      do:  ("sibs" <-[sliceT] "$r3");;;
+      (if: ![boolT] "getProof"
       then
-        let: "$r0" := (let: "$a0" := (![#sliceT] "sibs") in
-        let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (![#ptrT] "sib"))) #()) in
-        (slice.append #byteT) "$a0" "$a1") in
-        do:  ("sibs" <-[#sliceT] "$r0")
+        let: "$r0" := (let: "$a0" := (![sliceT] "sibs") in
+        let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (![ptrT] "sib"))) #()) in
+        (slice.append byteT) "$a0" "$a1") in
+        do:  ("sibs" <-[sliceT] "$r0")
       else do:  #());;;
-      return: (![#boolT] "found", ![#sliceT] "foundLabel", ![#sliceT] "foundVal", ![#sliceT] "sibs")
+      return: (![boolT] "found", ![sliceT] "foundLabel", ![sliceT] "foundVal", ![sliceT] "sibs")
     else do:  #());;;
     do:  (let: "$a0" := (interface.make #stringT.id #"merkle: find into cut node"%go) in
     Panic "$a0")).
@@ -403,7 +403,7 @@ Definition node__findⁱᵐᵖˡ : val :=
 Definition getProofCapⁱᵐᵖˡ : val :=
   λ: "depth",
     exception_do (let: "depth" := (mem.alloc "depth") in
-    return: ((((((#(W64 8) + ((![#uint64T] "depth") * cryptoffi.HashLen)) + #(W64 1)) + #(W64 8)) + cryptoffi.HashLen) + #(W64 8)) + #(W64 32))).
+    return: ((((((#(W64 8) + ((![uint64T] "depth") * cryptoffi.HashLen)) + #(W64 1)) + #(W64 8)) + cryptoffi.HashLen) + #(W64 8)) + #(W64 32))).
 
 Definition VerifyMemb : go_string := "github.com/sanjit-bhat/pav/merkle.VerifyMemb"%go.
 
@@ -416,31 +416,31 @@ Definition proofToTree : go_string := "github.com/sanjit-bhat/pav/merkle.proofTo
    go: merkle.go:203:6 *)
 Definition VerifyMembⁱᵐᵖˡ : val :=
   λ: "label" "val" "proof",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "hash" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
+    let: "hash" := (mem.alloc (type.zero_val sliceT)) in
     let: "proof" := (mem.alloc "proof") in
     let: "val" := (mem.alloc "val") in
     let: "label" := (mem.alloc "label") in
-    let: "tr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
-    let: "$a1" := (![#sliceT] "proof") in
+    let: "tr" := (mem.alloc (type.zero_val ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "label") in
+    let: "$a1" := (![sliceT] "proof") in
     (func_call #proofToTree) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("tr" <-[#ptrT] "$r0");;;
-    do:  ("err" <-[#boolT] "$r1");;;
-    (if: ![#boolT] "err"
-    then return: (![#sliceT] "hash", ![#boolT] "err")
+    do:  ("tr" <-[ptrT] "$r0");;;
+    do:  ("err" <-[boolT] "$r1");;;
+    (if: ![boolT] "err"
+    then return: (![sliceT] "hash", ![boolT] "err")
     else do:  #());;;
     do:  (let: "$a0" := (~ (let: "$a0" := "tr" in
     let: "$a1" := #(W64 0) in
-    let: "$a2" := (![#sliceT] "label") in
-    let: "$a3" := (![#sliceT] "val") in
+    let: "$a2" := (![sliceT] "label") in
+    let: "$a3" := (![sliceT] "val") in
     (func_call #put) "$a0" "$a1" "$a2" "$a3")) in
     (func_call #std.Assert) "$a0");;;
-    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] "tr")) #()) in
-    do:  ("hash" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "hash", ![#boolT] "err")).
+    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] "tr")) #()) in
+    do:  ("hash" <-[sliceT] "$r0");;;
+    return: (![sliceT] "hash", ![boolT] "err")).
 
 Definition VerifyNonMemb : go_string := "github.com/sanjit-bhat/pav/merkle.VerifyNonMemb"%go.
 
@@ -449,24 +449,24 @@ Definition VerifyNonMemb : go_string := "github.com/sanjit-bhat/pav/merkle.Verif
    go: merkle.go:214:6 *)
 Definition VerifyNonMembⁱᵐᵖˡ : val :=
   λ: "label" "proof",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "hash" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
+    let: "hash" := (mem.alloc (type.zero_val sliceT)) in
     let: "proof" := (mem.alloc "proof") in
     let: "label" := (mem.alloc "label") in
-    let: "tr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
-    let: "$a1" := (![#sliceT] "proof") in
+    let: "tr" := (mem.alloc (type.zero_val ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "label") in
+    let: "$a1" := (![sliceT] "proof") in
     (func_call #proofToTree) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("tr" <-[#ptrT] "$r0");;;
-    do:  ("err" <-[#boolT] "$r1");;;
-    (if: ![#boolT] "err"
-    then return: (![#sliceT] "hash", ![#boolT] "err")
+    do:  ("tr" <-[ptrT] "$r0");;;
+    do:  ("err" <-[boolT] "$r1");;;
+    (if: ![boolT] "err"
+    then return: (![sliceT] "hash", ![boolT] "err")
     else do:  #());;;
-    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] "tr")) #()) in
-    do:  ("hash" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "hash", ![#boolT] "err")).
+    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] "tr")) #()) in
+    do:  ("hash" <-[sliceT] "$r0");;;
+    return: (![sliceT] "hash", ![boolT] "err")).
 
 Definition VerifyUpdate : go_string := "github.com/sanjit-bhat/pav/merkle.VerifyUpdate"%go.
 
@@ -476,49 +476,40 @@ Definition VerifyUpdate : go_string := "github.com/sanjit-bhat/pav/merkle.Verify
    go: merkle.go:225:6 *)
 Definition VerifyUpdateⁱᵐᵖˡ : val :=
   λ: "label" "val" "proof",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "newHash" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "oldHash" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
+    let: "newHash" := (mem.alloc (type.zero_val sliceT)) in
+    let: "oldHash" := (mem.alloc (type.zero_val sliceT)) in
     let: "proof" := (mem.alloc "proof") in
     let: "val" := (mem.alloc "val") in
     let: "label" := (mem.alloc "label") in
-    let: "tr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
-    let: "$a1" := (![#sliceT] "proof") in
+    let: "tr" := (mem.alloc (type.zero_val ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "label") in
+    let: "$a1" := (![sliceT] "proof") in
     (func_call #proofToTree) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("tr" <-[#ptrT] "$r0");;;
-    do:  ("err" <-[#boolT] "$r1");;;
-    (if: ![#boolT] "err"
-    then return: (![#sliceT] "oldHash", ![#sliceT] "newHash", ![#boolT] "err")
+    do:  ("tr" <-[ptrT] "$r0");;;
+    do:  ("err" <-[boolT] "$r1");;;
+    (if: ![boolT] "err"
+    then return: (![sliceT] "oldHash", ![sliceT] "newHash", ![boolT] "err")
     else do:  #());;;
-    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] "tr")) #()) in
-    do:  ("oldHash" <-[#sliceT] "$r0");;;
+    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] "tr")) #()) in
+    do:  ("oldHash" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := (~ (let: "$a0" := "tr" in
     let: "$a1" := #(W64 0) in
-    let: "$a2" := (![#sliceT] "label") in
-    let: "$a3" := (![#sliceT] "val") in
+    let: "$a2" := (![sliceT] "label") in
+    let: "$a3" := (![sliceT] "val") in
     (func_call #put) "$a0" "$a1" "$a2" "$a3")) in
     (func_call #std.Assert) "$a0");;;
-    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] "tr")) #()) in
-    do:  ("newHash" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "oldHash", ![#sliceT] "newHash", ![#boolT] "err")).
+    let: "$r0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] "tr")) #()) in
+    do:  ("newHash" <-[sliceT] "$r0");;;
+    return: (![sliceT] "oldHash", ![sliceT] "newHash", ![boolT] "err")).
 
 (* go: merkle.go:236:15 *)
 Definition Map__Hashⁱᵐᵖˡ : val :=
   λ: "m" <>,
     exception_do (let: "m" := (mem.alloc "m") in
-    return: ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (struct.field_ref #Map #"root"%go (![#ptrT] "m")))) #())).
-
-Definition MerkleProof : go_type := structT [
-  "Siblings" :: sliceT;
-  "IsOtherLeaf" :: boolT;
-  "LeafLabel" :: sliceT;
-  "LeafVal" :: sliceT
-].
-#[global] Typeclasses Opaque MerkleProof.
-#[global] Opaque MerkleProof.
+    return: ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (struct.field_ref ptrT #"root"%go (![ptrT] "m")))) #())).
 
 Definition newShell : go_string := "github.com/sanjit-bhat/pav/merkle.newShell"%go.
 
@@ -529,158 +520,158 @@ Definition MerkleProofDecode : go_string := "github.com/sanjit-bhat/pav/merkle.M
    go: merkle.go:241:6 *)
 Definition proofToTreeⁱᵐᵖˡ : val :=
   λ: "label" "proof",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "tr" := (mem.alloc (type.zero_val #ptrT)) in
+    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
+    let: "tr" := (mem.alloc (type.zero_val ptrT)) in
     let: "proof" := (mem.alloc "proof") in
     let: "label" := (mem.alloc "label") in
-    (if: (s_to_w64 (let: "$a0" := (![#sliceT] "label") in
+    (if: (s_to_w64 (let: "$a0" := (![sliceT] "label") in
     slice.len "$a0")) ≠ cryptoffi.HashLen
     then
       let: "$r0" := #true in
-      do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#ptrT] "tr", ![#boolT] "err")
+      do:  ("err" <-[boolT] "$r0");;;
+      return: (![ptrT] "tr", ![boolT] "err")
     else do:  #());;;
-    let: "p" := (mem.alloc (type.zero_val #ptrT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "proof") in
+    let: "p" := (mem.alloc (type.zero_val ptrT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "proof") in
     (func_call #MerkleProofDecode) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("p" <-[#ptrT] "$r0");;;
+    do:  ("p" <-[ptrT] "$r0");;;
     do:  "$r1";;;
-    do:  ("err" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err"
-    then return: (![#ptrT] "tr", ![#boolT] "err")
+    do:  ("err" <-[boolT] "$r2");;;
+    (if: ![boolT] "err"
+    then return: (![ptrT] "tr", ![boolT] "err")
     else do:  #());;;
-    (if: ((s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #MerkleProof #"Siblings"%go (![#ptrT] "p"))) in
+    (if: ((s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"Siblings"%go (![ptrT] "p"))) in
     slice.len "$a0")) `rem` cryptoffi.HashLen) ≠ #(W64 0)
     then
       let: "$r0" := #true in
-      do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#ptrT] "tr", ![#boolT] "err")
+      do:  ("err" <-[boolT] "$r0");;;
+      return: (![ptrT] "tr", ![boolT] "err")
     else do:  #());;;
-    let: "sibsDepth" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #MerkleProof #"Siblings"%go (![#ptrT] "p"))) in
+    let: "sibsDepth" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"Siblings"%go (![ptrT] "p"))) in
     slice.len "$a0")) `quot` cryptoffi.HashLen) in
-    do:  ("sibsDepth" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "sibsDepth") > maxDepth
+    do:  ("sibsDepth" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "sibsDepth") > maxDepth
     then
       let: "$r0" := #true in
-      do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#ptrT] "tr", ![#boolT] "err")
+      do:  ("err" <-[boolT] "$r0");;;
+      return: (![ptrT] "tr", ![boolT] "err")
     else do:  #());;;
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![#sliceT] "label") in
-    let: "$a2" := (![#sliceT] (struct.field_ref #MerkleProof #"Siblings"%go (![#ptrT] "p"))) in
+    let: "$a1" := (![sliceT] "label") in
+    let: "$a2" := (![sliceT] (struct.field_ref ptrT #"Siblings"%go (![ptrT] "p"))) in
     (func_call #newShell) "$a0" "$a1" "$a2") in
-    do:  ("tr" <-[#ptrT] "$r0");;;
-    (if: ![#boolT] (struct.field_ref #MerkleProof #"IsOtherLeaf"%go (![#ptrT] "p"))
+    do:  ("tr" <-[ptrT] "$r0");;;
+    (if: ![boolT] (struct.field_ref ptrT #"IsOtherLeaf"%go (![ptrT] "p"))
     then
-      (if: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafLabel"%go (![#ptrT] "p"))) in
+      (if: (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"LeafLabel"%go (![ptrT] "p"))) in
       slice.len "$a0")) ≠ cryptoffi.HashLen
       then
         let: "$r0" := #true in
-        do:  ("err" <-[#boolT] "$r0");;;
-        return: (![#ptrT] "tr", ![#boolT] "err")
+        do:  ("err" <-[boolT] "$r0");;;
+        return: (![ptrT] "tr", ![boolT] "err")
       else do:  #());;;
-      (if: let: "$a0" := (![#sliceT] "label") in
-      let: "$a1" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafLabel"%go (![#ptrT] "p"))) in
+      (if: let: "$a0" := (![sliceT] "label") in
+      let: "$a1" := (![sliceT] (struct.field_ref ptrT #"LeafLabel"%go (![ptrT] "p"))) in
       (func_call #bytes.Equal) "$a0" "$a1"
       then
         let: "$r0" := #true in
-        do:  ("err" <-[#boolT] "$r0");;;
-        return: (![#ptrT] "tr", ![#boolT] "err")
+        do:  ("err" <-[boolT] "$r0");;;
+        return: (![ptrT] "tr", ![boolT] "err")
       else do:  #());;;
       (let: "$r0" := (let: "$a0" := "tr" in
       let: "$a1" := #(W64 0) in
-      let: "$a2" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafLabel"%go (![#ptrT] "p"))) in
-      let: "$a3" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafVal"%go (![#ptrT] "p"))) in
+      let: "$a2" := (![sliceT] (struct.field_ref ptrT #"LeafLabel"%go (![ptrT] "p"))) in
+      let: "$a3" := (![sliceT] (struct.field_ref ptrT #"LeafVal"%go (![ptrT] "p"))) in
       (func_call #put) "$a0" "$a1" "$a2" "$a3") in
-      do:  ("err" <-[#boolT] "$r0");;;
-      (if: ![#boolT] "err"
-      then return: (![#ptrT] "tr", ![#boolT] "err")
+      do:  ("err" <-[boolT] "$r0");;;
+      (if: ![boolT] "err"
+      then return: (![ptrT] "tr", ![boolT] "err")
       else do:  #()))
     else do:  #());;;
-    return: (![#ptrT] "tr", ![#boolT] "err")).
+    return: (![ptrT] "tr", ![boolT] "err")).
 
 (* go: merkle.go:276:6 *)
 Definition newShellⁱᵐᵖˡ : val :=
   λ: "depth" "label" "sibs",
-    exception_do (let: "n" := (mem.alloc (type.zero_val #ptrT)) in
+    exception_do (let: "n" := (mem.alloc (type.zero_val ptrT)) in
     let: "sibs" := (mem.alloc "sibs") in
     let: "label" := (mem.alloc "label") in
     let: "depth" := (mem.alloc "depth") in
-    let: "sibsLen" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "sibs") in
+    let: "sibsLen" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "sibs") in
     slice.len "$a0")) in
-    do:  ("sibsLen" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "sibsLen") = #(W64 0)
-    then return: (![#ptrT] "n")
+    do:  ("sibsLen" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "sibsLen") = #(W64 0)
+    then return: (![ptrT] "n")
     else do:  #());;;
-    let: "split" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "sibsLen") - cryptoffi.HashLen) in
-    do:  ("split" <-[#uint64T] "$r0");;;
-    let: "sibs0" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "sibs") in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "split")) in
-    do:  ("sibs0" <-[#sliceT] "$r0");;;
-    let: "hash" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "sibs") in
-    slice.slice #byteT "$s" (![#uint64T] "split") (slice.len "$s")) in
-    do:  ("hash" <-[#sliceT] "$r0");;;
-    let: "cut" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "split" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "sibsLen") - cryptoffi.HashLen) in
+    do:  ("split" <-[uint64T] "$r0");;;
+    let: "sibs0" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "sibs") in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "split")) in
+    do:  ("sibs0" <-[sliceT] "$r0");;;
+    let: "hash" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "sibs") in
+    slice.slice byteT "$s" (![uint64T] "split") (slice.len "$s")) in
+    do:  ("hash" <-[sliceT] "$r0");;;
+    let: "cut" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := (mem.alloc (let: "$nodeTy" := cutNodeTy in
-    let: "$hash" := (![#sliceT] "hash") in
-    struct.make #node [{
+    let: "$hash" := (![sliceT] "hash") in
+    struct.make node [{
       "nodeTy" ::= "$nodeTy";
       "hash" ::= "$hash";
-      "child0" ::= type.zero_val #ptrT;
-      "child1" ::= type.zero_val #ptrT;
-      "label" ::= type.zero_val #sliceT;
-      "val" ::= type.zero_val #sliceT
+      "child0" ::= type.zero_val ptrT;
+      "child1" ::= type.zero_val ptrT;
+      "label" ::= type.zero_val sliceT;
+      "val" ::= type.zero_val sliceT
     }])) in
-    do:  ("cut" <-[#ptrT] "$r0");;;
-    let: "inner" := (mem.alloc (type.zero_val #ptrT)) in
+    do:  ("cut" <-[ptrT] "$r0");;;
+    let: "inner" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := (mem.alloc (let: "$nodeTy" := innerNodeTy in
-    struct.make #node [{
+    struct.make node [{
       "nodeTy" ::= "$nodeTy";
-      "hash" ::= type.zero_val #sliceT;
-      "child0" ::= type.zero_val #ptrT;
-      "child1" ::= type.zero_val #ptrT;
-      "label" ::= type.zero_val #sliceT;
-      "val" ::= type.zero_val #sliceT
+      "hash" ::= type.zero_val sliceT;
+      "child0" ::= type.zero_val ptrT;
+      "child1" ::= type.zero_val ptrT;
+      "label" ::= type.zero_val sliceT;
+      "val" ::= type.zero_val sliceT
     }])) in
-    do:  ("inner" <-[#ptrT] "$r0");;;
-    let: "sib" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "child" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "label") in
-    let: "$a1" := (![#uint64T] "depth") in
-    (method_call #(ptrT.id node.id) #"getChild"%go (![#ptrT] "inner")) "$a0" "$a1") in
+    do:  ("inner" <-[ptrT] "$r0");;;
+    let: "sib" := (mem.alloc (type.zero_val ptrT)) in
+    let: "child" := (mem.alloc (type.zero_val ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "label") in
+    let: "$a1" := (![uint64T] "depth") in
+    (method_call #(ptrT.id node.id) #"getChild"%go (![ptrT] "inner")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("child" <-[#ptrT] "$r0");;;
-    do:  ("sib" <-[#ptrT] "$r1");;;
-    let: "$r0" := (![#ptrT] "cut") in
-    do:  ((![#ptrT] "sib") <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := ((![#uint64T] "depth") + #(W64 1)) in
-    let: "$a1" := (![#sliceT] "label") in
-    let: "$a2" := (![#sliceT] "sibs0") in
+    do:  ("child" <-[ptrT] "$r0");;;
+    do:  ("sib" <-[ptrT] "$r1");;;
+    let: "$r0" := (![ptrT] "cut") in
+    do:  ((![ptrT] "sib") <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := ((![uint64T] "depth") + #(W64 1)) in
+    let: "$a1" := (![sliceT] "label") in
+    let: "$a2" := (![sliceT] "sibs0") in
     (func_call #newShell) "$a0" "$a1" "$a2") in
-    do:  ((![#ptrT] "child") <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (struct.field_ref #node #"child0"%go (![#ptrT] "inner")))) #()) in
-    let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![#ptrT] (struct.field_ref #node #"child1"%go (![#ptrT] "inner")))) #()) in
+    do:  ((![ptrT] "child") <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (struct.field_ref ptrT #"child0"%go (![ptrT] "inner")))) #()) in
+    let: "$a1" := ((method_call #(ptrT.id node.id) #"getHash"%go (![ptrT] (struct.field_ref ptrT #"child1"%go (![ptrT] "inner")))) #()) in
     (func_call #compInnerHash) "$a0" "$a1") in
-    do:  ((struct.field_ref #node #"hash"%go (![#ptrT] "inner")) <-[#sliceT] "$r0");;;
-    return: (![#ptrT] "inner")).
+    do:  ((struct.field_ref ptrT #"hash"%go (![ptrT] "inner")) <-[sliceT] "$r0");;;
+    return: (![ptrT] "inner")).
 
 (* go: merkle.go:293:16 *)
 Definition node__getHashⁱᵐᵖˡ : val :=
   λ: "n" <>,
     exception_do (let: "n" := (mem.alloc "n") in
-    (if: (![#ptrT] "n") = #null
-    then return: (![#sliceT] (globals.get #emptyHash))
+    (if: (![ptrT] "n") = #null
+    then return: (![sliceT] (globals.get #emptyHash))
     else do:  #());;;
-    return: (![#sliceT] (struct.field_ref #node #"hash"%go (![#ptrT] "n")))).
+    return: (![sliceT] (struct.field_ref ptrT #"hash"%go (![ptrT] "n")))).
 
 Definition compEmptyHash : go_string := "github.com/sanjit-bhat/pav/merkle.compEmptyHash"%go.
 
@@ -688,7 +679,7 @@ Definition compEmptyHash : go_string := "github.com/sanjit-bhat/pav/merkle.compE
 Definition compEmptyHashⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (let: "$a0" := ((let: "$sl0" := emptyNodeTag in
-     slice.literal #byteT ["$sl0"])) in
+     slice.literal byteT ["$sl0"])) in
      (func_call #cryptoutil.Hash) "$a0")).
 
 (* go: merkle.go:304:6 *)
@@ -696,46 +687,46 @@ Definition compLeafHashⁱᵐᵖˡ : val :=
   λ: "label" "val",
     exception_do (let: "val" := (mem.alloc "val") in
     let: "label" := (mem.alloc "label") in
-    let: "hr" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "hr" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
-    do:  ("hr" <-[#ptrT] "$r0");;;
+    do:  ("hr" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := ((let: "$sl0" := leafNodeTag in
-    slice.literal #byteT ["$sl0"])) in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
+    slice.literal byteT ["$sl0"])) in
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "label") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "label") in
     slice.len "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
-    do:  (let: "$a0" := (![#sliceT] "label") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
+    do:  (let: "$a0" := (![sliceT] "label") in
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "val") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "val") in
     slice.len "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
-    do:  (let: "$a0" := (![#sliceT] "val") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
+    do:  (let: "$a0" := (![sliceT] "val") in
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![ptrT] "hr")) "$a0")).
 
 (* go: merkle.go:314:6 *)
 Definition compInnerHashⁱᵐᵖˡ : val :=
   λ: "child0" "child1",
     exception_do (let: "child1" := (mem.alloc "child1") in
     let: "child0" := (mem.alloc "child0") in
-    let: "hr" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "hr" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
-    do:  ("hr" <-[#ptrT] "$r0");;;
+    do:  ("hr" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := ((let: "$sl0" := innerNodeTag in
-    slice.literal #byteT ["$sl0"])) in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
-    do:  (let: "$a0" := (![#sliceT] "child0") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
-    do:  (let: "$a0" := (![#sliceT] "child1") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
+    slice.literal byteT ["$sl0"])) in
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
+    do:  (let: "$a0" := (![sliceT] "child0") in
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
+    do:  (let: "$a0" := (![sliceT] "child1") in
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![ptrT] "hr")) "$a0")).
 
 Definition getBit : go_string := "github.com/sanjit-bhat/pav/merkle.getBit"%go.
 
@@ -748,11 +739,11 @@ Definition node__getChildⁱᵐᵖˡ : val :=
     exception_do (let: "n" := (mem.alloc "n") in
     let: "depth" := (mem.alloc "depth") in
     let: "label" := (mem.alloc "label") in
-    (if: let: "$a0" := (![#sliceT] "label") in
-    let: "$a1" := (![#uint64T] "depth") in
+    (if: let: "$a0" := (![sliceT] "label") in
+    let: "$a1" := (![uint64T] "depth") in
     (func_call #getBit) "$a0" "$a1"
-    then return: (struct.field_ref #node #"child1"%go (![#ptrT] "n"), struct.field_ref #node #"child0"%go (![#ptrT] "n"))
-    else return: (struct.field_ref #node #"child0"%go (![#ptrT] "n"), struct.field_ref #node #"child1"%go (![#ptrT] "n")))).
+    then return: (struct.field_ref ptrT #"child1"%go (![ptrT] "n"), struct.field_ref ptrT #"child0"%go (![ptrT] "n"))
+    else return: (struct.field_ref ptrT #"child0"%go (![ptrT] "n"), struct.field_ref ptrT #"child1"%go (![ptrT] "n")))).
 
 (* getBit returns false if the nth bit of b is 0.
    if n exceeds b, it returns true.
@@ -762,20 +753,29 @@ Definition getBitⁱᵐᵖˡ : val :=
   λ: "b" "n",
     exception_do (let: "n" := (mem.alloc "n") in
     let: "b" := (mem.alloc "b") in
-    let: "slot" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "n") `quot` #(W64 8)) in
-    do:  ("slot" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "slot") < (s_to_w64 (let: "$a0" := (![#sliceT] "b") in
+    let: "slot" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "n") `quot` #(W64 8)) in
+    do:  ("slot" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "slot") < (s_to_w64 (let: "$a0" := (![sliceT] "b") in
     slice.len "$a0"))
     then
-      let: "off" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((![#uint64T] "n") `rem` #(W64 8)) in
-      do:  ("off" <-[#uint64T] "$r0");;;
-      let: "x" := (mem.alloc (type.zero_val #byteT)) in
-      let: "$r0" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "b") (![#uint64T] "slot"))) in
-      do:  ("x" <-[#byteT] "$r0");;;
-      return: (((![#byteT] "x") `and` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "off")))) ≠ #(W8 0))
+      let: "off" := (mem.alloc (type.zero_val uint64T)) in
+      let: "$r0" := ((![uint64T] "n") `rem` #(W64 8)) in
+      do:  ("off" <-[uint64T] "$r0");;;
+      let: "x" := (mem.alloc (type.zero_val byteT)) in
+      let: "$r0" := (![byteT] (slice.elem_ref byteT (![sliceT] "b") (![uint64T] "slot"))) in
+      do:  ("x" <-[byteT] "$r0");;;
+      return: (((![byteT] "x") `and` (#(W8 1) ≪ (u_to_w8 (![uint64T] "off")))) ≠ #(W8 0))
     else return: (#true))).
+
+Definition MerkleProof : go_type := structT [
+  "Siblings" :: sliceT;
+  "IsOtherLeaf" :: boolT;
+  "LeafLabel" :: sliceT;
+  "LeafVal" :: sliceT
+].
+#[global] Typeclasses Opaque MerkleProof.
+#[global] Opaque MerkleProof.
 
 Definition MerkleProofEncode : go_string := "github.com/sanjit-bhat/pav/merkle.MerkleProofEncode"%go.
 
@@ -784,97 +784,97 @@ Definition MerkleProofEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] "b0") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #MerkleProof #"Siblings"%go (![#ptrT] "o"))) in
+    let: "b" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (![sliceT] "b0") in
+    do:  ("b" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
+    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"Siblings"%go (![ptrT] "o"))) in
     (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#boolT] (struct.field_ref #MerkleProof #"IsOtherLeaf"%go (![#ptrT] "o"))) in
+    do:  ("b" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
+    let: "$a1" := (![boolT] (struct.field_ref ptrT #"IsOtherLeaf"%go (![ptrT] "o"))) in
     (func_call #marshal.WriteBool) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafLabel"%go (![#ptrT] "o"))) in
+    do:  ("b" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
+    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"LeafLabel"%go (![ptrT] "o"))) in
     (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafVal"%go (![#ptrT] "o"))) in
+    do:  ("b" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
+    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"LeafVal"%go (![ptrT] "o"))) in
     (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "b")).
+    do:  ("b" <-[sliceT] "$r0");;;
+    return: (![sliceT] "b")).
 
 (* go: serde.out.go:18:6 *)
 Definition MerkleProofDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val #sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
+    let: "err1" := (mem.alloc (type.zero_val boolT)) in
+    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
+    let: "a1" := (mem.alloc (type.zero_val sliceT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
     (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[#sliceT] "$r0");;;
-    do:  ("b1" <-[#sliceT] "$r1");;;
-    do:  ("err1" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err1"
+    do:  ("a1" <-[sliceT] "$r0");;;
+    do:  ("b1" <-[sliceT] "$r1");;;
+    do:  ("err1" <-[boolT] "$r2");;;
+    (if: ![boolT] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val #boolT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
+    let: "err2" := (mem.alloc (type.zero_val boolT)) in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "a2" := (mem.alloc (type.zero_val boolT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
     (func_call #safemarshal.ReadBool) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[#boolT] "$r0");;;
-    do:  ("b2" <-[#sliceT] "$r1");;;
-    do:  ("err2" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err2"
+    do:  ("a2" <-[boolT] "$r0");;;
+    do:  ("b2" <-[sliceT] "$r1");;;
+    do:  ("err2" <-[boolT] "$r2");;;
+    (if: ![boolT] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err3" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a3" := (mem.alloc (type.zero_val #sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b2") in
+    let: "err3" := (mem.alloc (type.zero_val boolT)) in
+    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
+    let: "a3" := (mem.alloc (type.zero_val sliceT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b2") in
     (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a3" <-[#sliceT] "$r0");;;
-    do:  ("b3" <-[#sliceT] "$r1");;;
-    do:  ("err3" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err3"
+    do:  ("a3" <-[sliceT] "$r0");;;
+    do:  ("b3" <-[sliceT] "$r1");;;
+    do:  ("err3" <-[boolT] "$r2");;;
+    (if: ![boolT] "err3"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err4" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b4" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a4" := (mem.alloc (type.zero_val #sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b3") in
+    let: "err4" := (mem.alloc (type.zero_val boolT)) in
+    let: "b4" := (mem.alloc (type.zero_val sliceT)) in
+    let: "a4" := (mem.alloc (type.zero_val sliceT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b3") in
     (func_call #safemarshal.ReadSlice1D) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a4" <-[#sliceT] "$r0");;;
-    do:  ("b4" <-[#sliceT] "$r1");;;
-    do:  ("err4" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err4"
+    do:  ("a4" <-[sliceT] "$r0");;;
+    do:  ("b4" <-[sliceT] "$r1");;;
+    do:  ("err4" <-[boolT] "$r2");;;
+    (if: ![boolT] "err4"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$Siblings" := (![#sliceT] "a1") in
-     let: "$IsOtherLeaf" := (![#boolT] "a2") in
-     let: "$LeafLabel" := (![#sliceT] "a3") in
-     let: "$LeafVal" := (![#sliceT] "a4") in
-     struct.make #MerkleProof [{
+    return: (mem.alloc (let: "$Siblings" := (![sliceT] "a1") in
+     let: "$IsOtherLeaf" := (![boolT] "a2") in
+     let: "$LeafLabel" := (![sliceT] "a3") in
+     let: "$LeafVal" := (![sliceT] "a4") in
+     struct.make MerkleProof [{
        "Siblings" ::= "$Siblings";
        "IsOtherLeaf" ::= "$IsOtherLeaf";
        "LeafLabel" ::= "$LeafLabel";
        "LeafVal" ::= "$LeafVal"
-     }]), ![#sliceT] "b4", #false)).
+     }]), ![sliceT] "b4", #false)).
 
 Definition vars' : list (go_string * go_type) := [(emptyHash, sliceT)].
 
@@ -902,7 +902,7 @@ Definition initialize' : val :=
       do:  (bytes.initialize' #());;;
       do:  (package.alloc merkle.merkle #());;;
       let: "$r0" := ((func_call #compEmptyHash) #()) in
-      do:  ((globals.get #emptyHash) <-[#sliceT] "$r0"))
+      do:  ((globals.get #emptyHash) <-[sliceT] "$r0"))
       ).
 
 End code.

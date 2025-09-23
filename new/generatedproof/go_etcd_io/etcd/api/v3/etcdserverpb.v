@@ -46,6 +46,7 @@ Admitted.
 Module RequestHeader.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ID' : w64;
   Username' : go_string;
@@ -108,18 +109,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RequestHeader ID' Username' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.RequestHeader (alist_val [
-      "ID" ::= #ID';
-      "Username" ::= #Username';
-      "AuthRevision" ::= #AuthRevision';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(RequestHeader.mk ID' Username' AuthRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RequestHeader_struct_fields_split dq l (v : RequestHeader.t) :
@@ -152,6 +141,7 @@ End instances.
 Module InternalRaftRequest.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Header' : loc;
   ID' : w64;
@@ -359,47 +349,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_InternalRaftRequest Header' ID' V2' Range' Put' DeleteRange' Txn' Compaction' LeaseGrant' LeaseRevoke' Alarm' LeaseCheckpoint' AuthEnable' AuthDisable' AuthStatus' Authenticate' AuthUserAdd' AuthUserDelete' AuthUserGet' AuthUserChangePassword' AuthUserGrantRole' AuthUserRevokeRole' AuthUserList' AuthRoleList' AuthRoleAdd' AuthRoleDelete' AuthRoleGet' AuthRoleGrantPermission' AuthRoleRevokePermission' ClusterVersionSet' ClusterMemberAttrSet' DowngradeInfoSet' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.InternalRaftRequest (alist_val [
-      "Header" ::= #Header';
-      "ID" ::= #ID';
-      "V2" ::= #V2';
-      "Range" ::= #Range';
-      "Put" ::= #Put';
-      "DeleteRange" ::= #DeleteRange';
-      "Txn" ::= #Txn';
-      "Compaction" ::= #Compaction';
-      "LeaseGrant" ::= #LeaseGrant';
-      "LeaseRevoke" ::= #LeaseRevoke';
-      "Alarm" ::= #Alarm';
-      "LeaseCheckpoint" ::= #LeaseCheckpoint';
-      "AuthEnable" ::= #AuthEnable';
-      "AuthDisable" ::= #AuthDisable';
-      "AuthStatus" ::= #AuthStatus';
-      "Authenticate" ::= #Authenticate';
-      "AuthUserAdd" ::= #AuthUserAdd';
-      "AuthUserDelete" ::= #AuthUserDelete';
-      "AuthUserGet" ::= #AuthUserGet';
-      "AuthUserChangePassword" ::= #AuthUserChangePassword';
-      "AuthUserGrantRole" ::= #AuthUserGrantRole';
-      "AuthUserRevokeRole" ::= #AuthUserRevokeRole';
-      "AuthUserList" ::= #AuthUserList';
-      "AuthRoleList" ::= #AuthRoleList';
-      "AuthRoleAdd" ::= #AuthRoleAdd';
-      "AuthRoleDelete" ::= #AuthRoleDelete';
-      "AuthRoleGet" ::= #AuthRoleGet';
-      "AuthRoleGrantPermission" ::= #AuthRoleGrantPermission';
-      "AuthRoleRevokePermission" ::= #AuthRoleRevokePermission';
-      "ClusterVersionSet" ::= #ClusterVersionSet';
-      "ClusterMemberAttrSet" ::= #ClusterMemberAttrSet';
-      "DowngradeInfoSet" ::= #DowngradeInfoSet';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(InternalRaftRequest.mk Header' ID' V2' Range' Put' DeleteRange' Txn' Compaction' LeaseGrant' LeaseRevoke' Alarm' LeaseCheckpoint' AuthEnable' AuthDisable' AuthStatus' Authenticate' AuthUserAdd' AuthUserDelete' AuthUserGet' AuthUserChangePassword' AuthUserGrantRole' AuthUserRevokeRole' AuthUserList' AuthRoleList' AuthRoleAdd' AuthRoleDelete' AuthRoleGet' AuthRoleGrantPermission' AuthRoleRevokePermission' ClusterVersionSet' ClusterMemberAttrSet' DowngradeInfoSet' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance InternalRaftRequest_struct_fields_split dq l (v : InternalRaftRequest.t) :
@@ -721,6 +670,7 @@ Admitted.
 Module ResponseHeader.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ClusterId' : w64;
   MemberId' : w64;
@@ -788,19 +738,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ResponseHeader ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.ResponseHeader (alist_val [
-      "ClusterId" ::= #ClusterId';
-      "MemberId" ::= #MemberId';
-      "Revision" ::= #Revision';
-      "RaftTerm" ::= #RaftTerm';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(ResponseHeader.mk ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ResponseHeader_struct_fields_split dq l (v : ResponseHeader.t) :
@@ -835,6 +772,7 @@ End instances.
 Module RangeRequest.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Key' : slice.t;
   RangeEnd' : slice.t;
@@ -947,28 +885,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RangeRequest Key' RangeEnd' Limit' Revision' SortOrder' SortTarget' Serializable' KeysOnly' CountOnly' MinModRevision' MaxModRevision' MinCreateRevision' MaxCreateRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.RangeRequest (alist_val [
-      "Key" ::= #Key';
-      "RangeEnd" ::= #RangeEnd';
-      "Limit" ::= #Limit';
-      "Revision" ::= #Revision';
-      "SortOrder" ::= #SortOrder';
-      "SortTarget" ::= #SortTarget';
-      "Serializable" ::= #Serializable';
-      "KeysOnly" ::= #KeysOnly';
-      "CountOnly" ::= #CountOnly';
-      "MinModRevision" ::= #MinModRevision';
-      "MaxModRevision" ::= #MaxModRevision';
-      "MinCreateRevision" ::= #MinCreateRevision';
-      "MaxCreateRevision" ::= #MaxCreateRevision';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(RangeRequest.mk Key' RangeEnd' Limit' Revision' SortOrder' SortTarget' Serializable' KeysOnly' CountOnly' MinModRevision' MaxModRevision' MinCreateRevision' MaxCreateRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RangeRequest_struct_fields_split dq l (v : RangeRequest.t) :
@@ -1021,6 +937,7 @@ End instances.
 Module RangeResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Header' : loc;
   Kvs' : slice.t;
@@ -1088,19 +1005,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RangeResponse Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.RangeResponse (alist_val [
-      "Header" ::= #Header';
-      "Kvs" ::= #Kvs';
-      "More" ::= #More';
-      "Count" ::= #Count';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(RangeResponse.mk Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RangeResponse_struct_fields_split dq l (v : RangeResponse.t) :
@@ -1135,6 +1039,7 @@ End instances.
 Module PutRequest.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Key' : slice.t;
   Value' : slice.t;
@@ -1212,21 +1117,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_PutRequest Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.PutRequest (alist_val [
-      "Key" ::= #Key';
-      "Value" ::= #Value';
-      "Lease" ::= #Lease';
-      "PrevKv" ::= #PrevKv';
-      "IgnoreValue" ::= #IgnoreValue';
-      "IgnoreLease" ::= #IgnoreLease';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(PutRequest.mk Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance PutRequest_struct_fields_split dq l (v : PutRequest.t) :
@@ -1265,6 +1155,7 @@ End instances.
 Module PutResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Header' : loc;
   PrevKv' : loc;
@@ -1322,17 +1213,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_PutResponse Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.PutResponse (alist_val [
-      "Header" ::= #Header';
-      "PrevKv" ::= #PrevKv';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(PutResponse.mk Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance PutResponse_struct_fields_split dq l (v : PutResponse.t) :
@@ -1363,6 +1243,7 @@ End instances.
 Module DeleteRangeRequest.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Key' : slice.t;
   RangeEnd' : slice.t;
@@ -1425,18 +1306,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_DeleteRangeRequest Key' RangeEnd' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.DeleteRangeRequest (alist_val [
-      "Key" ::= #Key';
-      "RangeEnd" ::= #RangeEnd';
-      "PrevKv" ::= #PrevKv';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(DeleteRangeRequest.mk Key' RangeEnd' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance DeleteRangeRequest_struct_fields_split dq l (v : DeleteRangeRequest.t) :
@@ -1469,6 +1338,7 @@ End instances.
 Module DeleteRangeResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Header' : loc;
   Deleted' : w64;
@@ -1531,18 +1401,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_DeleteRangeResponse Header' Deleted' PrevKvs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.DeleteRangeResponse (alist_val [
-      "Header" ::= #Header';
-      "Deleted" ::= #Deleted';
-      "PrevKvs" ::= #PrevKvs';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(DeleteRangeResponse.mk Header' Deleted' PrevKvs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance DeleteRangeResponse_struct_fields_split dq l (v : DeleteRangeResponse.t) :
@@ -1586,6 +1444,7 @@ End isRequestOp_Request.
 Module RequestOp.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Request' : isRequestOp_Request.t;
   XXX_NoUnkeyedLiteral' : unit;
@@ -1638,16 +1497,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RequestOp Request' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.RequestOp (alist_val [
-      "Request" ::= #Request';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(RequestOp.mk Request' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RequestOp_struct_fields_split dq l (v : RequestOp.t) :
@@ -1676,6 +1525,7 @@ End instances.
 Module RequestOp_RequestRange.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   RequestRange' : loc;
 }.
@@ -1713,13 +1563,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RequestOp_RequestRange RequestRange':
-  PureWp True
-    (struct.make #etcdserverpb.RequestOp_RequestRange (alist_val [
-      "RequestRange" ::= #RequestRange'
-    ]))%struct
-    #(RequestOp_RequestRange.mk RequestRange').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RequestOp_RequestRange_struct_fields_split dq l (v : RequestOp_RequestRange.t) :
@@ -1742,6 +1585,7 @@ End instances.
 Module RequestOp_RequestPut.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   RequestPut' : loc;
 }.
@@ -1779,13 +1623,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RequestOp_RequestPut RequestPut':
-  PureWp True
-    (struct.make #etcdserverpb.RequestOp_RequestPut (alist_val [
-      "RequestPut" ::= #RequestPut'
-    ]))%struct
-    #(RequestOp_RequestPut.mk RequestPut').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RequestOp_RequestPut_struct_fields_split dq l (v : RequestOp_RequestPut.t) :
@@ -1808,6 +1645,7 @@ End instances.
 Module RequestOp_RequestDeleteRange.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   RequestDeleteRange' : loc;
 }.
@@ -1845,13 +1683,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RequestOp_RequestDeleteRange RequestDeleteRange':
-  PureWp True
-    (struct.make #etcdserverpb.RequestOp_RequestDeleteRange (alist_val [
-      "RequestDeleteRange" ::= #RequestDeleteRange'
-    ]))%struct
-    #(RequestOp_RequestDeleteRange.mk RequestDeleteRange').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RequestOp_RequestDeleteRange_struct_fields_split dq l (v : RequestOp_RequestDeleteRange.t) :
@@ -1874,6 +1705,7 @@ End instances.
 Module RequestOp_RequestTxn.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   RequestTxn' : loc;
 }.
@@ -1911,13 +1743,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RequestOp_RequestTxn RequestTxn':
-  PureWp True
-    (struct.make #etcdserverpb.RequestOp_RequestTxn (alist_val [
-      "RequestTxn" ::= #RequestTxn'
-    ]))%struct
-    #(RequestOp_RequestTxn.mk RequestTxn').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RequestOp_RequestTxn_struct_fields_split dq l (v : RequestOp_RequestTxn.t) :
@@ -1951,6 +1776,7 @@ End isResponseOp_Response.
 Module ResponseOp.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Response' : isResponseOp_Response.t;
   XXX_NoUnkeyedLiteral' : unit;
@@ -2003,16 +1829,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ResponseOp Response' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.ResponseOp (alist_val [
-      "Response" ::= #Response';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(ResponseOp.mk Response' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ResponseOp_struct_fields_split dq l (v : ResponseOp.t) :
@@ -2041,6 +1857,7 @@ End instances.
 Module ResponseOp_ResponseRange.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ResponseRange' : loc;
 }.
@@ -2078,13 +1895,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ResponseOp_ResponseRange ResponseRange':
-  PureWp True
-    (struct.make #etcdserverpb.ResponseOp_ResponseRange (alist_val [
-      "ResponseRange" ::= #ResponseRange'
-    ]))%struct
-    #(ResponseOp_ResponseRange.mk ResponseRange').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ResponseOp_ResponseRange_struct_fields_split dq l (v : ResponseOp_ResponseRange.t) :
@@ -2107,6 +1917,7 @@ End instances.
 Module ResponseOp_ResponsePut.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ResponsePut' : loc;
 }.
@@ -2144,13 +1955,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ResponseOp_ResponsePut ResponsePut':
-  PureWp True
-    (struct.make #etcdserverpb.ResponseOp_ResponsePut (alist_val [
-      "ResponsePut" ::= #ResponsePut'
-    ]))%struct
-    #(ResponseOp_ResponsePut.mk ResponsePut').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ResponseOp_ResponsePut_struct_fields_split dq l (v : ResponseOp_ResponsePut.t) :
@@ -2173,6 +1977,7 @@ End instances.
 Module ResponseOp_ResponseDeleteRange.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ResponseDeleteRange' : loc;
 }.
@@ -2210,13 +2015,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ResponseOp_ResponseDeleteRange ResponseDeleteRange':
-  PureWp True
-    (struct.make #etcdserverpb.ResponseOp_ResponseDeleteRange (alist_val [
-      "ResponseDeleteRange" ::= #ResponseDeleteRange'
-    ]))%struct
-    #(ResponseOp_ResponseDeleteRange.mk ResponseDeleteRange').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ResponseOp_ResponseDeleteRange_struct_fields_split dq l (v : ResponseOp_ResponseDeleteRange.t) :
@@ -2239,6 +2037,7 @@ End instances.
 Module ResponseOp_ResponseTxn.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ResponseTxn' : loc;
 }.
@@ -2276,13 +2075,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ResponseOp_ResponseTxn ResponseTxn':
-  PureWp True
-    (struct.make #etcdserverpb.ResponseOp_ResponseTxn (alist_val [
-      "ResponseTxn" ::= #ResponseTxn'
-    ]))%struct
-    #(ResponseOp_ResponseTxn.mk ResponseTxn').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ResponseOp_ResponseTxn_struct_fields_split dq l (v : ResponseOp_ResponseTxn.t) :
@@ -2316,6 +2108,7 @@ End isCompare_TargetUnion.
 Module Compare.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Result' : Compare_CompareResult.t;
   Target' : Compare_CompareTarget.t;
@@ -2388,20 +2181,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Compare Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.Compare (alist_val [
-      "Result" ::= #Result';
-      "Target" ::= #Target';
-      "Key" ::= #Key';
-      "TargetUnion" ::= #TargetUnion';
-      "RangeEnd" ::= #RangeEnd';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(Compare.mk Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Compare_struct_fields_split dq l (v : Compare.t) :
@@ -2438,6 +2217,7 @@ End instances.
 Module Compare_Version.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Version' : w64;
 }.
@@ -2475,13 +2255,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Compare_Version Version':
-  PureWp True
-    (struct.make #etcdserverpb.Compare_Version (alist_val [
-      "Version" ::= #Version'
-    ]))%struct
-    #(Compare_Version.mk Version').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Compare_Version_struct_fields_split dq l (v : Compare_Version.t) :
@@ -2504,6 +2277,7 @@ End instances.
 Module Compare_CreateRevision.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   CreateRevision' : w64;
 }.
@@ -2541,13 +2315,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Compare_CreateRevision CreateRevision':
-  PureWp True
-    (struct.make #etcdserverpb.Compare_CreateRevision (alist_val [
-      "CreateRevision" ::= #CreateRevision'
-    ]))%struct
-    #(Compare_CreateRevision.mk CreateRevision').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Compare_CreateRevision_struct_fields_split dq l (v : Compare_CreateRevision.t) :
@@ -2570,6 +2337,7 @@ End instances.
 Module Compare_ModRevision.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   ModRevision' : w64;
 }.
@@ -2607,13 +2375,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Compare_ModRevision ModRevision':
-  PureWp True
-    (struct.make #etcdserverpb.Compare_ModRevision (alist_val [
-      "ModRevision" ::= #ModRevision'
-    ]))%struct
-    #(Compare_ModRevision.mk ModRevision').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Compare_ModRevision_struct_fields_split dq l (v : Compare_ModRevision.t) :
@@ -2636,6 +2397,7 @@ End instances.
 Module Compare_Value.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Value' : slice.t;
 }.
@@ -2673,13 +2435,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Compare_Value Value':
-  PureWp True
-    (struct.make #etcdserverpb.Compare_Value (alist_val [
-      "Value" ::= #Value'
-    ]))%struct
-    #(Compare_Value.mk Value').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Compare_Value_struct_fields_split dq l (v : Compare_Value.t) :
@@ -2702,6 +2457,7 @@ End instances.
 Module Compare_Lease.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Lease' : w64;
 }.
@@ -2739,13 +2495,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Compare_Lease Lease':
-  PureWp True
-    (struct.make #etcdserverpb.Compare_Lease (alist_val [
-      "Lease" ::= #Lease'
-    ]))%struct
-    #(Compare_Lease.mk Lease').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Compare_Lease_struct_fields_split dq l (v : Compare_Lease.t) :
@@ -2768,6 +2517,7 @@ End instances.
 Module TxnRequest.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Compare' : slice.t;
   Success' : slice.t;
@@ -2830,18 +2580,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TxnRequest Compare' Success' Failure' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.TxnRequest (alist_val [
-      "Compare" ::= #Compare';
-      "Success" ::= #Success';
-      "Failure" ::= #Failure';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(TxnRequest.mk Compare' Success' Failure' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance TxnRequest_struct_fields_split dq l (v : TxnRequest.t) :
@@ -2874,6 +2612,7 @@ End instances.
 Module TxnResponse.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Header' : loc;
   Succeeded' : bool;
@@ -2936,18 +2675,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TxnResponse Header' Succeeded' Responses' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
-  PureWp True
-    (struct.make #etcdserverpb.TxnResponse (alist_val [
-      "Header" ::= #Header';
-      "Succeeded" ::= #Succeeded';
-      "Responses" ::= #Responses';
-      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
-      "XXX_unrecognized" ::= #XXX_unrecognized';
-      "XXX_sizecache" ::= #XXX_sizecache'
-    ]))%struct
-    #(TxnResponse.mk Header' Succeeded' Responses' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance TxnResponse_struct_fields_split dq l (v : TxnResponse.t) :

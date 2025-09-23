@@ -43,15 +43,15 @@ Definition compute_new_capⁱᵐᵖˡ : val :=
   λ: "old_cap" "min_cap",
     exception_do (let: "min_cap" := (mem.alloc "min_cap") in
     let: "old_cap" := (mem.alloc "old_cap") in
-    let: "new_cap" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "old_cap") * #(W64 2)) in
-    do:  ("new_cap" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "new_cap") < (![#uint64T] "min_cap")
+    let: "new_cap" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![uint64T] "old_cap") * #(W64 2)) in
+    do:  ("new_cap" <-[uint64T] "$r0");;;
+    (if: (![uint64T] "new_cap") < (![uint64T] "min_cap")
     then
-      let: "$r0" := (![#uint64T] "min_cap") in
-      do:  ("new_cap" <-[#uint64T] "$r0")
+      let: "$r0" := (![uint64T] "min_cap") in
+      do:  ("new_cap" <-[uint64T] "$r0")
     else do:  #());;;
-    return: (![#uint64T] "new_cap")).
+    return: (![uint64T] "new_cap")).
 
 Definition reserve : go_string := "github.com/tchajed/marshal.reserve"%go.
 
@@ -63,30 +63,30 @@ Definition reserveⁱᵐᵖˡ : val :=
   λ: "b" "additional",
     exception_do (let: "additional" := (mem.alloc "additional") in
     let: "b" := (mem.alloc "b") in
-    let: "min_cap" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (s_to_w64 (let: "$a0" := (![#sliceT] "b") in
+    let: "min_cap" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := (s_to_w64 (let: "$a0" := (![sliceT] "b") in
     slice.len "$a0")) in
-    let: "$a1" := (![#uint64T] "additional") in
+    let: "$a1" := (![uint64T] "additional") in
     (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-    do:  ("min_cap" <-[#uint64T] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![#sliceT] "b") in
-    slice.cap "$a0")) < (![#uint64T] "min_cap")
+    do:  ("min_cap" <-[uint64T] "$r0");;;
+    (if: (s_to_w64 (let: "$a0" := (![sliceT] "b") in
+    slice.cap "$a0")) < (![uint64T] "min_cap")
     then
-      let: "new_cap" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (let: "$a0" := (s_to_w64 (let: "$a0" := (![#sliceT] "b") in
+      let: "new_cap" := (mem.alloc (type.zero_val uint64T)) in
+      let: "$r0" := (let: "$a0" := (s_to_w64 (let: "$a0" := (![sliceT] "b") in
       slice.cap "$a0")) in
-      let: "$a1" := (![#uint64T] "min_cap") in
+      let: "$a1" := (![uint64T] "min_cap") in
       (func_call #compute_new_cap) "$a0" "$a1") in
-      do:  ("new_cap" <-[#uint64T] "$r0");;;
-      let: "dest" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "$r0" := (slice.make3 #byteT (let: "$a0" := (![#sliceT] "b") in
-      slice.len "$a0") (![#uint64T] "new_cap")) in
-      do:  ("dest" <-[#sliceT] "$r0");;;
-      do:  (let: "$a0" := (![#sliceT] "dest") in
-      let: "$a1" := (![#sliceT] "b") in
-      (slice.copy #byteT) "$a0" "$a1");;;
-      return: (![#sliceT] "dest")
-    else return: (![#sliceT] "b"))).
+      do:  ("new_cap" <-[uint64T] "$r0");;;
+      let: "dest" := (mem.alloc (type.zero_val sliceT)) in
+      let: "$r0" := (slice.make3 byteT (let: "$a0" := (![sliceT] "b") in
+      slice.len "$a0") (![uint64T] "new_cap")) in
+      do:  ("dest" <-[sliceT] "$r0");;;
+      do:  (let: "$a0" := (![sliceT] "dest") in
+      let: "$a1" := (![sliceT] "b") in
+      (slice.copy byteT) "$a0" "$a1");;;
+      return: (![sliceT] "dest")
+    else return: (![sliceT] "b"))).
 
 Definition ReadInt : go_string := "github.com/tchajed/marshal.ReadInt"%go.
 
@@ -94,12 +94,12 @@ Definition ReadInt : go_string := "github.com/tchajed/marshal.ReadInt"%go.
 Definition ReadIntⁱᵐᵖˡ : val :=
   λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
     (func_call #primitive.UInt64Get) "$a0") in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    return: (![#uint64T] "i", let: "$s" := (![#sliceT] "b") in
-     slice.slice #byteT "$s" #(W64 8) (slice.len "$s"))).
+    do:  ("i" <-[uint64T] "$r0");;;
+    return: (![uint64T] "i", let: "$s" := (![sliceT] "b") in
+     slice.slice byteT "$s" #(W64 8) (slice.len "$s"))).
 
 Definition ReadInt32 : go_string := "github.com/tchajed/marshal.ReadInt32"%go.
 
@@ -107,12 +107,12 @@ Definition ReadInt32 : go_string := "github.com/tchajed/marshal.ReadInt32"%go.
 Definition ReadInt32ⁱᵐᵖˡ : val :=
   λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    let: "i" := (mem.alloc (type.zero_val #uint32T)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "i" := (mem.alloc (type.zero_val uint32T)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
     (func_call #primitive.UInt32Get) "$a0") in
-    do:  ("i" <-[#uint32T] "$r0");;;
-    return: (![#uint32T] "i", let: "$s" := (![#sliceT] "b") in
-     slice.slice #byteT "$s" #(W64 4) (slice.len "$s"))).
+    do:  ("i" <-[uint32T] "$r0");;;
+    return: (![uint32T] "i", let: "$s" := (![sliceT] "b") in
+     slice.slice byteT "$s" #(W64 4) (slice.len "$s"))).
 
 Definition ReadInts : go_string := "github.com/tchajed/marshal.ReadInts"%go.
 
@@ -125,12 +125,12 @@ Definition ReadBytesⁱᵐᵖˡ : val :=
   λ: "b" "l",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "b" := (mem.alloc "b") in
-    let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "b") in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "l")) in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "s", let: "$s" := (![#sliceT] "b") in
-     slice.slice #byteT "$s" (![#uint64T] "l") (slice.len "$s"))).
+    let: "s" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "b") in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "l")) in
+    do:  ("s" <-[sliceT] "$r0");;;
+    return: (![sliceT] "s", let: "$s" := (![sliceT] "b") in
+     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"))).
 
 Definition ReadBytesCopy : go_string := "github.com/tchajed/marshal.ReadBytesCopy"%go.
 
@@ -141,15 +141,15 @@ Definition ReadBytesCopyⁱᵐᵖˡ : val :=
   λ: "b" "l",
     exception_do (let: "l" := (mem.alloc "l") in
     let: "b" := (mem.alloc "b") in
-    let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT (![#uint64T] "l")) in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "s") in
-    let: "$a1" := (let: "$s" := (![#sliceT] "b") in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "l")) in
-    (slice.copy #byteT) "$a0" "$a1");;;
-    return: (![#sliceT] "s", let: "$s" := (![#sliceT] "b") in
-     slice.slice #byteT "$s" (![#uint64T] "l") (slice.len "$s"))).
+    let: "s" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 byteT (![uint64T] "l")) in
+    do:  ("s" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (![sliceT] "s") in
+    let: "$a1" := (let: "$s" := (![sliceT] "b") in
+    slice.slice byteT "$s" #(W64 0) (![uint64T] "l")) in
+    (slice.copy byteT) "$a0" "$a1");;;
+    return: (![sliceT] "s", let: "$s" := (![sliceT] "b") in
+     slice.slice byteT "$s" (![uint64T] "l") (slice.len "$s"))).
 
 Definition ReadBool : go_string := "github.com/tchajed/marshal.ReadBool"%go.
 
@@ -157,11 +157,11 @@ Definition ReadBool : go_string := "github.com/tchajed/marshal.ReadBool"%go.
 Definition ReadBoolⁱᵐᵖˡ : val :=
   λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    let: "x" := (mem.alloc (type.zero_val #boolT)) in
-    let: "$r0" := ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "b") #(W64 0))) ≠ #(W8 0)) in
-    do:  ("x" <-[#boolT] "$r0");;;
-    return: (![#boolT] "x", let: "$s" := (![#sliceT] "b") in
-     slice.slice #byteT "$s" #(W64 1) (slice.len "$s"))).
+    let: "x" := (mem.alloc (type.zero_val boolT)) in
+    let: "$r0" := ((![byteT] (slice.elem_ref byteT (![sliceT] "b") #(W64 0))) ≠ #(W8 0)) in
+    do:  ("x" <-[boolT] "$r0");;;
+    return: (![boolT] "x", let: "$s" := (![sliceT] "b") in
+     slice.slice byteT "$s" #(W64 1) (slice.len "$s"))).
 
 Definition ReadLenPrefixedBytes : go_string := "github.com/tchajed/marshal.ReadLenPrefixedBytes"%go.
 
@@ -169,24 +169,24 @@ Definition ReadLenPrefixedBytes : go_string := "github.com/tchajed/marshal.ReadL
 Definition ReadLenPrefixedBytesⁱᵐᵖˡ : val :=
   λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "l" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b") in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "l" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "b") in
     (func_call #ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("l" <-[#uint64T] "$r0");;;
-    do:  ("b2" <-[#sliceT] "$r1");;;
-    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "bs" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b2") in
-    let: "$a1" := (![#uint64T] "l") in
+    do:  ("l" <-[uint64T] "$r0");;;
+    do:  ("b2" <-[sliceT] "$r1");;;
+    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
+    let: "bs" := (mem.alloc (type.zero_val sliceT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "b2") in
+    let: "$a1" := (![uint64T] "l") in
     (func_call #ReadBytes) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("bs" <-[#sliceT] "$r0");;;
-    do:  ("b3" <-[#sliceT] "$r1");;;
-    return: (![#sliceT] "bs", ![#sliceT] "b3")).
+    do:  ("bs" <-[sliceT] "$r0");;;
+    do:  ("b3" <-[sliceT] "$r1");;;
+    return: (![sliceT] "bs", ![sliceT] "b3")).
 
 Definition WriteInt : go_string := "github.com/tchajed/marshal.WriteInt"%go.
 
@@ -197,24 +197,24 @@ Definition WriteIntⁱᵐᵖˡ : val :=
   λ: "b" "i",
     exception_do (let: "i" := (mem.alloc "i") in
     let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
     let: "$a1" := #(W64 8) in
     (func_call #reserve) "$a0" "$a1") in
-    do:  ("b2" <-[#sliceT] "$r0");;;
-    let: "off" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b2") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    let: "off" := (mem.alloc (type.zero_val intT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b2") in
     slice.len "$a0") in
-    do:  ("off" <-[#intT] "$r0");;;
-    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "b2") in
-    slice.slice #byteT "$s" #(W64 0) ((![#intT] "off") + #(W64 8))) in
-    do:  ("b3" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (let: "$s" := (![#sliceT] "b3") in
-    slice.slice #byteT "$s" (![#intT] "off") (slice.len "$s")) in
-    let: "$a1" := (![#uint64T] "i") in
+    do:  ("off" <-[intT] "$r0");;;
+    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "b2") in
+    slice.slice byteT "$s" #(W64 0) ((![intT] "off") + #(W64 8))) in
+    do:  ("b3" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (let: "$s" := (![sliceT] "b3") in
+    slice.slice byteT "$s" (![intT] "off") (slice.len "$s")) in
+    let: "$a1" := (![uint64T] "i") in
     (func_call #primitive.UInt64Put) "$a0" "$a1");;;
-    return: (![#sliceT] "b3")).
+    return: (![sliceT] "b3")).
 
 Definition WriteInt32 : go_string := "github.com/tchajed/marshal.WriteInt32"%go.
 
@@ -225,24 +225,24 @@ Definition WriteInt32ⁱᵐᵖˡ : val :=
   λ: "b" "i",
     exception_do (let: "i" := (mem.alloc "i") in
     let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
     let: "$a1" := #(W64 4) in
     (func_call #reserve) "$a0" "$a1") in
-    do:  ("b2" <-[#sliceT] "$r0");;;
-    let: "off" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b2") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    let: "off" := (mem.alloc (type.zero_val intT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b2") in
     slice.len "$a0") in
-    do:  ("off" <-[#intT] "$r0");;;
-    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "b2") in
-    slice.slice #byteT "$s" #(W64 0) ((![#intT] "off") + #(W64 4))) in
-    do:  ("b3" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (let: "$s" := (![#sliceT] "b3") in
-    slice.slice #byteT "$s" (![#intT] "off") (slice.len "$s")) in
-    let: "$a1" := (![#uint32T] "i") in
+    do:  ("off" <-[intT] "$r0");;;
+    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$s" := (![sliceT] "b2") in
+    slice.slice byteT "$s" #(W64 0) ((![intT] "off") + #(W64 4))) in
+    do:  ("b3" <-[sliceT] "$r0");;;
+    do:  (let: "$a0" := (let: "$s" := (![sliceT] "b3") in
+    slice.slice byteT "$s" (![intT] "off") (slice.len "$s")) in
+    let: "$a1" := (![uint32T] "i") in
     (func_call #primitive.UInt32Put) "$a0" "$a1");;;
-    return: (![#sliceT] "b3")).
+    return: (![sliceT] "b3")).
 
 Definition WriteBytes : go_string := "github.com/tchajed/marshal.WriteBytes"%go.
 
@@ -253,9 +253,9 @@ Definition WriteBytesⁱᵐᵖˡ : val :=
   λ: "b" "data",
     exception_do (let: "data" := (mem.alloc "data") in
     let: "b" := (mem.alloc "b") in
-    return: (let: "$a0" := (![#sliceT] "b") in
-     let: "$a1" := (![#sliceT] "data") in
-     (slice.append #byteT) "$a0" "$a1")).
+    return: (let: "$a0" := (![sliceT] "b") in
+     let: "$a1" := (![sliceT] "data") in
+     (slice.append byteT) "$a0" "$a1")).
 
 Definition WriteInts : go_string := "github.com/tchajed/marshal.WriteInts"%go.
 
@@ -266,17 +266,17 @@ Definition WriteBoolⁱᵐᵖˡ : val :=
   λ: "b" "x",
     exception_do (let: "x" := (mem.alloc "x") in
     let: "b" := (mem.alloc "b") in
-    (if: ![#boolT] "x"
+    (if: ![boolT] "x"
     then
-      return: (let: "$a0" := (![#sliceT] "b") in
+      return: (let: "$a0" := (![sliceT] "b") in
        let: "$a1" := ((let: "$sl0" := #(W8 1) in
-       slice.literal #byteT ["$sl0"])) in
-       (slice.append #byteT) "$a0" "$a1")
+       slice.literal byteT ["$sl0"])) in
+       (slice.append byteT) "$a0" "$a1")
     else
-      return: (let: "$a0" := (![#sliceT] "b") in
+      return: (let: "$a0" := (![sliceT] "b") in
        let: "$a1" := ((let: "$sl0" := #(W8 0) in
-       slice.literal #byteT ["$sl0"])) in
-       (slice.append #byteT) "$a0" "$a1"))).
+       slice.literal byteT ["$sl0"])) in
+       (slice.append byteT) "$a0" "$a1"))).
 
 Definition WriteLenPrefixedBytes : go_string := "github.com/tchajed/marshal.WriteLenPrefixedBytes"%go.
 
@@ -285,14 +285,14 @@ Definition WriteLenPrefixedBytesⁱᵐᵖˡ : val :=
   λ: "b" "bs",
     exception_do (let: "bs" := (mem.alloc "bs") in
     let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "bs") in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "bs") in
     slice.len "$a0")) in
     (func_call #WriteInt) "$a0" "$a1") in
-    do:  ("b2" <-[#sliceT] "$r0");;;
-    return: (let: "$a0" := (![#sliceT] "b2") in
-     let: "$a1" := (![#sliceT] "bs") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    return: (let: "$a0" := (![sliceT] "b2") in
+     let: "$a1" := (![sliceT] "bs") in
      (func_call #WriteBytes) "$a0" "$a1")).
 
 Definition ReadSlice : go_string := "github.com/tchajed/marshal.ReadSlice"%go.
@@ -303,32 +303,32 @@ Definition ReadSliceⁱᵐᵖˡ : val :=
     exception_do (let: "readOne" := (mem.alloc "readOne") in
     let: "count" := (mem.alloc "count") in
     let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] "b") in
-    do:  ("b2" <-[#sliceT] "$r0");;;
-    let: "xs" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (![sliceT] "b") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    let: "xs" := (mem.alloc (type.zero_val sliceT)) in
     let: "$r0" := #slice.nil in
-    do:  ("xs" <-[#sliceT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("xs" <-[sliceT] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "count")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "bNew" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "xNew" := (mem.alloc (type.zero_val "T")) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b2") in
-      (![#funcT] "readOne") "$a0") in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "count")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "bNew" := (mem.alloc (type.zero_val sliceT)) in
+      let: "xNew" := (mem.alloc (type.zero_val T)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "b2") in
+      (![funcT] "readOne") "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("xNew" <-["T"] "$r0");;;
-      do:  ("bNew" <-[#sliceT] "$r1");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "xs") in
-      let: "$a1" := ((let: "$sl0" := (!["T"] "xNew") in
-      slice.literal "T" ["$sl0"])) in
-      (slice.append "T") "$a0" "$a1") in
-      do:  ("xs" <-[#sliceT] "$r0");;;
-      let: "$r0" := (![#sliceT] "bNew") in
-      do:  ("b2" <-[#sliceT] "$r0")));;;
-    return: (![#sliceT] "xs", ![#sliceT] "b2")).
+      do:  ("xNew" <-[T] "$r0");;;
+      do:  ("bNew" <-[sliceT] "$r1");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "xs") in
+      let: "$a1" := ((let: "$sl0" := (![T] "xNew") in
+      slice.literal T ["$sl0"])) in
+      (slice.append T) "$a0" "$a1") in
+      do:  ("xs" <-[sliceT] "$r0");;;
+      let: "$r0" := (![sliceT] "bNew") in
+      do:  ("b2" <-[sliceT] "$r0")));;;
+    return: (![sliceT] "xs", ![sliceT] "b2")).
 
 Definition ReadSliceLenPrefix : go_string := "github.com/tchajed/marshal.ReadSliceLenPrefix"%go.
 
@@ -337,18 +337,18 @@ Definition ReadSliceLenPrefixⁱᵐᵖˡ : val :=
   λ: "T" "b" "readOne",
     exception_do (let: "readOne" := (mem.alloc "readOne") in
     let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "count" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b") in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "count" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "b") in
     (func_call #ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("count" <-[#uint64T] "$r0");;;
-    do:  ("b2" <-[#sliceT] "$r1");;;
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "b2") in
-    let: "$a1" := (![#uint64T] "count") in
-    let: "$a2" := (![#funcT] "readOne") in
-    ((func_call #ReadSlice) "T") "$a0" "$a1" "$a2")) in
+    do:  ("count" <-[uint64T] "$r0");;;
+    do:  ("b2" <-[sliceT] "$r1");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "b2") in
+    let: "$a1" := (![uint64T] "count") in
+    let: "$a2" := (![funcT] "readOne") in
+    ((func_call #ReadSlice) T) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
 
 Definition WriteSlice : go_string := "github.com/tchajed/marshal.WriteSlice"%go.
@@ -359,19 +359,19 @@ Definition WriteSliceⁱᵐᵖˡ : val :=
     exception_do (let: "writeOne" := (mem.alloc "writeOne") in
     let: "xs" := (mem.alloc "xs") in
     let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] "b") in
-    do:  ("b2" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#sliceT] "xs") in
-    (let: "x" := (mem.alloc (type.zero_val "T")) in
-    slice.for_range "T" "$range" (λ: "$key" "$value",
-      do:  ("x" <-["T"] "$value");;;
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (![sliceT] "b") in
+    do:  ("b2" <-[sliceT] "$r0");;;
+    let: "$range" := (![sliceT] "xs") in
+    (let: "x" := (mem.alloc (type.zero_val T)) in
+    slice.for_range T "$range" (λ: "$key" "$value",
+      do:  ("x" <-[T] "$value");;;
       do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "b2") in
-      let: "$a1" := (!["T"] "x") in
-      (![#funcT] "writeOne") "$a0" "$a1") in
-      do:  ("b2" <-[#sliceT] "$r0")));;;
-    return: (![#sliceT] "b2")).
+      let: "$r0" := (let: "$a0" := (![sliceT] "b2") in
+      let: "$a1" := (![T] "x") in
+      (![funcT] "writeOne") "$a0" "$a1") in
+      do:  ("b2" <-[sliceT] "$r0")));;;
+    return: (![sliceT] "b2")).
 
 Definition WriteSliceLenPrefix : go_string := "github.com/tchajed/marshal.WriteSliceLenPrefix"%go.
 
@@ -381,19 +381,19 @@ Definition WriteSliceLenPrefixⁱᵐᵖˡ : val :=
     exception_do (let: "writeOne" := (mem.alloc "writeOne") in
     let: "xs" := (mem.alloc "xs") in
     let: "b" := (mem.alloc "b") in
-    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "xs") in
+    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "xs") in
     slice.len "$a0")) in
     (func_call #WriteInt) "$a0" "$a1") in
-    do:  ("b2" <-[#sliceT] "$r0");;;
-    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b2") in
-    let: "$a1" := (![#sliceT] "xs") in
-    let: "$a2" := (![#funcT] "writeOne") in
-    ((func_call #WriteSlice) "T") "$a0" "$a1" "$a2") in
-    do:  ("b3" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "b3")).
+    do:  ("b2" <-[sliceT] "$r0");;;
+    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (let: "$a0" := (![sliceT] "b2") in
+    let: "$a1" := (![sliceT] "xs") in
+    let: "$a2" := (![funcT] "writeOne") in
+    ((func_call #WriteSlice) T) "$a0" "$a1" "$a2") in
+    do:  ("b3" <-[sliceT] "$r0");;;
+    return: (![sliceT] "b3")).
 
 Definition vars' : list (go_string * go_type) := [].
 

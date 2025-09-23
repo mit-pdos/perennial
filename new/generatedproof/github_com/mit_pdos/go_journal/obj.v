@@ -19,6 +19,7 @@ Module obj.
 Module Log.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   mu' : loc;
   log' : loc;
@@ -66,15 +67,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log mu' log' pos':
-  PureWp True
-    (struct.make #obj.Log (alist_val [
-      "mu" ::= #mu';
-      "log" ::= #log';
-      "pos" ::= #pos'
-    ]))%struct
-    #(Log.mk mu' log' pos').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Log_struct_fields_split dq l (v : Log.t) :

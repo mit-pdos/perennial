@@ -36,76 +36,76 @@ Definition CreateAppendOnlyFile : go_string := "github.com/mit-pdos/gokv/aof.Cre
 Definition CreateAppendOnlyFileⁱᵐᵖˡ : val :=
   λ: "fname",
     exception_do (let: "fname" := (mem.alloc "fname") in
-    let: "a" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #AppendOnlyFile)) in
-    do:  ("a" <-[#ptrT] "$r0");;;
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ((struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    let: "a" := (mem.alloc (type.zero_val ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val AppendOnlyFile)) in
+    do:  ("a" <-[ptrT] "$r0");;;
+    let: "$r0" := (mem.alloc (type.zero_val sync.Mutex)) in
+    do:  ((struct.field_ref ptrT #"mu"%go (![ptrT] "a")) <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
-    do:  ((struct.field_ref #AppendOnlyFile #"lengthCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    do:  ((struct.field_ref ptrT #"lengthCond"%go (![ptrT] "a")) <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
-    do:  ((struct.field_ref #AppendOnlyFile #"oldDurableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    do:  ((struct.field_ref ptrT #"oldDurableCond"%go (![ptrT] "a")) <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
-    do:  ((struct.field_ref #AppendOnlyFile #"durableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    do:  ((struct.field_ref ptrT #"durableCond"%go (![ptrT] "a")) <-[ptrT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
-    do:  ((struct.field_ref #AppendOnlyFile #"closedCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
+    do:  ((struct.field_ref ptrT #"closedCond"%go (![ptrT] "a")) <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
+      exception_do (do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-        (if: ((let: "$a0" := (![#sliceT] (struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a"))) in
-        slice.len "$a0") = #(W64 0)) && (~ (![#boolT] (struct.field_ref #AppendOnlyFile #"closeRequested"%go (![#ptrT] "a"))))
+        (if: ((let: "$a0" := (![sliceT] (struct.field_ref ptrT #"membuf"%go (![ptrT] "a"))) in
+        slice.len "$a0") = #(W64 0)) && (~ (![boolT] (struct.field_ref ptrT #"closeRequested"%go (![ptrT] "a"))))
         then
-          do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"lengthCond"%go (![#ptrT] "a")))) #());;;
+          do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![ptrT] (struct.field_ref ptrT #"lengthCond"%go (![ptrT] "a")))) #());;;
           continue: #()
         else do:  #());;;
-        (if: ![#boolT] (struct.field_ref #AppendOnlyFile #"closeRequested"%go (![#ptrT] "a"))
+        (if: ![boolT] (struct.field_ref ptrT #"closeRequested"%go (![ptrT] "a"))
         then
-          do:  (let: "$a0" := (![#stringT] "fname") in
-          let: "$a1" := (![#sliceT] (struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a"))) in
+          do:  (let: "$a0" := (![stringT] "fname") in
+          let: "$a1" := (![sliceT] (struct.field_ref ptrT #"membuf"%go (![ptrT] "a"))) in
           (func_call #grove_ffi.FileAppend) "$a0" "$a1");;;
-          let: "$r0" := (slice.make2 #byteT #(W64 0)) in
-          do:  ((struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
-          let: "$r0" := (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a"))) in
-          do:  ((struct.field_ref #AppendOnlyFile #"durableLength"%go (![#ptrT] "a")) <-[#uint64T] "$r0");;;
-          do:  ((method_call #(ptrT.id sync.Cond.id) #"Broadcast"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"durableCond"%go (![#ptrT] "a")))) #());;;
+          let: "$r0" := (slice.make2 byteT #(W64 0)) in
+          do:  ((struct.field_ref ptrT #"membuf"%go (![ptrT] "a")) <-[sliceT] "$r0");;;
+          let: "$r0" := (![uint64T] (struct.field_ref ptrT #"length"%go (![ptrT] "a"))) in
+          do:  ((struct.field_ref ptrT #"durableLength"%go (![ptrT] "a")) <-[uint64T] "$r0");;;
+          do:  ((method_call #(ptrT.id sync.Cond.id) #"Broadcast"%go (![ptrT] (struct.field_ref ptrT #"durableCond"%go (![ptrT] "a")))) #());;;
           let: "$r0" := #true in
-          do:  ((struct.field_ref #AppendOnlyFile #"closed"%go (![#ptrT] "a")) <-[#boolT] "$r0");;;
-          do:  ((method_call #(ptrT.id sync.Cond.id) #"Broadcast"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"closedCond"%go (![#ptrT] "a")))) #());;;
-          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
+          do:  ((struct.field_ref ptrT #"closed"%go (![ptrT] "a")) <-[boolT] "$r0");;;
+          do:  ((method_call #(ptrT.id sync.Cond.id) #"Broadcast"%go (![ptrT] (struct.field_ref ptrT #"closedCond"%go (![ptrT] "a")))) #());;;
+          do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
           break: #()
         else do:  #());;;
-        let: "l" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "$r0" := (![#sliceT] (struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a"))) in
-        do:  ("l" <-[#sliceT] "$r0");;;
-        let: "newLength" := (mem.alloc (type.zero_val #uint64T)) in
-        let: "$r0" := (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a"))) in
-        do:  ("newLength" <-[#uint64T] "$r0");;;
-        let: "$r0" := (slice.make2 #byteT #(W64 0)) in
-        do:  ((struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
-        let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := (![#ptrT] (struct.field_ref #AppendOnlyFile #"durableCond"%go (![#ptrT] "a"))) in
-        do:  ("cond" <-[#ptrT] "$r0");;;
-        let: "$r0" := (![#ptrT] (struct.field_ref #AppendOnlyFile #"oldDurableCond"%go (![#ptrT] "a"))) in
-        do:  ((struct.field_ref #AppendOnlyFile #"durableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-        let: "$r0" := (![#ptrT] "cond") in
-        do:  ((struct.field_ref #AppendOnlyFile #"oldDurableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
-        do:  (let: "$a0" := (![#stringT] "fname") in
-        let: "$a1" := (![#sliceT] "l") in
+        let: "l" := (mem.alloc (type.zero_val sliceT)) in
+        let: "$r0" := (![sliceT] (struct.field_ref ptrT #"membuf"%go (![ptrT] "a"))) in
+        do:  ("l" <-[sliceT] "$r0");;;
+        let: "newLength" := (mem.alloc (type.zero_val uint64T)) in
+        let: "$r0" := (![uint64T] (struct.field_ref ptrT #"length"%go (![ptrT] "a"))) in
+        do:  ("newLength" <-[uint64T] "$r0");;;
+        let: "$r0" := (slice.make2 byteT #(W64 0)) in
+        do:  ((struct.field_ref ptrT #"membuf"%go (![ptrT] "a")) <-[sliceT] "$r0");;;
+        let: "cond" := (mem.alloc (type.zero_val ptrT)) in
+        let: "$r0" := (![ptrT] (struct.field_ref ptrT #"durableCond"%go (![ptrT] "a"))) in
+        do:  ("cond" <-[ptrT] "$r0");;;
+        let: "$r0" := (![ptrT] (struct.field_ref ptrT #"oldDurableCond"%go (![ptrT] "a"))) in
+        do:  ((struct.field_ref ptrT #"durableCond"%go (![ptrT] "a")) <-[ptrT] "$r0");;;
+        let: "$r0" := (![ptrT] "cond") in
+        do:  ((struct.field_ref ptrT #"oldDurableCond"%go (![ptrT] "a")) <-[ptrT] "$r0");;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+        do:  (let: "$a0" := (![stringT] "fname") in
+        let: "$a1" := (![sliceT] "l") in
         (func_call #grove_ffi.FileAppend) "$a0" "$a1");;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
-        let: "$r0" := (![#uint64T] "newLength") in
-        do:  ((struct.field_ref #AppendOnlyFile #"durableLength"%go (![#ptrT] "a")) <-[#uint64T] "$r0");;;
-        do:  ((method_call #(ptrT.id sync.Cond.id) #"Broadcast"%go (![#ptrT] "cond")) #());;;
+        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+        let: "$r0" := (![uint64T] "newLength") in
+        do:  ((struct.field_ref ptrT #"durableLength"%go (![ptrT] "a")) <-[uint64T] "$r0");;;
+        do:  ((method_call #(ptrT.id sync.Cond.id) #"Broadcast"%go (![ptrT] "cond")) #());;;
         continue: #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    return: (![#ptrT] "a")).
+    return: (![ptrT] "a")).
 
 (* NOTE: cannot be called concurrently with Append()
 
@@ -113,13 +113,13 @@ Definition CreateAppendOnlyFileⁱᵐᵖˡ : val :=
 Definition AppendOnlyFile__Closeⁱᵐᵖˡ : val :=
   λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
     let: "$r0" := #true in
-    do:  ((struct.field_ref #AppendOnlyFile #"closeRequested"%go (![#ptrT] "a")) <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"lengthCond"%go (![#ptrT] "a")))) #());;;
-    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #AppendOnlyFile #"closed"%go (![#ptrT] "a"))))); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"closedCond"%go (![#ptrT] "a")))) #()));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
+    do:  ((struct.field_ref ptrT #"closeRequested"%go (![ptrT] "a")) <-[boolT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![ptrT] (struct.field_ref ptrT #"lengthCond"%go (![ptrT] "a")))) #());;;
+    (for: (λ: <>, (~ (![boolT] (struct.field_ref ptrT #"closed"%go (![ptrT] "a"))))); (λ: <>, #()) := λ: <>,
+      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![ptrT] (struct.field_ref ptrT #"closedCond"%go (![ptrT] "a")))) #()));;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
     return: #()).
 
 (* NOTE: cannot be called concurrently with Close()
@@ -129,41 +129,41 @@ Definition AppendOnlyFile__Appendⁱᵐᵖˡ : val :=
   λ: "a" "data",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "data" := (mem.alloc "data") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a"))) in
-    let: "$a1" := (![#sliceT] "data") in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"membuf"%go (![ptrT] "a"))) in
+    let: "$a1" := (![sliceT] "data") in
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ((struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a"))) in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "data") in
+    do:  ((struct.field_ref ptrT #"membuf"%go (![ptrT] "a")) <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"length"%go (![ptrT] "a"))) in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "data") in
     slice.len "$a0")) in
     (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-    do:  ((struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a")) <-[#uint64T] "$r0");;;
-    let: "r" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a"))) in
-    do:  ("r" <-[#uint64T] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"lengthCond"%go (![#ptrT] "a")))) #());;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
-    return: (![#uint64T] "r")).
+    do:  ((struct.field_ref ptrT #"length"%go (![ptrT] "a")) <-[uint64T] "$r0");;;
+    let: "r" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (![uint64T] (struct.field_ref ptrT #"length"%go (![ptrT] "a"))) in
+    do:  ("r" <-[uint64T] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![ptrT] (struct.field_ref ptrT #"lengthCond"%go (![ptrT] "a")))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    return: (![uint64T] "r")).
 
 (* go: aof.go:109:26 *)
 Definition AppendOnlyFile__WaitAppendⁱᵐᵖˡ : val :=
   λ: "a" "length",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "length" := (mem.alloc "length") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
-    let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-    (if: ((![#uint64T] "length") + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a"))) in
-    slice.len "$a0"))) ≤ (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a")))
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
+    let: "cond" := (mem.alloc (type.zero_val ptrT)) in
+    (if: ((![uint64T] "length") + (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"membuf"%go (![ptrT] "a"))) in
+    slice.len "$a0"))) ≤ (![uint64T] (struct.field_ref ptrT #"length"%go (![ptrT] "a")))
     then
-      let: "$r0" := (![#ptrT] (struct.field_ref #AppendOnlyFile #"oldDurableCond"%go (![#ptrT] "a"))) in
-      do:  ("cond" <-[#ptrT] "$r0")
+      let: "$r0" := (![ptrT] (struct.field_ref ptrT #"oldDurableCond"%go (![ptrT] "a"))) in
+      do:  ("cond" <-[ptrT] "$r0")
     else
-      let: "$r0" := (![#ptrT] (struct.field_ref #AppendOnlyFile #"durableCond"%go (![#ptrT] "a"))) in
-      do:  ("cond" <-[#ptrT] "$r0"));;;
-    (for: (λ: <>, (![#uint64T] (struct.field_ref #AppendOnlyFile #"durableLength"%go (![#ptrT] "a"))) < (![#uint64T] "length")); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] "cond")) #()));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
+      let: "$r0" := (![ptrT] (struct.field_ref ptrT #"durableCond"%go (![ptrT] "a"))) in
+      do:  ("cond" <-[ptrT] "$r0"));;;
+    (for: (λ: <>, (![uint64T] (struct.field_ref ptrT #"durableLength"%go (![ptrT] "a"))) < (![uint64T] "length")); (λ: <>, #()) := λ: <>,
+      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![ptrT] "cond")) #()));;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"mu"%go (![ptrT] "a")))) #());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

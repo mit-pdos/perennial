@@ -13,6 +13,7 @@ Module confchange.
 Module Changer.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   Tracker' : tracker.ProgressTracker.t;
   LastIndex' : w64;
@@ -55,14 +56,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Changer Tracker' LastIndex':
-  PureWp True
-    (struct.make #confchange.Changer (alist_val [
-      "Tracker" ::= #Tracker';
-      "LastIndex" ::= #LastIndex'
-    ]))%struct
-    #(Changer.mk Tracker' LastIndex').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Changer_struct_fields_split dq l (v : Changer.t) :

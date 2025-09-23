@@ -22,7 +22,7 @@ Section disk.
   Definition ReadToⁱᵐᵖˡ : val :=
     λ: "a" "buf",
     let: "p" := ExternalOp ReadOp (Var "a") in
-    slice.copy #byteT (Var "buf") (Var "p", #(W64 4096), #(W64 4096)).
+    slice.copy byteT (Var "buf") (Var "p", #(W64 4096), #(W64 4096)).
 
   Definition Writeⁱᵐᵖˡ : val :=
     λ: "a" "b",

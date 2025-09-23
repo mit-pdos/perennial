@@ -14,6 +14,7 @@ Module rpctypes.
 Module EtcdError.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
   code' : codes.Code.t;
   desc' : go_string;
@@ -56,14 +57,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_EtcdError code' desc':
-  PureWp True
-    (struct.make #rpctypes.EtcdError (alist_val [
-      "code" ::= #code';
-      "desc" ::= #desc'
-    ]))%struct
-    #(EtcdError.mk code' desc').
-Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance EtcdError_struct_fields_split dq l (v : EtcdError.t) :
@@ -88,6 +81,7 @@ End instances.
 Module TokenFieldNameGRPCKey.
 Section def.
 Context `{ffi_syntax}.
+
 Record t := mk {
 }.
 End def.
@@ -118,12 +112,6 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TokenFieldNameGRPCKey:
-  PureWp True
-    (struct.make #rpctypes.TokenFieldNameGRPCKey (alist_val [
-    ]))%struct
-    #(TokenFieldNameGRPCKey.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 

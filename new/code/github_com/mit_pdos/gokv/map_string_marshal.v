@@ -16,39 +16,39 @@ Definition EncodeStringMap : go_string := "github.com/mit-pdos/gokv/map_string_m
 Definition EncodeStringMapⁱᵐᵖˡ : val :=
   λ: "kvs",
     exception_do (let: "kvs" := (mem.alloc "kvs") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![type.mapT #stringT #stringT] "kvs") in
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (slice.make2 byteT #(W64 0)) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![mapT stringT stringT] "kvs") in
     map.len "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$range" := (![type.mapT #stringT #stringT] "kvs") in
-    (let: "v" := (mem.alloc (type.zero_val #stringT)) in
-    let: "k" := (mem.alloc (type.zero_val #stringT)) in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "$range" := (![mapT stringT stringT] "kvs") in
+    (let: "v" := (mem.alloc (type.zero_val stringT)) in
+    let: "k" := (mem.alloc (type.zero_val stringT)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("v" <-[#stringT] "$value");;;
-      do:  ("k" <-[#stringT] "$key");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-      let: "$a1" := (s_to_w64 (let: "$a0" := (![#stringT] "k") in
+      do:  ("v" <-[stringT] "$value");;;
+      do:  ("k" <-[stringT] "$key");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+      let: "$a1" := (s_to_w64 (let: "$a0" := (![stringT] "k") in
       StringLength "$a0")) in
       (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("enc" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-      let: "$a1" := (string.to_bytes (![#stringT] "k")) in
+      do:  ("enc" <-[sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+      let: "$a1" := (string.to_bytes (![stringT] "k")) in
       (func_call #marshal.WriteBytes) "$a0" "$a1") in
-      do:  ("enc" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-      let: "$a1" := (s_to_w64 (let: "$a0" := (![#stringT] "v") in
+      do:  ("enc" <-[sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+      let: "$a1" := (s_to_w64 (let: "$a0" := (![stringT] "v") in
       StringLength "$a0")) in
       (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("enc" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-      let: "$a1" := (string.to_bytes (![#stringT] "v")) in
+      do:  ("enc" <-[sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
+      let: "$a1" := (string.to_bytes (![stringT] "v")) in
       (func_call #marshal.WriteBytes) "$a0" "$a1") in
-      do:  ("enc" <-[#sliceT] "$r0")));;;
-    return: (![#sliceT] "enc")).
+      do:  ("enc" <-[sliceT] "$r0")));;;
+    return: (![sliceT] "enc")).
 
 Definition DecodeStringMap : go_string := "github.com/mit-pdos/gokv/map_string_marshal.DecodeStringMap"%go.
 
@@ -56,58 +56,58 @@ Definition DecodeStringMap : go_string := "github.com/mit-pdos/gokv/map_string_m
 Definition DecodeStringMapⁱᵐᵖˡ : val :=
   λ: "enc_in",
     exception_do (let: "enc_in" := (mem.alloc "enc_in") in
-    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] "enc_in") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "numEntries" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "kvs" := (mem.alloc (type.zero_val (type.mapT #stringT #stringT))) in
-    let: "$r0" := (map.make #stringT #stringT) in
-    do:  ("kvs" <-[type.mapT #stringT #stringT] "$r0");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
+    let: "$r0" := (![sliceT] "enc_in") in
+    do:  ("enc" <-[sliceT] "$r0");;;
+    let: "numEntries" := (mem.alloc (type.zero_val uint64T)) in
+    let: "kvs" := (mem.alloc (type.zero_val (mapT stringT stringT))) in
+    let: "$r0" := (map.make stringT stringT) in
+    do:  ("kvs" <-[mapT stringT stringT] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
     (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("numEntries" <-[#uint64T] "$r0");;;
-    do:  ("enc" <-[#sliceT] "$r1");;;
-    let: "numEntries2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] "numEntries") in
-    do:  ("numEntries2" <-[#uint64T] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("numEntries" <-[uint64T] "$r0");;;
+    do:  ("enc" <-[sliceT] "$r1");;;
+    let: "numEntries2" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := (![uint64T] "numEntries") in
+    do:  ("numEntries2" <-[uint64T] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "numEntries2")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "ln" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "key" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "val" := (mem.alloc (type.zero_val #sliceT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "numEntries2")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "ln" := (mem.alloc (type.zero_val uint64T)) in
+      let: "key" := (mem.alloc (type.zero_val sliceT)) in
+      let: "val" := (mem.alloc (type.zero_val sliceT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
       (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("ln" <-[#uint64T] "$r0");;;
-      do:  ("enc" <-[#sliceT] "$r1");;;
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      let: "$a1" := (![#uint64T] "ln") in
+      do:  ("ln" <-[uint64T] "$r0");;;
+      do:  ("enc" <-[sliceT] "$r1");;;
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
+      let: "$a1" := (![uint64T] "ln") in
       (func_call #marshal.ReadBytes) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("key" <-[#sliceT] "$r0");;;
-      do:  ("enc" <-[#sliceT] "$r1");;;
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+      do:  ("key" <-[sliceT] "$r0");;;
+      do:  ("enc" <-[sliceT] "$r1");;;
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
       (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("ln" <-[#uint64T] "$r0");;;
-      do:  ("enc" <-[#sliceT] "$r1");;;
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      let: "$a1" := (![#uint64T] "ln") in
+      do:  ("ln" <-[uint64T] "$r0");;;
+      do:  ("enc" <-[sliceT] "$r1");;;
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
+      let: "$a1" := (![uint64T] "ln") in
       (func_call #marshal.ReadBytes) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("val" <-[#sliceT] "$r0");;;
-      do:  ("enc" <-[#sliceT] "$r1");;;
-      let: "$r0" := (string.from_bytes (![#sliceT] "val")) in
-      do:  (map.insert (![type.mapT #stringT #stringT] "kvs") (string.from_bytes (![#sliceT] "key")) "$r0")));;;
-    return: (![type.mapT #stringT #stringT] "kvs")).
+      do:  ("val" <-[sliceT] "$r0");;;
+      do:  ("enc" <-[sliceT] "$r1");;;
+      let: "$r0" := (string.from_bytes (![sliceT] "val")) in
+      do:  (map.insert (![mapT stringT stringT] "kvs") (string.from_bytes (![sliceT] "key")) "$r0")));;;
+    return: (![mapT stringT stringT] "kvs")).
 
 Definition vars' : list (go_string * go_type) := [].
 

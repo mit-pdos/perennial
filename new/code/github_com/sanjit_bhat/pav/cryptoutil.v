@@ -15,15 +15,15 @@ Definition Hash : go_string := "github.com/sanjit-bhat/pav/cryptoutil.Hash"%go.
 (* go: cryptoutil.go:7:6 *)
 Definition Hashⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "hash" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "hash" := (mem.alloc (type.zero_val sliceT)) in
     let: "b" := (mem.alloc "b") in
-    let: "hr" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "hr" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
-    do:  ("hr" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "b") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
+    do:  ("hr" <-[ptrT] "$r0");;;
+    do:  (let: "$a0" := (![sliceT] "b") in
+    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![ptrT] "hr")) "$a0")).
 
 Definition vars' : list (go_string * go_type) := [].
 

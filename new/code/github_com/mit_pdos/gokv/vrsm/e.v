@@ -40,8 +40,8 @@ Definition EncodeError : go_string := "github.com/mit-pdos/gokv/vrsm/e.EncodeErr
 Definition EncodeErrorⁱᵐᵖˡ : val :=
   λ: "err",
     exception_do (let: "err" := (mem.alloc "err") in
-    return: (let: "$a0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
-     let: "$a1" := (![#uint64T] "err") in
+    return: (let: "$a0" := (slice.make3 byteT #(W64 0) #(W64 8)) in
+     let: "$a1" := (![uint64T] "err") in
      (func_call #marshal.WriteInt) "$a0" "$a1")).
 
 Definition DecodeError : go_string := "github.com/mit-pdos/gokv/vrsm/e.DecodeError"%go.
@@ -50,14 +50,14 @@ Definition DecodeError : go_string := "github.com/mit-pdos/gokv/vrsm/e.DecodeErr
 Definition DecodeErrorⁱᵐᵖˡ : val :=
   λ: "enc",
     exception_do (let: "enc" := (mem.alloc "enc") in
-    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
+    let: "err" := (mem.alloc (type.zero_val uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
     (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("err" <-[#uint64T] "$r0");;;
+    do:  ("err" <-[uint64T] "$r0");;;
     do:  "$r1";;;
-    return: (![#uint64T] "err")).
+    return: (![uint64T] "err")).
 
 Definition vars' : list (go_string * go_type) := [].
 

@@ -26,15 +26,6 @@ Module Channel.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty (T : go_type) : go_type := structT [
-  "lock" :: ptrT;
-  "state" :: channel.OfferState;
-  "buffer" :: sliceT;
-  "cap" :: uint64T;
-  "v" :: T
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   lock' : loc;
   state' : OfferState.t;
@@ -45,7 +36,6 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End Channel.
 
-#[local] Transparent Channel.ty.
 Arguments Channel.mk {_} { T' } {_ T _} .
 Arguments Channel.t {_} T' {_ T _} .
 
@@ -55,14 +45,14 @@ Context`{!IntoVal T'} `{!IntoValTyped T' T} .
 #[local] Transparent channel.Channel.
 #[local] Typeclasses Transparent channel.Channel.
 
-Global Instance Channel_wf : struct.Wf (Channel.ty T).
+Global Instance Channel_wf : struct.Wf channel.Channel.
 Proof. apply _. Qed.
 
-Global Instance settable_Channel : Settable (Channel.t T') :=
+Global Instance settable_Channel : Settable Channel.t :=
   settable! (Channel.mk (T:=T)) < Channel.lock'; Channel.state'; Channel.buffer'; Channel.cap'; Channel.v' >.
-Global Instance into_val_Channel : IntoVal (Channel.t T') :=
+Global Instance into_val_Channel : IntoVal Channel.t :=
   {| to_val_def v :=
-    struct.val_aux (Channel.ty T) [
+    struct.val_aux channel.Channel [
     "lock" ::= #(Channel.lock' v);
     "state" ::= #(Channel.state' v);
     "buffer" ::= #(Channel.buffer' v);
@@ -71,7 +61,7 @@ Global Instance into_val_Channel : IntoVal (Channel.t T') :=
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_Channel : IntoValTyped (Channel.t T') (Channel.ty T) :=
+Global Program Instance into_val_typed_Channel : IntoValTyped Channel.t channel.Channel :=
 {|
   default_val := Channel.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
 |}.
@@ -80,50 +70,32 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Channel_lock : IntoValStructField "lock" (Channel.ty T) Channel.lock'.
+Global Instance into_val_struct_field_Channel_lock : IntoValStructField "lock" channel.Channel Channel.lock'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Channel_state : IntoValStructField "state" (Channel.ty T) Channel.state'.
+Global Instance into_val_struct_field_Channel_state : IntoValStructField "state" channel.Channel Channel.state'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Channel_buffer : IntoValStructField "buffer" (Channel.ty T) Channel.buffer'.
+Global Instance into_val_struct_field_Channel_buffer : IntoValStructField "buffer" channel.Channel Channel.buffer'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Channel_cap : IntoValStructField "cap" (Channel.ty T) Channel.cap'.
+Global Instance into_val_struct_field_Channel_cap : IntoValStructField "cap" channel.Channel Channel.cap'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Channel_v : IntoValStructField "v" (Channel.ty T) Channel.v'.
+Global Instance into_val_struct_field_Channel_v : IntoValStructField "v" channel.Channel Channel.v'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_Channel :
-  PureWp True
-    (channel.Channel #T)
-    #(Channel.ty T).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_Channel lock' state' buffer' cap' v':
-  PureWp True
-    (struct.make #(Channel.ty T) (alist_val [
-      "lock" ::= #lock';
-      "state" ::= #state';
-      "buffer" ::= #buffer';
-      "cap" ::= #cap';
-      "v" ::= #v'
-    ]))%struct
-    #(Channel.mk lock' state' buffer' cap' v').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Channel_struct_fields_split `{!BoundedTypeSize T} dq l (v : (Channel.t T')) :
+Global Instance Channel_struct_fields_split `{!BoundedTypeSize T} dq l (v : Channel.t) :
   StructFieldsSplit dq l v (
-    "Hlock" ∷ l ↦s[(Channel.ty T) :: "lock"]{dq} v.(Channel.lock') ∗
-    "Hstate" ∷ l ↦s[(Channel.ty T) :: "state"]{dq} v.(Channel.state') ∗
-    "Hbuffer" ∷ l ↦s[(Channel.ty T) :: "buffer"]{dq} v.(Channel.buffer') ∗
-    "Hcap" ∷ l ↦s[(Channel.ty T) :: "cap"]{dq} v.(Channel.cap') ∗
-    "Hv" ∷ l ↦s[(Channel.ty T) :: "v"]{dq} v.(Channel.v')
+    "Hlock" ∷ l ↦s[channel.Channel :: "lock"]{dq} v.(Channel.lock') ∗
+    "Hstate" ∷ l ↦s[channel.Channel :: "state"]{dq} v.(Channel.state') ∗
+    "Hbuffer" ∷ l ↦s[channel.Channel :: "buffer"]{dq} v.(Channel.buffer') ∗
+    "Hcap" ∷ l ↦s[channel.Channel :: "cap"]{dq} v.(Channel.cap') ∗
+    "Hv" ∷ l ↦s[channel.Channel :: "v"]{dq} v.(Channel.v')
   ).
 Proof.
   rewrite /named.
@@ -131,10 +103,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Channel.lock' v)) ((Channel.ty T)) "lock"%go.
-  simpl_one_flatten_struct (# (Channel.state' v)) ((Channel.ty T)) "state"%go.
-  simpl_one_flatten_struct (# (Channel.buffer' v)) ((Channel.ty T)) "buffer"%go.
-  simpl_one_flatten_struct (# (Channel.cap' v)) ((Channel.ty T)) "cap"%go.
+  simpl_one_flatten_struct (# (Channel.lock' v)) (channel.Channel) "lock"%go.
+  simpl_one_flatten_struct (# (Channel.state' v)) (channel.Channel) "state"%go.
+  simpl_one_flatten_struct (# (Channel.buffer' v)) (channel.Channel) "buffer"%go.
+  simpl_one_flatten_struct (# (Channel.cap' v)) (channel.Channel) "cap"%go.
 
   solve_field_ref_f.
 Qed.
@@ -157,14 +129,6 @@ Module SelectCase.
 Section def.
 Context `{ffi_syntax}.
 
-Definition ty (T : go_type) : go_type := structT [
-  "channel" :: ptrT;
-  "dir" :: channel.SelectDir;
-  "Value" :: T;
-  "Ok" :: boolT
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
 Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
   channel' : loc;
   dir' : SelectDir.t;
@@ -174,7 +138,6 @@ Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
 End def.
 End SelectCase.
 
-#[local] Transparent SelectCase.ty.
 Arguments SelectCase.mk {_} { T' } {_ T _} .
 Arguments SelectCase.t {_} T' {_ T _} .
 
@@ -184,14 +147,14 @@ Context`{!IntoVal T'} `{!IntoValTyped T' T} .
 #[local] Transparent channel.SelectCase.
 #[local] Typeclasses Transparent channel.SelectCase.
 
-Global Instance SelectCase_wf : struct.Wf (SelectCase.ty T).
+Global Instance SelectCase_wf : struct.Wf channel.SelectCase.
 Proof. apply _. Qed.
 
-Global Instance settable_SelectCase : Settable (SelectCase.t T') :=
+Global Instance settable_SelectCase : Settable SelectCase.t :=
   settable! (SelectCase.mk (T:=T)) < SelectCase.channel'; SelectCase.dir'; SelectCase.Value'; SelectCase.Ok' >.
-Global Instance into_val_SelectCase : IntoVal (SelectCase.t T') :=
+Global Instance into_val_SelectCase : IntoVal SelectCase.t :=
   {| to_val_def v :=
-    struct.val_aux (SelectCase.ty T) [
+    struct.val_aux channel.SelectCase [
     "channel" ::= #(SelectCase.channel' v);
     "dir" ::= #(SelectCase.dir' v);
     "Value" ::= #(SelectCase.Value' v);
@@ -199,7 +162,7 @@ Global Instance into_val_SelectCase : IntoVal (SelectCase.t T') :=
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_SelectCase : IntoValTyped (SelectCase.t T') (SelectCase.ty T) :=
+Global Program Instance into_val_typed_SelectCase : IntoValTyped SelectCase.t channel.SelectCase :=
 {|
   default_val := SelectCase.mk (default_val _) (default_val _) (default_val _) (default_val _);
 |}.
@@ -208,45 +171,28 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_SelectCase_channel : IntoValStructField "channel" (SelectCase.ty T) SelectCase.channel'.
+Global Instance into_val_struct_field_SelectCase_channel : IntoValStructField "channel" channel.SelectCase SelectCase.channel'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_SelectCase_dir : IntoValStructField "dir" (SelectCase.ty T) SelectCase.dir'.
+Global Instance into_val_struct_field_SelectCase_dir : IntoValStructField "dir" channel.SelectCase SelectCase.dir'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_SelectCase_Value : IntoValStructField "Value" (SelectCase.ty T) SelectCase.Value'.
+Global Instance into_val_struct_field_SelectCase_Value : IntoValStructField "Value" channel.SelectCase SelectCase.Value'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_SelectCase_Ok : IntoValStructField "Ok" (SelectCase.ty T) SelectCase.Ok'.
+Global Instance into_val_struct_field_SelectCase_Ok : IntoValStructField "Ok" channel.SelectCase SelectCase.Ok'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_SelectCase :
-  PureWp True
-    (channel.SelectCase #T)
-    #(SelectCase.ty T).
-Proof. solve_type_pure_wp. Qed.
 
 
-Global Instance wp_struct_make_SelectCase channel' dir' Value' Ok':
-  PureWp True
-    (struct.make #(SelectCase.ty T) (alist_val [
-      "channel" ::= #channel';
-      "dir" ::= #dir';
-      "Value" ::= #Value';
-      "Ok" ::= #Ok'
-    ]))%struct
-    #(SelectCase.mk channel' dir' Value' Ok').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance SelectCase_struct_fields_split `{!BoundedTypeSize T} dq l (v : (SelectCase.t T')) :
+Global Instance SelectCase_struct_fields_split `{!BoundedTypeSize T} dq l (v : SelectCase.t) :
   StructFieldsSplit dq l v (
-    "Hchannel" ∷ l ↦s[(SelectCase.ty T) :: "channel"]{dq} v.(SelectCase.channel') ∗
-    "Hdir" ∷ l ↦s[(SelectCase.ty T) :: "dir"]{dq} v.(SelectCase.dir') ∗
-    "HValue" ∷ l ↦s[(SelectCase.ty T) :: "Value"]{dq} v.(SelectCase.Value') ∗
-    "HOk" ∷ l ↦s[(SelectCase.ty T) :: "Ok"]{dq} v.(SelectCase.Ok')
+    "Hchannel" ∷ l ↦s[channel.SelectCase :: "channel"]{dq} v.(SelectCase.channel') ∗
+    "Hdir" ∷ l ↦s[channel.SelectCase :: "dir"]{dq} v.(SelectCase.dir') ∗
+    "HValue" ∷ l ↦s[channel.SelectCase :: "Value"]{dq} v.(SelectCase.Value') ∗
+    "HOk" ∷ l ↦s[channel.SelectCase :: "Ok"]{dq} v.(SelectCase.Ok')
   ).
 Proof.
   rewrite /named.
@@ -254,9 +200,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SelectCase.channel' v)) ((SelectCase.ty T)) "channel"%go.
-  simpl_one_flatten_struct (# (SelectCase.dir' v)) ((SelectCase.ty T)) "dir"%go.
-  simpl_one_flatten_struct (# (SelectCase.Value' v)) ((SelectCase.ty T)) "Value"%go.
+  simpl_one_flatten_struct (# (SelectCase.channel' v)) (channel.SelectCase) "channel"%go.
+  simpl_one_flatten_struct (# (SelectCase.dir' v)) (channel.SelectCase) "dir"%go.
+  simpl_one_flatten_struct (# (SelectCase.Value' v)) (channel.SelectCase) "Value"%go.
 
   solve_field_ref_f.
 Qed.
