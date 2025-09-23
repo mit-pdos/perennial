@@ -41,7 +41,7 @@ Definition Cond__Broadcastⁱᵐᵖˡ : val := λ: "c" <>, #().
 Definition Cond__Signalⁱᵐᵖˡ : val := λ: "c" <>, #().
 
 Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
-  λ: "l", ArbitraryInt.
+  λ: "l", u_to_w32 ArbitraryInt.
 Definition runtime_notifyListWaitⁱᵐᵖˡ : val :=
   λ: "l" "t", #().
 Definition runtime_notifyListNotifyAllⁱᵐᵖˡ : val :=
