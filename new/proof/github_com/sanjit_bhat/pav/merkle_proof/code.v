@@ -1228,14 +1228,15 @@ Lemma wp_node_prove n t d0 sl_label d1 label oval getProof :
   }}}.
 Proof.
   wp_start as "@". wp_auto.
-  destruct His_entry as (?&?&?).
+  destruct His_entry as (found&?&?).
   wp_apply (wp_node_find with "[$Hown_tree $Hsl_label]") as "* @"; try done.
   { iFrame "#%". }
 
   wp_bind (If _ _ _).
   wp_apply (wp_wand _ _ _
-    (λ _,
+    (λ v,
     ∃ sibs_enc',
+    "->" ∷ ⌜v = execute_val⌝ ∗
     "proof" ∷ proof_ptr ↦ sl_sibs ∗
     "Hsl_sibs" ∷ sl_sibs ↦* sibs_enc' ∗
     "Hproof" ∷ (if negb getProof then True else
@@ -1244,39 +1245,36 @@ Proof.
       "%Henc_sibs" ∷ ⌜sibs_enc' = u64_le (length (mjoin (reverse sibs))) ++ mjoin (reverse sibs)⌝)
     )%I
     with "[proof Hsl_sibs Hproof]"
-  ).
+  ) as "* @".
   { destruct getProof; wp_auto.
-    2: { iFrame "∗#". }
+    2: { by iFrame "∗#". }
     iNamed "Hproof".
     subst.
     iDestruct (own_slice_len with "Hsl_sibs") as %[Hlen_sibs ?].
     rewrite app_length Hlen_sibsLen in Hlen_sibs.
-    wp_apply (wp_UInt64Put with "[$Hsl_sibs]") as "Hsl_sibs"; [word|].
+    wp_apply (primitive.wp_UInt64Put with "[$Hsl_sibs]") as "Hsl_sibs"; [word|].
     iFrame "∗#".
-    iPureIntro. repeat f_equal. word. }
+    iPureIntro. split; [done|].
+    repeat f_equal. word. }
 
-  iIntros (v1) "@".
-  (* the goal is:
-  WP exception_do
-     (v1 ;;;
-     stuff...)
-     {{ v, Φ v }}
-
-  if we leave [v1] an arbitrary val, the program reduces to this,
-  which blocks us from executing "stuff".
-  WP exception_do
-       (exception_seq
-          (#
-             {|
-               func.f := <>;
-               func.x := <>;
-               func.e := stuff...)
-          v1)
-        {{ v, Φ v }}
-
-  if we make v1 an [execute_val], it reduces properly. *)
-  assert (v1 = execute_val) as -> by admit.
-  wp_auto.
+  destruct found as [[]|]; simplify_eq/=.
+  2: { wp_auto. destruct getProof; wp_auto.
+    - iNamed "Hproof".
+      wp_apply (marshal.wp_WriteBool with "[$Hsl_sibs $Hcap_sibs]") as "* [Hsl Hcap]".
+      wp_apply (marshal.wp_WriteInt with "[$Hsl $Hcap]") as "* [Hsl Hcap]".
+      wp_apply (marshal.wp_WriteInt with "[$Hsl $Hcap]") as "* [Hsl Hcap]".
+      iApply "HΦ".
+      iDestruct (own_tree_to_hash with "Hown_tree") as "[% #His_hash]".
+      iFrame "∗#".
+      case_match; try done. iSplit; [done|].
+      simpl.
+      iExists _. iSplit; [|iFrame "#"]. iClear "His_hash".
+      rewrite /is_non_memb_proof.
+      iExists sibs, None.
+      admit.
+      (* if continued with this approach, would need to prove relations
+      bw is_sibs and pure_newShell. *)
+    - iApply "HΦ". iFrame "∗#". by case_match.
 Admitted.
 
 End proof.

@@ -1220,7 +1220,7 @@ Fixpoint is_sibs' (t : tree) (depth : nat) (label : list w8)
     "%Heq_sibs" ∷ ⌜ sibs = sib :: sibs' ⌝ ∗
     "#Hrecur" ∷ is_sibs' c_recur (S depth) label sibs' ∗
     "#Hcut_tree" ∷ is_cut_tree c_sib sib
-  | Cut _ => False
+  | Cut _ => True
   end.
 Definition is_sibs t label sibs := is_sibs' t 0 label sibs.
 Hint Unfold is_sibs : merkle.
