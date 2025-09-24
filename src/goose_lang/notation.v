@@ -133,6 +133,8 @@ Notation "e1 `rem` e2" := (BinOp RemOp e1%E e2%E) : expr_scope.
 Notation "e1 `rems` e2" := (BinOp RemSignedOp e1%E e2%E) (at level 35) : expr_scope.
 Notation "e1 ≪ e2" := (BinOp ShiftLOp e1%E e2%E) : expr_scope.
 Notation "e1 ≫ e2" := (BinOp ShiftROp e1%E e2%E) : expr_scope.
+(* models Go's &^ operator *)
+Notation "e1 `and_not` e2" := (BinOp AndOp e1%E (UnOp NegOp e2%E)) (at level 40, only parsing) : expr_scope.
 
 Notation "e1 ≤ e2" := (BinOp LeOp e1%E e2%E) : expr_scope.
 Notation "e1 < e2" := (BinOp LtOp e1%E e2%E) : expr_scope.
