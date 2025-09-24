@@ -19,10 +19,6 @@ Proof.
 Qed.
 End wps.
 
-(* NOTE: To avoid printing the [GoContext] instance when printing [global_addr].
-   See https://github.com/rocq-prover/rocq/issues/9814 *)
-#[global] Notation global_addr := global_addr_def.
-
 Section init_defns.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoContext}.
 
@@ -30,7 +26,8 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoC
 Definition is_init (σ : state) : Prop :=
   (∀ var_name, σ.(globals) ("V" ++ var_name)%go = Some #(global_addr var_name)) ∧
   (∀ func_name, σ.(globals) ("F" ++ func_name)%go = (__function func_name)) ∧
-  (∀ type_id, σ.(globals) ("M" ++ type_id)%go = (alist_val <$> __method type_id)) ∧
+  (∀ type_id method_name, σ.(globals) ("M" ++ type_id ++ "." ++ method_name)%go
+                          = (__method type_id method_name)) ∧
   (∀ pkg_name, σ.(globals) ("P" ++ pkg_name)%go = None).
 #[global] Opaque is_init.
 #[local] Opaque is_init.
@@ -45,7 +42,8 @@ Local Definition is_init_inv get_is_pkg_init : iProp Σ :=
         "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, get_is_pkg_init pkg_name) ∗
         "%Hglobal_addr" ∷ (⌜ ∀ var_name, g ("V" ++ var_name)%go = Some #(global_addr var_name) ⌝) ∗
         "%Hfunction" ∷ (⌜ ∀ func_name, g ("F" ++ func_name)%go = (__function func_name) ⌝) ∗
-        "%Hmethod" ∷ (⌜ ∀ type_id, g ("M" ++ type_id)%go = (alist_val <$> __method type_id) ⌝) ∗
+        "%Hmethod" ∷ (⌜ ∀ type_id method_name, g ("M" ++ type_id ++ "." ++ method_name)%go
+                          = (__method type_id method_name) ⌝) ∗
 
         "%Hpackage_inited" ∷ (⌜ ∀ pkg_name, g ("P" ++ pkg_name)%go =
                                 # <$> ((gset_to_gmap "initialized"%go package_inited) ∪
@@ -137,20 +135,6 @@ Notation is_pkg_defined_pure := is_pkg_defined_pure_def.
 Notation is_pkg_defined := is_pkg_defined_def.
 #[global] Arguments is_pkg_defined (pkg_name) {_ _} {go_ctx}.
 #[global] Opaque is_pkg_defined.
-
-(** Internal to Goose. Pure predicate asserting that the declarations in the Go
-    package [pkg_name] are part of the implicit [GoContext]. *)
-Definition is_pkg_defined_pure_single_def pkg_name `{!PkgInfo pkg_name} : Prop :=
-  (∀ func_name func,
-     (pkg_functions pkg_name) func_name = Some func →
-     (__function func_name) = Some func) ∧
-  (∀ type_name method_name m,
-     ((pkg_msets pkg_name) type_name) ≫= (alist_lookup_f method_name) = Some m →
-     (__method type_name) ≫= (alist_lookup_f method_name) = Some m).
-(* XXX: sealing because of a unification problem *)
-Program Definition is_pkg_defined_pure_single := sealed is_pkg_defined_pure_single_def.
-Definition is_pkg_defined_pure_single_unseal : is_pkg_defined_pure_single = _ := seal_eq _.
-#[global] Arguments is_pkg_defined_pure_single (pkg_name) {_}.
 
 (** Internal to Goose. This says that the package's declarations are accessible
     (including functions, methods, and variables). This does not cover any
@@ -313,15 +297,13 @@ Definition method_callv_def (type_id method_name : go_string) (receiver : val) :
     func.f := <>;
                 func.x := "firstArg";
     func.e :=
-      let: "method_set" := option.unwrap (GlobalGet (# "M"%go + # type_id)) in
-      option.unwrap (alist_lookup (# method_name) "method_set") receiver "firstArg"
+      option.unwrap (GlobalGet (# "M"%go + # type_id + # "."%go + # method_name)) receiver "firstArg"
   |}.
 Program Definition method_callv := sealed @method_callv_def.
 Definition method_callv_unseal : method_callv = _ := seal_eq _.
 
-
-Global Instance wp_method_callv (type_name method_name : go_string) (receiver : val) :
-  PureWp True (method_call #type_name #method_name receiver) #(method_callv type_name method_name receiver).
+Global Instance wp_method_callv (type_id method_name : go_string) (receiver : val) :
+  PureWp True (method_call #type_id #method_name receiver) #(method_callv type_id method_name receiver).
 Proof.
   rewrite method_call_unseal /method_call_def method_callv_unseal.
   intros ?????. iIntros "Hwp". wp_pure_lc "?".
@@ -337,20 +319,11 @@ Class WpFuncCall func_name (f : val) (P : iProp Σ) :=
        WP #(func_callv func_name) first_arg {{ Φ }}).
 
 (** Same as [WpFuncCall]. *)
-Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val) (P : iProp Σ)
+Class WpMethodCall (type_id : go_string) (func_name : go_string) (m : val) (P : iProp Σ)
   := wp_method_call :
     (∀ (first_arg receiver : val) Φ,
          P -∗ (WP (m receiver first_arg) {{ Φ }}) -∗
-         WP #(method_callv type_name func_name receiver) first_arg {{ Φ }}).
-
-Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
-  alist_lookup_f n ((λ '(name, a), (name, f a)) <$> l) =
-  f <$> (alist_lookup_f n l).
-Proof.
-  induction l as [|[]]; first done; simpl.
-  destruct (ByteString.eqb g n); first done.
-  rewrite IHl //.
-Qed.
+         WP #(method_callv type_id func_name receiver) first_arg {{ Φ }}).
 
 #[local] Transparent is_go_context.
 
@@ -375,7 +348,7 @@ Qed.
 
 (** Internal to Goose. Used in generatedproofs to establish [WpFuncCall]. *)
 Lemma wp_func_call' {func_name func} `{!PkgInfo pkg_name} P :
-  (pkg_functions pkg_name) func_name = Some func →
+  (is_pkg_defined_pure_single pkg_name → __function func_name = Some func) →
   (P -∗ is_pkg_defined_single pkg_name) →
   WpFuncCall func_name func P.
 Proof.
@@ -384,13 +357,13 @@ Proof.
   iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in #(_ :: _)]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
-  iModIntro. rewrite Hfunction. rewrite is_pkg_defined_pure_single_unseal in Hdefined.
-  destruct Hdefined as [Hfunction' Hmethod']. erewrite Hfunction'; last done. wp_pures. iApply "HΦ".
+  iModIntro. rewrite Hfunction.
+  rewrite Hlookup //. wp_pures. iApply "HΦ".
 Qed.
 
 (** Internal to Goose. Used in generatedproofs to establish [WpMethodCall]. *)
 Lemma wp_method_call' {type_id method_name m} `{!PkgInfo pkg_name} P :
-  ((pkg_msets pkg_name) type_id) ≫= (alist_lookup_f method_name) = (Some m) →
+  (is_pkg_defined_pure_single pkg_name → __method type_id method_name = Some m) →
   (P -∗ is_pkg_defined_single pkg_name) →
   WpMethodCall type_id method_name m P.
 Proof.
@@ -399,11 +372,8 @@ Proof.
   iNamed "Hctx". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # (_ :: _)]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
-  iModIntro. rewrite Hmethod. rewrite is_pkg_defined_pure_single_unseal in Hdefined.
-  destruct Hdefined as [Hfunction' Hmethod']. specialize (Hmethod' _ _ _ Hlookup).
-  destruct (__method type_id); last by exfalso.
-  wp_pures. simpl in *. destruct (alist_lookup_f method_name l); last by exfalso.
-  wp_pures. simplify_eq. iApply "HΦ".
+  iModIntro. rewrite -app_assoc. rewrite Hmethod Hlookup //. wp_pures.
+  iApply "HΦ".
 Qed.
 
 End calls.

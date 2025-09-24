@@ -27,17 +27,19 @@ Class GoContext {ext : ffi_syntax} :=
     to_mem_type : go_string → go_type;
   }.
 
+(* NOTE: To avoid printing the [GoContext] instance when printing [global_addr].
+   See https://github.com/rocq-prover/rocq/issues/9814 *)
+#[global] Notation global_addr := global_addr_def.
+
 (** [PkgInfo] associates a pkg_name to its static information. *)
 Class PkgInfo (pkg_name: go_string) `{ffi_syntax} := {
     pkg_vars : list (go_string * go_type);
-    pkg_functions : go_string → option val;
-    pkg_msets : go_string → option (list (go_string * val));
+    is_pkg_defined_pure_single_def : GoContext → Prop;
     pkg_imported_pkgs : list go_string;
   }.
-
+#[global] Notation is_pkg_defined_pure_single := is_pkg_defined_pure_single_def.
 Arguments pkg_vars (pkg_name) {_ _}.
-Arguments pkg_functions (pkg_name) {_ _}.
-Arguments pkg_msets (pkg_name) {_ _}.
+Arguments is_pkg_defined_pure_single (pkg_name) {_ _ _}.
 Arguments pkg_imported_pkgs (pkg_name) {_ _}.
 
 Module option.
@@ -121,10 +123,7 @@ Definition func_call_unseal : func_call = _ := seal_eq _.
 
 Definition method_call_def : val :=
   λ: "type_id" "method_name" "receiver",
-    λ: "firstArg",
-       let: "method_set" := option.unwrap $ GlobalGet (#"M" + "type_id") in
-       (option.unwrap $ alist_lookup "method_name" "method_set") "receiver" "firstArg"
-    .
+    λ: "firstArg", (option.unwrap $ GlobalGet (#"M" + "type_id" + #"." + "method_name")) "receiver" "firstArg".
 Program Definition method_call := sealed @method_call_def.
 Definition method_call_unseal : method_call = _ := seal_eq _.
 
