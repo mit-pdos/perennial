@@ -2326,6 +2326,14 @@ Global Instance wp_func_call_useFloat :
   WpFuncCall unittest.useFloat _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_compareIntFloat :
+  WpFuncCall unittest.compareIntFloat _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_compareFloatInt :
+  WpFuncCall unittest.compareFloatInt _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_forRangeNoBinding :
   WpFuncCall unittest.forRangeNoBinding _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
