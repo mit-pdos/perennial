@@ -2610,10 +2610,6 @@ Global Instance wp_func_call_AssignOps :
   WpFuncCall unittest.AssignOps _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_BitwiseAndNot :
-  WpFuncCall unittest.BitwiseAndNot _ (is_pkg_defined unittest) :=
-  ltac:(solve_wp_func_call).
-
 Global Instance wp_func_call_Negative :
   WpFuncCall unittest.Negative _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
