@@ -10,11 +10,21 @@ translate = [
   "rlocker",
   "Once",
   "Once.*",
+  "Cond",
+  "Cond.*",
+  "NewCond",
+  "Locker",
 ]
 
 imports = [
   "sync/atomic",
   "internal/race",
+]
+
+axiomatize = [
+  "notifyList",
+  "copyChecker",
+  "copyChecker.*",
 ]
 
 trusted = [
@@ -26,13 +36,8 @@ trusted = [
   "Mutex",
   "Mutex.*",
 
-  "Cond",
-  "Cond.*",
-  "NewCond",
+  "runtime_notifyList*",
 
-  "runtime_Semacquire",
-  "runtime_SemacquireWaitGroup",
-  "runtime_SemacquireRWMutexR",
-  "runtime_SemacquireRWMutex",
+  "runtime_Semacquire*",
   "runtime_Semrelease",
 ]
