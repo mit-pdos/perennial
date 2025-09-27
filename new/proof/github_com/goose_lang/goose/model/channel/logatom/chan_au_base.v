@@ -489,7 +489,7 @@ Definition send_au_slow ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : i
     (* Case: Buffered channel with space available *)
     | chan_rep.Buffered buff => 
         if (length buff <? cap) 
-        then (own_channel ch cap (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ)
+        then (own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
         else True
     | _ => True
     end).
@@ -508,7 +508,7 @@ Definition send_au_fast ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : i
     (* Case: Buffered channel with space available *)
     | chan_rep.Buffered buff => 
         if (length buff <? cap) 
-        then (own_channel ch cap (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ)
+        then (own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
         else True
     | _ => True
     end).
