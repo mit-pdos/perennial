@@ -17,6 +17,19 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new").
 
+Definition LoadInt64ⁱᵐᵖˡ : val :=
+  λ: "addr", Load "addr".
+
+Definition StoreInt64ⁱᵐᵖˡ : val :=
+  λ: "addr" "val", AtomicStore "addr" "val".
+
+Definition AddInt64ⁱᵐᵖˡ : val :=
+  λ: "addr" "val", AtomicOp PlusOp "addr" "val".
+
+Definition CompareAndSwapInt64ⁱᵐᵖˡ : val :=
+  λ: "addr" "old" "new",
+    Snd (CmpXchg "addr" "old" "new").
+
 Definition LoadInt32ⁱᵐᵖˡ : val :=
   λ: "addr", Load "addr".
 
