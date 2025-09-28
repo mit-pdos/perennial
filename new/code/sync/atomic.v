@@ -211,7 +211,103 @@ Definition Int32__Orⁱᵐᵖˡ : val :=
      let: "$a1" := (![#int32T] "mask") in
      (func_call #OrInt32) "$a0" "$a1")).
 
-Axiom Int64 : go_type.
+Definition align64 : go_type := structT [
+].
+#[global] Typeclasses Opaque align64.
+#[global] Opaque align64.
+
+Definition Int64 : go_type := structT [
+  "_0" :: noCopy;
+  "_1" :: align64;
+  "v" :: int64T
+].
+#[global] Typeclasses Opaque Int64.
+#[global] Opaque Int64.
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:106:17 *)
+Definition Int64__Loadⁱᵐᵖˡ : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (mem.alloc "x") in
+    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
+     (func_call #LoadInt64) "$a0")).
+
+(* Store atomically stores val into x.
+
+   go: type.go:109:17 *)
+Definition Int64__Storeⁱᵐᵖˡ : val :=
+  λ: "x" "val",
+    exception_do (let: "x" := (mem.alloc "x") in
+    let: "val" := (mem.alloc "val") in
+    do:  (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
+    let: "$a1" := (![#int64T] "val") in
+    (func_call #StoreInt64) "$a0" "$a1");;;
+    return: #()).
+
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:112:17 *)
+Definition Int64__Swapⁱᵐᵖˡ : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #int64T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int64T] "new") in
+     (func_call #SwapInt64) "$a0" "$a1")).
+
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:115:17 *)
+Definition Int64__CompareAndSwapⁱᵐᵖˡ : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    let: "old" := (mem.alloc "old") in
+    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int64T] "old") in
+     let: "$a2" := (![#int64T] "new") in
+     (func_call #CompareAndSwapInt64) "$a0" "$a1" "$a2")).
+
+(* Add atomically adds delta to x and returns the new value.
+
+   go: type.go:120:17 *)
+Definition Int64__Addⁱᵐᵖˡ : val :=
+  λ: "x" "delta",
+    exception_do (let: "new" := (mem.alloc (type.zero_val #int64T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "delta" := (mem.alloc "delta") in
+    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int64T] "delta") in
+     (func_call #AddInt64) "$a0" "$a1")).
+
+(* And atomically performs a bitwise AND operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:124:17 *)
+Definition Int64__Andⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #int64T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int64T] "mask") in
+     (func_call #AndInt64) "$a0" "$a1")).
+
+(* Or atomically performs a bitwise OR operation on x using the bitmask
+   provided as mask and returns the old value.
+
+   go: type.go:128:17 *)
+Definition Int64__Orⁱᵐᵖˡ : val :=
+  λ: "x" "mask",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #int64T)) in
+    let: "x" := (mem.alloc "x") in
+    let: "mask" := (mem.alloc "mask") in
+    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int64T] "mask") in
+     (func_call #OrInt64) "$a0" "$a1")).
 
 Definition Uint32 : go_type := structT [
   "_0" :: noCopy;
@@ -304,11 +400,6 @@ Definition Uint32__Orⁱᵐᵖˡ : val :=
     return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#uint32T] "mask") in
      (func_call #OrUint32) "$a0" "$a1")).
-
-Definition align64 : go_type := structT [
-].
-#[global] Typeclasses Opaque align64.
-#[global] Opaque align64.
 
 Definition Uint64 : go_type := structT [
   "_0" :: noCopy;
@@ -706,10 +797,6 @@ Axiom SwapInt64ⁱᵐᵖˡ : val.
 
 Axiom SwapUint64ⁱᵐᵖˡ : val.
 
-Axiom CompareAndSwapInt64ⁱᵐᵖˡ : val.
-
-Axiom AddInt64ⁱᵐᵖˡ : val.
-
 Axiom AndInt64ⁱᵐᵖˡ : val.
 
 Axiom AndUint64ⁱᵐᵖˡ : val.
@@ -717,10 +804,6 @@ Axiom AndUint64ⁱᵐᵖˡ : val.
 Axiom OrInt64ⁱᵐᵖˡ : val.
 
 Axiom OrUint64ⁱᵐᵖˡ : val.
-
-Axiom LoadInt64ⁱᵐᵖˡ : val.
-
-Axiom StoreInt64ⁱᵐᵖˡ : val.
 
 Axiom b32ⁱᵐᵖˡ : val.
 
@@ -745,20 +828,6 @@ Axiom Pointer__Loadⁱᵐᵖˡ : val.
 Axiom Pointer__Storeⁱᵐᵖˡ : val.
 
 Axiom Pointer__Swapⁱᵐᵖˡ : val.
-
-Axiom Int64__Addⁱᵐᵖˡ : val.
-
-Axiom Int64__Andⁱᵐᵖˡ : val.
-
-Axiom Int64__CompareAndSwapⁱᵐᵖˡ : val.
-
-Axiom Int64__Loadⁱᵐᵖˡ : val.
-
-Axiom Int64__Orⁱᵐᵖˡ : val.
-
-Axiom Int64__Storeⁱᵐᵖˡ : val.
-
-Axiom Int64__Swapⁱᵐᵖˡ : val.
 
 Axiom Uintptr__Addⁱᵐᵖˡ : val.
 

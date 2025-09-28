@@ -245,22 +245,130 @@ Qed.
 
 End instances.
 
+(* type atomic.align64 *)
+Module align64.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+}.
+End def.
+End align64.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent atomic.align64.
+#[local] Typeclasses Transparent atomic.align64.
+
+Global Instance align64_wf : struct.Wf atomic.align64.
+Proof. apply _. Qed.
+
+Global Instance into_val_align64 : IntoVal align64.t :=
+  {| to_val_def v :=
+    struct.val_aux atomic.align64 [
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_align64 : IntoValTyped align64.t atomic.align64 :=
+{|
+  default_val := align64.mk;
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_align64:
+  PureWp True
+    (struct.make #atomic.align64 (alist_val [
+    ]))%struct
+    #(align64.mk).
+Proof. solve_struct_make_pure_wp. Qed.
+
+End instances.
+
 (* type atomic.Int64 *)
 Module Int64.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Record t := mk {
+  _0' : noCopy.t;
+  _1' : align64.t;
+  v' : w64;
+}.
 End def.
 End Int64.
 
-Global Instance bounded_size_Int64 : BoundedTypeSize atomic.Int64.
-Admitted.
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent atomic.Int64.
+#[local] Typeclasses Transparent atomic.Int64.
 
-Global Instance into_val_Int64 `{ffi_syntax} : IntoVal Int64.t.
-Admitted.
+Global Instance Int64_wf : struct.Wf atomic.Int64.
+Proof. apply _. Qed.
 
-Global Instance into_val_typed_Int64 `{ffi_syntax} : IntoValTyped Int64.t atomic.Int64.
-Admitted.
+Global Instance settable_Int64 : Settable Int64.t :=
+  settable! Int64.mk < Int64._0'; Int64._1'; Int64.v' >.
+Global Instance into_val_Int64 : IntoVal Int64.t :=
+  {| to_val_def v :=
+    struct.val_aux atomic.Int64 [
+    "_0" ::= #(Int64._0' v);
+    "_1" ::= #(Int64._1' v);
+    "v" ::= #(Int64.v' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Int64 : IntoValTyped Int64.t atomic.Int64 :=
+{|
+  default_val := Int64.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Int64__0 : IntoValStructField "_0" atomic.Int64 Int64._0'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Int64__1 : IntoValStructField "_1" atomic.Int64 Int64._1'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Int64_v : IntoValStructField "v" atomic.Int64 Int64.v'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Int64 _0' _1' v':
+  PureWp True
+    (struct.make #atomic.Int64 (alist_val [
+      "_0" ::= #_0';
+      "_1" ::= #_1';
+      "v" ::= #v'
+    ]))%struct
+    #(Int64.mk _0' _1' v').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Int64_struct_fields_split dq l (v : Int64.t) :
+  StructFieldsSplit dq l v (
+    "H_0" ∷ l ↦s[atomic.Int64 :: "_0"]{dq} v.(Int64._0') ∗
+    "H_1" ∷ l ↦s[atomic.Int64 :: "_1"]{dq} v.(Int64._1') ∗
+    "Hv" ∷ l ↦s[atomic.Int64 :: "v"]{dq} v.(Int64.v')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Int64._0' v)) (atomic.Int64) "_0"%go.
+  simpl_one_flatten_struct (# (Int64._1' v)) (atomic.Int64) "_1"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 (* type atomic.Uint32 *)
 Module Uint32.
@@ -333,49 +441,6 @@ Proof.
 
   solve_field_ref_f.
 Qed.
-
-End instances.
-
-(* type atomic.align64 *)
-Module align64.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-}.
-End def.
-End align64.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.align64.
-#[local] Typeclasses Transparent atomic.align64.
-
-Global Instance align64_wf : struct.Wf atomic.align64.
-Proof. apply _. Qed.
-
-Global Instance into_val_align64 : IntoVal align64.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.align64 [
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_align64 : IntoValTyped align64.t atomic.align64 :=
-{|
-  default_val := align64.mk;
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_align64:
-  PureWp True
-    (struct.make #atomic.align64 (alist_val [
-    ]))%struct
-    #(align64.mk).
-Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -672,16 +737,32 @@ Global Instance wp_func_call_StoreUint32 :
   WpFuncCall atomic.StoreUint32 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_CompareAndSwapInt64 :
+  WpFuncCall atomic.CompareAndSwapInt64 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_CompareAndSwapUint64 :
   WpFuncCall atomic.CompareAndSwapUint64 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_AddInt64 :
+  WpFuncCall atomic.AddInt64 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_AddUint64 :
   WpFuncCall atomic.AddUint64 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_LoadInt64 :
+  WpFuncCall atomic.LoadInt64 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_LoadUint64 :
   WpFuncCall atomic.LoadUint64 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StoreInt64 :
+  WpFuncCall atomic.StoreInt64 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_StoreUint64 :
@@ -714,6 +795,34 @@ Global Instance wp_method_call_Int32'ptr_Store :
 
 Global Instance wp_method_call_Int32'ptr_Swap :
   WpMethodCall (ptrT.id atomic.Int32.id) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int64'ptr_Add :
+  WpMethodCall (ptrT.id atomic.Int64.id) "Add" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int64'ptr_And :
+  WpMethodCall (ptrT.id atomic.Int64.id) "And" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int64'ptr_CompareAndSwap :
+  WpMethodCall (ptrT.id atomic.Int64.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int64'ptr_Load :
+  WpMethodCall (ptrT.id atomic.Int64.id) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int64'ptr_Or :
+  WpMethodCall (ptrT.id atomic.Int64.id) "Or" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int64'ptr_Store :
+  WpMethodCall (ptrT.id atomic.Int64.id) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Int64'ptr_Swap :
+  WpMethodCall (ptrT.id atomic.Int64.id) "Swap" _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Uint32'ptr_Add :

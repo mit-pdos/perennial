@@ -80,6 +80,16 @@ passes while the goose PR is open. This feature is implemented by
 `etc/ci-use-goose-pr`, which reads the PR description and identifies the
 corresponding goose branch using the GitHub API.
 
+## Integer temmplating
+
+Some files have templates that are used to support the various integer types by
+copy-pasting:
+
+```bash
+./etc/int_template.py new/proof/sync/atomic.v
+./etc/int_template.py new/trusted_code/sync/atomic.v
+```
+
 ## Python linting
 
 We run [ruff](https://github.com/astral-sh/ruff) to lint all python code in CI.
