@@ -38,7 +38,9 @@ class TemplateProcessor:
         """Extract the template section from the file."""
         template_pattern = (
             # exclude the newline after the begin marker, so it isn't part of the template
-            re.escape(self.TEMPLATE_BEGIN) + r"\n(.*?)" + re.escape(self.TEMPLATE_END)
+            re.escape(self.TEMPLATE_BEGIN)
+            + r"\n(.*?)"
+            + re.escape(self.TEMPLATE_END)
         )
         m = re.search(template_pattern, self.content, re.DOTALL)
 
@@ -109,7 +111,14 @@ def int_template(tmpl):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="""
+Generalize a template written for u64 to other integer types.  Transforms code
+for Uint64 to Uint32, Int64, and Int32 (for example, see
+new/proof/sync/atomic.v). The template and auto-generated output are placed
+between comment markers within the input file.
+"""
+    )
     parser.add_argument("template_file", type=Path)
     args = parser.parse_args()
 
