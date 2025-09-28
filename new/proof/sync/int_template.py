@@ -105,7 +105,7 @@ def int_template(tmpl):
     ]:
         new = tmpl.replace(base.name, config.name).replace(base.typ_, config.typ_)
         components.append(f"(** {config.name} *)\n{new}")
-    return "\n\n".join(components)
+    return "\n".join(components)
 
 
 def main():
