@@ -38,9 +38,7 @@ class TemplateProcessor:
         """Extract the template section from the file."""
         template_pattern = (
             # exclude the newline after the begin marker, so it isn't part of the template
-            re.escape(self.TEMPLATE_BEGIN)
-            + r"\n(.*?)"
-            + re.escape(self.TEMPLATE_END)
+            re.escape(self.TEMPLATE_BEGIN) + r"\n(.*?)" + re.escape(self.TEMPLATE_END)
         )
         m = re.search(template_pattern, self.content, re.DOTALL)
 
