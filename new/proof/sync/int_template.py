@@ -34,22 +34,28 @@ class TemplateProcessor:
             print(f"Error reading file: {e}", file=sys.stderr)
             sys.exit(1)
 
-    def parse_template(self):
+    def _parse_template(self):
         """Extract the template section from the file."""
         template_pattern = (
-            re.escape(self.TEMPLATE_BEGIN) + r"\n(.*?)" + re.escape(self.TEMPLATE_END)
+            # exclude the newline after the begin marker, so it isn't part of the template
+            re.escape(self.TEMPLATE_BEGIN)
+            + r"\n(.*?)"
+            + re.escape(self.TEMPLATE_END)
         )
-        match = re.search(template_pattern, self.content, re.DOTALL)
+        m = re.search(template_pattern, self.content, re.DOTALL)
 
-        if match:
-            self.template = match.group(1)
+        if m:
+            self.template = m.group(1)
         else:
             raise ValueError(
                 f"template not found (starting with {self.TEMPLATE_BEGIN})"
             )
 
-    def find_auto_gen_section(self):
-        """Find the auto-generated section where template output should go."""
+    def _parse_auto_gen_section(self):
+        """Find the auto-generated section where template output should go.
+
+        To insert the output here, we just track the contents before and after.
+        """
         m = re.search(re.escape(self.AUTO_GEN_BEGIN), self.content)
         if m:
             self._before_auto_gen = self.content[: m.end(0)]
@@ -64,8 +70,8 @@ class TemplateProcessor:
     def process(self):
         """Main processing function."""
         self.read_file()
-        self.parse_template()
-        self.find_auto_gen_section()
+        self._parse_template()
+        self._parse_auto_gen_section()
 
     def output(self, auto_gen_content):
         """Output file with auto-generated section replaced.
@@ -73,6 +79,8 @@ class TemplateProcessor:
         The caller should do the template processing and produce
         auto_gen_content.
         """
+        # indent the generated content to make it visually separate from the
+        # hand-written template
         auto_gen_indented = "  " + auto_gen_content.replace("\n", "\n  ")
         return (
             f"{self._before_auto_gen}\n"
