@@ -145,6 +145,22 @@ Proof. unfold CombineSepGives.
   naive_solver.
 Qed.
 
+Lemma Uint64_unfold l dq (x: w64) :
+  own_Uint64 l dq x ⊣⊢
+  l ↦s[atomic.Uint64 :: "v"]{dq} x.
+Proof.
+  iSplit.
+  - iIntros "H".
+    iApply struct_fields_split in "H". iNamed "H".
+    iFrame.
+  - iIntros "Hl".
+    iApply @struct_fields_combine.
+    iFrame "Hl".
+    simpl.
+    rewrite -?noCopy_emp -?align_emp.
+    done.
+Qed.
+
 Lemma wp_Uint64__Load u dq :
   ∀ Φ,
   is_pkg_init atomic -∗
@@ -341,6 +357,22 @@ Qed.
     naive_solver.
   Qed.
   
+  Lemma Int64_unfold l dq (x: w64) :
+    own_Int64 l dq x ⊣⊢
+    l ↦s[atomic.Int64 :: "v"]{dq} x.
+  Proof.
+    iSplit.
+    - iIntros "H".
+      iApply struct_fields_split in "H". iNamed "H".
+      iFrame.
+    - iIntros "Hl".
+      iApply @struct_fields_combine.
+      iFrame "Hl".
+      simpl.
+      rewrite -?noCopy_emp -?align_emp.
+      done.
+  Qed.
+  
   Lemma wp_Int64__Load u dq :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -533,6 +565,22 @@ Qed.
     naive_solver.
   Qed.
   
+  Lemma Uint32_unfold l dq (x: w32) :
+    own_Uint32 l dq x ⊣⊢
+    l ↦s[atomic.Uint32 :: "v"]{dq} x.
+  Proof.
+    iSplit.
+    - iIntros "H".
+      iApply struct_fields_split in "H". iNamed "H".
+      iFrame.
+    - iIntros "Hl".
+      iApply @struct_fields_combine.
+      iFrame "Hl".
+      simpl.
+      rewrite -?noCopy_emp -?align_emp.
+      done.
+  Qed.
+  
   Lemma wp_Uint32__Load u dq :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -723,6 +771,22 @@ Qed.
     iIntros "?". iDestruct (combine_sep_gives with "[$]") as "#H".
     rewrite go_type_size_unseal. iDestruct "H" as %?. iModIntro. iPureIntro.
     naive_solver.
+  Qed.
+  
+  Lemma Int32_unfold l dq (x: w32) :
+    own_Int32 l dq x ⊣⊢
+    l ↦s[atomic.Int32 :: "v"]{dq} x.
+  Proof.
+    iSplit.
+    - iIntros "H".
+      iApply struct_fields_split in "H". iNamed "H".
+      iFrame.
+    - iIntros "Hl".
+      iApply @struct_fields_combine.
+      iFrame "Hl".
+      simpl.
+      rewrite -?noCopy_emp -?align_emp.
+      done.
   Qed.
   
   Lemma wp_Int32__Load u dq :

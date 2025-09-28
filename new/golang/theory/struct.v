@@ -165,6 +165,16 @@ Proof.
   constructor; rewrite Heq //.
 Qed.
 
+Lemma struct_fields_split_elim `{!IntoVal V} `{!IntoValTyped V t} {dwf: struct.Wf t}
+  (dq: dfrac) (l: loc) (v: V) Psplit `{Hsplit: !StructFieldsSplit dq l v Psplit} :
+  l ↦{dq} v ⊣⊢ Psplit.
+Proof.
+  destruct Hsplit as [H1 H2].
+  iSplit.
+  - rewrite H1; auto.
+  - rewrite H2; auto.
+Qed.
+
 (* A specialized version of [big_sepL_app] that simplifies some loc_add-related
 expressions. Not strictly about heap_pointsto, but specialized with a dfrac so
 higher-order unification works properly. *)
