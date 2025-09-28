@@ -4,6 +4,9 @@ translate = [
   "Int32*",
   "Uint32*",
 
+  "Bool*",
+  "b32",
+
   "noCopy",
   "align64",
   "Value*",
