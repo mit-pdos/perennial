@@ -101,14 +101,81 @@ Definition StoreInt64 : go_string := "sync/atomic.StoreInt64"%go.
 
 Definition StoreUint64 : go_string := "sync/atomic.StoreUint64"%go.
 
-Axiom Bool : go_type.
-
-Definition b32 : go_string := "sync/atomic.b32"%go.
-
 Definition noCopy : go_type := structT [
 ].
 #[global] Typeclasses Opaque noCopy.
 #[global] Opaque noCopy.
+
+Definition Bool : go_type := structT [
+  "_0" :: noCopy;
+  "v" :: uint32T
+].
+#[global] Typeclasses Opaque Bool.
+#[global] Opaque Bool.
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:17:16 *)
+Definition Bool__Loadⁱᵐᵖˡ : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (mem.alloc "x") in
+    return: ((let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
+     (func_call #LoadUint32) "$a0") ≠ #(W32 0))).
+
+Definition b32 : go_string := "sync/atomic.b32"%go.
+
+(* Store atomically stores val into x.
+
+   go: type.go:20:16 *)
+Definition Bool__Storeⁱᵐᵖˡ : val :=
+  λ: "x" "val",
+    exception_do (let: "x" := (mem.alloc "x") in
+    let: "val" := (mem.alloc "val") in
+    do:  (let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
+    let: "$a1" := (let: "$a0" := (![#boolT] "val") in
+    (func_call #b32) "$a0") in
+    (func_call #StoreUint32) "$a0" "$a1");;;
+    return: #()).
+
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:23:16 *)
+Definition Bool__Swapⁱᵐᵖˡ : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (mem.alloc (type.zero_val #boolT)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    return: ((let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (let: "$a0" := (![#boolT] "new") in
+     (func_call #b32) "$a0") in
+     (func_call #SwapUint32) "$a0" "$a1") ≠ #(W32 0))).
+
+(* CompareAndSwap executes the compare-and-swap operation for the boolean value x.
+
+   go: type.go:26:16 *)
+Definition Bool__CompareAndSwapⁱᵐᵖˡ : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
+    let: "x" := (mem.alloc "x") in
+    let: "new" := (mem.alloc "new") in
+    let: "old" := (mem.alloc "old") in
+    return: (let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (let: "$a0" := (![#boolT] "old") in
+     (func_call #b32) "$a0") in
+     let: "$a2" := (let: "$a0" := (![#boolT] "new") in
+     (func_call #b32) "$a0") in
+     (func_call #CompareAndSwapUint32) "$a0" "$a1" "$a2")).
+
+(* b32 returns a uint32 0 or 1 representing b.
+
+   go: type.go:31:6 *)
+Definition b32ⁱᵐᵖˡ : val :=
+  λ: "b",
+    exception_do (let: "b" := (mem.alloc "b") in
+    (if: ![#boolT] "b"
+    then return: (#(W32 1))
+    else do:  #());;;
+    return: (#(W32 0))).
 
 Definition Pointer : val :=
   λ: "T", type.structT [
@@ -805,21 +872,11 @@ Axiom OrInt64ⁱᵐᵖˡ : val.
 
 Axiom OrUint64ⁱᵐᵖˡ : val.
 
-Axiom b32ⁱᵐᵖˡ : val.
-
 Axiom runtime_procPinⁱᵐᵖˡ : val.
 
 Axiom runtime_procUnpinⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(SwapInt32, SwapInt32ⁱᵐᵖˡ); (SwapUint32, SwapUint32ⁱᵐᵖˡ); (SwapUintptr, SwapUintptrⁱᵐᵖˡ); (SwapPointer, SwapPointerⁱᵐᵖˡ); (CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (CompareAndSwapUint32, CompareAndSwapUint32ⁱᵐᵖˡ); (CompareAndSwapUintptr, CompareAndSwapUintptrⁱᵐᵖˡ); (CompareAndSwapPointer, CompareAndSwapPointerⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (AddUint32, AddUint32ⁱᵐᵖˡ); (AddUintptr, AddUintptrⁱᵐᵖˡ); (AndInt32, AndInt32ⁱᵐᵖˡ); (AndUint32, AndUint32ⁱᵐᵖˡ); (AndUintptr, AndUintptrⁱᵐᵖˡ); (OrInt32, OrInt32ⁱᵐᵖˡ); (OrUint32, OrUint32ⁱᵐᵖˡ); (OrUintptr, OrUintptrⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (LoadUint32, LoadUint32ⁱᵐᵖˡ); (LoadUintptr, LoadUintptrⁱᵐᵖˡ); (LoadPointer, LoadPointerⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (StoreUint32, StoreUint32ⁱᵐᵖˡ); (StoreUintptr, StoreUintptrⁱᵐᵖˡ); (StorePointer, StorePointerⁱᵐᵖˡ); (SwapInt64, SwapInt64ⁱᵐᵖˡ); (SwapUint64, SwapUint64ⁱᵐᵖˡ); (CompareAndSwapInt64, CompareAndSwapInt64ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddInt64, AddInt64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (AndInt64, AndInt64ⁱᵐᵖˡ); (AndUint64, AndUint64ⁱᵐᵖˡ); (OrInt64, OrInt64ⁱᵐᵖˡ); (OrUint64, OrUint64ⁱᵐᵖˡ); (LoadInt64, LoadInt64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreInt64, StoreInt64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ); (b32, b32ⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ)].
-
-Axiom Bool__CompareAndSwapⁱᵐᵖˡ : val.
-
-Axiom Bool__Loadⁱᵐᵖˡ : val.
-
-Axiom Bool__Storeⁱᵐᵖˡ : val.
-
-Axiom Bool__Swapⁱᵐᵖˡ : val.
 
 Axiom Pointer__CompareAndSwapⁱᵐᵖˡ : val.
 

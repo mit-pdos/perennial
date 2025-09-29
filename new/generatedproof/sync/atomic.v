@@ -9,23 +9,6 @@ Set Default Proof Using "Type".
 
 Module atomic.
 
-(* type atomic.Bool *)
-Module Bool.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End Bool.
-
-Global Instance bounded_size_Bool : BoundedTypeSize atomic.Bool.
-Admitted.
-
-Global Instance into_val_Bool `{ffi_syntax} : IntoVal Bool.t.
-Admitted.
-
-Global Instance into_val_typed_Bool `{ffi_syntax} : IntoValTyped Bool.t atomic.Bool.
-Admitted.
-
 (* type atomic.noCopy *)
 Module noCopy.
 Section def.
@@ -66,6 +49,80 @@ Global Instance wp_struct_make_noCopy:
     ]))%struct
     #(noCopy.mk).
 Proof. solve_struct_make_pure_wp. Qed.
+
+End instances.
+
+(* type atomic.Bool *)
+Module Bool.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  _0' : noCopy.t;
+  v' : w32;
+}.
+End def.
+End Bool.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent atomic.Bool.
+#[local] Typeclasses Transparent atomic.Bool.
+
+Global Instance Bool_wf : struct.Wf atomic.Bool.
+Proof. apply _. Qed.
+
+Global Instance settable_Bool : Settable Bool.t :=
+  settable! Bool.mk < Bool._0'; Bool.v' >.
+Global Instance into_val_Bool : IntoVal Bool.t :=
+  {| to_val_def v :=
+    struct.val_aux atomic.Bool [
+    "_0" ::= #(Bool._0' v);
+    "v" ::= #(Bool.v' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Bool : IntoValTyped Bool.t atomic.Bool :=
+{|
+  default_val := Bool.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Bool__0 : IntoValStructField "_0" atomic.Bool Bool._0'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Bool_v : IntoValStructField "v" atomic.Bool Bool.v'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Bool _0' v':
+  PureWp True
+    (struct.make #atomic.Bool (alist_val [
+      "_0" ::= #_0';
+      "v" ::= #v'
+    ]))%struct
+    #(Bool.mk _0' v').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Bool_struct_fields_split dq l (v : Bool.t) :
+  StructFieldsSplit dq l v (
+    "H_0" ∷ l ↦s[atomic.Bool :: "_0"]{dq} v.(Bool._0') ∗
+    "Hv" ∷ l ↦s[atomic.Bool :: "v"]{dq} v.(Bool.v')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Bool._0' v)) (atomic.Bool) "_0"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -768,6 +825,26 @@ Global Instance wp_func_call_StoreInt64 :
 Global Instance wp_func_call_StoreUint64 :
   WpFuncCall atomic.StoreUint64 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_b32 :
+  WpFuncCall atomic.b32 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Bool'ptr_CompareAndSwap :
+  WpMethodCall (ptrT.id atomic.Bool.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Bool'ptr_Load :
+  WpMethodCall (ptrT.id atomic.Bool.id) "Load" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Bool'ptr_Store :
+  WpMethodCall (ptrT.id atomic.Bool.id) "Store" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Bool'ptr_Swap :
+  WpMethodCall (ptrT.id atomic.Bool.id) "Swap" _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Int32'ptr_Add :
   WpMethodCall (ptrT.id atomic.Int32.id) "Add" _ (is_pkg_defined atomic) :=
