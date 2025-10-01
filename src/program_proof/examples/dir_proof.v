@@ -312,7 +312,7 @@ Section goose.
       }
       rewrite /Palloc Hused.
       iSplitR.
-      + iSplit; iPureIntro; set_unfold; lia.
+      + iSplit; iPureIntro; auto.
       + rewrite Hunused difference_empty_L.
         rewrite /rangeSet.
         rewrite big_sepS_list_to_set; last first.
@@ -640,7 +640,7 @@ Section goose.
                "Hused_set" ∷ is_addrset addrs_ref
                   (⋃ (take (uint.nat n) (inode.addrs <$> s_inodes))))%I
                 ([∗ list] i↦s_inode ∈ s_inodes, inode_cinv i s_inode)%I
-             with "[] [] [$Hinode_s $Hpre_inodes $Hused_set]").
+             with "[] [] [$Hinode_s $Hpre_inodes Hused_set]").
     { iIntros "!>" (x) "Hpre"; iNamed "Hpre". iApply pre_inodes_to_cinv. eauto. }
     { iIntros (i inode_ref) "!>".
       iIntros (Φ' Φc') "(Hpre&%Hbound&%Hlookup) HΦ"; iNamed "Hpre".
@@ -699,6 +699,7 @@ Section goose.
       { rewrite list_lookup_fmap.
         rewrite Hs_inode_lookup //. }
       rewrite union_list_app_L /= right_id_L //. }
+    { rewrite /union_list. iFrame. }
     iSplit.
     { iLeft in "HΦ". eauto. }
     iIntros "!> (Hinv&Hinode_s)"; iNamed "Hinv".
