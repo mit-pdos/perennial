@@ -6,6 +6,11 @@ From Perennial.Helpers Require Import gset.
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
 
+(* workaround for https://gitlab.mpi-sws.org/iris/stdpp/-/issues/243 *)
+Global Instance union_list_proper_L {A C} `{SemiSet A C, !LeibnizEquiv C} :
+  Proper (Permutation ==> (=)) (union_list (A:=C)).
+Proof. apply (foldr_permutation_proper' _); apply _. Qed.
+
 Section map.
 Context {K V : Type}.
 Context `{Countable K}.
