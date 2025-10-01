@@ -513,6 +513,24 @@ Definition send_au_fast ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : i
     | _ => True
     end).
 
+
+Definition close_au ch (cap: Z) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
+   |={⊤,∅}=>
+    ▷∃ s, "Hocinner" ∷ own_channel ch cap s γ ∗
+     "Hcontinner" ∷
+    (match s with
+    (* Case: Ready to close unbuffered *)
+    | chan_rep.Idle =>
+           own_channel ch cap (chan_rep.Closed []) γ ={∅,⊤}=∗ Φ
+    (* Case: Buffered, go to draining *)
+    | chan_rep.Buffered buff => 
+          own_channel ch cap (chan_rep.Closed buff) γ ={∅,⊤}=∗ Φ
+    (* Case: Channel is closed already, panic *)
+    | chan_rep.Closed draining => False 
+    | _ => True
+    end).
+
+
 (** Maps physical states to their logical representations with ghost state.
     This is the key invariant that connects the physical implementation
     to the logical specifications. *)
