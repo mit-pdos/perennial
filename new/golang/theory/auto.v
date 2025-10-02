@@ -250,8 +250,8 @@ Qed.
 
 (* This pattern comes up in the postcondition from [wp_for] if the condition is
 the constant [#true] (for infinite loops using [break] for example) *)
-Lemma if_decide_true_eq `{!ffi_syntax} {A} (x y: A) :
-  (if decide (#true = #true) then x else y) = x.
+Lemma if_decide_eq `{!ffi_syntax} {A} (b: bool) (x y: A) :
+  (if decide (#b = #b) then x else y) = x.
 Proof. rewrite decide_True //. Qed.
 
 (* TODO: is there a systematic way to avoid seeing these? *)
@@ -271,7 +271,7 @@ Proof. rewrite decide_True //. Qed.
 
 Ltac cleanup_bool_decide :=
   rewrite ?if_decide_bool_eq_true ?if_decide_bool_eq_false
-    ?if_decide_true_eq ?if_decide_true_eq_false ?if_decide_false_eq_true
+    ?if_decide_eq ?if_decide_true_eq_false ?if_decide_false_eq_true
     ?if_decide_true_neq_false ?if_decide_false_neq_true.
 
 #[local]
@@ -309,9 +309,12 @@ Ltac wp_if_destruct :=
           destruct (bool_decide_reflect b); subst;
           wp_pures;
           cleanup_bool_decide;
-          try wp_auto
+          try wp_auto;
+          cleanup_bool_decide
       | context[@to_val _ bool _ ?b] =>
           is_var b; destruct b;
-          try wp_auto
+          cleanup_bool_decide;
+          try wp_auto;
+          cleanup_bool_decide
       end
   end.

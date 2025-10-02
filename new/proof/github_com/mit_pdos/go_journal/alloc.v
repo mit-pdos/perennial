@@ -324,10 +324,7 @@ Proof.
   - wp_for_post.
     iFrame.
     pose proof (and_1_u8 x). word.
-  - (* XXX why doesn't the automation work for this? *)
-    rewrite decide_True //.
-    wp_auto.
-    iApply "HΦ". word.
+  - iApply "HΦ". word.
 Qed.
 
 Lemma wp_NumFree max l :
@@ -370,10 +367,7 @@ Proof.
     wp_for_post.
     iFrame.
     word.
-  - (* XXX: decide (#false = #false) does not evaluate *)
-    rewrite decide_True //.
-    wp_auto.
-    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
+  - wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
     { word. }
     iApply "HΦ". word.
 Qed.

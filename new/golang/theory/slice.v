@@ -1205,8 +1205,6 @@ Proof.
       rewrite -app_assoc /=.
       rewrite -> length_take_le by word.
       repeat (f_equal; try word). }
-    rewrite decide_True //.
-    wp_auto.
     assert (i = slice.len_f s2) by word; subst i.
     iApply "HΦ".
     iSplit; [ word | ].
@@ -1214,9 +1212,7 @@ Proof.
     rewrite -> !take_ge by word.
     iExactEq "Hs1".
     repeat (f_equal; try word).
-  - rewrite decide_True //.
-    wp_auto.
-    assert (i = slice.len_f s) by word; subst i.
+  - assert (i = slice.len_f s) by word; subst i.
     iApply "HΦ".
     iSplit; [ word | ].
     iFrame "Hs2".
