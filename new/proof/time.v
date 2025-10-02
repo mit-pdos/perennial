@@ -13,7 +13,7 @@ Lemma wp_Time__sec (t : loc) (tv : time.Time.t) :
     t @ (ptrT.id time.Time.id) @ "sec" #()
   {{{ (x : w64), RET #x; t ↦ tv }}}.
 Proof.
-  wp_start. wp_auto. wp_if_destruct; wp_auto; by iApply "HΦ".
+  wp_start. wp_auto. wp_if_destruct; by iApply "HΦ".
 Qed.
 
 #[local]

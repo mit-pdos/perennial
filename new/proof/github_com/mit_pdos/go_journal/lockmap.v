@@ -228,8 +228,7 @@ Proof.
 
   wp_auto.
   wp_if_destruct.
-  - wp_auto.
-    wp_apply (wp_Cond__Signal with "[$Hcond]").
+  - wp_apply (wp_Cond__Signal with "[$Hcond]").
 
     iMod (ghost_map_update false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
     iDestruct (big_sepM2_insert_2 _ _ _ addr with "[held cond waiters Haddrlocked Hp] Haddrs") as "Haddrs".
@@ -241,8 +240,7 @@ Proof.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs $Hcovered]").
     iApply "HΦ". done.
 
-  - wp_auto.
-    wp_apply (wp_map_delete with "Hmptr") as "Hmptr".
+  - wp_apply (wp_map_delete with "Hmptr") as "Hmptr".
 
     iMod (ghost_map_delete with "Hghctx Haddrlocked") as "Hghctx".
     iDestruct (big_sepS_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
@@ -417,7 +415,7 @@ Proof.
   }
 
   wp_for "Hloop".
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   - rewrite rangeSet_first.
     2: { unseal_nshard. word. }
     iDestruct (big_sepS_insert with "Hpp") as "[Hp Hpp]".

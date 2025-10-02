@@ -111,8 +111,8 @@ Proof.
     iMod ("Hclo" with "[Hk]").
     { iExists true. iFrame. }
     iModIntro. iIntros "Hck". wp_auto. rewrite bool_decide_true // decide_False //.
-    2:{ naive_solver. } rewrite decide_True //.
-    wp_auto. iApply "HΦ". iFrame.
+    rewrite decide_True //; wp_auto.
+    iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_LockClerk__Unlock ck key γ R :

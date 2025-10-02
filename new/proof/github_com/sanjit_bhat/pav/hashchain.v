@@ -426,7 +426,6 @@ Proof.
   iDestruct (own_slice_len with "Hsl_proof") as %?.
   wp_if_destruct.
   2: {
-    wp_auto.
     iApply "HΦ".
     (* TODO(goose): could "nil ownership" be automated? *)
     iDestruct (own_slice_nil (DfracOwn 1)) as "?".
@@ -441,7 +440,6 @@ Proof.
       iIntros (?) "@".
       iDestruct (wish_Verify_impl_mod_len with "[//]") as %?.
       word. }
-  wp_auto.
   iPersist "extLen".
 
   remember (word.divu _ _) as extLen.

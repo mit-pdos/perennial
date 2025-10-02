@@ -63,7 +63,7 @@ Proof.
   wp_if_destruct.
   { rewrite -> bool_decide_eq_true_2 by word.
     iApply "HΦ"; auto. }
-  wp_auto. wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   { rewrite -> bool_decide_eq_true_2 by word.
     iApply "HΦ"; auto. }
   iSpecialize ("HΦ" with "[$]").

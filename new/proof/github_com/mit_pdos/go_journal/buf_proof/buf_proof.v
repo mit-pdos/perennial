@@ -781,18 +781,15 @@ Proof.
   wp_auto.
   rewrite !mask_bit_ok //.
   wp_if_destruct.
-  - wp_auto.
-    iExactEq "HΦ"; do 3 f_equal.
+  - iExactEq "HΦ"; do 3 f_equal.
     rewrite install_one_bit_id //.
     { lia. }
     destruct (default false _), (default false _); auto.
     + apply masks_different in e; eauto; contradiction.
     + apply symmetry, masks_different in e; eauto; contradiction.
-  - wp_auto.
-    rewrite !mask_bit_ok //.
+  - rewrite !mask_bit_ok //.
     wp_if_destruct.
-    + wp_auto.
-      destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?.
+    + destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?.
       { apply masks_different in e; auto; contradiction. }
       iExactEq "HΦ"; do 3 f_equal.
       rewrite /install_one_bit.
@@ -800,8 +797,7 @@ Proof.
       apply (inj byte_to_bits).
       rewrite bits_to_byte_to_bits; [|len].
       bit_cases bit; byte_cases dst; vm_refl.
-    + wp_auto.
-      destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?; last contradiction.
+    + destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?; last contradiction.
       destruct (default false (byte_to_bits dst !! uint.nat bit)) eqn:?; first contradiction.
       iExactEq "HΦ"; do 3 f_equal.
       rewrite /install_one_bit.

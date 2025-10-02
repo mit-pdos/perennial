@@ -43,7 +43,6 @@ Proof.
     iDestruct (own_slice_len with "Hsl_b") as %[Hb_len ?].
     apply nil_length_inv in Hb_len. subst.
     iFrame "∗#". }
-  wp_auto.
   wp_apply (wp_slice_append with "[$Hsl_b]") as "* (?&?&?)".
   { iFrame "#". }
   iApply "HΦ". iFrame.

@@ -207,6 +207,15 @@ Tactic Notation "wp_auto_lc" int(x) :=
   let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
   f x.
 
+Lemma true_neq_false `{ffi: ffi_syntax} :
+  #true ≠ #false.
+Proof. intros ?%(inj to_val); congruence. Qed.
+Lemma false_neq_true `{ffi: ffi_syntax} :
+  #false ≠ #true.
+Proof. intros ?%(inj to_val); congruence. Qed.
+
+Hint Resolve true_neq_false false_neq_true : core.
+
 Lemma if_decide_bool_eq_true `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #true) then x
   else y) = (if bool_decide P then x else y).
@@ -214,7 +223,6 @@ Proof.
   destruct (bool_decide_reflect P).
   - rewrite decide_True //.
   - rewrite decide_False //.
-    inv 1.
 Qed.
 
 Lemma if_decide_bool_eq_false `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
@@ -223,7 +231,6 @@ Lemma if_decide_bool_eq_false `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
 Proof.
   destruct (bool_decide_reflect P).
   - rewrite decide_False //.
-    inv 1.
   - rewrite decide_True //.
 Qed.
 
@@ -241,16 +248,31 @@ Proof.
   rewrite decide_True //.
 Qed.
 
-(* This patterns comes up in the postcondition from [wp_for] if the condition is
+(* This pattern comes up in the postcondition from [wp_for] if the condition is
 the constant [#true] (for infinite loops using [break] for example) *)
-Lemma if_decide_true_eq `{!ffi_syntax} {A} (x y: A) :
-  (if decide (#true = #true) then x else y) = x.
-Proof.
-  rewrite decide_True //.
-Qed.
+Lemma if_decide_eq `{!ffi_syntax} {A} (b: bool) (x y: A) :
+  (if decide (#b = #b) then x else y) = x.
+Proof. rewrite decide_True //. Qed.
+
+(* TODO: is there a systematic way to avoid seeing these? *)
+Lemma if_decide_true_eq_false `{!ffi_syntax} {A} (x y: A) :
+  (if decide (#true = #false) then x else y) = y.
+Proof. rewrite decide_False //. Qed.
+Lemma if_decide_false_eq_true `{!ffi_syntax} {A} (x y: A) :
+  (if decide (#false = #true) then x else y) = y.
+Proof. rewrite decide_False //. Qed.
+
+Lemma if_decide_true_neq_false `{!ffi_syntax} {A} (x y: A) :
+  (if decide (#true ≠ #false) then x else y) = x.
+Proof. rewrite decide_True //. Qed.
+Lemma if_decide_false_neq_true `{!ffi_syntax} {A} (x y: A) :
+  (if decide (#false ≠ #true) then x else y) = x.
+Proof. rewrite decide_True //. Qed.
 
 Ltac cleanup_bool_decide :=
-  rewrite ?if_decide_bool_eq_true ?if_decide_bool_eq_false ?if_decide_true_eq.
+  rewrite ?if_decide_bool_eq_true ?if_decide_bool_eq_false
+    ?if_decide_eq ?if_decide_true_eq_false ?if_decide_false_eq_true
+    ?if_decide_true_neq_false ?if_decide_false_neq_true.
 
 #[local]
 Ltac wp_for_cleanup :=
@@ -286,6 +308,13 @@ Ltac wp_if_destruct :=
       | context[bool_decide ?b] =>
           destruct (bool_decide_reflect b); subst;
           wp_pures;
+          cleanup_bool_decide;
+          try wp_auto;
+          cleanup_bool_decide
+      | context[@to_val _ bool _ ?b] =>
+          is_var b; destruct b;
+          cleanup_bool_decide;
+          try wp_auto;
           cleanup_bool_decide
       end
   end.
