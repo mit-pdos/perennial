@@ -420,7 +420,6 @@ Proof.
     simpl. iSplit; auto. iSplit; auto.
     iApply own_slice_cap_none; reflexivity.
   }
-  wp_pures.
   wp_bind (AllocN _ _).
   rewrite [in #cap]to_val_unseal.
   iApply (wp_allocN_seq with "[//]").
@@ -445,7 +444,7 @@ Proof.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros.
     rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
-    rewrite default_val_eq_zero_val.
+    rewrite !default_val_eq_zero_val.
     erewrite has_go_type_len.
     2:{ apply zero_val_has_go_type. }
     iApply (big_sepL_impl with "[$]").
@@ -459,6 +458,7 @@ Proof.
     rewrite /own_slice_cap_def /=.
     iSplitR; first iPureIntro.
     { word. }
+    rewrite !default_val_eq_zero_val.
     erewrite has_go_type_len.
     2:{ apply zero_val_has_go_type. }
     iExists (replicate (sint.nat cap - sint.nat len)%nat (default_val V)).
@@ -953,7 +953,6 @@ Proof.
   iDestruct (own_slice_len with "Hsl") as %Hlen.
   wp_if_destruct.
   - (* Case: execute loop body *)
-    wp_auto.
     pose proof (list_lookup_lt vs (sint.nat j) ltac:(word)) as [w Hlookup].
     iDestruct (own_slice_elem_acc j with "[$]") as "[Helem Hown]"; [word|done|].
     wp_pure.
@@ -1178,8 +1177,8 @@ Proof.
     )%I with "[Hs1 Hs2 i]" as "IH".
   { iFrame. word. }
   wp_for "IH".
-  wp_if_destruct; try wp_auto.
-  - wp_if_destruct; try wp_auto.
+  wp_if_destruct.
+  - wp_if_destruct.
     {
       list_elem vs' (sint.Z i) as y.
       wp_pure; [ word | ].
@@ -1206,8 +1205,6 @@ Proof.
       rewrite -app_assoc /=.
       rewrite -> length_take_le by word.
       repeat (f_equal; try word). }
-    rewrite decide_False.
-    2: { inv 1. }
     rewrite decide_True //.
     wp_auto.
     assert (i = slice.len_f s2) by word; subst i.
@@ -1217,9 +1214,7 @@ Proof.
     rewrite -> !take_ge by word.
     iExactEq "Hs1".
     repeat (f_equal; try word).
-  - rewrite decide_False.
-    2: { inv 1. }
-    rewrite decide_True //.
+  - rewrite decide_True //.
     wp_auto.
     assert (i = slice.len_f s) by word; subst i.
     iApply "HΦ".
@@ -1295,7 +1290,7 @@ Proof.
   iDestruct (own_slice_wf with "Hs") as %Hwf1.
   iDestruct (own_slice_wf with "Hs2") as %Hwf2.
   wp_apply wp_sum_assume_no_overflow_signed as "%Hoverflow".
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   - wp_pure.
     { word. }
     match goal with

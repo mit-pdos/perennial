@@ -211,7 +211,7 @@ Proof.
   wp_apply "HErr"; first iFrame "#". iIntros (?) "_". wp_pures.
   destruct bool_decide.
   2:{
-    rewrite decide_False //; last naive_solver.
+    rewrite decide_False //.
     rewrite decide_True //. wp_auto. iApply "HΦ". eauto.
   }
   rewrite decide_True //. wp_auto.
@@ -229,7 +229,6 @@ Proof.
       iNamedAccu. }
     { (* not nil *)
       rewrite decide_False //. iNamed "Hsession".
-      wp_auto.
       wp_apply "HDone". wp_auto.
       wp_apply wp_Session__Done.
       { iFrame "#". }
@@ -583,7 +582,7 @@ Proof.
   wp_apply (wp_map_get with "[$entries_own]") as "entries_own".
   wp_auto. wp_if_destruct.
   { (* li is nil *)
-    wp_auto. iCombineNamed "*_own" as "Hown".
+    iCombineNamed "*_own" as "Hown".
     iDestruct ("Hclose" with "[Hown]") as "Hown".
     { iNamed "Hown". iFrame "∗#%". iExists true. iFrame "∗#%". }
     wp_apply (wp_RWMutex__Unlock with "[$Hlocked $Hown]") as "Hmu".

@@ -31,7 +31,7 @@ Theorem wp_Min_l (n m: u64) :
 Proof.
   wp_start as "%Hmin".
   wp_auto.
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   - iApply "HΦ". done.
   - replace m with n by word.
     iApply "HΦ". done.
@@ -45,7 +45,7 @@ Theorem wp_Min_r (n m: u64) :
 Proof.
   wp_start as "%Hmin".
   wp_auto.
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   - replace n with m by word.
     iApply "HΦ". done.
   - iApply "HΦ". done.
@@ -63,7 +63,7 @@ Proof.
   (* Annoying that [iNamed "Hpkg"] doesn't work directly.. *)
   iDestruct (is_pkg_init_access with "[$]") as "Hpkg". simpl. iNamed "Hpkg".
   wp_auto.
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   - wp_apply wp_Printf.
     iApply "HΦ". done.
   - iApply "HΦ". done.

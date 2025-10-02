@@ -194,7 +194,6 @@ Proof.
 
   (* in golang, extract byte. *)
   wp_if_destruct; [|word].
-  wp_auto.
   wp_pure; [ word | ].
   wp_apply (wp_load_slice_elem with "[$Hsl_bs]") as "Hsl_bs".
   { word. }
@@ -602,7 +601,7 @@ Admitted. (*
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_sibs") as %[].
 
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   { iApply "HΦ".
     destruct sibs_enc. 2: { simpl in *. word. }
     instantiate (1:=[]).
@@ -737,7 +736,7 @@ Proof.
 Admitted. (*
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_label") as %[].
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   2: { iApply "HΦ". intro_wish. word. }
   wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* Hpost".
   destruct err; wp_auto.
@@ -746,14 +745,14 @@ Admitted. (*
   iNamed "Hown_obj_dec".
   iDestruct (own_slice_len with "Hsl_Siblings") as %[Hlen_sl_sibs ?].
   wp_auto.
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   2: { iApply "HΦ". intro_wish.
     iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
     iClear "Hwish_dec". simpl in *.
     apply join_same_len_length in Hlen_sibs.
     rewrite -join_length_reverse in Hlen_sibs.
     word. }
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   { iApply "HΦ". intro_wish.
     iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
     iClear "Hwish_dec". simpl in *.
@@ -784,7 +783,7 @@ Admitted. (*
     iPureIntro; repeat split; try done; word. }
 
   iDestruct (own_slice_len with "Hsl_LeafLabel") as %[].
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   2: { iApply "HΦ". intro_wish.
     destruct oleaf as [[]|].
     2: { iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] _]. }
@@ -794,7 +793,7 @@ Admitted. (*
   iPersist "Hsl_LeafLabel Hsl_LeafVal".
   wp_apply bytes.wp_Equal as "_".
   { iFrame "#". }
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   { iApply "HΦ". intro_wish.
     destruct oleaf as [[]|].
     2: { iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] _]. }

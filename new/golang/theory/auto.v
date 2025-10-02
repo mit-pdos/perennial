@@ -308,6 +308,10 @@ Ltac wp_if_destruct :=
       | context[bool_decide ?b] =>
           destruct (bool_decide_reflect b); subst;
           wp_pures;
-          cleanup_bool_decide
+          cleanup_bool_decide;
+          try wp_auto
+      | context[@to_val _ bool _ ?b] =>
+          is_var b; destruct b;
+          try wp_auto
       end
   end.
