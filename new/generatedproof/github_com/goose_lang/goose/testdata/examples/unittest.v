@@ -2826,6 +2826,14 @@ Global Instance wp_func_call_testVariadicPassThrough :
   WpFuncCall unittest.testVariadicPassThrough _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_LocalVars :
+  WpFuncCall unittest.LocalVars _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_LocalConsts :
+  WpFuncCall unittest.LocalConsts _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_method_call_embedA_Foo :
   WpMethodCall unittest.embedA.id "Foo" _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_method_call).
