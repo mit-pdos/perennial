@@ -133,7 +133,7 @@ Proof.
   iIntros (ep ?). destruct (decide (uint.Z ep < uint.Z put_ep)).
   (* case 1: ep < put_ep. *)
   { iEval (rewrite /is_hist_ep). rewrite filter_app.
-    opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
+    opose proof (list_filter_singleton_True (λ x, uint.Z x.1 ≤ uint.Z ep)
       (put_ep, pk)) as [[->_]|[_?]]. 2: { exfalso. simpl in *. word. }
     list_simplifier. destruct (decide (uint.Z ep < uint.Z valid)).
     (* case 1.1: ep < valid. *)
@@ -159,7 +159,7 @@ Proof.
         iFrame "#%". word. } }
   (* case 2: ep = put_ep. *)
   iEval (rewrite /is_hist_ep). rewrite filter_app.
-  opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
+  opose proof (list_filter_singleton_True (λ x, uint.Z x.1 ≤ uint.Z ep)
     (put_ep, pk)) as [[_?]|[->_]]. { exfalso. simpl in *. word. }
   destruct (decide (valid = 0)) as [->|].
   (* case 2.1: valid = 0. *)

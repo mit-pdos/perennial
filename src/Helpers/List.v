@@ -150,7 +150,7 @@ Section list.
     replicate n x = [].
   Proof. intros ->. reflexivity. Qed.
 
-  Lemma list_filter_singleton (P : A → Prop)
+  Lemma list_filter_singleton_True (P : A → Prop)
       `{!∀ x, Decision (P x)} x :
     (filter P [x] = [] ∧ ¬ P x) ∨ (filter P [x] = [x] ∧ P x).
   Proof.

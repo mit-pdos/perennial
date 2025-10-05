@@ -468,7 +468,7 @@ Lemma covered_by_shard_insert x X :
   covered_by_shard (uint.Z (word.modu x (W64 NSHARD))) ({[x]} ∪ X) =
   {[x]} ∪ covered_by_shard (uint.Z (word.modu x (W64 NSHARD))) X.
 Proof.
-  rewrite /covered_by_shard filter_union_L filter_singleton_L //.
+  rewrite /covered_by_shard filter_union_L filter_singleton_True_L //.
   unseal_nshard.
   word.
 Qed.
@@ -479,7 +479,7 @@ Lemma covered_by_shard_insert_ne (x x' : u64) X :
     covered_by_shard (uint.Z x') X.
 Proof.
   intros.
-  rewrite /covered_by_shard filter_union_L filter_singleton_not_L.
+  rewrite /covered_by_shard filter_union_L filter_singleton_False_L.
   { set_solver. }
   auto.
 Qed.
