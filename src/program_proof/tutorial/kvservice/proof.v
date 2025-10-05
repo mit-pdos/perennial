@@ -197,7 +197,7 @@ Proof.
   iUnfold put.own in "Hargs". iNamed "Hargs". rewrite Hown_struct. wp_pures.
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
-  wp_if_destruct.
+  wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
     wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
@@ -237,7 +237,7 @@ Proof.
   iUnfold conditionalPut.own in "Hargs". iNamed "Hargs". rewrite Hown_struct.
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
-  wp_if_destruct.
+  wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
     wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
@@ -251,7 +251,7 @@ Proof.
   }
   wp_apply (wp_ref_to) as (ret2_ptr) "Hret"; first val_ty.
   wp_apply (wp_MapGet with "HkvsM") as (??) "[Hlookup HkvsM]".
-  wp_if_destruct.
+  wp_if_destruct; wp_auto.
   { (* case: the old value matches the expected value *)
     wp_apply (wp_MapInsert with "HkvsM") as "HkvsM"; first done.
     (* FIXME: delete typed_map.map_insert *)
@@ -299,7 +299,7 @@ Proof.
   iUnfold get.own in "Hargs". iNamed "Hargs". rewrite Hown_struct.
   wp_auto.
   wp_apply (wp_MapGet with "HlastRepliesM") as (??) "[%HlastReply HlastRepliesM]".
-  wp_if_destruct.
+  wp_if_destruct; wp_auto.
   { (* case: this is a duplicate request *)
     wp_apply (wp_Mutex__Unlock with "[-HΦ Hspec]").
     {
