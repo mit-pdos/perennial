@@ -148,7 +148,7 @@ Proof.
     (* FIXME: declare then access init predicate of errors. *)
     admit.
   }
-  wp_auto. wp_apply (wp_Generator__Next with "[]"). { iFrame "#". }
+  wp_apply (wp_Generator__Next with "[]"). { iFrame "#". }
   iIntros "%i Hid". wp_auto. wp_alloc hdr_ptr as "hdr". wp_auto.
   iNamed "Hsimple". rewrite HAuthenticate. wp_auto.
   iDestruct ("Hclose" with "[$]") as "Hsrv".
@@ -180,7 +180,7 @@ Proof.
   iDestruct "Hmarshal" as "(req_ptr & req & %data & data_sl & %Hmarshal)".
   wp_auto. wp_if_destruct.
   { wp_bind. (* FIXME: access errors init predicate *) admit. }
-  wp_auto. rewrite HID. wp_auto. wp_bind.
+  rewrite HID. wp_auto. wp_bind.
   wp_apply (wp_wand with "[req]").
   {
     instantiate (1:=(λ v, "->" ∷ ⌜ v = #hdr.(etcdserverpb.RequestHeader.ID') ⌝ ∗

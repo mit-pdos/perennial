@@ -163,7 +163,6 @@ Proof.
     iApply "HQ_inv".
     done.
   - wp_if_destruct; [ | exfalso; word ].
-    wp_auto.
     wp_apply wp_Once__doSlow.
     { iFrame "#". }
     iIntros "HQ".

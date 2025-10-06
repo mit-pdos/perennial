@@ -192,7 +192,6 @@ Proof.
 
   (* in golang, extract byte. *)
   wp_if_destruct; [|word].
-  wp_auto.
   wp_pure; [ word | ].
   wp_apply (wp_load_slice_elem with "[$Hsl_bs]") as "Hsl_bs".
   { word. }
@@ -367,7 +366,6 @@ Proof.
   (* empty. *)
   { iDestruct (own_empty_tree with "Hown_tree") as %->.
     iClear "IH".
-    wp_auto.
     wp_apply wp_alloc as "* Hnode".
     iApply wp_fupd.
     wp_apply wp_compLeafHash as "* @".
@@ -387,7 +385,7 @@ Proof.
     wp_if_destruct.
     (* same label. *)
     { case_decide; [|done].
-      iClear "IH". wp_auto.
+      iClear "IH".
       iApply wp_fupd.
       wp_apply wp_compLeafHash as "* @".
       { iFrame "#". }
@@ -407,7 +405,7 @@ Proof.
       simplify_eq/=. }
 
     (* diff label. *)
-    wp_auto. wp_apply wp_alloc as "* Hnode".
+    wp_apply wp_alloc as "* Hnode".
     wp_apply (wp_node_getChild with "[$Hnode]") as "*".
     { iFrame "#". }
     iIntros "[_ H]". iNamed "H". wp_auto.
@@ -597,7 +595,7 @@ Proof.
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_sibs") as %[].
 
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   { iApply "HΦ".
     destruct sibs_enc. 2: { simpl in *. word. }
     instantiate (1:=[]).
@@ -730,7 +728,7 @@ Lemma wp_proofToTree sl_label label sl_proof proof :
 Proof.
   wp_start as "@". wp_auto.
   iDestruct (own_slice_len with "Hsl_label") as %[].
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   2: { iApply "HΦ". intro_wish. word. }
   wp_apply (MerkleProof.wp_dec with "[$Hsl_proof]") as "* Hpost".
   destruct err; wp_auto.
@@ -739,14 +737,14 @@ Proof.
   iNamed "Hown_obj_dec".
   iDestruct (own_slice_len with "Hsl_Siblings") as %[Hlen_sl_sibs ?].
   wp_auto.
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   2: { iApply "HΦ". intro_wish.
     iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
     iClear "Hwish_dec". simpl in *.
     apply join_same_len_length in Hlen_sibs.
     rewrite -join_length_reverse in Hlen_sibs.
     word. }
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   { iApply "HΦ". intro_wish.
     iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[-> ->].
     iClear "Hwish_dec". simpl in *.
@@ -777,7 +775,7 @@ Proof.
     iPureIntro; repeat split; try done; word. }
 
   iDestruct (own_slice_len with "Hsl_LeafLabel") as %[].
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   2: { iApply "HΦ". intro_wish.
     destruct oleaf as [[]|].
     2: { iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] _]. }
@@ -787,7 +785,7 @@ Proof.
   iPersist "Hsl_LeafLabel Hsl_LeafVal".
   wp_apply bytes.wp_Equal as "_".
   { iFrame "#". }
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   { iApply "HΦ". intro_wish.
     destruct oleaf as [[]|].
     2: { iDestruct (MerkleProof.wish_det with "Hwish_dec Henc_proof") as %[[=] _]. }
@@ -881,9 +879,7 @@ Proof.
 
   { iClear "IH".
     iDestruct (own_empty_tree with "Hown_tree") as %->.
-    wp_auto.
-    (* TODO(goose): wp_if_destruct could destruct bool's. *)
-    destruct getProof; wp_auto.
+    wp_if_destruct.
     + wp_apply wp_getProofCap as "* %"; [word|].
       wp_apply wp_slice_make3 as "* (Hsl_sibs&Hcap_sibs&_)"; [word|].
       iApply "HΦ". iFrame.
@@ -926,7 +922,7 @@ Proof.
       (if b then if b then x0 else x1 else if b then x1 else x0) = x0) as Hif.
     { intros. by repeat case_match. }
 
-    destruct getProof; wp_auto; simpl in *; iNamed "Hproof".
+    wp_if_destruct; simpl in *; iNamed "Hproof".
     + iDestruct ("Hclose" with "Hcb Hcnb") as "@".
       rewrite !{}Hif.
       wp_apply (wp_node_getHash (if get_bit label depth then _ else _)
@@ -1236,7 +1232,7 @@ Proof.
     )%I
     with "[proof Hsl_sibs Hproof]"
   ) as "* @".
-  { destruct getProof; wp_auto.
+  { wp_if_destruct.
     2: { by iFrame "∗#". }
     iNamed "Hproof".
     subst.
@@ -1247,6 +1243,7 @@ Proof.
     iPureIntro. split; [done|].
     repeat f_equal. word. }
 
+  (* TODO(goose): wp_if_destruct with #(negb b) *)
   destruct found as [[]|]; simplify_eq/=.
   2: { wp_auto. destruct getProof; wp_auto.
     - iNamed "Hproof".
