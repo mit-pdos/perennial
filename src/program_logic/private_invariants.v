@@ -179,10 +179,11 @@ Context `{PRI: !pri_invG IRISG}.
       intros E'.
       exists (coPpick (MaybeEn2 E ∖ gset_to_coPset E')).
       rewrite -elem_of_gset_to_coPset (comm and) -elem_of_difference.
-      apply coPpick_elem_of=> Hfin.
-      apply (difference_finite_inv _ _) in Hfin; auto using gset_to_coPset_finite.
-      apply MaybeEn2_infinite in Hfin; auto.
-      intros ?. eapply set_not_infinite_finite; eauto.
+      apply coPpick_elem_of=> Hempty.
+      eapply MaybeEn2_infinite, (difference_finite_inv _ _).
+      { rewrite -coPset_infinite_finite. exact Hinf. }
+      2:{ erewrite Hempty. apply empty_finite. }
+      apply gset_to_coPset_finite.
     }
     iDestruct ("Hclo" with "[$]") as "$".
     iIntros "!> !>". rewrite pri_inv_eq /pri_inv_def. iExists _. iFrame; eauto.
