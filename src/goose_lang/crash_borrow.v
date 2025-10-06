@@ -54,6 +54,7 @@ Proof.
   rewrite /= decide_True in Hval => //=.
   apply coPpick_elem_of.
   intros ?. apply set_not_infinite_finite in Hinf; eauto.
+  subst. apply empty_finite.
 Qed.
 
 Lemma ownfCP_disj1 γ q1 D E :
