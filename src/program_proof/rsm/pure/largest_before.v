@@ -193,6 +193,6 @@ Lemma largest_before_union_max n nmax ns :
 Proof.
   intros Hn Hgt.
   rewrite /largest_before.
-  rewrite filter_union_L filter_singleton_not_L; last lia.
+  rewrite filter_union_L filter_singleton_False_L; last lia.
   by rewrite union_empty_l_L.
 Qed.
