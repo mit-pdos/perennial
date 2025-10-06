@@ -103,9 +103,10 @@ Section ae_inv.
   Proof.
     exists (coPpick (AE_next_diff (S k) mj ∖gset_to_coPset E)).
     rewrite -elem_of_gset_to_coPset (comm and) -elem_of_difference.
-    apply coPpick_elem_of=> Hfin.
-    eapply AE_next_diff_inf, (difference_finite_inv _ _), Hfin.
-    apply gset_to_coPset_finite.
+    apply coPpick_elem_of=> Hempty.
+    eapply AE_next_diff_inf, (difference_finite_inv _ _).
+    { apply gset_to_coPset_finite. }
+    erewrite Hempty. apply empty_finite.
   Qed.
 
   Lemma own_ae_inv_alloc_k E k mj P : ▷ P -∗ |k,mj={E}=> own_ae_inv k mj P.
