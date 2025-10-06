@@ -102,7 +102,7 @@ Section inv_mut.
     exists (coPpick (MaybeEn1 (↑ N) ∖gset_to_coPset E)).
     rewrite -elem_of_gset_to_coPset (comm and) -elem_of_difference.
     apply coPpick_elem_of=> Hfin.
-    eapply (MaybeEn_infinite _ (nclose_infinite N)), (difference_finite_inv _ _), Hfin.
+    eapply (MaybeEn_infinite _ (nclose_not_finite N)), (difference_finite_inv _ _), Hfin.
     apply gset_to_coPset_finite.
   Qed.
 
