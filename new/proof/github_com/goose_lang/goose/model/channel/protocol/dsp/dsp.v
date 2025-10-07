@@ -251,4 +251,111 @@ Lemma dsp_right_close_rl {V_LR V_RL}
 Proof.
 Admitted.
 
+(** ** Choice and Branch Operations 
+    
+    These operations provide choice/branching in DSP protocols.
+    - Internal choice: One endpoint decides which branch, pure protocol update
+    - External choice: Endpoint receives and reacts to the other's decision
+*)
+
+(** Left endpoint makes internal choice - pure protocol update, no communication *)
+Lemma dsp_left_internal_choice {V_LR V_RL}
+    `{!protoG Σ (DspV V_LR V_RL)}
+    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
+    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    (γl γr : gname) (N : namespace)
+    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z) 
+    (b : bool) (P1 P2 : iProp Σ) 
+    (p_choice p1 p2 : iProto Σ (DspV V_LR V_RL)) E :
+  ↑N ⊆ E →
+  (if b then P1 else P2) -∗
+  dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
+    p_choice ={E}=∗
+  dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
+    (if b then p1 else p2).
+Proof.
+Admitted.
+
+(** Left endpoint receives external choice - destruct on right endpoint's decision *)
+Lemma dsp_left_external_choice {V_LR V_RL}
+    `{!protoG Σ (DspV V_LR V_RL)}
+    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
+    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    (γl γr : gname) (N : namespace)
+    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z) 
+    (P1 P2 : iProp Σ) 
+    (m : iMsg Σ (DspV V_LR V_RL))
+    (p1 p2 : iProto Σ (DspV V_LR V_RL)) :
+  {{{ is_pkg_init channel ∗
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
+        (<?> m) ∗
+      (* Message encodes receiving a choice with appropriate resources *)
+      (∀ (v : V_RL) (p' : iProto Σ (DspV V_LR V_RL)),
+         iMsg_car m (inr v) (Next p') -∗
+         (∃ (b : bool), ⌜p' = if b then p1 else p2⌝ ∗ if b then P1 else P2)) }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
+  {{{ (v : V_RL) (ok : bool), RET (#v, #ok);
+      if ok then 
+        ∃ (b : bool) (p' : iProto Σ (DspV V_LR V_RL)),
+          ⌜p' = if b then p1 else p2⌝ ∗
+          dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' ∗ 
+          if b then P1 else P2
+      else
+        (<?> m) ⊑ END ∗
+        dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+Proof.
+Admitted.
+
+(** Right endpoint makes internal choice - pure protocol update, no communication *)
+Lemma dsp_right_internal_choice {V_LR V_RL}
+    `{!protoG Σ (DspV V_LR V_RL)}
+    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
+    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    (γl γr : gname) (N : namespace)
+    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z) 
+    (b : bool) (P1 P2 : iProp Σ) 
+    (p_choice p1 p2 : iProto Σ (DspV V_LR V_RL)) E :
+  ↑N ⊆ E →
+  (if b then P1 else P2) -∗
+  dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
+    p_choice ={E}=∗
+  dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
+    (if b then p1 else p2).
+Proof.
+Admitted.
+
+(** Right endpoint receives external choice - destruct on left endpoint's decision *)
+Lemma dsp_right_external_choice {V_LR V_RL}
+    `{!protoG Σ (DspV V_LR V_RL)}
+    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
+    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    (γl γr : gname) (N : namespace)
+    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z) 
+    (P1 P2 : iProp Σ) 
+    (m : iMsg Σ (DspV V_LR V_RL))
+    (p1 p2 : iProto Σ (DspV V_LR V_RL)) :
+  {{{ is_pkg_init channel ∗
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
+        (<?> m) ∗
+      (* Message encodes receiving a choice with appropriate resources *)
+      (∀ (v : V_LR) (p' : iProto Σ (DspV V_LR V_RL)),
+         iMsg_car m (inl v) (Next p') -∗
+         (∃ (b : bool), ⌜p' = if b then p1 else p2⌝ ∗ if b then P1 else P2)) }}}
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tL #()
+  {{{ (v : V_LR) (ok : bool), RET (#v, #ok);
+      if ok then 
+        ∃ (b : bool) (p' : iProto Σ (DspV V_LR V_RL)),
+          ⌜p' = if b then p1 else p2⌝ ∗
+          dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' ∗ 
+          if b then P1 else P2
+      else
+        (<?> m) ⊑ END ∗
+        dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+Proof.
+Admitted.
+
 End dsp.
