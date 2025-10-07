@@ -2,8 +2,9 @@
    This file is part of Actris (https://gitlab.mpi-sws.org/iris/actris).
 
    Copyright (c) Actris developers and contributors.
-   Distributed under the terms of the BSD 3-Clause License; see the LICENSE file
-   in this repository for details.
+   Distributed under the terms of the BSD 3-Clause License; see
+   https://gitlab.mpi-sws.org/iris/actris/-/blob/master/LICENSE
+   for the full license text.
 *)
 
 (** This file defines the model of dependent separation protocols as the
