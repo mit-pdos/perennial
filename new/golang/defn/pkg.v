@@ -24,7 +24,6 @@ Class GoContext {ext : ffi_syntax} :=
     global_addr_def : go_string → loc;
     __function : go_string → option val;
     __method : go_string → go_string → option val;
-    to_mem_type : go_string → go_type;
   }.
 
 (* NOTE: To avoid printing the [GoContext] instance when printing [global_addr].

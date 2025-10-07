@@ -4,7 +4,8 @@ From New.golang.defn Require Import typing.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition error : go_type := interfaceT.
+(* FIXME: make this part of NamedToUnderlying *)
+Definition error : go.type := interfaceT.
 
 (* only defined for 2 inputs for now. *)
 Definition minUint64 (n : nat) : val :=

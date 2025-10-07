@@ -89,6 +89,11 @@ destruct a. apply Forall_cons. split.
 { apply IHdecls. }
   Defined.
 
+  (* FIXME: the existence of this is a performance optimization: a simpler
+     alternative is to prove for each record type manually that the
+     wp_load/store specs hold. This allows for stating an intermediate condition
+     which is sufficient for wp_load/store and which can be proven "quickly"
+     by generatedproof. *)
   Inductive has_go_type : val → go_type → Prop :=
   | has_go_type_bool (b : bool) : has_go_type #b boolT
   | has_go_type_uint64 (x : w64) : has_go_type #x uint64T

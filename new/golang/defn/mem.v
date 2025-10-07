@@ -1,42 +1,100 @@
-From New.golang.defn Require Export typing.
+From New.golang.defn Require Export typing intoval.
 From Perennial Require Import base.
 
-(** * Memory load, store, and allocation with type annotations. *)
 Module mem.
+Inductive type :=
+(* Boolean *)
+| boolT
+
+(* Numeric, except float and impl-specific sized objects *)
+| w8T
+| w16T
+| w32T
+| w64T
+| stringT
+| arrayT (n : nat) (elem : type)
+| sliceT
+| interfaceT
+| structT (decls : list (go_string * type))
+| ptrT
+| funcT
+| invalidT.
+
+Section val_types.
+  Context `{ffi_syntax}.
+  Fixpoint zero_val (t : type) : val :=
+    match t with
+    | boolT => #false
+
+    (* Numeric, except float and impl-specific sized objects *)
+    | w8T => #(W8 0)
+    | w16T => #(W16 0)
+    | w32T => #(W32 0)
+    | w64T => #(W64 0)
+
+    | stringT => #""%V
+    | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
+    | sliceT => #slice.nil
+    | structT decls => fold_right PairV #() (fmap (zero_val ∘ snd) decls)
+    | ptrT => #null
+    | funcT => #func.nil
+    | interfaceT => #interface.nil
+    | invalidT => LitV LitPoison
+    end.
+
+  Fixpoint go_type_size_def (t : type) : nat :=
+    match t with
+    | structT d =>
+        (fix go_type_size_struct d : nat :=
+           match d with
+           | [] => O
+           | (_,t) :: d => (go_type_size_def t + go_type_size_struct d)%nat
+           end
+        ) d
+    | arrayT n e => n * (go_type_size_def e)
+    | _ => 1
+    end.
+  Program Definition go_type_size := sealed @go_type_size_def.
+  Definition go_type_size_unseal : go_type_size = _ := seal_eq _.
+End val_types.
+
+Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +ₗ[ t ]  z").
+Notation "l +ₗ[ t ] z" := (l +ₗ go_type_size t * z) : stdpp_scope .
+Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (go_type_size t)) e1%E e2%E) : expr_scope .
+
+(** * Memory load, store, and allocation with type annotations. *)
 Section go_lang.
   Context `{ffi_syntax}.
+  Context `{!NamedUnderlyingTypes}.
 
-  Definition alloc_def (t : go_type) : val := λ: <>, ref (zero_val t).
-  Program Definition alloc := sealed @alloc_def.
-  Definition alloc_unseal : alloc = _ := seal_eq _.
+  Definition alloc (t : type) : val := λ: <>, ref (zero_val t).
 
-  Fixpoint load_def (t : go_type) : val :=
+  Fixpoint load (t : type) : val :=
     match t with
     | structT d =>
         (fix load_struct d : val :=
           match d with
           | [] => (λ: <>, #())%V
-          | (_,t) :: d => (λ: "l", (load_def t "l", load_struct d ("l" +ₗ[t] #(W64 1))))%V
+          | (_,t) :: d => (λ: "l", (load t "l", load_struct d ("l" +ₗ[t] #(W64 1))))%V
           end) d
     | arrayT n t =>
         (fix load_array n : val :=
           match n with
           | O => (λ: <>, #())%V
-          | S n => (λ: "l", (load_def t "l", load_array n ("l" +ₗ[t] #(W64 1))))%V
+          | S n => (λ: "l", (load t "l", load_array n ("l" +ₗ[t] #(W64 1))))%V
           end) n
+    | invalidT => (λ: "l", Panic "invalid type")%V
     | _ => (λ: "l", !(Var "l"))%V
     end.
-  Program Definition load := sealed @load_def.
-  Definition load_unseal : load = _ := seal_eq _.
 
-  Fixpoint store_def (t : go_type): val :=
+  Fixpoint store (t : type): val :=
     match t with
     | structT d =>
         (fix store_struct d : val :=
           match d with
           | [] => (λ: <> <>, #())%V
           | (f,t) :: d => (λ: "p" "v",
-                                  store_def t "p" (Fst "v");;
+                                  store t "p" (Fst "v");;
                                   store_struct d (BinOp (OffsetOp (go_type_size t)) "p" #(W64 1))
                                     (Snd "v"))%V
           end) d
@@ -45,18 +103,49 @@ Section go_lang.
           match n with
           | O => (λ: <> <>, #())%V
           | S n => (λ: "p" "v",
-                            store_def t "p" (Fst "v");;
+                            store t "p" (Fst "v");;
                             store_array n (BinOp (OffsetOp (go_type_size t)) "p" #(W64 1)) (Snd "v"))%V
           end) n
+    | invalidT => (λ: "l", Panic "invalid type")%V
     | _ => (λ: "p" "v", "p" <- "v")%V
     end.
-  Program Definition store := sealed @store_def.
-  Definition store_unseal : store = _ := seal_eq _.
-
 End go_lang.
 End mem.
 
-Reserved Notation "![ t ] e" (at level 9, right associativity, format "![ t ]  e").
-Notation "![ t ] e" := (mem.load t e%E) : expr_scope.
-Reserved Notation "e1 <-[ t ] e2" (at level 80, format "e1  <-[ t ]  e2").
-Notation "e1 <-[ t ] e2" := (mem.store t e1%E e2%E) : expr_scope.
+(* built-in types *)
+Definition uint64 : go_string := "uint64".
+Definition uint16 : go_string := "uint16".
+Definition uint8 : go_string := "uint8".
+Definition int64 : go_string := "int64".
+Definition int32 : go_string := "int32".
+Definition int16 : go_string := "int16".
+Definition int8 : go_string := "int8".
+
+Module go.
+Section defs.
+Context `{!NamedUnderlyingTypes}.
+
+Local Definition to_mem_type (t : go.type) : mem.type :=
+  match t with
+  | go.Named n (go.TypeArgs []) =>
+      if decide (n = uint64) then mem.w64T
+      else mem.invalidT
+  | _ => mem.invalidT
+  end.
+
+Context `{ffi_syntax}.
+
+Definition alloc_def (t : go.type) : val := mem.alloc (to_mem_type t).
+Program Definition alloc := sealed @alloc_def.
+Definition alloc_unseal : alloc = _ := seal_eq _.
+
+Definition load_def (t : go.type) : val := mem.load (to_mem_type t).
+Program Definition load := sealed @load_def.
+Definition load_unseal : load = _ := seal_eq _.
+
+Definition store_def (t : go.type) : val := mem.store (to_mem_type t).
+Program Definition store := sealed @store_def.
+Definition store_unseal : store = _ := seal_eq _.
+
+End defs.
+End go.
