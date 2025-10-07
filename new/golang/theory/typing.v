@@ -12,6 +12,7 @@ Section defs.
 Class IntoValInj (V : Type) `{IntoVal V} :=
   {
     default_val : V ;
+    typed_pointsto_def `{!ffi_interp ffi} `{!heapGS Σ} (l : loc) (dq : dfrac) (v : V) : iProp Σ;
     #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
     #[global] to_val_eqdec :: EqDecision V ;
   }.
@@ -20,7 +21,6 @@ Arguments default_val (V) {_ _ _}.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
   {
-    typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
     wp_load_def : (∀ l dq v, {{{ typed_pointsto_def l dq v }}}
                                go.load t #l
                              {{{ RET #v; typed_pointsto_def l dq v }}}) ;
@@ -36,7 +36,7 @@ Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
 Program Definition typed_pointsto := sealed @typed_pointsto_def.
 Definition typed_pointsto_unseal : typed_pointsto = _ := seal_eq _.
-Arguments typed_pointsto {_ _ _ _ _} l dq v.
+Arguments typed_pointsto {_ _ _ _ _ _ _ _} l dq v.
 
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
@@ -60,67 +60,23 @@ Lemma wp_alloc `{IntoValTyped V t} :
   {{{ l, RET #l; l ↦ (default_val V) }}}.
 Proof. rewrite typed_pointsto_unseal. apply wp_alloc_def. Qed.
 
-Fixpoint is_comparable_go_type (t : go_type) : bool :=
-  match t with
-  | arrayT n elem => is_comparable_go_type elem
-  | structT d => forallb (λ '(f, t), is_comparable_go_type t) d
-  | funcT => false
-  | interfaceT => false
-  | _ => true
-  end
-.
+End defs.
 
-Lemma to_val_is_comparable `{IntoValTyped V t} (v : V) :
-  is_comparable_go_type t = true →
-  is_comparable #v.
-Proof.
-  pose proof (to_val_has_go_type v) as Hty.
-  generalize dependent #v. clear dependent V.
-  intros v Hty Hcomp.
-  induction Hty; try rewrite to_val_unseal /= //.
-  - repeat constructor; rewrite to_val_unseal //.
-  - clear Helems. simpl in Hcomp.
-    dependent induction a generalizing n.
-    + done.
-    + rewrite /=. split.
-      { apply H0; naive_solver. }
-      { apply (IHa _ ltac:(done)); naive_solver. }
-  - rewrite struct.val_aux_unseal. simpl.
-    clear Hfields. simpl in Hcomp.
-    induction d as [|[]].
-    + rewrite /= to_val_unseal //.
-    + rewrite /=.
-      simpl in Hcomp.
-      apply andb_prop in Hcomp as[HcompHd Hcomp].
-      split.
-      { apply H0; naive_solver. }
-      { apply IHd; naive_solver. }
-Qed.
-
-Ltac2 solve_has_go_type_step () :=
-  match! goal with
-  | [ |- has_go_type (zero_val _) _ ] => apply zero_val_has_go_type
-  | [ |- has_go_type _ _ ] => try assumption; constructor
-  | [ |- Forall _ _ ] => constructor
-  | [ |- ∀ (_:_), _ ] => intros
-  | [ h : (In _ _) |- _ ] =>
-      Std.destruct false [ {
-            Std.indcl_arg := (Std.ElimOnIdent h);
-            Std.indcl_eqn := None;
-            Std.indcl_as := None;
-            Std.indcl_in := None
-        } ] None
-  | [ h : (@eq (go_string * go_type) (_, _) _) |- _ ] =>
-      (* XXX: inversion_clear is not as powerful as inversion H; subst; clear H;
-      comes up in generics when there are dependent types *)
-      Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
-  end.
-Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).
+Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+                         (at level 20, dq custom dfrac at level 1,
+                            format "l  ↦ dq  v") : bi_scope.
 
 Section into_val_instances.
 Context `{ffi_syntax}.
 
-Program Global Instance into_val_typed_loc : IntoValTyped loc ptrT :=
+Program Global Instance into_val_inj_loc : IntoValInj loc :=
+  {|
+    default_val := null;
+    typed_pointsto_def _ _ _ _ l dq v := (heap_pointsto l dq #v) ;
+  |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_loc t : IntoValTyped loc ptrT :=
 {| default_val := null |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
@@ -246,7 +202,3 @@ Final Obligation.
 Qed.
 
 End into_val_instances.
-
-Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
-                         (at level 20, dq custom dfrac at level 1,
-                            format "l  ↦ dq  v") : bi_scope.
