@@ -2,7 +2,7 @@
   description = "A Flake for Perennial development, with Goose and Grackle";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/a595dde4d0d31606e19dcec73db02279db59d201";
+    nixpkgs.url = "github:/NixOS/nixpkgs/8913c168d1c56dc49a7718685968f38752171c3b";
     flake-utils.url = "github:numtide/flake-utils";
     grackle.url = "github:mjschwenne/grackle";
     self.submodules = true;
