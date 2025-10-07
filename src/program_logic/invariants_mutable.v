@@ -101,9 +101,10 @@ Section inv_mut.
   Proof.
     exists (coPpick (MaybeEn1 (↑ N) ∖gset_to_coPset E)).
     rewrite -elem_of_gset_to_coPset (comm and) -elem_of_difference.
-    apply coPpick_elem_of=> Hfin.
-    eapply (MaybeEn_infinite _ (nclose_infinite N)), (difference_finite_inv _ _), Hfin.
-    apply gset_to_coPset_finite.
+    apply coPpick_elem_of=> Hempty.
+    eapply (MaybeEn_infinite _ (nclose_not_finite N)). eapply (difference_finite_inv _ _).
+    { apply gset_to_coPset_finite. }
+    erewrite Hempty. apply empty_finite.
   Qed.
 
   Lemma inv_mut_alloc k N E sch Ps Qs :

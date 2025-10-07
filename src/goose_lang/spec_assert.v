@@ -911,7 +911,7 @@ Proof.
   iIntros.
   iMod (ownfCP_inf_init (refinement_resv_name)) as (D) "(%Hinf&Hres)".
   iMod (ghost_allocN_seq_sized_meta_own_resv j K E D (coPpick D) with "[$] [$] [$]") as "(?&?&?)"; auto.
-  { apply coPpick_elem_of. by apply coPset_infinite_finite. }
+  { apply coPpick_elem_of => Hempty; subst. by apply set_infinite_non_empty in Hinf. }
   iModIntro. iExists _. iFrame. iPureIntro; eauto.
 Qed.
 
