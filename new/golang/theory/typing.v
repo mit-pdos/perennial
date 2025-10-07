@@ -1,299 +1,64 @@
 From Coq Require Import Logic.FunctionalExtensionality.
 From Coq Require Import Program.Equality.
+From iris.bi.lib Require Import fractional.
+From Perennial.goose_lang Require Export lang lifting ipersist.
 From stdpp Require Import list.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-From New.golang.defn Require Export typing.
+From New.golang.defn Require Export typing mem.
 
-Section alist.
+Section defs.
 
-Fixpoint alist_lookup_f {A} (f : go_string) (l : list (go_string * A)) : option A :=
-  match l with
-  | [] => None
-  | (f', v)::l => if ByteString.eqb f' f then Some v else alist_lookup_f f l
-  end.
-
-End alist.
-
-(** * Typed data representations for struct and slice *)
-
-Module struct.
-Section goose_lang.
-  Context `{ffi_syntax}.
-
-  Definition val_aux_def (t : go_type) (field_vals: list (go_string*val)): val :=
-    match t with
-    | structT d => (fix val_struct (fs : list (go_string*go_type)) :=
-                     match fs with
-                     | [] => (#())
-                     | (f,ft)::fs => (default (zero_val ft) (alist_lookup_f f field_vals), val_struct fs)%V
-                     end) d
-    | _ => LitV LitPoison
-    end.
-  Program Definition val_aux := unseal (_ : seal (@val_aux_def)). Final Obligation. by eexists. Qed.
-  Definition val_aux_unseal : val_aux = _ := seal_eq _.
-
-  Lemma val_aux_nil field_vals : val_aux (structT []) field_vals = #().
-  Proof. rewrite val_aux_unseal //. Qed.
-  Lemma val_aux_cons field_vals f ft fs :
-    val_aux (structT ((f,ft)::fs)) field_vals =
-    (default (zero_val ft) (alist_lookup_f f field_vals), val_aux (structT fs) field_vals)%V
-  .
-  Proof. rewrite val_aux_unseal //. Qed.
-
-End goose_lang.
-End struct.
-
-Declare Scope struct_scope.
-Notation "f :: t" := (@pair go_string go_type f%go t) : struct_scope.
-Notation "f ::= v" := (@pair go_string val f%go v%V) (at level 60) : struct_scope.
-Delimit Scope struct_scope with struct.
-
-(** * Pure Coq reasoning principles *)
-Section typing.
-  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}.
-
-Program Definition go_type_ind :=
-  λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
-    (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
-    (f6 : P sliceT) (f7 : P interfaceT)
-    (f8 : ∀ (decls : list (go_string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
-    (f9 : P ptrT) (f10 : P funcT),
-    fix F (g : go_type) : P g :=
-    match g as g0 return (P g0) with
-    | boolT => f
-    | uint8T => f0
-    | uint16T => f1
-    | uint32T => f2
-    | uint64T => f3
-    | stringT => f4
-    | arrayT n elem => f5 n elem (F elem)
-    | sliceT => f6
-    | interfaceT => f7
-    | structT decls => f8 decls _
-    | ptrT => f9
-    | funcT => f10
-    end.
-Final Obligation.
-intros.
-revert H.
-enough (Forall P decls.*2).
-1:{
-  intros.
-  rewrite List.Forall_forall in H.
-  apply H. done.
-}
-induction decls; first done.
-destruct a. apply Forall_cons. split.
-{ apply F. }
-{ apply IHdecls. }
-  Defined.
-
-  (* FIXME: the existence of this is a performance optimization: a simpler
-     alternative is to prove for each record type manually that the
-     wp_load/store specs hold. This allows for stating an intermediate condition
-     which is sufficient for wp_load/store and which can be proven "quickly"
-     by generatedproof. *)
-  Inductive has_go_type : val → go_type → Prop :=
-  | has_go_type_bool (b : bool) : has_go_type #b boolT
-  | has_go_type_uint64 (x : w64) : has_go_type #x uint64T
-  | has_go_type_uint32 (x : w32) : has_go_type #x uint32T
-  | has_go_type_uint16 (x : w16) : has_go_type #x uint16T
-  | has_go_type_uint8 (x : w8) : has_go_type #x uint8T
-
-  | has_go_type_string (s : go_string) : has_go_type #s stringT
-
-  | has_go_type_slice (s : slice.t) : has_go_type (#s) sliceT
-  | has_go_type_interface (i : interface.t) : has_go_type (#i) interfaceT
-
-  | has_go_type_array (n : nat) elem (a : list val) (Hlen : length a = n)
-      (Helems : ∀ v, In v a → has_go_type v elem)
-    : has_go_type (fold_right PairV #() a) (arrayT n elem)
-
-  | has_go_type_struct
-      (d : struct.descriptor) fvs
-      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (alist_lookup_f f fvs)) t)
-    : has_go_type (struct.val_aux (structT d) fvs) (structT d)
-  | has_go_type_ptr (l : loc) : has_go_type #l ptrT
-  | has_go_type_func (f : func.t) : has_go_type #f funcT
-  | has_go_type_func_nil : has_go_type #null funcT
-  .
-
-  Lemma zero_val_has_go_type t :
-    has_go_type (zero_val t) t.
-  Proof.
-    induction t using go_type_ind; rewrite zero_val_unseal /to_val; try econstructor.
-    { rewrite length_replicate //. }
-    { (* arrayT *)
-      simpl.
-      intros. fold zero_val_def in H.
-      rewrite -list_elem_of_In in H.
-      apply list_elem_of_lookup in H as [? Hget%lookup_replicate].
-      intuition subst.
-      by rewrite -zero_val_unseal.
-    }
-    { (* structT *)
-      replace (zero_val_def (structT decls)) with (struct.val_aux (structT decls) []).
-      {
-        econstructor. intros. simpl.
-        apply Hfields.
-        apply in_map_iff. eexists _.
-        split; last done. done.
-      }
-      rewrite struct.val_aux_unseal.
-      induction decls.
-      { done. }
-      destruct a. simpl.
-      f_equal.
-      { by rewrite zero_val_unseal. }
-      apply IHdecls.
-      intros.
-      apply Hfields.
-      simpl. right. done.
-    }
-  Qed.
-
-  Lemma has_go_type_len {v t} :
-    has_go_type v t ->
-    length (flatten_struct v) = (go_type_size t).
-  Proof.
-    rewrite go_type_size_unseal.
-    induction 1; simpl; rewrite ?to_val_unseal /=; auto.
-    - destruct i; done.
-    - simpl.
-      dependent induction a generalizing n.
-      + simpl in *. subst. done.
-      + simpl.
-        unshelve epose proof (IHa _ ltac:(done) _ _) as IHa.
-        { intros. apply Helems. by right. }
-        { intros. apply H. by right. }
-        rewrite length_app.
-        rewrite IHa. subst. simpl.
-        f_equal. rewrite H //. by left.
-    - rewrite struct.val_aux_unseal.
-      induction d.
-      { rewrite /= ?to_val_unseal. done. }
-      destruct a. cbn.
-      rewrite length_app.
-      rewrite IHd.
-      { f_equal. apply H. by left. }
-      { clear H IHd. intros. apply Hfields. by right. }
-      { intros. apply H. simpl. by right. }
-  Qed.
-
-  Definition zero_val' (t : go_type) : val :=
-    match t with
-    | boolT => #false
-
-    (* Numeric, except float and impl-specific sized objects *)
-    | uint8T => #(W8 0)
-    | uint16T => #(W16 0)
-    | uint32T => #(W32 0)
-    | uint64T => #(W64 0)
-
-    | stringT => #("")
-    | arrayT n elem => foldr PairV (# ()%V) (replicate n (zero_val_def elem))
-    | sliceT => #slice.nil
-    | structT decls => struct.val_aux t []
-    | ptrT => #null
-    | funcT => #func.nil
-    | interfaceT => #interface.nil
-    end.
-
-  Lemma zero_val'_eq_zero_val_1 t :
-    zero_val t = zero_val' t.
-  Proof.
-    rewrite zero_val_unseal.
-    induction t; try done.
-    simpl. rewrite struct.val_aux_unseal.
-    induction decls; first done.
-    destruct a. simpl.
-    by rewrite IHdecls /= !zero_val_unseal.
-  Qed.
-
-  Lemma zero_val_eq :
-    zero_val = zero_val'.
-  Proof.
-    apply functional_extensionality.
-    intros. apply zero_val'_eq_zero_val_1.
-  Qed.
-
-  #[local] Hint Constructors has_go_type : core.
-
-  Tactic Notation "try_if_one_goal" tactic1(t) :=
-    first [ t; let n := numgoals in guard n <= 1
-          | idtac ].
-
-  Definition is_slice_val v : {s:slice.t | v = #s} + {∀ (s: slice.t), v ≠ #s}.
-  Proof.
-    let solve_right :=
-      try (solve [ right;
-                  intros [???];
-                  repeat (rewrite !to_val_unseal /=);
-                    inversion 1;
-                  subst ]) in
-    repeat match goal with
-           | l: base_lit |- _ =>
-               destruct l; solve_right
-           | v: val |- _ =>
-               destruct v; solve_right
-           end.
-    left.
-    eexists (slice.mk _ _ _);
-      repeat (rewrite !to_val_unseal //=).
-  Defined.
-
-  (* TODO: I think this is possible, but some unfortunate changes are needed: we
-  need a recursion principle for go_type (which is basically the same as
-  go_type_ind but with `In` replaced with something isomorphic to list_elem_of
-  but in Type), and then we can finish this up. *)
-  Definition has_go_type_dec v t : {has_go_type v t} + {¬has_go_type v t}.
-  Proof.
-    induction t;
-      try_if_one_goal (
-          destruct v; eauto; try solve [ right; inversion 1; eauto ];
-          try lazymatch goal with
-            | l: base_lit |- _ =>
-                try_if_one_goal (
-                    destruct l; eauto;
-                    try solve [ right; inversion 1; eauto ];
-                    try lazymatch goal with
-                      | l': loc |- _ =>
-                          destruct (decide (l' = null)); subst;
-                          eauto; try solve [ right; inversion 1; eauto ]
-                      end
-                  )
-          end
-        ).
-    (* XXX: after changing the "#" notation to refer to IntoVal, this is broken. *)
-  Abort.
-
-End typing.
-
-Class IntoValTyped (V : Type) (t : go_type) `{IntoVal V} :=
+Class IntoValInj (V : Type) `{IntoVal V} :=
   {
     default_val : V ;
-    to_val_has_go_type: ∀ (v : V), has_go_type (# v) t ;
-    default_val_eq_zero_val : #default_val = zero_val t ;
     #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
     #[global] to_val_eqdec :: EqDecision V ;
+  }.
+Arguments default_val (V) {_ _ _}.
+
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
+  {
+    typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
+    wp_load_def : (∀ l dq v, {{{ typed_pointsto_def l dq v }}}
+                               go.load t #l
+                             {{{ RET #v; typed_pointsto_def l dq v }}}) ;
+    wp_store_def : (∀ l v w, {{{ typed_pointsto_def l 1 v }}}
+                               go.store t #l #w
+                             {{{ RET #v; typed_pointsto_def l 1 w }}}) ;
+    wp_alloc_def : ({{{ True }}}
+                      go.alloc t #()
+                    {{{ l, RET #l; typed_pointsto_def l 1 (default_val V) }}}) ;
   }.
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
-Arguments default_val (V) {_ _ _ _}.
+Program Definition typed_pointsto := sealed @typed_pointsto_def.
+Definition typed_pointsto_unseal : typed_pointsto = _ := seal_eq _.
+Arguments typed_pointsto {_ _ _ _ _} l dq v.
 
-(* [BoundedTypeSize] proves that a type has a reasonable maximum upper bound in its size.
+Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+                         (at level 20, dq custom dfrac at level 1,
+                            format "l  ↦ dq  v") : bi_scope.
 
-When we axiomatize a go_type, we need it to have a sensible size so that
-field offsets can be calculated using w64 calculations. This is a highly
-conversative maximum size for a type that still enables it to be used in
-essentially any larger struct.
+Lemma wp_load `{IntoValTyped V t} l dq v :
+  {{{ l ↦{dq} v }}}
+    go.load t #l
+  {{{ RET #v; l ↦{dq} v }}}.
+Proof. rewrite typed_pointsto_unseal. apply wp_load_def. Qed.
 
-We currently do not rely on this typeclass for non-axiomatic types (where it
-could be proven by direct computation). *)
-Class BoundedTypeSize (t : go_type) :=
-  { has_bounded_type_size : Z.of_nat (go_type_size t) < 2^32; }.
+Lemma wp_store `{IntoValTyped V t} l v w :
+  {{{ l ↦ v }}}
+    go.store t #l #w
+  {{{ RET #v; l ↦ w }}}.
+Proof. rewrite typed_pointsto_unseal. apply wp_store_def. Qed.
+
+Lemma wp_alloc `{IntoValTyped V t} :
+  {{{ True }}}
+    go.alloc t #()
+  {{{ l, RET #l; l ↦ (default_val V) }}}.
+Proof. rewrite typed_pointsto_unseal. apply wp_alloc_def. Qed.
 
 Fixpoint is_comparable_go_type (t : go_type) : bool :=
   match t with
@@ -481,3 +246,7 @@ Final Obligation.
 Qed.
 
 End into_val_instances.
+
+Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+                         (at level 20, dq custom dfrac at level 1,
+                            format "l  ↦ dq  v") : bi_scope.

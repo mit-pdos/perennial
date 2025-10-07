@@ -42,25 +42,23 @@ Section val_types.
     | invalidT => LitV LitPoison
     end.
 
-  Fixpoint go_type_size_def (t : type) : nat :=
+  Fixpoint type_size (t : type) : nat :=
     match t with
     | structT d =>
-        (fix go_type_size_struct d : nat :=
+        (fix type_size_struct d : nat :=
            match d with
            | [] => O
-           | (_,t) :: d => (go_type_size_def t + go_type_size_struct d)%nat
+           | (_,t) :: d => (type_size t + type_size_struct d)%nat
            end
         ) d
-    | arrayT n e => n * (go_type_size_def e)
+    | arrayT n e => n * (type_size e)
     | _ => 1
     end.
-  Program Definition go_type_size := sealed @go_type_size_def.
-  Definition go_type_size_unseal : go_type_size = _ := seal_eq _.
 End val_types.
 
 Reserved Notation "l +ₗ[ t ] z" (at level 50, left associativity, format "l  +ₗ[ t ]  z").
-Notation "l +ₗ[ t ] z" := (l +ₗ go_type_size t * z) : stdpp_scope .
-Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (go_type_size t)) e1%E e2%E) : expr_scope .
+Global Notation "l +ₗ[ t ] z" := (l +ₗ type_size t * z) : stdpp_scope .
+Global Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (type_size t)) e1%E e2%E) : expr_scope .
 
 (** * Memory load, store, and allocation with type annotations. *)
 Section go_lang.
@@ -95,7 +93,7 @@ Section go_lang.
           | [] => (λ: <> <>, #())%V
           | (f,t) :: d => (λ: "p" "v",
                                   store t "p" (Fst "v");;
-                                  store_struct d (BinOp (OffsetOp (go_type_size t)) "p" #(W64 1))
+                                  store_struct d (BinOp (OffsetOp (type_size t)) "p" #(W64 1))
                                     (Snd "v"))%V
           end) d
     | arrayT n t =>
@@ -104,7 +102,7 @@ Section go_lang.
           | O => (λ: <> <>, #())%V
           | S n => (λ: "p" "v",
                             store t "p" (Fst "v");;
-                            store_array n (BinOp (OffsetOp (go_type_size t)) "p" #(W64 1)) (Snd "v"))%V
+                            store_array n (BinOp (OffsetOp (type_size t)) "p" #(W64 1)) (Snd "v"))%V
           end) n
     | invalidT => (λ: "l", Panic "invalid type")%V
     | _ => (λ: "p" "v", "p" <- "v")%V
