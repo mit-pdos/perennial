@@ -116,6 +116,7 @@ Proof.
   rewrite decide_True //.
 Qed.
 
+(* FIXME: 
 Global Instance wp_eq `{!IntoVal V} `{!IntoValTyped V t} (v1 v2 : V) :
   PureWp (is_comparable_go_type t = true) (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)) | 0.
 Proof.
@@ -131,7 +132,7 @@ Proof.
   destruct (decide (v1 = v2)) eqn:Hx.
   - subst. rewrite !bool_decide_true //.
   - rewrite !bool_decide_false // -to_val_unseal. by intros Heq%to_val_inj.
-Qed.
+Qed. *)
 
 (** Unops *)
 (* w64 unops *)
@@ -631,8 +632,8 @@ Ltac2 wp_call () :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
       wp_walk_unwrap (fun () => walk_expr e wp_call_visit)
-        "wp_call: could not find a function call expression at the head";
-      try (rewrite <- !default_val_eq_zero_val)
+        "wp_call: could not find a function call expression at the head"
+      (* try (rewrite <- !default_val_eq_zero_val) *)
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_call: current proof is not a WP"
   end.
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
@@ -714,3 +715,17 @@ Tactic Notation "wp_apply_core" open_constr(lem) :=
 
 Tactic Notation "wp_apply" open_constr(lem) :=
   wp_apply_core lem.
+
+Section into_val_instances.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+
+Program Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
+Next Obligation. Admitted.
+Next Obligation. Admitted.
+Next Obligation.
+  iIntros (??) "_ HΦ".
+  rewrite go.alloc_unseal. wp_call. simpl.
+  wp_apply wp_alloc_untyped.
+  { rewrite to_val_unseal //=. }
+  iIntros (?)
+Qed.

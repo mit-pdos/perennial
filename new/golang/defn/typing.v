@@ -43,7 +43,7 @@ with interface_elem :=
 
 with type_term := | TypeTerm (type : type) | TypeTermUnderlying (type : type).
 
-Coercion TypeLit : type_lit >-> type.
+Global Coercion TypeLit : type_lit >-> type.
 
 Definition string_to_go_string (s : string) : go_string :=
   byte_to_w8 <$> String.list_byte_of_string s.
@@ -75,3 +75,5 @@ Definition to_underlying `{!NamedUnderlyingTypes} (t : go.type) : go.type :=
   | go.Named n (go.TypeArgs args) => (named_to_underlying n args)
   | _ => t
   end.
+
+Global Coercion go.TypeLit : go.type_lit >-> go.type.

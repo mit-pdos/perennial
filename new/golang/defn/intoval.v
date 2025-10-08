@@ -11,11 +11,13 @@ ByteString.v *)
 Class IntoVal `{ffi_syntax} (V : Type) :=
   {
     to_val_def : V → val;
+    zero_val : V;
   }.
 
 Program Definition to_val := sealed @to_val_def.
 Definition to_val_unseal : to_val = _ := seal_eq _.
 Arguments to_val {_ _ _} v.
+Arguments zero_val {_} (V) {_}.
 (* Disable Notation "# l". *)
 Global Notation "# x" := (to_val x%go).
 Global Notation "#" := to_val (at level 0).
@@ -39,31 +41,31 @@ Section primitive_instances.
 Context `{ffi_syntax}.
 
 Global Instance into_val_loc : IntoVal loc :=
-  {| to_val_def := λ v, (LitV $ LitLoc v) |}.
+  {| to_val_def := λ v, (LitV $ LitLoc v); zero_val := null |}.
 
 Global Instance into_val_w64 : IntoVal w64 :=
-  {| to_val_def := λ v, (LitV $ LitInt v) |}.
+  {| to_val_def := λ v, (LitV $ LitInt v); zero_val := W64 0 |}.
 
 Global Instance into_val_w32 : IntoVal w32 :=
-  {| to_val_def := λ v, (LitV $ LitInt32 v) |}.
+  {| to_val_def := λ v, (LitV $ LitInt32 v); zero_val := W32 0 |}.
 
 Global Instance into_val_w16 : IntoVal w16 :=
-  {| to_val_def := λ v, (LitV $ LitInt16 v) |}.
+  {| to_val_def := λ v, (LitV $ LitInt16 v); zero_val := W16 0 |}.
 
 Global Instance into_val_w8 : IntoVal w8 :=
-  {| to_val_def := λ v, (LitV $ LitByte v) |}.
+  {| to_val_def := λ v, (LitV $ LitByte v); zero_val := W8 0 |}.
 
 Global Instance into_val_unit : IntoVal () :=
-  {| to_val_def := λ _, (LitV $ LitUnit) |}.
+  {| to_val_def := λ _, (LitV $ LitUnit); zero_val := () |}.
 
 Global Instance into_val_bool : IntoVal bool :=
-  {| to_val_def := λ b, (LitV $ LitBool b) |}.
+  {| to_val_def := λ b, (LitV $ LitBool b); zero_val := false |}.
 
 Global Instance into_val_go_string : IntoVal go_string :=
-  {| to_val_def := λ s, (LitV $ LitString s) |}.
+  {| to_val_def := λ s, (LitV $ LitString s); zero_val := ""%go |}.
 
 Global Instance into_val_func : IntoVal func.t :=
-  {| to_val_def := λ (f : func.t), RecV f.(func.f) f.(func.x) f.(func.e) |}.
+  {| to_val_def := λ (f : func.t), RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
 End primitive_instances.
 
 Module slice.
@@ -90,13 +92,15 @@ End interface.
 Section instances.
 Context `{ffi_syntax}.
 Global Instance into_val_array `{!IntoVal V} n : IntoVal (vec V n) :=
-  {| to_val_def :=
-      λ v, (Vector.fold_right PairV (vmap to_val v) #())
+  {|
+    to_val_def := λ v, (Vector.fold_right PairV (vmap to_val v) #());
+    zero_val := vreplicate n (zero_val V);
   |}.
 
 Global Instance into_val_slice : IntoVal slice.t :=
   {|
-    to_val_def (s: slice.t) := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f))
+    to_val_def (s: slice.t) := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f));
+    zero_val := slice.nil;
   |}.
 
 Global Instance slice_eq_dec : EqDecision slice.t.
@@ -108,11 +112,9 @@ Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
       match i with
       | interface.nil => NONEV
       | interface.mk type_id v => SOMEV (#type_id, v)%V
-      end
+      end;
+    zero_val := interface.nil;
   |}.
-
-Global Instance into_val_prod `{!IntoVal A} `{!IntoVal B} : IntoVal (A * B) :=
-  {| to_val_def (v: A * B) := (PairV #(fst v) #(snd v)) |}.
 
 End instances.
 Global Notation "()" := tt : val_scope.

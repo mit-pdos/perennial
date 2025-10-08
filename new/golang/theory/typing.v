@@ -7,12 +7,26 @@ From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Export typing mem.
 
+Section pointsto.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+
+Context `{!IntoVal V}.
+Implicit Type v : V.
+Program Definition typed_pointsto_def l (dq : dfrac) (v : V) : iProp Σ :=
+  (([∗ list] j↦vj ∈ flatten_struct (to_val v), heap_pointsto (l +ₗ j) dq vj))%I.
+Definition typed_pointsto_aux : seal (@typed_pointsto_def). Proof. by eexists. Qed.
+Definition typed_pointsto := typed_pointsto_aux.(unseal).
+Definition typed_pointsto_unseal : @typed_pointsto = @typed_pointsto_def := typed_pointsto_aux.(seal_eq).
+End pointsto.
+Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+                         (at level 20, dq custom dfrac at level 1,
+                            format "l  ↦ dq  v") : bi_scope.
+
 Section defs.
 
 Class IntoValInj (V : Type) `{IntoVal V} :=
   {
     default_val : V ;
-    typed_pointsto_def `{!ffi_interp ffi} `{!heapGS Σ} (l : loc) (dq : dfrac) (v : V) : iProp Σ;
     #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
     #[global] to_val_eqdec :: EqDecision V ;
   }.
@@ -21,66 +35,39 @@ Arguments default_val (V) {_ _ _}.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
   {
-    wp_load_def : (∀ l dq v, {{{ typed_pointsto_def l dq v }}}
-                               go.load t #l
-                             {{{ RET #v; typed_pointsto_def l dq v }}}) ;
-    wp_store_def : (∀ l v w, {{{ typed_pointsto_def l 1 v }}}
-                               go.store t #l #w
-                             {{{ RET #v; typed_pointsto_def l 1 w }}}) ;
-    wp_alloc_def : ({{{ True }}}
-                      go.alloc t #()
-                    {{{ l, RET #l; typed_pointsto_def l 1 (default_val V) }}}) ;
+    wp_load : (∀ l dq (v : V), {{{ l ↦ v }}}
+                                 go.load t #l
+                               {{{ RET #v; l ↦{dq} v }}}) ;
+    wp_store : (∀ l (v w : V), {{{ l ↦ v }}}
+                                 go.store t #l #w
+                               {{{ RET #v; l ↦ w }}}) ;
+    wp_alloc : ({{{ True }}}
+                  go.alloc t #()
+                {{{ l, RET #l; l ↦ (default_val V) }}}) ;
   }.
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
-Program Definition typed_pointsto := sealed @typed_pointsto_def.
-Definition typed_pointsto_unseal : typed_pointsto = _ := seal_eq _.
-Arguments typed_pointsto {_ _ _ _ _ _ _ _} l dq v.
-
-Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
-                         (at level 20, dq custom dfrac at level 1,
-                            format "l  ↦ dq  v") : bi_scope.
-
-Lemma wp_load `{IntoValTyped V t} l dq v :
-  {{{ l ↦{dq} v }}}
-    go.load t #l
-  {{{ RET #v; l ↦{dq} v }}}.
-Proof. rewrite typed_pointsto_unseal. apply wp_load_def. Qed.
-
-Lemma wp_store `{IntoValTyped V t} l v w :
-  {{{ l ↦ v }}}
-    go.store t #l #w
-  {{{ RET #v; l ↦ w }}}.
-Proof. rewrite typed_pointsto_unseal. apply wp_store_def. Qed.
-
-Lemma wp_alloc `{IntoValTyped V t} :
-  {{{ True }}}
-    go.alloc t #()
-  {{{ l, RET #l; l ↦ (default_val V) }}}.
-Proof. rewrite typed_pointsto_unseal. apply wp_alloc_def. Qed.
-
 End defs.
 
-Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
-                         (at level 20, dq custom dfrac at level 1,
-                            format "l  ↦ dq  v") : bi_scope.
-
 Section into_val_instances.
-Context `{ffi_syntax}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Program Global Instance into_val_inj_loc : IntoValInj loc :=
   {|
     default_val := null;
-    typed_pointsto_def _ _ _ _ l dq v := (heap_pointsto l dq #v) ;
   |}.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
-Program Global Instance into_val_typed_loc t : IntoValTyped loc ptrT :=
-{| default_val := null |}.
-Next Obligation. solve_has_go_type. Qed.
-Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+(*
+Program Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
+Next Obligation. Admitted.
+Next Obligation. Admitted.
+Next Obligation.
+  iIntros (??) "_ HΦ".
+  rewrite go.alloc_unseal /go.alloc_def /=.
+  unfold mem.alloc.
+Abort.
 
 Program Global Instance into_val_typed_w64 : IntoValTyped w64 uint64T :=
 {| default_val := W64 0 |}.
@@ -199,6 +186,6 @@ Qed.
 Next Obligation. rewrite zero_val_eq /= struct.val_aux_unseal //. Qed.
 Final Obligation.
   intros ???. destruct x, y. done.
-Qed.
+Qed. *)
 
 End into_val_instances.

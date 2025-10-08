@@ -22,25 +22,6 @@ Inductive type :=
 
 Section val_types.
   Context `{ffi_syntax}.
-  Fixpoint zero_val (t : type) : val :=
-    match t with
-    | boolT => #false
-
-    (* Numeric, except float and impl-specific sized objects *)
-    | w8T => #(W8 0)
-    | w16T => #(W16 0)
-    | w32T => #(W32 0)
-    | w64T => #(W64 0)
-
-    | stringT => #""%V
-    | arrayT n elem => fold_right PairV #() (replicate n (zero_val elem))
-    | sliceT => #slice.nil
-    | structT decls => fold_right PairV #() (fmap (zero_val ∘ snd) decls)
-    | ptrT => #null
-    | funcT => #func.nil
-    | interfaceT => #interface.nil
-    | invalidT => LitV LitPoison
-    end.
 
   Fixpoint type_size (t : type) : nat :=
     match t with
@@ -64,8 +45,6 @@ Global Notation "e1 +ₗ[ t ] e2" := (BinOp (OffsetOp (type_size t)) e1%E e2%E) 
 Section go_lang.
   Context `{ffi_syntax}.
   Context `{!NamedUnderlyingTypes}.
-
-  Definition alloc (t : type) : val := λ: <>, ref (zero_val t).
 
   Fixpoint load (t : type) : val :=
     match t with
@@ -128,12 +107,13 @@ Local Definition to_mem_type (t : go.type) : mem.type :=
   | go.Named n (go.TypeArgs []) =>
       if decide (n = uint64) then mem.w64T
       else mem.invalidT
+  | go.PointerType _ => mem.ptrT
   | _ => mem.invalidT
   end.
 
 Context `{ffi_syntax}.
 
-Definition alloc_def (t : go.type) : val := mem.alloc (to_mem_type t).
+Definition alloc_def (V : Type) `{!IntoVal V} : val := (λ: <>, ref #(zero_val V)).
 Program Definition alloc := sealed @alloc_def.
 Definition alloc_unseal : alloc = _ := seal_eq _.
 
