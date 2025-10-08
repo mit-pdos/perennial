@@ -90,7 +90,7 @@ End go_lang.
 End mem.
 
 (* built-in types *)
-Definition uint64 : go_string := "uint64".
+Definition uint64 : go_type := "uint64".
 Definition uint16 : go_string := "uint16".
 Definition uint8 : go_string := "uint8".
 Definition int64 : go_string := "int64".

@@ -26,24 +26,19 @@ Section defs.
 
 Class IntoValInj (V : Type) `{IntoVal V} :=
   {
-    default_val : V ;
     #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
     #[global] to_val_eqdec :: EqDecision V ;
   }.
-Arguments default_val (V) {_ _ _}.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
   {
-    wp_load : (∀ l dq (v : V), {{{ l ↦ v }}}
+    wp_load : (∀ l dq (v : V), {{{ l ↦{dq} v }}}
                                  go.load t #l
-                               {{{ RET #v; l ↦{dq} v }}}) ;
+                               {{{ RET #v; l ↦{dq} v }}});
     wp_store : (∀ l (v w : V), {{{ l ↦ v }}}
                                  go.store t #l #w
-                               {{{ RET #v; l ↦ w }}}) ;
-    wp_alloc : ({{{ True }}}
-                  go.alloc t #()
-                {{{ l, RET #l; l ↦ (default_val V) }}}) ;
+                               {{{ RET #v; l ↦ w }}});
   }.
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
@@ -53,21 +48,13 @@ End defs.
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Program Global Instance into_val_inj_loc : IntoValInj loc :=
-  {|
-    default_val := null;
-  |}.
+Program Global Instance into_val_inj_loc : IntoValInj loc.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
 (*
 Program Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Next Obligation. Admitted.
 Next Obligation. Admitted.
-Next Obligation.
-  iIntros (??) "_ HΦ".
-  rewrite go.alloc_unseal /go.alloc_def /=.
-  unfold mem.alloc.
-Abort.
 
 Program Global Instance into_val_typed_w64 : IntoValTyped w64 uint64T :=
 {| default_val := W64 0 |}.

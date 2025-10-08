@@ -719,8 +719,41 @@ Tactic Notation "wp_apply" open_constr(lem) :=
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
+Program Global Instance into_val_typed_uint64 : IntoValTyped loc (go.Named uint64 (go.TypeArgs [])).
+Next Obligation.
+  iIntros "* Hl HΦ".
+  rewrite go.load_unseal. wp_call.
+  rewrite typed_pointsto_unseal.
+Admitted.
+Final Obligation. Admitted.
+
 Program Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
+Next Obligation.
+  iIntros "* Hl HΦ".
+  rewrite go.load_unseal. wp_call.
+  rewrite typed_pointsto_unseal.
+Admitted.
+Final Obligation. Admitted.
+
+(* Given [t : typeId], want to load+store, even when t is named. *)
+
+Definition foo : go.type := go.StructType [(go.FieldDecl ["a"%go] $ go.Named uint64 $ go.TypeArgs [])].
+
+Record foo_t := 
+  mk {
+      a : w64;
+    }.
+
+Global Instance into_val_foo : IntoVal foo_t :=
+  {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
+
+Global Instance into_val_foo_inj : IntoValInj foo_t :=
+  {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
+
+Program Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
 Next Obligation. Admitted.
+
+Admitted.
 Next Obligation. Admitted.
 Next Obligation.
   iIntros (??) "_ HΦ".
