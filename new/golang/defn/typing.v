@@ -28,7 +28,7 @@ with type_lit :=
 
 with field_decl :=
 | FieldDecl : go_string → type → _
-| EmbeddedField : bool → go_string → list type (* type args *) → _
+| EmbeddedField : go_string → type → _
 
 with signature := | Signature : list parameter_decl → result → _
 

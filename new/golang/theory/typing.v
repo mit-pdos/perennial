@@ -31,6 +31,7 @@ Class IntoValInj (V : Type) `{IntoVal V} :=
   }.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!NamedUnderlyingTypes}.
 Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
   {
     wp_load : (∀ l dq (v : V), {{{ l ↦{dq} v }}}

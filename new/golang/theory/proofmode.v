@@ -718,12 +718,15 @@ Tactic Notation "wp_apply" open_constr(lem) :=
 
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!NamedUnderlyingTypes}.
 
-Program Global Instance into_val_typed_uint64 : IntoValTyped loc (go.Named uint64 (go.TypeArgs [])).
+Program Global Instance into_val_typed_uint64 : IntoValTyped loc uint64.
 Next Obligation.
   iIntros "* Hl HΦ".
-  rewrite go.load_unseal. wp_call.
-  rewrite typed_pointsto_unseal.
+  rewrite go.load_unseal. rewrite /go.load_def.
+  rewrite /go.to_mem_type /mem.go.to_mem_type_fuel /=.
+  rewrite lookup_insert_eq.
+  simpl.
 Admitted.
 Final Obligation. Admitted.
 
@@ -737,23 +740,45 @@ Final Obligation. Admitted.
 
 (* Given [t : typeId], want to load+store, even when t is named. *)
 
-Definition foo : go.type := go.StructType [(go.FieldDecl ["a"%go] $ go.Named uint64 $ go.TypeArgs [])].
-
 Record foo_t := 
   mk {
       a : w64;
     }.
-
 Global Instance into_val_foo : IntoVal foo_t :=
   {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
 
-Global Instance into_val_foo_inj : IntoValInj foo_t :=
-  {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
+Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go uint64)].
+Definition foo : go.type := go.Named "foo"%go [].
 
+Class foo_type_assumptions : Prop :=
+  {
+    foo_underlying : named_to_underlying "foo"%go [] = foo_impl
+  }.
+
+Context `{!foo_type_assumptions}.
+
+Lemma foo_unfold :
+  go.to_mem_type foo = mem.structT [("a"%go, mem.w64T)].
+Proof.
+  Time rewrite /go.to_mem_type;
+  rewrite go.to_mem_type_fuel_step //=;
+  repeat rewrite lookup_insert_ne //; rewrite lookup_empty foo_underlying;
+  rewrite go.to_mem_type_fuel_step //=.
+  (* TODO: could associate a fuel amount for every type for purposes of
+     to_mem_type, so we can easily apply the unfolding lemma. *)
+  rewrite go.to_mem_type_fuel_step //=.
+  rewrite lookup_insert_eq. done.
+Qed.
+Global Instance into_val_foo_inj : IntoValInj foo_t.
+Proof. Admitted.
 Program Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
-Next Obligation. Admitted.
-
+Next Obligation. 
+  iIntros "* Hl HΦ".
+  rewrite go.load_unseal /go.load_def.
+  rewrite foo_unfold.
+  (* FIXME: use  *)
 Admitted.
+
 Next Obligation. Admitted.
 Next Obligation.
   iIntros (??) "_ HΦ".

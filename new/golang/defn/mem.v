@@ -122,6 +122,12 @@ Local Definition to_mem_type_aux (recur : go.type → mem.type) (t : go.type) : 
       | None => recur (named_to_underlying n [])
       end
   | go.PointerType _ => mem.ptrT
+  | go.StructType field_decls =>
+      mem.structT
+        ((λ f, match f with
+               | go.FieldDecl fn ty => (fn, recur ty)
+               | go.EmbeddedField fn ty => (fn, recur ty)
+               end) <$> field_decls)
   | _ => mem.invalidT
   end.
 
@@ -132,6 +138,18 @@ Local Definition to_mem_type_fuel (fuel : positive) : go.type → mem.type :=
     fuel.
 
 Definition to_mem_type := to_mem_type_fuel 1024.
+
+Lemma to_mem_type_fuel_step fuel t :
+  (fuel ≠ 1)%positive →
+  to_mem_type_fuel fuel t =
+  (to_mem_type_aux (to_mem_type_fuel (fuel-1)) t).
+Proof.
+  intros Hf.
+  unfold to_mem_type_fuel.
+  replace (fuel) with (Pos.succ (fuel-1)) by lia.
+  rewrite Pos.peano_rect_succ.
+  f_equal. f_equal. lia.
+Qed.
 
 Context `{ffi_syntax}.
 
