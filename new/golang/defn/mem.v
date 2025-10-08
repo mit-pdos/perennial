@@ -90,26 +90,48 @@ End go_lang.
 End mem.
 
 (* built-in types *)
-Definition uint64 : go_type := "uint64".
-Definition uint16 : go_string := "uint16".
-Definition uint8 : go_string := "uint8".
-Definition int64 : go_string := "int64".
-Definition int32 : go_string := "int32".
-Definition int16 : go_string := "int16".
-Definition int8 : go_string := "int8".
+Definition uint64 : go.type := go.Named "uint64"%go [].
+Definition uint32 : go.type := go.Named "uint32"%go [].
+Definition uint16 : go.type := go.Named "uint16"%go [].
+Definition uint8 : go.type := go.Named "uint8"%go [].
+Definition int64 : go.type := go.Named "int64"%go [].
+Definition int32 : go.type := go.Named "int32"%go [].
+Definition int16 : go.type := go.Named "int16"%go [].
+Definition int8 : go.type := go.Named "int8"%go [].
+
+Definition primitives : gmap go_string mem.type :=
+  {["uint64"%go := mem.w64T;
+    "uint32"%go := mem.w32T;
+    "uint16"%go := mem.w16T;
+    "uint8"%go := mem.w8T;
+    "int64"%go := mem.w64T;
+    "int32"%go := mem.w32T;
+    "int16"%go := mem.w16T;
+    "int8"%go := mem.w8T
+  ]}.
 
 Module go.
 Section defs.
 Context `{!NamedUnderlyingTypes}.
 
-Local Definition to_mem_type (t : go.type) : mem.type :=
+Local Definition to_mem_type_aux (recur : go.type → mem.type) (t : go.type) : mem.type :=
   match t with
-  | go.Named n (go.TypeArgs []) =>
-      if decide (n = uint64) then mem.w64T
-      else mem.invalidT
+  | go.Named n [] =>
+      match primitives !! n with
+      | Some mt => mt
+      | None => recur (named_to_underlying n [])
+      end
   | go.PointerType _ => mem.ptrT
   | _ => mem.invalidT
   end.
+
+Local Definition to_mem_type_fuel (fuel : positive) : go.type → mem.type :=
+  Pos.peano_rect
+    (const (go.type → mem.type)) (λ _, mem.invalidT)
+    (λ _ recur, to_mem_type_aux recur)
+    fuel.
+
+Definition to_mem_type := to_mem_type_fuel 1024.
 
 Context `{ffi_syntax}.
 

@@ -6,12 +6,15 @@ Module go.
 Definition identifier := go_string.
 Definition type_name := go_string.
 
-(** https://go.dev/ref/spec#Types *)
+(** https://go.dev/ref/spec#Types
+    When a type would otherwise have a single constructor with a single
+    argument, the type is omitted and its single input is inlined. Also, places
+    where Go syntax allows for `func (a, b uint64)` are required to be `func (a
+    uint64, b uint64)` here (e.g. field or parameter decls).
+ *)
 Inductive type :=
-| Named : type_name → type_args → _
+| Named : type_name → list type (* type args *) → _
 | TypeLit : type_lit → _
-
-with type_args := | TypeArgs : list type → _
 
 with type_lit :=
 | ArrayType : Z → type → _
@@ -24,17 +27,15 @@ with type_lit :=
 | ChannelType : option bool → type → _
 
 with field_decl :=
-| FieldDecl : (list go_string) → type → _
-| EmbeddedField : bool → go_string → type_args → _
+| FieldDecl : go_string → type → _
+| EmbeddedField : bool → go_string → list type (* type args *) → _
 
-with signature := | Signature : parameters → result → _
+with signature := | Signature : list parameter_decl → result → _
 
-with parameters := | ParameterList : (list parameter_decl) → _
-
-with parameter_decl := | ParameterDecl : (list identifier) → (* variadic *) bool → _
+with parameter_decl := | ParameterDecl : identifier → type → (* variadic *) bool → _
 
 with result :=
-| ResultParameters : parameters → _
+| ResultParameters : list parameter_decl → _
 | ResultType : type → _
 
 with interface_elem :=
@@ -72,7 +73,7 @@ Class NamedUnderlyingTypes :=
 
 Definition to_underlying `{!NamedUnderlyingTypes} (t : go.type) : go.type :=
   match t with
-  | go.Named n (go.TypeArgs args) => (named_to_underlying n args)
+  | go.Named n args => (named_to_underlying n args)
   | _ => t
   end.
 
