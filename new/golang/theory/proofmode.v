@@ -261,7 +261,7 @@ Global Instance wp_w16_s_to_w8 (v : w16) : PureWp True (s_to_w8 #v) #(W8 $ sint.
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* bool unop *)
-Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(negb b).
+Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(Datatypes.negb b).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* string unop *)
