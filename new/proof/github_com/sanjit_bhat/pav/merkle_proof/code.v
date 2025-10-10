@@ -154,10 +154,6 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-Lemma bool_decide_ite_not (P : Prop) {dec : Decision P} :
-  (if bool_decide P then false else true) = bool_decide (¬P).
-Proof. by rewrite bool_decide_not. Qed.
-
 Lemma wp_getBit sl_bs d0 bs (n : w64) :
   {{{
     is_pkg_init merkle ∗
@@ -205,13 +201,13 @@ Proof.
   iApply "HΦ". iFrame. iPureIntro.
   rewrite lookup_byte_to_bits in Ho.
   2: { by apply Nat.mod_upper_bound. }
-  rewrite bool_decide_ite_not.
   replace (Z.of_nat (uint.nat n `mod` 8)%nat) with (uint.Z n `mod` 8) in Ho.
   2: { rewrite Nat2Z.inj_mod. word. }
   simplify_eq/=. clear.
+  rewrite -bool_decide_not.
   assert (∀ x y, x = y → bool_decide (x ≠ W8 0) = bool_decide (y ≠ W8 0))
     as Ht by naive_solver.
-  f_equal. apply Ht. repeat f_equal. word.
+  apply Ht. repeat f_equal. word.
 Qed.
 
 Lemma wp_node_getChild n d0 nodeTy sl_hash ptr_child0 ptr_child1 l v sl_label d1 label (depth : w64) :

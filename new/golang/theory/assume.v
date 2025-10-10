@@ -124,7 +124,7 @@ Proof.
   match goal with
   | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
   end.
-  { iIntros (?); congruence. }
+  { by iIntros (?). }
   iIntros (_). iApply "HΦ".
   iPureIntro. lia.
 Qed.
