@@ -301,6 +301,10 @@ Ltac wp_for_chan_post :=
 post-processing. This is because bool_decide can come with some complications
 that should be simplified, like negb around bool_decide or equality of values
 inside the bool_decide. *)
+(* TODO: [wp_if_destruct] used when user has [if: #b] at program head
+and wants to case branch, regardless of whether b is a var or not.
+the impl should be changed to match this intuition.
+right now, it destructs [# b] found anywhere. *)
 Ltac wp_if_destruct :=
   lazymatch goal with
   | |- environments.envs_entails _ ?g =>
@@ -316,5 +320,11 @@ Ltac wp_if_destruct :=
           cleanup_bool_decide;
           try wp_auto;
           cleanup_bool_decide
+      | context[@to_val _ bool _ (negb ?b)] =>
+          is_var b; destruct b;
+          cleanup_bool_decide;
+          try wp_auto;
+          cleanup_bool_decide
+      end
       end
   end.
