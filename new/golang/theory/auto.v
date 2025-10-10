@@ -326,5 +326,4 @@ Ltac wp_if_destruct :=
           try wp_auto;
           cleanup_bool_decide
       end
-      end
   end.
