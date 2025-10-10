@@ -51,19 +51,19 @@ Qed.
 Lemma wp_Equal sl_b0 sl_b1 d0 d1 (b0 b1 : list w8) :
   {{{
     is_pkg_init bytes ∗
-    "Hsl_b0" ∷ sl_b0 ↦*{d0} b0 ∗
-    "Hsl_b1" ∷ sl_b1 ↦*{d1} b1
+    "Hb0" ∷ sl_b0 ↦*{d0} b0 ∗
+    "Hb1" ∷ sl_b1 ↦*{d1} b1
   }}}
   @! bytes.Equal #sl_b0 #sl_b1
   {{{
     RET #(bool_decide (b0 = b1));
-    "Hsl_b0" ∷ sl_b0 ↦*{d0} b0 ∗
-    "Hsl_b1" ∷ sl_b1 ↦*{d1} b1
+    sl_b0 ↦*{d0} b0 ∗
+    sl_b1 ↦*{d1} b1
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-  wp_apply (wp_StringFromBytes with "Hsl_b0") as "Hsl_b0".
-  wp_apply (wp_StringFromBytes with "Hsl_b1") as "Hsl_b1".
+  wp_apply (wp_StringFromBytes with "Hb0") as "Hb0".
+  wp_apply (wp_StringFromBytes with "Hb1") as "Hb1".
   iApply "HΦ". iFrame.
 Qed.
 
