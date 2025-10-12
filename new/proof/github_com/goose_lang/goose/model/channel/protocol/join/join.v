@@ -228,20 +228,21 @@ Proof.
 Qed.
 
 Lemma wp_worker_send γ ch cap P :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 ∗
-      is_pkg_init channel ∗
+  {{{ is_pkg_init channel ∗
+      £ 1 ∗ £ 1 ∗ £ 1 ∗
       is_join γ ch cap ∗
       worker γ P ∗
       P }}}
     ch @ (ptrT.id channel.Channel.id) @ "Send" #t #(default_val V)
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & Hlc4 & #Hinit & #Hjoin & HWorker & HP) HΦ".
+  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hjoin & HWorker & HP) HΦ".
   rewrite /worker /is_join.
   iNamed "HWorker".
   iDestruct "HWorker" as "[Hfrag Hprop]".
   iDestruct "Hjoin" as "[#Hch #Hinv]".
   iApply (wp_Send ch cap (default_val V) γ.(chan_name) with "[$Hinit $Hch]").
+  iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch1".
@@ -302,19 +303,20 @@ Proof.
 Qed.
 
 Lemma wp_join_receive γ ch cap n Q :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 ∗
-      is_pkg_init channel ∗
+  {{{ is_pkg_init channel ∗
+      £ 1 ∗ £ 1 ∗ £ 1 ∗
       is_join γ ch cap ∗
       join γ (S n) Q }}}
     ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
   {{{ v, RET (v, #true); join γ n Q }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & Hlc4 & #Hinit & #Hjoin & HJoin & HJoinQ) HΦ".
+  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hjoin & HJoin & HJoinQ) HΦ".
   iNamed "HJoinQ".
   iDestruct "HJoinQ" as "[HspQ HQimp]".
   rewrite /join /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
   iApply (wp_Receive ch cap γ.(chan_name) with "[$Hinit $Hch]").
+  iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv".

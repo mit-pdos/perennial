@@ -191,7 +191,7 @@ Proof.
 Qed.
 
 Lemma wp_done_close γ ch Qs :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 ∗
+  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗
       is_pkg_init channel ∗
       is_done γ ch ∗
       Notify γ Qs ∗
@@ -199,10 +199,11 @@ Lemma wp_done_close γ ch Qs :
     ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & Hlc4 & #Hinit & #Hdone & HNotify & HQs) Hcont".
+  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hdone & HNotify & HQs) Hcont".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   unfold Notify. iDestruct "HNotify" as (m) "[Hauth_half [%Hbound HProps]]".
   iApply (wp_Close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+  iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc2 Hinv_open") as "Hinv_open".
@@ -240,18 +241,19 @@ Proof.
 Qed.
 
 Lemma wp_done_receive γ ch i Q :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 ∗
-      is_pkg_init channel ∗
+  {{{ is_pkg_init channel ∗
+      £ 1 ∗ £ 1 ∗ £ 1 ∗
       is_done γ ch ∗
       Notified γ i Q }}}
     ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
   {{{ RET (#(default_val V), #false); Q }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & Hlc4 & #Hinit & #Hdone & HNotifed) Hcont".
+  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hdone & HNotifed) Hcont".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   unfold Notify.
   iApply wp_fupd.
   iApply (wp_Receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+  iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch0".
