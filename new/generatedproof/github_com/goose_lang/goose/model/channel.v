@@ -152,117 +152,6 @@ Definition t := w64.
 End def.
 End SelectDir.
 
-(* type channel.SelectCase *)
-Module SelectCase.
-Section def.
-Context `{ffi_syntax}.
-
-Definition ty (T : go_type) : go_type := structT [
-  "channel" :: ptrT;
-  "dir" :: channel.SelectDir;
-  "Value" :: T;
-  "Ok" :: boolT
-]%struct.
-#[global] Typeclasses Opaque ty.
-#[global] Opaque ty.
-Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
-  channel' : loc;
-  dir' : SelectDir.t;
-  Value' : T';
-  Ok' : bool;
-}.
-End def.
-End SelectCase.
-
-#[local] Transparent SelectCase.ty.
-Arguments SelectCase.mk {_} { T' } {_ T _} .
-Arguments SelectCase.t {_} T' {_ T _} .
-
-Section instances.
-Context `{ffi_syntax}.
-Context`{!IntoVal T'} `{!IntoValTyped T' T} .
-#[local] Transparent channel.SelectCase.
-#[local] Typeclasses Transparent channel.SelectCase.
-
-Global Instance SelectCase_wf : struct.Wf (SelectCase.ty T).
-Proof. apply _. Qed.
-
-Global Instance settable_SelectCase : Settable (SelectCase.t T') :=
-  settable! (SelectCase.mk (T:=T)) < SelectCase.channel'; SelectCase.dir'; SelectCase.Value'; SelectCase.Ok' >.
-Global Instance into_val_SelectCase : IntoVal (SelectCase.t T') :=
-  {| to_val_def v :=
-    struct.val_aux (SelectCase.ty T) [
-    "channel" ::= #(SelectCase.channel' v);
-    "dir" ::= #(SelectCase.dir' v);
-    "Value" ::= #(SelectCase.Value' v);
-    "Ok" ::= #(SelectCase.Ok' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_SelectCase : IntoValTyped (SelectCase.t T') (SelectCase.ty T) :=
-{|
-  default_val := SelectCase.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_SelectCase_channel : IntoValStructField "channel" (SelectCase.ty T) SelectCase.channel'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_SelectCase_dir : IntoValStructField "dir" (SelectCase.ty T) SelectCase.dir'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_SelectCase_Value : IntoValStructField "Value" (SelectCase.ty T) SelectCase.Value'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_SelectCase_Ok : IntoValStructField "Ok" (SelectCase.ty T) SelectCase.Ok'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_type_SelectCase :
-  PureWp True
-    (channel.SelectCase #T)
-    #(SelectCase.ty T).
-Proof. solve_type_pure_wp. Qed.
-
-
-Global Instance wp_struct_make_SelectCase channel' dir' Value' Ok':
-  PureWp True
-    (struct.make #(SelectCase.ty T) (alist_val [
-      "channel" ::= #channel';
-      "dir" ::= #dir';
-      "Value" ::= #Value';
-      "Ok" ::= #Ok'
-    ]))%struct
-    #(SelectCase.mk channel' dir' Value' Ok').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance SelectCase_struct_fields_split `{!BoundedTypeSize T} dq l (v : (SelectCase.t T')) :
-  StructFieldsSplit dq l v (
-    "Hchannel" ∷ l ↦s[(SelectCase.ty T) :: "channel"]{dq} v.(SelectCase.channel') ∗
-    "Hdir" ∷ l ↦s[(SelectCase.ty T) :: "dir"]{dq} v.(SelectCase.dir') ∗
-    "HValue" ∷ l ↦s[(SelectCase.ty T) :: "Value"]{dq} v.(SelectCase.Value') ∗
-    "HOk" ∷ l ↦s[(SelectCase.ty T) :: "Ok"]{dq} v.(SelectCase.Ok')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SelectCase.channel' v)) ((SelectCase.ty T)) "channel"%go.
-  simpl_one_flatten_struct (# (SelectCase.dir' v)) ((SelectCase.ty T)) "dir"%go.
-  simpl_one_flatten_struct (# (SelectCase.Value' v)) ((SelectCase.ty T)) "Value"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -293,52 +182,24 @@ Global Instance wp_func_call_NewChannelRef :
   WpFuncCall channel.NewChannelRef _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_NewSendCase :
-  WpFuncCall channel.NewSendCase _ (is_pkg_defined channel) :=
+Global Instance wp_func_call_NonBlockingSelect1 :
+  WpFuncCall channel.NonBlockingSelect1 _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_NewRecvCase :
-  WpFuncCall channel.NewRecvCase _ (is_pkg_defined channel) :=
+Global Instance wp_func_call_BlockingSelect2 :
+  WpFuncCall channel.BlockingSelect2 _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_TrySelect :
-  WpFuncCall channel.TrySelect _ (is_pkg_defined channel) :=
+Global Instance wp_func_call_NonBlockingSelect2 :
+  WpFuncCall channel.NonBlockingSelect2 _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_Select1 :
-  WpFuncCall channel.Select1 _ (is_pkg_defined channel) :=
+Global Instance wp_func_call_BlockingSelect3 :
+  WpFuncCall channel.BlockingSelect3 _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_TrySelectCase2 :
-  WpFuncCall channel.TrySelectCase2 _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Select2 :
-  WpFuncCall channel.Select2 _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TrySelectCase3 :
-  WpFuncCall channel.TrySelectCase3 _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Select3 :
-  WpFuncCall channel.Select3 _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TrySelectCase4 :
-  WpFuncCall channel.TrySelectCase4 _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Select4 :
-  WpFuncCall channel.Select4 _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TrySelectCase5 :
-  WpFuncCall channel.TrySelectCase5 _ (is_pkg_defined channel) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Select5 :
-  WpFuncCall channel.Select5 _ (is_pkg_defined channel) :=
+Global Instance wp_func_call_NonBlockingSelect3 :
+  WpFuncCall channel.NonBlockingSelect3 _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Channel'ptr_Cap :
