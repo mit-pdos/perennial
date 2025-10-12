@@ -38,7 +38,7 @@ Proof.
     iNamed "phys". iNamed "offer". wp_auto. unfold chan_cap_valid in Hcapvalid.
     wp_if_destruct.
     {
-      wp_auto. wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
+      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
       iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
       iDestruct (slice.own_slice_len with "slice") as "[%Hlen_slice %Hslgtz]".
       iDestruct (own_slice_wf with "slice") as "%Hwf".
@@ -70,7 +70,6 @@ Proof.
       }
     }
     {
-      wp_auto.
       wp_apply (wp_Mutex__Unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
       { iModIntro. unfold chan_inv_inner. iExists (Buffered buff). iFrame.
@@ -314,7 +313,7 @@ Proof.
     iNamed "phys". iNamed "offer". wp_auto. unfold chan_cap_valid in Hcapvalid.
     wp_if_destruct.
     {
-      wp_auto. wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
+      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
       iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
       iDestruct (slice.own_slice_len with "slice") as "[%Hlen_slice %Hslgtz]".
       iDestruct (own_slice_wf with "slice") as "%Hwf".
@@ -346,7 +345,6 @@ Proof.
       }
     }
     {
-      wp_auto.
       wp_apply (wp_Mutex__Unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
       { iModIntro. unfold chan_inv_inner. iExists (Buffered buff). iFrame.
