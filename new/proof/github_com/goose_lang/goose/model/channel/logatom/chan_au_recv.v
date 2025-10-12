@@ -110,7 +110,7 @@ Proof.
       }
       assert (buff = []).
       { destruct buff. { done. } { rewrite H in Hl. naive_solver. } }
-      subst buff. wp_auto.
+      subst buff. 
 
       wp_apply (wp_Mutex__Unlock
                   with "[$lock state buffer slice slice_cap Hchanrepfrag $Hlock]").
@@ -320,7 +320,7 @@ discriminate Heq.
         iDestruct (own_slice_len with "slice") as "[%H1 %H2]".
         simpl in H1.
         word.
-    } wp_auto.
+    } 
 
     wp_apply (wp_Mutex__Unlock
                 with "[$lock state  slice slice_cap buffer offer H $Hlock]").
@@ -590,7 +590,7 @@ Proof.
       }
       assert (buff = []).
       { destruct buff. { done. } { rewrite H in Hl. naive_solver. } }
-      subst buff. wp_auto.
+      subst buff.
       wp_apply (wp_Mutex__Unlock
                   with "[$lock state buffer slice slice_cap Hchanrepfrag $Hlock]").
       { iModIntro. iFrame. unfold chan_inv_inner. iFrame.  iExists (Buffered []).
@@ -689,7 +689,7 @@ Proof.
         iDestruct (own_slice_len with "slice") as "[%H1 %H2]".
         simpl in H1.
         word.
-    } wp_auto.
+    } 
 
     wp_apply (wp_Mutex__Unlock
                 with "[$lock state  slice slice_cap buffer H offer $Hlock]").
