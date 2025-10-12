@@ -458,22 +458,21 @@ Qed.
 Lemma wp_Send (ch: loc) (cap: Z) (v: V) (γ: chan_names):
   ∀ Φ,
   is_pkg_init channel ∗ is_channel ch cap γ -∗
-  (send_au_slow ch cap v γ (Φ #())) -∗
+  (£1 -∗ send_au_slow ch cap v γ (Φ #())) -∗
   WP ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v {{ Φ }}.
 Proof.
   intros. iIntros "[#Hinit #Hic]". iIntros "Hau".
-  try (iModIntro (□ _)%I).
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
   destruct_pkg_init "Hinit".
-  try (first [ wp_func_call | wp_method_call ]; wp_call; [idtac]).
+  wp_method_call. wp_call_lc "?".
+  iSpecialize ("Hau" with "[$]").
   wp_auto.
 
   wp_if_destruct; first done.
   wp_for. iNamed "Hau".
   wp_apply ((wp_TrySend ch cap v γ
     (send_au_slow ch cap v γ (Φ (# ())) ∗ c_ptr ↦ ch ∗ v_ptr ↦ v)%I)
-    with "[][Hau c v]").
-  { iFrame "#". }
+    with "[$] [Hau c v]").
   { iFrame.
     iIntros "(Hau & c & v)".
     unfold send_au_slow. iMod "Hau".
@@ -512,8 +511,8 @@ Proof.
     }
   }
   {
-    iIntros "Hcontineer". wp_auto.
-    destruct decide. all:try naive_solver.
+    iIntros "(Hau & c & v)". wp_auto.
+    rewrite decide_True //.
     wp_auto. wp_for_post. iFrame.
   }
 Qed.
@@ -660,14 +659,14 @@ Qed.
 Lemma wp_Close (ch: loc) (cap: Z) (γ: chan_names):
   ∀ Φ,
   is_pkg_init channel ∗ is_channel ch cap γ -∗
-  close_au ch cap γ (Φ #()) -∗
+  (£1 -∗ close_au ch cap γ (Φ #())) -∗
   WP ch @ (ptrT.id channel.Channel.id) @ "Close" #t #() {{ Φ }}.
 Proof.
   intros. iIntros "[#Hinit #Hic]". iIntros "Hau".
-  try (iModIntro (□ _)%I).
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
   destruct_pkg_init "Hinit".
-  try (first [ wp_func_call | wp_method_call ]; wp_call; [idtac]).
+  wp_method_call. wp_call_lc "?".
+  iSpecialize ("Hau" with "[$]").
   wp_auto.
   simpl.
   wp_if_destruct; first done.

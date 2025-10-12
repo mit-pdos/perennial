@@ -417,14 +417,14 @@ Qed.
 Lemma wp_Receive (ch: loc) (cap: Z) (γ: chan_names) :
   ∀ Φ,
   is_pkg_init channel ∗ is_channel ch cap γ -∗
-  (rcv_au_slow ch cap γ (λ v ok, Φ (#v, #ok)%V)) -∗
+  (£1 -∗ rcv_au_slow ch cap γ (λ v ok, Φ (#v, #ok)%V)) -∗
   WP ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #() {{ Φ }}.
 Proof.
     intros. iIntros "[#Hinit #Hic]". iIntros "Hau".
-  try (iModIntro (□ _)%I).
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
     destruct_pkg_init "Hinit".
-  try (first [ wp_func_call | wp_method_call ]; wp_call; [idtac]).
+  wp_method_call. wp_call_lc "?".
+  iSpecialize ("Hau" with "[$]").
   wp_auto.
 
   wp_if_destruct; first done.

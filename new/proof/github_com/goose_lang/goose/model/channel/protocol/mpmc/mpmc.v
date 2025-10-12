@@ -366,15 +366,16 @@ Qed.
 
 Lemma wp_mpmc_send γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
                    (sent : gmultiset V) (v : V) :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
+  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
       mpmc_producer γ sent ∗
       P v }}}
     ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
   {{{ RET #(); mpmc_producer γ (sent ⊎ {[+ v +]}) }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & Hlc4 & #Hinit & #Hmpmc & Hprod & HP) Hcont".
+  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hprod & HP) Hcont".
   unfold is_mpmc. iNamed "Hmpmc". iDestruct "Hmpmc" as "[#Hchan Hinv]".
   iApply (wp_Send ch cap v γ.(chan_name) with "[$Hchan $Hinit]").
+  iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc2 Hinv_open") as "Hinv_open".
@@ -551,7 +552,7 @@ Qed.
 
 Lemma wp_mpmc_receive γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
                       (received : gmultiset V) :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
+  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
       mpmc_consumer γ received }}}
     ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
   {{{ (v:V) (ok:bool), RET (#v, #ok);
@@ -559,10 +560,11 @@ Lemma wp_mpmc_receive γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmulti
       then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
       else is_closed γ ∗ mpmc_consumer γ received }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & Hlc4 & #Hinit & #Hmpmc & Hcons) Hcont".
+  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hcons) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
   iApply (wp_Receive ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
@@ -760,17 +762,18 @@ Qed.
 
 Lemma wp_mpmc_close γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)):
   length producers = n_prod →
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
+  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
       ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
       R (foldr (⊎) ∅ producers) }}}
     ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
   {{{ RET #(); True }}}.
 Proof.
   intros.
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4 & #Hinit & #Hmpmc & Hprods & HR) Hcont".
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hprods & HR) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
   iApply (wp_Close ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc2 Hinv_open") as "Hinv_open".

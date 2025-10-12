@@ -128,23 +128,22 @@ Qed.
 
 (** Future fulfill operation - consumes fulfill token and P(v) to send value *)
 Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
-  {{{
-   £ 1 ∗
-        is_pkg_init channel ∗ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
+  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
     ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & #Hinit & #Hfuture & Hfulfillt & HP) Hcont".
+  iIntros (Φ) "(#Hinit & #Hfuture & Hfulfillt & HP) Hcont".
 
   (* Extract channel info from Future predicate *)
   unfold is_future.
   iDestruct "Hfuture" as "[Hchan Hinv]".
 
-  iApply (wp_Send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (wp_Send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
+  iIntros "?".
 
   (* Open the Future invariant to provide the atomic update *)
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
+  iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
 
   (* Establish agreement between our fulfill token and invariant's fulfill state *)
@@ -198,14 +197,12 @@ Qed.
 
 (** Future await operation - consumes await token to receive value and P(v) *)
 Lemma wp_future_await γ ch (P : V → iProp Σ) :
-  {{{
-   £ 1 ∗
-        is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
+  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
     ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
   {{{ (v : V) , RET (#v, #true);
       P v }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & #Hinit & #Hfuture & HawaitI) Hcont".
+  iIntros (Φ) "(#Hinit & #Hfuture & HawaitI) Hcont".
 
   (* Extract channel info from Future predicate *)
   unfold is_future.
@@ -213,10 +210,11 @@ Proof.
 
   (* Use wp_Receive with our atomic update *)
   iApply (wp_Receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
+  iIntros "Hlc1".
 
   (* Open the Future invariant to provide the atomic update *)
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
+  iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
 
   (* Establish agreement between our await token and invariant's await state *)
