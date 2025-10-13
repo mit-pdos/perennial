@@ -139,7 +139,7 @@ Proof.
   iDestruct "Hfuture" as "[Hchan Hinv]".
 
   wp_apply (wp_Send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
-  iIntros "?".
+  iIntros "(? & ? & ? & ?)".
 
   (* Open the Future invariant to provide the atomic update *)
   iInv "Hinv" as "Hinv_open" "Hinv_close".
@@ -210,7 +210,7 @@ Proof.
 
   (* Use wp_Receive with our atomic update *)
   iApply (wp_Receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
-  iIntros "Hlc1".
+  iIntros "(Hlc1 & _)".
 
   (* Open the Future invariant to provide the atomic update *)
   iInv "Hinv" as "Hinv_open" "Hinv_close".

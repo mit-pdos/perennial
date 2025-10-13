@@ -52,7 +52,6 @@ Qed.
 
 Lemma wp_handshake_receive γ ch P Q :
   {{{
-         £ 1 ∗  £ 1 ∗
       is_pkg_init channel ∗
       is_handshake γ ch P Q  ∗
       Q
@@ -62,9 +61,9 @@ Lemma wp_handshake_receive γ ch P Q :
       v, RET (#v, #true); P v
   }}}.
 Proof.
-  iIntros (?) "(Hlc1 & Hlc2 & Hpc & (#Hchan & #Hinv) & HQ) HΦ".
+  iIntros (?) "(Hpc & (#Hchan & #Hinv) & HQ) HΦ".
   iApply ((wp_Receive ch 0  γ Φ  ) with "[$Hpc $Hchan]").
-  iIntros "Hlc3".
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
    iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".
   iInv "Hinv" as "Hi" "Hclose".
@@ -93,7 +92,6 @@ Qed.
 
 Lemma wp_handshake_send γ ch v P Q :
   {{{
-         £ 1 ∗  £ 1 ∗
       is_pkg_init channel ∗
       is_handshake γ ch P Q ∗
       P v
@@ -103,10 +101,10 @@ Lemma wp_handshake_send γ ch v P Q :
       RET (#()); Q
   }}}.
 Proof.
-  iIntros (?) "(Hlc1 & Hlc2 & Hpc & (#Hchan & #Hinv) & HP) HΦ".
+  iIntros (?) "(Hpc & (#Hchan & #Hinv) & HP) HΦ".
   iApply ((wp_Send ch 0 v γ Φ  ) with "[$Hpc $Hchan]").
-  iIntros "Hlc3".
-   iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
+  iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".
   iInv "Hinv" as "Hi" "Hclose".
    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
