@@ -191,22 +191,21 @@ Proof.
 Qed.
 
 Lemma wp_done_close γ ch Qs :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗
-      is_pkg_init channel ∗
+  {{{ is_pkg_init channel ∗
       is_done γ ch ∗
       Notify γ Qs ∗
       [∗ list] Q ∈ Qs, Q }}}
     ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hdone & HNotify & HQs) Hcont".
+  iIntros (Φ) "(#Hinit & #Hdone & HNotify & HQs) Hcont".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   unfold Notify. iDestruct "HNotify" as (m) "[Hauth_half [%Hbound HProps]]".
   iApply (wp_Close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
-  iIntros "Hlc4".
-  iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
+  iIntros "(? & ? & ? & ?)".
+  iMod (lc_fupd_elim_later with "[$] Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc2 Hinv_open") as "Hinv_open".
+  iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hinv_open" as (s m' Qs') "(Hch_own & Hmap_half & Hstate)".
   iDestruct (ghost_map_auth_agree with "Hauth_half Hmap_half") as %->.
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
@@ -214,7 +213,7 @@ Proof.
   destruct s; try done.
   - iIntros "Hoc".
     iMod "Hmask".
-    iMod (lc_fupd_elim_later with "Hlc3 Hinv_close") as "Hinv_close".
+    iMod (lc_fupd_elim_later with "[$] Hinv_close") as "Hinv_close".
     iMod ("Hinv_close" with "[Hmap_half Hoc Hauth_half HProps HQs]") as "_".
     {
       iNext. iExists (chan_rep.Closed []), m'. iFrame "Hmap_half".
@@ -242,20 +241,19 @@ Qed.
 
 Lemma wp_done_receive γ ch i Q :
   {{{ is_pkg_init channel ∗
-      £ 1 ∗ £ 1 ∗ £ 1 ∗
       is_done γ ch ∗
       Notified γ i Q }}}
     ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
   {{{ RET (#(default_val V), #false); Q }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hdone & HNotifed) Hcont".
+  iIntros (Φ) "(#Hinit & #Hdone & HNotifed) Hcont".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   unfold Notify.
   iApply wp_fupd.
   iApply (wp_Receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
-  iIntros "Hlc4".
+  iIntros "(? & ? & ? & ?)".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
+  iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch0".
   iNamed "Hinv_open".
   destruct s; try done.
@@ -273,7 +271,7 @@ Proof.
     iModIntro.
     unfold rcv_au_inner.
     iInv "Hinv" as "Hinv_open1" "Hinv_close".
-    iMod (lc_fupd_elim_later with "Hlc4 Hinv_open1") as "Hinv_open1".
+    iMod (lc_fupd_elim_later with "[$] Hinv_open1") as "Hinv_open1".
     iNamed "Hinv_open1".
     destruct s; try done.
     {
@@ -307,7 +305,7 @@ Proof.
         iDestruct "H4" as "[H4|H4]".
         - iDestruct "H4" as "[Hprop_half x]".
           iDestruct (saved_prop_agree with "[$Hn2] [$Hprop_half]") as "#HQQi".
-          iMod (lc_fupd_elim_later with "Hlc2 HQQi") as "#Hp_eq2".
+          iMod (lc_fupd_elim_later with "[$] HQQi") as "#Hp_eq2".
           iMod ("Hinv_close" with "[Hoc H2 Hmap Hgm H3 Hn2 Hprop_half]") as "Hc".
           {
             iCombine "Hprop_half" "Hn2" as "H". iModIntro. iExists (chan_rep.Closed []). iFrame. iExists Qs0. iSplitL ""; first done. iFrame. iApply "H2".
@@ -356,7 +354,7 @@ Proof.
       iDestruct "H4" as "[H4|H4]".
       - iDestruct "H4" as "[Hprop_half x]".
         iDestruct (saved_prop_agree with "[$Hn2] [$Hprop_half]") as "#HQQi".
-        iMod (lc_fupd_elim_later with "Hlc2 HQQi") as "#Hp_eq2".
+        iMod (lc_fupd_elim_later with "[$] HQQi") as "#Hp_eq2".
         iMod ("Hinv_close" with "[Hoc H2 Hmap Hgm H3 Hn2 Hprop_half]") as "Hc".
         {
           iCombine "Hprop_half" "Hn2" as "H". iModIntro. iExists (chan_rep.Closed []). iFrame.

@@ -458,15 +458,15 @@ Qed.
 Lemma wp_Send (ch: loc) (cap: Z) (v: V) (γ: chan_names):
   ∀ Φ,
   is_pkg_init channel ∗ is_channel ch cap γ -∗
-  (£1 -∗ send_au_slow ch cap v γ (Φ #())) -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch cap v γ (Φ #())) -∗
   WP ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v {{ Φ }}.
 Proof.
   intros. iIntros "[#Hinit #Hic]". iIntros "Hau".
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
   destruct_pkg_init "Hinit".
   wp_method_call. wp_call_lc "?".
+  wp_auto_lc 3.
   iSpecialize ("Hau" with "[$]").
-  wp_auto.
 
   wp_if_destruct; first done.
   wp_for. iNamed "Hau".
@@ -659,16 +659,15 @@ Qed.
 Lemma wp_Close (ch: loc) (cap: Z) (γ: chan_names):
   ∀ Φ,
   is_pkg_init channel ∗ is_channel ch cap γ -∗
-  (£1 -∗ close_au ch cap γ (Φ #())) -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch cap γ (Φ #())) -∗
   WP ch @ (ptrT.id channel.Channel.id) @ "Close" #t #() {{ Φ }}.
 Proof.
   intros. iIntros "[#Hinit #Hic]". iIntros "Hau".
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
   destruct_pkg_init "Hinit".
   wp_method_call. wp_call_lc "?".
+  wp_auto_lc 3.
   iSpecialize ("Hau" with "[$]").
-  wp_auto.
-  simpl.
   wp_if_destruct; first done.
   wp_for.
 
@@ -702,7 +701,7 @@ Proof.
   }
   iIntros "Hau". iDestruct "Hau" as "[H1 H2]".
   iApply wp_fupd.
-  wp_auto_lc 1.
+  wp_auto.
   destruct decide.
   { iModIntro. wp_auto. wp_for_post. iFrame. }
   done.
