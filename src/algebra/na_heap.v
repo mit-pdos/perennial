@@ -131,7 +131,7 @@ Section definitions.
 
   Definition meta_def `{Countable A} (l : L) (N : namespace) (x : A) : iProp Σ :=
     (∃ γm, own (na_meta_name hG) (gmap_view_frag l DfracDiscarded (to_agree γm)) ∗
-           own γm (reservation_map_data (positives_flatten N) (to_agree (encode x))))%I.
+           own γm (reservation_map_data (coPpick (↑N)) (to_agree (encode x))))%I.
   Definition meta_aux : seal (@meta_def). Proof. by eexists. Qed.
   Definition meta {A dA cA} := meta_aux.(unseal) A dA cA.
   Definition meta_eq : @meta = @meta_def := meta_aux.(seal_eq).
@@ -422,9 +422,7 @@ Section na_heap.
     iDestruct 1 as (γm) "[Hγm Hm]". iExists γm. iFrame "Hγm".
     iApply (own_update with "Hm").
     apply reservation_map_alloc; last done.
-    cut (positives_flatten N ∈@{coPset} ↑N); first by set_solver.
-    rewrite namespaces.nclose_unseal. apply elem_coPset_suffixes.
-    exists 1%positive. by rewrite left_id_L.
+    pose proof (coPpick_elem_of (↑ N) (nclose_non_empty _)); set_solver.
   Qed.
 
   Lemma na_heap_alloc tls σ l v lk :
