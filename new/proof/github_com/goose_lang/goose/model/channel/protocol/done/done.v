@@ -67,12 +67,12 @@ Definition is_done (γ : done_names) (ch : loc) : iProp Σ :=
   )%I.
 
 Lemma done_alloc_notified γ ch Qs Q :
-  £ 1 -∗ is_done γ ch -∗
+  is_done γ ch -∗
   Notify γ Qs ={⊤}=∗
   Notify γ (Qs ++ [Q]) ∗
   Notified γ (length Qs) Q.
 Proof.
-  iIntros "Hlc #Hdone HNotify".
+  iIntros "#Hdone HNotify".
   rewrite /Notify /Notified /is_done.
   iDestruct "HNotify" as (m) "[Hauth_half HQs]".
   iDestruct "Hdone" as "[#Hch #Hinv]".
@@ -80,8 +80,7 @@ Proof.
   iDestruct "Hprop" as "[Hprop1 Hprop2]".
   set (i := length Qs).
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc Hinv_open") as "Hinv_open".
-  iDestruct "Hinv_open" as (s m' Qs') "(Hch_own & Hmap_half & Hstate)".
+  iDestruct "Hinv_open" as (s m' Qs') "(>Hch_own & >Hmap_half & Hstate)".
   iDestruct ((ghost_map_auth_agree _ (1/2) (1/2) m m') with "[$Hauth_half] [$Hmap_half]") as %->.
   iCombine "Hauth_half Hmap_half" as "Hauth_full".
   iDestruct "HQs" as "[%H HQs]".
@@ -92,7 +91,7 @@ Proof.
   }
   iDestruct "Hauth_full" as "[Hauth_half1 Hauth_half2]".
   iDestruct "Hfrag" as "[Hfrag1 Hfrag2]".
-  destruct s; try done.
+  destruct s; try iDestruct "Hstate" as ">Hstate"; try done.
   {
     iMod ("Hinv_close" with "[Hch_own Hauth_half2 Hstate]").
     {
@@ -136,15 +135,16 @@ Proof.
     }
   }
   {
-    destruct draining; try done.
-    iDestruct "Hstate" as "[%Hc Hgm]".
-    iNamed "Hgm".
-    iDestruct ((ghost_map_auth_agree _ (1/2) (1/2) m' (<[i:=prop_gname]> m')) with "[$Hgm] [$Hauth_half1]") as %->.
-    iCombine "Hauth_half2 Hauth_half1" as "Hgm2".
-    iDestruct ((ghost_map_auth_agree) with "[$Hgm] [$Hgm2]") as %->.
-    iDestruct (ghost_map_auth_valid with "Hgm2") as %Hvalid1.
-    iDestruct (ghost_map_auth_valid_2 with "Hgm2 Hgm") as %[Hvalid2 _].
-    done.
+    destruct draining.
+    - iDestruct "Hstate" as "[>%Hc Hgm]".
+      iDestruct "Hgm" as "(>? & ?)". iNamed.
+      iDestruct ((ghost_map_auth_agree _ (1/2) (1/2) m' (<[i:=prop_gname]> m')) with "[$Hgm] [$Hauth_half1]") as %->.
+      iCombine "Hauth_half2 Hauth_half1" as "Hgm2".
+      iDestruct ((ghost_map_auth_agree) with "[$Hgm] [$Hgm2]") as %->.
+      iDestruct (ghost_map_auth_valid with "Hgm2") as %Hvalid1.
+      iDestruct (ghost_map_auth_valid_2 with "Hgm2 Hgm") as %[Hvalid2 _].
+      done.
+    - iDestruct "Hstate" as ">Hstate". done.
   }
 Qed.
 

@@ -20,6 +20,8 @@ Inductive t (V : Type) : Type :=
 | RcvCommit                  (* Receiver committed, waiting for sender to complete *)
 | Closed (draining: list V)  (* Closed channel, possibly draining remaining messages *)
 .
+#[global] Instance witness V : Inhabited (t V) := populate!.
+
 
   Global Arguments Buffered {V}.
   Global Arguments Idle {V}.
