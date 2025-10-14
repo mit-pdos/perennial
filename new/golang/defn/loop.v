@@ -13,24 +13,24 @@ Definition continue_val_def : val := (#"continue", #()).
 Program Definition continue_val := sealed @continue_val_def.
 Definition continue_val_unseal : continue_val = _ := seal_eq _.
 
-Definition do_break_def : val := λ: "v", (#"break", Var "v").
+Definition do_break_def : val := λ: "v", (#"break", "v").
 Program Definition do_break := sealed @do_break_def.
 Definition do_break_unseal : do_break = _ := seal_eq _.
 
-Definition do_continue_def : val := λ: "v", (#"continue", Var "v").
+Definition do_continue_def : val := λ: "v", (#"continue", "v").
 Program Definition do_continue := sealed @do_continue_def.
 Definition do_continue_unseal : do_continue = _ := seal_eq _.
 
 Local Definition do_for_def : val :=
   rec: "loop" "cond" "body" "post" :=
    exception_do (
-   if: ~(Var "cond") #() then (return: (do: #()))
+   if: ~("cond" #()) then (return: (do: #()))
    else
      let: "b" := "body" #() in
      if: Fst "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst "b" = #"continue") || (Fst $ Var "b" = #"execute")
+     if: (Fst "b" = #"continue") || (Fst "b" = #"execute")
           then (do: "post" #();;; return: "loop" "cond" "body" "post") else do: #() ;;;
-     return: Var "b"
+     return: "b"
   ).
 
 Program Definition do_for := sealed @do_for_def.
@@ -39,11 +39,11 @@ Definition do_for_unseal : do_for = _ := seal_eq _.
 Definition do_loop_def: val :=
   λ: "body",
   (rec: "loop" <> := exception_do (
-     let: "b" := (Var "body") #() in
-     if: Fst $ Var "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst $ Var "b" = #"continue") || (Fst $ Var "b" = #"execute")
-          then (return: (Var "loop") #()) else do: #() ;;;
-     return: Var "b"
+     let: "b" := "body" #() in
+     if: Fst "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
+     if: (Fst "b" = #"continue") || (Fst "b" = #"execute")
+          then (return: "loop" #()) else do: #() ;;;
+     return: "b"
   )) #().
 
 Program Definition do_loop := sealed @do_loop_def.
