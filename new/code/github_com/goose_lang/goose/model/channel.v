@@ -10,7 +10,6 @@ Module channel.
 Module OfferState. Definition id : go_string := "github.com/goose-lang/goose/model/channel.OfferState"%go. End OfferState.
 Module Channel. Definition id : go_string := "github.com/goose-lang/goose/model/channel.Channel"%go. End Channel.
 Module SelectDir. Definition id : go_string := "github.com/goose-lang/goose/model/channel.SelectDir"%go. End SelectDir.
-Module SelectCase. Definition id : go_string := "github.com/goose-lang/goose/model/channel.SelectCase"%go. End SelectCase.
 
 Section code.
 Context `{ffi_syntax}.
@@ -399,430 +398,420 @@ Definition SelectSend : val := #(W64 0).
 (* case <-Chan: *)
 Definition SelectRecv : val := #(W64 1).
 
-Definition SelectCase : val :=
-  λ: "T", type.structT [
-    (#"channel"%go, #ptrT);
-    (#"dir"%go, #SelectDir);
-    (#"Value"%go, "T");
-    (#"Ok"%go, #boolT)
-  ].
-  #[global] Typeclasses Opaque SelectCase.
-  #[global] Opaque SelectCase.
+Definition NonBlockingSelect1 : go_string := "github.com/goose-lang/goose/model/channel.NonBlockingSelect1"%go.
 
-Definition NewSendCase : go_string := "github.com/goose-lang/goose/model/channel.NewSendCase"%go.
+(* Non-blocking select with 1 case (send or receive)
+   For receive: value parameter is ignored
+   Returns (selected, received_value, ok)
 
-(* go: channel.go:298:6 *)
-Definition NewSendCaseⁱᵐᵖˡ : val :=
-  λ: "T" "channel" "value",
+   go: channel.go:292:6 *)
+Definition NonBlockingSelect1ⁱᵐᵖˡ : val :=
+  λ: "T" "ch" "dir" "value",
     exception_do (let: "value" := (mem.alloc "value") in
-    let: "channel" := (mem.alloc "channel") in
-    return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
-     let: "$dir" := SelectSend in
-     let: "$Value" := (!["T"] "value") in
-     struct.make (SelectCase "T") [{
-       "channel" ::= "$channel";
-       "dir" ::= "$dir";
-       "Value" ::= "$Value";
-       "Ok" ::= type.zero_val #boolT
-     }]))).
-
-Definition NewRecvCase : go_string := "github.com/goose-lang/goose/model/channel.NewRecvCase"%go.
-
-(* go: channel.go:306:6 *)
-Definition NewRecvCaseⁱᵐᵖˡ : val :=
-  λ: "T" "channel",
-    exception_do (let: "channel" := (mem.alloc "channel") in
-    return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
-     let: "$dir" := SelectRecv in
-     struct.make (SelectCase "T") [{
-       "channel" ::= "$channel";
-       "dir" ::= "$dir";
-       "Value" ::= type.zero_val "T";
-       "Ok" ::= type.zero_val #boolT
-     }]))).
-
-Definition TrySelect : go_string := "github.com/goose-lang/goose/model/channel.TrySelect"%go.
-
-(* Uses the applicable Try<Operation> function on the select case's channel. Default is always
-   selectable so simply returns true.
-
-   go: channel.go:315:6 *)
-Definition TrySelectⁱᵐᵖˡ : val :=
-  λ: "T" "select_case" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "select_case" := (mem.alloc "select_case") in
-    let: "channel" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] (struct.field_ref (SelectCase "T") #"channel"%go (![#ptrT] "select_case"))) in
-    do:  ("channel" <-[#ptrT] "$r0");;;
-    (if: (![#ptrT] "channel") = #null
-    then return: (#false)
-    else do:  #());;;
-    (if: (![#SelectDir] (struct.field_ref (SelectCase "T") #"dir"%go (![#ptrT] "select_case"))) = SelectSend
+    let: "dir" := (mem.alloc "dir") in
+    let: "ch" := (mem.alloc "ch") in
+    let: "zero" := (mem.alloc (type.zero_val "T")) in
+    (if: (![#SelectDir] "dir") = SelectSend
     then
-      return: (let: "$a0" := (!["T"] (struct.field_ref (SelectCase "T") #"Value"%go (![#ptrT] "select_case"))) in
-       let: "$a1" := (![#boolT] "blocking") in
-       (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "channel") "T") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#SelectDir] (struct.field_ref (SelectCase "T") #"dir"%go (![#ptrT] "select_case"))) = SelectRecv
-    then
-      let: "item" := (mem.alloc (type.zero_val "T")) in
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#boolT] "blocking") in
-      (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "channel") "T") "$a0") in
+      let: "$r0" := (let: "$a0" := (!["T"] "value") in
+      let: "$a1" := #false in
+      (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch") "T") "$a0" "$a1") in
+      do:  ("selected" <-[#boolT] "$r0");;;
+      return: (![#boolT] "selected", !["T"] "zero", #false)
+    else
+      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+      let: "recv_val" := (mem.alloc (type.zero_val "T")) in
+      let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+      (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch") "T") "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
       do:  ("selected" <-[#boolT] "$r0");;;
-      do:  ("item" <-["T"] "$r1");;;
+      do:  ("recv_val" <-["T"] "$r1");;;
       do:  ("ok" <-[#boolT] "$r2");;;
-      let: "$r0" := (!["T"] "item") in
-      do:  ((struct.field_ref (SelectCase "T") #"Value"%go (![#ptrT] "select_case")) <-["T"] "$r0");;;
-      let: "$r0" := (![#boolT] "ok") in
-      do:  ((struct.field_ref (SelectCase "T") #"Ok"%go (![#ptrT] "select_case")) <-[#boolT] "$r0");;;
-      return: (![#boolT] "selected")
-    else do:  #());;;
-    return: (#false)).
+      return: (![#boolT] "selected", !["T"] "recv_val", ![#boolT] "ok"))).
 
-Definition Select1 : go_string := "github.com/goose-lang/goose/model/channel.Select1"%go.
+Definition BlockingSelect2 : go_string := "github.com/goose-lang/goose/model/channel.BlockingSelect2"%go.
 
-(* Select1 performs a select operation on 1 case. This is used for Send and
-   Receive as well, since these channel operations in Go are equivalent to
-   a single case select statement with no default.
+(* Blocking select with 2 cases
+   Returns (caseIndex, received_value1, received_value2, ok)
 
-   go: channel.go:342:6 *)
-Definition Select1ⁱᵐᵖˡ : val :=
-  λ: "T1" "case1" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+   go: channel.go:306:6 *)
+Definition BlockingSelect2ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
+    exception_do (let: "val2" := (mem.alloc "val2") in
+    let: "dir2" := (mem.alloc "dir2") in
+    let: "ch2" := (mem.alloc "ch2") in
+    let: "val1" := (mem.alloc "val1") in
+    let: "dir1" := (mem.alloc "dir1") in
+    let: "ch1" := (mem.alloc "ch1") in
+    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
+    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "$r0" := (let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1") in
-      do:  ("selected" <-[#boolT] "$r0");;;
-      (if: (![#boolT] "selected") || (~ (![#boolT] "blocking"))
-      then break: #()
-      else do:  #()));;;
-    return: (![#boolT] "selected")).
+      (if: (((func_call #primitive.RandomUint64) #()) `rem` #(W64 2)) = #(W64 0)
+      then
+        (if: (![#SelectDir] "dir1") = SelectSend
+        then
+          (if: let: "$a0" := (!["T1"] "val1") in
+          let: "$a1" := #true in
+          (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch1") "T1") "$a0" "$a1"
+          then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", #false)
+          else do:  #())
+        else
+          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+          let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
+          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
+          (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch1") "T1") "$a0") in
+          let: "$r0" := "$ret0" in
+          let: "$r1" := "$ret1" in
+          let: "$r2" := "$ret2" in
+          do:  ("selected" <-[#boolT] "$r0");;;
+          do:  ("recv_val" <-["T1"] "$r1");;;
+          do:  ("ok" <-[#boolT] "$r2");;;
+          (if: ![#boolT] "selected"
+          then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", ![#boolT] "ok")
+          else do:  #()))
+      else
+        (if: (![#SelectDir] "dir2") = SelectSend
+        then
+          (if: let: "$a0" := (!["T2"] "val2") in
+          let: "$a1" := #true in
+          (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch2") "T2") "$a0" "$a1"
+          then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", #false)
+          else do:  #())
+        else
+          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+          let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
+          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
+          (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch2") "T2") "$a0") in
+          let: "$r0" := "$ret0" in
+          let: "$r1" := "$ret1" in
+          let: "$r2" := "$ret2" in
+          do:  ("selected" <-[#boolT] "$r0");;;
+          do:  ("recv_val" <-["T2"] "$r1");;;
+          do:  ("ok" <-[#boolT] "$r2");;;
+          (if: ![#boolT] "selected"
+          then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", ![#boolT] "ok")
+          else do:  #()))))).
 
-Definition TrySelectCase2 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase2"%go.
+Definition NonBlockingSelect2 : go_string := "github.com/goose-lang/goose/model/channel.NonBlockingSelect2"%go.
 
-(* go: channel.go:355:6 *)
-Definition TrySelectCase2ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "index" "case1" "case2" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
+(* Non-blocking select with 2 cases
+   Returns (caseIndex, received_value1, received_value2, ok)
+   caseIndex = 2 means no selection
+
+   go: channel.go:346:6 *)
+Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
+    exception_do (let: "val2" := (mem.alloc "val2") in
+    let: "dir2" := (mem.alloc "dir2") in
+    let: "ch2" := (mem.alloc "ch2") in
+    let: "val1" := (mem.alloc "val1") in
+    let: "dir1" := (mem.alloc "dir1") in
+    let: "ch1" := (mem.alloc "ch1") in
+    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
+    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
+    (if: (((func_call #primitive.RandomUint64) #()) `rem` #(W64 2)) = #(W64 0)
     then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
-    then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
-    else do:  #());;;
-    do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0 or 1"%go) in
-    Panic "$a0")).
+      (if: (![#SelectDir] "dir1") = SelectSend
+      then
+        (if: let: "$a0" := (!["T1"] "val1") in
+        let: "$a1" := #false in
+        (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch1") "T1") "$a0" "$a1"
+        then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", #false)
+        else do:  #())
+      else
+        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
+        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+        (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch1") "T1") "$a0") in
+        let: "$r0" := "$ret0" in
+        let: "$r1" := "$ret1" in
+        let: "$r2" := "$ret2" in
+        do:  ("selected" <-[#boolT] "$r0");;;
+        do:  ("recv_val" <-["T1"] "$r1");;;
+        do:  ("ok" <-[#boolT] "$r2");;;
+        (if: ![#boolT] "selected"
+        then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", ![#boolT] "ok")
+        else do:  #()));;;
+      (if: (![#SelectDir] "dir2") = SelectSend
+      then
+        (if: let: "$a0" := (!["T2"] "val2") in
+        let: "$a1" := #false in
+        (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch2") "T2") "$a0" "$a1"
+        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", #false)
+        else do:  #())
+      else
+        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
+        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+        (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch2") "T2") "$a0") in
+        let: "$r0" := "$ret0" in
+        let: "$r1" := "$ret1" in
+        let: "$r2" := "$ret2" in
+        do:  ("selected" <-[#boolT] "$r0");;;
+        do:  ("recv_val" <-["T2"] "$r1");;;
+        do:  ("ok" <-[#boolT] "$r2");;;
+        (if: ![#boolT] "selected"
+        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", ![#boolT] "ok")
+        else do:  #()))
+    else
+      (if: (![#SelectDir] "dir2") = SelectSend
+      then
+        (if: let: "$a0" := (!["T2"] "val2") in
+        let: "$a1" := #false in
+        (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch2") "T2") "$a0" "$a1"
+        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", #false)
+        else do:  #())
+      else
+        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
+        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+        (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch2") "T2") "$a0") in
+        let: "$r0" := "$ret0" in
+        let: "$r1" := "$ret1" in
+        let: "$r2" := "$ret2" in
+        do:  ("selected" <-[#boolT] "$r0");;;
+        do:  ("recv_val" <-["T2"] "$r1");;;
+        do:  ("ok" <-[#boolT] "$r2");;;
+        (if: ![#boolT] "selected"
+        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", ![#boolT] "ok")
+        else do:  #()));;;
+      (if: (![#SelectDir] "dir1") = SelectSend
+      then
+        (if: let: "$a0" := (!["T1"] "val1") in
+        let: "$a1" := #false in
+        (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch1") "T1") "$a0" "$a1"
+        then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", #false)
+        else do:  #())
+      else
+        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
+        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+        (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch1") "T1") "$a0") in
+        let: "$r0" := "$ret0" in
+        let: "$r1" := "$ret1" in
+        let: "$r2" := "$ret2" in
+        do:  ("selected" <-[#boolT] "$r0");;;
+        do:  ("recv_val" <-["T1"] "$r1");;;
+        do:  ("ok" <-[#boolT] "$r2");;;
+        (if: ![#boolT] "selected"
+        then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", ![#boolT] "ok")
+        else do:  #())));;;
+    return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", #false)).
 
-Definition Select2 : go_string := "github.com/goose-lang/goose/model/channel.Select2"%go.
+Definition BlockingSelect3 : go_string := "github.com/goose-lang/goose/model/channel.BlockingSelect3"%go.
 
-(* go: channel.go:368:6 *)
-Definition Select2ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "case1" "case2" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 2)) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase2) "T1" "T2") "$a0" "$a1" "$a2" "$a3"
-    then return: (![#uint64T] "i")
-    else do:  #());;;
+(* go: channel.go:408:6 *)
+Definition BlockingSelect3ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
+    exception_do (let: "val3" := (mem.alloc "val3") in
+    let: "dir3" := (mem.alloc "dir3") in
+    let: "ch3" := (mem.alloc "ch3") in
+    let: "val2" := (mem.alloc "val2") in
+    let: "dir2" := (mem.alloc "dir2") in
+    let: "ch2" := (mem.alloc "ch2") in
+    let: "val1" := (mem.alloc "val1") in
+    let: "dir1" := (mem.alloc "dir1") in
+    let: "ch1" := (mem.alloc "ch1") in
+    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
+    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
+    let: "zero3" := (mem.alloc (type.zero_val "T3")) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
-      then return: (#(W64 0))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
-      then return: (#(W64 1))
-      else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
-      then return: (#(W64 2))
-      else do:  #()))).
+      let: "r" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 3)) in
+      do:  ("r" <-[#uint64T] "$r0");;;
+      (if: (![#uint64T] "r") = #(W64 0)
+      then
+        (if: (![#SelectDir] "dir1") = SelectSend
+        then
+          (if: let: "$a0" := (!["T1"] "val1") in
+          let: "$a1" := #true in
+          (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch1") "T1") "$a0" "$a1"
+          then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+          else do:  #())
+        else
+          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+          let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
+          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
+          (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch1") "T1") "$a0") in
+          let: "$r0" := "$ret0" in
+          let: "$r1" := "$ret1" in
+          let: "$r2" := "$ret2" in
+          do:  ("selected" <-[#boolT] "$r0");;;
+          do:  ("recv_val" <-["T1"] "$r1");;;
+          do:  ("ok" <-[#boolT] "$r2");;;
+          (if: ![#boolT] "selected"
+          then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", !["T3"] "zero3", ![#boolT] "ok")
+          else do:  #()))
+      else
+        (if: (![#uint64T] "r") = #(W64 1)
+        then
+          (if: (![#SelectDir] "dir2") = SelectSend
+          then
+            (if: let: "$a0" := (!["T2"] "val2") in
+            let: "$a1" := #true in
+            (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch2") "T2") "$a0" "$a1"
+            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            else do:  #())
+          else
+            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+            let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
+            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
+            (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch2") "T2") "$a0") in
+            let: "$r0" := "$ret0" in
+            let: "$r1" := "$ret1" in
+            let: "$r2" := "$ret2" in
+            do:  ("selected" <-[#boolT] "$r0");;;
+            do:  ("recv_val" <-["T2"] "$r1");;;
+            do:  ("ok" <-[#boolT] "$r2");;;
+            (if: ![#boolT] "selected"
+            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", !["T3"] "zero3", ![#boolT] "ok")
+            else do:  #()))
+        else
+          (if: (![#SelectDir] "dir3") = SelectSend
+          then
+            (if: let: "$a0" := (!["T3"] "val3") in
+            let: "$a1" := #true in
+            (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch3") "T3") "$a0" "$a1"
+            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            else do:  #())
+          else
+            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+            let: "recv_val" := (mem.alloc (type.zero_val "T3")) in
+            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
+            (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch3") "T3") "$a0") in
+            let: "$r0" := "$ret0" in
+            let: "$r1" := "$ret1" in
+            let: "$r2" := "$ret2" in
+            do:  ("selected" <-[#boolT] "$r0");;;
+            do:  ("recv_val" <-["T3"] "$r1");;;
+            do:  ("ok" <-[#boolT] "$r2");;;
+            (if: ![#boolT] "selected"
+            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "recv_val", ![#boolT] "ok")
+            else do:  #())))))).
 
-Definition TrySelectCase3 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase3"%go.
+Definition NonBlockingSelect3 : go_string := "github.com/goose-lang/goose/model/channel.NonBlockingSelect3"%go.
 
-(* go: channel.go:392:6 *)
-Definition TrySelectCase3ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "index" "case1" "case2" "case3" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case3" := (mem.alloc "case3") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
-    then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
-    then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 2)
-    then
-      return: (let: "$a0" := (![#ptrT] "case3") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T3") "$a0" "$a1")
-    else do:  #());;;
-    do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0, 1 or 2"%go) in
-    Panic "$a0")).
+(* Non-blocking select with 3 cases
+   Returns (caseIndex, received_value1, received_value2, received_value3, ok)
+   caseIndex = 3 means no selection
 
-Definition Select3 : go_string := "github.com/goose-lang/goose/model/channel.Select3"%go.
-
-(* go: channel.go:409:6 *)
-Definition Select3ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "case1" "case2" "case3" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case3" := (mem.alloc "case3") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+   go: channel.go:461:6 *)
+Definition NonBlockingSelect3ⁱᵐᵖˡ : val :=
+  λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
+    exception_do (let: "val3" := (mem.alloc "val3") in
+    let: "dir3" := (mem.alloc "dir3") in
+    let: "ch3" := (mem.alloc "ch3") in
+    let: "val2" := (mem.alloc "val2") in
+    let: "dir2" := (mem.alloc "dir2") in
+    let: "ch2" := (mem.alloc "ch2") in
+    let: "val1" := (mem.alloc "val1") in
+    let: "dir1" := (mem.alloc "dir1") in
+    let: "ch1" := (mem.alloc "ch1") in
+    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
+    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
+    let: "zero3" := (mem.alloc (type.zero_val "T3")) in
+    let: "start" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 3)) in
+    do:  ("start" <-[#uint64T] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#ptrT] "case3") in
-    let: "$a4" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase3) "T1" "T2" "T3") "$a0" "$a1" "$a2" "$a3" "$a4"
-    then return: (![#uint64T] "i")
-    else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
-      then return: (#(W64 0))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
-      then return: (#(W64 1))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case3") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T3") "$a0" "$a1"
-      then return: (#(W64 2))
-      else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
-      then return: (#(W64 3))
-      else do:  #()))).
-
-Definition TrySelectCase4 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase4"%go.
-
-(* go: channel.go:436:6 *)
-Definition TrySelectCase4ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "T4" "index" "case1" "case2" "case3" "case4" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case4" := (mem.alloc "case4") in
-    let: "case3" := (mem.alloc "case3") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
-    then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
-    then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 2)
-    then
-      return: (let: "$a0" := (![#ptrT] "case3") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T3") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 3)
-    then
-      return: (let: "$a0" := (![#ptrT] "case4") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T4") "$a0" "$a1")
-    else do:  #());;;
-    do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0, 1, 2 or 3"%go) in
-    Panic "$a0")).
-
-Definition Select4 : go_string := "github.com/goose-lang/goose/model/channel.Select4"%go.
-
-(* go: channel.go:457:6 *)
-Definition Select4ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "T4" "case1" "case2" "case3" "case4" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case4" := (mem.alloc "case4") in
-    let: "case3" := (mem.alloc "case3") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 4)) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#ptrT] "case3") in
-    let: "$a4" := (![#ptrT] "case4") in
-    let: "$a5" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase4) "T1" "T2" "T3" "T4") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5"
-    then return: (![#uint64T] "i")
-    else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
-      then return: (#(W64 0))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
-      then return: (#(W64 1))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case3") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T3") "$a0" "$a1"
-      then return: (#(W64 2))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case4") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T4") "$a0" "$a1"
-      then return: (#(W64 3))
-      else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
-      then return: (#(W64 4))
-      else do:  #()))).
-
-Definition TrySelectCase5 : go_string := "github.com/goose-lang/goose/model/channel.TrySelectCase5"%go.
-
-(* go: channel.go:488:6 *)
-Definition TrySelectCase5ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "T4" "T5" "index" "case1" "case2" "case3" "case4" "case5" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case5" := (mem.alloc "case5") in
-    let: "case4" := (mem.alloc "case4") in
-    let: "case3" := (mem.alloc "case3") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "index" := (mem.alloc "index") in
-    (if: (![#uint64T] "index") = #(W64 0)
-    then
-      return: (let: "$a0" := (![#ptrT] "case1") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T1") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 1)
-    then
-      return: (let: "$a0" := (![#ptrT] "case2") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T2") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 2)
-    then
-      return: (let: "$a0" := (![#ptrT] "case3") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T3") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 3)
-    then
-      return: (let: "$a0" := (![#ptrT] "case4") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T4") "$a0" "$a1")
-    else do:  #());;;
-    (if: (![#uint64T] "index") = #(W64 4)
-    then
-      return: (let: "$a0" := (![#ptrT] "case5") in
-       let: "$a1" := (![#boolT] "blocking") in
-       ((func_call #TrySelect) "T5") "$a0" "$a1")
-    else do:  #());;;
-    do:  (let: "$a0" := (interface.make #stringT.id #"index needs to be 0, 1, 2, 3 or 4"%go) in
-    Panic "$a0")).
-
-Definition Select5 : go_string := "github.com/goose-lang/goose/model/channel.Select5"%go.
-
-(* go: channel.go:513:6 *)
-Definition Select5ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "T4" "T5" "case1" "case2" "case3" "case4" "case5" "blocking",
-    exception_do (let: "blocking" := (mem.alloc "blocking") in
-    let: "case5" := (mem.alloc "case5") in
-    let: "case4" := (mem.alloc "case4") in
-    let: "case3" := (mem.alloc "case3") in
-    let: "case2" := (mem.alloc "case2") in
-    let: "case1" := (mem.alloc "case1") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` #(W64 5)) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#uint64T] "i") in
-    let: "$a1" := (![#ptrT] "case1") in
-    let: "$a2" := (![#ptrT] "case2") in
-    let: "$a3" := (![#ptrT] "case3") in
-    let: "$a4" := (![#ptrT] "case4") in
-    let: "$a5" := (![#ptrT] "case5") in
-    let: "$a6" := (![#boolT] "blocking") in
-    ((func_call #TrySelectCase5) "T1" "T2" "T3" "T4" "T5") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5" "$a6"
-    then return: (![#uint64T] "i")
-    else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: let: "$a0" := (![#ptrT] "case1") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T1") "$a0" "$a1"
-      then return: (#(W64 0))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case2") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T2") "$a0" "$a1"
-      then return: (#(W64 1))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case3") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T3") "$a0" "$a1"
-      then return: (#(W64 2))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case4") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T4") "$a0" "$a1"
-      then return: (#(W64 3))
-      else do:  #());;;
-      (if: let: "$a0" := (![#ptrT] "case5") in
-      let: "$a1" := (![#boolT] "blocking") in
-      ((func_call #TrySelect) "T5") "$a0" "$a1"
-      then return: (#(W64 4))
-      else do:  #());;;
-      (if: (~ (![#boolT] "blocking"))
-      then return: (#(W64 5))
-      else do:  #()))).
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "caseIdx" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (((![#uint64T] "start") + (![#uint64T] "i")) `rem` #(W64 3)) in
+      do:  ("caseIdx" <-[#uint64T] "$r0");;;
+      (if: (![#uint64T] "caseIdx") = #(W64 0)
+      then
+        (if: (![#SelectDir] "dir1") = SelectSend
+        then
+          (if: let: "$a0" := (!["T1"] "val1") in
+          let: "$a1" := #false in
+          (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch1") "T1") "$a0" "$a1"
+          then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+          else do:  #())
+        else
+          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+          let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
+          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+          (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch1") "T1") "$a0") in
+          let: "$r0" := "$ret0" in
+          let: "$r1" := "$ret1" in
+          let: "$r2" := "$ret2" in
+          do:  ("selected" <-[#boolT] "$r0");;;
+          do:  ("recv_val" <-["T1"] "$r1");;;
+          do:  ("ok" <-[#boolT] "$r2");;;
+          (if: ![#boolT] "selected"
+          then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", !["T3"] "zero3", ![#boolT] "ok")
+          else do:  #()))
+      else
+        (if: (![#uint64T] "caseIdx") = #(W64 1)
+        then
+          (if: (![#SelectDir] "dir2") = SelectSend
+          then
+            (if: let: "$a0" := (!["T2"] "val2") in
+            let: "$a1" := #false in
+            (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch2") "T2") "$a0" "$a1"
+            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            else do:  #())
+          else
+            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+            let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
+            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+            (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch2") "T2") "$a0") in
+            let: "$r0" := "$ret0" in
+            let: "$r1" := "$ret1" in
+            let: "$r2" := "$ret2" in
+            do:  ("selected" <-[#boolT] "$r0");;;
+            do:  ("recv_val" <-["T2"] "$r1");;;
+            do:  ("ok" <-[#boolT] "$r2");;;
+            (if: ![#boolT] "selected"
+            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", !["T3"] "zero3", ![#boolT] "ok")
+            else do:  #()))
+        else
+          (if: (![#SelectDir] "dir3") = SelectSend
+          then
+            (if: let: "$a0" := (!["T3"] "val3") in
+            let: "$a1" := #false in
+            (method_call #(ptrT.id Channel.id) #"TrySend"%go (![#ptrT] "ch3") "T3") "$a0" "$a1"
+            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            else do:  #())
+          else
+            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+            let: "recv_val" := (mem.alloc (type.zero_val "T3")) in
+            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
+            (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "ch3") "T3") "$a0") in
+            let: "$r0" := "$ret0" in
+            let: "$r1" := "$ret1" in
+            let: "$r2" := "$ret2" in
+            do:  ("selected" <-[#boolT] "$r0");;;
+            do:  ("recv_val" <-["T3"] "$r1");;;
+            do:  ("ok" <-[#boolT] "$r2");;;
+            (if: ![#boolT] "selected"
+            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "recv_val", ![#boolT] "ok")
+            else do:  #()))))));;;
+    return: (#(W64 3), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(NewChannelRef, NewChannelRefⁱᵐᵖˡ); (NewSendCase, NewSendCaseⁱᵐᵖˡ); (NewRecvCase, NewRecvCaseⁱᵐᵖˡ); (TrySelect, TrySelectⁱᵐᵖˡ); (Select1, Select1ⁱᵐᵖˡ); (TrySelectCase2, TrySelectCase2ⁱᵐᵖˡ); (Select2, Select2ⁱᵐᵖˡ); (TrySelectCase3, TrySelectCase3ⁱᵐᵖˡ); (Select3, Select3ⁱᵐᵖˡ); (TrySelectCase4, TrySelectCase4ⁱᵐᵖˡ); (Select4, Select4ⁱᵐᵖˡ); (TrySelectCase5, TrySelectCase5ⁱᵐᵖˡ); (Select5, Select5ⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewChannelRef, NewChannelRefⁱᵐᵖˡ); (NonBlockingSelect1, NonBlockingSelect1ⁱᵐᵖˡ); (BlockingSelect2, BlockingSelect2ⁱᵐᵖˡ); (NonBlockingSelect2, NonBlockingSelect2ⁱᵐᵖˡ); (BlockingSelect3, BlockingSelect3ⁱᵐᵖˡ); (NonBlockingSelect3, NonBlockingSelect3ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(OfferState.id, []); (ptrT.id OfferState.id, []); (Channel.id, []); (ptrT.id Channel.id, [("Cap"%go, Channel__Capⁱᵐᵖˡ); ("Close"%go, Channel__Closeⁱᵐᵖˡ); ("Len"%go, Channel__Lenⁱᵐᵖˡ); ("Receive"%go, Channel__Receiveⁱᵐᵖˡ); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOkⁱᵐᵖˡ); ("Send"%go, Channel__Sendⁱᵐᵖˡ); ("TryClose"%go, Channel__TryCloseⁱᵐᵖˡ); ("TryReceive"%go, Channel__TryReceiveⁱᵐᵖˡ); ("TrySend"%go, Channel__TrySendⁱᵐᵖˡ)]); (SelectDir.id, []); (ptrT.id SelectDir.id, []); (SelectCase.id, []); (ptrT.id SelectCase.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(OfferState.id, []); (ptrT.id OfferState.id, []); (Channel.id, []); (ptrT.id Channel.id, [("Cap"%go, Channel__Capⁱᵐᵖˡ); ("Close"%go, Channel__Closeⁱᵐᵖˡ); ("Len"%go, Channel__Lenⁱᵐᵖˡ); ("Receive"%go, Channel__Receiveⁱᵐᵖˡ); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOkⁱᵐᵖˡ); ("Send"%go, Channel__Sendⁱᵐᵖˡ); ("TryClose"%go, Channel__TryCloseⁱᵐᵖˡ); ("TryReceive"%go, Channel__TryReceiveⁱᵐᵖˡ); ("TrySend"%go, Channel__TrySendⁱᵐᵖˡ)]); (SelectDir.id, []); (ptrT.id SelectDir.id, [])].
 
 #[global] Instance info' : PkgInfo channel.channel :=
   {|
