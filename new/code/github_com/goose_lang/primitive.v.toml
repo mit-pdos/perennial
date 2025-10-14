@@ -12,3 +12,6 @@ trusted = [
   "Mutex*",
   # FIXME: add remaining functions
 ]
+[bootstrap]
+enabled = true
+prelude = []

@@ -1,4 +1,4 @@
-From New.golang Require Import defn.
+From New.golang Require Import defn.core.
 
 Module atomic.
 Section code.

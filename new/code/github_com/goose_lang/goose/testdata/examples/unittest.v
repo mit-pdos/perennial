@@ -168,21 +168,21 @@ Definition chanBasicⁱᵐᵖˡ : val :=
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "y" := (mem.alloc (type.zero_val #stringT)) in
-    let: ("$ret0", "$ret1") := (chan.receive (![type.chanT #stringT] "x")) in
+    let: ("$ret0", "$ret1") := (chan.receive #stringT (![type.chanT #stringT] "x")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("y" <-[#stringT] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
-    let: "$r0" := (Fst (chan.receive (![type.chanT #stringT] "x"))) in
+    let: "$r0" := (Fst (chan.receive #stringT (![type.chanT #stringT] "x"))) in
     do:  ("y" <-[#stringT] "$r0");;;
     (if: ![#boolT] "ok"
     then
@@ -278,10 +278,10 @@ Definition chanDirectionalⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
     let: "y" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
-    do:  (Fst (chan.receive (![type.chanT #uint64T] "x")));;;
+    do:  (Fst (chan.receive #uint64T (![type.chanT #uint64T] "x")));;;
     do:  (let: "$chan" := (![type.chanT #stringT] "y") in
     let: "$v" := #""%go in
-    chan.send "$chan" "$v");;;
+    chan.send #stringT "$chan" "$v");;;
     return: #()).
 
 Definition chanRange : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.chanRange"%go.
