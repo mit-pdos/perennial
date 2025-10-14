@@ -1,4 +1,4 @@
-From New.golang Require Import defn defn.lock.
+From New.golang Require Import defn.core defn.lock.
 
 Module sync.
 Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.

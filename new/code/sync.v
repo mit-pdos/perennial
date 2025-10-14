@@ -2,7 +2,8 @@
 Require Export New.code.internal.race.
 Require Export New.code.sync.atomic.
 
-From New.golang Require Import defn.
+From New.golang Require Import defn.core.
+From New.golang.defn Require Export slice array map string interface defer builtin.
 Require Export New.trusted_code.sync.
 Import sync.
 Definition sync : go_string := "sync".

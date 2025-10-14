@@ -32,7 +32,7 @@ Definition HelloWorldAsyncⁱᵐᵖˡ : val :=
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "ch") in
       let: "$v" := ((func_call #sys_hello_world) #()) in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -43,7 +43,7 @@ Definition HelloWorldSync : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: examples.go:21:6 *)
 Definition HelloWorldSyncⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (Fst (chan.receive ((func_call #HelloWorldAsync) #())))).
+    exception_do (return: (Fst (chan.receive #stringT ((func_call #HelloWorldAsync) #())))).
 
 Definition HelloWorldCancellable : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldCancellable"%go.
 
@@ -57,12 +57,13 @@ Definition HelloWorldCancellableⁱᵐᵖˡ : val :=
     let: "future" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
     let: "$r0" := ((func_call #HelloWorldAsync) #()) in
     do:  ("future" <-[type.chanT #stringT] "$r0");;;
-    chan.select [chan.select_receive (![type.chanT #stringT] "future") (λ: "$recvVal",
+    chan.select [chan.select_receive #stringT (![type.chanT #stringT] "future") (λ: "$recvVal",
        let: "resolved" := (mem.alloc (type.zero_val #stringT)) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("resolved" <-[#stringT] "$r0");;;
        return: (![#stringT] "resolved")
-       ); chan.select_receive (![type.chanT (type.structT [
+       ); chan.select_receive (type.structT [
+     ]) (![type.chanT (type.structT [
      ])] "done") (λ: "$recvVal",
        return: (![#stringT] (![#ptrT] "err"))
        )] chan.select_no_default).
@@ -117,7 +118,7 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
     ])] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (Fst (chan.receive (![type.chanT #ptrT] "c"))) in
+      let: "$r0" := (Fst (chan.receive #ptrT (![type.chanT #ptrT] "c"))) in
       do:  ("ptr" <-[#ptrT] "$r0");;;
       let: "$r0" := ((![#intT] (![#ptrT] "ptr")) + #(W64 2)) in
       do:  ((![#ptrT] "ptr") <-[#intT] "$r0");;;
@@ -126,7 +127,8 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
       let: "$v" := (struct.make (type.structT [
       ]) [{
       }]) in
-      chan.send "$chan" "$v");;;
+      chan.send (type.structT [
+      ]) "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -138,8 +140,9 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
     do:  ("ptr" <-[#ptrT] "$r0");;;
     do:  (let: "$chan" := (![type.chanT #ptrT] "c") in
     let: "$v" := (![#ptrT] "ptr") in
-    chan.send "$chan" "$v");;;
-    do:  (Fst (chan.receive (![type.chanT (type.structT [
+    chan.send #ptrT "$chan" "$v");;;
+    do:  (Fst (chan.receive (type.structT [
+    ]) (![type.chanT (type.structT [
     ])] "signal")));;;
     return: (![#intT] (![#ptrT] "ptr"))).
 
@@ -164,7 +167,7 @@ Definition fibonacciⁱᵐᵖˡ : val :=
     (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "n")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
       do:  (let: "$chan" := (![type.chanT #intT] "c") in
       let: "$v" := (![#intT] "x") in
-      chan.send "$chan" "$v");;;
+      chan.send #intT "$chan" "$v");;;
       let: "$r0" := (![#intT] "y") in
       let: "$r1" := ((![#intT] "x") + (![#intT] "y")) in
       do:  ("x" <-[#intT] "$r0");;;
@@ -214,7 +217,8 @@ Definition select_nb_no_panicⁱᵐᵖˡ : val :=
     do:  ("ch" <-[type.chanT (type.structT [
     ])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (chan.select [chan.select_receive (![type.chanT (type.structT [
+      exception_do (chan.select [chan.select_receive (type.structT [
+       ]) (![type.chanT (type.structT [
        ])] "ch") (λ: "$recvVal",
          do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
          Panic "$a0")
@@ -224,10 +228,11 @@ Definition select_nb_no_panicⁱᵐᵖˡ : val :=
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    chan.select [chan.select_send (struct.make (type.structT [
+    chan.select [chan.select_send (type.structT [
+     ]) (![type.chanT (type.structT [
+     ])] "ch") (struct.make (type.structT [
      ]) [{
-     }]) (![type.chanT (type.structT [
-     ])] "ch") (λ: <>,
+     }]) (λ: <>,
        do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
        Panic "$a0")
        )] (chan.select_default (λ: <>,
@@ -251,7 +256,8 @@ Definition select_ready_case_no_panicⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![type.chanT (type.structT [
     ])] "ch") in
     chan.close "$a0");;;
-    chan.select [chan.select_receive (![type.chanT (type.structT [
+    chan.select [chan.select_receive (type.structT [
+     ]) (![type.chanT (type.structT [
      ])] "ch") (λ: "$recvVal",
        do:  #()
        )] (chan.select_default (λ: <>,
@@ -419,7 +425,7 @@ Definition clientⁱᵐᵖˡ : val :=
       do:  ("letter" <-[#stringT] "$value");;;
       do:  "$key";;;
       let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-      chan.select [chan.select_receive (![type.chanT #sliceT] "freeList") (λ: "$recvVal",
+      chan.select [chan.select_receive #sliceT (![type.chanT #sliceT] "freeList") (λ: "$recvVal",
          let: "$r0" := (Fst "$recvVal") in
          do:  ("b" <-[#sliceT] "$r0");;;
          do:  #()
@@ -433,7 +439,7 @@ Definition clientⁱᵐᵖˡ : val :=
       (func_call #load) "$a0" "$a1");;;
       do:  (let: "$chan" := (![type.chanT #sliceT] "serverChan") in
       let: "$v" := (![#sliceT] "b") in
-      chan.send "$chan" "$v")));;;
+      chan.send #sliceT "$chan" "$v")));;;
     do:  (let: "$a0" := (![type.chanT #sliceT] "serverChan") in
     chan.close "$a0");;;
     return: #()).
@@ -450,7 +456,7 @@ Definition serverⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-      let: ("$ret0", "$ret1") := (chan.receive (![type.chanT #sliceT] "serverChan")) in
+      let: ("$ret0", "$ret1") := (chan.receive #sliceT (![type.chanT #sliceT] "serverChan")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("b" <-[#sliceT] "$r0");;;
@@ -462,13 +468,14 @@ Definition serverⁱᵐᵖˡ : val :=
         let: "$v" := (struct.make (type.structT [
         ]) [{
         }]) in
-        chan.send "$chan" "$v");;;
+        chan.send (type.structT [
+        ]) "$chan" "$v");;;
         return: (#())
       else do:  #());;;
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![#ptrT] "output") in
       (func_call #process) "$a0" "$a1");;;
-      chan.select [chan.select_send (![#sliceT] "b") (![type.chanT #sliceT] "freeList") (λ: <>,
+      chan.select [chan.select_send #sliceT (![type.chanT #sliceT] "freeList") (![#sliceT] "b") (λ: <>,
          do:  #()
          )] (chan.select_default (λ: <>,
         do:  #()
@@ -518,7 +525,8 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ : val :=
     let: "$a1" := (![type.chanT #sliceT] "freeList") in
     let: "$a2" := (![type.chanT #sliceT] "serverChan") in
     (func_call #client) "$a0" "$a1" "$a2");;;
-    do:  (Fst (chan.receive (![type.chanT (type.structT [
+    do:  (Fst (chan.receive (type.structT [
+    ]) (![type.chanT (type.structT [
     ])] "done")));;;
     (if: (![#stringT] "output") ≠ #"HELLO, WORLD"%go
     then
