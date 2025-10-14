@@ -1,5 +1,5 @@
 From New.code Require Import sync.
-From New.golang Require Import defn.
+From New.golang Require Import defn defn.spinlock.
 
 Module primitive.
 Module prophId. Definition id : go_string := "github.com/goose-lang/goose.prophId". End prophId.
@@ -86,6 +86,14 @@ this in GooseLang, so we just loop. *)
 
   Definition AssumeNoStringOverflowⁱᵐᵖˡ : val :=
     λ: "s", assume.assume (IsNoStringOverflow "s").
+
+  Definition Mutex := structT [ "state" :: boolT ].
+
+  Definition Mutex__Lockⁱᵐᵖˡ : val :=
+    λ: "m" <>, spinlock.lock (struct.field_ref #Mutex #"state"%go "m").
+
+  Definition Mutex__Unlockⁱᵐᵖˡ : val :=
+    λ: "m" <>, spinlock.unlock (struct.field_ref #Mutex #"state"%go "m").
 
 End code.
 End primitive.
