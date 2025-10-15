@@ -15,8 +15,13 @@ Notation cutNodeTy := (W8 0) (only parsing).
 Notation leafNodeTy := (W8 1) (only parsing).
 Notation innerNodeTy := (W8 2) (only parsing).
 
-Definition max_depth := 256%nat.
-Hint Unfold max_depth : word.
+(* number of bits in hash.
+nat bc in merkle theory, depth used as nat for easy induction. *)
+Definition max_depth := (Z.to_nat cryptoffi.hash_len * 8)%nat.
+Lemma max_depth_unfold : max_depth = (Z.to_nat cryptoffi.hash_len * 8)%nat.
+Proof. done. Qed.
+#[global] Hint Rewrite max_depth_unfold : word.
+#[global] Opaque max_depth.
 
 (* used to [autounfold] top-level recursive defs. *)
 Create HintDb merkle.

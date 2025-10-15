@@ -189,7 +189,7 @@ Lemma wish_Verify_det proof vs0 vs1 :
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
   subst. iPureIntro.
-  eapply (join_same_len_inj (Z.to_nat $ cryptoffi.hash_len)); [lia|..|done].
+  eapply (join_same_len_inj (Z.to_nat $ cryptoffi.hash_len)); [word|..|done].
   - eapply list.Forall_impl; [done|].
     intuition. lia.
   - eapply list.Forall_impl; [done|].
@@ -208,8 +208,8 @@ Proof.
   iPureIntro. split.
   { apply Forall_snoc.
     split; [done|].
-    rewrite subslice_length; lia. }
-  rewrite (take_subslice (Z.to_nat $ i * 32)); [|lia].
+    rewrite subslice_length; word. }
+  rewrite (take_subslice (Z.to_nat $ i * 32)); [|word].
   rewrite join_app.
   f_equal; [done|].
   by list_simplifier.

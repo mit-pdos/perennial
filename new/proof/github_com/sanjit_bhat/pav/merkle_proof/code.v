@@ -294,14 +294,14 @@ Proof. iIntros "**". case_match; iFrame. Qed.
 Lemma wp_getProofCap (depth : nat) :
   {{{
     is_pkg_init merkle ∗
-    "%Heq_depth" ∷ ⌜depth≤max_depth⌝
+    "%Heq_depth" ∷ ⌜depth ≤ max_depth⌝
   }}}
   @! merkle.getProofCap #(W64 depth)
   {{{
     (cap : w64), RET #cap;
     "%Heq_cap" ∷ ⌜8 ≤ sint.Z cap⌝
   }}}.
-Proof. rewrite /max_depth. wp_start as "@". wp_auto. iApply "HΦ". word. Qed.
+Proof. wp_start as "@". wp_auto. iApply "HΦ". word. Qed.
 
 Lemma wp_put n0 n t sl_label sl_val label val :
   (* for max depth. *)
@@ -634,7 +634,7 @@ Proof.
   { iFrame "#". case_match; [|iFrame].
     iFrame "∗#".
     iPureIntro. intuition.
-    rewrite length_drop. lia. }
+    rewrite length_drop. word. }
   iIntros "*". iNamedSuffix 1 "0". wp_auto.
   wp_apply (wp_node_getHash
     (if get_bit label depth then _ else Cut _)
@@ -642,7 +642,7 @@ Proof.
   { iFrame "#". case_match; [iFrame|].
     iFrame "∗#".
     iPureIntro. intuition.
-    rewrite length_drop. lia. }
+    rewrite length_drop. word. }
   iIntros "*". iNamedSuffix 1 "1". wp_auto.
 
   wp_apply wp_compInnerHash. { iFrame "#". }
@@ -652,7 +652,7 @@ Proof.
   instantiate (1:=drop (depth_rem * 32) sibs_enc :: sibs).
   repeat iSplit; try iPureIntro.
   - rewrite reverse_cons join_app join_singleton -Henc_sibs take_drop //.
-  - apply Forall_cons; [|done]. rewrite length_drop. lia.
+  - apply Forall_cons; [|done]. rewrite length_drop. word.
   - iFrame "∗#".
 Qed.
 
@@ -684,7 +684,7 @@ Proof.
     as Heq_s; try done.
   2: { by apply Forall_reverse. }
   2: { by apply Forall_reverse. }
-  { lia. }
+  { word. }
   apply (inj _) in Heq_s.
   destruct o0 as [[]|]; [|by case_match].
   iNamedSuffix "Holeaf0" "0".
@@ -804,7 +804,7 @@ Proof.
       as Heq_s; try done.
     2: { by apply Forall_reverse. }
     2: { by apply Forall_reverse. }
-    { lia. }
+    { word. }
     apply (inj _) in Heq_s.
     by subst. }
 

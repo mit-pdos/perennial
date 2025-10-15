@@ -406,8 +406,6 @@ Proof.
   by iDestruct ("IH" with "Hchild10 Hchild11") as %->.
 Qed.
 
-#[global] Opaque is_full_tree'.
-
 Definition is_map m h : iProp Σ :=
   ∃ t,
   "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
@@ -422,8 +420,6 @@ Proof.
   iDestruct is_full_tree_invert as "[% H]"; [done|].
   iFrame "#".
   iPureIntro. naive_solver.
-  (* NOTE: without [Opaque is_full_tree'], Qed spins forever.
-  this happens even with [Arguments] constraints. *)
 Qed.
 
 Lemma is_map_inj m0 m1 h :

@@ -3,7 +3,11 @@ From New.generatedproof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
 Module cryptoffi.
 
-Notation hash_len := 32 (only parsing).
+Definition hash_len := 32.
+Lemma hash_len_unfold : hash_len = 32.
+Proof. done. Qed.
+#[global] Hint Rewrite hash_len_unfold : word.
+#[global] Opaque hash_len.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
@@ -53,13 +57,13 @@ Lemma is_hash_inj data0 data1 hash :
 Proof. Admitted.
 
 Lemma is_hash_len data hash :
-  is_hash data hash -∗ ⌜ Z.of_nat (length hash) = hash_len ⌝.
+  is_hash data hash -∗ ⌜ Z.of_nat $ length hash = hash_len ⌝.
 Proof. Admitted.
 
 (* key feature of prophecy hash model.
 TODO: this is missing some gnames to pin everything down. *)
 Lemma is_hash_invert hash :
-  Z.of_nat (length hash) = hash_len → ⊢
+  Z.of_nat $ length hash = hash_len → ⊢
   ∃ data, is_hash data hash.
 Proof. Admitted.
 
