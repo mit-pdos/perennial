@@ -36,6 +36,7 @@ Local Definition do_for_def : val :=
 Program Definition do_for := sealed @do_for_def.
 Definition do_for_unseal : do_for = _ := seal_eq _.
 
+(* TODO: this is unused, remove it? (empty for loops use do_for with cond set to λ: <>, #true) *)
 Definition do_loop_def: val :=
   λ: "body",
   (rec: "loop" <> := exception_do (
