@@ -35,10 +35,10 @@ Context `{!NamedUnderlyingTypes}.
 Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
   {
     wp_load : (∀ l dq (v : V), {{{ l ↦{dq} v }}}
-                                 go.load t #l
+                                 load t #l
                                {{{ RET #v; l ↦{dq} v }}});
     wp_store : (∀ l (v w : V), {{{ l ↦ v }}}
-                                 go.store t #l #w
+                                 store t #l #w
                                {{{ RET #v; l ↦ w }}});
   }.
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)

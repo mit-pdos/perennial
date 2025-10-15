@@ -720,25 +720,22 @@ Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!NamedUnderlyingTypes}.
 
-Program Global Instance into_val_typed_uint64 : IntoValTyped loc uint64.
+Context `{!go.MemOps}.
+Program Global Instance into_val_typed_uint64 : IntoValTyped loc go.uint64.
 Next Obligation.
   iIntros "* Hl HΦ".
-  rewrite go.load_unseal. rewrite /go.load_def.
-  rewrite /go.to_mem_type /mem.go.to_mem_type_fuel /=.
-  rewrite lookup_insert_eq.
-  simpl.
+  rewrite go.load_primitive; [|constructor].
+  wp_pures.
 Admitted.
 Final Obligation. Admitted.
 
 Program Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Next Obligation.
   iIntros "* Hl HΦ".
-  rewrite go.load_unseal. wp_call.
-  rewrite typed_pointsto_unseal.
+  rewrite go.load_primitive; [|constructor].
+  wp_pures.
 Admitted.
 Final Obligation. Admitted.
-
-(* Given [t : typeId], want to load+store, even when t is named. *)
 
 Record foo_t := 
   mk {
@@ -747,7 +744,7 @@ Record foo_t :=
 Global Instance into_val_foo : IntoVal foo_t :=
   {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
 
-Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go uint64)].
+Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go go.uint64)].
 Definition foo : go.type := go.Named "foo"%go [].
 
 Class foo_type_assumptions : Prop :=
@@ -757,33 +754,55 @@ Class foo_type_assumptions : Prop :=
 
 Context `{!foo_type_assumptions}.
 
-Lemma foo_unfold :
-  go.to_mem_type foo = mem.structT [("a"%go, mem.w64T)].
-Proof.
-  Time rewrite /go.to_mem_type;
-  rewrite go.to_mem_type_fuel_step //=;
-  repeat rewrite lookup_insert_ne //; rewrite lookup_empty foo_underlying;
-  rewrite go.to_mem_type_fuel_step //=.
-  (* TODO: could associate a fuel amount for every type for purposes of
-     to_mem_type, so we can easily apply the unfolding lemma. *)
-  rewrite go.to_mem_type_fuel_step //=.
-  rewrite lookup_insert_eq. done.
-Qed.
 Global Instance into_val_foo_inj : IntoValInj foo_t.
 Proof. Admitted.
+
+Lemma foo_split l dq (v : foo_t) :
+  l ↦{dq} v ⊣⊢ l ↦{dq} v.(a).
+Proof.
+Admitted.
+
 Program Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
 Next Obligation. 
   iIntros "* Hl HΦ".
-  rewrite go.load_unseal /go.load_def.
-  rewrite foo_unfold.
-  (* FIXME: use  *)
+  rewrite go.load_underlying /= foo_underlying go.load_struct.
+  simpl. wp_pures. wp_bind.
+  rewrite loc_add_0.
+  iDestruct (foo_split with "Hl") as "Hl".
+  wp_apply (wp_load (t:=go.uint64) with "Hl").
+  iIntros "Hl".
+  iDestruct (foo_split with "Hl") as "Hl".
+  wp_pures.
+  (* TODO: struct_val in lang.v *)
 Admitted.
 
-Next Obligation. Admitted.
-Next Obligation.
-  iIntros (??) "_ HΦ".
-  rewrite go.alloc_unseal. wp_call. simpl.
-  wp_apply wp_alloc_untyped.
-  { rewrite to_val_unseal //=. }
-  iIntros (?)
+
+Context `{!GoContext}.
+Context `{!MemOps}.
+
+Record foo_t := 
+  mk {
+      a : w64;
+    }.
+Global Instance into_val_foo : IntoVal foo_t :=
+  {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
+
+Definition foo : go.type := go.Named "foo"%go [].
+Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go uint64)].
+
+Class foo_type_assumptions : Prop :=
+  {
+    foo_underlying : named_to_underlying "foo"%go [] = foo_impl
+  }.
+
+Context `{!foo_type_assumptions}.
+
+Goal goose_lang.size (go.ArrayType 3 foo) = 3.
+  rewrite size_array size_underlying /= foo_underlying
+    size_struct /= size_primitive //. constructor.
 Qed.
+
+Goal load (go.ArrayType 3 foo) = (λ: "l", ! "l")%V.
+  rewrite is_load_array /=. vm_compute Z.add.
+  rewrite is_load_underlying /= foo_underlying.
+  rewrite is_load_struct /=.

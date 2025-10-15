@@ -11,6 +11,8 @@ From Perennial.program_logic Require Export crash_lang.
 From Perennial.goose_lang Require Export locations.
 From Perennial Require Export Helpers.Integers.
 
+From New.golang.defn Require Export typing.
+
 Set Default Proof Using "Type".
 
 Open Scope Z_scope.
@@ -99,10 +101,7 @@ Inductive prim_op1 : Set :=
   | LoadOp
   | InputOp
   | OutputOp
-
-  | GlobalGetOp (* string *)
 .
-
 
 Inductive prim_op2 : Set :=
  | AllocNOp (* array length (positive number), initial value *)
@@ -119,6 +118,19 @@ Definition prim_op (ar:arity) : Type :=
   | args1 => prim_op1
   | args2 => prim_op2
   end.
+
+Inductive go_op : Type :=
+| StructFieldOffset (t : go.type) (f : go_string)
+| StructFieldGet (t : go.type) (f : go_string)
+| GoLoad (t : go.type)
+| GoStore (t : go.type)
+| GoAlloc (t : go.type)
+| MethodCall (* (go_string, go_string) *)
+| PackageInitCheck (pkg_name : go_string)
+| PackageInitMark (pkg_name : go_string)
+
+| GlobalVarAddr (var_name : go_string)
+| FuncCall (func_id : go_string).
 
 Inductive expr :=
   (* Values *)
@@ -166,6 +178,8 @@ with val :=
   aliasing/sharing with memory that GooseLang can "see").
   On the Go side, these should be pointers to some private type. *)
   | ExtV (ev : ffi_val)
+  (* Go Instructions *)
+  | GoInstruction (o : go_op)
 .
 
 Bind Scope expr_scope with expr.
@@ -183,8 +197,6 @@ Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
-Notation GlobalGet := (Primitive1 GlobalGetOp).
-Notation GlobalPut := (Primitive2 GlobalPutOp).
 
 (* XXX: to avoid splitting things into heap cells, can wrap it in e.g. an InjLV.
    This is how lists can avoid getting split into different heap cells when [ref]'d. *)
@@ -227,20 +239,37 @@ Definition Oracle := Trace -> forall (sel:u64), u64.
 
 Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0).
 
-(** The state: heaps of vals. *)
+(** Go-related constant state. *)
+Record GoContext : Type :=
+  {
+    global_addr : go_string → loc;
+    functions : go_string → option val;
+    methods : go_string → go_string → option val;
+    alloc : go.type → val;
+    load : go.type → val;
+    store : go.type → val;
+    size : go.type → Z;
+  }.
+
+Record GoState : Type :=
+  {
+    gc : GoContext;
+    inited_packages : gset go_string;
+  }.
+
 Record state : Type := {
-  heap: gmap loc (nonAtomic val);
-  globals : byte_string → option val;
-  world: ffi_state;
-  trace: Trace;
-  oracle: Oracle;
+  heap : gmap loc (nonAtomic val);
+  go_state : GoState;
+  world : ffi_state;
+  trace : Trace;
+  oracle : Oracle;
 }.
 Record global_state : Type := {
   global_world: ffi_global_state;
   used_proph_id: gset proph_id;
 }.
 
-Global Instance eta_state : Settable _ := settable! Build_state <heap; globals; world; trace; oracle>.
+Global Instance eta_state : Settable _ := settable! Build_state <heap; go_state; world; trace; oracle>.
 Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
 
 (* Note that ffi_step takes a val, which is itself parameterized by the
@@ -266,10 +295,10 @@ Class ffi_semantics :=
 Context {ffi_semantics: ffi_semantics}.
 
 Inductive goose_crash : state -> state -> Prop :=
-  | GooseCrash σ w w' :
+  | GooseCrash σ w w' go_state' :
      w = σ.(world) ->
      ffi_crash_step w w' ->
-     goose_crash σ (set globals (fun _ => const None) (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ))))
+     goose_crash σ (set go_state (fun _ => go_state') (set trace add_crash (set world (fun _ => w') (set heap (fun _ => ∅) σ))))
 .
 
 
@@ -327,7 +356,7 @@ Definition val_is_unboxed (v : val) : Prop :=
 Global Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
 Proof. destruct l; simpl; exact (decide _). Defined.
 Global Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
-Proof. destruct v as [ | | | [] | [] | ]; simpl; exact (decide _). Defined.
+Proof. destruct v as [ | | | [] | [] | | ]; simpl; exact (decide _). Defined.
 
 (** We just compare the word-sized representation of two values, without looking
 into boxed data.  This works out fine if at least one of the to-be-compared
@@ -378,6 +407,8 @@ Global Instance prim_op2_eq_dec : EqDecision prim_op2.
 Proof. solve_decision. Defined.
 Global Instance prim_op_eq_dec ar : EqDecision (prim_op ar).
 Proof. destruct ar; simpl; apply _. Defined.
+Global Instance go_op_eq_dec : EqDecision go_op.
+Proof. solve_decision. Qed.
 Global Instance expr_eq_dec : EqDecision expr.
 Proof using ext.
   clear ffi_semantics ffi.
@@ -429,6 +460,7 @@ Proof using ext.
       | InjLV e, InjLV e' => cast_if (decide (e = e'))
       | InjRV e, InjRV e' => cast_if (decide (e = e'))
       | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
+      | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
       | _, _ => right _
       end
         for go); try (clear go gov; abstract intuition congruence).
@@ -446,7 +478,8 @@ Proof using ext.
        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
      | InjLV e, InjLV e' => cast_if (decide (e = e'))
      | InjRV e, InjRV e' => cast_if (decide (e = e'))
-      | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
+     | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
+     | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
      | _, _ => right _
      end); try abstract intuition congruence.
 Defined.
@@ -576,6 +609,9 @@ Definition a_prim_op {ar} (op: prim_op ar) : prim_op'.
   destruct ar; simpl in op; eauto.
 Defined.
 
+Instance go_op_countable : Countable go_op.
+Proof. Admitted.
+
 (** For the proof of [Countable expr], we encode [expr] as a [genTree] with some
 countable type at the leaves. [basic_type] is what we use as that leaf type. *)
 Inductive basic_type :=
@@ -588,6 +624,7 @@ Inductive basic_type :=
   | primOpVal (op:prim_op')
   | externOp (op:ffi_opcode)
   | externVal (ev:ffi_val)
+  | goOpVal (op:go_op)
 .
 
 Instance basic_type_eq_dec : EqDecision basic_type.
@@ -603,7 +640,8 @@ Proof.
                               | bin_opVal op => inr (inr (inr (inr (inr (inl op)))))
                               | primOpVal op => inr (inr (inr (inr (inr (inr (inl op))))))
                               | externOp op => inr (inr (inr (inr (inr (inr (inr (inl op)))))))
-                              | externVal k => inr (inr (inr (inr (inr (inr (inr (inr k)))))))
+                              | externVal k => inr (inr (inr (inr (inr (inr (inr (inr (inl k))))))))
+                              | goOpVal op => inr (inr (inr (inr (inr (inr (inr (inr (inr op))))))))
                               end)
                          (λ x, match x with
                               | inl s => stringVal s
@@ -614,7 +652,8 @@ Proof.
                               | inr (inr (inr (inr (inr (inl op))))) => bin_opVal op
                               | inr (inr (inr (inr (inr (inr (inl op)))))) => primOpVal op
                               | inr (inr (inr (inr (inr (inr (inr (inl op))))))) => externOp op
-                              | inr (inr (inr (inr (inr (inr (inr (inr k))))))) => externVal k
+                              | inr (inr (inr (inr (inr (inr (inr (inr (inl k)))))))) => externVal k
+                              | inr (inr (inr (inr (inr (inr (inr (inr (inr op)))))))) => goOpVal op
                                end) _); by intros [].
 Qed.
 
@@ -674,6 +713,7 @@ Proof using ext.
      | InjLV v => GenNode 2 [gov v]
      | InjRV v => GenNode 3 [gov v]
      | ExtV ev => GenNode 4 [GenLeaf $ externVal ev]
+     | GoInstruction op => GenNode 5 [GenLeaf $ goOpVal op]
      end
    for go).
  set (dec :=
@@ -712,6 +752,7 @@ Proof using ext.
      | GenNode 2 [v] => InjLV (gov v)
      | GenNode 3 [v] => InjRV (gov v)
      | GenNode 4 [GenLeaf (externVal ev)] => ExtV ev
+     | GenNode 5 [GenLeaf (goOpVal op)] => GoInstruction op
      | _ => LitV LitUnit (* dummy *)
      end
    for go).
@@ -725,9 +766,24 @@ Qed.
 Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
-Global Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; globals := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
+
+Global Instance GoContext_inhabited : Inhabited GoContext :=
+  populate {|
+      global_addr := inhabitant; 
+      functions := inhabitant;
+      methods := inhabitant;
+      alloc := inhabitant;
+      load := inhabitant;
+      store:= inhabitant;
+      size := inhabitant;
+    |}.
+
+Global Instance GoState_inhabited : Inhabited GoState :=
+  populate {| gc := inhabitant; inited_packages := inhabitant |}.
+
+Global Instance state_inhabited : Inhabited state :=
+  populate {| heap := inhabitant; go_state := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 Global Instance global_state_inhabited : Inhabited global_state :=
   populate {| used_proph_id := inhabitant; global_world := inhabitant; |}.
@@ -1261,15 +1317,11 @@ Definition base_trans (e: expr) :
     atomically
       (modifyσ (set trace (add_event (Out_ev v)));;
        ret $ LitV $ LitUnit)
-  | GlobalGet (Val (LitV (LitString k))) =>
-      atomically (x ← reads (λ '(σ, g), σ.(globals) k);
-                  ret (match x with
-                       | Some x => (InjRV x)
-                       | None => (InjLV (LitV LitUnit))
-                       end))
-  | GlobalPut (Val (LitV (LitString k))) (Val v) =>
-      atomically (modifyσ (set globals (λ old k', if decide (k' = k) then Some v else old k'));;
-                  ret $ LitV $ LitUnit)
+  | App (Val (GoInstruction (GoLoad t))) (Val v) =>
+      atomicallyM
+      (σ ← reads (λ '(σ,g), σ);
+       ret $ (App (Val (σ.(go_state).(gc).(load) t)) (Val v))
+      )
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
     atomically
       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
@@ -1805,6 +1857,4 @@ Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
-Notation GlobalGet := (Primitive1 GlobalGetOp).
-Notation GlobalPut := (Primitive2 GlobalPutOp).
 Notation nonAtomic T := (naMode * T)%type.

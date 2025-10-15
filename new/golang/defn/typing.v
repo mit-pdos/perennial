@@ -1,6 +1,15 @@
-From stdpp Require Export pretty.
-From New.golang.defn Require Export intoval.
-From Perennial Require Import base.
+From stdpp Require Export pretty countable.
+From Perennial Require Import base ByteString.
+
+(* pre-lang.v *)
+
+Definition go_string := byte_string.
+Delimit Scope byte_string_scope with go.
+Bind Scope byte_string_scope with go_string.
+(* NOTE: this causes W8 values to be printed using the byte notation set up in
+ByteString.v *)
+(* Delimit Scope byte_char_scope with go_byte. *)
+
 
 Module go.
 Definition identifier := go_string.
@@ -15,6 +24,7 @@ Definition type_name := go_string.
 Inductive type :=
 | Named : type_name → list type (* type args *) → _
 | TypeLit : type_lit → _
+
 
 with type_lit :=
 | ArrayType : Z → type → _
@@ -43,6 +53,12 @@ with interface_elem :=
 | TypeElem : list type_term → _
 
 with type_term := | TypeTerm (type : type) | TypeTermUnderlying (type : type).
+
+Global Instance type_eq_dec : EqDecision type.
+Proof. Admitted.
+
+Global Instance type_countable : Countable type.
+Proof. Admitted.
 
 Global Coercion TypeLit : type_lit >-> type.
 
