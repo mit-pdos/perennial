@@ -87,13 +87,13 @@ this in GooseLang, so we just loop. *)
   Definition AssumeNoStringOverflowⁱᵐᵖˡ : val :=
     λ: "s", assume.assume (IsNoStringOverflow "s").
 
-  Definition Mutex := structT [ "state" :: boolT ].
+  Definition Mutex := boolT.
 
   Definition Mutex__Lockⁱᵐᵖˡ : val :=
-    λ: "m" <>, spinlock.lock (struct.field_ref #Mutex #"state"%go "m").
+    λ: "m" <>, spinlock.lock "m".
 
   Definition Mutex__Unlockⁱᵐᵖˡ : val :=
-    λ: "m" <>, spinlock.unlock (struct.field_ref #Mutex #"state"%go "m").
+    λ: "m" <>, spinlock.unlock "m".
 
 End code.
 End primitive.

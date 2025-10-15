@@ -3,6 +3,9 @@ From New.golang Require Import theory.spinlock.
 Require Import New.code.github_com.goose_lang.primitive.
 Require Import New.generatedproof.github_com.goose_lang.primitive.
 
+#[global] Opaque primitive.Mutex primitive.Mutex__Lockⁱᵐᵖˡ primitive.Mutex__Unlockⁱᵐᵖˡ.
+#[local] Transparent primitive.Mutex primitive.Mutex__Lockⁱᵐᵖˡ primitive.Mutex__Unlockⁱᵐᵖˡ.
+
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -137,13 +140,13 @@ Qed.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  is_spinlock (struct.field_ref_f primitive.Mutex "state" m) R.
+  is_spinlock m R.
 #[global] Opaque is_Mutex.
 #[local] Transparent is_Mutex.
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := own_spinlock (struct.field_ref_f primitive.Mutex "state" m).
+Definition own_Mutex (m: loc) : iProp Σ := own_spinlock m.
 #[global] Opaque own_Mutex.
 #[local] Transparent own_Mutex.
 
@@ -162,12 +165,11 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Theorem init_Mutex R E m : m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦ (default_val bool) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "H HR".
-  iApply struct_fields_split in "H"; iNamed "H".
   simpl.
-  iMod (init_spinlock with "Hstate HR") as "Hm".
+  iMod (init_spinlock with "H HR") as "Hm".
   done.
 Qed.
 
