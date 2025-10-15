@@ -1,5 +1,5 @@
 From New.code Require Import sync.
-From New.golang Require Import defn defn.spinlock.
+From New.golang Require Import defn defn.lock.
 
 Module primitive.
 Module prophId. Definition id : go_string := "github.com/goose-lang/goose.prophId". End prophId.
@@ -90,10 +90,10 @@ this in GooseLang, so we just loop. *)
   Definition Mutex := boolT.
 
   Definition Mutex__Lockⁱᵐᵖˡ : val :=
-    λ: "m" <>, spinlock.lock "m".
+    λ: "m" <>, lock.lock "m".
 
   Definition Mutex__Unlockⁱᵐᵖˡ : val :=
-    λ: "m" <>, spinlock.unlock "m".
+    λ: "m" <>, lock.unlock "m".
 
 End code.
 End primitive.

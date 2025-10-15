@@ -1,5 +1,5 @@
 From New.proof.sync_proof Require Import base.
-From New.golang.theory Require Import spinlock.
+From New.golang.theory Require Import lock.
 
 Section proof.
 Context `{heapGS Σ, !ffi_semantics _ _}.
@@ -8,20 +8,20 @@ Context `{!syncG Σ}.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  is_spinlock (struct.field_ref_f sync.Mutex "state" m) R.
+  is_lock (struct.field_ref_f sync.Mutex "state" m) R.
 #[global] Opaque is_Mutex.
 #[local] Transparent is_Mutex.
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := own_spinlock (struct.field_ref_f sync.Mutex "state" m).
+Definition own_Mutex (m: loc) : iProp Σ := own_lock (struct.field_ref_f sync.Mutex "state" m).
 #[global] Opaque own_Mutex.
 #[local] Transparent own_Mutex.
 
 Lemma own_Mutex_exclusive (m : loc) : own_Mutex m -∗ own_Mutex m -∗ False.
 Proof.
   iIntros "H1 H2".
-  by iDestruct (own_spinlock_exclusive with "H1 H2") as %?.
+  by iDestruct (own_lock_exclusive with "H1 H2") as %?.
 Qed.
 
 Global Instance is_Mutex_ne m : NonExpansive (is_Mutex m).
@@ -39,7 +39,7 @@ Proof.
   simpl.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   iNamed "Hl". simpl.
-  iMod (init_spinlock with "Hstate HR") as "Hm".
+  iMod (init_lock with "Hstate HR") as "Hm".
   done.
 Qed.
 
@@ -49,7 +49,7 @@ Lemma wp_Mutex__TryLock m R :
   {{{ (locked : bool), RET #locked; if locked then own_Mutex m ∗ R else True }}}.
 Proof.
   wp_start as "#His".
-  wp_apply (wp_spinlock_trylock with "[$His]").
+  wp_apply (wp_lock_trylock with "[$His]").
   iIntros (locked) "H".
   iApply "HΦ".
   done.
@@ -61,7 +61,7 @@ Lemma wp_Mutex__Lock m R :
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "#His".
-  wp_apply (wp_spinlock_lock with "[$His]").
+  wp_apply (wp_lock_lock with "[$His]").
   iIntros "[Hown HR]".
   iApply "HΦ".
   iFrame.
@@ -74,7 +74,7 @@ Lemma wp_Mutex__Unlock m R :
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(#His & Hlocked & HR)".
-  wp_apply (wp_spinlock_unlock with "[$His $Hlocked $HR]").
+  wp_apply (wp_lock_unlock with "[$His $Hlocked $HR]").
   by iApply "HΦ".
 Qed.
 

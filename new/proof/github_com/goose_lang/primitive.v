@@ -1,10 +1,10 @@
 From New.proof Require Import proof_prelude.
-From New.golang Require Import theory.spinlock.
+From New.golang Require Import theory.lock.
 Require Import New.code.github_com.goose_lang.primitive.
 Require Import New.generatedproof.github_com.goose_lang.primitive.
 
-#[global] Opaque primitive.Mutex primitive.Mutex__Lockⁱᵐᵖˡ primitive.Mutex__Unlockⁱᵐᵖˡ.
-#[local] Transparent primitive.Mutex primitive.Mutex__Lockⁱᵐᵖˡ primitive.Mutex__Unlockⁱᵐᵖˡ.
+#[global] Opaque primitive.Mutex.
+#[local] Transparent primitive.Mutex.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -140,20 +140,20 @@ Qed.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  is_spinlock m R.
+  is_lock m R.
 #[global] Opaque is_Mutex.
 #[local] Transparent is_Mutex.
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := own_spinlock m.
+Definition own_Mutex (m: loc) : iProp Σ := own_lock m.
 #[global] Opaque own_Mutex.
 #[local] Transparent own_Mutex.
 
 Lemma own_Mutex_exclusive (m : loc) : own_Mutex m -∗ own_Mutex m -∗ False.
 Proof.
   iIntros "H1 H2".
-  by iDestruct (own_spinlock_exclusive with "H1 H2") as %?.
+  by iDestruct (own_lock_exclusive with "H1 H2") as %?.
 Qed.
 
 Global Instance is_Mutex_ne m : NonExpansive (is_Mutex m).
@@ -169,7 +169,7 @@ Theorem init_Mutex R E m : m ↦ (default_val bool) -∗ ▷ R ={E}=∗ is_Mutex
 Proof.
   iIntros "H HR".
   simpl.
-  iMod (init_spinlock with "H HR") as "Hm".
+  iMod (init_lock with "H HR") as "Hm".
   done.
 Qed.
 
@@ -179,7 +179,7 @@ Lemma wp_Mutex__Lock m R :
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "#His".
-  wp_apply (wp_spinlock_lock with "[$His]").
+  wp_apply (wp_lock_lock with "[$His]").
   iIntros "[Hown HR]".
   iApply "HΦ".
   iFrame.
@@ -192,7 +192,7 @@ Lemma wp_Mutex__Unlock m R :
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(#His & Hlocked & HR)".
-  wp_apply (wp_spinlock_unlock with "[$His $Hlocked $HR]").
+  wp_apply (wp_lock_unlock with "[$His $Hlocked $HR]").
   by iApply "HΦ".
 Qed.
 

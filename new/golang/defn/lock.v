@@ -1,6 +1,6 @@
-From New.golang Require Import defn.
+From New.golang Require Import defn.core.
 
-Module spinlock.
+Module lock.
 Section code.
 Context `{ffi_syntax}.
 
@@ -18,6 +18,6 @@ Definition unlock : val :=
   λ: "m", exception_do (do: CmpXchg "m" #true #false ;;; return: #())
 .
 End code.
-End spinlock.
+End lock.
 
-#[global] Opaque spinlock.trylock spinlock.lock spinlock.unlock.
+#[global] Opaque lock.trylock lock.lock lock.unlock.

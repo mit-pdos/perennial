@@ -1,4 +1,4 @@
-From New.golang Require Import defn defn.spinlock.
+From New.golang Require Import defn defn.lock.
 
 Module sync.
 Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
@@ -14,14 +14,14 @@ Definition Mutex : go_type := structT [
 
 
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
-  λ: "m" <>, spinlock.trylock (struct.field_ref #Mutex #"state"%go "m").
+  λ: "m" <>, lock.trylock (struct.field_ref #Mutex #"state"%go "m").
 
 Definition Mutex__Lockⁱᵐᵖˡ : val :=
   λ: "m" <>,
-     spinlock.lock (struct.field_ref #Mutex #"state"%go "m").
+     lock.lock (struct.field_ref #Mutex #"state"%go "m").
 
 Definition Mutex__Unlockⁱᵐᵖˡ : val :=
-  λ: "m" <>, spinlock.unlock (struct.field_ref #Mutex #"state"%go "m").
+  λ: "m" <>, lock.unlock (struct.field_ref #Mutex #"state"%go "m").
 
 Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
   λ: "l", u_to_w32 ArbitraryInt.
