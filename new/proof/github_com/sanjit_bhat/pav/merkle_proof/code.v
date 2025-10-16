@@ -13,7 +13,7 @@ From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base serde
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-(** ownership preds. *)
+(** tree predicates. *)
 
 Fixpoint own_tree ptr t d : iProp Σ :=
   ∃ hash,
@@ -42,28 +42,10 @@ Fixpoint own_tree ptr t d : iProp Σ :=
     "#Hsl_hash" ∷ sl_hash ↦*□ hash
   end.
 
-Definition own ptr m d : iProp Σ :=
-  ∃ ptr_root t,
-  "HMap" ∷ ptr ↦{d} (merkle.Map.mk ptr_root) ∗
-  "%Heq_tree" ∷ ⌜ m = to_map t ⌝ ∗
-  "Hown_tree" ∷ own_tree ptr_root t d ∗
-  "%His_cutless" ∷ ⌜ is_cutless t ⌝ ∗
-  "%His_limit" ∷ ⌜ is_limit t ⌝.
-
 Lemma own_tree_to_hash ptr t d :
   own_tree ptr t d -∗
   ∃ dig, is_cut_tree t dig.
 Proof. destruct t; iNamed 1; iFrame "#". Qed.
-
-Lemma own_to_is_map ptr m d :
-  own ptr m d -∗
-  ∃ dig, is_map m dig.
-Proof.
-  iNamed 1.
-  iFrame "%".
-  iDestruct (own_tree_to_hash with "Hown_tree") as "[% #His_tree]".
-  by iDestruct (cut_to_full with "His_tree") as "$".
-Qed.
 
 Lemma own_empty_tree t d :
   own_tree null t d -∗
@@ -75,7 +57,7 @@ Proof.
     by rewrite go_type_size_unseal.
 Qed.
 
-(** program proofs. *)
+(** tree / Verifier program proofs. *)
 
 Lemma wp_compLeafHash sl_label sl_val (label val : list w8) :
   {{{
@@ -1433,5 +1415,136 @@ Proof.
   rewrite length_reverse.
   word.
 Qed.
+
+(** Map predicates. *)
+
+(* [own_Map] [hash] allows for same hash across Map ops: Hash, Prove, Put.
+an alternate (stronger but more work) approach is define pred that
+determ maps Map to tree (via adding tree constraints like minimality)
+and determ maps tree to hash. *)
+Definition own_Map ptr m hash d : iProp Σ :=
+  ∃ ptr_root t,
+  "Hstruct" ∷ ptr ↦{d} (merkle.Map.mk ptr_root) ∗
+  "Hown_tree" ∷ own_tree ptr_root t d ∗
+  "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
+  "#His_hash" ∷ is_cut_tree t hash ∗
+
+  "%His_cutless" ∷ ⌜ is_cutless t ⌝ ∗
+  "%His_limit" ∷ ⌜ is_limit t ⌝ ∗
+  "%His_const_label" ∷ ⌜is_const_label_len t⌝ ∗
+  "%His_sorted" ∷ ⌜is_sorted t ⌝.
+
+Lemma own_Map_to_is_map ptr m hash d :
+  own_Map ptr m hash d -∗
+  is_map m hash.
+Proof.
+  iNamed 1.
+  iFrame (Heq_map).
+  by iDestruct (cut_to_full with "His_hash") as "$".
+Qed.
+
+Lemma own_Map_init ptr d0 :
+  ("#Hinit" ∷ is_initialized ∗
+  "Hstruct" ∷ ptr ↦{d0} (merkle.Map.mk null)) -∗
+  ∃ hash, "Hown_Map" ∷ own_Map ptr ∅ hash d0.
+Proof.
+  iIntros "@".
+  rewrite /is_initialized. iNamed "Hinit".
+  iExists _, null, Empty.
+  iFrame "∗#".
+  by repeat iSplit.
+Qed.
+
+(** Map program proofs. *)
+
+Lemma wp_Map_Hash ptr m hash d0 :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "Hown_Map" ∷ own_Map ptr m hash d0
+  }}}
+  ptr @ (ptrT.id merkle.Map.id) @ "Hash" #()
+  {{{
+    sl_hash, RET #sl_hash;
+    "Hown_Map" ∷ own_Map ptr m hash d0 ∗
+    "#Hsl_hash" ∷ sl_hash ↦*□ hash
+  }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  iNamed "Hown_Map".
+  wp_auto.
+  iRename "His_hash" into "His_hash'".
+  wp_apply (wp_node_getHash with "[$Hown_tree]") as "* @".
+  { iFrame "#". }
+  iDestruct (is_cut_tree_det with "His_hash His_hash'") as %->.
+  iApply "HΦ".
+  iFrame "∗#%".
+Qed.
+
+Lemma is_cutless_to_path t label :
+  is_cutless t →
+  is_cutless_path t label.
+Proof.
+  autounfold with merkle.
+  remember 0%nat as depth. clear Heqdepth.
+  revert depth.
+  induction t; intros; simplify_eq/=; try done.
+  case_match; naive_solver.
+Qed.
+
+Lemma wp_Map_Prove ptr m hash d0 sl_label d1 label :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "Hown_Map" ∷ own_Map ptr m hash d0 ∗
+    "Hsl_label" ∷ sl_label ↦*{d1} label ∗
+    "%Hlen_label" ∷ ⌜Z.of_nat $ length label = cryptoffi.hash_len⌝
+  }}}
+  ptr @ (ptrT.id merkle.Map.id) @ "Prove" #sl_label
+  {{{
+    inMap sl_val val sl_entryProof entryProof, RET (#inMap, #sl_val, #sl_entryProof);
+    "Hown_Map" ∷ own_Map ptr m hash d0 ∗
+    "Hsl_label" ∷ sl_label ↦*{d1} label ∗
+
+    "#Hsl_val" ∷ sl_val ↦*□ val ∗
+    "Hsl_entryProof" ∷ sl_entryProof ↦* entryProof ∗
+
+    "%Hlook" ∷
+      ⌜match m !! label with
+      | None => inMap = false
+      | Some v => inMap = true ∧ val = v
+      end⌝ ∗
+    "#Hproof" ∷
+      match m !! label with
+      | None => wish_VerifyNonMemb label entryProof hash
+      | Some v => wish_VerifyMemb label v entryProof hash
+      end
+  }}}.
+Proof.
+  wp_start as "@". wp_auto.
+  iNamed "Hown_Map".
+  wp_auto.
+  wp_apply (wp_node_prove with "[$Hown_tree $Hsl_label]") as "* @".
+  { iFrame "#%".
+Admitted.
+
+Lemma wp_Map_Put ptr m hash sl_label label sl_val val :
+  {{{
+    is_pkg_init merkle ∗
+    "#Hinit" ∷ is_initialized ∗
+    "Hown_Map" ∷ own_Map ptr m hash 1 ∗
+    "#Hsl_label_in" ∷ sl_label ↦*□ label ∗
+    "#Hsl_val_in" ∷ sl_val ↦*□ val ∗
+    "%Hmono" ∷ ⌜m !! label = None⌝ ∗
+    "%Hlen_label" ∷ ⌜Z.of_nat $ length label = cryptoffi.hash_len⌝
+  }}}
+  ptr @ (ptrT.id merkle.Map.id) @ "Put" #sl_label #sl_val
+  {{{
+    sl_updProof updProof hash', RET #sl_updProof;
+    "Hown_Map" ∷ own_Map ptr (<[label:=val]>m) hash' 1 ∗
+    "Hsl_updProof" ∷ sl_updProof ↦* updProof ∗
+    "#His_proof" ∷ wish_VerifyUpdate label val updProof hash hash'
+  }}}.
+Proof. Admitted.
 
 End proof.
