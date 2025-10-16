@@ -1,13 +1,6 @@
 From New.golang.defn Require Export notation.
 From Perennial Require Import base.
 
-Definition go_string := byte_string.
-Delimit Scope byte_string_scope with go.
-Bind Scope byte_string_scope with go_string.
-(* NOTE: this causes W8 values to be printed using the byte notation set up in
-ByteString.v *)
-(* Delimit Scope byte_char_scope with go_byte. *)
-
 Class IntoVal `{ffi_syntax} (V : Type) :=
   {
     to_val_def : V → val;

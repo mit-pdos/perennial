@@ -50,11 +50,14 @@ Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop 
 | is_primitive_zero_val_int16 : is_primitive_zero_val int16 (W16 0)
 | is_primitive_zero_val_int8 : is_primitive_zero_val int8 (W8 0).
 
+(* TODO: copied in lifting.v *)
 Global Arguments alloc {_ _} (t).
 Global Arguments load {_ _} (t).
 Global Arguments store {_ _} (t).
+Global Arguments struct_field_ref {_ _} (t field loc).
 Global Arguments goose_lang.size {_ _} (t).
 Existing Class GoContext.
+
 Class MemOps `{!GoContext} :=
 {
   alloc_underlying t : alloc t = alloc (to_underlying t);
@@ -74,15 +77,15 @@ Class MemOps `{!GoContext} :=
   load_underlying t : load t = load (to_underlying t);
   load_primitive t (H : is_primitive t) : load t = (λ: "l", ! "l")%V;
   load_struct fds :
-    let body := (foldl (λ '(offset, ld) (fd : go.field_decl),
-                          (offset,
-                             (ld, (match fd with
-                                   | go.FieldDecl _ t 
-                                   | go.EmbeddedField _ t => load t
-                                   end)
-                                    (BinOp (OffsetOp offset) "l" #(W64 1)))%E)
-                   ) (0, Val #()) fds) in
-    load (go.StructType fds) = (λ: "l", body.2)%V;
+    let body := (foldl (λ '(ld) (fd : go.field_decl),
+                          (ld, let (name, t) := (match fd with
+                                                 | go.FieldDecl n t => (n, t)%core
+                                                 | go.EmbeddedField n t => (n, t)%core
+                                                 end) in
+                               (GoInstruction $ GoLoad t)
+                                 ((GoInstruction $ StructFieldRef (go.StructType fds) name) "l"))%E
+                   ) (Val #()) fds) in
+    load (go.StructType fds) = (λ: "l", body)%V;
   load_array n elem :
     let body := (Z.iter n
                    (λ '(offset, ld),
@@ -102,6 +105,8 @@ Class MemOps `{!GoContext} :=
                                           end
                                    ) <$> fds);
   size_array n elem : goose_lang.size (go.ArrayType n elem) = n * goose_lang.size elem;
+
+  struct_field_ref_underlying t : struct_field_ref t = struct_field_ref (to_underlying t);
 }.
 
 (*

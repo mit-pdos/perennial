@@ -120,7 +120,7 @@ Definition prim_op (ar:arity) : Type :=
   end.
 
 Inductive go_op : Type :=
-| StructFieldOffset (t : go.type) (f : go_string)
+| StructFieldRef (t : go.type) (f : go_string)
 | StructFieldGet (t : go.type) (f : go_string)
 | GoLoad (t : go.type)
 | GoStore (t : go.type)
@@ -180,7 +180,7 @@ with val :=
   | ExtV (ev : ffi_val)
   (* Go Instructions *)
   | GoInstruction (o : go_op)
-.
+  | StructVal (fvs : gmap go_string val).
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
@@ -249,6 +249,7 @@ Record GoContext : Type :=
     load : go.type → val;
     store : go.type → val;
     size : go.type → Z;
+    struct_field_ref : go.type → go_string → loc → loc;
   }.
 
 Record GoState : Type :=
@@ -356,7 +357,7 @@ Definition val_is_unboxed (v : val) : Prop :=
 Global Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
 Proof. destruct l; simpl; exact (decide _). Defined.
 Global Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
-Proof. destruct v as [ | | | [] | [] | | ]; simpl; exact (decide _). Defined.
+Proof. destruct v as [ | | | [] | [] | | | ]; simpl; exact (decide _). Defined.
 
 (** We just compare the word-sized representation of two values, without looking
 into boxed data.  This works out fine if at least one of the to-be-compared
@@ -461,9 +462,11 @@ Proof using ext.
       | InjRV e, InjRV e' => cast_if (decide (e = e'))
       | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
       | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
+      | StructVal v, StructVal v' => cast_if (decide (v = v'))
       | _, _ => right _
       end
         for go); try (clear go gov; abstract intuition congruence).
+  apply gmap_eq_dec. assumption.
 Defined.
 Global Instance val_eq_dec : EqDecision val.
 Proof using ext.
@@ -480,8 +483,10 @@ Proof using ext.
      | InjRV e, InjRV e' => cast_if (decide (e = e'))
      | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
      | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
+     | StructVal v, StructVal v' => cast_if (decide (v = v'))
      | _, _ => right _
      end); try abstract intuition congruence.
+  apply gmap_eq_dec. assumption.
 Defined.
 
 Definition enc_base_lit :=
@@ -625,7 +630,7 @@ Inductive basic_type :=
   | externOp (op:ffi_opcode)
   | externVal (ev:ffi_val)
   | goOpVal (op:go_op)
-.
+  | structVal (m : gmap go_string val).
 
 Instance basic_type_eq_dec : EqDecision basic_type.
 Proof. solve_decision. Defined.
@@ -641,7 +646,8 @@ Proof.
                               | primOpVal op => inr (inr (inr (inr (inr (inr (inl op))))))
                               | externOp op => inr (inr (inr (inr (inr (inr (inr (inl op)))))))
                               | externVal k => inr (inr (inr (inr (inr (inr (inr (inr (inl k))))))))
-                              | goOpVal op => inr (inr (inr (inr (inr (inr (inr (inr (inr op))))))))
+                              | goOpVal op => inr (inr (inr (inr (inr (inr (inr (inr (inr (inl op)))))))))
+                              | structVal m => inr (inr (inr (inr (inr (inr (inr (inr (inr (inr m)))))))))
                               end)
                          (λ x, match x with
                               | inl s => stringVal s
@@ -653,9 +659,10 @@ Proof.
                               | inr (inr (inr (inr (inr (inr (inl op)))))) => primOpVal op
                               | inr (inr (inr (inr (inr (inr (inr (inl op))))))) => externOp op
                               | inr (inr (inr (inr (inr (inr (inr (inr (inl k)))))))) => externVal k
-                              | inr (inr (inr (inr (inr (inr (inr (inr (inr op)))))))) => goOpVal op
-                               end) _); by intros [].
-Qed.
+                              | inr (inr (inr (inr (inr (inr (inr (inr (inr (inl op))))))))) => goOpVal op
+                              | inr (inr (inr (inr (inr (inr (inr (inr (inr (inr m))))))))) => structVal m
+                               end) _); last by intros [].
+Admitted.
 
 Definition to_prim_op : {f: forall ar (op: prim_op'), prim_op ar |
                          forall ar op, f ar (a_prim_op op) = op}.
@@ -681,7 +688,7 @@ Proof using ext.
    fix go e :=
      match e with
      | Val v => GenNode 0 [gov v]
-     | Var x => GenLeaf (stringVal x)
+     | Var x => GenLeaf $ (stringVal x)
      | Rec f x e => GenNode 1 [GenLeaf $ binderVal f; GenLeaf $ binderVal x; go e]
      | App e1 e2 => GenNode 2 [go e1; go e2]
      | Primitive0 op => GenNode 21 [GenLeaf $ primOpVal $ a_prim_op op]
@@ -714,6 +721,7 @@ Proof using ext.
      | InjRV v => GenNode 3 [gov v]
      | ExtV ev => GenNode 4 [GenLeaf $ externVal ev]
      | GoInstruction op => GenNode 5 [GenLeaf $ goOpVal op]
+     | StructVal v => GenNode 6 [GenLeaf $ structVal v]
      end
    for go).
  set (dec :=
@@ -753,6 +761,7 @@ Proof using ext.
      | GenNode 3 [v] => InjRV (gov v)
      | GenNode 4 [GenLeaf (externVal ev)] => ExtV ev
      | GenNode 5 [GenLeaf (goOpVal op)] => GoInstruction op
+     | GenNode 6 [GenLeaf (structVal v)] => StructVal v
      | _ => LitV LitUnit (* dummy *)
      end
    for go).
@@ -777,6 +786,7 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
       load := inhabitant;
       store:= inhabitant;
       size := inhabitant;
+      struct_field_ref := inhabitant;
     |}.
 
 Global Instance GoState_inhabited : Inhabited GoState :=
@@ -1321,6 +1331,11 @@ Definition base_trans (e: expr) :
       atomicallyM
       (σ ← reads (λ '(σ,g), σ);
        ret $ (App (Val (σ.(go_state).(gc).(load) t)) (Val v))
+      )
+  | App (Val (GoInstruction (StructFieldRef t f))) (Val (LitV (LitLoc l))) =>
+      atomically
+      (σ ← reads (λ '(σ,g), σ);
+       ret $ LitV $ LitLoc (σ.(go_state).(gc).(struct_field_ref) t f l)
       )
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
     atomically

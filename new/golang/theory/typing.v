@@ -7,32 +7,24 @@ From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Export typing mem.
 
-Section pointsto.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-
-Context `{!IntoVal V}.
-Implicit Type v : V.
-Program Definition typed_pointsto_def l (dq : dfrac) (v : V) : iProp Σ :=
-  (([∗ list] j↦vj ∈ flatten_struct (to_val v), heap_pointsto (l +ₗ j) dq vj))%I.
-Definition typed_pointsto_aux : seal (@typed_pointsto_def). Proof. by eexists. Qed.
-Definition typed_pointsto := typed_pointsto_aux.(unseal).
-Definition typed_pointsto_unseal : @typed_pointsto = @typed_pointsto_def := typed_pointsto_aux.(seal_eq).
-End pointsto.
-Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
-                         (at level 20, dq custom dfrac at level 1,
-                            format "l  ↦ dq  v") : bi_scope.
-
 Section defs.
 
-Class IntoValInj (V : Type) `{IntoVal V} :=
+Class IntoValProof (V : Type) `{IntoVal V} :=
   {
+    typed_pointsto_def `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+      (l : loc) (dq : dfrac) (v : V) : iProp Σ;
     #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
     #[global] to_val_eqdec :: EqDecision V ;
   }.
 
+Notation typed_pointsto := typed_pointsto_def.
+Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+                         (at level 20, dq custom dfrac at level 1,
+                            format "l  ↦ dq  v") : bi_scope.
+
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!NamedUnderlyingTypes}.
-Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
+Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValProof V} :=
   {
     wp_load : (∀ l dq (v : V), {{{ l ↦{dq} v }}}
                                  load t #l
@@ -41,15 +33,21 @@ Class IntoValTyped (V : Type) (t : go.type) `{!IntoVal V} `{!IntoValInj V} :=
                                  store t #l #w
                                {{{ RET #v; l ↦ w }}});
   }.
-(* One of [V] or [ty] should not be an evar before doing typeclass search *)
+(* [ty] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
-Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
 End defs.
+
+Notation typed_pointsto := typed_pointsto_def.
+Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+                         (at level 20, dq custom dfrac at level 1,
+                            format "l  ↦ dq  v") : bi_scope.
+
 
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Program Global Instance into_val_inj_loc : IntoValInj loc.
+Program Global Instance into_val_inj_loc : IntoValProof loc :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
 (*

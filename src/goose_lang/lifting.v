@@ -24,6 +24,13 @@ Ltac solve_pure_exec :=
   subst; intros ?; apply nsteps_once, pure_base_step_pure_step;
     constructor; [solve_exec_safe | solve_exec_puredet].
 
+Global Arguments alloc {_ _} (t).
+Global Arguments load {_ _} (t).
+Global Arguments store {_ _} (t).
+Global Arguments struct_field_ref {_ _} (t field loc).
+Global Arguments goose_lang.size {_ _} (t).
+Existing Class GoContext.
+
 Section definitions.
   Context `{ext:ffi_syntax}.
   Context `{hG: na_heapGS loc val Σ}.
@@ -508,7 +515,7 @@ Would be good to align terminology. *)
 Class gooseLocalGS Σ := GooseLocalGS {
   goose_crashGS : crashGS Σ;
   goose_ffiLocalGS : ffiLocalGS Σ;
-  goose_go_context : GoContext; 
+  #[global] goose_go_context :: GoContext; 
   #[global] goose_na_heapGS :: na_heapGS loc val Σ;
   #[global] goose_traceGS :: traceGS Σ;
   #[global] goose_go_stateGS :: go_stateGS Σ;
@@ -861,10 +868,6 @@ Proof.
   iModIntro. iFrame "∗#%"; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
-Existing Class GoContext.
-#[global] Existing Instance goose_go_context.
-Arguments load {_ _} (t).
-
 (* TODO: register as PureWp. *)
 Lemma wp_GoLoad s E (l : loc) t Φ :
   WP (load t) #l @ s ; E {{ Φ }} -∗
@@ -887,6 +890,29 @@ Proof.
   { rewrite /step_count_next/=. lia. }
   iModIntro. rewrite Hgc. iFrame "∗#%".
 Qed.
+
+Lemma wp_StructFieldRef s E (l : loc) t f Φ :
+  Φ #(struct_field_ref t f l) -∗
+  WP (GoInstruction (StructFieldRef t f)) #l @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_base_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
+  iNamed "H".
+  iSplit.
+  { iPureIntro.
+    rewrite /base_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; by monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iNext. iMod "Hmask" as "_".
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. rewrite Hgc. iFrame "∗#%".
+Qed.
+
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
 Lemma wp_fork s E e Φ :

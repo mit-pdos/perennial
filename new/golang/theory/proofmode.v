@@ -1,6 +1,6 @@
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lang lifting ipersist.
-From Perennial.Helpers Require Export ipm.
+From Perennial.Helpers Require Export ipm Tactics.
 From iris.proofmode Require Import coq_tactics.
 (* make sure solve_proper comes from stdpp and not Coq *)
 From stdpp Require Export tactics.
@@ -754,28 +754,49 @@ Class foo_type_assumptions : Prop :=
 
 Context `{!foo_type_assumptions}.
 
-Global Instance into_val_foo_inj : IntoValInj foo_t.
-Proof. Admitted.
+(* TODO: struct field_ref. One option is to have field_ref_f be a totally opaque
+   function.  All that really matters is it's a deterministic computation and
+   that it agrees with allocation.
+   E.g. it really doesn't matter if struct fields are packed or not, nor if
+   they're in the same order as source code.
+ *)
+(* TODO: for struct values, what about using a gmap rather than list val?
+   Induction principle might be screwed up. *)
+
+Program Global Instance into_val_proof_w64 : IntoValProof w64 :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_foo_inj : IntoValProof foo_t :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := (struct_field_ref foo "a"%go l ↦{dq} v.(a))%I |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Admitted.
+Next Obligation. solve_decision. Qed.
 
 Lemma foo_split l dq (v : foo_t) :
-  l ↦{dq} v ⊣⊢ l ↦{dq} v.(a).
-Proof.
-Admitted.
+  l ↦{dq} v ⊢ (struct_field_ref foo "a"%go l) ↦{dq} v.(a).
+Proof. done. Qed.
 
 Program Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
 Next Obligation. 
   iIntros "* Hl HΦ".
-  rewrite go.load_underlying /= foo_underlying go.load_struct.
-  simpl. wp_pures. wp_bind.
-  rewrite loc_add_0.
+  iEval (rewrite go.load_underlying /= foo_underlying go.load_struct /=).
+  wp_pures. wp_bind.
+  rewrite [in #l]to_val_unseal.
+  wp_apply wp_StructFieldRef. (* FIXME: PureWp *)
+  wp_apply wp_GoLoad. (* FIXME: PureWp *) 
+  ereplace (LitV (LitLoc ?[a])) with (# ?a). (* FIXME: version using to_val *)
+  2:{ rewrite to_val_unseal //. }
   iDestruct (foo_split with "Hl") as "Hl".
+  Opaque typed_pointsto. (* FIXME: seal typed_pointsto *)
+  iEval (rewrite go.struct_field_ref_underlying /= foo_underlying /foo_impl) in "Hl".
   wp_apply (wp_load (t:=go.uint64) with "Hl").
   iIntros "Hl".
-  iDestruct (foo_split with "Hl") as "Hl".
   wp_pures.
-  (* TODO: struct_val in lang.v *)
+  (* FIXME: construct StructVal. Have pure op to insert into struct val. Can
+     start from empty struct val. Can give list-like notation. *)
 Admitted.
 
+(* TODO: Maybe aggregate all the built-in dynamic functions into one instruction? *)
 
 Context `{!GoContext}.
 Context `{!MemOps}.
