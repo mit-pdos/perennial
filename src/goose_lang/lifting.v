@@ -869,50 +869,61 @@ Proof.
 Qed.
 
 (* TODO: register as PureWp. *)
-Lemma wp_GoLoad s E (l : loc) t Φ :
-  WP (load t) #l @ s ; E {{ Φ }} -∗
-  WP (GoInstruction (GoLoad t)) #l @ s ; E {{ Φ }}.
+Lemma wp_GoLoad K s E (l : loc) t Φ :
+  ▷ (£ 1 -∗ WP fill K ((load t) #l) @ s ; E {{ Φ }}) -∗
+  WP fill K ((GoInstruction (GoLoad t)) #l) @ s ; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
-  iApply wp_lift_base_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?".
+  iApply wp_lift_step; [apply fill_not_val; done|].
+  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
   iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
   iNamed "H".
   iSplit.
   { iPureIntro.
-    rewrite /base_reducible.
+    destruct s; try done.
+    apply base_prim_fill_reducible.
     repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+    econstructor; simpl; by monad_simpl. }
+  iIntros (v2 σ2 g2 efs Hstep).
+  rewrite /= in Hstep.
+  inversion Hstep; subst.
+  eapply base_redex_unique in H; first last.
+  { by repeat eexists _. }
+  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
+  destruct H as [<- <-]. inv_base_step. 
   iNext. iMod "Hmask" as "_".
+  iIntros "Hlc".
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   iModIntro. rewrite Hgc. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
 Lemma wp_StructFieldRef s E (l : loc) t f Φ :
-  Φ #(struct_field_ref t f l) -∗
+  ▷ (£ 1 -∗ Φ #(struct_field_ref t f l)) -∗
   WP (GoInstruction (StructFieldRef t f)) #l @ s ; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
-  iApply wp_lift_atomic_base_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?".
-  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
   iNamed "H".
   iSplit.
-  { iPureIntro.
-    rewrite /base_reducible.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
     repeat eexists. simpl. constructor.
     econstructor; simpl; by monad_simpl.
   }
   iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iNext. iMod "Hmask" as "_".
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+  inv_base_step.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   iModIntro. rewrite Hgc. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
-
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
 Lemma wp_fork s E e Φ :

@@ -487,6 +487,11 @@ Global Instance wp_call_go_func (v2 : val) f x e :
   PureWp True (App #(func.mk f x e) v2) (subst' x v2 (subst' f #(func.mk f x e) e)).
 Proof. rewrite to_val_unseal /=. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
+Global Instance wp_GoLoad t (l : loc) :
+  PureWp True (GoInstruction (GoLoad t) #l) (load t #l).
+Proof.
+Admitted. (* FIXME: prove *)
+
 End instances.
 
 Global Hint Extern 0 (PureWp _ (App (Val (RecV _ _ _)) _) _) => simple apply wp_call : typeclass_instances.
@@ -716,6 +721,20 @@ Tactic Notation "wp_apply_core" open_constr(lem) :=
 Tactic Notation "wp_apply" open_constr(lem) :=
   wp_apply_core lem.
 
+
+Section go_wp_pure_instances.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+Global Instance wp_StructFieldRef t f (l : loc) :
+  PureWp True (GoInstruction (StructFieldRef t f) #l) #(struct_field_ref t f l).
+Proof.
+  iIntros "% * _ % HΦ".
+  wp_bind. rewrite to_val_unseal. iApply wp_StructFieldRef.
+  simpl. iApply "HΦ".
+
+
+Admitted. (* FIXME: prove *)
+
+
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!NamedUnderlyingTypes}.
@@ -781,11 +800,6 @@ Next Obligation.
   iIntros "* Hl HΦ".
   iEval (rewrite go.load_underlying /= foo_underlying go.load_struct /=).
   wp_pures. wp_bind.
-  rewrite [in #l]to_val_unseal.
-  wp_apply wp_StructFieldRef. (* FIXME: PureWp *)
-  wp_apply wp_GoLoad. (* FIXME: PureWp *) 
-  ereplace (LitV (LitLoc ?[a])) with (# ?a). (* FIXME: version using to_val *)
-  2:{ rewrite to_val_unseal //. }
   iDestruct (foo_split with "Hl") as "Hl".
   Opaque typed_pointsto. (* FIXME: seal typed_pointsto *)
   iEval (rewrite go.struct_field_ref_underlying /= foo_underlying /foo_impl) in "Hl".
