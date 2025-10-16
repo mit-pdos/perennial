@@ -487,11 +487,6 @@ Global Instance wp_call_go_func (v2 : val) f x e :
   PureWp True (App #(func.mk f x e) v2) (subst' x v2 (subst' f #(func.mk f x e) e)).
 Proof. rewrite to_val_unseal /=. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_GoLoad t (l : loc) :
-  PureWp True (GoInstruction (GoLoad t) #l) (load t #l).
-Proof.
-Admitted. (* FIXME: prove *)
-
 End instances.
 
 Global Hint Extern 0 (PureWp _ (App (Val (RecV _ _ _)) _) _) => simple apply wp_call : typeclass_instances.
@@ -724,16 +719,20 @@ Tactic Notation "wp_apply" open_constr(lem) :=
 
 Section go_wp_pure_instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+
+Global Instance wp_GoLoad t (l : loc) :
+  PureWp True (GoInstruction (GoLoad t) #l) (load t #l).
+Proof.
+  iIntros "% * _ % HΦ". rewrite to_val_unseal. iApply wp_GoLoad. iApply "HΦ".
+Qed.
+
+
 Global Instance wp_StructFieldRef t f (l : loc) :
   PureWp True (GoInstruction (StructFieldRef t f) #l) #(struct_field_ref t f l).
 Proof.
-  iIntros "% * _ % HΦ".
-  wp_bind. rewrite to_val_unseal. iApply wp_StructFieldRef.
-  simpl. iApply "HΦ".
-
-
-Admitted. (* FIXME: prove *)
-
+  iIntros "% * _ % HΦ". wp_bind.
+  rewrite to_val_unseal. iApply wp_StructFieldRef. iApply "HΦ".
+Qed.
 
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
