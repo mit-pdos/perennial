@@ -734,6 +734,180 @@ Proof.
   rewrite to_val_unseal. iApply wp_StructFieldRef. iApply "HΦ".
 Qed.
 
+End go_wp_pure_instances.
+
+Section into_val_instances.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  `{!NamedUnderlyingTypes} `{!go.MemOps}.
+
+Lemma wp_untyped_load l dq v s E :
+  {{{ ▷ heap_pointsto l dq v }}}
+    ! #l @ s; E
+  {{{ RET v; heap_pointsto l dq v }}}.
+Proof. rewrite to_val_unseal. apply lifting.wp_load. Qed.
+
+Program Global Instance into_val_proof_loc : IntoValProof loc :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Existing Class go.is_primitive.
+Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
+
+Program Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
+Next Obligation.
+  iIntros "* Hl HΦ".
+  rewrite go.load_primitive.
+  wp_pures. rewrite typed_pointsto_unseal /=.
+  wp_apply (wp_untyped_load with "Hl").
+  iIntros "Hl". by iApply "HΦ".
+Qed.
+
+Local Ltac solve_wp_load :=
+  iIntros "* Hl HΦ";
+  rewrite go.load_primitive;
+  wp_pures; rewrite typed_pointsto_unseal /=;
+  wp_apply (wp_untyped_load with "Hl");
+  iIntros "Hl"; by iApply "HΦ".
+
+Final Obligation.
+Admitted.
+
+Local Ltac solve_wp_store := admit.
+
+Program Global Instance into_val_inj_w64 : IntoValProof w64 :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w64 : IntoValTyped w64 go.uint64.
+Next Obligation. solve_wp_load. Qed.
+Next Obligation. solve_wp_store. Admitted.
+
+Program Global Instance into_val_inj_w32 : IntoValProof w32 :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w32 : IntoValTyped w32 go.uint32.
+Next Obligation. solve_wp_load. Qed.
+Next Obligation. solve_wp_store. Admitted.
+
+Program Global Instance into_val_inj_w16 : IntoValProof w16 :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w16 : IntoValTyped w16 go.uint16.
+Next Obligation. solve_wp_load. Qed.
+Next Obligation. solve_wp_store. Admitted.
+
+Program Global Instance into_val_inj_w8 : IntoValProof w8 :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_w8 : IntoValTyped w8 go.uint8.
+Next Obligation. solve_wp_load. Qed.
+Next Obligation. solve_wp_store. Admitted.
+
+Program Global Instance into_val_inj_bool : IntoValProof bool :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_bool : IntoValTyped bool go.bool.
+Next Obligation. solve_wp_load. Qed.
+Next Obligation. solve_wp_store. Admitted.
+
+Program Global Instance into_val_inj_string : IntoValProof go_string :=
+  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+
+Program Global Instance into_val_typed_string : IntoValTyped go_string go.string.
+Next Obligation. solve_wp_load. Qed.
+Next Obligation. solve_wp_store. Admitted.
+
+Program Global Instance into_val_typed_slice : IntoValTyped slice.t sliceT :=
+{| default_val := slice.nil |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal. move => [???][???] [=].
+                 repeat intros [=->%to_val_inj]. done.
+Qed.
+
+(* Using [vec] here because the [to_val] must be a total function that always
+   meets [has_go_type]. An alternative could be a sigma type. *)
+Program Global Instance into_val_typed_array `{!IntoVal V} `{!IntoValTyped V t} n :
+  IntoValTyped (vec V n) (arrayT n t) :=
+{| default_val := vreplicate n (default_val _) |}.
+Next Obligation.
+  rewrite to_val_unseal /=.
+  solve_has_go_type.
+  induction v as [|].
+  - apply (has_go_type_array 0 t []); done.
+  - simpl in *.
+    inversion IHv. subst.
+    pose proof (has_go_type_array (S (length a)) t (#h::a) ltac:(done)) as Ht.
+    simpl in Ht. apply Ht. intros ? [|].
+    + subst. apply to_val_has_go_type.
+    + apply Helems. done.
+Qed.
+Next Obligation.
+  intros.
+  rewrite to_val_unseal zero_val_eq /=.
+  rewrite -zero_val_unseal -default_val_eq_zero_val.
+  induction n; first done. simpl. f_equal. apply IHn.
+Qed.
+Final Obligation.
+rewrite to_val_unseal.
+intros. intros ?? Heq.
+simpl in Heq.
+induction x.
+{ rewrite (VectorSpec.nil_spec y) //. }
+destruct y using vec_S_inv.
+simpl in *.
+injection Heq as Heq1 Heq.
+apply to_val_inj in Heq1. subst.
+f_equal. by apply IHx.
+Qed.
+
+Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
+{| default_val := func.nil |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
+Qed.
+Final Obligation. solve_decision. Qed.
+
+Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
+{| default_val := interface.nil |}.
+Next Obligation. solve_has_go_type. Qed.
+Next Obligation. rewrite zero_val_eq //. Qed.
+Next Obligation.
+  rewrite to_val_unseal => [x y] Heq.
+  destruct x as [|], y as [|].
+  {
+    simpl in *.
+    injection Heq as Heq1 Heq2.
+    apply to_val_inj in Heq1. subst. done.
+  }
+  all: first [discriminate | reflexivity].
+Qed.
+Final Obligation.
+  solve_decision.
+Qed.
+
+Program Global Instance into_val_typed_unit : IntoValTyped unit (structT []) :=
+{| default_val := tt |}.
+Next Obligation.
+  intros [].
+  replace (#()) with (struct.val_aux (structT []) []).
+  2:{ rewrite struct.val_aux_unseal //. }
+  by constructor.
+Qed.
+Next Obligation. rewrite zero_val_eq /= struct.val_aux_unseal //. Qed.
+Final Obligation.
+  intros ???. destruct x, y. done.
+Qed. *)
+
+End into_val_instances.
+
+
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!NamedUnderlyingTypes}.
