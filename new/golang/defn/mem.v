@@ -1,5 +1,5 @@
-From New.golang.defn Require Export typing intoval.
-From Perennial Require Import base.
+From New.golang.defn Require Export prelang.
+From New.golang.defn Require Export notation intoval.
 
 Module go.
 

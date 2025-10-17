@@ -1,5 +1,5 @@
 From New Require Import notation.
-From New.golang.defn Require Import typing.
+From New.golang.defn Require Import prelang.
 
 Section goose_lang.
 Context `{ffi_syntax}.

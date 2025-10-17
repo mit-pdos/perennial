@@ -1,7 +1,7 @@
-From stdpp Require Export pretty countable.
-From Perennial Require Import base ByteString.
+(* pre lang.v *)
 
-(* pre-lang.v *)
+From stdpp Require Export pretty countable.
+From Perennial Require Export base ByteString.
 
 Definition go_string := byte_string.
 Delimit Scope byte_string_scope with go.
@@ -9,7 +9,6 @@ Bind Scope byte_string_scope with go_string.
 (* NOTE: this causes W8 values to be printed using the byte notation set up in
 ByteString.v *)
 (* Delimit Scope byte_char_scope with go_byte. *)
-
 
 Module go.
 Definition identifier := go_string.
@@ -24,7 +23,6 @@ Definition type_name := go_string.
 Inductive type :=
 | Named : type_name → list type (* type args *) → _
 | TypeLit : type_lit → _
-
 
 with type_lit :=
 | ArrayType : Z → type → _
@@ -80,17 +78,44 @@ Fixpoint type_to_string (t : type) : go_string :=
   end.
 End go.
 
-(** FIXME: document this. Convenient for stating assumptions. Allows for
-    mutually recursive types in which e.g. the pointer element is not erased. *)
+(** Used by Goose for stating package-level assumptions about newly defined
+    types. *)
 Class NamedUnderlyingTypes :=
   {
-    named_to_underlying : go_string -> (list go.type) → go.type
+    to_underlying : go.type → go.type
   }.
 
-Definition to_underlying `{!NamedUnderlyingTypes} (t : go.type) : go.type :=
-  match t with
-  | go.Named n args => (named_to_underlying n args)
-  | _ => t
-  end.
-
 Global Coercion go.TypeLit : go.type_lit >-> go.type.
+
+Inductive go_op : Type :=
+| GoLoad (t : go.type)
+| GoStore (t : go.type)
+| GoAlloc (t : go.type)
+
+| FuncCall (func_id : go_string)
+| MethodCall (* (go_string, go_string) *)
+
+| PackageInitCheck (pkg_name : go_string)
+| PackageInitMark (pkg_name : go_string)
+
+| GlobalVarAddr (var_name : go_string)
+
+| StructFieldRef (t : go.type) (f : go_string)
+| StructFieldGet (f : go_string)
+| StructFieldSet (f : go_string)
+
+| Len
+| Cap 
+| SliceIndexRef (t : go.type) (* int *)
+| Make (* can do slice, map, etc. *)
+
+| Slice
+
+| ArrayElemRef (t : go.type) (* int *)
+.
+
+TODO:
+[ ] Move structval to base_lit.
+[ ] Add `MapVal : gmap base_lit val` to val.
+[ ] Add `SliceVal` to base_lit, taking a loc and two w64s.
+

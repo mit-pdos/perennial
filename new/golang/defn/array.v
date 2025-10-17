@@ -1,5 +1,5 @@
 From New Require Import notation.
-From New.golang.defn Require Import typing list.
+From New.golang.defn Require Import prelang.
 
 Module array.
 Section defn.

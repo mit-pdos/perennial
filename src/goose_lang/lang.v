@@ -11,7 +11,7 @@ From Perennial.program_logic Require Export crash_lang.
 From Perennial.goose_lang Require Export locations.
 From Perennial Require Export Helpers.Integers.
 
-From New.golang.defn Require Export typing.
+From New.golang.defn Require Export prelang.
 
 Set Default Proof Using "Type".
 
@@ -120,17 +120,31 @@ Definition prim_op (ar:arity) : Type :=
   end.
 
 Inductive go_op : Type :=
-| StructFieldRef (t : go.type) (f : go_string)
-| StructFieldGet (t : go.type) (f : go_string)
 | GoLoad (t : go.type)
 | GoStore (t : go.type)
 | GoAlloc (t : go.type)
+
+| FuncCall (func_id : go_string)
 | MethodCall (* (go_string, go_string) *)
+
 | PackageInitCheck (pkg_name : go_string)
 | PackageInitMark (pkg_name : go_string)
 
 | GlobalVarAddr (var_name : go_string)
-| FuncCall (func_id : go_string).
+
+| StructFieldRef (t : go.type) (f : go_string)
+| StructFieldGet (f : go_string)
+| StructFieldSet (f : go_string)
+
+| Len
+| Cap
+| Ptr
+| Make (* can do slice, map, etc. *)
+
+| Slice
+
+| ArrayElemRef (t : go.type) (* int *)
+.
 
 Inductive expr :=
   (* Values *)

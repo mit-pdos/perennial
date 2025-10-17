@@ -2,6 +2,5 @@
 are written in Go and translated with goose *)
 From Perennial.goose_lang Require Export lang notation.
 From New.golang.defn Require Export
-  typing type_id exception
-  mem struct pkg loop list.
+  exception mem struct pkg loop list.
 Open Scope struct_scope.
