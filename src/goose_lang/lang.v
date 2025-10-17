@@ -69,7 +69,8 @@ comparisons could be affected. *)
 Inductive base_lit : Type :=
   | LitInt (n : u64) | LitInt32 (n : u32) | LitInt16 (n : w16) | LitBool (b : bool) | LitByte (n : u8)
   | LitString (s : byte_string) | LitUnit | LitPoison
-  | LitLoc (l : loc) | LitProphecy (p: proph_id).
+  | LitLoc (l : loc) | LitProphecy (p: proph_id)
+  | LitStruct (fvs : gmap go_string base_lit).
 Inductive un_op : Set :=
   | NegOp | MinusUnOp
   | UToW64Op | UToW32Op | UToW16Op | UToW8Op
@@ -146,6 +147,202 @@ Inductive go_op : Type :=
 | ArrayElemRef (t : go.type) (* int *)
 .
 
+Global Instance base_lit_eq_dec : EqDecision base_lit.
+Proof. refine (
+           fix go e1 e2 :=
+             match e1, e2 with
+             | LitInt x, LitInt x' => cast_if (decide (x = x'))
+             | LitInt32 x, LitInt32 x' => cast_if (decide (x = x'))
+             | LitInt16 x, LitInt16 x' => cast_if (decide (x = x'))
+             | LitBool x, LitBool x' => cast_if (decide (x = x'))
+             | LitByte x, LitByte x' => cast_if (decide (x = x'))
+             | LitString x, LitString x' => cast_if (decide (x = x'))
+             | LitUnit, LitUnit => left _
+             | LitPoison, LitPoison => left _
+             | LitLoc l, LitLoc l' => cast_if (decide (l = l'))
+             | LitProphecy i, LitProphecy i' => cast_if (decide (i = i'))
+             | LitStruct m, LitStruct m' => cast_if (decide (m = m'))
+             | _ , _ => right _
+             end); [ try by intuition congruence .. | ].
+       { apply gmap_eq_dec. done. }
+       intros H. inversion H. done.
+Defined.
+
+Open Scope nat.
+Fixpoint size_of_base_lit (fuel : nat) (l : base_lit) : nat :=
+  match fuel with
+  | 0 => 0 (* Out of fuel *)
+  | S fuel' =>
+    match l with
+    | LitStruct m => S (size_of_list fuel' (map_to_list m))
+    | _ => 1
+    end
+  end
+with size_of_list (fuel : nat) (l : list (go_string * base_lit)) : nat :=
+  match fuel with
+  | 0 => 0 (* Out of fuel *)
+  | S fuel' =>
+    match l with
+    | [] => 0
+    | (_, v) :: t => (size_of_base_lit fuel' v + size_of_list fuel' t)%nat
+    end
+  end.
+
+Inductive t :=
+| mk (m : gmap positive t).
+
+Instance : EqDecision t. Proof. Admitted.
+
+Print gmap_dep.
+Print gmap_dep_ne.
+Definition encode_t (x : t) : gen_tree _ := 
+  match x with
+  | mk (GMap GEmpty) => GenLeaf O
+  | mk (GMap (GNodes n)) => 
+      (fix go {P} (n : gmap_dep_ne t P) :=
+         match n with
+         | GNode001 a =>
+         | GNode010 _ a =>
+         | GNode011 _ a =>
+         | GNode100 _ a =>
+         | GNode101 _ a =>
+         | GNode110 _ a =>
+         | GNode111 _ a =>
+         end
+      ) n
+  end
+.
+Print gmap_car.
+Print GEmpty.
+Print GMap.
+
+Instance : Countable t.
+Proof.
+Qed.
+
+From Stdlib.Program Require Export Program.
+Program Definition enc_base_lit_tree : base_lit → gen_tree _ :=
+  fix go b :=
+  match b with
+  | LitInt n =>
+      GenLeaf (Some n, None, None, None, None, None, None, None, None, None)
+  | LitInt32 n => 
+      GenLeaf (None, Some n, None, None, None, None, None, None, None, None)
+  | LitInt16 n => 
+      GenLeaf (None, None, Some n, None, None, None, None, None, None, None)
+  | LitByte n =>
+      GenLeaf (None, None, None, Some n, None, None, None, None, None, None)
+  | LitBool b =>
+      GenLeaf (None, None, None, None, Some b, None, None, None, None, None)
+  | LitUnit =>
+      GenLeaf (None, None, None, None, None, Some (), None, None, None, None)
+  | LitString s =>
+      GenLeaf (None, None, None, None, None, None, Some s, None, None, None)
+  | LitPoison =>
+      GenLeaf (None, None, None, None, None, None, None, Some (), None, None)
+  | LitLoc l =>
+      GenLeaf (None, None, None, None, None, None, None, None, Some l, None)
+  | LitProphecy p =>
+      GenLeaf (None, None, None, None, None, None, None, None, None, Some p)
+  | LitStruct m =>
+      GenNode 0 _
+  end.
+Next Obligation.
+  eapply (fmap (λ '(_, v), go v)).
+  eapply map_to_list. apply m. Unshelve.
+  2:{ tc_solve. }
+Defined.
+((λ '(_, v), enc_base_lit_tree v) <$> (map_to_list m))
+Fixpoint enc_base_lit (b : base_lit) : positive :=
+  let encode := encode in
+  match b with
+  | LitInt n =>
+      encode (Some n, None, None, None, None, None, None, None, None, None)
+  | LitInt32 n => 
+      encode (None, Some n, None, None, None, None, None, None, None, None)
+  | LitInt16 n => 
+      encode (None, None, Some n, None, None, None, None, None, None, None)
+  | LitByte n =>
+      encode (None, None, None, Some n, None, None, None, None, None, None)
+  | LitBool b =>
+      encode (None, None, None, None, Some b, None, None, None, None, None)
+  | LitUnit =>
+      encode (None, None, None, None, None, Some (), None, None, None, None)
+  | LitString s =>
+      encode (None, None, None, None, None, None, Some s, None, None, None)
+  | LitPoison =>
+      encode (None, None, None, None, None, None, None, Some (), None, None)
+  | LitLoc l =>
+      encode (None, None, None, None, None, None, None, None, Some l, None)
+  | LitProphecy p =>
+      encode (None, None, None, None, None, None, None, None, None, Some p)
+  | LitStruct m => xH
+  end.
+
+Definition enc_base_lit :=
+(fix go l :=
+   match l with
+   | LitInt n =>
+       (Some n, None, None, None, None, None, None, None, None, None, None)
+   | LitInt32 n => 
+       (None, Some n, None, None, None, None, None, None, None, None, None)
+   | LitInt16 n => 
+       (None, None, Some n, None, None, None, None, None, None, None, None)
+   | LitByte n =>
+       (None, None, None, Some n, None, None, None, None, None, None, None)
+   | LitBool b =>
+       (None, None, None, None, Some b, None, None, None, None, None, None)
+   | LitUnit =>
+       (None, None, None, None, None, Some (), None, None, None, None, None)
+   | LitString s =>
+       (None, None, None, None, None, None, Some s, None, None, None, None)
+   | LitPoison =>
+       (None, None, None, None, None, None, None, Some (), None, None, None)
+   | LitLoc l =>
+       (None, None, None, None, None, None, None, None, Some l, None, None)
+   | LitProphecy p =>
+       (None, None, None, None, None, None, None, None, None, Some p, None)
+   | LitStruct m =>
+       (None, None, None, None, None, None, None, None, None, None, Some m)
+   end).
+
+Definition dec_base_lit t :=
+  match t with
+  | (Some n, None, None, None, None, None, None, None, None, None, None) =>
+      (LitInt n)
+  | (None, Some n, None, None, None, None, None, None, None, None, None) =>
+      (LitInt32 n)
+  | (None, None, Some n, None, None, None, None, None, None, None, None) =>
+      (LitInt16 n)
+  | (None, None, None, Some n, None, None, None, None, None, None, None) =>
+      (LitByte n)
+  | (None, None, None, None, Some b, None, None, None, None, None, None) =>
+      (LitBool b)
+  | (None, None, None, None, None, Some (), None, None, None, None, None) =>
+      LitUnit
+  | (None, None, None, None, None, None, Some s, None, None, None, None) =>
+      (LitString s)
+  | (None, None, None, None, None, None, None, Some (), None, None, None) =>
+      LitPoison
+  | (None, None, None, None, None, None, None, None, Some l, None, None) =>
+      (LitLoc l)
+  | (None, None, None, None, None, None, None, None, None, Some p, None) =>
+      (LitProphecy p)
+  | (None, None, None, None, None, None, None, None, None, None, Some m) =>
+      (LitStruct m)
+  | _ => LitUnit
+  end.
+
+Definition base_lit_enc_retract : forall l, dec_base_lit (enc_base_lit l) = l.
+Proof.
+  by intros [].
+Qed.
+
+Global Instance base_lit_countable : Countable base_lit.
+Proof.
+  unshelve eapply (inj_countable' enc_base_lit dec_base_lit base_lit_enc_retract).
+  Search Countable "recur".
+
 Inductive expr :=
   (* Values *)
   | Val (v : val)
@@ -194,7 +391,9 @@ with val :=
   | ExtV (ev : ffi_val)
   (* Go Instructions *)
   | GoInstruction (o : go_op)
-  | StructVal (fvs : gmap go_string val).
+  | MapVal (m : gmap base_lit val)
+.
+
 
 Bind Scope expr_scope with expr.
 Bind Scope val_scope with val.
@@ -502,42 +701,6 @@ Proof using ext.
      end); try abstract intuition congruence.
   apply gmap_eq_dec. assumption.
 Defined.
-
-Definition enc_base_lit :=
-(λ l, match l with
-  | LitInt n => (inl (inl (inl (inl (inl n)))), None)
-  | LitInt32 n => (inl (inl (inl (inl (inr n)))), None)
-  | LitInt16 n => (inl (inl (inl (inr n))), None)
-  | LitByte n => (inl (inl (inr n)), None)
-  | LitBool b => (inl (inr b), None)
-  | LitUnit => (inr (inl false), None)
-  | LitString s => (inr (inr (inr s)), None)
-  | LitPoison => (inr (inl true), None)
-  | LitLoc l => (inr (inr (inl l)), None)
-  | LitProphecy p => (inr (inl false), Some p)
-  end).
-
-Definition dec_base_lit :=
-(λ l, match l with
-  | (inl (inl (inl (inl (inl n)))), None) => LitInt n
-  | (inl (inl (inl (inl (inr n)))), None) => LitInt32 n
-  | (inl (inl (inl (inr n))), None) => LitInt16 n
-  | (inl (inl (inr n)), None) => LitByte n
-  | (inl (inr b), None) => LitBool b
-  | (inr (inl false), None) => LitUnit
-  | (inr (inr (inr s)), None) => LitString s
-  | (inr (inl true), None) => LitPoison
-  | (inr (inr (inl l)), None) => LitLoc l
-  | (_, Some p) => LitProphecy p
-  end).
-
-Definition base_lit_enc_retract : forall l, dec_base_lit (enc_base_lit l) = l.
-Proof.
-  by intros [].
-Qed.
-
-Global Instance base_lit_countable : Countable base_lit :=
-  inj_countable' enc_base_lit dec_base_lit base_lit_enc_retract.
 
 Global Instance un_op_finite : Countable un_op.
 Proof.

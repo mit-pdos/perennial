@@ -115,7 +115,6 @@ Inductive go_op : Type :=
 .
 
 TODO:
-[ ] Move structval to base_lit.
 [ ] Add `MapVal : gmap base_lit val` to val.
 [ ] Add `SliceVal` to base_lit, taking a loc and two w64s.
 
