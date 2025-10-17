@@ -250,7 +250,7 @@ Qed.
 
 End proof.
 
-Module MerkleProof.
+Module Proof.
 Record t :=
   mk' {
     Siblings: list w8;
@@ -297,7 +297,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 
 Definition own ptr obj d : iProp Σ :=
   ∃ sl_Siblings sl_LeafLabel sl_LeafVal,
-  "Hstruct" ∷ ptr ↦{d} (merkle.MerkleProof.mk sl_Siblings
+  "Hstruct" ∷ ptr ↦{d} (merkle.Proof.mk sl_Siblings
     obj.(IsOtherLeaf) sl_LeafLabel sl_LeafVal) ∗
 
   "Hsl_Siblings" ∷ sl_Siblings ↦*{d} obj.(Siblings) ∗
@@ -326,7 +326,7 @@ Lemma wp_dec sl_b d b :
     is_pkg_init merkle ∗
     "Hsl_b" ∷ sl_b ↦*{d} b
   }}}
-  @! merkle.MerkleProofDecode #sl_b
+  @! merkle.ProofDecode #sl_b
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
@@ -341,4 +341,4 @@ Lemma wp_dec sl_b d b :
 Proof. Admitted.
 
 End proof.
-End MerkleProof.
+End Proof.
