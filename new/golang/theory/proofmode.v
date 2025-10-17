@@ -637,9 +637,14 @@ Ltac2 wp_call () :=
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
 Tactic Notation "wp_call_lc" constr(H) := ltac2:(Control.enter wp_call); iIntros H; wp_pures.
 
+(* helper to prove PureWp for simple cases where we know what the final
+evaluation result is *)
 Ltac pure_wp_start :=
   apply pure_wp_val; intros ????;
-  iIntros "HΦ"; try (wp_call_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]")).
+  iIntros "HΦ";
+  try (wp_call_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]"));
+  try (wp_pure_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]"));
+  wp_pures.
 
 Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
   lazy_match! goal with
