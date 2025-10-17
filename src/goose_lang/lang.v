@@ -168,116 +168,14 @@ Proof. refine (
        intros H. inversion H. done.
 Defined.
 
-Open Scope nat.
-Fixpoint size_of_base_lit (fuel : nat) (l : base_lit) : nat :=
-  match fuel with
-  | 0 => 0 (* Out of fuel *)
-  | S fuel' =>
-    match l with
-    | LitStruct m => S (size_of_list fuel' (map_to_list m))
-    | _ => 1
-    end
-  end
-with size_of_list (fuel : nat) (l : list (go_string * base_lit)) : nat :=
-  match fuel with
-  | 0 => 0 (* Out of fuel *)
-  | S fuel' =>
-    match l with
-    | [] => 0
-    | (_, v) :: t => (size_of_base_lit fuel' v + size_of_list fuel' t)%nat
-    end
-  end.
-
+(* FIXME: delete this little example. *)
 Inductive t :=
 | mk (m : gmap positive t).
 
 Instance : EqDecision t. Proof. Admitted.
 
-Print gmap_dep.
-Print gmap_dep_ne.
-Definition encode_t (x : t) : gen_tree _ := 
-  match x with
-  | mk (GMap GEmpty) => GenLeaf O
-  | mk (GMap (GNodes n)) => 
-      (fix go {P} (n : gmap_dep_ne t P) :=
-         match n with
-         | GNode001 a =>
-         | GNode010 _ a =>
-         | GNode011 _ a =>
-         | GNode100 _ a =>
-         | GNode101 _ a =>
-         | GNode110 _ a =>
-         | GNode111 _ a =>
-         end
-      ) n
-  end
-.
-Print gmap_car.
-Print GEmpty.
-Print GMap.
-
 Instance : Countable t.
-Proof.
-Qed.
-
-From Stdlib.Program Require Export Program.
-Program Definition enc_base_lit_tree : base_lit → gen_tree _ :=
-  fix go b :=
-  match b with
-  | LitInt n =>
-      GenLeaf (Some n, None, None, None, None, None, None, None, None, None)
-  | LitInt32 n => 
-      GenLeaf (None, Some n, None, None, None, None, None, None, None, None)
-  | LitInt16 n => 
-      GenLeaf (None, None, Some n, None, None, None, None, None, None, None)
-  | LitByte n =>
-      GenLeaf (None, None, None, Some n, None, None, None, None, None, None)
-  | LitBool b =>
-      GenLeaf (None, None, None, None, Some b, None, None, None, None, None)
-  | LitUnit =>
-      GenLeaf (None, None, None, None, None, Some (), None, None, None, None)
-  | LitString s =>
-      GenLeaf (None, None, None, None, None, None, Some s, None, None, None)
-  | LitPoison =>
-      GenLeaf (None, None, None, None, None, None, None, Some (), None, None)
-  | LitLoc l =>
-      GenLeaf (None, None, None, None, None, None, None, None, Some l, None)
-  | LitProphecy p =>
-      GenLeaf (None, None, None, None, None, None, None, None, None, Some p)
-  | LitStruct m =>
-      GenNode 0 _
-  end.
-Next Obligation.
-  eapply (fmap (λ '(_, v), go v)).
-  eapply map_to_list. apply m. Unshelve.
-  2:{ tc_solve. }
-Defined.
-((λ '(_, v), enc_base_lit_tree v) <$> (map_to_list m))
-Fixpoint enc_base_lit (b : base_lit) : positive :=
-  let encode := encode in
-  match b with
-  | LitInt n =>
-      encode (Some n, None, None, None, None, None, None, None, None, None)
-  | LitInt32 n => 
-      encode (None, Some n, None, None, None, None, None, None, None, None)
-  | LitInt16 n => 
-      encode (None, None, Some n, None, None, None, None, None, None, None)
-  | LitByte n =>
-      encode (None, None, None, Some n, None, None, None, None, None, None)
-  | LitBool b =>
-      encode (None, None, None, None, Some b, None, None, None, None, None)
-  | LitUnit =>
-      encode (None, None, None, None, None, Some (), None, None, None, None)
-  | LitString s =>
-      encode (None, None, None, None, None, None, Some s, None, None, None)
-  | LitPoison =>
-      encode (None, None, None, None, None, None, None, Some (), None, None)
-  | LitLoc l =>
-      encode (None, None, None, None, None, None, None, None, Some l, None)
-  | LitProphecy p =>
-      encode (None, None, None, None, None, None, None, None, None, Some p)
-  | LitStruct m => xH
-  end.
+Proof. Admitted. (* FIXME: how to do this? *)
 
 Definition enc_base_lit :=
 (fix go l :=
@@ -341,7 +239,7 @@ Qed.
 Global Instance base_lit_countable : Countable base_lit.
 Proof.
   unshelve eapply (inj_countable' enc_base_lit dec_base_lit base_lit_enc_retract).
-  Search Countable "recur".
+Admitted. (* FIXME: how to prove this? Needed for maps. *)
 
 Inductive expr :=
   (* Values *)
@@ -391,7 +289,7 @@ with val :=
   | ExtV (ev : ffi_val)
   (* Go Instructions *)
   | GoInstruction (o : go_op)
-  | MapVal (m : gmap base_lit val)
+  | MapV (m : gmap base_lit val)
 .
 
 
@@ -528,58 +426,6 @@ Definition to_val (e : expr) : option val :=
   | _ => None
   end.
 
-(** We assume the following encoding of values to 64-bit words: The least 3
-significant bits of every word are a "tag", and we have 61 bits of payload,
-which is enough if all pointers are 8-byte-aligned (common on 64bit
-architectures). The tags have the following meaning:
-
-0: Payload is the data for a LitV (LitInt _).
-1: Payload is the data for a InjLV (LitV (LitInt _)).
-2: Payload is the data for a InjRV (LitV (LitInt _)).
-3: Payload is the data for a LitV (LitLoc _).
-4: Payload is the data for a InjLV (LitV (LitLoc _)).
-4: Payload is the data for a InjRV (LitV (LitLoc _)).
-6: Payload is one of the following finitely many values, which 61 bits are more
-   than enough to encode:
-   LitV LitUnit, InjLV (LitV LitUnit), InjRV (LitV LitUnit),
-   LitV (LitBool _), InjLV (LitV (LitBool _)), InjRV (LitV (LitBool _)).
-7: Value is boxed, i.e., payload is a pointer to some read-only memory area on
-   the heap which stores whether this is a RecV, PairV, InjLV or InjRV and the
-   relevant data for those cases. However, the boxed representation is never
-   used if any of the above representations could be used.
-
-Ignoring (as usual) the fact that we have to fit the infinite Z/loc into 61
-bits, this means every value is machine-word-sized and can hence be atomically
-read and written.  Also notice that the sets of boxed and unboxed values are
-disjoint. *)
-Definition lit_is_unboxed (l: base_lit) : Prop :=
-  match l with
-  (** Disallow comparing (erased) prophecies with (erased) prophecies, by
-  considering them boxed. *)
-  | LitProphecy _ | LitPoison => False
-  | _ => True
-  end.
-Definition val_is_unboxed (v : val) : Prop :=
-  match v with
-  | LitV l => lit_is_unboxed l
-  | InjLV (LitV l) => lit_is_unboxed l
-  | InjRV (LitV l) => lit_is_unboxed l
-  | _ => False
-  end.
-
-Global Instance lit_is_unboxed_dec l : Decision (lit_is_unboxed l).
-Proof. destruct l; simpl; exact (decide _). Defined.
-Global Instance val_is_unboxed_dec v : Decision (val_is_unboxed v).
-Proof. destruct v as [ | | | [] | [] | | | ]; simpl; exact (decide _). Defined.
-
-(** We just compare the word-sized representation of two values, without looking
-into boxed data.  This works out fine if at least one of the to-be-compared
-values is unboxed (exploiting the fact that an unboxed and a boxed value can
-never be equal because these are disjoint sets). *)
-Definition vals_compare_safe (vl v1 : val) : Prop :=
-  val_is_unboxed vl ∨ val_is_unboxed v1.
-Global Arguments vals_compare_safe !_ !_ /.
-
 (** Equality and other typeclass stuff *)
 Lemma to_of_val v : to_val (of_val v) = Some v.
 Proof. by destruct v. Qed.
@@ -590,23 +436,6 @@ Proof. destruct e=>//=. by intros [= <-]. Qed.
 Global Instance of_val_inj : Inj (=) (=) of_val.
 Proof. intros ??. congruence. Qed.
 
-Global Instance base_lit_eq_dec : EqDecision base_lit.
-Proof. refine (
-           fun e1 e2 =>
-             match e1, e2 with
-             | LitInt x, LitInt x' => cast_if (decide (x = x'))
-             | LitInt32 x, LitInt32 x' => cast_if (decide (x = x'))
-             | LitInt16 x, LitInt16 x' => cast_if (decide (x = x'))
-             | LitBool x, LitBool x' => cast_if (decide (x = x'))
-             | LitByte x, LitByte x' => cast_if (decide (x = x'))
-             | LitString x, LitString x' => cast_if (decide (x = x'))
-             | LitUnit, LitUnit => left _
-             | LitPoison, LitPoison => left _
-             | LitLoc l, LitLoc l' => cast_if (decide (l = l'))
-             | LitProphecy i, LitProphecy i' => cast_if (decide (i = i'))
-             | _ , _ => right _
-             end); abstract intuition congruence.
-Defined.
 Global Instance un_op_eq_dec : EqDecision un_op.
 Proof. solve_decision. Defined.
 Global Instance bin_op_eq_dec : EqDecision bin_op.
@@ -675,10 +504,10 @@ Proof using ext.
       | InjRV e, InjRV e' => cast_if (decide (e = e'))
       | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
       | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
-      | StructVal v, StructVal v' => cast_if (decide (v = v'))
+      | MapV m, MapV m' => cast_if (decide (m = m'))
       | _, _ => right _
       end
-        for go); try (clear go gov; abstract intuition congruence).
+        for go); try by (clear go gov; abstract intuition congruence).
   apply gmap_eq_dec. assumption.
 Defined.
 Global Instance val_eq_dec : EqDecision val.
@@ -696,261 +525,11 @@ Proof using ext.
      | InjRV e, InjRV e' => cast_if (decide (e = e'))
      | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
      | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
-     | StructVal v, StructVal v' => cast_if (decide (v = v'))
+      | MapV m, MapV m' => cast_if (decide (m = m'))
      | _, _ => right _
      end); try abstract intuition congruence.
   apply gmap_eq_dec. assumption.
 Defined.
-
-Global Instance un_op_finite : Countable un_op.
-Proof.
-  solve_countable un_op_rec 15%nat.
-Qed.
-
-Global Instance bin_op_countable : Countable bin_op.
-Proof.
-  refine (inj_countable' (λ op, match op with
-                                | PlusOp => inl 0
-                                | MinusOp => inl 1
-                                | MultOp => inl 2
-                                | QuotOp => inl 3
-                                | QuotSignedOp => inl 14
-                                | RemOp => inl 4
-                                | RemSignedOp => inl 15
-                                | AndOp => inl 5
-                                | OrOp => inl 6
-                                | XorOp => inl 7
-                                | ShiftLOp => inl 8
-                                | ShiftROp => inl 9
-                                | LeOp => inl 10
-                                | LtOp => inl 11
-                                | EqOp => inl 12
-                                | StringGetOp => inl 13
-                                | OffsetOp k => inr k
-                                end)
-                         (λ x, match x with
-                               | inl 0 => _
-                               | inl 1 => _
-                               | inl 2 => _
-                               | inl 3 => _
-                               | inl 4 => _
-                               | inl 5 => _
-                               | inl 6 => _
-                               | inl 7 => _
-                               | inl 8 => _
-                               | inl 9 => _
-                               | inl 10 => _
-                               | inl 11 => _
-                               | inl 12 => _
-                               | inl 13 => _
-                               | inl 14 => _
-                               | inl 15 => _
-                               | inl _ => PlusOp
-                               | inr k => OffsetOp k
-                               end) _); by intros [].
-Qed.
-
-Instance prim_op0_countable : Countable prim_op0.
-Proof.
-  refine (inj_countable' (fun op => match op with
-                                    | PanicOp s => Some s
-                                    | ArbitraryIntOp => None
-                                    end)
-         (fun v => match v with
-                   | Some s => PanicOp s
-                   | None => ArbitraryIntOp
-                   end) _); by intros [].
-Qed.
-
-Instance prim_op1_countable : Countable prim_op1.
-Proof. solve_countable prim_op1_rec 7%nat. Qed.
-
-Instance prim_op2_countable : Countable prim_op2.
-Proof.
-  refine (inj_countable' (λ op, match op with
-                                | AllocNOp => inl 0
-                                | FinishStoreOp => inl 1
-                                | AtomicStoreOp => inl 2
-                                | GlobalPutOp => inl 3
-                                | AtomicOpOp x => inr x
-                                end)
-                         (λ x, match x with
-                               | inl 0 => AllocNOp
-                               | inl 1 => FinishStoreOp
-                               | inl 2 => AtomicStoreOp
-                               | inl 3 => GlobalPutOp
-                               | inr k => AtomicOpOp k
-                               | inl _ => AllocNOp
-                               end) _); by intros [].
-Qed.
-
-Definition prim_op' : Type := prim_op0 + prim_op1 + prim_op2.
-
-Definition a_prim_op {ar} (op: prim_op ar) : prim_op'.
-  rewrite /prim_op'.
-  destruct ar; simpl in op; eauto.
-Defined.
-
-Instance go_op_countable : Countable go_op.
-Proof. Admitted.
-
-(** For the proof of [Countable expr], we encode [expr] as a [genTree] with some
-countable type at the leaves. [basic_type] is what we use as that leaf type. *)
-Inductive basic_type :=
-  | stringVal (s:string)
-  | binderVal (b:binder)
-  | intVal (z:u64)
-  | litVal (l: base_lit)
-  | un_opVal (op:un_op)
-  | bin_opVal (op:bin_op)
-  | primOpVal (op:prim_op')
-  | externOp (op:ffi_opcode)
-  | externVal (ev:ffi_val)
-  | goOpVal (op:go_op)
-  | structVal (m : gmap go_string val).
-
-Instance basic_type_eq_dec : EqDecision basic_type.
-Proof. solve_decision. Defined.
-Instance basic_type_countable : Countable basic_type.
-Proof.
-  refine (inj_countable' (λ x, match x with
-                              | stringVal s => inl s
-                              | binderVal b => inr (inl b)
-                              | intVal z => inr (inr (inl z))
-                              | litVal l => inr (inr (inr (inl l)))
-                              | un_opVal op => inr (inr (inr (inr (inl op))))
-                              | bin_opVal op => inr (inr (inr (inr (inr (inl op)))))
-                              | primOpVal op => inr (inr (inr (inr (inr (inr (inl op))))))
-                              | externOp op => inr (inr (inr (inr (inr (inr (inr (inl op)))))))
-                              | externVal k => inr (inr (inr (inr (inr (inr (inr (inr (inl k))))))))
-                              | goOpVal op => inr (inr (inr (inr (inr (inr (inr (inr (inr (inl op)))))))))
-                              | structVal m => inr (inr (inr (inr (inr (inr (inr (inr (inr (inr m)))))))))
-                              end)
-                         (λ x, match x with
-                              | inl s => stringVal s
-                              | inr (inl b) => binderVal b
-                              | inr (inr (inl z)) => intVal z
-                              | inr (inr (inr (inl l))) => litVal l
-                              | inr (inr (inr (inr (inl op)))) => un_opVal op
-                              | inr (inr (inr (inr (inr (inl op))))) => bin_opVal op
-                              | inr (inr (inr (inr (inr (inr (inl op)))))) => primOpVal op
-                              | inr (inr (inr (inr (inr (inr (inr (inl op))))))) => externOp op
-                              | inr (inr (inr (inr (inr (inr (inr (inr (inl k)))))))) => externVal k
-                              | inr (inr (inr (inr (inr (inr (inr (inr (inr (inl op))))))))) => goOpVal op
-                              | inr (inr (inr (inr (inr (inr (inr (inr (inr (inr m))))))))) => structVal m
-                               end) _); last by intros [].
-Admitted.
-
-Definition to_prim_op : {f: forall ar (op: prim_op'), prim_op ar |
-                         forall ar op, f ar (a_prim_op op) = op}.
-  unshelve refine (exist _ (fun ar op => _) _);
-    [ (* partially construct f as a match statement *)
-      destruct ar; destruct op as [[|]|] |
-      (* solve equality cases by unification *)
-      destruct ar, op; simpl; eauto
-    ];
-    (* solve default cases with an arbitrary value *)
-    solve [ constructor; auto using "" ]
-  .
-(* intentionally opaque since the type signature gives the only needed
-correctness condition *)
-Qed.
-
-Definition to_prim_op_correct := proj2_sig to_prim_op.
-
-Global Instance expr_countable : Countable expr.
-Proof using ext.
-  clear ffi_semantics ffi.
- set (enc :=
-   fix go e :=
-     match e with
-     | Val v => GenNode 0 [gov v]
-     | Var x => GenLeaf $ (stringVal x)
-     | Rec f x e => GenNode 1 [GenLeaf $ binderVal f; GenLeaf $ binderVal x; go e]
-     | App e1 e2 => GenNode 2 [go e1; go e2]
-     | Primitive0 op => GenNode 21 [GenLeaf $ primOpVal $ a_prim_op op]
-     | Primitive1 op e => GenNode 22 [GenLeaf $ primOpVal $ a_prim_op op; go e]
-     | Primitive2 op e1 e2 => GenNode 23 [GenLeaf $ primOpVal $ a_prim_op op; go e1; go e2]
-     (* | Primitive3 op e0 e1 e2 => GenNode 24 [GenLeaf $ primOpVal $ a_prim_op op; go e0; go e1; go e2] *)
-     | UnOp op e => GenNode 3 [GenLeaf $ un_opVal op; go e]
-     | BinOp op e1 e2 => GenNode 4 [GenLeaf $ bin_opVal op; go e1; go e2]
-     | If e0 e1 e2 => GenNode 5 [go e0; go e1; go e2]
-     | Pair e1 e2 => GenNode 6 [go e1; go e2]
-     | Fst e => GenNode 7 [go e]
-     | Snd e => GenNode 8 [go e]
-     | InjL e => GenNode 9 [go e]
-     | InjR e => GenNode 10 [go e]
-     | Case e0 e1 e2 => GenNode 11 [go e0; go e1; go e2]
-     | Fork e => GenNode 12 [go e]
-     | Atomically el e => GenNode 13 [go el; go e]
-     | ExternalOp op e => GenNode 20 [GenLeaf $ externOp op; go e]
-     | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
-     | NewProph => GenNode 18 []
-     | ResolveProph e1 e2 => GenNode 19 [go e1; go e2]
-     end
-   with gov v :=
-     match v with
-     | LitV l => GenLeaf $ litVal l
-     | RecV f x e =>
-        GenNode 0 [GenLeaf $ binderVal f; GenLeaf $ binderVal x; go e]
-     | PairV v1 v2 => GenNode 1 [gov v1; gov v2]
-     | InjLV v => GenNode 2 [gov v]
-     | InjRV v => GenNode 3 [gov v]
-     | ExtV ev => GenNode 4 [GenLeaf $ externVal ev]
-     | GoInstruction op => GenNode 5 [GenLeaf $ goOpVal op]
-     | StructVal v => GenNode 6 [GenLeaf $ structVal v]
-     end
-   for go).
- set (dec :=
-   fix go e :=
-     match e with
-     | GenNode 0 [v] => Val (gov v)
-     | GenLeaf (stringVal x) => Var x
-     | GenNode 1 [GenLeaf (binderVal f); GenLeaf (binderVal x); e] => Rec f x (go e)
-     | GenNode 2 [e1; e2] => App (go e1) (go e2)
-     | GenNode 21 [GenLeaf (primOpVal op)] => Primitive0 (`to_prim_op args0 op)
-     | GenNode 22 [GenLeaf (primOpVal op); e] => Primitive1 (`to_prim_op args1 op) (go e)
-     | GenNode 23 [GenLeaf (primOpVal op); e1; e2] => Primitive2 (`to_prim_op args2 op) (go e1) (go e2)
-     (* | GenNode 24 [GenLeaf (primOpVal op); e0; e1; e2] => Primitive3 (`to_prim_op args3 op) (go e0) (go e1) (go e2) *)
-     | GenNode 3 [GenLeaf (un_opVal op); e] => UnOp op (go e)
-     | GenNode 4 [GenLeaf (bin_opVal op); e1; e2] => BinOp op (go e1) (go e2)
-     | GenNode 5 [e0; e1; e2] => If (go e0) (go e1) (go e2)
-     | GenNode 6 [e1; e2] => Pair (go e1) (go e2)
-     | GenNode 7 [e] => Fst (go e)
-     | GenNode 8 [e] => Snd (go e)
-     | GenNode 9 [e] => InjL (go e)
-     | GenNode 10 [e] => InjR (go e)
-     | GenNode 11 [e0; e1; e2] => Case (go e0) (go e1) (go e2)
-     | GenNode 12 [e] => Fork (go e)
-     | GenNode 13 [el; e] => Atomically (go el) (go e)
-     | GenNode 20 [GenLeaf (externOp op); e] => ExternalOp op (go e)
-     | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
-     | GenNode 18 [] => NewProph
-     | GenNode 19 [e1; e2] => ResolveProph (go e1) (go e2)
-     | _ => Val $ LitV LitUnit (* dummy *)
-     end
-   with gov v :=
-     match v with
-     | GenLeaf (litVal l) => LitV l
-     | GenNode 0 [GenLeaf (binderVal f); GenLeaf (binderVal x); e] => RecV f x (go e)
-     | GenNode 1 [v1; v2] => PairV (gov v1) (gov v2)
-     | GenNode 2 [v] => InjLV (gov v)
-     | GenNode 3 [v] => InjRV (gov v)
-     | GenNode 4 [GenLeaf (externVal ev)] => ExtV ev
-     | GenNode 5 [GenLeaf (goOpVal op)] => GoInstruction op
-     | GenNode 6 [GenLeaf (structVal v)] => StructVal v
-     | _ => LitV LitUnit (* dummy *)
-     end
-   for go).
- refine (inj_countable' enc dec _).
- refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
-  - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
-      rewrite ?to_prim_op_correct;
-      [exact (gov v)|done..].
- - destruct v; by f_equal.
-Qed.
-Global Instance val_countable : Countable val.
-Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 
@@ -1406,6 +985,17 @@ Definition modifyσ (f : state → state) : transition (state*global_state) () :
 Definition modifyg (f : global_state → global_state) : transition (state*global_state) () :=
   modify (λ '(σ, g), (σ, f g)).
 
+(* Only give semantics to CmpXchg for integers. *)
+Definition val_cmpxchg_safe (v : val) : bool :=
+  match v with
+  | LitV l =>
+      match l with
+      | LitInt _ | LitInt32 _ | LitInt16 _ | LitByte _ => true
+      | _ => false
+      end
+  | _ => false
+  end.
+
 Definition base_trans (e: expr) :
  transition (state * global_state) (list observation * expr * list expr) :=
   match e with
@@ -1519,7 +1109,7 @@ Definition base_trans (e: expr) :
       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
       match nav with
       | (Reading n, vl) =>
-        check (vals_compare_safe vl v1);;
+        check (val_cmpxchg_safe vl || val_cmpxchg_safe v1 = true);;
         when (vl = v1) (check (n = 0%nat);; modifyσ (set heap <[l:=Free v2]>));;
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
