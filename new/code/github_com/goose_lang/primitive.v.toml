@@ -9,5 +9,6 @@ trusted = [
   "Assume",
   "RandomUint64",
   "AssumeNoStringOverflow",
+  "Mutex*",
   # FIXME: add remaining functions
 ]
