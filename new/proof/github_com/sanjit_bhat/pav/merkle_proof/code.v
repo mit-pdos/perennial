@@ -696,6 +696,7 @@ Lemma wp_proofToTree sl_label label sl_proof proof :
         "Hwish" ∷ wish_proofToTree label proof t ∗
         "Hown_tree" ∷ own_tree tr t 1 ∗
 
+        (* TODO: rm after prove wish_toTree lemma. *)
         (* necessary for subsequent put's. *)
         "%Hlabel_None" ∷ ⌜is_entry t label None⌝ ∗
         "%Hcutless" ∷ ⌜is_cutless_path t label⌝ ∗
@@ -1534,6 +1535,226 @@ Proof.
   by iFrame "∗#%".
 Qed.
 
+Lemma put_impl_non_cut t depth label val limit :
+  is_Some (pure_put' t depth label val limit) →
+  ∀ h, t ≠ Cut h.
+Proof. rewrite pure_put_unfold. by destruct t. Qed.
+
+Definition cut_cut_reln t0 t1 h : iProp Σ :=
+  "#Ht0" ∷ is_cut_tree t0 h ∗
+  "#Ht1" ∷ is_cut_tree t1 h.
+
+Lemma cut_cut_reln_Empty t h :
+  cut_cut_reln Empty t h -∗
+  ⌜∀ h, t ≠ Cut h⌝ -∗
+  ⌜t = Empty⌝.
+Proof.
+  iIntros "@ %Hpath".
+  destruct t; simpl; try naive_solver;
+    iNamedSuffix "Ht0" "0";
+    iNamedSuffix "Ht1" "1";
+    by iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %?.
+Qed.
+
+Lemma cut_cut_reln_Leaf l v t h :
+  cut_cut_reln (Leaf l v) t h -∗
+  ⌜∀ h, t ≠ Cut h⌝ -∗
+  ⌜t = Leaf l v⌝.
+Proof.
+  iIntros "@ %Hpath".
+  destruct t; simpl; try naive_solver;
+    iNamedSuffix "Ht0" "0";
+    iNamedSuffix "Ht1" "1";
+    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %Henc;
+    try done.
+  iPureIntro.
+  list_simplifier.
+  apply app_inj_1 in Henc as [Hlen_label Henc]; [|len].
+  apply (inj u64_le) in Hlen_label.
+  apply app_inj_1 in Henc as [<- Henc]; [|word].
+  by apply app_inj_1 in Henc as [_ <-]; [|len].
+Qed.
+
+Lemma cut_cut_reln_Inner c0 c1 t h :
+  cut_cut_reln (Inner c0 c1) t h -∗
+  ⌜∀ h, t ≠ Cut h⌝ -∗
+  ∃ c0' c1' h0 h1,
+  ⌜t = Inner c0' c1'⌝ ∗
+  cut_cut_reln c0 c0' h0 ∗
+  cut_cut_reln c1 c1' h1.
+Proof.
+  iIntros "@ %Hpath".
+  destruct t; simpl; try naive_solver;
+    iNamedSuffix "Ht0" "_l";
+    iNamedSuffix "Ht1" "_r";
+    iDestruct (cryptoffi.is_hash_inj with "His_hash_l His_hash_r") as %Henc;
+    try done.
+  list_simplifier.
+  iDestruct (is_cut_tree_len with "Hchild0_l") as %?.
+  iDestruct (is_cut_tree_len with "Hchild1_l") as %?.
+  iDestruct (is_cut_tree_len with "Hchild0_r") as %?.
+  iDestruct (is_cut_tree_len with "Hchild1_r") as %?.
+  apply app_inj_1 in Henc as [<- <-]; [|word].
+  repeat iExists _.
+  iSplit; [done|].
+  iFrame "#".
+Qed.
+
+Lemma cut_cut_hash_over_put t0 t1 h label val t0' t1' h' :
+  cut_cut_reln t0 t1 h -∗
+  ⌜pure_put t0 label val = Some t0'⌝ -∗
+  ⌜pure_put t1 label val = Some t1'⌝ -∗
+  is_cut_tree t0' h' -∗
+  is_cut_tree t1' h'.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  iInduction limit as [? IH] using lt_wf_ind forall (t0 t1 h t0' t1' h' depth).
+  iIntros "#Hreln %Hput0 %Hput1 #Hhash_t0'".
+  rewrite pure_put_unfold in Hput0.
+
+  destruct t0; try done.
+  - iDestruct (cut_cut_reln_Empty with "Hreln [%]") as %->.
+    { by eapply put_impl_non_cut. }
+    rewrite pure_put_unfold in Hput1.
+    simplify_eq/=.
+    iFrame "#".
+  - iDestruct (cut_cut_reln_Leaf with "Hreln [%]") as %->.
+    { by eapply put_impl_non_cut. }
+    rewrite pure_put_unfold in Hput1.
+    case_decide.
+    { simplify_eq/=. iFrame "#". }
+    case_match; try done.
+    simpl in *.
+    case_match; try done.
+    simplify_eq/=.
+    iFrame "#".
+  - iDestruct (cut_cut_reln_Inner with "Hreln [%]") as "(%&%&%&%&->&#Hreln0&#Hreln1)".
+    { by eapply put_impl_non_cut. }
+    rewrite pure_put_unfold in Hput1.
+    case_match; try done.
+    simpl in *.
+    destruct (pure_put' _ _ _ _ _) eqn:? in Hput0; try done.
+    destruct (pure_put' _ _ _ _ _) eqn:? in Hput1; try done.
+    simplify_eq/=.
+    iSpecialize ("IH" $! n with "[]"); [word|].
+    iNamed "Hhash_t0'".
+    case_match.
+    + iDestruct ("IH" with "Hreln1 [//][//][$]") as "$".
+      iNamed "Hreln0".
+      iDestruct (is_cut_tree_det with "Hchild0 Ht0") as %->.
+      iFrame "#".
+    + iDestruct ("IH" with "Hreln0 [//][//][$]") as "$".
+      iNamed "Hreln1".
+      iDestruct (is_cut_tree_det with "Hchild1 Ht0") as %->.
+      iFrame "#".
+Qed.
+
+Tactic Notation "rw_pure_put" := repeat
+  match goal with
+  | H : pure_put' _ _ _ _ _ = None |- _ => rewrite -{}H
+  end.
+
+Lemma put_Some t label val :
+  (* for max depth. *)
+  is_limit t →
+  Z.of_nat (length label) = cryptoffi.hash_len →
+  is_const_label_len t →
+  is_sorted t →
+  (* for no Cut. *)
+  is_cutless_path t label →
+  is_Some (pure_put t label val).
+Proof.
+  autounfold with merkle.
+  assert (∃ x, x = max_depth) as [limit Heq]; [by eexists|].
+  rewrite -[in is_limit' _ _]Heq.
+  rewrite -[in pure_put' _ _ _ _ _]Heq.
+  remember [] as pref.
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
+  replace 0%nat with (length pref); [|by subst].
+  assert (length pref + limit = max_depth)%nat.
+  { subst. simpl. lia. }
+  clear Heq Heqpref.
+  intros.
+  generalize dependent t.
+  generalize dependent pref.
+
+  induction limit as [? IH] using lt_wf_ind.
+  intros. rewrite pure_put_unfold.
+  destruct t; simpl in *; try done.
+
+  - case_decide; [done|].
+    destruct limit.
+    (* limit=0. show labels actually equal. *)
+    { opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
+        [|done|]; [by len|].
+      opose proof (prefix_total_full _ (bytes_to_bits label0) _ _);
+        [|done|]; [by len|].
+      simplify_eq/=. }
+
+    ospecialize (IH limit _); [lia|].
+    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    eapply IH; repeat case_match; try done; [|len|..];
+      by eapply prefix_total_snoc.
+  - destruct limit; [done|].
+    ospecialize (IH limit _); [lia|].
+    intuition.
+    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    eapply IH; repeat case_match; try done; [..|len|len];
+      by eapply prefix_total_snoc.
+Qed.
+
+Lemma proofToTree_to_put_precond label proof_enc t :
+  wish_proofToTree label proof_enc t -∗
+  ("%Hlabel_None" ∷ ⌜is_entry t label None⌝ ∗
+  "%Hcutless" ∷ ⌜is_cutless_path t label⌝ ∗
+  "%Hlimit" ∷ ⌜is_limit t⌝ ∗
+  "%Hsorted" ∷ ⌜is_sorted t⌝ ∗
+  "%Hconst_label_len" ∷ ⌜is_const_label_len t⌝).
+Proof.
+  iIntros "@".
+  opose proof (newShell_None label sibs).
+  opose proof (cutless_on_newShell label sibs).
+  opose proof (limit_on_newShell label sibs _); [word|].
+  opose proof (sorted_on_newShell label sibs).
+  opose proof (const_label_on_newShell label sibs).
+  destruct oleaf as [[]|]; simplify_eq/=; [|done].
+  iNamed "Holeaf".
+
+  eapply old_entry_over_put in Hcode as ?; [|done..].
+  eapply cutless_over_put in Hcode as ?; [|done].
+  eapply is_limit_over_put in Hcode as ?; [|done].
+  eapply is_sorted_over_put in Hcode as ?; [|done].
+  eapply const_label_len_over_put in Hcode as ?; [|done|word].
+  by opose proof (put_impl_cutless _ _ _ _).
+Qed.
+
+(* TODO: name conflict. *)
+Lemma is_cutless_over_put t label val t' :
+  is_cutless t →
+  pure_put t label val = Some t' →
+  is_cutless t'.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t t' depth.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match; try case_match;
+    simplify_eq/=; try done.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; intuition;
+      (by eapply IH; [|done]).
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; intuition; (by eapply IH; [|done]).
+Qed.
+
 Lemma wp_Map_Put ptr m hash sl_label label sl_val val :
   {{{
     is_pkg_init merkle ∗
@@ -1581,18 +1802,18 @@ Proof.
   instantiate (1:=hash0).
   instantiate (1:=proof).
   rewrite /wish_VerifyUpdate.
-  iSplitL. { admit. }
-  iSplitL. { admit. }
-  iExists t0.
-  iFrame "Hwish_toTree_wish".
-  (* stuck:
-  have heap tree, pre and post put.
-  have Verify tree pre-put that matches pre-hash.
-  stuck showing that Verify post-put matches post-hash.
-
-  note: node.find deals with somewhat similar problem.
-  it guarantees that logically inserting found into Verify tree
-  yields Verify tree with same hash as heap tree. *)
-Admitted.
+  iFrame. iSplit.
+  - iFrame "#". iPureIntro. repeat split.
+    + symmetry. by eapply to_map_over_put.
+    + by eapply is_cutless_over_put.
+    + by eapply is_limit_over_put.
+    + eapply const_label_len_over_put; try done. word.
+    + by eapply is_sorted_over_put.
+  - iFrame "Hwish_toTree_wish".
+    iDestruct (proofToTree_to_put_precond with "[$]") as "@".
+    opose proof (put_Some _ _ val _ _ _ _ _) as [? ?]; try done.
+    iDestruct (cut_cut_hash_over_put t t0 with "[$][//][//][$]") as "#?".
+    iFrame "#%".
+Qed.
 
 End proof.
