@@ -57,6 +57,117 @@ Proof.
     by rewrite go_type_size_unseal.
 Qed.
 
+(* TODO: DFractional should automatically imply Persistent. *)
+#[global] Instance own_tree_pers ptr t :
+  Persistent (own_tree ptr t DfracDiscarded).
+Proof. revert ptr. induction t; apply _. Qed.
+
+#[global] Instance own_tree_dfrac ptr t :
+  DFractional (λ d, own_tree ptr t d).
+Proof.
+  split.
+  - intros ??. iSplit.
+    + iInduction t as [] forall (ptr);
+        iIntros "H"; iNamed "H"; try iNamed "H"; fold own_tree.
+      * by iFrame "#".
+      * iDestruct "Hnode" as "[? ?]".
+        iFrame "∗#".
+      * iDestruct "Hnode" as "[? ?]".
+        iDestruct ("IHt1" with "Hown_child0") as "[? ?]".
+        iDestruct ("IHt2" with "Hown_child1") as "[? ?]".
+        iFrame "∗#".
+      * iDestruct "Hnode" as "[? ?]".
+        iFrame "∗#".
+    + iInduction t as [] forall (ptr);
+        iIntros "[H0 H1]";
+        iNamedSuffix "H0" "0"; iNamedSuffix "H1" "1";
+        try iNamedSuffix "H0" "0"; try iNamedSuffix "H1" "1";
+        fold own_tree.
+      * by iFrame "#".
+      * iCombine "Hnode0 Hnode1" as "Hnode" gives %[_ ?].
+        simplify_eq/=.
+        iFrame "∗#".
+      * iCombine "Hnode0 Hnode1" as "Hnode" gives %[_ ?].
+        simplify_eq/=.
+        iDestruct ("IHt1" with "[$Hown_child00 $Hown_child01]") as "?".
+        iDestruct ("IHt2" with "[$Hown_child10 $Hown_child11]") as "?".
+        iFrame "∗#".
+      * iCombine "Hnode0 Hnode1" as "Hnode" gives %[_ ?].
+        simplify_eq/=.
+        iFrame "∗#".
+  - apply _.
+  - iIntros "* H".
+    iInduction t as [] forall (ptr);
+      iNamed "H"; try iNamed "H"; fold own_tree.
+    + by iFrame "#".
+    + iPersist "Hnode". by iFrame "#".
+    + iPersist "Hnode".
+      iMod ("IHt1" with "Hown_child0") as "?".
+      iMod ("IHt2" with "Hown_child1") as "?".
+      by iFrame "∗#".
+    + iPersist "Hnode". by iFrame "#".
+Qed.
+
+#[global] Instance own_tree_as_dfrac ptr t d :
+  AsDFractional (own_tree ptr t d) (λ d, own_tree ptr t d) d.
+Proof. auto. Qed.
+
+#[global] Instance own_tree_combine_sep_gives ptr t0 t1 d0 d1 :
+  CombineSepGives (own_tree ptr t0 d0) (own_tree ptr t1 d1) ⌜t0 = t1⌝.
+Proof.
+  rewrite /CombineSepGives.
+  iIntros "[H0 H1]".
+  iInduction t0 as [] forall (ptr t1); destruct t1;
+    iNamedSuffix "H0" "0"; iNamedSuffix "H1" "1";
+    try iNamedSuffix "H0" "0"; try iNamedSuffix "H1" "1";
+    fold own_tree; subst.
+  - by iModIntro.
+  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+    iCombine "Hsl_label0 Hsl_label1" gives %->.
+    iCombine "Hsl_val0 Hsl_val1" gives %->.
+    by iModIntro.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+    iDestruct ("IHt0_1" with "Hown_child00 Hown_child01") as %->.
+    iDestruct ("IHt0_2" with "Hown_child10 Hown_child11") as %->.
+    by iModIntro.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+  - iCombine "Hnode0 Hnode1" gives %[_ ?].
+    simplify_eq/=.
+    iCombine "Hsl_hash0 Hsl_hash1" gives %->.
+    iNamedSuffix "Htree_hash0" "0".
+    iNamedSuffix "Htree_hash1" "1".
+    simplify_eq/=.
+    by iModIntro.
+Qed.
+
+#[global] Instance own_tree_combine_sep_as ptr t0 t1 d0 d1 :
+  CombineSepAs (own_tree ptr t0 d0) (own_tree ptr t1 d1)
+    (own_tree ptr t0 (d0 ⋅ d1)) | 60.
+Proof.
+  rewrite /CombineSepAs. iIntros "[H0 H1]".
+  iCombine "H0 H1" gives %->.
+  iCombine "H0 H1" as "$".
+Qed.
+
 (** tree / Verify program proofs. *)
 
 Lemma wp_compLeafHash sl_label sl_val (label val : list w8) :
@@ -1452,6 +1563,59 @@ Proof.
   iExists _, null, Empty.
   iFrame "∗#".
   by repeat iSplit.
+Qed.
+
+#[global] Instance own_Map_pers ptr m h :
+  Persistent (own_Map ptr m h DfracDiscarded).
+Proof. apply _. Qed.
+
+#[global] Instance own_Map_dfrac ptr m h :
+  DFractional (λ dq, own_Map ptr m h dq).
+Proof.
+  split.
+  - intros ??. iSplit.
+    + iNamed 1.
+      iDestruct "Hstruct" as "[? ?]".
+      iDestruct "Hown_tree" as "[? ?]".
+      by iFrame "∗#".
+    + iIntros "[H0 H1]".
+      iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
+      iCombine "Hstruct0 Hstruct1" as "?" gives %[_ ?].
+      simplify_eq/=.
+      iCombine "Hown_tree0 Hown_tree1" as "?" gives %->.
+      by iFrame "∗#".
+  - apply _.
+  - iIntros "* @".
+    iPersist "Hstruct Hown_tree".
+    by iFrame "#".
+Qed.
+
+#[global] Instance own_Map_as_dfrac ptr m h dq :
+  AsDFractional (own_Map ptr m h dq) (λ dq, own_Map ptr m h dq) dq.
+Proof. auto. Qed.
+
+#[global] Instance own_Map_combine_sep_gives ptr m0 m1 h0 h1 d0 d1 :
+  CombineSepGives (own_Map ptr m0 h0 d0) (own_Map ptr m1 h1 d1)
+    ⌜m0 = m1 ∧ h0 = h1⌝.
+Proof.
+  rewrite /CombineSepGives. iIntros "[H0 H1]".
+  iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
+  iCombine "Hstruct0 Hstruct1" gives %[_ ?].
+  simplify_eq/=.
+  iCombine "Hown_tree0 Hown_tree1" gives %->.
+  iDestruct (is_cut_tree_det with "His_hash0 His_hash1") as %->.
+  by iModIntro.
+Qed.
+
+#[global] Instance own_Map_combine_sep_as ptr m0 m1 h0 h1 d0 d1 :
+  CombineSepAs (own_Map ptr m0 h0 d0) (own_Map ptr m1 h1 d1)
+    (own_Map ptr m0 h0 (d0 ⋅ d1)) | 60.
+Proof.
+  rewrite /CombineSepAs.
+  iIntros "[H0 H1]".
+  iCombine "H0 H1" gives %?.
+  destruct_and?. simplify_eq/=.
+  iCombine "H0 H1" as "$".
 Qed.
 
 (** Map program proofs. *)
