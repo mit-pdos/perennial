@@ -633,7 +633,7 @@ Proof.
   rewrite !map_disjoint_dom !dom_fmap_L //.
 Qed.
 
-Theorem Op_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E anydirty :
+Theorem Op_lift buftx mt γUnified dinit (m : gmap addr {K & bufDataT K}) E anydirty :
   ↑invN ⊆ E ->
   (
     is_jrnl buftx mt γUnified dinit anydirty ∗
@@ -641,7 +641,7 @@ Theorem Op_lift buftx mt γUnified dinit (m : gmap addr {K & _}) E anydirty :
   )
     -∗ |NC={E}=>
   (
-    is_jrnl buftx (((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) ∪ mt) γUnified dinit anydirty
+    is_jrnl buftx ((((λ v, existT (projT1 v) (projT2 v, projT2 v)) <$> m) : gmap addr _) ∪ mt) γUnified dinit anydirty
   ).
 Proof.
   iIntros (HNE) "[Htxn Ha]".

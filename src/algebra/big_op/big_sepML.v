@@ -353,7 +353,7 @@ Section maplist.
 
   Theorem big_sepML_sepM Φ (P : K -> V -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P k v) m l ⊣⊢
-    big_sepML Φ m l ∗ big_opM _ P m.
+    big_sepML Φ m l ∗ big_sepM P m.
   Proof.
     rewrite big_sepML_eq; iSplit.
     - iIntros "Hlm".
@@ -397,7 +397,7 @@ Section maplist.
 
   Theorem big_sepML_sepM_ex Φ m l :
     big_sepML Φ m l -∗
-    big_opM _ (λ k v, ∃ lv, ⌜ lv ∈ l ⌝ ∗ Φ k v lv) m.
+    big_sepM (λ k v, ∃ lv, ⌜ lv ∈ l ⌝ ∗ Φ k v lv) m.
   Proof.
     rewrite big_sepML_eq /big_sepML_def; iIntros "Hlm".
     iDestruct "Hlm" as (lm) "[% Hlm]".
@@ -411,7 +411,7 @@ Section maplist.
 
   Theorem big_sepML_sepL_split Φ (P : LV -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l -∗
-    big_sepML Φ m l ∗ big_opL _ (λ i, P) l.
+    big_sepML Φ m l ∗ big_sepL (λ i, P) l.
   Proof.
     rewrite big_sepML_eq.
     iIntros "Hlm".
@@ -428,7 +428,7 @@ Section maplist.
   Qed.
 
   Theorem big_sepML_sepL_combine Φ (P : LV -> PROP) m l :
-    big_sepML Φ m l ∗ big_opL _ (λ i, P) l -∗
+    big_sepML Φ m l ∗ big_sepL (λ i, P) l -∗
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l.
   Proof.
     rewrite big_sepML_eq.
@@ -468,7 +468,7 @@ Section maplist.
 
   Theorem big_sepML_sepL Φ (P : LV -> PROP) m l :
     big_sepML (λ k v lv, Φ k v lv ∗ P lv) m l ⊣⊢
-    big_sepML Φ m l ∗ big_opL _ (λ i, P) l.
+    big_sepML Φ m l ∗ big_sepL (λ i, P) l.
   Proof.
     iSplit.
     - iApply big_sepML_sepL_split.
@@ -477,7 +477,7 @@ Section maplist.
 
   Theorem big_sepML_sepL_exists Φ m l :
     big_sepML Φ m l -∗
-    big_opL _ (λ _ lv, ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv) l.
+    big_sepL (λ _ lv, ∃ k v, ⌜ m !! k = Some v ⌝ ∗ Φ k v lv) l.
   Proof.
     rewrite big_sepML_eq /big_sepML_def.
     iIntros "Hml".

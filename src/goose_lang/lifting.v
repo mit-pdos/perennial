@@ -1,3 +1,4 @@
+From Stdlib Require Import Logic.FunctionalExtensionality.
 From stdpp Require Import fin_maps.
 From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import lib.frac_auth auth numbers gmap excl dfrac_agree.
@@ -1012,7 +1013,7 @@ Proof.
   by iApply ("IH" with "[Hvs]").
 Qed.
 
-Definition big_opL_add_spec (M: ofe) (o: M -> M -> M) {mon:monoid.Monoid o} f start off k n :=
+Definition big_opL_add_spec (M: ofe) (o: M -> M -> M) `{mon:!monoid.MonoidOps o u} f start off k n :=
   Proper (equiv ==> equiv ==> equiv) o ->
   big_opL o (fun i x => f (i + k)%nat x) (seq (start + off) n) ≡
   big_opL o (fun i x => f i (x + off)%nat) (seq (start + k)%nat n).
@@ -1021,7 +1022,7 @@ Definition big_opL_add_spec (M: ofe) (o: M -> M -> M) {mon:monoid.Monoid o} f st
 Eval compute in (fun M o {mon:monoid.Monoid o} f off => big_opL_add_spec M o f 2%nat off 4%nat).
 *)
 
-Theorem big_opL_add (M: ofe) (o: M -> M -> M) {mon:monoid.Monoid o} f start off k n :
+Theorem big_opL_add (M: ofe) (o: M -> M -> M) `{mon:!monoid.MonoidOps o u} f start off k n :
   Proper (equiv ==> equiv ==> equiv) o ->
   big_opL o (fun i x => f (k + i)%nat x) (seq (start + off) n) ≡
   big_opL o (fun i x => f (k + i)%nat (x + off)%nat) (seq start n).
@@ -1030,7 +1031,17 @@ Proof.
   revert start k off.
   induction n; simpl; auto; intros.
   apply H; auto.
-  setoid_rewrite Nat.add_succ_r.
+  (* TODO: setoid_rewrite Nat.add_succ_r doesn't work here *)
+  assert (∀ (g: nat → nat), (fun n0 x => f (k + S n0)%nat (g x)) =
+          (fun n0 x => f (S (k + n0))%nat (g x))
+         ) as Heq.
+  {
+    intros g.
+    apply functional_extensionality => n0.
+    apply functional_extensionality => x.
+    rewrite Nat.add_succ_r //.
+  }
+  rewrite !Heq.
   rewrite <- (IHn (S start) (S k)).
   simpl; auto.
 Qed.
