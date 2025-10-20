@@ -42,27 +42,119 @@ Lemma prefix_total_nil l :
   prefix_total [] l.
 Proof. exists 0%nat. by eexists. Qed.
 
+Lemma list_lookup_total_gt l i :
+  i ≥ length l → l !!! i = inhabitant.
+Proof.
+  intros ?.
+  rewrite list_lookup_total_alt.
+  by rewrite lookup_ge_None_2; [|lia].
+Qed.
+
+Lemma snoc_to_cons x k : ∃ x' k', k ++ [x] = x' :: k'.
+Proof. destruct k; naive_solver. Qed.
+
+Lemma cons_to_snoc x k : ∃ x' k', x :: k = k' ++ [x'].
+Proof.
+  revert x. induction k as [|a k]; intros x.
+  - by eexists _, [].
+  - opose proof (IHk _) as (?&k'&->).
+    by eexists _, (x :: k').
+Qed.
+
+(* [prefix_total] does not demand minimal replication and prefix extension.
+[prefix_total_shrink] shows that it can always "shrink down"
+into one of minimal cases. *)
+Lemma prefix_total_shrink l0 l1 :
+  prefix_total l0 l1 →
+  (* l0 < l1. *)
+  (∃ x k, l1 = l0 ++ x :: k) ∨
+  (l0 = l1) ∨
+  (* l0 > l1. *)
+  (∃ n, l1 ++ inhabitant :: replicate n inhabitant = l0).
+Proof.
+  intros (n&k&?). generalize dependent k.
+  induction n as [|n];
+    intros k Heq; destruct k as [|x k];
+    list_simplifier; [naive_solver..|].
+
+  rewrite replicate_cons_app in Heq.
+  opose proof (cons_to_snoc x k) as (?&?&Ht).
+  rewrite {}Ht in Heq.
+  list_simplifier.
+  naive_solver.
+Qed.
+
+Lemma prefix_to_total l0 l1 :
+  prefix l0 l1 →
+  prefix_total l0 l1.
+Proof.
+  intros (k&?).
+  exists 0%nat, k.
+  by list_simplifier.
+Qed.
+
 Lemma prefix_total_snoc l0 l1 x :
   prefix_total l0 l1 →
   l1 !!! length l0 = x →
   prefix_total (l0 ++ [x]) l1.
-Proof. Admitted.
+Proof.
+  intros [(?&?&?)|[->|(n&?)]]%prefix_total_shrink Hlook.
+  (* case l0 < l1: rely on [prefix_snoc]. *)
+  - apply prefix_to_total.
+    apply prefix_snoc.
+    + by eexists _.
+    + rewrite list_lookup_lookup_total_lt; [naive_solver|].
+      list_simplifier. len.
+  - rewrite list_lookup_total_gt in Hlook; [|lia]. subst.
+    exists 1%nat, []. by list_simplifier.
+  - rewrite list_lookup_total_gt in Hlook; subst; [|len].
+    list_simplifier.
+    rewrite -replicate_S_end.
+    exists (S (S n)), [].
+    by list_simplifier.
+Qed.
+
+Lemma lookup_total_replicate_inhabitant n i :
+  replicate (A:=A) n inhabitant !!! i = inhabitant.
+Proof.
+  assert ((i < n)%nat ∨ (i ≥ n)%nat) as [?|?] by lia.
+  - apply list_lookup_alt.
+    by apply lookup_replicate.
+  - by rewrite list_lookup_total_gt; [|len].
+Qed.
+
+Lemma lookup_total_replicate_inhabitant' l n i :
+  (l ++ replicate n inhabitant) !!! i = l !!! i.
+Proof.
+  assert (i < length l ∨ length l ≤ i) as [?|?] by lia.
+  - by rewrite lookup_total_app_l; [|lia].
+  - rewrite lookup_total_app_r; [|lia].
+    rewrite lookup_total_replicate_inhabitant.
+    by rewrite list_lookup_total_gt; [|len].
+Qed.
 
 Lemma prefix_total_snoc_inv l0 l1 x :
   prefix_total (l0 ++ [x]) l1 →
   prefix_total l0 l1 ∧ l1 !!! length l0 = x.
-Proof. Admitted.
-
-Lemma prefix_total_neq l0 l1 l2 :
-  prefix_total l0 l1 →
-  ¬ prefix_total l0 l2 →
-  l1 ≠ l2.
-Proof. Admitted.
+Proof.
+  intros (n&k&Heq). split.
+  - exists n, (x :: k).
+    by list_simplifier.
+  - apply (f_equal (lookup_total (length l0))) in Heq.
+    rewrite lookup_total_replicate_inhabitant' in Heq.
+    rewrite lookup_total_app_l in Heq; [|len].
+    rewrite lookup_total_app_r in Heq; [|len].
+    by replace (_ - _)%nat with (0%nat) in Heq; [|lia].
+Qed.
 
 Lemma prefix_total_app_l l1 l2 l3 :
   prefix_total (l1 ++ l3) l2 →
   prefix_total l1 l2.
-Proof. Admitted.
+Proof.
+  intros (n&k&?).
+  exists n, (l3 ++ k).
+  by list_simplifier.
+Qed.
 
 Lemma prefix_total_full p l :
   length p = length l →
