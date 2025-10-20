@@ -1317,46 +1317,6 @@ Proof.
   by case_match.
 Qed.
 
-(** stuff that might need to be resurrected. *)
-
-(*
-Fixpoint minimal_tree t : Prop :=
-  match t with
-  | Inner child0 child1 =>
-    minimal_tree child0 ∧
-    minimal_tree child1 ∧
-    size (tree_to_map t) > 1
-    (* alternate rules for (child0, child1):
-    disallow: (Empty, Empty); (Empty, Leaf).
-    allow: (Empty, Inner); (Leaf, Leaf); (Leaf, Inner); (Inner, Inner). *)
-  | _ => True
-  end.
-
-Lemma tree_to_map_det {t0 t1 depth} :
-  tree_to_map t0 = tree_to_map t1 →
-  sorted_tree t0 depth →
-  sorted_tree t1 depth →
-  is_cutless t0 →
-  is_cutless t1 →
-  minimal_tree t0 →
-  minimal_tree t1 →
-  t0 = t1.
-Proof.
-  revert t1 depth.
-  induction t0 as [| ? | ? IH0 ? IH1 | ?];
-    destruct t1; intros; try done; simpl in *.
-  - apply (f_equal size) in H. rewrite map_size_empty in H. lia.
-  - naive_solver.
-  - apply (f_equal size) in H. rewrite map_size_singleton in H. lia.
-  - apply (f_equal size) in H. rewrite map_size_empty in H. lia.
-  - apply (f_equal size) in H. rewrite map_size_singleton in H. lia.
-  - intuition.
-    opose proof (tree_to_map_inner_eq _ _ _); [done..|intuition].
-    opose proof (IH0 t1_1 _ _ _ _ _ _) as ->; try done.
-    opose proof (IH1 t1_2 _ _ _ _ _ _) as ->; try done.
-Qed.
-*)
-
 End proof.
 
 Hint Unfold find is_entry to_map is_sorted is_full_tree is_map is_cutless_path
