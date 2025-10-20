@@ -1,5 +1,6 @@
 From Stdlib.Logic Require Import Classical.
 From stdpp Require Import list ssreflect.
+From Perennial.Helpers Require Import ListLen.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
@@ -371,6 +372,7 @@ Proof.
   rewrite length_drop length_take.
   auto.
 Qed.
+#[global] Hint Rewrite @subslice_length'.
 
 Theorem subslice_length {A} n m (l: list A) :
   (m <= length l)%nat ->
