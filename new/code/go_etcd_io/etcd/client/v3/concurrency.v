@@ -362,7 +362,7 @@ Definition Election__Observeⁱᵐᵖˡ : val :=
     let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![type.chanT #clientv3.GetResponse] "retc") in
     let: "$go" := (method_call #(ptrT.id Election.id) #"observe"%go (![#ptrT] "e")) in
-    do:  (Fork ("$go" "a0" "a1"));;;
+    do:  (Fork ("$go" "$a0" "$a1"));;;
     return: (![type.chanT #clientv3.GetResponse] "retc")).
 
 (* go: election.go:173:20 *)

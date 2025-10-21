@@ -185,7 +185,7 @@ Definition fib_consumerⁱᵐᵖˡ : val :=
     chan.cap "$a0") in
     let: "$a1" := (![type.chanT #intT] "c") in
     let: "$go" := (func_call #fibonacci) in
-    do:  (Fork ("$go" "a0" "a1"));;;
+    do:  (Fork ("$go" "$a0" "$a1"));;;
     let: "results" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := #slice.nil in
     do:  ("results" <-[#sliceT] "$r0");;;
@@ -501,7 +501,7 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ : val :=
     let: "$a3" := (![type.chanT (type.structT [
     ])] "done") in
     let: "$go" := (func_call #server) in
-    do:  (Fork ("$go" "a0" "a1" "a2" "a3"));;;
+    do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"));;;
     do:  (let: "$a0" := ((let: "$sl0" := #"h"%go in
     let: "$sl1" := #"e"%go in
     let: "$sl2" := #"l"%go in
@@ -698,7 +698,7 @@ Definition fib_consumerXⁱᵐᵖˡ : val :=
     let: "$a0" := #(W64 10) in
     let: "$a1" := (![#ptrT] "c") in
     let: "$go" := (func_call #fibonacciX) in
-    do:  (Fork ("$go" "a0" "a1"));;;
+    do:  (Fork ("$go" "$a0" "$a1"));;;
     let: "results" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := #slice.nil in
     do:  ("results" <-[#sliceT] "$r0");;;
@@ -1018,7 +1018,7 @@ Definition LeakyBufferPipelineXⁱᵐᵖˡ : val :=
     let: "$a2" := (![#ptrT] "serverChan") in
     let: "$a3" := (![#ptrT] "join") in
     let: "$go" := (func_call #serverX) in
-    do:  (Fork ("$go" "a0" "a1" "a2" "a3"));;;
+    do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"));;;
     do:  (let: "$a0" := ((let: "$sl0" := #"h"%go in
     let: "$sl1" := #"e"%go in
     let: "$sl2" := #"l"%go in
