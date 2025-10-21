@@ -1095,6 +1095,60 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
+Lemma wp_StructFieldGet s E (l : loc) f fvs v Φ :
+  fvs !! f = Some v →
+  ▷ (£ 1 -∗ Φ v) -∗
+  WP (GoInstruction (StructFieldGet f)) (StructV fvs) @ s ; E {{ Φ }}.
+Proof.
+  intros Hf. iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+    rewrite Hf. done.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; monad_simpl. rewrite Hf //. }
+  inv_base_step. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. simpl. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_StructFieldSet s E (l : loc) f fvs v Φ :
+  ▷ (£ 1 -∗ Φ (StructV (<[f := v]> fvs))) -∗
+  WP (GoInstruction (StructFieldSet f)) ((StructV fvs), v)%V @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+  inv_base_step. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. simpl. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ (LitV LitUnit) -∗ WP Fork e @ s; E {{ Φ }}.
