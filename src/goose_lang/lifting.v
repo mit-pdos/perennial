@@ -981,6 +981,68 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
+Lemma wp_FuncCall s E n f Φ :
+  functions n = Some f →
+  ▷ (£ 1 -∗ Φ f) -∗
+  WP (GoInstruction (FuncCall n)) #() @ s ; E {{ Φ }}.
+Proof.
+  intros Hf. iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+    rewrite Hgc Hf //.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor.
+      econstructor; simpl; monad_simpl. rewrite Hgc Hf //. }
+  inv_base_step.
+  rewrite -Hgc in Hf. rewrite Hf in Hstep. inv_base_step.
+  monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame "∗#%". simpl.
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_MethodCall s E t m f Φ :
+  methods t m = Some f →
+  ▷ (£ 1 -∗ Φ f) -∗
+  WP (GoInstruction (MethodCall t m)) #() @ s ; E {{ Φ }}.
+Proof.
+  intros Hf. iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+    rewrite Hgc Hf //.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor.
+      econstructor; simpl; monad_simpl. rewrite Hgc Hf //. }
+  inv_base_step.
+  rewrite -Hgc in Hf. rewrite Hf in Hstep. inv_base_step.
+  monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame "∗#%". simpl.
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
 Lemma wp_StructFieldRef s E (l : loc) t f Φ :
   ▷ (£ 1 -∗ Φ #(struct_field_ref t f l)) -∗
   WP (GoInstruction (StructFieldRef t f)) #l @ s ; E {{ Φ }}.
