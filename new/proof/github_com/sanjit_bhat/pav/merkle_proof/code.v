@@ -1,6 +1,6 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
-From Perennial.Helpers Require Import bytes NamedProps.
+From Perennial.Helpers Require Import bytes NamedProps condition.
 From Stdlib.micromega Require Import ZifyNat.
 
 From New.proof Require Import bytes.
@@ -369,19 +369,6 @@ Proof.
 Qed.
 
 Notation pref_ext p l := (p ++ [get_bit l (length p)]) (only parsing).
-
-(* condition [P] and [Q] on [φ]. [P] and [Q] should be filled in by [iAccu]. *)
-Lemma condition_prop {P Q : iProp Σ} {φ : Prop} (dec : Decision φ) :
-  P -∗
-  Q -∗
-  (if dec then P else Q) ∗ (if dec then Q else P).
-Proof. iIntros "**". case_match; iFrame. Qed.
-
-Lemma condition_bool {P Q : iProp Σ} (b : bool) :
-  P -∗
-  Q -∗
-  (if b then P else Q) ∗ (if b then Q else P).
-Proof. iIntros "**". case_match; iFrame. Qed.
 
 Lemma wp_getProofCap (depth : nat) :
   {{{
