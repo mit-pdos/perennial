@@ -1293,6 +1293,42 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
+Lemma wp_Make {s E} t v Φ :
+  False -∗
+  WP (GoInstruction (Make t) v) @ s ; E {{ Φ }}.
+Proof. iIntros ([]). Qed.
+
+Lemma wp_Slice {s E} v Φ :
+  False -∗
+  WP (GoInstruction Slice v) @ s ; E {{ Φ }}.
+Proof. iIntros ([]). Qed.
+
+Lemma wp_ArrayIndexRef {s E} l (j : w64) t Φ :
+  ▷ (£ 1 -∗ Φ #(array_index_ref t (sint.Z j) l)) -∗
+  WP (GoInstruction (ArrayIndexRef t)) (#l, #j)%V @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; try by monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+  inv_base_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. rewrite Hgc. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ (LitV LitUnit) -∗ WP Fork e @ s; E {{ Φ }}.

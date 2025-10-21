@@ -230,7 +230,7 @@ Inductive go_op : Type :=
 | Make (t : go.type) (* can do slice, map, etc. *)
 | Slice
 
-| ArrayElemRef (t : go.type) (* int *)
+| ArrayIndexRef (t : go.type) (* int *)
 
 (* these are internal steps; the Go map lookup has to be implemented as multiple
    instructions because it is not atomic. *)
@@ -1067,7 +1067,7 @@ Definition go_instruction_step (op : go_op) (arg : val) :
       ret_expr $ Val $ LitV $ LitLoc (slice_index_ref t (sint.Z j) s)
   | Make t, _ => undefined
   | Slice, _ => undefined
-  | ArrayElemRef t, PairV (LitV (LitLoc l)) (LitV (LitInt j)) =>
+  | ArrayIndexRef t, PairV (LitV (LitLoc l)) (LitV (LitInt j)) =>
       ret_expr $ Val $ LitV $ LitLoc (array_index_ref t (sint.Z j) l)
   | InternalMapLookup, PairV m k =>
       let '(ok, v) := map_lookup m k in ret_expr $ Val $ (PairV v (LitV $ LitBool ok))
