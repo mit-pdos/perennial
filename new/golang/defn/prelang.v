@@ -78,22 +78,17 @@ Fixpoint type_to_string (t : type) : go_string :=
   end.
 End go.
 
-(** Used by Goose for stating package-level assumptions about newly defined
-    types. *)
-Class NamedUnderlyingTypes :=
-  {
-    to_underlying : go.type → go.type
-  }.
-
 Global Coercion go.TypeLit : go.type_lit >-> go.type.
 
 Inductive go_op : Type :=
+| AngelicExit
+
 | GoLoad (t : go.type)
 | GoStore (t : go.type)
 | GoAlloc (t : go.type)
 
 | FuncCall (func_id : go_string)
-| MethodCall (* (go_string, go_string) *)
+| MethodCall (t : go.type) (m : go_string)
 
 | PackageInitCheck (pkg_name : go_string)
 | PackageInitMark (pkg_name : go_string)
@@ -107,14 +102,14 @@ Inductive go_op : Type :=
 | Len
 | Cap 
 | SliceIndexRef (t : go.type) (* int *)
-| Make (* can do slice, map, etc. *)
+| Make (t : go.type) (* can do slice, map, etc. *)
 
 | Slice
 
-| ArrayElemRef (t : go.type) (* int *)
-.
+| ArrayElemRef (t : go.type) (* int *).
 
+(*
 TODO:
-[ ] Add `MapVal : gmap base_lit val` to val.
-[ ] Add `SliceVal` to base_lit, taking a loc and two w64s.
-
+[ ] Go interfaces
+[ ] Define semantics for other ops.
+ *)

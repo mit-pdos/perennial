@@ -61,11 +61,6 @@ Global Instance into_val_func : IntoVal func.t :=
   {| to_val_def := λ (f : func.t), RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
 End primitive_instances.
 
-Module slice.
-Record t := mk { ptr_f: loc; len_f: u64; cap_f: u64; }.
-Definition nil : slice.t := mk null 0 0.
-End slice.
-
 Module chan.
   Definition t := loc.
   Definition nil : chan.t := null.
@@ -92,12 +87,9 @@ Global Instance into_val_array `{!IntoVal V} n : IntoVal (vec V n) :=
 
 Global Instance into_val_slice : IntoVal slice.t :=
   {|
-    to_val_def (s: slice.t) := InjLV (#s.(slice.ptr_f), #s.(slice.len_f), #s.(slice.cap_f));
+    to_val_def (s: slice.t) := LitV (LitSlice s);
     zero_val := slice.nil;
   |}.
-
-Global Instance slice_eq_dec : EqDecision slice.t.
-Proof. solve_decision. Qed.
 
 Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
   {|
