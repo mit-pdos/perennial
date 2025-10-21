@@ -57,7 +57,6 @@ Proof.
     by rewrite go_type_size_unseal.
 Qed.
 
-(* TODO: DFractional should automatically imply Persistent. *)
 #[global] Instance own_tree_pers ptr t :
   Persistent (own_tree ptr t DfracDiscarded).
 Proof. revert ptr. induction t; apply _. Qed.
