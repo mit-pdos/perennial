@@ -56,7 +56,7 @@ Definition is_entry t label oval :=
   end.
 Hint Unfold is_entry : merkle.
 
-(** relation between trees and maps. *)
+(** relation bw map interp and paths. *)
 
 Fixpoint to_map' t pref : gmap (list w8) (list w8) :=
   (* using [prefix_total] allows other preds (e.g., [is_entry])
@@ -196,6 +196,52 @@ Proof.
   split.
   - by apply entry_to_lookup.
   - intros. subst. by apply lookup_to_entry.
+Qed.
+
+(** relation bw sorted'ness and paths. *)
+
+(* used in put op termination and find correctness. *)
+Fixpoint is_sorted' t pref :=
+  match t with
+  | Leaf label val => prefix_total pref (bytes_to_bits label)
+  | Inner c0 c1 =>
+    is_sorted' c0 (pref ++ [false]) ∧
+    is_sorted' c1 (pref ++ [true])
+  | _ => True
+  end.
+Definition is_sorted t := is_sorted' t [].
+Hint Unfold is_sorted : merkle.
+
+(* very similar to [to_map_Some]. *)
+Lemma is_sorted_find_pref t pref label fl fv :
+  find' t (length pref) label = Some (fl, fv) →
+  is_sorted' t pref →
+  prefix_total pref (bytes_to_bits fl).
+Proof.
+  revert pref.
+  induction t; simpl; intros; simplify_eq/=; try done.
+  intuition.
+  replace (S _) with (length (pref ++
+    [if get_bit label (length pref) then true else false])) in * by len.
+  case_match.
+  - eapply prefix_total_app_l.
+    by eapply IHt2.
+  - eapply prefix_total_app_l.
+    by eapply IHt1.
+Qed.
+
+Lemma find_to_bit_eq t0 t1 pref label fl fv :
+  find' (Inner t0 t1) (length pref) label = Some (fl, fv) →
+  is_sorted' t0 (pref ++ [false]) →
+  is_sorted' t1 (pref ++ [true]) →
+  get_bit label (length pref) = get_bit fl (length pref).
+Proof.
+  simpl. intros Hf **.
+  replace (S _) with (length (pref ++ [get_bit label (length pref)])) in Hf by len.
+  eapply is_sorted_find_pref in Hf.
+  2: { by case_match. }
+  eapply prefix_total_snoc_inv in Hf.
+  intuition.
 Qed.
 
 (** full trees / maps. *)
@@ -414,6 +460,17 @@ Fixpoint is_cutless_path' t depth label :=
 Definition is_cutless_path t label := is_cutless_path' t 0 label.
 Hint Unfold is_cutless_path : merkle.
 
+Lemma is_cutless_to_path t label :
+  is_cutless t →
+  is_cutless_path t label.
+Proof.
+  autounfold with merkle.
+  remember 0%nat as depth. clear Heqdepth.
+  revert depth.
+  induction t; intros; simplify_eq/=; try done.
+  case_match; naive_solver.
+Qed.
+
 Lemma is_cut_tree_len t h:
   is_cut_tree t h -∗
   ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
@@ -432,6 +489,66 @@ Proof.
     iDestruct ("IH1" with "Hchild10 Hchild11") as %->.
     by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
   - naive_solver.
+Qed.
+
+Definition cut_cut_reln t0 t1 h : iProp Σ :=
+  "#Ht0" ∷ is_cut_tree t0 h ∗
+  "#Ht1" ∷ is_cut_tree t1 h.
+
+Lemma cut_cut_reln_Empty t h :
+  cut_cut_reln Empty t h -∗
+  ⌜∀ h, t ≠ Cut h⌝ -∗
+  ⌜t = Empty⌝.
+Proof.
+  iIntros "@ %Hpath".
+  destruct t; simpl; try naive_solver;
+    iNamedSuffix "Ht0" "0";
+    iNamedSuffix "Ht1" "1";
+    by iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %?.
+Qed.
+
+Lemma cut_cut_reln_Leaf l v t h :
+  cut_cut_reln (Leaf l v) t h -∗
+  ⌜∀ h, t ≠ Cut h⌝ -∗
+  ⌜t = Leaf l v⌝.
+Proof.
+  iIntros "@ %Hpath".
+  destruct t; simpl; try naive_solver;
+    iNamedSuffix "Ht0" "0";
+    iNamedSuffix "Ht1" "1";
+    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %Henc;
+    try done.
+  iPureIntro.
+  list_simplifier.
+  apply app_inj_1 in Henc as [Hlen_label Henc]; [|len].
+  apply (inj u64_le) in Hlen_label.
+  apply app_inj_1 in Henc as [<- Henc]; [|word].
+  by apply app_inj_1 in Henc as [_ <-]; [|len].
+Qed.
+
+Lemma cut_cut_reln_Inner c0 c1 t h :
+  cut_cut_reln (Inner c0 c1) t h -∗
+  ⌜∀ h, t ≠ Cut h⌝ -∗
+  ∃ c0' c1' h0 h1,
+  ⌜t = Inner c0' c1'⌝ ∗
+  cut_cut_reln c0 c0' h0 ∗
+  cut_cut_reln c1 c1' h1.
+Proof.
+  iIntros "@ %Hpath".
+  destruct t; simpl; try naive_solver;
+    iNamedSuffix "Ht0" "_l";
+    iNamedSuffix "Ht1" "_r";
+    iDestruct (cryptoffi.is_hash_inj with "His_hash_l His_hash_r") as %Henc;
+    try done.
+  list_simplifier.
+  iDestruct (is_cut_tree_len with "Hchild0_l") as %?.
+  iDestruct (is_cut_tree_len with "Hchild1_l") as %?.
+  iDestruct (is_cut_tree_len with "Hchild0_r") as %?.
+  iDestruct (is_cut_tree_len with "Hchild1_r") as %?.
+  apply app_inj_1 in Henc as [<- <-]; [|word].
+  repeat iExists _.
+  iSplit; [done|].
+  iFrame "#".
 Qed.
 
 (** full <-> cut tree reln. *)
@@ -588,6 +705,27 @@ Proof.
     + by iApply "IHt2".
 Qed.
 
+(** const label len -- needed for put op termination. *)
+
+Fixpoint is_const_label_len t :=
+  match t with
+  | Leaf label val => Z.of_nat (length label) = cryptoffi.hash_len
+  | Inner c0 c1 => is_const_label_len c0 ∧ is_const_label_len c1
+  | _ => True
+  end.
+
+Lemma find_on_const_label_len t label l v :
+  find t label = Some (l, v) →
+  is_const_label_len t →
+  Z.of_nat (length l) = cryptoffi.hash_len.
+Proof.
+  autounfold with merkle.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t depth.
+  induction t; intros; simplify_eq/=; try done.
+  case_match; naive_solver.
+Qed.
+
 (** gallina tree ops.
 
 need gallina transl of Golang [merkle.put] for determ spec.
@@ -690,25 +828,10 @@ Hint Unfold pure_proofToTree : merkle.
 
 (** invariants on [pure_put]. *)
 
-(* needed for WP proof of pure_put = Some. *)
-Fixpoint is_sorted' t pref :=
-  match t with
-  | Leaf label val => prefix_total pref (bytes_to_bits label)
-  | Inner c0 c1 =>
-    is_sorted' c0 (pref ++ [false]) ∧
-    is_sorted' c1 (pref ++ [true])
-  | _ => True
-  end.
-Definition is_sorted t := is_sorted' t [].
-Hint Unfold is_sorted : merkle.
-
-(* needed for WP proof of pure_put = Some. *)
-Fixpoint is_const_label_len t :=
-  match t with
-  | Leaf label val => Z.of_nat (length label) = cryptoffi.hash_len
-  | Inner c0 c1 => is_const_label_len c0 ∧ is_const_label_len c1
-  | _ => True
-  end.
+Lemma put_impl_non_cut t depth label val limit :
+  is_Some (pure_put' t depth label val limit) →
+  ∀ h, t ≠ Cut h.
+Proof. rewrite pure_put_unfold. by destruct t. Qed.
 
 Lemma const_label_len_over_put t t' label val :
   is_const_label_len t →
@@ -734,7 +857,7 @@ Proof.
     repeat case_match; try done; naive_solver.
 Qed.
 
-Lemma put_impl_cutless t label val :
+Lemma put_impl_cutless_pre t label val :
   is_Some (pure_put t label val) →
   is_cutless_path t label.
 Proof.
@@ -769,7 +892,7 @@ Proof.
     repeat case_match; by eapply IH.
 Qed.
 
-Lemma cutless_over_put t t' label0 label1 val :
+Lemma cutless_path_over_put t t' label0 label1 val :
   is_cutless_path t label0 →
   pure_put t label1 val = Some t' →
   is_cutless_path t' label0.
@@ -788,6 +911,27 @@ Proof.
       (by eapply IH; [|done]).
   - ospecialize (IH n _); [lia|].
     repeat case_match; try done; (by eapply IH; [|done]).
+Qed.
+
+Lemma cutless_over_put t label val t' :
+  is_cutless t →
+  pure_put t label val = Some t' →
+  is_cutless t'.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  revert t t' depth.
+  induction limit as [? IH] using lt_wf_ind.
+  intros *. rewrite pure_put_unfold.
+  destruct t; simpl; intros;
+    try case_decide; try case_match; try case_match;
+    simplify_eq/=; try done.
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; intuition;
+      (by eapply IH; [|done]).
+  - ospecialize (IH n _); [lia|].
+    repeat case_match; intuition; (by eapply IH; [|done]).
 Qed.
 
 (* [pure_put] definitionally guarantees [limit] down the put path.
@@ -1049,6 +1193,57 @@ Proof.
     simplify_eq/=. iPureIntro. by case_match.
 Qed.
 
+Lemma cut_cut_hash_over_put t0 t1 h label val t0' t1' h' :
+  cut_cut_reln t0 t1 h -∗
+  ⌜pure_put t0 label val = Some t0'⌝ -∗
+  ⌜pure_put t1 label val = Some t1'⌝ -∗
+  is_cut_tree t0' h' -∗
+  is_cut_tree t1' h'.
+Proof.
+  autounfold with merkle.
+  remember max_depth as limit. clear Heqlimit.
+  remember 0%nat as depth. clear Heqdepth.
+  iInduction limit as [? IH] using lt_wf_ind forall (t0 t1 h t0' t1' h' depth).
+  iIntros "#Hreln %Hput0 %Hput1 #Hhash_t0'".
+  rewrite pure_put_unfold in Hput0.
+
+  destruct t0; try done.
+  - iDestruct (cut_cut_reln_Empty with "Hreln [%]") as %->.
+    { by eapply put_impl_non_cut. }
+    rewrite pure_put_unfold in Hput1.
+    simplify_eq/=.
+    iFrame "#".
+  - iDestruct (cut_cut_reln_Leaf with "Hreln [%]") as %->.
+    { by eapply put_impl_non_cut. }
+    rewrite pure_put_unfold in Hput1.
+    case_decide.
+    { simplify_eq/=. iFrame "#". }
+    case_match; try done.
+    simpl in *.
+    case_match; try done.
+    simplify_eq/=.
+    iFrame "#".
+  - iDestruct (cut_cut_reln_Inner with "Hreln [%]") as "(%&%&%&%&->&#Hreln0&#Hreln1)".
+    { by eapply put_impl_non_cut. }
+    rewrite pure_put_unfold in Hput1.
+    case_match; try done.
+    simpl in *.
+    destruct (pure_put' _ _ _ _ _) eqn:? in Hput0; try done.
+    destruct (pure_put' _ _ _ _ _) eqn:? in Hput1; try done.
+    simplify_eq/=.
+    iSpecialize ("IH" $! n with "[]"); [word|].
+    iNamed "Hhash_t0'".
+    case_match.
+    + iDestruct ("IH" with "Hreln1 [//][//][$]") as "$".
+      iNamed "Hreln0".
+      iDestruct (is_cut_tree_det with "Hchild0 Ht0") as %->.
+      iFrame "#".
+    + iDestruct ("IH" with "Hreln0 [//][//][$]") as "$".
+      iNamed "Hreln1".
+      iDestruct (is_cut_tree_det with "Hchild1 Ht0") as %->.
+      iFrame "#".
+Qed.
+
 (* easier [map_eq] extensional proof vs. using fin_map reductions. *)
 Lemma to_map_over_put t t' label val :
   pure_put t label val = Some t' →
@@ -1061,6 +1256,63 @@ Proof.
   - rewrite -entry_eq_lookup.
     eapply old_entry_over_put; [|done..].
     by apply entry_eq_lookup.
+Qed.
+
+Tactic Notation "rw_pure_put" := repeat
+  match goal with
+  | H : pure_put' _ _ _ _ _ = None |- _ => rewrite -{}H
+  end.
+
+Lemma put_Some t label val :
+  (* for max depth. *)
+  is_limit t →
+  Z.of_nat (length label) = cryptoffi.hash_len →
+  is_const_label_len t →
+  is_sorted t →
+  (* for no Cut. *)
+  is_cutless_path t label →
+  is_Some (pure_put t label val).
+Proof.
+  autounfold with merkle.
+  assert (∃ x, x = max_depth) as [limit Heq]; [by eexists|].
+  rewrite -[in is_limit' _ _]Heq.
+  rewrite -[in pure_put' _ _ _ _ _]Heq.
+  remember [] as pref.
+  assert (prefix_total pref (bytes_to_bits label)).
+  { subst. apply prefix_total_nil. }
+  replace 0%nat with (length pref); [|by subst].
+  assert (length pref + limit = max_depth)%nat.
+  { subst. simpl. lia. }
+  clear Heq Heqpref.
+  intros.
+  generalize dependent t.
+  generalize dependent pref.
+
+  induction limit as [? IH] using lt_wf_ind.
+  intros. rewrite pure_put_unfold.
+  destruct t; simpl in *; try done.
+
+  - case_decide; [done|].
+    destruct limit.
+    (* limit=0. show labels actually equal. *)
+    { opose proof (prefix_total_full _ (bytes_to_bits label) _ _);
+        [|done|]; [by len|].
+      opose proof (prefix_total_full _ (bytes_to_bits label0) _ _);
+        [|done|]; [by len|].
+      simplify_eq/=. }
+
+    ospecialize (IH limit _); [lia|].
+    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    eapply IH; repeat case_match; try done; [|len|..];
+      by eapply prefix_total_snoc.
+  - destruct limit; [done|].
+    ospecialize (IH limit _); [lia|].
+    intuition.
+    destruct (pure_put' _ _ _ _ _) eqn:?; [done|]. rw_pure_put.
+    replace (S _) with (length $ pref_ext pref label) in * by len.
+    eapply IH; repeat case_match; try done; [..|len|len];
+      by eapply prefix_total_snoc.
 Qed.
 
 (** invariants on [pure_newShell]. *)
