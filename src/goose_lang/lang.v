@@ -225,7 +225,7 @@ Inductive go_op : Type :=
 | StructFieldSet (f : go_string)
 
 | Len
-| Cap 
+| Cap
 | SliceIndexRef (t : go.type) (* int *)
 | Make (t : go.type) (* can do slice, map, etc. *)
 | Slice
@@ -563,7 +563,7 @@ Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any
 
 Global Instance GoContext_inhabited : Inhabited GoContext :=
   populate {|
-      global_addr := inhabitant; 
+      global_addr := inhabitant;
       functions := inhabitant;
       methods := inhabitant;
       alloc := inhabitant;

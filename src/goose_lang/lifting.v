@@ -508,7 +508,7 @@ Would be good to align terminology. *)
 Class gooseLocalGS Σ := GooseLocalGS {
   goose_crashGS : crashGS Σ;
   goose_ffiLocalGS : ffiLocalGS Σ;
-  #[global] goose_go_context :: GoContext; 
+  #[global] goose_go_context :: GoContext;
   #[global] goose_na_heapGS :: na_heapGS loc val Σ;
   #[global] goose_traceGS :: traceGS Σ;
   #[global] goose_go_stateGS :: go_stateGS Σ;
@@ -861,7 +861,36 @@ Proof.
   iModIntro. iFrame "∗#%"; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
-(* TODO: register as PureWp. *)
+(** WPs for go instructions  *)
+
+Lemma wp_AngelicExit s E (v : val) Φ :
+  ⊢ WP GoInstruction AngelicExit #() @ s ; E {{ Φ }}.
+Proof.
+  iLöb as "IH".
+  iApply wp_lift_step; [done|].
+  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
+  iNamed "H".
+  iSplit.
+  { iPureIntro.
+    destruct s; try done.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; by monad_simpl. }
+  iIntros (v2 σ2 g2 efs Hstep).
+  rewrite /= in Hstep.
+  inversion Hstep; subst.
+  eapply (base_redex_unique []) in H; first last.
+  { by repeat eexists _. }
+  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
+  destruct H as [<- <-]. inv_base_step.
+  iNext. iMod "Hmask" as "_".
+  iIntros "Hlc".
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame "∗#%".
+Qed.
+
 Lemma wp_GoLoad K s E (l : loc) t Φ :
   ▷ (£ 1 -∗ WP fill K ((load t) #l) @ s ; E {{ Φ }}) -∗
   WP fill K ((GoInstruction (GoLoad t)) #l) @ s ; E {{ Φ }}.
@@ -883,7 +912,67 @@ Proof.
   eapply base_redex_unique in H; first last.
   { by repeat eexists _. }
   { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
-  destruct H as [<- <-]. inv_base_step. 
+  destruct H as [<- <-]. inv_base_step.
+  iNext. iMod "Hmask" as "_".
+  iIntros "Hlc".
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. rewrite Hgc. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_GoStore K s E (l : loc) t Φ :
+  ▷ (£ 1 -∗ WP fill K ((store t) #l) @ s ; E {{ Φ }}) -∗
+  WP fill K ((GoInstruction (GoStore t)) #l) @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_step; [apply fill_not_val; done|].
+  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
+  iNamed "H".
+  iSplit.
+  { iPureIntro.
+    destruct s; try done.
+    apply base_prim_fill_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; by monad_simpl. }
+  iIntros (v2 σ2 g2 efs Hstep).
+  rewrite /= in Hstep.
+  inversion Hstep; subst.
+  eapply base_redex_unique in H; first last.
+  { by repeat eexists _. }
+  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
+  destruct H as [<- <-]. inv_base_step.
+  iNext. iMod "Hmask" as "_".
+  iIntros "Hlc".
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. rewrite Hgc. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_GoAlloc K s E (l : loc) t Φ :
+  ▷ (£ 1 -∗ WP fill K ((alloc t) #()) @ s ; E {{ Φ }}) -∗
+  WP fill K ((GoInstruction (GoAlloc t)) #()) @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_step; [apply fill_not_val; done|].
+  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
+  iNamed "H".
+  iSplit.
+  { iPureIntro.
+    destruct s; try done.
+    apply base_prim_fill_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; by monad_simpl. }
+  iIntros (v2 σ2 g2 efs Hstep).
+  rewrite /= in Hstep.
+  inversion Hstep; subst.
+  eapply base_redex_unique in H; first last.
+  { by repeat eexists _. }
+  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
+  destruct H as [<- <-]. inv_base_step.
   iNext. iMod "Hmask" as "_".
   iIntros "Hlc".
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
