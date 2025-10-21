@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Export lang lifting ipersist.
 From stdpp Require Import list.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-From New.golang.defn Require Export prelang mem.
+From New.golang.defn Require Export postlang.
 
 Class IntoValProof (V : Type) `{IntoVal V} :=
   {

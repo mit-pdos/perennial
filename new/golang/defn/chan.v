@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem loop prelang.
+From New.golang.defn Require Import loop prelang.
 
 Module chan.
 Section defns.

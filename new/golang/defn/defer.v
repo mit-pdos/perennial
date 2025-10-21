@@ -1,4 +1,4 @@
-From New.golang.defn Require Import exception mem.
+From New.golang.defn Require Import exception.
 
 Section defn.
 Context `{!ffi_syntax}.

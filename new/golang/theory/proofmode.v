@@ -4,7 +4,7 @@ From Perennial.Helpers Require Export ipm Tactics.
 From iris.proofmode Require Import coq_tactics.
 (* make sure solve_proper comes from stdpp and not Coq *)
 From stdpp Require Export tactics.
-From New.golang.defn Require Export notation intoval.
+From New.golang.defn Require Export notation postlang.
 From New.golang.theory Require Export typing.
 From Perennial Require Export base.
 From Ltac2 Require Import Ltac2.
@@ -116,7 +116,7 @@ Proof.
   rewrite decide_True //.
 Qed.
 
-(* FIXME: 
+(* FIXME:
 Global Instance wp_eq `{!IntoVal V} `{!IntoValTyped V t} (v1 v2 : V) :
   PureWp (is_comparable_go_type t = true) (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)) | 0.
 Proof.
@@ -929,7 +929,7 @@ Next Obligation.
 Admitted.
 Final Obligation. Admitted.
 
-Record foo_t := 
+Record foo_t :=
   mk {
       a : w64;
     }.
@@ -969,7 +969,7 @@ Lemma foo_split l dq (v : foo_t) :
 Proof. done. Qed.
 
 Program Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
-Next Obligation. 
+Next Obligation.
   iIntros "* Hl HΦ".
   iEval (rewrite go.load_underlying /= foo_underlying go.load_struct /=).
   wp_pures. wp_bind.
@@ -988,7 +988,7 @@ Admitted.
 Context `{!GoContext}.
 Context `{!MemOps}.
 
-Record foo_t := 
+Record foo_t :=
   mk {
       a : w64;
     }.

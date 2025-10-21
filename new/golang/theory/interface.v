@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.theory Require Import struct typing proofmode pkg.
+From New.golang.theory Require Import typing proofmode pkg.
 From New.golang.defn Require Import interface.
 
 Set Default Proof Using "Type".
