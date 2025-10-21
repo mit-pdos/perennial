@@ -190,12 +190,13 @@ Lemma dsp_left_recv_closed {TT:tele} {V_LR V_RL}
     `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) :
+    (lrcap rlcap: Z) p :
+  p = Some END ∨ p = None →
   {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
   {{{ RET (#(), #false);
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}.
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p }}}.
 Proof.
 Admitted.
 
@@ -256,12 +257,13 @@ Lemma dsp_right_recv_closed {TT:tele} {V_LR V_RL}
     `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) :
+    (lrcap rlcap: Z) p :
+  p = Some END ∨ p = None →
   {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
   {{{ RET (#(), #false);
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}.
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p }}}.
 Proof.
 Admitted.
 
