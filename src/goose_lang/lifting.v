@@ -24,13 +24,6 @@ Ltac solve_pure_exec :=
   subst; intros ?; apply nsteps_once, pure_base_step_pure_step;
     constructor; [solve_exec_safe | solve_exec_puredet].
 
-Global Arguments alloc {_ _} (t).
-Global Arguments load {_ _} (t).
-Global Arguments store {_ _} (t).
-Global Arguments struct_field_ref {_ _} (t field loc).
-Global Arguments goose_lang.size {_ _} (t).
-Existing Class GoContext.
-
 Section definitions.
   Context `{ext:ffi_syntax}.
   Context `{hG: na_heapGS loc val Σ}.
@@ -574,7 +567,7 @@ Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
       "Htr_auth" ∷ trace_auth σ.(trace) ∗
       "Hor_auth" ∷ oracle_auth σ.(oracle) ∗
       "Hg_auth" ∷ own_go_state σ.(go_state).(inited_packages) ∗
-      "%Hgc" ∷ ⌜ σ.(go_state).(gc) = goose_go_context ⌝
+      "%Hgc" ∷ ⌜ σ.(go_state).(go_context) = goose_go_context ⌝
     )%I;
 }.
 
@@ -1366,6 +1359,9 @@ Proof.
   { iDestruct (heap_pointsto_na_acc with "H") as "[$ _]". }
   eauto.
 Qed.
+
+Definition vals_compare_safe v v' : Prop :=
+  val_cmpxchg_safe v || val_cmpxchg_safe v' = true.
 
 Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
   v' ≠ v1 → vals_compare_safe v' v1 →
