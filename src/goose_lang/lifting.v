@@ -566,7 +566,7 @@ Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
       "Hffi" ∷ ffi_local_ctx goose_ffiLocalGS σ.(world) ∗
       "Htr_auth" ∷ trace_auth σ.(trace) ∗
       "Hor_auth" ∷ oracle_auth σ.(oracle) ∗
-      "Hg_auth" ∷ own_go_state σ.(go_state).(inited_packages) ∗
+      "Hg_auth" ∷ own_go_state_ctx σ.(go_state).(inited_packages) ∗
       "%Hgc" ∷ ⌜ σ.(go_state).(go_context) = goose_go_context ⌝
     )%I;
 }.
@@ -1041,6 +1041,66 @@ Proof.
   { rewrite /step_count_next/=. lia. }
   iModIntro. iFrame "∗#%". simpl.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_PackageInitCheck pkg_inited pkg :
+  {{{ own_go_state pkg_inited }}}
+    GoInstruction (PackageInitCheck pkg) #()
+  {{{ RET #(bool_decide (pkg ∈ pkg_inited)); own_go_state pkg_inited }}}.
+Proof.
+  iIntros "% Hg HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { iPureIntro. apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl. }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor.
+      econstructor; simpl; monad_simpl. }
+  inv_base_step.
+  iCombine "Hg_auth Hg" gives %Heq. subst.
+  iFrame.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame "∗#%". simpl.
+  iSplit; last done. iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_PackageInitMark pkg_inited pkg :
+  {{{ own_go_state pkg_inited }}}
+    GoInstruction (PackageInitMark pkg) #()
+  {{{ RET #(); own_go_state ({[pkg]} ∪ pkg_inited) }}}.
+Proof.
+  iIntros "% Hg HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { iPureIntro. apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl. }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor.
+      econstructor; simpl; monad_simpl. }
+  inv_base_step.
+  iCombine "Hg_auth Hg" gives %Heq. subst.
+  iFrame.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iFrame "∗#%". simpl.
+  rewrite own_go_state_unseal.
+  iMod (ghost_var_update_2 with "Hg Hg_auth") as "[Hg Hg_auth]".
+  { compute_done. }
+  iFrame. iModIntro.
+  iSplit; last done. iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_GlobalVarAddr s E var Φ :
