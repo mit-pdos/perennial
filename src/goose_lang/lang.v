@@ -1071,7 +1071,7 @@ Definition go_instruction_step (op : go_op) (arg : val) :
       ret_expr $ Val $ LitV $ LitLoc (array_index_ref t (sint.Z j) l)
   | InternalMapLookup, PairV m k =>
       let '(ok, v) := map_lookup m k in ret_expr $ Val $ (PairV v (LitV $ LitBool ok))
-  | InternalMapInsert, PairV m (PairV k v) =>
+  | InternalMapInsert, PairV (PairV m k) v =>
       ret_expr $ Val $ map_insert m k v
   | _, _ => undefined
   end.

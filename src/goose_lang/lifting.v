@@ -865,6 +865,10 @@ Qed.
 (* There's a lot of copy/paste below. Some of it stems from needing to invert
    the "transition" library's monadic primitives.
 
+   There are also various `rewrite Hgc` proof steps that appear to not change
+   the proof goal; in reality, they change an unprinted implicit parameter
+   `go_context`.
+
    Some stuff could be simplified if/when old goose is gone. Could define and
    provide instances for IntoVal prior to these WPs so we don't have to reexport
    them. Could also set up PureWp prior to this. *)
@@ -1327,6 +1331,63 @@ Proof.
   { rewrite /step_count_next/=. lia. }
   iModIntro. rewrite Hgc. iFrame "∗#%".
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_InternalMapLookup {s E} m k Φ :
+  ▷ (£ 1 -∗
+     Φ (let '(ok, v) := map_lookup m k in (PairV v (LitV $ LitBool ok)))) -∗
+  WP (GoInstruction InternalMapLookup) (m, k)%V @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  destruct (map_lookup m k) as [ok v] eqn:Hm.
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; try by monad_simpl.
+    rewrite Hgc Hm //.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; monad_simpl.
+      rewrite Hgc Hm //. }
+  inv_base_step. rewrite Hgc Hm in Hstep. inv_base_step. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_InternalMapInsert {s E} m k v Φ :
+  ▷ (£ 1 -∗ Φ (map_insert m k v)) -∗
+  WP (GoInstruction InternalMapInsert) (m, k, v)%V @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; by monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+
+  inv_base_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iFrame. iFrame "∗#%".
+  iSplit; last done. rewrite Hgc. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
