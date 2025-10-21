@@ -862,8 +862,14 @@ Proof.
 Qed.
 
 (** WPs for go instructions  *)
+(* There's a lot of copy/paste below. Some of it stems from needing to invert
+   the "transition" library's monadic primitives.
 
-Lemma wp_AngelicExit s E (v : val) Φ :
+   Some stuff could be simplified if/when old goose is gone. Could define and
+   provide instances for IntoVal prior to these WPs so we don't have to reexport
+   them. Could also set up PureWp prior to this. *)
+
+Lemma wp_AngelicExit {s E} (v : val) Φ :
   ⊢ WP GoInstruction AngelicExit #() @ s ; E {{ Φ }}.
 Proof.
   iLöb as "IH".
@@ -891,7 +897,7 @@ Proof.
   iModIntro. iFrame "∗#%".
 Qed.
 
-Lemma wp_GoLoad K s E (l : loc) t Φ :
+Lemma wp_GoLoad K {s E} (l : loc) t Φ :
   ▷ (£ 1 -∗ WP fill K ((load t) #l) @ s ; E {{ Φ }}) -∗
   WP fill K ((GoInstruction (GoLoad t)) #l) @ s ; E {{ Φ }}.
 Proof.
@@ -921,7 +927,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_GoStore K s E (l : loc) t Φ :
+Lemma wp_GoStore K {s E} (l : loc) t Φ :
   ▷ (£ 1 -∗ WP fill K ((store t) #l) @ s ; E {{ Φ }}) -∗
   WP fill K ((GoInstruction (GoStore t)) #l) @ s ; E {{ Φ }}.
 Proof.
@@ -951,7 +957,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_GoAlloc K s E (l : loc) t Φ :
+Lemma wp_GoAlloc K {s E} (l : loc) t Φ :
   ▷ (£ 1 -∗ WP fill K ((alloc t) #()) @ s ; E {{ Φ }}) -∗
   WP fill K ((GoInstruction (GoAlloc t)) #()) @ s ; E {{ Φ }}.
 Proof.
@@ -981,7 +987,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_FuncCall s E n f Φ :
+Lemma wp_FuncCall {s E} n f Φ :
   functions n = Some f →
   ▷ (£ 1 -∗ Φ f) -∗
   WP (GoInstruction (FuncCall n)) #() @ s ; E {{ Φ }}.
@@ -1012,7 +1018,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_MethodCall s E t m f Φ :
+Lemma wp_MethodCall {s E} t m f Φ :
   methods t m = Some f →
   ▷ (£ 1 -∗ Φ f) -∗
   WP (GoInstruction (MethodCall t m)) #() @ s ; E {{ Φ }}.
@@ -1103,7 +1109,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iFrame.
 Qed.
 
-Lemma wp_GlobalVarAddr s E var Φ :
+Lemma wp_GlobalVarAddr {s E} var Φ :
   ▷ (£ 1 -∗ Φ #(global_addr var)) -∗
   WP (GoInstruction (GlobalVarAddr var)) #() @ s ; E {{ Φ }}.
 Proof.
@@ -1129,7 +1135,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_StructFieldRef s E (l : loc) t f Φ :
+Lemma wp_StructFieldRef {s E} (l : loc) t f Φ :
   ▷ (£ 1 -∗ Φ #(struct_field_ref t f l)) -∗
   WP (GoInstruction (StructFieldRef t f)) #l @ s ; E {{ Φ }}.
 Proof.
@@ -1155,7 +1161,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_StructFieldGet s E (l : loc) f fvs v Φ :
+Lemma wp_StructFieldGet {s E} (l : loc) f fvs v Φ :
   fvs !! f = Some v →
   ▷ (£ 1 -∗ Φ v) -∗
   WP (GoInstruction (StructFieldGet f)) (StructV fvs) @ s ; E {{ Φ }}.
@@ -1183,7 +1189,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_StructFieldSet s E (l : loc) f fvs v Φ :
+Lemma wp_StructFieldSet {s E} (l : loc) f fvs v Φ :
   ▷ (£ 1 -∗ Φ (StructV (<[f := v]> fvs))) -∗
   WP (GoInstruction (StructFieldSet f)) ((StructV fvs), v)%V @ s ; E {{ Φ }}.
 Proof.
@@ -1206,6 +1212,84 @@ Proof.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   iModIntro. simpl. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_Len {s E} sl Φ :
+  ▷ (£ 1 -∗ Φ #(sl.(slice.len))) -∗
+  WP (GoInstruction Len) (LitV $ LitSlice sl) @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+  inv_base_step. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. simpl. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_Cap {s E} sl Φ :
+  ▷ (£ 1 -∗ Φ #(sl.(slice.len))) -∗
+  WP (GoInstruction Len) (LitV $ LitSlice sl) @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+  inv_base_step. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. simpl. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_SliceIndexRef {s E} sl (j : w64) t Φ :
+  ▷ (£ 1 -∗ Φ #(slice_index_ref t (sint.Z j) sl)) -∗
+  WP (GoInstruction (SliceIndexRef t)) (#(LitSlice sl), #j)%V @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; try by monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+  inv_base_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. rewrite Hgc. iFrame "∗#%".
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
