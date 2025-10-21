@@ -370,7 +370,10 @@ Lemma chan_rep_halves_update γ s1 s2 s' :
   chan_rep_half γ s1 -∗ chan_rep_half γ s2 ==∗
      chan_rep_half γ s' ∗ chan_rep_half γ s'.
 Proof.
-Admitted.
+  iIntros "H1 H2". iCombine "H1 H2" as "H".
+  iMod (ghost_var_update with "H") as "[H1 H2]".
+  by iFrame.
+Qed.
 
 Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
   match s with
@@ -396,11 +399,11 @@ Proof.
   by iApply (ghost_var_agree with "Hchanrepfrag Hoc"). 
 Qed.
 
+(* Needs [chan_cap_valid s'' cap] as precondition? *)
 Lemma own_channel_halves_update ch cap s s' s'' γ :
   own_channel ch cap s γ -∗ own_channel ch cap s' γ ==∗
   own_channel ch cap s'' γ ∗ own_channel ch cap s'' γ.
-Proof.
-  Admitted.
+Proof. Admitted.
 
 (** Type alias for convenience: converts postcondition to predicate format *)
 Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
@@ -601,16 +604,13 @@ Definition is_channel (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
     "#lock" ∷ mutex.is_Mutex mu_loc (chan_inv_inner ch cap γ).
 
 Global Instance is_channel_pers ch cap γ : Persistent (is_channel cap ch γ).
-Proof.
-Admitted.
+Proof. apply _. Qed.
 
 Global Instance own_channel_timeless ch cap s γ : Timeless (own_channel ch cap s γ).
-Proof.
-Admitted.
+Proof. apply _. Qed.
 
 Lemma is_channel_not_null ch cap γ:
   is_channel ch cap γ -∗ ⌜ch ≠ null⌝.
-Proof.
-Admitted.
+Proof. Admitted.
 
 End base.

@@ -34,22 +34,13 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 (** ** Buffer Matching Predicates *)
 
 (** Defines when Go channel state matches expected message queue *)
-Definition lr_buffer_matches {V_LR}
-    (lr_state : chan_rep.t V_LR) (vsl : list V_LR) : Prop :=
-  match lr_state with
-  | chan_rep.Buffered queue => vsl = queue
-  | chan_rep.SndPending v | chan_rep.SndCommit v => vsl = [v]
-  | chan_rep.Closed draining => vsl = draining
-  | _ => vsl = []
-  end.
-
-Definition rl_buffer_matches {V_RL}
-    (rl_state : chan_rep.t V_RL) (vsr : list V_RL) : Prop :=
-  match rl_state with
-  | chan_rep.Buffered queue => vsr = queue
-  | chan_rep.SndPending v | chan_rep.SndCommit v => vsr = [v]
-  | chan_rep.Closed draining => vsr = draining
-  | _ => vsr = []
+Definition buffer_matches {V}
+    (state : chan_rep.t V) (vs : list V) : Prop :=
+  match state with
+  | chan_rep.Buffered queue => vs = queue
+  | chan_rep.SndPending v | chan_rep.SndCommit v => vs = [v]
+  | chan_rep.Closed draining => vs = draining
+  | _ => vs = []
   end.
 
 (** ** Protocol Value Lifting *)
@@ -75,8 +66,16 @@ Definition dsp_session_inv {V_LR V_RL}
   ∃ lr_state rl_state vsl vsr,
     own_channel lr_chan lrcap lr_state γlr_names ∗
     own_channel rl_chan rlcap rl_state γrl_names ∗
-    ⌜lr_buffer_matches lr_state vsl⌝ ∗
-    ⌜rl_buffer_matches rl_state vsr⌝ ∗
+    ⌜buffer_matches lr_state vsl⌝ ∗
+    ⌜buffer_matches rl_state vsr⌝ ∗
+    match lr_state with
+    | chan_rep.Closed _ => iProto_own γl END
+    | _ => True
+    end ∗
+    match rl_state with
+    | chan_rep.Closed _ => iProto_own γr END
+    | _ => True
+    end ∗
     iProto_ctx γl γr (lift_lr vsl) (lift_rl vsr).
 
 (** DSP session context - public interface with persistent channel handles *)
@@ -101,9 +100,12 @@ Definition dsp_left_endpoint {V_LR V_RL}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z)
-    (p : iProto Σ (DspV V_LR V_RL)) : iProp Σ :=
+    (p : option $ iProto Σ (DspV V_LR V_RL)) : iProp Σ :=
   dsp_session γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
-  iProto_own γl p.
+  match p with
+  | None => True
+  | Some p => iProto_own γl p
+  end.
 
 (** Right endpoint - can send V_RL via rl_chan, receive V_LR via lr_chan *)
 Definition dsp_right_endpoint {V_LR V_RL}
@@ -113,28 +115,38 @@ Definition dsp_right_endpoint {V_LR V_RL}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z)
-    (p : iProto Σ (DspV V_LR V_RL)) : iProp Σ :=
+    (p : option $ iProto Σ (DspV V_LR V_RL)) : iProp Σ :=
   dsp_session γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
-  iProto_own γr p.
+  match p with
+  | None => True
+  | Some p => iProto_own γr p
+  end.
 
 (** ** Initialization *)
 
 (** Initialize a new DSP session from basic channels *)
 Lemma dsp_session_init {V_LR V_RL}
     `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    `{cGSL : chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
+    `{cGSR : chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    E
     (N : namespace) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) (p : iProto Σ (DspV V_LR V_RL)) :
   is_channel lr_chan lrcap γlr_names -∗
   is_channel rl_chan rlcap γrl_names -∗
-  own_channel lr_chan lrcap chan_rep.Idle γlr_names -∗
-  own_channel rl_chan rlcap chan_rep.Idle γrl_names ==∗
+  @own_channel _ _ cGSL lr_chan lrcap chan_rep.Idle γlr_names -∗
+  @own_channel _ _ cGSR rl_chan rlcap chan_rep.Idle γrl_names ={E}=∗
   ∃ γl γr,
-    dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p ∗
-    dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (iProto_dual p).
+    dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some p) ∗
+    dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some $ iProto_dual p).
 Proof.
-Admitted.
+  iIntros "#Hcl_is #Hcr_is Hcl_own Hcr_own".
+  iMod (iProto_init) as (γl γr) "(Hctx & Hpl & Hpr)".
+  iMod (inv_alloc N _ (dsp_session_inv _ _ _ _ _ _ _ _) with "[Hcl_own Hcr_own Hctx]")
+    as "#Hinv".
+  { iExists chan_rep.Idle,chan_rep.Idle,[],[]. by iFrame. }
+  by iFrame "∗#".
+Qed.
 
 (** ** Left Endpoint Operations *)
 
@@ -145,37 +157,47 @@ Lemma dsp_left_send {V_LR V_RL}
     `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (v : V_LR) (m : iMsg Σ (DspV V_LR V_RL)) :
+    (lrcap rlcap: Z) (v : V_LR) (p : iProto Σ (DspV V_LR V_RL)) :
   {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<!> m) ∗
-      ∃ p', iMsg_car m (inl v) (Next p') }}}
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some $ <!> MSG (inl v); p) }}}
     lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #tL #v
-  {{{ p', RET #();
-      iMsg_car m (inl v) (Next p') ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' }}}.
+  {{{ RET #();
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some p) }}}.
 Proof.
 Admitted.
 
 (** Left endpoint receives V_RL value via rl_chan *)
-Lemma dsp_left_recv {V_LR V_RL}
+Lemma dsp_left_recv {TT:tele} {V_LR V_RL}
     `{!protoG Σ (DspV V_LR V_RL)}
     `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
     `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (m : iMsg Σ (DspV V_LR V_RL)) :
+    (lrcap rlcap: Z) (v : TT → V_LR) (P : TT → iProp Σ) (p : TT → iProto Σ (DspV V_LR V_RL)) :
   {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<?> m) }}}
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap
+        (Some $ <?.. x> MSG inl (v x) {{ ▷ P x }}; p x) }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
-  {{{ (v : V_RL) (ok : bool), RET (#v, #ok);
-      if ok then ∃ p', iMsg_car m (inr v) (Next p') ∗
-                      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p'
-      else (* Channel closed - only valid if protocol allows termination *)
-           iProto_le (<?> m) END ∗
-           dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+  {{{ x, RET (#(v x), #true);
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some $ p x) ∗
+      P x }}}.
 Proof.
 Admitted.
 
+Lemma dsp_left_recv_closed {TT:tele} {V_LR V_RL}
+    `{!protoG Σ (DspV V_LR V_RL)}
+    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
+    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    (γl γr : gname) (N : namespace)
+    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z) :
+  {{{ is_pkg_init channel ∗
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
+  {{{ RET (#(), #false);
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}.
+Proof.
+Admitted.
 
 (** Left endpoint closes lr_chan (stops sending V_LR) *)
 Lemma dsp_left_close_lr {V_LR V_RL}
@@ -186,11 +208,9 @@ Lemma dsp_left_close_lr {V_LR V_RL}
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) (p : iProto Σ (DspV V_LR V_RL)) :
   {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p ∗
-      (* Only allow closure when protocol permits it *)
-      p ⊑ END }}}
+      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some END) }}}
     lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #tL #()
-  {{{ RET #(); dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+  {{{ RET #(); dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}.
 Proof.
 Admitted.
 
@@ -203,34 +223,45 @@ Lemma dsp_right_send {V_LR V_RL}
     `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (v : V_RL) (m : iMsg Σ (DspV V_LR V_RL)) :
+    (lrcap rlcap: Z) (v : V_RL) (p : iProto Σ (DspV V_LR V_RL)) :
   {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<!> m) ∗
-      ∃ p', iMsg_car m (inr v) (Next p') }}}
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some $ <!> MSG (inr v); p) }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Send" #tR #v
-  {{{ p', RET #();
-      iMsg_car m (inr v) (Next p') ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' }}}.
+  {{{ RET #();
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some p) }}}.
 Proof.
 Admitted.
 
 (** Right endpoint receives V_LR value via lr_chan *)
-Lemma dsp_right_recv {V_LR V_RL}
+Lemma dsp_right_recv {TT:tele} {V_LR V_RL}
     `{!protoG Σ (DspV V_LR V_RL)}
     `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
     `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
     (γl γr : gname) (N : namespace)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (m : iMsg Σ (DspV V_LR V_RL)) :
+    (lrcap rlcap: Z) (v : TT → V_RL) (P : TT → iProp Σ) (p : TT → iProto Σ (DspV V_LR V_RL)) :
   {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<?> m) }}}
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap
+        (Some $ <?.. x> MSG inr (v x) {{ ▷ P x }}; p x) }}}
     lr_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tL #()
-  {{{ (v : V_LR) (ok : bool), RET (#v, #ok);
-      if ok then ∃ p', iMsg_car m (inl v) (Next p') ∗
-                      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p'
-      else (* Channel closed - only valid if protocol allows termination *)
-           (<?> m) ⊑ END ∗
-           dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+  {{{ x, RET (#(v x), #true);
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some $ p x) ∗
+      P x }}}.
+Proof.
+Admitted.
+
+Lemma dsp_right_recv_closed {TT:tele} {V_LR V_RL}
+    `{!protoG Σ (DspV V_LR V_RL)}
+    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
+    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
+    (γl γr : gname) (N : namespace)
+    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z) :
+  {{{ is_pkg_init channel ∗
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
+  {{{ RET (#(), #false);
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}.
 Proof.
 Admitted.
 
@@ -243,118 +274,9 @@ Lemma dsp_right_close_rl {V_LR V_RL}
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) (p : iProto Σ (DspV V_LR V_RL)) :
   {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p ∗
-      (* Only allow closure when protocol permits it *)
-      p ⊑ END }}}
+      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (Some END) }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Close" #tR #()
-  {{{ RET #(); dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
-Proof.
-Admitted.
-
-(** ** Choice and Branch Operations 
-    
-    These operations provide choice/branching in DSP protocols.
-    - Internal choice: One endpoint decides which branch, pure protocol update
-    - External choice: Endpoint receives and reacts to the other's decision
-*)
-
-(** Left endpoint makes internal choice - pure protocol update, no communication *)
-Lemma dsp_left_internal_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (b : bool) (P1 P2 : iProp Σ) 
-    (p_choice p1 p2 : iProto Σ (DspV V_LR V_RL)) E :
-  ↑N ⊆ E →
-  (if b then P1 else P2) -∗
-  dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    p_choice ={E}=∗
-  dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    (if b then p1 else p2).
-Proof.
-Admitted.
-
-(** Left endpoint receives external choice - destruct on right endpoint's decision *)
-Lemma dsp_left_external_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (P1 P2 : iProp Σ) 
-    (m : iMsg Σ (DspV V_LR V_RL))
-    (p1 p2 : iProto Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-        (<?> m) ∗
-      (* Message encodes receiving a choice with appropriate resources *)
-      (∀ (v : V_RL) (p' : iProto Σ (DspV V_LR V_RL)),
-         iMsg_car m (inr v) (Next p') -∗
-         (∃ (b : bool), ⌜p' = if b then p1 else p2⌝ ∗ if b then P1 else P2)) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
-  {{{ (v : V_RL) (ok : bool), RET (#v, #ok);
-      if ok then 
-        ∃ (b : bool) (p' : iProto Σ (DspV V_LR V_RL)),
-          ⌜p' = if b then p1 else p2⌝ ∗
-          dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' ∗ 
-          if b then P1 else P2
-      else
-        (<?> m) ⊑ END ∗
-        dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
-Proof.
-Admitted.
-
-(** Right endpoint makes internal choice - pure protocol update, no communication *)
-Lemma dsp_right_internal_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (b : bool) (P1 P2 : iProp Σ) 
-    (p_choice p1 p2 : iProto Σ (DspV V_LR V_RL)) E :
-  ↑N ⊆ E →
-  (if b then P1 else P2) -∗
-  dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    p_choice ={E}=∗
-  dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    (if b then p1 else p2).
-Proof.
-Admitted.
-
-(** Right endpoint receives external choice - destruct on left endpoint's decision *)
-Lemma dsp_right_external_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (P1 P2 : iProp Σ) 
-    (m : iMsg Σ (DspV V_LR V_RL))
-    (p1 p2 : iProto Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-        (<?> m) ∗
-      (* Message encodes receiving a choice with appropriate resources *)
-      (∀ (v : V_LR) (p' : iProto Σ (DspV V_LR V_RL)),
-         iMsg_car m (inl v) (Next p') -∗
-         (∃ (b : bool), ⌜p' = if b then p1 else p2⌝ ∗ if b then P1 else P2)) }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tL #()
-  {{{ (v : V_LR) (ok : bool), RET (#v, #ok);
-      if ok then 
-        ∃ (b : bool) (p' : iProto Σ (DspV V_LR V_RL)),
-          ⌜p' = if b then p1 else p2⌝ ∗
-          dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' ∗ 
-          if b then P1 else P2
-      else
-        (<?> m) ⊑ END ∗
-        dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+  {{{ RET #(); dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap None }}}.
 Proof.
 Admitted.
 
