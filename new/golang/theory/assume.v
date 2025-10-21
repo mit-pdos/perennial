@@ -1,4 +1,3 @@
-From New Require Export notation.
 From New.golang.defn Require Export builtin assume.
 From New.golang.theory Require Export builtin typing proofmode.
 From Perennial Require Import base.

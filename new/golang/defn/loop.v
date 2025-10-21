@@ -1,4 +1,3 @@
-From New Require Import notation.
 From New.golang.defn Require Import exception.
 From Perennial Require Import base.
 

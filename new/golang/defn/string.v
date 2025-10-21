@@ -1,4 +1,3 @@
-From New.golang.defn Require Import notation.
 From New.golang.defn Require Import prelang slice.
 From Perennial Require Import base.
 

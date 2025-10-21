@@ -1,5 +1,4 @@
-From New Require Import notation.
-From New.golang.defn Require Import prelang.
+From New.golang.defn Require Import postlang.
 
 Section goose_lang.
 Context `{ffi_syntax}.
@@ -66,4 +65,3 @@ Definition make_nondet (t : go_type) : val :=
      end.
 
 End goose_lang.
-

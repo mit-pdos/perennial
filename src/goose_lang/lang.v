@@ -298,11 +298,11 @@ with val :=
 End external.
 End goose_lang.
 
-Bind Scope expr_scope with expr.
-Bind Scope val_scope with val.
-
 (* Prefer goose_lang names over ectx_language names. *)
 Export goose_lang.
+
+Bind Scope expr_scope with expr.
+Bind Scope val_scope with val.
 
 Notation Panic s := (Primitive0 (PanicOp s)).
 Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).

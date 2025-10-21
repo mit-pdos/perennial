@@ -1,4 +1,3 @@
-From New Require Export notation.
 From New.golang.defn Require Export prelang.
 From Perennial Require Import base.
 
