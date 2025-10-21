@@ -383,7 +383,7 @@ Proof.
   rewrite length_drop length_take.
   auto.
 Qed.
-#[global] Hint Rewrite @subslice_length'.
+#[global] Hint Rewrite @subslice_length' : len.
 
 Theorem subslice_length {A} n m (l: list A) :
   (m <= length l)%nat ->
