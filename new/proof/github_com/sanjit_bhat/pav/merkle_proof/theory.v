@@ -1096,10 +1096,7 @@ Proof.
     simplify_eq/=.
 
     (* t1=Inner case. very tricky. *)
-    (* TODO: upstream. this doesn't support [occurrence] clauses like [in *]. *)
-    Tactic Notation "ereplace0" open_constr(x) "with" open_constr(y) "in" constr(z) :=
-      replace x with y in z.
-    ereplace0
+    ereplace
       (if get_bit label depth
         then if get_bit label0 depth then ?[a] else ?[b]
         else if get_bit label0 depth then ?b else ?a)
