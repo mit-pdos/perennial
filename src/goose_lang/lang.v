@@ -205,6 +205,45 @@ Definition dec_base_lit t :=
   | _ => LitUnit
   end.
 
+Inductive go_op : Type :=
+| AngelicExit
+
+| GoLoad (t : go.type)
+| GoStore (t : go.type)
+| GoAlloc (t : go.type)
+
+| FuncCall (func_id : go_string)
+| MethodCall (t : go.type) (m : go_string)
+
+| PackageInitCheck (pkg_name : go_string)
+| PackageInitMark (pkg_name : go_string)
+
+| GlobalVarAddr (var_name : go_string)
+
+| StructFieldRef (t : go.type) (f : go_string)
+| StructFieldGet (f : go_string)
+| StructFieldSet (f : go_string)
+
+| Len
+| Cap 
+| SliceIndexRef (t : go.type) (* int *)
+| Make (t : go.type) (* can do slice, map, etc. *)
+| Slice
+
+| ArrayElemRef (t : go.type) (* int *)
+
+(* these are internal steps; the Go map lookup has to be implemented as multiple
+   instructions because it is not atomic. *)
+| InternalMapLookup
+| InternalMapInsert
+.
+
+(*
+TODO:
+[ ] Go interfaces
+[ ] Define semantics for other ops.
+ *)
+
 Inductive expr :=
   (* Values *)
   | Val (v : val)
@@ -298,17 +337,18 @@ Class GoContext : Type :=
     global_addr : go_string → loc;
     functions : go_string → option val;
     methods : go.type → go_string → option val;
+
     alloc : go.type → val;
     load : go.type → val;
     store : go.type → val;
-    size : go.type → Z;
+
     struct_field_ref : go.type → go_string → loc → loc;
     slice_index_ref : go.type → Z → slice.t → loc;
     array_index_ref : go.type → Z → loc → loc;
     to_underlying : go.type → go.type;
-    is_map_pure (v : val) (m : val → option val) : Prop;
-    map_lookup : go.type → val → option val;
-    map_insert : go.type → val → val;
+    is_map_pure (v : val) (m : val → bool * val) : Prop;
+    map_lookup : val → val → bool * val;
+    map_insert : val → val → val → val;
   }.
 
 Context {ffi : ffi_model}.
@@ -362,6 +402,7 @@ Record global_state : Type := {
   used_proph_id: gset proph_id;
 }.
 
+Global Instance eta_go_state : Settable _ := settable! Build_GoState <go_context; inited_packages>.
 Global Instance eta_state : Settable _ := settable! Build_state <heap; go_state; world; trace; oracle>.
 Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
 
@@ -528,7 +569,6 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
       alloc := inhabitant;
       load := inhabitant;
       store:= inhabitant;
-      size := inhabitant;
       struct_field_ref := inhabitant;
       array_index_ref := inhabitant;
       slice_index_ref := inhabitant;
@@ -989,33 +1029,51 @@ Definition val_cmpxchg_safe (v : val) : bool :=
   | _ => false
   end.
 
-Definition go_instruction_step (g : GoState) (op : go_op) (arg : val) : option val :=
-  let go_context := g.(go_context) in
+Definition go_instruction_step (op : go_op) (arg : val) :
+  transition (state * global_state) (list observation * expr * list expr) :=
+  σ ← reads (λ '(σ,g), σ);
+  let _ := σ.(go_state).(go_context) in
   match op, arg with
-  | GoLoad t, _ => Some $ load t
-  | GoStore t, _ => Some $ store t
-  | GoAlloc t, _ => Some $ alloc t
-  | FuncCall f, _ => functions f
-  | MethodCall t m, _ => methods t m
-  (* `PackageInitCheck` interacts with GoState *)
-  (* `PackageInitMark` interacts with GoState *)
-  | GlobalVarAddr v, _ => Some $ LitV $ LitLoc $ global_addr v
+  | AngelicExit, _ =>
+      ret_expr $ App (Val $ GoInstruction AngelicExit) (Val arg)
+  | GoLoad t, _ =>
+      ret_expr $ App (Val $ load t) (Val arg)
+  | GoStore t, _ =>
+      ret_expr $ App (Val $ store t) (Val arg)
+  | GoAlloc t, _ =>
+      ret_expr $ App (Val $ alloc t) (Val arg)
+  | FuncCall f, _ =>
+      match functions f with | Some f => ret_expr (Val f) | _ => undefined end
+  | MethodCall t f, _ =>
+      match methods t f with | Some f => ret_expr (Val f) | _ => undefined end
+  | PackageInitCheck pkg_id, _ =>
+      ret_expr $ Val $ LitV $ LitBool $ bool_decide (pkg_id ∈ σ.(go_state).(inited_packages))
+  | PackageInitMark pkg_id, _ =>
+      modifyσ $ set go_state $ set inited_packages ({[ pkg_id ]} ∪.) ;;
+      ret_expr $ Val $ LitV $ LitUnit
+  | GlobalVarAddr var, _ =>
+      ret_expr $ Val $ LitV $ LitLoc (global_addr var)
   | StructFieldRef t f, LitV (LitLoc l) =>
-      Some $ LitV $ LitLoc $ struct_field_ref t f l
-  | StructFieldGet f, (StructV m) => (m !! f)
-  | Len, LitV (LitSlice s) => Some $ LitV $ LitInt s.(slice.len)
-  | Cap, LitV (LitSlice s) => Some $ LitV $ LitInt s.(slice.cap)
-  | SliceIndexRef t, PairV (LitV (LitSlice s)) (LitV (LitInt i)) =>
-      Some $ LitV $ LitLoc $ slice_index_ref t (uint.Z i) s
-
-  (* `Make` interacts with heap *)
-  (* TODO: would be nice if `Make` could non-deterministically pick a sequence
-     of addresses, and angelically fail if none can be found. Angelic failure
-     would require either
-     1) no longer requiring "reducible" in WP, or
-     2) having a special "angelic fail" instruction which reduces to itself forever.
-   *)
-  | _, _ => None
+      ret_expr $ Val $ LitV $ LitLoc $ struct_field_ref t f l
+  | StructFieldGet f, StructV m =>
+      match m !! f with | Some v => ret_expr (Val v) | _ => undefined end
+  | StructFieldSet f, PairV (StructV m) v =>
+      ret_expr $ Val $ StructV (<[f := v]> m)
+  | Len, LitV (LitSlice s) =>
+      ret_expr $ Val $ LitV $ LitInt s.(slice.len)
+  | Cap, LitV (LitSlice s) =>
+      ret_expr $ Val $ LitV $ LitInt s.(slice.cap)
+  | SliceIndexRef t, PairV (LitV (LitSlice s)) (LitV (LitInt j)) =>
+      ret_expr $ Val $ LitV $ LitLoc (slice_index_ref t (sint.Z j) s)
+  | Make t, _ => undefined
+  | Slice, _ => undefined
+  | ArrayElemRef t, PairV (LitV (LitLoc l)) (LitV (LitInt j)) =>
+      ret_expr $ Val $ LitV $ LitLoc (array_index_ref t (sint.Z j) l)
+  | InternalMapLookup, PairV m k =>
+      let '(ok, v) := map_lookup m k in ret_expr $ Val $ (PairV v (LitV $ LitBool ok))
+  | InternalMapInsert, PairV m (PairV k v) =>
+      ret_expr $ Val $ map_insert m k v
+  | _, _ => undefined
   end.
 
 Definition base_trans (e: expr) :
@@ -1116,16 +1174,8 @@ Definition base_trans (e: expr) :
     atomically
       (modifyσ (set trace (add_event (Out_ev v)));;
        ret $ LitV $ LitUnit)
-  | App (Val (GoInstruction (GoLoad t))) (Val v) =>
-      atomicallyM
-      (σ ← reads (λ '(σ,g), σ);
-       ret $ (App (Val (σ.(go_state).(go_context).(load) t)) (Val v))
-      )
-  | App (Val (GoInstruction (StructFieldRef t f))) (Val (LitV (LitLoc l))) =>
-      atomically
-      (σ ← reads (λ '(σ,g), σ);
-       ret $ LitV $ LitLoc (σ.(go_state).(go_context).(struct_field_ref) t f l)
-      )
+  | App (Val (GoInstruction op)) (Val arg) =>
+      go_instruction_step op arg
   | CmpXchg (Val (LitV (LitLoc l))) (Val v1) (Val v2) =>
     atomically
       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;

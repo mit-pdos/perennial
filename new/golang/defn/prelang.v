@@ -79,37 +79,3 @@ Fixpoint type_to_string (t : type) : go_string :=
 End go.
 
 Global Coercion go.TypeLit : go.type_lit >-> go.type.
-
-Inductive go_op : Type :=
-| AngelicExit
-
-| GoLoad (t : go.type)
-| GoStore (t : go.type)
-| GoAlloc (t : go.type)
-
-| FuncCall (func_id : go_string)
-| MethodCall (t : go.type) (m : go_string)
-
-| PackageInitCheck (pkg_name : go_string)
-| PackageInitMark (pkg_name : go_string)
-
-| GlobalVarAddr (var_name : go_string)
-
-| StructFieldRef (t : go.type) (f : go_string)
-| StructFieldGet (f : go_string)
-| StructFieldSet (f : go_string)
-
-| Len
-| Cap 
-| SliceIndexRef (t : go.type) (* int *)
-| Make (t : go.type) (* can do slice, map, etc. *)
-
-| Slice
-
-| ArrayElemRef (t : go.type) (* int *).
-
-(*
-TODO:
-[ ] Go interfaces
-[ ] Define semantics for other ops.
- *)
