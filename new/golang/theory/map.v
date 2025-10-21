@@ -1,7 +1,7 @@
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export map.
-From New.golang.theory Require Export list mem exception loop typing.
+From New.golang.theory Require Export mem exception loop.
 From Perennial Require Import base.
 
 Transparent map.insert map.get map.delete map.for_range map.len map.make.
@@ -67,13 +67,13 @@ Lemma wp_map_literal_val (l:list (K * V)):
   {{{ True }}}
     map.literal_val vt #l
   {{{ v, RET v; ⌜ is_map_val v (list_to_map l) ⌝ }}}.
-Proof. 
+Proof.
   iIntros (?) "% HΦ".
   iInduction l as [| h tl] "IH" forall (Φ).
   + wp_call.
     iApply "HΦ".
     iPureIntro.
-    unfold is_map_val. 
+    unfold is_map_val.
     done.
   + wp_call.
     wp_bind (map.literal_val _ _)%E.
@@ -93,8 +93,8 @@ Proof.
       * done.
       * done.
     - reflexivity.
-Qed. 
-     
+Qed.
+
 Lemma wp_map_literal (l:list (K * V)):
   {{{ ⌜ is_comparable_go_type kt = true ⌝ }}}
     map.literal vt #l

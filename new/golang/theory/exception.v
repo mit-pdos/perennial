@@ -1,5 +1,5 @@
 From New.golang.defn Require Export exception.
-From New.golang.theory Require Export proofmode typing.
+From New.golang.theory Require Export proofmode.
 From iris.proofmode Require Import coq_tactics.
 Import Ltac2.
 Set Default Proof Mode "Classic".

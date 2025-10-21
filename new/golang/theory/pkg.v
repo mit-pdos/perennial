@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.theory Require Import exception mem typing list assume.
+From New.golang.theory Require Import exception mem assume.
 From New.golang.defn Require Export pkg.
 From Perennial Require Import base.
 Import Ltac2. Import Printf.

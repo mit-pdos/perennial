@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Export loop.
-From New.golang.theory Require Import exception typing.
+From New.golang.theory Require Import exception.
 From iris_named_props Require Export named_props.
 From Perennial Require Import base.
 
