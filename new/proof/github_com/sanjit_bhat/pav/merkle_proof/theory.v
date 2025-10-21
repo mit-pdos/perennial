@@ -567,18 +567,6 @@ Fixpoint is_limit' t limit :=
 Definition is_limit t := is_limit' t max_depth.
 Hint Unfold is_limit : merkle.
 
-Lemma is_limit_inc t (l0 l1 : nat) :
-  is_limit' t l0 →
-  l0 ≤ l1 →
-  is_limit' t l1.
-Proof.
-  revert l0 l1.
-  induction t; try done.
-  simpl. intros.
-  repeat (case_match; [done|]).
-  naive_solver lia.
-Qed.
-
 Definition cut_full_reln' ct ft lim h : iProp Σ :=
   "#Hct" ∷ is_cut_tree ct h ∗
   "#Hft" ∷ is_full_tree' ft h lim.
@@ -1055,6 +1043,20 @@ Proof.
       simplify_eq/=; rw_get_bit; naive_solver.
 Qed.
 
+(* easier [map_eq] extensional proof vs. using fin_map reductions. *)
+Lemma to_map_over_put t t' label val :
+  pure_put t label val = Some t' →
+  to_map t' = <[label:=val]>(to_map t).
+Proof.
+  intros. apply map_eq. intros.
+  destruct (decide (label = i)); subst; simpl_map.
+  - apply entry_eq_lookup.
+    by eapply put_new_entry.
+  - rewrite -entry_eq_lookup.
+    eapply old_entry_over_put; [|done..].
+    by apply entry_eq_lookup.
+Qed.
+
 (* note: since put is pure, this lemma can't *give* post-put hash resources.
 instead it requires them. *)
 Lemma cut_full_over_put t0 t0' t1 t1' h0 h1 label val :
@@ -1239,20 +1241,6 @@ Proof.
       iNamed "Hreln1".
       iDestruct (is_cut_tree_det with "Hchild1 Ht0") as %->.
       iFrame "#".
-Qed.
-
-(* easier [map_eq] extensional proof vs. using fin_map reductions. *)
-Lemma to_map_over_put t t' label val :
-  pure_put t label val = Some t' →
-  to_map t' = <[label:=val]>(to_map t).
-Proof.
-  intros. apply map_eq. intros.
-  destruct (decide (label = i)); subst; simpl_map.
-  - apply entry_eq_lookup.
-    by eapply put_new_entry.
-  - rewrite -entry_eq_lookup.
-    eapply old_entry_over_put; [|done..].
-    by apply entry_eq_lookup.
 Qed.
 
 Tactic Notation "rw_pure_put" := repeat
