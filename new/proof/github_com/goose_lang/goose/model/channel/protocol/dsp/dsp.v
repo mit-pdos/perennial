@@ -3,6 +3,7 @@ From New.proof.github_com.goose_lang.goose.model.channel
      Require Export chan_au_send chan_au_recv chan_au_base chan_init.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export dsp_ghost_theory.
+From iris.base_logic.lib Require Import token.
 
 (** * Dependent Separation Protocols (DSP) over Go Channels
 
@@ -29,6 +30,7 @@ Context `{!ghost_varG Σ ()}.
 Context `{!chanGhostStateG Σ val}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!protoG Σ val}.
+Context `{!tokenG Σ}.
 
 #[export] Instance into_val_val : IntoVal val := { to_val_def := id }.
 Instance into_val_typed_val : IntoValTyped val atomic.Value.
@@ -52,7 +54,7 @@ Definition buffer_matches {V}
 
 (** DSP session invariant - owns both channels and maintains protocol state *)
 Definition dsp_session_inv
-    (γl γr : gname)
+    (γl γr γtl γtr : gname)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) : iProp Σ :=
   ∃ lr_state rl_state vsl vsr,
@@ -62,18 +64,18 @@ Definition dsp_session_inv
     own_channel rl_chan rlcap rl_state γrl_names ∗
     match lr_state with
     | chan_rep.Closed _ => iProto_own γl END
-    | _ => True
+    | _ => token γtl
     end ∗
     match rl_state with
     | chan_rep.Closed _ => iProto_own γr END
-    | _ => True
+    | _ => token γtr
     end ∗
     iProto_ctx γl γr vsl vsr.
 
 Lemma dsp_session_inv_sym
-    γl γr lr_chan rl_chan γlr_names γrl_names lrcap rlcap :
-   dsp_session_inv γl γr lr_chan rl_chan γlr_names γrl_names lrcap rlcap ⊣⊢
-   dsp_session_inv γr γl rl_chan lr_chan γrl_names γlr_names rlcap lrcap.
+    γl γr γtl γtr lr_chan rl_chan γlr_names γrl_names lrcap rlcap :
+   dsp_session_inv γl γr γtl γtr lr_chan rl_chan γlr_names γrl_names lrcap rlcap ⊣⊢
+   dsp_session_inv γr γl γtr γtl rl_chan lr_chan γrl_names γlr_names rlcap lrcap.
 Proof.
   iSplit.
   - iDestruct 1 as (????) "(Hcl&Hcr&?&?&?&?&Hp)". iFrame. by iApply iProto_ctx_sym.
@@ -82,12 +84,12 @@ Qed.
 
 (** DSP session context - public interface with persistent channel handles *)
 Definition dsp_session
-    (γl γr : gname)
+    (γl γr γtl γtr : gname)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) : iProp Σ :=
   is_channel lr_chan lrcap γlr_names ∗
   is_channel rl_chan rlcap γrl_names ∗
-  inv N (dsp_session_inv γl γr lr_chan rl_chan γlr_names γrl_names lrcap rlcap).
+  inv N (dsp_session_inv γl γr γtl γtr lr_chan rl_chan γlr_names γrl_names lrcap rlcap).
 
 (** ** DSP Endpoints *)
 
@@ -95,12 +97,12 @@ Definition dsp_session
 Definition dsp_endpoint
     (v:val)
     (p : option $ iProto Σ val) : iProp Σ :=
-  ∃ (γl γr : gname) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+  ∃ (γl γr γtl γtr : gname) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z),
     ⌜v = #(lr_chan,rl_chan)⌝ ∗
-    dsp_session γl γr lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
+    dsp_session γl γr γtl γtr lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
     match p with
-    | None => True
+    | None => token γtl
     | Some p => iProto_own γl p
     end.
 
@@ -121,14 +123,16 @@ Lemma dsp_session_init
 Proof.
   iIntros "#Hcl_is #Hcr_is Hcl_own Hcr_own".
   iMod (iProto_init) as (γl γr) "(Hctx & Hpl & Hpr)".
-  iMod (inv_alloc N _ (dsp_session_inv γl γr lr_chan rl_chan γlr_names γrl_names lrcap rlcap) with "[Hcl_own Hcr_own Hctx]")
+  iMod (token_alloc) as (γtl) "Htl".
+  iMod (token_alloc) as (γtr) "Htr".
+  iMod (inv_alloc N _ (dsp_session_inv γl γr γtl γtr lr_chan rl_chan γlr_names γrl_names lrcap rlcap) with "[Hcl_own Hcr_own Htl Htr Hctx]")
     as "#Hinv".
   { iExists chan_rep.Idle,chan_rep.Idle,[],[]. by iFrame. }
   iModIntro.
   iSplitL "Hpl".
-  - iExists _,_,_,_,_,_,_,_. iSplit; [done|].    
+  - iExists _,_,_,_,_,_,_,_,_,_. iSplit; [done|].    
     iFrame "Hpl Hinv". iFrame "∗#".
-  - iExists _,_,_,_,_,_,_,_. iSplit; [done|].
+  - iExists _,_,_,_,_,_,_,_,_,_. iSplit; [done|].
     rewrite dsp_session_inv_sym. iFrame "Hinv".
     iFrame "∗#".
 Qed.
@@ -145,7 +149,7 @@ Lemma dsp_send (lr_chan rl_chan : loc) (v : val) (p : iProto Σ val) :
   {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
-  iDestruct "Hc" as (???????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
@@ -183,7 +187,7 @@ Proof.
     destruct lr_state; try done.
     + iIntros "Hownl". iMod "Hclose'".
       iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]").
-      { iIntros "!>". iExists _,_,_,_. iFrame. done. }
+      { iIntros "!>". iExists _,_,_,_. iFrame. iFrame. done. }
       iApply "HΦ". iFrame "#∗". done.
     + iDestruct (iProto_own_excl with "Hown Hclosel") as "[]".
   - done.
@@ -213,7 +217,7 @@ Lemma dsp_recv {TT:tele}
   {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
-  iDestruct "Hc" as (???????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
@@ -249,7 +253,7 @@ Proof.
   - iIntros "Hownr".
     iMod "Hclose'" as "_".
     iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
-    { iIntros "!>". iExists _,_,_,_. iFrame. done. }
+    { iIntros "!>". iExists _,_,_,_. iFrame. iFrame. done. }
     iModIntro.
     iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
     iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -335,7 +339,7 @@ Lemma dsp_close  (lr_chan rl_chan : loc) (p : iProto Σ val) :
   {{{ RET #(); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
-  iDestruct "Hc" as (???????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
@@ -350,13 +354,13 @@ Proof.
   destruct lr_state; try done.
   - iIntros "Hownl".
     iMod "Hclose'".
-    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx Hp]") as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hcloser Hctx Hp]") as "_".
     { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iFrame "Hp". iSplit; [done|].
       iPureIntro. simpl in *. by simplify_eq. }
     iApply "HΦ". by iFrame "#∗".
   - iIntros "Hownl".
     iMod "Hclose'".
-    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx Hp]") as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hcloser Hctx Hp]") as "_".
     { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iFrame "Hp". iSplit; [done|].
       iPureIntro. simpl in *. by simplify_eq. }
     iApply "HΦ". by iFrame "#∗".
@@ -367,11 +371,11 @@ Qed.
 Lemma dsp_recv_end {TT:tele} (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
-    {{{ RET (into_val_typed_val.(default_val val) ::= #false);
+  {{{ RET (into_val_typed_val.(default_val val) ::= #false);
         #(lr_chan,rl_chan) ↣ END }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
-  iDestruct "Hc" as (???????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
@@ -444,5 +448,64 @@ Proof.
       iPureIntro. simpl in *. by simplify_eq. }
     iApply "HΦ". by iFrame "#∗".
 Qed.  
+
+(** Endpoint receives on a closed or ended channel *)
+Lemma dsp_recv_closed {TT:tele} (lr_chan rl_chan : loc) :
+  {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
+  {{{ RET (into_val_typed_val.(default_val val) ::= #false);
+        ↯ #(lr_chan,rl_chan) }}}.
+Proof.
+  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
+  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iIntros "H£s".
+  iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+  iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+  iCombine "Hctx Hclosel" as "H".
+  iDestruct "H£s" as "[H£ H£s]".
+  iMod (lc_fupd_elim_later with "H£ H") as "[Hctx Hclosel]".
+  destruct lr_state; try by iDestruct (token_exclusive with "Hp Hclosel") as "[]".  
+  iDestruct (iProto_end_inv_l with "Hctx Hclosel") as "#>%".
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hclose'".
+  iModIntro.
+  iExists _. iFrame.
+  destruct rl_state; try done.
+  - simpl in *. simplify_eq. iFrame. done.
+  - simpl in *. simplify_eq.
+    iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|]. by iFrame. }
+    iModIntro.
+    iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+    iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hctx Hclosel" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hctx Hclosel]".
+    iApply fupd_mask_intro; [solve_ndisj|].
+    iIntros "Hclose'".
+    iFrame.
+    destruct lr_state; try by iDestruct (token_exclusive with "Hp Hclosel") as "[]".  
+    iDestruct (iProto_end_inv_l with "Hctx Hclosel") as "#>->".
+    destruct rl_state; try done.
+    simpl in *. simplify_eq.
+    iIntros "!> Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|]. by iFrame. }
+    iApply "HΦ". by iFrame "#∗".
+  - simpl in *. by simplify_eq.
+  - simpl in *. simplify_eq.
+    iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|]. by iFrame. }
+    iApply "HΦ". by iFrame "#∗".
+Qed.
 
 End dsp.
