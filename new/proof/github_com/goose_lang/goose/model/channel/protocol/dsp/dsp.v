@@ -27,9 +27,9 @@ From iris.base_logic.lib Require Import token.
 Section dsp.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!ghost_varG Σ ()}.
-Context `{!chanGhostStateG Σ interface.t}.
+Context `{!chanGhostStateG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!protoG Σ interface.t}.
+Context `{!protoG Σ V}.
 Context `{!tokenG Σ}.
 
 Let N := nroot .@ "dsp_chan".
@@ -92,7 +92,7 @@ Definition dsp_session
 (** Left endpoint - can send V_LR via lr_chan, receive V_RL via rl_chan *)
 Definition dsp_endpoint
     (v : val)
-    (p : option $ iProto Σ interface.t) : iProp Σ :=
+    (p : option $ iProto Σ V) : iProp Σ :=
   ∃ (γl γr γtl γtr : gname) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z),
     ⌜v = #(lr_chan,rl_chan)⌝ ∗
@@ -116,7 +116,7 @@ Proof. apply (ne_proper _). Qed.
 (** Initialize a new DSP session from basic channels *)
 Lemma dsp_session_init
     E (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (p : iProto Σ interface.t) :
+    (lrcap rlcap: Z) (p : iProto Σ V) :
   is_channel lr_chan lrcap γlr_names -∗
   is_channel rl_chan rlcap γrl_names -∗
   own_channel lr_chan lrcap chan_rep.Idle γlr_names -∗
@@ -141,13 +141,10 @@ Qed.
 
 (** ** Endpoint Operations *)
 
-(* Lemma into_val_val_unfold (v : val) : #v = v. *)
-(* Proof. by rewrite to_val_unseal /to_val_def /=. Qed. *)
-
 (** Endpoint sends value *)
-Lemma dsp_send (lr_chan rl_chan : loc) (v : interface.t) (p : iProto Σ interface.t) :
+Lemma dsp_send (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #interfaceT #v
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #tV #v
   {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -208,9 +205,9 @@ Admitted.
 
 (** Endpoint receives value *)
 Lemma dsp_recv {TT:tele}
-    (lr_chan rl_chan : loc) (v : TT → interface.t) (P : TT → iProp Σ) (p : TT → iProto Σ interface.t) :
+    (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #interfaceT #()
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
   {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -330,9 +327,9 @@ Proof.
 Qed.
 
 (** Endpoint closes (stops sending val) *)
-Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ interface.t) :
+Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ V) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #interfaceT #()
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #tV #()
   {{{ RET #(); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -367,8 +364,8 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_end (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #interfaceT #()
-  {{{ RET (default_val interface.t ::= #false); #(lr_chan,rl_chan) ↣ END }}}.
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+  {{{ RET (default_val V ::= #false); #(lr_chan,rl_chan) ↣ END }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
   iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -448,8 +445,8 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #interfaceT #()
-  {{{ RET (default_val interface.t ::= #false); ↯ #(lr_chan,rl_chan) }}}.
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+  {{{ RET (default_val V ::= #false); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
   iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
