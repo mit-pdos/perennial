@@ -5,7 +5,7 @@
 From Perennial.goose_lang Require Export lang notation.
 From Perennial Require Export base.
 
-Class IntoVal `{ffi_syntax} (V : Type) :=
+Class IntoVal {ext : ffi_syntax} (V : Type) :=
   {
     to_val_def : V → val;
     zero_val : V;
@@ -13,7 +13,7 @@ Class IntoVal `{ffi_syntax} (V : Type) :=
 
 Program Definition to_val := sealed @to_val_def.
 Definition to_val_unseal : to_val = _ := seal_eq _.
-Arguments to_val {_ _ _} v.
+Arguments to_val {_ _ _} v%go.
 Arguments zero_val {_} (V) {_}.
 (* Disable Notation "# l". *)
 Global Notation "# x" := (to_val x%go).
@@ -34,37 +34,6 @@ Definition nil := mk <> <> (LitV LitPoison).
 End defn.
 End func.
 
-Section primitive_instances.
-Context `{ffi_syntax}.
-
-Global Instance into_val_loc : IntoVal loc :=
-  {| to_val_def := λ v, (LitV $ LitLoc v); zero_val := null |}.
-
-Global Instance into_val_w64 : IntoVal w64 :=
-  {| to_val_def := λ v, (LitV $ LitInt v); zero_val := W64 0 |}.
-
-Global Instance into_val_w32 : IntoVal w32 :=
-  {| to_val_def := λ v, (LitV $ LitInt32 v); zero_val := W32 0 |}.
-
-Global Instance into_val_w16 : IntoVal w16 :=
-  {| to_val_def := λ v, (LitV $ LitInt16 v); zero_val := W16 0 |}.
-
-Global Instance into_val_w8 : IntoVal w8 :=
-  {| to_val_def := λ v, (LitV $ LitByte v); zero_val := W8 0 |}.
-
-Global Instance into_val_unit : IntoVal () :=
-  {| to_val_def := λ _, (LitV $ LitUnit); zero_val := () |}.
-
-Global Instance into_val_bool : IntoVal bool :=
-  {| to_val_def := λ b, (LitV $ LitBool b); zero_val := false |}.
-
-Global Instance into_val_go_string : IntoVal go_string :=
-  {| to_val_def := λ s, (LitV $ LitString s); zero_val := ""%go |}.
-
-Global Instance into_val_func : IntoVal func.t :=
-  {| to_val_def := λ (f : func.t), RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
-End primitive_instances.
-
 Module chan.
   Definition t := loc.
   Definition nil : chan.t := null.
@@ -81,11 +50,39 @@ Section goose_lang.
 End goose_lang.
 End interface.
 
-Section instances.
+Section into_val_instances.
 Context `{ffi_syntax}.
+
+Global Instance into_val_loc : IntoVal loc :=
+  {| to_val_def v := (LitV $ LitLoc v); zero_val := null |}.
+
+Global Instance into_val_w64 : IntoVal w64 :=
+  {| to_val_def v := (LitV $ LitInt v); zero_val := W64 0 |}.
+
+Global Instance into_val_w32 : IntoVal w32 :=
+  {| to_val_def v := (LitV $ LitInt32 v); zero_val := W32 0 |}.
+
+Global Instance into_val_w16 : IntoVal w16 :=
+  {| to_val_def v := (LitV $ LitInt16 v); zero_val := W16 0 |}.
+
+Global Instance into_val_w8 : IntoVal w8 :=
+  {| to_val_def v := (LitV $ LitByte v); zero_val := W8 0 |}.
+
+Global Instance into_val_unit : IntoVal () :=
+  {| to_val_def _ := (LitV $ LitUnit); zero_val := () |}.
+
+Global Instance into_val_bool : IntoVal bool :=
+  {| to_val_def b := (LitV $ LitBool b); zero_val := false |}.
+
+Global Instance into_val_go_string : IntoVal go_string :=
+  {| to_val_def s := (LitV $ LitString s); zero_val := ""%go |}.
+
+Global Instance into_val_func : IntoVal func.t :=
+  {| to_val_def f := RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
+
 Global Instance into_val_array `{!IntoVal V} n : IntoVal (vec V n) :=
   {|
-    to_val_def := λ v, (Vector.fold_right PairV (vmap to_val v) #());
+    to_val_def v := ArrayV (to_val <$> (vec_to_list v));
     zero_val := vreplicate n (zero_val V);
   |}.
 
@@ -95,7 +92,7 @@ Global Instance into_val_slice : IntoVal slice.t :=
     zero_val := slice.nil;
   |}.
 
-Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
+Global Instance into_val_interface : IntoVal interface.t :=
   {|
     to_val_def (i: interface.t) :=
       match i with
@@ -105,7 +102,7 @@ Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
     zero_val := interface.nil;
   |}.
 
-End instances.
+End into_val_instances.
 Global Notation "()" := tt : val_scope.
 Global Opaque to_val.
 

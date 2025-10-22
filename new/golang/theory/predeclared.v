@@ -6,37 +6,43 @@ Set Default Proof Using "Type".
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hvalid : go.ContextValid}.
 
-Program Global Instance into_val_proof_loc : IntoValProof loc :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-Program Global Instance into_val_proof_w64 : IntoValProof w64 :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_w64 : TypedPointsto w64 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-Program Global Instance into_val_proof_w32 : IntoValProof w32 :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_w32 : TypedPointsto w32 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-Program Global Instance into_val_proof_w16 : IntoValProof w16 :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_w16 : TypedPointsto w16 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-Program Global Instance into_val_proof_w8 : IntoValProof w8 :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_w8 : TypedPointsto w8 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-Program Global Instance into_val_proof_bool : IntoValProof bool :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_bool : TypedPointsto bool :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-Program Global Instance into_val_proof_string : IntoValProof go_string :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_string : TypedPointsto go_string :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-Program Global Instance into_val_proof_slice : IntoValProof slice.t :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Program Global Instance typed_pointsto_slice : TypedPointsto slice.t :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+
+Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+
+(* FIXME: `array_index_ref` requires a `go.type`, but for the `vec V n`
+   points-to, all we have is the Type `V`. *)
+
+Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
+               `{!TypedPointsto V} `{!IntoValTyped V t}
+  : TypedPointsto (vec V n) :=
+  {|
+    typed_pointsto_def l dq v :=
+      ([∗ list] i ↦ ve ∈ (vec_to_list v), array_index_ref t (Z.of_nat i) l ↦ ve)%I;
+  |}.
 
 (* Helper lemmas for establishing [IntoValTyped] *)
 Local Lemma wp_untyped_load l dq v s E :
@@ -98,11 +104,14 @@ Proof using Hvalid. solve_into_val_typed. Qed.
 Global Instance into_val_typed_slice t : IntoValTyped slice.t (go.SliceType t).
 Proof using Hvalid. solve_into_val_typed. Qed.
 
+Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
+Proof using Hvalid. solve_into_val_typed. Qed.
+
+(*  *)
 (* Using [vec] here because the [to_val] must be a total function that always
    meets [has_go_type]. An alternative could be a sigma type. *)
-Program Global Instance into_val_typed_array `{!IntoVal V} `{!IntoValTyped V t} n :
-  IntoValTyped (vec V n) (arrayT n t) :=
-{| default_val := vreplicate n (default_val _) |}.
+Global Instance into_val_typed_array `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t} n
+  : IntoValTyped (vec V n) (go.ArrayType n t) (H:=(typed_pointsto_array V n (t:=_))).
 Next Obligation.
   rewrite to_val_unseal /=.
   solve_has_go_type.
@@ -223,12 +232,12 @@ Context `{!foo_type_assumptions}.
 (* TODO: for struct values, what about using a gmap rather than list val?
    Induction principle might be screwed up. *)
 
-Program Global Instance into_val_proof_w64 : IntoValProof w64 :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := heap_pointsto l dq #v |}.
+Program Global Instance into_val_proof_w64 : TypedPointsto w64 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
 
-Program Global Instance into_val_foo_inj : IntoValProof foo_t :=
-  {| typed_pointsto_def _ _ _ _ _ _ l dq v := (struct_field_ref foo "a"%go l ↦{dq} v.(a))%I |}.
+Program Global Instance into_val_foo_inj : TypedPointsto foo_t :=
+  {| typed_pointsto_def l dq v := (struct_field_ref foo "a"%go l ↦{dq} v.(a))%I |}.
 Next Obligation. rewrite to_val_unseal => ?? [=] //. Admitted.
 Next Obligation. solve_decision. Qed.
 
