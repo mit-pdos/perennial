@@ -27,14 +27,10 @@ From iris.base_logic.lib Require Import token.
 Section dsp.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!ghost_varG Σ ()}.
-Context `{!chanGhostStateG Σ val}.
+Context `{!chanGhostStateG Σ interface.t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!protoG Σ val}.
+Context `{!protoG Σ interface.t}.
 Context `{!tokenG Σ}.
-
-#[export] Instance into_val_val : IntoVal val := { to_val_def := id }.
-Instance into_val_typed_val : IntoValTyped val atomic.Value.
-Proof. Admitted.
 
 Let N := nroot .@ "dsp_chan".
 
@@ -95,8 +91,8 @@ Definition dsp_session
 
 (** Left endpoint - can send V_LR via lr_chan, receive V_RL via rl_chan *)
 Definition dsp_endpoint
-    (v:val)
-    (p : option $ iProto Σ val) : iProp Σ :=
+    (v : val)
+    (p : option $ iProto Σ interface.t) : iProp Σ :=
   ∃ (γl γr γtl γtr : gname) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z),
     ⌜v = #(lr_chan,rl_chan)⌝ ∗
@@ -120,7 +116,7 @@ Proof. apply (ne_proper _). Qed.
 (** Initialize a new DSP session from basic channels *)
 Lemma dsp_session_init
     E (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (p : iProto Σ val) :
+    (lrcap rlcap: Z) (p : iProto Σ interface.t) :
   is_channel lr_chan lrcap γlr_names -∗
   is_channel rl_chan rlcap γrl_names -∗
   own_channel lr_chan lrcap chan_rep.Idle γlr_names -∗
@@ -145,13 +141,13 @@ Qed.
 
 (** ** Endpoint Operations *)
 
-Lemma into_val_val_unfold (v : val) : #v = v.
-Proof. by rewrite to_val_unseal /to_val_def /=. Qed.
+(* Lemma into_val_val_unfold (v : val) : #v = v. *)
+(* Proof. by rewrite to_val_unseal /to_val_def /=. Qed. *)
 
 (** Endpoint sends value *)
-Lemma dsp_send (lr_chan rl_chan : loc) (v : val) (p : iProto Σ val) :
+Lemma dsp_send (lr_chan rl_chan : loc) (v : interface.t) (p : iProto Σ interface.t) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #atomic.Value #v
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #interfaceT #v
   {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -212,9 +208,9 @@ Admitted.
 
 (** Endpoint receives value *)
 Lemma dsp_recv {TT:tele}
-    (lr_chan rl_chan : loc) (v : TT → val) (P : TT → iProp Σ) (p : TT → iProto Σ val) :
+    (lr_chan rl_chan : loc) (v : TT → interface.t) (P : TT → iProp Σ) (p : TT → iProto Σ interface.t) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #interfaceT #()
   {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -334,9 +330,9 @@ Proof.
 Qed.
 
 (** Endpoint closes (stops sending val) *)
-Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ val) :
+Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ interface.t) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #atomic.Value #()
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #interfaceT #()
   {{{ RET #(); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -371,9 +367,8 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_end (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
-  {{{ RET (into_val_typed_val.(default_val val) ::= #false);
-        #(lr_chan,rl_chan) ↣ END }}}.
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #interfaceT #()
+  {{{ RET (default_val interface.t ::= #false); #(lr_chan,rl_chan) ↣ END }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
   iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -453,9 +448,8 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
-  {{{ RET (into_val_typed_val.(default_val val) ::= #false);
-        ↯ #(lr_chan,rl_chan) }}}.
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #interfaceT #()
+  {{{ RET (default_val interface.t ::= #false); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
   iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
