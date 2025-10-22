@@ -1077,6 +1077,128 @@ Section proto.
     iApply (iProto_interp_le_l with "[H] Hle"). by iApply iProto_interp_sym.
   Qed.
 
+  Lemma iProto_interp_end_inv vsl vsr pr :
+    iProto_interp vsl vsr END pr -∗ ⌜vsr = []⌝.
+  Proof.
+    iDestruct 1 as (p) "[Hp Hdp] /=".
+    destruct vsr; [done|].
+    iDestruct (iProto_le_end_inv_l with "Hp") as "#Heq".
+    by rewrite iProto_message_end_equivI.
+  Qed.
+
+  Lemma iProto_interp_send_end_inv vsl vsr vl pl :
+    iProto_interp vsl vsr (<!> MSG vl; pl) END -∗
+    ▷^(length vsr) False.
+  Proof.
+    iIntros "H".
+    iDestruct (iProto_interp_sym with "H") as "H".
+    iDestruct (iProto_interp_end_inv with "H") as %->.
+    iDestruct (iProto_interp_sym with "H") as "H".
+    iDestruct "H" as (p) "[Hp Hdp] /=".
+    iDestruct (iProto_le_dual_l with "Hdp") as "Hdp".
+    rewrite iProto_dual_end.
+    iDestruct (iProto_le_end_inv_r with "Hdp") as "Heq".
+    iRewrite "Heq" in "Hp".
+    iInduction (vsr) as [|vr vsr] "IHvsr" forall (pl); simpl.
+    - iDestruct (iProto_le_end_inv_r with "Hp") as "Hp".
+      by rewrite iProto_message_end_equivI.
+    - iDestruct (iProto_le_send_inv with "Hp") as (a1 m') "[Heq Hp]".
+      rewrite iProto_message_equivI.
+      iDestruct "Heq" as (<-) "Heq".
+      iSpecialize ("Heq" $! vr (Next (iProto_app_recvs vsr END))).
+      iSpecialize ("Hp" $! vr vl (iProto_app_recvs vsr END) pl).
+      iRewrite -"Heq" in "Hp".
+      rewrite {2}iMsg_base_eq /iMsg_base_def /=.
+      rewrite {2}iMsg_base_eq /iMsg_base_def /=.
+      iDestruct ("Hp" with "[//] [//]") as (pt) "[Hp1 Hp2]".
+      by iApply ("IHvsr" with "Hp1").
+  Qed.
+
+  Lemma iProto_interp_recv_end_inv vsl m :
+    iProto_interp vsl [] (<?> m) END -∗
+    False.
+  Proof.
+    iIntros "H".
+    iDestruct (iProto_interp_sym with "H") as "H".
+    iDestruct (iProto_interp_end_inv with "H") as %->.
+    iDestruct (iProto_interp_sym with "H") as "H".
+    iDestruct "H" as (p) "[Hp Hdp] /=".
+    iDestruct (iProto_le_dual_l with "Hdp") as "Hdp".
+    rewrite iProto_dual_end.
+    iDestruct (iProto_le_end_inv_r with "Hdp") as "Heq".
+    iRewrite "Heq" in "Hp".
+    iDestruct (iProto_le_recv_inv with "Hp") as (m1) "[Heq Hp]".
+    by rewrite iProto_end_message_equivI.
+  Qed.
+
+  Lemma iProto_send_end_inv_r γl γr vsl vsr vr pr :
+    iProto_ctx γl γr vsl vsr -∗
+    iProto_own γl END -∗
+    iProto_own γr (<!> MSG vr; pr) -∗
+    ▷ ▷^(length vsl) False.
+  Proof.
+    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
+    iDestruct 1 as (pl'') "[Hlel H◯l]".
+    iDestruct 1 as (pr'') "[Hler H◯r]".
+    iDestruct (iProto_own_auth_agree with "H●l H◯l") as "#Hpl".
+    iDestruct (iProto_own_auth_agree with "H●r H◯r") as "#Hpr".
+    iDestruct (iProto_interp_le_l with "Hinterp [Hlel]") as "Hinterp".
+    { iIntros "!>". by iRewrite "Hpl". }
+    iDestruct (iProto_interp_le_r with "Hinterp [Hler]") as "Hinterp".
+    { iIntros "!>". by iRewrite "Hpr". }
+    iDestruct (iProto_interp_sym with "Hinterp") as "Hinterp".
+    by iDestruct (iProto_interp_send_end_inv with "Hinterp") as "Hneq".
+  Qed.
+
+  (* Make better lemma: i.e. prove that vsr = non-empty, when (<?> m) / END,
+     and derive contradiction from that *)
+  Lemma iProto_recv_end_inv_l γl γr vsl m :
+    iProto_ctx γl γr vsl [] -∗
+    iProto_own γl (<?> m) -∗
+    iProto_own γr END -∗
+    ▷ False.
+  Proof.
+    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
+    iDestruct 1 as (pl'') "[Hlel H◯l]".
+    iDestruct 1 as (pr'') "[Hler H◯r]".
+    iDestruct (iProto_own_auth_agree with "H●l H◯l") as "#Hpl".
+    iDestruct (iProto_own_auth_agree with "H●r H◯r") as "#Hpr".
+    iDestruct (iProto_interp_le_l with "Hinterp [Hlel]") as "Hinterp".
+    { iIntros "!>". by iRewrite "Hpl". }
+    iDestruct (iProto_interp_le_r with "Hinterp [Hler]") as "Hinterp".
+    { iIntros "!>". by iRewrite "Hpr". }
+    by iDestruct (iProto_interp_recv_end_inv with "Hinterp") as "Hneq".
+  Qed.
+
+  Lemma iProto_end_inv_l γl γr vsl vsr :
+    iProto_ctx γl γr vsl vsr -∗
+    iProto_own γl END -∗
+    ▷ ⌜vsr = []⌝.
+  Proof.
+    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
+    iDestruct 1 as (pr'') "[Hle H◯]".
+    iDestruct (iProto_own_auth_agree with "H●l H◯") as "#Hpl".
+    iDestruct (iProto_interp_le_l with "Hinterp [Hle]") as "Hinterp".
+    { iIntros "!>". by iRewrite "Hpl". }
+    iDestruct (iProto_interp_end_inv with "Hinterp") as "Hneq".
+    done.
+  Qed.
+
+  Lemma iProto_end_inv_r γl γr vsl vsr :
+    iProto_ctx γl γr vsl vsr -∗
+    iProto_own γr END -∗
+    ▷ ⌜vsl = []⌝.
+  Proof.
+    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
+    iDestruct 1 as (pl'') "[Hle H◯]".
+    iDestruct (iProto_own_auth_agree with "H●r H◯") as "#Hpr".
+    iDestruct (iProto_interp_le_r with "Hinterp [Hle]") as "Hinterp".
+    { iIntros "!>". by iRewrite "Hpr". }
+    iDestruct (iProto_interp_sym with "Hinterp") as "Hinterp".
+    iDestruct (iProto_interp_end_inv with "Hinterp") as "Hneq".
+    done.
+  Qed.
+
   Lemma iProto_interp_send vl ml vsl vsr pr pl' :
     iProto_interp vsl vsr (<!> ml) pr -∗
     iMsg_car ml vl (Next pl') -∗

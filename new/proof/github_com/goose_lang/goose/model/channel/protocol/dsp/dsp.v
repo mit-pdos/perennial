@@ -97,7 +97,7 @@ Definition dsp_endpoint
     (p : option $ iProto Σ val) : iProp Σ :=
   ∃ (γl γr : gname) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z),
-    ⌜v = #lr_chan⌝ ∗
+    ⌜v = #(lr_chan,rl_chan)⌝ ∗
     dsp_session γl γr lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
     match p with
     | None => True
@@ -117,7 +117,7 @@ Lemma dsp_session_init
   is_channel rl_chan rlcap γrl_names -∗
   own_channel lr_chan lrcap chan_rep.Idle γlr_names -∗
   own_channel rl_chan rlcap chan_rep.Idle γrl_names ={E}=∗
-  #lr_chan ↣ p ∗ #rl_chan ↣ iProto_dual p.
+  #(lr_chan,rl_chan) ↣ p ∗ #(rl_chan,lr_chan) ↣ iProto_dual p.
 Proof.
   iIntros "#Hcl_is #Hcr_is Hcl_own Hcr_own".
   iMod (iProto_init) as (γl γr) "(Hctx & Hpl & Hpr)".
@@ -139,15 +139,16 @@ Lemma into_val_val_unfold (v : val) : #v = v.
 Proof. by rewrite to_val_unseal /to_val_def /=. Qed.
 
 (** Endpoint sends value *)
-Lemma dsp_send (c : val) (v : val) (p : iProto Σ val) :
-  {{{ is_pkg_init channel ∗ c ↣ <!> MSG v; p }}}
-    c @ (ptrT.id channel.Channel.id) @ "Send" #atomic.Value #v
-  {{{ RET #(); c ↣ p }}}.
+Lemma dsp_send (lr_chan rl_chan : loc) (v : val) (p : iProto Σ val) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #atomic.Value #v
+  {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
-  iDestruct "Hc" as (????????->) "(#(Hcl&Hcr&HI)&Hp)".
-  replace (# (# lr_chan)) with (# lr_chan); last first.
-  { by rewrite into_val_val_unfold. }
+  iDestruct "Hc" as (???????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
   iApply (wp_Send lr_chan lrcap v γlr_names with "[$Hinit $Hcl]").
   iIntros "H£".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
@@ -159,7 +160,7 @@ Proof.
   destruct lr_state.
   - destruct (length buff <? lrcap)%Z; [|done].
     iIntros "Hownl".
-    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx [$Hp] []") as "Hp".
+    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
     { by rewrite iMsg_base_eq. }
     iMod "Hp" as "[Hp Hown]". iMod "Hclose'" as "_".
     iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hp]").
@@ -167,7 +168,7 @@ Proof.
       iFrame. inversion H. subst. admit. }    
     iApply "HΦ". by iFrame "#∗".
   - iIntros "Hownl".
-    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx [$Hp] []") as "Hp".
+    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
     { by rewrite iMsg_base_eq. }
     iMod "Hp" as "[Hctx Hown]". iMod "Hclose'" as "_". 
     iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]").
@@ -187,7 +188,7 @@ Proof.
     + iDestruct (iProto_own_excl with "Hown Hclosel") as "[]".
   - done.
   - iIntros "Hownl".
-    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx [$Hp] []") as "Hp".
+    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
     { by rewrite iMsg_base_eq. }
     iMod "Hp" as "[Hp Hown]". iMod "Hclose'".
     iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hp]").
@@ -199,14 +200,133 @@ Proof.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
 Admitted.
 
+Global Instance iProto_pointsto_ne c : NonExpansive (dsp_endpoint c).
+Proof. solve_proper. Qed.
+Global Instance iProto_pointsto_proper c : Proper ((≡) ==> (≡)) (dsp_endpoint c).
+Proof. apply (ne_proper _). Qed.
+
 (** Endpoint receives value *)
 Lemma dsp_recv {TT:tele}
-    (c: val) (v : TT → val) (P : TT → iProp Σ) (p : TT → iProto Σ val) :
-  {{{ is_pkg_init channel ∗ c ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
-    c @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
-  {{{ x, RET (#(v x), #true); c ↣ p x ∗ P x }}}.
+    (lr_chan rl_chan : loc) (v : TT → val) (P : TT → iProp Σ) (p : TT → iProto Σ val) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
+  {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iDestruct "Hc" as (???????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
+  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iIntros "H£s".
+  iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+  iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hclose'".
+  iModIntro.
+  iExists _. iFrame.
+  destruct rl_state.
+  - destruct buff; [done|].
+    destruct vsr; [done|].
+    iIntros "Hownr".
+    iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+    iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hown Hm" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+    rewrite iMsg_base_eq.
+    iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+    simpl in *. simplify_eq.
+    iApply "HΦ".
+    iDestruct "H£s" as "[H£ H£s]".
+    rewrite later_equivI_1.
+    iCombine "Hp" "HP" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iModIntro. iRewrite "Hp". by iFrame "#∗".
+  - iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame. done. }
+    iModIntro.
+    iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+    iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+    iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hclose'". iModIntro.
+    iExists _. iFrame.
+    destruct rl_state; try done.
+    + iIntros "Hownr".
+      simpl in *. simplify_eq.
+      iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+      iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+      iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+      { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+        iPureIntro. simpl in *. by simplify_eq. }
+      iCombine "Hown Hm" as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+      rewrite iMsg_base_eq.
+      iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+      simpl in *. simplify_eq.
+      iApply "HΦ".
+      iDestruct "H£s" as "[H£ H£s]".
+      rewrite later_equivI_1.
+      iCombine "Hp" "HP" as "H".
+      iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+      iModIntro. iRewrite "Hp". by iFrame "#∗".
+    + simpl in *. simplify_eq.
+      destruct draining; [|done].
+      iDestruct (iProto_recv_end_inv_l with "Hctx Hp Hcloser") as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as "[]".
+  - iIntros "Hownr".
+    simpl in *. simplify_eq.
+    iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+    iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hown Hm" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+    rewrite iMsg_base_eq.
+    iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+    simpl in *. simplify_eq.
+    iApply "HΦ".
+    iDestruct "H£s" as "[H£ H£s]".
+    rewrite later_equivI_1.
+    iCombine "Hp" "HP" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iModIntro. iRewrite "Hp". by iFrame "#∗".
+  - done.
+  - done.
+  - done.
+  - destruct draining.
+    { simpl in *. simplify_eq.
+      iDestruct (iProto_recv_end_inv_l with "Hctx Hp Hcloser") as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as "[]". }
+    simpl in *. simplify_eq.
+    iIntros "Hownr".
+    iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+    iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hown Hm" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+    rewrite iMsg_base_eq.
+    iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+    simpl in *. simplify_eq.
+    iApply "HΦ".
+    iDestruct "H£s" as "[H£ H£s]".
+    rewrite later_equivI_1.
+    iCombine "Hp" "HP" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iModIntro. iRewrite "Hp". by iFrame "#∗".
+Qed.
 
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_closed {TT:tele} (c : val) :
