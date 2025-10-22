@@ -339,6 +339,24 @@ Section proto.
   Implicit Types p pl pr : iProto Σ V.
   Implicit Types m : iMsg Σ V.
 
+  Lemma own_prot_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :
+    own γ (◯E (Next p1)) -∗
+    own γ (◯E (Next p2)) -∗
+    False.
+  Proof.
+    iIntros "Hi Hj". iDestruct (own_valid_2 with "Hi Hj") as "H".
+    by rewrite uPred.cmra_valid_elim excl_auth_frag_op_validN.
+  Qed.
+
+  Lemma iProto_own_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :
+    iProto_own γ p1 -∗ iProto_own γ p2 -∗ False.
+  Proof.
+    rewrite /iProto_own.
+    iDestruct 1 as (p1') "[_ Hp1]".
+    iDestruct 1 as (p2') "[_ Hp2]".
+    iDestruct (own_prot_excl with "Hp1 Hp2") as %[].
+  Qed.
+
   (** ** Equality *)
   Lemma iProto_case p : p ≡ END ∨ ∃ a m, p ≡ <a> m.
   Proof.
