@@ -1138,6 +1138,7 @@ Proof.
     iDestruct own_slice_nil as "$".
     intro_wish. iApply "Hgenie". iFrame. }
   iNamed "Hgenie".
+  iDestruct (proofToTree_post with "[$]") as "#@".
   wp_apply (wp_node_getHash with "[$Hown_tree]") as "* @".
   { iFrame "#". }
   iApply "HΦ".
@@ -1695,7 +1696,7 @@ Proof.
     + eapply const_label_len_over_put; try done. word.
     + by eapply is_sorted_over_put.
   - iFrame "Hwish_toTree_wish".
-    iDestruct (proofToTree_to_put_precond with "[$]") as "@".
+    iDestruct (proofToTree_post with "[$]") as "#@".
     opose proof (put_Some _ _ val _ _ _ _ _) as [? ?]; try done.
     iDestruct (cut_cut_hash_over_put t t0 with "[$][//][//][$]") as "#?".
     iFrame "#%".
