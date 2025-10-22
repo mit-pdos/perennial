@@ -161,29 +161,38 @@ Inductive is_primitive : go.type → Prop :=
 | is_primitive_map kt vt : is_primitive (go.MapType kt vt)
 | is_primitive_channel dir t : is_primitive (go.ChannelType dir t).
 
-Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop :=
-| is_primitive_zero_val_uint64 : is_primitive_zero_val uint64 (W64 0)
-| is_primitive_zero_val_uint32 : is_primitive_zero_val uint32 (W32 0)
-| is_primitive_zero_val_uint16 : is_primitive_zero_val uint16 (W16 0)
-| is_primitive_zero_val_uint8 : is_primitive_zero_val uint8 (W8 0)
-| is_primitive_zero_val_int64 : is_primitive_zero_val int64 (W64 0)
-| is_primitive_zero_val_int32 : is_primitive_zero_val int32 (W32 0)
-| is_primitive_zero_val_int16 : is_primitive_zero_val int16 (W16 0)
-| is_primitive_zero_val_int8 : is_primitive_zero_val int8 (W8 0).
-
 (** [go.ContextValid] defines when a GoContext is valid. *)
 Class ContextValid `{!GoContext} :=
 {
   alloc_underlying t : alloc t = alloc (to_underlying t);
-  alloc_primitive t `{!IntoVal V} (v : V) (H : is_primitive_zero_val t v) :
-    alloc t = (λ: <>, ref #v)%V;
+  alloc_primitive t `{!IntoVal V} : alloc t = (λ: <>, ref #(zero_val V))%V;
   alloc_struct fds : alloc (go.StructType fds) = alloc (go.StructType fds); (* TODO *)
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
 
   load_underlying t : load t = load (to_underlying t);
   load_primitive t (H : is_primitive t) : load t = (λ: "l", ! "l")%V;
-  load_struct fds : load (go.StructType fds) = (λ: "l", Panic "impl")%V; (* TODO *)
-  load_array n elem : load (go.ArrayType n elem) = load (go.ArrayType n elem); (* TODO *)
+  load_struct fds :
+    load (go.StructType fds) =
+    (λ: "l",
+       foldl (λ struct_so_far fd,
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => pair n t
+                                                | go.EmbeddedField n t => pair n t
+                                                end in
+                let field_addr :=
+                  (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
+                let field_val := (GoInstruction (GoLoad field_type) field_addr) in
+                GoInstruction (StructFieldSet field_name) field_val struct_so_far
+         ) (StructV ∅) fds)%V;
+  load_array n elem_type :
+    load (go.ArrayType n elem_type) =
+    (λ: "l",
+       foldl (λ array_so_far j,
+                let elem_addr :=
+                  GoInstruction (ArrayIndexRef (go.ArrayType n elem_type)) #(W64 j) "l" in
+                GoInstruction (GoLoad elem_type) elem_addr)
+             (ArrayV []) (seqZ 0 n)
+    )%V;
 
   store_underlying t : store t = store (to_underlying t);
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
