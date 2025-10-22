@@ -37,6 +37,9 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
     (e.g. int64 and uint64 both have w64). *)
 Class IntoValTyped (V : Type) (t : go.type) `{TypedPointsto V} :=
   {
+    wp_alloc : ({{{ True }}}
+                  alloc t #()
+                {{{ l, RET #l; l ↦ (zero_val V) }}});
     wp_load : (∀ l dq (v : V), {{{ l ↦{dq} v }}}
                                  load t #l
                                {{{ RET #v; l ↦{dq} v }}});
