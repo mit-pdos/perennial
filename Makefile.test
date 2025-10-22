@@ -34,7 +34,7 @@ ROCQ_TEST=rocq top -batch -test-mode $(ROCQPROJECT_ARGS)
 
 tests/.rocqdeps.d: $(TESTFILES) _RocqProject
 	@echo 'ROCQ DEP TESTFILES'
-	$(Q)rocq dep -f _RocqProject $(ROCQPROJECT_ARGS) $(ROCQ_DEP_ARGS) -dyndep var $(TESTFILES) > "$@"
+	$(Q)rocq dep -vos -f _RocqProject $(ROCQPROJECT_ARGS) $(ROCQ_DEP_ARGS) -dyndep var $(TESTFILES) > "$@"
 ifeq ($(filter clean,$(MAKECMDGOALS)),)
 -include tests/.rocqdeps.d
 endif

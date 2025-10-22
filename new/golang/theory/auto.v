@@ -59,7 +59,10 @@ Tactic Notation "wp_start_folded" "as" constr(pat) :=
   try clear x;
   iIntros (Φ) "Hpre HΦ";
   destruct_pkg_init "Hpre";
-  iDestruct "Hpre" as pat.
+  lazymatch iTypeOf "Hpre" with
+  | Some (_, emp%I) => iClear "Hpre"
+  | _ => iDestruct "Hpre" as pat
+  end.
 
 Tactic Notation "wp_start" "as" constr(pat) :=
   wp_start_folded as pat;

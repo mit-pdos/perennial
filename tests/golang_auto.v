@@ -33,6 +33,20 @@ Proof.
   word.
 Qed.
 
+Lemma wp_useInts_auto (x: w64) (y: w32) :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.useInts #x #y
+  {{{ (a: w64) (b: w32), RET (#a, #b);
+      ⌜uint.Z a = (uint.Z y + 1)%Z⌝ ∗
+      ⌜uint.Z b = (uint.Z y + 3) `mod` 2^32⌝ }}}.
+Proof.
+  wp_start.
+  Show 1.
+  wp_auto.
+  iApply "HΦ".
+  word.
+Qed.
+
 Lemma wp_load_pointsto_not_found (x_l y_l: loc) (x: w64) :
   {{{ x_l ↦ x }}}
     ![#uint64T] #y_l
