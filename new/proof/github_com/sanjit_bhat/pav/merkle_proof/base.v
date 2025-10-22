@@ -26,6 +26,7 @@ Proof. done. Qed.
 (* used to [autounfold] top-level recursive defs. *)
 Create HintDb merkle.
 
+Module merkle.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
@@ -89,6 +90,7 @@ Qed.
 Proof. apply _. Qed.
 
 End proof.
+End merkle.
 
 (* to prevent weird unfolding during iFrame. *)
-Typeclasses Opaque is_initialized.
+Typeclasses Opaque merkle.is_initialized.

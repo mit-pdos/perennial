@@ -10,6 +10,8 @@ From New.proof.github_com.tchajed Require Import marshal.
 
 From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base serde theory.
 
+Module merkle.
+Import base.merkle serde.merkle theory.merkle.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
@@ -1702,4 +1704,21 @@ Proof.
     iFrame "#%".
 Qed.
 
+(* NOTE: i don't know why these instances are so brittle.
+even re-ordering VerifyNonMemb before VerifyMemb causes TC search to spin.
+i prove these instances at the end to remove internal brittleness.
+i export the defs as Opaque to remove external brittleness. *)
+#[global] Instance wish_VerifyMemb_pers l v p h :
+  Persistent (wish_VerifyMemb l v p h).
+Proof. apply _. Qed.
+
+#[global] Instance wish_VerifyUpdate_pers l v p hO hN :
+  Persistent (wish_VerifyUpdate l v p hO hN).
+Proof. apply _. Qed.
+
+#[global] Instance wish_VerifyNonMemb_pers l p h :
+  Persistent (wish_VerifyNonMemb l p h).
+Proof. apply _. Qed.
+
 End proof.
+End merkle.

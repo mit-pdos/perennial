@@ -4,6 +4,7 @@ From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 
+Module merkle.
 Section proof.
 
 Inductive dec_node :=
@@ -342,3 +343,4 @@ Proof. Admitted.
 
 End proof.
 End Proof.
+End merkle.

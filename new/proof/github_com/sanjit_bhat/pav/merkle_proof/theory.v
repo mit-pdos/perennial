@@ -8,6 +8,8 @@ From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base serde
 
 Notation get_bit l n := (bytes_to_bits l !!! n : bool).
 
+Module merkle.
+Import base.merkle serde.merkle.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
@@ -388,6 +390,9 @@ Definition is_map m h : iProp Σ :=
   "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
   "#His_tree" ∷ is_full_tree t h.
 Hint Unfold is_map : merkle.
+
+#[global] Instance is_map_pers m h : Persistent (is_map m h).
+Proof. apply _. Qed.
 
 Lemma is_map_invert h :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
@@ -1370,6 +1375,10 @@ Proof.
 Qed.
 
 End proof.
+End merkle.
 
-Hint Unfold find is_entry to_map is_sorted is_full_tree is_map is_cutless_path
-  is_limit cut_full_reln pure_put pure_newShell pure_proofToTree : merkle.
+Hint Unfold merkle.find merkle.is_entry merkle.to_map merkle.is_sorted
+  merkle.is_full_tree merkle.is_map merkle.is_cutless_path
+  merkle.is_limit merkle.cut_full_reln
+  merkle.pure_put merkle.pure_newShell merkle.pure_proofToTree
+  : merkle.
