@@ -98,10 +98,11 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
 (** ** Initialization *)
 
 (** Create an SPSC channel from a basic channel *)
-Lemma start_spsc ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ) γ:
-  is_channel ch 0 γ -∗
-  (own_channel ch 0 chan_rep.Idle γ) ={⊤}=∗
-  (∃ γspsc, is_spsc γspsc ch P R).
+Lemma start_spsc ch cap (P : Z -> V → iProp Σ) (R : list V → iProp Σ) γ:
+  is_channel ch cap γ -∗
+   (if (cap =? 0) then
+  (own_channel ch cap chan_rep.Idle γ) else (own_channel ch cap (chan_rep.Buffered []) γ)) ={⊤}=∗
+  (∃ γspsc, is_spsc γspsc ch P R ∗  spsc_producer γspsc []  ∗  spsc_consumer γspsc []) .
 Proof.
   iIntros "#Hch Hoc".
 
@@ -115,7 +116,7 @@ Proof.
   (* Allocate the invariant *)
   iMod (inv_alloc nroot _ (
     ∃ s sent recv,
-      "Hch" ∷ own_channel ch 0 s γ ∗
+      "Hch" ∷ own_channel ch cap s γ ∗
       "HsentI" ∷ ghost_var γsent (1/2)%Qp sent ∗
       "HrecvI" ∷ ghost_var γrecv (1/2)%Qp recv ∗
       "%Hrel" ∷ ⌜sent = recv ++ inflight s⌝ ∗
@@ -133,13 +134,28 @@ Proof.
   ) with "[Hoc HsentA HrecvA]") as "#Hinv".
   {
     (* Prove the invariant holds initially *)
+  destruct cap. {
+    simpl.
     iNext. iExists chan_rep.Idle, [], []. iFrame.
     iPureIntro. simpl. done.
-  }
+    }
+    {
+       iNext. iExists (chan_rep.Buffered []), [], []. iFrame.
+       simpl.
+       iFrame.
+    iPureIntro. simpl. done.
+    }
+    {
+     iNext.  iFrame. simpl. iPureIntro. done.
+    }
+    }
+
+  
+
 
   (* Construct the final result *)
   iModIntro. iExists γspsc.
-  unfold is_spsc. iExists 0. iFrame "#".
+  unfold is_spsc. iFrame. iExists cap. iFrame "#".
 Qed.
 
 (** ** Receive Operation *)
