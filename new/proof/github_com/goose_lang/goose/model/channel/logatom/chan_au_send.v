@@ -24,8 +24,7 @@ Lemma wp_NewChannelRef (cap: Z) {B: BoundedTypeSize t} :
   }}}.
 Proof.
   intros Hcap.
-    wp_start.
-    iNamed "Hpre". wp_auto.
+  wp_start. wp_auto.
   wp_if_destruct.
   {
     assert (cap > 0) by word.
