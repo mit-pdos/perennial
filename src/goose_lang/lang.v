@@ -151,60 +151,6 @@ Proof. refine (
        intros H. inversion H. done.
 Defined.
 
-Definition enc_base_lit :=
-(fix go l :=
-   match l with
-   | LitInt n =>
-       (Some n, None, None, None, None, None, None, None, None, None, None)
-   | LitInt32 n =>
-       (None, Some n, None, None, None, None, None, None, None, None, None)
-   | LitInt16 n =>
-       (None, None, Some n, None, None, None, None, None, None, None, None)
-   | LitByte n =>
-       (None, None, None, Some n, None, None, None, None, None, None, None)
-   | LitBool b =>
-       (None, None, None, None, Some b, None, None, None, None, None, None)
-   | LitUnit =>
-       (None, None, None, None, None, Some (), None, None, None, None, None)
-   | LitString s =>
-       (None, None, None, None, None, None, Some s, None, None, None, None)
-   | LitPoison =>
-       (None, None, None, None, None, None, None, Some (), None, None, None)
-   | LitLoc l =>
-       (None, None, None, None, None, None, None, None, Some l, None, None)
-   | LitProphecy p =>
-       (None, None, None, None, None, None, None, None, None, Some p, None)
-   | LitSlice s =>
-       (None, None, None, None, None, None, None, None, None, None, Some s)
-   end).
-
-Definition dec_base_lit t :=
-  match t with
-  | (Some n, None, None, None, None, None, None, None, None, None, None) =>
-      (LitInt n)
-  | (None, Some n, None, None, None, None, None, None, None, None, None) =>
-      (LitInt32 n)
-  | (None, None, Some n, None, None, None, None, None, None, None, None) =>
-      (LitInt16 n)
-  | (None, None, None, Some n, None, None, None, None, None, None, None) =>
-      (LitByte n)
-  | (None, None, None, None, Some b, None, None, None, None, None, None) =>
-      (LitBool b)
-  | (None, None, None, None, None, Some (), None, None, None, None, None) =>
-      LitUnit
-  | (None, None, None, None, None, None, Some s, None, None, None, None) =>
-      (LitString s)
-  | (None, None, None, None, None, None, None, Some (), None, None, None) =>
-      LitPoison
-  | (None, None, None, None, None, None, None, None, Some l, None, None) =>
-      (LitLoc l)
-  | (None, None, None, None, None, None, None, None, None, Some p, None) =>
-      (LitProphecy p)
-  | (None, None, None, None, None, None, None, None, None, None, Some s) =>
-      (LitSlice s)
-  | _ => LitUnit
-  end.
-
 Inductive go_op : Type :=
 | AngelicExit
 
@@ -230,7 +176,9 @@ Inductive go_op : Type :=
 | Make (t : go.type) (* can do slice, map, etc. *)
 | Slice
 
-| ArrayIndexRef (t : go.type) (* int *)
+| ArrayIndexRef (t : go.type)
+| ArrayLookup (* int *)
+| ArrayAppend
 
 (* these are internal steps; the Go map lookup has to be implemented as multiple
    instructions because it is not atomic. *)
@@ -238,10 +186,8 @@ Inductive go_op : Type :=
 | InternalMapInsert
 .
 
-(*
-TODO:
-[ ] Go interfaces
-[ ] Define semantics for other ops.
+(* TODO:
+  [ ] Go interfaces
  *)
 
 Inductive expr :=
@@ -1065,10 +1011,17 @@ Definition go_instruction_step (op : go_op) (arg : val) :
       ret_expr $ Val $ LitV $ LitInt s.(slice.cap)
   | SliceIndexRef t, PairV (LitV (LitSlice s)) (LitV (LitInt j)) =>
       ret_expr $ Val $ LitV $ LitLoc (slice_index_ref t (sint.Z j) s)
+      (* The Go runtime implementation requires slice length to fit in an `int`,
+         so the semantics here requires an int64 and Goose must insert necessary
+         conversions. Similar for arrays below. *)
   | Make t, _ => undefined
   | Slice, _ => undefined
   | ArrayIndexRef t, PairV (LitV (LitLoc l)) (LitV (LitInt j)) =>
       ret_expr $ Val $ LitV $ LitLoc (array_index_ref t (sint.Z j) l)
+  | ArrayLookup, PairV (ArrayV a) (LitV (LitInt j)) =>
+      match a !! (sint.nat j) with | Some v => ret_expr $ Val $ v | _ => undefined end
+  | ArrayAppend, PairV (ArrayV a) v =>
+      ret_expr $ Val $ ArrayV (a ++ [v])
   | InternalMapLookup, PairV m k =>
       let '(ok, v) := map_lookup m k in ret_expr $ Val $ (PairV v (LitV $ LitBool ok))
   | InternalMapInsert, PairV (PairV m k) v =>

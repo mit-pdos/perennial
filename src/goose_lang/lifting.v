@@ -1309,7 +1309,7 @@ Proof. iIntros ([]). Qed.
 
 Lemma wp_ArrayIndexRef {s E} l (j : w64) t Φ :
   ▷ (£ 1 -∗ Φ #(array_index_ref t (sint.Z j) l)) -∗
-  WP (GoInstruction (ArrayIndexRef t)) (#l, #j)%V @ s ; E {{ Φ }}.
+  WP GoInstruction (ArrayIndexRef t) (#l, #j)%V @ s ; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   iApply wp_lift_atomic_step; [done|].
@@ -1330,6 +1330,60 @@ Proof.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   iModIntro. rewrite Hgc. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_ArrayLookup {s E} (j : w64) vs v Φ :
+  vs !! (sint.nat j) = Some v →
+  ▷ (£ 1 -∗ Φ v) -∗
+  WP GoInstruction ArrayLookup ((ArrayV vs), #j)%V @ s ; E {{ Φ }}.
+Proof.
+  intros Hf. iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+    rewrite Hf. done.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; monad_simpl. rewrite Hf //. }
+  inv_base_step. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. simpl. iFrame "∗#%".
+  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+Qed.
+
+Lemma wp_ArrayAppend {s E} vs v Φ :
+  ▷ (£ 1 -∗ Φ (ArrayV (vs ++ [v]))) -∗
+  WP GoInstruction ArrayAppend ((ArrayV vs), v)%V @ s ; E {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  iApply wp_lift_atomic_step; [done|].
+  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
+  iNamed "H".
+  iSplit.
+  { destruct s; try done. iPureIntro.
+    apply base_prim_reducible.
+    repeat eexists. simpl. constructor.
+    econstructor; simpl; monad_simpl.
+  }
+  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iIntros "!> Hlc".
+  rewrite /= in Hstep.
+  apply base_reducible_prim_step in Hstep.
+  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
+  inv_base_step. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. simpl. iFrame "∗#%".
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 

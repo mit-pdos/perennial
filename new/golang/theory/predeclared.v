@@ -106,9 +106,13 @@ Proof using Hvalid. solve_into_val_typed. Qed.
 Global Instance into_val_typed_array `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t} n
   : IntoValTyped (array.t t V n) (go.ArrayType n t).
 Proof using Hvalid.
-Abort. (* FIXME: prove *)
   split.
-  - iIntros "* Hl HΦ". rewrite go.load_array.
+  - iIntros "* Hl HΦ".
+    rewrite typed_pointsto_unseal /=.
+    wp_apply (wp_untyped_load with "Hl");
+    rewrite typed_pointsto_unseal.
+    iEval (rewrite to_val_unseal) in "Hl".
+    rewrite go.load_array.
 Next Obligation.
   rewrite to_val_unseal /=.
   solve_has_go_type.
