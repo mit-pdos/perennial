@@ -76,8 +76,6 @@ Lemma wp_HelloWorldSync :
   Qed.
 End hello_world.
 
-(* Need to fix a translation issue with fork and the later credits needed in spsc but otherwise this works *)
-(*
 Section fibonacci_examples.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -367,4 +365,3 @@ iIntros "%Hfl". wp_auto. wp_for_post. iApply "HΦ". rewrite Hfl.
 Admitted.
 
 End fibonacci_examples.
-*)
