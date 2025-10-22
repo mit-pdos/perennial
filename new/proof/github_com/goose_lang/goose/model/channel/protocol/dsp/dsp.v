@@ -109,6 +109,12 @@ Definition dsp_endpoint
 Notation "c ↣ p" := (dsp_endpoint c (Some p)) (at level 20, format "c  ↣  p").
 Notation "↯ c" := (dsp_endpoint c None) (at level 20, format "↯  c").
 
+
+Global Instance dsp_endpoint_ne c : NonExpansive (dsp_endpoint c).
+Proof. solve_proper. Qed.
+Global Instance dsp_endpoint_proper c : Proper ((≡) ==> (≡)) (dsp_endpoint c).
+Proof. apply (ne_proper _). Qed.
+
 (** ** Initialization *)
 
 (** Initialize a new DSP session from basic channels *)
@@ -203,11 +209,6 @@ Proof.
   - done.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
 Admitted.
-
-Global Instance iProto_pointsto_ne c : NonExpansive (dsp_endpoint c).
-Proof. solve_proper. Qed.
-Global Instance iProto_pointsto_proper c : Proper ((≡) ==> (≡)) (dsp_endpoint c).
-Proof. apply (ne_proper _). Qed.
 
 (** Endpoint receives value *)
 Lemma dsp_recv {TT:tele}
@@ -333,7 +334,7 @@ Proof.
 Qed.
 
 (** Endpoint closes (stops sending val) *)
-Lemma dsp_close  (lr_chan rl_chan : loc) (p : iProto Σ val) :
+Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ val) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
     lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #atomic.Value #()
   {{{ RET #(); ↯ #(lr_chan,rl_chan) }}}.
@@ -368,7 +369,7 @@ Proof.
 Qed.
 
 (** Endpoint receives on a closed or ended channel *)
-Lemma dsp_recv_end {TT:tele} (lr_chan rl_chan : loc) :
+Lemma dsp_recv_end (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
   {{{ RET (into_val_typed_val.(default_val val) ::= #false);
@@ -450,7 +451,7 @@ Proof.
 Qed.  
 
 (** Endpoint receives on a closed or ended channel *)
-Lemma dsp_recv_closed {TT:tele} (lr_chan rl_chan : loc) :
+Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #atomic.Value #()
   {{{ RET (into_val_typed_val.(default_val val) ::= #false);
