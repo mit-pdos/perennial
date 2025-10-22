@@ -35,20 +35,31 @@ End defn.
 End func.
 
 Module chan.
-  Definition t := loc.
-  Definition nil : chan.t := null.
+Definition t := loc.
+Definition nil : chan.t := null.
 End chan.
 
 Module interface.
 Section goose_lang.
-  Context `{ffi_syntax}.
+Context `{ffi_syntax}.
 
-  Inductive t :=
-  | mk (type_id : go_string) (v : val) : t
-  | nil : t.
+Inductive t :=
+| mk (type_id : go_string) (v : val) : t
+| nil : t.
 
 End goose_lang.
 End interface.
+
+Module array.
+Section goose_lang.
+(* Using [vec] here because the [to_val] must be a total function that always
+   meets [has_go_type]. An alternative could be a sigma type. *)
+Record t (ty : go.type) (V : Type) (n : nat) :=
+mk { vec : vec V n }.
+End goose_lang.
+End array.
+Arguments array.mk (ty) {_ _} (_).
+Arguments array.vec {_ _ _} (_).
 
 Section into_val_instances.
 Context `{ffi_syntax}.
@@ -80,10 +91,10 @@ Global Instance into_val_go_string : IntoVal go_string :=
 Global Instance into_val_func : IntoVal func.t :=
   {| to_val_def f := RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
 
-Global Instance into_val_array `{!IntoVal V} n : IntoVal (vec V n) :=
+Global Instance into_val_array t `{!IntoVal V} n : IntoVal (array.t t V n) :=
   {|
-    to_val_def v := ArrayV (to_val <$> (vec_to_list v));
-    zero_val := vreplicate n (zero_val V);
+    to_val_def v := ArrayV (to_val <$> (vec_to_list v.(array.vec)));
+    zero_val := array.mk t $ vreplicate n (zero_val V);
   |}.
 
 Global Instance into_val_slice : IntoVal slice.t :=

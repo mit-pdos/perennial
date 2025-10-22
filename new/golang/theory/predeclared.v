@@ -33,15 +33,11 @@ Program Global Instance typed_pointsto_slice : TypedPointsto slice.t :=
 Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
-(* FIXME: `array_index_ref` requires a `go.type`, but for the `vec V n`
-   points-to, all we have is the Type `V`. *)
-
 Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
-               `{!TypedPointsto V} `{!IntoValTyped V t}
-  : TypedPointsto (vec V n) :=
+  `{!TypedPointsto V} `{!IntoValTyped V t} : TypedPointsto (array.t t V n) :=
   {|
     typed_pointsto_def l dq v :=
-      ([∗ list] i ↦ ve ∈ (vec_to_list v), array_index_ref t (Z.of_nat i) l ↦ ve)%I;
+      ([∗ list] i ↦ ve ∈ (vec_to_list v.(array.vec)), array_index_ref t (Z.of_nat i) l ↦ ve)%I;
   |}.
 
 (* Helper lemmas for establishing [IntoValTyped] *)
@@ -107,11 +103,12 @@ Proof using Hvalid. solve_into_val_typed. Qed.
 Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
 Proof using Hvalid. solve_into_val_typed. Qed.
 
-(*  *)
-(* Using [vec] here because the [to_val] must be a total function that always
-   meets [has_go_type]. An alternative could be a sigma type. *)
 Global Instance into_val_typed_array `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t} n
-  : IntoValTyped (vec V n) (go.ArrayType n t) (H:=(typed_pointsto_array V n (t:=_))).
+  : IntoValTyped (array.t t V n) (go.ArrayType n t).
+Proof using Hvalid.
+Abort. (* FIXME: prove *)
+  split.
+  - iIntros "* Hl HΦ". rewrite go.load_array.
 Next Obligation.
   rewrite to_val_unseal /=.
   solve_has_go_type.
