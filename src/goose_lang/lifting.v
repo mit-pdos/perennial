@@ -1193,7 +1193,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_StructFieldSet {s E} (l : loc) f fvs v Φ :
+Lemma wp_StructFieldSet {s E} f fvs v Φ :
   ▷ (£ 1 -∗ Φ (StructV (<[f := v]> fvs))) -∗
   WP (GoInstruction (StructFieldSet f)) ((StructV fvs), v)%V @ s ; E {{ Φ }}.
 Proof.

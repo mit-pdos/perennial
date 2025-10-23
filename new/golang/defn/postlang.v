@@ -161,11 +161,32 @@ Inductive is_primitive : go.type → Prop :=
 | is_primitive_map kt vt : is_primitive (go.MapType kt vt)
 | is_primitive_channel dir t : is_primitive (go.ChannelType dir t).
 
+Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop :=
+| is_primitive_zero_val_uint64 : is_primitive_zero_val uint64 (W64 0)
+| is_primitive_zero_val_uint32 : is_primitive_zero_val uint32 (W32 0)
+| is_primitive_zero_val_uint16 : is_primitive_zero_val uint16 (W16 0)
+| is_primitive_zero_val_uint8 : is_primitive_zero_val uint8 (W8 0)
+| is_primitive_zero_val_int64 : is_primitive_zero_val int64 (W64 0)
+| is_primitive_zero_val_int32 : is_primitive_zero_val int32 (W32 0)
+| is_primitive_zero_val_int16 : is_primitive_zero_val int16 (W16 0)
+| is_primitive_zero_val_int8 : is_primitive_zero_val int8 (W8 0)
+| is_primitive_zero_val_string : is_primitive_zero_val go.string ""%go
+| is_primitive_zero_val_bool : is_primitive_zero_val go.bool false
+
+| is_primitive_zero_val_pointer t : is_primitive_zero_val (go.PointerType t) null
+| is_primitive_zero_val_function t : is_primitive_zero_val (go.FunctionType t) func.nil
+(* | is_primitive_interface elems : is_primitive (go.InterfaceType elems) *)
+| is_primitive_zero_val_slice elem : is_primitive_zero_val (go.SliceType elem) slice.nil
+| is_primitive_zero_val_map kt vt : is_primitive_zero_val (go.MapType kt vt) null
+| is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) null
+.
+
 (** [go.ContextValid] defines when a GoContext is valid. *)
 Class ContextValid `{!GoContext} :=
 {
   alloc_underlying t : alloc t = alloc (to_underlying t);
-  alloc_primitive t `{!IntoVal V} : alloc t = (λ: <>, ref #(zero_val V))%V;
+  alloc_primitive t {V} (v : V) `{!IntoVal V} (H : is_primitive_zero_val t v) :
+  alloc t = (λ: <>, ref #v)%V;
   alloc_struct fds : alloc (go.StructType fds) = alloc (go.StructType fds); (* TODO *)
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
 
@@ -182,7 +203,7 @@ Class ContextValid `{!GoContext} :=
                 let field_addr :=
                   (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
                 let field_val := (GoInstruction (GoLoad field_type) field_addr) in
-                GoInstruction (StructFieldSet field_name) field_val struct_so_far
+                GoInstruction (StructFieldSet field_name) (struct_so_far, field_val)
          ) (StructV ∅) fds)%V;
   load_array n elem_type :
     load (go.ArrayType n elem_type) =

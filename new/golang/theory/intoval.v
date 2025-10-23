@@ -21,6 +21,7 @@ Class TypedPointsto (V : Type) `{!IntoVal V} :=
 {
   typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ
 }.
+Global Hint Mode TypedPointsto ! - : typeclass_instances.
 
 Program Definition typed_pointsto := sealed @typed_pointsto_def.
 Definition typed_pointsto_unseal : typed_pointsto = _ := seal_eq _.

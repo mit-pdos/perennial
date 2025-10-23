@@ -1,5 +1,7 @@
 From New.golang.theory Require Export proofmode.
 From Perennial Require Import base.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Set Default Proof Using "Type".
 
@@ -59,6 +61,13 @@ Qed.
 
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
+Existing Class go.is_primitive_zero_val.
+#[local] Hint Extern 1 (go.is_primitive_zero_val ?t ?v) => constructor : typeclass_instances.
+
+Local Ltac solve_wp_alloc :=
+  iIntros "* _ HΦ";
+  rewrite go.alloc_primitive typed_pointsto_unseal /= to_val_unseal;
+  wp_pures; by wp_apply wp_alloc_untyped.
 
 Local Ltac solve_wp_load :=
   iIntros "* Hl HΦ";
@@ -74,7 +83,7 @@ Local Ltac solve_wp_store :=
   wp_apply (wp_untyped_store with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
-Local Ltac solve_into_val_typed := constructor; [solve_wp_load|solve_wp_store].
+Local Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Proof using Hvalid. solve_into_val_typed. Qed.
@@ -107,188 +116,95 @@ Global Instance into_val_typed_array `{!IntoVal V} `{!TypedPointsto V} `{!IntoVa
   : IntoValTyped (array.t t V n) (go.ArrayType n t).
 Proof using Hvalid.
   split.
+  - admit.
   - iIntros "* Hl HΦ".
     rewrite typed_pointsto_unseal /=.
-    wp_apply (wp_untyped_load with "Hl");
-    rewrite typed_pointsto_unseal.
-    iEval (rewrite to_val_unseal) in "Hl".
-    rewrite go.load_array.
-Next Obligation.
-  rewrite to_val_unseal /=.
-  solve_has_go_type.
-  induction v as [|].
-  - apply (has_go_type_array 0 t []); done.
-  - simpl in *.
-    inversion IHv. subst.
-    pose proof (has_go_type_array (S (length a)) t (#h::a) ltac:(done)) as Ht.
-    simpl in Ht. apply Ht. intros ? [|].
-    + subst. apply to_val_has_go_type.
-    + apply Helems. done.
-Qed.
-Next Obligation.
-  intros.
-  rewrite to_val_unseal zero_val_eq /=.
-  rewrite -zero_val_unseal -default_val_eq_zero_val.
-  induction n; first done. simpl. f_equal. apply IHn.
-Qed.
-Final Obligation.
-rewrite to_val_unseal.
-intros. intros ?? Heq.
-simpl in Heq.
-induction x.
-{ rewrite (VectorSpec.nil_spec y) //. }
-destruct y using vec_S_inv.
-simpl in *.
-injection Heq as Heq1 Heq.
-apply to_val_inj in Heq1. subst.
-f_equal. by apply IHx.
-Qed.
-
-Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
-{| default_val := func.nil |}.
-Next Obligation. solve_has_go_type. Qed.
-Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
-Qed.
-Final Obligation. solve_decision. Qed.
-
-Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
-{| default_val := interface.nil |}.
-Next Obligation. solve_has_go_type. Qed.
-Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation.
-  rewrite to_val_unseal => [x y] Heq.
-  destruct x as [|], y as [|].
-  {
-    simpl in *.
-    injection Heq as Heq1 Heq2.
-    apply to_val_inj in Heq1. subst. done.
-  }
-  all: first [discriminate | reflexivity].
-Qed.
-Final Obligation.
-  solve_decision.
-Qed.
-
-Program Global Instance into_val_typed_unit : IntoValTyped unit (structT []) :=
-{| default_val := tt |}.
-Next Obligation.
-  intros [].
-  replace (#()) with (struct.val_aux (structT []) []).
-  2:{ rewrite struct.val_aux_unseal //. }
-  by constructor.
-Qed.
-Next Obligation. rewrite zero_val_eq /= struct.val_aux_unseal //. Qed.
-Final Obligation.
-  intros ???. destruct x, y. done.
-Qed. *)
+    rewrite go.load_array. simpl.
+    iInduction n as [|] "IH".
+    + wp_pures. rewrite to_val_unseal /=.
+      destruct v as [v]. rewrite (VectorSpec.nil_spec v) /=.
+      iApply "HΦ". done.
+    + destruct v. inversion vec as [|hd n' tl]; subst.
+Admitted. (* FIXME: prove these *)
 
 End into_val_instances.
 
-
-Section into_val_instances.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!NamedUnderlyingTypes}.
-
-Context `{!go.MemOps}.
-Program Global Instance into_val_typed_uint64 : IntoValTyped loc go.uint64.
-Next Obligation.
-  iIntros "* Hl HΦ".
-  rewrite go.load_primitive; [|constructor].
-  wp_pures.
-Admitted.
-Final Obligation. Admitted.
-
-Program Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
-Next Obligation.
-  iIntros "* Hl HΦ".
-  rewrite go.load_primitive; [|constructor].
-  wp_pures.
-Admitted.
-Final Obligation. Admitted.
+Section test.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.ContextValid}.
 
 Record foo_t :=
   mk {
       a : w64;
+      b : go_string;
     }.
 Global Instance into_val_foo : IntoVal foo_t :=
-  {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
+  {|
+    to_val_def := λ v, StructV {[ "b"%go := #v.(b); "a"%go := #v.(a) ]};
+    zero_val := mk (zero_val _) (zero_val _)
+  |}.
 
-Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go go.uint64)].
+Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go go.uint64); (go.EmbeddedField "b"%go go.string)].
 Definition foo : go.type := go.Named "foo"%go [].
 
 Class foo_type_assumptions : Prop :=
   {
-    foo_underlying : named_to_underlying "foo"%go [] = foo_impl
+    foo_underlying : to_underlying foo = foo_impl
   }.
 
 Context `{!foo_type_assumptions}.
 
-(* TODO: struct field_ref. One option is to have field_ref_f be a totally opaque
-   function.  All that really matters is it's a deterministic computation and
-   that it agrees with allocation.
-   E.g. it really doesn't matter if struct fields are packed or not, nor if
-   they're in the same order as source code.
- *)
-(* TODO: for struct values, what about using a gmap rather than list val?
-   Induction principle might be screwed up. *)
+Program Global Instance typed_pointsto_foo : TypedPointsto foo_t :=
+  {| typed_pointsto_def l dq v :=
+      ("a" ∷ struct_field_ref foo "a"%go l ↦{dq} v.(a) ∗
+       "b" ∷ struct_field_ref foo "b"%go l ↦{dq} v.(b)
+      )%I |}.
 
-Program Global Instance into_val_proof_w64 : TypedPointsto w64 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Qed.
+Global Instance settable_foo : Settable foo_t :=
+  settable! mk < a; b >.
 
-Program Global Instance into_val_foo_inj : TypedPointsto foo_t :=
-  {| typed_pointsto_def l dq v := (struct_field_ref foo "a"%go l ↦{dq} v.(a))%I |}.
-Next Obligation. rewrite to_val_unseal => ?? [=] //. Admitted.
-Next Obligation. solve_decision. Qed.
+Ltac solve_wp_struct_field_set :=
+  iIntros (?) "* _ *"; iIntros "Hwp";
+  rewrite [in (to_val (V:=foo_t))]to_val_unseal; wp_apply wp_StructFieldSet;
+  simpl; iExactEq "Hwp"; do 5 f_equal;
+  repeat (rewrite insert_insert; destruct decide; [done| (done || f_equal)]).
 
-Lemma foo_split l dq (v : foo_t) :
-  l ↦{dq} v ⊢ (struct_field_ref foo "a"%go l) ↦{dq} v.(a).
-Proof. done. Qed.
+Global Instance wp_StructFieldSet_foo_a (v : foo_t) (a' : w64) :
+  PureWp True (GoInstruction (StructFieldSet "a") (#v, #a')%V)
+         (#(set a (const a') v)).
+Proof. solve_wp_struct_field_set. Qed.
 
-Program Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
-Next Obligation.
-  iIntros "* Hl HΦ".
-  iEval (rewrite go.load_underlying /= foo_underlying go.load_struct /=).
-  wp_pures. wp_bind.
-  iDestruct (foo_split with "Hl") as "Hl".
-  Opaque typed_pointsto. (* FIXME: seal typed_pointsto *)
-  iEval (rewrite go.struct_field_ref_underlying /= foo_underlying /foo_impl) in "Hl".
-  wp_apply (wp_load (t:=go.uint64) with "Hl").
-  iIntros "Hl".
-  wp_pures.
-  (* FIXME: construct StructVal. Have pure op to insert into struct val. Can
-     start from empty struct val. Can give list-like notation. *)
+Global Instance wp_StructFieldSet_foo_b (v : foo_t) b' :
+  PureWp True (GoInstruction (StructFieldSet "b") (#v, #b')%V)
+         (#(set b (const b') v)).
+Proof. solve_wp_struct_field_set. Qed.
+
+Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
+Proof.
+  split.
+  - admit.
+  - iIntros "* Hl HΦ".
+    rewrite [in (_ (foo_t))]typed_pointsto_unseal /=.
+    rewrite go.load_underlying foo_underlying.
+    rewrite go.struct_field_ref_underlying foo_underlying.
+    rewrite [in (_ foo_t)]to_val_unseal.
+    rewrite go.load_struct /=. iNamed "Hl".
+
+    wp_pures. wp_apply (wp_load with "[$a]"). iIntros "a".
+    wp_pures. wp_apply wp_StructFieldSet. iIntros "_".
+    wp_pures.
+
+    wp_pures. wp_apply (wp_load with "[$b]"). iIntros "b".
+    wp_pures. wp_apply wp_StructFieldSet. iIntros "_".
+    wp_pures.
+
+    rewrite insert_empty. wp_pures. iApply "HΦ". iFrame.
+  - iIntros "* Hl HΦ".
+    rewrite [in (_ (foo_t))]typed_pointsto_unseal /=.
+    rewrite go.store_underlying foo_underlying.
+    rewrite go.struct_field_ref_underlying foo_underlying.
+    rewrite [in (_ foo_t)]to_val_unseal.
+    rewrite go.store_struct /=. iNamed "Hl".
+    wp_pures. admit.
 Admitted.
 
-(* TODO: Maybe aggregate all the built-in dynamic functions into one instruction? *)
-
-Context `{!GoContext}.
-Context `{!MemOps}.
-
-Record foo_t :=
-  mk {
-      a : w64;
-    }.
-Global Instance into_val_foo : IntoVal foo_t :=
-  {| to_val_def := λ v, (#v.(a), #())%V; zero_val := (mk (zero_val _)) |}.
-
-Definition foo : go.type := go.Named "foo"%go [].
-Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go uint64)].
-
-Class foo_type_assumptions : Prop :=
-  {
-    foo_underlying : named_to_underlying "foo"%go [] = foo_impl
-  }.
-
-Context `{!foo_type_assumptions}.
-
-Goal goose_lang.size (go.ArrayType 3 foo) = 3.
-  rewrite size_array size_underlying /= foo_underlying
-    size_struct /= size_primitive //. constructor.
-Qed.
-
-Goal load (go.ArrayType 3 foo) = (λ: "l", ! "l")%V.
-  rewrite is_load_array /=. vm_compute Z.add.
-  rewrite is_load_underlying /= foo_underlying.
-  rewrite is_load_struct /=.
+End test.
