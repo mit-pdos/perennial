@@ -128,51 +128,48 @@ Proof.
     wp_start. wp_apply wp_alloc.
     iIntros (l). iIntros "Herr".
     wp_auto_lc 4.
-      wp_apply wp_HelloWorldAsync; first done.
-  iIntros (ch γfuture) "[Hfut Hawait]". wp_auto_lc 1.
- iDestruct "Hpre" as "(#H1 & H2 & H3)".
- iAssert ( is_channel (t:=structT []) done_ch 0 γdone.(chan_name)) as "#Hdonech".
- {
-   iFrame "#".
-  unfold is_done.
-     iDestruct "H1" as "[#Hdone #Hinv]". iFrame "#".
+    wp_apply wp_HelloWorldAsync; first done.
+    iIntros (ch γfuture) "[Hfut Hawait]". wp_auto_lc 1.
+    iDestruct "Hpre" as "(#H1 & H2 & H3)".
+    iAssert ( is_channel (t:=structT []) done_ch 0 γdone.(chan_name)) as "#Hdonech".
+    {
+      iFrame "#".
+      unfold is_done.
+      iDestruct "H1" as "[#Hdone #Hinv]". iFrame "#".
 
- }
-     iDestruct "Hfut" as "[#Hfut #Hinv1]". iFrame "#".
-     wp_pures.
-  wp_apply ((wp_BlockingSelect2
- (IntoValTyped0:=(into_val_typed_string))
- (IntoValTyped1:=into_val_typed_unit )
-  (ffi:=ffi)
-  (ffi_interp0:=ffi_interp0)
+    }
+    iDestruct "Hfut" as "[#Hfut #Hinv1]". iFrame "#".
+    wp_pures.
+    wp_apply ((wp_BlockingSelect2
+                 (IntoValTyped0:=(into_val_typed_string))
+                 (IntoValTyped1:=into_val_typed_unit )
+                 (ffi:=ffi)
+                 (ffi_interp0:=ffi_interp0)
 
-  (V1:=go_string) (t1:=stringT) (V2:=unit) (t2:=structT [])
-  ch 1  γfuture.(future.chan_name) (W64 1) ""%go  (* Channel 1: Future Channel (go_string) *)
-  done_ch 0 γdone.(chan_name)  (W64 1) () _
-            )
+                 (V1:=go_string) (t1:=stringT) (V2:=unit) (t2:=structT [])
+                 ch 1  γfuture.(future.chan_name) (W64 1) ""%go  (* Channel 1: Future Channel (go_string) *)
+                                 done_ch 0 γdone.(chan_name)  (W64 1) () _
+              )
 
-             with "[$Hdonech $Hfut ]").
-  {
-     iSplit.
-     {
-       admit. }
-     {
+               with "[$Hdonech $Hfut ]").
+    {
+      iSplit.
+      {
+        admit. }
+      {
 
-       iRight. simpl. iFrame. iFrame "#".
-       iSplitL "". { iPureIntro;done. }
+        iRight. simpl. iFrame. iFrame "#".
+        iSplitL "". { iPureIntro;done. }
 
-       iDestruct ((done_receive_au (t:=structT []) (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
-                with " [$H1] [$H2] ") as "H".
-       {
-
-         iApply ("H" with "HΦ").
-         iModIntro.
-         iIntros "Herr".
-         iApply "HΦ".
-         iApply "H".
-       }
-       iFrame "%".
-     Admitted.
+        iApply ((done_receive_au (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
+                    with " [$H1] [$H2] [HΦ] [$]").
+        {
+          iModIntro.
+          iIntros "Herr".
+          wp_auto.
+          admit.
+        }
+Admitted.
 
 Lemma wp_HelloWorldWithTimeout :
   {{{ is_pkg_init channel ∗

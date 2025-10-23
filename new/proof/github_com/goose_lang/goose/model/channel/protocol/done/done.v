@@ -326,12 +326,12 @@ Proof.
 Qed.
 
 Lemma done_receive_au γ ch Q  :
-  ∀ Φ,
+  ∀ (Φ: V → bool → iProp Σ),
   is_done γ ch -∗
   Notified γ Q -∗
-  ▷ (Q -∗ Φ (#(default_val V), #false))%V -∗
+  ▷ (Q -∗ Φ (default_val V) false) -∗
   £1 ∗ £1 ∗ £1 ∗ £1 -∗
-  rcv_au_slow ch 0 γ.(chan_name) (λ (v:V) (ok:bool), Φ (#v, #ok)%V).
+  rcv_au_slow ch 0 γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   intros Φ.
   iIntros "#Hdone".
