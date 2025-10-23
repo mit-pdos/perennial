@@ -9,23 +9,6 @@ Set Default Proof Using "Type".
 
 Module primitive.
 
-(* type primitive.Mutex *)
-Module Mutex.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End Mutex.
-
-Global Instance bounded_size_Mutex : BoundedTypeSize primitive.Mutex.
-Admitted.
-
-Global Instance into_val_Mutex `{ffi_syntax} : IntoVal Mutex.t.
-Admitted.
-
-Global Instance into_val_typed_Mutex `{ffi_syntax} : IntoValTyped Mutex.t primitive.Mutex.
-Admitted.
-
 (* type primitive.prophId *)
 Module prophId.
 Section def.
@@ -97,6 +80,14 @@ Global Instance wp_func_call_Assume :
 Global Instance wp_func_call_AssumeNoStringOverflow :
   WpFuncCall primitive.AssumeNoStringOverflow _ (is_pkg_defined primitive) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Mutex'ptr_Lock :
+  WpMethodCall (ptrT.id primitive.Mutex.id) "Lock" _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Mutex'ptr_Unlock :
+  WpMethodCall (ptrT.id primitive.Mutex.id) "Unlock" _ (is_pkg_defined primitive) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End primitive.
