@@ -224,10 +224,43 @@ Proof.
     wp_pures.
 
     wp_bind.
-    wp_apply (@wp_store with "b"). iIntros "b".
+
+Tactic Notation "iPoseProofCore" uconstr(lem)
+    "as" constr(p) tactic3(tac) :=
+  iStartProof;
+  (* let lem := type_term lem in *)
+  let t := lazymatch lem with ITrm ?t ?xs ?pat => t | _ => lem end in
+  let t := lazymatch type of t with string => constr:(INamed t) | _ => t end in
+  let spec_tac Htmp :=
+    lazymatch lem with
+    | ITrm _ ?xs ?pat => iSpecializeCore (ITrm Htmp xs pat) as p
+    | _ => idtac
+    end in
+  lazymatch type of t with
+  | ident =>
+     let Htmp := iFresh in
+     iPoseProofCoreHyp t as Htmp; spec_tac Htmp; [..|tac Htmp]
+  | _ => iPoseProofCoreLem t as (fun Htmp => spec_tac Htmp; [..|tac Htmp])
+  end.
+
+Tactic Notation "iApply" uconstr(lem) :=
+  iPoseProofCore lem as false (fun H => iApplyHyp H);
+  reduction.pm_prettify. (* reduce redexes created by instantiation; this is done at the
+  very end after all type classes have been solved. *)
+
+    (* TODO: need to trigger type checking at *some* point. But before that,
+       the tactic needs to unify the consequent of the lemma with the goal, which
+       means the tactic would either need to do some sort of unification between
+       uconstr and constr or else would need to typecheck _just_ the consequent,
+       then unify, then typecheck the antecedents. Seems annoying if not impossible.
+       Maybe best to stick with `iApply @wp_store.`
+     *)
+    iApply (wp_store with "b").
+    iIntros "b".
 
     iApply "HΦ". iFrame.
-    (* FIXME: the wp_load/wp_store tactics will need to deal with these instances correctly. *)
+
+    (* FIXME: avoid shelving these instances deal with these instances correctly. *)
 Admitted.
 
 End test.
