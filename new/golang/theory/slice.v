@@ -1136,6 +1136,24 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wp_load_slice_elem' s (i: w64) (vs: list V) dq v :
+  0 ≤ sint.Z i →
+  {{{ s ↦*{dq} vs ∗ ⌜vs !! (sint.nat i) = Some v⌝ }}}
+    ![#t] (slice.elem_ref #t #s #i)
+  {{{ RET #v; s ↦*{dq} vs }}}.
+Proof.
+  intros Hpos.
+  wp_start_folded as "[Hs %Hlookup]".
+  iDestruct (own_slice_len with "Hs") as %Hlen.
+  wp_pure.
+  { apply lookup_lt_Some in Hlookup.
+    word. }
+  wp_apply (wp_load_slice_elem with "[$Hs]").
+  { word. }
+  { eauto. }
+  iApply "HΦ".
+Qed.
+
 Lemma wp_store_slice_elem s (i: w64) (vs: list V) (v': V) :
   {{{ s ↦* vs ∗ ⌜0 ≤ sint.Z i < Z.of_nat (length vs)⌝ }}}
     #(slice.elem_ref_f s t i) <-[#t] #v'
@@ -1150,6 +1168,20 @@ Proof.
   iApply "HΦ".
   iDestruct ("Hs" with "Hv") as "Hs".
   iFrame.
+Qed.
+
+Lemma wp_store_slice_elem' s (i: w64) (vs: list V) (v': V) :
+  {{{ s ↦* vs ∗ ⌜0 ≤ sint.Z i < Z.of_nat (length vs)⌝ }}}
+    (slice.elem_ref #t #s #i) <-[#t] #v'
+  {{{ RET #(); s ↦* (<[sint.nat i := v']> vs) }}}.
+Proof.
+  wp_start_folded as "[Hs %bound]".
+  iDestruct (own_slice_len with "Hs") as %Hlen.
+  wp_pure.
+  { word. }
+  wp_apply (wp_store_slice_elem with "[$Hs]").
+  { word. }
+  iApply "HΦ".
 Qed.
 
 (** slice.copy copies as much as possible (the smaller of len(s) and len(s2)) and returns
