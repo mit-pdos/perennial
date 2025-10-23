@@ -168,10 +168,29 @@ Ltac solve_wp_struct_field_set :=
   simpl; iExactEq "Hwp"; do 5 f_equal;
   repeat (rewrite insert_insert; destruct decide; [done| (done || f_equal)]).
 
+Ltac solve_wp_struct_field_get :=
+  iIntros (?) "* _ *"; iIntros "Hwp";
+  rewrite [in (to_val (V:=foo_t))]to_val_unseal. wp_apply wp_StructFieldGet; last done;
+  repeat (rewrite lookup_insert_ne //; []); rewrite lookup_insert //.
+
 Global Instance wp_StructFieldSet_foo_a (v : foo_t) (a' : w64) :
   PureWp True (GoInstruction (StructFieldSet "a") (#v, #a')%V)
          (#(set a (const a') v)).
 Proof. solve_wp_struct_field_set. Qed.
+
+Global Instance wp_StructFieldSet_foo_b (v : foo_t) b' :
+  PureWp True (GoInstruction (StructFieldSet "b") (#v, #b')%V)
+         (#(set b (const b') v)).
+Proof. solve_wp_struct_field_set. Qed.
+
+Global Instance wp_StructFieldGet_foo_a (v : foo_t) :
+  PureWp True (GoInstruction (StructFieldGet "a") #v) #v.(a).
+Proof.
+  iIntros (?) "* _ *"; iIntros "Hwp".
+  rewrite [in (to_val (V:=foo_t))]to_val_unseal. wp_apply wp_StructFieldGet; last done.
+  { admit. }
+  repeat (rewrite lookup_insert_ne //; []). rewrite lookup_insert //.
+Qed.
 
 Global Instance wp_StructFieldSet_foo_b (v : foo_t) b' :
   PureWp True (GoInstruction (StructFieldSet "b") (#v, #b')%V)
@@ -204,7 +223,9 @@ Proof.
     rewrite go.struct_field_ref_underlying foo_underlying.
     rewrite [in (_ foo_t)]to_val_unseal.
     rewrite go.store_struct /=. iNamed "Hl".
-    wp_pures. admit.
+    wp_pures. wp_bind.
+    wp_pure.
+    admit.
 Admitted.
 
 End test.

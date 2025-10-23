@@ -211,14 +211,39 @@ Class ContextValid `{!GoContext} :=
        foldl (λ array_so_far j,
                 let elem_addr :=
                   GoInstruction (ArrayIndexRef (go.ArrayType n elem_type)) #(W64 j) "l" in
-                GoInstruction (GoLoad elem_type) elem_addr)
+                let elem_val := GoInstruction (GoLoad elem_type) elem_addr in
+                GoInstruction ArrayAppend (array_so_far, elem_val)
+         )
              (ArrayV []) (seqZ 0 n)
     )%V;
 
   store_underlying t : store t = store (to_underlying t);
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
-  store_struct fds : store (go.StructType fds) = (λ: "l", Panic "impl")%V; (* TODO *)
-  store_array n elem : store (go.ArrayType n elem) = store (go.ArrayType n elem); (* TODO *)
+  store_struct fds :
+    store (go.StructType fds) =
+    (λ: "l" "v",
+       foldl (λ store_so_far fd,
+                store_so_far;;
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => pair n t
+                                                | go.EmbeddedField n t => pair n t
+                                                end in
+                let field_addr :=
+                  (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
+                let field_val := (GoInstruction (StructFieldGet field_name) "v") in
+                GoInstruction (GoStore field_type) field_addr field_val
+         ) (StructV ∅) fds)%V;
+  store_array n elem_type :
+    store (go.ArrayType n elem_type) =
+    (λ: "l" "v",
+       foldl (λ str_so_far j,
+                str_so_far;;
+                let elem_addr :=
+                  GoInstruction (ArrayIndexRef (go.ArrayType n elem_type)) #(W64 j) "l" in
+                let elem_val := GoInstruction ArrayLookup ("v", #(W64 n)) in
+                GoInstruction (GoStore elem_type) elem_addr elem_val)
+             (ArrayV []) (seqZ 0 n)
+    )%V;
 
   struct_field_ref_underlying t : struct_field_ref t = struct_field_ref (to_underlying t);
 }.
