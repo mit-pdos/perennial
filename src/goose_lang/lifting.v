@@ -873,7 +873,7 @@ Qed.
    provide instances for IntoVal prior to these WPs so we don't have to reexport
    them. Could also set up PureWp prior to this. *)
 
-Lemma wp_AngelicExit {s E} (v : val) Φ :
+Lemma wp_AngelicExit {s E} Φ :
   ⊢ WP GoInstruction AngelicExit #() @ s ; E {{ Φ }}.
 Proof.
   iLöb as "IH".
@@ -991,7 +991,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_GoPrealloc {s E} Φ :
+Lemma wp_GoPrealloc {s E} :
   {{{ True }}}
     GoInstruction GoPrealloc #() @ s ; E
   {{{ (l : loc), RET #l; True }}}.

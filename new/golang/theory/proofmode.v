@@ -116,24 +116,6 @@ Proof.
   rewrite decide_True //.
 Qed.
 
-(* FIXME:
-Global Instance wp_eq `{!IntoVal V} `{!IntoValTyped V t} (v1 v2 : V) :
-  PureWp (is_comparable_go_type t = true) (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)) | 0.
-Proof.
-  apply (pure_exec_pure_wp O).
-  intros Hcomp.
-  pose proof (conj (to_val_is_comparable v1 ltac:(done)) (to_val_is_comparable v2 ltac:(done))).
-  revert Hcomp.
-  rewrite to_val_unseal in H.
-  cut (bin_op_eval EqOp (to_val_def v1) (to_val_def v2) = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
-  { rewrite to_val_unseal. intros ?. solve_pure_exec. }
-  rewrite /bin_op_eval /bin_op_eval_eq /=.
-  rewrite decide_True //.
-  destruct (decide (v1 = v2)) eqn:Hx.
-  - subst. rewrite !bool_decide_true //.
-  - rewrite !bool_decide_false // -to_val_unseal. by intros Heq%to_val_inj.
-Qed. *)
-
 (** Unops *)
 (* w64 unops *)
 Global Instance wp_neg_w64 (v : w64) : PureWp True (~#v) #(word.not v).
@@ -616,7 +598,7 @@ Ltac2 wp_pure_lc () :=
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_pure: current proof is not a WP"
   end.
 Tactic Notation "wp_pure" := ltac2:(Control.enter wp_pure).
-Tactic Notation "wp_pure_lc" constr(H) := ltac2:(Control.enter wp_pure_lc); iIntros H.
+Tactic Notation "wp_pure_lc" constr(H) := ltac2:(Control.enter wp_pure_lc); last iIntros H.
 Tactic Notation "wp_pures" := repeat (wp_pure; []).
 
 Ltac2 wp_call_visit e k :=

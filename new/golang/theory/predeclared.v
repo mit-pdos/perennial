@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hvalid : go.ContextValid}.
 
+(** TypedPointsto instances *)
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 
@@ -42,6 +43,37 @@ Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
       ([∗ list] i ↦ ve ∈ (vec_to_list v.(array.vec)), array_index_ref t (Z.of_nat i) l ↦ ve)%I;
   |}.
 
+(** IntoValComparable instances *)
+Ltac solve_into_val_comparable :=
+  split;
+  [rewrite to_val_unseal; intros ??; by inversion 1|
+    apply _ |
+    rewrite to_val_unseal; done].
+
+Global Instance into_val_comparable_loc : IntoValComparable loc.
+Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_w64 : IntoValComparable w64.
+Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_w32 : IntoValComparable w32.
+Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_w16 : IntoValComparable w16.
+Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_w8 : IntoValComparable w8.
+Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_bool : IntoValComparable bool.
+Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_string : IntoValComparable go_string.
+Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_slice : IntoValComparable slice.t.
+Proof. solve_into_val_comparable. Qed.
+
 (* Helper lemmas for establishing [IntoValTyped] *)
 Local Lemma wp_untyped_load l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}
@@ -58,6 +90,16 @@ Proof.
   wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
   wp_pures. by iApply (wp_finish_store with "[$Hl $Hl']").
 Qed.
+
+Lemma wp_GoPrealloc :
+  {{{ True }}}
+    GoInstruction GoPrealloc #()
+  {{{ (l : loc), RET #l; True }}}.
+Proof. rewrite to_val_unseal. apply wp_GoPrealloc. Qed.
+
+Lemma wp_AngelicExit Φ s E :
+  ⊢ WP GoInstruction AngelicExit #() @ s; E {{ Φ }}.
+Proof. rewrite to_val_unseal. apply wp_AngelicExit. Qed.
 
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
@@ -191,10 +233,44 @@ Global Instance wp_StructFieldGet_foo_b (v : foo_t) :
   PureWp True (GoInstruction (StructFieldGet "b") #v) #v.(b).
 Proof. solve_wp_struct_field_get. Qed.
 
-Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
+Lemma bool_decide_inj `(f : A → B) `{!Inj eq eq f} a a' `{!EqDecision A}
+  `{!EqDecision B}
+  : bool_decide (f a = f a') = bool_decide (a = a').
 Proof.
+  case_bool_decide.
+  { eapply inj in H1; last done. rewrite bool_decide_true //. }
+  { rewrite bool_decide_false //.
+    intros HR. apply H1. subst. done. }
+Qed.
+
+Global Instance wp_eq `{!IntoVal V} `{!IntoValComparable V} (v1 v2 : V) :
+  PureWp True (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)).
+Proof.
+  pose proof wp_eq_val.
+  iIntros (?) "* _ * HΦ".
+  wp_pure_lc "Hl"; [ split; apply to_val_comparable | ].
+  rewrite bool_decide_inj.
+  iApply "HΦ". iFrame.
+Qed.
+
+Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
+Proof using H H0.
   split.
-  - admit.
+  - iIntros "* _ HΦ".
+    rewrite go.alloc_underlying foo_underlying.
+    rewrite go.alloc_struct.
+    rewrite [in (_ (foo_t))]typed_pointsto_unseal /=.
+    rewrite go.struct_field_ref_underlying foo_underlying.
+    wp_pures. simpl.
+    wp_apply wp_GoPrealloc. iIntros (l) "_".
+
+    wp_pures. wp_apply wp_alloc. iIntros (?) "?".
+    wp_pures. case_bool_decide; subst; wp_pures; last (wp_apply wp_AngelicExit).
+
+    wp_pures. wp_apply wp_alloc. iIntros (?) "?".
+    wp_pures. case_bool_decide; subst; wp_pures; last (wp_apply wp_AngelicExit).
+
+    iApply "HΦ". iFrame.
   - iIntros "* Hl HΦ".
     rewrite [in (_ (foo_t))]typed_pointsto_unseal /=.
     rewrite go.load_underlying foo_underlying.
@@ -217,6 +293,6 @@ Proof.
     wp_pures. wp_apply (wp_store with "b"). iIntros "b".
 
     iApply "HΦ". iFrame.
-Admitted.
+Qed.
 
 End test.

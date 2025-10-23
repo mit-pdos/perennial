@@ -15,6 +15,7 @@ Class IntoValComparable (V : Type) `{!IntoVal V} :=
   {
     #[global] to_val_inj :: Inj (=) (=) (to_val (V:=V));
     #[global] to_val_eqdec :: EqDecision V ;
+    to_val_comparable : (∀ (v : V), is_comparable #v);
   }.
 
 Class TypedPointsto (V : Type) `{!IntoVal V} :=

@@ -187,7 +187,25 @@ Class ContextValid `{!GoContext} :=
   alloc_underlying t : alloc t = alloc (to_underlying t);
   alloc_primitive t {V} (v : V) `{!IntoVal V} (H : is_primitive_zero_val t v) :
   alloc t = (λ: <>, ref #v)%V;
-  alloc_struct fds : alloc (go.StructType fds) = alloc (go.StructType fds); (* TODO *)
+  alloc_struct fds :
+    alloc (go.StructType fds) =
+    (λ: <>,
+        let: "l" := GoInstruction GoPrealloc #() in
+        foldl (λ alloc_so_far fd,
+                 alloc_so_far ;;
+                 let (field_name, field_type) := match fd with
+                                                 | go.FieldDecl n t => pair n t
+                                                 | go.EmbeddedField n t => pair n t
+                                                 end in
+                let field_addr :=
+                  (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
+                let: "l_field" := GoInstruction (GoAlloc field_type) #() in
+                if: ("l_field" ≠ field_addr) then
+                  GoInstruction AngelicExit #()
+                else
+                  #()
+          ) #() fds ;;
+        "l")%V;
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
 
   load_underlying t : load t = load (to_underlying t);
