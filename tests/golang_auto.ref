@@ -17,7 +17,7 @@ goal 1 is:
   "HΦ" : ∀ (a : w64) (b : w32),
            ⌜uint.Z a = (uint.Z y + 1)%Z⌝ ∗
            ⌜uint.Z b = (uint.Z y + 3) `mod` 2 ^ 32⌝ -∗ 
-           Φ (a ::= # b)%V
+           Φ (# a, # b)%V
   --------------------------------------∗
   WP exception_do
        (let: "y" := alloc (# y) in
