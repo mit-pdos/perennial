@@ -52,6 +52,12 @@ Class IntoValTyped (V : Type) (t : go.type) `{TypedPointsto V} :=
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 End defs.
 
+(* Non-maximally insert the arguments related to [t], [IntoVal], etc., so that
+   typeclass search won't be invoked until wp_apply actually unifies the [t]. *)
+Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _] (Φ).
+Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _] (l dq v Φ).
+Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _] (l v w Φ).
+
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
