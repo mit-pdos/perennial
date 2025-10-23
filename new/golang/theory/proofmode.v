@@ -754,8 +754,11 @@ Qed.
 Global Instance wp_StructFieldRef t f (l : loc) :
   PureWp True (GoInstruction (StructFieldRef t f) #l) #(struct_field_ref t f l).
 Proof.
-  iIntros "% * _ % HΦ". wp_bind.
-  rewrite to_val_unseal. iApply wp_StructFieldRef. iApply "HΦ".
+  iIntros "% * _ % HΦ". rewrite to_val_unseal. wp_apply wp_StructFieldRef. iApply "HΦ".
 Qed.
+
+Global Instance wp_StructFieldSet_untyped f m v :
+  PureWp True (GoInstruction (StructFieldSet f) (StructV m, v)%V) (StructV (<[f := v]> m)).
+Proof. iIntros "% * _ % HΦ". wp_apply wp_StructFieldSet. iApply "HΦ". Qed.
 
 End go_wp_pure_instances.

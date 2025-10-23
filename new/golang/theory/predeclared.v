@@ -202,13 +202,9 @@ Proof.
     rewrite [in (_ foo_t)]to_val_unseal.
     rewrite go.load_struct /=. iNamed "Hl".
 
-    wp_pures. wp_apply (wp_load with "[$a]"). iIntros "a".
-    wp_pures. wp_apply wp_StructFieldSet. iIntros "_".
-    wp_pures.
+    wp_pures. wp_apply (wp_load with "[$a]"). iIntros "a". wp_pures.
 
-    wp_pures. wp_apply (wp_load with "[$b]"). iIntros "b".
-    wp_pures. wp_apply wp_StructFieldSet. iIntros "_".
-    wp_pures.
+    wp_pures. wp_apply (wp_load with "[$b]"). iIntros "b". wp_pures.
 
     rewrite insert_empty. wp_pures. iApply "HΦ". iFrame.
   - iIntros "* Hl HΦ".
