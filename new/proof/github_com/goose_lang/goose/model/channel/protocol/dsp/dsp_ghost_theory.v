@@ -1155,7 +1155,7 @@ Section proto.
     iProto_ctx γl γr vsl vsr -∗
     iProto_own γl (<!> m) -∗
     iMsg_car m vl (Next p) ==∗
-      ▷ iProto_ctx γl γr (vsl ++ [vl]) vsr ∗
+      iProto_ctx γl γr (vsl ++ [vl]) vsr ∗
       iProto_own γl p.
   Proof.
     iDestruct 1 as (pl pr) "(H●l & H●r & Hinterp)".
@@ -1167,7 +1167,7 @@ Section proto.
     iDestruct (iProto_interp_send with "Hinterp [Hm //]") as "Hinterp".
     iMod (iProto_own_auth_update _ _ _ p with "H●l H◯") as "[H●l H◯]".
     iIntros "!>". iSplitR "H◯".
-    - iIntros "!>". iExists p, pr. iFrame.
+    - iExists p, pr. iFrame.
     - iExists p. iFrame. iApply iProto_le_refl.
   Qed.
 
