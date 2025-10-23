@@ -115,21 +115,25 @@ Proof. apply (ne_proper _). Qed.
 
 (** Initialize a new DSP session from basic channels *)
 Lemma dsp_session_init
-    E (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    E (lr_chan rl_chan : loc) (lr_state rl_state : chan_rep.t V)
+    (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) (p : iProto Σ V) :
+  (lr_state = chan_rep.Idle ∨ lr_state = chan_rep.Buffered []) →
+  (rl_state = chan_rep.Idle ∨ rl_state = chan_rep.Buffered []) →
   is_channel lr_chan lrcap γlr_names -∗
   is_channel rl_chan rlcap γrl_names -∗
-  own_channel lr_chan lrcap chan_rep.Idle γlr_names -∗
-  own_channel rl_chan rlcap chan_rep.Idle γrl_names ={E}=∗
+  own_channel lr_chan lrcap lr_state γlr_names -∗
+  own_channel rl_chan rlcap rl_state γrl_names ={E}=∗
   #(lr_chan,rl_chan) ↣ p ∗ #(rl_chan,lr_chan) ↣ iProto_dual p.
 Proof.
-  iIntros "#Hcl_is #Hcr_is Hcl_own Hcr_own".
+  iIntros (Hlr Hrl) "#Hcl_is #Hcr_is Hcl_own Hcr_own".
   iMod (iProto_init) as (γl γr) "(Hctx & Hpl & Hpr)".
   iMod (token_alloc) as (γtl) "Htl".
   iMod (token_alloc) as (γtr) "Htr".
   iMod (inv_alloc N _ (dsp_session_inv γl γr γtl γtr lr_chan rl_chan γlr_names γrl_names lrcap rlcap) with "[Hcl_own Hcr_own Htl Htr Hctx]")
     as "#Hinv".
-  { iExists chan_rep.Idle,chan_rep.Idle,[],[]. by iFrame. }
+  { iExists lr_state,rl_state,[],[]. iIntros "!>". iFrame.
+    by destruct Hlr,Hrl; simplify_eq; do 2 (iSplit; [done|]); iFrame. }
   iModIntro.
   iSplitL "Hpl".
   - iExists _,_,_,_,_,_,_,_,_,_. iSplit; [done|].    
