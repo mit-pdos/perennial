@@ -219,6 +219,7 @@ Lemma base_lit_inv (l1 l2: base_lit) :
   | LitPoison, LitPoison => True
   | LitLoc x1, LitLoc x2 => x1 = x2
   | LitProphecy p1, LitProphecy p2 => p1 = p2
+  | LitSlice s1, LitSlice s2 => s1 = s2
   | _, _ => False
   end.
 Proof.
@@ -238,6 +239,7 @@ Lemma lit_ne_inv `{!ffi_syntax} (l1 l2: base_lit) :
   | LitPoison, LitPoison => False
   | LitLoc x1, LitLoc x2 => x1 ≠ x2
   | LitProphecy p1, LitProphecy p2 => p1 ≠ p2
+  | LitSlice s1, LitSlice s2 => s1 ≠ s2
   | _, _ => True
   end.
 Proof.

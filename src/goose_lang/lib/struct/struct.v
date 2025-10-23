@@ -289,7 +289,7 @@ Lemma NoDup_app_singleton A l (x:A) :
   NoDup (l ++ [x]) ->
   x ∉ l.
 Proof.
-  intros Hnodup%NoDup_app.
+  intros Hnodup%list.NoDup_app.
   destruct Hnodup as (_&Hnotin&_).
   intros H%Hnotin.
   apply H.
@@ -319,7 +319,7 @@ Proof.
     rewrite -app_assoc.
     erewrite field_offset_prefix; eauto.
     rewrite ?fmap_app in H.
-    apply NoDup_app in H.
+    apply list.NoDup_app in H.
     destruct H as [H _].
     simpl in H.
     apply NoDup_app_singleton in H; auto.

@@ -8,11 +8,11 @@ From Perennial.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions Integers.
-From Perennial.goose_lang Require Import lang lifting proofmode prelude
-     slice.impl slice typed_slice typed_mem control.
 From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi typed_impl.
 Import typed_impl.grove_ffi.
+From Perennial.goose_lang Require Import lang lifting proofmode prelude
+     slice.impl slice typed_slice typed_mem control.
 
 Set Default Proof Using "Type".
 

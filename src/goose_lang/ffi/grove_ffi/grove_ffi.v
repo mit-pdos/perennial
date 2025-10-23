@@ -301,7 +301,7 @@ lemmas. *)
       opose proof (Hl i _ _) as Hl; [lia..|].
       opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | |]; try done.
+      destruct v'' as [lit| | | | | | | |]; try done.
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".
@@ -498,7 +498,7 @@ lemmas. *)
       opose proof (Hl i _ _) as Hl; [lia..|].
       opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | |]; try done.
+      destruct v'' as [lit| | | | | | | |]; try done.
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".
@@ -506,7 +506,7 @@ lemmas. *)
     { iPureIntro. clear -Hmlen Hfilebound.
       intros f' c'. destruct (decide (f = f')) as [<-|Hne].
       - rewrite lookup_insert_eq=>-[<-]. word.
-      - rewrite lookup_insert_ne //. eapply Hfilebound. } 
+      - rewrite lookup_insert_ne //. eapply Hfilebound. }
     iApply "HΦ".
     by iFrame.
   Qed.
@@ -556,7 +556,7 @@ lemmas. *)
       opose proof (Hl i _ _) as Hl; [lia..|].
       opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | |]; try done.
+      destruct v'' as [lit| | | | | | | |]; try done.
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".

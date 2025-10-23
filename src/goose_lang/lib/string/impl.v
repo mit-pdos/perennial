@@ -1,5 +1,5 @@
-From Perennial.goose_lang Require Import lang slice notation typing.
-From Perennial.goose_lang.lib Require Import control.impl.
+From Perennial.goose_lang Require Import lang typing notation.
+From Perennial.goose_lang.lib Require Import slice control.impl.
 
 Section goose_lang.
 Context {ext:ffi_syntax}.
