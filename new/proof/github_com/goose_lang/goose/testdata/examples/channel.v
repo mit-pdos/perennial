@@ -28,6 +28,23 @@ Proof.
   wp_start. iApply "HΦ". done.
 Qed.
 
+Lemma wp_DSPExample :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
+    @! chan_spec_raw_examples.DSPExampleX #()
+  {{{ RET #(W64 42); True }}}.
+Proof.
+  wp_start. wp_auto. wp_pures.
+   wp_apply (wp_NewChannelRef (t:=ptrT) 0);first done.
+  iIntros (c). iIntros (γ).
+  iIntros "[#Hic Hoc]".
+  wp_auto.
+   wp_apply (wp_NewChannelRef (t:=(structT [])) 0);first done.
+  iIntros (signal). iIntros (γ').
+  iIntros "[#Hicsignal Hocsignal]".
+  wp_auto.
+Admitted.
+
+
 Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel  }}}
     @! chan_spec_raw_examples.HelloWorldAsyncX #()
