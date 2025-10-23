@@ -1,6 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init.
-From iris.base_logic Require Import ghost_map.
+From New.proof.github_com.goose_lang.goose.model.channel Require Import
+  chan_au_send chan_au_recv chan_au_base.
 
 (** * Simple Channel Pattern Verification
 
