@@ -483,12 +483,12 @@ Proof.
   rewrite Hunseal in Hgh_lookup.
   wp_auto.
 
-  (* XXX is this the expected way to use the [pure_elem_ref] instance of PureWp? *)
-  wp_pure; first word.
-
-  (* XXX is this the expected way to use [wp_load_slice_elem]? *)
-  wp_apply (wp_load_slice_elem with "[$Hslice]") as "_"; first word.
+  (* XXX why does wp_apply not work here? *)
+  wp_bind (![_] (slice.elem_ref _ _ _))%E.
+  iApply (wp_load_slice_elem' with "[$Hslice]"); first word.
   { ereplace (sint.nat ?[x]) with (uint.nat ?x); first done. word. }
+  iIntros "!> _".
+  wp_auto.
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
   wp_apply (wp_lockShard__acquire with "[$Hshard]").

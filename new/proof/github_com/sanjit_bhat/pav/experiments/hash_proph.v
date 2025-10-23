@@ -1,10 +1,9 @@
-From Perennial.program_proof.pav Require Import prelude.
-From Goose.github_com.mit_pdos.pav Require Import cryptoffi.
+From New.proof Require Import proof_prelude.
 
 Notation hash_len := 32 (only parsing).
 
 Section proof.
-Context `{!heapGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_varG Σ (list (list w8))}.
 
 (* [hash_fun] is the hash function itself: [hash_fun v] is the hash of [v].
@@ -134,74 +133,6 @@ Proof.
     + apply list_elem_of_fmap_2. eauto.
     + done.
 Qed.
-
-Definition own_hasher (ptr : loc) (data : list w8) : iProp Σ :=
-  ∃ sl,
-    "Hhptr" ∷ ptr ↦[slice.T byteT] (slice_val sl) ∗
-    "Hhsl" ∷ own_slice sl byteT (DfracOwn 1) data.
-
-Lemma wp_NewHasher :
-  {{{ True }}}
-  NewHasher #()
-  {{{
-    ptr_hr, RET #ptr_hr;
-    "Hown_hr" ∷ own_hasher ptr_hr []
-  }}}.
-Proof.
-  iIntros (Φ) "_ HΦ".
-  wp_rec.
-  wp_apply wp_ref_of_zero; first by eauto.
-  iIntros (ptr) "Hptr".
-  rewrite zero_slice_val.
-  iDestruct (own_slice_zero) as "Hsl".
-  wp_pures.
-  iModIntro. iApply "HΦ".
-  iFrame "∗#".
-Qed.
-
-Lemma wp_Hasher__Write sl_b ptr_hr data d0 b :
-  {{{
-    "Hown_hr" ∷ own_hasher ptr_hr data ∗
-    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b
-  }}}
-  Hasher__Write #ptr_hr (slice_val sl_b)
-  {{{
-    RET #();
-    "Hown_hr" ∷ own_hasher ptr_hr (data ++ b) ∗
-    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b
-  }}}.
-Proof.
-  iIntros (Φ) "H HΦ".
-  iNamed "H".
-  iNamed "Hown_hr".
-  wp_rec.
-  wp_pures.
-  wp_load.
-  wp_apply (wp_SliceAppendSlice with "[$Hhsl $Hsl_b]"); first by eauto.
-  iIntros (sl') "[Hhsl Hsl_b]".
-  wp_store.
-  iModIntro. iApply "HΦ".
-  iFrame.
-Qed.
-
-Lemma wp_Hasher__Sum γ sl_b_in ptr_hr data b_in :
-  {{{
-    "Hown_hr" ∷ own_hasher ptr_hr data ∗
-    "Hsl_b_in" ∷ own_slice sl_b_in byteT (DfracOwn 1) b_in ∗
-    "Hhm" ∷ is_hash_model γ
-  }}}
-  Hasher__Sum #ptr_hr (slice_val sl_b_in)
-  {{{
-    sl_b_out hash, RET (slice_val sl_b_out);
-    "Hown_hr" ∷ own_hasher ptr_hr data ∗
-    "Hsl_b_out" ∷ own_slice sl_b_out byteT (DfracOwn 1) (b_in ++ hash) ∗
-    "#His_hash" ∷ ⌜is_hash γ (Some data) hash⌝
-  }}}.
-Proof.
-  iIntros (Φ) "H HΦ".
-  iNamed "H". iNamed "Hown_hr".
-Admitted.
-
 
 (* Example use of [is_hash_inv] to reason about commitment to
  * a chain of [list w8] values.  The [limit] value prevents a

@@ -1522,17 +1522,15 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
         let: "$r0" := (![#sliceT] (struct.field_ref #mapEntry #"label"%go (![#ptrT] "out0"))) in
         do:  ("label" <-[#sliceT] "$r0");;;
         let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "inMap" := (mem.alloc (type.zero_val #boolT)) in
-        let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "label") in
-        (method_call #(ptrT.id merkle.Map.id) #"Prove"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0") in
-        let: "$r0" := "$ret0" in
-        let: "$r1" := "$ret1" in
-        let: "$r2" := "$ret2" in
-        do:  ("inMap" <-[#boolT] "$r0");;;
-        do:  "$r1";;;
-        do:  ("proof" <-[#sliceT] "$r2");;;
-        do:  (let: "$a0" := (~ (![#boolT] "inMap")) in
-        (func_call #std.Assert) "$a0");;;
+        let: "$r0" := (let: "$a0" := (![#sliceT] "label") in
+        let: "$a1" := (![#sliceT] (struct.field_ref #mapEntry #"val"%go (![#ptrT] "out0"))) in
+        (method_call #(ptrT.id merkle.Map.id) #"Put"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0" "$a1") in
+        do:  ("proof" <-[#sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (Fst (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))))) in
+        let: "$a1" := ((let: "$sl0" := (![#sliceT] (struct.field_ref #WQReq #"Pk"%go (![#ptrT] "req"))) in
+        slice.literal #sliceT ["$sl0"])) in
+        (slice.append #sliceT) "$a0" "$a1") in
+        do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))) "$r0");;;
         let: "info" := (mem.alloc (type.zero_val #ptrT)) in
         let: "$r0" := (mem.alloc (let: "$MapLabel" := (![#sliceT] "label") in
         let: "$MapVal" := (![#sliceT] (struct.field_ref #mapEntry #"val"%go (![#ptrT] "out0"))) in
@@ -1547,15 +1545,7 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
         let: "$a1" := ((let: "$sl0" := (![#ptrT] "info") in
         slice.literal #ptrT ["$sl0"])) in
         (slice.append #ptrT) "$a0" "$a1") in
-        do:  ("upd" <-[#sliceT] "$r0");;;
-        do:  (let: "$a0" := (![#sliceT] "label") in
-        let: "$a1" := (![#sliceT] (struct.field_ref #mapEntry #"val"%go (![#ptrT] "out0"))) in
-        (method_call #(ptrT.id merkle.Map.id) #"Put"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0" "$a1");;;
-        let: "$r0" := (let: "$a0" := (Fst (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))))) in
-        let: "$a1" := ((let: "$sl0" := (![#sliceT] (struct.field_ref #WQReq #"Pk"%go (![#ptrT] "req"))) in
-        slice.literal #sliceT ["$sl0"])) in
-        (slice.append #sliceT) "$a0" "$a1") in
-        do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))) "$r0")
+        do:  ("upd" <-[#sliceT] "$r0")
       else do:  #())));;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((method_call #(ptrT.id merkle.Map.id) #"Hash"%go (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) #()) in
@@ -1588,7 +1578,7 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
 
 (* getHist returns a history of membership proofs for all post-prefix versions.
 
-   go: server.go:248:18 *)
+   go: server.go:246:18 *)
 Definition Server__getHistⁱᵐᵖˡ : val :=
   λ: "s" "uid" "prefixLen",
     exception_do (let: "hist" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1660,7 +1650,7 @@ Definition Server__getHistⁱᵐᵖˡ : val :=
 
 (* getBound returns a non-membership proof for the boundary version.
 
-   go: server.go:264:18 *)
+   go: server.go:262:18 *)
 Definition Server__getBoundⁱᵐᵖˡ : val :=
   λ: "s" "uid" "numVers",
     exception_do (let: "bound" := (mem.alloc (type.zero_val #ptrT)) in

@@ -1,6 +1,6 @@
 From Coq Require Import List.
 From stdpp Require Import list vector.
-From Perennial.Helpers Require Import List Integers.
+From Perennial.Helpers Require Import Integers.
 
 Lemma singleton_length {A} (x:A) : length [x] = 1%nat.
 Proof. reflexivity. Qed.
@@ -16,7 +16,7 @@ Create HintDb len.
 #[global]
 Hint Rewrite @singleton_length @length_cons @length_nil
   @length_app @length_drop @length_take @length_fmap
-  @length_replicate @repeat_length @subslice_length'
+  @length_replicate @repeat_length
   @length_insert @length_alter @length_reverse : len.
 #[global]
 Hint Rewrite @length_vec_to_list : len.
@@ -40,6 +40,6 @@ Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
            | Z => constr:(Z.to_nat i)
            | u64 => constr:(uint.nat i)
            end in
-  destruct (list_lookup_lt l i) as [x H];
+  destruct (lookup_lt_is_Some_2 l i) as [x H];
   [ try solve [ len ]
   | ].

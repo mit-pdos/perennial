@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# /// script
+# dependencies = [
+#   "pandas",
+# ]
+# ///
+
 from __future__ import print_function
 
 import sqlite3

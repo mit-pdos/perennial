@@ -23,7 +23,6 @@ Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_mapG Σ nat gname}.
-Context `{!savedPropG Σ}.
 
 Record done_names := {
   chan_name : chan_names;

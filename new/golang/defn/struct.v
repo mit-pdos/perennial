@@ -7,8 +7,8 @@ From Perennial Require Import base.
 (* FIXME: these notations don't work properly. *)
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair go_string go_type f%go t) : struct_scope.
-Notation "f ::= v" := (PairV #(f%go) v%V) (at level 60) : val_scope.
-Notation "f ::= v" := (Pair #(f%go) v%E) (at level 60) : expr_scope.
+Notation "f ::= v" := (PairV #(f%go) v%V) (at level 60, only parsing) : val_scope.
+Notation "f ::= v" := (Pair #(f%go) v%E) (at level 60, only parsing) : expr_scope.
 Delimit Scope struct_scope with struct.
 Global Arguments structT _%_list%_struct.
 

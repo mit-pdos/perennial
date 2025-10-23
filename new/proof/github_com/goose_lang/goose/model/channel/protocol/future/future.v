@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_au_send chan_au_recv chan_au_base chan_init.
 
 (** * Future Channel Verification
 
@@ -276,6 +276,24 @@ Proof.
       }
     }
   }
+Qed.
+
+Lemma wp_future_await_discard_ok γ ch (P : V → iProp Σ) :
+  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
+    ch @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #t #()
+  {{{ (v : V) , RET #v;
+      P v }}}.
+Proof.
+  wp_start. wp_auto.
+  wp_apply ((wp_future_await γ ch P) with "[- HΦ return_val]").
+  {
+   iFrame.
+  }
+  iIntros (v).
+  iIntros "HP".
+  wp_auto.
+  iApply "HΦ".
+  done.
 Qed.
 
 End future.
