@@ -157,6 +157,7 @@ Inductive go_op : Type :=
 | GoLoad (t : go.type)
 | GoStore (t : go.type)
 | GoAlloc (t : go.type)
+| GoPrealloc
 
 | FuncCall (func_id : go_string)
 | MethodCall (t : go.type) (m : go_string)
@@ -988,6 +989,9 @@ Definition go_instruction_step (op : go_op) (arg : val) :
       ret_expr $ App (App (Val $ store t) (Val addr)) (Val v)
   | GoAlloc t, _ =>
       ret_expr $ App (Val $ alloc t) (Val arg)
+  | GoPrealloc, _ =>
+      l ← suchThat (fun _ _ => True) (gen:=fallback_genPred _);
+      ret_expr $ Val $ LitV $ LitLoc l
   | FuncCall f, _ =>
       match functions f with | Some f => ret_expr (Val f) | _ => undefined end
   | MethodCall t f, _ =>

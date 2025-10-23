@@ -991,6 +991,23 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
+Lemma wp_GoPrealloc {s E} Φ :
+  {{{ True }}}
+    GoInstruction GoPrealloc #() @ s ; E
+  {{{ (l : loc), RET #l; True }}}.
+Proof.
+  iIntros "% _ HΦ". iApply wp_lift_atomic_base_step; [done|].
+  iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&?&?) Hg !>"; iSplit.
+  { iPureIntro. econstructor. repeat eexists. constructor.
+    simpl. econstructor; simpl; monad_simpl.
+    unshelve econstructor; try done.
+    refine null. }
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step; iFrame.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iSplitL; last done. by iApply "HΦ".
+Qed.
+
 Lemma wp_FuncCall {s E} n f Φ :
   functions n = Some f →
   ▷ (£ 1 -∗ Φ f) -∗
