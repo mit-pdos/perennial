@@ -167,16 +167,14 @@ Proof.
     { by rewrite iMsg_base_eq. }
     iMod "Hp" as "[Hp Hown]". iMod "Hclose'" as "_".
     iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hp]").
-    { iIntros "!>". iExists _,_,_,_. iFrame. do 2 (iSplit; [done|]).
-      iFrame. inversion H. subst. admit. }    
+    { iIntros "!>". iExists _,_,_,_. iFrame. inversion H. iFrame. done. }
     iApply "HΦ". by iFrame "#∗".
   - iIntros "Hownl".
     iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
     { by rewrite iMsg_base_eq. }
     iMod "Hp" as "[Hctx Hown]". iMod "Hclose'" as "_". 
     iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]").
-    { iIntros "!>". iExists _,_,_,_. iFrame. do 2 (iSplit; [done|]).
-      iFrame. inversion H. subst. admit. }
+    { iIntros "!>". iExists _,_,_,_. iFrame. inversion H. iFrame. done. }
     iModIntro.
     iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
     iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hclose'".
@@ -195,13 +193,12 @@ Proof.
     { by rewrite iMsg_base_eq. }
     iMod "Hp" as "[Hp Hown]". iMod "Hclose'".
     iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hp]").
-    { iIntros "!>". iExists _,_,_,_. iFrame. do 2 (iSplit; [done|]).
-      iFrame. inversion H. subst. admit. }
+    { iIntros "!>". iExists _,_,_,_. iFrame. inversion H. iFrame. done. }
     iApply "HΦ". by iFrame "#∗".
   - done.
   - done.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
-Admitted.
+Qed.
 
 (** Endpoint receives value *)
 Lemma dsp_recv {TT:tele}
@@ -365,7 +362,7 @@ Qed.
 Lemma dsp_recv_end (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
-  {{{ RET (default_val V ::= #false); #(lr_chan,rl_chan) ↣ END }}}.
+  {{{ RET (#(default_val V), #false); #(lr_chan,rl_chan) ↣ END }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
   iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -440,13 +437,13 @@ Proof.
     { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
       iPureIntro. simpl in *. by simplify_eq. }
     iApply "HΦ". by iFrame "#∗".
-Qed.  
+Qed.
 
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
     rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
-  {{{ RET (default_val V ::= #false); ↯ #(lr_chan,rl_chan) }}}.
+  {{{ RET (#(default_val V), #false); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
   iDestruct "Hc" as (?????????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
