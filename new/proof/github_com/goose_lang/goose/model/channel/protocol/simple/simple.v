@@ -19,8 +19,8 @@ Record simple_names := {
   chan_name : chan_names;
 }.
 
-Definition is_simple (γ : simple_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
-  ∃ cap,
+(* TODO: cap should not have to be exposed *)
+Definition is_simple (γ : simple_names) (ch : loc) (cap : Z) (P : V → iProp Σ) : iProp Σ :=
   "#Hch" ∷ is_channel ch cap γ.(chan_name) ∗
   "#Hinv" ∷ inv nroot (
     ∃ (s : chan_rep.t V),
@@ -40,7 +40,7 @@ Definition is_simple (γ : simple_names) (ch : loc) (P : V → iProp Σ) : iProp
 Lemma start_simple (ch : loc) (cap : Z) (γ : chan_names) (P : V → iProp Σ) :
   is_channel ch cap γ -∗
   own_channel ch cap chan_rep.Idle γ ={⊤}=∗
-  ∃ γdone, is_simple γdone ch P.
+  ∃ γdone, is_simple γdone ch cap P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -52,17 +52,13 @@ Proof.
   by iFrame "#".
 Qed.
 
-Lemma wp_simple_receive γ ch P :
-  {{{ is_pkg_init channel ∗
-      is_simple γ ch P }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
-  {{{ v, RET (#v, #true); P v }}}.
+Lemma simple_rcv_au γ ch cap P Φ  :
+  is_simple γ ch cap P ∗ £1 ∗ £1 ⊢
+  (▷ ∀ v, P v -∗ Φ (#v, #true)%V) -∗
+  rcv_au_slow ch cap γ.(chan_name) (λ v ok, Φ (#v, #ok)%V).
 Proof.
-  wp_start_folded as "#Hsimple".
-  unfold is_simple. iNamed "Hsimple".
-  iApply wp_fupd.
-  wp_apply (wp_Receive ch cap γ.(chan_name) with "[$Hch]").
-  iIntros "(? & ? & ? & ?)".
+  iIntros "(#Hsimple & ? & ?) HΦ".
+  iNamed "Hsimple".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch0".
@@ -81,7 +77,6 @@ Proof.
     {
       iNext. iFrame. done.
     }
-    iModIntro.
     iModIntro.
     iApply "HΦ".
     iFrame. }
@@ -125,7 +120,7 @@ Proof.
       {
         iNext. iFrame.
       }
-      iModIntro. iModIntro.
+      iModIntro.
       iApply "HΦ".
       iFrame.
     }
@@ -143,7 +138,7 @@ Proof.
     {
       iNext. iFrame.
     }
-    iModIntro. iModIntro.
+    iModIntro.
     iApply "HΦ".
     iFrame.
   }
@@ -161,18 +156,28 @@ Proof.
   }
 Qed.
 
-Lemma wp_simple_send γ ch v P :
+Lemma wp_simple_receive γ ch cap P :
   {{{ is_pkg_init channel ∗
-      is_simple γ ch P ∗
-      P v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
-  {{{ RET #(); True }}}.
+      is_simple γ ch cap P }}}
+    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+  {{{ v, RET (#v, #true); P v }}}.
 Proof.
-  wp_start_folded as "[#Hsimple HP]".
-  unfold is_simple. iNamed "Hsimple".
-  iApply wp_fupd.
-  wp_apply (wp_Send ch cap with "[$Hch]").
+  wp_start_folded as "#Hsimple".
+  iNamed "Hsimple".
+  wp_apply (wp_Receive ch cap γ.(chan_name) with "[$Hch]").
   iIntros "(? & ? & ? & ?)".
+  iApply (simple_rcv_au with "[$]").
+  iFrame.
+Qed.
+
+Lemma simple_send_au γ ch cap P v (Φ: val → iProp Σ) :
+  is_simple γ ch cap P ∗ £1 ∗ £1 ⊢
+  P v -∗
+  (▷ Φ #()) -∗
+  send_au_slow ch cap v γ.(chan_name) (Φ #()).
+Proof.
+  iIntros "(#Hsimple & ? & ?) HP HΦ".
+  iNamed "Hsimple".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch0".
@@ -193,9 +198,8 @@ Proof.
         rewrite big_sepL_app /=.
         iFrame.
       }
-      iModIntro. iModIntro.
+      iModIntro.
       iApply "HΦ".
-      iFrame.
     }
     done.
   }
@@ -245,9 +249,7 @@ Proof.
       {
         iNext. iFrame.
       }
-      iModIntro. iModIntro.
-      iApply "HΦ".
-      iFrame.
+      done.
     }
   }
   {
@@ -263,9 +265,8 @@ Proof.
     {
       iNext. iFrame. done.
     }
-    iModIntro. iModIntro.
-    iApply "HΦ".
-    iFrame.
+    iModIntro.
+    done.
   }
   {
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
@@ -275,6 +276,21 @@ Proof.
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext. iFrame.
   }
+Qed.
+
+Lemma wp_simple_send γ ch cap v P :
+  {{{ is_pkg_init channel ∗
+      is_simple γ ch cap P ∗
+      P v }}}
+    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start_folded as "[#Hsimple HP]".
+  unfold is_simple. iNamed "Hsimple".
+  wp_apply (wp_Send ch cap with "[$Hch]").
+  iIntros "(Hlc1 & Hlc2 & ? & ?)".
+  iApply (simple_send_au with "[$] [$HP]").
+  iNext. by iApply "HΦ".
 Qed.
 
 End proof.
