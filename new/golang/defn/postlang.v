@@ -231,7 +231,7 @@ Class ContextValid `{!GoContext} :=
                 let field_addr :=
                   (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
                 let field_val := (GoInstruction (StructFieldGet field_name) "v") in
-                GoInstruction (GoStore field_type) field_addr field_val
+                GoInstruction (GoStore field_type) (field_addr, field_val)
          ) (StructV ∅) fds)%V;
   store_array n elem_type :
     store (go.ArrayType n elem_type) =
@@ -241,7 +241,7 @@ Class ContextValid `{!GoContext} :=
                 let elem_addr :=
                   GoInstruction (ArrayIndexRef (go.ArrayType n elem_type)) #(W64 j) "l" in
                 let elem_val := GoInstruction ArrayLookup ("v", #(W64 n)) in
-                GoInstruction (GoStore elem_type) elem_addr elem_val)
+                GoInstruction (GoStore elem_type) (elem_addr, elem_val))
              (ArrayV []) (seqZ 0 n)
     )%V;
 

@@ -931,9 +931,9 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_GoStore K {s E} (l : loc) t Φ :
-  ▷ (£ 1 -∗ WP fill K ((store t) #l) @ s ; E {{ Φ }}) -∗
-  WP fill K ((GoInstruction (GoStore t)) #l) @ s ; E {{ Φ }}.
+Lemma wp_GoStore K {s E} (l : loc) v t Φ :
+  ▷ (£ 1 -∗ WP fill K (store t #l v) @ s ; E {{ Φ }}) -∗
+  WP fill K ((GoInstruction (GoStore t)) (#l, v)%V) @ s ; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   iApply wp_lift_step; [apply fill_not_val; done|].
@@ -961,7 +961,7 @@ Proof.
   iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
-Lemma wp_GoAlloc K {s E} (l : loc) t Φ :
+Lemma wp_GoAlloc K {s E} t Φ :
   ▷ (£ 1 -∗ WP fill K ((alloc t) #()) @ s ; E {{ Φ }}) -∗
   WP fill K ((GoInstruction (GoAlloc t)) #()) @ s ; E {{ Φ }}.
 Proof.

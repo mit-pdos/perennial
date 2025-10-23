@@ -720,10 +720,35 @@ Tactic Notation "wp_apply" open_constr(lem) :=
 Section go_wp_pure_instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
 
+Global Instance wp_GoAlloc t :
+  PureWp True (GoInstruction (GoAlloc t) #()) (alloc t #()).
+Proof.
+  iIntros "% * _ % HΦ". rewrite to_val_unseal. iApply wp_GoAlloc. iApply "HΦ".
+Qed.
+
+Global Instance wp_GoStore t (l : loc) v :
+  PureWp True (GoInstruction (GoStore t) (#l, v)%V) (store t #l v).
+Proof.
+  iIntros "% * _ % HΦ". rewrite to_val_unseal. iApply wp_GoStore. iApply "HΦ".
+Qed.
+
 Global Instance wp_GoLoad t (l : loc) :
   PureWp True (GoInstruction (GoLoad t) #l) (load t #l).
 Proof.
   iIntros "% * _ % HΦ". rewrite to_val_unseal. iApply wp_GoLoad. iApply "HΦ".
+Qed.
+
+(* TODO: would be ok to make functions and method total functions. The go
+   compiler will make sure that only valid functions get called. To deal with
+   method sets, we'll anyways want a different piece of state that has all of
+   the method signatures for a type, so it's OK for the methods map to have
+   method implementations for every method name (the ones that don't exist will
+   never be called). *)
+
+Global Instance wp_GlobalVarAddr v :
+  PureWp True (GoInstruction (GlobalVarAddr v) #()) #(global_addr v).
+Proof.
+  iIntros "% * _ % HΦ". rewrite to_val_unseal. wp_apply wp_GlobalVarAddr. iApply "HΦ".
 Qed.
 
 Global Instance wp_StructFieldRef t f (l : loc) :

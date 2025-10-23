@@ -984,8 +984,8 @@ Definition go_instruction_step (op : go_op) (arg : val) :
       ret_expr $ App (Val $ GoInstruction AngelicExit) (Val arg)
   | GoLoad t, _ =>
       ret_expr $ App (Val $ load t) (Val arg)
-  | GoStore t, _ =>
-      ret_expr $ App (Val $ store t) (Val arg)
+  | GoStore t, PairV addr v  =>
+      ret_expr $ App (App (Val $ store t) (Val addr)) (Val v)
   | GoAlloc t, _ =>
       ret_expr $ App (Val $ alloc t) (Val arg)
   | FuncCall f, _ =>

@@ -170,7 +170,7 @@ Ltac solve_wp_struct_field_set :=
 
 Ltac solve_wp_struct_field_get :=
   iIntros (?) "* _ *"; iIntros "Hwp";
-  rewrite [in (to_val (V:=foo_t))]to_val_unseal. wp_apply wp_StructFieldGet; last done;
+  rewrite [in (to_val (V:=foo_t))]to_val_unseal; wp_apply wp_StructFieldGet; last done;
   repeat (rewrite lookup_insert_ne //; []); rewrite lookup_insert //.
 
 Global Instance wp_StructFieldSet_foo_a (v : foo_t) (a' : w64) :
@@ -185,17 +185,11 @@ Proof. solve_wp_struct_field_set. Qed.
 
 Global Instance wp_StructFieldGet_foo_a (v : foo_t) :
   PureWp True (GoInstruction (StructFieldGet "a") #v) #v.(a).
-Proof.
-  iIntros (?) "* _ *"; iIntros "Hwp".
-  rewrite [in (to_val (V:=foo_t))]to_val_unseal. wp_apply wp_StructFieldGet; last done.
-  { admit. }
-  repeat (rewrite lookup_insert_ne //; []). rewrite lookup_insert //.
-Qed.
+Proof. solve_wp_struct_field_get. Qed.
 
-Global Instance wp_StructFieldSet_foo_b (v : foo_t) b' :
-  PureWp True (GoInstruction (StructFieldSet "b") (#v, #b')%V)
-         (#(set b (const b') v)).
-Proof. solve_wp_struct_field_set. Qed.
+Global Instance wp_StructFieldGet_foo_b (v : foo_t) :
+  PureWp True (GoInstruction (StructFieldGet "b") #v) #v.(b).
+Proof. solve_wp_struct_field_get. Qed.
 
 Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
 Proof.
@@ -221,11 +215,19 @@ Proof.
     rewrite [in (_ (foo_t))]typed_pointsto_unseal /=.
     rewrite go.store_underlying foo_underlying.
     rewrite go.struct_field_ref_underlying foo_underlying.
-    rewrite [in (_ foo_t)]to_val_unseal.
     rewrite go.store_struct /=. iNamed "Hl".
-    wp_pures. wp_bind.
-    wp_pure.
-    admit.
+
+    wp_pures.
+    wp_apply (wp_store with "[a]").
+    { iFrame. }
+    iIntros "a".
+    wp_pures.
+
+    wp_bind.
+    wp_apply (@wp_store with "b"). iIntros "b".
+
+    iApply "HΦ". iFrame.
+    (* FIXME: the wp_load/wp_store tactics will need to deal with these instances correctly. *)
 Admitted.
 
 End test.
