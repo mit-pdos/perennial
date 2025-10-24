@@ -53,4 +53,10 @@ Axiom wp_Time__Add : ∀ (t : time.Time.t) (d : time.Duration.t),
     t @ time.Time.id @ "Add" #d
   {{{ (t : time.Time.t), RET #t; True }}}.
 
+Lemma wp_Sleep (d : time.Duration.t) :
+  {{{ is_pkg_init time }}}
+    @! time.Sleep #d
+  {{{ RET #(); True }}}.
+Proof. wp_start. by iApply "HΦ". Qed.
+
 End wps.

@@ -19,5 +19,8 @@ Definition syncTimerⁱᵐᵖˡ : val :=
 
 Axiom Afterⁱᵐᵖˡ : val.
 
+Definition Sleepⁱᵐᵖˡ : val :=
+  λ: "d", #().
+
 End code.
 End time.
