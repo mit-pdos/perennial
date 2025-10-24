@@ -388,6 +388,39 @@ Definition Channel__Capⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#uint64T] (struct.field_ref (Channel "T") #"cap"%go (![#ptrT] "c")))).
 
+(* c.Iter() returns an iterator that models a for range loop over the channel.
+
+   go: channel.go:280:22 *)
+Definition Channel__Iterⁱᵐᵖˡ : val :=
+  λ: "c" "T" <>,
+    exception_do (let: "c" := (mem.alloc "c") in
+    return: ((λ: "yield",
+       exception_do (let: "yield" := (mem.alloc "yield") in
+       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+         let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+         let: "v" := (mem.alloc (type.zero_val "T")) in
+         let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+         let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
+         (method_call #(ptrT.id Channel.id) #"TryReceive"%go (![#ptrT] "c") "T") "$a0") in
+         let: "$r0" := "$ret0" in
+         let: "$r1" := "$ret1" in
+         let: "$r2" := "$ret2" in
+         do:  ("selected" <-[#boolT] "$r0");;;
+         do:  ("v" <-["T"] "$r1");;;
+         do:  ("ok" <-[#boolT] "$r2");;;
+         (if: (~ (![#boolT] "selected"))
+         then continue: #()
+         else do:  #());;;
+         (if: (~ (![#boolT] "ok"))
+         then return: (#())
+         else do:  #());;;
+         (if: (~ (let: "$a0" := (!["T"] "v") in
+         (![#funcT] "yield") "$a0"))
+         then return: (#())
+         else do:  #()));;;
+       return: #())
+       ))).
+
 Definition SelectDir : go_type := uint64T.
 #[global] Typeclasses Opaque SelectDir.
 #[global] Opaque SelectDir.
@@ -404,7 +437,7 @@ Definition NonBlockingSelect1 : go_string := "github.com/goose-lang/goose/model/
    For receive: value parameter is ignored
    Returns (selected, received_value, ok)
 
-   go: channel.go:292:6 *)
+   go: channel.go:313:6 *)
 Definition NonBlockingSelect1ⁱᵐᵖˡ : val :=
   λ: "T" "ch" "dir" "value",
     exception_do (let: "value" := (mem.alloc "value") in
@@ -438,7 +471,7 @@ Definition BlockingSelect2 : go_string := "github.com/goose-lang/goose/model/cha
 (* Blocking select with 2 cases
    Returns (caseIndex, received_value1, received_value2, ok)
 
-   go: channel.go:306:6 *)
+   go: channel.go:327:6 *)
 Definition BlockingSelect2ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
     exception_do (let: "val2" := (mem.alloc "val2") in
@@ -504,7 +537,7 @@ Definition NonBlockingSelect2 : go_string := "github.com/goose-lang/goose/model/
    Returns (caseIndex, received_value1, received_value2, ok)
    caseIndex = 2 means no selection
 
-   go: channel.go:346:6 *)
+   go: channel.go:367:6 *)
 Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
     exception_do (let: "val2" := (mem.alloc "val2") in
@@ -610,7 +643,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
 
 Definition BlockingSelect3 : go_string := "github.com/goose-lang/goose/model/channel.BlockingSelect3"%go.
 
-(* go: channel.go:408:6 *)
+(* go: channel.go:429:6 *)
 Definition BlockingSelect3ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
     exception_do (let: "val3" := (mem.alloc "val3") in
@@ -708,7 +741,7 @@ Definition NonBlockingSelect3 : go_string := "github.com/goose-lang/goose/model/
    Returns (caseIndex, received_value1, received_value2, received_value3, ok)
    caseIndex = 3 means no selection
 
-   go: channel.go:461:6 *)
+   go: channel.go:482:6 *)
 Definition NonBlockingSelect3ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
     exception_do (let: "val3" := (mem.alloc "val3") in
@@ -811,7 +844,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(NewChannelRef, NewChannelRefⁱᵐᵖˡ); (NonBlockingSelect1, NonBlockingSelect1ⁱᵐᵖˡ); (BlockingSelect2, BlockingSelect2ⁱᵐᵖˡ); (NonBlockingSelect2, NonBlockingSelect2ⁱᵐᵖˡ); (BlockingSelect3, BlockingSelect3ⁱᵐᵖˡ); (NonBlockingSelect3, NonBlockingSelect3ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(OfferState.id, []); (ptrT.id OfferState.id, []); (Channel.id, []); (ptrT.id Channel.id, [("Cap"%go, Channel__Capⁱᵐᵖˡ); ("Close"%go, Channel__Closeⁱᵐᵖˡ); ("Len"%go, Channel__Lenⁱᵐᵖˡ); ("Receive"%go, Channel__Receiveⁱᵐᵖˡ); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOkⁱᵐᵖˡ); ("Send"%go, Channel__Sendⁱᵐᵖˡ); ("TryClose"%go, Channel__TryCloseⁱᵐᵖˡ); ("TryReceive"%go, Channel__TryReceiveⁱᵐᵖˡ); ("TrySend"%go, Channel__TrySendⁱᵐᵖˡ)]); (SelectDir.id, []); (ptrT.id SelectDir.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(OfferState.id, []); (ptrT.id OfferState.id, []); (Channel.id, []); (ptrT.id Channel.id, [("Cap"%go, Channel__Capⁱᵐᵖˡ); ("Close"%go, Channel__Closeⁱᵐᵖˡ); ("Iter"%go, Channel__Iterⁱᵐᵖˡ); ("Len"%go, Channel__Lenⁱᵐᵖˡ); ("Receive"%go, Channel__Receiveⁱᵐᵖˡ); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOkⁱᵐᵖˡ); ("Send"%go, Channel__Sendⁱᵐᵖˡ); ("TryClose"%go, Channel__TryCloseⁱᵐᵖˡ); ("TryReceive"%go, Channel__TryReceiveⁱᵐᵖˡ); ("TrySend"%go, Channel__TrySendⁱᵐᵖˡ)]); (SelectDir.id, []); (ptrT.id SelectDir.id, [])].
 
 #[global] Instance info' : PkgInfo channel.channel :=
   {|

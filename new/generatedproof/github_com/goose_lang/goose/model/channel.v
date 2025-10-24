@@ -210,6 +210,10 @@ Global Instance wp_method_call_Channel'ptr_Close :
   WpMethodCall (ptrT.id channel.Channel.id) "Close" _ (is_pkg_defined channel) :=
   ltac:(solve_wp_method_call).
 
+Global Instance wp_method_call_Channel'ptr_Iter :
+  WpMethodCall (ptrT.id channel.Channel.id) "Iter" _ (is_pkg_defined channel) :=
+  ltac:(solve_wp_method_call).
+
 Global Instance wp_method_call_Channel'ptr_Len :
   WpMethodCall (ptrT.id channel.Channel.id) "Len" _ (is_pkg_defined channel) :=
   ltac:(solve_wp_method_call).
