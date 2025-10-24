@@ -2,7 +2,6 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_ini
 From New.proof Require Import proof_prelude.
 From iris.base_logic.lib Require Import saved_prop.
 From iris.algebra Require Import auth gset.
-Require Import New.proof.sync.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 From New.proof.github_com.goose_lang Require Import primitive.
@@ -598,7 +597,7 @@ Definition is_channel (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
     "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 cap) ∗
     "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "lock"]□ mu_loc ∗
-    "#lock" ∷ mutex.is_Mutex mu_loc (chan_inv_inner ch cap γ).
+    "#lock" ∷ primitive.is_Mutex mu_loc (chan_inv_inner ch cap γ).
 
 Global Instance is_channel_pers ch cap γ : Persistent (is_channel cap ch γ).
 Proof.

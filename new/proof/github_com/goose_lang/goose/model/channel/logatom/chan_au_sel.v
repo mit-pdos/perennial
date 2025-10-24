@@ -4,7 +4,6 @@ Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 From New.proof.github_com.goose_lang Require Import primitive.
 From New.proof.github_com.goose_lang.std Require Import std_core.
-From New.proof.sync_proof Require Import mutex sema.
 
 Section select.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
