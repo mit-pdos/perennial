@@ -3,7 +3,6 @@ From New.proof.github_com.goose_lang.goose.model.channel
      Require Export  future spsc done  chan_au_sel.
 From New.proof Require Import time.
 From Perennial.goose_lang Require Import lang.
-From Perennial.goose_lang Require Import time.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From Perennial.goose_lang.lib Require Import slice.
@@ -202,7 +201,8 @@ Lemma wp_HelloWorldWithTimeout :
       ⌜result = "Hello, World!"%go ∨
         result = "operation timed out"%go⌝
   }}}.
-Proof.
+  Proof using chanGhostStateG0 chanGhostStateG1 ext ffi ffi_interp0 ffi_semantics0 ghost_mapG0
+ghost_varG0 go_ctx hG Σ.
   wp_start.
   wp_auto.
   wp_apply (wp_NewChannelRef (t:=structT []) 0);first done.
@@ -215,18 +215,14 @@ iMod ("Hstart" with "Hoc") as (γdone) "[#Hdone Hnot]".
 iModIntro. wp_auto.
 wp_apply fupd_wp.
 iPersist "done".
+
 iMod (done_alloc_notified (t:=structT []) γdone ch True (errMsg_ptr ↦ "operation timed out"%go)%I
       with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
 iModIntro.
 wp_apply (wp_fork with "[HNotify errMsg done]").
 {
 wp_auto.
-Print time.Sleep.
-wp_apply wp_func_call.
-{
-  iExists ().
-  admit.
-}
+wp_apply wp_Sleep.
 wp_apply (wp_done_close (V:=()) with "[$HNotify errMsg]").
 {
   iFrame "#".
@@ -253,7 +249,7 @@ wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
       left. done.
     }
     }
-  Admitted.
+Qed.
 
 End cancellable.
 
@@ -351,7 +347,6 @@ Proof.
 
               with "[ Hspsc Hprod]").
      { iFrame "#".  iFrame.  simpl.
-       do 3 (iSplitL "";first admit).
        replace (Z.to_nat (length sent)) with (length sent) by lia.
        word.
        }
@@ -420,7 +415,7 @@ Proof.
               (λ sent0 : list w64, ⌜sent0 = fib_list n⌝%I) sent
 
               with "[ $Hspsc $Hprod]").
-    { iFrame "#".  do 3 (iSplitL; first admit). iPureIntro. rewrite Hsl.
+    { iFrame "#".   iPureIntro. rewrite Hsl.
       assert ((length sent) = n).
       {
        assert  (sint.Z (W64 n) ≤  sint.Z (W64 (length sent))) by word.
@@ -440,7 +435,7 @@ Proof.
         }
     iApply "HΦ". done.
 }
-Admitted.
+Qed.
 
 Lemma wp_fib_consumer:
   {{{ is_pkg_init channel ∗ is_pkg_init chan_spec_raw_examples
@@ -451,7 +446,7 @@ Lemma wp_fib_consumer:
 
 
   }}}.
-Proof.
+  Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
   wp_start. wp_auto.
   wp_apply (wp_NewChannelRef 10);first done.
   iIntros (c γ) "[#Hchan Hown]".
@@ -498,7 +493,7 @@ Proof.
 iNamed "IH". wp_auto.
    wp_apply ((wp_spsc_receive (t:=intT) γspsc c γspsc (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
                   (λ sent, ⌜sent = fib_list 10 ⌝%I) (fib_list i) _) with "[Hcons]").
-   { iFrame "#".  iFrame. admit.  }
+   { iFrame "#".  iFrame.   }
    iIntros (v ok).
    destruct ok.
    {
@@ -544,6 +539,6 @@ iSplitL "Hcons".
 }
 iIntros "%Hfl". wp_auto. wp_for_post. iApply "HΦ". rewrite Hfl.
     iFrame.
-Admitted.
+Qed.
 
 End fibonacci_examples.
