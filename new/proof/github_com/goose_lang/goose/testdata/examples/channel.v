@@ -1,6 +1,6 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export  future spsc done  chan_au_sel.
+     Require Export  future spsc done  chan_au_sel dsp.
 From New.proof Require Import time.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
@@ -34,16 +34,20 @@ Lemma wp_DSPExample :
   {{{ RET #(W64 42); True }}}.
 Proof.
   wp_start. wp_auto. wp_pures.
-   wp_apply (wp_NewChannelRef (t:=ptrT) 0);first done.
+  wp_apply (wp_NewChannelRef (t:=interfaceT) 0);first done.
   iIntros (c). iIntros (γ).
   iIntros "[#Hic Hoc]".
   wp_auto.
-   wp_apply (wp_NewChannelRef (t:=(structT [])) 0);first done.
+  wp_apply (wp_NewChannelRef (t:=interfaceT) 0);first done.
   iIntros (signal). iIntros (γ').
   iIntros "[#Hicsignal Hocsignal]".
   wp_auto.
+  iMod (dsp_session_init with "[Hic] [Hicsignal] [$Hoc] [$Hocsignal]") as "H";
+    [by eauto|by eauto|..].
+  { Fail iApply "Hic". iDestruct "Hic" as "-#Hic". iClear "#". Fail iApply "Hic".
+    iStopProof. done. }
+  { iApply "Hicsignal". }
 Admitted.
-
 
 Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel  }}}

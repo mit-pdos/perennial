@@ -625,12 +625,11 @@ Definition DSPExampleXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "c" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef #ptrT) "$a0") in
+    (func_call #channel.NewChannelRef #interfaceT) "$a0") in
     do:  ("c" <-[#ptrT] "$r0");;;
     let: "signal" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef (type.structT [
-    ])) "$a0") in
+    (func_call #channel.NewChannelRef #interfaceT) "$a0") in
     do:  ("signal" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
