@@ -19,18 +19,11 @@ Definition maxUint64 (n : nat) : val :=
 (* TODO(tchajed): I don't believe it's possible to implement signed operations
 in a width-independent way *)
 
-Definition int_ge0 : val :=
-  λ: "x", "x" < #(W64 (2^63)).
-
 Definition int_lt : val :=
-  λ: "x" "y", if: int_ge0 "x" then
-                (if: int_ge0 "y" then "x" < "y"
-                else #false)
-              else (* sint.Z x < 0 *)
-                (if: int_ge0 "y" then #true
-                else "x" < "y").
+  λ: "x" "y", BinOp SignedLtOp "x" "y".
+
 Definition int_leq : val :=
-  λ: "x" "y", ("x" = "y") || int_lt "x" "y".
+  λ: "x" "y", BinOp SignedLeOp "x" "y".
 
 Definition int_geq : val :=
   λ: "x" "y", int_leq "y" "x".
