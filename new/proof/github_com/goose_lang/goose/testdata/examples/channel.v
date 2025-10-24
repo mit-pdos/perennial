@@ -2,6 +2,8 @@ From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export  future spsc done  chan_au_sel.
 From New.proof Require Import time.
+From Perennial.goose_lang Require Import lang.
+From Perennial.goose_lang Require Import time.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From Perennial.goose_lang.lib Require Import slice.
@@ -13,7 +15,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!chanGhostStateG Σ go_string}.  (* V = go_string *)
 Context `{!ghost_varG Σ bool}.
-Context `{!savedPropG Σ}.
 Set Default Proof Using "Type".
 #[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
@@ -98,11 +99,13 @@ Section cancellable.
   Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_varG Σ bool}.
-Context `{!savedPropG Σ}.
 Context `{!chanGhostStateG Σ unit}.
 Context `{!chanGhostStateG Σ go_string}.
 Context `{!ghost_mapG Σ nat gname}.
 Set Default Proof Using "Type".
+
+#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
 
 Global Instance wp_struct_make_unit:
   PureWp True
@@ -115,22 +118,26 @@ Qed.
 
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
-  (γdone: done_names) (i: nat) :
+  (γdone: done_names) :
   {{{ is_pkg_init channel ∗
         is_pkg_init chan_spec_raw_examples ∗
 
         is_done (V:=unit) (t:=structT []) γdone done_ch ∗
-        Notified γdone (err_ptr1 ↦ err_msg) ∗
-        err_ptr1 ↦ err_msg }}}
+        Notified γdone (err_ptr1 ↦ err_msg)  }}}
     @! chan_spec_raw_examples.HelloWorldCancellableX #done_ch #err_ptr1
-    {{{ RET #(); True }}}.
-Proof.
+    {{{
+(result: go_string), RET #result;
+      ⌜result = err_msg ∨ result = "Hello, World!"%go⌝
+    }}}.
+Proof using chanGhostStateG0 chanGhostStateG1 ext ffi ffi_interp0 ffi_semantics0 ghost_mapG0
+ghost_varG0 go_ctx hG Σ.
+
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
   wp_auto_lc 4.
   wp_apply wp_HelloWorldAsync; first done.
-  iIntros (ch γfuture) "[Hfut Hawait]". wp_auto_lc 1.
-  iDestruct "Hpre" as "(#H1 & H2 & H3)".
+  iIntros (ch γfuture) "[#Hfut Hawait]". wp_auto_lc 1.
+  iDestruct "Hpre" as "(#H1 & H2)".
   iAssert ( is_channel (t:=structT []) done_ch 0 γdone.(chan_name)) as "#Hdonech".
   {
     iFrame "#".
@@ -155,21 +162,36 @@ Proof.
   {
     iSplit.
     {
-      admit. }
+      iRight.
+      iSplitL "";first done.
+      iApply ((future_await_au  (V:=go_string) γfuture ch   )
+               with " [$Hfut $Hinv1] [$Hawait] [HΦ resolved selected_case Herr] [$]").
+      iNext. iIntros (v). iIntros "%Hw".
+      wp_auto.
+      iApply "HΦ".
+      iPureIntro.
+      right. done. }
     {
 
       iRight. simpl. iFrame. iFrame "#".
       iSplitL "". { iPureIntro;done. }
 
-      iApply ((done_receive_au (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
-               with " [$H1] [$H2] [HΦ] [$]").
+
+      iApply ((done_receive_au  (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
+               with " [$H1] [H2] [HΦ resolved selected_case Herr] [$]").
       {
-        iModIntro.
-        iIntros "Herr".
-        wp_auto.
-        admit.
+        iFrame.
+       }
+       {
+
+        iNext. iIntros "Herr'".
+      wp_auto. iApply "HΦ". iLeft. done.
       }
-Admitted.
+      }
+      }
+
+Qed.
+
 
 Lemma wp_HelloWorldWithTimeout :
   {{{ is_pkg_init channel ∗
@@ -177,9 +199,60 @@ Lemma wp_HelloWorldWithTimeout :
   }}}
     @!  chan_spec_raw_examples.HelloWorldWithTimeoutX #()
   {{{ (result: go_string), RET #result;
-      ⌜result = "Hello, World!"%go ∨ result = "operation timed out"%go⌝
+      ⌜result = "Hello, World!"%go ∨
+        result = "operation timed out"%go⌝
   }}}.
 Proof.
+  wp_start.
+  wp_auto.
+  wp_apply (wp_NewChannelRef (t:=structT []) 0);first done.
+  iIntros (ch).
+  iIntros (γ).
+  iIntros "[#Hchan Hoc]".
+  wp_apply fupd_wp. simpl.
+  iDestruct (start_done ch γ with "Hchan") as "Hstart".
+iMod ("Hstart" with "Hoc") as (γdone) "[#Hdone Hnot]".
+iModIntro. wp_auto.
+wp_apply fupd_wp.
+iPersist "done".
+iMod (done_alloc_notified (t:=structT []) γdone ch True (errMsg_ptr ↦ "operation timed out"%go)%I
+      with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
+iModIntro.
+wp_apply (wp_fork with "[HNotify errMsg done]").
+{
+wp_auto.
+Print time.Sleep.
+wp_apply wp_func_call.
+{
+  iExists ().
+  admit.
+}
+wp_apply (wp_done_close (V:=()) with "[$HNotify errMsg]").
+{
+  iFrame "#".
+  iFrame.
+}
+{
+  done.
+}
+}
+
+wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
+{
+  done.
+}
+{
+  iIntros (result).
+  iIntros "%Hres".
+  wp_auto.
+  iApply "HΦ".
+  iPureIntro. destruct Hres.
+  { right. done.
+    }
+    {
+      left. done.
+    }
+    }
   Admitted.
 
 End cancellable.

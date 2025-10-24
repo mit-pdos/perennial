@@ -82,7 +82,6 @@ Class chanGhostStateG Σ V := ChanGhostStateG {
   offer_lockG :: ghost_varG Σ (option (offer_lock V));
   offer_parked_propG :: savedPropG Σ;
   offer_parked_predG :: savedPredG Σ (V * bool);
-  continuation_parkedG :: savedPropG Σ;
 }.
 
 Definition chanGhostStateΣ V : gFunctors :=

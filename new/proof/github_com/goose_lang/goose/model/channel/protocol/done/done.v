@@ -23,6 +23,7 @@ Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_mapG Σ nat gname}.
+Context `{!savedPropG Σ}.
 
 
 Record done_names := {
@@ -480,7 +481,7 @@ Proof.
 
 
 
-  iApply ((done_receive_au _ _ _ Φ  ) with "[] [$HNotified] [Hcont] ").
+  iApply ((done_receive_au _ _ _   ) with "[] [$HNotified] [Hcont] ").
   { unfold is_done. iFrame "#". }
   { iNext. iIntros "HQ". iApply "Hcont". iFrame. }
 Qed.
