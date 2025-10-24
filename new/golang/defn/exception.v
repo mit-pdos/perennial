@@ -1,4 +1,4 @@
-From New.golang.defn Require Export prelang.
+From New.golang.defn Require Export postlang.
 From Perennial Require Import base.
 
 Section defn.

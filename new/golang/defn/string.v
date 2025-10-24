@@ -1,4 +1,4 @@
-From New.golang.defn Require Import prelang slice.
+From New.golang.defn Require Import postlang slice.
 From Perennial Require Import base.
 
 Section defn.

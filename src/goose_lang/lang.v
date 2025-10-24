@@ -92,6 +92,7 @@ Inductive bin_op : Set :=
   | AndOp | OrOp | XorOp (* Bitwise *)
   | ShiftLOp | ShiftROp (* Shifts *)
   | LeOp | LtOp | EqOp (* Relations *)
+  | SignedLeOp | SignedLtOp (* SIgned integer relations *)
   | OffsetOp (k:Z) (* Pointer offset *)
   | StringGetOp
 .
@@ -707,6 +708,8 @@ Definition bin_op_eval_compare (op : bin_op) {width} {word: Interface.word width
   match op with
   | LeOp => Some $ bool_decide (word.unsigned n1 <= word.unsigned n2)
   | LtOp => Some $ bool_decide (word.unsigned n1 < word.unsigned n2)
+  | SignedLeOp => Some $ bool_decide (word.signed n1 <= word.signed n2)
+  | SignedLtOp => Some $ bool_decide (word.signed n1 < word.signed n2)
   | EqOp => Some $ bool_decide (word.unsigned n1 = word.unsigned n2)
   | _ => None
   end.

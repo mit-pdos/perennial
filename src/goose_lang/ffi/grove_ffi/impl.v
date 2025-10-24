@@ -4,7 +4,7 @@ From stdpp Require Import gmap vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Import CountableTactics Transitions Integers ByteString.
-From Perennial.goose_lang Require Import lang notation lib.control.impl.
+From Perennial.goose_lang Require Import lang notation.
 
 Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is
