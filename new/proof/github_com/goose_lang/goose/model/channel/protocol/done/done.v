@@ -23,13 +23,17 @@ Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_mapG Σ nat gname}.
+Context `{!savedPropG Σ}.
+
 
 Record done_names := {
   chan_name : chan_names;
-  receivers_map_name : gname
+  receivers_map_name : gname;
+  acc_name         : gname
 }.
 
-Definition Notify (γ : done_names) (Qs : list (iProp Σ)) : iProp Σ :=
+
+Definition NotifyInternal (γ : done_names) (Qs : list (iProp Σ)) : iProp Σ :=
   ∃ (m : gmap nat gname),
     ghost_map_auth γ.(receivers_map_name) (1/2) m ∗
     ⌜∀ i, i ≥ length Qs → m !! i = None⌝ ∗
@@ -38,8 +42,12 @@ Definition Notify (γ : done_names) (Qs : list (iProp Σ)) : iProp Σ :=
         i ↪[γ.(receivers_map_name)]{#1/2} prop_gname ∗
         saved_prop_own prop_gname (DfracOwn(1/2)) Q.
 
-Definition Notified (γ : done_names) (i : nat) (Q : iProp Σ) : iProp Σ :=
-  ∃ prop_gname,
+Definition Notify (γ : done_names) (R : iProp Σ) : iProp Σ :=
+  ∃ Qs, NotifyInternal γ Qs ∗ saved_prop_own γ.(acc_name) (DfracOwn 1) R
+∗ (R -∗ [∗ list] Q ∈ Qs, Q) .
+
+Definition Notified (γ : done_names) (Q : iProp Σ) : iProp Σ :=
+  ∃ prop_gname i,
     i ↪[γ.(receivers_map_name)]{#1/2} prop_gname ∗
     saved_prop_own prop_gname (DfracOwn (1/2)) Q.
 
@@ -65,24 +73,26 @@ Definition is_done (γ : done_names) (ch : loc) : iProp Σ :=
       end
   )%I.
 
-Lemma done_alloc_notified γ ch Qs Q :
+Lemma done_alloc_notified γ ch R Q :
   is_done γ ch -∗
-  Notify γ Qs ={⊤}=∗
-  Notify γ (Qs ++ [Q]) ∗
-  Notified γ (length Qs) Q.
+  Notify γ R ={⊤}=∗
+  Notify γ (R ∗ Q) ∗
+  Notified γ Q.
 Proof.
-  iIntros "#Hdone HNotify".
+  iIntros "#Hdone HNotifyInternal".
   rewrite /Notify /Notified /is_done.
-  iDestruct "HNotify" as (m) "[Hauth_half HQs]".
+  iDestruct "HNotifyInternal" as (Qs) "(HQs & Hsp & HRQs)".
   iDestruct "Hdone" as "[#Hch #Hinv]".
   iMod (saved_prop_alloc Q (DfracOwn 1)) as (prop_gname) "Hprop"; first done.
   iDestruct "Hprop" as "[Hprop1 Hprop2]".
   set (i := length Qs).
   iInv "Hinv" as "Hinv_open" "Hinv_close".
+  unfold NotifyInternal.
+  iNamed "HQs".
+  iDestruct "HQs" as "(Hauth_half & %H & HQs)".
   iDestruct "Hinv_open" as (s m' Qs') "(>Hch_own & >Hmap_half & Hstate)".
   iDestruct ((ghost_map_auth_agree _ (1/2) (1/2) m m') with "[$Hauth_half] [$Hmap_half]") as %->.
   iCombine "Hauth_half Hmap_half" as "Hauth_full".
-  iDestruct "HQs" as "[%H HQs]".
   iMod (ghost_map_insert i prop_gname with "Hauth_full") as "[Hauth_full Hfrag]".
   {
     specialize H with i.
@@ -90,6 +100,22 @@ Proof.
   }
   iDestruct "Hauth_full" as "[Hauth_half1 Hauth_half2]".
   iDestruct "Hfrag" as "[Hfrag1 Hfrag2]".
+  iAssert (
+  [∗ list] i0↦Q0 ∈ (Qs ++ [Q]),
+    ∃ pg, i0 ↪[γ.(receivers_map_name)]{#1/2} pg ∗
+           saved_prop_own pg (DfracOwn (1/2)) Q0
+)%I
+with "[HQs Hfrag1 Hprop1]" as "HQs_ext".
+{
+  iApply (big_sepL_app with "[$HQs Hfrag1 Hprop1]").
+  - (* keep the old part as-is *)
+    rewrite big_sepL_singleton.
+    iFrame.
+    replace (length Qs + 0) with (length Qs) by done.
+    iFrame.
+
+}
+iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
   destruct s; try iDestruct "Hstate" as ">Hstate"; try done.
   {
     iMod ("Hinv_close" with "[Hch_own Hauth_half2 Hstate]").
@@ -108,8 +134,13 @@ Proof.
           apply H. lia.
       }
       replace (length Qs + 0) with (length Qs) by lia.
-      iFrame "Hfrag1".
-      rewrite big_sepL_nil. done.
+      iIntros "[HR' HQ]".
+      iFrame. simpl. iSplitL "HR' HRQs".
+      {
+      iApply "HRQs".
+      done.
+      }
+      done.
     }
   }
   {
@@ -121,9 +152,9 @@ Proof.
     {
       iModIntro. iFrame.
       replace (length Qs + 0) with (length Qs) by lia.
-      iFrame "Hfrag1".
-      rewrite big_sepL_nil. iPureIntro. split; try done.
-      intros.
+      iFrame.
+      iSplitL "". { iPureIntro.
+ intros.
       subst i.
       rewrite length_app in H0; simpl in H0.
       assert (Hi0_ne : i0 ≠ length Qs) by lia.
@@ -131,6 +162,15 @@ Proof.
       rewrite lookup_insert_ne.
       { apply H. done. }
       done.
+      }
+       iIntros "[HR' HQ]".
+      iFrame. simpl. iSplitL "HRQs HR'".
+      {
+      iApply "HRQs".
+      done.
+      }
+      done.
+
     }
   }
   {
@@ -150,13 +190,19 @@ Qed.
 Lemma start_done (ch : loc) (γ : chan_names) :
   is_channel ch 0 γ -∗
   own_channel ch 0 chan_rep.Idle γ ={⊤}=∗
-  ∃ γdone, is_done γdone ch ∗ Notify γdone [].
+  ∃ γdone, is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
   iMod (ghost_map_alloc_empty) as (γmap) "[Hmap_auth1 Hmap_auth2]".
+  iMod (saved_prop_alloc (emp : iProp Σ) (DfracOwn 1)) as (γacc) "Hacc_full".
+  {
+    done.
+  }
   set (γdone := {|
     chan_name := γ;
-    receivers_map_name := γmap
+    receivers_map_name := γmap;
+    acc_name := γacc
+
   |}).
   iMod (inv_alloc nroot _ (
     ∃ s m Qs,
@@ -182,75 +228,121 @@ Proof.
     iFrame. iExists []. done.
   }
   iModIntro. iExists γdone. iFrame "#".
-  rewrite /Notify. replace (γdone.(chan_name)) with γ by done. iFrame.
+  rewrite /NotifyInternal. replace (γdone.(chan_name)) with γ by done. iFrame.
   replace (γdone.(receivers_map_name)) with γmap by done. iFrame.
   iDestruct (big_sepL_nil (λ i Q, ∃ prop_gname : gname, i ↪[γmap]{#1 / 2} prop_gname ∗ saved_prop_own prop_gname (DfracOwn (1 / 2)) Q)%I) as "H".
+  iExists [].
+  iSplitR "".
+  {
+
+  
+  iFrame.
   iSplitL "". { iFrame. iPureIntro. done. }
-  iApply "H". done.
+  simpl.
+  done.
+  }
+  {
+    simpl. done.
+  }
 Qed.
 
-Lemma wp_done_close γ ch Qs :
-  {{{ is_pkg_init channel ∗
-      is_done γ ch ∗
-      Notify γ Qs ∗
-      [∗ list] Q ∈ Qs, Q }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
-  {{{ RET #(); True }}}.
+Lemma done_close_au γ ch R Φ :
+  is_done γ ch -∗
+  Notify γ R -∗
+  R -∗
+  ▷ (True -∗ Φ #()) -∗
+   £1 ∗ £1 ∗ £1 -∗
+  close_au ch 0 γ.(chan_name) (Φ #()).
 Proof.
-  iIntros (Φ) "(#Hinit & #Hdone & HNotify & HQs) Hcont".
-  unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
-  unfold Notify. iDestruct "HNotify" as (m) "[Hauth_half [%Hbound HProps]]".
-  iApply (wp_Close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
-  iIntros "(? & ? & ? & ?)".
+  iIntros "#Hdone". iIntros "HNh".
+  iIntros "HR".
+  unfold Notify. iNamed "HNh". iDestruct "HNh" as "[HProps Hsp]".
+  unfold NotifyInternal.
+  iNamed "HProps".
+  iDestruct "HProps" as "(Hgm & %Hlen & HQs)".
+  unfold is_done. iDestruct "Hdone" as "[Hch Hinv]". iIntros "Hcont".
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iMod (lc_fupd_elim_later with "[$] Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hinv_open" as (s m' Qs') "(Hch_own & Hmap_half & Hstate)".
-  iDestruct (ghost_map_auth_agree with "Hauth_half Hmap_half") as %->.
+  iDestruct (ghost_map_auth_agree with "Hgm Hmap_half") as %->.
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext. iFrame.
   destruct s; try done.
   - iIntros "Hoc".
     iMod "Hmask".
     iMod (lc_fupd_elim_later with "[$] Hinv_close") as "Hinv_close".
-    iMod ("Hinv_close" with "[Hmap_half Hoc Hauth_half HProps HQs]") as "_".
+    iDestruct "Hsp" as "[Hsp Hrs]".
+    iApply "Hrs" in "HR".
+    iMod ("Hinv_close" with "[Hmap_half Hsp Hoc HR Hgm HQs]") as "_".
     {
       iNext. iExists (chan_rep.Closed []), m'. iFrame "Hmap_half".
       iFrame. iExists Qs.
-      iDestruct ((big_sepL_sep_2) with "[$HProps] [$HQs]") as "H".
+      iSplitL "". { iPureIntro. done. }
+
+      iDestruct ((big_sepL_sep_2) with "[$HR] [$HQs]") as "H".
       iFrame.
-      iSplitL ""; first done.
       iApply (big_sepL_mono with "H").
       {
         iIntros (k). iIntros (y). iIntros "%H". iIntros "H". iDestruct "H" as "[H y]".
-        iFrame. iNamed "H". iExists prop_gname. iDestruct "H" as "[H1 H2]".
+        iFrame. iNamed "H". iNamed "y". iExists prop_gname. iDestruct "y" as "[H1 H2]".
         iFrame. iLeft. iFrame.
       }
     }
     iModIntro. iApply "Hcont". done.
   - destruct draining; try done.
     iNamed "Hstate".
-    iCombine "Hauth_half Hgm" as "H".
-    iCombine "H Hmap_half" as "H".
+    iCombine "Hmap_half Hgm" as "H". iNamed "Hstate".
+    iCombine "H Hgm" as "H".
     iDestruct (ghost_map_auth_valid with "H") as %Hvalid1.
     exfalso.
     eapply (Qp.not_add_le_l 1 (1/2)%Qp).
     exact Hvalid1.
 Qed.
 
-Lemma wp_done_receive γ ch i Q :
+Lemma wp_done_close γ ch R :
   {{{ is_pkg_init channel ∗
       is_done γ ch ∗
-      Notified γ i Q }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
-  {{{ RET (#(default_val V), #false); Q }}}.
+      Notify γ R ∗ R }}}
+    ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
+  {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & #Hdone & HNotifed) Hcont".
+  iIntros (Φ). iIntros "(#Hinit & #Hdone & Hrest)".  iNamed "Hrest".
+  iDestruct "Hrest" as "[HNh HR]".
+  iIntros "Hphi".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
-  unfold Notify.
-  iApply wp_fupd.
-  iApply (wp_Receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+  iApply (wp_Close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+  iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
+  iApply (done_close_au with "[][$HNh][$HR][Hphi Hlc]").
+  {
+    unfold is_done.
+   iFrame "#".
+  }
+  {
+    iNext.
+    iFrame.
+    }
+    done.
+Qed.
+
+Lemma done_receive_au γ ch Q  :
+  ∀ (Φ: V → bool → iProp Σ),
+  is_done γ ch -∗
+  Notified γ Q -∗
+  ▷ (Q -∗ Φ (default_val V) false) -∗
+  £1 ∗ £1 ∗ £1 ∗ £1 -∗
+  rcv_au_slow ch 0 γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+Proof.
+  intros Φ.
+  iIntros "#Hdone".
+  iIntros "HNotified".
+  iIntros "HphiQ".
   iIntros "(? & ? & ? & ?)".
+   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
+  unfold NotifyInternal.
+
+
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch0".
@@ -287,8 +379,8 @@ Proof.
       destruct draining.
       {
         iIntros "Hoc".
-        iMod "Hmask". iNamed "Hinv_open1". iNamed "HNotifed".
-        iDestruct "HNotifed" as "[Hn1 Hn2]".
+        iMod "Hmask". iNamed "Hinv_open1". iNamed "HNotified".
+        iDestruct "HNotified" as "[Hn1 Hn2]".
         iDestruct (ghost_map_lookup with "Hmap Hn1") as %Hlookup.
         have Hi_lt : i < length Qs0.
         {
@@ -312,8 +404,8 @@ Proof.
             replace (DfracOwn (1 / 2) ⋅ DfracOwn (1 / 2)) with (DfracOwn 1) by (rewrite dfrac_op_own; rewrite Qp.half_half; done).
             done.
           }
-          iModIntro. iModIntro.
-          iApply "Hcont".
+          iModIntro.
+          iApply "HphiQ".
           iRewrite "Hp_eq2".
           done.
         - iDestruct "H4" as "Hprop_full".
@@ -336,8 +428,8 @@ Proof.
     destruct draining.
     {
       iIntros "Hoc".
-      iMod "Hmask". iNamed "Hinv_open". iNamed "HNotifed".
-      iDestruct "HNotifed" as "[Hn1 Hn2]".
+      iMod "Hmask". iNamed "Hinv_open". iNamed "HNotified".
+      iDestruct "HNotified" as "[Hn1 Hn2]".
       iDestruct (ghost_map_lookup with "Hmap Hn1") as %Hlookup.
       have Hi_lt : i < length Qs.
       {
@@ -362,8 +454,8 @@ Proof.
           replace (DfracOwn (1 / 2) ⋅ DfracOwn (1 / 2)) with (DfracOwn 1) by (rewrite dfrac_op_own; rewrite Qp.half_half; done).
           done.
         }
-        iModIntro. iModIntro.
-        iApply "Hcont".
+        iModIntro.
+        iApply "HphiQ".
         iRewrite "Hp_eq2".
         done.
       - iDestruct "H4" as "Hprop_full".
@@ -374,6 +466,24 @@ Proof.
     }
     done.
   }
+Qed.
+
+Lemma wp_done_receive γ ch Q :
+  {{{ is_pkg_init channel ∗
+      is_done γ ch ∗
+      Notified γ Q }}}
+    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+  {{{ RET (#(default_val V), #false); Q }}}.
+Proof.
+  iIntros (Φ) "(#Hinit & #Hdone & HNotified) Hcont".
+  unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
+   iApply (wp_Receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+
+
+
+  iApply ((done_receive_au _ _ _   ) with "[] [$HNotified] [Hcont] ").
+  { unfold is_done. iFrame "#". }
+  { iNext. iIntros "HQ". iApply "Hcont". iFrame. }
 Qed.
 
 End done.
