@@ -34,11 +34,11 @@ Lemma wp_DSPExample :
   {{{ RET #(W64 42); True }}}.
 Proof.
   wp_start. wp_auto. wp_pures.
-   wp_apply (wp_NewChannelRef (t:=ptrT) 0);first done.
+   wp_apply (wp_NewChannel (t:=ptrT) 0);first done.
   iIntros (c). iIntros (γ).
   iIntros "[#Hic Hoc]".
   wp_auto.
-   wp_apply (wp_NewChannelRef (t:=(structT [])) 0);first done.
+   wp_apply (wp_NewChannel (t:=(structT [])) 0);first done.
   iIntros (signal). iIntros (γ').
   iIntros "[#Hicsignal Hocsignal]".
   wp_auto.
@@ -53,7 +53,7 @@ Lemma wp_HelloWorldAsync :
       await_token γfuture }}}.
 Proof.
   wp_start. wp_auto.
-  wp_apply wp_NewChannelRef;first done.
+  wp_apply wp_NewChannel;first done.
   iIntros (ch). iIntros (γ). iIntros "(#HisChan & Hownchan)".
   wp_auto.
   simpl in *.
@@ -205,7 +205,7 @@ Lemma wp_HelloWorldWithTimeout :
 ghost_varG0 go_ctx hG Σ.
   wp_start.
   wp_auto.
-  wp_apply (wp_NewChannelRef (t:=structT []) 0);first done.
+  wp_apply (wp_NewChannel (t:=structT []) 0);first done.
   iIntros (ch).
   iIntros (γ).
   iIntros "[#Hchan Hoc]".
@@ -448,7 +448,7 @@ Lemma wp_fib_consumer:
   }}}.
   Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
   wp_start. wp_auto.
-  wp_apply (wp_NewChannelRef 10);first done.
+  wp_apply (wp_NewChannel 10);first done.
   iIntros (c γ) "[#Hchan Hown]".
   wp_auto.
    iMod (start_spsc c 10  (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
