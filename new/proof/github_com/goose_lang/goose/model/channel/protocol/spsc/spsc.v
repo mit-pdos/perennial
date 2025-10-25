@@ -164,14 +164,13 @@ Qed.
 Lemma wp_spsc_receive γ ch (ns:spsc_names) (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
                       (received : list V) :
   {{{ is_pkg_init channel ∗
-      £ 1 ∗ £ 1 ∗ £ 1 ∗
       is_spsc γ ch P R ∗ spsc_consumer γ received }}}
     ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
   {{{ (v:V) (ok:bool), RET (#v, #ok);
       (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
             else R received)%I }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hspsc & Hcons) Hcont".
+  iIntros (Φ) "(#Hinit & #Hspsc & Hcons) Hcont".
 
   (* Extract channel info from SPSC predicate *)
   unfold is_spsc. iNamed "Hspsc".
@@ -183,6 +182,7 @@ Proof.
 
   (* Open the SPSC invariant to provide the atomic update *)
   iInv "Hinv" as "Hinv_open" "Hinv_close".
+  iDestruct "Hlc4" as "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
 
@@ -427,12 +427,11 @@ Qed.
 Lemma wp_spsc_send γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
                    (sent : list V) (v : V) :
   {{{ is_pkg_init channel ∗
-      £ 1 ∗ £ 1 ∗ £ 1 ∗
       is_spsc γ ch P R ∗ spsc_producer γ sent ∗ P (length sent) v }}}
     ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
   {{{ RET #(); spsc_producer γ (sent ++ [v]) }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hspsc & Hprod & HP) Hcont".
+  iIntros (Φ) "(#Hinit & #Hspsc & Hprod & HP) Hcont".
 
   (* Extract channel info from SPSC predicate *)
   unfold is_spsc. iNamed "Hspsc". 
@@ -441,6 +440,7 @@ Proof.
   (* Use wp_Send with our atomic update *)
   iApply (wp_Send ch cap v γ.(chan_name) with "[$Hinit $Hchan]").
   iIntros "Hlc4".
+  iDestruct "Hlc4" as "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
   (* Provide the send atomic update *)
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
@@ -602,16 +602,16 @@ Qed.
 
 (** SPSC close operation *)
 Lemma wp_spsc_close γ ch P R sent :
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_spsc γ ch P R ∗ 
+  {{{  is_pkg_init channel ∗ is_spsc γ ch P R ∗
       spsc_producer γ sent ∗ R sent }}}
     ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hspsc & Hprod & HP) Hcont".
+  iIntros (Φ) "( #Hinit & #Hspsc & Hprod & HP) Hcont".
   unfold is_spsc. iNamed "Hspsc".
   iDestruct "Hspsc" as "[Hchan Hinv]".
   iApply (wp_Close ch cap γ.(chan_name) with "[$Hinit $Hchan]").
-  iIntros "Hlc4".
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".

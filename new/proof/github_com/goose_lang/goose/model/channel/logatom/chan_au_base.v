@@ -2,7 +2,6 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_ini
 From New.proof Require Import proof_prelude.
 From iris.base_logic.lib Require Import saved_prop.
 From iris.algebra Require Import auth gset.
-Require Import New.proof.sync.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 From New.proof.github_com.goose_lang Require Import primitive.
@@ -23,13 +22,13 @@ Inductive t (V : Type) : Type :=
 #[global] Instance witness V : Inhabited (t V) := populate!.
 
 
-  Global Arguments Buffered {V}.
-  Global Arguments Idle {V}.
-  Global Arguments SndPending {V}.
-  Global Arguments RcvPending {V}.
-  Global Arguments SndCommit {V}.
-  Global Arguments RcvCommit {V}.
-  Global Arguments Closed {V}.
+Global Arguments Buffered {V}.
+Global Arguments Idle {V}.
+Global Arguments SndPending {V}.
+Global Arguments RcvPending {V}.
+Global Arguments SndCommit {V}.
+Global Arguments RcvCommit {V}.
+Global Arguments Closed {V}.
 
 End chan_rep.
 
@@ -83,7 +82,6 @@ Class chanGhostStateG Σ V := ChanGhostStateG {
   offer_lockG :: ghost_varG Σ (option (offer_lock V));
   offer_parked_propG :: savedPropG Σ;
   offer_parked_predG :: savedPredG Σ (V * bool);
-  continuation_parkedG :: savedPropG Σ;
 }.
 
 Definition chanGhostStateΣ V : gFunctors :=
@@ -370,9 +368,8 @@ Lemma chan_rep_halves_update γ s1 s2 s' :
   chan_rep_half γ s1 -∗ chan_rep_half γ s2 ==∗
      chan_rep_half γ s' ∗ chan_rep_half γ s'.
 Proof.
-  iIntros "H1 H2". iCombine "H1 H2" as "H".
-  iMod (ghost_var_update with "H") as "[H1 H2]".
-  by iFrame.
+  rewrite /chan_rep.
+  apply ghost_var_update_halves.
 Qed.
 
 Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
@@ -401,9 +398,15 @@ Qed.
 
 (* Needs [chan_cap_valid s'' cap] as precondition? *)
 Lemma own_channel_halves_update ch cap s s' s'' γ :
+  chan_cap_valid s'' cap →
   own_channel ch cap s γ -∗ own_channel ch cap s' γ ==∗
   own_channel ch cap s'' γ ∗ own_channel ch cap s'' γ.
-Proof. Admitted.
+Proof.
+  iIntros (Hvalid) "[Hv1 %] [Hv2 %]". rewrite /named.
+  iMod (chan_rep_halves_update with "Hv1 Hv2") as "[$ $]".
+  iPureIntro.
+  auto.
+Qed.
 
 (** Type alias for convenience: converts postcondition to predicate format *)
 Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
@@ -600,8 +603,8 @@ Definition chan_inv_inner (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
 Definition is_channel (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
     "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 cap) ∗
-    "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "lock"]□ mu_loc ∗
-    "#lock" ∷ mutex.is_Mutex mu_loc (chan_inv_inner ch cap γ).
+    "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "mu"]□ mu_loc ∗
+    "#lock" ∷ primitive.is_Mutex mu_loc (chan_inv_inner ch cap γ).
 
 Global Instance is_channel_pers ch cap γ : Persistent (is_channel cap ch γ).
 Proof. apply _. Qed.
@@ -611,6 +614,10 @@ Proof. apply _. Qed.
 
 Lemma is_channel_not_null ch cap γ:
   is_channel ch cap γ -∗ ⌜ch ≠ null⌝.
-Proof. Admitted.
+Proof.
+  iNamed 1.
+  iDestruct (field_pointsto_not_null with "cap") as %Hnn; auto.
+  done.
+Qed.
 
 End base.
