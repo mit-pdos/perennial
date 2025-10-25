@@ -534,7 +534,7 @@ Definition HelloWorldAsyncXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 1) in
-    (func_call #channel.NewChannelRef #stringT) "$a0") in
+    (func_call #channel.NewChannel #stringT) "$a0") in
     do:  ("ch" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := ((func_call #sys_hello_world) #()) in
@@ -596,7 +596,7 @@ Definition HelloWorldWithTimeoutXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "done" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef (type.structT [
+    (func_call #channel.NewChannel (type.structT [
     ])) "$a0") in
     do:  ("done" <-[#ptrT] "$r0");;;
     let: "errMsg" := (mem.alloc (type.zero_val #stringT)) in
@@ -625,11 +625,11 @@ Definition DSPExampleXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "c" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef #ptrT) "$a0") in
+    (func_call #channel.NewChannel #ptrT) "$a0") in
     do:  ("c" <-[#ptrT] "$r0");;;
     let: "signal" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef (type.structT [
+    (func_call #channel.NewChannel (type.structT [
     ])) "$a0") in
     do:  ("signal" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
@@ -693,7 +693,7 @@ Definition fib_consumerXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "c" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 10) in
-    (func_call #channel.NewChannelRef #intT) "$a0") in
+    (func_call #channel.NewChannel #intT) "$a0") in
     do:  ("c" <-[#ptrT] "$r0");;;
     let: "$a0" := #(W64 10) in
     let: "$a1" := (![#ptrT] "c") in
@@ -729,7 +729,7 @@ Definition select_nb_no_panicXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef (type.structT [
+    (func_call #channel.NewChannel (type.structT [
     ])) "$a0") in
     do:  ("ch" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
@@ -785,7 +785,7 @@ Definition select_ready_case_no_panicXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef (type.structT [
+    (func_call #channel.NewChannel (type.structT [
     ])) "$a0") in
     do:  ("ch" <-[#ptrT] "$r0");;;
     do:  ((method_call #(ptrT.id channel.Channel.id) #"Close"%go (![#ptrT] "ch") (type.structT [
@@ -999,15 +999,15 @@ Definition LeakyBufferPipelineXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "freeList" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef #sliceT) "$a0") in
+    (func_call #channel.NewChannel #sliceT) "$a0") in
     do:  ("freeList" <-[#ptrT] "$r0");;;
     let: "serverChan" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef #sliceT) "$a0") in
+    (func_call #channel.NewChannel #sliceT) "$a0") in
     do:  ("serverChan" <-[#ptrT] "$r0");;;
     let: "join" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannelRef (type.structT [
+    (func_call #channel.NewChannel (type.structT [
     ])) "$a0") in
     do:  ("join" <-[#ptrT] "$r0");;;
     let: "output" := (mem.alloc (type.zero_val #stringT)) in

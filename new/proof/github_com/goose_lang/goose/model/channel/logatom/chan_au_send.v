@@ -12,10 +12,10 @@ Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
-Lemma wp_NewChannelRef (cap: Z) {B: BoundedTypeSize t} :
+Lemma wp_NewChannel (cap: Z) {B: BoundedTypeSize t} :
   0 ≤ cap < 2^63 ->
   {{{ is_pkg_init channel }}}
-    @! channel.NewChannelRef #t #(W64 cap)
+    @! channel.NewChannel #t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_channel ch cap γ ∗
       own_channel ch cap (if (cap =? 0) then chan_rep.Idle else chan_rep.Buffered []) γ

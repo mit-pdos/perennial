@@ -175,8 +175,8 @@ Global Program Instance is_pkg_defined_channel : IsPkgDefined channel :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_NewChannelRef :
-  WpFuncCall channel.NewChannelRef _ (is_pkg_defined channel) :=
+Global Instance wp_func_call_NewChannel :
+  WpFuncCall channel.NewChannel _ (is_pkg_defined channel) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NonBlockingSelect1 :

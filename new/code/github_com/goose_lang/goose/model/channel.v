@@ -18,19 +18,19 @@ Definition offerState : go_type := uint64T.
 #[global] Typeclasses Opaque offerState.
 #[global] Opaque offerState.
 
-Definition Buffered : val := #(W64 0).
+Definition buffered : val := #(W64 0).
 
-Definition Idle : val := #(W64 1).
+Definition idle : val := #(W64 1).
 
-Definition SndWait : val := #(W64 2).
+Definition sndPending : val := #(W64 2).
 
-Definition RcvWait : val := #(W64 3).
+Definition rcvPending : val := #(W64 3).
 
-Definition SndDone : val := #(W64 4).
+Definition sndCommit : val := #(W64 4).
 
-Definition RcvDone : val := #(W64 5).
+Definition rcvDone : val := #(W64 5).
 
-Definition Closed : val := #(W64 6).
+Definition closed : val := #(W64 6).
 
 Definition Channel : val :=
   λ: "T", type.structT [
@@ -43,20 +43,18 @@ Definition Channel : val :=
   #[global] Typeclasses Opaque Channel.
   #[global] Opaque Channel.
 
-Definition NewChannelRef : go_string := "github.com/goose-lang/goose/model/channel.NewChannelRef"%go.
+Definition NewChannel : go_string := "github.com/goose-lang/goose/model/channel.NewChannel"%go.
 
-(* buffer_size = 0 is an unbuffered channel
-
-   go: channel.go:32:6 *)
-Definition NewChannelRefⁱᵐᵖˡ : val :=
+(* go: channel.go:31:6 *)
+Definition NewChannelⁱᵐᵖˡ : val :=
   λ: "T" "cap",
     exception_do (let: "cap" := (mem.alloc "cap") in
     let: "local_state" := (mem.alloc (type.zero_val #offerState)) in
-    let: "$r0" := Idle in
+    let: "$r0" := idle in
     do:  ("local_state" <-[#offerState] "$r0");;;
     (if: int_gt (![#intT] "cap") #(W64 0)
     then
-      let: "$r0" := Buffered in
+      let: "$r0" := buffered in
       do:  ("local_state" <-[#offerState] "$r0")
     else do:  #());;;
     return: (mem.alloc (let: "$cap" := (![#intT] "cap") in
@@ -77,7 +75,7 @@ Definition NewChannelRefⁱᵐᵖˡ : val :=
 
    c <- val
 
-   go: channel.go:50:22 *)
+   go: channel.go:49:22 *)
 Definition Channel__Sendⁱᵐᵖˡ : val :=
   λ: "c" "T" "v",
     exception_do (let: "c" := (mem.alloc "c") in
@@ -93,7 +91,7 @@ Definition Channel__Sendⁱᵐᵖˡ : val :=
       do:  #());;;
     return: #()).
 
-(* go: channel.go:66:22 *)
+(* go: channel.go:65:22 *)
 Definition Channel__Receiveⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
@@ -122,20 +120,20 @@ Definition Channel__Receiveⁱᵐᵖˡ : val :=
    may be successful exchanges that need to complete, which is equivalent to the go runtime where
    the closer must still obtain the channel's lock
 
-   go: channel.go:83:22 *)
+   go: channel.go:82:22 *)
 Definition Channel__tryCloseⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
     do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
     let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-    (if: "$sw" = Closed
+    (if: "$sw" = closed
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"close of closed channel"%go) in
       Panic "$a0")
     else
-      (if: ("$sw" = Buffered) || ("$sw" = Idle)
+      (if: ("$sw" = buffered) || ("$sw" = idle)
       then
-        let: "$r0" := Closed in
+        let: "$r0" := closed in
         do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
         do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
         return: (#true)
@@ -149,7 +147,7 @@ Definition Channel__tryCloseⁱᵐᵖˡ : val :=
 
    close(c)
 
-   go: channel.go:105:22 *)
+   go: channel.go:104:22 *)
 Definition Channel__Closeⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
@@ -167,7 +165,7 @@ Definition Channel__Closeⁱᵐᵖˡ : val :=
    is equivalent to:
    v := c<-
 
-   go: channel.go:117:22 *)
+   go: channel.go:116:22 *)
 Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
@@ -185,7 +183,7 @@ Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ : val :=
    around nonblocking TryReceive. If false, we don't make an offer since we don't need to match
    with another non-blocking send.
 
-   go: channel.go:127:22 *)
+   go: channel.go:126:22 *)
 Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
   λ: "c" "T" "blocking",
     exception_do (let: "c" := (mem.alloc "c") in
@@ -193,7 +191,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
     let: "local_val" := (mem.alloc (type.zero_val "T")) in
     do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
     let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-    (if: "$sw" = Buffered
+    (if: "$sw" = buffered
     then
       let: "v" := (mem.alloc (type.zero_val "T")) in
       (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
@@ -211,7 +209,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
       do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
       return: (#false, !["T"] "v", #true)
     else
-      (if: "$sw" = Closed
+      (if: "$sw" = closed
       then
         (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
         slice.len "$a0") #(W64 0)
@@ -228,34 +226,34 @@ Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
         do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
         return: (#true, !["T"] "local_val", #false)
       else
-        (if: "$sw" = SndWait
+        (if: "$sw" = sndPending
         then
           let: "$r0" := (!["T"] (struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c"))) in
           do:  ("local_val" <-["T"] "$r0");;;
-          let: "$r0" := RcvDone in
+          let: "$r0" := rcvDone in
           do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
           do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
           return: (#true, !["T"] "local_val", #true)
         else
-          (if: "$sw" = Idle
+          (if: "$sw" = idle
           then
             (if: ![#boolT] "blocking"
             then
-              let: "$r0" := RcvWait in
+              let: "$r0" := rcvPending in
               do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
               do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
               do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
               let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-              (if: "$sw" = RcvWait
+              (if: "$sw" = rcvPending
               then
-                let: "$r0" := Idle in
+                let: "$r0" := idle in
                 do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
                 do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
                 return: (#false, !["T"] "local_val", #true)
               else
-                (if: "$sw" = SndDone
+                (if: "$sw" = sndCommit
                 then
-                  let: "$r0" := Idle in
+                  let: "$r0" := idle in
                   do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
                   let: "$r0" := (!["T"] (struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c"))) in
                   do:  ("local_val" <-["T"] "$r0");;;
@@ -274,7 +272,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
 (* Non-Blocking send operation for select statements. Blocking send and blocking select
    statements simply call this in a for loop until it returns true.
 
-   go: channel.go:192:22 *)
+   go: channel.go:191:22 *)
 Definition Channel__TrySendⁱᵐᵖˡ : val :=
   λ: "c" "T" "val" "blocking",
     exception_do (let: "c" := (mem.alloc "c") in
@@ -282,12 +280,12 @@ Definition Channel__TrySendⁱᵐᵖˡ : val :=
     let: "val" := (mem.alloc "val") in
     do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
     let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-    (if: "$sw" = Closed
+    (if: "$sw" = closed
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"send on closed channel"%go) in
       Panic "$a0")
     else
-      (if: "$sw" = Buffered
+      (if: "$sw" = buffered
       then
         (if: int_lt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
         slice.len "$a0") (![#intT] (struct.field_ref (Channel "T") #"cap"%go (![#ptrT] "c")))
@@ -303,36 +301,36 @@ Definition Channel__TrySendⁱᵐᵖˡ : val :=
         do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
         return: (#false)
       else
-        (if: "$sw" = RcvWait
+        (if: "$sw" = rcvPending
         then
-          let: "$r0" := SndDone in
+          let: "$r0" := sndCommit in
           do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
           let: "$r0" := (!["T"] "val") in
           do:  ((struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c")) <-["T"] "$r0");;;
           do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
           return: (#true)
         else
-          (if: "$sw" = Idle
+          (if: "$sw" = idle
           then
             (if: ![#boolT] "blocking"
             then
-              let: "$r0" := SndWait in
+              let: "$r0" := sndPending in
               do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
               let: "$r0" := (!["T"] "val") in
               do:  ((struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c")) <-["T"] "$r0");;;
               do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
               do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
               let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-              (if: "$sw" = RcvDone
+              (if: "$sw" = rcvDone
               then
-                let: "$r0" := Idle in
+                let: "$r0" := idle in
                 do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
                 do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
                 return: (#true)
               else
-                (if: "$sw" = SndWait
+                (if: "$sw" = sndPending
                 then
-                  let: "$r0" := Idle in
+                  let: "$r0" := idle in
                   do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
                   do:  ((method_call #(ptrT.id primitive.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
                   return: (#false)
@@ -354,7 +352,7 @@ Definition Channel__TrySendⁱᵐᵖˡ : val :=
    This might not be worth specifying since it is hard to make good use of channel length
    semantics.
 
-   go: channel.go:253:22 *)
+   go: channel.go:252:22 *)
 Definition Channel__Lenⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
@@ -374,7 +372,7 @@ Definition Channel__Lenⁱᵐᵖˡ : val :=
    is equivalent to:
    cap(c)
 
-   go: channel.go:267:22 *)
+   go: channel.go:266:22 *)
 Definition Channel__Capⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
@@ -385,7 +383,7 @@ Definition Channel__Capⁱᵐᵖˡ : val :=
 
 (* c.Iter() returns an iterator that models a for range loop over the channel.
 
-   go: channel.go:275:22 *)
+   go: channel.go:274:22 *)
 Definition Channel__Iterⁱᵐᵖˡ : val :=
   λ: "c" "T" <>,
     exception_do (let: "c" := (mem.alloc "c") in
@@ -432,7 +430,7 @@ Definition NonBlockingSelect1 : go_string := "github.com/goose-lang/goose/model/
    For receive: value parameter is ignored
    Returns (selected, received_value, ok)
 
-   go: channel.go:308:6 *)
+   go: channel.go:307:6 *)
 Definition NonBlockingSelect1ⁱᵐᵖˡ : val :=
   λ: "T" "ch" "dir" "value",
     exception_do (let: "value" := (mem.alloc "value") in
@@ -466,7 +464,7 @@ Definition BlockingSelect2 : go_string := "github.com/goose-lang/goose/model/cha
 (* Blocking select with 2 cases
    Returns (caseIndex, received_value1, received_value2, ok)
 
-   go: channel.go:322:6 *)
+   go: channel.go:321:6 *)
 Definition BlockingSelect2ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
     exception_do (let: "val2" := (mem.alloc "val2") in
@@ -532,7 +530,7 @@ Definition NonBlockingSelect2 : go_string := "github.com/goose-lang/goose/model/
    Returns (caseIndex, received_value1, received_value2, ok)
    caseIndex = 2 means no selection
 
-   go: channel.go:362:6 *)
+   go: channel.go:361:6 *)
 Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
     exception_do (let: "val2" := (mem.alloc "val2") in
@@ -638,7 +636,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
 
 Definition BlockingSelect3 : go_string := "github.com/goose-lang/goose/model/channel.BlockingSelect3"%go.
 
-(* go: channel.go:424:6 *)
+(* go: channel.go:423:6 *)
 Definition BlockingSelect3ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
     exception_do (let: "val3" := (mem.alloc "val3") in
@@ -736,7 +734,7 @@ Definition NonBlockingSelect3 : go_string := "github.com/goose-lang/goose/model/
    Returns (caseIndex, received_value1, received_value2, received_value3, ok)
    caseIndex = 3 means no selection
 
-   go: channel.go:477:6 *)
+   go: channel.go:476:6 *)
 Definition NonBlockingSelect3ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
     exception_do (let: "val3" := (mem.alloc "val3") in
@@ -837,7 +835,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(NewChannelRef, NewChannelRefⁱᵐᵖˡ); (NonBlockingSelect1, NonBlockingSelect1ⁱᵐᵖˡ); (BlockingSelect2, BlockingSelect2ⁱᵐᵖˡ); (NonBlockingSelect2, NonBlockingSelect2ⁱᵐᵖˡ); (BlockingSelect3, BlockingSelect3ⁱᵐᵖˡ); (NonBlockingSelect3, NonBlockingSelect3ⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewChannel, NewChannelⁱᵐᵖˡ); (NonBlockingSelect1, NonBlockingSelect1ⁱᵐᵖˡ); (BlockingSelect2, BlockingSelect2ⁱᵐᵖˡ); (NonBlockingSelect2, NonBlockingSelect2ⁱᵐᵖˡ); (BlockingSelect3, BlockingSelect3ⁱᵐᵖˡ); (NonBlockingSelect3, NonBlockingSelect3ⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(offerState.id, []); (ptrT.id offerState.id, []); (Channel.id, []); (ptrT.id Channel.id, [("Cap"%go, Channel__Capⁱᵐᵖˡ); ("Close"%go, Channel__Closeⁱᵐᵖˡ); ("Iter"%go, Channel__Iterⁱᵐᵖˡ); ("Len"%go, Channel__Lenⁱᵐᵖˡ); ("Receive"%go, Channel__Receiveⁱᵐᵖˡ); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOkⁱᵐᵖˡ); ("Send"%go, Channel__Sendⁱᵐᵖˡ); ("TryReceive"%go, Channel__TryReceiveⁱᵐᵖˡ); ("TrySend"%go, Channel__TrySendⁱᵐᵖˡ); ("tryClose"%go, Channel__tryCloseⁱᵐᵖˡ)]); (SelectDir.id, []); (ptrT.id SelectDir.id, [])].
 
