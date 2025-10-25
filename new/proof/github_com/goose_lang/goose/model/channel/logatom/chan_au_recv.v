@@ -57,6 +57,7 @@ Proof.
       subst s.
       iMod ((own_channel_halves_update _ _ _ _ (chan_rep.Buffered rest)) with "Hown Hoc")
         as "[Hown1 Hown2]".
+      { done. }
       iMod ("Hcont" with "Hown1") as "Hcont".
       iModIntro.
       have Hpos : 0 ≤ sint.Z (W64 0) by word.
@@ -182,6 +183,7 @@ Proof.
       iDestruct (own_channel_halves_update ch cap _ _
                    (chan_rep.Idle)
                   with "[$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]".
+      { done. }
       iMod ("Hcontinner" with "Hgv1") as "Hcont".
       iModIntro.
       iDestruct (saved_prop.saved_pred_agree γ.(offer_parked_pred_name)
@@ -247,6 +249,7 @@ Proof.
     { iFrame. iPureIntro. done. }
     iDestruct (own_channel_halves_update ch cap _ _  (chan_rep.SndPending v)
                 with "[$Hown] [$Hown1]") as ">[Hgv1 Hgv2]".
+    { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont1". iModIntro.
     iApply "HPau" in "HP0".
     iApply fupd_wp.
@@ -258,6 +261,7 @@ Proof.
     iDestruct (own_channel_agree with "[$Hgv1] [$Hoc]") as "%Hseq". subst s.
     iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.RcvCommit)
                 with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
+    { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
     wp_apply (wp_Mutex__Unlock
                with "[$lock state v slice slice_cap buffer Hgv1 H2 Hpred Hoffer Hcont1 $Hlock]").
@@ -328,6 +332,7 @@ Proof.
         subst s.
         iMod ((own_channel_halves_update _ _ _ _ (chan_rep.Closed draining)) with "Hown Hoc")
           as "[Hown1 Hown2]".
+        { simpl. destruct draining; auto. }
         iMod ("Hcont" with "Hown1") as "Hcont".
         iModIntro.
         have Hpos : 0 ≤ sint.Z (W64 0) by word.
@@ -499,6 +504,7 @@ Proof.
       subst s.
       iMod ((own_channel_halves_update _ _ _ _ (chan_rep.Buffered rest)) with "Hown Hoc")
         as "[Hown1 Hown2]".
+      { done. }
       iMod ("Hcont" with "Hown1") as "Hcont".
       iModIntro.
       have Hpos : 0 ≤ sint.Z (W64 0) by word.
@@ -578,6 +584,7 @@ Proof.
     { iFrame. iPureIntro. done. }
     iDestruct (own_channel_halves_update ch cap _ _  (chan_rep.SndPending v)
                 with "[$Hown] [$Hown1]") as ">[Hgv1 Hgv2]".
+    { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont1". iModIntro.
     iApply "HPau" in "HP0".
     iApply fupd_wp.
@@ -589,6 +596,8 @@ Proof.
     iDestruct (own_channel_agree with "[$Hgv1] [$Hoc]") as "%Hseq". subst s.
     iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.RcvCommit)
                 with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
+    { done. }
+    
     iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
 
     wp_apply (wp_Mutex__Unlock
@@ -661,6 +670,7 @@ Proof.
         subst s.
         iMod ((own_channel_halves_update _ _ _ _ (chan_rep.Closed draining)) with "Hown Hoc")
           as "[Hown1 Hown2]".
+        { simpl. destruct draining; auto. }
         iMod ("Hcont" with "Hown1") as "Hcont".
         iModIntro.
         have Hpos : 0 ≤ sint.Z (W64 0) by word.

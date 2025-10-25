@@ -22,13 +22,13 @@ Inductive t (V : Type) : Type :=
 #[global] Instance witness V : Inhabited (t V) := populate!.
 
 
-  Global Arguments Buffered {V}.
-  Global Arguments Idle {V}.
-  Global Arguments SndPending {V}.
-  Global Arguments RcvPending {V}.
-  Global Arguments SndCommit {V}.
-  Global Arguments RcvCommit {V}.
-  Global Arguments Closed {V}.
+Global Arguments Buffered {V}.
+Global Arguments Idle {V}.
+Global Arguments SndPending {V}.
+Global Arguments RcvPending {V}.
+Global Arguments SndCommit {V}.
+Global Arguments RcvCommit {V}.
+Global Arguments Closed {V}.
 
 End chan_rep.
 
@@ -368,7 +368,9 @@ Lemma chan_rep_halves_update γ s1 s2 s' :
   chan_rep_half γ s1 -∗ chan_rep_half γ s2 ==∗
      chan_rep_half γ s' ∗ chan_rep_half γ s'.
 Proof.
-Admitted.
+  rewrite /chan_rep.
+  apply ghost_var_update_halves.
+Qed.
 
 Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
   match s with
@@ -395,10 +397,15 @@ Proof.
 Qed.
 
 Lemma own_channel_halves_update ch cap s s' s'' γ :
+  chan_cap_valid s'' cap →
   own_channel ch cap s γ -∗ own_channel ch cap s' γ ==∗
   own_channel ch cap s'' γ ∗ own_channel ch cap s'' γ.
 Proof.
-  Admitted.
+  iIntros (Hvalid) "[Hv1 %] [Hv2 %]". rewrite /named.
+  iMod (chan_rep_halves_update with "Hv1 Hv2") as "[$ $]".
+  iPureIntro.
+  auto.
+Qed.
 
 (** Type alias for convenience: converts postcondition to predicate format *)
 Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
@@ -599,16 +606,17 @@ Definition is_channel (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
     "#lock" ∷ primitive.is_Mutex mu_loc (chan_inv_inner ch cap γ).
 
 Global Instance is_channel_pers ch cap γ : Persistent (is_channel cap ch γ).
-Proof.
-Admitted.
+Proof. apply _. Qed.
 
 Global Instance own_channel_timeless ch cap s γ : Timeless (own_channel ch cap s γ).
-Proof.
-Admitted.
+Proof. apply _. Qed.
 
 Lemma is_channel_not_null ch cap γ:
   is_channel ch cap γ -∗ ⌜ch ≠ null⌝.
 Proof.
-Admitted.
+  iNamed 1.
+  iDestruct (field_pointsto_not_null with "cap") as %Hnn; auto.
+  done.
+Qed.
 
 End base.
