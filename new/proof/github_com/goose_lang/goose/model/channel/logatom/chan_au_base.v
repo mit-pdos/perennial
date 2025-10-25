@@ -595,7 +595,7 @@ Definition chan_inv_inner (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
 Definition is_channel (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
     "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 cap) ∗
-    "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "lock"]□ mu_loc ∗
+    "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "mu"]□ mu_loc ∗
     "#lock" ∷ primitive.is_Mutex mu_loc (chan_inv_inner ch cap γ).
 
 Global Instance is_channel_pers ch cap γ : Persistent (is_channel cap ch γ).
