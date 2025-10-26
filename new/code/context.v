@@ -559,7 +559,7 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
     ])] "done") = #null
     then return: (#())
     else do:  #());;;
-    chan.select [chan.select_receive (type.structT [
+    chan.select_nonblocking [chan.select_receive (type.structT [
      ]) (![type.chanT (type.structT [
      ])] "done") (λ: "$recvVal",
        do:  (let: "$a0" := #false in
@@ -568,9 +568,9 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
        (func_call #Cause) "$a0") in
        (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2");;;
        return: (#())
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  #()
-      ));;;
+      );;;
     (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "p" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#Context] "parent") in
@@ -639,7 +639,7 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W32 1) in
     (method_call #(ptrT.id atomic.Int32.id) #"Add"%go (globals.get #goroutines)) "$a0");;;
     let: "$go" := (λ: <>,
-      exception_do (chan.select [chan.select_receive (type.structT [
+      exception_do (chan.select_blocking [chan.select_receive (type.structT [
        ]) ((interface.get #"Done"%go (![#Context] "parent")) #()) (λ: "$recvVal",
          do:  (let: "$a0" := #false in
          let: "$a1" := ((interface.get #"Err"%go (![#Context] "parent")) #()) in
@@ -649,7 +649,7 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
          ); chan.select_receive (type.structT [
        ]) ((interface.get #"Done"%go (![#canceler] "child")) #()) (λ: "$recvVal",
          do:  #()
-         )] chan.select_no_default;;;
+         )];;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;

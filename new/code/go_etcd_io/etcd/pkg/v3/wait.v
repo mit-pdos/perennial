@@ -115,7 +115,7 @@ Definition list__Triggerⁱᵐᵖˡ : val :=
     then
       do:  (let: "$chan" := (![type.chanT #interfaceT] "ch") in
       let: "$v" := (![#interfaceT] "x") in
-      chan.send "$chan" "$v");;;
+      chan.send #interfaceT "$chan" "$v");;;
       do:  (let: "$a0" := (![type.chanT #interfaceT] "ch") in
       chan.close "$a0")
     else do:  #());;;
