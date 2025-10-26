@@ -22,7 +22,7 @@ Fixpoint own_tree ptr t d : iProp Σ :=
   "#Htree_hash" ∷ is_cut_tree t hash ∗
   match t with
   | Empty =>
-    "%Heq_ptr" ∷ ⌜ ptr = null ⌝
+    "%Heq_ptr" ∷ ⌜ptr = null⌝
   | Leaf label val =>
     ∃ sl_hash sl_label sl_val,
     "Hnode" ∷ ptr ↦{d}
@@ -51,7 +51,7 @@ Proof. destruct t; iNamed 1; iFrame "#". Qed.
 
 Lemma own_empty_tree t d :
   own_tree null t d -∗
-  ⌜ t = Empty ⌝.
+  ⌜t = Empty⌝.
 Proof.
   iIntros "H". destruct t; [done|..];
     iNamed "H"; iNamed "H";
@@ -257,7 +257,7 @@ Lemma wp_getBit sl_bs d0 bs (n : w64) :
   {{{
     bit, RET #bit;
     "Hsl_bs" ∷ sl_bs ↦*{d0} bs ∗
-    "->" ∷ ⌜ bit = get_bit bs (uint.nat n) ⌝
+    "->" ∷ ⌜bit = get_bit bs (uint.nat n)⌝
   }}}.
 Proof.
   wp_start as "@". wp_auto.
@@ -402,11 +402,12 @@ Lemma wp_put n0 n t sl_label sl_val label val :
   {{{
     n' err, RET #err;
     "Hn0" ∷ n0 ↦ n' ∗
-    "Hgenie" ∷ match err with
+    "Hgenie" ∷
+      match err with
       | true => ¬ ⌜is_cutless_path t label⌝
       | false =>
         ∃ t',
-        "%Hcode" ∷ ⌜ pure_put t label val = Some t' ⌝ ∗
+        "%Hcode" ∷ ⌜pure_put t label val = Some t'⌝ ∗
         "Hown_tree" ∷ own_tree n' t' 1
       end
   }}}.
@@ -816,7 +817,8 @@ Lemma wp_proofToTree sl_label label sl_proof proof :
   @! merkle.proofToTree #sl_label #sl_proof
   {{{
     tr err, RET (#tr, #err);
-    "Hgenie" ∷ match err with
+    "Hgenie" ∷
+      match err with
       | true => ¬ ∃ t, wish_proofToTree label proof t
       | false =>
         ∃ t,
@@ -1122,7 +1124,8 @@ Lemma wp_VerifyNonMemb sl_label label sl_proof proof :
   {{{
     sl_hash hash err, RET (#sl_hash, #err);
     "#Hsl_hash" ∷ sl_hash ↦*□ hash ∗
-    "Hgenie" ∷ match err with
+    "Hgenie" ∷
+      match err with
       | true => ¬ ∃ hash, wish_VerifyNonMemb label proof hash
       | false =>
         ∃ m,
@@ -1185,7 +1188,8 @@ Lemma wp_VerifyMemb sl_label label sl_val val sl_proof proof :
   {{{
     sl_hash hash err, RET (#sl_hash, #err);
     "#Hsl_hash" ∷ sl_hash ↦*□ hash ∗
-    "Hgenie" ∷ match err with
+    "Hgenie" ∷
+      match err with
       | true => ¬ ∃ hash, wish_VerifyMemb label val proof hash
       | false =>
         ∃ m,
@@ -1263,7 +1267,8 @@ Lemma wp_VerifyUpdate sl_label label sl_val val sl_proof proof :
     RET (#sl_oldHash, #sl_newHash, #err);
     "#Hsl_oldHash" ∷ sl_oldHash ↦*□ oldHash ∗
     "#Hsl_newHash" ∷ sl_newHash ↦*□ newHash ∗
-    "Hgenie" ∷ match err with
+    "Hgenie" ∷
+      match err with
       | true => ¬ ∃ hO hN, wish_VerifyUpdate label val proof hO hN
       | false =>
         ∃ mOld mNew,
@@ -1491,13 +1496,13 @@ Definition own_Map ptr m hash d : iProp Σ :=
   ∃ ptr_root t,
   "Hstruct" ∷ ptr ↦{d} (merkle.Map.mk ptr_root) ∗
   "Hown_tree" ∷ own_tree ptr_root t d ∗
-  "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
+  "%Heq_map" ∷ ⌜m = to_map t⌝ ∗
   "#His_hash" ∷ is_cut_tree t hash ∗
 
-  "%His_cutless" ∷ ⌜ is_cutless t ⌝ ∗
-  "%His_limit" ∷ ⌜ is_limit t ⌝ ∗
+  "%His_cutless" ∷ ⌜is_cutless t⌝ ∗
+  "%His_limit" ∷ ⌜is_limit t⌝ ∗
   "%His_const_label" ∷ ⌜is_const_label_len t⌝ ∗
-  "%His_sorted" ∷ ⌜is_sorted t ⌝.
+  "%His_sorted" ∷ ⌜is_sorted t⌝.
 
 Lemma own_Map_to_is_map ptr m hash d :
   own_Map ptr m hash d -∗

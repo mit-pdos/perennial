@@ -307,8 +307,8 @@ Definition own ptr obj d : iProp Σ :=
 
 Definition wish b obj tail : iProp Σ :=
   ∃ enc,
-  "%Henc_obj" ∷ ⌜ encodes obj enc ⌝ ∗
-  "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝.
+  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
+  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
 
 Lemma wish_det b obj0 obj1 tail0 tail1 :
   wish b obj0 tail0 -∗

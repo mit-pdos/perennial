@@ -49,15 +49,15 @@ Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
 Lemma is_hash_det data hash0 hash1 :
-  is_hash (Some data) hash0 -∗ is_hash (Some data) hash1 -∗ ⌜ hash0 = hash1 ⌝.
+  is_hash (Some data) hash0 -∗ is_hash (Some data) hash1 -∗ ⌜hash0 = hash1⌝.
 Proof. Admitted.
 
 Lemma is_hash_inj data0 data1 hash :
-  is_hash data0 hash -∗ is_hash data1 hash -∗ ⌜ data0 = data1⌝.
+  is_hash data0 hash -∗ is_hash data1 hash -∗ ⌜data0 = data1⌝.
 Proof. Admitted.
 
 Lemma is_hash_len data hash :
-  is_hash data hash -∗ ⌜ Z.of_nat $ length hash = hash_len ⌝.
+  is_hash data hash -∗ ⌜Z.of_nat $ length hash = hash_len⌝.
 Proof. Admitted.
 
 (* key feature of prophecy hash model.
@@ -69,7 +69,7 @@ Proof. Admitted.
 
 Lemma is_hash_pure data hash :
   is_hash (Some data) hash -∗
-  ⌜ hash = pure_hash data ⌝.
+  ⌜hash = pure_hash data⌝.
 Proof. Admitted.
 
 Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ.
