@@ -213,7 +213,7 @@ Definition chanSelectⁱᵐᵖˡ : val :=
     let: "c" := (mem.alloc (type.zero_val (type.chanT #intT))) in
     let: "i2" := (mem.alloc (type.zero_val #intT)) in
     let: "i1" := (mem.alloc (type.zero_val #intT)) in
-    chan.select [chan.select_receive #intT (![type.chanT #intT] "c3") (λ: "$recvVal",
+    chan.select_nonblocking [chan.select_receive #intT (![type.chanT #intT] "c3") (λ: "$recvVal",
        do:  #()
        ); chan.select_receive #intT (![type.chanT #intT] "c1") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
@@ -256,19 +256,19 @@ Definition chanSelectⁱᵐᵖˡ : val :=
        let: "$r0" := (Fst "$recvVal") in
        do:  ((slice.elem_ref #intT (![#sliceT] "a") ((func_call #f) #())) <-[#intT] "$r0");;;
        do:  #()
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"no communication
       "%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")
-      ));;;
+      );;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      chan.select [chan.select_send #intT (![type.chanT #intT] "c") #(W64 0) (λ: <>,
+      chan.select_blocking [chan.select_send #intT (![type.chanT #intT] "c") #(W64 0) (λ: <>,
          do:  #()
          ); chan.select_send #intT (![type.chanT #intT] "c") #(W64 1) (λ: <>,
          do:  #()
-         )] chan.select_no_default);;;
-    chan.select [] chan.select_no_default;;;
+         )]);;;
+    chan.select_blocking [];;;
     return: #()).
 
 Definition chanDirectional : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.chanDirectional"%go.

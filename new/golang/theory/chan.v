@@ -3,6 +3,8 @@ From iris.base_logic Require Export lib.ghost_var.
 From New.golang.theory Require Import exception list mem loop typing struct proofmode.
 From Perennial Require Import base.
 
+Set Default Proof Using "Type".
+
 Module chanstate.
 Record t (V : Type) :=
   mk {
@@ -171,7 +173,7 @@ Lemma wp_for_chan_range P ch (body : func.t) :
                             own_chan ch s' ={∅,⊤}=∗ WP #body #v {{ for_chan_postcondition P Φ }})))
     ) -∗
   WP chan.for_range #ch #body {{ Φ }}.
-Proof.
+Proof using IntoValTyped0.
 Admitted.
 
 Lemma wp_for_chan_post_do P Φ :
@@ -236,45 +238,28 @@ Module chan.
 Section op.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Inductive op :=
-| select_send_f (v : val) (ch : chan.t) (handler : func.t)
-| select_receive_f (ch : chan.t) (handler : func.t).
+| select_send_f (t: go_type) (v : val) (ch : chan.t) (handler : func.t)
+| select_receive_f (t: go_type) (ch : chan.t) (handler : func.t).
 
 Global Instance into_val_op : IntoVal op :=
   {|
     to_val_def := λ o,
         match o with
-        | select_send_f v ch f => InjLV (v, #ch, #f)
-        | select_receive_f ch f => InjRV (#ch, #f)
+        | select_send_f t v ch f => InjLV (#t, v, #ch, #f)
+        | select_receive_f t ch f => InjRV (#t, #ch, #f)
         end
   |}.
 
-Global Instance wp_select_send (v : val) ch f :
-  PureWp True (chan.select_send v #ch #f)
-    #(select_send_f v ch f).
+Global Instance wp_select_send (t: go_type) (v : val) ch f :
+  PureWp True (chan.select_send #t v #ch #f)
+    #(select_send_f t v ch f).
 Proof.
   pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
 Qed.
 
-Global Instance wp_select_receive ch f :
-  PureWp True (chan.select_receive #ch #f)
-    #(select_receive_f ch f).
-Proof.
-  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
-Qed.
-
-Inductive default :=
-| select_default_f  : func.t → default.
-
-Global Instance into_val_default : IntoVal default :=
-  {|
-    to_val_def := λ s,
-        match s with
-        | select_default_f f => InjRV #f
-        end
-  |}.
-
-Global Instance wp_select_default f:
-  PureWp True (chan.select_default #f) #(select_default_f f).
+Global Instance wp_select_receive t ch f :
+  PureWp True (chan.select_receive #t #ch #f)
+    #(select_receive_f t ch f).
 Proof.
   pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
 Qed.
@@ -292,16 +277,16 @@ Lemma wp_chan_select_blocking (cases : list chan.op) :
   ∀ Φ,
   ([∧ list] case ∈ cases,
      match case with
-     | chan.select_send_f send_val send_chan send_handler =>
-         (∃ V (v : V) `(!IntoVal V),
+     | chan.select_send_f t send_val send_chan send_handler =>
+         (∃ V (v : V) `(!IntoVal V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
              send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }}))
-     | chan.select_receive_f recv_chan recv_handler =>
-         (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+     | chan.select_receive_f t recv_chan recv_handler =>
+         (∃ V `(!IntoVal V) `(!IntoValTyped V t),
              receive_atomic_update V recv_chan (λ v, WP #recv_handler v {{ Φ }}))
      end
   ) -∗
-  WP chan.select #cases chan.select_no_default {{ Φ }}.
+  WP chan.select_blocking #cases {{ Φ }}.
 Proof.
 Admitted.
 
@@ -311,17 +296,17 @@ Lemma wp_chan_select_nonblocking (Φnrs : list (iProp Σ)) (cases : list chan.op
   (([∧ list] i ↦ case ∈ cases,
       let Φnotready := default False (Φnrs !! i) in
       match case with
-      | chan.select_send_f send_val send_chan send_handler =>
-          (∃ V (v : V) `(!IntoVal V),
+      | chan.select_send_f t send_val send_chan send_handler =>
+          (∃ V (v : V) `(!IntoVal V) `(!IntoValTyped V t),
               ⌜ send_val = #v ⌝ ∗
               nonblocking_send_atomic_update send_chan v (WP #send_handler #() {{ Φ }}) Φnotready)
-      | chan.select_receive_f recv_chan recv_handler =>
-          (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+      | chan.select_receive_f t recv_chan recv_handler =>
+          (∃ V `(!IntoVal V) `(!IntoValTyped V t),
               nonblocking_receive_atomic_update V recv_chan (λ v, WP #recv_handler v {{ Φ }}) Φnotready)
       end) ∧
    ([∗] Φnrs -∗ WP #def #() {{ Φ }})
   ) -∗
-  WP chan.select #cases #(chan.select_default_f def) {{ Φ }}.
+  WP chan.select_nonblocking #cases {{ Φ }}.
 Proof.
 Admitted.
 

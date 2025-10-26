@@ -57,7 +57,7 @@ Definition HelloWorldCancellableⁱᵐᵖˡ : val :=
     let: "future" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
     let: "$r0" := ((func_call #HelloWorldAsync) #()) in
     do:  ("future" <-[type.chanT #stringT] "$r0");;;
-    chan.select [chan.select_receive #stringT (![type.chanT #stringT] "future") (λ: "$recvVal",
+    chan.select_blocking [chan.select_receive #stringT (![type.chanT #stringT] "future") (λ: "$recvVal",
        let: "resolved" := (mem.alloc (type.zero_val #stringT)) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("resolved" <-[#stringT] "$r0");;;
@@ -66,7 +66,7 @@ Definition HelloWorldCancellableⁱᵐᵖˡ : val :=
      ]) (![type.chanT (type.structT [
      ])] "done") (λ: "$recvVal",
        return: (![#stringT] (![#ptrT] "err"))
-       )] chan.select_no_default).
+       )]).
 
 Definition HelloWorldWithTimeout : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldWithTimeout"%go.
 
@@ -217,27 +217,27 @@ Definition select_nb_no_panicⁱᵐᵖˡ : val :=
     do:  ("ch" <-[type.chanT (type.structT [
     ])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (chan.select [chan.select_receive (type.structT [
+      exception_do (chan.select_nonblocking [chan.select_receive (type.structT [
        ]) (![type.chanT (type.structT [
        ])] "ch") (λ: "$recvVal",
          do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
          Panic "$a0")
-         )] (chan.select_default (λ: <>,
+         )] (λ: <>,
         do:  #()
-        ));;;
+        );;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    chan.select [chan.select_send (type.structT [
+    chan.select_nonblocking [chan.select_send (type.structT [
      ]) (![type.chanT (type.structT [
      ])] "ch") (struct.make (type.structT [
      ]) [{
      }]) (λ: <>,
        do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
        Panic "$a0")
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  #()
-      ));;;
+      );;;
     return: #()).
 
 Definition select_ready_case_no_panic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panic"%go.
@@ -256,14 +256,14 @@ Definition select_ready_case_no_panicⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![type.chanT (type.structT [
     ])] "ch") in
     chan.close "$a0");;;
-    chan.select [chan.select_receive (type.structT [
+    chan.select_nonblocking [chan.select_receive (type.structT [
      ]) (![type.chanT (type.structT [
      ])] "ch") (λ: "$recvVal",
        do:  #()
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  (let: "$a0" := (interface.make #stringT.id #"Shouldn't be possible!"%go) in
       Panic "$a0")
-      ));;;
+      );;;
     return: #()).
 
 Definition TestHelloWorldSync : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldSync"%go.
@@ -425,15 +425,15 @@ Definition clientⁱᵐᵖˡ : val :=
       do:  ("letter" <-[#stringT] "$value");;;
       do:  "$key";;;
       let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-      chan.select [chan.select_receive #sliceT (![type.chanT #sliceT] "freeList") (λ: "$recvVal",
+      chan.select_nonblocking [chan.select_receive #sliceT (![type.chanT #sliceT] "freeList") (λ: "$recvVal",
          let: "$r0" := (Fst "$recvVal") in
          do:  ("b" <-[#sliceT] "$r0");;;
          do:  #()
-         )] (chan.select_default (λ: <>,
+         )] (λ: <>,
         let: "$r0" := ((let: "$sl0" := #(W8 0) in
         slice.literal #byteT ["$sl0"])) in
         do:  ("b" <-[#sliceT] "$r0")
-        ));;;
+        );;;
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![#stringT] "letter") in
       (func_call #load) "$a0" "$a1");;;
@@ -475,11 +475,11 @@ Definition serverⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![#ptrT] "output") in
       (func_call #process) "$a0" "$a1");;;
-      chan.select [chan.select_send #sliceT (![type.chanT #sliceT] "freeList") (![#sliceT] "b") (λ: <>,
+      chan.select_nonblocking [chan.select_send #sliceT (![type.chanT #sliceT] "freeList") (![#sliceT] "b") (λ: <>,
          do:  #()
-         )] (chan.select_default (λ: <>,
+         )] (λ: <>,
         do:  #()
-        )));;;
+        ));;;
     return: #()).
 
 Definition LeakyBufferPipeline : go_string := "github.com/goose-lang/goose/testdata/examples/channel.LeakyBufferPipeline"%go.

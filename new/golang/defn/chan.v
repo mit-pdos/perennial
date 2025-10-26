@@ -1,24 +1,22 @@
-From New.golang.defn Require Import mem typing exception.
+From New.golang.defn Require Import mem typing exception pkg type_id.
 From New.code.github_com.goose_lang.goose.model Require Import channel.
-
-(* FIXME: seal these functions *)
 
 Module chan.
 Section defns.
 Context `{ffi_syntax}.
 
 (* takes type as first argument *)
-Definition make: val := channel.NewChannelRefⁱᵐᵖˡ.
+Definition make: val := channel.NewChannelⁱᵐᵖˡ.
 Definition receive : val :=
-  λ: "T" "c", channel.Channel__Receiveⁱᵐᵖˡ "c" "T" #().
+  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Receive" "c" "T" #().
 Definition send : val :=
-  λ: "T" "c" "v", channel.Channel__Sendⁱᵐᵖˡ "c" "T" "v".
+  λ: "T" "c" "v", method_call #(ptrT.id channel.Channel.id) #"Send" "c" "T" "v".
 Definition close : val :=
-  λ: "T" "c", channel.Channel__Closeⁱᵐᵖˡ "c" "T" #().
+  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Close" "c" "T" #().
 Definition len : val :=
-  λ: "T" "c", channel.Channel__Lenⁱᵐᵖˡ "c" "T" #().
+  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Len" "c" "T" #().
 Definition cap : val :=
-  λ: "T" "c", channel.Channel__Capⁱᵐᵖˡ "c" "T" #().
+  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Cap" "c" "T" #().
 
 Definition for_range : val :=
   λ: "T" "c" "body",
@@ -48,11 +46,11 @@ Definition do_select_case : val :=
     exception_do (match: "c" with
         InjL "data" =>
           let: ((("T", "ch"), "v"), "f") := "data" in
-          let: "ok" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
+          let: "ok" := method_call #(ptrT.id channel.Channel.id) #"TrySend" "ch" "T" "v" "blocking" in
           if: "ok" then ("f" #();;; do: #true) else (do: #false)
       | InjR "data" =>
           let: (("T", "ch"), "f") := "data" in
-          let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
+          let: (("success", "v"), "ok") := method_call #(ptrT.id channel.Channel.id) #"TryReceive" "ch" "T" "blocking" in
           if: "success" then
             ("f" "v" "ok";;; do: #true)
           else do: #false
@@ -69,14 +67,6 @@ cases (select_send or select_receive) and a default handler. It starts from a
 random position, then runs do_select_case with "blocking"=#true over each case.
 On failure, run the default handler. *)
 Axiom select_nonblocking : val.
-
-(* TODO: won't use these as select cases *)
-
-Definition select_no_default : val :=
-  InjLV #().
-
-Definition select_default : val :=
-  λ: "f", InjR "f".
 
 End defns.
 End chan.
