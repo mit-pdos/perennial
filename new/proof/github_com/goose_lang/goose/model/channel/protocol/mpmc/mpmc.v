@@ -17,6 +17,8 @@ From Perennial.algebra Require Import ghost_var.
     Requires Countable V because gmultiset V = gmap V positive.
 *)
 
+#[local] Transparent is_channel own_channel.
+
 Section mpmc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!chanGhostStateG Σ V}.

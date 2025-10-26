@@ -15,6 +15,8 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_
     - Support for resource protocols P (per-value) and R (final state)
 *)
 
+#[local] Transparent is_channel own_channel.
+
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!chanGhostStateG Σ V}.

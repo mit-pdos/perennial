@@ -620,3 +620,5 @@ Proof.
 Qed.
 
 End base.
+
+#[global] Opaque is_channel own_channel.
