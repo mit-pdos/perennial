@@ -1,0 +1,91 @@
+From Perennial Require Import base.
+From New.golang.defn Require Import builtin.
+
+Module slice.
+(* FIXME: seal these functions *)
+Section goose_lang.
+Context `{ffi_syntax}.
+
+Class SliceValid `{!GoContext} :=
+  {
+  }.
+
+(* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)
+Definition slice : val :=
+  λ: "t" "s" "low" "high",
+  if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" (cap "s")) then
+    InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", cap "s" - "low")
+  else Panic "slice indices out of order"
+.
+
+(* s[a:b:c] (picking a specific capacity c) *)
+Definition full_slice : val :=
+  λ: "t" "s" "low" "high" "max",
+  if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" "max") && (int_leq "max" (cap "s")) then
+    InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", "max" - "low")
+  else Panic "slice indices out of order"
+.
+
+Definition for_range : val :=
+  λ: "t" "s" "body",
+  let: "i" := alloc #(W64 0) in
+  for: (λ: <>, int_lt (![#int64T] "i") (len "s")) ; (λ: <>, "i" <-[#int64T] (![#int64T] "i") + #(W64 1)) :=
+    (λ: <>, "body" (![#int64T] "i") (!["t"] (elem_ref "t" "s" (![#int64T] "i"))))
+.
+
+Definition copy : val :=
+  λ: "t" "dst" "src",
+  let: "i" := alloc (zero_val uint64T) in
+  (for: (λ: <>, int_lt (![#int64T] "i") (len "dst") && (int_lt (![#int64T] "i") (len "src"))) ; (λ: <>, Skip) :=
+    (λ: <>,
+    do: (let: "i_val" := ![#int64T] "i" in
+      elem_ref "t" "dst" "i_val" <-["t"] !["t"] (elem_ref "t" "src" "i_val");;
+      "i" <-[#int64T] "i_val" + #(W64 1))));;
+  ![#int64T] "i"
+.
+
+(* only for internal use, not an external model *)
+Definition _new_cap : val :=
+  λ: "len",
+    let: "extra" := ArbitraryInt in
+    if: int_leq "len" ("len" + "extra") then "len" + "extra"
+    else "len".
+
+Definition append : val :=
+  λ: "t" "s" "x",
+  let: "new_len" := sum_assume_no_overflow_signed (len "s") (len "x") in
+  if: (cap "s") ≥ "new_len" then
+    (* "grow" s to include its capacity *)
+    let: "s_new" := slice "t" "s" #(W64 0) "new_len" in
+    (* copy "x" past the original "s" *)
+    copy "t" (slice "t" "s_new" (len "s") "new_len") "x";;
+    "s_new"
+  else
+    let: "new_cap" := _new_cap "new_len" in
+    let: "s_new" := make3 "t" "new_len" "new_cap" in
+    copy "t" "s_new" "s" ;;
+    copy "t" (slice "t" "s_new" (len "s") "new_len") "x" ;;
+    "s_new".
+
+(* Takes in a list as input, and turns it into a heap-allocated slice. *)
+Definition literal : val :=
+  λ: "t" "elems",
+  let: "len" := list.Length "elems" in
+  let: "s" := make2 "t" "len" in
+  let: "l" := ref "elems" in
+  let: "i" := alloc (zero_val uint64T) in
+  (for: (λ: <>, int_lt (![#int64T] "i") "len") ; (λ: <>, "i" <-[#int64T] ![#int64T] "i" + #(W64 1)) :=
+     (λ: <>,
+        do: (list.Match !"l" (λ: <>, #())
+               (λ: "elem" "l_tail",
+                  "l" <- "l_tail" ;;
+                  elem_ref "t" "s" (![#int64T] "i") <-["t"] "elem")))) ;;
+  "s"
+.
+
+End goose_lang.
+End slice.
+
+Global Opaque slice.ptr slice.len slice.cap slice.make3 slice.make2
+  slice.elem_ref slice.slice slice.full_slice slice.for_range
+  slice.copy slice._new_cap slice.append slice.literal.

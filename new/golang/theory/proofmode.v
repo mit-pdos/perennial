@@ -700,12 +700,17 @@ Tactic Notation "wp_apply" open_constr(lem) :=
 
 (* FIXME: rest of the instances *)
 Section go_wp_pure_instances.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+         `{!GoContext}.
+Context `{goose_go_stepper = go.is_go_step}.
 
 Global Instance wp_GoAlloc t :
   PureWp True (GoInstruction (GoAlloc t) #()) (alloc t #()).
 Proof.
-  iIntros "% * _ % HΦ". rewrite to_val_unseal. iApply wp_GoAlloc. iApply "HΦ".
+  iIntros "% * _ % HΦ". iApply wp_GoInstruction; rewrite H0.
+  { intros. repeat econstructor. }
+  iNext. iIntros "* %Hstep". inv Hstep. inv Hpure.
+  iFrame. by iIntros "$".
 Qed.
 
 Global Instance wp_GoStore t (l : loc) v :

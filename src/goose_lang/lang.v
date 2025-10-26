@@ -160,7 +160,7 @@ Inductive go_op : Type :=
 | GoAlloc (t : go.type)
 | GoPrealloc
 
-| FuncCall (func_id : go_string)
+| FuncCall (f : go_string) (type_args : list go.type)
 | MethodCall (t : go.type) (m : go_string)
 
 | PackageInitCheck (pkg_name : go_string)
@@ -172,14 +172,16 @@ Inductive go_op : Type :=
 | StructFieldGet (f : go_string)
 | StructFieldSet (f : go_string)
 
-| Len
-| Cap
-| SliceIndexRef (t : go.type) (* int *)
-| Make (t : go.type) (* can do slice, map, etc. *)
-| Slice
+(* can do slice, array, string, map, etc. for these ops; the internal ones
+   should not be directly called by GooseLang. *)
+| InternalLen (t : go.type)
+| InternalCap (t : go.type)
+| InternalDynamicArrayAlloc (elem_type : go.type)
+| InternalMakeSlice
+| IndexRef (t : go.type)
+| Index (t : go.type)
+| Slice (t : go.type)
 
-| ArrayIndexRef (t : go.type)
-| ArrayLookup (* int *)
 | ArrayAppend
 
 (* these are internal steps; the Go map lookup has to be implemented as multiple
@@ -241,7 +243,8 @@ with val :=
   (* Go stuff *)
   | GoInstruction (o : go_op)
   | StructV (fvs : gmap go_string val)
-  | ArrayV (vs : list val).
+  | ArrayV (vs : list val)
+  | InterfaceV (t : option (go.type * val)).
 
 End external.
 End goose_lang.
@@ -279,26 +282,6 @@ Fixpoint flatten_struct (v: val) : list val :=
   | _ => [v]
   end.
 
-(** [GoContext] contains Go-related constant state. *)
-Class GoContext : Type :=
-  {
-    global_addr : go_string → loc;
-    functions : go_string → option val;
-    methods : go.type → go_string → option val;
-
-    alloc : go.type → val;
-    load : go.type → val;
-    store : go.type → val;
-
-    struct_field_ref : go.type → go_string → loc → loc;
-    slice_index_ref : go.type → Z → slice.t → loc;
-    array_index_ref : go.type → Z → loc → loc;
-    to_underlying : go.type → go.type;
-    is_map_pure (v : val) (m : val → bool * val) : Prop;
-    map_lookup : val → val → bool * val;
-    map_insert : val → val → val → val;
-  }.
-
 Context {ffi : ffi_model}.
 
 Inductive naMode : Set :=
@@ -331,10 +314,18 @@ Definition Oracle := Trace -> forall (sel:u64), u64.
 
 Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0).
 
+(** [GoStepper] is the type of step relation for Go instructions.
+    We could define it here (in realtion to other assumed state), but it's
+    ideal to define it by using (a) the IntoVal typeclass (and related
+    definitions) and (b) using GooseLang notation. We could try to bring that
+    all into here, but it seems more likely to break old goose/Perennial, so
+    avoiding it for now. *)
+Definition GoStepper : Type :=
+  ∀ (op : go_op) (arg : val) (e' : expr) (s : gset go_string) (s' : gset go_string),  Prop.
 
 Record GoState : Type :=
   {
-    go_context : GoContext;
+    is_go_step : GoStepper;
     inited_packages : gset go_string;
   }.
 
@@ -350,7 +341,7 @@ Record global_state : Type := {
   used_proph_id: gset proph_id;
 }.
 
-Global Instance eta_go_state : Settable _ := settable! Build_GoState <go_context; inited_packages>.
+Global Instance eta_go_state : Settable _ := settable! Build_GoState <is_go_step; inited_packages>.
 Global Instance eta_state : Settable _ := settable! Build_state <heap; go_state; world; trace; oracle>.
 Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
 
@@ -476,11 +467,14 @@ Proof using ext.
       | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
       | StructV op, StructV op' => cast_if (decide (op = op'))
       | ArrayV op, ArrayV op' => cast_if (decide (op = op'))
+      | InterfaceV (Some (a, b)), InterfaceV (Some (a', b')) =>
+          cast_if_and (decide (a = a')) (decide (b = b'))
+      | InterfaceV None, InterfaceV None => left _
       | _, _ => right _
       end
         for go); try by (clear go gov; abstract intuition congruence).
   { apply gmap_eq_dec. assumption. }
-  solve_decision.
+  { solve_decision. }
 Defined.
 Global Instance val_eq_dec : EqDecision val.
 Proof using ext.
@@ -499,6 +493,9 @@ Proof using ext.
      | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
      | StructV m, StructV m' => cast_if (decide (m = m'))
      | ArrayV v, ArrayV v' => cast_if (decide (v = v'))
+      | InterfaceV (Some (a, b)), InterfaceV (Some (a', b')) =>
+          cast_if_and (decide (a = a')) (decide (b = b'))
+      | InterfaceV None, InterfaceV None => left _
      | _, _ => right _
      end); try abstract intuition congruence.
   { apply gmap_eq_dec. assumption. }
@@ -509,25 +506,8 @@ Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 
 Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any"%go []).
 
-Global Instance GoContext_inhabited : Inhabited GoContext :=
-  populate {|
-      global_addr := inhabitant;
-      functions := inhabitant;
-      methods := inhabitant;
-      alloc := inhabitant;
-      load := inhabitant;
-      store:= inhabitant;
-      struct_field_ref := inhabitant;
-      array_index_ref := inhabitant;
-      slice_index_ref := inhabitant;
-      to_underlying := inhabitant;
-      is_map_pure := inhabitant;
-      map_lookup := inhabitant;
-      map_insert := inhabitant;
-    |}.
-
 Global Instance GoState_inhabited : Inhabited GoState :=
-  populate {| go_context := inhabitant; inited_packages := inhabitant |}.
+  populate {| is_go_step := inhabitant; inited_packages := inhabitant |}.
 
 Global Instance state_inhabited : Inhabited state :=
   populate {| heap := inhabitant; go_state := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
@@ -982,60 +962,11 @@ Definition val_cmpxchg_safe (v : val) : bool :=
 
 Definition go_instruction_step (op : go_op) (arg : val) :
   transition (state * global_state) (list observation * expr * list expr) :=
-  σ ← reads (λ '(σ,g), σ);
-  let _ := σ.(go_state).(go_context) in
-  match op, arg with
-  | AngelicExit, _ =>
-      ret_expr $ App (Val $ GoInstruction AngelicExit) (Val arg)
-  | GoLoad t, _ =>
-      ret_expr $ App (Val $ load t) (Val arg)
-  | GoStore t, PairV addr v  =>
-      ret_expr $ App (App (Val $ store t) (Val addr)) (Val v)
-  | GoAlloc t, _ =>
-      ret_expr $ App (Val $ alloc t) (Val arg)
-  | GoPrealloc, _ =>
-      l ← suchThat (fun _ _ => True) (gen:=fallback_genPred _);
-      ret_expr $ Val $ LitV $ LitLoc l
-  | FuncCall f, _ =>
-      match functions f with | Some f => ret_expr (Val f) | _ => undefined end
-  | MethodCall t f, _ =>
-      match methods t f with | Some f => ret_expr (Val f) | _ => undefined end
-  | PackageInitCheck pkg_id, _ =>
-      ret_expr $ Val $ LitV $ LitBool $ bool_decide (pkg_id ∈ σ.(go_state).(inited_packages))
-  | PackageInitMark pkg_id, _ =>
-      modifyσ $ set go_state $ set inited_packages ({[ pkg_id ]} ∪.) ;;
-      ret_expr $ Val $ LitV $ LitUnit
-  | GlobalVarAddr var, _ =>
-      ret_expr $ Val $ LitV $ LitLoc (global_addr var)
-  | StructFieldRef t f, LitV (LitLoc l) =>
-      ret_expr $ Val $ LitV $ LitLoc $ struct_field_ref t f l
-  | StructFieldGet f, StructV m =>
-      match m !! f with | Some v => ret_expr (Val v) | _ => undefined end
-  | StructFieldSet f, PairV (StructV m) v =>
-      ret_expr $ Val $ StructV (<[f := v]> m)
-  | Len, LitV (LitSlice s) =>
-      ret_expr $ Val $ LitV $ LitInt s.(slice.len)
-  | Cap, LitV (LitSlice s) =>
-      ret_expr $ Val $ LitV $ LitInt s.(slice.cap)
-  | SliceIndexRef t, PairV (LitV (LitSlice s)) (LitV (LitInt j)) =>
-      ret_expr $ Val $ LitV $ LitLoc (slice_index_ref t (sint.Z j) s)
-      (* The Go runtime implementation requires slice length to fit in an `int`,
-         so the semantics here requires an int64 and Goose must insert necessary
-         conversions. Similar for arrays below. *)
-  | Make t, _ => undefined
-  | Slice, _ => undefined
-  | ArrayIndexRef t, PairV (LitV (LitLoc l)) (LitV (LitInt j)) =>
-      ret_expr $ Val $ LitV $ LitLoc (array_index_ref t (sint.Z j) l)
-  | ArrayLookup, PairV (ArrayV a) (LitV (LitInt j)) =>
-      match a !! (sint.nat j) with | Some v => ret_expr $ Val $ v | _ => undefined end
-  | ArrayAppend, PairV (ArrayV a) v =>
-      ret_expr $ Val $ ArrayV (a ++ [v])
-  | InternalMapLookup, PairV m k =>
-      let '(ok, v) := map_lookup m k in ret_expr $ Val $ (PairV v (LitV $ LitBool ok))
-  | InternalMapInsert, PairV (PairV m k) v =>
-      ret_expr $ Val $ map_insert m k v
-  | _, _ => undefined
-  end.
+  '(e', s') ← suchThat
+    (λ '(σ,g) '(e', s'), σ.(go_state).(is_go_step) op arg e' σ.(go_state).(inited_packages) s')
+    (gen:=fallback_genPred _);
+  modifyσ $ set go_state $ set inited_packages (λ _, s') ;;
+  ret_expr e'.
 
 Definition base_trans (e: expr) :
  transition (state * global_state) (list observation * expr * list expr) :=

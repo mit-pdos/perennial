@@ -1,4 +1,4 @@
-From New.golang.defn Require Import postlang.
+From New.golang.defn Require Export postlang.
 
 Section goose_lang.
 Context `{ffi_syntax}.
@@ -15,20 +15,6 @@ Definition maxUint64 (n : nat) : val :=
   | 2%nat => (λ: "x" "y", if: "x" > "y" then "x" else "y")%V
   | _ => LitV $ LitPoison
   end.
-
-(* TODO(tchajed): I don't believe it's possible to implement signed operations
-in a width-independent way *)
-
-Definition int_lt : val :=
-  λ: "x" "y", BinOp SignedLtOp "x" "y".
-
-Definition int_leq : val :=
-  λ: "x" "y", BinOp SignedLeOp "x" "y".
-
-Definition int_geq : val :=
-  λ: "x" "y", int_leq "y" "x".
-Definition int_gt : val :=
-  λ: "x" "y", int_lt "y" "x".
 
 Axiom recover : val.
 

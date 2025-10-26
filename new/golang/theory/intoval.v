@@ -9,7 +9,7 @@ From New.golang.defn Require Export postlang.
 
 Section defs.
 
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!GoContext}.
 
 Class IntoValComparable (V : Type) `{!IntoVal V} :=
   {
@@ -55,9 +55,9 @@ End defs.
 
 (* Non-maximally insert the arguments related to [t], [IntoVal], etc., so that
    typeclass search won't be invoked until wp_apply actually unifies the [t]. *)
-Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _] (Φ).
-Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _] (l dq v Φ).
-Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _] (l v w Φ).
+Global Arguments wp_alloc {_ _ _ _ _ _ _} [_ _ _ _ _] (Φ).
+Global Arguments wp_load {_ _ _ _ _ _ _} [_ _ _ _ _] (l dq v Φ).
+Global Arguments wp_store {_ _ _ _ _ _ _} [_ _ _ _ _] (l v w Φ).
 
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,

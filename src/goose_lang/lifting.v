@@ -508,7 +508,7 @@ Would be good to align terminology. *)
 Class gooseLocalGS Σ := GooseLocalGS {
   goose_crashGS : crashGS Σ;
   goose_ffiLocalGS : ffiLocalGS Σ;
-  #[global] goose_go_context :: GoContext;
+  goose_go_stepper : GoStepper;
   #[global] goose_na_heapGS :: na_heapGS loc val Σ;
   #[global] goose_traceGS :: traceGS Σ;
   #[global] goose_go_stateGS :: go_stateGS Σ;
@@ -567,7 +567,7 @@ Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
       "Htr_auth" ∷ trace_auth σ.(trace) ∗
       "Hor_auth" ∷ oracle_auth σ.(oracle) ∗
       "Hg_auth" ∷ own_go_state_ctx σ.(go_state).(inited_packages) ∗
-      "%Hgc" ∷ ⌜ σ.(go_state).(go_context) = goose_go_context ⌝
+      "%Hg" ∷ ⌜ σ.(go_state).(is_go_step) = goose_go_stepper ⌝
     )%I;
 }.
 
@@ -861,604 +861,45 @@ Proof.
   iModIntro. iFrame "∗#%"; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
-(** WPs for go instructions  *)
-(* There's a lot of copy/paste below. Some of it stems from needing to invert
-   the "transition" library's monadic primitives.
-
-   There are also various `rewrite Hgc` proof steps that appear to not change
-   the proof goal; in reality, they change an unprinted implicit parameter
-   `go_context`.
-
-   Some stuff could be simplified if/when old goose is gone. Could define and
-   provide instances for IntoVal prior to these WPs so we don't have to reexport
-   them. Could also set up PureWp prior to this. *)
-
-Lemma wp_AngelicExit {s E} Φ :
-  ⊢ WP GoInstruction AngelicExit #() @ s ; E {{ Φ }}.
+(** WP for go instructions  *)
+Lemma wp_GoInstruction op arg {stk E} K Φ :
+  (∀ s, ∃ e', goose_go_stepper op arg e' s s) →
+  ▷ (∀ e' s s', ⌜ goose_go_stepper op arg e' s s' ⌝ →
+              (own_go_state_ctx s ={E}=∗ own_go_state_ctx s') ∗
+              (£ 1 -∗ WP fill K e' @ stk ; E {{ Φ }})) -∗
+  WP fill K (GoInstruction op arg) @ stk ; E {{ Φ }}.
 Proof.
-  iLöb as "IH".
-  iApply wp_lift_step; [done|].
-  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
-  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
-  iNamed "H".
-  iSplit.
-  { iPureIntro.
-    destruct s; try done.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl. }
-  iIntros (v2 σ2 g2 efs Hstep).
-  rewrite /= in Hstep.
-  inversion Hstep; subst.
-  eapply (base_redex_unique []) in H; first last.
-  { by repeat eexists _. }
-  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
-  destruct H as [<- <-]. inv_base_step.
-  iNext. iMod "Hmask" as "_".
-  iIntros "Hlc".
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. iFrame "∗#%".
-Qed.
-
-Lemma wp_GoLoad K {s E} (l : loc) t Φ :
-  ▷ (£ 1 -∗ WP fill K ((load t) #l) @ s ; E {{ Φ }}) -∗
-  WP fill K ((GoInstruction (GoLoad t)) #l) @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
+  iIntros (Hok) "HΦ".
   iApply wp_lift_step; [apply fill_not_val; done|].
   iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
   iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
   iNamed "H".
-  iSplit.
-  { iPureIntro.
-    destruct s; try done.
-    apply base_prim_fill_reducible.
+  assert (Hred : base_reducible (GoInstruction op arg) σ1 g1).
+  { epose proof (Hok _) as Hok. destruct Hok as [e' Hok].
     repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl. }
+    econstructor.
+    { simpl. econstructor.
+      instantiate (1:=pair _ _). simpl.
+      rewrite Hg. done. }
+    simpl. monad_simpl. }
+  iSplit.
+  { iPureIntro. destruct stk; try done. apply base_prim_fill_reducible. done. }
   iIntros (v2 σ2 g2 efs Hstep).
   rewrite /= in Hstep.
   inversion Hstep; subst.
   eapply base_redex_unique in H; first last.
   { by repeat eexists _. }
-  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
-  destruct H as [<- <-]. inv_base_step.
+  { done. }
+  destruct H as [<- <-]. inv_base_step. destruct pat0.
+  simpl in *. monad_inv.
   iNext. iMod "Hmask" as "_".
-  iIntros "Hlc".
+  iIntros "Hlc". inv_base_step.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
-  iModIntro. rewrite Hgc. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_GoStore K {s E} (l : loc) v t Φ :
-  ▷ (£ 1 -∗ WP fill K (store t #l v) @ s ; E {{ Φ }}) -∗
-  WP fill K ((GoInstruction (GoStore t)) (#l, v)%V) @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_step; [apply fill_not_val; done|].
-  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
-  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
-  iNamed "H".
-  iSplit.
-  { iPureIntro.
-    destruct s; try done.
-    apply base_prim_fill_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl. }
-  iIntros (v2 σ2 g2 efs Hstep).
-  rewrite /= in Hstep.
-  inversion Hstep; subst.
-  eapply base_redex_unique in H; first last.
-  { by repeat eexists _. }
-  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
-  destruct H as [<- <-]. inv_base_step.
-  iNext. iMod "Hmask" as "_".
-  iIntros "Hlc".
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. rewrite Hgc. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_GoAlloc K {s E} t Φ :
-  ▷ (£ 1 -∗ WP fill K ((alloc t) #()) @ s ; E {{ Φ }}) -∗
-  WP fill K ((GoInstruction (GoAlloc t)) #()) @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_step; [apply fill_not_val; done|].
-  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
-  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
-  iNamed "H".
-  iSplit.
-  { iPureIntro.
-    destruct s; try done.
-    apply base_prim_fill_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl. }
-  iIntros (v2 σ2 g2 efs Hstep).
-  rewrite /= in Hstep.
-  inversion Hstep; subst.
-  eapply base_redex_unique in H; first last.
-  { by repeat eexists _. }
-  { repeat eexists. constructor. econstructor; simpl; by monad_simpl. }
-  destruct H as [<- <-]. inv_base_step.
-  iNext. iMod "Hmask" as "_".
-  iIntros "Hlc".
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. rewrite Hgc. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_GoPrealloc {s E} :
-  {{{ True }}}
-    GoInstruction GoPrealloc #() @ s ; E
-  {{{ (l : loc), RET #l; True }}}.
-Proof.
-  iIntros "% _ HΦ". iApply wp_lift_atomic_base_step; [done|].
-  iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&?&?) Hg !>"; iSplit.
-  { iPureIntro. econstructor. repeat eexists. constructor.
-    simpl. econstructor; simpl; monad_simpl.
-    unshelve econstructor; try done.
-    refine null. }
-  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step; iFrame.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. iSplitL; last done. by iApply "HΦ".
-Qed.
-
-Lemma wp_FuncCall {s E} n f Φ :
-  functions n = Some f →
-  ▷ (£ 1 -∗ Φ f) -∗
-  WP (GoInstruction (FuncCall n)) #() @ s ; E {{ Φ }}.
-Proof.
-  intros Hf. iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-    rewrite Hgc Hf //.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor.
-      econstructor; simpl; monad_simpl. rewrite Hgc Hf //. }
-  inv_base_step.
-  rewrite -Hgc in Hf. rewrite Hf in Hstep. inv_base_step.
-  monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. iFrame "∗#%". simpl.
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_MethodCall {s E} t m f Φ :
-  methods t m = Some f →
-  ▷ (£ 1 -∗ Φ f) -∗
-  WP (GoInstruction (MethodCall t m)) #() @ s ; E {{ Φ }}.
-Proof.
-  intros Hf. iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-    rewrite Hgc Hf //.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor.
-      econstructor; simpl; monad_simpl. rewrite Hgc Hf //. }
-  inv_base_step.
-  rewrite -Hgc in Hf. rewrite Hf in Hstep. inv_base_step.
-  monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. iFrame "∗#%". simpl.
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_PackageInitCheck pkg_inited pkg :
-  {{{ own_go_state pkg_inited }}}
-    GoInstruction (PackageInitCheck pkg) #()
-  {{{ RET #(bool_decide (pkg ∈ pkg_inited)); own_go_state pkg_inited }}}.
-Proof.
-  iIntros "% Hg HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { iPureIntro. apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl. }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor.
-      econstructor; simpl; monad_simpl. }
-  inv_base_step.
-  iCombine "Hg_auth Hg" gives %Heq. subst.
-  iFrame.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. iFrame "∗#%". simpl.
-  iSplit; last done. iApply "HΦ". iFrame.
-Qed.
-
-Lemma wp_PackageInitMark pkg_inited pkg :
-  {{{ own_go_state pkg_inited }}}
-    GoInstruction (PackageInitMark pkg) #()
-  {{{ RET #(); own_go_state ({[pkg]} ∪ pkg_inited) }}}.
-Proof.
-  iIntros "% Hg HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { iPureIntro. apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl. }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor.
-      econstructor; simpl; monad_simpl. }
-  inv_base_step.
-  iCombine "Hg_auth Hg" gives %Heq. subst.
-  iFrame.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iFrame "∗#%". simpl.
-  rewrite own_go_state_unseal.
-  iMod (ghost_var_update_2 with "Hg Hg_auth") as "[Hg Hg_auth]".
-  { compute_done. }
-  iFrame. iModIntro.
-  iSplit; last done. iApply "HΦ". iFrame.
-Qed.
-
-Lemma wp_GlobalVarAddr {s E} var Φ :
-  ▷ (£ 1 -∗ Φ #(global_addr var)) -∗
-  WP (GoInstruction (GlobalVarAddr var)) #() @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. rewrite Hgc. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_StructFieldRef {s E} (l : loc) t f Φ :
-  ▷ (£ 1 -∗ Φ #(struct_field_ref t f l)) -∗
-  WP (GoInstruction (StructFieldRef t f)) #l @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. rewrite Hgc. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_StructFieldGet {s E} f fvs v Φ :
-  fvs !! f = Some v →
-  ▷ (£ 1 -∗ Φ v) -∗
-  WP (GoInstruction (StructFieldGet f)) (StructV fvs) @ s ; E {{ Φ }}.
-Proof.
-  intros Hf. iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-    rewrite Hf. done.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; monad_simpl. rewrite Hf //. }
-  inv_base_step. monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. simpl. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_StructFieldSet {s E} f fvs v Φ :
-  ▷ (£ 1 -∗ Φ (StructV (<[f := v]> fvs))) -∗
-  WP (GoInstruction (StructFieldSet f)) ((StructV fvs), v)%V @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step. monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. simpl. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_Len {s E} sl Φ :
-  ▷ (£ 1 -∗ Φ #(sl.(slice.len))) -∗
-  WP (GoInstruction Len) (LitV $ LitSlice sl) @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step. monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. simpl. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_Cap {s E} sl Φ :
-  ▷ (£ 1 -∗ Φ #(sl.(slice.len))) -∗
-  WP (GoInstruction Len) (LitV $ LitSlice sl) @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step. monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. simpl. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_SliceIndexRef {s E} sl (j : w64) t Φ :
-  ▷ (£ 1 -∗ Φ #(slice_index_ref t (sint.Z j) sl)) -∗
-  WP (GoInstruction (SliceIndexRef t)) (#(LitSlice sl), #j)%V @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; try by monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. rewrite Hgc. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_Make {s E} t v Φ :
-  False -∗
-  WP (GoInstruction (Make t) v) @ s ; E {{ Φ }}.
-Proof. iIntros ([]). Qed.
-
-Lemma wp_Slice {s E} v Φ :
-  False -∗
-  WP (GoInstruction Slice v) @ s ; E {{ Φ }}.
-Proof. iIntros ([]). Qed.
-
-Lemma wp_ArrayIndexRef {s E} l (j : w64) t Φ :
-  ▷ (£ 1 -∗ Φ #(array_index_ref t (sint.Z j) l)) -∗
-  WP GoInstruction (ArrayIndexRef t) (#l, #j)%V @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; try by monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. rewrite Hgc. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_ArrayLookup {s E} (j : w64) vs v Φ :
-  vs !! (sint.nat j) = Some v →
-  ▷ (£ 1 -∗ Φ v) -∗
-  WP GoInstruction ArrayLookup ((ArrayV vs), #j)%V @ s ; E {{ Φ }}.
-Proof.
-  intros Hf. iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-    rewrite Hf. done.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; monad_simpl. rewrite Hf //. }
-  inv_base_step. monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. simpl. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_ArrayAppend {s E} vs v Φ :
-  ▷ (£ 1 -∗ Φ (ArrayV (vs ++ [v]))) -∗
-  WP GoInstruction ArrayAppend ((ArrayV vs), v)%V @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-  inv_base_step. monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. simpl. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_InternalMapLookup {s E} m k Φ :
-  ▷ (£ 1 -∗
-     Φ (let '(ok, v) := map_lookup m k in (PairV v (LitV $ LitBool ok)))) -∗
-  WP (GoInstruction InternalMapLookup) (m, k)%V @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  destruct (map_lookup m k) as [ok v] eqn:Hm.
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; try by monad_simpl.
-    rewrite Hgc Hm //.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; monad_simpl.
-      rewrite Hgc Hm //. }
-  inv_base_step. rewrite Hgc Hm in Hstep. inv_base_step. monad_inv.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. iFrame. iFrame "∗#%".
-  iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
-Qed.
-
-Lemma wp_InternalMapInsert {s E} m k v Φ :
-  ▷ (£ 1 -∗ Φ (map_insert m k v)) -∗
-  WP (GoInstruction InternalMapInsert) (m, k, v)%V @ s ; E {{ Φ }}.
-Proof.
-  iIntros "HΦ".
-  iApply wp_lift_atomic_step; [done|].
-  iIntros (σ1  g1 ns mj D κ κs nt) "H ?". iModIntro.
-  iNamed "H".
-  iSplit.
-  { destruct s; try done. iPureIntro.
-    apply base_prim_reducible.
-    repeat eexists. simpl. constructor.
-    econstructor; simpl; by monad_simpl.
-  }
-  iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
-  iIntros "!> Hlc".
-  rewrite /= in Hstep.
-  apply base_reducible_prim_step in Hstep.
-  2:{ repeat eexists. simpl. constructor. econstructor; simpl; by monad_simpl. }
-
-  inv_base_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
-  { rewrite /step_count_next/=. lia. }
-  iModIntro. iFrame. iFrame "∗#%".
-  iSplit; last done. rewrite Hgc. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+  rewrite -Hg. iSpecialize ("HΦ" $! _ _ _ ltac:(done)).
+  iDestruct "HΦ" as "[Hupd HΦ]". iMod ("Hupd" with "Hg_auth") as "Hg_auth".
+  iModIntro. iFrame "∗#%". rewrite /RecordSet.set /=.
+  iFrame. iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
 Qed.
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)
@@ -1816,7 +1257,6 @@ Proof.
   iFrame "Hσ ∗". iApply "HΦ".
   iApply "Hl_rest". iFrame.
 Qed.
-
 Lemma wp_atomic_op s E l v0 v1 v op :
   bin_op_eval op v0 v1 = Some v →
   {{{ ▷ l ↦ v0 }}} AtomicOp op (Val $ LitV (LitLoc l)) v1 @ s; E
