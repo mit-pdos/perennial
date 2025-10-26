@@ -337,30 +337,6 @@ Proof.
   naive_solver.
 Qed.
 
-(* if [Cut], carries the hash, so hashes must be equal.
-otherwise, [decode_node_inj] says that Some preimg's are equal,
-which implies the hashes are equal. *)
-Lemma is_full_tree_det t h0 h1 l0 l1 :
-  is_full_tree' t h0 l0 -∗
-  is_full_tree' t h1 l1 -∗
-  ⌜ h0 = h1 ⌝.
-Proof.
-  iInduction (l0) as [? IH] using lt_wf_ind forall (t h0 h1 l1);
-    iEval (setoid_rewrite is_full_tree_unfold);
-    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
-    repeat case_match;
-    iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
-    simplify_eq/=; try done.
-  1-2:
-    opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|];
-    by iApply cryptoffi.is_hash_det.
-  iSpecialize ("IH" $! n with "[]"); [word|].
-  iDestruct ("IH" with "Hchild00 Hchild01") as %->.
-  iDestruct ("IH" with "Hchild10 Hchild11") as %->.
-  opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-  by iApply cryptoffi.is_hash_det.
-Qed.
-
 (* [is_full_tree_inj] demands the same [limit], which allows it to perform
 the same number of hash inversions before potentially reaching [Cut].
 merkle clients should all use the same [limit] in their code and proofs.
