@@ -1,5 +1,5 @@
 From New.golang.defn Require Export loop.
-From New.golang.theory Require Import exception.
+From New.golang.theory Require Export exception.
 From iris_named_props Require Export named_props.
 From Perennial Require Import base.
 
