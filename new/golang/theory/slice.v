@@ -3,25 +3,20 @@ From iris.algebra Require Import dfrac.
 From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Import mem assume exception loop auto builtin primitive.
+From New.golang.theory Require Import loop.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
 
 #[local]
-Transparent slice.ptr slice.len slice.cap slice.make3 slice.make2
-  slice.elem_ref slice.slice slice.full_slice slice.for_range
-  slice.copy slice._new_cap slice.append slice.literal.
+Transparent slice.for_range slice.literal.
 
 Module slice.
-Definition slice_f (sl : slice.t) (t : go_type) (n1 n2 : u64) : slice.t :=
+Definition slice_f (sl : slice.t) (t : go.type) (n1 n2 : u64) : slice.t :=
   slice.mk (sl.(slice.ptr_f) +ₗ[t] sint.Z n1) (word.sub n2 n1) (word.sub sl.(slice.cap_f) n1).
 
 Definition full_slice_f (sl : slice.t) (t : go_type) (n1 n2 n3 : u64) : slice.t :=
   slice.mk (sl.(slice.ptr_f) +ₗ[t] sint.Z n1) (word.sub n2 n1) (word.sub n3 n1).
-
-Definition elem_ref_f (sl : slice.t) (t : go_type) (i : u64) : loc :=
-  sl.(slice.ptr_f) +ₗ[t] (sint.Z i).
 End slice.
 
 Section defns_and_lemmas.

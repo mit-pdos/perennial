@@ -5,101 +5,48 @@ Import RecordSetNotations.
 
 Set Default Proof Using "Type".
 
-Section into_val_instances.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hvalid : go.ContextValid}.
-
-(** TypedPointsto instances *)
-Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w64 : TypedPointsto w64 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w32 : TypedPointsto w32 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w16 : TypedPointsto w16 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w8 : TypedPointsto w8 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_bool : TypedPointsto bool :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_string : TypedPointsto go_string :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_slice : TypedPointsto slice.t :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
-  `{!TypedPointsto V} `{!IntoValTyped V t} : TypedPointsto (array.t t V n) :=
-  {|
-    typed_pointsto_def l dq v :=
-      ([∗ list] i ↦ ve ∈ (vec_to_list v.(array.vec)), array_index_ref t (Z.of_nat i) l ↦ ve)%I;
-  |}.
-
-(** IntoValComparable instances *)
-Ltac solve_into_val_comparable :=
-  split;
-  [rewrite to_val_unseal; intros ??; by inversion 1|
-    apply _ |
-    rewrite to_val_unseal; done].
-
-Global Instance into_val_comparable_loc : IntoValComparable loc.
-Proof. solve_into_val_comparable. Qed.
-
-Global Instance into_val_comparable_w64 : IntoValComparable w64.
-Proof. solve_into_val_comparable. Qed.
-
-Global Instance into_val_comparable_w32 : IntoValComparable w32.
-Proof. solve_into_val_comparable. Qed.
-
-Global Instance into_val_comparable_w16 : IntoValComparable w16.
-Proof. solve_into_val_comparable. Qed.
-
-Global Instance into_val_comparable_w8 : IntoValComparable w8.
-Proof. solve_into_val_comparable. Qed.
-
-Global Instance into_val_comparable_bool : IntoValComparable bool.
-Proof. solve_into_val_comparable. Qed.
-
-Global Instance into_val_comparable_string : IntoValComparable go_string.
-Proof. solve_into_val_comparable. Qed.
-
-Global Instance into_val_comparable_slice : IntoValComparable slice.t.
-Proof. solve_into_val_comparable. Qed.
+Section mem_lemmas.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hvalid : go.CoreSemantics}.
 
 (* Helper lemmas for establishing [IntoValTyped] *)
 Local Lemma wp_untyped_load l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}
     ! #l @ s; E
   {{{ RET v; heap_pointsto l dq v }}}.
-Proof. rewrite to_val_unseal. apply lifting.wp_load. Qed.
+Proof. rewrite into_val_unseal. apply lifting.wp_load. Qed.
 
 Local Lemma wp_untyped_store l v v' s E :
   {{{ ▷ heap_pointsto l (DfracOwn 1) v }}}
     #l <- v' @ s; E
   {{{ RET #(); heap_pointsto l (DfracOwn 1) v' }}}.
 Proof.
-  rewrite to_val_unseal. iIntros "% Hl HΦ". wp_call.
+  rewrite into_val_unseal. iIntros "% Hl HΦ". wp_call.
   wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
   wp_pures. by iApply (wp_finish_store with "[$Hl $Hl']").
 Qed.
 
-Lemma wp_GoPrealloc :
+Lemma wp_GoPrealloc {stk E} :
   {{{ True }}}
-    GoInstruction GoPrealloc #()
+    GoInstruction GoPrealloc #() @ stk; E
   {{{ (l : loc), RET #l; True }}}.
-Proof. rewrite to_val_unseal. apply wp_GoPrealloc. Qed.
+Proof.
+  iIntros (?) "_ HΦ". wp_apply (wp_GoInstruction []).
+  { intros. eexists #null. econstructor. econstructor. }
+  iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  iFrame. iSplitR. { by iIntros "$". }
+  iIntros "_". simpl. wp_pures. by iApply "HΦ".
+Qed.
 
 Lemma wp_AngelicExit Φ s E :
   ⊢ WP GoInstruction AngelicExit #() @ s; E {{ Φ }}.
-Proof. rewrite to_val_unseal. apply wp_AngelicExit. Qed.
+Proof.
+  iLöb as "IH".
+  wp_apply (wp_GoInstruction []).
+  { intros. repeat econstructor. }
+  iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  iFrame. iSplitR. { by iIntros "$". }
+  iIntros "_". simpl. iApply "IH".
+Qed.
 
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
@@ -108,7 +55,7 @@ Existing Class go.is_primitive_zero_val.
 
 Local Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
-  rewrite go.alloc_primitive typed_pointsto_unseal /= to_val_unseal;
+  rewrite go.alloc_primitive typed_pointsto_unseal /= into_val_unseal;
   wp_pures; by wp_apply wp_alloc_untyped.
 
 Local Ltac solve_wp_load :=
@@ -163,16 +110,16 @@ Proof using Hvalid.
     rewrite typed_pointsto_unseal /=.
     rewrite go.load_array. simpl.
     iInduction n as [|] "IH".
-    + wp_pures. rewrite to_val_unseal /=.
+    + wp_pures. rewrite into_val_unseal /=.
       destruct v as [v]. rewrite (VectorSpec.nil_spec v) /=.
       iApply "HΦ". done.
     + destruct v. inversion vec as [|hd n' tl]; subst.
 Admitted. (* FIXME: prove these *)
 
-End into_val_instances.
+End mem_lemmas.
 
-Section test.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.ContextValid}.
+Section __struct_test.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
 
 Record foo_t :=
   mk {
@@ -181,7 +128,7 @@ Record foo_t :=
     }.
 Global Instance into_val_foo : IntoVal foo_t :=
   {|
-    to_val_def := λ v, StructV {[ "b"%go := #v.(b); "a"%go := #v.(a) ]};
+    into_val_def := λ v, StructV {[ "b"%go := #v.(b); "a"%go := #v.(a) ]};
     zero_val := mk (zero_val _) (zero_val _)
   |}.
 
@@ -206,13 +153,13 @@ Global Instance settable_foo : Settable foo_t :=
 
 Ltac solve_wp_struct_field_set :=
   iIntros (?) "* _ *"; iIntros "Hwp";
-  rewrite [in (to_val (V:=foo_t))]to_val_unseal; wp_apply wp_StructFieldSet;
-  simpl; iExactEq "Hwp"; do 5 f_equal;
+  rewrite [in (into_val (V:=foo_t))]into_val_unseal; wp_pure_lc "Hlc";
+  iSpecialize ("Hwp" with "[$]"); simpl; iExactEq "Hwp"; do 4 f_equal;
   repeat (rewrite insert_insert; destruct decide; [done| (done || f_equal)]).
 
 Ltac solve_wp_struct_field_get :=
   iIntros (?) "* _ *"; iIntros "Hwp";
-  rewrite [in (to_val (V:=foo_t))]to_val_unseal; wp_apply wp_StructFieldGet; last done;
+  rewrite [in (into_val (V:=foo_t))]into_val_unseal; wp_apply wp_StructFieldGet_untyped; last done;
   repeat (rewrite lookup_insert_ne //; []); rewrite lookup_insert //.
 
 Global Instance wp_StructFieldSet_foo_a (v : foo_t) (a' : w64) :
@@ -248,7 +195,7 @@ Global Instance wp_eq `{!IntoVal V} `{!IntoValComparable V} (v1 v2 : V) :
 Proof.
   pose proof wp_eq_val.
   iIntros (?) "* _ * HΦ".
-  wp_pure_lc "Hl"; [ split; apply to_val_comparable | ].
+  wp_pure_lc "Hl"; [ split; apply into_val_comparable | ].
   rewrite bool_decide_inj.
   iApply "HΦ". iFrame.
 Qed.
@@ -275,7 +222,7 @@ Proof using H H0.
     rewrite [in (_ (foo_t))]typed_pointsto_unseal /=.
     rewrite go.load_underlying foo_underlying.
     rewrite go.struct_field_ref_underlying foo_underlying.
-    rewrite [in (_ foo_t)]to_val_unseal.
+    rewrite [in (_ foo_t)]into_val_unseal.
     rewrite go.load_struct /=. iNamed "Hl".
 
     wp_pures. wp_apply (wp_load with "[$a]"). iIntros "a". wp_pures.
@@ -295,4 +242,4 @@ Proof using H H0.
     iApply "HΦ". iFrame.
 Qed.
 
-End test.
+End __struct_test.

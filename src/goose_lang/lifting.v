@@ -862,7 +862,7 @@ Proof.
 Qed.
 
 (** WP for go instructions  *)
-Lemma wp_GoInstruction op arg {stk E} K Φ :
+Lemma wp_GoInstruction K op arg {stk E} Φ :
   (∀ s, ∃ e', is_go_step op arg e' s s) →
   ▷ (∀ e' s s', ⌜ is_go_step op arg e' s s' ⌝ →
               (own_go_state_ctx s ={E}=∗ own_go_state_ctx s') ∗

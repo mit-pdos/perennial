@@ -5,6 +5,7 @@ Module slice.
 Section goose_lang.
 Context `{ffi_syntax}.
 
+#[warning="-uniform-inheritance"]
 Local Coercion GoInstruction : go_op >-> val.
 
 (* only for internal use, not an external model *)
@@ -102,8 +103,7 @@ Definition literal (elem_type : go.type) (len : Z) : val :=
   (for: (λ: <>, int_lt (![go.int64] "i") "len") ; (λ: <>, "i" <-[go.int64] ![go.int64] "i" + #(W64 1)) :=
      (λ: <>,
         do: (IndexRef st "s" (![go.int64] "i") <-[elem_type] (Index (go.ArrayType len elem_type) "elems" "i")))) ;;
-  "s"
-.
+  "s".
 
 End goose_lang.
 End slice.

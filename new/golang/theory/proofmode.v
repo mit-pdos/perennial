@@ -731,4 +731,16 @@ Global Instance wp_StructFieldSet_untyped f m v :
   PureWp True (GoInstruction (StructFieldSet f) (StructV m, v)%V) (StructV (<[f := v]> m)).
 Proof. solve_pure. Qed.
 
+Lemma wp_StructFieldGet_untyped {stk E} f m v :
+  m !! f = Some v →
+  {{{ True }}}
+    GoInstruction (StructFieldGet f) (StructV m) @ stk; E
+  {{{ RET v; £ 1 }}}.
+Proof.
+  iIntros "% * _ HΦ". iApply (wp_GoInstruction []).
+  { intros. repeat econstructor. done. }
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  iSplitR; first by iIntros. iIntros "?". simpl. wp_pures. by iApply "HΦ".
+Qed.
+
 End go_wp_pure_instances.

@@ -2,7 +2,7 @@
    assumptions about valid GoContext and definition of zero values via
    IntoVal. *)
 
-From Perennial.goose_lang Require Export lang notation.
+From Perennial.goose_lang Require Export lang.
 From Perennial Require Export base.
 
 Definition slice_index_ref `{GoContext} (elem_type : go.type) (i : Z) (s : slice.t) : loc :=
