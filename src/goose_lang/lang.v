@@ -268,6 +268,333 @@ Notation Load := (Primitive1 LoadOp).
 Notation Input := (Primitive1 InputOp).
 Notation Output := (Primitive1 OutputOp).
 
+Delimit Scope expr_scope with E.
+Delimit Scope val_scope with V.
+
+Global Open Scope Z. (* Make sure everyone gets this scope. *)
+
+Coercion LitBool : bool >-> base_lit.
+Coercion LitLoc : loc >-> base_lit.
+(* TODO: this should be added *)
+(* Coercion LitString : string >-> base_lit. *)
+Coercion LitInt : u64 >-> base_lit.
+Coercion LitInt32 : u32 >-> base_lit.
+Coercion LitInt16 : w16 >-> base_lit.
+Coercion LitByte : u8 >-> base_lit.
+Coercion LitProphecy : proph_id >-> base_lit.
+Notation "'str' s" := (LitString (s : byte_string)) (at level 30, format "'str'  s") : val_scope.
+
+Definition b2val {ext: ffi_syntax}: u8 -> val := λ (b:u8), LitV (LitByte b).
+Global Instance b2val_inj {ext: ffi_syntax} : Inj eq eq b2val.
+Proof.
+  intros b1 b2 Heq.
+  inversion Heq; auto.
+Qed.
+
+Coercion App : expr >-> Funclass.
+
+Coercion Val : val >-> expr.
+(** As of https://github.com/coq/coq/pull/15789 Coq does not require the uniform
+inheritance criteria, but silencing the warning is still required. *)
+#[warning="-uniform-inheritance"]
+Coercion Var : string >-> expr.
+
+(** Define some derived forms. *)
+Notation Lam x e := (Rec BAnon x e) (only parsing).
+Notation Let x e1 e2 := (App (Lam x e2) e1) (only parsing).
+Notation Seq e1 e2 := (Let BAnon e1 e2) (only parsing).
+Notation LamV x e := (RecV BAnon x e) (only parsing).
+Notation Match e0 x1 e1 x2 e2 := (Case e0 (Lam x1 e1) (Lam x2 e2)) (only parsing).
+Notation Alloc e := (AllocN (Val $ LitV $ LitInt (W64 1)) e).
+(** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)
+Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
+
+(* Skip should be atomic, we sometimes open invariants around
+   it. Hence, we need to explicitly use LamV instead of e.g., Seq. *)
+Notation Skip := (App (Val $ LamV BAnon (Val $ LitV LitUnit)) (Val $ LitV LitUnit)).
+Definition Linearize {ext:ffi_syntax}: expr := Skip.
+
+(* No scope for the values, does not conflict and scope is often not inferred
+properly. *)
+Notation "# l" := (LitV l%Z%V%stdpp) (at level 8, format "# l").
+
+(** Syntax inspired by Coq/Ocaml. Constructions with higher precedence come
+    first. *)
+Notation "( e1 , e2 , .. , en )" := (Pair .. (Pair e1 e2) .. en) : expr_scope.
+Notation "( e1 , e2 , .. , en )" := (PairV .. (PairV e1 e2) .. en) : val_scope.
+
+(*
+Using the '[hv' ']' printing box, we make sure that when the notation for match
+does not fit on a single line, line breaks will be inserted for *each* breaking
+point '/'. Note that after each breaking point /, one can put n spaces (for
+example '/  '). That way, when the breaking point is turned into a line break,
+indentation of n spaces will appear after the line break. As such, when the
+match does not fit on one line, it will print it like:
+
+  match: e0 with
+    InjL x1 => e1
+  | InjR x2 => e2
+  end
+
+Moreover, if the branches do not fit on a single line, it will be printed as:
+
+  match: e0 with
+    InjL x1 =>
+    lots of stuff bla bla bla bla bla bla bla bla
+  | InjR x2 =>
+    even more stuff bla bla bla bla bla bla bla bla
+  end
+*)
+Notation "'match:' e0 'with' 'InjL' x1 => e1 | 'InjR' x2 => e2 'end'" :=
+  (Match e0 x1%binder e1 x2%binder e2)
+  (e0, x1, e1, x2, e2 at level 200,
+   format "'[hv' 'match:'  e0  'with'  '/  ' '[' 'InjL'  x1  =>  '/  ' e1 ']'  '/' '[' |  'InjR'  x2  =>  '/  ' e2 ']'  '/' 'end' ']'") : expr_scope.
+Notation "'match:' e0 'with' 'InjR' x1 => e1 | 'InjL' x2 => e2 'end'" :=
+  (Match e0 x2%binder e2 x1%binder e1)
+  (e0, x1, e1, x2, e2 at level 200, only parsing) : expr_scope.
+
+Notation "()" := LitUnit : val_scope.
+Notation "! e" := (Load e%E) (at level 9, right associativity) : expr_scope.
+Notation "'ref' e" := (Alloc e%E) (at level 10) : expr_scope.
+Notation "- e" := (UnOp MinusUnOp e%E) : expr_scope.
+Notation "'u_to_w64' e" := (UnOp UToW64Op e%E) (at level 10) : expr_scope.
+Notation "'u_to_w32' e" := (UnOp UToW32Op e%E) (at level 10) : expr_scope.
+Notation "'u_to_w16' e" := (UnOp UToW16Op e%E) (at level 10) : expr_scope.
+Notation "'u_to_w8' e" := (UnOp UToW8Op e%E) (at level 10) : expr_scope.
+Notation "'s_to_w64' e" := (UnOp SToW64Op e%E) (at level 10) : expr_scope.
+Notation "'s_to_w32' e" := (UnOp SToW32Op e%E) (at level 10) : expr_scope.
+Notation "'s_to_w16' e" := (UnOp SToW16Op e%E) (at level 10) : expr_scope.
+Notation "'s_to_w8' e" := (UnOp SToW8Op e%E) (at level 10) : expr_scope.
+Notation "'to_u64' e" := (UnOp UToW64Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
+Notation "'to_u32' e" := (UnOp UToW32Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
+Notation "'to_u16' e" := (UnOp UToW16Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
+Notation "'to_u8' e" := (UnOp UToW8Op e%E) (at level 10, only parsing) : expr_scope. (* backwards compatibility *)
+Notation "'to_string' e" := (UnOp ToStringOp e%E) (at level 10) : expr_scope.
+Notation "'StringLength' e" := (UnOp StringLenOp e%E) (at level 10) : expr_scope.
+Notation "'IsNoStringOverflow' e" := (UnOp IsNoStringOverflowOp e%E) (at level 10) : expr_scope.
+
+Notation "'StringGet'" := (BinOp StringGetOp) (at level 10) : expr_scope.
+Notation "e1 + e2" := (BinOp PlusOp e1%E e2%E) : expr_scope.
+Notation "e1 +ₗ e2" := (BinOp (OffsetOp 1) e1%E e2%E) : expr_scope.
+Notation "e1 - e2" := (BinOp MinusOp e1%E e2%E) : expr_scope.
+Notation "e1 * e2" := (BinOp MultOp e1%E e2%E) : expr_scope.
+Notation "e1 `or` e2" := (BinOp OrOp e1%E e2%E) (at level 40) : expr_scope.
+Notation "e1 `and` e2" := (BinOp AndOp e1%E e2%E) (at level 40) : expr_scope.
+Notation "e1 `xor` e2" := (BinOp XorOp e1%E e2%E) (at level 40) : expr_scope.
+Notation "e1 `quot` e2" := (BinOp QuotOp e1%E e2%E) : expr_scope.
+Notation "e1 `quots` e2" := (BinOp QuotSignedOp e1%E e2%E) (at level 35) : expr_scope.
+Notation "e1 `rem` e2" := (BinOp RemOp e1%E e2%E) : expr_scope.
+Notation "e1 `rems` e2" := (BinOp RemSignedOp e1%E e2%E) (at level 35) : expr_scope.
+Notation "e1 ≪ e2" := (BinOp ShiftLOp e1%E e2%E) : expr_scope.
+Notation "e1 ≫ e2" := (BinOp ShiftROp e1%E e2%E) : expr_scope.
+
+Notation "e1 ≤ e2" := (BinOp LeOp e1%E e2%E) : expr_scope.
+Notation "e1 < e2" := (BinOp LtOp e1%E e2%E) : expr_scope.
+Notation "e1 ≥ e2" := (BinOp LeOp e2%E e1%E) : expr_scope.
+Notation "e1 > e2" := (BinOp LtOp e2%E e1%E) : expr_scope.
+Notation "e1 = e2" := (BinOp EqOp e1%E e2%E) : expr_scope.
+Notation "e1 ≠ e2" := (UnOp NegOp (BinOp EqOp e1%E e2%E)) : expr_scope.
+
+Notation "~ e" := (UnOp NegOp e%E) (at level 75, right associativity) : expr_scope.
+Definition Store {ext:ffi_syntax} : val :=
+  LamV "l" (Lam "v" (Seq
+                     (PrepareWrite (Var "l"))
+                     (FinishStore (Var "l") (Var "v")))).
+(* The unicode ← is already part of the notation "_ ← _; _" for bind. *)
+Notation "e1 <- e2" := (Store e1%E e2%E) (at level 80) : expr_scope.
+
+Definition Read {ext:ffi_syntax} : val :=
+  LamV "l" ((Let "v" (StartRead (Var "l"))
+                     (Seq (FinishRead (Var "l"))
+                          (Var "v")))).
+
+(* The breaking point '/  ' makes sure that the body of the rec is indented
+by two spaces in case the whole rec does not fit on a single line. *)
+Notation "'rec:' f x := e" := (Rec f%binder x%binder e%E)
+  (at level 200, f at level 1, x at level 1, e at level 200,
+   format "'[' 'rec:'  f  x  :=  '/  ' e ']'") : expr_scope.
+Notation "'rec:' f x := e" := (RecV f%binder x%binder e%E)
+  (at level 200, f at level 1, x at level 1, e at level 200,
+   format "'[' 'rec:'  f  x  :=  '/  ' e ']'") : val_scope.
+Notation "'if:' e1 'then' e2 'else' e3" := (If e1%E e2%E e3%E)
+  (at level 200, e1, e2, e3 at level 200) : expr_scope.
+
+(** Derived notions, in order of declaration. The notations for let and seq
+are stated explicitly instead of relying on the Notations Let and Seq as
+defined above. This is needed because App is now a coercion, and these
+notations are otherwise not pretty printed back accordingly. *)
+Notation "'rec:' f x y .. z := e" := (Rec f%binder x%binder (Lam y%binder .. (Lam z%binder e%E) ..))
+  (at level 200, f, x, y, z at level 1, e at level 200,
+   format "'[' 'rec:'  f  x  y  ..  z  :=  '/  ' e ']'") : expr_scope.
+Notation "'rec:' f x y .. z := e" := (RecV f%binder x%binder (Lam y%binder .. (Lam z%binder e%E) ..))
+  (at level 200, f, x, y, z at level 1, e at level 200,
+   format "'[' 'rec:'  f  x  y  ..  z  :=  '/  ' e ']'") : val_scope.
+
+(* The breaking point '/  ' makes sure that the body of the λ: is indented
+by two spaces in case the whole λ: does not fit on a single line. *)
+Notation "λ: x , e" := (Lam x%binder e%E)
+  (at level 200, x at level 1, e at level 200,
+   format "'[' 'λ:'  x ,  '/  ' e ']'") : expr_scope.
+Notation "λ: x y .. z , e" := (Lam x%binder (Lam y%binder .. (Lam z%binder e%E) ..))
+  (at level 200, x, y, z at level 1, e at level 200,
+   format "'[' 'λ:'  x  y  ..  z ,  '/  ' e ']'") : expr_scope.
+
+Notation "λ: x , e" := (LamV x%binder e%E)
+  (at level 200, x at level 1, e at level 200,
+   format "'[' 'λ:'  x ,  '/  ' e ']'") : val_scope.
+Notation "λ: x y .. z , e" := (LamV x%binder (Lam y%binder .. (Lam z%binder e%E) .. ))
+  (at level 200, x, y, z at level 1, e at level 200,
+   format "'[' 'λ:'  x  y  ..  z ,  '/  ' e ']'") : val_scope.
+
+Notation "'let:' x := e1 'in' e2" := (Lam x%binder e2%E e1%E)
+  (at level 200, x at level 1, e1, e2 at level 200,
+   format "'[' 'let:'  x  :=  '[' e1 ']'  'in'  '/' e2 ']'") : expr_scope.
+(* TODO: this notation is not hygienic because it introduces __p into e1's scope
+
+we could do slightly better by using a variable that can't appear in Go (eg, one
+with spaces), but we would probably still handle nested destructuring
+incorrectly *)
+Notation "'let:' ( a1 , a2 ) := e1 'in' e2" :=
+  (Lam "__p"
+    (Lam a1%binder (Lam a2%binder e2%E (Snd "__p")) (Fst "__p"))
+    e1%E)
+  (at level 200, a1, a2 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( a1 , a2 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( a1 , a2 ) , a3 ) := e1 'in' e2" :=
+  (Lam "__p"
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Fst (Fst "__p")))
+    e1%E)
+  (at level 200, a1, a2, a3 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( a1 , a2 ) , a3 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( ( a1 , a2 ) , a3 ) , a4 ) := e1 'in' e2" :=
+  (Lam "__p"
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder (Lam a4%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p"))))
+      (Fst (Fst (Fst "__p"))))
+    e1%E)
+  (at level 200, a1, a2, a3, a4 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( ( a1 , a2 ) , a3 ) , a4 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) := e1 'in' e2" :=
+  (Lam "__p"
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder (Lam a4%binder (Lam a5%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p"))))
+      (Snd (Fst (Fst (Fst "__p"))))) (Fst (Fst (Fst (Fst "__p")))))
+    e1%E)
+  (at level 200, a1, a2, a3, a4, a5 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "'let:' ( ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) , a6 ) := e1 'in' e2" :=
+  (Lam "__p"
+    (Lam a1%binder (Lam a2%binder (Lam a3%binder (Lam a4%binder
+      (Lam a5%binder (Lam a6%binder e2%E
+      (Snd "__p")) (Snd (Fst "__p"))) (Snd (Fst (Fst "__p"))))
+      (Snd (Fst (Fst (Fst "__p"))))) (Snd (Fst (Fst (Fst (Fst "__p"))))))
+      (Fst (Fst (Fst (Fst (Fst "__p"))))))
+    e1%E)
+  (at level 200, a1, a2, a3, a4, a5, a6 at level 1, e1, e2 at level 200,
+   format "'[' 'let:' ( ( ( ( ( a1 , a2 ) , a3 ) , a4 ) , a5 ) , a6 ) := '[' e1 ']' 'in' '/' e2 ']'") : expr_scope.
+Notation "e1 ;; e2" := (Lam BAnon e2%E e1%E)
+  (at level 100, e2 at level 200,
+   format "'[' '[hv' '[' e1 ']' ;;  ']' '/' e2 ']'") : expr_scope.
+
+(* Shortcircuit Boolean connectives *)
+Notation "e1 && e2" :=
+  (If e1%E e2%E (LitV (LitBool false))) (only parsing) : expr_scope.
+Notation "e1 || e2" :=
+  (If e1%E (LitV (LitBool true)) e2%E) (only parsing) : expr_scope.
+
+(** Notations for option *)
+Notation NONE := (InjL (LitV LitUnit)) (only parsing).
+Notation NONEV := (InjLV (LitV LitUnit)) (only parsing).
+Notation SOME x := (InjR x) (only parsing).
+Notation SOMEV x := (InjRV x) (only parsing).
+
+Notation "'match:' e0 'with' 'NONE' => e1 | 'SOME' x => e2 'end'" :=
+  (Match e0 BAnon e1 x%binder e2)
+  (e0, e1, x, e2 at level 200, only parsing) : expr_scope.
+Notation "'match:' e0 'with' 'SOME' x => e2 | 'NONE' => e1 'end'" :=
+  (Match e0 BAnon e1 x%binder e2)
+  (e0, e1, x, e2 at level 200, only parsing) : expr_scope.
+
+(*
+Notation ResolveProph e1 e2 := (Resolve Skip e1 e2) (only parsing).
+Notation "'resolve_proph:' p 'to:' v" := (ResolveProph p v) (at level 100) : expr_scope.
+*)
+
+(** [GoContext] contains several low-level Go functions for typed memory access,
+    map updates, etc. *)
+Class GoContext {ext : ffi_syntax} : Type :=
+  {
+    global_addr : go_string → loc;
+    functions : go_string → list go.type → val;
+    methods : go.type → go_string → val;
+
+    alloc : go.type → val;
+    load : go.type → val;
+    store : go.type → val;
+
+    struct_field_ref : go.type → go_string → loc → loc;
+
+    index (container_type : go.type) (i : Z) (v : val) : expr;
+    index_ref (container_type : go.type) (i : Z) (v : val) : expr;
+    array_index_ref (elem_type : go.type) (i : Z) (l : loc) : loc;
+
+    to_underlying : go.type → go.type;
+    is_map_pure (v : val) (m : val → bool * val) : Prop;
+    map_lookup : val → val → bool * val;
+    map_insert : val → val → val → val;
+  }.
+
+Class IntoVal {ext : ffi_syntax} (V : Type) :=
+  {
+    into_val_def : V → val;
+    zero_val : V;
+  }.
+
+Program Definition into_val := sealed @into_val_def.
+Definition into_val_unseal : into_val = _ := seal_eq _.
+Arguments into_val {_ _ _} v%go.
+Arguments zero_val {_} (V) {_}.
+
+Module func.
+Section defn.
+Context `{ffi_syntax}.
+Record t := mk {
+      f : binder;
+      x : binder;
+      e : expr;
+    }.
+Definition nil := mk <> <> (Val $ LitV LitPoison).
+End defn.
+End func.
+
+Module chan.
+Definition t := loc.
+Definition nil : chan.t := null.
+End chan.
+
+Module interface.
+Section goose_lang.
+Context `{ffi_syntax}.
+
+Inductive t :=
+| mk (ty : go.type) (v : val) : t
+| nil : t.
+
+End goose_lang.
+End interface.
+
+Module array.
+Section goose_lang.
+(* Using [vec] here because the [to_val] must be a total function that always
+   meets [has_go_type]. An alternative could be a sigma type. *)
+Record t (ty : go.type) (V : Type) (n : nat) :=
+mk { vec : vec V n }.
+End goose_lang.
+End array.
+Arguments array.mk (ty) {_ _} (_).
+Arguments array.vec {_ _ _} (_).
+
 Section external.
 (* these are codes for external operations (which all take a single val as an
    argument and evaluate to a value) and data for external values *)
@@ -314,18 +641,117 @@ Definition Oracle := Trace -> forall (sel:u64), u64.
 
 Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0).
 
-(** [GoStepper] is the type of step relation for Go instructions.
-    We could define it here (in realtion to other assumed state), but it's
-    ideal to define it by using (a) the IntoVal typeclass (and related
-    definitions) and (b) using GooseLang notation. We could try to bring that
-    all into here, but it seems more likely to break old goose/Perennial, so
-    avoiding it for now. *)
-Definition GoStepper : Type :=
-  ∀ (op : go_op) (arg : val) (e' : expr) (s : gset go_string) (s' : gset go_string),  Prop.
+Section into_val_instances.
+Context `{ffi_syntax}.
+
+Global Instance into_val_loc : IntoVal loc :=
+  {| into_val_def v := (LitV $ LitLoc v); zero_val := null |}.
+
+Global Instance into_val_w64 : IntoVal w64 :=
+  {| into_val_def v := (LitV $ LitInt v); zero_val := W64 0 |}.
+
+Global Instance into_val_w32 : IntoVal w32 :=
+  {| into_val_def v := (LitV $ LitInt32 v); zero_val := W32 0 |}.
+
+Global Instance into_val_w16 : IntoVal w16 :=
+  {| into_val_def v := (LitV $ LitInt16 v); zero_val := W16 0 |}.
+
+Global Instance into_val_w8 : IntoVal w8 :=
+  {| into_val_def v := (LitV $ LitByte v); zero_val := W8 0 |}.
+
+Global Instance into_val_unit : IntoVal () :=
+  {| into_val_def _ := (LitV $ LitUnit); zero_val := () |}.
+
+Global Instance into_val_bool : IntoVal bool :=
+  {| into_val_def b := (LitV $ LitBool b); zero_val := false |}.
+
+Global Instance into_val_go_string : IntoVal go_string :=
+  {| into_val_def s := (LitV $ LitString s); zero_val := ""%go |}.
+
+Global Instance into_val_func : IntoVal func.t :=
+  {| into_val_def f := RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
+
+Global Instance into_val_array t `{!IntoVal V} n : IntoVal (array.t t V n) :=
+  {|
+    into_val_def v := ArrayV (into_val <$> (vec_to_list v.(array.vec)));
+    zero_val := array.mk t $ vreplicate n (zero_val V);
+  |}.
+
+Global Instance into_val_slice : IntoVal slice.t :=
+  {|
+    into_val_def (s: slice.t) := LitV (LitSlice s);
+    zero_val := slice.nil;
+  |}.
+
+Global Instance into_val_interface : IntoVal interface.t :=
+  {|
+    into_val_def (i: interface.t) :=
+      match i with
+      | interface.nil => InterfaceV None
+      | interface.mk ty v => InterfaceV $ Some (ty, v)
+      end;
+    zero_val := interface.nil;
+  |}.
+
+End into_val_instances.
+Notation "()" := tt : val_scope.
+#[global] Opaque to_val.
+
+(* Shortcircuit Boolean connectives *)
+Notation "e1 && e2" :=
+  (If e1%E e2%E #false) (only parsing) : expr_scope.
+Notation "e1 || e2" :=
+  (If e1%E #true e2%E) (only parsing) : expr_scope.
+
+Local Notation "# x" := (into_val x%go).
+Local Notation "#" := into_val (at level 0).
+Inductive is_go_step_pure `{!GoContext} :
+  ∀ (op : go_op) (arg : val) (e' : expr), Prop :=
+| angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
+| load_step t arg : is_go_step_pure (GoLoad t) arg (load t arg)
+| store_step t (l : loc) v : is_go_step_pure (GoStore t) (#l, v)%V (store t #l v)
+| alloc_step t : is_go_step_pure (GoAlloc t) #() (alloc t #())%E
+| prealloc_step (l : loc) : is_go_step_pure GoPrealloc #() #l
+| func_call_step f targs : is_go_step_pure (FuncCall f targs) #() (functions f targs)
+| method_call_step t m : is_go_step_pure (MethodCall t m) #() (methods t m)
+| global_var_addr_step v : is_go_step_pure (GlobalVarAddr v) #() #(global_addr v)
+| struct_field_ref_step t f l : is_go_step_pure (StructFieldRef t f) #l #(struct_field_ref t f l)
+| struct_field_get_step f m v (Hf : m !! f = Some v) :
+  is_go_step_pure (StructFieldGet f) (StructV m) (Val v)
+| struct_field_set_step f m v :
+  is_go_step_pure (StructFieldSet f) (StructV m, v)%V (StructV $ <[ f := v ]> m)
+
+| internal_len_slice_step_pure elem_type s :
+  is_go_step_pure (InternalLen (go.SliceType elem_type)) #s #(s.(slice.len))
+| internal_len_array_step_pure elem_type n v :
+  is_go_step_pure (InternalLen (go.ArrayType n elem_type)) v #(W64 n)
+
+| internal_cap_slice_step_pure elem_type s :
+  is_go_step_pure (InternalCap (go.SliceType elem_type)) #s #(s.(slice.cap))
+| internal_dynamic_array_alloc_pure elem_type (n : w64) :
+  is_go_step_pure (InternalDynamicArrayAlloc elem_type) #n
+    (GoInstruction (GoAlloc $ go.ArrayType (sint.Z n) elem_type) #())
+| internal_slice_make_pure p l c :
+  is_go_step_pure InternalMakeSlice (#p, #l, #c) #(slice.mk p l c)
+| slice_array_step_pure n elem_type p l c :
+  is_go_step_pure (Slice (go.ArrayType n elem_type)) (#p, (#l, #c))%V #(slice.mk p l c)
+| index_ref_step t v (j : w64) : is_go_step_pure (IndexRef t) (v, #j) (index_ref t (sint.Z j) v)
+| index_step t v (j : w64) : is_go_step_pure (Index t) (v, #j) (index t (sint.Z j) v)
+| array_append_step_pure l v : is_go_step_pure ArrayAppend (ArrayV l) (ArrayV $ l ++ [v])
+| internal_map_lookup_step_pure m k :
+  is_go_step_pure InternalMapLookup (m, k) (let '(ok, v) := map_lookup m k in (v, #ok))
+| internal_map_insert_step_pure m k v :
+  is_go_step_pure InternalMapLookup (m, k, v) (map_insert m k v).
+
+Inductive is_go_step `{!GoContext} :
+  ∀ (op : go_op) (arg : val) (e' : expr) (s : gset go_string) (s' : gset go_string), Prop :=
+| go_step_pure op arg e' (Hpure : is_go_step_pure op arg e') s : is_go_step op arg e' s s
+| package_init_check_step s p : is_go_step (PackageInitCheck p) #() #(bool_decide (p ∈ s)) s s
+| package_init_mark_step s p : is_go_step (PackageInitMark p) #() #() s (s ∪ {[p]}).
 
 Record GoState : Type :=
   {
-    is_go_step : GoStepper;
+    go_context : GoContext;
     inited_packages : gset go_string;
   }.
 
@@ -341,7 +767,7 @@ Record global_state : Type := {
   used_proph_id: gset proph_id;
 }.
 
-Global Instance eta_go_state : Settable _ := settable! Build_GoState <is_go_step; inited_packages>.
+Global Instance eta_go_state : Settable _ := settable! Build_GoState <go_context; inited_packages>.
 Global Instance eta_state : Settable _ := settable! Build_state <heap; go_state; world; trace; oracle>.
 Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
 
@@ -503,15 +929,32 @@ Proof using ext.
 Defined.
 
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
+Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
 Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any"%go []).
 
+Global Instance GoContext_inhabited : Inhabited GoContext :=
+  populate
+  {| global_addr := inhabitant;
+    functions := inhabitant;
+    methods := inhabitant;
+    alloc := inhabitant;
+    load := inhabitant;
+    store := inhabitant;
+    struct_field_ref := inhabitant;
+    index := inhabitant;
+    index_ref := inhabitant;
+    array_index_ref := inhabitant;
+    to_underlying := inhabitant;
+    is_map_pure := inhabitant;
+    map_lookup := inhabitant;
+    map_insert := inhabitant;
+  |}.
 Global Instance GoState_inhabited : Inhabited GoState :=
-  populate {| is_go_step := inhabitant; inited_packages := inhabitant |}.
+  populate {| go_context := inhabitant; inited_packages := inhabitant |}.
 
 Global Instance state_inhabited : Inhabited state :=
   populate {| heap := inhabitant; go_state := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
-Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 Global Instance global_state_inhabited : Inhabited global_state :=
   populate {| used_proph_id := inhabitant; global_world := inhabitant; |}.
 
@@ -963,7 +1406,9 @@ Definition val_cmpxchg_safe (v : val) : bool :=
 Definition go_instruction_step (op : go_op) (arg : val) :
   transition (state * global_state) (list observation * expr * list expr) :=
   '(e', s') ← suchThat
-    (λ '(σ,g) '(e', s'), σ.(go_state).(is_go_step) op arg e' σ.(go_state).(inited_packages) s')
+    (λ '(σ,g) '(e', s'),
+       let _ := σ.(go_state).(go_context) in
+       is_go_step op arg e' σ.(go_state).(inited_packages) s')
     (gen:=fallback_genPred _);
   modifyσ $ set go_state $ set inited_packages (λ _, s') ;;
   ret_expr e'.
@@ -1583,3 +2028,6 @@ Proof.
 Qed.
 
 End goose.
+
+Notation LetCtx x e2 := (AppRCtx (LamV x e2)) (only parsing).
+Notation SeqCtx e2 := (LetCtx BAnon e2) (only parsing).

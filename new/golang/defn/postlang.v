@@ -5,150 +5,20 @@
 From Perennial.goose_lang Require Export lang notation.
 From Perennial Require Export base.
 
-(** [GoContext] contains several low-level Go functions for typed memory access,
-    map updates, etc. *)
-Class GoContext {ext : ffi_syntax} : Type :=
-  {
-    global_addr : go_string → loc;
-    functions : go_string → list go.type → val;
-    methods : go.type → go_string → val;
-
-    alloc : go.type → val;
-    load : go.type → val;
-    store : go.type → val;
-
-    struct_field_ref : go.type → go_string → loc → loc;
-
-    index (container_type : go.type) (i : Z) (v : val) : expr;
-    index_ref (container_type : go.type) (i : Z) (v : val) : expr;
-    array_index_ref (elem_type : go.type) (i : Z) (l : loc) : loc;
-
-    to_underlying : go.type → go.type;
-    is_map_pure (v : val) (m : val → bool * val) : Prop;
-    map_lookup : val → val → bool * val;
-    map_insert : val → val → val → val;
-  }.
-
 Definition slice_index_ref `{GoContext} (elem_type : go.type) (i : Z) (s : slice.t) : loc :=
   array_index_ref elem_type i s.(slice.ptr).
 
-Class IntoVal {ext : ffi_syntax} (V : Type) :=
-  {
-    to_val_def : V → val;
-    zero_val : V;
-  }.
-
-Program Definition to_val := sealed @to_val_def.
-Definition to_val_unseal : to_val = _ := seal_eq _.
-Arguments to_val {_ _ _} v%go.
-Arguments zero_val {_} (V) {_}.
-(* Disable Notation "# l". *)
-Global Notation "# x" := (to_val x%go).
-Global Notation "#" := to_val (at level 0).
-
-(* One of [V] or [ty] should not be an evar before doing typeclass search *)
-Global Hint Mode IntoVal - ! : typeclass_instances.
-
-Module func.
-Section defn.
-Context `{ffi_syntax}.
-Record t := mk {
-      f : binder;
-      x : binder;
-      e : expr;
-    }.
-Definition nil := mk <> <> (LitV LitPoison).
-End defn.
-End func.
-
-Module chan.
-Definition t := loc.
-Definition nil : chan.t := null.
-End chan.
-
-Module interface.
-Section goose_lang.
-Context `{ffi_syntax}.
-
-Inductive t :=
-| mk (ty : go.type) (v : val) : t
-| nil : t.
-
-End goose_lang.
-End interface.
-
-Module array.
-Section goose_lang.
-(* Using [vec] here because the [to_val] must be a total function that always
-   meets [has_go_type]. An alternative could be a sigma type. *)
-Record t (ty : go.type) (V : Type) (n : nat) :=
-mk { vec : vec V n }.
-End goose_lang.
-End array.
-Arguments array.mk (ty) {_ _} (_).
-Arguments array.vec {_ _ _} (_).
-
-Section into_val_instances.
-Context `{ffi_syntax}.
-
-Global Instance into_val_loc : IntoVal loc :=
-  {| to_val_def v := (LitV $ LitLoc v); zero_val := null |}.
-
-Global Instance into_val_w64 : IntoVal w64 :=
-  {| to_val_def v := (LitV $ LitInt v); zero_val := W64 0 |}.
-
-Global Instance into_val_w32 : IntoVal w32 :=
-  {| to_val_def v := (LitV $ LitInt32 v); zero_val := W32 0 |}.
-
-Global Instance into_val_w16 : IntoVal w16 :=
-  {| to_val_def v := (LitV $ LitInt16 v); zero_val := W16 0 |}.
-
-Global Instance into_val_w8 : IntoVal w8 :=
-  {| to_val_def v := (LitV $ LitByte v); zero_val := W8 0 |}.
-
-Global Instance into_val_unit : IntoVal () :=
-  {| to_val_def _ := (LitV $ LitUnit); zero_val := () |}.
-
-Global Instance into_val_bool : IntoVal bool :=
-  {| to_val_def b := (LitV $ LitBool b); zero_val := false |}.
-
-Global Instance into_val_go_string : IntoVal go_string :=
-  {| to_val_def s := (LitV $ LitString s); zero_val := ""%go |}.
-
-Global Instance into_val_func : IntoVal func.t :=
-  {| to_val_def f := RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
-
-Global Instance into_val_array t `{!IntoVal V} n : IntoVal (array.t t V n) :=
-  {|
-    to_val_def v := ArrayV (to_val <$> (vec_to_list v.(array.vec)));
-    zero_val := array.mk t $ vreplicate n (zero_val V);
-  |}.
-
-Global Instance into_val_slice : IntoVal slice.t :=
-  {|
-    to_val_def (s: slice.t) := LitV (LitSlice s);
-    zero_val := slice.nil;
-  |}.
-
-Global Instance into_val_interface : IntoVal interface.t :=
-  {|
-    to_val_def (i: interface.t) :=
-      match i with
-      | interface.nil => InterfaceV None
-      | interface.mk ty v => InterfaceV $ Some (ty, v)
-      end;
-    zero_val := interface.nil;
-  |}.
-
-End into_val_instances.
 Global Notation "()" := tt : val_scope.
-Global Opaque to_val.
+Global Opaque into_val.
 
 (* Shortcircuit Boolean connectives *)
 Notation "e1 && e2" :=
   (If e1%E e2%E #false) (only parsing) : expr_scope.
 Notation "e1 || e2" :=
   (If e1%E #true e2%E) (only parsing) : expr_scope.
+
+Global Notation "# x" := (into_val x%go).
+Global Notation "#" := into_val (at level 0).
 
 Module go.
 
@@ -220,55 +90,8 @@ Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop 
 | is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) null
 .
 
-Inductive is_go_step_pure `{!GoContext} :
-  ∀ (op : go_op) (arg : val) (e' : expr), Prop :=
-| angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
-| load_step t arg : is_go_step_pure (GoLoad t) arg (load t arg)
-| store_step t arg : is_go_step_pure (GoStore t) arg (store t arg)
-| alloc_step t : is_go_step_pure (GoAlloc t) #() (alloc t #())%E
-| prealloc_step (l : loc) : is_go_step_pure GoPrealloc #() #l
-| func_call_step f targs : is_go_step_pure (FuncCall f targs) #() (functions f targs)
-| method_call_step t m : is_go_step_pure (MethodCall t m) #() (methods t m)
-| global_var_addr_step v : is_go_step_pure (GlobalVarAddr v) #() #(global_addr v)
-| struct_field_ref_step t f l : is_go_step_pure (StructFieldRef t f) #l #(struct_field_ref t f l)
-| struct_field_get_step f m v (Hf : m !! f = Some v) :
-  is_go_step_pure (StructFieldGet f) (StructV m) (Val v)
-| struct_field_set_step f m v :
-  is_go_step_pure (StructFieldSet f) (StructV m, v)%V (StructV $ <[ f := v ]> m)
-
-| internal_len_slice_step_pure elem_type s :
-  is_go_step_pure (InternalLen (go.SliceType elem_type)) #s #s.(slice.len)
-| internal_len_array_step_pure elem_type n v :
-  is_go_step_pure (InternalLen (go.ArrayType n elem_type)) v #(W64 n)
-
-| internal_cap_slice_step_pure elem_type s :
-  is_go_step_pure (InternalCap (go.SliceType elem_type)) #s #s.(slice.cap)
-| internal_dynamic_array_alloc_pure elem_type (n : w64) :
-  is_go_step_pure (InternalDynamicArrayAlloc elem_type) #n
-    (GoInstruction (GoAlloc $ go.ArrayType (sint.Z n) elem_type) #())
-| internal_slice_make_pure p l c :
-  is_go_step_pure InternalMakeSlice (#p, #l, #c) #(slice.mk p l c)
-| slice_array_step_pure n elem_type p l c :
-  is_go_step_pure (Slice (go.ArrayType n elem_type)) (#p, (#l, #c))%V #(slice.mk p l c)
-| index_ref_step t v (j : w64) : is_go_step_pure (IndexRef t) (v, #j) (index_ref t (sint.Z j) v)
-| index_step t v (j : w64) : is_go_step_pure (Index t) (v, #j) (index t (sint.Z j) v)
-| array_append_step_pure l v : is_go_step_pure ArrayAppend (ArrayV l) (ArrayV $ l ++ [v])
-| internal_map_lookup_step_pure m k :
-  is_go_step_pure InternalMapLookup (m, k) (let '(ok, v) := map_lookup m k in (v, #ok))
-| internal_map_insert_step_pure m k v :
-  is_go_step_pure InternalMapLookup (m, k, v) (map_insert m k v)
-.
-
-(* TODO: add requirement that goose_go_stepper = this thing *)
-Inductive is_go_step `{!GoContext} :
-  ∀ (op : go_op) (arg : val) (e' : expr) (s : gset go_string) (s' : gset go_string), Prop :=
-| go_step_pure op arg e' (Hpure : is_go_step_pure op arg e') s : is_go_step op arg e' s s
-| package_init_check_step s p : is_go_step (PackageInitCheck p) #() #(bool_decide (p ∈ s)) s s
-| package_init_mark_step s p : is_go_step (PackageInitMark p) #() #() s (s ∪ {[p]})
-.
-
-(** [go.ValidCore] defines when a GoContext is valid, excluding slice, map, and
-    channel stuff. *)
+(** [go.ValidCore] defines when a GoContext is valid, excluding map, and channel
+    stuff. *)
 Class ValidCore `{!GoContext} :=
 {
   alloc_underlying t : alloc t = alloc (to_underlying t);
@@ -365,20 +188,17 @@ Class ValidCore `{!GoContext} :=
     index (go.SliceType elem_type) i #s =
     GoInstruction (GoLoad elem_type) $ GoInstruction (Index $ go.SliceType elem_type) #(W64 i) #s;
 
-  len_underlying t :
-    functions len [t] = functions len [to_underlying t];
+  len_underlying t : functions len [t] = functions len [to_underlying t];
   len_slice elem_type :
-  functions len [go.TypeLit $ go.SliceType elem_type] =
-  (λ: "s", GoInstruction (InternalLen (go.SliceType elem_type)) "s")%V;
+    functions len [go.TypeLit $ go.SliceType elem_type] =
+    (λ: "s", GoInstruction (InternalLen (go.SliceType elem_type)) "s")%V;
 
-  cap_underlying t :
-  functions cap [t] = functions cap [to_underlying t];
+  cap_underlying t : functions cap [t] = functions cap [to_underlying t];
   cap_slice elem_type :
       functions cap [go.TypeLit $ go.SliceType elem_type] =
       (λ: "s", GoInstruction (InternalCap (go.SliceType elem_type)) "s")%V;
 
-  make3_underlying t :
-    functions make3 [t] = functions make3 [to_underlying t];
+  make3_underlying t : functions make3 [t] = functions make3 [to_underlying t];
   make3_slice elem_type :
     functions make3 [go.TypeLit $ go.SliceType elem_type] =
     (λ: "t" "len" "cap",

@@ -508,7 +508,7 @@ Would be good to align terminology. *)
 Class gooseLocalGS Σ := GooseLocalGS {
   goose_crashGS : crashGS Σ;
   goose_ffiLocalGS : ffiLocalGS Σ;
-  goose_go_stepper : GoStepper;
+  #[global] goose_go_context :: GoContext;
   #[global] goose_na_heapGS :: na_heapGS loc val Σ;
   #[global] goose_traceGS :: traceGS Σ;
   #[global] goose_go_stateGS :: go_stateGS Σ;
@@ -567,7 +567,7 @@ Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
       "Htr_auth" ∷ trace_auth σ.(trace) ∗
       "Hor_auth" ∷ oracle_auth σ.(oracle) ∗
       "Hg_auth" ∷ own_go_state_ctx σ.(go_state).(inited_packages) ∗
-      "%Hg" ∷ ⌜ σ.(go_state).(is_go_step) = goose_go_stepper ⌝
+      "%Hg" ∷ ⌜ σ.(go_state).(go_context) = goose_go_context ⌝
     )%I;
 }.
 
@@ -863,8 +863,8 @@ Qed.
 
 (** WP for go instructions  *)
 Lemma wp_GoInstruction op arg {stk E} K Φ :
-  (∀ s, ∃ e', goose_go_stepper op arg e' s s) →
-  ▷ (∀ e' s s', ⌜ goose_go_stepper op arg e' s s' ⌝ →
+  (∀ s, ∃ e', is_go_step op arg e' s s) →
+  ▷ (∀ e' s s', ⌜ is_go_step op arg e' s s' ⌝ →
               (own_go_state_ctx s ={E}=∗ own_go_state_ctx s') ∗
               (£ 1 -∗ WP fill K e' @ stk ; E {{ Φ }})) -∗
   WP fill K (GoInstruction op arg) @ stk ; E {{ Φ }}.
