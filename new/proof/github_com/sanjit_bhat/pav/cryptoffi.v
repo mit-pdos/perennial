@@ -158,7 +158,7 @@ Proof. Admitted.
 
 Lemma wp_SigGenerateKey P :
   (∀ l, Persistent (P l)) →
-  {{{ True }}}
+  {{{ is_pkg_init cryptoffi }}}
   @! cryptoffi.SigGenerateKey #()
   {{{
     sl_pk pk ptr_sk, RET (#sl_pk, #ptr_sk);
@@ -170,6 +170,7 @@ Proof. Admitted.
 
 Lemma wp_SigPrivateKey_Sign ptr_sk pk P sl_msg msg d0 :
   {{{
+    is_pkg_init cryptoffi ∗
     "#His_sig_sk" ∷ is_sig_sk ptr_sk pk P ∗
     "HP" ∷ P msg ∗
     "Hsl_msg" ∷ sl_msg ↦*{d0} msg
@@ -185,6 +186,7 @@ Proof. Admitted.
 
 Lemma wp_SigPublicKey_Verify sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
   {{{
+    is_pkg_init cryptoffi ∗
     "Hsl_sig_pk" ∷ sl_pk ↦*{d0} pk ∗
     "Hsl_msg" ∷ sl_msg ↦*{d1} msg ∗
     "Hsl_sig" ∷ sl_sig ↦*{d2} sig
@@ -266,7 +268,7 @@ Lemma is_vrf_out_len pk data out :
 Proof. Admitted.
 
 Lemma wp_VrfGenerateKey :
-  {{{ True }}}
+  {{{ is_pkg_init cryptoffi }}}
   @! cryptoffi.VrfGenerateKey #()
   {{{
     (ptr_pk ptr_sk : loc) (pk : list w8), RET (#ptr_pk, #ptr_sk);
@@ -277,6 +279,7 @@ Proof. Admitted.
 
 Lemma wp_VrfPrivateKey_Prove ptr_sk pk sl_data (data : list w8) d0 :
   {{{
+    is_pkg_init cryptoffi ∗
     "#His_vrf_sk" ∷ is_vrf_sk ptr_sk pk ∗
     "Hsl_data" ∷ sl_data ↦*{d0} data
   }}}
@@ -293,6 +296,7 @@ Proof. Admitted.
 
 Lemma wp_VrfPublicKey_Verify ptr_pk pk sl_data sl_proof (data proof : list w8) d0 d1 :
   {{{
+    is_pkg_init cryptoffi ∗
     "#His_vrf_pk" ∷ is_vrf_pk ptr_pk pk ∗
     "Hsl_data" ∷ sl_data ↦*{d0} data ∗
     "Hsl_proof" ∷ sl_proof ↦*{d1} proof
@@ -315,6 +319,7 @@ Proof. Admitted.
 
 Lemma wp_VrfPublicKeyEncode ptr_pk pk :
   {{{
+    is_pkg_init cryptoffi ∗
     "#His_vrf_pk" ∷ is_vrf_pk ptr_pk pk
   }}}
   @! cryptoffi.VrfPublicKeyEncode #ptr_pk
@@ -326,6 +331,7 @@ Proof. Admitted.
 
 Lemma wp_VrfPublicKeyDecode sl_enc pk d0 :
   {{{
+    is_pkg_init cryptoffi ∗
     "Hsl_enc" ∷ sl_enc ↦*{d0} pk
   }}}
   @! cryptoffi.VrfPublicKeyDecode #sl_enc
@@ -339,7 +345,7 @@ Proof. Admitted.
 (** Cryptographic randomness. *)
 
 Lemma wp_RandBytes (n : w64) :
-  {{{ True }}}
+  {{{ is_pkg_init cryptoffi }}}
   @! cryptoffi.RandBytes #n
   {{{
     sl_b (b : list w8), RET #sl_b;
