@@ -7,8 +7,41 @@ Section goose_lang.
 Context `{ffi_syntax}.
 
 Class SliceValid `{!GoContext} :=
-  {
-  }.
+{
+  make3_slice elem_type :
+    functions make3 [go.TypeLit $ go.SliceType elem_type] =
+    (λ: "t" "len" "cap",
+       if: (int_lt "cap" "len") then Panic "makeslice: cap out of range" else #();;
+       if: (int_lt "len" #(W64 0)) then Panic "makeslice: len out of range" else #();;
+       if: "cap" = #(W64 0) then
+         (* XXX: this computes a nondeterministic unallocated address by using
+            "(Loc 1 0) +ₗ ArbiraryInt"*)
+         GoInstruction InternalMakeSlice (#(Loc 1 0) +ₗ ArbitraryInt, "len", "cap")
+       else
+         let: "p" := GoInstruction (InternalDynamicArrayAlloc elem_type) "cap" in
+         GoInstruction InternalMakeSlice ("p", "len", "cap"))%V;
+
+  make2_slice elem_type :
+    functions make2 [go.TypeLit $ go.SliceType elem_type] =
+    (λ: "t" "sz", GoInstruction (FuncCall make3 [go.TypeLit $ go.SliceType elem_type]) #() "t" "sz" "sz")%V;
+
+  index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
+    index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);
+
+  index_slice elem_type i (s : slice.t) :
+    index (go.SliceType elem_type) i #s =
+    GoInstruction (GoLoad elem_type) $ GoInstruction (Index $ go.SliceType elem_type) #(W64 i) #s;
+  len_slice elem_type :
+    functions len [go.TypeLit $ go.SliceType elem_type] =
+    (λ: "s", GoInstruction (InternalLen (go.SliceType elem_type)) "s")%V;
+
+  cap_slice elem_type :
+    functions cap [go.TypeLit $ go.SliceType elem_type] =
+    (λ: "s", GoInstruction (InternalCap (go.SliceType elem_type)) "s")%V;
+
+  slice_slice elem_type :
+    functions
+}.
 
 (* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)
 Definition slice : val :=

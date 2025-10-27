@@ -9,7 +9,7 @@ dfrac. We do extend the interface to include dfrac-specific laws. *)
 
 Class DFractional {PROP : bi} `{BUpd PROP} (Φ : dfrac → PROP) :=
   { dfractional dp dq : Φ (dp ⋅ dq) ⊣⊢ Φ dp ∗ Φ dq;
-    dfractional_persistent : Persistent (Φ DfracDiscarded);
+    #[global] dfractional_persistent :: Persistent (Φ DfracDiscarded);
     dfractional_persist dq : Φ dq ⊢ |==> Φ DfracDiscarded; }.
 Global Arguments dfractional {_ _ _ _} _ _.
 Global Arguments dfractional_persistent {_ _} _ {_}.

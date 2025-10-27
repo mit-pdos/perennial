@@ -733,8 +733,20 @@ Inductive is_go_step_pure `{!GoContext} :
     (GoInstruction (GoAlloc $ go.ArrayType (sint.Z n) elem_type) #())
 | internal_slice_make_pure p l c :
   is_go_step_pure InternalMakeSlice (#p, #l, #c) #(slice.mk p l c)
-| slice_array_step_pure n elem_type p l c :
-  is_go_step_pure (Slice (go.ArrayType n elem_type)) (#p, (#l, #c))%V #(slice.mk p l c)
+| slice_array_step_pure n elem_type p low high max :
+  is_go_step_pure (Slice (go.ArrayType n elem_type))
+    (#p, (#low, #high, #max))%V
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max < n) then
+       #(slice.mk (array_index_ref elem_type (sint.Z low) p)
+           (word.sub high low) (word.sub max low))
+     else Panic "slice bounds out of range")
+| slice_slice_step_pure elem_type s low high max :
+  is_go_step_pure (Slice (go.SliceType elem_type))
+    (#s, (#low, #high, #max))%V
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max < sint.Z s.(slice.cap)) then
+       #(slice.mk (array_index_ref elem_type (sint.Z low) s.(slice.ptr))
+           (word.sub high low) (word.sub max low))
+     else Panic "slice bounds out of range")
 | index_ref_step t v (j : w64) : is_go_step_pure (IndexRef t) (v, #j) (index_ref t (sint.Z j) v)
 | index_step t v (j : w64) : is_go_step_pure (Index t) (v, #j) (index t (sint.Z j) v)
 | array_append_step_pure l v : is_go_step_pure ArrayAppend (ArrayV l) (ArrayV $ l ++ [v])

@@ -8,7 +8,7 @@ From New.golang.defn Require Export postlang.
 
 Section defs.
 
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!GoContext}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Class IntoValComparable (V : Type) `{!IntoVal V} :=
   {
@@ -19,7 +19,8 @@ Class IntoValComparable (V : Type) `{!IntoVal V} :=
 
 Class TypedPointsto (V : Type) `{!IntoVal V} :=
 {
-  typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ
+  typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
+  typed_pointsto_def_dfractional l v : DFractional (λ dq, typed_pointsto_def l dq v);
 }.
 Global Hint Mode TypedPointsto ! - : typeclass_instances.
 
@@ -30,6 +31,14 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
 
+Global Instance typed_pointsto_dfractional `{TypedPointsto V} l v :
+  DFractional (λ dq, typed_pointsto l dq v).
+Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
+
+Global Instance typed_pointsto_asdfractional `{TypedPointsto V} l dq v :
+  AsDFractional (typed_pointsto l dq v) (λ dq, typed_pointsto l dq v) dq.
+Proof. split; try done. apply _. Qed.
+
 (** [IntoValTyped V t] provides proofs that loading and storing [t] respects
     the typed points-to for `V`.
 
@@ -38,15 +47,17 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
     (e.g. int64 and uint64 both have w64). *)
 Class IntoValTyped (V : Type) (t : go.type) `{TypedPointsto V} :=
   {
-    wp_alloc : ({{{ True }}}
-                  alloc t #()
-                {{{ l, RET #l; l ↦ (zero_val V) }}});
-    wp_load : (∀ l dq (v : V), {{{ l ↦{dq} v }}}
-                                 load t #l
-                               {{{ RET #v; l ↦{dq} v }}});
-    wp_store : (∀ l (v w : V), {{{ l ↦ v }}}
-                                 store t #l #w
-                               {{{ RET #(); l ↦ w }}});
+    wp_alloc : (∀ {s E}, {{{ True }}}
+                           alloc t #() @ s ; E
+                         {{{ l, RET #l; l ↦ (zero_val V) }}});
+    wp_load : (∀ {s E} l dq (v : V),
+                 {{{ l ↦{dq} v }}}
+                   load t #l @ s ; E
+                 {{{ RET #v; l ↦{dq} v }}});
+    wp_store : (∀ {s E} l (v w : V),
+                  {{{ l ↦ v }}}
+                    store t #l #w @ s ; E
+                  {{{ RET #(); l ↦ w }}});
   }.
 (* [t] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
@@ -54,9 +65,9 @@ End defs.
 
 (* Non-maximally insert the arguments related to [t], [IntoVal], etc., so that
    typeclass search won't be invoked until wp_apply actually unifies the [t]. *)
-Global Arguments wp_alloc {_ _ _ _ _ _ _} [_ _ _ _ _] (Φ).
-Global Arguments wp_load {_ _ _ _ _ _ _} [_ _ _ _ _] (l dq v Φ).
-Global Arguments wp_store {_ _ _ _ _ _ _} [_ _ _ _ _] (l v w Φ).
+Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _] (Φ).
+Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _] (l dq v Φ).
+Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _] (l v w Φ).
 
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
@@ -65,7 +76,7 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
 Set Default Proof Using "Type".
 
 Section into_val_instances.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hvalid : go.ValidCore}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
 
 (** TypedPointsto instances *)
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
@@ -99,7 +110,7 @@ Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
   `{!TypedPointsto V} `{!IntoValTyped V t} : TypedPointsto (array.t t V n) :=
   {|
     typed_pointsto_def l dq v :=
-      ([∗ list] i ↦ ve ∈ (vec_to_list v.(array.vec)), array_index_ref t (Z.of_nat i) l ↦ ve)%I;
+      ([∗ list] i ↦ ve ∈ (vec_to_list v.(array.vec)), array_index_ref t (Z.of_nat i) l ↦{dq} ve)%I;
   |}.
 
 (** IntoValComparable instances *)
