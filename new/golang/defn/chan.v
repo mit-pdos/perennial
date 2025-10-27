@@ -6,7 +6,8 @@ Section defns.
 Context `{ffi_syntax}.
 
 (* takes type as first argument *)
-Definition make: val := channel.NewChannelⁱᵐᵖˡ.
+Definition make: val := λ: "T" "cap",
+    func_call #channel.NewChannel "T" "cap".
 Definition receive : val :=
   λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Receive" "c" "T" #().
 Definition send : val :=

@@ -1,3 +1,4 @@
+From New.golang.theory Require Export chan_old chan_auto.
 Require Import New.proof.proof_prelude.
 
 Section onetime_barrier.

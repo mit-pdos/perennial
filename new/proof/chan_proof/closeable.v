@@ -1,4 +1,5 @@
 From iris.algebra.lib Require Import dfrac_agree.
+From New.golang.theory Require Export chan_old chan_auto.
 Require Import New.proof.proof_prelude.
 
 (** A pattern for channel usage: a channel that never has anything sent, and is
