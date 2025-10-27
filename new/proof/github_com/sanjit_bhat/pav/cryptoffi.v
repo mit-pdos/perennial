@@ -30,7 +30,7 @@ Proof.
   simpl. iFrame "∗#". done.
 Qed.
 
-(* Hashes. *)
+(** Hashes. *)
 
 Definition pure_hash (data : list w8) : list w8.
 Proof. Admitted.
@@ -111,7 +111,7 @@ Lemma wp_Hasher_Sum sl_b_in hr data b_in :
   }}}.
 Proof. Admitted.
 
-(* Signatures. *)
+(** Signatures. *)
 
 (* is_sig_sk says that an sk is in-distribution.
 furthermore, it came from calling the Generate fn,
@@ -204,7 +204,7 @@ Lemma wp_SigPublicKey_Verify sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2
   }}}.
 Proof. Admitted.
 
-(* Verifiable Random Functions (VRFs).
+(** Verifiable Random Functions (VRFs).
 IETF spec: https://www.rfc-editor.org/rfc/rfc9381.html.
 we model correctness (is_vrf_proof), "Full Uniqueness" (is_vrf_out_det),
 and "Full Collision Resistance" (is_vrf_out_inj). *)
@@ -333,6 +333,18 @@ Lemma wp_VrfPublicKeyDecode sl_enc pk d0 :
     (ptr_pk : loc), RET #ptr_pk;
     "Hsl_enc" ∷ sl_enc ↦*{d0} pk ∗
     "#His_vrf_pk" ∷ is_vrf_pk ptr_pk pk
+  }}}.
+Proof. Admitted.
+
+(** Cryptographic randomness. *)
+
+Lemma wp_RandBytes (n : w64) :
+  {{{ True }}}
+  @! cryptoffi.RandBytes #n
+  {{{
+    sl_b (b : list w8), RET #sl_b;
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "%Hlen_b" ∷ ⌜length b = uint.nat n⌝
   }}}.
 Proof. Admitted.
 
