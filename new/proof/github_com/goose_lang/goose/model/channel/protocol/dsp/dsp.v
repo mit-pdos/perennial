@@ -519,6 +519,21 @@ Proof.
     iApply "HΦ". by iFrame "#∗".
 Qed.
 
+Lemma dsp_recv_false (b : bool) (lr_chan rl_chan : loc) :
+  {{{ is_pkg_init channel ∗ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+  {{{ RET (#(default_val V), #false); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
+Proof. destruct b; [apply dsp_recv_end|apply dsp_recv_closed]. Qed.
+
+Lemma dsp_recv_false_discard_ok (b : bool) (lr_chan rl_chan : loc) :
+  {{{ is_pkg_init channel ∗ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #tV #()
+  {{{ RET #(default_val V); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
+Proof.
+  wp_start. wp_auto. wp_apply (dsp_recv_false with "[$Hpre]").
+  iIntros "Hpre". wp_auto. by iApply "HΦ".
+Qed.
+
 End dsp.
 
 Notation "c ↣ p" := (dsp_endpoint c (Some p)) (at level 20, format "c  ↣  p").
