@@ -36,6 +36,8 @@ Definition is_simple (γ : simple_names) (ch : loc) (cap : Z) (P : V → iProp �
   )%I.
 #[global] Opaque is_simple.
 #[local] Transparent is_simple.
+#[global] Instance is_simple_pers γ ch cap P : Persistent (is_simple γ ch cap P).
+Proof. apply _. Qed.
 
 Lemma start_simple (ch : loc) (cap : Z) (γ : chan_names) (P : V → iProp Σ) :
   is_channel ch cap γ -∗
@@ -48,6 +50,21 @@ Proof.
   |}.
   iMod (inv_alloc nroot with "[Hoc]") as "$".
   { iNext. iFrame. }
+  simpl.
+  by iFrame "#".
+Qed.
+
+Lemma start_simple_buffered (ch : loc) (cap : Z) (γ : chan_names) (P : V → iProp Σ) :
+  is_channel ch cap γ -∗
+  own_channel ch cap (chan_rep.Buffered []) γ ={⊤}=∗
+  ∃ γsimple, is_simple γsimple ch cap P.
+Proof.
+  iIntros "#Hch Hoc".
+  iExists {|
+    chan_name := γ;
+  |}.
+  iMod (inv_alloc nroot with "[Hoc]") as "$".
+  { iNext. iFrame. simpl. done. }
   simpl.
   by iFrame "#".
 Qed.
