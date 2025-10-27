@@ -1,4 +1,5 @@
 From New.golang.theory Require Export proofmode.
+From New.experiments Require Export glob.
 From Perennial Require Import base.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
@@ -109,11 +110,16 @@ Proof using Hvalid.
   - iIntros "* Hl HΦ".
     rewrite typed_pointsto_unseal /=.
     rewrite go.load_array. simpl.
-    iInduction n as [|] "IH".
-    + wp_pures. rewrite into_val_unseal /=.
-      destruct v as [v]. rewrite (VectorSpec.nil_spec v) /=.
-      iApply "HΦ". done.
-    + destruct v. inversion vec as [|hd n' tl]; subst.
+    iDestruct "Hl" as "[%Hlen Hl]".
+    assert (0 ≤ n) by lia.
+    iCombineNamed "*" as "H".
+    iStopProof. revert v Hlen. pattern n.
+    revert n H. apply natlike_ind.
+    + intros. iStartProof. iNamed 1. wp_pures.
+      wp_pures. rewrite into_val_unseal /=.
+      destruct v as [v]. simpl in *. destruct v; try done.
+      simpl. by iApply "HΦ".
+    + intros n Hnz IH.
 Admitted. (* FIXME: prove these *)
 
 End mem_lemmas.

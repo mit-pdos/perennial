@@ -21,6 +21,11 @@ Class TypedPointsto (V : Type) `{!IntoVal V} :=
 {
   typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
   typed_pointsto_def_dfractional l v : DFractional (λ dq, typed_pointsto_def l dq v);
+  typed_pointsto_agree : (∀ l dq1 dq2 v1 v2,
+                            typed_pointsto_def l dq1 v1 -∗
+                            typed_pointsto_def l dq2 v2 -∗
+                            ⌜ v1 = v2 ⌝
+                         )
 }.
 Global Hint Mode TypedPointsto ! - : typeclass_instances.
 
@@ -38,6 +43,14 @@ Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
 Global Instance typed_pointsto_asdfractional `{TypedPointsto V} l dq v :
   AsDFractional (typed_pointsto l dq v) (λ dq, typed_pointsto l dq v) dq.
 Proof. split; try done. apply _. Qed.
+
+Global Instance typed_pointsto_combine_sep_gives `{TypedPointsto V} l dq1 v1 dq2 v2 :
+  CombineSepGives (typed_pointsto l dq1 v1)
+    (typed_pointsto l dq2 v2) (⌜ v1 = v2 ⌝).
+Proof.
+  rewrite typed_pointsto_unseal /CombineSepGives. iIntros "[H1 H2]".
+  iDestruct (typed_pointsto_agree with "H1 H2") as %Heq. by iModIntro.
+Qed.
 
 (** [IntoValTyped V t] provides proofs that loading and storing [t] respects
     the typed points-to for `V`.
@@ -78,41 +91,6 @@ Set Default Proof Using "Type".
 Section into_val_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
 
-(** TypedPointsto instances *)
-Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w64 : TypedPointsto w64 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w32 : TypedPointsto w32 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w16 : TypedPointsto w16 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_w8 : TypedPointsto w8 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_bool : TypedPointsto bool :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_string : TypedPointsto go_string :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_slice : TypedPointsto slice.t :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
-
-Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
-  `{!TypedPointsto V} `{!IntoValTyped V t} : TypedPointsto (array.t t V n) :=
-  {|
-    typed_pointsto_def l dq v :=
-      ([∗ list] i ↦ ve ∈ (vec_to_list v.(array.vec)), array_index_ref t (Z.of_nat i) l ↦{dq} ve)%I;
-  |}.
-
 (** IntoValComparable instances *)
 Ltac solve_into_val_comparable :=
   split;
@@ -143,5 +121,84 @@ Proof. solve_into_val_comparable. Qed.
 
 Global Instance into_val_comparable_slice : IntoValComparable slice.t.
 Proof. solve_into_val_comparable. Qed.
+
+(** TypedPointsto instances *)
+Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_w64 : TypedPointsto w64 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_w32 : TypedPointsto w32 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_w16 : TypedPointsto w16 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_w8 : TypedPointsto w8 :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_bool : TypedPointsto bool :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_string : TypedPointsto go_string :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_slice : TypedPointsto slice.t :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
+Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof.
+  iIntros "* H1 H2". iCombine "H1 H2" gives %Heq.
+  iPureIntro. rewrite into_val_unseal /= in Heq.
+  destruct v1, v2. naive_solver.
+Qed.
+
+Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
+  `{!TypedPointsto V} `{!IntoValTyped V t} `{!go.CoreSemantics} : TypedPointsto (array.t t V n) :=
+  {|
+    typed_pointsto_def l dq v :=
+      (⌜ Z.of_nat $ length v.(array.arr) = n ⌝ ∗
+       [∗ list] i ↦ ve ∈ v.(array.arr), array_index_ref t (Z.of_nat i) l ↦{dq} ve)%I;
+  |}.
+Final Obligation.
+Proof.
+  intros. iIntros "* [%Hlen1 H1] [%Hlen2 H2]".
+  destruct v1 as [vs1], v2 as [vs2]. simpl in *.
+  assert (length vs1 = length vs2) as Hlen by lia.
+  clear -Hlen IntoValTyped0 H0.
+  (iInduction vs1 as [|v1 vs1] "IH" forall (l vs2 Hlen)).
+  { simpl in Hlen.
+    destruct vs2; simpl in Hlen; try congruence.
+    auto. }
+  destruct vs2; simpl in Hlen; first by congruence.
+  simpl.
+  iDestruct "H1" as "[Hx1 H1]".
+  iDestruct "H2" as "[Hx2 H2]".
+  iCombine "Hx1 Hx2" gives %->.
+  setoid_rewrite Nat2Z.inj_succ.
+  setoid_rewrite <- Z.add_1_l.
+  setoid_rewrite go.array_index_ref_add.
+  iDestruct ("IH" $! _ vs2 with "[] H1 H2") as %H; auto.
+  by simplify_eq.
+Qed.
 
 End into_val_instances.

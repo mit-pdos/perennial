@@ -588,12 +588,12 @@ Module array.
 Section goose_lang.
 (* Using [vec] here because the [to_val] must be a total function that always
    meets [has_go_type]. An alternative could be a sigma type. *)
-Record t (ty : go.type) (V : Type) (n : nat) :=
-mk { vec : vec V n }.
+Record t (ty : go.type) (V : Type) (n : Z) :=
+mk { arr : list V }.
 End goose_lang.
 End array.
 Arguments array.mk (ty) {_ _} (_).
-Arguments array.vec {_ _ _} (_).
+Arguments array.arr {_ _ _} (_).
 
 Section external.
 (* these are codes for external operations (which all take a single val as an
@@ -673,8 +673,8 @@ Global Instance into_val_func : IntoVal func.t :=
 
 Global Instance into_val_array t `{!IntoVal V} n : IntoVal (array.t t V n) :=
   {|
-    into_val_def v := ArrayV (into_val <$> (vec_to_list v.(array.vec)));
-    zero_val := array.mk t $ vreplicate n (zero_val V);
+    into_val_def v := ArrayV (into_val <$> v.(array.arr));
+    zero_val := array.mk t $ replicate (Z.to_nat n) (zero_val V);
   |}.
 
 Global Instance into_val_slice : IntoVal slice.t :=

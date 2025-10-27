@@ -202,6 +202,9 @@ Class CoreSemantics `{!GoContext} :=
   make3_underlying t : functions make3 [t] = functions make3 [to_underlying t];
   make2_underlying t : functions make2 [t] = functions make2 [to_underlying t];
   make1_underlying t : functions make1 [t] = functions make1 [to_underlying t];
+
+  array_index_ref_add t i j l :
+    array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);
 }.
 
 End defs.

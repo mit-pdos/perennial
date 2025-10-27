@@ -71,7 +71,7 @@ Qed.
 Lemma own_slice_empty dq s :
   sint.Z s.(slice.len) = 0 ->
   0 ≤ sint.Z s.(slice.cap) ->
-  ⊢ s ↦*{dq} ([] : list V).
+  ⊢ s ↦[t]*{dq} ([] : list V).
 Proof.
   unseal. intros Hsz Hcap. destruct s. simpl in *.
   iPureIntro. split_and!; [done|word|word|word].
@@ -91,27 +91,25 @@ Proof.
 Qed.
 
 Lemma own_slice_len s dq vs :
-  s ↦*{dq} vs -∗ ⌜length vs = sint.nat s.(slice.len) ∧ 0 ≤ sint.Z s.(slice.len)⌝.
+  s ↦[t]*{dq} vs -∗ ⌜length vs = sint.nat s.(slice.len) ∧ 0 ≤ sint.Z s.(slice.len)⌝.
 Proof.
   unseal. iIntros "(_&[%%]) !%"; word.
 Qed.
 
-Lemma loc_add_stride_Sn l n :
-  l +ₗ[t] S n = (l +ₗ go_type_size t) +ₗ[t] n.
+Lemma array_index_ref_add i j l :
+  array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l).
 Proof.
-  rewrite loc_add_assoc.
-  f_equal.
-  lia.
-Qed.
+Admitted. (* FIXME: assumption. *)
 
 Lemma own_slice_agree s dq1 dq2 vs1 vs2 :
-  s ↦*{dq1} vs1 -∗
-  s ↦*{dq2} vs2 -∗
+  s ↦[t]*{dq1} vs1 -∗
+  s ↦[t]*{dq2} vs2 -∗
   ⌜vs1 = vs2⌝.
 Proof.
   unseal.
   iIntros "[Hs1 [%%]] [Hs2 [%%]]".
   assert (length vs1 = length vs2) by congruence.
+  unfold slice_index_ref.
   generalize (slice.ptr s). intros l.
   assert (length vs1 = length vs2) as Hlen by done.
   clear -Hlen IntoValTyped0.
@@ -123,7 +121,16 @@ Proof.
   simpl.
   iDestruct "Hs1" as "[Hx1 Ha1]".
   iDestruct "Hs2" as "[Hx2 Ha2]".
-  iCombine "Hx1 Hx2" gives %[_ ->].
+  Set Typeclasses Debug.
+  eassert (CombineSepGives (array_index_ref t 0%nat l ↦{dq1} v1) (array_index_ref t 0%nat l ↦{dq2} v)
+             ?[R']).
+  {
+    Print Hint.
+    Search CombineSepGives.
+    apply _.
+    autoapply with typeclass_instances.
+  }
+  iCombine "Hx1 Hx2" gives "H". %[_ ->]. (* FIXME: AsDFractional? *)
   setoid_rewrite loc_add_stride_Sn.
   iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
 Qed.
