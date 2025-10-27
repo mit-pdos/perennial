@@ -7,7 +7,7 @@ From New.code.github_com.goose_lang.goose.testdata.examples Require Import chann
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From Perennial.goose_lang.lib Require Import slice.
 From iris.base_logic Require Import ghost_map.
-From New.golang.theory Require Import struct.
+From New.golang.theory Require Import struct chan.
 
 Section hello_world.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -47,18 +47,17 @@ Admitted.
 
 Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel  }}}
-    @! chan_spec_raw_examples.HelloWorldAsyncX #()
+    @! chan_spec_raw_examples.HelloWorldAsync #()
   {{{ (ch: loc) (γfuture: future_names), RET #ch; is_future (V:=go_string) (t:=stringT) γfuture ch
         (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)  ∗
       await_token γfuture }}}.
 Proof.
   wp_start. wp_auto.
-  wp_apply wp_NewChannel;first done.
+  wp_apply chan.wp_make; first done.
   iIntros (ch). iIntros (γ). iIntros "(#HisChan & Hownchan)".
   wp_auto.
   simpl in *.
-  iDestruct ((start_future (V:=go_string) ch (λ v, ⌜ v = "Hello, World!"%go ⌝%I) γ) with "[$HisChan] [$Hownchan]") as ">Hfut".
-  iNamed "Hfut".
+  iDestruct ((start_future (V:=go_string) ch (λ v, ⌜ v = "Hello, World!"%go ⌝%I) γ) with "[$HisChan] [$Hownchan]") as ">(%γfuture & %Hname & Hfut)".
   iDestruct "Hfut" as "(#Hisfut & Hawait & Hfulfill)".
   iPersist "ch".
   wp_apply (wp_fork with "[Hfulfill]").
@@ -67,30 +66,40 @@ Proof.
     wp_apply wp_sys_hello_world.
     iAssert (⌜"Hello, World!"%go = "Hello, World!"%go⌝)%I as "HP".
     { iPureIntro. reflexivity. }
-wp_apply (wp_future_fulfill γfuture ch (λ v : go_string, ⌜v = "Hello, World!"%go⌝%I) "Hello, World!"%go
-  with "[ $Hisfut $Hfulfill $HP]").
-done.
+    wp_apply (chan.wp_send with "[$]") as "[Hlc _]".
+    replace γ with (γfuture.(future.chan_name)).
+  iApply (future_fulfill_au γfuture ch (λ v : go_string, ⌜v = "Hello, World!"%go⌝%I) "Hello, World!"%go
+  with "[$] [$]").
+    iIntros "!> _".
+    wp_auto.
+    done.
   }
   iApply "HΦ".
-  iFrame. iFrame "#".
+  iFrame "∗#".
 Qed.
 
 Lemma wp_HelloWorldSync :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
-    @! chan_spec_raw_examples.HelloWorldSyncX #()
+    @! chan_spec_raw_examples.HelloWorldSync #()
   {{{ RET #("Hello, World!"); True }}}.
-  Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
+Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
   wp_start.
   wp_apply wp_HelloWorldAsync; first done.
-  iIntros (ch γfuture) "[Hfut Hawait]". wp_auto_lc 1.
-  wp_apply ((wp_future_await_discard_ok  (V:=go_string) (t:=stringT)  γfuture ch
-               (λ (v : go_string), ⌜v = "Hello, World!"%go⌝%I)) with "[$Hawait $Hfut]").
-  iIntros (v) "%Hw".
+  iIntros (ch γfuture) "[#Hfut Hawait]".
+  wp_apply (chan.wp_receive) as "[Hlc _]".
+  {
+    (* TODO: breaking the idiom abstraction, but do need to extract [is_channel] *)
+    iDestruct "Hfut" as "[#Hchan _]".
+    done.
+  }
+  iApply (future_await_au (V:=go_string) (t:=stringT)  γfuture ch
+               (λ (v : go_string), ⌜v = "Hello, World!"%go⌝%I) with "[$] [$Hawait $Hlc]").
+  iIntros "!> %v %Heq". subst.
   wp_auto.
-  subst v.
   iApply "HΦ".
   done.
-  Qed.
+Qed.
+
 End hello_world.
 
 

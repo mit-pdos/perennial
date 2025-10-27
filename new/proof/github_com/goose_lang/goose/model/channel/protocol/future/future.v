@@ -85,7 +85,7 @@ Definition is_future (γ : future_names) (ch : loc)
 Lemma start_future ch (P : V → iProp Σ) γ :
   is_channel ch 1 γ -∗
   (own_channel ch 1 (chan_rep.Buffered []) γ) ={⊤}=∗
-  (∃ γfuture, is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
+  (∃ γfuture, ⌜γfuture.(future.chan_name) = γ⌝ ∗ is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
 Proof.
   iIntros "#Hch Hoc".
 
@@ -120,6 +120,7 @@ Proof.
 
   (* Construct the final result *)
   iModIntro. iExists γfuture.
+  iSplit; [done|].
   unfold is_future, await_token, fulfill_token.
   iFrame "#". iFrame.
 Qed.
@@ -129,13 +130,11 @@ Qed.
 Lemma future_fulfill_au γ ch (P : V → iProp Σ) (v : V) :
   ∀ (Φ: iProp Σ),
   is_future γ ch P -∗
-  fulfill_token γ -∗
-  P v -∗
-    ▷ (True -∗ Φ) -∗
-  £1  -∗
+  £1 ∗ fulfill_token γ ∗ P v -∗
+  ▷ (True -∗ Φ) -∗
   send_au_slow ch 1 v γ.(chan_name) Φ.
 Proof.
-  iIntros (Φ) "#Hfuture Hfulfillt HP Hcont Hlc".
+  iIntros (Φ) "#Hfuture (Hlc & Hfulfillt & HP) Hcont".
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
 
@@ -191,19 +190,18 @@ Proof.
   wp_apply (wp_Send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
 
-  iApply (future_fulfill_au with "[$Hiv $Hchan] [$Hfulfillt] [$HP] [$][$]").
-
+  iApply (future_fulfill_au with "[$Hiv $Hchan] [$]").
+  done.
 Qed.
 
 Lemma future_await_au γ ch (P : V → iProp Σ) :
   ∀ (Φ: V → bool → iProp Σ),
   is_future γ ch P -∗
-  await_token γ -∗
+  £1 ∗ await_token γ -∗
   ▷ (∀ v, P v -∗ Φ v true) -∗
-   £1 -∗
   rcv_au_slow ch 1 γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
-  iIntros (Φ) "#Hfuture Hawaitt HΦcont Hlc".
+  iIntros (Φ) "#Hfuture [Hlc Hawaitt] HΦcont".
   unfold is_future.
   iDestruct "Hfuture" as "[_ Hinv]".
 
@@ -251,10 +249,8 @@ Proof.
   iApply (wp_Receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
   iIntros "(Hlc1 & Hlc2)".
 
-  iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$Hawaitt] [Hcont] [Hlc1 Hlc2]").
-  { iNext. iFrame.
-    }
-    done.
+  iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$] [Hcont]").
+  iNext. iFrame.
 Qed.
 
 
