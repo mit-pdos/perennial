@@ -111,6 +111,13 @@ Proof. solve_proper. Qed.
 Global Instance dsp_endpoint_proper c : Proper ((≡) ==> (≡)) (dsp_endpoint c).
 Proof. apply (ne_proper _). Qed.
 
+Lemma iProto_pointsto_le c p1 p2 : c ↣ p1 ⊢ ▷ (p1 ⊑ p2) -∗ c ↣ p2.
+Proof.
+  iDestruct 1 as (γl γr γtl γtr lr_chan rl_chan γlr_names γrl_names lr_cap rl_cap ->) "[Hc Hp]".
+  iIntros "Hle'". iExists _,_,_,_,_,_,_,_,_,_. iSplit; [done|]. iFrame "Hc".
+  by iApply (iProto_own_le with "Hp").
+Qed.
+
 (** ** Initialization *)
 
 (** Initialize a new DSP session from basic channels *)
@@ -327,6 +334,17 @@ Proof.
     iModIntro. iRewrite "Hp". by iFrame "#∗".
 Qed.
 
+(** Endpoint receives value *)
+Lemma dsp_recv_discard_ok {TT:tele}
+    (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #tV #()
+  {{{ x, RET #(v x); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
+Proof.
+  wp_start. wp_auto. wp_apply (dsp_recv with "[$Hpre]").
+  iIntros (x) "Hpre". wp_auto. by iApply "HΦ".
+Qed.
+
 (** Endpoint closes (stops sending val) *)
 Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ V) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
@@ -502,3 +520,6 @@ Proof.
 Qed.
 
 End dsp.
+
+Notation "c ↣ p" := (dsp_endpoint c (Some p)) (at level 20, format "c  ↣  p").
+Notation "↯ c" := (dsp_endpoint c None) (at level 20, format "↯  c").
