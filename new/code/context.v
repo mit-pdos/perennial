@@ -734,7 +734,8 @@ Definition cancelCtx__cancelⁱᵐᵖˡ : val :=
     else
       do:  (let: "$a0" := (![type.chanT (type.structT [
       ])] "d") in
-      chan.close "$a0"));;;
+      (chan.close (type.structT [
+      ])) "$a0"));;;
     let: "$range" := (![type.mapT #canceler (type.structT [
     ])] (struct.field_ref #cancelCtx #"children"%go (![#ptrT] "c"))) in
     (let: "child" := (mem.alloc (type.zero_val #canceler)) in
@@ -1334,7 +1335,8 @@ Definition initialize' : val :=
       do:  ((λ: <>,
         exception_do (do:  (let: "$a0" := (![type.chanT (type.structT [
         ])] (globals.get #closedchan)) in
-        chan.close "$a0");;;
+        (chan.close (type.structT [
+        ])) "$a0");;;
         return: #())
         ) #()))
       ).

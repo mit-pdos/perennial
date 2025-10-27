@@ -91,7 +91,8 @@ Definition HelloWorldWithTimeoutⁱᵐᵖˡ : val :=
       do:  ("errMsg" <-[#stringT] "$r0");;;
       do:  (let: "$a0" := (![type.chanT (type.structT [
       ])] "done") in
-      chan.close "$a0");;;
+      (chan.close (type.structT [
+      ])) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -166,7 +167,7 @@ Definition fibonacciⁱᵐᵖˡ : val :=
       do:  ("x" <-[#intT] "$r0");;;
       do:  ("y" <-[#intT] "$r1")));;;
     do:  (let: "$a0" := (![type.chanT #intT] "c") in
-    chan.close "$a0");;;
+    (chan.close #intT) "$a0");;;
     return: #()).
 
 Definition fib_consumer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fib_consumer"%go.
@@ -248,7 +249,8 @@ Definition select_ready_case_no_panicⁱᵐᵖˡ : val :=
     ])] "$r0");;;
     do:  (let: "$a0" := (![type.chanT (type.structT [
     ])] "ch") in
-    chan.close "$a0");;;
+    (chan.close (type.structT [
+    ])) "$a0");;;
     chan.select_nonblocking [chan.select_receive (type.structT [
      ]) (![type.chanT (type.structT [
      ])] "ch") (λ: "$recvVal",
@@ -434,7 +436,7 @@ Definition clientⁱᵐᵖˡ : val :=
       let: "$v" := (![#sliceT] "b") in
       chan.send #sliceT "$chan" "$v")));;;
     do:  (let: "$a0" := (![type.chanT #sliceT] "serverChan") in
-    chan.close "$a0");;;
+    (chan.close #sliceT) "$a0");;;
     return: #()).
 
 Definition server : go_string := "github.com/goose-lang/goose/testdata/examples/channel.server"%go.

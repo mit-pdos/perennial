@@ -376,7 +376,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
     let: "$r0" := ((method_call #(ptrT.id Session.id) #"Client"%go (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![type.chanT #clientv3.GetResponse] "ch") in
-    let: "$f" := chan.close in
+    let: "$f" := (chan.close #clientv3.GetResponse) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" "$a0";;
@@ -1125,7 +1125,8 @@ Definition NewSessionⁱᵐᵖˡ : val :=
       with_defer: (do:  (let: "$f" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![type.chanT (type.structT [
         ])] "donec") in
-        chan.close "$a0");;;
+        (chan.close (type.structT [
+        ])) "$a0");;;
         do:  ((![#context.CancelFunc] "cancel") #());;;
         return: #())
         ) in

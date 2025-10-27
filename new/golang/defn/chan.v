@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem typing exception pkg type_id.
+From New.golang.defn Require Import mem typing exception pkg type_id list.
 From New.code.github_com.goose_lang.goose.model Require Import channel.
 
 Module chan.
@@ -57,17 +57,31 @@ Definition do_select_case : val :=
           else do: #false
       end).
 
+(** [try_select] is used as the core of both [select_blocking] and [select_nonblocking] *)
+Definition try_select : val :=
+  rec: "go" "cases" "blocking" :=
+    (* TODO: model should choose a random start position *)
+    list.Match "cases"
+      (λ: <>, #false)
+      (λ: "hd" "tl", do_select_case "hd" "blocking" || "go" "tl")
+    #().
+
 (** select_blocking models a select without a default case. It takes a list of
 cases (select_send or select_receive). It starts from a random position, then
 runs do_select_case with "blocking"=#false over each case until one until one
 returns true. Loop this until success. *)
-Axiom select_blocking : val.
+
+Definition select_blocking : val :=
+  rec: "loop" "cases" :=
+      (try_select "cases" #false || "loop" "cases");; #().
 
 (** select_nonblocking models a select with a default case. It takes a list of
 cases (select_send or select_receive) and a default handler. It starts from a
 random position, then runs do_select_case with "blocking"=#true over each case.
 On failure, run the default handler. *)
-Axiom select_nonblocking : val.
+Definition select_nonblocking : val :=
+  λ: "cases" "def",
+    (try_select "cases" #true || "def" #());; #().
 
 End defns.
 End chan.

@@ -604,7 +604,7 @@ Proof.
   }
 Qed.
 
-Lemma wp_tryClose (ch: loc) (cap: Z) (γ: chan_names) (P: iProp Σ):
+Lemma wp_tryClose (ch: loc) (cap: Z) (γ: chan_names) (P: iProp Σ) :
   ∀ Φ,
   is_pkg_init channel ∗ is_channel ch cap γ -∗
   P ∗ (P -∗ close_au ch cap γ (Φ (#true))) -∗
@@ -612,11 +612,7 @@ Lemma wp_tryClose (ch: loc) (cap: Z) (γ: chan_names) (P: iProp Σ):
   WP ch @ (ptrT.id channel.Channel.id) @ "tryClose" #t #() {{ Φ }}.
 Proof.
   intros. iIntros "[#Hinit #Hunb]". iIntros "[HP HPau]". iIntros "HPfail".
-  try (iModIntro (□ _)%I).
-  let x := ident:(Φ) in
-  try clear x.
-  destruct_pkg_init "Hinit".
-  try (first [ wp_func_call | wp_method_call ]; wp_call; [idtac]).
+  wp_method_call. wp_call.
   iNamed "Hunb".
   wp_auto_lc 1.
 
@@ -746,7 +742,7 @@ Proof.
   }
 Qed.
 
-Lemma wp_Close (ch: loc) (cap: Z) (γ: chan_names):
+Lemma wp_Close (ch: loc) (cap: Z) (γ: chan_names) :
   ∀ Φ,
   is_pkg_init channel ∗ is_channel ch cap γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch cap γ (Φ #())) -∗

@@ -2237,7 +2237,7 @@ Definition node__runⁱᵐᵖˡ : val :=
            let: "$v" := (![#error] "err") in
            chan.send #error "$chan" "$v");;;
            do:  (let: "$a0" := (![type.chanT #error] (struct.field_ref #msgWithResult #"result"%go "pm")) in
-           chan.close "$a0")
+           (chan.close #error) "$a0")
          else do:  #())
          ); chan.select_receive #raftpb.Message (![type.chanT #raftpb.Message] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: "$recvVal",
          let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
@@ -2366,7 +2366,8 @@ Definition node__runⁱᵐᵖˡ : val :=
        ])] (struct.field_ref #node #"stop"%go (![#ptrT] "n"))) (λ: "$recvVal",
          do:  (let: "$a0" := (![type.chanT (type.structT [
          ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) in
-         chan.close "$a0");;;
+         (chan.close (type.structT [
+         ])) "$a0");;;
          return: (#())
          )]);;;
     return: #()).

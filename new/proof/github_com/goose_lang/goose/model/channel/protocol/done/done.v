@@ -190,7 +190,7 @@ Qed.
 Lemma start_done (ch : loc) (γ : chan_names) :
   is_channel ch 0 γ -∗
   own_channel ch 0 chan_rep.Idle γ ={⊤}=∗
-  ∃ γdone, is_done γdone ch ∗ Notify γdone True.
+  ∃ γdone, ⌜γdone.(chan_name) = γ⌝ ∗ is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
   iMod (ghost_map_alloc_empty) as (γmap) "[Hmap_auth1 Hmap_auth2]".
@@ -228,6 +228,7 @@ Proof.
     iFrame. iExists []. done.
   }
   iModIntro. iExists γdone. iFrame "#".
+  iSplit; [ done | ].
   rewrite /NotifyInternal. replace (γdone.(chan_name)) with γ by done. iFrame.
   replace (γdone.(receivers_map_name)) with γmap by done. iFrame.
   iDestruct (big_sepL_nil (λ i Q, ∃ prop_gname : gname, i ↪[γmap]{#1 / 2} prop_gname ∗ saved_prop_own prop_gname (DfracOwn (1 / 2)) Q)%I) as "H".
@@ -248,20 +249,17 @@ Qed.
 
 Lemma done_close_au γ ch R Φ :
   is_done γ ch -∗
-  Notify γ R -∗
-  R -∗
-  ▷ (True -∗ Φ #()) -∗
-   £1 ∗ £1 ∗ £1 -∗
-  close_au ch 0 γ.(chan_name) (Φ #()).
+  £1 ∗ £1 ∗ £1 -∗
+  Notify γ R ∗ R -∗
+  ▷ Φ -∗
+  close_au ch 0 γ.(chan_name) Φ.
 Proof.
-  iIntros "#Hdone". iIntros "HNh".
-  iIntros "HR".
+  iIntros "#Hdone". iIntros "(Hlc1 & Hlc2 & Hlc3)". iIntros "[HNh HR]".
   unfold Notify. iNamed "HNh". iDestruct "HNh" as "[HProps Hsp]".
   unfold NotifyInternal.
   iNamed "HProps".
   iDestruct "HProps" as "(Hgm & %Hlen & HQs)".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]". iIntros "Hcont".
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iMod (lc_fupd_elim_later with "[$] Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
@@ -290,7 +288,7 @@ Proof.
         iFrame. iLeft. iFrame.
       }
     }
-    iModIntro. iApply "Hcont". done.
+    iModIntro. iApply "Hcont".
   - destruct draining; try done.
     iNamed "Hstate".
     iCombine "Hmap_half Hgm" as "H". iNamed "Hstate".
@@ -314,16 +312,9 @@ Proof.
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   iApply (wp_Close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
-  iApply (done_close_au with "[][$HNh][$HR][Hphi Hlc]").
-  {
-    unfold is_done.
-   iFrame "#".
-  }
-  {
-    iNext.
-    iFrame.
-    }
-    done.
+  iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
+  { iFrame "#". }
+  iNext. iApply "Hphi". done.
 Qed.
 
 Lemma done_receive_au γ ch Q  :

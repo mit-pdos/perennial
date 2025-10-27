@@ -1,6 +1,6 @@
 From New.golang.defn Require Export chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import chan_au_base chan_au_send chan_au_recv chan_au_sel.
+  Require Import chan_au_base chan_au_send chan_au_recv.
 From iris.base_logic Require Export lib.ghost_var.
 From New.golang.theory Require Import exception list mem loop typing struct proofmode pkg auto.
 From Perennial Require Import base.
@@ -72,6 +72,78 @@ Proof.
   wp_apply (wp_Receive with "[$]").
   iFrame.
 Qed.
+
+Inductive op :=
+| select_send_f (t: go_type) (v : val) (ch : chan.t) (handler : func.t)
+| select_receive_f (t: go_type) (ch : chan.t) (handler : func.t).
+
+Global Instance into_val_op : IntoVal op :=
+  {|
+    to_val_def := λ o,
+        match o with
+        | select_send_f t v ch f => InjLV (#t, #ch, v, #f)
+        | select_receive_f t ch f => InjRV (#t, #ch, #f)
+        end
+  |}.
+
+Global Instance wp_select_send ch (v : val) f :
+  PureWp True (chan.select_send #t #ch v #f)
+    #(select_send_f t v ch f).
+Proof.
+  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
+Qed.
+
+Global Instance wp_select_receive ch f :
+  PureWp True (chan.select_receive #t #ch #f)
+    #(select_receive_f t ch f).
+Proof.
+  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
+Qed.
+
+Lemma wp_select_blocking (cases : list op) :
+  ∀ Φ,
+  ([∧ list] case ∈ cases,
+     match case with
+     | select_send_f t send_val send_chan send_handler =>
+         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+             ⌜ send_val = #v ⌝ ∗
+             is_channel (V:=V) (t:=t) send_chan cap γ ∗
+             send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
+     | select_receive_f t recv_chan recv_handler =>
+         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
+             is_channel (V:=V) (t:=t) recv_chan cap γ ∗
+             rcv_au_slow recv_chan cap γ (λ (v: V) ok,
+               WP #recv_handler (#v, #ok)%V {{ Φ }})
+     end
+  ) -∗
+  WP chan.select_blocking #cases {{ Φ }}.
+Proof.
+  iIntros (Φ) "Hcases".
+  iLöb as "IH".
+  wp_call.
+Admitted.
+
+Lemma wp_select_nonblocking (cases : list op) (def: func.t) :
+  ∀ Φ,
+  ([∧ list] case ∈ cases,
+     match case with
+     | select_send_f t send_val send_chan send_handler =>
+         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+             ⌜ send_val = #v ⌝ ∗
+             is_channel (V:=V) (t:=t) send_chan cap γ ∗
+             send_au_fast send_chan cap v γ (WP #send_handler #() {{ Φ }})
+     | select_receive_f t recv_chan recv_handler =>
+         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
+             is_channel (V:=V) (t:=t) recv_chan cap γ ∗
+             rcv_au_fast recv_chan cap γ (λ (v: V) ok,
+               WP #recv_handler #v {{ Φ }})
+     end
+  ) ∧ WP #def #() {{ Φ }} -∗
+  WP chan.select_nonblocking #cases #def {{ Φ }}.
+Proof.
+  iIntros (Φ) "Hcases".
+  wp_call.
+Admitted.
 
 End proof.
 
