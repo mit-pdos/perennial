@@ -1,4 +1,4 @@
-From New.golang.defn Require Import exception.
+From New.golang.defn Require Export exception.
 From Perennial Require Import base.
 
 Section goose_lang.

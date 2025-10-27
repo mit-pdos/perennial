@@ -21,11 +21,19 @@ Global Notation "# x" := (into_val x%go).
 Global Notation "#" := into_val (at level 0).
 
 (* built-in functions *)
+Definition append : go_string := "append".
+Definition cap : go_string := "cap".
+Definition clear : go_string := "clear".
+Definition close : go_string := "close".
+Definition copy : go_string := "copy".
+Definition delete : go_string := "delete".
+Definition len : go_string := "len".
 Definition make3 : go_string := "make3".
 Definition make2 : go_string := "make2".
 Definition make1 : go_string := "make1".
-Definition len : go_string := "len".
-Definition cap : go_string := "cap".
+Definition min : go_string := "min".
+Definition max : go_string := "max".
+Definition panic : go_string := "panic".
 
 (* helpers for signed comparisons *)
 Section helpers.
@@ -199,5 +207,12 @@ Class CoreSemantics `{!GoContext} :=
 End defs.
 End go.
 
-Global Notation func_call := (GoInstruction FuncCall).
-Global Notation method_call := (GoInstruction MethodCall).
+Global Notation "'func_call' a b" := (GoInstruction (FuncCall a b)) (at level 1).
+
+Notation "@! func" :=
+  #(functions func []) (at level 1, no associativity, format "@! func") : expr_scope.
+
+Notation "![ t ] e" := (GoInstruction (GoLoad t) e%E)
+                         (at level 9, right associativity, format "![ t ]  e") : expr_scope.
+Notation "e1 <-[ t ] e2" := (GoInstruction (GoStore t) (Pair e1%E e2%E))
+                             (at level 80, format "e1  <-[ t ]  e2") : expr_scope.

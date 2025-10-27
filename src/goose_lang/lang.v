@@ -521,13 +521,25 @@ Notation ResolveProph e1 e2 := (Resolve Skip e1 e2) (only parsing).
 Notation "'resolve_proph:' p 'to:' v" := (ResolveProph p v) (at level 100) : expr_scope.
 *)
 
+Module func.
+Section defn.
+Context `{ffi_syntax}.
+Record t := mk {
+      f : binder;
+      x : binder;
+      e : expr;
+    }.
+Definition nil := mk <> <> (Val $ LitV LitPoison).
+End defn.
+End func.
+
 (** [GoContext] contains several low-level Go functions for typed memory access,
     map updates, etc. *)
 Class GoContext {ext : ffi_syntax} : Type :=
   {
     global_addr : go_string → loc;
-    functions : go_string → list go.type → val;
-    methods : go.type → go_string → val;
+    functions : go_string → list go.type → func.t;
+    methods : go.type → go_string → func.t;
 
     alloc : go.type → val;
     load : go.type → val;
@@ -555,18 +567,6 @@ Program Definition into_val := sealed @into_val_def.
 Definition into_val_unseal : into_val = _ := seal_eq _.
 Arguments into_val {_ _ _} v%go.
 Arguments zero_val {_} (V) {_}.
-
-Module func.
-Section defn.
-Context `{ffi_syntax}.
-Record t := mk {
-      f : binder;
-      x : binder;
-      e : expr;
-    }.
-Definition nil := mk <> <> (Val $ LitV LitPoison).
-End defn.
-End func.
 
 Module chan.
 Definition t := loc.
@@ -712,8 +712,8 @@ Inductive is_go_step_pure `{!GoContext} :
 | store_step t (l : loc) v : is_go_step_pure (GoStore t) (#l, v)%V (store t #l v)
 | alloc_step t : is_go_step_pure (GoAlloc t) #() (alloc t #())%E
 | prealloc_step (l : loc) : is_go_step_pure GoPrealloc #() #l
-| func_call_step f targs : is_go_step_pure (FuncCall f targs) #() (functions f targs)
-| method_call_step t m : is_go_step_pure (MethodCall t m) #() (methods t m)
+| func_call_step f targs : is_go_step_pure (FuncCall f targs) #() #(functions f targs)
+| method_call_step t m : is_go_step_pure (MethodCall t m) #() #(methods t m)
 | global_var_addr_step v : is_go_step_pure (GlobalVarAddr v) #() #(global_addr v)
 | struct_field_ref_step t f l : is_go_step_pure (StructFieldRef t f) #l #(struct_field_ref t f l)
 | struct_field_get_step f m v (Hf : m !! f = Some v) :
@@ -945,6 +945,8 @@ Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
 Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any"%go []).
 
+Global Instance func_t_inhabited : Inhabited func.t :=
+  populate (func.mk inhabitant inhabitant inhabitant).
 Global Instance GoContext_inhabited : Inhabited GoContext :=
   populate
   {| global_addr := inhabitant;
