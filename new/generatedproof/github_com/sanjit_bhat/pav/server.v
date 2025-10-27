@@ -1399,10 +1399,6 @@ Global Instance wp_method_call_Server'ptr_Start :
   WpMethodCall (ptrT.id server.Server.id) "Start" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_Server'ptr_Worker :
-  WpMethodCall (ptrT.id server.Server.id) "Worker" _ (is_pkg_defined server) :=
-  ltac:(solve_wp_method_call).
-
 Global Instance wp_method_call_Server'ptr_addEntries :
   WpMethodCall (ptrT.id server.Server.id) "addEntries" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
@@ -1425,6 +1421,10 @@ Global Instance wp_method_call_Server'ptr_makeEntries :
 
 Global Instance wp_method_call_Server'ptr_makeEntry :
   WpMethodCall (ptrT.id server.Server.id) "makeEntry" _ (is_pkg_defined server) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_worker :
+  WpMethodCall (ptrT.id server.Server.id) "worker" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Work'ptr_Finish :

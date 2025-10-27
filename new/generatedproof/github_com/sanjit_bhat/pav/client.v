@@ -675,16 +675,16 @@ Global Instance wp_func_call_New :
   WpFuncCall client.New _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CheckMemb :
-  WpFuncCall client.CheckMemb _ (is_pkg_defined client) :=
+Global Instance wp_func_call_checkMemb :
+  WpFuncCall client.checkMemb _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CheckHist :
-  WpFuncCall client.CheckHist _ (is_pkg_defined client) :=
+Global Instance wp_func_call_checkHist :
+  WpFuncCall client.checkHist _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CheckNonMemb :
-  WpFuncCall client.CheckNonMemb _ (is_pkg_defined client) :=
+Global Instance wp_func_call_checkNonMemb :
+  WpFuncCall client.checkNonMemb _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Client'ptr_Audit :
