@@ -102,6 +102,14 @@ Proof using Hvalid. solve_into_val_typed. Qed.
 Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
 Proof using Hvalid. solve_into_val_typed. Qed.
 
+Lemma seqZ_succ start n :
+  0 ≤ n →
+  seqZ start (Z.succ n) = seqZ start n ++ [start + n].
+Proof.
+  intros H. rewrite /seqZ Z2Nat.inj_succ; last lia.
+  rewrite seq_S fmap_app /=. f_equal. f_equal. lia.
+Qed.
+
 Global Instance into_val_typed_array `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t} n
   : IntoValTyped (array.t t V n) (go.ArrayType n t).
 Proof using Hvalid.
@@ -109,18 +117,49 @@ Proof using Hvalid.
   - admit.
   - iIntros "* Hl HΦ".
     rewrite typed_pointsto_unseal /=.
-    rewrite go.load_array. simpl.
+    rewrite go.load_array. simpl. wp_pures.
+
+    assert (∃ m, n = m ∧ n ≤ m) as (m & Heq & Hm) by by eexists.
+    replace (go.ArrayType n t) with (go.ArrayType m t) by naive_solver.
+    clear Heq.
+    replace (subst "l" _ _) with
+    ((foldl
+         (λ (array_so_far : expr) (j : Z),
+            GoInstruction ArrayAppend
+              (array_so_far, ![t] (GoInstruction (IndexRef (go.ArrayType m t)) (#l, # (W64 j)))))
+          (ArrayV []) (seqZ 0 n))%E).
+    2:{ generalize (seqZ 0 n). intros ls. induction ls using rev_ind; first done.
+      rewrite !foldl_snoc /=. f_equal. f_equal. done. }
+
     iDestruct "Hl" as "[%Hlen Hl]".
     assert (0 ≤ n) by lia.
-    iCombineNamed "*" as "H".
-    iStopProof. revert v Hlen. pattern n.
+    iCombineNamed "*" as "?".
+    iStopProof. revert v Hlen Hm Φ. pattern n.
     revert n H. apply natlike_ind.
     + intros. iStartProof. iNamed 1. wp_pures.
       wp_pures. rewrite into_val_unseal /=.
       destruct v as [v]. simpl in *. destruct v; try done.
-      simpl. by iApply "HΦ".
-    + intros n Hnz IH.
-Admitted. (* FIXME: prove these *)
+      simpl. wp_pures. by iApply "HΦ".
+    + intros n Hnz IH. intros v Hlen Hm ?.
+      iStartProof. iNamed 1.
+      rewrite seqZ_succ // foldl_snoc.
+      wp_bind (foldl _ _ _).
+      destruct v as [ls].
+      destruct ls using rev_ind.
+      { simpl in *. lia. } simpl in *.
+      clear IHls.
+      iApply (IH with "[-]").
+      { instantiate (1:=(array.mk t ls)). rewrite length_app /= in Hlen.
+        simpl. lia. }
+      { lia. }
+      iDestruct "Hl" as "(Hl & Hlast & _)".
+      iFrame "Hl". iIntros "[_ Hl]". simpl.
+      wp_pures. rewrite go.index_ref_array.
+      wp_pures. wp_apply (wp_load with "[Hlast]").
+      { iExactEq "Hlast". f_equal. f_equal.
+        FIXME: have to deal with overflow anyways.... Maybe angelically exit and use iLöb.
+
+Admitted.
 
 End mem_lemmas.
 

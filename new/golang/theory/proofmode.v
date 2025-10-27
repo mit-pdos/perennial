@@ -731,6 +731,14 @@ Global Instance wp_StructFieldSet_untyped f m v :
   PureWp True (GoInstruction (StructFieldSet f) (StructV m, v)%V) (StructV (<[f := v]> m)).
 Proof. solve_pure. Qed.
 
+Global Instance wp_IndexRef t (j : w64) (v : val) :
+  PureWp True (GoInstruction (IndexRef t) (v, #j)%V) (index_ref t (sint.Z j) v).
+Proof. solve_pure. Qed.
+
+Global Instance wp_Index t (j : w64) (v : val) :
+  PureWp True (GoInstruction (Index t) (v, #j)%V) (index t (sint.Z j) v).
+Proof. solve_pure. Qed.
+
 Lemma wp_StructFieldGet_untyped {stk E} f m v :
   m !! f = Some v →
   {{{ True }}}

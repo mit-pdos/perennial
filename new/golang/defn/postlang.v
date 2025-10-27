@@ -150,7 +150,7 @@ Class CoreSemantics `{!GoContext} :=
     (λ: "l",
        foldl (λ array_so_far j,
                 let elem_addr :=
-                  GoInstruction (IndexRef (go.ArrayType n elem_type)) #(W64 j) "l" in
+                  GoInstruction (IndexRef (go.ArrayType n elem_type)) ("l", #(W64 j)) in
                 let elem_val := GoInstruction (GoLoad elem_type) elem_addr in
                 GoInstruction ArrayAppend (array_so_far, elem_val)
          )
@@ -179,7 +179,7 @@ Class CoreSemantics `{!GoContext} :=
        foldl (λ str_so_far j,
                 str_so_far;;
                 let elem_addr :=
-                  GoInstruction (IndexRef (go.ArrayType n elem_type)) #(W64 j) "l" in
+                  GoInstruction (IndexRef (go.ArrayType n elem_type)) ("l", #(W64 j)) in
                 let elem_val := GoInstruction (Index $ go.ArrayType n elem_type) ("v", #(W64 n)) in
                 GoInstruction (GoStore elem_type) (elem_addr, elem_val))
              (ArrayV []) (seqZ 0 n)
