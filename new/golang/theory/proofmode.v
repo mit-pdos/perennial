@@ -739,6 +739,10 @@ Global Instance wp_Index t (j : w64) (v : val) :
   PureWp True (GoInstruction (Index t) (v, #j)%V) (index t (sint.Z j) v).
 Proof. solve_pure. Qed.
 
+Global Instance wp_ArrayAppend vs v :
+  PureWp True (GoInstruction ArrayAppend (ArrayV vs, v)%V) (ArrayV (vs ++ [v])).
+Proof. solve_pure. Qed.
+
 Lemma wp_StructFieldGet_untyped {stk E} f m v :
   m !! f = Some v →
   {{{ True }}}
@@ -749,6 +753,26 @@ Proof.
   { intros. repeat econstructor. done. }
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
   iSplitR; first by iIntros. iIntros "?". simpl. wp_pures. by iApply "HΦ".
+Qed.
+
+Lemma bool_decide_inj `(f : A → B) `{!Inj eq eq f} a a' `{!EqDecision A}
+  `{!EqDecision B}
+  : bool_decide (f a = f a') = bool_decide (a = a').
+Proof.
+  case_bool_decide.
+  { eapply inj in H; last done. rewrite bool_decide_true //. }
+  { rewrite bool_decide_false //.
+    intros HR. apply H. subst. done. }
+Qed.
+
+Global Instance wp_eq `{!IntoVal V} `{!IntoValComparable V} (v1 v2 : V) :
+  PureWp True (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)).
+Proof.
+  pose proof wp_eq_val.
+  iIntros (?) "* _ * HΦ".
+  wp_pure_lc "Hl"; [ split; apply into_val_comparable | ].
+  rewrite bool_decide_inj.
+  iApply "HΦ". iFrame.
 Qed.
 
 End go_wp_pure_instances.

@@ -1,6 +1,7 @@
 From New.golang.theory Require Export proofmode.
 From New.experiments Require Export glob.
 From Perennial Require Import base.
+From Perennial.Helpers Require Import List.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
@@ -116,49 +117,37 @@ Proof using Hvalid.
   split.
   - admit.
   - iIntros "* Hl HΦ".
-    rewrite typed_pointsto_unseal /=.
-    rewrite go.load_array. simpl. wp_pures.
-
-    assert (∃ m, n = m ∧ n ≤ m) as (m & Heq & Hm) by by eexists.
-    replace (go.ArrayType n t) with (go.ArrayType m t) by naive_solver.
-    clear Heq.
-    replace (subst "l" _ _) with
-    ((foldl
-         (λ (array_so_far : expr) (j : Z),
-            GoInstruction ArrayAppend
-              (array_so_far, ![t] (GoInstruction (IndexRef (go.ArrayType m t)) (#l, # (W64 j)))))
-          (ArrayV []) (seqZ 0 n))%E).
-    2:{ generalize (seqZ 0 n). intros ls. induction ls using rev_ind; first done.
-      rewrite !foldl_snoc /=. f_equal. f_equal. done. }
-
+    rewrite go.load_array. case_decide.
+    { wp_pures. wp_apply wp_AngelicExit. }
+    wp_pure. wp_pure. rewrite typed_pointsto_unseal /=.
     iDestruct "Hl" as "[%Hlen Hl]".
-    assert (0 ≤ n) by lia.
-    iCombineNamed "*" as "?".
-    iStopProof. revert v Hlen Hm Φ. pattern n.
-    revert n H. apply natlike_ind.
-    + intros. iStartProof. iNamed 1. wp_pures.
-      wp_pures. rewrite into_val_unseal /=.
-      destruct v as [v]. simpl in *. destruct v; try done.
-      simpl. wp_pures. by iApply "HΦ".
-    + intros n Hnz IH. intros v Hlen Hm ?.
-      iStartProof. iNamed 1.
-      rewrite seqZ_succ // foldl_snoc.
-      wp_bind (foldl _ _ _).
-      destruct v as [ls].
-      destruct ls using rev_ind.
-      { simpl in *. lia. } simpl in *.
-      clear IHls.
-      iApply (IH with "[-]").
-      { instantiate (1:=(array.mk t ls)). rewrite length_app /= in Hlen.
-        simpl. lia. }
-      { lia. }
-      iDestruct "Hl" as "(Hl & Hlast & _)".
-      iFrame "Hl". iIntros "[_ Hl]". simpl.
-      wp_pures. rewrite go.index_ref_array.
-      wp_pures. wp_apply (wp_load with "[Hlast]").
-      { iExactEq "Hlast". f_equal. f_equal.
-        FIXME: have to deal with overflow anyways.... Maybe angelically exit and use iLöb.
 
+    assert (∃ m, n = m ∧ 0 ≤ m ≤ n) as (m & Heq & Hm) by (exists n; lia).
+    rewrite [in #(W64 n)]Heq.
+    iEval (rewrite <- Heq, into_val_unseal) in "HΦ".
+    simpl. destruct v as [v]. simpl in *.
+    replace (v) with (take (Z.to_nat m) v).
+    2:{ rewrite take_ge //. lia. }
+    clear Heq.
+    set (f := #(func.mk _ _ _)).
+    iLöb as "IH" forall (m Hm Φ).
+
+    wp_pures. fold f.
+    case_bool_decide as Heq.
+    { wp_pures. replace m with 0 by word. rewrite into_val_unseal /=. by iApply "HΦ". }
+    wp_pure. wp_pure. set (m':=m-1).
+    replace (word.sub _ _) with (W64 m') by word.
+    replace (Z.to_nat m) with (S (Z.to_nat m'))%nat by word.
+    pose proof (list_lookup_lt v (Z.to_nat m')) as [ve Hlookup]; first word.
+    erewrite take_S_r; last done.
+    rewrite big_sepL_app /=. iDestruct "Hl" as "(Hl & Hlast & _)".
+    wp_apply ("IH" with "[] Hl"); first word. iIntros "[_ Hl]".
+    wp_pures. rewrite go.index_ref_array. wp_pures. wp_apply (wp_load with "[Hlast]").
+    { iExactEq "Hlast". f_equal. f_equal. rewrite length_take. word. }
+    iIntros "Hlast". rewrite length_app length_take. wp_pures. rewrite fmap_app /=.
+    iApply "HΦ". iFrame. iSplitR; first word.
+    iSplitL; last done. iExactEq "Hlast". f_equal. f_equal. word.
+  - admit.
 Admitted.
 
 End mem_lemmas.
@@ -224,26 +213,6 @@ Proof. solve_wp_struct_field_get. Qed.
 Global Instance wp_StructFieldGet_foo_b (v : foo_t) :
   PureWp True (GoInstruction (StructFieldGet "b") #v) #v.(b).
 Proof. solve_wp_struct_field_get. Qed.
-
-Lemma bool_decide_inj `(f : A → B) `{!Inj eq eq f} a a' `{!EqDecision A}
-  `{!EqDecision B}
-  : bool_decide (f a = f a') = bool_decide (a = a').
-Proof.
-  case_bool_decide.
-  { eapply inj in H1; last done. rewrite bool_decide_true //. }
-  { rewrite bool_decide_false //.
-    intros HR. apply H1. subst. done. }
-Qed.
-
-Global Instance wp_eq `{!IntoVal V} `{!IntoValComparable V} (v1 v2 : V) :
-  PureWp True (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)).
-Proof.
-  pose proof wp_eq_val.
-  iIntros (?) "* _ * HΦ".
-  wp_pure_lc "Hl"; [ split; apply into_val_comparable | ].
-  rewrite bool_decide_inj.
-  iApply "HΦ". iFrame.
-Qed.
 
 Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
 Proof using H H0.

@@ -102,7 +102,10 @@ Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop 
 | is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) null
 .
 
-(** [go.ValidCore] defines when a GoContext is valid, excluding slice, map, and
+#[warning="-uniform-inheritance"]
+Local Coercion GoInstruction : go_op >-> val.
+(** [go.ValidCore] defines when a GoContext is valid, excludin
+       slice, map, and
     channel stuff. *)
 Class CoreSemantics `{!GoContext} :=
 {
@@ -112,20 +115,17 @@ Class CoreSemantics `{!GoContext} :=
   alloc_struct fds :
     alloc (go.StructType fds) =
     (λ: <>,
-        let: "l" := GoInstruction GoPrealloc #() in
+        let: "l" := GoPrealloc #() in
         foldl (λ alloc_so_far fd,
                  alloc_so_far ;;
                  let (field_name, field_type) := match fd with
                                                  | go.FieldDecl n t => pair n t
                                                  | go.EmbeddedField n t => pair n t
                                                  end in
-                let field_addr :=
-                  (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
-                let: "l_field" := GoInstruction (GoAlloc field_type) #() in
-                if: ("l_field" ≠ field_addr) then
-                  GoInstruction AngelicExit #()
-                else
-                  #()
+                let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
+                let: "l_field" := GoAlloc field_type #() in
+                if: ("l_field" ≠ field_addr) then AngelicExit #()
+                else #()
           ) #() fds ;;
         "l")%V;
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
@@ -140,22 +140,24 @@ Class CoreSemantics `{!GoContext} :=
                                                 | go.FieldDecl n t => pair n t
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
-                let field_addr :=
-                  (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
-                let field_val := (GoInstruction (GoLoad field_type) field_addr) in
-                GoInstruction (StructFieldSet field_name) (struct_so_far, field_val)
+                let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
+                let field_val := GoLoad field_type field_addr in
+                StructFieldSet field_name (struct_so_far, field_val)
          ) (StructV ∅) fds)%V;
   load_array n elem_type :
     load (go.ArrayType n elem_type) =
-    (λ: "l",
-       foldl (λ array_so_far j,
-                let elem_addr :=
-                  GoInstruction (IndexRef (go.ArrayType n elem_type)) ("l", #(W64 j)) in
-                let elem_val := GoInstruction (GoLoad elem_type) elem_addr in
-                GoInstruction ArrayAppend (array_so_far, elem_val)
-         )
-             (ArrayV []) (seqZ 0 n)
-    )%V;
+    if decide (¬(0 ≤ n < 2^63-1)) then
+      (λ: "l", AngelicExit #())%V
+        (* the compiler guarantees that any compiled code does not have an array this size *)
+    else
+      (λ: "l",
+         (rec: "recur" "n" :=
+            if: "n" = #(W64 0) then (ArrayV [])
+            else let: "array_so_far" := "recur" ("n" - #(W64 1)) in
+                 let: "elem_addr" := IndexRef (go.ArrayType n elem_type) ("l", "n" - #(W64 1)) in
+                 let: "elem_val" := GoLoad elem_type "elem_addr" in
+                 ArrayAppend ("array_so_far", "elem_val")
+         ) #(W64 n))%V;
 
   store_underlying t : store t = store (to_underlying t);
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
@@ -168,20 +170,18 @@ Class CoreSemantics `{!GoContext} :=
                                                 | go.FieldDecl n t => pair n t
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
-                let field_addr :=
-                  (GoInstruction (StructFieldRef (go.StructType fds) field_name) "l") in
-                let field_val := (GoInstruction (StructFieldGet field_name) "v") in
-                GoInstruction (GoStore field_type) (field_addr, field_val)
+                let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
+                let field_val := StructFieldGet field_name "v" in
+                GoStore field_type (field_addr, field_val)
          ) (StructV ∅) fds)%V;
   store_array n elem_type :
     store (go.ArrayType n elem_type) =
     (λ: "l" "v",
        foldl (λ str_so_far j,
                 str_so_far;;
-                let elem_addr :=
-                  GoInstruction (IndexRef (go.ArrayType n elem_type)) ("l", #(W64 j)) in
-                let elem_val := GoInstruction (Index $ go.ArrayType n elem_type) ("v", #(W64 n)) in
-                GoInstruction (GoStore elem_type) (elem_addr, elem_val))
+                let elem_addr := IndexRef (go.ArrayType n elem_type) ("l", #(W64 j)) in
+                let elem_val := Index (go.ArrayType n elem_type) ("v", #(W64 n)) in
+                GoStore elem_type (elem_addr, elem_val))
              (ArrayV []) (seqZ 0 n)
     )%V;
 

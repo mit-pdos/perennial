@@ -749,7 +749,7 @@ Inductive is_go_step_pure `{!GoContext} :
      else Panic "slice bounds out of range")
 | index_ref_step t v (j : w64) : is_go_step_pure (IndexRef t) (v, #j) (index_ref t (sint.Z j) v)
 | index_step t v (j : w64) : is_go_step_pure (Index t) (v, #j) (index t (sint.Z j) v)
-| array_append_step_pure l v : is_go_step_pure ArrayAppend (ArrayV l) (ArrayV $ l ++ [v])
+| array_append_step_pure l v : is_go_step_pure ArrayAppend (ArrayV l, v) (ArrayV $ l ++ [v])
 | internal_map_lookup_step_pure m k :
   is_go_step_pure InternalMapLookup (m, k) (let '(ok, v) := map_lookup m k in (v, #ok))
 | internal_map_insert_step_pure m k v :
