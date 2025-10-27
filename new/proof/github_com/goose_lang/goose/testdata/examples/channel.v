@@ -1,7 +1,7 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export  future spsc done  chan_au_sel.
-From New.proof Require Import time.
+From New.proof Require Import time sync.
 From Perennial.goose_lang Require Import lang.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
