@@ -3,6 +3,7 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.strings.
 Require Export New.generatedproof.time.
 Require Export New.generatedproof.github_com.goose_lang.goose.model.channel.
+Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.channel.
@@ -24,7 +25,8 @@ Global Instance is_pkg_defined_pure_chan_spec_raw_examples : IsPkgDefinedPure ch
       is_pkg_defined_pure_single chan_spec_raw_examples ∧
       is_pkg_defined_pure code.strings.strings ∧
       is_pkg_defined_pure code.time.time ∧
-      is_pkg_defined_pure code.github_com.goose_lang.goose.model.channel.channel;
+      is_pkg_defined_pure code.github_com.goose_lang.goose.model.channel.channel ∧
+      is_pkg_defined_pure code.sync.sync;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -34,7 +36,8 @@ Global Program Instance is_pkg_defined_chan_spec_raw_examples : IsPkgDefined cha
       (is_pkg_defined_single chan_spec_raw_examples ∗
        is_pkg_defined code.strings.strings ∗
        is_pkg_defined code.time.time ∗
-       is_pkg_defined code.github_com.goose_lang.goose.model.channel.channel)%I
+       is_pkg_defined code.github_com.goose_lang.goose.model.channel.channel ∗
+       is_pkg_defined code.sync.sync)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
@@ -193,6 +196,14 @@ Global Instance wp_func_call_serverX :
 
 Global Instance wp_func_call_LeakyBufferPipelineX :
   WpFuncCall chan_spec_raw_examples.LeakyBufferPipelineX _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_worker :
+  WpFuncCall chan_spec_raw_examples.worker _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SearchReplace :
+  WpFuncCall chan_spec_raw_examples.SearchReplace _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 End names.

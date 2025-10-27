@@ -16,8 +16,8 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Local Fixpoint is_chain_rev (boot : list w8) (l : list $ list w8) (h : list w8) : iProp Σ :=
   match l with
   | [] =>
-    "->" ∷ ⌜ boot = h ⌝ ∗
-    "%Hlen" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
+    "->" ∷ ⌜boot = h⌝ ∗
+    "%Hlen" ∷ ⌜Z.of_nat $ length h = cryptoffi.hash_len⌝
   | x :: l' =>
     ∃ h',
     "#Hrecur" ∷ is_chain_rev boot l' h' ∗
@@ -32,7 +32,7 @@ Proof. revert h. induction l; apply _. Qed.
 
 Lemma is_chain_rev_len b l h :
   is_chain_rev b l h -∗
-  ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
+  ⌜Z.of_nat $ length h = cryptoffi.hash_len⌝.
 Proof.
   destruct l; simpl; iNamed 1.
   - done.
@@ -62,7 +62,7 @@ Local Lemma is_chain_inj_aux he l0 l1 b h :
   cryptoffi.is_hash (Some []) he -∗
   is_chain_rev he l0 h -∗
   is_chain_rev b l1 h -∗
-  ⌜ l1 `prefix_of` l0 ⌝.
+  ⌜l1 `prefix_of` l0⌝.
 Proof.
   iIntros "#He".
   iInduction l0 as [|??] forall (l1 h); destruct l1; simpl;
@@ -86,7 +86,7 @@ Qed.
 Lemma is_chain_inj l0 l1 h :
   is_chain l0 h -∗
   is_chain_boot l1 h -∗
-  ⌜ l1 `suffix_of` l0 ⌝.
+  ⌜l1 `suffix_of` l0⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
   iDestruct (is_chain_inj_aux with "He0 His_chain0 His_chain1") as %?.
@@ -97,7 +97,7 @@ Qed.
 Local Lemma is_chain_inj0 l0 l1 h :
   is_chain l0 h -∗
   is_chain l1 h -∗
-  ⌜ l0 = l1 ⌝.
+  ⌜l0 = l1⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
   iDestruct (is_chain_inj with "[$He0 $His_chain0] [$His_chain1]") as %?.
@@ -157,14 +157,14 @@ Qed.
 
 (* [wish_Verify] says that new_vals encodes to proof. *)
 Definition wish_Verify (proof : list w8) new_vals : iProp Σ :=
-  "%Hlen_vals" ∷ ⌜ Forall (λ x, Z.of_nat (length x) = cryptoffi.hash_len) new_vals ⌝ ∗
-  "%Henc_vals" ∷ ⌜ proof = mjoin new_vals ⌝.
+  "%Hlen_vals" ∷ ⌜Forall (λ x, Z.of_nat (length x) = cryptoffi.hash_len) new_vals⌝ ∗
+  "%Henc_vals" ∷ ⌜proof = mjoin new_vals⌝.
 #[global] Opaque wish_Verify.
 #[local] Transparent wish_Verify.
 
 Local Lemma wish_Verify_impl_eq_len proof new_vals :
   wish_Verify proof new_vals -∗
-  ⌜ Z.of_nat (length proof) = (length new_vals * cryptoffi.hash_len)%Z ⌝.
+  ⌜Z.of_nat (length proof) = (length new_vals * cryptoffi.hash_len)%Z⌝.
 Proof.
   iNamed 1. iPureIntro.
   subst. rewrite length_join.
@@ -175,7 +175,7 @@ Qed.
 
 Local Lemma wish_Verify_impl_mod_len proof new_vals :
   wish_Verify proof new_vals -∗
-  ⌜ Z.of_nat (length proof) `mod` cryptoffi.hash_len = 0 ⌝.
+  ⌜Z.of_nat (length proof) `mod` cryptoffi.hash_len = 0⌝.
 Proof.
   iIntros "H".
   iDestruct (wish_Verify_impl_eq_len with "H") as %?.
@@ -185,7 +185,7 @@ Qed.
 Lemma wish_Verify_det proof vs0 vs1 :
   wish_Verify proof vs0 -∗
   wish_Verify proof vs1 -∗
-  ⌜ vs0 = vs1 ⌝.
+  ⌜vs0 = vs1⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
   subst. iPureIntro.
@@ -220,7 +220,7 @@ Local Definition own (l : loc) (vals : list $ list w8) (d : dfrac) : iProp Σ :=
   "Hstruct" ∷ l ↦{d} (hashchain.HashChain.mk sl_predLastLink sl_lastLink sl_enc) ∗
 
   "#Hsl_predLastLink" ∷ sl_predLastLink ↦*□ predLastLink ∗
-  "#His_chain_pred" ∷ (∀ x vals', ⌜ vals = vals' ++ [x] ⌝ -∗
+  "#His_chain_pred" ∷ (∀ x vals', ⌜vals = vals' ++ [x]⌝ -∗
     is_chain vals' predLastLink) ∗
 
   "#Hsl_lastLink" ∷ sl_lastLink ↦*□ lastLink ∗
@@ -282,7 +282,7 @@ Lemma wp_HashChain_Append c vals sl_val d0 val :
     is_pkg_init hashchain ∗
     "Hown_HashChain" ∷ own c vals 1 ∗
     "Hsl_val" ∷ sl_val ↦*{d0} val ∗
-    "%Hlen_val" ∷ ⌜ Z.of_nat $ length val = cryptoffi.hash_len ⌝
+    "%Hlen_val" ∷ ⌜Z.of_nat $ length val = cryptoffi.hash_len⌝
   }}}
   c @ (ptrT.id hashchain.HashChain.id) @ "Append" #sl_val
   {{{
@@ -320,7 +320,7 @@ Lemma wp_HashChain_Prove c vals d (prevLen : w64) :
   {{{
     is_pkg_init hashchain ∗
     "Hown_HashChain" ∷ own c vals d ∗
-    "%Hlt_prevLen" ∷ ⌜ uint.Z prevLen <= length vals ⌝
+    "%Hlt_prevLen" ∷ ⌜uint.Z prevLen <= length vals⌝
   }}}
   c @ (ptrT.id hashchain.HashChain.id) @ "Prove" #prevLen
   {{{
@@ -356,7 +356,7 @@ Lemma wp_HashChain_Bootstrap c vals d pred_vals lastVal :
   {{{
     is_pkg_init hashchain ∗
     "Hown_HashChain" ∷ own c vals d ∗
-    "->" ∷ ⌜ vals = pred_vals ++ [lastVal] ⌝
+    "->" ∷ ⌜vals = pred_vals ++ [lastVal]⌝
   }}}
   c @ (ptrT.id hashchain.HashChain.id) @ "Bootstrap" #()
   {{{
@@ -411,12 +411,12 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
     RET (#extLen, #sl_newVal, #sl_newLink, #err);
     "#Hsl_newVal" ∷ sl_newVal ↦*□ newVal ∗
     "Hsl_newLink" ∷ sl_newLink ↦* newLink ∗
-    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ ∃ new_vals, wish_Verify proof new_vals) ∗
+    "Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ new_vals, wish_Verify proof new_vals) ∗
     "Herr" ∷ (∀ new_vals, wish_Verify proof new_vals -∗
       (* TODO(goose): stdpp things like [last] that shadow Stdlib things
       have extremely brittle imports in Perennial.
       https://github.com/mit-pdos/perennial/issues/327 *)
-      "->" ∷ ⌜ newVal = default [] (list.last new_vals) ⌝ ∗
+      "->" ∷ ⌜newVal = default [] (list.last new_vals)⌝ ∗
       "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink)
   }}}.
 Proof.
@@ -451,10 +451,10 @@ Proof.
     "Hsl_newLink" ∷ sl_newLink ↦* newLink ∗
     "#Hsl_newVal" ∷ sl_newVal ↦*□ newVal ∗
 
-    "%Hlt_i" ∷ ⌜ uint.Z i ≤ uint.Z extLen ⌝ ∗
+    "%Hlt_i" ∷ ⌜uint.Z i ≤ uint.Z extLen⌝ ∗
     "#Hwish" ∷ wish_Verify
       (take (Z.to_nat (uint.Z i * cryptoffi.hash_len)) proof) new_vals ∗
-    "->" ∷ ⌜ newVal = default [] (stdpp.list_basics.list.last new_vals) ⌝ ∗
+    "->" ∷ ⌜newVal = default [] (stdpp.list_basics.list.last new_vals)⌝ ∗
     "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink
   )%I with "[i newLink newVal Hsl_prevLink]" as "IH".
   { iDestruct own_slice_nil as "?".
