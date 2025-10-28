@@ -34,9 +34,7 @@ Definition own_aprop_frag γ (P : iProp Σ) (n : nat) : iProp Σ :=
 #[global] Opaque own_aprop_frag.
 #[local] Transparent own_aprop_frag.
 
-Definition own_aprop γ (P : iProp Σ) : iProp Σ := own_aprop_frag γ P 1.
-#[global] Opaque own_aprop.
-#[local] Transparent own_aprop.
+Notation own_aprop γ P := (own_aprop_frag γ P 1).
 
 Lemma own_aprop_auth_alloc :
   ⊢ |==> ∃ γ, own_aprop_auth γ True 0.
@@ -91,10 +89,26 @@ Proof.
   - iIntros "HP'". iApply "HimpliesP'" in "HP'". iApply "HimpliesP" in "HP'". iFrame.
 Qed.
 
-Lemma own_aprop_frag_combine γ P P' n n' :
-  ⊢ own_aprop_frag γ P n -∗ own_aprop_frag γ P' n' -∗ own_aprop_frag γ (P ∗ P') (n + n').
+#[global] Instance own_aprop_auth_le γ P P' n n' :
+  CombineSepGives (own_aprop_auth γ P n) (own_aprop_frag γ P' n') (⌜ n' ≤ n ⌝)%I.
 Proof.
-  iNamed 1. iNamedSuffix 1 "'". rename gns0 into gns'.
+  rewrite /CombineSepGives. iIntros "[@ H]". iNamedSuffix "H" "'".
+  iDestruct (ghost_map_lookup_big with "Hgns [Hgns']") as "%Hsub".
+  { instantiate (1:=gset_to_gmap () gns0). rewrite big_sepM_gset_to_gmap. iFrame. }
+  apply subseteq_dom in Hsub. rewrite !dom_gset_to_gmap in Hsub.
+  iModIntro. iPureIntro. apply subseteq_size in Hsub. lia.
+Qed.
+
+#[global] Instance own_aprop_auth_le' γ P P' n n' :
+  CombineSepGives (own_aprop_frag γ P' n') (own_aprop_auth γ P n) (⌜ n' ≤ n ⌝)%I.
+Proof.
+  rewrite /CombineSepGives. iIntros "[H H']". iCombine "H' H" gives %H. iModIntro. done.
+Qed.
+
+#[global] Instance own_aprop_frag_combine γ P P' n n' :
+  CombineSepAs (own_aprop_frag γ P n) (own_aprop_frag γ P' n') (own_aprop_frag γ (P ∗ P') (n + n')).
+Proof.
+  rewrite /CombineSepAs. iIntros "[@ H]". iNamedSuffix "H" "'". rename gns0 into gns'.
   destruct (decide (gns ∩ gns' = ∅)) as [Hdisj|Hbad].
   2:{
     apply set_choose_L in Hbad. destruct Hbad as [γprop Hbad].
@@ -113,6 +127,7 @@ Proof.
 Qed.
 
 End auth_prop.
+#[global] Notation own_aprop γ P := (own_aprop_frag γ P 1).
 
 Section waitgroup_idiom.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -220,7 +235,7 @@ Proof.
   iInv "Hinv" as "Hi" "Hclose".
   iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask". iNext.
   iNamedSuffix "Hi" "_inv". iExists _; iFrame.
-  FIXME: lemma for this:
+  Set Typeclasses Debug.
   iCombine "Hdone_prop_inv Haprop" gives %Hle.
 Qed.
 
