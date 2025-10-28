@@ -181,6 +181,14 @@ Program Global Instance typed_pointsto_foo : TypedPointsto foo_t :=
       ("a" ∷ struct_field_ref foo "a"%go l ↦{dq} v.(a) ∗
        "b" ∷ struct_field_ref foo "b"%go l ↦{dq} v.(b)
       )%I |}.
+Final Obligation.
+Proof.
+simpl. intros. iNamedSuffix 1 "1". iNamedSuffix 1 "2".
+destruct v1, v2; simpl.
+iCombine "a1 a2" gives %->.
+iCombine "b1 b2" gives %->.
+done.
+Qed.
 
 Global Instance settable_foo : Settable foo_t :=
   settable! mk < a; b >.

@@ -104,9 +104,8 @@ Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop 
 
 #[warning="-uniform-inheritance"]
 Local Coercion GoInstruction : go_op >-> val.
-(** [go.ValidCore] defines when a GoContext is valid, excludin
-       slice, map, and
-    channel stuff. *)
+(** [go.CoreSemantics] defines when a GoContext is valid, excluding slice, map,
+    and channel stuff. *)
 Class CoreSemantics `{!GoContext} :=
 {
   alloc_underlying t : alloc t = alloc (to_underlying t);

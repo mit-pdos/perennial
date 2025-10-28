@@ -23,13 +23,13 @@ End def.
 End slice.
 
 Section defns_and_lemmas.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
 
 Definition own_slice_def {V} t `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
-  (s : slice.t) (dq : dfrac) vs
+  (s : slice.t) (dq : dfrac) (vs : list V)
   : iProp Σ :=
-  ([∗ list] i ↦ v ∈ vs, (slice_index_ref t i s) ↦{dq} v ) ∗
-  ⌜ length vs = sint.nat s.(slice.len) ∧ 0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝.
+  (s.(slice.ptr) ↦{dq} (array.mk t (sint.Z s.(slice.len)) vs)) ∗
+  ⌜ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝.
 Program Definition own_slice := sealed @own_slice_def.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
 
@@ -62,10 +62,22 @@ Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 Ltac unseal := rewrite ?own_slice_unseal /own_slice_def
                  ?own_slice_cap_unseal /own_slice_cap_def.
 
+Lemma own_array_nil ptr dq :
+  ⊢ ptr ↦{dq} (array.mk t 0 []).
+Proof.
+  rewrite typed_pointsto_unseal. simpl. iPureIntro. done.
+Qed.
+
+Lemma own_array_len ptr dq n vs :
+  ptr ↦{dq} (array.mk t n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
+Proof.
+  rewrite typed_pointsto_unseal. simpl. iIntros "[% _] !%". done.
+Qed.
+
 Lemma own_slice_nil dq :
   ⊢ slice.nil ↦[t]*{dq} ([] : list V).
 Proof.
-  unseal. simpl. iPureIntro. split_and!; done.
+  unseal. simpl. iDestruct own_array_nil as "$". done.
 Qed.
 
 Lemma own_slice_empty dq s :
@@ -74,7 +86,7 @@ Lemma own_slice_empty dq s :
   ⊢ s ↦[t]*{dq} ([] : list V).
 Proof.
   unseal. intros Hsz Hcap. destruct s. simpl in *.
-  iPureIntro. split_and!; [done|word|word|word].
+  rewrite Hsz. iDestruct own_array_nil as "$". word.
 Qed.
 
 Lemma own_slice_cap_none s :
@@ -93,65 +105,40 @@ Qed.
 Lemma own_slice_len s dq vs :
   s ↦[t]*{dq} vs -∗ ⌜length vs = sint.nat s.(slice.len) ∧ 0 ≤ sint.Z s.(slice.len)⌝.
 Proof.
-  unseal. iIntros "(_&[%%]) !%"; word.
+  unseal. iIntros "(H&%)". iDestruct (own_array_len with "H") as %?. word.
 Qed.
-
-Lemma array_index_ref_add i j l :
-  array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l).
-Proof.
-Admitted. (* FIXME: assumption. *)
 
 Lemma own_slice_agree s dq1 dq2 vs1 vs2 :
   s ↦[t]*{dq1} vs1 -∗
   s ↦[t]*{dq2} vs2 -∗
   ⌜vs1 = vs2⌝.
 Proof.
-  unseal.
-  iIntros "[Hs1 [%%]] [Hs2 [%%]]".
-  assert (length vs1 = length vs2) by congruence.
-  unfold slice_index_ref.
-  generalize (slice.ptr s). intros l.
-  assert (length vs1 = length vs2) as Hlen by done.
-  clear -Hlen IntoValTyped0.
-  (iInduction vs1 as [|v1 vs1] "IH" forall (l vs2 Hlen)).
-  { simpl in Hlen.
-    destruct vs2; simpl in Hlen; try congruence.
-    auto. }
-  destruct vs2; simpl in Hlen; first by congruence.
-  simpl.
-  iDestruct "Hs1" as "[Hx1 Ha1]".
-  iDestruct "Hs2" as "[Hx2 Ha2]".
-  Set Typeclasses Debug.
-  eassert (CombineSepGives (array_index_ref t 0%nat l ↦{dq1} v1) (array_index_ref t 0%nat l ↦{dq2} v)
-             ?[R']).
-  {
-    Print Hint.
-    Search CombineSepGives.
-    apply _.
-    autoapply with typeclass_instances.
-  }
-  iCombine "Hx1 Hx2" gives "H". %[_ ->]. (* FIXME: AsDFractional? *)
-  setoid_rewrite loc_add_stride_Sn.
-  iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
+  unseal. iIntros "[Hs1 %] [Hs2 %]".
+  iCombine "Hs1 Hs2" gives %[=->]. done.
 Qed.
 
-Global Instance own_slice_persistent s vs : Persistent (s ↦*□ vs).
-Proof. unseal; apply _. Qed.
+Global Instance own_slice_persistent s vs : Persistent (s ↦[t]*□ vs).
+Proof. unseal. apply _. Qed.
 
 #[global]
 Instance own_slice_dfractional s vs :
-  DFractional (λ dq, s ↦*{dq} vs).
+  DFractional (λ dq, s ↦[t]*{dq} vs).
 Proof. unseal; apply _. Qed.
 
 #[global]
 Instance own_slice_as_dfractional s dq vs :
-  AsDFractional (s ↦*{dq} vs) (λ dq, s ↦*{dq} vs) dq.
+  AsDFractional (s ↦[t]*{dq} vs) (λ dq, s ↦[t]*{dq} vs) dq.
 Proof. auto. Qed.
 
 #[global]
 Instance own_slice_as_fractional s q vs :
-  fractional.AsFractional (s ↦*{#q} vs) (λ q, s ↦*{#q} vs) q.
-Proof. unseal; split; auto; apply _. Qed.
+  fractional.AsFractional (s ↦[t]*{#q} vs) (λ q, s ↦[t]*{#q} vs) q.
+Proof.
+  split; auto.
+  change (λ q0 : Qp, s ↦[t]*{#q0} vs) with (λ q : Qp, (λ dq, s ↦[t]*{dq} vs) (DfracOwn q)).
+  apply fractional_of_dfractional.
+  apply _.
+Qed.
 
 Lemma own_slice_valid s dq (vs: list V) :
   go_type_size t > 0 →

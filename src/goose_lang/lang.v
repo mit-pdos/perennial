@@ -592,7 +592,7 @@ Record t (ty : go.type) (V : Type) (n : Z) :=
 mk { arr : list V }.
 End goose_lang.
 End array.
-Arguments array.mk (ty) {_ _} (_).
+Arguments array.mk (ty) {_} (n arr).
 Arguments array.arr {_ _ _} (_).
 
 Section external.
@@ -674,7 +674,7 @@ Global Instance into_val_func : IntoVal func.t :=
 Global Instance into_val_array t `{!IntoVal V} n : IntoVal (array.t t V n) :=
   {|
     into_val_def v := ArrayV (into_val <$> v.(array.arr));
-    zero_val := array.mk t $ replicate (Z.to_nat n) (zero_val V);
+    zero_val := array.mk t n $ replicate (Z.to_nat n) (zero_val V);
   |}.
 
 Global Instance into_val_slice : IntoVal slice.t :=
