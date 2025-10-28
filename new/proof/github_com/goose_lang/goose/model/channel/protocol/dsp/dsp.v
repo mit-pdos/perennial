@@ -3,359 +3,550 @@ From New.proof.github_com.goose_lang.goose.model.channel
      Require Export chan_au_send chan_au_recv chan_au_base chan_init.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export dsp_ghost_theory.
+From iris.base_logic.lib Require Export token.
 
 (** * Dependent Separation Protocols (DSP) over Go Channels
 
     This file implements dependent separation protocols using bidirectional Go channels.
 
     Key concepts:
-    - Two protocol endpoints (left and right) communicate via two Go channels
-    - LR channel: left endpoint sends V_LR values to right endpoint
-    - RL channel: right endpoint sends V_RL values to left endpoint
+    - Protocol endpoints communicate via two Go channels
+    - LR channel: left endpoint sends values to right endpoint
+    - RL channel: right endpoint sends values to left endpoint
     - Protocol state is tracked using Actris iProto with sum types
     - Channel closure is protocol-aware - only allowed when protocol permits
 *)
 
-(** ** Sum Type for Bidirectional Communication *)
+(* Include [chanGhostStateG Σ V] etc. here or not? *)
+Class dspG Σ V := {
+  chanG_tokenG :: tokenG Σ;
+  chanG_protoG :: protoG Σ V;
+}.
 
-Definition DspV (V_LR V_RL : Type) := sum V_LR V_RL.
+Record dsp_names := DSPNames {
+  token_lr_name : gname;            (* Token for excluding closed state of lr channel  *)
+  token_rl_name : gname;            (* Token for excluding closed state of rl channel*)
+  dsp_lr_name : gname;              (* Protocol ownership for lr channel *)
+  dsp_rl_name : gname;              (* Protocol ownership for rl channel *)
+}.
 
-#[export] Instance eqdec_sum `{EqDecision A} `{EqDecision B}
-  : EqDecision (A + B) := _.
-#[export] Instance countable_sum `{Countable A} `{Countable B}
-  : Countable (A + B) := _.
+Definition flip_dsp_names (γdsp_names : dsp_names) : dsp_names :=
+  DSPNames 
+    γdsp_names.(token_rl_name)
+    γdsp_names.(token_lr_name)
+    γdsp_names.(dsp_rl_name)
+    γdsp_names.(dsp_lr_name).
 
 Section dsp.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!ghost_varG Σ ()}.
-Context `{!chanGhostStateG Σ ()}.
+Context `{!chanGhostStateG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!dspG Σ V}.
+
+Let N := nroot .@ "dsp_chan".
 
 (** ** Buffer Matching Predicates *)
 
 (** Defines when Go channel state matches expected message queue *)
-Definition lr_buffer_matches {V_LR}
-    (lr_state : chan_rep.t V_LR) (vsl : list V_LR) : Prop :=
-  match lr_state with
-  | chan_rep.Buffered queue => vsl = queue
-  | chan_rep.SndPending v | chan_rep.SndCommit v => vsl = [v]
-  | chan_rep.Closed draining => vsl = draining
-  | _ => vsl = []
+Definition buffer_matches {V}
+    (state : chan_rep.t V) (vs : list V) : Prop :=
+  match state with
+  | chan_rep.Buffered queue => vs = queue
+  | chan_rep.SndPending v | chan_rep.SndCommit v => vs = [v]
+  | chan_rep.Closed draining => vs = draining
+  | _ => vs = []
   end.
-
-Definition rl_buffer_matches {V_RL}
-    (rl_state : chan_rep.t V_RL) (vsr : list V_RL) : Prop :=
-  match rl_state with
-  | chan_rep.Buffered queue => vsr = queue
-  | chan_rep.SndPending v | chan_rep.SndCommit v => vsr = [v]
-  | chan_rep.Closed draining => vsr = draining
-  | _ => vsr = []
-  end.
-
-(** ** Protocol Value Lifting *)
-
-(** Lift left-to-right values into sum type for protocol *)
-Definition lift_lr {V_LR V_RL} (vsl : list V_LR)
-  : list (DspV V_LR V_RL) := List.map (@inl V_LR V_RL) vsl.
-
-(** Lift right-to-left values into sum type for protocol *)
-Definition lift_rl {V_LR V_RL} (vsr : list V_RL)
-  : list (DspV V_LR V_RL) := List.map (@inr V_LR V_RL) vsr.
 
 (** ** DSP Session Context *)
 
 (** DSP session invariant - owns both channels and maintains protocol state *)
-Definition dsp_session_inv {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname)
+Definition dsp_session_inv
+    (γdsp_names : dsp_names)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) : iProp Σ :=
-  ∃ lr_state rl_state vsl vsr,
+  ∃ lr_state rl_state (vsl vsr : list V),
+    ⌜buffer_matches lr_state vsl⌝ ∗
+    ⌜buffer_matches rl_state vsr⌝ ∗
     own_channel lr_chan lrcap lr_state γlr_names ∗
     own_channel rl_chan rlcap rl_state γrl_names ∗
-    ⌜lr_buffer_matches lr_state vsl⌝ ∗
-    ⌜rl_buffer_matches rl_state vsr⌝ ∗
-    iProto_ctx γl γr (lift_lr vsl) (lift_rl vsr).
+    match lr_state with
+    | chan_rep.Closed _ => iProto_own (γdsp_names.(dsp_lr_name)) END
+    | _ => token (γdsp_names.(token_lr_name))
+    end ∗
+    match rl_state with
+    | chan_rep.Closed _ => iProto_own (γdsp_names.(dsp_rl_name)) END
+    | _ => token (γdsp_names.(token_rl_name))
+    end ∗
+    iProto_ctx (γdsp_names.(dsp_lr_name)) (γdsp_names.(dsp_rl_name)) vsl vsr.
+
+Lemma dsp_session_inv_sym
+    γdsp_names lr_chan rl_chan γlr_names γrl_names lrcap rlcap :
+   dsp_session_inv γdsp_names lr_chan rl_chan γlr_names γrl_names lrcap rlcap ⊣⊢
+   dsp_session_inv (flip_dsp_names γdsp_names) rl_chan lr_chan γrl_names γlr_names rlcap lrcap.
+Proof.
+  iSplit.
+  - iDestruct 1 as (????) "(Hcl&Hcr&?&?&?&?&Hp)". iFrame. by iApply iProto_ctx_sym.
+  - iDestruct 1 as (????) "(Hcl&Hcr&?&?&?&?&Hp)". iFrame. by iApply iProto_ctx_sym.
+Qed.
 
 (** DSP session context - public interface with persistent channel handles *)
-Definition dsp_session {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
+Definition dsp_session
+             (γdsp_names : dsp_names)
     (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
     (lrcap rlcap: Z) : iProp Σ :=
   is_channel lr_chan lrcap γlr_names ∗
   is_channel rl_chan rlcap γrl_names ∗
-  inv N (dsp_session_inv γl γr lr_chan rl_chan γlr_names γrl_names lrcap rlcap).
+  inv N (dsp_session_inv γdsp_names lr_chan rl_chan γlr_names γrl_names lrcap rlcap).
 
 (** ** DSP Endpoints *)
 
 (** Left endpoint - can send V_LR via lr_chan, receive V_RL via rl_chan *)
-Definition dsp_left_endpoint {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z)
-    (p : iProto Σ (DspV V_LR V_RL)) : iProp Σ :=
-  dsp_session γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
-  iProto_own γl p.
+Definition dsp_endpoint
+    (v : val)
+    (p : option $ iProto Σ V) : iProp Σ :=
+  ∃ (γdsp_names : dsp_names) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z),
+    ⌜v = #(lr_chan,rl_chan)⌝ ∗
+    dsp_session γdsp_names lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
+    match p with
+    | None => token γdsp_names.(token_lr_name)
+    | Some p => iProto_own γdsp_names.(dsp_lr_name) p
+    end.
 
-(** Right endpoint - can send V_RL via rl_chan, receive V_LR via lr_chan *)
-Definition dsp_right_endpoint {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z)
-    (p : iProto Σ (DspV V_LR V_RL)) : iProp Σ :=
-  dsp_session γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap ∗
-  iProto_own γr p.
+Notation "c ↣ p" := (dsp_endpoint c (Some p)) (at level 20, format "c  ↣  p").
+Notation "↯ c" := (dsp_endpoint c None) (at level 20, format "↯  c").
+
+
+Global Instance dsp_endpoint_ne c : NonExpansive (dsp_endpoint c).
+Proof. solve_proper. Qed.
+Global Instance dsp_endpoint_proper c : Proper ((≡) ==> (≡)) (dsp_endpoint c).
+Proof. apply (ne_proper _). Qed.
+
+Lemma iProto_pointsto_le c p1 p2 : c ↣ p1 ⊢ ▷ (p1 ⊑ p2) -∗ c ↣ p2.
+Proof.
+  iDestruct 1 as (γdsp_names lr_chan rl_chan γlr_names γrl_names lr_cap rl_cap ->) "[Hc Hp]".
+  iIntros "Hle'". iExists _,_,_,_,_,_,_. iSplit; [done|]. iFrame "Hc".
+  by iApply (iProto_own_le with "Hp").
+Qed.
 
 (** ** Initialization *)
 
 (** Initialize a new DSP session from basic channels *)
-Lemma dsp_session_init {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (N : namespace) (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (p : iProto Σ (DspV V_LR V_RL)) :
+Lemma dsp_session_init
+    E (lr_chan rl_chan : loc) (lr_state rl_state : chan_rep.t V)
+    (γlr_names γrl_names : chan_names)
+    (lrcap rlcap: Z) (p : iProto Σ V) :
+  (lr_state = chan_rep.Idle ∨ lr_state = chan_rep.Buffered []) →
+  (rl_state = chan_rep.Idle ∨ rl_state = chan_rep.Buffered []) →
   is_channel lr_chan lrcap γlr_names -∗
   is_channel rl_chan rlcap γrl_names -∗
-  own_channel lr_chan lrcap chan_rep.Idle γlr_names -∗
-  own_channel rl_chan rlcap chan_rep.Idle γrl_names ==∗
-  ∃ γl γr,
-    dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p ∗
-    dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (iProto_dual p).
+  own_channel lr_chan lrcap lr_state γlr_names -∗
+  own_channel rl_chan rlcap rl_state γrl_names ={E}=∗
+  #(lr_chan,rl_chan) ↣ p ∗ #(rl_chan,lr_chan) ↣ iProto_dual p.
 Proof.
-Admitted.
+  iIntros (Hlr Hrl) "#Hcl_is #Hcr_is Hcl_own Hcr_own".
+  iMod (iProto_init) as (γl γr) "(Hctx & Hpl & Hpr)".
+  iMod (token_alloc) as (γtl) "Htl".
+  iMod (token_alloc) as (γtr) "Htr".
+  set γdsp_names := (DSPNames γtl γtr γl γr).
+  iMod (inv_alloc N _ (dsp_session_inv γdsp_names lr_chan rl_chan γlr_names γrl_names lrcap rlcap) with "[Hcl_own Hcr_own Htl Htr Hctx]")
+    as "#Hinv".
+  { iExists lr_state,rl_state,[],[]. iIntros "!>". iFrame.
+    by destruct Hlr,Hrl; simplify_eq; do 2 (iSplit; [done|]); iFrame. }
+  iModIntro.
+  iSplitL "Hpl".
+  - iExists γdsp_names,_,_,_,_,_,_. iSplit; [done|].    
+    iFrame "Hpl Hinv". iFrame "∗#".
+  - iExists (flip_dsp_names γdsp_names),_,_,_,_,_,_. iSplit; [done|].
+    rewrite dsp_session_inv_sym. iFrame "Hinv".
+    iFrame "∗#".
+Qed.
 
-(** ** Left Endpoint Operations *)
+(** ** Endpoint Operations *)
 
-(** Left endpoint sends V_LR value via lr_chan *)
-Lemma dsp_left_send {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (v : V_LR) (m : iMsg Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<!> m) ∗
-      ∃ p', iMsg_car m (inl v) (Next p') }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #tL #v
-  {{{ p', RET #();
-      iMsg_car m (inl v) (Next p') ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' }}}.
+(** Endpoint sends value *)
+Lemma dsp_send (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #tV #v
+  {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
+  iApply (wp_Send lr_chan lrcap v γlr_names with "[$Hinit $Hcl]").
+  iIntros "H£".
+  iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+  iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+  iApply fupd_mask_intro; [solve_ndisj|]. 
+  iIntros "Hclose'".
+  iModIntro.
+  iExists _. iFrame.
+  destruct lr_state.
+  - destruct (length buff <? lrcap)%Z; [|done].
+    iIntros "Hownl".
+    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
+    { by rewrite iMsg_base_eq. }
+    iMod "Hp" as "[Hp Hown]". iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hp]").
+    { iIntros "!>". iExists _,_,_,_. iFrame. inversion H. iFrame. done. }
+    iApply "HΦ". by iFrame "#∗".
+  - iIntros "Hownl".
+    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
+    { by rewrite iMsg_base_eq. }
+    iMod "Hp" as "[Hctx Hown]". iMod "Hclose'" as "_". 
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]").
+    { iIntros "!>". iExists _,_,_,_. iFrame. inversion H. iFrame. done. }
+    iModIntro.
+    iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+    iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hclose'".
+    iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+    iFrame.
+    iIntros "!>".
+    destruct lr_state; try done.
+    + iIntros "Hownl". iMod "Hclose'".
+      iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]").
+      { iIntros "!>". iExists _,_,_,_. iFrame. iFrame. done. }
+      iApply "HΦ". iFrame "#∗". done.
+    + iDestruct (iProto_own_excl with "Hown Hclosel") as "[]".
+  - done.
+  - iIntros "Hownl".
+    iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
+    { by rewrite iMsg_base_eq. }
+    iMod "Hp" as "[Hp Hown]". iMod "Hclose'".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hp]").
+    { iIntros "!>". iExists _,_,_,_. iFrame. inversion H. iFrame. done. }
+    iApply "HΦ". by iFrame "#∗".
+  - done.
+  - done.
+  - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
+Qed.
 
-(** Left endpoint receives V_RL value via rl_chan *)
-Lemma dsp_left_recv {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (m : iMsg Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<?> m) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
-  {{{ (v : V_RL) (ok : bool), RET (#v, #ok);
-      if ok then ∃ p', iMsg_car m (inr v) (Next p') ∗
-                      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p'
-      else (* Channel closed - only valid if protocol allows termination *)
-           iProto_le (<?> m) END ∗
-           dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+(** Endpoint receives value *)
+Lemma dsp_recv {TT:tele}
+    (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+  {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
+  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iIntros "H£s".
+  iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+  iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hclose'".
+  iModIntro.
+  iExists _. iFrame.
+  destruct rl_state.
+  - destruct buff; [done|].
+    destruct vsr; [done|].
+    iIntros "Hownr".
+    iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+    iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hown Hm" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+    rewrite iMsg_base_eq.
+    iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+    simpl in *. simplify_eq.
+    iApply "HΦ".
+    iDestruct "H£s" as "[H£ H£s]".
+    rewrite later_equivI_1.
+    iCombine "Hp" "HP" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iModIntro. iRewrite "Hp". by iFrame "#∗".
+  - iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame. iFrame. done. }
+    iModIntro.
+    iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+    iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+    iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hclose'". iModIntro.
+    iExists _. iFrame.
+    destruct rl_state; try done.
+    + iIntros "Hownr".
+      simpl in *. simplify_eq.
+      iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+      iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+      iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+      { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+        iPureIntro. simpl in *. by simplify_eq. }
+      iCombine "Hown Hm" as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+      rewrite iMsg_base_eq.
+      iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+      simpl in *. simplify_eq.
+      iApply "HΦ".
+      iDestruct "H£s" as "[H£ H£s]".
+      rewrite later_equivI_1.
+      iCombine "Hp" "HP" as "H".
+      iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+      iModIntro. iRewrite "Hp". by iFrame "#∗".
+    + simpl in *. simplify_eq.
+      destruct draining; [|done].
+      iDestruct (iProto_recv_end_inv_l with "Hctx Hp Hcloser") as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as "[]".
+  - iIntros "Hownr".
+    simpl in *. simplify_eq.
+    iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+    iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hown Hm" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+    rewrite iMsg_base_eq.
+    iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+    simpl in *. simplify_eq.
+    iApply "HΦ".
+    iDestruct "H£s" as "[H£ H£s]".
+    rewrite later_equivI_1.
+    iCombine "Hp" "HP" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iModIntro. iRewrite "Hp". by iFrame "#∗".
+  - done.
+  - done.
+  - done.
+  - destruct draining.
+    { simpl in *. simplify_eq.
+      iDestruct (iProto_recv_end_inv_l with "Hctx Hp Hcloser") as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as "[]". }
+    simpl in *. simplify_eq.
+    iIntros "Hownr".
+    iDestruct (iProto_recv with "Hctx Hp") as "Hp".
+    iMod "Hp" as (xs) "(Hctx & Hown & Hm)". iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hown Hm" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hown Hm]".
+    rewrite iMsg_base_eq.
+    iDestruct (iMsg_texist_exist with "Hm") as (x <-) "[Hp HP]".
+    simpl in *. simplify_eq.
+    iApply "HΦ".
+    iDestruct "H£s" as "[H£ H£s]".
+    rewrite later_equivI_1.
+    iCombine "Hp" "HP" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iModIntro. iRewrite "Hp". by iFrame "#∗".
+Qed.
 
-
-(** Left endpoint closes lr_chan (stops sending V_LR) *)
-Lemma dsp_left_close_lr {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (p : iProto Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p ∗
-      (* Only allow closure when protocol permits it *)
-      p ⊑ END }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #tL #()
-  {{{ RET #(); dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+(** Endpoint receives value *)
+Lemma dsp_recv_discard_ok {TT:tele}
+    (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #tV #()
+  {{{ x, RET #(v x); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
-Admitted.
+  wp_start. wp_auto. wp_apply (dsp_recv with "[$Hpre]").
+  iIntros (x) "Hpre". wp_auto. by iApply "HΦ".
+Qed.
 
-(** ** Right Endpoint Operations *)
-
-(** Right endpoint sends V_RL value via rl_chan *)
-Lemma dsp_right_send {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (v : V_RL) (m : iMsg Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<!> m) ∗
-      ∃ p', iMsg_car m (inr v) (Next p') }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Send" #tR #v
-  {{{ p', RET #();
-      iMsg_car m (inr v) (Next p') ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' }}}.
+(** Endpoint closes (stops sending val) *)
+Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ V) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
+    lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #tV #()
+  {{{ RET #(); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
+  iApply (wp_Close lr_chan lrcap γlr_names with "[$Hinit $Hcl]").
+  iIntros "H£".
+  iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+  iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hclose'".
+  iModIntro.
+  iExists _. iFrame.
+  destruct lr_state; try done.
+  - iIntros "Hownl".
+    iMod "Hclose'".
+    iMod ("Hclose" with "[Hownl Hownr Hcloser Hctx Hp]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iFrame "Hp". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iApply "HΦ". by iFrame "#∗".
+  - iIntros "Hownl".
+    iMod "Hclose'".
+    iMod ("Hclose" with "[Hownl Hownr Hcloser Hctx Hp]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iFrame "Hp". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iApply "HΦ". by iFrame "#∗".
+  - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".   
+Qed.
 
-(** Right endpoint receives V_LR value via lr_chan *)
-Lemma dsp_right_recv {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (m : iMsg Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap (<?> m) }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tL #()
-  {{{ (v : V_LR) (ok : bool), RET (#v, #ok);
-      if ok then ∃ p', iMsg_car m (inl v) (Next p') ∗
-                      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p'
-      else (* Channel closed - only valid if protocol allows termination *)
-           (<?> m) ⊑ END ∗
-           dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+(** Endpoint receives on a closed or ended channel *)
+Lemma dsp_recv_end (lr_chan rl_chan : loc) :
+  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+  {{{ RET (#(default_val V), #false); #(lr_chan,rl_chan) ↣ END }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
+  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iIntros "H£s".
+  iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+  iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hclose'".
+  iModIntro.
+  iExists _. iFrame.
+  destruct rl_state; try done.
+  - destruct buff; [done|].
+    destruct vsr; [done|].
+    iIntros "Hownr".
+    iDestruct (iProto_end_inv_l with "Hctx Hp") as "H".
+    iDestruct "H£s" as "[H£ H£s]".
+    iMod (lc_fupd_elim_later with "H£ H") as %?.
+    by simplify_eq.
+  - iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iModIntro.
+    iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+    iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+    iDestruct "H£s" as "[H£ H£s]".
+    iMod (lc_fupd_elim_later with "H£ Hctx") as "Hctx".
+    iApply fupd_mask_intro; [solve_ndisj|].
+    iIntros "Hclose'".
+    iFrame.
+    destruct rl_state; try done.
+    + iIntros "!> Hownr".
+      simpl in *. simplify_eq.
+      iDestruct (iProto_end_inv_l with "Hctx Hp") as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as %?.
+      by simplify_eq.
+    + destruct draining; last first.
+      { simpl in *. simplify_eq.
+        iDestruct (iProto_end_inv_l with "Hctx Hp") as "H".
+        iDestruct "H£s" as "[H£ H£s]".
+        iIntros "!>". eauto. }
+      iIntros "!> Hownr".
+      iMod "Hclose'".
+      iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+      { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+        iPureIntro. simpl in *. by simplify_eq. }
+      iApply "HΦ". by iFrame "#∗".      
+  - iIntros "Hownr".
+    simpl in *.
+    simplify_eq.
+    iDestruct (iProto_end_inv_l with "Hctx Hp") as "H".
+    iDestruct "H£s" as "[H£ H£s]".
+    iMod (lc_fupd_elim_later with "H£ H") as %?.
+    by simplify_eq.
+  - destruct draining; last first.
+    { simpl in *.
+      simplify_eq.
+      iDestruct (iProto_end_inv_l with "Hctx Hp") as "H".
+      iDestruct "H£s" as "[H£ H£s]".
+      iMod (lc_fupd_elim_later with "H£ H") as %?.
+      by simplify_eq. }
+    simpl in *. simplify_eq.
+    iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|].
+      iPureIntro. simpl in *. by simplify_eq. }
+    iApply "HΦ". by iFrame "#∗".
+Qed.
 
-(** Right endpoint closes rl_chan (stops sending V_RL) *)
-Lemma dsp_right_close_rl {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) (p : iProto Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p ∗
-      (* Only allow closure when protocol permits it *)
-      p ⊑ END }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Close" #tR #()
-  {{{ RET #(); dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
+(** Endpoint receives on a closed or ended channel *)
+Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
+  {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+  {{{ RET (#(default_val V), #false); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
+  rewrite to_val_unseal in Heq. simplify_eq.
+  rename lr_chan0 into lr_chan.
+  rename rl_chan0 into rl_chan.
+  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iIntros "H£s".
+  iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+  iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+  iCombine "Hctx Hclosel" as "H".
+  iDestruct "H£s" as "[H£ H£s]".
+  iMod (lc_fupd_elim_later with "H£ H") as "[Hctx Hclosel]".
+  destruct lr_state; try by iDestruct (token_exclusive with "Hp Hclosel") as "[]".  
+  iDestruct (iProto_end_inv_l with "Hctx Hclosel") as "#>%".
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hclose'".
+  iModIntro.
+  iExists _. iFrame.
+  destruct rl_state; try done.
+  - simpl in *. simplify_eq. iFrame. done.
+  - simpl in *. simplify_eq.
+    iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|]. by iFrame. }
+    iModIntro.
+    iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
+    iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
+    iDestruct "H£s" as "[H£ H£s]".
+    iCombine "Hctx Hclosel" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[Hctx Hclosel]".
+    iApply fupd_mask_intro; [solve_ndisj|].
+    iIntros "Hclose'".
+    iFrame.
+    destruct lr_state; try by iDestruct (token_exclusive with "Hp Hclosel") as "[]".  
+    iDestruct (iProto_end_inv_l with "Hctx Hclosel") as "#>->".
+    destruct rl_state; try done.
+    simpl in *. simplify_eq.
+    iIntros "!> Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|]. by iFrame. }
+    iApply "HΦ". by iFrame "#∗".
+  - simpl in *. by simplify_eq.
+  - simpl in *. simplify_eq.
+    iIntros "Hownr".
+    iMod "Hclose'" as "_".
+    iMod ("Hclose" with "[Hownl Hownr Hclosel Hcloser Hctx]") as "_".
+    { iIntros "!>". iExists _,_,_,_. iFrame "Hownr ∗". iSplit; [done|]. by iFrame. }
+    iApply "HΦ". by iFrame "#∗".
+Qed.
 
-(** ** Choice and Branch Operations 
-    
-    These operations provide choice/branching in DSP protocols.
-    - Internal choice: One endpoint decides which branch, pure protocol update
-    - External choice: Endpoint receives and reacts to the other's decision
-*)
+Lemma dsp_recv_false (b : bool) (lr_chan rl_chan : loc) :
+  {{{ is_pkg_init channel ∗ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+  {{{ RET (#(default_val V), #false); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
+Proof. destruct b; [apply dsp_recv_end|apply dsp_recv_closed]. Qed.
 
-(** Left endpoint makes internal choice - pure protocol update, no communication *)
-Lemma dsp_left_internal_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (b : bool) (P1 P2 : iProp Σ) 
-    (p_choice p1 p2 : iProto Σ (DspV V_LR V_RL)) E :
-  ↑N ⊆ E →
-  (if b then P1 else P2) -∗
-  dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    p_choice ={E}=∗
-  dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    (if b then p1 else p2).
+Lemma dsp_recv_false_discard_ok (b : bool) (lr_chan rl_chan : loc) :
+  {{{ is_pkg_init channel ∗ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
+    rl_chan @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #tV #()
+  {{{ RET #(default_val V); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
 Proof.
-Admitted.
-
-(** Left endpoint receives external choice - destruct on right endpoint's decision *)
-Lemma dsp_left_external_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (P1 P2 : iProp Σ) 
-    (m : iMsg Σ (DspV V_LR V_RL))
-    (p1 p2 : iProto Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-        (<?> m) ∗
-      (* Message encodes receiving a choice with appropriate resources *)
-      (∀ (v : V_RL) (p' : iProto Σ (DspV V_LR V_RL)),
-         iMsg_car m (inr v) (Next p') -∗
-         (∃ (b : bool), ⌜p' = if b then p1 else p2⌝ ∗ if b then P1 else P2)) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tR #()
-  {{{ (v : V_RL) (ok : bool), RET (#v, #ok);
-      if ok then 
-        ∃ (b : bool) (p' : iProto Σ (DspV V_LR V_RL)),
-          ⌜p' = if b then p1 else p2⌝ ∗
-          dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' ∗ 
-          if b then P1 else P2
-      else
-        (<?> m) ⊑ END ∗
-        dsp_left_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
-Proof.
-Admitted.
-
-(** Right endpoint makes internal choice - pure protocol update, no communication *)
-Lemma dsp_right_internal_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (b : bool) (P1 P2 : iProp Σ) 
-    (p_choice p1 p2 : iProto Σ (DspV V_LR V_RL)) E :
-  ↑N ⊆ E →
-  (if b then P1 else P2) -∗
-  dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    p_choice ={E}=∗
-  dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-    (if b then p1 else p2).
-Proof.
-Admitted.
-
-(** Right endpoint receives external choice - destruct on left endpoint's decision *)
-Lemma dsp_right_external_choice {V_LR V_RL}
-    `{!protoG Σ (DspV V_LR V_RL)}
-    `{!chanGhostStateG Σ V_LR} `{!IntoVal V_LR} `{!IntoValTyped V_LR tL}
-    `{!chanGhostStateG Σ V_RL} `{!IntoVal V_RL} `{!IntoValTyped V_RL tR}
-    (γl γr : gname) (N : namespace)
-    (lr_chan rl_chan : loc) (γlr_names γrl_names : chan_names)
-    (lrcap rlcap: Z) 
-    (P1 P2 : iProp Σ) 
-    (m : iMsg Σ (DspV V_LR V_RL))
-    (p1 p2 : iProto Σ (DspV V_LR V_RL)) :
-  {{{ is_pkg_init channel ∗
-      dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap 
-        (<?> m) ∗
-      (* Message encodes receiving a choice with appropriate resources *)
-      (∀ (v : V_LR) (p' : iProto Σ (DspV V_LR V_RL)),
-         iMsg_car m (inl v) (Next p') -∗
-         (∃ (b : bool), ⌜p' = if b then p1 else p2⌝ ∗ if b then P1 else P2)) }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tL #()
-  {{{ (v : V_LR) (ok : bool), RET (#v, #ok);
-      if ok then 
-        ∃ (b : bool) (p' : iProto Σ (DspV V_LR V_RL)),
-          ⌜p' = if b then p1 else p2⌝ ∗
-          dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap p' ∗ 
-          if b then P1 else P2
-      else
-        (<?> m) ⊑ END ∗
-        dsp_right_endpoint γl γr N lr_chan rl_chan γlr_names γrl_names lrcap rlcap END }}}.
-Proof.
-Admitted.
+  wp_start. wp_auto. wp_apply (dsp_recv_false with "[$Hpre]").
+  iIntros "Hpre". wp_auto. by iApply "HΦ".
+Qed.
 
 End dsp.
+
+Notation "c ↣ p" := (dsp_endpoint c (Some p)) (at level 20, format "c  ↣  p").
+Notation "↯ c" := (dsp_endpoint c None) (at level 20, format "↯  c").
