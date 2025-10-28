@@ -626,24 +626,22 @@ Definition DSPExampleXⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "c" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel #ptrT) "$a0") in
+    (func_call #channel.NewChannel #interfaceT) "$a0") in
     do:  ("c" <-[#ptrT] "$r0");;;
     let: "signal" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel (type.structT [
-    ])) "$a0") in
+    (func_call #channel.NewChannel #interfaceT) "$a0") in
     do:  ("signal" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := ((method_call #(ptrT.id channel.Channel.id) #"ReceiveDiscardOk"%go (![#ptrT] "c") #ptrT) #()) in
+      let: "$r0" := (interface.type_assert ((method_call #(ptrT.id channel.Channel.id) #"ReceiveDiscardOk"%go (![#ptrT] "c") #interfaceT) #()) #(ptrT.id intT.id)) in
       do:  ("ptr" <-[#ptrT] "$r0");;;
       let: "$r0" := ((![#intT] (![#ptrT] "ptr")) + #(W64 2)) in
       do:  ((![#ptrT] "ptr") <-[#intT] "$r0");;;
-      do:  (let: "$a0" := (struct.make (type.structT [
+      do:  (let: "$a0" := (interface.make #(structT.id []) (struct.make (type.structT [
       ]) [{
-      }]) in
-      (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "signal") (type.structT [
-      ])) "$a0");;;
+      }])) in
+      (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "signal") #interfaceT) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -653,10 +651,9 @@ Definition DSPExampleXⁱᵐᵖˡ : val :=
     let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := "val" in
     do:  ("ptr" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#ptrT] "ptr") in
-    (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "c") #ptrT) "$a0");;;
-    do:  ((method_call #(ptrT.id channel.Channel.id) #"ReceiveDiscardOk"%go (![#ptrT] "signal") (type.structT [
-    ])) #());;;
+    do:  (let: "$a0" := (interface.make #(ptrT.id intT.id) (![#ptrT] "ptr")) in
+    (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "c") #interfaceT) "$a0");;;
+    do:  ((method_call #(ptrT.id channel.Channel.id) #"ReceiveDiscardOk"%go (![#ptrT] "signal") #interfaceT) #());;;
     return: (![#intT] (![#ptrT] "ptr"))).
 
 Definition fibonacciX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fibonacciX"%go.

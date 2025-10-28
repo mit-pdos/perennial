@@ -1,6 +1,6 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export  future spsc done  chan_au_sel.
+     Require Export  future spsc done  chan_au_sel dsp.
 From New.proof Require Import time sync.
 From Perennial.goose_lang Require Import lang.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
@@ -8,6 +8,15 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Im
 From Perennial.goose_lang.lib Require Import slice.
 From iris.base_logic Require Import ghost_map.
 From New.golang.theory Require Import struct.
+
+(* TODO: Move? *)
+Global Instance wp_struct_make_unit {ext : ffi_syntax} {ffi : ffi_model} {ffi_interp0 : ffi_interp ffi} 
+  {Σ : gFunctors} {hG : heapGS Σ} {ffi_semantics0 : ffi_semantics ext ffi} :
+  PureWp True (struct.make #(structT []) (alist_val []))%struct #().
+Proof.
+  erewrite <- struct_val_aux_nil.
+  apply wp_struct_make; cbn; auto.
+Qed.
 
 Section hello_world.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -27,23 +36,6 @@ Lemma wp_sys_hello_world :
 Proof.
   wp_start. iApply "HΦ". done.
 Qed.
-
-Lemma wp_DSPExample :
-  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
-    @! chan_spec_raw_examples.DSPExampleX #()
-  {{{ RET #(W64 42); True }}}.
-Proof.
-  wp_start. wp_auto. wp_pures.
-   wp_apply (wp_NewChannel (t:=ptrT) 0);first done.
-  iIntros (c). iIntros (γ).
-  iIntros "[#Hic Hoc]".
-  wp_auto.
-   wp_apply (wp_NewChannel (t:=(structT [])) 0);first done.
-  iIntros (signal). iIntros (γ').
-  iIntros "[#Hicsignal Hocsignal]".
-  wp_auto.
-Admitted.
-
 
 Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel  }}}
@@ -105,15 +97,6 @@ Set Default Proof Using "Type".
 
 #[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
-
-Global Instance wp_struct_make_unit:
-  PureWp True
-    (struct.make #(structT []) (alist_val []))%struct
-    #().
-Proof.
-  erewrite <- struct_val_aux_nil.
-  apply wp_struct_make; cbn; auto.
-Qed.
 
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
@@ -365,7 +348,6 @@ Proof.
         split;first done.
         rewrite Hsl.
         split;first done.
-        split;first done.
         lia.
       }
       iFrame.
@@ -542,3 +524,89 @@ iIntros "%Hfl". wp_auto. wp_for_post. iApply "HΦ". rewrite Hfl.
 Qed.
 
 End fibonacci_examples.
+
+Section dsp_examples.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!chanGhostStateG Σ interface.t}.
+Context `{!dspG Σ interface.t}.
+Set Default Proof Using "Type".
+#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
+
+Definition ref_prot : iProto Σ interface.t :=
+  <! (l:loc) (x:Z)> MSG (interface.mk (ptrT.id intT.id) #l) {{ l ↦ W64 x }} ;
+  <?> MSG (interface.mk (structT.id []) #()) {{ l ↦ w64_word_instance.(word.add) (W64 x) (W64 2) }} ;
+  END.
+
+Lemma wp_DSPExample :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
+    @! chan_spec_raw_examples.DSPExampleX #()
+  {{{ RET #(W64 42); True }}}.
+Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG dspG0
+Σ.
+  (* TODO: Simplify the above [Proof] *)
+  wp_start. wp_auto.
+  wp_apply (wp_NewChannel (V:=interface.t) (t:=interfaceT) 0); [done|].
+  iIntros (c γ) "[#Hic Hoc]". wp_auto.
+  wp_apply (wp_NewChannel (V:=interface.t) (t:=interfaceT) 0); [done|].
+  iIntros (signal γ') "[#Hicsignal Hocsignal]". wp_auto.
+  iMod (dsp_session_init _ _ _ _ _ _ _ _ _ ref_prot with "Hic Hicsignal Hoc Hocsignal")
+                       as "[Hc Hcsignal]";
+    [by eauto|by eauto|..].
+  iPersist "c signal".
+  wp_apply (wp_fork with "[Hcsignal]").
+  { wp_auto.
+    (* BEGIN: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
+    wp_apply (dsp_recv_discard_ok (tV:=interfaceT) (TT:=[tele loc Z]) signal c
+              (tele_app (λ l x, interface.mk (ptrT.id intT.id) (# l)))
+              (tele_app (λ l x, l ↦ W64 (x)))%I
+              (tele_app (λ l x, iProto_dual
+                                  (<?> MSG (interface.mk (structT.id []) #())
+                                     {{ l ↦ w64_word_instance.(word.add)
+                                                  (W64 x) (W64 2) }} ; END))) with "[Hcsignal]").
+    { iApply (iProto_pointsto_le with "Hcsignal").
+      rewrite /ref_prot. rewrite iProto_dual_message /=.
+      iIntros "!>".
+      rewrite !iMsg_dual_exist. iIntros (l).
+      rewrite !iMsg_dual_exist. iIntros (x).
+      rewrite iMsg_dual_base. iExists l, x.
+      iIntros "HP". iFrame "HP".
+      iApply iProto_le_base. iApply iProto_le_refl. }
+    simpl.
+    iIntros (lx).
+    epose proof (tele_arg_S_inv lx) as [l [[x []] ->]]. simpl.
+    iIntros "[Hcsignal Hl]".
+    (* END: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
+    wp_apply wp_interface_type_assert; [done|].
+    (* BEGIN: Will be simplified to tactic [wp_send with "[$Hl]"] *)
+    iDestruct (iProto_pointsto_le _ _ (<!> MSG (interface.mk (structT.id []) #()) ; END)
+                with "Hcsignal [Hl]") as "Hcsignal".
+    { rewrite iProto_dual_message /= iMsg_dual_base.
+      iIntros "!>". iFrame "Hl". rewrite iProto_dual_end. iApply iProto_le_refl. }
+    wp_apply (dsp_send with "[$Hcsignal]").
+    (* END: Will be simplified to tactic [wp_send with "[$Hl]"] *)
+    iIntros "Hc". by wp_auto. }
+  (* BEGIN: Will be simplified to tactic [wp_send with "[$val]"] *)
+  iDestruct (iProto_pointsto_le with "[$Hc] [val]") as "Hc".
+  { iExists val_ptr, 40%Z. iFrame "val". iApply iProto_le_refl. }
+  wp_apply (dsp_send with "[$Hc]").
+  (* END: Will be simplified to tactic [wp_send with "[$val]"] *)
+  iIntros "Hc". wp_auto.
+  (* BEGIN: Will be simplified to tactic [wp_recv as "Hl"] *)
+  wp_apply (dsp_recv_discard_ok (tV:=interfaceT) (TT:=[tele]) c signal
+              (λ _, interface.mk (structT.id []) (# ()))
+              (λ _, val_ptr ↦ W64 (40 + 2))%I
+              (λ _, END%proto)
+             with "[Hc]").
+  { simpl. iApply (iProto_pointsto_le with "Hc").
+    iIntros "!> HP". iFrame. done. }
+  iIntros (_) "[Hc Hl]".
+  (* END: Will be simplified to tactic [wp_recv as "Hl"] *)
+  wp_auto. by iApply "HΦ".
+Qed.
+
+End dsp_examples.
+
