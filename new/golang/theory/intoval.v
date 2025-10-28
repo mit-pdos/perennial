@@ -40,9 +40,17 @@ Global Instance typed_pointsto_dfractional `{TypedPointsto V} l v :
   DFractional (λ dq, typed_pointsto l dq v).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
 
-Global Instance typed_pointsto_asdfractional `{TypedPointsto V} l dq v :
+Global Instance typed_pointsto_as_dfractional `{TypedPointsto V} l dq v :
   AsDFractional (typed_pointsto l dq v) (λ dq, typed_pointsto l dq v) dq.
 Proof. split; try done. apply _. Qed.
+
+(* TODO: move higher upstream. *)
+Global Instance as_dfractional_persistent P Φ `{AsDFractional _ (P : iProp Σ) Φ DfracDiscarded} :
+  Persistent P.
+Proof.
+  erewrite as_dfractional. apply dfractional_persistent.
+  unshelve eapply as_dfractional_dfractional; try eassumption.
+Qed.
 
 Global Instance typed_pointsto_combine_sep_gives `{TypedPointsto V} l dq1 v1 dq2 v2 :
   CombineSepGives (typed_pointsto l dq1 v1)
