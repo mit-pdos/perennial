@@ -25,7 +25,7 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Lemma wp_make (cap: Z) {B: BoundedTypeSize t} :
   0 ≤ cap < 2^63 ->
-  {{{ is_pkg_init channel }}}
+  {{{ True }}}
     chan.make #t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_channel ch cap γ ∗
@@ -41,7 +41,7 @@ Qed.
 
 Lemma wp_send (ch: loc) (cap: Z) (v: V) (γ: chan_names):
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch cap v γ (Φ #())) -∗
   WP chan.send #t #ch #v {{ Φ }}.
 Proof.
@@ -53,7 +53,7 @@ Qed.
 
 Lemma wp_close (ch: loc) (cap: Z) (γ: chan_names):
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch cap γ (Φ #())) -∗
   WP chan.close #t #ch {{ Φ }}.
 Proof.
@@ -65,7 +65,7 @@ Qed.
 
 Lemma wp_receive (ch: loc) (cap: Z) (γ: chan_names) :
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ rcv_au_slow ch cap γ (λ v ok, Φ (#v, #ok)%V)) -∗
   WP chan.receive #t #ch {{ Φ }}.
 Proof.
@@ -76,7 +76,7 @@ Proof.
 Qed.
 
 Lemma wp_cap (ch: loc) (cap: Z) (γ: chan_names) :
-  {{{ is_pkg_init channel ∗ is_channel ch cap γ }}}
+  {{{ is_channel ch cap γ }}}
     chan.cap #t #ch
   {{{ RET #(W64 cap); True }}}.
 Proof.

@@ -193,7 +193,7 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hiv]".
 
-  wp_apply (chan.wp_send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (chan.wp_send ch 1 v γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
 
   iApply (future_fulfill_au with "[$Hiv $Hchan] [$]").
@@ -252,7 +252,7 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
   
-  iApply (chan.wp_receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_receive ch 1 γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2)".
 
   iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$] [Hcont]").

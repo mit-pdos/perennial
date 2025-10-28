@@ -176,7 +176,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (chan.wp_send lr_chan lrcap v γlr_names with "[$Hinit $Hcl]").
+  iApply (chan.wp_send lr_chan lrcap v γlr_names with "[$Hcl]").
   iIntros "H£".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -236,7 +236,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hcr]").
   iIntros "H£s".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -358,7 +358,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (chan.wp_close lr_chan lrcap γlr_names with "[$Hinit $Hcl]").
+  iApply (chan.wp_close lr_chan lrcap γlr_names with "[$Hcl]").
   iIntros "H£".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -393,7 +393,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hcr]").
   iIntros "H£s".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -474,7 +474,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hcr]").
   iIntros "H£s".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".

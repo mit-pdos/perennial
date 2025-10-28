@@ -378,7 +378,7 @@ Lemma wp_mpmc_send γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset
 Proof.
   iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hprod & HP) Hcont".
   unfold is_mpmc. iNamed "Hmpmc". iDestruct "Hmpmc" as "[#Hchan Hinv]".
-  iApply (chan.wp_send ch cap v γ.(chan_name) with "[$Hchan $Hinit]").
+  iApply (chan.wp_send ch cap v γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
@@ -567,7 +567,7 @@ Proof.
   iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hcons) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (chan.wp_receive ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_receive ch cap γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
@@ -776,7 +776,7 @@ Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hprods & HR) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (chan.wp_close ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_close ch cap γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".

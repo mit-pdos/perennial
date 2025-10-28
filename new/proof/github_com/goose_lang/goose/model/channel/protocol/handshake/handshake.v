@@ -63,7 +63,7 @@ Lemma wp_handshake_receive γ ch P Q :
   }}}.
 Proof.
   iIntros (?) "(Hpc & (#Hchan & #Hinv) & HQ) HΦ".
-  iApply ((chan.wp_receive ch 0  γ Φ  ) with "[$Hpc $Hchan]").
+  wp_apply ((chan.wp_receive ch 0  γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
    iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".
@@ -103,7 +103,7 @@ Lemma wp_handshake_send γ ch v P Q :
   }}}.
 Proof.
   iIntros (?) "(Hpc & (#Hchan & #Hinv) & HP) HΦ".
-  iApply ((chan.wp_send ch 0 v γ Φ  ) with "[$Hpc $Hchan]").
+  wp_apply ((chan.wp_send ch 0 v γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
   iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".

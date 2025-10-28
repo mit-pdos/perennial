@@ -316,7 +316,7 @@ Proof.
   iDestruct "Hrest" as "[HNh HR]".
   iIntros "Hphi".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
-  iApply (chan.wp_close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+  iApply (chan.wp_close ch 0 γ.(chan_name) with "[$Hch]").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
   iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
   { iFrame "#". }
@@ -474,7 +474,7 @@ Lemma wp_done_receive γ ch Q :
 Proof.
   iIntros (Φ) "(#Hinit & #Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
-   iApply (chan.wp_receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+   iApply (chan.wp_receive ch 0 γ.(chan_name) with "[$Hch]").
 
 
 

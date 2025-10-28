@@ -7,17 +7,17 @@ Context `{ffi_syntax}.
 
 (* takes type as first argument *)
 Definition make: val := λ: "T" "cap",
-    func_call #channel.NewChannel "T" "cap".
+    channel.NewChannelⁱᵐᵖˡ "T" "cap".
 Definition receive : val :=
-  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Receive" "c" "T" #().
+  λ: "T" "c", channel.Channel__Receiveⁱᵐᵖˡ "c" "T" #().
 Definition send : val :=
-  λ: "T" "c" "v", method_call #(ptrT.id channel.Channel.id) #"Send" "c" "T" "v".
+  λ: "T" "c" "v", channel.Channel__Sendⁱᵐᵖˡ "c" "T" "v".
 Definition close : val :=
-  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Close" "c" "T" #().
+  λ: "T" "c", channel.Channel__Closeⁱᵐᵖˡ "c" "T" #().
 Definition len : val :=
-  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Len" "c" "T" #().
+  λ: "T" "c", channel.Channel__Lenⁱᵐᵖˡ "c" "T" #().
 Definition cap : val :=
-  λ: "T" "c", method_call #(ptrT.id channel.Channel.id) #"Cap" "c" "T" #().
+  λ: "T" "c", channel.Channel__Capⁱᵐᵖˡ "c" "T" #().
 
 Definition for_range : val :=
   λ: "T" "c" "body",
@@ -41,11 +41,11 @@ Definition do_select_case : val :=
     exception_do (match: "c" with
         InjL "data" =>
           let: ((("T", "ch"), "v"), "f") := "data" in
-          let: "ok" := method_call #(ptrT.id channel.Channel.id) #"TrySend" "ch" "T" "v" "blocking" in
+          let: "ok" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
           if: "ok" then ("f" #();;; do: #true) else (do: #false)
       | InjR "data" =>
           let: (("T", "ch"), "f") := "data" in
-          let: (("success", "v"), "ok") := method_call #(ptrT.id channel.Channel.id) #"TryReceive" "ch" "T" "blocking" in
+          let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
           if: "success" then
             ("f" "v" "ok";;; do: #true)
           else do: #false

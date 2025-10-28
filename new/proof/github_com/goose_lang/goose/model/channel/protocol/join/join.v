@@ -243,7 +243,7 @@ Proof.
   iNamed "HWorker".
   iDestruct "HWorker" as "[Hfrag Hprop]".
   iDestruct "Hjoin" as "[#Hch #Hinv]".
-  iApply (chan.wp_send ch cap (default_val V) γ.(chan_name) with "[$Hinit $Hch]").
+  iApply (chan.wp_send ch cap (default_val V) γ.(chan_name) with "[$Hch]").
   iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
@@ -317,7 +317,7 @@ Proof.
   iDestruct "HJoinQ" as "[HspQ HQimp]".
   rewrite /join /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
-  iApply (chan.wp_receive ch cap γ.(chan_name) with "[$Hinit $Hch]").
+  iApply (chan.wp_receive ch cap γ.(chan_name) with "[$Hch]").
   iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".

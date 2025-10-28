@@ -180,7 +180,7 @@ Proof.
   iDestruct "Hspsc" as "[Hchan Hinv]".
 
   (* Use wp_Receive with our atomic update *)
-  iApply (chan.wp_receive ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (chan.wp_receive ch cap γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
 
   (* Open the SPSC invariant to provide the atomic update *)
@@ -441,7 +441,7 @@ Proof.
   iDestruct "Hspsc" as "[Hchan Hinv]".
   
   (* Use wp_Send with our atomic update *)
-  iApply (chan.wp_send ch cap v γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (chan.wp_send ch cap v γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
   iDestruct "Hlc4" as "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
@@ -613,7 +613,7 @@ Proof.
   iIntros (Φ) "( #Hinit & #Hspsc & Hprod & HP) Hcont".
   unfold is_spsc. iNamed "Hspsc".
   iDestruct "Hspsc" as "[Hchan Hinv]".
-  iApply (chan.wp_close ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_close ch cap γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".

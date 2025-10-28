@@ -1,9 +1,8 @@
 From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_au_base chan_init.
 From New.proof Require Import proof_prelude.
+From New.golang.theory Require Import lock.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
-From New.proof.github_com.goose_lang Require Import primitive.
-From New.proof.github_com.goose_lang.std Require Import std_core.
 
 #[local] Transparent is_channel own_channel.
 
@@ -16,15 +15,15 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Lemma wp_NewChannel (cap: Z) {B: BoundedTypeSize t} :
   0 ≤ cap < 2^63 ->
-  {{{ is_pkg_init channel }}}
-    @! channel.NewChannel #t #(W64 cap)
+  {{{ True }}}
+    channel.NewChannelⁱᵐᵖˡ #t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_channel ch cap γ ∗
       own_channel ch cap (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
   intros Hcap.
-  wp_start. wp_auto.
+  wp_start. wp_call. wp_auto.
   wp_if_destruct.
   {
     assert (cap > 0) by word.
@@ -57,7 +56,7 @@ Proof.
                offer_continuation_name := offer_continuation_gname;
              |}).
     iPersist "Hcap Hmu".
-    iMod ((init_Mutex (chan_inv_inner ch cap γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
+    iMod ((init_lock (chan_inv_inner ch cap γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
     {
       iModIntro. unfold chan_inv_inner.
       iDestruct "Hsl" as "[Hsl Hos]".
@@ -107,7 +106,7 @@ Proof.
                offer_continuation_name := offer_continuation_gname;
              |}).
     iPersist "Hmu Hcap".
-    iMod ((init_Mutex (chan_inv_inner ch 0 γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
+    iMod ((init_lock (chan_inv_inner ch 0 γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
     {
       iModIntro. unfold chan_inv_inner.
       iDestruct "Hsl" as "[Hsl Hos]".
@@ -123,11 +122,11 @@ Proof.
 Qed.
 
 Lemma wp_Cap (ch: loc) (cap: Z) (γ: chan_names) :
-  {{{ is_pkg_init channel ∗ is_channel ch cap γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Cap" #t #()
+  {{{ is_channel ch cap γ }}}
+    channel.Channel__Capⁱᵐᵖˡ #ch #t #()
   {{{ RET #(W64 cap); True }}}.
 Proof.
-  wp_start as "#Hch".
+  wp_start as "#Hch". wp_call.
   wp_auto.
   iDestruct (is_channel_not_null with "Hch") as %Hnn.
   iNamed "Hch".
@@ -138,32 +137,35 @@ Proof.
 Qed.
 
 Lemma wp_Len (ch: loc) (cap: Z) (γ: chan_names) :
-  {{{ is_pkg_init channel ∗ is_channel ch cap γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Len" #t #()
+  {{{ is_channel ch cap γ }}}
+    channel.Channel__Lenⁱᵐᵖˡ #ch #t #()
   {{{ (l: w64), RET #l; ⌜0 ≤ sint.Z l ≤ cap⌝ }}}.
 Proof.
-  wp_start as "#His".
+  wp_start as "#His". wp_call.
   wp_auto.
   iDestruct (is_channel_not_null with "His") as %Hnn.
   iNamed "His".
   rewrite bool_decide_eq_false_2 //.
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
+  wp_call.
+  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
   destruct s.
   - iNamed "phys".
     wp_auto.
     iDestruct (own_slice_len with "slice") as %Hlen.
-    wp_apply (wp_Mutex__Unlock with "[$lock state buffer slice slice_cap offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (Buffered buff); iFrame. }
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap offer $Hlock]").
+    { unfold chan_inv_inner. iExists (Buffered buff); iFrame. }
     iApply "HΦ".
     iPureIntro.
     admit. (* TODO: does not seem tracked *)
   - iNamed "phys".
     wp_auto.
     iDestruct (own_slice_len with "slice") as %Hlen.
-    wp_apply (wp_Mutex__Unlock with "[$lock state buffer slice slice_cap offer v $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists Idle; iFrame "∗#". }
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap offer v $Hlock]").
+    { unfold chan_inv_inner. iExists Idle; iFrame "∗#". }
     iApply "HΦ".
     iPureIntro.
     admit. (* need 0 ≤ cap *)
@@ -171,16 +173,17 @@ Admitted.
 
 Lemma wp_TrySend (ch: loc) (cap: Z) (v: V) (γ: chan_names) (P: iProp Σ):
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   P ∗ (P -∗ ((send_au_slow ch cap v γ (Φ (#true))))) -∗
   (P -∗ (Φ (#false))) -∗
-  WP ch @ (ptrT.id channel.Channel.id) @ "TrySend" #t #v #true {{ Φ }}.
+  WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #true {{ Φ }}.
 Proof.
-  intros. iIntros "[#Hinit Hunb]". iIntros "[HP HPau]". iIntros "HPfail".
-  wp_method_call. wp_call.
+  intros. iIntros "Hunb". iIntros "[HP HPau]". iIntros "HPfail".
+  wp_call.
   iNamed "Hunb".
   wp_auto_lc 5.
-  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
+  wp_call.
+  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
 
   (* Case analysis on channel state *)
@@ -213,8 +216,9 @@ Proof.
       destruct (length buff <? cap) eqn: Heq.
       {
         iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
-        wp_apply (wp_Mutex__Unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
-        { iModIntro. unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
+        wp_call.
+        wp_apply (wp_lock_unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
+        { unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
         done.
       }
       {
@@ -223,9 +227,10 @@ Proof.
       }
     }
     {
-      wp_apply (wp_Mutex__Unlock
+      wp_call.
+      wp_apply (wp_lock_unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
-      { iModIntro. unfold chan_inv_inner. iExists (Buffered buff). iFrame.
+      { unfold chan_inv_inner. iExists (Buffered buff). iFrame.
         iPureIntro. done.
       }
       iApply "HPfail" in "HP". done.
@@ -235,11 +240,13 @@ Proof.
     iNamed "offer".
     iDestruct ((offer_idle_to_send γ v P (Φ (# true))) with "Hoffer") as ">[offer1 offer2]".
 
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer1 Hpred Hchanrepfrag HPau HP $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndWait v). iFrame. iPureIntro. done. }
+    { unfold chan_inv_inner. iExists (SndWait v). iFrame. iPureIntro. done. }
 
-    wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
+    wp_call.
+    wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
     iNamed "Hchan".
     iNamed "phys". iNamed "offer".
     destruct s.
@@ -262,9 +269,10 @@ Proof.
         with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       iMod ((saved_prop.saved_pred_update (K Φr0)) with "Hpred") as "[Hpred1 Hpred2]".
       iCombine "Hpred1 Hpred2" as "Hp".
-      wp_apply (wp_Mutex__Unlock
+      wp_call.
+      wp_apply (wp_lock_unlock
         with "[$lock state v slice slice_cap buffer Hchanrepfrag Hp H1 $Hlock]").
-      { iModIntro. unfold chan_inv_inner. iExists (Idle). iFrame.
+      { unfold chan_inv_inner. iExists (Idle). iFrame.
         iExists Φr0. iFrame. unfold saved_prop.saved_pred_own. rewrite dfrac_op_own Qp.half_half.
         iFrame.
         done.
@@ -308,9 +316,10 @@ Proof.
         P0 Φ0)
         with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
 
-      wp_apply (wp_Mutex__Unlock
+      wp_call.
+      wp_apply (wp_lock_unlock
         with "[$lock state v slice slice_cap buffer Hpred Hgv2 Hpeq H1 $Hlock]").
-      { iModIntro. unfold chan_inv_inner. iExists (Idle). iFrame. }
+      { unfold chan_inv_inner. iExists (Idle). iFrame. }
       unfold K.
       iRewrite -"H" in "Hcont". done.
 
@@ -334,9 +343,10 @@ Proof.
 
   - (* SndWait *)
     iNamed "phys". wp_auto_lc 5.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndWait v0). iFrame. }
+    { unfold chan_inv_inner. iExists (SndWait v0). iFrame. }
     iApply "HPfail" in "HP".
     done.
 
@@ -371,23 +381,26 @@ Proof.
       with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
     { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer Hgv1 H2 Hpred Hoffer Hcont1 $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamed "Hgv1". iFrame. }
+    { unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamed "Hgv1". iFrame. }
     done.
 
   - (* SndDone *)
     iNamed "phys". wp_auto_lc 2.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndDone v0). iFrame. }
+    { unfold chan_inv_inner. iExists (SndDone v0). iFrame. }
     iApply "HPfail" in "HP". done.
 
   - (* RcvDone *)
     iNamed "phys". wp_auto_lc 2.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (RcvDone v0). iFrame. }
+    { unfold chan_inv_inner. iExists (RcvDone v0). iFrame. }
     iApply "HPfail" in "HP". done.
 
   - (* Closed *)
@@ -424,16 +437,17 @@ Qed.
 
 Lemma wp_TrySend_nb (ch: loc) (cap: Z) (v: V) (γ: chan_names) (P: iProp Σ):
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   P ∗ (P -∗ ((send_au_fast ch cap v γ (Φ (#true))))) -∗
   (P -∗ (Φ (#false))) -∗
-  WP ch @ (ptrT.id channel.Channel.id) @ "TrySend" #t #v #false {{ Φ }}.
+  WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #false {{ Φ }}.
 Proof.
-  intros. iIntros "[#Hinit Hunb]". iIntros "[HP HPau]". iIntros "HPfail".
-  wp_method_call. wp_call.
+  intros. iIntros "Hunb". iIntros "[HP HPau]". iIntros "HPfail".
+  wp_call.
   iNamed "Hunb".
   wp_auto_lc 5.
-  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
+  wp_call.
+  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
 
   (* Case analysis on channel state *)
@@ -466,8 +480,9 @@ Proof.
       destruct (length buff <? cap) eqn: Heq.
       {
         iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
-        wp_apply (wp_Mutex__Unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
-        { iModIntro. unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
+        wp_call.
+        wp_apply (wp_lock_unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
+        { unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
         done.
       }
       {
@@ -476,9 +491,10 @@ Proof.
       }
     }
     {
-      wp_apply (wp_Mutex__Unlock
+      wp_call.
+      wp_apply (wp_lock_unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
-      { iModIntro. unfold chan_inv_inner. iExists (Buffered buff). iFrame.
+      { unfold chan_inv_inner. iExists (Buffered buff). iFrame.
         iPureIntro. done.
       }
       iApply "HPfail" in "HP". done.
@@ -487,17 +503,19 @@ Proof.
 
   { (* Idle *)
     iNamed "phys". wp_auto_lc 5.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer HPau $Hlock]").
-    { iModIntro. iFrame. unfold chan_inv_inner. iExists (Idle). iFrame. }
+    { iFrame. unfold chan_inv_inner. iExists (Idle). iFrame. }
     iApply "HPfail" in "HP". done.
   }
 
   { (* SndWait *)
     iNamed "phys". wp_auto_lc 5.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndWait v0). iFrame. }
+    { unfold chan_inv_inner. iExists (SndWait v0). iFrame. }
     iApply "HPfail" in "HP".
     done.
   }
@@ -533,25 +551,28 @@ Proof.
       with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
     { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer Hgv1 H2 Hpred Hoffer Hcont1 $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamed "Hgv1". iFrame. }
+    { unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamed "Hgv1". iFrame. }
     done.
   }
 
   { (* SndDone *)
     iNamed "phys". wp_auto_lc 2.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndDone v0). iFrame. }
+    { unfold chan_inv_inner. iExists (SndDone v0). iFrame. }
     iApply "HPfail" in "HP". done.
   }
 
   { (* RcvDone *)
     iNamed "phys". wp_auto_lc 2.
-    wp_apply (wp_Mutex__Unlock
+    wp_call.
+    wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (RcvDone v0). iFrame. }
+    { unfold chan_inv_inner. iExists (RcvDone v0). iFrame. }
     iApply "HPfail" in "HP". done.
   }
 
@@ -590,14 +611,13 @@ Qed.
 
 Lemma wp_Send (ch: loc) (cap: Z) (v: V) (γ: chan_names):
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch cap v γ (Φ #())) -∗
-  WP ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v {{ Φ }}.
+  WP channel.Channel__Sendⁱᵐᵖˡ #ch #t #v {{ Φ }}.
 Proof.
-  intros. iIntros "[#Hinit #Hic]". iIntros "Hau".
+  intros. iIntros "#Hic". iIntros "Hau".
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
-  destruct_pkg_init "Hinit".
-  wp_method_call. wp_call_lc "?".
+  wp_call_lc "?".
   wp_auto_lc 3.
   iSpecialize ("Hau" with "[$]").
 
@@ -652,18 +672,19 @@ Qed.
 
 Lemma wp_tryClose (ch: loc) (cap: Z) (γ: chan_names) (P: iProp Σ) :
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   P ∗ (P -∗ close_au ch cap γ (Φ (#true))) -∗
   (P -∗ (Φ (#false))) -∗
-  WP ch @ (ptrT.id channel.Channel.id) @ "tryClose" #t #() {{ Φ }}.
+  WP channel.Channel__tryCloseⁱᵐᵖˡ #ch #t #() {{ Φ }}.
 Proof.
-  intros. iIntros "[#Hinit #Hunb]". iIntros "[HP HPau]". iIntros "HPfail".
-  wp_method_call. wp_call.
+  intros. iIntros "#Hunb". iIntros "[HP HPau]". iIntros "HPfail".
+  wp_call.
   iNamed "Hunb".
   wp_auto_lc 1.
 
   (* Lock the channel *)
-  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
+  wp_call.
+  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
 
   (* Open the atomic update *)
@@ -691,8 +712,9 @@ Proof.
     iMod ("Hcontinner" with "Hgv1") as "HΦ".
     iModIntro.
 
-    wp_apply (wp_Mutex__Unlock with "[$lock state buffer slice slice_cap Hgv2 $Hlock]").
-    { iModIntro. unfold chan_inv_inner.
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap Hgv2 $Hlock]").
+    { unfold chan_inv_inner.
       iExists (Closed buff). unfold chan_phys.
       destruct buff.
       { iFrame. destruct cap. all: try iFrame.
@@ -724,8 +746,9 @@ Proof.
     iModIntro.
 
     wp_auto.
-    wp_apply (wp_Mutex__Unlock with "[$lock state v buffer slice slice_cap Hgv2 Hoffer $Hlock]").
-    { iModIntro. unfold chan_inv_inner.
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state v buffer slice slice_cap Hgv2 Hoffer $Hlock]").
+    { unfold chan_inv_inner.
       iExists (Closed []). iFrame. destruct cap.
       { done. }
       { done. }
@@ -736,29 +759,33 @@ Proof.
 
   { (* SndWait - can't close yet *)
     wp_auto.
-    wp_apply (wp_Mutex__Unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndWait v). iFrame. }
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
+    { unfold chan_inv_inner. iExists (SndWait v). iFrame. }
     iApply "HPfail" in "HP". iFrame.
   }
 
   { (* RcvWait - can't close yet *)
     wp_auto.
-    wp_apply (wp_Mutex__Unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (RcvWait). iFrame. }
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
+    { unfold chan_inv_inner. iExists (RcvWait). iFrame. }
     iApply "HPfail" in "HP". iFrame.
   }
 
   { (* SndDone - can't close yet *)
     wp_auto.
-    wp_apply (wp_Mutex__Unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (SndDone v). iFrame. }
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
+    { unfold chan_inv_inner. iExists (SndDone v). iFrame. }
     iApply "HPfail" in "HP". iFrame.
   }
 
   { (* RcvDone - can't close yet *)
     wp_auto.
-    wp_apply (wp_Mutex__Unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
-    { iModIntro. unfold chan_inv_inner. iExists (RcvDone v). iFrame. }
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state v buffer slice slice_cap offer $Hlock]").
+    { unfold chan_inv_inner. iExists (RcvDone v). iFrame. }
     iApply "HPfail" in "HP". iFrame.
   }
 
@@ -790,14 +817,13 @@ Qed.
 
 Lemma wp_Close (ch: loc) (cap: Z) (γ: chan_names) :
   ∀ Φ,
-  is_pkg_init channel ∗ is_channel ch cap γ -∗
+  is_channel ch cap γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch cap γ (Φ #())) -∗
-  WP ch @ (ptrT.id channel.Channel.id) @ "Close" #t #() {{ Φ }}.
+  WP channel.Channel__Closeⁱᵐᵖˡ #ch #t #() {{ Φ }}.
 Proof.
-  intros. iIntros "[#Hinit #Hic]". iIntros "Hau".
+  intros. iIntros "#Hic". iIntros "Hau".
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
-  destruct_pkg_init "Hinit".
-  wp_method_call. wp_call_lc "?".
+  wp_call_lc "?".
   wp_auto_lc 3.
   iSpecialize ("Hau" with "[$]").
   wp_if_destruct; first done.
