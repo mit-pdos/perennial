@@ -85,7 +85,7 @@ Definition is_future (γ : future_names) (ch : loc)
 Lemma start_future ch (P : V → iProp Σ) γ :
   is_channel ch 1 γ -∗
   (own_channel ch 1 (chan_rep.Buffered []) γ) ={⊤}=∗
-  (∃ γfuture, ⌜γfuture.(future.chan_name) = γ⌝ ∗ is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
+  (∃ γfuture, is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
 Proof.
   iIntros "#Hch Hoc".
 
@@ -120,9 +120,14 @@ Proof.
 
   (* Construct the final result *)
   iModIntro. iExists γfuture.
-  iSplit; [done|].
   unfold is_future, await_token, fulfill_token.
   iFrame "#". iFrame.
+Qed.
+
+Lemma future_is_channel γfuture ch P :
+  is_future γfuture ch P ⊢ is_channel ch 1 γfuture.(future.chan_name).
+Proof.
+  iDestruct 1 as "[$ _]".
 Qed.
 
 (** ** Fulfill Operation (Send) *)

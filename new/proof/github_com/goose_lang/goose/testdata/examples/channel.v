@@ -57,7 +57,7 @@ Proof.
   iIntros (ch). iIntros (γ). iIntros "(#HisChan & Hownchan)".
   wp_auto.
   simpl in *.
-  iDestruct ((start_future (V:=go_string) ch (λ v, ⌜ v = "Hello, World!"%go ⌝%I) γ) with "[$HisChan] [$Hownchan]") as ">(%γfuture & %Hname & Hfut)".
+  iDestruct ((start_future (V:=go_string) ch (λ v, ⌜ v = "Hello, World!"%go ⌝%I) γ) with "[$HisChan] [$Hownchan]") as ">(%γfuture & Hfut)".
   iDestruct "Hfut" as "(#Hisfut & Hawait & Hfulfill)".
   iPersist "ch".
   wp_apply (wp_fork with "[Hfulfill]").
@@ -66,8 +66,8 @@ Proof.
     wp_apply wp_sys_hello_world.
     iAssert (⌜"Hello, World!"%go = "Hello, World!"%go⌝)%I as "HP".
     { iPureIntro. reflexivity. }
-    wp_apply (chan.wp_send with "[$]") as "[Hlc _]".
-    replace γ with (γfuture.(future.chan_name)).
+    wp_apply (chan.wp_send with "[]") as "[Hlc _]".
+    { iDestruct (future_is_channel with "Hisfut") as "$". }
   iApply (future_fulfill_au γfuture ch (λ v : go_string, ⌜v = "Hello, World!"%go⌝%I) "Hello, World!"%go
   with "[$] [$]").
     iIntros "!> _".
@@ -87,11 +87,7 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_c
   wp_apply wp_HelloWorldAsync; first done.
   iIntros (ch γfuture) "[#Hfut Hawait]".
   wp_apply (chan.wp_receive) as "[Hlc _]".
-  {
-    (* TODO: breaking the idiom abstraction, but do need to extract [is_channel] *)
-    iDestruct "Hfut" as "[#Hchan _]".
-    done.
-  }
+  { iApply future_is_channel; done. }
   iApply (future_await_au (V:=go_string) (t:=stringT)  γfuture ch
                (λ (v : go_string), ⌜v = "Hello, World!"%go⌝%I) with "[$] [$Hawait $Hlc]").
   iIntros "!> %v %Heq". subst.
@@ -202,7 +198,7 @@ ghost_varG0 go_ctx hG Σ.
   iIntros (ch γ) "[#Hchan Hoc]".
   simpl.
   iDestruct (start_done ch γ with "Hchan") as "Hstart".
-iMod ("Hstart" with "Hoc") as (γdone) "(%Hname & #Hdone & Hnot)".
+iMod ("Hstart" with "Hoc") as (γdone) "(#Hdone & Hnot)".
 wp_auto.
 iPersist "done".
 
@@ -211,8 +207,8 @@ iMod (done_alloc_notified (t:=structT []) γdone ch True (errMsg_ptr ↦ "operat
 wp_apply (wp_fork with "[HNotify errMsg done]").
 { wp_auto.
   wp_apply wp_Sleep.
-  wp_apply (chan.wp_close (V:=()) with "[$Hchan]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
-  replace γ with γdone.(chan_name).
+  wp_apply (chan.wp_close (V:=()) with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
+  { iApply (done_is_channel with "Hdone"). }
   iApply (done_close_au (V:=()) with "[$] [$] [$HNotify errMsg]").
   { iFrame. }
   iNext.

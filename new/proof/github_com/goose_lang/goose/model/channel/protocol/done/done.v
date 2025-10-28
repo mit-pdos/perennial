@@ -190,7 +190,7 @@ Qed.
 Lemma start_done (ch : loc) (γ : chan_names) :
   is_channel ch 0 γ -∗
   own_channel ch 0 chan_rep.Idle γ ={⊤}=∗
-  ∃ γdone, ⌜γdone.(chan_name) = γ⌝ ∗ is_done γdone ch ∗ Notify γdone True.
+  ∃ γdone, is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
   iMod (ghost_map_alloc_empty) as (γmap) "[Hmap_auth1 Hmap_auth2]".
@@ -228,7 +228,6 @@ Proof.
     iFrame. iExists []. done.
   }
   iModIntro. iExists γdone. iFrame "#".
-  iSplit; [ done | ].
   rewrite /NotifyInternal. replace (γdone.(chan_name)) with γ by done. iFrame.
   replace (γdone.(receivers_map_name)) with γmap by done. iFrame.
   iDestruct (big_sepL_nil (λ i Q, ∃ prop_gname : gname, i ↪[γmap]{#1 / 2} prop_gname ∗ saved_prop_own prop_gname (DfracOwn (1 / 2)) Q)%I) as "H".
@@ -245,6 +244,12 @@ Proof.
   {
     simpl. done.
   }
+Qed.
+
+Lemma done_is_channel γ ch :
+  is_done γ ch ⊢ is_channel ch 0 γ.(chan_name).
+Proof.
+  iDestruct 1 as "[$ _]".
 Qed.
 
 Lemma done_close_au γ ch R Φ :
