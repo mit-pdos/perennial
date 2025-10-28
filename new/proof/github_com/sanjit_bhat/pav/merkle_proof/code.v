@@ -59,10 +59,6 @@ Proof.
     by rewrite go_type_size_unseal.
 Qed.
 
-#[global] Instance own_tree_pers ptr t :
-  Persistent (own_tree ptr t DfracDiscarded).
-Proof. revert ptr. induction t; apply _. Qed.
-
 #[global] Instance own_tree_dfrac ptr t :
   DFractional (λ d, own_tree ptr t d).
 Proof.
@@ -96,7 +92,7 @@ Proof.
       * iCombine "Hnode0 Hnode1" as "Hnode" gives %[_ ?].
         simplify_eq/=.
         iFrame "∗#".
-  - apply _.
+  - revert ptr. induction t; apply _.
   - iIntros "* H".
     iInduction t as [] forall (ptr);
       iNamed "H"; try iNamed "H"; fold own_tree.
@@ -1524,10 +1520,6 @@ Proof.
   iFrame "∗#".
   by repeat iSplit.
 Qed.
-
-#[global] Instance own_Map_pers ptr m h :
-  Persistent (own_Map ptr m h DfracDiscarded).
-Proof. apply _. Qed.
 
 #[global] Instance own_Map_dfrac ptr m h :
   DFractional (λ dq, own_Map ptr m h dq).
