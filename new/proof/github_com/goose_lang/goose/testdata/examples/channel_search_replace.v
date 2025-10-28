@@ -133,17 +133,18 @@ Section waitgroup_idiom.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
-Context `{!ghost_varG Σ nat}.
+Context `{!tok_setG Σ}.
 Context `{!auth_propG Σ}.
 
 Record WaitGroup_join_names :=
   {
     wg_gn : WaitGroup_names;
     wg_aprop_gn : gname;
-    wg_added_gn : gname;
+    wg_not_done_gn : gname;
   }.
 
 Implicit Types γ : WaitGroup_join_names.
+
 
 (* Internal invariant. Maintains ownership of the waitgroup counter so that
    Done() can run concurrently to Add. *)
@@ -153,19 +154,20 @@ Local Definition is_wgj_inv wg γ N : iProp Σ :=
   inv (N.@"inv") (
       ∃ ctr added done Pdone,
         "Hwg_ctr" ∷ own_WaitGroup γ.(wg_gn) ctr ∗
-        "Hadded" ∷ ghost_var γ.(wg_added_gn) (1/2) added ∗
-        "Hdone_prop" ∷ own_aprop_auth γ.(wg_aprop_gn) Pdone done ∗
-        "Hdone" ∷ Pdone ∗
+        "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) added ∗
+        "Hdone_toks" ∷ own_toks γ.(wg_not_done_gn) done ∗
+        "Hdone_aprop" ∷ own_aprop_frag γ.(wg_aprop_gn) Pdone done ∗
+        "Hdone_P" ∷ Pdone ∗
         "%Hctr_pos" ∷ (⌜ 0 ≤ sint.Z ctr ⌝) ∗
         "%Hctr" ∷ (⌜ sint.Z ctr = Z.of_nat added - Z.of_nat done ⌝)
     ).
 
-(** Permission to call `Add`. Calling `Add` will extend `A` with a caller-chosen
+(** Permission to call `Add`. Calling `Add` will extend `P` with a caller-chosen
     proposition, as long as `num_added` doesn't overflow. *)
 Definition own_Adder wg γ N (num_added : w32) (P : iProp Σ) : iProp Σ :=
   "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 0) ∗
   "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P (sint.nat num_added) ∗
-  "Hadded" ∷ ghost_var γ.(wg_added_gn) (1/2) (sint.nat num_added) ∗
+  "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) (sint.nat num_added) ∗
   "%Hadded_pos" ∷ ⌜ 0 ≤ sint.Z num_added ⌝ ∗
   "#Hinv" ∷ is_wgj_inv wg γ N.
 #[global] Opaque own_Adder.
@@ -176,7 +178,7 @@ Definition own_Waiter wg γ N (P : iProp Σ) : iProp Σ :=
   ∃ n,
   "Hwaiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 1) ∗
   "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P n ∗
-  "Hadded" ∷ ghost_var γ.(wg_added_gn) (1/2) n ∗
+  "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) n ∗
   "#Hinv" ∷ is_wgj_inv wg γ N.
 #[global] Opaque own_Waiter.
 #[local] Transparent own_Waiter.
@@ -184,6 +186,7 @@ Definition own_Waiter wg γ N (P : iProp Σ) : iProp Σ :=
 (** Permission to call `Done` as long as `P` is passed in. *)
 Definition own_Done wg γ N (P : iProp Σ) : iProp Σ :=
   "Haprop" ∷ own_aprop γ.(wg_aprop_gn) P ∗
+  "Hdone_tok" ∷ own_toks γ.(wg_not_done_gn) 1 ∗
   "#Hinv" ∷ is_wgj_inv wg γ N.
 #[global] Opaque own_Done.
 #[local] Transparent own_Done.
@@ -210,15 +213,14 @@ Proof.
   iIntros "Hno_waiters".
   iIntros "Hwg_ctr_inv". iMod "Hmask" as "_".
   iMod (own_aprop_auth_add P' with "Haprop") as "[Haprop Hdone_aprop]".
-  iMod (ghost_var_update_2 with "Hadded Hadded_inv") as "[Hadded Hadded_inv]".
-  { compute_done. }
+  iCombine "Hadded Hadded_inv" as "Hadded".
+  iMod (own_tok_auth_S with "Hadded") as "[[Hadded Hadded_inv] Hdone_tok]".
   iCombineNamed "*_inv" as "Hi".
   iMod ("Hclose" with "[Hi]").
-  { iNamed "Hi". iFrame.
-    instantiate (1:=(sint.nat num_added + 1)%nat). word. }
+  { iNamed "Hi". iFrame. word. }
   iModIntro. iApply "HΦ". iFrame "∗#".
-  replace (S _) with (sint.nat (word.add num_added $ W32 1)) by word.
-  replace (sint.nat (word.add _ _)) with (sint.nat num_added + 1)%nat by word.
+  progress replace (S _) with (sint.nat (word.add num_added $ W32 1)) by word.
+  progress replace (sint.nat (word.add _ _)) with (sint.nat num_added + 1)%nat by word.
   iFrame. word.
 Qed.
 
@@ -235,8 +237,15 @@ Proof.
   iInv "Hinv" as "Hi" "Hclose".
   iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask". iNext.
   iNamedSuffix "Hi" "_inv". iExists _; iFrame.
-  Set Typeclasses Debug.
-  iCombine "Hdone_prop_inv Haprop" gives %Hle.
+  iCombine "Hdone_tok Hdone_toks_inv" as "Hdone_toks_inv". simpl.
+  iCombine "Haprop Hdone_aprop_inv" as "Hdone_aprop_inv".
+  iCombine "Hadded_inv Hdone_toks_inv" gives %Hle.
+  iSplitR; first word. iIntros "Hwg_ctr_inv".
+  iMod "Hmask". iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi HP]").
+  { iNamed "Hi". iFrame "Hwg_ctr_inv". iFrame "Hdone_aprop_inv".
+    (* FIXME: iFrame seems to frame [?P] in the goal with whatever prop it sees.. *)
+    iFrame "Hdone_toks_inv". iFrame "Hadded_inv". iFrame. word. }
+  iModIntro. by iApply "HΦ".
 Qed.
 
 End waitgroup_idiom.
