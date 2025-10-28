@@ -197,7 +197,8 @@ Local Definition is_wgj_inv wg γ : iProp Σ :=
 
 (** Permission to call `Add`. Calling `Add` will extend `P` with a caller-chosen
     proposition, as long as `num_added` doesn't overflow. *)
-Definition own_Adder wg γ (num_added : w32) (P : iProp Σ) : iProp Σ :=
+Definition own_Adder wg (num_added : w32) (P : iProp Σ) : iProp Σ :=
+  ∃ γ,
   "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 0) ∗
   "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P (sint.nat num_added) ∗
   "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) (sint.nat num_added) ∗
@@ -207,8 +208,8 @@ Definition own_Adder wg γ (num_added : w32) (P : iProp Σ) : iProp Σ :=
 #[local] Transparent own_Adder.
 
 (** Permission to call `Wait`, knowing that `P` will be true afterwards. *)
-Definition own_Waiter wg γ (P : iProp Σ) : iProp Σ :=
-  ∃ n,
+Definition own_Waiter wg (P : iProp Σ) : iProp Σ :=
+  ∃ γ n,
   "Hwaiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 1) ∗
   "Hwait_tok" ∷ own_WaitGroup_wait_token γ.(wg_gn) ∗
   "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P n ∗
@@ -218,7 +219,8 @@ Definition own_Waiter wg γ (P : iProp Σ) : iProp Σ :=
 #[local] Transparent own_Waiter.
 
 (** Permission to call `Done` as long as `P` is passed in. *)
-Definition own_Done wg γ (P : iProp Σ) : iProp Σ :=
+Definition own_Done wg (P : iProp Σ) : iProp Σ :=
+  ∃ γ,
   "Haprop" ∷ own_aprop γ.(wg_aprop_gn) P ∗
   "Hdone_tok" ∷ own_toks γ.(wg_not_done_gn) 1 ∗
   "#Hinv" ∷ is_wgj_inv wg γ.
@@ -229,7 +231,7 @@ Lemma waitgroup_join_init wg γwg :
   is_WaitGroup wg γwg (wgjN.@"wg") -∗
   own_WaitGroup γwg (W32 0) -∗
   own_WaitGroup_waiters γwg (W32 0) ={⊤}=∗
-  ∃ γ, own_Adder wg γ (W32 0) True.
+  own_Adder wg (W32 0) True.
 Proof.
   iIntros "#His Hctr_inv Hwaiters".
   iMod own_aprop_auth_alloc as (wg_aprop_gn) "Haprop".
@@ -241,15 +243,15 @@ Proof.
   iFrame "∗#". word.
 Qed.
 
-Lemma wp_WaitGroup__Add P' wg γ P num_added :
+Lemma wp_WaitGroup__Add P' wg P num_added :
   {{{ is_pkg_init sync ∗
-      "Ha" ∷ own_Adder wg γ num_added P ∗
+      "Ha" ∷ own_Adder wg num_added P ∗
       "%Hoverflow" ∷ (⌜ sint.Z num_added < 2^31-1 ⌝)
   }}}
     wg @ (ptrT.id sync.WaitGroup.id) @ "Add" #(W64 1)
   {{{ RET #();
-      own_Adder wg γ (word.add num_added (W32 1)) (P ∗ P') ∗
-      own_Done wg γ P'
+      own_Adder wg (word.add num_added (W32 1)) (P ∗ P') ∗
+      own_Done wg P'
   }}}.
 Proof.
   wp_start_folded as "Hpre". iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
@@ -274,9 +276,9 @@ Proof.
   iFrame. word.
 Qed.
 
-Lemma wp_WaitGroup__Done P wg γ :
+Lemma wp_WaitGroup__Done P wg :
   {{{ is_pkg_init sync ∗
-      "Ha" ∷ own_Done wg γ P ∗
+      "Ha" ∷ own_Done wg P ∗
       "HP" ∷ P
   }}}
     wg @ (ptrT.id sync.WaitGroup.id) @ "Done" #()
@@ -298,10 +300,10 @@ Proof.
   iModIntro. by iApply "HΦ".
 Qed.
 
-Lemma wp_WaitGroup__Wait P wg γ :
-  {{{ is_pkg_init sync ∗ "Ha" ∷ own_Waiter wg γ P }}}
+Lemma wp_WaitGroup__Wait P wg :
+  {{{ is_pkg_init sync ∗ "Ha" ∷ own_Waiter wg P }}}
     wg @ (ptrT.id sync.WaitGroup.id) @ "Wait" #()
-  {{{ RET #(); ▷ P ∗ own_Adder wg γ (W32 0) True }}}.
+  {{{ RET #(); ▷ P ∗ own_Adder wg (W32 0) True }}}.
 Proof.
   wp_start_folded as "Hpre". iApply wp_fupd. iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
   wp_apply (wp_WaitGroup__Wait with "[$]").
@@ -354,16 +356,6 @@ Implicit Types γ : SearchReplace_names.
 
 Definition search_replace (x y: w64) : list w64 → list w64 :=
   fmap (λ a, if decide (a = x) then y else a).
-
-Definition wg_inv γ : iProp Σ :=
-  inv nroot (
-      ∃ ctr added done,
-        "Hwg_ctr" ∷ own_WaitGroup γ.(wg) ctr ∗
-        "Hadded" ∷ own_tok_auth_dfrac γ.(wg_added) (DfracOwn (1/2)) added ∗
-        "Hdone" ∷ own_tok_auth_dfrac γ.(wg_added) (DfracOwn (1/2)) done ∗
-        "" ∷ ⌜ uint.nat ctr = added + done ⌝
-    )
-.
 
 (* SearchReplace will own own_WaitGroup_waiters.
    Invariant for counter will say
