@@ -9,13 +9,13 @@ Set Default Proof Using "Type".
 
 Section auth_prop.
 
-Class authPropG Σ :=
+Class auth_propG Σ :=
   {
     #[local] savedPred_inG :: savedPropG Σ;
     #[local] gnameSet_inG :: ghost_mapG Σ gname ();
   }.
 
-Context `{!authPropG Σ}.
+Context `{!auth_propG Σ}.
 
 Definition own_aprop_auth γ (P : iProp Σ) (n : nat) : iProp Σ :=
   ∃ gns,
@@ -47,7 +47,7 @@ Proof.
   iModIntro. repeat iSplitL; try done; iIntros "_ "; done.
 Qed.
 
-Lemma own_aprop_auth_add γ P Q n :
+Lemma own_aprop_auth_add Q γ P n :
   ⊢ own_aprop_auth γ P n ==∗ own_aprop_auth γ (P ∗ Q) (S n) ∗ own_aprop γ Q.
 Proof.
   iNamed 1.
@@ -118,55 +118,99 @@ Section waitgroup_idiom.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
+Context `{!ghost_varG Σ nat}.
+Context `{!auth_propG Σ}.
 
 Record WaitGroup_join_names :=
   {
-    wg : WaitGroup_names;
-    wg_added : gname;
+    wg_gn : WaitGroup_names;
+    wg_aprop_gn : gname;
+    wg_added_gn : gname;
   }.
 
 Implicit Types γ : WaitGroup_join_names.
 
-Print auth_set_auth.
-AuthProp :
-
-  P : iProp
-  n, k : nat
-
- own_auth P n
- own_frag P k
-
- own_frag P k ∗ own_frag P' k' -∗ own_frag (P ∗ P') (k + k')
-
- own_auth P n ∗ own_frag P' n -∗ ▷(P ≡ P')
- own_auth P n ∗ own_frag P' n -∗ own_auth P'' 0
-
-Definition wg_inv γ : iProp Σ :=
-  inv nroot (
-      ∃ ctr added done,
-        "Hwg_ctr" ∷ own_WaitGroup γ.(wg) ctr ∗
-        "Hadded" ∷ own_tok_auth_dfrac γ.(wg_added) (DfracOwn (1/2)) added ∗
-        "Hdone" ∷ own_tok_auth_dfrac γ.(wg_added) (DfracOwn (1/2)) done ∗
-        "" ∷ ⌜ uint.nat ctr = added + done ⌝
-    )
-.
+(* Internal invariant. Maintains ownership of the waitgroup counter so that
+   Done() can run concurrently to Add. *)
+Local Definition is_wgj_inv wg γ N : iProp Σ :=
+  "#His" ∷ is_WaitGroup wg γ.(wg_gn) (N.@"wg") ∗
+  "#Hinv" ∷
+  inv (N.@"inv") (
+      ∃ ctr added done Pdone,
+        "Hwg_ctr" ∷ own_WaitGroup γ.(wg_gn) ctr ∗
+        "Hadded" ∷ ghost_var γ.(wg_added_gn) (1/2) added ∗
+        "Hdone_prop" ∷ own_aprop_auth γ.(wg_aprop_gn) Pdone done ∗
+        "Hdone" ∷ Pdone ∗
+        "%Hctr_pos" ∷ (⌜ 0 ≤ sint.Z ctr ⌝) ∗
+        "%Hctr" ∷ (⌜ sint.Z ctr = Z.of_nat added - Z.of_nat done ⌝)
+    ).
 
 (** Permission to call `Add`. Calling `Add` will extend `A` with a caller-chosen
     proposition, as long as `num_added` doesn't overflow. *)
-Definition own_Adder γ (num_added : w32) (P : iProp Σ) : iProp Σ :=
-  "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg) (W32 0)
-.
+Definition own_Adder wg γ N (num_added : w32) (P : iProp Σ) : iProp Σ :=
+  "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 0) ∗
+  "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P (sint.nat num_added) ∗
+  "Hadded" ∷ ghost_var γ.(wg_added_gn) (1/2) (sint.nat num_added) ∗
+  "%Hadded_pos" ∷ ⌜ 0 ≤ sint.Z num_added ⌝ ∗
+  "#Hinv" ∷ is_wgj_inv wg γ N.
+#[global] Opaque own_Adder.
+#[local] Transparent own_Adder.
 
 (** Permission to call `Wait`, knowing that `P` will be true afterwards. *)
-Definition own_Waiter γ (P : iProp Σ) : iProp Σ :=
-  "Hwaiters" ∷ own_WaitGroup_waiters γ.(wg) (W32 1)
-.
+Definition own_Waiter wg γ N (P : iProp Σ) : iProp Σ :=
+  ∃ n,
+  "Hwaiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 1) ∗
+  "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P n ∗
+  "Hadded" ∷ ghost_var γ.(wg_added_gn) (1/2) n ∗
+  "#Hinv" ∷ is_wgj_inv wg γ N.
+#[global] Opaque own_Waiter.
+#[local] Transparent own_Waiter.
 
 (** Permission to call `Done` as long as `P` is passed in. *)
-Definition own_Done γ (P : iProp Σ) : iProp Σ :=
-  True
-.
+Definition own_Done wg γ N (P : iProp Σ) : iProp Σ :=
+  "Haprop" ∷ own_aprop γ.(wg_aprop_gn) P ∗
+  "#Hinv" ∷ is_wgj_inv wg γ N.
+#[global] Opaque own_Done.
+#[local] Transparent own_Done.
 
+Lemma wp_WaitGroup__Add P' wg γ N P num_added :
+  {{{ is_pkg_init sync ∗
+      "Ha" ∷ own_Adder wg γ N num_added P ∗
+      "%Hoverflow" ∷ (⌜ sint.Z num_added < 2^31-1 ⌝) ∗
+      "Hlc" ∷ £ 1 ∗ (* FIXME: could add ▷ to lower level WaitGroup__Add, which
+                     requires adding it to atomic Add spec. *)
+      "Hlc2" ∷ £ 1
+  }}}
+    wg @ (ptrT.id sync.WaitGroup.id) @ "Add" #(W64 1)
+  {{{ RET #();
+      own_Adder wg γ N (word.add num_added (W32 1)) (P ∗ P') ∗
+      own_Done wg γ N P'
+  }}}.
+Proof.
+  wp_start_folded as "Hpre". iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
+  wp_apply (wp_WaitGroup__Add with "[$]").
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
+  iNamedSuffix "Hi" "_inv". iExists _; iFrame.
+  iCombine "Hadded Hadded_inv" gives %[_ Heq]. subst.
+  iSplitR; first word.
+  iIntros "Hno_waiters". (* FIXME: annoying to make sure we don't lose own_WaitGroup_waiters. *)
+  iIntros "Hwg_ctr_inv". iMod "Hmask" as "_".
+  iMod (own_aprop_auth_add P' with "Haprop") as "[Haprop Hdone_aprop]".
+  iMod (ghost_var_update_2 with "Hadded Hadded_inv") as "[Hadded Hadded_inv]".
+  { compute_done. }
+  iCombineNamed "*_inv" as "Hi".
+  iMod ("Hclose" with "[Hi]").
+  { iNamed "Hi". iFrame.
+    instantiate (1:=(sint.nat num_added + 1)%nat). word. }
+  iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
+  iModIntro. iApply "HΦ". iFrame "∗#".
+  iSplitL "Hno_waiters"; first admit.
+  replace (S _) with (sint.nat (word.add num_added $ W32 1)) by word.
+  replace (sint.nat (word.add _ _)) with (sint.nat num_added + 1)%nat by word.
+  iFrame. word.
+Admitted.
 
 End waitgroup_idiom.
 
