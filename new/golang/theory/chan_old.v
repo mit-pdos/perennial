@@ -172,7 +172,7 @@ Lemma wp_for_chan_range P ch (body : func.t) :
                       (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
                             own_chan ch s' ={∅,⊤}=∗ WP #body #v {{ for_chan_postcondition P Φ }})))
     ) -∗
-  WP chan.for_range #ch #body {{ Φ }}.
+  WP chan.for_range #t #ch #body {{ Φ }}.
 Proof using IntoValTyped0.
 Admitted.
 
