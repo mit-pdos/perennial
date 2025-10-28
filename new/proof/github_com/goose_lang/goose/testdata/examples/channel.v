@@ -527,15 +527,15 @@ Definition ref_prot : iProto Σ interface.t :=
 
 Lemma wp_DSPExample :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
-    @! chan_spec_raw_examples.DSPExampleX #()
+    @! chan_spec_raw_examples.DSPExample #()
   {{{ RET #(W64 42); True }}}.
 Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG dspG0
 Σ.
   (* TODO: Simplify the above [Proof] *)
   wp_start. wp_auto.
-  wp_apply (wp_NewChannel (V:=interface.t) (t:=interfaceT) 0); [done|].
+  wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
   iIntros (c γ) "[#Hic Hoc]". wp_auto.
-  wp_apply (wp_NewChannel (V:=interface.t) (t:=interfaceT) 0); [done|].
+  wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
   iIntros (signal γ') "[#Hicsignal Hocsignal]". wp_auto.
   iMod (dsp_session_init _ _ _ _ _ _ _ _ _ ref_prot with "Hic Hicsignal Hoc Hocsignal")
                        as "[Hc Hcsignal]";
@@ -544,7 +544,7 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
   wp_apply (wp_fork with "[Hcsignal]").
   { wp_auto.
     (* BEGIN: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
-    wp_apply (dsp_recv_discard_ok (tV:=interfaceT) (TT:=[tele loc Z]) signal c
+    wp_apply (dsp_recv (tV:=interfaceT) (TT:=[tele loc Z]) signal c
               (tele_app (λ l x, interface.mk (ptrT.id intT.id) (# l)))
               (tele_app (λ l x, l ↦ W64 (x)))%I
               (tele_app (λ l x, iProto_dual
@@ -563,6 +563,7 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
     iIntros (lx).
     epose proof (tele_arg_S_inv lx) as [l [[x []] ->]]. simpl.
     iIntros "[Hcsignal Hl]".
+    wp_auto.
     (* END: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
     wp_apply wp_interface_type_assert; [done|].
     (* BEGIN: Will be simplified to tactic [wp_send with "[$Hl]"] *)
@@ -580,7 +581,7 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
   (* END: Will be simplified to tactic [wp_send with "[$val]"] *)
   iIntros "Hc". wp_auto.
   (* BEGIN: Will be simplified to tactic [wp_recv as "Hl"] *)
-  wp_apply (dsp_recv_discard_ok (tV:=interfaceT) (TT:=[tele]) c signal
+  wp_apply (dsp_recv (tV:=interfaceT) (TT:=[tele]) c signal
               (λ _, interface.mk (structT.id []) (# ()))
               (λ _, val_ptr ↦ W64 (40 + 2))%I
               (λ _, END%proto)

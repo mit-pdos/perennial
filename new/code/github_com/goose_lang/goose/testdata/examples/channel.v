@@ -122,9 +122,9 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
       let: "$r0" := ((![#intT] (![#ptrT] "ptr")) + #(W64 2)) in
       do:  ((![#ptrT] "ptr") <-[#intT] "$r0");;;
       do:  (let: "$chan" := (![type.chanT #interfaceT] "signal") in
-      let: "$v" := (struct.make (type.structT [
+      let: "$v" := (interface.make #(structT.id []) (struct.make (type.structT [
       ]) [{
-      }]) in
+      }])) in
       chan.send #interfaceT "$chan" "$v");;;
       return: #())
       ) in
@@ -136,7 +136,7 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
     let: "$r0" := "val" in
     do:  ("ptr" <-[#ptrT] "$r0");;;
     do:  (let: "$chan" := (![type.chanT #interfaceT] "c") in
-    let: "$v" := (![#ptrT] "ptr") in
+    let: "$v" := (interface.make #(ptrT.id intT.id) (![#ptrT] "ptr")) in
     chan.send #interfaceT "$chan" "$v");;;
     do:  (Fst (chan.receive #interfaceT (![type.chanT #interfaceT] "signal")));;;
     return: (![#intT] (![#ptrT] "ptr"))).
