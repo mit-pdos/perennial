@@ -91,6 +91,27 @@ Proof.
   - iIntros "HP'". iApply "HimpliesP'" in "HP'". iApply "HimpliesP" in "HP'". iFrame.
 Qed.
 
+Lemma own_aprop_frag_combine γ P P' n n' :
+  ⊢ own_aprop_frag γ P n -∗ own_aprop_frag γ P' n' -∗ own_aprop_frag γ (P ∗ P') (n + n').
+Proof.
+  iNamed 1. iNamedSuffix 1 "'". rename gns0 into gns'.
+  destruct (decide (gns ∩ gns' = ∅)) as [Hdisj|Hbad].
+  2:{
+    apply set_choose_L in Hbad. destruct Hbad as [γprop Hbad].
+    iDestruct (big_sepS_elem_of_acc _ _ γprop with "Hgns") as "[H1 _]";
+      first set_solver.
+    iDestruct (big_sepS_elem_of_acc _ _ γprop with "Hgns'") as "[H2 _]";
+      first set_solver.
+    iCombine "H1 H2" gives %[Hbad' _]. done.
+  }
+  apply disjoint_intersection_L in Hdisj.
+  iExists (gns ∪ gns'). rewrite big_sepS_union //. iFrame.
+  rewrite big_sepS_union //. rewrite size_union //.
+  iSplitL; last word. iSplit.
+  - iIntros "[H H']". iApply "HimpliesP" in "H". iApply "HimpliesP'" in "H'". iFrame.
+  - iIntros "[H H']". iApply "HimpliesP" in "H". iApply "HimpliesP'" in "H'". iFrame.
+Qed.
+
 End auth_prop.
 
 Section waitgroup_idiom.
