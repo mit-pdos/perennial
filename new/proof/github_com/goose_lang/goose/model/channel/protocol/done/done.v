@@ -1,5 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
+From New.golang.theory Require Import chan.
 From iris.base_logic Require Import ghost_map.
 From iris.base_logic.lib Require Import saved_prop.
 
@@ -308,14 +309,14 @@ Lemma wp_done_close γ ch R :
   {{{ is_pkg_init channel ∗
       is_done γ ch ∗
       Notify γ R ∗ R }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
+    chan.close #t #ch
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ). iIntros "(#Hinit & #Hdone & Hrest)".  iNamed "Hrest".
   iDestruct "Hrest" as "[HNh HR]".
   iIntros "Hphi".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
-  iApply (wp_Close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+  iApply (chan.wp_close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
   iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
   { iFrame "#". }
@@ -468,12 +469,12 @@ Lemma wp_done_receive γ ch Q :
   {{{ is_pkg_init channel ∗
       is_done γ ch ∗
       Notified γ Q }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{ RET (#(default_val V), #false); Q }}}.
 Proof.
   iIntros (Φ) "(#Hinit & #Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
-   iApply (wp_Receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+   iApply (chan.wp_receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
 
 
 

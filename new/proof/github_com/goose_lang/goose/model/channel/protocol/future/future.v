@@ -1,5 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
+From New.golang.theory Require Import chan.
 
 (** * Future Channel Verification
 
@@ -184,7 +185,7 @@ Qed.
 
 Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
   {{{ is_pkg_init channel ∗ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.send #t #ch #v
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(#Hinit & #Hfuture & Hfulfillt & HP) Hcont".
@@ -192,7 +193,7 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hiv]".
 
-  wp_apply (wp_Send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (chan.wp_send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
 
   iApply (future_fulfill_au with "[$Hiv $Hchan] [$]").
@@ -243,7 +244,7 @@ Qed.
 (** Future await operation - consumes await token to receive value and P(v) *)
 Lemma wp_future_await γ ch (P : V → iProp Σ) :
   {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{ (v : V), RET (#v, #true); P v }}}.
 Proof.
   iIntros (Φ) "(#Hinit & #Hfuture & Hawaitt) Hcont".
@@ -251,30 +252,11 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
   
-  iApply (wp_Receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
   iIntros "(Hlc1 & Hlc2)".
 
   iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$] [Hcont]").
   iNext. iFrame.
-Qed.
-
-
-Lemma wp_future_await_discard_ok γ ch (P : V → iProp Σ) :
-  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #t #()
-  {{{ (v : V) , RET #v;
-      P v }}}.
-Proof.
-  wp_start. wp_auto.
-  wp_apply ((wp_future_await γ ch P) with "[- HΦ return_val]").
-  {
-   iFrame.
-  }
-  iIntros (v).
-  iIntros "HP".
-  wp_auto.
-  iApply "HΦ".
-  done.
 Qed.
 
 End future.

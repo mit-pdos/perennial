@@ -82,5 +82,6 @@ End chan.
 
 #[global] Opaque chan.make chan.receive chan.send chan.close
   chan.len chan.cap
-  chan.for_range chan.select_nonblocking chan.select_blocking
+  chan.select_nonblocking chan.select_blocking
 .
+(* [chan.for_range] is intended to be verified by unfolding and using [wp_for] *)

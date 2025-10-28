@@ -1,5 +1,7 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init contrib.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base contrib.
+From New.proof.github_com.goose_lang.goose.model.channel Require Import contrib.
+From New.golang.theory Require Import chan.
 From iris.algebra Require Import gmultiset big_op.
 From iris.algebra Require Export csum.
 From stdpp Require Export sets gmultiset countable.
@@ -371,12 +373,12 @@ Lemma wp_mpmc_send γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset
   {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
       mpmc_producer γ sent ∗
       P v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.send #t #ch #v
   {{{ RET #(); mpmc_producer γ (sent ⊎ {[+ v +]}) }}}.
 Proof.
   iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hprod & HP) Hcont".
   unfold is_mpmc. iNamed "Hmpmc". iDestruct "Hmpmc" as "[#Hchan Hinv]".
-  iApply (wp_Send ch cap v γ.(chan_name) with "[$Hchan $Hinit]").
+  iApply (chan.wp_send ch cap v γ.(chan_name) with "[$Hchan $Hinit]").
   iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
@@ -556,7 +558,7 @@ Lemma wp_mpmc_receive γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmulti
                       (received : gmultiset V) :
   {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
       mpmc_consumer γ received }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{ (v:V) (ok:bool), RET (#v, #ok);
       if ok
       then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
@@ -565,7 +567,7 @@ Proof.
   iIntros (Φ) "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hcons) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (wp_Receive ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_receive ch cap γ.(chan_name) with "[$Hinit $Hchan]").
   iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
@@ -767,14 +769,14 @@ Lemma wp_mpmc_close γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V
   {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
       ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
       R (foldr (⊎) ∅ producers) }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
+    chan.close #t #ch
   {{{ RET #(); True }}}.
 Proof.
   intros.
   iIntros "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hprods & HR) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (wp_Close ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_close ch cap γ.(chan_name) with "[$Hinit $Hchan]").
   iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".

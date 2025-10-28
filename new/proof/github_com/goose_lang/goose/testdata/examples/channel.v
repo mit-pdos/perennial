@@ -9,8 +9,6 @@ From Perennial.goose_lang.lib Require Import slice.
 From iris.base_logic Require Import ghost_map.
 From New.golang.theory Require Import struct chan.
 
-#[local] Transparent chan.for_range.
-
 (* TODO: Move? *)
 Global Instance wp_struct_make_unit {ext : ffi_syntax} {ffi : ffi_model} {ffi_interp0 : ffi_interp ffi} 
   {Σ : gFunctors} {hG : heapGS Σ} {ffi_semantics0 : ffi_semantics ext ffi} :
