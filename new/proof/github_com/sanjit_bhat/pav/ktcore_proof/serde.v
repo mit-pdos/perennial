@@ -102,19 +102,20 @@ Record t :=
     Link: list w8;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
-  sint.Z (W64 (length obj.(Link))) = length obj.(Link) ∧
+Definition pure_enc obj :=
+  [obj.(SigTag)] ++
+  u64_le obj.(Epoch) ++
+  u64_le (length obj.(Link)) ++ obj.(Link).
 
-  enc =
-    [obj.(SigTag)] ++
-    u64_le obj.(Epoch) ++
-    u64_le (length obj.(Link)) ++ obj.(Link).
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
 
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+  sint.Z (W64 (length obj.(Link))) = length obj.(Link).
+
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -126,17 +127,6 @@ Definition own ptr obj d : iProp Σ :=
 
   "Hsl_Link" ∷ sl_Link ↦*{d} obj.(Link).
 
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
-
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
@@ -146,11 +136,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.LinkSigEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -163,12 +154,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
@@ -183,16 +174,17 @@ Record t :=
     Ver: w64;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
-  enc =
-    u64_le obj.(Uid) ++
-    u64_le obj.(Ver).
+Definition pure_enc obj :=
+  u64_le obj.(Uid) ++
+  u64_le obj.(Ver).
 
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail.
+
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -200,17 +192,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 
 Definition own ptr obj d : iProp Σ :=
   "Hstruct" ∷ ptr ↦{d} (ktcore.MapLabel.mk obj.(Uid) obj.(Ver)).
-
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
 
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
@@ -221,11 +202,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.MapLabelEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -238,12 +220,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
@@ -258,19 +240,20 @@ Record t :=
     Rand: list w8;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
+Definition pure_enc obj :=
+  u64_le (length obj.(Val)) ++ obj.(Val) ++
+  u64_le (length obj.(Rand)) ++ obj.(Rand).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+
   sint.Z (W64 (length obj.(Val))) = length obj.(Val) ∧
-  sint.Z (W64 (length obj.(Rand))) = length obj.(Rand) ∧
+  sint.Z (W64 (length obj.(Rand))) = length obj.(Rand).
 
-  enc =
-    u64_le (length obj.(Val)) ++ obj.(Val) ++
-    u64_le (length obj.(Rand)) ++ obj.(Rand).
-
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -283,17 +266,6 @@ Definition own ptr obj d : iProp Σ :=
   "Hsl_Val" ∷ sl_Val ↦*{d} obj.(Val) ∗
   "Hsl_Rand" ∷ sl_Rand ↦*{d} obj.(Rand).
 
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
-
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
@@ -303,11 +275,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.CommitOpenEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -320,12 +293,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
@@ -341,21 +314,22 @@ Record t :=
     MerkleProof: list w8;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
-  ∃ enc_PkOpen,
+Definition pure_enc obj :=
+  u64_le (length obj.(LabelProof)) ++ obj.(LabelProof) ++
+  CommitOpen.pure_enc obj.(PkOpen) ++
+  u64_le (length obj.(MerkleProof)) ++ obj.(MerkleProof).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+
   sint.Z (W64 (length obj.(LabelProof))) = length obj.(LabelProof) ∧
-  sint.Z (W64 (length obj.(MerkleProof))) = length obj.(MerkleProof) ∧
+  CommitOpen.wish (CommitOpen.pure_enc obj.(PkOpen)) obj.(PkOpen) [] ∧
+  sint.Z (W64 (length obj.(MerkleProof))) = length obj.(MerkleProof).
 
-  enc =
-    u64_le (length obj.(LabelProof)) ++ obj.(LabelProof) ++
-    enc_PkOpen ++
-    u64_le (length obj.(MerkleProof)) ++ obj.(MerkleProof).
-
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -369,17 +343,6 @@ Definition own ptr obj d : iProp Σ :=
   "Hown_PkOpen" ∷ CommitOpen.own ptr_PkOpen obj.(PkOpen) d ∗
   "Hsl_MerkleProof" ∷ sl_MerkleProof ↦*{d} obj.(MerkleProof).
 
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
-
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
@@ -389,11 +352,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.MembEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -406,12 +370,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
@@ -426,19 +390,20 @@ Record t :=
     MerkleProof: list w8;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
+Definition pure_enc obj :=
+  u64_le (length obj.(LabelProof)) ++ obj.(LabelProof) ++
+  u64_le (length obj.(MerkleProof)) ++ obj.(MerkleProof).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+
   sint.Z (W64 (length obj.(LabelProof))) = length obj.(LabelProof) ∧
-  sint.Z (W64 (length obj.(MerkleProof))) = length obj.(MerkleProof) ∧
+  sint.Z (W64 (length obj.(MerkleProof))) = length obj.(MerkleProof).
 
-  enc =
-    u64_le (length obj.(LabelProof)) ++ obj.(LabelProof) ++
-    u64_le (length obj.(MerkleProof)) ++ obj.(MerkleProof).
-
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -451,17 +416,6 @@ Definition own ptr obj d : iProp Σ :=
   "Hsl_LabelProof" ∷ sl_LabelProof ↦*{d} obj.(LabelProof) ∗
   "Hsl_MerkleProof" ∷ sl_MerkleProof ↦*{d} obj.(MerkleProof).
 
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
-
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
@@ -471,11 +425,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.NonMembEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -488,12 +443,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
@@ -509,21 +464,22 @@ Record t :=
     NonMembProof: list w8;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
+Definition pure_enc obj :=
+  u64_le (length obj.(MapLabel)) ++ obj.(MapLabel) ++
+  u64_le (length obj.(MapVal)) ++ obj.(MapVal) ++
+  u64_le (length obj.(NonMembProof)) ++ obj.(NonMembProof).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+
   sint.Z (W64 (length obj.(MapLabel))) = length obj.(MapLabel) ∧
   sint.Z (W64 (length obj.(MapVal))) = length obj.(MapVal) ∧
-  sint.Z (W64 (length obj.(NonMembProof))) = length obj.(NonMembProof) ∧
+  sint.Z (W64 (length obj.(NonMembProof))) = length obj.(NonMembProof).
 
-  enc =
-    u64_le (length obj.(MapLabel)) ++ obj.(MapLabel) ++
-    u64_le (length obj.(MapVal)) ++ obj.(MapVal) ++
-    u64_le (length obj.(NonMembProof)) ++ obj.(NonMembProof).
-
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -537,17 +493,6 @@ Definition own ptr obj d : iProp Σ :=
   "Hsl_MapVal" ∷ sl_MapVal ↦*{d} obj.(MapVal) ∗
   "Hsl_NonMembProof" ∷ sl_NonMembProof ↦*{d} obj.(NonMembProof).
 
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
-
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
@@ -557,11 +502,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.UpdateProofEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -574,12 +520,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
@@ -594,21 +540,21 @@ Record t :=
     LinkSig: list w8;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
-  ∃ enc_Updates,
+Definition pure_enc obj :=
+  u64_le (length obj.(Updates)) ++ mjoin (map UpdateProof.pure_enc obj.(Updates)) ++
+  u64_le (length obj.(LinkSig)) ++ obj.(LinkSig).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+
   sint.Z (W64 (length obj.(Updates))) = length obj.(Updates) ∧
-  Forall2 (λ o e, UpdateProof.encodes o e) obj.(Updates) enc_Updates ∧
-  sint.Z (W64 (length obj.(LinkSig))) = length obj.(LinkSig) ∧
+  Forall (λ o, UpdateProof.wish (UpdateProof.pure_enc o) o []) obj.(Updates) ∧
+  sint.Z (W64 (length obj.(LinkSig))) = length obj.(LinkSig).
 
-  enc =
-    u64_le (length obj.(Updates)) ++ mjoin enc_Updates ++
-    u64_le (length obj.(LinkSig)) ++ obj.(LinkSig).
-
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -623,17 +569,6 @@ Definition own ptr obj d : iProp Σ :=
     UpdateProof.own ptr obj d) ∗
   "Hsl_LinkSig" ∷ sl_LinkSig ↦*{d} obj.(LinkSig).
 
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
-
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
@@ -643,11 +578,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.AuditProofEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -660,12 +596,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
