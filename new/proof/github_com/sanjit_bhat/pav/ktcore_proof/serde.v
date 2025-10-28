@@ -52,7 +52,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
@@ -74,7 +74,7 @@ Lemma wp_dec sl_b d b :
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦*{d} b
   }}}
-  @! ktcore.VrfSigEncode #sl_b
+  @! ktcore.VrfSigDecode #sl_b
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
@@ -134,7 +134,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
@@ -209,7 +209,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
@@ -291,7 +291,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
@@ -377,7 +377,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
@@ -459,7 +459,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
@@ -545,7 +545,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
@@ -631,7 +631,7 @@ Lemma wish_det b obj0 obj1 tail0 tail1 :
   ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
 Proof. Admitted.
 
-Lemma wp_enc sl_b b ptr_obj obj d :
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
