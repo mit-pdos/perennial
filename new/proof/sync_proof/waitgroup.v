@@ -169,9 +169,10 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
      ▷ ∃ oldc,
        "Hwg" ∷ own_WaitGroup γ oldc ∗
        "%Hbounds" ∷ ⌜ 0 ≤ sint.Z oldc + sint.Z delta' < 2^31 ⌝ ∗
-       "HnoWaiters" ∷ (⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) ∗
-       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
-               own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
+       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∗ (own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())) ∨
+         (own_WaitGroup_waiters γ (W32 0) ∗
+          (own_WaitGroup_waiters γ (W32 0) -∗ own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗
+           Φ #())))
   ) -∗
   WP wg @ (ptrT.id sync.WaitGroup.id) @ "Add" #delta {{ Φ }}.
 Proof.
@@ -191,7 +192,7 @@ Proof.
   {
     iExFalso.
     destruct Hw as [-> Hw].
-    iDestruct "HnoWaiters" as "[%|HnoWaiter]"; first by exfalso.
+    iDestruct "HΦ" as "[(% & _)|(HnoWaiter & HΦ)]"; first by exfalso.
     iCombine "HnoWaiter Hwait_toks_wg" gives %Hbad.
     exfalso. apply Hw. word.
   }
@@ -203,8 +204,8 @@ Proof.
   destruct unfinished_waiters.
   2:{
     iExFalso. destruct (Hunfinished_zero_wg ltac:(done)) as [-> ->].
-    iDestruct "HnoWaiters" as "[%|HnoWaiters]"; first done.
-    iCombine "HnoWaiters Hunfinished_wait_toks_wg" gives %Hbad. word.
+    iDestruct "HΦ" as "[(% & _)|(HnoWaiter & HΦ)]"; first by exfalso.
+    iCombine "HnoWaiter Hunfinished_wait_toks_wg" gives %Hbad. word.
   }
   subst.
   destruct (decide (word.add oldc delta' = W32 0 ∧ waiters ≠ W32 0)) as [Hwake|HnoWake].
@@ -217,7 +218,10 @@ Proof.
       rewrite decide_False; last intuition.
       iFrame. done.
     }
-    iMod ("HΦ" with "[$] [$]").
+    iAssert (|={_,_}=> Φ #())%I with "[HΦ Hwg]" as ">HΦ".
+    { iDestruct "HΦ" as "[(_ & HΦ)|(? & HΦ)]".
+      - iMod ("HΦ" with "[$]"). done.
+      - iMod ("HΦ" with "[$] [$]"). done. }
     iModIntro.
     wp_auto.
     rewrite enc_get_high enc_get_low.
@@ -268,7 +272,10 @@ Proof.
     iNamed "Hi". iNext.
     iFrame. rewrite decide_True; last intuition. done.
   }
-  iMod ("HΦ" with "[$] [$]") as "HΦ".
+    iAssert (|={_,_}=> Φ #())%I with "[HΦ Hwg]" as ">HΦ".
+    { iDestruct "HΦ" as "[(_ & HΦ)|(? & HΦ)]".
+      - iMod ("HΦ" with "[$]"). done.
+      - iMod ("HΦ" with "[$] [$]"). done. }
   iModIntro.
   wp_auto. rewrite enc_get_high enc_get_low.
 
@@ -410,7 +417,7 @@ Proof.
   replace (W32 (uint.Z (W64 (-1)))) with (W32 (-1)) by done.
   replace (sint.Z (W32 (-1))) with (-1) by done.
   iFrame "Hwg". iSplitR; first word.
-  iSplitR. { iLeft. word. } iIntros "Hw Hctr".
+  iLeft. iSplitR; first word. iIntros "Hctr".
   iMod ("HΦ" with "[Hctr]") as "HΦ".
   { iExactEq "Hctr". repeat f_equal. word. }
   iModIntro. wp_auto. iApply "HΦ".
