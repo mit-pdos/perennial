@@ -9,6 +9,18 @@ From New.proof.github_com.sanjit_bhat.pav.ktcore_proof Require Import base.
 Notation VrfSigTag := 0 (only parsing).
 Notation LinkSigTag := 1 (only parsing).
 
+(** core serde spec requirements:
+- deterministic encoding of object.
+- optional correctness: encoded object decodes to same object.
+- security: specs usable even for weak caller.
+- "stackable". e.g., when verifying struct, allow re-using field predicates.
+
+impl:
+- [pure_enc] gives deterministic encoding.
+- [wish] optionally transports correctness from encoder to decoder.
+[wish_det] deterministically maps an encoding to its object and tail.
+- [pure_enc] and [wish] can be arbitrarily nested for structs. *)
+
 Module ktcore.
 
 Module VrfSig.
@@ -18,18 +30,19 @@ Record t :=
     VrfPk: list w8;
   }.
 
-Definition encodes (obj : t) (enc : list w8) : Prop :=
-  sint.Z (W64 (length obj.(VrfPk))) = length obj.(VrfPk) ∧
+Definition pure_enc obj :=
+  [obj.(SigTag)] ++
+  u64_le (length obj.(VrfPk)) ++ obj.(VrfPk).
 
-  enc =
-    [obj.(SigTag)] ++
-    u64_le (length obj.(VrfPk)) ++ obj.(VrfPk).
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
 
-Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  encodes obj0 enc0 →
-  encodes obj1 enc1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+  sint.Z (W64 (length obj.(VrfPk))) = length obj.(VrfPk).
+
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
 Proof. Admitted.
 
 Section proof.
@@ -41,17 +54,6 @@ Definition own ptr obj d : iProp Σ :=
 
   "Hsl_VrfPk" ∷ sl_VrfPk ↦*{d} obj.(VrfPk).
 
-Definition wish b obj tail : iProp Σ :=
-  ∃ enc,
-  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
-  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
-
-Lemma wish_det b obj0 obj1 tail0 tail1 :
-  wish b obj0 tail0 -∗
-  wish b obj1 tail1 -∗
-  ⌜obj0 = obj1 ∧ tail0 = tail1⌝.
-Proof. Admitted.
-
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
@@ -61,11 +63,12 @@ Lemma wp_enc obj sl_b b ptr_obj d :
   }}}
   @! ktcore.VrfSigEncode #sl_b #ptr_obj
   {{{
-    sl_b' enc, RET #sl_b';
-    sl_b' ↦* (b ++ enc) ∗
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
     own ptr_obj obj d ∗
-    ⌜encodes obj enc⌝
+    ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
 
@@ -78,12 +81,12 @@ Lemma wp_dec sl_b d b :
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
-    | true => ¬ ∃ obj tail, wish b obj tail
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      wish b obj tail ∗
       own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
     end
   }}}.
 Proof. Admitted.
