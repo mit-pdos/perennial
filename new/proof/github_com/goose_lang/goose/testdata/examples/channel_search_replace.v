@@ -176,10 +176,7 @@ Definition own_Done wg γ N (P : iProp Σ) : iProp Σ :=
 Lemma wp_WaitGroup__Add P' wg γ N P num_added :
   {{{ is_pkg_init sync ∗
       "Ha" ∷ own_Adder wg γ N num_added P ∗
-      "%Hoverflow" ∷ (⌜ sint.Z num_added < 2^31-1 ⌝) ∗
-      "Hlc" ∷ £ 1 ∗ (* FIXME: could add ▷ to lower level WaitGroup__Add, which
-                     requires adding it to atomic Add spec. *)
-      "Hlc2" ∷ £ 1
+      "%Hoverflow" ∷ (⌜ sint.Z num_added < 2^31-1 ⌝)
   }}}
     wg @ (ptrT.id sync.WaitGroup.id) @ "Add" #(W64 1)
   {{{ RET #();
@@ -190,12 +187,12 @@ Proof.
   wp_start_folded as "Hpre". iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
   wp_apply (wp_WaitGroup__Add with "[$]").
   iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask". iNext.
   iNamedSuffix "Hi" "_inv". iExists _; iFrame.
   iCombine "Hadded Hadded_inv" gives %[_ Heq]. subst.
   iSplitR; first word.
-  iIntros "Hno_waiters". (* FIXME: annoying to make sure we don't lose own_WaitGroup_waiters. *)
+  iRight. iFrame.
+  iIntros "Hno_waiters".
   iIntros "Hwg_ctr_inv". iMod "Hmask" as "_".
   iMod (own_aprop_auth_add P' with "Haprop") as "[Haprop Hdone_aprop]".
   iMod (ghost_var_update_2 with "Hadded Hadded_inv") as "[Hadded Hadded_inv]".
@@ -204,13 +201,11 @@ Proof.
   iMod ("Hclose" with "[Hi]").
   { iNamed "Hi". iFrame.
     instantiate (1:=(sint.nat num_added + 1)%nat). word. }
-  iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
   iModIntro. iApply "HΦ". iFrame "∗#".
-  iSplitL "Hno_waiters"; first admit.
   replace (S _) with (sint.nat (word.add num_added $ W32 1)) by word.
   replace (sint.nat (word.add _ _)) with (sint.nat num_added + 1)%nat by word.
   iFrame. word.
-Admitted.
+Qed.
 
 End waitgroup_idiom.
 
