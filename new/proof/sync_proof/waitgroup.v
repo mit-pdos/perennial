@@ -120,6 +120,26 @@ Proof.
   iCombine "H1 H2" gives %H. word.
 Qed.
 
+Lemma dealloc_wait_token wg γ N (w : w32) :
+  uint.Z (word.sub w (W32 1)) = uint.Z w - 1 →
+  is_WaitGroup wg γ N -∗
+  own_WaitGroup_waiters γ w -∗
+  own_WaitGroup_wait_token γ ={↑N}=∗
+  own_WaitGroup_waiters γ (word.sub w (W32 1)).
+Proof.
+  intros H. iIntros "[_ #Hinv] H Htok".
+  iInv "Hinv" as ">Hi". iNamedSuffix "Hi" "_wg".
+  iCombine "Hwaiters_bounded_wg H" gives %[_ ->].
+  iCombine "Hwaiters_bounded_wg H" as "H".
+  iCombine "H Hunfinished_wait_toks_wg" gives %Hle.
+  iMod (own_tok_auth_sub with "H Htok") as "[H Hwaiters_bounded_wg]".
+  iModIntro. iFrame "∗#%".
+  replace (Z.to_nat (w32_word_instance.(word.unsigned) w) - 1)%nat with
+    (uint.nat (word.sub w (W32 1))).
+  2:{ word. }
+  by iFrame.
+Qed.
+
 Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
   ghost_var γ.(counter_gn) (1/2)%Qp counter.
 #[global] Opaque own_WaitGroup.
@@ -423,7 +443,7 @@ Proof.
   iModIntro. wp_auto. iApply "HΦ".
 Qed.
 
-Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
+Lemma wp_WaitGroup__Wait (wg : loc) γ N :
   ∀ Φ,
   is_pkg_init sync ∗ is_WaitGroup wg γ N ∗ own_WaitGroup_wait_token γ -∗
   (|={⊤∖↑N, ∅}=>

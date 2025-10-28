@@ -20,8 +20,8 @@ Context `{!auth_propG Σ}.
 Definition own_aprop_auth γ (P : iProp Σ) (n : nat) : iProp Σ :=
   ∃ gns,
     "Hgns" ∷ ghost_map_auth γ 1 (gset_to_gmap () gns) ∗
-    "Hused" ∷ ([∗ set] γprop ∈ gns, ∃ Q, saved_prop_own γprop DfracDiscarded Q) ∗
-    "HimpliesP" ∷ (([∗ set] γprop ∈ gns, ∃ Q, saved_prop_own γprop DfracDiscarded Q ∗ ▷ Q) ∗-∗ ▷ P) ∗
+    "#Hused" ∷ ([∗ set] γprop ∈ gns, ∃ Q, saved_prop_own γprop DfracDiscarded Q) ∗
+    "#HimpliesP" ∷ □(([∗ set] γprop ∈ gns, ∃ Q, saved_prop_own γprop DfracDiscarded Q ∗ ▷ Q) ∗-∗ ▷ P) ∗
     "%Hn" ∷ ⌜ size gns = n ⌝.
 #[global] Opaque own_aprop_auth.
 #[local] Transparent own_aprop_auth.
@@ -29,7 +29,7 @@ Definition own_aprop_auth γ (P : iProp Σ) (n : nat) : iProp Σ :=
 Definition own_aprop_frag γ (P : iProp Σ) (n : nat) : iProp Σ :=
   ∃ gns,
     "Hgns" ∷ ([∗ set] γprop ∈ gns, γprop ↪[γ] ()) ∗
-    "HimpliesP" ∷ (([∗ set] γprop ∈ gns, ∃ Q, saved_prop_own γprop DfracDiscarded Q ∗ ▷ Q) ∗-∗ ▷ P) ∗
+    "#HimpliesP" ∷ □(([∗ set] γprop ∈ gns, ∃ Q, saved_prop_own γprop DfracDiscarded Q ∗ ▷ Q) ∗-∗ ▷ P) ∗
     "%Hn" ∷ ⌜ size gns = n ⌝.
 #[global] Opaque own_aprop_frag.
 #[local] Transparent own_aprop_frag.
@@ -42,7 +42,7 @@ Proof.
   iMod (ghost_map_alloc ∅) as (γ) "[H _]".
   iExists γ. unfold own_aprop_auth. iExists ∅.
   rewrite gset_to_gmap_empty. iFrame. rewrite !big_sepS_empty //.
-  iModIntro. repeat iSplitL; try done; iIntros "_ "; done.
+  iModIntro. repeat iSplitL; try done. iModIntro. iIntros "_ "; done.
 Qed.
 
 Lemma own_aprop_auth_add Q γ P n :
@@ -60,7 +60,7 @@ Proof.
   iModIntro. iSplitR "Hgns'".
   { iFrame. assert ({[γprop]} ## gns) by set_solver.
     repeat rewrite !big_sepS_union // !big_sepS_singleton. iFrame "∗#".
-    subst. rewrite size_union // size_singleton /=. iSplitL; last done.
+    subst. rewrite size_union // size_singleton /=. iSplitL; last done. iModIntro.
     iSplit.
     - iIntros "[HQ' HPs]". iSpecialize ("HimpliesP" with "HPs"). iFrame.
       iDestruct "HQ'" as (?) "[HQ' HQfact]". iCombine "HQ HQ'" gives "[_ H]".
@@ -70,27 +70,59 @@ Proof.
       + by iApply "HimpliesP".
   }
   iExists {[ _ ]}. rewrite !big_sepS_singleton. iFrame. rewrite size_singleton.
-  iSplitL; last done. iSplit.
+  iSplitL; last done. iModIntro. iSplit.
   - iIntros "(% & HQ' & HQfact)". iCombine "HQ HQ'" gives "[_ Heq]".
     iNext. iRewrite "Heq". iFrame.
   - iIntros "?". iFrame "#∗".
 Qed.
 
-Lemma own_aprop_auth_agree γ P P' n :
-  ⊢ own_aprop_auth γ P n -∗ own_aprop_frag γ P' n -∗ (▷ P ∗-∗ ▷ P').
+Lemma own_aprop_auth_reset γ P P' n :
+  ⊢ own_aprop_auth γ P n -∗ own_aprop_frag γ P' n ==∗ own_aprop_auth γ True O.
 Proof.
   iNamed 1. iNamedSuffix 1 "'".
   iDestruct (ghost_map_lookup_big with "Hgns [Hgns']") as "%Hsub".
   { instantiate (1:=gset_to_gmap () gns0). rewrite big_sepM_gset_to_gmap. iFrame. }
   apply subseteq_dom in Hsub. rewrite !dom_gset_to_gmap in Hsub.
+  apply set_subseteq_size_eq in Hsub as Heq; last lia. subst.
+  iMod (ghost_map_delete_big with "Hgns [Hgns']") as "Hgns".
+  { instantiate (1:=gset_to_gmap () gns). rewrite big_sepM_gset_to_gmap. iFrame. }
+  rewrite map_difference_diag.
+  iModIntro. iExists ∅. rewrite gset_to_gmap_empty. iFrame.
+  rewrite !big_sepS_empty.
+  repeat iSplitL; try done. iModIntro. iIntros "_ "; done.
+Qed.
+
+Lemma own_aprop_frag_0 γ :
+  ⊢ own_aprop_frag γ True 0.
+Proof.
+  iExists ∅. rewrite !big_sepS_empty. repeat iSplitL; try done.
+  iModIntro. by iIntros.
+Qed.
+
+#[global] Instance own_aprop_auth_agree γ P P' n :
+  CombineSepGives (own_aprop_auth γ P n) (own_aprop_frag γ P' n) (▷ P ∗-∗ ▷ P').
+Proof.
+  rewrite /CombineSepGives. iIntros "[@ H]". iNamedSuffix "H" "'".
+  iDestruct (ghost_map_lookup_big with "Hgns [Hgns']") as "%Hsub".
+  { instantiate (1:=gset_to_gmap () gns0). rewrite big_sepM_gset_to_gmap. iFrame. }
+  apply subseteq_dom in Hsub. rewrite !dom_gset_to_gmap in Hsub.
   apply set_subseteq_size_eq in Hsub as Heq; last lia. subst. clear Hn' Hsub.
+  iModIntro.
   iSplit.
   - iIntros "HP". iApply "HimpliesP" in "HP". iApply "HimpliesP'" in "HP". iFrame.
   - iIntros "HP'". iApply "HimpliesP'" in "HP'". iApply "HimpliesP" in "HP'". iFrame.
 Qed.
 
+#[global] Instance own_aprop_auth_agree' γ P P' n :
+  CombineSepGives (own_aprop_frag γ P' n) (own_aprop_auth γ P n)  (▷ P' ∗-∗ ▷ P).
+Proof.
+  rewrite /CombineSepGives. iIntros "[H H']". iCombine "H' H" gives "[? ?]". iModIntro.
+  iSplit; done.
+Qed.
+
+(* higher cost to prefer [own_aprop_auth_agree]. *)
 #[global] Instance own_aprop_auth_le γ P P' n n' :
-  CombineSepGives (own_aprop_auth γ P n) (own_aprop_frag γ P' n') (⌜ n' ≤ n ⌝)%I.
+  CombineSepGives (own_aprop_auth γ P n) (own_aprop_frag γ P' n') (⌜ n' ≤ n ⌝)%I | 10.
 Proof.
   rewrite /CombineSepGives. iIntros "[@ H]". iNamedSuffix "H" "'".
   iDestruct (ghost_map_lookup_big with "Hgns [Hgns']") as "%Hsub".
@@ -100,7 +132,7 @@ Proof.
 Qed.
 
 #[global] Instance own_aprop_auth_le' γ P P' n n' :
-  CombineSepGives (own_aprop_frag γ P' n') (own_aprop_auth γ P n) (⌜ n' ≤ n ⌝)%I.
+  CombineSepGives (own_aprop_frag γ P' n') (own_aprop_auth γ P n) (⌜ n' ≤ n ⌝)%I | 10.
 Proof.
   rewrite /CombineSepGives. iIntros "[H H']". iCombine "H' H" gives %H. iModIntro. done.
 Qed.
@@ -121,7 +153,7 @@ Proof.
   apply disjoint_intersection_L in Hdisj.
   iExists (gns ∪ gns'). rewrite big_sepS_union //. iFrame.
   rewrite big_sepS_union //. rewrite size_union //.
-  iSplitL; last word. iSplit.
+  iSplitL; last word. iModIntro. iSplit.
   - iIntros "[H H']". iApply "HimpliesP" in "H". iApply "HimpliesP'" in "H'". iFrame.
   - iIntros "[H H']". iApply "HimpliesP" in "H". iApply "HimpliesP'" in "H'". iFrame.
 Qed.
@@ -145,13 +177,14 @@ Record WaitGroup_join_names :=
 
 Implicit Types γ : WaitGroup_join_names.
 
+Local Definition wgjN := nroot.@"wgjoin".
 
 (* Internal invariant. Maintains ownership of the waitgroup counter so that
    Done() can run concurrently to Add. *)
-Local Definition is_wgj_inv wg γ N : iProp Σ :=
-  "#His" ∷ is_WaitGroup wg γ.(wg_gn) (N.@"wg") ∗
+Local Definition is_wgj_inv wg γ : iProp Σ :=
+  "#His" ∷ is_WaitGroup wg γ.(wg_gn) (wgjN.@"wg") ∗
   "#Hinv" ∷
-  inv (N.@"inv") (
+  inv (wgjN.@"inv") (
       ∃ ctr added done Pdone,
         "Hwg_ctr" ∷ own_WaitGroup γ.(wg_gn) ctr ∗
         "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) added ∗
@@ -164,42 +197,59 @@ Local Definition is_wgj_inv wg γ N : iProp Σ :=
 
 (** Permission to call `Add`. Calling `Add` will extend `P` with a caller-chosen
     proposition, as long as `num_added` doesn't overflow. *)
-Definition own_Adder wg γ N (num_added : w32) (P : iProp Σ) : iProp Σ :=
+Definition own_Adder wg γ (num_added : w32) (P : iProp Σ) : iProp Σ :=
   "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 0) ∗
   "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P (sint.nat num_added) ∗
   "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) (sint.nat num_added) ∗
   "%Hadded_pos" ∷ ⌜ 0 ≤ sint.Z num_added ⌝ ∗
-  "#Hinv" ∷ is_wgj_inv wg γ N.
+  "#Hinv" ∷ is_wgj_inv wg γ.
 #[global] Opaque own_Adder.
 #[local] Transparent own_Adder.
 
 (** Permission to call `Wait`, knowing that `P` will be true afterwards. *)
-Definition own_Waiter wg γ N (P : iProp Σ) : iProp Σ :=
+Definition own_Waiter wg γ (P : iProp Σ) : iProp Σ :=
   ∃ n,
   "Hwaiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 1) ∗
+  "Hwait_tok" ∷ own_WaitGroup_wait_token γ.(wg_gn) ∗
   "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P n ∗
   "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) n ∗
-  "#Hinv" ∷ is_wgj_inv wg γ N.
+  "#Hinv" ∷ is_wgj_inv wg γ.
 #[global] Opaque own_Waiter.
 #[local] Transparent own_Waiter.
 
 (** Permission to call `Done` as long as `P` is passed in. *)
-Definition own_Done wg γ N (P : iProp Σ) : iProp Σ :=
+Definition own_Done wg γ (P : iProp Σ) : iProp Σ :=
   "Haprop" ∷ own_aprop γ.(wg_aprop_gn) P ∗
   "Hdone_tok" ∷ own_toks γ.(wg_not_done_gn) 1 ∗
-  "#Hinv" ∷ is_wgj_inv wg γ N.
+  "#Hinv" ∷ is_wgj_inv wg γ.
 #[global] Opaque own_Done.
 #[local] Transparent own_Done.
 
-Lemma wp_WaitGroup__Add P' wg γ N P num_added :
+Lemma waitgroup_join_init wg γwg :
+  is_WaitGroup wg γwg (wgjN.@"wg") -∗
+  own_WaitGroup γwg (W32 0) -∗
+  own_WaitGroup_waiters γwg (W32 0) ={⊤}=∗
+  ∃ γ, own_Adder wg γ (W32 0) True.
+Proof.
+  iIntros "#His Hctr_inv Hwaiters".
+  iMod own_aprop_auth_alloc as (wg_aprop_gn) "Haprop".
+  iMod own_tok_auth_alloc as (wg_not_done_gn) "[Hadded_inv Hadded]".
+  iExists _. instantiate (1:=ltac:(econstructor)). rewrite /own_Adder /=.
+  iFrame. iSplitR; first word.
+  iMod own_toks_0 as "?". iDestruct own_aprop_frag_0 as "?".
+  iMod (inv_alloc with "[-]") as "$"; last done.
+  iFrame "∗#". word.
+Qed.
+
+Lemma wp_WaitGroup__Add P' wg γ P num_added :
   {{{ is_pkg_init sync ∗
-      "Ha" ∷ own_Adder wg γ N num_added P ∗
+      "Ha" ∷ own_Adder wg γ num_added P ∗
       "%Hoverflow" ∷ (⌜ sint.Z num_added < 2^31-1 ⌝)
   }}}
     wg @ (ptrT.id sync.WaitGroup.id) @ "Add" #(W64 1)
   {{{ RET #();
-      own_Adder wg γ N (word.add num_added (W32 1)) (P ∗ P') ∗
-      own_Done wg γ N P'
+      own_Adder wg γ (word.add num_added (W32 1)) (P ∗ P') ∗
+      own_Done wg γ P'
   }}}.
 Proof.
   wp_start_folded as "Hpre". iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
@@ -224,9 +274,9 @@ Proof.
   iFrame. word.
 Qed.
 
-Lemma wp_WaitGroup__Done P wg γ N :
+Lemma wp_WaitGroup__Done P wg γ :
   {{{ is_pkg_init sync ∗
-      "Ha" ∷ own_Done wg γ N P ∗
+      "Ha" ∷ own_Done wg γ P ∗
       "HP" ∷ P
   }}}
     wg @ (ptrT.id sync.WaitGroup.id) @ "Done" #()
@@ -246,6 +296,39 @@ Proof.
     (* FIXME: iFrame seems to frame [?P] in the goal with whatever prop it sees.. *)
     iFrame "Hdone_toks_inv". iFrame "Hadded_inv". iFrame. word. }
   iModIntro. by iApply "HΦ".
+Qed.
+
+Lemma wp_WaitGroup__Wait P wg γ :
+  {{{ is_pkg_init sync ∗ "Ha" ∷ own_Waiter wg γ P }}}
+    wg @ (ptrT.id sync.WaitGroup.id) @ "Wait" #()
+  {{{ RET #(); ▷ P ∗ own_Adder wg γ (W32 0) True }}}.
+Proof.
+  wp_start_folded as "Hpre". iApply wp_fupd. iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
+  wp_apply (wp_WaitGroup__Wait with "[$]").
+  iInv "Hinv" as "Hi" "Hclose".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask". iNext.
+  iNamedSuffix "Hi" "_inv". iExists _; iFrame. iIntros "%Hctr_zero Hwg_ctr_inv".
+  assert (ctr = W32 0) as -> by word.
+  assert (added = done) as -> by word.
+  iCombine "Hadded Hadded_inv" gives %[_ ->].
+  iCombine "Hdone_aprop_inv Haprop" gives "Heq".
+  iMod (own_aprop_auth_reset with "[$] [$]") as "Haprop".
+  iCombine "Hadded Hadded_inv" as "Hadded".
+  iMod (own_tok_auth_sub done with "[$] [$]") as "[Hadded Hadded_inv]".
+  rewrite Nat.sub_diag. iMod "Hmask" as "_".
+  iRename "Hdone_P_inv" into "Hdone_P".
+  iDestruct own_aprop_frag_0 as "-#Hdone_aprop_inv".
+  iMod own_toks_0 as "Hdone_toks_inv". iCombineNamed "*_inv" as "Hi".
+  iMod ("Hclose" with "[Hi]").
+  { iNamed "Hi". iFrame. word. }
+  iModIntro. iIntros "Hwt".
+  iMod fupd_mask_subseteq as "Hmask"; last iMod (dealloc_wait_token with "[$] [$] [$]") as "H".
+  { solve_ndisj. }
+  { word. }
+  replace (word.sub _ _) with (W32 0) by word.
+  iMod "Hmask" as "_". iModIntro. iApply "HΦ". iFrame.
+  iDestruct "Heq" as "[Heq _]". iFrame "#". iSplitL; last word.
+  iApply "Heq". done.
 Qed.
 
 End waitgroup_idiom.
