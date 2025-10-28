@@ -5,6 +5,8 @@ From iris.base_logic Require Export lib.ghost_var.
 From New.golang.theory Require Import exception list mem loop typing struct proofmode pkg auto.
 From Perennial Require Import base.
 
+Open Scope Z_scope.
+
 Set Default Proof Using "Type".
 
 Module chan.
@@ -71,6 +73,17 @@ Proof.
   wp_call.
   wp_apply (wp_Receive with "[$]").
   iFrame.
+Qed.
+
+Lemma wp_cap (ch: loc) (cap: Z) (γ: chan_names) :
+  {{{ is_pkg_init channel ∗ is_channel ch cap γ }}}
+    chan.cap #t #ch
+  {{{ RET #(W64 cap); True }}}.
+Proof.
+  wp_start as "#Hch".
+  wp_call.
+  wp_apply (wp_Cap with "[$Hch]").
+  by iApply "HΦ".
 Qed.
 
 Inductive op :=

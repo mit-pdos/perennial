@@ -122,6 +122,52 @@ Proof.
   }
 Qed.
 
+Lemma wp_Cap (ch: loc) (cap: Z) (γ: chan_names) :
+  {{{ is_pkg_init channel ∗ is_channel ch cap γ }}}
+    ch @ (ptrT.id channel.Channel.id) @ "Cap" #t #()
+  {{{ RET #(W64 cap); True }}}.
+Proof.
+  wp_start as "#Hch".
+  wp_auto.
+  iDestruct (is_channel_not_null with "Hch") as %Hnn.
+  iNamed "Hch".
+  rewrite bool_decide_eq_false_2 //.
+  wp_auto.
+  iApply "HΦ".
+  done.
+Qed.
+
+Lemma wp_Len (ch: loc) (cap: Z) (γ: chan_names) :
+  {{{ is_pkg_init channel ∗ is_channel ch cap γ }}}
+    ch @ (ptrT.id channel.Channel.id) @ "Len" #t #()
+  {{{ (l: w64), RET #l; ⌜0 ≤ sint.Z l ≤ cap⌝ }}}.
+Proof.
+  wp_start as "#His".
+  wp_auto.
+  iDestruct (is_channel_not_null with "His") as %Hnn.
+  iNamed "His".
+  rewrite bool_decide_eq_false_2 //.
+  wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
+  iNamed "Hchan".
+  destruct s.
+  - iNamed "phys".
+    wp_auto.
+    iDestruct (own_slice_len with "slice") as %Hlen.
+    wp_apply (wp_Mutex__Unlock with "[$lock state buffer slice slice_cap offer $Hlock]").
+    { iModIntro. unfold chan_inv_inner. iExists (Buffered buff); iFrame. }
+    iApply "HΦ".
+    iPureIntro.
+    admit. (* TODO: does not seem tracked *)
+  - iNamed "phys".
+    wp_auto.
+    iDestruct (own_slice_len with "slice") as %Hlen.
+    wp_apply (wp_Mutex__Unlock with "[$lock state buffer slice slice_cap offer v $Hlock]").
+    { iModIntro. unfold chan_inv_inner. iExists Idle; iFrame "∗#". }
+    iApply "HΦ".
+    iPureIntro.
+    admit. (* need 0 ≤ cap *)
+Admitted.
 
 Lemma wp_TrySend (ch: loc) (cap: Z) (v: V) (γ: chan_names) (P: iProp Σ):
   ∀ Φ,

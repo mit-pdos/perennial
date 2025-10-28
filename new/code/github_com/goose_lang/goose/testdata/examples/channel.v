@@ -179,7 +179,7 @@ Definition fib_consumerⁱᵐᵖˡ : val :=
     let: "$r0" := (chan.make #intT #(W64 10)) in
     do:  ("c" <-[type.chanT #intT] "$r0");;;
     let: "$a0" := (let: "$a0" := (![type.chanT #intT] "c") in
-    chan.cap "$a0") in
+    (chan.cap #intT) "$a0") in
     let: "$a1" := (![type.chanT #intT] "c") in
     let: "$go" := (func_call #fibonacci) in
     do:  (Fork ("$go" "$a0" "$a1"));;;
@@ -188,7 +188,7 @@ Definition fib_consumerⁱᵐᵖˡ : val :=
     do:  ("results" <-[#sliceT] "$r0");;;
     let: "$range" := (![type.chanT #intT] "c") in
     (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #intT "$range" (λ: "$key",
       do:  ("i" <-[#intT] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "results") in
       let: "$a1" := ((let: "$sl0" := (![#intT] "i") in

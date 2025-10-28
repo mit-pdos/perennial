@@ -9,6 +9,8 @@ From Perennial.goose_lang.lib Require Import slice.
 From iris.base_logic Require Import ghost_map.
 From New.golang.theory Require Import struct chan.
 
+#[local] Transparent chan.for_range.
+
 Section hello_world.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -283,7 +285,7 @@ Lemma wp_fibonacci (n: nat) (c_ptr: loc) γ:
                   (λ sent, ⌜sent = fib_list  n⌝) ∗
       spsc_producer γ []
   }}}
-    @! chan_spec_raw_examples.fibonacciX #(W64 n) #c_ptr
+    @! chan_spec_raw_examples.fibonacci #(W64 n) #c_ptr
   {{{ RET #(); True }}}.
 Proof.
   intros Hn.
@@ -416,7 +418,7 @@ Qed.
 Lemma wp_fib_consumer:
   {{{ is_pkg_init channel ∗ is_pkg_init chan_spec_raw_examples
   }}}
-   @! chan_spec_raw_examples.fib_consumerX #()
+   @! chan_spec_raw_examples.fib_consumer #()
   {{{ sl, RET #(sl);
       sl ↦* (fib_list 10)
 
@@ -424,7 +426,7 @@ Lemma wp_fib_consumer:
   }}}.
   Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
   wp_start. wp_auto.
-  wp_apply (wp_NewChannel 10);first done.
+  wp_apply (chan.wp_make); first done.
   iIntros (c γ) "[#Hchan Hown]".
   wp_auto.
    iMod (start_spsc c 10  (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
@@ -436,6 +438,7 @@ Lemma wp_fib_consumer:
    {
      iFrame.
      }
+  wp_apply (chan.wp_cap with "[$Hchan]").
   wp_apply (wp_fork with "[Hprod]").
    {
 
@@ -450,23 +453,26 @@ Lemma wp_fib_consumer:
    }
   iDestruct (theory.slice.own_slice_nil  (DfracOwn 1)) as "Hnil".
    iDestruct (theory.slice.own_slice_cap_nil (V:=w64)) as "Hnil_cap".
- iAssert (∃ (i: nat) sl,
+   simpl.
+ iAssert (∃ (i: nat) (i_v: w64) sl,
+             "i" ∷ i_ptr ↦ i_v ∗
             "c"  ∷ c_ptr ↦ c ∗
   "Hcons"  ∷ spsc_consumer γspsc (fib_list i) ∗
   "Hsl"  ∷ sl ↦* (fib_list i) ∗
   "results"  ∷ results_ptr ↦ sl ∗
   "oslc"  ∷ theory.slice.own_slice_cap w64 sl (DfracOwn 1)
 )%I
-  with "[ c Hcons results]" as "IH".
+  with "[ i c Hcons results]" as "IH".
 {
-  iFrame.
   iExists 0%nat.
-  iFrame.  unfold fib_list. simpl. iFrame "#".
+  iFrame.
+  unfold fib_list. iFrame "#".
 }
 
 
-   wp_for.
-iNamed "IH". wp_auto.
+  rewrite /chan.for_range.
+  wp_auto.
+  wp_for "IH".
    wp_apply ((wp_spsc_receive (t:=intT) γspsc c γspsc (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
                   (λ sent, ⌜sent = fib_list 10 ⌝%I) (fib_list i) _) with "[Hcons]").
    { iFrame "#".  iFrame.   }
@@ -513,8 +519,9 @@ iSplitL "Hcons".
   iFrame.
 }
 }
-iIntros "%Hfl". wp_auto. wp_for_post. iApply "HΦ". rewrite Hfl.
-    iFrame.
+iIntros "%Hfl". wp_auto. wp_for_post. iFrame.
+   iApply "HΦ".
+   rewrite Hfl. iFrame "Hsl".
 Qed.
 
 End fibonacci_examples.

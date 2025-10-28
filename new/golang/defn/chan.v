@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem typing exception pkg type_id list.
+From New.golang.defn Require Import mem typing exception loop pkg type_id list.
 From New.code.github_com.goose_lang.goose.model Require Import channel.
 
 Module chan.
@@ -21,20 +21,14 @@ Definition cap : val :=
 
 Definition for_range : val :=
   λ: "T" "c" "body",
-    (rec: "loop" <> := exception_do (
-        let: "t" := receive "T" "c" in
-        if: Snd "t" then
-          (* received Fst "t" *)
-          let: "b" := "body" (Fst "t") in
-          if: Fst "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
-          if: (Fst "b" = #"continue") || (Fst "b" = #"execute")
-              then (return: "loop" #())
-              else do: #() ;;;
-            (return: "b")
-        else
-          (* ok = false, channel is empty *)
-          (return: #())
-      )) #().
+    (for: (λ: <>, #true)%V; (λ: <>, Skip)%V := λ: <>,
+       let: "t" := receive "T" "c" in
+       if: Snd "t" then
+         "body" (Fst "t")
+       else
+         (* channel is closed *)
+         break: #()
+    ).
 
 Definition select_send : val :=
   λ: "T" "ch" "v" "f", InjL ("T", "ch", "v", "f").

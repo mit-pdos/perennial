@@ -588,7 +588,7 @@ Definition waitDeleteⁱᵐᵖˡ : val :=
     (method_call #(ptrT.id clientv3.Client.id) #"Watch"%go (![#ptrT] "client")) "$a0" "$a1" "$a2") in
     do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
     let: "$range" := (![#clientv3.WatchChan] "wch") in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #clientv3.WatchResponse "$range" (λ: "$key",
       do:  ("wr" <-[#clientv3.WatchResponse] "$key");;;
       let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
       (let: "ev" := (mem.alloc (type.zero_val #ptrT)) in
@@ -1136,7 +1136,7 @@ Definition NewSessionⁱᵐᵖˡ : val :=
         "$oldf" #()
         )));;;
       let: "$range" := (![type.chanT #ptrT] "keepAlive") in
-      chan.for_range "$range" (λ: "$key",
+      chan.for_range #ptrT "$range" (λ: "$key",
         do:  #());;;
       return: #())
       ) in

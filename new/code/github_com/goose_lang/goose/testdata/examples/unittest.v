@@ -292,20 +292,20 @@ Definition chanRangeⁱᵐᵖˡ : val :=
     exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
     let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "y" := (mem.alloc (type.zero_val #uint64T)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  ("y" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "y")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")));;;
     let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  ("x" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "x")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")));;;
     let: "$range" := (![type.chanT #uint64T] "x") in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  #());;;
     return: #()).
 
