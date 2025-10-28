@@ -69,7 +69,7 @@ Lemma wp_onetime_barrier_receive γ ch Sd Rv :
       own_recv_tok γ ∗
       Rv
   }}}
-    chan.receive #ch
+    chan.receive #(structT []) #ch
   {{{
       RET (#(), #true); Sd
   }}}.
@@ -119,7 +119,7 @@ Lemma wp_onetime_barrier_send γ ch Sd Rv :
       own_send_tok γ ∗
       Sd
   }}}
-    chan.send #ch #()
+    chan.send #(structT []) #ch #()
   {{{
       RET #(); Rv
   }}}.

@@ -123,14 +123,14 @@ Admitted.
 Lemma wp_chan_receive ch :
   ∀ Φ,
   ▷ receive_atomic_update ch Φ -∗
-  WP chan.receive #ch {{ Φ }}.
+  WP chan.receive #t #ch {{ Φ }}.
 Proof.
 Admitted.
 
 Lemma wp_chan_send ch (v : V) :
   ∀ Φ,
   ▷ send_atomic_update ch v Φ -∗
-  WP chan.send #ch #v {{ Φ }}.
+  WP chan.send #t #ch #v {{ Φ }}.
 Proof.
 Admitted.
 
@@ -140,7 +140,7 @@ Lemma wp_chan_close ch :
   ▷ (|={⊤,∅}=> ▷ ∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
                  (own_chan ch (s <|chanstate.closed := true |>) ={∅,⊤}=∗ Φ #())
   ) -∗
-  WP chan.close #ch {{ Φ }}.
+  WP chan.close #t #ch {{ Φ }}.
 Proof.
 Admitted.
 
@@ -214,7 +214,7 @@ End proof.
     current context to the loop invariant, then apply this tactic. Use
     [wp_for_chan_post] for the leaves of the proof. *)
 Ltac wp_for_chan_core :=
-  wp_bind (chan.for_range _ _); (iApply (wp_for_chan_range (IntoValTyped0:=?[ivt]) with "[-]"));
+  wp_bind (chan.for_range _ _ _); (iApply (wp_for_chan_range (IntoValTyped0:=?[ivt]) with "[-]"));
   [ by iNamedAccu
   | (by iFrame "#" || fail "wp_for_chan_core: could not solve [is_chan] by [iFrame ""#""]. ")
   | iIntros "!# __CTX"; iNamed "__CTX" ]; instantiate(ivt:=ltac:(tc_solve)).

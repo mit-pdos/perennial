@@ -130,7 +130,7 @@ Qed.
 
 Lemma wp_closeable_chan_close ch Pclosed :
   {{{ own_closeable_chan ch Pclosed Open ∗ □ Pclosed }}}
-  chan.close #ch
+  chan.close #(structT []) #ch
   {{{ RET #(); own_closeable_chan ch Pclosed Closed }}}.
 Proof.
   wp_start as "[Hown #?]". iNamed "Hown". iNamed "Hinv".
