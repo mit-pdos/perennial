@@ -207,6 +207,23 @@ Proof.
   iFrame. word.
 Qed.
 
+Lemma wp_WaitGroup__Done P wg γ N :
+  {{{ is_pkg_init sync ∗
+      "Ha" ∷ own_Done wg γ N P ∗
+      "HP" ∷ P
+  }}}
+    wg @ (ptrT.id sync.WaitGroup.id) @ "Done" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start_folded as "Hpre". iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
+  wp_apply (wp_WaitGroup__Done with "[$]").
+  iInv "Hinv" as "Hi" "Hclose".
+  iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask". iNext.
+  iNamedSuffix "Hi" "_inv". iExists _; iFrame.
+  FIXME: lemma for this:
+  iCombine "Hdone_prop_inv Haprop" gives %Hle.
+Qed.
+
 End waitgroup_idiom.
 
 Section proof.
