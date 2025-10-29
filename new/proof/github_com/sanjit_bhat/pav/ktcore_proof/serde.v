@@ -4,6 +4,7 @@ From Perennial.Helpers Require Import NamedProps.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import safemarshal.
 From New.proof.github_com.tchajed Require Import marshal.
+
 From New.proof.github_com.sanjit_bhat.pav.ktcore_proof Require Import base.
 
 Notation VrfSigTag := 0 (only parsing).
@@ -13,13 +14,14 @@ Notation LinkSigTag := 1 (only parsing).
 - deterministic encoding of object.
 - optional correctness: encoded object decodes to same object.
 - security: specs usable even for weak caller.
-- "stackable". e.g., when verifying struct, allow re-using field predicates.
+- "composable". e.g., predicates on struct re-use field predicates.
 
 impl:
 - [pure_enc] gives deterministic encoding.
 - [wish] optionally transports correctness from encoder to decoder.
 [wish_det] deterministically maps an encoding to its object and tail.
-- [pure_enc] and [wish] can be arbitrarily nested for structs. *)
+- higher-level objects can define [pure_enc] and [wish] i.t.o. the
+[pure_enc] and [wish] of lower-level objects. *)
 
 Module ktcore.
 
@@ -31,13 +33,13 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  [obj.(SigTag)] ++
-  u64_le (length obj.(VrfPk)) ++ obj.(VrfPk).
+  safemarshal.w8.pure_enc obj.(SigTag) ++
+  safemarshal.Slice1D.pure_enc obj.(VrfPk).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-
-  sint.Z (W64 (length obj.(VrfPk))) = length obj.(VrfPk).
+  ∃ t0,
+  safemarshal.w8.wish b obj.(SigTag) t0 ∧
+  safemarshal.Slice1D.wish t0 obj.(VrfPk) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
