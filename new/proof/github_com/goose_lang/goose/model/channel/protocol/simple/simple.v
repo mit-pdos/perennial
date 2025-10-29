@@ -175,8 +175,7 @@ Proof.
 Qed.
 
 Lemma wp_simple_receive γ ch cap P :
-  {{{ is_pkg_init channel ∗
-      is_simple γ ch cap P }}}
+  {{{ is_simple γ ch cap P }}}
     chan.receive #t #ch
   {{{ v, RET (#v, #true); P v }}}.
 Proof.
@@ -297,8 +296,7 @@ Proof.
 Qed.
 
 Lemma wp_simple_send γ ch cap v P :
-  {{{ is_pkg_init channel ∗
-      is_simple γ ch cap P ∗
+  {{{ is_simple γ ch cap P ∗
       P v }}}
     chan.send #t #ch #v
   {{{ RET #(); True }}}.

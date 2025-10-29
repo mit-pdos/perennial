@@ -1,9 +1,12 @@
 From iris.base_logic.lib Require Import saved_prop ghost_map.
 From New.proof Require Export proof_prelude.
+From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import chan_au_base chan_au_send chan_au_recv simple.
+  Require Import chan_au_base simple.
 From New.proof Require Import time sync tok_set.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
+
+From iris_named_props Require Import custom_syntax.
 
 Set Default Proof Using "Type".
 
@@ -434,7 +437,7 @@ Proof.
   wp_auto.
   case_bool_decide as Hi.
   (* FIXME: wp_if_destruct doesn't keep the fact around? *)
-  - rewrite decide_False // decide_True //. wp_pures.
+  - cleanup_bool_decide. wp_pures.
     wp_auto. wp_apply (wp_WaitGroup__Done with "[$Hwg_done Hxs]").
     { rewrite take_ge; last word. rewrite drop_ge; last word.
       rewrite app_nil_r. iFrame. }
@@ -504,7 +507,7 @@ Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
     iApply "HΦ".
     iFrame.
   }
-  wp_apply wp_NewChannel.
+  wp_apply chan.wp_make.
   { done. }
   iIntros (ch γch_names) "[#His_chan Hoc]". simpl. wp_auto.
   iMod (init_WaitGroup with "wg") as (?) "H".
