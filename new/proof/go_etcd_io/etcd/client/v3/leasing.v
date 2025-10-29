@@ -112,11 +112,9 @@ Proof using ghost_mapG0.
   { solve_ndisj. }
   iIntros "Hmask".
   iFrame.
-  iSplitR.
+  iSplit.
   { word. }
-  iSplitR.
-  { iLeft. word. }
-  iIntros "_ Hctr". iMod "Hmask" as "_".
+  iIntros "!> Hctr". iMod "Hmask" as "_".
   iMod (ghost_map_delete with "[$] [$]") as "Hm".
   iMod ("Hclose" with "[-]").
   {
@@ -680,11 +678,11 @@ Proof using Type*.
   wp_apply (wp_WaitGroup__Add with "[]").
   { iFrame "#". }
   iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iFrame "Hwg_ctr Hwg_wait".
+  iNext. iFrame "Hwg_ctr".
   iSplitR.
   { word. }
-  iIntros "[%Hbad|Hwg_wait] Hwg_ctr".
-  { by exfalso. }
+  iRight.
+  iFrame "Hwg_wait". iIntros "Hwg_wait Hwg_ctr".
   iMod "Hmask" as "_". iModIntro.
   wp_auto.
   replace (word.add _ (W32 (uint.Z (W64 2)))) with (W32 2) by word.
