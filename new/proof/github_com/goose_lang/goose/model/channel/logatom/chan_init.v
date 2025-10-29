@@ -1,8 +1,7 @@
 From New.proof Require Import proof_prelude.
 From iris.base_logic.lib Require Import saved_prop.
 From iris.algebra Require Import auth gset.
-Require Export New.code.github_com.goose_lang.goose.model.channel.
-From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
+From New.generatedproof.github_com.goose_lang.goose Require Export model.channel.
 From New.proof.github_com.goose_lang Require Import primitive.
 From New.proof.github_com.goose_lang.std Require Import std_core.
 

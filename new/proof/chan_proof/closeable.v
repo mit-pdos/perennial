@@ -1,4 +1,5 @@
 From iris.algebra.lib Require Import dfrac_agree.
+From New.golang.theory Require Export chan_old chan_auto.
 Require Import New.proof.proof_prelude.
 
 (** A pattern for channel usage: a channel that never has anything sent, and is
@@ -129,7 +130,7 @@ Qed.
 
 Lemma wp_closeable_chan_close ch Pclosed :
   {{{ own_closeable_chan ch Pclosed Open ∗ □ Pclosed }}}
-  chan.close #ch
+  chan.close #(structT []) #ch
   {{{ RET #(); own_closeable_chan ch Pclosed Closed }}}.
 Proof.
   wp_start as "[Hown #?]". iNamed "Hown". iNamed "Hinv".

@@ -1,13 +1,13 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export  future spsc done  chan_au_sel dsp.
+     Require Export  future spsc done dsp.
 From New.proof Require Import time sync.
 From Perennial.goose_lang Require Import lang.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From Perennial.goose_lang.lib Require Import slice.
 From iris.base_logic Require Import ghost_map.
-From New.golang.theory Require Import struct.
+From New.golang.theory Require Import struct chan.
 
 (* TODO: Move? *)
 Global Instance wp_struct_make_unit {ext : ffi_syntax} {ffi : ffi_model} {ffi_interp0 : ffi_interp ffi} 
@@ -39,18 +39,17 @@ Qed.
 
 Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel  }}}
-    @! chan_spec_raw_examples.HelloWorldAsyncX #()
+    @! chan_spec_raw_examples.HelloWorldAsync #()
   {{{ (ch: loc) (γfuture: future_names), RET #ch; is_future (V:=go_string) (t:=stringT) γfuture ch
         (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)  ∗
       await_token γfuture }}}.
 Proof.
   wp_start. wp_auto.
-  wp_apply wp_NewChannel;first done.
+  wp_apply chan.wp_make; first done.
   iIntros (ch). iIntros (γ). iIntros "(#HisChan & Hownchan)".
   wp_auto.
   simpl in *.
-  iDestruct ((start_future (V:=go_string) ch (λ v, ⌜ v = "Hello, World!"%go ⌝%I) γ) with "[$HisChan] [$Hownchan]") as ">Hfut".
-  iNamed "Hfut".
+  iDestruct ((start_future (V:=go_string) ch (λ v, ⌜ v = "Hello, World!"%go ⌝%I) γ) with "[$HisChan] [$Hownchan]") as ">(%γfuture & Hfut)".
   iDestruct "Hfut" as "(#Hisfut & Hawait & Hfulfill)".
   iPersist "ch".
   wp_apply (wp_fork with "[Hfulfill]").
@@ -59,30 +58,36 @@ Proof.
     wp_apply wp_sys_hello_world.
     iAssert (⌜"Hello, World!"%go = "Hello, World!"%go⌝)%I as "HP".
     { iPureIntro. reflexivity. }
-wp_apply (wp_future_fulfill γfuture ch (λ v : go_string, ⌜v = "Hello, World!"%go⌝%I) "Hello, World!"%go
-  with "[ $Hisfut $Hfulfill $HP]").
-done.
+    wp_apply (chan.wp_send with "[]") as "[Hlc _]".
+    { iDestruct (future_is_channel with "Hisfut") as "$". }
+  iApply (future_fulfill_au γfuture ch (λ v : go_string, ⌜v = "Hello, World!"%go⌝%I) "Hello, World!"%go
+  with "[$] [$]").
+    iIntros "!> _".
+    wp_auto.
+    done.
   }
   iApply "HΦ".
-  iFrame. iFrame "#".
+  iFrame "∗#".
 Qed.
 
 Lemma wp_HelloWorldSync :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
-    @! chan_spec_raw_examples.HelloWorldSyncX #()
+    @! chan_spec_raw_examples.HelloWorldSync #()
   {{{ RET #("Hello, World!"); True }}}.
-  Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
+Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
   wp_start.
   wp_apply wp_HelloWorldAsync; first done.
-  iIntros (ch γfuture) "[Hfut Hawait]". wp_auto_lc 1.
-  wp_apply ((wp_future_await_discard_ok  (V:=go_string) (t:=stringT)  γfuture ch
-               (λ (v : go_string), ⌜v = "Hello, World!"%go⌝%I)) with "[$Hawait $Hfut]").
-  iIntros (v) "%Hw".
+  iIntros (ch γfuture) "[#Hfut Hawait]".
+  wp_apply (chan.wp_receive) as "[Hlc _]".
+  { iApply future_is_channel; done. }
+  iApply (future_await_au (V:=go_string) (t:=stringT)  γfuture ch
+               (λ (v : go_string), ⌜v = "Hello, World!"%go⌝%I) with "[$] [$Hawait $Hlc]").
+  iIntros "!> %v %Heq". subst.
   wp_auto.
-  subst v.
   iApply "HΦ".
   done.
-  Qed.
+Qed.
+
 End hello_world.
 
 
@@ -106,13 +111,12 @@ Lemma wp_HelloWorldCancellable
 
         is_done (V:=unit) (t:=structT []) γdone done_ch ∗
         Notified γdone (err_ptr1 ↦ err_msg)  }}}
-    @! chan_spec_raw_examples.HelloWorldCancellableX #done_ch #err_ptr1
+    @! chan_spec_raw_examples.HelloWorldCancellable #done_ch #err_ptr1
     {{{
 (result: go_string), RET #result;
       ⌜result = err_msg ∨ result = "Hello, World!"%go⌝
     }}}.
-Proof using chanGhostStateG0 chanGhostStateG1 ext ffi ffi_interp0 ffi_semantics0 ghost_mapG0
-ghost_varG0 go_ctx hG Σ.
+Proof using chanGhostStateG0 chanGhostStateG1 ghost_mapG0 ghost_varG0.
 
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
@@ -128,39 +132,25 @@ ghost_varG0 go_ctx hG Σ.
 
   }
   iDestruct "Hfut" as "[#Hfut #Hinv1]". iFrame "#".
-  wp_pures.
-  wp_apply ((wp_BlockingSelect2
-               (IntoValTyped0:=(into_val_typed_string))
-               (IntoValTyped1:=into_val_typed_unit )
-               (ffi:=ffi)
-               (ffi_interp0:=ffi_interp0)
-
-               (V1:=go_string) (t1:=stringT) (V2:=unit) (t2:=structT [])
-               ch 1  γfuture.(future.chan_name) (W64 1) ""%go  (* Channel 1: Future Channel (go_string) *)
-                               done_ch 0 γdone.(chan_name)  (W64 1) () _
-            )
-
-             with "[$Hdonech $Hfut ]").
-  {
+  wp_apply chan.wp_select_blocking.
+  simpl.
     iSplit.
     {
-      iRight.
-      iSplitL "";first done.
+      iFrame "Hfut".
+      iRename select (£1) into "Hlc".
       iApply ((future_await_au  (V:=go_string) γfuture ch   )
-               with " [$Hfut $Hinv1] [$Hawait] [HΦ resolved selected_case Herr] [$]").
+               with " [$Hfut $Hinv1] [$Hawait $Hlc]").
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto.
+      subst v.
       iApply "HΦ".
       iPureIntro.
       right. done. }
     {
-
-      iRight. simpl. iFrame. iFrame "#".
-      iSplitL "". { iPureIntro;done. }
-
+      iFrame "Hdonech".
 
       iApply ((done_receive_au  (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
-               with " [$H1] [H2] [HΦ resolved selected_case Herr] [$]").
+               with " [$H1] [H2] [HΦ Herr] [$]").
       {
         iFrame.
        }
@@ -168,7 +158,6 @@ ghost_varG0 go_ctx hG Σ.
 
         iNext. iIntros "Herr'".
       wp_auto. iApply "HΦ". iLeft. done.
-      }
       }
       }
 
@@ -179,7 +168,7 @@ Lemma wp_HelloWorldWithTimeout :
   {{{ is_pkg_init channel ∗
       is_pkg_init chan_spec_raw_examples
   }}}
-    @!  chan_spec_raw_examples.HelloWorldWithTimeoutX #()
+    @!  chan_spec_raw_examples.HelloWorldWithTimeout #()
   {{{ (result: go_string), RET #result;
       ⌜result = "Hello, World!"%go ∨
         result = "operation timed out"%go⌝
@@ -188,33 +177,26 @@ Lemma wp_HelloWorldWithTimeout :
 ghost_varG0 go_ctx hG Σ.
   wp_start.
   wp_auto.
-  wp_apply (wp_NewChannel (t:=structT []) 0);first done.
-  iIntros (ch).
-  iIntros (γ).
-  iIntros "[#Hchan Hoc]".
-  wp_apply fupd_wp. simpl.
+  wp_apply (chan.wp_make (t:=structT [])); first done.
+  iIntros (ch γ) "[#Hchan Hoc]".
+  simpl.
   iDestruct (start_done ch γ with "Hchan") as "Hstart".
-iMod ("Hstart" with "Hoc") as (γdone) "[#Hdone Hnot]".
-iModIntro. wp_auto.
-wp_apply fupd_wp.
+iMod ("Hstart" with "Hoc") as (γdone) "(#Hdone & Hnot)".
+wp_auto.
 iPersist "done".
 
 iMod (done_alloc_notified (t:=structT []) γdone ch True (errMsg_ptr ↦ "operation timed out"%go)%I
       with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
-iModIntro.
 wp_apply (wp_fork with "[HNotify errMsg done]").
-{
-wp_auto.
-wp_apply wp_Sleep.
-wp_apply (wp_done_close (V:=()) with "[$HNotify errMsg]").
-{
-  iFrame "#".
-  iFrame.
-}
-{
-  done.
-}
-}
+{ wp_auto.
+  wp_apply wp_Sleep.
+  wp_apply (chan.wp_close (V:=()) with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
+  { iApply (done_is_channel with "Hdone"). }
+  iApply (done_close_au (V:=()) with "[$] [$] [$HNotify errMsg]").
+  { iFrame. }
+  iNext.
+  wp_auto.
+  done. }
 
 wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
 {
@@ -225,13 +207,7 @@ wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
   iIntros "%Hres".
   wp_auto.
   iApply "HΦ".
-  iPureIntro. destruct Hres.
-  { right. done.
-    }
-    {
-      left. done.
-    }
-    }
+  iPureIntro. destruct Hres; auto. }
 Qed.
 
 End cancellable.
@@ -279,6 +255,7 @@ Lemma fib_succ (k:nat) :
     match k with 0%nat => W64 1 | S k' => word.add (fib (S k')) (fib k') end.
 Proof. destruct k; simpl; reflexivity. Qed.
 
+Open Scope Z_scope.
 
 Lemma wp_fibonacci (n: nat) (c_ptr: loc) γ:
   0 < n < 2^63 ->
@@ -289,7 +266,7 @@ Lemma wp_fibonacci (n: nat) (c_ptr: loc) γ:
                   (λ sent, ⌜sent = fib_list  n⌝) ∗
       spsc_producer γ []
   }}}
-    @! chan_spec_raw_examples.fibonacciX #(W64 n) #c_ptr
+    @! chan_spec_raw_examples.fibonacci #(W64 n) #c_ptr
   {{{ RET #(); True }}}.
 Proof.
   intros Hn.
@@ -422,7 +399,7 @@ Qed.
 Lemma wp_fib_consumer:
   {{{ is_pkg_init channel ∗ is_pkg_init chan_spec_raw_examples
   }}}
-   @! chan_spec_raw_examples.fib_consumerX #()
+   @! chan_spec_raw_examples.fib_consumer #()
   {{{ sl, RET #(sl);
       sl ↦* (fib_list 10)
 
@@ -430,7 +407,7 @@ Lemma wp_fib_consumer:
   }}}.
   Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
   wp_start. wp_auto.
-  wp_apply (wp_NewChannel 10);first done.
+  wp_apply (chan.wp_make); first done.
   iIntros (c γ) "[#Hchan Hown]".
   wp_auto.
    iMod (start_spsc c 10  (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
@@ -442,6 +419,7 @@ Lemma wp_fib_consumer:
    {
      iFrame.
      }
+  wp_apply (chan.wp_cap with "[$Hchan]").
   wp_apply (wp_fork with "[Hprod]").
    {
 
@@ -456,23 +434,26 @@ Lemma wp_fib_consumer:
    }
   iDestruct (theory.slice.own_slice_nil  (DfracOwn 1)) as "Hnil".
    iDestruct (theory.slice.own_slice_cap_nil (V:=w64)) as "Hnil_cap".
- iAssert (∃ (i: nat) sl,
+   simpl.
+ iAssert (∃ (i: nat) (i_v: w64) sl,
+             "i" ∷ i_ptr ↦ i_v ∗
             "c"  ∷ c_ptr ↦ c ∗
   "Hcons"  ∷ spsc_consumer γspsc (fib_list i) ∗
   "Hsl"  ∷ sl ↦* (fib_list i) ∗
   "results"  ∷ results_ptr ↦ sl ∗
   "oslc"  ∷ theory.slice.own_slice_cap w64 sl (DfracOwn 1)
 )%I
-  with "[ c Hcons results]" as "IH".
+  with "[ i c Hcons results]" as "IH".
 {
-  iFrame.
   iExists 0%nat.
-  iFrame.  unfold fib_list. simpl. iFrame "#".
+  iFrame.
+  unfold fib_list. iFrame "#".
 }
 
 
-   wp_for.
-iNamed "IH". wp_auto.
+  rewrite /chan.for_range.
+  wp_auto.
+  wp_for "IH".
    wp_apply ((wp_spsc_receive (t:=intT) γspsc c γspsc (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
                   (λ sent, ⌜sent = fib_list 10 ⌝%I) (fib_list i) _) with "[Hcons]").
    { iFrame "#".  iFrame.   }
@@ -519,8 +500,9 @@ iSplitL "Hcons".
   iFrame.
 }
 }
-iIntros "%Hfl". wp_auto. wp_for_post. iApply "HΦ". rewrite Hfl.
-    iFrame.
+iIntros "%Hfl". wp_auto. wp_for_post. iFrame.
+   iApply "HΦ".
+   rewrite Hfl. iFrame "Hsl".
 Qed.
 
 End fibonacci_examples.
@@ -543,15 +525,15 @@ Definition ref_prot : iProto Σ interface.t :=
 
 Lemma wp_DSPExample :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
-    @! chan_spec_raw_examples.DSPExampleX #()
+    @! chan_spec_raw_examples.DSPExample #()
   {{{ RET #(W64 42); True }}}.
 Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG dspG0
 Σ.
   (* TODO: Simplify the above [Proof] *)
   wp_start. wp_auto.
-  wp_apply (wp_NewChannel (V:=interface.t) (t:=interfaceT) 0); [done|].
+  wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
   iIntros (c γ) "[#Hic Hoc]". wp_auto.
-  wp_apply (wp_NewChannel (V:=interface.t) (t:=interfaceT) 0); [done|].
+  wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
   iIntros (signal γ') "[#Hicsignal Hocsignal]". wp_auto.
   iMod (dsp_session_init _ _ _ _ _ _ _ _ _ ref_prot with "Hic Hicsignal Hoc Hocsignal")
                        as "[Hc Hcsignal]";
@@ -560,7 +542,7 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
   wp_apply (wp_fork with "[Hcsignal]").
   { wp_auto.
     (* BEGIN: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
-    wp_apply (dsp_recv_discard_ok (tV:=interfaceT) (TT:=[tele loc Z]) signal c
+    wp_apply (dsp_recv (tV:=interfaceT) (TT:=[tele loc Z]) signal c
               (tele_app (λ l x, interface.mk (ptrT.id intT.id) (# l)))
               (tele_app (λ l x, l ↦ W64 (x)))%I
               (tele_app (λ l x, iProto_dual
@@ -579,6 +561,7 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
     iIntros (lx).
     epose proof (tele_arg_S_inv lx) as [l [[x []] ->]]. simpl.
     iIntros "[Hcsignal Hl]".
+    wp_auto.
     (* END: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
     wp_apply wp_interface_type_assert; [done|].
     (* BEGIN: Will be simplified to tactic [wp_send with "[$Hl]"] *)
@@ -596,7 +579,7 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
   (* END: Will be simplified to tactic [wp_send with "[$val]"] *)
   iIntros "Hc". wp_auto.
   (* BEGIN: Will be simplified to tactic [wp_recv as "Hl"] *)
-  wp_apply (dsp_recv_discard_ok (tV:=interfaceT) (TT:=[tele]) c signal
+  wp_apply (dsp_recv (tV:=interfaceT) (TT:=[tele]) c signal
               (λ _, interface.mk (structT.id []) (# ()))
               (λ _, val_ptr ↦ W64 (40 + 2))%I
               (λ _, END%proto)

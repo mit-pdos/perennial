@@ -1,5 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
+From New.golang.theory Require Import chan.
 
 Section handshake.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -56,13 +57,13 @@ Lemma wp_handshake_receive γ ch P Q :
       is_handshake γ ch P Q  ∗
       Q
   }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{
       v, RET (#v, #true); P v
   }}}.
 Proof.
   iIntros (?) "(Hpc & (#Hchan & #Hinv) & HQ) HΦ".
-  iApply ((wp_Receive ch 0  γ Φ  ) with "[$Hpc $Hchan]").
+  wp_apply ((chan.wp_receive ch 0  γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
    iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".
@@ -96,13 +97,13 @@ Lemma wp_handshake_send γ ch v P Q :
       is_handshake γ ch P Q ∗
       P v
   }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.send #t #ch #v
   {{{
       RET (#()); Q
   }}}.
 Proof.
   iIntros (?) "(Hpc & (#Hchan & #Hinv) & HP) HΦ".
-  iApply ((wp_Send ch 0 v γ Φ  ) with "[$Hpc $Hchan]").
+  wp_apply ((chan.wp_send ch 0 v γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
   iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".

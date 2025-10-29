@@ -1,3 +1,4 @@
+From New.golang.theory Require Import chan_old.
 From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base op definitions.
 
 Section wps.
@@ -73,10 +74,10 @@ Axiom wp_Client__KeepAlive :
       (kch : chan.t) (err : error.t),
         RET (#kch, #err);
         if decide (err = interface.nil) then
-          is_chan () kch ∗
+          is_chan loc kch ∗
           (* Persistent ability to do receives, including when [kch] is closed;
              could wrap this in a definition *)
-          □(|={⊤,∅}=> ∃ (s : chanstate.t ()),
+          □(|={⊤,∅}=> ∃ (s : chanstate.t loc),
               own_chan kch s ∗
               (own_chan kch (set chanstate.received S s) ∨ own_chan kch s ={∅,⊤}=∗ True)
             )

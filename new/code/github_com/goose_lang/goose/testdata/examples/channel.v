@@ -33,7 +33,7 @@ Definition HelloWorldAsyncⁱᵐᵖˡ : val :=
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "ch") in
       let: "$v" := ((func_call #sys_hello_world) #()) in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -44,7 +44,7 @@ Definition HelloWorldSync : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: examples.go:21:6 *)
 Definition HelloWorldSyncⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (Fst (chan.receive ((func_call #HelloWorldAsync) #())))).
+    exception_do (return: (Fst (chan.receive #stringT ((func_call #HelloWorldAsync) #())))).
 
 Definition HelloWorldCancellable : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldCancellable"%go.
 
@@ -58,15 +58,16 @@ Definition HelloWorldCancellableⁱᵐᵖˡ : val :=
     let: "future" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
     let: "$r0" := ((func_call #HelloWorldAsync) #()) in
     do:  ("future" <-[type.chanT #stringT] "$r0");;;
-    chan.select [chan.select_receive (![type.chanT #stringT] "future") (λ: "$recvVal",
+    chan.select_blocking [chan.select_receive #stringT (![type.chanT #stringT] "future") (λ: "$recvVal",
        let: "resolved" := (mem.alloc (type.zero_val #stringT)) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("resolved" <-[#stringT] "$r0");;;
        return: (![#stringT] "resolved")
-       ); chan.select_receive (![type.chanT (type.structT [
+       ); chan.select_receive (type.structT [
+     ]) (![type.chanT (type.structT [
      ])] "done") (λ: "$recvVal",
        return: (![#stringT] (![#ptrT] "err"))
-       )] chan.select_no_default).
+       )]).
 
 Definition HelloWorldWithTimeout : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldWithTimeout"%go.
 
@@ -91,7 +92,8 @@ Definition HelloWorldWithTimeoutⁱᵐᵖˡ : val :=
       do:  ("errMsg" <-[#stringT] "$r0");;;
       do:  (let: "$a0" := (![type.chanT (type.structT [
       ])] "done") in
-      chan.close "$a0");;;
+      (chan.close (type.structT [
+      ])) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -107,27 +109,23 @@ Definition DSPExample : go_string := "github.com/goose-lang/goose/testdata/examp
    go: examples.go:52:6 *)
 Definition DSPExampleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "c" := (mem.alloc (type.zero_val (type.chanT #ptrT))) in
-    let: "$r0" := (chan.make #ptrT #(W64 0)) in
-    do:  ("c" <-[type.chanT #ptrT] "$r0");;;
-    let: "signal" := (mem.alloc (type.zero_val (type.chanT (type.structT [
-    ])))) in
-    let: "$r0" := (chan.make (type.structT [
-    ]) #(W64 0)) in
-    do:  ("signal" <-[type.chanT (type.structT [
-    ])] "$r0");;;
+    exception_do (let: "c" := (mem.alloc (type.zero_val (type.chanT #interfaceT))) in
+    let: "$r0" := (chan.make #interfaceT #(W64 0)) in
+    do:  ("c" <-[type.chanT #interfaceT] "$r0");;;
+    let: "signal" := (mem.alloc (type.zero_val (type.chanT #interfaceT))) in
+    let: "$r0" := (chan.make #interfaceT #(W64 0)) in
+    do:  ("signal" <-[type.chanT #interfaceT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (Fst (chan.receive (![type.chanT #ptrT] "c"))) in
+      let: "$r0" := (interface.type_assert (Fst (chan.receive #interfaceT (![type.chanT #interfaceT] "c"))) #(ptrT.id intT.id)) in
       do:  ("ptr" <-[#ptrT] "$r0");;;
       let: "$r0" := ((![#intT] (![#ptrT] "ptr")) + #(W64 2)) in
       do:  ((![#ptrT] "ptr") <-[#intT] "$r0");;;
-      do:  (let: "$chan" := (![type.chanT (type.structT [
-      ])] "signal") in
-      let: "$v" := (struct.make (type.structT [
+      do:  (let: "$chan" := (![type.chanT #interfaceT] "signal") in
+      let: "$v" := (interface.make #(structT.id []) (struct.make (type.structT [
       ]) [{
-      }]) in
-      chan.send "$chan" "$v");;;
+      }])) in
+      chan.send #interfaceT "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -137,11 +135,10 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
     let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := "val" in
     do:  ("ptr" <-[#ptrT] "$r0");;;
-    do:  (let: "$chan" := (![type.chanT #ptrT] "c") in
-    let: "$v" := (![#ptrT] "ptr") in
-    chan.send "$chan" "$v");;;
-    do:  (Fst (chan.receive (![type.chanT (type.structT [
-    ])] "signal")));;;
+    do:  (let: "$chan" := (![type.chanT #interfaceT] "c") in
+    let: "$v" := (interface.make #(ptrT.id intT.id) (![#ptrT] "ptr")) in
+    chan.send #interfaceT "$chan" "$v");;;
+    do:  (Fst (chan.receive #interfaceT (![type.chanT #interfaceT] "signal")));;;
     return: (![#intT] (![#ptrT] "ptr"))).
 
 Definition fibonacci : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fibonacci"%go.
@@ -165,13 +162,13 @@ Definition fibonacciⁱᵐᵖˡ : val :=
     (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "n")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
       do:  (let: "$chan" := (![type.chanT #intT] "c") in
       let: "$v" := (![#intT] "x") in
-      chan.send "$chan" "$v");;;
+      chan.send #intT "$chan" "$v");;;
       let: "$r0" := (![#intT] "y") in
       let: "$r1" := ((![#intT] "x") + (![#intT] "y")) in
       do:  ("x" <-[#intT] "$r0");;;
       do:  ("y" <-[#intT] "$r1")));;;
     do:  (let: "$a0" := (![type.chanT #intT] "c") in
-    chan.close "$a0");;;
+    (chan.close #intT) "$a0");;;
     return: #()).
 
 Definition fib_consumer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fib_consumer"%go.
@@ -183,7 +180,7 @@ Definition fib_consumerⁱᵐᵖˡ : val :=
     let: "$r0" := (chan.make #intT #(W64 10)) in
     do:  ("c" <-[type.chanT #intT] "$r0");;;
     let: "$a0" := (let: "$a0" := (![type.chanT #intT] "c") in
-    chan.cap "$a0") in
+    (chan.cap #intT) "$a0") in
     let: "$a1" := (![type.chanT #intT] "c") in
     let: "$go" := (func_call #fibonacci) in
     do:  (Fork ("$go" "$a0" "$a1"));;;
@@ -192,7 +189,7 @@ Definition fib_consumerⁱᵐᵖˡ : val :=
     do:  ("results" <-[#sliceT] "$r0");;;
     let: "$range" := (![type.chanT #intT] "c") in
     (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #intT "$range" (λ: "$key",
       do:  ("i" <-[#intT] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "results") in
       let: "$a1" := ((let: "$sl0" := (![#intT] "i") in
@@ -215,25 +212,27 @@ Definition select_nb_no_panicⁱᵐᵖˡ : val :=
     do:  ("ch" <-[type.chanT (type.structT [
     ])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (chan.select [chan.select_receive (![type.chanT (type.structT [
+      exception_do (chan.select_nonblocking [chan.select_receive (type.structT [
+       ]) (![type.chanT (type.structT [
        ])] "ch") (λ: "$recvVal",
          do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
          Panic "$a0")
-         )] (chan.select_default (λ: <>,
+         )] (λ: <>,
         do:  #()
-        ));;;
+        );;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    chan.select [chan.select_send (struct.make (type.structT [
+    chan.select_nonblocking [chan.select_send (type.structT [
+     ]) (![type.chanT (type.structT [
+     ])] "ch") (struct.make (type.structT [
      ]) [{
-     }]) (![type.chanT (type.structT [
-     ])] "ch") (λ: <>,
+     }]) (λ: <>,
        do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
        Panic "$a0")
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  #()
-      ));;;
+      );;;
     return: #()).
 
 Definition select_ready_case_no_panic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panic"%go.
@@ -251,14 +250,16 @@ Definition select_ready_case_no_panicⁱᵐᵖˡ : val :=
     ])] "$r0");;;
     do:  (let: "$a0" := (![type.chanT (type.structT [
     ])] "ch") in
-    chan.close "$a0");;;
-    chan.select [chan.select_receive (![type.chanT (type.structT [
+    (chan.close (type.structT [
+    ])) "$a0");;;
+    chan.select_nonblocking [chan.select_receive (type.structT [
+     ]) (![type.chanT (type.structT [
      ])] "ch") (λ: "$recvVal",
        do:  #()
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  (let: "$a0" := (interface.make #stringT.id #"Shouldn't be possible!"%go) in
       Panic "$a0")
-      ));;;
+      );;;
     return: #()).
 
 Definition TestHelloWorldSync : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldSync"%go.
@@ -420,23 +421,23 @@ Definition clientⁱᵐᵖˡ : val :=
       do:  ("letter" <-[#stringT] "$value");;;
       do:  "$key";;;
       let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-      chan.select [chan.select_receive (![type.chanT #sliceT] "freeList") (λ: "$recvVal",
+      chan.select_nonblocking [chan.select_receive #sliceT (![type.chanT #sliceT] "freeList") (λ: "$recvVal",
          let: "$r0" := (Fst "$recvVal") in
          do:  ("b" <-[#sliceT] "$r0");;;
          do:  #()
-         )] (chan.select_default (λ: <>,
+         )] (λ: <>,
         let: "$r0" := ((let: "$sl0" := #(W8 0) in
         slice.literal #byteT ["$sl0"])) in
         do:  ("b" <-[#sliceT] "$r0")
-        ));;;
+        );;;
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![#stringT] "letter") in
       (func_call #load) "$a0" "$a1");;;
       do:  (let: "$chan" := (![type.chanT #sliceT] "serverChan") in
       let: "$v" := (![#sliceT] "b") in
-      chan.send "$chan" "$v")));;;
+      chan.send #sliceT "$chan" "$v")));;;
     do:  (let: "$a0" := (![type.chanT #sliceT] "serverChan") in
-    chan.close "$a0");;;
+    (chan.close #sliceT) "$a0");;;
     return: #()).
 
 Definition server : go_string := "github.com/goose-lang/goose/testdata/examples/channel.server"%go.
@@ -451,7 +452,7 @@ Definition serverⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-      let: ("$ret0", "$ret1") := (chan.receive (![type.chanT #sliceT] "serverChan")) in
+      let: ("$ret0", "$ret1") := (chan.receive #sliceT (![type.chanT #sliceT] "serverChan")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("b" <-[#sliceT] "$r0");;;
@@ -463,17 +464,18 @@ Definition serverⁱᵐᵖˡ : val :=
         let: "$v" := (struct.make (type.structT [
         ]) [{
         }]) in
-        chan.send "$chan" "$v");;;
+        chan.send (type.structT [
+        ]) "$chan" "$v");;;
         return: (#())
       else do:  #());;;
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![#ptrT] "output") in
       (func_call #process) "$a0" "$a1");;;
-      chan.select [chan.select_send (![#sliceT] "b") (![type.chanT #sliceT] "freeList") (λ: <>,
+      chan.select_nonblocking [chan.select_send #sliceT (![type.chanT #sliceT] "freeList") (![#sliceT] "b") (λ: <>,
          do:  #()
-         )] (chan.select_default (λ: <>,
+         )] (λ: <>,
         do:  #()
-        )));;;
+        ));;;
     return: #()).
 
 Definition LeakyBufferPipeline : go_string := "github.com/goose-lang/goose/testdata/examples/channel.LeakyBufferPipeline"%go.
@@ -519,522 +521,9 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ : val :=
     let: "$a1" := (![type.chanT #sliceT] "freeList") in
     let: "$a2" := (![type.chanT #sliceT] "serverChan") in
     (func_call #client) "$a0" "$a1" "$a2");;;
-    do:  (Fst (chan.receive (![type.chanT (type.structT [
+    do:  (Fst (chan.receive (type.structT [
+    ]) (![type.chanT (type.structT [
     ])] "done")));;;
-    (if: (![#stringT] "output") ≠ #"HELLO, WORLD"%go
-    then
-      do:  (let: "$a0" := (interface.make #stringT.id #"incorrect output"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: #()).
-
-Definition HelloWorldAsyncX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldAsyncX"%go.
-
-(* go: examples_xlated.go:13:6 *)
-Definition HelloWorldAsyncXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 1) in
-    (func_call #channel.NewChannel #stringT) "$a0") in
-    do:  ("ch" <-[#ptrT] "$r0");;;
-    let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$a0" := ((func_call #sys_hello_world) #()) in
-      (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "ch") #stringT) "$a0");;;
-      return: #())
-      ) in
-    do:  (Fork ("$go" #()));;;
-    return: (![#ptrT] "ch")).
-
-Definition HelloWorldSyncX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldSyncX"%go.
-
-(* go: examples_xlated.go:21:6 *)
-Definition HelloWorldSyncXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (return: ((method_call #(ptrT.id channel.Channel.id) #"ReceiveDiscardOk"%go ((func_call #HelloWorldAsyncX) #()) #stringT) #())).
-
-Definition HelloWorldCancellableX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldCancellableX"%go.
-
-(* Simulates the error/done channel components of Context
-
-   go: examples_xlated.go:26:6 *)
-Definition HelloWorldCancellableXⁱᵐᵖˡ : val :=
-  λ: "done" "err",
-    exception_do (let: "err" := (mem.alloc "err") in
-    let: "done" := (mem.alloc "done") in
-    let: "future" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #HelloWorldAsyncX) #()) in
-    do:  ("future" <-[#ptrT] "$r0");;;
-    let: "resolved" := (mem.alloc (type.zero_val #stringT)) in
-    let: "selected_case" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#ptrT] "future") in
-    let: "$a1" := channel.SelectRecv in
-    let: "$a2" := #""%go in
-    let: "$a3" := (![#ptrT] "done") in
-    let: "$a4" := channel.SelectRecv in
-    let: "$a5" := (struct.make (type.structT [
-    ]) [{
-    }]) in
-    (func_call #channel.BlockingSelect2 #stringT (type.structT [
-    ])) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    let: "$r3" := "$ret3" in
-    do:  ("selected_case" <-[#uint64T] "$r0");;;
-    do:  ("resolved" <-[#stringT] "$r1");;;
-    do:  "$r2";;;
-    do:  "$r3";;;
-    (if: (![#uint64T] "selected_case") = #(W64 0)
-    then return: (![#stringT] "resolved")
-    else return: (![#stringT] (![#ptrT] "err")))).
-
-Definition HelloWorldWithTimeoutX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldWithTimeoutX"%go.
-
-(* Uses cancellation as a timeout mechanism.
-
-   go: examples_xlated.go:39:6 *)
-Definition HelloWorldWithTimeoutXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "done" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel (type.structT [
-    ])) "$a0") in
-    do:  ("done" <-[#ptrT] "$r0");;;
-    let: "errMsg" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := #""%go in
-    do:  ("errMsg" <-[#stringT] "$r0");;;
-    let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$a0" := (#(W64 10) * time.Millisecond) in
-      (func_call #time.Sleep) "$a0");;;
-      let: "$r0" := #"operation timed out"%go in
-      do:  ("errMsg" <-[#stringT] "$r0");;;
-      do:  ((method_call #(ptrT.id channel.Channel.id) #"Close"%go (![#ptrT] "done") (type.structT [
-      ])) #());;;
-      return: #())
-      ) in
-    do:  (Fork ("$go" #()));;;
-    return: (let: "$a0" := (![#ptrT] "done") in
-     let: "$a1" := "errMsg" in
-     (func_call #HelloWorldCancellableX) "$a0" "$a1")).
-
-Definition DSPExampleX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.DSPExampleX"%go.
-
-(* prog3 from Actris 2.0 intro: https://arxiv.org/pdf/2010.15030
-
-   go: examples_xlated.go:52:6 *)
-Definition DSPExampleXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "c" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel #interfaceT) "$a0") in
-    do:  ("c" <-[#ptrT] "$r0");;;
-    let: "signal" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel #interfaceT) "$a0") in
-    do:  ("signal" <-[#ptrT] "$r0");;;
-    let: "$go" := (λ: <>,
-      exception_do (let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (interface.type_assert ((method_call #(ptrT.id channel.Channel.id) #"ReceiveDiscardOk"%go (![#ptrT] "c") #interfaceT) #()) #(ptrT.id intT.id)) in
-      do:  ("ptr" <-[#ptrT] "$r0");;;
-      let: "$r0" := ((![#intT] (![#ptrT] "ptr")) + #(W64 2)) in
-      do:  ((![#ptrT] "ptr") <-[#intT] "$r0");;;
-      do:  (let: "$a0" := (interface.make #(structT.id []) (struct.make (type.structT [
-      ]) [{
-      }])) in
-      (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "signal") #interfaceT) "$a0");;;
-      return: #())
-      ) in
-    do:  (Fork ("$go" #()));;;
-    let: "val" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := #(W64 40) in
-    do:  ("val" <-[#intT] "$r0");;;
-    let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := "val" in
-    do:  ("ptr" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (interface.make #(ptrT.id intT.id) (![#ptrT] "ptr")) in
-    (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "c") #interfaceT) "$a0");;;
-    do:  ((method_call #(ptrT.id channel.Channel.id) #"ReceiveDiscardOk"%go (![#ptrT] "signal") #interfaceT) #());;;
-    return: (![#intT] (![#ptrT] "ptr"))).
-
-Definition fibonacciX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fibonacciX"%go.
-
-(* https://go.dev/tour/concurrency/4
-
-   go: examples_xlated.go:68:6 *)
-Definition fibonacciXⁱᵐᵖˡ : val :=
-  λ: "n" "c",
-    exception_do (let: "c" := (mem.alloc "c") in
-    let: "n" := (mem.alloc "n") in
-    let: "y" := (mem.alloc (type.zero_val #intT)) in
-    let: "x" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := #(W64 0) in
-    let: "$r1" := #(W64 1) in
-    do:  ("x" <-[#intT] "$r0");;;
-    do:  ("y" <-[#intT] "$r1");;;
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "n")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      do:  (let: "$a0" := (![#intT] "x") in
-      (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "c") #intT) "$a0");;;
-      let: "$r0" := (![#intT] "y") in
-      let: "$r1" := ((![#intT] "x") + (![#intT] "y")) in
-      do:  ("x" <-[#intT] "$r0");;;
-      do:  ("y" <-[#intT] "$r1")));;;
-    do:  ((method_call #(ptrT.id channel.Channel.id) #"Close"%go (![#ptrT] "c") #intT) #());;;
-    return: #()).
-
-Definition fib_consumerX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fib_consumerX"%go.
-
-(* go: examples_xlated.go:77:6 *)
-Definition fib_consumerXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "c" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 10) in
-    (func_call #channel.NewChannel #intT) "$a0") in
-    do:  ("c" <-[#ptrT] "$r0");;;
-    let: "$a0" := #(W64 10) in
-    let: "$a1" := (![#ptrT] "c") in
-    let: "$go" := (func_call #fibonacciX) in
-    do:  (Fork ("$go" "$a0" "$a1"));;;
-    let: "results" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := #slice.nil in
-    do:  ("results" <-[#sliceT] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "i" := (mem.alloc (type.zero_val #intT)) in
-      let: ("$ret0", "$ret1") := ((method_call #(ptrT.id channel.Channel.id) #"Receive"%go (![#ptrT] "c") #intT) #()) in
-      let: "$r0" := "$ret0" in
-      let: "$r1" := "$ret1" in
-      do:  ("i" <-[#intT] "$r0");;;
-      do:  ("ok" <-[#boolT] "$r1");;;
-      (if: (~ (![#boolT] "ok"))
-      then break: #()
-      else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "results") in
-      let: "$a1" := ((let: "$sl0" := (![#intT] "i") in
-      slice.literal #intT ["$sl0"])) in
-      (slice.append #intT) "$a0" "$a1") in
-      do:  ("results" <-[#sliceT] "$r0"));;;
-    return: (![#sliceT] "results")).
-
-Definition select_nb_no_panicX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_nb_no_panicX"%go.
-
-(* Show that it isn't possible to have 2 nonblocking ops that match.
-
-   go: examples_xlated.go:92:6 *)
-Definition select_nb_no_panicXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel (type.structT [
-    ])) "$a0") in
-    do:  ("ch" <-[#ptrT] "$r0");;;
-    let: "$go" := (λ: <>,
-      exception_do (let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#ptrT] "ch") in
-      let: "$a1" := channel.SelectRecv in
-      let: "$a2" := (struct.make (type.structT [
-      ]) [{
-      }]) in
-      (func_call #channel.NonBlockingSelect1 (type.structT [
-      ])) "$a0" "$a1" "$a2") in
-      let: "$r0" := "$ret0" in
-      let: "$r1" := "$ret1" in
-      let: "$r2" := "$ret2" in
-      do:  ("selected" <-[#boolT] "$r0");;;
-      do:  "$r1";;;
-      do:  "$r2";;;
-      (if: ![#boolT] "selected"
-      then
-        do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
-        Panic "$a0")
-      else do:  #());;;
-      return: #())
-      ) in
-    do:  (Fork ("$go" #()));;;
-    let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#ptrT] "ch") in
-    let: "$a1" := channel.SelectSend in
-    let: "$a2" := (struct.make (type.structT [
-    ]) [{
-    }]) in
-    (func_call #channel.NonBlockingSelect1 (type.structT [
-    ])) "$a0" "$a1" "$a2") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("selected" <-[#boolT] "$r0");;;
-    do:  "$r1";;;
-    do:  "$r2";;;
-    (if: ![#boolT] "selected"
-    then
-      do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: #()).
-
-Definition select_ready_case_no_panicX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panicX"%go.
-
-(* Show that a guaranteed to be ready case makes default impossible
-
-   go: examples_xlated.go:107:6 *)
-Definition select_ready_case_no_panicXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel (type.structT [
-    ])) "$a0") in
-    do:  ("ch" <-[#ptrT] "$r0");;;
-    do:  ((method_call #(ptrT.id channel.Channel.id) #"Close"%go (![#ptrT] "ch") (type.structT [
-    ])) #());;;
-    let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#ptrT] "ch") in
-    let: "$a1" := channel.SelectRecv in
-    let: "$a2" := (struct.make (type.structT [
-    ]) [{
-    }]) in
-    (func_call #channel.NonBlockingSelect1 (type.structT [
-    ])) "$a0" "$a1" "$a2") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("selected" <-[#boolT] "$r0");;;
-    do:  "$r1";;;
-    do:  "$r2";;;
-    (if: (~ (![#boolT] "selected"))
-    then
-      do:  (let: "$a0" := (interface.make #stringT.id #"Shouldn't be possible!"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: #()).
-
-Definition TestHelloWorldSyncX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldSyncX"%go.
-
-(* Various tests that should panic when failing, which also means verifying { True } e { True } is
-   sufficient since panic can't be verified.
-
-   go: examples_xlated.go:119:6 *)
-Definition TestHelloWorldSyncXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "result" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := ((func_call #HelloWorldSync) #()) in
-    do:  ("result" <-[#stringT] "$r0");;;
-    (if: (![#stringT] "result") ≠ #"Hello, World!"%go
-    then
-      do:  (let: "$a0" := (interface.make #stringT.id #"incorrect output"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: #()).
-
-Definition TestHelloWorldWithTimeoutX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldWithTimeoutX"%go.
-
-(* go: examples_xlated.go:126:6 *)
-Definition TestHelloWorldWithTimeoutXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "result" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := ((func_call #HelloWorldWithTimeout) #()) in
-    do:  ("result" <-[#stringT] "$r0");;;
-    (if: ((![#stringT] "result") ≠ #"operation timed out"%go) && ((![#stringT] "result") ≠ #"Hello, World!"%go)
-    then
-      do:  (let: "$a0" := (interface.make #stringT.id #"incorrect output"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: #()).
-
-Definition TestDSPExampleX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestDSPExampleX"%go.
-
-(* go: examples_xlated.go:133:6 *)
-Definition TestDSPExampleXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "result" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((func_call #DSPExample) #()) in
-    do:  ("result" <-[#intT] "$r0");;;
-    (if: (![#intT] "result") ≠ #(W64 42)
-    then
-      do:  (let: "$a0" := (interface.make #stringT.id #"incorrect output"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: #()).
-
-Definition TestFibConsumerX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestFibConsumerX"%go.
-
-(* go: examples_xlated.go:140:6 *)
-Definition TestFibConsumerXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "result" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((func_call #fib_consumer) #()) in
-    do:  ("result" <-[#sliceT] "$r0");;;
-    let: "expected" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((let: "$sl0" := #(W64 0) in
-    let: "$sl1" := #(W64 1) in
-    let: "$sl2" := #(W64 1) in
-    let: "$sl3" := #(W64 2) in
-    let: "$sl4" := #(W64 3) in
-    let: "$sl5" := #(W64 5) in
-    let: "$sl6" := #(W64 8) in
-    let: "$sl7" := #(W64 13) in
-    let: "$sl8" := #(W64 21) in
-    let: "$sl9" := #(W64 34) in
-    slice.literal #intT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"; "$sl7"; "$sl8"; "$sl9"])) in
-    do:  ("expected" <-[#sliceT] "$r0");;;
-    (if: (let: "$a0" := (![#sliceT] "result") in
-    slice.len "$a0") ≠ (let: "$a0" := (![#sliceT] "expected") in
-    slice.len "$a0")
-    then
-      do:  (let: "$a0" := (interface.make #stringT.id #"incorrect output"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    let: "$range" := (![#sliceT] "expected") in
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    slice.for_range #intT "$range" (λ: "$key" "$value",
-      do:  ("i" <-[#intT] "$key");;;
-      (if: (![#intT] (slice.elem_ref #intT (![#sliceT] "result") (![#intT] "i"))) ≠ (![#intT] (slice.elem_ref #intT (![#sliceT] "expected") (![#intT] "i")))
-      then
-        do:  (let: "$a0" := (interface.make #stringT.id #"incorrect output"%go) in
-        Panic "$a0")
-      else do:  #())));;;
-    return: #()).
-
-Definition TestSelectNbNoPanicX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectNbNoPanicX"%go.
-
-(* go: examples_xlated.go:153:6 *)
-Definition TestSelectNbNoPanicXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (do:  ((func_call #select_nb_no_panic) #());;;
-    return: #()).
-
-Definition TestSelectReadyCaseNoPanicX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectReadyCaseNoPanicX"%go.
-
-(* go: examples_xlated.go:157:6 *)
-Definition TestSelectReadyCaseNoPanicXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (do:  ((func_call #select_ready_case_no_panic) #());;;
-    return: #()).
-
-Definition clientX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.clientX"%go.
-
-(* go: examples_xlated.go:164:6 *)
-Definition clientXⁱᵐᵖˡ : val :=
-  λ: "input" "freeList" "serverChan",
-    exception_do (let: "serverChan" := (mem.alloc "serverChan") in
-    let: "freeList" := (mem.alloc "freeList") in
-    let: "input" := (mem.alloc "input") in
-    let: "$range" := (![#sliceT] "input") in
-    (let: "letter" := (mem.alloc (type.zero_val #stringT)) in
-    slice.for_range #stringT "$range" (λ: "$key" "$value",
-      do:  ("letter" <-[#stringT] "$value");;;
-      do:  "$key";;;
-      let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "v" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#ptrT] "freeList") in
-      let: "$a1" := channel.SelectRecv in
-      let: "$a2" := ((let: "$sl0" := #(W8 0) in
-      slice.literal #byteT ["$sl0"])) in
-      (func_call #channel.NonBlockingSelect1 #sliceT) "$a0" "$a1" "$a2") in
-      let: "$r0" := "$ret0" in
-      let: "$r1" := "$ret1" in
-      let: "$r2" := "$ret2" in
-      do:  ("selected" <-[#boolT] "$r0");;;
-      do:  ("v" <-[#sliceT] "$r1");;;
-      do:  "$r2";;;
-      (if: ![#boolT] "selected"
-      then
-        let: "$r0" := (![#sliceT] "v") in
-        do:  ("b" <-[#sliceT] "$r0")
-      else
-        let: "$r0" := ((let: "$sl0" := #(W8 0) in
-        slice.literal #byteT ["$sl0"])) in
-        do:  ("b" <-[#sliceT] "$r0"));;;
-      do:  (let: "$a0" := "b" in
-      let: "$a1" := (![#stringT] "letter") in
-      (func_call #load) "$a0" "$a1");;;
-      do:  (let: "$a0" := (![#sliceT] "b") in
-      (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "serverChan") #sliceT) "$a0")));;;
-    do:  ((method_call #(ptrT.id channel.Channel.id) #"Close"%go (![#ptrT] "serverChan") #sliceT) #());;;
-    return: #()).
-
-Definition serverX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.serverX"%go.
-
-(* go: examples_xlated.go:183:6 *)
-Definition serverXⁱᵐᵖˡ : val :=
-  λ: "output" "freeList" "serverChan" "join",
-    exception_do (let: "join" := (mem.alloc "join") in
-    let: "serverChan" := (mem.alloc "serverChan") in
-    let: "freeList" := (mem.alloc "freeList") in
-    let: "output" := (mem.alloc "output") in
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-      let: ("$ret0", "$ret1") := ((method_call #(ptrT.id channel.Channel.id) #"Receive"%go (![#ptrT] "serverChan") #sliceT) #()) in
-      let: "$r0" := "$ret0" in
-      let: "$r1" := "$ret1" in
-      do:  ("b" <-[#sliceT] "$r0");;;
-      do:  ("ok" <-[#boolT] "$r1");;;
-      (if: (~ (![#boolT] "ok"))
-      then
-        do:  (let: "$a0" := (struct.make (type.structT [
-        ]) [{
-        }]) in
-        (method_call #(ptrT.id channel.Channel.id) #"Send"%go (![#ptrT] "join") (type.structT [
-        ])) "$a0");;;
-        return: (#())
-      else do:  #());;;
-      do:  (let: "$a0" := "b" in
-      let: "$a1" := (![#ptrT] "output") in
-      (func_call #process) "$a0" "$a1");;;
-      do:  (let: "$a0" := (![#ptrT] "freeList") in
-      let: "$a1" := channel.SelectSend in
-      let: "$a2" := (![#sliceT] "b") in
-      (func_call #channel.NonBlockingSelect1 #sliceT) "$a0" "$a1" "$a2"));;;
-    return: #()).
-
-Definition LeakyBufferPipelineX : go_string := "github.com/goose-lang/goose/testdata/examples/channel.LeakyBufferPipelineX"%go.
-
-(* go: examples_xlated.go:204:6 *)
-Definition LeakyBufferPipelineXⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "freeList" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel #sliceT) "$a0") in
-    do:  ("freeList" <-[#ptrT] "$r0");;;
-    let: "serverChan" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel #sliceT) "$a0") in
-    do:  ("serverChan" <-[#ptrT] "$r0");;;
-    let: "join" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.NewChannel (type.structT [
-    ])) "$a0") in
-    do:  ("join" <-[#ptrT] "$r0");;;
-    let: "output" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := #""%go in
-    do:  ("output" <-[#stringT] "$r0");;;
-    let: "$a0" := "output" in
-    let: "$a1" := (![#ptrT] "freeList") in
-    let: "$a2" := (![#ptrT] "serverChan") in
-    let: "$a3" := (![#ptrT] "join") in
-    let: "$go" := (func_call #serverX) in
-    do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"));;;
-    do:  (let: "$a0" := ((let: "$sl0" := #"h"%go in
-    let: "$sl1" := #"e"%go in
-    let: "$sl2" := #"l"%go in
-    let: "$sl3" := #"l"%go in
-    let: "$sl4" := #"o"%go in
-    let: "$sl5" := #","%go in
-    let: "$sl6" := #" "%go in
-    let: "$sl7" := #"w"%go in
-    let: "$sl8" := #"o"%go in
-    let: "$sl9" := #"r"%go in
-    let: "$sl10" := #"l"%go in
-    let: "$sl11" := #"d"%go in
-    slice.literal #stringT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"; "$sl7"; "$sl8"; "$sl9"; "$sl10"; "$sl11"])) in
-    let: "$a1" := (![#ptrT] "freeList") in
-    let: "$a2" := (![#ptrT] "serverChan") in
-    (func_call #clientX) "$a0" "$a1" "$a2");;;
-    do:  ((method_call #(ptrT.id channel.Channel.id) #"Receive"%go (![#ptrT] "join") (type.structT [
-    ])) #());;;
     (if: (![#stringT] "output") ≠ #"HELLO, WORLD"%go
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"incorrect output"%go) in
@@ -1139,7 +628,7 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (HelloWorldAsyncX, HelloWorldAsyncXⁱᵐᵖˡ); (HelloWorldSyncX, HelloWorldSyncXⁱᵐᵖˡ); (HelloWorldCancellableX, HelloWorldCancellableXⁱᵐᵖˡ); (HelloWorldWithTimeoutX, HelloWorldWithTimeoutXⁱᵐᵖˡ); (DSPExampleX, DSPExampleXⁱᵐᵖˡ); (fibonacciX, fibonacciXⁱᵐᵖˡ); (fib_consumerX, fib_consumerXⁱᵐᵖˡ); (select_nb_no_panicX, select_nb_no_panicXⁱᵐᵖˡ); (select_ready_case_no_panicX, select_ready_case_no_panicXⁱᵐᵖˡ); (TestHelloWorldSyncX, TestHelloWorldSyncXⁱᵐᵖˡ); (TestHelloWorldWithTimeoutX, TestHelloWorldWithTimeoutXⁱᵐᵖˡ); (TestDSPExampleX, TestDSPExampleXⁱᵐᵖˡ); (TestFibConsumerX, TestFibConsumerXⁱᵐᵖˡ); (TestSelectNbNoPanicX, TestSelectNbNoPanicXⁱᵐᵖˡ); (TestSelectReadyCaseNoPanicX, TestSelectReadyCaseNoPanicXⁱᵐᵖˡ); (clientX, clientXⁱᵐᵖˡ); (serverX, serverXⁱᵐᵖˡ); (LeakyBufferPipelineX, LeakyBufferPipelineXⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -1148,14 +637,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.strings.strings; code.time.time; code.github_com.goose_lang.goose.model.channel.channel; code.sync.sync];
+    pkg_imported_pkgs := [code.strings.strings; code.time.time; code.sync.sync; code.github_com.goose_lang.goose.model.channel.channel];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
     package.init #channel.chan_spec_raw_examples (λ: <>,
-      exception_do (do:  (sync.initialize' #());;;
-      do:  (channel.initialize' #());;;
+      exception_do (do:  (channel.initialize' #());;;
+      do:  (sync.initialize' #());;;
       do:  (time.initialize' #());;;
       do:  (strings.initialize' #());;;
       do:  (package.alloc channel.chan_spec_raw_examples #()))

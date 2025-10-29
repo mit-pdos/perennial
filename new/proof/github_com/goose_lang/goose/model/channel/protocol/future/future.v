@@ -1,5 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
+From New.golang.theory Require Import chan.
 
 (** * Future Channel Verification
 
@@ -124,18 +125,22 @@ Proof.
   iFrame "#". iFrame.
 Qed.
 
+Lemma future_is_channel γfuture ch P :
+  is_future γfuture ch P ⊢ is_channel ch 1 γfuture.(future.chan_name).
+Proof.
+  iDestruct 1 as "[$ _]".
+Qed.
+
 (** ** Fulfill Operation (Send) *)
 
 Lemma future_fulfill_au γ ch (P : V → iProp Σ) (v : V) :
   ∀ (Φ: iProp Σ),
   is_future γ ch P -∗
-  fulfill_token γ -∗
-  P v -∗
-    ▷ (True -∗ Φ) -∗
-  £1  -∗
+  £1 ∗ fulfill_token γ ∗ P v -∗
+  ▷ (True -∗ Φ) -∗
   send_au_slow ch 1 v γ.(chan_name) Φ.
 Proof.
-  iIntros (Φ) "#Hfuture Hfulfillt HP Hcont Hlc".
+  iIntros (Φ) "#Hfuture (Hlc & Hfulfillt & HP) Hcont".
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
 
@@ -180,7 +185,7 @@ Qed.
 
 Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
   {{{ is_pkg_init channel ∗ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.send #t #ch #v
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(#Hinit & #Hfuture & Hfulfillt & HP) Hcont".
@@ -188,22 +193,21 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hiv]".
 
-  wp_apply (wp_Send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (chan.wp_send ch 1 v γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
 
-  iApply (future_fulfill_au with "[$Hiv $Hchan] [$Hfulfillt] [$HP] [$][$]").
-
+  iApply (future_fulfill_au with "[$Hiv $Hchan] [$]").
+  done.
 Qed.
 
 Lemma future_await_au γ ch (P : V → iProp Σ) :
   ∀ (Φ: V → bool → iProp Σ),
   is_future γ ch P -∗
-  await_token γ -∗
+  £1 ∗ await_token γ -∗
   ▷ (∀ v, P v -∗ Φ v true) -∗
-   £1 -∗
   rcv_au_slow ch 1 γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
-  iIntros (Φ) "#Hfuture Hawaitt HΦcont Hlc".
+  iIntros (Φ) "#Hfuture [Hlc Hawaitt] HΦcont".
   unfold is_future.
   iDestruct "Hfuture" as "[_ Hinv]".
 
@@ -240,7 +244,7 @@ Qed.
 (** Future await operation - consumes await token to receive value and P(v) *)
 Lemma wp_future_await γ ch (P : V → iProp Σ) :
   {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{ (v : V), RET (#v, #true); P v }}}.
 Proof.
   iIntros (Φ) "(#Hinit & #Hfuture & Hawaitt) Hcont".
@@ -248,32 +252,11 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
   
-  iApply (wp_Receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_receive ch 1 γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2)".
 
-  iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$Hawaitt] [Hcont] [Hlc1 Hlc2]").
-  { iNext. iFrame.
-    }
-    done.
-Qed.
-
-
-Lemma wp_future_await_discard_ok γ ch (P : V → iProp Σ) :
-  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #t #()
-  {{{ (v : V) , RET #v;
-      P v }}}.
-Proof.
-  wp_start. wp_auto.
-  wp_apply ((wp_future_await γ ch P) with "[- HΦ return_val]").
-  {
-   iFrame.
-  }
-  iIntros (v).
-  iIntros "HP".
-  wp_auto.
-  iApply "HΦ".
-  done.
+  iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$] [Hcont]").
+  iNext. iFrame.
 Qed.
 
 End future.

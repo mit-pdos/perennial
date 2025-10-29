@@ -1,5 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init.
+From New.golang.theory Require Import chan.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base chan_init.
 
 (** * Single Producer Single Consumer (SPSC) Channel Verification
 
@@ -14,6 +15,8 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_
     - Invariant maintains relationship: sent = received ++ in_flight
     - Support for resource protocols P (per-value) and R (final state)
 *)
+
+#[local] Transparent is_channel own_channel.
 
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -165,7 +168,7 @@ Lemma wp_spsc_receive γ ch (ns:spsc_names) (P : Z -> V → iProp Σ) (R : list 
                       (received : list V) :
   {{{ is_pkg_init channel ∗
       is_spsc γ ch P R ∗ spsc_consumer γ received }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{ (v:V) (ok:bool), RET (#v, #ok);
       (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
             else R received)%I }}}.
@@ -177,7 +180,7 @@ Proof.
   iDestruct "Hspsc" as "[Hchan Hinv]".
 
   (* Use wp_Receive with our atomic update *)
-  iApply (wp_Receive ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (chan.wp_receive ch cap γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
 
   (* Open the SPSC invariant to provide the atomic update *)
@@ -428,7 +431,7 @@ Lemma wp_spsc_send γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
                    (sent : list V) (v : V) :
   {{{ is_pkg_init channel ∗
       is_spsc γ ch P R ∗ spsc_producer γ sent ∗ P (length sent) v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.send #t #ch #v
   {{{ RET #(); spsc_producer γ (sent ++ [v]) }}}.
 Proof.
   iIntros (Φ) "(#Hinit & #Hspsc & Hprod & HP) Hcont".
@@ -438,7 +441,7 @@ Proof.
   iDestruct "Hspsc" as "[Hchan Hinv]".
   
   (* Use wp_Send with our atomic update *)
-  iApply (wp_Send ch cap v γ.(chan_name) with "[$Hinit $Hchan]").
+  wp_apply (chan.wp_send ch cap v γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
   iDestruct "Hlc4" as "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
@@ -604,13 +607,13 @@ Qed.
 Lemma wp_spsc_close γ ch P R sent :
   {{{  is_pkg_init channel ∗ is_spsc γ ch P R ∗
       spsc_producer γ sent ∗ R sent }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
+    chan.close #t #ch
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "( #Hinit & #Hspsc & Hprod & HP) Hcont".
   unfold is_spsc. iNamed "Hspsc".
   iDestruct "Hspsc" as "[Hchan Hinv]".
-  iApply (wp_Close ch cap γ.(chan_name) with "[$Hinit $Hchan]").
+  iApply (chan.wp_close ch cap γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
