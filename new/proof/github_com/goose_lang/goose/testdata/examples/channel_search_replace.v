@@ -204,22 +204,24 @@ Local Definition is_wgj_inv wg γ : iProp Σ :=
 (** Permission to call `Add`. Calling `Add` will extend `P` with a caller-chosen
     proposition, as long as `num_added` doesn't overflow. *)
 Definition own_Adder wg (num_added : w32) (P : iProp Σ) : iProp Σ :=
-  ∃ γ,
+  ∃ γ P',
   "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 0) ∗
-  "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P (sint.nat num_added) ∗
+  "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P' (sint.nat num_added) ∗
   "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) (sint.nat num_added) ∗
   "%Hadded_pos" ∷ ⌜ 0 ≤ sint.Z num_added ⌝ ∗
+  "HimpliesP" ∷ (P' -∗ P) ∗
   "#Hinv" ∷ is_wgj_inv wg γ.
 #[global] Opaque own_Adder.
 #[local] Transparent own_Adder.
 
 (** Permission to call `Wait`, knowing that `P` will be true afterwards. *)
 Definition own_Waiter wg (P : iProp Σ) : iProp Σ :=
-  ∃ γ n,
+  ∃ γ n P',
   "Hwaiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 1) ∗
   "Hwait_tok" ∷ own_WaitGroup_wait_token γ.(wg_gn) ∗
-  "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P n ∗
+  "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P' n ∗
   "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) n ∗
+  "HimpliesP" ∷ (P' -∗ P) ∗
   "#Hinv" ∷ is_wgj_inv wg γ.
 #[global] Opaque own_Waiter.
 #[local] Transparent own_Waiter.
@@ -234,17 +236,18 @@ Definition own_Done wg (P : iProp Σ) : iProp Σ :=
 #[local] Transparent own_Done.
 
 Lemma waitgroup_join_init wg γwg :
-  is_WaitGroup wg γwg (wgjN.@"wg") -∗
-  own_WaitGroup γwg (W32 0) -∗
+  is_WaitGroup wg γwg (wgjN.@"wg") ∗
+  own_WaitGroup γwg (W32 0) ∗
   own_WaitGroup_waiters γwg (W32 0) ={⊤}=∗
   own_Adder wg (W32 0) True.
 Proof.
-  iIntros "#His Hctr_inv Hwaiters".
+  iIntros "(#His & Hctr_inv & Hwaiters)".
   iMod own_aprop_auth_alloc as (wg_aprop_gn) "Haprop".
   iMod own_tok_auth_alloc as (wg_not_done_gn) "[Hadded_inv Hadded]".
   iExists _. instantiate (1:=ltac:(econstructor)). rewrite /own_Adder /=.
   iFrame. iSplitR; first word.
   iMod own_toks_0 as "?". iDestruct own_aprop_frag_0 as "?".
+  iSplitR; first by iIntros "!# ?".
   iMod (inv_alloc with "[-]") as "$"; last done.
   iFrame "∗#". word.
 Qed.
@@ -279,7 +282,8 @@ Proof.
   iModIntro. iApply "HΦ". iFrame "∗#".
   progress replace (S _) with (sint.nat (word.add num_added $ W32 1)) by word.
   progress replace (sint.nat (word.add _ _)) with (sint.nat num_added + 1)%nat by word.
-  iFrame. word.
+  iFrame. iSplitR; first word.
+  iIntros "[? ?]". iFrame. by iApply "HimpliesP".
 Qed.
 
 Lemma wp_WaitGroup__Done P wg :
@@ -336,7 +340,35 @@ Proof.
   replace (word.sub _ _) with (W32 0) by word.
   iMod "Hmask" as "_". iModIntro. iApply "HΦ". iFrame.
   iDestruct "Heq" as "[Heq _]". iFrame "#". iSplitL; last word.
-  iApply "Heq". done.
+  iApply "HimpliesP". iApply "Heq". done.
+Qed.
+
+Lemma own_Adder_wand P' wg n P :
+  (P -∗ P') -∗
+  own_Adder wg n P -∗
+  own_Adder wg n P'.
+Proof.
+  iIntros "Hwand". iNamed 1. iFrame "∗#%". iIntros "?".
+  iApply "Hwand". iApply "HimpliesP". done.
+Qed.
+
+Lemma own_Waiter_wand P' wg P :
+  (P -∗ P') -∗
+  own_Waiter wg P -∗
+  own_Waiter wg P'.
+Proof.
+  iIntros "Hwand". iNamed 1. iFrame "∗#%". iIntros "?".
+  iApply "Hwand". iApply "HimpliesP". done.
+Qed.
+
+(* Maybe don't really need a separate own_Waiter? *)
+Lemma start_wait wg n P :
+  own_Adder wg n P ={⊤}=∗ own_Waiter wg P.
+Proof.
+  iNamed 1. iFrame "∗#%". iNamed "Hinv".
+  iMod fupd_mask_subseteq; last iMod (alloc_wait_token with "[$] [$]") as "$"; last done.
+  { solve_ndisj. }
+  { word. }
 Qed.
 
 End waitgroup_idiom.
@@ -373,10 +405,9 @@ Definition chanP wg (x y: w64) (s: slice.t) : iProp Σ :=
 
 Definition waitgroupN := nroot .@ "waitgroup".
 
-Lemma wp_worker (γs: simple_names) (γwg: WaitGroup_names) (ch: loc) (wg: loc) (x y: w64) :
+Lemma wp_worker (γs: simple_names) (ch: loc) (wg: loc) (x y: w64) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-        "#Hchan" ∷ is_simple γs ch 4 (chanP wg x y) ∗
-        "Hwg" ∷ is_WaitGroup wg γwg waitgroupN }}}
+      "#Hchan" ∷ is_simple γs ch 4 (chanP wg x y) }}}
     @! chan_spec_raw_examples.worker #ch #wg #x #y
   {{{ RET #(); True }}}.
 Proof.
@@ -453,6 +484,7 @@ Proof.
   wp_start as "Hs".
   wp_auto.
   iDestruct (own_slice_len with "Hs") as %Hlen.
+  iDestruct (own_slice_wf with "Hs") as %Hcap. (* FIXME: rename to own_slice_cap? *)
   wp_if_destruct.
   {
     assert (length xs = 0%nat) by word.
@@ -462,10 +494,38 @@ Proof.
   }
   wp_apply wp_NewChannel.
   { done. }
-  iIntros (ch γch_names) "[#His_chan Hoc]".
-  change (4 =? 0) with false; simpl.
-  iMod (start_simple_buffered _ _ _ (chanP x y) with "[$His_chan] [$Hoc]") as (γch) "#Hchan".
-  wp_auto.
-Admitted.
+  iIntros (ch γch_names) "[#His_chan Hoc]". simpl. wp_auto.
+  iMod (init_WaitGroup with "wg") as (?) "H".
+  iMod (waitgroup_join_init with "H") as "Hwg".
+  iMod (start_simple_buffered _ _ _ (chanP wg_ptr x y) with "[$His_chan] [$Hoc]") as (γch) "#Hchan".
+  iAssert (∃ (i : w64), "i" ∷ i_ptr ↦ i)%I with "[$i]" as "HH".
+  wp_for. iNamed "HH". wp_auto.
+  wp_if_destruct.
+  2:{
+    wp_apply wp_fork.
+      { wp_apply wp_worker; last done. iFrame "#". }
+      wp_for_post. iFrame.
+  }
+
+  iAssert (
+      ∃ (offset : w64) remaining nadded,
+        "offset" ∷ offset_ptr ↦ offset ∗
+        "Hs" ∷ (slice.slice_f s uint64T offset remaining) ↦* drop (uint.nat offset) xs ∗
+        "Hwg" ∷ own_Adder wg_ptr nadded
+          ((slice.slice_f s uint64T 0 offset) ↦* take (uint.nat offset) (search_replace x y xs))
+    )%I with "[offset Hs Hwg]" as "HH".
+  { iFrame. iExists _. rewrite drop_0 take_0.
+    erewrite <- slice_slice_trivial. iFrame.
+    iDestruct (own_Adder_wand with "[] Hwg") as "$".
+    iIntros "_". iApply own_slice_empty; simpl; word. }
+  wp_for. iNamed "HH". wp_auto. case_bool_decide.
+  { rewrite decide_False // decide_True //. wp_auto.
+    iMod (start_wait with "Hwg") as "Hwg".
+    wp_apply (wp_WaitGroup__Wait with "[$Hwg]").
+    iClear "Hs". iIntros "[Hs Hwg]". subst.
+    rewrite take_ge; last len. wp_auto. iApply "HΦ".
+    rewrite <- slice_slice_trivial. iFrame. }
+  rewrite decide_True //. wp_auto.
+Qed.
 
 End proof.
