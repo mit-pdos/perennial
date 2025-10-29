@@ -3,7 +3,7 @@ From iris.algebra Require Import dfrac.
 From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Import loop.
+From New.golang.theory Require Export loop array primitive.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -39,9 +39,7 @@ Global Arguments own_slice {_} (t) {_ _ _} (s dq vs).
 Notation "s ↦[ t ]* dq vs" := (own_slice t s dq vs)
                             (at level 20, dq custom dfrac at level 50, format "s  ↦[ t ]* dq  vs").
 
-Context `{!IntoVal V}.
-Context `{!TypedPointsto (Σ:=Σ) V}.
-Context `{!IntoValTyped V t}.
+Context `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 Implicit Type (vs : list V).
 
 Definition own_slice_cap_def (s : slice.t) (dq : dfrac) : iProp Σ :=
@@ -63,22 +61,10 @@ Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 Ltac unseal := rewrite ?own_slice_unseal /own_slice_def
                  ?own_slice_cap_unseal /own_slice_cap_def.
 
-Lemma own_array_nil ptr dq :
-  ⊢ ptr ↦{dq} (array.mk t 0 []).
-Proof.
-  rewrite typed_pointsto_unseal. simpl. iPureIntro. done.
-Qed.
-
-Lemma own_array_len ptr dq n vs :
-  ptr ↦{dq} (array.mk t n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
-Proof.
-  rewrite typed_pointsto_unseal. simpl. iIntros "[% _] !%". done.
-Qed.
-
 Lemma own_slice_nil dq :
   ⊢ slice.nil ↦[t]*{dq} ([] : list V).
 Proof.
-  unseal. simpl. iDestruct own_array_nil as "$". done.
+  unseal. simpl. iDestruct array_empty as "$". done.
 Qed.
 
 Lemma own_slice_empty dq s :
@@ -87,7 +73,7 @@ Lemma own_slice_empty dq s :
   ⊢ s ↦[t]*{dq} ([] : list V).
 Proof.
   unseal. intros Hsz Hcap. destruct s. simpl in *.
-  rewrite Hsz. iDestruct own_array_nil as "$". word.
+  rewrite Hsz. iDestruct array_empty as "$". word.
 Qed.
 
 Lemma own_slice_cap_none s :
@@ -106,7 +92,7 @@ Qed.
 Lemma own_slice_len s dq vs :
   s ↦[t]*{dq} vs -∗ ⌜length vs = sint.nat s.(slice.len) ∧ 0 ≤ sint.Z s.(slice.len)⌝.
 Proof.
-  unseal. iIntros "(H&%)". iDestruct (own_array_len with "H") as %?. word.
+  unseal. iIntros "(H&%)". iDestruct (array_len with "H") as %?. word.
 Qed.
 
 Lemma own_slice_agree s dq1 dq2 vs1 vs2 :
@@ -220,7 +206,7 @@ Lemma own_slice_wf s dq vs :
   s ↦[t]*{dq} vs -∗ ⌜0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap)⌝.
 Proof.
   unseal.
-  iIntros "[? %]". iDestruct (own_array_len with "[$]") as %Hlen. word.
+  iIntros "[? %]". iDestruct (array_len with "[$]") as %Hlen. word.
 Qed.
 
 (* NOTE: only for backwards compatibility; non-primed version is more precise
@@ -292,101 +278,76 @@ Proof.
   iIntros (Hpos Hlookup) "Hsl".
   rewrite own_slice_unseal /own_slice_def.
   iDestruct "Hsl" as "[Hsl %]".
-  iDestruct (big_sepL_insert_acc _ _ (sint.nat i) with "Hsl") as "[Hptsto Hsl]".
-  { done. }
-  nat_cleanup.
-  iFrame "Hptsto".
-  iIntros (?) "Hptsto".
-  iSpecialize ("Hsl" with "Hptsto").
-  iFrame. rewrite length_insert. done.
+  iDestruct (array_acc with "Hsl") as "[? Hsl]"; try eassumption.
+  iFrame. iIntros (?) "Hv'".
+  iSpecialize ("Hsl" with "[$]"). iFrame. word.
 Qed.
 
 End defns_and_lemmas.
 
-Global Notation "s ↦[t]* dq vs" := (own_slice s dq vs)
-                            (at level 20, dq custom dfrac at level 50, format "s  ↦[t]* dq  vs").
+Global Notation "s ↦[ t ]* dq vs" := (own_slice t s dq vs)
+                            (at level 20, dq custom dfrac at level 50, format "s  ↦[ t ]* dq  vs").
 
-Global Arguments own_slice_cap {_ _ _ _ _} (V) {_ _ _} (s).
+Global Arguments own_slice_cap {_ _ _ _ _ _ _ _ _ _} (t) {_} s dq.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Lemma wp_slice_len stk E (s : slice.t) (Φ : val -> iProp Σ) :
-    Φ #(s.(slice.len)) -∗ WP slice.len (#s) @ stk; E {{ v, Φ v }}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}
+  {core_sem : go.CoreSemantics} {slice_sem : go.SliceSemantics}.
+Local Set Default Proof Using "Type core_sem slice_sem".
+
+Local Notation st e := [go.TypeLit $ go.SliceType e].
+Lemma wp_slice_len stk E et (s : slice.t) (Φ : val -> iProp Σ) :
+    Φ #(s.(slice.len)) -∗
+    WP #(functions len (st et)) #s @ stk; E {{ v, Φ v }}.
 Proof.
-  rewrite to_val_unseal. iIntros "HΦ".
-  wp_call. rewrite to_val_unseal. iApply "HΦ".
+  iIntros "HΦ". wp_pures. rewrite go.len_slice. wp_pures. iApply "HΦ".
 Qed.
 
-Lemma wp_slice_cap stk E (s : slice.t) (Φ : val -> iProp Σ) :
-    Φ #(s.(slice.cap)) -∗ WP slice.cap (#s) @ stk; E {{ v, Φ v }}.
+Lemma wp_slice_cap stk E et (s : slice.t) (Φ : val -> iProp Σ) :
+  Φ #(s.(slice.cap)) -∗
+  WP #(functions cap (st et)) (#s) @ stk; E {{ v, Φ v }}.
 Proof.
-  rewrite to_val_unseal. iIntros "HΦ".
-  wp_call. rewrite to_val_unseal. iApply "HΦ".
+  iIntros "HΦ". wp_pures. rewrite go.cap_slice. wp_pures. iApply "HΦ".
 Qed.
 
-Lemma slice_val_fold (ptr: loc) (sz: u64) (cap: u64) :
-  InjLV (#ptr, #sz, #cap)%V = #(slice.mk ptr sz cap).
-Proof. repeat rewrite to_val_unseal //=. Qed.
-
-Lemma seq_replicate_fmap {A} y n (a : A) :
-  (λ _, a) <$> seq y n = replicate n a.
-Proof.
-  revert y. induction n.
-  { done. }
-  { simpl. intros. f_equal. by erewrite IHn. }
-Qed.
-
-Lemma big_sepL_replicate_seq_general {PROP : bi} {A} (k n: nat) (v0: A) (P: nat → A → PROP) :
-  ([∗ list] i↦v ∈ replicate n v0, P (i + k)%nat v)%I = ([∗ list] i ∈ seq k n, P i v0)%I.
-Proof.
-  generalize dependent k.
-  induction n; auto; intros k.
-  simpl.
-  f_equal.
-  rewrite -IHn.
-  apply big_opL_ext => n' v Hget.
-  f_equal; lia.
-Qed.
-
-Lemma big_sepL_replicate_seq {PROP : bi} {A} (n: nat) (v0: A) (P: nat → A → PROP) :
-  ([∗ list] i↦v ∈ replicate n v0, P i v)%I = ([∗ list] i ∈ seq 0 n, P i v0)%I.
-Proof.
-  rewrite -big_sepL_replicate_seq_general.
-  apply big_opL_ext => n' v Hget.
-  f_equal; lia.
-Qed.
-
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+Context `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 Lemma wp_slice_make3 stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
   {{{ True }}}
-    slice.make3 t #len #cap @ stk; E
+    #(functions make3 (st t)) #len #cap @ stk; E
   {{{ sl, RET #sl;
-      sl ↦[t]* (replicate (sint.nat len) (default_val V)) ∗
-      own_slice_cap V sl (DfracOwn 1) ∗
+      sl ↦[t]* (replicate (sint.nat len) (zero_val V)) ∗
+      own_slice_cap t sl (DfracOwn 1) ∗
       ⌜ sl.(slice.cap) = cap ⌝
   }}}.
 Proof.
   iIntros (? Φ) "_ HΦ".
-  wp_call.
+  rewrite go.make3_slice. wp_pures.
+  wp_pures.
   wp_if_destruct.
   { exfalso. word. }
-
   wp_if_destruct.
+  { exfalso. word. }
+  case_bool_decide; wp_pures.
   {
-    wp_apply (wp_ArbitraryInt) as "%".
-    rewrite slice_val_fold.
-    iApply "HΦ".
-    rewrite own_slice_unseal.
+    subst.
+    wp_apply (wp_ArbitraryInt). iIntros "%".
+    wp_pures. iApply "HΦ".
     assert (len = W64 0) by word; subst.
-    unfold own_slice_def. simpl.
-    assert (sint.nat (W64 0) = 0)%nat as -> by word.
-    simpl. iSplit; auto. iSplit; auto.
-    iApply own_slice_cap_none; reflexivity.
+    simpl.
+    iDestruct (own_slice_empty) as "$".
+    { simpl. word. }
+    { simpl. word. }
+    iDestruct (own_slice_cap_none) as "$"; simpl; word.
   }
-  wp_pures.
+  wp_apply wp_alloc.
+  { instantiate (3:=(array.t t V (word.signed cap))). apply _. } (* FIXME: tc search *)
+  iIntros (ptr) "Hsl". wp_pures. iApply "HΦ".
+  rewrite own_slice_unseal/ own_slice_def /=.
+  (* TODO: split array lemma. *)
+
+  iFrame.
   wp_bind (AllocN _ _).
   rewrite [in #cap]to_val_unseal.
   iApply (wp_allocN_seq with "[//]").

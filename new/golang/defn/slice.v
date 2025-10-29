@@ -1,9 +1,6 @@
 From Perennial Require Import base.
 From New.golang.defn Require Export builtin loop assume.
 
-#[warning="-uniform-inheritance"]
-Local Coercion GoInstruction : go_op >-> val.
-
 Module slice.
 Section goose_lang.
 Context `{ffi_syntax}.
@@ -46,7 +43,7 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
 {
   make3_slice elem_type :
     #(functions make3 [go.TypeLit $ go.SliceType elem_type]) =
-    (λ: "t" "len" "cap",
+    (λ: "len" "cap",
        if: (int_lt "cap" "len") then Panic "makeslice: cap out of range" else #();;
        if: (int_lt "len" #(W64 0)) then Panic "makeslice: len out of range" else #();;
        if: "cap" = #(W64 0) then
@@ -59,7 +56,7 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
 
   make2_slice elem_type :
     #(functions make2 [go.TypeLit $ go.SliceType elem_type]) =
-    (λ: "t" "sz", FuncCall make3 [go.TypeLit $ go.SliceType elem_type] #() "t" "sz" "sz")%V;
+    (λ: "sz", FuncCall make3 [go.TypeLit $ go.SliceType elem_type] #() "sz" "sz")%V;
 
   index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
     index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);

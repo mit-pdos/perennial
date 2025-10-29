@@ -13,24 +13,34 @@ Context `{!IntoVal V}.
 Context `{!TypedPointsto (Σ:=Σ) V}.
 Context `{!IntoValTyped V t}.
 
-Lemma own_array_nil ptr dq :
+Lemma array_empty ptr dq :
   ⊢ ptr ↦{dq} (array.mk t 0 []).
 Proof.
   rewrite typed_pointsto_unseal. simpl. iPureIntro. done.
 Qed.
 
-Lemma own_array_len ptr dq n vs :
+Lemma array_len ptr dq n vs :
   ptr ↦{dq} (array.mk t n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
 Proof.
   rewrite typed_pointsto_unseal. simpl. iIntros "[% _] !%". done.
 Qed.
 
-Lemma own_array_acc i dq n vs :
-  0 ≤ sint.Z i →
-  vs !! (sint.nat i) = Some v →
-  s ↦[t]*{dq} vs -∗
-  slice_index_ref t (sint.Z i) s ↦{dq} v ∗
-  (∀ v', slice_index_ref t (sint.Z i) s ↦{dq} v' -∗
-        s ↦[t]*{dq} (<[sint.nat i := v']> vs)).
+Lemma array_acc p (i : Z) dq n (a : array.t t V n) (v: V) :
+  0 ≤ i →
+  a.(array.arr) !! (Z.to_nat i) = Some v →
+  p ↦{dq} a -∗
+  array_index_ref t i p ↦{dq} v ∗
+  (∀ v', array_index_ref t i p ↦{dq} v' -∗
+        p ↦{dq} (array.mk t n $ <[(Z.to_nat i) := v']> a.(array.arr))).
+Proof.
+  iIntros (Hpos Hlookup) "Harr".
+  rewrite [in _ (array.t _ _ _)]typed_pointsto_unseal /=.
+  iDestruct "Harr" as "[% Harr]".
+  iDestruct (big_sepL_insert_acc _ _ (Z.to_nat i) with "Harr") as "[Hptsto Harr]".
+  { done. }
+  nat_cleanup. iFrame "Hptsto". iIntros (?) "Hptsto".
+  iSpecialize ("Harr" with "Hptsto").
+  iFrame. rewrite length_insert. done.
+Qed.
 
-  ptr ↦{dq} (array.mk t n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
+End lemmas.

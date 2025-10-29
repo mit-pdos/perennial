@@ -44,7 +44,6 @@ Definition do_loop_def: val :=
           then (return: (Var "loop") #()) else do: #() ;;;
      return: Var "b"
   )) #().
-
 Program Definition do_loop := sealed @do_loop_def.
 Definition do_loop_unseal : do_loop = _ := seal_eq _.
 

@@ -698,6 +698,27 @@ Tactic Notation "wp_apply_core" open_constr(lem) :=
 Tactic Notation "wp_apply" open_constr(lem) :=
   wp_apply_core lem.
 
+Create HintDb cleanup_bool_decide_db.
+Global Hint Rewrite bool_decide_True bool_decide_False : cleanup_bool_decide_db.
+
+Ltac cleanup_bool_decide :=
+  autorewrite with cleanup_bool_decide_db.
+
+(* TODO: this is a very basic implementation that would benefit from
+post-processing. This is because bool_decide can come with some complications
+that should be simplified, like negb around bool_decide or equality of values
+inside the bool_decide. *)
+Ltac wp_if_destruct :=
+  lazymatch goal with
+  | |- environments.envs_entails _ ?g =>
+      match g with
+      | context[bool_decide ?b] =>
+          destruct (bool_decide_reflect b); subst;
+          wp_pures;
+          cleanup_bool_decide
+      end
+  end.
+
 (* FIXME: rest of the instances *)
 Section go_wp_pure_instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
@@ -719,6 +740,14 @@ Global Instance wp_GoLoad t (l : loc) :
   PureWp True (GoInstruction (GoLoad t) #l) (load t #l).
 Proof. solve_pure. Qed.
 
+Global Instance wp_FuncCall f ts :
+  PureWp True (GoInstruction (FuncCall f ts) #()) #(functions f ts).
+Proof. solve_pure. Qed.
+
+Global Instance wp_MethodCall t f :
+  PureWp True (GoInstruction (MethodCall t f) #()) #(methods t f).
+Proof. solve_pure. Qed.
+
 Global Instance wp_GlobalVarAddr v :
   PureWp True (GoInstruction (GlobalVarAddr v) #()) #(global_addr v).
 Proof. solve_pure. Qed.
@@ -729,6 +758,24 @@ Proof. solve_pure. Qed.
 
 Global Instance wp_StructFieldSet_untyped f m v :
   PureWp True (GoInstruction (StructFieldSet f) (StructV m, v)%V) (StructV (<[f := v]> m)).
+Proof. solve_pure. Qed.
+
+Global Instance wp_InternalLen et s :
+  PureWp True (GoInstruction (InternalLen (go.SliceType et)) #s) #(s.(slice.len)).
+Proof. solve_pure. Qed.
+
+Global Instance wp_InternalCap et s :
+  PureWp True (GoInstruction (InternalCap (go.SliceType et)) #s) #(s.(slice.cap)).
+Proof. solve_pure. Qed.
+
+Global Instance wp_InternalDynamicArrayAlloc et (n : w64) :
+  PureWp True (GoInstruction (InternalDynamicArrayAlloc et) #n)
+    (GoInstruction (GoAlloc $ go.ArrayType (sint.Z n) et) #()).
+Proof. solve_pure. Qed.
+
+Global Instance wp_InternalMakeSlice p l c :
+  PureWp True (GoInstruction InternalMakeSlice (#p, #l, #c)%V)
+    #(slice.mk p l c).
 Proof. solve_pure. Qed.
 
 Global Instance wp_IndexRef t (j : w64) (v : val) :

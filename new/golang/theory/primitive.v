@@ -15,7 +15,7 @@ Proof.
   wp_apply (lifting.wp_fork with "[$Hwp]").
   replace (LitV LitUnit) with #().
   { iFrame "HΦ". }
-  rewrite to_val_unseal //.
+  rewrite into_val_unseal //.
 Qed.
 
 (* use new goose's to_val for the return value *)
@@ -27,7 +27,7 @@ Proof.
   iIntros (x) "_".
   replace (LitV x) with #x.
   { iApply "HΦ". }
-  rewrite to_val_unseal //.
+  rewrite into_val_unseal //.
 Qed.
 
 End wps.

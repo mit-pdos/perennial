@@ -16,14 +16,14 @@ Global Instance pure_continue_val (v1 : val) :
 Proof.
   rewrite exception_seq_unseal continue_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_call_lc "?". by iApply "Hwp".
+  wp_call_lc "?". rewrite bool_decide_false //. wp_pures. by iApply "Hwp".
 Qed.
 
 Global Instance pure_break_val (v1 : val) : PureWp True (exception_seq v1 (break_val)) (break_val).
 Proof.
   rewrite exception_seq_unseal break_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_call_lc "?". by iApply "Hwp".
+  wp_call_lc "?". rewrite bool_decide_false //. wp_pures. by iApply "Hwp".
 Qed.
 
 Global Instance pure_do_continue_val : PureWp True (continue: #()) (continue_val).
@@ -77,7 +77,8 @@ Proof.
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "continue" *)
       subst. wp_pures. rewrite continue_val_unseal.
-      wp_pures.
+      wp_pures. rewrite bool_decide_false //. wp_pures.
+      rewrite bool_decide_true //. wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -90,6 +91,9 @@ Proof.
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "execute" *)
       subst. rewrite execute_val_unseal. wp_pures. (* FIXME: don't unfold [do:] here *)
+      wp_pures. rewrite bool_decide_false //. wp_pures.
+      rewrite bool_decide_false //. wp_pures.
+      rewrite bool_decide_true //. wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -101,12 +105,14 @@ Proof.
     }
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "break" *)
-      subst. rewrite break_val_unseal. wp_pures.
+      subst. rewrite break_val_unseal. wp_pures. rewrite bool_decide_true //. wp_pures.
       by iFrame.
     }
     iDestruct "Hb" as (?) "[% HΦ]".
     { (* body terminates with other error code *)
-      subst. rewrite return_val_unseal. wp_pures. done.
+      subst. rewrite return_val_unseal. wp_pures.
+      repeat (rewrite bool_decide_false //; wp_pures).
+      done.
     }
   - destruct (decide _); subst.
     { wp_pures. by iFrame. }

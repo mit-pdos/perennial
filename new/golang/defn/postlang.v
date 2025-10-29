@@ -5,20 +5,23 @@
 From Perennial.goose_lang Require Export lang.
 From Perennial Require Export base.
 
+#[warning="-uniform-inheritance"]
+Global Coercion GoInstruction : go_op >-> val.
+
 Definition slice_index_ref `{GoContext} (elem_type : go.type) (i : Z) (s : slice.t) : loc :=
   array_index_ref elem_type i s.(slice.ptr).
 
 Global Notation "()" := tt : val_scope.
 Global Opaque into_val.
 
-(* Shortcircuit Boolean connectives *)
-Notation "e1 && e2" :=
-  (If e1%E e2%E #false) (only parsing) : expr_scope.
-Notation "e1 || e2" :=
-  (If e1%E #true e2%E) (only parsing) : expr_scope.
-
 Global Notation "# x" := (into_val x%go).
 Global Notation "#" := into_val (at level 0).
+
+(* Shortcircuit Boolean connectives *)
+Global Notation "e1 && e2" :=
+  (If e1%E e2%E #false) (only parsing) : expr_scope.
+Global Notation "e1 || e2" :=
+  (If e1%E #true e2%E) (only parsing) : expr_scope.
 
 (* built-in functions *)
 Definition append : go_string := "append".
@@ -36,13 +39,10 @@ Definition max : go_string := "max".
 Definition panic : go_string := "panic".
 
 (* helpers for signed comparisons *)
-Section helpers.
-Context `{ffi_syntax}.
-Definition int_lt : val := λ: "x" "y", BinOp SignedLtOp "x" "y".
-Definition int_leq : val := λ: "x" "y", BinOp SignedLeOp "x" "y".
-Definition int_geq : val := λ: "x" "y", int_leq "y" "x".
-Definition int_gt : val := λ: "x" "y", int_lt "y" "x".
-End helpers.
+Global Notation int_lt e1 e2 := (BinOp SignedLtOp e1%E e2%E).
+Global Notation int_leq e1 e2 := (BinOp SignedLeOp e1%E e2%E).
+Global Notation int_gt e1 e2 := (BinOp SignedLeOp e2%E e1%E).
+Global Notation int_geq e1 e2 := (BinOp SignedLeOp e2%E e1%E).
 
 Module go.
 
@@ -102,8 +102,6 @@ Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop 
 | is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) null
 .
 
-#[warning="-uniform-inheritance"]
-Local Coercion GoInstruction : go_op >-> val.
 (** [go.CoreSemantics] defines when a GoContext is valid, excluding slice, map,
     and channel stuff. *)
 Class CoreSemantics `{!GoContext} :=
