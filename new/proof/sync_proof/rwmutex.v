@@ -1,6 +1,6 @@
 From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
-
+Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
 Section proof.
 
@@ -424,10 +424,10 @@ Proof.
   rwInvStart.
   rwStep step_RLock_readerCount_Add.
   - (* fast path *)
-    rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd. rwLinearize. rwInvEnd.
+    rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd. rwLinearize. rwInvEnd.
     wp_auto. rewrite -> bool_decide_false by word. wp_auto. iApply "HΦ".
   - (* slow path *)
-    rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+    rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd. rwInvEnd.
     wp_auto. rewrite -> bool_decide_true by word. wp_auto.
     wp_apply wp_runtime_SemacquireRWMutexR; first iFrame "#".
     rwInvStart. rwAtomicStart. iFrame. iIntros "% H1_inv". rwAtomicEnd.
@@ -446,7 +446,7 @@ Lemma wp_RWMutex__TryRLock γ rw N :
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_for. wp_apply wp_Int32__Load.
-  rwInvStart. iFrame. rwAtomicStart. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+  rwInvStart. iFrame. rwAtomicStart. iIntros "!> H1_inv". rwAtomicEnd. rwInvEnd.
   wp_auto. rewrite bool_decide_decide. destruct decide.
   - (* failed to get RLock *)
     wp_auto. wp_for_post. iRight in "HΦ". iFrame.
@@ -454,12 +454,12 @@ Proof.
     wp_auto. wp_apply wp_Int32__CompareAndSwap. rwInvStart. rwAtomicStart.
     iFrame. destruct decide.
     * (* CAS successful *)
-      iSplitR; first done. iIntros "H1_inv".
+      iSplitR; first done. iIntros "!> H1_inv".
       rwStep step_TryRLock_readerCount_CompareAndSwap.
       rwAtomicEnd. iLeft in "HΦ". rwLinearize. rwInvEnd.
       rewrite bool_decide_true //. wp_auto. wp_for_post. iFrame.
     * (* CAS failed *)
-      iSplitR; first done. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+      iSplitR; first done. iIntros "!> H1_inv". rwAtomicEnd. rwInvEnd.
       rewrite bool_decide_false //. wp_auto. wp_for_post. iFrame.
 Qed.
 
@@ -474,7 +474,7 @@ Lemma wp_RWMutex__RUnlock γ rw N :
 Proof.
   wp_start as "#His". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
-  rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+  rwInvStart. rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd.
   rwLinearizeStart.
   rwStep step_RUnlock_readerCount_Add; rwLinearizeEnd; rwInvEnd.
   - (* decrease number of readers Lock() is waiting for *)
@@ -485,7 +485,7 @@ Proof.
                                                             unfold sync.rwmutexMaxReaders in *.
                                                             word. }
     wp_auto. wp_apply wp_Int32__Add.
-    rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+    rwInvStart. rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd.
     rwStep step_rUnlockSlow_readerWait_Add; rwInvEnd.
     * (* wake up Lock() *)
       wp_auto. rewrite bool_decide_true //. wp_auto. wp_apply wp_runtime_Semrelease.
@@ -509,7 +509,7 @@ Proof.
   { iFrame "#". }
   iIntros "[Hlocked Hwl]". wp_auto.
   wp_apply wp_Int32__Add.
-  rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+  rwInvStart. rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd.
   rwStep step_Lock_readerCount_Add.
   - (* fast path *)
     rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
@@ -517,7 +517,7 @@ Proof.
   - (* slow path *)
     rwInvEnd. wp_auto. rewrite -> bool_decide_false by word.
     wp_auto. wp_apply wp_Int32__Add.
-    rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+    rwInvStart. rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd.
     rwStep step_Lock_readerWait_Add.
     * (* got lock now, no need to Semacquire *)
       rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
@@ -550,11 +550,11 @@ Proof.
   wp_auto.
   wp_apply wp_Int32__CompareAndSwap. rwInvStart.
   rwAtomicStart. iFrame. destruct decide.
-  - iSplitR; first done. iIntros "H1_inv". rwAtomicEnd.
+  - iSplitR; first done. iIntros "!> H1_inv". rwAtomicEnd.
     rwStep step_TryLock_readerCount_CompareAndSwap.
     iLeft in "HΦ". rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
     wp_auto. iFrame.
-  - iSplitR; first done. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+  - iSplitR; first done. iIntros "!> H1_inv". rwAtomicEnd. rwInvEnd.
     rewrite bool_decide_false //. wp_auto.
     wp_apply (wp_Mutex__Unlock with "[Hlocked Hwl]").
     { iFrame "#". iFrame. }
@@ -573,7 +573,7 @@ Lemma wp_RWMutex__Unlock γ rw N :
 Proof.
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
-  rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+  rwInvStart. rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd.
   rwLinearize. iDestruct "Hlocked_inv" as "[Hlocked ?]". rwStep step_Unlock_readerCount_Add. rwInvEnd.
   wp_auto. rewrite bool_decide_decide. destruct decide.
   { exfalso. word. }

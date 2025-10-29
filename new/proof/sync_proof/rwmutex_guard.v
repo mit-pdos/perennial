@@ -1,5 +1,6 @@
 From New.proof.sync_proof Require Import base.
 From New.proof.sync_proof Require rwmutex.
+Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
 (** A specification for RWMutex which guards a fractional resource [P q].
     [RLock] returns [P rfrac] while [Lock] returns [P 1]. *)

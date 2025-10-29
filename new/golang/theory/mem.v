@@ -387,7 +387,7 @@ Qed.
 
 Lemma wp_typed_Load (l : loc) (v : V) dq s E :
   is_primitive_type t →
-  {{{ l ↦{dq} v }}}
+  {{{ ▷ l ↦{dq} v }}}
     ! #l @ s ; E
   {{{ RET #v; l ↦{dq} v }}}.
 Proof using Type*.

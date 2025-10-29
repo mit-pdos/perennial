@@ -7,7 +7,7 @@ From New.proof.github_com.mit_pdos.gokv Require gokv.
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require unittest unittest.generics.
 From New.proof.github_com.goose_lang.goose.testdata.examples
-  Require channel.
+  Require channel channel_search_replace.
 
 From New.proof.github_com.goose_lang.goose.model.channel.protocol
   Require protocols.
