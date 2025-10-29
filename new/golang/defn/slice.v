@@ -1,12 +1,12 @@
 From Perennial Require Import base.
 From New.golang.defn Require Export builtin loop assume.
 
+#[warning="-uniform-inheritance"]
+Local Coercion GoInstruction : go_op >-> val.
+
 Module slice.
 Section goose_lang.
 Context `{ffi_syntax}.
-
-#[warning="-uniform-inheritance"]
-Local Coercion GoInstruction : go_op >-> val.
 
 (* only for internal use, not an external model *)
 Definition _new_cap : val :=
@@ -15,7 +15,34 @@ Definition _new_cap : val :=
     if: int_leq "len" ("len" + "extra") then "len" + "extra"
     else "len".
 
-Class SliceValid `{!GoContext} :=
+Definition for_range (elem_type : go.type) : val :=
+  λ: "s" "body",
+  let: "i" := GoAlloc go.int64 #() in
+  for: (λ: <>, int_lt (![go.int64] "i")
+          (FuncCall len [go.TypeLit $ go.SliceType elem_type]) "s") ;
+                      (λ: <>, "i" <-[go.int64] (![go.int64] "i") + #(W64 1)) :=
+    (λ: <>, "body" (![go.int64] "i") (![elem_type] (IndexRef (go.SliceType elem_type)) "s" (![go.int64] "i")))
+.
+
+(* Takes in a list as input, and turns it into a heap-allocated slice. *)
+Definition literal (elem_type : go.type) (len : Z) : val :=
+  λ: "elems",
+  let st : go.type := go.SliceType elem_type in
+  let: "s" := FuncCall make2 [st] "len" in
+  let: "l" := ref "elems" in
+  let: "i" := GoAlloc go.int64 #() in
+  (for: (λ: <>, int_lt (![go.int64] "i") "len") ; (λ: <>, "i" <-[go.int64] ![go.int64] "i" + #(W64 1)) :=
+     (λ: <>,
+        do: (IndexRef st "s" (![go.int64] "i") <-[elem_type] (Index (go.ArrayType len elem_type) "elems" "i")))) ;;
+  "s".
+
+End goose_lang.
+End slice.
+
+Global Opaque slice.for_range slice.literal.
+
+Module go.
+Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
 {
   make3_slice elem_type :
     #(functions make3 [go.TypeLit $ go.SliceType elem_type]) =
@@ -37,7 +64,7 @@ Class SliceValid `{!GoContext} :=
   index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
     index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);
 
-  index_slice elem_type i (s : slice.t) :
+  index_slice_slice elem_type i (s : slice.t) :
     index (go.SliceType elem_type) i #s =
     GoLoad elem_type $ (Index $ go.SliceType elem_type) #(W64 i) #s;
   len_slice elem_type :
@@ -77,35 +104,12 @@ Class SliceValid `{!GoContext} :=
          FuncCall copy [st] (Slice st "s_new" (FuncCall len [st] "s") "new_len") "x";;
          "s_new"
        else
-         let: "new_cap" := _new_cap "new_len" in
+         let: "new_cap" := slice._new_cap "new_len" in
          let: "s_new" := FuncCall make3 [st] "new_len" "new_cap" in
          FuncCall copy [st] "s_new" "s" ;;
          FuncCall copy [st] (Slice st "s_new" (FuncCall len [st] "s") "new_len") "x" ;;
-         "s_new")%V
+         "s_new")%V;
+
+  array_index_ref_0 t l : array_index_ref t 0 l = l;
 }.
-
-Definition for_range (elem_type : go.type) : val :=
-  λ: "s" "body",
-  let: "i" := GoAlloc go.int64 #() in
-  for: (λ: <>, int_lt (![go.int64] "i")
-          (FuncCall len [go.TypeLit $ go.SliceType elem_type]) "s") ;
-                      (λ: <>, "i" <-[go.int64] (![go.int64] "i") + #(W64 1)) :=
-    (λ: <>, "body" (![go.int64] "i") (![elem_type] (IndexRef (go.SliceType elem_type)) "s" (![go.int64] "i")))
-.
-
-(* Takes in a list as input, and turns it into a heap-allocated slice. *)
-Definition literal (elem_type : go.type) (len : Z) : val :=
-  λ: "elems",
-  let st : go.type := go.SliceType elem_type in
-  let: "s" := FuncCall make2 [st] "len" in
-  let: "l" := ref "elems" in
-  let: "i" := GoAlloc go.int64 #() in
-  (for: (λ: <>, int_lt (![go.int64] "i") "len") ; (λ: <>, "i" <-[go.int64] ![go.int64] "i" + #(W64 1)) :=
-     (λ: <>,
-        do: (IndexRef st "s" (![go.int64] "i") <-[elem_type] (Index (go.ArrayType len elem_type) "elems" "i")))) ;;
-  "s".
-
-End goose_lang.
-End slice.
-
-Global Opaque slice.for_range slice.literal.
+End go.

@@ -568,6 +568,8 @@ Definition into_val_unseal : into_val = _ := seal_eq _.
 Arguments into_val {_ _ _} v%go.
 Arguments zero_val {_} (V) {_}.
 
+Global Hint Mode IntoVal - ! : typeclass_instances.
+
 Module chan.
 Definition t := loc.
 Definition nil : chan.t := null.

@@ -23,7 +23,8 @@ End def.
 End slice.
 
 Section defns_and_lemmas.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {core_sem : go.CoreSemantics} {slice_sem : go.SliceSemantics}.
 
 Definition own_slice_def {V} t `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   (s : slice.t) (dq : dfrac) (vs : list V)
@@ -140,23 +141,8 @@ Proof.
   apply _.
 Qed.
 
-Lemma own_slice_valid s dq (vs: list V) :
-  go_type_size t > 0 →
-  s ↦*{dq} vs ⊢ ⌜✓dq ∨ vs = []⌝.
-Proof.
-  iIntros (Hsize) "H".
-  destruct vs; [ by auto | ].
-  iLeft.
-  rewrite own_slice_unseal /own_slice_def.
-  simpl.
-  iDestruct "H" as "((H & _) & _)".
-  rewrite Z.mul_0_r loc_add_0.
-  iDestruct (typed_pointsto_valid with "H") as %Hvalid.
-  auto.
-Qed.
-
 Global Instance own_slice_combine_sep_gives s dq1 dq2 vs1 vs2 :
-  CombineSepGives (s ↦*{dq1} vs1) (s ↦*{dq2} vs2) (⌜ vs1 = vs2 ⌝).
+  CombineSepGives (s ↦[t]*{dq1} vs1) (s ↦[t]*{dq2} vs2) (⌜ vs1 = vs2 ⌝).
 Proof.
   rewrite /CombineSepGives.
   iIntros "[H0 H1]".
@@ -165,7 +151,7 @@ Proof.
 Qed.
 
 Global Instance own_slice_combine_sep_as s dq1 dq2 vs1 vs2 :
-  CombineSepAs (s ↦*{dq1} vs1) (s ↦*{dq2} vs2) (s ↦*{dq1 ⋅ dq2} vs1) | 60.
+  CombineSepAs (s ↦[t]*{dq1} vs1) (s ↦[t]*{dq2} vs2) (s ↦[t]*{dq1 ⋅ dq2} vs1) | 60.
 Proof.
   rewrite /CombineSepAs.
   iIntros "[H0 H1]".
@@ -199,37 +185,22 @@ Instance own_slice_cap_as_dfractional s dq :
 Proof. auto. Qed.
 
 Lemma own_slice_persist s dq vs:
-  s ↦*{dq} vs ==∗ s ↦*□ vs.
+  s ↦[t]*{dq} vs ==∗ s ↦[t]*□ vs.
 Proof.
   iIntros "H". iPersist "H". done.
 Qed.
 
 #[global]
 Instance own_slice_update_to_persistent s dq vs :
-  UpdateIntoPersistently (s ↦*{dq} vs) (s ↦*□ vs).
+  UpdateIntoPersistently (s ↦[t]*{dq} vs) (s ↦[t]*□ vs).
 Proof. apply _. Qed.
 
 Global Instance own_slice_cap_update_to_persistent s dq :
   UpdateIntoPersistently (own_slice_cap s dq) (own_slice_cap s (□)).
 Proof. apply _. Qed.
 
-Global Instance own_slice_timeless s dq vs : Timeless (s ↦*{dq} vs).
-Proof. unseal; apply _. Qed.
-
-Lemma own_slice_not_null s dq vs :
-  go_type_size t > 0 →
-  length vs > 0 ->
-  s ↦*{dq} vs -∗
-  ⌜ s.(slice.ptr) ≠ null ⌝.
-Proof using Type*.
-  unseal.
-  iIntros (Hbt Hvs) "[Hs %]".
-  destruct s; destruct vs; simpl in *; try lia.
-  iDestruct "Hs" as "[Hptr _]".
-  rewrite Z.mul_0_r loc_add_0.
-  unshelve (by iApply (typed_pointsto_not_null with "[$]")).
-  done.
-Qed.
+Global Instance own_slice_timeless s dq vs : Timeless (s ↦[t]*{dq} vs).
+Proof. unseal. apply _. Qed.
 
 Lemma own_slice_cap_wf s dq :
   own_slice_cap s dq -∗ ⌜0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap)⌝.
@@ -246,15 +217,16 @@ Proof.
 Qed.
 
 Lemma own_slice_wf s dq vs :
-  s ↦*{dq} vs -∗ ⌜0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap)⌝.
+  s ↦[t]*{dq} vs -∗ ⌜0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap)⌝.
 Proof.
   unseal.
-  iIntros "[? %]". naive_solver.
+  iIntros "[? %]". iDestruct (own_array_len with "[$]") as %Hlen. word.
 Qed.
+
 (* NOTE: only for backwards compatibility; non-primed version is more precise
 about signed length *)
 Lemma own_slice_wf' s dq vs :
-  s ↦*{dq} vs -∗ ⌜uint.Z s.(slice.len) ≤ uint.Z s.(slice.cap)⌝.
+  s ↦[t]*{dq} vs -∗ ⌜uint.Z s.(slice.len) ≤ uint.Z s.(slice.cap)⌝.
 Proof.
   iIntros "H". iDestruct (own_slice_wf with "H") as "%". word.
 Qed.
@@ -268,54 +240,54 @@ Proof.
 Qed.
 
 Lemma slice_to_full_slice s n m :
-  slice.slice_f s t n m = slice.full_slice_f s t n m (slice.cap s).
+  slice.slice s t n m = slice.full_slice s t n m (slice.cap s).
 Proof. reflexivity. Qed.
 
-(* introduce a slice.slice_f for lemmas that require it *)
+Local Set Default Proof Using "Type core_sem slice_sem".
+
+(* introduce a slice.slice for lemmas that require it *)
 Lemma slice_slice_trivial s :
-  s = slice.slice_f s t (W64 0) (slice.len s).
+  s = slice.slice s t (W64 0) (slice.len s).
 Proof.
   destruct s; simpl.
-  rewrite /slice.slice_f /=.
-  rewrite Z.mul_0_r loc_add_0.
-  f_equal; word.
+  rewrite /slice.slice /=.
+  f_equal; try word.
+  rewrite /slice_index_ref /= go.array_index_ref_0 //.
 Qed.
 
 (* a variant of [slice_slice_trivial] that's easier to use with [iDestruct] and
 more discoverable with Search. *)
-Lemma own_slice_trivial_slice_f s dq (vs: list V) :
-  own_slice s dq vs ⊣⊢ own_slice (slice.slice_f s t (W64 0) (slice.len s)) dq vs.
+Lemma own_slice_trivial_slice s dq (vs: list V) :
+  s ↦[t]*{dq} vs ⊣⊢ (slice.slice s t (W64 0) (slice.len s)) ↦[t]*{dq} vs.
 Proof.
   rewrite -slice_slice_trivial //.
 Qed.
 
-Lemma own_slice_trivial_slice_f_2 s dq (vs: list V) :
-  own_slice (slice.slice_f s t (W64 0) (slice.len s)) dq vs ⊢ own_slice s dq vs.
+Lemma own_slice_trivial_slice_2 s dq (vs: list V) :
+  own_slice t (slice.slice s t (W64 0) (slice.len s)) dq vs ⊢ own_slice t s dq vs.
 Proof.
-  rewrite -own_slice_trivial_slice_f //.
+  rewrite -own_slice_trivial_slice //.
 Qed.
 
-Lemma slice_f_slice_f s n m n' m' :
+Lemma slice_slice s n m n' m' :
   0 ≤ sint.Z n + sint.Z n' < 2^63 →
   0 ≤ sint.Z m' ≤ sint.Z m - sint.Z n →
-  slice.slice_f (slice.slice_f s t n m) t n' m' =
-    slice.slice_f s t (word.add n n') (word.add n m').
+  slice.slice (slice.slice s t n m) t n' m' =
+    slice.slice s t (word.add n n') (word.add n m').
 Proof.
   intros Hoverflow Hle.
-  rewrite /slice.slice_f /=.
-  rewrite !loc_add_assoc.
-  f_equal; try word.
-  rewrite -Z.mul_add_distr_l.
-  repeat (f_equal; try word).
+  rewrite /slice.slice /=.
+  rewrite /slice_index_ref /= -go.array_index_ref_add.
+  f_equal; [|word ..]. f_equal. word.
 Qed.
 
-Lemma own_slice_elem_acc i v s dq vs :
+Lemma own_slice_elem_acc (i : w64) v s dq vs :
   0 ≤ sint.Z i →
   vs !! (sint.nat i) = Some v →
-  s ↦*{dq} vs -∗
-  slice.elem_ref_f s t i ↦{dq} v ∗
-  (∀ v', slice.elem_ref_f s t i ↦{dq} v' -∗
-        s ↦*{dq} (<[sint.nat i := v']> vs)).
+  s ↦[t]*{dq} vs -∗
+  slice_index_ref t (sint.Z i) s ↦{dq} v ∗
+  (∀ v', slice_index_ref t (sint.Z i) s ↦{dq} v' -∗
+        s ↦[t]*{dq} (<[sint.nat i := v']> vs)).
 Proof.
   iIntros (Hpos Hlookup) "Hsl".
   rewrite own_slice_unseal /own_slice_def.
@@ -331,8 +303,8 @@ Qed.
 
 End defns_and_lemmas.
 
-Global Notation "s ↦* dq vs" := (own_slice s dq vs)
-                            (at level 20, dq custom dfrac at level 50, format "s  ↦* dq  vs").
+Global Notation "s ↦[t]* dq vs" := (own_slice s dq vs)
+                            (at level 20, dq custom dfrac at level 50, format "s  ↦[t]* dq  vs").
 
 Global Arguments own_slice_cap {_ _ _ _ _} (V) {_ _ _} (s).
 
@@ -392,7 +364,7 @@ Lemma wp_slice_make3 stk E (len cap : w64) :
   {{{ True }}}
     slice.make3 t #len #cap @ stk; E
   {{{ sl, RET #sl;
-      sl ↦* (replicate (sint.nat len) (default_val V)) ∗
+      sl ↦[t]* (replicate (sint.nat len) (default_val V)) ∗
       own_slice_cap V sl (DfracOwn 1) ∗
       ⌜ sl.(slice.cap) = cap ⌝
   }}}.
@@ -479,7 +451,7 @@ Lemma wp_slice_make2 stk E (len : u64) :
   {{{ ⌜0 ≤ sint.Z len⌝ }}}
     slice.make2 t #len @ stk; E
   {{{ sl, RET #sl;
-      sl ↦* (replicate (sint.nat len) (default_val V)) ∗
+      sl ↦[t]* (replicate (sint.nat len) (default_val V)) ∗
       own_slice_cap V sl (DfracOwn 1)
   }}}.
 Proof.
@@ -594,9 +566,9 @@ Qed.
 
 Lemma own_slice_split k s dq (vs: list V) n m :
   0 ≤ sint.Z n ≤ sint.Z k ≤ sint.Z m →
-  slice.slice_f s t n m ↦*{dq} vs ⊣⊢
-  slice.slice_f s t n k ↦*{dq} take (sint.nat k - sint.nat n)%nat vs ∗
-  slice.slice_f s t k m ↦*{dq} drop (sint.nat k - sint.nat n)%nat vs.
+  slice.slice_f s t n m ↦[t]*{dq} vs ⊣⊢
+  slice.slice_f s t n k ↦[t]*{dq} take (sint.nat k - sint.nat n)%nat vs ∗
+  slice.slice_f s t k m ↦[t]*{dq} drop (sint.nat k - sint.nat n)%nat vs.
 Proof.
   intros Hle.
   rewrite -{1}(take_drop (sint.nat k - sint.nat n)%nat vs).
@@ -627,9 +599,9 @@ Qed.
 Lemma own_slice_combine k s dq (vs1 vs2: list V) n m :
   length vs1 = (sint.nat k - sint.nat n)%nat ∧
   0 ≤ sint.Z n ≤ sint.Z k ≤ sint.Z m →
-  slice.slice_f s t n k ↦*{dq} vs1 -∗
-  slice.slice_f s t k m ↦*{dq} vs2 -∗
-  slice.slice_f s t n m ↦*{dq} (vs1 ++ vs2).
+  slice.slice_f s t n k ↦[t]*{dq} vs1 -∗
+  slice.slice_f s t k m ↦[t]*{dq} vs2 -∗
+  slice.slice_f s t n m ↦[t]*{dq} (vs1 ++ vs2).
 Proof.
   iIntros (Hwf) "Hs1 Hs2".
   iApply (own_slice_split k).
@@ -641,9 +613,9 @@ Qed.
 
 Lemma own_slice_split_all k s dq (vs: list V) :
   0 ≤ sint.Z k ≤ sint.Z s.(slice.len) →
-  s ↦*{dq} vs ⊣⊢
-  slice.slice_f s t (W64 0) k ↦*{dq} take (sint.nat k) vs ∗
-  slice.slice_f s t k s.(slice.len) ↦*{dq} drop (sint.nat k)%nat vs.
+  s ↦[t]*{dq} vs ⊣⊢
+  slice.slice_f s t (W64 0) k ↦[t]*{dq} take (sint.nat k) vs ∗
+  slice.slice_f s t k s.(slice.len) ↦[t]*{dq} drop (sint.nat k)%nat vs.
 Proof.
   intros Hle.
   rewrite {1}(own_slice_trivial_slice_f s).
@@ -695,18 +667,18 @@ Proof.
   - word.
 Qed.
 
-(* Divide ownership of [s ↦* vs] around a slice [slice.slice_f s t n m].
+(* Divide ownership of [s ↦[t]* vs] around a slice [slice.slice_f s t n m].
 
 This is not the only choice; see [own_slice_f_cap] for a variation that uses
 capacity. *)
 Lemma own_slice_f (n m: w64) s dq (vs: list V) :
   0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.len) →
-  s ↦*{dq} vs
+  s ↦[t]*{dq} vs
   ⊣⊢
-  (slice.slice_f s t (W64 0) n) ↦*{dq} (take (sint.nat n) vs) ∗
-  (slice.slice_f s t n m) ↦*{dq} (subslice (sint.nat n) (sint.nat m) vs) ∗
+  (slice.slice_f s t (W64 0) n) ↦[t]*{dq} (take (sint.nat n) vs) ∗
+  (slice.slice_f s t n m) ↦[t]*{dq} (subslice (sint.nat n) (sint.nat m) vs) ∗
   (* after the sliced part *)
-  (slice.slice_f s t m (slice.len s)) ↦*{dq} (drop (sint.nat m) vs).
+  (slice.slice_f s t m (slice.len s)) ↦[t]*{dq} (drop (sint.nat m) vs).
 Proof.
   intros. rewrite /subslice.
 
@@ -721,7 +693,7 @@ Qed.
 
 Lemma own_slice_slice_absorb_capacity s (vs: list V) (n m: w64) :
   0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.len) →
-  slice.slice_f s t m (slice.len s) ↦* vs ∗
+  slice.slice_f s t m (slice.len s) ↦[t]* vs ∗
   own_slice_cap V s (DfracOwn 1) ⊢
   own_slice_cap V (slice.slice_f s t n m) (DfracOwn 1).
 Proof.
@@ -749,16 +721,16 @@ Proof.
   iFrame "Hvs'".
 Qed.
 
-(* divide ownership of [s ↦* vs ∗ own_slice_cap V s] around a slice [slice_f s t
+(* divide ownership of [s ↦[t]* vs ∗ own_slice_cap V s] around a slice [slice_f s t
 n m], moving ownership between m and [slice.len s] into the capacity of the
 slice *)
 (* TODO: could generalize to ⊣⊢. just need to generalize some deps. *)
 Lemma own_slice_f_cap (n m: w64) s (vs: list V) :
   0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.len) →
-  s ↦* vs ∗ own_slice_cap V s (DfracOwn 1)
+  s ↦[t]* vs ∗ own_slice_cap V s (DfracOwn 1)
   ⊢
-  (slice.slice_f s t (W64 0) n) ↦* (take (sint.nat n) vs) ∗
-  (slice.slice_f s t n m) ↦* (subslice (sint.nat n) (sint.nat m) vs) ∗
+  (slice.slice_f s t (W64 0) n) ↦[t]* (take (sint.nat n) vs) ∗
+  (slice.slice_f s t n m) ↦[t]* (subslice (sint.nat n) (sint.nat m) vs) ∗
   (* after the sliced part + capacity of original slice *)
   own_slice_cap V (slice.slice_f s t n m) (DfracOwn 1).
 Proof.
@@ -776,14 +748,14 @@ TODO: try to avoid using this and use the canonical pure WP for slice.slice (plu
 instead
 *)
 Lemma wp_slice_slice s dq (vs: list V) (n m : w64) :
-  {{{ s ↦*{dq} vs ∗ ⌜0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.len)⌝ }}}
+  {{{ s ↦[t]*{dq} vs ∗ ⌜0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.len)⌝ }}}
     slice.slice t #s #n #m
   {{{ RET #(slice.slice_f s t n m);
       (* before the sliced part *)
-      (slice.slice_f s t (W64 0) n) ↦*{dq} (take (sint.nat n) vs) ∗
-      (slice.slice_f s t n m) ↦*{dq} (subslice (sint.nat n) (sint.nat m) vs) ∗
+      (slice.slice_f s t (W64 0) n) ↦[t]*{dq} (take (sint.nat n) vs) ∗
+      (slice.slice_f s t n m) ↦[t]*{dq} (subslice (sint.nat n) (sint.nat m) vs) ∗
       (* after the sliced part *)
-      (slice.slice_f s t m (slice.len s)) ↦*{dq} (drop (sint.nat m) vs)
+      (slice.slice_f s t m (slice.len s)) ↦[t]*{dq} (drop (sint.nat m) vs)
   }}}.
 Proof.
   wp_start as "[Hs %]".
@@ -801,13 +773,13 @@ TODO: try to avoid using this and use the canonical pure WP for slice.slice (plu
 instead
 *)
 Lemma wp_slice_slice_with_cap s (vs: list V) (n m : w64) :
-  {{{ s ↦* vs ∗ own_slice_cap V s (DfracOwn 1) ∗
+  {{{ s ↦[t]* vs ∗ own_slice_cap V s (DfracOwn 1) ∗
             ⌜0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.len)⌝ }}}
     slice.slice t #s #n #m
   {{{ RET #(slice.slice_f s t n m);
       (* before the sliced part *)
-      (slice.slice_f s t (W64 0) n) ↦* (take (sint.nat n) vs) ∗
-      (slice.slice_f s t n m) ↦* (subslice (sint.nat n) (sint.nat m) vs) ∗
+      (slice.slice_f s t (W64 0) n) ↦[t]* (take (sint.nat n) vs) ∗
+      (slice.slice_f s t n m) ↦[t]* (subslice (sint.nat n) (sint.nat m) vs) ∗
       (* after the sliced part becomes part of this capacity *)
       own_slice_cap V (slice.slice_f s t n m) (DfracOwn 1)
   }}}.
@@ -825,11 +797,11 @@ Qed.
 (* An unusual use case for slicing where in s[n:m] we have len(s) ≤ m. This
 moves elements from the hidden capacity of s into its actual contents. *)
 Lemma own_slice_slice_into_capacity (n m: w64) s (vs: list V) :
-  s ↦* vs ∗ own_slice_cap V s (DfracOwn 1) ∗
+  s ↦[t]* vs ∗ own_slice_cap V s (DfracOwn 1) ∗
       ⌜0 ≤ sint.Z n ∧ sint.Z n ≤ sint.Z s.(slice.len) ≤ sint.Z m ≤ sint.Z s.(slice.cap)⌝ ⊢
   ∃ (vs': list V),
-  (slice.slice_f s t (W64 0) n) ↦* (take (sint.nat n) vs) ∗
-      (slice.slice_f s t n m) ↦* (drop (sint.nat n) vs ++ vs') ∗
+  (slice.slice_f s t (W64 0) n) ↦[t]* (take (sint.nat n) vs) ∗
+      (slice.slice_f s t n m) ↦[t]* (drop (sint.nat n) vs ++ vs') ∗
       own_slice_cap V (slice.slice_f s t n m) (DfracOwn 1).
 Proof.
   iIntros "(Hs & Hcap & %)".
@@ -920,10 +892,10 @@ Proof.
 Qed.
 
 Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
-  sl ↦*{dq} vs -∗
+  sl ↦[t]*{dq} vs -∗
   (fold_right (λ v P (i : w64),
                  WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val ⌝ ∗ P (word.add i 1) }})
-    (λ (_ : w64), sl ↦*{dq} vs -∗ Φ (execute_val))
+    (λ (_ : w64), sl ↦[t]*{dq} vs -∗ Φ (execute_val))
     vs) (W64 0) -∗
   WP slice.for_range t #sl body @ stk ; E {{ Φ }}
 .
@@ -970,7 +942,7 @@ Qed.
 Lemma wp_slice_literal {stk E} (l : list V) :
   {{{ True }}}
     slice.literal t #l @ stk ; E
-  {{{ sl, RET #sl; sl ↦* l }}}.
+  {{{ sl, RET #sl; sl ↦[t]* l }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
@@ -996,7 +968,7 @@ Proof.
       "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ Z.of_nat (length l) ⌝ ∗
       "Hi" ∷ i_ptr ↦ i ∗
       "Hl" ∷ heap_pointsto l_ptr (DfracOwn 1) (# (drop (sint.nat i) l)) ∗
-      "Hsl" ∷ sl ↦* (take (sint.nat i) l ++ replicate (length l - sint.nat i) (default_val V))
+      "Hsl" ∷ sl ↦[t]* (take (sint.nat i) l ++ replicate (length l - sint.nat i) (default_val V))
     )%I
     with "[Hi Hl Hsl]" as "Hloop".
   {
@@ -1095,8 +1067,8 @@ Admitted.
 (* TODO: not sound, need 0 ≤ sint i *)
 Global Instance points_to_access_slice_elem_ref s (i : w64) (vs : list V) dq v
   {Hlookup : TCSimpl (vs !! (sint.nat i)) (Some v)}
-  : PointsToAccess (slice.elem_ref_f s t i) v dq (s ↦*{dq} vs)
-      (λ v', s ↦*{dq} <[(sint.nat i) := v']> vs).
+  : PointsToAccess (slice.elem_ref_f s t i) v dq (s ↦[t]*{dq} vs)
+      (λ v', s ↦[t]*{dq} <[(sint.nat i) := v']> vs).
 Proof.
 (*
   constructor.
@@ -1111,9 +1083,9 @@ Admitted.
 
 Lemma wp_load_slice_elem s (i: w64) (vs: list V) dq v :
   0 ≤ sint.Z i →
-  {{{ s ↦*{dq} vs ∗ ⌜vs !! (sint.nat i) = Some v⌝ }}}
+  {{{ s ↦[t]*{dq} vs ∗ ⌜vs !! (sint.nat i) = Some v⌝ }}}
     ![t] #(slice.elem_ref_f s t i)
-  {{{ RET #v; s ↦*{dq} vs }}}.
+  {{{ RET #v; s ↦[t]*{dq} vs }}}.
 Proof.
   intros Hpos.
   wp_start_folded as "[Hs %Hlookup]".
@@ -1128,9 +1100,9 @@ Proof.
 Qed.
 
 Lemma wp_store_slice_elem s (i: w64) (vs: list V) (v': V) :
-  {{{ s ↦* vs ∗ ⌜0 ≤ sint.Z i < Z.of_nat (length vs)⌝ }}}
+  {{{ s ↦[t]* vs ∗ ⌜0 ≤ sint.Z i < Z.of_nat (length vs)⌝ }}}
     #(slice.elem_ref_f s t i) <-[t] #v'
-  {{{ RET #(); s ↦* (<[sint.nat i := v']> vs) }}}.
+  {{{ RET #(); s ↦[t]* (<[sint.nat i := v']> vs) }}}.
 Proof.
   wp_start_folded as "[Hs %bound]".
   list_elem vs (sint.Z i) as v.
@@ -1149,19 +1121,19 @@ the number of bytes copied. See https://pkg.go.dev/builtin#copy.
 Use [take_ge] and [drop_ge] to simplify the resulting list expression.
  *)
 Lemma wp_slice_copy (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
-  {{{ s ↦* vs ∗ s2 ↦*{dq} vs' }}}
+  {{{ s ↦[t]* vs ∗ s2 ↦[t]*{dq} vs' }}}
     slice.copy t #s #s2
   {{{ (n: w64), RET #n; ⌜sint.nat n = Nat.min (length vs) (length vs')⌝ ∗
-                          s ↦* (take (length vs) vs' ++ drop (length vs') vs) ∗
-                          s2 ↦*{dq} vs' }}}.
+                          s ↦[t]* (take (length vs) vs' ++ drop (length vs') vs) ∗
+                          s2 ↦[t]*{dq} vs' }}}.
 Proof.
   wp_start as "(Hs1 & Hs2)".
   wp_call. wp_auto.
   iDestruct (own_slice_len with "Hs1") as %Hlen1.
   iDestruct (own_slice_len with "Hs2") as %Hlen2.
   iAssert (∃ (i:w64),
-      "Hs1" ∷ s ↦* (take (sint.nat i) vs' ++ drop (sint.nat i) vs) ∗
-      "Hs2" ∷ s2 ↦*{dq} vs' ∗
+      "Hs1" ∷ s ↦[t]* (take (sint.nat i) vs' ++ drop (sint.nat i) vs) ∗
+      "Hs2" ∷ s2 ↦[t]*{dq} vs' ∗
       "i" ∷ i_ptr ↦ i ∗
       "%" ∷ ⌜0 ≤ sint.Z i ≤ Z.min (sint.Z s.(slice.len)) (sint.Z s2.(slice.len))⌝
     )%I with "[Hs1 Hs2 i]" as "IH".
@@ -1221,17 +1193,17 @@ Qed.
 
 Lemma own_slice_update_to_dfrac dq (s: slice.t) (vs: list V) :
   ✓dq →
-  s ↦* vs ⊢ |==> s ↦*{dq} vs.
+  s ↦[t]* vs ⊢ |==> s ↦[t]*{dq} vs.
 Proof.
   iIntros (Hvalid) "Hs".
-  iMod (dfractional_update_to_dfrac (λ dq, s ↦*{dq} vs) with "Hs") as "$"; auto.
+  iMod (dfractional_update_to_dfrac (λ dq, s ↦[t]*{dq} vs) with "Hs") as "$"; auto.
 Qed.
 
 Lemma own_slice_zero_size (s: slice.t) (vs: list V) dq :
   go_type_size t = 0%nat →
   length vs = uint.nat (slice.len s) →
   0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) →
-  ⊢ s ↦*{dq} vs.
+  ⊢ s ↦[t]*{dq} vs.
 Proof using IntoValTyped0.
   intros Hz Hlen Hwf.
   rewrite own_slice_unseal /own_slice_def.
@@ -1272,10 +1244,10 @@ Proof.
 Qed.
 
 Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
-  {{{ s ↦* vs ∗ own_slice_cap V s (DfracOwn 1) ∗ s2 ↦*{dq} vs' }}}
+  {{{ s ↦[t]* vs ∗ own_slice_cap V s (DfracOwn 1) ∗ s2 ↦[t]*{dq} vs' }}}
     slice.append t #s #s2
   {{{ (s': slice.t), RET #s';
-      s' ↦* (vs ++ vs') ∗ own_slice_cap V s' (DfracOwn 1) ∗ s2 ↦*{dq} vs' }}}.
+      s' ↦[t]* (vs ++ vs') ∗ own_slice_cap V s' (DfracOwn 1) ∗ s2 ↦[t]*{dq} vs' }}}.
 Proof.
   iIntros (Φ) "(Hs & Hcap & Hs2) HΦ".
   wp_call.
@@ -1370,6 +1342,6 @@ Qed.
 
 End wps.
 
-Notation "s ↦* dq vs" := (own_slice s dq vs)
+Notation "s ↦[t]* dq vs" := (own_slice s dq vs)
                             (at level 20, dq custom dfrac at level 50,
-                              vs constr at next level, format "s  ↦* dq  vs").
+                              vs constr at next level, format "s  ↦[t]* dq  vs").

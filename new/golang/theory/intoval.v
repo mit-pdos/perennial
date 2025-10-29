@@ -21,6 +21,7 @@ Class TypedPointsto (V : Type) `{!IntoVal V} :=
 {
   typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
   typed_pointsto_def_dfractional l v : DFractional (λ dq, typed_pointsto_def l dq v);
+  typed_pointsto_def_timeless l dq v : Timeless (typed_pointsto_def l dq v);
   typed_pointsto_agree : (∀ l dq1 dq2 v1 v2,
                             typed_pointsto_def l dq1 v1 -∗
                             typed_pointsto_def l dq2 v2 -∗
@@ -36,11 +37,15 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
 
-Global Instance typed_pointsto_dfractional `{TypedPointsto V} l v :
+Global Instance typed_pointsto_dfractional `{TypedPointsto V} l (v : V) :
   DFractional (λ dq, typed_pointsto l dq v).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
 
-Global Instance typed_pointsto_as_dfractional `{TypedPointsto V} l dq v :
+Global Instance typed_pointsto_timeless `{TypedPointsto V} l dq (v : V) :
+  Timeless (typed_pointsto l dq v).
+Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_timeless. Qed.
+
+Global Instance typed_pointsto_as_dfractional `{TypedPointsto V} l dq (v : V) :
   AsDFractional (typed_pointsto l dq v) (λ dq, typed_pointsto l dq v) dq.
 Proof. split; try done. apply _. Qed.
 
@@ -52,7 +57,7 @@ Proof.
   unshelve eapply as_dfractional_dfractional; try eassumption.
 Qed.
 
-Global Instance typed_pointsto_combine_sep_gives `{TypedPointsto V} l dq1 v1 dq2 v2 :
+Global Instance typed_pointsto_combine_sep_gives `{TypedPointsto V} l dq1 dq2  (v1 v2 : V) :
   CombineSepGives (typed_pointsto l dq1 v1)
     (typed_pointsto l dq2 v2) (⌜ v1 = v2 ⌝).
 Proof.
