@@ -172,8 +172,8 @@ Lemma wp_SigPrivateKey_Sign ptr_sk pk P sl_msg msg d0 :
   {{{
     is_pkg_init cryptoffi ∗
     "#His_sig_sk" ∷ is_sig_sk ptr_sk pk P ∗
-    "HP" ∷ P msg ∗
-    "Hsl_msg" ∷ sl_msg ↦*{d0} msg
+    "Hsl_msg" ∷ sl_msg ↦*{d0} msg ∗
+    "HP" ∷ P msg
   }}}
   ptr_sk @ (ptrT.id cryptoffi.SigPrivateKey.id) @ "Sign" #sl_msg
   {{{
