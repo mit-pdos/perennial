@@ -161,12 +161,18 @@ Qed.
 End auth_prop.
 #[global] Notation own_aprop γ P := (own_aprop_frag γ P 1).
 
+
 Section waitgroup_idiom.
+
+Class waitgroup_joinG Σ := {
+    #[local] tok_inG :: tok_setG Σ;
+    #[local] auth_inG :: auth_propG Σ;
+  }.
+
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
-Context `{!tok_setG Σ}.
-Context `{!auth_propG Σ}.
+Context `{!waitgroup_joinG Σ}.
 
 Record WaitGroup_join_names :=
   {
@@ -340,6 +346,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 Context `{!chanGhostStateG Σ slice.t}.
+Context `{!waitgroup_joinG Σ}.
 
 #[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
@@ -357,31 +364,18 @@ Implicit Types γ : SearchReplace_names.
 Definition search_replace (x y: w64) : list w64 → list w64 :=
   fmap (λ a, if decide (a = x) then y else a).
 
-(* SearchReplace will own own_WaitGroup_waiters.
-   Invariant for counter will say
- *)
-Definition chanP (x y: w64) (s: slice.t) : iProp Σ :=
-  (* TODO: somehow this slice needs to be exactly the data in some subslice of
-  the original list; does that need to be connected with a ghost variable? *)
+#[local] Hint Unfold search_replace : len.
+
+Definition chanP wg (x y: w64) (s: slice.t) : iProp Σ :=
   ∃ (xs: list w64),
     "Hxs" ∷ s ↦* xs ∗
-    "Hwg_done" ∷ (s ↦* (search_replace x y xs) ={⊤}=∗ own_wg_done_tok)
-.
-  (* TODO: need permission to send back ownership of s ↦* search_replace x y
-  xs on the waitgroup *)
-.
-
-
-Allocate
-(s ↦* (search_replace x y xs) ={⊤}=∗ own_wg_done_tok)
-(own_wg_done_tok ={⊤}=∗ s ↦* (search_replace x y xs))
-when calling Add.
+    "Hwg_done" ∷ own_Done wg (s ↦* (search_replace x y xs)).
 
 Definition waitgroupN := nroot .@ "waitgroup".
 
 Lemma wp_worker (γs: simple_names) (γwg: WaitGroup_names) (ch: loc) (wg: loc) (x y: w64) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-        "#Hchan" ∷ is_simple γs ch 4 (chanP x y) ∗
+        "#Hchan" ∷ is_simple γs ch 4 (chanP wg x y) ∗
         "Hwg" ∷ is_WaitGroup wg γwg waitgroupN }}}
     @! chan_spec_raw_examples.worker #ch #wg #x #y
   {{{ RET #(); True }}}.
@@ -390,11 +384,66 @@ Proof.
   wp_auto.
   wp_apply (wp_simple_receive with "[$Hchan]").
   iIntros (s) "Hrcv".
-  iDestruct "Hrcv" as (xs) "Hs".
+  wp_auto. iPersist "y x".
+  iAssert (∃ s,
+      "s" ∷ s_ptr ↦ s ∗
+      "Hrcv" ∷ chanP wg x y s
+    )%I with "[s Hrcv]" as "HH".
+  { iFrame. } clear s.
+  wp_for. iNamed "HH". iNamed "Hrcv".
+  iDestruct (own_slice_len with "[$]") as %Hlen.
+  iAssert (
+      ∃ (i : w64),
+        "i" ∷ i_ptr ↦ i ∗
+        "Hxs" ∷ s ↦* ((search_replace x y (take (sint.nat i) xs)) ++ (drop (sint.nat i) xs)) ∗
+        "%Hi_bound" ∷ ⌜ uint.nat i ≤ length xs ⌝
+    )%I with "[i Hxs]" as "HH".
+  { iFrame. rewrite take_0 drop_0 /=. iFrame. word. }
+  wp_for. iNamed "HH".
   wp_auto.
-  wp_for.
-  (* TODO: prove inner loop does search-replace for s *)
-Admitted.
+  case_bool_decide as Hi.
+  (* FIXME: wp_if_destruct doesn't keep the fact around? *)
+  - rewrite decide_False // decide_True //. wp_pures.
+    wp_auto. wp_apply (wp_WaitGroup__Done with "[$Hwg_done Hxs]").
+    { rewrite take_ge; last word. rewrite drop_ge; last word.
+      rewrite app_nil_r. iFrame. }
+    wp_for_post.
+    wp_apply (wp_simple_receive with "[$Hchan]").
+    iIntros (s') "Hrcv".
+    wp_auto. iFrame.
+  - rewrite decide_True //. wp_auto.
+    wp_pure; first word.
+    assert (sint.nat i < length xs)%nat as Hlt by word.
+    apply list_lookup_lt in Hlt as [x' Hlookup].
+    erewrite drop_S; last done.
+    iDestruct (own_slice_elem_acc i with "Hxs") as "[Helem Hxs]".
+    { word. }
+    { rewrite lookup_app_r; last len.
+      replace (_ - _)%nat with 0%nat by len. done. }
+    wp_auto.
+    wp_apply (wp_wand  _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗
+                                   slice.elem_ref_f s uint64T i ↦ (if decide (x' = x) then y else x') ∗
+                                   _
+                )%I
+               with "[Helem s i]").
+    { case_bool_decide; wp_auto.
+      - wp_pure; first word. wp_auto. rewrite decide_True //.
+        iFrame. iSplitR; first done. iNamedAccu.
+      - rewrite decide_False //. iFrame. done. }
+    iIntros "% (-> & Helem & HH)". iNamed "HH". wp_for_post.
+    iFrame. iSpecialize ("Hxs" with "[$]"). iSplitL "Hxs".
+    { iApply to_named. iExactEq "Hxs". f_equal.
+      rewrite insert_app_r_alt; last len.
+      replace (sint.nat (word.add _ _))%nat with (sint.nat i + 1)%nat by word.
+      rewrite take_more; last len. unfold search_replace. rewrite fmap_app.
+      rewrite -app_assoc. f_equal.
+      ereplace (<[_ := ?[a]]>) with (<[ O := ?a ]>).
+      2:{ f_equal. len. }
+      simpl. erewrite (drop_S xs _ (sint.nat i)); last done. f_equal.
+      f_equal. len.
+    }
+    word.
+Qed.
 
 Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ s ↦* xs }}}
