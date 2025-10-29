@@ -477,11 +477,23 @@ Proof.
 Qed.
 
 Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
-  {{{ is_pkg_init chan_spec_raw_examples ∗ s ↦* xs }}}
+  {{{ is_pkg_init chan_spec_raw_examples ∗ s ↦* xs ∗
+      ⌜ length xs ≤ 2^63 - 1000 ⌝ ∗
+      ⌜ length xs ≤ (2^31 - 1)*1000 ⌝
+  }}}
     @! chan_spec_raw_examples.SearchReplace #s #x #y
   {{{ RET #(); s ↦* (search_replace x y xs) }}}.
 Proof.
-  wp_start as "Hs".
+  (* The first overflow:
+     implementation adds 1000 at a time, potentially surpassing the slice length
+     before clamping. If it goes negative, then the clamping doesn't work. This
+     inequality is technically implied by the second; keeping for
+     documentation (and e.g. workRange can change). *)
+  (* The second overflow:
+     if `len(xs)` is bigger than `(2^31-1)*workRange`, then Add() will be called
+     *more* than 2^31-1 times, potentially overflow the internal waitgroup
+      counter. *)
+  wp_start as "(Hs & %Hoverflow1 & %Hoverflow2)".
   wp_auto.
   iDestruct (own_slice_len with "Hs") as %Hlen.
   iDestruct (own_slice_wf with "Hs") as %Hcap. (* FIXME: rename to own_slice_cap? *)
@@ -507,17 +519,21 @@ Proof.
       wp_for_post. iFrame.
   }
 
+  set (workRange:=1000).
   iAssert (
       ∃ (offset : w64) remaining nadded,
         "offset" ∷ offset_ptr ↦ offset ∗
         "Hs" ∷ (slice.slice_f s uint64T offset remaining) ↦* drop (uint.nat offset) xs ∗
         "Hwg" ∷ own_Adder wg_ptr nadded
-          ((slice.slice_f s uint64T 0 offset) ↦* take (uint.nat offset) (search_replace x y xs))
+          ((slice.slice_f s uint64T 0 offset) ↦* take (uint.nat offset) (search_replace x y xs)) ∗
+        "%Hoffset" ∷ ⌜ 0 ≤ sint.Z offset < length xs ⌝ ∗
+        "%Hnadded" ∷ ⌜ 0 ≤ workRange * sint.Z nadded ≤ sint.Z offset ⌝
     )%I with "[offset Hs Hwg]" as "HH".
   { iFrame. iExists _. rewrite drop_0 take_0.
     erewrite <- slice_slice_trivial. iFrame.
     iDestruct (own_Adder_wand with "[] Hwg") as "$".
-    iIntros "_". iApply own_slice_empty; simpl; word. }
+    { iIntros "_". iApply own_slice_empty; simpl; word. }
+    word. }
   wp_for. iNamed "HH". wp_auto. case_bool_decide.
   { rewrite decide_False // decide_True //. wp_auto.
     iMod (start_wait with "Hwg") as "Hwg".
@@ -526,6 +542,22 @@ Proof.
     rewrite take_ge; last len. wp_auto. iApply "HΦ".
     rewrite <- slice_slice_trivial. iFrame. }
   rewrite decide_True //. wp_auto.
+  set (nextOffset:=((sint.Z offset + workRange) `min` Z.of_nat (length xs))).
+  wp_bind (if: _ then _ else _)%E.
+  iPersist "s".
+  wp_apply (wp_wand  _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗
+                                 "nextOffset" ∷ nextOffset_ptr ↦ (W64 nextOffset))%I with "[nextOffset]").
+  { wp_if_destruct.
+    - iSplitR; first done. iApply to_named. iExactEq "nextOffset".
+      f_equal. unfold nextOffset. word.
+    - iSplitR; first done. iApply to_named. iExactEq "nextOffset".
+      f_equal. unfold nextOffset. word. }
+  iIntros "% [-> H]". iNamed "H". wp_auto.
+  wp_pure.
+  { unfold nextOffset. word. }
+  wp_auto. wp_apply (wp_WaitGroup__Add with "[$Hwg]").
+  { word. }
+  admit.
 Qed.
 
 End proof.
