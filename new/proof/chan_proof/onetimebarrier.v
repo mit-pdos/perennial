@@ -1,3 +1,4 @@
+From New.golang.theory Require Export chan_old chan_auto.
 Require Import New.proof.proof_prelude.
 
 Section onetime_barrier.
@@ -68,7 +69,7 @@ Lemma wp_onetime_barrier_receive γ ch Sd Rv :
       own_recv_tok γ ∗
       Rv
   }}}
-    chan.receive #ch
+    chan.receive #(structT []) #ch
   {{{
       RET (#(), #true); Sd
   }}}.
@@ -118,7 +119,7 @@ Lemma wp_onetime_barrier_send γ ch Sd Rv :
       own_send_tok γ ∗
       Sd
   }}}
-    chan.send #ch #()
+    chan.send #(structT []) #ch #()
   {{{
       RET #(); Rv
   }}}.

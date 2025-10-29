@@ -1,6 +1,7 @@
 Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
-  chan_au_send chan_au_recv chan_au_base.
+  chan_au_base.
+From New.golang.theory Require Import chan.
 
 (** * Simple Channel Pattern Verification
 
@@ -176,12 +177,12 @@ Qed.
 Lemma wp_simple_receive γ ch cap P :
   {{{ is_pkg_init channel ∗
       is_simple γ ch cap P }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{ v, RET (#v, #true); P v }}}.
 Proof.
   wp_start_folded as "#Hsimple".
   iNamed "Hsimple".
-  wp_apply (wp_Receive ch cap γ.(chan_name) with "[$Hch]").
+  wp_apply (chan.wp_receive ch cap γ.(chan_name) with "[$Hch]").
   iIntros "(? & ? & ? & ?)".
   iApply (simple_rcv_au with "[$]").
   iFrame.
@@ -299,12 +300,12 @@ Lemma wp_simple_send γ ch cap v P :
   {{{ is_pkg_init channel ∗
       is_simple γ ch cap P ∗
       P v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.send #t #ch #v
   {{{ RET #(); True }}}.
 Proof.
   wp_start_folded as "[#Hsimple HP]".
   unfold is_simple. iNamed "Hsimple".
-  wp_apply (wp_Send ch cap with "[$Hch]").
+  wp_apply (chan.wp_send ch cap with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & ? & ?)".
   iApply (simple_send_au with "[$] [$HP]").
   iNext. by iApply "HΦ".

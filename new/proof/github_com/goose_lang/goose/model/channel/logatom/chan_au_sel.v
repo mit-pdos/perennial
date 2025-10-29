@@ -5,6 +5,8 @@ From New.generatedproof.github_com.goose_lang.goose Require Import model.channel
 From New.proof.github_com.goose_lang Require Import primitive.
 From New.proof.github_com.goose_lang.std Require Import std_core.
 
+#[local] Transparent is_channel own_channel.
+
 Section select.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.

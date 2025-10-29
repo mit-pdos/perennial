@@ -559,7 +559,8 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
     ])] "done") = #null
     then return: (#())
     else do:  #());;;
-    chan.select [chan.select_receive (![type.chanT (type.structT [
+    chan.select_nonblocking [chan.select_receive (type.structT [
+     ]) (![type.chanT (type.structT [
      ])] "done") (λ: "$recvVal",
        do:  (let: "$a0" := #false in
        let: "$a1" := ((interface.get #"Err"%go (![#Context] "parent")) #()) in
@@ -567,9 +568,9 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
        (func_call #Cause) "$a0") in
        (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2");;;
        return: (#())
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  #()
-      ));;;
+      );;;
     (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "p" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#Context] "parent") in
@@ -638,15 +639,17 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W32 1) in
     (method_call #(ptrT.id atomic.Int32.id) #"Add"%go (globals.get #goroutines)) "$a0");;;
     let: "$go" := (λ: <>,
-      exception_do (chan.select [chan.select_receive ((interface.get #"Done"%go (![#Context] "parent")) #()) (λ: "$recvVal",
+      exception_do (chan.select_blocking [chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#Context] "parent")) #()) (λ: "$recvVal",
          do:  (let: "$a0" := #false in
          let: "$a1" := ((interface.get #"Err"%go (![#Context] "parent")) #()) in
          let: "$a2" := (let: "$a0" := (![#Context] "parent") in
          (func_call #Cause) "$a0") in
          (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2")
-         ); chan.select_receive ((interface.get #"Done"%go (![#canceler] "child")) #()) (λ: "$recvVal",
+         ); chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#canceler] "child")) #()) (λ: "$recvVal",
          do:  #()
-         )] chan.select_no_default;;;
+         )];;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -731,7 +734,8 @@ Definition cancelCtx__cancelⁱᵐᵖˡ : val :=
     else
       do:  (let: "$a0" := (![type.chanT (type.structT [
       ])] "d") in
-      chan.close "$a0"));;;
+      (chan.close (type.structT [
+      ])) "$a0"));;;
     let: "$range" := (![type.mapT #canceler (type.structT [
     ])] (struct.field_ref #cancelCtx #"children"%go (![#ptrT] "c"))) in
     (let: "child" := (mem.alloc (type.zero_val #canceler)) in
@@ -1331,7 +1335,8 @@ Definition initialize' : val :=
       do:  ((λ: <>,
         exception_do (do:  (let: "$a0" := (![type.chanT (type.structT [
         ])] (globals.get #closedchan)) in
-        chan.close "$a0");;;
+        (chan.close (type.structT [
+        ])) "$a0");;;
         return: #())
         ) #()))
       ).

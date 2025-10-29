@@ -1,5 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
+From New.golang.theory Require Import chan.
 From iris.base_logic Require Import ghost_map.
 From iris.base_logic.lib Require Import saved_prop.
 
@@ -246,22 +247,25 @@ Proof.
   }
 Qed.
 
+Lemma done_is_channel γ ch :
+  is_done γ ch ⊢ is_channel ch 0 γ.(chan_name).
+Proof.
+  iDestruct 1 as "[$ _]".
+Qed.
+
 Lemma done_close_au γ ch R Φ :
   is_done γ ch -∗
-  Notify γ R -∗
-  R -∗
-  ▷ (True -∗ Φ #()) -∗
-   £1 ∗ £1 ∗ £1 -∗
-  close_au ch 0 γ.(chan_name) (Φ #()).
+  £1 ∗ £1 ∗ £1 -∗
+  Notify γ R ∗ R -∗
+  ▷ Φ -∗
+  close_au ch 0 γ.(chan_name) Φ.
 Proof.
-  iIntros "#Hdone". iIntros "HNh".
-  iIntros "HR".
+  iIntros "#Hdone". iIntros "(Hlc1 & Hlc2 & Hlc3)". iIntros "[HNh HR]".
   unfold Notify. iNamed "HNh". iDestruct "HNh" as "[HProps Hsp]".
   unfold NotifyInternal.
   iNamed "HProps".
   iDestruct "HProps" as "(Hgm & %Hlen & HQs)".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]". iIntros "Hcont".
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iMod (lc_fupd_elim_later with "[$] Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
@@ -290,7 +294,7 @@ Proof.
         iFrame. iLeft. iFrame.
       }
     }
-    iModIntro. iApply "Hcont". done.
+    iModIntro. iApply "Hcont".
   - destruct draining; try done.
     iNamed "Hstate".
     iCombine "Hmap_half Hgm" as "H". iNamed "Hstate".
@@ -305,25 +309,18 @@ Lemma wp_done_close γ ch R :
   {{{ is_pkg_init channel ∗
       is_done γ ch ∗
       Notify γ R ∗ R }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Close" #t #()
+    chan.close #t #ch
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ). iIntros "(#Hinit & #Hdone & Hrest)".  iNamed "Hrest".
   iDestruct "Hrest" as "[HNh HR]".
   iIntros "Hphi".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
-  iApply (wp_Close ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+  iApply (chan.wp_close ch 0 γ.(chan_name) with "[$Hch]").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
-  iApply (done_close_au with "[][$HNh][$HR][Hphi Hlc]").
-  {
-    unfold is_done.
-   iFrame "#".
-  }
-  {
-    iNext.
-    iFrame.
-    }
-    done.
+  iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
+  { iFrame "#". }
+  iNext. iApply "Hphi". done.
 Qed.
 
 Lemma done_receive_au γ ch Q  :
@@ -472,12 +469,12 @@ Lemma wp_done_receive γ ch Q :
   {{{ is_pkg_init channel ∗
       is_done γ ch ∗
       Notified γ Q }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+    chan.receive #t #ch
   {{{ RET (#(default_val V), #false); Q }}}.
 Proof.
   iIntros (Φ) "(#Hinit & #Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
-   iApply (wp_Receive ch 0 γ.(chan_name) with "[$Hinit $Hch]").
+   iApply (chan.wp_receive ch 0 γ.(chan_name) with "[$Hch]").
 
 
 

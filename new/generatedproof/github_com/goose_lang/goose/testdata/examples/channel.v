@@ -2,8 +2,8 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.strings.
 Require Export New.generatedproof.time.
-Require Export New.generatedproof.github_com.goose_lang.goose.model.channel.
 Require Export New.generatedproof.sync.
+Require Export New.generatedproof.github_com.goose_lang.goose.model.channel.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.channel.
@@ -25,8 +25,8 @@ Global Instance is_pkg_defined_pure_chan_spec_raw_examples : IsPkgDefinedPure ch
       is_pkg_defined_pure_single chan_spec_raw_examples ∧
       is_pkg_defined_pure code.strings.strings ∧
       is_pkg_defined_pure code.time.time ∧
-      is_pkg_defined_pure code.github_com.goose_lang.goose.model.channel.channel ∧
-      is_pkg_defined_pure code.sync.sync;
+      is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.goose_lang.goose.model.channel.channel;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -36,8 +36,8 @@ Global Program Instance is_pkg_defined_chan_spec_raw_examples : IsPkgDefined cha
       (is_pkg_defined_single chan_spec_raw_examples ∗
        is_pkg_defined code.strings.strings ∗
        is_pkg_defined code.time.time ∗
-       is_pkg_defined code.github_com.goose_lang.goose.model.channel.channel ∗
-       is_pkg_defined code.sync.sync)%I
+       is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.goose_lang.goose.model.channel.channel)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
@@ -124,78 +124,6 @@ Global Instance wp_func_call_server :
 
 Global Instance wp_func_call_LeakyBufferPipeline :
   WpFuncCall chan_spec_raw_examples.LeakyBufferPipeline _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_HelloWorldAsyncX :
-  WpFuncCall chan_spec_raw_examples.HelloWorldAsyncX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_HelloWorldSyncX :
-  WpFuncCall chan_spec_raw_examples.HelloWorldSyncX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_HelloWorldCancellableX :
-  WpFuncCall chan_spec_raw_examples.HelloWorldCancellableX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_HelloWorldWithTimeoutX :
-  WpFuncCall chan_spec_raw_examples.HelloWorldWithTimeoutX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_DSPExampleX :
-  WpFuncCall chan_spec_raw_examples.DSPExampleX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_fibonacciX :
-  WpFuncCall chan_spec_raw_examples.fibonacciX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_fib_consumerX :
-  WpFuncCall chan_spec_raw_examples.fib_consumerX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_select_nb_no_panicX :
-  WpFuncCall chan_spec_raw_examples.select_nb_no_panicX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_select_ready_case_no_panicX :
-  WpFuncCall chan_spec_raw_examples.select_ready_case_no_panicX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TestHelloWorldSyncX :
-  WpFuncCall chan_spec_raw_examples.TestHelloWorldSyncX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TestHelloWorldWithTimeoutX :
-  WpFuncCall chan_spec_raw_examples.TestHelloWorldWithTimeoutX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TestDSPExampleX :
-  WpFuncCall chan_spec_raw_examples.TestDSPExampleX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TestFibConsumerX :
-  WpFuncCall chan_spec_raw_examples.TestFibConsumerX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TestSelectNbNoPanicX :
-  WpFuncCall chan_spec_raw_examples.TestSelectNbNoPanicX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_TestSelectReadyCaseNoPanicX :
-  WpFuncCall chan_spec_raw_examples.TestSelectReadyCaseNoPanicX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_clientX :
-  WpFuncCall chan_spec_raw_examples.clientX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_serverX :
-  WpFuncCall chan_spec_raw_examples.serverX _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_LeakyBufferPipelineX :
-  WpFuncCall chan_spec_raw_examples.LeakyBufferPipelineX _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_worker :

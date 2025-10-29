@@ -1,4 +1,5 @@
 From Perennial.base_logic.lib Require Import ghost_map.
+From New.golang.theory Require Import chan_old.
 Require Import New.code.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
@@ -255,7 +256,7 @@ Proof.
   wp_apply (wp_RWMutex__Lock with "[$Hmu]").
   iIntros "[Hmu Hown]".
   wp_auto.
-  wp_bind (chan.select _ _).
+  wp_bind (chan.select_nonblocking _ _).
   iNamedSuffix "Hown" "_lock".
   iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
   iCombine "sessionc_lock sessionc" as "sessionc".

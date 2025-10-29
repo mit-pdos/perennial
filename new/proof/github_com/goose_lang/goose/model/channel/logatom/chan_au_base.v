@@ -1,11 +1,10 @@
 From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_init.
 From New.proof Require Import proof_prelude.
+From New.golang.theory Require Import lock.
 From iris.base_logic.lib Require Import saved_prop.
 From iris.algebra Require Import auth gset.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
-From New.proof.github_com.goose_lang Require Import primitive.
-From New.proof.github_com.goose_lang.std Require Import std_core.
 
 (** The mathematical model of channel states. This represents the logical
     behavior of channels independent of the implementation details. *)
@@ -604,7 +603,7 @@ Definition is_channel (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
     "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 cap) ∗
     "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "mu"]□ mu_loc ∗
-    "#lock" ∷ primitive.is_Mutex mu_loc (chan_inv_inner ch cap γ).
+    "#lock" ∷ is_lock mu_loc (chan_inv_inner ch cap γ).
 
 Global Instance is_channel_pers ch cap γ : Persistent (is_channel cap ch γ).
 Proof. apply _. Qed.
@@ -621,3 +620,5 @@ Proof.
 Qed.
 
 End base.
+
+#[global] Opaque is_channel own_channel.

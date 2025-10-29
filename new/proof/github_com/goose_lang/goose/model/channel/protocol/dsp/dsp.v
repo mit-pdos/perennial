@@ -1,6 +1,7 @@
 Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export chan_au_send chan_au_recv chan_au_base chan_init.
+     Require Export chan_au_base.
+From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export dsp_ghost_theory.
 From iris.base_logic.lib Require Export token.
@@ -167,7 +168,7 @@ Qed.
 (** Endpoint sends value *)
 Lemma dsp_send (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Send" #tV #v
+    chan.send #tV #lr_chan #v
   {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -175,7 +176,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (wp_Send lr_chan lrcap v γlr_names with "[$Hinit $Hcl]").
+  iApply (chan.wp_send lr_chan lrcap v γlr_names with "[$Hcl]").
   iIntros "H£".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -227,7 +228,7 @@ Qed.
 Lemma dsp_recv {TT:tele}
     (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+    chan.receive #tV #rl_chan
   {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -235,7 +236,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hcr]").
   iIntros "H£s".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -346,21 +347,10 @@ Proof.
     iModIntro. iRewrite "Hp". by iFrame "#∗".
 Qed.
 
-(** Endpoint receives value *)
-Lemma dsp_recv_discard_ok {TT:tele}
-    (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
-  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #tV #()
-  {{{ x, RET #(v x); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
-Proof.
-  wp_start. wp_auto. wp_apply (dsp_recv with "[$Hpre]").
-  iIntros (x) "Hpre". wp_auto. by iApply "HΦ".
-Qed.
-
 (** Endpoint closes (stops sending val) *)
 Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ V) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
-    lr_chan @ (ptrT.id channel.Channel.id) @ "Close" #tV #()
+    chan.close #tV #lr_chan
   {{{ RET #(); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -368,7 +358,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (wp_Close lr_chan lrcap γlr_names with "[$Hinit $Hcl]").
+  iApply (chan.wp_close lr_chan lrcap γlr_names with "[$Hcl]").
   iIntros "H£".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -395,7 +385,7 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_end (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+    chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); #(lr_chan,rl_chan) ↣ END }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -403,7 +393,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hcr]").
   iIntros "H£s".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -476,7 +466,7 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+    chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
   iIntros (Φ) "(#Hinit&Hc) HΦ".
@@ -484,7 +474,7 @@ Proof.
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
   rename rl_chan0 into rl_chan.
-  iApply (wp_Receive rl_chan rlcap γrl_names with "[$Hinit $Hcr]").
+  iApply (chan.wp_receive rl_chan rlcap γrl_names with "[$Hcr]").
   iIntros "H£s".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
@@ -533,18 +523,9 @@ Qed.
 
 Lemma dsp_recv_false (b : bool) (lr_chan rl_chan : loc) :
   {{{ is_pkg_init channel ∗ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "Receive" #tV #()
+    chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
 Proof. destruct b; [apply dsp_recv_end|apply dsp_recv_closed]. Qed.
-
-Lemma dsp_recv_false_discard_ok (b : bool) (lr_chan rl_chan : loc) :
-  {{{ is_pkg_init channel ∗ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
-    rl_chan @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #tV #()
-  {{{ RET #(default_val V); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
-Proof.
-  wp_start. wp_auto. wp_apply (dsp_recv_false with "[$Hpre]").
-  iIntros "Hpre". wp_auto. by iApply "HΦ".
-Qed.
 
 End dsp.
 

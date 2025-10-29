@@ -168,21 +168,21 @@ Definition chanBasicⁱᵐᵖˡ : val :=
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "y" := (mem.alloc (type.zero_val #stringT)) in
-    let: ("$ret0", "$ret1") := (chan.receive (![type.chanT #stringT] "x")) in
+    let: ("$ret0", "$ret1") := (chan.receive #stringT (![type.chanT #stringT] "x")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("y" <-[#stringT] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
-    let: "$r0" := (Fst (chan.receive (![type.chanT #stringT] "x"))) in
+    let: "$r0" := (Fst (chan.receive #stringT (![type.chanT #stringT] "x"))) in
     do:  ("y" <-[#stringT] "$r0");;;
     (if: ![#boolT] "ok"
     then
@@ -213,9 +213,9 @@ Definition chanSelectⁱᵐᵖˡ : val :=
     let: "c" := (mem.alloc (type.zero_val (type.chanT #intT))) in
     let: "i2" := (mem.alloc (type.zero_val #intT)) in
     let: "i1" := (mem.alloc (type.zero_val #intT)) in
-    chan.select [chan.select_receive (![type.chanT #intT] "c3") (λ: "$recvVal",
+    chan.select_nonblocking [chan.select_receive #intT (![type.chanT #intT] "c3") (λ: "$recvVal",
        do:  #()
-       ); chan.select_receive (![type.chanT #intT] "c1") (λ: "$recvVal",
+       ); chan.select_receive #intT (![type.chanT #intT] "c1") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
        do:  ("i1" <-[#intT] "$r0");;;
        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"received "%go) in
@@ -224,14 +224,14 @@ Definition chanSelectⁱᵐᵖˡ : val :=
        "%go) in
        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
        (func_call #fmt.Print) "$a0")
-       ); chan.select_send (![#intT] "i2") (![type.chanT #intT] "c2") (λ: <>,
+       ); chan.select_send #intT (![type.chanT #intT] "c2") (![#intT] "i2") (λ: <>,
        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"sent "%go) in
        let: "$sl1" := (interface.make #intT.id (![#intT] "i2")) in
        let: "$sl2" := (interface.make #stringT.id #" to c2
        "%go) in
        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
        (func_call #fmt.Print) "$a0")
-       ); chan.select_receive (![type.chanT #intT] "c3") (λ: "$recvVal",
+       ); chan.select_receive #intT (![type.chanT #intT] "c3") (λ: "$recvVal",
        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
        let: "i3" := (mem.alloc (type.zero_val #intT)) in
        let: ("$ret0", "$ret1") := "$recvVal" in
@@ -252,23 +252,23 @@ Definition chanSelectⁱᵐᵖˡ : val :=
          "%go) in
          slice.literal #interfaceT ["$sl0"])) in
          (func_call #fmt.Print) "$a0"))
-       ); chan.select_receive (![type.chanT #intT] "c4") (λ: "$recvVal",
+       ); chan.select_receive #intT (![type.chanT #intT] "c4") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
        do:  ((slice.elem_ref #intT (![#sliceT] "a") ((func_call #f) #())) <-[#intT] "$r0");;;
        do:  #()
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"no communication
       "%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")
-      ));;;
+      );;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      chan.select [chan.select_send #(W64 0) (![type.chanT #intT] "c") (λ: <>,
+      chan.select_blocking [chan.select_send #intT (![type.chanT #intT] "c") #(W64 0) (λ: <>,
          do:  #()
-         ); chan.select_send #(W64 1) (![type.chanT #intT] "c") (λ: <>,
+         ); chan.select_send #intT (![type.chanT #intT] "c") #(W64 1) (λ: <>,
          do:  #()
-         )] chan.select_no_default);;;
-    chan.select [] chan.select_no_default;;;
+         )]);;;
+    chan.select_blocking [];;;
     return: #()).
 
 Definition chanDirectional : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.chanDirectional"%go.
@@ -278,10 +278,10 @@ Definition chanDirectionalⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
     let: "y" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
-    do:  (Fst (chan.receive (![type.chanT #uint64T] "x")));;;
+    do:  (Fst (chan.receive #uint64T (![type.chanT #uint64T] "x")));;;
     do:  (let: "$chan" := (![type.chanT #stringT] "y") in
     let: "$v" := #""%go in
-    chan.send "$chan" "$v");;;
+    chan.send #stringT "$chan" "$v");;;
     return: #()).
 
 Definition chanRange : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.chanRange"%go.
@@ -292,20 +292,20 @@ Definition chanRangeⁱᵐᵖˡ : val :=
     exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
     let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "y" := (mem.alloc (type.zero_val #uint64T)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  ("y" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "y")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")));;;
     let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  ("x" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "x")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")));;;
     let: "$range" := (![type.chanT #uint64T] "x") in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  #());;;
     return: #()).
 
