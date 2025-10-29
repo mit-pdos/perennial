@@ -963,7 +963,7 @@ Proof.
   iDestruct (struct_fields_split with "Hown") as "Hl".
   iNamed "Hl". simpl.
   iExists _. iFrame.
-  iIntros "Hv".
+  iIntros "!> Hv".
 
   iMod ("HΦ" with "[-]").
   {
@@ -1003,7 +1003,7 @@ Proof.
   iDestruct (struct_fields_split with "Hown") as "Hl".
   iNamed "Hl". simpl.
   iExists _. iFrame.
-  iIntros "Hv".
+  iIntros "!> Hv".
 
   iMod ("HΦ" with "[-]").
   {
@@ -1035,7 +1035,7 @@ Proof.
   iExists _. iFrame.
   iSplitR.
   { destruct v, old; auto. }
-  iIntros "Hv".
+  iIntros "!> Hv".
 
   iMod ("HΦ" with "[-]").
   {
