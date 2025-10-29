@@ -62,10 +62,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.VrfSigEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -81,9 +81,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.
@@ -144,10 +144,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.LinkSigEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -163,9 +163,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.
@@ -219,10 +219,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.MapLabelEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -238,9 +238,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.
@@ -301,10 +301,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.CommitOpenEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -320,9 +320,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.
@@ -387,10 +387,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.MembEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -406,9 +406,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.
@@ -469,10 +469,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.NonMembEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -488,9 +488,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.
@@ -555,10 +555,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.UpdateProofEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -574,9 +574,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.
@@ -641,10 +641,10 @@ Lemma wp_enc sl_b b ptr_obj obj d :
   @! ktcore.AuditProofEncode #sl_b #ptr_obj
   {{{
     sl_b' enc, RET #sl_b';
-    "Hsl_b" ∷ sl_b' ↦* (b ++ enc) ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b' 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d ∗
-    "%Henc" ∷ ⌜encodes obj enc⌝
+    sl_b' ↦* (b ++ enc) ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜encodes obj enc⌝
   }}}.
 Proof. Admitted.
 
@@ -660,9 +660,9 @@ Lemma wp_dec sl_b d b :
     | true => ¬ ∃ obj tail, wish b obj tail
     | false =>
       ∃ obj tail,
-      "#Hwish" ∷ wish b obj tail ∗
-      "Hown_obj" ∷ own ptr_obj obj d ∗
-      "Hsl_tail" ∷ sl_tail ↦*{d} tail
+      wish b obj tail ∗
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail
     end
   }}}.
 Proof. Admitted.

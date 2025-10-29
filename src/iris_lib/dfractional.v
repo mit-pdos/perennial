@@ -53,10 +53,6 @@ Section dfractional.
     apply fractional_of_dfractional; auto.
   Qed.
 
-  (* this instance isn't generally useful since DFractional doesn't unify with Φ
-  dq *)
-  Local Existing Instance dfractional_persistent.
-
   Global Instance DFractional_proper :
     Proper (pointwise_relation _ (≡) ==> iff) (@DFractional PROP _).
   Proof.
@@ -66,7 +62,19 @@ Section dfractional.
     - constructor; setoid_rewrite -> Hequiv; auto.
   Qed.
 
-  Global Instance persistent_dfractional (P : PROP) :
+  (* this instance isn't generally useful since DFractional
+  doesn't unify with Φ dq *)
+  Local Existing Instance dfractional_persistent.
+
+  Global Instance as_dfractional_persistent
+      `{AsDFractional _ P Φ DfracDiscarded} :
+    Persistent P.
+  Proof.
+    erewrite as_dfractional. apply dfractional_persistent.
+    unshelve eapply as_dfractional_dfractional; try eassumption.
+  Qed.
+
+  Global Instance persistent_dfractional P :
     Persistent P → TCOr (Affine P) (Absorbing P) → DFractional (λ _, P).
   Proof.
     intros ??. constructor; [ | by auto | by auto ].
