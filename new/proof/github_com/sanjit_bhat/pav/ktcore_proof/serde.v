@@ -19,6 +19,9 @@ Notation LinkSigTag := 1 (only parsing).
 impl:
 - [pure_enc] gives deterministic encoding.
 - [wish] optionally transports correctness from encoder to decoder.
+it's implemented by saying "the bytestream is encoded obj with tail".
+however, there's an additional restriction for variable-size objects
+(e.g., lists) that the length is in-bounds.
 [wish_det] deterministically maps an encoding to its object and tail.
 - higher-level objects can define [pure_enc] and [wish] i.t.o. the
 [pure_enc] and [wish] of lower-level objects. *)
@@ -537,15 +540,20 @@ End UpdateProof.
 Module UpdateProofSlice1D.
 
 Definition pure_enc obj :=
-  safemarshal.w64.pure_enc (length obj) ++ mjoin (map UpdateProof.pure_enc obj).
+  safemarshal.w64.pure_enc (length obj) ++ mjoin (UpdateProof.pure_enc <$> obj).
 
+(* more complex: cascading wishes across object list to [tail]. *)
 Definition wish b obj tail :=
-  ∃ t0,
-  safemarshal.w64.wish b (length obj) t0 ∧
-  t0 = mjoin (map UpdateProof.pure_enc obj) ++ tail ∧
+  ∃ tails t0,
+  tails !! 0%nat = Some t0 ∧
+  list.last tails = Some tail ∧
 
-  sint.Z (W64 (length obj)) = length obj ∧
-  Forall (λ o, UpdateProof.wish (UpdateProof.pure_enc o) o []) obj.
+  safemarshal.w64.wish b (length obj) t0 ∧
+  (∀ k o tPrev tNext,
+    obj !! k = Some o →
+    tails !! k = Some tPrev →
+    tails !! S k = Some tNext →
+    UpdateProof.wish tPrev o tNext).
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
@@ -556,20 +564,26 @@ Proof. Admitted.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Lemma wp_enc obj sl_b b sl_obj d :
+Definition own ptr obj d : iProp Σ :=
+  ∃ ptr0,
+  ptr ↦*{d} ptr0 ∗
+  ([∗ list] ptr;obj ∈ ptr0;obj,
+    UpdateProof.own ptr obj d).
+
+Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
     is_pkg_init ktcore ∗
     "Hsl_b" ∷ sl_b ↦* b ∗
     "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
-    "Hsl_obj" ∷ sl_obj ↦*{d} (map (λ o, UpdateProof.mk o.(UpdateProof.MapLabel) o.(UpdateProof.MapVal) o.(UpdateProof.NonMembProof)) obj)
+    "Hown_obj" ∷ own ptr_obj obj d
   }}}
-  @! ktcore.UpdateProofSlice1DEncode #sl_b #sl_obj
+  @! ktcore.UpdateProofSlice1DEncode #sl_b #ptr_obj
   {{{
     sl_b', RET #sl_b';
     let b' := b ++ pure_enc obj in
     sl_b' ↦* b' ∗
     own_slice_cap w8 sl_b' 1 ∗
-    sl_obj ↦*{d} (map (λ o, UpdateProof.mk o.(UpdateProof.MapLabel) o.(UpdateProof.MapVal) o.(UpdateProof.NonMembProof)) obj) ∗
+    own ptr_obj obj d ∗
     ⌜wish b' obj b⌝
   }}}.
 Proof. Admitted.
@@ -581,12 +595,12 @@ Lemma wp_dec sl_b d b :
   }}}
   @! ktcore.UpdateProofSlice1DDecode #sl_b
   {{{
-    sl_obj sl_tail err, RET (#sl_obj, #sl_tail, #err);
+    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
     | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
     | false =>
       ∃ obj tail,
-      sl_obj ↦*{d} (map (λ o, UpdateProof.mk o.(UpdateProof.MapLabel) o.(UpdateProof.MapVal) o.(UpdateProof.NonMembProof)) obj) ∗
+      own ptr_obj obj d ∗
       sl_tail ↦*{d} tail ∗
       ⌜wish b obj tail⌝
     end
@@ -622,12 +636,10 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition own ptr obj d : iProp Σ :=
-  ∃ sl0_Updates sl1_Updates sl_LinkSig,
-  "Hstruct" ∷ ptr ↦{d} (ktcore.AuditProof.mk sl0_Updates sl_LinkSig) ∗
+  ∃ ptr_Updates sl_LinkSig,
+  "Hstruct" ∷ ptr ↦{d} (ktcore.AuditProof.mk ptr_Updates sl_LinkSig) ∗
 
-  "Hsl0_Updates" ∷ sl0_Updates ↦*{d} sl1_Updates ∗
-  "Hsl1_Updates" ∷ ([∗ list] ptr;obj ∈ sl1_Updates;obj.(Updates),
-    UpdateProof.own ptr obj d) ∗
+  "Hsl_Updates" ∷ UpdateProofSlice1D.own ptr_Updates obj.(Updates) d ∗
   "Hsl_LinkSig" ∷ sl_LinkSig ↦*{d} obj.(LinkSig).
 
 Lemma wp_enc obj sl_b b ptr_obj d :
