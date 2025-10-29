@@ -105,14 +105,15 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  [obj.(SigTag)] ++
-  u64_le obj.(Epoch) ++
-  u64_le (length obj.(Link)) ++ obj.(Link).
+  safemarshal.w8.pure_enc obj.(SigTag) ++
+  safemarshal.w64.pure_enc obj.(Epoch) ++
+  safemarshal.Slice1D.pure_enc obj.(Link).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-
-  sint.Z (W64 (length obj.(Link))) = length obj.(Link).
+  ∃ t0 t1,
+  safemarshal.w8.wish b obj.(SigTag) t0 ∧
+  safemarshal.w64.wish t0 obj.(Epoch) t1 ∧
+  safemarshal.Slice1D.wish t1 obj.(Link) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
@@ -177,11 +178,13 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  u64_le obj.(Uid) ++
-  u64_le obj.(Ver).
+  safemarshal.w64.pure_enc obj.(Uid) ++
+  safemarshal.w64.pure_enc obj.(Ver).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail.
+  ∃ t0,
+  safemarshal.w64.wish b obj.(Uid) t0 ∧
+  safemarshal.w64.wish t0 obj.(Ver) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
@@ -243,14 +246,13 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  u64_le (length obj.(Val)) ++ obj.(Val) ++
-  u64_le (length obj.(Rand)) ++ obj.(Rand).
+  safemarshal.Slice1D.pure_enc obj.(Val) ++
+  safemarshal.Slice1D.pure_enc obj.(Rand).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-
-  sint.Z (W64 (length obj.(Val))) = length obj.(Val) ∧
-  sint.Z (W64 (length obj.(Rand))) = length obj.(Rand).
+  ∃ t0,
+  safemarshal.Slice1D.wish b obj.(Val) t0 ∧
+  safemarshal.Slice1D.wish t0 obj.(Rand) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
@@ -317,16 +319,15 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  u64_le (length obj.(LabelProof)) ++ obj.(LabelProof) ++
+  safemarshal.Slice1D.pure_enc obj.(LabelProof) ++
   CommitOpen.pure_enc obj.(PkOpen) ++
-  u64_le (length obj.(MerkleProof)) ++ obj.(MerkleProof).
+  safemarshal.Slice1D.pure_enc obj.(MerkleProof).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-
-  sint.Z (W64 (length obj.(LabelProof))) = length obj.(LabelProof) ∧
-  CommitOpen.wish (CommitOpen.pure_enc obj.(PkOpen)) obj.(PkOpen) [] ∧
-  sint.Z (W64 (length obj.(MerkleProof))) = length obj.(MerkleProof).
+  ∃ t0 t1,
+  safemarshal.Slice1D.wish b obj.(LabelProof) t0 ∧
+  CommitOpen.wish t0 obj.(PkOpen) t1 ∧
+  safemarshal.Slice1D.wish t1 obj.(MerkleProof) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
@@ -393,14 +394,13 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  u64_le (length obj.(LabelProof)) ++ obj.(LabelProof) ++
-  u64_le (length obj.(MerkleProof)) ++ obj.(MerkleProof).
+  safemarshal.Slice1D.pure_enc obj.(LabelProof) ++
+  safemarshal.Slice1D.pure_enc obj.(MerkleProof).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-
-  sint.Z (W64 (length obj.(LabelProof))) = length obj.(LabelProof) ∧
-  sint.Z (W64 (length obj.(MerkleProof))) = length obj.(MerkleProof).
+  ∃ t0,
+  safemarshal.Slice1D.wish b obj.(LabelProof) t0 ∧
+  safemarshal.Slice1D.wish t0 obj.(MerkleProof) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
@@ -467,16 +467,15 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  u64_le (length obj.(MapLabel)) ++ obj.(MapLabel) ++
-  u64_le (length obj.(MapVal)) ++ obj.(MapVal) ++
-  u64_le (length obj.(NonMembProof)) ++ obj.(NonMembProof).
+  safemarshal.Slice1D.pure_enc obj.(MapLabel) ++
+  safemarshal.Slice1D.pure_enc obj.(MapVal) ++
+  safemarshal.Slice1D.pure_enc obj.(NonMembProof).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-
-  sint.Z (W64 (length obj.(MapLabel))) = length obj.(MapLabel) ∧
-  sint.Z (W64 (length obj.(MapVal))) = length obj.(MapVal) ∧
-  sint.Z (W64 (length obj.(NonMembProof))) = length obj.(NonMembProof).
+  ∃ t0 t1,
+  safemarshal.Slice1D.wish b obj.(MapLabel) t0 ∧
+  safemarshal.Slice1D.wish t0 obj.(MapVal) t1 ∧
+  safemarshal.Slice1D.wish t1 obj.(NonMembProof) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
@@ -535,6 +534,68 @@ Proof. Admitted.
 End proof.
 End UpdateProof.
 
+Module UpdateProofSlice1D.
+
+Definition pure_enc obj :=
+  safemarshal.w64.pure_enc (length obj) ++ mjoin (map UpdateProof.pure_enc obj).
+
+Definition wish b obj tail :=
+  ∃ t0,
+  safemarshal.w64.wish b (length obj) t0 ∧
+  t0 = mjoin (map UpdateProof.pure_enc obj) ++ tail ∧
+
+  sint.Z (W64 (length obj)) = length obj ∧
+  Forall (λ o, UpdateProof.wish (UpdateProof.pure_enc o) o []) obj.
+
+Lemma wish_det {b obj0 obj1 tail0 tail1} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Lemma wp_enc obj sl_b b sl_obj d :
+  {{{
+    is_pkg_init ktcore ∗
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
+    "Hsl_obj" ∷ sl_obj ↦*{d} (map (λ o, UpdateProof.mk o.(UpdateProof.MapLabel) o.(UpdateProof.MapVal) o.(UpdateProof.NonMembProof)) obj)
+  }}}
+  @! ktcore.UpdateProofSlice1DEncode #sl_b #sl_obj
+  {{{
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    sl_obj ↦*{d} (map (λ o, UpdateProof.mk o.(UpdateProof.MapLabel) o.(UpdateProof.MapVal) o.(UpdateProof.NonMembProof)) obj) ∗
+    ⌜wish b' obj b⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_dec sl_b d b :
+  {{{
+    is_pkg_init ktcore ∗
+    "Hsl_b" ∷ sl_b ↦*{d} b
+  }}}
+  @! ktcore.UpdateProofSlice1DDecode #sl_b
+  {{{
+    sl_obj sl_tail err, RET (#sl_obj, #sl_tail, #err);
+    match err with
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
+    | false =>
+      ∃ obj tail,
+      sl_obj ↦*{d} (map (λ o, UpdateProof.mk o.(UpdateProof.MapLabel) o.(UpdateProof.MapVal) o.(UpdateProof.NonMembProof)) obj) ∗
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
+    end
+  }}}.
+Proof. Admitted.
+
+End proof.
+End UpdateProofSlice1D.
+
 Module AuditProof.
 Record t :=
   mk' {
@@ -543,15 +604,13 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  u64_le (length obj.(Updates)) ++ mjoin (map UpdateProof.pure_enc obj.(Updates)) ++
-  u64_le (length obj.(LinkSig)) ++ obj.(LinkSig).
+  UpdateProofSlice1D.pure_enc obj.(Updates) ++
+  safemarshal.Slice1D.pure_enc obj.(LinkSig).
 
 Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-
-  sint.Z (W64 (length obj.(Updates))) = length obj.(Updates) ∧
-  Forall (λ o, UpdateProof.wish (UpdateProof.pure_enc o) o []) obj.(Updates) ∧
-  sint.Z (W64 (length obj.(LinkSig))) = length obj.(LinkSig).
+  ∃ t0,
+  UpdateProofSlice1D.wish b obj.(Updates) t0 ∧
+  safemarshal.Slice1D.wish t0 obj.(LinkSig) tail.
 
 Lemma wish_det {b obj0 obj1 tail0 tail1} :
   wish b obj0 tail0 →
