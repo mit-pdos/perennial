@@ -483,7 +483,7 @@ Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
   }}}
     @! chan_spec_raw_examples.SearchReplace #s #x #y
   {{{ RET #(); s ↦* (search_replace x y xs) }}}.
-Proof.
+Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
   (* The first overflow:
      implementation adds 1000 at a time, potentially surpassing the slice length
      before clamping. If it goes negative, then the clamping doesn't work. This
@@ -521,19 +521,20 @@ Proof.
 
   set (workRange:=1000).
   iAssert (
-      ∃ (offset : w64) remaining nadded,
+      ∃ (offset : w64) nadded,
         "offset" ∷ offset_ptr ↦ offset ∗
-        "Hs" ∷ (slice.slice_f s uint64T offset remaining) ↦* drop (uint.nat offset) xs ∗
+        "Hs" ∷ (slice.slice_f s uint64T offset s.(slice.len_f)) ↦* drop (uint.nat offset) xs ∗
         "Hwg" ∷ own_Adder wg_ptr nadded
           ((slice.slice_f s uint64T 0 offset) ↦* take (uint.nat offset) (search_replace x y xs)) ∗
-        "%Hoffset" ∷ ⌜ 0 ≤ sint.Z offset < length xs ⌝ ∗
-        "%Hnadded" ∷ ⌜ 0 ≤ workRange * sint.Z nadded ≤ sint.Z offset ⌝
+        "%Hoffset" ∷ ⌜ 0 ≤ sint.Z offset ≤ length xs ⌝ ∗
+        "%Hnadded" ∷ ⌜ 0 ≤ workRange * sint.Z nadded ≤ sint.Z offset ∨ sint.nat offset = length xs⌝
     )%I with "[offset Hs Hwg]" as "HH".
   { iFrame. iExists _. rewrite drop_0 take_0.
     erewrite <- slice_slice_trivial. iFrame.
     iDestruct (own_Adder_wand with "[] Hwg") as "$".
     { iIntros "_". iApply own_slice_empty; simpl; word. }
     word. }
+  iPersist "s".
   wp_for. iNamed "HH". wp_auto. case_bool_decide.
   { rewrite decide_False // decide_True //. wp_auto.
     iMod (start_wait with "Hwg") as "Hwg".
@@ -544,7 +545,6 @@ Proof.
   rewrite decide_True //. wp_auto.
   set (nextOffset:=((sint.Z offset + workRange) `min` Z.of_nat (length xs))).
   wp_bind (if: _ then _ else _)%E.
-  iPersist "s".
   wp_apply (wp_wand  _ _ _ (λ v, ⌜ v = execute_val ⌝ ∗
                                  "nextOffset" ∷ nextOffset_ptr ↦ (W64 nextOffset))%I with "[nextOffset]").
   { wp_if_destruct.
@@ -557,7 +557,30 @@ Proof.
   { unfold nextOffset. word. }
   wp_auto. wp_apply (wp_WaitGroup__Add with "[$Hwg]").
   { word. }
-  admit.
+  iIntros "[Hwg Hdone]".
+  wp_auto.
+  iDestruct (own_slice_split nextOffset with "Hs") as "[Hsection Hs]".
+  { subst nextOffset. word. }
+  rewrite drop_drop.
+  wp_apply (wp_simple_send with "[Hdone Hsection]").
+  { iFrame "#". iFrame. }
+  wp_for_post.
+  iFrame. iExists _.
+  iSplitL "Hs".
+  { iApply to_named. iExactEq "Hs". f_equal. f_equal. subst nextOffset. word. }
+  iDestruct (own_Adder_wand with "[] Hwg") as "$".
+  {
+    iIntros "[Hpre Hsuf]".
+    iDestruct (own_slice_combine offset with "Hpre Hsuf") as "Hs".
+    { subst nextOffset. len. }
+    iExactEq "Hs". f_equal.
+    unfold search_replace. rewrite -!fmap_take. rewrite -fmap_app. f_equal.
+    rewrite take_take_drop. f_equal.
+    subst nextOffset. len.
+  }
+  subst nextOffset. word.
 Qed.
+
+Print Assumptions wp_SearchReplace.
 
 End proof.
