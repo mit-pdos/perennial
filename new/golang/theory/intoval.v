@@ -189,8 +189,8 @@ Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
   `{!TypedPointsto V} `{!IntoValTyped V t} `{!go.CoreSemantics} : TypedPointsto (array.t t V n) :=
   {|
     typed_pointsto_def l dq v :=
-      (⌜ Z.of_nat $ length v.(array.arr) = n ⌝ ∗
-       [∗ list] i ↦ ve ∈ v.(array.arr), array_index_ref t (Z.of_nat i) l ↦{dq} ve)%I;
+      (⌜ Z.of_nat $ length (array.arr v) = n ⌝ ∗
+       [∗ list] i ↦ ve ∈ (array.arr v), array_index_ref t (Z.of_nat i) l ↦{dq} ve)%I;
   |}.
 Final Obligation.
 Proof.

@@ -27,11 +27,11 @@ Qed.
 
 Lemma array_acc p (i : Z) dq n (a : array.t t V n) (v: V) :
   0 ≤ i →
-  a.(array.arr) !! (Z.to_nat i) = Some v →
+  array.arr a !! (Z.to_nat i) = Some v →
   p ↦{dq} a -∗
   array_index_ref t i p ↦{dq} v ∗
   (∀ v', array_index_ref t i p ↦{dq} v' -∗
-        p ↦{dq} (array.mk t n $ <[(Z.to_nat i) := v']> a.(array.arr))).
+        p ↦{dq} (array.mk t n $ <[(Z.to_nat i) := v']> $ array.arr a)).
 Proof.
   iIntros (Hpos Hlookup) "Harr".
   rewrite [in _ (array.t _ _ _)]typed_pointsto_unseal /=.
@@ -46,8 +46,8 @@ Qed.
 Lemma array_split (k : w64) l dq n (a : array.t t V n) :
   0 ≤ sint.Z k ≤ sint.Z n →
   l ↦{dq} a ⊣⊢
-  l ↦{dq} (array.mk t (sint.Z k) $ take (sint.nat k) a.(array.arr)) ∗
-  array_index_ref t (sint.Z k) l ↦{dq} (array.mk t (n - sint.Z k) $ drop (sint.nat k) a.(array.arr)).
+  l ↦{dq} (array.mk t (sint.Z k) $ take (sint.nat k) $ array.arr a) ∗
+  array_index_ref t (sint.Z k) l ↦{dq} (array.mk t (n - sint.Z k) $ drop (sint.nat k) $ array.arr a).
 Proof.
   intros Hle. rewrite typed_pointsto_unseal /=. destruct a as [arr]. simpl.
   rewrite -{1}(take_drop (sint.nat k) arr).

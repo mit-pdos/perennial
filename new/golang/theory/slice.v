@@ -29,7 +29,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
 Definition own_slice_def {V} t `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   (s : slice.t) (dq : dfrac) (vs : list V)
   : iProp Σ :=
-  (s.(slice.ptr) ↦{dq} (array.mk t (sint.Z s.(slice.len) - sint.Z s.(slice.cap)) vs)) ∗
+  (s.(slice.ptr) ↦{dq} (array.mk t (sint.Z s.(slice.len)) vs)) ∗
   ⌜ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝.
 Program Definition own_slice := sealed @own_slice_def.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
@@ -48,8 +48,8 @@ Definition own_slice_cap_def (s : slice.t) (dq : dfrac) : iProp Σ :=
 often desirable, but there are some niche cases where code could be aware of the
 contents of the capacity (for example, when sub-slicing from a larger slice) -
 actually taking advantage of that seems questionable though. *)
-  ∃ (a : array.t t V $ sint.Z s.(slice.len)),
-    (slice_index_ref t (sint.Z s.(slice.len)) s) ↦ a.
+  ∃ (a : array.t t V $ (sint.Z s.(slice.cap) - sint.Z s.(slice.len))),
+    (slice_index_ref t (sint.Z s.(slice.len)) s) ↦{dq} a.
 Program Definition own_slice_cap := sealed @own_slice_cap_def.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 
@@ -68,7 +68,7 @@ Lemma own_slice_empty dq s :
   ⊢ s ↦[t]*{dq} ([] : list V).
 Proof.
   unseal. intros Hsz Hcap. destruct s. simpl in *.
-  rewrite Hsz. (* FIXME: array should not be record. *)
+  rewrite Hsz.
   iDestruct array_empty as "$". word.
 Qed.
 
@@ -81,13 +81,9 @@ Proof.
   iSplit; [ word | ].
   iExists (array.mk _ _ []). rewrite /slice_index_ref /=.
   subst.
-  iDestruct (array_empty (array_index_ref t (word.signed cap) ptr) (DfracOwn 1)) as "H".
-  iExactEq "H".
-  Unset Printing Records.
-  iExactEq "H".
-  iApply own_slice_empty.
-  - simpl. word.
-  - simpl. word.
+  replace (_ - _) with 0 by word.
+  iDestruct (array_empty (array_index_ref t _ ptr) (DfracOwn 1)) as "H".
+  iExactEq "H".  f_equal.
 Qed.
 
 Lemma own_slice_len s dq vs :
@@ -159,7 +155,7 @@ Proof.
   - intros ??. iSplit.
     + iIntros "[% [H0 H1]]". iFrame.
     + iIntros "[[% H0] [% H1]]".
-      iDestruct (own_slice_agree with "H0 H1") as %->.
+      iCombine "H0 H1" gives %[=->].
       iCombine "H0 H1" as "H".
       iFrame.
   - apply _.
@@ -223,7 +219,7 @@ Lemma own_slice_cap_nil :
 Proof.
   rewrite own_slice_cap_unseal /own_slice_cap_def /=.
   iSplit; [ word | ].
-  iExists nil. iApply own_slice_empty; done.
+  iExists (array.mk _ _ nil). iApply array_empty; done.
 Qed.
 
 Lemma slice_to_full_slice s n m :
@@ -353,78 +349,9 @@ Proof.
     done. }
   rewrite own_slice_cap_unseal /own_slice_cap_def /=.
   iSplitL; last done. iSplitR; first word.
-  iExists _. rewrite
-  simpl.
-
-    Set Printing All.
-    f_equal.
-    iFrame.
-    iFrame. iExactEq "Hsl".
-    Set Printing All.
-    apply (f_equal (@typed_pointsto)).
-    Set Printing All.
-    Disable Notation "↦" (all).
-    Set Printing Implicit.
-    f_equal. f_equal. }
+  iExists _. rewrite /slice_index_ref.
+  replace (sint.Z (sint.Z len)) with (sint.Z len) by word.
   iFrame.
-  wp_bind (AllocN _ _).
-  rewrite [in #cap]to_val_unseal.
-  iApply (wp_allocN_seq with "[//]").
-  { word. }
-  iNext.
-  iIntros (?) "Hp".
-  replace (uint.nat cap) with (sint.nat cap) by word.
-  wp_pures.
-  replace (LitV l) with (#l); last by rewrite to_val_unseal //.
-  replace (LitV cap) with (#cap); last by rewrite to_val_unseal //.
-  rewrite slice_val_fold. iApply "HΦ".
-  rewrite own_slice_unseal own_slice_cap_unseal.
-  assert (sint.nat cap = sint.nat len + (sint.nat cap - sint.nat len))%nat as Hsplit by word.
-  rewrite Hsplit seq_app.
-  iDestruct "Hp" as "[Hsl Hcap]".
-  iSplitL "Hsl".
-  {
-    iSplitL.
-    2:{ iPureIntro. simpl. rewrite length_replicate. word. }
-    erewrite <- (seq_replicate_fmap O).
-    iApply (big_sepL_fmap with "[Hsl]").
-    iApply (big_sepL_impl with "[$]").
-    iModIntro. iIntros.
-    rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
-    rewrite default_val_eq_zero_val.
-    erewrite has_go_type_len.
-    2:{ apply zero_val_has_go_type. }
-    iApply (big_sepL_impl with "[$]").
-    iModIntro. iIntros. iFrame.
-    apply lookup_seq in H0 as [? ?].
-    subst. iFrame.
-  }
-  {
-    iSplitL.
-    2:{ iPureIntro. done. }
-    rewrite /own_slice_cap_def /=.
-    iSplitR; first iPureIntro.
-    { word. }
-    erewrite has_go_type_len.
-    2:{ apply to_val_has_go_type. }
-    iExists (replicate (sint.nat cap - sint.nat len)%nat (default_val V)).
-    rewrite own_slice_unseal /own_slice_def /=.
-    iSplit; [ | len ].
-    rewrite big_sepL_replicate_seq.
-    rewrite (big_sepL_offset _ (sint.nat len)).
-    iApply (big_sepL_impl with "[$]").
-    iModIntro. iIntros.
-    rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
-    rewrite default_val_eq_zero_val.
-    iApply (big_sepL_impl with "[$]").
-    iModIntro. iIntros (???) "Hp". iExactEq "Hp".
-    rewrite !loc_add_assoc.
-    do 2 f_equal.
-    (* TODO: word limitation *)
-    rewrite !Nat2Z.inj_add.
-    nat_cleanup.
-    word.
-  }
 Qed.
 
 Lemma wp_slice_make2 stk E (len : u64) :
