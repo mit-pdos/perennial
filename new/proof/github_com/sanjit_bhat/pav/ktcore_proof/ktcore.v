@@ -51,14 +51,13 @@ Proof.
   iFrame "∗#".
 Qed.
 
-Lemma wp_VerifyVrfSig sl_pk pk sl_vrfPk vrfPk sl_sig sig :
+Lemma wp_VerifyVrfSig (pk' : cryptoffi.SigPublicKey.t) pk sl_vrfPk vrfPk sl_sig sig :
   {{{
     is_pkg_init ktcore ∗
-    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
     "#Hsl_vrfPk" ∷ sl_vrfPk ↦*□ vrfPk ∗
     "#Hsl_sig" ∷ sl_sig ↦*□ sig
   }}}
-  @! ktcore.VerifyVrfSig #sl_pk #sl_vrfPk #sl_sig
+  @! ktcore.VerifyVrfSig #pk' #sl_vrfPk #sl_sig
   {{{
     (err : bool), RET #err;
     let enc := VrfSig.pure_enc (VrfSig.mk' (W8 VrfSigTag) vrfPk) in
@@ -78,10 +77,6 @@ Proof.
     as "* (Hsl_b&Hcap_b&Hown&%Hwish)".
   { iFrame "#". }
   simpl in *.
-  wp_bind.
-  Fail wp_load.
-  (* type mismatch: load for type SigPublicKey on pk_ptr,
-  which points to sl_pk : slice.t. *)
 Admitted.
 
 Lemma wp_SignLink ptr_sk (epoch : w64) sl_link link :

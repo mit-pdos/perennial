@@ -4,3 +4,6 @@ translate = [
 imports = [
   "!*"
 ]
+trusted = [
+  "SigPublicKey"
+]
