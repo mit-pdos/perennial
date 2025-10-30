@@ -202,12 +202,12 @@ Definition MapLabel : go_type := structT [
 
 (* go: ktcore.go:68:6 *)
 Definition ProveMapLabelⁱᵐᵖˡ : val :=
-  λ: "uid" "ver" "sk",
+  λ: "sk" "uid" "ver",
     exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
     let: "label" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "sk" := (mem.alloc "sk") in
     let: "ver" := (mem.alloc "ver") in
     let: "uid" := (mem.alloc "uid") in
+    let: "sk" := (mem.alloc "sk") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 16)) in
     do:  ("b" <-[#sliceT] "$r0");;;
@@ -228,11 +228,11 @@ Definition EvalMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.EvalMa
 
 (* go: ktcore.go:74:6 *)
 Definition EvalMapLabelⁱᵐᵖˡ : val :=
-  λ: "uid" "ver" "sk",
+  λ: "sk" "uid" "ver",
     exception_do (let: "label" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "sk" := (mem.alloc "sk") in
     let: "ver" := (mem.alloc "ver") in
     let: "uid" := (mem.alloc "uid") in
+    let: "sk" := (mem.alloc "sk") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 16)) in
     do:  ("b" <-[#sliceT] "$r0");;;
@@ -280,23 +280,13 @@ Definition GetMapVal : go_string := "github.com/sanjit-bhat/pav/ktcore.GetMapVal
 
 Definition CommitOpenEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpenEncode"%go.
 
-Definition CommitOpen : go_type := structT [
-  "Val" :: sliceT;
-  "Rand" :: sliceT
-].
-#[global] Typeclasses Opaque CommitOpen.
-#[global] Opaque CommitOpen.
-
 (* go: ktcore.go:86:6 *)
 Definition GetMapValⁱᵐᵖˡ : val :=
   λ: "pkOpen",
     exception_do (let: "val" := (mem.alloc (type.zero_val #sliceT)) in
     let: "pkOpen" := (mem.alloc "pkOpen") in
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 0) (((#(W64 8) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #CommitOpen #"Val"%go (![#ptrT] "pkOpen"))) in
-    slice.len "$a0"))) + #(W64 8)) + cryptoffi.HashLen)) in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := (![#ptrT] "pkOpen") in
     (func_call #CommitOpenEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
@@ -308,7 +298,7 @@ Definition GetCommitRand : go_string := "github.com/sanjit-bhat/pav/ktcore.GetCo
 (* GetCommitRand computes the psuedo-random (wrt commitSecret) bits
    used in a mapVal commitment.
 
-   go: ktcore.go:94:6 *)
+   go: ktcore.go:93:6 *)
 Definition GetCommitRandⁱᵐᵖˡ : val :=
   λ: "commitSecret" "label",
     exception_do (let: "rand" := (mem.alloc (type.zero_val #sliceT)) in
@@ -323,6 +313,13 @@ Definition GetCommitRandⁱᵐᵖˡ : val :=
     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
      (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![#ptrT] "hr")) "$a0")).
+
+Definition CommitOpen : go_type := structT [
+  "Val" :: sliceT;
+  "Rand" :: sliceT
+].
+#[global] Typeclasses Opaque CommitOpen.
+#[global] Opaque CommitOpen.
 
 Definition Memb : go_type := structT [
   "LabelProof" :: sliceT;

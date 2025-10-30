@@ -1464,9 +1464,9 @@ Definition Server__makeEntryⁱᵐᵖˡ : val :=
     slice.len "$a0")) in
     do:  ("numVers" <-[#uint64T] "$r0");;;
     let: "mapLabel" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "in"))) in
-    let: "$a1" := (![#uint64T] "numVers") in
-    let: "$a2" := (![#ptrT] (struct.field_ref #secrets #"vrf"%go (![#ptrT] (struct.field_ref #Server #"secs"%go (![#ptrT] "s"))))) in
+    let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #secrets #"vrf"%go (![#ptrT] (struct.field_ref #Server #"secs"%go (![#ptrT] "s"))))) in
+    let: "$a1" := (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "in"))) in
+    let: "$a2" := (![#uint64T] "numVers") in
     (func_call #ktcore.EvalMapLabel) "$a0" "$a1" "$a2") in
     do:  ("mapLabel" <-[#sliceT] "$r0");;;
     let: "rand" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1598,9 +1598,9 @@ Definition Server__getHistⁱᵐᵖˡ : val :=
     (for: (λ: <>, (![#uint64T] "ver") < (![#uint64T] "numVers")); (λ: <>, do:  ("ver" <-[#uint64T] ((![#uint64T] "ver") + #(W64 1)))) := λ: <>,
       let: "labelProof" := (mem.alloc (type.zero_val #sliceT)) in
       let: "label" := (mem.alloc (type.zero_val #sliceT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "uid") in
-      let: "$a1" := (![#uint64T] "ver") in
-      let: "$a2" := (![#ptrT] (struct.field_ref #secrets #"vrf"%go (![#ptrT] (struct.field_ref #Server #"secs"%go (![#ptrT] "s"))))) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] (struct.field_ref #secrets #"vrf"%go (![#ptrT] (struct.field_ref #Server #"secs"%go (![#ptrT] "s"))))) in
+      let: "$a1" := (![#uint64T] "uid") in
+      let: "$a2" := (![#uint64T] "ver") in
       (func_call #ktcore.ProveMapLabel) "$a0" "$a1" "$a2") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -1659,9 +1659,9 @@ Definition Server__getBoundⁱᵐᵖˡ : val :=
     let: "uid" := (mem.alloc "uid") in
     let: "labelProof" := (mem.alloc (type.zero_val #sliceT)) in
     let: "label" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "uid") in
-    let: "$a1" := (![#uint64T] "numVers") in
-    let: "$a2" := (![#ptrT] (struct.field_ref #secrets #"vrf"%go (![#ptrT] (struct.field_ref #Server #"secs"%go (![#ptrT] "s"))))) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] (struct.field_ref #secrets #"vrf"%go (![#ptrT] (struct.field_ref #Server #"secs"%go (![#ptrT] "s"))))) in
+    let: "$a1" := (![#uint64T] "uid") in
+    let: "$a2" := (![#uint64T] "numVers") in
     (func_call #ktcore.ProveMapLabel) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
