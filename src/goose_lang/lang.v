@@ -588,10 +588,9 @@ End interface.
 
 Module array.
 Section goose_lang.
-(* Using [vec] here because the [to_val] must be a total function that always
-   meets [has_go_type]. An alternative could be a sigma type. *)
-Record t (ty : go.type) (V : Type) (n : Z) :=
-mk { arr : list V }.
+Inductive t (ty : go.type) (V : Type) (n : Z) :=
+| mk (arr : list V) : t ty V n.
+Definition arr {ty V n} (x : t ty V n) := let (arr) := x in arr.
 End goose_lang.
 End array.
 Arguments array.mk (ty) {_} (n arr).
@@ -601,6 +600,8 @@ Section external.
 (* these are codes for external operations (which all take a single val as an
    argument and evaluate to a value) and data for external values *)
 Context {ext : ffi_syntax}.
+
+Definition x := array.mk (go.StructType []) 0 (@nil Z).
 
 (* XXX: to avoid splitting things into heap cells, can wrap it in e.g. an InjLV.
    This is how lists can avoid getting split into different heap cells when [ref]'d. *)
@@ -675,7 +676,7 @@ Global Instance into_val_func : IntoVal func.t :=
 
 Global Instance into_val_array t `{!IntoVal V} n : IntoVal (array.t t V n) :=
   {|
-    into_val_def v := ArrayV (into_val <$> v.(array.arr));
+    into_val_def v := ArrayV (into_val <$> (array.arr v));
     zero_val := array.mk t n $ replicate (Z.to_nat n) (zero_val V);
   |}.
 

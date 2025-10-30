@@ -29,7 +29,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
 Definition own_slice_def {V} t `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   (s : slice.t) (dq : dfrac) (vs : list V)
   : iProp Σ :=
-  (s.(slice.ptr) ↦{dq} (array.mk t (sint.Z s.(slice.len)) vs)) ∗
+  (s.(slice.ptr) ↦{dq} (array.mk t (sint.Z s.(slice.len) - sint.Z s.(slice.cap)) vs)) ∗
   ⌜ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝.
 Program Definition own_slice := sealed @own_slice_def.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
@@ -44,17 +44,12 @@ Implicit Type (vs : list V).
 
 Definition own_slice_cap_def (s : slice.t) (dq : dfrac) : iProp Σ :=
   ⌜ 0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝ ∗
-(* Two notes about this definition. First, it is written using [own_slice] to
-get some reuse, though an intermediate array points-to would be more useful
-here. Second, the capacity has arbitrary values, which is often desirable,
-but there are some niche cases where code could be aware of the contents of the
-capacity (for example, when sub-slicing from a larger slice) - actually taking
-advantage of that seems questionable though. *)
-  ∃ (vs: list V), own_slice t
-                    (slice.mk
-                       (slice_index_ref t (sint.Z s.(slice.len)) s)
-                       (word.sub s.(slice.cap) s.(slice.len))
-                       (word.sub s.(slice.cap) s.(slice.len))) dq vs.
+(* A notes about this definition. The capacity has arbitrary values, which is
+often desirable, but there are some niche cases where code could be aware of the
+contents of the capacity (for example, when sub-slicing from a larger slice) -
+actually taking advantage of that seems questionable though. *)
+  ∃ (a : array.t t V $ sint.Z s.(slice.len)),
+    (slice_index_ref t (sint.Z s.(slice.len)) s) ↦ a.
 Program Definition own_slice_cap := sealed @own_slice_cap_def.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 
@@ -73,7 +68,8 @@ Lemma own_slice_empty dq s :
   ⊢ s ↦[t]*{dq} ([] : list V).
 Proof.
   unseal. intros Hsz Hcap. destruct s. simpl in *.
-  rewrite Hsz. iDestruct array_empty as "$". word.
+  rewrite Hsz. (* FIXME: array should not be record. *)
+  iDestruct array_empty as "$". word.
 Qed.
 
 Lemma own_slice_cap_none s :
@@ -81,9 +77,14 @@ Lemma own_slice_cap_none s :
   0 ≤ sint.Z s.(slice.len) →
   ⊢ own_slice_cap s (DfracOwn 1).
 Proof.
-  destruct s; simpl; intros -> Hlen. rewrite own_slice_cap_unseal /own_slice_cap_def /=.
+  destruct s; simpl; intros Hcap Hlen. rewrite own_slice_cap_unseal /own_slice_cap_def /=.
   iSplit; [ word | ].
-  iExists [].
+  iExists (array.mk _ _ []). rewrite /slice_index_ref /=.
+  subst.
+  iDestruct (array_empty (array_index_ref t (word.signed cap) ptr) (DfracOwn 1)) as "H".
+  iExactEq "H".
+  Unset Printing Records.
+  iExactEq "H".
   iApply own_slice_empty.
   - simpl. word.
   - simpl. word.
@@ -330,23 +331,41 @@ Proof.
   wp_if_destruct.
   { exfalso. word. }
   case_bool_decide; wp_pures.
-  {
-    subst.
+  { subst.
     wp_apply (wp_ArbitraryInt). iIntros "%".
     wp_pures. iApply "HΦ".
     assert (len = W64 0) by word; subst.
-    simpl.
-    iDestruct (own_slice_empty) as "$".
-    { simpl. word. }
-    { simpl. word. }
-    iDestruct (own_slice_cap_none) as "$"; simpl; word.
-  }
+    simpl. iDestruct (own_slice_empty) as "$"; [simpl; word..|].
+    iDestruct (own_slice_cap_none) as "$"; simpl; word. }
   wp_apply wp_alloc.
   { instantiate (3:=(array.t t V (word.signed cap))). apply _. } (* FIXME: tc search *)
   iIntros (ptr) "Hsl". wp_pures. iApply "HΦ".
   rewrite own_slice_unseal/ own_slice_def /=.
-  (* TODO: split array lemma. *)
 
+  iDestruct (array_split (sint.Z len) with "Hsl") as "[Hsl Hcap]"; first word.
+  simpl. rewrite take_replicate.
+  iSplitL "Hsl".
+  { iSplitL; last word.
+    replace (_ `min` _)%nat with (sint.nat len) by word.
+    iExactEq "Hsl".
+    (* Unset Printing Records. *)
+    replace (word.signed (W64 _)) with (sint.Z len) by word.
+    done. }
+  rewrite own_slice_cap_unseal /own_slice_cap_def /=.
+  iSplitL; last done. iSplitR; first word.
+  iExists _. rewrite
+  simpl.
+
+    Set Printing All.
+    f_equal.
+    iFrame.
+    iFrame. iExactEq "Hsl".
+    Set Printing All.
+    apply (f_equal (@typed_pointsto)).
+    Set Printing All.
+    Disable Notation "↦" (all).
+    Set Printing Implicit.
+    f_equal. f_equal. }
   iFrame.
   wp_bind (AllocN _ _).
   rewrite [in #cap]to_val_unseal.
