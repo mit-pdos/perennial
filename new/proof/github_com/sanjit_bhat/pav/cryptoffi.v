@@ -153,7 +153,7 @@ Lemma wp_SigGenerateKey P :
   {{{ is_pkg_init cryptoffi }}}
   @! cryptoffi.SigGenerateKey #()
   {{{
-    sl_pk pk ptr_sk, RET (#sl_pk, #ptr_sk);
+    (sl_pk : cryptoffi.SigPublicKey.t) pk ptr_sk, RET (#sl_pk, #ptr_sk);
     "Hsl_sig_pk" ∷ sl_pk ↦* pk ∗
     "#His_sig_pk" ∷ is_sig_pk pk P ∗
     "#His_sig_sk" ∷ is_sig_sk ptr_sk pk P
@@ -176,14 +176,15 @@ Lemma wp_SigPrivateKey_Sign ptr_sk pk P sl_msg msg d0 :
   }}}.
 Proof. Admitted.
 
-Lemma wp_SigPublicKey_Verify sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
+Lemma wp_SigPublicKey_Verify (sl_pk : cryptoffi.SigPublicKey.t) pk
+    sl_msg msg sl_sig sig d0 d1 d2 :
   {{{
     is_pkg_init cryptoffi ∗
     "Hsl_sig_pk" ∷ sl_pk ↦*{d0} pk ∗
     "Hsl_msg" ∷ sl_msg ↦*{d1} msg ∗
     "Hsl_sig" ∷ sl_sig ↦*{d2} sig
   }}}
-  sl_pk @ (ptrT.id cryptoffi.SigPublicKey.id) @ "Verify" #sl_msg #sl_sig
+  sl_pk @ cryptoffi.SigPublicKey.id @ "Verify" #sl_msg #sl_sig
   {{{
     (err : bool), RET #err;
     "Hsl_sig_pk" ∷ sl_pk ↦*{d0} pk ∗
@@ -282,6 +283,21 @@ Lemma wp_VrfPrivateKey_Prove ptr_sk pk sl_data (data : list w8) d0 :
     "Hsl_out" ∷ sl_out ↦* out ∗
     "Hsl_proof" ∷ sl_proof ↦* proof ∗
     "#His_vrf_proof" ∷ is_vrf_proof pk data proof ∗
+    "#His_vrf_out" ∷ is_vrf_out pk data out
+  }}}.
+Proof. Admitted.
+
+Lemma wp_VrfPrivateKey_Evaluate ptr_sk pk sl_data (data : list w8) d0 :
+  {{{
+    is_pkg_init cryptoffi ∗
+    "#His_vrf_sk" ∷ is_vrf_sk ptr_sk pk ∗
+    "Hsl_data" ∷ sl_data ↦*{d0} data
+  }}}
+  ptr_sk @ (ptrT.id cryptoffi.VrfPrivateKey.id) @ "Evaluate" #sl_data
+  {{{
+    sl_out (out : list w8), RET #sl_out;
+    "Hsl_data" ∷ sl_data ↦*{d0} data ∗
+    "Hsl_out" ∷ sl_out ↦* out ∗
     "#His_vrf_out" ∷ is_vrf_out pk data out
   }}}.
 Proof. Admitted.
