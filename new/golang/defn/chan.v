@@ -57,8 +57,7 @@ Definition try_select : val :=
     (* TODO: model should choose a random start position *)
     list.Match "cases"
       (λ: <>, #false)
-      (λ: "hd" "tl", do_select_case "hd" "blocking" || "go" "tl")
-    #().
+      (λ: "hd" "tl", do_select_case "hd" "blocking" || "go" "tl" "blocking").
 
 (** select_blocking models a select without a default case. It takes a list of
 cases (select_send or select_receive). It starts from a random position, then

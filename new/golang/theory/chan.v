@@ -113,6 +113,71 @@ Proof.
   pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
 Qed.
 
+Lemma wp_do_select_case_blocking P cs :
+  ∀ Φ,
+  (P -∗ (match cs with
+         | select_send_f t send_val send_chan send_handler =>
+             ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+           ⌜ send_val = #v ⌝ ∗
+           is_channel (V:=V) (t:=t) send_chan cap γ ∗
+           send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
+        | select_receive_f t recv_chan recv_handler =>
+            ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
+           is_channel (V:=V) (t:=t) recv_chan cap γ ∗
+           rcv_au_slow recv_chan cap γ (λ (v: V) ok,
+                                          WP #recv_handler (#v, #ok)%V {{ Φ }})
+         end
+  )) -∗
+  P -∗
+  (P -∗ Φ #false) -∗
+  WP chan.do_select_case #cs #true {{ Φ }}.
+Proof.
+  iIntros (Φ) "Hcase HP HΦfalse".
+  wp_call. rewrite [in (_ op)]to_val_unseal /=. destruct cs; wp_auto.
+  - (* FIXME: go_type in op. *)
+    admit.
+  - admit.
+Admitted.
+
+Local Lemma wp_try_select_blocking P (cases : list op) :
+  ∀ Φ,
+  □(P -∗ ([∧ list] case ∈ cases,
+     match case with
+     | select_send_f t send_val send_chan send_handler =>
+         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+             ⌜ send_val = #v ⌝ ∗
+             is_channel (V:=V) (t:=t) send_chan cap γ ∗
+             send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
+     | select_receive_f t recv_chan recv_handler =>
+         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
+             is_channel (V:=V) (t:=t) recv_chan cap γ ∗
+             rcv_au_slow recv_chan cap γ (λ (v: V) ok,
+               WP #recv_handler (#v, #ok)%V {{ Φ }})
+     end
+  )) -∗
+  P -∗
+  (P -∗ Φ #false) -∗
+  WP chan.try_select #cases #true {{ Φ }}.
+Proof.
+  iIntros (Φ) "Hcases HP HΦfalse".
+  assert (∃ Ψ, Φ = Ψ) as [Ψ Heq] by by eexists.
+  iEval (rewrite Heq). iEval (rewrite Heq) in "HΦfalse". clear Heq.
+  iLöb as "IH" forall (Ψ cases).
+  wp_call.
+  destruct cases.
+  { wp_auto. by iApply "HΦfalse". }
+  wp_auto.
+  wp_apply (wp_do_select_case_blocking with "[Hcases] HP").
+  {
+    iIntros "P". iSpecialize ("Hcases" with "P").
+    simpl. iDestruct "Hcases" as "[Hcase _]". admit.
+  }
+  { iIntros "HP". wp_auto. iApply "IH". }
+  { i }
+  wp_bind
+Qed.
+
+(* FIXME: rename fast and slow. *)
 Lemma wp_select_blocking (cases : list op) :
   ∀ Φ,
   ([∧ list] case ∈ cases,
@@ -132,10 +197,17 @@ Lemma wp_select_blocking (cases : list op) :
   WP chan.select_blocking #cases {{ Φ }}.
 Proof.
   iIntros (Φ) "Hcases".
-  iLöb as "IH".
-  wp_call.
+  iLöb as "IH" forall (Φ).
+  wp_call. wp_bind. iLöb as "IHtry" forall . wp_call.
+  destruct cases.
+  { wp_auto. wp_apply ("IH" with "[$]"). }
+  wp_auto.
+  wp_apply "IHtry".
+  wp_bind
+
 Admitted.
 
+(* FIXME: what precondition for default case? *)
 Lemma wp_select_nonblocking (cases : list op) (def: func.t) :
   ∀ Φ,
   ([∧ list] case ∈ cases,
