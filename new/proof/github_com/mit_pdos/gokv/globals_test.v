@@ -61,7 +61,7 @@ Proof.
   (* go into foo() *)
   wp_func_call. wp_call.
   iApply wp_fupd.
-  repeat wp_apply wp_globals_get.
+  do 6 wp_apply wp_globals_get.
   iFrame. iEval (rewrite is_pkg_init_unfold).
   iMod (inv_alloc with "[-]") as "#$".
   2:{ repeat iModIntro. iFrame "#". }
@@ -78,7 +78,7 @@ Lemma wp_main :
 Proof.
   wp_start. iNamed "Hpre". wp_func_call. wp_call.
   wp_func_call. wp_call.
-  repeat wp_apply wp_globals_get.
+  do 3 wp_apply wp_globals_get.
   by iApply "HΦ".
 Qed.
 
