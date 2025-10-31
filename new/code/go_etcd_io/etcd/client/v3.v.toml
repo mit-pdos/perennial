@@ -30,10 +30,19 @@ translate = [
   "With*",
   "!WithCompactPhysical",
   "!WithRequireLeader",
-  "tRange", "tPut", "tDeleteRange", "tTxn",
-  "SortTarget", "SortOrder", "SortOption",
-  "SortBy*", "SortNone", "SortAscend", "SortDescend",
-  "LeaseOp", "LeaseOption",
+  "tRange",
+  "tPut",
+  "tDeleteRange",
+  "tTxn",
+  "SortTarget",
+  "SortOrder",
+  "SortOption",
+  "SortBy*",
+  "SortNone",
+  "SortAscend",
+  "SortDescend",
+  "LeaseOp",
+  "LeaseOption",
 ]
 
 imports = [

@@ -39,12 +39,10 @@ trusted = [
 
 ]
 
-imports = [
-  "!*",
-]
+imports = ["!*"]
 
 [bootstrap]
 enabled = true
 prelude = [
-    "From New.golang.defn Require Export slice array map string interface defer builtin.",
+  "From New.golang.defn Require Export slice array map string interface defer builtin.",
 ]
