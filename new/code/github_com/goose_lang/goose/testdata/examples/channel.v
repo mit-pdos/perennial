@@ -608,8 +608,6 @@ Definition HigherOrderExampleⁱᵐᵖˡ : val :=
     do:  (let: "$chan" := (![type.chanT #request] "c") in
     let: "$v" := (![#request] "r3") in
     chan.send #request "$chan" "$v");;;
-    do:  (let: "$a0" := (![type.chanT #request] "c") in
-    (chan.close #request) "$a0");;;
     let: "responses" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((let: "$sl0" := (Fst (chan.receive #stringT (![type.chanT #stringT] (struct.field_ref #request #"result"%go "r1")))) in
     let: "$sl1" := (Fst (chan.receive #stringT (![type.chanT #stringT] (struct.field_ref #request #"result"%go "r2")))) in

@@ -4,7 +4,7 @@ From New.proof.github_com.goose_lang.goose.model.channel
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
-From New.golang.theory Require Import struct chan.
+From New.golang.theory Require Import struct string chan.
 
 Import chan_spec_raw_examples.
 
@@ -589,7 +589,7 @@ Definition await_request (r: request.t) γfut (Q: go_string → iProp Σ) : iPro
   "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
   "Hfut_await" ∷ await_token γfut.
 
-Lemma wp_mkRequest (f: func.t) (Q: go_string → iProp Σ) :
+Lemma wp_mkRequest {f: func.t} (Q: go_string → iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ WP #f #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} }}}
     @! chan_spec_raw_examples.mkRequest #f
   {{{ γfut (r: request.t), RET #r; do_request r γfut Q ∗ await_request r γfut Q }}}.
@@ -647,6 +647,64 @@ Proof.
   { done. }
   wp_for_post.
   iFrame.
+Qed.
+
+Lemma wp_HigherOrderExample :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.HigherOrderExample #()
+  {{{ (s:slice.t), RET #s; s ↦* ["hello world"%go; "HELLO"%go; "world"%go] }}}.
+Proof using chanGhostStateG0 chanGhostStateG1 ghost_varG0.
+  wp_start.
+  (* TODO: why is the string unfolded here? *)
+  wp_auto.
+  wp_apply (chan.wp_make (V:=request.t)).
+  { done. }
+  iIntros (req_ch γ) "[His Hown]".
+  simpl.
+  iMod (start_simple with "His Hown") as "[%γdone #Hch]".
+  iAssert (is_request_chan γdone req_ch) with "[$Hch]" as "#Hreqs".
+  wp_auto.
+  wp_apply (wp_fork).
+  {
+    wp_apply (wp_ho_worker).
+    { iFrame "#". }
+    done.
+  }
+  wp_apply (wp_fork).
+  {
+    wp_apply (wp_ho_worker).
+    { iFrame "#". }
+    done.
+  }
+  wp_apply (wp_mkRequest (λ s, ⌜s = "hello world"%go⌝)%I) as "%γfut1 %r1 [Hdo_r1 Hawait_r1]".
+  {
+    wp_auto.
+    eauto.
+  }
+  wp_apply (wp_mkRequest (λ s, ⌜s = "HELLO"%go⌝)%I) as "%γfut2 %r2 [Hdo_r2 Hawait_r2]".
+  {
+    wp_auto.
+    eauto.
+  }
+  wp_apply (wp_mkRequest (λ s, ⌜s = "world"%go⌝)%I) as "%γfut3 %r3 [Hdo_r3 Hawait_r3]".
+  {
+    wp_auto.
+    eauto.
+  }
+  wp_apply (wp_simple_send (V:=request.t) with "[$Hch $Hdo_r1]").
+  wp_apply (wp_simple_send (V:=request.t) with "[$Hch $Hdo_r2]").
+  wp_apply (wp_simple_send (V:=request.t) with "[$Hch $Hdo_r3]").
+  wp_apply (wp_get_response with "[$Hawait_r1]") as "%s %Heq".
+  subst.
+  wp_apply (wp_get_response with "[$Hawait_r2]") as "%s %Heq".
+  subst.
+  wp_apply (wp_get_response with "[$Hawait_r3]") as "%s %Heq".
+  subst.
+  wp_apply wp_slice_literal.
+  iIntros (sl) "Hresponse".
+  wp_auto.
+  iApply "HΦ".
+  done.
 Qed.
 
 End higher_order_example.
