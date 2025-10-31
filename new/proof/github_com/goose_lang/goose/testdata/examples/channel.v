@@ -6,6 +6,8 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Im
 From iris.base_logic Require Import ghost_map.
 From New.golang.theory Require Import struct chan.
 
+Import chan_spec_raw_examples.
+
 Set Default Proof Using "Type".
 
 (* TODO: Move? *)
@@ -572,6 +574,82 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
 Qed.
 
 End dsp_examples.
+
+Section higher_order_example.
+Context `{!chanGhostStateG Σ request.t}.
+Context `{!chanGhostStateG Σ go_string}.
+Context `{!ghost_varG Σ bool}.
+
+Definition do_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
+  "Hf" ∷ WP #r.(request.f') #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} ∗
+  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
+  "Hfut_tok" ∷ fulfill_token γfut.
+
+Definition await_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
+  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
+  "Hfut_await" ∷ await_token γfut.
+
+Lemma wp_mkRequest (f: func.t) (Q: go_string → iProp Σ) :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ WP #f #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} }}}
+    @! chan_spec_raw_examples.mkRequest #f
+  {{{ γfut (r: request.t), RET #r; do_request r γfut Q ∗ await_request r γfut Q }}}.
+Proof.
+  wp_start as "Hf".
+  wp_auto.
+  wp_apply chan.wp_make.
+  { word. }
+  iIntros (ch γ) "[His Hown]".
+  simpl. (* for decide *)
+  iMod (start_future with "His Hown") as (γfuture) "(#Hfut & Hawait & Hfulfill)".
+  wp_auto.
+  iApply "HΦ".
+  iFrame "Hfut ∗".
+Qed.
+
+#[local] Lemma wp_get_response (r: request.t) γfut Q :
+  {{{ await_request r γfut Q }}}
+    chan.receive #stringT #r.(request.result')
+  {{{ (s: go_string), RET (#s, #true); Q s }}}.
+Proof.
+  wp_start as "Hawait". iNamed "Hawait".
+  wp_apply (wp_future_await with "[$Hfut $Hfut_await]").
+  iIntros (v) "HQ".
+  iApply "HΦ". done.
+Qed.
+
+Definition is_request_chan γ (ch: loc): iProp Σ :=
+  is_simple (V:=request.t) γ ch 0 (λ r, ∃ γfut Q, do_request r γfut Q)%I.
+
+Lemma wp_ho_worker γ ch :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_request_chan γ ch }}}
+    @! chan_spec_raw_examples.ho_worker #ch
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "#His".
+  rewrite /is_request_chan.
+  wp_auto.
+  rewrite /chan.for_range.
+  iPersist "c".
+  wp_auto.
+  iAssert (∃ (r0: request.t),
+      "r" ∷ r_ptr ↦ r0
+    )%I with "[$r]" as "IH".
+  wp_for "IH".
+  wp_apply (wp_simple_receive (V:=request.t) with "[$His]") as "%r Hreq".
+  iNamed "Hreq".
+  wp_bind (#r.(request.f') _)%E.
+  iApply (wp_wand with "[Hf]").
+  { iApply "Hf". }
+  iIntros (v) "HQ".
+  iDestruct "HQ" as (s) "[-> HQ]".
+  wp_auto.
+  wp_apply (wp_future_fulfill with "[$Hfut $Hfut_tok HQ]").
+  { done. }
+  wp_for_post.
+  iFrame.
+Qed.
+
+End higher_order_example.
 
 End proof.
 
