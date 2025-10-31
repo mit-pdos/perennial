@@ -345,18 +345,6 @@ Proof.
     iModIntro. iRewrite "Hp". by iFrame "#∗".
 Qed.
 
-(* (** Endpoint receives value *) *)
-(* Lemma dsp_recv_discard_ok {TT:tele} *)
-(*     (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) : *)
-(*   is_pkg_init channel -∗ *)
-(*   {{{ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ P x }}; p x }}} *)
-(*     rl_chan @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #tV #() *)
-(*   {{{ x, RET #(v x); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}. *)
-(* Proof. *)
-(*   iIntros "#Hinit". wp_start. wp_auto. wp_apply (dsp_recv with "Hinit Hpre"). *)
-(*   iIntros (x) "Hpre". wp_auto. by iApply "HΦ". *)
-(* Qed. *)
-
 (** Endpoint closes (stops sending val) *)
 Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ V) :
   is_pkg_init channel -∗
@@ -540,16 +528,6 @@ Lemma dsp_recv_false (b : bool) (lr_chan rl_chan : loc) :
     chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
 Proof. destruct b; [apply dsp_recv_end|apply dsp_recv_closed]. Qed.
-
-(* Lemma dsp_recv_false_discard_ok (b : bool) (lr_chan rl_chan : loc) : *)
-(*   is_pkg_init channel -∗ *)
-(*   {{{ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}} *)
-(*     chan.receive #tV #rl_chan *)
-(*   {{{ RET #(default_val V); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}. *)
-(* Proof. *)
-(*   iIntros "#Hinit". wp_start. wp_auto. wp_apply (dsp_recv_false with "Hinit Hpre"). *)
-(*   iIntros "Hpre". wp_auto. by iApply "HΦ". *)
-(* Qed. *)
 
 End dsp.
 
