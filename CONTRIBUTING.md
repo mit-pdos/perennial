@@ -48,8 +48,8 @@ builds the vos dependencies to work on the `wal/proof.v` file.
 Rocq also has a feature called `vok` compilation, where Rocq compiles a file
 using only `vos` files for its dependencies. The process does not produce a
 self-contained `vo` file, but emits an empty `vok` file to record that checking
-is complete.  This allows checking individual files essentially completely and
-in parallel.  Using `vos` and `vok` files can significantly speed up the
+is complete. This allows checking individual files essentially completely and
+in parallel. Using `vos` and `vok` files can significantly speed up the
 edit-compile-debug cycle. Note that `vok` checking isn't the same as regular
 compilation - it doesn't check universe constraints in the same way.
 
@@ -80,7 +80,7 @@ passes while the goose PR is open. This feature is implemented by
 `etc/ci-use-goose-pr`, which reads the PR description and identifies the
 corresponding goose branch using the GitHub API.
 
-## Integer temmplating
+## Integer templating
 
 Some files have templates that are used to support the various integer types by
 copy-pasting:
