@@ -1,11 +1,5 @@
-translate = [
-  "!*",
-]
+translate = ["!*"]
 
-imports = [
-  "!*",
-]
+imports = ["!*"]
 
-trusted = [
-  "Gosched",
-]
+trusted = ["Gosched"]

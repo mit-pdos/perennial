@@ -1,9 +1,3 @@
-translate = [
-  "HashLen"
-]
-imports = [
-  "!*"
-]
-trusted = [
-  "SigPublicKey"
-]
+translate = ["HashLen"]
+imports = ["!*"]
+trusted = ["SigPublicKey"]
