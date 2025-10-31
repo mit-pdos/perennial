@@ -218,25 +218,26 @@ Proof.
 Qed.
 
 Local Lemma wp_try_select_blocking (cases : list op) :
-  ∀ Φ,
+  ∀ Ψ Φ,
   let P := ([∧ list] case ∈ cases,
               match case with
               | select_send_f t send_val send_chan send_handler =>
                   ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
               ⌜ send_val = #v ⌝ ∗
               is_channel (V:=V) (t:=t) send_chan cap γ ∗
-              send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
+              send_au_slow send_chan cap v γ (WP #send_handler #() {{ Ψ }})
            | select_receive_f t recv_chan recv_handler =>
                ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
               is_channel (V:=V) (t:=t) recv_chan cap γ ∗
               rcv_au_slow recv_chan cap γ (λ (v: V) ok,
-                                             WP #recv_handler (#v, #ok)%V {{ Φ }})
+                                             WP #recv_handler (#v, #ok)%V {{ Ψ }})
             end
             )%I in
-  P ∧ Φ #false -∗
+  P ∧ Φ (#(), #false)%V -∗
+  (∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
   WP chan.try_select #cases #true {{ Φ }}.
 Proof.
-  simpl. iIntros (Φ) "HΦ".
+  simpl. iIntros (Ψ Φ) "HΦ HΨ".
   (* assert (∃ Ψ, Φ = Ψ) as [Ψ Heq] by by eexists.
   iEval (rewrite Heq). iEval (rewrite Heq) in "HΦfalse". clear Heq. *)
   iLöb as "IH" forall (cases).
@@ -247,8 +248,9 @@ Proof.
   wp_apply (wp_try_select_case_blocking with "HΦ").
   { iIntros "H". iSplit; try done. simpl. iLeft in "H". iLeft in "H". iFrame. }
   iIntros "* HΦ". wp_auto. wp_if_destruct.
-  - iApply "HΦ".
-  - simpl. wp_apply ("IH" with "[-]"). iSplit.
+  - iApply "HΨ". iApply "HΦ".
+  - simpl. wp_apply ("IH" with "[HΦ] HΨ"); try iFrame.
+    iSplit.
     + iLeft in "HΦ". iRight in "HΦ". done.
     + iRight in "HΦ". done.
 Qed.
@@ -274,14 +276,10 @@ Lemma wp_select_blocking (cases : list op) :
 Proof.
   iIntros (Φ) "Hcases".
   iLöb as "IH" forall (Φ).
-  wp_call. wp_bind. iLöb as "IHtry" forall . wp_call.
-  destruct cases.
-  { wp_auto. wp_apply ("IH" with "[$]"). }
-  wp_auto.
-  wp_apply "IHtry".
-  wp_bind
-
-Admitted.
+  wp_call. wp_apply (wp_try_select_blocking with "[-]").
+  { iSplit; first iFrame. wp_auto. iApply "IH". iFrame. }
+  iIntros (?) "HΦ". wp_auto. iFrame.
+Qed.
 
 (* FIXME: what precondition for default case? *)
 Lemma wp_select_nonblocking (cases : list op) (def: func.t) :

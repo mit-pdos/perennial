@@ -56,11 +56,11 @@ Definition try_select : val :=
   rec: "go" "cases" "blocking" :=
     (* TODO: model should choose a random start position *)
     list.Match "cases"
-      (λ: <>, #false)
+      (λ: <>, (#(), #false))
       (λ: "hd" "tl",
          let: ("v", "done") := try_select_case "hd" "blocking" in
          if: ~"done" then "go" "tl" "blocking"
-         else "v").
+         else ("v", #true)).
 
 (** select_blocking models a select without a default case. It takes a list of
 cases (select_send or select_receive). It starts from a random position, then
@@ -69,7 +69,9 @@ returns true. Loop this until success. *)
 
 Definition select_blocking : val :=
   rec: "loop" "cases" :=
-      (try_select "cases" #false || "loop" "cases");; #().
+    let: ("v", "succeeded") := try_select "cases" #true in
+    if: "succeeded" then "v"
+    else "loop" "cases".
 
 (** select_nonblocking models a select with a default case. It takes a list of
 cases (select_send or select_receive) and a default handler. It starts from a
@@ -77,7 +79,9 @@ random position, then runs do_select_case with "blocking"=#true over each case.
 On failure, run the default handler. *)
 Definition select_nonblocking : val :=
   λ: "cases" "def",
-    (try_select "cases" #true || "def" #());; #().
+    let: ("v", "succeeded") := try_select "cases" #true in
+    if: "succeeded" then "v"
+    else "def" #().
 
 End defns.
 End chan.
