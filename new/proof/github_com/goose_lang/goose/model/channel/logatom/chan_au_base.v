@@ -396,7 +396,7 @@ Proof.
 Qed.
 
 (* Needs [chan_cap_valid s'' cap] as precondition? *)
-Lemma own_channel_halves_update ch cap s s' s'' γ :
+Lemma own_channel_halves_update s'' ch cap s s' γ :
   chan_cap_valid s'' cap →
   own_channel ch cap s γ -∗ own_channel ch cap s' γ ==∗
   own_channel ch cap s'' γ ∗ own_channel ch cap s'' γ.
