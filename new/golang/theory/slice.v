@@ -356,62 +356,56 @@ Qed.
 
 Lemma wp_slice_make2 stk E (len : u64) :
   {{{ ⌜0 ≤ sint.Z len⌝ }}}
-    slice.make2 t #len @ stk; E
+    #(functions make2 (st t)) #len @ stk; E
   {{{ sl, RET #sl;
-      sl ↦[t]* (replicate (sint.nat len) (default_val V)) ∗
-      own_slice_cap V sl (DfracOwn 1)
+      sl ↦[t]* (replicate (sint.nat len) (zero_val V)) ∗
+      own_slice_cap t sl (DfracOwn 1)
   }}}.
 Proof.
   iIntros (Φ) "% HΦ".
-  wp_call.
+  rewrite go.make2_slice. wp_pures.
   wp_apply wp_slice_make3.
   { word. }
   iIntros (?) "(? & ? & ?)".
   iApply "HΦ". iFrame.
 Qed.
 
-Global Instance pure_slice_ptr (s : slice.t) :
-  PureWp True (slice.ptr (#s)) #(slice.ptr s).
-Proof.
-  rewrite to_val_unseal.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?". rewrite to_val_unseal.
-  by iApply "HΦ".
-Qed.
-
 Global Instance pure_slice_len (s : slice.t) :
-  PureWp True (slice.len (#s)) #(slice.len s).
+  PureWp True (#(functions len (st t)) (#s)) #(slice.len s).
 Proof.
-  rewrite to_val_unseal.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?". rewrite to_val_unseal. by iApply "HΦ".
+  iIntros (?????) "HΦ". rewrite go.len_slice. wp_pure_lc "Hlc". wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_cap (s : slice.t) :
-  PureWp True (slice.cap (#s)) #(slice.cap s).
+  PureWp True (#(functions cap (st t)) (#s)) #(slice.cap s).
 Proof.
-  rewrite to_val_unseal.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?". rewrite to_val_unseal. by iApply "HΦ".
+  iIntros (?????) "HΦ". rewrite go.cap_slice. wp_pure_lc "Hlc". wp_pures. by iApply "HΦ".
 Qed.
 
-Global Instance pure_elem_ref s (i : w64) :
-  PureWp (0 ≤ sint.Z i < sint.Z s.(slice.len)) (slice.elem_ref t #s #i)
-    #(slice.elem_ref_f s t i).
+Global Instance wp_slice_index_ref s (i : w64) :
+  PureWp (0 ≤ sint.Z i < sint.Z s.(slice.len)) (IndexRef (go.SliceType t) (#s, #i)%V)
+    #(slice_index_ref t (sint.Z i) s).
 Proof.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?".
-  rewrite bool_decide_true; last word.
-  wp_pures. replace (uint.Z i) with (sint.Z i) by word.
+  iIntros (?????) "HΦ". wp_pure_lc "Hlc". rewrite go.index_ref_slice //.
   by iApply "HΦ".
 Qed.
 
+(* FIXME: full slice expression vs simple slice expr. *)
 Global Instance pure_slice_slice s (n m : w64) :
   PureWp (0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z (slice.cap s) ∧
-          0 ≤ sint.Z (slice.len s) ≤ sint.Z (slice.cap s)) (slice.slice t #s #n #m)
-    #(slice.slice_f s t n m).
+          0 ≤ sint.Z (slice.len s) ≤ sint.Z (slice.cap s))
+    (Slice (go.SliceType t) (#s, #n, #m)%V)
+    #(slice.slice s t n m).
 Proof.
-  iIntros (?????) "HΦ".
+  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
+  [ intros; repeat econstructor | ].
+  { Search Slice.
+    slice_slice_step_pure:
+  }
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
+  iFrame; by iIntros "$".
+
+  wp_pure.
   wp_call_lc "?".
   rewrite bool_decide_true; last word.
   wp_pures.
