@@ -36,19 +36,19 @@ Definition select_send : val :=
 Definition select_receive : val :=
   λ: "T" "ch" "f", InjR ("T", "ch", "f").
 
-Definition do_select_case : val :=
+Definition try_select_case : val :=
   λ: "c" "blocking",
-    exception_do (match: "c" with
-        InjL "data" =>
-          let: ((("T", "ch"), "v"), "f") := "data" in
-          let: "ok" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
-          if: "ok" then ("f" #();;; do: #true) else (do: #false)
-      | InjR "data" =>
-          let: (("T", "ch"), "f") := "data" in
-          let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
-          if: "success" then
-            ("f" "v" "ok";;; do: #true)
-          else do: #false
+    (match: "c" with
+       InjL "data" =>
+         let: ((("T", "ch"), "v"), "handler") := "data" in
+         let: "success" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
+         if: "success" then ("handler" #(), #true)
+         else (#(), #false)
+     | InjR "data" =>
+         let: (("T", "ch"), "handler") := "data" in
+         let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
+         if: "success" then ("handler" ("v", "ok"), #true)
+         else (#(), #false)
       end).
 
 (** [try_select] is used as the core of both [select_blocking] and [select_nonblocking] *)
@@ -57,7 +57,10 @@ Definition try_select : val :=
     (* TODO: model should choose a random start position *)
     list.Match "cases"
       (λ: <>, #false)
-      (λ: "hd" "tl", do_select_case "hd" "blocking" || "go" "tl" "blocking").
+      (λ: "hd" "tl",
+         let: ("v", "done") := try_select_case "hd" "blocking" in
+         if: ~"done" then "go" "tl" "blocking"
+         else "v").
 
 (** select_blocking models a select without a default case. It takes a list of
 cases (select_send or select_receive). It starts from a random position, then
