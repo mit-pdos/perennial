@@ -62,7 +62,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version: "1.24.9"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
       - name: Setup Python
