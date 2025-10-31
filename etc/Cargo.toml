@@ -1,0 +1,11 @@
+[package]
+name = "etc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+taplo-cli = "0.10.0"
+
+[lib]
+# needed for valid Cargo.toml.
+path = "for_cargo.rs"

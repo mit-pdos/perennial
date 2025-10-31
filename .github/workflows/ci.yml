@@ -127,10 +127,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Activate brew
-        run: echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install taplo
-        run: brew install taplo
+        run: |
+          VERSION=$(sed -n 's/taplo-cli = "\(.*\)"/\1/p' **/Cargo.toml)
+          cargo install taplo-cli --version $VERSION --locked
       - name: Format toml files
         run: |
           taplo format
