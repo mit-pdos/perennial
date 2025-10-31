@@ -179,7 +179,7 @@ Proof.
   by iCombine "H0 H1" as "?".
 Qed.
 
-Global Instance own_slice_cap_persistent s : Persistent (own_slice_cap s dd).
+Global Instance own_slice_cap_persistent s : Persistent (own_slice_cap s (□)).
 Proof. unseal; apply _. Qed.
 
 #[global]
@@ -216,7 +216,7 @@ Instance own_slice_update_to_persistent s dq vs :
 Proof. apply _. Qed.
 
 Global Instance own_slice_cap_update_to_persistent s dq :
-  UpdateIntoPersistently (own_slice_cap s dq) (own_slice_cap s dd).
+  UpdateIntoPersistently (own_slice_cap s dq) (own_slice_cap s (□)).
 Proof. apply _. Qed.
 
 Global Instance own_slice_timeless s dq vs : Timeless (s ↦*{dq} vs).
