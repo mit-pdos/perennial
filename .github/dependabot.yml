@@ -21,3 +21,10 @@ updates:
       interval: "monthly"
       time: "04:00"
       timezone: "US/Eastern"
+
+  - package-ecosystem: "cargo"
+    directory: "/etc"
+    schedule:
+      interval: "monthly"
+      time: "04:00"
+      timezone: "US/Eastern"
