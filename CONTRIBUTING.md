@@ -90,7 +90,11 @@ copy-pasting:
 ./etc/int_template.py new/trusted_code/sync/atomic.v
 ```
 
-## Python linting
+## Formatting / Linting
 
-We run [ruff](https://github.com/astral-sh/ruff) to lint all python code in CI.
-You can run it locally with `ruff format`.
+- `python`: we run [ruff](https://github.com/astral-sh/ruff) in CI
+  to lint and format all our Python code.
+  Run it locally with `ruff format` and `ruff check`.
+- `toml`: we run [taplo](https://taplo.tamasfe.dev/) in CI
+  to format all our toml files.
+  Run it locally with `taplo format`.

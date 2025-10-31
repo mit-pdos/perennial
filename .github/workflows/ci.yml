@@ -119,9 +119,9 @@ jobs:
           cache: "pip"
       - run: pip install .
       - name: Format
-        run: ruff format --diff ./
+        run: ruff format --diff
       - name: Lint
-        run: ruff check ./
+        run: ruff check
 
   toml:
     runs-on: ubuntu-latest
