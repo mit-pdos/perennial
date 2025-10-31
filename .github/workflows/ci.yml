@@ -122,3 +122,16 @@ jobs:
         run: ruff format --diff ./
       - name: Lint
         run: ruff check ./
+
+  toml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Activate brew
+        run: echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+      - name: Install taplo
+        run: brew install taplo
+      - name: Format toml files
+        run: |
+          taplo format
+          git diff --exit-code
