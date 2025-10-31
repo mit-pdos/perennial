@@ -129,7 +129,7 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install taplo
         # NOTE: periodically update taplo version.
-        run: curl -fsSL https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz \
+        run: curl -fsSL "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz" \
           | gzip -d - | install -m 755 /dev/stdin /usr/local/bin/taplo
       - name: Format toml files
         run: taplo format --check --diff
