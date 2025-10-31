@@ -1,6 +1,4 @@
-translate = [
-  "!*",
-]
+translate = ["!*"]
 trusted = [
   "Listener",
   "Connection",
@@ -21,6 +19,4 @@ trusted = [
   "GetTSC",
   "GetTimeRange",
 ]
-imports = [
-  "!*",
-]
+imports = ["!*"]

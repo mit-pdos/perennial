@@ -1,9 +1,5 @@
-translate = [
-  "!*",
-]
-imports = [
-  "!*",
-]
+translate = ["!*"]
+imports = ["!*"]
 trusted = [
   "UInt64Put",
   "Assume",

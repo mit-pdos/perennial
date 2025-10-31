@@ -1,11 +1,3 @@
-translate = [
-  "KeyValue",
-  "Event_EventType",
-  "PUT",
-  "DELETE",
-  "Event",
-]
+translate = ["KeyValue", "Event_EventType", "PUT", "DELETE", "Event"]
 
-imports = [
-  "!*",
-]
+imports = ["!*"]

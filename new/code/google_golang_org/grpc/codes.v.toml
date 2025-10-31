@@ -12,6 +12,4 @@ translate = [
   "Unauthenticated",
   "Unavailable",
 ]
-imports = [
-  "!*"
-]
+imports = ["!*"]
