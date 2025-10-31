@@ -86,6 +86,14 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+End proof.
+
+Section select_proof.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!chanGhostStateG Σ V}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
+
 Inductive op :=
 | select_send_f (t: go_type) (v : val) (ch : chan.t) (handler : func.t)
 | select_receive_f (t: go_type) (ch : chan.t) (handler : func.t).
@@ -99,42 +107,63 @@ Global Instance into_val_op : IntoVal op :=
         end
   |}.
 
-Global Instance wp_select_send ch (v : val) f :
+Global Instance wp_select_send `{!IntoVal V} `{!IntoValTyped V t} ch (v : val) f :
   PureWp True (chan.select_send #t #ch v #f)
     #(select_send_f t v ch f).
 Proof.
   pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
 Qed.
 
-Global Instance wp_select_receive ch f :
+Global Instance wp_select_receive `{!IntoVal V} `{!IntoValTyped V t} ch f :
   PureWp True (chan.select_receive #t #ch #f)
     #(select_receive_f t ch f).
 Proof.
   pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
 Qed.
 
-Lemma wp_do_select_case_blocking P cs :
-  ∀ Φ,
-  (P -∗ (match cs with
-         | select_send_f t send_val send_chan send_handler =>
-             ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
-           ⌜ send_val = #v ⌝ ∗
-           is_channel (V:=V) (t:=t) send_chan cap γ ∗
-           send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
-        | select_receive_f t recv_chan recv_handler =>
-            ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
-           is_channel (V:=V) (t:=t) recv_chan cap γ ∗
-           rcv_au_slow recv_chan cap γ (λ (v: V) ok,
-                                          WP #recv_handler (#v, #ok)%V {{ Φ }})
-         end
-  )) -∗
-  P -∗
-  (P -∗ Φ #false) -∗
+Lemma wp_do_select_case_blocking cs :
+  ∀  Φ,
+  (match cs with
+   | select_send_f t send_val send_chan send_handler =>
+       ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+     ⌜ send_val = #v ⌝ ∗
+     is_channel (V:=V) (t:=t) send_chan cap γ ∗
+     send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
+  | select_receive_f t recv_chan recv_handler =>
+      ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
+     is_channel (V:=V) (t:=t) recv_chan cap γ ∗
+     rcv_au_slow recv_chan cap γ (λ (v: V) ok,
+                                    WP #recv_handler (#v, #ok)%V {{ Φ }})
+   end
+   ) -∗
+  (Φ #false) -∗
   WP chan.do_select_case #cs #true {{ Φ }}.
 Proof.
-  iIntros (Φ) "Hcase HP HΦfalse".
+  iIntros (Φ) "Hcase HΦfalse".
   wp_call. rewrite [in (_ op)]to_val_unseal /=. destruct cs; wp_auto.
-  - (* FIXME: go_type in op. *)
+  - (* FIXME: only get `V : Type` after deciding to fire the update now. *)
+    iNamed "Hcase". iDestruct "Hcase" as "(-> & #? & Hau)". wp_apply (wp_TrySend with "[$] [Hau]").
+    + iSplitL "Hau"; first iExact "Hau".
+      iIntros "Hau". iMod "Hau". iModIntro. iNext.
+      iNamed "Hau". iFrame. destruct s.
+      * case_decide.
+        -- iIntros "H". iSpecialize ("Hcont" with "[$]").
+           iMod "Hcont". iModIntro. wp_pures.
+           wp_apply (wp_wand with "Hcont").
+           iIntros (?) "HΦ". wp_pures.
+           (* FIXME: control flow: handle a break/continue/return in the handler impl. *)
+      iApply
+      iFrame "Hau".
+    }
+    {  }
+
+    (* FIXME: only learn that `send_val  = #v` after making a choice in the ∧.
+       But, if we pick the case in the ∧ now, then we won't be able to deal with
+       the `return false`.
+       Spec needs to imply that the value is well formed even before picking
+     *)
+    Search bi_wand bi_exist.
+    wp_apply wp_TrySend.
     admit.
   - admit.
 Admitted.
@@ -167,6 +196,9 @@ Proof.
   destruct cases.
   { wp_auto. by iApply "HΦfalse". }
   wp_auto.
+  wp_call. rewrite [in #o]to_val_unseal /=. destruct o; wp_auto.
+  -
+  destruct cs; wp_auto.
   wp_apply (wp_do_select_case_blocking with "[Hcases] HP").
   {
     iIntros "P". iSpecialize ("Hcases" with "P").
