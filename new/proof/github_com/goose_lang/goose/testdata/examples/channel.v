@@ -593,3 +593,160 @@ Qed.
 
 End dsp_examples.
 
+Section select_panic.
+  Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!chanGhostStateG Σ unit}.
+
+(** Invariant: channel must be Idle, all other states are False *)
+Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
+  "#Hch" ∷ is_channel (V:=unit)  ch 0 γ ∗
+  "#Hinv" ∷ inv nroot (
+    ∃ (s : chan_rep.t unit),
+      "Hoc" ∷ own_channel  ch 0 s γ ∗
+      match s with
+      | chan_rep.Idle => True
+      | _ => False
+      end
+  ).
+
+
+(** Create the idiom from a channel in Idle state *)
+Lemma start_select_nb_only (ch : loc) (γ : chan_names) :
+  is_channel ch 0 γ -∗
+  own_channel ch 0 chan_rep.Idle γ ={⊤}=∗
+  ∃ γnb, is_select_nb_only γnb ch.
+Proof.
+  iIntros "#Hch Hoc".
+  iMod (inv_alloc nroot with "[Hoc]") as "$".
+  { iNext. iFrame. }
+  simpl.
+  by iFrame "#".
+  Qed.
+
+(** Nonblocking send AU - vacuous since we ban all send preconditions *)
+Lemma select_nb_only_send_au γ ch v  :
+  ∀ Φ,
+  is_select_nb_only γ ch -∗
+  ( False -∗  Φ) -∗
+         £1 ∗ £1 -∗
+  send_au_fast ch 0 v γ Φ.
+Proof.
+   intros Φ.
+  iIntros "#Hnb".
+  iIntros "HΦ".
+  iIntros "[Hlc1 Hlc2]".
+  iNamed "Hnb".
+  iInv "Hinv" as "Hinv_open" "Hinv_close".
+  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
+  iNamed "Hinv_open".
+  destruct s; try done.
+  (* Only Idle case remains - all others give False from invariant *)
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iNext.
+  iFrame.
+  Qed.
+
+
+
+(** Nonblocking receive AU - vacuous since we ban all receive preconditions *)
+Lemma select_nb_only_rcv_au γ ch :
+   ∀ (Φ: unit → bool → iProp Σ),
+  is_select_nb_only  γ ch -∗
+  ( ∀ (v:unit), False -∗ Φ v true) -∗
+         £1 ∗ £1 -∗
+  rcv_au_fast ch 0 γ (λ (v:unit) (ok:bool), Φ v ok).
+Proof.
+  intros Φ.
+  iIntros "#Hnb".
+  iIntros "HΦ".
+  iIntros "[Hlc1 Hlc2]".
+  iNamed "Hnb".
+  iInv "Hinv" as "Hinv_open" "Hinv_close".
+  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
+  iNamed "Hinv_open".
+  destruct s; try done.
+  (* Only Idle case remains - all others give False from invariant *)
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iNext.
+  iFrame.
+Qed.
+
+
+Lemma wp_select_nb_no_panic :
+  {{{ is_pkg_init chan_spec_raw_examples}}}
+    @! chan_spec_raw_examples.select_nb_no_panic #()
+  {{{ RET #(); True }}}.
+  wp_start. wp_auto_lc 2.
+  wp_apply chan.wp_make. { done. }
+  iIntros (ch). iIntros (γ). iIntros "(#HisChan & Hownchan)".
+  iRename select (£1) into "Hlc1".
+  wp_auto_lc 2.
+  iRename select (£1) into "Hlc2".
+  simpl.
+  iPersist "ch".
+  do 2 (iRename select (£1) into "Hlc4").
+  iMod (start_select_nb_only ch with "[$HisChan] [$Hownchan]") as (γnb) "#Hnb".
+  wp_apply (wp_fork with "[Hnb]").
+  {
+  wp_auto_lc 4.
+  wp_apply chan.wp_select_nonblocking.
+    simpl.
+    iSplitL.
+  - (* Prove the receive case - will be vacuous *)
+    iSplitL.
+    +
+      iExists 0. iExists γnb. iExists unit. iExists _, _, _.
+      iFrame.
+      iSplit.
+      { (* Show is_channel matches *)
+        iNamed "Hnb". iFrame "#". }
+      (* Now use our select_nb_only_rcv_au lemma *)
+      iRename select (£1) into "Hlc1".
+      iApply (select_nb_only_rcv_au with " [$Hnb]").
+      {
+      iIntros (v).
+      iIntros "Hf".
+      done.
+      }
+      iFrame.
+    + (* True case *)
+      done.
+  - (* Prove the default case *)
+    wp_auto.
+    done.
+  }
+  {
+
+  wp_apply chan.wp_select_nonblocking.
+    simpl.
+    iSplitL "Hlc1 Hlc4".
+  - (* Prove the receive case - will be vacuous *)
+    iSplitL.
+    +
+      iExists 0. iExists unit. iExists γnb. iExists _, _, _, _.
+      iFrame.
+      iSplit.
+      { (* Show is_channel matches *)
+        iNamed "Hnb". iFrame "#". iPureIntro. done.  }
+      (* Now use our select_nb_only_rcv_au lemma *)
+       iSplit.
+      { (* Show is_channel matches *)
+        iNamed "Hnb". iFrame "#". }
+      iFrame "#".
+      iApply (select_nb_only_send_au γnb ch () with " [$Hnb] []").
+      {
+        iIntros "Hf".
+          done.
+      }
+      iFrame.
+    + (* True case *)
+      done.
+  - (* Prove the default case *)
+    wp_auto.
+    iApply "HΦ".
+    done.
+  }
+Qed.
+
+End select_panic.
