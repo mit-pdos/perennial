@@ -45,9 +45,6 @@ Proof. Admitted.
 #[global] Instance is_hash_pers data hash : Persistent (is_hash data hash).
 Proof. Admitted.
 
-#[global] Instance is_hash_timeless data hash : Timeless (is_hash data hash).
-Proof. Admitted.
-
 Lemma is_hash_det data hash0 hash1 :
   is_hash (Some data) hash0 -∗ is_hash (Some data) hash1 -∗ ⌜hash0 = hash1⌝.
 Proof. Admitted.
