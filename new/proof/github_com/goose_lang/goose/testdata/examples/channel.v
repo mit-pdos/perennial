@@ -1,13 +1,12 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export  future spsc done dsp.
-From New.proof Require Import time sync.
-From Perennial.goose_lang Require Import lang.
-From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
+     Require Export simple future spsc done dsp.
+From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
-From Perennial.goose_lang.lib Require Import slice.
 From iris.base_logic Require Import ghost_map.
 From New.golang.theory Require Import struct chan.
+
+Set Default Proof Using "Type".
 
 (* TODO: Move? *)
 Global Instance wp_struct_make_unit {ext : ffi_syntax} {ffi : ffi_model} {ffi_interp0 : ffi_interp ffi} 
@@ -18,16 +17,16 @@ Proof.
   apply wp_struct_make; cbn; auto.
 Qed.
 
-Section hello_world.
+Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chanGhostStateG Σ go_string}.  (* V = go_string *)
-Context `{!ghost_varG Σ bool}.
-Set Default Proof Using "Type".
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
+
 #[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
+
+Section hello_world.
+Context `{!chanGhostStateG Σ go_string}.
+Context `{!ghost_varG Σ bool}.
 
 Lemma wp_sys_hello_world :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -92,16 +91,10 @@ End hello_world.
 
 
 Section cancellable.
-  Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_varG Σ bool}.
 Context `{!chanGhostStateG Σ unit}.
 Context `{!chanGhostStateG Σ go_string}.
 Context `{!ghost_mapG Σ nat gname}.
-Set Default Proof Using "Type".
-
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
 
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
@@ -214,14 +207,8 @@ End cancellable.
 
 
 Section fibonacci_examples.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!chanGhostStateG Σ w64}.
 Context `{!ghost_varG Σ (list w64)}.
-Set Default Proof Using "Type".
-
-#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
 
 Fixpoint fib (n: nat) : w64 :=
   match n with
@@ -508,15 +495,8 @@ Qed.
 End fibonacci_examples.
 
 Section dsp_examples.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!chanGhostStateG Σ interface.t}.
 Context `{!dspG Σ interface.t}.
-Set Default Proof Using "Type".
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
-#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
 
 Definition ref_prot : iProto Σ interface.t :=
   <! (l:loc) (x:Z)> MSG (interface.mk (ptrT.id intT.id) #l) {{ l ↦ W64 x }} ;
@@ -592,4 +572,6 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
 Qed.
 
 End dsp_examples.
+
+End proof.
 
