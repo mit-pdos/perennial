@@ -1,6 +1,8 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
+From New.proof.crypto Require Import ed25519.
+
 Module cryptoffi.
 
 Definition hash_len := 32.
@@ -24,10 +26,13 @@ Proof.
   intros Hinit. wp_start as "(Hown & #? & #Hdef)".
   wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
-
-  iIntros "Hown". wp_auto. wp_call.
-  rewrite is_pkg_init_unfold.
-  simpl. iFrame "∗#". done.
+  iIntros "Hown". wp_auto.
+  wp_apply (ed25519.wp_initialize' with "[$Hown]") as "[Hown #?]".
+  { naive_solver. }
+  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_call.
+  iEval (rewrite is_pkg_init_unfold /=).
+  by iFrame "∗#".
 Qed.
 
 (** Hashes. *)
