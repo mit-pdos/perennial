@@ -1,7 +1,2 @@
-translate = [
-  "Field",
-  "FieldType",
-]
-imports = [
-  "!*",
-]
+translate = ["Field", "FieldType"]
+imports = ["!*"]

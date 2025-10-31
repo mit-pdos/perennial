@@ -1,6 +1,5 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
-From Perennial.Helpers Require Import bytes NamedProps condition.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From Stdlib.micromega Require Import ZifyNat.
 
 From New.proof Require Import bytes.
@@ -729,7 +728,7 @@ Proof.
   instantiate (1:=drop (depth_rem * 32) sibs_enc :: sibs).
   repeat iSplit; try iPureIntro.
   - rewrite reverse_cons join_app join_singleton -Henc_sibs take_drop //.
-  - apply Forall_cons; [|done]. rewrite length_drop. word.
+  - apply Forall_cons; split; [|done]. rewrite length_drop. word.
   - iFrame "∗#".
 Qed.
 
@@ -1060,7 +1059,7 @@ Proof.
       iDestruct (is_cut_tree_len with "Hchild0") as %?.
       iDestruct (is_cut_tree_len with "Hchild1") as %?.
       repeat (iSplit || iExists _); try done; try iPureIntro.
-      * apply Forall_cons; [|done].
+      * apply Forall_cons; split; [|done].
         destruct bit; word.
       * word.
       * replace (S _) with (length (pref ++ [get_bit label (length pref)])) by len.

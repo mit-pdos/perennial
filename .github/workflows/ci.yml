@@ -62,7 +62,7 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version: "1.24.9"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
       - name: Setup Python
@@ -119,6 +119,18 @@ jobs:
           cache: "pip"
       - run: pip install .
       - name: Format
-        run: ruff format --diff ./
+        run: ruff format --diff
       - name: Lint
-        run: ruff check ./
+        run: ruff check
+
+  toml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install taplo
+        # NOTE: periodically update taplo version.
+        run: |
+          curl -fsSL https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz \
+            | gzip -d - | install -m 755 /dev/stdin /usr/local/bin/taplo
+      - name: Format toml files
+        run: taplo format --check --diff

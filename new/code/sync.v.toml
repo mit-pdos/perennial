@@ -16,16 +16,9 @@ translate = [
   "Locker",
 ]
 
-imports = [
-  "sync/atomic",
-  "internal/race",
-]
+imports = ["sync/atomic", "internal/race"]
 
-axiomatize = [
-  "notifyList",
-  "copyChecker",
-  "copyChecker.*",
-]
+axiomatize = ["notifyList", "copyChecker", "copyChecker.*"]
 
 trusted = [
   # Unlike WaitGroup, one cannot translate and verify Mutex methods because they
@@ -45,5 +38,5 @@ trusted = [
 [bootstrap]
 enabled = true
 prelude = [
-    "From New.golang.defn Require Export slice array map string interface defer builtin.",
+  "From New.golang.defn Require Export slice array map string interface defer builtin.",
 ]

@@ -1,7 +1,2 @@
-translate = [
-  "!*",
-  "AuthInfo",
-]
-imports = [
-  "!*",
-]
+translate = ["!*", "AuthInfo"]
+imports = ["!*"]

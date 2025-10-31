@@ -1,12 +1,5 @@
-translate = [
-  "ProphId",
-]
+translate = ["ProphId"]
 
-trusted = [
-  "ResolveBytes",
-  "NewProph",
-]
+trusted = ["ResolveBytes", "NewProph"]
 
-imports = [
-  "*",
-]
+imports = ["*"]

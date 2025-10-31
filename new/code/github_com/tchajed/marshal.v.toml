@@ -1,11 +1,22 @@
 translate = [
-"compute_new_cap", "reserve",
-"ReadInt", "ReadInt32", "ReadBytes", "ReadBytesCopy", "ReadBool", "ReadLenPrefixedBytes",
-"WriteInt", "WriteInt32", "WriteBytes", "WriteBool", "WriteLenPrefixedBytes",
-"ReadSlice", "ReadSliceLenPrefix", "WriteSlice", "WriteSliceLenPrefix",
-"Dec", "Enc",
+  "compute_new_cap",
+  "reserve",
+  "ReadInt",
+  "ReadInt32",
+  "ReadBytes",
+  "ReadBytesCopy",
+  "ReadBool",
+  "ReadLenPrefixedBytes",
+  "WriteInt",
+  "WriteInt32",
+  "WriteBytes",
+  "WriteBool",
+  "WriteLenPrefixedBytes",
+  "ReadSlice",
+  "ReadSliceLenPrefix",
+  "WriteSlice",
+  "WriteSliceLenPrefix",
+  "Dec",
+  "Enc",
 ]
-imports = [
-  "github.com/goose-lang/primitive",
-  "github.com/goose-lang/std",
-]
+imports = ["github.com/goose-lang/primitive", "github.com/goose-lang/std"]

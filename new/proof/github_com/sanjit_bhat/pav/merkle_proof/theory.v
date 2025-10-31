@@ -1,6 +1,5 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.proof Require Import proof_prelude.
-From Perennial.Helpers Require Import bytes NamedProps.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
