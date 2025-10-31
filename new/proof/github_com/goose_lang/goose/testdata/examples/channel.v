@@ -1,6 +1,6 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export  future spsc done dsp.
+     Require Export  future spsc done dsp dsp_proofmode.
 From New.proof Require Import time sync.
 From Perennial.goose_lang Require Import lang.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
@@ -522,7 +522,6 @@ Definition ref_prot : iProto Σ interface.t :=
   <! (l:loc) (x:Z)> MSG (interface.mk (ptrT.id intT.id) #l) {{ l ↦ W64 x }} ;
   <?> MSG (interface.mk (structT.id []) #()) {{ l ↦ w64_word_instance.(word.add) (W64 x) (W64 2) }} ;
   END.
-
 Lemma wp_DSPExample :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
     @! chan_spec_raw_examples.DSPExample #()
@@ -541,55 +540,15 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
   iPersist "c signal".
   wp_apply (wp_fork with "[Hcsignal]").
   { wp_auto.
-    (* BEGIN: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
-    wp_apply (dsp_recv (tV:=interfaceT) (TT:=[tele loc Z]) signal c
-              (tele_app (λ l x, interface.mk (ptrT.id intT.id) (# l)))
-              (tele_app (λ l x, l ↦ W64 (x)))%I
-              (tele_app (λ l x, iProto_dual
-                                  (<?> MSG (interface.mk (structT.id []) #())
-                                     {{ l ↦ w64_word_instance.(word.add)
-                                                  (W64 x) (W64 2) }} ; END))) with "[Hcsignal]").
-    { iApply (iProto_pointsto_le with "Hcsignal").
-      rewrite /ref_prot. rewrite iProto_dual_message /=.
-      iIntros "!>".
-      rewrite !iMsg_dual_exist. iIntros (l).
-      rewrite !iMsg_dual_exist. iIntros (x).
-      rewrite iMsg_dual_base. iExists l, x.
-      iIntros "HP". iFrame "HP".
-      iApply iProto_le_base. iApply iProto_le_refl. }
-    simpl.
-    iIntros (lx).
-    epose proof (tele_arg_S_inv lx) as [l [[x []] ->]]. simpl.
-    iIntros "[Hcsignal Hl]".
+    wp_recv with "Hcsignal" as (l x) "Hl".
     wp_auto.
-    (* END: Will be simplified to tactic [wp_recv (l x) as "Hl"] *)
     wp_apply wp_interface_type_assert; [done|].
-    (* BEGIN: Will be simplified to tactic [wp_send with "[$Hl]"] *)
-    iDestruct (iProto_pointsto_le _ _ (<!> MSG (interface.mk (structT.id []) #()) ; END)
-                with "Hcsignal [Hl]") as "Hcsignal".
-    { rewrite iProto_dual_message /= iMsg_dual_base.
-      iIntros "!>". iFrame "Hl". rewrite iProto_dual_end. iApply iProto_le_refl. }
-    wp_apply (dsp_send with "[$Hcsignal]").
-    (* END: Will be simplified to tactic [wp_send with "[$Hl]"] *)
-    iIntros "Hc". by wp_auto. }
-  (* BEGIN: Will be simplified to tactic [wp_send with "[$val]"] *)
-  iDestruct (iProto_pointsto_le with "[$Hc] [val]") as "Hc".
-  { iExists val_ptr, 40%Z. iFrame "val". iApply iProto_le_refl. }
-  wp_apply (dsp_send with "[$Hc]").
-  (* END: Will be simplified to tactic [wp_send with "[$val]"] *)
-  iIntros "Hc". wp_auto.
-  (* BEGIN: Will be simplified to tactic [wp_recv as "Hl"] *)
-  wp_apply (dsp_recv (tV:=interfaceT) (TT:=[tele]) c signal
-              (λ _, interface.mk (structT.id []) (# ()))
-              (λ _, val_ptr ↦ W64 (40 + 2))%I
-              (λ _, END%proto)
-             with "[Hc]").
-  { simpl. iApply (iProto_pointsto_le with "Hc").
-    iIntros "!> HP". iFrame. done. }
-  iIntros (_) "[Hc Hl]".
-  (* END: Will be simplified to tactic [wp_recv as "Hl"] *)
+    wp_send with "Hcsignal" and "[Hl]".
+    by wp_auto. }
+  wp_send with "Hc" and (val_ptr 40) "[val]".
+  wp_auto.
+  wp_recv with "Hc" as "Hl".
   wp_auto. by iApply "HΦ".
 Qed.
 
 End dsp_examples.
-
