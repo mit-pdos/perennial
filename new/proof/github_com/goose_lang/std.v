@@ -157,14 +157,10 @@ Proof.
             val (coming from wp_auto) *)
       unshelve wp_if_destruct
           || unshelve wp_auto
+          || (wp_apply wp_Assume; iIntros "%")
           || congruence).
-  - wp_apply wp_Assume_true.
-    iApply "HΦ"; word.
-  - wp_apply wp_Assume_false.
-  - wp_apply wp_Assume_true.
-    iApply "HΦ"; word.
-  - wp_apply wp_Assume_false.
-  - wp_apply wp_Assume_false.
+  - iApply "HΦ"; word.
+  - iApply "HΦ"; word.
 Qed.
 
 Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
