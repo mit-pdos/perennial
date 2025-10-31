@@ -245,7 +245,7 @@ Qed.
 Lemma wp_GetMapVal ptr_pkOpen pkOpen :
   {{{
     is_pkg_init ktcore ∗
-    "#Hown" ∷ CommitOpen.own ptr_pkOpen pkOpen (□)
+    "#Hown" ∷ CommitOpen.own ptr_pkOpen pkOpen dd
   }}}
   @! ktcore.GetMapVal #ptr_pkOpen
   {{{
