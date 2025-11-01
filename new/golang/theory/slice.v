@@ -234,7 +234,7 @@ Proof using Type*.
   iDestruct "Hs" as "[Hptr _]".
   rewrite Z.mul_0_r loc_add_0.
   rewrite go_type_size_unseal in Hbt.
-  by iDestruct (pointsto_not_null with "Hptr") as %?.
+  by iDestruct (typed_pointsto_not_null with "Hptr") as %?.
 Qed.
 
 Lemma own_slice_cap_wf s dq :

@@ -469,7 +469,7 @@ Proof.
   rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
   rewrite Hfirst.
   rewrite loc_add_0.
-  by apply pointsto_not_null.
+  by apply typed_pointsto_not_null.
 Qed.
 
 Lemma has_bounded_type_size_def (t: go_type) `{BoundedTypeSize t} :

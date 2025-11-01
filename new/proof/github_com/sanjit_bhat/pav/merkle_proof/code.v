@@ -54,7 +54,7 @@ Lemma own_empty_tree t d :
 Proof.
   iIntros "H". destruct t; [done|..];
     iNamed "H"; iNamed "H";
-    (by iDestruct (pointsto_not_null with "Hnode") as %?; [done|]).
+    (by iDestruct (typed_pointsto_not_null with "Hnode") as %?; [done|]).
 Qed.
 
 #[global] Instance own_tree_dfrac ptr t :
@@ -117,10 +117,10 @@ Proof.
     try iNamedSuffix "H0" "0"; try iNamedSuffix "H1" "1";
     fold own_tree; subst.
   - by iModIntro.
-  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
-  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
-  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
-  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode0") as %?.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
     iCombine "Hsl_label0 Hsl_label1" gives %->.
@@ -130,7 +130,7 @@ Proof.
     simplify_eq/=.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
-  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode0") as %?.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
@@ -140,7 +140,7 @@ Proof.
     by iModIntro.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
-  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode0") as %?.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
