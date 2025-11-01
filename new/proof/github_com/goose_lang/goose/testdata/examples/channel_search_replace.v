@@ -2,7 +2,7 @@ From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import chan_au_base simple.
-From New.proof Require Import tok_set.
+From New.proof Require Import sync strings time tok_set.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 
 Section proof.
