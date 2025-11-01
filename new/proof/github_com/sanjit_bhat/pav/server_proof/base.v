@@ -1,6 +1,5 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import server.
-From Perennial.Helpers Require Import NamedProps.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof Require Import sync.
 From New.proof.github_com.goose_lang Require Import std.

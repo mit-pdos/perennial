@@ -1,6 +1,5 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import hashchain.
-From Perennial.Helpers Require Import NamedProps.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof Require Import bytes.
 From New.proof.github_com.goose_lang Require Import std.
@@ -413,10 +412,7 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
     "Hsl_newLink" ∷ sl_newLink ↦* newLink ∗
     "Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ new_vals, wish_Verify proof new_vals) ∗
     "Herr" ∷ (∀ new_vals, wish_Verify proof new_vals -∗
-      (* TODO(goose): stdpp things like [last] that shadow Stdlib things
-      have extremely brittle imports in Perennial.
-      https://github.com/mit-pdos/perennial/issues/327 *)
-      "->" ∷ ⌜newVal = default [] (list.last new_vals)⌝ ∗
+      "->" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
       "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink)
   }}}.
 Proof.
@@ -454,7 +450,7 @@ Proof.
     "%Hlt_i" ∷ ⌜uint.Z i ≤ uint.Z extLen⌝ ∗
     "#Hwish" ∷ wish_Verify
       (take (Z.to_nat (uint.Z i * cryptoffi.hash_len)) proof) new_vals ∗
-    "->" ∷ ⌜newVal = default [] (stdpp.list_basics.list.last new_vals)⌝ ∗
+    "->" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
     "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink
   )%I with "[i newLink newVal Hsl_prevLink]" as "IH".
   { iDestruct own_slice_nil as "?".

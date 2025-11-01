@@ -11,6 +11,80 @@ Set Default Proof Using "Type".
 
 Module chan_spec_raw_examples.
 
+(* type chan_spec_raw_examples.request *)
+Module request.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  f' : func.t;
+  result' : loc;
+}.
+End def.
+End request.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent chan_spec_raw_examples.request.
+#[local] Typeclasses Transparent chan_spec_raw_examples.request.
+
+Global Instance request_wf : struct.Wf chan_spec_raw_examples.request.
+Proof. apply _. Qed.
+
+Global Instance settable_request : Settable request.t :=
+  settable! request.mk < request.f'; request.result' >.
+Global Instance into_val_request : IntoVal request.t :=
+  {| to_val_def v :=
+    struct.val_aux chan_spec_raw_examples.request [
+    "f" ::= #(request.f' v);
+    "result" ::= #(request.result' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_request : IntoValTyped request.t chan_spec_raw_examples.request :=
+{|
+  default_val := request.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_request_f : IntoValStructField "f" chan_spec_raw_examples.request request.f'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_request_result : IntoValStructField "result" chan_spec_raw_examples.request request.result'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_request f' result':
+  PureWp True
+    (struct.make #chan_spec_raw_examples.request (alist_val [
+      "f" ::= #f';
+      "result" ::= #result'
+    ]))%struct
+    #(request.mk f' result').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance request_struct_fields_split dq l (v : request.t) :
+  StructFieldsSplit dq l v (
+    "Hf" ∷ l ↦s[chan_spec_raw_examples.request :: "f"]{dq} v.(request.f') ∗
+    "Hresult" ∷ l ↦s[chan_spec_raw_examples.request :: "result"]{dq} v.(request.result')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (request.f' v)) (chan_spec_raw_examples.request) "f"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -121,6 +195,18 @@ Global Instance wp_func_call_server :
 
 Global Instance wp_func_call_LeakyBufferPipeline :
   WpFuncCall chan_spec_raw_examples.LeakyBufferPipeline _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_mkRequest :
+  WpFuncCall chan_spec_raw_examples.mkRequest _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ho_worker :
+  WpFuncCall chan_spec_raw_examples.ho_worker _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_HigherOrderExample :
+  WpFuncCall chan_spec_raw_examples.HigherOrderExample _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_worker :
