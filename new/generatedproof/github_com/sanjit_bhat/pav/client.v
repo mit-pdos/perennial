@@ -711,12 +711,12 @@ Global Instance wp_method_call_Evid'ptr_Check :
   WpMethodCall (ptrT.id client.Evid.id) "Check" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_evidVrf'ptr_Check :
-  WpMethodCall (ptrT.id client.evidVrf.id) "Check" _ (is_pkg_defined client) :=
+Global Instance wp_method_call_evidVrf'ptr_check :
+  WpMethodCall (ptrT.id client.evidVrf.id) "check" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_evidLink'ptr_Check :
-  WpMethodCall (ptrT.id client.evidLink.id) "Check" _ (is_pkg_defined client) :=
+Global Instance wp_method_call_evidLink'ptr_check :
+  WpMethodCall (ptrT.id client.evidLink.id) "check" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
 End names.

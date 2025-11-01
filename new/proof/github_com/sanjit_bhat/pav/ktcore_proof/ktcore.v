@@ -20,6 +20,10 @@ Inductive Blame :=
   | BlameClients
   | BlameUnknown.
 
+Definition wish_VerifyVrfSig pk vrfPk sig : iProp Σ :=
+  let enc := VrfSig.pure_enc (VrfSig.mk' (W8 VrfSigTag) vrfPk) in
+  "#His_sig" ∷ cryptoffi.is_sig pk enc sig.
+
 Lemma wp_SignVrf ptr_sk pk P sl_vrfPk vrfPk :
   let enc := VrfSig.pure_enc (VrfSig.mk' (W8 VrfSigTag) vrfPk) in
   {{{
@@ -32,7 +36,7 @@ Lemma wp_SignVrf ptr_sk pk P sl_vrfPk vrfPk :
   {{{
     sl_sig sig, RET #sl_sig;
     "Hsl_sig" ∷ sl_sig ↦* sig ∗
-    "#His_sig" ∷ cryptoffi.is_sig pk enc sig
+    "#Hwish_vrfSig" ∷ wish_VerifyVrfSig pk vrfPk sig
   }}}.
 Proof.
   simpl. wp_start as "@". wp_auto.
@@ -59,12 +63,11 @@ Lemma wp_VerifyVrfSig sl_pk pk sl_vrfPk vrfPk sl_sig sig :
   @! ktcore.VerifyVrfSig #sl_pk #sl_vrfPk #sl_sig
   {{{
     (err : bool), RET #err;
-    let enc := VrfSig.pure_enc (VrfSig.mk' (W8 VrfSigTag) vrfPk) in
     "Hgenie" ∷
       match err with
-      | true => ¬ cryptoffi.is_sig pk enc sig
+      | true => ¬ wish_VerifyVrfSig pk vrfPk sig
       | false =>
-        "#His_sig" ∷ cryptoffi.is_sig pk enc sig
+        "#Hwish_vrfSig" ∷ wish_VerifyVrfSig pk vrfPk sig
       end
   }}}.
 Proof.
@@ -83,6 +86,10 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Definition wish_VerifyLinkSig pk ep link sig : iProp Σ :=
+  let enc := LinkSig.pure_enc (LinkSig.mk' (W8 LinkSigTag) ep link) in
+  "#His_sig" ∷ cryptoffi.is_sig pk enc sig.
+
 Lemma wp_SignLink ptr_sk pk P epoch sl_link link :
   let enc := LinkSig.pure_enc (LinkSig.mk' (W8 LinkSigTag) epoch link) in
   {{{
@@ -95,7 +102,7 @@ Lemma wp_SignLink ptr_sk pk P epoch sl_link link :
   {{{
     sl_sig sig, RET #sl_sig;
     "Hsl_sig" ∷ sl_sig ↦* sig ∗
-    "#His_sig" ∷ cryptoffi.is_sig pk enc sig
+    "#Hwish_linkSig" ∷ wish_VerifyLinkSig pk epoch link sig
   }}}.
 Proof.
   simpl. wp_start as "@". wp_auto.
@@ -122,12 +129,11 @@ Lemma wp_VerifyLinkSig sl_pk pk epoch sl_link link sl_sig sig :
   @! ktcore.VerifyLinkSig #sl_pk #epoch #sl_link #sl_sig
   {{{
     (err : bool), RET #err;
-    let enc := LinkSig.pure_enc (LinkSig.mk' (W8 LinkSigTag) epoch link) in
     "Hgenie" ∷
       match err with
-      | true => ¬ cryptoffi.is_sig pk enc sig
+      | true => ¬ wish_VerifyLinkSig pk epoch link sig
       | false =>
-        "#His_sig" ∷ cryptoffi.is_sig pk enc sig
+        "#Hwish_linkSig" ∷ wish_VerifyLinkSig pk epoch link sig
       end
   }}}.
 Proof.

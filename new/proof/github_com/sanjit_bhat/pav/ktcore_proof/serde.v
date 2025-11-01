@@ -6,9 +6,6 @@ From New.proof.github_com.tchajed Require Import marshal.
 
 From New.proof.github_com.sanjit_bhat.pav.ktcore_proof Require Import base.
 
-Notation VrfSigTag := 0 (only parsing).
-Notation LinkSigTag := 1 (only parsing).
-
 (** core serde spec requirements:
 - deterministic encoding of object.
 - optional correctness: encoded object decodes to same object.
@@ -26,6 +23,9 @@ however, there's an additional restriction for variable-size objects
 [pure_enc] and [wish] of lower-level objects. *)
 
 Module ktcore.
+
+Notation VrfSigTag := 0 (only parsing).
+Notation LinkSigTag := 1 (only parsing).
 
 Module VrfSig.
 Record t :=
