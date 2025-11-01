@@ -54,4 +54,5 @@ The command has indeed failed with message:
 Uncaught Ltac2 exception:
 Init.Tactic_failure (Init.Some message:(wp_store: could not find store_ty))
 The command has indeed failed with message:
+Uncaught Ltac2 exception:
 Init.Tactic_failure (Init.Some message:(wp_bind_next: not a WP goal))
