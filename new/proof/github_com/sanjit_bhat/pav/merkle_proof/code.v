@@ -54,8 +54,7 @@ Lemma own_empty_tree t d :
 Proof.
   iIntros "H". destruct t; [done|..];
     iNamed "H"; iNamed "H";
-    (iDestruct (typed_pointsto_not_null with "Hnode") as %?; [|done]);
-    by rewrite go_type_size_unseal.
+    (by iDestruct (pointsto_not_null with "Hnode") as %?; [done|]).
 Qed.
 
 #[global] Instance own_tree_dfrac ptr t :
