@@ -1,13 +1,14 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export  future spsc done dsp.
-From New.proof Require Import time sync.
-From Perennial.goose_lang Require Import lang.
-From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
+     Require Export simple future spsc done dsp.
+From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
-From Perennial.goose_lang.lib Require Import slice.
 From iris.base_logic Require Import ghost_map.
-From New.golang.theory Require Import struct chan.
+From New.golang.theory Require Import struct string chan.
+
+Import chan_spec_raw_examples.
+
+Set Default Proof Using "Type".
 
 (* TODO: Move? *)
 Global Instance wp_struct_make_unit {ext : ffi_syntax} {ffi : ffi_model} {ffi_interp0 : ffi_interp ffi} 
@@ -18,16 +19,16 @@ Proof.
   apply wp_struct_make; cbn; auto.
 Qed.
 
-Section hello_world.
+Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chanGhostStateG Σ go_string}.  (* V = go_string *)
-Context `{!ghost_varG Σ bool}.
-Set Default Proof Using "Type".
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
+
 #[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
+
+Section hello_world.
+Context `{!chanGhostStateG Σ go_string}.
+Context `{!ghost_varG Σ bool}.
 
 Lemma wp_sys_hello_world :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -92,16 +93,10 @@ End hello_world.
 
 
 Section cancellable.
-  Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!ghost_varG Σ bool}.
 Context `{!chanGhostStateG Σ unit}.
 Context `{!chanGhostStateG Σ go_string}.
 Context `{!ghost_mapG Σ nat gname}.
-Set Default Proof Using "Type".
-
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
 
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
@@ -214,14 +209,8 @@ End cancellable.
 
 
 Section fibonacci_examples.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!chanGhostStateG Σ w64}.
 Context `{!ghost_varG Σ (list w64)}.
-Set Default Proof Using "Type".
-
-#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
 
 Fixpoint fib (n: nat) : w64 :=
   match n with
@@ -508,15 +497,8 @@ Qed.
 End fibonacci_examples.
 
 Section dsp_examples.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!chanGhostStateG Σ interface.t}.
 Context `{!dspG Σ interface.t}.
-Set Default Proof Using "Type".
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
-#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
 
 Definition ref_prot : iProto Σ interface.t :=
   <! (l:loc) (x:Z)> MSG (interface.mk (ptrT.id intT.id) #l) {{ l ↦ W64 x }} ;
@@ -594,8 +576,6 @@ Qed.
 End dsp_examples.
 
 Section select_panic.
-  Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!chanGhostStateG Σ unit}.
 
 (** Invariant: channel must be Idle, all other states are False *)
@@ -750,3 +730,139 @@ Lemma wp_select_nb_no_panic :
 Qed.
 
 End select_panic.
+
+Section higher_order_example.
+Context `{!chanGhostStateG Σ request.t}.
+Context `{!chanGhostStateG Σ go_string}.
+Context `{!ghost_varG Σ bool}.
+
+Definition do_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
+  "Hf" ∷ WP #r.(request.f') #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} ∗
+  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
+  "Hfut_tok" ∷ fulfill_token γfut.
+
+Definition await_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
+  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
+  "Hfut_await" ∷ await_token γfut.
+
+Lemma wp_mkRequest {f: func.t} (Q: go_string → iProp Σ) :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ WP #f #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} }}}
+    @! chan_spec_raw_examples.mkRequest #f
+  {{{ γfut (r: request.t), RET #r; do_request r γfut Q ∗ await_request r γfut Q }}}.
+Proof.
+  wp_start as "Hf".
+  wp_auto.
+  wp_apply chan.wp_make.
+  { word. }
+  iIntros (ch γ) "[His Hown]".
+  simpl. (* for decide *)
+  iMod (start_future with "His Hown") as (γfuture) "(#Hfut & Hawait & Hfulfill)".
+  wp_auto.
+  iApply "HΦ".
+  iFrame "Hfut ∗".
+Qed.
+
+#[local] Lemma wp_get_response (r: request.t) γfut Q :
+  {{{ await_request r γfut Q }}}
+    chan.receive #stringT #r.(request.result')
+  {{{ (s: go_string), RET (#s, #true); Q s }}}.
+Proof.
+  wp_start as "Hawait". iNamed "Hawait".
+  wp_apply (wp_future_await with "[$Hfut $Hfut_await]").
+  iIntros (v) "HQ".
+  iApply "HΦ". done.
+Qed.
+
+Definition is_request_chan γ (ch: loc): iProp Σ :=
+  is_simple (V:=request.t) γ ch 0 (λ r, ∃ γfut Q, do_request r γfut Q)%I.
+
+Lemma wp_ho_worker γ ch :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_request_chan γ ch }}}
+    @! chan_spec_raw_examples.ho_worker #ch
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "#His".
+  rewrite /is_request_chan.
+  wp_auto.
+  rewrite /chan.for_range.
+  iPersist "c".
+  wp_auto.
+  iAssert (∃ (r0: request.t),
+      "r" ∷ r_ptr ↦ r0
+    )%I with "[$r]" as "IH".
+  wp_for "IH".
+  wp_apply (wp_simple_receive (V:=request.t) with "[$His]") as "%r Hreq".
+  iNamed "Hreq".
+  wp_bind (#r.(request.f') _)%E.
+  iApply (wp_wand with "[Hf]").
+  { iApply "Hf". }
+  iIntros (v) "HQ".
+  iDestruct "HQ" as (s) "[-> HQ]".
+  wp_auto.
+  wp_apply (wp_future_fulfill with "[$Hfut $Hfut_tok HQ]").
+  { done. }
+  wp_for_post.
+  iFrame.
+Qed.
+
+Lemma wp_HigherOrderExample :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.HigherOrderExample #()
+  {{{ (s:slice.t), RET #s; s ↦* ["hello world"%go; "HELLO"%go; "world"%go] }}}.
+Proof using chanGhostStateG0 chanGhostStateG1 ghost_varG0.
+  wp_start.
+  (* TODO: why is the string unfolded here? *)
+  wp_auto.
+  wp_apply (chan.wp_make (V:=request.t)).
+  { done. }
+  iIntros (req_ch γ) "[His Hown]".
+  simpl.
+  iMod (start_simple with "His Hown") as "[%γdone #Hch]".
+  iAssert (is_request_chan γdone req_ch) with "[$Hch]" as "#Hreqs".
+  wp_auto.
+  wp_apply (wp_fork).
+  {
+    wp_apply (wp_ho_worker).
+    { iFrame "#". }
+    done.
+  }
+  wp_apply (wp_fork).
+  {
+    wp_apply (wp_ho_worker).
+    { iFrame "#". }
+    done.
+  }
+  wp_apply (wp_mkRequest (λ s, ⌜s = "hello world"%go⌝)%I) as "%γfut1 %r1 [Hdo_r1 Hawait_r1]".
+  {
+    wp_auto.
+    eauto.
+  }
+  wp_apply (wp_mkRequest (λ s, ⌜s = "HELLO"%go⌝)%I) as "%γfut2 %r2 [Hdo_r2 Hawait_r2]".
+  {
+    wp_auto.
+    eauto.
+  }
+  wp_apply (wp_mkRequest (λ s, ⌜s = "world"%go⌝)%I) as "%γfut3 %r3 [Hdo_r3 Hawait_r3]".
+  {
+    wp_auto.
+    eauto.
+  }
+  wp_apply (wp_simple_send (V:=request.t) with "[$Hch $Hdo_r1]").
+  wp_apply (wp_simple_send (V:=request.t) with "[$Hch $Hdo_r2]").
+  wp_apply (wp_simple_send (V:=request.t) with "[$Hch $Hdo_r3]").
+  wp_apply (wp_get_response with "[$Hawait_r1]") as "%s %Heq".
+  subst.
+  wp_apply (wp_get_response with "[$Hawait_r2]") as "%s %Heq".
+  subst.
+  wp_apply (wp_get_response with "[$Hawait_r3]") as "%s %Heq".
+  subst.
+  wp_apply wp_slice_literal.
+  iIntros (sl) "Hresponse".
+  wp_auto.
+  iApply "HΦ".
+  done.
+Qed.
+
+End higher_order_example.
+
+End proof.
