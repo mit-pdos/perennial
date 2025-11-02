@@ -8,11 +8,82 @@ Definition chan_spec_raw_examples : go_string := "github.com/goose-lang/goose/te
 
 Module chan_spec_raw_examples.
 
+Module EliminationStack. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/channel.EliminationStack"%go. End EliminationStack.
 Module request. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/channel.request"%go. End request.
 
 Section code.
 Context `{ffi_syntax}.
 
+
+Definition EliminationStack : go_type := structT [
+  "stack" :: sliceT;
+  "mu" :: sync.Mutex;
+  "exchanger" :: chanT stringT
+].
+#[global] Typeclasses Opaque EliminationStack.
+#[global] Opaque EliminationStack.
+
+Definition NewEliminationStack : go_string := "github.com/goose-lang/goose/testdata/examples/channel.NewEliminationStack"%go.
+
+(* go: elimination_stack.go:13:6 *)
+Definition NewEliminationStackⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do (return: (mem.alloc (let: "$stack" := (slice.make2 #stringT #(W64 0)) in
+     let: "$exchanger" := (chan.make #stringT #(W64 0)) in
+     struct.make #EliminationStack [{
+       "stack" ::= "$stack";
+       "mu" ::= type.zero_val #sync.Mutex;
+       "exchanger" ::= "$exchanger"
+     }]))).
+
+(* go: elimination_stack.go:20:28 *)
+Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
+  λ: "s" "value",
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "value" := (mem.alloc "value") in
+    chan.select_nonblocking [chan.select_send #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (![#stringT] "value") (λ: <>,
+       return: (#())
+       )] (λ: <>,
+      do:  #()
+      );;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) in
+    let: "$a1" := ((let: "$sl0" := (![#stringT] "value") in
+    slice.literal #stringT ["$sl0"])) in
+    (slice.append #stringT) "$a0" "$a1") in
+    do:  ((struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
+    return: #()).
+
+(* go: elimination_stack.go:33:28 *)
+Definition EliminationStack__Popⁱᵐᵖˡ : val :=
+  λ: "s" <>,
+    exception_do (let: "s" := (mem.alloc "s") in
+    chan.select_nonblocking [chan.select_receive #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (λ: "$recvVal",
+       let: "v" := (mem.alloc (type.zero_val #stringT)) in
+       let: "$r0" := (Fst "$recvVal") in
+       do:  ("v" <-[#stringT] "$r0");;;
+       return: (![#stringT] "v", #true)
+       )] (λ: <>,
+      do:  #()
+      );;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
+    (if: (let: "$a0" := (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) in
+    slice.len "$a0") = #(W64 0)
+    then
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
+      return: (#""%go, #false)
+    else do:  #());;;
+    let: "v" := (mem.alloc (type.zero_val #stringT)) in
+    let: "$r0" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) ((let: "$a0" := (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) in
+    slice.len "$a0") - #(W64 1)))) in
+    do:  ("v" <-[#stringT] "$r0");;;
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) in
+    slice.slice #stringT "$s" #(W64 0) ((let: "$a0" := (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) in
+    slice.len "$a0") - #(W64 1))) in
+    do:  ((struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
+    return: (![#stringT] "v", #true)).
 
 Definition sys_hello_world : go_string := "github.com/goose-lang/goose/testdata/examples/channel.sys_hello_world"%go.
 
@@ -713,24 +784,24 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(request.id, []); (ptrT.id request.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(EliminationStack.id, []); (ptrT.id EliminationStack.id, [("Pop"%go, EliminationStack__Popⁱᵐᵖˡ); ("Push"%go, EliminationStack__Pushⁱᵐᵖˡ)]); (request.id, []); (ptrT.id request.id, [])].
 
 #[global] Instance info' : PkgInfo channel.chan_spec_raw_examples :=
   {|
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.strings.strings; code.time.time; code.sync.sync];
+    pkg_imported_pkgs := [code.sync.sync; code.strings.strings; code.time.time];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
     package.init #channel.chan_spec_raw_examples (λ: <>,
-      exception_do (do:  (sync.initialize' #());;;
-      do:  (time.initialize' #());;;
+      exception_do (do:  (time.initialize' #());;;
       do:  (strings.initialize' #());;;
+      do:  (sync.initialize' #());;;
       do:  (package.alloc channel.chan_spec_raw_examples #()))
       ).
 
