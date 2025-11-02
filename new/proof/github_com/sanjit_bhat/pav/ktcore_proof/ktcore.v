@@ -21,8 +21,10 @@ Inductive Blame :=
   | BlameUnknown.
 
 Definition wish_VerifyVrfSig pk vrfPk sig : iProp Σ :=
-  let enc := VrfSig.pure_enc (VrfSig.mk' (W8 VrfSigTag) vrfPk) in
-  "#His_sig" ∷ cryptoffi.is_sig pk enc sig.
+  let obj := VrfSig.mk' (W8 VrfSigTag) vrfPk in
+  let enc := VrfSig.pure_enc obj in
+  "#His_sig" ∷ cryptoffi.is_sig pk enc sig ∗
+  "%Hvalid" ∷ ⌜VrfSig.valid obj⌝.
 
 Lemma wp_SignVrf ptr_sk pk P sl_vrfPk vrfPk :
   let enc := VrfSig.pure_enc (VrfSig.mk' (W8 VrfSigTag) vrfPk) in
@@ -44,13 +46,13 @@ Proof.
   wp_apply wp_alloc as "* Hstruct".
   iPersist "Hstruct".
   wp_apply (VrfSig.wp_enc (VrfSig.mk' _ _) with "[$Hsl_b $Hcap_b]")
-    as "* (Hsl_b&Hcap_b&_)".
+    as "* (Hsl_b&Hcap_b&_&(_&%Hvalid))".
   { iFrame "#". }
   simpl in *.
   wp_apply (cryptoffi.wp_SigPrivateKey_Sign with "[$Hsl_b $HP]") as "* @".
   { iFrame "#". }
   iApply "HΦ".
-  iFrame "∗#".
+  by iFrame "∗#".
 Qed.
 
 Lemma wp_VerifyVrfSig sl_pk pk sl_vrfPk vrfPk sl_sig sig :
@@ -77,18 +79,23 @@ Proof.
   iPersist "Hstruct".
   replace (sint.nat _) with (0%nat) by word.
   wp_apply (VrfSig.wp_enc (VrfSig.mk' _ _) with "[$Hsl_b $Hcap_b]")
-    as "* (Hsl_b&Hcap_b&_)".
+    as "* (Hsl_b&Hcap_b&_&(_&%Hvalid))".
   { iFrame "#". }
   simpl in *.
   wp_apply (cryptoffi.wp_SigPublicKey_Verify with "[Hsl_b]") as "* H".
   { iFrame "∗#". }
   iNamedSuffix "H" "0".
-  by iApply "HΦ".
+  iApply "HΦ".
+  destruct err.
+  - iIntros "@". by iApply "Hgenie0".
+  - by iFrame.
 Qed.
 
 Definition wish_VerifyLinkSig pk ep link sig : iProp Σ :=
-  let enc := LinkSig.pure_enc (LinkSig.mk' (W8 LinkSigTag) ep link) in
-  "#His_sig" ∷ cryptoffi.is_sig pk enc sig.
+  let obj := LinkSig.mk' (W8 LinkSigTag) ep link in
+  let enc := LinkSig.pure_enc obj in
+  "#His_sig" ∷ cryptoffi.is_sig pk enc sig ∗
+  "%Hvalid" ∷ ⌜LinkSig.valid obj⌝.
 
 Lemma wp_SignLink ptr_sk pk P epoch sl_link link :
   let enc := LinkSig.pure_enc (LinkSig.mk' (W8 LinkSigTag) epoch link) in
@@ -110,13 +117,13 @@ Proof.
   wp_apply wp_alloc as "* Hstruct".
   iPersist "Hstruct".
   wp_apply (LinkSig.wp_enc (LinkSig.mk' _ _ _) with "[$Hsl_b $Hcap_b]")
-    as "* (Hsl_b&Hcap_b&_)".
+    as "* (Hsl_b&Hcap_b&_&(_&%Hvalid))".
   { iFrame "#". }
   simpl in *.
   wp_apply (cryptoffi.wp_SigPrivateKey_Sign with "[$Hsl_b $HP]") as "* @".
   { iFrame "#". }
   iApply "HΦ".
-  iFrame "∗#".
+  by iFrame "∗#".
 Qed.
 
 Lemma wp_VerifyLinkSig sl_pk pk epoch sl_link link sl_sig sig :
@@ -143,13 +150,16 @@ Proof.
   iPersist "Hstruct".
   replace (sint.nat _) with (0%nat) by word.
   wp_apply (LinkSig.wp_enc (LinkSig.mk' _ _ _) with "[$Hsl_b $Hcap_b]")
-    as "* (Hsl_b&Hcap_b&_)".
+    as "* (Hsl_b&Hcap_b&_&(_&%Hvalid))".
   { iFrame "#". }
   simpl in *.
   wp_apply (cryptoffi.wp_SigPublicKey_Verify with "[Hsl_b]") as "* H".
   { iFrame "∗#". }
   iNamedSuffix "H" "0".
-  by iApply "HΦ".
+  iApply "HΦ".
+  destruct err.
+  - iIntros "@". by iApply "Hgenie0".
+  - by iFrame.
 Qed.
 
 Lemma wp_ProveMapLabel ptr_sk pk (uid ver : w64) :

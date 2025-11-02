@@ -108,14 +108,15 @@ Context {sigγ : sig_names}.
 Definition sig_pred_vrf γ enc : iProp Σ :=
   ∃ vrfPk,
   "%Henc" ∷ ⌜enc = ktcore.VrfSig.pure_enc (ktcore.VrfSig.mk' (W8 ktcore.VrfSigTag) vrfPk)⌝ ∗
-  "#Hshot" ∷ ghost_var γ (□) vrfPk.
+  "#Hshot" ∷ ghost_var γ (□) vrfPk ∗
+  "%Hvalid" ∷ ⌜safemarshal.Slice1D.valid vrfPk⌝.
 
 Definition sig_pred_links γ enc : iProp Σ :=
   (* TODO: add map invs once figure out partial-epoch adtr. *)
-  ∃ ep link links,
+  ∃ ep link,
   "%Henc" ∷ ⌜enc = ktcore.LinkSig.pure_enc (ktcore.LinkSig.mk' (W8 ktcore.LinkSigTag) ep link)⌝ ∗
-  "#Hlb" ∷ mono_list_lb_own γ links ∗
-  "%Hlook" ∷ ⌜links !! uint.nat ep = Some link⌝.
+  "#Hlb" ∷ mono_list_idx_own γ (uint.nat ep) link ∗
+  "%Hvalid" ∷ ⌜safemarshal.Slice1D.valid link⌝.
 
 Definition sig_pred γ enc : iProp Σ :=
   sig_pred_vrf γ.(vrf_name) enc ∨ sig_pred_links γ.(links_name) enc.
@@ -133,7 +134,6 @@ Lemma wish_evidVrf_sig_pred e pk :
   ¬ cryptoffi.is_sig_pk pk (sig_pred sigγ).
 Proof.
   iIntros "@ #His_pk".
-  rewrite /ktcore.wish_VerifyVrfSig.
   iNamedSuffix "Hwish0" "0".
   iNamedSuffix "Hwish1" "1".
   iDestruct (cryptoffi.is_sig_to_pred with "His_pk His_sig0") as "#HP0".
@@ -142,9 +142,25 @@ Proof.
   iNamedSuffix "H" "0".
   iDestruct "HP1" as "[H|H]"; [|by iNamed "H"].
   iNamedSuffix "H" "1".
-  (* stuck knowing that physical and logical vrfPk's match.
-  need to know that logical vrfPk has w64 length. *)
-Admitted.
+  remember (ktcore.VrfSig.mk' _ _) as o0 in Henc0.
+  remember (ktcore.VrfSig.mk' _ _) as o1 in Henc0.
+  opose proof (ktcore.VrfSig.wish_det [] [] o0 o1 _ _) as [? _].
+  { by list_simplifier. }
+  { rewrite /ktcore.VrfSig.wish.
+    list_simplifier.
+    intuition.
+    by f_equal. }
+  remember (ktcore.VrfSig.mk' _ _) as o2 in Henc1.
+  remember (ktcore.VrfSig.mk' _ _) as o3 in Henc1.
+  opose proof (ktcore.VrfSig.wish_det [] [] o2 o3 _ _) as [? _].
+  { by list_simplifier. }
+  { rewrite /ktcore.VrfSig.wish.
+    list_simplifier.
+    intuition.
+    by f_equal. }
+  iCombine "Hshot0 Hshot1" gives %[_ <-].
+  simplify_eq/=.
+Qed.
 
 Lemma wp_evidVrf_check ptr_e e sl_pk pk :
   {{{
@@ -192,7 +208,35 @@ Definition wish_evidLink e pk : iProp Σ :=
 Lemma wish_evidLink_sig_pred e pk :
   wish_evidLink e pk -∗
   ¬ cryptoffi.is_sig_pk pk (sig_pred sigγ).
-Proof. Admitted.
+Proof.
+  iIntros "@ #His_pk".
+  iNamedSuffix "Hwish0" "0".
+  iNamedSuffix "Hwish1" "1".
+  iDestruct (cryptoffi.is_sig_to_pred with "His_pk His_sig0") as "#HP0".
+  iDestruct (cryptoffi.is_sig_to_pred with "His_pk His_sig1") as "#HP1".
+  iDestruct "HP0" as "[H|H]"; [by iNamed "H"|].
+  iNamedSuffix "H" "0".
+  iDestruct "HP1" as "[H|H]"; [by iNamed "H"|].
+  iNamedSuffix "H" "1".
+  remember (ktcore.LinkSig.mk' _ _ _) as o0 in Henc0.
+  remember (ktcore.LinkSig.mk' _ _ _) as o1 in Henc0.
+  opose proof (ktcore.LinkSig.wish_det [] [] o0 o1 _ _) as [? _].
+  { by list_simplifier. }
+  { rewrite /ktcore.LinkSig.wish.
+    list_simplifier.
+    intuition.
+    by f_equal. }
+  remember (ktcore.LinkSig.mk' _ _ _) as o2 in Henc1.
+  remember (ktcore.LinkSig.mk' _ _ _) as o3 in Henc1.
+  opose proof (ktcore.LinkSig.wish_det [] [] o2 o3 _ _) as [? _].
+  { by list_simplifier. }
+  { rewrite /ktcore.LinkSig.wish.
+    list_simplifier.
+    intuition.
+    by f_equal. }
+  simplify_eq/=.
+  by iDestruct (mono_list_idx_agree with "Hlb0 Hlb1") as %?.
+Qed.
 
 Lemma wp_evidLink_check ptr_e e sl_pk pk :
   {{{
@@ -242,7 +286,17 @@ Definition wish_Evid e pk : iProp Σ :=
 Lemma wish_Evid_sig_pred e pk :
   wish_Evid e pk -∗
   ¬ cryptoffi.is_sig_pk pk (sig_pred sigγ).
-Proof. Admitted.
+Proof.
+  iIntros "#Hwish #His_pk".
+  destruct e.
+  destruct vrf as [vrf|], link as [link|]; try done.
+  - iNamed "Hwish".
+    iApply (wish_evidVrf_sig_pred vrf); [|done].
+    by iFrame "#".
+  - iNamed "Hwish".
+    iApply (wish_evidLink_sig_pred link); [|done].
+    by iFrame "#".
+Qed.
 
 Lemma wp_Evid_Check ptr_e e sl_pk pk :
   {{{
@@ -269,11 +323,11 @@ Proof.
   wp_if_destruct.
   2: {
     destruct vrf.
-    2: { by iDestruct "Hown_vrf" as "%". }
+    2: { by iDestruct "Hown_vrf" as %?. }
     wp_if_destruct.
     2: {
       destruct link.
-      2: { by iDestruct "Hown_link" as "%". }
+      2: { by iDestruct "Hown_link" as %?. }
       by iApply "HΦ". }
     destruct link.
     { iNamedSuffix "Hown_link" "'".
@@ -291,7 +345,7 @@ Proof.
       by iDestruct (typed_pointsto_not_null with "Hstruct'") as %?. }
     by iApply "HΦ". }
   destruct link.
-  2: { by iDestruct "Hown_link" as "%". }
+  2: { by iDestruct "Hown_link" as %?. }
   wp_apply wp_evidLink_check as "* @".
   { iFrame "#". }
   by iApply "HΦ".
