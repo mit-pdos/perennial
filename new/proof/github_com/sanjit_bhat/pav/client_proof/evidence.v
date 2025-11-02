@@ -115,7 +115,7 @@ Definition sig_pred_links γ enc : iProp Σ :=
   (* TODO: add map invs once figure out partial-epoch adtr. *)
   ∃ ep link,
   "%Henc" ∷ ⌜enc = ktcore.LinkSig.pure_enc (ktcore.LinkSig.mk' (W8 ktcore.LinkSigTag) ep link)⌝ ∗
-  "#Hlb" ∷ mono_list_idx_own γ (uint.nat ep) link ∗
+  "#Hidx" ∷ mono_list_idx_own γ (uint.nat ep) link ∗
   "%Hvalid" ∷ ⌜safemarshal.Slice1D.valid link⌝.
 
 Definition sig_pred γ enc : iProp Σ :=
@@ -235,7 +235,7 @@ Proof.
     intuition.
     by f_equal. }
   simplify_eq/=.
-  by iDestruct (mono_list_idx_agree with "Hlb0 Hlb1") as %?.
+  by iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %?.
 Qed.
 
 Lemma wp_evidLink_check ptr_e e sl_pk pk :
