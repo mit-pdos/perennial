@@ -25,7 +25,7 @@ Definition EliminationStack : go_type := structT [
 
 Definition NewEliminationStack : go_string := "github.com/goose-lang/goose/testdata/examples/channel.NewEliminationStack"%go.
 
-(* go: elimination_stack.go:13:6 *)
+(* go: elimination_stack.go:14:6 *)
 Definition NewEliminationStackⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (mem.alloc (let: "$stack" := (slice.make2 #stringT #(W64 0)) in
@@ -36,16 +36,17 @@ Definition NewEliminationStackⁱᵐᵖˡ : val :=
        "exchanger" ::= "$exchanger"
      }]))).
 
-(* go: elimination_stack.go:20:28 *)
+(* go: elimination_stack.go:21:28 *)
 Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
   λ: "s" "value",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "value" := (mem.alloc "value") in
-    chan.select_nonblocking [chan.select_send #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (![#stringT] "value") (λ: <>,
+    chan.select_blocking [chan.select_send #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (![#stringT] "value") (λ: <>,
        return: (#())
-       )] (λ: <>,
-      do:  #()
-      );;;
+       ); chan.select_receive #time.Time (let: "$a0" := (#(W64 10) * time.Microsecond) in
+     (func_call #time.After) "$a0") (λ: "$recvVal",
+       do:  #()
+       )];;;
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) in
     let: "$a1" := ((let: "$sl0" := (![#stringT] "value") in
@@ -55,18 +56,19 @@ Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
     return: #()).
 
-(* go: elimination_stack.go:33:28 *)
+(* go: elimination_stack.go:35:28 *)
 Definition EliminationStack__Popⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
-    chan.select_nonblocking [chan.select_receive #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (λ: "$recvVal",
+    chan.select_blocking [chan.select_receive #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (λ: "$recvVal",
        let: "v" := (mem.alloc (type.zero_val #stringT)) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("v" <-[#stringT] "$r0");;;
        return: (![#stringT] "v", #true)
-       )] (λ: <>,
-      do:  #()
-      );;;
+       ); chan.select_receive #time.Time (let: "$a0" := (#(W64 10) * time.Microsecond) in
+     (func_call #time.After) "$a0") (λ: "$recvVal",
+       do:  #()
+       )];;;
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #EliminationStack #"mu"%go (![#ptrT] "s"))) #());;;
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #EliminationStack #"stack"%go (![#ptrT] "s"))) in
     slice.len "$a0") = #(W64 0)
@@ -793,14 +795,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Elimination
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.sync.sync; code.strings.strings; code.time.time];
+    pkg_imported_pkgs := [code.sync.sync; code.time.time; code.strings.strings];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
     package.init #channel.chan_spec_raw_examples (λ: <>,
-      exception_do (do:  (time.initialize' #());;;
-      do:  (strings.initialize' #());;;
+      exception_do (do:  (strings.initialize' #());;;
+      do:  (time.initialize' #());;;
       do:  (sync.initialize' #());;;
       do:  (package.alloc channel.chan_spec_raw_examples #()))
       ).
