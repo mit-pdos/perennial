@@ -224,10 +224,27 @@ Proof.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
 Qed.
 
+Lemma dsp_send_tele
+  {TT : tele} (tt:TT)
+  (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
+  {{{ #(lr_chan,rl_chan) ↣ (<!.. x> MSG (v x) {{ P x }}; p x) ∗ P tt }}}
+    chan.send #tV #lr_chan #(v tt)
+  {{{ RET #(); #(lr_chan,rl_chan) ↣ p tt }}}.
+Proof.
+  iIntros (Φ) "[Hc HP] HΦ".
+  iDestruct (iProto_pointsto_le _ _ (<!> MSG v tt; p tt)%proto with "Hc [HP]")
+    as "Hc".
+  { iIntros "!>".
+    iApply iProto_le_trans;
+      [iApply iProto_le_texist_intro_l|].
+    by iFrame "HP". }
+  by iApply (dsp_send with "Hc").
+Qed.
+
 (** Endpoint receives value *)
 Lemma dsp_recv {TT:tele}
     (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
-  {{{ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ P x }}; p x }}}
+  {{{ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
     chan.receive #tV #rl_chan
   {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
@@ -262,7 +279,8 @@ Proof.
     iApply "HΦ".
     iDestruct "H£s" as "[H£ H£s]".
     rewrite later_equivI_1.
-    iMod (lc_fupd_elim_later with "H£ Hp") as "Hp".
+    iCombine "HP Hp" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
     iModIntro. iRewrite "Hp". by iFrame "#∗".
   - iIntros "Hownr".
     iMod "Hclose'" as "_".
@@ -290,7 +308,8 @@ Proof.
       iApply "HΦ".
       iDestruct "H£s" as "[H£ H£s]".
       rewrite later_equivI_1.
-      iMod (lc_fupd_elim_later with "H£ Hp") as "Hp".
+      iCombine "HP Hp" as "H".
+      iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
       iModIntro. iRewrite "Hp". by iFrame "#∗".
     + simpl in *. simplify_eq.
       destruct draining; [|done].
@@ -313,7 +332,8 @@ Proof.
     iApply "HΦ".
     iDestruct "H£s" as "[H£ H£s]".
     rewrite later_equivI_1.
-    iMod (lc_fupd_elim_later with "H£ Hp") as "Hp".
+    iCombine "HP Hp" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
     iModIntro. iRewrite "Hp". by iFrame "#∗".
   - done.
   - done.
@@ -339,7 +359,8 @@ Proof.
     iApply "HΦ".
     iDestruct "H£s" as "[H£ H£s]".
     rewrite later_equivI_1.
-    iMod (lc_fupd_elim_later with "H£ Hp") as "Hp".
+    iCombine "HP Hp" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
     iModIntro. iRewrite "Hp". by iFrame "#∗".
 Qed.
 

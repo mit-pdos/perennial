@@ -540,14 +540,14 @@ Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ct
   iPersist "c signal".
   wp_apply (wp_fork with "[Hcsignal]").
   { wp_auto.
-    wp_recv with "Hcsignal" as (l x) "Hl".
+    wp_recv (l x) as "Hl".
     wp_auto.
     wp_apply wp_interface_type_assert; [done|].
-    wp_send with "Hcsignal" and "[Hl]".
+    wp_send with "[$Hl]".
     by wp_auto. }
-  wp_send with "Hc" and (val_ptr 40) "[val]".
+  wp_send with "[$val]".
   wp_auto.
-  wp_recv with "Hc" as "Hl".
+  wp_recv as "Hl".
   wp_auto. by iApply "HΦ".
 Qed.
 
