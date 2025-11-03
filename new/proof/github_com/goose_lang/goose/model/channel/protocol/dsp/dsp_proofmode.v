@@ -197,12 +197,9 @@ Tactic Notation "iProto_prepare" constr(pat) "with" "(" ne_uconstr_list(xs) ")" 
    iFrame; iApply iProto_le_refl|].
 
 Tactic Notation "wp_recv_core" "with" constr(pat) :=
-  let Htmp := iFresh in
-  iDestruct (dsp_recv with "[//]") as Htmp;
   iProto_prepare pat;
-  wp_apply (Htmp with pat);
-  rewrite -bi_tforall_forall /=;
-  iClear Htmp.
+  wp_apply (dsp_recv with pat);
+  rewrite -bi_tforall_forall /=.
 
 Tactic Notation "wp_recv" "with" constr(pat) :=
   wp_recv_core with pat; iIntros pat.
@@ -218,9 +215,7 @@ Tactic Notation "wp_recv" "with" constr(pat) "as"
   iIntros "[_FOO _BAR]"; iRevert "_FOO _BAR"; iIntros pat; iIntros pat2.
 
 Tactic Notation "wp_send_core" "with" constr(pat) :=
-  let Htmp := iFresh in
-  iDestruct (dsp_send with "[//]") as Htmp;
-  wp_apply (Htmp with pat);
+  wp_apply (dsp_send with pat);
   iIntros pat.
 
 Tactic Notation "wp_send" "with" constr(pat) :=
