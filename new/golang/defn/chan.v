@@ -79,7 +79,7 @@ random position, then runs do_select_case with "blocking"=#true over each case.
 On failure, run the default handler. *)
 Definition select_nonblocking : val :=
   λ: "cases" "def",
-    let: ("v", "succeeded") := try_select "cases" #true in
+    let: ("v", "succeeded") := try_select "cases" #false in
     if: "succeeded" then "v"
     else "def" #().
 
