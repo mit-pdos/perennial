@@ -308,11 +308,11 @@ Definition simple_multi_join : go_string := "github.com/goose-lang/goose/testdat
 (* go: examples.go:103:6 *)
 Definition simple_multi_joinⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "done" := (mem.alloc (type.zero_val (type.chanT (type.structT [
+    exception_do (let: "ch" := (mem.alloc (type.zero_val (type.chanT (type.structT [
     ])))) in
     let: "$r0" := (chan.make (type.structT [
     ]) #(W64 2)) in
-    do:  ("done" <-[type.chanT (type.structT [
+    do:  ("ch" <-[type.chanT (type.structT [
     ])] "$r0");;;
     let: "world" := (mem.alloc (type.zero_val #stringT)) in
     let: "hello" := (mem.alloc (type.zero_val #stringT)) in
@@ -320,7 +320,7 @@ Definition simple_multi_joinⁱᵐᵖˡ : val :=
       exception_do (let: "$r0" := #"Hello"%go in
       do:  ("hello" <-[#stringT] "$r0");;;
       do:  (let: "$chan" := (![type.chanT (type.structT [
-      ])] "done") in
+      ])] "ch") in
       let: "$v" := (struct.make (type.structT [
       ]) [{
       }]) in
@@ -333,7 +333,7 @@ Definition simple_multi_joinⁱᵐᵖˡ : val :=
       exception_do (let: "$r0" := #"World"%go in
       do:  ("world" <-[#stringT] "$r0");;;
       do:  (let: "$chan" := (![type.chanT (type.structT [
-      ])] "done") in
+      ])] "ch") in
       let: "$v" := (struct.make (type.structT [
       ]) [{
       }]) in
@@ -344,10 +344,10 @@ Definition simple_multi_joinⁱᵐᵖˡ : val :=
     do:  (Fork ("$go" #()));;;
     do:  (Fst (chan.receive (type.structT [
     ]) (![type.chanT (type.structT [
-    ])] "done")));;;
+    ])] "ch")));;;
     do:  (Fst (chan.receive (type.structT [
     ]) (![type.chanT (type.structT [
-    ])] "done")));;;
+    ])] "ch")));;;
     return: (((![#stringT] "hello") + #" "%go) + (![#stringT] "world"))).
 
 Definition select_nb_no_panic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_nb_no_panic"%go.
