@@ -157,26 +157,6 @@ Section lang.
 
 End lang.
 
-Section proofmode.
-  Context `{!protoG Σ V}.
-  Implicit Types TT : tele.
-  Implicit Types p : iProto Σ V.
-  Implicit Types m : iMsg Σ V.
-  Implicit Types P : iProp Σ.
-
-  Lemma iProto_le_prepare {TT:tele} a p m (tv : TT -t> V) tP tp :
-    ProtoNormalize false p [] (<a> m) →
-    MsgTele m tv tP tp →
-    ⊢ (p ⊑ (<a @.. (x:TT)> MSG tele_app tv x {{ tele_app tP x }} ; tele_app tp x))%proto.
-  Proof.
-    intros. rewrite /MsgTele in H0. rewrite -H0.
-    rewrite /ProtoNormalize in H.
-    simpl in *. rewrite right_id in H.
-    done.
-  Qed.
-
-End proofmode.
-
 (** * Symbolic execution tactics *)
 (* TODO: Maybe strip laters from other hypotheses in the future? *)
 Lemma tac_wp_recv `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanGhostStateG Σ V}
