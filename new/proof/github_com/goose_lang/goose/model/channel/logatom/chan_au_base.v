@@ -11,22 +11,14 @@ From New.generatedproof.github_com.goose_lang.goose Require Import model.channel
 Module chan_rep.
 Inductive t (V : Type) : Type :=
 | Buffered (buff: list V)     (* Buffered channel with pending messages *)
-| Idle                        (* Empty unbuffered channel, ready for operations *)
-| SndPending (v: V)          (* Unbuffered channel with sender waiting *)
-| RcvPending                 (* Unbuffered channel with receiver waiting *)
-| SndCommit (v: V)           (* Sender committed, waiting for receiver to complete *)
-| RcvCommit                  (* Receiver committed, waiting for sender to complete *)
+| Unbuffered (sent : option V) (received : bool)
 | Closed (draining: list V)  (* Closed channel, possibly draining remaining messages *)
 .
 #[global] Instance witness V : Inhabited (t V) := populate!.
 
 
 Global Arguments Buffered {V}.
-Global Arguments Idle {V}.
-Global Arguments SndPending {V}.
-Global Arguments RcvPending {V}.
-Global Arguments SndCommit {V}.
-Global Arguments RcvCommit {V}.
+Global Arguments Unbuffered {V}.
 Global Arguments Closed {V}.
 
 End chan_rep.
@@ -411,184 +403,132 @@ Qed.
 Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
   λ '(v,b), Φ v b.
 
-(** Inner atomic update for receive completion (second phase of handshake) *)
-Definition rcv_au_inner ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
-   |={⊤,∅}=>
-    ▷∃ s, "Hocinner" ∷ own_channel ch cap s γ ∗
-     "Hcontinner" ∷
-    (match s with
-    (* Case: Sender has committed, complete the exchange *)
-    | chan_rep.SndCommit v => own_channel ch cap chan_rep.Idle γ ={∅,⊤}=∗ Φ v true
-    (* Case: Channel is closed with no messages *)
-    | chan_rep.Closed [] => own_channel ch cap s γ ={∅,⊤}=∗ Φ (default_val V) false
-    | _ => True
-    end).
+(** Blocking receive atomic update *)
+Definition receive_au ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
+  |={⊤,∅}=>
+    ▷∃ s, own_channel ch cap s γ ∗
+          match s with
+          | chan_rep.Unbuffered sent false =>
+              own_channel ch cap (chan_rep.Unbuffered sent true) γ ={∅,⊤}=∗
+              (|={⊤,∅}=> ▷∃ s, own_channel ch cap s γ ∗
+                              match s with
+                              | chan_rep.Unbuffered (Some v) true =>
+                                  own_channel ch cap s γ ={∅,⊤}=∗ Φ v true
+                              | _ => True
+                              end)
+          | chan_rep.Buffered (v::rest) =>
+              (own_channel ch cap (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
+          | chan_rep.Closed (v::rest) =>
+              (own_channel ch cap (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
+          | chan_rep.Closed [] =>
+              own_channel ch cap s γ ={∅,⊤}=∗ Φ (default_val V) false
+          | _ => True
+          end.
 
-(** Slow path receive: may need to block and wait *)
-Definition rcv_au_slow ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
-   |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ own_channel ch cap s γ ∗
-     "Hcont" ∷
-    (match s with
-    (* Case: Sender is waiting, can complete immediately *)
-    | chan_rep.SndPending v =>
-          own_channel ch cap chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
-    (* Case: Channel is idle, need to wait for sender *)
-    | chan_rep.Idle =>
-          own_channel ch cap (chan_rep.RcvPending) γ ={∅,⊤}=∗
-              rcv_au_inner ch cap γ Φ
-    (* Case: Channel is closed *)
-    | chan_rep.Closed [] => own_channel ch cap s γ ={∅,⊤}=∗ Φ (default_val V) false
-    (* Case: Closed but still have values to drain *)
-    | chan_rep.Closed (v::rest) => (own_channel ch cap (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
-    (* Case: Buffered channel with values in buffer *)
-    | chan_rep.Buffered (v::rest) => (own_channel ch cap (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
-    | _ => True
-    end).
+(** Nonblocking receive atomic update *)
+Definition receive_nonblocking_au ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
+  |={⊤,∅}=>
+    ▷∃ s, own_channel ch cap s γ ∗
+          match s with
+          | chan_rep.Unbuffered (Some v) false =>
+              own_channel ch cap (chan_rep.Unbuffered (Some v) true) γ ={∅,⊤}=∗ Φ v true
+          | chan_rep.Buffered (v::rest) =>
+              (own_channel ch cap (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
+          | chan_rep.Closed (v::rest) =>
+              (own_channel ch cap (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
+          | chan_rep.Closed [] =>
+              own_channel ch cap s γ ={∅,⊤}=∗ Φ (default_val V) false
+          | _ => own_channel ch cap s γ ={∅,⊤}=∗ Φnotready
+          end.
 
-(** Fast path receive: immediate completion when possible *)
-Definition rcv_au_fast ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
-   |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ own_channel ch cap s γ ∗
-     "Hcont" ∷
-    (match s with
-    (* Case: Sender is waiting, can complete immediately *)
-    | chan_rep.SndPending v =>
-          own_channel ch cap chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
-    (* Case: Channel is closed *)
-    | chan_rep.Closed [] => own_channel ch cap s γ ={∅,⊤}=∗ Φ (default_val V) false
-    (* Case: Channel is closed but still has values to drain *)
-    | chan_rep.Closed (v::rest) => (own_channel ch cap (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
-    (* Case: Buffered channel with values *)
-    | chan_rep.Buffered (v::rest) => (own_channel ch cap (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
-    | _ => True
-    end).
+(** Blocking send atomic update *)
+Definition send_au ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
+  |={⊤,∅}=>
+    ▷∃ s, own_channel ch cap s γ ∗
+          match s with
+          | chan_rep.Unbuffered None received =>
+              own_channel ch cap (chan_rep.Unbuffered (Some v) received) γ ={∅,⊤}=∗
+              (|={⊤,∅}=> ▷∃ s, own_channel ch cap s γ ∗
+                              match s with
+                              | chan_rep.Unbuffered sent true =>
+                                  own_channel ch cap s γ ={∅,⊤}=∗ Φ
+                              | _ => True
+                              end)
+          | chan_rep.Buffered buff =>
+              ⌜ length buff < cap ⌝ -∗
+              own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ
+          | chan_rep.Closed _ => False
+          | _ => True
+          end.
 
-(** Inner atomic update for send completion (second phase of handshake) *)
-Definition send_au_inner ch (cap: Z) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
-   |={⊤,∅}=>
-    ▷∃ s, "Hocinner" ∷ own_channel ch cap s γ ∗
-     "Hcontinner" ∷
-    (match s with
-    (* Case: Receiver has committed, complete the exchange *)
-    | chan_rep.RcvCommit =>
-           own_channel ch cap chan_rep.Idle γ ={∅,⊤}=∗ Φ
-    (* Case: Channel is closed, operation fails *)
-    | chan_rep.Closed draining => False
-    | _ => True
-    end).
-
-(** Slow path send: may need to block and wait *)
-Definition send_au_slow ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
-   |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ own_channel ch cap s γ ∗
-     "Hcont" ∷
-    (match s with
-    (* Case: Receiver is waiting, can complete immediately *)
-    | chan_rep.RcvPending =>
-        own_channel ch cap (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
-    (* Case: Channel is idle, need to wait for receiver *)
-    | chan_rep.Idle =>
-          own_channel ch cap (chan_rep.SndPending v) γ ={∅,⊤}=∗
-              send_au_inner ch cap γ Φ
-    (* Case: Channel is closed, client must rule this out *)
-    | chan_rep.Closed draining => False
-    (* Case: Buffered channel with space available *)
-    | chan_rep.Buffered buff =>
-        if (decide (length buff < cap))
-        then (own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
-        else True
-    | _ => True
-    end).
-
-(** Fast path send: immediate completion when possible *)
-Definition send_au_fast ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
-   |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ own_channel ch cap s γ ∗
-     "Hcont" ∷
-    (match s with
-    (* Case: Receiver is waiting, can complete immediately *)
-    | chan_rep.RcvPending =>
-        own_channel ch cap (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
-    (* Case: Channel is closed, client must rule this out *)
-    | chan_rep.Closed draining => False
-    (* Case: Buffered channel with space available *)
-    | chan_rep.Buffered buff =>
-        if decide (length buff < cap)
-        then (own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
-        else True
-    | _ => True
-    end).
-
+(** Nonblocking send atomic update *)
+Definition send_nonblocking_au ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) Φnotready : iProp Σ :=
+  |={⊤,∅}=>
+    ▷∃ s, own_channel ch cap s γ ∗
+          match s with
+          | chan_rep.Unbuffered None received =>
+              own_channel ch cap (chan_rep.Unbuffered (Some v) true) γ ={∅,⊤}=∗ Φ
+          | chan_rep.Buffered buff =>
+              if decide (length buff < cap) then
+                own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ
+              else
+                own_channel ch cap s γ ={∅,⊤}=∗ Φnotready
+          | chan_rep.Closed _ => False
+          | _ => own_channel ch cap s γ ={∅,⊤}=∗ Φnotready
+          end.
 
 Definition close_au ch (cap: Z) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
-    ▷∃ s, "Hocinner" ∷ own_channel ch cap s γ ∗
-     "Hcontinner" ∷
-    (match s with
-    (* Case: Ready to close unbuffered *)
-    | chan_rep.Idle =>
-           own_channel ch cap (chan_rep.Closed []) γ ={∅,⊤}=∗ Φ
-    (* Case: Buffered, go to draining *)
-    | chan_rep.Buffered buff =>
-          own_channel ch cap (chan_rep.Closed buff) γ ={∅,⊤}=∗ Φ
-    (* Case: Channel is closed already, panic *)
-    | chan_rep.Closed draining => False
-    | _ => True
-    end).
+     ▷∃ s, own_channel ch cap s γ ∗
+           match s with
+           | chan_rep.Unbuffered x y=> own_channel ch cap (chan_rep.Closed []) γ ={∅,⊤}=∗ Φ
+           | chan_rep.Buffered buff => own_channel ch cap (chan_rep.Closed buff) γ ={∅,⊤}=∗ Φ
+           | chan_rep.Closed draining => False
+           end.
 
 
 (** Maps physical states to their logical representations with ghost state.
     This is the key invariant that connects the physical implementation
     to the logical specifications. *)
 Definition chan_logical (ch: loc) (cap: Z) (γ : chan_names) (s : chan_phys_state V): iProp Σ :=
-  match s with
-  | Idle =>
-       ∃ (Φr: V → bool → iProp Σ),
-           "Hoffer" ∷ offer_bundle_empty γ ∗
-           "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (K Φr) ∗
-            own_channel ch cap chan_rep.Idle γ
-
-  | SndWait v =>
-       ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ),
-          "Hoffer" ∷ offer_bundle_half γ (Some (Snd v)) P Φ ∗
-          "HP" ∷ P ∗
-          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (K Φr) ∗
-          "Hau" ∷ (P -∗ send_au_slow ch cap v γ Φ) ∗
-           own_channel ch cap chan_rep.Idle γ
-
-  | RcvWait =>
-       ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
-         "Hoffer" ∷ offer_bundle_half γ (Some Rcv) P True ∗
-         "HP" ∷ P ∗
-         "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (K Φr) ∗
-         "Hau" ∷ (P -∗ rcv_au_slow ch cap γ Φr) ∗
-         own_channel ch cap chan_rep.Idle γ
-
-  | SndDone v =>
-       ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
-       "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (K Φr) ∗
-       "Hoffer" ∷ offer_bundle_half γ (Some Rcv) P True ∗
-       "Hau" ∷ rcv_au_inner ch cap γ Φr ∗
-       own_channel ch cap (chan_rep.SndCommit v) γ
-
-  | RcvDone v =>
-       ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ),
-         "Hoffer" ∷ offer_bundle_half γ (Some (Snd v)) P Φ ∗
-         "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (K Φr) ∗
-         "Hau" ∷ send_au_inner ch cap γ Φ ∗
-       own_channel ch cap chan_rep.RcvCommit γ
-
-  | Closed [] =>
-          own_channel ch cap (chan_rep.Closed []) γ ∗
-           "Hoffer" ∷ if decide (cap = 0) then offer_bundle_empty γ else True
-
-  | Closed draining =>
-          own_channel ch cap (chan_rep.Closed draining) γ
-
-  | Buffered buff =>
-          own_channel ch cap (chan_rep.Buffered buff) γ
-  end.
+    match s with
+    | Idle =>
+        "Hoffer" ∷ offer_bundle_empty γ ∗
+        "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (λ _, True) ∗
+        "Hown" ∷ own_channel ch cap (chan_rep.Unbuffered None false) γ
+    | SndWait v =>
+        (* FIXME: combine Φ and Φr into offer_bundle *)
+        (∃ (P: iProp Σ) (Φ: iProp Σ),
+            "Hoffer" ∷ offer_bundle_half γ (Some (Snd v)) P Φ ∗
+            "HP" ∷ P ∗
+            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (λ _, True) ∗
+            "Hau" ∷ (P -∗ send_au ch cap v γ Φ) ∗
+            "Hown" ∷ own_channel ch cap (chan_rep.Unbuffered None false) γ)
+    | RcvWait =>
+        (∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
+            "Hoffer" ∷ offer_bundle_half γ (Some Rcv) P True ∗
+            "HP" ∷ P ∗
+            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (K Φr) ∗
+            "Hau" ∷ (P -∗ receive_au ch cap γ Φr) ∗
+            "Hown" ∷ own_channel ch cap (chan_rep.Unbuffered None false) γ)
+    | SndDone v =>
+        (∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
+            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (K Φr) ∗
+            "Hoffer" ∷ offer_bundle_half γ (Some Rcv) P True ∗
+            "HΦr" ∷ Φr v true ∗
+            "Hown" ∷ own_channel ch cap (chan_rep.Unbuffered None false) γ)
+    | RcvDone v =>
+        (∃ (P: iProp Σ) (Φ: iProp Σ),
+            "Hoffer" ∷ offer_bundle_half γ (Some (Snd v)) P Φ ∗
+            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (λ _, True) ∗
+            "Hau" ∷ Φ ∗
+            "Hown" ∷ own_channel ch cap (chan_rep.Unbuffered None false) γ)
+    | Buffered buff =>
+        "Hown" ∷ own_channel ch cap (chan_rep.Buffered buff) γ
+    | Closed draining =>
+        "Hown" ∷ own_channel ch cap (chan_rep.Closed draining) γ ∗
+        "Hoffer" ∷ offer_bundle_empty γ
+    end.
 
 (** The main invariant protected by the channel's mutex.
     This connects the physical heap state with the logical state. *)
