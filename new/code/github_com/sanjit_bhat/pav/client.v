@@ -773,7 +773,7 @@ Definition checkNonMembⁱᵐᵖˡ : val :=
     return: (![#boolT] "err")).
 
 (* go: evidence.go:31:19 *)
-Definition evidVrf__Checkⁱᵐᵖˡ : val :=
+Definition evidVrf__checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "e" := (mem.alloc "e") in
@@ -795,7 +795,7 @@ Definition evidVrf__Checkⁱᵐᵖˡ : val :=
      (func_call #bytes.Equal) "$a0" "$a1")).
 
 (* go: evidence.go:41:20 *)
-Definition evidLink__Checkⁱᵐᵖˡ : val :=
+Definition evidLink__checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "e" := (mem.alloc "e") in
@@ -828,21 +828,23 @@ Definition Evid__Checkⁱᵐᵖˡ : val :=
     let: "pk" := (mem.alloc "pk") in
     (if: (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e"))) ≠ #null
     then
+      (if: (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e"))) ≠ #null
+      then return: (#true)
+      else do:  #());;;
       return: (let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
-       (method_call #(ptrT.id evidVrf.id) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e")))) "$a0")
-    else do:  #());;;
-    (if: (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e"))) ≠ #null
-    then
+       (method_call #(ptrT.id evidVrf.id) #"check"%go (![#ptrT] (struct.field_ref #Evid #"vrf"%go (![#ptrT] "e")))) "$a0")
+    else
+      (if: (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e"))) = #null
+      then return: (#true)
+      else do:  #());;;
       return: (let: "$a0" := (![#cryptoffi.SigPublicKey] "pk") in
-       (method_call #(ptrT.id evidLink.id) #"Check"%go (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e")))) "$a0")
-    else do:  #());;;
-    return: (#true)).
+       (method_call #(ptrT.id evidLink.id) #"check"%go (![#ptrT] (struct.field_ref #Evid #"link"%go (![#ptrT] "e")))) "$a0"))).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (checkMemb, checkMembⁱᵐᵖˡ); (checkHist, checkHistⁱᵐᵖˡ); (checkNonMemb, checkNonMembⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Client.id, []); (ptrT.id Client.id, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); (pending.id, []); (ptrT.id pending.id, []); (epoch.id, []); (ptrT.id epoch.id, []); (serv.id, []); (ptrT.id serv.id, []); (Evid.id, []); (ptrT.id Evid.id, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrf.id, []); (ptrT.id evidVrf.id, [("Check"%go, evidVrf__Checkⁱᵐᵖˡ)]); (evidLink.id, []); (ptrT.id evidLink.id, [("Check"%go, evidLink__Checkⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Client.id, []); (ptrT.id Client.id, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); (pending.id, []); (ptrT.id pending.id, []); (epoch.id, []); (ptrT.id epoch.id, []); (serv.id, []); (ptrT.id serv.id, []); (Evid.id, []); (ptrT.id Evid.id, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrf.id, []); (ptrT.id evidVrf.id, [("check"%go, evidVrf__checkⁱᵐᵖˡ)]); (evidLink.id, []); (ptrT.id evidLink.id, [("check"%go, evidLink__checkⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo client.client :=
   {|

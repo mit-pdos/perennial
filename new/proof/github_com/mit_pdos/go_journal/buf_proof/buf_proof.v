@@ -329,8 +329,7 @@ Lemma buf_pointsto_non_null b a:
   b ↦s[buf.Buf :: "Addr"] addr2val a -∗ ⌜ #b ≠ #null ⌝.
 Proof.
   iIntros "Hb.a".
-  iDestruct (typed_pointsto_not_null with "Hb.a") as %Hnotnull.
-  { rewrite go_type_size_unseal. done. }
+  iDestruct (typed_pointsto_not_null with "Hb.a") as %Hnotnull; [done|].
   iPureIntro. intro H. subst.
   rewrite struct.field_ref_f_unseal in Hnotnull.
   rewrite to_val_unseal in H. simpl in H. inversion H. subst.

@@ -217,7 +217,7 @@ Section goose_lang.
     UpdateIntoPersistently (l ↦{dq} v) (l ↦□ v).
   Proof. apply _. Qed.
 
-  Lemma typed_pointsto_not_null l dq v :
+  Local Lemma typed_pointsto_not_null_aux l dq v :
     go_type_size t > 0 →
     l ↦{dq} v -∗ ⌜ l ≠ null ⌝.
   Proof using IntoValTyped0.
@@ -272,12 +272,12 @@ Section goose_lang.
   Qed.
 
   (* for automation - go_type_size_def t > 0 is provable using [auto] *)
-  Lemma pointsto_not_null l dq v :
+  Lemma typed_pointsto_not_null l dq v :
     go_type_size_def t > 0 →
     l ↦{dq} v -∗ ⌜l ≠ null⌝.
   Proof using IntoValTyped0.
     intros.
-    apply typed_pointsto_not_null.
+    apply typed_pointsto_not_null_aux.
     rewrite go_type_size_unseal //.
   Qed.
 

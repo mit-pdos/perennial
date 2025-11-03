@@ -655,6 +655,7 @@ Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
                                 (fun _ => Control.zero Walk_expr_more);
                               eapply (tac_wp_bind $k $e') >
                                 [simpl; reflexivity|ltac1:(reduction.pm_prettify)]; e'))
+  | [ |- _] => Control.zero (Tactic_failure (Some (fprintf "wp_bind: not a WP goal")))
   end.
 
 Tactic Notation "wp_bind" open_constr(e) :=
@@ -693,6 +694,7 @@ Ltac2 wp_bind_next () : unit :=
           | _ => eapply (tac_wp_bind $k $e) > [simpl; reflexivity|ltac1:(reduction.pm_prettify)]
           end
       end
+  | [ |- _] => Control.zero (Tactic_failure (Some (fprintf "wp_bind_next: not a WP goal")))
   end.
 
 Tactic Notation "wp_bind" := ltac2:(wp_bind_next ()).

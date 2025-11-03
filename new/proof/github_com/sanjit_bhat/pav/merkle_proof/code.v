@@ -1,6 +1,5 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
-From Perennial.Helpers Require Import bytes NamedProps condition.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From Stdlib.micromega Require Import ZifyNat.
 
 From New.proof Require Import bytes.
@@ -55,8 +54,7 @@ Lemma own_empty_tree t d :
 Proof.
   iIntros "H". destruct t; [done|..];
     iNamed "H"; iNamed "H";
-    (iDestruct (typed_pointsto_not_null with "Hnode") as %?; [|done]);
-    by rewrite go_type_size_unseal.
+    (by iDestruct (typed_pointsto_not_null with "Hnode") as %?; [done|]).
 Qed.
 
 #[global] Instance own_tree_dfrac ptr t :
@@ -119,10 +117,10 @@ Proof.
     try iNamedSuffix "H0" "0"; try iNamedSuffix "H1" "1";
     fold own_tree; subst.
   - by iModIntro.
-  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
-  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
-  - by iDestruct (pointsto_not_null with "Hnode1") as %?.
-  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode1") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode0") as %?.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
     iCombine "Hsl_label0 Hsl_label1" gives %->.
@@ -132,7 +130,7 @@ Proof.
     simplify_eq/=.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
-  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode0") as %?.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
@@ -142,7 +140,7 @@ Proof.
     by iModIntro.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
-  - by iDestruct (pointsto_not_null with "Hnode0") as %?.
+  - by iDestruct (typed_pointsto_not_null with "Hnode0") as %?.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
     simplify_eq/=.
   - iCombine "Hnode0 Hnode1" gives %[_ ?].
@@ -729,7 +727,7 @@ Proof.
   instantiate (1:=drop (depth_rem * 32) sibs_enc :: sibs).
   repeat iSplit; try iPureIntro.
   - rewrite reverse_cons join_app join_singleton -Henc_sibs take_drop //.
-  - apply Forall_cons; [|done]. rewrite length_drop. word.
+  - apply Forall_cons; split; [|done]. rewrite length_drop. word.
   - iFrame "∗#".
 Qed.
 
@@ -1060,7 +1058,7 @@ Proof.
       iDestruct (is_cut_tree_len with "Hchild0") as %?.
       iDestruct (is_cut_tree_len with "Hchild1") as %?.
       repeat (iSplit || iExists _); try done; try iPureIntro.
-      * apply Forall_cons; [|done].
+      * apply Forall_cons; split; [|done].
         destruct bit; word.
       * word.
       * replace (S _) with (length (pref ++ [get_bit label (length pref)])) by len.

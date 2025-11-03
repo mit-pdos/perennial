@@ -184,11 +184,11 @@ Proof.
 Qed.
 
 Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
-  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
+  {{{ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
     chan.send #t #ch #v
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & #Hfuture & Hfulfillt & HP) Hcont".
+  iIntros (Φ) "(#Hfuture & Hfulfillt & HP) Hcont".
 
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hiv]".
@@ -243,11 +243,11 @@ Qed.
 
 (** Future await operation - consumes await token to receive value and P(v) *)
 Lemma wp_future_await γ ch (P : V → iProp Σ) :
-  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
+  {{{ is_future γ ch P ∗ await_token γ }}}
     chan.receive #t #ch
   {{{ (v : V), RET (#v, #true); P v }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & #Hfuture & Hawaitt) Hcont".
+  iIntros (Φ) "(#Hfuture & Hawaitt) Hcont".
 
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".

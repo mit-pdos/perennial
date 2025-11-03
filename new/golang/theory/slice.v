@@ -233,8 +233,8 @@ Proof using Type*.
   destruct s; destruct vs; simpl in *; try lia.
   iDestruct "Hs" as "[Hptr _]".
   rewrite Z.mul_0_r loc_add_0.
-  unshelve (by iApply (typed_pointsto_not_null with "[$]")).
-  done.
+  rewrite go_type_size_unseal in Hbt.
+  by iDestruct (typed_pointsto_not_null with "Hptr") as %?.
 Qed.
 
 Lemma own_slice_cap_wf s dq :

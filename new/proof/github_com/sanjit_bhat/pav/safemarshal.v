@@ -1,6 +1,5 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import safemarshal.
-From Perennial.Helpers Require Import NamedProps.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof.github_com.tchajed Require Import marshal.
 
@@ -40,7 +39,7 @@ Definition pure_enc (obj : w8) :=
 Definition wish b obj tail :=
   b = pure_enc obj ++ tail.
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -94,7 +93,7 @@ Definition pure_enc obj :=
 Definition wish b obj tail :=
   b = pure_enc obj ++ tail.
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -141,18 +140,19 @@ End proof.
 End w64.
 
 Module Slice1D.
+Definition t := list w8.
 
 Definition pure_enc obj :=
   w64.pure_enc (length obj) ++ obj.
 
-Definition wish b obj tail :=
-  ∃ t0,
-  w64.wish b (length obj) t0 ∧
-  t0 = obj ++ tail ∧
-
+Definition valid (obj : t) :=
   sint.Z (W64 (length obj)) = length obj.
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
