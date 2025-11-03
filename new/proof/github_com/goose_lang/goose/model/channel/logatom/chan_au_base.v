@@ -581,7 +581,7 @@ Definition chan_logical (ch: loc) (cap: Z) (γ : chan_names) (s : chan_phys_stat
 
   | Closed [] =>
           own_channel ch cap (chan_rep.Closed []) γ ∗
-           "Hoffer" ∷ if (cap =? 0) then offer_bundle_empty γ else True
+           "Hoffer" ∷ if decide (cap = 0) then offer_bundle_empty γ else True
 
   | Closed draining =>
           own_channel ch cap (chan_rep.Closed draining) γ
