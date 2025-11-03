@@ -216,6 +216,7 @@ Lemma is_pkg_init_unfold (pkg_name : go_string) `{!IsPkgInit pkg_name} :
   "#Hinit" ∷ □ is_pkg_init_def pkg_name)%I.
 Proof. done. Qed.
 
+(* access user-defined init predicate. *)
 Lemma is_pkg_init_access (pkg_name : go_string) `{!IsPkgInit pkg_name} :
   is_pkg_init pkg_name -∗
   is_pkg_init_def pkg_name.

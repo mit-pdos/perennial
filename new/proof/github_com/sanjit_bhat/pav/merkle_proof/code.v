@@ -343,7 +343,6 @@ Qed.
 Lemma wp_node_getHash t n d :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "Hown_tree" ∷ own_tree n t d
   }}}
   n @ (ptrT.id merkle.node.id) @ "getHash" #()
@@ -357,6 +356,7 @@ Proof.
   wp_start as "@". wp_auto.
   wp_if_destruct.
   { iDestruct (own_empty_tree with "Hown_tree") as %->.
+    iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
     rewrite /is_initialized. iNamed "Hinit".
     wp_apply wp_globals_get.
     iApply "HΦ". iFrame "∗#". }
@@ -386,7 +386,6 @@ Lemma wp_put n0 n t sl_label sl_val label val :
   is_sorted t →
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "Hn0_in" ∷ n0 ↦ n ∗
     "Hown_tree" ∷ own_tree n t 1 ∗
     "#Hsl_label_in" ∷ sl_label ↦*□ label ∗
@@ -510,7 +509,8 @@ Proof.
     { iFrame "∗#".
       case_match.
       - iFrame "∗#".
-      - rewrite /is_initialized. iNamed "Hinit".
+      - iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
+        rewrite /is_initialized. iNamed "Hinit".
         by iFrame "#". }
     destruct err; iNamed "Hgenie".
     { iExFalso. iApply "Hgenie". iPureIntro. by case_match. }
@@ -532,7 +532,8 @@ Proof.
     { iFrame "#".
       destruct (get_bit label _); [|by iFrame].
       case_match.
-      - rewrite /is_initialized. iNamed "Hinit".
+      - iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
+        rewrite /is_initialized. iNamed "Hinit".
         by iFrame "#".
       - iFrame "∗#". }
     iIntros "*". iNamedSuffix 1 "0". wp_auto.
@@ -543,7 +544,8 @@ Proof.
     { iFrame "#".
       destruct (get_bit label _); [by iFrame|].
       case_match.
-      - rewrite /is_initialized. iNamed "Hinit".
+      - iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
+        rewrite /is_initialized. iNamed "Hinit".
         by iFrame "#".
       - iFrame "∗#". }
     iIntros "*". iNamedSuffix 1 "1". wp_auto.
@@ -648,7 +650,6 @@ Qed.
 Lemma wp_newShell sl_label label sl_sibs sibs_enc (depth depth_rem : nat) :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "#Hsl_label" ∷ sl_label ↦*□ label ∗
     "#Hsl_sibs" ∷ sl_sibs ↦*□ sibs_enc ∗
     "%Hlen_sibs" ∷ ⌜length sibs_enc = (depth_rem * Z.to_nat cryptoffi.hash_len)%nat⌝ ∗
@@ -671,6 +672,7 @@ Proof.
     destruct sibs_enc. 2: { simpl in *. word. }
     instantiate (1:=[]).
     repeat iSplit; try done.
+    iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
     rewrite /is_initialized. iNamed "Hinit".
     by iFrame "#". }
   destruct depth_rem; [word|].
@@ -804,7 +806,6 @@ Tactic Notation "intro_wish" := iIntros "(%&%&@)".
 Lemma wp_proofToTree sl_label label sl_proof proof :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "#Hsl_label" ∷ sl_label ↦*□ label ∗
     "#Hsl_proof" ∷ sl_proof ↦*□ proof
   }}}
@@ -920,7 +921,6 @@ Lemma wp_node_find n t d0 sl_label d1 label (getProof : bool) :
   is_cutless_path t label →
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "Hown_tree" ∷ own_tree n t d0 ∗
     "Hsl_label_in" ∷ sl_label ↦*{d1} label ∗
     (* [is_sorted] lets us know that put (found-label) on
@@ -1110,7 +1110,6 @@ Qed.
 Lemma wp_VerifyNonMemb sl_label label sl_proof proof :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "#Hsl_label" ∷ sl_label ↦*□ label ∗
     "#Hsl_proof" ∷ sl_proof ↦*□ proof
   }}}
@@ -1139,7 +1138,6 @@ Proof.
   iNamed "Hgenie".
   iDestruct (proofToTree_post with "[$]") as "#@".
   wp_apply (wp_node_getHash with "[$Hown_tree]") as "* @".
-  { iFrame "#". }
   iApply "HΦ".
   iDestruct (is_cut_tree_len with "His_hash") as %?.
   iDestruct (is_map_invert hash) as "[% #His_map]"; [done|].
@@ -1173,7 +1171,6 @@ Qed.
 Lemma wp_VerifyMemb sl_label label sl_val val sl_proof proof :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "#Hsl_label" ∷ sl_label ↦*□ label ∗
     "#Hsl_val" ∷ sl_val ↦*□ val ∗
     "#Hsl_proof" ∷ sl_proof ↦*□ proof
@@ -1211,7 +1208,6 @@ Proof.
   wp_apply wp_Assert; [done|].
 
   wp_apply (wp_node_getHash with "[$Hown_tree]") as "* @".
-  { iFrame "#". }
   iApply "HΦ".
   iDestruct (is_cut_tree_len with "His_hash") as %?.
   iDestruct (is_map_invert hash) as "[% #His_map]"; [done|].
@@ -1250,7 +1246,6 @@ Qed.
 Lemma wp_VerifyUpdate sl_label label sl_val val sl_proof proof :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "#Hsl_label" ∷ sl_label ↦*□ label ∗
     "#Hsl_val" ∷ sl_val ↦*□ val ∗
     "#Hsl_proof" ∷ sl_proof ↦*□ proof
@@ -1286,7 +1281,6 @@ Proof.
   iNamed "Hwish".
 
   wp_apply (wp_node_getHash with "[$Hown_tree]") as "*".
-  { iFrame "#". }
   iNamedSuffix 1 "_old". wp_auto.
   wp_apply (wp_put with "[$tr $Hown_tree_old]") as "* @"; try done.
   { iFrame "#". }
@@ -1294,7 +1288,6 @@ Proof.
   { iExFalso. by iApply "Hgenie". }
   wp_apply wp_Assert; [done|].
   wp_apply (wp_node_getHash with "[$Hown_tree]") as "*".
-  { iFrame "#". }
   iNamedSuffix 1 "_new". wp_auto.
 
   iApply "HΦ".
@@ -1329,7 +1322,6 @@ Qed.
 Lemma wp_node_prove n t d0 sl_label d1 label getProof :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "Hown_tree" ∷ own_tree n t d0 ∗
     "Hsl_label" ∷ sl_label ↦*{d1} label ∗
 
@@ -1366,7 +1358,6 @@ Lemma wp_node_prove n t d0 sl_label d1 label getProof :
 Proof.
   wp_start as "@". wp_auto.
   wp_apply (wp_node_find with "[$Hown_tree $Hsl_label]") as "* @"; try done.
-  { iFrame "#%". }
 
   wp_bind (If _ _ _).
   wp_apply (wp_wand _ _ _
@@ -1508,11 +1499,12 @@ Proof.
 Qed.
 
 Lemma own_Map_init ptr d0 :
-  ("#Hinit" ∷ is_initialized ∗
+  ("#Hpkg" ∷ is_pkg_init merkle ∗
   "Hstruct" ∷ ptr ↦{d0} (merkle.Map.mk null)) -∗
   ∃ hash, "Hown_Map" ∷ own_Map ptr ∅ hash d0.
 Proof.
   iIntros "@".
+  iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
   rewrite /is_initialized. iNamed "Hinit".
   iExists _, null, Empty.
   iFrame "∗#".
@@ -1573,7 +1565,6 @@ Qed.
 Lemma wp_Map_Hash ptr m hash d0 :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "Hown_Map" ∷ own_Map ptr m hash d0
   }}}
   ptr @ (ptrT.id merkle.Map.id) @ "Hash" #()
@@ -1588,7 +1579,6 @@ Proof.
   wp_auto.
   iRename "His_hash" into "His_hash'".
   wp_apply (wp_node_getHash with "[$Hown_tree]") as "* @".
-  { iFrame "#". }
   iDestruct (is_cut_tree_det with "His_hash His_hash'") as %->.
   iApply "HΦ".
   iFrame "∗#%".
@@ -1597,7 +1587,6 @@ Qed.
 Lemma wp_Map_Prove ptr m hash d0 sl_label d1 label :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "Hown_Map" ∷ own_Map ptr m hash d0 ∗
     "Hsl_label" ∷ sl_label ↦*{d1} label ∗
     "%Hlen_label" ∷ ⌜Z.of_nat $ length label = cryptoffi.hash_len⌝
@@ -1641,7 +1630,6 @@ Qed.
 Lemma wp_Map_Put ptr m hash sl_label label sl_val val :
   {{{
     is_pkg_init merkle ∗
-    "#Hinit" ∷ is_initialized ∗
     "Hown_Map" ∷ own_Map ptr m hash 1 ∗
     "#Hsl_label" ∷ sl_label ↦*□ label ∗
     "#Hsl_val" ∷ sl_val ↦*□ val ∗
@@ -1673,7 +1661,6 @@ Proof.
   iDestruct (struct_fields_split with "Hstruct") as "H".
   iNamed "H". simpl.
   wp_apply (wp_put with "[$Hown_tree $Hsl_label $Hroot]") as "* @"; try done.
-  { iFrame "#". }
   destruct err.
   { iExFalso. iApply "Hgenie". iPureIntro. by eapply is_cutless_to_path. }
   wp_apply std.wp_Assert; [done|].
