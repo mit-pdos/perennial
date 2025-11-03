@@ -167,6 +167,88 @@ Qed.
 
 End instances.
 
+(* type chan_spec_raw_examples.stream *)
+Module stream.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  req' : loc;
+  res' : loc;
+  f' : func.t;
+}.
+End def.
+End stream.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent chan_spec_raw_examples.stream.
+#[local] Typeclasses Transparent chan_spec_raw_examples.stream.
+
+Global Instance stream_wf : struct.Wf chan_spec_raw_examples.stream.
+Proof. apply _. Qed.
+
+Global Instance settable_stream : Settable stream.t :=
+  settable! stream.mk < stream.req'; stream.res'; stream.f' >.
+Global Instance into_val_stream : IntoVal stream.t :=
+  {| to_val_def v :=
+    struct.val_aux chan_spec_raw_examples.stream [
+    "req" ::= #(stream.req' v);
+    "res" ::= #(stream.res' v);
+    "f" ::= #(stream.f' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_stream : IntoValTyped stream.t chan_spec_raw_examples.stream :=
+{|
+  default_val := stream.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_stream_req : IntoValStructField "req" chan_spec_raw_examples.stream stream.req'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_stream_res : IntoValStructField "res" chan_spec_raw_examples.stream stream.res'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_stream_f : IntoValStructField "f" chan_spec_raw_examples.stream stream.f'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_stream req' res' f':
+  PureWp True
+    (struct.make #chan_spec_raw_examples.stream (alist_val [
+      "req" ::= #req';
+      "res" ::= #res';
+      "f" ::= #f'
+    ]))%struct
+    #(stream.mk req' res' f').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance stream_struct_fields_split dq l (v : stream.t) :
+  StructFieldsSplit dq l v (
+    "Hreq" ∷ l ↦s[chan_spec_raw_examples.stream :: "req"]{dq} v.(stream.req') ∗
+    "Hres" ∷ l ↦s[chan_spec_raw_examples.stream :: "res"]{dq} v.(stream.res') ∗
+    "Hf" ∷ l ↦s[chan_spec_raw_examples.stream :: "f"]{dq} v.(stream.f')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (stream.req' v)) (chan_spec_raw_examples.stream) "req"%go.
+  simpl_one_flatten_struct (# (stream.res' v)) (chan_spec_raw_examples.stream) "res"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -231,8 +313,20 @@ Global Instance wp_func_call_fib_consumer :
   WpFuncCall chan_spec_raw_examples.fib_consumer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_simple_join :
+  WpFuncCall chan_spec_raw_examples.simple_join _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_simple_multi_join :
+  WpFuncCall chan_spec_raw_examples.simple_multi_join _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_select_nb_no_panic :
   WpFuncCall chan_spec_raw_examples.select_nb_no_panic _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_select_no_double_close :
+  WpFuncCall chan_spec_raw_examples.select_no_double_close _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_select_ready_case_no_panic :
@@ -293,6 +387,26 @@ Global Instance wp_func_call_ho_worker :
 
 Global Instance wp_func_call_HigherOrderExample :
   WpFuncCall chan_spec_raw_examples.HigherOrderExample _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_mkStream :
+  WpFuncCall chan_spec_raw_examples.mkStream _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Async :
+  WpFuncCall chan_spec_raw_examples.Async _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MapServer :
+  WpFuncCall chan_spec_raw_examples.MapServer _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Muxer :
+  WpFuncCall chan_spec_raw_examples.Muxer _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CancellableMuxer :
+  WpFuncCall chan_spec_raw_examples.CancellableMuxer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_worker :
