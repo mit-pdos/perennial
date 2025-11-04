@@ -306,13 +306,12 @@ Proof.
 Qed.
 
 Lemma wp_done_close γ ch R :
-  {{{ is_pkg_init channel ∗
-      is_done γ ch ∗
+  {{{ is_done γ ch ∗
       Notify γ R ∗ R }}}
     chan.close #t #ch
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ). iIntros "(#Hinit & #Hdone & Hrest)".  iNamed "Hrest".
+  iIntros (Φ). iIntros "(#Hdone & Hrest)".  iNamed "Hrest".
   iDestruct "Hrest" as "[HNh HR]".
   iIntros "Hphi".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
@@ -466,13 +465,12 @@ Proof.
 Qed.
 
 Lemma wp_done_receive γ ch Q :
-  {{{ is_pkg_init channel ∗
-      is_done γ ch ∗
+  {{{ is_done γ ch ∗
       Notified γ Q }}}
     chan.receive #t #ch
   {{{ RET (#(default_val V), #false); Q }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & #Hdone & HNotified) Hcont".
+  iIntros (Φ) "(#Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
    iApply (chan.wp_receive ch 0 γ.(chan_name) with "[$Hch]").
 
