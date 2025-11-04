@@ -27,8 +27,12 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 #[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
 Instance stream_countable : Countable stream.t.
-Proof. Admitted.
-
+Proof.
+  refine (inj_countable'
+           (λ x, (stream.req' x, stream.res' x, stream.f' x))
+          (λ '(a, b, c), stream.mk a b c) _).
+  by intros [].
+Defined.
 
 Section hello_world.
 Context `{!chanGhostStateG Σ go_string}.

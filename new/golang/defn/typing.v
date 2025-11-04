@@ -74,6 +74,17 @@ Record t := mk {
       e : expr;
     }.
 Definition nil := mk <> <> (LitV LitPoison).
+
+#[global] Instance : EqDecision t.
+Proof. solve_decision. Qed.
+
+#[global] Instance : Countable t.
+Proof.
+  refine (inj_countable' (λ fn, (f fn, x fn, e fn))
+            (λ '(f, x, e), (mk f x e)) _).
+  by intros [].
+Defined.
+
 End defn.
 End func.
 

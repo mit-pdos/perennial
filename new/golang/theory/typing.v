@@ -503,7 +503,6 @@ Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
 Qed.
-Final Obligation. solve_decision. Qed.
 
 Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
 {| default_val := interface.nil |}.
