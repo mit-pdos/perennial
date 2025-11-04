@@ -3,7 +3,7 @@ From iris.algebra Require Import dfrac.
 From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export loop array primitive auto.
+From New.golang.theory Require Export loop array primitive.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -427,50 +427,60 @@ Lemma wp_slice_slice_pure s (n m: w64) :
     Slice (go.SliceType t) (#s, (#n, #m))%V
   {{{ RET #(slice.slice s t n m); True }}}.
 Proof.
-  wp_start as "%".
-  wp_pure.
-  wp_pures.
+  iIntros "% % HΦ".
+  wp_pure. wp_pures.
   iApply "HΦ". done.
 Qed.
 
 Lemma own_slice_split k s dq (vs: list V) n m :
   0 ≤ sint.Z n ≤ sint.Z k ≤ sint.Z m →
-  slice.slice_f s t n m ↦[t]*{dq} vs ⊣⊢
-  slice.slice_f s t n k ↦[t]*{dq} take (sint.nat k - sint.nat n)%nat vs ∗
-  slice.slice_f s t k m ↦[t]*{dq} drop (sint.nat k - sint.nat n)%nat vs.
+  slice.slice s t n m ↦[t]*{dq} vs ⊣⊢
+  slice.slice s t n k ↦[t]*{dq} take (sint.nat k - sint.nat n)%nat vs ∗
+  slice.slice s t k m ↦[t]*{dq} drop (sint.nat k - sint.nat n)%nat vs.
 Proof.
   intros Hle.
   rewrite -{1}(take_drop (sint.nat k - sint.nat n)%nat vs).
   rewrite own_slice_unseal /own_slice_def /=.
-  setoid_rewrite loc_add_assoc; setoid_rewrite <- Z.mul_add_distr_l.
-  rewrite big_sepL_app.
-  len.
-  replace (sint.nat (word.sub m n)) with (sint.nat m - sint.nat n)%nat by word.
-  iSplit.
-  - iIntros "((Hvs1 & Hvs2) & %Hwf)".
-    iSplitL "Hvs1".
-    + iSplit; [ | iPureIntro; move: Hwf; word ].
-      iFrame "Hvs1".
-    + iSplit; [ | iPureIntro; move: Hwf; word ].
-      iExactEq "Hvs2".
-      apply big_opL_ext => i v Hget.
-      do 3 f_equal.
-      word.
-  - iIntros "((Hvs1 & %Hwf1) & (Hvs2 & %Hwf2))".
-    iFrame "Hvs1".
-    iSplit; [ | iPureIntro; move: Hwf1 Hwf2; word ].
-    iExactEq "Hvs2".
-    apply big_opL_ext  => i v Hget.
-    do 3 f_equal.
-    move: Hwf1 Hwf2; word.
+  rewrite /slice_index_ref /=. iSplit.
+  - iIntros "[H %]".
+    iDestruct (array_len with "H") as %Hlen.
+    iDestruct (array_split (word.sub k n) with "H") as "[H1 H2]".
+    { word. }
+    iSplitL "H1".
+    + iSplitL; last by len. iExactEq "H1". f_equal. f_equal.
+      rewrite take_app_le. 2:{ revert Hlen. len. } rewrite take_take. f_equal. word.
+    + iSplitL; last by len. rewrite -go.array_index_ref_add.
+      iExactEq "H2".
+      replace (word.signed (word.sub m n) - word.signed (word.sub k n)) with
+        (word.signed (word.sub m k)) by word. f_equal.
+      * f_equal. word.
+      * f_equal. rewrite drop_app_ge.
+        2:{ revert Hlen. len. }
+        rewrite drop_drop. f_equal. revert Hlen. len.
+  - iIntros "[[H1 %] [H2 %]]". iSplitL; last by len.
+    iDestruct (array_len with "H1") as %Hlen1.
+    iDestruct (array_len with "H1") as %Hlen2.
+    iApply (array_split (word.sub k n)).
+    { word. }
+    iSplitL "H1".
+    + iExactEq "H1". f_equal. f_equal.
+      rewrite take_app_le. 2:{ revert Hlen1 Hlen2. len. } rewrite take_take. f_equal. word.
+    + rewrite -go.array_index_ref_add.
+      replace (word.signed (word.sub m n) - word.signed (word.sub k n)) with
+        (word.signed (word.sub m k)) by word.
+      iExactEq "H2". f_equal.
+      * f_equal. word.
+      * f_equal. rewrite drop_app_ge.
+        2:{ revert Hlen1 Hlen2. len. }
+        rewrite drop_drop. f_equal. revert Hlen1 Hlen2. len.
 Qed.
 
 Lemma own_slice_combine k s dq (vs1 vs2: list V) n m :
   length vs1 = (sint.nat k - sint.nat n)%nat ∧
   0 ≤ sint.Z n ≤ sint.Z k ≤ sint.Z m →
-  slice.slice_f s t n k ↦[t]*{dq} vs1 -∗
-  slice.slice_f s t k m ↦[t]*{dq} vs2 -∗
-  slice.slice_f s t n m ↦[t]*{dq} (vs1 ++ vs2).
+  slice.slice s t n k ↦[t]*{dq} vs1 -∗
+  slice.slice s t k m ↦[t]*{dq} vs2 -∗
+  slice.slice s t n m ↦[t]*{dq} (vs1 ++ vs2).
 Proof.
   iIntros (Hwf) "Hs1 Hs2".
   iApply (own_slice_split k).
@@ -483,11 +493,11 @@ Qed.
 Lemma own_slice_split_all k s dq (vs: list V) :
   0 ≤ sint.Z k ≤ sint.Z s.(slice.len) →
   s ↦[t]*{dq} vs ⊣⊢
-  slice.slice_f s t (W64 0) k ↦[t]*{dq} take (sint.nat k) vs ∗
-  slice.slice_f s t k s.(slice.len) ↦[t]*{dq} drop (sint.nat k)%nat vs.
+  slice.slice s t (W64 0) k ↦[t]*{dq} take (sint.nat k) vs ∗
+  slice.slice s t k s.(slice.len) ↦[t]*{dq} drop (sint.nat k)%nat vs.
 Proof.
   intros Hle.
-  rewrite {1}(own_slice_trivial_slice_f s).
+  rewrite {1}(own_slice_trivial_slice s).
   rewrite -> (own_slice_split k) by word.
   replace (sint.nat (W64 0)) with 0%nat by word.
   replace (sint.nat k - 0)%nat with (sint.nat k) by lia.
@@ -495,28 +505,13 @@ Proof.
 Qed.
 
 (* [own_slice_cap] only depends on where the end of the slice is *)
-Lemma own_slice_cap_same_end s s' dq :
-  slice.ptr s +ₗ[t] sint.Z (slice.len s) = slice.ptr s' +ₗ[t] sint.Z (slice.len s') →
-  sint.Z (slice.cap s) - sint.Z (slice.len s) = sint.Z (slice.cap s') - sint.Z (slice.len s') →
-  0 ≤ sint.Z (slice.len s) ∧ 0 ≤ sint.Z (slice.len s') →
-  own_slice_cap V s dq ⊣⊢ own_slice_cap V s' dq.
-Proof.
-  intros Hend Hcap Hwf.
-  rewrite own_slice_cap_unseal /own_slice_cap_def.
-  assert (word.sub (slice.cap s) (slice.len s) = word.sub (slice.cap s') (slice.len s'))
-    as Hdiff by word.
-  rewrite -Hdiff.
-  rewrite -!Hend.
-  f_equiv.
-  iPureIntro; word.
-Qed.
-
-Lemma own_slice_cap_slice_f_change_first s n n' m dq :
+Lemma own_slice_cap_slice_change_first s n n' m dq :
   sint.Z m ≤ sint.Z s.(slice.cap) ∧
   0 ≤ sint.Z n ≤ sint.Z m ∧ 0≤ sint.Z n' ≤ sint.Z m →
-  own_slice_cap V (slice.slice_f s t n m) dq ⊣⊢ own_slice_cap V (slice.slice_f s t n' m) dq.
+  own_slice_cap t (slice.slice s t n m) dq ⊣⊢ own_slice_cap t (slice.slice s t n' m) dq.
 Proof.
   intros Hbound.
+  rewrite own_slice_cap_unseal
   apply own_slice_cap_same_end; simpl.
   - rewrite !loc_add_assoc -!Z.mul_add_distr_l.
     repeat (f_equal; try word).
