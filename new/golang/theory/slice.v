@@ -3,7 +3,7 @@ From iris.algebra Require Import dfrac.
 From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export loop array primitive.
+From New.golang.theory Require Export loop array primitive auto.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -392,60 +392,29 @@ Qed.
 
 (* FIXME: full slice expression vs simple slice expr. *)
 Global Instance pure_slice_slice s (n m : w64) :
-  PureWp (0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z (slice.cap s) ∧
-          0 ≤ sint.Z (slice.len s) ≤ sint.Z (slice.cap s))
-    (Slice (go.SliceType t) (#s, #n, #m)%V)
+  PureWp (0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z (slice.cap s))
+    (Slice (go.SliceType t) (#s, (#n, #m))%V)
     #(slice.slice s t n m).
 Proof.
-  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
+  iIntros "% * % % HΦ"; iApply wp_GoInstruction;
   [ intros; repeat econstructor | ].
-  { Search Slice.
-    slice_slice_step_pure:
-  }
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
-  iFrame; by iIntros "$".
-
-  wp_pure.
-  wp_call_lc "?".
-  rewrite bool_decide_true; last word.
-  wp_pures.
-  rewrite bool_decide_true; last word.
-  wp_pures.
-  rewrite bool_decide_true; last word.
-  wp_pures.
-  iDestruct ("HΦ" with "[$]") as "HΦ".
-  replace (uint.Z n) with (sint.Z n) by word.
-  wp_pures.
-  iExactEq "HΦ".
-  repeat f_equal.
-  rewrite !to_val_unseal /=.
-  rewrite !to_val_unseal /=.
-  reflexivity.
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  apply into_val_inj in H3, H4. subst.
+  rewrite decide_True //.
+  iFrame. by iIntros "$".
 Qed.
 
 Global Instance pure_full_slice s (n m c : w64) :
-  PureWp (0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z c ∧
-          0 ≤ sint.Z c ≤ sint.Z (slice.cap s)) (slice.full_slice t #s #n #m #c)
-    #(slice.full_slice_f s t n m c).
+  PureWp (0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z c ∧ sint.Z c ≤ sint.Z (slice.cap s))
+    (FullSlice (go.SliceType t) (#s, (#n, #m, #c))%V)
+    #(slice.full_slice s t n m c).
 Proof.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?".
-  rewrite bool_decide_true; last word.
-  wp_pures.
-  rewrite bool_decide_true; last word.
-  wp_pures.
-  rewrite bool_decide_true; last word.
-  wp_pures.
-  rewrite bool_decide_true; last word.
-  wp_pures.
-  iDestruct ("HΦ" with "[$]") as "HΦ".
-  replace (uint.Z n) with (sint.Z n) by word.
-  iExactEq "HΦ".
-  repeat f_equal.
-  rewrite /slice.full_slice_f.
-  rewrite !to_val_unseal /=.
-  rewrite !to_val_unseal /=.
-  reflexivity.
+  iIntros "% * % % HΦ"; iApply wp_GoInstruction;
+  [ intros; repeat econstructor | ].
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  apply into_val_inj in H3, H4, H5. subst.
+  rewrite decide_True //.
+  iFrame. by iIntros "$".
 Qed.
 
 (** WP version of PureWp for discoverability and use with wp_apply.
@@ -454,10 +423,9 @@ TODO: if PureWp instances had their pure side conditions dispatched with [word]
 this lemma would be pretty much unnecessary.
 *)
 Lemma wp_slice_slice_pure s (n m: w64) :
-  {{{ ⌜0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.cap) ∧
-        0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap)⌝ }}}
-    slice.slice t #s #n #m
-  {{{ RET #(slice.slice_f s t n m); True }}}.
+  {{{ ⌜ 0 ≤ sint.Z n ≤ sint.Z m ≤ sint.Z s.(slice.cap) ⌝ }}}
+    Slice (go.SliceType t) (#s, (#n, #m))%V
+  {{{ RET #(slice.slice s t n m); True }}}.
 Proof.
   wp_start as "%".
   wp_pure.

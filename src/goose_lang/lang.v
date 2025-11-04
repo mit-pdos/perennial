@@ -181,6 +181,7 @@ Inductive go_op : Type :=
 | IndexRef (t : go.type)
 | Index (t : go.type)
 | Slice (t : go.type)
+| FullSlice (t : go.type)
 
 | ArrayAppend
 
@@ -736,17 +737,31 @@ Inductive is_go_step_pure `{!GoContext} :
     (GoInstruction (GoAlloc $ go.ArrayType (sint.Z n) elem_type) #())
 | internal_slice_make_pure p l c :
   is_go_step_pure InternalMakeSlice (#p, #l, #c) #(slice.mk p l c)
-| slice_array_step_pure n elem_type p low high max :
+| slice_array_step_pure n elem_type p low high:
   is_go_step_pure (Slice (go.ArrayType n elem_type))
+    (#p, (#low, #high))%V
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
+       #(slice.mk (array_index_ref elem_type (sint.Z low) p)
+           (word.sub high low) (word.sub (W64 n) low))
+     else Panic "slice bounds out of range")
+| full_slice_array_step_pure n elem_type p low high max :
+  is_go_step_pure (FullSlice (go.ArrayType n elem_type))
     (#p, (#low, #high, #max))%V
-    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max < n) then
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
        #(slice.mk (array_index_ref elem_type (sint.Z low) p)
            (word.sub high low) (word.sub max low))
      else Panic "slice bounds out of range")
-| slice_slice_step_pure elem_type s low high max :
+| slice_slice_step_pure elem_type s low high :
   is_go_step_pure (Slice (go.SliceType elem_type))
+    (#s, (#low, #high))%V
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
+       #(slice.mk (array_index_ref elem_type (sint.Z low) s.(slice.ptr))
+           (word.sub high low) (word.sub s.(slice.cap) low))
+     else Panic "slice bounds out of range")
+| full_slice_slice_step_pure elem_type s low high max :
+  is_go_step_pure (FullSlice (go.SliceType elem_type))
     (#s, (#low, #high, #max))%V
-    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max < sint.Z s.(slice.cap)) then
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
        #(slice.mk (array_index_ref elem_type (sint.Z low) s.(slice.ptr))
            (word.sub high low) (word.sub max low))
      else Panic "slice bounds out of range")
