@@ -766,14 +766,14 @@ Qed.
 
 Lemma wp_mpmc_close γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)):
   length producers = n_prod →
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_pkg_init channel ∗ is_mpmc γ ch n_prod n_cons P R ∗
+  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_mpmc γ ch n_prod n_cons P R ∗
       ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
       R (foldr (⊎) ∅ producers) }}}
     chan.close #t #ch
   {{{ RET #(); True }}}.
 Proof.
   intros.
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & #Hinit & #Hmpmc & Hprods & HR) Hcont".
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & #Hmpmc & Hprods & HR) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
   iApply (chan.wp_close ch cap γ.(mpmc_chan_name) with "[$Hchan]").

@@ -47,7 +47,7 @@ Proof.
 Qed.
 
 Lemma wp_HelloWorldAsync :
-  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel  }}}
+  {{{ is_pkg_init chan_spec_raw_examples  }}}
     @! chan_spec_raw_examples.HelloWorldAsync #()
   {{{ (ch: loc) (γfuture: future_names), RET #ch; is_future (V:=go_string) (t:=stringT) γfuture ch
         (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)  ∗
@@ -80,12 +80,12 @@ Proof.
 Qed.
 
 Lemma wp_HelloWorldSync :
-  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
+  {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HelloWorldSync #()
   {{{ RET #("Hello, World!"); True }}}.
 Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
   wp_start.
-  wp_apply wp_HelloWorldAsync; first done.
+  wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hfut Hawait]".
   wp_apply (chan.wp_receive) as "[Hlc _]".
   { iApply future_is_channel; done. }
@@ -109,9 +109,7 @@ Context `{!ghost_mapG Σ nat gname}.
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
   (γdone: done_names) :
-  {{{ is_pkg_init channel ∗
-        is_pkg_init chan_spec_raw_examples ∗
-
+  {{{ is_pkg_init chan_spec_raw_examples ∗
         is_done (V:=unit) (t:=structT []) γdone done_ch ∗
         Notified γdone (err_ptr1 ↦ err_msg)  }}}
     @! chan_spec_raw_examples.HelloWorldCancellable #done_ch #err_ptr1
@@ -124,7 +122,7 @@ Proof using chanGhostStateG0 chanGhostStateG1 ghost_mapG0 ghost_varG0.
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
   wp_auto_lc 4.
-  wp_apply wp_HelloWorldAsync; first done.
+  wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hfut Hawait]". wp_auto_lc 1.
   iDestruct "Hpre" as "(#H1 & H2)".
   iAssert ( is_channel (t:=structT []) done_ch 0 γdone.(chan_name)) as "#Hdonech".
@@ -168,8 +166,7 @@ Qed.
 
 
 Lemma wp_HelloWorldWithTimeout :
-  {{{ is_pkg_init channel ∗
-      is_pkg_init chan_spec_raw_examples
+  {{{ is_pkg_init chan_spec_raw_examples
   }}}
     @!  chan_spec_raw_examples.HelloWorldWithTimeout #()
   {{{ (result: go_string), RET #result;
@@ -202,9 +199,6 @@ wp_apply (wp_fork with "[HNotify errMsg done]").
   done. }
 
 wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
-{
-  done.
-}
 {
   iIntros (result).
   iIntros "%Hres".
@@ -256,8 +250,7 @@ Open Scope Z_scope.
 
 Lemma wp_fibonacci (n: nat) (c_ptr: loc) γ:
   0 < n < 2^63 ->
-  {{{ is_pkg_init channel ∗
-      is_pkg_init chan_spec_raw_examples ∗
+  {{{ is_pkg_init chan_spec_raw_examples ∗
 
       is_spsc γ c_ptr (λ i v, ⌜v = fib (Z.to_nat i)⌝)
                   (λ sent, ⌜sent = fib_list  n⌝) ∗
@@ -394,7 +387,7 @@ Proof.
 Qed.
 
 Lemma wp_fib_consumer:
-  {{{ is_pkg_init channel ∗ is_pkg_init chan_spec_raw_examples
+  {{{ is_pkg_init chan_spec_raw_examples
   }}}
    @! chan_spec_raw_examples.fib_consumer #()
   {{{ sl, RET #(sl);
@@ -513,7 +506,7 @@ Definition ref_prot : iProto Σ interface.t :=
   <?> MSG (interface.mk (structT.id []) #()) {{ l ↦ w64_word_instance.(word.add) (W64 x) (W64 2) }} ;
   END.
 Lemma wp_DSPExample :
-  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
+  {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.DSPExample #()
   {{{ RET #(W64 42); True }}}.
 Proof using chanGhostStateG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG dspG0
