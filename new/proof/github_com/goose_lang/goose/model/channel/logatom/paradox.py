@@ -7,7 +7,7 @@ State.declare('Init')
 State.declare('S1')
 State.declare('R1')
 State.declare('A')
-State.declare('B')
+# State.declare('B')
 State.declare('Invalid')
 State = State.create()
 
@@ -19,23 +19,21 @@ recv2 = Function('recv2', State, State)
 
 def I(op_seq):
     current = State.Init
-    last_sent1_state = None
-    last_recv1_state = None
+    last_sent1 = False
+    last_recv1= False
     for op in op_seq:
         if op == 's':
-            if last_sent1_state is not None:
-                current = send2(last_sent1_state, current)
-                last_sent1_state = None
+            if last_sent1:
+                current = send2(current)
             else:
                 current = send1(current)
-                last_sent1_state = current
+            last_sent1 = not last_sent1
         if op == 'r':
-            if last_recv1_state is not None:
-                current = recv2(last_recv1_state, current)
-                last_recv1_state = None
+            if last_recv1:
+                current = recv2(current)
             else:
                 current = recv1(current)
-                last_recv1_state = current
+            last_recv1 = not last_recv1
     return current
 
 s = Solver()
@@ -45,34 +43,28 @@ s.add(send1(State.Init) == State.S1)
 s.add(recv1(State.Init) == State.R1)
 
 # valid sequences
-s.add(I('srsr') == State.Init)
-s.add(I('srsr') == I('srsrsrsr'))
-s.add(I('srsr') == I('srrs'))
-s.add(I('srrs') == I('rsrs'))
-s.add(I('rsrs') == I('rssr'))
-s.add(I('rssr') == I('srsr'))
-
-st = Const('st', State)
+s.add(I('srs') == State.Init)
+s.add(I('rsr') == State.Init)
+s.add(I('srr') == State.Invalid)
+s.add(I('rss') == State.Invalid)
 
 # Invalid is like None
 s.add(send1(State.Invalid) == State.Invalid)
 s.add(recv1(State.Invalid) == State.Invalid)
-s.add(ForAll([st], send2(st, State.Invalid) == State.Invalid))
-s.add(ForAll([st], recv2(st, State.Invalid) == State.Invalid))
+s.add(send2(State.Invalid) == State.Invalid)
+s.add(recv2(State.Invalid) == State.Invalid)
 
 s.add(send1(send1(State.Init)) == State.Invalid)
 s.add(recv1(recv1(State.Init)) == State.Invalid)
-s.add(ForAll([st], send2(st, State.Init) == State.Invalid))
-s.add(ForAll([st], recv2(st, State.Init) == State.Invalid))
-s.add(ForAll([st], send2(st, recv1(State.Init)) == State.Invalid))
-s.add(ForAll([st], recv2(st, send1(State.Init)) == State.Invalid))
+s.add(send2(send1(State.Init)) == State.Invalid)
+s.add(recv2(recv1(State.Init)) == State.Invalid)
+s.add(send2(State.Init) == State.Invalid)
+s.add(recv2(State.Init) == State.Invalid)
+s.add(send2(recv1(State.Init)) == State.Invalid)
+s.add(recv2(send1(State.Init)) == State.Invalid)
 
-s.add(I('ss') == State.Invalid)
-s.add(I('rr') == State.Invalid)
-s.add(I('srss') == State.Invalid)
-s.add(I('rsrr') == State.Invalid)
-s.add(I('rsss') == State.Invalid)
-s.add(I('srrr') == State.Invalid)
+# NOT STRICTLY NECESSARY
+# s.add(I('sr') != I('rs'))
 
 j = 0
 while True:
@@ -81,7 +73,6 @@ while True:
     if s.check() == sat:
         m = s.model()
         print(m)
-        print(m.eval(I('rss')))
 
         f = True
         # find all send1 functions
