@@ -73,11 +73,10 @@ Lemma wp_Op__applyOpts (op : loc) :
     op @ (ptrT.id clientv3.Op.id) @ "applyOpts" #slice.nil
   {{{ RET #(); True }}}.
 Proof.
-  wp_start. wp_auto. wp_apply wp_slice_for_range.
-  { iApply (own_slice_nil DfracDiscarded). }
-  simpl. iIntros "_". wp_auto. iApply "HΦ". done.
-  Unshelve.
-  all: try tc_solve.
+  wp_start. wp_auto.
+  wp_for "i".
+  wp_if_destruct; [word|].
+  by iApply "HΦ".
 Qed.
 
 Lemma wp_OpPut key v :

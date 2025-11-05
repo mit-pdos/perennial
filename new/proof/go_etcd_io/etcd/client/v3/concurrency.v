@@ -68,15 +68,8 @@ Proof.
   wp_apply (wp_Client__Ctx with "[$]") as "% % #Hcontext". wp_auto.
   wp_alloc ops as "Hops".
   wp_auto.
-  (* only consider nil options *)
-  wp_apply wp_slice_for_range.
-  { instantiate (1:=[] : list concurrency.SessionOption.t ). instantiate (1:=DfracOwn 1).
-    Unshelve. all: try apply _.
-    iApply own_slice_nil. }
-  iEval simpl.
-  iIntros "_".
-
-  wp_auto.
+  wp_for "i".
+  wp_if_destruct; [word|].
   wp_apply (wp_Client__Grant with "[$]") as "* [Hresp Hl]". wp_auto.
   destruct bool_decide eqn:Herr.
   2:{ (* got an error; early return *)
