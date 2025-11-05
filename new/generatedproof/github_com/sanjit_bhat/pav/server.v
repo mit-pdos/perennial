@@ -17,94 +17,94 @@ Set Default Proof Using "Type".
 
 Module server.
 
-(* type server.StartReply *)
-Module StartReply.
+(* type server.StartCliReply *)
+Module StartCliReply.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  StartEpochLen' : w64;
-  StartLink' : slice.t;
+  PrevEpochLen' : w64;
+  PrevLink' : slice.t;
   ChainProof' : slice.t;
   LinkSig' : slice.t;
   VrfPk' : slice.t;
   VrfSig' : slice.t;
 }.
 End def.
-End StartReply.
+End StartCliReply.
 
 Section instances.
 Context `{ffi_syntax}.
-#[local] Transparent server.StartReply.
-#[local] Typeclasses Transparent server.StartReply.
+#[local] Transparent server.StartCliReply.
+#[local] Typeclasses Transparent server.StartCliReply.
 
-Global Instance StartReply_wf : struct.Wf server.StartReply.
+Global Instance StartCliReply_wf : struct.Wf server.StartCliReply.
 Proof. apply _. Qed.
 
-Global Instance settable_StartReply : Settable StartReply.t :=
-  settable! StartReply.mk < StartReply.StartEpochLen'; StartReply.StartLink'; StartReply.ChainProof'; StartReply.LinkSig'; StartReply.VrfPk'; StartReply.VrfSig' >.
-Global Instance into_val_StartReply : IntoVal StartReply.t :=
+Global Instance settable_StartCliReply : Settable StartCliReply.t :=
+  settable! StartCliReply.mk < StartCliReply.PrevEpochLen'; StartCliReply.PrevLink'; StartCliReply.ChainProof'; StartCliReply.LinkSig'; StartCliReply.VrfPk'; StartCliReply.VrfSig' >.
+Global Instance into_val_StartCliReply : IntoVal StartCliReply.t :=
   {| to_val_def v :=
-    struct.val_aux server.StartReply [
-    "StartEpochLen" ::= #(StartReply.StartEpochLen' v);
-    "StartLink" ::= #(StartReply.StartLink' v);
-    "ChainProof" ::= #(StartReply.ChainProof' v);
-    "LinkSig" ::= #(StartReply.LinkSig' v);
-    "VrfPk" ::= #(StartReply.VrfPk' v);
-    "VrfSig" ::= #(StartReply.VrfSig' v)
+    struct.val_aux server.StartCliReply [
+    "PrevEpochLen" ::= #(StartCliReply.PrevEpochLen' v);
+    "PrevLink" ::= #(StartCliReply.PrevLink' v);
+    "ChainProof" ::= #(StartCliReply.ChainProof' v);
+    "LinkSig" ::= #(StartCliReply.LinkSig' v);
+    "VrfPk" ::= #(StartCliReply.VrfPk' v);
+    "VrfSig" ::= #(StartCliReply.VrfSig' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_StartReply : IntoValTyped StartReply.t server.StartReply :=
+Global Program Instance into_val_typed_StartCliReply : IntoValTyped StartCliReply.t server.StartCliReply :=
 {|
-  default_val := StartReply.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  default_val := StartCliReply.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_StartReply_StartEpochLen : IntoValStructField "StartEpochLen" server.StartReply StartReply.StartEpochLen'.
+Global Instance into_val_struct_field_StartCliReply_PrevEpochLen : IntoValStructField "PrevEpochLen" server.StartCliReply StartCliReply.PrevEpochLen'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StartReply_StartLink : IntoValStructField "StartLink" server.StartReply StartReply.StartLink'.
+Global Instance into_val_struct_field_StartCliReply_PrevLink : IntoValStructField "PrevLink" server.StartCliReply StartCliReply.PrevLink'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StartReply_ChainProof : IntoValStructField "ChainProof" server.StartReply StartReply.ChainProof'.
+Global Instance into_val_struct_field_StartCliReply_ChainProof : IntoValStructField "ChainProof" server.StartCliReply StartCliReply.ChainProof'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StartReply_LinkSig : IntoValStructField "LinkSig" server.StartReply StartReply.LinkSig'.
+Global Instance into_val_struct_field_StartCliReply_LinkSig : IntoValStructField "LinkSig" server.StartCliReply StartCliReply.LinkSig'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StartReply_VrfPk : IntoValStructField "VrfPk" server.StartReply StartReply.VrfPk'.
+Global Instance into_val_struct_field_StartCliReply_VrfPk : IntoValStructField "VrfPk" server.StartCliReply StartCliReply.VrfPk'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StartReply_VrfSig : IntoValStructField "VrfSig" server.StartReply StartReply.VrfSig'.
+Global Instance into_val_struct_field_StartCliReply_VrfSig : IntoValStructField "VrfSig" server.StartCliReply StartCliReply.VrfSig'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StartReply StartEpochLen' StartLink' ChainProof' LinkSig' VrfPk' VrfSig':
+Global Instance wp_struct_make_StartCliReply PrevEpochLen' PrevLink' ChainProof' LinkSig' VrfPk' VrfSig':
   PureWp True
-    (struct.make #server.StartReply (alist_val [
-      "StartEpochLen" ::= #StartEpochLen';
-      "StartLink" ::= #StartLink';
+    (struct.make #server.StartCliReply (alist_val [
+      "PrevEpochLen" ::= #PrevEpochLen';
+      "PrevLink" ::= #PrevLink';
       "ChainProof" ::= #ChainProof';
       "LinkSig" ::= #LinkSig';
       "VrfPk" ::= #VrfPk';
       "VrfSig" ::= #VrfSig'
     ]))%struct
-    #(StartReply.mk StartEpochLen' StartLink' ChainProof' LinkSig' VrfPk' VrfSig').
+    #(StartCliReply.mk PrevEpochLen' PrevLink' ChainProof' LinkSig' VrfPk' VrfSig').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
-Global Instance StartReply_struct_fields_split dq l (v : StartReply.t) :
+Global Instance StartCliReply_struct_fields_split dq l (v : StartCliReply.t) :
   StructFieldsSplit dq l v (
-    "HStartEpochLen" ∷ l ↦s[server.StartReply :: "StartEpochLen"]{dq} v.(StartReply.StartEpochLen') ∗
-    "HStartLink" ∷ l ↦s[server.StartReply :: "StartLink"]{dq} v.(StartReply.StartLink') ∗
-    "HChainProof" ∷ l ↦s[server.StartReply :: "ChainProof"]{dq} v.(StartReply.ChainProof') ∗
-    "HLinkSig" ∷ l ↦s[server.StartReply :: "LinkSig"]{dq} v.(StartReply.LinkSig') ∗
-    "HVrfPk" ∷ l ↦s[server.StartReply :: "VrfPk"]{dq} v.(StartReply.VrfPk') ∗
-    "HVrfSig" ∷ l ↦s[server.StartReply :: "VrfSig"]{dq} v.(StartReply.VrfSig')
+    "HPrevEpochLen" ∷ l ↦s[server.StartCliReply :: "PrevEpochLen"]{dq} v.(StartCliReply.PrevEpochLen') ∗
+    "HPrevLink" ∷ l ↦s[server.StartCliReply :: "PrevLink"]{dq} v.(StartCliReply.PrevLink') ∗
+    "HChainProof" ∷ l ↦s[server.StartCliReply :: "ChainProof"]{dq} v.(StartCliReply.ChainProof') ∗
+    "HLinkSig" ∷ l ↦s[server.StartCliReply :: "LinkSig"]{dq} v.(StartCliReply.LinkSig') ∗
+    "HVrfPk" ∷ l ↦s[server.StartCliReply :: "VrfPk"]{dq} v.(StartCliReply.VrfPk') ∗
+    "HVrfSig" ∷ l ↦s[server.StartCliReply :: "VrfSig"]{dq} v.(StartCliReply.VrfSig')
   ).
 Proof.
   rewrite /named.
@@ -112,11 +112,101 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StartReply.StartEpochLen' v)) (server.StartReply) "StartEpochLen"%go.
-  simpl_one_flatten_struct (# (StartReply.StartLink' v)) (server.StartReply) "StartLink"%go.
-  simpl_one_flatten_struct (# (StartReply.ChainProof' v)) (server.StartReply) "ChainProof"%go.
-  simpl_one_flatten_struct (# (StartReply.LinkSig' v)) (server.StartReply) "LinkSig"%go.
-  simpl_one_flatten_struct (# (StartReply.VrfPk' v)) (server.StartReply) "VrfPk"%go.
+  simpl_one_flatten_struct (# (StartCliReply.PrevEpochLen' v)) (server.StartCliReply) "PrevEpochLen"%go.
+  simpl_one_flatten_struct (# (StartCliReply.PrevLink' v)) (server.StartCliReply) "PrevLink"%go.
+  simpl_one_flatten_struct (# (StartCliReply.ChainProof' v)) (server.StartCliReply) "ChainProof"%go.
+  simpl_one_flatten_struct (# (StartCliReply.LinkSig' v)) (server.StartCliReply) "LinkSig"%go.
+  simpl_one_flatten_struct (# (StartCliReply.VrfPk' v)) (server.StartCliReply) "VrfPk"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type server.StartAdtrReply *)
+Module StartAdtrReply.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  ChainProof' : slice.t;
+  LinkSig' : slice.t;
+  VrfPk' : slice.t;
+  VrfSig' : slice.t;
+}.
+End def.
+End StartAdtrReply.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent server.StartAdtrReply.
+#[local] Typeclasses Transparent server.StartAdtrReply.
+
+Global Instance StartAdtrReply_wf : struct.Wf server.StartAdtrReply.
+Proof. apply _. Qed.
+
+Global Instance settable_StartAdtrReply : Settable StartAdtrReply.t :=
+  settable! StartAdtrReply.mk < StartAdtrReply.ChainProof'; StartAdtrReply.LinkSig'; StartAdtrReply.VrfPk'; StartAdtrReply.VrfSig' >.
+Global Instance into_val_StartAdtrReply : IntoVal StartAdtrReply.t :=
+  {| to_val_def v :=
+    struct.val_aux server.StartAdtrReply [
+    "ChainProof" ::= #(StartAdtrReply.ChainProof' v);
+    "LinkSig" ::= #(StartAdtrReply.LinkSig' v);
+    "VrfPk" ::= #(StartAdtrReply.VrfPk' v);
+    "VrfSig" ::= #(StartAdtrReply.VrfSig' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_StartAdtrReply : IntoValTyped StartAdtrReply.t server.StartAdtrReply :=
+{|
+  default_val := StartAdtrReply.mk (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_StartAdtrReply_ChainProof : IntoValStructField "ChainProof" server.StartAdtrReply StartAdtrReply.ChainProof'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_StartAdtrReply_LinkSig : IntoValStructField "LinkSig" server.StartAdtrReply StartAdtrReply.LinkSig'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_StartAdtrReply_VrfPk : IntoValStructField "VrfPk" server.StartAdtrReply StartAdtrReply.VrfPk'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_StartAdtrReply_VrfSig : IntoValStructField "VrfSig" server.StartAdtrReply StartAdtrReply.VrfSig'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_StartAdtrReply ChainProof' LinkSig' VrfPk' VrfSig':
+  PureWp True
+    (struct.make #server.StartAdtrReply (alist_val [
+      "ChainProof" ::= #ChainProof';
+      "LinkSig" ::= #LinkSig';
+      "VrfPk" ::= #VrfPk';
+      "VrfSig" ::= #VrfSig'
+    ]))%struct
+    #(StartAdtrReply.mk ChainProof' LinkSig' VrfPk' VrfSig').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance StartAdtrReply_struct_fields_split dq l (v : StartAdtrReply.t) :
+  StructFieldsSplit dq l v (
+    "HChainProof" ∷ l ↦s[server.StartAdtrReply :: "ChainProof"]{dq} v.(StartAdtrReply.ChainProof') ∗
+    "HLinkSig" ∷ l ↦s[server.StartAdtrReply :: "LinkSig"]{dq} v.(StartAdtrReply.LinkSig') ∗
+    "HVrfPk" ∷ l ↦s[server.StartAdtrReply :: "VrfPk"]{dq} v.(StartAdtrReply.VrfPk') ∗
+    "HVrfSig" ∷ l ↦s[server.StartAdtrReply :: "VrfSig"]{dq} v.(StartAdtrReply.VrfSig')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (StartAdtrReply.ChainProof' v)) (server.StartAdtrReply) "ChainProof"%go.
+  simpl_one_flatten_struct (# (StartAdtrReply.LinkSig' v)) (server.StartAdtrReply) "LinkSig"%go.
+  simpl_one_flatten_struct (# (StartAdtrReply.VrfPk' v)) (server.StartAdtrReply) "VrfPk"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1307,8 +1397,12 @@ Global Instance wp_func_call_NewRpcServer :
   WpFuncCall server.NewRpcServer _ (is_pkg_defined server) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CallStart :
-  WpFuncCall server.CallStart _ (is_pkg_defined server) :=
+Global Instance wp_func_call_CallStartCli :
+  WpFuncCall server.CallStartCli _ (is_pkg_defined server) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CallStartAdtr :
+  WpFuncCall server.CallStartAdtr _ (is_pkg_defined server) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CallPut :
@@ -1323,12 +1417,20 @@ Global Instance wp_func_call_CallAudit :
   WpFuncCall server.CallAudit _ (is_pkg_defined server) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_StartReplyEncode :
-  WpFuncCall server.StartReplyEncode _ (is_pkg_defined server) :=
+Global Instance wp_func_call_StartCliReplyEncode :
+  WpFuncCall server.StartCliReplyEncode _ (is_pkg_defined server) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_StartReplyDecode :
-  WpFuncCall server.StartReplyDecode _ (is_pkg_defined server) :=
+Global Instance wp_func_call_StartCliReplyDecode :
+  WpFuncCall server.StartCliReplyDecode _ (is_pkg_defined server) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StartAdtrReplyEncode :
+  WpFuncCall server.StartAdtrReplyEncode _ (is_pkg_defined server) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_StartAdtrReplyDecode :
+  WpFuncCall server.StartAdtrReplyDecode _ (is_pkg_defined server) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_PutArgEncode :
@@ -1395,8 +1497,12 @@ Global Instance wp_method_call_Server'ptr_Put :
   WpMethodCall (ptrT.id server.Server.id) "Put" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_Server'ptr_Start :
-  WpMethodCall (ptrT.id server.Server.id) "Start" _ (is_pkg_defined server) :=
+Global Instance wp_method_call_Server'ptr_StartAdtr :
+  WpMethodCall (ptrT.id server.Server.id) "StartAdtr" _ (is_pkg_defined server) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_StartCli :
+  WpMethodCall (ptrT.id server.Server.id) "StartCli" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_addEntries :
