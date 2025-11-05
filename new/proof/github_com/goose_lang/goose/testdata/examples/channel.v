@@ -922,16 +922,17 @@ Context `{!ghost_var.ghost_varG Σ bool}.
 Context `{!contributionG Σ (gmultisetUR stream.t)}.
 Context `{!dspG Σ go_string}.
 
-Definition mapper_service_prot_aux (f: go_string → go_string)
+Definition mapper_service_prot_aux (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ)
   (rec : iProto Σ _) : iProto Σ _ :=
-  <! (req:go_string)> MSG req ;
-  <?> MSG (f req) ; rec.
+  <! (req:go_string)> MSG req {{ Φpre req }} ;
+  <? (res:go_string)> MSG res {{ Φpost req res }}; rec.
 
-Instance mapper_service_prot_contractive f : Contractive (mapper_service_prot_aux f).
+Instance mapper_service_prot_contractive Φpre Φpost : Contractive (mapper_service_prot_aux Φpre Φpost).
 Proof. solve_proto_contractive. Qed.
-Definition mapper_service_prot f := fixpoint (mapper_service_prot_aux f).
-Instance mapper_service_prot_unfold f :
-  ProtoUnfold (mapper_service_prot f) (mapper_service_prot_aux f (mapper_service_prot f)).
+Definition mapper_service_prot Φpre Φpost := fixpoint (mapper_service_prot_aux Φpre Φpost).
+Instance mapper_service_prot_unfold Φpre Φpost :
+  ProtoUnfold (mapper_service_prot Φpre Φpost)
+    (mapper_service_prot_aux Φpre Φpost (mapper_service_prot Φpre Φpost)).
 Proof. apply proto_unfold_eq, (fixpoint_unfold _). Qed.
 
 Definition is_mapper_stream (stream req_ch res_ch: loc) (f: func.t)
@@ -943,16 +944,16 @@ Definition is_mapper_stream (stream req_ch res_ch: loc) (f: func.t)
       WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ ⌜s' = f_log s⌝ }}).
 
 
-Lemma wp_mkStream (f: func.t) (f_log: go_string → go_string) :
+Lemma wp_mkStream (f: func.t) Φpre Φpost :
   {{{ is_pkg_init chan_spec_raw_examples ∗
       is_pkg_init channel ∗
       (∀ (s: go_string),
-          WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ ⌜s' = f_log s⌝ }})
+         Φpre s -∗ WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost s s' }})
   }}}
     @! chan_spec_raw_examples.mkStream #f
   {{{ (req_ch res_ch: loc) stream, RET stream;
-      # (req_ch, res_ch) ↣ mapper_service_prot f_log ∗
-      # (res_ch, req_ch) ↣ iProto_dual (mapper_service_prot f_log)
+      # (req_ch, res_ch) ↣ mapper_service_prot Φpre Φpost ∗
+      # (res_ch, req_ch) ↣ iProto_dual (mapper_service_prot Φpre Φpost)
   }}}.
 Proof.
   wp_start. wp_auto.
@@ -964,27 +965,26 @@ Proof.
   wp_apply wp_fupd.
 
   iMod (dsp_session_init _ _ _ _ _ _ _ _ _
-          (mapper_service_prot f_log) with "HisChan HisChan1 Hownchan
+          (mapper_service_prot Φpre Φpost) with "HisChan HisChan1 Hownchan
  Hownchan1")
                        as "[Hpl Hpr]";
     [by eauto|by eauto|..].
   iModIntro. wp_auto.
   iApply "HΦ".
-  iFrame.
-  Qed.
+  iFrame "Hpl Hpr".
+Qed.
 
-Lemma wp_MapServer (my_stream: stream.t)
-  (f_log: go_string → go_string) :
+Lemma wp_MapServer (my_stream: stream.t) Φpre Φpost :
   {{{ is_pkg_init chan_spec_raw_examples ∗
       "#Hf_spec" ∷ □ (∀ (strng: go_string),
+          Φpre strng -∗
           WP #(my_stream.(stream.f')) #strng
-          {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ ⌜s' = f_log strng⌝ }}) ∗
+          {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) ∗
       "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣
-                   iProto_dual (mapper_service_prot f_log)
-  }}}
+                   iProto_dual (mapper_service_prot Φpre Φpost)}}}
     @! chan_spec_raw_examples.MapServer #my_stream
   {{{ RET #(); True }}}.
-    wp_start.
+Proof using chanGhostStateG1 dspG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG Σ.  wp_start.
   iNamed "Hpre".
   rewrite /chan.for_range.
   wp_auto.
@@ -993,7 +993,7 @@ Lemma wp_MapServer (my_stream: stream.t)
     "s" ∷ s_ptr ↦ my_stream ∗
 
     "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣
-                 iProto_dual (mapper_service_prot f_log)
+                 iProto_dual (mapper_service_prot Φpre Φpost)
   )%I with "[in s Hf_spec Hprot]" as "IH".
   { iExists _. iFrame. }
 
@@ -1005,34 +1005,33 @@ Lemma wp_MapServer (my_stream: stream.t)
   wp_pures.
 
   wp_bind (#my_stream.(stream.f') #req_val)%E.
-  iApply (wp_wand with "[Hf_spec]").
-  { iSpecialize ("Hf_spec" $! req_val). iApply "Hf_spec". }
+  iApply (wp_wand with "[Hf_spec Hreq]").
+  { iSpecialize ("Hf_spec" $! req_val). iApply ("Hf_spec" with "Hreq"). }
   iIntros (v) "Hv".
-  iDestruct "Hv" as (s') "[%Heq_v %Heq_log]".
-  subst v s'.
+  iDestruct "Hv" as (s') "[%Heq_v Heq_log]".
+  subst.
   wp_auto.
   wp_pures.
-  wp_send with "[]";first done.
+  wp_send with "[Heq_log]";first done.
   wp_auto.
   wp_for_post.
   iFrame.
-  Qed.
+Qed.
 
 Lemma wp_Muxer (c: loc) γmpmc (n_prod n_cons: nat) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
       "#Hismpmc" ∷ is_mpmc γmpmc c n_prod n_cons
-        (λ s, ∃ (f_log: go_string → go_string),
+        (λ s, ∃ Φpre Φpost,
             □ (∀ (strng: go_string),
-                WP #(s.(stream.f')) #strng
-                {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ ⌜s' = f_log strng⌝ }}) ∗
+                Φpre strng -∗ WP #(s.(stream.f')) #strng
+                {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) ∗
             # (s.(stream.res'), s.(stream.req')) ↣
-              iProto_dual (mapper_service_prot f_log))
+              iProto_dual (mapper_service_prot Φpre Φpost))
         (λ _, True) ∗
-      "Hcons" ∷ mpmc_consumer γmpmc (∅ : gmultiset stream.t)
-  }}}
+      "Hcons" ∷ mpmc_consumer γmpmc (∅ : gmultiset stream.t) }}}
     @! chan_spec_raw_examples.Muxer #c
   {{{ RET #(); True%I }}}.
-   Proof using H chanGhostStateG0 chanGhostStateG1 contributionG0 dspG0 ext ffi ffi_interp0 ffi_semantics0
+Proof using H chanGhostStateG0 chanGhostStateG1 contributionG0 dspG0 ext ffi ffi_interp0 ffi_semantics0
 globalsGS0 go_ctx hG Σ.
    wp_start. wp_auto_lc 3. iNamed "Hpre".
     rewrite /chan.for_range.
@@ -1056,13 +1055,12 @@ globalsGS0 go_ctx hG Σ.
       iIntros "H". iDestruct "H" as "[Hdat Hcons]".
       iNamed "Hdat".
       wp_auto.
-  wp_apply (wp_fork with "[Hdat]").
-  {
-    wp_apply (wp_MapServer with "[$Hdat]");first done.
-
-  }
-  wp_for_post.
-  iFrame.
+      wp_apply (wp_fork with "[Hdat]").
+      {
+        by wp_apply (wp_MapServer with "[$Hdat]").
+      }
+      wp_for_post.
+      iFrame.
     }
     {
       iIntros "[#Hclosed Hcons]".
@@ -1070,8 +1068,8 @@ globalsGS0 go_ctx hG Σ.
       wp_for_post.
       iApply "HΦ".
       done.
-      }
-      Qed.
+    }
+Qed.
 
 End muxer.
 
