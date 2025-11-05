@@ -860,14 +860,45 @@ Definition Muxerⁱᵐᵖˡ : val :=
       do:  (Fork ("$go" "$a0"))));;;
     return: #()).
 
+Definition CancellableMapServer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableMapServer"%go.
+
+(* go: muxer.go:36:6 *)
+Definition CancellableMapServerⁱᵐᵖˡ : val :=
+  λ: "s" "done",
+    exception_do (let: "done" := (mem.alloc "done") in
+    let: "s" := (mem.alloc "s") in
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      chan.select_blocking [chan.select_receive #stringT (![type.chanT #stringT] (struct.field_ref #stream #"req"%go "s")) (λ: "$recvVal",
+         let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+         let: "in" := (mem.alloc (type.zero_val #stringT)) in
+         let: ("$ret0", "$ret1") := "$recvVal" in
+         let: "$r0" := "$ret0" in
+         let: "$r1" := "$ret1" in
+         do:  ("in" <-[#stringT] "$r0");;;
+         do:  ("ok" <-[#boolT] "$r1");;;
+         (if: (~ (![#boolT] "ok"))
+         then return: (#())
+         else do:  #());;;
+         do:  (let: "$chan" := (![type.chanT #stringT] (struct.field_ref #stream #"res"%go "s")) in
+         let: "$v" := (let: "$a0" := (![#stringT] "in") in
+         (![#funcT] (struct.field_ref #stream #"f"%go "s")) "$a0") in
+         chan.send #stringT "$chan" "$v")
+         ); chan.select_receive (type.structT [
+       ]) (![type.chanT (type.structT [
+       ])] "done") (λ: "$recvVal",
+         return: (#())
+         )]);;;
+    return: #()).
+
 Definition CancellableMuxer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableMuxer"%go.
 
 (* 4. CancellableMuxer - muxer with cancellation
 
-   go: muxer.go:37:6 *)
+   go: muxer.go:51:6 *)
 Definition CancellableMuxerⁱᵐᵖˡ : val :=
-  λ: "c" "done",
-    exception_do (let: "done" := (mem.alloc "done") in
+  λ: "c" "done" "errMsg",
+    exception_do (let: "errMsg" := (mem.alloc "errMsg") in
+    let: "done" := (mem.alloc "done") in
     let: "c" := (mem.alloc "c") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       chan.select_blocking [chan.select_receive #stream (![type.chanT #stream] "c") (λ: "$recvVal",
@@ -879,17 +910,57 @@ Definition CancellableMuxerⁱᵐᵖˡ : val :=
          do:  ("s" <-[#stream] "$r0");;;
          do:  ("ok" <-[#boolT] "$r1");;;
          (if: (~ (![#boolT] "ok"))
-         then return: (#())
+         then return: (#"serviced all requests"%go)
          else do:  #());;;
          let: "$a0" := (![#stream] "s") in
-         let: "$go" := (func_call #MapServer) in
-         do:  (Fork ("$go" "$a0"))
+         let: "$a1" := (![type.chanT (type.structT [
+         ])] "done") in
+         let: "$go" := (func_call #CancellableMapServer) in
+         do:  (Fork ("$go" "$a0" "$a1"))
          ); chan.select_receive (type.structT [
        ]) (![type.chanT (type.structT [
        ])] "done") (λ: "$recvVal",
-         return: (#())
-         )]);;;
-    return: #()).
+         return: (![#stringT] (![#ptrT] "errMsg"))
+         )])).
+
+Definition makeGreeting : go_string := "github.com/goose-lang/goose/testdata/examples/channel.makeGreeting"%go.
+
+(* go: muxer.go:65:6 *)
+Definition makeGreetingⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do (let: "mux" := (mem.alloc (type.zero_val (type.chanT #stream))) in
+    let: "$r0" := (chan.make #stream #(W64 2)) in
+    do:  ("mux" <-[type.chanT #stream] "$r0");;;
+    let: "$a0" := (![type.chanT #stream] "mux") in
+    let: "$go" := (func_call #Muxer) in
+    do:  (Fork ("$go" "$a0"));;;
+    let: "comma" := (mem.alloc (type.zero_val #stream)) in
+    let: "$r0" := (let: "$a0" := (λ: "s",
+      exception_do (let: "s" := (mem.alloc "s") in
+      return: ((![#stringT] "s") + #","%go))
+      ) in
+    (func_call #mkStream) "$a0") in
+    do:  ("comma" <-[#stream] "$r0");;;
+    let: "exclaim" := (mem.alloc (type.zero_val #stream)) in
+    let: "$r0" := (let: "$a0" := (λ: "s",
+      exception_do (let: "s" := (mem.alloc "s") in
+      return: ((![#stringT] "s") + #"!"%go))
+      ) in
+    (func_call #mkStream) "$a0") in
+    do:  ("exclaim" <-[#stream] "$r0");;;
+    do:  (let: "$chan" := (![type.chanT #stream] "mux") in
+    let: "$v" := (![#stream] "comma") in
+    chan.send #stream "$chan" "$v");;;
+    do:  (let: "$chan" := (![type.chanT #stream] "mux") in
+    let: "$v" := (![#stream] "exclaim") in
+    chan.send #stream "$chan" "$v");;;
+    do:  (let: "$chan" := (![type.chanT #stringT] (struct.field_ref #stream #"req"%go "comma")) in
+    let: "$v" := #"Hello"%go in
+    chan.send #stringT "$chan" "$v");;;
+    do:  (let: "$chan" := (![type.chanT #stringT] (struct.field_ref #stream #"req"%go "exclaim")) in
+    let: "$v" := #"World"%go in
+    chan.send #stringT "$chan" "$v");;;
+    return: (((Fst (chan.receive #stringT (![type.chanT #stringT] (struct.field_ref #stream #"res"%go "comma")))) + #" "%go) + (Fst (chan.receive #stringT (![type.chanT #stringT] (struct.field_ref #stream #"res"%go "exclaim")))))).
 
 Definition worker : go_string := "github.com/goose-lang/goose/testdata/examples/channel.worker"%go.
 
@@ -988,7 +1059,7 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (CancellableMapServer, CancellableMapServerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (makeGreeting, makeGreetingⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(EliminationStack.id, []); (ptrT.id EliminationStack.id, [("Pop"%go, EliminationStack__Popⁱᵐᵖˡ); ("Push"%go, EliminationStack__Pushⁱᵐᵖˡ)]); (request.id, []); (ptrT.id request.id, []); (stream.id, []); (ptrT.id stream.id, [])].
 

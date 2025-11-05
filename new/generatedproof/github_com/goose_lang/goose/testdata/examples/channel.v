@@ -405,8 +405,16 @@ Global Instance wp_func_call_Muxer :
   WpFuncCall chan_spec_raw_examples.Muxer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_CancellableMapServer :
+  WpFuncCall chan_spec_raw_examples.CancellableMapServer _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_CancellableMuxer :
   WpFuncCall chan_spec_raw_examples.CancellableMuxer _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_makeGreeting :
+  WpFuncCall chan_spec_raw_examples.makeGreeting _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_worker :
