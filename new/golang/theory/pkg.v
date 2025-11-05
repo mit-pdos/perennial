@@ -1,50 +1,21 @@
-From Perennial.goose_lang Require Import notation.
 From New.golang.theory Require Import exception mem assume.
-From New.golang.defn Require Export pkg.
 From Perennial Require Import base.
 Import Ltac2. Import Printf.
 Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
-Section wps.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-
-Global Instance wp_unwrap (v : val) :
-  PureWp True (option.unwrap $ InjRV v) v.
-Proof.
-  rewrite option.unwrap_unseal /option.unwrap_def.
-  intros ?????. iIntros "Hwp". wp_pure_lc "?".
-  wp_pures. by iApply "Hwp".
-Qed.
-End wps.
-
 Section init_defns.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoContext}.
 
-(** [is_init] holds when a node boots up and is used as an assumption in closed theorems. *)
-Definition is_init (σ : state) : Prop :=
-  (∀ var_name, σ.(globals) ("V" ++ var_name)%go = Some #(global_addr var_name)) ∧
-  (∀ func_name, σ.(globals) ("F" ++ func_name)%go = (__function func_name)) ∧
-  (∀ type_id method_name, σ.(globals) ("M" ++ type_id ++ "." ++ method_name)%go
-                          = (__method type_id method_name)) ∧
-  (∀ pkg_name, σ.(globals) ("P" ++ pkg_name)%go = None).
-#[global] Opaque is_init.
-#[local] Opaque is_init.
-
 Local Definition is_init_inv get_is_pkg_init : iProp Σ :=
   inv nroot (
-      ∃ g package_started package_inited,
-        "Hg" ∷ own_globals (DfracOwn (1/2)) g ∗
+      ∃ package_started package_inited,
+        "Hg" ∷ own_go_state package_inited ∗
         (* NOTE: could own an auth that has precisely the "started" keys, and
            the exclusive pointstos can be given to program proofs to help escrow
            resources into initialization. *)
         "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, get_is_pkg_init pkg_name) ∗
-        "%Hglobal_addr" ∷ (⌜ ∀ var_name, g ("V" ++ var_name)%go = Some #(global_addr var_name) ⌝) ∗
-        "%Hfunction" ∷ (⌜ ∀ func_name, g ("F" ++ func_name)%go = (__function func_name) ⌝) ∗
-        "%Hmethod" ∷ (⌜ ∀ type_id method_name, g ("M" ++ type_id ++ "." ++ method_name)%go
-                          = (__method type_id method_name) ⌝) ∗
-
         "%Hpackage_inited" ∷ (⌜ ∀ pkg_name, g ("P" ++ pkg_name)%go =
                                 # <$> ((gset_to_gmap "initialized"%go package_inited) ∪
                                    (gset_to_gmap "started"%go package_started)) !! pkg_name

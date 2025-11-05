@@ -15,41 +15,9 @@ Section wps.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance wp_int64_lt (l r : w64) : PureWp True (int_lt #l #r) #(bool_decide (sint.Z l < sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int64_gt (l r : w64) : PureWp True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
-Global Instance wp_int64_leq (l r : w64) : PureWp True (int_leq #l #r) #(bool_decide (sint.Z l ≤ sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int64_geq (l r : w64) : PureWp True (int_geq #l #r) #(bool_decide (sint.Z l >= sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
-
-Global Instance wp_int32_lt (l r : w32) : PureWp True (int_lt #l #r) #(bool_decide (sint.Z l < sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int32_gt (l r : w32) : PureWp True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
-Global Instance wp_int32_leq (l r : w32) : PureWp True (int_leq #l #r) #(bool_decide (sint.Z l ≤ sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int32_geq (l r : w32) : PureWp True (int_geq #l #r) #(bool_decide (sint.Z l >= sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
-
-Global Instance wp_int16_lt (l r : w16) : PureWp True (int_lt #l #r) #(bool_decide (sint.Z l < sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int16_gt (l r : w16) : PureWp True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
-Global Instance wp_int16_leq (l r : w16) : PureWp True (int_leq #l #r) #(bool_decide (sint.Z l ≤ sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int16_geq (l r : w16) : PureWp True (int_geq #l #r) #(bool_decide (sint.Z l >= sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
-
-Global Instance wp_int8_lt (l r : w8) : PureWp True (int_lt #l #r) #(bool_decide (sint.Z l < sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int8_gt (l r : w8) : PureWp True (int_gt #l #r) #(bool_decide (sint.Z l > sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
-Global Instance wp_int8_leq (l r : w8) : PureWp True (int_leq #l #r) #(bool_decide (sint.Z l ≤ sint.Z r)).
-Proof. by pure_wp_start. Qed.
-Global Instance wp_int8_geq (l r : w8) : PureWp True (int_geq #l #r) #(bool_decide (sint.Z l >= sint.Z r)).
-Proof. pure_wp_start. repeat case_bool_decide; (done || lia). Qed.
+Ltac pure_wp_start :=
+  apply pure_wp_val; intros ????;
+  iIntros "HΦ"; try (wp_call_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]")).
 
 Lemma wp_make_nondet_uint64 (v : val) :
   {{{ True }}}
@@ -57,7 +25,7 @@ Lemma wp_make_nondet_uint64 (v : val) :
   {{{ (x : w64), RET #x; True }}}.
 Proof.
   iIntros (?) "_ HΦ". wp_call. rewrite decide_True //. wp_apply wp_ArbitraryInt.
-  rewrite to_val_unseal //.
+  rewrite into_val_unseal //.
 Qed.
 
 (*
@@ -90,4 +58,4 @@ Qed. *)
 
 End wps.
 
-#[global] Opaque int_lt int_leq int_gt int_geq make_nondet.
+#[global] Opaque make_nondet.

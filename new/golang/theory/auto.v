@@ -2,15 +2,13 @@ From Perennial.goose_lang Require Import notation.
 From Coq Require Import ssreflect.
 From Ltac2 Require Import Ltac2 Printf.
 Set Default Proof Mode "Classic".
-From New.golang.theory Require Import proofmode pkg loop chan.
+From New.golang.theory Require Import proofmode loop.
 
-(* TODO: iFrame # is only for backwards compatibility *)
-Tactic Notation "wp_globals_get" :=
-  wp_globals_get_core; try iPkgInit; try iFrame "#".
-Tactic Notation "wp_func_call" :=
-  wp_func_call_core; try iPkgInit; try iFrame "#".
-Tactic Notation "wp_method_call" :=
-  wp_method_call_core; try iPkgInit; try iFrame "#".
+(* TODO: function unfolding requires a FuncUnfold typeclass
+Tactic Notation "wp_func_unfold" :=
+  wp_func_call_core; try iPkgInit.
+Tactic Notation "wp_method_unfold" :=
+  wp_method_call_core; try iPkgInit. *)
 
 (* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=

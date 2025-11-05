@@ -79,16 +79,28 @@ Local Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|so
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Proof using Hvalid. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_w64 : IntoValTyped w64 go.uint64.
+Global Instance into_val_typed_uint64 : IntoValTyped w64 go.uint64.
 Proof using Hvalid. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_w32 : IntoValTyped w32 go.uint32.
+Global Instance into_val_typed_uint32 : IntoValTyped w32 go.uint32.
 Proof using Hvalid. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_w16 : IntoValTyped w16 go.uint16.
+Global Instance into_val_typed_uint16 : IntoValTyped w16 go.uint16.
 Proof using Hvalid. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_w8 : IntoValTyped w8 go.uint8.
+Global Instance into_val_typed_uint8 : IntoValTyped w8 go.uint8.
+Proof using Hvalid. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_int64 : IntoValTyped w64 go.int64.
+Proof using Hvalid. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_int32 : IntoValTyped w32 go.int32.
+Proof using Hvalid. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_int16 : IntoValTyped w16 go.int16.
+Proof using Hvalid. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_int8 : IntoValTyped w8 go.int8.
 Proof using Hvalid. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_bool : IntoValTyped bool go.bool.
