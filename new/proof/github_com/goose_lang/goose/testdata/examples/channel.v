@@ -935,9 +935,8 @@ Instance mapper_service_prot_unfold Φpre Φpost :
     (mapper_service_prot_aux Φpre Φpost (mapper_service_prot Φpre Φpost)).
 Proof. apply proto_unfold_eq, (fixpoint_unfold _). Qed.
 
-Definition is_mapper_stream stream
-  (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ) : iProp Σ :=
-  ∃ req_ch res_ch f,
+Definition is_mapper_stream stream : iProp Σ :=
+  ∃ req_ch res_ch f (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ),
   ⌜stream = {| stream.req' := req_ch; stream.res' := res_ch; stream.f' := f |}⌝ ∗
   "Hf_spec" ∷ □ (∀ (s: go_string),
       Φpre s → WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost s s' }}) ∗
@@ -945,12 +944,11 @@ Definition is_mapper_stream stream
 
 Lemma wp_mkStream (f: func.t) Φpre Φpost :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-        "#Hf_spec" ∷ □ (∀ (strng: go_string),
-          Φpre strng -∗ WP #f #strng
-          {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) }}}
+      "#Hf_spec" ∷ □ (∀ (strng: go_string),
+                        Φpre strng -∗ WP #f #strng {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) }}}
     @! chan_spec_raw_examples.mkStream #f
   {{{ stream, RET #stream;
-      is_mapper_stream stream Φpre Φpost ∗
+      is_mapper_stream stream ∗
     # (stream.(stream.req'), stream.(stream.res')) ↣ mapper_service_prot Φpre Φpost }}}.
 Proof.
   wp_start. wp_auto.
@@ -970,14 +968,14 @@ Proof.
   iApply "HΦ".
   rewrite /is_mapper_stream.
   iSplitR "Hpl".
-  { iExists _, _, _. iSplit; [done|].
+  { iExists _, _, _, _, _. iSplit; [done|].
     iDestruct "Hpre" as "#Hpre". iFrame "Hpr".
     iIntros "!>" (s) "HΦ". by iApply "Hpre". }
   iFrame "Hpl".
 Qed.
 
-Lemma wp_MapServer (my_stream: stream.t) Φpre Φpost :
-  {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream Φpre Φpost }}}
+Lemma wp_MapServer (my_stream: stream.t) :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream }}}
     @! chan_spec_raw_examples.MapServer #my_stream
   {{{ RET #(); True }}}.
 Proof using chanGhostStateG1 dspG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG Σ.  wp_start.
@@ -1017,9 +1015,7 @@ Qed.
 
 Lemma wp_Muxer (c: loc) γmpmc (n_prod n_cons: nat) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-      "#Hismpmc" ∷ is_mpmc γmpmc c n_prod n_cons
-        (λ s, ∃ Φpre Φpost, is_mapper_stream s Φpre Φpost)
-        (λ _, True) ∗
+      "#Hismpmc" ∷ is_mpmc γmpmc c n_prod n_cons is_mapper_stream (λ _, True) ∗
       "Hcons" ∷ mpmc_consumer γmpmc (∅ : gmultiset stream.t) }}}
     @! chan_spec_raw_examples.Muxer #c
   {{{ RET #(); True%I }}}.
