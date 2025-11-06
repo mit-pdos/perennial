@@ -410,10 +410,15 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
     RET (#extLen, #sl_newVal, #sl_newLink, #err);
     "#Hsl_newVal" ∷ sl_newVal ↦*□ newVal ∗
     "Hsl_newLink" ∷ sl_newLink ↦* newLink ∗
-    "Hgenie" ∷ (⌜err = false⌝ ∗-∗ ∃ new_vals, wish_Verify proof new_vals) ∗
-    "Herr" ∷ (∀ new_vals, wish_Verify proof new_vals -∗
-      "->" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
-      "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink)
+    "Hgenie" ∷
+      match err with
+      | true => ¬ ∃ new_vals, wish_Verify proof new_vals
+      | false =>
+        ∃ new_vals,
+        "#Hwish_hashchain" ∷ wish_Verify proof new_vals ∗
+        "->" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
+        "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink
+      end
   }}}.
 Proof.
   wp_start. iNamed "Hpre".
@@ -423,19 +428,11 @@ Proof.
   wp_if_destruct.
   2: {
     iApply "HΦ".
-    (* TODO(goose): could "nil ownership" be automated? *)
-    iDestruct (own_slice_nil (DfracOwn 1)) as "?".
-    iDestruct (own_slice_nil DfracDiscarded) as "?".
-    iFrame "∗#". iSplit.
-    - iSplit. { by iIntros (?). }
-      iNamed 1.
-      iDestruct (wish_Verify_impl_mod_len with "[//]") as %?.
-      word.
-    - (* TODO: repetitive genie structure. how to fix?
-      in both cases, if had wish, contra. *)
-      iIntros (?) "@".
-      iDestruct (wish_Verify_impl_mod_len with "[//]") as %?.
-      word. }
+    iDestruct own_slice_nil as "$".
+    iDestruct own_slice_nil as "$".
+    iIntros "(%&#Hwish)".
+    iDestruct (wish_Verify_impl_mod_len with "[//]") as %?.
+    word. }
   iPersist "extLen".
 
   remember (word.divu _ _) as extLen.
@@ -470,11 +467,7 @@ Proof.
     wp_auto.
     rewrite take_ge; [|word].
     iApply "HΦ".
-    iFrame "∗#".
-    iSplit. { iSplit; [|done]. iIntros "_". iFrame "#". }
-    iIntros (?) "Hwish0".
-    iDestruct (wish_Verify_det with "Hwish Hwish0") as %->.
-    by iFrame "#". }
+    by iFrame "∗#". }
 
   wp_auto.
   wp_apply (wp_slice_slice with "[$Hsl_proof]"); [word|].
