@@ -34,7 +34,7 @@ Definition is_valid_cmp (cmp: Z → Z) (n: Z) : Prop :=
   (* NOTE: this is just a useful definition to make the invariant simpler, the
   actual comparison function is never passed there parameters *)
   (cmp (-1) = 1) ∧
-  (cmp n = 0).
+  (cmp n ≤ 0).
 
 Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) `{!Persistent I} :
   {{{ is_pkg_init sort ∗
@@ -132,8 +132,13 @@ Proof.
         destruct Hvalid as (Hmono & Hneg & Hn).
         pose proof (Hmono (sint.Z j) (sint.Z n) ltac:(word)).
         assert (sint.Z r ≠ 0) by word.
-        assert (cmp (sint.Z j) = 0) by word.
-        congruence.
+        destruct (decide (cmp (sint.Z n) = 0)).
+        {
+          assert (cmp (sint.Z j) = 0) by lia.
+          congruence.
+        }
+        assert (cmp (sint.Z n) < 0) by lia.
+        admit.
       * intros k Hk.
         destruct Hvalid as (Hmono & Hneg & Hn).
         destruct (decide (k = sint.Z i - 1)).
@@ -151,6 +156,52 @@ Proof.
       { subst; word. }
       pose proof (Hmono k (sint.Z i-1) ltac:(word)).
       word.
-Qed.
+Admitted.
+
+Definition signum (cmp_r: Z) : Z :=
+  if decide (cmp_r < 0) then -1
+  else if decide (cmp_r = 0) then 0
+       else 1.
+
+Definition adapt_cmp (cmp: Z → Z) (n: Z) : Z → Z :=
+  λ i, if decide (i < 0) then (1) else
+         if decide (n ≤ i) then (-1) (* not quite right *)
+         else signum (cmp i).
+
+Definition real_valid_cmp (cmp: Z → Z) (n: Z) :=
+  ∃ start end_,
+    (start ≤ end_) ∧
+    (∀ i, 0 ≤ i < start ∧ start ≤ n → cmp i > 0) ∧
+      (∀ i, start ≤ i ≤ end_ ∧ end_ < n → cmp i = 0) ∧
+      (∀ i, 0 ≤ end_ < i ∧ i < n → cmp i < 0).
+
+Lemma real_to_internal_cmp cmp n :
+  0 ≤ n →
+  real_valid_cmp cmp n →
+  is_valid_cmp (adapt_cmp cmp n) n.
+Proof.
+  intros Hnn H.
+  destruct H as (start & end_ & Hord & Hstart & Hmiddle & Hend).
+  split_and!.
+  {
+    intros i j H.
+    rewrite /adapt_cmp /signum.
+    repeat destruct (decide _); try lia.
+    all: admit.
+  }
+  { rewrite /adapt_cmp.
+    repeat first [
+        rewrite -> decide_True by lia
+      | rewrite -> decide_False by lia
+      | done ].
+  }
+  {
+   rewrite /adapt_cmp.
+    repeat first [
+        rewrite -> decide_True by lia
+      | rewrite -> decide_False by lia
+      | done ].
+  }
+Admitted.
 
 End proof.
