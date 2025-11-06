@@ -30,7 +30,7 @@ Lemma wp_SignVrf ptr_sk pk P sl_vrfPk vrfPk :
   let enc := VrfSig.pure_enc (VrfSig.mk' (W8 VrfSigTag) vrfPk) in
   {{{
     is_pkg_init ktcore ∗
-    "#His_sig_sk" ∷ cryptoffi.is_sig_sk ptr_sk pk P ∗
+    "#Hown_sig_sk" ∷ cryptoffi.own_sig_sk ptr_sk pk P ∗
     "#Hsl_vrfPk" ∷ sl_vrfPk ↦*□ vrfPk ∗
     "HP" ∷ P enc
   }}}
@@ -101,7 +101,7 @@ Lemma wp_SignLink ptr_sk pk P epoch sl_link link :
   let enc := LinkSig.pure_enc (LinkSig.mk' (W8 LinkSigTag) epoch link) in
   {{{
     is_pkg_init ktcore ∗
-    "#His_sig_sk" ∷ cryptoffi.is_sig_sk ptr_sk pk P ∗
+    "#Hown_sig_sk" ∷ cryptoffi.own_sig_sk ptr_sk pk P ∗
     "#Hsl_link" ∷ sl_link ↦*□ link ∗
     "HP" ∷ P enc
   }}}
@@ -165,7 +165,7 @@ Qed.
 Lemma wp_ProveMapLabel ptr_sk pk (uid ver : w64) :
   {{{
     is_pkg_init ktcore ∗
-    "#His_vrf_sk" ∷ cryptoffi.is_vrf_sk ptr_sk pk
+    "#Hown_vrf_sk" ∷ cryptoffi.own_vrf_sk ptr_sk pk
   }}}
   @! ktcore.ProveMapLabel #ptr_sk #uid #ver
   {{{
@@ -195,7 +195,7 @@ Qed.
 Lemma wp_EvalMapLabel ptr_sk pk (uid ver : w64) :
   {{{
     is_pkg_init ktcore ∗
-    "#His_vrf_sk" ∷ cryptoffi.is_vrf_sk ptr_sk pk
+    "#Hown_vrf_sk" ∷ cryptoffi.own_vrf_sk ptr_sk pk
   }}}
   @! ktcore.EvalMapLabel #ptr_sk #uid #ver
   {{{
@@ -223,7 +223,7 @@ Qed.
 Lemma wp_CheckMapLabel ptr_pk pk (uid ver : w64) sl_proof proof :
   {{{
     is_pkg_init ktcore ∗
-    "#His_vrf_pk" ∷ cryptoffi.is_vrf_pk ptr_pk pk ∗
+    "#Hown_vrf_pk" ∷ cryptoffi.own_vrf_pk ptr_pk pk ∗
     "#Hsl_proof" ∷ sl_proof ↦*□ proof
   }}}
   @! ktcore.CheckMapLabel #ptr_pk #uid #ver #sl_proof

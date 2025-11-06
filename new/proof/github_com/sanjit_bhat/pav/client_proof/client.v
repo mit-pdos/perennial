@@ -26,7 +26,7 @@ Definition wish_checkMemb pk uid ver dig memb : iProp Σ :=
 Lemma wp_checkMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_memb memb :
   {{{
     is_pkg_init client ∗
-    "#His_vrf_pk" ∷ cryptoffi.is_vrf_pk ptr_pk pk ∗
+    "#Hown_vrf_pk" ∷ cryptoffi.own_vrf_pk ptr_pk pk ∗
     "#Hsl_dig" ∷ sl_dig ↦*□ dig ∗
     "#Hown_memb" ∷ ktcore.Memb.own ptr_memb memb (□)
   }}}
@@ -80,7 +80,7 @@ Definition wish_checkHist pk uid (prefixLen : w64) dig hist : iProp Σ :=
 Lemma wp_checkHist ptr_pk pk (uid prefixLen : w64) sl_dig dig sl_hist sl0_hist hist :
   {{{
     is_pkg_init client ∗
-    "#His_vrf_pk" ∷ cryptoffi.is_vrf_pk ptr_pk pk ∗
+    "#Hown_vrf_pk" ∷ cryptoffi.own_vrf_pk ptr_pk pk ∗
     "#Hsl_dig" ∷ sl_dig ↦*□ dig ∗
     "#Hsl_hist" ∷ sl_hist ↦*□ sl0_hist ∗
     "#Hown_hist" ∷ ([∗ list] ptr;memb ∈ sl0_hist;hist,
@@ -157,7 +157,7 @@ Definition wish_checkNonMemb pk uid ver dig nonMemb : iProp Σ :=
 Lemma wp_checkNonMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_nonMemb nonMemb :
   {{{
     is_pkg_init client ∗
-    "#His_vrf_pk" ∷ cryptoffi.is_vrf_pk ptr_pk pk ∗
+    "#Hown_vrf_pk" ∷ cryptoffi.own_vrf_pk ptr_pk pk ∗
     "#Hsl_dig" ∷ sl_dig ↦*□ dig ∗
     "#Hown_nonMemb" ∷ ktcore.NonMemb.own ptr_nonMemb nonMemb (□)
   }}}
