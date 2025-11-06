@@ -45,12 +45,10 @@ Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) `{!Persis
     @! sort.Find #n #cmp_code
   {{{ (i: w64) (found: bool), RET (#i, #found);
       I ∗
-      ⌜found = true →
+      ⌜found = true ↔
         sint.Z i < sint.Z n ∧
         cmp (sint.Z i) = 0⌝ ∗
-      ⌜found = false →
-        (sint.Z i = sint.Z n) ∨
-        (∀ i, 0 ≤ i < sint.Z n ∧ cmp i > 0)⌝ ∗
+      ⌜(∀ i, 0 ≤ i < sint.Z n → cmp i > 0) → sint.Z i = sint.Z n⌝ ∗
       ⌜∀ k, 0 ≤ k < sint.Z i → cmp k > 0⌝
   }}}.
 Proof.
@@ -123,22 +121,13 @@ Proof.
       iApply "HΦ".
       iFrame.
       iPureIntro.
-      rewrite bool_decide_eq_true bool_decide_eq_false.
+      rewrite bool_decide_eq_true.
       split_and!.
-      * intros; subst.
+      * word.
+      * intros Hno_index.
+        (* contradiction in the i < n case *)
+        pose proof (Hno_index (sint.Z j) ltac:(word)).
         word.
-      * intros.
-        destruct Hvalid as (Hmono & Hneg & Hn).
-        replace (sint.Z j) with (sint.Z i) in *.
-        (* TODO: redo proof *)
-        pose proof (Hmono (sint.Z i) (sint.Z n) ltac:(word)).
-        pose proof (Hmono (sint.Z i-1) (sint.Z i) ltac:(word)).
-        assert (sint.Z r ≠ 0) by word.
-        destruct (decide (cmp (sint.Z n) = 0)).
-        {
-          word.
-        }
-        admit.
       * intros k Hk.
         destruct Hvalid as (Hmono & Hneg & Hn).
         destruct (decide (k = sint.Z i - 1)).
@@ -149,15 +138,17 @@ Proof.
       iApply "HΦ".
       iFrame.
       iPureIntro.
-      split_and!; auto; try word.
-      { admit. }
-      intros k Hk.
-      destruct Hvalid as (Hmono & Hneg & Hn).
-      destruct (decide (k = sint.Z i - 1)).
-      { subst; word. }
-      pose proof (Hmono k (sint.Z i-1) ltac:(word)).
-      word.
-Admitted.
+      split_and!.
+      * word.
+      * intros Hno_index.
+        word.
+      * intros k Hk.
+        destruct Hvalid as (Hmono & Hneg & Hn).
+        destruct (decide (k = sint.Z i - 1)).
+        { subst; word. }
+        pose proof (Hmono k (sint.Z i-1) ltac:(word)).
+        word.
+Qed.
 
 Definition signum (cmp_r: Z) : Z :=
   if decide (cmp_r < 0) then -1
