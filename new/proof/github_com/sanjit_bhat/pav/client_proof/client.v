@@ -199,5 +199,56 @@ Proof.
   iFrame "#".
 Qed.
 
+Definition wish_checkAudit servPk adtrPk ep reply : iProp Σ :=
+  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VerifyVrfSig adtrPk reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.AdtrVrfSig) ∗
+  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VerifyVrfSig servPk reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.ServVrfSig) ∗
+  "#Hwish_adtr_linkSig" ∷ ktcore.wish_VerifyLinkSig adtrPk ep reply.(auditor.GetReply.Link) reply.(auditor.GetReply.AdtrLinkSig) ∗
+  "#Hwish_serv_linkSig" ∷ ktcore.wish_VerifyLinkSig servPk ep reply.(auditor.GetReply.Link) reply.(auditor.GetReply.ServLinkSig).
+
+Lemma wp_checkAudit sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_reply reply :
+  {{{
+    is_pkg_init client ∗
+    "#Hsl_servPk" ∷ sl_servPk ↦*□ servPk ∗
+    "#Hsl_adtrPk" ∷ sl_adtrPk ↦*□ adtrPk ∗
+    "#Hown_reply" ∷ auditor.GetReply.own ptr_reply reply (□)
+  }}}
+  @! client.checkAudit #sl_servPk #sl_adtrPk #ep #ptr_reply
+  {{{
+    (err : bool), RET #err;
+    "Hgenie" ∷
+      match err with
+      | true => ¬ wish_checkAudit servPk adtrPk ep reply
+      | false =>
+        "#Hwish_checkAudit" ∷ wish_checkAudit servPk adtrPk ep reply
+      end
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hown_reply".
+  wp_auto.
+  wp_apply ktcore.wp_VerifyVrfSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_adtr_vrf".
+  wp_apply ktcore.wp_VerifyVrfSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_serv_vrf".
+  wp_apply ktcore.wp_VerifyLinkSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_adtr_link".
+  wp_apply ktcore.wp_VerifyLinkSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_serv_link".
+  iApply "HΦ".
+  iFrame "#".
+Qed.
+
 End proof.
 End client.
