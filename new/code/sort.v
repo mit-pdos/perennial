@@ -22,6 +22,58 @@ Definition Search : go_string := "sort.Search"%go.
 
 Definition Find : go_string := "sort.Find"%go.
 
+(* Find uses binary search to find and return the smallest index i in [0, n)
+   at which cmp(i) <= 0. If there is no such index i, Find returns i = n.
+   The found result is true if i < n and cmp(i) == 0.
+   Find calls cmp(i) only for i in the range [0, n).
+
+   To permit binary search, Find requires that cmp(i) > 0 for a leading
+   prefix of the range, cmp(i) == 0 in the middle, and cmp(i) < 0 for
+   the final suffix of the range. (Each subrange could be empty.)
+   The usual way to establish this condition is to interpret cmp(i)
+   as a comparison of a desired target value t against entry i in an
+   underlying indexed data structure x, returning <0, 0, and >0
+   when t < x[i], t == x[i], and t > x[i], respectively.
+
+   For example, to look for a particular string in a sorted, random-access
+   list of strings:
+
+   	i, found := sort.Find(x.Len(), func(i int) int {
+   	    return strings.Compare(target, x.At(i))
+   	})
+   	if found {
+   	    fmt.Printf("found %s at entry %d\n", target, i)
+   	} else {
+   	    fmt.Printf("%s not found, would insert at %d", target, i)
+   	}
+
+   go: search.go:99:6 *)
+Definition Findⁱᵐᵖˡ : val :=
+  λ: "n" "cmp",
+    exception_do (let: "found" := (mem.alloc (type.zero_val #boolT)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "cmp" := (mem.alloc "cmp") in
+    let: "n" := (mem.alloc "n") in
+    let: "j" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := #(W64 0) in
+    let: "$r1" := (![#intT] "n") in
+    do:  ("i" <-[#intT] "$r0");;;
+    do:  ("j" <-[#intT] "$r1");;;
+    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "j")); (λ: <>, #()) := λ: <>,
+      let: "h" := (mem.alloc (type.zero_val #intT)) in
+      let: "$r0" := (u_to_w64 ((s_to_w64 ((![#intT] "i") + (![#intT] "j"))) ≫ #(W64 1))) in
+      do:  ("h" <-[#intT] "$r0");;;
+      (if: int_gt (let: "$a0" := (![#intT] "h") in
+      (![#funcT] "cmp") "$a0") #(W64 0)
+      then
+        let: "$r0" := ((![#intT] "h") + #(W64 1)) in
+        do:  ("i" <-[#intT] "$r0")
+      else
+        let: "$r0" := (![#intT] "h") in
+        do:  ("j" <-[#intT] "$r0")));;;
+    return: (![#intT] "i", (int_lt (![#intT] "i") (![#intT] "n")) && ((let: "$a0" := (![#intT] "i") in
+     (![#funcT] "cmp") "$a0") = #(W64 0)))).
+
 Definition SearchInts : go_string := "sort.SearchInts"%go.
 
 Definition SearchFloat64s : go_string := "sort.SearchFloat64s"%go.
@@ -151,8 +203,6 @@ Definition rotate : go_string := "sort.rotate"%go.
 Definition vars' : list (go_string * go_type) := [].
 
 Axiom Searchⁱᵐᵖˡ : val.
-
-Axiom Findⁱᵐᵖˡ : val.
 
 Axiom SearchIntsⁱᵐᵖˡ : val.
 
