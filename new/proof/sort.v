@@ -1,6 +1,8 @@
 From New.generatedproof Require Import sort.
 From New.proof Require Import proof_prelude.
 
+Unset Printing Projections.
+
 Section proof.
 Context  `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContext}.
 
@@ -25,9 +27,10 @@ Proof. apply _. Qed.
 
 (* The key correctness property: cmp must be monotonically non-increasing *)
 (* note: this is overly strong, only cmp being negative/zero/positive matters
-and that is what should be monotonic, but you can always *)
+and that is what should be monotonic, but you can always convert the general cmp
+into one with these properties *)
 Definition is_valid_cmp (cmp: Z → Z) (n: Z) : Prop :=
-  (∀ i j, 0 ≤ i ∧ i < j < n → cmp j ≤ cmp i) ∧
+  (∀ i j, -1 ≤ i ∧ i < j ≤ n → cmp j ≤ cmp i) ∧
   (* NOTE: this is just a useful definition to make the invariant simpler, the
   actual comparison function is never passed there parameters *)
   (cmp (-1) = 1) ∧
@@ -57,68 +60,60 @@ Proof.
 
   (* Initialize loop invariant: i = 0, j = n *)
   iAssert (
-    ∃ (i_val j_val: w64),
-      "i" ∷ i_ptr ↦ i_val ∗
-      "j" ∷ j_ptr ↦ j_val ∗
+    ∃ (i j: w64),
+      "i" ∷ i_ptr ↦ i ∗
+      "j" ∷ j_ptr ↦ j ∗
       "I" ∷ I ∗
-      "%Hbounds" ∷ ⌜0 ≤ sint.Z i_val ≤ sint.Z j_val ≤ sint.Z n⌝ ∗
-      "%Hi_prop" ∷ ⌜∀ k, 0 ≤ k < sint.Z i_val → cmp k > 0⌝ ∗
-      "%Hj_prop" ∷ ⌜∀ k, sint.Z j_val ≤ k < sint.Z n → cmp k ≤ 0⌝
+      "%Hbounds" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z j ≤ sint.Z n⌝ ∗
+      "%Hi_prop" ∷ ⌜cmp (sint.Z i - 1) > 0⌝ ∗
+      "%Hj_prop" ∷ ⌜cmp (sint.Z j) ≤ 0⌝
   )%I with "[$I $i $j]" as "HI".
-  { iPureIntro. split_and!; intros; try word. }
+  { iPureIntro. split; [ word | ].
+    destruct Hvalid as (Hmono & Hneg & Hn).
+    change (sint.Z (W64 0)-1) with (-1).
+    split; word.
+  }
 
   wp_for "HI".
   wp_if_destruct.
   - (* Loop body: i < j *)
     (* Call cmp(h) *)
-    rewrite /cmp_implements.
     wp_apply ("Hcmp" with "[$I]").
     { iPureIntro. word. }
     iIntros (r) "[HI %Hcmp_result]".
+    (* note that making this a definition hides it from word (a subst is
+    needed) *)
+    set (h:=word.sru (word.add i j) (W64 1)) in *.
+    (* we can use h using only this abstract property *)
+    assert (sint.Z i ≤ sint.Z h < sint.Z j) as Hj.
+    {
+      subst h.
+      word.
+    }
 
     wp_auto.
     wp_if_destruct.
     + (* cmp(h) > 0, so i = h + 1 *)
       wp_for_post.
-      iFrame "j".
       iFrame.
       iPureIntro.
       split; [word|].
-      split.
-      * intros k Hk.
-        pose proof (Hi_prop k).
-        rewrite sint_eq_uint' in Hk; [ | word ].
-        rewrite word.unsigned_add_nowrap in Hk; [ | word ].
-        rewrite word.unsigned_sru_nowrap in Hk; [ | word ].
-        rewrite sint_eq_uint' in Hcmp_result; [ | word ].
-        rewrite sint_eq_uint' in Hcmp_result; [ | word ].
-        rewrite word.unsigned_sru_nowrap in Hcmp_result; [ | word ].
-        rewrite word.unsigned_add_nowrap in Hcmp_result; [ | word ].
-        rewrite word.unsigned_add_nowrap in Hk; [ | word ].
-        rewrite Z.shiftr_div_pow2 in Hk, Hcmp_result; [ | word ].
-        change (2^(uint.Z (W64 1))) with 2 in *.
-        change (uint.Z (W64 1)) with 1 in *.
-        change (sint.Z 0) with 0 in *.
-        rewrite sint_eq_uint' in H; [ | word ].
-        rewrite -> !sint_eq_uint' in * by word.
-        destruct Hvalid as (Hvalid & Hcmp_lo & Hcmp_hi).
-        admit.
-      * apply Hj_prop.
+      split; [ | word ].
+      destruct Hvalid as (Hmono & Hneg & Hn).
+      pose proof (Hmono (sint.Z i - 1) (sint.Z h) ltac:(word)).
+      replace (sint.Z (word.add h (W64 1)) - 1) with (sint.Z h) by word.
+      word.
     + (* cmp(h) ≤ 0, so j = h *)
       wp_for_post.
       iFrame.
       iPureIntro.
       split; [word|].
-      split.
-      * apply Hi_prop.
-      * intros k Hk.
-        destruct (decide (k > sint.Z (w64_word_instance.(word.sru)
-            (w64_word_instance.(word.add) i_val j_val)
-            (W64 1)))).
-        -- apply Hj_prop. admit.
-        -- admit.
+      split; [word|].
+      destruct Hvalid as (Hmono & Hneg & Hn).
+      pose proof (Hmono (sint.Z h) (sint.Z j) ltac:(word)).
+      word.
   - (* Loop exit: i = j *)
-    assert (sint.Z i_val = sint.Z j_val) by word.
+    assert (sint.Z i = sint.Z j) by word.
     wp_if_destruct.
     + (* i < n, check if cmp(i) = 0 *)
       wp_apply ("Hcmp" with "[$I]").
@@ -129,28 +124,33 @@ Proof.
       iApply "HΦ".
       iFrame.
       iPureIntro.
-      split_and!; auto; try word.
-      * intros Hfound.
-        destruct (bool_decide (sint.Z r = 0)) eqn:Heq.
-        -- rewrite bool_decide_eq_true in Heq.
-           split; [word|].
-           rewrite -Hcmp_result. word.
-        -- rewrite bool_decide_eq_false in Heq.
-           rewrite bool_decide_eq_true in Hfound.
-           word.
-      * intros Hnotfound.
-        rewrite bool_decide_eq_false in Hnotfound.
-        (* From Hj_prop, we know cmp(i) ≤ 0, and from Heq it's not 0 *)
-        assert (cmp (sint.Z i_val) ≤ 0).
-        { replace (sint.Z i_val) with (sint.Z j_val) by word.
-          apply Hj_prop. word. }
-
-        admit.
+      rewrite bool_decide_eq_true bool_decide_eq_false.
+      split_and!.
+      * intros; subst.
+        word.
+      * intros.
+        destruct Hvalid as (Hmono & Hneg & Hn).
+        pose proof (Hmono (sint.Z j) (sint.Z n) ltac:(word)).
+        assert (sint.Z r ≠ 0) by word.
+        assert (cmp (sint.Z j) = 0) by word.
+        congruence.
+      * intros k Hk.
+        destruct Hvalid as (Hmono & Hneg & Hn).
+        destruct (decide (k = sint.Z i - 1)).
+        { subst; word. }
+        pose proof (Hmono k (sint.Z i-1) ltac:(word)).
+        word.
     + (* i = n *)
       iApply "HΦ".
       iFrame.
       iPureIntro.
       split_and!; auto; try word.
-Admitted.
+      intros k Hk.
+      destruct Hvalid as (Hmono & Hneg & Hn).
+      destruct (decide (k = sint.Z i - 1)).
+      { subst; word. }
+      pose proof (Hmono k (sint.Z i-1) ltac:(word)).
+      word.
+Qed.
 
 End proof.
