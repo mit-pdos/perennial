@@ -79,6 +79,14 @@ Proof.
   by iApply is_chain_rev_inj.
 Qed.
 
+Lemma is_chain_init h :
+  Z.of_nat $ length h = cryptoffi.hash_len → ⊢
+  is_chain [] h.
+Proof.
+  iIntros (?).
+  by iExists _.
+Qed.
+
 Lemma wp_GetEmptyLink :
   {{{ is_pkg_init hashchain }}}
   @! hashchain.GetEmptyLink #()
