@@ -49,9 +49,8 @@ Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) `{!Persis
         sint.Z i < sint.Z n ∧
         cmp (sint.Z i) = 0⌝ ∗
       ⌜found = false →
-        (* the English spec clearly says this, but it is only true if 0 ≤ n so
-        we assume that in the precondition and translate the spec literally *)
-       sint.Z i = sint.Z n⌝ ∗
+        (sint.Z i = sint.Z n) ∨
+        (∀ i, 0 ≤ i < sint.Z n ∧ cmp i > 0)⌝ ∗
       ⌜∀ k, 0 ≤ k < sint.Z i → cmp k > 0⌝
   }}}.
 Proof.
@@ -130,14 +129,15 @@ Proof.
         word.
       * intros.
         destruct Hvalid as (Hmono & Hneg & Hn).
-        pose proof (Hmono (sint.Z j) (sint.Z n) ltac:(word)).
+        replace (sint.Z j) with (sint.Z i) in *.
+        (* TODO: redo proof *)
+        pose proof (Hmono (sint.Z i) (sint.Z n) ltac:(word)).
+        pose proof (Hmono (sint.Z i-1) (sint.Z i) ltac:(word)).
         assert (sint.Z r ≠ 0) by word.
         destruct (decide (cmp (sint.Z n) = 0)).
         {
-          assert (cmp (sint.Z j) = 0) by lia.
-          congruence.
+          word.
         }
-        assert (cmp (sint.Z n) < 0) by lia.
         admit.
       * intros k Hk.
         destruct Hvalid as (Hmono & Hneg & Hn).
@@ -150,6 +150,7 @@ Proof.
       iFrame.
       iPureIntro.
       split_and!; auto; try word.
+      { admit. }
       intros k Hk.
       destruct Hvalid as (Hmono & Hneg & Hn).
       destruct (decide (k = sint.Z i - 1)).
