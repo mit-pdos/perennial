@@ -1059,6 +1059,47 @@ globalsGS0 go_ctx hG Σ.
     }
 Qed.
 
+Lemma wp_makeGreeting :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.makeGreeting #()
+  {{{ RET #"Hello, World!"; True%I }}}.
+Proof.
+  wp_start. wp_auto.
+  wp_apply (chan.wp_make (V:=stream.t) 2); [done|].
+  iIntros (c γ) "[#Hic Hoc]". wp_auto.
+  iMod (start_mpmc _ _ _ _ 1 1 with "Hic Hoc") as (γmpmc) "[#Hmpmc [[Hprod _] [Hcons _]]]";
+    [done|lia..|].
+  wp_apply (wp_fork with "[Hcons]").
+  { wp_apply (wp_Muxer with "[Hcons]"); [|done]. iFrame "Hmpmc Hcons". }
+  wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ ","%go⌝)%I).
+  { iIntros (s) "!> _". wp_auto. by eauto. }
+  iIntros (stream1) "[Hstream1 Hc1]".
+  wp_auto.
+  wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ "!"%go⌝)%I).
+  { iIntros (s) "!> _". wp_auto. by eauto. }
+  iIntros (stream2) "[Hstream2 Hc2]".
+  wp_auto.
+  wp_apply (wp_mpmc_send with "[$Hmpmc $Hprod $Hstream1]").
+  iIntros "Hprod".
+  wp_auto.
+  wp_apply (wp_mpmc_send with "[$Hmpmc $Hprod $Hstream2]").
+  iIntros "Hprod".
+  wp_auto.
+  (* TODO: Proofmode unification fails to find the correct channel *)
+  iRevert "Hc2 Hc1". iIntros "Hc2 Hc1".
+  wp_send with "[//]".
+  wp_auto.
+  iRevert "Hc1 Hc2". iIntros "Hc2 Hc1".
+  wp_send with "[//]".
+  wp_auto.
+  iRevert "Hc1 Hc2". iIntros "Hc2 Hc1".
+  wp_recv (?) as "->". wp_auto.
+  iRevert "Hc1 Hc2". iIntros "Hc1 Hc2".
+  wp_recv (?) as "->".
+  wp_auto.
+  by iApply "HΦ".
+Qed.
+
 End muxer.
 
 End proof.
