@@ -51,6 +51,35 @@ Definition is_chain_boot l h : iProp Σ :=
   ∃ boot,
   "#His_chain" ∷ is_chain_aux boot l h.
 
+Lemma foo b0 b1 l0 l1 h :
+  ⌜length l0 ≤ length l1⌝ -∗
+  is_chain_rev b0 l0 h -∗
+  is_chain_rev b1 l1 h -∗
+  ⌜l0 `prefix_of` l1⌝.
+Proof.
+  iInduction l0 as [|??] forall (l1 h); destruct l1; simpl;
+    iIntros "%"; iNamedSuffix 1 "0"; iNamedSuffix 1 "1"; try done.
+  - iPureIntro. apply prefix_nil.
+  - iDestruct (is_chain_rev_len with "Hrecur0") as %?.
+    iDestruct (is_chain_rev_len with "Hrecur1") as %?.
+    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %Heq.
+    simplify_eq/=.
+    opose proof (app_inj_1 _ _ _ _ _ Heq) as [-> ->]; [lia|].
+    iDestruct ("IHl0" with "[] Hrecur0 Hrecur1") as %?; [word|].
+    iPureIntro. by apply prefix_cons.
+Qed.
+
+Lemma bar b0 b1 l0 l1 h :
+  is_chain_rev b0 l0 h -∗
+  is_chain_rev b1 l1 h -∗
+  ⌜l0 `prefix_of` l1 ∨ l1 `prefix_of` l0⌝.
+Proof.
+  iIntros "#H0 #H1".
+  destruct (decide (length l0 < length l1)).
+  - iLeft. iApply foo; [word|done..].
+  - iRight. iApply foo; [word|done..].
+Qed.
+
 (* we can't prove inj bw two bootstrapped chains bc of cycles.
 i.e., when Hash(boot, v) = boot, which makes
 Chain(boot, []) look indistinguishable from Chain(boot, [v...]).
