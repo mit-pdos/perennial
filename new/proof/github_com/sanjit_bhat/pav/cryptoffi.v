@@ -361,7 +361,7 @@ Lemma wp_VrfPublicKeyDecode sl_enc pk d0 :
   }}}
   @! cryptoffi.VrfPublicKeyDecode #sl_enc
   {{{
-    (ptr_pk : loc) err, RET #ptr_pk;
+    ptr_pk err, RET (#ptr_pk, #err);
     "Hsl_enc" ∷ sl_enc ↦*{d0} pk ∗
     "Hgenie" ∷
       match err with
