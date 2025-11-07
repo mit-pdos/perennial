@@ -1,6 +1,5 @@
 From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_init.
 From New.proof Require Import proof_prelude.
-From New.golang.theory Require Import lock.
 From iris.algebra Require Import auth.
 From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
 From New.golang.theory Require Import chan.
@@ -50,7 +49,6 @@ Record stack_names := {
   pop_parked_pred_name : gname;
 }.
 
-(** Abstract stack representation *)
 #[local] Definition stack_rep (γ: gname) (q: Qp) (l: list (go_string)) : iProp Σ :=
   ghost_var γ q l.
 
@@ -72,7 +70,6 @@ Lemma stack_rep_halves_update γ l1 l2 l' :
   stack_rep_half γ l' ∗ stack_rep_half γ l'.
 Proof. iApply ghost_var_update_halves. Qed.
 
-(** Atomic updates for push and pop *)
 Definition push_au (s: loc) (v: go_string) (γ: gname) (Φ: iProp Σ) : iProp Σ :=
   |={⊤,∅}=> ∃ l,
     stack_rep_half γ l ∗
@@ -86,20 +83,16 @@ Definition pop_au (s: loc) (γ: gname) (Φ: go_string → bool → iProp Σ) : i
      | v::l' => stack_rep_half γ l' ={∅,⊤}=∗ Φ v true
      end).
 
-(* Helper to convert pop postcondition to predicate format *)
 Definition PopK (Φ : go_string → bool → iProp Σ) : (go_string * bool) → iProp Σ :=
   λ '(v,b), Φ v b.
 
-(** Stack invariant: protected by mutex
-    Contains physical stack + push tokens for each element *)
 Definition stack_inv (s: loc) (γ: stack_names) : iProp Σ :=
   ∃ (physical: list (go_string)) (slice_val: slice.t),
-    "Hstack" ∷ s ↦s[(chan_spec_raw_examples.EliminationStack) :: "stack"] slice_val ∗
-    "Hslice" ∷ own_slice slice_val (DfracOwn 1) physical ∗
+    "Hstack" ∷ s ↦s[(chan_spec_raw_examples.LockedStack) :: "stack"] slice_val ∗
+    "Hslice" ∷ own_slice slice_val (DfracOwn 1) (reverse physical) ∗
     "Hslice_cap" ∷ own_slice_cap (go_string) slice_val (DfracOwn 1) ∗
     "Hlog2phys" ∷ stack_rep_half γ.(stack_state_name) physical .
 
-(* Exchanger invariant: the state machine for elimination *)
 Definition exchanger_inv (s: loc) (ch: loc) (γ: stack_names) : iProp Σ :=
   ∃ (ch_state: chan_rep.t (go_string)),
     "chan_state" ∷ own_channel ch 0 ch_state γ.(exch_chan_name) ∗
@@ -137,60 +130,143 @@ Definition is_exchanger (ch: loc) (γ: stack_names) : iProp Σ :=
 Global Instance is_exchanger_persistent ch γ : Persistent (is_exchanger ch γ).
 Proof. apply _. Qed.
 
-Definition is_elim_stack (s: loc) (γ: stack_names) : iProp Σ :=
+Definition is_elim_stack (st: loc) (γ: stack_names) : iProp Σ :=
   ∃ (mu_loc: loc) (ch_loc: loc),
-    "#mu_field" ∷ s ↦s[chan_spec_raw_examples.EliminationStack :: "mu"]□ mu_loc ∗
-    "#ch_field" ∷ s ↦s[chan_spec_raw_examples.EliminationStack :: "exchanger"]□ ch_loc ∗
-    "#is_lock" ∷ is_lock mu_loc (stack_inv s γ) ∗
-    "#is_exchanger" ∷ is_exchanger ch_loc γ.
+    "#mu_field" ∷ st ↦s[chan_spec_raw_examples.LockedStack :: "mu"]□ mu_loc ∗
+    "#ch_field" ∷ st ↦s[chan_spec_raw_examples.LockedStack :: "exchanger"]□ ch_loc ∗
+    "#is_lock" ∷ is_Mutex mu_loc (stack_inv st γ) .
 
-Global Instance is_elim_stack_persistent s γ : Persistent (is_elim_stack s γ).
+Global Instance is_elim_stack_persistent st γ : Persistent (is_elim_stack st γ).
 Proof. apply _. Qed.
 
 Lemma wp_NewEliminationStack :
   {{{ is_pkg_init chan_spec_raw_examples }}}
   @! chan_spec_raw_examples.NewEliminationStack #()
-  {{{ (s: loc) γ, RET #s;
-      is_elim_stack s γ ∗ stack_rep_half γ.(stack_state_name) []
+  {{{ (st: loc) γ, RET #st;
+      is_elim_stack st γ ∗ stack_rep_half γ.(stack_state_name) []
   }}}.
 Proof.
 Admitted.
 
-Lemma wp_EliminationStack__Push (s: loc) (v: go_string) (γ: stack_names)  :
-  ∀ Φ,
-  s ≠ null ->
-  is_elim_stack s γ -∗
+Lemma wp_LockedStack__Push (st: loc) (v: go_string) (γ: stack_names) Φ  :
+  st ≠ null ->
+  is_elim_stack st γ -∗
   is_pkg_init chan_spec_raw_examples -∗
-  push_au s v γ.(stack_state_name) (Φ #()) -∗
+  push_au st v γ.(stack_state_name) (Φ #()) -∗
 
-  WP chan_spec_raw_examples.EliminationStack__Pushⁱᵐᵖˡ #s #v {{ Φ }}.
+  WP chan_spec_raw_examples.LockedStack__Pushⁱᵐᵖˡ #st #v {{ Φ }}.
 Proof.
-   intros.
+  intros H.
    iIntros "#Hic".
    iIntros "#Hinit".
    iIntros "Hau".
    wp_call.
+  iNamed "Hic".
   wp_auto_lc 4.
+    wp_apply (wp_Mutex__Lock with "[$is_lock]") as "[Hlocl Hstack]".
+    iNamed "Hstack".
     iRename select (£1) into "Hlc1".
+    wp_pures.
+        iDestruct (own_slice_len with "Hslice") as %Hlen.
+           iDestruct (slice.own_slice_len with "Hslice") as "[%Hlen_slice %Hslgtz]".
+      iDestruct (own_slice_wf with "Hslice") as "%Hwf".
+      wp_auto.
+        wp_apply wp_slice_literal.
+        iIntros (sl).
+        iIntros "Hsl".
+        wp_auto.
+        wp_apply (wp_slice_append with "[$Hslice $Hslice_cap $Hsl]").
+        iIntros (sl').
+        iIntros "Hsl'".
+        wp_auto.
+        unfold push_au.
+        rewrite -fupd_wp.
+        iMod "Hau".
+        iNamed "Hau".
+        iDestruct "Hau" as "[Hsta Hclose]".
+          iDestruct (ghost_var_agree with "[$Hsta] [$Hlog2phys]") as "%Hag".
+        iCombine "Hsta Hlog2phys" as "Hstacklog".
+        subst l.
+          iMod (ghost_var_update (v :: physical) with "Hstacklog") as "[Hsl1 Hsl2]".
+          iMod ("Hclose" with "[$Hsl1]").
+          iModIntro.
+          iDestruct "Hsl'" as "(Hsl & Hosc & Hslpt)".
+             wp_apply (wp_Mutex__Unlock
+                 with "[$is_lock Hstack Hsl Hosc Hsl2 $Hlocl]").
+             {
+             iNext. iFrame. 
+             Search "reverse".
+             rewrite reverse_cons.
+             done
+             }
+done.          
+             Qed.
 
-  wp_apply chan.wp_select_blocking.
-  simpl.
-    iSplit.
-    {
-   wp_apply chan.wp_select_blocking.
-  simpl.
-    iSplit.
-    {
-  wp_start. iIntros "Hau".
-Admitted.
 
-Lemma wp_EliminationStack__Pop (s: loc) (γ: stack_names) :
-  ∀ Φ,
+Lemma wp_LockedStack__Pop
+    (st: loc) (γ: stack_names)
+   Φ  :
+  st ≠ null ->
   is_pkg_init chan_spec_raw_examples -∗
-  is_elim_stack s γ -∗
-  pop_au s γ.(stack_state_name) (λ v ok, Φ (#v, #ok)%V) -∗
-  WP chan_spec_raw_examples.EliminationStack__Popⁱᵐᵖˡ #s {{ Φ }}.
+  is_elim_stack st γ -∗
+  pop_au st γ.(stack_state_name) (λ v ok, Φ (#v, #ok)%V) -∗
+  WP chan_spec_raw_examples.LockedStack__Popⁱᵐᵖˡ #st #() {{ Φ }}.
 Proof.
-Admitted.
+  intros Hne.
+  iIntros "#His #Hinit HAU".
+  wp_call.
+  wp_auto.
+  iNamed "Hinit".
+  wp_auto.
+
+  wp_apply (wp_Mutex__Lock with "[$is_lock]") as "[Hown Hinv]".
+  iNamed "Hinv".                        
+
+  wp_pures.
+  iDestruct (slice.own_slice_len with "Hslice") as "[%Hlen_slice %Hsl_ge0]".
+  iDestruct (own_slice_wf with "Hslice") as "%Hwf".
+  wp_auto.
+
+  wp_if_destruct.
+  - 
+    assert (sint.nat slice_val.(slice.len_f) = 0%nat) by word.
+
+    unfold pop_au.
+    rewrite -fupd_wp.
+    iMod "HAU" as (l) "[Hhalf Hk]".
+    iDestruct (ghost_var_agree with "Hhalf Hlog2phys") as %->. (* l = [] *)
+  iDestruct (slice.own_slice_len with "Hslice") as "[%Hlen_slice' %Hsl_ge0']".
+   rewrite H in Hlen_slice'.
+   destruct physical. {
+   
+    iMod ("Hk" with "Hhalf") as "HΦ".                       
+    iModIntro.
+
+    wp_apply (wp_Mutex__Unlock with "[$is_lock Hown Hstack Hslice Hslice_cap Hlog2phys]").
+    { iFrame.
+    }
+    by iApply "HΦ".
+    }
+    { rewrite reverse_cons in Hlen_slice'.
+      rewrite length_app in Hlen_slice'.
+      
+      simpl in Hlen_slice'.
+      lia.
+      }
+
+      -
+destruct physical as [|x xs].
+{ simpl in *.
+word.  
+}
+    set (g := x). set (tail := xs). clearbody g tail.
+
+
+
+rewrite length_reverse in Hlen_slice.
+    iDestruct (slice.own_slice_len with "Hslice") as "[%Hlen_s %Hge0]".
+     have Hpos : 0 ≤ sint.Z (W64 0) by word.
+    Admitted.
+
 
 End elim_stack.

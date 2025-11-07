@@ -18,7 +18,7 @@ Context `{ffi_syntax}.
 
 
 Definition LockedStack : go_type := structT [
-  "mu" :: sync.Mutex;
+  "mu" :: ptrT;
   "stack" :: sliceT
 ].
 #[global] Typeclasses Opaque LockedStack.
@@ -31,7 +31,7 @@ Definition NewLockedStackⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (mem.alloc (let: "$stack" := (slice.make2 #stringT #(W64 0)) in
      struct.make #LockedStack [{
-       "mu" ::= type.zero_val #sync.Mutex;
+       "mu" ::= type.zero_val #ptrT;
        "stack" ::= "$stack"
      }]))).
 
@@ -40,24 +40,24 @@ Definition LockedStack__Pushⁱᵐᵖˡ : val :=
   λ: "s" "value",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "value" := (mem.alloc "value") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s"))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s")))) #());;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #LockedStack #"stack"%go (![#ptrT] "s"))) in
     let: "$a1" := ((let: "$sl0" := (![#stringT] "value") in
     slice.literal #stringT ["$sl0"])) in
     (slice.append #stringT) "$a0" "$a1") in
     do:  ((struct.field_ref #LockedStack #"stack"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s"))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s")))) #());;;
     return: #()).
 
 (* go: elimination_stack.go:24:23 *)
 Definition LockedStack__Popⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s"))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s")))) #());;;
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #LockedStack #"stack"%go (![#ptrT] "s"))) in
     slice.len "$a0") = #(W64 0)
     then
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s"))) #());;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s")))) #());;;
       return: (#""%go, #false)
     else do:  #());;;
     let: "last" := (mem.alloc (type.zero_val #intT)) in
@@ -70,7 +70,7 @@ Definition LockedStack__Popⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #LockedStack #"stack"%go (![#ptrT] "s"))) in
     slice.slice #stringT "$s" #(W64 0) (![#intT] "last")) in
     do:  ((struct.field_ref #LockedStack #"stack"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s"))) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s")))) #());;;
     return: (![#stringT] "v", #true)).
 
 Definition after : go_string := "github.com/goose-lang/goose/testdata/examples/channel.after"%go.

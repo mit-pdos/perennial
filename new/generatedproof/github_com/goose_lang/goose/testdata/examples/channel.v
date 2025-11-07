@@ -16,7 +16,7 @@ Module LockedStack.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  mu' : sync.Mutex.t;
+  mu' : loc;
   stack' : slice.t;
 }.
 End def.
