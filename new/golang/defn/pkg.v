@@ -1,0 +1,21 @@
+From New.golang.defn Require Export postlang.
+
+(** [PkgInfo] associates a pkg_name to its static information *)
+Class PkgInfo (pkg_name: go_string) `{ffi_syntax} :=
+  {
+    pkg_imported_pkgs : list go_string;
+  }.
+
+Module package.
+Section defns.
+Context `{ffi_syntax}.
+
+Definition init_def (pkg_name : go_string) : val :=
+  λ: "init",
+    if: PackageInitCheck pkg_name then
+      PackageInitStart pkg_name;; "init" #();; PackageInitFinish pkg_name
+    else #().
+Program Definition init := sealed @init_def.
+Definition init_unseal : init = _ := seal_eq _.
+End defns.
+End package.

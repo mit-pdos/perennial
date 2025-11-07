@@ -50,6 +50,35 @@ Proof.
   iIntros "_". simpl. iApply "IH".
 Qed.
 
+Lemma wp_PackageInitCheck {stk E} (pkg : go_string) (s : gmap go_string bool) :
+  {{{ own_go_state s }}}
+    GoInstruction (PackageInitCheck pkg) #() @ stk; E
+  {{{ RET #(bool_decide (is_Some (s !! pkg))); own_go_state s }}}.
+Proof.
+  iIntros (?) "Hown HΦ".
+  wp_apply (wp_GoInstruction []).
+  { intros. repeat econstructor. }
+  iIntros "* %Hstep".
+  inv Hstep; last by inv Hpure.
+  iSplitR; first by iIntros "$".
+  iIntros "_".
+  rewrite !bool_decide_decide.
+  destruct decide at 2.
+  { exfalso. clear -e. done. }
+  2:{
+    simpl.
+    exfalso. set_solver.
+  }
+  simpl. wp_pures. rewrite decide_True. iApply "HΦ".
+  iApply "HΦ". iFrame.
+Qed.
+
+  Eval simpl in (decide (pkg ∈ s')).
+
+  (bool_decide (pkg ∈ s')).
+
+  simpl.
+
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
 Existing Class go.is_primitive_zero_val.

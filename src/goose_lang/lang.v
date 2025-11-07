@@ -164,7 +164,8 @@ Inductive go_op : Type :=
 | MethodCall (t : go.type) (m : go_string)
 
 | PackageInitCheck (pkg_name : go_string)
-| PackageInitMark (pkg_name : go_string)
+| PackageInitStart (pkg_name : go_string)
+| PackageInitFinish (pkg_name : go_string)
 
 | GlobalVarAddr (var_name : go_string)
 
@@ -602,8 +603,6 @@ Section external.
    argument and evaluate to a value) and data for external values *)
 Context {ext : ffi_syntax}.
 
-Definition x := array.mk (go.StructType []) 0 (@nil Z).
-
 (* XXX: to avoid splitting things into heap cells, can wrap it in e.g. an InjLV.
    This is how lists can avoid getting split into different heap cells when [ref]'d. *)
 Fixpoint flatten_struct (v: val) : list val :=
@@ -773,16 +772,31 @@ Inductive is_go_step_pure `{!GoContext} :
 | internal_map_insert_step_pure m k v :
   is_go_step_pure InternalMapLookup (m, k, v) (map_insert m k v).
 
+(* FIXME:  *)
+
+Set Typeclasses Debug.
+Set Printing All.
+Definition y : Prop := ∀ p (s : gmap go_string bool), (p ∈ s).
+
+Instance gmap_elem_of : ElemOf go_string (gmap go_string bool).
+Proof. apply _.
+
 Inductive is_go_step `{!GoContext} :
-  ∀ (op : go_op) (arg : val) (e' : expr) (s : gset go_string) (s' : gset go_string), Prop :=
-| go_step_pure op arg e' (Hpure : is_go_step_pure op arg e') s : is_go_step op arg e' s s
+  ∀ (op : go_op) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
 | package_init_check_step s p : is_go_step (PackageInitCheck p) #() #(bool_decide (p ∈ s)) s s
-| package_init_mark_step s p : is_go_step (PackageInitMark p) #() #() s (s ∪ {[p]}).
+| package_init_start_step s p : is_go_step (PackageInitStart p) #() #() s (<[ p := false ]> s)
+| package_init_finish_step s p : is_go_step (PackageInitFinish p) #() #() s (<[ p := true ]>s)
+| go_step_pure op arg e' (Hpure : is_go_step_pure op arg e') s : is_go_step op arg e' s s.
+
+Search ElemOf gmap.
+Set Printing All.
+Check @package_init_check_step.
+Check @elem_of.
 
 Record GoState : Type :=
   {
     go_context : GoContext;
-    inited_packages : gset go_string;
+    package_state : gmap go_string bool;
   }.
 
 Record state : Type := {
@@ -797,7 +811,7 @@ Record global_state : Type := {
   used_proph_id: gset proph_id;
 }.
 
-Global Instance eta_go_state : Settable _ := settable! Build_GoState <go_context; inited_packages>.
+Global Instance eta_go_state : Settable _ := settable! Build_GoState <go_context; package_state>.
 Global Instance eta_state : Settable _ := settable! Build_state <heap; go_state; world; trace; oracle>.
 Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
 
@@ -983,7 +997,7 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     map_insert := inhabitant;
   |}.
 Global Instance GoState_inhabited : Inhabited GoState :=
-  populate {| go_context := inhabitant; inited_packages := inhabitant |}.
+  populate {| go_context := inhabitant; package_state := inhabitant |}.
 
 Global Instance state_inhabited : Inhabited state :=
   populate {| heap := inhabitant; go_state := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
@@ -1440,9 +1454,9 @@ Definition go_instruction_step (op : go_op) (arg : val) :
   '(e', s') ← suchThat
     (λ '(σ,g) '(e', s'),
        let _ := σ.(go_state).(go_context) in
-       is_go_step op arg e' σ.(go_state).(inited_packages) s')
+       is_go_step op arg e' σ.(go_state).(package_state) s')
     (gen:=fallback_genPred _);
-  modifyσ $ set go_state $ set inited_packages (λ _, s') ;;
+  modifyσ $ set go_state $ set package_state (λ _, s') ;;
   ret_expr e'.
 
 Definition base_trans (e: expr) :

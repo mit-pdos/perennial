@@ -134,16 +134,16 @@ Section go_state_definitions.
 Context `{ext:ffi_syntax}.
 
 Class go_stateGS Σ : Set := GoStateGS {
-  #[global] package_inited_inG :: ghost_varG Σ (gset go_string);
+  #[global] package_inited_inG :: ghost_varG Σ (gmap go_string bool);
   package_inited_name : gname ;
 }.
 
 Class go_state_preG (Σ: gFunctors) : Set := {
-  #[global] package_inited_preG_inG :: ghost_varG Σ (gset go_string);
+  #[global] package_inited_preG_inG :: ghost_varG Σ (gmap go_string bool);
 }.
 
 Definition go_stateΣ : gFunctors :=
-  #[ghost_varΣ (gset go_string)].
+  #[ghost_varΣ (gmap go_string bool)].
 
 Global Instance subG_globalsG {Σ} : subG go_stateΣ Σ → go_state_preG Σ.
 Proof. solve_inG. Qed.
@@ -155,10 +155,10 @@ Definition go_stateGS_update_pre (Σ: gFunctors) (hT: go_state_preG Σ)
 Definition go_stateGS_update (Σ: gFunctors) (hT: go_stateGS Σ) (new_package_inited_name: gname) :=
   {| package_inited_inG := package_inited_inG; package_inited_name := new_package_inited_name |}.
 
-Definition own_go_state_ctx `{hG : go_stateGS Σ} (package_inited : gset go_string) :=
+Definition own_go_state_ctx `{hG : go_stateGS Σ} (package_inited : gmap go_string bool) :=
   ghost_var package_inited_name (1/2) package_inited.
 
-Definition own_go_state_def `{hG : go_stateGS Σ} (package_inited : gset go_string) :=
+Definition own_go_state_def `{hG : go_stateGS Σ} (package_inited : gmap go_string bool) :=
   ghost_var package_inited_name (1/2) package_inited.
 Program Definition own_go_state := sealed @own_go_state_def.
 Definition own_go_state_unseal : own_go_state = _ := seal_eq _.
@@ -566,7 +566,7 @@ Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
       "Hffi" ∷ ffi_local_ctx goose_ffiLocalGS σ.(world) ∗
       "Htr_auth" ∷ trace_auth σ.(trace) ∗
       "Hor_auth" ∷ oracle_auth σ.(oracle) ∗
-      "Hg_auth" ∷ own_go_state_ctx σ.(go_state).(inited_packages) ∗
+      "Hg_auth" ∷ own_go_state_ctx σ.(go_state).(package_state) ∗
       "%Hg" ∷ ⌜ σ.(go_state).(go_context) = goose_go_context ⌝
     )%I;
 }.
@@ -1413,135 +1413,6 @@ Proof.
   iMod (proph_map_resolve_proph with "[$Hproph $Hp]") as (vs' ->) "[$ Hp]".
   iModIntro. iSplit=>//. iFrame. iApply "HΦ". eauto.
 Qed.
-
-(* In the following, strong atomicity is required due to the fact that [e] must
-be able to make a head step for [Resolve e _ _] not to be (head) stuck. *)
-
-(*
-Lemma resolve_reducible e σ (p : proph_id) v :
-  Atomic StronglyAtomic e → reducible e σ →
-  reducible (Resolve e (Val (LitV (LitProphecy p))) (Val v)) σ.
-Proof.
-  intros A (κ & e' & σ' & efs & H).
-  exists (κ ++ [(p, (default v (to_val e'), v))]), e', σ', efs.
-  eapply Ectx_step with (K:=[]); try done.
-  assert (∃w, Val w = e') as [w <-].
-  { unfold Atomic in A. apply (A σ e' κ σ' efs) in H. unfold is_Some in H.
-    destruct H as [w H]. exists w. simpl in H. by apply (of_to_val _ _ H). }
-  simpl.
-  constructor.
-  rewrite /base_step /=.
-  econstructor.
-  - by apply prim_step_to_val_is_base_step.
-  - simpl.
-    econstructor; auto.
-Qed.
-
-Lemma step_resolve e vp vt σ1 κ e2 σ2 efs :
-  Atomic StronglyAtomic e →
-  prim_step (Resolve e (Val vp) (Val vt)) σ1 κ e2 σ2 efs →
-  base_step (Resolve e (Val vp) (Val vt)) σ1 κ e2 σ2 efs.
-Proof.
-  intros A [Ks e1' e2' Hfill -> step]. simpl in *.
-  induction Ks as [|K Ks _] using rev_ind.
-  + simpl in *. subst.
-    inv_base_step. repeat inv_undefined.
-    inversion_clear step. repeat inv_undefined.
-    simpl in H0; monad_inv.
-    rewrite /base_step /=.
-    econstructor; eauto; simpl.
-    econstructor; auto.
-  + rewrite fill_app /= in Hfill. destruct K; inversion Hfill; subst; clear Hfill.
-    - assert (fill_item K (fill Ks e1') = fill (Ks ++ [K]) e1') as Eq1;
-        first by rewrite fill_app.
-      assert (fill_item K (fill Ks e2') = fill (Ks ++ [K]) e2') as Eq2;
-        first by rewrite fill_app.
-      rewrite fill_app /=. rewrite Eq1 in A.
-      assert (is_Some (to_val (fill (Ks ++ [K]) e2'))) as H.
-      { apply (A σ1 _ κ σ2 efs). eapply Ectx_step with (K0 := Ks ++ [K]); done. }
-      destruct H as [v H]. apply to_val_fill_some in H. by destruct H, Ks.
-    - assert (to_val (fill Ks e1') = Some vp); first by rewrite -H1 //.
-      apply to_val_fill_some in H. destruct H as [-> ->].
-      rewrite /base_step /= in step; monad_inv.
-    - assert (to_val (fill Ks e1') = Some vt); first by rewrite -H2 //.
-      apply to_val_fill_some in H. destruct H as [-> ->].
-      rewrite /base_step /= in step; monad_inv.
-Qed.
-
-Lemma wp_resolve s E e Φ (p : proph_id) v (pvs : list (val * val)) :
-  Atomic StronglyAtomic e →
-  to_val e = None →
-  proph p pvs -∗
-  WP e @ s; E {{ r, ∀ pvs', ⌜pvs = (r, v)::pvs'⌝ -∗ proph p pvs' -∗ Φ r }} -∗
-  WP Resolve e (Val $ LitV $ LitProphecy p) (Val v) @ s; E {{ Φ }}.
-Proof.
-  (* TODO we should try to use a generic lifting lemma (and avoid [wp_unfold])
-     here, since this breaks the WP abstraction. *)
-  iIntros (A He) "Hp WPe". rewrite !wp_unfold /wp_pre /= He. simpl in *.
-  iIntros (q σ1 ns κ κs n) "(Hσ&Hκ&Hw) HNC". destruct κ as [|[p' [w' v']] κ' _] using rev_ind.
-  - iMod ("WPe" $! q σ1 ns [] κs n with "[$Hσ $Hκ $Hw] [$]") as "[Hs WPe]". iModIntro. iSplit.
-    { iDestruct "Hs" as "%". iPureIntro. destruct s; [ by apply resolve_reducible | done]. }
-    iIntros (e2 σ2 efs step). exfalso. apply step_resolve in step; last done.
-    rewrite /base_step /= in step.
-    inversion_clear step.
-    repeat inv_undefined.
-    simpl in H0; monad_inv.
-    match goal with H: [] = ?κs ++ [_] |- _ => by destruct κs end.
-  - rewrite -app_assoc.
-    iMod ("WPe" $! q σ1 ns _ _ n with "[$Hσ $Hκ $Hw] [$]") as "[Hs WPe]". iModIntro. iSplit.
-    { iDestruct "Hs" as %?. iPureIntro. destruct s; [ by apply resolve_reducible | done]. }
-    iIntros (e2 σ2 efs step). apply step_resolve in step; last done.
-    rewrite /base_step /= in step.
-    inversion_clear step.
-    repeat inv_undefined.
-    simpl in H0; monad_inv.
-    simplify_list_eq.
-    rename v0 into w', s2 into σ2, l into efs.
-    iMod ("WPe" $! (Val w') σ2 efs with "[%]") as "WPe".
-    { by eexists [] _ _. }
-    iModIntro. iNext. iMod "WPe" as "[[$ (Hκ&Hw)] WPe]".
-    iMod (proph_map_resolve_proph p (w',v) κs with "[$Hκ $Hp]") as (vs' ->) "[$ HPost]".
-    iModIntro. rewrite !wp_unfold /wp_pre /=. iDestruct "WPe" as "[HΦ $]".
-    iFrame. iIntros.
-    iMod ("HΦ" with "[$]") as "(HΦ&?)". iModIntro. iFrame. by iApply "HΦ".
-Qed.
-
-(** Lemmas for some particular expression inside the [Resolve]. *)
-Lemma wp_resolve_proph s E (p : proph_id) (pvs : list (val * val)) v :
-  {{{ proph p pvs }}}
-    ResolveProph (Val $ LitV $ LitProphecy p) (Val v) @ s; E
-  {{{ pvs', RET (LitV LitUnit); ⌜pvs = (LitV LitUnit, v)::pvs'⌝ ∗ proph p pvs' }}}.
-Proof.
-  iIntros (Φ) "Hp HΦ". iApply (wp_resolve with "Hp"); first done.
-  iApply wp_pure_step_later=> //=. iApply wp_value.
-  iIntros "!>" (vs') "HEq Hp". iApply "HΦ". iFrame.
-Qed.
-
-Lemma wp_resolve_cmpxchg_suc s E l (p : proph_id) (pvs : list (val * val)) v1 v2 v :
-  vals_compare_safe v1 v1 →
-  {{{ proph p pvs ∗ ▷ l ↦ v1 }}}
-    Resolve (CmpXchg #l v1 v2) #p v @ s; E
-  {{{ RET (v1, #true) ; ∃ pvs', ⌜pvs = ((v1, #true)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦ v2 }}}.
-Proof.
-  iIntros (Hcmp Φ) "[Hp Hl] HΦ".
-  iApply (wp_resolve with "Hp"); first done.
-  assert (val_is_unboxed v1) as Hv1; first by destruct Hcmp.
-  iApply (wp_cmpxchg_suc with "Hl"); [done..|]. iIntros "!> Hl".
-  iIntros (pvs' ->) "Hp". iApply "HΦ". eauto with iFrame.
-Qed.
-
-Lemma wp_resolve_cmpxchg_fail s E l (p : proph_id) (pvs : list (val * val)) q v' v1 v2 v :
-  v' ≠ v1 → vals_compare_safe v' v1 →
-  {{{ proph p pvs ∗ ▷ l ↦{q} v' }}}
-    Resolve (CmpXchg #l v1 v2) #p v @ s; E
-  {{{ RET (v', #false) ; ∃ pvs', ⌜pvs = ((v', #false)%V, v)::pvs'⌝ ∗ proph p pvs' ∗ l ↦{q} v' }}}.
-Proof.
-  iIntros (NEq Hcmp Φ) "[Hp Hl] HΦ".
-  iApply (wp_resolve with "Hp"); first done.
-  iApply (wp_cmpxchg_fail with "Hl"); [done..|]. iIntros "!> Hl".
-  iIntros (pvs' ->) "Hp". iApply "HΦ". eauto with iFrame.
-Qed.
-*)
 
 End lifting.
 End goose_lang.
