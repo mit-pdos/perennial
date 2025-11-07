@@ -148,6 +148,7 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
     #[local] es_ls_inG :: locked_stackG Σ;
     #[local] es_var_inG :: ghost_varG Σ (list go_string);
     #[local] es_chan_inG :: chanGhostStateG Σ go_string;
+    #[local] es_afterChan_inG :: chanGhostStateG Σ time.Time.t;
     #[local] es_token_pointer_inG :: ghost_varG Σ gname;
     #[local] es_send_token_inG :: tokenG Σ;
     #[local] es_reply_token_inG :: ghost_varG Σ val;
@@ -201,16 +202,104 @@ Definition is_EliminationStack s γ N : iProp Σ :=
   ∃ st,
     "#s" ∷ s ↦□ st ∗
     "#Hbase" ∷ is_LockedStack st.(chan_spec_raw_examples.EliminationStack.base') γ.(ls_gn) ∗
-    "#Hch" ∷ is_channel st.(chan_spec_raw_examples.EliminationStack.exchanger') 0 γ.(ch_gn) ∗
-    "#Hinv" ∷ inv N (
+    "#Hch" ∷ is_channel (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') 0 γ.(ch_gn) ∗
+    "#Hinv" ∷ inv (N.@"inv") (
         ∃ stack (exstate : chan_rep.t go_string),
           "Hls" ∷ own_LockedStack γ.(ls_gn) stack ∗
           "Hauth" ∷ ghost_var γ.(spec_gn) (1/2) stack ∗
           "exchanger" ∷ own_channel st.(chan_spec_raw_examples.EliminationStack.exchanger') 0 exstate γ.(ch_gn) ∗
-          "exch_inv" ∷ own_exchanger_inv γ N exstate
+          "Hexchanger" ∷ own_exchanger_inv γ (N.@"inv") exstate
       ).
 
 #[global] Opaque own_EliminationStack.
 #[local] Transparent own_EliminationStack.
+
+Lemma wp_NewEliminationStack N :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.NewEliminationStack #()
+  {{{ s γ, RET #s; is_EliminationStack s γ N ∗ ⟦[]⟧ }}}.
+Proof.
+  wp_start. wp_apply wp_NewLockedStack as "%base %γbase (#Hbase & Hls)".
+  wp_apply (chan.wp_make (t:=stringT)); first lia.
+  iIntros "* [#? Hc]". simpl.
+  wp_auto. wp_alloc s as "Hs".
+  iApply wp_fupd. wp_auto.
+  iMod (ghost_var_alloc []) as (γspec) "[Hauth Hes]".
+  iMod (ghost_var_alloc γspec) as (γs) "[Hs● Hs◯]".
+  iMod (ghost_var_alloc γs) as (γr) "[Hr● Hr◯]".
+  iPersist "Hs". iApply "HΦ". iMod (inv_alloc with "[-Hes]") as "#Hinv".
+  2:{ iModIntro. instantiate (1:=ltac:(econstructor)). iFrame "∗#". }
+  iFrame "Hs● Hr●". simpl. iFrame. iFrame.
+Qed.
+
+(* FIXME: do this with `time.After`. *)
+Lemma wp_after (d : time.Duration.t) :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.after #d
+  {{{ γafter ch, RET #ch; is_channel ch 0 γafter ∗
+                          □ (∀ Φ, (∀ v, Φ v true) -∗
+                                  rcv_au_slow ch 0 γafter (V:=time.Time.t) Φ) }}}.
+Proof.
+Admitted.
+
+Lemma alloc_push_help_token {E} N P :
+  ⊢ |={E}=> ∃ γs, (token γs ={↑N}=∗ ▷ P) ∗
+                 (▷ P ={↑N}=∗ token γs).
+Proof.
+  iMod (token_alloc) as "[%γs Htok]".
+  iMod (token_alloc) as "[%γs2 Htok2]".
+  iMod (inv_alloc N _ (P ∗ token γs2 ∨ token γs)%I with "[$Htok]") as "#Hescrow".
+  iExists γs. iModIntro.
+  iSplitR.
+  - iIntros "Ht". iInv "Hescrow" as "[[HP _]| >Hbad]"; first by iFrame.
+    iCombine "Ht Hbad" gives %[].
+  - iIntros "HP". iInv "Hescrow" as "[[_ >Hbad] | >Htok]".
+    + iCombine "Htok2 Hbad" gives %[].
+    + iModIntro. iSplitR "Htok"; last by iFrame. iNext. iLeft. iFrame.
+Qed.
+
+Lemma wp_EliminationStack__Push v γ s N :
+  ∀ Φ,
+  is_pkg_init chan_spec_raw_examples ∗ is_EliminationStack s γ N -∗
+  (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (⟦(v :: σ)⟧ ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  WP s @ (ptrT.id chan_spec_raw_examples.EliminationStack.id) @ "Push" #v {{ Φ }}.
+Proof.
+  wp_start as "#His". iNamed "His".
+  iRename "s" into "s1". wp_auto.
+  wp_apply wp_after. iIntros "* [#Hafter #Hrecv]".
+  wp_auto_lc 1.
+  wp_apply chan.wp_select_blocking.
+  simpl. iSplit.
+  { (* elimination occurs *)
+    iFrame "#". iExists _; iSplitR; first done.
+    iInv "Hinv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iNamedSuffix "Hi" "_inv". iApply fupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask". iNext. iFrame.
+    destruct exstate; iNamedSuffix "Hexchanger_inv" "_inv"; try by iExFalso.
+    - (* idle *)
+      iNamedSuffix "Hexchanger_inv" "_inv";
+      iIntros "exchanger_inv". iMod "Hmask" as "_".
+      iRename "Hs◯_inv" into "Hs◯".
+      rename γs into γs_old.
+      iRename "HΦ" into "Hau_inv".
+      iMod (alloc_push_help_token (N.@"escrow") (Φ #())) as (γs) "[HΦ Htok_inv]".
+      iMod (ghost_var_update_2 with "Hs◯ Hs●_inv") as "[Hs●_inv Hs◯]".
+      { compute_done. }
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]").
+      { iNamed "Hi". iFrame. iFrame. iNext.
+        iMod (fupd_mask_subseteq _) as "Hmask";
+          last iMod "Hau_inv" as "(% & ? & Hau)"; first solve_ndisj.
+        iModIntro. iFrame.
+        iIntros "H". iMod ("Hau" with "[$]") as "H".
+        iMod "Hmask" as "_".
+        iMod (fupd_mask_subseteq _) as "Hmask";
+          last iMod ("Htok_inv" with "[$]") as "Htok"; first solve_ndisj.
+        iMod "Hmask". iFrame. done. }
+      iModIntro.
+  }
+
+Qed.
 
 End elimination_stack_proof.
