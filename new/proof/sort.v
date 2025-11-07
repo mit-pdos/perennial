@@ -36,7 +36,7 @@ Definition is_valid_cmp (cmp: Z → Z) (n: Z) : Prop :=
   (cmp (-1) = 1) ∧
   (cmp n ≤ 0).
 
-Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) `{!Persistent I} :
+Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) :
   {{{ is_pkg_init sort ∗
       ⌜0 ≤ sint.Z n⌝ ∗
       cmp_implements cmp_code cmp (sint.Z n) I ∗
@@ -157,15 +157,24 @@ Definition signum (cmp_r: Z) : Z :=
 
 Definition adapt_cmp (cmp: Z → Z) (n: Z) : Z → Z :=
   λ i, if decide (i < 0) then (1) else
-         if decide (n ≤ i) then (-1) (* not quite right *)
+         if decide (n ≤ i) then
+           if decide (n = 0) then 0 else signum (cmp (n-1))
          else signum (cmp i).
 
 Definition real_valid_cmp (cmp: Z → Z) (n: Z) :=
   ∃ start end_,
-    (start ≤ end_) ∧
-    (∀ i, 0 ≤ i < start ∧ start ≤ n → cmp i > 0) ∧
-      (∀ i, start ≤ i ≤ end_ ∧ end_ < n → cmp i = 0) ∧
-      (∀ i, 0 ≤ end_ < i ∧ i < n → cmp i < 0).
+    (0 ≤ start ≤ end_ ∧ end_ < n) ∧
+    (∀ i, 0 ≤ i < start     → cmp i > 0) ∧
+    (∀ i, start ≤ i < end_  → cmp i = 0) ∧
+    (∀ i, end_ ≤ i < n      → cmp i < 0).
+
+Ltac saturate cmp :=
+  repeat
+    match goal with
+    | _ => lia
+    | H: context[cmp ?i], Hall: ∀ (_: Z), _ |- _ =>
+      learn_hyp (Hall i)
+    end.
 
 Lemma real_to_internal_cmp cmp n :
   0 ≤ n →
@@ -175,25 +184,24 @@ Proof.
   intros Hnn H.
   destruct H as (start & end_ & Hord & Hstart & Hmiddle & Hend).
   split_and!.
-  {
-    intros i j H.
+  - intros i j H.
     rewrite /adapt_cmp /signum.
-    repeat destruct (decide _); try lia.
-    all: admit.
-  }
-  { rewrite /adapt_cmp.
-    repeat first [
-        rewrite -> decide_True by lia
-      | rewrite -> decide_False by lia
-      | done ].
-  }
-  {
-   rewrite /adapt_cmp.
-    repeat first [
-        rewrite -> decide_True by lia
-      | rewrite -> decide_False by lia
-      | done ].
-  }
-Admitted.
+    repeat destruct (decide _); saturate cmp.
+  - rewrite /adapt_cmp /signum.
+    repeat destruct (decide _); lia.
+  - rewrite /adapt_cmp /signum.
+    repeat destruct (decide _); saturate cmp.
+Qed.
+
+Lemma adapt_cmp_bounded cmp n :
+  ∀ i, 0 ≤ i < n →
+       signum (cmp i) = adapt_cmp cmp n i.
+Proof.
+  intros i H.
+  rewrite /adapt_cmp.
+  repeat destruct (decide _); try lia.
+Qed.
+
+(* TODO: cmp_implements does not carry over to adapt_cmp cmp *)
 
 End proof.
