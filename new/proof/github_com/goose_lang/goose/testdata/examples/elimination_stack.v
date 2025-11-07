@@ -6,6 +6,7 @@ From New.proof.github_com.goose_lang.goose.model.channel
   Require Import chan_au_base.
 From New.proof Require Import sync strings time.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
+From iris.base_logic.lib Require Import token.
 
 Class locked_stackG Σ :=
   {
@@ -36,6 +37,10 @@ Definition is_LockedStack s γ : iProp Σ :=
                   "Hauth" ∷ ghost_var γ (1/2) (reverse stack)
     )) ∗
   "_" ∷ True.
+#[global] Opaque is_LockedStack.
+#[local] Transparent is_LockedStack.
+#[global] Instance is_LockedStack_persistent s γ : Persistent (is_LockedStack s γ).
+Proof. apply _. Qed.
 
 Lemma wp_NewLockedStack :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -126,3 +131,86 @@ Proof.
 Qed.
 
 End locked_stack_proof.
+
+Section elimination_stack_proof.
+
+Record EliminationStack_names :=
+  {
+    spec_gn : gname;
+    ls_gn : gname;
+    ch_gn : chan_names;
+    s_gn : gname;
+    r_gn : gname;
+  }.
+
+Class elimination_stackG {ext : ffi_syntax} Σ :=
+  {
+    #[local] es_ls_inG :: locked_stackG Σ;
+    #[local] es_var_inG :: ghost_varG Σ (list go_string);
+    #[local] es_chan_inG :: chanGhostStateG Σ go_string;
+    #[local] es_token_pointer_inG :: ghost_varG Σ gname;
+    #[local] es_send_token_inG :: tokenG Σ;
+    #[local] es_reply_token_inG :: ghost_varG Σ val;
+  }.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
+
+Context `{!elimination_stackG Σ}.
+
+Definition own_EliminationStack γ (σ : list go_string) : iProp Σ :=
+  ghost_var γ.(spec_gn) (1/2) σ.
+#[global] Opaque own_EliminationStack.
+#[local] Transparent own_EliminationStack.
+
+(** Supports atomic updates for Pop and Push that are allowd to access [⊤∖N]. *)
+
+Local Notation "⟦ σ ⟧ " := (own_EliminationStack ltac2:(Control.refine (fun () => &γ)) σ) (only parsing).
+Local Notation "⟦ σ ⟧" :=
+  (own_EliminationStack _ σ) (only printing, format "⟦ σ ⟧").
+Local Notation "½r γr"
+  := (ghost_var ltac2:(Control.refine (fun () => '(&γ.(r_gn)))) (1/2) γr) (only parsing, at level 1).
+Local Notation "½r γr" := (ghost_var _.(r_gn) (1/2) γr) (only printing, format "½r  γr").
+Local Notation "½s γs"
+  := (ghost_var ltac2:(Control.refine (fun () => '(&γ.(s_gn)))) (1/2) γs) (only parsing, at level 1).
+Local Notation "½s γs" := (ghost_var _.(s_gn) (1/2) γs ) (only printing, format "½s  γs").
+
+Local Definition own_exchanger_inv γ N exstate : iProp Σ :=
+  ∃ γs γr,
+  "Hs●" ∷ ½s γs ∗ "Hr●" ∷ ½r γr ∗
+  "Hexchanger" ∷ (
+      match exstate with
+      | chan_rep.Idle =>
+          "Hs◯" ∷ ½s γs ∗ "Hr◯" ∷ ½r γr
+      | chan_rep.SndPending v =>
+          "Hsend_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (⟦v :: σ⟧ ={∅,⊤∖↑N}=∗ token γs)) ∗
+          "Hr◯" ∷ ½r γr
+      | chan_rep.RcvPending =>
+          "Hrecv_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (∀ v σ', ⌜ σ = v :: σ' ⌝ → ⟦σ⟧ ={∅,⊤∖↑N}=∗
+                                                        ghost_var γr (3/4) (#v, #true)%V)) ∗
+          "Hs◯" ∷ ½s γs
+      | chan_rep.SndCommit v =>
+          "Hrecv_wit" ∷ ghost_var γr (3/4) (#v, #true)%V ∗ "Hs◯" ∷ ½s γs
+      | chan_rep.RcvCommit =>
+          "Hrecv_wit" ∷ token γs ∗ "Hr◯" ∷ ½r γr
+      | _ => False
+      end
+    ).
+
+Definition is_EliminationStack s γ N : iProp Σ :=
+  ∃ st,
+    "#s" ∷ s ↦□ st ∗
+    "#Hbase" ∷ is_LockedStack st.(chan_spec_raw_examples.EliminationStack.base') γ.(ls_gn) ∗
+    "#Hch" ∷ is_channel st.(chan_spec_raw_examples.EliminationStack.exchanger') 0 γ.(ch_gn) ∗
+    "#Hinv" ∷ inv N (
+        ∃ stack (exstate : chan_rep.t go_string),
+          "Hls" ∷ own_LockedStack γ.(ls_gn) stack ∗
+          "Hauth" ∷ ghost_var γ.(spec_gn) (1/2) stack ∗
+          "exchanger" ∷ own_channel st.(chan_spec_raw_examples.EliminationStack.exchanger') 0 exstate γ.(ch_gn) ∗
+          "exch_inv" ∷ own_exchanger_inv γ N exstate
+      ).
+
+#[global] Opaque own_EliminationStack.
+#[local] Transparent own_EliminationStack.
+
+End elimination_stack_proof.
