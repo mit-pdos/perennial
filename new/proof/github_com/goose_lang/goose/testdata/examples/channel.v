@@ -1063,7 +1063,8 @@ Lemma wp_makeGreeting :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.makeGreeting #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof.
+Proof using H chanGhostStateG0 chanGhostStateG1 contributionG0 dspG0 ext ffi ffi_interp0
+ffi_semantics0 globalsGS0 go_ctx hG Σ.
   wp_start. wp_auto.
   wp_apply (chan.wp_make (V:=stream.t) 2); [done|].
   iIntros (c γ) "[#Hic Hoc]". wp_auto.
