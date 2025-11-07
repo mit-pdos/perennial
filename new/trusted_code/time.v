@@ -18,12 +18,21 @@ Definition syncTimerⁱᵐᵖˡ : val :=
      else #chan.nil.
 
 (* TODO: awkward to construct a time.Time from trusted_code *)
-Axiom arbitraryTime : val.
 #[local] Definition __Time : go_type := structT [
   "wall" :: uint64T;
   "ext" :: int64T;
   "loc" :: ptrT
 ].
+Definition arbitraryTime: val :=
+  λ: <>,
+     (* generate a simple non-monotonic time without any nanoseconds and
+     location of UTC *)
+     let: "wall_seconds" := ArbitraryInt in
+     struct.make #__Time [{
+        "wall" ::= #(W64 0);
+        "ext" ::= "wall_seconds";
+        "loc" ::= #null
+     }].
 
 Definition Afterⁱᵐᵖˡ : val :=
   λ: "d",
