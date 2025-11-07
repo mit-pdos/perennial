@@ -935,26 +935,21 @@ Instance mapper_service_prot_unfold Φpre Φpost :
     (mapper_service_prot_aux Φpre Φpost (mapper_service_prot Φpre Φpost)).
 Proof. apply proto_unfold_eq, (fixpoint_unfold _). Qed.
 
-Definition is_mapper_stream (stream req_ch res_ch: loc) (f: func.t)
-    (f_log: go_string → go_string) : iProp Σ :=
-  "req" ∷ stream ↦s[chan_spec_raw_examples.stream :: "req"] req_ch ∗
-  "res" ∷ stream ↦s[chan_spec_raw_examples.stream :: "res"] res_ch ∗
-  "f"   ∷ stream ↦s[chan_spec_raw_examples.stream :: "f"] f ∗
-  "Hf_spec" ∷ (∀ (s: go_string),
-      WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ ⌜s' = f_log s⌝ }}).
-
+Definition is_mapper_stream stream : iProp Σ :=
+  ∃ req_ch res_ch f (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ),
+  ⌜stream = {| stream.req' := req_ch; stream.res' := res_ch; stream.f' := f |}⌝ ∗
+  "Hf_spec" ∷ □ (∀ (s: go_string),
+      Φpre s → WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost s s' }}) ∗
+    # (res_ch, req_ch) ↣ iProto_dual (mapper_service_prot Φpre Φpost).
 
 Lemma wp_mkStream (f: func.t) Φpre Φpost :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-      is_pkg_init channel ∗
-      (∀ (s: go_string),
-         Φpre s -∗ WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost s s' }})
-  }}}
+      "#Hf_spec" ∷ □ (∀ (strng: go_string),
+                        Φpre strng -∗ WP #f #strng {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) }}}
     @! chan_spec_raw_examples.mkStream #f
-  {{{ (req_ch res_ch: loc) stream, RET stream;
-      # (req_ch, res_ch) ↣ mapper_service_prot Φpre Φpost ∗
-      # (res_ch, req_ch) ↣ iProto_dual (mapper_service_prot Φpre Φpost)
-  }}}.
+  {{{ stream, RET #stream;
+      is_mapper_stream stream ∗
+    # (stream.(stream.req'), stream.(stream.res')) ↣ mapper_service_prot Φpre Φpost }}}.
 Proof.
   wp_start. wp_auto.
       wp_apply (chan.wp_make (V:=go_string)); first done.
@@ -964,30 +959,30 @@ Proof.
   iIntros (ch1). iIntros (γ1). iIntros "(#HisChan1 & Hownchan1)".
   wp_apply wp_fupd.
 
-  iMod (dsp_session_init _ _ _ _ _ _ _ _ _
-          (mapper_service_prot Φpre Φpost) with "HisChan HisChan1 Hownchan
- Hownchan1")
+  iMod (dsp_session_init _ ch1 ch _ _ _ _ _ _
+          (mapper_service_prot Φpre Φpost) with "HisChan1 HisChan Hownchan1
+ Hownchan")
                        as "[Hpl Hpr]";
     [by eauto|by eauto|..].
   iModIntro. wp_auto.
   iApply "HΦ".
-  iFrame "Hpl Hpr".
+  rewrite /is_mapper_stream.
+  iSplitR "Hpl".
+  { iExists _, _, _, _, _. iSplit; [done|].
+    iDestruct "Hpre" as "#Hpre". iFrame "Hpr".
+    iIntros "!>" (s) "HΦ". by iApply "Hpre". }
+  iFrame "Hpl".
 Qed.
 
-Lemma wp_MapServer (my_stream: stream.t) Φpre Φpost :
-  {{{ is_pkg_init chan_spec_raw_examples ∗
-      "#Hf_spec" ∷ □ (∀ (strng: go_string),
-          Φpre strng -∗
-          WP #(my_stream.(stream.f')) #strng
-          {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) ∗
-      "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣
-                   iProto_dual (mapper_service_prot Φpre Φpost)}}}
+Lemma wp_MapServer (my_stream: stream.t) :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream }}}
     @! chan_spec_raw_examples.MapServer #my_stream
   {{{ RET #(); True }}}.
 Proof using chanGhostStateG1 dspG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG Σ.  wp_start.
   iNamed "Hpre".
   rewrite /chan.for_range.
   wp_auto.
+  iDestruct "Hpre" as (Heq) "[#Hf_spec Hprot]".
   iAssert (∃ (in_val: go_string),
     "in" ∷ in_ptr ↦ in_val ∗
     "s" ∷ s_ptr ↦ my_stream ∗
@@ -995,7 +990,7 @@ Proof using chanGhostStateG1 dspG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0
     "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣
                  iProto_dual (mapper_service_prot Φpre Φpost)
   )%I with "[in s Hf_spec Hprot]" as "IH".
-  { iExists _. iFrame. }
+  { iExists _. iFrame. subst. iFrame. }
 
   wp_for.
   iNamed "IH".
@@ -1006,7 +1001,7 @@ Proof using chanGhostStateG1 dspG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0
 
   wp_bind (#my_stream.(stream.f') #req_val)%E.
   iApply (wp_wand with "[Hf_spec Hreq]").
-  { iSpecialize ("Hf_spec" $! req_val). iApply ("Hf_spec" with "Hreq"). }
+  { iSpecialize ("Hf_spec" $! req_val). subst. iApply ("Hf_spec" with "Hreq"). }
   iIntros (v) "Hv".
   iDestruct "Hv" as (s') "[%Heq_v Heq_log]".
   subst.
@@ -1020,14 +1015,7 @@ Qed.
 
 Lemma wp_Muxer (c: loc) γmpmc (n_prod n_cons: nat) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-      "#Hismpmc" ∷ is_mpmc γmpmc c n_prod n_cons
-        (λ s, ∃ Φpre Φpost,
-            □ (∀ (strng: go_string),
-                Φpre strng -∗ WP #(s.(stream.f')) #strng
-                {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) ∗
-            # (s.(stream.res'), s.(stream.req')) ↣
-              iProto_dual (mapper_service_prot Φpre Φpost))
-        (λ _, True) ∗
+      "#Hismpmc" ∷ is_mpmc γmpmc c n_prod n_cons is_mapper_stream (λ _, True) ∗
       "Hcons" ∷ mpmc_consumer γmpmc (∅ : gmultiset stream.t) }}}
     @! chan_spec_raw_examples.Muxer #c
   {{{ RET #(); True%I }}}.
@@ -1069,6 +1057,48 @@ globalsGS0 go_ctx hG Σ.
       iApply "HΦ".
       done.
     }
+Qed.
+
+Lemma wp_makeGreeting :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.makeGreeting #()
+  {{{ RET #"Hello, World!"; True%I }}}.
+Proof using H chanGhostStateG0 chanGhostStateG1 contributionG0 dspG0 ext ffi ffi_interp0
+ffi_semantics0 globalsGS0 go_ctx hG Σ.
+  wp_start. wp_auto.
+  wp_apply (chan.wp_make (V:=stream.t) 2); [done|].
+  iIntros (c γ) "[#Hic Hoc]". wp_auto.
+  iMod (start_mpmc _ _ _ _ 1 1 with "Hic Hoc") as (γmpmc) "[#Hmpmc [[Hprod _] [Hcons _]]]";
+    [done|lia..|].
+  wp_apply (wp_fork with "[Hcons]").
+  { wp_apply (wp_Muxer with "[Hcons]"); [|done]. iFrame "Hmpmc Hcons". }
+  wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ ","%go⌝)%I).
+  { iIntros (s) "!> _". wp_auto. by eauto. }
+  iIntros (stream1) "[Hstream1 Hc1]".
+  wp_auto.
+  wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ "!"%go⌝)%I).
+  { iIntros (s) "!> _". wp_auto. by eauto. }
+  iIntros (stream2) "[Hstream2 Hc2]".
+  wp_auto.
+  wp_apply (wp_mpmc_send with "[$Hmpmc $Hprod $Hstream1]").
+  iIntros "Hprod".
+  wp_auto.
+  wp_apply (wp_mpmc_send with "[$Hmpmc $Hprod $Hstream2]").
+  iIntros "Hprod".
+  wp_auto.
+  (* TODO: Proofmode unification fails to find the correct channel *)
+  iRevert "Hc2 Hc1". iIntros "Hc2 Hc1".
+  wp_send with "[//]".
+  wp_auto.
+  iRevert "Hc1 Hc2". iIntros "Hc2 Hc1".
+  wp_send with "[//]".
+  wp_auto.
+  iRevert "Hc1 Hc2". iIntros "Hc2 Hc1".
+  wp_recv (?) as "->". wp_auto.
+  iRevert "Hc1 Hc2". iIntros "Hc1 Hc2".
+  wp_recv (?) as "->".
+  wp_auto.
+  by iApply "HΦ".
 Qed.
 
 End muxer.
