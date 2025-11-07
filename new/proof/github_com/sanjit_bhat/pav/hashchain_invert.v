@@ -58,6 +58,41 @@ Definition decode_chain data :=
     end
   end.
 
+Lemma decode_empty_inj d :
+  decode_chain d = DecEmpty →
+  d = Some $ [].
+Proof. Admitted.
+
+Lemma decode_link_inj d prevLink val :
+  decode_chain d = DecLink prevLink val →
+  d = Some $ prevLink ++ val ∧
+    Z.of_nat $ length prevLink = cryptoffi.hash_len.
+Proof. Admitted.
+
+Lemma decode_link_det prevLink val :
+  Z.of_nat $ length prevLink = cryptoffi.hash_len →
+  decode_chain (Some $ prevLink ++ val) = DecLink prevLink val.
+Proof. Admitted.
+
+Inductive CutList :=
+  | Nil
+  | Cons (v : list w8) (l' : CutList)
+  (* having a special state to capture invalid hashes lets us prove
+  determinism from list -> hash, [is_chain_det]. *)
+  | Cut (hash : list w8).
+
+Fixpoint to_list l :=
+  match l with
+  | Cons v l' => v :: to_list l'
+  | _ => []
+  end.
+
+Fixpoint App (l0 : list $ list w8) (l1 : CutList) :=
+  match l0 with
+  | [] => l1
+  | v :: l0' => Cons v (App l0' l1)
+  end.
+
 (* in practice, limit should be length of list. *)
 Fixpoint is_chain l h limit : iProp Σ :=
   ∃ d,
@@ -65,23 +100,19 @@ Fixpoint is_chain l h limit : iProp Σ :=
   "#Hdecode" ∷
     match decode_chain d with
     | DecEmpty =>
-      "%" ∷ ⌜l = []⌝
+      "%Heq_l" ∷ ⌜l = Nil⌝
     | DecLink prevLink val =>
       match limit with
       | 0%nat =>
-        "%" ∷ ⌜l = []⌝
+        "%Heq_l" ∷ ⌜l = Cut h⌝
       | S limit' =>
         ∃ l',
-        "%" ∷ ⌜l = l' ++ [val]⌝ ∗
+        "%Heq_l" ∷ ⌜l = Cons val l'⌝ ∗
         "#Hrecur" ∷ is_chain l' prevLink limit'
       end
     | DecInvalid =>
-      (* TODO: what object should represent invalid hash?
-      do we need a list that terminates in a Cut?
-      might need this if we want determ obj -> hash. *)
-      "%" ∷ ⌜l = []⌝
+      "%Heq_l" ∷ ⌜l = Cut h⌝
     end.
-(* #[global] Arguments is_chain !_. *)
 
 Lemma is_chain_unfold l h limit :
   is_chain l h limit
@@ -91,18 +122,18 @@ Lemma is_chain_unfold l h limit :
   "#Hdecode" ∷
     match decode_chain d with
     | DecEmpty =>
-      "%" ∷ ⌜l = []⌝
+      "%" ∷ ⌜l = Nil⌝
     | DecLink prevLink val =>
       match limit with
       | 0%nat =>
-        "%" ∷ ⌜l = []⌝
+        "%" ∷ ⌜l = Cut h⌝
       | S limit' =>
         ∃ l',
-        "%" ∷ ⌜l = l' ++ [val]⌝ ∗
+        "%" ∷ ⌜l = Cons val l'⌝ ∗
         "#Hrecur" ∷ is_chain l' prevLink limit'
       end
     | DecInvalid =>
-      "%" ∷ ⌜l = []⌝
+      "%" ∷ ⌜l = Cut h⌝
     end.
 Proof. destruct limit; naive_solver. Qed.
 
@@ -117,17 +148,6 @@ Proof.
     by iDestruct (cryptoffi.is_hash_len with "His_hash") as %?.
 Qed.
 
-Lemma decode_link_inj d prevLink val :
-  decode_chain d = DecLink prevLink val →
-  d = Some $ prevLink ++ val ∧
-    Z.of_nat $ length prevLink = cryptoffi.hash_len.
-Proof. Admitted.
-
-Lemma decode_link_det prevLink val :
-  Z.of_nat $ length prevLink = cryptoffi.hash_len →
-  decode_chain (Some $ prevLink ++ val) = DecLink prevLink val.
-Proof. Admitted.
-
 Lemma is_chain_invert h limit :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
   ∃ l, is_chain l h limit.
@@ -135,8 +155,8 @@ Proof.
   revert h. induction limit as [? IH] using lt_wf_ind. intros.
   setoid_rewrite is_chain_unfold.
   iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
-  repeat case_match; try naive_solver.
-  opose proof (decode_link_inj _ _ _ _) as (_&?); [done|].
+  destruct (decode_chain _) eqn:Hdec; try case_match; try naive_solver.
+  apply decode_link_inj in Hdec as [-> ?].
   ospecialize (IH n _); [lia|].
   iDestruct (IH prevLink) as "[% $]"; [done|].
   naive_solver.
@@ -150,18 +170,41 @@ Proof.
   iInduction (limit) as [? IH] using lt_wf_ind forall (l0 l1 h);
     iEval (setoid_rewrite is_chain_unfold);
     iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
-    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %->;
-    repeat case_match;
+    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %->.
+    destruct (decode_chain _) eqn:Hdec; try case_match;
     iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
     simplify_eq/=; try done.
   iSpecialize ("IH" $! n with "[]"); [word|].
   by iDestruct ("IH" with "Hrecur0 Hrecur1") as %->.
 Qed.
 
-Lemma is_chain_snoc l v prevLink nextLink ep :
+Lemma is_chain_det l h0 h1 limit limit' :
+  is_chain l h0 limit -∗
+  is_chain l h1 limit' -∗
+  ⌜h0 = h1⌝.
+Proof.
+  iInduction (limit) as [? IH] using lt_wf_ind forall (l h0 h1 limit');
+    iEval (setoid_rewrite is_chain_unfold);
+    iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
+    destruct (decode_chain d) eqn:Hdec0;
+    destruct (decode_chain d0) eqn:Hdec1;
+    repeat case_match;
+    iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
+    simplify_eq/=; try done.
+  - apply decode_empty_inj in Hdec0.
+    apply decode_empty_inj in Hdec1.
+    simplify_eq/=.
+    by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
+  - iDestruct ("IH" $! n with "[] Hrecur0 Hrecur1") as %->; [word|].
+    apply decode_link_inj in Hdec0 as [-> _].
+    apply decode_link_inj in Hdec1 as [-> _].
+    by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
+Qed.
+
+Lemma is_chain_cons l v prevLink nextLink ep :
   is_chain l prevLink ep -∗
   cryptoffi.is_hash (Some (prevLink ++ v)) nextLink -∗
-  is_chain (l ++ [v]) nextLink (S ep).
+  is_chain (Cons v l) nextLink (S ep).
 Proof.
   iIntros "#His_chain #His_hash".
   iFrame "#". fold is_chain.
@@ -170,13 +213,45 @@ Proof.
   by iFrame "#".
 Qed.
 
+Definition hash_reln l0 l1 h : iProp Σ :=
+  ∃ limit0 limit1,
+  "#Hc0" ∷ is_chain l0 h limit0 ∗
+  "#Hc1" ∷ is_chain l1 h limit1.
+
+Lemma hash_reln_App l0 l1 vs h h0 h1 limit0 limit1 :
+  hash_reln l0 l1 h -∗
+  is_chain (App vs l0) h0 limit0 -∗
+  is_chain (App vs l1) h1 limit1 -∗
+  ⌜h0 = h1⌝.
+Proof.
+  iInduction (vs) as [] forall (h0 h1 limit0 limit1);
+    iIntros "@ #Hc0' #Hc1'".
+  { iDestruct (is_chain_det with "Hc0 Hc0'") as %->.
+    by iDestruct (is_chain_det with "Hc1 Hc1'") as %->. }
+  iEval (rewrite is_chain_unfold) in "Hc0' Hc1'".
+  iNamedSuffix "Hc0'" "0".
+  iNamedSuffix "Hc1'" "1".
+  destruct (decode_chain d) eqn:Hdec0;
+    destruct (decode_chain d0) eqn:Hdec1;
+    repeat case_match;
+    iNamedSuffix "Hdecode0" "0";
+    iNamedSuffix "Hdecode1" "1";
+    try done.
+  simplify_eq/=.
+  iDestruct ("IHvs" with "[] Hrecur0 Hrecur1") as %->.
+  { iFrame "#". }
+  apply decode_link_inj in Hdec0 as [-> _].
+  apply decode_link_inj in Hdec1 as [-> _].
+  by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
+Qed.
+
 Lemma wp_GetEmptyLink :
   {{{ is_pkg_init hashchain }}}
   @! hashchain.GetEmptyLink #()
   {{{
     sl h, RET #sl;
     "Hsl_hash" ∷ sl ↦* h ∗
-    "#His_chain" ∷ is_chain [] h 0%nat
+    "#His_chain" ∷ is_chain Nil h 0%nat
   }}}.
 Proof.
   wp_start.
@@ -199,7 +274,7 @@ Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal l ep :
     "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
     "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal ∗
     "Hsl_nextLink" ∷ sl_nextLink ↦* nextLink ∗
-    "#His_chain" ∷ is_chain (l ++ [nextVal]) nextLink (S ep)
+    "#His_chain" ∷ is_chain (Cons nextVal l) nextLink (S ep)
   }}}.
 Proof.
   wp_start. iNamed "Hpre".
@@ -214,56 +289,38 @@ Proof.
   iIntros "*". iNamed 1.
   wp_auto.
   iApply "HΦ".
-  iDestruct (is_chain_snoc with "His_chain His_hash") as "$".
+  iDestruct (is_chain_cons with "His_chain His_hash") as "$".
   iFrame.
 Qed.
 
-Definition foo l v prev next : iProp Σ :=
-  ∃ ep,
-  is_chain l prev ep ∗
-  is_chain (l ++ [v]) next (S ep).
-
-Lemma foo_det l v prev next0 next1 :
-  foo l v prev next0 -∗
-  foo l v prev next1 -∗
-  ⌜next0 = next1⌝.
-Proof.
-  iIntros "(%&#Hp0&#Hn0)(%&#Hp1&#Hn1)".
-  iNamedSuffix "Hn0" "0".
-  iNamedSuffix "Hn1" "1".
-  fold is_chain.
-  repeat case_match;
-    iNamedSuffix "Hdecode0" "0";
-    iNamedSuffix "Hdecode1" "1";
-    try discriminate_list.
-
-  rewrite H1 in H2.
-  list_simplifier.
-  (* need: for same list and limit, same link.
-  but this not true bc invalid hash not pinned down! *)
-Abort.
-
-(* TODO: tie prevLink with newLink. *)
 Definition wish_Verify (prevLink proof : list w8) (extLen : w64) (newVal newLink : list w8) : iProp Σ :=
-  ∃ new_vals,
-  "%Hsame_len_vals" ∷ ⌜Forall (λ x, Z.of_nat (length x) = cryptoffi.hash_len) new_vals⌝ ∗
+  ∃ old_vals new_vals old_ep new_ep,
+  "%Hsame_len_vals" ∷ ⌜Forall (λ x, length x = Z.to_nat cryptoffi.hash_len) new_vals⌝ ∗
   "%Henc_vals" ∷ ⌜proof = mjoin new_vals⌝ ∗
   "%HnewVal" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
-  "%HextLen" ∷ ⌜uint.Z extLen = length new_vals⌝.
+  "%HextLen" ∷ ⌜uint.Z extLen = length new_vals⌝ ∗
+  "#His_prevLink" ∷ is_chain old_vals prevLink old_ep ∗
+  "#His_newLink" ∷ is_chain (App new_vals old_vals) newLink new_ep.
 #[global] Opaque wish_Verify.
 #[local] Transparent wish_Verify.
 
-(* need [wish_Verify_det] for correctness.
-to determ tie prevLink to newLink:
-1) is_chain vals prevLink _. is_chain (vals ++ new_vals) newLink _.
-and is_chain det property (see [foo_det]).
-2) literally say that newLink is the chained hash from prevLink.
-this is basically reverting to our old is_chain. *)
-Lemma wish_Verify_det pL p e0 e1 nV0 nV1 nL0 nL1 :
-  wish_Verify pL p e0 nV0 nL0 -∗
-  wish_Verify pL p e1 nV1 nL1 -∗
-  ⌜e0 = e1 ∧ nV0 = nV1 ∧ nL0 = nL1⌝.
-Proof. Abort.
+Lemma wish_Verify_det prevLink proof extLen0 extLen1 newVal0 newVal1 newLink0 newLink1 :
+  wish_Verify prevLink proof extLen0 newVal0 newLink0 -∗
+  wish_Verify prevLink proof extLen1 newVal1 newLink1 -∗
+  ⌜extLen0 = extLen1 ∧ newVal0 = newVal1 ∧ newLink0 = newLink1⌝.
+Proof.
+  iNamedSuffix 1 "0".
+  iNamedSuffix 1 "1".
+  subst.
+  opose proof (join_same_len_inj _ _ _ _ _ _ ltac:(done)) as ->;
+    [|done..|]; [word|].
+  replace extLen0 with extLen1 by word.
+  repeat iSplit; [done..|].
+  clear.
+  iDestruct (hash_reln_App with "[] His_newLink0 His_newLink1") as %->.
+  { iFrame "#". }
+  done.
+Qed.
 
 End proof.
 End hashchain.
