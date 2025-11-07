@@ -431,7 +431,7 @@ Definition NonBlockingSelect1 : go_string := "github.com/goose-lang/goose/model/
    For receive: value parameter is ignored
    Returns (selected, received_value, ok)
 
-   go: channel.go:307:6 *)
+   go: select.go:19:6 *)
 Definition NonBlockingSelect1ⁱᵐᵖˡ : val :=
   λ: "T" "ch" "dir" "value",
     exception_do (let: "value" := (mem.alloc "value") in
@@ -465,7 +465,7 @@ Definition BlockingSelect2 : go_string := "github.com/goose-lang/goose/model/cha
 (* Blocking select with 2 cases
    Returns (caseIndex, received_value1, received_value2, ok)
 
-   go: channel.go:321:6 *)
+   go: select.go:33:6 *)
 Definition BlockingSelect2ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
     exception_do (let: "val2" := (mem.alloc "val2") in
@@ -531,7 +531,7 @@ Definition NonBlockingSelect2 : go_string := "github.com/goose-lang/goose/model/
    Returns (caseIndex, received_value1, received_value2, ok)
    caseIndex = 2 means no selection
 
-   go: channel.go:361:6 *)
+   go: select.go:73:6 *)
 Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
     exception_do (let: "val2" := (mem.alloc "val2") in
@@ -637,7 +637,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
 
 Definition BlockingSelect3 : go_string := "github.com/goose-lang/goose/model/channel.BlockingSelect3"%go.
 
-(* go: channel.go:423:6 *)
+(* go: select.go:135:6 *)
 Definition BlockingSelect3ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
     exception_do (let: "val3" := (mem.alloc "val3") in
@@ -736,7 +736,7 @@ Definition NonBlockingSelect3 : go_string := "github.com/goose-lang/goose/model/
    Returns (caseIndex, received_value1, received_value2, received_value3, ok)
    caseIndex = 3 means no selection
 
-   go: channel.go:477:6 *)
+   go: select.go:189:6 *)
 Definition NonBlockingSelect3ⁱᵐᵖˡ : val :=
   λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
     exception_do (let: "val3" := (mem.alloc "val3") in
