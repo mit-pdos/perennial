@@ -1,5 +1,4 @@
 From Perennial.base_logic.lib Require Import ghost_map.
-From New.golang.theory Require Import chan_old.
 Require Import New.code.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
@@ -8,6 +7,9 @@ From New.proof Require Import context sync.
 
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
+
+From New.golang.theory Require Import chan_old.
+
 From Perennial.algebra Require Import ghost_var.
 Require Import Perennial.base.
 
