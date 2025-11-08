@@ -81,11 +81,12 @@ Class chanG Σ V := ChanG {
   offer_lockG :: ghost_varG Σ (option (offer_lock V));
   offer_parked_propG :: savedPropG Σ;
   offer_parked_predG :: savedPredG Σ (V * bool);
+  chan_ghost_ZG :: ghost_varG Σ Z;
 }.
 
 Definition chanΣ V : gFunctors :=
   #[ ghost_varΣ (chan_rep.t V); ghost_varΣ (option (offer_lock V));
-     savedPropΣ; savedPredΣ  (V * bool) ].
+     savedPropΣ; savedPredΣ  (V * bool); ghost_varΣ Z ].
 
 #[global] Instance subG_chanG Σ V :
   subG (chanΣ V) Σ → chanG Σ V.
@@ -192,13 +193,15 @@ Proof.
   iModIntro. iFrame.
 Qed.
 
-Lemma offer_send_to_idle γ v parked_prop cont :
-  offer_bundle_half γ (Some (Snd v)) parked_prop cont -∗
-   offer_bundle_half γ (Some (Snd v)) parked_prop cont ==∗
+Lemma offer_halves_to_idle γ x y parked_prop cont :
+  offer_bundle_half γ (Some x) parked_prop cont -∗
+   offer_bundle_half γ (Some y) parked_prop cont ==∗
   offer_bundle_empty γ.
 Proof.
   iIntros "[Hlock [Hoffer Hcont]]".
   iIntros "[Hlock2 [Hoffer2 Hcont2]]".
+  iCombine "Hlock Hlock2" gives %Heq.
+  assert (x = y) by (destruct_and!; congruence); subst.
   iCombine "Hlock Hlock2" as "Hlock".
   iMod (saved_prop_update_halves True with "Hoffer Hoffer2") as "[Hoffer Hoffer2]".
   iMod (saved_prop_update_halves True with "Hcont Hcont2") as "[Hcont Hcont2]".
@@ -222,26 +225,6 @@ Proof.
   iMod (saved_prop_update cont with "Hcont") as "[Hcont1 Hcont2]".
   iMod (saved_prop_update parked_prop with "Hoffer") as "[Hoffer1 Hoffer2]".
   iModIntro. iFrame.
-Qed.
-
-Lemma offer_recv_to_idle γ parked_prop cont :
-  offer_bundle_half γ (Some Rcv) parked_prop cont -∗
-   offer_bundle_half γ (Some Rcv) parked_prop cont ==∗
-  offer_bundle_empty γ.
-Proof.
-  iIntros "[Hlock [Hoffer Hcont]]".
-  iIntros "[Hlock2 [Hoffer2 Hcont2]]".
-  iCombine "Hlock Hlock2" as "Hlock".
-  iMod (saved_prop_update_halves True with "Hoffer Hoffer2") as "[Hoffer Hoffer2]".
-  iMod (saved_prop_update_halves True with "Hcont Hcont2") as "[Hcont Hcont2]".
-  iCombine "Hcont Hcont2" as "Hcont".
-  iCombine "Hoffer Hoffer2" as "Hoffer".
-  iMod (ghost_var_update None with "Hlock") as "Hlock".
-  iModIntro. unfold offer_bundle_empty. unfold offer_bundle_full. iFrame.
-  unfold saved_prop_own.
-  rewrite dfrac_op_own.
-  rewrite Qp.half_half.
-  iFrame.
 Qed.
 
 Lemma offer_reset γ :
@@ -356,11 +339,12 @@ Proof.
   iIntros "H1 H2". by iApply (ghost_var_agree with "H1 H2").
 Qed.
 
-Lemma chan_rep_combine γ s s' :
-  chan_rep_half γ s -∗ chan_rep_half γ s' -∗ ⌜s = s'⌝ -∗ chan_rep_full γ s.
+(* NOTE: unused *)
+#[local] Lemma chan_rep_combine γ s s' :
+  chan_rep_half γ s -∗ chan_rep_half γ s' -∗ chan_rep_full γ s.
 Proof.
-  iIntros "H1 H2 %H3". iDestruct (chan_rep_agree with "H1 H2") as %->.
-  iCombine "H1" "H2" as "H". done.
+  iIntros "H1 H2". iDestruct (chan_rep_agree with "H1 H2") as %->.
+  iCombine "H1 H2" as "H". done.
 Qed.
 
 Lemma chan_rep_halves_update γ s1 s2 s' :
