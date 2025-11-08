@@ -26,6 +26,7 @@ Record t := mk {
   mu' : loc;
   sk' : loc;
   lastDig' : slice.t;
+  bootEp' : w64;
   hist' : slice.t;
   serv' : loc;
 }.
@@ -41,13 +42,14 @@ Global Instance Auditor_wf : struct.Wf auditor.Auditor.
 Proof. apply _. Qed.
 
 Global Instance settable_Auditor : Settable Auditor.t :=
-  settable! Auditor.mk < Auditor.mu'; Auditor.sk'; Auditor.lastDig'; Auditor.hist'; Auditor.serv' >.
+  settable! Auditor.mk < Auditor.mu'; Auditor.sk'; Auditor.lastDig'; Auditor.bootEp'; Auditor.hist'; Auditor.serv' >.
 Global Instance into_val_Auditor : IntoVal Auditor.t :=
   {| to_val_def v :=
     struct.val_aux auditor.Auditor [
     "mu" ::= #(Auditor.mu' v);
     "sk" ::= #(Auditor.sk' v);
     "lastDig" ::= #(Auditor.lastDig' v);
+    "bootEp" ::= #(Auditor.bootEp' v);
     "hist" ::= #(Auditor.hist' v);
     "serv" ::= #(Auditor.serv' v)
     ]%struct
@@ -55,7 +57,7 @@ Global Instance into_val_Auditor : IntoVal Auditor.t :=
 
 Global Program Instance into_val_typed_Auditor : IntoValTyped Auditor.t auditor.Auditor :=
 {|
-  default_val := Auditor.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  default_val := Auditor.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
@@ -71,6 +73,9 @@ Proof. solve_into_val_struct_field. Qed.
 Global Instance into_val_struct_field_Auditor_lastDig : IntoValStructField "lastDig" auditor.Auditor Auditor.lastDig'.
 Proof. solve_into_val_struct_field. Qed.
 
+Global Instance into_val_struct_field_Auditor_bootEp : IntoValStructField "bootEp" auditor.Auditor Auditor.bootEp'.
+Proof. solve_into_val_struct_field. Qed.
+
 Global Instance into_val_struct_field_Auditor_hist : IntoValStructField "hist" auditor.Auditor Auditor.hist'.
 Proof. solve_into_val_struct_field. Qed.
 
@@ -79,16 +84,17 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Auditor mu' sk' lastDig' hist' serv':
+Global Instance wp_struct_make_Auditor mu' sk' lastDig' bootEp' hist' serv':
   PureWp True
     (struct.make #auditor.Auditor (alist_val [
       "mu" ::= #mu';
       "sk" ::= #sk';
       "lastDig" ::= #lastDig';
+      "bootEp" ::= #bootEp';
       "hist" ::= #hist';
       "serv" ::= #serv'
     ]))%struct
-    #(Auditor.mk mu' sk' lastDig' hist' serv').
+    #(Auditor.mk mu' sk' lastDig' bootEp' hist' serv').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
@@ -97,6 +103,7 @@ Global Instance Auditor_struct_fields_split dq l (v : Auditor.t) :
     "Hmu" ∷ l ↦s[auditor.Auditor :: "mu"]{dq} v.(Auditor.mu') ∗
     "Hsk" ∷ l ↦s[auditor.Auditor :: "sk"]{dq} v.(Auditor.sk') ∗
     "HlastDig" ∷ l ↦s[auditor.Auditor :: "lastDig"]{dq} v.(Auditor.lastDig') ∗
+    "HbootEp" ∷ l ↦s[auditor.Auditor :: "bootEp"]{dq} v.(Auditor.bootEp') ∗
     "Hhist" ∷ l ↦s[auditor.Auditor :: "hist"]{dq} v.(Auditor.hist') ∗
     "Hserv" ∷ l ↦s[auditor.Auditor :: "serv"]{dq} v.(Auditor.serv')
   ).
@@ -109,6 +116,7 @@ Proof.
   simpl_one_flatten_struct (# (Auditor.mu' v)) (auditor.Auditor) "mu"%go.
   simpl_one_flatten_struct (# (Auditor.sk' v)) (auditor.Auditor) "sk"%go.
   simpl_one_flatten_struct (# (Auditor.lastDig' v)) (auditor.Auditor) "lastDig"%go.
+  simpl_one_flatten_struct (# (Auditor.bootEp' v)) (auditor.Auditor) "bootEp"%go.
   simpl_one_flatten_struct (# (Auditor.hist' v)) (auditor.Auditor) "hist"%go.
 
   solve_field_ref_f.
@@ -590,6 +598,10 @@ Global Instance wp_func_call_New :
 
 Global Instance wp_func_call_getNextDig :
   WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_checkStart :
+  WpFuncCall auditor.checkStart _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewRpcAuditor :

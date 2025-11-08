@@ -1,14 +1,10 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import ktcore.
-From Perennial.Helpers Require Import NamedProps.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import safemarshal.
 From New.proof.github_com.tchajed Require Import marshal.
 
 From New.proof.github_com.sanjit_bhat.pav.ktcore_proof Require Import base.
-
-Notation VrfSigTag := 0 (only parsing).
-Notation LinkSigTag := 1 (only parsing).
 
 (** core serde spec requirements:
 - deterministic encoding of object.
@@ -18,15 +14,17 @@ Notation LinkSigTag := 1 (only parsing).
 
 impl:
 - [pure_enc] gives deterministic encoding.
-- [wish] optionally transports correctness from encoder to decoder.
-it's implemented by saying "the bytestream is encoded obj with tail".
-however, there's an additional restriction for variable-size objects
-(e.g., lists) that the length is in-bounds.
-[wish_det] deterministically maps an encoding to its object and tail.
-- higher-level objects can define [pure_enc] and [wish] i.t.o. the
-[pure_enc] and [wish] of lower-level objects. *)
+- [wish] transports correctness from encoder to decoder.
+it's just [pure_enc] plus a [valid] predicate.
+[valid] says that variable-length objects (e.g., lists)
+have lengths that fit within the s64 slice length.
+- [pure_enc] and [valid] of bigger objects is the
+[pure_enc] and [valid] of their components. *)
 
 Module ktcore.
+
+Notation VrfSigTag := 0 (only parsing).
+Notation LinkSigTag := 1 (only parsing).
 
 Module VrfSig.
 Record t :=
@@ -39,12 +37,14 @@ Definition pure_enc obj :=
   safemarshal.w8.pure_enc obj.(SigTag) ++
   safemarshal.Slice1D.pure_enc obj.(VrfPk).
 
-Definition wish b obj tail :=
-  ∃ t0,
-  safemarshal.w8.wish b obj.(SigTag) t0 ∧
-  safemarshal.Slice1D.wish t0 obj.(VrfPk) tail.
+Definition valid obj :=
+  safemarshal.Slice1D.valid obj.(VrfPk).
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -112,13 +112,14 @@ Definition pure_enc obj :=
   safemarshal.w64.pure_enc obj.(Epoch) ++
   safemarshal.Slice1D.pure_enc obj.(Link).
 
-Definition wish b obj tail :=
-  ∃ t0 t1,
-  safemarshal.w8.wish b obj.(SigTag) t0 ∧
-  safemarshal.w64.wish t0 obj.(Epoch) t1 ∧
-  safemarshal.Slice1D.wish t1 obj.(Link) tail.
+Definition valid obj :=
+  safemarshal.Slice1D.valid obj.(Link).
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -185,11 +186,9 @@ Definition pure_enc obj :=
   safemarshal.w64.pure_enc obj.(Ver).
 
 Definition wish b obj tail :=
-  ∃ t0,
-  safemarshal.w64.wish b obj.(Uid) t0 ∧
-  safemarshal.w64.wish t0 obj.(Ver) tail.
+  b = pure_enc obj ++ tail.
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -252,12 +251,15 @@ Definition pure_enc obj :=
   safemarshal.Slice1D.pure_enc obj.(Val) ++
   safemarshal.Slice1D.pure_enc obj.(Rand).
 
-Definition wish b obj tail :=
-  ∃ t0,
-  safemarshal.Slice1D.wish b obj.(Val) t0 ∧
-  safemarshal.Slice1D.wish t0 obj.(Rand) tail.
+Definition valid obj :=
+  safemarshal.Slice1D.valid obj.(Val) ∧
+  safemarshal.Slice1D.valid obj.(Rand).
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -326,13 +328,16 @@ Definition pure_enc obj :=
   CommitOpen.pure_enc obj.(PkOpen) ++
   safemarshal.Slice1D.pure_enc obj.(MerkleProof).
 
-Definition wish b obj tail :=
-  ∃ t0 t1,
-  safemarshal.Slice1D.wish b obj.(LabelProof) t0 ∧
-  CommitOpen.wish t0 obj.(PkOpen) t1 ∧
-  safemarshal.Slice1D.wish t1 obj.(MerkleProof) tail.
+Definition valid obj :=
+  safemarshal.Slice1D.valid obj.(LabelProof) ∧
+  CommitOpen.valid obj.(PkOpen) ∧
+  safemarshal.Slice1D.valid obj.(MerkleProof).
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -400,12 +405,15 @@ Definition pure_enc obj :=
   safemarshal.Slice1D.pure_enc obj.(LabelProof) ++
   safemarshal.Slice1D.pure_enc obj.(MerkleProof).
 
-Definition wish b obj tail :=
-  ∃ t0,
-  safemarshal.Slice1D.wish b obj.(LabelProof) t0 ∧
-  safemarshal.Slice1D.wish t0 obj.(MerkleProof) tail.
+Definition valid obj :=
+  safemarshal.Slice1D.valid obj.(LabelProof) ∧
+  safemarshal.Slice1D.valid obj.(MerkleProof).
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -474,13 +482,16 @@ Definition pure_enc obj :=
   safemarshal.Slice1D.pure_enc obj.(MapVal) ++
   safemarshal.Slice1D.pure_enc obj.(NonMembProof).
 
-Definition wish b obj tail :=
-  ∃ t0 t1,
-  safemarshal.Slice1D.wish b obj.(MapLabel) t0 ∧
-  safemarshal.Slice1D.wish t0 obj.(MapVal) t1 ∧
-  safemarshal.Slice1D.wish t1 obj.(NonMembProof) tail.
+Definition valid obj :=
+  safemarshal.Slice1D.valid obj.(MapLabel) ∧
+  safemarshal.Slice1D.valid obj.(MapVal) ∧
+  safemarshal.Slice1D.valid obj.(NonMembProof).
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -538,24 +549,20 @@ End proof.
 End UpdateProof.
 
 Module UpdateProofSlice1D.
+Definition t := list UpdateProof.t.
 
 Definition pure_enc obj :=
   safemarshal.w64.pure_enc (length obj) ++ mjoin (UpdateProof.pure_enc <$> obj).
 
-(* more complex: cascading wishes across object list to [tail]. *)
+Definition valid (obj : t) :=
+  sint.Z (W64 (length obj)) = length obj ∧
+  Forall (λ x, UpdateProof.valid x) obj.
+
 Definition wish b obj tail :=
-  ∃ tails t0,
-  tails !! 0%nat = Some t0 ∧
-  list.last tails = Some tail ∧
+  b = pure_enc obj ++ tail ∧
+  valid obj.
 
-  safemarshal.w64.wish b (length obj) t0 ∧
-  (∀ k o tPrev tNext,
-    obj !! k = Some o →
-    tails !! k = Some tPrev →
-    tails !! S k = Some tNext →
-    UpdateProof.wish tPrev o tNext).
-
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.
@@ -621,12 +628,15 @@ Definition pure_enc obj :=
   UpdateProofSlice1D.pure_enc obj.(Updates) ++
   safemarshal.Slice1D.pure_enc obj.(LinkSig).
 
-Definition wish b obj tail :=
-  ∃ t0,
-  UpdateProofSlice1D.wish b obj.(Updates) t0 ∧
-  safemarshal.Slice1D.wish t0 obj.(LinkSig) tail.
+Definition valid obj :=
+  UpdateProofSlice1D.valid obj.(Updates) ∧
+  safemarshal.Slice1D.valid obj.(LinkSig).
 
-Lemma wish_det {b obj0 obj1 tail0 tail1} :
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
   wish b obj0 tail0 →
   wish b obj1 tail1 →
   obj0 = obj1 ∧ tail0 = tail1.

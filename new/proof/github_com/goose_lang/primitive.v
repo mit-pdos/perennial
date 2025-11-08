@@ -41,6 +41,27 @@ Proof.
     wp_apply ("IH" with "[$]").
 Qed.
 
+Lemma wp_Assume_true :
+  ∀ Φ,
+  is_pkg_init primitive -∗
+  Φ #() -∗
+  WP @! primitive.Assume #true {{ Φ }}.
+Proof.
+  iIntros (Φ) "#? HΦ".
+  wp_apply wp_Assume.
+  iIntros "%". iFrame.
+Qed.
+
+Lemma wp_Assume_false :
+  ∀ Φ,
+  is_pkg_init primitive -∗
+  WP @! primitive.Assume #false {{ Φ }}.
+Proof.
+  iIntros (Φ) "#?".
+  wp_apply wp_Assume.
+  iIntros "%"; congruence.
+Qed.
+
 Lemma wp_RandomUint64 :
   {{{ is_pkg_init primitive }}}
     @! primitive.RandomUint64 #()

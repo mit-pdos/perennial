@@ -25,9 +25,7 @@ translate = [
   "isRequestOp_Request",
   "ResponseOp_*",
   "RequestOp_*",
-  "!*.String", # Uses proto.proto
+  "!*.String",             # Uses proto.proto
 ]
 
-imports = [
-  "!*",
-]
+imports = ["!*"]

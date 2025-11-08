@@ -233,8 +233,8 @@ Proof using Type*.
   destruct s; destruct vs; simpl in *; try lia.
   iDestruct "Hs" as "[Hptr _]".
   rewrite Z.mul_0_r loc_add_0.
-  unshelve (by iApply (typed_pointsto_not_null with "[$]")).
-  done.
+  rewrite go_type_size_unseal in Hbt.
+  by iDestruct (typed_pointsto_not_null with "Hptr") as %?.
 Qed.
 
 Lemma own_slice_cap_wf s dq :
@@ -585,6 +585,16 @@ Proof.
   reflexivity.
 Qed.
 
+Global Instance pure_slice_for_range (sl : slice.t) (body : val) :
+  PureWp True (slice.for_range #t #sl body)%E
+    (let: "i" := alloc #(W64 0) in
+     for: (λ: <>, int_lt (![#int64T] "i") (slice.len #sl)) ; (λ: <>, "i" <-[#int64T] (![#int64T] "i") + #(W64 1)) :=
+       (λ: <>, body (![#int64T] "i") (![#t] (slice.elem_ref #t #sl (![#int64T] "i")))))%E.
+Proof.
+  iIntros (?????) "HΦ".
+  wp_call_lc "?". by iApply "HΦ".
+Qed.
+
 (** WP version of PureWp for discoverability and use with wp_apply.
 
 TODO: if PureWp instances had their pure side conditions dispatched with [word]
@@ -927,53 +937,6 @@ Proof.
                    uint.nat (slice.len_f s))
              vs').
 *)
-Qed.
-
-Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
-  sl ↦*{dq} vs -∗
-  (fold_right (λ v P (i : w64),
-                 WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val ⌝ ∗ P (word.add i 1) }})
-    (λ (_ : w64), sl ↦*{dq} vs -∗ Φ (execute_val))
-    vs) (W64 0) -∗
-  WP slice.for_range #t #sl body @ stk ; E {{ Φ }}
-.
-Proof.
-  iIntros "Hsl HΦ".
-  wp_call.
-  wp_alloc j_ptr as "Hi".
-  wp_pures.
-  iAssert (
-      ∃ (j : u64),
-        "Hi" ∷ j_ptr ↦ j ∗
-        "%Hi" ∷ ⌜0 ≤ sint.Z j ≤ Z.of_nat (length vs)⌝ ∗
-        "Hiters" ∷ (fold_right _ _ (drop (sint.nat j) vs)) j
-    )%I with "[Hi HΦ]" as "Hinv".
-  { iExists (W64 0). iFrame. word. }
-  wp_for "Hinv".
-  iDestruct (own_slice_len with "Hsl") as %Hlen.
-  wp_if_destruct.
-  - (* Case: execute loop body *)
-    pose proof (list_lookup_lt vs (sint.nat j) ltac:(word)) as [w Hlookup].
-    iDestruct (own_slice_elem_acc j with "[$]") as "[Helem Hown]"; [word|done|].
-    wp_pure.
-    { word. }
-    wp_load.
-    iDestruct ("Hown" with "Helem") as "Hown".
-    rewrite list_insert_id; [|assumption].
-    wp_load.
-    erewrite drop_S; last eassumption.
-    simpl.
-    wp_apply (wp_wand with "Hiters").
-    iIntros (?) "[-> Hiters]".
-    wp_for_post.
-    iFrame.
-    replace (sint.nat (word.add _ $ W64 1)) with (S $ sint.nat j) by word.
-    iFrame.
-    word.
-  - simpl.  (* Case: done with loop body. *)
-    rewrite drop_ge.
-    2:{ word. }
-    iApply "Hiters". by iFrame.
 Qed.
 
 Lemma wp_slice_literal {stk E} (l : list V) :

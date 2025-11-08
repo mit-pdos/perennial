@@ -1,9 +1,5 @@
-translate = [
-  "Enabled",
-]
-imports = [
-  "!*",
-]
+translate = ["Enabled"]
+imports = ["!*"]
 [bootstrap]
 enabled = true
 prelude = []

@@ -2,7 +2,7 @@ From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import chan_au_base simple.
-From New.proof Require Import time sync tok_set.
+From New.proof Require Import sync strings time tok_set.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 
 Section proof.
@@ -12,8 +12,6 @@ Context `{!syncG Σ}.
 Context `{!chanGhostStateG Σ slice.t}.
 Context `{!waitgroup_joinG Σ}.
 
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
 #[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
 

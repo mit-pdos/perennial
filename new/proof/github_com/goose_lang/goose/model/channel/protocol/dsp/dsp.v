@@ -167,11 +167,11 @@ Qed.
 
 (** Endpoint sends value *)
 Lemma dsp_send (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) :
-  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
+  {{{ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
     chan.send #tV #lr_chan #v
   {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
 Proof.
-  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iIntros (Φ) "Hc HΦ".
   iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
@@ -224,14 +224,31 @@ Proof.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
 Qed.
 
+Lemma dsp_send_tele
+  {TT : tele} (tt:TT)
+  (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
+  {{{ #(lr_chan,rl_chan) ↣ (<!.. x> MSG (v x) {{ P x }}; p x) ∗ P tt }}}
+    chan.send #tV #lr_chan #(v tt)
+  {{{ RET #(); #(lr_chan,rl_chan) ↣ p tt }}}.
+Proof.
+  iIntros (Φ) "[Hc HP] HΦ".
+  iDestruct (iProto_pointsto_le _ _ (<!> MSG v tt; p tt)%proto with "Hc [HP]")
+    as "Hc".
+  { iIntros "!>".
+    iApply iProto_le_trans;
+      [iApply iProto_le_texist_intro_l|].
+    by iFrame "HP". }
+  by iApply (dsp_send with "Hc").
+Qed.
+
 (** Endpoint receives value *)
 Lemma dsp_recv {TT:tele}
     (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
-  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
+  {{{ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
     chan.receive #tV #rl_chan
   {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣ p x ∗ P x }}}.
 Proof.
-  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iIntros (Φ) "Hc HΦ".
   iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
@@ -262,8 +279,8 @@ Proof.
     iApply "HΦ".
     iDestruct "H£s" as "[H£ H£s]".
     rewrite later_equivI_1.
-    iCombine "Hp" "HP" as "H".
-    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iCombine "HP Hp" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
     iModIntro. iRewrite "Hp". by iFrame "#∗".
   - iIntros "Hownr".
     iMod "Hclose'" as "_".
@@ -291,8 +308,8 @@ Proof.
       iApply "HΦ".
       iDestruct "H£s" as "[H£ H£s]".
       rewrite later_equivI_1.
-      iCombine "Hp" "HP" as "H".
-      iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+      iCombine "HP Hp" as "H".
+      iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
       iModIntro. iRewrite "Hp". by iFrame "#∗".
     + simpl in *. simplify_eq.
       destruct draining; [|done].
@@ -315,8 +332,8 @@ Proof.
     iApply "HΦ".
     iDestruct "H£s" as "[H£ H£s]".
     rewrite later_equivI_1.
-    iCombine "Hp" "HP" as "H".
-    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iCombine "HP Hp" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
     iModIntro. iRewrite "Hp". by iFrame "#∗".
   - done.
   - done.
@@ -342,18 +359,18 @@ Proof.
     iApply "HΦ".
     iDestruct "H£s" as "[H£ H£s]".
     rewrite later_equivI_1.
-    iCombine "Hp" "HP" as "H".
-    iMod (lc_fupd_elim_later with "H£ H") as "[Hp HP]".
+    iCombine "HP Hp" as "H".
+    iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
     iModIntro. iRewrite "Hp". by iFrame "#∗".
 Qed.
 
 (** Endpoint closes (stops sending val) *)
 Lemma dsp_close (lr_chan rl_chan : loc) (p : iProto Σ V) :
-  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
+  {{{ #(lr_chan,rl_chan) ↣ END }}}
     chan.close #tV #lr_chan
   {{{ RET #(); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
-  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iIntros (Φ) "Hc HΦ".
   iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
@@ -384,11 +401,11 @@ Qed.
 
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_end (lr_chan rl_chan : loc) :
-  {{{ is_pkg_init channel ∗ #(lr_chan,rl_chan) ↣ END }}}
+  {{{ #(lr_chan,rl_chan) ↣ END }}}
     chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); #(lr_chan,rl_chan) ↣ END }}}.
 Proof.
-  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iIntros (Φ) "Hc HΦ".
   iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
@@ -465,11 +482,11 @@ Qed.
 
 (** Endpoint receives on a closed or ended channel *)
 Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
-  {{{ is_pkg_init channel ∗ ↯ #(lr_chan,rl_chan) }}}
+  {{{  ↯ #(lr_chan,rl_chan) }}}
     chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); ↯ #(lr_chan,rl_chan) }}}.
 Proof.
-  iIntros (Φ) "(#Hinit&Hc) HΦ".
+  iIntros (Φ) "Hc HΦ".
   iDestruct "Hc" as (??????? Heq) "(#(Hcl&Hcr&HI)&Hp)".
   rewrite to_val_unseal in Heq. simplify_eq.
   rename lr_chan0 into lr_chan.
@@ -522,7 +539,7 @@ Proof.
 Qed.
 
 Lemma dsp_recv_false (b : bool) (lr_chan rl_chan : loc) :
-  {{{ is_pkg_init channel ∗ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
+  {{{ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
     chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
 Proof. destruct b; [apply dsp_recv_end|apply dsp_recv_closed]. Qed.

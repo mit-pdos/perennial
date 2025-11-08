@@ -1,7 +1,2 @@
-translate = [
-  "Clone",
-  "Equal",
-]
-imports = [
-  "!*",
-]
+translate = ["Clone", "Equal"]
+imports = ["!*"]

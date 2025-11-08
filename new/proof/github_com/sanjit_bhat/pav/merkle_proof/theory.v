@@ -1,6 +1,5 @@
+From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
-From New.proof Require Import proof_prelude.
-From Perennial.Helpers Require Import bytes NamedProps.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
@@ -596,10 +595,12 @@ Proof.
 Qed.
 
 Lemma init_to_reln_Empty lim :
-  is_initialized -∗
+  is_pkg_init merkle -∗
   ∃ h, cut_full_reln' Empty Empty lim h.
 Proof.
-  rewrite /is_initialized. iNamed 1.
+  iIntros "#Hpkg".
+  iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
+  rewrite /is_initialized. iNamed "Hinit".
   rewrite /cut_full_reln'.
   iEval (setoid_rewrite is_full_tree_unfold).
   iFrame "#".
@@ -1042,7 +1043,7 @@ Qed.
 instead it requires them. *)
 Lemma cut_full_over_put t0 t0' t1 t1' h0 h1 label val :
   (* to demonstrate Empty hash. *)
-  is_initialized -∗
+  is_pkg_init merkle -∗
   cut_full_reln t0 t0' h0 -∗
   ⌜pure_put t0 label val = Some t1⌝ -∗
   cut_full_reln t1 t1' h1 -∗
