@@ -77,8 +77,8 @@ Proof. Admitted.
 Inductive CutList :=
   | Nil
   | Cons (v : list w8) (l' : CutList)
-  (* having a special state to capture invalid hashes lets us prove
-  determinism from list -> hash, [is_chain_det]. *)
+  (* [Cut] is a special state to capture invalid hashes.
+  it lets us prove determinism from list -> hash, [is_chain_det]. *)
   | Cut (hash : list w8).
 
 Fixpoint to_list l :=
@@ -100,18 +100,18 @@ Fixpoint is_chain l h limit : iProp Σ :=
   "#Hdecode" ∷
     match decode_chain d with
     | DecEmpty =>
-      "%Heq_l" ∷ ⌜l = Nil⌝
+      "%" ∷ ⌜l = Nil⌝
     | DecLink prevLink val =>
       match limit with
       | 0%nat =>
-        "%Heq_l" ∷ ⌜l = Cut h⌝
+        "%" ∷ ⌜l = Cut h⌝
       | S limit' =>
         ∃ l',
-        "%Heq_l" ∷ ⌜l = Cons val l'⌝ ∗
+        "%" ∷ ⌜l = Cons val l'⌝ ∗
         "#Hrecur" ∷ is_chain l' prevLink limit'
       end
     | DecInvalid =>
-      "%Heq_l" ∷ ⌜l = Cut h⌝
+      "%" ∷ ⌜l = Cut h⌝
     end.
 
 Lemma is_chain_unfold l h limit :
@@ -218,7 +218,7 @@ Definition hash_reln l0 l1 h : iProp Σ :=
   "#Hc0" ∷ is_chain l0 h limit0 ∗
   "#Hc1" ∷ is_chain l1 h limit1.
 
-Lemma hash_reln_App l0 l1 vs h h0 h1 limit0 limit1 :
+Lemma hash_reln_app l0 l1 vs h h0 h1 limit0 limit1 :
   hash_reln l0 l1 h -∗
   is_chain (App vs l0) h0 limit0 -∗
   is_chain (App vs l1) h1 limit1 -∗
@@ -317,7 +317,7 @@ Proof.
   replace extLen0 with extLen1 by word.
   repeat iSplit; [done..|].
   clear.
-  iDestruct (hash_reln_App with "[] His_newLink0 His_newLink1") as %->.
+  iDestruct (hash_reln_app with "[] His_newLink0 His_newLink1") as %->.
   { iFrame "#". }
   done.
 Qed.
