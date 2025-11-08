@@ -1,6 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base contrib.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import contrib.
+From New.proof.github_com.goose_lang.goose.model.channel Require Import protocol.base.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export contrib.
 From New.golang.theory Require Import chan.
 From iris.algebra Require Import gmultiset big_op.
 From iris.algebra Require Export csum.
@@ -23,12 +23,13 @@ From Perennial.algebra Require Import ghost_var.
 
 Section mpmc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!chan_protocolG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!Countable V}.
 Context `{!contributionG Σ (gmultisetR V)}.
+(* these is Perennial ghost_var (which supports dfrac), not Iris *)
 Context `{!ghost_varG Σ bool}.
 
 Record mpmc_names := {

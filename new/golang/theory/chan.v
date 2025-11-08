@@ -18,7 +18,7 @@ Module chan.
 Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -118,12 +118,12 @@ Lemma wp_select_blocking (cases : list op) :
   ([∧ list] case ∈ cases,
      match case with
      | select_send_f t send_val send_chan send_handler =>
-         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
              is_channel (V:=V) (t:=t) send_chan cap γ ∗
              send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
      | select_receive_f t recv_chan recv_handler =>
-         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
+         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
              is_channel (V:=V) (t:=t) recv_chan cap γ ∗
              rcv_au_slow recv_chan cap γ (λ (v: V) ok,
                WP #recv_handler (#v, #ok)%V {{ Φ }})
@@ -141,12 +141,12 @@ Lemma wp_select_nonblocking (cases : list op) (def: func.t) :
   ([∧ list] case ∈ cases,
      match case with
      | select_send_f t send_val send_chan send_handler =>
-         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
              is_channel (V:=V) (t:=t) send_chan cap γ ∗
              send_au_fast send_chan cap v γ (WP #send_handler #() {{ Φ }})
      | select_receive_f t recv_chan recv_handler =>
-         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
+         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
              is_channel (V:=V) (t:=t) recv_chan cap γ ∗
              rcv_au_fast recv_chan cap γ (λ (v: V) ok,
                WP #recv_handler #v {{ Φ }})

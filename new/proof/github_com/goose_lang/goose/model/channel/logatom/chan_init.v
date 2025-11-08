@@ -7,7 +7,7 @@ From New.proof.github_com.goose_lang.std Require Import std_core.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.  
-Context  `{!chanGhostStateG Σ}.
+Context  `{!chanG Σ}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 #[global] Instance : IsPkgInit channel := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf channel := build_get_is_pkg_init_wf.

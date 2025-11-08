@@ -128,7 +128,7 @@ End classes.
 
 Section lang.
   Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-  Context `{!chanGhostStateG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
+  Context `{!chanG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
   Context `{!globalsGS Σ} {go_ctx : GoContext}.
   Context `{!dspG Σ V}.
   Implicit Types TT : tele.
@@ -159,7 +159,7 @@ End lang.
 
 (** * Symbolic execution tactics *)
 (* TODO: Maybe strip laters from other hypotheses in the future? *)
-Lemma tac_wp_recv `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanGhostStateG Σ V}
+Lemma tac_wp_recv `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanG Σ V}
   `{!IntoVal V} `{!IntoValTyped V tV} `{!globalsGS Σ} {go_ctx : GoContext} `{!dspG Σ V}
   {TT : tele} Δ i j K (lr_chan rl_chan:loc) p m (tv : TT -t> V) tP tP' tp Φ :
   envs_lookup i Δ = Some (false, #(lr_chan, rl_chan) ↣ p)%I →
@@ -222,7 +222,7 @@ Tactic Notation "wp_recv" "(" simple_intropattern_list(xs) ")" "as"
     "(" ne_simple_intropattern_list(ys) ")" constr(pat) :=
   wp_recv_core (intros xs) as (fun H => _iDestructHyp H ys pat).
 
-Lemma tac_wp_send `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanGhostStateG Σ V}
+Lemma tac_wp_send `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanG Σ V}
   `{!IntoVal V} `{!IntoValTyped V tV} `{!globalsGS Σ} {go_ctx : GoContext} `{!dspG Σ V}
   {TT : tele} Δ neg i js K (lr_chan rl_chan : loc) v p m tv tP tp Φ :
   envs_lookup i Δ = Some (false, #(lr_chan,rl_chan) ↣ p)%I →

@@ -147,8 +147,8 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
   {
     #[local] es_ls_inG :: locked_stackG Σ;
     #[local] es_var_inG :: ghost_varG Σ (list go_string);
-    #[local] es_chan_inG :: chanGhostStateG Σ go_string;
-    #[local] es_afterChan_inG :: chanGhostStateG Σ unit;
+    #[local] es_chan_inG :: chanG Σ go_string;
+    #[local] es_afterChan_inG :: chanG Σ unit;
     #[local] es_token_pointer_inG :: ghost_varG Σ gname;
     #[local] es_send_token_inG :: tokenG Σ;
     #[local] es_reply_token_inG :: ghost_varG Σ go_string;
