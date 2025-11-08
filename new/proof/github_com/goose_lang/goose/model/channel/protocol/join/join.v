@@ -1,8 +1,8 @@
 Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
 From New.golang.theory Require Import chan.
+From Perennial.algebra Require Import auth_set.
 From iris.base_logic Require Import ghost_map.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import auth_set.
 From iris.base_logic.lib Require Import saved_prop.
 
 Module join.
