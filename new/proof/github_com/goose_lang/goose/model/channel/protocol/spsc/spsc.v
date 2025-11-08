@@ -20,7 +20,7 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_
 
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.

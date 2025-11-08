@@ -76,24 +76,24 @@ Record chan_names := {
 }.
 
 (** Type class for ghost state associated with channels *)
-Class chanGhostStateG Σ V := ChanGhostStateG {
+Class chanG Σ V := ChanG {
   offerG :: ghost_varG Σ (chan_rep.t V);
   offer_lockG :: ghost_varG Σ (option (offer_lock V));
   offer_parked_propG :: savedPropG Σ;
   offer_parked_predG :: savedPredG Σ (V * bool);
 }.
 
-Definition chanGhostStateΣ V : gFunctors :=
+Definition chanΣ V : gFunctors :=
   #[ ghost_varΣ (chan_rep.t V); ghost_varΣ (option (offer_lock V));
      savedPropΣ; savedPredΣ  (V * bool) ].
 
-#[global] Instance subG_chanGhostStateG Σ V :
-  subG (chanGhostStateΣ V) Σ → chanGhostStateG Σ V.
+#[global] Instance subG_chanG Σ V :
+  subG (chanΣ V) Σ → chanG Σ V.
 Proof. solve_inG. Qed.
 
 Section base.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 

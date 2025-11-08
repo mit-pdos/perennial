@@ -6,7 +6,7 @@ From New.proof.github_com.goose_lang.goose.model.channel
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chan_au_base.chanGhostStateG Σ time.Time.t}.
+Context `{!chan_au_base.chanG Σ time.Time.t}.
 
 #[global] Instance : IsPkgInit time := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf time := build_get_is_pkg_init_wf.

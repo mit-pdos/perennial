@@ -8,7 +8,7 @@ From New.generatedproof.github_com.goose_lang.goose Require Import model.channel
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.

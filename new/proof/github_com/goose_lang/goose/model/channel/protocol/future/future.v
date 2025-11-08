@@ -19,7 +19,7 @@ From New.golang.theory Require Import chan.
 
 Section future.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.

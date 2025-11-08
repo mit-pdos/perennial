@@ -23,7 +23,7 @@ From Perennial.algebra Require Import ghost_var.
 
 Section mpmc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.

@@ -10,7 +10,7 @@ From New.proof.github_com.goose_lang.std Require Import std_core.
 Section select.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chanGhostStateG Σ V1} `{!chanGhostStateG Σ V2}.
+Context `{!chanG Σ V1} `{!chanG Σ V2}.
 Context `{!IntoVal V1} `{!IntoVal V2} `{!IntoValTyped V1 t1} `{!IntoValTyped V2 t2}.
 
 Lemma wp_BlockingSelect2 (ch1: loc) (cap1: Z) (γ1: chan_names) (dir1: u64) (val1: V1)
