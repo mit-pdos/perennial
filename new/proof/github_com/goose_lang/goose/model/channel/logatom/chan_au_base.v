@@ -415,7 +415,7 @@ Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
    `rcv` (we would've done snd otherwise) *)
 
 (** Inner atomic update for receive completion (second phase of handshake) *)
-                                                                                        Definition rcv_au_inner ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
+Definition rcv_au_inner ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hocinner" ∷ own_channel ch cap s γ ∗
      "Hcontinner" ∷
