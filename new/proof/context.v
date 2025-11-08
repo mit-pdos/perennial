@@ -1,7 +1,9 @@
 From New Require Import code.context.
 From New Require Export generatedproof.context.
 From New Require Import proof.proof_prelude.
-From New.proof Require Import chan sync.atomic sync time errors.
+From New.proof Require Import sync.atomic sync time errors.
+(* make sure to use these specs *)
+From New.proof Require Import chan.
 
 Require Import Perennial.Helpers.CountableTactics.
 
