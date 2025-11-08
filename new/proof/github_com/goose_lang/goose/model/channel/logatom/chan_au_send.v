@@ -213,7 +213,7 @@ Proof.
       iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.Buffered (buff ++ [v]))
         with "[$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
       { done. }
-      destruct (length buff <? cap) eqn: Heq.
+      destruct (decide (length buff < cap)).
       {
         iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
         wp_call.
@@ -477,7 +477,7 @@ Proof.
       iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.Buffered (buff ++ [v]))
         with "[$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
       { done. }
-      destruct (length buff <? cap) eqn: Heq.
+      destruct (decide (length buff < cap)).
       {
         iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
         wp_call.
@@ -632,7 +632,7 @@ Proof.
     iModIntro. iModIntro. iNamed "Hau". iFrame.
     destruct s. all: try done.
     {
-      destruct (length buff <? cap).
+      destruct (decide (length buff < cap)).
       {
         iIntros "H". iMod ("Hcont" with "H") as "H".
         iModIntro. wp_auto. destruct decide.

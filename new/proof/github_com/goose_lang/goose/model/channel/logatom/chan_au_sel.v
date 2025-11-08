@@ -57,7 +57,7 @@ Proof.
         iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
         destruct s; try done.
         {
-          destruct (length buff <? cap1); try done.
+          destruct (decide (length buff < cap1); try done.
           {
             iIntros "Hoc". iMod ("Hcont" with "Hoc") as "Hcont".
             iModIntro. wp_auto. simpl. wp_for_post. iFrame.
@@ -195,7 +195,7 @@ Proof.
         iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
         destruct s; try done.
         {
-          destruct (length buff <? cap2); try done.
+          destruct (decide (length buff < cap2)); try done.
           {
             iIntros "Hoc". iMod ("Hcont" with "Hoc") as "Hcont".
             iModIntro. wp_auto. simpl. wp_for_post. iFrame.
@@ -351,7 +351,7 @@ Proof.
         iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
         destruct s; try done.
         {
-          destruct (length buff <? cap1); try done.
+          destruct (decide (length buff < cap1)); try done.
           {
             iIntros "Hoc". iMod ("Hcont" with "Hoc") as "Hcont".
             iModIntro. wp_auto. simpl. iFrame.
@@ -378,7 +378,7 @@ Proof.
             iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iExists s. iFrame.
             destruct s; try done.
             {
-              destruct (length buff <? cap2); try done.
+              destruct (decide (length buff < cap2)); try done.
               {
                 iIntros "Hoc". iMod ("Hcont" with "Hoc") as "Hcont".
                 iModIntro. wp_auto. simpl. iFrame.
@@ -540,7 +540,7 @@ Proof.
             iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
             destruct s; try done.
             {
-              destruct (length buff <? cap2); try done.
+              destruct (decide (length buff < cap2)); try done.
               {
                 iIntros "Hc". iMod ("Hcont" with "Hc") as "Hcont".
                 iModIntro. wp_auto. simpl. iFrame.
@@ -656,7 +656,7 @@ Proof.
         iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
         destruct s; try done.
         {
-          destruct (length buff <? cap2); try done.
+          destruct (decide (length buff < cap2)); try done.
           {
             iIntros "Hc". iMod ("Hcont" with "Hc") as "Hcont".
             iModIntro. wp_auto. simpl. iFrame.
@@ -694,7 +694,7 @@ Proof.
             iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
             destruct s; try done.
             {
-              destruct (length buff <? cap1); try done.
+              destruct (decide (length buff < cap1)); try done.
               {
                 iIntros "Hc". iMod ("Hcont" with "Hc") as "Hcont".
                 iModIntro. wp_auto. simpl. iFrame.
@@ -855,7 +855,7 @@ Proof.
             iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
             destruct s; try done.
             {
-              destruct (length buff <? cap1); try done.
+              destruct (decide (length buff < cap1)); try done.
               {
                 iIntros "Hc". iMod ("Hcont" with "Hc") as "Hcont".
                 iModIntro. wp_auto. simpl. iFrame.

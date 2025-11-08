@@ -461,7 +461,7 @@ Proof.
   destruct s; try done.
   
   { (* Case: Buffered channel *)
-    destruct (length buff <? cap) eqn:Hlen; [|done].
+    destruct (decide _); [|done].
     iIntros "Hoc".
     
     (* Update sent history *)
