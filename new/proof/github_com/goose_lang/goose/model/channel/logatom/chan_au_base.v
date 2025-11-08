@@ -464,6 +464,16 @@ Definition rcv_au_fast ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp �
     | _ => True
     end).
 
+Lemma blocking_rcv_implies_nonblocking ch cap γ (Φ : V → bool → iProp Σ) :
+  rcv_au_slow ch cap γ Φ -∗
+  rcv_au_fast ch cap γ Φ.
+Proof.
+  iIntros "Hau".
+  iMod "Hau" as (s) "[Hoc Hcont]".
+  iModIntro. iExists s. iFrame "Hoc".
+  destruct s; try done.
+Qed.
+
 (** Inner atomic update for send completion (second phase of handshake) *)
 Definition send_au_inner ch (cap: Z) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
@@ -520,6 +530,15 @@ Definition send_au_fast ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : i
     | _ => True
     end).
 
+Lemma blocking_send_implies_nonblocking ch cap v γ (Φ : iProp Σ) :
+  send_au_slow ch cap v γ Φ -∗
+  send_au_fast ch cap v γ Φ.
+Proof.
+  iIntros "Hchan".
+  iMod "Hchan" as (s) "[Hoc Hcont]".
+  iModIntro. iExists s. iFrame "Hoc".
+  destruct s; try done.
+Qed.
 
 Definition close_au ch (cap: Z) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
