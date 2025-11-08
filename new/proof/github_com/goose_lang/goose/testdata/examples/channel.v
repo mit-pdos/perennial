@@ -11,15 +11,6 @@ Import chan_spec_raw_examples.
 
 Set Default Proof Using "Type".
 
-(* TODO: Move? *)
-Global Instance wp_struct_make_unit {ext : ffi_syntax} {ffi : ffi_model} {ffi_interp0 : ffi_interp ffi} 
-  {Σ : gFunctors} {hG : heapGS Σ} {ffi_semantics0 : ffi_semantics ext ffi} :
-  PureWp True (struct.make #(structT []) (alist_val []))%struct #().
-Proof.
-  erewrite <- struct_val_aux_nil.
-  apply wp_struct_make; cbn; auto.
-Qed.
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
