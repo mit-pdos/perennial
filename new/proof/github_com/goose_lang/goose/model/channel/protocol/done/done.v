@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
+From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
 From New.golang.theory Require Import chan.
 From iris.base_logic Require Import ghost_map.
 From iris.base_logic.lib Require Import saved_prop.
@@ -19,12 +19,11 @@ From iris.base_logic.lib Require Import saved_prop.
 
 Section done.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanG Σ V}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!chan_protocolG Σ V}.
+
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!ghost_mapG Σ nat gname}.
-Context `{!savedPropG Σ}.
 
 
 Record done_names := {

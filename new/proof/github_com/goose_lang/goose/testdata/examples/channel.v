@@ -1,6 +1,6 @@
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Export simple future spsc done dsp dsp_proofmode mpmc join.
+     Require Import protocol.base simple future spsc done dsp dsp_proofmode mpmc join.
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
@@ -35,8 +35,7 @@ Proof.
 Defined.
 
 Section hello_world.
-Context `{!chanG Σ go_string}.
-Context `{!ghost_varG Σ bool}.
+Context `{!chan_protocolG Σ go_string}.
 
 Lemma wp_sys_hello_world :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -83,7 +82,7 @@ Lemma wp_HelloWorldSync :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HelloWorldSync #()
   {{{ RET #("Hello, World!"); True }}}.
-Proof using chanG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
+Proof using chan_protocolG0.
   wp_start.
   wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hfut Hawait]".
@@ -101,23 +100,21 @@ End hello_world.
 
 
 Section cancellable.
-Context `{!ghost_varG Σ bool}.
-Context `{!chanG Σ unit}.
-Context `{!chanG Σ go_string}.
-Context `{!ghost_mapG Σ nat gname}.
+Context `{!chan_protocolG Σ unit}.
+Context `{!chan_protocolG Σ go_string}.
 
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
   (γdone: done_names) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
         is_done (V:=unit) (t:=structT []) γdone done_ch ∗
-        Notified γdone (err_ptr1 ↦ err_msg)  }}}
+        Notified (V:=unit) γdone (err_ptr1 ↦ err_msg)  }}}
     @! chan_spec_raw_examples.HelloWorldCancellable #done_ch #err_ptr1
     {{{
 (result: go_string), RET #result;
       ⌜result = err_msg ∨ result = "Hello, World!"%go⌝
     }}}.
-Proof using chanG0 chanG1 ghost_mapG0 ghost_varG0.
+Proof using chan_protocolG0 chan_protocolG1.
 
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
@@ -139,7 +136,7 @@ Proof using chanG0 chanG1 ghost_mapG0 ghost_varG0.
     {
       iFrame "Hfut".
       iRename select (£1) into "Hlc".
-      iApply ((future_await_au  (V:=go_string) γfuture ch   )
+      iApply ((future_await_au (V:=go_string) γfuture ch   )
                with " [$Hfut $Hinv1] [$Hawait $Hlc]").
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto.
@@ -150,7 +147,7 @@ Proof using chanG0 chanG1 ghost_mapG0 ghost_varG0.
     {
       iFrame "Hdonech".
 
-      iApply ((done_receive_au  (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
+      iApply ((done_receive_au (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
                with " [$H1] [H2] [HΦ Herr] [$]").
       {
         iFrame.
@@ -173,8 +170,7 @@ Lemma wp_HelloWorldWithTimeout :
       ⌜result = "Hello, World!"%go ∨
         result = "operation timed out"%go⌝
   }}}.
-  Proof using chanG0 chanG1 ext ffi ffi_interp0 ffi_semantics0 ghost_mapG0
-ghost_varG0 go_ctx hG Σ.
+  Proof using chan_protocolG0 chan_protocolG1.
   wp_start.
   wp_auto.
   wp_apply (chan.wp_make (t:=structT [])); first done.
@@ -211,8 +207,7 @@ End cancellable.
 
 
 Section fibonacci_examples.
-Context `{!chanG Σ w64}.
-Context `{!ghost_varG Σ (list w64)}.
+Context `{!chan_protocolG Σ w64}.
 
 Fixpoint fib (n: nat) : w64 :=
   match n with
@@ -395,7 +390,7 @@ Lemma wp_fib_consumer:
 
 
   }}}.
-  Proof using chanG0 ext ffi ffi_interp0 ffi_semantics0 ghost_varG0 go_ctx hG Σ.
+Proof using chan_protocolG0.
   wp_start. wp_auto.
   wp_apply (chan.wp_make); first done.
   iIntros (c γ) "[#Hchan Hown]".
@@ -498,7 +493,7 @@ Qed.
 End fibonacci_examples.
 
 Section dsp_examples.
-Context `{!chanG Σ interface.t}.
+Context `{!chan_protocolG Σ interface.t}.
 Context `{!dspG Σ interface.t}.
 
 Definition ref_prot : iProto Σ interface.t :=
@@ -509,9 +504,7 @@ Lemma wp_DSPExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.DSPExample #()
   {{{ RET #(W64 42); True }}}.
-Proof using chanG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG dspG0
-Σ.
-  (* TODO: Simplify the above [Proof] *)
+Proof using chan_protocolG0 globalsGS0 dspG0.
   wp_start. wp_auto.
   wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
   iIntros (c γ) "[#Hic Hoc]". wp_auto.
@@ -537,7 +530,7 @@ Qed.
 End dsp_examples.
 
 Section select_panic.
-Context `{!chanG Σ unit}.
+Context `{!chan_protocolG Σ unit}.
 
 (** Invariant: channel must be Idle, all other states are False *)
 Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
@@ -693,9 +686,8 @@ Qed.
 End select_panic.
 
 Section higher_order_example.
-Context `{!chanG Σ request.t}.
-Context `{!chanG Σ go_string}.
-Context `{!ghost_varG Σ bool}.
+Context `{!chan_protocolG Σ request.t}.
+Context `{!chan_protocolG Σ go_string}.
 
 Definition do_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
   "Hf" ∷ WP #r.(request.f') #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} ∗
@@ -770,7 +762,7 @@ Lemma wp_HigherOrderExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HigherOrderExample #()
   {{{ (s:slice.t), RET #s; s ↦* ["hello world"%go; "HELLO"%go; "world"%go] }}}.
-Proof using chanG0 chanG1 ghost_varG0.
+Proof using chan_protocolG0 chan_protocolG1.
   wp_start.
   (* TODO: why is the string unfolded here? *)
   wp_auto.
@@ -827,17 +819,13 @@ Qed.
 End higher_order_example.
 
 Section join.
-Context `{!ghost_varG Σ bool}.
-Context `{!chanG Σ unit}.
-Context `{!join.joinG Σ}.
+Context `{!chan_protocolG Σ unit}.
 
 Lemma wp_simple_join :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel    }}}
     @! chan_spec_raw_examples.simple_join #()
   {{{  RET #("Hello, World!"); True }}}.
-  Proof using H chanG0 ext
-ffi ffi_interp0 ffi_semantics0
-go_ctx hG Σ.
+Proof using chan_protocolG0.
   wp_start. wp_auto_lc 3.
       iRename select (£1) into "Hlc".
   wp_apply chan.wp_make; first done.
@@ -866,11 +854,11 @@ go_ctx hG Σ.
   done.
 Qed.
 
-  Lemma wp_simple_multi_join :
+Lemma wp_simple_multi_join :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
     @! chan_spec_raw_examples.simple_multi_join #()
   {{{ RET #("Hello World"); True }}}.
-  Proof using H chanG0 ext ffi ffi_interp0 ffi_semantics0 go_ctx hG Σ.
+Proof using chan_protocolG0.
   wp_start. wp_auto_lc 3.
   iRename select (£1) into "Hlc1".
   wp_apply chan.wp_make; first done.
@@ -916,11 +904,12 @@ Qed.
 End join.
 
 Section muxer.
-Context `{!chanG Σ stream.t}.
-Context `{!chanG Σ go_string}.
-Context `{!ghost_var.ghost_varG Σ bool}.
+Context `{!chan_protocolG Σ stream.t}.
+Context `{!chan_protocolG Σ go_string}.
 Context `{!contributionG Σ (gmultisetUR stream.t)}.
 Context `{!dspG Σ go_string}.
+(* perennial ghost_var, not iris *)
+Context `{!ghost_var.ghost_varG Σ bool}.
 
 Definition mapper_service_prot_aux (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ)
   (rec : iProto Σ _) : iProto Σ _ :=
@@ -978,7 +967,8 @@ Lemma wp_MapServer (my_stream: stream.t) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream }}}
     @! chan_spec_raw_examples.MapServer #my_stream
   {{{ RET #(); True }}}.
-Proof using chanG1 dspG0 ext ffi ffi_interp0 ffi_semantics0 globalsGS0 go_ctx hG Σ.  wp_start.
+Proof using chan_protocolG0 chan_protocolG1 globalsGS0.
+  wp_start.
   iNamed "Hpre".
   rewrite /chan.for_range.
   wp_auto.
@@ -1019,8 +1009,7 @@ Lemma wp_Muxer (c: loc) γmpmc (n_prod n_cons: nat) :
       "Hcons" ∷ mpmc_consumer γmpmc (∅ : gmultiset stream.t) }}}
     @! chan_spec_raw_examples.Muxer #c
   {{{ RET #(); True%I }}}.
-Proof using H chanG0 chanG1 contributionG0 dspG0 ext ffi ffi_interp0 ffi_semantics0
-globalsGS0 go_ctx hG Σ.
+Proof using chan_protocolG0 chan_protocolG1 globalsGS0.
    wp_start. wp_auto_lc 3. iNamed "Hpre".
     rewrite /chan.for_range.
   wp_auto_lc 3.
@@ -1063,8 +1052,7 @@ Lemma wp_makeGreeting :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.makeGreeting #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof using H chanG0 chanG1 contributionG0 dspG0 ext ffi ffi_interp0
-ffi_semantics0 globalsGS0 go_ctx hG Σ.
+Proof using chan_protocolG0 chan_protocolG1 contributionG0 H dspG0 globalsGS0.
   wp_start. wp_auto.
   wp_apply (chan.wp_make (V:=stream.t) 2); [done|].
   iIntros (c γ) "[#Hic Hoc]". wp_auto.
