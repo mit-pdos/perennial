@@ -148,7 +148,7 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
     #[local] es_ls_inG :: locked_stackG Σ;
     #[local] es_var_inG :: ghost_varG Σ (list go_string);
     #[local] es_chan_inG :: chanGhostStateG Σ go_string;
-    #[local] es_afterChan_inG :: chanGhostStateG Σ time.Time.t;
+    #[local] es_afterChan_inG :: chanGhostStateG Σ unit;
     #[local] es_token_pointer_inG :: ghost_varG Σ gname;
     #[local] es_send_token_inG :: tokenG Σ;
     #[local] es_reply_token_inG :: ghost_varG Σ val;
@@ -184,16 +184,16 @@ Local Definition own_exchanger_inv γ N exstate : iProp Σ :=
       | chan_rep.Idle =>
           "Hs◯" ∷ ½s γs ∗ "Hr◯" ∷ ½r γr
       | chan_rep.SndPending v =>
-          "Hsend_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (⟦v :: σ⟧ ={∅,⊤∖↑N}=∗ token γs)) ∗
+          "Hpush_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (⟦v :: σ⟧ ={∅,⊤∖↑N}=∗ token γs)) ∗
           "Hr◯" ∷ ½r γr
       | chan_rep.RcvPending =>
-          "Hrecv_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (∀ v σ', ⌜ σ = v :: σ' ⌝ → ⟦σ⟧ ={∅,⊤∖↑N}=∗
+          "Hpop_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (∀ v σ', ⌜ σ = v :: σ' ⌝ → ⟦σ'⟧ ={∅,⊤∖↑N}=∗
                                                         ghost_var γr (3/4) (#v, #true)%V)) ∗
           "Hs◯" ∷ ½s γs
       | chan_rep.SndCommit v =>
-          "Hrecv_wit" ∷ ghost_var γr (3/4) (#v, #true)%V ∗ "Hs◯" ∷ ½s γs
+          "Hpop_wit" ∷ ghost_var γr (3/4) (#v, #true)%V ∗ "Hs◯" ∷ ½s γs
       | chan_rep.RcvCommit =>
-          "Hrecv_wit" ∷ token γs ∗ "Hr◯" ∷ ½r γr
+          "Hpush_wit" ∷ token γs ∗ "Hr◯" ∷ ½r γr
       | _ => False
       end
     ).
@@ -236,9 +236,9 @@ Qed.
 Lemma wp_after (d : time.Duration.t) :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.after #d
-  {{{ γafter ch, RET #ch; is_channel ch 0 γafter ∗
+  {{{ γafter ch, RET #ch; is_channel (t:=structT []) ch 0 γafter ∗
                           □ (∀ Φ, (∀ v, Φ v true) -∗
-                                  rcv_au_slow ch 0 γafter (V:=time.Time.t) Φ) }}}.
+                                  rcv_au_slow ch 0 γafter (V:=unit) Φ) }}}.
 Proof.
 Admitted.
 
@@ -267,17 +267,17 @@ Proof.
   wp_start as "#His". iNamed "His".
   iRename "s" into "s1". wp_auto.
   wp_apply wp_after. iIntros "* [#Hafter #Hrecv]".
-  wp_auto_lc 1.
+  wp_auto_lc 2.
   wp_apply chan.wp_select_blocking.
   simpl. iSplit.
-  { (* elimination occurs *)
+  - (* elimination occurs *)
     iFrame "#". iExists _; iSplitR; first done.
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
     iNamedSuffix "Hi" "_inv". iApply fupd_mask_intro; first solve_ndisj.
     iIntros "Hmask". iNext. iFrame.
     destruct exstate; iNamedSuffix "Hexchanger_inv" "_inv"; try by iExFalso.
-    - (* idle *)
+    + (* idle *)
       iNamedSuffix "Hexchanger_inv" "_inv";
       iIntros "exchanger_inv". iMod "Hmask" as "_".
       iRename "Hs◯_inv" into "Hs◯".
@@ -287,7 +287,7 @@ Proof.
       iMod (ghost_var_update_2 with "Hs◯ Hs●_inv") as "[Hs●_inv Hs◯]".
       { compute_done. }
       iCombineNamed "*_inv" as "Hi".
-      iMod ("Hclose" with "[Hi]").
+      iMod ("Hclose" with "[Hi]") as "_".
       { iNamed "Hi". iFrame. iFrame. iNext.
         iMod (fupd_mask_subseteq _) as "Hmask";
           last iMod "Hau_inv" as "(% & ? & Hau)"; first solve_ndisj.
@@ -298,8 +298,55 @@ Proof.
           last iMod ("Htok_inv" with "[$]") as "Htok"; first solve_ndisj.
         iMod "Hmask". iFrame. done. }
       iModIntro.
-  }
-
+      iInv "Hinv" as "Hi" "Hclose".
+      iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+      iNamedSuffix "Hi" "_inv". iApply fupd_mask_intro; first solve_ndisj.
+      iIntros "Hmask". iNext. iFrame.
+      destruct exstate; iNamedSuffix "Hexchanger_inv" "_inv"; try by done.
+      iIntros "exchanger_inv". iMod "Hmask" as "_".
+      iCombine "Hs●_inv Hs◯" gives %[_ ->]. iRename "Hs◯" into "Hs◯_inv".
+      iNamed "Hexchanger_inv". iRename "Hr◯" into "Hr◯_inv".
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. iFrame. }
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod ("HΦ" with "[$]") as "HΦ";
+        first solve_ndisj.
+      iMod "Hmask" as "_". iModIntro. wp_auto. iFrame.
+    + done.
+    + iIntros "exchanger_inv". iMod "Hmask" as "_". iNamedSuffix "Hexchanger_inv" "_inv".
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as "(% & Hfrag & HΦ)"; first solve_ndisj.
+      iCombine "Hfrag Hauth_inv" gives %[_ Heq]. subst stack.
+      iMod (ghost_var_update_2 with "Hfrag Hauth_inv") as "[Hfrag Hauth_inv]".
+      { compute_done. }
+      iMod ("HΦ" with "Hfrag") as "HΦ". iMod "Hmask" as "_".
+      iMod "Hpop_au_inv" as "(% & Hfrag & Hpop)".
+      iCombine "Hfrag Hauth_inv" gives %[_ Heq]. subst σ0.
+      iMod (ghost_var_update_2 with "Hfrag Hauth_inv") as "[Hfrag Hauth_inv]".
+      { compute_done. }
+      iMod ("Hpop" with "[//] Hfrag") as "Hpop_inv".
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. iFrame. }
+      iModIntro. wp_auto. iFrame.
+    + done.
+    + done.
+  - iSplit; last done.
+    iFrame "#". iApply "Hrecv".
+    iIntros ([]). wp_auto_lc 1. wp_apply wp_LockedStack__Push.
+    { iFrame "#". }
+    iInv "Hinv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iNamedSuffix "Hi" "_inv".
+    iFrame. iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+    iIntros "Hlc_inv". iMod "Hmask" as "_".
+    iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as "(% & Hfrag & HΦ)";
+      first solve_ndisj.
+    iCombine "Hfrag Hauth_inv" gives %[_ Heq]. subst stack.
+    iMod (ghost_var_update_2 with "Hfrag Hauth_inv") as "[Hfrag Hauth_inv]".
+    { compute_done. }
+    iMod ("HΦ" with "Hfrag") as "HΦ". iMod "Hmask" as "_".
+    iCombineNamed "*_inv" as "Hi".
+    iMod ("Hclose" with "[Hi]") as "_".
+    { iNamed "Hi". iFrame. }
+    iModIntro. wp_auto. iFrame.
 Qed.
-
-End elimination_stack_proof.
