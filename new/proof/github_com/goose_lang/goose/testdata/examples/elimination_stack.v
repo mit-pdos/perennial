@@ -151,7 +151,7 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
     #[local] es_afterChan_inG :: chanGhostStateG Σ unit;
     #[local] es_token_pointer_inG :: ghost_varG Σ gname;
     #[local] es_send_token_inG :: tokenG Σ;
-    #[local] es_reply_token_inG :: ghost_varG Σ val;
+    #[local] es_reply_token_inG :: ghost_varG Σ go_string;
   }.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -188,10 +188,10 @@ Local Definition own_exchanger_inv γ N exstate : iProp Σ :=
           "Hr◯" ∷ ½r γr
       | chan_rep.RcvPending =>
           "Hpop_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (∀ v σ', ⌜ σ = v :: σ' ⌝ → ⟦σ'⟧ ={∅,⊤∖↑N}=∗
-                                                        ghost_var γr (3/4) (#v, #true)%V)) ∗
+                                                        ghost_var γr (3/4) v)) ∗
           "Hs◯" ∷ ½s γs
       | chan_rep.SndCommit v =>
-          "Hpop_wit" ∷ ghost_var γr (3/4) (#v, #true)%V ∗ "Hs◯" ∷ ½s γs
+          "Hpop_wit" ∷ ghost_var γr (3/4) v ∗ "Hs◯" ∷ ½s γs
       | chan_rep.RcvCommit =>
           "Hpush_wit" ∷ token γs ∗ "Hr◯" ∷ ½r γr
       | _ => False
@@ -256,6 +256,29 @@ Proof.
   - iIntros "HP". iInv "Hescrow" as "[[_ >Hbad] | >Htok]".
     + iCombine "Htok2 Hbad" gives %[].
     + iModIntro. iSplitR "Htok"; last by iFrame. iNext. iLeft. iFrame.
+Qed.
+
+Lemma alloc_pop_help_token {E} N P :
+  ⊢ |={E}=> ∃ γr, (∀ (v : go_string), ghost_var γr (3/4) v ={↑N}=∗ ▷ P v) ∗
+                 (∀ v, ▷ P v ={↑N}=∗ ghost_var γr (3/4) v).
+Proof.
+  iMod (ghost_var_alloc ""%go) as "[%γr Htok]".
+  iMod (token_alloc) as "[%γdone Hdone]".
+  iMod (inv_alloc N _ (∃ v, P v ∗ token γdone ∗ ghost_var γr (1/4) v ∨ ghost_var γr 1 v)%I with
+    "[$Htok]") as "#Hescrow".
+  iExists γr. iModIntro.
+  iSplitR.
+  - iIntros "% Ht". iInv "Hescrow" as "[% [(HP & _ & >Ht2)| >Hbad]]".
+    + iCombine "Ht Ht2" gives %[_ Heq]. subst. iFrame. iSplitL; last done.
+      iModIntro. iNext. iCombine "Ht Ht2" as "Ht".
+      replace (3/4 + 1/4)%Qp with 1%Qp by compute_done. iFrame.
+    + iCombine "Ht Hbad" gives %[Hbad _]. done.
+  - iIntros "% HP". iInv "Hescrow" as "[% [(_ & >Hbad & _)| >Ht]]".
+    + iCombine "Hdone Hbad" gives %[].
+    + iMod (ghost_var_update with "Ht") as "Ht". iModIntro.
+      iEval (replace (1)%Qp with (3/4 + 1/4)%Qp by compute_done) in "Ht".
+      iDestruct "Ht" as "[Ht Ht2]". iFrame. iSplitL; last done.
+      iNext. iExists v. iLeft. iFrame.
 Qed.
 
 Lemma wp_EliminationStack__Push v γ s N :
@@ -350,3 +373,114 @@ Proof.
     { iNamed "Hi". iFrame. }
     iModIntro. wp_auto. iFrame.
 Qed.
+
+Lemma wp_EliminationStack__Pop γ s N :
+  ∀ Φ,
+  is_pkg_init chan_spec_raw_examples ∗ is_EliminationStack s γ N -∗
+  (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗
+                 (match σ with
+                  | [] => ⟦[]⟧ ={∅,⊤∖↑N}=∗ Φ (#"", #false)%V
+                  | v :: σ => ⟦σ⟧ ={∅,⊤∖↑N}=∗ Φ (#v, #true)%V
+                  end)) -∗
+  WP s @ (ptrT.id chan_spec_raw_examples.EliminationStack.id) @ "Pop" #() {{ Φ }}.
+Proof.
+  wp_start as "#His". iNamed "His".
+  iRename "s" into "s1". wp_auto.
+  wp_apply wp_after. iIntros "* [#Hafter #Hrecv]".
+  wp_auto_lc 2.
+  wp_apply chan.wp_select_blocking.
+  simpl. iSplit.
+  - (* elimination occurs *)
+    iFrame "#".
+    iInv "Hinv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iNamedSuffix "Hi" "_inv". iApply fupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask". iNext. iFrame.
+    destruct exstate; iNamedSuffix "Hexchanger_inv" "_inv"; try by iExFalso.
+    + (* idle *)
+      iNamedSuffix "Hexchanger_inv" "_inv";
+      iIntros "exchanger_inv". iMod "Hmask" as "_".
+      iRename "Hr◯_inv" into "Hr◯".
+      rename γs into γs_old.
+      iRename "HΦ" into "Hau_inv".
+      iMod (alloc_pop_help_token (N.@"escrow") (λ v, Φ (#v, #true)%V)) as (γs) "[HΦ Htok_inv]".
+      iMod (ghost_var_update_2 with "Hr◯ Hr●_inv") as "[Hr●_inv Hr◯]".
+      { compute_done. }
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. iFrame. iNext.
+        iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "Hau_inv" as "(% & ? & Hau)";
+          first solve_ndisj.
+        iModIntro. iFrame.
+        iIntros "* -> H". iMod ("Hau" with "[$]") as "H".
+        iMod "Hmask" as "_".
+        iMod (fupd_mask_subseteq _) as "Hmask";
+          last iMod ("Htok_inv" with "[$]") as "Htok"; first solve_ndisj.
+        iMod "Hmask". iFrame. done. }
+      iModIntro.
+      iInv "Hinv" as "Hi" "Hclose".
+      iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+      iNamedSuffix "Hi" "_inv". iApply fupd_mask_intro; first solve_ndisj.
+      iIntros "Hmask". iNext. iFrame.
+      destruct exstate; iNamedSuffix "Hexchanger_inv" "_inv"; try by done.
+      iIntros "exchanger_inv". iMod "Hmask" as "_".
+      iCombine "Hr●_inv Hr◯" gives %[_ ->]. iRename "Hr◯" into "Hr◯_inv".
+      iNamed "Hexchanger_inv". iRename "Hs◯" into "Hs◯_inv".
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. iFrame. }
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod ("HΦ" with "[$]") as "HΦ";
+        first solve_ndisj.
+      iMod "Hmask" as "_". iModIntro. wp_auto. iFrame.
+    + iIntros "exchanger_inv". iMod "Hmask" as "_". iNamedSuffix "Hexchanger_inv" "_inv".
+      iMod "Hpush_au_inv" as "(% & Hfrag & Hpush)".
+      iCombine "Hfrag Hauth_inv" gives %[_ Heq]. subst.
+      iMod (ghost_var_update_2 with "Hfrag Hauth_inv") as "[Hfrag Hauth_inv]".
+      { compute_done. }
+      iMod ("Hpush" with "Hfrag") as "Hpush_inv".
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as "(% & Hfrag & HΦ)"; first solve_ndisj.
+      iCombine "Hfrag Hauth_inv" gives %[_ Heq]. subst.
+      iMod (ghost_var_update_2 with "Hfrag Hauth_inv") as "[Hfrag Hauth_inv]".
+      { compute_done. }
+      iMod ("HΦ" with "Hfrag") as "HΦ". iMod "Hmask".
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. iFrame. }
+      iModIntro. wp_auto. iFrame.
+    + done.
+    + done.
+    + done.
+  - iSplit; last done.
+    iFrame "#". iApply "Hrecv".
+    iIntros ([]). wp_auto_lc 1. wp_apply wp_LockedStack__Pop.
+    { iFrame "#". }
+    iInv "Hinv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iNamedSuffix "Hi" "_inv".
+    iFrame. iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+    destruct stack.
+    * iIntros "Hlc_inv". iMod "Hmask" as "_".
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as "(% & Hfrag & HΦ)";
+        first solve_ndisj.
+      iCombine "Hfrag Hauth_inv" gives %[_ Heq]. subst.
+      iMod (ghost_var_update_2 with "Hfrag Hauth_inv") as "[Hfrag Hauth_inv]".
+      { compute_done. }
+      iMod ("HΦ" with "Hfrag") as "HΦ". iMod "Hmask" as "_".
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. }
+      iModIntro. wp_auto. iFrame.
+    * iIntros "Hlc_inv". iMod "Hmask" as "_".
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as "(% & Hfrag & HΦ)";
+        first solve_ndisj.
+      iCombine "Hfrag Hauth_inv" gives %[_ Heq]. subst.
+      iMod (ghost_var_update_2 with "Hfrag Hauth_inv") as "[Hfrag Hauth_inv]".
+      { compute_done. }
+      iMod ("HΦ" with "Hfrag") as "HΦ". iMod "Hmask" as "_".
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. }
+      iModIntro. wp_auto. iFrame.
+Qed.
+
+End elimination_stack_proof.
