@@ -390,7 +390,7 @@ Proof.
   iNext. iFrame "Hch".
   destruct s; try done.
   {
-    destruct (length buff <? cap)%Z eqn:Hlen; [|done].
+    destruct (decide (length buff < cap)%Z); [|done].
     iIntros "Hoc".
     unfold mpmc_producer.
     iMod (update_client γ.(mpmc_sent_name) n_prod sent0 sent

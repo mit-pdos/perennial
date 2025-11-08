@@ -185,7 +185,7 @@ Proof.
   iModIntro.
   iExists _. iFrame.
   destruct lr_state.
-  - destruct (length buff <? lrcap)%Z; [|done].
+  - destruct (decide (length buff < lrcap)%Z); [|done].
     iIntros "Hownl".
     iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
     { by rewrite iMsg_base_eq. }

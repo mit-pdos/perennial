@@ -245,7 +245,7 @@ Proof.
   iExists s. iFrame "Hch".
   iNamed "Hbar".
   destruct s; try done.
-  - destruct (length buff <? cap)%Z.
+  - destruct (decide (length buff < cap)%Z).
     + iNext. iIntros "Hoc".
       iMod "Hmask".
       iMod ("Hinv_close" with "[Hoc joinQ Hjoincount HsendNames_auth HworkerQ_wand Hbar HP Hprop Hfrag]") as "_".

@@ -205,7 +205,7 @@ Proof.
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext.
 
-    destruct (Z.ltb_spec (length buff) cap).
+    destruct (decide _).
     {
       iIntros "Hoc".
       iMod "Hmask" as "_".
