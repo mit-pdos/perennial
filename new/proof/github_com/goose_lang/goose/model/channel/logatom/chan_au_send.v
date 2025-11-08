@@ -266,7 +266,7 @@ Proof.
       iNamed "offer".
       iDestruct ((offer_bundle_lc_agree γ (Some (chan_au_base.Snd v)) P (Φ (# true))
         (Some (chan_au_base.Snd v1)) P0 Φ0)
-        with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+        with " [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       iMod ((saved_prop.saved_pred_update (K Φr0)) with "Hpred") as "[Hpred1 Hpred2]".
       iCombine "Hpred1 Hpred2" as "Hp".
       wp_call.
@@ -314,7 +314,7 @@ Proof.
       iDestruct ((offer_bundle_lc_agree γ (Some (chan_au_base.Snd v)) P (Φ (# true))
         (Some (chan_au_base.Snd v1))
         P0 Φ0)
-        with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+        with " [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
 
       wp_call.
       wp_apply (wp_lock_unlock

@@ -158,7 +158,7 @@ Proof.
       unfold chan_phys. iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
       iDestruct ((offer_bundle_lc_agree γ (Some Rcv)  P True (Some Rcv)  P0 True
-                 ) with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+                 ) with " [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       iMod ((saved_prop.saved_pred_update_halves (K Φr0)
             ) with "Hpred2 Hpred") as "[Hpred1 Hpred2]".
       iCombine "Hpred1 Hpred2" as "Hp".
@@ -203,7 +203,7 @@ Proof.
       rewrite dfrac_op_own Qp.half_half.
       iDestruct ((offer_bundle_lc_agree γ (Some Rcv)  P True (Some Rcv)
                     P0 True
-                 ) with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+                 ) with " [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
 
       wp_call.
       wp_apply (wp_lock_unlock

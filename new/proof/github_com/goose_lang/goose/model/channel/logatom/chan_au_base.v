@@ -274,7 +274,7 @@ Qed.
 
 Lemma offer_bundle_lc_agree γ
   lock1 parked1 cont1 lock2 parked2 cont2 :
-  £ 1 -∗ £ 1 -∗
+  £ 1 -∗
   saved_offer γ (1/2) lock1 parked1 cont1 -∗
   saved_offer γ (1/2) lock2 parked2 cont2 -∗
   |={⊤}=> ⌜lock1 = lock2⌝ ∗
@@ -282,35 +282,35 @@ Lemma offer_bundle_lc_agree γ
          offer_bundle_empty γ.
 Proof.
   iIntros "Hlc1".
-  iIntros "Hlc2".
   iIntros "[Hl1 [Hp1 Hc1]]".
   iIntros "[Hl2 [Hp2 Hc2]]".
-   iDestruct (ghost_var_agree with "[$Hl1] [$Hl2]") as %->.
+  iDestruct (ghost_var_agree with "[$Hl1] [$Hl2]") as %->.
   iDestruct (saved_prop_agree with "[$Hp1] [$Hp2]") as "#Hp_eq".
   iDestruct (saved_prop_agree with "[$Hc1] [$Hc2]") as "#Hc_eq".
 
-  iMod (lc_fupd_elim_later with "Hlc1 Hp_eq") as "Hp_eq1".
-  iMod (lc_fupd_elim_later with "Hlc2 Hc_eq") as "Hc_eq1".
+  iCombine "Hp_eq Hc_eq" as "Heq".
+  iClear "Hp_eq Hc_eq".
+  iMod (lc_fupd_elim_later with "Hlc1 Heq") as "[Hp_eq Hc_eq]".
   unfold offer_bundle_empty. unfold offer_bundle_full.
   iFrame.
   iSplitR; first done.  (* ⌜lock2 = lock2⌝ is trivial *)
 
-(* Combine and update ghost variable *)
-iCombine "Hl1 Hl2" as "Hlock".
-iMod ((ghost_var_update None) with "Hlock") as "Hlock".
+  (* Combine and update ghost variable *)
+  iCombine "Hl1 Hl2" as "Hlock".
+  iMod ((ghost_var_update None) with "Hlock") as "Hlock".
 
-(* Update saved propositions using halves lemmas *)
-iMod (saved_prop_update_halves True with "Hp1 Hp2") as "[Hp1 Hp2]".
-iMod (saved_prop_update_halves True with "Hc1 Hc2") as "[Hc1 Hc2]".
+  (* Update saved propositions using halves lemmas *)
+  iMod (saved_prop_update_halves True with "Hp1 Hp2") as "[Hp1 Hp2]".
+  iMod (saved_prop_update_halves True with "Hc1 Hc2") as "[Hc1 Hc2]".
 
-(* Combine the updated halves to get full ownership *)
-iCombine "Hp1 Hp2" as "Hparked".
-iCombine "Hc1 Hc2" as "Hcont".
+  (* Combine the updated halves to get full ownership *)
+  iCombine "Hp1 Hp2" as "Hparked".
+  iCombine "Hc1 Hc2" as "Hcont".
 
-(* Simplify the combined fractions *)
-rewrite dfrac_op_own Qp.half_half.
+  (* Simplify the combined fractions *)
+  rewrite dfrac_op_own Qp.half_half.
 
-iFrame.
+  iFrame.
   auto.
 Qed.
 
@@ -395,7 +395,6 @@ Proof.
   by iApply (ghost_var_agree with "Hchanrepfrag Hoc"). 
 Qed.
 
-(* Needs [chan_cap_valid s'' cap] as precondition? *)
 Lemma own_channel_halves_update ch cap s s' s'' γ :
   chan_cap_valid s'' cap →
   own_channel ch cap s γ -∗ own_channel ch cap s' γ ==∗
@@ -407,7 +406,7 @@ Proof.
   auto.
 Qed.
 
-(** Type alias for convenience: converts postcondition to predicate format *)
+(** uncurry *)
 Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
   λ '(v,b), Φ v b.
 
