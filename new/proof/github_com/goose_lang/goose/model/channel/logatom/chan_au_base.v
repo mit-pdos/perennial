@@ -76,24 +76,24 @@ Record chan_names := {
 }.
 
 (** Type class for ghost state associated with channels *)
-Class chanGhostStateG Σ V := ChanGhostStateG {
+Class chanG Σ V := ChanG {
   offerG :: ghost_varG Σ (chan_rep.t V);
   offer_lockG :: ghost_varG Σ (option (offer_lock V));
   offer_parked_propG :: savedPropG Σ;
   offer_parked_predG :: savedPredG Σ (V * bool);
 }.
 
-Definition chanGhostStateΣ V : gFunctors :=
+Definition chanΣ V : gFunctors :=
   #[ ghost_varΣ (chan_rep.t V); ghost_varΣ (option (offer_lock V));
      savedPropΣ; savedPredΣ  (V * bool) ].
 
-#[global] Instance subG_chanGhostStateG Σ V :
-  subG (chanGhostStateΣ V) Σ → chanGhostStateG Σ V.
+#[global] Instance subG_chanG Σ V :
+  subG (chanΣ V) Σ → chanG Σ V.
 Proof. solve_inG. Qed.
 
 Section base.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 
@@ -274,7 +274,7 @@ Qed.
 
 Lemma offer_bundle_lc_agree γ
   lock1 parked1 cont1 lock2 parked2 cont2 :
-  £ 1 -∗ £ 1 -∗
+  £ 1 -∗
   saved_offer γ (1/2) lock1 parked1 cont1 -∗
   saved_offer γ (1/2) lock2 parked2 cont2 -∗
   |={⊤}=> ⌜lock1 = lock2⌝ ∗
@@ -282,35 +282,35 @@ Lemma offer_bundle_lc_agree γ
          offer_bundle_empty γ.
 Proof.
   iIntros "Hlc1".
-  iIntros "Hlc2".
   iIntros "[Hl1 [Hp1 Hc1]]".
   iIntros "[Hl2 [Hp2 Hc2]]".
-   iDestruct (ghost_var_agree with "[$Hl1] [$Hl2]") as %->.
+  iDestruct (ghost_var_agree with "[$Hl1] [$Hl2]") as %->.
   iDestruct (saved_prop_agree with "[$Hp1] [$Hp2]") as "#Hp_eq".
   iDestruct (saved_prop_agree with "[$Hc1] [$Hc2]") as "#Hc_eq".
 
-  iMod (lc_fupd_elim_later with "Hlc1 Hp_eq") as "Hp_eq1".
-  iMod (lc_fupd_elim_later with "Hlc2 Hc_eq") as "Hc_eq1".
+  iCombine "Hp_eq Hc_eq" as "Heq".
+  iClear "Hp_eq Hc_eq".
+  iMod (lc_fupd_elim_later with "Hlc1 Heq") as "[Hp_eq Hc_eq]".
   unfold offer_bundle_empty. unfold offer_bundle_full.
   iFrame.
   iSplitR; first done.  (* ⌜lock2 = lock2⌝ is trivial *)
 
-(* Combine and update ghost variable *)
-iCombine "Hl1 Hl2" as "Hlock".
-iMod ((ghost_var_update None) with "Hlock") as "Hlock".
+  (* Combine and update ghost variable *)
+  iCombine "Hl1 Hl2" as "Hlock".
+  iMod ((ghost_var_update None) with "Hlock") as "Hlock".
 
-(* Update saved propositions using halves lemmas *)
-iMod (saved_prop_update_halves True with "Hp1 Hp2") as "[Hp1 Hp2]".
-iMod (saved_prop_update_halves True with "Hc1 Hc2") as "[Hc1 Hc2]".
+  (* Update saved propositions using halves lemmas *)
+  iMod (saved_prop_update_halves True with "Hp1 Hp2") as "[Hp1 Hp2]".
+  iMod (saved_prop_update_halves True with "Hc1 Hc2") as "[Hc1 Hc2]".
 
-(* Combine the updated halves to get full ownership *)
-iCombine "Hp1 Hp2" as "Hparked".
-iCombine "Hc1 Hc2" as "Hcont".
+  (* Combine the updated halves to get full ownership *)
+  iCombine "Hp1 Hp2" as "Hparked".
+  iCombine "Hc1 Hc2" as "Hcont".
 
-(* Simplify the combined fractions *)
-rewrite dfrac_op_own Qp.half_half.
+  (* Simplify the combined fractions *)
+  rewrite dfrac_op_own Qp.half_half.
 
-iFrame.
+  iFrame.
   auto.
 Qed.
 
@@ -407,9 +407,12 @@ Proof.
   auto.
 Qed.
 
-(** Type alias for convenience: converts postcondition to predicate format *)
+(** uncurry *)
 Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
   λ '(v,b), Φ v b.
+
+(* TODO: rename this; no need to save characters by writing just constants in
+   `rcv` (we would've done snd otherwise) *)
 
 (** Inner atomic update for receive completion (second phase of handshake) *)
 Definition rcv_au_inner ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
@@ -464,6 +467,17 @@ Definition rcv_au_fast ch cap γ (Φ : V → bool → iProp Σ) Φnotready : iPr
     | _ => (own_channel ch cap s γ ={∅,⊤}=∗ Φnotready)
     end).
 
+(* FIXME: not true anymore. *)
+Lemma blocking_rcv_implies_nonblocking ch cap γ (Φ : V → bool → iProp Σ) :
+  rcv_au_slow ch cap γ Φ -∗
+  rcv_au_fast ch cap γ Φ True.
+Proof.
+  iIntros "Hau".
+  iMod "Hau" as (s) "[Hoc Hcont]".
+  iModIntro. iExists s. iFrame "Hoc".
+  destruct s; try done.
+Qed.
+
 (** Inner atomic update for send completion (second phase of handshake) *)
 Definition send_au_inner ch (cap: Z) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
@@ -495,7 +509,7 @@ Definition send_au_slow ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : i
     | chan_rep.Closed draining => False
     (* Case: Buffered channel with space available *)
     | chan_rep.Buffered buff =>
-        if (decide (length buff < cap))
+        if decide (length buff < cap)
         then (own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
         else True
     | _ => True
@@ -520,6 +534,16 @@ Definition send_au_fast ch cap (v : V) γ Φ Φnotready : iProp Σ :=
     | _ => (own_channel ch cap s γ ={∅,⊤}=∗ Φnotready)
     end).
 
+(* FIXME: not true anymore. *)
+Lemma blocking_send_implies_nonblocking ch cap v γ (Φ : iProp Σ) :
+  send_au_slow ch cap v γ Φ -∗
+  send_au_fast ch cap v γ Φ True.
+Proof.
+  iIntros "Hchan".
+  iMod "Hchan" as (s) "[Hoc Hcont]".
+  iModIntro. iExists s. iFrame "Hoc".
+  destruct s; try done.
+Qed.
 
 Definition close_au ch (cap: Z) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
@@ -581,7 +605,7 @@ Definition chan_logical (ch: loc) (cap: Z) (γ : chan_names) (s : chan_phys_stat
 
   | Closed [] =>
           own_channel ch cap (chan_rep.Closed []) γ ∗
-           "Hoffer" ∷ if decide (cap = 0) then offer_bundle_empty γ else True
+          "Hoffer" ∷ if decide (cap = 0) then offer_bundle_empty γ else True
 
   | Closed draining =>
           own_channel ch cap (chan_rep.Closed draining) γ
@@ -597,6 +621,7 @@ Definition chan_inv_inner (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=
     "phys" ∷ chan_phys ch s ∗
     "offer" ∷ chan_logical ch cap γ s.
 
+(* FIXME: is_channel should take [t] explicitly. *)
 (** The public predicate that clients use to interact with channels.
     This is persistent and provides access to the channel's capabilities. *)
 Definition is_channel (ch: loc) (cap: Z) (γ: chan_names) : iProp Σ :=

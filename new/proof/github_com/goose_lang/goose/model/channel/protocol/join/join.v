@@ -1,15 +1,9 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import auth_set.
+From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
 From New.golang.theory Require Import chan.
+From Perennial.algebra Require Import auth_set.
 From iris.base_logic Require Import ghost_map.
 From iris.base_logic.lib Require Import saved_prop.
-From iris.algebra Require Import excl.
-
-Section proof.
-  Context `{hG: heapGS Σ} `{!ffi_semantics _ _}.
-  Context {go_ctx: GoContext}.
-End proof.
 
 Module join.
 
@@ -21,25 +15,12 @@ Record join_names :=
     join_counter_name: gname;
   }.
 
-Class joinG Σ := JoinG {
-    join_saved_propG :: savedPropG Σ;
-    join_auth_setG :: auth_setG Σ gname;
-    join_counterG :: ghost_varG Σ nat;
-  }.
-
-Definition joinΣ: gFunctors :=
-  #[ savedPropΣ; auth_setΣ gname; ghost_varΣ nat].
-
-#[global] Instance subG_joinG Σ : subG joinΣ Σ → joinG Σ.
-Proof. solve_inG. Qed.
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chan_protocolG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!joinG Σ}.
 
 Definition join (γ: join_names) (count:nat) (Q: iProp Σ): iProp Σ :=
   ghost_var γ.(join_counter_name) (1/2) count ∗
@@ -264,7 +245,7 @@ Proof.
   iExists s. iFrame "Hch".
   iNamed "Hbar".
   destruct s; try done.
-  - destruct (length buff <? cap)%Z.
+  - destruct (decide (length buff < cap)%Z).
     + iNext. iIntros "Hoc".
       iMod "Hmask".
       iMod ("Hinv_close" with "[Hoc joinQ Hjoincount HsendNames_auth HworkerQ_wand Hbar HP Hprop Hfrag]") as "_".

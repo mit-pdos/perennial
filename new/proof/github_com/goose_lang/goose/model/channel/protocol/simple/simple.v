@@ -12,7 +12,7 @@ From New.golang.theory Require Import chan.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 
@@ -205,7 +205,7 @@ Proof.
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext.
 
-    destruct (Z.ltb_spec (length buff) cap).
+    destruct (decide _).
     {
       iIntros "Hoc".
       iMod "Hmask" as "_".

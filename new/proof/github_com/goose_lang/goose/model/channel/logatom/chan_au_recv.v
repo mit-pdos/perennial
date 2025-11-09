@@ -8,7 +8,7 @@ From New.generatedproof.github_com.goose_lang.goose Require Import model.channel
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -152,7 +152,7 @@ Proof.
     {
       unfold chan_phys. iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
-      iDestruct (offer_bundle_lc_agree with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+      iDestruct (offer_bundle_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       iMod ((saved_prop.saved_pred_update_halves (K Φr0)
             ) with "Hpred2 Hpred") as "[Hpred1 Hpred2]".
       iCombine "Hpred1 Hpred2" as "Hp".
@@ -193,8 +193,7 @@ Proof.
                   with "[$Hpred2] [$Hpred]") as "#Hagree".
       iCombine "Hpred2 Hpred" as "offer".
       rewrite dfrac_op_own Qp.half_half.
-      iDestruct (offer_bundle_lc_agree with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
-
+      iDestruct (offer_bundle_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       wp_call.
       wp_apply (wp_lock_unlock
                  with "[$lock state v slice slice_cap buffer H1   Hgv2 offer   $Hlock]").

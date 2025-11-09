@@ -8,7 +8,7 @@ From New.generatedproof.github_com.goose_lang.goose Require Import model.channel
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -211,7 +211,7 @@ Proof.
       iDestruct (own_channel_halves_update (chan_rep.Buffered (buff ++ [v]))
         with "[$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
       { done. }
-      destruct (decide (length buff < cap)) eqn: Heq.
+      destruct (decide (length buff < cap)).
       {
         iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
         wp_call.
@@ -263,7 +263,7 @@ Proof.
 
     + unfold chan_phys. iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
-      iDestruct (offer_bundle_lc_agree with " [$] [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+      iDestruct (offer_bundle_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       iMod (saved_prop.saved_pred_update (K Φr0) with "Hpred") as "[Hpred1 Hpred2]".
       iCombine "Hpred1 Hpred2" as "Hp".
       wp_call.
@@ -306,9 +306,8 @@ Proof.
       { done. }
       iMod ("Hcontinner" with "Hgv1") as "Hcont".
       iModIntro.
-      iDestruct (offer_bundle_lc_agree with " [$] [$] [$offer2] [$Hoffer]") as
+      iDestruct (offer_bundle_lc_agree with "[$] [$offer2] [$Hoffer]") as
         ">(%Heq & Hpeq & H & H1)".
-
       wp_call.
       wp_apply (wp_lock_unlock
         with "[$lock state v slice slice_cap buffer Hpred Hgv2 Hpeq H1 $Hlock]").
@@ -473,13 +472,6 @@ Proof.
       { unfold chan_inv_inner. iExists (Buffered buff). iFrame. }
       done.
   - (* Idle *)
-  }
-      }
-      {
-        replace (sint.Z slice_val.(slice.len_f)) with (sint.Z (length buff)) in * by word.
-        word.
-      }
-    }
     {
       wp_call.
       iApply fupd_wp. iMod "HΦ" as "HΦ".

@@ -1,7 +1,7 @@
 From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import chan_au_base simple.
+  Require Import protocol.base chan_au_base simple.
 From New.proof Require Import sync strings time tok_set.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 
@@ -9,7 +9,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
-Context `{!chanGhostStateG Σ slice.t}.
+Context `{!chan_protocolG Σ slice.t}.
 Context `{!waitgroup_joinG Σ}.
 
 #[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
@@ -113,7 +113,7 @@ Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
   }}}
     @! chan_spec_raw_examples.SearchReplace #s #x #y
   {{{ RET #(); s ↦* (search_replace x y xs) }}}.
-Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
+Proof using chan_protocolG0 waitgroup_joinG0 syncG0.
   (* The first overflow:
      implementation adds 1000 at a time, potentially surpassing the slice length
      before clamping. If it goes negative, then the clamping doesn't work. This
@@ -210,6 +210,6 @@ Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
   subst nextOffset. word.
 Qed.
 
-Print Assumptions wp_SearchReplace.
+(* Print Assumptions wp_SearchReplace. *)
 
 End proof.

@@ -18,7 +18,7 @@ From iris.base_logic.lib Require Export token.
     - Channel closure is protocol-aware - only allowed when protocol permits
 *)
 
-(* Include [chanGhostStateG Σ V] etc. here or not? *)
+(* Include [chanG Σ V] etc. here or not? *)
 Class dspG Σ V := {
   chanG_tokenG :: tokenG Σ;
   chanG_protoG :: protoG Σ V;
@@ -40,7 +40,7 @@ Definition flip_dsp_names (γdsp_names : dsp_names) : dsp_names :=
 
 Section dsp.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
+Context `{!chanG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!dspG Σ V}.
 
@@ -185,7 +185,7 @@ Proof.
   iModIntro.
   iExists _. iFrame.
   destruct lr_state.
-  - destruct (length buff <? lrcap)%Z; [|done].
+  - destruct (decide (length buff < lrcap)%Z); [|done].
     iIntros "Hownl".
     iDestruct (iProto_send _ _ _ _ _ v p with "Hctx Hp []") as "Hp".
     { by rewrite iMsg_base_eq. }
