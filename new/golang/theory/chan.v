@@ -29,7 +29,7 @@ Lemma wp_make (cap: Z) {B: BoundedTypeSize t} :
     chan.make #t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_channel ch γ ∗
-      chan_cap γ cap ∗
+      ⌜chan_cap γ = cap⌝ ∗
       own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
@@ -79,13 +79,11 @@ Qed.
 Lemma wp_cap (ch: loc) (γ: chan_names) :
   {{{ is_channel ch γ }}}
     chan.cap #t #ch
-  {{{ (cap: Z), RET #(W64 cap); chan_cap γ cap }}}.
+  {{{ RET #(W64 (chan_cap γ)); True }}}.
 Proof.
   wp_start as "#Hch".
   wp_call.
-  iDestruct (is_channel_get_cap with "Hch") as (cap) "Hcap".
   wp_apply (wp_Cap with "[$Hch]").
-  { iFrame "#". }
   by iApply "HΦ".
 Qed.
 

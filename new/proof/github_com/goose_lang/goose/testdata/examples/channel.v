@@ -234,15 +234,15 @@ Proof. destruct k; simpl; reflexivity. Qed.
 
 Open Scope Z_scope.
 
-Lemma wp_fibonacci (n: nat) (c_ptr: loc) γ:
-  0 < n < 2^63 ->
+Lemma wp_fibonacci (n: w64) (c_ptr: loc) γ:
+  0 < sint.Z n < 2^63 →
   {{{ is_pkg_init chan_spec_raw_examples ∗
 
       is_spsc γ c_ptr (λ i v, ⌜v = fib (Z.to_nat i)⌝)
-                  (λ sent, ⌜sent = fib_list  n⌝) ∗
+                  (λ sent, ⌜sent = fib_list  (sint.nat n)⌝) ∗
       spsc_producer γ []
   }}}
-    @! chan_spec_raw_examples.fibonacci #(W64 n) #c_ptr
+    @! chan_spec_raw_examples.fibonacci #n #c_ptr
   {{{ RET #(); True }}}.
 Proof.
   intros Hn.
@@ -260,7 +260,7 @@ Proof.
            "c"     ∷ c_ptr ↦ c_ptr0 ∗
            "%Hil"  ∷ ⌜i = length sent⌝ ∗
            "%Hsl"  ∷ ⌜sent = fib_list i⌝ ∗
-           "%Hi"   ∷ ⌜0 ≤ i ≤ n⌝)%I
+           "%Hi"   ∷ ⌜0 ≤ i ≤ sint.Z n⌝)%I
   with "[x y i c Hprod]" as "IH".
 {
   iFrame.
@@ -279,7 +279,7 @@ Proof.
 
      wp_apply (wp_spsc_send (V:=w64) (t:=intT) γ c_ptr0
              (λ (i : Z) (v : w64), ⌜v = fib (Z.to_nat i)⌝%I)
-              (λ sent0 : list w64, ⌜sent0 = fib_list n⌝%I) sent
+              (λ sent0 : list w64, ⌜sent0 = fib_list (sint.nat n)⌝%I) sent
 
               with "[ Hspsc Hprod]").
      { iFrame "#".  iFrame.  simpl.
@@ -347,17 +347,12 @@ Proof.
     {
     wp_apply (wp_spsc_close (V:=w64) (t:=intT) γ c_ptr0
              (λ (i : Z) (v : w64), ⌜v = fib (Z.to_nat i)⌝%I)
-              (λ sent0 : list w64, ⌜sent0 = fib_list n⌝%I) sent
+              (λ sent0 : list w64, ⌜sent0 = fib_list (sint.nat n)⌝%I) sent
 
               with "[ $Hspsc $Hprod]").
     { iFrame "#".   iPureIntro. rewrite Hsl.
-      assert ((length sent) = n).
+      assert ((length sent) = sint.nat n).
       {
-       assert  (sint.Z (W64 n) ≤  sint.Z (W64 (length sent))) by word.
-       assert   ((sint.Z (W64 (length sent))) ≤ (sint.Z (W64 n))).
-       {
-          word.
-       }
        assert (length sent < 2^64). { lia. }
 
        word.
@@ -384,7 +379,7 @@ Lemma wp_fib_consumer:
 Proof using chan_protocolG0.
   wp_start. wp_auto.
   wp_apply (chan.wp_make); first done.
-  iIntros (c γ) "(#Hchan & #Hcap & Hown)".
+  iIntros (c γ) "(#Hchan & %Hcap_eq & Hown)".
   wp_auto.
   simpl.
    iMod (start_spsc c (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
@@ -397,17 +392,16 @@ Proof using chan_protocolG0.
      iFrame.
      }
   wp_apply (chan.wp_cap with "[$Hchan]").
-  iIntros (cap) "#Hcap2".
-  iCombine "Hcap Hcap2" gives %<-.
-  wp_auto.
   wp_apply (wp_fork with "[Hprod]").
    {
 
-   wp_apply ((wp_fibonacci 10 c γspsc) with "[$Hprod]").
+   wp_apply ((wp_fibonacci) with "[$Hprod]").
    {
-     done.
+     word.
    }
    {
+     iFrame "#".
+     replace (sint.nat (W64 (γ.(chan_cap)))) with 10%nat by word.
      iFrame "#".
    }
    done.

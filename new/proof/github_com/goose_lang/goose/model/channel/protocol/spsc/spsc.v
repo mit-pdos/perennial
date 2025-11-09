@@ -494,7 +494,6 @@ Proof.
 
     (* Case analysis on current state *)
     unfold chan_cap_valid in Hcapvalid.
-    subst cap.
     destruct s; try done.
     {
       (* RcvCommit case - complete handshake *)

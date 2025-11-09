@@ -76,7 +76,8 @@ Record chan_names := {
   offer_parked_prop_name : gname;        (* The saved prop that we can leave with the channel to support select *)
   offer_parked_pred_name : gname;        (* The saved continuation for receive, which is a predicate on v, ok *)
   offer_continuation_name : gname;       (* The continuation for send *)
-  cap_name : gname;                      (* capacity ghost var *)
+  chan_cap : Z;                          (* The channel capacity *)
+  chan_cap_bound : 0 ≤ chan_cap < 2^63;
 }.
 
 (** Type class for ghost state associated with channels *)
@@ -85,12 +86,11 @@ Class chanG Σ V := ChanG {
   offer_lockG :: ghost_varG Σ (option (offer_lock V));
   offer_parked_propG :: savedPropG Σ;
   offer_parked_predG :: savedPredG Σ (V * bool);
-  chan_ghost_ZG :: ghost_varG Σ Z;
 }.
 
 Definition chanΣ V : gFunctors :=
   #[ ghost_varΣ (chan_rep.t V); ghost_varΣ (option (offer_lock V));
-     savedPropΣ; savedPredΣ  (V * bool); ghost_varΣ Z ].
+     savedPropΣ; savedPredΣ  (V * bool) ].
 
 #[global] Instance subG_chanG Σ V :
   subG (chanΣ V) Σ → chanG Σ V.
@@ -375,45 +375,12 @@ Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
 
 (** ** Channel Ownership Predicate *)
 
-Definition chan_cap (γ: chan_names) (cap: Z): iProp _ :=
-  "Hvar" ∷ ghost_var (cap_name γ) (DfracDiscarded) cap ∗
-  "Hvalid" ∷ ⌜0 ≤ cap < 2^63⌝.
-
-#[global] Instance chan_cap_pers γ cap : Persistent (chan_cap γ cap).
-Proof. apply _. Qed.
-
-Lemma chan_cap_agree γ cap1 cap2 :
-  chan_cap γ cap1 -∗ chan_cap γ cap2 -∗ ⌜cap1 = cap2⌝.
-Proof.
-  rewrite /chan_cap.
-  iIntros "[H1 _] [H2 _]".
-  iCombine "H1 H2" gives %[_ Heq].
-  done.
-Qed.
-
-#[global] Instance chan_cap_combine_gives γ cap1 cap2 :
-  CombineSepGives (chan_cap γ cap1) (chan_cap γ cap2)
-                  ⌜cap1 = cap2⌝.
-Proof.
-  rewrite /CombineSepGives. iIntros "[H1 H2]".
-  iDestruct (chan_cap_agree with "H1 H2") as %Heq.
-  iIntros "!>".
-  done.
-Qed.
-
-Lemma chan_cap_to_bound γ cap :
-  chan_cap γ cap -∗ ⌜0 ≤ cap < 2^63⌝.
-Proof.
-  rewrite /chan_cap.
-  iIntros "[? %]". done.
-Qed.
+(* chan_cap is directly user accessible *)
 
 (** Represents ownership of a channel with its logical state *)
 Definition own_channel (ch: loc) (s: chan_rep.t V) (γ: chan_names) : iProp Σ :=
-  ∃ cap,
-  "#Hcap" ∷ chan_cap γ cap ∗
   "Hchanrepfrag" ∷ chan_rep_half γ.(state_name) s ∗
-  "%Hcapvalid" ∷ ⌜chan_cap_valid s cap⌝.
+  "%Hcapvalid" ∷ ⌜chan_cap_valid s (chan_cap γ)⌝.
 
 Lemma own_channel_agree ch s s' γ :
    own_channel ch s γ -∗ own_channel ch s' γ -∗ ⌜s = s'⌝.
@@ -424,42 +391,34 @@ Proof.
   by iApply (ghost_var_agree with "Hchanrepfrag1 Hchanrepfrag2").
 Qed.
 
-Lemma own_channel_halves_update ch cap s s' s'' γ :
-  chan_cap γ cap ∗ ⌜chan_cap_valid s'' cap⌝ -∗
+Lemma own_channel_halves_update ch s s' s'' γ :
+  chan_cap_valid s'' (chan_cap γ) →
   own_channel ch s γ -∗ own_channel ch s' γ ==∗
   own_channel ch s'' γ ∗ own_channel ch s'' γ.
 Proof.
-  iIntros "[#Hcap0 %Hvalid]".
-  iIntros "(%cap1 & #Hcap1 & Hv1 & %) (%cap2 & #Hcap2 & Hv2 & %)". rewrite /named.
-  iDestruct (chan_cap_agree with "Hcap0 Hcap1") as %Heq; subst.
-  iDestruct (chan_cap_agree with "Hcap0 Hcap2") as %Heq; subst.
+  intros Hvalid.
+  iIntros "(Hv1 & %) (Hv2 & %)". rewrite /named.
   iMod (chan_rep_halves_update with "Hv1 Hv2") as "[$ $]".
   iFrame "#∗".
   iPureIntro.
   auto.
 Qed.
 
-Lemma own_channel_buffer_size ch γ cap buf :
-  chan_cap γ cap -∗
+Lemma own_channel_buffer_size ch γ buf :
   own_channel ch (chan_rep.Buffered buf) γ -∗
-  ⌜Z.of_nat (length buf) ≤ cap⌝.
+  ⌜Z.of_nat (length buf) ≤ chan_cap γ⌝.
 Proof.
-  iIntros "Hcap0".
   iNamed 1.
-  iDestruct (chan_cap_agree with "Hcap Hcap0") as %Heq; subst.
   simpl in Hcapvalid.
   iPureIntro. lia.
 Qed.
 
-Lemma own_channel_drain_size ch γ cap draining :
-  chan_cap γ cap -∗
+Lemma own_channel_drain_size ch γ draining :
   own_channel ch (chan_rep.Closed draining) γ -∗
-  ⌜Z.of_nat (length draining) ≤ cap⌝.
+  ⌜Z.of_nat (length draining) ≤ chan_cap γ⌝.
 Proof.
-  iIntros "Hcap0".
   iNamed 1.
-  iDestruct (chan_cap_agree with "Hcap Hcap0") as %Heq; subst.
-  iDestruct (chan_cap_to_bound with "Hcap") as %Hbound.
+  pose proof (chan_cap_bound γ).
   simpl in Hcapvalid.
   destruct draining.
   { simpl. iPureIntro; lia. }
@@ -662,7 +621,7 @@ Definition chan_logical (ch: loc) (γ : chan_names) (s : chan_phys_state V): iPr
 
   | Closed [] =>
           own_channel ch (chan_rep.Closed []) γ ∗
-           "Hoffer" ∷ (chan_cap γ 0 -∗ offer_bundle_empty γ)
+           "Hoffer" ∷ (⌜chan_cap γ = 0⌝ -∗ offer_bundle_empty γ)
 
   | Closed draining =>
           own_channel ch (chan_rep.Closed draining) γ
@@ -682,9 +641,8 @@ Definition chan_inv_inner (ch: loc) (γ: chan_names) : iProp Σ :=
 (** The public predicate that clients use to interact with channels.
     This is persistent and provides access to the channel's capabilities. *)
 Definition is_channel (ch: loc) (γ: chan_names) : iProp Σ :=
-  ∃ (mu_loc: loc) (cap: Z),
-    "#His_cap" ∷ chan_cap γ cap ∗
-    "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 cap) ∗
+  ∃ (mu_loc: loc),
+    "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 (chan_cap γ)) ∗
     "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "mu"]□ mu_loc ∗
     "#lock" ∷ is_lock mu_loc (chan_inv_inner ch γ).
 
@@ -693,12 +651,6 @@ Proof. apply _. Qed.
 
 Global Instance own_channel_timeless ch s γ : Timeless (own_channel ch s γ).
 Proof. apply _. Qed.
-
-Lemma is_channel_get_cap ch γ :
-  is_channel ch γ -∗ ∃ cap, chan_cap γ cap.
-Proof.
-  iNamed 1. eauto.
-Qed.
 
 Lemma is_channel_not_null ch γ:
   is_channel ch γ -∗ ⌜ch ≠ null⌝.
