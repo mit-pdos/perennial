@@ -1,6 +1,7 @@
 Require Import New.proof.proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From Perennial.algebra Require Import ghost_var.
 
 (** * Single Producer Single Consumer (SPSC) Channel Verification
 
@@ -71,11 +72,10 @@ Definition inflight (s : chan_rep.t V) : list V :=
 *)
 Definition is_spsc (γ:spsc_names) (ch:loc) 
                    (P: Z -> V → iProp Σ) (R: list V → iProp Σ) : iProp Σ :=
-  ∃ (cap:Z),
-    is_channel ch cap γ.(chan_name) ∗
+    is_channel ch γ.(chan_name) ∗
     inv nroot (
       ∃ s sent recv,
-        "Hch"    ∷ own_channel ch cap s γ.(chan_name) ∗
+        "Hch"    ∷ own_channel ch s γ.(chan_name) ∗
         "HsentI" ∷ ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent ∗
         "HrecvI" ∷ ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) recv ∗
         "%Hrel"  ∷ ⌜sent = recv ++ inflight s⌝ ∗
@@ -100,10 +100,9 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
 (** ** Initialization *)
 
 (** Create an SPSC channel from a basic channel *)
-Lemma start_spsc ch cap (P : Z -> V → iProp Σ) (R : list V → iProp Σ) γ:
-  is_channel ch cap γ -∗
-   (if (cap =? 0) then
-  (own_channel ch cap chan_rep.Idle γ) else (own_channel ch cap (chan_rep.Buffered []) γ)) ={⊤}=∗
+Lemma start_spsc ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ) γ:
+  is_channel ch γ -∗
+  (own_channel ch chan_rep.Idle γ) ∨ (own_channel ch (chan_rep.Buffered []) γ) ={⊤}=∗
   (∃ γspsc, is_spsc γspsc ch P R ∗  spsc_producer γspsc []  ∗  spsc_consumer γspsc []) .
 Proof.
   iIntros "#Hch Hoc".
@@ -119,8 +118,9 @@ Proof.
   (* Allocate the invariant *)
   iMod (inv_alloc nroot _ with "[Hoc HsentA HrecvA]") as "$".
   {
+    iDestruct "Hoc" as "[Hoc|Hoc]".
     (* Prove the invariant holds initially *)
-  destruct cap. {
+  {
     simpl.
     iNext. iExists chan_rep.Idle, [], []. iFrame.
     iPureIntro. simpl. done.
@@ -130,9 +130,6 @@ Proof.
        simpl.
        iFrame.
     iPureIntro. simpl. done.
-    }
-    {
-     iNext.  iFrame. simpl. iPureIntro. done.
     }
   }
 
@@ -159,7 +156,7 @@ Proof.
   iDestruct "Hspsc" as "[Hchan Hinv]".
 
   (* Use wp_Receive with our atomic update *)
-  wp_apply (chan.wp_receive ch cap γ.(chan_name) with "[$Hchan]").
+  wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
 
   (* Open the SPSC invariant to provide the atomic update *)
@@ -419,7 +416,7 @@ Proof.
   iDestruct "Hspsc" as "[Hchan Hinv]".
   
   (* Use wp_Send with our atomic update *)
-  wp_apply (chan.wp_send ch cap v γ.(chan_name) with "[$Hchan]").
+  wp_apply (chan.wp_send ch v γ.(chan_name) with "[$Hchan]").
   iIntros "Hlc4".
   iDestruct "Hlc4" as "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
@@ -441,7 +438,6 @@ Proof.
   destruct s; try done.
   
   { (* Case: Buffered channel *)
-    destruct (decide _); [|done].
     iIntros "Hoc".
     
     (* Update sent history *)
@@ -472,9 +468,9 @@ Proof.
 
     iMod "Hmask".
     iNamed "Hoc".
-    iAssert (own_channel ch cap (chan_rep.SndPending v) γ.(chan_name))%I
+    iAssert (own_channel ch (chan_rep.SndPending v) γ.(chan_name))%I
       with "[Hchanrepfrag]" as "Hoc".
-    { iFrame. iPureIntro. unfold chan_cap_valid. done. }
+    { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
 
     (* Close invariant with SndPending state *)
     iMod ("Hinv_close" with "[Hoc HsentI_new HrecvI HP]") as "_".
@@ -591,7 +587,7 @@ Proof.
   iIntros (Φ) "( #Hspsc & Hprod & HP) Hcont".
   unfold is_spsc. iNamed "Hspsc".
   iDestruct "Hspsc" as "[Hchan Hinv]".
-  iApply (chan.wp_close ch cap γ.(chan_name) with "[$Hchan]").
+  iApply (chan.wp_close ch γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".

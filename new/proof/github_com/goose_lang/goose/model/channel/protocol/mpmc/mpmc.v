@@ -199,11 +199,10 @@ Definition inflight_mset (s : chan_rep.t V) : gmultiset V :=
 
 Definition is_mpmc (γ:mpmc_names) (ch:loc) (n_prod n_cons:nat)
                    (P: V → iProp Σ) (R: gmultiset V → iProp Σ) : iProp Σ :=
-  ∃ (cap:Z),
-    is_channel ch cap γ.(mpmc_chan_name) ∗
+    is_channel ch γ.(mpmc_chan_name) ∗
     inv nroot (
       ∃ s sent recv,
-        "Hch" ∷ own_channel ch cap s γ.(mpmc_chan_name) ∗
+        "Hch" ∷ own_channel ch s γ.(mpmc_chan_name) ∗
         "HsentI" ∷ server γ.(mpmc_sent_name) n_prod sent ∗
         "HrecvI" ∷ server γ.(mpmc_recv_name) n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -238,7 +237,7 @@ Proof.
   apply gmultiset_local_update_alloc.
 Qed.
 
-Lemma start_mpmc ch (P : V → iProp Σ) (R : gmultiset V → iProp Σ) γ (n_prod n_cons : nat) cap s:
+Lemma start_mpmc ch (P : V → iProp Σ) (R : gmultiset V → iProp Σ) γ (n_prod n_cons : nat) s:
   match s with
   | chan_rep.Buffered [] => True
   | chan_rep.Idle => True
@@ -246,8 +245,8 @@ Lemma start_mpmc ch (P : V → iProp Σ) (R : gmultiset V → iProp Σ) γ (n_pr
   end ->
   n_prod > 0 ->
   n_cons > 0 ->
-  is_channel ch cap γ -∗
-  (own_channel ch cap s γ) ={⊤}=∗
+  is_channel ch γ -∗
+  (own_channel ch s γ) ={⊤}=∗
   (∃ γmpmc, is_mpmc γmpmc ch n_prod n_cons P R ∗
             ([∗ list] _ ∈ seq 0 n_prod, mpmc_producer γmpmc ∅) ∗
             ([∗ list] _ ∈ seq 0 n_cons, mpmc_consumer γmpmc ∅)).
@@ -266,7 +265,7 @@ Proof.
     destruct buff; try done.
     iMod (inv_alloc nroot _ (
       ∃ s sent recv,
-        "Hch" ∷ own_channel ch cap s γ ∗
+        "Hch" ∷ own_channel ch s γ ∗
         "HsentI" ∷ server γsent n_prod sent ∗
         "HrecvI" ∷ server γrecv n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -302,7 +301,7 @@ Proof.
       simpl. done.
     }
     iModIntro. iExists γmpmc.
-    unfold is_mpmc. iFrame. iSplitL "". { iExists cap. iFrame "#". }
+    unfold is_mpmc. iFrame. iSplitL "". { iFrame "#". }
     iSplitL "HsentFrags".
     - unfold mpmc_producer.
       assert (∅ = (ε : gmultiset V)) as Heq by reflexivity.
@@ -318,7 +317,7 @@ Proof.
   {
     iMod (inv_alloc nroot _ (
       ∃ s sent recv,
-        "Hch" ∷ own_channel ch cap s γ ∗
+        "Hch" ∷ own_channel ch s γ ∗
         "HsentI" ∷ server γsent n_prod sent ∗
         "HrecvI" ∷ server γrecv n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -354,7 +353,7 @@ Proof.
       iPureIntro. done.
     }
     iModIntro. iExists γmpmc.
-    unfold is_mpmc. iFrame. iSplitL "". { iExists cap. iFrame "#". }
+    unfold is_mpmc. iFrame. iSplitL "". { iFrame "#". }
     iSplitL "HsentFrags".
     - unfold mpmc_producer.
       assert (∅ = (ε : gmultiset V)) as Heq by reflexivity.
@@ -379,7 +378,7 @@ Lemma wp_mpmc_send γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset
 Proof.
   iIntros (Φ) "(#Hmpmc & Hprod & HP) Hcont".
   unfold is_mpmc. iNamed "Hmpmc". iDestruct "Hmpmc" as "[#Hchan Hinv]".
-  iApply (chan.wp_send ch cap v γ.(mpmc_chan_name) with "[$Hchan]").
+  iApply (chan.wp_send ch v γ.(mpmc_chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
@@ -390,7 +389,6 @@ Proof.
   iNext. iFrame "Hch".
   destruct s; try done.
   {
-    destruct (decide (length buff < cap)%Z); [|done].
     iIntros "Hoc".
     unfold mpmc_producer.
     iMod (update_client γ.(mpmc_sent_name) n_prod sent0 sent
@@ -426,9 +424,9 @@ Proof.
     { apply gmultiset_disj_union_local_update. }
     iMod "Hmask".
     iNamed "Hoc".
-    iAssert (own_channel ch cap (chan_rep.SndPending v) γ.(mpmc_chan_name))%I
+    iAssert (own_channel ch (chan_rep.SndPending v) γ.(mpmc_chan_name))%I
       with "[Hchanrepfrag]" as "Hoc".
-    { iFrame. iPureIntro. unfold chan_cap_valid. done. }
+    { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
     iMod ("Hinv_close" with "[Hoc HsentI HrecvI Hclosed HP]") as "_".
     {
       iNext. iExists (chan_rep.SndPending v), (sent0 ⊎ {[+ v +]}), recv.
@@ -568,7 +566,7 @@ Proof.
   iIntros (Φ) "( #Hmpmc & Hcons) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (chan.wp_receive ch cap γ.(mpmc_chan_name) with "[$Hchan]").
+  iApply (chan.wp_receive ch γ.(mpmc_chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
@@ -777,7 +775,7 @@ Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3 & #Hmpmc & Hprods & HR) Hcont".
   unfold is_mpmc. iNamed "Hmpmc".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (chan.wp_close ch cap γ.(mpmc_chan_name) with "[$Hchan]").
+  iApply (chan.wp_close ch γ.(mpmc_chan_name) with "[$Hchan]").
   iIntros "Hlc4".
   iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
@@ -923,7 +921,7 @@ Lemma mpmc_get_final_resource
   ={⊤}=∗ R (foldr disj_union ∅ consumers).
 Proof.
   iIntros (Hlen) "Hlc #Hmpmc #Hclosed Hcons".
-  unfold is_mpmc. iDestruct "Hmpmc" as (cap) "[#Hchan #Hinv]".
+  unfold is_mpmc. iDestruct "Hmpmc" as "[#Hchan #Hinv]".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iNamed "Hinv_open".
   iMod (lc_fupd_elim_later with "Hlc Hinv_open") as "Hinv_open".

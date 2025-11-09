@@ -61,10 +61,10 @@ Definition fulfill_token (γ : future_names) : iProp Σ :=
 *)
 Definition is_future (γ : future_names) (ch : loc)
                      (P : V → iProp Σ) : iProp Σ :=
-  is_channel ch 1 γ.(chan_name) ∗
+  is_channel ch γ.(chan_name) ∗
   inv nroot (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_channel ch 1 s γ.(chan_name) ∗
+      "Hch" ∷ own_channel ch s γ.(chan_name) ∗
       "Hawait" ∷ ghost_var γ.(await_name) half await_avail ∗
       "Hfulfill" ∷ ghost_var γ.(fulfill_name) half fulfill_avail ∗
       (match s with
@@ -84,8 +84,8 @@ Definition is_future (γ : future_names) (ch : loc)
 
 (** Create a Future channel from a capacity-1 buffered channel *)
 Lemma start_future ch (P : V → iProp Σ) γ :
-  is_channel ch 1 γ -∗
-  (own_channel ch 1 (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_channel ch γ -∗
+  (own_channel ch (chan_rep.Buffered []) γ) ={⊤}=∗
   (∃ γfuture, is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
 Proof.
   iIntros "#Hch Hoc".
@@ -100,7 +100,7 @@ Proof.
   (* Allocate the invariant *)
   iMod (inv_alloc nroot _ (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_channel ch 1 s γ ∗
+      "Hch" ∷ own_channel ch s γ ∗
       "Hawait" ∷ ghost_var γawait half await_avail ∗
       "Hfulfill" ∷ ghost_var γfulfill half fulfill_avail ∗
       (match s with
@@ -126,7 +126,7 @@ Proof.
 Qed.
 
 Lemma future_is_channel γfuture ch P :
-  is_future γfuture ch P ⊢ is_channel ch 1 γfuture.(future.chan_name).
+  is_future γfuture ch P ⊢ is_channel ch γfuture.(future.chan_name).
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
@@ -138,7 +138,7 @@ Lemma future_fulfill_au γ ch (P : V → iProp Σ) (v : V) :
   is_future γ ch P -∗
   £1 ∗ fulfill_token γ ∗ P v -∗
   ▷ (True -∗ Φ) -∗
-  send_au_slow ch 1 v γ.(chan_name) Φ.
+  send_au_slow ch v γ.(chan_name) Φ.
 Proof.
   iIntros (Φ) "#Hfuture (Hlc & Hfulfillt & HP) Hcont".
   unfold is_future.
@@ -179,7 +179,9 @@ Proof.
     iExFalso. done.
     }
     {
-      destruct rest. all: done.
+      destruct rest; try done.
+      iDestruct "Hinv_open" as "[[% %] _]".
+      congruence.
     }
 Qed.
 
@@ -193,7 +195,7 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hiv]".
 
-  wp_apply (chan.wp_send ch 1 v γ.(chan_name) with "[$Hchan]").
+  wp_apply (chan.wp_send ch v γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
 
   iApply (future_fulfill_au with "[$Hiv $Hchan] [$]").
@@ -205,7 +207,7 @@ Lemma future_await_au γ ch (P : V → iProp Σ) :
   is_future γ ch P -∗
   £1 ∗ await_token γ -∗
   ▷ (∀ v, P v -∗ Φ v true) -∗
-  rcv_au_slow ch 1 γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  rcv_au_slow ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   iIntros (Φ) "#Hfuture [Hlc Hawaitt] HΦcont".
   unfold is_future.
@@ -252,7 +254,7 @@ Proof.
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
   
-  iApply (chan.wp_receive ch 1 γ.(chan_name) with "[$Hchan]").
+  iApply (chan.wp_receive ch γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2)".
 
   iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$] [Hcont]").

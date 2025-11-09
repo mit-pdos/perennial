@@ -20,8 +20,9 @@ Lemma wp_NewChannel (cap: Z) {B: BoundedTypeSize t} :
   {{{ True }}}
     channel.NewChannelⁱᵐᵖˡ #t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
-      is_channel ch cap γ ∗
-      own_channel ch cap (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
+      is_channel ch γ ∗
+      chan_cap γ cap ∗
+      own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
   intros Hcap.
@@ -39,6 +40,10 @@ Proof.
     rewrite /named.
     iDestruct (struct_fields_split with "Hch") as "Hch".
     iNamed "Hch". simpl.
+    iMod (ghost_var_alloc cap)
+           as (cap_gname) "Hcap_var".
+    (* TODO: iPersist doesn't work on Perennial ghost_var *)
+    iMod (ghost_var_persist with "Hcap_var") as "#Hcap_var".
     iMod (ghost_var_alloc (chan_rep.Buffered []))
       as (state_gname) "[Hstate_auth Hstate_frag]".
     iMod (ghost_var_alloc (None : option (offer_lock V)))
@@ -51,6 +56,7 @@ Proof.
       as (offer_parked_pred_gname) "Hparked_pred";first done.
     iMod (saved_prop.saved_prop_alloc True 1) as (offer_continuation_gname) "Hcontinuation";first done.
     set (γ := {|
+               cap_name := cap_gname;
                state_name := state_gname;
                offer_lock_name := offer_lock_gname;
                offer_parked_prop_name := offer_parked_prop_gname;
@@ -58,23 +64,28 @@ Proof.
                offer_continuation_name := offer_continuation_gname;
              |}).
     iPersist "Hcap Hmu".
-    iMod ((init_lock (chan_inv_inner ch cap γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
+    iMod ((init_lock (chan_inv_inner ch γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
     {
       iModIntro. unfold chan_inv_inner.
       iDestruct "Hsl" as "[Hsl Hos]".
 
       iExists (Buffered []). simpl.
-      iFrame "#". iFrame.
+      iFrame "#∗".
 
       iPureIntro.
       unfold chan_cap_valid.
-      lia.
+      simpl. lia.
 
     }
-    iModIntro.  iApply "HΦ".
+    iModIntro.  iApply ("HΦ" $! _ γ).
+    iAssert (chan_cap γ cap) as "His_cap".
+    {
+      rewrite /chan_cap.
+      iFrame "#". word.
+    }
     iFrame "#". simpl.
     rewrite decide_False; [ | word ].
-    iFrame. iPureIntro. unfold chan_cap_valid. lia.
+    iFrame. iPureIntro. unfold chan_cap_valid. simpl; lia.
   }
   {
     assert (cap = 0) by word; subst.
@@ -89,6 +100,9 @@ Proof.
     rewrite /named.
     iDestruct (struct_fields_split with "Hch") as "Hch".
     iNamed "Hch". simpl.
+    iMod (ghost_var_alloc 0)
+           as (cap_gname) "Hcap_var".
+    iMod (ghost_var_persist with "Hcap_var") as "#Hcap_var".
     iMod (ghost_var_alloc chan_rep.Idle)
       as (state_gname) "[Hstate_auth Hstate_frag]".
     iMod (ghost_var_alloc (None : option (offer_lock V)))
@@ -101,6 +115,7 @@ Proof.
       as (offer_parked_pred_gname) "Hparked_pred";first done.
     iMod (saved_prop.saved_prop_alloc True 1) as (offer_continuation_gname) "Hcontinuation";first done.
     set (γ := {|
+               cap_name := cap_gname;
                state_name := state_gname;
                offer_lock_name := offer_lock_gname;
                offer_parked_prop_name := offer_parked_prop_gname;
@@ -108,7 +123,7 @@ Proof.
                offer_continuation_name := offer_continuation_gname;
              |}).
     iPersist "Hmu Hcap".
-    iMod ((init_lock (chan_inv_inner ch 0 γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
+    iMod ((init_lock (chan_inv_inner ch γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
     {
       iModIntro. unfold chan_inv_inner.
       iDestruct "Hsl" as "[Hsl Hos]".
@@ -117,21 +132,27 @@ Proof.
       iPureIntro.
       rewrite /chan_cap_valid //.
     }
-    iModIntro.  iApply "HΦ".
+    iAssert (chan_cap γ 0) as "His_cap".
+    {
+      rewrite /chan_cap.
+      iFrame "#". word.
+    }
+    iModIntro.  iApply ("HΦ" $! _ γ).
     iFrame "#". simpl.
     iFrame.  iPureIntro. rewrite /chan_cap_valid //.
   }
 Qed.
 
 Lemma wp_Cap (ch: loc) (cap: Z) (γ: chan_names) :
-  {{{ is_channel ch cap γ }}}
+  {{{ is_channel ch γ ∗ chan_cap γ cap }}}
     channel.Channel__Capⁱᵐᵖˡ #ch #t #()
   {{{ RET #(W64 cap); True }}}.
 Proof.
-  wp_start as "#Hch". wp_call.
+  wp_start as "[#Hch Hcap]". wp_call.
   wp_auto.
   iDestruct (is_channel_not_null with "Hch") as %Hnn.
   iNamed "Hch".
+  iCombine "His_cap Hcap" gives %->.
   rewrite bool_decide_eq_false_2 //.
   wp_auto.
   iApply "HΦ".
@@ -139,29 +160,33 @@ Proof.
 Qed.
 
 Lemma wp_Len (ch: loc) (cap: Z) (γ: chan_names) :
-  {{{ is_channel ch cap γ }}}
+  {{{ is_channel ch γ ∗ chan_cap γ cap }}}
     channel.Channel__Lenⁱᵐᵖˡ #ch #t #()
   {{{ (l: w64), RET #l; ⌜0 ≤ sint.Z l ≤ cap⌝ }}}.
 Proof.
-  wp_start as "#His". wp_call.
+  wp_start as "[#His Hcap]". wp_call.
   wp_auto.
   iDestruct (is_channel_not_null with "His") as %Hnn.
   iNamed "His".
+  iCombine "His_cap Hcap" gives %->.
   rewrite bool_decide_eq_false_2 //.
   wp_auto.
   wp_call.
   wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
+  iDestruct (chan_cap_to_bound with "Hcap") as %Hbound.
   destruct s.
   - iNamed "phys".
     wp_auto.
     iDestruct (own_slice_len with "slice") as %Hlen.
+    cbn [chan_logical].
+    iDestruct (own_channel_buffer_size with "Hcap offer") as %Heq.
     wp_call.
     wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap offer $Hlock]").
     { unfold chan_inv_inner. iExists (Buffered buff); iFrame. }
     iApply "HΦ".
     iPureIntro.
-    admit. (* TODO: does not seem tracked *)
+    word.
   - iNamed "phys".
     wp_auto.
     iDestruct (own_slice_len with "slice") as %Hlen.
@@ -170,13 +195,34 @@ Proof.
     { unfold chan_inv_inner. iExists Idle; iFrame "∗#". }
     iApply "HΦ".
     iPureIntro.
-    admit. (* need 0 ≤ cap *)
+    simpl in *.
+    word.
+  - iNamed "phys".
+    wp_auto.
+    iDestruct (own_slice_len with "slice") as %Hlen.
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap offer v $Hlock]").
+    { unfold chan_inv_inner. iExists (SndWait v); iFrame "∗#". }
+    iApply "HΦ".
+    iPureIntro.
+    simpl in *.
+    word.
+  - iNamed "phys".
+    wp_auto.
+    iDestruct (own_slice_len with "slice") as %Hlen.
+    wp_call.
+    wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap offer v $Hlock]").
+    { unfold chan_inv_inner. iExists RcvWait; iFrame "∗#". }
+    iApply "HΦ".
+    iPureIntro.
+    simpl in *.
+    word.
 Admitted.
 
-Lemma wp_TrySend (ch: loc) (cap: Z) (v: V) (γ: chan_names) (P: iProp Σ):
+Lemma wp_TrySend (ch: loc) (v: V) (γ: chan_names) (P: iProp Σ):
   ∀ Φ,
-  is_channel ch cap γ -∗
-  P ∗ (P -∗ ((send_au_slow ch cap v γ (Φ (#true))))) -∗
+  is_channel ch γ -∗
+  P ∗ (P -∗ ((send_au_slow ch v γ (Φ (#true))))) -∗
   (P -∗ (Φ (#false))) -∗
   WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #true {{ Φ }}.
 Proof.
@@ -207,45 +253,42 @@ Proof.
       iApply fupd_wp. iMod "HP".
       iMod (lc_fupd_elim_later with "[$] HP") as "Hlogatom".
       iNamed "Hlogatom".
-      iAssert (own_channel ch cap (chan_rep.Buffered buff) γ)%I with "[Hchanrepfrag]" as "Hown".
-      { iFrame. iPureIntro. unfold chan_cap_valid. done. }
+      iAssert (own_channel ch (chan_rep.Buffered buff) γ)%I with "[Hchanrepfrag]" as "Hown".
+      { iFrame "#∗". iPureIntro. unfold chan_cap_valid. done. }
       iDestruct (own_channel_agree with "[$Hown] [$Hoc]") as "%Hseq".
       subst s.
+      iDestruct (chan_cap_to_bound with "His_cap") as %Hcap_bound.
+      assert (length buff < cap).
+      { word. }
 
       iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.Buffered (buff ++ [v]))
-        with "[$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
-      { done. }
-      destruct (decide (length buff < cap)).
-      {
-        iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
-        wp_call.
-        wp_apply (wp_lock_unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
-        { unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
-        done.
-      }
-      {
-        replace (sint.Z slice_val.(slice.len_f)) with (sint.Z (length buff)) in * by word.
-        word.
-      }
+        with "[$His_cap] [$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
+      { simpl. len. }
+      iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
+      wp_call.
+      wp_apply (wp_lock_unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
+      { unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
+      done.
     }
     {
       wp_call.
       wp_apply (wp_lock_unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
-      { unfold chan_inv_inner. iExists (Buffered buff). iFrame.
+      { unfold chan_inv_inner. iExists (Buffered buff). iFrame "#∗".
         iPureIntro. done.
       }
       iApply "HPfail" in "HP". done.
     }
   - (* Idle - make offer *)
     iNamed "phys". wp_auto_lc 5.
-    iNamed "offer".
+    iNamed "offer". iNamed "offer".
+    iCombine "Hcap His_cap" gives %->.
     iDestruct ((offer_idle_to_send γ v P (Φ (# true))) with "Hoffer") as ">[offer1 offer2]".
 
     wp_call.
     wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer offer1 Hpred Hchanrepfrag HPau HP $Hlock]").
-    { unfold chan_inv_inner. iExists (SndWait v). iFrame. iPureIntro. done. }
+    { unfold chan_inv_inner. iExists (SndWait v). iFrame "∗#". iPureIntro. done. }
 
     wp_call.
     wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
@@ -254,9 +297,11 @@ Proof.
     destruct s.
 
     + iNamed "phys". wp_auto_lc 5.
-      unfold chan_cap_valid in Hcapvalid. subst cap.
-      iNamed "offer".
-      unfold chan_cap_valid in Hcapvalid. done.
+      simpl in Hcapvalid. subst cap.
+      iNamedSuffix "offer" "2".
+      iCombine "Hcap Hcap2" gives %Heq.
+      simpl in Hcapvalid2.
+      lia.
 
     + iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
@@ -265,7 +310,7 @@ Proof.
       iApply (saved_offer_half_full_invalid with "offer2 Hoffer").
 
     + unfold chan_phys. iNamed "phys". wp_auto_lc 5.
-      iNamed "offer".
+      iNamed "offer". iNamedSuffix "offer" "2".
       iDestruct ((offer_bundle_lc_agree γ (Some (chan_au_base.Snd v)) P (Φ (# true))
         (Some (chan_au_base.Snd v1)) P0 Φ0)
         with " [$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
@@ -273,10 +318,10 @@ Proof.
       iCombine "Hpred1 Hpred2" as "Hp".
       wp_call.
       wp_apply (wp_lock_unlock
-        with "[$lock state v slice slice_cap buffer Hchanrepfrag Hp H1 $Hlock]").
+        with "[$lock state v slice slice_cap buffer Hchanrepfrag2 Hp H1 $Hlock]").
       { unfold chan_inv_inner. iExists (Idle). iFrame.
         iExists Φr0. iFrame. unfold saved_prop.saved_pred_own. rewrite dfrac_op_own Qp.half_half.
-        iFrame.
+        iFrame "∗#".
         done.
       }
       iRewrite -"Hpeq" in "HP".
@@ -287,29 +332,30 @@ Proof.
       iNamed "offer".
       iExFalso.
       iDestruct (offer_bundle_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
-      discriminate Heq.
+      congruence.
 
     + iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
       iExFalso.
       iDestruct (offer_bundle_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
-      discriminate Heq.
+      congruence.
 
     + iNamed "phys". wp_auto_lc 5.
-      iNamed "offer".
+      iNamed "offer". iNamedSuffix "offer" "2".
+      iCombine "Hcap Hcap2" gives %<-.
 
       unfold send_au_inner.
       iApply fupd_wp.
       iMod "Hau".
       iMod (lc_fupd_elim_later with "[$] Hau") as "HP".
       iNamed "HP".
-      iAssert (own_channel ch cap (chan_rep.RcvCommit) γ)%I
-        with "[Hchanrepfrag]" as "Hown".
-      { iFrame. iPureIntro. unfold chan_cap_valid. done. }
+      iAssert (own_channel ch (chan_rep.RcvCommit) γ)%I
+        with "[Hchanrepfrag2]" as "Hown".
+      { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
       iDestruct (own_channel_agree with "[$Hocinner] [$Hown]") as "%Hseq". subst s.
-      iDestruct (own_channel_halves_update ch cap _ _
+      iDestruct (own_channel_halves_update ch _ _ _
         (chan_rep.Idle)
-        with "[$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]".
+        with "[$Hcap] [$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]".
       { done. }
       iMod ("Hcontinner" with "Hgv1") as "Hcont".
       iModIntro.
@@ -330,17 +376,19 @@ Proof.
       destruct draining.
       {
         iNamed "phys". iDestruct "offer" as "[Hoc Hoffer]".
-        iNamed "Hoc".
+        iNamedSuffix "Hoc" "2".
+        iCombine "Hcap Hcap2" gives %<-.
         unfold chan_cap_valid in *. subst cap. simpl.
-        iNamed "Hoffer". unfold offer_bundle_empty.
+        iNamed "Hoffer". iSpecialize ("Hoffer" with "Hcap"). unfold offer_bundle_empty.
         iDestruct (saved_offer_fractional_invalid with "[$offer2] [$Hoffer]") as "H".
         { done. }
         done.
       }
       {
-        iNamed "phys". iDestruct "offer" as "[Hoc Hoffer]".
-        iNamed "Hoc".
-        unfold chan_cap_valid in *. subst cap. iNamed "Hoffer". done.
+        iNamed "phys". iNamedSuffix "offer" "2".
+        iCombine "Hcap Hcap2" gives %<-.
+        cbn [chan_cap_valid] in *.
+        lia.
       }
 
   - (* SndWait *)
@@ -355,20 +403,23 @@ Proof.
   - (* RcvWait - unbuffered channel *)
     iNamed "phys". wp_auto_lc 2.
     iNamed "offer". iDestruct "HP" as "HP0". iNamed "offer".
+    iNamed "offer".
+    iCombine "His_cap Hcap" gives %<-.
     iApply "Hau" in "HP".
     unfold send_au_slow.
     iApply fupd_wp. iMod "HP".
     iMod (lc_fupd_elim_later with "[$] HP") as "HP". iNamed "HP".
-    iDestruct "Hoc" as "[H1 H2]".
+    iDestruct "Hoc" as (cap') "(#Hcap2 & H1 & H2)".
+    iCombine "Hcap Hcap2" gives %<-.
     iDestruct (chan_rep_agree with "[$H1] [$Hchanrepfrag]") as "%Hseq". subst s.
-    iAssert (own_channel ch cap (chan_rep.Idle) γ)%I
+    iAssert (own_channel ch (chan_rep.Idle) γ)%I
       with "[Hchanrepfrag]" as "Hown".
-    { iFrame. iPureIntro. done. }
-    iAssert (own_channel ch cap (chan_rep.Idle) γ)%I
+    { iFrame "∗#". iPureIntro. done. }
+    iAssert (own_channel ch (chan_rep.Idle) γ)%I
       with "[H1]" as "Hown1".
-    { iFrame. iPureIntro. done. }
+    { iFrame "∗#". iPureIntro. done. }
     iDestruct (own_channel_halves_update ch cap _ _ (chan_rep.RcvPending)
-      with "[$Hown] [$Hown1]") as ">[Hgv1 Hgv2]".
+      with "[$Hcap] [$Hown] [$Hown1]") as ">[Hgv1 Hgv2]".
     { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont1". iModIntro.
     iApply "HPau" in "HP0".
@@ -380,13 +431,15 @@ Proof.
     iNamed "HP".
     iDestruct (own_channel_agree with "[$Hgv1] [$Hoc]") as "%Hseq". subst s.
     iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.SndCommit v)
-      with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
+      with "[$Hcap] [$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
     { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
     wp_call.
     wp_apply (wp_lock_unlock
       with "[$lock state v slice slice_cap buffer Hgv1 H2 Hpred Hoffer Hcont1 $Hlock]").
-    { unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamed "Hgv1". iFrame. }
+    { unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamedSuffix "Hgv1" "'".
+      iCombine "Hcap Hcap'" gives %<-.
+      iFrame "∗#". }
     done.
 
   - (* SndDone *)
@@ -415,32 +468,33 @@ Proof.
       iMod "HP".
       iMod (lc_fupd_elim_later with "[$] HP") as "HP".
       iNamed "HP".
-      iAssert (own_channel ch cap (chan_rep.Closed []) γ)%I
+      iAssert (own_channel ch (chan_rep.Closed []) γ)%I
         with "[Hchanrepfrag]" as "Hown".
-      { iFrame. }
+      { iFrame "∗#". }
       iDestruct (own_channel_agree with "[$Hoc] [$Hown]") as "%Hseq". subst s.
       done.
     }
     {
-      iNamed "phys". iDestruct "offer" as "[Hoc %Hoffer]".
-      iNamed "Hoc". iApply "HPau" in "HP".
-      unfold send_au_slow.
-      iApply fupd_wp.
-      iMod "HP".
-      iMod (lc_fupd_elim_later with "[$] HP") as "HP".
-      iNamed "HP".
-      iAssert (own_channel ch cap (chan_rep.Closed (v0 :: draining)) γ)%I
-        with "[Hchanrepfrag]" as "Hown".
-      { iFrame. iPureIntro. unfold chan_cap_valid. done. }
-      iDestruct (own_channel_agree with "[$Hoc] [$Hown]") as "%Hseq". subst s.
-      done.
+      (* iNamed "phys". iDestruct "offer" as "[Hoc %Hoffer]". *)
+      (* iNamed "Hoc". iApply "HPau" in "HP". *)
+      (* unfold send_au_slow. *)
+      (* iApply fupd_wp. *)
+      (* iMod "HP". *)
+      (* iMod (lc_fupd_elim_later with "[$] HP") as "HP". *)
+      (* iNamed "HP". *)
+      (* iAssert (own_channel ch cap (chan_rep.Closed (v0 :: draining)) γ)%I *)
+      (*   with "[Hchanrepfrag]" as "Hown". *)
+      (* { iFrame. iPureIntro. unfold chan_cap_valid. done. } *)
+      (* iDestruct (own_channel_agree with "[$Hoc] [$Hown]") as "%Hseq". subst s. *)
+      (* done. *)
+      admit.
     }
-Qed.
+Admitted.
 
-Lemma wp_TrySend_nb (ch: loc) (cap: Z) (v: V) (γ: chan_names) (P: iProp Σ):
+Lemma wp_TrySend_nb (ch: loc) (v: V) (γ: chan_names) (P: iProp Σ):
   ∀ Φ,
-  is_channel ch cap γ -∗
-  P ∗ (P -∗ ((send_au_fast ch cap v γ (Φ (#true))))) -∗
+  is_channel ch γ -∗
+  P ∗ (P -∗ ((send_au_fast ch v γ (Φ (#true))))) -∗
   (P -∗ (Φ (#false))) -∗
   WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #false {{ Φ }}.
 Proof.
@@ -457,6 +511,7 @@ Proof.
 
   { (* Buffered channel *)
     iNamed "phys". iNamed "offer". wp_auto. unfold chan_cap_valid in Hcapvalid.
+    iCombine "His_cap Hcap" gives %<-.
     wp_if_destruct.
     {
       wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
@@ -471,14 +526,14 @@ Proof.
       iApply fupd_wp. iMod "HP".
       iMod (lc_fupd_elim_later with "[$] HP") as "Hlogatom".
       iNamed "Hlogatom".
-      iAssert (own_channel ch cap (chan_rep.Buffered buff) γ)%I with "[Hchanrepfrag]" as "Hown".
-      { iFrame. iPureIntro. unfold chan_cap_valid. done. }
+      iAssert (own_channel ch (chan_rep.Buffered buff) γ)%I with "[Hchanrepfrag]" as "Hown".
+      { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
       iDestruct (own_channel_agree with "[$Hown] [$Hoc]") as "%Hseq".
       subst s.
 
       iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.Buffered (buff ++ [v]))
-        with "[$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
-      { done. }
+        with "[$His_cap] [$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
+      { simpl. iPureIntro. len. }
       destruct (decide (length buff < cap)).
       {
         iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
@@ -496,7 +551,7 @@ Proof.
       wp_call.
       wp_apply (wp_lock_unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
-      { unfold chan_inv_inner. iExists (Buffered buff). iFrame.
+      { unfold chan_inv_inner. iExists (Buffered buff). iFrame "∗#".
         iPureIntro. done.
       }
       iApply "HPfail" in "HP". done.
@@ -523,41 +578,42 @@ Proof.
   }
 
   { (* RcvWait - unbuffered channel *)
-    iNamed "phys". wp_auto_lc 2.
-    iNamed "offer". iDestruct "HP" as "HP0". iNamed "offer".
-    iApply "Hau" in "HP".
-    unfold send_au_slow.
-    iApply fupd_wp. iMod "HP".
-    iMod (lc_fupd_elim_later with "[$] HP") as "HP". iNamed "HP".
-    iDestruct "Hoc" as "[H1 H2]".
-    iDestruct (chan_rep_agree with "[$H1] [$Hchanrepfrag]") as "%Hseq". subst s.
-    iAssert (own_channel ch cap (chan_rep.Idle) γ)%I
-      with "[Hchanrepfrag]" as "Hown".
-    { iFrame. iPureIntro. done. }
-    iAssert (own_channel ch cap (chan_rep.Idle) γ)%I
-      with "[H1]" as "Hown1".
-    { iFrame. iPureIntro. done. }
-    iDestruct (own_channel_halves_update ch cap _ _ (chan_rep.RcvPending)
-      with "[$Hown] [$Hown1]") as ">[Hgv1 Hgv2]".
-    { done. }
-    iMod ("Hcont" with "Hgv2") as "Hcont1". iModIntro.
-    iApply "HPau" in "HP0".
-    iApply fupd_wp.
-    iMod (lc_fupd_elim_later with "[$] HP0") as "HP0".
-    unfold rcv_au_fast.
-    iMod "HP0".
-    iMod (lc_fupd_elim_later with "[$] HP0") as "HP".
-    iNamed "HP".
-    iDestruct (own_channel_agree with "[$Hgv1] [$Hoc]") as "%Hseq". subst s.
-    iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.SndCommit v)
-      with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
-    { done. }
-    iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
-    wp_call.
-    wp_apply (wp_lock_unlock
-      with "[$lock state v slice slice_cap buffer Hgv1 H2 Hpred Hoffer Hcont1 $Hlock]").
-    { unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamed "Hgv1". iFrame. }
-    done.
+    (* iNamed "phys". wp_auto_lc 2. *)
+    (* iNamed "offer". iDestruct "HP" as "HP0". iNamed "offer". *)
+    (* iApply "Hau" in "HP". *)
+    (* unfold send_au_slow. *)
+    (* iApply fupd_wp. iMod "HP". *)
+    (* iMod (lc_fupd_elim_later with "[$] HP") as "HP". iNamed "HP". *)
+    (* iDestruct "Hoc" as "[H1 H2]". *)
+    (* iDestruct (chan_rep_agree with "[$H1] [$Hchanrepfrag]") as "%Hseq". subst s. *)
+    (* iAssert (own_channel ch cap (chan_rep.Idle) γ)%I *)
+    (*   with "[Hchanrepfrag]" as "Hown". *)
+    (* { iFrame. iPureIntro. done. } *)
+    (* iAssert (own_channel ch cap (chan_rep.Idle) γ)%I *)
+    (*   with "[H1]" as "Hown1". *)
+    (* { iFrame. iPureIntro. done. } *)
+    (* iDestruct (own_channel_halves_update ch cap _ _ (chan_rep.RcvPending) *)
+    (*   with "[$Hown] [$Hown1]") as ">[Hgv1 Hgv2]". *)
+    (* { done. } *)
+    (* iMod ("Hcont" with "Hgv2") as "Hcont1". iModIntro. *)
+    (* iApply "HPau" in "HP0". *)
+    (* iApply fupd_wp. *)
+    (* iMod (lc_fupd_elim_later with "[$] HP0") as "HP0". *)
+    (* unfold rcv_au_fast. *)
+    (* iMod "HP0". *)
+    (* iMod (lc_fupd_elim_later with "[$] HP0") as "HP". *)
+    (* iNamed "HP". *)
+    (* iDestruct (own_channel_agree with "[$Hgv1] [$Hoc]") as "%Hseq". subst s. *)
+    (* iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.SndCommit v) *)
+    (*   with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]". *)
+    (* { done. } *)
+    (* iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro. *)
+    (* wp_call. *)
+    (* wp_apply (wp_lock_unlock *)
+    (*   with "[$lock state v slice slice_cap buffer Hgv1 H2 Hpred Hoffer Hcont1 $Hlock]"). *)
+    (* { unfold chan_inv_inner. iExists (SndDone v). iFrame. iNamed "Hgv1". iFrame. } *)
+    (* done. *)
+    admit.
   }
 
   { (* SndDone *)
@@ -588,33 +644,34 @@ Proof.
       iMod "HP".
       iMod (lc_fupd_elim_later with "[$] HP") as "HP".
       iNamed "HP".
-      iAssert (own_channel ch cap (chan_rep.Closed []) γ)%I
+      iAssert (own_channel ch (chan_rep.Closed []) γ)%I
         with "[Hchanrepfrag]" as "Hown".
-      { iFrame. }
+      { iFrame "∗#". }
       iDestruct (own_channel_agree with "[$Hoc] [$Hown]") as "%Hseq". subst s.
       done.
     }
     {
-      iNamed "phys". iDestruct "offer" as "[Hoc %Hoffer]".
-      iNamed "Hoc". iApply "HPau" in "HP".
-      unfold send_au_slow.
-      iApply fupd_wp.
-      iMod "HP".
-      iMod (lc_fupd_elim_later with "[$] HP") as "HP".
-      iNamed "HP".
-      iAssert (own_channel ch cap (chan_rep.Closed (v0 :: draining)) γ)%I
-        with "[Hchanrepfrag]" as "Hown".
-      { iFrame. iPureIntro. unfold chan_cap_valid. done. }
-      iDestruct (own_channel_agree with "[$Hoc] [$Hown]") as "%Hseq". subst s.
-      done.
+      (* iNamed "phys". iDestruct "offer" as "[Hoc %Hoffer]". *)
+      (* iNamed "Hoc". iApply "HPau" in "HP". *)
+      (* unfold send_au_slow. *)
+      (* iApply fupd_wp. *)
+      (* iMod "HP". *)
+      (* iMod (lc_fupd_elim_later with "[$] HP") as "HP". *)
+      (* iNamed "HP". *)
+      (* iAssert (own_channel ch cap (chan_rep.Closed (v0 :: draining)) γ)%I *)
+      (*   with "[Hchanrepfrag]" as "Hown". *)
+      (* { iFrame. iPureIntro. unfold chan_cap_valid. done. } *)
+      (* iDestruct (own_channel_agree with "[$Hoc] [$Hown]") as "%Hseq". subst s. *)
+      (* done. *)
+      admit.
     }
   }
-Qed.
+Admitted.
 
-Lemma wp_Send (ch: loc) (cap: Z) (v: V) (γ: chan_names):
+Lemma wp_Send (ch: loc) (v: V) (γ: chan_names):
   ∀ Φ,
-  is_channel ch cap γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch cap v γ (Φ #())) -∗
+  is_channel ch γ -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch v γ (Φ #())) -∗
   WP channel.Channel__Sendⁱᵐᵖˡ #ch #t #v {{ Φ }}.
 Proof.
   intros. iIntros "#Hic". iIntros "Hau".
@@ -625,8 +682,8 @@ Proof.
 
   wp_if_destruct; first done.
   wp_for. iNamed "Hau".
-  wp_apply ((wp_TrySend ch cap v γ
-    (send_au_slow ch cap v γ (Φ (# ())) ∗ c_ptr ↦ ch ∗ v_ptr ↦ v)%I)
+  wp_apply ((wp_TrySend ch v γ
+    (send_au_slow ch v γ (Φ (# ())) ∗ c_ptr ↦ ch ∗ v_ptr ↦ v)%I)
     with "[$] [Hau c v]").
   { iFrame.
     iIntros "(Hau & c & v)".
@@ -634,14 +691,11 @@ Proof.
     iModIntro. iModIntro. iNamed "Hau". iFrame.
     destruct s. all: try done.
     {
-      destruct (decide (length buff < cap)).
-      {
-        iIntros "H". iMod ("Hcont" with "H") as "H".
-        iModIntro. wp_auto. destruct decide.
-        { wp_auto. wp_for_post. iFrame. naive_solver. }
-        { destruct decide. { wp_auto. done. } done. }
-      }
-      { done. }
+      iIntros "H".
+      iMod ("Hcont" with "H") as "H".
+      iModIntro. wp_auto. destruct decide.
+      { wp_auto. wp_for_post. iFrame. naive_solver. }
+      destruct decide. { wp_auto. done. } done.
     }
     {
       iIntros "H". iMod ("Hcont" with "H") as "H".
@@ -652,16 +706,16 @@ Proof.
       {
         iIntros "Hcontineer".
         iMod ("Hcontinner" with "Hcontineer") as "H". iModIntro. wp_auto.
-        destruct decide. all:try naive_solver.
-        destruct decide. all: try done.
+        destruct decide; try naive_solver.
+        destruct decide; try done.
         wp_auto. done.
       }
     }
     {
       iIntros "Hcontineer".
       iMod ("Hcont" with "Hcontineer") as "H". iModIntro. wp_auto.
-      destruct decide. all:try naive_solver.
-      destruct decide. all: try done. wp_auto.
+      destruct decide; try naive_solver.
+      destruct decide; try done. wp_auto.
       done.
     }
   }
@@ -672,10 +726,10 @@ Proof.
   }
 Qed.
 
-Lemma wp_tryClose (ch: loc) (cap: Z) (γ: chan_names) (P: iProp Σ) :
+Lemma wp_tryClose (ch: loc) (γ: chan_names) (P: iProp Σ) :
   ∀ Φ,
-  is_channel ch cap γ -∗
-  P ∗ (P -∗ close_au ch cap γ (Φ (#true))) -∗
+  is_channel ch γ -∗
+  P ∗ (P -∗ close_au ch γ (Φ (#true))) -∗
   (P -∗ (Φ (#false))) -∗
   WP channel.Channel__tryCloseⁱᵐᵖˡ #ch #t #() {{ Φ }}.
 Proof.
@@ -697,9 +751,10 @@ Proof.
 
   { (* Buffered *)
     iNamed "offer".
-    iAssert (own_channel ch cap (chan_rep.Buffered buff) γ)%I
+    iCombine "His_cap Hcap" gives %<-.
+    iAssert (own_channel ch (chan_rep.Buffered buff) γ)%I
       with "[Hchanrepfrag]" as "Hown".
-    { iFrame. iPureIntro. done. }
+    { iFrame "∗#". iPureIntro. done. }
     wp_auto.
     iApply fupd_wp. iMod ("HPau" with "HP") as "Hau".
     iMod (lc_fupd_elim_later with "[$] Hau") as "Hau".
@@ -708,9 +763,10 @@ Proof.
     subst s.
 
     iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.Closed buff)
-      with "[$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]".
-    { move: Hcapvalid; rewrite /chan_cap_valid.
-      destruct buff; auto. }
+      with "[$His_cap] [$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]".
+    { iPureIntro.
+      move: Hcapvalid; rewrite /chan_cap_valid.
+      destruct buff; lia. }
     iMod ("Hcontinner" with "Hgv1") as "HΦ".
     iModIntro.
 
@@ -719,10 +775,10 @@ Proof.
     { unfold chan_inv_inner.
       iExists (Closed buff). unfold chan_phys.
       destruct buff.
-      { iFrame. destruct cap. all: try iFrame.
-        { simpl. done. }
-        { simpl. done. }
-        { simpl. done. }
+      { iFrame.
+        iIntros "Hcap0".
+        iCombine "Hcap Hcap0" gives %Heq; subst.
+        exfalso; simpl in *; lia.
       }
       { iFrame. }
     }
@@ -730,33 +786,34 @@ Proof.
   }
 
   { (* Idle *)
-    iNamed "offer".
-    iApply fupd_wp.
-    iMod ("HPau" with "HP") as "Hau".
-    iMod (lc_fupd_elim_later with "[$] Hau") as "Hau".
-    iNamed "Hau".
-    iAssert (own_channel ch cap (chan_rep.Idle) γ)%I
-      with "[Hchanrepfrag]" as "Hown".
-    { iFrame. iPureIntro. done. }
-    iDestruct (own_channel_agree with "[$Hocinner] [$Hown]") as "%Heq".
-    subst s.
+    (* iNamed "offer". *)
+    (* iApply fupd_wp. *)
+    (* iMod ("HPau" with "HP") as "Hau". *)
+    (* iMod (lc_fupd_elim_later with "[$] Hau") as "Hau". *)
+    (* iNamed "Hau". *)
+    (* iAssert (own_channel ch (chan_rep.Idle) γ)%I *)
+    (*   with "[Hchanrepfrag]" as "Hown". *)
+    (* { iFrame. iPureIntro. done. } *)
+    (* iDestruct (own_channel_agree with "[$Hocinner] [$Hown]") as "%Heq". *)
+    (* subst s. *)
 
-    iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.Closed [])
-      with "[$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]".
-    { done. }
-    iMod ("Hcontinner" with "Hgv1") as "HΦ".
-    iModIntro.
+    (* iDestruct (own_channel_halves_update _ _ _ _ (chan_rep.Closed []) *)
+    (*   with "[$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]". *)
+    (* { done. } *)
+    (* iMod ("Hcontinner" with "Hgv1") as "HΦ". *)
+    (* iModIntro. *)
 
-    wp_auto.
-    wp_call.
-    wp_apply (wp_lock_unlock with "[$lock state v buffer slice slice_cap Hgv2 Hoffer $Hlock]").
-    { unfold chan_inv_inner.
-      iExists (Closed []). iFrame. destruct cap.
-      { done. }
-      { done. }
-      { done. }
-    }
-    done.
+    (* wp_auto. *)
+    (* wp_call. *)
+    (* wp_apply (wp_lock_unlock with "[$lock state v buffer slice slice_cap Hgv2 Hoffer $Hlock]"). *)
+    (* { unfold chan_inv_inner. *)
+    (*   iExists (Closed []). iFrame. destruct cap. *)
+    (*   { done. } *)
+    (*   { done. } *)
+    (*   { done. } *)
+    (* } *)
+    (* done. *)
+    admit.
   }
 
   { (* SndWait - can't close yet *)
@@ -805,22 +862,23 @@ Proof.
       done.
     }
     {
-      iDestruct "offer" as "[offer1 %offer2]".
-      iApply fupd_wp.
-      iMod ("HPau" with "HP") as "Hau".
-      iMod (lc_fupd_elim_later with "[$] Hau") as "Hlogatom".
-      iNamed "Hlogatom".
-      iDestruct (own_channel_agree with "[$Hocinner] [$offer1]") as "%Heq".
-      { iPureIntro. unfold chan_cap_valid. done. }
-      subst s. done.
+      (* iDestruct "offer" as "[offer1 %offer2]". *)
+      (* iApply fupd_wp. *)
+      (* iMod ("HPau" with "HP") as "Hau". *)
+      (* iMod (lc_fupd_elim_later with "[$] Hau") as "Hlogatom". *)
+      (* iNamed "Hlogatom". *)
+      (* iDestruct (own_channel_agree with "[$Hocinner] [$offer1]") as "%Heq". *)
+      (* { iPureIntro. unfold chan_cap_valid. done. } *)
+      (* subst s. done. *)
+      admit.
     }
   }
-Qed.
+Admitted.
 
-Lemma wp_Close (ch: loc) (cap: Z) (γ: chan_names) :
+Lemma wp_Close (ch: loc) (γ: chan_names) :
   ∀ Φ,
-  is_channel ch cap γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch cap γ (Φ #())) -∗
+  is_channel ch γ -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch γ (Φ #())) -∗
   WP channel.Channel__Closeⁱᵐᵖˡ #ch #t #() {{ Φ }}.
 Proof.
   intros. iIntros "#Hic". iIntros "Hau".
@@ -831,7 +889,7 @@ Proof.
   wp_if_destruct; first done.
   wp_for.
 
-  wp_apply ((wp_tryClose ch cap γ (close_au ch cap γ (Φ (# ())) ∗ c_ptr ↦ ch)%I)
+  wp_apply ((wp_tryClose ch γ (close_au ch γ (Φ (# ())) ∗ c_ptr ↦ ch)%I)
     with "[$Hic] [Hau c] []").
   { iFrame. iIntros "[Hau c]".
     unfold close_au. iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.

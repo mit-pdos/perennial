@@ -72,14 +72,14 @@ Qed.
 Lemma wp_After (d : time.Duration.t) :
   {{{ is_pkg_init time }}}
     @! time.After #d
-  {{{ (ch: loc) γ, RET #ch; is_simple γ ch 0 (λ (t: time.Time.t), True)%I }}}.
+  {{{ (ch: loc) γ, RET #ch; is_simple γ ch (λ (t: time.Time.t), True)%I }}}.
 Proof.
   wp_start.
   change (time.time.__Time) with (time.Time).
   wp_apply chan.wp_make; first word.
-  iIntros (ch γ) "[His Hown]".
+  iIntros (ch γ) "(His & Hcap & Hown)".
   simpl.
-  iMod (start_simple _ _ _ (λ t, True)%I
+  iMod (start_simple _ _ (λ t, True)%I
           with "[$His] [$Hown]") as (γsimple) "#Hch".
   wp_auto.
   wp_apply wp_fork.
