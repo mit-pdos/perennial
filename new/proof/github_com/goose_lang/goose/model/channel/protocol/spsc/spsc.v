@@ -36,13 +36,13 @@ Record spsc_names := {
 
 (* Producer and Consumer Predicates *)
 
-(** Producer maintains (1/2)%Qp permission of sent history *)
+(** Producer maintains (1/2) permission of sent history *)
 Definition spsc_producer (γ:spsc_names) (sent:list V) : iProp Σ :=
-    ghost_var γ.(spsc_sent_name) (1/2)%Qp sent.
+    ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent.
 
-(** Consumer maintains (1/2)%Qp permission of received history *)
+(** Consumer maintains (1/2) permission of received history *)
 Definition spsc_consumer (γ:spsc_names) (received:list V) : iProp Σ :=
-    ghost_var γ.(spsc_recv_name) (1/2)%Qp received.
+    ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) received.
 
 (** ** In-Flight Values *)
 
@@ -76,8 +76,8 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
     inv nroot (
       ∃ s sent recv,
         "Hch"    ∷ own_channel ch cap s γ.(chan_name) ∗
-        "HsentI" ∷ ghost_var γ.(spsc_sent_name) (1/2)%Qp sent ∗
-        "HrecvI" ∷ ghost_var γ.(spsc_recv_name) (1/2)%Qp recv ∗
+        "HsentI" ∷ ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent ∗
+        "HrecvI" ∷ ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) recv ∗
         "%Hrel"  ∷ ⌜sent = recv ++ inflight s⌝ ∗
         (match s with
         (* P holds for all buffered values *)
@@ -114,26 +114,10 @@ Proof.
 
   (* Create the spsc_names record *)
   set (γspsc := {| chan_name := γ; spsc_sent_name := γsent; spsc_recv_name := γrecv |}).
+  iExists (γspsc).
 
   (* Allocate the invariant *)
-  iMod (inv_alloc nroot _ (
-    ∃ s sent recv,
-      "Hch" ∷ own_channel ch cap s γ ∗
-      "HsentI" ∷ ghost_var γsent (1/2)%Qp sent ∗
-      "HrecvI" ∷ ghost_var γrecv (1/2)%Qp recv ∗
-      "%Hrel" ∷ ⌜sent = recv ++ inflight s⌝ ∗
-      (match s with
-       | chan_rep.Buffered buff => [∗ list] i ↦ v ∈ buff, P ((length recv) + i) v
-       | chan_rep.SndPending v | chan_rep.SndCommit v => P (length recv) v
-       | chan_rep.Closed [] =>
-           spsc_producer γspsc sent ∗ (R sent ∨ spsc_consumer γspsc sent)
-       | chan_rep.Closed draining =>
-           ([∗ list] i ↦ v ∈ draining, P ((length recv) + i) v) ∗
-           spsc_producer γspsc sent ∗ 
-           (R sent ∨ spsc_consumer γspsc sent)
-       | _ => True
-       end)
-  ) with "[Hoc HsentA HrecvA]") as "#Hinv".
+  iMod (inv_alloc nroot _ with "[Hoc HsentA HrecvA]") as "$".
   {
     (* Prove the invariant holds initially *)
   destruct cap. {
@@ -150,14 +134,11 @@ Proof.
     {
      iNext.  iFrame. simpl. iPureIntro. done.
     }
-    }
-
-  
-
+  }
 
   (* Construct the final result *)
-  iModIntro. iExists γspsc.
-  unfold is_spsc. iFrame. iExists cap. iFrame "#".
+  iModIntro.
+  iFrame "#∗".
 Qed.
 
 (** ** Receive Operation *)

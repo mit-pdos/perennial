@@ -1,6 +1,7 @@
 Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
 From New.golang.theory Require Import chan.
+From Perennial.algebra Require Import ghost_var.
 
 (** * Future Channel Verification
 
@@ -32,7 +33,7 @@ Record future_names := {
   fulfill_name : gname         (* One-shot fulfill token *)
 }.
 
-Notation half := (1/2)%Qp.
+Notation half := (DfracOwn (1/2)).
 
 (** ** One-shot Token Predicates *)
 

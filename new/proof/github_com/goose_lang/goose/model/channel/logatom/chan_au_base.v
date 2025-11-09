@@ -6,6 +6,9 @@ From iris.algebra Require Import auth gset.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 
+(* NOTE: must shadow iris ghost_var *)
+From Perennial.algebra Require Import ghost_var.
+
 (** The mathematical model of channel states. This represents the logical
     behavior of channels independent of the implementation details. *)
 Module chan_rep.
@@ -171,7 +174,7 @@ Definition chan_phys (ch: loc) (s: chan_phys_state V) : iProp Σ :=
 Definition saved_offer (γ : chan_names) (q : Qp)
   (lock_val : option (offer_lock V))
   (parked_prop continuation_prop : iProp Σ) : iProp Σ :=
-  ghost_var γ.(offer_lock_name) q lock_val ∗
+  ghost_var γ.(offer_lock_name) (DfracOwn q) lock_val ∗
   saved_prop_own γ.(offer_parked_prop_name) (DfracOwn q) parked_prop ∗
   saved_prop_own γ.(offer_continuation_name) (DfracOwn q) continuation_prop.
 
@@ -320,7 +323,7 @@ Proof.
 Qed.
 
 Definition chan_rep (γ : gname) (q : Qp) (s : chan_rep.t V) : iProp Σ :=
-  ghost_var γ q s.
+  ghost_var γ (DfracOwn q) s.
 
 Notation chan_rep_full γ s := (chan_rep γ 1 s).
 Notation chan_rep_half γ s := (chan_rep γ (1/2)%Qp s).

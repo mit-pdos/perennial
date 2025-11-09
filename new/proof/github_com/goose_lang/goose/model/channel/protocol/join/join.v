@@ -4,6 +4,7 @@ From New.golang.theory Require Import chan.
 From Perennial.algebra Require Import auth_set.
 From iris.base_logic Require Import ghost_map.
 From iris.base_logic.lib Require Import saved_prop.
+From Perennial.algebra Require Import ghost_var.
 
 Module join.
 
@@ -23,7 +24,7 @@ Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Definition join (γ: join_names) (count:nat) (Q: iProp Σ): iProp Σ :=
-  ghost_var γ.(join_counter_name) (1/2) count ∗
+  ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
   ∃ Q', saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) Q' ∗ (Q' -∗ Q).
 
 Definition worker (γ: join_names) (P: iProp Σ): iProp Σ :=
@@ -35,11 +36,11 @@ Definition own_join (γ : join_names) (ch : loc) (cap: nat) : iProp Σ :=
     "Hch" ∷ own_channel ch cap s γ.(chan_name) ∗
     "joinQ" ∷ saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) workerQ ∗
     "%HnumWaiting" ∷ ⌜size sendNames = count⌝ ∗
-    "Hjoincount" ∷ ghost_var γ.(join_counter_name) (1/2) count ∗
+    "Hjoincount" ∷ ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
     "HsendNames_auth" ∷ auth_set_auth γ.(worker_names_name) sendNames ∗
     "HworkerQ_wand" ∷ ((([∗ set] γS ∈ sendNames,
                           ∃ P, saved_prop_own γS DfracDiscarded P ∗ ▷ P) -∗
-                        ▷ workerQ) ∨ (ghost_var γ.(join_counter_name) (1/2) count)) ∗
+                        ▷ workerQ) ∨ (ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count)) ∗
     match s with
     | chan_rep.Buffered msgs =>
         [∗ list] _ ∈ msgs, ∃ P, worker γ P ∗ P

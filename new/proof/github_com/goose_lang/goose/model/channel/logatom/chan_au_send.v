@@ -4,6 +4,8 @@ From New.golang.theory Require Import lock.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 
+From Perennial.algebra Require Import ghost_var.
+
 #[local] Transparent is_channel own_channel.
 
 Section atomic_specs.
