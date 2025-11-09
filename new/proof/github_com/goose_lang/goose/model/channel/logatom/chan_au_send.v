@@ -238,9 +238,41 @@ Proof.
     simpl in *.
     word.
   - (* Closed(draining) *)
-    iNamed "phys".
-    admit.
-Admitted.
+    destruct draining.
+    {
+      (* draining = nil *)
+      iNamed "phys".
+      wp_auto.
+      iDestruct (own_slice_len with "slice") as %Hlen.
+      wp_call.
+      wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap offer $Hlock]").
+      { unfold chan_inv_inner. rewrite /named. iFrame "offer ∗". }
+      iApply "HΦ".
+      iPureIntro.
+      simpl in *.
+      word.
+    }
+    (* length draining > 0 *)
+    {
+      iNamed "phys".
+      iAssert (⌜1 + (Z.of_nat (length draining)) ≤ cap⌝)%I as %Hdraining_bound.
+      {
+        iNamedSuffix "offer" "2".
+        simpl in Hcapvalid2.
+        iCombine "His_cap Hcap2" gives %<-.
+        iPureIntro. lia.
+      }
+      wp_auto.
+      iDestruct (own_slice_len with "slice") as %Hlen.
+      wp_call.
+      wp_apply (wp_lock_unlock with "[$lock state buffer slice slice_cap offer $Hlock]").
+      { unfold chan_inv_inner. rewrite /named. iFrame "offer ∗". }
+      iApply "HΦ".
+      iPureIntro.
+      simpl in *.
+      lia.
+    }
+Qed.
 
 Lemma wp_TrySend (ch: loc) (v: V) (γ: chan_names) (P: iProp Σ):
   ∀ Φ,

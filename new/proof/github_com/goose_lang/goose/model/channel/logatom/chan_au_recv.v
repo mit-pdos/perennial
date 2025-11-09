@@ -361,7 +361,9 @@ Proof.
         subst s.
         iMod ((own_channel_halves_update _ _ _ _ (chan_rep.Closed draining)) with "[$His_cap] Hown Hoc")
           as "[Hown1 Hown2]".
-        { simpl. destruct draining; auto. }
+        { simpl. destruct draining; [ done | ].
+          iPureIntro. move: Hcapvalid; len.
+        }
         iMod ("Hcont" with "Hown1") as "Hcont".
         iModIntro.
         have Hpos : 0 ≤ sint.Z (W64 0) by word.
@@ -715,7 +717,9 @@ Proof.
         subst s.
         iMod ((own_channel_halves_update _ _ _ _ (chan_rep.Closed draining)) with "[$His_cap] Hown Hoc")
           as "[Hown1 Hown2]".
-        { simpl. destruct draining; auto. }
+        { simpl. destruct draining; [done|].
+          iPureIntro. move: Hcapvalid; len.
+        }
         iMod ("Hcont" with "Hown1") as "Hcont".
         iModIntro.
         have Hpos : 0 ≤ sint.Z (W64 0) by word.

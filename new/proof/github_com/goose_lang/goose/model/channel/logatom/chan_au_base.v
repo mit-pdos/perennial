@@ -97,7 +97,7 @@ Definition chanΣ V : gFunctors :=
 Proof. solve_inG. Qed.
 
 Section base.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
@@ -361,9 +361,15 @@ Qed.
 
 Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
   match s with
-  | chan_rep.Buffered buf => (0 ≤ Z.of_nat (length buf) ≤ cap)%Z ∧ (0 < cap)
+  | chan_rep.Buffered buf =>
+      (* Buffered is only used for buffered channels, and buffer size is bounded
+      by capacity *)
+      (Z.of_nat (length buf) ≤ cap)%Z ∧ (0 < cap)
   | chan_rep.Closed [] => True              (* Empty closed channels might have been unbuffered, doesn't matter *)
-  | chan_rep.Closed _ => (0 < cap)%Z (* Draining closed channels are buffered channels *)
+  | chan_rep.Closed draining =>
+      (* Draining closed channels are buffered channels, and draining elements
+      are bounded by capacity *)
+      (Z.of_nat (length draining) ≤ cap) ∧ (0 < cap)
   | _ => cap = 0                            (* All other states are unbuffered *)
   end.
 
@@ -442,6 +448,21 @@ Proof.
   iNamed 1.
   iDestruct (chan_cap_agree with "Hcap Hcap0") as %Heq; subst.
   simpl in Hcapvalid.
+  iPureIntro. lia.
+Qed.
+
+Lemma own_channel_drain_size ch γ cap draining :
+  chan_cap γ cap -∗
+  own_channel ch (chan_rep.Closed draining) γ -∗
+  ⌜Z.of_nat (length draining) ≤ cap⌝.
+Proof.
+  iIntros "Hcap0".
+  iNamed 1.
+  iDestruct (chan_cap_agree with "Hcap Hcap0") as %Heq; subst.
+  iDestruct (chan_cap_to_bound with "Hcap") as %Hbound.
+  simpl in Hcapvalid.
+  destruct draining.
+  { simpl. iPureIntro; lia. }
   iPureIntro. lia.
 Qed.
 
