@@ -425,7 +425,7 @@ Qed.
 Lemma wp_TrySend_nb (ch: loc) (cap: Z) (v: V) (γ: chan_names) :
   ∀ Φ,
   is_channel ch cap γ -∗
-  send_au_fast ch cap v γ (Φ (#true)) ∧ Φ (#false) -∗
+  send_au_fast ch cap v γ (Φ (#true)) (Φ (#false)) -∗
   WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #false {{ Φ }}.
 Proof.
   intros. iIntros "Hunb". iIntros "HΦ".
@@ -438,37 +438,42 @@ Proof.
 
   (* Case analysis on channel state *)
   destruct s.
-
-  { (* Buffered channel *)
+  - (* Buffered channel *)
     iNamed "phys". iNamed "offer". wp_auto. unfold chan_cap_valid in Hcapvalid.
-    wp_if_destruct.
-    {
-      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
-      iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
-      iDestruct (slice.own_slice_len with "slice") as "[%Hlen_slice %Hslgtz]".
-      iDestruct (own_slice_wf with "slice") as "%Hwf".
-      wp_apply (wp_slice_append with "[$slice $Hsl $slice_cap]").
-      iIntros (fr) "(Hfr & Hfrsl & Hsl)". wp_auto_lc 1.
-      unfold send_au_slow.
-
-      iApply fupd_wp. iLeft in "HΦ". iMod "HΦ" as "HΦ".
-      iMod (lc_fupd_elim_later with "[$] HΦ") as "Hlogatom".
-      iNamed "Hlogatom".
-      iAssert (own_channel ch cap (chan_rep.Buffered buff) γ)%I with "[Hchanrepfrag]" as "Hown".
-      { iFrame. iPureIntro. unfold chan_cap_valid. done. }
-      iDestruct (own_channel_agree with "[$Hown] [$Hoc]") as "%Hseq".
-      subst s.
-
-      iDestruct (own_channel_halves_update (chan_rep.Buffered (buff ++ [v]))
+    iDestruct (own_slice_len with "slice") as "%Hlen".
+    iDestruct (own_slice_wf with "slice") as "%Hwf".
+    iDestruct (own_slice_cap_wf with "slice_cap") as "%Hwf2".
+    iApply fupd_wp. iMod "HΦ" as "HΦ".
+    iMod (lc_fupd_elim_later with "[$] HΦ") as "Hlogatom".
+    iNamed "Hlogatom".
+    iAssert (own_channel ch cap (chan_rep.Buffered buff) γ)%I with "[Hchanrepfrag]" as "Hown".
+    { iFrame. iPureIntro. unfold chan_cap_valid. done. }
+    iDestruct (own_channel_agree with "[$Hown] [$Hoc]") as "%Hseq". subst.
+    destruct decide.
+    + iDestruct (own_channel_halves_update (chan_rep.Buffered (buff ++ [v]))
         with "[$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
       { done. }
-      destruct (decide (length buff < cap)) eqn: Heq.
-      {
-        iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
-        wp_call.
-        wp_apply (wp_lock_unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
-        { unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
-        done.
+      iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
+      assert (sint.Z cap = cap) by admit.
+      rewrite bool_decide_true; last word.
+      wp_auto.
+
+      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
+      wp_apply (wp_slice_append with "[$slice $Hsl $slice_cap]").
+      iIntros (fr) "(Hfr & Hfrsl & Hsl)". wp_auto.
+      wp_call.
+      wp_apply (wp_lock_unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
+      { unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
+      done.
+    + iMod ("Hcont" with "Hown") as "Hstep". iModIntro.
+      rewrite bool_decide_false; last word.
+      wp_auto. wp_call.
+      wp_apply (wp_lock_unlock
+        with "[$lock state slice_cap Hoc buffer slice $Hlock]").
+      { unfold chan_inv_inner. iExists (Buffered buff). iFrame. }
+      done.
+  - (* Idle *)
+  }
       }
       {
         replace (sint.Z slice_val.(slice.len_f)) with (sint.Z (length buff)) in * by word.
@@ -477,12 +482,19 @@ Proof.
     }
     {
       wp_call.
+      iApply fupd_wp. iMod "HΦ" as "HΦ".
+      iMod (lc_fupd_elim_later with "[$] HΦ") as "Hlogatom".
+      iNamed "Hlogatom".
+      iAssert (own_channel ch cap (chan_rep.Buffered buff) γ)%I with "[Hchanrepfrag]" as "Hown".
+      { iFrame. iPureIntro. unfold chan_cap_valid. done. }
+      iDestruct (own_channel_agree with "[$Hown] [$Hoc]") as "%Hseq".
+      subst s.
       wp_apply (wp_lock_unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
       { unfold chan_inv_inner. iExists (Buffered buff). iFrame.
         iPureIntro. done.
       }
-      iRight in "HΦ". done.
+      done.
     }
   }
 

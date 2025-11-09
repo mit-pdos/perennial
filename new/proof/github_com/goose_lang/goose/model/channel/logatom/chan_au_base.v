@@ -447,7 +447,7 @@ Definition rcv_au_slow ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp �
     end).
 
 (** Fast path receive: immediate completion when possible *)
-Definition rcv_au_fast ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
+Definition rcv_au_fast ch cap γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_channel ch cap s γ ∗
      "Hcont" ∷
@@ -461,7 +461,7 @@ Definition rcv_au_fast ch (cap: Z) (γ: chan_names) (Φ : V → bool → iProp �
     | chan_rep.Closed (v::rest) => (own_channel ch cap (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
     (* Case: Buffered channel with values *)
     | chan_rep.Buffered (v::rest) => (own_channel ch cap (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
-    | _ => True
+    | _ => (own_channel ch cap s γ ={∅,⊤}=∗ Φnotready)
     end).
 
 (** Inner atomic update for send completion (second phase of handshake) *)
@@ -502,7 +502,7 @@ Definition send_au_slow ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : i
     end).
 
 (** Fast path send: immediate completion when possible *)
-Definition send_au_fast ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
+Definition send_au_fast ch cap (v : V) γ Φ Φnotready : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_channel ch cap s γ ∗
      "Hcont" ∷
@@ -516,8 +516,8 @@ Definition send_au_fast ch (cap: Z) (v : V) (γ: chan_names) (Φ : iProp Σ) : i
     | chan_rep.Buffered buff =>
         if decide (length buff < cap)
         then (own_channel ch cap (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
-        else True
-    | _ => True
+        else (own_channel ch cap s γ ={∅,⊤}=∗ Φnotready)
+    | _ => (own_channel ch cap s γ ={∅,⊤}=∗ Φnotready)
     end).
 
 
