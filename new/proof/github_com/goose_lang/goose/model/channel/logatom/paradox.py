@@ -6,6 +6,7 @@
 # ]
 # ///
 
+# ruff: noqa: F403, F405
 from z3 import *
 
 State = Datatype("State")
