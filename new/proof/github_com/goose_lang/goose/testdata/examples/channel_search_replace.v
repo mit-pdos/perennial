@@ -145,7 +145,7 @@ Proof using chan_protocolG0 waitgroup_joinG0 syncG0.
   wp_if_destruct.
   2:{
     wp_apply wp_fork.
-      { wp_apply wp_worker; last done. iFrame "#". }
+      { wp_apply wp_worker; last done. iDestruct "Hchan" as "[%H Hsimp]". iFrame "#". }
       wp_for_post. iFrame.
   }
 
@@ -192,7 +192,9 @@ Proof using chan_protocolG0 waitgroup_joinG0 syncG0.
   { subst nextOffset. word. }
   rewrite drop_drop.
   wp_apply (wp_simple_send with "[Hdone Hsection]").
-  { iFrame "#". iFrame. }
+  { iFrame "#". iDestruct "Hchan" as "[%H' Hsimp]". iSplitL "Hsimp". { iFrame "#". }
+    iFrame.
+    }
   wp_for_post.
   iFrame. iExists _.
   iSplitL "Hs".
