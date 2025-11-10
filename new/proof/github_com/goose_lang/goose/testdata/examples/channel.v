@@ -964,20 +964,19 @@ Lemma wp_MapServer (my_stream: stream.t) :
 Proof using chan_protocolG0 chan_protocolG1 globalsGS0.
   wp_start.
   iNamed "Hpre".
-  rewrite /chan.for_range.
   wp_auto.
   iDestruct "Hpre" as (Heq) "[#Hf_spec Hprot]".
-  iAssert (∃ (in_val: go_string),
-    "in" ∷ in_ptr ↦ in_val ∗
+  iAssert (
     "s" ∷ s_ptr ↦ my_stream ∗
 
     "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣
                  iProto_dual (mapper_service_prot Φpre Φpost)
-  )%I with "[in s Hf_spec Hprot]" as "IH".
-  { iExists _. iFrame. subst. iFrame. }
+  )%I with "[s Hf_spec Hprot]" as "IH".
+  { iFrame. subst. iFrame. }
 
   wp_for.
   iNamed "IH".
+  wp_auto.
 
   wp_recv (req_val) as "Hreq".
   wp_auto.

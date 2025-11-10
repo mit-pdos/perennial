@@ -919,21 +919,21 @@ Definition MapServer : go_string := "github.com/goose-lang/goose/testdata/exampl
 Definition MapServerⁱᵐᵖˡ : val :=
   λ: "s",
     exception_do (let: "s" := (mem.alloc "s") in
-    let: "$range" := (![type.chanT #stringT] (struct.field_ref #stream #"req"%go "s")) in
-    (let: "in" := (mem.alloc (type.zero_val #stringT)) in
-    chan.for_range #stringT "$range" (λ: "$key",
-      do:  ("in" <-[#stringT] "$key");;;
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "in" := (mem.alloc (type.zero_val #stringT)) in
+      let: "$r0" := (Fst (chan.receive #stringT (![type.chanT #stringT] (struct.field_ref #stream #"req"%go "s")))) in
+      do:  ("in" <-[#stringT] "$r0");;;
       do:  (let: "$chan" := (![type.chanT #stringT] (struct.field_ref #stream #"res"%go "s")) in
       let: "$v" := (let: "$a0" := (![#stringT] "in") in
       (![#funcT] (struct.field_ref #stream #"f"%go "s")) "$a0") in
-      chan.send #stringT "$chan" "$v")));;;
+      chan.send #stringT "$chan" "$v"));;;
     return: #()).
 
 Definition Muxer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Muxer"%go.
 
 (* 3. Muxer - SPSC for streams
 
-   go: muxer.go:30:6 *)
+   go: muxer.go:31:6 *)
 Definition Muxerⁱᵐᵖˡ : val :=
   λ: "c",
     exception_do (let: "c" := (mem.alloc "c") in
@@ -948,7 +948,7 @@ Definition Muxerⁱᵐᵖˡ : val :=
 
 Definition CancellableMapServer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableMapServer"%go.
 
-(* go: muxer.go:36:6 *)
+(* go: muxer.go:37:6 *)
 Definition CancellableMapServerⁱᵐᵖˡ : val :=
   λ: "s" "done",
     exception_do (let: "done" := (mem.alloc "done") in
@@ -980,7 +980,7 @@ Definition CancellableMuxer : go_string := "github.com/goose-lang/goose/testdata
 
 (* 4. CancellableMuxer - muxer with cancellation
 
-   go: muxer.go:51:6 *)
+   go: muxer.go:52:6 *)
 Definition CancellableMuxerⁱᵐᵖˡ : val :=
   λ: "c" "done" "errMsg",
     exception_do (let: "errMsg" := (mem.alloc "errMsg") in
@@ -1011,7 +1011,7 @@ Definition CancellableMuxerⁱᵐᵖˡ : val :=
 
 Definition makeGreeting : go_string := "github.com/goose-lang/goose/testdata/examples/channel.makeGreeting"%go.
 
-(* go: muxer.go:65:6 *)
+(* go: muxer.go:66:6 *)
 Definition makeGreetingⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "mux" := (mem.alloc (type.zero_val (type.chanT #stream))) in
