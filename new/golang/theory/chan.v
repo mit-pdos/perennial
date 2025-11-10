@@ -148,7 +148,7 @@ Proof.
   - repeat setoid_rewrite bi.and_exist_r.
     iDestruct "HΦ" as (V γ v' ? ? ?) "HΦ".
     iNamed "HΦ". iAssert (⌜ v = #v' ⌝ ∗ is_channel ch γ)%I with "[-]" as "[-> #?]".
-    { iLeft in "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". iFrame "#". done. }.
+    { iLeft in "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". iFrame "#". done. }
     wp_apply (wp_TrySend with "[$]").
     iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "(_ & _ & Hau)".
@@ -175,7 +175,7 @@ Proof.
   - repeat setoid_rewrite bi.and_exist_r.
     iDestruct "HΦ" as (V γ ? ? ?) "HΦ".
     iAssert (is_channel ch γ)%I with "[-]" as "#?".
-    { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }.
+    { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }
     wp_apply (wp_TryReceive with "[$]").
     iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "[_ Hau]".
