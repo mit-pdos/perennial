@@ -71,12 +71,12 @@ Proof.
 Qed.
 
 Lemma simple_rcv_au γ ch P Φ  :
-  is_simple γ ch P ∗ £1 ∗ £1 ⊢
-  (▷ ∀ v, P v -∗ Φ v true ) -∗
+  is_simple γ ch P ⊢
   £1 ∗ £1  -∗
-  rcv_au_slow ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  (▷ ∀ v, P v -∗ Φ v true ) -∗
+  rcv_au_slow ch γ.(chan_name) Φ.
 Proof.
-  iIntros "(#Hsimple & ? & ?) HΦ (Hlc1 & Hlc2 )".
+  iIntros "#Hsimple (Hlc1 & Hlc2 ) HΦ".
   iNamed "Hsimple".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
@@ -184,7 +184,7 @@ Proof.
   iNamed "Hsimple".
   wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
-  iApply (simple_rcv_au with "[$Hlc3 $Hlc4][HΦ][$Hlc1 $Hlc2]").
+  iApply (simple_rcv_au with "[] [$Hlc1 $Hlc2]").
   {
     iFrame "#".
   }
@@ -193,11 +193,11 @@ Proof.
   }
 Qed.
 
-Lemma simple_send_au γ ch P v (Φ: val → iProp Σ) :
+Lemma simple_send_au γ ch P v (Φ: iProp Σ) :
   is_simple γ ch P ∗ £1 ∗ £1 ⊢
   P v -∗
-  (▷ Φ #()) -∗
-  send_au_slow ch v γ.(chan_name) (Φ #()).
+  (▷ Φ) -∗
+  send_au_slow ch v γ.(chan_name) Φ.
 Proof.
   iIntros "(#Hsimple & ? & ?) HP HΦ".
   iNamed "Hsimple".

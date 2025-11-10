@@ -127,19 +127,14 @@ Proof using chan_protocolG0 chan_protocolG1.
       iFrame "#".
 
       iApply ((simple_rcv_au  (V:=go_string)  γfuture ch)
-               with " [-HΦ Hlc1 Hlc2][HΦ][$Hlc1 $Hlc2]").
-      {
-        iFrame "#".
-        iFrame.
-      }
-      {
+               with " [$Hfut] [$]").
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto.
       subst v.
       iApply "HΦ".
       iPureIntro.
-      right. done. }
-      }
+      right. done.
+    }
     {
       iFrame "Hdonech".
 
