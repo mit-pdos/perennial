@@ -43,7 +43,7 @@ Proof. apply _. Qed.
 Lemma start_simple (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
   is_channel ch γ -∗
   own_channel ch chan_rep.Idle γ ={⊤}=∗
-  ∃ γdone, is_simple γdone ch P.
+  ∃ γsimple,  ⌜γ = γsimple.(chan_name)⌝ ∗ is_simple γsimple ch P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -58,7 +58,7 @@ Qed.
 Lemma start_simple_buffered (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
   is_channel ch γ -∗
   own_channel ch (chan_rep.Buffered []) γ ={⊤}=∗
-  ∃ γsimple, is_simple γsimple ch P.
+  ∃ γsimple,  ⌜γ = γsimple.(chan_name)⌝ ∗  is_simple γsimple ch P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -72,10 +72,11 @@ Qed.
 
 Lemma simple_rcv_au γ ch P Φ  :
   is_simple γ ch P ∗ £1 ∗ £1 ⊢
-  (▷ ∀ v, P v -∗ Φ (#v, #true)%V) -∗
-  rcv_au_slow ch γ.(chan_name) (λ v ok, Φ (#v, #ok)%V).
+  (▷ ∀ v, P v -∗ Φ v true ) -∗
+  £1 ∗ £1  -∗
+  rcv_au_slow ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
-  iIntros "(#Hsimple & ? & ?) HΦ".
+  iIntros "(#Hsimple & ? & ?) HΦ (Hlc1 & Hlc2 )".
   iNamed "Hsimple".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
@@ -182,9 +183,14 @@ Proof.
   wp_start_folded as "#Hsimple".
   iNamed "Hsimple".
   wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
-  iIntros "(? & ? & ? & ?)".
-  iApply (simple_rcv_au with "[$]").
-  iFrame.
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
+  iApply (simple_rcv_au with "[$Hlc3 $Hlc4][HΦ][$Hlc1 $Hlc2]").
+  {
+    iFrame "#".
+  }
+  {
+   iNext. iFrame.
+  }
 Qed.
 
 Lemma simple_send_au γ ch P v (Φ: val → iProp Σ) :

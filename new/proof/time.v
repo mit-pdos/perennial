@@ -80,7 +80,7 @@ Proof.
   iIntros (ch γ) "(His & Hcap & Hown)".
   simpl.
   iMod (start_simple _ _ (λ t, True)%I
-          with "[$His] [$Hown]") as (γsimple) "#Hch".
+          with "[$His] [$Hown]") as (γsimple) "[_ #Hch]".
   wp_auto.
   wp_apply wp_fork.
   {
