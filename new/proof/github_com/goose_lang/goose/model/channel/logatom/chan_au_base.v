@@ -470,6 +470,24 @@ Definition rcv_au_slow ch (γ: chan_names) (Φ : V → bool → iProp Σ) : iPro
 
 (** Fast path receive: immediate completion when possible *)
 Definition rcv_au_fast ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
+  (|={⊤,∅}=>
+     ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
+           "Hcont" ∷
+             match s with
+             (* Case: Sender is waiting, can complete immediately *)
+             | chan_rep.SndPending v =>
+                 own_channel ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
+             (* Case: Channel is closed *)
+             | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+             (* Case: Channel is closed but still has values to drain *)
+             | chan_rep.Closed (v::rest) => (own_channel ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
+             (* Case: Buffered channel with values *)
+             | chan_rep.Buffered (v::rest) => (own_channel ch (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
+             | _ => True
+             end) ∧
+  Φnotready.
+
+Definition rcv_au_fast_alt ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
      "Hcont" ∷
@@ -486,16 +504,15 @@ Definition rcv_au_fast ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp �
     | _ => (own_channel ch s γ ={∅,⊤}=∗ Φnotready)
     end).
 
-(* FIXME: not true anymore. *)
 Lemma blocking_rcv_implies_nonblocking ch γ (Φ : V → bool → iProp Σ) :
   rcv_au_slow ch γ Φ -∗
   rcv_au_fast ch γ Φ True.
 Proof.
   iIntros "Hau".
-  iMod "Hau" as (s) "[Hoc Hcont]".
+  iSplitL; last done. iMod "Hau" as (s) "[Hoc Hcont]".
   iModIntro. iExists s. iFrame "Hoc".
   destruct s; try done.
-Abort.
+Qed.
 
 (** Inner atomic update for send completion (second phase of handshake) *)
 Definition send_au_inner ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
@@ -535,7 +552,24 @@ Definition send_au_slow ch (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :
     end).
 
 (** Fast path send: immediate completion when possible *)
-(* TODO: is there a weaker predicate that implies this and has lower
+Definition send_au_fast ch (v : V) γ Φ Φnotready : iProp Σ :=
+  (|={⊤,∅}=>
+     ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
+           "Hcont" ∷
+             match s with
+             (* Case: Receiver is waiting, can complete immediately *)
+             | chan_rep.RcvPending =>
+                 own_channel ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
+             (* Case: Channel is closed, client must rule this out *)
+             | chan_rep.Closed draining => False
+             (* Case: Buffered channel *)
+             | chan_rep.Buffered buff =>
+                   (own_channel ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
+             | _ => True
+             end) ∧
+  Φnotready.
+
+(* Q: is there a good way to combine this and [send_au_fast]?
    complexity? The (∃ b) stuff comes from writing out the join of the two
    incomparable specs (the old one and the new one).
 
@@ -560,36 +594,34 @@ Definition send_au_slow ch (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :
    ((atomic update with only Φ) ∧ Φnotready) ∨ (atomic update update to either Φ or Φnotready) =
    ∃ b,
    (atomic update with Φ and (if (not b) then Φnotready is included)) ∧ (if b then Φnotready) *)
-Definition send_au_fast ch (v : V) γ Φ Φnotready : iProp Σ :=
-  ∃ (b : bool),
-    (|={⊤,∅}=>
-       ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
-             "Hcont" ∷
-               match s with
-               (* Case: Receiver is waiting, can complete immediately *)
-               | chan_rep.RcvPending =>
-                   own_channel ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
-               (* Case: Channel is closed, client must rule this out *)
-               | chan_rep.Closed draining => False
-               (* Case: Buffered channel *)
-               | chan_rep.Buffered buff =>
-                   if decide (length buff < chan_cap γ) then
-                     (own_channel ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
-                   else
-                     (if b then (own_channel ch s γ ={∅,⊤}=∗ Φnotready) else True)
-               | _ => (if b then (own_channel ch s γ ={∅,⊤}=∗ Φnotready) else True)
-               end) ∧
-     (if b then Φnotready else True).
+Definition send_au_fast_alt ch (v : V) γ Φ Φnotready : iProp Σ :=
+  |={⊤,∅}=>
+    ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
+          "Hcont" ∷
+            match s with
+            (* Case: Receiver is waiting, can complete immediately *)
+            | chan_rep.RcvPending =>
+                own_channel ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
+            (* Case: Channel is closed, client must rule this out *)
+            | chan_rep.Closed draining => False
+            (* Case: Buffered channel *)
+            | chan_rep.Buffered buff =>
+                if decide (length buff < chan_cap γ) then
+                  (own_channel ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
+                else
+                  (own_channel ch s γ ={∅,⊤}=∗ Φnotready)
+            | _ => (own_channel ch s γ ={∅,⊤}=∗ Φnotready)
+            end.
 
 Lemma blocking_send_implies_nonblocking ch v γ (Φ : iProp Σ) :
   send_au_slow ch v γ Φ -∗
   send_au_fast ch v γ Φ True.
 Proof.
   iIntros "Hchan".
-  iExists false. iSplitL; last done.
+  iSplitL; last done.
   iMod "Hchan" as (s) "[Hoc Hcont]".
   iModIntro. iExists s. iFrame "Hoc".
-  destruct s; try done. destruct decide; done.
+  destruct s; try done.
 Qed.
 
 Definition close_au ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
