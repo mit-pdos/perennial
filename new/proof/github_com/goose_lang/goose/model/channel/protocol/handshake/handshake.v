@@ -22,10 +22,10 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
   ---------------------------------------------------------------------------*)
 Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
-  is_channel ch 0 γ  ∗
+  is_channel ch γ  ∗
   inv nroot (
       ∃ s,
-        "Hch" ∷ own_channel ch 0 s γ ∗
+        "Hch" ∷ own_channel ch s γ ∗
     (match s with
      | chan_rep.Idle =>
         True
@@ -39,8 +39,8 @@ Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
     )).
 
 Lemma start_handshake ch P Q  γ:
-  is_channel  ch 0 γ  -∗
-  own_channel  ch 0 chan_rep.Idle γ ={⊤}=∗
+  is_channel  ch γ  -∗
+  own_channel  ch chan_rep.Idle γ ={⊤}=∗
   is_handshake γ ch P Q .
 Proof.
     intros.
@@ -63,7 +63,7 @@ Lemma wp_handshake_receive γ ch P Q :
   }}}.
 Proof.
   iIntros (?) "(Hpc & (#Hchan & #Hinv) & HQ) HΦ".
-  wp_apply ((chan.wp_receive ch 0  γ Φ  ) with "[$Hchan]").
+  wp_apply ((chan.wp_receive ch γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
    iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".
@@ -103,7 +103,7 @@ Lemma wp_handshake_send γ ch v P Q :
   }}}.
 Proof.
   iIntros (?) "(Hpc & (#Hchan & #Hinv) & HP) HΦ".
-  wp_apply ((chan.wp_send ch 0 v γ Φ  ) with "[$Hchan]").
+  wp_apply ((chan.wp_send ch v γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
   iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
   iFrame "#".

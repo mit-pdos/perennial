@@ -28,8 +28,9 @@ Lemma wp_make (cap: Z) {B: BoundedTypeSize t} :
   {{{ True }}}
     chan.make #t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
-      is_channel ch cap γ ∗
-      own_channel ch cap (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
+      is_channel ch γ ∗
+      ⌜chan_cap γ = cap⌝ ∗
+      own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
   intros Hcap.
@@ -39,10 +40,10 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_send (ch: loc) (cap: Z) (v: V) (γ: chan_names):
+Lemma wp_send (ch: loc) (v: V) (γ: chan_names):
   ∀ Φ,
-  is_channel ch cap γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch cap v γ (Φ #())) -∗
+  is_channel ch γ -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch v γ (Φ #())) -∗
   WP chan.send #t #ch #v {{ Φ }}.
 Proof.
   wp_start as "#Hch".
@@ -51,10 +52,10 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_close (ch: loc) (cap: Z) (γ: chan_names):
+Lemma wp_close (ch: loc) (γ: chan_names):
   ∀ Φ,
-  is_channel ch cap γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch cap γ (Φ #())) -∗
+  is_channel ch γ -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch γ (Φ #())) -∗
   WP chan.close #t #ch {{ Φ }}.
 Proof.
   wp_start as "#Hch".
@@ -63,10 +64,10 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_receive (ch: loc) (cap: Z) (γ: chan_names) :
+Lemma wp_receive (ch: loc) (γ: chan_names) :
   ∀ Φ,
-  is_channel ch cap γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ rcv_au_slow ch cap γ (λ v ok, Φ (#v, #ok)%V)) -∗
+  is_channel ch γ -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ rcv_au_slow ch γ (λ v ok, Φ (#v, #ok)%V)) -∗
   WP chan.receive #t #ch {{ Φ }}.
 Proof.
   wp_start as "#Hch".
@@ -75,10 +76,10 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_cap (ch: loc) (cap: Z) (γ: chan_names) :
-  {{{ is_channel ch cap γ }}}
+Lemma wp_cap (ch: loc) (γ: chan_names) :
+  {{{ is_channel ch γ }}}
     chan.cap #t #ch
-  {{{ RET #(W64 cap); True }}}.
+  {{{ RET #(W64 (chan_cap γ)); True }}}.
 Proof.
   wp_start as "#Hch".
   wp_call.
@@ -118,14 +119,14 @@ Lemma wp_select_blocking (cases : list op) :
   ([∧ list] case ∈ cases,
      match case with
      | select_send_f t send_val send_chan send_handler =>
-         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
+         ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
-             is_channel (V:=V) (t:=t) send_chan cap γ ∗
-             send_au_slow send_chan cap v γ (WP #send_handler #() {{ Φ }})
+             is_channel (V:=V) (t:=t) send_chan γ ∗
+             send_au_slow send_chan v γ (WP #send_handler #() {{ Φ }})
      | select_receive_f t recv_chan recv_handler =>
-         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
-             is_channel (V:=V) (t:=t) recv_chan cap γ ∗
-             rcv_au_slow recv_chan cap γ (λ (v: V) ok,
+         ∃ γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+             is_channel (V:=V) (t:=t) recv_chan γ ∗
+             rcv_au_slow recv_chan γ (λ (v: V) ok,
                WP #recv_handler (#v, #ok)%V {{ Φ }})
      end
   ) -∗
@@ -141,14 +142,14 @@ Lemma wp_select_nonblocking (cases : list op) (def: func.t) :
   ([∧ list] case ∈ cases,
      match case with
      | select_send_f t send_val send_chan send_handler =>
-         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
+         ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
-             is_channel (V:=V) (t:=t) send_chan cap γ ∗
-             send_au_fast send_chan cap v γ (WP #send_handler #() {{ Φ }})
+             is_channel (V:=V) (t:=t) send_chan γ ∗
+             send_au_fast send_chan v γ (WP #send_handler #() {{ Φ }})
      | select_receive_f t recv_chan recv_handler =>
-         ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
-             is_channel (V:=V) (t:=t) recv_chan cap γ ∗
-             rcv_au_fast recv_chan cap γ (λ (v: V) ok,
+         ∃ γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+             is_channel (V:=V) (t:=t) recv_chan γ ∗
+             rcv_au_fast recv_chan γ (λ (v: V) ok,
                WP #recv_handler #v {{ Φ }})
      end
   ) ∧ WP #def #() {{ Φ }} -∗

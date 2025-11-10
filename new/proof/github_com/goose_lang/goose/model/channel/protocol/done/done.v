@@ -52,10 +52,10 @@ Definition Notified (γ : done_names) (Q : iProp Σ) : iProp Σ :=
     saved_prop_own prop_gname (DfracOwn (1/2)) Q.
 
 Definition is_done (γ : done_names) (ch : loc) : iProp Σ :=
-  is_channel ch 0 γ.(chan_name) ∗
+  is_channel ch γ.(chan_name) ∗
   inv nroot (
     ∃ (s : chan_rep.t V) (m : gmap nat gname) (Qs: list (iProp Σ)),
-      "Hch" ∷ own_channel ch 0 s γ.(chan_name) ∗
+      "Hch" ∷ own_channel ch s γ.(chan_name) ∗
       "Hmap" ∷ ghost_map_auth γ.(receivers_map_name) (1/2)%Qp m ∗
       match s with
       | chan_rep.Idle => True
@@ -188,8 +188,8 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
 Qed.
 
 Lemma start_done (ch : loc) (γ : chan_names) :
-  is_channel ch 0 γ -∗
-  own_channel ch 0 chan_rep.Idle γ ={⊤}=∗
+  is_channel ch γ -∗
+  own_channel ch chan_rep.Idle γ ={⊤}=∗
   ∃ γdone, is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
@@ -206,7 +206,7 @@ Proof.
   |}).
   iMod (inv_alloc nroot _ (
     ∃ s m Qs,
-      "Hch" ∷ own_channel ch 0 s γ ∗
+      "Hch" ∷ own_channel ch s γ ∗
       "Hmap" ∷ ghost_map_auth γmap (1/2)%Qp m ∗
       match s with
       | chan_rep.Idle => True
@@ -247,7 +247,7 @@ Proof.
 Qed.
 
 Lemma done_is_channel γ ch :
-  is_done γ ch ⊢ is_channel ch 0 γ.(chan_name).
+  is_done γ ch ⊢ is_channel ch γ.(chan_name).
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
@@ -257,7 +257,7 @@ Lemma done_close_au γ ch R Φ :
   £1 ∗ £1 ∗ £1 -∗
   Notify γ R ∗ R -∗
   ▷ Φ -∗
-  close_au ch 0 γ.(chan_name) Φ.
+  close_au ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hdone". iIntros "(Hlc1 & Hlc2 & Hlc3)". iIntros "[HNh HR]".
   unfold Notify. iNamed "HNh". iDestruct "HNh" as "[HProps Hsp]".
@@ -314,7 +314,7 @@ Proof.
   iDestruct "Hrest" as "[HNh HR]".
   iIntros "Hphi".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
-  iApply (chan.wp_close ch 0 γ.(chan_name) with "[$Hch]").
+  iApply (chan.wp_close ch γ.(chan_name) with "[$Hch]").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
   iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
   { iFrame "#". }
@@ -327,7 +327,7 @@ Lemma done_receive_au γ ch Q  :
   Notified γ Q -∗
   ▷ (Q -∗ Φ (default_val V) false) -∗
   £1 ∗ £1 ∗ £1 ∗ £1 -∗
-  rcv_au_slow ch 0 γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  rcv_au_slow ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   intros Φ.
   iIntros "#Hdone".
@@ -471,7 +471,7 @@ Lemma wp_done_receive γ ch Q :
 Proof.
   iIntros (Φ) "(#Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
-   iApply (chan.wp_receive ch 0 γ.(chan_name) with "[$Hch]").
+   iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
 
 
 
