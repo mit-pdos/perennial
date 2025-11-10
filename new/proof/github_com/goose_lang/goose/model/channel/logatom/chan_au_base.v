@@ -535,35 +535,62 @@ Definition send_au_slow ch (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :
     end).
 
 (** Fast path send: immediate completion when possible *)
-Definition send_au_fast ch (v : V) γ Φ Φnotready : iProp Σ :=
-   |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
-     "Hcont" ∷
-       (match s with
-        (* Case: Receiver is waiting, can complete immediately *)
-        | chan_rep.RcvPending =>
-            own_channel ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
-        (* Case: Channel is closed, client must rule this out *)
-        | chan_rep.Closed draining => False
-        (* Case: Buffered channel *)
-        | chan_rep.Buffered buff =>
-            if decide (length buff < chan_cap γ) then
-              (own_channel ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
-            else
-              (own_channel ch s γ ={∅,⊤}=∗ Φnotready)
-        | _ => (own_channel ch s γ ={∅,⊤}=∗ Φnotready)
-        end).
+(* TODO: is there a weaker predicate that implies this and has lower
+   complexity? The (∃ b) stuff comes from writing out the join of the two
+   incomparable specs (the old one and the new one).
 
-(* FIXME: not true anymore. *)
+   old spec := ((|={⊤,∅}=> T ∨ N) ∧ Ψ)
+   new spec := (|={⊤,∅}=> T ∨ (N ∗ (N ={∅,⊤}=∗ Ψ)))
+   where T := (R ∗ (D ={∅,⊤}=∗ Φ)), where N is ownership of a not-ready state, R
+   is ownership of a ready state, D is ownership of a done state, and Ψ =
+   Φnotready.
+
+   One can't prove (new_spec -∗ old_spec) because Ψ in new_spec gets to rely on
+   knowing it only runs in the notready case. Also
+
+   One also probably can't prove (old_spec -∗ new_spec) because (among other
+   possible reasons) old spec does not provide `|={∅,⊤}=>` in the notready case,
+   and we'd need to somehow close all invariants. This challenge of "I decided I
+   don't want to update any ghost state, so I'd like to close all invariants by
+   putting everything back as it was" has the feeling of aborting in logical
+   atomicity (though it does *not* require a fixpoint to reestablish the entire
+   update).
+
+   (old spec) ∨ (new spec) =
+   ((atomic update with only Φ) ∧ Φnotready) ∨ (atomic update update to either Φ or Φnotready) =
+   ∃ b,
+   (atomic update with Φ and (if (not b) then Φnotready is included)) ∧ (if b then Φnotready) *)
+Definition send_au_fast ch (v : V) γ Φ Φnotready : iProp Σ :=
+  ∃ (b : bool),
+    (|={⊤,∅}=>
+       ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
+             "Hcont" ∷
+               match s with
+               (* Case: Receiver is waiting, can complete immediately *)
+               | chan_rep.RcvPending =>
+                   own_channel ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
+               (* Case: Channel is closed, client must rule this out *)
+               | chan_rep.Closed draining => False
+               (* Case: Buffered channel *)
+               | chan_rep.Buffered buff =>
+                   if decide (length buff < chan_cap γ) then
+                     (own_channel ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
+                   else
+                     (if b then (own_channel ch s γ ={∅,⊤}=∗ Φnotready) else True)
+               | _ => (if b then (own_channel ch s γ ={∅,⊤}=∗ Φnotready) else True)
+               end) ∧
+     (if b then Φnotready else True).
+
 Lemma blocking_send_implies_nonblocking ch v γ (Φ : iProp Σ) :
   send_au_slow ch v γ Φ -∗
   send_au_fast ch v γ Φ True.
 Proof.
   iIntros "Hchan".
+  iExists false. iSplitL; last done.
   iMod "Hchan" as (s) "[Hoc Hcont]".
   iModIntro. iExists s. iFrame "Hoc".
-  destruct s; try done.
-Abort.
+  destruct s; try done. destruct decide; done.
+Qed.
 
 Definition close_au ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
