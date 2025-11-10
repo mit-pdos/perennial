@@ -256,7 +256,7 @@ Proof.
     }
 Qed.
 
-Lemma wp_TrySend (ch: loc) (v: V) (γ: chan_names) :
+Local Lemma wp_TrySend_blocking (ch: loc) (v: V) (γ: chan_names) :
   ∀ Φ,
   is_channel ch γ -∗
   send_au_slow ch v γ (Φ (#true)) ∧ Φ (#false) -∗
@@ -503,10 +503,129 @@ Proof.
     }
 Qed.
 
-Lemma wp_TrySend_nb (ch: loc) (v: V) (γ: chan_names) :
+Local Lemma wp_TrySend_nonblocking (ch: loc) (v: V) (γ: chan_names) :
   ∀ Φ,
   is_channel ch γ -∗
   send_au_fast ch v γ (Φ (#true)) (Φ (#false)) -∗
+  WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #false {{ Φ }}.
+Proof.
+  intros. iIntros "Hunb". iIntros "HΦ". wp_call.
+  iNamed "Hunb". wp_auto_lc 5. wp_call.
+  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
+  iNamedSuffix "Hchan" "_inv".
+
+  (* Case analysis on channel state *)
+  destruct s; iNamedSuffix "phys_inv" "_inv".
+  - (* Buffered channel *)
+    iNamedSuffix "offer_inv" "_inv".
+    wp_auto. unfold chan_cap_valid in *.
+
+    (* TODO: tactics to saturate the context with facts like these? *)
+    iDestruct (own_slice_len with "[$]") as "%Hlen".
+    iDestruct (own_slice_wf with "[$]") as "%Hwf".
+    iDestruct (own_slice_cap_wf with "[$]") as "%Hwf2".
+
+    wp_if_destruct.
+    +
+      iApply fupd_wp. iLeft in "HΦ". iMod "HΦ".
+      iMod (lc_fupd_elim_later with "[$] HΦ") as "Hlogatom".
+      iNamed "Hlogatom". iNamed "Hoc".
+      iCombine "Hchanrepfrag_inv Hchanrepfrag" gives %[_ Hseq]. subst.
+      iDestruct (own_channel_halves_update (chan_rep.Buffered (buff ++ [v]))
+        with "[$Hchanrepfrag] [$Hchanrepfrag_inv]") as ">[Hchanrepfrag Hchanrepfrag_inv]".
+      { simpl in *. len. }
+      { simpl in *. len. }
+      { simpl in *. len. }
+      iMod ("Hcont" with "Hchanrepfrag") as "Hstep". iModIntro.
+      assert (sint.Z γ.(chan_cap) = γ.(chan_cap)) by (destruct γ; simpl in *; word).
+      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
+      wp_apply (wp_slice_append with "[$slice_inv $Hsl $slice_cap_inv]").
+      iIntros (fr) "(slice_inv & slice_cap_inv & Hsl)". wp_auto.
+      wp_call. iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+      { iNamed "Hi". unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
+      done.
+    + wp_call. iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_lock_unlock
+        with "[$lock $Hlock Hi]").
+      { iNamed "Hi". unfold chan_inv_inner. iExists (Buffered buff). iFrame "∗#%". }
+      iRight in "HΦ". done.
+  - (* Idle *)
+    wp_auto_lc 5.
+    wp_call. iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_lock_unlock
+      with "[$lock $Hlock Hi]").
+    { iNamed "Hi". iFrame. unfold chan_inv_inner. iExists (Idle). iFrame. }
+    iRight in "HΦ". iFrame.
+  - (* SndWait *)
+    wp_auto_lc 5.
+    wp_call. iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+    { iNamed "Hi". unfold chan_inv_inner. iExists (SndWait v0). iFrame. }
+    iRight in "HΦ". iFrame.
+  - (* RcvWait - unbuffered channel *)
+    wp_auto_lc 2. iNamedSuffix "offer_inv" "_inv".
+    unfold send_au_slow.
+    iApply fupd_wp. iApply "Hau_inv" in "HP_inv". iMod "HP_inv".
+    iMod (lc_fupd_elim_later with "[$] HP_inv") as "HP_inv". iNamed "HP_inv".
+    iNamed "Hoc".
+    iCombine "Hchanrepfrag_inv Hchanrepfrag" gives %[_ Hseq]. subst.
+    iDestruct (own_channel_halves_update (chan_rep.RcvPending)
+      with "[$Hchanrepfrag] [$Hchanrepfrag_inv]") as ">[Hchanrepfrag Hchanrepfrag_inv]";
+      [done..|].
+    iMod ("Hcont" with "[$Hchanrepfrag]") as "Hcont1_inv". iModIntro.
+    iLeft in "HΦ".
+    iApply fupd_wp.
+    iMod "HΦ".
+    iMod (lc_fupd_elim_later with "[$] HΦ") as "HP".
+    iNamed "HP".
+    iDestruct (own_channel_agree with "[$Hchanrepfrag_inv] [$Hoc]") as "%Hseq". subst s.
+    iDestruct (own_channel_halves_update (chan_rep.SndCommit v)
+      with "[$Hchanrepfrag_inv] [$Hoc]") as ">[Hoc Hchanrepfrag_inv]".
+    { done. }
+    iMod ("Hcont" with "Hoc") as "Hcont". iModIntro.
+    wp_call. iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_lock_unlock
+      with "[$lock $Hlock Hi]").
+    { iNamed "Hi". unfold chan_inv_inner. iExists (SndDone v). iFrame "∗#". }
+    done.
+  - (* SndDone *)
+    wp_auto_lc 2. wp_call. iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_lock_unlock
+      with "[$lock $Hlock Hi]").
+    { iNamed "Hi". unfold chan_inv_inner. iExists (SndDone v0). iFrame. }
+    iRight in "HΦ". iFrame.
+  - (* RcvDone *)
+    wp_auto_lc 2. wp_call. iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_lock_unlock
+      with "[$lock $Hlock Hi]").
+    { iNamed "Hi". unfold chan_inv_inner. iExists (RcvDone v0). iFrame. }
+    iRight in "HΦ". iFrame.
+  - (* Closed *)
+    destruct draining; iNamedSuffix "phys_inv" "_inv".
+    + simpl. iDestruct "offer_inv" as "[Hoc_inv offer_inv]". iLeft in "HΦ".
+      unfold send_au_slow.
+      iApply fupd_wp.
+      iMod "HΦ".
+      iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
+      iNamed "HΦ".
+      iDestruct (own_channel_agree with "Hoc Hoc_inv") as "%Hseq". subst s.
+      done.
+    + simpl. iDestruct "offer_inv" as "Hoc_inv".
+      iLeft in "HΦ".
+      unfold send_au_slow.
+      iApply fupd_wp.
+      iMod "HΦ".
+      iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
+      iNamed "HΦ".
+      iDestruct (own_channel_agree with "[$Hoc] [$Hoc_inv]") as "%Hseq". subst s.
+      done.
+Qed.
+
+Local Lemma wp_TrySend_nonblocking_alt (ch: loc) (v: V) (γ: chan_names) :
+  ∀ Φ,
+  is_channel ch γ -∗
+  send_au_fast_alt ch v γ (Φ (#true)) (Φ (#false)) -∗
   WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #false {{ Φ }}.
 Proof.
   intros. iIntros "Hunb". iIntros "HΦ".
@@ -676,7 +795,25 @@ Proof.
     }
   }
 Qed. *)
+
+
 Admitted.
+
+Lemma wp_TrySend (ch: loc) (v: V) (γ: chan_names) (blocking : bool) :
+  ∀ Φ,
+  is_channel ch γ -∗
+  (if blocking then send_au_slow ch v γ (Φ (#true)) ∧ Φ (#false)
+   else (send_au_fast ch v γ (Φ (#true)) (Φ (#false)) ∨ send_au_fast_alt ch v γ (Φ (#true)) (Φ (#false))))
+  -∗
+  WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #blocking {{ Φ }}.
+Proof.
+  iIntros (?) "#? HΦ".
+  destruct blocking.
+  - wp_apply (wp_TrySend_blocking with "[$] [$]").
+  - iDestruct "HΦ" as "[?|?]".
+    + wp_apply (wp_TrySend_nonblocking with "[$] [$]").
+    + wp_apply (wp_TrySend_nonblocking_alt with "[$] [$]").
+Qed.
 
 Lemma wp_Send (ch: loc) (v: V) (γ: chan_names):
   ∀ Φ,

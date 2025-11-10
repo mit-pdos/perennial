@@ -92,7 +92,6 @@ End proof.
 Section select_proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
 Inductive op :=
@@ -130,14 +129,14 @@ Local Lemma wp_try_select_case_blocking cs Ψ :
   ∀ Φ,
   (match cs with
    | select_send_f t send_val send_chan send_handler =>
-       ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+       ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
      ⌜ send_val = #v ⌝ ∗
-     is_channel (V:=V) (t:=t) send_chan cap γ ∗
-     send_au_slow send_chan cap v γ (WP #send_handler #() {{ Ψ }})
+     is_channel (V:=V) (t:=t) send_chan γ ∗
+     send_au_slow send_chan v γ (WP #send_handler #() {{ Ψ }})
   | select_receive_f t recv_chan recv_handler =>
-      ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
-     is_channel (V:=V) (t:=t) recv_chan cap γ ∗
-     rcv_au_slow recv_chan cap γ (λ (v: V) ok,
+      ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+     is_channel (V:=V) (t:=t) recv_chan γ ∗
+     rcv_au_slow recv_chan γ (λ (v: V) ok,
                                     WP #recv_handler (#v, #ok)%V {{ Ψ }})
    end
   ) ∧ (Φ (#(), #false)%V) -∗
@@ -147,19 +146,18 @@ Proof.
   iIntros (Φ) "HΦ Hwand".
   wp_call. rewrite [in (_ op)]to_val_unseal /=. destruct cs; wp_auto.
   - repeat setoid_rewrite bi.and_exist_r.
-    iNamed "HΦ". iAssert (⌜ v = #a2 ⌝ ∗ is_channel ch a a1)%I with "[-]" as "[-> #?]".
+    iDestruct "HΦ" as (V γ v' ? ? ?) "HΦ".
+    iNamed "HΦ". iAssert (⌜ v = #v' ⌝ ∗ is_channel ch γ)%I with "[-]" as "[-> #?]".
     { iLeft in "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". iFrame "#". done. }.
     wp_apply (wp_TrySend with "[$]").
     iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "(_ & _ & Hau)".
       iMod "Hau". iModIntro. iNext. iNamed "Hau".
       iFrame. destruct s.
-      * case_decide.
-        -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_apply (wp_wand with "Hcont").
-           iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
-        -- iFrame.
+      * iIntros "H". iSpecialize ("Hcont" with "[$]").
+        iMod "Hcont". iModIntro. wp_auto.
+        wp_apply (wp_wand with "Hcont").
+        iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
         destruct s; try iFrame. iIntros "H". iSpecialize ("Hcontinner" with "[$]").
@@ -175,7 +173,8 @@ Proof.
       * iFrame.
     + wp_auto. iRight in "HΦ". done.
   - repeat setoid_rewrite bi.and_exist_r.
-    iNamed "HΦ". iAssert (is_channel ch a a0)%I with "[-]" as "#?".
+    iDestruct "HΦ" as (V γ ? ? ?) "HΦ".
+    iAssert (is_channel ch γ)%I with "[-]" as "#?".
     { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }.
     wp_apply (wp_TryReceive with "[$]").
     iSplit.
@@ -219,14 +218,14 @@ Local Lemma wp_try_select_blocking (cases : list op) :
   ([∧ list] case ∈ cases,
      match case with
      | select_send_f t send_val send_chan send_handler =>
-         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+         ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
      ⌜ send_val = #v ⌝ ∗
-     is_channel (V:=V) (t:=t) send_chan cap γ ∗
-     send_au_slow send_chan cap v γ (WP #send_handler #() {{ Ψ }})
+     is_channel (V:=V) (t:=t) send_chan γ ∗
+     send_au_slow send_chan v γ (WP #send_handler #() {{ Ψ }})
   | select_receive_f t recv_chan recv_handler =>
-      ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
-     is_channel (V:=V) (t:=t) recv_chan cap γ ∗
-     rcv_au_slow recv_chan cap γ (λ (v: V) ok,
+      ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+     is_channel (V:=V) (t:=t) recv_chan γ ∗
+     rcv_au_slow recv_chan γ (λ (v: V) ok,
                                     WP #recv_handler (#v, #ok)%V {{ Ψ }})
    end
   ) ∧ Φ (#(), #false)%V -∗
@@ -260,7 +259,7 @@ Lemma wp_select_blocking (cases : list op) :
              is_channel (V:=V) (t:=t) send_chan γ ∗
              send_au_slow send_chan v γ (WP #send_handler #() {{ Φ }})
      | select_receive_f t recv_chan recv_handler =>
-         ∃ γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+         ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
              is_channel (V:=V) (t:=t) recv_chan γ ∗
              rcv_au_slow recv_chan γ (λ (v: V) ok,
                WP #recv_handler (#v, #ok)%V {{ Φ }})
@@ -271,23 +270,24 @@ Proof.
   iIntros (Φ) "Hcases".
   iLöb as "IH" forall (Φ).
   wp_call. wp_apply (wp_try_select_blocking with "[-]").
-  { iSplit; first iFrame. wp_auto. iApply "IH". iFrame. }
-  iModIntro. iIntros "% HΦ". wp_auto. iFrame.
+  - iSplit; first iFrame.
+    wp_auto. iApply "IH". iFrame.
+  - iModIntro. iIntros "% HΦ". wp_auto. iFrame.
 Qed.
 
 Local Lemma wp_try_select_case_nonblocking cs Ψ :
   ∀ Φ,
   (match cs with
    | select_send_f t send_val send_chan send_handler =>
-       ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+       ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
      ⌜ send_val = #v ⌝ ∗
-     is_channel (V:=V) (t:=t) send_chan cap γ ∗
-     send_au_slow send_chan cap v γ (WP #send_handler #() {{ Ψ }})
+     is_channel (V:=V) (t:=t) send_chan γ ∗
+     send_au_fast send_chan v γ (WP #send_handler #() {{ Ψ }}) True
   | select_receive_f t recv_chan recv_handler =>
-      ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
-     is_channel (V:=V) (t:=t) recv_chan cap γ ∗
-     rcv_au_slow recv_chan cap γ (λ (v: V) ok,
-                                    WP #recv_handler (#v, #ok)%V {{ Ψ }})
+      ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+     is_channel (V:=V) (t:=t) recv_chan γ ∗
+     rcv_au_fast recv_chan γ (λ (v: V) ok,
+                                     WP #recv_handler (#v, #ok)%V {{ Ψ }}) True
    end
   ) ∧ (Φ (#(), #false)%V) -∗
   (∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
@@ -296,19 +296,17 @@ Proof.
   iIntros (Φ) "HΦ Hwand".
   wp_call. rewrite [in (_ op)]to_val_unseal /=. destruct cs; wp_auto.
   - repeat setoid_rewrite bi.and_exist_r.
-    iNamed "HΦ". iAssert (⌜ v = #a2 ⌝ ∗ is_channel ch a a1)%I with "[-]" as "[-> #?]".
+    iNamed "HΦ". iAssert (⌜ v = #a1 ⌝ ∗ is_channel ch a0)%I with "[-]" as "[-> #?]".
     { iLeft in "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". iFrame "#". done. }.
-    wp_apply (wp_TrySend_nb with "[$]").
-    iSplit.
+    wp_apply (wp_TrySend with "[$]").
+    iLeft. iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "(_ & _ & Hau)".
-      iMod "Hau". iModIntro. iNext. iNamed "Hau".
+      iLeft in "Hau". iMod "Hau". iModIntro. iNext. iNamed "Hau".
       iFrame. destruct s.
-      * case_decide.
-        -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_apply (wp_wand with "Hcont").
-           iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
-        -- iFrame.
+      * iIntros "H". iSpecialize ("Hcont" with "[$]").
+        iMod "Hcont". iModIntro. wp_auto.
+        wp_apply (wp_wand with "Hcont").
+        iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * done.
       * done.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
@@ -319,12 +317,12 @@ Proof.
       * done.
     + wp_auto. iRight in "HΦ". done.
   - repeat setoid_rewrite bi.and_exist_r.
-    iNamed "HΦ". iAssert (is_channel ch a a0)%I with "[-]" as "#?".
+    iNamed "HΦ". iAssert (is_channel ch a0)%I with "[-]" as "#?".
     { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }.
-    wp_apply (wp_TryReceive with "[$]").
+    wp_apply (wp_TryReceive_nb with "[$]").
     iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "[_ Hau]".
-      iMod "Hau". iModIntro. iNext.
+      iLeft in "Hau". iMod "Hau". iModIntro. iNext.
       iNamed "Hau". iFrame. destruct s.
       * destruct buff.
         -- iFrame.
@@ -332,22 +330,13 @@ Proof.
            iMod "Hcont". iModIntro. wp_auto.
            wp_apply (wp_wand with "Hcont").
            iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
+      * done.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
-        iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
-        destruct s; try iFrame.
-        -- iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
-        -- destruct draining; try iFrame.
-           iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
-           iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
-      * iIntros "H". iSpecialize ("Hcont" with "[$]").
-        iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
-        iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
-      * iFrame.
-      * iFrame.
-      * iFrame.
+        wp_auto. wp_apply (wp_wand with "Hcont"). iIntros "% HΨ". wp_auto.
+        iApply "Hwand". done.
+      * done.
+      * done.
+      * done.
       * destruct draining.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
            iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
@@ -363,15 +352,15 @@ Local Lemma wp_try_select_nonblocking (cases : list op) :
   ([∧ list] case ∈ cases,
      match case with
      | select_send_f t send_val send_chan send_handler =>
-         ∃ cap V γ (v : V) `(!IntoVal V) `(!chanGhostStateG Σ V) `(!IntoValTyped V t),
+         ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
      ⌜ send_val = #v ⌝ ∗
-     is_channel (V:=V) (t:=t) send_chan cap γ ∗
-     send_au_slow send_chan cap v γ (WP #send_handler #() {{ Ψ }})
+     is_channel (V:=V) (t:=t) send_chan γ ∗
+     send_au_fast send_chan v γ (WP #send_handler #() {{ Ψ }}) True
   | select_receive_f t recv_chan recv_handler =>
-      ∃ cap γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanGhostStateG Σ V),
-     is_channel (V:=V) (t:=t) recv_chan cap γ ∗
-     rcv_au_slow recv_chan cap γ (λ (v: V) ok,
-                                    WP #recv_handler (#v, #ok)%V {{ Ψ }})
+      ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+     is_channel (V:=V) (t:=t) recv_chan γ ∗
+     rcv_au_fast recv_chan γ (λ (v: V) ok,
+                                    WP #recv_handler (#v, #ok)%V {{ Ψ }}) True
    end
   ) ∧ Φ (#(), #false)%V -∗
   □(∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
@@ -383,7 +372,7 @@ Proof.
   destruct cases.
   { wp_auto. iRight in "HΦ". iApply "HΦ". }
   wp_auto.
-  wp_apply (wp_try_select_case_blocking _ Ψ with "[-Hwand] [Hwand]").
+  wp_apply (wp_try_select_case_nonblocking _ Ψ with "[-Hwand] [Hwand]").
   2:{ iIntros (?) "HΨ". wp_auto. iApply "Hwand". iFrame. }
   iSplit.
   { simpl. iLeft in "HΦ". iLeft in "HΦ". iFrame. }
@@ -401,20 +390,25 @@ Lemma wp_select_nonblocking (cases : list op) (def: func.t) :
          ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
              is_channel (V:=V) (t:=t) send_chan γ ∗
-             send_au_fast send_chan v γ (WP #send_handler #() {{ Φ }})
+             send_au_fast send_chan v γ (WP #send_handler #() {{ Φ }}) True
      | select_receive_f t recv_chan recv_handler =>
-         ∃ γ V `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
+         ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
              is_channel (V:=V) (t:=t) recv_chan γ ∗
              rcv_au_fast recv_chan γ (λ (v: V) ok,
-               WP #recv_handler #v {{ Φ }})
+               WP #recv_handler (#v, #ok)%V {{ Φ }}) True
      end
   ) ∧ WP #def #() {{ Φ }} -∗
   WP chan.select_nonblocking #cases #def {{ Φ }}.
 Proof.
   iIntros (Φ) "Hcases".
-  wp_call.
-Admitted.
+  iLöb as "IH" forall (Φ).
+  wp_call. wp_apply (wp_try_select_nonblocking with "[-]").
+  - iSplit.
+    + iLeft in "Hcases". iFrame.
+    + iRight in "Hcases". wp_auto. iFrame.
+  - iModIntro. iIntros "% HΦ". wp_auto. iFrame.
+Qed.
 
-End proof.
+End select_proof.
 
 End chan.
