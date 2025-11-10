@@ -5,7 +5,7 @@ Can be mutated when fully owned. *)
 From iris.algebra Require Import dfrac_agree proofmode_classes frac.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import proofmode.
-From iris.base_logic.lib Require Export own.
+From iris.base_logic.lib Require Import own.
 From iris.prelude Require Import options.
 
 (** The CMRA we need. *)
@@ -110,6 +110,13 @@ Section lemmas.
   Proof.
     intros Hq. unseal. rewrite -own_op. iApply own_update_2.
     apply dfrac_agree_update_2. done.
+  Qed.
+  Lemma ghost_var_update_halves b γ a1 a2 :
+    ghost_var γ (DfracOwn (1/2)) a1 -∗ ghost_var γ (DfracOwn (1/2)) a2 ==∗ ghost_var γ (DfracOwn (1/2)) b ∗ ghost_var γ (DfracOwn (1/2)) b.
+  Proof.
+    apply ghost_var_update_2.
+    rewrite dfrac_op_own.
+    rewrite Qp.half_half //.
   Qed.
 
   Lemma ghost_var_persist γ q a :

@@ -202,12 +202,12 @@ Definition is_EliminationStack s γ N : iProp Σ :=
   ∃ st,
     "#s" ∷ s ↦□ st ∗
     "#Hbase" ∷ is_LockedStack st.(chan_spec_raw_examples.EliminationStack.base') γ.(ls_gn) ∗
-    "#Hch" ∷ is_channel (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') 0 γ.(ch_gn) ∗
+    "#Hch" ∷ is_channel (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') γ.(ch_gn) ∗
     "#Hinv" ∷ inv (N.@"inv") (
         ∃ stack (exstate : chan_rep.t go_string),
           "Hls" ∷ own_LockedStack γ.(ls_gn) stack ∗
           "Hauth" ∷ ghost_var γ.(spec_gn) (1/2) stack ∗
-          "exchanger" ∷ own_channel st.(chan_spec_raw_examples.EliminationStack.exchanger') 0 exstate γ.(ch_gn) ∗
+          "exchanger" ∷ own_channel st.(chan_spec_raw_examples.EliminationStack.exchanger') exstate γ.(ch_gn) ∗
           "Hexchanger" ∷ own_exchanger_inv γ (N.@"inv") exstate
       ).
 
@@ -221,7 +221,7 @@ Lemma wp_NewEliminationStack N :
 Proof.
   wp_start. wp_apply wp_NewLockedStack as "%base %γbase (#Hbase & Hls)".
   wp_apply (chan.wp_make (t:=stringT)); first lia.
-  iIntros "* [#? Hc]". simpl.
+  iIntros "* (#? & _ & Hc)". simpl.
   wp_auto. wp_alloc s as "Hs".
   iApply wp_fupd. wp_auto.
   iMod (ghost_var_alloc []) as (γspec) "[Hauth Hes]".
@@ -236,9 +236,9 @@ Qed.
 Lemma wp_after (d : time.Duration.t) :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.after #d
-  {{{ γafter ch, RET #ch; is_channel (t:=structT []) ch 0 γafter ∗
+  {{{ γafter ch, RET #ch; is_channel (t:=structT []) ch γafter ∗
                           □ (∀ Φ, (∀ v, Φ v true) -∗
-                                  rcv_au_slow ch 0 γafter (V:=unit) Φ) }}}.
+                                  rcv_au_slow ch γafter (V:=unit) Φ) }}}.
 Proof.
 Admitted.
 
