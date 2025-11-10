@@ -296,7 +296,7 @@ Proof.
   wp_call. rewrite [in (_ op)]to_val_unseal /=. destruct cs; wp_auto.
   - repeat setoid_rewrite bi.and_exist_r.
     iNamed "HΦ". iAssert (⌜ v = #a1 ⌝ ∗ is_channel ch a0)%I with "[-]" as "[-> #?]".
-    { iLeft in "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". iFrame "#". done. }.
+    { iLeft in "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". iFrame "#". done. }
     wp_apply (wp_TrySend with "[$]").
     iLeft. iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "(_ & _ & Hau)".
@@ -317,7 +317,7 @@ Proof.
     + wp_auto. iRight in "HΦ". done.
   - repeat setoid_rewrite bi.and_exist_r.
     iNamed "HΦ". iAssert (is_channel ch a0)%I with "[-]" as "#?".
-    { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }.
+    { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }
     wp_apply (wp_TryReceive_nb with "[$]").
     iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "[_ Hau]".
