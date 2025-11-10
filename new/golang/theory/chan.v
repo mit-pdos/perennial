@@ -161,7 +161,6 @@ Proof.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
         destruct s; try iFrame. iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-        (* FIXME: naming: "continner"? *)
         iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
         iIntros (v) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iFrame.
