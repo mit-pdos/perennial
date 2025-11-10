@@ -39,35 +39,34 @@ Qed.
 Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples  }}}
     @! chan_spec_raw_examples.HelloWorldAsync #()
-  {{{ (ch: loc) (γfuture: future_names), RET #ch; is_future (V:=go_string) (t:=stringT) γfuture ch
-        (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)  ∗
-      await_token γfuture }}}.
+  {{{ (ch: loc)  (γfut: simple_names), RET #ch;
+       is_channel ch γfut.(simple.chan_name)  ∗
+  is_simple (V:=go_string) γfut ch (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)
+    }}}.
 Proof.
   wp_start. wp_auto.
   wp_apply chan.wp_make; first done.
   iIntros (ch). iIntros (γ). iIntros "(#HisChan & Hcap & Hownchan)".
   wp_auto.
   simpl in *.
-  iDestruct ((start_future (V:=go_string) ch (λ v, ⌜ v = "Hello, World!"%go ⌝%I) γ) with "[$HisChan] [$Hownchan]") as ">(%γfuture & Hfut)".
-  iDestruct "Hfut" as "(#Hisfut & Hawait & Hfulfill)".
+  iMod ((start_simple_buffered ch γ (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)%I)
+         with "HisChan Hownchan") as "(%γdone & %Hd & #Hch)".
   iPersist "ch".
-  wp_apply (wp_fork with "[Hfulfill]").
+  wp_apply (wp_fork).
   {
     wp_auto.
     wp_apply wp_sys_hello_world.
     iAssert (⌜"Hello, World!"%go = "Hello, World!"%go⌝)%I as "HP".
     { iPureIntro. reflexivity. }
-    wp_apply (chan.wp_send with "[]") as "[Hlc _]".
-    { iDestruct (future_is_channel with "Hisfut") as "$". }
-  iApply (future_fulfill_au γfuture ch (λ v : go_string, ⌜v = "Hello, World!"%go⌝%I) "Hello, World!"%go
-  with "[$] [$]").
-    iIntros "!> _".
-    wp_auto.
+  wp_apply (wp_simple_send (V:=go_string) with "[$Hch]").
+    { done. }
     done.
-  }
+    }
   iApply "HΦ".
+  subst γ.
   iFrame "∗#".
 Qed.
+
 
 Lemma wp_HelloWorldSync :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -76,13 +75,11 @@ Lemma wp_HelloWorldSync :
 Proof using chan_protocolG0.
   wp_start.
   wp_apply wp_HelloWorldAsync.
-  iIntros (ch γfuture) "[#Hfut Hawait]".
-  wp_apply (chan.wp_receive) as "[Hlc _]".
-  { iApply future_is_channel; done. }
-  iApply (future_await_au (V:=go_string) (t:=stringT)  γfuture ch
-               (λ (v : go_string), ⌜v = "Hello, World!"%go⌝%I) with "[$] [$Hawait $Hlc]").
-  iIntros "!> %v %Heq". subst.
+  iIntros (ch γfuture) "[#Hchan #Hfut]".
+  wp_apply (wp_simple_receive with "Hfut").
+  iIntros (v) "%Hv".
   wp_auto.
+  subst v.
   iApply "HΦ".
   done.
 Qed.
@@ -110,8 +107,10 @@ Proof using chan_protocolG0 chan_protocolG1.
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
   wp_auto_lc 4.
+  do 2 (iRename select (£1) into "Hlc2").
   wp_apply wp_HelloWorldAsync.
-  iIntros (ch γfuture) "[#Hfut Hawait]". wp_auto_lc 1.
+  iIntros (ch γfuture) "[#Hch #Hfut]". wp_auto_lc 1.
+  do 2 (iRename select (£1) into "Hlc1").
   iDestruct "Hpre" as "(#H1 & H2)".
   iAssert ( is_channel (t:=structT []) done_ch γdone.(chan_name)) as "#Hdonech".
   {
@@ -120,21 +119,27 @@ Proof using chan_protocolG0 chan_protocolG1.
     iDestruct "H1" as "[#Hdone #Hinv]". iFrame "#".
 
   }
-  iDestruct "Hfut" as "[#Hfut #Hinv1]". iFrame "#".
+  iFrame "#".
   wp_apply chan.wp_select_blocking.
   simpl.
     iSplit.
     {
-      iFrame "Hfut".
-      iRename select (£1) into "Hlc".
-      iApply ((future_await_au (V:=go_string) γfuture ch   )
-               with " [$Hfut $Hinv1] [$Hawait $Hlc]").
+      iFrame "#".
+
+      iApply ((simple_rcv_au  (V:=go_string)  γfuture ch)
+               with " [-HΦ Hlc1 Hlc2][HΦ][$Hlc1 $Hlc2]").
+      {
+        iFrame "#".
+        iFrame.
+      }
+      {
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto.
       subst v.
       iApply "HΦ".
       iPureIntro.
       right. done. }
+      }
     {
       iFrame "Hdonech".
 
@@ -759,7 +764,7 @@ Proof using chan_protocolG0 chan_protocolG1.
   { done. }
   iIntros (req_ch γ) "(His & _Hcap & Hown)".
   simpl.
-  iMod (start_simple with "His Hown") as "[%γdone #Hch]".
+  iMod (start_simple with "His Hown") as "(%γdone & %Hsimpch & #Hch)".
   iAssert (is_request_chan γdone req_ch) with "[$Hch]" as "#Hreqs".
   wp_auto.
   wp_apply (wp_fork).
