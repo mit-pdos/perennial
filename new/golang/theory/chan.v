@@ -407,7 +407,7 @@ Proof.
   - iModIntro. iIntros "% HΦ". wp_auto. iFrame.
 Qed.
 
-Local Lemma wp_try_select_case_nonblocking_general cs Ψ Ψnotready :
+Local Lemma wp_try_select_case_nonblocking_alt cs Ψ Ψnotready :
   ∀ P Φ,
   P -∗
   (match cs with
@@ -482,7 +482,7 @@ Proof.
         iIntros (?) "HΦ". wp_auto. by iApply "Hwand".
 Qed.
 
-Local Lemma wp_try_select_nonblocking_general Φnrs (cases : list op) :
+Local Lemma wp_try_select_nonblocking_alt Φnrs (cases : list op) :
   ∀ P Ψ Φ,
   ([∗ list] case; Φnr ∈ cases; Φnrs,
      match case with
@@ -511,7 +511,7 @@ Proof.
     iApply ("Hwandnr" with "[$]"). done. }
   wp_auto.
   iDestruct (big_sepL2_cons_inv_l with "HΦ") as (Φnr Φnrs' Heq) "[H HΦ]". subst.
-  wp_apply (wp_try_select_case_nonblocking_general _ Ψ with "HP [H]").
+  wp_apply (wp_try_select_case_nonblocking_alt _ Ψ with "HP [H]").
   { simpl. iFrame. }
   iSplit.
   - iIntros "% HΨ". wp_auto. iApply "Hwand". iFrame.
@@ -520,9 +520,18 @@ Proof.
     simpl. iIntros "P Hnrs". iApply ("Hwandnr" with "[$] [$]").
 Qed.
 
-(* FIXME: rename to "alt" rather than general; this does not imply the other
-   spec. *)
-Lemma wp_select_nonblocking_general Φnrs P (cases : list op) (def: func.t) :
+(** This specification requires proving _separate_ atomic updates for each case,
+    and requires a proposition [P] to represent the resources that are available
+    to ALL of the handlers (rather than having to be split up among the cases).
+    Users should do:
+     wp_apply (wp_select_nonblocking_alt [Φnr1; Φnr2;] with
+               "[list of props for proving atomic updates] [-]"); [|iNamedAccu|].
+
+    The reason this uses [au1 ∗ au2 ∗ ...] instead of [au1 ∧ au2 ∧ ...] is
+    because in the event that the default case is chosen, ALL of the case's
+    atomic updates will have to be fired to produce witnesses that all the cases
+    were not ready ([[∗] Φnrs]). *)
+Lemma wp_select_nonblocking_alt Φnrs P (cases : list op) (def: func.t) :
   ∀ Φ,
   ([∗ list] case; Φnr ∈ cases; Φnrs,
      match case with
@@ -530,8 +539,7 @@ Lemma wp_select_nonblocking_general Φnrs P (cases : list op) (def: func.t) :
          (∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
              is_channel (V:=V) (t:=t) send_chan γ ∗
-             send_au_fast_alt send_chan v γ (P -∗ WP #send_handler #() {{ Φ }})
-               Φnr)
+             send_au_fast_alt send_chan v γ (P -∗ WP #send_handler #() {{ Φ }}) Φnr)
      | select_receive_f t recv_chan recv_handler =>
          (∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
              is_channel (V:=V) (t:=t) recv_chan γ ∗
@@ -543,7 +551,7 @@ Lemma wp_select_nonblocking_general Φnrs P (cases : list op) (def: func.t) :
   WP chan.select_nonblocking #cases #def {{ Φ }}.
 Proof.
   iIntros (Φ) "Hcases HP Hdef".
-  wp_call. wp_apply (wp_try_select_nonblocking_general with "Hcases HP [Hdef]").
+  wp_call. wp_apply (wp_try_select_nonblocking_alt with "Hcases HP [Hdef]").
   - iIntros "HP Hnrs". wp_auto. iApply ("Hdef" with "[$] [$]").
   - iModIntro. iIntros. wp_auto. iFrame.
 Qed.
