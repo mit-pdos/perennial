@@ -318,7 +318,7 @@ Proof.
   - repeat setoid_rewrite bi.and_exist_r.
     iNamed "HΦ". iAssert (is_channel ch a0)%I with "[-]" as "#?".
     { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }
-    wp_apply (wp_TryReceive_nb with "[$]").
+    wp_apply (chan_au_recv.wp_TryReceive_nonblocking with "[$]").
     iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "[_ Hau]".
       iLeft in "Hau". iMod "Hau". iModIntro. iNext.
