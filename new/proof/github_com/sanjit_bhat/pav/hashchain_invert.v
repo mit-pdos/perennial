@@ -183,10 +183,10 @@ Proof.
     by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
 Qed.
 
-Lemma is_chain_snoc l v cut prevLink nextLink ep :
-  is_chain l cut prevLink ep -∗
+Lemma is_chain_snoc l v cut prevLink nextLink len :
+  is_chain l cut prevLink len -∗
   cryptoffi.is_hash (Some (prevLink ++ v)) nextLink -∗
-  is_chain (l ++ [v]) cut nextLink (S ep).
+  is_chain (l ++ [v]) cut nextLink (S len).
 Proof.
   iIntros "#His_chain #His_hash".
   iFrame "#". fold is_chain.
@@ -244,12 +244,12 @@ Proof.
   by iFrame "∗#".
 Qed.
 
-Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal l cut ep :
+Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal l cut len :
   {{{
     is_pkg_init hashchain ∗
     "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
     "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal ∗
-    "#His_chain" ∷ is_chain l cut prevLink ep
+    "#His_chain" ∷ is_chain l cut prevLink len
   }}}
   @! hashchain.GetNextLink #sl_prevLink #sl_nextVal
   {{{
@@ -257,7 +257,7 @@ Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal l cut ep :
     "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
     "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal ∗
     "Hsl_nextLink" ∷ sl_nextLink ↦* nextLink ∗
-    "#His_chain" ∷ is_chain (l ++ [nextVal]) cut nextLink (S ep)
+    "#His_chain" ∷ is_chain (l ++ [nextVal]) cut nextLink (S len)
   }}}.
 Proof.
   wp_start. iNamed "Hpre".
@@ -276,33 +276,357 @@ Proof.
   iFrame.
 Qed.
 
-Definition wish_Verify (prevLink proof : list w8) (extLen : w64) (newVal newLink : list w8) : iProp Σ :=
-  ∃ old_vals new_vals cut old_ep new_ep,
+Definition own (ptr : loc) (vals : list $ list w8) (d : dfrac) : iProp Σ :=
+  ∃ sl_predLastLink predLastLink sl_lastLink lastLink sl_enc enc,
+  "Hstruct" ∷ ptr ↦{d} (hashchain.HashChain.mk sl_predLastLink sl_lastLink sl_enc) ∗
+
+  "#Hsl_predLastLink" ∷ sl_predLastLink ↦*□ predLastLink ∗
+  "#His_chain_pred" ∷ (∀ x vals',
+    ⌜vals = vals' ++ [x]⌝ -∗
+    is_chain vals' None predLastLink (length vals')) ∗
+
+  "#Hsl_lastLink" ∷ sl_lastLink ↦*□ lastLink ∗
+  "#His_chain" ∷ is_chain vals None lastLink (length vals) ∗
+
+  "Hsl_enc" ∷ sl_enc ↦*{d} enc ∗
+  "Hsl_enc_cap" ∷ own_slice_cap w8 sl_enc d ∗
+  "%" ∷ ⌜enc = mjoin vals⌝ ∗
+  "%Hsame_len" ∷ ⌜Forall (λ x, length x = Z.to_nat cryptoffi.hash_len) vals⌝.
+#[global] Opaque own.
+#[local] Transparent own.
+
+Global Instance own_dfractional ptr vs :
+  DFractional (λ d, own ptr vs d).
+Proof.
+  rewrite /own. split.
+  - intros ??. iSplit.
+    + iNamed 1.
+      iDestruct "Hstruct" as "[? ?]".
+      iDestruct "Hsl_enc" as "[? ?]".
+      iDestruct "Hsl_enc_cap" as "[? ?]".
+      by iFrame "∗#".
+    + iIntros "[H0 H1]".
+      iNamedSuffix "H0" "0".
+      iNamedSuffix "H1" "1".
+      iCombine "Hstruct0 Hstruct1" as "Hstruct" gives %[_ ?].
+      simplify_eq/=.
+      iCombine "Hsl_enc0 Hsl_enc1" as "Hsl_enc".
+      iCombine "Hsl_enc_cap0 Hsl_enc_cap1" as "Hsl_enc_cap".
+      by iFrame "∗#".
+  - apply _.
+  - intros ?. iNamed 1.
+    iPersist "Hstruct Hsl_enc Hsl_enc_cap".
+    iModIntro. by iFrame "Hstruct #".
+Qed.
+
+Lemma wp_New :
+  {{{ is_pkg_init hashchain }}}
+  @! hashchain.New #()
+  {{{ ptr, RET #ptr; "Hown_HashChain" ∷ own ptr [] 1 }}}.
+Proof.
+  wp_start.
+  wp_apply wp_GetEmptyLink as "* @".
+  iPersist "Hsl_hash".
+  wp_apply wp_alloc as "* H0".
+  iApply "HΦ".
+  iFrame "∗#".
+  iDestruct own_slice_nil as "$".
+  iDestruct own_slice_nil as "$".
+  iDestruct own_slice_cap_nil as "$".
+  iSplit; [|done].
+  iIntros (???).
+  discriminate_list.
+Qed.
+
+Lemma wp_HashChain_Append ptr_c vals sl_val d0 val :
+  {{{
+    is_pkg_init hashchain ∗
+    "Hown_HashChain" ∷ own ptr_c vals 1 ∗
+    "Hsl_val" ∷ sl_val ↦*{d0} val ∗
+    "%Hlen_val" ∷ ⌜Z.of_nat $ length val = cryptoffi.hash_len⌝
+  }}}
+  ptr_c @ (ptrT.id hashchain.HashChain.id) @ "Append" #sl_val
+  {{{
+    sl_newLink newLink, RET #sl_newLink;
+    "Hown_HashChain" ∷ own ptr_c (vals ++ [val]) 1 ∗
+    "Hsl_val" ∷ sl_val ↦*{d0} val ∗
+    "#Hsl_newLink" ∷ sl_newLink ↦*□ newLink ∗
+    "#His_chain" ∷ is_chain (vals ++ [val]) None newLink (S $ length vals)
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". iNamed "Hown_HashChain".
+  wp_auto.
+  iDestruct (own_slice_len with "Hsl_val") as %?.
+  wp_apply wp_Assert.
+  { iPureIntro. apply bool_decide_eq_true. word. }
+  wp_apply (wp_GetNextLink with "[Hsl_val]").
+  { iFrame "∗#". }
+  iIntros "*". iNamedSuffix 1 "_n".
+  iPersist "Hsl_prevLink_n Hsl_nextLink_n".
+  wp_auto.
+  wp_apply (wp_slice_append with "[$Hsl_enc $Hsl_enc_cap $Hsl_nextVal_n]")
+    as "* (Hsl_enc & Hsl_enc_cap & Hsl_nextVal_n)".
+  iApply "HΦ".
+  iFrame "∗#".
+  repeat iSplit.
+  - iIntros (?? Heq).
+    apply app_inj_tail in Heq as [-> ->].
+    iFrame "#".
+  - iExactEq "His_chain_n". rewrite /named. repeat f_equal. len.
+  - iPureIntro. subst. rewrite join_app. by list_simplifier.
+  - iPureIntro. apply Forall_snoc. split; [done|word].
+Qed.
+
+(* [new_vals] is generalized form of physical outputs [extLen] and [newVal]. *)
+Definition wish_Verify prevLink proof new_vals newLink : iProp Σ :=
+  ∃ old_vals cut old_len new_len,
   "%Hsame_len_vals" ∷ ⌜Forall (λ x, length x = Z.to_nat cryptoffi.hash_len) new_vals⌝ ∗
   "%Henc_vals" ∷ ⌜proof = mjoin new_vals⌝ ∗
-  "%HnewVal" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
-  "%HextLen" ∷ ⌜uint.Z extLen = length new_vals⌝ ∗
-  "#His_prevLink" ∷ is_chain old_vals cut prevLink old_ep ∗
-  "#His_newLink" ∷ is_chain (old_vals ++ new_vals) cut newLink new_ep.
+
+  (* need two [is_chain]s to capture determinism from prevLink to newLink. *)
+  "#His_prevLink" ∷ is_chain old_vals cut prevLink old_len ∗
+  "#His_newLink" ∷ is_chain (old_vals ++ new_vals) cut newLink new_len.
 #[global] Opaque wish_Verify.
 #[local] Transparent wish_Verify.
 
-Lemma wish_Verify_det prevLink proof extLen0 extLen1 newVal0 newVal1 newLink0 newLink1 :
-  wish_Verify prevLink proof extLen0 newVal0 newLink0 -∗
-  wish_Verify prevLink proof extLen1 newVal1 newLink1 -∗
-  ⌜extLen0 = extLen1 ∧ newVal0 = newVal1 ∧ newLink0 = newLink1⌝.
+Lemma wish_Verify_det prevLink proof new_vals0 new_vals1 newLink0 newLink1 :
+  wish_Verify prevLink proof new_vals0 newLink0 -∗
+  wish_Verify prevLink proof new_vals1 newLink1 -∗
+  ⌜new_vals0 = new_vals1 ∧ newLink0 = newLink1⌝.
 Proof.
   iNamedSuffix 1 "0".
   iNamedSuffix 1 "1".
   subst.
   opose proof (join_same_len_inj _ _ _ _ _ _ ltac:(done)) as ->;
     [|done..|]; [word|].
-  replace extLen0 with extLen1 by word.
-  repeat iSplit; [done..|].
+  repeat iSplit; [done|].
   clear.
   iDestruct (hash_reln_app with "[] His_newLink0 His_newLink1") as %->.
   { iFrame "#". }
   done.
+Qed.
+
+Lemma wp_Verify sl_prevLink d0 prevLink sl_proof d1 proof old_vals cut len :
+  {{{
+    is_pkg_init hashchain ∗
+    "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
+    "Hsl_proof" ∷ sl_proof ↦*{d1} proof ∗
+    "#His_chain_prev" ∷ is_chain old_vals cut prevLink len
+  }}}
+  @! hashchain.Verify #sl_prevLink #sl_proof
+  {{{
+    extLen sl_newVal newVal sl_newLink newLink err,
+    RET (#extLen, #sl_newVal, #sl_newLink, #err);
+    "Hsl_newVal" ∷ sl_newVal ↦*{d1} newVal ∗
+    "Hsl_newLink" ∷ sl_newLink ↦*{d0} newLink ∗
+    "Hgenie" ∷
+      match err with
+      | true => ¬ ∃ new_vals newLink, wish_Verify prevLink proof new_vals newLink
+      | false =>
+        ∃ new_vals,
+        (* structure: wish_Verify gives correctness.
+        wp_Verify [is_chain]s allow security user to track hashchain vals. *)
+        "#Hwish_hashchain" ∷ wish_Verify prevLink proof new_vals newLink ∗
+        "%HextLen" ∷ ⌜extLen = W64 $ length new_vals⌝ ∗
+        "%HnewVal" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
+        "#His_chain" ∷ is_chain (old_vals ++ new_vals) cut newLink (len + (length new_vals))
+      end
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre".
+  wp_auto.
+  iDestruct (is_chain_hash_len with "His_chain_prev") as %?.
+  iDestruct (own_slice_valid with "Hsl_prevLink") as %Ht.
+  { by rewrite go_type_size_unseal. }
+  destruct Ht as [|Ht].
+  2: { apply (f_equal length) in Ht. simpl in *. word. }
+  iDestruct (own_slice_len with "Hsl_proof") as %[? ?].
+
+  wp_if_destruct.
+  2: {
+    iApply "HΦ".
+    iDestruct own_slice_nil as "$".
+    iDestruct own_slice_nil as "$".
+    iFrame.
+    iIntros "@".
+    apply join_same_len_length in Hsame_len_vals.
+    word. }
+  iPersist "extLen".
+  remember (word.divu _ _) as extLen.
+
+  iAssert (
+    ∃ (i : w64) sl_proof sl_newLink newLink sl_newVal newVal new_vals,
+    "i" ∷ i_ptr ↦ i ∗
+    "%Hlt_i" ∷ ⌜uint.Z i ≤ uint.Z extLen⌝ ∗
+
+    "proof" ∷ proof_ptr ↦ sl_proof ∗
+    "newVal" ∷ newVal_ptr ↦ sl_newVal ∗
+    "newLink" ∷ newLink_ptr ↦ sl_newLink ∗
+
+    "Hsl_proof" ∷ sl_proof ↦*{d1} drop (Z.to_nat (uint.Z i * cryptoffi.hash_len)) proof ∗
+    "Hsl_newVal" ∷ sl_newVal ↦*{d1} newVal ∗
+    "Hsl_newLink" ∷ sl_newLink ↦*{d0} newLink ∗
+
+    (* need inductive wish to establish proof encoding. *)
+    "#Hwish" ∷ wish_Verify prevLink
+      (take (Z.to_nat (uint.Z i * cryptoffi.hash_len)) proof)
+      new_vals newLink ∗
+    "%" ∷ ⌜length new_vals = uint.nat i⌝ ∗
+    "->" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
+    "#His_chain" ∷ is_chain (old_vals ++ new_vals) cut newLink (len + (length new_vals))
+  )%I with "[$i $newLink $newVal $proof Hsl_prevLink Hsl_proof]" as "IH".
+  { iDestruct own_slice_nil as "?".
+    iFrame "∗#".
+    iExists [].
+    list_simplifier.
+    ereplace (?[x] + 0)%nat with (?x) by lia.
+    iFrame "#".
+    rewrite take_0'; [|word].
+    repeat iSplit; try done.
+    word. }
+  wp_for "IH".
+  case_bool_decide.
+
+  2: {
+    wp_auto.
+    rewrite take_ge; [|word].
+    iApply "HΦ".
+    replace i with extLen in * by word.
+    iFrame "∗ Hwish #".
+    iSplit; [word|done]. }
+
+  rewrite -wp_fupd.
+  iRename "Hsl_newVal" into "Hsl_newVal_old".
+  wp_auto.
+  iDestruct (own_slice_wf with "Hsl_proof") as %?.
+  iDestruct (own_slice_len with "Hsl_proof") as %[Hlen_proof ?].
+  rewrite length_drop in Hlen_proof.
+  wp_apply (wp_slice_slice with "[$Hsl_proof]"); [word|].
+  iIntros "(_&Hsl_newVal&Hsl_proof)".
+  wp_auto.
+  wp_pure; [word|].
+  wp_auto.
+  wp_apply (wp_GetNextLink with "[$Hsl_newLink $Hsl_newVal $His_chain]") as "{His_chain} * @".
+  iMod (own_slice_update_to_dfrac d0 with "Hsl_nextLink") as "Hsl_nextLink"; [done|].
+  iModIntro.
+  wp_for_post.
+  iFrame "newLink ∗".
+
+  iEval (rewrite drop_drop) in "Hsl_proof".
+  replace (uint.Z (word.add _ _)) with (uint.Z i + 1) by word.
+  replace (Z.to_nat (uint.Z i * cryptoffi.hash_len) + sint.nat (W64 32))%nat
+    with (Z.to_nat ((uint.Z i + 1) * cryptoffi.hash_len))%nat by word.
+  iFrame "Hsl_proof".
+
+  rewrite subslice_from_start.
+  Opaque is_chain.
+  list_simplifier.
+  iExists _. repeat iSplit.
+  5: { iExactEq "His_chain". rewrite /named. repeat f_equal. len. }
+  - word.
+  - iEval (rewrite /wish_Verify).
+    iFrame "#".
+    iNamedSuffix "Hwish" "_x".
+    iPureIntro. repeat split.
+    + apply Forall_snoc. split; [done|]. len.
+    + rewrite join_app.
+      rewrite (take_subslice (Z.to_nat (uint.Z i * cryptoffi.hash_len))); [|word].
+      f_equal; [done|].
+      rewrite subslice_take_drop'.
+      list_simplifier.
+      repeat f_equal. word.
+  - len.
+  - rewrite last_snoc /=. iPureIntro. f_equal; word.
+Qed.
+
+Lemma is_chain_take n vals link :
+  is_chain vals None link (length vals) -∗
+  ∃ middleLink,
+  is_chain (take n vals) None middleLink n.
+Proof. Admitted.
+
+Lemma wp_HashChain_Prove c vals d (prevLen : w64) :
+  {{{
+    is_pkg_init hashchain ∗
+    "Hown_HashChain" ∷ own c vals d ∗
+    "%Hlt_prevLen" ∷ ⌜uint.Z prevLen <= length vals⌝
+  }}}
+  c @ (ptrT.id hashchain.HashChain.id) @ "Prove" #prevLen
+  {{{
+    sl_proof proof prevLink newLink, RET #sl_proof;
+    let old_vals := take (uint.nat prevLen) vals in
+    let new_vals := drop (uint.nat prevLen) vals in
+    "Hown_HashChain" ∷ own c vals d ∗
+    "Hsl_proof" ∷ sl_proof ↦* proof ∗
+
+    "#His_prevLink" ∷ is_chain old_vals None prevLink (uint.nat prevLen) ∗
+    "#His_newLink" ∷ is_chain vals None newLink (length vals) ∗
+    "#Hwish" ∷ wish_Verify prevLink proof new_vals newLink
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". iNamed "Hown_HashChain".
+  wp_auto.
+  iDestruct (own_slice_len with "Hsl_enc") as %?.
+  apply join_same_len_length in Hsame_len as ?.
+  wp_apply (wp_slice_slice with "[$Hsl_enc]") as "(Hsl0 & Hsl1 & Hsl2)"; [word|].
+  wp_apply (bytes.wp_Clone with "[$Hsl1]") as "* @".
+  iDestruct (own_slice_f with "[$Hsl0 $Hsl_b $Hsl2]") as "?"; [word|].
+
+  iDestruct (is_chain_take (uint.nat prevLen) with "His_chain") as "[% #His_chain_prev]".
+  iApply "HΦ".
+  iFrame "∗#%".
+  rewrite take_drop.
+  iFrame "#".
+  iPureIntro. split.
+  { by apply Forall_drop. }
+  subst.
+  opose proof (join_same_len_subslice (uint.nat prevLen) (length vals)
+    (Z.to_nat cryptoffi.hash_len) vals ltac:(word) Hsame_len) as Heq.
+  rewrite subslice_to_end in Heq; [|done].
+  rewrite Heq.
+  f_equal; word.
+Qed.
+
+Lemma wp_HashChain_Bootstrap c vals d old_vals last_val :
+  {{{
+    is_pkg_init hashchain ∗
+    "Hown_HashChain" ∷ own c vals d ∗
+    "->" ∷ ⌜vals = old_vals ++ [last_val]⌝
+  }}}
+  c @ (ptrT.id hashchain.HashChain.id) @ "Bootstrap" #()
+  {{{
+    sl_bootLink bootLink sl_proof proof newLink, RET (#sl_bootLink, #sl_proof);
+    "Hown_HashChain" ∷ own c vals d ∗
+    "#Hsl_bootLink" ∷ sl_bootLink ↦*□ bootLink ∗
+    "Hsl_proof" ∷ sl_proof ↦* proof ∗
+
+    "#His_bootLink" ∷ is_chain old_vals None bootLink (length old_vals) ∗
+    "#His_newLink" ∷ is_chain vals None newLink (length vals) ∗
+    "#Hwish" ∷ wish_Verify bootLink proof [last_val] newLink
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". iNamed "Hown_HashChain". wp_auto.
+  iDestruct (own_slice_len with "Hsl_enc") as %?.
+  apply join_same_len_length in Hsame_len as Hlen.
+  rewrite app_length /= in Hlen.
+  wp_apply (wp_slice_slice with "[$Hsl_enc]") as "(Hsl0 & Hsl1 & Hsl2)"; [word|].
+  wp_apply (bytes.wp_Clone with "[$Hsl1]") as "* @".
+  iDestruct (own_slice_f with "[$Hsl0 $Hsl_b $Hsl2]") as "?"; [word|].
+
+  iApply "HΦ".
+  iDestruct ("His_chain_pred" with "[//]") as "?".
+  iFrame "∗#%".
+  iPureIntro. split.
+  - apply Forall_snoc in Hsame_len as [??].
+    by rewrite Forall_singleton.
+  - replace (sint.nat (word.sub _ _)) with
+      ((length old_vals + 0) * (Z.to_nat cryptoffi.hash_len))%nat by word.
+    replace (sint.nat _) with
+      ((length old_vals + 1) * (Z.to_nat cryptoffi.hash_len))%nat by word.
+    subst.
+    rewrite -join_same_len_subslice; [|len|done].
+    rewrite subslice_app_length.
+    by list_simplifier.
 Qed.
 
 End proof.
