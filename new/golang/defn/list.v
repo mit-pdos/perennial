@@ -27,7 +27,7 @@ Section defn.
                            (λ: "hd" "tl",
                               let: "tl_length" := ("length" "tl") in
                               let: "new_length" := #(W64 1) + "tl_length" in
-                              if: "new_length" > "tl_length" then
+                              if: "new_length" < #(W64 (2^63)) then
                                 "new_length"
                               else (rec: "infloop" <> := Var "infloop" #()) #()
                            ).

@@ -57,7 +57,7 @@ Qed.
 Lemma wp_list_Length {stk E} (l : list V) :
   {{{ True }}}
     (list.Length #l) @ stk ; E
-  {{{ RET #(W64 (length l)); ⌜ length l = uint.nat (W64 (length l)) ⌝ }}}.
+  {{{ RET #(W64 (length l)); ⌜ length l = sint.nat (W64 (length l)) ⌝ }}}.
 Proof.
   iIntros (?) "_ HΦ".
   iInduction l as [] "IH" forall (Φ).
