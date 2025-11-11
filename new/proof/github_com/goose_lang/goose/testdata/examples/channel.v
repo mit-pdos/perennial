@@ -428,7 +428,7 @@ Proof using chan_protocolG0.
   rewrite /chan.for_range.
   wp_auto.
   wp_for "IH".
-   wp_apply ((wp_spsc_receive (t:=intT) γspsc c γspsc (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
+   wp_apply ((wp_spsc_receive (t:=intT) γspsc c (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
                   (λ sent, ⌜sent = fib_list 10 ⌝%I) (fib_list i) _) with "[Hcons]").
    { iFrame "#".  iFrame.   }
    iIntros (v ok).

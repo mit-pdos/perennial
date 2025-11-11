@@ -368,21 +368,19 @@ Proof.
   }
 Qed.
 
-Lemma wp_mpmc_send γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
-                   (sent : gmultiset V) (v : V) :
-  {{{ is_mpmc γ ch n_prod n_cons P R ∗
-      mpmc_producer γ sent ∗
-      P v }}}
-    chan.send #t #ch #v
-  {{{ RET #(); mpmc_producer γ (sent ⊎ {[+ v +]}) }}}.
+Lemma mpmc_send_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
+                   (sent : gmultiset V) (v : V) Φ :
+  is_mpmc γ ch n_prod n_cons P R -∗
+  £1 ∗ £1 -∗
+  mpmc_producer γ sent ∗ P v -∗
+  ▷(mpmc_producer γ (sent ⊎ {[+ v +]}) -∗ Φ) -∗
+  send_au_slow ch v γ.(mpmc_chan_name) Φ.
 Proof.
-  iIntros (Φ) "(#Hmpmc & Hprod & HP) Hcont".
-  unfold is_mpmc. iNamed "Hmpmc". iDestruct "Hmpmc" as "[#Hchan Hinv]".
-  iApply (chan.wp_send ch v γ.(mpmc_chan_name) with "[$Hchan]").
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
-  iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
+  iIntros "#Hmpmc (Hlc1 & Hlc2) [Hprod HP] Hcont".
+  iDestruct "Hmpmc" as "[Hchan Hinv]".
+
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc2 Hinv_open") as "Hinv_open".
+  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
   iDestruct (server_agree with "HsentI Hprod") as %[Hn_pos Hsub].
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
@@ -438,7 +436,7 @@ Proof.
     }
     iModIntro. unfold send_au_inner.
     iInv "Hinv" as "Hinv_open2" "Hinv_close2".
-    iMod (lc_fupd_elim_later with "Hlc3 Hinv_open2") as "Hinv_open2".
+    iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
     iNamed "Hinv_open2".
     destruct s; try (iFrame;done).
     {
@@ -553,21 +551,36 @@ Proof.
   }
 Qed.
 
-Lemma wp_mpmc_receive γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
-                      (received : gmultiset V) :
-  {{{  is_mpmc γ ch n_prod n_cons P R ∗
-      mpmc_consumer γ received }}}
-    chan.receive #t #ch
-  {{{ (v:V) (ok:bool), RET (#v, #ok);
-      if ok
-      then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
-      else is_closed γ ∗ mpmc_consumer γ received }}}.
+Lemma wp_mpmc_send γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
+                   (sent : gmultiset V) (v : V) :
+  {{{ is_mpmc γ ch n_prod n_cons P R ∗
+      mpmc_producer γ sent ∗
+      P v }}}
+    chan.send #t #ch #v
+  {{{ RET #(); mpmc_producer γ (sent ⊎ {[+ v +]}) }}}.
 Proof.
-  iIntros (Φ) "( #Hmpmc & Hcons) Hcont".
-  unfold is_mpmc. iNamed "Hmpmc".
+  iIntros (Φ) "(#Hmpmc & Hprod & HP) Hcont".
+  unfold is_mpmc. iPoseProof "Hmpmc" as "[#Hchan _]".
+  iApply (chan.wp_send ch v γ.(mpmc_chan_name) with "[$Hchan]").
+  iIntros "(Hlc1 & Hlc2 & _ & _)".
+  iApply (mpmc_send_au with "[$Hmpmc] [$] [$Hprod $HP]").
+  done.
+Qed.
+
+Lemma mpmc_rcv_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
+                      (received : gmultiset V) Φ :
+  is_mpmc γ ch n_prod n_cons P R -∗
+  £1 ∗ £1 -∗
+  mpmc_consumer γ received -∗
+  ▷(∀ (v: V) (ok: bool),
+    (if ok
+      then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
+      else is_closed γ ∗ mpmc_consumer γ received) -∗ Φ v ok) -∗
+  rcv_au_slow ch γ.(mpmc_chan_name) Φ.
+Proof.
+  iIntros "#Hmpmc (Hlc1 & Hlc2) Hcons Hcont".
+  unfold is_mpmc.
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (chan.wp_receive ch γ.(mpmc_chan_name) with "[$Hchan]").
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
@@ -763,23 +776,40 @@ Proof.
   }
 Qed.
 
-Lemma wp_mpmc_close γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)):
+Lemma wp_mpmc_receive γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset V → iProp Σ)
+                      (received : gmultiset V) :
+  {{{  is_mpmc γ ch n_prod n_cons P R ∗
+      mpmc_consumer γ received }}}
+    chan.receive #t #ch
+  {{{ (v:V) (ok:bool), RET (#v, #ok);
+      if ok
+      then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
+      else is_closed γ ∗ mpmc_consumer γ received }}}.
+Proof.
+  iIntros (Φ) "( #Hmpmc & Hcons) Hcont".
+  unfold is_mpmc.
+  iPoseProof "Hmpmc" as "[#Hchan _]".
+  iApply (chan.wp_receive ch γ.(mpmc_chan_name) with "[$Hchan]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
+  iApply (mpmc_rcv_au with "[$Hmpmc] [$] [$Hcons]").
+  done.
+Qed.
+
+Lemma mpmc_close_au γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)) Φ :
   length producers = n_prod →
-  {{{ £ 1 ∗ £ 1 ∗ £ 1 ∗ is_mpmc γ ch n_prod n_cons P R ∗
-      ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
-      R (foldr (⊎) ∅ producers) }}}
-    chan.close #t #ch
-  {{{ RET #(); True }}}.
+  is_mpmc γ ch n_prod n_cons P R -∗
+  £ 1 -∗
+  ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
+        R (foldr (⊎) ∅ producers) -∗
+  ▷Φ -∗
+  close_au ch γ.(mpmc_chan_name) Φ.
 Proof.
   intros.
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & #Hmpmc & Hprods & HR) Hcont".
-  unfold is_mpmc. iNamed "Hmpmc".
+  iIntros "#Hmpmc Hlc1 (Hprods & HR) Hcont".
+  unfold is_mpmc.
   iDestruct "Hmpmc" as "[Hchan Hinv]".
-  iApply (chan.wp_close ch γ.(mpmc_chan_name) with "[$Hchan]").
-  iIntros "Hlc4".
-  iMod (lc_fupd_elim_later with "Hlc1 Hcont") as "Hcont".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc2 Hinv_open") as "Hinv_open".
+  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
   destruct s; try done.
   - iExists (chan_rep.Buffered buff). iFrame "Hch".
@@ -812,7 +842,7 @@ Proof.
         done.
       }
       iModIntro.
-      iApply "Hcont". done.
+      done.
     + iFrame.
       unfold mpmc_producer.
       subst n_prod.
@@ -825,7 +855,7 @@ Proof.
         done.
       }
       iModIntro.
-      iApply "Hcont". done.
+      done.
   - iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask". iNext.
     iFrame. iIntros "Hoc".
     iMod (ghost_var_update true with "Hclosed") as "Hclosed".
@@ -849,7 +879,7 @@ Proof.
       subst sent.
       multiset_solver.
     }
-    iModIntro. iApply "Hcont". done.
+    iModIntro. done.
   - unfold mpmc_producer.
     subst n_prod.
     iMod (auth_map_agree γ.(mpmc_sent_name) sent producers with "[$HsentI] [$Hprods]") as "(%Hsent_eq & HsentI & Hprods)".
@@ -909,6 +939,24 @@ Proof.
       iDestruct (server_agree with "Hserver0 Hp") as %[Hcontra _].
       lia.
     }
+Qed.
+
+Lemma wp_mpmc_close γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)):
+  length producers = n_prod →
+  {{{ is_mpmc γ ch n_prod n_cons P R ∗
+      ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
+      R (foldr (⊎) ∅ producers) }}}
+    chan.close #t #ch
+  {{{ RET #(); True }}}.
+Proof.
+  intros.
+  iIntros "(#Hmpmc & Hprods & HR) Hcont".
+  iPoseProof "Hmpmc" as "[#Hchan _]".
+  iApply (chan.wp_close ch γ.(mpmc_chan_name) with "[$Hchan]").
+  iIntros "(Hlc1 & _ & _ & _)".
+  iApply (mpmc_close_au with "[$Hmpmc] [$] [$Hprods $HR]").
+  { done. }
+  iModIntro. by iApply "Hcont".
 Qed.
 
 Lemma mpmc_get_final_resource
