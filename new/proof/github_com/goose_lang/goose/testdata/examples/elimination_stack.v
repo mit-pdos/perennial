@@ -3,7 +3,7 @@
 From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import chan_au_base.
+  Require Import chan_au_base protocol.base.
 From New.proof Require Import sync strings time.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic.lib Require Import token.
@@ -149,6 +149,7 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
     #[local] es_var_inG :: ghost_varG Σ (list go_string);
     #[local] es_chan_inG :: chanG Σ go_string;
     #[local] es_afterChan_inG :: chanG Σ unit;
+    #[local] es_time_inG :: chan_protocolG Σ time.Time.t;
     #[local] es_token_pointer_inG :: ghost_varG Σ gname;
     #[local] es_send_token_inG :: tokenG Σ;
     #[local] es_reply_token_inG :: ghost_varG Σ go_string;
@@ -232,16 +233,6 @@ Proof.
   iFrame "Hs● Hr●". simpl. iFrame. iFrame.
 Qed.
 
-(* FIXME: do this with `time.After`. *)
-Lemma wp_after (d : time.Duration.t) :
-  {{{ is_pkg_init chan_spec_raw_examples }}}
-    @! chan_spec_raw_examples.after #d
-  {{{ γafter ch, RET #ch; is_channel (t:=structT []) ch γafter ∗
-                          □ (∀ Φ, (∀ v, Φ v true) -∗
-                                  rcv_au_slow ch γafter (V:=unit) Φ) }}}.
-Proof.
-Admitted.
-
 Lemma alloc_push_help_token {E} N P :
   ⊢ |={E}=> ∃ γs, (token γs ={↑N}=∗ ▷ P) ∗
                  (▷ P ={↑N}=∗ token γs).
@@ -281,6 +272,9 @@ Proof.
       iNext. iExists v. iLeft. iFrame.
 Qed.
 
+(* FIXME *)
+Transparent simple.is_simple.
+
 Lemma wp_EliminationStack__Push v γ s N :
   ∀ Φ,
   is_pkg_init chan_spec_raw_examples ∗ is_EliminationStack s γ N -∗
@@ -289,7 +283,7 @@ Lemma wp_EliminationStack__Push v γ s N :
 Proof.
   wp_start as "#His". iNamed "His".
   iRename "s" into "s1". wp_auto.
-  wp_apply wp_after. iIntros "* [#Hafter #Hrecv]".
+  wp_apply time.wp_After. iIntros (after_ch γafter) "#Hafter".
   wp_auto_lc 2.
   wp_apply chan.wp_select_blocking.
   simpl. iSplit.
@@ -354,8 +348,11 @@ Proof.
     + done.
     + done.
   - iSplit; last done.
-    iFrame "#". iApply "Hrecv".
-    iIntros ([]). wp_auto_lc 1. wp_apply wp_LockedStack__Push.
+    iFrame "#".
+    iPoseProof "Hafter" as "[$ _]".
+    iApply (simple.simple_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iIntros (t) "_ !>". wp_auto_lc 1.
+    wp_apply wp_LockedStack__Push.
     { iFrame "#". }
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
@@ -386,7 +383,7 @@ Lemma wp_EliminationStack__Pop γ s N :
 Proof.
   wp_start as "#His". iNamed "His".
   iRename "s" into "s1". wp_auto.
-  wp_apply wp_after. iIntros "* [#Hafter #Hrecv]".
+  wp_apply time.wp_After. iIntros (after_ch γafter) "#Hafter".
   wp_auto_lc 2.
   wp_apply chan.wp_select_blocking.
   simpl. iSplit.
@@ -451,8 +448,12 @@ Proof.
     + done.
     + done.
   - iSplit; last done.
-    iFrame "#". iApply "Hrecv".
-    iIntros ([]). wp_auto_lc 1. wp_apply wp_LockedStack__Pop.
+    iFrame "#".
+    (* FIXME: need to break is_simple to get is_channel *)
+    iPoseProof "Hafter" as "[$ _]".
+    iApply (simple.simple_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iIntros (t) "_ !>". wp_auto_lc 1.
+    wp_apply wp_LockedStack__Pop.
     { iFrame "#". }
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".

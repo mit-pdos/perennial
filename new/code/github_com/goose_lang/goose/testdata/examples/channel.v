@@ -73,37 +73,11 @@ Definition LockedStack__Popⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #LockedStack #"mu"%go (![#ptrT] "s"))) #());;;
     return: (![#stringT] "v", #true)).
 
-Definition after : go_string := "github.com/goose-lang/goose/testdata/examples/channel.after"%go.
-
-(* after returns a channel that closes after d (emulates time.After).
-
-   go: elimination_stack.go:38:6 *)
-Definition afterⁱᵐᵖˡ : val :=
-  λ: "d",
-    exception_do (let: "d" := (mem.alloc "d") in
-    let: "ch" := (mem.alloc (type.zero_val (type.chanT (type.structT [
-    ])))) in
-    let: "$r0" := (chan.make (type.structT [
-    ]) #(W64 0)) in
-    do:  ("ch" <-[type.chanT (type.structT [
-    ])] "$r0");;;
-    let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$a0" := (![#time.Duration] "d") in
-      (func_call #time.Sleep) "$a0");;;
-      do:  (let: "$a0" := (![type.chanT (type.structT [
-      ])] "ch") in
-      (chan.close (type.structT [
-      ])) "$a0");;;
-      return: #())
-      ) in
-    do:  (Fork ("$go" #()));;;
-    return: (![type.chanT (type.structT [
-     ])] "ch")).
+Definition timeout : val := #(W64 10000).
 
 Definition EliminationStack : go_type := structT [
   "base" :: ptrT;
-  "exchanger" :: chanT stringT;
-  "timeout" :: time.Duration
+  "exchanger" :: chanT stringT
 ].
 #[global] Typeclasses Opaque EliminationStack.
 #[global] Opaque EliminationStack.
@@ -113,36 +87,27 @@ Definition NewEliminationStack : go_string := "github.com/goose-lang/goose/testd
 (* NewEliminationStack constructs a new elimination stack
    using a fresh LockedStack and a small default timeout.
 
-   go: elimination_stack.go:56:6 *)
+   go: elimination_stack.go:47:6 *)
 Definition NewEliminationStackⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (mem.alloc (let: "$base" := ((func_call #NewLockedStack) #()) in
      let: "$exchanger" := (chan.make #stringT #(W64 0)) in
-     let: "$timeout" := (#(W64 10) * time.Microsecond) in
      struct.make #EliminationStack [{
        "base" ::= "$base";
-       "exchanger" ::= "$exchanger";
-       "timeout" ::= "$timeout"
+       "exchanger" ::= "$exchanger"
      }]))).
 
 (* Push first tries one-shot elimination; on timeout, falls back to the locked stack.
 
-   go: elimination_stack.go:65:28 *)
+   go: elimination_stack.go:55:28 *)
 Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
   λ: "s" "value",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "value" := (mem.alloc "value") in
-    let: "t" := (mem.alloc (type.zero_val (type.chanT (type.structT [
-    ])))) in
-    let: "$r0" := (let: "$a0" := (![#time.Duration] (struct.field_ref #EliminationStack #"timeout"%go (![#ptrT] "s"))) in
-    (func_call #after) "$a0") in
-    do:  ("t" <-[type.chanT (type.structT [
-    ])] "$r0");;;
     chan.select_blocking [chan.select_send #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (![#stringT] "value") (λ: <>,
        return: (#())
-       ); chan.select_receive (type.structT [
-     ]) (![type.chanT (type.structT [
-     ])] "t") (λ: "$recvVal",
+       ); chan.select_receive #time.Time (let: "$a0" := timeout in
+     (func_call #time.After) "$a0") (λ: "$recvVal",
        do:  #()
        )];;;
     do:  (let: "$a0" := (![#stringT] "value") in
@@ -151,24 +116,17 @@ Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
 
 (* Pop first tries one-shot elimination; on timeout, falls back to the locked stack.
 
-   go: elimination_stack.go:78:28 *)
+   go: elimination_stack.go:67:28 *)
 Definition EliminationStack__Popⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
-    let: "t" := (mem.alloc (type.zero_val (type.chanT (type.structT [
-    ])))) in
-    let: "$r0" := (let: "$a0" := (![#time.Duration] (struct.field_ref #EliminationStack #"timeout"%go (![#ptrT] "s"))) in
-    (func_call #after) "$a0") in
-    do:  ("t" <-[type.chanT (type.structT [
-    ])] "$r0");;;
     chan.select_blocking [chan.select_receive #stringT (![type.chanT #stringT] (struct.field_ref #EliminationStack #"exchanger"%go (![#ptrT] "s"))) (λ: "$recvVal",
        let: "v" := (mem.alloc (type.zero_val #stringT)) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("v" <-[#stringT] "$r0");;;
        return: (![#stringT] "v", #true)
-       ); chan.select_receive (type.structT [
-     ]) (![type.chanT (type.structT [
-     ])] "t") (λ: "$recvVal",
+       ); chan.select_receive #time.Time (let: "$a0" := timeout in
+     (func_call #time.After) "$a0") (λ: "$recvVal",
        do:  #()
        )];;;
     let: ("$ret0", "$ret1") := (((method_call #(ptrT.id LockedStack.id) #"Pop"%go (![#ptrT] (struct.field_ref #EliminationStack #"base"%go (![#ptrT] "s")))) #())) in
@@ -1145,7 +1103,7 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(NewLockedStack, NewLockedStackⁱᵐᵖˡ); (after, afterⁱᵐᵖˡ); (NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (CancellableMapServer, CancellableMapServerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (makeGreeting, makeGreetingⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewLockedStack, NewLockedStackⁱᵐᵖˡ); (NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (CancellableMapServer, CancellableMapServerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (makeGreeting, makeGreetingⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(LockedStack.id, []); (ptrT.id LockedStack.id, [("Pop"%go, LockedStack__Popⁱᵐᵖˡ); ("Push"%go, LockedStack__Pushⁱᵐᵖˡ)]); (EliminationStack.id, []); (ptrT.id EliminationStack.id, [("Pop"%go, EliminationStack__Popⁱᵐᵖˡ); ("Push"%go, EliminationStack__Pushⁱᵐᵖˡ)]); (request.id, []); (ptrT.id request.id, []); (stream.id, []); (ptrT.id stream.id, [])].
 

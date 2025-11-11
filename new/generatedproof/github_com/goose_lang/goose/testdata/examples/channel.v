@@ -92,7 +92,6 @@ Context `{ffi_syntax}.
 Record t := mk {
   base' : loc;
   exchanger' : loc;
-  timeout' : time.Duration.t;
 }.
 End def.
 End EliminationStack.
@@ -106,19 +105,18 @@ Global Instance EliminationStack_wf : struct.Wf chan_spec_raw_examples.Eliminati
 Proof. apply _. Qed.
 
 Global Instance settable_EliminationStack : Settable EliminationStack.t :=
-  settable! EliminationStack.mk < EliminationStack.base'; EliminationStack.exchanger'; EliminationStack.timeout' >.
+  settable! EliminationStack.mk < EliminationStack.base'; EliminationStack.exchanger' >.
 Global Instance into_val_EliminationStack : IntoVal EliminationStack.t :=
   {| to_val_def v :=
     struct.val_aux chan_spec_raw_examples.EliminationStack [
     "base" ::= #(EliminationStack.base' v);
-    "exchanger" ::= #(EliminationStack.exchanger' v);
-    "timeout" ::= #(EliminationStack.timeout' v)
+    "exchanger" ::= #(EliminationStack.exchanger' v)
     ]%struct
   |}.
 
 Global Program Instance into_val_typed_EliminationStack : IntoValTyped EliminationStack.t chan_spec_raw_examples.EliminationStack :=
 {|
-  default_val := EliminationStack.mk (default_val _) (default_val _) (default_val _);
+  default_val := EliminationStack.mk (default_val _) (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
@@ -131,27 +129,22 @@ Proof. solve_into_val_struct_field. Qed.
 Global Instance into_val_struct_field_EliminationStack_exchanger : IntoValStructField "exchanger" chan_spec_raw_examples.EliminationStack EliminationStack.exchanger'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_EliminationStack_timeout : IntoValStructField "timeout" chan_spec_raw_examples.EliminationStack EliminationStack.timeout'.
-Proof. solve_into_val_struct_field. Qed.
-
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_EliminationStack base' exchanger' timeout':
+Global Instance wp_struct_make_EliminationStack base' exchanger':
   PureWp True
     (struct.make #chan_spec_raw_examples.EliminationStack (alist_val [
       "base" ::= #base';
-      "exchanger" ::= #exchanger';
-      "timeout" ::= #timeout'
+      "exchanger" ::= #exchanger'
     ]))%struct
-    #(EliminationStack.mk base' exchanger' timeout').
+    #(EliminationStack.mk base' exchanger').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance EliminationStack_struct_fields_split dq l (v : EliminationStack.t) :
   StructFieldsSplit dq l v (
     "Hbase" ∷ l ↦s[chan_spec_raw_examples.EliminationStack :: "base"]{dq} v.(EliminationStack.base') ∗
-    "Hexchanger" ∷ l ↦s[chan_spec_raw_examples.EliminationStack :: "exchanger"]{dq} v.(EliminationStack.exchanger') ∗
-    "Htimeout" ∷ l ↦s[chan_spec_raw_examples.EliminationStack :: "timeout"]{dq} v.(EliminationStack.timeout')
+    "Hexchanger" ∷ l ↦s[chan_spec_raw_examples.EliminationStack :: "exchanger"]{dq} v.(EliminationStack.exchanger')
   ).
 Proof.
   rewrite /named.
@@ -160,7 +153,6 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
   simpl_one_flatten_struct (# (EliminationStack.base' v)) (chan_spec_raw_examples.EliminationStack) "base"%go.
-  simpl_one_flatten_struct (# (EliminationStack.exchanger' v)) (chan_spec_raw_examples.EliminationStack) "exchanger"%go.
 
   solve_field_ref_f.
 Qed.
@@ -353,10 +345,6 @@ Final Obligation. iIntros. iFrame "#%". Qed.
 
 Global Instance wp_func_call_NewLockedStack :
   WpFuncCall chan_spec_raw_examples.NewLockedStack _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_after :
-  WpFuncCall chan_spec_raw_examples.after _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewEliminationStack :
