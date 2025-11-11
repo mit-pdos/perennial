@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import List.
 From New.golang.defn Require Export chan.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import chan_au_base chan_au_send chan_au_recv.
@@ -268,8 +269,12 @@ Lemma wp_select_blocking (cases : list op) :
 Proof.
   iIntros (Φ) "Hcases".
   iLöb as "IH" forall (Φ).
-  wp_call. wp_apply (wp_try_select_blocking with "[-]").
-  - iSplit; first iFrame.
+  wp_call.
+  wp_apply wp_list_Shuffle.
+  iIntros (cases') "%Hperm".
+  wp_apply (wp_try_select_blocking with "[-]").
+  - rewrite -Hperm.
+    iSplit; first iFrame.
     wp_auto. iApply "IH". iFrame.
   - iModIntro. iIntros "% HΦ". wp_auto. iFrame.
 Qed.
@@ -400,8 +405,13 @@ Lemma wp_select_nonblocking (cases : list op) (def: func.t) :
   WP chan.select_nonblocking #cases #def {{ Φ }}.
 Proof.
   iIntros (Φ) "Hcases".
-  wp_call. wp_apply (wp_try_select_nonblocking with "[-]").
-  - iSplit.
+  iLöb as "IH" forall (Φ).
+  wp_call.
+  wp_apply wp_list_Shuffle.
+  iIntros (cases') "%Hperm".
+  wp_apply (wp_try_select_nonblocking with "[-]").
+  - rewrite -Hperm.
+    iSplit.
     + iLeft in "Hcases". iFrame.
     + iRight in "Hcases". wp_auto. iFrame.
   - iModIntro. iIntros "% HΦ". wp_auto. iFrame.
@@ -551,7 +561,18 @@ Lemma wp_select_nonblocking_alt Φnrs P (cases : list op) (def: func.t) :
   WP chan.select_nonblocking #cases #def {{ Φ }}.
 Proof.
   iIntros (Φ) "Hcases HP Hdef".
-  wp_call. wp_apply (wp_try_select_nonblocking_alt with "Hcases HP [Hdef]").
+  wp_call.
+  wp_apply wp_list_Shuffle.
+  iIntros (cases') "%Hperm".
+  iDestruct (big_sepL2_alt with "Hcases") as "[%Hlen Hcases]".
+  destruct (permutation_zip cases cases' Φnrs) as [Φnrs' [Hperm_Φnrs Hperm_zip]]; [done|done|].
+  rewrite Hperm_zip.
+  rewrite Hperm_Φnrs.
+  wp_apply (wp_try_select_nonblocking_alt with "[Hcases] HP [Hdef]").
+  - iApply big_sepL2_alt.
+    iFrame "Hcases".
+    apply Permutation_length in Hperm, Hperm_Φnrs.
+    iPureIntro. lia.
   - iIntros "HP Hnrs". wp_auto. iApply ("Hdef" with "[$] [$]").
   - iModIntro. iIntros. wp_auto. iFrame.
 Qed.
