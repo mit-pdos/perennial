@@ -3,6 +3,8 @@ From New.golang.defn Require Export typing list.
 From New.golang.theory Require Import exception.
 From New.golang.theory Require Import proofmode.
 
+Set Default Proof Using "Type".
+
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!IntoVal V}.
@@ -76,6 +78,92 @@ Proof.
     + iClear "HΦ IH".
       wp_pures. iLöb as "IH". wp_pures. done.
 Qed.
+
+Lemma wp_list_Get {stk E} (l : list V) (i: w64) (v: V) :
+  l !! (uint.nat i) = Some v →
+  {{{ True }}}
+    (list.Get #l #i) @ stk ; E
+  {{{ RET #v; True }}}.
+Proof.
+  intros Hget.
+  iIntros (?) "_ HΦ".
+  iInduction l as [] "IH" forall (Φ v i Hget).
+  - rewrite lookup_nil in Hget. congruence.
+  - wp_call.
+    destruct (bool_decide_reflect (i = W64 0)); wp_pures.
+    + subst. change (uint.nat (W64 0)) with 0%nat in Hget.
+      simpl in Hget. replace a with v by congruence.
+      by iApply "HΦ".
+    + replace (uint.nat i) with (S (uint.nat (word.sub i (W64 1)))) in Hget by word.
+      simpl in Hget.
+      wp_apply "IH".
+      { eauto. }
+      by iApply "HΦ".
+Qed.
+
+Lemma wp_list_Insert {stk E} (l : list V) (i: w64) (v': V) :
+  is_Some (l !! (uint.nat i)) →
+  {{{ True }}}
+    (list.Insert #l #i #v') @ stk ; E
+  {{{ RET #(<[uint.nat i := v']> l); True }}}.
+Proof.
+  intros [v Hget].
+  iIntros (?) "_ HΦ".
+  iInduction l as [] "IH" forall (Φ v i Hget).
+  - rewrite lookup_nil in Hget. congruence.
+  - wp_call.
+    destruct (bool_decide_reflect (i = W64 0)); wp_pures.
+    + subst. change (uint.nat (W64 0)) with 0%nat in Hget.
+      simpl in Hget. replace a with v by congruence.
+      by iApply "HΦ".
+    + replace (uint.nat i) with (S (uint.nat (word.sub i (W64 1)))) in * by word.
+      simpl in Hget.
+      wp_apply "IH".
+      { eauto. }
+      wp_pures.
+      simpl.
+      by iApply "HΦ".
+Qed.
+
+Lemma wp_random_int (n: w64) :
+  0 < uint.Z n →
+  {{{ True }}}
+    list.random_int #n
+  {{{ (x: w64), RET #x; ⌜uint.Z x < uint.Z n⌝ }}}.
+Proof.
+  intros H.
+  iIntros (?) "_ HΦ".
+  wp_call. wp_apply wp_ArbitraryInt.
+  iIntros (x) "_".
+  replace (LitV x) with (#x).
+  { wp_pures. iApply "HΦ". word. }
+  rewrite to_val_unseal //.
+Qed.
+
+Lemma wp_list_Shuffle (l : list V) :
+  {{{ True }}}
+    list.Shuffle #l
+  {{{ (l': list V), RET #l'; ⌜l ≡ₚ l'⌝ }}}.
+Proof.
+  iIntros (?) "_ HΦ".
+  wp_call. wp_apply wp_list_Length. iIntros "%Hlen_nat".
+  wp_pure. wp_pure.
+  wp_bind (rec: _ _ _ := _)%E.
+  iLöb as "IH".
+  wp_pures.
+  assert (uint.Z (W64 (length l)) = Z.of_nat (length l)) as Hlen by word.
+  rewrite Hlen.
+  change (uint.Z (W64 0)) with 0.
+  destruct (bool_decide_reflect (length l ≤ 0)); wp_pures.
+  - assert (l = []); subst.
+    { destruct l; auto.
+      simpl in *; lia. }
+    iApply "HΦ". done.
+  - wp_apply wp_random_int.
+    { word. }
+    iIntros (idx) "%Hidx_bound".
+    wp_pures.
+Admitted.
 
 Global Instance wp_alist_cons (k : go_string) (l : list (go_string * val)) (v : val) :
   PureWp  True

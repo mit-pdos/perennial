@@ -31,6 +31,47 @@ Section defn.
                                 "new_length"
                               else (rec: "infloop" <> := Var "infloop" #()) #()
                            ).
+
+  Definition random_int: val :=
+    λ: "n", ArbitraryInt `rem` "n".
+
+  Definition Get : val :=
+    rec: "get" "l" "i" :=
+      Match "l"
+        (λ: <>, Panic "index out of bounds")
+        (λ: "hd" "tl",
+          if: "i" = #(W64 0) then
+            "hd"
+          else
+            "get" "tl" ("i" - #(W64 1))).
+
+  Definition Insert : val :=
+    rec: "insert" "l" "i" "v" :=
+      Match "l"
+        (λ: <>, Nil #())
+        (λ: "hd" "tl",
+          if: "i" = #(W64 0) then
+            Cons "v" "tl"
+          else
+            Cons "hd" ("insert" "tl" ("i" - #(W64 1)) "v")).
+
+  Definition Shuffle : val :=
+    λ: "l",
+      let: "len" := Length "l" in
+      let: "shuffle_helper" :=
+        rec: "shuffle_helper" "lst" "remaining" :=
+          if: "remaining" ≤ #(W64 0) then
+            "lst"
+          else
+            let: "idx" := random_int "remaining" in
+            let: "val" := Get "lst" "idx" in
+            let: "last_idx" := "remaining" - #(W64 1) in
+            let: "last_val" := Get "lst" "last_idx" in
+            let: "lst2" := Insert "lst" "idx" "last_val" in
+            let: "lst3" := Insert "lst2" "last_idx" "val" in
+            "shuffle_helper" "lst3" "last_idx"
+      in "shuffle_helper" "l" "len".
+
 End defn.
 
 Notation ConsV hd tl := (InjRV (hd, tl)).

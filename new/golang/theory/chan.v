@@ -268,8 +268,12 @@ Lemma wp_select_blocking (cases : list op) :
 Proof.
   iIntros (Φ) "Hcases".
   iLöb as "IH" forall (Φ).
-  wp_call. wp_apply (wp_try_select_blocking with "[-]").
-  - iSplit; first iFrame.
+  wp_call.
+  wp_apply wp_list_Shuffle.
+  iIntros (cases') "%Hperm".
+  wp_apply (wp_try_select_blocking with "[-]").
+  - rewrite -Hperm.
+    iSplit; first iFrame.
     wp_auto. iApply "IH". iFrame.
   - iModIntro. iIntros "% HΦ". wp_auto. iFrame.
 Qed.
@@ -401,8 +405,12 @@ Lemma wp_select_nonblocking (cases : list op) (def: func.t) :
 Proof.
   iIntros (Φ) "Hcases".
   iLöb as "IH" forall (Φ).
-  wp_call. wp_apply (wp_try_select_nonblocking with "[-]").
-  - iSplit.
+  wp_call.
+  wp_apply wp_list_Shuffle.
+  iIntros (cases') "%Hperm".
+  wp_apply (wp_try_select_nonblocking with "[-]").
+  - rewrite -Hperm.
+    iSplit.
     + iLeft in "Hcases". iFrame.
     + iRight in "Hcases". wp_auto. iFrame.
   - iModIntro. iIntros "% HΦ". wp_auto. iFrame.
