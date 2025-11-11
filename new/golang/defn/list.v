@@ -32,7 +32,7 @@ Section defn.
                               else (rec: "infloop" <> := Var "infloop" #()) #()
                            ).
 
-  Definition random_int: val :=
+  #[local] Definition random_int: val :=
     λ: "n", ArbitraryInt `rem` "n".
 
   Definition Get : val :=
@@ -55,22 +55,23 @@ Section defn.
           else
             Cons "hd" ("insert" "tl" ("i" - #(W64 1)) "v")).
 
+  #[local] Definition shuffle_helper: val :=
+    rec: "shuffle_helper" "lst" "len" "remaining" :=
+      if: "remaining" ≤ #(W64 0) then
+        "lst"
+      else
+        let: "idx" := random_int "remaining" in
+        let: "val" := Get "lst" "idx" in
+        let: "last_idx" := "remaining" - #(W64 1) in
+        let: "last_val" := Get "lst" "last_idx" in
+        let: "lst2" := Insert "lst" "idx" "last_val" in
+        let: "lst3" := Insert "lst2" "last_idx" "val" in
+        "shuffle_helper" "lst3" "len" "last_idx".
+
   Definition Shuffle : val :=
     λ: "l",
       let: "len" := Length "l" in
-      let: "shuffle_helper" :=
-        rec: "shuffle_helper" "lst" "remaining" :=
-          if: "remaining" ≤ #(W64 0) then
-            "lst"
-          else
-            let: "idx" := random_int "remaining" in
-            let: "val" := Get "lst" "idx" in
-            let: "last_idx" := "remaining" - #(W64 1) in
-            let: "last_val" := Get "lst" "last_idx" in
-            let: "lst2" := Insert "lst" "idx" "last_val" in
-            let: "lst3" := Insert "lst2" "last_idx" "val" in
-            "shuffle_helper" "lst3" "last_idx"
-      in "shuffle_helper" "l" "len".
+      shuffle_helper "l" "len" "len".
 
 End defn.
 

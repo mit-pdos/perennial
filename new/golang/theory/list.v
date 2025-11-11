@@ -128,7 +128,7 @@ Qed.
 Lemma wp_random_int (n: w64) :
   0 < uint.Z n →
   {{{ True }}}
-    list.random_int #n
+    list.list.random_int #n
   {{{ (x: w64), RET #x; ⌜uint.Z x < uint.Z n⌝ }}}.
 Proof.
   intros H.
@@ -140,30 +140,60 @@ Proof.
   rewrite to_val_unseal //.
 Qed.
 
+#[local] Lemma wp_list_shuffle_helper (l : list V) (len_w: w64) (remaining: w64) :
+  {{{ ⌜length l = uint.nat len_w ∧ uint.Z remaining ≤ uint.Z len_w⌝ }}}
+    list.list.shuffle_helper #l #len_w #remaining
+  {{{ (l': list V), RET #l'; ⌜l ≡ₚ l'⌝ }}}.
+Proof.
+  iIntros (Φ) "%Hbound HΦ".
+  iLöb as "IH" forall (l len_w remaining Hbound).
+  wp_call.
+  change (uint.Z (W64 0)) with 0.
+  destruct (bool_decide_reflect (uint.Z remaining ≤ 0)); wp_pures.
+  - iApply "HΦ". done.
+  - wp_apply wp_random_int.
+    { word. }
+    iIntros (idx) "%Hidx_bound".
+    wp_pures.
+    destruct (lookup_lt_is_Some_2 l (uint.nat idx)) as [v Hget].
+    { word. }
+    wp_apply wp_list_Get; first by eauto.
+    wp_pures.
+    destruct (lookup_lt_is_Some_2 l (uint.nat (word.sub remaining (W64 1)))) as [v_last Hget_last].
+    { word. }
+    wp_apply wp_list_Get; first by eauto.
+    wp_pures.
+    wp_apply wp_list_Insert.
+    { eauto. }
+    wp_pures.
+    wp_apply wp_list_Insert.
+    { apply lookup_lt_is_Some_2.
+      rewrite length_insert. word. }
+    wp_pure.
+    wp_pure.
+    wp_apply "IH".
+    { rewrite !length_insert; word. }
+    iIntros (l') "%Hperm".
+    iApply "HΦ".
+    iPureIntro.
+    rewrite -Hperm.
+    rewrite List.Permutation_insert_swap; eauto.
+Qed.
+
 Lemma wp_list_Shuffle (l : list V) :
   {{{ True }}}
     list.Shuffle #l
   {{{ (l': list V), RET #l'; ⌜l ≡ₚ l'⌝ }}}.
 Proof.
   iIntros (?) "_ HΦ".
-  wp_call. wp_apply wp_list_Length. iIntros "%Hlen_nat".
-  wp_pure. wp_pure.
-  wp_bind (rec: _ _ _ := _)%E.
-  iLöb as "IH".
+  wp_call. wp_apply wp_list_Length. iIntros "%Hlen".
   wp_pures.
-  assert (uint.Z (W64 (length l)) = Z.of_nat (length l)) as Hlen by word.
-  rewrite Hlen.
-  change (uint.Z (W64 0)) with 0.
-  destruct (bool_decide_reflect (length l ≤ 0)); wp_pures.
-  - assert (l = []); subst.
-    { destruct l; auto.
-      simpl in *; lia. }
-    iApply "HΦ". done.
-  - wp_apply wp_random_int.
-    { word. }
-    iIntros (idx) "%Hidx_bound".
-    wp_pures.
-Admitted.
+  wp_apply wp_list_shuffle_helper.
+  { word. }
+  iIntros (l') "%Hperm".
+  iApply "HΦ".
+  done.
+Qed.
 
 Global Instance wp_alist_cons (k : go_string) (l : list (go_string * val)) (v : val) :
   PureWp  True
