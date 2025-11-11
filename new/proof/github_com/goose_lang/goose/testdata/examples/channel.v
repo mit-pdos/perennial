@@ -1075,4 +1075,31 @@ Qed.
 
 End muxer.
 
+Section notready_examples.
+Context `{!chanG Σ w64}.
+
+Lemma wp_select_no_double_close :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.select_no_double_close #()
+  {{{ RET #(); True }}}.
+Proof using chanG0.
+  wp_start. wp_auto.
+  wp_apply chan.wp_make; first done.
+  iIntros "* (#His_ch & %Hcap & Hch)". simpl.
+  wp_auto.
+  wp_apply (chan.wp_close with "[$]").
+  iIntros "_". iApply fupd_mask_intro; first solve_ndisj.
+  iIntros "Hmask". iFrame. iNext. iIntros "Hch". iMod "Hmask" as "_". iModIntro.
+  wp_auto.
+  wp_apply (chan.wp_select_nonblocking_alt [False%I] with "[Hch] [-]");
+    [|iNamedAccu|].
+  - simpl. iSplitL; last done. iFrame "#".
+    iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+    iFrame. iIntros "!> Hch". iMod "Hmask" as "_". iModIntro.
+    iNamed 1. wp_auto. by iApply "HΦ".
+  - iNamed 1. simpl. iIntros ([[]]).
+Qed.
+
+End notready_examples.
+
 End proof.
