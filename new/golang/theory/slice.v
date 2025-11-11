@@ -948,8 +948,6 @@ Proof.
   wp_call.
   wp_apply wp_list_Length.
   iIntros "%Hlen".
-  (* TODO: list.Length to give <2^63, not <2^64 *)
-  assert (length l = sint.nat (W64 (length l))) as Hlen' by admit.
   wp_pures.
   wp_apply wp_slice_make2.
   { word. }
@@ -975,7 +973,7 @@ Proof.
     iExists _; iFrame.
     autorewrite with list in *.
     simpl.
-    rewrite drop_0 take_0 Nat.sub_0_r -Hlen' /=.
+    rewrite drop_0 take_0 Nat.sub_0_r -Hlen /=.
     iFrame. word.
   }
   wp_for.
@@ -1061,25 +1059,7 @@ Proof.
     rewrite replicate_eq_0; [ | word ].
     rewrite app_nil_r //.
   }
-  Fail idtac.
-Admitted.
-
-(* TODO: not sound, need 0 ≤ sint i *)
-Global Instance points_to_access_slice_elem_ref s (i : w64) (vs : list V) dq v
-  {Hlookup : TCSimpl (vs !! (sint.nat i)) (Some v)}
-  : PointsToAccess (slice.elem_ref_f s t i) v dq (s ↦*{dq} vs)
-      (λ v', s ↦*{dq} <[(sint.nat i) := v']> vs).
-Proof.
-(*
-  constructor.
-  - inv Hlookup.
-    iIntros "Hs".
-    iDestruct (own_slice_elem_acc with "Hs") as "Hs"; eauto.
-  - inv Hlookup.
-    rewrite list_insert_id //.
 Qed.
-*)
-Admitted.
 
 Lemma wp_load_slice_elem s (i: w64) (vs: list V) dq v :
   0 ≤ sint.Z i →

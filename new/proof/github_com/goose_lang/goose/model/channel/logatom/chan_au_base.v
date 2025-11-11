@@ -487,6 +487,7 @@ Definition rcv_au_fast ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp �
              end) ∧
   Φnotready.
 
+(** See [send_au_fast_alt] documentation below.  *)
 Definition rcv_au_fast_alt ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
@@ -569,31 +570,26 @@ Definition send_au_fast ch (v : V) γ Φ Φnotready : iProp Σ :=
              end) ∧
   Φnotready.
 
-(* Q: is there a good way to combine this and [send_au_fast]?
-   complexity? The (∃ b) stuff comes from writing out the join of the two
-   incomparable specs (the old one and the new one).
+(** This is an alternate specification for nonblocking chan send that allows for
+    proving a caller-chosen [Φnotready] in case the send does not occur. If no
+    cases are ready in the containing select statement, the [Φnotready]s will be
+    passed as a precondition to the default handler, allowing for reasoning
+    about programs in which it should be _impossible_ to reach the default.
 
-   old spec := ((|={⊤,∅}=> T ∨ N) ∧ Ψ)
-   new spec := (|={⊤,∅}=> T ∨ (N ∗ (N ={∅,⊤}=∗ Ψ)))
-   where T := (R ∗ (D ={∅,⊤}=∗ Φ)), where N is ownership of a not-ready state, R
-   is ownership of a ready state, D is ownership of a done state, and Ψ =
-   Φnotready.
+    This is not implied by nor does it imply [send_au_fast].
+    - [send_au_fast -∗ send_au_fast_alt]: the default spec does not provide
+      [|={∅,⊤}=>] in the notready case, but it's necessary to somehow close all
+      invariants in [send_au_fast_alt].
+    - [send_au_fast_alt -∗ send_au_fast]: under [send_au_fast_alt], the notready
+      predicate is only known to be true if the channel is _actually_ not ready,
+      whereas [send_au_fast] requires proving it's always OK to skip a case.
 
-   One can't prove (new_spec -∗ old_spec) because Ψ in new_spec gets to rely on
-   knowing it only runs in the notready case. Also
-
-   One also probably can't prove (old_spec -∗ new_spec) because (among other
-   possible reasons) old spec does not provide `|={∅,⊤}=>` in the notready case,
-   and we'd need to somehow close all invariants. This challenge of "I decided I
-   don't want to update any ghost state, so I'd like to close all invariants by
-   putting everything back as it was" has the feeling of aborting in logical
-   atomicity (though it does *not* require a fixpoint to reestablish the entire
-   update).
-
-   (old spec) ∨ (new spec) =
-   ((atomic update with only Φ) ∧ Φnotready) ∨ (atomic update update to either Φ or Φnotready) =
-   ∃ b,
-   (atomic update with Φ and (if (not b) then Φnotready is included)) ∧ (if b then Φnotready) *)
+    The writer of this spec does not know a different au which is weaker than
+    both [send_au_fast] and [send_au_fast_alt] and which is provable with
+    [TrySend]. If such a thing exists, it may enable having a canonical spec for
+    nonblocking channel operations. To be worth it, it would also require having
+    a canonical version of the select spec, for which there are currently two
+    (see [golang/theory/chan.v]). *)
 Definition send_au_fast_alt ch (v : V) γ Φ Φnotready : iProp Σ :=
   |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
