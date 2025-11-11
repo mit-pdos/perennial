@@ -36,19 +36,19 @@ Definition select_send : val :=
 Definition select_receive : val :=
   λ: "T" "ch" "f", InjR ("T", "ch", "f").
 
-Definition do_select_case : val :=
+Definition try_select_case : val :=
   λ: "c" "blocking",
-    exception_do (match: "c" with
-        InjL "data" =>
-          let: ((("T", "ch"), "v"), "f") := "data" in
-          let: "ok" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
-          if: "ok" then ("f" #();;; do: #true) else (do: #false)
-      | InjR "data" =>
-          let: (("T", "ch"), "f") := "data" in
-          let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
-          if: "success" then
-            ("f" "v" "ok";;; do: #true)
-          else do: #false
+    (match: "c" with
+       InjL "data" =>
+         let: ((("T", "ch"), "v"), "handler") := "data" in
+         let: "success" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
+         if: "success" then ("handler" #(), #true)
+         else (#(), #false)
+     | InjR "data" =>
+         let: (("T", "ch"), "handler") := "data" in
+         let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
+         if: "success" then ("handler" ("v", "ok"), #true)
+         else (#(), #false)
       end).
 
 (** [try_select] is used as the core of both [select_blocking] and [select_nonblocking] *)
@@ -56,9 +56,11 @@ Definition try_select : val :=
   rec: "go" "cases" "blocking" :=
     (* TODO: model should choose a random start position *)
     list.Match "cases"
-      (λ: <>, #false)
-      (λ: "hd" "tl", do_select_case "hd" "blocking" || "go" "tl")
-    #().
+      (λ: <>, (#(), #false))
+      (λ: "hd" "tl",
+         let: ("v", "done") := try_select_case "hd" "blocking" in
+         if: ~"done" then "go" "tl" "blocking"
+         else ("v", #true)).
 
 (** select_blocking models a select without a default case. It takes a list of
 cases (select_send or select_receive). It starts from a random position, then
@@ -67,7 +69,9 @@ returns true. Loop this until success. *)
 
 Definition select_blocking : val :=
   rec: "loop" "cases" :=
-      (try_select "cases" #false || "loop" "cases");; #().
+    let: ("v", "succeeded") := try_select "cases" #true in
+    if: "succeeded" then "v"
+    else "loop" "cases".
 
 (** select_nonblocking models a select with a default case. It takes a list of
 cases (select_send or select_receive) and a default handler. It starts from a
@@ -75,7 +79,9 @@ random position, then runs do_select_case with "blocking"=#true over each case.
 On failure, run the default handler. *)
 Definition select_nonblocking : val :=
   λ: "cases" "def",
-    (try_select "cases" #true || "def" #());; #().
+    let: ("v", "succeeded") := try_select "cases" #false in
+    if: "succeeded" then "v"
+    else "def" #().
 
 End defns.
 End chan.

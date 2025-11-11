@@ -554,50 +554,48 @@ Proof.
 
 (** Nonblocking send AU - vacuous since we ban all send preconditions *)
 Lemma select_nb_only_send_au γ ch v  :
-  ∀ Φ,
+  ∀ Φ Φnotready,
   is_select_nb_only γ ch -∗
   ( False -∗  Φ) -∗
-         £1 ∗ £1 -∗
-  send_au_fast ch v γ Φ.
+  Φnotready -∗
+  send_au_fast ch v γ Φ Φnotready.
 Proof.
-   intros Φ.
-  iIntros "#Hnb".
-  iIntros "HΦ".
-  iIntros "[Hlc1 Hlc2]".
+   intros Φ Φnotready.
+  iIntros "#Hnb _ Hnotready".
   iNamed "Hnb".
-  iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
-  iNamed "Hinv_open".
-  destruct s; try done.
-  (* Only Idle case remains - all others give False from invariant *)
-  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
-  iNext.
-  iFrame.
-  Qed.
+  iSplit.
+   - iInv "Hinv" as ">Hinv_open" "Hinv_close".
+     iNamed "Hinv_open".
+     destruct s; try done.
+     (* Only Idle case remains - all others give False from invariant *)
+     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+     iNext.
+     iFrame.
+   - done.
+Qed.
 
 
 
 (** Nonblocking receive AU - vacuous since we ban all receive preconditions *)
 Lemma select_nb_only_rcv_au γ ch :
-   ∀ (Φ: unit → bool → iProp Σ),
+   ∀ (Φ: unit → bool → iProp Σ) (Φnotready: iProp Σ),
   is_select_nb_only  γ ch -∗
   ( ∀ (v:unit), False -∗ Φ v true) -∗
-         £1 ∗ £1 -∗
-  rcv_au_fast ch γ (λ (v:unit) (ok:bool), Φ v ok).
+  Φnotready -∗
+  rcv_au_fast ch γ (λ (v:unit) (ok:bool), Φ v ok) Φnotready.
 Proof.
-  intros Φ.
-  iIntros "#Hnb".
-  iIntros "HΦ".
-  iIntros "[Hlc1 Hlc2]".
+  intros Φ Φnotready.
+  iIntros "#Hnb _ Hnotready".
   iNamed "Hnb".
-  iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
-  iNamed "Hinv_open".
-  destruct s; try done.
-  (* Only Idle case remains - all others give False from invariant *)
-  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
-  iNext.
-  iFrame.
+  iSplit.
+  - iInv "Hinv" as ">Hinv_open" "Hinv_close".
+    iNamed "Hinv_open".
+    destruct s; try done.
+    (* Only Idle case remains - all others give False from invariant *)
+    iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    iNext.
+    iFrame.
+  - done.
 Qed.
 
 
@@ -605,6 +603,7 @@ Lemma wp_select_nb_no_panic :
   {{{ is_pkg_init chan_spec_raw_examples}}}
     @! chan_spec_raw_examples.select_nb_no_panic #()
   {{{ RET #(); True }}}.
+Proof using chan_protocolG0.
   wp_start. wp_auto_lc 2.
   wp_apply chan.wp_make. { done. }
   iIntros (ch). iIntros (γ). iIntros "(#HisChan & _Hcap & Hownchan)".
@@ -624,11 +623,8 @@ Lemma wp_select_nb_no_panic :
   - (* Prove the receive case - will be vacuous *)
     iSplitL.
     +
-      iExists γnb. iExists unit. iExists _, _, _.
-      iFrame.
-      iSplit.
-      { (* Show is_channel matches *)
-        iNamed "Hnb". iFrame "#". }
+      (* extract is_channel *)
+      iPoseProof "Hnb" as "[$ _]".
       (* Now use our select_nb_only_rcv_au lemma *)
       iRename select (£1) into "Hlc1".
       iApply (select_nb_only_rcv_au with " [$Hnb]").
@@ -637,7 +633,7 @@ Lemma wp_select_nb_no_panic :
       iIntros "Hf".
       done.
       }
-      iFrame.
+      done.
     + (* True case *)
       done.
   - (* Prove the default case *)
