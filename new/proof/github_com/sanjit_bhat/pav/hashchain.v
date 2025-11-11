@@ -61,18 +61,64 @@ Definition decode_chain data :=
 Lemma decode_empty_inj d :
   decode_chain d = DecEmpty →
   d = Some $ [].
-Proof. Admitted.
+Proof.
+  rewrite /decode_chain. intros.
+  case_match; [|done].
+  case_match; [done|].
+  by case_match.
+Qed.
+
+Lemma decode_link_inj_aux d x :
+  decode_link d = Some x →
+  d = x.1 ++ x.2 ∧
+    Z.of_nat $ length x.1 = cryptoffi.hash_len.
+Proof.
+  rewrite /decode_link. intros.
+  case_bool_decide; [|done].
+  simplify_eq/=.
+  remember d as rem0.
+
+  rewrite take_drop.
+  split; [done|len].
+Qed.
 
 Lemma decode_link_inj d prevLink val :
   decode_chain d = DecLink prevLink val →
   d = Some $ prevLink ++ val ∧
     Z.of_nat $ length prevLink = cryptoffi.hash_len.
-Proof. Admitted.
+Proof.
+  rewrite /decode_chain. intros.
+  case_match; [|done].
+  case_match; [done|].
+  case_match; [|done].
+  opose proof (decode_link_inj_aux _ _ _) as [Heq ?]; [done|].
+  rewrite Heq.
+  by simplify_eq/=.
+Qed.
+
+Lemma decode_link_det_aux prevLink val :
+  Z.of_nat $ length prevLink = cryptoffi.hash_len →
+  decode_link (prevLink ++ val) = Some (prevLink, val).
+Proof.
+  intros. rewrite /decode_link.
+  case_bool_decide.
+  2: { autorewrite with len in *. word. }
+  rewrite take_app_length'; [|word].
+  rewrite drop_app_length'; [|word].
+  done.
+Qed.
 
 Lemma decode_link_det prevLink val :
   Z.of_nat $ length prevLink = cryptoffi.hash_len →
   decode_chain (Some $ prevLink ++ val) = DecLink prevLink val.
-Proof. Admitted.
+Proof.
+  intros. simpl.
+  case_match eqn:Heq.
+  { apply (f_equal length) in Heq.
+    autorewrite with len in *. word. }
+  rewrite -{}Heq.
+  by rewrite decode_link_det_aux.
+Qed.
 
 (* in practice, limit should be length of list. *)
 Fixpoint is_chain l (cut : option $ list w8) h limit : iProp Σ :=
@@ -119,7 +165,14 @@ Lemma is_chain_unfold l cut h limit :
 Proof. destruct limit; naive_solver. Qed.
 
 #[global] Instance is_chain_pers l c h limit : Persistent (is_chain l c h limit).
-Proof. Admitted.
+Proof.
+  revert l h. induction limit as [? IH] using lt_wf_ind. intros.
+  setoid_rewrite is_chain_unfold.
+  apply exist_persistent. intros.
+  repeat case_match; try apply _.
+  ospecialize (IH n _); [lia|].
+  apply _.
+Qed.
 
 Lemma is_chain_hash_len l c h limit :
   is_chain l c h limit -∗
@@ -539,10 +592,11 @@ Proof.
   - rewrite last_snoc /=. iPureIntro. f_equal; word.
 Qed.
 
+(* TODO: conclusion is vacuously true. *)
 Lemma is_chain_take n vals link :
   is_chain vals None link (length vals) -∗
-  ∃ middleLink,
-  is_chain (take n vals) None middleLink n.
+  ∃ takeLink,
+  is_chain (take n vals) None takeLink n.
 Proof. Admitted.
 
 Lemma wp_HashChain_Prove c vals d (prevLen : w64) :
