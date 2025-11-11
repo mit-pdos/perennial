@@ -762,6 +762,42 @@ Proof.
   rewrite Permutation_swap //.
 Qed.
 
+Lemma permutation_zip {A B} (l1 l1': list A) (l2: list B) :
+  l1 ≡ₚ l1' →
+  length l1 = length l2 →
+  ∃ l2', l2 ≡ₚ l2' ∧ zip l1 l2 ≡ₚ zip l1' l2'.
+Proof.
+  intros Hperm.
+  generalize dependent l2.
+  induction Hperm.
+  - eauto.
+  - intros l2 Hlen.
+    destruct l2 as [|x2 l2].
+    { exfalso; simpl in *; lia. }
+    destruct (IHHperm l2) as (l2' & Hl2' & Hzip).
+    { simpl in *; lia. }
+    exists (x2 :: l2').
+    simpl; eauto.
+  - intros l2 Hlen.
+    destruct l2 as [|y2 [|x2 l2]].
+    { exfalso; simpl in *; lia. }
+    { exfalso; simpl in *; lia. }
+    exists (x2 :: y2 :: l2); simpl; eauto using Permutation.
+  - (* this case almost handled by Claude:
+    https://claude.ai/share/33d6e926-622a-4fdd-ae7a-9a71584b374f *)
+    intros l2 Hlen.
+    destruct (IHHperm1 l2) as (l2' & Hl2'1 & Hzip1); auto.
+    destruct (IHHperm2 l2') as (l2'' & Hl2'2 & Hzip2).
+    { apply Permutation_length in Hperm1.
+      apply Permutation_length in Hl2'1.
+      lia. }
+    exists l2''.
+    split.
+    + by etrans; eauto.
+    + by etrans; eauto.
+Qed.
+
+
 Lemma subslice_app_length {A} n m (l0 l1 : list A) :
   subslice ((length l0) + n) ((length l0) + m) (l0 ++ l1) =
   subslice n m l1.

@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import List.
 From New.golang.defn Require Export chan.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import chan_au_base chan_au_send chan_au_recv.
@@ -564,13 +565,17 @@ Proof.
   wp_apply wp_list_Shuffle.
   iIntros (cases') "%Hperm".
   iDestruct (big_sepL2_alt with "Hcases") as "[%Hlen Hcases]".
-  (* TODO: need to permute cases and Φnrs at the same time; there should be a
-  lemma about "copying" a permutation to another to get a permutation on zip *)
+  destruct (permutation_zip cases cases' Φnrs) as [Φnrs' [Hperm_Φnrs Hperm_zip]]; [done|done|].
+  rewrite Hperm_zip.
+  rewrite Hperm_Φnrs.
   wp_apply (wp_try_select_nonblocking_alt with "[Hcases] HP [Hdef]").
-  - admit. (* stuck here, need to rearrange lists *)
+  - iApply big_sepL2_alt.
+    iFrame "Hcases".
+    apply Permutation_length in Hperm, Hperm_Φnrs.
+    iPureIntro. lia.
   - iIntros "HP Hnrs". wp_auto. iApply ("Hdef" with "[$] [$]").
   - iModIntro. iIntros. wp_auto. iFrame.
-Admitted.
+Qed.
 
 End select_proof.
 

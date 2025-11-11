@@ -1,3 +1,4 @@
+From Perennial.Helpers Require Import List.
 From Perennial.goose_lang Require Export lifting.
 From New.golang.defn Require Export typing list.
 From New.golang.theory Require Import exception.
@@ -177,7 +178,7 @@ Proof.
     iApply "HΦ".
     iPureIntro.
     rewrite -Hperm.
-    rewrite List.Permutation_insert_swap; eauto.
+    rewrite Permutation_insert_swap; eauto.
 Qed.
 
 Lemma wp_list_Shuffle (l : list V) :
