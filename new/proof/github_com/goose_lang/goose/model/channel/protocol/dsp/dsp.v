@@ -165,7 +165,7 @@ Qed.
 (** ** Endpoint Operations *)
 
 (** Endpoint sends value *)
-Lemma dsp_send (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) :
+Lemma wp_dsp_send (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) :
   {{{ #(lr_chan,rl_chan) ↣ <!> MSG v; p }}}
     chan.send #tV #lr_chan #v
   {{{ RET #(); #(lr_chan,rl_chan) ↣ p }}}.
@@ -222,7 +222,7 @@ Proof.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
 Qed.
 
-Lemma dsp_send_tele
+Lemma wp_dsp_send_tele
   {TT : tele} (tt:TT)
   (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
   {{{ #(lr_chan,rl_chan) ↣ (<!.. x> MSG (v x) {{ P x }}; p x) ∗ P tt }}}
@@ -236,11 +236,11 @@ Proof.
     iApply iProto_le_trans;
       [iApply iProto_le_texist_intro_l|].
     by iFrame "HP". }
-  by iApply (dsp_send with "Hc").
+  by iApply (wp_dsp_send with "Hc").
 Qed.
 
 (** Endpoint receives value *)
-Lemma dsp_recv {TT:tele}
+Lemma wp_dsp_recv {TT:tele}
     (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
   {{{ #(lr_chan,rl_chan) ↣ <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
     chan.receive #tV #rl_chan
@@ -398,7 +398,7 @@ Proof.
 Qed.
 
 (** Endpoint receives on a closed or ended channel *)
-Lemma dsp_recv_end (lr_chan rl_chan : loc) :
+Lemma wp_dsp_recv_end (lr_chan rl_chan : loc) :
   {{{ #(lr_chan,rl_chan) ↣ END }}}
     chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); #(lr_chan,rl_chan) ↣ END }}}.
@@ -479,7 +479,7 @@ Proof.
 Qed.
 
 (** Endpoint receives on a closed or ended channel *)
-Lemma dsp_recv_closed (lr_chan rl_chan : loc) :
+Lemma wp_dsp_recv_closed (lr_chan rl_chan : loc) :
   {{{  ↯ #(lr_chan,rl_chan) }}}
     chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); ↯ #(lr_chan,rl_chan) }}}.
@@ -536,11 +536,11 @@ Proof.
     iApply "HΦ". by iFrame "#∗".
 Qed.
 
-Lemma dsp_recv_false (b : bool) (lr_chan rl_chan : loc) :
+Lemma wp_dsp_recv_false (b : bool) (lr_chan rl_chan : loc) :
   {{{ (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}
     chan.receive #tV #rl_chan
   {{{ RET (#(default_val V), #false); (if b then #(lr_chan,rl_chan) ↣ END else  ↯ #(lr_chan,rl_chan)) }}}.
-Proof. destruct b; [apply dsp_recv_end|apply dsp_recv_closed]. Qed.
+Proof. destruct b; [apply wp_dsp_recv_end|apply wp_dsp_recv_closed]. Qed.
 
 End dsp.
 

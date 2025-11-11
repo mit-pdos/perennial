@@ -186,7 +186,7 @@ Proof.
     iApply iProto_le_trans; [|iApply (iProto_le_texist_intro_r _ x)]; simpl.
     iIntros "H". by iDestruct (HP with "H") as "$". }
   rewrite -wp_bind. eapply bi.wand_apply;
-    [by eapply bi.wand_entails, (dsp_recv lr_chan _ (tele_app tv) (tele_app tP') (tele_app tp))|f_equiv; first done].
+    [by eapply bi.wand_entails, (wp_dsp_recv lr_chan _ (tele_app tv) (tele_app tP') (tele_app tp))|f_equiv; first done].
   rewrite -bi.later_intro; apply bi.forall_intro=> x.
   specialize (HΦ x). destruct (envs_app _ _) as [Δ'|] eqn:HΔ'=> //.
   rewrite envs_app_sound //; simpl. by rewrite right_id HΦ.
@@ -253,7 +253,7 @@ Proof.
     #(lr_chan,rl_chan) ↣ <!.. (x : TT)> MSG tele_app tv x {{ tele_app tP x }}; tele_app tp x) as ->.
   { iIntros "Hc". iApply (iProto_pointsto_le with "Hc"); iIntros "!>".
     iApply iProto_le_trans; [iApply Hp|]. by rewrite Hm. }
-  eapply bi.wand_apply; [rewrite -wp_bind; by eapply bi.wand_entails, dsp_send_tele|].
+  eapply bi.wand_apply; [rewrite -wp_bind; by eapply bi.wand_entails, wp_dsp_send_tele|].
   by rewrite -bi.later_intro.
 Qed.
 
