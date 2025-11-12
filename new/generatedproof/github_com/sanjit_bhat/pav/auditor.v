@@ -2,6 +2,7 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.bytes.
 Require Export New.generatedproof.sync.
+Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.advrpc.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.cryptoffi.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.hashchain.
@@ -26,7 +27,7 @@ Record t := mk {
   mu' : loc;
   sk' : loc;
   lastDig' : slice.t;
-  bootEp' : w64;
+  startEp' : w64;
   hist' : slice.t;
   serv' : loc;
 }.
@@ -42,14 +43,14 @@ Global Instance Auditor_wf : struct.Wf auditor.Auditor.
 Proof. apply _. Qed.
 
 Global Instance settable_Auditor : Settable Auditor.t :=
-  settable! Auditor.mk < Auditor.mu'; Auditor.sk'; Auditor.lastDig'; Auditor.bootEp'; Auditor.hist'; Auditor.serv' >.
+  settable! Auditor.mk < Auditor.mu'; Auditor.sk'; Auditor.lastDig'; Auditor.startEp'; Auditor.hist'; Auditor.serv' >.
 Global Instance into_val_Auditor : IntoVal Auditor.t :=
   {| to_val_def v :=
     struct.val_aux auditor.Auditor [
     "mu" ::= #(Auditor.mu' v);
     "sk" ::= #(Auditor.sk' v);
     "lastDig" ::= #(Auditor.lastDig' v);
-    "bootEp" ::= #(Auditor.bootEp' v);
+    "startEp" ::= #(Auditor.startEp' v);
     "hist" ::= #(Auditor.hist' v);
     "serv" ::= #(Auditor.serv' v)
     ]%struct
@@ -73,7 +74,7 @@ Proof. solve_into_val_struct_field. Qed.
 Global Instance into_val_struct_field_Auditor_lastDig : IntoValStructField "lastDig" auditor.Auditor Auditor.lastDig'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Auditor_bootEp : IntoValStructField "bootEp" auditor.Auditor Auditor.bootEp'.
+Global Instance into_val_struct_field_Auditor_startEp : IntoValStructField "startEp" auditor.Auditor Auditor.startEp'.
 Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Auditor_hist : IntoValStructField "hist" auditor.Auditor Auditor.hist'.
@@ -84,17 +85,17 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Auditor mu' sk' lastDig' bootEp' hist' serv':
+Global Instance wp_struct_make_Auditor mu' sk' lastDig' startEp' hist' serv':
   PureWp True
     (struct.make #auditor.Auditor (alist_val [
       "mu" ::= #mu';
       "sk" ::= #sk';
       "lastDig" ::= #lastDig';
-      "bootEp" ::= #bootEp';
+      "startEp" ::= #startEp';
       "hist" ::= #hist';
       "serv" ::= #serv'
     ]))%struct
-    #(Auditor.mk mu' sk' lastDig' bootEp' hist' serv').
+    #(Auditor.mk mu' sk' lastDig' startEp' hist' serv').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
@@ -103,7 +104,7 @@ Global Instance Auditor_struct_fields_split dq l (v : Auditor.t) :
     "Hmu" ∷ l ↦s[auditor.Auditor :: "mu"]{dq} v.(Auditor.mu') ∗
     "Hsk" ∷ l ↦s[auditor.Auditor :: "sk"]{dq} v.(Auditor.sk') ∗
     "HlastDig" ∷ l ↦s[auditor.Auditor :: "lastDig"]{dq} v.(Auditor.lastDig') ∗
-    "HbootEp" ∷ l ↦s[auditor.Auditor :: "bootEp"]{dq} v.(Auditor.bootEp') ∗
+    "HstartEp" ∷ l ↦s[auditor.Auditor :: "startEp"]{dq} v.(Auditor.startEp') ∗
     "Hhist" ∷ l ↦s[auditor.Auditor :: "hist"]{dq} v.(Auditor.hist') ∗
     "Hserv" ∷ l ↦s[auditor.Auditor :: "serv"]{dq} v.(Auditor.serv')
   ).
@@ -116,7 +117,7 @@ Proof.
   simpl_one_flatten_struct (# (Auditor.mu' v)) (auditor.Auditor) "mu"%go.
   simpl_one_flatten_struct (# (Auditor.sk' v)) (auditor.Auditor) "sk"%go.
   simpl_one_flatten_struct (# (Auditor.lastDig' v)) (auditor.Auditor) "lastDig"%go.
-  simpl_one_flatten_struct (# (Auditor.bootEp' v)) (auditor.Auditor) "bootEp"%go.
+  simpl_one_flatten_struct (# (Auditor.startEp' v)) (auditor.Auditor) "startEp"%go.
   simpl_one_flatten_struct (# (Auditor.hist' v)) (auditor.Auditor) "hist"%go.
 
   solve_field_ref_f.
@@ -563,6 +564,7 @@ Global Instance is_pkg_defined_pure_auditor : IsPkgDefinedPure auditor :=
       is_pkg_defined_pure_single auditor ∧
       is_pkg_defined_pure code.bytes.bytes ∧
       is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.advrpc.advrpc ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.hashchain.hashchain ∧
@@ -580,6 +582,7 @@ Global Program Instance is_pkg_defined_auditor : IsPkgDefined auditor :=
       (is_pkg_defined_single auditor ∗
        is_pkg_defined code.bytes.bytes ∗
        is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.github_com.goose_lang.std.std ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.advrpc.advrpc ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.hashchain.hashchain ∗
@@ -600,8 +603,8 @@ Global Instance wp_func_call_getNextDig :
   WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_checkStart :
-  WpFuncCall auditor.checkStart _ (is_pkg_defined auditor) :=
+Global Instance wp_func_call_CheckStart :
+  WpFuncCall auditor.CheckStart _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewRpcAuditor :
