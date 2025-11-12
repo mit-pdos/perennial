@@ -299,7 +299,8 @@ inside the bool_decide. *)
 (* TODO: [wp_if_destruct] used when user has [if: #b] at program head
 and wants to case branch, regardless of whether b is a var or not.
 the impl should be changed to match this intuition.
-right now, it destructs [# b] found anywhere. *)
+right now, it destructs [# b] found anywhere.
+https://github.com/mit-pdos/perennial/issues/471 *)
 Ltac wp_if_destruct :=
   lazymatch goal with
   | |- environments.envs_entails _ ?g =>
