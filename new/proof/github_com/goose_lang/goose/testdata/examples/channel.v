@@ -991,6 +991,50 @@ Proof using chan_protocolG0 chan_protocolG1 globalsGS0.
   iFrame.
 Qed.
 
+Lemma wp_MapClient (my_stream: stream.t) :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream }}}
+    @! chan_spec_raw_examples.Client #()
+  {{{ RET #"Hello, World!"; True%I }}}.
+Proof using chan_protocolG0 chan_protocolG1 contributionG0 H dspG0 globalsGS0.
+  wp_start.
+  wp_auto.
+    wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ ","%go⌝)%I).
+    {
+       iIntros (s) "!> _". wp_auto. by eauto.
+    }
+    iIntros (stream).
+    iIntros "Hmapper".
+    wp_auto.
+    wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ "!"%go⌝)%I).
+    {
+       iIntros (s) "!> _". wp_auto. by eauto.
+    }
+    iIntros (s').
+    iIntros "H'".
+    wp_auto.
+    iDestruct "Hmapper" as "[Hmapper Hstr]".
+    iDestruct "H'" as "[Hmapper' Hstr']".
+
+  wp_apply (wp_fork with "[Hmapper]").
+  {
+        wp_apply (wp_MapServer with "[$Hmapper]").
+done.
+  }
+  wp_apply (wp_fork with "[Hmapper']").
+  {
+        wp_apply (wp_MapServer with "[$Hmapper']").
+done.
+  }
+  wp_send with "[//]".
+  wp_auto.
+  wp_send with "[//]".
+  wp_auto.
+  wp_recv (?) as "->". wp_auto.
+  wp_recv (?) as "->". wp_auto.
+  iApply "HΦ".
+  done.
+Qed.
+
 Lemma wp_Muxer (c: loc) γmpmc (n_prod n_cons: nat) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
       "#Hismpmc" ∷ is_mpmc γmpmc c n_prod n_cons is_mapper_stream (λ _, True) ∗
