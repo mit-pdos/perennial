@@ -9,7 +9,7 @@ From New.proof.github_com.sanjit_bhat.pav.server_proof Require Import base.
 
 Module server.
 
-Module StartCliReply.
+Module StartReply.
 Record t :=
   mk' {
     PrevEpochLen: w64;
@@ -50,7 +50,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 
 Definition own ptr obj d : iProp Σ :=
   ∃ sl_PrevLink sl_ChainProof sl_LinkSig sl_VrfPk sl_VrfSig,
-  "Hstruct" ∷ ptr ↦{d} (server.StartCliReply.mk obj.(PrevEpochLen) sl_PrevLink sl_ChainProof sl_LinkSig sl_VrfPk sl_VrfSig) ∗
+  "Hstruct" ∷ ptr ↦{d} (server.StartReply.mk obj.(PrevEpochLen) sl_PrevLink sl_ChainProof sl_LinkSig sl_VrfPk sl_VrfSig) ∗
 
   "Hsl_PrevLink" ∷ sl_PrevLink ↦*{d} obj.(PrevLink) ∗
   "Hsl_ChainProof" ∷ sl_ChainProof ↦*{d} obj.(ChainProof) ∗
@@ -65,7 +65,7 @@ Lemma wp_enc obj sl_b b ptr_obj d :
     "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
     "Hown_obj" ∷ own ptr_obj obj d
   }}}
-  @! server.StartCliReplyEncode #sl_b #ptr_obj
+  @! server.StartReplyEncode #sl_b #ptr_obj
   {{{
     sl_b', RET #sl_b';
     let b' := b ++ pure_enc obj in
@@ -81,7 +81,7 @@ Lemma wp_dec sl_b d b :
     is_pkg_init server ∗
     "Hsl_b" ∷ sl_b ↦*{d} b
   }}}
-  @! server.StartCliReplyDecode #sl_b
+  @! server.StartReplyDecode #sl_b
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
@@ -96,90 +96,7 @@ Lemma wp_dec sl_b d b :
 Proof. Admitted.
 
 End proof.
-End StartCliReply.
-
-Module StartAdtrReply.
-Record t :=
-  mk' {
-    ChainProof: list w8;
-    LinkSig: list w8;
-    VrfPk: list w8;
-    VrfSig: list w8;
-  }.
-
-Definition pure_enc obj :=
-  safemarshal.Slice1D.pure_enc obj.(ChainProof) ++
-  safemarshal.Slice1D.pure_enc obj.(LinkSig) ++
-  safemarshal.Slice1D.pure_enc obj.(VrfPk) ++
-  safemarshal.Slice1D.pure_enc obj.(VrfSig).
-
-Definition valid obj :=
-  safemarshal.Slice1D.valid obj.(ChainProof) ∧
-  safemarshal.Slice1D.valid obj.(LinkSig) ∧
-  safemarshal.Slice1D.valid obj.(VrfPk) ∧
-  safemarshal.Slice1D.valid obj.(VrfSig).
-
-Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-  valid obj.
-
-Lemma wish_det tail0 tail1 obj0 obj1 {b} :
-  wish b obj0 tail0 →
-  wish b obj1 tail1 →
-  obj0 = obj1 ∧ tail0 = tail1.
-Proof. Admitted.
-
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-Definition own ptr obj d : iProp Σ :=
-  ∃ sl_ChainProof sl_LinkSig sl_VrfPk sl_VrfSig,
-  "Hstruct" ∷ ptr ↦{d} (server.StartAdtrReply.mk sl_ChainProof sl_LinkSig sl_VrfPk sl_VrfSig) ∗
-
-  "Hsl_ChainProof" ∷ sl_ChainProof ↦*{d} obj.(ChainProof) ∗
-  "Hsl_LinkSig" ∷ sl_LinkSig ↦*{d} obj.(LinkSig) ∗
-  "Hsl_VrfPk" ∷ sl_VrfPk ↦*{d} obj.(VrfPk) ∗
-  "Hsl_VrfSig" ∷ sl_VrfSig ↦*{d} obj.(VrfSig).
-
-Lemma wp_enc obj sl_b b ptr_obj d :
-  {{{
-    is_pkg_init server ∗
-    "Hsl_b" ∷ sl_b ↦* b ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d
-  }}}
-  @! server.StartAdtrReplyEncode #sl_b #ptr_obj
-  {{{
-    sl_b', RET #sl_b';
-    let b' := b ++ pure_enc obj in
-    sl_b' ↦* b' ∗
-    own_slice_cap w8 sl_b' 1 ∗
-    own ptr_obj obj d ∗
-    ⌜wish b' obj b⌝
-  }}}.
-Proof. Admitted.
-
-Lemma wp_dec sl_b d b :
-  {{{
-    is_pkg_init server ∗
-    "Hsl_b" ∷ sl_b ↦*{d} b
-  }}}
-  @! server.StartAdtrReplyDecode #sl_b
-  {{{
-    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
-    match err with
-    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
-    | false =>
-      ∃ obj tail,
-      own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail ∗
-      ⌜wish b obj tail⌝
-    end
-  }}}.
-Proof. Admitted.
-
-End proof.
-End StartAdtrReply.
+End StartReply.
 
 Module PutArg.
 Record t :=
