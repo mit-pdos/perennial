@@ -118,7 +118,7 @@ Definition dsp_endpoint
     | Some p => iProto_own γdsp_names.(dsp_lr_name) p
     end.
 
-Notation "c ↣{ γ }  p" := (dsp_endpoint γ c (Some p)) (at level 20, format "c  ↣{  γ  }  p").
+Notation "c ↣{ γ } p" := (dsp_endpoint γ c (Some p)) (at level 20, format "c  ↣{  γ  }  p").
 Notation "↯{ γ } c" := (dsp_endpoint γ c None) (at level 20, format "↯{  γ  }  c").
 
 Global Instance dsp_endpoint_ne γ c : NonExpansive (dsp_endpoint γ c).
@@ -233,7 +233,7 @@ Proof.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
 Qed.
 
-Lemma dsp_send (lr_chan rl_chan : loc) γ (v : V) (p : iProto Σ V) :
+Lemma wp_dsp_send (lr_chan rl_chan : loc) γ (v : V) (p : iProto Σ V) :
   {{{ #(lr_chan,rl_chan) ↣{γ} <!> MSG v; p }}}
     chan.send #tV #lr_chan #v
   {{{ RET #(); #(lr_chan,rl_chan) ↣{γ} p }}}.
@@ -269,7 +269,7 @@ Proof.
   iApply (dsp_send_au with "H£ Hc HΦ").
 Qed.
 
-Lemma dsp_send_tele
+Lemma wp_dsp_send_tele
   {TT : tele} (tt:TT)
   (lr_chan rl_chan : loc) γ (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
   {{{ #(lr_chan,rl_chan) ↣{γ} (<!.. x> MSG (v x) {{ P x }}; p x) ∗ P tt }}}
@@ -283,7 +283,7 @@ Proof.
     iApply iProto_le_trans;
       [iApply iProto_le_texist_intro_l|].
     by iFrame "HP". }
-  by iApply (dsp_send with "Hc").
+  by iApply (wp_dsp_send with "Hc").
 Qed.
 
 (** Endpoint receives value *)
@@ -408,7 +408,7 @@ Proof.
     iModIntro. iRewrite "Hp". by iFrame "#∗".
 Qed.
 
-Lemma dsp_recv {TT:tele}
+Lemma wp_dsp_recv {TT:tele}
     γ (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
   {{{ #(lr_chan,rl_chan) ↣{γ} <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
     chan.receive #tV #rl_chan
@@ -427,7 +427,7 @@ Proof.
 Qed.
 
 (** Endpoint closes (stops sending val) *)
-Lemma dsp_close γ (lr_chan rl_chan : loc) (p : iProto Σ V) Φ :
+Lemma wp_dsp_close γ (lr_chan rl_chan : loc) (p : iProto Σ V) Φ :
   #(lr_chan,rl_chan) ↣{γ} END -∗
   (↯{γ} #(lr_chan,rl_chan) -∗ Φ) -∗
   close_au lr_chan γ.(chan_lr_name) Φ.
@@ -605,5 +605,5 @@ Proof. destruct b; [apply wp_dsp_recv_end|apply wp_dsp_recv_closed]. Qed.
 
 End dsp.
 
-Notation "c ↣{ γ }  p" := (dsp_endpoint γ c (Some p)) (at level 20, format "c  ↣{  γ  }  p").
+Notation "c ↣{ γ } p" := (dsp_endpoint γ c (Some p)) (at level 20, format "c  ↣{  γ  }  p").
 Notation "↯{ γ } c" := (dsp_endpoint γ c None) (at level 20, format "↯{  γ  }  c").
