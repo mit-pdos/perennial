@@ -429,7 +429,7 @@ Proof using chan_protocolG0.
   rewrite /chan.for_range.
   wp_auto.
   wp_for "IH".
-   wp_apply ((wp_spsc_receive (t:=intT) γspsc c γspsc (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
+   wp_apply ((wp_spsc_receive (t:=intT) γspsc c (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
                   (λ sent, ⌜sent = fib_list 10 ⌝%I) (fib_list i) _) with "[Hcons]").
    { iFrame "#".  iFrame.   }
    iIntros (v ok).
@@ -501,7 +501,7 @@ Proof using chan_protocolG0 globalsGS0 dspG0.
   wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
   iIntros (signal γ') "(#Hicsignal & _Hcapsignal & Hocsignal)". wp_auto.
   iMod (dsp_session_init _ _ _ _ _ _ _ ref_prot with "Hic Hicsignal Hoc Hocsignal")
-                       as "[Hc Hcsignal]";
+                       as (γdsp1 γdsp2) "[Hc Hcsignal]";
     [by eauto|by eauto|..].
   iPersist "c signal".
   wp_apply (wp_fork with "[Hcsignal]").
@@ -911,20 +911,20 @@ Instance mapper_service_prot_unfold Φpre Φpost :
 Proof. apply proto_unfold_eq, (fixpoint_unfold _). Qed.
 
 Definition is_mapper_stream stream : iProp Σ :=
-  ∃ req_ch res_ch f (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ),
+  ∃ γ req_ch res_ch f (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ),
   ⌜stream = {| stream.req' := req_ch; stream.res' := res_ch; stream.f' := f |}⌝ ∗
   "Hf_spec" ∷ □ (∀ (s: go_string),
       Φpre s → WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost s s' }}) ∗
-    # (res_ch, req_ch) ↣ iProto_dual (mapper_service_prot Φpre Φpost).
+    # (res_ch, req_ch) ↣{γ} iProto_dual (mapper_service_prot Φpre Φpost).
 
 Lemma wp_mkStream (f: func.t) Φpre Φpost :
   {{{ is_pkg_init chan_spec_raw_examples ∗
       "#Hf_spec" ∷ □ (∀ (strng: go_string),
                         Φpre strng -∗ WP #f #strng {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) }}}
     @! chan_spec_raw_examples.mkStream #f
-  {{{ stream, RET #stream;
+  {{{ γ stream, RET #stream;
       is_mapper_stream stream ∗
-    # (stream.(stream.req'), stream.(stream.res')) ↣ mapper_service_prot Φpre Φpost }}}.
+    # (stream.(stream.req'), stream.(stream.res')) ↣{γ} mapper_service_prot Φpre Φpost }}}.
 Proof.
   wp_start. wp_auto.
       wp_apply (chan.wp_make (V:=go_string)); first done.
@@ -937,16 +937,15 @@ Proof.
   iMod (dsp_session_init _ ch1 ch _ _ _ _
           (mapper_service_prot Φpre Φpost) with "HisChan1 HisChan Hownchan1
  Hownchan")
-                       as "[Hpl Hpr]";
+                       as (γdsp1 γdsp2) "[Hpl Hpr]";
     [by eauto|by eauto|..].
   iModIntro. wp_auto.
   iApply "HΦ".
-  rewrite /is_mapper_stream.
-  iSplitR "Hpl".
-  { iExists _, _, _, _, _. iSplit; [done|].
-    iDestruct "Hpre" as "#Hpre". iFrame "Hpr".
-    iIntros "!>" (s) "HΦ". by iApply "Hpre". }
-  iFrame "Hpl".
+  simpl. iSplitR "Hpl"; [ | iFrame ]. (* iSplit is for performance *)
+  rewrite /is_mapper_stream /=.
+  iExists _, _, _, _, _, _. iSplit; [done|].
+  iDestruct "Hpre" as "#Hpre". iFrame "Hpr".
+  iIntros "!>" (s) "HΦ". by iApply "Hpre".
 Qed.
 
 Lemma wp_MapServer (my_stream: stream.t) :
@@ -961,7 +960,7 @@ Proof using chan_protocolG0 chan_protocolG1 globalsGS0.
   iAssert (
     "s" ∷ s_ptr ↦ my_stream ∗
 
-    "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣
+    "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣{γ}
                  iProto_dual (mapper_service_prot Φpre Φpost)
   )%I with "[s Hf_spec Hprot]" as "IH".
   { iFrame. subst. iFrame. }
@@ -999,14 +998,14 @@ Proof using chan_protocolG0 chan_protocolG1 contributionG0 H dspG0 globalsGS0.
     {
        iIntros (s) "!> _". wp_auto. by eauto.
     }
-    iIntros (stream).
+    iIntros (γ stream).
     iIntros "Hmapper".
     wp_auto.
     wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ "!"%go⌝)%I).
     {
        iIntros (s) "!> _". wp_auto. by eauto.
     }
-    iIntros (s').
+    iIntros (γ' s').
     iIntros "H'".
     wp_auto.
     iDestruct "Hmapper" as "[Hmapper Hstr]".
@@ -1091,11 +1090,11 @@ Proof using chan_protocolG0 chan_protocolG1 contributionG0 H dspG0 globalsGS0.
   { wp_apply (wp_Muxer with "[Hcons]"); [|done]. iFrame "Hmpmc Hcons". }
   wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ ","%go⌝)%I).
   { iIntros (s) "!> _". wp_auto. by eauto. }
-  iIntros (stream1) "[Hstream1 Hc1]".
+  iIntros (γ1 stream1) "[Hstream1 Hc1]".
   wp_auto.
   wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ "!"%go⌝)%I).
   { iIntros (s) "!> _". wp_auto. by eauto. }
-  iIntros (stream2) "[Hstream2 Hc2]".
+  iIntros (γ2 stream2) "[Hstream2 Hc2]".
   wp_auto.
   wp_apply (wp_mpmc_send with "[$Hmpmc $Hprod $Hstream1]").
   iIntros "Hprod".
