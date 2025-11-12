@@ -691,10 +691,6 @@ Global Instance wp_func_call_checkAudit :
   WpFuncCall client.checkAudit _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_checkStart :
-  WpFuncCall client.checkStart _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
 Global Instance wp_method_call_Client'ptr_Audit :
   WpMethodCall (ptrT.id client.Client.id) "Audit" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
