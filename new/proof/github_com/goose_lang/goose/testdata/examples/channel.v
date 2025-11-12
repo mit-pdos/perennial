@@ -1,3 +1,4 @@
+
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Import protocol.base simple future spsc done dsp dsp_proofmode mpmc join.
@@ -959,20 +960,19 @@ Lemma wp_MapServer (my_stream: stream.t) :
 Proof using chan_protocolG0 chan_protocolG1 globalsGS0.
   wp_start.
   iNamed "Hpre".
-  rewrite /chan.for_range.
   wp_auto.
   iDestruct "Hpre" as (Heq) "[#Hf_spec Hprot]".
-  iAssert (∃ (in_val: go_string),
-    "in" ∷ in_ptr ↦ in_val ∗
+  iAssert (
     "s" ∷ s_ptr ↦ my_stream ∗
 
     "Hprot" ∷ # (my_stream.(stream.res'), my_stream.(stream.req')) ↣
                  iProto_dual (mapper_service_prot Φpre Φpost)
-  )%I with "[in s Hf_spec Hprot]" as "IH".
-  { iExists _. iFrame. subst. iFrame. }
+  )%I with "[s Hf_spec Hprot]" as "IH".
+  { iFrame. subst. iFrame. }
 
   wp_for.
   iNamed "IH".
+  wp_auto.
 
   wp_recv (req_val) as "Hreq".
   wp_auto.
@@ -990,6 +990,50 @@ Proof using chan_protocolG0 chan_protocolG1 globalsGS0.
   wp_auto.
   wp_for_post.
   iFrame.
+Qed.
+
+Lemma wp_MapClient (my_stream: stream.t) :
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream }}}
+    @! chan_spec_raw_examples.Client #()
+  {{{ RET #"Hello, World!"; True%I }}}.
+Proof using chan_protocolG0 chan_protocolG1 contributionG0 H dspG0 globalsGS0.
+  wp_start.
+  wp_auto.
+    wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ ","%go⌝)%I).
+    {
+       iIntros (s) "!> _". wp_auto. by eauto.
+    }
+    iIntros (stream).
+    iIntros "Hmapper".
+    wp_auto.
+    wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ "!"%go⌝)%I).
+    {
+       iIntros (s) "!> _". wp_auto. by eauto.
+    }
+    iIntros (s').
+    iIntros "H'".
+    wp_auto.
+    iDestruct "Hmapper" as "[Hmapper Hstr]".
+    iDestruct "H'" as "[Hmapper' Hstr']".
+
+  wp_apply (wp_fork with "[Hmapper]").
+  {
+        wp_apply (wp_MapServer with "[$Hmapper]").
+done.
+  }
+  wp_apply (wp_fork with "[Hmapper']").
+  {
+        wp_apply (wp_MapServer with "[$Hmapper']").
+done.
+  }
+  wp_send with "[//]".
+  wp_auto.
+  wp_send with "[//]".
+  wp_auto.
+  wp_recv (?) as "->". wp_auto.
+  wp_recv (?) as "->". wp_auto.
+  iApply "HΦ".
+  done.
 Qed.
 
 Lemma wp_Muxer (c: loc) γmpmc (n_prod n_cons: nat) :
