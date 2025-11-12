@@ -501,7 +501,7 @@ Proof using chan_protocolG0 globalsGS0 dspG0.
   wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
   iIntros (signal γ') "(#Hicsignal & _Hcapsignal & Hocsignal)". wp_auto.
   iMod (dsp_session_init _ _ _ _ _ _ _ ref_prot with "Hic Hicsignal Hoc Hocsignal")
-                       as "[Hc Hcsignal]";
+                       as (γdsp1 γdsp2) "[Hc Hcsignal]";
     [by eauto|by eauto|..].
   iPersist "c signal".
   wp_apply (wp_fork with "[Hcsignal]").
@@ -910,21 +910,21 @@ Instance mapper_service_prot_unfold Φpre Φpost :
     (mapper_service_prot_aux Φpre Φpost (mapper_service_prot Φpre Φpost)).
 Proof. apply proto_unfold_eq, (fixpoint_unfold _). Qed.
 
-Definition is_mapper_stream stream : iProp Σ :=
+Definition is_mapper_stream γ stream : iProp Σ :=
   ∃ req_ch res_ch f (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ),
   ⌜stream = {| stream.req' := req_ch; stream.res' := res_ch; stream.f' := f |}⌝ ∗
   "Hf_spec" ∷ □ (∀ (s: go_string),
       Φpre s → WP #f #s {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost s s' }}) ∗
-    # (res_ch, req_ch) ↣ iProto_dual (mapper_service_prot Φpre Φpost).
+    # (res_ch, req_ch) ↣{γ} iProto_dual (mapper_service_prot Φpre Φpost).
 
 Lemma wp_mkStream (f: func.t) Φpre Φpost :
   {{{ is_pkg_init chan_spec_raw_examples ∗
       "#Hf_spec" ∷ □ (∀ (strng: go_string),
                         Φpre strng -∗ WP #f #strng {{ λ v, ∃ (s': go_string), ⌜v = #s'⌝ ∗ Φpost strng s' }}) }}}
     @! chan_spec_raw_examples.mkStream #f
-  {{{ stream, RET #stream;
-      is_mapper_stream stream ∗
-    # (stream.(stream.req'), stream.(stream.res')) ↣ mapper_service_prot Φpre Φpost }}}.
+  {{{ γ stream, RET #stream;
+      is_mapper_stream γ stream ∗
+    # (stream.(stream.req'), stream.(stream.res')) ↣{γ} mapper_service_prot Φpre Φpost }}}.
 Proof.
   wp_start. wp_auto.
       wp_apply (chan.wp_make (V:=go_string)); first done.
@@ -937,11 +937,11 @@ Proof.
   iMod (dsp_session_init _ ch1 ch _ _ _ _
           (mapper_service_prot Φpre Φpost) with "HisChan1 HisChan Hownchan1
  Hownchan")
-                       as "[Hpl Hpr]";
+                       as (γdsp1 γdsp2) "[Hpl Hpr]";
     [by eauto|by eauto|..].
   iModIntro. wp_auto.
   iApply "HΦ".
-  rewrite /is_mapper_stream.
+  rewrite /is_mapper_stream /=.
   iSplitR "Hpl".
   { iExists _, _, _, _, _. iSplit; [done|].
     iDestruct "Hpre" as "#Hpre". iFrame "Hpr".
