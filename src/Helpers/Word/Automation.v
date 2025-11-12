@@ -133,7 +133,7 @@ Ltac2 unfold_w_whatever () :=
   (* unlike autounfold, autorewrite fails if empty DB, so wrap in try. *)
   ltac1:(try autorewrite with word in * );
   ltac1:(autounfold with word in * );
-  unfold W64, W32, (* W16, *) W8, w64, w32, (* w16, *) w8 in *.
+  unfold W64, W32, W16, W8, w64, w32, w16, w8 in *.
 
 (* Runs [t] and panics unrecoverably if it throws an exception. *)
 Ltac2 handle_unsafe t :=
