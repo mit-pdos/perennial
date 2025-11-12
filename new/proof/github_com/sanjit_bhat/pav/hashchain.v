@@ -443,7 +443,7 @@ Lemma wp_Verify sl_prevLink d0 prevLink sl_proof d1 proof old_vals cut len :
   }}}
   @! hashchain.Verify #sl_prevLink #sl_proof
   {{{
-    extLen sl_newVal newVal sl_newLink newLink err,
+    (extLen : w64) sl_newVal newVal sl_newLink newLink err,
     RET (#extLen, #sl_newVal, #sl_newLink, #err);
     "Hsl_newVal" ∷ sl_newVal ↦*{d1} newVal ∗
     "Hsl_newLink" ∷ sl_newLink ↦*{d0} newLink ∗
@@ -452,8 +452,8 @@ Lemma wp_Verify sl_prevLink d0 prevLink sl_proof d1 proof old_vals cut len :
       | true => ¬ ∃ new_vals, ⌜wish_Verify proof new_vals⌝
       | false =>
         ∃ new_vals,
-        "%Hwish_hashchain" ∷ ⌜wish_Verify proof new_vals⌝ ∗
-        "%HextLen" ∷ ⌜extLen = W64 $ length new_vals⌝ ∗
+        "%Hwish_chain" ∷ ⌜wish_Verify proof new_vals⌝ ∗
+        "%HextLen" ∷ ⌜uint.Z extLen = length new_vals⌝ ∗
         "%HnewVal" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
         "#His_chain" ∷ is_chain (old_vals ++ new_vals) cut newLink (len + (length new_vals))
       end

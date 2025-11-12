@@ -445,9 +445,9 @@ Definition Newⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "errb" := (mem.alloc (type.zero_val #boolT)) in
     let: "vrfPk" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "newLink" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "newDig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "lastEp" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "startLink" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "startDig" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "startEp" := (mem.alloc (type.zero_val #uint64T)) in
     let: (((("$ret0", "$ret1"), "$ret2"), "$ret3"), "$ret4") := (let: "$a0" := (![#cryptoffi.SigPublicKey] "servPk") in
     let: "$a1" := (![#ptrT] "reply") in
     (func_call #auditor.CheckStart) "$a0" "$a1") in
@@ -456,9 +456,9 @@ Definition Newⁱᵐᵖˡ : val :=
     let: "$r2" := "$ret2" in
     let: "$r3" := "$ret3" in
     let: "$r4" := "$ret4" in
-    do:  ("lastEp" <-[#uint64T] "$r0");;;
-    do:  ("newDig" <-[#sliceT] "$r1");;;
-    do:  ("newLink" <-[#sliceT] "$r2");;;
+    do:  ("startEp" <-[#uint64T] "$r0");;;
+    do:  ("startDig" <-[#sliceT] "$r1");;;
+    do:  ("startLink" <-[#sliceT] "$r2");;;
     do:  ("vrfPk" <-[#ptrT] "$r3");;;
     do:  ("errb" <-[#boolT] "$r4");;;
     (if: ![#boolT] "errb"
@@ -475,9 +475,9 @@ Definition Newⁱᵐᵖˡ : val :=
     }])) in
     do:  ("pendingPut" <-[#ptrT] "$r0");;;
     let: "last" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$epoch" := (![#uint64T] "lastEp") in
-    let: "$dig" := (![#sliceT] "newDig") in
-    let: "$link" := (![#sliceT] "newLink") in
+    let: "$r0" := (mem.alloc (let: "$epoch" := (![#uint64T] "startEp") in
+    let: "$dig" := (![#sliceT] "startDig") in
+    let: "$link" := (![#sliceT] "startLink") in
     let: "$sig" := (![#sliceT] (struct.field_ref #server.StartReply #"LinkSig"%go (![#ptrT] "reply"))) in
     struct.make #epoch [{
       "epoch" ::= "$epoch";
