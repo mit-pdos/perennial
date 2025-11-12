@@ -471,6 +471,10 @@ Global Instance wp_func_call_MapServer :
   WpFuncCall chan_spec_raw_examples.MapServer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_Client :
+  WpFuncCall chan_spec_raw_examples.Client _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Muxer :
   WpFuncCall chan_spec_raw_examples.Muxer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
