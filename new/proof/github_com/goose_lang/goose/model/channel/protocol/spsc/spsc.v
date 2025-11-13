@@ -147,7 +147,7 @@ Lemma spsc_rcv_au γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
   spsc_consumer γ received -∗
   (▷ ∀ v (ok:bool),
      (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
-            else R received) -∗
+            else R received ∗ ⌜ v = (default_val V) ⌝) -∗
      Φ v ok) -∗
   rcv_au_slow ch γ.(chan_name) Φ.
 Proof.
@@ -269,7 +269,8 @@ done.
             iRight. unfold spsc_consumer. subst sent0. unfold inflight. rewrite app_nil_r. done.
           }
           iModIntro. iApply "Hcont". iFrame.
-          subst sent0. unfold inflight. rewrite app_nil_r. done.
+          subst sent0. unfold inflight. rewrite app_nil_r. iFrame.
+          done.
         }
         {
           iExFalso.
@@ -312,7 +313,8 @@ done.
           iRight. unfold spsc_consumer. subst sent. unfold inflight. rewrite app_nil_r. done.
         }
         iModIntro. iApply "Hcont". iFrame.
-        subst sent. unfold inflight. rewrite app_nil_r. done.
+        subst sent. unfold inflight. rewrite app_nil_r. iFrame.
+        done.
       }
       {
         iExFalso.
@@ -402,7 +404,7 @@ Lemma wp_spsc_receive γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
     chan.receive #t #ch
   {{{ (v:V) (ok:bool), RET (#v, #ok);
       (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
-            else R received)%I }}}.
+            else R received ∗ ⌜ v = (default_val V) ⌝ )%I }}}.
 Proof.
   iIntros (Φ) "(#Hspsc & Hcons) Hcont".
 
@@ -411,7 +413,7 @@ Proof.
   wp_apply (chan.wp_receive with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & _ & _)".
   iApply (spsc_rcv_au with "[$Hspsc] [$] [$Hcons]").
-  done.
+  iNext. iFrame.
 Qed.
 
 (** ** Send Operation *)
