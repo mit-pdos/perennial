@@ -575,7 +575,7 @@ Lemma mpmc_rcv_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset 
   ▷(∀ (v: V) (ok: bool),
     (if ok
       then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
-      else is_closed γ ∗ mpmc_consumer γ received) -∗ Φ v ok) -∗
+      else is_closed γ ∗ mpmc_consumer γ received ∗ ⌜ v = (default_val V) ⌝ ) -∗ Φ v ok) -∗
   rcv_au_slow ch γ.(mpmc_chan_name) Φ.
 Proof.
   iIntros "#Hmpmc (Hlc1 & Hlc2) Hcons Hcont".
@@ -669,6 +669,7 @@ Proof.
         unfold is_closed.
         iFrame.
         iFrame "Hclosed".
+        done.
       - unfold mpmc_consumer.
         iNamed "Hconss".
         iDestruct "Hconss" as "[%H1 Hcons1]".
@@ -717,6 +718,7 @@ Proof.
         unfold is_closed.
         iFrame.
         iFrame "Hclosed".
+        done.
       - unfold mpmc_consumer.
         iNamed "Hconss".
         iDestruct "Hconss" as "[%H1 Hcons1]".
@@ -784,7 +786,7 @@ Lemma wp_mpmc_receive γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmulti
   {{{ (v:V) (ok:bool), RET (#v, #ok);
       if ok
       then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
-      else is_closed γ ∗ mpmc_consumer γ received }}}.
+      else is_closed γ ∗ mpmc_consumer γ received ∗ ⌜ v = (default_val V) ⌝ }}}.
 Proof.
   iIntros (Φ) "( #Hmpmc & Hcons) Hcont".
   unfold is_mpmc.
