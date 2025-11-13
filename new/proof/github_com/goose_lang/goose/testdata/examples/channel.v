@@ -953,7 +953,7 @@ Proof using chan_protocolG0 dspG0 globalsGS0.
     "Hprot" ∷  # (req_ch, res_ch)  ↣{γdsp2}
                  iProto_dual (service_prot Φpre Φpost)
   )%I with "[s Hserver]" as "IH".
-  { iFrame.}
+  { iFrame. }
     wp_for "IH".
   {
 
