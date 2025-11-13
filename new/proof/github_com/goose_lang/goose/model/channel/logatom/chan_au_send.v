@@ -848,6 +848,32 @@ Proof.
   }
 Qed.
 
+(** Demo of a simple-to-understand AU *)
+#[local] Lemma wp_BlockingSend (ch: loc) (v: V) (γ: chan_names):
+  γ.(chan_cap) > 0 →
+  ∀ Φ,
+  is_channel ch γ -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ buffered_send_au ch v γ (Φ #())) -∗
+  WP channel.Channel__Sendⁱᵐᵖˡ #ch #t #v {{ Φ }}.
+Proof.
+  iIntros (Hcapnz Φ) "#Hunb HΦ".
+  iApply (wp_Send with "[$Hunb]").
+  iIntros "Hlc".
+  iSpecialize ("HΦ" with "[$Hlc]").
+  rewrite /send_au_slow /buffered_send_au.
+  iMod "HΦ". iIntros "!> !>".
+  iNamed "HΦ".
+  destruct s; iFrame; auto.
+  - iIntros "Hoc".
+    iExFalso.
+    iNamed "Hoc". simpl in *.
+    lia.
+  - iIntros "Hoc".
+    iExFalso.
+    iNamed "Hoc". simpl in *.
+    lia.
+Qed.
+
 Lemma wp_tryClose (ch: loc) (γ: chan_names) :
   ∀ Φ,
   is_channel ch γ -∗

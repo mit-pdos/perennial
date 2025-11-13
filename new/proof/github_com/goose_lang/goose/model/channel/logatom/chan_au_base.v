@@ -570,6 +570,17 @@ Definition send_au_fast ch (v : V) γ Φ Φnotready : iProp Σ :=
              end) ∧
   Φnotready.
 
+(* Special case update that only works if the channel is known to be buffered. *)
+Definition buffered_send_au ch (v : V) γ Φ : iProp Σ :=
+  |={⊤,∅}=>
+    ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗
+          "Hcont" ∷
+            match s with
+            | chan_rep.Buffered buf => own_channel ch (chan_rep.Buffered (buf ++ [v])) γ ={∅,⊤}=∗ Φ
+            | chan_rep.Closed _ => False
+            | _ => True
+            end.
+
 (** This is an alternate specification for nonblocking chan send that allows for
     proving a caller-chosen [Φnotready] in case the send does not occur. If no
     cases are ready in the containing select statement, the [Φnotready]s will be
