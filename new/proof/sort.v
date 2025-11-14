@@ -25,12 +25,14 @@ Definition cmp_implements (cmp_code: func.t) (cmp: Z → Z) (n: Z) (I: iProp Σ)
   Persistent (cmp_implements cmp_code cmp n I).
 Proof. apply _. Qed.
 
-(* The key correctness property: cmp must be monotonically non-increasing *)
-(* note: this is overly strong, only cmp being negative/zero/positive matters
-and that is what should be monotonic, but you can always convert the general cmp
-into one with these properties *)
+Definition signum (cmp_r: Z) : Z :=
+  if decide (cmp_r < 0) then -1
+  else if decide (cmp_r = 0) then 0
+       else 1.
+
+(* precondition for Find *)
 Definition is_valid_cmp (cmp: Z → Z) (n: Z) : Prop :=
-  (∀ i j, -1 ≤ i ∧ i < j ≤ n → cmp j ≤ cmp i) ∧
+  (∀ i j, -1 ≤ i ∧ i < j ≤ n → signum (cmp j) ≤ signum (cmp i)) ∧
   (* NOTE: this is just a useful definition to make the invariant simpler, the
   actual comparison function is never passed there parameters *)
   (cmp (-1) = 1) ∧
@@ -132,8 +134,9 @@ Proof.
         destruct Hvalid as (Hmono & Hneg & Hn).
         destruct (decide (k = sint.Z i - 1)).
         { subst; word. }
-        pose proof (Hmono k (sint.Z i-1) ltac:(word)).
-        word.
+        pose proof (Hmono k (sint.Z i-1) ltac:(word)) as Hmono'.
+        move: Hmono'. rewrite /signum.
+        repeat destruct decide; try lia.
     + (* i = n *)
       iApply "HΦ".
       iFrame.
@@ -146,14 +149,10 @@ Proof.
         destruct Hvalid as (Hmono & Hneg & Hn).
         destruct (decide (k = sint.Z i - 1)).
         { subst; word. }
-        pose proof (Hmono k (sint.Z i-1) ltac:(word)).
-        word.
+        pose proof (Hmono k (sint.Z i-1) ltac:(word)) as Hmono'.
+        move: Hmono'. rewrite /signum.
+        repeat destruct decide; try lia.
 Qed.
-
-Definition signum (cmp_r: Z) : Z :=
-  if decide (cmp_r < 0) then -1
-  else if decide (cmp_r = 0) then 0
-       else 1.
 
 Definition adapt_cmp (cmp: Z → Z) (n: Z) : Z → Z :=
   λ i, if decide (i < 0) then (1) else
