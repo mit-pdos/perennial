@@ -473,6 +473,10 @@ Global Instance wp_func_call_select_no_double_close :
   WpFuncCall chan_spec_raw_examples.select_no_double_close _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_exchangePointer :
+  WpFuncCall chan_spec_raw_examples.exchangePointer _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_select_ready_case_no_panic :
   WpFuncCall chan_spec_raw_examples.select_ready_case_no_panic _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).

@@ -52,7 +52,6 @@ Qed.
 
 Lemma wp_handshake_receive γ ch P Q :
   {{{
-      is_pkg_init channel ∗
       is_handshake γ ch P Q  ∗
       Q
   }}}
@@ -61,7 +60,7 @@ Lemma wp_handshake_receive γ ch P Q :
       v, RET (#v, #true); P v
   }}}.
 Proof.
-  iIntros (?) "(Hpc & (#Hchan & #Hinv) & HQ) HΦ".
+  iIntros (?) "((#Hchan & #Hinv) & HQ) HΦ".
   wp_apply ((chan.wp_receive ch γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
    iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
@@ -92,7 +91,6 @@ Qed.
 
 Lemma wp_handshake_send γ ch v P Q :
   {{{
-      is_pkg_init channel ∗
       is_handshake γ ch P Q ∗
       P v
   }}}
@@ -101,7 +99,7 @@ Lemma wp_handshake_send γ ch v P Q :
       RET (#()); Q
   }}}.
 Proof.
-  iIntros (?) "(Hpc & (#Hchan & #Hinv) & HP) HΦ".
+  iIntros (?) "((#Hchan & #Hinv) & HP) HΦ".
   wp_apply ((chan.wp_send ch v γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
   iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
