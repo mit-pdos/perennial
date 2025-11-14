@@ -1,3 +1,4 @@
+From stdpp Require Import sorting.
 From New.generatedproof Require Import sort.
 From New.proof Require Import proof_prelude.
 From New.proof.sort_proof Require Import sort_init.
@@ -116,6 +117,7 @@ Lemma wp_Search (n: w64) (f_code: func.t) (f: Z → bool) (I: iProp Σ) :
     @! sort.Search #n #f_code
   {{{ (i: w64), RET #i;
       I ∗
+      ⌜0 ≤ sint.Z i⌝ ∗
       ⌜(sint.Z i < sint.Z n)%Z → f (sint.Z i) = true⌝ ∗
       ⌜(∀ i, 0 ≤ i < sint.Z n → f i = false) → sint.Z i = sint.Z n⌝ ∗
       ⌜∀ k, 0 ≤ k < sint.Z i → f k = false⌝
@@ -184,6 +186,7 @@ Proof.
     iFrame.
     iPureIntro.
     split_and!.
+    * word.
     * intros Hilt.
       destruct (decide (sint.Z i < sint.Z n)); [ | word ].
       rewrite -> !adapt_pred_bounded in * by lia.
@@ -222,6 +225,118 @@ Proof.
         congruence.
       }
       lia.
+Qed.
+
+(** TODO: should be equivalent to StronglySorted, but couldn't find a std++
+lemma relating that to list lookup. *)
+Definition list_sorted {A} (R: A → A → Prop) (l: list A) :=
+  ∀ (i j: nat), (i < j)%nat →
+                ∀ (xi xj: A),
+                  l !! i = Some xi → l !! j = Some xj →
+                R xi xj.
+
+Definition search_f (x: w64) (xs: list w64) : Z → bool :=
+  λ i, match xs !! (Z.to_nat i) with
+       | Some x0 => bool_decide (sint.Z x ≤ sint.Z x0)
+       | None => true (* arbitrary, unreachable *)
+       end.
+
+Lemma search_f_true x xs i x_i :
+  xs !! (Z.to_nat i) = Some x_i →
+  search_f x xs i = true ↔
+  sint.Z x ≤ sint.Z x_i.
+Proof.
+  rewrite /search_f.
+  intros ->.
+  rewrite bool_decide_eq_true //.
+Qed.
+
+Lemma search_f_false x xs i x_i :
+  xs !! (Z.to_nat i) = Some x_i →
+  search_f x xs i = false ↔
+  sint.Z x_i < sint.Z x.
+Proof.
+  rewrite /search_f.
+  intros ->.
+  rewrite bool_decide_eq_false //.
+  word.
+Qed.
+
+Lemma wp_SearchInts (a: slice.t) (x: w64) q (xs: list w64) :
+  {{{ is_pkg_init sort ∗ a ↦*{q} xs ∗ ⌜ list_sorted (λ (i j: w64), sint.Z i ≤ sint.Z j) xs ⌝ }}}
+    @! sort.SearchInts #a #x
+  {{{ (i: w64), RET #i; a ↦*{q} xs ∗
+      ⌜(∀ (j: nat) x0, Z.of_nat j < sint.Z i → xs !! j = Some x0 → sint.Z x0 < sint.Z x) ∧
+       (∀ (j: nat) x0, sint.Z i ≤ Z.of_nat j → xs !! j = Some x0 → sint.Z x ≤ sint.Z x0)
+      ⌝ }}}.
+Proof.
+  wp_start as "[Ha %Hsort]".
+  wp_auto.
+  iDestruct (own_slice_len with "Ha") as %Hlen.
+  iPersist "x a".
+  wp_apply (wp_Search _ _ (search_f x xs) (a ↦*{q} xs) with "[$Ha]").
+  {
+    iSplit; first word.
+    iSplit.
+    - iIntros (i). wp_start as "[Ha %Hbound]".
+      wp_auto.
+      list_elem xs (sint.Z i) as x_i.
+      wp_apply (wp_load_slice_elem with "[$Ha]") as "Ha"; [ word | eauto | ].
+      iApply "HΦ". iFrame.
+      iPureIntro.
+      rewrite /search_f.
+      rewrite Hx_i_lookup.
+      apply bool_decide_ext.
+      word.
+    - iPureIntro.
+      rewrite /is_mono_pred; intros **.
+      list_elem xs (Z.to_nat i) as x_i.
+      list_elem xs (Z.to_nat j) as x_j.
+      rewrite search_f_true in H0; [ | eauto ].
+      rewrite search_f_true; [ | eauto ].
+      etrans; eauto.
+      eapply Hsort; [ | eauto | eauto ]; word.
+  }
+
+  iIntros (i) "[Ha %Hsearch]".
+  wp_auto.
+  iApply "HΦ".
+  iFrame.
+  iPureIntro.
+  destruct Hsearch as (Hi_nn & Hfound & Hoob & Hgt).
+  destruct (decide (sint.Z i < sint.Z a.(slice.len_f))).
+  {
+    (* returned index is in-bounds *)
+    specialize (Hfound ltac:(word)).
+    list_elem xs (sint.nat i) as xi.
+    rewrite search_f_true in Hfound; [ | eauto ].
+    split.
+    - intros j xj Hj_bound Hget_j.
+      pose proof (Hgt (Z.of_nat j) ltac:(word)) as Hget_j'.
+      rewrite search_f_false in Hget_j'; [ | rewrite Nat2Z.id; eauto ].
+      word.
+    - intros j xj Hj_bound Hget_j.
+      destruct (decide (sint.nat i = j)).
+      {
+        subst.
+        rewrite Hxi_lookup in Hget_j.
+        assert (xi = xj) by congruence; subst.
+        word.
+      }
+      pose proof (Hsort (sint.nat i) j ltac:(word) _ _ ltac:(eauto) ltac:(eauto)).
+      simpl in *.
+      word.
+  }
+  (* i is out-of-bounds (larger than list length) *)
+  split.
+  - intros.
+    (* every element is less than i *)
+    pose proof (Hgt j ltac:(word)) as Hsearchj.
+    rewrite search_f_false in Hsearchj; [ | rewrite Nat2Z.id; eauto ].
+    word.
+  - (* vacuous, no elements after index i *)
+    intros j xj Hj_bound Hget_j.
+    apply lookup_lt_Some in Hget_j. word.
 Qed.
 
 End proof.

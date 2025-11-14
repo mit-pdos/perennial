@@ -1,2 +1,2 @@
-translate = ["Search", "Find"]
+translate = ["Search", "SearchInts", "Find"]
 imports = ["!*"]

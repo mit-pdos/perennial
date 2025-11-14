@@ -174,5 +174,9 @@ Global Instance wp_func_call_Find :
   WpFuncCall sort.Find _ (is_pkg_defined sort) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_SearchInts :
+  WpFuncCall sort.SearchInts _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_func_call).
+
 End names.
 End sort.

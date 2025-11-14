@@ -151,6 +151,24 @@ Definition Findⁱᵐᵖˡ : val :=
 
 Definition SearchInts : go_string := "sort.SearchInts"%go.
 
+(* SearchInts searches for x in a sorted slice of ints and returns the index
+   as specified by [Search]. The return value is the index to insert x if x is
+   not present (it could be len(a)).
+   The slice must be sorted in ascending order.
+
+   go: search.go:123:6 *)
+Definition SearchIntsⁱᵐᵖˡ : val :=
+  λ: "a" "x",
+    exception_do (let: "x" := (mem.alloc "x") in
+    let: "a" := (mem.alloc "a") in
+    return: (let: "$a0" := (let: "$a0" := (![#sliceT] "a") in
+     slice.len "$a0") in
+     let: "$a1" := (λ: "i",
+       exception_do (let: "i" := (mem.alloc "i") in
+       return: (int_geq (![#intT] (slice.elem_ref #intT (![#sliceT] "a") (![#intT] "i"))) (![#intT] "x")))
+       ) in
+     (func_call #Search) "$a0" "$a1")).
+
 Definition SearchFloat64s : go_string := "sort.SearchFloat64s"%go.
 
 Definition SearchStrings : go_string := "sort.SearchStrings"%go.
@@ -276,8 +294,6 @@ Definition symMerge : go_string := "sort.symMerge"%go.
 Definition rotate : go_string := "sort.rotate"%go.
 
 Definition vars' : list (go_string * go_type) := [].
-
-Axiom SearchIntsⁱᵐᵖˡ : val.
 
 Axiom SearchFloat64sⁱᵐᵖˡ : val.
 
