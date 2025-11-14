@@ -1,4 +1,5 @@
-From New.golang.theory Require Export proofmode.
+From New.golang.defn Require Export predeclared.
+From New.golang.theory Require Export postlifting.
 From New.experiments Require Export glob.
 From Perennial Require Import base.
 From Perennial.Helpers Require Import List.
@@ -8,125 +9,70 @@ Import RecordSetNotations.
 Set Default Proof Using "Type".
 
 Section mem_lemmas.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hvalid : go.CoreSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {Hcore : go.CoreSemantics} {Hpredeclared : go.PredeclaredSemantics}.
 
-(* Helper lemmas for establishing [IntoValTyped] *)
-Local Lemma wp_untyped_load l dq v s E :
-  {{{ ▷ heap_pointsto l dq v }}}
-    ! #l @ s; E
-  {{{ RET v; heap_pointsto l dq v }}}.
-Proof. rewrite into_val_unseal. apply lifting.wp_load. Qed.
-
-Local Lemma wp_untyped_store l v v' s E :
-  {{{ ▷ heap_pointsto l (DfracOwn 1) v }}}
-    #l <- v' @ s; E
-  {{{ RET #(); heap_pointsto l (DfracOwn 1) v' }}}.
-Proof.
-  rewrite into_val_unseal. iIntros "% Hl HΦ". wp_call.
-  wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
-  wp_pures. by iApply (wp_finish_store with "[$Hl $Hl']").
-Qed.
-
-Lemma wp_GoPrealloc {stk E} :
-  {{{ True }}}
-    GoInstruction GoPrealloc #() @ stk; E
-  {{{ (l : loc), RET #l; True }}}.
-Proof.
-  iIntros (?) "_ HΦ". wp_apply (wp_GoInstruction []).
-  { intros. eexists #null. econstructor. econstructor. }
-  iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "_ $ !>". simpl. wp_pures. by iApply "HΦ".
-Qed.
-
-Lemma wp_AngelicExit Φ s E :
-  ⊢ WP GoInstruction AngelicExit #() @ s; E {{ Φ }}.
-Proof.
-  iLöb as "IH".
-  wp_apply (wp_GoInstruction []).
-  { intros. repeat econstructor. }
-  iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "_ $ !>". simpl. iApply "IH".
-Qed.
-
-Lemma wp_PackageInitCheck {stk E} (pkg : go_string) (s : gmap go_string bool) :
-  {{{ own_go_state s }}}
-    GoInstruction (PackageInitCheck pkg) #() @ stk; E
-  {{{ RET #(bool_decide (is_Some (s !! pkg))); own_go_state s }}}.
-Proof.
-  iIntros (?) "Hown HΦ".
-  wp_apply (wp_GoInstruction []).
-  { intros. repeat econstructor. }
-  iIntros "* %Hstep".
-  inv Hstep; last by inv Hpure.
-  iIntros "_ Hauth". iCombine "Hauth Hown" gives %Heq. subst.
-  iModIntro. iFrame. simpl. wp_pures.
-  by iApply "HΦ".
-Qed.
-
-Existing Class go.is_primitive.
-#[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
-Existing Class go.is_primitive_zero_val.
-#[local] Hint Extern 1 (go.is_primitive_zero_val ?t ?v) => constructor : typeclass_instances.
-
-Local Ltac solve_wp_alloc :=
+Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
-  rewrite go.alloc_primitive typed_pointsto_unseal /= into_val_unseal;
+  rewrite go.alloc_predeclared typed_pointsto_unseal /= into_val_unseal;
   wp_pures; by wp_apply wp_alloc_untyped.
 
-Local Ltac solve_wp_load :=
+Ltac solve_wp_load :=
   iIntros "* Hl HΦ";
-  rewrite go.load_primitive;
+  rewrite go.load_predeclared;
   wp_pures; rewrite typed_pointsto_unseal /=;
-  wp_apply (wp_untyped_load with "Hl");
+  wp_apply (_internal_wp_untyped_load with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
-Local Ltac solve_wp_store :=
+Ltac solve_wp_store :=
   iIntros "* Hl HΦ";
-  rewrite go.store_primitive;
+  rewrite go.store_predeclared;
   wp_pures; rewrite typed_pointsto_unseal /=;
-  wp_apply (wp_untyped_store with "Hl");
+  wp_apply (_internal_wp_untyped_store with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
-Local Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
+Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
-Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
-Proof using Hvalid. solve_into_val_typed. Qed.
+Existing Class go.is_predeclared.
+#[local] Hint Extern 1 (go.is_predeclared ?t) => constructor : typeclass_instances.
+Existing Class go.is_predeclared_zero_val.
+#[local] Hint Extern 1 (go.is_predeclared_zero_val ?t ?v) => constructor : typeclass_instances.
 
 Global Instance into_val_typed_uint64 : IntoValTyped w64 go.uint64.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_uint32 : IntoValTyped w32 go.uint32.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_uint16 : IntoValTyped w16 go.uint16.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_uint8 : IntoValTyped w8 go.uint8.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_uint : IntoValTyped w64 go.uint.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_int64 : IntoValTyped w64 go.int64.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_int32 : IntoValTyped w32 go.int32.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_int16 : IntoValTyped w16 go.int16.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_int8 : IntoValTyped w8 go.int8.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_int : IntoValTyped w64 go.int.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_bool : IntoValTyped bool go.bool.
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_string : IntoValTyped go_string go.string.
-Proof using Hvalid. solve_into_val_typed. Qed.
-
-Global Instance into_val_typed_slice t : IntoValTyped slice.t (go.SliceType t).
-Proof using Hvalid. solve_into_val_typed. Qed.
-
-Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
-Proof using Hvalid. solve_into_val_typed. Qed.
+Proof using Hpredeclared. solve_into_val_typed. Qed.
 
 Lemma seqZ_succ start n :
   0 ≤ n →
@@ -136,49 +82,11 @@ Proof.
   rewrite seq_S fmap_app /=. f_equal. f_equal. lia.
 Qed.
 
-Global Instance into_val_typed_array `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t} n
-  : IntoValTyped (array.t t V n) (go.ArrayType n t).
-Proof using Hvalid.
-  split.
-  - admit.
-  - iIntros "* Hl HΦ".
-    rewrite go.load_array. case_decide.
-    { wp_pures. wp_apply wp_AngelicExit. }
-    wp_pure. wp_pure. rewrite typed_pointsto_unseal /=.
-    iDestruct "Hl" as "[%Hlen Hl]".
-
-    assert (∃ m, n = m ∧ 0 ≤ m ≤ n) as (m & Heq & Hm) by (exists n; lia).
-    rewrite [in #(W64 n)]Heq.
-    iEval (rewrite <- Heq, into_val_unseal) in "HΦ".
-    simpl. destruct v as [v]. simpl in *.
-    replace (v) with (take (Z.to_nat m) v).
-    2:{ rewrite take_ge //. lia. }
-    clear Heq.
-    set (f := #(func.mk _ _ _)).
-    iLöb as "IH" forall (m Hm Φ).
-
-    wp_pures. fold f.
-    case_bool_decide as Heq.
-    { wp_pures. replace m with 0 by word. rewrite into_val_unseal /=. by iApply "HΦ". }
-    wp_pure. wp_pure. set (m':=m-1).
-    replace (word.sub _ _) with (W64 m') by word.
-    replace (Z.to_nat m) with (S (Z.to_nat m'))%nat by word.
-    pose proof (list_lookup_lt v (Z.to_nat m')) as [ve Hlookup]; first word.
-    erewrite take_S_r; last done.
-    rewrite big_sepL_app /=. iDestruct "Hl" as "(Hl & Hlast & _)".
-    wp_apply ("IH" with "[] Hl"); first word. iIntros "[_ Hl]".
-    wp_pures. rewrite go.index_ref_array. wp_pures. wp_apply (wp_load with "[Hlast]").
-    { iExactEq "Hlast". f_equal. f_equal. rewrite length_take. word. }
-    iIntros "Hlast". rewrite length_app length_take. wp_pures. rewrite fmap_app /=.
-    iApply "HΦ". iFrame. iSplitR; first word.
-    iSplitL; last done. iExactEq "Hlast". f_equal. f_equal. word.
-  - admit.
-Admitted.
-
 End mem_lemmas.
 
 Section __struct_test.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {Hcore : go.CoreSemantics} {Hpredeclared : go.PredeclaredSemantics}.
 
 Record foo_t :=
   mk {
@@ -248,7 +156,7 @@ Global Instance wp_StructFieldGet_foo_b (v : foo_t) :
 Proof. solve_wp_struct_field_get. Qed.
 
 Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
-Proof using H H0.
+Proof using H Hcore Hpredeclared.
   split.
   - iIntros "* _ HΦ".
     rewrite go.alloc_underlying foo_underlying.

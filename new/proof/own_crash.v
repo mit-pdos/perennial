@@ -2,7 +2,6 @@ From iris.algebra Require Export auth gmap frac agree excl.
 From iris.bi.lib Require Import fixpoint_mono.
 From iris.base_logic.lib Require Import mono_nat saved_prop.
 From Perennial.goose_lang Require Import lifting.
-From New.golang.theory Require Import intoval.
 From Perennial Require Import base.
 From stdpp Require Import tactics.
 
