@@ -174,43 +174,43 @@ Global Instance wp_StructFieldRef t f (l : loc) :
 Proof. solve_pure. Qed.
 
 Global Instance wp_StructFieldSet_untyped f m v :
-  PureWp True (GoInstruction (StructFieldSet f) (StructV m, v)%V) (StructV (<[f := v]> m)).
+  PureWp True (StructFieldSet f (StructV m, v)%V) (StructV (<[f := v]> m)).
 Proof. solve_pure. Qed.
 
 Global Instance wp_InternalLen et s :
-  PureWp True (GoInstruction (InternalLen (go.SliceType et)) #s) #(s.(slice.len)).
+  PureWp True (InternalLen (go.SliceType et) #s) #(s.(slice.len)).
 Proof. solve_pure. Qed.
 
 Global Instance wp_InternalCap et s :
-  PureWp True (GoInstruction (InternalCap (go.SliceType et)) #s) #(s.(slice.cap)).
+  PureWp True (InternalCap (go.SliceType et) #s) #(s.(slice.cap)).
 Proof. solve_pure. Qed.
 
 Global Instance wp_InternalDynamicArrayAlloc et (n : w64) :
-  PureWp True (GoInstruction (InternalDynamicArrayAlloc et) #n)
-    (GoInstruction (GoAlloc $ go.ArrayType (sint.Z n) et) #()).
+  PureWp True (InternalDynamicArrayAlloc et #n)
+    (GoAlloc (go.ArrayType (sint.Z n) et) #()).
 Proof. solve_pure. Qed.
 
 Global Instance wp_InternalMakeSlice p l c :
-  PureWp True (GoInstruction InternalMakeSlice (#p, #l, #c)%V)
+  PureWp True (InternalMakeSlice (#p, #l, #c)%V)
     #(slice.mk p l c).
 Proof. solve_pure. Qed.
 
 Global Instance wp_IndexRef t (j : w64) (v : val) :
-  PureWp True (GoInstruction (IndexRef t) (v, #j)%V) (index_ref t (sint.Z j) v).
+  PureWp True (IndexRef t (v, #j)%V) (index_ref t (sint.Z j) v).
 Proof. solve_pure. Qed.
 
 Global Instance wp_Index t (j : w64) (v : val) :
-  PureWp True (GoInstruction (Index t) (v, #j)%V) (index t (sint.Z j) v).
+  PureWp True (Index t (v, #j)%V) (index t (sint.Z j) v).
 Proof. solve_pure. Qed.
 
 Global Instance wp_ArrayAppend vs v :
-  PureWp True (GoInstruction ArrayAppend (ArrayV vs, v)%V) (ArrayV (vs ++ [v])).
+  PureWp True (ArrayAppend (ArrayV vs, v)%V) (ArrayV (vs ++ [v])).
 Proof. solve_pure. Qed.
 
 Lemma wp_StructFieldGet_untyped {stk E} f m v :
   m !! f = Some v →
   {{{ True }}}
-    GoInstruction (StructFieldGet f) (StructV m) @ stk; E
+    StructFieldGet f (StructV m) @ stk; E
   {{{ RET v; £ 1 }}}.
 Proof.
   iIntros "% * _ HΦ". iApply (wp_GoInstruction []).
@@ -241,7 +241,7 @@ Qed.
 
 Lemma wp_GoPrealloc {stk E} :
   {{{ True }}}
-    GoInstruction GoPrealloc #() @ stk; E
+    GoPrealloc #() @ stk; E
   {{{ (l : loc), RET #l; True }}}.
 Proof.
   iIntros (?) "_ HΦ". wp_apply (wp_GoInstruction []).
@@ -251,7 +251,7 @@ Proof.
 Qed.
 
 Lemma wp_AngelicExit Φ s E :
-  ⊢ WP GoInstruction AngelicExit #() @ s; E {{ Φ }}.
+  ⊢ WP AngelicExit #() @ s; E {{ Φ }}.
 Proof.
   iLöb as "IH".
   wp_apply (wp_GoInstruction []).
@@ -262,7 +262,7 @@ Qed.
 
 Lemma wp_PackageInitCheck {stk E} (pkg : go_string) (s : gmap go_string bool) :
   {{{ own_go_state s }}}
-    GoInstruction (PackageInitCheck pkg) #() @ stk; E
+    PackageInitCheck pkg #() @ stk; E
   {{{ RET #(bool_decide (is_Some (s !! pkg))); own_go_state s }}}.
 Proof.
   iIntros (?) "Hown HΦ".
