@@ -772,26 +772,12 @@ Inductive is_go_step_pure `{!GoContext} :
 | internal_map_insert_step_pure m k v :
   is_go_step_pure InternalMapLookup (m, k, v) (map_insert m k v).
 
-(* FIXME:  *)
-
-Set Typeclasses Debug.
-Set Printing All.
-Definition y : Prop := ∀ p (s : gmap go_string bool), (p ∈ s).
-
-Instance gmap_elem_of : ElemOf go_string (gmap go_string bool).
-Proof. apply _.
-
 Inductive is_go_step `{!GoContext} :
   ∀ (op : go_op) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
-| package_init_check_step s p : is_go_step (PackageInitCheck p) #() #(bool_decide (p ∈ s)) s s
+| package_init_check_step s p : is_go_step (PackageInitCheck p) #() #(bool_decide (p ∈ dom s)) s s
 | package_init_start_step s p : is_go_step (PackageInitStart p) #() #() s (<[ p := false ]> s)
 | package_init_finish_step s p : is_go_step (PackageInitFinish p) #() #() s (<[ p := true ]>s)
 | go_step_pure op arg e' (Hpure : is_go_step_pure op arg e') s : is_go_step op arg e' s s.
-
-Search ElemOf gmap.
-Set Printing All.
-Check @package_init_check_step.
-Check @elem_of.
 
 Record GoState : Type :=
   {
