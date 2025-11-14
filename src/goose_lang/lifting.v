@@ -865,8 +865,9 @@ Qed.
 Lemma wp_GoInstruction K op arg {stk E} Φ :
   (∀ s, ∃ e', is_go_step op arg e' s s) →
   ▷ (∀ e' s s', ⌜ is_go_step op arg e' s s' ⌝ →
-              (own_go_state_ctx s ={E}=∗ own_go_state_ctx s') ∗
-              (£ 1 -∗ WP fill K e' @ stk ; E {{ Φ }})) -∗
+                (£ 1 -∗ own_go_state_ctx s ={E}=∗
+                 own_go_state_ctx s' ∗
+                 WP fill K e' @ stk ; E {{ Φ }})) -∗
   WP fill K (GoInstruction op arg) @ stk ; E {{ Φ }}.
 Proof.
   iIntros (Hok) "HΦ".
@@ -897,9 +898,9 @@ Proof.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   rewrite -Hg. iSpecialize ("HΦ" $! _ _ _ ltac:(done)).
-  iDestruct "HΦ" as "[Hupd HΦ]". iMod ("Hupd" with "Hg_auth") as "Hg_auth".
-  iModIntro. iFrame "∗#%". rewrite /RecordSet.set /=.
-  iFrame. iSplit; last done. iApply "HΦ". iDestruct "Hlc" as "[$ _]".
+  iDestruct "Hlc" as "[Hlc _]".
+  iMod ("HΦ" with "[$] [$]") as "[Hg_auth HΦ]".
+  iModIntro. iFrame "∗#%".
 Qed.
 
 (** Fork: Not using Texan triples to avoid some unnecessary [True] *)

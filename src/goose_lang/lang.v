@@ -774,7 +774,8 @@ Inductive is_go_step_pure `{!GoContext} :
 
 Inductive is_go_step `{!GoContext} :
   ∀ (op : go_op) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
-| package_init_check_step s p : is_go_step (PackageInitCheck p) #() #(bool_decide (p ∈ dom s)) s s
+| package_init_check_step s p :
+  is_go_step (PackageInitCheck p) #() #(bool_decide (is_Some (s !! p))) s s
 | package_init_start_step s p : is_go_step (PackageInitStart p) #() #() s (<[ p := false ]> s)
 | package_init_finish_step s p : is_go_step (PackageInitFinish p) #() #() s (<[ p := true ]>s)
 | go_step_pure op arg e' (Hpure : is_go_step_pure op arg e') s : is_go_step op arg e' s s.

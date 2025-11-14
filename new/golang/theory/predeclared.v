@@ -35,8 +35,7 @@ Proof.
   iIntros (?) "_ HΦ". wp_apply (wp_GoInstruction []).
   { intros. eexists #null. econstructor. econstructor. }
   iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iFrame. iSplitR. { by iIntros "$". }
-  iIntros "_". simpl. wp_pures. by iApply "HΦ".
+  iIntros "_ $ !>". simpl. wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_AngelicExit Φ s E :
@@ -46,8 +45,7 @@ Proof.
   wp_apply (wp_GoInstruction []).
   { intros. repeat econstructor. }
   iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iFrame. iSplitR. { by iIntros "$". }
-  iIntros "_". simpl. iApply "IH".
+  iIntros "_ $ !>". simpl. iApply "IH".
 Qed.
 
 Lemma wp_PackageInitCheck {stk E} (pkg : go_string) (s : gmap go_string bool) :
@@ -60,24 +58,10 @@ Proof.
   { intros. repeat econstructor. }
   iIntros "* %Hstep".
   inv Hstep; last by inv Hpure.
-  iSplitR; first by iIntros "$".
-  iIntros "_".
-  rewrite !bool_decide_decide.
-  destruct decide at 2.
-  { exfalso. clear -e. done. }
-  2:{
-    simpl.
-    exfalso. set_solver.
-  }
-  simpl. wp_pures. rewrite decide_True. iApply "HΦ".
-  iApply "HΦ". iFrame.
+  iIntros "_ Hauth". iCombine "Hauth Hown" gives %Heq. subst.
+  iModIntro. iFrame. simpl. wp_pures.
+  by iApply "HΦ".
 Qed.
-
-  Eval simpl in (decide (pkg ∈ s')).
-
-  (bool_decide (pkg ∈ s')).
-
-  simpl.
 
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.

@@ -5,10 +5,10 @@ Context `{!ffi_syntax}.
 
 Definition wrap_defer : val :=
   λ: "body",
-    let: "$defer" := (mem.alloc funcT #()) in
-    "$defer" <-[funcT] #(func.mk <> <> #());;
+    let: "$defer" := (GoAlloc funcT #()) in
+    "$defer" <-[go.FunctionType] #(func.mk <> <> #());;
     let: "$func_ret" := exception_do ("body" "$defer") in
-    (![funcT] "$defer") #();;
+    (![go.FunctionType] "$defer") #();;
     "$func_ret".
 
 End defn.

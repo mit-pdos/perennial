@@ -727,7 +727,7 @@ Local Ltac solve_pure :=
   iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
   [ intros; repeat econstructor | ];
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
-  iFrame; by iIntros "$".
+  iIntros "H"; iIntros "$ !>"; by iApply "HΦ".
 Global Instance wp_GoAlloc t :
   PureWp True (GoInstruction (GoAlloc t) #()) (alloc t #()).
 Proof. solve_pure. Qed.
@@ -799,7 +799,7 @@ Proof.
   iIntros "% * _ HΦ". iApply (wp_GoInstruction []).
   { intros. repeat econstructor. done. }
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iSplitR; first by iIntros. iIntros "?". simpl. wp_pures. by iApply "HΦ".
+  iIntros "? $ !>". simpl. wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma bool_decide_inj `(f : A → B) `{!Inj eq eq f} a a' `{!EqDecision A}
