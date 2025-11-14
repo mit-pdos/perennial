@@ -17,7 +17,7 @@ sort.Find to write the proof *)
    with an arbitrary invariant I that it requires and preserves *)
 Definition cmp_implements (cmp_code: func.t) (cmp: Z → Z) (n: Z) (I: iProp Σ) : iProp Σ :=
   ∀ (i: w64),
-    {{{ I ∗ ⌜sint.Z i < n⌝ }}}
+    {{{ I ∗ ⌜0 ≤ sint.Z i < n⌝ }}}
       #cmp_code #i
     {{{ (r: w64), RET #r; I ∗ ⌜sint.Z r = cmp (sint.Z i)⌝ }}}.
 
@@ -158,7 +158,7 @@ Definition adapt_cmp (cmp: Z → Z) (n: Z) : Z → Z :=
   λ i, if decide (i < 0) then (1) else
          if decide (n ≤ i) then
            if decide (n = 0) then 0 else signum (cmp (n-1))
-         else signum (cmp i).
+         else cmp i.
 
 Definition real_valid_cmp (cmp: Z → Z) (n: Z) :=
   ∃ start end_,
@@ -192,15 +192,38 @@ Proof.
     repeat destruct (decide _); saturate cmp.
 Qed.
 
+Lemma internal_to_real_cmp cmp n :
+  0 ≤ n →
+  is_valid_cmp cmp n →
+  real_valid_cmp cmp n.
+Proof.
+  intros Hnn (Hmono & Hi & Hj).
+  rewrite /real_valid_cmp.
+  (* somewhat difficult: need to take a lower bound from a finite interval of
+  Z *)
+Abort.
+
 Lemma adapt_cmp_bounded cmp n :
   ∀ i, 0 ≤ i < n →
-       signum (cmp i) = adapt_cmp cmp n i.
+       adapt_cmp cmp n i = cmp i.
 Proof.
   intros i H.
   rewrite /adapt_cmp.
   repeat destruct (decide _); try lia.
 Qed.
 
-(* TODO: cmp_implements does not carry over to adapt_cmp cmp *)
+Lemma cmp_implements_adapt cmp_code cmp n I :
+  cmp_implements cmp_code cmp n I -∗
+  cmp_implements cmp_code (adapt_cmp cmp n) n I.
+Proof.
+  rewrite /cmp_implements.
+  iIntros "#H %i".
+  wp_start as "[HI %Hbound]".
+  iApply ("H" with "[$HI //]").
+  iModIntro.
+  iIntros (r) "[HI %Heq]".
+  iApply "HΦ". iFrame.
+  rewrite adapt_cmp_bounded //.
+Qed.
 
 End proof.
