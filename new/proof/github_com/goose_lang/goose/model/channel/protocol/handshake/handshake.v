@@ -1,14 +1,13 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_base.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export protocol.base.
 From New.golang.theory Require Import chan.
 
 Section handshake.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!ghost_varG Σ ()}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
-Context `{!chanG Σ V}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!chan_protocolG Σ V}.
 
 (*----------------------------------------------------------------------------
   Invariant for a simple handshake on an unbuffered channel with unit payloads.

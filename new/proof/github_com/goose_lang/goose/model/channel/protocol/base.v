@@ -13,11 +13,12 @@ Class chan_protocolG Σ V := ChanProtocolG {
     chan_protocol_ghost_listG :: ghost_varG Σ (list V);
     chan_protocol_setG :: auth_setG Σ gname;
     chan_protocol_ghost_natG :: ghost_varG Σ nat;
+    chan_protocol_ghost_unitG :: ghost_varG Σ ();
 }.
 
 Definition chan_protocolΣ V : gFunctors :=
   #[ chanΣ V; ghost_mapΣ nat gname;
-     ghost_varΣ bool; ghost_varΣ (list V); ghost_varΣ nat;
+     ghost_varΣ bool; ghost_varΣ (list V); ghost_varΣ nat; ghost_varΣ ();
      auth_setΣ gname
     ].
 
