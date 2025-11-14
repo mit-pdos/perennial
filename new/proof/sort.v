@@ -9,11 +9,7 @@ Context  `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoConte
 #[global] Instance : IsPkgInit sort := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf sort := build_get_is_pkg_init_wf.
 
-(* various parts of this were written by Claude Sonnet 4.5. It was given the doc
-and the memoize example from my course notes to write the spec, and the code for
-sort.Find to write the proof *)
-
-(* The comparison function must implement a pure function over indices,
+(* The comparison function must implement a pure function over in-bounds indices,
    with an arbitrary invariant I that it requires and preserves *)
 Definition cmp_implements (cmp_code: func.t) (cmp: Z → Z) (n: Z) (I: iProp Σ) : iProp Σ :=
   ∀ (i: w64),
@@ -30,20 +26,94 @@ Definition signum (cmp_r: Z) : Z :=
   else if decide (cmp_r = 0) then 0
        else 1.
 
-(* precondition for Find *)
+Lemma signum_n1 : signum (-1) = (-1).
+Proof. reflexivity. Qed.
+Lemma signum_0 : signum 0 = 0.
+Proof. reflexivity. Qed.
+Lemma signum_1 : signum 1 = 1.
+Proof. reflexivity. Qed.
+Lemma signum_idemp cmp_r :
+  signum (signum cmp_r) = signum cmp_r.
+Proof.
+  rewrite /signum.
+  repeat destruct decide; lia.
+Qed.
+Lemma signum_bound cmp_r :
+  -1 ≤ signum cmp_r ≤ 1.
+Proof.
+  rewrite /signum.
+  repeat destruct decide; lia.
+Qed.
+
+(* "proper" monotonicity on only [0, n) - a sensible precondition for Find *)
+Definition is_mono_cmp (cmp: Z → Z) (n: Z) : Prop :=
+  (∀ i j, 0 ≤ i ∧ i < j < n → signum (cmp j) ≤ signum (cmp i)).
+
+Hint Rewrite signum_n1 signum_0 signum_1 signum_idemp : sign.
+Hint Resolve signum_bound : sign.
+
+Definition adapt_cmp (cmp: Z → Z) (n: Z) : Z → Z :=
+  λ i, if decide (i < 0) then (1) else
+         if decide (n ≤ i) then
+           if decide (n = 0) then 0 else (-1)
+         else cmp i.
+
+Lemma adapt_cmp_bounded cmp n :
+  ∀ i, 0 ≤ i < n →
+       adapt_cmp cmp n i = cmp i.
+Proof.
+  intros i H.
+  rewrite /adapt_cmp.
+  repeat destruct (decide _); try lia.
+Qed.
+
+(* "internal" monotonicity on [-1, n] by extending (adapting) cmp *)
 Definition is_valid_cmp (cmp: Z → Z) (n: Z) : Prop :=
   (∀ i j, -1 ≤ i ∧ i < j ≤ n → signum (cmp j) ≤ signum (cmp i)) ∧
-  (* NOTE: this is just a useful definition to make the invariant simpler, the
-  actual comparison function is never passed there parameters *)
-  (cmp (-1) = 1) ∧
-  (cmp n ≤ 0).
+  cmp (-1) = 1 ∧
+  cmp n ≤ 0.
+
+Lemma is_valid_cmp_adapted cmp n :
+  0 ≤ n →
+  is_mono_cmp cmp n →
+  is_valid_cmp (adapt_cmp cmp n) n.
+Proof.
+  rewrite /is_mono_cmp /is_valid_cmp.
+  intros Hnn Hmono.
+  split_and!.
+  - intros **. pose proof (Hmono i j) as Hij.
+    assert (i < j) by lia.
+    destruct (decide (0 ≤ i ∧ j < n)).
+    { repeat rewrite -> adapt_cmp_bounded by lia.
+      lia. }
+    rewrite /adapt_cmp.
+    repeat destruct decide; autorewrite with sign; try lia.
+    + pose proof (signum_bound (cmp i)); lia.
+    + pose proof (signum_bound (cmp j)); lia.
+  - rewrite /adapt_cmp.
+    repeat destruct decide; lia.
+  - rewrite /adapt_cmp.
+    repeat destruct decide; lia.
+Qed.
+
+Lemma cmp_implements_adapt cmp_code cmp n I :
+  cmp_implements cmp_code cmp n I -∗
+  cmp_implements cmp_code (adapt_cmp cmp n) n I.
+Proof.
+  rewrite /cmp_implements.
+  iIntros "#H %i".
+  wp_start as "[HI %Hbound]".
+  iApply ("H" with "[$HI //]").
+  rewrite adapt_cmp_bounded; [ | lia ].
+  done.
+Qed.
 
 Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) :
   {{{ is_pkg_init sort ∗
       ⌜0 ≤ sint.Z n⌝ ∗
       cmp_implements cmp_code cmp (sint.Z n) I ∗
       I ∗
-      ⌜is_valid_cmp cmp (sint.Z n)⌝ }}}
+      ⌜is_mono_cmp cmp (sint.Z n)⌝ }}}
     @! sort.Find #n #cmp_code
   {{{ (i: w64) (found: bool), RET (#i, #found);
       I ∗
@@ -54,8 +124,12 @@ Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) :
       ⌜∀ k, 0 ≤ k < sint.Z i → cmp k > 0⌝
   }}}.
 Proof.
-  wp_start as "(%Hpos & #Hcmp & I & %Hvalid)".
+  wp_start as "(%Hpos & #Hcmp0 & I & %Hvalid)".
   wp_auto.
+
+  iDestruct (cmp_implements_adapt with "Hcmp0") as "Hcmp".
+  iClear "Hcmp0".
+  apply is_valid_cmp_adapted in Hvalid; [ | lia ].
 
   (* Initialize loop invariant: i = 0, j = n *)
   iAssert (
@@ -64,8 +138,8 @@ Proof.
       "j" ∷ j_ptr ↦ j ∗
       "I" ∷ I ∗
       "%Hbounds" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z j ≤ sint.Z n⌝ ∗
-      "%Hi_prop" ∷ ⌜cmp (sint.Z i - 1) > 0⌝ ∗
-      "%Hj_prop" ∷ ⌜cmp (sint.Z j) ≤ 0⌝
+      "%Hi_prop" ∷ ⌜adapt_cmp cmp (sint.Z n) (sint.Z i - 1) > 0⌝ ∗
+      "%Hj_prop" ∷ ⌜adapt_cmp cmp (sint.Z n) (sint.Z j) ≤ 0⌝
   )%I with "[$I $i $j]" as "HI".
   { iPureIntro. split; [ word | ].
     destruct Hvalid as (Hmono & Hneg & Hn).
@@ -124,6 +198,7 @@ Proof.
       iFrame.
       iPureIntro.
       rewrite bool_decide_eq_true.
+      rewrite -> !adapt_cmp_bounded in * by lia.
       split_and!.
       * word.
       * intros Hno_index.
@@ -132,9 +207,11 @@ Proof.
         word.
       * intros k Hk.
         destruct Hvalid as (Hmono & Hneg & Hn).
+        rewrite -> !adapt_cmp_bounded in * by lia.
         destruct (decide (k = sint.Z i - 1)).
         { subst; word. }
         pose proof (Hmono k (sint.Z i-1) ltac:(word)) as Hmono'.
+        rewrite -> !adapt_cmp_bounded in * by lia.
         move: Hmono'. rewrite /signum.
         repeat destruct decide; try lia.
     + (* i = n *)
@@ -147,19 +224,19 @@ Proof.
         word.
       * intros k Hk.
         destruct Hvalid as (Hmono & Hneg & Hn).
+        rewrite -> !adapt_cmp_bounded in * by lia.
         destruct (decide (k = sint.Z i - 1)).
         { subst; word. }
         pose proof (Hmono k (sint.Z i-1) ltac:(word)) as Hmono'.
+        rewrite -> !adapt_cmp_bounded in * by lia.
         move: Hmono'. rewrite /signum.
         repeat destruct decide; try lia.
 Qed.
 
-Definition adapt_cmp (cmp: Z → Z) (n: Z) : Z → Z :=
-  λ i, if decide (i < 0) then (1) else
-         if decide (n ≤ i) then
-           if decide (n = 0) then 0 else signum (cmp (n-1))
-         else cmp i.
-
+(* Direct translation of specification text. However, this formulation seems
+hard to work with for the common case of a monotonic comparison function, as
+you'd get for a sorted list; the relevant lemma is stated below but is hard to
+prove. *)
 Definition real_valid_cmp (cmp: Z → Z) (n: Z) :=
   ∃ start end_,
     (0 ≤ start ≤ end_ ∧ end_ < n) ∧
@@ -202,28 +279,5 @@ Proof.
   (* somewhat difficult: need to take a lower bound from a finite interval of
   Z *)
 Abort.
-
-Lemma adapt_cmp_bounded cmp n :
-  ∀ i, 0 ≤ i < n →
-       adapt_cmp cmp n i = cmp i.
-Proof.
-  intros i H.
-  rewrite /adapt_cmp.
-  repeat destruct (decide _); try lia.
-Qed.
-
-Lemma cmp_implements_adapt cmp_code cmp n I :
-  cmp_implements cmp_code cmp n I -∗
-  cmp_implements cmp_code (adapt_cmp cmp n) n I.
-Proof.
-  rewrite /cmp_implements.
-  iIntros "#H %i".
-  wp_start as "[HI %Hbound]".
-  iApply ("H" with "[$HI //]").
-  iModIntro.
-  iIntros (r) "[HI %Heq]".
-  iApply "HΦ". iFrame.
-  rewrite adapt_cmp_bounded //.
-Qed.
 
 End proof.
