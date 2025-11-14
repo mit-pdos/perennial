@@ -501,6 +501,18 @@ Global Instance wp_func_call_TestSelectReadyCaseNoPanic :
   WpFuncCall chan_spec_raw_examples.TestSelectReadyCaseNoPanic _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_mkRequest :
+  WpFuncCall chan_spec_raw_examples.mkRequest _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_ho_worker :
+  WpFuncCall chan_spec_raw_examples.ho_worker _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_HigherOrderExample :
+  WpFuncCall chan_spec_raw_examples.HigherOrderExample _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_load :
   WpFuncCall chan_spec_raw_examples.load _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
@@ -519,18 +531,6 @@ Global Instance wp_func_call_server :
 
 Global Instance wp_func_call_LeakyBufferPipeline :
   WpFuncCall chan_spec_raw_examples.LeakyBufferPipeline _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_mkRequest :
-  WpFuncCall chan_spec_raw_examples.mkRequest _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ho_worker :
-  WpFuncCall chan_spec_raw_examples.ho_worker _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_HigherOrderExample :
-  WpFuncCall chan_spec_raw_examples.HigherOrderExample _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_mkStream :
@@ -565,16 +565,16 @@ Global Instance wp_func_call_Muxer :
   WpFuncCall chan_spec_raw_examples.Muxer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_makeGreeting :
+  WpFuncCall chan_spec_raw_examples.makeGreeting _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_CancellableMapServer :
   WpFuncCall chan_spec_raw_examples.CancellableMapServer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CancellableMuxer :
   WpFuncCall chan_spec_raw_examples.CancellableMuxer _ (is_pkg_defined chan_spec_raw_examples) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_makeGreeting :
-  WpFuncCall chan_spec_raw_examples.makeGreeting _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_worker :
