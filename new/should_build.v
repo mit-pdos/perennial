@@ -13,7 +13,7 @@ From New.proof.github_com.goose_lang.goose.model.channel.protocol
   Require protocols.
 
 From New.proof Require go_etcd_io.etcd.client.v3.leasing.
-From New.proof Require Import bytes chan context.
+From New.proof Require Import bytes chan context sort.
 
 Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.
 
