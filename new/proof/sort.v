@@ -1,1 +1,1 @@
-From New.proof.sort_proof Require Export find.
+From New.proof.sort_proof Require Export find search.
