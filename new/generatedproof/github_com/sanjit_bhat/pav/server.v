@@ -22,8 +22,8 @@ Module StartReply.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  StartEpochLen' : w64;
-  StartLink' : slice.t;
+  PrevEpochLen' : w64;
+  PrevLink' : slice.t;
   ChainProof' : slice.t;
   LinkSig' : slice.t;
   VrfPk' : slice.t;
@@ -41,12 +41,12 @@ Global Instance StartReply_wf : struct.Wf server.StartReply.
 Proof. apply _. Qed.
 
 Global Instance settable_StartReply : Settable StartReply.t :=
-  settable! StartReply.mk < StartReply.StartEpochLen'; StartReply.StartLink'; StartReply.ChainProof'; StartReply.LinkSig'; StartReply.VrfPk'; StartReply.VrfSig' >.
+  settable! StartReply.mk < StartReply.PrevEpochLen'; StartReply.PrevLink'; StartReply.ChainProof'; StartReply.LinkSig'; StartReply.VrfPk'; StartReply.VrfSig' >.
 Global Instance into_val_StartReply : IntoVal StartReply.t :=
   {| to_val_def v :=
     struct.val_aux server.StartReply [
-    "StartEpochLen" ::= #(StartReply.StartEpochLen' v);
-    "StartLink" ::= #(StartReply.StartLink' v);
+    "PrevEpochLen" ::= #(StartReply.PrevEpochLen' v);
+    "PrevLink" ::= #(StartReply.PrevLink' v);
     "ChainProof" ::= #(StartReply.ChainProof' v);
     "LinkSig" ::= #(StartReply.LinkSig' v);
     "VrfPk" ::= #(StartReply.VrfPk' v);
@@ -63,10 +63,10 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_StartReply_StartEpochLen : IntoValStructField "StartEpochLen" server.StartReply StartReply.StartEpochLen'.
+Global Instance into_val_struct_field_StartReply_PrevEpochLen : IntoValStructField "PrevEpochLen" server.StartReply StartReply.PrevEpochLen'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StartReply_StartLink : IntoValStructField "StartLink" server.StartReply StartReply.StartLink'.
+Global Instance into_val_struct_field_StartReply_PrevLink : IntoValStructField "PrevLink" server.StartReply StartReply.PrevLink'.
 Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_StartReply_ChainProof : IntoValStructField "ChainProof" server.StartReply StartReply.ChainProof'.
@@ -83,24 +83,24 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StartReply StartEpochLen' StartLink' ChainProof' LinkSig' VrfPk' VrfSig':
+Global Instance wp_struct_make_StartReply PrevEpochLen' PrevLink' ChainProof' LinkSig' VrfPk' VrfSig':
   PureWp True
     (struct.make #server.StartReply (alist_val [
-      "StartEpochLen" ::= #StartEpochLen';
-      "StartLink" ::= #StartLink';
+      "PrevEpochLen" ::= #PrevEpochLen';
+      "PrevLink" ::= #PrevLink';
       "ChainProof" ::= #ChainProof';
       "LinkSig" ::= #LinkSig';
       "VrfPk" ::= #VrfPk';
       "VrfSig" ::= #VrfSig'
     ]))%struct
-    #(StartReply.mk StartEpochLen' StartLink' ChainProof' LinkSig' VrfPk' VrfSig').
+    #(StartReply.mk PrevEpochLen' PrevLink' ChainProof' LinkSig' VrfPk' VrfSig').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance StartReply_struct_fields_split dq l (v : StartReply.t) :
   StructFieldsSplit dq l v (
-    "HStartEpochLen" ∷ l ↦s[server.StartReply :: "StartEpochLen"]{dq} v.(StartReply.StartEpochLen') ∗
-    "HStartLink" ∷ l ↦s[server.StartReply :: "StartLink"]{dq} v.(StartReply.StartLink') ∗
+    "HPrevEpochLen" ∷ l ↦s[server.StartReply :: "PrevEpochLen"]{dq} v.(StartReply.PrevEpochLen') ∗
+    "HPrevLink" ∷ l ↦s[server.StartReply :: "PrevLink"]{dq} v.(StartReply.PrevLink') ∗
     "HChainProof" ∷ l ↦s[server.StartReply :: "ChainProof"]{dq} v.(StartReply.ChainProof') ∗
     "HLinkSig" ∷ l ↦s[server.StartReply :: "LinkSig"]{dq} v.(StartReply.LinkSig') ∗
     "HVrfPk" ∷ l ↦s[server.StartReply :: "VrfPk"]{dq} v.(StartReply.VrfPk') ∗
@@ -112,8 +112,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StartReply.StartEpochLen' v)) (server.StartReply) "StartEpochLen"%go.
-  simpl_one_flatten_struct (# (StartReply.StartLink' v)) (server.StartReply) "StartLink"%go.
+  simpl_one_flatten_struct (# (StartReply.PrevEpochLen' v)) (server.StartReply) "PrevEpochLen"%go.
+  simpl_one_flatten_struct (# (StartReply.PrevLink' v)) (server.StartReply) "PrevLink"%go.
   simpl_one_flatten_struct (# (StartReply.ChainProof' v)) (server.StartReply) "ChainProof"%go.
   simpl_one_flatten_struct (# (StartReply.LinkSig' v)) (server.StartReply) "LinkSig"%go.
   simpl_one_flatten_struct (# (StartReply.VrfPk' v)) (server.StartReply) "VrfPk"%go.

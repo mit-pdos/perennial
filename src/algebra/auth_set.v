@@ -1,5 +1,5 @@
-(* Auth set from Prof. Tej Chajed's CS 839 curriculum 
-https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/program_proof/demos/barrier_proof.v 
+(* Auth set from sys verif course
+https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/program_proof/demos/auth_set.v
 *)
 From iris.algebra Require Import auth gset.
 From iris.proofmode Require Import proofmode.

@@ -107,17 +107,18 @@ Proof. Admitted.
 
 (** Signatures. *)
 
-(* is_sig_sk says that an sk is in-distribution.
+(* own_sig_sk says that an sk is in-distribution.
 furthermore, it came from calling the Generate fn,
 and the underlying sk is enclosed in the ffi,
 forcing all users to establish the sigpred.
 pk is a mathematical list so it can leave the ffi and be sent
 between parties. *)
-Definition is_sig_sk (ptr_sk : loc) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
+Definition own_sig_sk (ptr_sk : loc) (pk : list w8) (P : list w8 → iProp Σ) : iProp Σ.
 Admitted.
 
-#[global] Instance is_sig_sk_pers ptr_sk pk P :
-  Persistent (is_sig_sk ptr_sk pk P).
+(* think of this as DfracDiscarded. *)
+#[global] Instance own_sig_sk_pers ptr_sk pk P :
+  Persistent (own_sig_sk ptr_sk pk P).
 Proof. Admitted.
 
 (* is_sig_pk says that pk is in-distribution.
@@ -129,7 +130,7 @@ Admitted.
 #[global] Instance is_sig_pk_pers pk P : Persistent (is_sig_pk pk P).
 Proof. Admitted.
 
-Lemma is_sig_sk_to_pk ptr_sk pk P : is_sig_sk ptr_sk pk P -∗ is_sig_pk pk P.
+Lemma own_sig_sk_to_pk ptr_sk pk P : own_sig_sk ptr_sk pk P -∗ is_sig_pk pk P.
 Proof. Admitted.
 
 (* is_sig says that Verify will ret True on these inputs.
@@ -158,14 +159,14 @@ Lemma wp_SigGenerateKey P :
     (sl_pk : cryptoffi.SigPublicKey.t) pk ptr_sk, RET (#sl_pk, #ptr_sk);
     "Hsl_sig_pk" ∷ sl_pk ↦* pk ∗
     "#His_sig_pk" ∷ is_sig_pk pk P ∗
-    "#His_sig_sk" ∷ is_sig_sk ptr_sk pk P
+    "#Hown_sig_sk" ∷ own_sig_sk ptr_sk pk P
  }}}.
 Proof. Admitted.
 
 Lemma wp_SigPrivateKey_Sign ptr_sk pk P sl_msg msg d0 :
   {{{
     is_pkg_init cryptoffi ∗
-    "#His_sig_sk" ∷ is_sig_sk ptr_sk pk P ∗
+    "#Hown_sig_sk" ∷ own_sig_sk ptr_sk pk P ∗
     "Hsl_msg" ∷ sl_msg ↦*{d0} msg ∗
     "HP" ∷ P msg
   }}}
@@ -206,20 +207,33 @@ IETF spec: https://www.rfc-editor.org/rfc/rfc9381.html.
 we model correctness (is_vrf_proof), "Full Uniqueness" (is_vrf_out_det),
 and "Full Collision Resistance" (is_vrf_out_inj). *)
 
-(* is_vrf_sk provides ownership of an sk from the VrfGenerateKey function. *)
-Definition is_vrf_sk (ptr_sk : loc) (pk : list w8) : iProp Σ.
+(* own_vrf_sk provides ownership of an sk from the VrfGenerateKey function. *)
+Definition own_vrf_sk (ptr_sk : loc) (pk : list w8) : iProp Σ.
 Admitted.
 
-#[global] Instance is_vrf_sk_pers ptr_sk pk : Persistent (is_vrf_sk ptr_sk pk).
+(* think of this as DfracDiscarded. *)
+#[global] Instance own_vrf_sk_pers ptr_sk pk : Persistent (own_vrf_sk ptr_sk pk).
 Proof. Admitted.
 
 (* is_vrf_pk says that pk satisfies certain mathematical crypto checks.
 this is in contrast to is_sig_pk, which additionally says that
 the corresponding sk never left the ffi. *)
-Definition is_vrf_pk (ptr_pk : loc) (pk : list w8) : iProp Σ.
+Definition is_vrf_pk (pk : list w8) : iProp Σ.
 Admitted.
 
-#[global] Instance is_vrf_pk_pers ptr_pk pk : Persistent (is_vrf_pk ptr_pk pk).
+#[global] Instance is_vrf_pk_pers pk : Persistent (is_vrf_pk pk).
+Proof. Admitted.
+
+(* own_vrf_pk just wraps is_vrf_pk with ownership of the heap resources
+corresponding to the pk bytes. *)
+Definition own_vrf_pk (ptr_pk : loc) (pk : list w8) : iProp Σ.
+Admitted.
+
+(* think of this as DfracDiscarded. *)
+#[global] Instance own_vrf_pk_pers ptr_pk pk : Persistent (own_vrf_pk ptr_pk pk).
+Proof. Admitted.
+
+Lemma own_vrf_pk_valid ptr_pk pk : own_vrf_pk ptr_pk pk -∗ is_vrf_pk pk.
 Proof. Admitted.
 
 (* is_vrf_proof helps model correctness.
@@ -267,15 +281,15 @@ Lemma wp_VrfGenerateKey :
   @! cryptoffi.VrfGenerateKey #()
   {{{
     (ptr_pk ptr_sk : loc) (pk : list w8), RET (#ptr_pk, #ptr_sk);
-    "#His_vrf_pk" ∷ is_vrf_pk ptr_pk pk ∗
-    "#His_vrf_sk" ∷ is_vrf_sk ptr_sk pk
+    "#Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk ∗
+    "#Hown_vrf_sk" ∷ own_vrf_sk ptr_sk pk
   }}}.
 Proof. Admitted.
 
 Lemma wp_VrfPrivateKey_Prove ptr_sk pk sl_data (data : list w8) d0 :
   {{{
     is_pkg_init cryptoffi ∗
-    "#His_vrf_sk" ∷ is_vrf_sk ptr_sk pk ∗
+    "#Hown_vrf_sk" ∷ own_vrf_sk ptr_sk pk ∗
     "Hsl_data" ∷ sl_data ↦*{d0} data
   }}}
   ptr_sk @ (ptrT.id cryptoffi.VrfPrivateKey.id) @ "Prove" #sl_data
@@ -292,7 +306,7 @@ Proof. Admitted.
 Lemma wp_VrfPrivateKey_Evaluate ptr_sk pk sl_data (data : list w8) d0 :
   {{{
     is_pkg_init cryptoffi ∗
-    "#His_vrf_sk" ∷ is_vrf_sk ptr_sk pk ∗
+    "#Hown_vrf_sk" ∷ own_vrf_sk ptr_sk pk ∗
     "Hsl_data" ∷ sl_data ↦*{d0} data
   }}}
   ptr_sk @ (ptrT.id cryptoffi.VrfPrivateKey.id) @ "Evaluate" #sl_data
@@ -307,7 +321,7 @@ Proof. Admitted.
 Lemma wp_VrfPublicKey_Verify ptr_pk pk sl_data sl_proof (data proof : list w8) d0 d1 :
   {{{
     is_pkg_init cryptoffi ∗
-    "#His_vrf_pk" ∷ is_vrf_pk ptr_pk pk ∗
+    "#Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk ∗
     "Hsl_data" ∷ sl_data ↦*{d0} data ∗
     "Hsl_proof" ∷ sl_proof ↦*{d1} proof
   }}}
@@ -330,12 +344,13 @@ Proof. Admitted.
 Lemma wp_VrfPublicKeyEncode ptr_pk pk :
   {{{
     is_pkg_init cryptoffi ∗
-    "#His_vrf_pk" ∷ is_vrf_pk ptr_pk pk
+    "#Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk
   }}}
   @! cryptoffi.VrfPublicKeyEncode #ptr_pk
   {{{
     sl_enc, RET #sl_enc;
-    "Hsl_enc" ∷ sl_enc ↦* pk
+    "Hsl_enc" ∷ sl_enc ↦* pk ∗
+    "#His_vrf_pk" ∷ is_vrf_pk pk
   }}}.
 Proof. Admitted.
 
@@ -346,9 +361,14 @@ Lemma wp_VrfPublicKeyDecode sl_enc pk d0 :
   }}}
   @! cryptoffi.VrfPublicKeyDecode #sl_enc
   {{{
-    (ptr_pk : loc), RET #ptr_pk;
+    ptr_pk err, RET (#ptr_pk, #err);
     "Hsl_enc" ∷ sl_enc ↦*{d0} pk ∗
-    "#His_vrf_pk" ∷ is_vrf_pk ptr_pk pk
+    "Hgenie" ∷
+      match err with
+      | true => ¬ is_vrf_pk pk
+      | false =>
+        "#Hown_vrf_pk" ∷ own_vrf_pk ptr_pk pk
+      end
   }}}.
 Proof. Admitted.
 

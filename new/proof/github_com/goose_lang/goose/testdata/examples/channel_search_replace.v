@@ -1,7 +1,7 @@
 From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import chan_au_base simple.
+  Require Import protocol.base chan_au_base simple.
 From New.proof Require Import sync strings time tok_set.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 
@@ -9,7 +9,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
-Context `{!chanGhostStateG Σ slice.t}.
+Context `{!chan_protocolG Σ slice.t}.
 Context `{!waitgroup_joinG Σ}.
 
 #[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
@@ -37,7 +37,7 @@ Definition waitgroupN := nroot .@ "waitgroup".
 
 Lemma wp_worker (γs: simple_names) (ch: loc) (wg: loc) (x y: w64) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-      "#Hchan" ∷ is_simple γs ch 4 (chanP wg x y) }}}
+      "#Hchan" ∷ is_simple γs ch (chanP wg x y) }}}
     @! chan_spec_raw_examples.worker #ch #wg #x #y
   {{{ RET #(); True }}}.
 Proof.
@@ -113,7 +113,7 @@ Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
   }}}
     @! chan_spec_raw_examples.SearchReplace #s #x #y
   {{{ RET #(); s ↦* (search_replace x y xs) }}}.
-Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
+Proof using chan_protocolG0 waitgroup_joinG0 syncG0.
   (* The first overflow:
      implementation adds 1000 at a time, potentially surpassing the slice length
      before clamping. If it goes negative, then the clamping doesn't work. This
@@ -136,16 +136,16 @@ Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
   }
   wp_apply chan.wp_make.
   { done. }
-  iIntros (ch γch_names) "[#His_chan Hoc]". simpl. wp_auto.
+  iIntros (ch γch_names) "(#His_chan & Hcap & Hoc)". simpl. wp_auto.
   iMod (init_WaitGroup with "wg") as (?) "H".
   iMod (join.init with "H") as "Hwg".
-  iMod (start_simple_buffered _ _ _ (chanP wg_ptr x y) with "[$His_chan] [$Hoc]") as (γch) "#Hchan".
+  iMod (start_simple_buffered _ _ (chanP wg_ptr x y) with "[$His_chan] [$Hoc]") as (γch) "#Hchan".
   iAssert (∃ (i : w64), "i" ∷ i_ptr ↦ i)%I with "[$i]" as "HH".
   wp_for. iNamed "HH". wp_auto.
   wp_if_destruct.
   2:{
     wp_apply wp_fork.
-      { wp_apply wp_worker; last done. iFrame "#". }
+      { wp_apply wp_worker; last done. iDestruct "Hchan" as "[%H Hsimp]". iFrame "#". }
       wp_for_post. iFrame.
   }
 
@@ -192,7 +192,9 @@ Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
   { subst nextOffset. word. }
   rewrite drop_drop.
   wp_apply (wp_simple_send with "[Hdone Hsection]").
-  { iFrame "#". iFrame. }
+  { iFrame "#". iDestruct "Hchan" as "[%H' Hsimp]". iSplitL "Hsimp". { iFrame "#". }
+    iFrame.
+    }
   wp_for_post.
   iFrame. iExists _.
   iSplitL "Hs".
@@ -210,6 +212,6 @@ Proof using chanGhostStateG0 waitgroup_joinG0 syncG0.
   subst nextOffset. word.
 Qed.
 
-Print Assumptions wp_SearchReplace.
+(* Print Assumptions wp_SearchReplace. *)
 
 End proof.

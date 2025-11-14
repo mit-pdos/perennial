@@ -128,7 +128,7 @@ End classes.
 
 Section lang.
   Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-  Context `{!chanGhostStateG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
+  Context `{!chanG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
   Context `{!globalsGS Σ} {go_ctx : GoContext}.
   Context `{!dspG Σ V}.
   Implicit Types TT : tele.
@@ -138,17 +138,17 @@ Section lang.
 
   (** Automatically perform normalization of protocols in the proof mode when
   using [iAssumption] and [iFrame]. *)
-  Global Instance pointsto_proto_from_assumption q c p1 p2 :
+  Global Instance pointsto_proto_from_assumption q c p1 p2 γ :
     ProtoNormalize false p1 [] p2 →
-    FromAssumption q (c ↣ p1) (c ↣ p2).
+    FromAssumption q (c ↣{γ} p1) (c ↣{γ} p2).
   Proof.
     rewrite /FromAssumption /ProtoNormalize /= right_id.
     rewrite bi.intuitionistically_if_elim.
     iIntros (?) "H". by iApply (iProto_pointsto_le with "H").
   Qed.
-  Global Instance pointsto_proto_from_frame q c p1 p2 :
+  Global Instance pointsto_proto_from_frame q c p1 p2 γ :
     ProtoNormalize false p1 [] p2 →
-    Frame q (c ↣ p1) (c ↣ p2) True.
+    Frame q (c ↣{γ} p1) (c ↣{γ} p2) True.
   Proof.
     rewrite /Frame /ProtoNormalize /= right_id.
     rewrite bi.intuitionistically_if_elim.
@@ -159,17 +159,17 @@ End lang.
 
 (** * Symbolic execution tactics *)
 (* TODO: Maybe strip laters from other hypotheses in the future? *)
-Lemma tac_wp_recv `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanGhostStateG Σ V}
+Lemma tac_wp_recv `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanG Σ V}
   `{!IntoVal V} `{!IntoValTyped V tV} `{!globalsGS Σ} {go_ctx : GoContext} `{!dspG Σ V}
-  {TT : tele} Δ i j K (lr_chan rl_chan:loc) p m (tv : TT -t> V) tP tP' tp Φ :
-  envs_lookup i Δ = Some (false, #(lr_chan, rl_chan) ↣ p)%I →
+  {TT : tele} Δ i j K (lr_chan rl_chan:loc) γ p m (tv : TT -t> V) tP tP' tp Φ :
+  envs_lookup i Δ = Some (false, #(lr_chan, rl_chan) ↣{γ} p)%I →
   ProtoNormalize false p [] (<?> m) →
   MsgTele m tv tP tp →
   (∀.. x, MaybeIntoLaterN false 1 (tele_app tP x) (tele_app tP' x)) →
   let Δ' := envs_delete false i false Δ in
   (∀.. x : TT,
     match envs_app false
-        (Esnoc (Esnoc Enil j (tele_app tP' x)) i (#(lr_chan,rl_chan) ↣ tele_app tp x)) Δ' with
+        (Esnoc (Esnoc Enil j (tele_app tP' x)) i (#(lr_chan,rl_chan) ↣{γ} tele_app tp x)) Δ' with
     | Some Δ'' => envs_entails Δ'' (WP fill K (of_val (#(tele_app tv x), #true)) {{ Φ }})
     | None => False
     end) →
@@ -178,7 +178,7 @@ Proof.
   rewrite envs_entails_unseal /ProtoNormalize /MsgTele /MaybeIntoLaterN /=.
   rewrite !tforall_forall right_id.
   intros ? Hp Hm HP HΦ. rewrite envs_lookup_sound //; simpl.
-  assert (#(lr_chan,rl_chan) ↣ p ⊢ #(lr_chan,rl_chan) ↣ <?.. x>
+  assert (#(lr_chan,rl_chan) ↣{γ} p ⊢ #(lr_chan,rl_chan) ↣{γ} <?.. x>
     MSG tele_app tv x {{ ▷ tele_app tP' x }}; tele_app tp x) as ->.
   { iIntros "Hc". iApply (iProto_pointsto_le with "Hc"). iIntros "!>".
     iApply iProto_le_trans; [iApply Hp|rewrite Hm].
@@ -186,7 +186,8 @@ Proof.
     iApply iProto_le_trans; [|iApply (iProto_le_texist_intro_r _ x)]; simpl.
     iIntros "H". by iDestruct (HP with "H") as "$". }
   rewrite -wp_bind. eapply bi.wand_apply;
-    [by eapply bi.wand_entails, (dsp_recv lr_chan _ (tele_app tv) (tele_app tP') (tele_app tp))|f_equiv; first done].
+    [by eapply bi.wand_entails, (wp_dsp_recv _ lr_chan _ (tele_app tv) (tele_app tP') (tele_app tp))|
+      f_equiv; first done].
   rewrite -bi.later_intro; apply bi.forall_intro=> x.
   specialize (HΦ x). destruct (envs_app _ _) as [Δ'|] eqn:HΔ'=> //.
   rewrite envs_app_sound //; simpl. by rewrite right_id HΦ.
@@ -194,8 +195,8 @@ Qed.
 
 Tactic Notation "wp_recv_core" tactic3(tac_intros) "as" tactic3(tac) :=
   let solve_pointsto _ :=
-    let c := match goal with |- _ = Some (_, (?c ↣ _)%I) => c end in
-    iAssumptionCore || fail "wp_recv: cannot find" c "↣ ? @ ?" in
+    let c := match goal with |- _ = Some (_, (?c ↣{_} _)%I) => c end in
+    iAssumptionCore || fail "wp_recv: cannot find" c "↣{γ} ? @ ?" in
   wp_pures;
   let Hnew := iFresh in
   lazymatch goal with
@@ -222,17 +223,17 @@ Tactic Notation "wp_recv" "(" simple_intropattern_list(xs) ")" "as"
     "(" ne_simple_intropattern_list(ys) ")" constr(pat) :=
   wp_recv_core (intros xs) as (fun H => _iDestructHyp H ys pat).
 
-Lemma tac_wp_send `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanGhostStateG Σ V}
+Lemma tac_wp_send `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanG Σ V}
   `{!IntoVal V} `{!IntoValTyped V tV} `{!globalsGS Σ} {go_ctx : GoContext} `{!dspG Σ V}
-  {TT : tele} Δ neg i js K (lr_chan rl_chan : loc) v p m tv tP tp Φ :
-  envs_lookup i Δ = Some (false, #(lr_chan,rl_chan) ↣ p)%I →
+  {TT : tele} Δ neg i js K (lr_chan rl_chan : loc) γ v p m tv tP tp Φ :
+  envs_lookup i Δ = Some (false, #(lr_chan,rl_chan) ↣{γ} p)%I →
   ProtoNormalize false p [] (<!> m) →
   MsgTele m tv tP tp →
   let Δ' := envs_delete false i false Δ in
   (∃.. x : TT,
     match envs_split (if neg is true then base.Right else base.Left) js Δ' with
     | Some (Δ1,Δ2) =>
-       match envs_app false (Esnoc Enil i (#(lr_chan,rl_chan) ↣ tele_app tp x)) Δ2 with
+       match envs_app false (Esnoc Enil i (#(lr_chan,rl_chan) ↣{γ} tele_app tp x)) Δ2 with
        | Some Δ2' =>
           v = tele_app tv x ∧
           envs_entails Δ1 (tele_app tP x) ∧
@@ -249,18 +250,18 @@ Proof.
   destruct (envs_app _ _ _) as [Δ2'|] eqn:? => //.
   rewrite envs_split_sound //; rewrite (envs_app_sound Δ2) //; simpl.
   destruct HΦ as (-> & -> & ->). rewrite right_id assoc.
-  assert (#(lr_chan,rl_chan) ↣ p ⊢
-    #(lr_chan,rl_chan) ↣ <!.. (x : TT)> MSG tele_app tv x {{ tele_app tP x }}; tele_app tp x) as ->.
+  assert (#(lr_chan,rl_chan) ↣{γ} p ⊢
+    #(lr_chan,rl_chan) ↣{γ} <!.. (x : TT)> MSG tele_app tv x {{ tele_app tP x }}; tele_app tp x) as ->.
   { iIntros "Hc". iApply (iProto_pointsto_le with "Hc"); iIntros "!>".
     iApply iProto_le_trans; [iApply Hp|]. by rewrite Hm. }
-  eapply bi.wand_apply; [rewrite -wp_bind; by eapply bi.wand_entails, dsp_send_tele|].
+  eapply bi.wand_apply; [rewrite -wp_bind; by eapply bi.wand_entails, wp_dsp_send_tele|].
   by rewrite -bi.later_intro.
 Qed.
 
 Tactic Notation "wp_send_core" tactic3(tac_exist) "with" constr(pat) :=
   let solve_pointsto _ :=
-    let c := match goal with |- _ = Some (_, (?c ↣ _)%I) => c end in
-    iAssumptionCore || fail "wp_send: cannot find" c "↣ ? @ ?" in
+    let c := match goal with |- _ = Some (_, (?c ↣{_} _)%I) => c end in
+    iAssumptionCore || fail "wp_send: cannot find" c "↣{γ} ? @ ?" in
   let solve_done d :=
     lazymatch d with
     | true =>

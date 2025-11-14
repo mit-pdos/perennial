@@ -339,12 +339,6 @@ Proof.
   iIntros "[Hlocked Hlinv]".
   iNamed "Hlinv".
   wp_auto.
-
-  (* XXX seems unfortunate that the proof has to unfold [slice.for_range] *)
-  Transparent slice.for_range.
-  rewrite /slice.for_range.
-  wp_auto.
-
   iAssert (∃ (i count: w64) (b: w8),
     "i" ∷ i_ptr ↦ i ∗
     "count" ∷ count_ptr ↦ count ∗
