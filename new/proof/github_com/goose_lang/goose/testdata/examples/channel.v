@@ -829,7 +829,7 @@ Proof using chan_protocolG0.
   wp_apply (wp_fork with "[Hworker message]").
   {
     wp_auto.
-    wp_apply (join.wp_worker_send with "[$Hisjoin $Hworker $message]").
+    wp_apply (join.wp_join_send with "[$Hisjoin $Hworker $message]").
     { iFrame. }
   }
   wp_apply (join.wp_join_receive with "[$]").
@@ -867,13 +867,13 @@ Proof using chan_protocolG0.
   wp_apply (wp_fork with "[Hworker1 hello]").
   {
     wp_auto.
-    wp_apply (join.wp_worker_send with "[$Hisjoin $Hworker1 $hello]").
+    wp_apply (join.wp_join_send with "[$Hisjoin $Hworker1 $hello]").
     { iFrame. }
   }
   wp_apply (wp_fork with "[Hworker2 world]").
   {
     wp_auto.
-    wp_apply (join.wp_worker_send with "[$Hisjoin $Hworker2 $world]").
+    wp_apply (join.wp_join_send with "[$Hisjoin $Hworker2 $world]").
     { iFrame. }
   }
   wp_apply (join.wp_join_receive with "[$Hjoin $Hisjoin]").
