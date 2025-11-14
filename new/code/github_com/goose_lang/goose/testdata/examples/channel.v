@@ -450,6 +450,53 @@ Definition select_no_double_closeⁱᵐᵖˡ : val :=
       );;;
     return: #()).
 
+Definition exchangePointer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.exchangePointer"%go.
+
+(* go: examples.go:148:6 *)
+Definition exchangePointerⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do (let: "x" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("x" <-[#intT] "$r0");;;
+    let: "y" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("y" <-[#intT] "$r0");;;
+    let: "ch" := (mem.alloc (type.zero_val (type.chanT (type.structT [
+    ])))) in
+    let: "$r0" := (chan.make (type.structT [
+    ]) #(W64 0)) in
+    do:  ("ch" <-[type.chanT (type.structT [
+    ])] "$r0");;;
+    let: "$go" := (λ: <>,
+      exception_do (let: "$r0" := #(W64 1) in
+      do:  ("x" <-[#intT] "$r0");;;
+      do:  (let: "$chan" := (![type.chanT (type.structT [
+      ])] "ch") in
+      let: "$v" := (struct.make (type.structT [
+      ]) [{
+      }]) in
+      chan.send (type.structT [
+      ]) "$chan" "$v");;;
+      (if: (![#intT] "y") ≠ #(W64 2)
+      then
+        do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
+        Panic "$a0")
+      else do:  #());;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$r0" := #(W64 2) in
+    do:  ("y" <-[#intT] "$r0");;;
+    do:  (Fst (chan.receive (type.structT [
+    ]) (![type.chanT (type.structT [
+    ])] "ch")));;;
+    (if: (![#intT] "x") ≠ #(W64 1)
+    then
+      do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    return: #()).
+
 Definition select_ready_case_no_panic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panic"%go.
 
 (* Show that a guaranteed to be ready case makes default impossible
@@ -1185,7 +1232,7 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(NewLockedStack, NewLockedStackⁱᵐᵖˡ); (NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (Serve, Serveⁱᵐᵖˡ); (appWrld, appWrldⁱᵐᵖˡ); (Client, Clientⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (ClientOld, ClientOldⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (makeGreeting, makeGreetingⁱᵐᵖˡ); (CancellableMapServer, CancellableMapServerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewLockedStack, NewLockedStackⁱᵐᵖˡ); (NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (exchangePointer, exchangePointerⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (Serve, Serveⁱᵐᵖˡ); (appWrld, appWrldⁱᵐᵖˡ); (Client, Clientⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (ClientOld, ClientOldⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (makeGreeting, makeGreetingⁱᵐᵖˡ); (CancellableMapServer, CancellableMapServerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(LockedStack.id, []); (ptrT.id LockedStack.id, [("Pop"%go, LockedStack__Popⁱᵐᵖˡ); ("Push"%go, LockedStack__Pushⁱᵐᵖˡ)]); (EliminationStack.id, []); (ptrT.id EliminationStack.id, [("Pop"%go, EliminationStack__Popⁱᵐᵖˡ); ("Push"%go, EliminationStack__Pushⁱᵐᵖˡ)]); (request.id, []); (ptrT.id request.id, []); (stream.id, []); (ptrT.id stream.id, []); (streamold.id, []); (ptrT.id streamold.id, [])].
 

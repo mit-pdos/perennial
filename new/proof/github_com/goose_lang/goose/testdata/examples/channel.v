@@ -1,7 +1,7 @@
 
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Import protocol.base simple future spsc done dsp dsp_proofmode mpmc join.
+     Require Import protocol.base simple future spsc done dsp dsp_proofmode mpmc join handshake.
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
@@ -829,7 +829,7 @@ Proof using chan_protocolG0.
   wp_apply (wp_fork with "[Hworker message]").
   {
     wp_auto.
-    wp_apply (join.wp_worker_send with "[$Hisjoin $Hworker $message]").
+    wp_apply (join.wp_join_send with "[$Hisjoin $Hworker $message]").
     { iFrame. }
   }
   wp_apply (join.wp_join_receive with "[$]").
@@ -867,13 +867,13 @@ Proof using chan_protocolG0.
   wp_apply (wp_fork with "[Hworker1 hello]").
   {
     wp_auto.
-    wp_apply (join.wp_worker_send with "[$Hisjoin $Hworker1 $hello]").
+    wp_apply (join.wp_join_send with "[$Hisjoin $Hworker1 $hello]").
     { iFrame. }
   }
   wp_apply (wp_fork with "[Hworker2 world]").
   {
     wp_auto.
-    wp_apply (join.wp_worker_send with "[$Hisjoin $Hworker2 $world]").
+    wp_apply (join.wp_join_send with "[$Hisjoin $Hworker2 $world]").
     { iFrame. }
   }
   wp_apply (join.wp_join_receive with "[$Hjoin $Hisjoin]").
@@ -928,13 +928,13 @@ Proof using chan_protocolG0 dspG0 globalsGS0.
     wp_apply (chan.wp_make (V:=go_string)); first done.
   iIntros (res_ch γ_res) "(#Hres & _ & Hown_res)".
   wp_auto_lc 1.
-  
+
   (* Make req channel *)
   wp_apply (chan.wp_make (V:=go_string)); first done.
   iIntros (req_ch γ_req) "(#Hreq & _ & Hown_req)".
 
 
-  
+
   (* Initialize protocol *)
   wp_apply wp_fupd.
   iMod (dsp_session_init _ res_ch req_ch _ _ _ _
@@ -944,7 +944,7 @@ Proof using chan_protocolG0 dspG0 globalsGS0.
   iModIntro.
   wp_auto.
   iPersist "s".
-  
+
   wp_apply (wp_fork with "[Hserver f]").
   {
     wp_auto.
@@ -1000,16 +1000,16 @@ Lemma wp_Client:
 Proof using chan_protocolG0 dspG0 globalsGS0.
   wp_start.
   wp_auto.
-  
+
   wp_apply (wp_Serve _ (λ _, True%I) (λ s1 s2, ⌜s2 = s1 ++ ", World!"%go⌝%I)).
   { iIntros "!>" (s) "_". wp_apply wp_appWrld. iExists  (s ++ ", World!"%go). iPureIntro. done.
     }
   iIntros (hw γ) "Hprot".
   wp_auto.
-  
+
   wp_send with "[//]".
   wp_auto.
-  
+
   wp_recv (?) as "->".
   wp_auto.
   by iApply "HΦ".
@@ -1274,5 +1274,25 @@ Proof using chanG0.
 Qed.
 
 End notready_examples.
+
+Section exchange_pointer_proof.
+
+Context `{!chan_protocolG Σ unit}.
+Lemma wp_exchangePointer :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.exchangePointer #()
+  {{{ RET #(); True }}}.
+Proof using chan_protocolG0.
+  wp_start. wp_auto.
+  wp_apply (chan.wp_make (t:=structT [])); [done|].
+  iIntros (ch γ) "(#His_ch & % & Hch)". wp_auto. simpl.
+  iMod (start_handshake _ (λ _, x_ptr ↦ W64 1)%I (y_ptr ↦ W64 2)%I with "[$] [$]") as "#H".
+  iPersist "ch".
+  wp_apply (wp_fork with "[x]").
+  - wp_auto. by wp_apply (wp_handshake_send with "[$H $x]") as "y".
+  - wp_apply (wp_handshake_receive with "[$H $y]") as "* x". by iApply "HΦ".
+Qed.
+
+End exchange_pointer_proof.
 
 End proof.

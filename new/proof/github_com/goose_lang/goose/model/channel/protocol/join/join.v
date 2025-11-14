@@ -222,20 +222,19 @@ Proof.
   }
 Qed.
 
-Lemma wp_worker_send γ ch P :
-  {{{ is_join γ ch ∗
-      worker γ P ∗
-      P }}}
-    chan.send #t #ch #(default_val V)
-  {{{ RET #(); True }}}.
+Lemma join_send_au γ ch P Φ :
+  £1 ∗ £1 ∗ £1 -∗
+  is_join γ ch -∗
+  worker γ P -∗
+  P -∗
+  ▷(True -∗ Φ) -∗
+  send_au_slow ch (default_val V) γ.(chan_name) Φ.
 Proof.
-  iIntros (Φ) "(#Hjoin & HWorker & HP) HΦ".
+  iIntros "(Hlc1 & Hlc2 & Hlc3) #Hjoin HWorker HP Hau".
   rewrite /worker /is_join.
   iNamed "HWorker".
   iDestruct "HWorker" as "[Hfrag Hprop]".
   iDestruct "Hjoin" as "[#Hch #Hinv]".
-  iApply (chan.wp_send ch (default_val V) γ.(chan_name) with "[$Hch]").
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch1".
@@ -255,7 +254,7 @@ Proof.
         rewrite big_sepL_app.
         iFrame. simpl. done.
       }
-      iModIntro. iApply "HΦ". done.
+      iModIntro. iApply "Hau". done.
   - iNext. iIntros "Hoc".
     iMod "Hmask".
     iMod ("Hinv_close" with "[Hoc joinQ Hjoincount HsendNames_auth HworkerQ_wand Hbar HP Hprop Hfrag]") as "_".
@@ -281,7 +280,7 @@ Proof.
           iSplitL ""; first done.
           iFrame.
         }
-        iModIntro. iApply "HΦ". done.
+        iModIntro. iApply "Hau". done.
     }
   - iNext. iIntros "Hoc". iMod "Hmask".
     iMod ("Hinv_close" with "[Hoc joinQ Hjoincount HsendNames_auth HworkerQ_wand Hbar HP Hfrag Hprop]") as "_".
@@ -290,22 +289,37 @@ Proof.
       iSplitL ""; first done.
       iFrame.
     }
-    iModIntro. iApply "HΦ". done.
+    iModIntro. iApply "Hau". done.
 Qed.
 
-Lemma wp_join_receive γ ch n Q :
+Lemma wp_join_send γ ch P :
   {{{ is_join γ ch ∗
-      join γ (S n) Q }}}
-    chan.receive #t #ch
-  {{{ v, RET (v, #true); join γ n Q }}}.
+      worker γ P ∗
+      P }}}
+    chan.send #t #ch #(default_val V)
+  {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(#Hjoin & HJoin & HJoinQ) HΦ".
-  iNamed "HJoinQ".
-  iDestruct "HJoinQ" as "[HspQ HQimp]".
-  rewrite /join /is_join.
+  iIntros (Φ) "(#Hjoin & HWorker & HP) HΦ".
+  rewrite /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
-  iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
+  iApply (chan.wp_send ch (default_val V) γ.(chan_name) with "[$Hch]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
+  iApply (join_send_au with "[$] [$] [$] [$]").
+  done.
+Qed.
+
+Lemma join_receive_au γ ch n Q Φ :
+  £1 ∗ £1 -∗
+  is_join γ ch -∗
+  join γ (S n) Q -∗
+  ▷(∀ (v:V), join γ n Q -∗ Φ v true) -∗
+  rcv_au_slow ch γ.(chan_name) Φ.
+Proof.
+  iIntros "(Hlc1 & Hlc2) #Hjoin HJoin Hau".
+  rewrite /join /is_join.
+  iDestruct "HJoin" as "[HJoin HJoinQ]".
+  iDestruct "HJoinQ" as (Q') "[HspQ HQimp]".
+  iDestruct "Hjoin" as "[#Hch #Hinv]".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv".
@@ -350,8 +364,7 @@ Proof.
         { auto. }
         iFrame.
       }
-      iApply "HΦ".
-      iModIntro. iFrame.
+      iModIntro. iApply "Hau". iFrame.
     }
     {
       iCombine "H2 Hjoincount" as "H2".
@@ -406,7 +419,7 @@ Proof.
           }
           done.
         }
-        iModIntro. iApply "HΦ". iFrame.
+        iModIntro. iApply "Hau". iFrame.
       }
       {
         iCombine "H2 Hjoincount" as "H2".
@@ -450,12 +463,26 @@ Proof.
         }
         { done. }
       }
-      iApply "HΦ".
-      iModIntro. iFrame.
+      iModIntro. iApply "Hau". iFrame.
     }
     iCombine "H2 Hjoincount" as "H2".
     iDestruct (ghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
     done.
+Qed.
+
+Lemma wp_join_receive γ ch n Q :
+  {{{ is_join γ ch ∗
+      join γ (S n) Q }}}
+    chan.receive #t #ch
+  {{{ (v:V), RET (#v, #true); join γ n Q }}}.
+Proof.
+  iIntros (Φ) "(#Hjoin & HJoin) HΦ".
+  rewrite /is_join.
+  iDestruct "Hjoin" as "[#Hch #Hinv]".
+  iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
+  iApply (join_receive_au with "[$] [$] [$]").
+  done.
 Qed.
 
 Lemma join_finish γ ch Q :
