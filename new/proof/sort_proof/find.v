@@ -2,6 +2,33 @@ From New.generatedproof Require Import sort.
 From New.proof Require Import proof_prelude.
 From New.proof.sort_proof Require Import sort_init.
 
+(** Proof of sort.Find.
+
+The specification for sort.Find is fairly complicated: it takes a comparison
+function (cmp: Z → Z) and a number n, and it searches for an i ∈ [0, n) such
+that [cmp i = 0] and [cmp (i-1) > 0], assuming [cmp] goes from positive to zero
+to negative.
+
+The intuition behind cmp is that if you're searching for x in a sorted list xs,
+then cmp(i) = xs[i] - x, but in principle Find is much more general.
+
+There are several key ideas in adapting the informal specification and the proof
+sketch in the Go source code:
+- The natural specification does not extend nicely to _negative_ n - this edge
+  case was likely overlooked (the specification implies n would be returned but
+  0 is instead). So we make it a precondition that 0 ≤ n.
+- The comparison function is assumed to have a monotonic _sign_. It only ever
+  matters what the sign (-1, 0, or 1) of a comparison is in any case.
+- The comparison function is only ever called on [0, n), so we promise this in
+  the Hoare triple assumed for cmp_code (the implementation of cmp, a pure
+  function).
+- The proof sketch "defines" cmp (-1) = 1 and cmp n ≤ 0, which makes the
+  invariants much easier to state. We do not want to impose this on the caller,
+  so we "adapt" the user-provided cmp function to have this property. There is
+  no loss because the provided function is anyway not called on these
+  out-of-bounds values.
+*)
+
 Unset Printing Projections.
 
 Section proof.
