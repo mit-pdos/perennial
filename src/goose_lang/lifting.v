@@ -863,7 +863,7 @@ Qed.
 
 (** WP for go instructions  *)
 Lemma wp_GoInstruction K op arg {stk E} Φ :
-  (∀ s, ∃ e', is_go_step op arg e' s s) →
+  (∀ s, ∃ e' s', is_go_step op arg e' s s') →
   ▷ (∀ e' s s', ⌜ is_go_step op arg e' s s' ⌝ →
                 (£ 1 -∗ own_go_state_ctx s ={E}=∗
                  own_go_state_ctx s' ∗
@@ -876,7 +876,7 @@ Proof.
   iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
   iNamed "H".
   assert (Hred : base_reducible (GoInstruction op arg) σ1 g1).
-  { epose proof (Hok _) as Hok. destruct Hok as [e' Hok].
+  { epose proof (Hok _) as Hok. destruct Hok as (e' & s' & Hok).
     repeat eexists. simpl. constructor.
     econstructor.
     { simpl. econstructor.

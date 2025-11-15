@@ -275,6 +275,38 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Lemma wp_PackageInitStart {stk E} (pkg : go_string) (s : gmap go_string bool) :
+  {{{ own_go_state s }}}
+    PackageInitStart pkg #() @ stk; E
+  {{{ RET #(); own_go_state (<[ pkg := false ]> s) }}}.
+Proof.
+  iIntros (?) "Hown HΦ".
+  wp_apply (wp_GoInstruction []).
+  { intros. repeat econstructor. }
+  iIntros "* %Hstep".
+  inv Hstep; last by inv Hpure.
+  iIntros "_ Hauth". iCombine "Hauth Hown" gives %Heq. subst.
+  iMod (own_go_state_update with "[$] [$]") as "[Hown Hauth]".
+  iModIntro. iFrame. simpl. wp_pures.
+  by iApply "HΦ".
+Qed.
+
+Lemma wp_PackageInitFinish {stk E} (pkg : go_string) (s : gmap go_string bool) :
+  {{{ own_go_state s }}}
+    PackageInitFinish pkg #() @ stk; E
+  {{{ RET #(); own_go_state (<[ pkg := true ]> s) }}}.
+Proof.
+  iIntros (?) "Hown HΦ".
+  wp_apply (wp_GoInstruction []).
+  { intros. repeat econstructor. }
+  iIntros "* %Hstep".
+  inv Hstep; last by inv Hpure.
+  iIntros "_ Hauth". iCombine "Hauth Hown" gives %Heq. subst.
+  iMod (own_go_state_update with "[$] [$]") as "[Hown Hauth]".
+  iModIntro. iFrame. simpl. wp_pures.
+  by iApply "HΦ".
+Qed.
+
 End go_wps.
 
 Section mem_lemmas.
