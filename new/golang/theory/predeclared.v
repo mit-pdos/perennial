@@ -8,6 +8,13 @@ Import RecordSetNotations.
 
 Set Default Proof Using "Type".
 
+Module error.
+  Section def.
+  Context `{ffi_syntax}.
+  Definition t := interface.t.
+  End def.
+End error.
+
 Section into_val_typed_instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {Hcore : go.CoreSemantics} {Hpredeclared : go.PredeclaredSemantics}.

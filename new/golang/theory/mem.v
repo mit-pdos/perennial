@@ -1,7 +1,7 @@
 From iris.proofmode Require Import coq_tactics reduction tactics environments.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
-From New.golang.theory Require Import proofmode.
+From New.golang.theory Require Import predeclared.
 From iris.proofmode Require Import string_ident.
 Require Import Coq.Program.Equality.
 

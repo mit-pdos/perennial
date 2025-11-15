@@ -12,9 +12,8 @@ Context `{ffi_syntax}.
 
 Definition init_def (pkg_name : go_string) : val :=
   λ: "init",
-    if: PackageInitCheck pkg_name then
-      PackageInitStart pkg_name;; "init" #();; PackageInitFinish pkg_name
-    else #().
+    if: PackageInitCheck pkg_name #() then #()
+    else PackageInitStart pkg_name #();; "init" #();; PackageInitFinish pkg_name #().
 Program Definition init := sealed @init_def.
 Definition init_unseal : init = _ := seal_eq _.
 End defns.

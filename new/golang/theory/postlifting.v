@@ -245,7 +245,7 @@ Lemma wp_GoPrealloc {stk E} :
   {{{ (l : loc), RET #l; True }}}.
 Proof.
   iIntros (?) "_ HΦ". wp_apply (wp_GoInstruction []).
-  { intros. eexists #null. econstructor. econstructor. }
+  { intros. exists #null. repeat econstructor. }
   iIntros "* %Hstep"; inv Hstep; inv Hpure.
   iIntros "_ $ !>". simpl. wp_pures. by iApply "HΦ".
 Qed.
@@ -263,7 +263,7 @@ Qed.
 Lemma wp_PackageInitCheck {stk E} (pkg : go_string) (s : gmap go_string bool) :
   {{{ own_go_state s }}}
     PackageInitCheck pkg #() @ stk; E
-  {{{ RET #(bool_decide (is_Some (s !! pkg))); own_go_state s }}}.
+  {{{ RET #(default false (s !! pkg)); own_go_state s }}}.
 Proof.
   iIntros (?) "Hown HΦ".
   wp_apply (wp_GoInstruction []).

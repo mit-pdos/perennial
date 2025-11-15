@@ -1,5 +1,5 @@
 From Perennial Require Import base.
-From New.golang.defn Require Export builtin loop assume.
+From New.golang.defn Require Export loop assume.
 
 Definition slice_index_ref `{GoContext} (elem_type : go.type) (i : Z) (s : slice.t) : loc :=
   array_index_ref elem_type i s.(slice.ptr).

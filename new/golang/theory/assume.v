@@ -1,5 +1,5 @@
-From New.golang.defn Require Export builtin assume.
-From New.golang.theory Require Export builtin proofmode.
+From New.golang.defn Require Export assume.
+From New.golang.theory Require Export predeclared.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".

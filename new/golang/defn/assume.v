@@ -1,4 +1,4 @@
-From New.golang.defn Require Import exception builtin.
+From New.golang.defn Require Import exception.
 From Perennial Require Import base.
 
 Section defn.

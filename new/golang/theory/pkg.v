@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 Section init_defns.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoContext}.
 
-Definition is_init (σ : state) : Prop :=
+Definition is_init (σ : lang.state) : Prop :=
   σ.(go_state).(package_state) = ∅.
 
 (** [own_initializing] denotes permission to run [package.init]. This is
@@ -220,78 +220,26 @@ Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : v
   get_is_pkg_init pkg_name = is_pkg_init →
   (own_initializing get_is_pkg_init ∗ (own_initializing get_is_pkg_init -∗ WP init_func #() {{ _, □ is_pkg_init ∗ own_initializing get_is_pkg_init }})) -∗
   (own_initializing get_is_pkg_init ∗ is_pkg_init -∗ Φ #()) -∗
-  WP package.init pkg_name init_func #() {{ Φ }}.
+  WP package.init pkg_name init_func {{ Φ }}.
 Proof.
   intros ? Heq. subst. iIntros "(Hown & Hpre) HΦ". rewrite package.init_unseal.
-  wp_call.
-  wp_call_lc "Hlc".
-  wp_bind. iNamed "Hown". iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iRename "Hg" into "Hg2". iNamed "Hi".
-  rewrite [in #(_ :: _)]to_val_unseal.
-  wp_apply (wp_GlobalGet with "[$]").
+  wp_call. iNamed "Hown". wp_apply (wp_PackageInitCheck with "[$]").
   iIntros "Hg".
-  iCombine "Hg Hg2" gives %[_ Heq]. subst.
-  iMod ("Hclose" with "[Hg Hinit]") as "_". { iFrame "∗#%". }
-  iModIntro. rewrite Hpackage_inited.
-  destruct (lookup) eqn:Hstatus.
- - simpl. wp_pures. wp_apply wp_assume. iIntros "%Hstarted_ne".
-    rewrite bool_decide_decide in Hstarted_ne; try done.
-    destruct decide as [|] in Hstarted_ne; try done.
-    wp_pures. iApply "HΦ".
-    iFrame "∗#". iDestruct (big_sepS_elem_of_acc with "Hinit") as "[$ _]".
-    specialize (Hpackage_inited pkg_name).
-    rewrite lookup_union in Hstatus.
-    destruct lookup eqn:Hlookup in Hstatus.
-    { rewrite lookup_gset_to_gmap_Some in Hlookup. set_solver. }
-    rewrite left_id in Hstatus.
-    symmetry in Hpackage_inited. rewrite lookup_gset_to_gmap_Some in Hstatus.
-    naive_solver.
-  - simpl. wp_pure_lc "Hlc". wp_pures. wp_bind.
-    iInv "Hinv" as "Hi" "Hclose".
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iAssert (∃ g, own_globals (DfracOwn (1/2)) g)%I with "[Hi]" as "[% Hg]".
-    { iNamedSuffix "Hi" "_tmp". iFrame. }
-    iCombine "Hg Hg2" gives %[_ Heq]. subst.
-    iCombine "Hg Hg2" as "Hg".
-    wp_apply (wp_GlobalPut with "[$]").
-    iIntros "[Hown Hg]".
-    iMod ("Hclose" with "[Hg]") as "_".
-    {
-      iFrame "∗#%".
-      iExists ({[ pkg_name ]} ∪ package_started). iPureIntro.
-      rewrite lookup_union union_None in Hstatus. destruct Hstatus as [Hinit Hstarted].
-      intros pkg_name'. rewrite /globals_insert lookup_union gset_to_gmap_union_singleton.
-      destruct decide as [Heq|Hneq].
-      { simpl in Heq. simplify_eq. rewrite lookup_insert_eq Hinit //. }
-      { simpl in Hneq. rewrite Hpackage_inited lookup_union. rewrite lookup_insert_ne //. congruence. }
-    }
-    iModIntro. wp_pures. wp_bind.
-    wp_apply (wp_wand with "[Hpre Hown]").
-    { iApply ("Hpre" with "[$Hown]"). iFrame "#". }
-    iClear "Hinit". iIntros (?) "[#? Hown]". iClear "Hinv". iNamed "Hown". wp_pures.
-    wp_call_lc "Hlc". wp_bind. iInv "Hinv" as "Hi" "Hclose".
-    clear dependent package_started package_inited.
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iRename "Hg" into "Hg2". iNamed "Hi".
-    rewrite [in #(_::_)]to_val_unseal.
-    iCombine "Hg Hg2" gives %[_ Heq]. subst.
-    iCombine "Hg Hg2" as "Hg".
-    wp_apply (wp_GlobalPut with "[$]"). iIntros "[Hg Hown]".
-    iMod ("Hclose" with "[Hg]").
-    {
-      iExists _, package_started, ({[ pkg_name ]} ∪ package_inited).
-      iFrame "∗#%". iSplit.
-      { iModIntro. iModIntro. iApply big_sepS_insert_2; done. }
-      iPureIntro. intros pkg_name'. rewrite /globals_insert lookup_union gset_to_gmap_union_singleton.
-      destruct decide.
-      { simpl in *; simplify_eq. rewrite lookup_insert_eq union_Some_l //. }
-      { simpl in *; rewrite Hpackage_inited lookup_union lookup_insert_ne //. congruence. }
-    }
-    rewrite to_val_unseal.
-    iApply "HΦ". iFrame "∗#". done.
+  destruct (default) eqn:Hstatus.
+ - wp_pures. iApply "HΦ".
+   iFrame "∗#". destruct lookup eqn:Hlookup in Hstatus; last by exfalso.
+   iDestruct (big_sepM_lookup with "Hinit") as "H"; first done.
+   simpl in *. subst. iFrame "#".
+ - wp_pures.
+   wp_apply (wp_PackageInitStart with "[$]"). iIntros "Hg". wp_pures.
+   iSpecialize ("Hpre" with "[Hg]").
+   { iFrame "∗#". iDestruct (big_sepM_insert_2 with "[] Hinit") as "$". done. }
+   wp_apply (wp_wand with "Hpre").
+   iIntros "* [#? Hown]". wp_pures. iClear "Hinit". iNamed "Hown".
+   wp_apply (wp_PackageInitFinish with "[$]"). iIntros "Hg".
+   iApply "HΦ". iFrame "∗#".
+   iDestruct (big_sepM_insert_2 with "[] Hinit") as "$".
+   iFrame "#".
 Qed.
 
 End package_init.
-
-(* Uses [cbv] to unfold [is_pkg_defined] despite it being [Opaque]. *)
-Ltac simpl_is_pkg_defined := (cbv delta [is_pkg_defined]; simpl).
