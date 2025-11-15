@@ -77,7 +77,7 @@ Definition int64 : go.type := go.Named "int64"%go [].
 Definition rune : go.type := int32.
 Definition string : go.type := go.Named "string"%go [].
 Definition error : go.type :=
-  go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] $ go.ResultType string)].
+  go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] $ Some $ go.ResultType go.string)].
 
 Definition uint : go.type := go.Named "uint"%go [].
 Definition uint8 : go.type := go.Named "uint8"%go [].

@@ -38,12 +38,12 @@ with field_decl :=
 | FieldDecl : go_string → type → _
 | EmbeddedField : go_string → type → _
 
-with signature := | Signature : list parameter_decl → result → _
+with signature := | Signature : list parameter_decl → option result → _
 
 with parameter_decl := | ParameterDecl : identifier → type → (* variadic *) bool → _
 
 with result :=
-| ResultParameters : list parameter_decl → _
+| ResultParameters : list type → _
 | ResultType : type → _
 
 with interface_elem :=

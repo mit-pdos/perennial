@@ -5,7 +5,7 @@ Section defns.
 Context `{ffi_syntax}.
 
 (* takes type as first argument *)
-Axiom make : ∀ (t : go_type), val.
+Axiom make : ∀ (t : go.type), val.
 Axiom receive : val.
 Axiom send : val.
 Axiom select : val.

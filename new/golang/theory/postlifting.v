@@ -440,6 +440,9 @@ Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Proof. solve_into_val_typed. Qed.
 
+Global Instance into_val_typed_func sig : IntoValTyped func.t (go.FunctionType sig).
+Proof. solve_into_val_typed. Qed.
+
 Global Instance into_val_typed_slice t : IntoValTyped slice.t (go.SliceType t).
 Proof. solve_into_val_typed. Qed.
 
