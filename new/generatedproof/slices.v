@@ -64,5 +64,73 @@ Global Program Instance is_pkg_defined_slices : IsPkgDefined slices :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_insertionSortCmpFunc :
+  WpFuncCall slices.insertionSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_siftDownCmpFunc :
+  WpFuncCall slices.siftDownCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_heapSortCmpFunc :
+  WpFuncCall slices.heapSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_pdqsortCmpFunc :
+  WpFuncCall slices.pdqsortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionCmpFunc :
+  WpFuncCall slices.partitionCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionEqualCmpFunc :
+  WpFuncCall slices.partitionEqualCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partialInsertionSortCmpFunc :
+  WpFuncCall slices.partialInsertionSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_breakPatternsCmpFunc :
+  WpFuncCall slices.breakPatternsCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_choosePivotCmpFunc :
+  WpFuncCall slices.choosePivotCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_order2CmpFunc :
+  WpFuncCall slices.order2CmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianCmpFunc :
+  WpFuncCall slices.medianCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianAdjacentCmpFunc :
+  WpFuncCall slices.medianAdjacentCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_reverseRangeCmpFunc :
+  WpFuncCall slices.reverseRangeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_swapRangeCmpFunc :
+  WpFuncCall slices.swapRangeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_stableCmpFunc :
+  WpFuncCall slices.stableCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_symMergeCmpFunc :
+  WpFuncCall slices.symMergeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rotateCmpFunc :
+  WpFuncCall slices.rotateCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
 End names.
 End slices.

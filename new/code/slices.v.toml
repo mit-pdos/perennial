@@ -1,2 +1,2 @@
-translate = ["!*"]
+translate = ["*CmpFunc"]
 imports = ["!*"]
