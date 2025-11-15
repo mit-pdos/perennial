@@ -166,8 +166,16 @@ Global Program Instance is_pkg_defined_sort : IsPkgDefined sort :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_Search :
+  WpFuncCall sort.Search _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Find :
   WpFuncCall sort.Find _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SearchInts :
+  WpFuncCall sort.SearchInts _ (is_pkg_defined sort) :=
   ltac:(solve_wp_func_call).
 
 End names.
