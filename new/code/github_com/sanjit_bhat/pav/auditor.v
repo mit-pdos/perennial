@@ -56,9 +56,11 @@ Definition serv : go_type := structT [
 #[global] Typeclasses Opaque serv.
 #[global] Opaque serv.
 
+Definition getNextLink : go_string := "github.com/sanjit-bhat/pav/auditor.getNextLink"%go.
+
 (* Update queries server for a new epoch update and applies it.
 
-   go: auditor.go:42:19 *)
+   go: auditor.go:43:19 *)
 Definition Auditor__Updateⁱᵐᵖˡ : val :=
   λ: "a" <>,
     with_defer: (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -90,78 +92,65 @@ Definition Auditor__Updateⁱᵐᵖˡ : val :=
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("p" <-[#ptrT] "$value");;;
       do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![#ptrT] "p") in
-      (method_call #(ptrT.id Auditor.id) #"updOnce"%go (![#ptrT] "a")) "$a0") in
-      do:  ("err" <-[#ktcore.Blame] "$r0");;;
-      (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
-      then return: (![#ktcore.Blame] "err")
-      else do:  #())));;;
+      let: "sigPk" := (mem.alloc (type.zero_val #cryptoffi.SigPublicKey)) in
+      let: "$r0" := (![#cryptoffi.SigPublicKey] (struct.field_ref #serv #"sigPk"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
+      do:  ("sigPk" <-[#cryptoffi.SigPublicKey] "$r0");;;
+      let: "prevEp" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (((![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
+      slice.len "$a0"))) - #(W64 1)) in
+      do:  ("prevEp" <-[#uint64T] "$r0");;;
+      let: "prevLink" := (mem.alloc (type.zero_val #sliceT)) in
+      let: "$r0" := (![#sliceT] (struct.field_ref #history #"link"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) ((let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
+      slice.len "$a0") - #(W64 1)))))) in
+      do:  ("prevLink" <-[#sliceT] "$r0");;;
+      let: "errb" := (mem.alloc (type.zero_val #boolT)) in
+      let: "link" := (mem.alloc (type.zero_val #sliceT)) in
+      let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
+      let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
+      let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#cryptoffi.SigPublicKey] "sigPk") in
+      let: "$a1" := (![#uint64T] "prevEp") in
+      let: "$a2" := (![#sliceT] (struct.field_ref #Auditor #"lastDig"%go (![#ptrT] "a"))) in
+      let: "$a3" := (![#sliceT] "prevLink") in
+      let: "$a4" := (![#ptrT] "p") in
+      (func_call #getNextLink) "$a0" "$a1" "$a2" "$a3" "$a4") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      let: "$r2" := "$ret2" in
+      let: "$r3" := "$ret3" in
+      do:  ("ep" <-[#uint64T] "$r0");;;
+      do:  ("dig" <-[#sliceT] "$r1");;;
+      do:  ("link" <-[#sliceT] "$r2");;;
+      do:  ("errb" <-[#boolT] "$r3");;;
+      (if: ![#boolT] "errb"
+      then
+        let: "$r0" := ktcore.BlameServFull in
+        do:  ("err" <-[#ktcore.Blame] "$r0");;;
+        return: (![#ktcore.Blame] "err")
+      else do:  #());;;
+      let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
+      let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #Auditor #"sk"%go (![#ptrT] "a"))) in
+      let: "$a1" := (![#uint64T] "ep") in
+      let: "$a2" := (![#sliceT] "link") in
+      (func_call #ktcore.SignLink) "$a0" "$a1" "$a2") in
+      do:  ("sig" <-[#sliceT] "$r0");;;
+      let: "$r0" := (![#sliceT] "dig") in
+      do:  ((struct.field_ref #Auditor #"lastDig"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
+      let: "info" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (mem.alloc (let: "$link" := (![#sliceT] "link") in
+      let: "$servSig" := (![#sliceT] (struct.field_ref #ktcore.AuditProof #"LinkSig"%go (![#ptrT] "p"))) in
+      let: "$adtrSig" := (![#sliceT] "sig") in
+      struct.make #history [{
+        "link" ::= "$link";
+        "servSig" ::= "$servSig";
+        "adtrSig" ::= "$adtrSig"
+      }])) in
+      do:  ("info" <-[#ptrT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
+      let: "$a1" := ((let: "$sl0" := (![#ptrT] "info") in
+      slice.literal #ptrT ["$sl0"])) in
+      (slice.append #ptrT) "$a0" "$a1") in
+      do:  ((struct.field_ref #Auditor #"hist"%go (![#ptrT] "a")) <-[#sliceT] "$r0")));;;
     return: (![#ktcore.Blame] "err")).
-
-Definition getNextDig : go_string := "github.com/sanjit-bhat/pav/auditor.getNextDig"%go.
-
-(* go: auditor.go:60:19 *)
-Definition Auditor__updOnceⁱᵐᵖˡ : val :=
-  λ: "a" "p",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
-    let: "a" := (mem.alloc "a") in
-    let: "p" := (mem.alloc "p") in
-    let: "nextEp" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
-    slice.len "$a0"))) in
-    do:  ("nextEp" <-[#uint64T] "$r0");;;
-    let: "lastLink" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] (struct.field_ref #history #"link"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) ((let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
-    slice.len "$a0") - #(W64 1)))))) in
-    do:  ("lastLink" <-[#sliceT] "$r0");;;
-    let: "errb" := (mem.alloc (type.zero_val #boolT)) in
-    let: "nextDig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"lastDig"%go (![#ptrT] "a"))) in
-    let: "$a1" := (![#sliceT] (struct.field_ref #ktcore.AuditProof #"Updates"%go (![#ptrT] "p"))) in
-    (func_call #getNextDig) "$a0" "$a1") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  ("nextDig" <-[#sliceT] "$r0");;;
-    do:  ("errb" <-[#boolT] "$r1");;;
-    (if: ![#boolT] "errb"
-    then return: (ktcore.BlameServFull)
-    else do:  #());;;
-    let: "nextLink" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "lastLink") in
-    let: "$a1" := (![#sliceT] "nextDig") in
-    (func_call #hashchain.GetNextLink) "$a0" "$a1") in
-    do:  ("nextLink" <-[#sliceT] "$r0");;;
-    (if: let: "$a0" := (![#cryptoffi.SigPublicKey] (struct.field_ref #serv #"sigPk"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
-    let: "$a1" := (![#uint64T] "nextEp") in
-    let: "$a2" := (![#sliceT] "nextLink") in
-    let: "$a3" := (![#sliceT] (struct.field_ref #ktcore.AuditProof #"LinkSig"%go (![#ptrT] "p"))) in
-    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
-    then return: (ktcore.BlameServFull)
-    else do:  #());;;
-    let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #Auditor #"sk"%go (![#ptrT] "a"))) in
-    let: "$a1" := (![#uint64T] "nextEp") in
-    let: "$a2" := (![#sliceT] "nextLink") in
-    (func_call #ktcore.SignLink) "$a0" "$a1" "$a2") in
-    do:  ("sig" <-[#sliceT] "$r0");;;
-    let: "$r0" := (![#sliceT] "nextDig") in
-    do:  ((struct.field_ref #Auditor #"lastDig"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
-    let: "info" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$link" := (![#sliceT] "nextLink") in
-    let: "$servSig" := (![#sliceT] (struct.field_ref #ktcore.AuditProof #"LinkSig"%go (![#ptrT] "p"))) in
-    let: "$adtrSig" := (![#sliceT] "sig") in
-    struct.make #history [{
-      "link" ::= "$link";
-      "servSig" ::= "$servSig";
-      "adtrSig" ::= "$adtrSig"
-    }])) in
-    do:  ("info" <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
-    let: "$a1" := ((let: "$sl0" := (![#ptrT] "info") in
-    slice.literal #ptrT ["$sl0"])) in
-    (slice.append #ptrT) "$a0" "$a1") in
-    do:  ((struct.field_ref #Auditor #"hist"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
-    return: (ktcore.BlameNone)).
 
 Definition GetReply : go_type := structT [
   "Link" :: sliceT;
@@ -178,7 +167,7 @@ Definition GetReply : go_type := structT [
 (* Get returns the auditor's info for a particular epoch.
    it errors if the epoch is out of bounds.
 
-   go: auditor.go:84:19 *)
+   go: auditor.go:73:19 *)
 Definition Auditor__Getⁱᵐᵖˡ : val :=
   λ: "a" "epoch",
     with_defer: (let: "a" := (mem.alloc "a") in
@@ -243,7 +232,7 @@ Definition New : go_string := "github.com/sanjit-bhat/pav/auditor.New"%go.
 
 Definition CheckStart : go_string := "github.com/sanjit-bhat/pav/auditor.CheckStart"%go.
 
-(* go: auditor.go:101:6 *)
+(* go: auditor.go:90:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: "servAddr" "servPk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -350,14 +339,64 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("a" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "a", ![#cryptoffi.SigPublicKey] "sigPk", ![#ktcore.Blame] "err")).
 
-(* go: auditor.go:123:6 *)
+Definition getNextDig : go_string := "github.com/sanjit-bhat/pav/auditor.getNextDig"%go.
+
+(* go: auditor.go:112:6 *)
+Definition getNextLinkⁱᵐᵖˡ : val :=
+  λ: "sigPk" "prevEp" "prevDig" "prevLink" "p",
+    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
+    let: "link" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "p" := (mem.alloc "p") in
+    let: "prevLink" := (mem.alloc "prevLink") in
+    let: "prevDig" := (mem.alloc "prevDig") in
+    let: "prevEp" := (mem.alloc "prevEp") in
+    let: "sigPk" := (mem.alloc "sigPk") in
+    (if: (~ (let: "$a0" := (![#uint64T] "prevEp") in
+    let: "$a1" := #(W64 1) in
+    (func_call #std.SumNoOverflow) "$a0" "$a1"))
+    then
+      let: "$r0" := #true in
+      do:  ("err" <-[#boolT] "$r0");;;
+      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
+    else do:  #());;;
+    let: "$r0" := ((![#uint64T] "prevEp") + #(W64 1)) in
+    do:  ("ep" <-[#uint64T] "$r0");;;
+    (let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "prevDig") in
+    let: "$a1" := (![#sliceT] (struct.field_ref #ktcore.AuditProof #"Updates"%go (![#ptrT] "p"))) in
+    (func_call #getNextDig) "$a0" "$a1") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("dig" <-[#sliceT] "$r0");;;
+    do:  ("err" <-[#boolT] "$r1");;;
+    (if: ![#boolT] "err"
+    then return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
+    else do:  #()));;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "prevLink") in
+    let: "$a1" := (![#sliceT] "dig") in
+    (func_call #hashchain.GetNextLink) "$a0" "$a1") in
+    do:  ("link" <-[#sliceT] "$r0");;;
+    (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "sigPk") in
+    let: "$a1" := (![#uint64T] "ep") in
+    let: "$a2" := (![#sliceT] "link") in
+    let: "$a3" := (![#sliceT] (struct.field_ref #ktcore.AuditProof #"LinkSig"%go (![#ptrT] "p"))) in
+    (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
+    then
+      let: "$r0" := #true in
+      do:  ("err" <-[#boolT] "$r0");;;
+      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
+    else do:  #());;;
+    return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")).
+
+(* go: auditor.go:129:6 *)
 Definition getNextDigⁱᵐᵖˡ : val :=
-  λ: "lastDig" "updates",
+  λ: "prevDig" "updates",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "updates" := (mem.alloc "updates") in
-    let: "lastDig" := (mem.alloc "lastDig") in
-    let: "$r0" := (![#sliceT] "lastDig") in
+    let: "prevDig" := (mem.alloc "prevDig") in
+    let: "$r0" := (![#sliceT] "prevDig") in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "updates") in
     (let: "u" := (mem.alloc (type.zero_val #ptrT)) in
@@ -391,7 +430,7 @@ Definition getNextDigⁱᵐᵖˡ : val :=
       do:  ("dig" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "dig", ![#boolT] "err")).
 
-(* go: auditor.go:140:6 *)
+(* go: auditor.go:146:6 *)
 Definition CheckStartⁱᵐᵖˡ : val :=
   λ: "servPk" "reply",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -928,9 +967,9 @@ Definition GetReplyDecodeⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (getNextDig, getNextDigⁱᵐᵖˡ); (CheckStart, CheckStartⁱᵐᵖˡ); (NewRpcAuditor, NewRpcAuditorⁱᵐᵖˡ); (CallUpdate, CallUpdateⁱᵐᵖˡ); (CallGet, CallGetⁱᵐᵖˡ); (UpdateReplyEncode, UpdateReplyEncodeⁱᵐᵖˡ); (UpdateReplyDecode, UpdateReplyDecodeⁱᵐᵖˡ); (GetArgEncode, GetArgEncodeⁱᵐᵖˡ); (GetArgDecode, GetArgDecodeⁱᵐᵖˡ); (GetReplyEncode, GetReplyEncodeⁱᵐᵖˡ); (GetReplyDecode, GetReplyDecodeⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (getNextLink, getNextLinkⁱᵐᵖˡ); (getNextDig, getNextDigⁱᵐᵖˡ); (CheckStart, CheckStartⁱᵐᵖˡ); (NewRpcAuditor, NewRpcAuditorⁱᵐᵖˡ); (CallUpdate, CallUpdateⁱᵐᵖˡ); (CallGet, CallGetⁱᵐᵖˡ); (UpdateReplyEncode, UpdateReplyEncodeⁱᵐᵖˡ); (UpdateReplyDecode, UpdateReplyDecodeⁱᵐᵖˡ); (GetArgEncode, GetArgEncodeⁱᵐᵖˡ); (GetArgDecode, GetArgDecodeⁱᵐᵖˡ); (GetReplyEncode, GetReplyEncodeⁱᵐᵖˡ); (GetReplyDecode, GetReplyDecodeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Auditor.id, []); (ptrT.id Auditor.id, [("Get"%go, Auditor__Getⁱᵐᵖˡ); ("Update"%go, Auditor__Updateⁱᵐᵖˡ); ("updOnce"%go, Auditor__updOnceⁱᵐᵖˡ)]); (history.id, []); (ptrT.id history.id, []); (serv.id, []); (ptrT.id serv.id, []); (UpdateReply.id, []); (ptrT.id UpdateReply.id, []); (GetArg.id, []); (ptrT.id GetArg.id, []); (GetReply.id, []); (ptrT.id GetReply.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Auditor.id, []); (ptrT.id Auditor.id, [("Get"%go, Auditor__Getⁱᵐᵖˡ); ("Update"%go, Auditor__Updateⁱᵐᵖˡ)]); (history.id, []); (ptrT.id history.id, []); (serv.id, []); (ptrT.id serv.id, []); (UpdateReply.id, []); (ptrT.id UpdateReply.id, []); (GetArg.id, []); (ptrT.id GetArg.id, []); (GetReply.id, []); (ptrT.id GetReply.id, [])].
 
 #[global] Instance info' : PkgInfo auditor.auditor :=
   {|

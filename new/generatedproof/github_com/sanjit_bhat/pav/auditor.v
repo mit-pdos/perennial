@@ -599,6 +599,10 @@ Global Instance wp_func_call_New :
   WpFuncCall auditor.New _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_getNextLink :
+  WpFuncCall auditor.getNextLink _ (is_pkg_defined auditor) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_getNextDig :
   WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
@@ -649,10 +653,6 @@ Global Instance wp_method_call_Auditor'ptr_Get :
 
 Global Instance wp_method_call_Auditor'ptr_Update :
   WpMethodCall (ptrT.id auditor.Auditor.id) "Update" _ (is_pkg_defined auditor) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Auditor'ptr_updOnce :
-  WpMethodCall (ptrT.id auditor.Auditor.id) "updOnce" _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_method_call).
 
 End names.

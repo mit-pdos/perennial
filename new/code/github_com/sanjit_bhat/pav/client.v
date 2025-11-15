@@ -91,6 +91,8 @@ Definition checkNonMemb : go_string := "github.com/sanjit-bhat/pav/client.checkN
 
 Definition checkHist : go_string := "github.com/sanjit-bhat/pav/client.checkHist"%go.
 
+Definition getNextEp : go_string := "github.com/sanjit-bhat/pav/client.getNextEp"%go.
+
 (* Get a uid's pk.
 
    go: client.go:56:18 *)
@@ -125,13 +127,15 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     then return: (![#uint64T] "ep", ![#boolT] "isReg", ![#sliceT] "pk", ![#ktcore.Blame] "err")
     else do:  #());;;
     let: "errb" := (mem.alloc (type.zero_val #boolT)) in
-    let: "last" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "chainProof") in
-    let: "$a1" := (![#sliceT] "sig") in
-    (method_call #(ptrT.id Client.id) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
+    let: "next" := (mem.alloc (type.zero_val #ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))) in
+    let: "$a1" := (![#cryptoffi.SigPublicKey] (struct.field_ref #serv #"sigPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
+    let: "$a2" := (![#sliceT] "chainProof") in
+    let: "$a3" := (![#sliceT] "sig") in
+    (func_call #getNextEp) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("last" <-[#ptrT] "$r0");;;
+    do:  ("next" <-[#ptrT] "$r0");;;
     do:  ("errb" <-[#boolT] "$r1");;;
     (if: ![#boolT] "errb"
     then
@@ -142,7 +146,7 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     (if: let: "$a0" := (![#ptrT] (struct.field_ref #serv #"vrfPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
     let: "$a1" := (![#uint64T] "uid") in
     let: "$a2" := #(W64 0) in
-    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
+    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "next"))) in
     let: "$a4" := (![#sliceT] "hist") in
     (func_call #checkHist) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
@@ -157,7 +161,7 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     (if: let: "$a0" := (![#ptrT] (struct.field_ref #serv #"vrfPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
     let: "$a1" := (![#uint64T] "uid") in
     let: "$a2" := (![#uint64T] "boundVer") in
-    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
+    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "next"))) in
     let: "$a4" := (![#ptrT] "bound") in
     (func_call #checkNonMemb) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
@@ -165,15 +169,15 @@ Definition Client__Getⁱᵐᵖˡ : val :=
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isReg", ![#sliceT] "pk", ![#ktcore.Blame] "err")
     else do:  #());;;
-    let: "$r0" := (![#ptrT] "last") in
+    let: "$r0" := (![#ptrT] "next") in
     do:  ((struct.field_ref #Client #"last"%go (![#ptrT] "c")) <-[#ptrT] "$r0");;;
     (if: (![#uint64T] "boundVer") = #(W64 0)
-    then return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last")), #false, #slice.nil, ktcore.BlameNone)
+    then return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next")), #false, #slice.nil, ktcore.BlameNone)
     else
       let: "lastKey" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "hist") ((![#uint64T] "boundVer") - #(W64 1)))) in
       do:  ("lastKey" <-[#ptrT] "$r0");;;
-      return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last")), #true, ![#sliceT] (struct.field_ref #ktcore.CommitOpen #"Val"%go (![#ptrT] (struct.field_ref #ktcore.Memb #"PkOpen"%go (![#ptrT] "lastKey")))), ktcore.BlameNone))).
+      return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next")), #true, ![#sliceT] (struct.field_ref #ktcore.CommitOpen #"Val"%go (![#ptrT] (struct.field_ref #ktcore.Memb #"PkOpen"%go (![#ptrT] "lastKey")))), ktcore.BlameNone))).
 
 (* SelfMon a client's own uid.
    if isChanged, the key was added sometime from the last SelfMon.
@@ -208,13 +212,15 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     then return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
     else do:  #());;;
     let: "errb" := (mem.alloc (type.zero_val #boolT)) in
-    let: "last" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "chainProof") in
-    let: "$a1" := (![#sliceT] "sig") in
-    (method_call #(ptrT.id Client.id) #"getChainExt"%go (![#ptrT] "c")) "$a0" "$a1") in
+    let: "next" := (mem.alloc (type.zero_val #ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))) in
+    let: "$a1" := (![#cryptoffi.SigPublicKey] (struct.field_ref #serv #"sigPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
+    let: "$a2" := (![#sliceT] "chainProof") in
+    let: "$a3" := (![#sliceT] "sig") in
+    (func_call #getNextEp) "$a0" "$a1" "$a2" "$a3") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("last" <-[#ptrT] "$r0");;;
+    do:  ("next" <-[#ptrT] "$r0");;;
     do:  ("errb" <-[#boolT] "$r1");;;
     (if: ![#boolT] "errb"
     then
@@ -225,7 +231,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     (if: let: "$a0" := (![#ptrT] (struct.field_ref #serv #"vrfPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
     let: "$a1" := (![#uint64T] (struct.field_ref #Client #"uid"%go (![#ptrT] "c"))) in
     let: "$a2" := (![#uint64T] (struct.field_ref #nextVer #"ver"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
-    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
+    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "next"))) in
     let: "$a4" := (![#sliceT] "hist") in
     (func_call #checkHist) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
@@ -243,7 +249,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     (if: let: "$a0" := (![#ptrT] (struct.field_ref #serv #"vrfPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
     let: "$a1" := (![#uint64T] (struct.field_ref #Client #"uid"%go (![#ptrT] "c"))) in
     let: "$a2" := (![#uint64T] "boundVer") in
-    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "last"))) in
+    let: "$a3" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "next"))) in
     let: "$a4" := (![#ptrT] "bound") in
     (func_call #checkNonMemb) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
@@ -259,9 +265,9 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
         do:  ("err" <-[#ktcore.Blame] "$r0");;;
         return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
       else do:  #());;;
-      let: "$r0" := (![#ptrT] "last") in
+      let: "$r0" := (![#ptrT] "next") in
       do:  ((struct.field_ref #Client #"last"%go (![#ptrT] "c")) <-[#ptrT] "$r0");;;
-      return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last")), #false, ktcore.BlameNone)
+      return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next")), #false, ktcore.BlameNone)
     else do:  #());;;
     (if: (![#uint64T] "histLen") > #(W64 1)
     then
@@ -271,9 +277,9 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     else do:  #());;;
     (if: (![#uint64T] "histLen") = #(W64 0)
     then
-      let: "$r0" := (![#ptrT] "last") in
+      let: "$r0" := (![#ptrT] "next") in
       do:  ((struct.field_ref #Client #"last"%go (![#ptrT] "c")) <-[#ptrT] "$r0");;;
-      return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last")), #false, ktcore.BlameNone)
+      return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next")), #false, ktcore.BlameNone)
     else do:  #());;;
     let: "newKey" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "hist") #(W64 0))) in
@@ -286,7 +292,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
     else do:  #());;;
-    let: "$r0" := (![#ptrT] "last") in
+    let: "$r0" := (![#ptrT] "next") in
     do:  ((struct.field_ref #Client #"last"%go (![#ptrT] "c")) <-[#ptrT] "$r0");;;
     let: "$r0" := #false in
     do:  ((struct.field_ref #nextVer #"isPending"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c")))) <-[#boolT] "$r0");;;
@@ -296,7 +302,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     let: "$a1" := #(W64 1) in
     (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #nextVer #"ver"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c")))) <-[#uint64T] "$r0");;;
-    return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "last")), #true, ktcore.BlameNone)).
+    return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next")), #true, ktcore.BlameNone)).
 
 Definition Evid : go_type := structT [
   "vrf" :: ptrT;
@@ -511,18 +517,19 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("c" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "c", ![#ktcore.Blame] "err")).
 
-(* go: client.go:196:18 *)
-Definition Client__getChainExtⁱᵐᵖˡ : val :=
-  λ: "c" "chainProof" "sig",
+(* go: client.go:196:6 *)
+Definition getNextEpⁱᵐᵖˡ : val :=
+  λ: "prev" "sigPk" "chainProof" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "ep" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "c" := (mem.alloc "c") in
+    let: "next" := (mem.alloc (type.zero_val #ptrT)) in
     let: "sig" := (mem.alloc "sig") in
     let: "chainProof" := (mem.alloc "chainProof") in
+    let: "sigPk" := (mem.alloc "sigPk") in
+    let: "prev" := (mem.alloc "prev") in
     let: "newLink" := (mem.alloc (type.zero_val #sliceT)) in
     let: "newDig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "extLen" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] (struct.field_ref #epoch #"link"%go (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))))) in
+    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] (struct.field_ref #epoch #"link"%go (![#ptrT] "prev"))) in
     let: "$a1" := (![#sliceT] "chainProof") in
     (func_call #hashchain.Verify) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
@@ -534,26 +541,26 @@ Definition Client__getChainExtⁱᵐᵖˡ : val :=
     do:  ("newLink" <-[#sliceT] "$r2");;;
     do:  ("err" <-[#boolT] "$r3");;;
     (if: ![#boolT] "err"
-    then return: (![#ptrT] "ep", ![#boolT] "err")
+    then return: (![#ptrT] "next", ![#boolT] "err")
     else do:  #());;;
     (if: (![#uint64T] "extLen") = #(W64 0)
     then
-      let: "$r0" := (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))) in
-      do:  ("ep" <-[#ptrT] "$r0");;;
-      return: (![#ptrT] "ep", ![#boolT] "err")
+      let: "$r0" := (![#ptrT] "prev") in
+      do:  ("next" <-[#ptrT] "$r0");;;
+      return: (![#ptrT] "next", ![#boolT] "err")
     else do:  #());;;
-    (if: (~ (let: "$a0" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))))) in
+    (if: (~ (let: "$a0" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "prev"))) in
     let: "$a1" := (![#uint64T] "extLen") in
     (func_call #std.SumNoOverflow) "$a0" "$a1"))
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#ptrT] "ep", ![#boolT] "err")
+      return: (![#ptrT] "next", ![#boolT] "err")
     else do:  #());;;
     let: "newEp" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] (struct.field_ref #Client #"last"%go (![#ptrT] "c"))))) + (![#uint64T] "extLen")) in
+    let: "$r0" := ((![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "prev"))) + (![#uint64T] "extLen")) in
     do:  ("newEp" <-[#uint64T] "$r0");;;
-    (if: let: "$a0" := (![#cryptoffi.SigPublicKey] (struct.field_ref #serv #"sigPk"%go (![#ptrT] (struct.field_ref #Client #"serv"%go (![#ptrT] "c"))))) in
+    (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "sigPk") in
     let: "$a1" := (![#uint64T] "newEp") in
     let: "$a2" := (![#sliceT] "newLink") in
     let: "$a3" := (![#sliceT] "sig") in
@@ -561,7 +568,7 @@ Definition Client__getChainExtⁱᵐᵖˡ : val :=
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#ptrT] "ep", ![#boolT] "err")
+      return: (![#ptrT] "next", ![#boolT] "err")
     else do:  #());;;
     let: "$r0" := (mem.alloc (let: "$epoch" := (![#uint64T] "newEp") in
     let: "$dig" := (![#sliceT] "newDig") in
@@ -573,8 +580,8 @@ Definition Client__getChainExtⁱᵐᵖˡ : val :=
       "link" ::= "$link";
       "sig" ::= "$sig"
     }])) in
-    do:  ("ep" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "ep", ![#boolT] "err")).
+    do:  ("next" <-[#ptrT] "$r0");;;
+    return: (![#ptrT] "next", ![#boolT] "err")).
 
 Definition checkMemb : go_string := "github.com/sanjit-bhat/pav/client.checkMemb"%go.
 
@@ -802,9 +809,9 @@ Definition Evid__Checkⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (checkMemb, checkMembⁱᵐᵖˡ); (checkHist, checkHistⁱᵐᵖˡ); (checkNonMemb, checkNonMembⁱᵐᵖˡ); (checkAudit, checkAuditⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (getNextEp, getNextEpⁱᵐᵖˡ); (checkMemb, checkMembⁱᵐᵖˡ); (checkHist, checkHistⁱᵐᵖˡ); (checkNonMemb, checkNonMembⁱᵐᵖˡ); (checkAudit, checkAuditⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Client.id, []); (ptrT.id Client.id, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); (nextVer.id, []); (ptrT.id nextVer.id, []); (epoch.id, []); (ptrT.id epoch.id, []); (serv.id, []); (ptrT.id serv.id, []); (Evid.id, []); (ptrT.id Evid.id, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrf.id, []); (ptrT.id evidVrf.id, [("check"%go, evidVrf__checkⁱᵐᵖˡ)]); (evidLink.id, []); (ptrT.id evidLink.id, [("check"%go, evidLink__checkⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Client.id, []); (ptrT.id Client.id, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ)]); (nextVer.id, []); (ptrT.id nextVer.id, []); (epoch.id, []); (ptrT.id epoch.id, []); (serv.id, []); (ptrT.id serv.id, []); (Evid.id, []); (ptrT.id Evid.id, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrf.id, []); (ptrT.id evidVrf.id, [("check"%go, evidVrf__checkⁱᵐᵖˡ)]); (evidLink.id, []); (ptrT.id evidLink.id, [("check"%go, evidLink__checkⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo client.client :=
   {|

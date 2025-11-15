@@ -11,6 +11,29 @@ From New.proof.github_com.sanjit_bhat.pav.client_proof Require Import
 
 Module client.
 Import evidence.client.
+
+Module epoch.
+Record t :=
+  mk' {
+    epoch: w64;
+    dig: list w8;
+    link: list w8;
+    sig: list w8;
+  }.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ sl_dig sl_link sl_sig,
+  "Hstruct" ∷ ptr ↦{d} (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
+  "Hsl_dig" ∷ sl_dig ↦*{d} obj.(dig) ∗
+  "Hsl_link" ∷ sl_link ↦*{d} obj.(link) ∗
+  "Hsl_sig" ∷ sl_sig ↦*{d} obj.(sig).
+
+End proof.
+End epoch.
+
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
@@ -200,10 +223,14 @@ Proof.
 Qed.
 
 Definition wish_checkAudit servPk adtrPk ep reply : iProp Σ :=
-  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VerifyVrfSig adtrPk reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.AdtrVrfSig) ∗
-  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VerifyVrfSig servPk reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.ServVrfSig) ∗
-  "#Hwish_adtr_linkSig" ∷ ktcore.wish_VerifyLinkSig adtrPk ep reply.(auditor.GetReply.Link) reply.(auditor.GetReply.AdtrLinkSig) ∗
-  "#Hwish_serv_linkSig" ∷ ktcore.wish_VerifyLinkSig servPk ep reply.(auditor.GetReply.Link) reply.(auditor.GetReply.ServLinkSig).
+  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VerifyVrfSig adtrPk
+    reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.AdtrVrfSig) ∗
+  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VerifyVrfSig servPk
+    reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.ServVrfSig) ∗
+  "#Hwish_adtr_linkSig" ∷ ktcore.wish_VerifyLinkSig adtrPk ep
+    reply.(auditor.GetReply.Link) reply.(auditor.GetReply.AdtrLinkSig) ∗
+  "#Hwish_serv_linkSig" ∷ ktcore.wish_VerifyLinkSig servPk ep
+    reply.(auditor.GetReply.Link) reply.(auditor.GetReply.ServLinkSig).
 
 Lemma wp_checkAudit sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_reply reply :
   {{{
@@ -249,6 +276,89 @@ Proof.
   iApply "HΦ".
   iFrame "#".
 Qed.
+
+(*
+Definition wish_getNextEp sigPk last_ep chainProof sig next_ep next_vals : iProp Σ :=
+  "%Hwish_chain" ∷ ⌜hashchain.wish_Verify chainProof next_vals⌝ ∗
+  "%Heq_ep" ∷ ⌜uint.Z last_ep.(epoch.epoch) + length next_vals = uint.Z next_ep.(epoch.epoch)⌝ ∗
+  "%Heq_dig" ∷ ⌜last next_vals = Some next_ep.(epoch.dig)⌝ ∗
+  "#His_link_sig" ∷ ktcore.wish_VerifyLinkSig sigPk next_ep.(epoch.epoch) next_ep.(epoch.link) next_ep.(epoch.sig).
+
+Lemma wp_getNextEp ptr_last last sl_sigPk sigPk sl_chainProof chainProof sl_sig sig
+    old_vals cut len :
+  {{{
+    is_pkg_init client ∗
+    "#Hown_last" ∷ epoch.own ptr_last last (□) ∗
+    "#Hsl_sigPk" ∷ sl_sigPk ↦*□ sigPk ∗
+    "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
+    "#Hsl_sig" ∷ sl_sig ↦*□ sig ∗
+    "#His_chain_last" ∷ hashchain.is_chain old_vals cut last.(epoch.link) len
+  }}}
+  @! client.getNextEp #ptr_last #sl_sigPk #sl_chainProof #sl_sig
+  {{{
+    ptr_next (err : bool), RET (#ptr_next, #err);
+    "Hgenie" ∷
+      match err with
+      | true => ¬ ∃ next next_vals, wish_getNextEp sigPk last chainProof sig next next_vals
+      | false =>
+        ∃ next next_vals,
+        "#Hown_next" ∷ epoch.own ptr_next next (□) ∗
+        "#Hwish_getNextEp" ∷ wish_getNextEp sigPk last chainProof sig next next_vals ∗
+        "#His_chain_next" ∷ hashchain.is_chain (old_vals ++ next_vals) cut next.(epoch.link)
+          (len + length next_vals)
+      end
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hown_last".
+  wp_auto.
+  wp_apply (hashchain.wp_Verify with "[$Hsl_link $Hsl_chainProof $His_chain_last]").
+  iIntros "*". iNamed 1.
+  wp_if_destruct.
+  { iApply "HΦ". iNamedSuffix 1 "'". simpl in *.
+    iApply "Hgenie". naive_solver. }
+  iNamed "Hgenie".
+  wp_if_destruct.
+  { iApply "HΦ".
+    iPersist "Hstruct Hsl_dig Hsl_link Hsl_sig".
+    iFrame "#".
+    iExists last, [].
+    opose proof (hashchain.wish_Verify_det _ _ _ Hwish_chain Hwish_chain') as ->.
+    apply last_None in Heq_dig' as ?.
+    apply (f_equal length) in H.
+    autorewrite with len in *.
+    iFrame "#".
+    iPureIntro. split; [word|done]. }
+  iNamedSuffix "Hgenie" "chain".
+  wp_apply std.wp_SumNoOverflow.
+  wp_if_destruct.
+  2: { iApply "HΦ". iNamedSuffix 1 "'". simpl in *.
+    iApply "Hgenie".
+    iIntros (?? (?&?&?&?)).
+    opose proof (hashchain.wish_Verify_det _ _ _ Hwish_chain Hwish_chain') as ->.
+    word. }
+  wp_apply ktcore.wp_VerifyLinkSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iNamedSuffix 1 "'". simpl in *. iApply "Hgenie".
+    iIntros (?? (?&?&?&?)).
+    opose proof (hashchain.wish_Verify_det _ _ _ Hwish_chain Hwish_chain') as ->.
+    iDestruct (hashchain.is_chain_det with "His_chain_chain His_chain_chain'") as %<-.
+    iExactEq "His_link_sig'". repeat f_equal. word. }
+  iNamed "Hgenie".
+  wp_apply wp_alloc as "* Hstruct".
+  iApply "HΦ".
+  iPersist "Hstruct Hsl_newVal Hsl_newLink Hsl_sig".
+  iFrame "#".
+  iExists new_vals.
+  iFrame "#".
+  iPureIntro. split; [word|].
+  destruct (last _) eqn:Heq; [done|].
+  apply last_None in Heq.
+  apply (f_equal length) in Heq.
+  simpl in *. word.
+Qed.
+*)
 
 End proof.
 End client.

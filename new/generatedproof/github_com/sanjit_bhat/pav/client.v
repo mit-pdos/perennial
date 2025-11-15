@@ -675,6 +675,10 @@ Global Instance wp_func_call_New :
   WpFuncCall client.New _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_getNextEp :
+  WpFuncCall client.getNextEp _ (is_pkg_defined client) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_checkMemb :
   WpFuncCall client.checkMemb _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
@@ -705,10 +709,6 @@ Global Instance wp_method_call_Client'ptr_Put :
 
 Global Instance wp_method_call_Client'ptr_SelfMon :
   WpMethodCall (ptrT.id client.Client.id) "SelfMon" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Client'ptr_getChainExt :
-  WpMethodCall (ptrT.id client.Client.id) "getChainExt" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Evid'ptr_Check :
