@@ -165,6 +165,7 @@ Inductive go_op : Type :=
 
 | InterfaceGet (m : go_string)
 | TypeAssert (t : go.type)
+| TypeAssert2 (t : go.type)
 
 | PackageInitCheck (pkg_name : go_string)
 | PackageInitStart (pkg_name : go_string)
@@ -713,6 +714,17 @@ Notation "e1 || e2" :=
 
 Local Notation "# x" := (into_val x%go).
 Local Notation "#" := into_val (at level 0).
+
+Definition is_interface_type `{!GoContext} (t : go.type) : bool :=
+  match (to_underlying t) with
+  | go.InterfaceType _ => true
+  | _ => false
+  end.
+
+(* Little helper for getting zero val in typeassert2 *)
+Local Definition glang_zero_val (t : go.type) : expr :=
+  GoInstruction (GoLoad t) (GoInstruction (GoAlloc t) #()).
+
 Inductive is_go_step_pure `{!GoContext} :
   ∀ (op : go_op) (arg : val) (e' : expr), Prop :=
 | angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
@@ -720,8 +732,34 @@ Inductive is_go_step_pure `{!GoContext} :
 | store_step t (l : loc) v : is_go_step_pure (GoStore t) (#l, v)%V (store t #l v)
 | alloc_step t : is_go_step_pure (GoAlloc t) #() (alloc t #())%E
 | prealloc_step (l : loc) : is_go_step_pure GoPrealloc #() #l
-| func_call_step f targs : is_go_step_pure (FuncResolve f targs) #() #(functions f targs)
-| method_call_step t m : is_go_step_pure (MethodResolve t m) #() #(methods t m)
+| func_resolve_step f targs : is_go_step_pure (FuncResolve f targs) #() #(functions f targs)
+| method_resolve_step t m : is_go_step_pure (MethodResolve t m) #() #(methods t m)
+| interface_get_step m i :
+  is_go_step_pure (InterfaceGet m) #i
+    (match i with
+     | interface.nil => Panic "nil dereference in interface call"
+     | interface.mk t v => (GoInstruction (MethodResolve t m) #() v)%E
+     end)
+| type_assert_step t i :
+  is_go_step_pure (TypeAssert t) #i
+    (match i with
+     | interface.nil => Panic "type assert failed"
+     | interface.mk dt v =>
+         if is_interface_type t then
+           (if (type_set t dt) then #i else Panic "type assert failed")
+         else
+           (if decide (t = dt) then v else Panic "type assert failed")
+     end)
+| type_assert2_step t i :
+  is_go_step_pure (TypeAssert2 t) #i
+    (match i with
+     | interface.nil => (#interface.nil, #false)%V
+     | interface.mk dt v =>
+         if is_interface_type t then
+           (if (type_set t dt) then (#i, #true)%V else (#interface.nil, #false)%V)
+         else
+           (if decide (t = dt) then (v, #true)%V else (glang_zero_val t, #false)%E)
+     end)
 | global_var_addr_step v : is_go_step_pure (GlobalVarAddr v) #() #(global_addr v)
 | struct_field_ref_step t f l : is_go_step_pure (StructFieldRef t f) #l #(struct_field_ref t f l)
 | struct_field_get_step f m v (Hf : m !! f = Some v) :
