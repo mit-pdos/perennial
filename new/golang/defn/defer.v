@@ -3,7 +3,7 @@ From New.golang.defn Require Import exception.
 Section defn.
 Context `{!ffi_syntax}.
 
-Definition deferType := go.FunctionType (go.Signature [] None).
+Definition deferType := go.FunctionType (go.Signature [] false []).
 
 Definition wrap_defer : val :=
   λ: "body",
