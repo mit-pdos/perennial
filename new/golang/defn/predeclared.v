@@ -77,7 +77,7 @@ Definition int64 : go.type := go.Named "int64"%go [].
 Definition rune : go.type := int32.
 Definition string : go.type := go.Named "string"%go [].
 Definition error : go.type :=
-  go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] $ Some $ go.ResultType go.string)].
+  go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])].
 
 Definition uint : go.type := go.Named "uint"%go [].
 Definition uint8 : go.type := go.Named "uint8"%go [].
@@ -127,6 +127,8 @@ Class PredeclaredSemantics {go_ctx : GoContext} :=
     alloc t = (λ: <>, ref #v)%V;
   load_predeclared t (H : is_predeclared t) : load t = (λ: "l", ! "l")%V;
   store_predeclared t (H : is_predeclared t) : store t = (λ: "l" "v", "l" <- "v")%V;
+
+  predeclared_underlying t (H : is_predeclared t) : to_underlying t = t;
 
   len_underlying t : functions len [t] = functions len [to_underlying t];
 

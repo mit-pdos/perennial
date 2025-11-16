@@ -547,7 +547,6 @@ Class GoContext {ext : ffi_syntax} : Type :=
     functions : go_string → list go.type → func.t;
     methods : go.type → go_string → func.t;
     method_set : go.type → gmap go_string go.signature;
-    type_set : go.type → (go.type → bool);
 
     alloc : go.type → val;
     load : go.type → val;
@@ -725,6 +724,29 @@ Definition is_interface_type `{!GoContext} (t : go.type) : bool :=
 Local Definition glang_zero_val (t : go.type) : expr :=
   GoInstruction (GoLoad t) (GoInstruction (GoAlloc t) #()).
 
+(* Based on: https://go.dev/ref/spec#General_interfaces *)
+Definition type_set_term_contains {go_ctx : GoContext} t (e : go.type_term) : bool :=
+  match e with
+  | go.TypeTerm t' => bool_decide (t = t')
+  | go.TypeTermUnderlying t' => bool_decide (to_underlying t = t')
+  end.
+
+Definition type_set_elem_contains {go_ctx : GoContext} t (e : go.interface_elem) : bool :=
+  match e with
+  | go.MethodElem m signature => bool_decide (method_set t !! m = Some signature)
+  | go.TypeElem terms => existsb (type_set_term_contains t) terms
+  end.
+
+Definition type_set_elems_contains {go_ctx : GoContext} t (elems : list go.interface_elem) : bool :=
+  forallb (type_set_elem_contains t) elems.
+
+(** Equals [true] iff t is in the type set of t'. *)
+Definition type_set_contains {go_ctx : GoContext} t t' : bool :=
+  match (to_underlying t') with
+  | go.InterfaceType elems => type_set_elems_contains t elems
+  | _ => bool_decide (t = t')
+  end.
+
 Inductive is_go_step_pure `{!GoContext} :
   ∀ (op : go_op) (arg : val) (e' : expr), Prop :=
 | angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
@@ -746,7 +768,7 @@ Inductive is_go_step_pure `{!GoContext} :
      | interface.nil => Panic "type assert failed"
      | interface.mk dt v =>
          if is_interface_type t then
-           (if (type_set t dt) then #i else Panic "type assert failed")
+           (if (type_set_contains dt t) then #i else Panic "type assert failed")
          else
            (if decide (t = dt) then v else Panic "type assert failed")
      end)
@@ -756,7 +778,7 @@ Inductive is_go_step_pure `{!GoContext} :
      | interface.nil => (#interface.nil, #false)%V
      | interface.mk dt v =>
          if is_interface_type t then
-           (if (type_set t dt) then (#i, #true)%V else (#interface.nil, #false)%V)
+           (if (type_set_contains dt t) then (#i, #true)%V else (#interface.nil, #false)%V)
          else
            (if decide (t = dt) then (v, #true)%V else (glang_zero_val t, #false)%E)
      end)
@@ -1015,7 +1037,6 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     functions := inhabitant;
     methods := inhabitant;
     method_set := inhabitant;
-    type_set := inhabitant;
     alloc := inhabitant;
     load := inhabitant;
     store := inhabitant;

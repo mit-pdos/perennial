@@ -44,15 +44,14 @@ with field_decl :=
 with signature :=
 | Signature : (* param types *) list type → (* variadic *) bool → (* result types *) list type → _
 
-with result :=
-| ResultParameters : list type → _
-| ResultType : type → _
-
 with interface_elem :=
 | MethodElem : identifier → signature → _
 | TypeElem : list type_term → _
 
 with type_term := | TypeTerm (type : type) | TypeTermUnderlying (type : type).
+
+Global Instance signature_eq_dec : EqDecision signature.
+Proof. Admitted.
 
 Global Instance type_eq_dec : EqDecision type.
 Proof. Admitted.

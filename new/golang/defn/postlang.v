@@ -26,7 +26,6 @@ Global Notation int_leq e1 e2 := (BinOp SignedLeOp e1%E e2%E).
 Global Notation int_gt e1 e2 := (BinOp SignedLeOp e2%E e1%E).
 Global Notation int_geq e1 e2 := (BinOp SignedLeOp e2%E e1%E).
 
-
 Module go.
 Section defs.
 Context {ext : ffi_syntax}.
@@ -48,7 +47,6 @@ Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop 
 | is_primitive_zero_val_slice elem : is_primitive_zero_val (go.SliceType elem) slice.nil
 | is_primitive_zero_val_map kt vt : is_primitive_zero_val (go.MapType kt vt) null
 | is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) null.
-
 
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), slice, map, and
@@ -146,6 +144,9 @@ Class CoreSemantics {go_ctx : GoContext} :=
 
   array_index_ref_add t i j l :
     array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);
+
+  method_interface t m (H : is_interface_type t = true) :
+    #(methods t m) = (InterfaceGet m);
 }.
 
 End defs.
