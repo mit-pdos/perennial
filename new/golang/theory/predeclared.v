@@ -204,4 +204,20 @@ Proof using H Hcore Hpredeclared.
     iApply "HΦ". iFrame.
 Qed.
 
+Lemma wp_test :
+  {{{ True }}}
+    (let: "i" := #(interface.mk (go.uint64) #(W64 0)) in
+     let: "z" := MethodResolve (go.error) "foo" #() "i" in
+     #()
+    )
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros "% _ HΦ". wp_pures.
+  rewrite go.method_interface //.
+  2:{ unfold is_interface_type. erewrite go.predeclared_underlying.
+      2:{ admit. }
+      done. }
+  wp_pures.
+Abort.
+
 End __struct_test.

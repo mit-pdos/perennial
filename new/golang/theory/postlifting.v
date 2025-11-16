@@ -134,10 +134,19 @@ Proof. solve_into_val_comparable. Qed.
 
 Global Instance into_val_comparable_slice : IntoValComparable slice.t.
 Proof. solve_into_val_comparable. Qed.
+
+Global Instance into_val_comparable_interface : IntoValComparable interface.t.
+Proof.
+  split.
+  - rewrite into_val_unseal; intros ? ?. inversion 1.
+    destruct x, y; naive_solver.
+  - solve_decision.
+  - rewrite into_val_unseal. intros []; done.
+Qed.
 End into_val_comparable_instances.
 
 Section go_wps.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hcore : go.CoreSemantics}.
 
 Local Ltac solve_pure :=
   iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
@@ -157,13 +166,64 @@ Global Instance wp_GoLoad t (l : loc) :
   PureWp True (GoLoad t #l) (load t #l).
 Proof. solve_pure. Qed.
 
-Global Instance wp_FuncCall f ts :
-  PureWp True (FuncCall f ts #()) #(functions f ts).
+Global Instance wp_FuncResolve f ts :
+  PureWp True (FuncResolve f ts #()) #(functions f ts).
 Proof. solve_pure. Qed.
 
-Global Instance wp_MethodCall t f :
-  PureWp True (MethodCall t f #()) #(methods t f).
+Global Instance wp_MethodResolve t f :
+  PureWp True (MethodResolve t f #()) #(methods t f).
 Proof. solve_pure. Qed.
+
+Global Instance pure_wp_InterfaceGet m t v :
+  PureWp True (InterfaceGet m #(interface.mk t v)) (MethodResolve t m #() v).
+Proof. solve_pure. Qed.
+
+Global Instance pure_wp_TypeAssert_non_interface t v :
+  PureWp (is_interface_type t = false) (TypeAssert t #(interface.mk t v)) v.
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. rewrite Heq. rewrite decide_True //. by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_TypeAssert_interface t dt v :
+  PureWp (is_interface_type t = true ∧ type_set_contains dt t = true)
+    (TypeAssert t #(interface.mk dt v)) #(interface.mk dt v).
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. destruct Heq as [-> Hcontains]. rewrite Hcontains. by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_TypeAssert2_non_interface t t' `{!IntoVal V}
+  `{!TypedPointsto V} `{!IntoValTyped V t} (v : V) :
+  PureWp (is_interface_type t = false)
+    (TypeAssert2 t #(interface.mk t' #v))
+    (if decide (t = t') then (#v, #true)%V else (#(zero_val V), #false)%V).
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. rewrite Heq. destruct decide.
+  - by iApply "HΦ".
+  - unfold lang.glang_zero_val. wp_pures. wp_apply wp_alloc. iIntros "* Hl".
+    wp_pures. wp_apply (wp_load with "[$Hl]"). iIntros "_". wp_pures. by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_TypeAssert2_interface t i :
+  PureWp (is_interface_type t = true)
+    (TypeAssert2 t #i)
+    (match i with
+     | interface.mk dt v =>
+         if type_set_contains dt t then (# i, # true)%V else (# interface.nil, # false)%V
+     | interface.nil => (# interface.nil, # false)%V
+     end).
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. rewrite Heq. destruct i.
+  - by iApply "HΦ".
+  - by iApply "HΦ".
+Qed.
 
 Global Instance wp_GlobalVarAddr v :
   PureWp True (GlobalVarAddr v #()) #(global_addr v).
