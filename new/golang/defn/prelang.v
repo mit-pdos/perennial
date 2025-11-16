@@ -19,7 +19,10 @@ Definition type_name := go_string.
     argument, the type is omitted and its single input is inlined. Also, places
     where Go syntax allows for `func (a, b uint64)` are required to be `func (a
     uint64, b uint64)` here (e.g. field or parameter decls).
- *)
+
+    Lastly, since equality of signature types ignores parameter/result names,
+    they are excluded here. This allows for using Rocq's [eq] to formaally
+    define Go type identity. *)
 Inductive type :=
 | Named : type_name → list type (* type args *) → _
 | TypeLit : type_lit → _
@@ -38,9 +41,8 @@ with field_decl :=
 | FieldDecl : go_string → type → _
 | EmbeddedField : go_string → type → _
 
-with signature := | Signature : list parameter_decl → option result → _
-
-with parameter_decl := | ParameterDecl : identifier → type → (* variadic *) bool → _
+with signature :=
+| Signature : (* param types *) list type → (* variadic *) bool → (* result types *) list type → _
 
 with result :=
 | ResultParameters : list type → _

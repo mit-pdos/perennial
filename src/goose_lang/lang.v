@@ -160,8 +160,11 @@ Inductive go_op : Type :=
 | GoAlloc (t : go.type)
 | GoPrealloc
 
-| FuncCall (f : go_string) (type_args : list go.type)
-| MethodCall (t : go.type) (m : go_string)
+| FuncResolve (f : go_string) (type_args : list go.type)
+| MethodResolve (t : go.type) (m : go_string)
+
+| InterfaceGet (m : go_string)
+| TypeAssert (t : go.type)
 
 | PackageInitCheck (pkg_name : go_string)
 | PackageInitStart (pkg_name : go_string)
@@ -542,6 +545,8 @@ Class GoContext {ext : ffi_syntax} : Type :=
     global_addr : go_string → loc;
     functions : go_string → list go.type → func.t;
     methods : go.type → go_string → func.t;
+    method_set : go.type → gmap go_string go.signature;
+    type_set : go.type → (go.type → bool);
 
     alloc : go.type → val;
     load : go.type → val;
@@ -715,8 +720,8 @@ Inductive is_go_step_pure `{!GoContext} :
 | store_step t (l : loc) v : is_go_step_pure (GoStore t) (#l, v)%V (store t #l v)
 | alloc_step t : is_go_step_pure (GoAlloc t) #() (alloc t #())%E
 | prealloc_step (l : loc) : is_go_step_pure GoPrealloc #() #l
-| func_call_step f targs : is_go_step_pure (FuncCall f targs) #() #(functions f targs)
-| method_call_step t m : is_go_step_pure (MethodCall t m) #() #(methods t m)
+| func_call_step f targs : is_go_step_pure (FuncResolve f targs) #() #(functions f targs)
+| method_call_step t m : is_go_step_pure (MethodResolve t m) #() #(methods t m)
 | global_var_addr_step v : is_go_step_pure (GlobalVarAddr v) #() #(global_addr v)
 | struct_field_ref_step t f l : is_go_step_pure (StructFieldRef t f) #l #(struct_field_ref t f l)
 | struct_field_get_step f m v (Hf : m !! f = Some v) :
@@ -971,6 +976,8 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
   {| global_addr := inhabitant;
     functions := inhabitant;
     methods := inhabitant;
+    method_set := inhabitant;
+    type_set := inhabitant;
     alloc := inhabitant;
     load := inhabitant;
     store := inhabitant;
