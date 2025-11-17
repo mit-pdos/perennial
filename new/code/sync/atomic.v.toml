@@ -37,7 +37,7 @@ trusted = [
 
   "noCopy",
   "Pointer",
-  "Pointer.*"
+  "Pointer.*",
 ]
 
 imports = ["!*"]
