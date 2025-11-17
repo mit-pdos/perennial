@@ -1,5 +1,5 @@
 From New.golang.defn Require Import pkg.
-From New.golang.theory Require Import exception mem assume.
+From New.golang.theory Require Import exception assume.
 From Perennial Require Import base.
 Import Ltac2. Import Printf.
 Set Default Proof Mode "Classic".

@@ -6,7 +6,9 @@ Set Default Proof Using "Type".
 
 Section wps.
 
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+Local Set Default Proof Using "Type core_sem pre_sem".
 
 Lemma wp_assume (b: bool) Φ stk E:
   (⌜b = true⌝ -∗ Φ #()) -∗
@@ -27,7 +29,7 @@ Lemma wp_assume_sum_no_overflow (x y: w64) Φ :
   WP assume_sum_no_overflow #x #y {{ Φ }}.
 Proof.
   iIntros "HΦ".
-  wp_call.
+  wp_call. wp_pures.
   wp_apply wp_assume.
   iIntros (H).
   apply bool_decide_eq_true in H.

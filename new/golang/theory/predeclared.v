@@ -103,7 +103,7 @@ End into_val_typed_instances.
 
 Section inequality_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {Hcore : go.CoreSemantics} {Hpredeclared : go.PredeclaredSemantics}.
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
 
 Ltac solve_ineq lem :=
   iIntros (?) "* _ * HΦ";
@@ -245,7 +245,7 @@ End inequality_instances.
 
 Section __struct_test.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {Hcore : go.CoreSemantics} {Hpredeclared : go.PredeclaredSemantics}.
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
 
 Record foo_t :=
   mk {
@@ -315,7 +315,7 @@ Global Instance wp_StructFieldGet_foo_b (v : foo_t) :
 Proof. solve_wp_struct_field_get. Qed.
 
 Global Instance into_val_typed_foo  : IntoValTyped foo_t foo.
-Proof using H Hcore Hpredeclared.
+Proof using H core_sem pre_sem.
   split.
   - iIntros "* _ HΦ".
     rewrite go.alloc_underlying foo_underlying.
