@@ -87,8 +87,8 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
     (λ: "dst" "src",
        let st : go.type := go.SliceType elem_type in
        let: "i" := GoAlloc go.int #() in
-       (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (FuncResolve go.len [st] #() "dst") &&
-                ((![go.int] "i") <⟨go.int⟩ (FuncResolve go.len [st] #() "src"))) ; (λ: <>, Skip) :=
+       (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
+                (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, Skip) :=
           (λ: <>,
              do: (let: "i_val" := ![go.int] "i" in
                   IndexRef st ("dst", "i_val")
@@ -105,15 +105,15 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
                            (FuncResolve go.len [st] #() "x") in
        if: (FuncResolve go.cap [st] #() "s") ≥⟨go.int⟩ "new_len" then
          (* "grow" s to include its capacity *)
-         let: "s_new" := Slice st "s" #(W64 0) "new_len" in
+         let: "s_new" := Slice st ("s", (#(W64 0), "new_len")) in
          (* copy "x" past the original "s" *)
-         FuncResolve go.copy [st] #() (Slice st "s_new" (FuncResolve go.len [st] #() "s") "new_len") "x";;
+         FuncResolve go.copy [st] #() (Slice st ("s_new", (FuncResolve go.len [st] #() "s", "new_len"))) "x";;
          "s_new"
        else
          let: "new_cap" := slice._new_cap "new_len" in
          let: "s_new" := FuncResolve go.make3 [st] #() "new_len" "new_cap" in
          FuncResolve go.copy [st] #() "s_new" "s" ;;
-         FuncResolve go.copy [st] #() (Slice st "s_new" (FuncResolve go.len [st] #() "s") "new_len") "x" ;;
+         FuncResolve go.copy [st] #() (Slice st ("s_new", (FuncResolve go.len [st] #() "s", "new_len"))) "x" ;;
          "s_new")%V;
 
   array_index_ref_0 t l : array_index_ref t 0 l = l;

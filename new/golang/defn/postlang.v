@@ -21,17 +21,17 @@ Global Notation "e1 || e2" :=
   (If e1%E #true e2%E) (only parsing) : expr_scope.
 
 Notation "e1 ≤⟨ t ⟩ e2" := (GoInstruction (GoLe t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1 ≤⟨ t ⟩ e2") : expr_scope.
+                             (at level 70, format "e1  ≤⟨ t ⟩  e2") : expr_scope.
 Notation "e1 <⟨ t ⟩ e2" := (GoInstruction (GoLt t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1 <⟨ t ⟩ e2") : expr_scope.
+                             (at level 70, format "e1  <⟨ t ⟩  e2") : expr_scope.
 Notation "e1 ≥⟨ t ⟩ e2" := (GoInstruction (GoGe t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1 ≥⟨ t ⟩ e2") : expr_scope.
+                             (at level 70, format "e1  ≥⟨ t ⟩  e2") : expr_scope.
 Notation "e1 >⟨ t ⟩ e2" := (GoInstruction (GoGt t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1 >⟨ t ⟩ e2") : expr_scope.
+                             (at level 70, format "e1  >⟨ t ⟩  e2") : expr_scope.
 Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoEquals t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1 =⟨ t ⟩ e2") : expr_scope.
+                             (at level 70, format "e1  =⟨ t ⟩  e2") : expr_scope.
 Notation "e1 ≠⟨ t ⟩ e2" := (UnOp NegOp (e1%E =⟨t⟩ e2%E))
-                             (at level 70, format "e1 ≠⟨ t ⟩ e2") : expr_scope.
+                             (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
 
 Module go.
 Section defs.
