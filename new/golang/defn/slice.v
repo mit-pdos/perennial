@@ -1,4 +1,3 @@
-From Perennial Require Import base.
 From New.golang.defn Require Export loop assume predeclared.
 
 Definition slice_index_ref `{GoContext} (elem_type : go.type) (i : Z) (s : slice.t) : loc :=
@@ -45,9 +44,9 @@ Global Opaque slice.for_range slice.literal.
 Module go.
 Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
 {
-  equals_slice_l t s :
+  equals_slice_nil_l t s :
     go_equals (go.SliceType t) #s #slice.nil = Some $ bool_decide (s = slice.nil);
-  equals_slice_r t s :
+  equals_slice_nil_r t s :
     go_equals (go.SliceType t) #slice.nil #s = Some $ bool_decide (s = slice.nil);
 
   make3_slice elem_type :
@@ -66,6 +65,10 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
   make2_slice elem_type :
     #(functions go.make2 [go.TypeLit $ go.SliceType elem_type]) =
     (λ: "sz", FuncResolve go.make3 [go.TypeLit $ go.SliceType elem_type] #() "sz" "sz")%V;
+
+  make1_slice elem_type :
+    #(functions go.make1 [go.TypeLit $ go.SliceType elem_type]) =
+    (λ: <>, FuncResolve go.make2 [go.TypeLit $ go.SliceType elem_type] #() #(W64 0))%V;
 
   index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
     index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);

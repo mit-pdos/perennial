@@ -365,11 +365,26 @@ Lemma wp_slice_make2 stk E (len : u64) :
       own_slice_cap t sl (DfracOwn 1)
   }}}.
 Proof.
-  iIntros (Φ) "% HΦ".
-  rewrite go.make2_slice. wp_auto.
-  wp_apply wp_slice_make3.
-  { word. }
+  wp_start as "%".
+  wp_apply wp_slice_make3; first word.
   iIntros (?) "(? & ? & ?)".
+  iApply "HΦ". iFrame.
+Qed.
+
+Local Instance make1_unfold t : FuncUnfold go.make1 (st t) _ :=
+  ltac:(constructor; apply go.make1_slice).
+
+Lemma wp_slice_make1 stk E :
+  {{{ True }}}
+    #(functions go.make1 (st t)) #() @ stk; E
+  {{{ sl, RET #sl;
+      sl ↦[t]* [] ∗
+      own_slice_cap t sl (DfracOwn 1)
+  }}}.
+Proof.
+  wp_start as "%".
+  wp_apply wp_slice_make2; first word.
+  iIntros (?) "(? & ?)".
   iApply "HΦ". iFrame.
 Qed.
 
