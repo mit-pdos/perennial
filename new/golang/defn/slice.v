@@ -44,6 +44,11 @@ Global Opaque slice.for_range slice.literal.
 Module go.
 Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
 {
+  equals_slice_l t s :
+    go_equals (go.SliceType t) #s #slice.nil = Some $ bool_decide (s = slice.nil);
+  equals_slice_r t s :
+    go_equals (go.SliceType t) #slice.nil #s = Some $ bool_decide (s = slice.nil);
+
   make3_slice elem_type :
     #(functions go.make3 [go.TypeLit $ go.SliceType elem_type]) =
     (λ: "len" "cap",

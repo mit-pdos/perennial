@@ -11,11 +11,9 @@ Import RecordSetNotations.
 Section into_val_defs.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Class IntoValComparable (V : Type) `{!IntoVal V} :=
+Class IntoValComparable t (V : Type) `{!IntoVal V} `{!EqDecision V} :=
   {
-    #[global] into_val_inj :: Inj (=) (=) (into_val (V:=V));
-    #[global] into_val_eqdec :: EqDecision V ;
-    into_val_comparable : (∀ (v : V), is_comparable #v);
+    into_val_comparable : go.is_strictly_comparable_sem t V;
   }.
 
 Class TypedPointsto (V : Type) `{!IntoVal V} :=
@@ -101,48 +99,40 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
 
+
 Section into_val_comparable_instances.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hcore : go.CoreSemantics}.
 
-Ltac solve_into_val_comparable :=
-  split;
-  [rewrite into_val_unseal; intros ??; by inversion 1|
-    apply _ |
-    rewrite into_val_unseal; done].
+Global Instance into_val_loc_inj : Inj eq eq (into_val (V:=loc)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-(** IntoValComparable instances *)
-Global Instance into_val_comparable_loc : IntoValComparable loc.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_comparable_loc t : IntoValComparable (go.PointerType t) loc.
+Proof. constructor. apply go.equals_pointer. Qed.
 
-Global Instance into_val_comparable_w64 : IntoValComparable w64.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_slice_inj : Inj eq eq (into_val (V:=slice.t)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_w32 : IntoValComparable w32.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_w64_inj : Inj eq eq (into_val (V:=w64)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_w16 : IntoValComparable w16.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_w32_inj : Inj eq eq (into_val (V:=w32)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_w8 : IntoValComparable w8.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_w16_inj : Inj eq eq (into_val (V:=w16)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_bool : IntoValComparable bool.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_w8_inj : Inj eq eq (into_val (V:=w8)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_string : IntoValComparable go_string.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_bool_inj : Inj eq eq (into_val (V:=bool)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_slice : IntoValComparable slice.t.
-Proof. solve_into_val_comparable. Qed.
+Global Instance into_val_string_inj : Inj eq eq (into_val (V:=go_string)).
+Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_interface : IntoValComparable interface.t.
-Proof.
-  split.
-  - rewrite into_val_unseal; intros ? ?. inversion 1.
-    destruct x, y; naive_solver.
-  - solve_decision.
-  - rewrite into_val_unseal. intros []; done.
-Qed.
+Global Instance interface_into_val_inj : Inj eq eq (into_val (V:=interface.t)).
+Proof. rewrite into_val_unseal; intros ? ?. inversion 1. destruct x, y; naive_solver. Qed.
+
 End into_val_comparable_instances.
 
 Section go_wps.
@@ -289,13 +279,14 @@ Proof.
     intros HR. apply H. subst. done. }
 Qed.
 
-Global Instance wp_eq `{!IntoVal V} `{!IntoValComparable V} (v1 v2 : V) :
-  PureWp True (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)).
+Global Instance wp_eq `{!IntoVal V} `{!EqDecision V} `{!IntoValComparable t V} (v1 v2 : V) :
+  PureWp True (GoEquals t (#v1, #v2)%V) #(bool_decide (v1 = v2)).
 Proof.
-  pose proof wp_eq_val.
   iIntros (?) "* _ * HΦ".
-  wp_pure_lc "Hl"; [ split; apply into_val_comparable | ].
-  rewrite bool_decide_inj.
+  iApply wp_GoInstruction.
+  { intros. repeat econstructor. }
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  iIntros "? $ !>". rewrite into_val_comparable.
   iApply "HΦ". iFrame.
 Qed.
 

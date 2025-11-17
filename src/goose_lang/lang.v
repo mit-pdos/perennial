@@ -155,6 +155,12 @@ Defined.
 Inductive go_op : Type :=
 | AngelicExit
 
+| GoEquals (t : go.type)
+| GoLt (t : go.type)
+| GoLe (t : go.type)
+| GoGt (t : go.type)
+| GoGe (t : go.type)
+
 | GoLoad (t : go.type)
 | GoStore (t : go.type)
 | GoAlloc (t : go.type)
@@ -543,6 +549,10 @@ End func.
     map updates, etc. *)
 Class GoContext {ext : ffi_syntax} : Type :=
   {
+    go_equals : go.type → val → val → option bool;
+    go_lt : go.type → val → val → option bool;
+    go_le : go.type → val → val → option bool;
+
     global_addr : go_string → loc;
     functions : go_string → list go.type → func.t;
     methods : go.type → go_string → func.t;
@@ -750,6 +760,21 @@ Definition type_set_contains {go_ctx : GoContext} t t' : bool :=
 Inductive is_go_step_pure `{!GoContext} :
   ∀ (op : go_op) (arg : val) (e' : expr), Prop :=
 | angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
+| equals_step t v1 v2 :
+  is_go_step_pure (GoEquals t) (v1, v2)%V
+    (match go_equals t v1 v2 with | Some b => #b | None => Panic "not comparable" end)
+| lt_step t v1 v2 :
+  is_go_step_pure (GoLt t) (v1, v2)%V
+    (match go_lt t v1 v2 with | Some b => #b | None => Panic "not ordered" end)
+| le_step t v1 v2 :
+  is_go_step_pure (GoLe t) (v1, v2)%V
+    (match go_le t v2 v1 with | Some b => #b | None => Panic "not ordered" end)
+| gt_step t v1 v2 :
+  is_go_step_pure (GoGt t) (v1, v2)%V
+    (match go_lt t v2 v1 with | Some b => #b | None => Panic "not ordered" end)
+| ge_step t v1 v2 :
+  is_go_step_pure (GoGe t) (v1, v2)%V
+    (match go_le t v2 v1 with | Some b => #b | None => Panic "not ordered" end)
 | load_step t arg : is_go_step_pure (GoLoad t) arg (load t arg)
 | store_step t (l : loc) v : is_go_step_pure (GoStore t) (#l, v)%V (store t #l v)
 | alloc_step t : is_go_step_pure (GoAlloc t) #() (alloc t #())%E
@@ -1033,7 +1058,11 @@ Global Instance func_t_inhabited : Inhabited func.t :=
   populate (func.mk inhabitant inhabitant inhabitant).
 Global Instance GoContext_inhabited : Inhabited GoContext :=
   populate
-  {| global_addr := inhabitant;
+  {|
+    go_equals := inhabitant;
+    go_lt := inhabitant;
+    go_le := inhabitant;
+    global_addr := inhabitant;
     functions := inhabitant;
     methods := inhabitant;
     method_set := inhabitant;
