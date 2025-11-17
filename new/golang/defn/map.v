@@ -7,14 +7,14 @@ Definition nil : t := null.
 Section defs.
 Context {ext : ffi_syntax}.
 
-Definition lookup2 (key_type elem_type : go.type) : val :=
+Definition lookup2 : val :=
   λ: "m" "k", InternalMapLookup (Read "m", "k").
 
-Definition lookup1 (key_type elem_type : go.type) : val :=
-  λ: "m" "k", Fst (lookup2 key_type elem_type "m" "k").
+Definition lookup1 : val :=
+  λ: "m" "k", Fst (lookup2 "m" "k").
 
-Definition insert (key_type elem_type : go.type) : val :=
-  λ: "m" "k" "v", Store "m" (InternalMapInsert (Read "m", "k", "v"), "def").
+Definition insert : val :=
+  λ: "m" "k" "v", Store "m" (InternalMapInsert (Read "m", "k", "v")).
 
 (* Does not support modifications to the map during the loop. *)
 Definition for_range (key_type elem_type : go.type) : val :=
@@ -50,14 +50,15 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
   map_lookup_pure k mv m (H : is_map_pure mv m) :
     map_lookup mv k = m k;
   is_map_pure_map_insert k v mv m (H : is_map_pure mv m) :
-    is_map_pure (map_insert mv k v) (λ k', if decide (k' = k) then (true, v) else m k);
-  map_delete_pure k mv m (H : is_map_pure mv m) :
+    is_map_pure (map_insert mv k v) (λ k', if decide (k' = k) then (true, v) else m k');
+  is_map_pure_map_delete k mv m (H : is_map_pure mv m) :
     is_map_pure (map_delete mv k)
-      (λ k', if decide (k' = k) then (false, map_default mv) else m k);
+      (λ k', if decide (k' = k) then (false, map_default mv) else m k');
   is_map_pure_mv_empty dv : is_map_pure (mv_empty dv) (const (false, dv));
 
   map_default_mv_empty dv : map_default (mv_empty dv) = dv;
-  map_default_insert m k v : map_default (map_insert m k v) = map_default m;
+  map_default_map_insert m k v : map_default (map_insert m k v) = map_default m;
+  map_default_map_delete m k : map_default (map_delete m k) = map_default m;
 
   is_map_domain_exists mv m (H : is_map_pure mv m) : ∃ ks, is_map_domain mv ks;
   is_map_domain_mv_empty dv ks : is_map_domain (mv_empty dv) ks → ks = [];
@@ -72,7 +73,7 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
                FuncResolve go.make1 [go.TypeLit $ go.MapType key_type elem_type] #())%V;
   delete_map key_type elem_type :
     #(functions go.delete [go.TypeLit $ go.MapType key_type elem_type]) =
-    (λ: "m" "v", Store "m" $ InternalMapDelete (Read "m", "k"))%V;
+    (λ: "m" "k", Store "m" $ InternalMapDelete (Read "m", "k"))%V;
   make2_map key_type elem_type :
     ∃ default_elem,
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =

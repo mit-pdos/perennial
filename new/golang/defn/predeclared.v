@@ -126,7 +126,7 @@ Class PredeclaredSemantics {go_ctx : GoContext} :=
 {
   alloc_predeclared t {V} (v : V) `{!IntoVal V} (H : is_predeclared_zero_val t v) :
     alloc t = (λ: <>, ref #v)%V;
-  load_predeclared t (H : is_predeclared t) : load t = (λ: "l", ! "l")%V;
+  load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
   store_predeclared t (H : is_predeclared t) : store t = (λ: "l" "v", "l" <- "v")%V;
 
   predeclared_underlying t (H : is_predeclared t) : to_underlying t = t;

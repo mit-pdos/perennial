@@ -381,6 +381,18 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Global Instance wp_InternalMapLookup mv k:
+  PureWp True (InternalMapLookup (mv, k)%V) (let '(ok, v) := map_lookup mv k in (v, #ok)).
+Proof. solve_pure. Qed.
+
+Global Instance wp_InternalMapInsert mv k v:
+  PureWp True (InternalMapInsert (mv, k, v)%V) (map_insert mv k v).
+Proof. solve_pure. Qed.
+
+Global Instance wp_InternalMapDelete mv k :
+  PureWp True (InternalMapDelete (mv, k)%V) (map_delete mv k).
+Proof. solve_pure. Qed.
+
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.
 Proof.
@@ -410,11 +422,25 @@ End go_wps.
 Section mem_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 (* Helper lemmas for establishing [IntoValTyped] *)
-Lemma _internal_wp_untyped_load l dq v s E :
+Lemma _internal_wp_untyped_atomic_load l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}
     ! #l @ s; E
   {{{ RET v; heap_pointsto l dq v }}}.
 Proof. rewrite into_val_unseal. apply lifting.wp_load. Qed.
+
+Lemma _internal_wp_untyped_read l dq v s E :
+  {{{ ▷ heap_pointsto l dq v }}}
+    Read #l @ s; E
+  {{{ RET v; heap_pointsto l dq v }}}.
+Proof.
+  rewrite into_val_unseal.
+  iIntros "% Hl HΦ".
+  wp_call.
+  wp_apply (wp_start_read with "Hl"). iIntros "[? ?]".
+  wp_pures.
+  wp_apply (wp_finish_read with "[$]").
+  iIntros "?". wp_pures. by iApply "HΦ".
+Qed.
 
 Lemma _internal_wp_untyped_store l v v' s E :
   {{{ ▷ heap_pointsto l (DfracOwn 1) v }}}
@@ -493,7 +519,7 @@ Ltac solve_wp_load :=
   iIntros "* Hl HΦ";
   rewrite go.load_primitive;
   wp_pures; rewrite typed_pointsto_unseal /=;
-  wp_apply (_internal_wp_untyped_load with "Hl");
+  wp_apply (_internal_wp_untyped_read with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
 Ltac solve_wp_store :=

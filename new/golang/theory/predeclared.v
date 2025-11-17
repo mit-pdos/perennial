@@ -21,7 +21,7 @@ Ltac solve_wp_load :=
   iIntros "* Hl HΦ";
   rewrite go.load_predeclared;
   wp_pures; rewrite typed_pointsto_unseal /=;
-  wp_apply (_internal_wp_untyped_load with "Hl");
+  wp_apply (_internal_wp_untyped_read with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
 Ltac solve_wp_store :=

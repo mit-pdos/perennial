@@ -116,7 +116,7 @@ Class CoreSemantics {go_ctx : GoContext} :=
         "l")%V;
 
   load_underlying t : load t = load (to_underlying t);
-  load_primitive t (H : is_primitive t) : load t = (λ: "l", ! "l")%V;
+  load_primitive t (H : is_primitive t) : load t = (λ: "l", Read "l")%V;
   load_struct fds :
     load (go.StructType fds) =
     (λ: "l",
