@@ -787,22 +787,16 @@ Proof.
     iFrame "Hi". iFrame. iSplitR; first word.
     iApply to_named. iExactEq "Hsl". f_equal.
     replace (sint.nat (word.add i (W64 1))) with (sint.nat i + 1)%nat by word.
-    rewrite insert_app_r_alt.
-    2:{ rewrite length_take. word. }
-    rewrite take_more.
-    2:{ word. }
+    rewrite insert_app_r_alt; last len.
+    rewrite take_more; last len.
     rewrite -app_assoc.
     f_equal.
-    rewrite insert_replicate_lt.
-    2:{ rewrite length_take. word. }
-    rewrite length_take.
-    rewrite Nat.min_l.
-    2:{ word. }
-    rewrite Nat.sub_diag.
-    simpl.
-    f_equal.
-    f_equal.
-    word.
+    rewrite insert_replicate_lt; last len.
+    rewrite length_take. rewrite Nat.min_l; last len.
+    rewrite Nat.sub_diag. simpl.
+    erewrite take_S_r.
+    2:{ rewrite lookup_drop. rewrite right_id. done. }
+    simpl. f_equal. f_equal. len.
   }
   {
     simpl.
@@ -817,25 +811,7 @@ Proof.
     rewrite replicate_eq_0; [ | word ].
     rewrite app_nil_r //.
   }
-  Fail idtac.
-Admitted.
-
-(* TODO: not sound, need 0 ≤ sint i *)
-Global Instance points_to_access_slice_elem_ref s (i : w64) (vs : list V) dq v
-  {Hlookup : TCSimpl (vs !! (sint.nat i)) (Some v)}
-  : PointsToAccess (slice.elem_ref_f s t i) v dq (s ↦[t]*{dq} vs)
-      (λ v', s ↦[t]*{dq} <[(sint.nat i) := v']> vs).
-Proof.
-(*
-  constructor.
-  - inv Hlookup.
-    iIntros "Hs".
-    iDestruct (own_slice_elem_acc with "Hs") as "Hs"; eauto.
-  - inv Hlookup.
-    rewrite list_insert_id //.
 Qed.
-*)
-Admitted.
 
 Lemma wp_load_slice_elem s (i: w64) (vs: list V) dq v :
   0 ≤ sint.Z i →
