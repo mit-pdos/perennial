@@ -1,5 +1,5 @@
 From New.golang.defn Require Export map.
-From New.golang.theory Require Export array predeclared auto.
+From New.golang.theory Require Export mem array predeclared auto.
 
 Set Default Proof Using "Type".
 
@@ -24,7 +24,7 @@ Proof.
       last (by repeat econstructor); done. }
   iIntros "* %Hstep".
   inv Hstep. inv Hpure.
-  iIntros "? $ !>". simpl. wp_pures. iApply "HΦ". done.
+  iIntros "? $ !>". simpl. wp_auto. iApply "HΦ". done.
 Qed.
 
 
@@ -149,9 +149,8 @@ Lemma wp_map_delete l (m : gmap K V) k key_type elem_type :
   {{{ RET #(); l ↦$ delete k m }}}.
 Proof using Inj0.
   wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
-  wp_apply (_internal_wp_untyped_read with "Hown"). iIntros "Hown".
-  wp_pures.
-  wp_apply (_internal_wp_untyped_store with "Hown"). iIntros "Hown".
+  wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
+  wp_apply (_internal_wp_untyped_store with "Hown") as "Hown".
   iApply "HΦ". iFrame "Hown".
   iPureIntro. eexists. split_and!.
   - by apply go.is_map_pure_map_delete.
@@ -167,11 +166,11 @@ Lemma wp_map_lookup2 l (m : gmap K V) k dq :
   {{{ RET (#(default (zero_val V) (m !! k)), #(bool_decide (is_Some (m !! k)))); l ↦${dq} m }}}.
 Proof.
   wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
-  wp_apply (_internal_wp_untyped_read with "Hown"). iIntros "Hown". wp_pures.
+  wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
   erewrite go.map_lookup_pure; last done.
-  pose proof (Hagree k) as Heq. rewrite Heq. destruct (m !! k).
-  - wp_pures. iApply "HΦ". iFrame "∗#%".
-  - wp_pures. iApply "HΦ". iFrame "∗#%".
+  pose proof (Hagree k) as Heq. rewrite Heq. destruct (m !! k); wp_auto.
+  - iApply "HΦ". iFrame "∗#%".
+  - iApply "HΦ". iFrame "∗#%".
 Qed.
 
 Lemma wp_map_lookup1 l (m : gmap K V) k dq :
@@ -182,12 +181,19 @@ Proof.
   wp_start as "Hm". wp_apply (wp_map_lookup2 with "Hm") as "Hm". by iApply "HΦ".
 Qed.
 
-Lemma wp_map_make :
-  is_comparable_go_type kt = true →
+Lemma wp_map_make2 (len : w64) key_type elem_type
+  `{!IntoValComparable K key_type}
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
-    map.make kt vt #()
+    #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof.
+  wp_start. pose proof (go.make2_map key_type elem_type) as [def Hunfold].
+  rewrite Hunfold. wp_auto.
+  wp_alloc tmp as "?". wp_auto.
+  wp_bind.
+  (* FIXME: better plan for zero_val. *)
+
   rewrite own_map_unseal.
   iIntros (??) "_ HΦ".
   wp_call.
@@ -199,6 +205,10 @@ Proof.
   iFrame. iPureIntro.
   naive_solver.
 Qed.
+
+Local Instance make1_unfold key_type elem_type :
+  FuncUnfold go.make1 [go.TypeLit $ go.MapType key_type elem_type] _ :=
+  ltac:(constructor; apply go.make1_map).
 
 #[global]
 Instance own_map_discarded_persist mref m : Persistent (own_map mref DfracDiscarded m).
