@@ -28,7 +28,7 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition CompareAndSwapInt64ⁱᵐᵖˡ : val :=
     λ: "addr" "old" "new",
       Snd (CmpXchg "addr" "old" "new").
-  
+
   (** Uint32 *)
   Definition LoadUint32ⁱᵐᵖˡ : val :=
     λ: "addr", Load "addr".
@@ -39,7 +39,7 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition CompareAndSwapUint32ⁱᵐᵖˡ : val :=
     λ: "addr" "old" "new",
       Snd (CmpXchg "addr" "old" "new").
-  
+
   (** Int32 *)
   Definition LoadInt32ⁱᵐᵖˡ : val :=
     λ: "addr", Load "addr".
@@ -50,8 +50,33 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition CompareAndSwapInt32ⁱᵐᵖˡ : val :=
     λ: "addr" "old" "new",
       Snd (CmpXchg "addr" "old" "new").
-  
+
 (* END AUTO-GENERATED *)
+
+Definition noCopy : go_type := structT [
+].
+#[global] Typeclasses Opaque noCopy.
+#[global] Opaque noCopy.
+
+Definition Pointer : val :=
+  λ: "T", type.structT [
+    (#"_0"%go, type.arrayT #(W64 0) #ptrT);
+    (#"_1"%go, #(structT [])); (* XXX: inlined noCopy *)
+    (#"v"%go, #ptrT)
+  ].
+#[global] Typeclasses Opaque Pointer.
+#[global] Opaque Pointer.
+
+Definition Pointer__Loadⁱᵐᵖˡ: val :=
+  λ: "p" "T", Load (struct.field_ref (Pointer "T") #"v" "p").
+Definition Pointer__Storeⁱᵐᵖˡ: val :=
+  λ: "p" "T" "v", AtomicStore (struct.field_ref (Pointer "T") #"v" "p") "v".
+Definition Pointer__CompareAndSwapⁱᵐᵖˡ: val :=
+  λ: "p" "T" "old" "new",
+    let: "l" := ![#ptrT] (struct.field_ref (Pointer "T") #"v" "p") in
+    Snd (CmpXchg "l" "old" "new").
+Definition Pointer__Swapⁱᵐᵖˡ: val :=
+  λ: "p" "T" "new", Panic "unimplemented".
 
 End code.
 End atomic.

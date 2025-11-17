@@ -286,7 +286,7 @@ Qed.
     iMod "HΦ" as (?) "[>Haddr HΦ]".
     unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
   Qed.
-  
+
   Lemma wp_StoreInt64 (addr : loc) (v : w64) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -297,7 +297,7 @@ Qed.
     iMod "HΦ" as (?) "[>Haddr HΦ]".
     unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
   Qed.
-  
+
   Lemma wp_AddInt64 (addr : loc) (v : w64) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -311,7 +311,7 @@ Qed.
     iApply (wp_atomic_op with "Haddr"); first done.
     iFrame.
   Qed.
-  
+
   Lemma wp_CompareAndSwapInt64 (addr : loc) (old : w64) (new : w64) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -341,7 +341,7 @@ Qed.
       by wp_auto.
     }
   Qed.
-  
+
   #[global] Opaque own_Int64.
   #[local] Transparent own_Int64.
   Global Instance own_Int64_timeless a b c : Timeless (own_Int64 a b c) := _.
@@ -355,7 +355,7 @@ Qed.
     rewrite go_type_size_unseal. iDestruct "H" as %?. iModIntro. iPureIntro.
     naive_solver.
   Qed.
-  
+
   Lemma Int64_unfold l dq (x: w64) :
     own_Int64 l dq x ⊣⊢
     l ↦s[atomic.Int64 :: "v"]{dq} x.
@@ -371,7 +371,7 @@ Qed.
       rewrite -?noCopy_emp -?align_emp.
       done.
   Qed.
-  
+
   Lemma wp_Int64__Load u dq :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -383,12 +383,12 @@ Qed.
     wp_apply (wp_LoadInt64 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       (* FIXME: StructFieldsSplit typeclass is shelved unless something is specified up front. *)
@@ -398,7 +398,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Int64__Store u v :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -410,12 +410,12 @@ Qed.
     wp_apply (wp_StoreInt64 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Int64.t)).
@@ -424,7 +424,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Int64__Add u delta :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -438,12 +438,12 @@ Qed.
     wp_apply (wp_AddInt64 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Int64.t)).
@@ -452,7 +452,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Int64__CompareAndSwap u old new :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -466,14 +466,14 @@ Qed.
     wp_apply (wp_CompareAndSwapInt64 with "[$]").
     iMod "HΦ". iModIntro. iNext.
     iDestruct "HΦ" as (??) "(Hown & -> & HΦ)".
-  
+
     iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iSplitR.
     { by destruct decide. }
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Int64.t)).
@@ -482,7 +482,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   (** Uint32 *)
   Lemma wp_LoadUint32 (addr : loc) dq :
     ∀ Φ,
@@ -494,7 +494,7 @@ Qed.
     iMod "HΦ" as (?) "[>Haddr HΦ]".
     unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
   Qed.
-  
+
   Lemma wp_StoreUint32 (addr : loc) (v : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -505,7 +505,7 @@ Qed.
     iMod "HΦ" as (?) "[>Haddr HΦ]".
     unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
   Qed.
-  
+
   Lemma wp_AddUint32 (addr : loc) (v : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -519,7 +519,7 @@ Qed.
     iApply (wp_atomic_op with "Haddr"); first done.
     iFrame.
   Qed.
-  
+
   Lemma wp_CompareAndSwapUint32 (addr : loc) (old : w32) (new : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -549,7 +549,7 @@ Qed.
       by wp_auto.
     }
   Qed.
-  
+
   #[global] Opaque own_Uint32.
   #[local] Transparent own_Uint32.
   Global Instance own_Uint32_timeless a b c : Timeless (own_Uint32 a b c) := _.
@@ -563,7 +563,7 @@ Qed.
     rewrite go_type_size_unseal. iDestruct "H" as %?. iModIntro. iPureIntro.
     naive_solver.
   Qed.
-  
+
   Lemma Uint32_unfold l dq (x: w32) :
     own_Uint32 l dq x ⊣⊢
     l ↦s[atomic.Uint32 :: "v"]{dq} x.
@@ -579,7 +579,7 @@ Qed.
       rewrite -?noCopy_emp -?align_emp.
       done.
   Qed.
-  
+
   Lemma wp_Uint32__Load u dq :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -591,12 +591,12 @@ Qed.
     wp_apply (wp_LoadUint32 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       (* FIXME: StructFieldsSplit typeclass is shelved unless something is specified up front. *)
@@ -606,7 +606,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Uint32__Store u v :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -618,12 +618,12 @@ Qed.
     wp_apply (wp_StoreUint32 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Uint32.t)).
@@ -632,7 +632,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Uint32__Add u delta :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -646,12 +646,12 @@ Qed.
     wp_apply (wp_AddUint32 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Uint32.t)).
@@ -660,7 +660,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Uint32__CompareAndSwap u old new :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -674,14 +674,14 @@ Qed.
     wp_apply (wp_CompareAndSwapUint32 with "[$]").
     iMod "HΦ". iModIntro. iNext.
     iDestruct "HΦ" as (??) "(Hown & -> & HΦ)".
-  
+
     iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iSplitR.
     { by destruct decide. }
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Uint32.t)).
@@ -690,7 +690,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   (** Int32 *)
   Lemma wp_LoadInt32 (addr : loc) dq :
     ∀ Φ,
@@ -702,7 +702,7 @@ Qed.
     iMod "HΦ" as (?) "[>Haddr HΦ]".
     unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
   Qed.
-  
+
   Lemma wp_StoreInt32 (addr : loc) (v : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -713,7 +713,7 @@ Qed.
     iMod "HΦ" as (?) "[>Haddr HΦ]".
     unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
   Qed.
-  
+
   Lemma wp_AddInt32 (addr : loc) (v : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -727,7 +727,7 @@ Qed.
     iApply (wp_atomic_op with "Haddr"); first done.
     iFrame.
   Qed.
-  
+
   Lemma wp_CompareAndSwapInt32 (addr : loc) (old : w32) (new : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -757,7 +757,7 @@ Qed.
       by wp_auto.
     }
   Qed.
-  
+
   #[global] Opaque own_Int32.
   #[local] Transparent own_Int32.
   Global Instance own_Int32_timeless a b c : Timeless (own_Int32 a b c) := _.
@@ -771,7 +771,7 @@ Qed.
     rewrite go_type_size_unseal. iDestruct "H" as %?. iModIntro. iPureIntro.
     naive_solver.
   Qed.
-  
+
   Lemma Int32_unfold l dq (x: w32) :
     own_Int32 l dq x ⊣⊢
     l ↦s[atomic.Int32 :: "v"]{dq} x.
@@ -787,7 +787,7 @@ Qed.
       rewrite -?noCopy_emp -?align_emp.
       done.
   Qed.
-  
+
   Lemma wp_Int32__Load u dq :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -799,12 +799,12 @@ Qed.
     wp_apply (wp_LoadInt32 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       (* FIXME: StructFieldsSplit typeclass is shelved unless something is specified up front. *)
@@ -814,7 +814,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Int32__Store u v :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -826,12 +826,12 @@ Qed.
     wp_apply (wp_StoreInt32 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Int32.t)).
@@ -840,7 +840,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Int32__Add u delta :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -854,12 +854,12 @@ Qed.
     wp_apply (wp_AddInt32 with "[$]").
     iMod "HΦ". iModIntro.
     iDestruct "HΦ" as (?) "[Hown HΦ]".
-  
+
     iNext. iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Int32.t)).
@@ -868,7 +868,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
   Lemma wp_Int32__CompareAndSwap u old new :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -882,14 +882,14 @@ Qed.
     wp_apply (wp_CompareAndSwapInt32 with "[$]").
     iMod "HΦ". iModIntro. iNext.
     iDestruct "HΦ" as (??) "(Hown & -> & HΦ)".
-  
+
     iDestruct (struct_fields_split with "Hown") as "Hl".
     iNamed "Hl". simpl.
     iExists _. iFrame.
     iSplitR.
     { by destruct decide. }
     iIntros "Hv".
-  
+
     iMod ("HΦ" with "[-]").
     {
       iApply (struct_fields_combine (V:=atomic.Int32.t)).
@@ -898,7 +898,7 @@ Qed.
     iModIntro.
     wp_auto. done.
   Qed.
-  
+
 (* END AUTO-GENERATED *)
 
 (** Bool *)
@@ -1051,5 +1051,65 @@ Proof.
   wp_auto.
   destruct v, old; auto.
 Qed.
+
+(** Pointer *)
+Section pointer.
+Context `{!IntoVal T'} `{!IntoValTyped T' T} `{!BoundedTypeSize T}.
+
+Definition own_Pointer (u : loc) dq (v : loc) : iProp Σ :=
+  u ↦{dq} atomic.Pointer.mk (T:=T) (T':=T') (default_val _) (default_val _) v.
+#[global] Opaque own_Pointer.
+#[local] Transparent own_Pointer.
+Global Instance own_Pointer_timeless a b c : Timeless (own_Pointer a b c) := _.
+
+Lemma wp_Pointer__Load u dq :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ∃ v, own_Pointer u dq v ∗ (own_Pointer u dq v ={∅,⊤}=∗ Φ #v)) -∗
+  WP u @ (ptrT.id atomic.Pointer.id) @ "Load" #T {{ Φ }}.
+Proof using BoundedTypeSize0.
+  wp_start as "_".
+  iMod "HΦ" as (?) "[Haddr HΦ]"; try tc_solve.
+  rewrite /own_Pointer.
+  iApply struct_fields_split in "Haddr"; simpl.
+  iNamed "Haddr".
+  unshelve iApply (wp_typed_Load with "[$]"); try tc_solve.
+  { done. }
+  iModIntro.
+  iIntros "Hv".
+  iMod ("HΦ" with "[H_0 H_1 Hv]") as "HΦ".
+  {
+    iApply @struct_fields_combine; simpl.
+    iFrame.
+  }
+  done.
+Qed.
+
+Lemma wp_Pointer__Store u v' :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ∃ v, own_Pointer u (DfracOwn 1) v ∗ (own_Pointer u (DfracOwn 1) v' ={∅,⊤}=∗ Φ #())) -∗
+  WP u @ (ptrT.id atomic.Pointer.id) @ "Store" #T #v' {{ Φ }}.
+Proof using BoundedTypeSize0.
+  wp_start as "_".
+  iMod "HΦ" as (?) "[Haddr HΦ]"; try tc_solve.
+  rewrite /own_Pointer.
+  iApply struct_fields_split in "Haddr"; simpl.
+  iNamed "Haddr".
+  unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve.
+  { done. }
+  iModIntro.
+  iIntros "Hv".
+  iMod ("HΦ" with "[H_0 H_1 Hv]") as "HΦ".
+  {
+    iApply @struct_fields_combine; simpl.
+    iFrame.
+  }
+  done.
+Qed.
+
+
+End pointer.
+
 
 End wps.
