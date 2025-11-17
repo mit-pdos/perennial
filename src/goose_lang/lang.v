@@ -151,9 +151,12 @@ Proof. refine (
        intros H. inversion H. done.
 Defined.
 
-Inductive go_op : Type :=
+Inductive go_instruction : Type :=
 | AngelicExit
 
+(* TODO: other operators (Add, Mul, etc.) should be defined this way, so signed
+   v.s. unsigned mul can be done systematically, and add for integers vs add for
+   strings as well. *)
 | GoEquals (t : go.type)
 | GoLt (t : go.type)
 | GoLe (t : go.type)
@@ -168,6 +171,7 @@ Inductive go_op : Type :=
 | FuncResolve (f : go_string) (type_args : list go.type)
 | MethodResolve (t : go.type) (m : go_string)
 
+| InterfaceMake (t : go.type)
 | InterfaceGet (m : go_string)
 | TypeAssert (t : go.type)
 | TypeAssert2 (t : go.type)
@@ -252,7 +256,7 @@ with val :=
   On the Go side, these should be pointers to some private type. *)
   | ExtV (ev : ffi_val)
   (* Go stuff *)
-  | GoInstruction (o : go_op)
+  | GoInstruction (o : go_instruction)
   | StructV (fvs : gmap go_string val)
   | ArrayV (vs : list val)
   | InterfaceV (t : option (go.type * val)).
@@ -750,7 +754,7 @@ Definition type_set_contains {go_ctx : GoContext} t t' : bool :=
   end.
 
 Inductive is_go_step_pure `{!GoContext} :
-  ∀ (op : go_op) (arg : val) (e' : expr), Prop :=
+  ∀ (op : go_instruction) (arg : val) (e' : expr), Prop :=
 | angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
 | equals_step t v1 v2 :
   is_go_step_pure (GoEquals t) (v1, v2)%V
@@ -773,6 +777,8 @@ Inductive is_go_step_pure `{!GoContext} :
 | prealloc_step (l : loc) : is_go_step_pure GoPrealloc #() #l
 | func_resolve_step f targs : is_go_step_pure (FuncResolve f targs) #() #(functions f targs)
 | method_resolve_step t m : is_go_step_pure (MethodResolve t m) #() #(methods t m)
+| interface_make_step dt v :
+  is_go_step_pure (InterfaceMake dt) v #(interface.mk dt v)
 | interface_get_step m i :
   is_go_step_pure (InterfaceGet m) #i
     (match i with
@@ -855,7 +861,7 @@ Inductive is_go_step_pure `{!GoContext} :
   is_go_step_pure InternalMapLookup (m, k, v) (map_insert m k v).
 
 Inductive is_go_step `{!GoContext} :
-  ∀ (op : go_op) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
+  ∀ (op : go_instruction) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
 | package_init_check_step s p :
   is_go_step (PackageInitCheck p) #() #(default false (s !! p)) s s
 | package_init_start_step s p : is_go_step (PackageInitStart p) #() #() s (<[ p := false ]> s)
@@ -950,7 +956,7 @@ Global Instance prim_op2_eq_dec : EqDecision prim_op2.
 Proof. solve_decision. Defined.
 Global Instance prim_op_eq_dec ar : EqDecision (prim_op ar).
 Proof. destruct ar; simpl; apply _. Defined.
-Global Instance go_op_eq_dec : EqDecision go_op.
+Global Instance go_instruction_eq_dec : EqDecision go_instruction.
 Proof. solve_decision. Qed.
 Global Instance expr_eq_dec : EqDecision expr.
 Proof using ext.
@@ -1521,7 +1527,7 @@ Definition val_cmpxchg_safe (v : val) : bool :=
   | _ => false
   end.
 
-Definition go_instruction_step (op : go_op) (arg : val) :
+Definition go_instruction_step (op : go_instruction) (arg : val) :
   transition (state * global_state) (list observation * expr * list expr) :=
   '(e', s') ← suchThat
     (λ '(σ,g) '(e', s'),

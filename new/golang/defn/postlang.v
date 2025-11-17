@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Export lang.
 From Perennial Require Export base.
 
 #[warning="-uniform-inheritance"]
-Global Coercion GoInstruction : go_op >-> val.
+Global Coercion GoInstruction : go_instruction >-> val.
 
 Global Notation "()" := tt : val_scope.
 Global Opaque into_val.

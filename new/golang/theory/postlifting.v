@@ -187,6 +187,10 @@ Global Instance pure_wp_InterfaceGet m t v :
   PureWp True (InterfaceGet m #(interface.mk t v)) (MethodResolve t m #() v).
 Proof. solve_pure. Qed.
 
+Global Instance pure_wp_InterfaceMake dt (v : val) :
+  PureWp True (InterfaceMake dt v) #(interface.mk dt v).
+Proof. solve_pure. Qed.
+
 Global Instance pure_wp_TypeAssert_non_interface t v :
   PureWp (is_interface_type t = false) (TypeAssert t #(interface.mk t v)) v.
 Proof.

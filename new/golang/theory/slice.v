@@ -850,6 +850,8 @@ Proof.
   - wp_if_destruct; try wp_auto.
     {
       list_elem vs' (sint.Z i) as y.
+      rewrite decide_True //.
+      wp_auto.
       wp_pure; first word. wp_auto.
       wp_pure; first word. wp_auto.
       wp_apply (wp_load_slice_index with "[$Hs2]") as "Hs2".
@@ -874,13 +876,15 @@ Proof.
       rewrite -app_assoc /=.
       rewrite -> length_take_le by word.
       repeat (f_equal; try word). }
+    rewrite decide_False //. rewrite decide_True //. wp_auto.
     iApply "HΦ".
     iSplit; [ word | ].
     iFrame "Hs2".
     rewrite -> !take_ge by word.
     iExactEq "Hs1".
     repeat (f_equal; try word).
-  - iApply "HΦ".
+  - rewrite decide_False //. rewrite decide_True //. wp_auto.
+    iApply "HΦ".
     iSplit; [ word | ].
     iFrame "Hs2".
     rewrite -> !drop_ge, !app_nil_r by word.
