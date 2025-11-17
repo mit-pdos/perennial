@@ -20,8 +20,7 @@ Definition for_range (elem_type : go.type) : val :=
   for: (λ: <>, (![go.int] "i") <⟨go.int⟩
           (FuncResolve go.len [go.TypeLit $ go.SliceType elem_type]) #() "s") ;
                       (λ: <>, "i" <-[go.int] (![go.int] "i") + #(W64 1)) :=
-    (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type)) ("s", (![go.int] "i"))))
-.
+    (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type)) ("s", (![go.int] "i")))).
 
 (* Takes in a list as input, and turns it into a heap-allocated slice. *)
 Definition literal (elem_type : go.type) (len : w64) : val :=

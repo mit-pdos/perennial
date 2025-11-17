@@ -133,8 +133,9 @@ Class PredeclaredSemantics {go_ctx : GoContext} :=
 
   len_underlying t : functions len [t] = functions len [to_underlying t];
   cap_underlying t : functions cap [t] = functions cap [to_underlying t];
-  copy_underlying t : functions copy [t] = functions copy [to_underlying t];
   clear_underlying t : functions clear [t] = functions clear [to_underlying t];
+  copy_underlying t : functions copy [t] = functions copy [to_underlying t];
+  delete_underlying t : functions delete [t] = functions delete [to_underlying t];
   make3_underlying t : functions make3 [t] = functions make3 [to_underlying t];
   make2_underlying t : functions make2 [t] = functions make2 [to_underlying t];
   make1_underlying t : functions make1 [t] = functions make1 [to_underlying t];

@@ -1,15 +1,15 @@
-From Perennial.Helpers Require Import NamedProps.
-From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export map.
 From New.golang.theory Require Export mem exception loop.
 From Perennial Require Import base.
 
-Transparent map.insert map.get map.delete map.for_range map.len map.make.
-
 Set Default Proof Using "Type".
 
 Section defns_and_lemmas.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {core_sem : go.CoreSemantics}
+  {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics}
+  {slice_sem : go.SliceSemantics}.
 
 (* NOTE: we assume EqDecision explicitly here even though it is also available
 through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]

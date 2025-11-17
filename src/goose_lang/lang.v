@@ -198,11 +198,14 @@ Inductive go_instruction : Type :=
 | FullSlice (t : go.type)
 
 | ArrayAppend
+| ArrayLength
 
 (* these are internal steps; the Go map lookup has to be implemented as multiple
    instructions because it is not atomic. *)
+| InternalMapDomain
 | InternalMapLookup
 | InternalMapInsert
+| InternalMapDelete
 .
 
 (* TODO:
@@ -569,9 +572,10 @@ Class GoContext {ext : ffi_syntax} : Type :=
     array_index_ref (elem_type : go.type) (i : Z) (l : loc) : loc;
 
     to_underlying : go.type → go.type;
-    is_map_pure (v : val) (m : val → bool * val) : Prop;
     map_lookup : val → val → bool * val;
     map_insert : val → val → val → val;
+    map_delete : val → val → val;
+    is_map_domain : val → list val → Prop;
   }.
 
 Class IntoVal {ext : ffi_syntax} (V : Type) :=
@@ -859,10 +863,20 @@ Inductive is_go_step_pure `{!GoContext} :
 | index_ref_step t v (j : w64) : is_go_step_pure (IndexRef t) (v, #j) (index_ref t (sint.Z j) v)
 | index_step t v (j : w64) : is_go_step_pure (Index t) (v, #j) (index t (sint.Z j) v)
 | array_append_step_pure l v : is_go_step_pure ArrayAppend (ArrayV l, v) (ArrayV $ l ++ [v])
+| array_length_step_pure l :
+  is_go_step_pure ArrayLength (ArrayV l)
+    (if decide (length l < 2^63) then
+       #(W64 (length l))
+     else (GoInstruction AngelicExit #()))
 | internal_map_lookup_step_pure m k :
   is_go_step_pure InternalMapLookup (m, k) (let '(ok, v) := map_lookup m k in (v, #ok))
 | internal_map_insert_step_pure m k v :
-  is_go_step_pure InternalMapLookup (m, k, v) (map_insert m k v).
+  is_go_step_pure InternalMapInsert (m, k, v) (map_insert m k v)
+| internal_map_delete_step_pure m k :
+  is_go_step_pure InternalMapDelete (m, k) (map_delete m k)
+| internal_map_domain_step_pure m ks (H : is_map_domain m ks) :
+  is_go_step_pure InternalMapDomain m (ArrayV ks)
+.
 
 Inductive is_go_step `{!GoContext} :
   ∀ (op : go_instruction) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
@@ -1076,9 +1090,10 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     index_ref := inhabitant;
     array_index_ref := inhabitant;
     to_underlying := inhabitant;
-    is_map_pure := inhabitant;
     map_lookup := inhabitant;
     map_insert := inhabitant;
+    map_delete := inhabitant;
+    is_map_domain := inhabitant;
   |}.
 Global Instance GoState_inhabited : Inhabited GoState :=
   populate {| go_context := inhabitant; package_state := inhabitant |}.
