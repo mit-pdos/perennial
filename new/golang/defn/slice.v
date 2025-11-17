@@ -49,6 +49,28 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
   equals_slice_nil_r t s :
     go_equals (go.SliceType t) #slice.nil #s = Some $ bool_decide (s = slice.nil);
 
+  clear_slice elem_type :
+    #(functions go.clear [go.TypeLit $ go.SliceType elem_type]) =
+    (λ: "sl",
+       let st : go.type := go.SliceType elem_type in
+       let: "zero_sl" := FuncResolve go.make2 [st] #() (FuncResolve go.len [st] #() "sl") in
+       FuncResolve go.copy [st] #() "sl" "zero_sl";;
+    #())%V;
+
+  copy_slice elem_type :
+    #(functions go.copy [go.TypeLit $ go.SliceType elem_type]) =
+    (λ: "dst" "src",
+       let st : go.type := go.SliceType elem_type in
+       let: "i" := GoAlloc go.int #() in
+       (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
+                (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, Skip) :=
+          (λ: <>,
+             do: (let: "i_val" := ![go.int] "i" in
+                  IndexRef st ("dst", "i_val")
+                      <-[elem_type] ![elem_type] (IndexRef st ("src", "i_val"));;
+                  "i" <-[go.int] "i_val" + #(W64 1))));;
+       ![go.int] "i")%V;
+
   make3_slice elem_type :
     #(functions go.make3 [go.TypeLit $ go.SliceType elem_type]) =
     (λ: "len" "cap",
@@ -83,21 +105,6 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
   cap_slice elem_type :
     #(functions go.cap [go.TypeLit $ go.SliceType elem_type]) =
     (λ: "s", InternalCap (go.SliceType elem_type) "s")%V;
-
-  copy_underlying t : functions go.copy [t] = functions go.copy [to_underlying t];
-  copy_slice elem_type :
-    #(functions go.copy [go.TypeLit $ go.SliceType elem_type]) =
-    (λ: "dst" "src",
-       let st : go.type := go.SliceType elem_type in
-       let: "i" := GoAlloc go.int #() in
-       (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
-                (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, Skip) :=
-          (λ: <>,
-             do: (let: "i_val" := ![go.int] "i" in
-                  IndexRef st ("dst", "i_val")
-                      <-[elem_type] ![elem_type] (IndexRef st ("src", "i_val"));;
-                  "i" <-[go.int] "i_val" + #(W64 1))));;
-       ![go.int] "i")%V;
 
   append_underlying t : functions go.append [t] = functions go.append [to_underlying t];
   append_slice elem_type :

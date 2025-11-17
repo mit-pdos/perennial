@@ -44,5 +44,10 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
   make1_map key_type elem_type :
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: <>, FuncResolve go.make2 [go.TypeLit $ go.MapType key_type elem_type] #() #(W64 0))%V;
+
+  clear_map key_type elem_type :
+    #(functions go.clear [go.TypeLit $ go.MapType key_type elem_type]) =
+    (λ: "m", Store "m" $ Load $
+               FuncResolve go.make1 [go.TypeLit $ go.MapType key_type elem_type] #())%V;
 }.
 End go.
