@@ -73,7 +73,7 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
   index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
     index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);
 
-  index_slice_slice elem_type i (s : slice.t) :
+  index_slice elem_type i (s : slice.t) :
     index (go.SliceType elem_type) i #s =
     GoLoad elem_type $ (Index $ go.SliceType elem_type) (#(W64 i), #s)%V;
   len_slice elem_type :

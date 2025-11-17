@@ -560,6 +560,10 @@ Class GoContext {ext : ffi_syntax} : Type :=
 
     struct_field_ref : go.type → go_string → loc → loc;
 
+    (* map index expressions have their own implementation that does not use the
+       `Index` primitive. It's statically (even with type parameters) known
+       whether an index expression is a map index expression or not a map index
+       expression. https://go.dev/ref/spec#Index_expressions *)
     index (container_type : go.type) (i : Z) (v : val) : expr;
     index_ref (container_type : go.type) (i : Z) (v : val) : expr;
     array_index_ref (elem_type : go.type) (i : Z) (l : loc) : loc;
