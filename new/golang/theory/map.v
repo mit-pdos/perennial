@@ -174,6 +174,14 @@ Proof.
   - wp_pures. iApply "HΦ". iFrame "∗#%".
 Qed.
 
+Lemma wp_map_lookup1 l (m : gmap K V) k dq :
+  {{{ l ↦${dq} m }}}
+    map.lookup1 #l #k
+  {{{ RET (#(default (zero_val V) (m !! k))); l ↦${dq} m }}}.
+Proof.
+  wp_start as "Hm". wp_apply (wp_map_lookup2 with "Hm") as "Hm". by iApply "HΦ".
+Qed.
+
 Lemma wp_map_make :
   is_comparable_go_type kt = true →
   {{{ True }}}
