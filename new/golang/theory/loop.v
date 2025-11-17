@@ -9,21 +9,21 @@ Set Default Proof Using "Type".
 exported interface of this file. *)
 
 Section wps.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+Local Set Default Proof Using "Type core_sem pre_sem".
 
 Global Instance pure_continue_val (v1 : val) :
   PureWp True (exception_seq v1 (continue_val)) (continue_val).
 Proof.
   rewrite exception_seq_unseal continue_val_unseal.
-  intros ?????. iIntros "Hwp".
-  wp_call_lc "?". rewrite bool_decide_false //. wp_pures. by iApply "Hwp".
+  intros ?????. iIntros "Hwp". wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance pure_break_val (v1 : val) : PureWp True (exception_seq v1 (break_val)) (break_val).
 Proof.
   rewrite exception_seq_unseal break_val_unseal.
-  intros ?????. iIntros "Hwp".
-  wp_call_lc "?". rewrite bool_decide_false //. wp_pures. by iApply "Hwp".
+  intros ?????. iIntros "Hwp". wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance pure_do_continue_val : PureWp True (continue: #()) (continue_val).
@@ -77,8 +77,7 @@ Proof.
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "continue" *)
       subst. wp_pures. rewrite continue_val_unseal.
-      wp_pures. rewrite bool_decide_false //. wp_pures.
-      rewrite bool_decide_true //. wp_pures.
+      wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -90,10 +89,8 @@ Proof.
     }
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "execute" *)
-      subst. rewrite execute_val_unseal. wp_pures. (* FIXME: don't unfold [do:] here *)
-      wp_pures. rewrite bool_decide_false //. wp_pures.
-      rewrite bool_decide_false //. wp_pures.
-      rewrite bool_decide_true //. wp_pures.
+      subst. rewrite execute_val_unseal. wp_pures.
+      wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -105,7 +102,7 @@ Proof.
     }
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "break" *)
-      subst. rewrite break_val_unseal. wp_pures. rewrite bool_decide_true //. wp_pures.
+      subst. rewrite break_val_unseal. wp_pures.
       by iFrame.
     }
     iDestruct "Hb" as (?) "[% HΦ]".

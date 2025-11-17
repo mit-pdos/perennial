@@ -1,3 +1,5 @@
+From Perennial.Helpers Require Export List ListLen Fractional NamedProps.
+(* Some of these imports (like the helpers) are for files that import postlifting.v *)
 From iris.bi.lib Require Import fractional.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
@@ -11,9 +13,9 @@ Export RecordSetNotations.
 Section into_val_defs.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Class IntoValComparable t (V : Type) `{!IntoVal V} `{!EqDecision V} :=
+Class IntoValComparable (V : Type) t `{!IntoVal V} `{!EqDecision V} :=
   {
-    into_val_comparable : go.is_strictly_comparable_sem t V;
+    into_val_comparable : go.is_strictly_comparable t V;
   }.
 
 Class TypedPointsto (V : Type) `{!IntoVal V} :=
@@ -101,12 +103,12 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
 
 
 Section into_val_comparable_instances.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hcore : go.CoreSemantics}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
 
 Global Instance into_val_loc_inj : Inj eq eq (into_val (V:=loc)).
 Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
-Global Instance into_val_comparable_loc t : IntoValComparable (go.PointerType t) loc.
+Global Instance into_val_comparable_loc t : IntoValComparable loc (go.PointerType t).
 Proof. constructor. apply go.equals_pointer. Qed.
 
 Global Instance into_val_slice_inj : Inj eq eq (into_val (V:=slice.t)).
@@ -136,7 +138,7 @@ Proof. rewrite into_val_unseal; intros ? ?. inversion 1. destruct x, y; naive_so
 End into_val_comparable_instances.
 
 Section go_wps.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hcore : go.CoreSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
 
 Local Ltac solve_pure :=
   iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
@@ -279,7 +281,7 @@ Proof.
     intros HR. apply H. subst. done. }
 Qed.
 
-Global Instance wp_eq `{!IntoVal V} `{!EqDecision V} `{!IntoValComparable t V} (v1 v2 : V) :
+Global Instance wp_eq `[!IntoVal V] `[!EqDecision V] `[!IntoValComparable V t] (v1 v2 : V) :
   PureWp True (GoEquals t (#v1, #v2)%V) #(bool_decide (v1 = v2)).
 Proof.
   iIntros (?) "* _ * HΦ".
@@ -358,6 +360,30 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Lemma wp_fork s E e Φ :
+  ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.
+Proof.
+  iIntros "Hwp HΦ".
+  wp_apply (lifting.wp_fork with "[$Hwp]").
+  replace (LitV LitUnit) with #().
+  { iFrame "HΦ". }
+  rewrite into_val_unseal //.
+Qed.
+
+(* use new goose's to_val for the return value *)
+Lemma wp_ArbitraryInt s E  :
+  {{{ True }}}
+    ArbitraryInt @ s; E
+  {{{ (x : w64), RET #x; True }}}.
+Proof.
+  iIntros "% _ HΦ".
+  wp_apply (lifting.wp_ArbitraryInt).
+  iIntros (x) "_".
+  replace (LitV x) with #x.
+  { by iApply "HΦ". }
+  rewrite into_val_unseal //.
+Qed.
+
 End go_wps.
 
 Section mem_lemmas.
@@ -381,7 +407,7 @@ Qed.
 
 End mem_lemmas.
 Section typed_pointsto_instances.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {Hcore : go.CoreSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
 
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.

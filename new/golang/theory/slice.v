@@ -1,12 +1,5 @@
-From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
-From iris.algebra Require Import dfrac.
-From Perennial.iris_lib Require Import dfractional.
-From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export loop array primitive auto.
-From Perennial Require Import base.
-
-Set Default Proof Using "Type".
+From New.golang.theory Require Export array loop.
 
 #[local]
 Transparent slice.for_range slice.literal.
@@ -24,7 +17,10 @@ End slice.
 
 Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics} {slice_sem : go.SliceSemantics}.
+  {core_sem : go.CoreSemantics}
+  {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics}
+  {slice_sem : go.SliceSemantics}.
 
 Definition own_slice_def {V} t `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   (s : slice.t) (dq : dfrac) (vs : list V)
@@ -43,6 +39,10 @@ Context `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 Implicit Type (vs : list V).
 
 Definition own_slice_cap_def (s : slice.t) (dq : dfrac) : iProp Σ :=
+  (* Want to make this definition depend on [IntoValTyped], so it can be used a
+  typeclass for looking up V given t. At some point, we could introduce a
+  separate typeclass just for doing that. *)
+  let _ := wp_alloc (E:=⊤) (s:=NotStuck) (t:=t) (λ _, True)%I in
   ⌜ 0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝ ∗
 (* A notes about this definition. The capacity has arbitrary values, which is
 often desirable, but there are some niche cases where code could be aware of the
@@ -226,7 +226,7 @@ Lemma slice_to_full_slice s low high :
   slice.slice s t low high = slice.full_slice s t low high (slice.cap s).
 Proof. reflexivity. Qed.
 
-Local Set Default Proof Using "Type core_sem slice_sem".
+Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
 
 (* introduce a slice.slice for lemmas that require it *)
 Lemma slice_slice_trivial s :
@@ -289,20 +289,23 @@ Global Arguments own_slice_cap {_ _ _ _ _ _ _ _ _ _} (t) {_} s dq.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}
-  {core_sem : go.CoreSemantics} {slice_sem : go.SliceSemantics}.
-Local Set Default Proof Using "Type core_sem slice_sem".
+  {core_sem : go.CoreSemantics}
+  {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics}
+  {slice_sem : go.SliceSemantics}.
+Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
 
 Local Notation st e := [go.TypeLit $ go.SliceType e].
 Lemma wp_slice_len stk E et (s : slice.t) (Φ : val -> iProp Σ) :
     Φ #(s.(slice.len)) -∗
-    WP #(functions len (st et)) #s @ stk; E {{ v, Φ v }}.
+    WP #(functions go.len (st et)) #s @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "HΦ". wp_pures. rewrite go.len_slice. wp_pures. iApply "HΦ".
 Qed.
 
 Lemma wp_slice_cap stk E et (s : slice.t) (Φ : val -> iProp Σ) :
   Φ #(s.(slice.cap)) -∗
-  WP #(functions cap (st et)) (#s) @ stk; E {{ v, Φ v }}.
+  WP #(functions go.cap (st et)) (#s) @ stk; E {{ v, Φ v }}.
 Proof.
   iIntros "HΦ". wp_pures. rewrite go.cap_slice. wp_pures. iApply "HΦ".
 Qed.
@@ -312,8 +315,8 @@ Context `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 Lemma wp_slice_make3 stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
   {{{ True }}}
-    #(functions make3 (st t)) #len #cap @ stk; E
-  {{{ sl, RET #sl;
+    #(functions go.make3 (st t)) #len #cap @ stk; E
+  {{{ (sl : slice.t), RET #sl;
       sl ↦[t]* (replicate (sint.nat len) (zero_val V)) ∗
       own_slice_cap t sl (DfracOwn 1) ∗
       ⌜ sl.(slice.cap) = cap ⌝
@@ -328,13 +331,12 @@ Proof.
   { exfalso. word. }
   case_bool_decide; wp_pures.
   { subst.
-    wp_apply (wp_ArbitraryInt). iIntros "%".
+    wp_apply (wp_ArbitraryInt). iIntros "% _".
     wp_pures. iApply "HΦ".
     assert (len = W64 0) by word; subst.
     simpl. iDestruct (own_slice_empty) as "$"; [simpl; word..|].
     iDestruct (own_slice_cap_none) as "$"; simpl; word. }
   wp_apply wp_alloc.
-  { instantiate (3:=(array.t t V (word.signed cap))). apply _. } (* FIXME: tc search *)
   iIntros (ptr) "Hsl". wp_pures. iApply "HΦ".
   rewrite own_slice_unseal/ own_slice_def /=.
 
@@ -344,7 +346,6 @@ Proof.
   { iSplitL; last word.
     replace (_ `min` _)%nat with (sint.nat len) by word.
     iExactEq "Hsl".
-    (* Unset Printing Records. *)
     replace (word.signed (W64 _)) with (sint.Z len) by word.
     done. }
   rewrite own_slice_cap_unseal /own_slice_cap_def /=.
@@ -356,7 +357,7 @@ Qed.
 
 Lemma wp_slice_make2 stk E (len : u64) :
   {{{ ⌜0 ≤ sint.Z len⌝ }}}
-    #(functions make2 (st t)) #len @ stk; E
+    #(functions go.make2 (st t)) #len @ stk; E
   {{{ sl, RET #sl;
       sl ↦[t]* (replicate (sint.nat len) (zero_val V)) ∗
       own_slice_cap t sl (DfracOwn 1)
@@ -371,13 +372,13 @@ Proof.
 Qed.
 
 Global Instance pure_slice_len (s : slice.t) :
-  PureWp True (#(functions len (st t)) (#s)) #(slice.len s).
+  PureWp True (#(functions go.len (st t)) (#s)) #(slice.len s).
 Proof.
   iIntros (?????) "HΦ". rewrite go.len_slice. wp_pure_lc "Hlc". wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_cap (s : slice.t) :
-  PureWp True (#(functions cap (st t)) (#s)) #(slice.cap s).
+  PureWp True (#(functions go.cap (st t)) (#s)) #(slice.cap s).
 Proof.
   iIntros (?????) "HΦ". rewrite go.cap_slice. wp_pure_lc "Hlc". wp_pures. by iApply "HΦ".
 Qed.
@@ -399,9 +400,9 @@ Proof.
   iIntros "% * % % HΦ"; iApply wp_GoInstruction;
   [ intros; repeat econstructor | ].
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  apply into_val_inj in H3, H4. subst.
+  eapply inj in H3, H4; try tc_solve. subst.
   rewrite decide_True //.
-  iFrame. by iIntros "$".
+  iIntros "? $ !>". by iApply "HΦ".
 Qed.
 
 Global Instance pure_full_slice s (low high c : w64) :
@@ -412,9 +413,9 @@ Proof.
   iIntros "% * % % HΦ"; iApply wp_GoInstruction;
   [ intros; repeat econstructor | ].
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  apply into_val_inj in H3, H4, H5. subst.
+  eapply inj in H3, H4, H5; try tc_solve. subst.
   rewrite decide_True //.
-  iFrame. by iIntros "$".
+  iIntros "? $ !>". by iApply "HΦ".
 Qed.
 
 (** WP version of PureWp for discoverability and use with wp_apply.
@@ -718,101 +719,41 @@ Proof.
     f_equal. word.
 Qed.
 
-Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
-  sl ↦[t]*{dq} vs -∗
-  (fold_right (λ v P (i : w64),
-                 WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val ⌝ ∗ P (word.add i 1) }})
-    (λ (_ : w64), sl ↦[t]*{dq} vs -∗ Φ (execute_val))
-    vs) (W64 0) -∗
-  WP slice.for_range t #sl body @ stk ; E {{ Φ }}
-.
-Proof.
-  iIntros "Hsl HΦ".
-  wp_call.
-  wp_apply wp_alloc.
-  {
-    Search IntoValTyped
-    apply _. }
-  wp_alloc j_ptr as "Hi".
-  wp_pures.
-  iAssert (
-      ∃ (j : u64),
-        "Hi" ∷ j_ptr ↦ j ∗
-        "%Hi" ∷ ⌜0 ≤ sint.Z j ≤ Z.of_nat (length vs)⌝ ∗
-        "Hiters" ∷ (fold_right _ _ (drop (sint.nat j) vs)) j
-    )%I with "[Hi HΦ]" as "Hinv".
-  { iExists (W64 0). iFrame. word. }
-  wp_for "Hinv".
-  iDestruct (own_slice_len with "Hsl") as %Hlen.
-  wp_if_destruct.
-  - (* Case: execute loop body *)
-    wp_auto.
-    pose proof (list_lookup_lt vs (sint.nat j) ltac:(word)) as [w Hlookup].
-    iDestruct (own_slice_elem_acc j with "[$]") as "[Helem Hown]"; [word|done|].
-    wp_pure.
-    { word. }
-    wp_load.
-    iDestruct ("Hown" with "Helem") as "Hown".
-    rewrite list_insert_id; [|assumption].
-    wp_load.
-    erewrite drop_S; last eassumption.
-    simpl.
-    wp_apply (wp_wand with "Hiters").
-    iIntros (?) "[-> Hiters]".
-    wp_for_post.
-    iFrame.
-    replace (sint.nat (word.add _ $ W64 1)) with (S $ sint.nat j) by word.
-    iFrame.
-    word.
-  - simpl.  (* Case: done with loop body. *)
-    rewrite drop_ge.
-    2:{ word. }
-    iApply "Hiters". by iFrame.
-Qed.
-
-Lemma wp_slice_literal {stk E} (l : list V) :
-  {{{ True }}}
-    slice.literal t #l @ stk ; E
+Lemma wp_slice_literal {stk E} sz (l : list V) :
+  {{{ ⌜ Z.of_nat $ length l = sint.Z sz ⌝ }}}
+    slice.literal t sz (ArrayV (into_val <$> l)) @ stk ; E
   {{{ sl, RET #sl; sl ↦[t]* l }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
+  iIntros (Φ) "%Hlen HΦ".
   wp_call.
-  wp_apply wp_list_Length.
-  iIntros "%Hlen".
-  (* TODO: list.Length to give <2^63, not <2^64 *)
-  assert (length l = sint.nat (W64 (length l))) as Hlen' by admit.
-  wp_pures.
   wp_apply wp_slice_make2.
   { word. }
   iIntros (?) "[Hsl Hcap]".
   wp_pures.
-  wp_bind (ref _)%E.
-  iApply (wp_alloc_untyped with "[//]").
-  { instantiate (1:=#l). rewrite to_val_unseal /=. by destruct l. }
-  iNext. iIntros (l_ptr) "Hl".
-  wp_pures.
-  wp_alloc i_ptr as "Hi".
+  wp_apply (wp_alloc_untyped with "[]").
+  { simpl. done. }
+  iIntros (l_ptr) "Hl". iPersist "Hl".
+  wp_pures. wp_apply wp_alloc. iIntros (i_ptr) "Hi".
   wp_pures.
   iDestruct (own_slice_len with "Hsl") as %Hsz.
   rewrite length_replicate in Hsz.
   iAssert (∃ (i : w64),
       "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ Z.of_nat (length l) ⌝ ∗
       "Hi" ∷ i_ptr ↦ i ∗
-      "Hl" ∷ heap_pointsto l_ptr (DfracOwn 1) (# (drop (sint.nat i) l)) ∗
-      "Hsl" ∷ sl ↦[t]* (take (sint.nat i) l ++ replicate (length l - sint.nat i) (default_val V))
+      "Hsl" ∷ sl ↦[t]* (take (sint.nat i) l ++ replicate (length l - sint.nat i) (zero_val V))
     )%I
     with "[Hi Hl Hsl]" as "Hloop".
   {
     iExists _; iFrame.
     autorewrite with list in *.
     simpl.
-    rewrite drop_0 take_0 Nat.sub_0_r -Hlen' /=.
+    rewrite take_0 Nat.sub_0_r -Hlen /=.
+    replace (Z.to_nat (length l)) with (length l) by word.
     iFrame. word.
   }
-  wp_for.
+  wp_for_core.
   iNamed "Hloop".
-  wp_pures.
-  wp_load.
+  wp_pures. wp_apply (wp_load with "[$]"). iIntros "Hi".
   wp_pures.
   autorewrite with list in *.
   case_bool_decide as Hlt.
@@ -820,23 +761,14 @@ Proof.
     simpl.
     rewrite decide_True //.
     wp_pures.
-    wp_bind (! _)%E.
-    iApply (wp_load with "[$]").
-    iNext. iIntros "Hl".
+    wp_apply (wp_load with "[$]"). iIntros "Hi".
+    wp_pures. wp_pure; first word. wp_pures.
+    wp_apply (wp_load with "[$]"). iIntros "Hi".
     wp_pures.
-    destruct (drop _ _) eqn:Hdrop.
-    { exfalso. apply (f_equal length) in Hdrop.
-      rewrite length_drop /= in Hdrop.
-      autorewrite with list in *. word. }
-    simpl.
+    list_elem l (sint.Z i) as v.
+    erewrite go.index_array.
+    2:{ rewrite list_lookup_fmap Hv_lookup //. }
     wp_pures.
-    wp_apply (wp_store with "[$]").
-    iIntros "Hl".
-    wp_pures.
-    wp_load.
-    autorewrite with list in *.
-    wp_pure.
-    { word. }
     iDestruct (own_slice_elem_acc i with "Hsl") as "[Hptsto Hsl]".
     { word. }
     {
@@ -847,21 +779,14 @@ Proof.
       split; first done.
       word.
     }
-    wp_store.
+    wp_apply (wp_store with "[$]"). iIntros "H". iSpecialize ("Hsl" with "H").
     wp_pures.
-    wp_for_post.
-    iFrame.
+    wp_for_post_core.
+    wp_apply (wp_load with "[$]"). iIntros "Hi". wp_pures.
+    wp_apply (wp_store with "[$]"). iIntros "Hi".
+    iFrame "Hi". iFrame. iSplitR; first word.
+    iApply to_named. iExactEq "Hsl". f_equal.
     replace (sint.nat (word.add i (W64 1))) with (sint.nat i + 1)%nat by word.
-    rewrite -drop_drop.
-    rewrite Hdrop.
-    rewrite /= drop_0.
-    iFrame.
-    iSpecialize ("Hsl" with "Hptsto").
-    iSplitR.
-    { word. }
-    iApply to_named.
-    iExactEq "Hsl".
-    repeat f_equal.
     rewrite insert_app_r_alt.
     2:{ rewrite length_take. word. }
     rewrite take_more.
@@ -873,7 +798,7 @@ Proof.
     rewrite length_take.
     rewrite Nat.min_l.
     2:{ word. }
-    rewrite Nat.sub_diag Hdrop.
+    rewrite Nat.sub_diag.
     simpl.
     f_equal.
     f_equal.

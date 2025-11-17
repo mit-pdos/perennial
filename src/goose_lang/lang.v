@@ -760,7 +760,7 @@ Inductive is_go_step_pure `{!GoContext} :
     (match go_lt t v1 v2 with | Some b => #b | None => Panic "not ordered" end)
 | le_step t v1 v2 :
   is_go_step_pure (GoLe t) (v1, v2)%V
-    (match go_le t v2 v1 with | Some b => #b | None => Panic "not ordered" end)
+    (match go_le t v1 v2 with | Some b => #b | None => Panic "not ordered" end)
 | gt_step t v1 v2 :
   is_go_step_pure (GoGt t) (v1, v2)%V
     (match go_lt t v2 v1 with | Some b => #b | None => Panic "not ordered" end)

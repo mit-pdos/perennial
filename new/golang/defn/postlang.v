@@ -20,12 +20,18 @@ Global Notation "e1 && e2" :=
 Global Notation "e1 || e2" :=
   (If e1%E #true e2%E) (only parsing) : expr_scope.
 
-Notation "e1 ≤[ t ] e2" := (GoInstruction (GoLe t) (e1%E, e2%E)%E) (at level 1) : expr_scope.
-Notation "e1 <[ t ] e2" := (GoInstruction (GoLt t) (e1%E, e2%E)%E) (at level 1) : expr_scope.
-Notation "e1 ≥[ t ] e2" := (GoInstruction (GoGe t) (e1%E, e2%E)%E) (at level 1) : expr_scope.
-Notation "e1 >[ t ] e2" := (GoInstruction (GoGt t) (e1%E, e2%E)%E) (at level 1) : expr_scope.
-Notation "e1 =[ t ] e2" := (GoInstruction (GoEquals t) (e1%E, e2%E)%E) (at level 1) : expr_scope.
-Notation "e1 ≠[ t ] e2" := (UnOp NegOp (e1%E =[t] e2%E)) (at level 1) : expr_scope.
+Notation "e1 ≤⟨ t ⟩ e2" := (GoInstruction (GoLe t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1 ≤⟨ t ⟩ e2") : expr_scope.
+Notation "e1 <⟨ t ⟩ e2" := (GoInstruction (GoLt t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1 <⟨ t ⟩ e2") : expr_scope.
+Notation "e1 ≥⟨ t ⟩ e2" := (GoInstruction (GoGe t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1 ≥⟨ t ⟩ e2") : expr_scope.
+Notation "e1 >⟨ t ⟩ e2" := (GoInstruction (GoGt t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1 >⟨ t ⟩ e2") : expr_scope.
+Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoEquals t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1 =⟨ t ⟩ e2") : expr_scope.
+Notation "e1 ≠⟨ t ⟩ e2" := (UnOp NegOp (e1%E =⟨t⟩ e2%E))
+                             (at level 70, format "e1 ≠⟨ t ⟩ e2") : expr_scope.
 
 Module go.
 Section defs.
@@ -58,14 +64,14 @@ Proof. solve_decision. Qed.
 Global Instance func_eq_dec : EqDecision func.t.
 Proof. solve_decision. Qed.
 
-Definition is_strictly_comparable_sem t V `{!EqDecision V} `{!IntoVal V} `{!GoContext} : Prop :=
+Definition is_strictly_comparable t V `{!EqDecision V} `{!IntoVal V} `{!GoContext} : Prop :=
   ∀ (v1 v2 : V), go_equals t #v1 #v2 = Some $ bool_decide (v1 = v2).
 
 Class CoreComparisonSemantics {go_ctx : GoContext} :=
 {
   equals_underlying t : go_equals t = go_equals (to_underlying t);
-  equals_pointer t : is_strictly_comparable_sem (go.PointerType t) loc;
-  equals_channel t dir : is_strictly_comparable_sem (go.ChannelType dir t) chan.t;
+  equals_pointer t : is_strictly_comparable (go.PointerType t) loc;
+  equals_channel t dir : is_strictly_comparable (go.ChannelType dir t) chan.t;
   equals_interface_nil_r elems i :
     go_equals (go.InterfaceType elems) #i #interface.nil = Some $ bool_decide (i = interface.nil);
   equals_interface_nil_l elems i :
@@ -104,7 +110,7 @@ Class CoreSemantics {go_ctx : GoContext} :=
                                                  end in
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
                 let: "l_field" := GoAlloc field_type #() in
-                if: ("l_field" ≠[go.PointerType field_type] field_addr) then AngelicExit #()
+                if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
                 else #()
           ) #() fds ;;
         "l")%V;

@@ -1,5 +1,4 @@
-From New.golang.defn Require Export postlang.
-From Perennial Require Import base.
+From New.golang.defn Require Export predeclared.
 
 Section defn.
 
@@ -28,7 +27,7 @@ Definition do_execute_unseal : do_execute = _ := seal_eq _.
    next sequential computation. *)
 Local Definition exception_seq_def : val :=
   λ: "s2" "s1",
-    if: (Fst "s1") = #"execute" then
+    if: (Fst "s1") =⟨go.string⟩ #"execute" then
       "s2" #()
     else
       "s1"

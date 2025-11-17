@@ -26,26 +26,14 @@ Local Definition do_for_def : val :=
    if: ~(Var "cond") #() then (return: (do: #()))
    else
      let: "b" := "body" #() in
-     if: Fst "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst "b" = #"continue") || (Fst $ Var "b" = #"execute")
+     if: (Fst "b") =⟨go.string⟩ #"break" then (return: (do: #())) else (do: #()) ;;;
+     if: (Fst "b" =⟨go.string⟩ #"continue") || (Fst $ Var "b" =⟨go.string⟩ #"execute")
           then (do: "post" #();;; return: "loop" "cond" "body" "post") else do: #() ;;;
      return: Var "b"
   ).
 
 Program Definition do_for := sealed @do_for_def.
 Definition do_for_unseal : do_for = _ := seal_eq _.
-
-Definition do_loop_def: val :=
-  λ: "body",
-  (rec: "loop" <> := exception_do (
-     let: "b" := (Var "body") #() in
-     if: Fst $ Var "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst $ Var "b" = #"continue") || (Fst $ Var "b" = #"execute")
-          then (return: (Var "loop") #()) else do: #() ;;;
-     return: Var "b"
-  )) #().
-Program Definition do_loop := sealed @do_loop_def.
-Definition do_loop_unseal : do_loop = _ := seal_eq _.
 
 End goose_lang.
 

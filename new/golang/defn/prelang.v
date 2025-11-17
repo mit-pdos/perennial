@@ -3,7 +3,7 @@
 From stdpp Require Export pretty countable.
 From Perennial Require Export base ByteString.
 
-Definition go_string := byte_string.
+Notation go_string := byte_string.
 Delimit Scope byte_string_scope with go.
 Bind Scope byte_string_scope with go_string.
 (* NOTE: this causes W8 values to be printed using the byte notation set up in

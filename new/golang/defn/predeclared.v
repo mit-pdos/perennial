@@ -3,35 +3,19 @@ From New.golang.defn Require Export postlang.
 Section helpers.
 Context {ext : ffi_syntax}.
 (* Implementations for max and min for integer types. *)
+
 Definition minⁱᵐᵖˡ t (n : nat) : val :=
   match n with
-  | 2%nat => (λ: "x" "y", if: "x" <[t] "y" then "x" else "y")%V
+  | 2%nat => (λ: "x" "y", if: ("x" <⟨t⟩ "y")%E then "x" else "y")%V
   | _ => LitV $ LitPoison
   end.
 
 Definition maxⁱᵐᵖˡ t (n : nat) : val :=
   match n with
-  | 2%nat => (λ: "x" "y", if: "x" >[t] "y" then "x" else "y")%V
+  | 2%nat => (λ: "x" "y", if: "x" >⟨t⟩ "y" then "x" else "y")%V
   | _ => LitV $ LitPoison
   end.
 
-Axiom recover : val.
-
-Definition float_placeholder : val := #().
-
-(* Definition make_nondet (t : go.type) : val :=
-  λ: <>,
-     if decide (t = go.uint64) then
-       ArbitraryInt
-     else
-       Panic "unsupported nondet". *)
-(*
-     match t with
-     | go.uint64 => ArbitraryInt
-     | uint32T => u_to_w32 ArbitraryInt
-     | uint16T => u_to_w16 ArbitraryInt
-     | _
-     end. *)
 End helpers.
 
 Module go.
@@ -121,21 +105,21 @@ Inductive is_predeclared_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Pro
 | is_predeclared_zero_val_string : is_predeclared_zero_val go.string ""%go
 | is_predeclared_zero_val_bool : is_predeclared_zero_val go.bool false.
 
-Inductive is_integer_type : go.type → Prop :=
-| is_integer_type_uint : _ go.uint
-| is_integer_type_uint64 : _ go.uint64
-| is_integer_type_uint32 : _ go.uint32
-| is_integer_type_uint16 : _ go.uint16
-| is_integer_type_uint8 : _ go.uint8
-| is_integer_type_int : _ go.int
-| is_integer_type_int64 : _ go.int64
-| is_integer_type_int32 : _ go.int32
-| is_integer_type_int16 : _ go.int16
-| is_integer_type_int8 : _ go.int8.
+Inductive is_integer_type : Type → go.type → Prop :=
+| is_integer_type_uint : _ w64 go.uint
+| is_integer_type_uint64 : _ w64 go.uint64
+| is_integer_type_uint32 : _ w32 go.uint32
+| is_integer_type_uint16 : _ w16 go.uint16
+| is_integer_type_uint8 : _ w8 go.uint8
+| is_integer_type_int : _ w64 go.int
+| is_integer_type_int64 : _ w64 go.int64
+| is_integer_type_int32 : _ w32 go.int32
+| is_integer_type_int16 : _ w16 go.int16
+| is_integer_type_int8 : _ w8 go.int8.
 
-Inductive is_ordered_type : go.type → Prop :=
-| is_ordered_type_numeric t (H : is_integer_type t) : _ t
-| is_ordered_type_string : _ go.string
+Inductive is_ordered_type : Type → go.type → Prop :=
+| is_ordered_type_string : _ go_string go.string
+| is_ordered_type_numeric t V (H : is_integer_type V t) : _ V t
 .
 
 Class PredeclaredSemantics {go_ctx : GoContext} :=
@@ -155,8 +139,37 @@ Class PredeclaredSemantics {go_ctx : GoContext} :=
   make2_underlying t : functions make2 [t] = functions make2 [to_underlying t];
   make1_underlying t : functions make1 [t] = functions make1 [to_underlying t];
 
-  min_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
-  max_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = maxⁱᵐᵖˡ t n;
+  min_ordered n t V (H : is_ordered_type V t) : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
+  max_ordered n t V (H : is_ordered_type V t) : #(functions min (replicate n t)) = maxⁱᵐᵖˡ t n;
+
+  comparable_bool : go.is_strictly_comparable go.bool Datatypes.bool;
+
+  comparable_ordered t {V} `{!IntoVal V} `{!EqDecision V}
+    (H : is_ordered_type V t) : go.is_strictly_comparable t V;
+
+  le_int (v1 v2 : w64) : go_le go.int #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
+  le_int64 (v1 v2 : w64) : go_le go.int64 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
+  le_int32 (v1 v2 : w32) : go_le go.int32 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
+  le_int16 (v1 v2 : w16) : go_le go.int16 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
+  le_int8 (v1 v2 : w8) : go_le go.int8 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
+
+  le_uint (v1 v2 : w64) : go_le go.uint #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
+  le_uint64 (v1 v2 : w64) : go_le go.uint64 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
+  le_uint32 (v1 v2 : w32) : go_le go.uint32 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
+  le_uint16 (v1 v2 : w16) : go_le go.uint16 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
+  le_uint8 (v1 v2 : w8) : go_le go.uint8 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
+
+  lt_int (v1 v2 : w64) : go_lt go.int #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
+  lt_int64 (v1 v2 : w64) : go_lt go.int64 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
+  lt_int32 (v1 v2 : w32) : go_lt go.int32 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
+  lt_int16 (v1 v2 : w16) : go_lt go.int16 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
+  lt_int8 (v1 v2 : w8) : go_lt go.int8 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
+
+  lt_uint (v1 v2 : w64) : go_lt go.uint #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
+  lt_uint64 (v1 v2 : w64) : go_lt go.uint64 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
+  lt_uint32 (v1 v2 : w32) : go_lt go.uint32 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
+  lt_uint16 (v1 v2 : w16) : go_lt go.uint16 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
+  lt_uint8 (v1 v2 : w8) : go_lt go.uint8 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
 }.
 
 End defs.
