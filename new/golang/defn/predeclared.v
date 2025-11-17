@@ -3,15 +3,15 @@ From New.golang.defn Require Export postlang.
 Section helpers.
 Context {ext : ffi_syntax}.
 (* Implementations for max and min for integer types. *)
-Definition min_uintⁱᵐᵖˡ (n : nat) : val :=
+Definition minⁱᵐᵖˡ t (n : nat) : val :=
   match n with
-  | 2%nat => (λ: "x" "y", if: "x" < "y" then "x" else "y")%V
+  | 2%nat => (λ: "x" "y", if: "x" <[t] "y" then "x" else "y")%V
   | _ => LitV $ LitPoison
   end.
 
-Definition max_uintⁱᵐᵖˡ (n : nat) : val :=
+Definition maxⁱᵐᵖˡ t (n : nat) : val :=
   match n with
-  | 2%nat => (λ: "x" "y", if: "x" > "y" then "x" else "y")%V
+  | 2%nat => (λ: "x" "y", if: "x" >[t] "y" then "x" else "y")%V
   | _ => LitV $ LitPoison
   end.
 
@@ -121,6 +121,23 @@ Inductive is_predeclared_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Pro
 | is_predeclared_zero_val_string : is_predeclared_zero_val go.string ""%go
 | is_predeclared_zero_val_bool : is_predeclared_zero_val go.bool false.
 
+Inductive is_integer_type : go.type → Prop :=
+| is_integer_type_uint : _ go.uint
+| is_integer_type_uint64 : _ go.uint64
+| is_integer_type_uint32 : _ go.uint32
+| is_integer_type_uint16 : _ go.uint16
+| is_integer_type_uint8 : _ go.uint8
+| is_integer_type_int : _ go.int
+| is_integer_type_int64 : _ go.int64
+| is_integer_type_int32 : _ go.int32
+| is_integer_type_int16 : _ go.int16
+| is_integer_type_int8 : _ go.int8.
+
+Inductive is_ordered_type : go.type → Prop :=
+| is_ordered_type_numeric t (H : is_integer_type t) : _ t
+| is_ordered_type_string : _ go.string
+.
+
 Class PredeclaredSemantics {go_ctx : GoContext} :=
 {
   alloc_predeclared t {V} (v : V) `{!IntoVal V} (H : is_predeclared_zero_val t v) :
@@ -138,17 +155,8 @@ Class PredeclaredSemantics {go_ctx : GoContext} :=
   make2_underlying t : functions make2 [t] = functions make2 [to_underlying t];
   make1_underlying t : functions make1 [t] = functions make1 [to_underlying t];
 
-  min_uint n : #(functions min (replicate n uint)) = min_uintⁱᵐᵖˡ n;
-  min_uint8 n : #(functions min (replicate n uint8)) = min_uintⁱᵐᵖˡ n;
-  min_uint16 n : #(functions min (replicate n uint16)) = min_uintⁱᵐᵖˡ n;
-  min_uint32 n : #(functions min (replicate n uint32)) = min_uintⁱᵐᵖˡ n;
-  min_uint64 n : #(functions min (replicate n uint64)) = min_uintⁱᵐᵖˡ n;
-
-  max_uint n : #(functions max (replicate n uint)) = max_uintⁱᵐᵖˡ n;
-  max_uint8 n : #(functions max (replicate n uint8)) = max_uintⁱᵐᵖˡ n;
-  max_uint16 n : #(functions max (replicate n uint16)) = max_uintⁱᵐᵖˡ n;
-  max_uint32 n : #(functions max (replicate n uint32)) = max_uintⁱᵐᵖˡ n;
-  max_uint64 n : #(functions max (replicate n uint64)) = max_uintⁱᵐᵖˡ n;
+  min_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
+  max_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = maxⁱᵐᵖˡ t n;
 }.
 
 End defs.

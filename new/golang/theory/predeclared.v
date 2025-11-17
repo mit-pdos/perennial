@@ -1,12 +1,5 @@
 From New.golang.defn Require Export predeclared.
 From New.golang.theory Require Export postlifting.
-From New.experiments Require Export glob.
-From Perennial Require Import base.
-From Perennial.Helpers Require Import List.
-From RecordUpdate Require Import RecordSet.
-Import RecordSetNotations.
-
-Set Default Proof Using "Type".
 
 Module error.
   Section def.

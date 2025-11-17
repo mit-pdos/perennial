@@ -2,7 +2,6 @@ From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
-From New.golang.defn Require Export slice.
 From New.golang.theory Require Import loop.
 From Perennial Require Import base.
 
@@ -68,5 +67,74 @@ Proof.
     iIntros "!# * % H". iExactEq "H". f_equal.
     f_equal. len.
 Qed.
+
+Program Global Instance typed_pointsto_array (V : Type) `{!IntoVal V} n
+  `{!TypedPointsto V} `{!IntoValTyped V t} {Hcore : go.CoreSemantics} :
+  TypedPointsto (array.t t V n) :=
+  {|
+    typed_pointsto_def l dq v :=
+      (⌜ Z.of_nat $ length (array.arr v) = n ⌝ ∗
+       [∗ list] i ↦ ve ∈ (array.arr v), array_index_ref t (Z.of_nat i) l ↦{dq} ve)%I;
+  |}.
+Final Obligation.
+Proof.
+  intros. iIntros "* [%Hlen1 H1] [%Hlen2 H2]".
+  destruct v1 as [vs1], v2 as [vs2]. simpl in *.
+  assert (length vs1 = length vs2) as Hlen by lia.
+  clear -Hlen IntoValTyped0 Hcore.
+  (iInduction vs1 as [|v1 vs1] "IH" forall (l vs2 Hlen)).
+  { simpl in Hlen.
+    destruct vs2; simpl in Hlen; try congruence.
+    auto. }
+  destruct vs2; simpl in Hlen; first by congruence.
+  simpl.
+  iDestruct "H1" as "[Hx1 H1]".
+  iDestruct "H2" as "[Hx2 H2]".
+  iCombine "Hx1 Hx2" gives %->.
+  setoid_rewrite Nat2Z.inj_succ.
+  setoid_rewrite <- Z.add_1_l.
+  setoid_rewrite go.array_index_ref_add.
+  iDestruct ("IH" $! _ vs2 with "[] H1 H2") as %H; auto.
+  by simplify_eq.
+Qed.
+
+Global Instance into_val_typed_array `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t} n
+  : IntoValTyped (array.t t V n) (go.ArrayType n t).
+Proof.
+  split.
+  - admit.
+  - iIntros "* Hl HΦ".
+    rewrite go.load_array. case_decide.
+    { wp_pures. wp_apply wp_AngelicExit. }
+    wp_pure. wp_pure. rewrite typed_pointsto_unseal /=.
+    iDestruct "Hl" as "[%Hlen Hl]".
+
+    assert (∃ m, n = m ∧ 0 ≤ m ≤ n) as (m & Heq & Hm) by (exists n; lia).
+    rewrite [in #(W64 n)]Heq.
+    iEval (rewrite <- Heq, into_val_unseal) in "HΦ".
+    simpl. destruct v as [v]. simpl in *.
+    replace (v) with (take (Z.to_nat m) v).
+    2:{ rewrite take_ge //. lia. }
+    clear Heq.
+    set (f := #(func.mk _ _ _)).
+    iLöb as "IH" forall (m Hm Φ).
+
+    wp_pures. fold f.
+    case_bool_decide as Heq.
+    { wp_pures. replace m with 0 by word. rewrite into_val_unseal /=. by iApply "HΦ". }
+    wp_pure. wp_pure. set (m':=m-1).
+    replace (word.sub _ _) with (W64 m') by word.
+    replace (Z.to_nat m) with (S (Z.to_nat m'))%nat by word.
+    pose proof (list_lookup_lt v (Z.to_nat m')) as [ve Hlookup]; first word.
+    erewrite take_S_r; last done.
+    rewrite big_sepL_app /=. iDestruct "Hl" as "(Hl & Hlast & _)".
+    wp_apply ("IH" with "[] Hl"); first word. iIntros "[_ Hl]".
+    wp_pures. rewrite go.index_ref_array. wp_pures. wp_apply (wp_load with "[Hlast]").
+    { iExactEq "Hlast". f_equal. f_equal. rewrite length_take. word. }
+    iIntros "Hlast". rewrite length_app length_take. wp_pures. rewrite fmap_app /=.
+    iApply "HΦ". iFrame. iSplitR; first word.
+    iSplitL; last done. iExactEq "Hlast". f_equal. f_equal. word.
+  - admit.
+Admitted.
 
 End lemmas.
