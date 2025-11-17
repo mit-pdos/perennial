@@ -161,34 +161,17 @@ Proof using Inj0.
   - by rewrite go.map_default_map_delete.
 Qed.
 
-Lemma wp_map_get l (m : gmap K V) k dq :
+Lemma wp_map_lookup2 l (m : gmap K V) k dq :
   {{{ l ↦${dq} m }}}
-    map.get #l #k
-  {{{ RET (#(default (default_val V) (m !! k)), #(bool_decide (is_Some (m !! k)))); l ↦${dq} m }}}.
+    map.lookup2 #l #k
+  {{{ RET (#(default (zero_val V) (m !! k)), #(bool_decide (is_Some (m !! k)))); l ↦${dq} m }}}.
 Proof.
-  rewrite own_map_unseal.
-  iIntros (?) "Hm HΦ".
-  iDestruct "Hm" as (?) "(Hm & % & %Hm)".
-  wp_call.
-  wp_bind (! _)%E.
-  rewrite [in #l]to_val_unseal /=.
-  iApply (wp_load with "[$]").
-  iIntros "!> Hm".
-  wp_pure. iSpecialize ("HΦ" with "[Hm]").
-  { iFrame "∗%". }
-  iLöb as "IH" forall (v m Hm Φ).
-  wp_pures. destruct v; try by exfalso.
-  - wp_pures. destruct Hm as [-> ->]. done.
-  - destruct v; try by exfalso.
-    destruct v1; try by exfalso.
-    destruct Hm as (k' & ? & ? & -> & -> & Hm & ->).
-    wp_pures.
-    destruct (decide (k = k')); subst.
-    + rewrite lookup_insert_eq. rewrite !bool_decide_eq_true_2 //.
-      wp_pures. done.
-    + rewrite -> (bool_decide_eq_false_2 (k = k')) by congruence.
-      rewrite lookup_insert_ne //.
-      wp_pure. iApply ("IH" with "[//] HΦ").
+  wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
+  wp_apply (_internal_wp_untyped_read with "Hown"). iIntros "Hown". wp_pures.
+  erewrite go.map_lookup_pure; last done.
+  pose proof (Hagree k) as Heq. rewrite Heq. destruct (m !! k).
+  - wp_pures. iApply "HΦ". iFrame "∗#%".
+  - wp_pures. iApply "HΦ". iFrame "∗#%".
 Qed.
 
 Lemma wp_map_make :
