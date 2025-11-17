@@ -73,8 +73,7 @@ Definition Pointer__Storeⁱᵐᵖˡ: val :=
   λ: "p" "T" "v", AtomicStore (struct.field_ref (Pointer "T") #"v" "p") "v".
 Definition Pointer__CompareAndSwapⁱᵐᵖˡ: val :=
   λ: "p" "T" "old" "new",
-    let: "l" := ![#ptrT] (struct.field_ref (Pointer "T") #"v" "p") in
-    Snd (CmpXchg "l" "old" "new").
+    Snd (CmpXchg (struct.field_ref (Pointer "T") #"v" "p") "old" "new").
 Definition Pointer__Swapⁱᵐᵖˡ: val :=
   λ: "p" "T" "new", Panic "unimplemented".
 

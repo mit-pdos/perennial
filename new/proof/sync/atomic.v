@@ -1108,6 +1108,48 @@ Proof using BoundedTypeSize0.
   done.
 Qed.
 
+Lemma wp_Pointer__CompareAndSwap u old new :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ▷ ∃ v dq, own_Pointer u dq v ∗
+                    ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
+  (own_Pointer u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
+  WP u @ (ptrT.id atomic.Pointer.id) @ "CompareAndSwap" #T #old #new {{ Φ }}.
+Proof using BoundedTypeSize0.
+  wp_start as "_".
+  wp_bind (CmpXchg _ _ _).
+  iMod "HΦ" as (??) "(>Hown & >-> & HΦ)".
+  rewrite /own_Pointer.
+  iApply struct_fields_split in "Hown"; simpl.
+  iNamed "Hown".
+  rewrite bool_decide_decide.
+  destruct decide.
+  {
+    subst.
+    unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
+    iIntros "!> Hv".
+    iMod ("HΦ" with "[-]") as "HΦ".
+    {
+      iApply @struct_fields_combine; simpl.
+      iFrame.
+    }
+    iModIntro.
+    by wp_auto.
+  }
+  {
+    unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve; try done.
+    { naive_solver. }
+    iIntros "!> Hv".
+    iMod ("HΦ" with "[-]") as "HΦ".
+    {
+      iApply @struct_fields_combine; simpl.
+      iFrame.
+    }
+    iModIntro.
+    by wp_auto.
+  }
+Qed.
+
 
 End pointer.
 
