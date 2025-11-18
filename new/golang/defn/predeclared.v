@@ -159,6 +159,8 @@ Class PredeclaredSemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} 
   #[global]
   comparable_ordered t (H : is_ordered_type t) :: go.IsComparable t;
 
+  go_eq_string : go.is_always_safe_to_compare go.string go_string;
+
   go_eq_int : go.is_always_safe_to_compare go.int w64;
   go_eq_int64 : go.is_always_safe_to_compare go.int64 w64;
   go_eq_int32 : go.is_always_safe_to_compare go.int32 w32;

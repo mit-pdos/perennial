@@ -46,7 +46,6 @@ Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
     "%Hdefault" ∷ ⌜ go.map_default mv = #(zero_val V) ⌝.
 Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
-Arguments own_map mptr dq m.
 
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
@@ -181,6 +180,9 @@ Proof.
   wp_start as "Hm". wp_apply (wp_map_lookup2 with "Hm") as "Hm". by iApply "HΦ".
 Qed.
 
+Local Instance make2_unfold key_type elem_type :
+  FuncUnfold go.make2 [go.TypeLit $ go.MapType key_type elem_type] _ :=
+  ltac:(constructor; apply go.make2_map).
 Lemma wp_map_make2 (len : w64) key_type elem_type
   `{!IntoValComparable K key_type}
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
@@ -188,10 +190,8 @@ Lemma wp_map_make2 (len : w64) key_type elem_type
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof.
-  wp_start. pose proof (go.make2_map key_type elem_type) as [def Hunfold].
-  rewrite Hunfold. wp_auto.
-  wp_alloc tmp as "?". wp_auto.
-  wp_bind.
+  wp_start. wp_alloc tmp as "?". wp_auto.
+  wp_apply wp_InternalMapMake.
   (* FIXME: require == to be defined during runtime. *)
 
   rewrite own_map_unseal.
