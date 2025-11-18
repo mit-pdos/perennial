@@ -7,13 +7,11 @@ translate = [
   "Bool*",
   "b32",
 
-  "noCopy",
   "align64",
   "Value*",
   "efaceWords",
 
   "_",
-  "Pointer",
 ]
 
 trusted = [
@@ -37,6 +35,9 @@ trusted = [
   "AddInt32",
   "CompareAndSwapInt32",
 
+  "noCopy",
+  "Pointer",
+  "Pointer.*",
 ]
 
 imports = ["!*"]
