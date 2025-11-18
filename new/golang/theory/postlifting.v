@@ -424,39 +424,6 @@ Proof.
   rewrite into_val_unseal //.
 Qed.
 
-
-Definition someStructType : go.type :=
-  go.StructType [(go.FieldDecl "a"%go (go.PointerType (go.Named "uint64"%go [])))].
-
-Lemma wp_test  :
-  {{{ True }}}
-  GoEquals someStructType (StructV {[ "a"%go := #null ]}, StructV {[ "a"%go := #null ]})%V
-  {{{ RET #true; True }}}.
-Proof.
-  iIntros "% _ HΦ".
-
-  (* TODO: abstract into lemma *)
-  iApply (wp_GoInstruction [] (GoEquals someStructType)).
-  { intros. repeat econstructor. }
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "? $ !>". simpl.
-
-  (* precondition/typeclass *)
-  assert (go.is_comparable someStructType) as Hcomp.
-  { rewrite go.is_comparable_struct. repeat constructor. apply into_val_comparable. }
-  rewrite Hcomp.
-
-  rewrite go._go_eq_struct. simpl.
-  wp_pures.
-  wp_apply wp_StructFieldGet_untyped. (* TODO: use struct field get instance *)
-  { rewrite lookup_singleton //. }
-  iIntros "_".
-  wp_apply wp_StructFieldGet_untyped.
-  { rewrite lookup_singleton //. }
-  iIntros "_".
-  wp_pures. by iApply "HΦ".
-Qed.
-
 End go_wps.
 
 Section mem_lemmas.
@@ -547,6 +514,8 @@ Qed.
 
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
+Existing Class go.is_primitive_zero_val.
+#[local] Hint Extern 1 (go.is_primitive_zero_val ?t ?v) => constructor : typeclass_instances.
 
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
@@ -570,18 +539,7 @@ Ltac solve_wp_store :=
 Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
-Proof.
-  split.
-  { apply go.go_zero_val_pointer. }
-  {
-    rewrite go.go_zero_val_pointer.
-    iIntros "* _ HΦ"; rewrite go.alloc_primitive typed_pointsto_unseal /= into_val_unseal; wp_pures.
-    wp_apply wp_alloc_untyped.
-    2:{ done. }
-    rewrite into_val_unseal. done.
-    done.
-    solve_wp_alloc. }
-  solve_into_val_typed. Qed.
+Proof. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_func sig : IntoValTyped func.t (go.FunctionType sig).
 Proof. solve_into_val_typed. Qed.
