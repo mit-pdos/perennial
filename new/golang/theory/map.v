@@ -46,6 +46,11 @@ Definition own_map_unseal : own_map = _ := seal_eq _.
 
 Arguments own_map mptr dq m {kt IntoValTyped0 vt IntoValTyped1}.
 
+#[global] Instance own_map_timeless mptr dq (m: gmap K V)
+ `{!IntoValTyped K kt} `{!IntoValTyped V vt}
+  : Timeless (own_map mptr dq m).
+Proof. rewrite own_map_unseal. apply _. Qed.
+
 Context `{!IntoValTyped K kt} `{!IntoValTyped V vt}.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
