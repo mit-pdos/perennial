@@ -24,15 +24,78 @@ Record t :=
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Definition own ptr obj d : iProp Σ :=
+Definition own ptr obj : iProp Σ :=
   ∃ sl_dig sl_link sl_sig,
-  "Hstruct" ∷ ptr ↦{d} (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
-  "Hsl_dig" ∷ sl_dig ↦*{d} obj.(dig) ∗
-  "Hsl_link" ∷ sl_link ↦*{d} obj.(link) ∗
-  "Hsl_sig" ∷ sl_sig ↦*{d} obj.(sig).
+  "#Hstruct" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
+  "#Hsl_dig" ∷ sl_dig ↦*□ obj.(dig) ∗
+  "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
+  "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig).
 
 End proof.
 End epoch.
+
+Module nextVer.
+Record t :=
+  mk' {
+    ver: w64;
+    isPending: bool;
+    pendingPk: list w8;
+  }.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ sl_pendingPk,
+  "Hstruct" ∷ ptr ↦{d} (client.nextVer.mk obj.(ver) obj.(isPending) sl_pendingPk) ∗
+  "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ obj.(pendingPk).
+
+End proof.
+End nextVer.
+
+Module serv.
+Record t :=
+  mk' {
+    cli: loc;
+    sigPk: list w8;
+    vrfPk: list w8;
+    vrfSig: list w8;
+  }.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj : iProp Σ :=
+  ∃ sl_sigPk ptr_vrfPk sl_vrfSig,
+  "#Hstruct" ∷ ptr ↦□ (client.serv.mk obj.(cli) sl_sigPk ptr_vrfPk sl_vrfSig) ∗
+  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(sigPk) ∗
+  "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(vrfPk) ∗
+  "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig).
+
+End proof.
+End serv.
+
+Module Client.
+Record t :=
+  mk' {
+    uid: w64;
+    pend: nextVer.t;
+    last: epoch.t;
+    serv: serv.t;
+  }.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ ptr_pend ptr_last ptr_serv,
+  "Hstruct" ∷ ptr ↦{d} (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
+  "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) d ∗
+  "#Hown_last" ∷ epoch.own ptr_last obj.(last) ∗
+  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv).
+
+End proof.
+End Client.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
