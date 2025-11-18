@@ -87,10 +87,6 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
     #(functions go.make2 [go.TypeLit $ go.SliceType elem_type]) =
     (λ: "sz", FuncResolve go.make3 [go.TypeLit $ go.SliceType elem_type] #() "sz" "sz")%V;
 
-  make1_slice elem_type :
-    #(functions go.make1 [go.TypeLit $ go.SliceType elem_type]) =
-    (λ: <>, FuncResolve go.make2 [go.TypeLit $ go.SliceType elem_type] #() #(W64 0))%V;
-
   index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
     index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);
 

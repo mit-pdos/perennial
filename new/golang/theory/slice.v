@@ -371,23 +371,6 @@ Proof.
   iApply "HΦ". iFrame.
 Qed.
 
-Local Instance make1_unfold t : FuncUnfold go.make1 (st t) _ :=
-  ltac:(constructor; apply go.make1_slice).
-
-Lemma wp_slice_make1 stk E :
-  {{{ True }}}
-    #(functions go.make1 (st t)) #() @ stk; E
-  {{{ sl, RET #sl;
-      sl ↦[t]* [] ∗
-      own_slice_cap t sl (DfracOwn 1)
-  }}}.
-Proof.
-  wp_start as "%".
-  wp_apply wp_slice_make2; first word.
-  iIntros (?) "(? & ?)".
-  iApply "HΦ". iFrame.
-Qed.
-
 Global Instance wp_slice_index_ref s (i : w64) :
   PureWp (0 ≤ sint.Z i < sint.Z s.(slice.len)) (IndexRef (go.SliceType t) (#s, #i)%V)
     #(slice_index_ref t (sint.Z i) s).
