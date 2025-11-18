@@ -549,7 +549,8 @@ End func.
     map updates, etc. *)
 Class GoContext {ext : ffi_syntax} : Type :=
   {
-    go_equals : go.type → val → val → option bool;
+    (* includes special-case handling, such as comparing slices to nil. *)
+    go_eq_top_level : go.type → val → val → expr;
     go_lt : go.type → val → val → option bool;
     go_le : go.type → val → val → option bool;
 
@@ -767,8 +768,7 @@ Inductive is_go_step_pure `{!GoContext} :
   ∀ (op : go_instruction) (arg : val) (e' : expr), Prop :=
 | angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
 | equals_step t v1 v2 :
-  is_go_step_pure (GoEquals t) (v1, v2)%V
-    (match go_equals t v1 v2 with | Some b => #b | None => Panic "not comparable" end)
+  is_go_step_pure (GoEquals t) (v1, v2)%V (go_eq_top_level t v1 v2)
 | lt_step t v1 v2 :
   is_go_step_pure (GoLt t) (v1, v2)%V
     (match go_lt t v1 v2 with | Some b => #b | None => Panic "not ordered" end)
@@ -1079,7 +1079,7 @@ Global Instance func_t_inhabited : Inhabited func.t :=
 Global Instance GoContext_inhabited : Inhabited GoContext :=
   populate
   {|
-    go_equals := inhabitant;
+    go_eq_top_level := inhabitant;
     go_lt := inhabitant;
     go_le := inhabitant;
     global_addr := inhabitant;

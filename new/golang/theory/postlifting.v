@@ -30,9 +30,12 @@ End unfolding_defs.
 Section into_val_defs.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Class IntoValComparable (V : Type) t `{!IntoVal V} `{!EqDecision V} :=
+Class IntoValComparable {go_ctx : GoContext}
+                        {core_sem : go.CoreSemantics}
+  (V : Type) t `{!IntoVal V} `{!EqDecision V} :=
   {
-    into_val_comparable : go.is_strictly_comparable t V;
+    into_val_comparable : go.is_comparable t;
+    into_val_always_comparable : go.is_always_comparable t V;
   }.
 
 Class TypedPointsto (V : Type) `{!IntoVal V} :=
@@ -89,7 +92,6 @@ Qed.
     (e.g. int64 and uint64 both have w64). *)
 Class IntoValTyped (V : Type) (t : go.type) `{TypedPointsto V} :=
   {
-    go_zero_val_eq : go_zero_val t = #(zero_val V);
     wp_alloc : (∀ {s E}, {{{ True }}}
                            alloc t #() @ s ; E
                          {{{ l, RET #l; l ↦ (zero_val V) }}});
@@ -127,7 +129,11 @@ Global Instance into_val_loc_inj : Inj eq eq (into_val (V:=loc)).
 Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
 
 Global Instance into_val_comparable_loc t : IntoValComparable loc (go.PointerType t).
-Proof. constructor. apply go.equals_pointer. Qed.
+Proof.
+  split.
+  - apply go.is_comparable_pointer.
+  - apply go.go_eq_pointer.
+Qed.
 
 Global Instance into_val_slice_inj : Inj eq eq (into_val (V:=slice.t)).
 Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
@@ -310,7 +316,7 @@ Proof.
   iApply wp_GoInstruction.
   { intros. repeat econstructor. }
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "? $ !>". rewrite into_val_comparable.
+  iIntros "? $ !>". rewrite into_val_comparable. rewrite into_val_always_comparable.
   iApply "HΦ". iFrame.
 Qed.
 
@@ -416,6 +422,39 @@ Proof.
   replace (LitV x) with #x.
   { by iApply "HΦ". }
   rewrite into_val_unseal //.
+Qed.
+
+
+Definition someStructType : go.type :=
+  go.StructType [(go.FieldDecl "a"%go (go.PointerType (go.Named "uint64"%go [])))].
+
+Lemma wp_test  :
+  {{{ True }}}
+  GoEquals someStructType (StructV {[ "a"%go := #null ]}, StructV {[ "a"%go := #null ]})%V
+  {{{ RET #true; True }}}.
+Proof.
+  iIntros "% _ HΦ".
+
+  (* TODO: abstract into lemma *)
+  iApply (wp_GoInstruction [] (GoEquals someStructType)).
+  { intros. repeat econstructor. }
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  iIntros "? $ !>". simpl.
+
+  (* precondition/typeclass *)
+  assert (go.is_comparable someStructType) as Hcomp.
+  { rewrite go.is_comparable_struct. repeat constructor. apply into_val_comparable. }
+  rewrite Hcomp.
+
+  rewrite go._go_eq_struct. simpl.
+  wp_pures.
+  wp_apply wp_StructFieldGet_untyped. (* TODO: use struct field get instance *)
+  { rewrite lookup_singleton //. }
+  iIntros "_".
+  wp_apply wp_StructFieldGet_untyped.
+  { rewrite lookup_singleton //. }
+  iIntros "_".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 End go_wps.
@@ -533,7 +572,15 @@ Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Proof.
   split.
-  - apply go.go_zero_val_pointer.
+  { apply go.go_zero_val_pointer. }
+  {
+    rewrite go.go_zero_val_pointer.
+    iIntros "* _ HΦ"; rewrite go.alloc_primitive typed_pointsto_unseal /= into_val_unseal; wp_pures.
+    wp_apply wp_alloc_untyped.
+    2:{ done. }
+    rewrite into_val_unseal. done.
+    done.
+    solve_wp_alloc. }
   solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_func sig : IntoValTyped func.t (go.FunctionType sig).

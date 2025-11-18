@@ -52,6 +52,14 @@ Inductive is_primitive : go.type → Prop :=
 | is_primitive_map kt vt : is_primitive (go.MapType kt vt)
 | is_primitive_channel dir t : is_primitive (go.ChannelType dir t).
 
+Inductive is_primitive_zero_val : go.type → val → Prop :=
+| is_primitive_zero_val_pointer t : is_primitive_zero_val (go.PointerType t) #null
+| is_primitive_zero_val_function t : is_primitive_zero_val (go.FunctionType t) #func.nil
+| is_primitive_zero_valinterface elems : is_primitive_zero_val (go.InterfaceType elems) #interface.nil
+| is_primitive_zero_val_slice elem : is_primitive_zero_val (go.SliceType elem) #slice.nil
+| is_primitive_zero_val_map kt vt : is_primitive_zero_val (go.MapType kt vt) #null
+| is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) #null.
+
 Global Instance interface_eq_dec : EqDecision interface.t.
 Proof. solve_decision. Qed.
 
@@ -61,32 +69,100 @@ Proof. solve_decision. Qed.
 Global Instance func_eq_dec : EqDecision func.t.
 Proof. solve_decision. Qed.
 
-Definition is_strictly_comparable t V `{!EqDecision V} `{!IntoVal V} `{!GoContext} : Prop :=
-  ∀ (v1 v2 : V), go_equals t #v1 #v2 = Some $ bool_decide (v1 = v2).
-
-Class CoreComparisonSemantics {go_ctx : GoContext} :=
+(* [go_eq_top_level] includes special cases for slice, map, and func comparison.
+   [go_eq] does not. This helps define the semantics of comparing interface
+   values. *)
+Class CoreComparisonDefinition {go_ctx : GoContext} :=
 {
-  equals_underlying t : go_equals t = go_equals (to_underlying t);
-  equals_pointer t : is_strictly_comparable (go.PointerType t) loc;
-  equals_channel t dir : is_strictly_comparable (go.ChannelType dir t) chan.t;
-  equals_interface_nil_r elems i :
-    go_equals (go.InterfaceType elems) #i #interface.nil = Some $ bool_decide (i = interface.nil);
-  equals_interface_nil_l elems i :
-    go_equals (go.InterfaceType elems) #interface.nil #i = Some $ bool_decide (i = interface.nil);
-  equals_interface elems t v1 v2 :
-    go_equals (go.InterfaceType elems) #(interface.mk t v1) #(interface.mk t v2) =
-    go_equals t v1 v2; (* FIXME: incorrect. E.g. v1 = v2 = nil slice is supposed to panic. *)
-
-  equals_func_l sig f :
-    go_equals (go.FunctionType sig) #f #func.nil = Some $ bool_decide (f = func.nil);
-  equals_func_r sig f :
-    go_equals (go.FunctionType sig) #func.nil #f = Some $ bool_decide (f = func.nil);
+  go_eq : go.type → val → val → expr;
 }.
 
-Class GoZeroVal `{!GoContext} t V `{!IntoVal V} : Prop :=
-  {
-    go_zero_val_typed : go_zero_val t = #(zero_val V);
-  }.
+(* These types support actually exeucting `a == b`. E.g. slices, maps, funcs do
+   not support this; they only support some special cases in go_eq_top_level. *)
+Definition is_comparable t `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
+  ∀ (v1 v2 : val), go_eq_top_level t v1 v2 = go_eq t v1 v2.
+
+(* These types have the semantics that `a == b` reduces to true if the semantic
+   representation of `a` is equal to `b` and false otherwise. *)
+Definition is_always_comparable t V `{!EqDecision V} `{!IntoVal V}
+  `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
+  ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
+
+(* Here's an example exhibiting struct comparison subtleties:
+
+```
+package main
+
+type comparableButNotSuperComparable struct {
+	x int
+	a any
+}
+
+func main() {
+	a := comparableButNotSuperComparable{x: 37, a: make([]int, 0)}
+	b := comparableButNotSuperComparable{x: 38, a: make([]int, 0)}
+	var aa any = a
+	var ba any = b
+	if aa == ba {
+	}
+}
+```
+If the 38 is changed to 37, then the comparison `aa == ba` does not short
+circuit, and it tries to check if the `any` fields are equal, at which point it
+panics because the type is not comparable.
+*)
+Class CoreComparisonSemantics {go_ctx : GoContext} :=
+{
+  #[global] core_comp_def :: CoreComparisonDefinition;
+  go_eq_top_level_underlying t : go_eq_top_level t = go_eq_top_level (to_underlying t);
+  go_eq_underlying t : go_eq t = go_eq (to_underlying t);
+
+  (* special cases *)
+  go_eq_func_nil_l sig f :
+    go_eq_top_level (go.FunctionType sig) #f #func.nil = #(bool_decide (f = func.nil));
+  go_eq_func_nil_r sig f :
+    go_eq_top_level (go.FunctionType sig) #func.nil #f = #(bool_decide (f = func.nil));
+  go_eq_slice_nil_l t s :
+    go_eq_top_level (go.SliceType t) #s #slice.nil = #(bool_decide (s = slice.nil));
+  go_eq_slice_nil_r t s :
+    go_eq_top_level (go.SliceType t) #slice.nil #s = #(bool_decide (s = slice.nil));
+  go_eq_map_nil_l kt vt m :
+    go_eq_top_level (go.MapType kt vt) #m #map.nil = #(bool_decide (m = map.nil));
+  go_eq_map_nil_r kt vt m :
+    go_eq_top_level (go.MapType kt vt) #map.nil #m = #(bool_decide (m = map.nil));
+
+  is_comparable_pointer t : is_comparable (go.PointerType t);
+  go_eq_pointer t : is_always_comparable (go.PointerType t) loc;
+
+  is_comparable_channel t dir : is_comparable (go.ChannelType dir t);
+  go_eq_channel t dir : is_always_comparable (go.ChannelType dir t) chan.t;
+
+  is_comparable_interface elems : is_comparable (go.InterfaceType elems);
+  go_eq_interface_ne elems t1 t2 v1 v2 (H : t1 ≠ t2) :
+    go_eq (go.InterfaceType elems) #(interface.mk t1 v1) #(interface.mk t2 v2) = #false;
+  go_eq_interface elems t v1 v2 :
+    go_eq (go.InterfaceType elems) #(interface.mk t v1) #(interface.mk t v2) = go_eq t v1 v2;
+  go_eq_interface_nil_r elems i :
+    go_eq (go.InterfaceType elems) #i #interface.nil = #(bool_decide (i = interface.nil));
+  go_eq_interface_nil_l elems i :
+    go_eq (go.InterfaceType elems) #interface.nil #i = #(bool_decide (i = interface.nil));
+
+  is_comparable_struct fds :
+    is_comparable (go.StructType fds) ↔
+    Forall (λ fd,
+              is_comparable (
+                  match fd with go.FieldDecl n t => t | go.EmbeddedField n t => t end
+      )) fds;
+  _go_eq_struct fds v1 v2 :
+    go_eq (go.StructType fds) v1 v2 =
+    foldl (λ cmp_so_far fd,
+             let (field_name, field_type) :=
+               match fd with go.FieldDecl n t => (n, t) | go.EmbeddedField n t => (n, t) end in
+             (if: cmp_so_far then
+                GoEquals field_type (StructFieldGet field_name v1, StructFieldGet field_name v2)
+              else #false)%E
+      ) #true fds
+}.
 
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
@@ -97,15 +173,8 @@ Class CoreSemantics {go_ctx : GoContext} :=
 {
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
-  go_zero_val_pointer t : go_zero_val (go.PointerType t) = #(zero_val loc);
-  go_zero_val_function sig : go_zero_val (go.FunctionType sig) = #(zero_val func.t);
-  go_zero_val_interface elems : go_zero_val (go.InterfaceType elems) = #(zero_val interface.t);
-  go_zero_val_slice elem : go_zero_val (go.SliceType elem) = #(zero_val slice.t);
-  go_zero_val_map kt vt : go_zero_val (go.MapType kt vt) = #(zero_val map.t);
-  go_zero_val_channel dir t : go_zero_val (go.ChannelType dir t) = #(zero_val chan.t);
-
   alloc_underlying t : alloc t = alloc (to_underlying t);
-  alloc_primitive t (H : is_primitive t) : alloc t = (λ: <>, ref (go_zero_val t))%V;
+  alloc_primitive t v (H : is_primitive_zero_val t v) : alloc t = (λ: <>, ref v)%V;
   alloc_struct fds :
     alloc (go.StructType fds) =
     (λ: <>,
