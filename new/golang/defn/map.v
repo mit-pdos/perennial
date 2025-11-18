@@ -72,7 +72,6 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
 
   is_map_pure (v : val) (m : val → bool * val) : Prop;
   map_default : val → val;
-  mv_empty (dv : val) : val;
 
   is_map_pure_flatten mv m (H : is_map_pure mv m) :
     flatten_struct mv = [mv];
@@ -83,14 +82,14 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
   is_map_pure_map_delete k mv m (H : is_map_pure mv m) :
     is_map_pure (map_delete mv k)
       (λ k', if decide (k' = k) then (false, map_default mv) else m k');
-  is_map_pure_mv_empty dv : is_map_pure (mv_empty dv) (const (false, dv));
+  is_map_pure_map_empty dv : is_map_pure (map_empty dv) (const (false, dv));
 
-  map_default_mv_empty dv : map_default (mv_empty dv) = dv;
+  map_default_map_empty dv : map_default (map_empty dv) = dv;
   map_default_map_insert m k v : map_default (map_insert m k v) = map_default m;
   map_default_map_delete m k : map_default (map_delete m k) = map_default m;
 
   is_map_domain_exists mv m (H : is_map_pure mv m) : ∃ ks, is_map_domain mv ks;
-  is_map_domain_mv_empty dv ks : is_map_domain (mv_empty dv) ks → ks = [];
+  is_map_domain_map_empty dv ks : is_map_domain (map_empty dv) ks → ks = [];
   is_map_domain_insert mv m ks :
     is_map_pure mv m →
     is_map_domain mv ks →
@@ -109,7 +108,7 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
        let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
        ref (InternalMapMake "default_elem"))%V;
   make1_map key_type elem_type :
-    #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
+    #(functions go.make1 [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: <>, FuncResolve go.make2 [go.TypeLit $ go.MapType key_type elem_type] #() #(W64 0))%V;
   len_map key_type elem_type :
     #(functions go.len [go.TypeLit $ go.MapType key_type elem_type]) =

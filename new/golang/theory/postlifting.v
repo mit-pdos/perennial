@@ -379,6 +379,10 @@ Global Instance wp_InternalMapDelete mv k :
   PureWp True (InternalMapDelete (mv, k)%V) (map_delete mv k).
 Proof. solve_pure. Qed.
 
+Global Instance wp_InternalMapMake (v : val) :
+  PureWp True (InternalMapMake v) (map_empty v).
+Proof. solve_pure. Qed.
+
 Ltac solve_eq lem :=
   iIntros (?) "* _ * HΦ"; wp_pure_lc "Hlc"; rewrite lem; by iApply "HΦ".
 Global Instance pure_wp_eq_pointer t (l1 l2 : loc) :

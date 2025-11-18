@@ -184,31 +184,34 @@ Local Instance make2_unfold key_type elem_type :
   FuncUnfold go.make2 [go.TypeLit $ go.MapType key_type elem_type] _ :=
   ltac:(constructor; apply go.make2_map).
 Lemma wp_map_make2 (len : w64) key_type elem_type
-  `{!IntoValComparable K key_type}
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof.
   wp_start. wp_alloc tmp as "?". wp_auto.
-  wp_apply wp_InternalMapMake.
-  (* FIXME: require == to be defined during runtime. *)
-
-  rewrite own_map_unseal.
-  iIntros (??) "_ HΦ".
-  wp_call.
+  epose proof (go.is_map_pure_map_empty _).
   iApply wp_alloc_untyped; try done.
+  { erewrite go.is_map_pure_flatten; done. }
   iNext.
   iIntros (?) "Hl".
-  replace (LitV l) with #l; last by rewrite to_val_unseal.
-  iApply "HΦ".
-  iFrame. iPureIntro.
-  naive_solver.
+  replace (LitV l) with #l; last by rewrite into_val_unseal.
+  iApply "HΦ". rewrite own_map_unseal.
+  iFrame "∗%". iPureIntro. split.
+  - intros. rewrite lookup_empty //.
+  - rewrite go.map_default_map_empty //.
 Qed.
 
 Local Instance make1_unfold key_type elem_type :
   FuncUnfold go.make1 [go.TypeLit $ go.MapType key_type elem_type] _ :=
   ltac:(constructor; apply go.make1_map).
+Lemma wp_map_make1 key_type elem_type
+  `{!IntoValComparable K key_type}
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  {{{ True }}}
+    #(functions go.make1 [go.TypeLit $ go.MapType key_type elem_type]) #()
+  {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
+Proof. wp_start. by wp_apply wp_map_make2. Qed.
 
 #[global]
 Instance own_map_discarded_persist mref m : Persistent (own_map mref DfracDiscarded m).
