@@ -77,14 +77,19 @@ Class CoreComparisonDefinition {go_ctx : GoContext} :=
   go_eq : go.type → val → val → expr;
 }.
 
-(* These types support actually exeucting `a == b`. E.g. slices, maps, funcs do
-   not support this; they only support some special cases in go_eq_top_level. *)
-Definition is_comparable t `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
-  ∀ (v1 v2 : val), go_eq_top_level t v1 v2 = go_eq t v1 v2.
+(** [IsComparable t] means that semantics for `==` is defined for the type [t].
+    Corresponds to _comparable_ as defined in
+    https://go.dev/ref/spec#Comparison_operators. This does not mean that `==`
+    will run safely for [t]; specifically, interfaces are comparable but
+    `==` can still panic. The types for which this holds is specified
+    in recursive way in [CoreSemantics]. *)
+Class IsComparable t `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
+  {
+    is_comparable : ∀ (v1 v2 : val), go_eq_top_level t v1 v2 = go_eq t v1 v2;
+  }.
 
-(* These types have the semantics that `a == b` reduces to true if the semantic
-   representation of `a` is equal to `b` and false otherwise. *)
-Definition is_always_comparable t V `{!EqDecision V} `{!IntoVal V}
+(* Helper definition to cover types for whom `a == b` always executes safely. *)
+Definition is_always_safe_to_compare t V `{!EqDecision V} `{!IntoVal V}
   `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
   ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
 
@@ -122,22 +127,16 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
     go_eq_top_level (go.FunctionType sig) #f #func.nil = #(bool_decide (f = func.nil));
   go_eq_func_nil_r sig f :
     go_eq_top_level (go.FunctionType sig) #func.nil #f = #(bool_decide (f = func.nil));
-  go_eq_slice_nil_l t s :
-    go_eq_top_level (go.SliceType t) #s #slice.nil = #(bool_decide (s = slice.nil));
-  go_eq_slice_nil_r t s :
-    go_eq_top_level (go.SliceType t) #slice.nil #s = #(bool_decide (s = slice.nil));
-  go_eq_map_nil_l kt vt m :
-    go_eq_top_level (go.MapType kt vt) #m #map.nil = #(bool_decide (m = map.nil));
-  go_eq_map_nil_r kt vt m :
-    go_eq_top_level (go.MapType kt vt) #map.nil #m = #(bool_decide (m = map.nil));
 
-  is_comparable_pointer t : is_comparable (go.PointerType t);
-  go_eq_pointer t : is_always_comparable (go.PointerType t) loc;
+  #[global]
+  is_comparable_pointer t :: IsComparable (go.PointerType t);
+  go_eq_pointer t : is_always_safe_to_compare (go.PointerType t) loc;
 
-  is_comparable_channel t dir : is_comparable (go.ChannelType dir t);
-  go_eq_channel t dir : is_always_comparable (go.ChannelType dir t) chan.t;
+  #[global]
+  is_comparable_channel t dir :: IsComparable (go.ChannelType t dir);
+  go_eq_channel t dir : is_always_safe_to_compare (go.ChannelType t dir) loc;
 
-  is_comparable_interface elems : is_comparable (go.InterfaceType elems);
+  is_comparable_interface elems : IsComparable (go.InterfaceType elems);
   go_eq_interface_ne elems t1 t2 v1 v2 (H : t1 ≠ t2) :
     go_eq (go.InterfaceType elems) #(interface.mk t1 v1) #(interface.mk t2 v2) = #false;
   go_eq_interface elems t v1 v2 :
@@ -148,12 +147,12 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
     go_eq (go.InterfaceType elems) #interface.nil #i = #(bool_decide (i = interface.nil));
 
   is_comparable_struct fds :
-    is_comparable (go.StructType fds) ↔
+    IsComparable (go.StructType fds) ↔
     Forall (λ fd,
-              is_comparable (
+              IsComparable (
                   match fd with go.FieldDecl n t => t | go.EmbeddedField n t => t end
       )) fds;
-  _go_eq_struct fds v1 v2 :
+  go_eq_struct fds v1 v2 :
     go_eq (go.StructType fds) v1 v2 =
     foldl (λ cmp_so_far fd,
              let (field_name, field_type) :=

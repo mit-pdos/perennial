@@ -43,10 +43,10 @@ Global Opaque slice.for_range slice.literal.
 Module go.
 Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
 {
-  equals_slice_nil_l t s :
-    go_equals (go.SliceType t) #s #slice.nil = Some $ bool_decide (s = slice.nil);
-  equals_slice_nil_r t s :
-    go_equals (go.SliceType t) #slice.nil #s = Some $ bool_decide (s = slice.nil);
+  go_eq_slice_nil_l t s :
+    go_eq_top_level (go.SliceType t) #s #slice.nil = #(bool_decide (s = slice.nil));
+  go_eq_slice_nil_r t s :
+    go_eq_top_level (go.SliceType t) #slice.nil #s = #(bool_decide (s = slice.nil));
 
   clear_slice elem_type :
     #(functions go.clear [go.TypeLit $ go.SliceType elem_type]) =

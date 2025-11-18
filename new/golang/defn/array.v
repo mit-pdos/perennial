@@ -4,11 +4,11 @@ Module go.
 Section defs.
 Context `{ffi_syntax}.
 
-Class ArraySemantics {go_ctx : GoContext} :=
+Class ArraySemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} :=
 {
-  equals_array n t V (a1 a2 : array.t t V n) `{!EqDecision V} `{!IntoVal V}
-    (H : go.is_strictly_comparable t V) :
-    go.is_strictly_comparable (go.ArrayType n t) (array.t t V n);
+  #[global]
+  equals_array n t (H : go.IsComparable t) ::
+    go.IsComparable (go.ArrayType n t);
 
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
   load_array n elem_type :

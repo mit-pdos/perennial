@@ -65,10 +65,10 @@ End map.
 Module go.
 Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
 {
-  equals_map_nil_l key_type elem_type m :
-    go_equals (go.MapType key_type elem_type) #m #map.nil = Some $ bool_decide (m = map.nil);
-  equals_map_nil_r key_type elem_type m :
-    go_equals (go.MapType key_type elem_type) #map.nil #m = Some $ bool_decide (m = map.nil);
+  go_eq_map_nil_l kt vt m :
+    go_eq_top_level (go.MapType kt vt) #m #map.nil = #(bool_decide (m = map.nil));
+  go_eq_map_nil_r kt vt m :
+    go_eq_top_level (go.MapType kt vt) #map.nil #m = #(bool_decide (m = map.nil));
 
   is_map_pure (v : val) (m : val → bool * val) : Prop;
   map_default : val → val;
@@ -106,7 +106,8 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
   make2_map key_type elem_type :
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: "len",
-       ref (mv_empty (go_zero_val elem_type)))%V;
+       let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
+       ref (InternalMapMake "default_elem"))%V;
   make1_map key_type elem_type :
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: <>, FuncResolve go.make2 [go.TypeLit $ go.MapType key_type elem_type] #() #(W64 0))%V;

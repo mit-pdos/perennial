@@ -30,14 +30,6 @@ End unfolding_defs.
 Section into_val_defs.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Class IntoValComparable {go_ctx : GoContext}
-                        {core_sem : go.CoreSemantics}
-  (V : Type) t `{!IntoVal V} `{!EqDecision V} :=
-  {
-    into_val_comparable : go.is_comparable t;
-    into_val_always_comparable : go.is_always_comparable t V;
-  }.
-
 Class TypedPointsto (V : Type) `{!IntoVal V} :=
 {
   typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
@@ -127,13 +119,6 @@ Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.Co
 
 Global Instance into_val_loc_inj : Inj eq eq (into_val (V:=loc)).
 Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_comparable_loc t : IntoValComparable loc (go.PointerType t).
-Proof.
-  split.
-  - apply go.is_comparable_pointer.
-  - apply go.go_eq_pointer.
-Qed.
 
 Global Instance into_val_slice_inj : Inj eq eq (into_val (V:=slice.t)).
 Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
@@ -309,16 +294,9 @@ Proof.
     intros HR. apply H. subst. done. }
 Qed.
 
-Global Instance wp_eq `[!IntoVal V] `[!EqDecision V] `[!IntoValComparable V t] (v1 v2 : V) :
-  PureWp True (GoEquals t (#v1, #v2)%V) #(bool_decide (v1 = v2)).
-Proof.
-  iIntros (?) "* _ * HΦ".
-  iApply wp_GoInstruction.
-  { intros. repeat econstructor. }
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "? $ !>". rewrite into_val_comparable. rewrite into_val_always_comparable.
-  iApply "HΦ". iFrame.
-Qed.
+Global Instance pure_wp_GoEquals `[!go.IsComparable t] (v1 v2 : val) :
+  PureWp True (GoEquals t (v1, v2)%V) (go.go_eq t v1 v2).
+Proof. rewrite -go.is_comparable. solve_pure. Qed.
 
 Lemma wp_GoPrealloc {stk E} :
   {{{ True }}}

@@ -192,7 +192,6 @@ Proof.
   rewrite Hunfold. wp_auto.
   wp_alloc tmp as "?". wp_auto.
   wp_bind.
-  (* FIXME: better plan for zero_val. *)
   (* FIXME: require == to be defined during runtime. *)
 
   rewrite own_map_unseal.

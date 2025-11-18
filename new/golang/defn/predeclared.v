@@ -91,41 +91,50 @@ Inductive is_predeclared : go.type → Prop :=
 | is_predeclared_bool : is_predeclared go.bool
 .
 
-Inductive is_predeclared_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop :=
-| is_predeclared_zero_val_uint : is_predeclared_zero_val go.uint (W64 0)
-| is_predeclared_zero_val_uint8 : is_predeclared_zero_val go.uint8 (W8 0)
-| is_predeclared_zero_val_uint16 : is_predeclared_zero_val go.uint16 (W16 0)
-| is_predeclared_zero_val_uint32 : is_predeclared_zero_val go.uint32 (W32 0)
-| is_predeclared_zero_val_uint64 : is_predeclared_zero_val go.uint64 (W64 0)
-| is_predeclared_zero_val_int : is_predeclared_zero_val go.int (W64 0)
-| is_predeclared_zero_val_int8 : is_predeclared_zero_val go.int8 (W8 0)
-| is_predeclared_zero_val_int16 : is_predeclared_zero_val go.int16 (W16 0)
-| is_predeclared_zero_val_int32 : is_predeclared_zero_val go.int32 (W32 0)
-| is_predeclared_zero_val_int64 : is_predeclared_zero_val go.int64 (W64 0)
-| is_predeclared_zero_val_string : is_predeclared_zero_val go.string ""%go
-| is_predeclared_zero_val_bool : is_predeclared_zero_val go.bool false.
+Inductive is_predeclared_zero_val : go.type → val → Prop :=
+| is_predeclared_zero_val_uint : is_predeclared_zero_val go.uint #(W64 0)
+| is_predeclared_zero_val_uint8 : is_predeclared_zero_val go.uint8 #(W8 0)
+| is_predeclared_zero_val_uint16 : is_predeclared_zero_val go.uint16 #(W16 0)
+| is_predeclared_zero_val_uint32 : is_predeclared_zero_val go.uint32 #(W32 0)
+| is_predeclared_zero_val_uint64 : is_predeclared_zero_val go.uint64 #(W64 0)
+| is_predeclared_zero_val_int : is_predeclared_zero_val go.int #(W64 0)
+| is_predeclared_zero_val_int8 : is_predeclared_zero_val go.int8 #(W8 0)
+| is_predeclared_zero_val_int16 : is_predeclared_zero_val go.int16 #(W16 0)
+| is_predeclared_zero_val_int32 : is_predeclared_zero_val go.int32 #(W32 0)
+| is_predeclared_zero_val_int64 : is_predeclared_zero_val go.int64 #(W64 0)
+| is_predeclared_zero_val_string : is_predeclared_zero_val go.string #""%go
+| is_predeclared_zero_val_bool : is_predeclared_zero_val go.bool #false.
 
-Inductive is_integer_type : Type → go.type → Prop :=
-| is_integer_type_uint : _ w64 go.uint
-| is_integer_type_uint64 : _ w64 go.uint64
-| is_integer_type_uint32 : _ w32 go.uint32
-| is_integer_type_uint16 : _ w16 go.uint16
-| is_integer_type_uint8 : _ w8 go.uint8
-| is_integer_type_int : _ w64 go.int
-| is_integer_type_int64 : _ w64 go.int64
-| is_integer_type_int32 : _ w32 go.int32
-| is_integer_type_int16 : _ w16 go.int16
-| is_integer_type_int8 : _ w8 go.int8.
+Inductive is_integer_type : go.type → Prop :=
+| is_integer_type_uint : _ go.uint
+| is_integer_type_uint64 : _ go.uint64
+| is_integer_type_uint32 : _ go.uint32
+| is_integer_type_uint16 : _ go.uint16
+| is_integer_type_uint8 : _ go.uint8
+| is_integer_type_int : _ go.int
+| is_integer_type_int64 : _ go.int64
+| is_integer_type_int32 : _ go.int32
+| is_integer_type_int16 : _ go.int16
+| is_integer_type_int8 : _ go.int8.
 
-Inductive is_ordered_type : Type → go.type → Prop :=
-| is_ordered_type_string : _ go_string go.string
-| is_ordered_type_numeric t V (H : is_integer_type V t) : _ V t
+Existing Class is_integer_type.
+Global Existing Instances
+  is_integer_type_uint is_integer_type_uint64 is_integer_type_uint32
+  is_integer_type_uint16 is_integer_type_uint8 is_integer_type_int
+  is_integer_type_int64 is_integer_type_int32 is_integer_type_int16
+  is_integer_type_int8.
+
+Inductive is_ordered_type : go.type → Prop :=
+| is_ordered_type_string : _ go.string
+| is_ordered_type_numeric t (H : is_integer_type t) : _ t
 .
 
-Class PredeclaredSemantics {go_ctx : GoContext} :=
+Existing Class is_ordered_type.
+Global Existing Instances is_ordered_type_string is_ordered_type_numeric.
+
+Class PredeclaredSemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} :=
 {
-  alloc_predeclared t {V} (v : V) `{!IntoVal V} (H : is_predeclared_zero_val t v) :
-    alloc t = (λ: <>, ref #v)%V;
+  alloc_predeclared t v (H : is_predeclared_zero_val t v) : alloc t = (λ: <>, ref v)%V;
   load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
   store_predeclared t (H : is_predeclared t) : store t = (λ: "l" "v", "l" <- "v")%V;
 
@@ -140,20 +149,32 @@ Class PredeclaredSemantics {go_ctx : GoContext} :=
   make2_underlying t : functions make2 [t] = functions make2 [to_underlying t];
   make1_underlying t : functions make1 [t] = functions make1 [to_underlying t];
 
-  min_ordered n t V (H : is_ordered_type V t) : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
-  max_ordered n t V (H : is_ordered_type V t) : #(functions min (replicate n t)) = maxⁱᵐᵖˡ t n;
+  min_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
+  max_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = maxⁱᵐᵖˡ t n;
 
-  comparable_bool : go.is_strictly_comparable go.bool Datatypes.bool;
+  #[global]
+  comparable_bool :: go.IsComparable go.bool;
+  go_eq_bool : go.is_always_safe_to_compare go.bool Datatypes.bool;
 
-  comparable_ordered t {V} `{!IntoVal V} `{!EqDecision V}
-    (H : is_ordered_type V t) : go.is_strictly_comparable t V;
+  #[global]
+  comparable_ordered t (H : is_ordered_type t) :: go.IsComparable t;
+
+  go_eq_int : go.is_always_safe_to_compare go.int w64;
+  go_eq_int64 : go.is_always_safe_to_compare go.int64 w64;
+  go_eq_int32 : go.is_always_safe_to_compare go.int32 w32;
+  go_eq_int16 : go.is_always_safe_to_compare go.int16 w16;
+  go_eq_int8 : go.is_always_safe_to_compare go.int8 w8;
+  go_eq_uint : go.is_always_safe_to_compare go.uint w64;
+  go_eq_uint64 : go.is_always_safe_to_compare go.uint64 w64;
+  go_eq_uint32 : go.is_always_safe_to_compare go.uint32 w32;
+  go_eq_uint16 : go.is_always_safe_to_compare go.uint16 w16;
+  go_eq_uint8 : go.is_always_safe_to_compare go.uint8 w8;
 
   le_int (v1 v2 : w64) : go_le go.int #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
   le_int64 (v1 v2 : w64) : go_le go.int64 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
   le_int32 (v1 v2 : w32) : go_le go.int32 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
   le_int16 (v1 v2 : w16) : go_le go.int16 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
   le_int8 (v1 v2 : w8) : go_le go.int8 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
-
   le_uint (v1 v2 : w64) : go_le go.uint #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
   le_uint64 (v1 v2 : w64) : go_le go.uint64 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
   le_uint32 (v1 v2 : w32) : go_le go.uint32 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
@@ -165,7 +186,6 @@ Class PredeclaredSemantics {go_ctx : GoContext} :=
   lt_int32 (v1 v2 : w32) : go_lt go.int32 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
   lt_int16 (v1 v2 : w16) : go_lt go.int16 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
   lt_int8 (v1 v2 : w8) : go_lt go.int8 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
-
   lt_uint (v1 v2 : w64) : go_lt go.uint #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
   lt_uint64 (v1 v2 : w64) : go_lt go.uint64 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
   lt_uint32 (v1 v2 : w32) : go_lt go.uint32 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
