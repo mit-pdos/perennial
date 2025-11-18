@@ -223,12 +223,8 @@ Qed.
 Lemma own_map_persist mref dq m :
   own_map mref dq m ==∗ own_map mref DfracDiscarded m.
 Proof.
-  rewrite own_map_unseal /own_map_def.
-  iIntros "(%v & H & % & %)".
-  iMod (heap_pointsto_persist with "H") as "H".
-  iModIntro.
-  iFrame.
-  eauto.
+  rewrite own_map_unseal /own_map_def. iNamed 1.
+  iPersist "Hown". iModIntro. eauto.
 Qed.
 
 #[global]
@@ -246,13 +242,10 @@ End defns_and_lemmas.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
-Arguments own_map {ext ffi ffi_interp0 Σ heapGS0} {K}%_type_scope
-  {IntoVal0 EqDecision0 Countable0} {V}%_type_scope {IntoVal1} mptr dq m
-  {kt IntoValTyped0 vt IntoValTyped1}.
-
 Module test_own_map.
   Section proof.
-  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+    {map_sem : go.MapSemantics}.
   Definition foo (mref: loc) (m: gmap w64 w64): iProp Σ :=
     own_map mref DfracDiscarded m.
   End proof.
