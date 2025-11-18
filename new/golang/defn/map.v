@@ -1,9 +1,38 @@
 From New.golang.defn Require Export loop predeclared.
 
-Module map.
-Definition t := loc.
-Definition nil : t := null.
+(* One subtlety (from https://go.dev/ref/spec#Map_types): inserting into a map
+   can cause a run-time panic.
 
+   https://go.dev/ref/spec#Comparison_operators says:
+    > A comparison of two interface values with identical dynamic types causes a
+    > run-time panic if that type is not comparable.
+   While (not comparable → run-time panic) is true, the converse is not.
+   Consider having a's dynamic type be []int (or something not comparable) in the below:
+   type comparableButNotSuperComparable struct {
+	   a any
+   }
+   So, the check "is the type comparable" is insufficient for a safe semantics.
+   Some comparable types will still lead to run-time panics.
+
+   Here's a definition that captures both what map insertion and interface
+   checks need:
+   Define a typed Go value (v : t) to be _super-duper comparable_ if
+   - t is a boolean, integer, floating-point, complex, string, pointer, channel type
+   - t is an interface, and (dyn_val : dyn_typ) is super-duper comparable where
+     v = interfaceVal(dyn_typ, dyn_val)
+   - t is a struct, and all of v's field values are super-duper comparable
+   - t is an array, and all of v's elements are super-duper comparable.
+
+   This does not consider "type parameters", because this is defining semantics
+   of monomorphized Go programs, at which point there are no type parameters.
+
+   Hypothesis A: in real Go, map insertion or lookup with key `k` panics iff
+   (k is not super-duper comparable)
+   Hypothesis B: in real Go, comparison between A and B panics iff A or B is not
+   super-duper comparable. !!! WRONG: no panic if the dynamic types are
+   different at some point traversing down the tree.
+*)
+Module map.
 Section defs.
 Context {ext : ffi_syntax}.
 
@@ -75,12 +104,9 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
     #(functions go.delete [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: "m" "k", Store "m" $ InternalMapDelete (Read "m", "k"))%V;
   make2_map key_type elem_type :
-    ∃ default_elem,
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: "len",
-       let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
-       (if: "default_elem" ≠⟨elem_type⟩ default_elem then AngelicExit else #());;
-       ref (mv_empty default_elem))%V;
+       ref (mv_empty (go_zero_val elem_type)))%V;
   make1_map key_type elem_type :
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: <>, FuncResolve go.make2 [go.TypeLit $ go.MapType key_type elem_type] #() #(W64 0))%V;
