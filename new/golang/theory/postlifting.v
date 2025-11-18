@@ -89,6 +89,7 @@ Qed.
     (e.g. int64 and uint64 both have w64). *)
 Class IntoValTyped (V : Type) (t : go.type) `{TypedPointsto V} :=
   {
+    go_zero_val_eq : go_zero_val t = #(zero_val V);
     wp_alloc : (∀ {s E}, {{{ True }}}
                            alloc t #() @ s ; E
                          {{{ l, RET #l; l ↦ (zero_val V) }}});
@@ -507,8 +508,6 @@ Qed.
 
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
-Existing Class go.is_primitive_zero_val.
-#[local] Hint Extern 1 (go.is_primitive_zero_val ?t ?v) => constructor : typeclass_instances.
 
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
@@ -532,7 +531,10 @@ Ltac solve_wp_store :=
 Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
-Proof. solve_into_val_typed. Qed.
+Proof.
+  split.
+  - apply go.go_zero_val_pointer.
+  solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_func sig : IntoValTyped func.t (go.FunctionType sig).
 Proof. solve_into_val_typed. Qed.

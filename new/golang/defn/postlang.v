@@ -33,6 +33,11 @@ Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoEquals t) (e1%E, e2%E)%E)
 Notation "e1 ≠⟨ t ⟩ e2" := (UnOp NegOp (e1%E =⟨t⟩ e2%E))
                              (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
 
+Module map.
+Definition t := loc.
+Definition nil : t := null.
+End map.
+
 Module go.
 Section defs.
 Context {ext : ffi_syntax}.
@@ -46,14 +51,6 @@ Inductive is_primitive : go.type → Prop :=
 | is_primitive_slice elem : is_primitive (go.SliceType elem)
 | is_primitive_map kt vt : is_primitive (go.MapType kt vt)
 | is_primitive_channel dir t : is_primitive (go.ChannelType dir t).
-
-Inductive is_primitive_zero_val : go.type → ∀ {V} `{!IntoVal V}, V → Prop :=
-| is_primitive_zero_val_pointer t : is_primitive_zero_val (go.PointerType t) null
-| is_primitive_zero_val_function t : is_primitive_zero_val (go.FunctionType t) func.nil
-(* | is_primitive_interface elems : is_primitive (go.InterfaceType elems) *)
-| is_primitive_zero_val_slice elem : is_primitive_zero_val (go.SliceType elem) slice.nil
-| is_primitive_zero_val_map kt vt : is_primitive_zero_val (go.MapType kt vt) null
-| is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) null.
 
 Global Instance interface_eq_dec : EqDecision interface.t.
 Proof. solve_decision. Qed.
@@ -78,7 +75,7 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
     go_equals (go.InterfaceType elems) #interface.nil #i = Some $ bool_decide (i = interface.nil);
   equals_interface elems t v1 v2 :
     go_equals (go.InterfaceType elems) #(interface.mk t v1) #(interface.mk t v2) =
-    go_equals t v1 v2;
+    go_equals t v1 v2; (* FIXME: incorrect. E.g. v1 = v2 = nil slice is supposed to panic. *)
 
   equals_func_l sig f :
     go_equals (go.FunctionType sig) #f #func.nil = Some $ bool_decide (f = func.nil);
@@ -86,8 +83,13 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
     go_equals (go.FunctionType sig) #func.nil #f = Some $ bool_decide (f = func.nil);
 }.
 
+Class GoZeroVal `{!GoContext} t V `{!IntoVal V} : Prop :=
+  {
+    go_zero_val_typed : go_zero_val t = #(zero_val V);
+  }.
+
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
-    excluding predeclared types (including primitives), slice, map, and
+    excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
 
     The rules prefixed with [_] should not be used in any program proofs. *)
@@ -95,9 +97,15 @@ Class CoreSemantics {go_ctx : GoContext} :=
 {
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
+  go_zero_val_pointer t : go_zero_val (go.PointerType t) = #(zero_val loc);
+  go_zero_val_function sig : go_zero_val (go.FunctionType sig) = #(zero_val func.t);
+  go_zero_val_interface elems : go_zero_val (go.InterfaceType elems) = #(zero_val interface.t);
+  go_zero_val_slice elem : go_zero_val (go.SliceType elem) = #(zero_val slice.t);
+  go_zero_val_map kt vt : go_zero_val (go.MapType kt vt) = #(zero_val map.t);
+  go_zero_val_channel dir t : go_zero_val (go.ChannelType dir t) = #(zero_val chan.t);
+
   alloc_underlying t : alloc t = alloc (to_underlying t);
-  alloc_primitive t {V} (v : V) `{!IntoVal V} (H : is_primitive_zero_val t v) :
-    alloc t = (λ: <>, ref #v)%V;
+  alloc_primitive t (H : is_primitive t) : alloc t = (λ: <>, ref (go_zero_val t))%V;
   alloc_struct fds :
     alloc (go.StructType fds) =
     (λ: <>,

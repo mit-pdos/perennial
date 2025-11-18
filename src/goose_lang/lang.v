@@ -202,10 +202,11 @@ Inductive go_instruction : Type :=
 
 (* these are internal steps; the Go map lookup has to be implemented as multiple
    instructions because it is not atomic. *)
-| InternalMapDomain
 | InternalMapLookup
 | InternalMapInsert
 | InternalMapDelete
+| InternalMapDomain
+| InternalMapMake
 .
 
 (* TODO:
@@ -572,6 +573,7 @@ Class GoContext {ext : ffi_syntax} : Type :=
     array_index_ref (elem_type : go.type) (i : Z) (l : loc) : loc;
 
     to_underlying : go.type → go.type;
+    map_empty : val → val;
     map_lookup : val → val → bool * val;
     map_insert : val → val → val → val;
     map_delete : val → val → val;
@@ -876,6 +878,8 @@ Inductive is_go_step_pure `{!GoContext} :
   is_go_step_pure InternalMapDelete (m, k) (map_delete m k)
 | internal_map_domain_step_pure m ks (H : is_map_domain m ks) :
   is_go_step_pure InternalMapDomain m (ArrayV ks)
+| internal_map_make_step_pure v :
+  is_go_step_pure InternalMapMake v (map_empty v)
 .
 
 Inductive is_go_step `{!GoContext} :
@@ -1090,6 +1094,7 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     index_ref := inhabitant;
     array_index_ref := inhabitant;
     to_underlying := inhabitant;
+    map_empty := inhabitant;
     map_lookup := inhabitant;
     map_insert := inhabitant;
     map_delete := inhabitant;
