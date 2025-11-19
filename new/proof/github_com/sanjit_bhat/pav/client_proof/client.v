@@ -4,7 +4,7 @@ From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.proof Require Import bytes.
 From New.proof.github_com.goose_lang Require Import std.
 From New.proof.github_com.sanjit_bhat.pav Require Import
-  advrpc auditor cryptoffi hashchain ktcore merkle server.
+  advrpc auditor cryptoffi hashchain ktcore merkle server sigpred.
 
 From New.proof.github_com.sanjit_bhat.pav.client_proof Require Import
   evidence.
@@ -60,17 +60,26 @@ Record t :=
     sigPk: list w8;
     vrfPk: list w8;
     vrfSig: list w8;
+
+    isGood: bool;
+    sigpredγ: sigpred.γs.t;
   }.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
   ∃ sl_sigPk ptr_vrfPk sl_vrfSig,
   "#Hstruct" ∷ ptr ↦□ (client.serv.mk obj.(cli) sl_sigPk ptr_vrfPk sl_vrfSig) ∗
   "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(sigPk) ∗
+  "#His_sigPk" ∷ (if negb obj.(isGood) then True else
+    cryptoffi.is_sig_pk obj.(sigPk) (sigpred.pred obj.(sigpredγ))) ∗
   "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(vrfPk) ∗
-  "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig).
+  "#Hgs_vrfPk" ∷ (if negb obj.(isGood) then True else
+    ghost_var obj.(sigpredγ).(sigpred.γs.vrf) (□) obj.(vrfPk)) ∗
+  "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig) ∗
+  "#His_vrfSig" ∷ ktcore.wish_VerifyVrfSig obj.(sigPk) obj.(vrfPk) obj.(vrfSig).
 
 End proof.
 End serv.
@@ -86,6 +95,7 @@ Record t :=
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
 Definition own ptr obj d : iProp Σ :=
   ∃ ptr_pend ptr_last ptr_serv,

@@ -15,7 +15,7 @@ End γs.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-Context `{pavG Σ}.
+Context `{!pavG Σ}.
 
 Definition vrf_pred γ enc : iProp Σ :=
   ∃ vrfPk,
