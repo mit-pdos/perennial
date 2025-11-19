@@ -42,10 +42,14 @@ End entry.
 End sigpred.
 
 Class sigpredG Σ := {
+  (* ghost_var of vrfPk. *)
   #[global] sigpredG_vrf :: ghost_varG Σ (list w8);
+  (* mono_list of (dig, link, map). *)
   #[global] sigpredG_chain :: mono_listG sigpred.entry.t Σ;
 }.
 
 Class pavG Σ := {
   #[global] pavG_sigpred :: sigpredG Σ;
+  (* ghost_map uid (gset (ver, pk)). *)
+  #[global] pavG_puts :: ghost_mapG Σ w64 (gset (w64 * list w8));
 }.

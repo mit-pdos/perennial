@@ -12,6 +12,17 @@ From New.proof.github_com.sanjit_bhat.pav.client_proof Require Import
 Module client.
 Import evidence.client.
 
+Module servInfo.
+Record t :=
+  mk {
+    sigPk: list w8;
+    vrfPk: list w8;
+    isGood: bool;
+    sigpredγ: sigpred.γs.t;
+    putsγ: gname;
+  }.
+End servInfo.
+
 Module epoch.
 Record t :=
   mk' {
@@ -19,17 +30,28 @@ Record t :=
     dig: list w8;
     link: list w8;
     sig: list w8;
+
+    serv: servInfo.t;
   }.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
   ∃ sl_dig sl_link sl_sig,
   "#Hstruct" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
   "#Hsl_dig" ∷ sl_dig ↦*□ obj.(dig) ∗
   "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
-  "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig).
+  "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig) ∗
+  "#His_sig" ∷ ktcore.wish_VerifyLinkSig obj.(serv).(servInfo.sigPk)
+    obj.(epoch) obj.(link) obj.(sig) ∗
+
+  "#Hgs_chain" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
+    ∃ m,
+    mono_list_idx_own obj.(serv).(servInfo.sigpredγ).(sigpred.γs.chain)
+      (uint.nat obj.(epoch))
+      (sigpred.entry.mk obj.(dig) obj.(link) m)).
 
 End proof.
 End epoch.
@@ -40,15 +62,29 @@ Record t :=
     ver: w64;
     isPending: bool;
     pendingPk: list w8;
+
+    uid: w64;
+    serv: servInfo.t;
+    isGoodClis: bool;
   }.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
-Definition own ptr obj d : iProp Σ :=
+Definition own ptr obj : iProp Σ :=
   ∃ sl_pendingPk,
-  "Hstruct" ∷ ptr ↦{d} (client.nextVer.mk obj.(ver) obj.(isPending) sl_pendingPk) ∗
-  "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ obj.(pendingPk).
+  "Hstruct" ∷ ptr ↦ (client.nextVer.mk obj.(ver) obj.(isPending) sl_pendingPk) ∗
+  "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ obj.(pendingPk) ∗
+
+  "Hgs" ∷ (if negb (andb obj.(serv).(servInfo.isGood) obj.(isGoodClis)) then True else
+    ∃ puts,
+    "Hmap" ∷ obj.(uid) ↪[obj.(serv).(servInfo.putsγ)] puts ∗
+    "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
+    "%Hpending" ∷ ⌜∀ pk,
+      (obj.(ver), pk) ∈ puts →
+      obj.(isPending) = true ∧ pk = obj.(pendingPk)⌝
+    ).
 
 End proof.
 End nextVer.
@@ -57,12 +93,9 @@ Module serv.
 Record t :=
   mk' {
     cli: loc;
-    sigPk: list w8;
-    vrfPk: list w8;
     vrfSig: list w8;
 
-    isGood: bool;
-    sigpredγ: sigpred.γs.t;
+    serv: servInfo.t;
   }.
 
 Section proof.
@@ -72,14 +105,18 @@ Context `{!pavG Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ sl_sigPk ptr_vrfPk sl_vrfSig,
   "#Hstruct" ∷ ptr ↦□ (client.serv.mk obj.(cli) sl_sigPk ptr_vrfPk sl_vrfSig) ∗
-  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(sigPk) ∗
-  "#His_sigPk" ∷ (if negb obj.(isGood) then True else
-    cryptoffi.is_sig_pk obj.(sigPk) (sigpred.pred obj.(sigpredγ))) ∗
-  "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(vrfPk) ∗
-  "#Hgs_vrfPk" ∷ (if negb obj.(isGood) then True else
-    ghost_var obj.(sigpredγ).(sigpred.γs.vrf) (□) obj.(vrfPk)) ∗
+  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(serv).(servInfo.sigPk) ∗
+  "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(serv).(servInfo.vrfPk) ∗
   "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig) ∗
-  "#His_vrfSig" ∷ ktcore.wish_VerifyVrfSig obj.(sigPk) obj.(vrfPk) obj.(vrfSig).
+  "#His_vrfSig" ∷ ktcore.wish_VerifyVrfSig obj.(serv).(servInfo.sigPk)
+    obj.(serv).(servInfo.vrfPk) obj.(vrfSig) ∗
+
+  "#His_sigPk" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
+    cryptoffi.is_sig_pk obj.(serv).(servInfo.sigPk)
+      (sigpred.pred obj.(serv).(servInfo.sigpredγ))) ∗
+  "#Hgs_vrfPk" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
+    ghost_var obj.(serv).(servInfo.sigpredγ).(sigpred.γs.vrf)
+      (□) obj.(serv).(servInfo.vrfPk)).
 
 End proof.
 End serv.
@@ -97,12 +134,16 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
-Definition own ptr obj d : iProp Σ :=
+Definition own ptr obj : iProp Σ :=
   ∃ ptr_pend ptr_last ptr_serv,
-  "Hstruct" ∷ ptr ↦{d} (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
-  "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) d ∗
+  "Hstruct" ∷ ptr ↦ (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
+  "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) ∗
   "#Hown_last" ∷ epoch.own ptr_last obj.(last) ∗
-  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv).
+  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) ∗
+
+  "%Heq_serv0" ∷ ⌜obj.(serv).(serv.serv) = obj.(last).(epoch.serv)⌝ ∗
+  "%Heq_serv1" ∷ ⌜obj.(serv).(serv.serv) = obj.(pend).(nextVer.serv)⌝ ∗
+  "%Heq_uid" ∷ ⌜obj.(uid) = obj.(pend).(nextVer.uid)⌝.
 
 End proof.
 End Client.
