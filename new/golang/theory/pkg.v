@@ -174,14 +174,6 @@ Notation "rcvr @ type @ method" :=
   #(methods type method #rcvr)
     (at level 1, type at next level, no associativity) : expr_scope.
 
-  | |- WpFuncCall _ _ (is_pkg_defined ?pkg_name) =>
-      apply (wp_func_call' (pkg_name:=pkg_name)); [reflexivity| iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"]
-  | _ => fail "solve_wp_func_call: not a WpFuncCall goal"
-  end.
-  | |- WpMethodCall _ _ _ (is_pkg_defined ?pkg_name) =>
-      apply (wp_method_call' (pkg_name:=pkg_name)); [reflexivity | iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"]
-  | _ => fail "solve_wp_method_call: not a WpMethodCall goal"
-  end.
 (* FIXME: better implementation using PkgInfo to direct the search. Could try lithium even. *)
 (* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)
 Ltac solve_pkg_init :=
