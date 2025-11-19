@@ -1,51 +1,47 @@
 From New.golang.defn Require Export loop predeclared.
 
-(* One subtlety (from https://go.dev/ref/spec#Map_types): inserting into a map
-   can cause a run-time panic.
+(* One subtlety (from https://go.dev/ref/spec#Map_types): inserting into or
+   lookup up from a map can cause a run-time panic:
+   "If the key type is an interface type, these comparison operators [== and !=]
+   must be defined for the dynamic key values; failure will cause a run-time
+   panic."
+   The values which result in panics are not precisely defined by the spec (e.g.
+   what about an interface with dynamic value being a nil slice? `==` is technically
+   defined as a special case for nil slices). A better source of what is safe
+   and not is the implementation:
+   https://cs.opensource.google/go/go/+/refs/tags/go1.25.4:src/internal/runtime/maps/map.go;l=831
 
-   https://go.dev/ref/spec#Comparison_operators says:
-    > A comparison of two interface values with identical dynamic types causes a
-    > run-time panic if that type is not comparable.
-   While (not comparable → run-time panic) is true, the converse is not.
-   Consider having a's dynamic type be []int (or something not comparable) in the below:
-   type comparableButNotSuperComparable struct {
-	   a any
-   }
-   So, the check "is the type comparable" is insufficient for a safe semantics.
-   Some comparable types will still lead to run-time panics.
-
-   Here's a definition that captures both what map insertion and interface
-   checks need:
-   Define a typed Go value (v : t) to be _super-duper comparable_ if
-   - t is a boolean, integer, floating-point, complex, string, pointer, channel type
-   - t is an interface, and (dyn_val : dyn_typ) is super-duper comparable where
-     v = interfaceVal(dyn_typ, dyn_val)
-   - t is a struct, and all of v's field values are super-duper comparable
-   - t is an array, and all of v's elements are super-duper comparable.
-
-   This does not consider "type parameters", because this is defining semantics
-   of monomorphized Go programs, at which point there are no type parameters.
-
-   Hypothesis A: in real Go, map insertion or lookup with key `k` panics iff
-   (k is not super-duper comparable)
-   Hypothesis B: in real Go, comparison between A and B panics iff A or B is not
-   super-duper comparable. !!! WRONG: no panic if the dynamic types are
-   different at some point traversing down the tree.
+   This corresponds: `k` is a safe map key iff [go_eq k k] is safe to execute.
+   The latter is safe when
+     InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k"
+   is safe.
 *)
+
 Module map.
 Section defs.
 Context {ext : ffi_syntax}.
 
-Definition lookup2 : val :=
-  λ: "m" "k", InternalMapLookup (Read "m", "k").
+Definition lookup2 (key_type elem_type : go.type) : val :=
+  λ: "m" "k",
+    (* make sure it's safe to look up *)
+    InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
+    if: "m" =⟨go.PointerType go.string⟩ #null then (* placeholder element type *)
+      (* NOTE: this gets the zero value from element type in a hacky way. *)
+      let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
+      ("default_elem", #false)
+    else InternalMapLookup (Read "m", "k").
 
-Definition lookup1 : val :=
-  λ: "m" "k", Fst (lookup2 "m" "k").
+Definition lookup1 (key_type elem_type : go.type) : val :=
+  λ: "m" "k", Fst (lookup2 key_type elem_type "m" "k").
 
-Definition insert : val :=
-  λ: "m" "k" "v", Store "m" (InternalMapInsert (Read "m", "k", "v")).
+Definition insert (key_type : go.type) : val :=
+  λ: "m" "k" "v",
+    (* make sure it's safe to look up *)
+    InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
+    Store "m" (InternalMapInsert (Read "m", "k", "v")).
 
-(* Does not support modifications to the map during the loop. *)
+(* Does not support modifications to the map during the loop.
+   Does not support nil maps. *)
 Definition for_range (key_type elem_type : go.type) : val :=
   λ: "m" "body",
     let: "mv" := StartRead "m" in
