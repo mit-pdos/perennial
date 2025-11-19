@@ -294,7 +294,10 @@ Proof.
     intros HR. apply H. subst. done. }
 Qed.
 
-(* This should only be used if there isn't a better instance available. *)
+(* These should only be used if there aren't better instances available. *)
+Global Instance pure_wp_GoEquals_top_level t (v1 v2 : val) :
+  PureWp True (GoEquals t (v1, v2)%V) (go_eq_top_level t v1 v2) | 200.
+Proof. solve_pure. Qed.
 Global Instance pure_wp_GoEquals `[!go.IsComparable t] (v1 v2 : val) :
   PureWp True (GoEquals t (v1, v2)%V) (go.go_eq t v1 v2) | 100.
 Proof. rewrite -go.is_comparable. solve_pure. Qed.
@@ -383,15 +386,25 @@ Global Instance wp_InternalMapMake (v : val) :
   PureWp True (InternalMapMake v) (map_empty v).
 Proof. solve_pure. Qed.
 
-Ltac solve_eq lem :=
-  iIntros (?) "* _ * HΦ"; wp_pure_lc "Hlc"; rewrite lem; by iApply "HΦ".
-Global Instance pure_wp_eq_pointer t (l1 l2 : loc) :
-  PureWp True (GoEquals (go.PointerType t) (#l1, #l2)%V) #(bool_decide (l1 = l2)).
-Proof. solve_eq go.go_eq_pointer. Qed.
+Class IsGoEq t v1 v2 (b : bool) : Prop :=
+  {
+    wp_go_eq stk E Φ : Φ #b -∗ WP (go.go_eq t v1 v2) @ stk; E {{ Φ }}
+  }.
+Global Arguments wp_go_eq [t].
 
-Global Instance pure_wp_eq_channel t dir (ch1 ch2 : chan.t) :
-  PureWp True (GoEquals (go.ChannelType t dir) (#ch1, #ch2)%V) #(bool_decide (ch1 = ch2)).
-Proof. solve_eq go.go_eq_channel. Qed.
+Global Instance pure_wp_eq_ t v1 v2 b `{!go.IsComparable t} :
+  IsGoEq t v1 v2 b → PureWp True (GoEquals t (v1, v2)%V) #b | 0.
+Proof.
+  iIntros "%%*%% HΦ". wp_pure_lc "?". wp_bind (go.go_eq _ _ _). iApply wp_go_eq. by iApply "HΦ".
+Qed.
+
+Global Instance is_go_eq_pointer t (l1 l2 : loc) :
+  IsGoEq (go.PointerType t) #l1 #l2 (bool_decide (l1 = l2)).
+Proof. constructor. rewrite go.go_eq_pointer. iIntros "* ?". by wp_pures. Qed.
+
+Global Instance is_go_eq_channel t dir (l1 l2 : chan.t) :
+  IsGoEq (go.ChannelType t dir) #l1 #l2 (bool_decide (l1 = l2)).
+Proof. constructor. rewrite go.go_eq_channel. iIntros "* ?". by wp_pures. Qed.
 
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.

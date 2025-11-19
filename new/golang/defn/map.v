@@ -99,7 +99,9 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
                FuncResolve go.make1 [go.TypeLit $ go.MapType key_type elem_type] #())%V;
   delete_map key_type elem_type :
     #(functions go.delete [go.TypeLit $ go.MapType key_type elem_type]) =
-    (λ: "m" "k", Store "m" $ InternalMapDelete (Read "m", "k"))%V;
+    (λ: "m" "k",
+       InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
+       Store "m" $ InternalMapDelete (Read "m", "k"))%V;
   make2_map key_type elem_type :
     #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: "len",

@@ -82,7 +82,7 @@ Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
 
 Ltac solve_eq lem :=
-  iIntros (?) "* _ * HΦ"; wp_pure_lc "Hlc"; rewrite lem; by iApply "HΦ".
+  constructor; rewrite lem; iIntros "* ?"; by wp_pures.
 
 Ltac solve_ineq lem :=
   iIntros (?) "* _ * HΦ";
@@ -90,8 +90,8 @@ Ltac solve_ineq lem :=
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
   iIntros "? $ !>"; rewrite lem; iApply "HΦ"; iFrame.
 
-Global Instance wp_eq_uint (v1 v2 : w64) :
-  PureWp True (GoEquals go.uint (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_uint (v1 v2 : w64) :
+  IsGoEq go.uint #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_uint. Qed.
 Global Instance wp_le_uint (v1 v2 : w64) :
   PureWp True (GoLe go.uint (#v1, #v2)%V) #(bool_decide (uint.Z v1 ≤ uint.Z v2)).
@@ -106,8 +106,8 @@ Global Instance wp_gt_uint (v1 v2 : w64) :
   PureWp True (GoGt go.uint (#v1, #v2)%V) #(bool_decide (uint.Z v2 < uint.Z v1)).
 Proof. solve_ineq go.lt_uint. Qed.
 
-Global Instance wp_eq_uint64 (v1 v2 : w64) :
-  PureWp True (GoEquals go.uint64 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_uint64 (v1 v2 : w64) :
+  IsGoEq go.uint64 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_uint64. Qed.
 Global Instance wp_le_uint64 (v1 v2 : w64) :
   PureWp True (GoLe go.uint64 (#v1, #v2)%V) #(bool_decide (uint.Z v1 ≤ uint.Z v2)).
@@ -122,8 +122,8 @@ Global Instance wp_gt_uint64 (v1 v2 : w64) :
   PureWp True (GoGt go.uint64 (#v1, #v2)%V) #(bool_decide (uint.Z v2 < uint.Z v1)).
 Proof. solve_ineq go.lt_uint64. Qed.
 
-Global Instance wp_eq_uint32 (v1 v2 : w32) :
-  PureWp True (GoEquals go.uint32 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_uint32 (v1 v2 : w32) :
+  IsGoEq go.uint32 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_uint32. Qed.
 Global Instance wp_le_uint32 (v1 v2 : w32) :
   PureWp True (GoLe go.uint32 (#v1, #v2)%V) #(bool_decide (uint.Z v1 ≤ uint.Z v2)).
@@ -138,8 +138,8 @@ Global Instance wp_gt_uint32 (v1 v2 : w32) :
   PureWp True (GoGt go.uint32 (#v1, #v2)%V) #(bool_decide (uint.Z v2 < uint.Z v1)).
 Proof. solve_ineq go.lt_uint32. Qed.
 
-Global Instance wp_eq_uint16 (v1 v2 : w16) :
-  PureWp True (GoEquals go.uint16 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_uint16 (v1 v2 : w16) :
+  IsGoEq go.uint16 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_uint16. Qed.
 Global Instance wp_le_uint16 (v1 v2 : w16) :
   PureWp True (GoLe go.uint16 (#v1, #v2)%V) #(bool_decide (uint.Z v1 ≤ uint.Z v2)).
@@ -154,8 +154,8 @@ Global Instance wp_gt_uint16 (v1 v2 : w16) :
   PureWp True (GoGt go.uint16 (#v1, #v2)%V) #(bool_decide (uint.Z v2 < uint.Z v1)).
 Proof. solve_ineq go.lt_uint16. Qed.
 
-Global Instance wp_eq_uint8 (v1 v2 : w8) :
-  PureWp True (GoEquals go.uint8 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_uint8 (v1 v2 : w8) :
+  IsGoEq go.uint8 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_uint8. Qed.
 Global Instance wp_le_uint8 (v1 v2 : w8) :
   PureWp True (GoLe go.uint8 (#v1, #v2)%V) #(bool_decide (uint.Z v1 ≤ uint.Z v2)).
@@ -170,8 +170,8 @@ Global Instance wp_gt_uint8 (v1 v2 : w8) :
   PureWp True (GoGt go.uint8 (#v1, #v2)%V) #(bool_decide (uint.Z v2 < uint.Z v1)).
 Proof. solve_ineq go.lt_uint8. Qed.
 
-Global Instance wp_eq_int (v1 v2 : w64) :
-  PureWp True (GoEquals go.int (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_int (v1 v2 : w64) :
+  IsGoEq go.int #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_int. Qed.
 Global Instance wp_le_int (v1 v2 : w64) :
   PureWp True (GoLe go.int (#v1, #v2)%V) #(bool_decide (sint.Z v1 ≤ sint.Z v2)).
@@ -186,8 +186,8 @@ Global Instance wp_gt_int (v1 v2 : w64) :
   PureWp True (GoGt go.int (#v1, #v2)%V) #(bool_decide (sint.Z v2 < sint.Z v1)).
 Proof. solve_ineq go.lt_int. Qed.
 
-Global Instance wp_eq_int64 (v1 v2 : w64) :
-  PureWp True (GoEquals go.int64 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_int64 (v1 v2 : w64) :
+  IsGoEq go.int64 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_int64. Qed.
 Global Instance wp_le_int64 (v1 v2 : w64) :
   PureWp True (GoLe go.int64 (#v1, #v2)%V) #(bool_decide (sint.Z v1 ≤ sint.Z v2)).
@@ -202,8 +202,8 @@ Global Instance wp_gt_int64 (v1 v2 : w64) :
   PureWp True (GoGt go.int64 (#v1, #v2)%V) #(bool_decide (sint.Z v2 < sint.Z v1)).
 Proof. solve_ineq go.lt_int64. Qed.
 
-Global Instance wp_eq_int32 (v1 v2 : w32) :
-  PureWp True (GoEquals go.int32 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_int32 (v1 v2 : w32) :
+  IsGoEq go.int32 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_int32. Qed.
 Global Instance wp_le_int32 (v1 v2 : w32) :
   PureWp True (GoLe go.int32 (#v1, #v2)%V) #(bool_decide (sint.Z v1 ≤ sint.Z v2)).
@@ -218,8 +218,8 @@ Global Instance wp_gt_int32 (v1 v2 : w32) :
   PureWp True (GoGt go.int32 (#v1, #v2)%V) #(bool_decide (sint.Z v2 < sint.Z v1)).
 Proof. solve_ineq go.lt_int32. Qed.
 
-Global Instance wp_eq_int16 (v1 v2 : w16) :
-  PureWp True (GoEquals go.int16 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_int16 (v1 v2 : w16) :
+  IsGoEq go.int16 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_int16. Qed.
 Global Instance wp_le_int16 (v1 v2 : w16) :
   PureWp True (GoLe go.int16 (#v1, #v2)%V) #(bool_decide (sint.Z v1 ≤ sint.Z v2)).
@@ -234,8 +234,8 @@ Global Instance wp_gt_int16 (v1 v2 : w16) :
   PureWp True (GoGt go.int16 (#v1, #v2)%V) #(bool_decide (sint.Z v2 < sint.Z v1)).
 Proof. solve_ineq go.lt_int16. Qed.
 
-Global Instance wp_eq_int8 (v1 v2 : w8) :
-  PureWp True (GoEquals go.int8 (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_int8 (v1 v2 : w8) :
+  IsGoEq go.int8 #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_int8. Qed.
 Global Instance wp_le_int8 (v1 v2 : w8) :
   PureWp True (GoLe go.int8 (#v1, #v2)%V) #(bool_decide (sint.Z v1 ≤ sint.Z v2)).
@@ -250,8 +250,8 @@ Global Instance wp_gt_int8 (v1 v2 : w8) :
   PureWp True (GoGt go.int8 (#v1, #v2)%V) #(bool_decide (sint.Z v2 < sint.Z v1)).
 Proof. solve_ineq go.lt_int8. Qed.
 
-Global Instance pure_wp_eq_string (v1 v2 : go_string) :
-  PureWp True (GoEquals go.string (#v1, #v2)%V) #(bool_decide (v1 = v2)).
+Global Instance is_go_eq_string (v1 v2 : go_string) :
+  IsGoEq go.string #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_string. Qed.
 
 End inequality_instances.

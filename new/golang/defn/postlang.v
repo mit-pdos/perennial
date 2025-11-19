@@ -136,7 +136,8 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
   is_comparable_channel t dir :: IsComparable (go.ChannelType t dir);
   go_eq_channel t dir : is_always_safe_to_compare (go.ChannelType t dir) loc;
 
-  is_comparable_interface elems : IsComparable (go.InterfaceType elems);
+  #[global]
+  is_comparable_interface elems :: IsComparable (go.InterfaceType elems);
   go_eq_interface_ne elems t1 t2 v1 v2 (H : t1 ≠ t2) :
     go_eq (go.InterfaceType elems) #(interface.mk t1 v1) #(interface.mk t2 v2) = #false;
   go_eq_interface elems t v1 v2 :
