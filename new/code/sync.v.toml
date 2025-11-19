@@ -35,9 +35,3 @@ trusted = [
   "runtime_Semacquire*",
   "runtime_Semrelease",
 ]
-
-[bootstrap]
-enabled = true
-prelude = [
-  "From New.golang.defn Require Export slice array map string defer.",
-]

@@ -27,6 +27,8 @@ Definition PublicKey : go_type := sliceT.
 
 Axiom PrivateKey : go_type.
 
+Definition privateKeyCache : go_string := "crypto/ed25519.privateKeyCache"%go.
+
 Axiom Options : go_type.
 
 Definition GenerateKey : go_string := "crypto/ed25519.GenerateKey"%go.

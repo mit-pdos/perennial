@@ -65,7 +65,7 @@ Definition Equalⁱᵐᵖˡ : val :=
   λ: "a" "b",
     exception_do (let: "b" := (mem.alloc "b") in
     let: "a" := (mem.alloc "a") in
-    return: ((string.from_bytes (![sliceT] "a")) = (string.from_bytes (![sliceT] "b")))).
+    return: ((string.from_bytes (![#sliceT] "a")) = (string.from_bytes (![#sliceT] "b")))).
 
 Definition Compare : go_string := "bytes.Compare"%go.
 
@@ -207,12 +207,12 @@ Definition Clone : go_string := "bytes.Clone"%go.
 Definition Cloneⁱᵐᵖˡ : val :=
   λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    (if: (![sliceT] "b") = #slice.nil
+    (if: (![#sliceT] "b") = #slice.nil
     then return: (#slice.nil)
     else do:  #());;;
     return: (let: "$a0" := #slice.nil in
-     let: "$a1" := (![sliceT] "b") in
-     (slice.append byteT) "$a0" "$a1")).
+     let: "$a1" := (![#sliceT] "b") in
+     (slice.append #byteT) "$a0" "$a1")).
 
 Definition CutPrefix : go_string := "bytes.CutPrefix"%go.
 

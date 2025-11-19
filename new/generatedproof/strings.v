@@ -12,7 +12,6 @@ Module strings.
 Module Builder.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   addr' : loc;
   buf' : slice.t;
@@ -55,6 +54,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Builder addr' buf':
+  PureWp True
+    (struct.make #strings.Builder (alist_val [
+      "addr" ::= #addr';
+      "buf" ::= #buf'
+    ]))%struct
+    #(Builder.mk addr' buf').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Builder_struct_fields_split dq l (v : Builder.t) :
