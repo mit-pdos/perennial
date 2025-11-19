@@ -55,5 +55,15 @@ Lemma wp_Server__History s γ uid prevEpoch prevVerLen :
 Proof.
 Admitted.
 
+(* For proving the "all good clients" idiom spec, perhaps only need an invariant
+   like:
+inv (∃ σ,
+      own_Server γs σ ∗
+      ([∗ map] (uid,ver) ↦ pk ∈ σ,
+        (witness that uid committed to ver being pk))
+) *)
+
+(* For proving the "adversarial clients" idiom spec, perhaps only need an invariant
+   like: inv (∃ σ, own_Server γs σ) *)
 End proof.
 End server.
