@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 import collections
+import sys
 
 def main():
+    if len(sys.argv) != 3:
+        print("usage: trace-deps.py <A.vos/vo/vok> <B.vos/vo/vok> will show why A transitively depends on A")
+        exit(-1)
+
     deps = collections.defaultdict(set)
     with open(".rocqdeps.d") as f:
         for line in f.readlines():
@@ -11,8 +16,8 @@ def main():
                     deps[p].add(c)
 
     # find path from A to B
-    A = "new/should_build.vos"
-    B = "src/goose_lang/lib/lock/impl.vos"
+    A = sys.argv[1]
+    B = sys.argv[2]
     visited = set()
     cur_path = [A]
     def recur():

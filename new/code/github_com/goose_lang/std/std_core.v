@@ -20,7 +20,7 @@ Definition SumNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
-    return: (((![uint64T] "x") + (![uint64T] "y")) ≥ (![uint64T] "x"))).
+    return: (((![#uint64T] "x") + (![#uint64T] "y")) ≥ (![#uint64T] "x"))).
 
 Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumAssumeNoOverflow"%go.
 
@@ -33,11 +33,11 @@ Definition SumAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
-    do:  (let: "$a0" := (let: "$a0" := (![uint64T] "x") in
-    let: "$a1" := (![uint64T] "y") in
+    do:  (let: "$a0" := (let: "$a0" := (![#uint64T] "x") in
+    let: "$a1" := (![#uint64T] "y") in
     (func_call #SumNoOverflow) "$a0" "$a1") in
     (func_call #primitive.Assume) "$a0");;;
-    return: ((![uint64T] "x") + (![uint64T] "y"))).
+    return: ((![#uint64T] "x") + (![#uint64T] "y"))).
 
 Definition MulNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulNoOverflow"%go.
 
@@ -48,10 +48,10 @@ Definition MulNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
-    (if: ((![uint64T] "x") = #(W64 0)) || ((![uint64T] "y") = #(W64 0))
+    (if: ((![#uint64T] "x") = #(W64 0)) || ((![#uint64T] "y") = #(W64 0))
     then return: (#true)
     else do:  #());;;
-    return: ((![uint64T] "x") ≤ (#(W64 (18446744073709551616 - 1)) `quot` (![uint64T] "y")))).
+    return: ((![#uint64T] "x") ≤ (#(W64 (18446744073709551616 - 1)) `quot` (![#uint64T] "y")))).
 
 Definition MulAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulAssumeNoOverflow"%go.
 
@@ -64,11 +64,11 @@ Definition MulAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
-    do:  (let: "$a0" := (let: "$a0" := (![uint64T] "x") in
-    let: "$a1" := (![uint64T] "y") in
+    do:  (let: "$a0" := (let: "$a0" := (![#uint64T] "x") in
+    let: "$a1" := (![#uint64T] "y") in
     (func_call #MulNoOverflow) "$a0" "$a1") in
     (func_call #primitive.Assume) "$a0");;;
-    return: ((![uint64T] "x") * (![uint64T] "y"))).
+    return: ((![#uint64T] "x") * (![#uint64T] "y"))).
 
 Definition Shuffle : go_string := "github.com/goose-lang/std/std_core.Shuffle"%go.
 
@@ -78,25 +78,25 @@ Definition Shuffle : go_string := "github.com/goose-lang/std/std_core.Shuffle"%g
 Definition Shuffleⁱᵐᵖˡ : val :=
   λ: "xs",
     exception_do (let: "xs" := (mem.alloc "xs") in
-    (if: (let: "$a0" := (![sliceT] "xs") in
+    (if: (let: "$a0" := (![#sliceT] "xs") in
     slice.len "$a0") = #(W64 0)
     then return: (#())
     else do:  #());;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := (s_to_w64 ((let: "$a0" := (![sliceT] "xs") in
+    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (s_to_w64 ((let: "$a0" := (![#sliceT] "xs") in
     slice.len "$a0") - #(W64 1))) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") - #(W64 1)))) := λ: <>,
-      let: "j" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` ((![uint64T] "i") + #(W64 1))) in
-      do:  ("j" <-[uint64T] "$r0");;;
-      let: "temp" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "i"))) in
-      do:  ("temp" <-[uint64T] "$r0");;;
-      let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "j"))) in
-      do:  ((slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "i")) <-[uint64T] "$r0");;;
-      let: "$r0" := (![uint64T] "temp") in
-      do:  ((slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "j")) <-[uint64T] "$r0")));;;
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") - #(W64 1)))) := λ: <>,
+      let: "j" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` ((![#uint64T] "i") + #(W64 1))) in
+      do:  ("j" <-[#uint64T] "$r0");;;
+      let: "temp" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "i"))) in
+      do:  ("temp" <-[#uint64T] "$r0");;;
+      let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j"))) in
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "i")) <-[#uint64T] "$r0");;;
+      let: "$r0" := (![#uint64T] "temp") in
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j")) <-[#uint64T] "$r0")));;;
     return: #()).
 
 Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permutation"%go.
@@ -108,18 +108,18 @@ Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permut
 Definition Permutationⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
-    let: "order" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T (![uint64T] "n")) in
-    do:  ("order" <-[sliceT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    let: "order" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #uint64T (![#uint64T] "n")) in
+    do:  ("order" <-[#sliceT] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "n")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (![uint64T] "i") in
-      do:  ((slice.elem_ref uint64T (![sliceT] "order") (![uint64T] "i")) <-[uint64T] "$r0")));;;
-    do:  (let: "$a0" := (![sliceT] "order") in
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "n")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (![#uint64T] "i") in
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "order") (![#uint64T] "i")) <-[#uint64T] "$r0")));;;
+    do:  (let: "$a0" := (![#sliceT] "order") in
     (func_call #Shuffle) "$a0");;;
-    return: (![sliceT] "order")).
+    return: (![#sliceT] "order")).
 
 Definition vars' : list (go_string * go_type) := [].
 

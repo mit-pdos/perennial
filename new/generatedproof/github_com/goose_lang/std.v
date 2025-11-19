@@ -2,6 +2,7 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.math.
 Require Export New.generatedproof.sync.
+Require Export New.generatedproof.time.
 Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.goose_lang.std.std_core.
 Require Export New.golang.theory.
@@ -16,7 +17,6 @@ Module std.
 Module JoinHandle.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   mu' : loc;
   done' : bool;
@@ -64,6 +64,15 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_JoinHandle mu' done' cond':
+  PureWp True
+    (struct.make #std.JoinHandle (alist_val [
+      "mu" ::= #mu';
+      "done" ::= #done';
+      "cond" ::= #cond'
+    ]))%struct
+    #(JoinHandle.mk mu' done' cond').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance JoinHandle_struct_fields_split dq l (v : JoinHandle.t) :
@@ -99,6 +108,7 @@ Global Instance is_pkg_defined_pure_std : IsPkgDefinedPure std :=
       is_pkg_defined_pure_single std ∧
       is_pkg_defined_pure code.math.math ∧
       is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.time.time ∧
       is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
       is_pkg_defined_pure code.github_com.goose_lang.std.std_core.std_core;
   |}.
@@ -110,6 +120,7 @@ Global Program Instance is_pkg_defined_std : IsPkgDefined std :=
       (is_pkg_defined_single std ∗
        is_pkg_defined code.math.math ∗
        is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.time.time ∗
        is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
        is_pkg_defined code.github_com.goose_lang.std.std_core.std_core)%I
   |}.
@@ -158,6 +169,10 @@ Global Instance wp_func_call_Multipar :
 
 Global Instance wp_func_call_Skip :
   WpFuncCall std.Skip _ (is_pkg_defined std) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_WaitTimeout :
+  WpFuncCall std.WaitTimeout _ (is_pkg_defined std) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_JoinHandle'ptr_Join :
