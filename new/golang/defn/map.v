@@ -50,7 +50,7 @@ Definition for_range (key_type elem_type : go.type) : val :=
       let: "key_sl" := slice.literal key_type (InternalMapDomain "mv") in
       let: "v" :=
         (slice.for_range key_type
-           (λ: "_unused" "k", "body" "k" (lookup1 key_type elem_type "m" "k"))
+           (λ: <> "k", "body" "k" (lookup1 key_type elem_type "m" "k"))
            "key_sl") in
       FinishRead "m";;
       "v".
@@ -86,7 +86,7 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
 
   is_map_domain_exists mv m (H : is_map_pure mv m) : ∃ ks, is_map_domain mv ks;
   is_map_domain_map_empty dv ks : is_map_domain (map_empty dv) ks → ks = [];
-  is_map_domain_insert mv m ks :
+  is_map_domain_pure mv m ks :
     is_map_pure mv m →
     is_map_domain mv ks →
     NoDup ks ∧ (∀ k, (m k).1 = true ↔ k ∈ ks);

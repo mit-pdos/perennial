@@ -1,5 +1,5 @@
 From New.golang.defn Require Export map.
-From New.golang.theory Require Export mem array predeclared auto.
+From New.golang.theory Require Export mem array predeclared auto slice.
 
 Set Default Proof Using "Type".
 
@@ -8,9 +8,10 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {core_sem : go.CoreSemantics}
   {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics}
+  {slice_sem : go.SliceSemantics}
   {map_sem : go.MapSemantics}.
 
-Local Set Default Proof Using "Type core_sem pre_sem array_sem map_sem".
+Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem map_sem".
 
 (* TODO: reading from nil map. Want to say that an owned map is not nil, which
    requires knowing that wp_ref gives non-null pointers. *)
@@ -46,6 +47,7 @@ Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
                                 | None => (false, #(zero_val V))
                                 | Some v => (true, #v)
                                 end) ⌝ ∗
+    "%Hdom" ∷ ⌜ ∀ kv, (mp kv).1 = true → ∃ (k : K), kv = #k ⌝ ∗
     "%Hdefault" ∷ ⌜ go.map_default mv = #(zero_val V) ⌝.
 Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
@@ -155,6 +157,7 @@ Proof using Inj0.
   - intros k'. simpl. destruct decide.
     + assert (k = k') by naive_solver. subst. rewrite lookup_insert_eq //.
     + rewrite lookup_insert_ne; last naive_solver. apply Hagree.
+  - simpl. intros kv. destruct decide; naive_solver.
   - by rewrite go.map_default_map_insert.
 Qed.
 
@@ -177,6 +180,7 @@ Proof using Inj0.
   - intros k'. simpl. destruct decide.
     + assert (k' = k) by naive_solver. subst. rewrite lookup_delete_eq Hdefault //.
     + rewrite lookup_delete_ne; last naive_solver. apply Hagree.
+  - simpl. intros kv. destruct decide; naive_solver.
   - by rewrite go.map_default_map_delete.
 Qed.
 
@@ -268,43 +272,58 @@ Proof.
   rewrite own_map_unseal. iNamed 1. iDestruct (heap_pointsto_non_null with "Hown") as "$".
 Qed.
 
-(* mref $↦{dq/2} m *)
-Lemma wp_map_for_range (body : func.t) key_type elem_type mref m dq :
+Lemma wp_map_for_range (body : func.t) key_type elem_type mref m dq
+  `{!TypedPointsto K} `{!IntoValTyped K key_type} :
   ∀ Φ,
   mref ↦${dq} m -∗
-  (∀ keys i_ptr,
-     ⌜ list_to_set keys = dom m ∧ length keys = size m ⌝ -∗
-     i_ptr ↦ (W64 0) -∗
-  WP (for: (# {|
-          func.f := <>;
-          func.x := <>;
-          func.e := ![go.int] (# i_ptr) <⟨go.int⟩ # (W64 (length keys))
-        |}) ; (# {|
-                    func.f := <>;
-                    func.x := <>;
-                    func.e := # i_ptr <-[go.int] ![go.int] (# i_ptr) + # (W64 1)
-                  |}) := # {|
-                              func.f := <>;
-                              func.x := <>;
-                              func.e :=
-                                (let: "k"%string := Index elem_type (ArrayV keys, # i_ptr) in
-                                # body "k"%string (map.lookup1 key_type elem_type #mref "k"%string))%E
-                            |}) {{ Φ }}) -∗
-
+  (∀ keys_sl keys,
+     ⌜ list_to_set keys = dom m ∧ length keys = size m ∧ NoDup keys ⌝ ∗
+     keys_sl ↦[key_type]* keys -∗
+     WP slice.for_range key_type
+        (# {|
+              func.f := <>;
+              func.x := <>;
+              func.e := (λ: "k"%string, # body "k"%string (map.lookup1 key_type elem_type (# mref) "k"%string))%E
+            |}) (# keys_sl) {{ v, mref ↦${dq} m -∗ Φ v }}
+  ) -∗
   WP map.for_range key_type elem_type #mref #body {{ Φ }}.
-Proof.
-  iIntros "% Hm".
+Proof using Inj0 pre_sem slice_sem.
+  iIntros "% Hm HΦ".
   wp_call. rewrite go.go_eq_map_nil_l.
   iDestruct (own_map_not_nil with "[$]") as %?.
   wp_if_destruct; first by exfalso.
   rewrite own_map_unseal. iNamed "Hm".
   wp_apply (_internal_wp_untyped_start_read with "Hown") as "Hown".
-  wp_apply (wp_InternalMapDomain with "[//]"). iIntros "%ks %Hdom".
-  wp_auto. destruct decide.
-  2:{ wp_apply wp_AngelicExit. }
-  wp_auto.
+  wp_apply (wp_InternalMapDomain with "[//]"). iIntros "%ks %Hdom'".
+  eapply go.is_map_domain_pure in Hdom'; last done.
+  destruct Hdom' as [Hks_nodup Hks].
+  assert (Forall (λ kv, ∃ (k : K), kv = #k) ks) as Heq.
+  { rewrite Forall_forall. intros kv. rewrite -list_elem_of_In.
+    intros Hk. specialize (Hks kv). specialize (Hdom kv).
+    rewrite -Hks in Hk. apply Hdom in Hk. done. }
+  apply Forall_exists_Forall2_l in Heq as [keys Heq].
+  apply Forall2_fmap_2 in Heq. rewrite -list_eq_Forall2 in Heq.
+  rewrite list_fmap_id in Heq. subst.
+  wp_apply wp_slice_literal. iIntros "%keys_sl keys_sl". wp_auto.
+  wp_bind (slice.for_range _ _ _).
+  iSpecialize ("HΦ" with "[$keys_sl]").
+  { iPureIntro.
+    eassert _ as Hl.
+    2:{ split; first eexact Hl.
+        apply NoDup_fmap in Hks_nodup; last tc_solve.
+        rewrite <- (size_list_to_set (C:=gset K)); last done.
+        rewrite Hl. rewrite size_dom //. }
+    rewrite sets.set_eq. intros k.
+    rewrite elem_of_list_to_set.
+    specialize (Hks #k). specialize (Hagree k).
+    rewrite list_elem_of_fmap_inj in Hks.
+    rewrite -Hks. rewrite Hagree. rewrite elem_of_dom.
+    by destruct lookup.
+  }
+  iApply (wp_wand with "HΦ").
+  iIntros "% HΦ". wp_auto. wp_apply "Hown" as "Hown".
+  iApply "HΦ". iFrame "∗#%".
 Qed.
-
 
 #[global]
 Instance own_map_discarded_persist mref m : Persistent (own_map mref DfracDiscarded m).
