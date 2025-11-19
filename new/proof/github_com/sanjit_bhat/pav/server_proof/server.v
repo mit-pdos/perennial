@@ -55,4 +55,5 @@ Lemma wp_Server__History s γ uid prevEpoch prevVerLen :
 Proof.
 Admitted.
 
+End proof.
 End server.
