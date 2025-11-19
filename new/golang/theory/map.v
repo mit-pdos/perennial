@@ -325,6 +325,14 @@ Proof using Inj0 pre_sem slice_sem.
   iApply "HΦ". iFrame "∗#%".
 Qed.
 
+Lemma wp_map_nil_for_range (body : func.t) key_type elem_type :
+  ∀ Φ,
+  Φ execute_val -∗
+  WP map.for_range key_type elem_type #map.nil #body {{ Φ }}.
+Proof.
+  iIntros "% HΦ". wp_call. rewrite go.go_eq_map_nil_l. by wp_if_destruct.
+Qed.
+
 #[global]
 Instance own_map_discarded_persist mref m : Persistent (own_map mref DfracDiscarded m).
 Proof.
