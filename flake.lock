@@ -36,17 +36,36 @@
         "type": "github"
       }
     },
+    "flake-utils_3": {
+      "inputs": {
+        "systems": "systems_3"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "grackle": {
       "inputs": {
         "flake-utils": "flake-utils_2",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "perennial": "perennial"
       },
       "locked": {
-        "lastModified": 1755637914,
-        "narHash": "sha256-bt3cnCFQlXirEvD6RqksZZ5LmsAScybuRdxqeWNW8hs=",
+        "lastModified": 1758214139,
+        "narHash": "sha256-jAhf3ZfjAdlvNvrBQRelLTEuoJrhYNYk6Nq/3HGK/+0=",
         "owner": "mjschwenne",
         "repo": "grackle",
-        "rev": "0287e5c807e39d94f64938bcf391cc615bd3606c",
+        "rev": "2d423b187cd78c3f8a2f8ca570e1d1f050e3c7f8",
         "type": "github"
       },
       "original": {
@@ -65,8 +84,10 @@
         "type": "github"
       },
       "original": {
-        "id": "nixpkgs",
-        "type": "indirect"
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a595dde4d0d31606e19dcec73db02279db59d201",
+        "type": "github"
       }
     },
     "nixpkgs_2": {
@@ -85,11 +106,50 @@
         "type": "github"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1759733170,
+        "narHash": "sha256-TXnlsVb5Z8HXZ6mZoeOAIwxmvGHp1g4Dw89eLvIwKVI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "8913c168d1c56dc49a7718685968f38752171c3b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "8913c168d1c56dc49a7718685968f38752171c3b",
+        "type": "github"
+      }
+    },
+    "perennial": {
+      "inputs": {
+        "flake-utils": "flake-utils_3",
+        "grackle": [
+          "grackle"
+        ],
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1757538945,
+        "narHash": "sha256-UStDgbYGwwYXOF/GpuwAeevPbxTOu1Fo7cqxklgnpeA=",
+        "ref": "refs/heads/master",
+        "rev": "161a791f5639a75ef68d1e145d7dbd41944b35b7",
+        "revCount": 8794,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/mit-pdos/perennial.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/mit-pdos/perennial.git"
+      }
+    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
         "grackle": "grackle",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       }
     },
     "systems": {
@@ -108,6 +168,21 @@
       }
     },
     "systems_2": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_3": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",

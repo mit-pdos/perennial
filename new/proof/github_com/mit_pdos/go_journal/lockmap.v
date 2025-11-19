@@ -6,6 +6,8 @@ Require Import New.proof.sync.
 From Perennial.base_logic Require Import lib.ghost_map.
 From Perennial.Helpers Require Import range_set.
 
+From iris_named_props Require Import custom_syntax.
+
 Ltac len := autorewrite with len; try word.
 
 Class lockmapG Σ : Set := #[global] lockmap_inG :: ghost_mapG Σ u64 bool.
@@ -228,8 +230,7 @@ Proof.
 
   wp_auto.
   wp_if_destruct.
-  - wp_auto.
-    wp_apply (wp_Cond__Signal with "[$Hcond]").
+  - wp_apply (wp_Cond__Signal with "[$Hcond]").
 
     iMod (ghost_map_update false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
     iDestruct (big_sepM2_insert_2 _ _ _ addr with "[held cond waiters Haddrlocked Hp] Haddrs") as "Haddrs".
@@ -241,8 +242,7 @@ Proof.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs $Hcovered]").
     iApply "HΦ". done.
 
-  - wp_auto.
-    wp_apply (wp_map_delete with "Hmptr") as "Hmptr".
+  - wp_apply (wp_map_delete with "Hmptr") as "Hmptr".
 
     iMod (ghost_map_delete with "Hghctx Haddrlocked") as "Hghctx".
     iDestruct (big_sepS_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
@@ -298,7 +298,7 @@ Lemma covered_by_shard_insert x X :
   covered_by_shard (uint.Z (word.modu x (W64 NSHARD))) ({[x]} ∪ X) =
   {[x]} ∪ covered_by_shard (uint.Z (word.modu x (W64 NSHARD))) X.
 Proof.
-  rewrite /covered_by_shard filter_union_L filter_singleton_L //.
+  rewrite /covered_by_shard filter_union_L filter_singleton_True_L //.
   unseal_nshard.
   word.
 Qed.
@@ -309,7 +309,7 @@ Lemma covered_by_shard_insert_ne (x x' : u64) X :
     covered_by_shard (uint.Z x') X.
 Proof.
   intros.
-  rewrite /covered_by_shard filter_union_L filter_singleton_not_L.
+  rewrite /covered_by_shard filter_union_L filter_singleton_False_L.
   { set_solver. }
   auto.
 Qed.
@@ -417,7 +417,7 @@ Proof.
   }
 
   wp_for "Hloop".
-  wp_if_destruct; wp_auto.
+  wp_if_destruct.
   - rewrite rangeSet_first.
     2: { unseal_nshard. word. }
     iDestruct (big_sepS_insert with "Hpp") as "[Hp Hpp]".
@@ -485,12 +485,12 @@ Proof.
   rewrite Hunseal in Hgh_lookup.
   wp_auto.
 
-  (* XXX is this the expected way to use the [pure_elem_ref] instance of PureWp? *)
-  wp_pure; first word.
-
-  (* XXX is this the expected way to use [wp_load_slice_elem]? *)
-  wp_apply (wp_load_slice_elem with "[$Hslice]") as "_"; first word.
+  (* XXX why does wp_apply not work here? *)
+  wp_bind (![_] (slice.elem_ref _ _ _))%E.
+  iApply (wp_load_slice_elem' with "[$Hslice]"); first word.
   { ereplace (sint.nat ?[x]) with (uint.nat ?x); first done. word. }
+  iIntros "!> _".
+  wp_auto.
 
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
   wp_apply (wp_lockShard__acquire with "[$Hshard]").

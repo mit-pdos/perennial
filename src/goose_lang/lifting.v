@@ -967,26 +967,16 @@ Proof.
   by iApply ("IH" with "[Hvs]").
 Qed.
 
-Definition big_opL_add_spec (M: ofe) (o: M -> M -> M) {mon:monoid.Monoid o} f start off k n :=
-  Proper (equiv ==> equiv ==> equiv) o ->
-  big_opL o (fun i x => f (i + k)%nat x) (seq (start + off) n) ≡
-  big_opL o (fun i x => f i (x + off)%nat) (seq (start + k)%nat n).
-
-(*
-Eval compute in (fun M o {mon:monoid.Monoid o} f off => big_opL_add_spec M o f 2%nat off 4%nat).
-*)
-
-Theorem big_opL_add (M: ofe) (o: M -> M -> M) {mon:monoid.Monoid o} f start off k n :
-  Proper (equiv ==> equiv ==> equiv) o ->
+Theorem big_opL_add (M: ofe) (o: M -> M -> M) `{!monoid.Monoid o u} f start off k n :
   big_opL o (fun i x => f (k + i)%nat x) (seq (start + off) n) ≡
   big_opL o (fun i x => f (k + i)%nat (x + off)%nat) (seq start n).
 Proof.
   intros.
   revert start k off.
   induction n; simpl; auto; intros.
-  apply H; auto.
+  apply monoid_proper; first done.
   setoid_rewrite Nat.add_succ_r.
-  rewrite <- (IHn (S start) (S k)).
+  rewrite -(IHn (S start) (S k)).
   simpl; auto.
 Qed.
 
@@ -994,7 +984,7 @@ Theorem big_sepL_offset {b:bi} f off n :
   big_opL (@bi_sep b) (fun i x => f i x) (seq off n) ≡
   big_opL bi_sep (fun i x => f i (x + off)%nat) (seq 0%nat n).
 Proof.
-  apply (big_opL_add _ _ _ 0%nat _ 0%nat _ _).
+  apply (big_opL_add _ _ _ 0%nat _ 0%nat).
 Qed.
 
 Lemma Zmul_nat_add1_r (x k:nat) :

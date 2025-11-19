@@ -2,11 +2,13 @@
 Require Export New.proof.grove_prelude.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.vkv.condputargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.vkv.getargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.vkv.putargs_gk.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.kv.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.map_string_marshal.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.storage.
-Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.vkv.
@@ -223,6 +225,7 @@ Qed.
 
 End instances.
 
+<<<<<<< HEAD
 (* type vkv.PutArgs *)
 Module PutArgs.
 Section def.
@@ -375,6 +378,8 @@ Qed.
 
 End instances.
 
+=======
+>>>>>>> master
 Section names.
 
 Context `{!heapGS Σ}.
@@ -388,11 +393,13 @@ Global Instance is_pkg_defined_pure_vkv : IsPkgDefinedPure vkv :=
       is_pkg_defined_pure_single vkv ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.vkv.condputargs_gk.condputargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.vkv.getargs_gk.getargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.vkv.putargs_gk.putargs_gk ∧
       is_pkg_defined_pure code.sync.sync ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.kv.kv ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.storage.storage ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.storage.storage;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -402,11 +409,13 @@ Global Program Instance is_pkg_defined_vkv : IsPkgDefined vkv :=
       (is_pkg_defined_single vkv ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.exactlyonce ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.vkv.condputargs_gk.condputargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.vkv.getargs_gk.getargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.vkv.putargs_gk.putargs_gk ∗
        is_pkg_defined code.sync.sync ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.kv.kv ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.map_string_marshal.map_string_marshal ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.storage.storage ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.storage.storage)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
@@ -421,30 +430,6 @@ Global Instance wp_func_call_MakeClerkPool :
 
 Global Instance wp_func_call_MakeKv :
   WpFuncCall vkv.MakeKv _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodePutArgs :
-  WpFuncCall vkv.encodePutArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodePutArgs :
-  WpFuncCall vkv.decodePutArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeGetArgs :
-  WpFuncCall vkv.encodeGetArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeGetArgs :
-  WpFuncCall vkv.decodeGetArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeCondPutArgs :
-  WpFuncCall vkv.encodeCondPutArgs _ (is_pkg_defined vkv) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeCondPutArgs :
-  WpFuncCall vkv.decodeCondPutArgs _ (is_pkg_defined vkv) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeVersionedStateMachine :

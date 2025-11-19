@@ -7,6 +7,9 @@ From New.proof Require Import context sync.
 
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
+
+From New.golang.theory Require Import chan_old.
+
 From Perennial.algebra Require Import ghost_var.
 Require Import Perennial.base.
 
@@ -111,11 +114,9 @@ Proof using ghost_mapG0.
   { solve_ndisj. }
   iIntros "Hmask".
   iFrame.
-  iSplitR.
+  iSplit.
   { word. }
-  iSplitR.
-  { iLeft. word. }
-  iIntros "_ Hctr". iMod "Hmask" as "_".
+  iIntros "!> Hctr". iMod "Hmask" as "_".
   iMod (ghost_map_delete with "[$] [$]") as "Hm".
   iMod ("Hclose" with "[-]").
   {
@@ -211,7 +212,7 @@ Proof.
   wp_apply "HErr"; first iFrame "#". iIntros (?) "_". wp_pures.
   destruct bool_decide.
   2:{
-    rewrite decide_False //; last naive_solver.
+    rewrite decide_False //.
     rewrite decide_True //. wp_auto. iApply "HΦ". eauto.
   }
   rewrite decide_True //. wp_auto.
@@ -229,7 +230,6 @@ Proof.
       iNamedAccu. }
     { (* not nil *)
       rewrite decide_False //. iNamed "Hsession".
-      wp_auto.
       wp_apply "HDone". wp_auto.
       wp_apply wp_Session__Done.
       { iFrame "#". }
@@ -256,7 +256,7 @@ Proof.
   wp_apply (wp_RWMutex__Lock with "[$Hmu]").
   iIntros "[Hmu Hown]".
   wp_auto.
-  wp_bind (chan.select _ _).
+  wp_bind (chan.select_nonblocking _ _).
   iNamedSuffix "Hown" "_lock".
   iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
   iCombine "sessionc_lock sessionc" as "sessionc".
@@ -583,7 +583,7 @@ Proof.
   wp_apply (wp_map_get with "[$entries_own]") as "entries_own".
   wp_auto. wp_if_destruct.
   { (* li is nil *)
-    wp_auto. iCombineNamed "*_own" as "Hown".
+    iCombineNamed "*_own" as "Hown".
     iDestruct ("Hclose" with "[Hown]") as "Hown".
     { iNamed "Hown". iFrame "∗#%". iExists true. iFrame "∗#%". }
     wp_apply (wp_RWMutex__Unlock with "[$Hlocked $Hown]") as "Hmu".
@@ -680,11 +680,11 @@ Proof using Type*.
   wp_apply (wp_WaitGroup__Add with "[]").
   { iFrame "#". }
   iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iFrame "Hwg_ctr Hwg_wait".
+  iNext. iFrame "Hwg_ctr".
   iSplitR.
   { word. }
-  iIntros "[%Hbad|Hwg_wait] Hwg_ctr".
-  { by exfalso. }
+  iRight.
+  iFrame "Hwg_wait". iIntros "Hwg_wait Hwg_ctr".
   iMod "Hmask" as "_". iModIntro.
   wp_auto.
   replace (word.add _ (W32 (uint.Z (W64 2)))) with (W32 2) by word.

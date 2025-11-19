@@ -10,3 +10,12 @@
   dq : dfrac
   ============================
   l1 ↦ v1 ∗ l2 ↦{dq} v2 ∗ l1 ↦□ v1 ⊢ True
+"tuple print"
+     : string
+1 goal
+  
+  Σ : gFunctors
+  heapGS0 : heapGS Σ
+  l : loc
+  ============================
+  {{{ True }}} Skip {{{ RET (# true, # true); True }}}

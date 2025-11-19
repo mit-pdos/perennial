@@ -1,8 +1,7 @@
-From New.golang Require Import defn.
+From New.golang Require Import defn.core defn.lock.
 
 Module sync.
 Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
-Module Cond. Definition id : go_string := "sync.Cond". End Cond.
 
 Section code.
 Context `{ffi_syntax}.
@@ -14,6 +13,7 @@ Definition Mutex : go_type := structT [
   ].
 
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
+<<<<<<< HEAD
   λ: "m" <>, Snd (CmpXchg (struct.field_ref Mutex "state"%go "m") #false #true).
 
 Definition Mutex__Lockⁱᵐᵖˡ : val :=
@@ -40,6 +40,27 @@ Definition Cond__Waitⁱᵐᵖˡ : val := λ: "c" <>, exception_do (
                                ).
 Definition Cond__Broadcastⁱᵐᵖˡ : val := λ: "c" <>, #().
 Definition Cond__Signalⁱᵐᵖˡ : val := λ: "c" <>, #().
+=======
+  λ: "m" <>, lock.trylock (struct.field_ref #Mutex #"state"%go "m").
+
+Definition Mutex__Lockⁱᵐᵖˡ : val :=
+  λ: "m" <>,
+     lock.lock (struct.field_ref #Mutex #"state"%go "m").
+
+Definition Mutex__Unlockⁱᵐᵖˡ : val :=
+  λ: "m" <>, lock.unlock (struct.field_ref #Mutex #"state"%go "m").
+
+Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
+  λ: "l", u_to_w32 ArbitraryInt.
+Definition runtime_notifyListWaitⁱᵐᵖˡ : val :=
+  λ: "l" "t", #().
+Definition runtime_notifyListNotifyAllⁱᵐᵖˡ : val :=
+  λ: "l", #().
+Definition runtime_notifyListNotifyOneⁱᵐᵖˡ : val :=
+  λ: "l", #().
+Definition runtime_notifyListCheckⁱᵐᵖˡ : val :=
+  λ: "l", #().
+>>>>>>> master
 
 Definition runtime_Semacquireⁱᵐᵖˡ : val :=
   (* inspired by runtime/sema.go:272:

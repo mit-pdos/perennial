@@ -2,6 +2,36 @@ The command has indeed failed with message:
 y is already used.
 The command has indeed failed with message:
 Tactic failure: iIntro: "y" not fresh.
+goal 1 is:
+  
+  Σ : gFunctors
+  hG : heapGS Σ
+  globalsGS0 : globalsGS Σ
+  go_ctx : GoContext
+  x : w64
+  y : w32
+  Φ : val → iPropI Σ
+  ============================
+  _ : is_pkg_init unittest
+  --------------------------------------□
+  "HΦ" : ∀ (a : w64) (b : w32),
+           ⌜uint.Z a = (uint.Z y + 1)%Z⌝ ∗
+           ⌜uint.Z b = (uint.Z y + 3) `mod` 2 ^ 32⌝ -∗ 
+           Φ (# a, # b)%V
+  --------------------------------------∗
+  WP exception_do
+       (let: "y" := alloc (# y) in
+        let: "x" := alloc (# x) in
+        let: "z" := alloc (type.zero_val (# uint64T)) in
+        let: "$r0" := u_to_w64 ![# uint32T] "y" in
+        (do: "z" <-[# uint64T] "$r0") ;;;
+        let: "$r0" := ![# uint64T] "z" + # (W64 1) in
+        (do: "z" <-[# uint64T] "$r0") ;;;
+        let: "y2" := alloc (type.zero_val (# uint32T)) in
+        let: "$r0" := ![# uint32T] "y" + # (W32 3) in
+        (do: "y2" <-[# uint32T] "$r0") ;;;
+        return: (![# uint64T] "z", ![# uint32T] "y2"))
+  {{ v, Φ v }}
 The command has indeed failed with message:
 Uncaught Ltac2 exception:
 Init.Tactic_failure
@@ -23,3 +53,6 @@ Init.Tactic_failure
 The command has indeed failed with message:
 Uncaught Ltac2 exception:
 Init.Tactic_failure (Init.Some message:(wp_store: could not find store_ty))
+The command has indeed failed with message:
+Uncaught Ltac2 exception:
+Init.Tactic_failure (Init.Some message:(wp_bind_next: not a WP goal))

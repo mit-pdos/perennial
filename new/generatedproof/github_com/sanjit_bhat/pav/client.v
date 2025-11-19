@@ -98,65 +98,77 @@ Qed.
 
 End instances.
 
-(* type client.pending *)
-Module pending.
+(* type client.nextVer *)
+Module nextVer.
 Section def.
 Context `{ffi_syntax}.
 
 Record t := mk {
-  nextVer' : w64;
+  ver' : w64;
   isPending' : bool;
-  pk' : slice.t;
+  pendingPk' : slice.t;
 }.
 End def.
-End pending.
+End nextVer.
 
 Section instances.
 Context `{ffi_syntax}.
-#[local] Transparent client.pending.
-#[local] Typeclasses Transparent client.pending.
+#[local] Transparent client.nextVer.
+#[local] Typeclasses Transparent client.nextVer.
 
-Global Instance pending_wf : struct.Wf client.pending.
+Global Instance nextVer_wf : struct.Wf client.nextVer.
 Proof. apply _. Qed.
 
-Global Instance settable_pending : Settable pending.t :=
-  settable! pending.mk < pending.nextVer'; pending.isPending'; pending.pk' >.
-Global Instance into_val_pending : IntoVal pending.t :=
+Global Instance settable_nextVer : Settable nextVer.t :=
+  settable! nextVer.mk < nextVer.ver'; nextVer.isPending'; nextVer.pendingPk' >.
+Global Instance into_val_nextVer : IntoVal nextVer.t :=
   {| to_val_def v :=
-    struct.val_aux client.pending [
-    "nextVer" ::= #(pending.nextVer' v);
-    "isPending" ::= #(pending.isPending' v);
-    "pk" ::= #(pending.pk' v)
+    struct.val_aux client.nextVer [
+    "ver" ::= #(nextVer.ver' v);
+    "isPending" ::= #(nextVer.isPending' v);
+    "pendingPk" ::= #(nextVer.pendingPk' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_pending : IntoValTyped pending.t client.pending :=
+Global Program Instance into_val_typed_nextVer : IntoValTyped nextVer.t client.nextVer :=
 {|
-  default_val := pending.mk (default_val _) (default_val _) (default_val _);
+  default_val := nextVer.mk (default_val _) (default_val _) (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_pending_nextVer : IntoValStructField "nextVer" client.pending pending.nextVer'.
+Global Instance into_val_struct_field_nextVer_ver : IntoValStructField "ver" client.nextVer nextVer.ver'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_pending_isPending : IntoValStructField "isPending" client.pending pending.isPending'.
+Global Instance into_val_struct_field_nextVer_isPending : IntoValStructField "isPending" client.nextVer nextVer.isPending'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_pending_pk : IntoValStructField "pk" client.pending pending.pk'.
+Global Instance into_val_struct_field_nextVer_pendingPk : IntoValStructField "pendingPk" client.nextVer nextVer.pendingPk'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+<<<<<<< HEAD
+=======
+Global Instance wp_struct_make_nextVer ver' isPending' pendingPk':
+  PureWp True
+    (struct.make #client.nextVer (alist_val [
+      "ver" ::= #ver';
+      "isPending" ::= #isPending';
+      "pendingPk" ::= #pendingPk'
+    ]))%struct
+    #(nextVer.mk ver' isPending' pendingPk').
+Proof. solve_struct_make_pure_wp. Qed.
+>>>>>>> master
 
 
-Global Instance pending_struct_fields_split dq l (v : pending.t) :
+Global Instance nextVer_struct_fields_split dq l (v : nextVer.t) :
   StructFieldsSplit dq l v (
-    "HnextVer" ∷ l ↦s[client.pending :: "nextVer"]{dq} v.(pending.nextVer') ∗
-    "HisPending" ∷ l ↦s[client.pending :: "isPending"]{dq} v.(pending.isPending') ∗
-    "Hpk" ∷ l ↦s[client.pending :: "pk"]{dq} v.(pending.pk')
+    "Hver" ∷ l ↦s[client.nextVer :: "ver"]{dq} v.(nextVer.ver') ∗
+    "HisPending" ∷ l ↦s[client.nextVer :: "isPending"]{dq} v.(nextVer.isPending') ∗
+    "HpendingPk" ∷ l ↦s[client.nextVer :: "pendingPk"]{dq} v.(nextVer.pendingPk')
   ).
 Proof.
   rewrite /named.
@@ -164,8 +176,8 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (pending.nextVer' v)) (client.pending) "nextVer"%go.
-  simpl_one_flatten_struct (# (pending.isPending' v)) (client.pending) "isPending"%go.
+  simpl_one_flatten_struct (# (nextVer.ver' v)) (client.nextVer) "ver"%go.
+  simpl_one_flatten_struct (# (nextVer.isPending' v)) (client.nextVer) "isPending"%go.
 
   solve_field_ref_f.
 Qed.
@@ -614,16 +626,24 @@ Global Instance wp_func_call_New :
   WpFuncCall client.New _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CheckMemb :
-  WpFuncCall client.CheckMemb _ (is_pkg_defined client) :=
+Global Instance wp_func_call_getNextEp :
+  WpFuncCall client.getNextEp _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CheckHist :
-  WpFuncCall client.CheckHist _ (is_pkg_defined client) :=
+Global Instance wp_func_call_checkMemb :
+  WpFuncCall client.checkMemb _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CheckNonMemb :
-  WpFuncCall client.CheckNonMemb _ (is_pkg_defined client) :=
+Global Instance wp_func_call_checkHist :
+  WpFuncCall client.checkHist _ (is_pkg_defined client) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_checkNonMemb :
+  WpFuncCall client.checkNonMemb _ (is_pkg_defined client) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_checkAudit :
+  WpFuncCall client.checkAudit _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Client'ptr_Audit :
@@ -642,20 +662,16 @@ Global Instance wp_method_call_Client'ptr_SelfMon :
   WpMethodCall (ptrT.id client.Client.id) "SelfMon" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_Client'ptr_getChainExt :
-  WpMethodCall (ptrT.id client.Client.id) "getChainExt" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
 Global Instance wp_method_call_Evid'ptr_Check :
   WpMethodCall (ptrT.id client.Evid.id) "Check" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_evidVrf'ptr_Check :
-  WpMethodCall (ptrT.id client.evidVrf.id) "Check" _ (is_pkg_defined client) :=
+Global Instance wp_method_call_evidVrf'ptr_check :
+  WpMethodCall (ptrT.id client.evidVrf.id) "check" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_evidLink'ptr_Check :
-  WpMethodCall (ptrT.id client.evidLink.id) "Check" _ (is_pkg_defined client) :=
+Global Instance wp_method_call_evidLink'ptr_check :
+  WpMethodCall (ptrT.id client.evidLink.id) "check" _ (is_pkg_defined client) :=
   ltac:(solve_wp_method_call).
 
 End names.

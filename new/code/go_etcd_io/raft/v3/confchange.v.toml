@@ -1,7 +1,3 @@
-imports = [
-  "go.etcd.io/raft/v3/tracker",
-]
+imports = ["go.etcd.io/raft/v3/tracker"]
 
-translate = [
-  "Changer",
-]
+translate = ["Changer"]

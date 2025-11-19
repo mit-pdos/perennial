@@ -143,9 +143,7 @@ Proof.
   wp_start as "_".
   wp_auto.
   wp_if_destruct; last by word.
-  wp_auto.
   wp_if_destruct; last by word.
-  wp_auto.
   wp_apply (wp_slice_make2 (V:=u8)).
   { word. }
   iIntros (bitmap_s) "[Hs Hscap]". simpl.
@@ -177,15 +175,13 @@ Proof.
   iNamed "Hl".
   wp_auto.
   wp_if_destruct.
-  - wp_auto.
-    iApply "HΦ".
+  - iApply "HΦ".
     iSplit.
     + iPureIntro.
       word.
     + iExists _, _, _.
       iFrame "∗%".
-  - wp_auto.
-    iApply "HΦ".
+  - iApply "HΦ".
     iDestruct (own_slice_len with "Hbits") as %Hsz_len.
     rewrite word.unsigned_mul in n.
     rewrite -> wrap_small in n by word.
@@ -230,8 +226,7 @@ Proof.
   destruct (bits_lookup_byte max bits num) as [b Hlookup]; [ done | word | ].
   wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
   wp_if_destruct.
-  - wp_auto.
-    wp_pure; first by word.
+  - wp_pure; first by word.
     wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
     wp_pure; first by word.
     wp_apply (wp_store_slice_elem with "[$Hbits]") as "Hbits"; [ word | ].
@@ -239,14 +234,12 @@ Proof.
     wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
     { rewrite length_insert. word. }
     iApply "HΦ". word.
-  - wp_auto.
-    wp_apply (wp_incNext max with "[$next $bitmap $Hbits]"); first done.
+  - wp_apply (wp_incNext max with "[$next $bitmap $Hbits]"); first done.
     { word. }
     iIntros (next'') "[%Hnext'' Hlinv]".
     wp_auto.
     wp_if_destruct.
-    + wp_auto.
-      wp_for_post.
+    + wp_for_post.
       wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $Hlinv]").
       iApply "HΦ". done.
     + wp_for_post.
@@ -304,7 +297,6 @@ Proof.
   wp_start as "H".
   wp_auto.
   wp_if_destruct; first word.
-  wp_auto.
   wp_apply (wp_freeBit with "[$H]"); eauto.
   by iApply "HΦ".
 Qed.
@@ -329,16 +321,10 @@ Proof.
   iNamed "Hloop".
   wp_auto.
   wp_if_destruct.
-  - wp_auto.
-    wp_for_post.
+  - wp_for_post.
     iFrame.
     pose proof (and_1_u8 x). word.
-  - (* XXX why doesn't the automation work for this? *)
-    replace (# true) with (into_val_bool.(to_val_def) true) by ( rewrite to_val_unseal; auto ).
-    replace (# false) with (into_val_bool.(to_val_def) false) by ( rewrite to_val_unseal; auto ).
-    simpl.
-    wp_auto.
-    iApply "HΦ". word.
+  - iApply "HΦ". word.
 Qed.
 
 Lemma wp_NumFree max l :
@@ -353,12 +339,6 @@ Proof.
   iIntros "[Hlocked Hlinv]".
   iNamed "Hlinv".
   wp_auto.
-
-  (* XXX seems unfortunate that the proof has to unfold [slice.for_range] *)
-  Transparent slice.for_range.
-  rewrite /slice.for_range.
-  wp_auto.
-
   iAssert (∃ (i count: w64) (b: w8),
     "i" ∷ i_ptr ↦ i ∗
     "count" ∷ count_ptr ↦ count ∗
@@ -373,8 +353,7 @@ Proof.
   iDestruct (own_slice_len with "Hbits") as %Hsz.
   wp_auto.
   wp_if_destruct.
-  - wp_auto.
-    wp_pure; first word.
+  - wp_pure; first word.
     edestruct (lookup_lt_is_Some_2 bits (sint.nat i)); first word.
     wp_apply (wp_load_slice_elem with "[$Hbits]") as "Hbits"; [ word | eauto | ].
     wp_apply wp_popCnt. iIntros (n Hn).
@@ -382,12 +361,7 @@ Proof.
     wp_for_post.
     iFrame.
     word.
-  - (* XXX: decide (#false = #true) does not evaluate *)
-    replace (# true) with (into_val_bool.(to_val_def) true) by ( rewrite to_val_unseal; auto ).
-    replace (# false) with (into_val_bool.(to_val_def) false) by ( rewrite to_val_unseal; auto ).
-    simpl.
-    wp_auto.
-    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
+  - wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
     { word. }
     iApply "HΦ". word.
 Qed.

@@ -11,7 +11,7 @@ MAKE_REF:=
 
 # Only test reference output on known versions of Rocq, to avoid blocking
 # CI when they change the printing a little.
-ROCQ_REF:=$(shell echo "$(ROCQ_VERSION)" | grep -E "^9\.(0)\." -q && echo 1)
+ROCQ_REF:=$(shell echo "$(ROCQ_VERSION)" | grep -E "^9\.(0|1)\." -q && echo 1)
 
 # Run tests interleaved with main build.  They have to be in the same target for this.
 default: $(if $(NO_TEST),,test)
@@ -34,7 +34,7 @@ ROCQ_TEST=rocq top -batch -test-mode $(ROCQPROJECT_ARGS)
 
 tests/.rocqdeps.d: $(TESTFILES) _RocqProject
 	@echo 'ROCQ DEP TESTFILES'
-	$(Q)rocq dep -f _RocqProject $(ROCQPROJECT_ARGS) $(ROCQ_DEP_ARGS) -dyndep var $(TESTFILES) > "$@"
+	$(Q)rocq dep -vos -f _RocqProject $(ROCQPROJECT_ARGS) $(ROCQ_DEP_ARGS) -dyndep var $(TESTFILES) > "$@"
 ifeq ($(filter clean,$(MAKECMDGOALS)),)
 -include tests/.rocqdeps.d
 endif

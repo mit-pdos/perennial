@@ -1,2 +1,2 @@
 From New.proof.sync_proof Require Export
-  base cond mutex rwmutex_guard waitgroup.
+  base cond once mutex rwmutex_guard waitgroup waitgroup_join.

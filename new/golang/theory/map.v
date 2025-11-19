@@ -52,6 +52,10 @@ Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
 Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
 
+#[global] Instance own_map_timeless mptr dq (m: gmap K V)
+  : Timeless (own_map mptr dq m).
+Proof. rewrite own_map_unseal. apply _. Qed.
+
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 

@@ -669,7 +669,6 @@ Section lemmas.
     gmap_rel_view_auth R 1 m ~~> gmap_rel_view_auth R 1 (f <$> m).
   Proof.
     intros Hf. apply view_update_auth.
-    { eexists; try econstructor. }
     intros n bf Hrel.
     intros k [dq' [v' aset']] Hlookup.
     edestruct (Hrel _ _ Hlookup) as (vf&aset&vm&?&?&Hlookup'&?).

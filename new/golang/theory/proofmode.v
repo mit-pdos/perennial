@@ -244,7 +244,7 @@ Global Instance wp_w16_s_to_w8 (v : w16) : PureWp True (s_to_w8 #v) #(W8 $ sint.
 Proof. rewrite into_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* bool unop *)
-Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(negb b).
+Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(Datatypes.negb b).
 Proof. rewrite into_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* string unop *)
@@ -620,9 +620,14 @@ Ltac2 wp_call () :=
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
 Tactic Notation "wp_call_lc" constr(H) := ltac2:(Control.enter wp_call); iIntros H; wp_pures.
 
+(* helper to prove PureWp for simple cases where we know what the final
+evaluation result is *)
 Ltac pure_wp_start :=
   apply pure_wp_val; intros ????;
-  iIntros "HΦ"; try (wp_call_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]")).
+  iIntros "HΦ";
+  try (wp_call_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]"));
+  try (wp_pure_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]"));
+  wp_pures.
 
 Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
   lazy_match! goal with
@@ -633,6 +638,7 @@ Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
                                 (fun _ => Control.zero Walk_expr_more);
                               eapply (tac_wp_bind $k $e') >
                                 [simpl; reflexivity|ltac1:(reduction.pm_prettify)]; e'))
+  | [ |- _] => Control.zero (Tactic_failure (Some (fprintf "wp_bind: not a WP goal")))
   end.
 
 Tactic Notation "wp_bind" open_constr(e) :=
@@ -671,6 +677,7 @@ Ltac2 wp_bind_next () : unit :=
           | _ => eapply (tac_wp_bind $k $e) > [simpl; reflexivity|ltac1:(reduction.pm_prettify)]
           end
       end
+  | [ |- _] => Control.zero (Tactic_failure (Some (fprintf "wp_bind_next: not a WP goal")))
   end.
 
 Tactic Notation "wp_bind" := ltac2:(wp_bind_next ()).

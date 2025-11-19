@@ -18,6 +18,7 @@ jobs:
       matrix:
         coq_version:
           - dev
+          - "9.1"
           - "9.0"
       max-parallel: 4
       fail-fast: false
@@ -59,13 +60,14 @@ jobs:
       - uses: actions/checkout@v5
         with:
           submodules: true
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          # pin exact version for deterministic stdlib translation.
+          go-version: "1.24.9"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: "pip"
@@ -93,14 +95,14 @@ jobs:
       - name: Install protoc
         run: sudo apt-get install protobuf-compiler -y
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: "1.22"
+          go-version: "1.24"
           cache: false
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: "pip"
       - name: Check Grackle
         run: |
@@ -112,12 +114,24 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: "pip"
       - run: pip install .
       - name: Format
-        run: ruff format --diff ./
+        run: ruff format --diff
       - name: Lint
-        run: ruff check ./
+        run: ruff check
+
+  toml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install taplo
+        # NOTE: periodically update taplo version.
+        run: |
+          curl -fsSL https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz \
+            | gzip -d - | install -m 755 /dev/stdin /usr/local/bin/taplo
+      - name: Format toml files
+        run: taplo format --check --diff

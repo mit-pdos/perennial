@@ -200,6 +200,7 @@ Definition Election__Campaignⁱᵐᵖˡ : val :=
     do:  ("err" <-[error] "$r0");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
+<<<<<<< HEAD
       chan.select [chan.select_receive ((interface.get #"Done"%go (![context.Context] "ctx")) #()) (λ: "$recvVal",
          do:  (let: "$a0" := ((method_call #(ptrT.id clientv3.Client.id) #"Ctx"%go (![ptrT] "client")) #()) in
          (method_call #(ptrT.id Election.id) #"Resign"%go (![ptrT] "e")) "$a0")
@@ -208,6 +209,17 @@ Definition Election__Campaignⁱᵐᵖˡ : val :=
         do:  ((struct.field_ref ptrT #"leaderSession"%go (![ptrT] "e")) <-[ptrT] "$r0")
         ));;;
       return: (![error] "err")
+=======
+      chan.select_nonblocking [chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
+         do:  (let: "$a0" := ((method_call #(ptrT.id clientv3.Client.id) #"Ctx"%go (![#ptrT] "client")) #()) in
+         (method_call #(ptrT.id Election.id) #"Resign"%go (![#ptrT] "e")) "$a0")
+         )] (λ: <>,
+        let: "$r0" := #null in
+        do:  ((struct.field_ref #Election #"leaderSession"%go (![#ptrT] "e")) <-[#ptrT] "$r0")
+        );;;
+      return: (![#error] "err")
+>>>>>>> master
     else do:  #());;;
     let: "$r0" := (![ptrT] (struct.field_ref ptrT #"Header"%go (![ptrT] "resp"))) in
     do:  ((struct.field_ref ptrT #"hdr"%go (![ptrT] "e")) <-[ptrT] "$r0");;;
@@ -356,6 +368,7 @@ Definition Election__Observeⁱᵐᵖˡ : val :=
   λ: "e" "ctx",
     exception_do (let: "e" := (mem.alloc "e") in
     let: "ctx" := (mem.alloc "ctx") in
+<<<<<<< HEAD
     let: "retc" := (mem.alloc (type.zero_val (chanT clientv3.GetResponse))) in
     let: "$r0" := (chan.make clientv3.GetResponse #(W64 0)) in
     do:  ("retc" <-[chanT clientv3.GetResponse] "$r0");;;
@@ -364,6 +377,16 @@ Definition Election__Observeⁱᵐᵖˡ : val :=
     let: "$go" := (method_call #(ptrT.id Election.id) #"observe"%go (![ptrT] "e")) in
     do:  (Fork ("$go" "a0" "a1"));;;
     return: (![chanT clientv3.GetResponse] "retc")).
+=======
+    let: "retc" := (mem.alloc (type.zero_val (type.chanT #clientv3.GetResponse))) in
+    let: "$r0" := (chan.make #clientv3.GetResponse #(W64 0)) in
+    do:  ("retc" <-[type.chanT #clientv3.GetResponse] "$r0");;;
+    let: "$a0" := (![#context.Context] "ctx") in
+    let: "$a1" := (![type.chanT #clientv3.GetResponse] "retc") in
+    let: "$go" := (method_call #(ptrT.id Election.id) #"observe"%go (![#ptrT] "e")) in
+    do:  (Fork ("$go" "$a0" "$a1"));;;
+    return: (![type.chanT #clientv3.GetResponse] "retc")).
+>>>>>>> master
 
 (* go: election.go:173:20 *)
 Definition Election__observeⁱᵐᵖˡ : val :=
@@ -371,12 +394,21 @@ Definition Election__observeⁱᵐᵖˡ : val :=
     with_defer: (let: "e" := (mem.alloc "e") in
     let: "ch" := (mem.alloc "ch") in
     let: "ctx" := (mem.alloc "ctx") in
+<<<<<<< HEAD
     let: "client" := (mem.alloc (type.zero_val ptrT)) in
     let: "$r0" := ((method_call #(ptrT.id Session.id) #"Client"%go (![ptrT] (struct.field_ref ptrT #"session"%go (![ptrT] "e")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (![chanT clientv3.GetResponse] "ch") in
     let: "$f" := chan.close in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+=======
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := ((method_call #(ptrT.id Session.id) #"Client"%go (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
+    do:  ("client" <-[#ptrT] "$r0");;;
+    do:  (let: "$a0" := (![type.chanT #clientv3.GetResponse] "ch") in
+    let: "$f" := (chan.close #clientv3.GetResponse) in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+>>>>>>> master
     (λ: <>,
       "$f" "$a0";;
       "$oldf" #()
@@ -412,6 +444,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
         let: "$r0" := ((let: "$sl0" := (let: "$a0" := (![int64T] (struct.field_ref ptrT #"Revision"%go (![ptrT] (struct.field_ref ptrT #"Header"%go (![ptrT] "resp"))))) in
         (func_call #clientv3.WithRev) "$a0") in
         let: "$sl1" := ((func_call #clientv3.WithPrefix) #()) in
+<<<<<<< HEAD
         slice.literal clientv3.OpOption ["$sl0"; "$sl1"])) in
         do:  ("opts" <-[sliceT] "$r0");;;
         let: "wch" := (mem.alloc (type.zero_val clientv3.WatchChan)) in
@@ -424,6 +457,20 @@ Definition Election__observeⁱᵐᵖˡ : val :=
           let: "ok" := (mem.alloc (type.zero_val boolT)) in
           let: "wr" := (mem.alloc (type.zero_val clientv3.WatchResponse)) in
           let: ("$ret0", "$ret1") := (chan.receive (![clientv3.WatchChan] "wch")) in
+=======
+        slice.literal #clientv3.OpOption ["$sl0"; "$sl1"])) in
+        do:  ("opts" <-[#sliceT] "$r0");;;
+        let: "wch" := (mem.alloc (type.zero_val #clientv3.WatchChan)) in
+        let: "$r0" := (let: "$a0" := (![#context.Context] "cctx") in
+        let: "$a1" := (![#stringT] (struct.field_ref #Election #"keyPrefix"%go (![#ptrT] "e"))) in
+        let: "$a2" := (![#sliceT] "opts") in
+        (method_call #(ptrT.id clientv3.Client.id) #"Watch"%go (![#ptrT] "client")) "$a0" "$a1" "$a2") in
+        do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
+        (for: (λ: <>, (![#ptrT] "kv") = #null); (λ: <>, #()) := λ: <>,
+          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+          let: "wr" := (mem.alloc (type.zero_val #clientv3.WatchResponse)) in
+          let: ("$ret0", "$ret1") := (chan.receive #clientv3.WatchResponse (![#clientv3.WatchChan] "wch")) in
+>>>>>>> master
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ("wr" <-[clientv3.WatchResponse] "$r0");;;
@@ -450,6 +497,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
             else do:  #()))));;;
         do:  ((![context.CancelFunc] "cancel") #())
       else
+<<<<<<< HEAD
         let: "$r0" := (![ptrT] (struct.field_ref ptrT #"Header"%go (![ptrT] "resp"))) in
         let: "$r1" := (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"Kvs"%go (![ptrT] "resp"))) #(W64 0))) in
         do:  ("hdr" <-[ptrT] "$r0");;;
@@ -458,12 +506,23 @@ Definition Election__observeⁱᵐᵖˡ : val :=
        let: "$Kvs" := ((let: "$sl0" := (![ptrT] "kv") in
        slice.literal ptrT ["$sl0"])) in
        struct.make clientv3.GetResponse [{
+=======
+        let: "$r0" := (![#ptrT] (struct.field_ref #clientv3.GetResponse #"Header"%go (![#ptrT] "resp"))) in
+        let: "$r1" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp"))) #(W64 0))) in
+        do:  ("hdr" <-[#ptrT] "$r0");;;
+        do:  ("kv" <-[#ptrT] "$r1"));;;
+      chan.select_blocking [chan.select_send #clientv3.GetResponse (![type.chanT #clientv3.GetResponse] "ch") (let: "$Header" := (![#ptrT] "hdr") in
+       let: "$Kvs" := ((let: "$sl0" := (![#ptrT] "kv") in
+       slice.literal #ptrT ["$sl0"])) in
+       struct.make #clientv3.GetResponse [{
+>>>>>>> master
          "Header" ::= "$Header";
          "Kvs" ::= "$Kvs";
          "More" ::= type.zero_val boolT;
          "Count" ::= type.zero_val int64T;
          "XXX_NoUnkeyedLiteral" ::= type.zero_val (structT [
          ]);
+<<<<<<< HEAD
          "XXX_unrecognized" ::= type.zero_val sliceT;
          "XXX_sizecache" ::= type.zero_val int32T
        }]) (![chanT clientv3.GetResponse] "ch") (λ: <>,
@@ -474,6 +533,19 @@ Definition Election__observeⁱᵐᵖˡ : val :=
       let: "cancel" := (mem.alloc (type.zero_val context.CancelFunc)) in
       let: "cctx" := (mem.alloc (type.zero_val context.Context)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
+=======
+         "XXX_unrecognized" ::= type.zero_val #sliceT;
+         "XXX_sizecache" ::= type.zero_val #int32T
+       }]) (λ: <>,
+         do:  #()
+         ); chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
+         return: (#())
+         )];;;
+      let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
+      let: "cctx" := (mem.alloc (type.zero_val #context.Context)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
+>>>>>>> master
       (func_call #context.WithCancel) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -489,11 +561,19 @@ Definition Election__observeⁱᵐᵖˡ : val :=
       do:  ("wch" <-[clientv3.WatchChan] "$r0");;;
       let: "keyDeleted" := (mem.alloc (type.zero_val boolT)) in
       let: "$r0" := #false in
+<<<<<<< HEAD
       do:  ("keyDeleted" <-[boolT] "$r0");;;
       (for: (λ: <>, (~ (![boolT] "keyDeleted"))); (λ: <>, #()) := λ: <>,
         let: "ok" := (mem.alloc (type.zero_val boolT)) in
         let: "wr" := (mem.alloc (type.zero_val clientv3.WatchResponse)) in
         let: ("$ret0", "$ret1") := (chan.receive (![clientv3.WatchChan] "wch")) in
+=======
+      do:  ("keyDeleted" <-[#boolT] "$r0");;;
+      (for: (λ: <>, (~ (![#boolT] "keyDeleted"))); (λ: <>, #()) := λ: <>,
+        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "wr" := (mem.alloc (type.zero_val #clientv3.WatchResponse)) in
+        let: ("$ret0", "$ret1") := (chan.receive #clientv3.WatchResponse (![#clientv3.WatchChan] "wch")) in
+>>>>>>> master
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("wr" <-[clientv3.WatchResponse] "$r0");;;
@@ -514,6 +594,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
             do:  ("keyDeleted" <-[boolT] "$r0");;;
             break: #()
           else do:  #());;;
+<<<<<<< HEAD
           let: "$r0" := (struct.field_ref clientv3.WatchResponse #"Header"%go "wr") in
           do:  ((struct.field_ref ptrT #"Header"%go (![ptrT] "resp")) <-[ptrT] "$r0");;;
           let: "$r0" := ((let: "$sl0" := (![ptrT] (struct.field_ref ptrT #"Kv"%go (![ptrT] "ev"))) in
@@ -526,6 +607,21 @@ Definition Election__observeⁱᵐᵖˡ : val :=
              return: (#())
              )] chan.select_no_default)));;;
       do:  ((![context.CancelFunc] "cancel") #()));;;
+=======
+          let: "$r0" := (struct.field_ref #clientv3.WatchResponse #"Header"%go "wr") in
+          do:  ((struct.field_ref #clientv3.GetResponse #"Header"%go (![#ptrT] "resp")) <-[#ptrT] "$r0");;;
+          let: "$r0" := ((let: "$sl0" := (![#ptrT] (struct.field_ref #clientv3.Event #"Kv"%go (![#ptrT] "ev"))) in
+          slice.literal #ptrT ["$sl0"])) in
+          do:  ((struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp")) <-[#sliceT] "$r0");;;
+          chan.select_blocking [chan.select_send #clientv3.GetResponse (![type.chanT #clientv3.GetResponse] "ch") (![#clientv3.GetResponse] (![#ptrT] "resp")) (λ: <>,
+             do:  #()
+             ); chan.select_receive (type.structT [
+           ]) ((interface.get #"Done"%go (![#context.Context] "cctx")) #()) (λ: "$recvVal",
+             do:  ((![#context.CancelFunc] "cancel") #());;;
+             return: (#())
+             )])));;;
+      do:  ((![#context.CancelFunc] "cancel") #()));;;
+>>>>>>> master
     return: #()).
 
 (* Key returns the leader key if elected, empty string otherwise.
@@ -581,6 +677,7 @@ Definition waitDeleteⁱᵐᵖˡ : val :=
     let: "$a1" := (![stringT] "key") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := (![int64T] "rev") in
     (func_call #clientv3.WithRev) "$a0") in
+<<<<<<< HEAD
     slice.literal clientv3.OpOption ["$sl0"])) in
     (method_call #(ptrT.id clientv3.Client.id) #"Watch"%go (![ptrT] "client")) "$a0" "$a1" "$a2") in
     do:  ("wch" <-[clientv3.WatchChan] "$r0");;;
@@ -591,6 +688,18 @@ Definition waitDeleteⁱᵐᵖˡ : val :=
       (let: "ev" := (mem.alloc (type.zero_val ptrT)) in
       slice.for_range ptrT "$range" (λ: "$key" "$value",
         do:  ("ev" <-[ptrT] "$value");;;
+=======
+    slice.literal #clientv3.OpOption ["$sl0"])) in
+    (method_call #(ptrT.id clientv3.Client.id) #"Watch"%go (![#ptrT] "client")) "$a0" "$a1" "$a2") in
+    do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
+    let: "$range" := (![#clientv3.WatchChan] "wch") in
+    chan.for_range #clientv3.WatchResponse "$range" (λ: "$key",
+      do:  ("wr" <-[#clientv3.WatchResponse] "$key");;;
+      let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
+      (let: "ev" := (mem.alloc (type.zero_val #ptrT)) in
+      slice.for_range #ptrT "$range" (λ: "$key" "$value",
+        do:  ("ev" <-[#ptrT] "$value");;;
+>>>>>>> master
         do:  "$key";;;
         (if: (![mvccpb.Event_EventType] (struct.field_ref ptrT #"Type"%go (![ptrT] "ev"))) = mvccpb.DELETE
         then return: (#interface.nil)
@@ -1122,8 +1231,14 @@ Definition NewSessionⁱᵐᵖˡ : val :=
       with_defer: (do:  (let: "$f" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![chanT (structT [
         ])] "donec") in
+<<<<<<< HEAD
         chan.close "$a0");;;
         do:  ((![context.CancelFunc] "cancel") #());;;
+=======
+        (chan.close (type.structT [
+        ])) "$a0");;;
+        do:  ((![#context.CancelFunc] "cancel") #());;;
+>>>>>>> master
         return: #())
         ) in
       "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
@@ -1131,8 +1246,13 @@ Definition NewSessionⁱᵐᵖˡ : val :=
         "$f" #();;
         "$oldf" #()
         )));;;
+<<<<<<< HEAD
       let: "$range" := (![chanT ptrT] "keepAlive") in
       chan.for_range "$range" (λ: "$key",
+=======
+      let: "$range" := (![type.chanT #ptrT] "keepAlive") in
+      chan.for_range #ptrT "$range" (λ: "$key",
+>>>>>>> master
         do:  #());;;
       return: #())
       ) in
@@ -1182,9 +1302,16 @@ Definition Session__Doneⁱᵐᵖˡ : val :=
 Definition Session__Orphanⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
+<<<<<<< HEAD
     do:  ((![context.CancelFunc] (struct.field_ref ptrT #"cancel"%go (![ptrT] "s"))) #());;;
     do:  (Fst (chan.receive (![chanT (structT [
     ])] (struct.field_ref ptrT #"donec"%go (![ptrT] "s")))));;;
+=======
+    do:  ((![#context.CancelFunc] (struct.field_ref #Session #"cancel"%go (![#ptrT] "s"))) #());;;
+    do:  (Fst (chan.receive (type.structT [
+    ]) (![type.chanT (type.structT [
+    ])] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))));;;
+>>>>>>> master
     return: #()).
 
 (* Close orphans the session and revokes the session lease.
@@ -1589,7 +1716,7 @@ Definition runSTMⁱᵐᵖˡ : val :=
             "resp" ::= #null;
             "err" ::= ![error] (struct.field_ref stmError #"err"%go "e")
           }]) in
-          chan.send "$chan" "$v")
+          chan.send #stmResponse "$chan" "$v")
         else do:  #()));;;
         return: #())
         ) in
@@ -1612,6 +1739,7 @@ Definition runSTMⁱᵐᵖˡ : val :=
         (if: (![ptrT] (struct.field_ref stmResponse #"resp"%go "out")) ≠ #null
         then break: #()
         else do:  #())));;;
+<<<<<<< HEAD
       do:  (let: "$chan" := (![chanT stmResponse] "outc") in
       let: "$v" := (![stmResponse] "out") in
       chan.send "$chan" "$v");;;
@@ -1622,6 +1750,18 @@ Definition runSTMⁱᵐᵖˡ : val :=
     let: "$r0" := (Fst (chan.receive (![chanT stmResponse] "outc"))) in
     do:  ("r" <-[stmResponse] "$r0");;;
     return: (![ptrT] (struct.field_ref stmResponse #"resp"%go "r"), ![error] (struct.field_ref stmResponse #"err"%go "r"))).
+=======
+      do:  (let: "$chan" := (![type.chanT #stmResponse] "outc") in
+      let: "$v" := (![#stmResponse] "out") in
+      chan.send #stmResponse "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "r" := (mem.alloc (type.zero_val #stmResponse)) in
+    let: "$r0" := (Fst (chan.receive #stmResponse (![type.chanT #stmResponse] "outc"))) in
+    do:  ("r" <-[#stmResponse] "$r0");;;
+    return: (![#ptrT] (struct.field_ref #stmResponse #"resp"%go "r"), ![#error] (struct.field_ref #stmResponse #"err"%go "r"))).
+>>>>>>> master
 
 (* go: stm.go:190:19 *)
 Definition readSet__addⁱᵐᵖˡ : val :=

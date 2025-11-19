@@ -1,12 +1,7 @@
 [project]
 name = "perennial"
 version = "2024.0.0"
-dependencies = [
-  "ruff==0.12.11",
-]
+dependencies = ["ruff==0.14.3"]
 
 [tool.ruff]
-exclude = [
-    "src/goose_lang/examples/nfs_spec",
-    "external",
-]
+exclude = ["src/goose_lang/examples/nfs_spec", "external"]

@@ -1,9 +1,10 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 
+Module merkle.
 Section proof.
 
 Inductive dec_node :=
@@ -250,7 +251,7 @@ Qed.
 
 End proof.
 
-Module MerkleProof.
+Module Proof.
 Record t :=
   mk' {
     Siblings: list w8;
@@ -297,7 +298,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 
 Definition own ptr obj d : iProp Σ :=
   ∃ sl_Siblings sl_LeafLabel sl_LeafVal,
-  "Hstruct" ∷ ptr ↦{d} (merkle.MerkleProof.mk sl_Siblings
+  "Hstruct" ∷ ptr ↦{d} (merkle.Proof.mk sl_Siblings
     obj.(IsOtherLeaf) sl_LeafLabel sl_LeafVal) ∗
 
   "Hsl_Siblings" ∷ sl_Siblings ↦*{d} obj.(Siblings) ∗
@@ -306,8 +307,8 @@ Definition own ptr obj d : iProp Σ :=
 
 Definition wish b obj tail : iProp Σ :=
   ∃ enc,
-  "%Henc_obj" ∷ ⌜ encodes obj enc ⌝ ∗
-  "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝.
+  "%Henc_obj" ∷ ⌜encodes obj enc⌝ ∗
+  "%Heq_tail" ∷ ⌜b = enc ++ tail⌝.
 
 Lemma wish_det b obj0 obj1 tail0 tail1 :
   wish b obj0 tail0 -∗
@@ -326,7 +327,7 @@ Lemma wp_dec sl_b d b :
     is_pkg_init merkle ∗
     "Hsl_b" ∷ sl_b ↦*{d} b
   }}}
-  @! merkle.MerkleProofDecode #sl_b
+  @! merkle.ProofDecode #sl_b
   {{{
     ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
     match err with
@@ -341,4 +342,5 @@ Lemma wp_dec sl_b d b :
 Proof. Admitted.
 
 End proof.
-End MerkleProof.
+End Proof.
+End merkle.

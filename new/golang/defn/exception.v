@@ -1,5 +1,31 @@
 From New.golang.defn Require Export predeclared.
 
+(* "Exception monad" for modeling function returns.
+
+This is not really a monad (there is no bind), but it implements
+short-circuiting evaluation where function returns halt execution of subsequent
+parts of the program.
+
+The core primitives are [do: e] and [return: e]. These are composed with [m1;;;
+m2] (note triple semicolon; this is not the same as GooseLang sequencing). The
+key rules are [do: e1 ;;; m2 == e1;; m2] and [return: e1 ;;; m2 == return: e1];
+the latter is the "short-circuiting" needed for function returns to halt
+execution. This sequencing is also used for loops, which have other
+short-circuiting constructs [loop_op ;;; m2 == loop_op], namely [continue] and
+[break]. These also halt execution, and are then consumed by the loop combinator
+to decide how to proceed for the next iteration.
+
+A function block is executed with [exception_do m], which strips both [do:] and
+[return:]; a function can terminate without having used return. You can think of
+[return:] as raising an exception and [exception_do] as catching and unwrapping
+that exception.
+
+The implementation of these primitives is very simple. [do: e] is [("#execute",
+e)] and [return: e] is [("return", e)]. Sequencing is defined as expected for
+the rules above. [exception_do m] is simply [Snd m] to remove the label.
+
+*)
+
 Section defn.
 
 Context `{!ffi_syntax}.
@@ -12,7 +38,6 @@ Definition return_val_def (v : val) : val := (#"return", v).
 Program Definition return_val := sealed @return_val_def.
 Definition return_val_unseal : return_val = _ := seal_eq _.
 
-(* "Exception" monad *)
 (* executing to the end without a return produces a #() to match Go's void
 return semantics (named return values are translated as return statements using
 do_return as defined below). *)

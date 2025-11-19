@@ -12,24 +12,24 @@ Definition continue_val_def : val := (#"continue", #()).
 Program Definition continue_val := sealed @continue_val_def.
 Definition continue_val_unseal : continue_val = _ := seal_eq _.
 
-Definition do_break_def : val := λ: "v", (#"break", Var "v").
+Definition do_break_def : val := λ: "v", (#"break", "v").
 Program Definition do_break := sealed @do_break_def.
 Definition do_break_unseal : do_break = _ := seal_eq _.
 
-Definition do_continue_def : val := λ: "v", (#"continue", Var "v").
+Definition do_continue_def : val := λ: "v", (#"continue", "v").
 Program Definition do_continue := sealed @do_continue_def.
 Definition do_continue_unseal : do_continue = _ := seal_eq _.
 
 Local Definition do_for_def : val :=
   rec: "loop" "cond" "body" "post" :=
    exception_do (
-   if: ~(Var "cond") #() then (return: (do: #()))
+   if: ~("cond" #()) then (return: (do: #()))
    else
      let: "b" := "body" #() in
      if: (Fst "b") =⟨go.string⟩ #"break" then (return: (do: #())) else (do: #()) ;;;
      if: (Fst "b" =⟨go.string⟩ #"continue") || (Fst $ Var "b" =⟨go.string⟩ #"execute")
           then (do: "post" #();;; return: "loop" "cond" "body" "post") else do: #() ;;;
-     return: Var "b"
+     return: "b"
   ).
 
 Program Definition do_for := sealed @do_for_def.

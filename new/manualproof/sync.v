@@ -49,6 +49,7 @@ Proof.
   solve_field_ref_f.
 Qed.
 End instances.
+<<<<<<< HEAD
 
 Module Cond.
 Section def.
@@ -122,3 +123,6 @@ Admitted.
 
 End instances.
 (* End manually written version of recordgen output *)
+=======
+(* End manually written version of proofgen output *)
+>>>>>>> master

@@ -22,7 +22,7 @@ Definition UnderlyingSlice : go_string := "github.com/goose-lang/goose/testdata/
 Definition UnderlyingSliceⁱᵐᵖˡ : val :=
   λ: "T" "s",
     exception_do (let: "s" := (mem.alloc "s") in
-    return: (let: "$a0" := (![T] "s") in
+    return: (let: "$a0" := (!["T"] "s") in
      slice.len "$a0")).
 
 Definition Clone : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Clone"%go.
@@ -36,14 +36,15 @@ Definition Cloneⁱᵐᵖˡ : val :=
   λ: "S" "E" "s",
     exception_do (let: "s" := (mem.alloc "s") in
     return: (let: "$a0" := #slice.nil in
-     let: "$a1" := (![S] "s") in
-     (slice.append E) "$a0" "$a1")).
+     let: "$a1" := (!["S"] "s") in
+     (slice.append "E") "$a0" "$a1")).
 
-Definition Box (T : go_type) : go_type := structT [
-  "Value" :: T
-].
-#[global] Typeclasses Opaque Box.
-#[global] Opaque Box.
+Definition Box : val :=
+  λ: "T", type.structT [
+    (#"Value"%go, "T")
+  ].
+  #[global] Typeclasses Opaque Box.
+  #[global] Opaque Box.
 
 Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
 
@@ -53,7 +54,7 @@ Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/
 Definition BoxGetⁱᵐᵖˡ : val :=
   λ: "T" "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    return: (![T] (struct.field_ref (Box T) #"Value"%go "b"))).
+    return: (!["T"] (struct.field_ref (Box "T") #"Value"%go "b"))).
 
 Definition BoxGet2 : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet2"%go.
 
@@ -61,13 +62,13 @@ Definition BoxGet2 : go_string := "github.com/goose-lang/goose/testdata/examples
 Definition BoxGet2ⁱᵐᵖˡ : val :=
   λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
-    return: (![uint64T] (struct.field_ref (Box uint64T) #"Value"%go "b"))).
+    return: (![#uint64T] (struct.field_ref (Box #uint64T) #"Value"%go "b"))).
 
 (* go: generics.go:21:17 *)
 Definition Box__Getⁱᵐᵖˡ : val :=
   λ: "b" "T" <>,
     exception_do (let: "b" := (mem.alloc "b") in
-    return: (![T] (struct.field_ref (Box T) #"Value"%go "b"))).
+    return: (!["T"] (struct.field_ref (Box "T") #"Value"%go "b"))).
 
 Definition makeGenericBox : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeGenericBox"%go.
 
@@ -75,8 +76,8 @@ Definition makeGenericBox : go_string := "github.com/goose-lang/goose/testdata/e
 Definition makeGenericBoxⁱᵐᵖˡ : val :=
   λ: "T" "value",
     exception_do (let: "value" := (mem.alloc "value") in
-    return: (let: "$Value" := (![T] "value") in
-     struct.make (Box T) [{
+    return: (let: "$Value" := (!["T"] "value") in
+     struct.make (Box "T") [{
        "Value" ::= "$Value"
      }])).
 
@@ -86,7 +87,7 @@ Definition makeBox : go_string := "github.com/goose-lang/goose/testdata/examples
 Definition makeBoxⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (let: "$Value" := #(W64 42) in
-     struct.make (Box uint64T) [{
+     struct.make (Box #uint64T) [{
        "Value" ::= "$Value"
      }])).
 
@@ -95,85 +96,89 @@ Definition useBoxGet : go_string := "github.com/goose-lang/goose/testdata/exampl
 (* go: generics.go:34:6 *)
 Definition useBoxGetⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val (Box uint64T))) in
+    exception_do (let: "x" := (mem.alloc (type.zero_val (Box #uint64T))) in
     let: "$r0" := (let: "$a0" := #(W64 42) in
-    ((func_call #makeGenericBox) uint64T) "$a0") in
-    do:  ("x" <-[Box uint64T] "$r0");;;
-    return: ((method_call #(ptrT.id Box.id) #"Get"%go "x" uint64T) #())).
+    ((func_call #makeGenericBox) #uint64T) "$a0") in
+    do:  ("x" <-[Box #uint64T] "$r0");;;
+    return: ((method_call #Box.id #"Get"%go (![Box #uint64T] "x") #uint64T) #())).
 
-Definition Container (T : go_type) : go_type := structT [
-  "X" :: T;
-  "Y" :: mapT intT T;
-  "Z" :: ptrT;
-  "W" :: uint64T
-].
-#[global] Typeclasses Opaque Container.
-#[global] Opaque Container.
+Definition Container : val :=
+  λ: "T", type.structT [
+    (#"X"%go, "T");
+    (#"Y"%go, type.mapT #intT "T");
+    (#"Z"%go, #ptrT);
+    (#"W"%go, #uint64T)
+  ].
+  #[global] Typeclasses Opaque Container.
+  #[global] Opaque Container.
 
 Definition useContainer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
 
 (* go: generics.go:47:6 *)
 Definition useContainerⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "container" := (mem.alloc (type.zero_val (Container uint64T))) in
+    exception_do (let: "container" := (mem.alloc (type.zero_val (Container #uint64T))) in
     let: "$r0" := (let: "$X" := #(W64 1) in
     let: "$Y" := ((let: "$v0" := #(W64 2) in
     let: "$k0" := #(W64 1) in
-    map.literal intT uint64T [map.kv_entry "$k0" "$v0"])) in
-    let: "$Z" := (mem.alloc (type.zero_val uint64T)) in
+    map.literal #intT #uint64T [map.kv_entry "$k0" "$v0"])) in
+    let: "$Z" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$W" := #(W64 3) in
-    struct.make (Container uint64T) [{
+    struct.make (Container #uint64T) [{
       "X" ::= "$X";
       "Y" ::= "$Y";
       "Z" ::= "$Z";
       "W" ::= "$W"
     }]) in
-    do:  ("container" <-[Container uint64T] "$r0");;;
+    do:  ("container" <-[Container #uint64T] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref (Container uint64T) #"X"%go "container") <-[uint64T] "$r0");;;
+    do:  ((struct.field_ref (Container #uint64T) #"X"%go "container") <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  (map.insert (![mapT intT uint64T] (struct.field_ref (Container uint64T) #"Y"%go "container")) #(W64 2) "$r0");;;
-    let: "$r0" := (mem.alloc (type.zero_val uint64T)) in
-    do:  ((struct.field_ref (Container uint64T) #"Z"%go "container") <-[ptrT] "$r0");;;
+    do:  (map.insert (![type.mapT #intT #uint64T] (struct.field_ref (Container #uint64T) #"Y"%go "container")) #(W64 2) "$r0");;;
+    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ((struct.field_ref (Container #uint64T) #"Z"%go "container") <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  ((struct.field_ref (Container uint64T) #"W"%go "container") <-[uint64T] "$r0");;;
+    do:  ((struct.field_ref (Container #uint64T) #"W"%go "container") <-[#uint64T] "$r0");;;
     return: #()).
 
-Definition UseContainer : go_type := structT [
-  "X" :: Container uint64T
-].
-#[global] Typeclasses Opaque UseContainer.
-#[global] Opaque UseContainer.
+Definition UseContainer : val :=
+  λ: <>, type.structT [
+    (#"X"%go, Container #uint64T)
+  ].
+  #[global] Typeclasses Opaque UseContainer.
+  #[global] Opaque UseContainer.
 
-Definition OnlyIndirect (T : go_type) : go_type := structT [
-  "X" :: sliceT;
-  "Y" :: ptrT
-].
-#[global] Typeclasses Opaque OnlyIndirect.
-#[global] Opaque OnlyIndirect.
+Definition OnlyIndirect : val :=
+  λ: "T", type.structT [
+    (#"X"%go, #sliceT);
+    (#"Y"%go, #ptrT)
+  ].
+  #[global] Typeclasses Opaque OnlyIndirect.
+  #[global] Opaque OnlyIndirect.
 
-Definition MultiParam (A : go_type) (B : go_type) : go_type := structT [
-  "Y" :: B;
-  "X" :: A
-].
-#[global] Typeclasses Opaque MultiParam.
-#[global] Opaque MultiParam.
+Definition MultiParam : val :=
+  λ: "A" "B", type.structT [
+    (#"Y"%go, "B");
+    (#"X"%go, "A")
+  ].
+  #[global] Typeclasses Opaque MultiParam.
+  #[global] Opaque MultiParam.
 
 Definition useMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
 
 (* go: generics.go:75:6 *)
 Definition useMultiParamⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "mp" := (mem.alloc (type.zero_val (MultiParam uint64T boolT))) in
+    exception_do (let: "mp" := (mem.alloc (type.zero_val (MultiParam #uint64T #boolT))) in
     let: "$r0" := (let: "$Y" := #true in
     let: "$X" := #(W64 1) in
-    struct.make (MultiParam uint64T boolT) [{
+    struct.make (MultiParam #uint64T #boolT) [{
       "Y" ::= "$Y";
       "X" ::= "$X"
     }]) in
-    do:  ("mp" <-[MultiParam uint64T boolT] "$r0");;;
+    do:  ("mp" <-[MultiParam #uint64T #boolT] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref (MultiParam uint64T boolT) #"X"%go "mp") <-[uint64T] "$r0");;;
+    do:  ((struct.field_ref (MultiParam #uint64T #boolT) #"X"%go "mp") <-[#uint64T] "$r0");;;
     return: #()).
 
 Definition swapMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.swapMultiParam"%go.
@@ -182,13 +187,13 @@ Definition swapMultiParam : go_string := "github.com/goose-lang/goose/testdata/e
 Definition swapMultiParamⁱᵐᵖˡ : val :=
   λ: "A" "p",
     exception_do (let: "p" := (mem.alloc "p") in
-    let: "temp" := (mem.alloc (type.zero_val A)) in
-    let: "$r0" := (![A] (struct.field_ref ptrT #"X"%go (![ptrT] "p"))) in
-    do:  ("temp" <-[A] "$r0");;;
-    let: "$r0" := (![A] (struct.field_ref ptrT #"Y"%go (![ptrT] "p"))) in
-    do:  ((struct.field_ref ptrT #"X"%go (![ptrT] "p")) <-[A] "$r0");;;
-    let: "$r0" := (![A] "temp") in
-    do:  ((struct.field_ref ptrT #"Y"%go (![ptrT] "p")) <-[A] "$r0");;;
+    let: "temp" := (mem.alloc (type.zero_val "A")) in
+    let: "$r0" := (!["A"] (struct.field_ref (MultiParam "A" "A") #"X"%go (![#ptrT] "p"))) in
+    do:  ("temp" <-["A"] "$r0");;;
+    let: "$r0" := (!["A"] (struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p"))) in
+    do:  ((struct.field_ref (MultiParam "A" "A") #"X"%go (![#ptrT] "p")) <-["A"] "$r0");;;
+    let: "$r0" := (!["A"] "temp") in
+    do:  ((struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p")) <-["A"] "$r0");;;
     return: #()).
 
 Definition multiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.multiParamFunc"%go.
@@ -198,8 +203,8 @@ Definition multiParamFuncⁱᵐᵖˡ : val :=
   λ: "A" "B" "x" "b",
     exception_do (let: "b" := (mem.alloc "b") in
     let: "x" := (mem.alloc "x") in
-    return: ((let: "$sl0" := (![B] "b") in
-     slice.literal B ["$sl0"]))).
+    return: ((let: "$sl0" := (!["B"] "b") in
+     slice.literal "B" ["$sl0"]))).
 
 Definition useMultiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParamFunc"%go.
 
@@ -208,7 +213,7 @@ Definition useMultiParamFuncⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := #true in
-    ((func_call #multiParamFunc) uint64T boolT) "$a0" "$a1");;;
+    ((func_call #multiParamFunc) #uint64T #boolT) "$a0" "$a1");;;
     return: (#());;;
     return: #()).
 
@@ -217,17 +222,17 @@ Definition useAnyPointer : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: generics.go:96:6 *)
 Definition useAnyPointerⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val uint64T)) in
+    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
     do:  (let: "$a0" := "x" in
-    (func_call #helpers.AnyPointer uint64T) "$a0");;;
+    (func_call #helpers.AnyPointer #uint64T) "$a0");;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(UnderlyingSlice, UnderlyingSliceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (BoxGet, BoxGetⁱᵐᵖˡ); (BoxGet2, BoxGet2ⁱᵐᵖˡ); (makeGenericBox, makeGenericBoxⁱᵐᵖˡ); (makeBox, makeBoxⁱᵐᵖˡ); (useBoxGet, useBoxGetⁱᵐᵖˡ); (useContainer, useContainerⁱᵐᵖˡ); (useMultiParam, useMultiParamⁱᵐᵖˡ); (swapMultiParam, swapMultiParamⁱᵐᵖˡ); (multiParamFunc, multiParamFuncⁱᵐᵖˡ); (useMultiParamFunc, useMultiParamFuncⁱᵐᵖˡ); (useAnyPointer, useAnyPointerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Box.id, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (ptrT.id Box.id, [("Get"%go, (λ: "$r0",
-                 method_call #Box.id #"Get"%go (![Box (__mem_type T)] "$r")
+Definition msets' : list (go_string * (list (go_string * val))) := [(Box.id, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (ptrT.id Box.id, [("Get"%go, (λ: "$r",
+                 method_call #Box.id #"Get"%go (![Box #()] "$r")
                  )%V)]); (Container.id, []); (ptrT.id Container.id, []); (UseContainer.id, []); (ptrT.id UseContainer.id, []); (OnlyIndirect.id, []); (ptrT.id OnlyIndirect.id, []); (MultiParam.id, []); (ptrT.id MultiParam.id, [])].
 
 #[global] Instance info' : PkgInfo generics.generics :=

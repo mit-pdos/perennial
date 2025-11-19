@@ -405,6 +405,17 @@ Proof.
   iIntros "? $ !>". by iApply "HΦ".
 Qed.
 
+Global Instance pure_slice_for_range (sl : slice.t) (body : val) :
+  PureWp True (slice.for_range t #sl body)%E
+       (let: "i" := alloc go.int (# ()) in
+        for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len (st t) (# ()) (# sl)) ;
+        (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
+          λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t)) (# sl, ![go.int] "i")))%E.
+Proof.
+  iIntros (?????) "HΦ".
+  wp_call_lc "?". by iApply "HΦ".
+Qed.
+
 (** WP version of PureWp for discoverability and use with wp_apply.
 
 TODO: if PureWp instances had their pure side conditions dispatched with [word]
@@ -825,6 +836,7 @@ Qed.
 
 Local Instance copy_unfold t : FuncUnfold go.copy (st t) _ :=
   ltac:(constructor; apply go.copy_slice).
+
 (** slice.copy copies as much as possible (the smaller of len(s) and len(s2)) and returns
 the number of bytes copied. See https://pkg.go.dev/builtin#copy.
 
@@ -848,8 +860,8 @@ Proof.
     )%I with "[Hs1 Hs2 i]" as "IH".
   { iFrame. simpl. word. }
   wp_for "IH".
-  wp_if_destruct; try wp_auto.
-  - wp_if_destruct; try wp_auto.
+  wp_if_destruct; first wp_auto.
+  - wp_if_destruct.
     {
       list_elem vs' (sint.Z i) as y.
       rewrite decide_True //.
@@ -955,7 +967,7 @@ Proof.
   iDestruct (own_slice_wf with "Hs") as %Hwf1.
   iDestruct (own_slice_wf with "Hs2") as %Hwf2.
   wp_apply wp_sum_assume_no_overflow_signed as "%Hoverflow".
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   - wp_pure; first word.
     match goal with
     | |- context[slice.slice _ _ ?low ?high] =>

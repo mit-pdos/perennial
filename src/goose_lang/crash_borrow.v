@@ -53,7 +53,7 @@ Proof.
   specialize (Hval (coPpick E)).
   rewrite /= decide_True in Hval => //=.
   apply coPpick_elem_of.
-  intros ?. apply set_not_infinite_finite in Hinf; eauto.
+  intros ?. by apply set_infinite_non_empty in Hinf.
 Qed.
 
 Lemma ownfCP_disj1 γ q1 D E :

@@ -201,11 +201,11 @@ Lemma wp_testSwitchMultiple (x: w64) :
   }}}.
 Proof.
   wp_start. wp_auto.
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   { by iApply "HΦ". }
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   { by iApply "HΦ". }
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   { by iApply "HΦ". }
   iApply "HΦ".
   word.
@@ -309,15 +309,14 @@ Proof.
   { word. }
   wp_for "IH".
   wp_if_destruct.
-  - wp_auto.
-    wp_pure; first word.
+  - wp_pure; first word.
     list_elem xs (sint.nat i) as x_i.
     wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; first word.
     { eauto. }
     wp_for_post.
     iFrame.
     word.
-  - wp_auto. iApply "HΦ". iFrame.
+  - iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_useEmbeddedMethod (d : unittest.embedD.t) :

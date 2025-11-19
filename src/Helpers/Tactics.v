@@ -38,6 +38,15 @@ Ltac exact_eq H :=
    This introduces a tactic notation so that the open_constrs can introduce new
    evars before being passed into the builtin [replace] tactic.
  *)
-Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) := replace x with y.
+Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) :=
+  replace x with y.
 
-Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) "by" tactic(s) := replace x with y by s.
+Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) "by" tactic(s) :=
+  replace x with y by s.
+
+(* TODO: [constr] doesn't support [occurrence] clauses like [in *]. *)
+Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) "in" constr(z) :=
+  replace x with y in z.
+
+Tactic Notation "ereplace" open_constr(x) "with" open_constr(y) "in" constr(z) "by" tactic(s) :=
+  replace x with y in z by s.

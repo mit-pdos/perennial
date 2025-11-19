@@ -16,7 +16,7 @@ Definition f : go_string := "github.com/goose-lang/goose/testdata/examples/unitt
 Definition fⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "$r0" := #(W64 11) in
-    do:  ((globals.get #unittest.GlobalX) <-[uint64T] "$r0");;;
+    do:  ((globals.get #unittest.GlobalX) <-[#uint64T] "$r0");;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

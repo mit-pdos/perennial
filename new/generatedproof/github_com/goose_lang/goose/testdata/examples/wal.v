@@ -15,7 +15,6 @@ Module awol.
 Module Log.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   d' : disk.Disk.t;
   l' : loc;
@@ -68,6 +67,16 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Log d' l' cache' length':
+  PureWp True
+    (struct.make #awol.Log (alist_val [
+      "d" ::= #d';
+      "l" ::= #l';
+      "cache" ::= #cache';
+      "length" ::= #length'
+    ]))%struct
+    #(Log.mk d' l' cache' length').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Log_struct_fields_split dq l (v : Log.t) :

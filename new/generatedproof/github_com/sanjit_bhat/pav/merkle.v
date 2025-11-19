@@ -170,8 +170,8 @@ Qed.
 
 End instances.
 
-(* type merkle.MerkleProof *)
-Module MerkleProof.
+(* type merkle.Proof *)
+Module Proof.
 Section def.
 Context `{ffi_syntax}.
 
@@ -182,59 +182,72 @@ Record t := mk {
   LeafVal' : slice.t;
 }.
 End def.
-End MerkleProof.
+End Proof.
 
 Section instances.
 Context `{ffi_syntax}.
-#[local] Transparent merkle.MerkleProof.
-#[local] Typeclasses Transparent merkle.MerkleProof.
+#[local] Transparent merkle.Proof.
+#[local] Typeclasses Transparent merkle.Proof.
 
-Global Instance MerkleProof_wf : struct.Wf merkle.MerkleProof.
+Global Instance Proof_wf : struct.Wf merkle.Proof.
 Proof. apply _. Qed.
 
-Global Instance settable_MerkleProof : Settable MerkleProof.t :=
-  settable! MerkleProof.mk < MerkleProof.Siblings'; MerkleProof.IsOtherLeaf'; MerkleProof.LeafLabel'; MerkleProof.LeafVal' >.
-Global Instance into_val_MerkleProof : IntoVal MerkleProof.t :=
+Global Instance settable_Proof : Settable Proof.t :=
+  settable! Proof.mk < Proof.Siblings'; Proof.IsOtherLeaf'; Proof.LeafLabel'; Proof.LeafVal' >.
+Global Instance into_val_Proof : IntoVal Proof.t :=
   {| to_val_def v :=
-    struct.val_aux merkle.MerkleProof [
-    "Siblings" ::= #(MerkleProof.Siblings' v);
-    "IsOtherLeaf" ::= #(MerkleProof.IsOtherLeaf' v);
-    "LeafLabel" ::= #(MerkleProof.LeafLabel' v);
-    "LeafVal" ::= #(MerkleProof.LeafVal' v)
+    struct.val_aux merkle.Proof [
+    "Siblings" ::= #(Proof.Siblings' v);
+    "IsOtherLeaf" ::= #(Proof.IsOtherLeaf' v);
+    "LeafLabel" ::= #(Proof.LeafLabel' v);
+    "LeafVal" ::= #(Proof.LeafVal' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_MerkleProof : IntoValTyped MerkleProof.t merkle.MerkleProof :=
+Global Program Instance into_val_typed_Proof : IntoValTyped Proof.t merkle.Proof :=
 {|
-  default_val := MerkleProof.mk (default_val _) (default_val _) (default_val _) (default_val _);
+  default_val := Proof.mk (default_val _) (default_val _) (default_val _) (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_MerkleProof_Siblings : IntoValStructField "Siblings" merkle.MerkleProof MerkleProof.Siblings'.
+Global Instance into_val_struct_field_Proof_Siblings : IntoValStructField "Siblings" merkle.Proof Proof.Siblings'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_MerkleProof_IsOtherLeaf : IntoValStructField "IsOtherLeaf" merkle.MerkleProof MerkleProof.IsOtherLeaf'.
+Global Instance into_val_struct_field_Proof_IsOtherLeaf : IntoValStructField "IsOtherLeaf" merkle.Proof Proof.IsOtherLeaf'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_MerkleProof_LeafLabel : IntoValStructField "LeafLabel" merkle.MerkleProof MerkleProof.LeafLabel'.
+Global Instance into_val_struct_field_Proof_LeafLabel : IntoValStructField "LeafLabel" merkle.Proof Proof.LeafLabel'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_MerkleProof_LeafVal : IntoValStructField "LeafVal" merkle.MerkleProof MerkleProof.LeafVal'.
+Global Instance into_val_struct_field_Proof_LeafVal : IntoValStructField "LeafVal" merkle.Proof Proof.LeafVal'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+<<<<<<< HEAD
+=======
+Global Instance wp_struct_make_Proof Siblings' IsOtherLeaf' LeafLabel' LeafVal':
+  PureWp True
+    (struct.make #merkle.Proof (alist_val [
+      "Siblings" ::= #Siblings';
+      "IsOtherLeaf" ::= #IsOtherLeaf';
+      "LeafLabel" ::= #LeafLabel';
+      "LeafVal" ::= #LeafVal'
+    ]))%struct
+    #(Proof.mk Siblings' IsOtherLeaf' LeafLabel' LeafVal').
+Proof. solve_struct_make_pure_wp. Qed.
+>>>>>>> master
 
 
-Global Instance MerkleProof_struct_fields_split dq l (v : MerkleProof.t) :
+Global Instance Proof_struct_fields_split dq l (v : Proof.t) :
   StructFieldsSplit dq l v (
-    "HSiblings" ∷ l ↦s[merkle.MerkleProof :: "Siblings"]{dq} v.(MerkleProof.Siblings') ∗
-    "HIsOtherLeaf" ∷ l ↦s[merkle.MerkleProof :: "IsOtherLeaf"]{dq} v.(MerkleProof.IsOtherLeaf') ∗
-    "HLeafLabel" ∷ l ↦s[merkle.MerkleProof :: "LeafLabel"]{dq} v.(MerkleProof.LeafLabel') ∗
-    "HLeafVal" ∷ l ↦s[merkle.MerkleProof :: "LeafVal"]{dq} v.(MerkleProof.LeafVal')
+    "HSiblings" ∷ l ↦s[merkle.Proof :: "Siblings"]{dq} v.(Proof.Siblings') ∗
+    "HIsOtherLeaf" ∷ l ↦s[merkle.Proof :: "IsOtherLeaf"]{dq} v.(Proof.IsOtherLeaf') ∗
+    "HLeafLabel" ∷ l ↦s[merkle.Proof :: "LeafLabel"]{dq} v.(Proof.LeafLabel') ∗
+    "HLeafVal" ∷ l ↦s[merkle.Proof :: "LeafVal"]{dq} v.(Proof.LeafVal')
   ).
 Proof.
   rewrite /named.
@@ -242,9 +255,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (MerkleProof.Siblings' v)) (merkle.MerkleProof) "Siblings"%go.
-  simpl_one_flatten_struct (# (MerkleProof.IsOtherLeaf' v)) (merkle.MerkleProof) "IsOtherLeaf"%go.
-  simpl_one_flatten_struct (# (MerkleProof.LeafLabel' v)) (merkle.MerkleProof) "LeafLabel"%go.
+  simpl_one_flatten_struct (# (Proof.Siblings' v)) (merkle.Proof) "Siblings"%go.
+  simpl_one_flatten_struct (# (Proof.IsOtherLeaf' v)) (merkle.Proof) "IsOtherLeaf"%go.
+  simpl_one_flatten_struct (# (Proof.LeafLabel' v)) (merkle.Proof) "LeafLabel"%go.
 
   solve_field_ref_f.
 Qed.
@@ -331,12 +344,12 @@ Global Instance wp_func_call_getBit :
   WpFuncCall merkle.getBit _ (is_pkg_defined merkle) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_MerkleProofEncode :
-  WpFuncCall merkle.MerkleProofEncode _ (is_pkg_defined merkle) :=
+Global Instance wp_func_call_ProofEncode :
+  WpFuncCall merkle.ProofEncode _ (is_pkg_defined merkle) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_MerkleProofDecode :
-  WpFuncCall merkle.MerkleProofDecode _ (is_pkg_defined merkle) :=
+Global Instance wp_func_call_ProofDecode :
+  WpFuncCall merkle.ProofDecode _ (is_pkg_defined merkle) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Map'ptr_Hash :

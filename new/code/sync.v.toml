@@ -11,13 +11,15 @@ translate = [
   "rlocker",
   "Once",
   "Once.*",
+  "Cond",
+  "Cond.*",
+  "NewCond",
+  "Locker",
 ]
 
-imports = [
-  "sync/atomic",
-  "internal/race",
-  "internal/synctest",
-]
+imports = ["sync/atomic", "internal/race", "internal/synctest"]
+
+axiomatize = ["notifyList", "copyChecker", "copyChecker.*"]
 
 trusted = [
   # Unlike WaitGroup, one cannot translate and verify Mutex methods because they
@@ -28,13 +30,14 @@ trusted = [
   "Mutex",
   "Mutex.*",
 
-  "Cond",
-  "Cond.*",
-  "NewCond",
+  "runtime_notifyList*",
 
-  "runtime_Semacquire",
-  "runtime_SemacquireWaitGroup",
-  "runtime_SemacquireRWMutexR",
-  "runtime_SemacquireRWMutex",
+  "runtime_Semacquire*",
   "runtime_Semrelease",
+]
+
+[bootstrap]
+enabled = true
+prelude = [
+  "From New.golang.defn Require Export slice array map string defer.",
 ]

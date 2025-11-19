@@ -30,20 +30,20 @@ Definition c : go_type := structT [
 Definition c__Fooⁱᵐᵖˡ : val :=
   λ: "c" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    let: "y" := (mem.alloc (type.zero_val B)) in
-    let: "$r0" := (interface.make #(ptrT.id c.id) (![ptrT] "c")) in
-    do:  ("y" <-[B] "$r0");;;
-    do:  ((interface.get #"Bar"%go (![B] "y")) #());;;
+    let: "y" := (mem.alloc (type.zero_val #B)) in
+    let: "$r0" := (interface.make #(ptrT.id c.id) (![#ptrT] "c")) in
+    do:  ("y" <-[#B] "$r0");;;
+    do:  ((interface.get #"Bar"%go (![#B] "y")) #());;;
     return: #()).
 
 (* go: x.go:19:13 *)
 Definition c__Barⁱᵐᵖˡ : val :=
   λ: "c" <>,
     exception_do (let: "c" := (mem.alloc "c") in
-    let: "y" := (mem.alloc (type.zero_val A)) in
-    let: "$r0" := (interface.make #(ptrT.id c.id) (![ptrT] "c")) in
-    do:  ("y" <-[A] "$r0");;;
-    do:  ((interface.get #"Foo"%go (![A] "y")) #());;;
+    let: "y" := (mem.alloc (type.zero_val #A)) in
+    let: "$r0" := (interface.make #(ptrT.id c.id) (![#ptrT] "c")) in
+    do:  ("y" <-[#A] "$r0");;;
+    do:  ((interface.get #"Foo"%go (![#A] "y")) #());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

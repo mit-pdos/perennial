@@ -49,6 +49,25 @@ Definition for_postcondition_def stk E (post : val) P Φ bv : iProp Σ :=
 Program Definition for_postcondition := sealed @for_postcondition_def.
 Definition for_postcondition_unseal : for_postcondition = _ := seal_eq _.
 
+#[local] Instance pure_test_execute : PureWp True (Fst execute_val) (#"execute").
+Proof.
+  rewrite execute_val_unseal.
+  pure_wp_start.
+  iApply "HΦ".
+Qed.
+#[local] Instance pure_test_continue : PureWp True (Fst continue_val) (#"continue").
+Proof.
+  rewrite continue_val_unseal.
+  pure_wp_start.
+  iApply "HΦ".
+Qed.
+#[local] Instance pure_test_break : PureWp True (Fst break_val) (#"break").
+Proof.
+  rewrite break_val_unseal.
+  pure_wp_start.
+  iApply "HΦ".
+Qed.
+
 Lemma wp_for P stk E (cond body post : val) Φ :
   P -∗
   □ (P -∗
@@ -76,8 +95,7 @@ Proof.
     iIntros (bc) "Hb". (* "[[% HP] | [[% HP] | [[% HΦ] | HΦ]]]". *)
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "continue" *)
-      subst. wp_pures. rewrite continue_val_unseal.
-      wp_pures.
+      subst. wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -89,7 +107,7 @@ Proof.
     }
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "execute" *)
-      subst. rewrite execute_val_unseal. wp_pures.
+      subst. wp_pures.
       wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
@@ -102,7 +120,7 @@ Proof.
     }
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "break" *)
-      subst. rewrite break_val_unseal. wp_pures.
+      subst. wp_pures.
       by iFrame.
     }
     iDestruct "Hb" as (?) "[% HΦ]".
@@ -150,10 +168,10 @@ Qed.
 
 End wps.
 
-(** Tactic for convenient loop reasoning. First use [iAssert] to generalize the
-current context to the loop invariant, then apply this tactic. Use
-[wp_for_post_do], [wp_for_post_continue], and [wp_for_post_return] at the leaves
-of the proof. *)
+(** Tactics for convenient loop reasoning:
+- use [iAssert] to generalize the current context to the loop invariant.
+- use [wp_for] with the loop invariant.
+- use [wp_for_post] at the loop control points. *)
 Ltac wp_for_core :=
   wp_bind (do_for _ _ _); iApply (wp_for with "[-]");
   [ by iNamedAccu

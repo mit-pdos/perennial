@@ -2,12 +2,17 @@
 Require Export New.proof.grove_prelude.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.reconnectclient.
-Require Export New.generatedproof.github_com.tchajed.marshal.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.paxos.applyasfollowerargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.paxos.applyasfollowerreply_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.paxos.enternewepochargs_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.paxos.enternewepochreply_gk.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.paxos.error_gk.
 Require Export New.generatedproof.log.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.asyncfile.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.urpc.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.paxos.paxosstate_gk.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.paxos.
@@ -76,6 +81,7 @@ Qed.
 
 End instances.
 
+<<<<<<< HEAD
 (* type paxos.Error *)
 Module Error.
 
@@ -517,6 +523,8 @@ Qed.
 
 End instances.
 
+=======
+>>>>>>> master
 (* type paxos.Server *)
 Module Server.
 Section def.
@@ -611,12 +619,17 @@ Global Instance is_pkg_defined_pure_paxos : IsPkgDefinedPure paxos :=
       is_pkg_defined_pure_single paxos ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.reconnectclient.reconnectclient ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.paxos.applyasfollowerargs_gk.applyasfollowerargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.paxos.applyasfollowerreply_gk.applyasfollowerreply_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.paxos.enternewepochargs_gk.enternewepochargs_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.paxos.enternewepochreply_gk.enternewepochreply_gk ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.paxos.error_gk.error_gk ∧
       is_pkg_defined_pure code.log.log ∧
       is_pkg_defined_pure code.sync.sync ∧
       is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.asyncfile.asyncfile ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.urpc.urpc;
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.urpc.urpc ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.paxos.paxosstate_gk.paxosstate_gk;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -626,70 +639,23 @@ Global Program Instance is_pkg_defined_paxos : IsPkgDefined paxos :=
       (is_pkg_defined_single paxos ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.reconnectclient.reconnectclient ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.paxos.applyasfollowerargs_gk.applyasfollowerargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.paxos.applyasfollowerreply_gk.applyasfollowerreply_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.paxos.enternewepochargs_gk.enternewepochargs_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.paxos.enternewepochreply_gk.enternewepochreply_gk ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.paxos.error_gk.error_gk ∗
        is_pkg_defined code.log.log ∗
        is_pkg_defined code.sync.sync ∗
        is_pkg_defined code.github_com.goose_lang.std.std ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.asyncfile.asyncfile ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.urpc.urpc)%I
+       is_pkg_defined code.github_com.mit_pdos.gokv.urpc.urpc ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.paxos.paxosstate_gk.paxosstate_gk)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
 Global Instance wp_func_call_MakeSingleClerk :
   WpFuncCall paxos.MakeSingleClerk _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeApplyAsFollowerArgs :
-  WpFuncCall paxos.encodeApplyAsFollowerArgs _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeApplyAsFollowerArgs :
-  WpFuncCall paxos.decodeApplyAsFollowerArgs _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeApplyAsFollowerReply :
-  WpFuncCall paxos.decodeApplyAsFollowerReply _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeApplyAsFollowerReply :
-  WpFuncCall paxos.encodeApplyAsFollowerReply _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeEnterNewEpochArgs :
-  WpFuncCall paxos.encodeEnterNewEpochArgs _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeEnterNewEpochArgs :
-  WpFuncCall paxos.decodeEnterNewEpochArgs _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeEnterNewEpochReply :
-  WpFuncCall paxos.decodeEnterNewEpochReply _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeEnterNewEpochReply :
-  WpFuncCall paxos.encodeEnterNewEpochReply _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeApplyReply :
-  WpFuncCall paxos.encodeApplyReply _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeApplyReply :
-  WpFuncCall paxos.decodeApplyReply _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_boolToU64 :
-  WpFuncCall paxos.boolToU64 _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodePaxosState :
-  WpFuncCall paxos.encodePaxosState _ (is_pkg_defined paxos) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodePaxosState :
-  WpFuncCall paxos.decodePaxosState _ (is_pkg_defined paxos) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_makeServer :

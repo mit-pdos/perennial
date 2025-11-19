@@ -113,11 +113,19 @@ Definition list__Triggerⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.RWMutex.id) #"Unlock"%go (struct.field_ref listElement #"l"%go (slice.elem_ref listElement (![sliceT] (struct.field_ref ptrT #"e"%go (![ptrT] "w"))) (![uint64T] "idx")))) #());;;
     (if: (![chanT interfaceT] "ch") ≠ #null
     then
+<<<<<<< HEAD
       do:  (let: "$chan" := (![chanT interfaceT] "ch") in
       let: "$v" := (![interfaceT] "x") in
       chan.send "$chan" "$v");;;
       do:  (let: "$a0" := (![chanT interfaceT] "ch") in
       chan.close "$a0")
+=======
+      do:  (let: "$chan" := (![type.chanT #interfaceT] "ch") in
+      let: "$v" := (![#interfaceT] "x") in
+      chan.send #interfaceT "$chan" "$v");;;
+      do:  (let: "$a0" := (![type.chanT #interfaceT] "ch") in
+      (chan.close #interfaceT) "$a0")
+>>>>>>> master
     else do:  #());;;
     return: #()).
 
@@ -281,7 +289,8 @@ Definition timeList__Triggerⁱᵐᵖˡ : val :=
         map.delete "$a0" "$a1");;;
         do:  (let: "$a0" := (![chanT (structT [
         ])] "ch") in
-        chan.close "$a0")
+        (chan.close (type.structT [
+        ])) "$a0")
       else do:  #())));;;
     return: #()).
 
@@ -313,7 +322,8 @@ Definition initialize' : val :=
         ])] "$r0");;;
         do:  (let: "$a0" := (![chanT (structT [
         ])] (globals.get #closec)) in
-        chan.close "$a0");;;
+        (chan.close (type.structT [
+        ])) "$a0");;;
         return: #())
         ) #()))
       ).

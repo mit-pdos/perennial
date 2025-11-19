@@ -89,10 +89,325 @@ Definition init : go_string := "context.init"%go.
 
 Axiom cancelCtx : go_type.
 
+<<<<<<< HEAD
 Axiom stringer : go_type.
 
 Definition contextName : go_string := "context.contextName"%go.
 
+=======
+   go: context.go:393:6 *)
+Definition removeChildⁱᵐᵖˡ : val :=
+  λ: "parent" "child",
+    exception_do (let: "child" := (mem.alloc "child") in
+    let: "parent" := (mem.alloc "parent") in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "s" := (mem.alloc (type.zero_val #stopCtx)) in
+    let: ("$ret0", "$ret1") := (interface.checked_type_assert #stopCtx (![#Context] "parent") #stopCtx.id) in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("s" <-[#stopCtx] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: ![#boolT] "ok"
+    then
+      do:  ((![#funcT] (struct.field_ref #stopCtx #"stop"%go "s")) #());;;
+      return: (#())
+    else do:  #()));;;
+    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "p" := (mem.alloc (type.zero_val #ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#Context] "parent") in
+    (func_call #parentCancelCtx) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("p" <-[#ptrT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: (~ (![#boolT] "ok"))
+    then return: (#())
+    else do:  #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "p"))) #());;;
+    (if: (![type.mapT #canceler (type.structT [
+    ])] (struct.field_ref #cancelCtx #"children"%go (![#ptrT] "p"))) ≠ #null
+    then
+      do:  (let: "$a0" := (![type.mapT #canceler (type.structT [
+      ])] (struct.field_ref #cancelCtx #"children"%go (![#ptrT] "p"))) in
+      let: "$a1" := (![#canceler] "child") in
+      map.delete "$a0" "$a1")
+    else do:  #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "p"))) #());;;
+    return: #()).
+
+Definition value : go_string := "context.value"%go.
+
+(* go: context.go:435:21 *)
+Definition cancelCtx__Valueⁱᵐᵖˡ : val :=
+  λ: "c" "key",
+    exception_do (let: "c" := (mem.alloc "c") in
+    let: "key" := (mem.alloc "key") in
+    (if: interface.eq (![#interfaceT] "key") (interface.make #(ptrT.id intT.id) (globals.get #cancelCtxKey))
+    then return: (interface.make #(ptrT.id cancelCtx.id) (![#ptrT] "c"))
+    else do:  #());;;
+    return: (let: "$a0" := (![#Context] (struct.field_ref #cancelCtx #"Context"%go (![#ptrT] "c"))) in
+     let: "$a1" := (![#interfaceT] "key") in
+     (func_call #value) "$a0" "$a1")).
+
+(* go: context.go:442:21 *)
+Definition cancelCtx__Doneⁱᵐᵖˡ : val :=
+  λ: "c" <>,
+    with_defer: (let: "c" := (mem.alloc "c") in
+    let: "d" := (mem.alloc (type.zero_val #interfaceT)) in
+    let: "$r0" := ((method_call #(ptrT.id atomic.Value.id) #"Load"%go (struct.field_ref #cancelCtx #"done"%go (![#ptrT] "c"))) #()) in
+    do:  ("d" <-[#interfaceT] "$r0");;;
+    (if: (~ (interface.eq (![#interfaceT] "d") #interface.nil))
+    then return: (interface.type_assert (![#interfaceT] "d") #(chanT.id (structT.id [])))
+    else do:  #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+    do:  (let: "$f" := (method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+    (λ: <>,
+      "$f" #();;
+      "$oldf" #()
+      )));;;
+    let: "$r0" := ((method_call #(ptrT.id atomic.Value.id) #"Load"%go (struct.field_ref #cancelCtx #"done"%go (![#ptrT] "c"))) #()) in
+    do:  ("d" <-[#interfaceT] "$r0");;;
+    (if: interface.eq (![#interfaceT] "d") #interface.nil
+    then
+      let: "$r0" := (interface.make #(chanT.id (structT.id [])) (chan.make (type.structT [
+      ]) #(W64 0))) in
+      do:  ("d" <-[#interfaceT] "$r0");;;
+      do:  (let: "$a0" := (![#interfaceT] "d") in
+      (method_call #(ptrT.id atomic.Value.id) #"Store"%go (struct.field_ref #cancelCtx #"done"%go (![#ptrT] "c"))) "$a0")
+    else do:  #());;;
+    return: (interface.type_assert (![#interfaceT] "d") #(chanT.id (structT.id [])))).
+
+(* go: context.go:457:21 *)
+Definition cancelCtx__Errⁱᵐᵖˡ : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (mem.alloc "c") in
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "$r0" := (![#error] (struct.field_ref #cancelCtx #"err"%go (![#ptrT] "c"))) in
+    do:  ("err" <-[#error] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+    return: (![#error] "err")).
+
+(* propagateCancel arranges for child to be canceled when parent is.
+   It sets the parent context of cancelCtx.
+
+   go: context.go:466:21 *)
+Definition cancelCtx__propagateCancelⁱᵐᵖˡ : val :=
+  λ: "c" "parent" "child",
+    exception_do (let: "c" := (mem.alloc "c") in
+    let: "child" := (mem.alloc "child") in
+    let: "parent" := (mem.alloc "parent") in
+    let: "$r0" := (![#Context] "parent") in
+    do:  ((struct.field_ref #cancelCtx #"Context"%go (![#ptrT] "c")) <-[#Context] "$r0");;;
+    let: "done" := (mem.alloc (type.zero_val (type.chanT (type.structT [
+    ])))) in
+    let: "$r0" := ((interface.get #"Done"%go (![#Context] "parent")) #()) in
+    do:  ("done" <-[type.chanT (type.structT [
+    ])] "$r0");;;
+    (if: (![type.chanT (type.structT [
+    ])] "done") = #null
+    then return: (#())
+    else do:  #());;;
+    chan.select_nonblocking [chan.select_receive (type.structT [
+     ]) (![type.chanT (type.structT [
+     ])] "done") (λ: "$recvVal",
+       do:  (let: "$a0" := #false in
+       let: "$a1" := ((interface.get #"Err"%go (![#Context] "parent")) #()) in
+       let: "$a2" := (let: "$a0" := (![#Context] "parent") in
+       (func_call #Cause) "$a0") in
+       (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2");;;
+       return: (#())
+       )] (λ: <>,
+      do:  #()
+      );;;
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "p" := (mem.alloc (type.zero_val #ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#Context] "parent") in
+    (func_call #parentCancelCtx) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("p" <-[#ptrT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: ![#boolT] "ok"
+    then
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "p"))) #());;;
+      (if: (~ (interface.eq (![#error] (struct.field_ref #cancelCtx #"err"%go (![#ptrT] "p"))) #interface.nil))
+      then
+        do:  (let: "$a0" := #false in
+        let: "$a1" := (![#error] (struct.field_ref #cancelCtx #"err"%go (![#ptrT] "p"))) in
+        let: "$a2" := (![#error] (struct.field_ref #cancelCtx #"cause"%go (![#ptrT] "p"))) in
+        (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2")
+      else
+        (if: (![type.mapT #canceler (type.structT [
+        ])] (struct.field_ref #cancelCtx #"children"%go (![#ptrT] "p"))) = #null
+        then
+          let: "$r0" := (map.make #canceler (type.structT [
+          ])) in
+          do:  ((struct.field_ref #cancelCtx #"children"%go (![#ptrT] "p")) <-[type.mapT #canceler (type.structT [
+          ])] "$r0")
+        else do:  #());;;
+        let: "$r0" := (struct.make (type.structT [
+        ]) [{
+        }]) in
+        do:  (map.insert (![type.mapT #canceler (type.structT [
+        ])] (struct.field_ref #cancelCtx #"children"%go (![#ptrT] "p"))) (![#canceler] "child") "$r0"));;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "p"))) #());;;
+      return: (#())
+    else do:  #()));;;
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "a" := (mem.alloc (type.zero_val #afterFuncer)) in
+    let: ("$ret0", "$ret1") := (interface.checked_type_assert #afterFuncer (![#Context] "parent") #afterFuncer.id) in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("a" <-[#afterFuncer] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: ![#boolT] "ok"
+    then
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+      let: "stop" := (mem.alloc (type.zero_val #funcT)) in
+      let: "$r0" := (let: "$a0" := (λ: <>,
+        exception_do (do:  (let: "$a0" := #false in
+        let: "$a1" := ((interface.get #"Err"%go (![#Context] "parent")) #()) in
+        let: "$a2" := (let: "$a0" := (![#Context] "parent") in
+        (func_call #Cause) "$a0") in
+        (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2");;;
+        return: #())
+        ) in
+      (interface.get #"AfterFunc"%go (![#afterFuncer] "a")) "$a0") in
+      do:  ("stop" <-[#funcT] "$r0");;;
+      let: "$r0" := (interface.make #stopCtx.id (let: "$Context" := (![#Context] "parent") in
+      let: "$stop" := (![#funcT] "stop") in
+      struct.make #stopCtx [{
+        "Context" ::= "$Context";
+        "stop" ::= "$stop"
+      }])) in
+      do:  ((struct.field_ref #cancelCtx #"Context"%go (![#ptrT] "c")) <-[#Context] "$r0");;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+      return: (#())
+    else do:  #()));;;
+    do:  (let: "$a0" := #(W32 1) in
+    (method_call #(ptrT.id atomic.Int32.id) #"Add"%go (globals.get #goroutines)) "$a0");;;
+    let: "$go" := (λ: <>,
+      exception_do (chan.select_blocking [chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#Context] "parent")) #()) (λ: "$recvVal",
+         do:  (let: "$a0" := #false in
+         let: "$a1" := ((interface.get #"Err"%go (![#Context] "parent")) #()) in
+         let: "$a2" := (let: "$a0" := (![#Context] "parent") in
+         (func_call #Cause) "$a0") in
+         (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2")
+         ); chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#canceler] "child")) #()) (λ: "$recvVal",
+         do:  #()
+         )];;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    return: #()).
+
+Definition stringer : go_type := interfaceT.
+#[global] Typeclasses Opaque stringer.
+#[global] Opaque stringer.
+
+Definition contextName : go_string := "context.contextName"%go.
+
+(* go: context.go:526:6 *)
+Definition contextNameⁱᵐᵖˡ : val :=
+  λ: "c",
+    exception_do (let: "c" := (mem.alloc "c") in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "s" := (mem.alloc (type.zero_val #stringer)) in
+    let: ("$ret0", "$ret1") := (interface.checked_type_assert #stringer (![#Context] "c") #stringer.id) in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("s" <-[#stringer] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: ![#boolT] "ok"
+    then return: ((interface.get #"String"%go (![#stringer] "s")) #())
+    else do:  #()));;;
+    return: ((interface.get #"String"%go (let: "$a0" := (![#Context] "c") in
+     (func_call #reflectlite.TypeOf) "$a0")) #())).
+
+(* go: context.go:533:21 *)
+Definition cancelCtx__Stringⁱᵐᵖˡ : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (mem.alloc "c") in
+    return: ((let: "$a0" := (![#Context] (struct.field_ref #cancelCtx #"Context"%go (![#ptrT] "c"))) in
+     (func_call #contextName) "$a0") + #".WithCancel"%go)).
+
+(* cancel closes c.done, cancels each of c's children, and, if
+   removeFromParent is true, removes c from its parent's children.
+   cancel sets c.cause to cause if this is the first time c is canceled.
+
+   go: context.go:540:21 *)
+Definition cancelCtx__cancelⁱᵐᵖˡ : val :=
+  λ: "c" "removeFromParent" "err" "cause",
+    exception_do (let: "c" := (mem.alloc "c") in
+    let: "cause" := (mem.alloc "cause") in
+    let: "err" := (mem.alloc "err") in
+    let: "removeFromParent" := (mem.alloc "removeFromParent") in
+    (if: interface.eq (![#error] "err") #interface.nil
+    then
+      do:  (let: "$a0" := (interface.make #stringT.id #"context: internal error: missing cancel error"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    (if: interface.eq (![#error] "cause") #interface.nil
+    then
+      let: "$r0" := (![#error] "err") in
+      do:  ("cause" <-[#error] "$r0")
+    else do:  #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+    (if: (~ (interface.eq (![#error] (struct.field_ref #cancelCtx #"err"%go (![#ptrT] "c"))) #interface.nil))
+    then
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+      return: (#())
+    else do:  #());;;
+    let: "$r0" := (![#error] "err") in
+    do:  ((struct.field_ref #cancelCtx #"err"%go (![#ptrT] "c")) <-[#error] "$r0");;;
+    let: "$r0" := (![#error] "cause") in
+    do:  ((struct.field_ref #cancelCtx #"cause"%go (![#ptrT] "c")) <-[#error] "$r0");;;
+    let: "d" := (mem.alloc (type.zero_val (type.chanT (type.structT [
+    ])))) in
+    let: ("$ret0", "$ret1") := (interface.checked_type_assert (type.chanT (type.structT [
+    ])) ((method_call #(ptrT.id atomic.Value.id) #"Load"%go (struct.field_ref #cancelCtx #"done"%go (![#ptrT] "c"))) #()) #(chanT.id (structT.id []))) in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("d" <-[type.chanT (type.structT [
+    ])] "$r0");;;
+    do:  "$r1";;;
+    (if: (![type.chanT (type.structT [
+    ])] "d") = #null
+    then
+      do:  (let: "$a0" := (interface.make #(chanT.id (structT.id [])) (![type.chanT (type.structT [
+      ])] (globals.get #closedchan))) in
+      (method_call #(ptrT.id atomic.Value.id) #"Store"%go (struct.field_ref #cancelCtx #"done"%go (![#ptrT] "c"))) "$a0")
+    else
+      do:  (let: "$a0" := (![type.chanT (type.structT [
+      ])] "d") in
+      (chan.close (type.structT [
+      ])) "$a0"));;;
+    let: "$range" := (![type.mapT #canceler (type.structT [
+    ])] (struct.field_ref #cancelCtx #"children"%go (![#ptrT] "c"))) in
+    (let: "child" := (mem.alloc (type.zero_val #canceler)) in
+    map.for_range "$range" (λ: "$key" "value",
+      do:  ("child" <-[#canceler] "$key");;;
+      do:  (let: "$a0" := #false in
+      let: "$a1" := (![#error] "err") in
+      let: "$a2" := (![#error] "cause") in
+      (interface.get #"cancel"%go (![#canceler] "child")) "$a0" "$a1" "$a2")));;;
+    let: "$r0" := #null in
+    do:  ((struct.field_ref #cancelCtx #"children"%go (![#ptrT] "c")) <-[type.mapT #canceler (type.structT [
+    ])] "$r0");;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (struct.field_ref #cancelCtx #"mu"%go (![#ptrT] "c"))) #());;;
+    (if: ![#boolT] "removeFromParent"
+    then
+      do:  (let: "$a0" := (![#Context] (struct.field_ref #cancelCtx #"Context"%go (![#ptrT] "c"))) in
+      let: "$a1" := (interface.make #(ptrT.id cancelCtx.id) (![#ptrT] "c")) in
+      (func_call #removeChild) "$a0" "$a1")
+    else do:  #());;;
+    return: #()).
+
+>>>>>>> master
 Definition WithoutCancel : go_string := "context.WithoutCancel"%go.
 
 Axiom withoutCancelCtx : go_type.
@@ -276,9 +591,29 @@ Definition initialize' : val :=
     package.init #context.context (λ: <>,
       exception_do (do:  (time.initialize' #());;;
       do:  (package.alloc context.context #());;;
+<<<<<<< HEAD
       do:  (Canceled'init #());;;
       do:  (DeadlineExceeded'init #());;;
       do:  (closedchan'init #()))
+=======
+      let: "$r0" := (let: "$a0" := #"context canceled"%go in
+      (func_call #errors.New) "$a0") in
+      do:  ((globals.get #Canceled) <-[#error] "$r0");;;
+      let: "$r0" := (interface.make #deadlineExceededError.id (struct.make #deadlineExceededError [{
+      }])) in
+      do:  ((globals.get #DeadlineExceeded) <-[#error] "$r0");;;
+      let: "$r0" := (chan.make (type.structT [
+      ]) #(W64 0)) in
+      do:  ((globals.get #closedchan) <-[type.chanT (type.structT [
+      ])] "$r0");;;
+      do:  ((λ: <>,
+        exception_do (do:  (let: "$a0" := (![type.chanT (type.structT [
+        ])] (globals.get #closedchan)) in
+        (chan.close (type.structT [
+        ])) "$a0");;;
+        return: #())
+        ) #()))
+>>>>>>> master
       ).
 
 End code.

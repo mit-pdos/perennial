@@ -511,8 +511,8 @@ Section bi.
     iIntros (y Hy) "[HX Hx]".
     rewrite filter_union_L.
     case_decide as HP; last first.
-    { rewrite filter_singleton_not_L; [by rewrite union_empty_l_L | apply HP]. }
-    rewrite filter_singleton_L; last apply HP.
+    { rewrite filter_singleton_False_L; [by rewrite union_empty_l_L | apply HP]. }
+    rewrite filter_singleton_True_L; last apply HP.
     iApply (big_sepS_insert_2 with "Hx HX").
   Qed.
 
@@ -534,7 +534,7 @@ Section bi.
     iDestruct "HΦ" as "[Hx HX]".
     (* rewrite filter_union_L elem_of_union in Hpart. *)
     (* destruct Hpart as [Hin | Hcontra]; last set_solver. *)
-    rewrite filter_singleton_L; last apply HP.
+    rewrite filter_singleton_True_L; last apply HP.
     iFrame "Hx".
     iSpecialize ("HYX" $! (λ y, [∗ set] x ∈ filter (λ x', P x' y) X, Φ x)%I with "[] HX").
     { iIntros "!>" (y' _ _) "HΦ".

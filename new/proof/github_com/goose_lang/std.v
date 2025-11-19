@@ -2,6 +2,7 @@ From New.proof Require Import proof_prelude.
 From New.proof Require Import math.
 From New.generatedproof.github_com.goose_lang Require Import std.
 From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
+From iris_named_props Require Import custom_syntax.
 
 Set Default Proof Using "Type".
 
@@ -56,7 +57,7 @@ Proof.
   wp_auto.
   iDestruct (own_slice_len with "Hs1") as "%".
   iDestruct (own_slice_len with "Hs2") as "%".
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   {
     assert (length xs1 = length xs2) by word.
     iAssert (∃ (i: w64),
@@ -69,7 +70,7 @@ Proof.
       split; [ word | intros; word ].
     }
     wp_for "IH".
-    wp_if_destruct; try wp_auto.
+    wp_if_destruct.
     - list_elem xs1 (sint.Z i) as x1_i.
       wp_pure; [ word | ].
       wp_apply (wp_load_slice_elem with "[$Hs1]") as "Hs1"; [ word | eauto | ].
@@ -107,7 +108,7 @@ Lemma wp_BytesClone (b:slice.t) (xs:list u8) (dq:dfrac) :
   {{{ b', RET #b'; own_slice b' (DfracOwn 1) xs ∗ own_slice_cap w8 b' (DfracOwn 1) }}}.
 Proof.
   wp_start as "Hb". wp_auto.
-  wp_if_destruct; try wp_auto.
+  wp_if_destruct.
   - iApply "HΦ". 
     + iSplitL.
       * iDestruct (own_slice_len with "Hb") as "[%Hb_len %]".
@@ -151,9 +152,10 @@ Lemma wp_SignedSumAssumeNoOverflow (x y : u64) :
 Proof.
   wp_start as "_"; wp_auto.
   unfold math.MaxInt, math.MinInt.
-  repeat (wp_if_destruct
+  repeat (
             (* BUG: this unshelve avoids trivial shelved goals of type w64 and
-            val *)
+            val (coming from wp_auto) *)
+      unshelve wp_if_destruct
           || unshelve wp_auto
           || (wp_apply wp_Assume; iIntros "%")
           || congruence).

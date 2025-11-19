@@ -1,9 +1,3 @@
-translate = [
-  "!*",
-  "Status",
-]
+translate = ["!*", "Status"]
 
-imports = [
-  "!*",
-  "google.golang.org/genproto/googleapis/rpc/status",
-]
+imports = ["!*", "google.golang.org/genproto/googleapis/rpc/status"]

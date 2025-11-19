@@ -10,3 +10,6 @@ Export uPred.
 
 Global Set Default Proof Using "Type".
 Global Set Printing Projections.
+
+Add Search Blacklist "wp_func_call_".
+Add Search Blacklist "wp_method_call_".

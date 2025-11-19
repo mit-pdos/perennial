@@ -1,15 +1,17 @@
 translate = [
+  "Int64*",
   "Uint64*",
   "Int32*",
   "Uint32*",
 
-  "noCopy",
+  "Bool*",
+  "b32",
+
   "align64",
   "Value*",
   "efaceWords",
 
   "_",
-  "Pointer",
 ]
 
 trusted = [
@@ -18,17 +20,30 @@ trusted = [
   "AddUint64",
   "CompareAndSwapUint64",
 
-  "LoadInt32",
-  "StoreInt32",
-  "AddInt32",
-  "CompareAndSwapInt32",
+  "LoadInt64",
+  "StoreInt64",
+  "AddInt64",
+  "CompareAndSwapInt64",
 
   "LoadUint32",
   "StoreUint32",
   "AddUint32",
   "CompareAndSwapUint32",
+
+  "LoadInt32",
+  "StoreInt32",
+  "AddInt32",
+  "CompareAndSwapInt32",
+
+  "noCopy",
+  "Pointer",
+  "Pointer.*",
 ]
 
-imports = [
-  "!*",
+imports = ["!*"]
+
+[bootstrap]
+enabled = true
+prelude = [
+  "From New.golang.defn Require Export slice array map string interface defer builtin.",
 ]

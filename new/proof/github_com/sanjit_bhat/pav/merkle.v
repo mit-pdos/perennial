@@ -1,16 +1,15 @@
-(* NOTE: "merkle_proof" files themselves don't explicitly define Modules.
-this allows merkle files to not have to write "merkle".
-however, when they're exposed to the outside, they're within this merkle module. *)
-From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base code serde theory.
+(* use iris.bi Module structure to enforce strict "merkle" namespace. *)
+(* NOTE: with multi-file "pkg", i don't think it's possible to make
+"internal" things invisible to the outside.
+marking them "Local" would make them hard to use from other inside-pkg files.
+splitting into "internal" / "external" modules is tedious. *)
+From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Export
+  base code serde theory.
 
-Module merkle.
-  Export base code serde theory.
-  (* tentative strategy:
-  - inside sub-files, don't mark opaque / local.
-  those objects need to be visible inside the "pkg".
-  - at export time, only export external objects.
-  - ideally, mark external objects as opaque.
-  if haven't proved all helper lemmas for external obj,
-  then might need to leave as transp and mark lower-level obj as opaque. *)
-  (* #[global] Opaque is_full_tree is_map is_entry. *)
+Module Import merkle.
+  Export base.merkle code.merkle serde.merkle theory.merkle.
 End merkle.
+
+(* external defs. *)
+#[global] Opaque is_initialized own_Map is_map
+  wish_VerifyNonMemb wish_VerifyMemb wish_VerifyUpdate.

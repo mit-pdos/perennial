@@ -329,8 +329,7 @@ Lemma buf_pointsto_non_null b a:
   b ↦s[buf.Buf :: "Addr"] addr2val a -∗ ⌜ #b ≠ #null ⌝.
 Proof.
   iIntros "Hb.a".
-  iDestruct (typed_pointsto_not_null with "Hb.a") as %Hnotnull.
-  { rewrite go_type_size_unseal. done. }
+  iDestruct (typed_pointsto_not_null with "Hb.a") as %Hnotnull; [done|].
   iPureIntro. intro H. subst.
   rewrite struct.field_ref_f_unseal in Hnotnull.
   rewrite to_val_unseal in H. simpl in H. inversion H. subst.
@@ -781,18 +780,15 @@ Proof.
   wp_auto.
   rewrite !mask_bit_ok //.
   wp_if_destruct.
-  - wp_auto.
-    iExactEq "HΦ"; do 3 f_equal.
+  - iExactEq "HΦ"; do 3 f_equal.
     rewrite install_one_bit_id //.
     { lia. }
     destruct (default false _), (default false _); auto.
     + apply masks_different in e; eauto; contradiction.
     + apply symmetry, masks_different in e; eauto; contradiction.
-  - wp_auto.
-    rewrite !mask_bit_ok //.
+  - rewrite !mask_bit_ok //.
     wp_if_destruct.
-    + wp_auto.
-      destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?.
+    + destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?.
       { apply masks_different in e; auto; contradiction. }
       iExactEq "HΦ"; do 3 f_equal.
       rewrite /install_one_bit.
@@ -800,8 +796,7 @@ Proof.
       apply (inj byte_to_bits).
       rewrite bits_to_byte_to_bits; [|len].
       bit_cases bit; byte_cases dst; vm_refl.
-    + wp_auto.
-      destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?; last contradiction.
+    + destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?; last contradiction.
       destruct (default false (byte_to_bits dst !! uint.nat bit)) eqn:?; first contradiction.
       iExactEq "HΦ"; do 3 f_equal.
       rewrite /install_one_bit.

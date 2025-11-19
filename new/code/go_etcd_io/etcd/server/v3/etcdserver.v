@@ -544,6 +544,7 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
+<<<<<<< HEAD
     chan.select [chan.select_receive (![chanT interfaceT] "ch") (λ: "$recvVal",
        let: "x" := (mem.alloc (type.zero_val interfaceT)) in
        let: "$r0" := (Fst "$recvVal") in
@@ -561,6 +562,27 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ : val :=
      ])] (struct.field_ref ptrT #"done"%go (![ptrT] "s"))) (λ: "$recvVal",
        return: (#null, ![error] (globals.get #errors.ErrStopped))
        )] chan.select_no_default).
+=======
+    chan.select_blocking [chan.select_receive #interfaceT (![type.chanT #interfaceT] "ch") (λ: "$recvVal",
+       let: "x" := (mem.alloc (type.zero_val #interfaceT)) in
+       let: "$r0" := (Fst "$recvVal") in
+       do:  ("x" <-[#interfaceT] "$r0");;;
+       return: (interface.type_assert (![#interfaceT] "x") #(ptrT.id apply.Result.id), #interface.nil)
+       ); chan.select_receive (type.structT [
+     ]) ((interface.get #"Done"%go (![#context.Context] "cctx")) #()) (λ: "$recvVal",
+       do:  ((interface.get #"Inc"%go (![#prometheus.Counter] (globals.get #proposalsFailed))) #());;;
+       do:  (let: "$a0" := (![#uint64T] "id") in
+       let: "$a1" := #interface.nil in
+       (interface.get #"Trigger"%go (![#wait.Wait] (struct.field_ref #EtcdServer #"w"%go (![#ptrT] "s")))) "$a0" "$a1");;;
+       return: (#null, let: "$a0" := ((interface.get #"Err"%go (![#context.Context] "cctx")) #()) in
+        let: "$a1" := (![#time.Time] "start") in
+        (method_call #(ptrT.id EtcdServer.id) #"parseProposeCtxErr"%go (![#ptrT] "s")) "$a0" "$a1")
+       ); chan.select_receive (type.structT [
+     ]) (![type.chanT (type.structT [
+     ])] (struct.field_ref #EtcdServer #"done"%go (![#ptrT] "s"))) (λ: "$recvVal",
+       return: (#null, ![#error] (globals.get #errors.ErrStopped))
+       )]).
+>>>>>>> master
 
 Definition isStopped : go_string := "go.etcd.io/etcd/server/v3/etcdserver.isStopped"%go.
 

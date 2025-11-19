@@ -711,8 +711,6 @@ Axiom parseRFC3339ⁱᵐᵖˡ : val.
 
 Axiom parseStrictRFC3339ⁱᵐᵖˡ : val.
 
-Axiom Sleepⁱᵐᵖˡ : val.
-
 Axiom whenⁱᵐᵖˡ : val.
 
 Axiom stopTimerⁱᵐᵖˡ : val.

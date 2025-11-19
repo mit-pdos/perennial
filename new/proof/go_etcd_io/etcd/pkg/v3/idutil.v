@@ -61,7 +61,7 @@ Proof.
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv".
   iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
-  iFrame. iIntros "suffix_inv".
+  iFrame. iIntros "!> suffix_inv".
   ereplace (word.add ?[a] ?[b]) with (W64 (init + (num_used + 1))) by word.
   rewrite seqZ_cons.
   2:{ admit. } (* TODO: requires knowing that there are fewer than 2^56 calls to [Next]. *)

@@ -4,8 +4,8 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.trusted_proph.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.configservice.
-Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.e.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.
+Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.err_gk.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.clerk.
@@ -110,8 +110,8 @@ Global Instance is_pkg_defined_pure_clerk : IsPkgDefinedPure clerk :=
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.trusted_proph.trusted_proph ∧
       is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.e.e ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.replica;
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.replica ∧
+      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -123,8 +123,8 @@ Global Program Instance is_pkg_defined_clerk : IsPkgDefined clerk :=
        is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.trusted_proph.trusted_proph ∗
        is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.e.e ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.replica)%I
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.replica ∗
+       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

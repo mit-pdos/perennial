@@ -1,5 +1,6 @@
 From Stdlib.Logic Require Import Classical.
 From stdpp Require Import list ssreflect.
+From Perennial.Helpers Require Import ListLen.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
@@ -29,6 +30,17 @@ End list_misc.
 Section list.
   Context {A : Type}.
   Implicit Types l : (list A).
+
+  Lemma snoc_to_cons x l : ∃ x' l', l ++ [x] = x' :: l'.
+  Proof. destruct l; naive_solver. Qed.
+
+  Lemma cons_to_snoc x l : ∃ x' l', x :: l = l' ++ [x'].
+  Proof.
+    revert x. induction l as [|a l]; intros x.
+    - by eexists _, [].
+    - opose proof (IHl _) as (?&l'&->).
+      by eexists _, (x :: l').
+  Qed.
 
   Lemma fmap_length_reverse (l : list $ list A) :
     length <$> reverse l = reverse (length <$> l).
@@ -150,7 +162,7 @@ Section list.
     replicate n x = [].
   Proof. intros ->. reflexivity. Qed.
 
-  Lemma list_filter_singleton (P : A → Prop)
+  Lemma list_filter_singleton_True (P : A → Prop)
       `{!∀ x, Decision (P x)} x :
     (filter P [x] = [] ∧ ¬ P x) ∨ (filter P [x] = [x] ∧ P x).
   Proof.
@@ -371,6 +383,7 @@ Proof.
   rewrite length_drop length_take.
   auto.
 Qed.
+#[global] Hint Rewrite @subslice_length' : len.
 
 Theorem subslice_length {A} n m (l: list A) :
   (m <= length l)%nat ->
@@ -749,6 +762,42 @@ Proof.
   rewrite Permutation_swap //.
 Qed.
 
+Lemma permutation_zip {A B} (l1 l1': list A) (l2: list B) :
+  l1 ≡ₚ l1' →
+  length l1 = length l2 →
+  ∃ l2', l2 ≡ₚ l2' ∧ zip l1 l2 ≡ₚ zip l1' l2'.
+Proof.
+  intros Hperm.
+  generalize dependent l2.
+  induction Hperm.
+  - eauto.
+  - intros l2 Hlen.
+    destruct l2 as [|x2 l2].
+    { exfalso; simpl in *; lia. }
+    destruct (IHHperm l2) as (l2' & Hl2' & Hzip).
+    { simpl in *; lia. }
+    exists (x2 :: l2').
+    simpl; eauto.
+  - intros l2 Hlen.
+    destruct l2 as [|y2 [|x2 l2]].
+    { exfalso; simpl in *; lia. }
+    { exfalso; simpl in *; lia. }
+    exists (x2 :: y2 :: l2); simpl; eauto using Permutation.
+  - (* this case almost handled by Claude:
+    https://claude.ai/share/33d6e926-622a-4fdd-ae7a-9a71584b374f *)
+    intros l2 Hlen.
+    destruct (IHHperm1 l2) as (l2' & Hl2'1 & Hzip1); auto.
+    destruct (IHHperm2 l2') as (l2'' & Hl2'2 & Hzip2).
+    { apply Permutation_length in Hperm1.
+      apply Permutation_length in Hl2'1.
+      lia. }
+    exists l2''.
+    split.
+    + by etrans; eauto.
+    + by etrans; eauto.
+Qed.
+
+
 Lemma subslice_app_length {A} n m (l0 l1 : list A) :
   subslice ((length l0) + n) ((length l0) + m) (l0 ++ l1) =
   subslice n m l1.
@@ -903,3 +952,184 @@ Proof.
 Qed.
 
 End join_same_len.
+
+Section lookup_total.
+Context `{!Inhabited A}.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma list_lookup_total_gt l i :
+  i ≥ length l → l !!! i = inhabitant.
+Proof.
+  intros ?.
+  rewrite list_lookup_total_alt.
+  by rewrite lookup_ge_None_2; [|lia].
+Qed.
+
+Lemma lookup_total_replicate_inhabitant n i :
+  replicate (A:=A) n inhabitant !!! i = inhabitant.
+Proof.
+  assert (i < n ∨ i ≥ n) as [?|?] by lia.
+  - apply list_lookup_alt.
+    by apply lookup_replicate.
+  - by rewrite list_lookup_total_gt; [|len].
+Qed.
+
+Lemma lookup_total_replicate_inhabitant' l n i :
+  (l ++ replicate n inhabitant) !!! i = l !!! i.
+Proof.
+  assert (i < length l ∨ length l ≤ i) as [?|?] by lia.
+  - by rewrite lookup_total_app_l; [|lia].
+  - rewrite lookup_total_app_r; [|lia].
+    rewrite lookup_total_replicate_inhabitant.
+    by rewrite list_lookup_total_gt; [|len].
+Qed.
+
+End lookup_total.
+
+Section prefix_total.
+Context `{!Inhabited A}.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+(* prefix of a list extended with inhabitant. *)
+Definition prefix_total : relation (list A) :=
+  λ l1 l2, ∃ n k, l2 ++ replicate n inhabitant = l1 ++ k.
+
+Lemma prefix_total_nil l : prefix_total [] l.
+Proof. exists 0. by eexists. Qed.
+
+Lemma prefix_total_cons_alt x y l1 l2 :
+  x = y →
+  prefix_total l1 l2 →
+  prefix_total (x :: l1) (y :: l2).
+Proof. intros -> (?&?&?). eexists _, _. list_simplifier. by f_equal. Qed.
+
+Lemma prefix_total_cons_inv_2 x y l1 l2 :
+  prefix_total (x :: l1) (y :: l2) →
+  prefix_total l1 l2.
+Proof. intros (?&?&?). list_simplifier. by eexists _, _. Qed.
+
+Lemma prefix_total_cons_inv_1 x y l1 l2 :
+  prefix_total (x :: l1) (y :: l2) →
+  x = y.
+Proof. intros (?&?&?). by list_simplifier. Qed.
+
+Lemma prefix_total_nil_cons_alt x l :
+  x = inhabitant →
+  prefix_total l [] →
+  prefix_total (x :: l) [].
+Proof. intros -> (n&?&?). eexists (S n), _. list_simplifier. by f_equal. Qed.
+
+Lemma prefix_total_nil_cons_inv_2 x l :
+  prefix_total (x :: l) [] →
+  prefix_total l [].
+Proof. intros (n&?&?). destruct n; list_simplifier. by eexists _, _. Qed.
+
+Lemma prefix_total_nil_cons_inv_1 x l :
+  prefix_total (x :: l) [] →
+  x = inhabitant.
+Proof. intros (n&?&?). by destruct n; list_simplifier. Qed.
+
+#[global] Instance prefix_total_dec `{!EqDecision A} : RelDecision prefix_total :=
+  fix go l1 l2 :=
+  match l1, l2  with
+  | [], _ => left (prefix_total_nil _)
+  | x :: l1, [] =>
+    match decide_rel (=) x inhabitant with
+    | left Hxy =>
+      match go l1 [] with
+      | left Hl1l2 => left (prefix_total_nil_cons_alt _ _ Hxy Hl1l2)
+      | right Hl1l2 => right (Hl1l2 ∘ prefix_total_nil_cons_inv_2 _ _)
+      end
+    | right Hxy => right (Hxy ∘ prefix_total_nil_cons_inv_1 _ _)
+    end
+  | x :: l1, y :: l2 =>
+    match decide_rel (=) x y with
+    | left Hxy =>
+      match go l1 l2 with
+      | left Hl1l2 => left (prefix_total_cons_alt _ _ _ _ Hxy Hl1l2)
+      | right Hl1l2 => right (Hl1l2 ∘ prefix_total_cons_inv_2 _ _ _ _)
+      end
+    | right Hxy => right (Hxy ∘ prefix_total_cons_inv_1 _ _ _ _)
+    end
+  end.
+
+(* [prefix_total] does not demand minimal replication and prefix extension.
+[prefix_total_shrink] shows that it can always "shrink down"
+to one of these minimal cases. *)
+Lemma prefix_total_shrink l0 l1 :
+  prefix_total l0 l1 →
+  (* l0 < l1. *)
+  (∃ x k, l1 = l0 ++ x :: k) ∨
+  (l0 = l1) ∨
+  (* l0 > l1. *)
+  (∃ n, l1 ++ inhabitant :: replicate n inhabitant = l0).
+Proof.
+  intros (n&k&?). generalize dependent k.
+  induction n as [|n];
+    intros k Heq; destruct k as [|x k];
+    list_simplifier; [naive_solver..|].
+
+  rewrite replicate_cons_app in Heq.
+  opose proof (cons_to_snoc x k) as (?&?&Ht).
+  rewrite {}Ht in Heq.
+  list_simplifier.
+  naive_solver.
+Qed.
+
+Lemma prefix_to_total l0 l1 : prefix l0 l1 → prefix_total l0 l1.
+Proof. intros (k&?). exists 0, k. by list_simplifier. Qed.
+
+Lemma prefix_total_snoc l0 l1 x :
+  prefix_total l0 l1 →
+  l1 !!! length l0 = x →
+  prefix_total (l0 ++ [x]) l1.
+Proof.
+  intros [(?&?&?)|[->|(n&?)]]%prefix_total_shrink Hlook.
+  (* case l0 < l1: rely on [prefix_snoc]. *)
+  - apply prefix_to_total.
+    apply prefix_snoc.
+    + by eexists _.
+    + rewrite list_lookup_lookup_total_lt; [naive_solver|].
+      list_simplifier. len.
+  - rewrite list_lookup_total_gt in Hlook; [|lia]. subst.
+    exists 1, []. by list_simplifier.
+  - rewrite list_lookup_total_gt in Hlook; subst; [|len].
+    list_simplifier.
+    rewrite -replicate_S_end.
+    exists (S (S n)), [].
+    by list_simplifier.
+Qed.
+
+Lemma prefix_total_snoc_inv l0 l1 x :
+  prefix_total (l0 ++ [x]) l1 →
+  prefix_total l0 l1 ∧ l1 !!! length l0 = x.
+Proof.
+  intros (n&k&Heq). split.
+  - exists n, (x :: k).
+    by list_simplifier.
+  - apply (f_equal (lookup_total (length l0))) in Heq.
+    rewrite lookup_total_replicate_inhabitant' in Heq.
+    rewrite lookup_total_app_l in Heq; [|len].
+    rewrite lookup_total_app_r in Heq; [|len].
+    by replace (_ - _) with (0) in Heq; [|lia].
+Qed.
+
+Lemma prefix_total_app_l l1 l2 l3 :
+  prefix_total (l1 ++ l3) l2 →
+  prefix_total l1 l2.
+Proof. intros (n&k&?). exists n, (l3 ++ k). by list_simplifier. Qed.
+
+Lemma prefix_total_full p l :
+  length p = length l →
+  prefix_total p l →
+  p = l.
+Proof.
+  rewrite /prefix_total.
+  intros ? (?&?&Heq).
+  apply (f_equal (take (length l))) in Heq.
+  by rewrite !take_app_length' in Heq.
+Qed.
+
+End prefix_total.

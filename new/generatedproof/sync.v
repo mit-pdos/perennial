@@ -12,23 +12,6 @@ Set Default Proof Using "Type".
 
 Module sync.
 
-(* type sync.copyChecker *)
-Module copyChecker.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End copyChecker.
-
-Global Instance bounded_size_copyChecker : BoundedTypeSize sync.copyChecker.
-Admitted.
-
-Global Instance into_val_copyChecker `{ffi_syntax} : IntoVal copyChecker.t.
-Admitted.
-
-Global Instance into_val_typed_copyChecker `{ffi_syntax} : IntoValTyped copyChecker.t sync.copyChecker.
-Admitted.
-
 (* type sync.noCopy *)
 Module noCopy.
 Section def.
@@ -67,6 +50,141 @@ Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 
 End instances.
 
+(* type sync.Locker *)
+Module Locker.
+
+#[global] Transparent sync.Locker.
+#[global] Typeclasses Transparent sync.Locker.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End Locker.
+
+(* type sync.notifyList *)
+Module notifyList.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End notifyList.
+
+Global Instance bounded_size_notifyList : BoundedTypeSize sync.notifyList.
+Admitted.
+
+Global Instance into_val_notifyList `{ffi_syntax} : IntoVal notifyList.t.
+Admitted.
+
+Global Instance into_val_typed_notifyList `{ffi_syntax} : IntoValTyped notifyList.t sync.notifyList.
+Admitted.
+
+(* type sync.copyChecker *)
+Module copyChecker.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End copyChecker.
+
+Global Instance bounded_size_copyChecker : BoundedTypeSize sync.copyChecker.
+Admitted.
+
+Global Instance into_val_copyChecker `{ffi_syntax} : IntoVal copyChecker.t.
+Admitted.
+
+Global Instance into_val_typed_copyChecker `{ffi_syntax} : IntoValTyped copyChecker.t sync.copyChecker.
+Admitted.
+
+(* type sync.Cond *)
+Module Cond.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  noCopy' : noCopy.t;
+  L' : Locker.t;
+  notify' : notifyList.t;
+  checker' : copyChecker.t;
+}.
+End def.
+End Cond.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent sync.Cond.
+#[local] Typeclasses Transparent sync.Cond.
+
+Global Instance Cond_wf : struct.Wf sync.Cond.
+Proof. apply _. Qed.
+
+Global Instance settable_Cond : Settable Cond.t :=
+  settable! Cond.mk < Cond.noCopy'; Cond.L'; Cond.notify'; Cond.checker' >.
+Global Instance into_val_Cond : IntoVal Cond.t :=
+  {| to_val_def v :=
+    struct.val_aux sync.Cond [
+    "noCopy" ::= #(Cond.noCopy' v);
+    "L" ::= #(Cond.L' v);
+    "notify" ::= #(Cond.notify' v);
+    "checker" ::= #(Cond.checker' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Cond : IntoValTyped Cond.t sync.Cond :=
+{|
+  default_val := Cond.mk (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Cond_noCopy : IntoValStructField "noCopy" sync.Cond Cond.noCopy'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Cond_L : IntoValStructField "L" sync.Cond Cond.L'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Cond_notify : IntoValStructField "notify" sync.Cond Cond.notify'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Cond_checker : IntoValStructField "checker" sync.Cond Cond.checker'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Cond noCopy' L' notify' checker':
+  PureWp True
+    (struct.make #sync.Cond (alist_val [
+      "noCopy" ::= #noCopy';
+      "L" ::= #L';
+      "notify" ::= #notify';
+      "checker" ::= #checker'
+    ]))%struct
+    #(Cond.mk noCopy' L' notify' checker').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Cond_struct_fields_split dq l (v : Cond.t) :
+  StructFieldsSplit dq l v (
+    "HnoCopy" ∷ l ↦s[sync.Cond :: "noCopy"]{dq} v.(Cond.noCopy') ∗
+    "HL" ∷ l ↦s[sync.Cond :: "L"]{dq} v.(Cond.L') ∗
+    "Hnotify" ∷ l ↦s[sync.Cond :: "notify"]{dq} v.(Cond.notify') ∗
+    "Hchecker" ∷ l ↦s[sync.Cond :: "checker"]{dq} v.(Cond.checker')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Cond.noCopy' v)) (sync.Cond) "noCopy"%go.
+  simpl_one_flatten_struct (# (Cond.L' v)) (sync.Cond) "L"%go.
+  simpl_one_flatten_struct (# (Cond.notify' v)) (sync.Cond) "notify"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 (* type sync.Map *)
 Module Map.
 Section def.
@@ -82,23 +200,6 @@ Global Instance into_val_Map `{ffi_syntax} : IntoVal Map.t.
 Admitted.
 
 Global Instance into_val_typed_Map `{ffi_syntax} : IntoValTyped Map.t sync.Map.
-Admitted.
-
-(* type sync.Locker *)
-Module Locker.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End Locker.
-
-Global Instance bounded_size_Locker : BoundedTypeSize sync.Locker.
-Admitted.
-
-Global Instance into_val_Locker `{ffi_syntax} : IntoVal Locker.t.
-Admitted.
-
-Global Instance into_val_typed_Locker `{ffi_syntax} : IntoValTyped Locker.t sync.Locker.
 Admitted.
 
 (* type sync.Once *)
@@ -309,23 +410,6 @@ Global Instance into_val_poolChainElt `{ffi_syntax} : IntoVal poolChainElt.t.
 Admitted.
 
 Global Instance into_val_typed_poolChainElt `{ffi_syntax} : IntoValTyped poolChainElt.t sync.poolChainElt.
-Admitted.
-
-(* type sync.notifyList *)
-Module notifyList.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End notifyList.
-
-Global Instance bounded_size_notifyList : BoundedTypeSize sync.notifyList.
-Admitted.
-
-Global Instance into_val_notifyList `{ffi_syntax} : IntoVal notifyList.t.
-Admitted.
-
-Global Instance into_val_typed_notifyList `{ffi_syntax} : IntoValTyped notifyList.t sync.notifyList.
 Admitted.
 
 (* type sync.RWMutex *)
@@ -551,6 +635,26 @@ Global Instance wp_func_call_runtime_SemacquireRWMutex :
 
 Global Instance wp_func_call_runtime_Semrelease :
   WpFuncCall sync.runtime_Semrelease _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListAdd :
+  WpFuncCall sync.runtime_notifyListAdd _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListWait :
+  WpFuncCall sync.runtime_notifyListWait _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListNotifyAll :
+  WpFuncCall sync.runtime_notifyListNotifyAll _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListNotifyOne :
+  WpFuncCall sync.runtime_notifyListNotifyOne _ (is_pkg_defined sync) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_runtime_notifyListCheck :
+  WpFuncCall sync.runtime_notifyListCheck _ (is_pkg_defined sync) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Cond'ptr_Broadcast :

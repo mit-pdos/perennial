@@ -1,9 +1,6 @@
-From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import cryptoutil.
-(* TODO(goose): brittleness with NamedProps import.
-if iris import comes after, overrides custom syntax.
-(shouldn't it be imported in overall prelude?) *)
-From Perennial.Helpers Require Import NamedProps.
+From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
+
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
 Module cryptoutil.

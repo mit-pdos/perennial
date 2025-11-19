@@ -34,7 +34,6 @@ End B.
 Module c.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
 }.
 End def.
@@ -65,6 +64,12 @@ Final Obligation. solve_decision. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_c:
+  PureWp True
+    (struct.make #interfacerecursion.c (alist_val [
+    ]))%struct
+    #(c.mk).
+Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 

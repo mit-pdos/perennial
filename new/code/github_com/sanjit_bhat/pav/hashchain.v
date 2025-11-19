@@ -113,6 +113,7 @@ Definition Verifyⁱᵐᵖˡ : val :=
     do:  ("newLink" <-[sliceT] "$r0");;;
     (let: "i" := (mem.alloc (type.zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
+<<<<<<< HEAD
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "extLen")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
       let: "start" := (mem.alloc (type.zero_val uint64T)) in
@@ -126,6 +127,18 @@ Definition Verifyⁱᵐᵖˡ : val :=
       do:  ("newVal" <-[sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "newLink") in
       let: "$a1" := (![sliceT] "newVal") in
+=======
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "extLen")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (let: "$s" := (![#sliceT] "proof") in
+      slice.slice #byteT "$s" #(W64 0) cryptoffi.HashLen) in
+      do:  ("newVal" <-[#sliceT] "$r0");;;
+      let: "$r0" := (let: "$s" := (![#sliceT] "proof") in
+      slice.slice #byteT "$s" cryptoffi.HashLen (slice.len "$s")) in
+      do:  ("proof" <-[#sliceT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "newLink") in
+      let: "$a1" := (![#sliceT] "newVal") in
+>>>>>>> master
       (func_call #GetNextLink) "$a0" "$a1") in
       do:  ("newLink" <-[sliceT] "$r0")));;;
     return: (![uint64T] "extLen", ![sliceT] "newVal", ![sliceT] "newLink", ![boolT] "err")).
@@ -134,7 +147,7 @@ Definition New : go_string := "github.com/sanjit-bhat/pav/hashchain.New"%go.
 
 Definition GetEmptyLink : go_string := "github.com/sanjit-bhat/pav/hashchain.GetEmptyLink"%go.
 
-(* go: hashchain.go:64:6 *)
+(* go: hashchain.go:63:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (mem.alloc (let: "$lastLink" := ((func_call #GetEmptyLink) #()) in
@@ -144,13 +157,13 @@ Definition Newⁱᵐᵖˡ : val :=
        "vals" ::= type.zero_val sliceT
      }]))).
 
-(* go: hashchain.go:68:6 *)
+(* go: hashchain.go:67:6 *)
 Definition GetEmptyLinkⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (let: "$a0" := #slice.nil in
      (func_call #cryptoutil.Hash) "$a0")).
 
-(* go: hashchain.go:72:6 *)
+(* go: hashchain.go:71:6 *)
 Definition GetNextLinkⁱᵐᵖˡ : val :=
   λ: "prevLink" "nextVal",
     exception_do (let: "nextVal" := (mem.alloc "nextVal") in

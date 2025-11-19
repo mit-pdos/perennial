@@ -123,7 +123,7 @@ Proof.
   wp_pures.
   wp_apply wp_assume.
   case_bool_decide.
-  { iIntros (?); congruence. }
+  { by iIntros (?). }
   iIntros (_). iApply "HΦ".
   iPureIntro.
   lia.

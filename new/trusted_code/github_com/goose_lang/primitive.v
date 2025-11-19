@@ -1,13 +1,10 @@
 From New.code Require Import sync.
-From New.golang Require Import defn.
+From New.golang.defn Require Import core slice lock.
 
 Module primitive.
 Module prophId. Definition id : go_string := "github.com/goose-lang/goose.prophId". End prophId.
 Section code.
   Context `{ffi_syntax}.
-
-  (* FIXME: this shouldn't be exposed, but it is because of the alias `ProphId =
-   *prophId`. *)
 
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)
@@ -26,7 +23,9 @@ this in GooseLang, so we just loop. *)
   Definition Exitⁱᵐᵖˡ : val :=
     λ: <>, (rec: "loop" <> := Var "loop" #()) #().
 
-  Definition UInt64Putⁱᵐᵖˡ : val := λ: "p" "n",
+  Definition UInt64Putⁱᵐᵖˡ : val :=
+    λ: "p" "n",
+      exception_do (
       do: (slice.elem_ref #uint8T "p" #(W64 0)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (0*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 1)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (1*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 2)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (2*8)));;;
@@ -34,8 +33,7 @@ this in GooseLang, so we just loop. *)
       do: (slice.elem_ref #uint8T "p" #(W64 4)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (4*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 5)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (5*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 6)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (6*8)));;;
-      do: (slice.elem_ref #uint8T "p" #(W64 7)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (7*8)))
-    .
+      do: (slice.elem_ref #uint8T "p" #(W64 7)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (7*8)))).
 
   Definition UInt64Getⁱᵐᵖˡ : val := λ: "p",
       let: "v0" := to_u64 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 0)) in
@@ -51,11 +49,11 @@ this in GooseLang, so we just loop. *)
 
   Definition UInt32Putⁱᵐᵖˡ : val :=
     λ: "p" "n",
+      exception_do (
       do: (slice.elem_ref #uint8T "p" #(W64 0)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (0*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 1)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (1*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 2)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (2*8)));;;
-      do: (slice.elem_ref #uint8T "p" #(W64 3)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (3*8)))
-    .
+      do: (slice.elem_ref #uint8T "p" #(W64 3)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (3*8)))).
 
   Definition UInt32Getⁱᵐᵖˡ : val := λ: "p",
       let: "v0" := to_u32 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 0)) in
@@ -73,7 +71,8 @@ this in GooseLang, so we just loop. *)
 
   Definition AfterFuncⁱᵐᵖˡ : val := λ: "duration" "f", Fork "f" ;; ref "f".
 
-  Definition WaitTimeoutⁱᵐᵖˡ : val := λ: "l" "timeout", method_call #sync #"Cond" "Wait" "l".
+  Definition WaitTimeoutⁱᵐᵖˡ : val := λ: "l" "timeout",
+      method_call #sync #"Cond" "Wait" "l".
 
   Definition RandomUint64ⁱᵐᵖˡ : val := λ: <>, ArbitraryInt.
 
@@ -85,6 +84,14 @@ this in GooseLang, so we just loop. *)
 
   Definition AssumeNoStringOverflowⁱᵐᵖˡ : val :=
     λ: "s", assume.assume (IsNoStringOverflow "s").
+
+  Definition Mutex := boolT.
+
+  Definition Mutex__Lockⁱᵐᵖˡ : val :=
+    λ: "m" <>, lock.lock "m".
+
+  Definition Mutex__Unlockⁱᵐᵖˡ : val :=
+    λ: "m" <>, lock.unlock "m".
 
 End code.
 End primitive.

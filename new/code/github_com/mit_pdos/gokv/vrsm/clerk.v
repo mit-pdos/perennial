@@ -3,8 +3,8 @@ Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.code.github_com.mit_pdos.gokv.trusted_proph.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.configservice.
-Require Export New.code.github_com.mit_pdos.gokv.vrsm.e.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.
+Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.
 
 From New.golang Require Import defn.
 Definition clerk : go_string := "github.com/mit-pdos/gokv/vrsm/clerk".
@@ -63,6 +63,7 @@ Definition Makeⁱᵐᵖˡ : val :=
     (func_call #configservice.MakeClerk) "$a0") in
     do:  ((struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")) <-[ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+<<<<<<< HEAD
       let: "config" := (mem.alloc (type.zero_val sliceT)) in
       let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
       do:  ("config" <-[sliceT] "$r0");;;
@@ -71,6 +72,16 @@ Definition Makeⁱᵐᵖˡ : val :=
       then continue: #()
       else
         let: "$r0" := (let: "$a0" := (![sliceT] "config") in
+=======
+      let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
+      let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
+      do:  ("config" <-[#config_gk.S] "$r0");;;
+      (if: (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
+      slice.len "$a0") = #(W64 0)
+      then continue: #()
+      else
+        let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
+>>>>>>> master
         (func_call #makeClerks) "$a0") in
         do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
         break: #()));;;
@@ -93,6 +104,7 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val sliceT)) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+<<<<<<< HEAD
       let: "err" := (mem.alloc (type.zero_val uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "op") in
       (method_call #(ptrT.id replica.Clerk.id) #"Apply"%go (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) #(W64 0)))) "$a0") in
@@ -101,10 +113,21 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
       do:  ("err" <-[uint64T] "$r0");;;
       do:  ("ret" <-[sliceT] "$r1");;;
       (if: (![uint64T] "err") = e.None
+=======
+      let: "err" := (mem.alloc (type.zero_val #err_gk.E)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "op") in
+      (method_call #(ptrT.id replica.Clerk.id) #"Apply"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) #(W64 0)))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("err" <-[#err_gk.E] "$r0");;;
+      do:  ("ret" <-[#sliceT] "$r1");;;
+      (if: (![#err_gk.E] "err") = err_gk.None
+>>>>>>> master
       then break: #()
       else
         do:  (let: "$a0" := (#(W64 100) * #(W64 1000000)) in
         (func_call #primitive.Sleep) "$a0");;;
+<<<<<<< HEAD
         let: "config" := (mem.alloc (type.zero_val sliceT)) in
         let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
         do:  ("config" <-[sliceT] "$r0");;;
@@ -112,6 +135,15 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
         slice.len "$a0") #(W64 0)
         then
           let: "$r0" := (let: "$a0" := (![sliceT] "config") in
+=======
+        let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
+        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
+        do:  ("config" <-[#config_gk.S] "$r0");;;
+        (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
+        slice.len "$a0") #(W64 0)
+        then
+          let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
+>>>>>>> master
           (func_call #makeClerks) "$a0") in
           do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0")
         else do:  #());;;
@@ -149,12 +181,21 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
     let: "ret" := (mem.alloc (type.zero_val sliceT)) in
     do:  ((method_call #(ptrT.id Clerk.id) #"maybeRefreshPreference"%go (![ptrT] "ck")) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+<<<<<<< HEAD
       let: "offset" := (mem.alloc (type.zero_val uint64T)) in
       let: "$r0" := (![uint64T] (struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck"))) in
       do:  ("offset" <-[uint64T] "$r0");;;
       let: "err" := (mem.alloc (type.zero_val uint64T)) in
       let: "i" := (mem.alloc (type.zero_val uint64T)) in
       (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
+=======
+      let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck"))) in
+      do:  ("offset" <-[#uint64T] "$r0");;;
+      let: "err" := (mem.alloc (type.zero_val #err_gk.E)) in
+      let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+      (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+>>>>>>> master
       slice.len "$a0"))); (λ: <>, #()) := λ: <>,
         let: "k" := (mem.alloc (type.zero_val uint64T)) in
         let: "$r0" := (((![uint64T] "i") + (![uint64T] "offset")) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
@@ -164,9 +205,15 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
         (method_call #(ptrT.id replica.Clerk.id) #"ApplyRo"%go (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) (![uint64T] "k")))) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
+<<<<<<< HEAD
         do:  ("err" <-[uint64T] "$r0");;;
         do:  ("ret" <-[sliceT] "$r1");;;
         (if: (![uint64T] "err") = e.None
+=======
+        do:  ("err" <-[#err_gk.E] "$r0");;;
+        do:  ("ret" <-[#sliceT] "$r1");;;
+        (if: (![#err_gk.E] "err") = err_gk.None
+>>>>>>> master
         then
           let: "$r0" := (![uint64T] "k") in
           do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
@@ -179,7 +226,11 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
         do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
         do:  "$r1";;;
         continue: #());;;
+<<<<<<< HEAD
       (if: (![uint64T] "err") = e.None
+=======
+      (if: (![#err_gk.E] "err") = err_gk.None
+>>>>>>> master
       then break: #()
       else
         let: "timeToSleep" := (mem.alloc (type.zero_val uint64T)) in
@@ -187,6 +238,7 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
         do:  ("timeToSleep" <-[uint64T] "$r0");;;
         do:  (let: "$a0" := ((![uint64T] "timeToSleep") * #(W64 1000000)) in
         (func_call #primitive.Sleep) "$a0");;;
+<<<<<<< HEAD
         let: "config" := (mem.alloc (type.zero_val sliceT)) in
         let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
         do:  ("config" <-[sliceT] "$r0");;;
@@ -194,6 +246,15 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
         slice.len "$a0") #(W64 0)
         then
           let: "$r0" := (let: "$a0" := (![sliceT] "config") in
+=======
+        let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
+        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
+        do:  ("config" <-[#config_gk.S] "$r0");;;
+        (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
+        slice.len "$a0") #(W64 0)
+        then
+          let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
+>>>>>>> master
           (func_call #makeClerks) "$a0") in
           do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
           let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
@@ -236,14 +297,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Clerk.id, [
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.trusted_proph.trusted_proph; code.github_com.mit_pdos.gokv.vrsm.configservice.configservice; code.github_com.mit_pdos.gokv.vrsm.e.e; code.github_com.mit_pdos.gokv.vrsm.replica.replica];
+    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.trusted_proph.trusted_proph; code.github_com.mit_pdos.gokv.vrsm.configservice.configservice; code.github_com.mit_pdos.gokv.vrsm.replica.replica; code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
     package.init #clerk.clerk (λ: <>,
-      exception_do (do:  (replica.initialize' #());;;
-      do:  (e.initialize' #());;;
+      exception_do (do:  (err_gk.initialize' #());;;
+      do:  (replica.initialize' #());;;
       do:  (configservice.initialize' #());;;
       do:  (trusted_proph.initialize' #());;;
       do:  (grove_ffi.initialize' #());;;

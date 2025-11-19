@@ -3,7 +3,8 @@ Require Export New.code.internal.race.
 Require Export New.code.internal.synctest.
 Require Export New.code.sync.atomic.
 
-From New.golang Require Import defn.
+From New.golang Require Import defn.core.
+From New.golang.defn Require Export slice array map string interface defer builtin.
 Require Export New.trusted_code.sync.
 Import sync.
 Definition sync : go_string := "sync".
@@ -34,18 +35,116 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition NewCond : go_string := "sync.NewCond"%go.
-
-Axiom copyChecker : go_type.
-
 Definition noCopy : go_type := structT [
 ].
 #[global] Typeclasses Opaque noCopy.
 #[global] Opaque noCopy.
 
-Axiom Map : go_type.
+Definition Locker : go_type := interfaceT.
+#[global] Typeclasses Opaque Locker.
+#[global] Opaque Locker.
 
-Axiom Locker : go_type.
+Axiom notifyList : go_type.
+
+Axiom copyChecker : go_type.
+
+Definition Cond : go_type := structT [
+  "noCopy" :: noCopy;
+  "L" :: Locker;
+  "notify" :: notifyList;
+  "checker" :: copyChecker
+].
+#[global] Typeclasses Opaque Cond.
+#[global] Opaque Cond.
+
+Definition NewCond : go_string := "sync.NewCond"%go.
+
+(* NewCond returns a new Cond with Locker l.
+
+   go: cond.go:48:6 *)
+Definition NewCondⁱᵐᵖˡ : val :=
+  λ: "l",
+    exception_do (let: "l" := (mem.alloc "l") in
+    return: (mem.alloc (let: "$L" := (![#Locker] "l") in
+     struct.make #Cond [{
+       "noCopy" ::= type.zero_val #noCopy;
+       "L" ::= "$L";
+       "notify" ::= type.zero_val #notifyList;
+       "checker" ::= type.zero_val #copyChecker
+     }]))).
+
+Definition runtime_notifyListWait : go_string := "sync.runtime_notifyListWait"%go.
+
+Definition runtime_notifyListAdd : go_string := "sync.runtime_notifyListAdd"%go.
+
+(* Wait atomically unlocks c.L and suspends execution
+   of the calling goroutine. After later resuming execution,
+   Wait locks c.L before returning. Unlike in other systems,
+   Wait cannot return unless awoken by [Cond.Broadcast] or [Cond.Signal].
+
+   Because c.L is not locked while Wait is waiting, the caller
+   typically cannot assume that the condition is true when
+   Wait returns. Instead, the caller should Wait in a loop:
+
+   	c.L.Lock()
+   	for !condition() {
+   	    c.Wait()
+   	}
+   	... make use of condition ...
+   	c.L.Unlock()
+
+   go: cond.go:67:16 *)
+Definition Cond__Waitⁱᵐᵖˡ : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (mem.alloc "c") in
+    do:  ((method_call #(ptrT.id copyChecker.id) #"check"%go (struct.field_ref #Cond #"checker"%go (![#ptrT] "c"))) #());;;
+    let: "t" := (mem.alloc (type.zero_val #uint32T)) in
+    let: "$r0" := (let: "$a0" := (struct.field_ref #Cond #"notify"%go (![#ptrT] "c")) in
+    (func_call #runtime_notifyListAdd) "$a0") in
+    do:  ("t" <-[#uint32T] "$r0");;;
+    do:  ((interface.get #"Unlock"%go (![#Locker] (struct.field_ref #Cond #"L"%go (![#ptrT] "c")))) #());;;
+    do:  (let: "$a0" := (struct.field_ref #Cond #"notify"%go (![#ptrT] "c")) in
+    let: "$a1" := (![#uint32T] "t") in
+    (func_call #runtime_notifyListWait) "$a0" "$a1");;;
+    do:  ((interface.get #"Lock"%go (![#Locker] (struct.field_ref #Cond #"L"%go (![#ptrT] "c")))) #());;;
+    return: #()).
+
+Definition runtime_notifyListNotifyOne : go_string := "sync.runtime_notifyListNotifyOne"%go.
+
+(* Signal wakes one goroutine waiting on c, if there is any.
+
+   It is allowed but not required for the caller to hold c.L
+   during the call.
+
+   Signal() does not affect goroutine scheduling priority; if other goroutines
+   are attempting to lock c.L, they may be awoken before a "waiting" goroutine.
+
+   go: cond.go:82:16 *)
+Definition Cond__Signalⁱᵐᵖˡ : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (mem.alloc "c") in
+    do:  ((method_call #(ptrT.id copyChecker.id) #"check"%go (struct.field_ref #Cond #"checker"%go (![#ptrT] "c"))) #());;;
+    do:  (let: "$a0" := (struct.field_ref #Cond #"notify"%go (![#ptrT] "c")) in
+    (func_call #runtime_notifyListNotifyOne) "$a0");;;
+    return: #()).
+
+Definition runtime_notifyListNotifyAll : go_string := "sync.runtime_notifyListNotifyAll"%go.
+
+(* Broadcast wakes all goroutines waiting on c.
+
+   It is allowed but not required for the caller to hold c.L
+   during the call.
+
+   go: cond.go:91:16 *)
+Definition Cond__Broadcastⁱᵐᵖˡ : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (mem.alloc "c") in
+    do:  ((method_call #(ptrT.id copyChecker.id) #"check"%go (struct.field_ref #Cond #"checker"%go (![#ptrT] "c"))) #());;;
+    do:  (let: "$a0" := (struct.field_ref #Cond #"notify"%go (![#ptrT] "c")) in
+    (func_call #runtime_notifyListNotifyAll) "$a0");;;
+    return: #()).
+
+Axiom Map : go_type.
 
 Definition Once : go_type := structT [
   "_0" :: noCopy;
@@ -177,21 +276,11 @@ Definition runtime_SemacquireRWMutex : go_string := "sync.runtime_SemacquireRWMu
 
 Definition runtime_Semrelease : go_string := "sync.runtime_Semrelease"%go.
 
-Definition runtime_notifyListAdd : go_string := "sync.runtime_notifyListAdd"%go.
-
-Definition runtime_notifyListWait : go_string := "sync.runtime_notifyListWait"%go.
-
-Definition runtime_notifyListNotifyAll : go_string := "sync.runtime_notifyListNotifyAll"%go.
-
-Definition runtime_notifyListNotifyOne : go_string := "sync.runtime_notifyListNotifyOne"%go.
-
 Definition runtime_notifyListCheck : go_string := "sync.runtime_notifyListCheck"%go.
 
 Definition throw : go_string := "sync.throw"%go.
 
 Definition fatal : go_string := "sync.fatal"%go.
-
-Axiom notifyList : go_type.
 
 Definition RWMutex : go_type := structT [
   "w" :: Mutex;
@@ -760,16 +849,6 @@ Axiom runtime_procUnpinⁱᵐᵖˡ : val.
 Axiom runtime_LoadAcquintptrⁱᵐᵖˡ : val.
 
 Axiom runtime_StoreReluintptrⁱᵐᵖˡ : val.
-
-Axiom runtime_notifyListAddⁱᵐᵖˡ : val.
-
-Axiom runtime_notifyListWaitⁱᵐᵖˡ : val.
-
-Axiom runtime_notifyListNotifyAllⁱᵐᵖˡ : val.
-
-Axiom runtime_notifyListNotifyOneⁱᵐᵖˡ : val.
-
-Axiom runtime_notifyListCheckⁱᵐᵖˡ : val.
 
 Axiom throwⁱᵐᵖˡ : val.
 

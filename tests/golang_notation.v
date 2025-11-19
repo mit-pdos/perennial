@@ -11,4 +11,13 @@ Proof.
   Show.
 Abort.
 
+Check "tuple print".
+Lemma tuple_print (l : loc) :
+  {{{ True }}}
+    Skip
+  {{{ RET (#true, #true); True }}}. 
+Proof.
+  Show.
+Abort.
+
 End proof.
