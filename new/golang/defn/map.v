@@ -13,7 +13,7 @@ From New.golang.defn Require Export loop predeclared.
 
    This corresponds: `k` is a safe map key iff [go_eq k k] is safe to execute.
    The latter is safe when
-     InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k"
+     #(interface.mk key_type k) =⟨go.any⟩ #(interface.mk key_type k)
    is safe.
 *)
 
@@ -25,7 +25,7 @@ Definition lookup2 (key_type elem_type : go.type) : val :=
   λ: "m" "k",
     (* make sure it's safe to look up *)
     InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
-    if: "m" =⟨go.PointerType go.string⟩ #null then (* placeholder element type *)
+    if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
       (* NOTE: this gets the zero value from element type in a hacky way. *)
       let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
       ("default_elem", #false)
@@ -40,20 +40,22 @@ Definition insert (key_type : go.type) : val :=
     InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
     Store "m" (InternalMapInsert (Read "m", "k", "v")).
 
-(* Does not support modifications to the map during the loop.
-   Does not support nil maps. *)
+(* Does not support modifications to the map during the loop. *)
 Definition for_range (key_type elem_type : go.type) : val :=
   λ: "m" "body",
-    let: "mv" := StartRead "m" in
-    let: "ks" := InternalMapDomain "mv" in
-    let: "len" := ArrayLength "ks" in
-    let: "i" := GoAlloc go.int #() in
-    let: "v" :=
-      (for: (λ: <>, ![go.int] "i" <⟨go.int⟩ "len"); (λ: <>, "i" <-[go.int] (![go.int] "i") + #(W64 1)) :=
-         (λ: <>, let: "k" := Index elem_type ("ks", "i") in
-            "body" "k" (InternalMapLookup ("mv", "k")))) in
-    FinishRead "m";;
-    "v".
+    if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
+      do: #()
+    else
+      let: "mv" := StartRead "m" in
+      let: "ks" := InternalMapDomain "mv" in
+      let: "len" := ArrayLength "ks" in
+      let: "i" := GoAlloc go.int #() in
+      let: "v" :=
+        (for: (λ: <>, ![go.int] "i" <⟨go.int⟩ "len"); (λ: <>, "i" <-[go.int] (![go.int] "i") + #(W64 1)) :=
+           (λ: <>, let: "k" := Index elem_type ("ks", "i") in
+              "body" "k" (InternalMapLookup ("mv", "k")))) in
+      FinishRead "m";;
+      "v".
 
 End defs.
 End map.
