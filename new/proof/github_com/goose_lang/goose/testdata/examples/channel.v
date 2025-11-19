@@ -1,11 +1,10 @@
-
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Import protocol.base simple future spsc done dsp dsp_proofmode mpmc join handshake.
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
-From New.golang.theory Require Import struct string chan.
+From New.golang Require Import theory.
 From iris.algebra Require Import gmultiset.
 
 Import chan_spec_raw_examples.

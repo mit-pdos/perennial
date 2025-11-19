@@ -4,7 +4,7 @@ import sys
 
 def main():
     if len(sys.argv) != 3:
-        print("usage: trace-deps.py <A.vos/vo/vok> <B.vos/vo/vok> will show why A transitively depends on A")
+        print("usage: trace-deps.py <A.vos/vo/vok> <B.vos/vo/vok> will show why A transitively depends on B")
         exit(-1)
 
     deps = collections.defaultdict(set)

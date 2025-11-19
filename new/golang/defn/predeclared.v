@@ -159,8 +159,6 @@ Class PredeclaredSemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} 
   #[global]
   comparable_ordered t (H : is_ordered_type t) :: go.IsComparable t;
 
-  go_eq_string : go.is_always_safe_to_compare go.string go_string;
-
   go_eq_int : go.is_always_safe_to_compare go.int w64;
   go_eq_int64 : go.is_always_safe_to_compare go.int64 w64;
   go_eq_int32 : go.is_always_safe_to_compare go.int32 w32;
@@ -193,6 +191,10 @@ Class PredeclaredSemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} 
   lt_uint32 (v1 v2 : w32) : go_lt go.uint32 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
   lt_uint16 (v1 v2 : w16) : go_lt go.uint16 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
   lt_uint8 (v1 v2 : w8) : go_lt go.uint8 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
+
+  go_eq_string : go.is_always_safe_to_compare go.string go_string;
+  index_string i (s : go_string) b (Hinrange : s !! (Z.to_nat i) = Some b) :
+    index (go.string) i #s = #b
 }.
 
 End defs.
