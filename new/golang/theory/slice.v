@@ -285,7 +285,7 @@ End defns_and_lemmas.
 Global Notation "s ↦[ t ]* dq vs" := (own_slice t s dq vs)
                             (at level 20, dq custom dfrac at level 50, format "s  ↦[ t ]* dq  vs").
 
-Global Arguments own_slice_cap {_ _ _ _ _ _ _ _ _ _} (t) {_} s dq.
+Global Arguments own_slice_cap {_ _ _ _ _ _ _ _ _ _ _} (t) {_} s dq.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}
@@ -704,14 +704,17 @@ Proof.
     f_equal. word.
 Qed.
 
-Lemma wp_slice_literal {stk E} sz (l : list V) :
-  {{{ ⌜ Z.of_nat $ length l = sint.Z sz ⌝ }}}
-    slice.literal t sz (ArrayV (into_val <$> l)) @ stk ; E
+Lemma wp_slice_literal {stk E} (l : list V) :
+  {{{ True }}}
+    slice.literal t (ArrayV (into_val <$> l)) @ stk ; E
   {{{ sl, RET #sl; sl ↦[t]* l }}}.
 Proof.
-  wp_start as "%Hlen".
+  wp_start as "_". destruct decide as [Hlen|].
+  2:{ wp_apply wp_AngelicExit. }
+  rewrite length_fmap in Hlen.
+  wp_auto.
   wp_apply wp_slice_make2.
-  { word. }
+  { len. }
   iIntros (?) "[Hsl Hcap]".
   wp_auto.
   wp_apply (wp_alloc_untyped with "[]").
@@ -719,7 +722,7 @@ Proof.
   iIntros (l_ptr) "Hl". iPersist "Hl".
   wp_auto.
   iDestruct (own_slice_len with "Hsl") as %Hsz.
-  rewrite length_replicate in Hsz.
+  rewrite length_replicate length_fmap in Hsz.
   iAssert (∃ (i : w64),
       "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ Z.of_nat (length l) ⌝ ∗
       "Hi" ∷ i_ptr ↦ i ∗
@@ -730,11 +733,12 @@ Proof.
     iExists _; iFrame.
     autorewrite with list in *.
     simpl.
-    rewrite take_0 Nat.sub_0_r -Hlen /=.
-    replace (Z.to_nat (length l)) with (length l) by word.
+    rewrite take_0 Nat.sub_0_r /=.
+    replace (sint.nat (length l)) with (length l) by word.
     iFrame. word.
   }
   wp_for "Hloop".
+  rewrite length_fmap.
   case_bool_decide as Hlt.
   {
     wp_auto.
@@ -773,7 +777,7 @@ Proof.
   {
     wp_auto.
     iApply "HΦ".
-    replace (sint.Z i) with (sint.Z (length l)).
+    replace (sint.nat i) with (length l).
     2:{ word. }
     iExactEq "Hsl".
     rewrite take_ge; [ | word ].

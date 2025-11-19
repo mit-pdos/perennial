@@ -1,4 +1,4 @@
-From New.golang.defn Require Export loop predeclared.
+From New.golang.defn Require Export loop predeclared slice.
 
 (* One subtlety (from https://go.dev/ref/spec#Map_types): inserting into or
    lookup up from a map can cause a run-time panic:
@@ -47,13 +47,11 @@ Definition for_range (key_type elem_type : go.type) : val :=
       do: #()
     else
       let: "mv" := StartRead "m" in
-      let: "ks" := InternalMapDomain "mv" in
-      let: "len" := ArrayLength "ks" in
-      let: "i" := GoAlloc go.int #() in
+      let: "key_sl" := slice.literal key_type (InternalMapDomain "mv") in
       let: "v" :=
-        (for: (λ: <>, ![go.int] "i" <⟨go.int⟩ "len"); (λ: <>, "i" <-[go.int] (![go.int] "i") + #(W64 1)) :=
-           (λ: <>, let: "k" := Index elem_type ("ks", "i") in
-              "body" "k" (InternalMapLookup ("mv", "k")))) in
+        (slice.for_range key_type
+           (λ: "_unused" "k", "body" "k" (lookup1 key_type elem_type "m" "k"))
+           "key_sl") in
       FinishRead "m";;
       "v".
 

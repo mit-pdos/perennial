@@ -262,6 +262,50 @@ Lemma wp_map_make1 key_type elem_type
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof. wp_start. by wp_apply wp_map_make2. Qed.
 
+Lemma own_map_not_nil mref m dq :
+  mref ↦${dq} m -∗ ⌜ mref ≠ map.nil ⌝.
+Proof.
+  rewrite own_map_unseal. iNamed 1. iDestruct (heap_pointsto_non_null with "Hown") as "$".
+Qed.
+
+(* mref $↦{dq/2} m *)
+Lemma wp_map_for_range (body : func.t) key_type elem_type mref m dq :
+  ∀ Φ,
+  mref ↦${dq} m -∗
+  (∀ keys i_ptr,
+     ⌜ list_to_set keys = dom m ∧ length keys = size m ⌝ -∗
+     i_ptr ↦ (W64 0) -∗
+  WP (for: (# {|
+          func.f := <>;
+          func.x := <>;
+          func.e := ![go.int] (# i_ptr) <⟨go.int⟩ # (W64 (length keys))
+        |}) ; (# {|
+                    func.f := <>;
+                    func.x := <>;
+                    func.e := # i_ptr <-[go.int] ![go.int] (# i_ptr) + # (W64 1)
+                  |}) := # {|
+                              func.f := <>;
+                              func.x := <>;
+                              func.e :=
+                                (let: "k"%string := Index elem_type (ArrayV keys, # i_ptr) in
+                                # body "k"%string (map.lookup1 key_type elem_type #mref "k"%string))%E
+                            |}) {{ Φ }}) -∗
+
+  WP map.for_range key_type elem_type #mref #body {{ Φ }}.
+Proof.
+  iIntros "% Hm".
+  wp_call. rewrite go.go_eq_map_nil_l.
+  iDestruct (own_map_not_nil with "[$]") as %?.
+  wp_if_destruct; first by exfalso.
+  rewrite own_map_unseal. iNamed "Hm".
+  wp_apply (_internal_wp_untyped_start_read with "Hown") as "Hown".
+  wp_apply (wp_InternalMapDomain with "[//]"). iIntros "%ks %Hdom".
+  wp_auto. destruct decide.
+  2:{ wp_apply wp_AngelicExit. }
+  wp_auto.
+Qed.
+
+
 #[global]
 Instance own_map_discarded_persist mref m : Persistent (own_map mref DfracDiscarded m).
 Proof.

@@ -272,6 +272,11 @@ Global Instance wp_ArrayAppend vs v :
   PureWp True (ArrayAppend (ArrayV vs, v)%V) (ArrayV (vs ++ [v])).
 Proof. solve_pure. Qed.
 
+Global Instance wp_ArrayLength vs :
+  PureWp True (ArrayLength (ArrayV vs))
+      (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ())).
+Proof. solve_pure. Qed.
+
 Lemma wp_StructFieldGet_untyped {stk E} f m v :
   m !! f = Some v →
   {{{ True }}}
@@ -440,6 +445,22 @@ Lemma _internal_wp_untyped_atomic_load l dq v s E :
     ! #l @ s; E
   {{{ RET v; heap_pointsto l dq v }}}.
 Proof. rewrite into_val_unseal. apply lifting.wp_load. Qed.
+
+Lemma _internal_wp_untyped_start_read l dq v s E :
+  {{{ ▷ heap_pointsto l dq v }}}
+    StartRead #l @ s; E
+  {{{ RET v;
+      (∀ Ψ, (heap_pointsto l dq v -∗ Ψ #()) -∗ WP FinishRead #l @ s ; E {{ Ψ }})
+    }}}.
+Proof.
+  rewrite into_val_unseal.
+  iIntros "% Hl HΦ".
+  wp_apply (wp_start_read with "Hl"). iIntros "[? ?]".
+  iApply "HΦ".
+  iIntros "% HΨ".
+  wp_apply (wp_finish_read with "[$]").
+  iIntros "?". wp_pures. by iApply "HΨ".
+Qed.
 
 Lemma _internal_wp_untyped_read l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}

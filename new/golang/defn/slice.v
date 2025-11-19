@@ -23,16 +23,17 @@ Definition for_range (elem_type : go.type) : val :=
     (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type)) ("s", (![go.int] "i")))).
 
 (* Takes in a list as input, and turns it into a heap-allocated slice. *)
-Definition literal (elem_type : go.type) (len : w64) : val :=
+Definition literal (elem_type : go.type) : val :=
   λ: "elems",
   let st : go.type := go.SliceType elem_type in
-  let: "s" := FuncResolve go.make2 [st] #() #len in
+  let: "len" := ArrayLength "elems" in
+  let: "s" := FuncResolve go.make2 [st] #() "len" in
   let: "l" := ref "elems" in
   let: "i" := GoAlloc go.int #() in
-  (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #len) ; (λ: <>, "i" <-[go.int] ![go.int] "i" + #(W64 1)) :=
+  (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ "len") ; (λ: <>, "i" <-[go.int] ![go.int] "i" + #(W64 1)) :=
      (λ: <>,
         do: (IndexRef st ("s", (![go.int] "i")) <-[elem_type]
-                (Index (go.ArrayType (sint.Z len) elem_type) ("elems", ![go.int] "i"))))) ;;
+                (Index (go.ArrayType (2^63) elem_type) ("elems", ![go.int] "i"))))) ;;
   "s".
 
 End goose_lang.
