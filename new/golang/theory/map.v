@@ -201,15 +201,13 @@ Proof.
   + iApply "HΦ". iFrame "∗#%".
 Qed.
 
-Lemma wp_map_nil_lookup2 key_type elem_type k
+Global Instance pure_wp_map_nil_lookup2 key_type elem_type k
   `{!TypedPointsto V} `{!IntoValTyped V elem_type}
   {Hsafe : SafeMapKey key_type k} :
-  {{{ True }}}
-    map.lookup2 key_type elem_type #map.nil #k
-  {{{ RET (#(zero_val V), #false); True }}}.
+  PureWp True (map.lookup2 key_type elem_type #map.nil #k) (#(zero_val V), #false)%V.
 Proof.
   destruct Hsafe as [[? Hsafe]].
-  wp_start as "Hm".
+  pure_wp_start.
   rewrite go.go_eq_map_nil_l. wp_if_destruct.
   2:{ exfalso. done. }
   wp_alloc tmp as "?". wp_auto. by iApply "HΦ".
@@ -223,15 +221,11 @@ Proof.
   wp_start as "Hm". wp_apply (wp_map_lookup2 with "Hm") as "Hm". by iApply "HΦ".
 Qed.
 
-Lemma wp_map_nil_lookup1 key_type elem_type k
+Global Instance pure_wp_map_nil_lookup1 key_type elem_type k
   `{!TypedPointsto V} `{!IntoValTyped V elem_type}
   {Hsafe : SafeMapKey key_type k} :
-  {{{ True }}}
-    map.lookup1 key_type elem_type #map.nil #k
-  {{{ RET #(zero_val V); True }}}.
-Proof.
-  wp_start as "Hm". wp_apply wp_map_nil_lookup2. by iApply "HΦ".
-Qed.
+  PureWp True (map.lookup1 key_type elem_type #map.nil #k) #(zero_val V).
+Proof. by pure_wp_start. Qed.
 
 Local Instance make2_unfold key_type elem_type :
   FuncUnfold go.make2 [go.TypeLit $ go.MapType key_type elem_type] _ :=
@@ -325,12 +319,10 @@ Proof using Inj0 pre_sem slice_sem.
   iApply "HΦ". iFrame "∗#%".
 Qed.
 
-Lemma wp_map_nil_for_range (body : func.t) key_type elem_type :
-  ∀ Φ,
-  Φ execute_val -∗
-  WP map.for_range key_type elem_type #map.nil #body {{ Φ }}.
+Global Instance wp_map_nil_for_range (body : func.t) key_type elem_type :
+  PureWp True (map.for_range key_type elem_type #map.nil #body) execute_val.
 Proof.
-  iIntros "% HΦ". wp_call. rewrite go.go_eq_map_nil_l. by wp_if_destruct.
+  pure_wp_start. rewrite go.go_eq_map_nil_l. by wp_if_destruct.
 Qed.
 
 #[global]
