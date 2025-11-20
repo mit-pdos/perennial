@@ -405,11 +405,11 @@ Proof using Type*.
     iApply (wp_load with "[$Hl]"); iFrame.
 Qed.
 
-Lemma wp_typed_AtomicStore s E (l : loc) (v v' : V) :
+Lemma wp_typed_AtomicSwap s E (l : loc) (v v' : V) :
   is_primitive_type t →
   {{{ l ↦ v }}}
-    AtomicStore #l #v' @ s ; E
-  {{{ RET #(); l ↦ v' }}}.
+    AtomicSwap #l #v' @ s ; E
+  {{{ RET #v; l ↦ v' }}}.
 Proof using Type*.
   intros Hprim.
   pose proof (to_val_has_go_type v) as Hty_old.
@@ -423,7 +423,7 @@ Proof using Type*.
   all: inversion Hty; subst;
     inversion Hty_old; inversion Hty; subst;
     simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
-    iApply (wp_atomic_store with "[$Hl]"); iFrame.
+    iApply (wp_atomic_swap with "[$Hl]"); iFrame.
 Qed.
 
 End goose_lang.

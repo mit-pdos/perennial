@@ -813,10 +813,6 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Axiom SwapInt32ⁱᵐᵖˡ : val.
-
-Axiom SwapUint32ⁱᵐᵖˡ : val.
-
 Axiom SwapUintptrⁱᵐᵖˡ : val.
 
 Axiom SwapPointerⁱᵐᵖˡ : val.
@@ -846,10 +842,6 @@ Axiom LoadPointerⁱᵐᵖˡ : val.
 Axiom StoreUintptrⁱᵐᵖˡ : val.
 
 Axiom StorePointerⁱᵐᵖˡ : val.
-
-Axiom SwapInt64ⁱᵐᵖˡ : val.
-
-Axiom SwapUint64ⁱᵐᵖˡ : val.
 
 Axiom AndInt64ⁱᵐᵖˡ : val.
 

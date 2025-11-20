@@ -47,13 +47,13 @@ Qed.
 
 #[global] Instance LoadUint64_Atomic (l:loc) : Atomic StronglyAtomic (atomic.LoadUint64 #l).
 Proof. apply _. Qed.
-#[global] Instance StoreUint64_Atomic (l:loc) (v: base_lit) : Atomic StronglyAtomic (atomic.StoreUint64 #l #v).
+#[global] Instance SwapUint64_Atomic (l:loc) (v: base_lit) : Atomic StronglyAtomic (atomic.SwapUint64 #l #v).
 Proof. apply _. Qed.
 #[global] Instance CompareAndSwap64_Atomic (l:loc) (v1 v2: base_lit) : Atomic StronglyAtomic (atomic.CompareAndSwapUint64 #l #v1 #v2).
 Proof. apply _. Qed.
 #[global] Instance Pointer__Load_Atomic t (l:loc) : Atomic StronglyAtomic (atomic.Pointer__Load t #l).
 Proof. apply _. Qed.
-#[global] Instance Pointer__Store_Atomic t (l:loc) (v: base_lit) : Atomic StronglyAtomic (atomic.Pointer__Store t #l #v).
+#[global] Instance Pointer__Swap_Atomic t (l:loc) (v: base_lit) : Atomic StronglyAtomic (atomic.Pointer__Swap t #l #v).
 Proof. apply _. Qed.
 
 Lemma wp_LoadUint64 (l: loc) (x: w64) stk E :
@@ -91,7 +91,9 @@ Proof.
   setoid_rewrite uint64_pointsto.
   iIntros (Φ) "Hl HΦ".
   wp_pures.
-  wp_apply (wp_atomic_store with "[$Hl]"). iIntros "Hl".
+  wp_apply (wp_atomic_swap with "[$Hl]"). iIntros "Hl".
+  wp_pures.
+  iModIntro.
   iApply "HΦ". iFrame.
 Qed.
 
@@ -104,7 +106,9 @@ Proof.
   setoid_rewrite uint32_pointsto.
   iIntros (Φ) "Hl HΦ".
   wp_pures.
-  wp_apply (wp_atomic_store with "[$Hl]"). iIntros "Hl".
+  wp_apply (wp_atomic_swap with "[$Hl]"). iIntros "Hl".
+  wp_pures.
+  iModIntro.
   iApply "HΦ". iFrame.
 Qed.
 
@@ -130,7 +134,9 @@ Proof.
   setoid_rewrite loc_pointsto.
   rewrite /atomic.Pointer__Store.
   wp_pures.
-  wp_apply (wp_atomic_store with "[$Hl]"). iIntros "Hl".
+  wp_apply (wp_atomic_swap with "[$Hl]"). iIntros "Hl".
+  wp_pures.
+  iModIntro.
   iApply "HΦ". iFrame.
 Qed.
 

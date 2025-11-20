@@ -107,7 +107,7 @@ Inductive prim_op1 : Set :=
 Inductive prim_op2 : Set :=
  | AllocNOp (* array length (positive number), initial value *)
  | FinishStoreOp (* pointer, value *)
- | AtomicStoreOp (* pointer, value *) (* atomic store *)
+ | AtomicSwapOp (* pointer, value; returns old value *)
  | AtomicOpOp (op : bin_op) (* pointer, value *) (* atomic binary operation *)
  | GlobalPutOp (* string, val *)
 .
@@ -176,7 +176,7 @@ Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
-Notation AtomicStore := (Primitive2 AtomicStoreOp).
+Notation AtomicSwap := (Primitive2 AtomicSwapOp).
 Notation AtomicOp o := (Primitive2 (AtomicOpOp o)).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
@@ -555,14 +555,14 @@ Proof.
   refine (inj_countable' (λ op, match op with
                                 | AllocNOp => inl 0
                                 | FinishStoreOp => inl 1
-                                | AtomicStoreOp => inl 2
+                                | AtomicSwapOp => inl 2
                                 | GlobalPutOp => inl 3
                                 | AtomicOpOp x => inr x
                                 end)
                          (λ x, match x with
                                | inl 0 => AllocNOp
                                | inl 1 => FinishStoreOp
-                               | inl 2 => AtomicStoreOp
+                               | inl 2 => AtomicSwapOp
                                | inl 3 => GlobalPutOp
                                | inr k => AtomicOpOp k
                                | inl _ => AllocNOp
@@ -1232,13 +1232,13 @@ Definition base_trans (e: expr) :
        check (is_Writing nav);;
        modifyσ (set heap <[l:=Free v]>);;
        ret $ LitV $ LitUnit)
-  | AtomicStore (Val (LitV (LitLoc l))) (Val v) => (* atomic write *)
+  | AtomicSwap (Val (LitV (LitLoc l))) (Val v) => (* atomic swap *)
     atomically
       (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
        match nav with
-       | (Reading 0, _) =>
+       | (Reading 0, v0) =>
            modifyσ (set heap <[l:=Free v]>);;
-           ret $ LitV $ LitUnit
+           ret $ v0
        | _ => undefined
       end)
   | AtomicOp op (Val (LitV (LitLoc l))) (Val v) => (* atomic add *)
@@ -1797,7 +1797,7 @@ Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).
 Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
-Notation AtomicStore := (Primitive2 AtomicStoreOp).
+Notation AtomicSwap := (Primitive2 AtomicSwapOp).
 Notation AtomicOp o := (Primitive2 (AtomicOpOp o)).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).

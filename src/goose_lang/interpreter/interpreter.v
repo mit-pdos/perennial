@@ -872,8 +872,8 @@ Ltac runStateT_inv :=
         subst.
         Transitions.monad_inv.
         do 2 eexists.
-        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx AtomicStoreOp e2)])|].
-        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx AtomicStoreOp #l4)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx AtomicSwapOp e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx AtomicSwapOp #l4)])|].
         single_step.
         exact H.
       }

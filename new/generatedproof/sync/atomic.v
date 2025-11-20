@@ -617,6 +617,14 @@ Global Program Instance is_pkg_defined_atomic : IsPkgDefined atomic :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_SwapInt32 :
+  WpFuncCall atomic.SwapInt32 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SwapUint32 :
+  WpFuncCall atomic.SwapUint32 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_CompareAndSwapInt32 :
   WpFuncCall atomic.CompareAndSwapInt32 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
@@ -647,6 +655,14 @@ Global Instance wp_func_call_StoreInt32 :
 
 Global Instance wp_func_call_StoreUint32 :
   WpFuncCall atomic.StoreUint32 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SwapInt64 :
+  WpFuncCall atomic.SwapInt64 _ (is_pkg_defined atomic) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SwapUint64 :
+  WpFuncCall atomic.SwapUint64 _ (is_pkg_defined atomic) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_CompareAndSwapInt64 :

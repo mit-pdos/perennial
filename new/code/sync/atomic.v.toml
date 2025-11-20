@@ -17,21 +17,25 @@ translate = [
 trusted = [
   "LoadUint64",
   "StoreUint64",
+  "SwapUint64",
   "AddUint64",
   "CompareAndSwapUint64",
 
   "LoadInt64",
   "StoreInt64",
+  "SwapInt64",
   "AddInt64",
   "CompareAndSwapInt64",
 
   "LoadUint32",
   "StoreUint32",
+  "SwapUint32",
   "AddUint32",
   "CompareAndSwapUint32",
 
   "LoadInt32",
   "StoreInt32",
+  "SwapInt32",
   "AddInt32",
   "CompareAndSwapInt32",
 
