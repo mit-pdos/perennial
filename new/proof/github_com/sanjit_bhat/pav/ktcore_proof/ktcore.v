@@ -12,13 +12,24 @@ Import serde.ktcore.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Inductive Blame :=
+Inductive BlameTys :=
   | BlameServSig
   | BlameServFull
   | BlameAdtrSig
   | BlameAdtrFull
   | BlameClients
   | BlameUnknown.
+
+Axiom BlameTys_EqDecision : EqDecision BlameTys.
+Global Existing Instance BlameTys_EqDecision.
+
+Axiom BlameTys_Countable : Countable BlameTys.
+Global Existing Instance BlameTys_Countable.
+
+Definition Blame := gset BlameTys.
+
+Axiom Blame_IntoVal : IntoVal Blame.
+Global Existing Instance Blame_IntoVal.
 
 Definition wish_VerifyVrfSig pk vrfPk sig : iProp Σ :=
   let obj := VrfSig.mk' (W8 VrfSigTag) vrfPk in
