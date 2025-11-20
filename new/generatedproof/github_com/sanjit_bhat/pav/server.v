@@ -5,6 +5,7 @@ Require Export New.generatedproof.github_com.sanjit_bhat.pav.ktcore.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.safemarshal.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.generatedproof.sync.
+Require Export New.generatedproof.time.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.cryptoffi.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.hashchain.
@@ -861,141 +862,80 @@ Qed.
 
 End instances.
 
-(* type server.WQReq *)
-Module WQReq.
+(* type server.Work *)
+Module Work.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
   Uid' : w64;
   Pk' : slice.t;
   Ver' : w64;
-}.
-End def.
-End WQReq.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent server.WQReq.
-#[local] Typeclasses Transparent server.WQReq.
-
-Global Instance WQReq_wf : struct.Wf server.WQReq.
-Proof. apply _. Qed.
-
-Global Instance settable_WQReq : Settable WQReq.t :=
-  settable! WQReq.mk < WQReq.Uid'; WQReq.Pk'; WQReq.Ver' >.
-Global Instance into_val_WQReq : IntoVal WQReq.t :=
-  {| to_val_def v :=
-    struct.val_aux server.WQReq [
-    "Uid" ::= #(WQReq.Uid' v);
-    "Pk" ::= #(WQReq.Pk' v);
-    "Ver" ::= #(WQReq.Ver' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_WQReq : IntoValTyped WQReq.t server.WQReq :=
-{|
-  default_val := WQReq.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_WQReq_Uid : IntoValStructField "Uid" server.WQReq WQReq.Uid'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WQReq_Pk : IntoValStructField "Pk" server.WQReq WQReq.Pk'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WQReq_Ver : IntoValStructField "Ver" server.WQReq WQReq.Ver'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WQReq Uid' Pk' Ver':
-  PureWp True
-    (struct.make #server.WQReq (alist_val [
-      "Uid" ::= #Uid';
-      "Pk" ::= #Pk';
-      "Ver" ::= #Ver'
-    ]))%struct
-    #(WQReq.mk Uid' Pk' Ver').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance WQReq_struct_fields_split dq l (v : WQReq.t) :
-  StructFieldsSplit dq l v (
-    "HUid" ∷ l ↦s[server.WQReq :: "Uid"]{dq} v.(WQReq.Uid') ∗
-    "HPk" ∷ l ↦s[server.WQReq :: "Pk"]{dq} v.(WQReq.Pk') ∗
-    "HVer" ∷ l ↦s[server.WQReq :: "Ver"]{dq} v.(WQReq.Ver')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WQReq.Uid' v)) (server.WQReq) "Uid"%go.
-  simpl_one_flatten_struct (# (WQReq.Pk' v)) (server.WQReq) "Pk"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type server.WQResp *)
-Module WQResp.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
   Err' : bool;
 }.
 End def.
-End WQResp.
+End Work.
 
 Section instances.
 Context `{ffi_syntax}.
-#[local] Transparent server.WQResp.
-#[local] Typeclasses Transparent server.WQResp.
+#[local] Transparent server.Work.
+#[local] Typeclasses Transparent server.Work.
 
-Global Instance WQResp_wf : struct.Wf server.WQResp.
+Global Instance Work_wf : struct.Wf server.Work.
 Proof. apply _. Qed.
 
-Global Instance settable_WQResp : Settable WQResp.t :=
-  settable! WQResp.mk < WQResp.Err' >.
-Global Instance into_val_WQResp : IntoVal WQResp.t :=
+Global Instance settable_Work : Settable Work.t :=
+  settable! Work.mk < Work.Uid'; Work.Pk'; Work.Ver'; Work.Err' >.
+Global Instance into_val_Work : IntoVal Work.t :=
   {| to_val_def v :=
-    struct.val_aux server.WQResp [
-    "Err" ::= #(WQResp.Err' v)
+    struct.val_aux server.Work [
+    "Uid" ::= #(Work.Uid' v);
+    "Pk" ::= #(Work.Pk' v);
+    "Ver" ::= #(Work.Ver' v);
+    "Err" ::= #(Work.Err' v)
     ]%struct
   |}.
 
-Global Program Instance into_val_typed_WQResp : IntoValTyped WQResp.t server.WQResp :=
+Global Program Instance into_val_typed_Work : IntoValTyped Work.t server.Work :=
 {|
-  default_val := WQResp.mk (default_val _);
+  default_val := Work.mk (default_val _) (default_val _) (default_val _) (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_WQResp_Err : IntoValStructField "Err" server.WQResp WQResp.Err'.
+Global Instance into_val_struct_field_Work_Uid : IntoValStructField "Uid" server.Work Work.Uid'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Work_Pk : IntoValStructField "Pk" server.Work Work.Pk'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Work_Ver : IntoValStructField "Ver" server.Work Work.Ver'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Work_Err : IntoValStructField "Err" server.Work Work.Err'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WQResp Err':
+Global Instance wp_struct_make_Work Uid' Pk' Ver' Err':
   PureWp True
-    (struct.make #server.WQResp (alist_val [
+    (struct.make #server.Work (alist_val [
+      "Uid" ::= #Uid';
+      "Pk" ::= #Pk';
+      "Ver" ::= #Ver';
       "Err" ::= #Err'
     ]))%struct
-    #(WQResp.mk Err').
+    #(Work.mk Uid' Pk' Ver' Err').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
-Global Instance WQResp_struct_fields_split dq l (v : WQResp.t) :
+Global Instance Work_struct_fields_split dq l (v : Work.t) :
   StructFieldsSplit dq l v (
-    "HErr" ∷ l ↦s[server.WQResp :: "Err"]{dq} v.(WQResp.Err')
+    "HUid" ∷ l ↦s[server.Work :: "Uid"]{dq} v.(Work.Uid') ∗
+    "HPk" ∷ l ↦s[server.Work :: "Pk"]{dq} v.(Work.Pk') ∗
+    "HVer" ∷ l ↦s[server.Work :: "Ver"]{dq} v.(Work.Ver') ∗
+    "HErr" ∷ l ↦s[server.Work :: "Err"]{dq} v.(Work.Err')
   ).
 Proof.
   rewrite /named.
@@ -1003,6 +943,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Work.Uid' v)) (server.Work) "Uid"%go.
+  simpl_one_flatten_struct (# (Work.Pk' v)) (server.Work) "Pk"%go.
+  simpl_one_flatten_struct (# (Work.Ver' v)) (server.Work) "Ver"%go.
 
   solve_field_ref_f.
 Qed.
@@ -1083,186 +1026,6 @@ Qed.
 
 End instances.
 
-(* type server.Work *)
-Module Work.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  mu' : loc;
-  cond' : loc;
-  done' : bool;
-  Req' : loc;
-  Resp' : loc;
-}.
-End def.
-End Work.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent server.Work.
-#[local] Typeclasses Transparent server.Work.
-
-Global Instance Work_wf : struct.Wf server.Work.
-Proof. apply _. Qed.
-
-Global Instance settable_Work : Settable Work.t :=
-  settable! Work.mk < Work.mu'; Work.cond'; Work.done'; Work.Req'; Work.Resp' >.
-Global Instance into_val_Work : IntoVal Work.t :=
-  {| to_val_def v :=
-    struct.val_aux server.Work [
-    "mu" ::= #(Work.mu' v);
-    "cond" ::= #(Work.cond' v);
-    "done" ::= #(Work.done' v);
-    "Req" ::= #(Work.Req' v);
-    "Resp" ::= #(Work.Resp' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Work : IntoValTyped Work.t server.Work :=
-{|
-  default_val := Work.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Work_mu : IntoValStructField "mu" server.Work Work.mu'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Work_cond : IntoValStructField "cond" server.Work Work.cond'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Work_done : IntoValStructField "done" server.Work Work.done'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Work_Req : IntoValStructField "Req" server.Work Work.Req'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Work_Resp : IntoValStructField "Resp" server.Work Work.Resp'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Work mu' cond' done' Req' Resp':
-  PureWp True
-    (struct.make #server.Work (alist_val [
-      "mu" ::= #mu';
-      "cond" ::= #cond';
-      "done" ::= #done';
-      "Req" ::= #Req';
-      "Resp" ::= #Resp'
-    ]))%struct
-    #(Work.mk mu' cond' done' Req' Resp').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Work_struct_fields_split dq l (v : Work.t) :
-  StructFieldsSplit dq l v (
-    "Hmu" ∷ l ↦s[server.Work :: "mu"]{dq} v.(Work.mu') ∗
-    "Hcond" ∷ l ↦s[server.Work :: "cond"]{dq} v.(Work.cond') ∗
-    "Hdone" ∷ l ↦s[server.Work :: "done"]{dq} v.(Work.done') ∗
-    "HReq" ∷ l ↦s[server.Work :: "Req"]{dq} v.(Work.Req') ∗
-    "HResp" ∷ l ↦s[server.Work :: "Resp"]{dq} v.(Work.Resp')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Work.mu' v)) (server.Work) "mu"%go.
-  simpl_one_flatten_struct (# (Work.cond' v)) (server.Work) "cond"%go.
-  simpl_one_flatten_struct (# (Work.done' v)) (server.Work) "done"%go.
-  simpl_one_flatten_struct (# (Work.Req' v)) (server.Work) "Req"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type server.WorkQ *)
-Module WorkQ.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  mu' : loc;
-  work' : slice.t;
-  cond' : loc;
-}.
-End def.
-End WorkQ.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent server.WorkQ.
-#[local] Typeclasses Transparent server.WorkQ.
-
-Global Instance WorkQ_wf : struct.Wf server.WorkQ.
-Proof. apply _. Qed.
-
-Global Instance settable_WorkQ : Settable WorkQ.t :=
-  settable! WorkQ.mk < WorkQ.mu'; WorkQ.work'; WorkQ.cond' >.
-Global Instance into_val_WorkQ : IntoVal WorkQ.t :=
-  {| to_val_def v :=
-    struct.val_aux server.WorkQ [
-    "mu" ::= #(WorkQ.mu' v);
-    "work" ::= #(WorkQ.work' v);
-    "cond" ::= #(WorkQ.cond' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_WorkQ : IntoValTyped WorkQ.t server.WorkQ :=
-{|
-  default_val := WorkQ.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_WorkQ_mu : IntoValStructField "mu" server.WorkQ WorkQ.mu'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WorkQ_work : IntoValStructField "work" server.WorkQ WorkQ.work'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WorkQ_cond : IntoValStructField "cond" server.WorkQ WorkQ.cond'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WorkQ mu' work' cond':
-  PureWp True
-    (struct.make #server.WorkQ (alist_val [
-      "mu" ::= #mu';
-      "work" ::= #work';
-      "cond" ::= #cond'
-    ]))%struct
-    #(WorkQ.mk mu' work' cond').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance WorkQ_struct_fields_split dq l (v : WorkQ.t) :
-  StructFieldsSplit dq l v (
-    "Hmu" ∷ l ↦s[server.WorkQ :: "mu"]{dq} v.(WorkQ.mu') ∗
-    "Hwork" ∷ l ↦s[server.WorkQ :: "work"]{dq} v.(WorkQ.work') ∗
-    "Hcond" ∷ l ↦s[server.WorkQ :: "cond"]{dq} v.(WorkQ.cond')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WorkQ.mu' v)) (server.WorkQ) "mu"%go.
-  simpl_one_flatten_struct (# (WorkQ.work' v)) (server.WorkQ) "work"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -1279,6 +1042,7 @@ Global Instance is_pkg_defined_pure_server : IsPkgDefinedPure server :=
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.safemarshal.safemarshal ∧
       is_pkg_defined_pure code.github_com.tchajed.marshal.marshal ∧
       is_pkg_defined_pure code.sync.sync ∧
+      is_pkg_defined_pure code.time.time ∧
       is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.hashchain.hashchain ∧
@@ -1295,6 +1059,7 @@ Global Program Instance is_pkg_defined_server : IsPkgDefined server :=
        is_pkg_defined code.github_com.sanjit_bhat.pav.safemarshal.safemarshal ∗
        is_pkg_defined code.github_com.tchajed.marshal.marshal ∗
        is_pkg_defined code.sync.sync ∗
+       is_pkg_defined code.time.time ∗
        is_pkg_defined code.github_com.goose_lang.std.std ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.hashchain.hashchain ∗
@@ -1371,16 +1136,12 @@ Global Instance wp_func_call_AuditReplyDecode :
   WpFuncCall server.AuditReplyDecode _ (is_pkg_defined server) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_getWork :
+  WpFuncCall server.getWork _ (is_pkg_defined server) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_New :
   WpFuncCall server.New _ (is_pkg_defined server) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewWork :
-  WpFuncCall server.NewWork _ (is_pkg_defined server) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewWorkQ :
-  WpFuncCall server.NewWorkQ _ (is_pkg_defined server) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Server'ptr_Audit :
@@ -1403,8 +1164,12 @@ Global Instance wp_method_call_Server'ptr_addEntries :
   WpMethodCall (ptrT.id server.Server.id) "addEntries" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_Server'ptr_checkRequests :
-  WpMethodCall (ptrT.id server.Server.id) "checkRequests" _ (is_pkg_defined server) :=
+Global Instance wp_method_call_Server'ptr_checkWork :
+  WpMethodCall (ptrT.id server.Server.id) "checkWork" _ (is_pkg_defined server) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Server'ptr_doWork :
+  WpMethodCall (ptrT.id server.Server.id) "doWork" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Server'ptr_getBound :
@@ -1421,26 +1186,6 @@ Global Instance wp_method_call_Server'ptr_makeEntries :
 
 Global Instance wp_method_call_Server'ptr_makeEntry :
   WpMethodCall (ptrT.id server.Server.id) "makeEntry" _ (is_pkg_defined server) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Server'ptr_worker :
-  WpMethodCall (ptrT.id server.Server.id) "worker" _ (is_pkg_defined server) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Work'ptr_Finish :
-  WpMethodCall (ptrT.id server.Work.id) "Finish" _ (is_pkg_defined server) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_WorkQ'ptr_Do :
-  WpMethodCall (ptrT.id server.WorkQ.id) "Do" _ (is_pkg_defined server) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_WorkQ'ptr_DoBatch :
-  WpMethodCall (ptrT.id server.WorkQ.id) "DoBatch" _ (is_pkg_defined server) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_WorkQ'ptr_Get :
-  WpMethodCall (ptrT.id server.WorkQ.id) "Get" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
 End names.

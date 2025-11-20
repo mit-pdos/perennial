@@ -21,8 +21,8 @@ Definition ReadBoolⁱᵐᵖˡ : val :=
     let: "b" := (mem.alloc "b") in
     let: "$r0" := (![#sliceT] "b") in
     do:  ("rem" <-[#sliceT] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![#sliceT] "rem") in
-    slice.len "$a0")) < #(W64 1)
+    (if: int_lt (let: "$a0" := (![#sliceT] "rem") in
+    slice.len "$a0") #(W64 1)
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
@@ -78,8 +78,8 @@ Definition ReadIntⁱᵐᵖˡ : val :=
     let: "b" := (mem.alloc "b") in
     let: "$r0" := (![#sliceT] "b") in
     do:  ("rem" <-[#sliceT] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![#sliceT] "rem") in
-    slice.len "$a0")) < #(W64 8)
+    (if: int_lt (let: "$a0" := (![#sliceT] "rem") in
+    slice.len "$a0") #(W64 8)
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
@@ -135,8 +135,8 @@ Definition ReadByteⁱᵐᵖˡ : val :=
     let: "b" := (mem.alloc "b") in
     let: "$r0" := (![#sliceT] "b") in
     do:  ("rem" <-[#sliceT] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![#sliceT] "rem") in
-    slice.len "$a0")) < #(W64 1)
+    (if: int_lt (let: "$a0" := (![#sliceT] "rem") in
+    slice.len "$a0") #(W64 1)
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
