@@ -1209,9 +1209,22 @@ Definition mapEntry : go_type := structT [
 
 Definition getWork : go_string := "github.com/sanjit-bhat/pav/server.getWork"%go.
 
+(* go: server.go:125:18 *)
+Definition Server__workerⁱᵐᵖˡ : val :=
+  λ: "s" <>,
+    exception_do (let: "s" := (mem.alloc "s") in
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "work" := (mem.alloc (type.zero_val #sliceT)) in
+      let: "$r0" := (let: "$a0" := (![type.chanT #ptrT] (struct.field_ref #Server #"workQ"%go (![#ptrT] "s"))) in
+      (func_call #getWork) "$a0") in
+      do:  ("work" <-[#sliceT] "$r0");;;
+      do:  (let: "$a0" := (![#sliceT] "work") in
+      (method_call #(ptrT.id Server.id) #"doWork"%go (![#ptrT] "s")) "$a0"));;;
+    return: #()).
+
 (* batch-aggregator with timeout.
 
-   go: server.go:126:6 *)
+   go: server.go:133:6 *)
 Definition getWorkⁱᵐᵖˡ : val :=
   λ: "workQ",
     exception_do (let: "work" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1246,7 +1259,7 @@ Definition getWorkⁱᵐᵖˡ : val :=
          )]));;;
     return: (![#sliceT] "work")).
 
-(* go: server.go:143:18 *)
+(* go: server.go:150:18 *)
 Definition Server__doWorkⁱᵐᵖˡ : val :=
   λ: "s" "work",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1266,7 +1279,7 @@ Definition Server__doWorkⁱᵐᵖˡ : val :=
 
 Definition New : go_string := "github.com/sanjit-bhat/pav/server.New"%go.
 
-(* go: server.go:155:6 *)
+(* go: server.go:162:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
@@ -1368,20 +1381,11 @@ Definition Newⁱᵐᵖˡ : val :=
     slice.literal #ptrT ["$sl0"])) in
     (slice.append #ptrT) "$a0" "$a1") in
     do:  ((struct.field_ref #history #"audits"%go (![#ptrT] (struct.field_ref #Server #"hist"%go (![#ptrT] "s")))) <-[#sliceT] "$r0");;;
-    let: "$go" := (λ: <>,
-      exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-        let: "work" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "$r0" := (let: "$a0" := (![type.chanT #ptrT] (struct.field_ref #Server #"workQ"%go (![#ptrT] "s"))) in
-        (func_call #getWork) "$a0") in
-        do:  ("work" <-[#sliceT] "$r0");;;
-        do:  (let: "$a0" := (![#sliceT] "work") in
-        (method_call #(ptrT.id Server.id) #"doWork"%go (![#ptrT] "s")) "$a0"));;;
-      return: #())
-      ) in
+    let: "$go" := (method_call #(ptrT.id Server.id) #"worker"%go (![#ptrT] "s")) in
     do:  (Fork ("$go" #()));;;
     return: (![#ptrT] "s", ![#cryptoffi.SigPublicKey] "sigPk")).
 
-(* go: server.go:185:18 *)
+(* go: server.go:187:18 *)
 Definition Server__checkWorkⁱᵐᵖˡ : val :=
   λ: "s" "work",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1423,7 +1427,7 @@ Definition Server__checkWorkⁱᵐᵖˡ : val :=
       do:  (map.insert (![type.mapT #uint64T #boolT] "uidSet") (![#uint64T] "uid") "$r0")));;;
     return: #()).
 
-(* go: server.go:205:18 *)
+(* go: server.go:207:18 *)
 Definition Server__makeEntriesⁱᵐᵖˡ : val :=
   λ: "s" "work",
     exception_do (let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1467,7 +1471,7 @@ Definition Server__makeEntriesⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Wait"%go (![#ptrT] "wg")) #());;;
     return: (![#sliceT] "ents")).
 
-(* go: server.go:225:18 *)
+(* go: server.go:227:18 *)
 Definition Server__makeEntryⁱᵐᵖˡ : val :=
   λ: "s" "in" "out",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1506,7 +1510,7 @@ Definition Server__makeEntryⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #mapEntry #"val"%go (![#ptrT] "out")) <-[#sliceT] "$r0");;;
     return: #()).
 
-(* go: server.go:236:18 *)
+(* go: server.go:238:18 *)
 Definition Server__addEntriesⁱᵐᵖˡ : val :=
   λ: "s" "work" "ents",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1589,7 +1593,7 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
 
 (* getHist returns a history of membership proofs for all post-prefix versions.
 
-   go: server.go:262:18 *)
+   go: server.go:264:18 *)
 Definition Server__getHistⁱᵐᵖˡ : val :=
   λ: "s" "uid" "prefixLen",
     exception_do (let: "hist" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1661,7 +1665,7 @@ Definition Server__getHistⁱᵐᵖˡ : val :=
 
 (* getBound returns a non-membership proof for the boundary version.
 
-   go: server.go:278:18 *)
+   go: server.go:280:18 *)
 Definition Server__getBoundⁱᵐᵖˡ : val :=
   λ: "s" "uid" "numVers",
     exception_do (let: "bound" := (mem.alloc (type.zero_val #ptrT)) in
@@ -1703,7 +1707,7 @@ Definition vars' : list (go_string * go_type) := [(WorkQSize, intT); (BatchSize,
 
 Definition functions' : list (go_string * val) := [(NewRpcServer, NewRpcServerⁱᵐᵖˡ); (CallStart, CallStartⁱᵐᵖˡ); (CallPut, CallPutⁱᵐᵖˡ); (CallHistory, CallHistoryⁱᵐᵖˡ); (CallAudit, CallAuditⁱᵐᵖˡ); (StartReplyEncode, StartReplyEncodeⁱᵐᵖˡ); (StartReplyDecode, StartReplyDecodeⁱᵐᵖˡ); (PutArgEncode, PutArgEncodeⁱᵐᵖˡ); (PutArgDecode, PutArgDecodeⁱᵐᵖˡ); (HistoryArgEncode, HistoryArgEncodeⁱᵐᵖˡ); (HistoryArgDecode, HistoryArgDecodeⁱᵐᵖˡ); (HistoryReplyEncode, HistoryReplyEncodeⁱᵐᵖˡ); (HistoryReplyDecode, HistoryReplyDecodeⁱᵐᵖˡ); (AuditArgEncode, AuditArgEncodeⁱᵐᵖˡ); (AuditArgDecode, AuditArgDecodeⁱᵐᵖˡ); (AuditReplyEncode, AuditReplyEncodeⁱᵐᵖˡ); (AuditReplyDecode, AuditReplyDecodeⁱᵐᵖˡ); (getWork, getWorkⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(StartReply.id, []); (ptrT.id StartReply.id, []); (PutArg.id, []); (ptrT.id PutArg.id, []); (HistoryArg.id, []); (ptrT.id HistoryArg.id, []); (HistoryReply.id, []); (ptrT.id HistoryReply.id, []); (AuditArg.id, []); (ptrT.id AuditArg.id, []); (AuditReply.id, []); (ptrT.id AuditReply.id, []); (Server.id, []); (ptrT.id Server.id, [("Audit"%go, Server__Auditⁱᵐᵖˡ); ("History"%go, Server__Historyⁱᵐᵖˡ); ("Put"%go, Server__Putⁱᵐᵖˡ); ("Start"%go, Server__Startⁱᵐᵖˡ); ("addEntries"%go, Server__addEntriesⁱᵐᵖˡ); ("checkWork"%go, Server__checkWorkⁱᵐᵖˡ); ("doWork"%go, Server__doWorkⁱᵐᵖˡ); ("getBound"%go, Server__getBoundⁱᵐᵖˡ); ("getHist"%go, Server__getHistⁱᵐᵖˡ); ("makeEntries"%go, Server__makeEntriesⁱᵐᵖˡ); ("makeEntry"%go, Server__makeEntryⁱᵐᵖˡ)]); (secrets.id, []); (ptrT.id secrets.id, []); (keyStore.id, []); (ptrT.id keyStore.id, []); (history.id, []); (ptrT.id history.id, []); (Work.id, []); (ptrT.id Work.id, []); (mapEntry.id, []); (ptrT.id mapEntry.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(StartReply.id, []); (ptrT.id StartReply.id, []); (PutArg.id, []); (ptrT.id PutArg.id, []); (HistoryArg.id, []); (ptrT.id HistoryArg.id, []); (HistoryReply.id, []); (ptrT.id HistoryReply.id, []); (AuditArg.id, []); (ptrT.id AuditArg.id, []); (AuditReply.id, []); (ptrT.id AuditReply.id, []); (Server.id, []); (ptrT.id Server.id, [("Audit"%go, Server__Auditⁱᵐᵖˡ); ("History"%go, Server__Historyⁱᵐᵖˡ); ("Put"%go, Server__Putⁱᵐᵖˡ); ("Start"%go, Server__Startⁱᵐᵖˡ); ("addEntries"%go, Server__addEntriesⁱᵐᵖˡ); ("checkWork"%go, Server__checkWorkⁱᵐᵖˡ); ("doWork"%go, Server__doWorkⁱᵐᵖˡ); ("getBound"%go, Server__getBoundⁱᵐᵖˡ); ("getHist"%go, Server__getHistⁱᵐᵖˡ); ("makeEntries"%go, Server__makeEntriesⁱᵐᵖˡ); ("makeEntry"%go, Server__makeEntryⁱᵐᵖˡ); ("worker"%go, Server__workerⁱᵐᵖˡ)]); (secrets.id, []); (ptrT.id secrets.id, []); (keyStore.id, []); (ptrT.id keyStore.id, []); (history.id, []); (ptrT.id history.id, []); (Work.id, []); (ptrT.id Work.id, []); (mapEntry.id, []); (ptrT.id mapEntry.id, [])].
 
 #[global] Instance info' : PkgInfo server.server :=
   {|

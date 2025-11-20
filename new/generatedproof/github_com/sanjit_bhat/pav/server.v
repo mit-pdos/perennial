@@ -1188,5 +1188,9 @@ Global Instance wp_method_call_Server'ptr_makeEntry :
   WpMethodCall (ptrT.id server.Server.id) "makeEntry" _ (is_pkg_defined server) :=
   ltac:(solve_wp_method_call).
 
+Global Instance wp_method_call_Server'ptr_worker :
+  WpMethodCall (ptrT.id server.Server.id) "worker" _ (is_pkg_defined server) :=
+  ltac:(solve_wp_method_call).
+
 End names.
 End server.
