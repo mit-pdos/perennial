@@ -27,6 +27,11 @@ Inductive type :=
 | Named : type_name → list type (* type args *) → _
 | TypeLit : type_lit → _
 
+with chan_dir :=
+| sendrecv
+| sendonly
+| recvonly
+
 with type_lit :=
 | ArrayType : Z → type → _
 | StructType : list field_decl → _
@@ -35,7 +40,7 @@ with type_lit :=
 | InterfaceType : (list interface_elem) → _
 | SliceType : type → _
 | MapType : type → type → _
-| ChannelType : option bool → type → _
+| ChannelType : chan_dir → type → _
 
 with field_decl :=
 | FieldDecl : go_string → type → _
