@@ -1222,9 +1222,7 @@ Definition Server__workerⁱᵐᵖˡ : val :=
       (method_call #(ptrT.id Server.id) #"doWork"%go (![#ptrT] "s")) "$a0"));;;
     return: #()).
 
-(* batch-aggregator with timeout.
-
-   go: server.go:133:6 *)
+(* go: server.go:132:6 *)
 Definition getWorkⁱᵐᵖˡ : val :=
   λ: "workQ",
     exception_do (let: "work" := (mem.alloc (type.zero_val #sliceT)) in

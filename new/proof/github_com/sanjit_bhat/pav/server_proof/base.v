@@ -1,7 +1,7 @@
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import server.
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
-From New.proof Require Import sync.
+From New.proof Require Import sync time.
 From New.proof.github_com.goose_lang Require Import std.
 From New.proof.github_com.sanjit_bhat.pav Require Import
   advrpc cryptoffi hashchain ktcore merkle safemarshal.
