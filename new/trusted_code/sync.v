@@ -8,19 +8,16 @@ Context `{ffi_syntax}.
 
 (* FIXME: make everything in here opaque. *)
 
-Definition Mutex : go_type := structT [
-    "state" :: boolT
-  ].
+Definition Mutexⁱᵐᵖˡ : go.type := go.bool.
 
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
-  λ: "m" <>, lock.trylock (struct.field_ref #Mutex #"state"%go "m").
+  λ: "m" <>, lock.trylock "m".
 
 Definition Mutex__Lockⁱᵐᵖˡ : val :=
-  λ: "m" <>,
-     lock.lock (struct.field_ref #Mutex #"state"%go "m").
+  λ: "m" <>, lock.lock "m".
 
 Definition Mutex__Unlockⁱᵐᵖˡ : val :=
-  λ: "m" <>, lock.unlock (struct.field_ref #Mutex #"state"%go "m").
+  λ: "m" <>, lock.unlock "m".
 
 Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
   λ: "l", u_to_w32 ArbitraryInt.
@@ -52,7 +49,7 @@ Definition runtime_Semacquireⁱᵐᵖˡ : val :=
   λ: "addr", exception_do
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
        let: "v" := Load "addr" in
-       (if: "v" = #(W32 0) then
+       (if: "v" =⟨go.uint32⟩ #(W32 0) then
           continue: #()
         else
           do: #()
@@ -69,13 +66,13 @@ Definition runtime_Semreleaseⁱᵐᵖˡ : val :=
 (* differs from runtime_Semacquire only in the park "reason", used for internal
    concurrency testing *)
 Definition runtime_SemacquireWaitGroupⁱᵐᵖˡ : val :=
-  λ: "addr" "_synctestDurable", func_call #"sync.runtime_Semacquire" "addr".
+  λ: "addr" "_synctestDurable", (FuncResolve "sync.runtime_Semacquire" []) #() "addr".
 
 Definition runtime_SemacquireRWMutexRⁱᵐᵖˡ : val :=
-  λ: "addr" "_lifo" "_skipframes", func_call #"sync.runtime_Semacquire" "addr".
+  λ: "addr" "_lifo" "_skipframes", (FuncResolve "sync.runtime_Semacquire" []) #() "addr".
 
 Definition runtime_SemacquireRWMutexⁱᵐᵖˡ : val :=
-  λ: "addr" "_lifo" "_skipframes", func_call #"sync.runtime_Semacquire" "addr".
+  λ: "addr" "_lifo" "_skipframes", (FuncResolve "sync.runtime_Semacquire" []) #() "addr".
 
 End code.
 End sync.
