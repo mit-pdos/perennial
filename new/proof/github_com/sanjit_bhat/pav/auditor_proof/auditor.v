@@ -130,77 +130,7 @@ Proof.
   simpl in *. word.
 Qed.
 
-Definition wish_getNextDig_aux prevDig updates digs : iProp Σ :=
-  "%Hlen" ∷ ⌜length digs = S (length updates)⌝ ∗
-  "%Hhead" ∷ ⌜head digs = Some prevDig⌝ ∗
-  "#Hwish_updates" ∷ ([∗ list] i ↦ upd ∈ updates,
-    ∃ dig0 dig1,
-    "%Hlook0" ∷ ⌜digs !! i = Some dig0⌝ ∗
-    "%Hlook1" ∷ ⌜digs !! (S i) = Some dig1⌝ ∗
-    "#Hwish" ∷ merkle.wish_Update upd.(ktcore.UpdateProof.MapLabel)
-      upd.(ktcore.UpdateProof.MapVal) upd.(ktcore.UpdateProof.NonMembProof)
-      dig0 dig1).
-
-Lemma wish_getNextDig_aux_det prevDig updates digs0 digs1 :
-  wish_getNextDig_aux prevDig updates digs0 -∗
-  wish_getNextDig_aux prevDig updates digs1 -∗
-  ⌜digs0 = digs1⌝.
-Proof.
-  iNamedSuffix 1 "0".
-  iNamedSuffix 1 "1".
-  iInduction updates as [] using rev_ind forall (digs0 digs1 Hlen0 Hlen1 Hhead0 Hhead1).
-  { destruct digs0, digs1; try done.
-    destruct digs0, digs1; try done.
-    by simplify_eq/=. }
-  destruct digs0 using rev_ind; try done. clear IHdigs0.
-  destruct digs1 using rev_ind; try done. clear IHdigs1.
-  autorewrite with len in *.
-  iDestruct (big_sepL_snoc with "Hwish_updates0") as "{Hwish_updates0} [Hwish0 H0]".
-  iDestruct (big_sepL_snoc with "Hwish_updates1") as "{Hwish_updates1} [Hwish1 H1]".
-  iDestruct ("IHupdates" $! digs0 digs1 with "[][][][][][]") as %->.
-  all: iClear "IHupdates".
-  1-4: iPureIntro.
-  { lia. }
-  { lia. }
-  { destruct digs0; try done. simpl in *. lia. }
-  { destruct digs1; try done. simpl in *. lia. }
-  { iModIntro. iApply (big_sepL_impl with "Hwish0"). iModIntro.
-    iIntros (?? Hlook) "@".
-    apply lookup_lt_Some in Hlook.
-    rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
-    iFrame "#%". }
-  { iModIntro. iApply (big_sepL_impl with "Hwish1"). iModIntro.
-    iIntros (?? Hlook) "@".
-    apply lookup_lt_Some in Hlook.
-    rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
-    iFrame "#%". }
-  iClear "Hwish0 Hwish1".
-  iNamedSuffix "H0" "0".
-  iNamedSuffix "H1" "1".
-  iDestruct (merkle.wish_Update_det with "Hwish0 Hwish1") as %[-> ->].
-  rewrite !lookup_app_r in Hlook10, Hlook11; [|lia..].
-  apply list_lookup_singleton_Some in Hlook10 as [_ ->].
-  apply list_lookup_singleton_Some in Hlook11 as [_ ->].
-  done.
-Qed.
-
-Definition wish_getNextDig prevDig updates dig : iProp Σ :=
-  ∃ digs,
-  "#Hwish_aux" ∷ wish_getNextDig_aux prevDig updates digs ∗
-  "%Hlast" ∷ ⌜last digs = Some dig⌝.
-
-Lemma wish_getNextDig_det prevDig updates dig0 dig1 :
-  wish_getNextDig prevDig updates dig0 -∗
-  wish_getNextDig prevDig updates dig1 -∗
-  ⌜dig0 = dig1⌝.
-Proof.
-  iNamedSuffix 1 "0".
-  iNamedSuffix 1 "1".
-  iDestruct (wish_getNextDig_aux_det with "Hwish_aux0 Hwish_aux1") as %->.
-  rewrite Hlast0 in Hlast1.
-  by simplify_eq/=.
-Qed.
-
+(*
 Lemma wp_getNextDig sl_prevDig prevDig sl_updates sl0_updates updates mPrev :
   {{{
     is_pkg_init auditor ∗
@@ -310,6 +240,7 @@ Admitted.
     + iExactEq "His_proof". repeat f_equal.
       by rewrite -Hlast.
 Qed.
+*)
 *)
 
 End proof.

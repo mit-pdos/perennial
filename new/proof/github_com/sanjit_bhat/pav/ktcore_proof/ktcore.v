@@ -340,5 +340,48 @@ Definition wish_NonMemb pk uid ver dig nonMemb : iProp Σ :=
   "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc label ∗
   "#Hwish_nonMemb" ∷ merkle.wish_NonMemb label nonMemb.(ktcore.NonMemb.MerkleProof) dig.
 
+Definition wish_ListUpdate updates digs : iProp Σ :=
+  "%Hlen" ∷ ⌜length digs = if decide (length updates = 0%nat)
+    then 0%nat else S (length updates)⌝ ∗
+  "#Hwish_updates" ∷ ([∗ list] i ↦ upd ∈ updates,
+    ∃ dig0 dig1,
+    "%Hlook0" ∷ ⌜digs !! i = Some dig0⌝ ∗
+    "%Hlook1" ∷ ⌜digs !! (S i) = Some dig1⌝ ∗
+    "#Hwish" ∷ merkle.wish_Update upd.(ktcore.UpdateProof.MapLabel)
+      upd.(ktcore.UpdateProof.MapVal) upd.(ktcore.UpdateProof.NonMembProof)
+      dig0 dig1).
+
+Lemma wish_ListUpdate_det updates digs0 digs1 :
+  wish_ListUpdate updates digs0 -∗
+  wish_ListUpdate updates digs1 -∗
+  ⌜digs0 = digs1⌝.
+Proof.
+  iNamedSuffix 1 "0".
+  iNamedSuffix 1 "1".
+  case_decide.
+  { by destruct digs0, digs1. }
+  (* no way to apply [list_eq_same_length] directly. *)
+  iAssert (⌜∀ (i : nat) x y,
+    digs0 !! i = Some x → digs1 !! i = Some y → x = y⌝)%I as %?.
+  2: { iPureIntro. eapply list_eq_same_length; [done..|]. naive_solver. }
+  iIntros (i ?? Hlook0 Hlook1).
+  apply lookup_lt_Some in Hlook0 as ?.
+  destruct i.
+  - list_elem updates 0%nat as upd.
+    iDestruct (big_sepL_lookup with "Hwish_updates0") as "{Hwish_updates0} H0"; [done|].
+    iDestruct (big_sepL_lookup with "Hwish_updates1") as "{Hwish_updates1} H1"; [done|].
+    iNamedSuffix "H0" "0".
+    iNamedSuffix "H1" "1".
+    simplify_eq/=.
+    by iDestruct (merkle.wish_Update_det with "Hwish0 Hwish1") as %[-> ->].
+  - list_elem updates i as upd.
+    iDestruct (big_sepL_lookup with "Hwish_updates0") as "{Hwish_updates0} H0"; [done|].
+    iDestruct (big_sepL_lookup with "Hwish_updates1") as "{Hwish_updates1} H1"; [done|].
+    iNamedSuffix "H0" "0".
+    iNamedSuffix "H1" "1".
+    simplify_eq/=.
+    by iDestruct (merkle.wish_Update_det with "Hwish0 Hwish1") as %[-> ->].
+Qed.
+
 End proof.
 End ktcore.
