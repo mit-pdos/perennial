@@ -195,7 +195,7 @@ Proof.
   2: { iApply "HΦ". iIntros "@".
     iDestruct (cryptoffi.is_vrf_out_det with "His_out His_vrf_out") as %->.
     iDestruct (cryptoffi.is_hash_det with "His_MapVal His_mapVal") as %->.
-    iDestruct (merkle.wish_VerifyMemb_det with "His_proof_merk Hwish_memb") as %->.
+    iDestruct (merkle.wish_Memb_det with "His_proof_merk Hwish_memb") as %->.
     done. }
   iApply "HΦ".
   iFrame "#".
@@ -310,7 +310,7 @@ Proof.
   wp_if_destruct.
   2: { iApply "HΦ". iIntros "@".
     iDestruct (cryptoffi.is_vrf_out_det with "His_out His_vrf_out") as %->.
-    iDestruct (merkle.wish_VerifyNonMemb_det with "His_proof_merk Hwish_nonMemb") as %->.
+    iDestruct (merkle.wish_NonMemb_det with "His_proof_merk Hwish_nonMemb") as %->.
     done. }
   iApply "HΦ".
   iFrame "#".

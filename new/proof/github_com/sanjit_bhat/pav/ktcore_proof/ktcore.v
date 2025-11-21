@@ -327,7 +327,7 @@ Definition wish_Memb pk uid ver dig memb : iProp Σ :=
   "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc_label memb.(ktcore.Memb.LabelProof) ∗
   "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc_label label ∗
   "#His_mapVal" ∷ cryptoffi.is_hash (Some enc_val) mapVal ∗
-  "#Hwish_memb" ∷ merkle.wish_VerifyMemb label mapVal memb.(ktcore.Memb.MerkleProof) dig.
+  "#Hwish_memb" ∷ merkle.wish_Memb label mapVal memb.(ktcore.Memb.MerkleProof) dig.
 
 Definition wish_ListMemb pk uid (prefixLen : w64) dig hist : iProp Σ :=
   ([∗ list] ver ↦ memb ∈ hist,
@@ -338,7 +338,7 @@ Definition wish_NonMemb pk uid ver dig nonMemb : iProp Σ :=
   let enc := ktcore.MapLabel.pure_enc (ktcore.MapLabel.mk' uid ver) in
   "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc nonMemb.(ktcore.NonMemb.LabelProof) ∗
   "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc label ∗
-  "#Hwish_nonMemb" ∷ merkle.wish_VerifyNonMemb label nonMemb.(ktcore.NonMemb.MerkleProof) dig.
+  "#Hwish_nonMemb" ∷ merkle.wish_NonMemb label nonMemb.(ktcore.NonMemb.MerkleProof) dig.
 
 End proof.
 End ktcore.

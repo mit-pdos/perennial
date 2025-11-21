@@ -95,7 +95,7 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
         ktcore.Memb.own ptr obj (□)) ∗
       "#Hptr_bound" ∷ ktcore.NonMemb.own ptr_bound bound (□) ∗
 
-      "%Hwish_chainProof" ∷ ⌜hashchain.wish_Verify chainProof
+      "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
         (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
       "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(serverγ.sig_pk)
         (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗

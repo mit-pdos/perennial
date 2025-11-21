@@ -23,7 +23,7 @@ Definition wish_CheckStart servPk reply (ep : w64) dig link : iProp Σ :=
   "%Hlen_link_prev" ∷ ⌜Z.of_nat $ length reply.(server.StartReply.PrevLink) = cryptoffi.hash_len⌝ ∗
   "#His_chain_prev" ∷ hashchain.is_chain digs0 cut reply.(server.StartReply.PrevLink)
     (uint.nat reply.(server.StartReply.PrevEpochLen)) ∗
-  "%Hwish_chain" ∷ ⌜hashchain.wish_Verify reply.(server.StartReply.ChainProof) digs1⌝ ∗
+  "%Hwish_chain" ∷ ⌜hashchain.wish_Proof reply.(server.StartReply.ChainProof) digs1⌝ ∗
   "#His_chain_start" ∷ hashchain.is_chain (digs0 ++ digs1) cut link
     (uint.nat reply.(server.StartReply.PrevEpochLen) + length digs1) ∗
   "%Heq_ep" ∷ ⌜uint.Z reply.(server.StartReply.PrevEpochLen) + length digs1 - 1 = uint.Z ep⌝ ∗
@@ -43,7 +43,7 @@ Proof.
   iNamedSuffix 1 "0".
   iNamedSuffix 1 "1".
   iDestruct (hashchain.is_chain_inj with "His_chain_prev0 His_chain_prev1") as %[-> ->].
-  opose proof (hashchain.wish_Verify_det _ _ _ Hwish_chain0 Hwish_chain1) as ->.
+  opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain0 Hwish_chain1) as ->.
   iDestruct (hashchain.is_chain_det with "His_chain_start0 His_chain_start1") as %->.
   iPureIntro.
   rewrite Heq_dig0 in Heq_dig1.
@@ -89,7 +89,7 @@ Proof.
   iPersist "Hsl_newVal Hsl_newLink".
   wp_if_destruct.
   { iApply "HΦ". iNamedSuffix 1 "'". simpl in *.
-    opose proof (hashchain.wish_Verify_det _ _ _ Hwish_chain Hwish_chain') as ->.
+    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain Hwish_chain') as ->.
     apply last_Some in Heq_dig' as [? Heq].
     apply (f_equal length) in Heq.
     autorewrite with len in *.
@@ -97,13 +97,13 @@ Proof.
   wp_apply std.wp_SumNoOverflow.
   wp_if_destruct.
   2: { iApply "HΦ". iNamedSuffix 1 "'". simpl in *.
-    opose proof (hashchain.wish_Verify_det _ _ _ Hwish_chain Hwish_chain') as ->.
+    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain Hwish_chain') as ->.
     word. }
   wp_apply ktcore.wp_VerifyLinkSig as "* @".
   { iFrame "#". }
   wp_if_destruct.
   { iApply "HΦ". iNamedSuffix 1 "'". simpl in *. iApply "Hgenie".
-    opose proof (hashchain.wish_Verify_det _ _ _ Hwish_chain Hwish_chain') as ->.
+    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain Hwish_chain') as ->.
     iDestruct (hashchain.is_chain_inj with "His_chain_prev His_chain_prev'") as %[-> ->].
     iDestruct (hashchain.is_chain_det with "His_chain His_chain_start'") as %->.
     iExactEq "His_link_sig'". repeat f_equal. word. }
@@ -137,7 +137,7 @@ Definition wish_getNextDig_aux prevDig updates digs : iProp Σ :=
     ∃ dig0 dig1,
     "%Hlook0" ∷ ⌜digs !! i = Some dig0⌝ ∗
     "%Hlook1" ∷ ⌜digs !! (S i) = Some dig1⌝ ∗
-    "#Hwish" ∷ merkle.wish_VerifyUpdate upd.(ktcore.UpdateProof.MapLabel)
+    "#Hwish" ∷ merkle.wish_Update upd.(ktcore.UpdateProof.MapLabel)
       upd.(ktcore.UpdateProof.MapVal) upd.(ktcore.UpdateProof.NonMembProof)
       dig0 dig1).
 
@@ -177,7 +177,7 @@ Proof.
   iClear "Hwish0 Hwish1".
   iNamedSuffix "H0" "0".
   iNamedSuffix "H1" "1".
-  iDestruct (merkle.wish_VerifyUpdate_det with "Hwish0 Hwish1") as %[-> ->].
+  iDestruct (merkle.wish_Update_det with "Hwish0 Hwish1") as %[-> ->].
   rewrite !lookup_app_r in Hlook10, Hlook11; [|lia..].
   apply list_lookup_singleton_Some in Hlook10 as [_ ->].
   apply list_lookup_singleton_Some in Hlook11 as [_ ->].

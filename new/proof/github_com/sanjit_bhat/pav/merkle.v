@@ -12,4 +12,4 @@ End merkle.
 
 (* external defs. *)
 #[global] Opaque is_initialized own_Map is_map
-  wish_VerifyNonMemb wish_VerifyMemb wish_VerifyUpdate.
+  wish_NonMemb wish_Memb wish_Update.

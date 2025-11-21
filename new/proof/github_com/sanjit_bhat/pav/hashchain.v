@@ -410,22 +410,22 @@ Proof.
   - iPureIntro. apply Forall_snoc. split; [done|word].
 Qed.
 
-(* unlike most other pav wishes, [wish_Verify] doesn't tie down all
+(* unlike most other pav wishes, [wish_Proof] doesn't tie down all
 inputs and outputs of [hashchain.Verify].
 it only says that [proof] deterministically decodes to [new_vals].
 the remaining input is [prevLink].
 it's not referenced because it's client-tracked.
 the outputs ([extLen], [newVal], [newLink]) aren't referenced
 because they deterministically derive from [prevLink] and [new_vals]. *)
-Definition wish_Verify (proof : list w8) new_vals :=
+Definition wish_Proof (proof : list w8) new_vals :=
   Forall (λ x, length x = Z.to_nat cryptoffi.hash_len) new_vals ∧
   proof = mjoin new_vals.
-#[global] Opaque wish_Verify.
-#[local] Transparent wish_Verify.
+#[global] Opaque wish_Proof.
+#[local] Transparent wish_Proof.
 
-Lemma wish_Verify_det proof new_vals0 new_vals1 :
-  wish_Verify proof new_vals0 →
-  wish_Verify proof new_vals1 →
+Lemma wish_Proof_det proof new_vals0 new_vals1 :
+  wish_Proof proof new_vals0 →
+  wish_Proof proof new_vals1 →
   new_vals0 = new_vals1.
 Proof.
   intros (?&?) (?&?).
@@ -449,10 +449,10 @@ Lemma wp_Verify sl_prevLink d0 prevLink sl_proof d1 proof old_vals cut len :
     "Hsl_newLink" ∷ sl_newLink ↦*{d0} newLink ∗
     "Hgenie" ∷
       match err with
-      | true => ¬ ∃ new_vals, ⌜wish_Verify proof new_vals⌝
+      | true => ¬ ∃ new_vals, ⌜wish_Proof proof new_vals⌝
       | false =>
         ∃ new_vals,
-        "%Hwish_chain" ∷ ⌜wish_Verify proof new_vals⌝ ∗
+        "%Hwish_chain" ∷ ⌜wish_Proof proof new_vals⌝ ∗
         "%HextLen" ∷ ⌜uint.Z extLen = length new_vals⌝ ∗
         "%HnewVal" ∷ ⌜newVal = default [] (last new_vals)⌝ ∗
         "#His_chain" ∷ is_chain (old_vals ++ new_vals) cut newLink (len + (length new_vals))
@@ -493,7 +493,7 @@ Proof.
     "Hsl_newVal" ∷ sl_newVal ↦*{d1} newVal ∗
     "Hsl_newLink" ∷ sl_newLink ↦*{d0} newLink ∗
 
-    "(%Hsame_len&%Henc)" ∷ ⌜wish_Verify
+    "(%Hsame_len&%Henc)" ∷ ⌜wish_Proof
       (take (Z.to_nat (uint.Z i * cryptoffi.hash_len)) proof)
       new_vals⌝ ∗
     "%" ∷ ⌜length new_vals = uint.nat i⌝ ∗
@@ -575,7 +575,7 @@ Lemma wp_HashChain_Prove c vals d (prevLen : w64) :
     "Hown_HashChain" ∷ own c vals d ∗
     "Hsl_proof" ∷ sl_proof ↦* proof ∗
 
-    "%Hwish" ∷ ⌜wish_Verify proof new_vals⌝
+    "%Hwish" ∷ ⌜wish_Proof proof new_vals⌝
   }}}.
 Proof.
   wp_start. iNamed "Hpre". iNamed "Hown_HashChain".
@@ -612,7 +612,7 @@ Lemma wp_HashChain_Bootstrap c vals d old_vals last_val :
     "Hsl_proof" ∷ sl_proof ↦* proof ∗
 
     "#His_bootLink" ∷ is_chain old_vals None bootLink (length old_vals) ∗
-    "%Hwish" ∷ ⌜wish_Verify proof [last_val]⌝
+    "%Hwish" ∷ ⌜wish_Proof proof [last_val]⌝
   }}}.
 Proof.
   wp_start. iNamed "Hpre". iNamed "Hown_HashChain". wp_auto.

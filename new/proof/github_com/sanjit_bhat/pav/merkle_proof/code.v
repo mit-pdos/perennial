@@ -1089,14 +1089,14 @@ Proof.
       destruct bit; iFrame.
 Qed.
 
-Definition wish_VerifyNonMemb label proof hash : iProp Σ :=
+Definition wish_NonMemb label proof hash : iProp Σ :=
   ∃ t,
   "Hwish_toTree" ∷ wish_proofToTree label proof t ∗
   "#His_hash" ∷ is_cut_tree t hash.
 
-Lemma wish_VerifyNonMemb_det l p h0 h1 :
-  wish_VerifyNonMemb l p h0 -∗
-  wish_VerifyNonMemb l p h1 -∗
+Lemma wish_NonMemb_det l p h0 h1 :
+  wish_NonMemb l p h0 -∗
+  wish_NonMemb l p h1 -∗
   ⌜h0 = h1⌝.
 Proof.
   iNamedSuffix 1 "0".
@@ -1119,10 +1119,10 @@ Lemma wp_VerifyNonMemb sl_label label sl_proof proof :
     "#Hsl_hash" ∷ sl_hash ↦*□ hash ∗
     "Hgenie" ∷
       match err with
-      | true => ¬ ∃ hash, wish_VerifyNonMemb label proof hash
+      | true => ¬ ∃ hash, wish_NonMemb label proof hash
       | false =>
         ∃ m,
-        "#His_proof" ∷ wish_VerifyNonMemb label proof hash ∗
+        "#His_proof" ∷ wish_NonMemb label proof hash ∗
         "#His_map" ∷ is_map m hash ∗
         "%Hlook" ∷ ⌜m !! label = None⌝
       end
@@ -1149,15 +1149,15 @@ Proof.
   by rewrite -entry_eq_lookup.
 Qed.
 
-Definition wish_VerifyMemb label val proof hash : iProp Σ :=
+Definition wish_Memb label val proof hash : iProp Σ :=
   ∃ t0 t1,
   "Hwish_toTree" ∷ wish_proofToTree label proof t0 ∗
   "%Hcode" ∷ ⌜pure_put t0 label val = Some t1⌝ ∗
   "#His_hash" ∷ is_cut_tree t1 hash.
 
-Lemma wish_VerifyMemb_det l v p h0 h1 :
-  wish_VerifyMemb l v p h0 -∗
-  wish_VerifyMemb l v p h1 -∗
+Lemma wish_Memb_det l v p h0 h1 :
+  wish_Memb l v p h0 -∗
+  wish_Memb l v p h1 -∗
   ⌜h0 = h1⌝.
 Proof.
   iNamedSuffix 1 "0".
@@ -1181,10 +1181,10 @@ Lemma wp_VerifyMemb sl_label label sl_val val sl_proof proof :
     "#Hsl_hash" ∷ sl_hash ↦*□ hash ∗
     "Hgenie" ∷
       match err with
-      | true => ¬ ∃ hash, wish_VerifyMemb label val proof hash
+      | true => ¬ ∃ hash, wish_Memb label val proof hash
       | false =>
         ∃ m,
-        "#His_proof" ∷ wish_VerifyMemb label val proof hash ∗
+        "#His_proof" ∷ wish_Memb label val proof hash ∗
         "#His_map" ∷ is_map m hash ∗
         "%Hlook" ∷ ⌜m !! label = Some val⌝
       end
@@ -1222,16 +1222,16 @@ Proof.
   by rewrite -entry_eq_lookup.
 Qed.
 
-Definition wish_VerifyUpdate label val proof hashOld hashNew : iProp Σ :=
+Definition wish_Update label val proof hashOld hashNew : iProp Σ :=
   ∃ tOld tNew,
   "Hwish_toTree" ∷ wish_proofToTree label proof tOld ∗
   "%Hcode" ∷ ⌜pure_put tOld label val = Some tNew⌝ ∗
   "#His_hash_old" ∷ is_cut_tree tOld hashOld ∗
   "#His_hash_new" ∷ is_cut_tree tNew hashNew.
 
-Lemma wish_VerifyUpdate_det l v p hO0 hO1 hN0 hN1 :
-  wish_VerifyUpdate l v p hO0 hN0 -∗
-  wish_VerifyUpdate l v p hO1 hN1 -∗
+Lemma wish_Update_det l v p hO0 hO1 hN0 hN1 :
+  wish_Update l v p hO0 hN0 -∗
+  wish_Update l v p hO1 hN1 -∗
   ⌜hO0 = hO1 ∧ hN0 = hN1⌝.
 Proof.
   iNamedSuffix 1 "0".
@@ -1258,10 +1258,10 @@ Lemma wp_VerifyUpdate sl_label label sl_val val sl_proof proof :
     "#Hsl_newHash" ∷ sl_newHash ↦*□ newHash ∗
     "Hgenie" ∷
       match err with
-      | true => ¬ ∃ hO hN, wish_VerifyUpdate label val proof hO hN
+      | true => ¬ ∃ hO hN, wish_Update label val proof hO hN
       | false =>
         ∃ mOld mNew,
-        "#His_proof" ∷ wish_VerifyUpdate label val proof oldHash newHash ∗
+        "#His_proof" ∷ wish_Update label val proof oldHash newHash ∗
         "#His_map_old" ∷ is_map mOld oldHash ∗
         "#His_map_new" ∷ is_map mNew newHash ∗
         "->" ∷ ⌜mNew = <[label:=val]>mOld⌝ ∗
@@ -1350,8 +1350,8 @@ Lemma wp_node_prove n t d0 sl_label d1 label getProof :
       ∃ hash,
       "#His_proof" ∷
         match oval with
-        | None => wish_VerifyNonMemb label proof hash
-        | Some v => wish_VerifyMemb label v proof hash
+        | None => wish_NonMemb label proof hash
+        | Some v => wish_Memb label v proof hash
         end ∗
       "#His_hash" ∷ is_cut_tree t hash)
   }}}.
@@ -1607,8 +1607,8 @@ Lemma wp_Map_Prove ptr m hash d0 sl_label d1 label :
       end⌝ ∗
     "#Hproof" ∷
       match m !! label with
-      | None => wish_VerifyNonMemb label entryProof hash
-      | Some v => wish_VerifyMemb label v entryProof hash
+      | None => wish_NonMemb label entryProof hash
+      | Some v => wish_Memb label v entryProof hash
       end
   }}}.
 Proof.
@@ -1641,7 +1641,7 @@ Lemma wp_Map_Put ptr m hash sl_label label sl_val val :
     sl_updProof updProof hash', RET #sl_updProof;
     "Hown_Map" ∷ own_Map ptr (<[label:=val]>m) hash' 1 ∗
     "Hsl_updProof" ∷ sl_updProof ↦* updProof ∗
-    "#His_proof" ∷ wish_VerifyUpdate label val updProof hash hash'
+    "#His_proof" ∷ wish_Update label val updProof hash hash'
   }}}.
 Proof.
   wp_start as "@". wp_auto.
@@ -1671,7 +1671,7 @@ Proof.
 
   instantiate (1:=hash0).
   instantiate (1:=proof).
-  rewrite /wish_VerifyUpdate.
+  rewrite /wish_Update.
   iFrame. iSplit.
   - iFrame "#". iPureIntro. repeat split.
     + symmetry. by eapply to_map_over_put.
@@ -1690,16 +1690,16 @@ Qed.
 even re-ordering VerifyNonMemb before VerifyMemb causes TC search to spin.
 i prove these instances at the end to remove internal brittleness.
 i export the defs as Opaque to remove external brittleness. *)
-#[global] Instance wish_VerifyMemb_pers l v p h :
-  Persistent (wish_VerifyMemb l v p h).
+#[global] Instance wish_Memb_pers l v p h :
+  Persistent (wish_Memb l v p h).
 Proof. apply _. Qed.
 
-#[global] Instance wish_VerifyUpdate_pers l v p hO hN :
-  Persistent (wish_VerifyUpdate l v p hO hN).
+#[global] Instance wish_Update_pers l v p hO hN :
+  Persistent (wish_Update l v p hO hN).
 Proof. apply _. Qed.
 
-#[global] Instance wish_VerifyNonMemb_pers l p h :
-  Persistent (wish_VerifyNonMemb l p h).
+#[global] Instance wish_NonMemb_pers l p h :
+  Persistent (wish_NonMemb l p h).
 Proof. apply _. Qed.
 
 End proof.
