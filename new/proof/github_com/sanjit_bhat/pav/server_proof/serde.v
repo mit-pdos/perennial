@@ -241,75 +241,6 @@ Proof. Admitted.
 End proof.
 End HistoryArg.
 
-Module MembSlice1D.
-Definition t := list ktcore.Memb.t.
-
-Definition pure_enc obj :=
-  safemarshal.w64.pure_enc (length obj) ++ mjoin (ktcore.Memb.pure_enc <$> obj).
-
-Definition valid (obj : t) :=
-  sint.Z (W64 (length obj)) = length obj ∧
-  Forall (λ x, ktcore.Memb.valid x) obj.
-
-Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-  valid obj.
-
-Lemma wish_det tail0 tail1 obj0 obj1 {b} :
-  wish b obj0 tail0 →
-  wish b obj1 tail1 →
-  obj0 = obj1 ∧ tail0 = tail1.
-Proof. Admitted.
-
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-Definition own ptr obj d : iProp Σ :=
-  ∃ ptr0,
-  ptr ↦*{d} ptr0 ∗
-  ([∗ list] ptr;obj ∈ ptr0;obj,
-    ktcore.Memb.own ptr obj d).
-
-Lemma wp_enc obj sl_b b ptr_obj d :
-  {{{
-    is_pkg_init ktcore ∗
-    "Hsl_b" ∷ sl_b ↦* b ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d
-  }}}
-  @! ktcore.MembSlice1DEncode #sl_b #ptr_obj
-  {{{
-    sl_b', RET #sl_b';
-    let b' := b ++ pure_enc obj in
-    sl_b' ↦* b' ∗
-    own_slice_cap w8 sl_b' 1 ∗
-    own ptr_obj obj d ∗
-    ⌜wish b' obj b⌝
-  }}}.
-Proof. Admitted.
-
-Lemma wp_dec sl_b d b :
-  {{{
-    is_pkg_init ktcore ∗
-    "Hsl_b" ∷ sl_b ↦*{d} b
-  }}}
-  @! ktcore.MembSlice1DDecode #sl_b
-  {{{
-    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
-    match err with
-    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
-    | false =>
-      ∃ obj tail,
-      own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail ∗
-      ⌜wish b obj tail⌝
-    end
-  }}}.
-Proof. Admitted.
-
-End proof.
-End MembSlice1D.
-
 Module HistoryReply.
 Record t :=
   mk' {
@@ -323,14 +254,14 @@ Record t :=
 Definition pure_enc obj :=
   safemarshal.Slice1D.pure_enc obj.(ChainProof) ++
   safemarshal.Slice1D.pure_enc obj.(LinkSig) ++
-  MembSlice1D.pure_enc obj.(Hist) ++
+  ktcore.MembSlice1D.pure_enc obj.(Hist) ++
   ktcore.NonMemb.pure_enc obj.(Bound) ++
   safemarshal.w64.pure_enc obj.(Err).
 
 Definition valid obj :=
   safemarshal.Slice1D.valid obj.(ChainProof) ∧
   safemarshal.Slice1D.valid obj.(LinkSig) ∧
-  MembSlice1D.valid obj.(Hist) ∧
+  ktcore.MembSlice1D.valid obj.(Hist) ∧
   ktcore.NonMemb.valid obj.(Bound).
 
 Definition wish b obj tail :=
@@ -352,7 +283,7 @@ Definition own ptr obj d : iProp Σ :=
 
   "Hsl_ChainProof" ∷ sl_ChainProof ↦*{d} obj.(ChainProof) ∗
   "Hsl_LinkSig" ∷ sl_LinkSig ↦*{d} obj.(LinkSig) ∗
-  "Hown_Hist" ∷ MembSlice1D.own ptr_Hist obj.(Hist) d ∗
+  "Hown_Hist" ∷ ktcore.MembSlice1D.own ptr_Hist obj.(Hist) d ∗
   "Hown_Bound" ∷ ktcore.NonMemb.own ptr_Bound obj.(Bound) d.
 
 Lemma wp_enc obj sl_b b ptr_obj d :
@@ -459,75 +390,6 @@ Proof. Admitted.
 End proof.
 End AuditArg.
 
-Module AuditProofSlice1D.
-Definition t := list ktcore.AuditProof.t.
-
-Definition pure_enc obj :=
-  safemarshal.w64.pure_enc (length obj) ++ mjoin (ktcore.AuditProof.pure_enc <$> obj).
-
-Definition valid (obj : t) :=
-  sint.Z (W64 (length obj)) = length obj ∧
-  Forall (λ x, ktcore.AuditProof.valid x) obj.
-
-Definition wish b obj tail :=
-  b = pure_enc obj ++ tail ∧
-  valid obj.
-
-Lemma wish_det tail0 tail1 obj0 obj1 {b} :
-  wish b obj0 tail0 →
-  wish b obj1 tail1 →
-  obj0 = obj1 ∧ tail0 = tail1.
-Proof. Admitted.
-
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-Definition own ptr obj d : iProp Σ :=
-  ∃ ptr0,
-  ptr ↦*{d} ptr0 ∗
-  ([∗ list] ptr;obj ∈ ptr0;obj,
-    ktcore.AuditProof.own ptr obj d).
-
-Lemma wp_enc obj sl_b b ptr_obj d :
-  {{{
-    is_pkg_init ktcore ∗
-    "Hsl_b" ∷ sl_b ↦* b ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d
-  }}}
-  @! ktcore.AuditProofSlice1DEncode #sl_b #ptr_obj
-  {{{
-    sl_b', RET #sl_b';
-    let b' := b ++ pure_enc obj in
-    sl_b' ↦* b' ∗
-    own_slice_cap w8 sl_b' 1 ∗
-    own ptr_obj obj d ∗
-    ⌜wish b' obj b⌝
-  }}}.
-Proof. Admitted.
-
-Lemma wp_dec sl_b d b :
-  {{{
-    is_pkg_init ktcore ∗
-    "Hsl_b" ∷ sl_b ↦*{d} b
-  }}}
-  @! ktcore.AuditProofSlice1DDecode #sl_b
-  {{{
-    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
-    match err with
-    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
-    | false =>
-      ∃ obj tail,
-      own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail ∗
-      ⌜wish b obj tail⌝
-    end
-  }}}.
-Proof. Admitted.
-
-End proof.
-End AuditProofSlice1D.
-
 Module AuditReply.
 Record t :=
   mk' {
@@ -536,11 +398,11 @@ Record t :=
   }.
 
 Definition pure_enc obj :=
-  AuditProofSlice1D.pure_enc obj.(P) ++
+  ktcore.AuditProofSlice1D.pure_enc obj.(P) ++
   safemarshal.w64.pure_enc obj.(Err).
 
 Definition valid obj :=
-  AuditProofSlice1D.valid obj.(P).
+  ktcore.AuditProofSlice1D.valid obj.(P).
 
 Definition wish b obj tail :=
   b = pure_enc obj ++ tail ∧
@@ -559,7 +421,7 @@ Definition own ptr obj d : iProp Σ :=
   ∃ ptr_P,
   "Hstruct" ∷ ptr ↦{d} (server.AuditReply.mk ptr_P obj.(Err)) ∗
 
-  "Hown_P" ∷ AuditProofSlice1D.own ptr_P obj.(P) d.
+  "Hown_P" ∷ ktcore.AuditProofSlice1D.own ptr_P obj.(P) d.
 
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{

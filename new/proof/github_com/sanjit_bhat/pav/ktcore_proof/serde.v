@@ -394,6 +394,75 @@ Proof. Admitted.
 End proof.
 End Memb.
 
+Module MembSlice1D.
+Definition t := list Memb.t.
+
+Definition pure_enc obj :=
+  safemarshal.w64.pure_enc (length obj) ++ mjoin (Memb.pure_enc <$> obj).
+
+Definition valid (obj : t) :=
+  sint.Z (W64 (length obj)) = length obj ∧
+  Forall (λ x, Memb.valid x) obj.
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ ptr0,
+  ptr ↦*{d} ptr0 ∗
+  ([∗ list] ptr;obj ∈ ptr0;obj,
+    Memb.own ptr obj d).
+
+Lemma wp_enc obj sl_b b ptr_obj d :
+  {{{
+    is_pkg_init ktcore ∗
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
+    "Hown_obj" ∷ own ptr_obj obj d
+  }}}
+  @! ktcore.MembSlice1DEncode #sl_b #ptr_obj
+  {{{
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜wish b' obj b⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_dec sl_b d b :
+  {{{
+    is_pkg_init ktcore ∗
+    "Hsl_b" ∷ sl_b ↦*{d} b
+  }}}
+  @! ktcore.MembSlice1DDecode #sl_b
+  {{{
+    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
+    match err with
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
+    | false =>
+      ∃ obj tail,
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
+    end
+  }}}.
+Proof. Admitted.
+
+End proof.
+End MembSlice1D.
+
 Module NonMemb.
 Record t :=
   mk' {
@@ -691,5 +760,74 @@ Proof. Admitted.
 
 End proof.
 End AuditProof.
+
+Module AuditProofSlice1D.
+Definition t := list AuditProof.t.
+
+Definition pure_enc obj :=
+  safemarshal.w64.pure_enc (length obj) ++ mjoin (AuditProof.pure_enc <$> obj).
+
+Definition valid (obj : t) :=
+  sint.Z (W64 (length obj)) = length obj ∧
+  Forall (λ x, AuditProof.valid x) obj.
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ ptr0,
+  ptr ↦*{d} ptr0 ∗
+  ([∗ list] ptr;obj ∈ ptr0;obj,
+    ktcore.AuditProof.own ptr obj d).
+
+Lemma wp_enc obj sl_b b ptr_obj d :
+  {{{
+    is_pkg_init ktcore ∗
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
+    "Hown_obj" ∷ own ptr_obj obj d
+  }}}
+  @! ktcore.AuditProofSlice1DEncode #sl_b #ptr_obj
+  {{{
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜wish b' obj b⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_dec sl_b d b :
+  {{{
+    is_pkg_init ktcore ∗
+    "Hsl_b" ∷ sl_b ↦*{d} b
+  }}}
+  @! ktcore.AuditProofSlice1DDecode #sl_b
+  {{{
+    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
+    match err with
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
+    | false =>
+      ∃ obj tail,
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
+    end
+  }}}.
+Proof. Admitted.
+
+End proof.
+End AuditProofSlice1D.
 
 End ktcore.

@@ -83,16 +83,14 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
       "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
         uint.nat prevVerLen > length pks⌝
     ) ∨ (
-      ∃ chainProof (linkSig : list w8) sl0_hist hist bound,
+      ∃ chainProof (linkSig : list w8) hist bound,
       "%Herr" ∷ ⌜err = ∅⌝ ∗
       "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
         uint.nat prevVerLen ≤ length pks⌝ ∗
 
       "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
       "#Hsl_linkSig" ∷ sl_linkSig ↦*□ linkSig ∗
-      "#Hsl_hist" ∷ sl_hist ↦*□ sl0_hist ∗
-      "#Hsl0_hist" ∷ ([∗ list] ptr;obj ∈ sl0_hist;hist,
-        ktcore.Memb.own ptr obj (□)) ∗
+      "#Hsl_hist" ∷ ktcore.MembSlice1D.own sl_hist hist (□) ∗
       "#Hptr_bound" ∷ ktcore.NonMemb.own ptr_bound bound (□) ∗
 
       "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
