@@ -411,6 +411,14 @@ Global Instance is_go_eq_channel t dir (l1 l2 : chan.t) :
   IsGoEq (go.ChannelType t dir) #l1 #l2 (bool_decide (l1 = l2)).
 Proof. constructor. rewrite go.go_eq_channel. iIntros "* ?". by wp_pures. Qed.
 
+Global Instance is_go_eq_interface elems t v1 v2 b {Heq : IsGoEq t v1 v2 b}  :
+  IsGoEq (go.InterfaceType elems) #(interface.mk t v1) #(interface.mk t v2)
+    b.
+Proof.
+  constructor. rewrite go.go_eq_interface. iIntros "*?". rewrite decide_True //.
+  by iApply wp_go_eq.
+Qed.
+
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.
 Proof.

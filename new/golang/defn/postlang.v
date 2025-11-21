@@ -138,14 +138,15 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
 
   #[global]
   is_comparable_interface elems :: IsComparable (go.InterfaceType elems);
-  go_eq_interface_ne elems t1 t2 v1 v2 (H : t1 ≠ t2) :
-    go_eq (go.InterfaceType elems) #(interface.mk t1 v1) #(interface.mk t2 v2) = #false;
-  go_eq_interface elems t v1 v2 :
-    go_eq (go.InterfaceType elems) #(interface.mk t v1) #(interface.mk t v2) = go_eq t v1 v2;
-  go_eq_interface_nil_r elems i :
-    go_eq (go.InterfaceType elems) #i #interface.nil = #(bool_decide (i = interface.nil));
-  go_eq_interface_nil_l elems i :
-    go_eq (go.InterfaceType elems) #interface.nil #i = #(bool_decide (i = interface.nil));
+  go_eq_interface elems i1 i2 :
+    go_eq (go.InterfaceType elems) #i1 #i2 =
+      match i1, i2 with
+      | interface.nil, interface.nil => #true
+      | (interface.mk t1 v1), (interface.mk t2 v2) =>
+          if decide (t1 = t2) then go_eq t1 v1 v2
+          else #false
+      | _, _ => #false
+      end;
 
   is_comparable_struct fds :
     IsComparable (go.StructType fds) ↔
@@ -163,6 +164,15 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
               else #false)%E
       ) #true fds
 }.
+
+
+Definition element_list K V := list (K * V).
+Global Instance element_list_into_val K V
+  `{!IntoVal K} `{!IntoVal V} : IntoVal (element_list K V) :=
+  {|
+    into_val_def kvs := ArrayV ((λ '(k,v), (#k,#v)%V) <$> kvs ) ;
+    zero_val := [];
+  |}.
 
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
@@ -229,6 +239,19 @@ Class CoreSemantics {go_ctx : GoContext} :=
 
   method_interface t m (H : is_interface_type t = true) :
     #(methods t m) = (InterfaceGet m);
+
+  composite_literal_struct fds (fvs : list val) (* in-order *)
+                           (Hlen : length fvs = length fds) :
+    composite_literal (go.StructType fds) (ArrayV fvs) =
+    StructV (
+        foldl (λ m '(fd, v),
+                 let field_name := match fd with
+                                   | go.FieldDecl n t => n
+                                   | go.EmbeddedField n t => n
+                                   end in
+                <[ field_name := v ]> m
+          ) ∅ (zip fds fvs)
+      )
 }.
 
 End defs.

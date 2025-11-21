@@ -111,5 +111,18 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
   len_map key_type elem_type :
     #(functions go.len [go.TypeLit $ go.MapType key_type elem_type]) =
     (λ: "m", ArrayLength (InternalMapDomain (Read "m")))%V;
+
+  composite_literal_map key_type elem_type (kvs : list val) :
+    composite_literal (go.MapType key_type elem_type) (ArrayV kvs) =
+    (let: "m" := FuncResolve go.make1 [go.TypeLit $ go.MapType key_type elem_type] #() #() in
+     (* insert everything  *)
+     (foldl (λ expr_so_far kv,
+               expr_so_far;;
+               (map.insert key_type "m" (Fst (Val kv)) (Snd (Val kv))))
+        (#() : expr)
+        kvs
+     ) ;;
+     "m"
+    )%E
 }.
 End go.

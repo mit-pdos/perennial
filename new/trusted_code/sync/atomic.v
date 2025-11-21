@@ -53,29 +53,5 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
 
 (* END AUTO-GENERATED *)
 
-Definition noCopy : go_type := structT [
-].
-#[global] Typeclasses Opaque noCopy.
-#[global] Opaque noCopy.
-
-Definition Pointer : val :=
-  λ: "T", type.structT [
-    (#"_0"%go, type.arrayT #(W64 0) #ptrT);
-    (#"_1"%go, #(structT [])); (* XXX: inlined noCopy *)
-    (#"v"%go, #ptrT)
-  ].
-#[global] Typeclasses Opaque Pointer.
-#[global] Opaque Pointer.
-
-Definition Pointer__Loadⁱᵐᵖˡ: val :=
-  λ: "p" "T", Load (struct.field_ref (Pointer "T") #"v" "p").
-Definition Pointer__Storeⁱᵐᵖˡ: val :=
-  λ: "p" "T" "v", AtomicStore (struct.field_ref (Pointer "T") #"v" "p") "v".
-Definition Pointer__CompareAndSwapⁱᵐᵖˡ: val :=
-  λ: "p" "T" "old" "new",
-    Snd (CmpXchg (struct.field_ref (Pointer "T") #"v" "p") "old" "new").
-Definition Pointer__Swapⁱᵐᵖˡ: val :=
-  λ: "p" "T" "new", Panic "unimplemented".
-
 End code.
 End atomic.

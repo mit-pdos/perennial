@@ -207,11 +207,9 @@ Inductive go_instruction : Type :=
 | InternalMapDelete
 | InternalMapDomain
 | InternalMapMake
-.
 
-(* TODO:
-  [ ] Go interfaces
- *)
+| CompositeLiteral (t : go.type)
+.
 
 Inductive expr :=
   (* Values *)
@@ -581,6 +579,7 @@ Class GoContext {ext : ffi_syntax} : Type :=
     map_insert : val → val → val → val;
     map_delete : val → val → val;
     is_map_domain : val → list val → Prop;
+    composite_literal : go.type → val → expr;
   }.
 
 Class IntoVal {ext : ffi_syntax} (V : Type) :=
@@ -882,6 +881,8 @@ Inductive is_go_step_pure `{!GoContext} :
   is_go_step_pure InternalMapDomain m (ArrayV ks)
 | internal_map_make_step_pure v :
   is_go_step_pure InternalMapMake v (map_empty v)
+| composite_literal_step t v :
+  is_go_step_pure (CompositeLiteral t) v (composite_literal t v)
 .
 
 Inductive is_go_step `{!GoContext} :
@@ -1101,6 +1102,7 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     map_insert := inhabitant;
     map_delete := inhabitant;
     is_map_domain := inhabitant;
+    composite_literal := inhabitant;
   |}.
 Global Instance GoState_inhabited : Inhabited GoState :=
   populate {| go_context := inhabitant; package_state := inhabitant |}.

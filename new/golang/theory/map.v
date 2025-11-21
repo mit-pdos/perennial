@@ -59,89 +59,16 @@ Proof. rewrite own_map_unseal. apply _. Qed.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
-(*
-Global Instance wp_kv_entry_pure_wp {A B:Type} `{!IntoVal A} `{!IntoVal B} (a: A) (b: B) :
-  PureWp True ((map.kv_entry #a #b)%E) (#(a, b)).
-Proof.
-  pure_wp_start.
-  rewrite map.kv_entry_unseal.
-  unfold map.kv_entry_def.
-  wp_pure_lc "?".
-  wp_pures.
-  rewrite [in #(_, _)]to_val_unseal /=.
-  iApply "HΦ".
-  done.
-Qed.
-
-Lemma wp_map_literal_val (l:list (K * V)):
-  {{{ True }}}
-    map.literal_val vt #l
-  {{{ v, RET v; ⌜ is_map_val v (list_to_map l) ⌝ }}}.
-Proof.
-  iIntros (?) "% HΦ".
-  iInduction l as [| h tl] "IH" forall (Φ).
-  + wp_call.
-    iApply "HΦ".
-    iPureIntro.
-    unfold is_map_val.
-    done.
-  + wp_call.
-    wp_bind (map.literal_val _ _)%E.
-    iApply ("IH" with "[HΦ]"). iNext.
-    iIntros (?) "%Htl_map".
-    wp_pures.
-    iApply "HΦ".
-    iPureIntro.
-    destruct h as [hk hv].
-    rewrite to_val_unseal.
-    simpl.
-    exists hk, hv, (list_to_map tl).
-    split; first reflexivity.
-    split; first reflexivity.
-    split.
-    - destruct v; try by exfalso.
-      * done.
-      * done.
-    - reflexivity.
-Qed
-
-Lemma wp_map_literal (l:list (K * V)):
-  {{{ ⌜ is_comparable_go_type kt = true ⌝ }}}
-    map.literal vt #l
-  {{{ (l_ptr : loc), RET #l_ptr; l_ptr ↦$ (list_to_map l) }}}.
-Proof.
-  iIntros (?) "%Hcomp HΦ".
-  wp_call.
-  wp_apply wp_map_literal_val.
-  iIntros (v) "%Hmv".
-  iApply (wp_alloc_untyped with "[//]").
-  { instantiate (1:=v). by destruct v. }
-  iNext.
-  iIntros (?) "Hm".
-  rewrite to_val_unseal.
-  iApply "HΦ".
-  rewrite own_map_unseal.
-  iUnfold own_map_def.
-  iExists v.
-  iFrame.
-  done.
-Qed. *)
-
 Class SafeMapKey key_type (k : K) :=
   {
     safe_map_go_eq :
-      ∃ v, PureWp True (GoEquals go.any (#(interface.mk key_type #k), #(interface.mk key_type #k))%V)%E
-        (Val v);
+      ∃ b, IsGoEq key_type #k #k b;
   }.
 
 Global Instance safe_map_key_is_go_eq key_type k b :
   IsGoEq key_type #k #k b → SafeMapKey key_type k.
 Proof.
-  intros ?. constructor. exists #b.
-  iIntros "% * % % HΦ". wp_auto_lc 1.
-  wp_bind (go.go_eq _ _ _).
-  rewrite go.go_eq_interface. iApply wp_go_eq.
-  by iApply "HΦ".
+  intros ?. constructor. by eexists.
 Qed.
 
 Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k} :
@@ -257,7 +184,6 @@ Local Instance make1_unfold key_type elem_type :
   FuncUnfold go.make1 [go.TypeLit $ go.MapType key_type elem_type] _ :=
   ltac:(constructor; apply go.make1_map).
 Lemma wp_map_make1 key_type elem_type
-  `{!IntoValComparable K key_type}
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
     #(functions go.make1 [go.TypeLit $ go.MapType key_type elem_type]) #()
@@ -321,6 +247,39 @@ Proof using Inj0 pre_sem slice_sem.
   iApply (wp_wand with "HΦ").
   iIntros "% HΦ". wp_auto. wp_apply "Hown" as "Hown".
   iApply "HΦ". iFrame "∗#%".
+Qed.
+
+Lemma wp_map_composite_literal key_type elem_type (kvs : list (K * V))
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  {{{ ⌜ Forall (λ '(pair k v), SafeMapKey key_type k) kvs ⌝ }}}
+    composite_literal (go.MapType key_type elem_type) (ArrayV ((λ '(pair k v), (#k,#v)%V) <$> kvs))
+  {{{ mref, RET #mref; mref ↦$ (foldl (λ m '(pair k v), insert k v m) ∅ kvs) }}}.
+Proof using Inj0 array_sem core_sem pre_sem slice_sem.
+  wp_start as "%Hsafe".
+  rewrite go.composite_literal_map.
+  wp_auto. wp_apply wp_map_make1.
+  iIntros "%mref Hm". wp_auto.
+  replace (subst "m" #mref _) with
+    (foldl
+       (λ (expr_so_far : expr) (kv : val), expr_so_far;; map.insert key_type #mref (Fst kv) (Snd kv))
+       (# ()) ((λ '(pair k v), (# k, # v)%V) <$> kvs))%E.
+  2:{ induction kvs using rev_ind; try done.
+      simpl. rewrite fmap_app !foldl_snoc /=.
+      rewrite IHkvs //. rewrite Forall_app in Hsafe. naive_solver. }
+  wp_bind (foldl _ _ _).
+  iApply (wp_wand _ _ _ (λ _, _)%I with "[-HΦ] [HΦ]").
+  2:{ iIntros "% H". simpl. wp_auto. iApply "HΦ". iAccu. }
+  clear Φ.
+  iInduction kvs as [|] "IH" using rev_ind.
+  - simpl. wp_auto. iFrame.
+  - rewrite fmap_app !foldl_snoc.
+    wp_bind (foldl _ _ _). apply Forall_app in Hsafe as [Hsafe Hsafe'].
+    destruct x. rewrite Forall_singleton in Hsafe'.
+    iSpecialize ("IH" with "[//] [$]").
+    Search (Forall _ [_]).
+    iApply (wp_wand with "IH"). iIntros "% H". wp_auto.
+    wp_apply (wp_map_insert with "[$]") as "Hm".
+    iFrame.
 Qed.
 
 Global Instance wp_map_nil_for_range (body : func.t) key_type elem_type :

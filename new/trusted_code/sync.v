@@ -6,8 +6,6 @@ Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
 Section code.
 Context `{ffi_syntax}.
 
-(* FIXME: make everything in here opaque. *)
-
 Definition Mutexⁱᵐᵖˡ : go.type := go.bool.
 
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=

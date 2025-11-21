@@ -150,7 +150,7 @@ Class PredeclaredSemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} 
   make1_underlying t : functions make1 [t] = functions make1 [to_underlying t];
 
   min_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
-  max_ordered n t (H : is_ordered_type t) : #(functions min (replicate n t)) = maxⁱᵐᵖˡ t n;
+  max_ordered n t (H : is_ordered_type t) : #(functions max (replicate n t)) = maxⁱᵐᵖˡ t n;
 
   #[global]
   comparable_bool :: go.IsComparable go.bool;
