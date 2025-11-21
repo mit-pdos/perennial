@@ -151,15 +151,6 @@ End Client.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Definition wish_checkMemb pk uid ver dig memb : iProp Σ :=
-  ∃ label mapVal,
-  let enc_label := ktcore.MapLabel.pure_enc (ktcore.MapLabel.mk' uid ver) in
-  let enc_val := ktcore.CommitOpen.pure_enc memb.(ktcore.Memb.PkOpen) in
-  "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc_label memb.(ktcore.Memb.LabelProof) ∗
-  "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc_label label ∗
-  "#His_mapVal" ∷ cryptoffi.is_hash (Some enc_val) mapVal ∗
-  "#Hwish_memb" ∷ merkle.wish_VerifyMemb label mapVal memb.(ktcore.Memb.MerkleProof) dig.
-
 Lemma wp_checkMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_memb memb :
   {{{
     is_pkg_init client ∗
@@ -172,9 +163,9 @@ Lemma wp_checkMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_memb memb :
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkMemb pk uid ver dig memb
+      | true => ¬ server.wish_checkMemb pk uid ver dig memb
       | false =>
-        "#Hwish_checkMemb" ∷ wish_checkMemb pk uid ver dig memb
+        "#Hwish_checkMemb" ∷ server.wish_checkMemb pk uid ver dig memb
       end
   }}}.
 Proof.
@@ -210,10 +201,6 @@ Proof.
   iFrame "#".
 Qed.
 
-Definition wish_checkHist pk uid (prefixLen : w64) dig hist : iProp Σ :=
-  ([∗ list] ver ↦ memb ∈ hist,
-    wish_checkMemb pk uid (uint.Z prefixLen + ver) dig memb).
-
 Lemma wp_checkHist ptr_pk pk (uid prefixLen : w64) sl_dig dig sl_hist sl0_hist hist :
   {{{
     is_pkg_init client ∗
@@ -228,9 +215,9 @@ Lemma wp_checkHist ptr_pk pk (uid prefixLen : w64) sl_dig dig sl_hist sl0_hist h
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkHist pk uid prefixLen dig hist
+      | true => ¬ server.wish_checkHist pk uid prefixLen dig hist
       | false =>
-        "#Hwish_checkHist" ∷ wish_checkHist pk uid prefixLen dig hist
+        "#Hwish_checkHist" ∷ server.wish_checkHist pk uid prefixLen dig hist
       end
   }}}.
 Proof.
@@ -251,7 +238,7 @@ Proof.
 
     "%Hlt_i" ∷ ⌜0%Z ≤ sint.Z i ≤ length hist⌝ ∗
     "#Hwish" ∷ ([∗ list] ver ↦ memb ∈ take (sint.nat i) hist,
-      wish_checkMemb pk uid (uint.Z prefixLen + ver) dig memb)
+      server.wish_checkMemb pk uid (uint.Z prefixLen + ver) dig memb)
   )%I with "[-HΦ]" as "IH".
   { iFrame. iSplit; [word|naive_solver]. }
   wp_for "IH".
@@ -284,13 +271,6 @@ Proof.
   iFrame "#".
 Qed.
 
-Definition wish_checkNonMemb pk uid ver dig nonMemb : iProp Σ :=
-  ∃ label,
-  let enc := ktcore.MapLabel.pure_enc (ktcore.MapLabel.mk' uid ver) in
-  "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc nonMemb.(ktcore.NonMemb.LabelProof) ∗
-  "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc label ∗
-  "#Hwish_nonMemb" ∷ merkle.wish_VerifyNonMemb label nonMemb.(ktcore.NonMemb.MerkleProof) dig.
-
 Lemma wp_checkNonMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_nonMemb nonMemb :
   {{{
     is_pkg_init client ∗
@@ -303,9 +283,9 @@ Lemma wp_checkNonMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_nonMemb nonMemb :
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkNonMemb pk uid ver dig nonMemb
+      | true => ¬ server.wish_checkNonMemb pk uid ver dig nonMemb
       | false =>
-        "#Hwish_checkNonMemb" ∷ wish_checkNonMemb pk uid ver dig nonMemb
+        "#Hwish_checkNonMemb" ∷ server.wish_checkNonMemb pk uid ver dig nonMemb
       end
   }}}.
 Proof.
