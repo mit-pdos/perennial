@@ -3,4 +3,4 @@ From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import
   advrpc auditor client cryptoffi cryptoutil hashchain ktcore
-  merkle netffi safemarshal server.
+  merkle netffi safemarshal server sigpred.
