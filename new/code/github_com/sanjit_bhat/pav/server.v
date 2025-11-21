@@ -1189,15 +1189,11 @@ Definition Server__Auditⁱᵐᵖˡ : val :=
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "proof", ![#ktcore.Blame] "err")
     else do:  #());;;
-    (let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] "prevEpochLen") in
-    do:  ("ep" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "ep") < (![#uint64T] "numEps")); (λ: <>, do:  ("ep" <-[#uint64T] ((![#uint64T] "ep") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
-      let: "$a1" := ((let: "$sl0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #history #"audits"%go (![#ptrT] (struct.field_ref #Server #"hist"%go (![#ptrT] "s"))))) (![#uint64T] "ep"))) in
-      slice.literal #ptrT ["$sl0"])) in
-      (slice.append #ptrT) "$a0" "$a1") in
-      do:  ("proof" <-[#sliceT] "$r0")));;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "proof") in
+    let: "$a1" := (let: "$s" := (![#sliceT] (struct.field_ref #history #"audits"%go (![#ptrT] (struct.field_ref #Server #"hist"%go (![#ptrT] "s"))))) in
+    slice.slice #ptrT "$s" (![#uint64T] "prevEpochLen") (slice.len "$s")) in
+    (slice.append #ptrT) "$a0" "$a1") in
+    do:  ("proof" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "proof", ![#ktcore.Blame] "err")).
 
 Definition mapEntry : go_type := structT [
@@ -1209,7 +1205,7 @@ Definition mapEntry : go_type := structT [
 
 Definition getWork : go_string := "github.com/sanjit-bhat/pav/server.getWork"%go.
 
-(* go: server.go:125:18 *)
+(* go: server.go:122:18 *)
 Definition Server__workerⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1218,6 +1214,10 @@ Definition Server__workerⁱᵐᵖˡ : val :=
       let: "$r0" := (let: "$a0" := (![type.chanT #ptrT] (struct.field_ref #Server #"workQ"%go (![#ptrT] "s"))) in
       (func_call #getWork) "$a0") in
       do:  ("work" <-[#sliceT] "$r0");;;
+      (if: (let: "$a0" := (![#sliceT] "work") in
+      slice.len "$a0") = #(W64 0)
+      then continue: #()
+      else do:  #());;;
       do:  (let: "$a0" := (![#sliceT] "work") in
       (method_call #(ptrT.id Server.id) #"doWork"%go (![#ptrT] "s")) "$a0"));;;
     return: #()).
