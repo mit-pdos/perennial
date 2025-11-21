@@ -151,8 +151,6 @@ Axiom readOnly : go_type.
 
 Definition expunged : go_string := "sync.expunged"%go.
 
-Axiom expunged'init : val.
-
 Axiom entry : go_type.
 
 Definition newEntry : go_string := "sync.newEntry"%go.
@@ -716,7 +714,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
       else do:  #()));;;
     return: #()).
 
-Definition vars' : list (go_string * go_type) := [].
+Definition vars' : list (go_string * go_type) := [(expunged, ptrT)].
 
 Axiom newEntryⁱᵐᵖˡ : val.
 
@@ -858,7 +856,8 @@ Definition initialize' : val :=
       exception_do (do:  (race.initialize' #());;;
       do:  (atomic.initialize' #());;;
       do:  (package.alloc sync.sync #());;;
-      do:  (expunged'init #()))
+      let: "$r0" := (mem.alloc (type.zero_val #interfaceT)) in
+      do:  ((globals.get #expunged) <-[#ptrT] "$r0"))
       ).
 
 End code.
