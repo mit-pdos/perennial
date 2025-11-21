@@ -2702,6 +2702,10 @@ Global Instance wp_func_call_VoidImplicitReturnInBranch :
   WpFuncCall unittest.VoidImplicitReturnInBranch _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_useRuneOps :
+  WpFuncCall unittest.useRuneOps _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_sliceOps :
   WpFuncCall unittest.sliceOps _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
