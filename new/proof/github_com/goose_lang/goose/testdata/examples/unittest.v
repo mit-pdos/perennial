@@ -332,4 +332,15 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wp_useRuneOps (r0: w32) :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.useRuneOps #r0
+  {{{ (r: w32), RET #r; ⌜r = W32 98⌝ }}}.
+Proof.
+  wp_start.
+  wp_auto.
+  iApply "HΦ".
+  done.
+Qed.
+
 End proof.

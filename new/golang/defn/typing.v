@@ -46,6 +46,10 @@ Definition int16T := uint16T.
 Definition int32T := uint32T.
 Definition int64T := uint64T.
 
+(* rune is an alias for int32, not even a defined type:
+https://pkg.go.dev/builtin#rune *)
+Notation runeT := int32T (only parsing).
+
 (* The zero_value for [floatX] is 0, so this is OK. *)
 Definition float32T := uint32T.
 Definition float64T := uint64T.
