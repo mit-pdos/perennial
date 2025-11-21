@@ -319,4 +319,17 @@ Proof.
   - iApply "HΦ". iFrame.
 Qed.
 
+Lemma wp_pointerAny :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.pointerAny #()
+  {{{ (l:loc), RET #l; l ↦ interface.nil }}}.
+Proof.
+  wp_start.
+  wp_auto.
+  wp_alloc p as "Hp".
+  wp_auto.
+  iApply "HΦ".
+  iFrame.
+Qed.
+
 End proof.

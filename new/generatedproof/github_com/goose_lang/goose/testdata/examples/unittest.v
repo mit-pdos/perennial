@@ -2422,6 +2422,10 @@ Global Instance wp_func_call_testPtrMset :
   WpFuncCall unittest.testPtrMset _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_pointerAny :
+  WpFuncCall unittest.pointerAny _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_useInts :
   WpFuncCall unittest.useInts _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
@@ -2544,10 +2548,6 @@ Global Instance wp_func_call_mapGetCall :
 
 Global Instance wp_func_call_mapLiteralTest :
   WpFuncCall unittest.mapLiteralTest _ (is_pkg_defined unittest) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_mapClearTest :
-  WpFuncCall unittest.mapClearTest _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_returnTwo :
