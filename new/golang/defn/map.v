@@ -69,6 +69,17 @@ Definition len : val :=
 Definition make : val :=
   λ: "kt" "vt", Alloc (InjL (type.zero_val "vt")).
 
+Definition clear : val :=
+  λ: "mref",
+    (rec: "clear" "m" :=
+       match: "m" with
+         InjL "def" => "mref" <- InjL "def"
+       | InjR "kvm" =>
+         let: "m2" := Snd "kvm" in
+         "clear" "m2"
+       end
+    ) (!"mref").
+
 Definition kv_entry_def : val :=
   λ: "k" "v", ("k", "v").
 Program Definition kv_entry := unseal (_:seal (@kv_entry_def)).
