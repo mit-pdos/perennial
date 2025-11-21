@@ -2550,6 +2550,10 @@ Global Instance wp_func_call_mapLiteralTest :
   WpFuncCall unittest.mapLiteralTest _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_mapClearTest :
+  WpFuncCall unittest.mapClearTest _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_returnTwo :
   WpFuncCall unittest.returnTwo _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
