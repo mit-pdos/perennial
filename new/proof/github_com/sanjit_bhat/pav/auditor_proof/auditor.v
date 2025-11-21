@@ -28,11 +28,11 @@ Definition wish_CheckStart servPk reply (ep : w64) dig link : iProp Σ :=
     (uint.nat reply.(server.StartReply.PrevEpochLen) + length digs1) ∗
   "%Heq_ep" ∷ ⌜uint.Z reply.(server.StartReply.PrevEpochLen) + length digs1 - 1 = uint.Z ep⌝ ∗
   "%Heq_dig" ∷ ⌜last digs1 = Some dig⌝ ∗
-  "#His_link_sig" ∷ ktcore.wish_VerifyLinkSig servPk ep link reply.(server.StartReply.LinkSig) ∗
+  "#His_link_sig" ∷ ktcore.wish_LinkSig servPk ep link reply.(server.StartReply.LinkSig) ∗
 
   (* vrf. *)
   "#His_vrf_pk" ∷ cryptoffi.is_vrf_pk reply.(server.StartReply.VrfPk) ∗
-  "#His_vrf_sig" ∷ ktcore.wish_VerifyVrfSig servPk reply.(server.StartReply.VrfPk)
+  "#His_vrf_sig" ∷ ktcore.wish_VrfSig servPk reply.(server.StartReply.VrfPk)
     reply.(server.StartReply.VrfSig).
 
 Lemma wish_CheckStart_det pk r e0 e1 d0 d1 l0 l1 :

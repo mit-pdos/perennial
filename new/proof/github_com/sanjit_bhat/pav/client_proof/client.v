@@ -44,7 +44,7 @@ Definition own ptr obj : iProp Σ :=
   "#Hsl_dig" ∷ sl_dig ↦*□ obj.(dig) ∗
   "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
   "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig) ∗
-  "#His_sig" ∷ ktcore.wish_VerifyLinkSig obj.(serv).(servInfo.sigPk)
+  "#His_sig" ∷ ktcore.wish_LinkSig obj.(serv).(servInfo.sigPk)
     obj.(epoch) obj.(link) obj.(sig) ∗
 
   "#Hgs_chain" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
@@ -108,7 +108,7 @@ Definition own ptr obj : iProp Σ :=
   "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(serv).(servInfo.sigPk) ∗
   "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(serv).(servInfo.vrfPk) ∗
   "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig) ∗
-  "#His_vrfSig" ∷ ktcore.wish_VerifyVrfSig obj.(serv).(servInfo.sigPk)
+  "#His_vrfSig" ∷ ktcore.wish_VrfSig obj.(serv).(servInfo.sigPk)
     obj.(serv).(servInfo.vrfPk) obj.(vrfSig) ∗
 
   "#His_sigPk" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
@@ -163,9 +163,9 @@ Lemma wp_checkMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_memb memb :
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ server.wish_checkMemb pk uid ver dig memb
+      | true => ¬ ktcore.wish_Memb pk uid ver dig memb
       | false =>
-        "#Hwish_checkMemb" ∷ server.wish_checkMemb pk uid ver dig memb
+        "#Hwish_Memb" ∷ ktcore.wish_Memb pk uid ver dig memb
       end
   }}}.
 Proof.
@@ -215,9 +215,9 @@ Lemma wp_checkHist ptr_pk pk (uid prefixLen : w64) sl_dig dig sl_hist sl0_hist h
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ server.wish_checkHist pk uid prefixLen dig hist
+      | true => ¬ ktcore.wish_ListMemb pk uid prefixLen dig hist
       | false =>
-        "#Hwish_checkHist" ∷ server.wish_checkHist pk uid prefixLen dig hist
+        "#Hwish_ListMemb" ∷ ktcore.wish_ListMemb pk uid prefixLen dig hist
       end
   }}}.
 Proof.
@@ -238,7 +238,7 @@ Proof.
 
     "%Hlt_i" ∷ ⌜0%Z ≤ sint.Z i ≤ length hist⌝ ∗
     "#Hwish" ∷ ([∗ list] ver ↦ memb ∈ take (sint.nat i) hist,
-      server.wish_checkMemb pk uid (uint.Z prefixLen + ver) dig memb)
+      ktcore.wish_Memb pk uid (uint.Z prefixLen + ver) dig memb)
   )%I with "[-HΦ]" as "IH".
   { iFrame. iSplit; [word|naive_solver]. }
   wp_for "IH".
@@ -262,7 +262,7 @@ Proof.
     erewrite take_S_r; [|done].
     rewrite big_sepL_snoc.
     iFrame "#".
-    iExactEq "Hwish_checkMemb".
+    iExactEq "Hwish_Memb".
     repeat f_equal. len. }
 
   iApply "HΦ".
@@ -283,9 +283,9 @@ Lemma wp_checkNonMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_nonMemb nonMemb :
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ server.wish_checkNonMemb pk uid ver dig nonMemb
+      | true => ¬ ktcore.wish_NonMemb pk uid ver dig nonMemb
       | false =>
-        "#Hwish_checkNonMemb" ∷ server.wish_checkNonMemb pk uid ver dig nonMemb
+        "#Hwish_NonMemb" ∷ ktcore.wish_NonMemb pk uid ver dig nonMemb
       end
   }}}.
 Proof.
@@ -317,13 +317,13 @@ Proof.
 Qed.
 
 Definition wish_checkAudit servPk adtrPk ep reply : iProp Σ :=
-  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VerifyVrfSig adtrPk
+  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VrfSig adtrPk
     reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.AdtrVrfSig) ∗
-  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VerifyVrfSig servPk
+  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VrfSig servPk
     reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.ServVrfSig) ∗
-  "#Hwish_adtr_linkSig" ∷ ktcore.wish_VerifyLinkSig adtrPk ep
+  "#Hwish_adtr_linkSig" ∷ ktcore.wish_LinkSig adtrPk ep
     reply.(auditor.GetReply.Link) reply.(auditor.GetReply.AdtrLinkSig) ∗
-  "#Hwish_serv_linkSig" ∷ ktcore.wish_VerifyLinkSig servPk ep
+  "#Hwish_serv_linkSig" ∷ ktcore.wish_LinkSig servPk ep
     reply.(auditor.GetReply.Link) reply.(auditor.GetReply.ServLinkSig).
 
 Lemma wp_checkAudit sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_reply reply :

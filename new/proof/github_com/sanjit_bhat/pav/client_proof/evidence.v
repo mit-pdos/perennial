@@ -93,8 +93,8 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Context `{pavG Σ}.
 
 Definition wish_evidVrf e pk : iProp Σ :=
-  "#Hwish0" ∷ ktcore.wish_VerifyVrfSig pk e.(evidVrf.vrfPk0) e.(evidVrf.sig0) ∗
-  "#Hwish1" ∷ ktcore.wish_VerifyVrfSig pk e.(evidVrf.vrfPk1) e.(evidVrf.sig1) ∗
+  "#Hwish0" ∷ ktcore.wish_VrfSig pk e.(evidVrf.vrfPk0) e.(evidVrf.sig0) ∗
+  "#Hwish1" ∷ ktcore.wish_VrfSig pk e.(evidVrf.vrfPk1) e.(evidVrf.sig1) ∗
   "%Heq" ∷ ⌜e.(evidVrf.vrfPk0) ≠ e.(evidVrf.vrfPk1)⌝.
 
 Lemma wish_evidVrf_sig_pred e pk γ :
@@ -169,8 +169,8 @@ Proof.
 Qed.
 
 Definition wish_evidLink e pk : iProp Σ :=
-  "#Hwish0" ∷ ktcore.wish_VerifyLinkSig pk e.(evidLink.epoch) e.(evidLink.link0) e.(evidLink.sig0) ∗
-  "#Hwish1" ∷ ktcore.wish_VerifyLinkSig pk e.(evidLink.epoch) e.(evidLink.link1) e.(evidLink.sig1) ∗
+  "#Hwish0" ∷ ktcore.wish_LinkSig pk e.(evidLink.epoch) e.(evidLink.link0) e.(evidLink.sig0) ∗
+  "#Hwish1" ∷ ktcore.wish_LinkSig pk e.(evidLink.epoch) e.(evidLink.link1) e.(evidLink.sig1) ∗
   "%Heq" ∷ ⌜e.(evidLink.link0) ≠ e.(evidLink.link1)⌝.
 
 Lemma wish_evidLink_sig_pred e pk γ :

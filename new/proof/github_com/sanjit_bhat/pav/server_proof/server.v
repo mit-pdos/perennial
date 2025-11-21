@@ -35,26 +35,6 @@ End serverγ.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Definition wish_checkMemb pk uid ver dig memb : iProp Σ :=
-  ∃ label mapVal,
-  let enc_label := ktcore.MapLabel.pure_enc (ktcore.MapLabel.mk' uid ver) in
-  let enc_val := ktcore.CommitOpen.pure_enc memb.(ktcore.Memb.PkOpen) in
-  "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc_label memb.(ktcore.Memb.LabelProof) ∗
-  "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc_label label ∗
-  "#His_mapVal" ∷ cryptoffi.is_hash (Some enc_val) mapVal ∗
-  "#Hwish_memb" ∷ merkle.wish_VerifyMemb label mapVal memb.(ktcore.Memb.MerkleProof) dig.
-
-Definition wish_checkHist pk uid (prefixLen : w64) dig hist : iProp Σ :=
-  ([∗ list] ver ↦ memb ∈ hist,
-    wish_checkMemb pk uid (uint.Z prefixLen + ver) dig memb).
-
-Definition wish_checkNonMemb pk uid ver dig nonMemb : iProp Σ :=
-  ∃ label,
-  let enc := ktcore.MapLabel.pure_enc (ktcore.MapLabel.mk' uid ver) in
-  "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc nonMemb.(ktcore.NonMemb.LabelProof) ∗
-  "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc label ∗
-  "#Hwish_nonMemb" ∷ merkle.wish_VerifyNonMemb label nonMemb.(ktcore.NonMemb.MerkleProof) dig.
-
 Implicit Types γ : serverγ.t.
 Implicit Types σ : state.t.
 
@@ -67,10 +47,9 @@ Global Existing Instance own_Server_timeless.
 
 Definition pure_put σ uid pk (ver : w64) :=
   let pks := σ.(state.pending) !!! uid in
-  (* drops put if not right version. *)
-  match bool_decide (uint.nat ver = length pks) with false => σ | _ =>
-  set state.pending (<[uid:=pks ++ [pk]]>) σ
-  end.
+  (* drop put if not right version. *)
+  if bool_decide (uint.nat ver ≠ length pks) then σ else
+  set state.pending (<[uid:=pks ++ [pk]]>) σ.
 
 (* RPC spec needs □ in front of atomic update. *)
 Lemma wp_Server_Put s γ uid pk sl_pk ver :
@@ -79,6 +58,7 @@ Lemma wp_Server_Put s γ uid pk sl_pk ver :
   sl_pk ↦*□ pk -∗
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
     (own_Server γ (pure_put σ uid pk ver) ={∅,⊤}=∗ True)) ∗
+  (* fupd might be used after Put returns, so Φ goes separately. *)
   Φ #() -∗
   WP s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver {{ Φ }}.
 Proof.
@@ -89,6 +69,7 @@ Admitted.
 Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
   ∀ Φ,
   is_Server s γ -∗
+  (* read-only. *)
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
     (* postcond. it only references σ.(state.hist). *)
     ∃ sl_chainProof sl_linkSig sl_hist ptr_bound (err : ktcore.Blame)
@@ -116,14 +97,14 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
 
       "%Hwish_chainProof" ∷ ⌜hashchain.wish_Verify chainProof
         (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
-      "#Hwish_linkSig" ∷ ktcore.wish_VerifyLinkSig γ.(serverγ.sig_pk)
+      "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(serverγ.sig_pk)
         (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
-      "#Hwish_hist" ∷ wish_checkHist γ.(serverγ.vrf_pk) uid prevVerLen
+      "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(serverγ.vrf_pk) uid prevVerLen
         lastDig hist ∗
       "%Heq_hist" ∷ ⌜Forall2
         (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
         (drop (uint.nat prevVerLen) pks) hist⌝ ∗
-      "#Hwish_bound" ∷ wish_checkNonMemb γ.(serverγ.vrf_pk) uid
+      "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(serverγ.vrf_pk) uid
         (W64 $ length pks) lastDig bound
     )) -∗
     Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err))) -∗
