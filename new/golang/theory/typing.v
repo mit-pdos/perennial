@@ -48,6 +48,8 @@ End struct.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair go_string go_type f%go t) : struct_scope.
+(* TODO: this conflicts with coq-record-update [set] notation:
+https://github.com/mit-pdos/perennial/issues/487 *)
 Notation "f ::= v" := (@pair go_string val f%go v%V) (at level 60) : struct_scope.
 Delimit Scope struct_scope with struct.
 
