@@ -34,7 +34,7 @@ Definition runBob : go_string := "github.com/sanjit-bhat/pav/alicebob.runBob"%go
 
 Definition runAlice : go_string := "github.com/sanjit-bhat/pav/alicebob.runAlice"%go.
 
-(* go: alicebob.go:23:6 *)
+(* go: alicebob.go:27:6 *)
 Definition testAliceBobⁱᵐᵖˡ : val :=
   λ: "servAddr" "adtrAddr",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -239,7 +239,7 @@ Definition histEntry : go_type := structT [
 #[global] Typeclasses Opaque histEntry.
 #[global] Opaque histEntry.
 
-(* go: alicebob.go:122:6 *)
+(* go: alicebob.go:126:6 *)
 Definition equalⁱᵐᵖˡ : val :=
   λ: "o0" "o1",
     exception_do (let: "o1" := (mem.alloc "o1") in
@@ -259,7 +259,7 @@ Definition loopPending : go_string := "github.com/sanjit-bhat/pav/alicebob.loopP
 
 (* runAlice does a bunch of puts.
 
-   go: alicebob.go:133:6 *)
+   go: alicebob.go:137:6 *)
 Definition runAliceⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -321,7 +321,7 @@ Definition runAliceⁱᵐᵖˡ : val :=
       do:  ("hist" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "hist", ![#ktcore.Blame] "err")).
 
-(* go: alicebob.go:163:6 *)
+(* go: alicebob.go:167:6 *)
 Definition loopPendingⁱᵐᵖˡ : val :=
   λ: "cli" "ep",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -350,7 +350,7 @@ Definition loopPendingⁱᵐᵖˡ : val :=
 
 (* runBob does a get at some time in the middle of alice's puts.
 
-   go: alicebob.go:180:6 *)
+   go: alicebob.go:184:6 *)
 Definition runBobⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -408,7 +408,12 @@ Definition initialize' : val :=
       do:  (time.initialize' #());;;
       do:  (sync.initialize' #());;;
       do:  (bytes.initialize' #());;;
-      do:  (package.alloc alicebob.alicebob #()))
+      do:  (package.alloc alicebob.alicebob #());;;
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := time.Millisecond in
+        do:  ((globals.get #server.BatchTimeout) <-[#time.Duration] "$r0");;;
+        return: #())
+        ) #()))
       ).
 
 End code.

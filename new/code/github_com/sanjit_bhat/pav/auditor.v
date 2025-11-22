@@ -60,7 +60,7 @@ Definition getNextLink : go_string := "github.com/sanjit-bhat/pav/auditor.getNex
 
 (* Update queries server for a new epoch update and applies it.
 
-   go: auditor.go:43:19 *)
+   go: auditor.go:44:19 *)
 Definition Auditor__Updateⁱᵐᵖˡ : val :=
   λ: "a" <>,
     with_defer: (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -72,13 +72,13 @@ Definition Auditor__Updateⁱᵐᵖˡ : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "numEps" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
-    slice.len "$a0"))) in
-    do:  ("numEps" <-[#uint64T] "$r0");;;
+    let: "prevEp" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (((![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
+    slice.len "$a0"))) - #(W64 1)) in
+    do:  ("prevEp" <-[#uint64T] "$r0");;;
     let: "upd" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] (struct.field_ref #serv #"cli"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
-    let: "$a1" := (![#uint64T] "numEps") in
+    let: "$a1" := (![#uint64T] "prevEp") in
     (func_call #server.CallAudit) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -167,7 +167,7 @@ Definition GetReply : go_type := structT [
 (* Get returns the auditor's info for a particular epoch.
    it errors if the epoch is out of bounds.
 
-   go: auditor.go:73:19 *)
+   go: auditor.go:74:19 *)
 Definition Auditor__Getⁱᵐᵖˡ : val :=
   λ: "a" "epoch",
     with_defer: (let: "a" := (mem.alloc "a") in
@@ -179,10 +179,6 @@ Definition Auditor__Getⁱᵐᵖˡ : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "numEpochs" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
-    slice.len "$a0"))) in
-    do:  ("numEpochs" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "epoch") < (![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a")))
     then
       return: (mem.alloc (let: "$Err" := ktcore.BlameUnknown in
@@ -196,7 +192,11 @@ Definition Auditor__Getⁱᵐᵖˡ : val :=
          "Err" ::= "$Err"
        }]))
     else do:  #());;;
-    (if: (![#uint64T] "epoch") ≥ (![#uint64T] "numEpochs")
+    let: "lastEp" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (((![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
+    slice.len "$a0"))) - #(W64 1)) in
+    do:  ("lastEp" <-[#uint64T] "$r0");;;
+    (if: (![#uint64T] "epoch") > (![#uint64T] "lastEp")
     then
       return: (mem.alloc (let: "$Err" := ktcore.BlameUnknown in
        struct.make #GetReply [{
@@ -232,7 +232,7 @@ Definition New : go_string := "github.com/sanjit-bhat/pav/auditor.New"%go.
 
 Definition CheckStart : go_string := "github.com/sanjit-bhat/pav/auditor.CheckStart"%go.
 
-(* go: auditor.go:90:6 *)
+(* go: auditor.go:91:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: "servAddr" "servPk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -341,7 +341,7 @@ Definition Newⁱᵐᵖˡ : val :=
 
 Definition getNextDig : go_string := "github.com/sanjit-bhat/pav/auditor.getNextDig"%go.
 
-(* go: auditor.go:112:6 *)
+(* go: auditor.go:113:6 *)
 Definition getNextLinkⁱᵐᵖˡ : val :=
   λ: "sigPk" "prevEp" "prevDig" "prevLink" "p",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -389,7 +389,7 @@ Definition getNextLinkⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")).
 
-(* go: auditor.go:129:6 *)
+(* go: auditor.go:130:6 *)
 Definition getNextDigⁱᵐᵖˡ : val :=
   λ: "prevDig" "updates",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -430,7 +430,7 @@ Definition getNextDigⁱᵐᵖˡ : val :=
       do:  ("dig" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "dig", ![#boolT] "err")).
 
-(* go: auditor.go:146:6 *)
+(* go: auditor.go:147:6 *)
 Definition CheckStartⁱᵐᵖˡ : val :=
   λ: "servPk" "reply",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in

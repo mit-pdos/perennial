@@ -329,11 +329,11 @@ End HistoryReply.
 Module AuditArg.
 Record t :=
   mk' {
-    PrevEpochLen: w64;
+    PrevEpoch: w64;
   }.
 
 Definition pure_enc obj :=
-  safemarshal.w64.pure_enc obj.(PrevEpochLen).
+  safemarshal.w64.pure_enc obj.(PrevEpoch).
 
 Definition wish b obj tail :=
   b = pure_enc obj ++ tail.
@@ -348,7 +348,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition own ptr obj d : iProp Σ :=
-  "Hstruct" ∷ ptr ↦{d} (server.AuditArg.mk obj.(PrevEpochLen)).
+  "Hstruct" ∷ ptr ↦{d} (server.AuditArg.mk obj.(PrevEpoch)).
 
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{

@@ -391,7 +391,7 @@ Module AuditArg.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  PrevEpochLen' : w64;
+  PrevEpoch' : w64;
 }.
 End def.
 End AuditArg.
@@ -405,11 +405,11 @@ Global Instance AuditArg_wf : struct.Wf server.AuditArg.
 Proof. apply _. Qed.
 
 Global Instance settable_AuditArg : Settable AuditArg.t :=
-  settable! AuditArg.mk < AuditArg.PrevEpochLen' >.
+  settable! AuditArg.mk < AuditArg.PrevEpoch' >.
 Global Instance into_val_AuditArg : IntoVal AuditArg.t :=
   {| to_val_def v :=
     struct.val_aux server.AuditArg [
-    "PrevEpochLen" ::= #(AuditArg.PrevEpochLen' v)
+    "PrevEpoch" ::= #(AuditArg.PrevEpoch' v)
     ]%struct
   |}.
 
@@ -422,23 +422,23 @@ Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_AuditArg_PrevEpochLen : IntoValStructField "PrevEpochLen" server.AuditArg AuditArg.PrevEpochLen'.
+Global Instance into_val_struct_field_AuditArg_PrevEpoch : IntoValStructField "PrevEpoch" server.AuditArg AuditArg.PrevEpoch'.
 Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_AuditArg PrevEpochLen':
+Global Instance wp_struct_make_AuditArg PrevEpoch':
   PureWp True
     (struct.make #server.AuditArg (alist_val [
-      "PrevEpochLen" ::= #PrevEpochLen'
+      "PrevEpoch" ::= #PrevEpoch'
     ]))%struct
-    #(AuditArg.mk PrevEpochLen').
+    #(AuditArg.mk PrevEpoch').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AuditArg_struct_fields_split dq l (v : AuditArg.t) :
   StructFieldsSplit dq l v (
-    "HPrevEpochLen" ∷ l ↦s[server.AuditArg :: "PrevEpochLen"]{dq} v.(AuditArg.PrevEpochLen')
+    "HPrevEpoch" ∷ l ↦s[server.AuditArg :: "PrevEpoch"]{dq} v.(AuditArg.PrevEpoch')
   ).
 Proof.
   rewrite /named.
