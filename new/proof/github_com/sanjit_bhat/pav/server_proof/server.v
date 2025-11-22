@@ -5,9 +5,13 @@ From New.proof.github_com.goose_lang Require Import std.
 From New.proof.github_com.sanjit_bhat.pav Require Import
   cryptoffi hashchain ktcore merkle.
 
+From New.proof.github_com.sanjit_bhat.pav.server_proof Require Import
+  serde.
+
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 Module server.
+Import serde.server.
 
 (* gmap from uid's to list of pks (indexed by version). *)
 Definition keys_ty := gmap w64 (list $ list w8).
@@ -20,6 +24,9 @@ Record t :=
     pending: keys_ty;
     (* history of digs and keys.
     server can update this by adding dig that corresponds to curr pending. *)
+    (* TODO: technically, keys can be derived from dig,
+    just like we derive links from digs in below specs. *)
+    (* NOTE: all read-only post-conds only reference hist. *)
     hist: list (list w8 * keys_ty);
   }.
 End state.
@@ -71,7 +78,6 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
   is_Server s γ -∗
   (* read-only. *)
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    (* postcond. it only references σ.(state.hist). *)
     ∃ sl_chainProof sl_linkSig sl_hist ptr_bound (err : ktcore.Blame)
       lastDig lastKeys lastLink,
     let numEps := length σ.(state.hist) in
@@ -115,7 +121,6 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) :
   is_Server s γ -∗
   (* read-only. *)
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    (* postcond. it only references σ.(state.hist). *)
     ∃ sl_proof (err : ktcore.Blame),
     ((
       "%Herr" ∷ ⌜err = {[ ktcore.BlameUnknown ]}⌝ ∗
@@ -144,6 +149,33 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) :
     )) -∗
     Φ #(sl_proof, err))) -∗
   WP s @ (ptrT.id server.Server.id) @ "Audit" #prevEpoch {{ Φ }}.
+Proof.
+Admitted.
+
+Lemma wp_Server_Start s γ :
+  ∀ Φ,
+  is_Server s γ -∗
+  (* read-only. *)
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+    ∃ ptr_reply reply last_link,
+    "#Hsl_reply" ∷ StartReply.own ptr_reply reply (□) ∗
+
+    "#His_PrevLink" ∷ hashchain.is_chain
+      (take (uint.nat reply.(StartReply.PrevEpochLen)) σ.(state.hist).*1)
+      None reply.(StartReply.PrevLink)
+      (uint.nat reply.(StartReply.PrevEpochLen)) ∗
+    "%His_ChainProof" ∷ ⌜hashchain.wish_Proof reply.(StartReply.ChainProof)
+      (drop (uint.nat reply.(StartReply.PrevEpochLen)) σ.(state.hist).*1)⌝ ∗
+    "#His_last_link" ∷ hashchain.is_chain σ.(state.hist).*1 None
+      last_link (length σ.(state.hist)) ∗
+    "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(serverγ.sig_pk)
+      (W64 $ length σ.(state.hist) - 1) last_link reply.(StartReply.LinkSig) ∗
+
+    "%Heq_VrfPk" ∷ ⌜γ.(serverγ.vrf_pk) = reply.(StartReply.VrfPk)⌝ ∗
+    "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(serverγ.sig_pk) γ.(serverγ.vrf_pk)
+      reply.(StartReply.VrfSig) -∗
+    Φ #ptr_reply)) -∗
+  WP s @ (ptrT.id server.Server.id) @ "Start" #() {{ Φ }}.
 Proof.
 Admitted.
 
