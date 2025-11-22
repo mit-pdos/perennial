@@ -110,6 +110,32 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
 Proof.
 Admitted.
 
+Lemma wp_Server_Audit s γ (prevEpoch : w64) :
+  ∀ Φ,
+  is_Server s γ -∗
+  (* read-only. *)
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+    (* postcond. it only references σ.(state.hist). *)
+    ∃ sl_proof (err : ktcore.Blame),
+    ((
+      "%Herr" ∷ ⌜err = {[ ktcore.BlameUnknown ]}⌝ ∗
+      "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist)⌝
+    ) ∨ (
+      ∃ proof prevDig,
+      "%Herr" ∷ ⌜err = ∅⌝ ∗
+      "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist)⌝ ∗
+
+      "#Hsl_proof" ∷ ktcore.AuditProofSlice1D.own sl_proof proof (□) ∗
+
+      "%Heq_prevDig" ∷ ⌜σ.(state.hist).*1 !! (uint.nat prevEpoch) = Some prevDig⌝ ∗
+      "#Hwish_audit" ∷ ktcore.wish_ListAudit prevDig proof
+        (drop (S $ uint.nat prevEpoch) σ.(state.hist).*1)
+    )) -∗
+    Φ #(sl_proof, err))) -∗
+  WP s @ (ptrT.id server.Server.id) @ "Audit" #prevEpoch {{ Φ }}.
+Proof.
+Admitted.
+
 (* For proving the "all good clients" idiom spec, perhaps only need an invariant
    like:
 inv (∃ σ,
