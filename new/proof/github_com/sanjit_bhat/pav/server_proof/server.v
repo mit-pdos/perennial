@@ -20,13 +20,14 @@ Module state.
 Record t :=
   mk {
     (* pending map of all keys.
-    client gives server permission to add to this. *)
+    client gives server permission to add to this.
+    all writable post-conds only reference pending. *)
     pending: keys_ty;
     (* history of digs and keys.
-    server can update this by adding dig that corresponds to curr pending. *)
-    (* TODO: technically, keys can be derived from dig,
-    just like we derive links from digs in below specs. *)
-    (* NOTE: all read-only post-conds only reference hist. *)
+    server can update this by adding dig that corresponds to curr pending.
+    all read-only post-conds only reference hist. *)
+    (* TODO: technically, can derive keys from dig,
+    just like we derive link from digs in below specs. *)
     hist: list (list w8 * keys_ty);
   }.
 End state.
@@ -63,6 +64,7 @@ Lemma wp_Server_Put s γ uid pk sl_pk ver :
   ∀ Φ,
   is_Server s γ -∗
   sl_pk ↦*□ pk -∗
+  (* writable. *)
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
     (own_Server γ (pure_put σ uid pk ver) ={∅,⊤}=∗ True)) ∗
   (* fupd might be used after Put returns, so Φ goes separately. *)
