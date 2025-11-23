@@ -27,23 +27,28 @@ Record t :=
     server can update this by adding dig that corresponds to curr pending.
     all read-only post-conds only reference hist. *)
     (* TODO: technically, can derive keys from dig,
-    just like we derive link from digs in below specs. *)
+    just like we derive link from digs in below specs.
+    that would be a bit more work since a dig inverts to a merkle map,
+    which requires a few more steps to connect to (uid, ver, pk). *)
     hist: list (list w8 * keys_ty);
   }.
 End state.
 
-Module serverγ.
+Module servγ.
 Record t :=
   mk {
     sig_pk: list w8;
     vrf_pk: list w8;
+    (* map from uid to gname. *)
+    uidγ: gmap w64 gname;
+    histγ: gname;
   }.
-End serverγ.
+End servγ.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Implicit Types γ : serverγ.t.
+Implicit Types γ : servγ.t.
 Implicit Types σ : state.t.
 
 Axiom is_Server : ∀ (s : loc) γ, iProp Σ.
@@ -52,6 +57,8 @@ Axiom own_Server : ∀ γ σ, iProp Σ.
 
 Axiom own_Server_timeless : ∀ γ σ,  Timeless (own_Server γ σ).
 Global Existing Instance own_Server_timeless.
+
+(** "low-level" specs for server methods. *)
 
 Definition pure_put σ uid pk (ver : w64) :=
   let pks := σ.(state.pending) !!! uid in
@@ -103,14 +110,14 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
 
       "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
         (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
-      "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(serverγ.sig_pk)
+      "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
         (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
-      "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(serverγ.vrf_pk) uid prevVerLen
+      "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(servγ.vrf_pk) uid prevVerLen
         lastDig hist ∗
       "%Heq_hist" ∷ ⌜Forall2
         (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
         (drop (uint.nat prevVerLen) pks) hist⌝ ∗
-      "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(serverγ.vrf_pk) uid
+      "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(servγ.vrf_pk) uid
         (W64 $ length pks) lastDig bound
     )) -∗
     Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err))) -∗
@@ -142,7 +149,7 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) :
         let ep := S $ (uint.nat prevEpoch + k)%nat in
         "#His_link" ∷ hashchain.is_chain (take (S ep) σ.(state.hist).*1)
           None link (S ep) ∗
-        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(serverγ.sig_pk)
+        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
           (W64 ep) link aud.(ktcore.AuditProof.LinkSig))
       (* no need to explicitly state update labels and vals.
       those are tied down by UpdateProof, which is tied into server's digs.
@@ -170,27 +177,37 @@ Lemma wp_Server_Start s γ :
       (drop (uint.nat reply.(StartReply.PrevEpochLen)) σ.(state.hist).*1)⌝ ∗
     "#His_last_link" ∷ hashchain.is_chain σ.(state.hist).*1 None
       last_link (length σ.(state.hist)) ∗
-    "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(serverγ.sig_pk)
+    "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
       (W64 $ length σ.(state.hist) - 1) last_link reply.(StartReply.LinkSig) ∗
 
-    "%Heq_VrfPk" ∷ ⌜γ.(serverγ.vrf_pk) = reply.(StartReply.VrfPk)⌝ ∗
-    "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(serverγ.sig_pk) γ.(serverγ.vrf_pk)
+    "%Heq_VrfPk" ∷ ⌜γ.(servγ.vrf_pk) = reply.(StartReply.VrfPk)⌝ ∗
+    "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(servγ.sig_pk) γ.(servγ.vrf_pk)
       reply.(StartReply.VrfSig) -∗
     Φ #ptr_reply)) -∗
   WP s @ (ptrT.id server.Server.id) @ "Start" #() {{ Φ }}.
 Proof.
 Admitted.
 
-(* For proving the "all good clients" idiom spec, perhaps only need an invariant
-   like:
-inv (∃ σ,
-      own_Server γs σ ∗
-      ([∗ map] (uid,ver) ↦ pk ∈ σ,
-        (witness that uid committed to ver being pk))
-) *)
+(** invariants on server state. *)
 
-(* For proving the "adversarial clients" idiom spec, perhaps only need an invariant
-   like: inv (∃ σ, own_Server γs σ) *)
+(* serverσ.hist. *)
+Context `{!mono_listG (list w8 * keys_ty) Σ}.
+(* each uid has a mono_list of (ver, pk). *)
+Context `{!mono_listG (w64 * list w8) Σ}.
+
+Definition serv_inv γ : iProp Σ :=
+  ∃ σ,
+  "Hserv" ∷ own_Server γ σ ∗
+  "#Hpending" ∷ ([∗ map] uid ↦ pks ∈ σ.(state.pending),
+    ∃ uidγ,
+    "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
+    "#Hpks" ∷ ([∗ list] ver ↦ pk ∈ pks,
+      ∃ i,
+      (* NOTE: client owns mlist_auth for their uid.
+      for adversarial uid, auth in inv. *)
+      mono_list_idx_own uidγ i ((W64 ver), pk))) ∗
+  (* NOTE: client remembers lb's of this. *)
+  "Hhist" ∷ mono_list_auth_own γ.(servγ.histγ) 1 σ.(state.hist).
 
 End proof.
 End server.
