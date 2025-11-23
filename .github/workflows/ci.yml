@@ -19,7 +19,6 @@ jobs:
         coq_version:
           - dev
           - "9.1"
-          - "9.0"
       max-parallel: 4
       fail-fast: false
 
@@ -56,6 +55,9 @@ jobs:
 
   check-goose:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
@@ -69,6 +71,8 @@ jobs:
           cd etc/ci-use-goose-pr
           go install .
       - name: check that Goosed files are clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             ci-use-goose-pr -pr ${{ github.event.number }} -verbose
