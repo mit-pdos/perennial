@@ -50,15 +50,13 @@ jobs:
             startGroup Build
               make -j4 -k ci
             endGroup
-          after_script: |
-            startGroup Create timing report
-              ./etc/timing-report.py --max-files 50
-            endGroup
-          uninstall: |
-            make clean
+          uninstall:
       - name: Revert permissions
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
+      - name: Report timing statistics
+        run: |
+          ./etc/timing-report.py --max-files 50
 
   check-goose:
     runs-on: ubuntu-latest
