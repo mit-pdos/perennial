@@ -84,16 +84,10 @@ unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
 ci: skip-qed src/ShouldBuild.vo
-	$(Q)if [ ${TIMED} = "true" ]; then \
-		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
-		fi
 
 # compiled by Rocq CI
 # not intended for normal development
 lite: src/LiteBuild.vo
-	$(Q)if [ ${TIMED} = "true" ]; then \
-		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
-		fi
 
 clean:
 	@echo "CLEAN vo glob aux"
