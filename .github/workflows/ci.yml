@@ -19,7 +19,6 @@ jobs:
         coq_version:
           - dev
           - "9.1"
-          - "9.0"
       max-parallel: 4
       fail-fast: false
 
