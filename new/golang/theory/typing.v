@@ -510,7 +510,7 @@ Program Global Instance into_val_typed_interface : IntoValTyped interface.t inte
 {| default_val := interface.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation.
+Final Obligation.
   rewrite to_val_unseal => [x y] Heq.
   destruct x as [|], y as [|].
   {
@@ -519,9 +519,6 @@ Next Obligation.
     apply to_val_inj in Heq1. subst. done.
   }
   all: first [discriminate | reflexivity].
-Qed.
-Final Obligation.
-  solve_decision.
 Qed.
 
 Program Global Instance into_val_typed_unit : IntoValTyped unit (structT []) :=

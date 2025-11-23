@@ -161,8 +161,7 @@ Proof.
   destruct ok; subst; wp_auto.
   { by iApply "HΦ". }
   wp_if_destruct.
-  { rewrite bool_decide_true //. wp_auto. by iApply "HΦ". }
-  rewrite bool_decide_false //. wp_auto.
+  { by iApply "HΦ". }
   by iApply "HΦ".
 Qed.
 
