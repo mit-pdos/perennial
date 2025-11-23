@@ -141,6 +141,23 @@ Section goose_lang.
   | mk (type_id : go_string) (v : val) : t
   | nil : t.
 
+  #[global] Instance eq_decision : EqDecision t.
+  Proof. solve_decision. Qed.
+
+  #[global] Instance countable : Countable t.
+  Proof.
+    apply (inj_countable' (A:=go_string * val + ())
+                       (λ x, match x with
+                             | mk type_id v => inl (type_id, v)
+                             | nil => inr tt
+                             end)
+                       (λ x, match x with
+                            | inl (type_id, v) => mk type_id v
+                            | inr _ => nil
+                            end)).
+    intros [|]; auto.
+  Defined.
+
 End goose_lang.
 End interface.
 

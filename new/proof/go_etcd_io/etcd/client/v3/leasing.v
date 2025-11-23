@@ -321,8 +321,7 @@ Proof.
   wp_if_destruct.
   { (* got a valid session *)
     rewrite (decide_True _ _ eq_refl).
-    rewrite bool_decide_true //.
-    wp_auto. wp_apply (wp_RWMutex__Lock with "[$Hmu]").
+    wp_apply (wp_RWMutex__Lock with "[$Hmu]").
     iIntros "[Hmu Hown]". wp_auto.
     iClear "Hsession_lock".
     iNamedSuffix "Hown" "_lock".
@@ -345,7 +344,7 @@ Proof.
     iFrame "#". destruct (decide (s = null)); done.
   }
   { (* not a valid session. *)
-    rewrite bool_decide_false //. wp_auto. wp_for_post.
+    wp_for_post.
     iFrame "∗#%". iExists true. iFrame.
   }
 Qed.
@@ -542,12 +541,10 @@ Proof.
   iIntros "* [Hlkv Hready]".
   wp_auto. wp_if_destruct.
   2:{
-    rewrite bool_decide_false; last done.
-    wp_auto. iApply "HΦ". rewrite !decide_False //.
+    iApply "HΦ". rewrite !decide_False //.
   }
-  rewrite bool_decide_decide !decide_True //.
   iDestruct "Hready" as "#Hready".
-  wp_auto. wp_for.
+  wp_for.
   iPoseProof "Hctx" as "Hctx2".
   iNamedSuffix "Hctx2" "_ctx".
   wp_apply "HErr_ctx".
@@ -556,11 +553,11 @@ Proof.
   wp_auto.
   wp_if_destruct.
   2:{
-    rewrite bool_decide_decide !decide_False //. wp_auto.
+    rewrite decide_True // decide_False //.
     wp_apply ("HErr_ctx" with "[$Herr]"). iIntros (?) "%Herr". wp_auto.
     iApply "HΦ". rewrite !decide_False //.
   }
-  rewrite bool_decide_decide !decide_True //. wp_auto.
+  rewrite !decide_True //.
   rename err_ptr into outer_err_ptr. iRename "err" into "outer_err".
   wp_auto.
   (* wp_apply wp_leasingKV__tryModifyOp. *)
