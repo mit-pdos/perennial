@@ -34,7 +34,7 @@ jobs:
           install: |
             startGroup Install dependencies
               sudo apt-get update
-              sudo apt-get install -y python3 python3-pandas sqlite3
+              sudo apt-get install -y sqlite3
             endGroup
           # for permissions issue, see:
           # https://github.com/coq-community/docker-coq-action#permissions.
@@ -58,20 +58,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: true
       - uses: actions/setup-go@v6
         with:
           # pin exact version for deterministic stdlib translation.
           go-version: "1.24.9"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-          cache: "pip"
-      - run: pip install .
       - name: build ci-use-goose-pr
         run: |
           cd etc/ci-use-goose-pr
@@ -90,8 +82,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          submodules: true
       - name: Install protoc
         run: sudo apt-get install protobuf-compiler -y
       - name: Install Go
@@ -99,11 +89,6 @@ jobs:
         with:
           go-version: "1.24"
           cache: false
-      - name: Install Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-          cache: "pip"
       - name: Check Grackle
         run: |
           ./etc/ci-grackle-check.py
