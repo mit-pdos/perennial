@@ -18,9 +18,6 @@ Section defn.
 Context `{ffi_syntax}.
 (* Context `{hG: heapGS Σ, !ffi_semantics _ _}. *)
 Context `{PROP : Type}.
-(* FIXME: prove this and put it in golang directory. *)
-Instance interface_countable : Countable interface.t.
-Admitted.
 Record t :=
   mk
     {
