@@ -47,18 +47,10 @@ End servγ.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-Implicit Types γ : servγ.t.
-Implicit Types σ : state.t.
-
-Axiom is_Server : ∀ (s : loc) γ, iProp Σ.
-
-Axiom own_Server : ∀ γ σ, iProp Σ.
-
-Axiom own_Server_timeless : ∀ γ σ,  Timeless (own_Server γ σ).
-Global Existing Instance own_Server_timeless.
-
-(** "low-level" specs for server methods. *)
+(* serverσ.hist. *)
+Context `{!mono_listG (list w8 * keys_ty) Σ}.
+(* each uid has a mono_list of (ver, pk). *)
+Context `{!mono_listG (w64 * list w8) Σ}.
 
 Definition pure_put σ uid pk (ver : w64) :=
   let pks := σ.(state.pending) !!! uid in
@@ -66,16 +58,76 @@ Definition pure_put σ uid pk (ver : w64) :=
   if bool_decide (uint.nat ver ≠ length pks) then σ else
   set state.pending (<[uid:=pks ++ [pk]]>) σ.
 
+(** server invariants and ghost state. *)
+
+Implicit Types γ : servγ.t.
+Implicit Types σ : state.t.
+
+Definition serv_gs γ σ : iProp Σ :=
+  "#Hpend" ∷ ([∗ map] uid ↦ pks ∈ σ.(state.pending),
+    ∃ uidγ,
+    "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
+    "#Hpks" ∷ ([∗ list] ver ↦ pk ∈ pks,
+      ∃ i,
+      (* NOTE: client owns mlist_auth for their uid.
+      for adversarial uid, auth in inv. *)
+      mono_list_idx_own uidγ i ((W64 ver), pk))) ∗
+  (* NOTE: client remembers lb's of this. *)
+  "Hhist" ∷ mono_list_auth_own γ.(servγ.histγ) 1 σ.(state.hist).
+
+Lemma gs_put γ σ uid pk ver uidγ i :
+  serv_gs γ σ -∗
+  ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
+  mono_list_idx_own uidγ i (ver, pk) -∗
+  serv_gs γ (pure_put σ uid pk ver).
+Proof.
+  iIntros "@ %Hlook_uidγ #Hmono_idx".
+  iSplitR.
+  - rewrite /pure_put.
+    case_bool_decide; [iFrame "#"|].
+    simpl.
+    iApply big_sepM_insert_2; [|iFrame "#"].
+    iFrame "%".
+    iApply big_sepL_snoc.
+    iSplit.
+    2: { iExists _. iExactEq "Hmono_idx". repeat f_equal. word. }
+    rewrite lookup_total_alt.
+    destruct (σ.(state.pending) !! uid) eqn:Hlook;
+      rewrite Hlook; simpl; [|done].
+    iDestruct (big_sepM_lookup with "Hpend") as "@"; [done|].
+    by simplify_eq/=.
+  - rewrite /pure_put. case_bool_decide; iFrame.
+Qed.
+
+Axiom own_Server : ∀ γ σ, iProp Σ.
+
+Axiom own_Server_timeless : ∀ γ σ,  Timeless (own_Server γ σ).
+Global Existing Instance own_Server_timeless.
+
+Definition serv_inv γ : iProp Σ :=
+  ∃ σ,
+  "Hserv" ∷ own_Server γ σ ∗
+  "Hgs" ∷ serv_gs γ σ.
+
+Definition is_Server (s : loc) γ : iProp Σ :=
+  inv nroot (serv_inv γ).
+
+#[global] Instance is_Server_pers s γ : Persistent (is_Server s γ).
+Proof. apply _. Qed.
+
+(** "low-level" specs for server methods. *)
+
 (* RPC spec needs □ in front of atomic update. *)
 Lemma wp_Server_Put s γ uid pk sl_pk ver :
   ∀ Φ,
+  is_pkg_init server -∗
   is_Server s γ -∗
   sl_pk ↦*□ pk -∗
   (* writable. *)
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
-    (own_Server γ (pure_put σ uid pk ver) ={∅,⊤}=∗ True)) ∗
+    (own_Server γ (pure_put σ uid pk ver) ={∅,⊤}=∗ True)) -∗
   (* fupd might be used after Put returns, so Φ goes separately. *)
-  Φ #() -∗
+  ▷ Φ #() -∗
   WP s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver {{ Φ }}.
 Proof.
 Admitted.
@@ -84,6 +136,7 @@ Admitted.
 (* for idiomatic spec, use GS to contradict BlameUnknown. *)
 Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
   ∀ Φ,
+  is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
@@ -127,6 +180,7 @@ Admitted.
 
 Lemma wp_Server_Audit s γ (prevEpoch : w64) :
   ∀ Φ,
+  is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
@@ -163,6 +217,7 @@ Admitted.
 
 Lemma wp_Server_Start s γ :
   ∀ Φ,
+  is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
@@ -188,26 +243,36 @@ Lemma wp_Server_Start s γ :
 Proof.
 Admitted.
 
-(** invariants on server state. *)
+(** RA-based (more client-centric) specs. *)
 
-(* serverσ.hist. *)
-Context `{!mono_listG (list w8 * keys_ty) Σ}.
-(* each uid has a mono_list of (ver, pk). *)
-Context `{!mono_listG (w64 * list w8) Σ}.
-
-Definition serv_inv γ : iProp Σ :=
-  ∃ σ,
-  "Hserv" ∷ own_Server γ σ ∗
-  "#Hpending" ∷ ([∗ map] uid ↦ pks ∈ σ.(state.pending),
-    ∃ uidγ,
+Lemma wp_Server_Put' s γ uid sl_pk pk ver uidγ i :
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server s γ ∗
+    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
     "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
-    "#Hpks" ∷ ([∗ list] ver ↦ pk ∈ pks,
-      ∃ i,
-      (* NOTE: client owns mlist_auth for their uid.
-      for adversarial uid, auth in inv. *)
-      mono_list_idx_own uidγ i ((W64 ver), pk))) ∗
-  (* NOTE: client remembers lb's of this. *)
-  "Hhist" ∷ mono_list_auth_own γ.(servγ.histγ) 1 σ.(state.hist).
+    "#Hmono_idx" ∷ mono_list_idx_own uidγ i (ver, pk)
+  }}}
+  s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "[#? @] Hpost".
+  wp_apply (wp_Server_Put with "[//][//][//][][Hpost]").
+  2: { by iApply "Hpost". }
+  iModIntro.
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame.
+  iIntros "Hserv".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-]"); [|done].
+  iModIntro.
+  iFrame.
+  iApply (gs_put with "Hgs [//][//]").
+Qed.
 
 End proof.
 End server.
