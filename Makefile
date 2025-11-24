@@ -57,6 +57,10 @@ TIMING_EXT?=timing
 TIMING_EXTRA = > $<.$(TIMING_EXT)
 endif
 
+install:
+	./etc/install.sh
+.PHONY: install
+
 
 %.vo: %.v _RocqProject | .rocqdeps.d
 	@echo "ROCQ COMPILE $<"
