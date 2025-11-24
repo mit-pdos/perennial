@@ -1,7 +1,7 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
-From Perennial.algebra Require ghost_async_map.
+From Perennial.algebra Require ghost_async_map abs_laterable.
 
 From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy
@@ -108,10 +108,16 @@ From Perennial.program_proof.minlease Require proof.
 
 (* Grove tutorial *)
 From Perennial.program_proof.tutorial Require
-     basics.proof
+     basics.proof basics.full_proof
      queue.proof
      kvservice.proof
      kvservice.full_proof.
+From Perennial.program_proof.tutorial.objectstore Require
+     chunk.writechunk_proof_gk
+     dir.chunkhandle_proof_gk
+     dir.finishwrite_proof_gk
+     dir.recordchunk_proof_gk
+.
 
 (* Verus-related proofs *)
 From Perennial.program_proof.verus Require
@@ -123,11 +129,15 @@ From Perennial.program_proof.verus Require
 
 From Perennial.program_proof.cachekv Require proof.
 
-(* pav with old goose *)
-From Perennial.program_proof.pav Require should_build.
+(** everything below is unmaintained but does build *)
 
-(* these are unmaintained but do build *)
+(* pav with old goose *)
+From Perennial.program_proof.pav Require should_build marshalutil workq.
+
 From Perennial.program_proof Require
-  optional_precond spellchecker.proof.
+  optional_precond spellchecker.proof bad_nil_slice bad_zero_func single.election.
+From Perennial.program_logic Require simulation.
+From Perennial.program_proof.tutorial.lockservice Require
+  proof lockrequest_proof_gk.
 
 From New Require should_build.
