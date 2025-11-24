@@ -1,7 +1,7 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
-From Perennial.algebra Require ghost_async_map abs_laterable.
+From Perennial.algebra Require ghost_async_map abs_laterable partition.
 
 From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy
