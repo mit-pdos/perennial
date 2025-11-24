@@ -22,11 +22,14 @@ From Perennial.program_proof Require
      txn.twophase_refinement_thm
      simple.proofs simple.example
 .
+From Perennial.program_proof.simple Require print_assumptions.
+
 
 From Perennial.program_proof.examples Require
      replicated_block_proof
      all_examples
 .
+From Perennial.program_proof.examples Require print_assumptions.
 
 From Perennial.program_proof.grove_shared Require
      urpc_proof erpc_proof.
@@ -38,6 +41,7 @@ From Perennial.program_proof.memkv Require
      memkv_clerk_proof
      lockservice_proof bank_proof
      closed.
+From Perennial.program_proof.memkv Require print_assumptions.
 
 (* Epoch-fencing examples *)
 From Perennial.program_proof.fencing Require
@@ -51,15 +55,18 @@ From Perennial.program_proof.aof Require proof.
 (* vrsm *)
 From Perennial.program_proof.vrsm Require
      reconfig.proof vkv.kv_proof closed_proof.
+From Perennial.program_proof.vrsm Require print_assumptions.
 
 (* MVCC *)
-From Perennial.program_proof.mvcc Require mvcc_proof.
+From Perennial.program_proof.mvcc Require db_run mvcc_proof.
+From Perennial.program_proof.mvcc Require print_assumptions.
 
 (* rsm *)
 From Perennial.program_proof.rsm Require rsm_proof.
 
 (* tulip *)
 From Perennial.program_proof.tulip Require tulip_proof.
+From Perennial.program_proof.tulip Require print_assumptions.
 
 (*
 From Perennial.goose_lang Require
@@ -108,8 +115,19 @@ From Perennial.program_proof.tutorial Require
 
 (* Verus-related proofs *)
 From Perennial.program_proof.verus Require
-    wrs.
+    wrs wrsmulti inv ucmra_cmra_adjunction.
+(*
+From Perennial.program_proof.verus Require
+    typecast_nontermination.
+*)
 
 From Perennial.program_proof.cachekv Require proof.
+
+(* pav with old goose *)
+From Perennial.program_proof.pav Require should_build.
+
+(* these are unmaintained but do build *)
+From Perennial.program_proof Require
+  optional_precond spellchecker.proof.
 
 From New Require should_build.
