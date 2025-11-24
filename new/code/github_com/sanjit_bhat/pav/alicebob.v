@@ -2,7 +2,6 @@
 Require Export New.code.bytes.
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.std.
-Require Export New.code.github_com.sanjit_bhat.pav.advrpc.
 Require Export New.code.github_com.sanjit_bhat.pav.auditor.
 Require Export New.code.github_com.sanjit_bhat.pav.client.
 Require Export New.code.github_com.sanjit_bhat.pav.cryptoffi.
@@ -34,7 +33,7 @@ Definition runBob : go_string := "github.com/sanjit-bhat/pav/alicebob.runBob"%go
 
 Definition runAlice : go_string := "github.com/sanjit-bhat/pav/alicebob.runAlice"%go.
 
-(* go: alicebob.go:27:6 *)
+(* go: alicebob.go:26:6 *)
 Definition testAliceBobⁱᵐᵖˡ : val :=
   λ: "servAddr" "adtrAddr",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -186,12 +185,7 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
-    let: "adtrCli" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "adtrAddr") in
-    (func_call #advrpc.Dial) "$a0") in
-    do:  ("adtrCli" <-[#ptrT] "$r0");;;
-    (let: "$r0" := (let: "$a0" := (![#ptrT] "adtrCli") in
-    (func_call #auditor.CallUpdate) "$a0") in
+    (let: "$r0" := ((method_call #(ptrT.id auditor.Auditor.id) #"Update"%go (![#ptrT] "adtr")) #()) in
     do:  ("err" <-[#ktcore.Blame] "$r0");;;
     (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
     then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
@@ -239,7 +233,7 @@ Definition histEntry : go_type := structT [
 #[global] Typeclasses Opaque histEntry.
 #[global] Opaque histEntry.
 
-(* go: alicebob.go:126:6 *)
+(* go: alicebob.go:124:6 *)
 Definition equalⁱᵐᵖˡ : val :=
   λ: "o0" "o1",
     exception_do (let: "o1" := (mem.alloc "o1") in
@@ -259,7 +253,7 @@ Definition loopPending : go_string := "github.com/sanjit-bhat/pav/alicebob.loopP
 
 (* runAlice does a bunch of puts.
 
-   go: alicebob.go:137:6 *)
+   go: alicebob.go:135:6 *)
 Definition runAliceⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -321,7 +315,7 @@ Definition runAliceⁱᵐᵖˡ : val :=
       do:  ("hist" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "hist", ![#ktcore.Blame] "err")).
 
-(* go: alicebob.go:167:6 *)
+(* go: alicebob.go:165:6 *)
 Definition loopPendingⁱᵐᵖˡ : val :=
   λ: "cli" "ep",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -350,7 +344,7 @@ Definition loopPendingⁱᵐᵖˡ : val :=
 
 (* runBob does a get at some time in the middle of alice's puts.
 
-   go: alicebob.go:184:6 *)
+   go: alicebob.go:182:6 *)
 Definition runBobⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -391,7 +385,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(histEntry.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.time.time; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.advrpc.advrpc; code.github_com.sanjit_bhat.pav.auditor.auditor; code.github_com.sanjit_bhat.pav.client.client; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.server.server];
+    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.time.time; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.auditor.auditor; code.github_com.sanjit_bhat.pav.client.client; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.server.server];
   |}.
 
 Definition initialize' : val :=
@@ -402,7 +396,6 @@ Definition initialize' : val :=
       do:  (cryptoffi.initialize' #());;;
       do:  (client.initialize' #());;;
       do:  (auditor.initialize' #());;;
-      do:  (advrpc.initialize' #());;;
       do:  (std.initialize' #());;;
       do:  (primitive.initialize' #());;;
       do:  (time.initialize' #());;;

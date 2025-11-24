@@ -691,8 +691,12 @@ Global Instance wp_func_call_checkNonMemb :
   WpFuncCall client.checkNonMemb _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_checkAudit :
-  WpFuncCall client.checkAudit _ (is_pkg_defined client) :=
+Global Instance wp_func_call_checkAuditLink :
+  WpFuncCall client.checkAuditLink _ (is_pkg_defined client) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_checkAuditVrf :
+  WpFuncCall client.checkAuditVrf _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Client'ptr_Audit :
