@@ -93,20 +93,25 @@ Definition is_always_safe_to_compare t V `{!EqDecision V} `{!IntoVal V}
   `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
   ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
 
-Definition element_list_nil_def (key_type : option go.type) (elem_type : go.type) : val :=
-  λ: <>, ArrayV [].
-Program Definition element_list_nil := sealed element_list_nil_def.
-Definition element_list_nil_unseal : element_list_nil = _ := seal_eq _.
+Definition AllocValue_def t : val :=
+  λ: "v", let: "l" := GoAlloc t #() in GoStore t ("l", "v");; "l".
+Program Definition AllocValue := sealed AllocValue_def.
+Definition AllocValue_unseal : AllocValue = _ := seal_eq _.
 
-Definition element_list_cons_def : val :=
+Definition ElementListNil_def (key_type : option go.type) (elem_type : go.type) : val :=
+  λ: <>, ArrayV [].
+Program Definition ElementListNil := sealed ElementListNil_def.
+Definition ElementListNil_unseal : ElementListNil = _ := seal_eq _.
+
+Definition ElementListApp_def : val :=
   λ: "v" "l", ArrayAppend ("l", "v").
-Program Definition element_list_cons := sealed element_list_cons_def.
-Definition element_list_cons_unseal : element_list_cons = _ := seal_eq _.
+Program Definition ElementListApp := sealed ElementListApp_def.
+Definition ElementListApp_unseal : ElementListApp = _ := seal_eq _.
 
-Definition struct_element_list_nil_def : val :=
+Definition StructElementListNil_def : val :=
   λ: <>, ArrayV [].
-Program Definition struct_element_list_nil := sealed struct_element_list_nil_def.
-Definition struct_element_list_nil_unseal : struct_element_list_nil = _ := seal_eq _.
+Program Definition StructElementListNil := sealed StructElementListNil_def.
+Definition StructElementListNil_unseal : StructElementListNil = _ := seal_eq _.
 
 (* Here's an example exhibiting struct comparison subtleties:
 

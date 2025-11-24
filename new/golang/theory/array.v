@@ -13,20 +13,20 @@ Global Instance unkeyed_element_list_into_val V
     zero_val := [];
   |}.
 
-Global Instance pure_wp_unkeyed_element_list_nil elem_type
+Global Instance pure_wp_unkeyed_ElementListNil elem_type
            `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
-  PureWp True (go.element_list_nil None elem_type #())
+  PureWp True (go.ElementListNil None elem_type #())
     #([] : unkeyed_element_list V).
 Proof.
-  pure_wp_start. rewrite go.element_list_nil_unseal. wp_call_lc "?". rewrite into_val_unseal.
+  pure_wp_start. rewrite go.ElementListNil_unseal. wp_call_lc "?". rewrite into_val_unseal.
   by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_unkeyed_element_list_cons `{!IntoVal V} (v : V)
+Global Instance pure_wp_unkeyed_ElementListApp `{!IntoVal V} (v : V)
   (l : unkeyed_element_list V) :
-  PureWp True (go.element_list_cons #v #l) #(l ++ [v]).
+  PureWp True (go.ElementListApp #v #l) #(l ++ [v]).
 Proof.
-  pure_wp_start. rewrite go.element_list_cons_unseal. wp_call_lc "?".
+  pure_wp_start. rewrite go.ElementListApp_unseal. wp_call_lc "?".
   rewrite [in (into_val (V:=unkeyed_element_list _))]into_val_unseal. simpl.
   wp_pures. rewrite fmap_app /=. by iApply "HΦ".
 Qed.
@@ -39,23 +39,23 @@ Global Instance element_list_into_val K V
     zero_val := [];
   |}.
 
-Global Instance pure_wp_element_list_nil key_type elem_type
+Global Instance pure_wp_ElementListNil key_type elem_type
           `{!IntoVal K} `{!IntoVal V}
           `{!TypedPointsto K} `{!TypedPointsto V}
           `{!IntoValTyped K key_type} `{!IntoValTyped V elem_type} :
-  PureWp True (go.element_list_nil (Some key_type) elem_type #())
+  PureWp True (go.ElementListNil (Some key_type) elem_type #())
     #([] : element_list K V).
 Proof.
-  pure_wp_start. rewrite go.element_list_nil_unseal. wp_call_lc "?". rewrite into_val_unseal.
+  pure_wp_start. rewrite go.ElementListNil_unseal. wp_call_lc "?". rewrite into_val_unseal.
   by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_element_list_cons `{!IntoVal K} `{!IntoVal V} (k : K) (v : V)
+Global Instance pure_wp_ElementListApp `{!IntoVal K} `{!IntoVal V} (k : K) (v : V)
   (l : element_list K V) :
-  PureWp True (go.element_list_cons (#k, #v)%V #l)
+  PureWp True (go.ElementListApp (#k, #v)%V #l)
       #(l ++ [(k,v)]).
 Proof.
-  pure_wp_start. rewrite go.element_list_cons_unseal. wp_call_lc "?".
+  pure_wp_start. rewrite go.ElementListApp_unseal. wp_call_lc "?".
   rewrite [in (into_val (V:=element_list _ _))]into_val_unseal. simpl.
   wp_pures. rewrite fmap_app /=. by iApply "HΦ".
 Qed.
@@ -68,19 +68,19 @@ Global Instance struct_element_list_into_val :
     zero_val := [];
   |}.
 
-Global Instance pure_wp_struct_element_list_nil  :
-  PureWp True (go.struct_element_list_nil #())
+Global Instance pure_wp_StructElementListNil  :
+  PureWp True (go.StructElementListNil #())
     #([] : struct_element_list).
 Proof.
-  pure_wp_start. rewrite go.struct_element_list_nil_unseal. wp_call_lc "?". rewrite into_val_unseal.
+  pure_wp_start. rewrite go.StructElementListNil_unseal. wp_call_lc "?". rewrite into_val_unseal.
   by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_struct_element_list_cons (v : val)
+Global Instance pure_wp_StructElementListApp (v : val)
   (l : struct_element_list) :
-  PureWp True (go.element_list_cons v #l) #(l ++ [v]).
+  PureWp True (go.ElementListApp v #l) #(l ++ [v]).
 Proof.
-  pure_wp_start. rewrite go.element_list_cons_unseal. wp_call_lc "?".
+  pure_wp_start. rewrite go.ElementListApp_unseal. wp_call_lc "?".
   rewrite [in (into_val (V:=struct_element_list))]into_val_unseal. simpl.
   wp_pures. by iApply "HΦ".
 Qed.
