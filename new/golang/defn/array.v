@@ -36,11 +36,15 @@ Class ArraySemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} :=
              (ArrayV []) (seqZ 0 n)
     )%V;
 
-
   index_ref_array n elem_type i l :
     index_ref (go.ArrayType n elem_type) i #l = #(array_index_ref elem_type i l);
   index_array n elem_type i l v (Hinrange : l !! (Z.to_nat i) = Some v):
     index (go.ArrayType n elem_type) i (ArrayV l) = (Val v);
+
+  (* this only supports unkeyed array literals; goose will unfold them for now. *)
+  composite_literal_array n elem_type (vs : list val) :
+    composite_literal (go.ArrayType n elem_type) (ArrayV vs) =
+    (#();; ArrayV vs)%E;
 
   array_index_ref_add t i j l :
     array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);

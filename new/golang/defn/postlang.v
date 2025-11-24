@@ -93,6 +93,21 @@ Definition is_always_safe_to_compare t V `{!EqDecision V} `{!IntoVal V}
   `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
   ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
 
+Definition element_list_nil_def (key_type : option go.type) (elem_type : go.type) : val :=
+  λ: <>, ArrayV [].
+Program Definition element_list_nil := sealed element_list_nil_def.
+Definition element_list_nil_unseal : element_list_nil = _ := seal_eq _.
+
+Definition element_list_cons_def : val :=
+  λ: "v" "l", ArrayAppend ("l", "v").
+Program Definition element_list_cons := sealed element_list_cons_def.
+Definition element_list_cons_unseal : element_list_cons = _ := seal_eq _.
+
+Definition struct_element_list_nil_def : val :=
+  λ: <>, ArrayV [].
+Program Definition struct_element_list_nil := sealed struct_element_list_nil_def.
+Definition struct_element_list_nil_unseal : struct_element_list_nil = _ := seal_eq _.
+
 (* Here's an example exhibiting struct comparison subtleties:
 
 ```
@@ -166,14 +181,6 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
 }.
 
 
-Definition element_list K V := list (K * V).
-Global Instance element_list_into_val K V
-  `{!IntoVal K} `{!IntoVal V} : IntoVal (element_list K V) :=
-  {|
-    into_val_def kvs := ArrayV ((λ '(k,v), (#k,#v)%V) <$> kvs ) ;
-    zero_val := [];
-  |}.
-
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
@@ -239,6 +246,9 @@ Class CoreSemantics {go_ctx : GoContext} :=
 
   method_interface t m (H : is_interface_type t = true) :
     #(methods t m) = (InterfaceGet m);
+
+  composite_literal_underlying t :
+    composite_literal t = composite_literal (to_underlying t);
 
   composite_literal_struct fds (fvs : list val) (* in-order *)
                            (Hlen : length fvs = length fds) :

@@ -391,6 +391,10 @@ Global Instance wp_InternalMapMake (v : val) :
   PureWp True (InternalMapMake v) (map_empty v).
 Proof. solve_pure. Qed.
 
+Global Instance pure_wp_CompositeLiteral t (v : val) :
+  PureWp True (CompositeLiteral t v) (composite_literal t v).
+Proof. solve_pure. Qed.
+
 Class IsGoEq t v1 v2 (b : bool) : Prop :=
   {
     wp_go_eq stk E Φ : Φ #b -∗ WP (go.go_eq t v1 v2) @ stk; E {{ Φ }}

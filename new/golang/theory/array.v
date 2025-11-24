@@ -1,6 +1,92 @@
 From New.golang.defn Require Export array.
 From New.golang.theory Require Export predeclared.
 
+Section element_list_proof.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {core_sem : go.CoreSemantics}.
+
+Definition unkeyed_element_list V := list V.
+Global Instance unkeyed_element_list_into_val V
+  `{!IntoVal V} : IntoVal (unkeyed_element_list V) :=
+  {|
+    into_val_def vs := ArrayV ((λ v, #v) <$> vs ) ;
+    zero_val := [];
+  |}.
+
+Global Instance pure_wp_unkeyed_element_list_nil elem_type
+           `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  PureWp True (go.element_list_nil None elem_type #())
+    #([] : unkeyed_element_list V).
+Proof.
+  pure_wp_start. rewrite go.element_list_nil_unseal. wp_call_lc "?". rewrite into_val_unseal.
+  by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_unkeyed_element_list_cons `{!IntoVal V} (v : V)
+  (l : unkeyed_element_list V) :
+  PureWp True (go.element_list_cons #v #l) #(l ++ [v]).
+Proof.
+  pure_wp_start. rewrite go.element_list_cons_unseal. wp_call_lc "?".
+  rewrite [in (into_val (V:=unkeyed_element_list _))]into_val_unseal. simpl.
+  wp_pures. rewrite fmap_app /=. by iApply "HΦ".
+Qed.
+
+Definition element_list K V := list (K * V).
+Global Instance element_list_into_val K V
+  `{!IntoVal K} `{!IntoVal V} : IntoVal (element_list K V) :=
+  {|
+    into_val_def kvs := ArrayV ((λ '(k,v), (#k,#v)%V) <$> kvs ) ;
+    zero_val := [];
+  |}.
+
+Global Instance pure_wp_element_list_nil key_type elem_type
+          `{!IntoVal K} `{!IntoVal V}
+          `{!TypedPointsto K} `{!TypedPointsto V}
+          `{!IntoValTyped K key_type} `{!IntoValTyped V elem_type} :
+  PureWp True (go.element_list_nil (Some key_type) elem_type #())
+    #([] : element_list K V).
+Proof.
+  pure_wp_start. rewrite go.element_list_nil_unseal. wp_call_lc "?". rewrite into_val_unseal.
+  by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_element_list_cons `{!IntoVal K} `{!IntoVal V} (k : K) (v : V)
+  (l : element_list K V) :
+  PureWp True (go.element_list_cons (#k, #v)%V #l)
+      #(l ++ [(k,v)]).
+Proof.
+  pure_wp_start. rewrite go.element_list_cons_unseal. wp_call_lc "?".
+  rewrite [in (into_val (V:=element_list _ _))]into_val_unseal. simpl.
+  wp_pures. rewrite fmap_app /=. by iApply "HΦ".
+Qed.
+
+Definition struct_element_list := list val.
+Global Instance struct_element_list_into_val :
+  IntoVal (struct_element_list) :=
+  {|
+    into_val_def vs := ArrayV (vs ) ;
+    zero_val := [];
+  |}.
+
+Global Instance pure_wp_struct_element_list_nil  :
+  PureWp True (go.struct_element_list_nil #())
+    #([] : struct_element_list).
+Proof.
+  pure_wp_start. rewrite go.struct_element_list_nil_unseal. wp_call_lc "?". rewrite into_val_unseal.
+  by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_struct_element_list_cons (v : val)
+  (l : struct_element_list) :
+  PureWp True (go.element_list_cons v #l) #(l ++ [v]).
+Proof.
+  pure_wp_start. rewrite go.element_list_cons_unseal. wp_call_lc "?".
+  rewrite [in (into_val (V:=struct_element_list))]into_val_unseal. simpl.
+  wp_pures. by iApply "HΦ".
+Qed.
+
+End element_list_proof.
+
 Section lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {core_sem : go.CoreSemantics}
@@ -139,6 +225,15 @@ Proof.
     iApply (big_sepL_impl with "H2").
     iIntros "!# * % H". iExactEq "H". f_equal.
     f_equal. len.
+Qed.
+
+Lemma pure_wp_array_composite_literal `{!IntoVal V} elem_type n
+  (el : unkeyed_element_list V) :
+  PureWp True (composite_literal (go.ArrayType n elem_type) #el)
+         #(array.mk elem_type n el).
+Proof.
+  pure_wp_start. rewrite into_val_unseal. simpl.
+  rewrite go.composite_literal_array. wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
 End lemmas.

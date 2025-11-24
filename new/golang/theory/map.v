@@ -249,13 +249,13 @@ Proof using Inj0 pre_sem slice_sem.
   iApply "HΦ". iFrame "∗#%".
 Qed.
 
-Lemma wp_map_composite_literal key_type elem_type (kvs : list (K * V))
+Lemma wp_map_composite_literal key_type elem_type (kvs : element_list K V)
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ ⌜ Forall (λ '(pair k v), SafeMapKey key_type k) kvs ⌝ }}}
-    composite_literal (go.MapType key_type elem_type) (ArrayV ((λ '(pair k v), (#k,#v)%V) <$> kvs))
+    composite_literal (go.MapType key_type elem_type) #kvs
   {{{ mref, RET #mref; mref ↦$ (foldl (λ m '(pair k v), insert k v m) ∅ kvs) }}}.
 Proof using Inj0 array_sem core_sem pre_sem slice_sem.
-  wp_start as "%Hsafe".
+  wp_start as "%Hsafe". rewrite [in (_ (element_list _ _))]into_val_unseal.
   rewrite go.composite_literal_map.
   wp_auto. wp_apply wp_map_make1.
   iIntros "%mref Hm". wp_auto.
@@ -276,7 +276,6 @@ Proof using Inj0 array_sem core_sem pre_sem slice_sem.
     wp_bind (foldl _ _ _). apply Forall_app in Hsafe as [Hsafe Hsafe'].
     destruct x. rewrite Forall_singleton in Hsafe'.
     iSpecialize ("IH" with "[//] [$]").
-    Search (Forall _ [_]).
     iApply (wp_wand with "IH"). iIntros "% H". wp_auto.
     wp_apply (wp_map_insert with "[$]") as "Hm".
     iFrame.
