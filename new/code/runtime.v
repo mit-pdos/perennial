@@ -6767,11 +6767,11 @@ Definition panicunsafeslicenilptr1 : go_string := "runtime.panicunsafeslicenilpt
 
 Definition reflect_unsafeslice : go_string := "runtime.reflect_unsafeslice"%go.
 
-Axiom runeError : val.
+Axiom runeError : Z.
 
 Axiom runeSelf : Z.
 
-Axiom maxRune : val.
+Axiom maxRune : Z.
 
 Axiom surrogateMin : Z.
 
