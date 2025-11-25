@@ -316,36 +316,73 @@ Proof.
   iFrame "#".
 Qed.
 
-Definition wish_checkAudit servPk adtrPk ep reply : iProp Σ :=
-  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VrfSig adtrPk
-    reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.AdtrVrfSig) ∗
-  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VrfSig servPk
-    reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.ServVrfSig) ∗
+Definition wish_checkAuditLink servPk adtrPk ep link : iProp Σ :=
   "#Hwish_adtr_linkSig" ∷ ktcore.wish_LinkSig adtrPk ep
-    reply.(auditor.GetReply.Link) reply.(auditor.GetReply.AdtrLinkSig) ∗
+    link.(auditor.SignedLink.Link) link.(auditor.SignedLink.AdtrSig) ∗
   "#Hwish_serv_linkSig" ∷ ktcore.wish_LinkSig servPk ep
-    reply.(auditor.GetReply.Link) reply.(auditor.GetReply.ServLinkSig).
+    link.(auditor.SignedLink.Link) link.(auditor.SignedLink.ServSig).
 
-Lemma wp_checkAudit sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_reply reply :
+Lemma wp_checkAuditLink sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_link link :
   {{{
     is_pkg_init client ∗
     "#Hsl_servPk" ∷ sl_servPk ↦*□ servPk ∗
     "#Hsl_adtrPk" ∷ sl_adtrPk ↦*□ adtrPk ∗
-    "#Hown_reply" ∷ auditor.GetReply.own ptr_reply reply (□)
+    "#Hown_link" ∷ auditor.SignedLink.own ptr_link link (□)
   }}}
-  @! client.checkAudit #sl_servPk #sl_adtrPk #ep #ptr_reply
+  @! client.checkAuditLink #sl_servPk #sl_adtrPk #ep #ptr_link
   {{{
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkAudit servPk adtrPk ep reply
+      | true => ¬ wish_checkAuditLink servPk adtrPk ep link
       | false =>
-        "#Hwish_checkAudit" ∷ wish_checkAudit servPk adtrPk ep reply
+        "#Hwish_checkAuditLink" ∷ wish_checkAuditLink servPk adtrPk ep link
       end
   }}}.
 Proof.
   wp_start as "@".
-  iNamed "Hown_reply".
+  iNamed "Hown_link".
+  wp_auto.
+  wp_apply ktcore.wp_VerifyLinkSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_adtr_link".
+  wp_apply ktcore.wp_VerifyLinkSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_serv_link".
+  iApply "HΦ".
+  iFrame "#".
+Qed.
+
+Definition wish_checkAuditVrf servPk adtrPk vrf : iProp Σ :=
+  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VrfSig adtrPk
+    vrf.(auditor.SignedVrf.VrfPk) vrf.(auditor.SignedVrf.AdtrSig) ∗
+  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VrfSig servPk
+    vrf.(auditor.SignedVrf.VrfPk) vrf.(auditor.SignedVrf.ServSig).
+
+Lemma wp_checkAuditVrf sl_servPk servPk sl_adtrPk adtrPk ptr_vrf vrf :
+  {{{
+    is_pkg_init client ∗
+    "#Hsl_servPk" ∷ sl_servPk ↦*□ servPk ∗
+    "#Hsl_adtrPk" ∷ sl_adtrPk ↦*□ adtrPk ∗
+    "#Hown_vrf" ∷ auditor.SignedVrf.own ptr_vrf vrf (□)
+  }}}
+  @! client.checkAuditVrf #sl_servPk #sl_adtrPk #ptr_vrf
+  {{{
+    (err : bool), RET #err;
+    "Hgenie" ∷
+      match err with
+      | true => ¬ wish_checkAuditVrf servPk adtrPk vrf
+      | false =>
+        "#Hwish_checkAuditVrf" ∷ wish_checkAuditVrf servPk adtrPk vrf
+      end
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hown_vrf".
   wp_auto.
   wp_apply ktcore.wp_VerifyVrfSig as "* @".
   { iFrame "#". }
@@ -357,16 +394,6 @@ Proof.
   wp_if_destruct.
   { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
   iNamedSuffix "Hgenie" "_serv_vrf".
-  wp_apply ktcore.wp_VerifyLinkSig as "* @".
-  { iFrame "#". }
-  wp_if_destruct.
-  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
-  iNamedSuffix "Hgenie" "_adtr_link".
-  wp_apply ktcore.wp_VerifyLinkSig as "* @".
-  { iFrame "#". }
-  wp_if_destruct.
-  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
-  iNamedSuffix "Hgenie" "_serv_link".
   iApply "HΦ".
   iFrame "#".
 Qed.

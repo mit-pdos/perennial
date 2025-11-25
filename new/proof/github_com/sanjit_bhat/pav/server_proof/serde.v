@@ -9,29 +9,99 @@ From New.proof.github_com.sanjit_bhat.pav.server_proof Require Import base.
 
 Module server.
 
-Module StartReply.
+Module StartChain.
 Record t :=
   mk' {
     PrevEpochLen: w64;
     PrevLink: list w8;
     ChainProof: list w8;
     LinkSig: list w8;
-    VrfPk: list w8;
-    VrfSig: list w8;
   }.
 
 Definition pure_enc obj :=
   safemarshal.w64.pure_enc obj.(PrevEpochLen) ++
   safemarshal.Slice1D.pure_enc obj.(PrevLink) ++
   safemarshal.Slice1D.pure_enc obj.(ChainProof) ++
-  safemarshal.Slice1D.pure_enc obj.(LinkSig) ++
-  safemarshal.Slice1D.pure_enc obj.(VrfPk) ++
-  safemarshal.Slice1D.pure_enc obj.(VrfSig).
+  safemarshal.Slice1D.pure_enc obj.(LinkSig).
 
 Definition valid obj :=
   safemarshal.Slice1D.valid obj.(PrevLink) ∧
   safemarshal.Slice1D.valid obj.(ChainProof) ∧
-  safemarshal.Slice1D.valid obj.(LinkSig) ∧
+  safemarshal.Slice1D.valid obj.(LinkSig).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ sl_PrevLink sl_ChainProof sl_LinkSig,
+  "Hstruct" ∷ ptr ↦{d} (server.StartChain.mk obj.(PrevEpochLen) sl_PrevLink sl_ChainProof sl_LinkSig) ∗
+
+  "Hsl_PrevLink" ∷ sl_PrevLink ↦*{d} obj.(PrevLink) ∗
+  "Hsl_ChainProof" ∷ sl_ChainProof ↦*{d} obj.(ChainProof) ∗
+  "Hsl_LinkSig" ∷ sl_LinkSig ↦*{d} obj.(LinkSig).
+
+Lemma wp_enc obj sl_b b ptr_obj d :
+  {{{
+    is_pkg_init server ∗
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
+    "Hown_obj" ∷ own ptr_obj obj d
+  }}}
+  @! server.StartChainEncode #sl_b #ptr_obj
+  {{{
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜wish b' obj b⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_dec sl_b d b :
+  {{{
+    is_pkg_init server ∗
+    "Hsl_b" ∷ sl_b ↦*{d} b
+  }}}
+  @! server.StartChainDecode #sl_b
+  {{{
+    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
+    match err with
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
+    | false =>
+      ∃ obj tail,
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
+    end
+  }}}.
+Proof. Admitted.
+
+End proof.
+End StartChain.
+
+Module StartVrf.
+Record t :=
+  mk' {
+    VrfPk: list w8;
+    VrfSig: list w8;
+  }.
+
+Definition pure_enc obj :=
+  safemarshal.Slice1D.pure_enc obj.(VrfPk) ++
+  safemarshal.Slice1D.pure_enc obj.(VrfSig).
+
+Definition valid obj :=
   safemarshal.Slice1D.valid obj.(VrfPk) ∧
   safemarshal.Slice1D.valid obj.(VrfSig).
 
@@ -49,14 +119,86 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition own ptr obj d : iProp Σ :=
-  ∃ sl_PrevLink sl_ChainProof sl_LinkSig sl_VrfPk sl_VrfSig,
-  "Hstruct" ∷ ptr ↦{d} (server.StartReply.mk obj.(PrevEpochLen) sl_PrevLink sl_ChainProof sl_LinkSig sl_VrfPk sl_VrfSig) ∗
+  ∃ sl_VrfPk sl_VrfSig,
+  "Hstruct" ∷ ptr ↦{d} (server.StartVrf.mk sl_VrfPk sl_VrfSig) ∗
 
-  "Hsl_PrevLink" ∷ sl_PrevLink ↦*{d} obj.(PrevLink) ∗
-  "Hsl_ChainProof" ∷ sl_ChainProof ↦*{d} obj.(ChainProof) ∗
-  "Hsl_LinkSig" ∷ sl_LinkSig ↦*{d} obj.(LinkSig) ∗
   "Hsl_VrfPk" ∷ sl_VrfPk ↦*{d} obj.(VrfPk) ∗
   "Hsl_VrfSig" ∷ sl_VrfSig ↦*{d} obj.(VrfSig).
+
+Lemma wp_enc obj sl_b b ptr_obj d :
+  {{{
+    is_pkg_init server ∗
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
+    "Hown_obj" ∷ own ptr_obj obj d
+  }}}
+  @! server.StartVrfEncode #sl_b #ptr_obj
+  {{{
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜wish b' obj b⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_dec sl_b d b :
+  {{{
+    is_pkg_init server ∗
+    "Hsl_b" ∷ sl_b ↦*{d} b
+  }}}
+  @! server.StartVrfDecode #sl_b
+  {{{
+    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
+    match err with
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
+    | false =>
+      ∃ obj tail,
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
+    end
+  }}}.
+Proof. Admitted.
+
+End proof.
+End StartVrf.
+
+Module StartReply.
+Record t :=
+  mk' {
+    Chain: StartChain.t;
+    Vrf: StartVrf.t;
+  }.
+
+Definition pure_enc obj :=
+  StartChain.pure_enc obj.(Chain) ++
+  StartVrf.pure_enc obj.(Vrf).
+
+Definition valid obj :=
+  StartChain.valid obj.(Chain) ∧
+  StartVrf.valid obj.(Vrf).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ ptr_Chain ptr_Vrf,
+  "Hstruct" ∷ ptr ↦{d} (server.StartReply.mk ptr_Chain ptr_Vrf) ∗
+
+  "Hown_Chain" ∷ StartChain.own ptr_Chain obj.(Chain) d ∗
+  "Hown_Vrf" ∷ StartVrf.own ptr_Vrf obj.(Vrf) d.
 
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{
@@ -248,7 +390,7 @@ Record t :=
     LinkSig: list w8;
     Hist: list ktcore.Memb.t;
     Bound: ktcore.NonMemb.t;
-    Err: w64;
+    Err: bool;
   }.
 
 Definition pure_enc obj :=
@@ -256,7 +398,7 @@ Definition pure_enc obj :=
   safemarshal.Slice1D.pure_enc obj.(LinkSig) ++
   ktcore.MembSlice1D.pure_enc obj.(Hist) ++
   ktcore.NonMemb.pure_enc obj.(Bound) ++
-  safemarshal.w64.pure_enc obj.(Err).
+  safemarshal.bool.pure_enc obj.(Err).
 
 Definition valid obj :=
   safemarshal.Slice1D.valid obj.(ChainProof) ∧
@@ -394,12 +536,12 @@ Module AuditReply.
 Record t :=
   mk' {
     P: list ktcore.AuditProof.t;
-    Err: w64;
+    Err: bool;
   }.
 
 Definition pure_enc obj :=
   ktcore.AuditProofSlice1D.pure_enc obj.(P) ++
-  safemarshal.w64.pure_enc obj.(Err).
+  safemarshal.bool.pure_enc obj.(Err).
 
 Definition valid obj :=
   ktcore.AuditProofSlice1D.valid obj.(P).

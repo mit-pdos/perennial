@@ -19,8 +19,9 @@ Module auditor.
 Module Auditor. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.Auditor"%go. End Auditor.
 Module history. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.history"%go. End history.
 Module serv. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.serv"%go. End serv.
-Module UpdateReply. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.UpdateReply"%go. End UpdateReply.
 Module GetArg. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.GetArg"%go. End GetArg.
+Module SignedLink. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.SignedLink"%go. End SignedLink.
+Module SignedVrf. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.SignedVrf"%go. End SignedVrf.
 Module GetReply. Definition id : go_string := "github.com/sanjit-bhat/pav/auditor.GetReply"%go. End GetReply.
 
 Section code.
@@ -152,17 +153,21 @@ Definition Auditor__Updateⁱᵐᵖˡ : val :=
       do:  ((struct.field_ref #Auditor #"hist"%go (![#ptrT] "a")) <-[#sliceT] "$r0")));;;
     return: (![#ktcore.Blame] "err")).
 
-Definition GetReply : go_type := structT [
-  "Link" :: sliceT;
-  "ServLinkSig" :: sliceT;
-  "AdtrLinkSig" :: sliceT;
+Definition SignedVrf : go_type := structT [
   "VrfPk" :: sliceT;
-  "ServVrfSig" :: sliceT;
-  "AdtrVrfSig" :: sliceT;
-  "Err" :: ktcore.Blame
+  "ServSig" :: sliceT;
+  "AdtrSig" :: sliceT
 ].
-#[global] Typeclasses Opaque GetReply.
-#[global] Opaque GetReply.
+#[global] Typeclasses Opaque SignedVrf.
+#[global] Opaque SignedVrf.
+
+Definition SignedLink : go_type := structT [
+  "Link" :: sliceT;
+  "ServSig" :: sliceT;
+  "AdtrSig" :: sliceT
+].
+#[global] Typeclasses Opaque SignedLink.
+#[global] Opaque SignedLink.
 
 (* Get returns the auditor's info for a particular epoch.
    it errors if the epoch is out of bounds.
@@ -170,7 +175,10 @@ Definition GetReply : go_type := structT [
    go: auditor.go:74:19 *)
 Definition Auditor__Getⁱᵐᵖˡ : val :=
   λ: "a" "epoch",
-    with_defer: (let: "a" := (mem.alloc "a") in
+    with_defer: (let: "err" := (mem.alloc (type.zero_val #boolT)) in
+    let: "vrf" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "link" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "a" := (mem.alloc "a") in
     let: "epoch" := (mem.alloc "epoch") in
     do:  ((method_call #(ptrT.id sync.RWMutex.id) #"RLock"%go (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) #());;;
     do:  (let: "$f" := (method_call #(ptrT.id sync.RWMutex.id) #"RUnlock"%go (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) in
@@ -181,16 +189,9 @@ Definition Auditor__Getⁱᵐᵖˡ : val :=
       )));;;
     (if: (![#uint64T] "epoch") < (![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a")))
     then
-      return: (mem.alloc (let: "$Err" := ktcore.BlameUnknown in
-       struct.make #GetReply [{
-         "Link" ::= type.zero_val #sliceT;
-         "ServLinkSig" ::= type.zero_val #sliceT;
-         "AdtrLinkSig" ::= type.zero_val #sliceT;
-         "VrfPk" ::= type.zero_val #sliceT;
-         "ServVrfSig" ::= type.zero_val #sliceT;
-         "AdtrVrfSig" ::= type.zero_val #sliceT;
-         "Err" ::= "$Err"
-       }]))
+      let: "$r0" := #true in
+      do:  ("err" <-[#boolT] "$r0");;;
+      return: (![#ptrT] "link", ![#ptrT] "vrf", ![#boolT] "err")
     else do:  #());;;
     let: "lastEp" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (((![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) in
@@ -198,41 +199,40 @@ Definition Auditor__Getⁱᵐᵖˡ : val :=
     do:  ("lastEp" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "epoch") > (![#uint64T] "lastEp")
     then
-      return: (mem.alloc (let: "$Err" := ktcore.BlameUnknown in
-       struct.make #GetReply [{
-         "Link" ::= type.zero_val #sliceT;
-         "ServLinkSig" ::= type.zero_val #sliceT;
-         "AdtrLinkSig" ::= type.zero_val #sliceT;
-         "VrfPk" ::= type.zero_val #sliceT;
-         "ServVrfSig" ::= type.zero_val #sliceT;
-         "AdtrVrfSig" ::= type.zero_val #sliceT;
-         "Err" ::= "$Err"
-       }]))
+      let: "$r0" := #true in
+      do:  ("err" <-[#boolT] "$r0");;;
+      return: (![#ptrT] "link", ![#ptrT] "vrf", ![#boolT] "err")
     else do:  #());;;
     let: "x" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Auditor #"hist"%go (![#ptrT] "a"))) ((![#uint64T] "epoch") - (![#uint64T] (struct.field_ref #Auditor #"startEp"%go (![#ptrT] "a")))))) in
     do:  ("x" <-[#ptrT] "$r0");;;
-    return: (mem.alloc (let: "$Link" := (![#sliceT] (struct.field_ref #history #"link"%go (![#ptrT] "x"))) in
-     let: "$ServLinkSig" := (![#sliceT] (struct.field_ref #history #"servSig"%go (![#ptrT] "x"))) in
-     let: "$AdtrLinkSig" := (![#sliceT] (struct.field_ref #history #"adtrSig"%go (![#ptrT] "x"))) in
-     let: "$VrfPk" := (![#sliceT] (struct.field_ref #serv #"vrfPk"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
-     let: "$ServVrfSig" := (![#sliceT] (struct.field_ref #serv #"servVrfSig"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
-     let: "$AdtrVrfSig" := (![#sliceT] (struct.field_ref #serv #"adtrVrfSig"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
-     struct.make #GetReply [{
-       "Link" ::= "$Link";
-       "ServLinkSig" ::= "$ServLinkSig";
-       "AdtrLinkSig" ::= "$AdtrLinkSig";
-       "VrfPk" ::= "$VrfPk";
-       "ServVrfSig" ::= "$ServVrfSig";
-       "AdtrVrfSig" ::= "$AdtrVrfSig";
-       "Err" ::= type.zero_val #ktcore.Blame
-     }]))).
+    let: "$r0" := (mem.alloc (let: "$Link" := (![#sliceT] (struct.field_ref #history #"link"%go (![#ptrT] "x"))) in
+    let: "$ServSig" := (![#sliceT] (struct.field_ref #history #"servSig"%go (![#ptrT] "x"))) in
+    let: "$AdtrSig" := (![#sliceT] (struct.field_ref #history #"adtrSig"%go (![#ptrT] "x"))) in
+    struct.make #SignedLink [{
+      "Link" ::= "$Link";
+      "ServSig" ::= "$ServSig";
+      "AdtrSig" ::= "$AdtrSig"
+    }])) in
+    do:  ("link" <-[#ptrT] "$r0");;;
+    let: "$r0" := (mem.alloc (let: "$VrfPk" := (![#sliceT] (struct.field_ref #serv #"vrfPk"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
+    let: "$ServSig" := (![#sliceT] (struct.field_ref #serv #"servVrfSig"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
+    let: "$AdtrSig" := (![#sliceT] (struct.field_ref #serv #"adtrVrfSig"%go (![#ptrT] (struct.field_ref #Auditor #"serv"%go (![#ptrT] "a"))))) in
+    struct.make #SignedVrf [{
+      "VrfPk" ::= "$VrfPk";
+      "ServSig" ::= "$ServSig";
+      "AdtrSig" ::= "$AdtrSig"
+    }])) in
+    do:  ("vrf" <-[#ptrT] "$r0");;;
+    return: (![#ptrT] "link", ![#ptrT] "vrf", ![#boolT] "err")).
 
 Definition New : go_string := "github.com/sanjit-bhat/pav/auditor.New"%go.
 
-Definition CheckStart : go_string := "github.com/sanjit-bhat/pav/auditor.CheckStart"%go.
+Definition CheckStartVrf : go_string := "github.com/sanjit-bhat/pav/auditor.CheckStartVrf"%go.
 
-(* go: auditor.go:91:6 *)
+Definition CheckStartChain : go_string := "github.com/sanjit-bhat/pav/auditor.CheckStartChain"%go.
+
+(* go: auditor.go:95:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: "servAddr" "servPk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -244,13 +244,16 @@ Definition Newⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#uint64T] "servAddr") in
     (func_call #advrpc.Dial) "$a0") in
     do:  ("cli" <-[#ptrT] "$r0");;;
-    let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] "cli") in
+    let: "vrf" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "chain" := (mem.alloc (type.zero_val #ptrT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#ptrT] "cli") in
     (func_call #server.CallStart) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("reply" <-[#ptrT] "$r0");;;
-    do:  ("err" <-[#ktcore.Blame] "$r1");;;
+    let: "$r2" := "$ret2" in
+    do:  ("chain" <-[#ptrT] "$r0");;;
+    do:  ("vrf" <-[#ptrT] "$r1");;;
+    do:  ("err" <-[#ktcore.Blame] "$r2");;;
     (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
     then return: (![#ptrT] "a", ![#cryptoffi.SigPublicKey] "sigPk", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -258,19 +261,30 @@ Definition Newⁱᵐᵖˡ : val :=
     let: "startLink" := (mem.alloc (type.zero_val #sliceT)) in
     let: "startDig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "startEp" := (mem.alloc (type.zero_val #uint64T)) in
-    let: (((("$ret0", "$ret1"), "$ret2"), "$ret3"), "$ret4") := (let: "$a0" := (![#cryptoffi.SigPublicKey] "servPk") in
-    let: "$a1" := (![#ptrT] "reply") in
-    (func_call #CheckStart) "$a0" "$a1") in
+    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#cryptoffi.SigPublicKey] "servPk") in
+    let: "$a1" := (![#ptrT] "chain") in
+    (func_call #CheckStartChain) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
     let: "$r3" := "$ret3" in
-    let: "$r4" := "$ret4" in
     do:  ("startEp" <-[#uint64T] "$r0");;;
     do:  ("startDig" <-[#sliceT] "$r1");;;
     do:  ("startLink" <-[#sliceT] "$r2");;;
-    do:  "$r3";;;
-    do:  ("errb" <-[#boolT] "$r4");;;
+    do:  ("errb" <-[#boolT] "$r3");;;
+    (if: ![#boolT] "errb"
+    then
+      let: "$r0" := ktcore.BlameServFull in
+      do:  ("err" <-[#ktcore.Blame] "$r0");;;
+      return: (![#ptrT] "a", ![#cryptoffi.SigPublicKey] "sigPk", ![#ktcore.Blame] "err")
+    else do:  #());;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#cryptoffi.SigPublicKey] "servPk") in
+    let: "$a1" := (![#ptrT] "vrf") in
+    (func_call #CheckStartVrf) "$a0" "$a1") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  "$r0";;;
+    do:  ("errb" <-[#boolT] "$r1");;;
     (if: ![#boolT] "errb"
     then
       let: "$r0" := ktcore.BlameServFull in
@@ -294,7 +308,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("linkSig" <-[#sliceT] "$r0");;;
     let: "h" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$link" := (![#sliceT] "startLink") in
-    let: "$servSig" := (![#sliceT] (struct.field_ref #server.StartReply #"LinkSig"%go (![#ptrT] "reply"))) in
+    let: "$servSig" := (![#sliceT] (struct.field_ref #server.StartChain #"LinkSig"%go (![#ptrT] "chain"))) in
     let: "$adtrSig" := (![#sliceT] "linkSig") in
     struct.make #history [{
       "link" ::= "$link";
@@ -304,14 +318,14 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("h" <-[#ptrT] "$r0");;;
     let: "vrfSig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "sk") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfPk"%go (![#ptrT] "reply"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #server.StartVrf #"VrfPk"%go (![#ptrT] "vrf"))) in
     (func_call #ktcore.SignVrf) "$a0" "$a1") in
     do:  ("vrfSig" <-[#sliceT] "$r0");;;
     let: "serv" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$cli" := (![#ptrT] "cli") in
     let: "$sigPk" := (![#cryptoffi.SigPublicKey] "servPk") in
-    let: "$vrfPk" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfPk"%go (![#ptrT] "reply"))) in
-    let: "$servVrfSig" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfSig"%go (![#ptrT] "reply"))) in
+    let: "$vrfPk" := (![#sliceT] (struct.field_ref #server.StartVrf #"VrfPk"%go (![#ptrT] "vrf"))) in
+    let: "$servVrfSig" := (![#sliceT] (struct.field_ref #server.StartVrf #"VrfSig"%go (![#ptrT] "vrf"))) in
     let: "$adtrVrfSig" := (![#sliceT] "vrfSig") in
     struct.make #serv [{
       "cli" ::= "$cli";
@@ -341,7 +355,7 @@ Definition Newⁱᵐᵖˡ : val :=
 
 Definition getNextDig : go_string := "github.com/sanjit-bhat/pav/auditor.getNextDig"%go.
 
-(* go: auditor.go:113:6 *)
+(* go: auditor.go:122:6 *)
 Definition getNextLinkⁱᵐᵖˡ : val :=
   λ: "sigPk" "prevEp" "prevDig" "prevLink" "p",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -389,7 +403,7 @@ Definition getNextLinkⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")).
 
-(* go: auditor.go:130:6 *)
+(* go: auditor.go:139:6 *)
 Definition getNextDigⁱᵐᵖˡ : val :=
   λ: "prevDig" "updates",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -430,27 +444,26 @@ Definition getNextDigⁱᵐᵖˡ : val :=
       do:  ("dig" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "dig", ![#boolT] "err")).
 
-(* go: auditor.go:147:6 *)
-Definition CheckStartⁱᵐᵖˡ : val :=
-  λ: "servPk" "reply",
+(* go: auditor.go:156:6 *)
+Definition CheckStartChainⁱᵐᵖˡ : val :=
+  λ: "servPk" "chain",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "vrfPk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "link" := (mem.alloc (type.zero_val #sliceT)) in
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "reply" := (mem.alloc "reply") in
+    let: "chain" := (mem.alloc "chain") in
     let: "servPk" := (mem.alloc "servPk") in
-    (if: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartReply #"PrevLink"%go (![#ptrT] "reply"))) in
+    (if: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartChain #"PrevLink"%go (![#ptrT] "chain"))) in
     slice.len "$a0")) ≠ cryptoffi.HashLen
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")
+      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
     else do:  #());;;
     let: "errb" := (mem.alloc (type.zero_val #boolT)) in
     let: "extLen" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartReply #"PrevLink"%go (![#ptrT] "reply"))) in
-    let: "$a1" := (![#sliceT] (struct.field_ref #server.StartReply #"ChainProof"%go (![#ptrT] "reply"))) in
+    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartChain #"PrevLink"%go (![#ptrT] "chain"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #server.StartChain #"ChainProof"%go (![#ptrT] "chain"))) in
     (func_call #hashchain.Verify) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -464,35 +477,45 @@ Definition CheckStartⁱᵐᵖˡ : val :=
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")
+      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
     else do:  #());;;
     (if: (![#uint64T] "extLen") = #(W64 0)
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")
+      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
     else do:  #());;;
-    (if: (~ (let: "$a0" := (![#uint64T] (struct.field_ref #server.StartReply #"PrevEpochLen"%go (![#ptrT] "reply"))) in
+    (if: (~ (let: "$a0" := (![#uint64T] (struct.field_ref #server.StartChain #"PrevEpochLen"%go (![#ptrT] "chain"))) in
     let: "$a1" := ((![#uint64T] "extLen") - #(W64 1)) in
     (func_call #std.SumNoOverflow) "$a0" "$a1"))
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")
+      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
     else do:  #());;;
-    let: "$r0" := (((![#uint64T] (struct.field_ref #server.StartReply #"PrevEpochLen"%go (![#ptrT] "reply"))) + (![#uint64T] "extLen")) - #(W64 1)) in
+    let: "$r0" := (((![#uint64T] (struct.field_ref #server.StartChain #"PrevEpochLen"%go (![#ptrT] "chain"))) + (![#uint64T] "extLen")) - #(W64 1)) in
     do:  ("ep" <-[#uint64T] "$r0");;;
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "servPk") in
     let: "$a1" := (![#uint64T] "ep") in
     let: "$a2" := (![#sliceT] "link") in
-    let: "$a3" := (![#sliceT] (struct.field_ref #server.StartReply #"LinkSig"%go (![#ptrT] "reply"))) in
+    let: "$a3" := (![#sliceT] (struct.field_ref #server.StartChain #"LinkSig"%go (![#ptrT] "chain"))) in
     (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")
+      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")
     else do:  #());;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfPk"%go (![#ptrT] "reply"))) in
+    return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#boolT] "err")).
+
+(* go: auditor.go:183:6 *)
+Definition CheckStartVrfⁱᵐᵖˡ : val :=
+  λ: "servPk" "vrf",
+    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
+    let: "vrfPk" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "vrf" := (mem.alloc "vrf") in
+    let: "servPk" := (mem.alloc "servPk") in
+    let: "errb" := (mem.alloc (type.zero_val #boolT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartVrf #"VrfPk"%go (![#ptrT] "vrf"))) in
     (func_call #cryptoffi.VrfPublicKeyDecode) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -502,26 +525,32 @@ Definition CheckStartⁱᵐᵖˡ : val :=
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")
+      return: (![#ptrT] "vrfPk", ![#boolT] "err")
     else do:  #());;;
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "servPk") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfPk"%go (![#ptrT] "reply"))) in
-    let: "$a2" := (![#sliceT] (struct.field_ref #server.StartReply #"VrfSig"%go (![#ptrT] "reply"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #server.StartVrf #"VrfPk"%go (![#ptrT] "vrf"))) in
+    let: "$a2" := (![#sliceT] (struct.field_ref #server.StartVrf #"VrfSig"%go (![#ptrT] "vrf"))) in
     (func_call #ktcore.VerifyVrfSig) "$a0" "$a1" "$a2"
     then
       let: "$r0" := #true in
       do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")
+      return: (![#ptrT] "vrfPk", ![#boolT] "err")
     else do:  #());;;
-    return: (![#uint64T] "ep", ![#sliceT] "dig", ![#sliceT] "link", ![#ptrT] "vrfPk", ![#boolT] "err")).
+    return: (![#ptrT] "vrfPk", ![#boolT] "err")).
 
-Definition UpdateRpc : val := #(W64 0).
-
-Definition GetRpc : val := #(W64 1).
+Definition GetRpc : val := #(W64 0).
 
 Definition NewRpcAuditor : go_string := "github.com/sanjit-bhat/pav/auditor.NewRpcAuditor"%go.
 
 Definition GetReplyEncode : go_string := "github.com/sanjit-bhat/pav/auditor.GetReplyEncode"%go.
+
+Definition GetReply : go_type := structT [
+  "Link" :: ptrT;
+  "Vrf" :: ptrT;
+  "Err" :: boolT
+].
+#[global] Typeclasses Opaque GetReply.
+#[global] Opaque GetReply.
 
 Definition GetArg : go_type := structT [
   "Epoch" :: uint64T
@@ -531,40 +560,13 @@ Definition GetArg : go_type := structT [
 
 Definition GetArgDecode : go_string := "github.com/sanjit-bhat/pav/auditor.GetArgDecode"%go.
 
-Definition UpdateReplyEncode : go_string := "github.com/sanjit-bhat/pav/auditor.UpdateReplyEncode"%go.
-
-Definition UpdateReply : go_type := structT [
-  "Err" :: ktcore.Blame
-].
-#[global] Typeclasses Opaque UpdateReply.
-#[global] Opaque UpdateReply.
-
-(* go: rpc.go:13:6 *)
+(* go: rpc.go:12:6 *)
 Definition NewRpcAuditorⁱᵐᵖˡ : val :=
   λ: "adtr",
     exception_do (let: "adtr" := (mem.alloc "adtr") in
     let: "h" := (mem.alloc (type.zero_val (type.mapT #uint64T #funcT))) in
     let: "$r0" := (map.make #uint64T #funcT) in
     do:  ("h" <-[type.mapT #uint64T #funcT] "$r0");;;
-    let: "$r0" := (λ: "arg" "reply",
-      exception_do (let: "reply" := (mem.alloc "reply") in
-      let: "arg" := (mem.alloc "arg") in
-      let: "r0" := (mem.alloc (type.zero_val #ktcore.Blame)) in
-      let: "$r0" := ((method_call #(ptrT.id Auditor.id) #"Update"%go (![#ptrT] "adtr")) #()) in
-      do:  ("r0" <-[#ktcore.Blame] "$r0");;;
-      let: "replyObj" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (mem.alloc (let: "$Err" := (![#ktcore.Blame] "r0") in
-      struct.make #UpdateReply [{
-        "Err" ::= "$Err"
-      }])) in
-      do:  ("replyObj" <-[#ptrT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-      let: "$a1" := (![#ptrT] "replyObj") in
-      (func_call #UpdateReplyEncode) "$a0" "$a1") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
-      return: #())
-      ) in
-    do:  (map.insert (![type.mapT #uint64T #funcT] "h") UpdateRpc "$r0");;;
     let: "$r0" := (λ: "arg" "reply",
       exception_do (let: "reply" := (mem.alloc "reply") in
       let: "arg" := (mem.alloc "arg") in
@@ -581,14 +583,10 @@ Definition NewRpcAuditorⁱᵐᵖˡ : val :=
       (if: ![#boolT] "err"
       then
         let: "r" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := (mem.alloc (let: "$Err" := ktcore.BlameUnknown in
+        let: "$r0" := (mem.alloc (let: "$Err" := #true in
         struct.make #GetReply [{
-          "Link" ::= type.zero_val #sliceT;
-          "ServLinkSig" ::= type.zero_val #sliceT;
-          "AdtrLinkSig" ::= type.zero_val #sliceT;
-          "VrfPk" ::= type.zero_val #sliceT;
-          "ServVrfSig" ::= type.zero_val #sliceT;
-          "AdtrVrfSig" ::= type.zero_val #sliceT;
+          "Link" ::= type.zero_val #ptrT;
+          "Vrf" ::= type.zero_val #ptrT;
           "Err" ::= "$Err"
         }])) in
         do:  ("r" <-[#ptrT] "$r0");;;
@@ -598,9 +596,26 @@ Definition NewRpcAuditorⁱᵐᵖˡ : val :=
         do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
         return: (#())
       else do:  #());;;
-      let: "r" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #GetArg #"Epoch"%go (![#ptrT] "a"))) in
+      let: "r2" := (mem.alloc (type.zero_val #boolT)) in
+      let: "r1" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "r0" := (mem.alloc (type.zero_val #ptrT)) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#uint64T] (struct.field_ref #GetArg #"Epoch"%go (![#ptrT] "a"))) in
       (method_call #(ptrT.id Auditor.id) #"Get"%go (![#ptrT] "adtr")) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      let: "$r2" := "$ret2" in
+      do:  ("r0" <-[#ptrT] "$r0");;;
+      do:  ("r1" <-[#ptrT] "$r1");;;
+      do:  ("r2" <-[#boolT] "$r2");;;
+      let: "r" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (mem.alloc (let: "$Link" := (![#ptrT] "r0") in
+      let: "$Vrf" := (![#ptrT] "r1") in
+      let: "$Err" := (![#boolT] "r2") in
+      struct.make #GetReply [{
+        "Link" ::= "$Link";
+        "Vrf" ::= "$Vrf";
+        "Err" ::= "$Err"
+      }])) in
       do:  ("r" <-[#ptrT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
       let: "$a1" := (![#ptrT] "r") in
@@ -612,56 +627,19 @@ Definition NewRpcAuditorⁱᵐᵖˡ : val :=
     return: (let: "$a0" := (![type.mapT #uint64T #funcT] "h") in
      (func_call #advrpc.NewServer) "$a0")).
 
-Definition CallUpdate : go_string := "github.com/sanjit-bhat/pav/auditor.CallUpdate"%go.
-
-Definition UpdateReplyDecode : go_string := "github.com/sanjit-bhat/pav/auditor.UpdateReplyDecode"%go.
-
-(* go: rpc.go:33:6 *)
-Definition CallUpdateⁱᵐᵖˡ : val :=
-  λ: "c",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
-    let: "c" := (mem.alloc "c") in
-    let: "rb" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
-    do:  ("rb" <-[#ptrT] "$r0");;;
-    (if: let: "$a0" := UpdateRpc in
-    let: "$a1" := #slice.nil in
-    let: "$a2" := (![#ptrT] "rb") in
-    (method_call #(ptrT.id advrpc.Client.id) #"Call"%go (![#ptrT] "c")) "$a0" "$a1" "$a2"
-    then return: (ktcore.BlameUnknown)
-    else do:  #());;;
-    let: "errb" := (mem.alloc (type.zero_val #boolT)) in
-    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] (![#ptrT] "rb")) in
-    (func_call #UpdateReplyDecode) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("r" <-[#ptrT] "$r0");;;
-    do:  "$r1";;;
-    do:  ("errb" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "errb"
-    then return: (ktcore.BlameAdtrFull)
-    else do:  #());;;
-    (if: let: "$a0" := (![#ktcore.Blame] (struct.field_ref #UpdateReply #"Err"%go (![#ptrT] "r"))) in
-    let: "$a1" := ((let: "$sl0" := ktcore.BlameServFull in
-    let: "$sl1" := ktcore.BlameUnknown in
-    slice.literal #ktcore.Blame ["$sl0"; "$sl1"])) in
-    (func_call #ktcore.CheckBlame) "$a0" "$a1"
-    then return: (ktcore.BlameAdtrFull)
-    else do:  #());;;
-    return: (![#ktcore.Blame] "err")).
-
 Definition CallGet : go_string := "github.com/sanjit-bhat/pav/auditor.CallGet"%go.
 
 Definition GetReplyDecode : go_string := "github.com/sanjit-bhat/pav/auditor.GetReplyDecode"%go.
 
 Definition GetArgEncode : go_string := "github.com/sanjit-bhat/pav/auditor.GetArgEncode"%go.
 
-(* go: rpc.go:49:6 *)
+(* go: rpc.go:28:6 *)
 Definition CallGetⁱᵐᵖˡ : val :=
   λ: "c" "epoch",
-    exception_do (let: "epoch" := (mem.alloc "epoch") in
+    exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
+    let: "vrf" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "link" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "epoch" := (mem.alloc "epoch") in
     let: "c" := (mem.alloc "c") in
     let: "a" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$Epoch" := (![#uint64T] "epoch") in
@@ -682,16 +660,9 @@ Definition CallGetⁱᵐᵖˡ : val :=
     let: "$a2" := (![#ptrT] "rb") in
     (method_call #(ptrT.id advrpc.Client.id) #"Call"%go (![#ptrT] "c")) "$a0" "$a1" "$a2"
     then
-      return: (mem.alloc (let: "$Err" := ktcore.BlameUnknown in
-       struct.make #GetReply [{
-         "Link" ::= type.zero_val #sliceT;
-         "ServLinkSig" ::= type.zero_val #sliceT;
-         "AdtrLinkSig" ::= type.zero_val #sliceT;
-         "VrfPk" ::= type.zero_val #sliceT;
-         "ServVrfSig" ::= type.zero_val #sliceT;
-         "AdtrVrfSig" ::= type.zero_val #sliceT;
-         "Err" ::= "$Err"
-       }]))
+      let: "$r0" := ktcore.BlameUnknown in
+      do:  ("err" <-[#ktcore.Blame] "$r0");;;
+      return: (![#ptrT] "link", ![#ptrT] "vrf", ![#ktcore.Blame] "err")
     else do:  #());;;
     let: "errb" := (mem.alloc (type.zero_val #boolT)) in
     let: "r" := (mem.alloc (type.zero_val #ptrT)) in
@@ -703,75 +674,25 @@ Definition CallGetⁱᵐᵖˡ : val :=
     do:  ("r" <-[#ptrT] "$r0");;;
     do:  "$r1";;;
     do:  ("errb" <-[#boolT] "$r2");;;
+    let: "$r0" := (![#ptrT] (struct.field_ref #GetReply #"Link"%go (![#ptrT] "r"))) in
+    do:  ("link" <-[#ptrT] "$r0");;;
+    let: "$r0" := (![#ptrT] (struct.field_ref #GetReply #"Vrf"%go (![#ptrT] "r"))) in
+    do:  ("vrf" <-[#ptrT] "$r0");;;
     (if: ![#boolT] "errb"
     then
-      return: (mem.alloc (let: "$Err" := ktcore.BlameAdtrFull in
-       struct.make #GetReply [{
-         "Link" ::= type.zero_val #sliceT;
-         "ServLinkSig" ::= type.zero_val #sliceT;
-         "AdtrLinkSig" ::= type.zero_val #sliceT;
-         "VrfPk" ::= type.zero_val #sliceT;
-         "ServVrfSig" ::= type.zero_val #sliceT;
-         "AdtrVrfSig" ::= type.zero_val #sliceT;
-         "Err" ::= "$Err"
-       }]))
+      let: "$r0" := ktcore.BlameAdtrFull in
+      do:  ("err" <-[#ktcore.Blame] "$r0");;;
+      return: (![#ptrT] "link", ![#ptrT] "vrf", ![#ktcore.Blame] "err")
     else do:  #());;;
-    (if: let: "$a0" := (![#ktcore.Blame] (struct.field_ref #GetReply #"Err"%go (![#ptrT] "r"))) in
-    let: "$a1" := ((let: "$sl0" := ktcore.BlameUnknown in
-    slice.literal #ktcore.Blame ["$sl0"])) in
-    (func_call #ktcore.CheckBlame) "$a0" "$a1"
+    (if: ![#boolT] (struct.field_ref #GetReply #"Err"%go (![#ptrT] "r"))
     then
-      return: (mem.alloc (let: "$Err" := ktcore.BlameAdtrFull in
-       struct.make #GetReply [{
-         "Link" ::= type.zero_val #sliceT;
-         "ServLinkSig" ::= type.zero_val #sliceT;
-         "AdtrLinkSig" ::= type.zero_val #sliceT;
-         "VrfPk" ::= type.zero_val #sliceT;
-         "ServVrfSig" ::= type.zero_val #sliceT;
-         "AdtrVrfSig" ::= type.zero_val #sliceT;
-         "Err" ::= "$Err"
-       }]))
+      let: "$r0" := ktcore.BlameUnknown in
+      do:  ("err" <-[#ktcore.Blame] "$r0");;;
+      return: (![#ptrT] "link", ![#ptrT] "vrf", ![#ktcore.Blame] "err")
     else do:  #());;;
-    return: (![#ptrT] "r")).
+    return: (![#ptrT] "link", ![#ptrT] "vrf", ![#ktcore.Blame] "err")).
 
-(* go: serde.out.go:11:6 *)
-Definition UpdateReplyEncodeⁱᵐᵖˡ : val :=
-  λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (![#sliceT] "b0") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#ktcore.Blame] (struct.field_ref #UpdateReply #"Err"%go (![#ptrT] "o"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "b")).
-
-(* go: serde.out.go:16:6 *)
-Definition UpdateReplyDecodeⁱᵐᵖˡ : val :=
-  λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
-    (func_call #safemarshal.ReadInt) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("a1" <-[#uint64T] "$r0");;;
-    do:  ("b1" <-[#sliceT] "$r1");;;
-    do:  ("err1" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err1"
-    then return: (#null, #slice.nil, #true)
-    else do:  #());;;
-    return: (mem.alloc (let: "$Err" := (![#uint64T] "a1") in
-     struct.make #UpdateReply [{
-       "Err" ::= "$Err"
-     }]), ![#sliceT] "b1", #false)).
-
-(* go: serde.out.go:23:6 *)
+(* go: serde.out.go:10:6 *)
 Definition GetArgEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
@@ -785,7 +706,7 @@ Definition GetArgEncodeⁱᵐᵖˡ : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
-(* go: serde.out.go:28:6 *)
+(* go: serde.out.go:15:6 *)
 Definition GetArgDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
@@ -808,8 +729,10 @@ Definition GetArgDecodeⁱᵐᵖˡ : val :=
        "Epoch" ::= "$Epoch"
      }]), ![#sliceT] "b1", #false)).
 
-(* go: serde.out.go:35:6 *)
-Definition GetReplyEncodeⁱᵐᵖˡ : val :=
+Definition SignedLinkEncode : go_string := "github.com/sanjit-bhat/pav/auditor.SignedLinkEncode"%go.
+
+(* go: serde.out.go:22:6 *)
+Definition SignedLinkEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "b0" := (mem.alloc "b0") in
@@ -817,37 +740,23 @@ Definition GetReplyEncodeⁱᵐᵖˡ : val :=
     let: "$r0" := (![#sliceT] "b0") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #GetReply #"Link"%go (![#ptrT] "o"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #SignedLink #"Link"%go (![#ptrT] "o"))) in
     (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #GetReply #"ServLinkSig"%go (![#ptrT] "o"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #SignedLink #"ServSig"%go (![#ptrT] "o"))) in
     (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #GetReply #"AdtrLinkSig"%go (![#ptrT] "o"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #SignedLink #"AdtrSig"%go (![#ptrT] "o"))) in
     (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #GetReply #"VrfPk"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #GetReply #"ServVrfSig"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#sliceT] (struct.field_ref #GetReply #"AdtrVrfSig"%go (![#ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#ktcore.Blame] (struct.field_ref #GetReply #"Err"%go (![#ptrT] "o"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
-(* go: serde.out.go:46:6 *)
-Definition GetReplyDecodeⁱᵐᵖˡ : val :=
+Definition SignedLinkDecode : go_string := "github.com/sanjit-bhat/pav/auditor.SignedLinkDecode"%go.
+
+(* go: serde.out.go:29:6 *)
+Definition SignedLinkDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
     exception_do (let: "b0" := (mem.alloc "b0") in
     let: "err1" := (mem.alloc (type.zero_val #boolT)) in
@@ -892,84 +801,178 @@ Definition GetReplyDecodeⁱᵐᵖˡ : val :=
     (if: ![#boolT] "err3"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err4" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b4" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a4" := (mem.alloc (type.zero_val #sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b3") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("a4" <-[#sliceT] "$r0");;;
-    do:  ("b4" <-[#sliceT] "$r1");;;
-    do:  ("err4" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err4"
-    then return: (#null, #slice.nil, #true)
-    else do:  #());;;
-    let: "err5" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b5" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a5" := (mem.alloc (type.zero_val #sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b4") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("a5" <-[#sliceT] "$r0");;;
-    do:  ("b5" <-[#sliceT] "$r1");;;
-    do:  ("err5" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err5"
-    then return: (#null, #slice.nil, #true)
-    else do:  #());;;
-    let: "err6" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b6" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a6" := (mem.alloc (type.zero_val #sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b5") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("a6" <-[#sliceT] "$r0");;;
-    do:  ("b6" <-[#sliceT] "$r1");;;
-    do:  ("err6" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err6"
-    then return: (#null, #slice.nil, #true)
-    else do:  #());;;
-    let: "err7" := (mem.alloc (type.zero_val #boolT)) in
-    let: "b7" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "a7" := (mem.alloc (type.zero_val #uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b6") in
-    (func_call #safemarshal.ReadInt) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    let: "$r2" := "$ret2" in
-    do:  ("a7" <-[#uint64T] "$r0");;;
-    do:  ("b7" <-[#sliceT] "$r1");;;
-    do:  ("err7" <-[#boolT] "$r2");;;
-    (if: ![#boolT] "err7"
-    then return: (#null, #slice.nil, #true)
-    else do:  #());;;
     return: (mem.alloc (let: "$Link" := (![#sliceT] "a1") in
-     let: "$ServLinkSig" := (![#sliceT] "a2") in
-     let: "$AdtrLinkSig" := (![#sliceT] "a3") in
-     let: "$VrfPk" := (![#sliceT] "a4") in
-     let: "$ServVrfSig" := (![#sliceT] "a5") in
-     let: "$AdtrVrfSig" := (![#sliceT] "a6") in
-     let: "$Err" := (![#uint64T] "a7") in
+     let: "$ServSig" := (![#sliceT] "a2") in
+     let: "$AdtrSig" := (![#sliceT] "a3") in
+     struct.make #SignedLink [{
+       "Link" ::= "$Link";
+       "ServSig" ::= "$ServSig";
+       "AdtrSig" ::= "$AdtrSig"
+     }]), ![#sliceT] "b3", #false)).
+
+Definition SignedVrfEncode : go_string := "github.com/sanjit-bhat/pav/auditor.SignedVrfEncode"%go.
+
+(* go: serde.out.go:44:6 *)
+Definition SignedVrfEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "b0" := (mem.alloc "b0") in
+    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (![#sliceT] "b0") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (![#sliceT] (struct.field_ref #SignedVrf #"VrfPk"%go (![#ptrT] "o"))) in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (![#sliceT] (struct.field_ref #SignedVrf #"ServSig"%go (![#ptrT] "o"))) in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (![#sliceT] (struct.field_ref #SignedVrf #"AdtrSig"%go (![#ptrT] "o"))) in
+    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "b")).
+
+Definition SignedVrfDecode : go_string := "github.com/sanjit-bhat/pav/auditor.SignedVrfDecode"%go.
+
+(* go: serde.out.go:51:6 *)
+Definition SignedVrfDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
+    exception_do (let: "b0" := (mem.alloc "b0") in
+    let: "err1" := (mem.alloc (type.zero_val #boolT)) in
+    let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "a1" := (mem.alloc (type.zero_val #sliceT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    let: "$r2" := "$ret2" in
+    do:  ("a1" <-[#sliceT] "$r0");;;
+    do:  ("b1" <-[#sliceT] "$r1");;;
+    do:  ("err1" <-[#boolT] "$r2");;;
+    (if: ![#boolT] "err1"
+    then return: (#null, #slice.nil, #true)
+    else do:  #());;;
+    let: "err2" := (mem.alloc (type.zero_val #boolT)) in
+    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "a2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    let: "$r2" := "$ret2" in
+    do:  ("a2" <-[#sliceT] "$r0");;;
+    do:  ("b2" <-[#sliceT] "$r1");;;
+    do:  ("err2" <-[#boolT] "$r2");;;
+    (if: ![#boolT] "err2"
+    then return: (#null, #slice.nil, #true)
+    else do:  #());;;
+    let: "err3" := (mem.alloc (type.zero_val #boolT)) in
+    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "a3" := (mem.alloc (type.zero_val #sliceT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b2") in
+    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    let: "$r2" := "$ret2" in
+    do:  ("a3" <-[#sliceT] "$r0");;;
+    do:  ("b3" <-[#sliceT] "$r1");;;
+    do:  ("err3" <-[#boolT] "$r2");;;
+    (if: ![#boolT] "err3"
+    then return: (#null, #slice.nil, #true)
+    else do:  #());;;
+    return: (mem.alloc (let: "$VrfPk" := (![#sliceT] "a1") in
+     let: "$ServSig" := (![#sliceT] "a2") in
+     let: "$AdtrSig" := (![#sliceT] "a3") in
+     struct.make #SignedVrf [{
+       "VrfPk" ::= "$VrfPk";
+       "ServSig" ::= "$ServSig";
+       "AdtrSig" ::= "$AdtrSig"
+     }]), ![#sliceT] "b3", #false)).
+
+(* go: serde.out.go:66:6 *)
+Definition GetReplyEncodeⁱᵐᵖˡ : val :=
+  λ: "b0" "o",
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "b0" := (mem.alloc "b0") in
+    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (![#sliceT] "b0") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (![#ptrT] (struct.field_ref #GetReply #"Link"%go (![#ptrT] "o"))) in
+    (func_call #SignedLinkEncode) "$a0" "$a1") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (![#ptrT] (struct.field_ref #GetReply #"Vrf"%go (![#ptrT] "o"))) in
+    (func_call #SignedVrfEncode) "$a0" "$a1") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (![#boolT] (struct.field_ref #GetReply #"Err"%go (![#ptrT] "o"))) in
+    (func_call #marshal.WriteBool) "$a0" "$a1") in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "b")).
+
+(* go: serde.out.go:73:6 *)
+Definition GetReplyDecodeⁱᵐᵖˡ : val :=
+  λ: "b0",
+    exception_do (let: "b0" := (mem.alloc "b0") in
+    let: "err1" := (mem.alloc (type.zero_val #boolT)) in
+    let: "b1" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "a1" := (mem.alloc (type.zero_val #ptrT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b0") in
+    (func_call #SignedLinkDecode) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    let: "$r2" := "$ret2" in
+    do:  ("a1" <-[#ptrT] "$r0");;;
+    do:  ("b1" <-[#sliceT] "$r1");;;
+    do:  ("err1" <-[#boolT] "$r2");;;
+    (if: ![#boolT] "err1"
+    then return: (#null, #slice.nil, #true)
+    else do:  #());;;
+    let: "err2" := (mem.alloc (type.zero_val #boolT)) in
+    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "a2" := (mem.alloc (type.zero_val #ptrT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b1") in
+    (func_call #SignedVrfDecode) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    let: "$r2" := "$ret2" in
+    do:  ("a2" <-[#ptrT] "$r0");;;
+    do:  ("b2" <-[#sliceT] "$r1");;;
+    do:  ("err2" <-[#boolT] "$r2");;;
+    (if: ![#boolT] "err2"
+    then return: (#null, #slice.nil, #true)
+    else do:  #());;;
+    let: "err3" := (mem.alloc (type.zero_val #boolT)) in
+    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "a3" := (mem.alloc (type.zero_val #boolT)) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#sliceT] "b2") in
+    (func_call #safemarshal.ReadBool) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    let: "$r2" := "$ret2" in
+    do:  ("a3" <-[#boolT] "$r0");;;
+    do:  ("b3" <-[#sliceT] "$r1");;;
+    do:  ("err3" <-[#boolT] "$r2");;;
+    (if: ![#boolT] "err3"
+    then return: (#null, #slice.nil, #true)
+    else do:  #());;;
+    return: (mem.alloc (let: "$Link" := (![#ptrT] "a1") in
+     let: "$Vrf" := (![#ptrT] "a2") in
+     let: "$Err" := (![#boolT] "a3") in
      struct.make #GetReply [{
        "Link" ::= "$Link";
-       "ServLinkSig" ::= "$ServLinkSig";
-       "AdtrLinkSig" ::= "$AdtrLinkSig";
-       "VrfPk" ::= "$VrfPk";
-       "ServVrfSig" ::= "$ServVrfSig";
-       "AdtrVrfSig" ::= "$AdtrVrfSig";
+       "Vrf" ::= "$Vrf";
        "Err" ::= "$Err"
-     }]), ![#sliceT] "b7", #false)).
+     }]), ![#sliceT] "b3", #false)).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (getNextLink, getNextLinkⁱᵐᵖˡ); (getNextDig, getNextDigⁱᵐᵖˡ); (CheckStart, CheckStartⁱᵐᵖˡ); (NewRpcAuditor, NewRpcAuditorⁱᵐᵖˡ); (CallUpdate, CallUpdateⁱᵐᵖˡ); (CallGet, CallGetⁱᵐᵖˡ); (UpdateReplyEncode, UpdateReplyEncodeⁱᵐᵖˡ); (UpdateReplyDecode, UpdateReplyDecodeⁱᵐᵖˡ); (GetArgEncode, GetArgEncodeⁱᵐᵖˡ); (GetArgDecode, GetArgDecodeⁱᵐᵖˡ); (GetReplyEncode, GetReplyEncodeⁱᵐᵖˡ); (GetReplyDecode, GetReplyDecodeⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (getNextLink, getNextLinkⁱᵐᵖˡ); (getNextDig, getNextDigⁱᵐᵖˡ); (CheckStartChain, CheckStartChainⁱᵐᵖˡ); (CheckStartVrf, CheckStartVrfⁱᵐᵖˡ); (NewRpcAuditor, NewRpcAuditorⁱᵐᵖˡ); (CallGet, CallGetⁱᵐᵖˡ); (GetArgEncode, GetArgEncodeⁱᵐᵖˡ); (GetArgDecode, GetArgDecodeⁱᵐᵖˡ); (SignedLinkEncode, SignedLinkEncodeⁱᵐᵖˡ); (SignedLinkDecode, SignedLinkDecodeⁱᵐᵖˡ); (SignedVrfEncode, SignedVrfEncodeⁱᵐᵖˡ); (SignedVrfDecode, SignedVrfDecodeⁱᵐᵖˡ); (GetReplyEncode, GetReplyEncodeⁱᵐᵖˡ); (GetReplyDecode, GetReplyDecodeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Auditor.id, []); (ptrT.id Auditor.id, [("Get"%go, Auditor__Getⁱᵐᵖˡ); ("Update"%go, Auditor__Updateⁱᵐᵖˡ)]); (history.id, []); (ptrT.id history.id, []); (serv.id, []); (ptrT.id serv.id, []); (UpdateReply.id, []); (ptrT.id UpdateReply.id, []); (GetArg.id, []); (ptrT.id GetArg.id, []); (GetReply.id, []); (ptrT.id GetReply.id, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Auditor.id, []); (ptrT.id Auditor.id, [("Get"%go, Auditor__Getⁱᵐᵖˡ); ("Update"%go, Auditor__Updateⁱᵐᵖˡ)]); (history.id, []); (ptrT.id history.id, []); (serv.id, []); (ptrT.id serv.id, []); (GetArg.id, []); (ptrT.id GetArg.id, []); (SignedLink.id, []); (ptrT.id SignedLink.id, []); (SignedVrf.id, []); (ptrT.id SignedVrf.id, []); (GetReply.id, []); (ptrT.id GetReply.id, [])].
 
 #[global] Instance info' : PkgInfo auditor.auditor :=
   {|

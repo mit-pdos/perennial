@@ -669,10 +669,6 @@ Global Program Instance is_pkg_defined_ktcore : IsPkgDefined ktcore :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_CheckBlame :
-  WpFuncCall ktcore.CheckBlame _ (is_pkg_defined ktcore) :=
-  ltac:(solve_wp_func_call).
-
 Global Instance wp_func_call_SignVrf :
   WpFuncCall ktcore.SignVrf _ (is_pkg_defined ktcore) :=
   ltac:(solve_wp_func_call).
