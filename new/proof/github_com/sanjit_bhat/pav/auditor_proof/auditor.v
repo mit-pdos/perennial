@@ -17,27 +17,21 @@ Import base.auditor.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Definition wish_CheckStart servPk reply (ep : w64) dig link : iProp Σ :=
+Definition wish_CheckStartChain servPk chain (ep : w64) dig link : iProp Σ :=
   ∃ digs0 digs1 cut,
-  (* hashchain. *)
-  "%Hlen_link_prev" ∷ ⌜Z.of_nat $ length reply.(server.StartReply.PrevLink) = cryptoffi.hash_len⌝ ∗
-  "#His_chain_prev" ∷ hashchain.is_chain digs0 cut reply.(server.StartReply.PrevLink)
-    (uint.nat reply.(server.StartReply.PrevEpochLen)) ∗
-  "%Hwish_chain" ∷ ⌜hashchain.wish_Proof reply.(server.StartReply.ChainProof) digs1⌝ ∗
+  "%Hlen_link_prev" ∷ ⌜Z.of_nat $ length chain.(server.StartChain.PrevLink) = cryptoffi.hash_len⌝ ∗
+  "#His_chain_prev" ∷ hashchain.is_chain digs0 cut chain.(server.StartChain.PrevLink)
+    (uint.nat chain.(server.StartChain.PrevEpochLen)) ∗
+  "%Hwish_chain" ∷ ⌜hashchain.wish_Proof chain.(server.StartChain.ChainProof) digs1⌝ ∗
   "#His_chain_start" ∷ hashchain.is_chain (digs0 ++ digs1) cut link
-    (uint.nat reply.(server.StartReply.PrevEpochLen) + length digs1) ∗
-  "%Heq_ep" ∷ ⌜uint.Z reply.(server.StartReply.PrevEpochLen) + length digs1 - 1 = uint.Z ep⌝ ∗
+    (uint.nat chain.(server.StartChain.PrevEpochLen) + length digs1) ∗
+  "%Heq_ep" ∷ ⌜uint.Z chain.(server.StartChain.PrevEpochLen) + length digs1 - 1 = uint.Z ep⌝ ∗
   "%Heq_dig" ∷ ⌜last digs1 = Some dig⌝ ∗
-  "#His_link_sig" ∷ ktcore.wish_LinkSig servPk ep link reply.(server.StartReply.LinkSig) ∗
+  "#His_link_sig" ∷ ktcore.wish_LinkSig servPk ep link chain.(server.StartChain.LinkSig).
 
-  (* vrf. *)
-  "#His_vrf_pk" ∷ cryptoffi.is_vrf_pk reply.(server.StartReply.VrfPk) ∗
-  "#His_vrf_sig" ∷ ktcore.wish_VrfSig servPk reply.(server.StartReply.VrfPk)
-    reply.(server.StartReply.VrfSig).
-
-Lemma wish_CheckStart_det pk r e0 e1 d0 d1 l0 l1 :
-  wish_CheckStart pk r e0 d0 l0 -∗
-  wish_CheckStart pk r e1 d1 l1 -∗
+Lemma wish_CheckStartChain_det pk c e0 e1 d0 d1 l0 l1 :
+  wish_CheckStartChain pk c e0 d0 l0 -∗
+  wish_CheckStartChain pk c e1 d1 l1 -∗
   ⌜e0 = e1 ∧ d0 = d1 ∧ l0 = l1⌝.
 Proof.
   iNamedSuffix 1 "0".
@@ -51,30 +45,29 @@ Proof.
   by simplify_eq/=.
 Qed.
 
-Lemma wp_CheckStart sl_servPk servPk ptr_reply reply :
+Lemma wp_CheckStartChain sl_servPk servPk ptr_chain chain :
   {{{
     is_pkg_init auditor ∗
     "#Hsl_servPk" ∷ sl_servPk ↦*□ servPk ∗
-    "#Hown_reply" ∷ server.StartReply.own ptr_reply reply (□)
+    "#Hown_chain" ∷ server.StartChain.own ptr_chain chain (□)
   }}}
-  @! auditor.CheckStart #sl_servPk #ptr_reply
+  @! auditor.CheckStartChain #sl_servPk #ptr_chain
   {{{
-    (ep : w64) sl_dig sl_link ptr_vrfPk (err : bool),
-    RET (#ep, #sl_dig, #sl_link, #ptr_vrfPk, #err);
+    (ep : w64) sl_dig sl_link (err : bool),
+    RET (#ep, #sl_dig, #sl_link, #err);
     "Hgenie" ∷
       match err with
-      | true => ¬ ∃ ep dig link, wish_CheckStart servPk reply ep dig link
+      | true => ¬ ∃ ep dig link, wish_CheckStartChain servPk chain ep dig link
       | false =>
         ∃ dig link,
         "#Hsl_dig" ∷ sl_dig ↦*□ dig ∗
         "#Hsl_link" ∷ sl_link ↦*□ link ∗
-        "#Hwish_CheckStart" ∷ wish_CheckStart servPk reply ep dig link ∗
-        "#Hown_vrf_pk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk reply.(server.StartReply.VrfPk)
+        "#Hwish_CheckStartChain" ∷ wish_CheckStartChain servPk chain ep dig link
       end
   }}}.
 Proof.
   wp_start as "@".
-  iNamed "Hown_reply". destruct reply. simpl.
+  iNamed "Hown_chain". destruct chain. simpl.
   wp_auto.
   iDestruct (own_slice_len with "Hsl_PrevLink") as %[? _].
   wp_if_destruct.
@@ -108,6 +101,43 @@ Proof.
     iDestruct (hashchain.is_chain_det with "His_chain His_chain_start'") as %->.
     iExactEq "His_link_sig'". repeat f_equal. word. }
   iNamed "Hgenie".
+  iDestruct (hashchain.is_chain_hash_len with "His_chain_prev") as %?.
+  iApply "HΦ".
+  iFrame "#%". simpl in *.
+  iPureIntro. split; [word|].
+  destruct (last _) eqn:Heq; [done|].
+  apply last_None in Heq.
+  apply (f_equal length) in Heq.
+  simpl in *. word.
+Qed.
+
+Definition wish_CheckStartVrf servPk vrf : iProp Σ :=
+  "#His_vrf_pk" ∷ cryptoffi.is_vrf_pk vrf.(server.StartVrf.VrfPk) ∗
+  "#His_vrf_sig" ∷ ktcore.wish_VrfSig servPk vrf.(server.StartVrf.VrfPk)
+    vrf.(server.StartVrf.VrfSig).
+
+Lemma wp_CheckStartVrf sl_servPk servPk ptr_vrf vrf :
+  {{{
+    is_pkg_init auditor ∗
+    "#Hsl_servPk" ∷ sl_servPk ↦*□ servPk ∗
+    "#Hown_vrf" ∷ server.StartVrf.own ptr_vrf vrf (□)
+  }}}
+  @! auditor.CheckStartVrf #sl_servPk #ptr_vrf
+  {{{
+    ptr_vrfPk (err : bool),
+    RET (#ptr_vrfPk, #err);
+    "Hgenie" ∷
+      match err with
+      | true => ¬ wish_CheckStartVrf servPk vrf
+      | false =>
+        "#Hwish_CheckStartVrf" ∷ wish_CheckStartVrf servPk vrf ∗
+        "#Hown_vrf_pk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk vrf.(server.StartVrf.VrfPk)
+      end
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hown_vrf". destruct vrf. simpl.
+  wp_auto.
   wp_apply cryptoffi.wp_VrfPublicKeyDecode as "* @ {Hsl_enc}".
   { iFrame "#". }
   wp_if_destruct.
@@ -118,16 +148,9 @@ Proof.
   wp_if_destruct.
   { iApply "HΦ". iNamedSuffix 1 "'". simpl in *. by iApply "Hgenie". }
   iNamed "Hgenie".
-
   iDestruct (cryptoffi.own_vrf_pk_valid with "Hown_vrf_pk") as "#His_vrf_pk".
-  iDestruct (hashchain.is_chain_hash_len with "His_chain_prev") as %?.
   iApply "HΦ".
-  iFrame "#%". simpl in *.
-  iPureIntro. split; [word|].
-  destruct (last _) eqn:Heq; [done|].
-  apply last_None in Heq.
-  apply (f_equal length) in Heq.
-  simpl in *. word.
+  iFrame "#%".
 Qed.
 
 (*

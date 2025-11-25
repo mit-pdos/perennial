@@ -410,9 +410,9 @@ Definition RemoveAll : go_string := "os.RemoveAll"%go.
 
 Definition endsWithDot : go_string := "os.endsWithDot"%go.
 
-Axiom PathSeparator : val.
+Axiom PathSeparator : Z.
 
-Axiom PathListSeparator : val.
+Axiom PathListSeparator : Z.
 
 Definition IsPathSeparator : go_string := "os.IsPathSeparator"%go.
 

@@ -41,25 +41,6 @@ Definition BlameClients : val := #(W64 16).
 
 Definition BlameUnknown : val := #(W64 32).
 
-Definition CheckBlame : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckBlame"%go.
-
-(* CheckBlame prevents bad parties from giving bad [Blame] codes.
-
-   go: ktcore.go:34:6 *)
-Definition CheckBlameⁱᵐᵖˡ : val :=
-  λ: "b" "allowed",
-    exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "allowed" := (mem.alloc "allowed") in
-    let: "b" := (mem.alloc "b") in
-    let: "all" := (mem.alloc (type.zero_val #Blame)) in
-    let: "$range" := (![#sliceT] "allowed") in
-    (let: "x" := (mem.alloc (type.zero_val #Blame)) in
-    slice.for_range #Blame "$range" (λ: "$key" "$value",
-      do:  ("x" <-[#Blame] "$value");;;
-      do:  "$key";;;
-      do:  ("all" <-[#Blame] ((![#Blame] "all") `or` (![#Blame] "x")))));;;
-    return: (((![#Blame] "b") `and` (~ (![#Blame] "all"))) ≠ #(W64 0))).
-
 Definition SignVrf : go_string := "github.com/sanjit-bhat/pav/ktcore.SignVrf"%go.
 
 Definition VrfSigEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSigEncode"%go.
@@ -73,7 +54,7 @@ Definition VrfSig : go_type := structT [
 
 Definition VrfSigTag : val := #(W8 0).
 
-(* go: ktcore.go:42:6 *)
+(* go: ktcore.go:34:6 *)
 Definition SignVrfⁱᵐᵖˡ : val :=
   λ: "sk" "vrfPk",
     exception_do (let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
@@ -98,7 +79,7 @@ Definition SignVrfⁱᵐᵖˡ : val :=
 
 Definition VerifyVrfSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyVrfSig"%go.
 
-(* go: ktcore.go:50:6 *)
+(* go: ktcore.go:42:6 *)
 Definition VerifyVrfSigⁱᵐᵖˡ : val :=
   λ: "pk" "vrfPk" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -135,7 +116,7 @@ Definition LinkSig : go_type := structT [
 
 Definition LinkSigTag : val := #(W8 1).
 
-(* go: ktcore.go:56:6 *)
+(* go: ktcore.go:48:6 *)
 Definition SignLinkⁱᵐᵖˡ : val :=
   λ: "sk" "epoch" "link",
     exception_do (let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
@@ -163,7 +144,7 @@ Definition SignLinkⁱᵐᵖˡ : val :=
 
 Definition VerifyLinkSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyLinkSig"%go.
 
-(* go: ktcore.go:64:6 *)
+(* go: ktcore.go:56:6 *)
 Definition VerifyLinkSigⁱᵐᵖˡ : val :=
   λ: "pk" "epoch" "link" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -200,7 +181,7 @@ Definition MapLabel : go_type := structT [
 #[global] Typeclasses Opaque MapLabel.
 #[global] Opaque MapLabel.
 
-(* go: ktcore.go:70:6 *)
+(* go: ktcore.go:62:6 *)
 Definition ProveMapLabelⁱᵐᵖˡ : val :=
   λ: "sk" "uid" "ver",
     exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
@@ -226,7 +207,7 @@ Definition ProveMapLabelⁱᵐᵖˡ : val :=
 
 Definition EvalMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.EvalMapLabel"%go.
 
-(* go: ktcore.go:76:6 *)
+(* go: ktcore.go:68:6 *)
 Definition EvalMapLabelⁱᵐᵖˡ : val :=
   λ: "sk" "uid" "ver",
     exception_do (let: "label" := (mem.alloc (type.zero_val #sliceT)) in
@@ -250,7 +231,7 @@ Definition EvalMapLabelⁱᵐᵖˡ : val :=
 
 Definition CheckMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckMapLabel"%go.
 
-(* go: ktcore.go:82:6 *)
+(* go: ktcore.go:74:6 *)
 Definition CheckMapLabelⁱᵐᵖˡ : val :=
   λ: "pk" "uid" "ver" "proof",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -280,7 +261,7 @@ Definition GetMapVal : go_string := "github.com/sanjit-bhat/pav/ktcore.GetMapVal
 
 Definition CommitOpenEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpenEncode"%go.
 
-(* go: ktcore.go:88:6 *)
+(* go: ktcore.go:80:6 *)
 Definition GetMapValⁱᵐᵖˡ : val :=
   λ: "pkOpen",
     exception_do (let: "val" := (mem.alloc (type.zero_val #sliceT)) in
@@ -298,7 +279,7 @@ Definition GetCommitRand : go_string := "github.com/sanjit-bhat/pav/ktcore.GetCo
 (* GetCommitRand computes the psuedo-random (wrt commitSecret) bits
    used in a mapVal commitment.
 
-   go: ktcore.go:95:6 *)
+   go: ktcore.go:87:6 *)
 Definition GetCommitRandⁱᵐᵖˡ : val :=
   λ: "commitSecret" "label",
     exception_do (let: "rand" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1151,7 +1132,7 @@ Definition AuditProofSlice1DDecodeⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(CheckBlame, CheckBlameⁱᵐᵖˡ); (SignVrf, SignVrfⁱᵐᵖˡ); (VerifyVrfSig, VerifyVrfSigⁱᵐᵖˡ); (SignLink, SignLinkⁱᵐᵖˡ); (VerifyLinkSig, VerifyLinkSigⁱᵐᵖˡ); (ProveMapLabel, ProveMapLabelⁱᵐᵖˡ); (EvalMapLabel, EvalMapLabelⁱᵐᵖˡ); (CheckMapLabel, CheckMapLabelⁱᵐᵖˡ); (GetMapVal, GetMapValⁱᵐᵖˡ); (GetCommitRand, GetCommitRandⁱᵐᵖˡ); (VrfSigEncode, VrfSigEncodeⁱᵐᵖˡ); (VrfSigDecode, VrfSigDecodeⁱᵐᵖˡ); (LinkSigEncode, LinkSigEncodeⁱᵐᵖˡ); (LinkSigDecode, LinkSigDecodeⁱᵐᵖˡ); (MapLabelEncode, MapLabelEncodeⁱᵐᵖˡ); (MapLabelDecode, MapLabelDecodeⁱᵐᵖˡ); (CommitOpenEncode, CommitOpenEncodeⁱᵐᵖˡ); (CommitOpenDecode, CommitOpenDecodeⁱᵐᵖˡ); (MembEncode, MembEncodeⁱᵐᵖˡ); (MembDecode, MembDecodeⁱᵐᵖˡ); (NonMembEncode, NonMembEncodeⁱᵐᵖˡ); (NonMembDecode, NonMembDecodeⁱᵐᵖˡ); (AuditProofEncode, AuditProofEncodeⁱᵐᵖˡ); (AuditProofDecode, AuditProofDecodeⁱᵐᵖˡ); (UpdateProofEncode, UpdateProofEncodeⁱᵐᵖˡ); (UpdateProofDecode, UpdateProofDecodeⁱᵐᵖˡ); (UpdateProofSlice1DEncode, UpdateProofSlice1DEncodeⁱᵐᵖˡ); (UpdateProofSlice1DDecode, UpdateProofSlice1DDecodeⁱᵐᵖˡ); (MembSlice1DEncode, MembSlice1DEncodeⁱᵐᵖˡ); (MembSlice1DDecode, MembSlice1DDecodeⁱᵐᵖˡ); (AuditProofSlice1DEncode, AuditProofSlice1DEncodeⁱᵐᵖˡ); (AuditProofSlice1DDecode, AuditProofSlice1DDecodeⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(SignVrf, SignVrfⁱᵐᵖˡ); (VerifyVrfSig, VerifyVrfSigⁱᵐᵖˡ); (SignLink, SignLinkⁱᵐᵖˡ); (VerifyLinkSig, VerifyLinkSigⁱᵐᵖˡ); (ProveMapLabel, ProveMapLabelⁱᵐᵖˡ); (EvalMapLabel, EvalMapLabelⁱᵐᵖˡ); (CheckMapLabel, CheckMapLabelⁱᵐᵖˡ); (GetMapVal, GetMapValⁱᵐᵖˡ); (GetCommitRand, GetCommitRandⁱᵐᵖˡ); (VrfSigEncode, VrfSigEncodeⁱᵐᵖˡ); (VrfSigDecode, VrfSigDecodeⁱᵐᵖˡ); (LinkSigEncode, LinkSigEncodeⁱᵐᵖˡ); (LinkSigDecode, LinkSigDecodeⁱᵐᵖˡ); (MapLabelEncode, MapLabelEncodeⁱᵐᵖˡ); (MapLabelDecode, MapLabelDecodeⁱᵐᵖˡ); (CommitOpenEncode, CommitOpenEncodeⁱᵐᵖˡ); (CommitOpenDecode, CommitOpenDecodeⁱᵐᵖˡ); (MembEncode, MembEncodeⁱᵐᵖˡ); (MembDecode, MembDecodeⁱᵐᵖˡ); (NonMembEncode, NonMembEncodeⁱᵐᵖˡ); (NonMembDecode, NonMembDecodeⁱᵐᵖˡ); (AuditProofEncode, AuditProofEncodeⁱᵐᵖˡ); (AuditProofDecode, AuditProofDecodeⁱᵐᵖˡ); (UpdateProofEncode, UpdateProofEncodeⁱᵐᵖˡ); (UpdateProofDecode, UpdateProofDecodeⁱᵐᵖˡ); (UpdateProofSlice1DEncode, UpdateProofSlice1DEncodeⁱᵐᵖˡ); (UpdateProofSlice1DDecode, UpdateProofSlice1DDecodeⁱᵐᵖˡ); (MembSlice1DEncode, MembSlice1DEncodeⁱᵐᵖˡ); (MembSlice1DDecode, MembSlice1DDecodeⁱᵐᵖˡ); (AuditProofSlice1DEncode, AuditProofSlice1DEncodeⁱᵐᵖˡ); (AuditProofSlice1DDecode, AuditProofSlice1DDecodeⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(Blame.id, []); (ptrT.id Blame.id, []); (VrfSig.id, []); (ptrT.id VrfSig.id, []); (LinkSig.id, []); (ptrT.id LinkSig.id, []); (MapLabel.id, []); (ptrT.id MapLabel.id, []); (CommitOpen.id, []); (ptrT.id CommitOpen.id, []); (Memb.id, []); (ptrT.id Memb.id, []); (NonMemb.id, []); (ptrT.id NonMemb.id, []); (AuditProof.id, []); (ptrT.id AuditProof.id, []); (UpdateProof.id, []); (ptrT.id UpdateProof.id, [])].
 

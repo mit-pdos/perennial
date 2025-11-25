@@ -305,72 +305,6 @@ Qed.
 
 End instances.
 
-(* type auditor.UpdateReply *)
-Module UpdateReply.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Err' : ktcore.Blame.t;
-}.
-End def.
-End UpdateReply.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent auditor.UpdateReply.
-#[local] Typeclasses Transparent auditor.UpdateReply.
-
-Global Instance UpdateReply_wf : struct.Wf auditor.UpdateReply.
-Proof. apply _. Qed.
-
-Global Instance settable_UpdateReply : Settable UpdateReply.t :=
-  settable! UpdateReply.mk < UpdateReply.Err' >.
-Global Instance into_val_UpdateReply : IntoVal UpdateReply.t :=
-  {| to_val_def v :=
-    struct.val_aux auditor.UpdateReply [
-    "Err" ::= #(UpdateReply.Err' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_UpdateReply : IntoValTyped UpdateReply.t auditor.UpdateReply :=
-{|
-  default_val := UpdateReply.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_UpdateReply_Err : IntoValStructField "Err" auditor.UpdateReply UpdateReply.Err'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_UpdateReply Err':
-  PureWp True
-    (struct.make #auditor.UpdateReply (alist_val [
-      "Err" ::= #Err'
-    ]))%struct
-    #(UpdateReply.mk Err').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance UpdateReply_struct_fields_split dq l (v : UpdateReply.t) :
-  StructFieldsSplit dq l v (
-    "HErr" ∷ l ↦s[auditor.UpdateReply :: "Err"]{dq} v.(UpdateReply.Err')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
 (* type auditor.GetArg *)
 Module GetArg.
 Section def.
@@ -437,18 +371,178 @@ Qed.
 
 End instances.
 
+(* type auditor.SignedLink *)
+Module SignedLink.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Link' : slice.t;
+  ServSig' : slice.t;
+  AdtrSig' : slice.t;
+}.
+End def.
+End SignedLink.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent auditor.SignedLink.
+#[local] Typeclasses Transparent auditor.SignedLink.
+
+Global Instance SignedLink_wf : struct.Wf auditor.SignedLink.
+Proof. apply _. Qed.
+
+Global Instance settable_SignedLink : Settable SignedLink.t :=
+  settable! SignedLink.mk < SignedLink.Link'; SignedLink.ServSig'; SignedLink.AdtrSig' >.
+Global Instance into_val_SignedLink : IntoVal SignedLink.t :=
+  {| to_val_def v :=
+    struct.val_aux auditor.SignedLink [
+    "Link" ::= #(SignedLink.Link' v);
+    "ServSig" ::= #(SignedLink.ServSig' v);
+    "AdtrSig" ::= #(SignedLink.AdtrSig' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_SignedLink : IntoValTyped SignedLink.t auditor.SignedLink :=
+{|
+  default_val := SignedLink.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_SignedLink_Link : IntoValStructField "Link" auditor.SignedLink SignedLink.Link'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_SignedLink_ServSig : IntoValStructField "ServSig" auditor.SignedLink SignedLink.ServSig'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_SignedLink_AdtrSig : IntoValStructField "AdtrSig" auditor.SignedLink SignedLink.AdtrSig'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_SignedLink Link' ServSig' AdtrSig':
+  PureWp True
+    (struct.make #auditor.SignedLink (alist_val [
+      "Link" ::= #Link';
+      "ServSig" ::= #ServSig';
+      "AdtrSig" ::= #AdtrSig'
+    ]))%struct
+    #(SignedLink.mk Link' ServSig' AdtrSig').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance SignedLink_struct_fields_split dq l (v : SignedLink.t) :
+  StructFieldsSplit dq l v (
+    "HLink" ∷ l ↦s[auditor.SignedLink :: "Link"]{dq} v.(SignedLink.Link') ∗
+    "HServSig" ∷ l ↦s[auditor.SignedLink :: "ServSig"]{dq} v.(SignedLink.ServSig') ∗
+    "HAdtrSig" ∷ l ↦s[auditor.SignedLink :: "AdtrSig"]{dq} v.(SignedLink.AdtrSig')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (SignedLink.Link' v)) (auditor.SignedLink) "Link"%go.
+  simpl_one_flatten_struct (# (SignedLink.ServSig' v)) (auditor.SignedLink) "ServSig"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type auditor.SignedVrf *)
+Module SignedVrf.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  VrfPk' : slice.t;
+  ServSig' : slice.t;
+  AdtrSig' : slice.t;
+}.
+End def.
+End SignedVrf.
+
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent auditor.SignedVrf.
+#[local] Typeclasses Transparent auditor.SignedVrf.
+
+Global Instance SignedVrf_wf : struct.Wf auditor.SignedVrf.
+Proof. apply _. Qed.
+
+Global Instance settable_SignedVrf : Settable SignedVrf.t :=
+  settable! SignedVrf.mk < SignedVrf.VrfPk'; SignedVrf.ServSig'; SignedVrf.AdtrSig' >.
+Global Instance into_val_SignedVrf : IntoVal SignedVrf.t :=
+  {| to_val_def v :=
+    struct.val_aux auditor.SignedVrf [
+    "VrfPk" ::= #(SignedVrf.VrfPk' v);
+    "ServSig" ::= #(SignedVrf.ServSig' v);
+    "AdtrSig" ::= #(SignedVrf.AdtrSig' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_SignedVrf : IntoValTyped SignedVrf.t auditor.SignedVrf :=
+{|
+  default_val := SignedVrf.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_SignedVrf_VrfPk : IntoValStructField "VrfPk" auditor.SignedVrf SignedVrf.VrfPk'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_SignedVrf_ServSig : IntoValStructField "ServSig" auditor.SignedVrf SignedVrf.ServSig'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_SignedVrf_AdtrSig : IntoValStructField "AdtrSig" auditor.SignedVrf SignedVrf.AdtrSig'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_SignedVrf VrfPk' ServSig' AdtrSig':
+  PureWp True
+    (struct.make #auditor.SignedVrf (alist_val [
+      "VrfPk" ::= #VrfPk';
+      "ServSig" ::= #ServSig';
+      "AdtrSig" ::= #AdtrSig'
+    ]))%struct
+    #(SignedVrf.mk VrfPk' ServSig' AdtrSig').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance SignedVrf_struct_fields_split dq l (v : SignedVrf.t) :
+  StructFieldsSplit dq l v (
+    "HVrfPk" ∷ l ↦s[auditor.SignedVrf :: "VrfPk"]{dq} v.(SignedVrf.VrfPk') ∗
+    "HServSig" ∷ l ↦s[auditor.SignedVrf :: "ServSig"]{dq} v.(SignedVrf.ServSig') ∗
+    "HAdtrSig" ∷ l ↦s[auditor.SignedVrf :: "AdtrSig"]{dq} v.(SignedVrf.AdtrSig')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (SignedVrf.VrfPk' v)) (auditor.SignedVrf) "VrfPk"%go.
+  simpl_one_flatten_struct (# (SignedVrf.ServSig' v)) (auditor.SignedVrf) "ServSig"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 (* type auditor.GetReply *)
 Module GetReply.
 Section def.
 Context `{ffi_syntax}.
 Record t := mk {
-  Link' : slice.t;
-  ServLinkSig' : slice.t;
-  AdtrLinkSig' : slice.t;
-  VrfPk' : slice.t;
-  ServVrfSig' : slice.t;
-  AdtrVrfSig' : slice.t;
-  Err' : ktcore.Blame.t;
+  Link' : loc;
+  Vrf' : loc;
+  Err' : bool;
 }.
 End def.
 End GetReply.
@@ -462,23 +556,19 @@ Global Instance GetReply_wf : struct.Wf auditor.GetReply.
 Proof. apply _. Qed.
 
 Global Instance settable_GetReply : Settable GetReply.t :=
-  settable! GetReply.mk < GetReply.Link'; GetReply.ServLinkSig'; GetReply.AdtrLinkSig'; GetReply.VrfPk'; GetReply.ServVrfSig'; GetReply.AdtrVrfSig'; GetReply.Err' >.
+  settable! GetReply.mk < GetReply.Link'; GetReply.Vrf'; GetReply.Err' >.
 Global Instance into_val_GetReply : IntoVal GetReply.t :=
   {| to_val_def v :=
     struct.val_aux auditor.GetReply [
     "Link" ::= #(GetReply.Link' v);
-    "ServLinkSig" ::= #(GetReply.ServLinkSig' v);
-    "AdtrLinkSig" ::= #(GetReply.AdtrLinkSig' v);
-    "VrfPk" ::= #(GetReply.VrfPk' v);
-    "ServVrfSig" ::= #(GetReply.ServVrfSig' v);
-    "AdtrVrfSig" ::= #(GetReply.AdtrVrfSig' v);
+    "Vrf" ::= #(GetReply.Vrf' v);
     "Err" ::= #(GetReply.Err' v)
     ]%struct
   |}.
 
 Global Program Instance into_val_typed_GetReply : IntoValTyped GetReply.t auditor.GetReply :=
 {|
-  default_val := GetReply.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  default_val := GetReply.mk (default_val _) (default_val _) (default_val _);
 |}.
 Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
@@ -488,19 +578,7 @@ Final Obligation. solve_decision. Qed.
 Global Instance into_val_struct_field_GetReply_Link : IntoValStructField "Link" auditor.GetReply GetReply.Link'.
 Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_GetReply_ServLinkSig : IntoValStructField "ServLinkSig" auditor.GetReply GetReply.ServLinkSig'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_GetReply_AdtrLinkSig : IntoValStructField "AdtrLinkSig" auditor.GetReply GetReply.AdtrLinkSig'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_GetReply_VrfPk : IntoValStructField "VrfPk" auditor.GetReply GetReply.VrfPk'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_GetReply_ServVrfSig : IntoValStructField "ServVrfSig" auditor.GetReply GetReply.ServVrfSig'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_GetReply_AdtrVrfSig : IntoValStructField "AdtrVrfSig" auditor.GetReply GetReply.AdtrVrfSig'.
+Global Instance into_val_struct_field_GetReply_Vrf : IntoValStructField "Vrf" auditor.GetReply GetReply.Vrf'.
 Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_GetReply_Err : IntoValStructField "Err" auditor.GetReply GetReply.Err'.
@@ -508,29 +586,21 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetReply Link' ServLinkSig' AdtrLinkSig' VrfPk' ServVrfSig' AdtrVrfSig' Err':
+Global Instance wp_struct_make_GetReply Link' Vrf' Err':
   PureWp True
     (struct.make #auditor.GetReply (alist_val [
       "Link" ::= #Link';
-      "ServLinkSig" ::= #ServLinkSig';
-      "AdtrLinkSig" ::= #AdtrLinkSig';
-      "VrfPk" ::= #VrfPk';
-      "ServVrfSig" ::= #ServVrfSig';
-      "AdtrVrfSig" ::= #AdtrVrfSig';
+      "Vrf" ::= #Vrf';
       "Err" ::= #Err'
     ]))%struct
-    #(GetReply.mk Link' ServLinkSig' AdtrLinkSig' VrfPk' ServVrfSig' AdtrVrfSig' Err').
+    #(GetReply.mk Link' Vrf' Err').
 Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance GetReply_struct_fields_split dq l (v : GetReply.t) :
   StructFieldsSplit dq l v (
     "HLink" ∷ l ↦s[auditor.GetReply :: "Link"]{dq} v.(GetReply.Link') ∗
-    "HServLinkSig" ∷ l ↦s[auditor.GetReply :: "ServLinkSig"]{dq} v.(GetReply.ServLinkSig') ∗
-    "HAdtrLinkSig" ∷ l ↦s[auditor.GetReply :: "AdtrLinkSig"]{dq} v.(GetReply.AdtrLinkSig') ∗
-    "HVrfPk" ∷ l ↦s[auditor.GetReply :: "VrfPk"]{dq} v.(GetReply.VrfPk') ∗
-    "HServVrfSig" ∷ l ↦s[auditor.GetReply :: "ServVrfSig"]{dq} v.(GetReply.ServVrfSig') ∗
-    "HAdtrVrfSig" ∷ l ↦s[auditor.GetReply :: "AdtrVrfSig"]{dq} v.(GetReply.AdtrVrfSig') ∗
+    "HVrf" ∷ l ↦s[auditor.GetReply :: "Vrf"]{dq} v.(GetReply.Vrf') ∗
     "HErr" ∷ l ↦s[auditor.GetReply :: "Err"]{dq} v.(GetReply.Err')
   ).
 Proof.
@@ -540,11 +610,7 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
   simpl_one_flatten_struct (# (GetReply.Link' v)) (auditor.GetReply) "Link"%go.
-  simpl_one_flatten_struct (# (GetReply.ServLinkSig' v)) (auditor.GetReply) "ServLinkSig"%go.
-  simpl_one_flatten_struct (# (GetReply.AdtrLinkSig' v)) (auditor.GetReply) "AdtrLinkSig"%go.
-  simpl_one_flatten_struct (# (GetReply.VrfPk' v)) (auditor.GetReply) "VrfPk"%go.
-  simpl_one_flatten_struct (# (GetReply.ServVrfSig' v)) (auditor.GetReply) "ServVrfSig"%go.
-  simpl_one_flatten_struct (# (GetReply.AdtrVrfSig' v)) (auditor.GetReply) "AdtrVrfSig"%go.
+  simpl_one_flatten_struct (# (GetReply.Vrf' v)) (auditor.GetReply) "Vrf"%go.
 
   solve_field_ref_f.
 Qed.
@@ -607,28 +673,20 @@ Global Instance wp_func_call_getNextDig :
   WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CheckStart :
-  WpFuncCall auditor.CheckStart _ (is_pkg_defined auditor) :=
+Global Instance wp_func_call_CheckStartChain :
+  WpFuncCall auditor.CheckStartChain _ (is_pkg_defined auditor) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_CheckStartVrf :
+  WpFuncCall auditor.CheckStartVrf _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_NewRpcAuditor :
   WpFuncCall auditor.NewRpcAuditor _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_CallUpdate :
-  WpFuncCall auditor.CallUpdate _ (is_pkg_defined auditor) :=
-  ltac:(solve_wp_func_call).
-
 Global Instance wp_func_call_CallGet :
   WpFuncCall auditor.CallGet _ (is_pkg_defined auditor) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_UpdateReplyEncode :
-  WpFuncCall auditor.UpdateReplyEncode _ (is_pkg_defined auditor) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_UpdateReplyDecode :
-  WpFuncCall auditor.UpdateReplyDecode _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetArgEncode :
@@ -637,6 +695,22 @@ Global Instance wp_func_call_GetArgEncode :
 
 Global Instance wp_func_call_GetArgDecode :
   WpFuncCall auditor.GetArgDecode _ (is_pkg_defined auditor) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SignedLinkEncode :
+  WpFuncCall auditor.SignedLinkEncode _ (is_pkg_defined auditor) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SignedLinkDecode :
+  WpFuncCall auditor.SignedLinkDecode _ (is_pkg_defined auditor) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SignedVrfEncode :
+  WpFuncCall auditor.SignedVrfEncode _ (is_pkg_defined auditor) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SignedVrfDecode :
+  WpFuncCall auditor.SignedVrfDecode _ (is_pkg_defined auditor) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_GetReplyEncode :

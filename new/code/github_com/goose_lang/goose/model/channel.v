@@ -477,7 +477,7 @@ Definition BlockingSelect2ⁱᵐᵖˡ : val :=
     let: "zero1" := (mem.alloc (type.zero_val "T1")) in
     let: "zero2" := (mem.alloc (type.zero_val "T2")) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 2)) = #(W64 0)
+      (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem` #(W64 2)) = #(W64 0)
       then
         (if: (![#SelectDir] "dir1") = SelectSend
         then
@@ -542,7 +542,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
     let: "ch1" := (mem.alloc "ch1") in
     let: "zero1" := (mem.alloc (type.zero_val "T1")) in
     let: "zero2" := (mem.alloc (type.zero_val "T2")) in
-    (if: (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 2)) = #(W64 0)
+    (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem` #(W64 2)) = #(W64 0)
     then
       (if: (![#SelectDir] "dir1") = SelectSend
       then
@@ -654,7 +654,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ : val :=
     let: "zero3" := (mem.alloc (type.zero_val "T3")) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "r" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 3)) in
+      let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem` #(W64 3)) in
       do:  ("r" <-[#uint64T] "$r0");;;
       let: "$sw" := (![#uint64T] "r") in
       (if: "$sw" = #(W64 0)
@@ -752,7 +752,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ : val :=
     let: "zero2" := (mem.alloc (type.zero_val "T2")) in
     let: "zero3" := (mem.alloc (type.zero_val "T3")) in
     let: "start" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 3)) in
+    let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem` #(W64 3)) in
     do:  ("start" <-[#uint64T] "$r0");;;
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in

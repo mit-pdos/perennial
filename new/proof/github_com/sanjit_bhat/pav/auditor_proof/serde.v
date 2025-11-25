@@ -8,70 +8,6 @@ From New.proof.github_com.sanjit_bhat.pav.auditor_proof Require Import base.
 
 Module auditor.
 
-Module UpdateReply.
-Record t :=
-  mk' {
-    Err: w64;
-  }.
-
-Definition pure_enc obj :=
-  safemarshal.w64.pure_enc obj.(Err).
-
-Definition wish b obj tail :=
-  b = pure_enc obj ++ tail.
-
-Lemma wish_det tail0 tail1 obj0 obj1 {b} :
-  wish b obj0 tail0 →
-  wish b obj1 tail1 →
-  obj0 = obj1 ∧ tail0 = tail1.
-Proof. Admitted.
-
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-Definition own ptr obj d : iProp Σ :=
-  "Hstruct" ∷ ptr ↦{d} (auditor.UpdateReply.mk obj.(Err)).
-
-Lemma wp_enc obj sl_b b ptr_obj d :
-  {{{
-    is_pkg_init auditor ∗
-    "Hsl_b" ∷ sl_b ↦* b ∗
-    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
-    "Hown_obj" ∷ own ptr_obj obj d
-  }}}
-  @! auditor.UpdateReplyEncode #sl_b #ptr_obj
-  {{{
-    sl_b', RET #sl_b';
-    let b' := b ++ pure_enc obj in
-    sl_b' ↦* b' ∗
-    own_slice_cap w8 sl_b' 1 ∗
-    own ptr_obj obj d ∗
-    ⌜wish b' obj b⌝
-  }}}.
-Proof. Admitted.
-
-Lemma wp_dec sl_b d b :
-  {{{
-    is_pkg_init auditor ∗
-    "Hsl_b" ∷ sl_b ↦*{d} b
-  }}}
-  @! auditor.UpdateReplyDecode #sl_b
-  {{{
-    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
-    match err with
-    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
-    | false =>
-      ∃ obj tail,
-      own ptr_obj obj d ∗
-      sl_tail ↦*{d} tail ∗
-      ⌜wish b obj tail⌝
-    end
-  }}}.
-Proof. Admitted.
-
-End proof.
-End UpdateReply.
-
 Module GetArg.
 Record t :=
   mk' {
@@ -136,34 +72,23 @@ Proof. Admitted.
 End proof.
 End GetArg.
 
-Module GetReply.
+Module SignedLink.
 Record t :=
   mk' {
     Link: list w8;
-    ServLinkSig: list w8;
-    AdtrLinkSig: list w8;
-    VrfPk: list w8;
-    ServVrfSig: list w8;
-    AdtrVrfSig: list w8;
-    Err: w64;
+    ServSig: list w8;
+    AdtrSig: list w8;
   }.
 
 Definition pure_enc obj :=
   safemarshal.Slice1D.pure_enc obj.(Link) ++
-  safemarshal.Slice1D.pure_enc obj.(ServLinkSig) ++
-  safemarshal.Slice1D.pure_enc obj.(AdtrLinkSig) ++
-  safemarshal.Slice1D.pure_enc obj.(VrfPk) ++
-  safemarshal.Slice1D.pure_enc obj.(ServVrfSig) ++
-  safemarshal.Slice1D.pure_enc obj.(AdtrVrfSig) ++
-  safemarshal.w64.pure_enc obj.(Err).
+  safemarshal.Slice1D.pure_enc obj.(ServSig) ++
+  safemarshal.Slice1D.pure_enc obj.(AdtrSig).
 
 Definition valid obj :=
   safemarshal.Slice1D.valid obj.(Link) ∧
-  safemarshal.Slice1D.valid obj.(ServLinkSig) ∧
-  safemarshal.Slice1D.valid obj.(AdtrLinkSig) ∧
-  safemarshal.Slice1D.valid obj.(VrfPk) ∧
-  safemarshal.Slice1D.valid obj.(ServVrfSig) ∧
-  safemarshal.Slice1D.valid obj.(AdtrVrfSig).
+  safemarshal.Slice1D.valid obj.(ServSig) ∧
+  safemarshal.Slice1D.valid obj.(AdtrSig).
 
 Definition wish b obj tail :=
   b = pure_enc obj ++ tail ∧
@@ -179,15 +104,168 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
 Definition own ptr obj d : iProp Σ :=
-  ∃ sl_Link sl_ServLinkSig sl_AdtrLinkSig sl_VrfPk sl_ServVrfSig sl_AdtrVrfSig,
-  "Hstruct" ∷ ptr ↦{d} (auditor.GetReply.mk sl_Link sl_ServLinkSig sl_AdtrLinkSig sl_VrfPk sl_ServVrfSig sl_AdtrVrfSig obj.(Err)) ∗
+  ∃ sl_Link sl_ServSig sl_AdtrSig,
+  "Hstruct" ∷ ptr ↦{d} (auditor.SignedLink.mk sl_Link sl_ServSig sl_AdtrSig) ∗
 
   "Hsl_Link" ∷ sl_Link ↦*{d} obj.(Link) ∗
-  "Hsl_ServLinkSig" ∷ sl_ServLinkSig ↦*{d} obj.(ServLinkSig) ∗
-  "Hsl_AdtrLinkSig" ∷ sl_AdtrLinkSig ↦*{d} obj.(AdtrLinkSig) ∗
+  "Hsl_ServSig" ∷ sl_ServSig ↦*{d} obj.(ServSig) ∗
+  "Hsl_AdtrSig" ∷ sl_AdtrSig ↦*{d} obj.(AdtrSig).
+
+Lemma wp_enc obj sl_b b ptr_obj d :
+  {{{
+    is_pkg_init auditor ∗
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
+    "Hown_obj" ∷ own ptr_obj obj d
+  }}}
+  @! auditor.SignedLinkEncode #sl_b #ptr_obj
+  {{{
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜wish b' obj b⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_dec sl_b d b :
+  {{{
+    is_pkg_init auditor ∗
+    "Hsl_b" ∷ sl_b ↦*{d} b
+  }}}
+  @! auditor.SignedLinkDecode #sl_b
+  {{{
+    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
+    match err with
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
+    | false =>
+      ∃ obj tail,
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
+    end
+  }}}.
+Proof. Admitted.
+
+End proof.
+End SignedLink.
+
+Module SignedVrf.
+Record t :=
+  mk' {
+    VrfPk: list w8;
+    ServSig: list w8;
+    AdtrSig: list w8;
+  }.
+
+Definition pure_enc obj :=
+  safemarshal.Slice1D.pure_enc obj.(VrfPk) ++
+  safemarshal.Slice1D.pure_enc obj.(ServSig) ++
+  safemarshal.Slice1D.pure_enc obj.(AdtrSig).
+
+Definition valid obj :=
+  safemarshal.Slice1D.valid obj.(VrfPk) ∧
+  safemarshal.Slice1D.valid obj.(ServSig) ∧
+  safemarshal.Slice1D.valid obj.(AdtrSig).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ sl_VrfPk sl_ServSig sl_AdtrSig,
+  "Hstruct" ∷ ptr ↦{d} (auditor.SignedVrf.mk sl_VrfPk sl_ServSig sl_AdtrSig) ∗
+
   "Hsl_VrfPk" ∷ sl_VrfPk ↦*{d} obj.(VrfPk) ∗
-  "Hsl_ServVrfSig" ∷ sl_ServVrfSig ↦*{d} obj.(ServVrfSig) ∗
-  "Hsl_AdtrVrfSig" ∷ sl_AdtrVrfSig ↦*{d} obj.(AdtrVrfSig).
+  "Hsl_ServSig" ∷ sl_ServSig ↦*{d} obj.(ServSig) ∗
+  "Hsl_AdtrSig" ∷ sl_AdtrSig ↦*{d} obj.(AdtrSig).
+
+Lemma wp_enc obj sl_b b ptr_obj d :
+  {{{
+    is_pkg_init auditor ∗
+    "Hsl_b" ∷ sl_b ↦* b ∗
+    "Hcap_b" ∷ own_slice_cap w8 sl_b 1 ∗
+    "Hown_obj" ∷ own ptr_obj obj d
+  }}}
+  @! auditor.SignedVrfEncode #sl_b #ptr_obj
+  {{{
+    sl_b', RET #sl_b';
+    let b' := b ++ pure_enc obj in
+    sl_b' ↦* b' ∗
+    own_slice_cap w8 sl_b' 1 ∗
+    own ptr_obj obj d ∗
+    ⌜wish b' obj b⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_dec sl_b d b :
+  {{{
+    is_pkg_init auditor ∗
+    "Hsl_b" ∷ sl_b ↦*{d} b
+  }}}
+  @! auditor.SignedVrfDecode #sl_b
+  {{{
+    ptr_obj sl_tail err, RET (#ptr_obj, #sl_tail, #err);
+    match err with
+    | true => ¬ ∃ obj tail, ⌜wish b obj tail⌝
+    | false =>
+      ∃ obj tail,
+      own ptr_obj obj d ∗
+      sl_tail ↦*{d} tail ∗
+      ⌜wish b obj tail⌝
+    end
+  }}}.
+Proof. Admitted.
+
+End proof.
+End SignedVrf.
+
+Module GetReply.
+Record t :=
+  mk' {
+    Link: SignedLink.t;
+    Vrf: SignedVrf.t;
+    Err: bool;
+  }.
+
+Definition pure_enc obj :=
+  SignedLink.pure_enc obj.(Link) ++
+  SignedVrf.pure_enc obj.(Vrf) ++
+  safemarshal.bool.pure_enc obj.(Err).
+
+Definition valid obj :=
+  SignedLink.valid obj.(Link) ∧
+  SignedVrf.valid obj.(Vrf).
+
+Definition wish b obj tail :=
+  b = pure_enc obj ++ tail ∧
+  valid obj.
+
+Lemma wish_det tail0 tail1 obj0 obj1 {b} :
+  wish b obj0 tail0 →
+  wish b obj1 tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj d : iProp Σ :=
+  ∃ ptr_Link ptr_Vrf,
+  "Hstruct" ∷ ptr ↦{d} (auditor.GetReply.mk ptr_Link ptr_Vrf obj.(Err)) ∗
+
+  "Hown_Link" ∷ SignedLink.own ptr_Link obj.(Link) d ∗
+  "Hown_Vrf" ∷ SignedVrf.own ptr_Vrf obj.(Vrf) d.
 
 Lemma wp_enc obj sl_b b ptr_obj d :
   {{{

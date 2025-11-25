@@ -90,6 +90,17 @@ Definition t := w32.
 End def.
 End Uint32.
 
+(* type unittest.numWrapper *)
+Module numWrapper.
+
+#[global] Transparent unittest.numWrapper.
+#[global] Typeclasses Transparent unittest.numWrapper.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End numWrapper.
+
 (* type unittest.diskWrapper *)
 Module diskWrapper.
 Section def.
@@ -2238,6 +2249,10 @@ Global Instance wp_func_call_testU32NewtypeLen :
   WpFuncCall unittest.testU32NewtypeLen _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_testNumWrapper :
+  WpFuncCall unittest.testNumWrapper _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_testCopySimple :
   WpFuncCall unittest.testCopySimple _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
@@ -2352,6 +2367,10 @@ Global Instance wp_func_call_other :
 
 Global Instance wp_func_call_bar :
   WpFuncCall unittest.bar _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_useUntypedRune :
+  WpFuncCall unittest.useUntypedRune _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_TakesFunctionType :
@@ -2845,6 +2864,10 @@ Global Instance wp_func_call_LocalVars :
 Global Instance wp_func_call_LocalConsts :
   WpFuncCall unittest.LocalConsts _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_numWrapper'ptr_inc :
+  WpMethodCall (ptrT.id unittest.numWrapper.id) "inc" _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_embedA_Foo :
   WpMethodCall unittest.embedA.id "Foo" _ (is_pkg_defined unittest) :=

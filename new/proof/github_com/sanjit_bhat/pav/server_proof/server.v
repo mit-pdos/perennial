@@ -52,52 +52,37 @@ Context `{!mono_listG (list w8 * keys_ty) Σ}.
 (* each uid has a mono_list of (ver, pk). *)
 Context `{!mono_listG (w64 * list w8) Σ}.
 
-Definition pure_put σ uid pk (ver : w64) :=
-  let pks := σ.(state.pending) !!! uid in
-  (* drop put if not right version. *)
-  if bool_decide (uint.nat ver ≠ length pks) then σ else
-  set state.pending (<[uid:=pks ++ [pk]]>) σ.
-
-(** server invariants and ghost state. *)
+(** invariants. *)
 
 Implicit Types γ : servγ.t.
 Implicit Types σ : state.t.
 
-Definition serv_gs γ σ : iProp Σ :=
+Definition gs_inv γ σ : iProp Σ :=
   "#Hpend" ∷ ([∗ map] uid ↦ pks ∈ σ.(state.pending),
     ∃ uidγ,
     "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
     "#Hpks" ∷ ([∗ list] ver ↦ pk ∈ pks,
       ∃ i,
-      (* NOTE: client owns mlist_auth for their uid.
+      (* client owns mlist_auth for their uid.
       for adversarial uid, auth in inv. *)
       mono_list_idx_own uidγ i ((W64 ver), pk))) ∗
-  (* NOTE: client remembers lb's of this. *)
+  (* client remembers lb's of this. *)
   "Hhist" ∷ mono_list_auth_own γ.(servγ.histγ) 1 σ.(state.hist).
 
-Lemma gs_put γ σ uid pk ver uidγ i :
-  serv_gs γ σ -∗
-  ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
-  mono_list_idx_own uidγ i (ver, pk) -∗
-  serv_gs γ (pure_put σ uid pk ver).
-Proof.
-  iIntros "@ %Hlook_uidγ #Hmono_idx".
-  iSplitR.
-  - rewrite /pure_put.
-    case_bool_decide; [iFrame "#"|].
-    simpl.
-    iApply big_sepM_insert_2; [|iFrame "#"].
-    iFrame "%".
-    iApply big_sepL_snoc.
-    iSplit.
-    2: { iExists _. iExactEq "Hmono_idx". repeat f_equal. word. }
-    rewrite lookup_total_alt.
-    destruct (σ.(state.pending) !! uid) eqn:Hlook;
-      rewrite Hlook; simpl; [|done].
-    iDestruct (big_sepM_lookup with "Hpend") as "@"; [done|].
-    by simplify_eq/=.
-  - rewrite /pure_put. case_bool_decide; iFrame.
-Qed.
+Definition keys_sub : relation keys_ty := map_included (λ _, prefix).
+
+(* TODO: unclear if we need to relate dig to keys in σ.(hist).
+might be able to prove client correctness and serv specs without it.
+note: serv can maintain inv that ties its merkle tree to both
+lastDig and lastKeys. *)
+Definition state_inv σ : iProp Σ :=
+  "%Hpend" ∷ ⌜(∀ lastHist,
+    last σ.(state.hist) = Some lastHist →
+    keys_sub lastHist.2 σ.(state.pending))⌝ ∗
+  "%Hhist" ∷ ⌜(∀ i hist0 hist1,
+    σ.(state.hist) !! i = Some hist0 →
+    σ.(state.hist) !! (S i) = Some hist1 →
+    keys_sub hist0.2 hist1.2)⌝.
 
 Axiom own_Server : ∀ γ σ, iProp Σ.
 
@@ -107,7 +92,8 @@ Global Existing Instance own_Server_timeless.
 Definition serv_inv γ : iProp Σ :=
   ∃ σ,
   "Hserv" ∷ own_Server γ σ ∗
-  "Hgs" ∷ serv_gs γ σ.
+  "Hgs" ∷ gs_inv γ σ ∗
+  "#Hstate" ∷ state_inv σ.
 
 Definition is_Server (s : loc) γ : iProp Σ :=
   inv nroot (serv_inv γ).
@@ -115,7 +101,132 @@ Definition is_Server (s : loc) γ : iProp Σ :=
 #[global] Instance is_Server_pers s γ : Persistent (is_Server s γ).
 Proof. apply _. Qed.
 
-(** "low-level" specs for server methods. *)
+(** state transition ops. *)
+
+Lemma op_read s γ :
+  is_Server s γ -∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
+Proof.
+  iIntros "#His_serv".
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iMod "Hmask" as "_".
+  iNamed "Hgs".
+  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
+  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
+Qed.
+
+Definition pure_put uid pk (ver : w64) (pend : keys_ty) :=
+  let pks := pend !!! uid in
+  (* drop put if not right version.
+  this enforces a "linear" version history. *)
+  if bool_decide (uint.nat ver ≠ length pks) then pend else
+  <[uid:=pks ++ [pk]]>pend.
+
+Lemma sub_over_put pend uid pk ver :
+  keys_sub pend (pure_put uid pk ver pend).
+Proof.
+  rewrite /pure_put.
+  case_bool_decide; [done|].
+  rewrite /keys_sub.
+  apply insert_included; [apply _|].
+  rewrite lookup_total_alt.
+  intros ? ->. simpl.
+  by apply prefix_app_r.
+Qed.
+
+Lemma op_put s γ uid uidγ i ver pk :
+  is_Server s γ -∗
+  ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
+  mono_list_idx_own uidγ i (ver, pk) -∗
+  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+    let σ' := set state.pending (pure_put uid pk ver) σ in
+    (own_Server γ σ' ={∅,⊤}=∗ True)).
+Proof.
+  iIntros "#His_serv %Hlook_uidγ #Hmono_idx".
+  iModIntro.
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-]"); [|done].
+  iModIntro.
+  iFrame.
+
+  destruct σ. simpl in *.
+  iSplitL.
+  - iNamed "Hgs". iFrame.
+    rewrite /pure_put /=.
+    case_bool_decide; [iFrame "#"|].
+    iApply big_sepM_insert_2; [|iFrame "#"].
+    iFrame "%".
+    iApply big_sepL_snoc.
+    iSplit.
+    2: { iExists _. iExactEq "Hmono_idx". repeat f_equal. word. }
+    rewrite lookup_total_alt.
+    destruct (pending !! uid) eqn:Hlook;
+      rewrite Hlook; simpl; [|done].
+    iDestruct (big_sepM_lookup with "Hpend") as "@"; [done|].
+    by simplify_eq/=.
+  - iNamed "Hstate".
+    iSplit; iPureIntro; simpl; [|done].
+    intros.
+    trans pending; [naive_solver|].
+    apply sub_over_put.
+Qed.
+
+Lemma op_add_hist s γ dig :
+  is_Server s γ -∗
+  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+    let σ' := set (state.hist) (.++ [(dig, σ.(state.pending))]) σ in
+    (own_Server γ σ' ={∅,⊤}=∗ True)).
+Proof.
+  iIntros "#His_serv".
+  iModIntro.
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iNamed "Hgs".
+  iNamed "Hstate".
+  iMod (mono_list_auth_own_update_app with "Hhist") as "[Hhist _]".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-]"); [|done].
+  iModIntro.
+  iFrame "∗∗#".
+
+  destruct σ. simpl in *.
+  iSplit; iPureIntro; simpl.
+  - intros ? Hlast. rewrite last_snoc in Hlast.
+    by simplify_eq/=.
+  - intros i ?? Hlook0 Hlook1.
+    apply lookup_lt_Some in Hlook1 as ?.
+    autorewrite with len in *.
+    destruct (decide (S i = length hist)).
+    + rewrite lookup_app_l in Hlook0; [|lia].
+      rewrite lookup_app_r in Hlook1; [|lia].
+      apply list_lookup_singleton_Some in Hlook1 as [_ ?].
+      replace i with (pred (length hist)) in Hlook0 by lia.
+      rewrite -last_lookup in Hlook0.
+      naive_solver.
+    + rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
+      naive_solver.
+Qed.
+
+(** specs. *)
 
 (* RPC spec needs □ in front of atomic update. *)
 Lemma wp_Server_Put s γ uid pk sl_pk ver :
@@ -124,155 +235,129 @@ Lemma wp_Server_Put s γ uid pk sl_pk ver :
   is_Server s γ -∗
   sl_pk ↦*□ pk -∗
   (* writable. *)
+  (* True postcond. caller doesn't need anything from Put. *)
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
-    (own_Server γ (pure_put σ uid pk ver) ={∅,⊤}=∗ True)) -∗
+    (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)) -∗
   (* fupd might be used after Put returns, so Φ goes separately. *)
   ▷ Φ #() -∗
   WP s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver {{ Φ }}.
 Proof.
 Admitted.
 
-(* The RPC spec is the same, no □ bc this doesn't mutate σ. *)
-(* for idiomatic spec, use GS to contradict BlameUnknown. *)
 Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
-  ∀ Φ,
+  ∀ Φ Q,
   is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    ∃ sl_chainProof sl_linkSig sl_hist ptr_bound (err : ktcore.Blame)
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
+  (∀ σ,
+    Q σ -∗
+    ∃ sl_chainProof sl_linkSig sl_hist ptr_bound err
       lastDig lastKeys lastLink,
     let numEps := length σ.(state.hist) in
     let pks := lastKeys !!! uid in
     "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
     "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
-    ((
-      "%Herr" ∷ ⌜err = {[ ktcore.BlameUnknown ]}⌝ ∗
-      "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
-        uint.nat prevVerLen > length pks⌝
-    ) ∨ (
-      ∃ chainProof (linkSig : list w8) hist bound,
-      "%Herr" ∷ ⌜err = ∅⌝ ∗
-      "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
-        uint.nat prevVerLen ≤ length pks⌝ ∗
+    "#Hgenie" ∷
+      match err with
+      | true =>
+        "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
+          uint.nat prevVerLen > length pks⌝
+      | false =>
+        ∃ chainProof linkSig hist bound,
+        "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
+          uint.nat prevVerLen ≤ length pks⌝ ∗
 
-      "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
-      "#Hsl_linkSig" ∷ sl_linkSig ↦*□ linkSig ∗
-      "#Hsl_hist" ∷ ktcore.MembSlice1D.own sl_hist hist (□) ∗
-      "#Hptr_bound" ∷ ktcore.NonMemb.own ptr_bound bound (□) ∗
+        "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
+        "#Hsl_linkSig" ∷ sl_linkSig ↦*□ linkSig ∗
+        "#Hsl_hist" ∷ ktcore.MembSlice1D.own sl_hist hist (□) ∗
+        "#Hptr_bound" ∷ ktcore.NonMemb.own ptr_bound bound (□) ∗
 
-      "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
-        (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
-      "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
-        (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
-      "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(servγ.vrf_pk) uid prevVerLen
-        lastDig hist ∗
-      "%Heq_hist" ∷ ⌜Forall2
-        (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
-        (drop (uint.nat prevVerLen) pks) hist⌝ ∗
-      "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(servγ.vrf_pk) uid
-        (W64 $ length pks) lastDig bound
-    )) -∗
-    Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err))) -∗
+        "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
+          (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
+        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
+          (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
+        "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(servγ.vrf_pk) uid prevVerLen
+          lastDig hist ∗
+        "%Heq_hist" ∷ ⌜Forall2
+          (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
+          (drop (uint.nat prevVerLen) pks) hist⌝ ∗
+        "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(servγ.vrf_pk) uid
+          (W64 $ length pks) lastDig bound
+      end -∗
+    Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
   WP s @ (ptrT.id server.Server.id) @ "History" #uid #prevEpoch #prevVerLen {{ Φ }}.
-Proof.
-Admitted.
+Proof. Admitted.
 
 Lemma wp_Server_Audit s γ (prevEpoch : w64) :
-  ∀ Φ,
+  ∀ Φ Q,
   is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    ∃ sl_proof (err : ktcore.Blame),
-    ((
-      "%Herr" ∷ ⌜err = {[ ktcore.BlameUnknown ]}⌝ ∗
-      "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist)⌝
-    ) ∨ (
-      ∃ proof prevDig,
-      "%Herr" ∷ ⌜err = ∅⌝ ∗
-      "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist)⌝ ∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
+  (∀ σ,
+    Q σ -∗
+    ∃ sl_proof err,
+    "#Hgenie" ∷
+      match err with
+      | true =>
+        "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist)⌝
+      | false =>
+        ∃ proof prevDig,
+        "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist)⌝ ∗
 
-      "#Hsl_proof" ∷ ktcore.AuditProofSlice1D.own sl_proof proof (□) ∗
+        "#Hsl_proof" ∷ ktcore.AuditProofSlice1D.own sl_proof proof (□) ∗
 
-      "%Heq_prevDig" ∷ ⌜σ.(state.hist).*1 !! (uint.nat prevEpoch) = Some prevDig⌝ ∗
-      "#Hwish_digs" ∷ ktcore.wish_ListAudit prevDig proof
-        (drop (S $ uint.nat prevEpoch) σ.(state.hist).*1) ∗
-      "#His_sigs" ∷ ([∗ list] k ↦ aud ∈ proof,
-        ∃ link,
-        let ep := S $ (uint.nat prevEpoch + k)%nat in
-        "#His_link" ∷ hashchain.is_chain (take (S ep) σ.(state.hist).*1)
-          None link (S ep) ∗
-        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
-          (W64 ep) link aud.(ktcore.AuditProof.LinkSig))
-      (* no need to explicitly state update labels and vals.
-      those are tied down by UpdateProof, which is tied into server's digs.
-      dig only commits to one map, which lets auditor know it shares
-      same maps as server. *)
-    )) -∗
-    Φ #(sl_proof, err))) -∗
+        "%Heq_prevDig" ∷ ⌜σ.(state.hist).*1 !! (uint.nat prevEpoch) = Some prevDig⌝ ∗
+        "#Hwish_digs" ∷ ktcore.wish_ListAudit prevDig proof
+          (drop (S $ uint.nat prevEpoch) σ.(state.hist).*1) ∗
+        "#His_sigs" ∷ ([∗ list] k ↦ aud ∈ proof,
+          ∃ link,
+          let ep := S $ (uint.nat prevEpoch + k)%nat in
+          "#His_link" ∷ hashchain.is_chain (take (S ep) σ.(state.hist).*1)
+            None link (S ep) ∗
+          "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
+            (W64 ep) link aud.(ktcore.AuditProof.LinkSig))
+        (* no need to explicitly state update labels and vals.
+        those are tied down by UpdateProof, which is tied into server's digs.
+        dig only commits to one map, which lets auditor know it shares
+        same maps as server. *)
+      end -∗
+    Φ #(sl_proof, err)) -∗
   WP s @ (ptrT.id server.Server.id) @ "Audit" #prevEpoch {{ Φ }}.
 Proof.
 Admitted.
 
 Lemma wp_Server_Start s γ :
-  ∀ Φ,
+  ∀ Φ Q,
   is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    ∃ ptr_reply reply last_link,
-    "#Hsl_reply" ∷ StartReply.own ptr_reply reply (□) ∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
+  (∀ σ,
+    Q σ -∗
+    ∃ ptr_chain chain ptr_vrf vrf last_link,
+    "#Hptr_chain" ∷ StartChain.own ptr_chain chain (□) ∗
+    "#Hptr_vrf" ∷ StartVrf.own ptr_vrf vrf (□) ∗
 
     "#His_PrevLink" ∷ hashchain.is_chain
-      (take (uint.nat reply.(StartReply.PrevEpochLen)) σ.(state.hist).*1)
-      None reply.(StartReply.PrevLink)
-      (uint.nat reply.(StartReply.PrevEpochLen)) ∗
-    "%His_ChainProof" ∷ ⌜hashchain.wish_Proof reply.(StartReply.ChainProof)
-      (drop (uint.nat reply.(StartReply.PrevEpochLen)) σ.(state.hist).*1)⌝ ∗
+      (take (uint.nat chain.(StartChain.PrevEpochLen)) σ.(state.hist).*1)
+      None chain.(StartChain.PrevLink)
+      (uint.nat chain.(StartChain.PrevEpochLen)) ∗
+    "%His_ChainProof" ∷ ⌜hashchain.wish_Proof chain.(StartChain.ChainProof)
+      (drop (uint.nat chain.(StartChain.PrevEpochLen)) σ.(state.hist).*1)⌝ ∗
     "#His_last_link" ∷ hashchain.is_chain σ.(state.hist).*1 None
       last_link (length σ.(state.hist)) ∗
     "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
-      (W64 $ length σ.(state.hist) - 1) last_link reply.(StartReply.LinkSig) ∗
+      (W64 $ length σ.(state.hist) - 1) last_link chain.(StartChain.LinkSig) ∗
 
-    "%Heq_VrfPk" ∷ ⌜γ.(servγ.vrf_pk) = reply.(StartReply.VrfPk)⌝ ∗
+    "%Heq_VrfPk" ∷ ⌜γ.(servγ.vrf_pk) = vrf.(StartVrf.VrfPk)⌝ ∗
     "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(servγ.sig_pk) γ.(servγ.vrf_pk)
-      reply.(StartReply.VrfSig) -∗
-    Φ #ptr_reply)) -∗
+      vrf.(StartVrf.VrfSig) -∗
+    Φ #(ptr_chain, ptr_vrf)) -∗
   WP s @ (ptrT.id server.Server.id) @ "Start" #() {{ Φ }}.
 Proof.
 Admitted.
-
-(** RA-based (more client-centric) specs. *)
-
-Lemma wp_Server_Put' s γ uid sl_pk pk ver uidγ i :
-  {{{
-    is_pkg_init server ∗
-    "#His_serv" ∷ is_Server s γ ∗
-    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
-    "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
-    "#Hmono_idx" ∷ mono_list_idx_own uidγ i (ver, pk)
-  }}}
-  s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver
-  {{{ RET #(); True }}}.
-Proof.
-  iIntros (Φ) "[#? @] Hpost".
-  wp_apply (wp_Server_Put with "[//][//][//][][Hpost]").
-  2: { by iApply "Hpost". }
-  iModIntro.
-  rewrite /is_Server.
-  iInv "His_serv" as ">@" "Hclose".
-  iApply fupd_mask_intro.
-  { set_solver. }
-  iIntros "Hmask".
-  iFrame.
-  iIntros "Hserv".
-  iMod "Hmask" as "_".
-  iMod ("Hclose" with "[-]"); [|done].
-  iModIntro.
-  iFrame.
-  iApply (gs_put with "Hgs [//][//]").
-Qed.
 
 End proof.
 End server.
