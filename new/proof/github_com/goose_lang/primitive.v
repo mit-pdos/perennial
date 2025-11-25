@@ -62,17 +62,28 @@ Proof.
   iIntros "%"; congruence.
 Qed.
 
+Lemma wp_RandomUint64__impl :
+  {{{ True }}}
+    primitive.RandomUint64ⁱᵐᵖˡ #()
+  {{{ (x: w64), RET #x; True }}}
+.
+Proof.
+  wp_start as "_".
+  wp_call.
+  wp_apply wp_ArbitraryInt.
+  iIntros (x).
+  by iApply "HΦ".
+Qed.
+
 Lemma wp_RandomUint64 :
   {{{ is_pkg_init primitive }}}
     @! primitive.RandomUint64 #()
   {{{ (x: w64), RET #x; True }}}
 .
 Proof.
-  wp_start as "_".
-  wp_apply wp_ArbitraryInt.
-  iIntros (x).
-  iApply "HΦ".
-  done.
+  wp_start_folded as "_".
+  wp_func_call.
+  by iApply wp_RandomUint64__impl.
 Qed.
 
 Lemma wp_AssumeNoStringOverflow (s: byte_string) :
