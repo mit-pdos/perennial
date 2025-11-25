@@ -108,7 +108,18 @@ Axiom increasingHint : val.
 
 Axiom decreasingHint : val.
 
-Axiom xorshift : go_type.
+Definition xorshift : go_type := uint64T.
+#[global] Typeclasses Opaque xorshift.
+#[global] Opaque xorshift.
+
+(* go: sort.go:181:20 *)
+Definition xorshift__Nextⁱᵐᵖˡ : val :=
+  λ: "r" <>,
+    exception_do (let: "r" := (mem.alloc "r") in
+    do:  ((![#ptrT] "r") <-[#xorshift] ((![#xorshift] (![#ptrT] "r")) `xor` ((![#xorshift] (![#ptrT] "r")) ≪ #(W64 13))));;;
+    do:  ((![#ptrT] "r") <-[#xorshift] ((![#xorshift] (![#ptrT] "r")) `xor` ((![#xorshift] (![#ptrT] "r")) ≫ #(W64 7))));;;
+    do:  ((![#ptrT] "r") <-[#xorshift] ((![#xorshift] (![#ptrT] "r")) `xor` ((![#xorshift] (![#ptrT] "r")) ≪ #(W64 17))));;;
+    return: (![#xorshift] (![#ptrT] "r"))).
 
 Definition nextPowerOfTwo : go_string := "slices.nextPowerOfTwo"%go.
 
@@ -1235,8 +1246,6 @@ Axiom symMergeOrderedⁱᵐᵖˡ : val.
 Axiom rotateOrderedⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(All, Allⁱᵐᵖˡ); (Backward, Backwardⁱᵐᵖˡ); (Values, Valuesⁱᵐᵖˡ); (AppendSeq, AppendSeqⁱᵐᵖˡ); (Collect, Collectⁱᵐᵖˡ); (Sorted, Sortedⁱᵐᵖˡ); (SortedFunc, SortedFuncⁱᵐᵖˡ); (SortedStableFunc, SortedStableFuncⁱᵐᵖˡ); (Chunk, Chunkⁱᵐᵖˡ); (Equal, Equalⁱᵐᵖˡ); (EqualFunc, EqualFuncⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (CompareFunc, CompareFuncⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (Insert, Insertⁱᵐᵖˡ); (Delete, Deleteⁱᵐᵖˡ); (DeleteFunc, DeleteFuncⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (Compact, Compactⁱᵐᵖˡ); (CompactFunc, CompactFuncⁱᵐᵖˡ); (Grow, Growⁱᵐᵖˡ); (Clip, Clipⁱᵐᵖˡ); (rotateLeft, rotateLeftⁱᵐᵖˡ); (rotateRight, rotateRightⁱᵐᵖˡ); (overlaps, overlapsⁱᵐᵖˡ); (startIdx, startIdxⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (Concat, Concatⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (SortFunc, SortFuncⁱᵐᵖˡ); (SortStableFunc, SortStableFuncⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (IsSortedFunc, IsSortedFuncⁱᵐᵖˡ); (Min, Minⁱᵐᵖˡ); (MinFunc, MinFuncⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (MaxFunc, MaxFuncⁱᵐᵖˡ); (BinarySearch, BinarySearchⁱᵐᵖˡ); (BinarySearchFunc, BinarySearchFuncⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (insertionSortCmpFunc, insertionSortCmpFuncⁱᵐᵖˡ); (siftDownCmpFunc, siftDownCmpFuncⁱᵐᵖˡ); (heapSortCmpFunc, heapSortCmpFuncⁱᵐᵖˡ); (pdqsortCmpFunc, pdqsortCmpFuncⁱᵐᵖˡ); (partitionCmpFunc, partitionCmpFuncⁱᵐᵖˡ); (partitionEqualCmpFunc, partitionEqualCmpFuncⁱᵐᵖˡ); (partialInsertionSortCmpFunc, partialInsertionSortCmpFuncⁱᵐᵖˡ); (breakPatternsCmpFunc, breakPatternsCmpFuncⁱᵐᵖˡ); (choosePivotCmpFunc, choosePivotCmpFuncⁱᵐᵖˡ); (order2CmpFunc, order2CmpFuncⁱᵐᵖˡ); (medianCmpFunc, medianCmpFuncⁱᵐᵖˡ); (medianAdjacentCmpFunc, medianAdjacentCmpFuncⁱᵐᵖˡ); (reverseRangeCmpFunc, reverseRangeCmpFuncⁱᵐᵖˡ); (swapRangeCmpFunc, swapRangeCmpFuncⁱᵐᵖˡ); (stableCmpFunc, stableCmpFuncⁱᵐᵖˡ); (symMergeCmpFunc, symMergeCmpFuncⁱᵐᵖˡ); (rotateCmpFunc, rotateCmpFuncⁱᵐᵖˡ); (insertionSortOrdered, insertionSortOrderedⁱᵐᵖˡ); (siftDownOrdered, siftDownOrderedⁱᵐᵖˡ); (heapSortOrdered, heapSortOrderedⁱᵐᵖˡ); (pdqsortOrdered, pdqsortOrderedⁱᵐᵖˡ); (partitionOrdered, partitionOrderedⁱᵐᵖˡ); (partitionEqualOrdered, partitionEqualOrderedⁱᵐᵖˡ); (partialInsertionSortOrdered, partialInsertionSortOrderedⁱᵐᵖˡ); (breakPatternsOrdered, breakPatternsOrderedⁱᵐᵖˡ); (choosePivotOrdered, choosePivotOrderedⁱᵐᵖˡ); (order2Ordered, order2Orderedⁱᵐᵖˡ); (medianOrdered, medianOrderedⁱᵐᵖˡ); (medianAdjacentOrdered, medianAdjacentOrderedⁱᵐᵖˡ); (reverseRangeOrdered, reverseRangeOrderedⁱᵐᵖˡ); (swapRangeOrdered, swapRangeOrderedⁱᵐᵖˡ); (stableOrdered, stableOrderedⁱᵐᵖˡ); (symMergeOrdered, symMergeOrderedⁱᵐᵖˡ); (rotateOrdered, rotateOrderedⁱᵐᵖˡ)].
-
-Axiom xorshift__Nextⁱᵐᵖˡ : val.
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(sortedHint.id, []); (ptrT.id sortedHint.id, []); (xorshift.id, []); (ptrT.id xorshift.id, [("Next"%go, xorshift__Nextⁱᵐᵖˡ)])].
 
