@@ -217,7 +217,11 @@ Proof.
   wp_apply wp_StringToBytes.
   iIntros (?) "Hsl".
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-  wp_apply (wp_ReadInt with "[$]").
+  wp_apply (wp_ReadInt nil with "[Hsl]").
+  {
+    rewrite app_nil_r.
+    iFrame.
+  }
   iIntros. wp_pures. iModIntro. by iApply "HΦ".
 Qed.
 

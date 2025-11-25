@@ -102,7 +102,7 @@ Proof.
   { solve_ndisj. }
   iIntros "Hmask".
   iFrame.
-  iIntros "Hnext".
+  iIntros "!> Hnext".
   iMod "Hmask".
   iMod ("Hclose" with "[Hcur Hnext Hheld HP]").
   {
@@ -150,7 +150,7 @@ Proof.
     { solve_ndisj. }
     iIntros "Hmask".
     iFrame.
-    iIntros "Hcur".
+    iIntros "!> Hcur".
     iMod "Hmask".
     iMod ("Hclose" with "[Hcur Hnext Hheld]").
     {
@@ -176,10 +176,7 @@ Proof.
     iModIntro.
     wp_auto.
     wp_if_destruct.
-    { rewrite decide_False. 2: rewrite to_val_unseal //.
-      rewrite decide_True. 2: rewrite to_val_unseal //.
-      wp_auto.
-      iApply "HΦ".
+    { iApply "HΦ".
       rewrite Hnextsome. iFrame.
     }
     word.
@@ -188,7 +185,7 @@ Proof.
     { solve_ndisj. }
     iIntros "Hmask".
     iFrame.
-    iIntros "Hcur".
+    iIntros "!> Hcur".
     iMod "Hmask".
     iMod ("Hclose" with "[Hcur Hnext Hheld HP]").
     {
@@ -198,16 +195,13 @@ Proof.
     iModIntro.
     wp_auto.
     wp_if_destruct.
-    { rewrite decide_False. 2: rewrite to_val_unseal //.
-      rewrite decide_True. 2: rewrite to_val_unseal //.
-      word.
-    }
-    wp_auto.
+    { exfalso. word. }
     wp_apply (wp_Gosched with "[]").
     { done. }
 
     wp_for_post.
     iFrame.
+    Fail idtac.
 Admitted.
 
 Lemma wp_TicketLock__Release (ptr : loc) g P :
@@ -243,7 +237,7 @@ Proof.
   { solve_ndisj. }
   iIntros "Hmask".
   iFrame.
-  iIntros "Hcur".
+  iIntros "!> Hcur".
   iMod "Hmask".
   iMod ("Hclose" with "[Hcur Hnext Hheld HP]").
   {
@@ -259,11 +253,14 @@ Proof.
     iPureIntro.
     destruct (decide (uint.nat (word.add cur (W64 1)) = uint.nat next)).
     (* assuming no overflow, this would have been true. *)
+    { admit. }
     admit.
   }
 
   iModIntro.
-
+  wp_auto.
+  by iApply "HΦ".
+  Fail idtac.
 Admitted.
 
 End proof.
