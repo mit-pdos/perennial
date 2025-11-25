@@ -22,13 +22,13 @@ Instance subG_partitionG L V {Σ} `{Countable L, Infinite L, Countable V, Infini
   subG (partitionΣ L V) Σ → partition_preG L V Σ.
 Proof. solve_inG. Qed.
 
-Local Notation "l ↦{ q } v" := (pointsto l q v)
-  (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
-Local Notation "l ↦ v" := (pointsto l 1 v) (at level 20) : bi_scope.
+Local Notation "l ↦ dq v" := (pointsto l dq v)
+  (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  v") : bi_scope.
+Local Notation "l ↦ v" := (pointsto l (DfracOwn 1) v) (at level 20) : bi_scope.
 
-Local Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
-  (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
-Local Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
+Local Notation "l ↦ dq -" := (∃ v, pointsto l dq v)%I
+  (at level 20, dq custom dfrac at level 1, format "l  ↦ dq  -") : bi_scope.
+Local Notation "l ↦ -" := (l ↦{#1} -)%I (at level 20) : bi_scope.
 
 Section definitions.
 Context `{Countable L, Infinite L, Countable V, Infinite V, hG : !partitionG L V Σ}.
@@ -41,7 +41,7 @@ Definition disjoint_images (σ: gmap L (gset V)) : Prop :=
                  s1 ## s2.
 
 Definition partition_ctx (σ: gmap L (gset V)) : iProp Σ :=
-  (⌜ disjoint_images σ ⌝ ∗ gen_heap_ctx σ).
+  (⌜ disjoint_images σ ⌝ ∗ gen_heap_interp σ).
 
 Definition union_partition (σ: gmap L (gset V)) : gset V :=
   map_fold (λ _ s1 s2, s1 ∪ s2) ∅ σ.
@@ -50,7 +50,7 @@ Lemma union_partition_elem_of_1 σ (v: V):
   v ∈ union_partition σ → ∃ i s, σ !! i = Some s ∧ v ∈ s.
 Proof.
   revert v.
-  eapply (map_fold_ind (λ b σ, ∀ v, v ∈ b → ∃ i s, σ !! i = Some s ∧ v ∈ s) _ ∅).
+  eapply (map_fold_weak_ind (λ b σ, ∀ v, v ∈ b → ∃ i s, σ !! i = Some s ∧ v ∈ s) _ ∅).
   - set_solver.
   - intros i s1 m s2 Hlookup HP v Hin.
     apply elem_of_union in Hin as [Hs1|Hs2].
@@ -63,7 +63,7 @@ Lemma union_partition_elem_of_2 σ (v: V) i s:
   σ !! i = Some s → v ∈ s → v ∈ union_partition σ.
 Proof.
   revert v i s.
-  eapply (map_fold_ind (λ b σ, ∀ v i s, σ !! i = Some s → v ∈ s → v ∈ b) _ ∅).
+  eapply (map_fold_weak_ind (λ b σ, ∀ v i s, σ !! i = Some s → v ∈ s → v ∈ b) _ ∅).
   - set_solver.
   - intros i s1 m s2 Hlookup HP v i' s Hlookup2 Hin.
     destruct (decide (i = i')).
@@ -126,7 +126,9 @@ Proof.
   iDestruct (gen_heap_valid with "Hctx Hl2") as %Hin2.
   iAssert (⌜l1 ≠ l2⌝)%I with "[-]" as %Hneq.
   { iIntros (?). subst. iDestruct (pointsto_valid_2 with "[$] [$]") as %Hval.
-    rewrite frac_valid in Hval * => Hlt. by apply Qp.not_plus_q_ge_1 in Hlt.
+    destruct Hval as [Hval _].
+    rewrite dfrac_op_own dfrac_valid in Hval.
+    by apply Qp.not_add_le_l in Hval.
   }
   iPureIntro. split; auto. eapply Hdisj; eauto.
 Qed.

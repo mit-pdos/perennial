@@ -1,7 +1,7 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
-From Perennial.algebra Require ghost_async_map.
+From Perennial.algebra Require ghost_async_map abs_laterable partition.
 
 From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy
@@ -22,11 +22,14 @@ From Perennial.program_proof Require
      txn.twophase_refinement_thm
      simple.proofs simple.example
 .
+From Perennial.program_proof.simple Require print_assumptions.
+
 
 From Perennial.program_proof.examples Require
      replicated_block_proof
      all_examples
 .
+From Perennial.program_proof.examples Require print_assumptions.
 
 From Perennial.program_proof.grove_shared Require
      urpc_proof erpc_proof.
@@ -38,6 +41,7 @@ From Perennial.program_proof.memkv Require
      memkv_clerk_proof
      lockservice_proof bank_proof
      closed.
+From Perennial.program_proof.memkv Require print_assumptions.
 
 (* Epoch-fencing examples *)
 From Perennial.program_proof.fencing Require
@@ -51,15 +55,18 @@ From Perennial.program_proof.aof Require proof.
 (* vrsm *)
 From Perennial.program_proof.vrsm Require
      reconfig.proof vkv.kv_proof closed_proof.
+From Perennial.program_proof.vrsm Require print_assumptions.
 
 (* MVCC *)
-From Perennial.program_proof.mvcc Require mvcc_proof.
+From Perennial.program_proof.mvcc Require db_run mvcc_proof.
+From Perennial.program_proof.mvcc Require print_assumptions.
 
 (* rsm *)
 From Perennial.program_proof.rsm Require rsm_proof.
 
 (* tulip *)
 From Perennial.program_proof.tulip Require tulip_proof.
+From Perennial.program_proof.tulip Require print_assumptions.
 
 (*
 From Perennial.goose_lang Require
@@ -101,15 +108,36 @@ From Perennial.program_proof.minlease Require proof.
 
 (* Grove tutorial *)
 From Perennial.program_proof.tutorial Require
-     basics.proof
+     basics.proof basics.full_proof
      queue.proof
      kvservice.proof
      kvservice.full_proof.
+From Perennial.program_proof.tutorial.objectstore Require
+     chunk.writechunk_proof_gk
+     dir.chunkhandle_proof_gk
+     dir.finishwrite_proof_gk
+     dir.recordchunk_proof_gk
+.
 
 (* Verus-related proofs *)
 From Perennial.program_proof.verus Require
-    wrs.
+    wrs wrsmulti inv ucmra_cmra_adjunction.
+(*
+From Perennial.program_proof.verus Require
+    typecast_nontermination.
+*)
 
 From Perennial.program_proof.cachekv Require proof.
+
+(** everything below is unmaintained but does build *)
+
+From Perennial.program_proof Require
+  optional_precond spellchecker.proof bad_nil_slice bad_zero_func single.election.
+From Perennial.program_logic Require simulation.
+From Perennial.program_proof.tutorial.lockservice Require
+  proof lockrequest_proof_gk.
+From Perennial.goose_lang.trusted.github_com.mit_pdos.gokv Require trusted_hash.
+From Perennial.program_proof.tulip.paxos.invariance Require extend.
+From Perennial.program_proof.tulip.program.backup Require bgpreparer_process_query_result.
 
 From New Require should_build.
