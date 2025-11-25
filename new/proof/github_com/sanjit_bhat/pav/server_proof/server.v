@@ -52,13 +52,7 @@ Context `{!mono_listG (list w8 * keys_ty) Σ}.
 (* each uid has a mono_list of (ver, pk). *)
 Context `{!mono_listG (w64 * list w8) Σ}.
 
-Definition pure_put uid pk (ver : w64) (pend : keys_ty) :=
-  let pks := pend !!! uid in
-  (* drop put if not right version. *)
-  if bool_decide (uint.nat ver ≠ length pks) then pend else
-  <[uid:=pks ++ [pk]]>pend.
-
-(** server invariants and ghost state. *)
+(** invariants. *)
 
 Implicit Types γ : servγ.t.
 Implicit Types σ : state.t.
@@ -99,6 +93,39 @@ Definition serv_inv γ : iProp Σ :=
   "Hgs" ∷ gs_inv γ σ ∗
   "#Hstate" ∷ state_inv σ.
 
+Definition is_Server (s : loc) γ : iProp Σ :=
+  inv nroot (serv_inv γ).
+
+#[global] Instance is_Server_pers s γ : Persistent (is_Server s γ).
+Proof. apply _. Qed.
+
+(** state transitions. *)
+
+Lemma do_read s γ :
+  is_Server s γ -∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
+Proof.
+  iIntros "#His_serv".
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iMod "Hmask" as "_".
+  iNamed "Hgs".
+  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
+  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
+Qed.
+
+Definition pure_put uid pk (ver : w64) (pend : keys_ty) :=
+  let pks := pend !!! uid in
+  (* drop put if not right version. *)
+  if bool_decide (uint.nat ver ≠ length pks) then pend else
+  <[uid:=pks ++ [pk]]>pend.
+
 Lemma sub_over_put pend uid pk ver :
   keys_sub pend (pure_put uid pk ver pend).
 Proof.
@@ -111,90 +138,7 @@ Proof.
   by apply prefix_app_r.
 Qed.
 
-Lemma logical_put γ σ uid pk ver uidγ i :
-  gs_inv γ σ -∗
-  state_inv σ -∗
-  ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
-  mono_list_idx_own uidγ i (ver, pk) -∗
-  let σ' := set (state.pending) (pure_put uid pk ver) σ in
-  gs_inv γ σ' ∗ state_inv σ'.
-Proof.
-  iIntros "@ @ %Hlook_uidγ #Hmono_idx".
-  destruct σ. simpl in *.
-  iSplitL.
-  - iFrame.
-    rewrite /pure_put /=.
-    case_bool_decide; [iFrame "#"|].
-    iApply big_sepM_insert_2; [|iFrame "#"].
-    iFrame "%".
-    iApply big_sepL_snoc.
-    iSplit.
-    2: { iExists _. iExactEq "Hmono_idx". repeat f_equal. word. }
-    rewrite lookup_total_alt.
-    destruct (pending !! uid) eqn:Hlook;
-      rewrite Hlook; simpl; [|done].
-    iDestruct (big_sepM_lookup with "Hpend") as "@"; [done|].
-    by simplify_eq/=.
-  - iSplit; iPureIntro; simpl; [|done].
-    intros.
-    trans pending; [naive_solver|].
-    apply sub_over_put.
-Qed.
-
-(* TODO: tie down dig to pending. *)
-Lemma logical_new_ep γ σ dig :
-  gs_inv γ σ -∗
-  state_inv σ ==∗
-  let σ' := set (state.hist) (.++ [(dig, σ.(state.pending))]) σ in
-  gs_inv γ σ' ∗ state_inv σ'.
-Proof.
-  iIntros "@ @".
-  destruct σ. simpl in *.
-  iMod (mono_list_auth_own_update_app with "Hhist") as "[? _]".
-  iFrame "∗#".
-  iModIntro.
-  iSplit; iPureIntro; simpl.
-  - intros ? Hlast. rewrite last_snoc in Hlast.
-    by simplify_eq/=.
-  - intros i ?? Hlook0 Hlook1.
-    apply lookup_lt_Some in Hlook1 as ?.
-    autorewrite with len in *.
-    destruct (decide (S i = length hist)).
-    + rewrite lookup_app_l in Hlook0; [|lia].
-      rewrite lookup_app_r in Hlook1; [|lia].
-      apply list_lookup_singleton_Some in Hlook1 as [_ ?].
-      replace i with (pred (length hist)) in Hlook0 by lia.
-      rewrite -last_lookup in Hlook0.
-      naive_solver.
-    + rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
-      naive_solver.
-Qed.
-
-Definition is_Server (s : loc) γ : iProp Σ :=
-  inv nroot (serv_inv γ).
-
-#[global] Instance is_Server_pers s γ : Persistent (is_Server s γ).
-Proof. apply _. Qed.
-
-(** specs for server methods. *)
-
-(* RPC spec needs □ in front of atomic update. *)
-Lemma wp_Server_Put s γ uid pk sl_pk ver :
-  ∀ Φ,
-  is_pkg_init server -∗
-  is_Server s γ -∗
-  sl_pk ↦*□ pk -∗
-  (* writable. *)
-  (* True postcond. caller doesn't need anything from Put. *)
-  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
-    (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)) -∗
-  (* fupd might be used after Put returns, so Φ goes separately. *)
-  ▷ Φ #() -∗
-  WP s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver {{ Φ }}.
-Proof.
-Admitted.
-
-Lemma mk_Put_fupd s γ uid uidγ i ver pk :
+Lemma do_put s γ uid uidγ i ver pk :
   is_Server s γ -∗
   ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
   mono_list_idx_own uidγ i (ver, pk) -∗
@@ -214,8 +158,88 @@ Proof.
   iMod ("Hclose" with "[-]"); [|done].
   iModIntro.
   iFrame.
-  by iApply (logical_put with "Hgs").
+
+  destruct σ. simpl in *.
+  iSplitL.
+  - iNamed "Hgs". iFrame.
+    rewrite /pure_put /=.
+    case_bool_decide; [iFrame "#"|].
+    iApply big_sepM_insert_2; [|iFrame "#"].
+    iFrame "%".
+    iApply big_sepL_snoc.
+    iSplit.
+    2: { iExists _. iExactEq "Hmono_idx". repeat f_equal. word. }
+    rewrite lookup_total_alt.
+    destruct (pending !! uid) eqn:Hlook;
+      rewrite Hlook; simpl; [|done].
+    iDestruct (big_sepM_lookup with "Hpend") as "@"; [done|].
+    by simplify_eq/=.
+  - iNamed "Hstate".
+    iSplit; iPureIntro; simpl; [|done].
+    intros.
+    trans pending; [naive_solver|].
+    apply sub_over_put.
 Qed.
+
+(* TODO: tie down dig to pending. *)
+Lemma do_add_hist s γ dig :
+  is_Server s γ -∗
+  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+    let σ' := set (state.hist) (.++ [(dig, σ.(state.pending))]) σ in
+    (own_Server γ σ' ={∅,⊤}=∗ True)).
+Proof.
+  iIntros "#His_serv".
+  iModIntro.
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iNamed "Hgs".
+  iNamed "Hstate".
+  iMod (mono_list_auth_own_update_app with "Hhist") as "[Hhist _]".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-]"); [|done].
+  iModIntro.
+  iFrame "∗∗#".
+
+  destruct σ. simpl in *.
+  iSplit; iPureIntro; simpl.
+  - intros ? Hlast. rewrite last_snoc in Hlast.
+    by simplify_eq/=.
+  - intros i ?? Hlook0 Hlook1.
+    apply lookup_lt_Some in Hlook1 as ?.
+    autorewrite with len in *.
+    destruct (decide (S i = length hist)).
+    + rewrite lookup_app_l in Hlook0; [|lia].
+      rewrite lookup_app_r in Hlook1; [|lia].
+      apply list_lookup_singleton_Some in Hlook1 as [_ ?].
+      replace i with (pred (length hist)) in Hlook0 by lia.
+      rewrite -last_lookup in Hlook0.
+      naive_solver.
+    + rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
+      naive_solver.
+Qed.
+
+(** specs. *)
+
+(* RPC spec needs □ in front of atomic update. *)
+Lemma wp_Server_Put s γ uid pk sl_pk ver :
+  ∀ Φ,
+  is_pkg_init server -∗
+  is_Server s γ -∗
+  sl_pk ↦*□ pk -∗
+  (* writable. *)
+  (* True postcond. caller doesn't need anything from Put. *)
+  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+    (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)) -∗
+  (* fupd might be used after Put returns, so Φ goes separately. *)
+  ▷ Φ #() -∗
+  WP s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver {{ Φ }}.
+Proof.
+Admitted.
 
 Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
   ∀ Φ Q,
@@ -262,25 +286,6 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
   WP s @ (ptrT.id server.Server.id) @ "History" #uid #prevEpoch #prevVerLen {{ Φ }}.
 Proof. Admitted.
 
-Lemma mk_History_fupd s γ :
-  is_Server s γ -∗
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
-Proof.
-  iIntros "#His_serv".
-  rewrite /is_Server.
-  iInv "His_serv" as ">@" "Hclose".
-  iApply fupd_mask_intro.
-  { set_solver. }
-  iIntros "Hmask".
-  iFrame "Hserv".
-  iIntros "Hserv".
-  iMod "Hmask" as "_".
-  iNamed "Hgs".
-  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
-  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
-Qed.
-
 Lemma wp_Server_Audit s γ (prevEpoch : w64) :
   ∀ Φ Q,
   is_pkg_init server -∗
@@ -320,25 +325,6 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) :
 Proof.
 Admitted.
 
-Lemma mk_Audit_fupd s γ :
-  is_Server s γ -∗
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
-Proof.
-  iIntros "#His_serv".
-  rewrite /is_Server.
-  iInv "His_serv" as ">@" "Hclose".
-  iApply fupd_mask_intro.
-  { set_solver. }
-  iIntros "Hmask".
-  iFrame "Hserv".
-  iIntros "Hserv".
-  iMod "Hmask" as "_".
-  iNamed "Hgs".
-  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
-  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
-Qed.
-
 Lemma wp_Server_Start s γ :
   ∀ Φ Q,
   is_pkg_init server -∗
@@ -369,25 +355,6 @@ Lemma wp_Server_Start s γ :
   WP s @ (ptrT.id server.Server.id) @ "Start" #() {{ Φ }}.
 Proof.
 Admitted.
-
-Lemma mk_Start_fupd s γ :
-  is_Server s γ -∗
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
-Proof.
-  iIntros "#His_serv".
-  rewrite /is_Server.
-  iInv "His_serv" as ">@" "Hclose".
-  iApply fupd_mask_intro.
-  { set_solver. }
-  iIntros "Hmask".
-  iFrame "Hserv".
-  iIntros "Hserv".
-  iMod "Hmask" as "_".
-  iNamed "Hgs".
-  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
-  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
-Qed.
 
 End proof.
 End server.
