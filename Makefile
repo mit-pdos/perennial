@@ -1,7 +1,6 @@
 SRC_DIRS := 'src' 'external' 'new'
-ALL_VFILES := $(shell find $(SRC_DIRS) -not -path "external/coqutil/etc/coq-scripts/*" -name "*.v")
-VFILES := $(shell find 'src' -name "*.v")
-QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
+ALL_VFILES := $(shell find $(SRC_DIRS) -not -path "external/coqutil/etc/coq-scripts/*" -not -name "*__nobuild.v" -name "*.v")
+VFILES := $(shell find 'src' -not -name "*__nobuild.v" -name "*.v")
 
 # extract any global arguments for Rocq from _RocqProject
 ROCQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _RocqProject)
@@ -32,7 +31,6 @@ default: src/ShouldBuild.vo
 
 all: $(VFILES:.v=.vo)
 vos: src/ShouldBuild.vos
-vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
 check-assumptions: \
 	src/program_proof/examples/print_assumptions.vo \
