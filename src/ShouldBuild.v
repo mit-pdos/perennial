@@ -131,9 +131,6 @@ From Perennial.program_proof.cachekv Require proof.
 
 (** everything below is unmaintained but does build *)
 
-(* pav with old goose *)
-From Perennial.program_proof.pav Require should_build marshalutil workq.
-
 From Perennial.program_proof Require
   optional_precond spellchecker.proof bad_nil_slice bad_zero_func single.election.
 From Perennial.program_logic Require simulation.
