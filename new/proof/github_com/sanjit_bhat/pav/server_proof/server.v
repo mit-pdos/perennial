@@ -176,7 +176,7 @@ Definition is_Server (s : loc) γ : iProp Σ :=
 #[global] Instance is_Server_pers s γ : Persistent (is_Server s γ).
 Proof. apply _. Qed.
 
-(** "low-level" specs for server methods. *)
+(** specs for server methods. *)
 
 (* RPC spec needs □ in front of atomic update. *)
 Lemma wp_Server_Put s γ uid pk sl_pk ver :
@@ -185,6 +185,7 @@ Lemma wp_Server_Put s γ uid pk sl_pk ver :
   is_Server s γ -∗
   sl_pk ↦*□ pk -∗
   (* writable. *)
+  (* True postcond. caller doesn't need anything from Put. *)
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
     (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)) -∗
   (* fupd might be used after Put returns, so Φ goes separately. *)
@@ -193,14 +194,37 @@ Lemma wp_Server_Put s γ uid pk sl_pk ver :
 Proof.
 Admitted.
 
-(* The RPC spec is the same, no □ bc this doesn't mutate σ. *)
-(* for idiomatic spec, use GS to contradict BlameUnknown. *)
+Lemma mk_Put_fupd s γ uid uidγ i ver pk :
+  is_Server s γ -∗
+  ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
+  mono_list_idx_own uidγ i (ver, pk) -∗
+  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+    (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)).
+Proof.
+  iIntros "#His_serv %Hlook_uidγ #Hmono_idx".
+  iModIntro.
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-]"); [|done].
+  iModIntro.
+  iFrame.
+  by iApply (logical_put with "Hgs").
+Qed.
+
 Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
-  ∀ Φ,
+  ∀ Φ Q,
   is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
+  (∀ σ,
+    Q σ -∗
     ∃ sl_chainProof sl_linkSig sl_hist ptr_bound err
       lastDig lastKeys lastLink,
     let numEps := length σ.(state.hist) in
@@ -213,7 +237,7 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
         "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
           uint.nat prevVerLen > length pks⌝
       | false =>
-        ∃ chainProof (linkSig : list w8) hist bound,
+        ∃ chainProof linkSig hist bound,
         "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
           uint.nat prevVerLen ≤ length pks⌝ ∗
 
@@ -233,19 +257,38 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
           (drop (uint.nat prevVerLen) pks) hist⌝ ∗
         "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(servγ.vrf_pk) uid
           (W64 $ length pks) lastDig bound
-      end
-    -∗
-    Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err))) -∗
+      end -∗
+    Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
   WP s @ (ptrT.id server.Server.id) @ "History" #uid #prevEpoch #prevVerLen {{ Φ }}.
+Proof. Admitted.
+
+Lemma mk_History_fupd s γ :
+  is_Server s γ -∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
 Proof.
-Admitted.
+  iIntros "#His_serv".
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iMod "Hmask" as "_".
+  iNamed "Hgs".
+  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
+  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
+Qed.
 
 Lemma wp_Server_Audit s γ (prevEpoch : w64) :
-  ∀ Φ,
+  ∀ Φ Q,
   is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
+  (∀ σ,
+    Q σ -∗
     ∃ sl_proof err,
     "#Hgenie" ∷
       match err with
@@ -271,19 +314,39 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) :
         those are tied down by UpdateProof, which is tied into server's digs.
         dig only commits to one map, which lets auditor know it shares
         same maps as server. *)
-      end
-    -∗
-    Φ #(sl_proof, err))) -∗
+      end -∗
+    Φ #(sl_proof, err)) -∗
   WP s @ (ptrT.id server.Server.id) @ "Audit" #prevEpoch {{ Φ }}.
 Proof.
 Admitted.
 
+Lemma mk_Audit_fupd s γ :
+  is_Server s γ -∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
+Proof.
+  iIntros "#His_serv".
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iFrame "Hserv".
+  iIntros "Hserv".
+  iMod "Hmask" as "_".
+  iNamed "Hgs".
+  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
+  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
+Qed.
+
 Lemma wp_Server_Start s γ :
-  ∀ Φ,
+  ∀ Φ Q,
   is_pkg_init server -∗
   is_Server s γ -∗
   (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
+  (∀ σ,
+    Q σ -∗
     ∃ ptr_chain chain ptr_vrf vrf last_link,
     "#Hptr_chain" ∷ StartChain.own ptr_chain chain (□) ∗
     "#Hptr_vrf" ∷ StartVrf.own ptr_vrf vrf (□) ∗
@@ -302,40 +365,28 @@ Lemma wp_Server_Start s γ :
     "%Heq_VrfPk" ∷ ⌜γ.(servγ.vrf_pk) = vrf.(StartVrf.VrfPk)⌝ ∗
     "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(servγ.sig_pk) γ.(servγ.vrf_pk)
       vrf.(StartVrf.VrfSig) -∗
-    Φ #(ptr_chain, ptr_vrf))) -∗
+    Φ #(ptr_chain, ptr_vrf)) -∗
   WP s @ (ptrT.id server.Server.id) @ "Start" #() {{ Φ }}.
 Proof.
 Admitted.
 
-(** RA-based (more client-centric) specs. *)
-
-Lemma wp_Server_Put' s γ uid sl_pk pk ver uidγ i :
-  {{{
-    is_pkg_init server ∗
-    "#His_serv" ∷ is_Server s γ ∗
-    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
-    "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
-    "#Hmono_idx" ∷ mono_list_idx_own uidγ i (ver, pk)
-  }}}
-  s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver
-  {{{ RET #(); True }}}.
+Lemma mk_Start_fupd s γ :
+  is_Server s γ -∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
+    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
 Proof.
-  iIntros (Φ) "[#? @] Hpost".
-  wp_apply (wp_Server_Put with "[//][//][//][][Hpost]").
-  2: { by iApply "Hpost". }
-  iModIntro.
+  iIntros "#His_serv".
   rewrite /is_Server.
   iInv "His_serv" as ">@" "Hclose".
   iApply fupd_mask_intro.
   { set_solver. }
   iIntros "Hmask".
-  iFrame.
+  iFrame "Hserv".
   iIntros "Hserv".
   iMod "Hmask" as "_".
-  iMod ("Hclose" with "[-]"); [|done].
-  iModIntro.
-  iFrame.
-  by iApply (logical_put with "Hgs").
+  iNamed "Hgs".
+  iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
+  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
 Qed.
 
 End proof.
