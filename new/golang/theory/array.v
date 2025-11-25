@@ -227,13 +227,27 @@ Proof.
     f_equal. len.
 Qed.
 
-Lemma pure_wp_array_composite_literal `{!IntoVal V} elem_type n
+Global Instance pure_wp_array_composite_literal `{!IntoVal V} elem_type n
   (el : unkeyed_element_list V) :
   PureWp True (composite_literal (go.ArrayType n elem_type) #el)
          #(array.mk elem_type n el).
 Proof.
   pure_wp_start. rewrite into_val_unseal. simpl.
   rewrite go.composite_literal_array. wp_pure_lc "?". wp_pures. by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_slice_array elem_type n p low high :
+  PureWp (0 ≤ word.signed low ≤ word.signed high ≤ n)
+    (Slice (go.ArrayType n elem_type) (#p, (#low, #high))%V)
+       #(slice.mk (array_index_ref elem_type (word.signed low) p)
+           (word.sub high low)
+           (word.sub (W64 n) low)).
+Proof.
+  pure_wp_start.
+  iApply (wp_GoInstruction []).
+  { intros; repeat econstructor. }
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure. rewrite decide_True //.
+  iIntros "H"; iIntros "$ !>". simpl. wp_pures. by iApply "HΦ".
 Qed.
 
 End lemmas.
