@@ -129,7 +129,8 @@ From Perennial.program_proof.verus Require
 
 From Perennial.program_proof.cachekv Require proof.
 
-(** everything below is unmaintained but does build *)
+(** everything below is unmaintained but does build.
+i.e., if it breaks in the future, we might remove it. *)
 
 From Perennial.program_proof Require
   optional_precond spellchecker.proof bad_nil_slice bad_zero_func single.election.

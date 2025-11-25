@@ -63,21 +63,23 @@ Definition gs_inv γ σ : iProp Σ :=
     "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
     "#Hpks" ∷ ([∗ list] ver ↦ pk ∈ pks,
       ∃ i,
-      (* NOTE: client owns mlist_auth for their uid.
+      (* client owns mlist_auth for their uid.
       for adversarial uid, auth in inv. *)
       mono_list_idx_own uidγ i ((W64 ver), pk))) ∗
-  (* NOTE: client remembers lb's of this. *)
+  (* client remembers lb's of this. *)
   "Hhist" ∷ mono_list_auth_own γ.(servγ.histγ) 1 σ.(state.hist).
 
 Definition keys_sub : relation keys_ty := map_included (λ _, prefix).
 
-(* TODO: relate digs to maps.
-tricky bc need lot more stuff to derive merkle maps from (uid, ver, pk). *)
+(* TODO: unclear if we need to relate dig to keys in σ.(hist).
+might be able to prove client correctness and serv specs without it.
+note: serv can maintain inv that ties its merkle tree to both
+lastDig and lastKeys. *)
 Definition state_inv σ : iProp Σ :=
-  "%Hpend_state" ∷ ⌜(∀ lastHist,
+  "%Hpend" ∷ ⌜(∀ lastHist,
     last σ.(state.hist) = Some lastHist →
     keys_sub lastHist.2 σ.(state.pending))⌝ ∗
-  "%Hhist_state" ∷ ⌜(∀ i hist0 hist1,
+  "%Hhist" ∷ ⌜(∀ i hist0 hist1,
     σ.(state.hist) !! i = Some hist0 →
     σ.(state.hist) !! (S i) = Some hist1 →
     keys_sub hist0.2 hist1.2)⌝.
@@ -99,9 +101,9 @@ Definition is_Server (s : loc) γ : iProp Σ :=
 #[global] Instance is_Server_pers s γ : Persistent (is_Server s γ).
 Proof. apply _. Qed.
 
-(** state transitions. *)
+(** state transition ops. *)
 
-Lemma do_read s γ :
+Lemma op_read s γ :
   is_Server s γ -∗
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
     (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
@@ -122,7 +124,8 @@ Qed.
 
 Definition pure_put uid pk (ver : w64) (pend : keys_ty) :=
   let pks := pend !!! uid in
-  (* drop put if not right version. *)
+  (* drop put if not right version.
+  this enforces a "linear" version history. *)
   if bool_decide (uint.nat ver ≠ length pks) then pend else
   <[uid:=pks ++ [pk]]>pend.
 
@@ -138,12 +141,13 @@ Proof.
   by apply prefix_app_r.
 Qed.
 
-Lemma do_put s γ uid uidγ i ver pk :
+Lemma op_put s γ uid uidγ i ver pk :
   is_Server s γ -∗
   ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
   mono_list_idx_own uidγ i (ver, pk) -∗
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
-    (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)).
+    let σ' := set state.pending (pure_put uid pk ver) σ in
+    (own_Server γ σ' ={∅,⊤}=∗ True)).
 Proof.
   iIntros "#His_serv %Hlook_uidγ #Hmono_idx".
   iModIntro.
@@ -181,8 +185,7 @@ Proof.
     apply sub_over_put.
 Qed.
 
-(* TODO: tie down dig to pending. *)
-Lemma do_add_hist s γ dig :
+Lemma op_add_hist s γ dig :
   is_Server s γ -∗
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
     let σ' := set (state.hist) (.++ [(dig, σ.(state.pending))]) σ in
