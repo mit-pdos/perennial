@@ -1,5 +1,5 @@
 opam-version: "2.0"
-maintainer: "Tej Chajed <tchajed@gmail.com>"
+maintainer: "Tej Chajed <chajed@wisc.edu>"
 authors: "The Perennial Team"
 license: "MIT"
 homepage: "https://github.com/mit-pdos/perennial"
@@ -20,7 +20,8 @@ tags: [
 ]
 
 depends: [
-  "coq" { (>= "9.1" & < "9.2~") | (= "dev") }
+  "rocq-runtime" { (>= "9.1" & < "9.2~") | (= "dev") }
+  "rocq-stdlib"
   "coq-coqutil" { (>= "0.0.7") }
   "coq-record-update"
   "rocq-stdpp"
@@ -29,10 +30,10 @@ depends: [
 ]
 
 pin-depends: [
-  ["coq-record-update.dev" "git+https://github.com/tchajed/coq-record-update#7b2645210331c3ec"]
-  ["rocq-stdpp.dev" "git+https://gitlab.mpi-sws.org/iris/stdpp#187909f0c15b7c8413eaddb5b76965f2136212e6"]
-  ["rocq-iris.dev" "git+https://gitlab.mpi-sws.org/iris/iris#fde0f86992421845b4094b6e8b4b521d62a9d531"]
-  ["iris-named-props.dev" "git+https://github.com/tchajed/iris-named-props#c388714a93b1c043ed42a3f446280abd5113d26f"]
+  ["coq-record-update.dev"   "git+https://github.com/tchajed/coq-record-update#7b2645210331c3ec"]
+  ["rocq-stdpp.dev"          "git+https://gitlab.mpi-sws.org/iris/stdpp#187909f0c15b7c8"]
+  ["rocq-iris.dev"           "git+https://gitlab.mpi-sws.org/iris/iris#fde0f8699242184"]
+  ["iris-named-props.dev"    "git+https://github.com/tchajed/iris-named-props#c388714a93b1c043"]
 ]
 
 build: [make "new/golang/defn.vo" "-j%{jobs}%"]
