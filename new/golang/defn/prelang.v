@@ -18,21 +18,18 @@ Definition type_name := go_string.
     When a type would otherwise have a single constructor with a single
     argument, the type is omitted and its single input is inlined. Also, places
     where Go syntax allows for `func (a, b uint64)` are required to be `func (a
-    uint64, b uint64)` here (e.g. field or parameter decls).
+    uint64, b uint64)` here (e.g. field or parameter decls). TypeLit is inlined
+    into `type` so that `go.SliceType elem_type` is a `type`, rather than a
+    `type_lit` that needs another conversion. `TypeLit` is only used internally
+    for defining `Type` in the Go spec, so eliding shouldn't matter to other
+    parts of the Go semantics.
 
     Lastly, since equality of signature types ignores parameter/result names,
     they are excluded here. This allows for using Rocq's [eq] to formaally
     define Go type identity. *)
 Inductive type :=
 | Named : type_name → list type (* type args *) → _
-| TypeLit : type_lit → _
-
-with chan_dir :=
-| sendrecv
-| sendonly
-| recvonly
-
-with type_lit :=
+(* type literals: *)
 | ArrayType : Z → type → _
 | StructType : list field_decl → _
 | PointerType : type → _
@@ -41,6 +38,11 @@ with type_lit :=
 | SliceType : type → _
 | MapType : type → type → _
 | ChannelType : chan_dir → type → _
+
+with chan_dir :=
+| sendrecv
+| sendonly
+| recvonly
 
 with field_decl :=
 | FieldDecl : go_string → type → _
@@ -64,8 +66,6 @@ Proof. Admitted.
 Global Instance type_countable : Countable type.
 Proof. Admitted.
 
-Global Coercion TypeLit : type_lit >-> type.
-
 Definition string_to_go_string (s : string) : go_string :=
   byte_to_w8 <$> String.list_byte_of_string s.
 
@@ -82,6 +82,5 @@ Fixpoint type_to_string (t : type) : go_string :=
   | ArrayType n elem => ("[" ++ pretty_go n ++ "]" ++ type_to_string elem)%go
   | _ => ""%go
   end.
-End go.
 
-Global Coercion go.TypeLit : go.type_lit >-> go.type.
+End go.

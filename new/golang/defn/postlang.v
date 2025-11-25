@@ -98,6 +98,11 @@ Definition AllocValue_def t : val :=
 Program Definition AllocValue := sealed AllocValue_def.
 Definition AllocValue_unseal : AllocValue = _ := seal_eq _.
 
+Definition ZeroVal_def t : val :=
+  λ: <>, let: "l" := GoAlloc t #() in GoLoad t "l".
+Program Definition ZeroVal := sealed ZeroVal_def.
+Definition ZeroVal_unseal : ZeroVal = _ := seal_eq _.
+
 Definition ElementListNil_def (key_type : option go.type) (elem_type : go.type) : val :=
   λ: <>, ArrayV [].
 Program Definition ElementListNil := sealed ElementListNil_def.

@@ -92,29 +92,29 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
     NoDup ks ∧ (∀ k, (m k).1 = true ↔ k ∈ ks);
 
   clear_map key_type elem_type :
-    #(functions go.clear [go.TypeLit $ go.MapType key_type elem_type]) =
+    #(functions go.clear [go.MapType key_type elem_type]) =
     (λ: "m", Store "m" $ Read $
-               FuncResolve go.make1 [go.TypeLit $ go.MapType key_type elem_type] #())%V;
+               FuncResolve go.make1 [go.MapType key_type elem_type] #())%V;
   delete_map key_type elem_type :
-    #(functions go.delete [go.TypeLit $ go.MapType key_type elem_type]) =
+    #(functions go.delete [go.MapType key_type elem_type]) =
     (λ: "m" "k",
        InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
        Store "m" $ InternalMapDelete (Read "m", "k"))%V;
   make2_map key_type elem_type :
-    #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) =
+    #(functions go.make2 [go.MapType key_type elem_type]) =
     (λ: "len",
        let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
        ref (InternalMapMake "default_elem"))%V;
   make1_map key_type elem_type :
-    #(functions go.make1 [go.TypeLit $ go.MapType key_type elem_type]) =
-    (λ: <>, FuncResolve go.make2 [go.TypeLit $ go.MapType key_type elem_type] #() #(W64 0))%V;
+    #(functions go.make1 [go.MapType key_type elem_type]) =
+    (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0))%V;
   len_map key_type elem_type :
-    #(functions go.len [go.TypeLit $ go.MapType key_type elem_type]) =
+    #(functions go.len [go.MapType key_type elem_type]) =
     (λ: "m", ArrayLength (InternalMapDomain (Read "m")))%V;
 
   composite_literal_map key_type elem_type (kvs : list val) :
     composite_literal (go.MapType key_type elem_type) (ArrayV kvs) =
-    (let: "m" := FuncResolve go.make1 [go.TypeLit $ go.MapType key_type elem_type] #() #() in
+    (let: "m" := FuncResolve go.make1 [go.MapType key_type elem_type] #() #() in
      (* insert everything  *)
      (foldl (λ expr_so_far kv,
                expr_so_far;;

@@ -295,29 +295,27 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}
   {slice_sem : go.SliceSemantics}.
 Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
 
-Local Notation st e := [go.TypeLit $ go.SliceType e].
-
 Global Instance pure_wp_slice_len t (s : slice.t) :
-  PureWp True (#(functions go.len (st t)) (#s)) #(slice.len s).
+  PureWp True (#(functions go.len [go.SliceType t]) (#s)) #(slice.len s).
 Proof.
   iIntros (?????) "HΦ". rewrite go.len_slice. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
 Global Instance pure_wp_slice_cap t (s : slice.t) :
-  PureWp True (#(functions go.cap (st t)) (#s)) #(slice.cap s).
+  PureWp True (#(functions go.cap [go.SliceType t]) (#s)) #(slice.cap s).
 Proof.
   iIntros (?????) "HΦ". rewrite go.cap_slice. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
 Context `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
-Local Instance make3_unfold t : FuncUnfold go.make3 (st t) _ :=
+Local Instance make3_unfold t : FuncUnfold go.make3 [go.SliceType t] _ :=
   ltac:(constructor; apply go.make3_slice).
 
 Lemma wp_slice_make3 stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
   {{{ True }}}
-    #(functions go.make3 (st t)) #len #cap @ stk; E
+    #(functions go.make3 [go.SliceType t]) #len #cap @ stk; E
   {{{ (sl : slice.t), RET #sl;
       sl ↦[t]* (replicate (sint.nat len) (zero_val V)) ∗
       own_slice_cap t sl (DfracOwn 1) ∗
@@ -354,12 +352,12 @@ Proof.
   iFrame.
 Qed.
 
-Local Instance make2_unfold t : FuncUnfold go.make2 (st t) _ :=
+Local Instance make2_unfold t : FuncUnfold go.make2 [go.SliceType t] _ :=
   ltac:(constructor; apply go.make2_slice).
 
 Lemma wp_slice_make2 stk E (len : u64) :
   {{{ ⌜0 ≤ sint.Z len⌝ }}}
-    #(functions go.make2 (st t)) #len @ stk; E
+    #(functions go.make2 [go.SliceType t]) #len @ stk; E
   {{{ sl, RET #sl;
       sl ↦[t]* (replicate (sint.nat len) (zero_val V)) ∗
       own_slice_cap t sl (DfracOwn 1)
@@ -408,7 +406,7 @@ Qed.
 Global Instance pure_slice_for_range (sl : slice.t) (body : val) :
   PureWp True (slice.for_range t #sl body)%E
        (let: "i" := alloc go.int (# ()) in
-        for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len (st t) (# ()) (# sl)) ;
+        for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType t] (# ()) (# sl)) ;
         (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
           λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t)) (# sl, ![go.int] "i")))%E.
 Proof.
@@ -834,7 +832,7 @@ Proof.
   iFrame.
 Qed.
 
-Local Instance copy_unfold t : FuncUnfold go.copy (st t) _ :=
+Local Instance copy_unfold t : FuncUnfold go.copy [go.SliceType t] _ :=
   ltac:(constructor; apply go.copy_slice).
 
 (** slice.copy copies as much as possible (the smaller of len(s) and len(s2)) and returns
@@ -844,7 +842,7 @@ Use [take_ge] and [drop_ge] to simplify the resulting list expression.
  *)
 Lemma wp_slice_copy (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦[t]* vs ∗ s2 ↦[t]*{dq} vs' }}}
-    #(functions go.copy (st t)) #s #s2
+    #(functions go.copy [go.SliceType t]) #s #s2
   {{{ (n: w64), RET #n; ⌜sint.nat n = Nat.min (length vs) (length vs')⌝ ∗
                           s ↦[t]* (take (length vs) vs' ++ drop (length vs') vs) ∗
                           s2 ↦[t]*{dq} vs' }}}.
@@ -906,11 +904,11 @@ Proof.
     repeat (f_equal; try word).
 Qed.
 
-Local Instance clear_unfold t : FuncUnfold go.clear (st t) _ :=
+Local Instance clear_unfold t : FuncUnfold go.clear [go.SliceType t] _ :=
   ltac:(constructor; apply go.clear_slice).
 Lemma wp_slice_clear s vs :
   {{{ s ↦[t]* vs }}}
-    #(functions go.clear (st t)) #s
+    #(functions go.clear [go.SliceType t]) #s
   {{{ RET #(); s ↦[t]* replicate (length vs) (zero_val V) }}}.
 Proof.
   wp_start as "Hs".
@@ -953,11 +951,11 @@ Proof.
     word.
 Qed.
 
-Local Instance append_unfold t : FuncUnfold go.append (st t) _ :=
+Local Instance append_unfold t : FuncUnfold go.append [go.SliceType t] _ :=
   ltac:(constructor; apply go.append_slice).
 Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦[t]* vs ∗ own_slice_cap t s (DfracOwn 1) ∗ s2 ↦[t]*{dq} vs' }}}
-    #(functions go.append (st t)) #s #s2
+    #(functions go.append [go.SliceType t]) #s #s2
   {{{ (s': slice.t), RET #s';
       s' ↦[t]* (vs ++ vs') ∗ own_slice_cap t s' (DfracOwn 1) ∗ s2 ↦[t]*{dq} vs' }}}.
 Proof.

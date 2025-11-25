@@ -18,7 +18,7 @@ Definition for_range (elem_type : go.type) : val :=
   λ: "s" "body",
   let: "i" := GoAlloc go.int #() in
   for: (λ: <>, (![go.int] "i") <⟨go.int⟩
-          (FuncResolve go.len [go.TypeLit $ go.SliceType elem_type]) #() "s") ;
+          (FuncResolve go.len [go.SliceType elem_type]) #() "s") ;
                       (λ: <>, "i" <-[go.int] (![go.int] "i") + #(W64 1)) :=
     (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type)) ("s", (![go.int] "i")))).
 
@@ -50,7 +50,7 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
     go_eq_top_level (go.SliceType t) #slice.nil #s = #(bool_decide (s = slice.nil));
 
   clear_slice elem_type :
-    #(functions go.clear [go.TypeLit $ go.SliceType elem_type]) =
+    #(functions go.clear [go.SliceType elem_type]) =
     (λ: "sl",
        let st : go.type := go.SliceType elem_type in
        let: "zero_sl" := FuncResolve go.make2 [st] #() (FuncResolve go.len [st] #() "sl") in
@@ -58,7 +58,7 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
     #())%V;
 
   copy_slice elem_type :
-    #(functions go.copy [go.TypeLit $ go.SliceType elem_type]) =
+    #(functions go.copy [go.SliceType elem_type]) =
     (λ: "dst" "src",
        let st : go.type := go.SliceType elem_type in
        let: "i" := GoAlloc go.int #() in
@@ -72,7 +72,7 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
        ![go.int] "i")%V;
 
   make3_slice elem_type :
-    #(functions go.make3 [go.TypeLit $ go.SliceType elem_type]) =
+    #(functions go.make3 [go.SliceType elem_type]) =
     (λ: "len" "cap",
        if: ("cap" <⟨go.int⟩ "len") then Panic "makeslice: cap out of range" else #();;
        if: ("len" <⟨go.int⟩ #(W64 0)) then Panic "makeslice: len out of range" else #();;
@@ -85,8 +85,8 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
          InternalMakeSlice ("p", "len", "cap"))%V;
 
   make2_slice elem_type :
-    #(functions go.make2 [go.TypeLit $ go.SliceType elem_type]) =
-    (λ: "sz", FuncResolve go.make3 [go.TypeLit $ go.SliceType elem_type] #() "sz" "sz")%V;
+    #(functions go.make2 [go.SliceType elem_type]) =
+    (λ: "sz", FuncResolve go.make3 [go.SliceType elem_type] #() "sz" "sz")%V;
 
   index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
     index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);
@@ -95,16 +95,16 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
     index (go.SliceType elem_type) i #s =
     GoLoad elem_type $ (Index $ go.SliceType elem_type) (#(W64 i), #s)%V;
   len_slice elem_type :
-    #(functions go.len [go.TypeLit $ go.SliceType elem_type]) =
+    #(functions go.len [go.SliceType elem_type]) =
     (λ: "s", InternalLen (go.SliceType elem_type) "s")%V;
 
   cap_slice elem_type :
-    #(functions go.cap [go.TypeLit $ go.SliceType elem_type]) =
+    #(functions go.cap [go.SliceType elem_type]) =
     (λ: "s", InternalCap (go.SliceType elem_type) "s")%V;
 
   append_underlying t : functions go.append [t] = functions go.append [to_underlying t];
   append_slice elem_type :
-    #(functions go.append [go.TypeLit $ go.SliceType elem_type]) =
+    #(functions go.append [go.SliceType elem_type]) =
     (λ: "s" "x",
        let st : go.type := go.SliceType elem_type in
        let: "new_len" := sum_assume_no_overflow_signed (FuncResolve go.len [st] #() "s")

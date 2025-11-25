@@ -93,11 +93,11 @@ Proof using Inj0.
 Qed.
 
 Local Instance delete_unfold key_type elem_type :
-  FuncUnfold go.delete [go.TypeLit $ go.MapType key_type elem_type] _ :=
+  FuncUnfold go.delete [go.MapType key_type elem_type] _ :=
   ltac:(constructor; apply go.delete_map).
 Lemma wp_map_delete l (m : gmap K V) k key_type elem_type {Hsafe : SafeMapKey key_type k} :
   {{{ l ↦$ m }}}
-    #(functions go.delete [go.TypeLit $ go.MapType key_type elem_type])
+    #(functions go.delete [go.MapType key_type elem_type])
         #l #k
   {{{ RET #(); l ↦$ delete k m }}}.
 Proof using Inj0.
@@ -159,12 +159,12 @@ Global Instance pure_wp_map_nil_lookup1 key_type elem_type k
 Proof. by pure_wp_start. Qed.
 
 Local Instance make2_unfold key_type elem_type :
-  FuncUnfold go.make2 [go.TypeLit $ go.MapType key_type elem_type] _ :=
+  FuncUnfold go.make2 [go.MapType key_type elem_type] _ :=
   ltac:(constructor; apply go.make2_map).
 Lemma wp_map_make2 (len : w64) key_type elem_type
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
-    #(functions go.make2 [go.TypeLit $ go.MapType key_type elem_type]) #len
+    #(functions go.make2 [go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof.
   wp_start. wp_alloc tmp as "?". wp_auto.
@@ -181,12 +181,12 @@ Proof.
 Qed.
 
 Local Instance make1_unfold key_type elem_type :
-  FuncUnfold go.make1 [go.TypeLit $ go.MapType key_type elem_type] _ :=
+  FuncUnfold go.make1 [go.MapType key_type elem_type] _ :=
   ltac:(constructor; apply go.make1_map).
 Lemma wp_map_make1 key_type elem_type
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
-    #(functions go.make1 [go.TypeLit $ go.MapType key_type elem_type]) #()
+    #(functions go.make1 [go.MapType key_type elem_type]) #()
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof. wp_start. by wp_apply wp_map_make2. Qed.
 
