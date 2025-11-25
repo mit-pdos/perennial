@@ -1,6 +1,6 @@
 SRC_DIRS := 'src' 'external' 'new'
 ALL_VFILES := $(shell find $(SRC_DIRS) -not -path "external/coqutil/etc/coq-scripts/*" -not -name "*__nobuild.v" -name "*.v")
-VFILES := $(shell find 'src' -not -name "*__nobuild.v" -name "*.v")
+VFILES := $(shell find 'src' 'new' -not -name "*__nobuild.v" -name "*.v")
 
 # extract any global arguments for Rocq from _RocqProject
 ROCQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _RocqProject)
