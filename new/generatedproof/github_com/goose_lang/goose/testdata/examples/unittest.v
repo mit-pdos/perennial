@@ -2369,6 +2369,10 @@ Global Instance wp_func_call_bar :
   WpFuncCall unittest.bar _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_useUntypedRune :
+  WpFuncCall unittest.useUntypedRune _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_TakesFunctionType :
   WpFuncCall unittest.TakesFunctionType _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
