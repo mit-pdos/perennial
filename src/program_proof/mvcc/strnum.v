@@ -4,7 +4,7 @@ From Goose.github_com.mit_pdos.vmvcc.examples Require Export strnum.
 Section program.
 Context `{!heapGS Σ}.
 
-Definition u64_to_string (n : u64) : string.
+Definition u64_to_string (n : u64) : byte_string.
 Admitted.
 
 Lemma u64_to_string_inj n1 n2 :
