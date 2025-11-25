@@ -1,0 +1,35 @@
+opam-version: "2.0"
+maintainer: "Tej Chajed <tchajed@gmail.com>"
+authors: "The Perennial Team"
+license: "MIT"
+homepage: "https://github.com/mit-pdos/perennial"
+bug-reports: "https://github.com/mit-pdos/perennial/issues"
+dev-repo: "git+https://github.com/mit-pdos/perennial.git"
+version: "dev"
+
+synopsis: "A framework for verifying concurrent, crash-safe, distributed systems written in Go"
+description: """
+Perennial is a framework for verifying the correctness of systems programs. It
+supports concurrency, crash-consistency proofs, and distributed systems.
+Perennial works together with Goose to be powerful infrastructure for verifying
+Go programs. It is built on top of the Iris separation logic.
+"""
+tags: [
+  "logpath:Perennial"
+  "logpath:New"
+]
+
+depends: [
+  "coq" { (>= "9.1" & < "9.2~") | (= "dev") }
+  #"coqutil"
+  #"coq-record-update"
+  #"rocq-iris"
+  #"iris-named-props"
+]
+
+#pin-depends: [
+#]
+
+build: [make "new/golang/defn.vo" "-j%{jobs}%"]
+install: ["./etc/install.sh" "new/golang/defn.vo"]
+
