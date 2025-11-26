@@ -52,4 +52,8 @@ Class pavG Σ := {
   #[global] pavG_sigpred :: sigpredG Σ;
   (* ghost_map uid (gset (ver, pk)). *)
   #[global] pavG_puts :: ghost_mapG Σ w64 (gset (w64 * list w8));
+  (* serverσ.hist. *)
+  #[global] pavG_serv_hist :: mono_listG (list w8 * (gmap w64 (list $ list w8))) Σ;
+  (* serverσ.pending. each uid has a mono_list of (ver, pk). *)
+  #[global] pavG_serv_uids :: mono_listG (w64 * list w8) Σ;
 }.

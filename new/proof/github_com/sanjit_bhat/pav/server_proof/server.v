@@ -47,10 +47,7 @@ End servγ.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-(* serverσ.hist. *)
-Context `{!mono_listG (list w8 * keys_ty) Σ}.
-(* each uid has a mono_list of (ver, pk). *)
-Context `{!mono_listG (w64 * list w8) Σ}.
+Context `{!pavG Σ}.
 
 (** invariants. *)
 
