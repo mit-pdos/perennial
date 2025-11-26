@@ -14,7 +14,7 @@ target="$1"
 
 function gen_rocq_project() {
 	cat _RocqProject
-	"$DIR"/etc/package-sources.sh "$target"
+	"$DIR"/package-sources.sh "$target"
 }
 
 proj_file=_RocqProject.install
