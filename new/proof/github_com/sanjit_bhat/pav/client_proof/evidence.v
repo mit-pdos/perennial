@@ -203,9 +203,9 @@ Proof.
     intuition.
     by f_equal. }
   simplify_eq/=.
-  iDestruct (mono_list_idx_agree with "[][]") as %?.
-  { by iApply (mono_list_idx_own_get with "Hlb0"). }
-  { by iApply (mono_list_idx_own_get with "Hlb1"). }
+  iDestruct (mono_list_idx_own_get with "Hlb0") as "Hidx0"; [done|].
+  iDestruct (mono_list_idx_own_get with "Hlb1") as "Hidx1"; [done|].
+  iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %->.
   destruct e. simpl in *.
   simplify_eq/=.
 Qed.
