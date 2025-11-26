@@ -3,7 +3,7 @@ From New.generatedproof.github_com.sanjit_bhat.pav Require Import server.
 From New.proof Require Import sync time.
 From New.proof.github_com.goose_lang Require Import std.
 From New.proof.github_com.sanjit_bhat.pav Require Import
-  cryptoffi hashchain ktcore merkle.
+  cryptoffi hashchain ktcore merkle sigpred.
 
 From New.proof.github_com.sanjit_bhat.pav.server_proof Require Import
   serde.
@@ -34,7 +34,7 @@ Record t :=
   }.
 End state.
 
-Module servγ.
+Module cfg.
 Record t :=
   mk {
     sig_pk: list w8;
@@ -42,8 +42,12 @@ Record t :=
     (* map from uid to gname. *)
     uidγ: gmap w64 gname;
     histγ: gname;
+    (* for now, have sigpred GS be diff from serv.hist GS.
+    serv.hist GS talks about keys, whereas auditor (sharing same sigpred),
+    doesn't have the plaintext keys. *)
+    sigpredγ: sigpred.cfg.t;
   }.
-End servγ.
+End cfg.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
@@ -51,20 +55,20 @@ Context `{!pavG Σ}.
 
 (** invariants. *)
 
-Implicit Types γ : servγ.t.
+Implicit Types γ : cfg.t.
 Implicit Types σ : state.t.
 
 Definition gs_inv γ σ : iProp Σ :=
   "#Hpend" ∷ ([∗ map] uid ↦ pks ∈ σ.(state.pending),
     ∃ uidγ,
-    "%Hlook_uidγ" ∷ ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ ∗
+    "%Hlook_uidγ" ∷ ⌜γ.(cfg.uidγ) !! uid = Some uidγ⌝ ∗
     "#Hpks" ∷ ([∗ list] ver ↦ pk ∈ pks,
       ∃ i,
       (* client owns mlist_auth for their uid.
       for adversarial uid, auth in inv. *)
       mono_list_idx_own uidγ i ((W64 ver), pk))) ∗
   (* client remembers lb's of this. *)
-  "Hhist" ∷ mono_list_auth_own γ.(servγ.histγ) 1 σ.(state.hist).
+  "Hhist" ∷ mono_list_auth_own γ.(cfg.histγ) 1 σ.(state.hist).
 
 Definition keys_sub : relation keys_ty := map_included (λ _, prefix).
 
@@ -103,7 +107,7 @@ Proof. apply _. Qed.
 Lemma op_read s γ :
   is_Server s γ -∗
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    (λ σ, mono_list_lb_own γ.(servγ.histγ) σ.(state.hist)) σ)).
+    (λ σ, mono_list_lb_own γ.(cfg.histγ) σ.(state.hist)) σ)).
 Proof.
   iIntros "#His_serv".
   rewrite /is_Server.
@@ -140,7 +144,7 @@ Qed.
 
 Lemma op_put s γ uid uidγ i ver pk :
   is_Server s γ -∗
-  ⌜γ.(servγ.uidγ) !! uid = Some uidγ⌝ -∗
+  ⌜γ.(cfg.uidγ) !! uid = Some uidγ⌝ -∗
   mono_list_idx_own uidγ i (ver, pk) -∗
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
     let σ' := set state.pending (pure_put uid pk ver) σ in
@@ -247,6 +251,7 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
   is_Server s γ -∗
   (* read-only. *)
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
+  (* TODO: change to ∃ sigma. *)
   (∀ σ,
     Q σ -∗
     ∃ sl_chainProof sl_linkSig sl_hist ptr_bound err
@@ -272,14 +277,14 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
 
         "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
           (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
-        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
+        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
           (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
-        "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(servγ.vrf_pk) uid prevVerLen
+        "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(cfg.vrf_pk) uid prevVerLen
           lastDig hist ∗
         "%Heq_hist" ∷ ⌜Forall2
           (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
           (drop (uint.nat prevVerLen) pks) hist⌝ ∗
-        "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(servγ.vrf_pk) uid
+        "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(cfg.vrf_pk) uid
           (W64 $ length pks) lastDig bound
       end -∗
     Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
@@ -313,7 +318,7 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) :
           let ep := S $ (uint.nat prevEpoch + k)%nat in
           "#His_link" ∷ hashchain.is_chain (take (S ep) σ.(state.hist).*1)
             None link (S ep) ∗
-          "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
+          "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
             (W64 ep) link aud.(ktcore.AuditProof.LinkSig))
         (* no need to explicitly state update labels and vals.
         those are tied down by UpdateProof, which is tied into server's digs.
@@ -345,11 +350,11 @@ Lemma wp_Server_Start s γ :
       (drop (uint.nat chain.(StartChain.PrevEpochLen)) σ.(state.hist).*1)⌝ ∗
     "#His_last_link" ∷ hashchain.is_chain σ.(state.hist).*1 None
       last_link (length σ.(state.hist)) ∗
-    "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
+    "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
       (W64 $ length σ.(state.hist) - 1) last_link chain.(StartChain.LinkSig) ∗
 
-    "%Heq_VrfPk" ∷ ⌜γ.(servγ.vrf_pk) = vrf.(StartVrf.VrfPk)⌝ ∗
-    "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(servγ.sig_pk) γ.(servγ.vrf_pk)
+    "%Heq_VrfPk" ∷ ⌜γ.(cfg.vrf_pk) = vrf.(StartVrf.VrfPk)⌝ ∗
+    "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(cfg.sig_pk) γ.(cfg.vrf_pk)
       vrf.(StartVrf.VrfSig) -∗
     Φ #(ptr_chain, ptr_vrf)) -∗
   WP s @ (ptrT.id server.Server.id) @ "Start" #() {{ Φ }}.

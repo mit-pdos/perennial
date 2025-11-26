@@ -58,10 +58,12 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
     let pks := lastKeys !!! uid in
     "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
     "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
-    (("%Herr" ∷ ⌜err = {[ ktcore.BlameServFull ]}⌝ ∗
+    (
+      "%Herr" ∷ ⌜err = {[ ktcore.BlameServFull ]}⌝ ∗
       "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
-        uint.nat prevVerLen > length pks⌝) ∨
-    ( ∃ chainProof linkSig hist bound,
+        uint.nat prevVerLen > length pks⌝
+      ∨
+      ∃ chainProof linkSig hist bound,
       "%Herr" ∷ ⌜err = ∅⌝ ∗
       "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
         uint.nat prevVerLen ≤ length pks⌝ ∗
@@ -73,16 +75,19 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
 
       "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
         (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
-      "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
+      "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
         (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
-      "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(servγ.vrf_pk) uid prevVerLen
+      "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(cfg.vrf_pk) uid prevVerLen
         lastDig hist ∗
       "%Heq_hist" ∷ ⌜Forall2
         (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
         (drop (uint.nat prevVerLen) pks) hist⌝ ∗
-      "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(servγ.vrf_pk) uid
-        (W64 $ length pks) lastDig bound)) -∗
+      "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(cfg.vrf_pk) uid
+        (W64 $ length pks) lastDig bound
+    ) -∗
     Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
+  (* TODO: unify into a disjunct with three branches. *)
+  (* TODO: unify with isGood=false spec, which just gives decoding heap resources. *)
   (∀ (sl_chainProof sl_linkSig sl_hist : slice.t) (ptr_bound : loc) (err : ktcore.Blame),
     ⌜err = {[ ktcore.BlameUnknown ]}⌝ -∗
     Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
@@ -96,9 +101,11 @@ Lemma wp_CallAudit s γ (prevEpoch : w64) :
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
   (∀ σ sl_proof (err : ktcore.Blame),
     Q σ -∗
-    (("%Herr" ∷ ⌜err = {[ ktcore.BlameServFull ]}⌝ ∗
-      "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist)⌝) ∨
-    ( ∃ proof prevDig,
+    (
+      "%Herr" ∷ ⌜err = {[ ktcore.BlameServFull ]}⌝ ∗
+      "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist)⌝
+      ∨
+      ∃ proof prevDig,
       "%Herr" ∷ ⌜err = ∅⌝ ∗
       "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist)⌝ ∗
 
@@ -112,8 +119,9 @@ Lemma wp_CallAudit s γ (prevEpoch : w64) :
         let ep := S $ (uint.nat prevEpoch + k)%nat in
         "#His_link" ∷ hashchain.is_chain (take (S ep) σ.(state.hist).*1)
           None link (S ep) ∗
-        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
-          (W64 ep) link aud.(ktcore.AuditProof.LinkSig)))) -∗
+        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
+          (W64 ep) link aud.(ktcore.AuditProof.LinkSig))
+    ) -∗
     Φ #(sl_proof, err)) -∗
   (∀ (sl_proof : slice.t) (err : ktcore.Blame),
     ⌜err = {[ ktcore.BlameUnknown ]}⌝ -∗
@@ -142,11 +150,11 @@ Lemma wp_CallStart s γ :
       (drop (uint.nat chain.(StartChain.PrevEpochLen)) σ.(state.hist).*1)⌝ ∗
     "#His_last_link" ∷ hashchain.is_chain σ.(state.hist).*1 None
       last_link (length σ.(state.hist)) ∗
-    "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(servγ.sig_pk)
+    "#His_LinkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
       (W64 $ length σ.(state.hist) - 1) last_link chain.(StartChain.LinkSig) ∗
 
-    "%Heq_VrfPk" ∷ ⌜γ.(servγ.vrf_pk) = vrf.(StartVrf.VrfPk)⌝ ∗
-    "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(servγ.sig_pk) γ.(servγ.vrf_pk)
+    "%Heq_VrfPk" ∷ ⌜γ.(cfg.vrf_pk) = vrf.(StartVrf.VrfPk)⌝ ∗
+    "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(cfg.sig_pk) γ.(cfg.vrf_pk)
       vrf.(StartVrf.VrfSig) -∗
     Φ #(ptr_chain, ptr_vrf, err)) -∗
   (∀ (ptr_chain ptr_vrf : loc) (err : ktcore.Blame),

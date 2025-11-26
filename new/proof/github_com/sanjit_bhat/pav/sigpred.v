@@ -5,13 +5,13 @@ From New.proof.github_com.sanjit_bhat.pav Require Import
 
 Module sigpred.
 
-Module γs.
+Module cfg.
 Record t :=
   mk {
     vrf: gname;
     chain: gname;
   }.
-End γs.
+End cfg.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
@@ -52,7 +52,7 @@ Definition chain_pred γ enc : iProp Σ :=
   "#Hinv" ∷ chain_inv chain.
 
 Definition pred γ enc : iProp Σ :=
-  vrf_pred γ.(γs.vrf) enc ∨ chain_pred γ.(γs.chain) enc.
+  vrf_pred γ.(cfg.vrf) enc ∨ chain_pred γ.(cfg.chain) enc.
 
 #[global] Instance pred_pers γ e : Persistent (pred γ e).
 Proof. apply _. Qed.

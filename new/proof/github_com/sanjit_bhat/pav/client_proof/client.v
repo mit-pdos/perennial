@@ -12,14 +12,13 @@ From New.proof.github_com.sanjit_bhat.pav.client_proof Require Import
 Module client.
 Import evidence.client.
 
+(* client info about the server, regardless of the server trust.
+these fields may be diff from the "global" [server.cfg.t]. *)
 Module servInfo.
 Record t :=
   mk {
-    sigPk: list w8;
-    vrfPk: list w8;
-    isGood: bool;
-    sigpredγ: sigpred.γs.t;
-    putsγ: gname;
+    sig_pk: list w8;
+    vrf_pk: list w8;
   }.
 End servInfo.
 
@@ -32,6 +31,7 @@ Record t :=
     sig: list w8;
 
     serv: servInfo.t;
+    servGood: option server.cfg.t;
   }.
 
 Section proof.
@@ -39,19 +39,33 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
-  ∃ sl_dig sl_link sl_sig,
+  ∃ sl_dig sl_link sl_sig digs cut,
   "#Hstruct" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
   "#Hsl_dig" ∷ sl_dig ↦*□ obj.(dig) ∗
   "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
   "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig) ∗
-  "#His_sig" ∷ ktcore.wish_LinkSig obj.(serv).(servInfo.sigPk)
+
+  "#Hlast_dig" ∷ ⌜last digs = Some obj.(dig)⌝ ∗
+  "#His_chain" ∷ hashchain.is_chain digs cut obj.(link) (S $ uint.nat obj.(epoch)) ∗
+  "#His_sig" ∷ ktcore.wish_LinkSig obj.(serv).(servInfo.sig_pk)
     obj.(epoch) obj.(link) obj.(sig) ∗
 
-  "#Hgs_chain" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
+  "#Hserv_good" ∷ match obj.(servGood) with None => True | Some c =>
+    ∃ hist,
+    "#His_hist" ∷ mono_list_lb_own c.(server.cfg.histγ) hist ∗
+    "%His_digs" ∷ ⌜hist.*1 = digs⌝ ∗
+    "%Hcut" ∷ ⌜cut = None⌝
+    end ∗
+  True.
+
+(*
+  (* TODO: treat ServFull and ServSig separately? *)
+  "#Hgs_chain" ∷ (match obj.(servGood) with None => True | Some cfg =>
     ∃ m,
-    mono_list_idx_own obj.(serv).(servInfo.sigpredγ).(sigpred.γs.chain)
+    mono_list_idx_own obj.(serv).(servInfo.sigpredγ).(sigpred.cfg.chain)
       (uint.nat obj.(epoch))
       (sigpred.entry.mk obj.(dig) obj.(link) m)).
+*)
 
 End proof.
 End epoch.
@@ -60,11 +74,10 @@ Module nextVer.
 Record t :=
   mk' {
     ver: w64;
-    isPending: bool;
-    pendingPk: list w8;
+    pendingPk: option $ list w8;
 
     uid: w64;
-    serv: servInfo.t;
+    servGood: option server.cfg.t;
     isGoodClis: bool;
   }.
 
@@ -73,18 +86,28 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
-  ∃ sl_pendingPk,
-  "Hstruct" ∷ ptr ↦ (client.nextVer.mk obj.(ver) obj.(isPending) sl_pendingPk) ∗
-  "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ obj.(pendingPk) ∗
+  ∃ isPending sl_pendingPk,
+  "Hstruct" ∷ ptr ↦ (client.nextVer.mk obj.(ver) isPending sl_pendingPk) ∗
+  "#Hsl_pendingPk" ∷
+    match obj.(pendingPk) with
+    | None =>
+      "%HisPending" ∷ ⌜isPending = false⌝
+    | Some pk =>
+      "%HisPending" ∷ ⌜isPending = true⌝ ∗
+      "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ pk
+    end ∗
 
-  "Hgs" ∷ (if negb (andb obj.(serv).(servInfo.isGood) obj.(isGoodClis)) then True else
-    ∃ puts,
-    "Hmap" ∷ obj.(uid) ↪[obj.(serv).(servInfo.putsγ)] puts ∗
-    "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
-    "%Hpending" ∷ ⌜∀ pk,
-      (obj.(ver), pk) ∈ puts →
-      obj.(isPending) = true ∧ pk = obj.(pendingPk)⌝
-    ).
+  "Hown_uid" ∷
+    match obj.(isGoodClis), obj.(servGood) with
+    | true, Some cfg =>
+      ∃ uidγ puts,
+      "%Hlook_uidγ" ∷ ⌜cfg.(server.cfg.uidγ) !! obj.(uid) = Some uidγ⌝ ∗
+      "Hputs" ∷ mono_list_auth_own uidγ 1 puts ∗
+
+      "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
+      "%Hpending" ∷ ⌜∀ pk, (obj.(ver), pk) ∈ puts → obj.(pendingPk) = Some pk⌝
+    | _, _ => True
+    end.
 
 End proof.
 End nextVer.
@@ -95,7 +118,8 @@ Record t :=
     cli: loc;
     vrfSig: list w8;
 
-    serv: servInfo.t;
+    info: servInfo.t;
+    good: option server.cfg.t;
   }.
 
 Section proof.
@@ -105,18 +129,16 @@ Context `{!pavG Σ}.
 Definition own ptr obj : iProp Σ :=
   ∃ sl_sigPk ptr_vrfPk sl_vrfSig,
   "#Hstruct" ∷ ptr ↦□ (client.serv.mk obj.(cli) sl_sigPk ptr_vrfPk sl_vrfSig) ∗
-  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(serv).(servInfo.sigPk) ∗
-  "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(serv).(servInfo.vrfPk) ∗
+  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(info).(servInfo.sig_pk) ∗
+  "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(info).(servInfo.vrf_pk) ∗
   "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig) ∗
-  "#His_vrfSig" ∷ ktcore.wish_VrfSig obj.(serv).(servInfo.sigPk)
-    obj.(serv).(servInfo.vrfPk) obj.(vrfSig) ∗
+  "#His_vrfSig" ∷ ktcore.wish_VrfSig obj.(info).(servInfo.sig_pk)
+    obj.(info).(servInfo.vrf_pk) obj.(vrfSig) ∗
 
-  "#His_sigPk" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
-    cryptoffi.is_sig_pk obj.(serv).(servInfo.sigPk)
-      (sigpred.pred obj.(serv).(servInfo.sigpredγ))) ∗
-  "#Hgs_vrfPk" ∷ (if negb obj.(serv).(servInfo.isGood) then True else
-    ghost_var obj.(serv).(servInfo.sigpredγ).(sigpred.γs.vrf)
-      (□) obj.(serv).(servInfo.vrfPk)).
+  "#His_sigPk" ∷ match obj.(good) with None => True | Some cfg =>
+    cryptoffi.is_sig_pk obj.(info).(servInfo.sig_pk)
+      (sigpred.pred cfg.(server.cfg.sigpredγ))
+    end.
 
 End proof.
 End serv.
@@ -141,8 +163,9 @@ Definition own ptr obj : iProp Σ :=
   "#Hown_last" ∷ epoch.own ptr_last obj.(last) ∗
   "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) ∗
 
-  "%Heq_serv0" ∷ ⌜obj.(serv).(serv.serv) = obj.(last).(epoch.serv)⌝ ∗
-  "%Heq_serv1" ∷ ⌜obj.(serv).(serv.serv) = obj.(pend).(nextVer.serv)⌝ ∗
+  "%Heq_serv" ∷ ⌜obj.(serv).(serv.info) = obj.(last).(epoch.serv)⌝ ∗
+  "%Heq_servGood0" ∷ ⌜obj.(serv).(serv.good) = obj.(last).(epoch.servGood)⌝ ∗
+  "%Heq_servGood1" ∷ ⌜obj.(serv).(serv.good) = obj.(pend).(nextVer.servGood)⌝ ∗
   "%Heq_uid" ∷ ⌜obj.(uid) = obj.(pend).(nextVer.uid)⌝.
 
 End proof.
