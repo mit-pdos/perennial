@@ -27,8 +27,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: true
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
@@ -47,7 +45,6 @@ jobs:
               sudo apt-get update
               sudo apt-get install -y sqlite3
               opam pin add -n -y -k path $PACKAGE $WORKDIR
-              opam update -y
               opam install -j 2 --confirm-level=unsafe-yes --deps-only .
             endGroup
           script: |

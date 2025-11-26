@@ -1,7 +1,6 @@
 SRC_DIRS := 'src' 'external' 'new'
 # ALL_VFILES is used to calculate dependencies so includes external
 ALL_VFILES := $(shell find $(SRC_DIRS) \
-	-not -path "external/coqutil/etc/coq-scripts/*" -a \
 	-type f -not -name "*__nobuild.v" -name "*.v")
 # PROJ_VFILES is for the all target
 PROJ_VFILES := $(shell find src new \
@@ -39,9 +38,11 @@ all: $(PROJ_VFILES:.v=.vo)
 vos: $(PROJ_VFILES:.v=.vos)
 vok: $(PROJ_VFILES:.v=.vok)
 
-.PHONY: new-goose
+.PHONY: new-goose new-goose.vos
 new-goose:
 	$(Q)$(MAKE) $$(./etc/package-sources.sh new-goose | sed 's/\.v$$/\.vo/')
+new-goose.vos:
+	$(Q)$(MAKE) $$(./etc/package-sources.sh new-goose | sed 's/\.v$$/\.vos/')
 
 check-assumptions: \
 	src/program_proof/examples/print_assumptions.vo \
