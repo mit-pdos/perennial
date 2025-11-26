@@ -27,25 +27,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: true
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.UV_VERSION }}
-      - uses: coq-community/docker-coq-action@v1
+      - uses: rocq-community/docker-coq-action@v1
         with:
           coq_version: ${{ matrix.coq_version }}
           ocaml_version: "default"
-          install: |
-            startGroup Install dependencies
-              sudo apt-get update
-              sudo apt-get install -y sqlite3
-            endGroup
+          opam_file: "perennial.opam"
           # for permissions issue, see:
           # https://github.com/coq-community/docker-coq-action#permissions.
-          before_script: |
+          before_install: |
             sudo chown -R 1000:1000 .
+          install: |
+            startGroup Install dependencies
+              sudo apt-get update -y
+              sudo apt-get install -y sqlite3
+              opam pin add -n -y -k path $PACKAGE $WORKDIR
+              opam install -j 4 -y --deps-only $PACKAGE
+            endGroup
           script: |
             startGroup Build
               make -j4 -k ci
@@ -64,9 +65,9 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.UV_VERSION }}
       - uses: actions/setup-go@v6

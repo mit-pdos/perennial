@@ -20,11 +20,8 @@ reduces build times by about 10%.
 
 ## Maintaining dependencies
 
-There are a few dependencies managed as submodules in `external/`. To update
-them, run `git submodule update --init --remote`, then commit the resulting
-change with git.
-
-The dependencies are frozen at a particular version to avoid breaking the
+The dependencies are pinned to a particular commit hash (using an opam
+`pin-depends` clause) to avoid breaking the
 Perennial build when there are incompatible upstream changes. We use Dependabot
 to do daily checks for dependency updates (see
 [.github/dependabot.yml](.github/dependabot.yml) and read the GitHub

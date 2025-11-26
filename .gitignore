@@ -42,3 +42,9 @@ __pycache__
 
 # opam
 _opam
+
+# rocq makefile (for ./etc/install.sh)
+.Makefile.rocq.d
+.filestoinstall
+Makefile.rocq*
+_RocqProject.install
