@@ -36,6 +36,5 @@ pin-depends: [
   ["iris-named-props.dev"    "git+https://github.com/tchajed/iris-named-props#c388714a93b1c043"]
 ]
 
-build: [make new-goose "-j%{jobs}%"]
-install: ["./etc/install.sh" new-goose]
-
+build: [make "new-goose" "-j%{jobs}%"]
+install: ["./etc/install.sh" "new-goose"]

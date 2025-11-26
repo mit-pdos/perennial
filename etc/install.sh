@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 set -eu
 
 # Parse arguments
@@ -12,7 +14,7 @@ target="$1"
 
 function gen_rocq_project() {
 	cat _RocqProject
-	etc/package-sources.sh "$target"
+	"$DIR"/etc/package-sources.sh "$target"
 }
 
 proj_file=_RocqProject.install
