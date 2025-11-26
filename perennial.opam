@@ -36,6 +36,6 @@ pin-depends: [
   ["iris-named-props.dev"    "git+https://github.com/tchajed/iris-named-props#c388714a93b1c043"]
 ]
 
-build: [make "new/golang/defn.vo" "-j%{jobs}%"]
-install: ["./etc/install.sh" "new/golang/defn.vo"]
+build: [make new-goose "-j%{jobs}%"]
+install: ["./etc/install.sh" new-goose]
 

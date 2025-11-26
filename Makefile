@@ -36,8 +36,13 @@ endif
 default: src/ShouldBuild.vo
 
 all: $(PROJ_VFILES:.v=.vo)
-vos: src/ShouldBuild.vos
-interpreter: src/goose_lang/interpreter/generated_test.vos
+vos: $(PROJ_VFILES:.v=.vos)
+vok: $(PROJ_VFILES:.v=.vok)
+
+.PHONY: new-goose
+new-goose:
+	$(Q)$(MAKE) $$(./etc/package-sources.sh new-goose | sed 's/\.v$$/\.vo/')
+
 check-assumptions: \
 	src/program_proof/examples/print_assumptions.vo \
 	src/program_proof/simple/print_assumptions.vo \
