@@ -37,21 +37,14 @@ jobs:
         with:
           coq_version: ${{ matrix.coq_version }}
           ocaml_version: "default"
-          install: |
-            startGroup Install dependencies
-              sudo apt-get update
-              sudo apt-get install -y sqlite3
-              opam update -y
-              opam install -j 2 --confirm-level=unsafe-yes --deps-only .
-            endGroup
+          opam_file: "perennial.opam"
+          before_install: |
+            sudo apt-get update
+            sudo apt-get install -y sqlite3
           # for permissions issue, see:
           # https://github.com/coq-community/docker-coq-action#permissions.
           before_script: |
             sudo chown -R 1000:1000 .
-          script: |
-            startGroup Build
-              opam install -y .
-            endGroup
           uninstall:
       - name: Revert permissions
         if: ${{ always() }}
