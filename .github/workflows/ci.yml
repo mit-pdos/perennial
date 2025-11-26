@@ -41,6 +41,8 @@ jobs:
             startGroup Install dependencies
               sudo apt-get update
               sudo apt-get install -y sqlite3
+              opam update -y
+              opam install -j 2 --confirm-level=unsafe-yes --deps-only .
             endGroup
           # for permissions issue, see:
           # https://github.com/coq-community/docker-coq-action#permissions.
