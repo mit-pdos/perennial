@@ -6,7 +6,6 @@ Outputs all dependencies with .vo extension changed to .v
 
 import sys
 import os
-from pathlib import Path
 
 
 def parse_rocqdeps(deps_file):
