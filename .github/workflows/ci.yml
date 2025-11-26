@@ -38,17 +38,29 @@ jobs:
           coq_version: ${{ matrix.coq_version }}
           ocaml_version: "default"
           opam_file: "perennial.opam"
-          before_install: |
-            sudo apt-get update
-            sudo apt-get install -y sqlite3
           # for permissions issue, see:
           # https://github.com/coq-community/docker-coq-action#permissions.
-          before_script: |
+          before_install: |
             sudo chown -R 1000:1000 .
+          install: |
+            startGroup Install dependencies
+              sudo apt-get update
+              sudo apt-get install -y sqlite3
+              opam pin add -n -y -k path $PACKAGE $WORKDIR
+              opam update -y
+              opam install -j 2 --confirm-level=unsafe-yes --deps-only .
+            endGroup
+          script: |
+            startGroup Build
+              make -j2 -k ci
+            endGroup
           uninstall:
       - name: Revert permissions
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
+      - name: Report timing statistics
+        run: |
+          ./etc/timing-report.py --max-files 50
 
   check-goose:
     runs-on: ubuntu-latest
