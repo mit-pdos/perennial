@@ -7,13 +7,6 @@ From New.proof.github_com.sanjit_bhat.pav Require Import
 From New.proof.github_com.sanjit_bhat.pav.server_proof Require Import
   serde server.
 
-Module server.
-Import serde.server server.server.
-
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-Context `{!pavG Σ}.
-
 (* notes:
 - only change is that some of these specs return Blame (not bool) err.
 - BlameUnknown is like giving up.
@@ -24,10 +17,22 @@ since the req might not have even hit the serv, it's not in front of a Q.
 (err = BlameUnknown -∗ Φ).
 the client must prove both postconds.
 the function can decide which postcond to use.
+- the specs implicitly assume a good network pipeline to good serv.
+under those conditions, the RPC client should encode args correctly,
+the RPC server should decode args correctly,
+the RPC server should encode replies correctly,
+and the RPC client should decode replies correctly.
+the specs capture this by not allowing errors from RPC serde.
 
 TODO:
-- for now, use same [is_Server] w/ same ptr arg.
-- for now, don't consider RPC encoding / decoding. *)
+- for now, use same [is_Server] w/ same ptr arg. *)
+
+Module server.
+Import serde.server server.server.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
 Lemma wp_CallPut s γ uid pk sl_pk ver :
   ∀ Φ,
@@ -125,8 +130,6 @@ Lemma wp_CallStart s γ :
   (∀ σ ptr_chain ptr_vrf (err : ktcore.Blame),
     Q σ -∗
     ∃ chain vrf last_link,
-    (* TODO: bc we don't yet consider RPC serde,
-    we don't have a BlameServFull err case. *)
     "%Herr" ∷ ⌜err = ∅⌝ ∗
     "#Hptr_chain" ∷ StartChain.own ptr_chain chain (□) ∗
     "#Hptr_vrf" ∷ StartVrf.own ptr_vrf vrf (□) ∗
