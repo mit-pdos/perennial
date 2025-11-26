@@ -50,15 +50,12 @@ jobs:
             sudo chown -R 1000:1000 .
           script: |
             startGroup Build
-              make -j4 -k ci
+              opam install -y .
             endGroup
           uninstall:
       - name: Revert permissions
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
-      - name: Report timing statistics
-        run: |
-          ./etc/timing-report.py --max-files 50
 
   check-goose:
     runs-on: ubuntu-latest
