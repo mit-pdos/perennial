@@ -997,91 +997,6 @@ Proof. destruct ar; simpl; apply _. Defined.
 Global Instance go_instruction_eq_dec : EqDecision go_instruction.
 Proof. solve_decision. Qed.
 
-(** For the proof of [Countable expr], we encode [expr] as a [genTree] with some
-    countable type at the leaves. [basic_type] is what we use as that leaf type. *)
-Definition GenNode {T : Type} (s : string) :=
-  GenNode (T := T) (Pos.to_nat (encode s)).
-
-Inductive leaf_type : Type :=
-  | BaseLitLeaf (val : base_lit)
-  | BinOpLeaf (val : bin_op)
-  | BinderLeaf (val : binder)
-  | FfiOpcodeLeaf (val : ffi_opcode)
-  | FfiValLeaf (val : ffi_val)
-  | GoInstructionLeaf (val : go_instruction)
-  | GoStringLeaf (val : go_string)
-  | ListValLeaf (val : list val)
-  | PrimOpArgs0Leaf (val : prim_op args0)
-  | PrimOpArgs1Leaf (val : prim_op args1)
-  | PrimOpArgs2Leaf (val : prim_op args2)
-  | StringLeaf (val : string)
-  | UnOpLeaf (val : un_op)
-  | GoTypeLeaf (t : go.type)
-.
-
-Fixpoint gen_tree_expr (v : expr) : gen_tree leaf_type :=
-  match v with
-  | Val arg1 => GenNode "Val" [gen_tree_val arg1]
-  | Var arg1 => GenNode "Var" [GenLeaf $ StringLeaf arg1]
-  | Rec arg1 arg2 arg3 => GenNode "Rec" [GenLeaf $ BinderLeaf arg1; GenLeaf $ BinderLeaf arg2; gen_tree_expr arg3]
-  | App arg1 arg2 => GenNode "App" [gen_tree_expr arg1; gen_tree_expr arg2]
-  | UnOp arg1 arg2 => GenNode "UnOp" [GenLeaf $ UnOpLeaf arg1; gen_tree_expr arg2]
-  | BinOp arg1 arg2 arg3 => GenNode "BinOp" [GenLeaf $ BinOpLeaf arg1; gen_tree_expr arg2; gen_tree_expr arg3]
-  | If arg1 arg2 arg3 => GenNode "If" [gen_tree_expr arg1; gen_tree_expr arg2; gen_tree_expr arg3]
-  | Pair arg1 arg2 => GenNode "Pair" [gen_tree_expr arg1; gen_tree_expr arg2]
-  | Fst arg1 => GenNode "Fst" [gen_tree_expr arg1]
-  | Snd arg1 => GenNode "Snd" [gen_tree_expr arg1]
-  | InjL arg1 => GenNode "InjL" [gen_tree_expr arg1]
-  | InjR arg1 => GenNode "InjR" [gen_tree_expr arg1]
-  | Case arg1 arg2 arg3 => GenNode "Case" [gen_tree_expr arg1; gen_tree_expr arg2; gen_tree_expr arg3]
-  | Fork arg1 => GenNode "Fork" [gen_tree_expr arg1]
-  | Atomically arg1 arg2 => GenNode "Atomically" [gen_tree_expr arg1; gen_tree_expr arg2]
-  | Primitive0 arg1 => GenNode "Primitive0" [GenLeaf $ PrimOpArgs0Leaf arg1]
-  | Primitive1 arg1 arg2 => GenNode "Primitive1" [GenLeaf $ PrimOpArgs1Leaf arg1; gen_tree_expr arg2]
-  | Primitive2 arg1 arg2 arg3 => GenNode "Primitive2" [GenLeaf $ PrimOpArgs2Leaf arg1; gen_tree_expr arg2; gen_tree_expr arg3]
-  | CmpXchg arg1 arg2 arg3 => GenNode "CmpXchg" [gen_tree_expr arg1; gen_tree_expr arg2; gen_tree_expr arg3]
-  | ExternalOp arg1 arg2 => GenNode "ExternalOp" [GenLeaf $ FfiOpcodeLeaf arg1; gen_tree_expr arg2]
-  | NewProph  => GenNode "NewProph" []
-  | ResolveProph arg1 arg2 => GenNode "ResolveProph" [gen_tree_expr arg1; gen_tree_expr arg2]
-  end
-with gen_tree_val (v : val) : gen_tree leaf_type :=
-  match v with
-  | LitV arg1 => GenNode "LitV" [GenLeaf $ BaseLitLeaf arg1]
-  | RecV arg1 arg2 arg3 => GenNode "RecV" [GenLeaf $ BinderLeaf arg1; GenLeaf $ BinderLeaf arg2; gen_tree_expr arg3]
-  | PairV arg1 arg2 => GenNode "PairV" [gen_tree_val arg1; gen_tree_val arg2]
-  | InjLV arg1 => GenNode "InjLV" [gen_tree_val arg1]
-  | InjRV arg1 => GenNode "InjRV" [gen_tree_val arg1]
-  | ExtV arg1 => GenNode "ExtV" [GenLeaf $ FfiValLeaf arg1]
-  | GoInstruction arg1 => GenNode "GoInstruction" [GenLeaf $ GoInstructionLeaf arg1]
-  | ArrayV arg1 => GenNode "ArrayV" [GenLeaf $ ListValLeaf arg1]
-  | InterfaceV arg1 =>
-      GenNode "InterfaceV"
-        (match arg1 with
-         | Some (t, v) => [GenLeaf $ GoTypeLeaf t; gen_tree_val v]
-         | None => []
-         end)
-  | LiteralValue arg1 => GenNode "LiteralValue" (gen_tree_keyed_element <$> arg1)
-  end
-with gen_tree_keyed_element (v : keyed_element) : gen_tree leaf_type :=
-  match v with
-  | KeyedElement k v =>
-      GenNode "KeyedElement"
-              (match k with
-               | Some k => [gen_tree_key k; gen_tree_element v]
-               | None => [gen_tree_element v]
-               end)
-  end
-with gen_tree_key (v : key) : gen_tree leaf_type :=
-  match v with
-  | KeyField arg1 => GenNode "KeyField" [GenLeaf $ GoStringLeaf arg1]
-  | KeyExpression arg1 => GenNode "KeyExpression" [gen_tree_expr arg1]
-  | KeyLiteralValue arg1 => GenNode "KeyLiteralValue" (gen_tree_keyed_element <$> arg1)
-  end
-with gen_tree_element (v : element) : gen_tree leaf_type :=
-  match v with
-  | ElementExpression arg1 => GenNode "ElementExpression" [gen_tree_expr arg1]
-  | ElementLiteralValue arg1 => GenNode "ElementLiteralValue" (gen_tree_keyed_element <$> arg1)
-  end.
 
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
@@ -1104,6 +1019,8 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     load := inhabitant;
     store := inhabitant;
     struct_field_ref := inhabitant;
+    struct_field_get := inhabitant;
+    struct_field_set := inhabitant;
     index := inhabitant;
     index_ref := inhabitant;
     array_index_ref := inhabitant;
@@ -1338,6 +1255,258 @@ Global Instance is_comparable_decide v : Decision (is_comparable v).
 Proof.
   induction v; simpl; auto; solve_decision.
 Defined.
+
+End external.
+
+(** For the proof of [Countable expr], we encode [expr] as a [genTree] with some
+    countable type at the leaves. [basic_type] is what we use as that leaf type. *)
+Module gen_tree.
+Section gen_tree.
+Context {ext : ffi_syntax}.
+Inductive gen_tree (T : Type) : Type :=
+    GenLeaf : T → gen_tree T | GenNode : string → list (gen_tree T) → gen_tree T.
+Global Arguments GenLeaf {_} _ : assert.
+Global Arguments GenNode {_} _ _ : assert.
+
+Inductive leaf_type : Type :=
+  | BaseLitLeaf (val : base_lit)
+  | BinOpLeaf (val : bin_op)
+  | BinderLeaf (val : binder)
+  | FfiOpcodeLeaf (val : ffi_opcode)
+  | FfiValLeaf (val : ffi_val)
+  | GoInstructionLeaf (val : go_instruction)
+  | GoStringLeaf (val : go_string)
+  | PrimOpArgs0Leaf (val : prim_op args0)
+  | PrimOpArgs1Leaf (val : prim_op args1)
+  | PrimOpArgs2Leaf (val : prim_op args2)
+  | StringLeaf (val : string)
+  | UnOpLeaf (val : un_op)
+  | GoTypeLeaf (t : go.type)
+.
+
+Fixpoint of_expr (v : expr) : gen_tree leaf_type :=
+  match v with
+  | Val arg1 => GenNode "Val" [of_val arg1]
+  | Var arg1 => GenNode "Var" [GenLeaf $ StringLeaf arg1]
+  | Rec arg1 arg2 arg3 => GenNode "Rec" [GenLeaf $ BinderLeaf arg1; GenLeaf $ BinderLeaf arg2; of_expr arg3]
+  | App arg1 arg2 => GenNode "App" [of_expr arg1; of_expr arg2]
+  | UnOp arg1 arg2 => GenNode "UnOp" [GenLeaf $ UnOpLeaf arg1; of_expr arg2]
+  | BinOp arg1 arg2 arg3 => GenNode "BinOp" [GenLeaf $ BinOpLeaf arg1; of_expr arg2; of_expr arg3]
+  | If arg1 arg2 arg3 => GenNode "If" [of_expr arg1; of_expr arg2; of_expr arg3]
+  | Pair arg1 arg2 => GenNode "Pair" [of_expr arg1; of_expr arg2]
+  | Fst arg1 => GenNode "Fst" [of_expr arg1]
+  | Snd arg1 => GenNode "Snd" [of_expr arg1]
+  | InjL arg1 => GenNode "InjL" [of_expr arg1]
+  | InjR arg1 => GenNode "InjR" [of_expr arg1]
+  | Case arg1 arg2 arg3 => GenNode "Case" [of_expr arg1; of_expr arg2; of_expr arg3]
+  | Fork arg1 => GenNode "Fork" [of_expr arg1]
+  | Atomically arg1 arg2 => GenNode "Atomically" [of_expr arg1; of_expr arg2]
+  | Primitive0 arg1 => GenNode "Primitive0" [GenLeaf $ PrimOpArgs0Leaf arg1]
+  | Primitive1 arg1 arg2 => GenNode "Primitive1" [GenLeaf $ PrimOpArgs1Leaf arg1; of_expr arg2]
+  | Primitive2 arg1 arg2 arg3 => GenNode "Primitive2" [GenLeaf $ PrimOpArgs2Leaf arg1; of_expr arg2; of_expr arg3]
+  | CmpXchg arg1 arg2 arg3 => GenNode "CmpXchg" [of_expr arg1; of_expr arg2; of_expr arg3]
+  | ExternalOp arg1 arg2 => GenNode "ExternalOp" [GenLeaf $ FfiOpcodeLeaf arg1; of_expr arg2]
+  | NewProph  => GenNode "NewProph" []
+  | ResolveProph arg1 arg2 => GenNode "ResolveProph" [of_expr arg1; of_expr arg2]
+  end
+with of_val (v : val) : gen_tree leaf_type :=
+  match v with
+  | LitV arg1 => GenNode "LitV" [GenLeaf $ BaseLitLeaf arg1]
+  | RecV arg1 arg2 arg3 => GenNode "RecV" [GenLeaf $ BinderLeaf arg1; GenLeaf $ BinderLeaf arg2; of_expr arg3]
+  | PairV arg1 arg2 => GenNode "PairV" [of_val arg1; of_val arg2]
+  | InjLV arg1 => GenNode "InjLV" [of_val arg1]
+  | InjRV arg1 => GenNode "InjRV" [of_val arg1]
+  | ExtV arg1 => GenNode "ExtV" [GenLeaf $ FfiValLeaf arg1]
+  | GoInstruction arg1 => GenNode "GoInstruction" [GenLeaf $ GoInstructionLeaf arg1]
+  | ArrayV arg1 => GenNode "ArrayV" (of_val <$> arg1)
+  | InterfaceV arg1 =>
+      GenNode "InterfaceV"
+        (match arg1 with
+         | Some (t, v) => [GenLeaf $ GoTypeLeaf t; of_val v]
+         | None => []
+         end)
+  | LiteralValue arg1 => GenNode "LiteralValue" (of_keyed_element <$> arg1)
+  end
+with of_keyed_element (v : keyed_element) : gen_tree leaf_type :=
+  match v with
+  | KeyedElement k v =>
+      GenNode "KeyedElement"
+              (match k with
+               | Some k => [of_key k; of_element v]
+               | None => [of_element v]
+               end)
+  end
+with of_key (v : key) : gen_tree leaf_type :=
+  match v with
+  | KeyField arg1 => GenNode "KeyField" [GenLeaf $ GoStringLeaf arg1]
+  | KeyExpression arg1 => GenNode "KeyExpression" [of_expr arg1]
+  | KeyLiteralValue arg1 => GenNode "KeyLiteralValue" (of_keyed_element <$> arg1)
+  end
+with of_element (v : element) : gen_tree leaf_type :=
+  match v with
+  | ElementExpression arg1 => GenNode "ElementExpression" [of_expr arg1]
+  | ElementLiteralValue arg1 => GenNode "ElementLiteralValue" (of_keyed_element <$> arg1)
+  end.
+
+Local Definition fmap_option {A B} (f : A → option B) (l : list A) : option (list B) :=
+  foldl (λ l a,
+           match (f a), l with
+           | Some b, Some l => Some (l ++ [b])
+           | _, _ => None
+           end
+    ) (Some (@nil B)) l.
+
+Fixpoint to_expr (v : gen_tree leaf_type) : option expr :=
+  match v with
+  | GenNode "Val" [arg1] =>
+      (arg1 ← to_val arg1;
+       mret $ Val arg1)
+  | GenNode "Var" [GenLeaf (StringLeaf arg1)] => Some (Var arg1)
+  | GenNode "Rec" [GenLeaf (BinderLeaf arg1); GenLeaf (BinderLeaf arg2); arg3] =>
+      (arg3 ← to_expr arg3;
+       mret $ Rec arg1 arg2 arg3)
+  | GenNode "App" [arg1; arg2] =>
+      (arg1 ← to_expr arg1;
+       arg2 ← to_expr arg2;
+       mret $ App arg1 arg2)
+  | GenNode "UnOp" [GenLeaf (UnOpLeaf arg1); arg2] =>
+      (arg2 ← to_expr arg2;
+       mret $ UnOp arg1 arg2)
+  | GenNode "BinOp" [GenLeaf (BinOpLeaf arg1); arg2; arg3] =>
+      (arg2 ← to_expr arg2;
+       arg3 ← to_expr arg3;
+       mret $ BinOp arg1 arg2 arg2)
+  | GenNode "If" [arg1; arg2; arg3] =>
+      (arg1 ← to_expr arg1;
+       arg2 ← to_expr arg2;
+       arg3 ← to_expr arg3;
+       mret $ If arg1 arg2 arg3)
+  | GenNode "Pair" [arg1; arg2] =>
+      (arg1 ← to_expr arg1;
+       arg2 ← to_expr arg2;
+       mret $ Pair arg1 arg2)
+  | GenNode "Fst" [arg1] =>
+      (arg1 ← to_expr arg1;
+       mret $ Fst arg1)
+  | GenNode "Snd" [arg1] =>
+      (arg1 ← to_expr arg1;
+       mret $ Snd arg1)
+  | GenNode "InjL" [arg1] =>
+      (arg1 ← to_expr arg1;
+       mret $ InjL arg1)
+  | GenNode "InjR" [arg1] =>
+      (arg1 ← to_expr arg1;
+       mret $ InjR arg1)
+  | GenNode "Case" [arg1; arg2; arg3] =>
+      (arg1 ← to_expr arg1;
+       arg2 ← to_expr arg2;
+       arg3 ← to_expr arg3;
+       mret $ Case arg1 arg2 arg3)
+  | GenNode "Fork" [arg1] =>
+      (arg1 ← to_expr arg1;
+       mret $ Fork arg1)
+  | GenNode "Atomically" [arg1; arg2] =>
+      (arg1 ← to_expr arg1;
+       arg2 ← to_expr arg2;
+       mret $ Atomically arg1 arg2)
+  | GenNode "Primitive0" [GenLeaf (PrimOpArgs0Leaf arg1)] =>
+      mret $ Primitive0 arg1
+  | GenNode "Primitive1" [GenLeaf (PrimOpArgs1Leaf arg1); arg2] =>
+      (arg2 ← to_expr arg2;
+       mret $ Primitive1 arg1 arg2)
+  | GenNode "Primitive2" [GenLeaf (PrimOpArgs2Leaf arg1); arg2; arg3] =>
+      (arg2 ← to_expr arg2;
+       arg3 ← to_expr arg3;
+       mret $ Primitive2 arg1 arg2 arg3)
+  | GenNode "CmpXchg" [arg1; arg2; arg3] =>
+      (arg1 ← to_expr arg1;
+       arg2 ← to_expr arg2;
+       arg3 ← to_expr arg3;
+       mret $ CmpXchg arg1 arg2 arg3)
+  | GenNode "ExternalOp" [GenLeaf (FfiOpcodeLeaf arg1); arg2] =>
+      (arg2 ← to_expr arg2;
+       mret $ ExternalOp arg1 arg2)
+  | GenNode "NewProph" [] => mret $ NewProph
+  | GenNode "ResolveProph" [arg1; arg2] =>
+      (arg1 ← to_expr arg1;
+       arg2 ← to_expr arg2;
+       mret $ ResolveProph arg1 arg2)
+  | _ => None
+  end
+with to_val (v : gen_tree leaf_type) : option val :=
+  match v with
+  | GenNode "LitV" [GenLeaf (BaseLitLeaf arg1)] =>
+      mret $ LitV arg1
+  | GenNode "RecV" [GenLeaf (BinderLeaf arg1); GenLeaf (BinderLeaf arg2); arg3] =>
+      (arg3 ← to_expr arg3;
+       mret $ RecV arg1 arg2 arg3)
+  | GenNode "PairV" [arg1; arg2] =>
+      (arg1 ← to_val arg1;
+       arg2 ← to_val arg2;
+       mret $ PairV arg1 arg2)
+  | GenNode "InjLV" [arg1] =>
+      (arg1 ← to_val arg1;
+       mret $ InjLV arg1)
+  | GenNode "InjRV" [arg1] =>
+      (arg1 ← to_val arg1;
+       mret $ InjRV arg1)
+  | GenNode "ExtV" [GenLeaf (FfiValLeaf arg1)] => mret $ ExtV arg1
+  | GenNode "GoInstruction" [GenLeaf (GoInstructionLeaf arg1)] => mret $ GoInstruction arg1
+  | GenNode "ArrayV" arg1 =>
+      (arg1 ← fmap_option to_val arg1;
+       mret $ ArrayV arg1)
+  | GenNode "InterfaceV" l =>
+        (match l with
+         | [GenLeaf (GoTypeLeaf t); v] => (v ← to_val v; mret $ InterfaceV $ Some (t, v))
+         | [] => (mret $ InterfaceV None)
+         | _ => None
+         end)
+  | GenNode "LiteralValue" arg1 =>
+      (arg1 ← fmap_option to_keyed_element arg1;
+       mret $ LiteralValue arg1)
+  | _ => None
+  end
+with to_keyed_element (v : gen_tree leaf_type) : option keyed_element :=
+  match v with
+  | GenNode "KeyedElement" l =>
+      (match l with
+       | [k; v] =>
+           (k ← to_key k;
+            v ← to_element v;
+            mret $ KeyedElement (Some k) v)
+       | [v] =>
+           (v ← to_element v;
+            mret $ KeyedElement None v)
+       | _ => None
+       end)
+  | _ => None
+  end
+with to_key (v : gen_tree leaf_type) : option key :=
+  match v with
+  | GenNode "KeyField" [GenLeaf (GoStringLeaf arg1)] => mret $ KeyField arg1
+  | GenNode "KeyExpression" [arg1] =>
+      (arg1 ← to_expr arg1;
+       mret $ KeyExpression arg1)
+  | GenNode "KeyLiteralValue" arg1 =>
+      (arg1 ← fmap_option to_keyed_element arg1;
+       mret $ KeyLiteralValue arg1)
+  | _ => None
+  end
+with to_element (v : gen_tree leaf_type) : option element :=
+  match v with
+  | GenNode "ElementExpression" [arg1] =>
+      (arg1 ← to_expr arg1;
+       mret $ ElementExpression arg1)
+  | GenNode "ElementLiteralValue" arg1 =>
+      (arg1 ← fmap_option to_keyed_element arg1;
+       mret $ ElementLiteralValue arg1)
+  | _ => None
+  end.
+
+FIXME:
+
+Section external.
+Context `{ffi_syntax}.
 
 Definition bin_op_eval_eq (v1 v2 : val) : option base_lit :=
   if decide (is_comparable v1 ∧ is_comparable v2) then
