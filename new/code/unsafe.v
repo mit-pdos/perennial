@@ -9,24 +9,17 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition vars' : list (go_string * go_type) := [].
-
 Definition functions' : list (go_string * val) := [].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [].
 
 #[global] Instance info' : PkgInfo unsafe.unsafe :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #unsafe.unsafe (λ: <>,
-      exception_do (do:  (package.alloc unsafe.unsafe #()))
+    package.init unsafe.unsafe (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

@@ -10,8 +10,6 @@ Definition std : go_string := "github.com/goose-lang/std".
 
 Module std.
 
-Module JoinHandle. Definition id : go_string := "github.com/goose-lang/std.JoinHandle"%go. End JoinHandle.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -23,10 +21,10 @@ Definition Assert : go_string := "github.com/goose-lang/std.Assert"%go.
    go: goose_std.go:13:6 *)
 Definition Assertⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (mem.alloc "b") in
-    (if: (~ (![#boolT] "b"))
+    exception_do (let: "b" := (GoAllocValue go.bool "b") in
+    (if: (~ (![go.bool] "b"))
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"assertion failure"%go) in
+      do:  (let: "$a0" := (InterfaceMake go.string #"assertion failure"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -38,11 +36,11 @@ Definition SumNoOverflow : go_string := "github.com/goose-lang/std.SumNoOverflow
    go: goose_std.go:20:6 *)
 Definition SumNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (mem.alloc "y") in
-    let: "x" := (mem.alloc "x") in
-    return: (let: "$a0" := (![#uint64T] "x") in
-     let: "$a1" := (![#uint64T] "y") in
-     (func_call #std_core.SumNoOverflow) "$a0" "$a1")).
+    exception_do (let: "y" := (GoAllocValue go.uint64 "y") in
+    let: "x" := (GoAllocValue go.uint64 "x") in
+    return: (let: "$a0" := (![go.uint64] "x") in
+     let: "$a1" := (![go.uint64] "y") in
+     (FuncResolve std_core.SumNoOverflow #()) "$a0" "$a1")).
 
 Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std.SumAssumeNoOverflow"%go.
 
@@ -53,22 +51,22 @@ Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std.SumAssu
    go: goose_std.go:27:6 *)
 Definition SumAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (mem.alloc "y") in
-    let: "x" := (mem.alloc "x") in
-    return: (let: "$a0" := (![#uint64T] "x") in
-     let: "$a1" := (![#uint64T] "y") in
-     (func_call #std_core.SumAssumeNoOverflow) "$a0" "$a1")).
+    exception_do (let: "y" := (GoAllocValue go.uint64 "y") in
+    let: "x" := (GoAllocValue go.uint64 "x") in
+    return: (let: "$a0" := (![go.uint64] "x") in
+     let: "$a1" := (![go.uint64] "y") in
+     (FuncResolve std_core.SumAssumeNoOverflow #()) "$a0" "$a1")).
 
 Definition SignedSumAssumeNoOverflow : go_string := "github.com/goose-lang/std.SignedSumAssumeNoOverflow"%go.
 
 (* go: goose_std.go:31:6 *)
 Definition SignedSumAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (mem.alloc "y") in
-    let: "x" := (mem.alloc "x") in
-    do:  (let: "$a0" := (((int_geq (![#intT] "y") #(W64 0)) && (int_leq (![#intT] "x") (#(W64 math.MaxInt) - (![#intT] "y")))) || ((int_lt (![#intT] "y") #(W64 0)) && (int_geq (![#intT] "x") (#(W64 math.MinInt) - (![#intT] "y"))))) in
-    (func_call #primitive.Assume) "$a0");;;
-    return: ((![#intT] "x") + (![#intT] "y"))).
+    exception_do (let: "y" := (GoAllocValue go.int "y") in
+    let: "x" := (GoAllocValue go.int "x") in
+    do:  (let: "$a0" := (((int_geq (![go.int] "y") #(W64 0)) && (int_leq (![go.int] "x") (#(W64 math.MaxInt) - (![go.int] "y")))) || ((int_lt (![go.int] "y") #(W64 0)) && (int_geq (![go.int] "x") (#(W64 math.MinInt) - (![go.int] "y"))))) in
+    (FuncResolve primitive.Assume #()) "$a0");;;
+    return: ((![go.int] "x") + (![go.int] "y"))).
 
 Definition BytesEqual : go_string := "github.com/goose-lang/std.BytesEqual"%go.
 
@@ -77,32 +75,32 @@ Definition BytesEqual : go_string := "github.com/goose-lang/std.BytesEqual"%go.
    go: goose_std.go:37:6 *)
 Definition BytesEqualⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (mem.alloc "y") in
-    let: "x" := (mem.alloc "x") in
-    let: "xlen" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "x") in
+    exception_do (let: "y" := (GoAllocValue (go.SliceType go.byte) "y") in
+    let: "x" := (GoAllocValue (go.SliceType go.byte) "x") in
+    let: "xlen" := (GoAlloc go.int #()) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "x") in
     slice.len "$a0") in
-    do:  ("xlen" <-[#intT] "$r0");;;
-    (if: (![#intT] "xlen") ≠ (let: "$a0" := (![#sliceT] "y") in
+    do:  ("xlen" <-[go.int] "$r0");;;
+    (if: (![go.int] "xlen") ≠ (let: "$a0" := (![go.SliceType go.byte] "y") in
     slice.len "$a0")
     then return: (#false)
     else do:  #());;;
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    let: "retval" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    let: "retval" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("retval" <-[#boolT] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (![#intT] "xlen"))); (λ: <>, #()) := λ: <>,
-      (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "x") (![#uint64T] "i"))) ≠ (![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") (![#uint64T] "i")))
+    do:  ("retval" <-[go.bool] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < (s_to_w64 (![go.int] "xlen"))); (λ: <>, #()) := λ: <>,
+      (if: (![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "x") (![go.uint64] "i"))) ≠ (![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "y") (![go.uint64] "i")))
       then
         let: "$r0" := #false in
-        do:  ("retval" <-[#boolT] "$r0");;;
+        do:  ("retval" <-[go.bool] "$r0");;;
         break: #()
       else do:  #());;;
-      do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)));;;
+      do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)));;;
       continue: #());;;
-    return: (![#boolT] "retval")).
+    return: (![go.bool] "retval")).
 
 Definition BytesClone : go_string := "github.com/goose-lang/std.BytesClone"%go.
 
@@ -113,13 +111,13 @@ Definition BytesClone : go_string := "github.com/goose-lang/std.BytesClone"%go.
    go: goose_std.go:58:6 *)
 Definition BytesCloneⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (mem.alloc "b") in
-    (if: (![#sliceT] "b") = #slice.nil
+    exception_do (let: "b" := (GoAllocValue (go.SliceType go.byte) "b") in
+    (if: (![go.SliceType go.byte] "b") = #slice.nil
     then return: (#slice.nil)
     else do:  #());;;
     return: (let: "$a0" := #slice.nil in
-     let: "$a1" := (![#sliceT] "b") in
-     (slice.append #byteT) "$a0" "$a1")).
+     let: "$a1" := (![go.SliceType go.byte] "b") in
+     (slice.append go.byte) "$a0" "$a1")).
 
 Definition SliceSplit : go_string := "github.com/goose-lang/std.SliceSplit"%go.
 
@@ -131,36 +129,34 @@ Definition SliceSplit : go_string := "github.com/goose-lang/std.SliceSplit"%go.
    go: goose_std.go:69:6 *)
 Definition SliceSplitⁱᵐᵖˡ : val :=
   λ: "T" "xs" "n",
-    exception_do (let: "n" := (mem.alloc "n") in
-    let: "xs" := (mem.alloc "xs") in
-    return: (let: "$s" := (![#sliceT] "xs") in
-     slice.slice "T" "$s" #(W64 0) (![#uint64T] "n"), let: "$s" := (![#sliceT] "xs") in
-     slice.slice "T" "$s" (![#uint64T] "n") (slice.len "$s"))).
+    exception_do (let: "n" := (GoAllocValue go.uint64 "n") in
+    let: "xs" := (GoAllocValue (go.SliceType T) "xs") in
+    return: (let: "$s" := (![go.SliceType T] "xs") in
+     slice.slice T "$s" #(W64 0) (![go.uint64] "n"), let: "$s" := (![go.SliceType T] "xs") in
+     slice.slice T "$s" (![go.uint64] "n") (slice.len "$s"))).
 
-Definition JoinHandle : go_type := structT [
-  "mu" :: ptrT;
-  "done" :: boolT;
-  "cond" :: ptrT
+Definition JoinHandleⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "mu"%go go.PointerType sync.Mutex);
+  (go.FieldDecl "done"%go go.bool);
+  (go.FieldDecl "cond"%go go.PointerType sync.Cond)
 ].
-#[global] Typeclasses Opaque JoinHandle.
-#[global] Opaque JoinHandle.
 
 Definition newJoinHandle : go_string := "github.com/goose-lang/std.newJoinHandle"%go.
 
 (* go: goose_std.go:84:6 *)
 Definition newJoinHandleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("mu" <-[#ptrT] "$r0");;;
-    let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] "mu")) in
-    (func_call #sync.NewCond) "$a0") in
-    do:  ("cond" <-[#ptrT] "$r0");;;
-    return: (mem.alloc (let: "$mu" := (![#ptrT] "mu") in
+    exception_do (let: "mu" := (GoAlloc (go.PointerType sync.Mutex) #()) in
+    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    do:  ("mu" <-[go.PointerType sync.Mutex] "$r0");;;
+    let: "cond" := (GoAlloc (go.PointerType sync.Cond) #()) in
+    let: "$r0" := (let: "$a0" := (InterfaceMake (go.PointerType sync.Mutex) (![go.PointerType sync.Mutex] "mu")) in
+    (FuncResolve sync.NewCond #()) "$a0") in
+    do:  ("cond" <-[go.PointerType sync.Cond] "$r0");;;
+    return: (GoAllocValue JoinHandle (let: "$mu" := (![go.PointerType sync.Mutex] "mu") in
      let: "$done" := #false in
-     let: "$cond" := (![#ptrT] "cond") in
-     struct.make #JoinHandle [{
+     let: "$cond" := (![go.PointerType sync.Cond] "cond") in
+     struct.make JoinHandle [{
        "mu" ::= "$mu";
        "done" ::= "$done";
        "cond" ::= "$cond"
@@ -169,12 +165,12 @@ Definition newJoinHandleⁱᵐᵖˡ : val :=
 (* go: goose_std.go:94:22 *)
 Definition JoinHandle__finishⁱᵐᵖˡ : val :=
   λ: "h" <>,
-    exception_do (let: "h" := (mem.alloc "h") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    exception_do (let: "h" := (GoAllocValue (go.PointerType JoinHandle) "h") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Lock #() (![go.PointerType sync.Mutex] (struct.field_ref JoinHandle #"mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     let: "$r0" := #true in
-    do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #());;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    do:  ((struct.field_ref JoinHandle #"done"%go (![go.PointerType JoinHandle] "h")) <-[go.bool] "$r0");;;
+    do:  ((MethodResolve (go.PointerType sync.Cond) Signal #() (![go.PointerType sync.Cond] (struct.field_ref JoinHandle #"cond"%go (![go.PointerType JoinHandle] "h")))) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Unlock #() (![go.PointerType sync.Mutex] (struct.field_ref JoinHandle #"mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     return: #()).
 
 Definition Spawn : go_string := "github.com/goose-lang/std.Spawn"%go.
@@ -190,32 +186,32 @@ Definition Spawn : go_string := "github.com/goose-lang/std.Spawn"%go.
    go: goose_std.go:108:6 *)
 Definition Spawnⁱᵐᵖˡ : val :=
   λ: "f",
-    exception_do (let: "f" := (mem.alloc "f") in
-    let: "h" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #newJoinHandle) #()) in
-    do:  ("h" <-[#ptrT] "$r0");;;
+    exception_do (let: "f" := (GoAllocValue (go.FunctionType (go.Signature [] #false [])) "f") in
+    let: "h" := (GoAlloc (go.PointerType JoinHandle) #()) in
+    let: "$r0" := ((FuncResolve newJoinHandle #()) #()) in
+    do:  ("h" <-[go.PointerType JoinHandle] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((![#funcT] "f") #());;;
-      do:  ((method_call #(ptrT.id JoinHandle.id) #"finish"%go (![#ptrT] "h")) #());;;
+      exception_do (do:  ((![go.FunctionType (go.Signature [] #false [])] "f") #());;;
+      do:  ((MethodResolve (go.PointerType JoinHandle) finish #() (![go.PointerType JoinHandle] "h")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    return: (![#ptrT] "h")).
+    return: (![go.PointerType JoinHandle] "h")).
 
 (* go: goose_std.go:117:22 *)
 Definition JoinHandle__Joinⁱᵐᵖˡ : val :=
   λ: "h" <>,
-    exception_do (let: "h" := (mem.alloc "h") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    exception_do (let: "h" := (GoAllocValue (go.PointerType JoinHandle) "h") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Lock #() (![go.PointerType sync.Mutex] (struct.field_ref JoinHandle #"mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: ![#boolT] (struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h"))
+      (if: ![go.bool] (struct.field_ref JoinHandle #"done"%go (![go.PointerType JoinHandle] "h"))
       then
         let: "$r0" := #false in
-        do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
+        do:  ((struct.field_ref JoinHandle #"done"%go (![go.PointerType JoinHandle] "h")) <-[go.bool] "$r0");;;
         break: #()
       else do:  #());;;
-      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #()));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+      do:  ((MethodResolve (go.PointerType sync.Cond) Wait #() (![go.PointerType sync.Cond] (struct.field_ref JoinHandle #"cond"%go (![go.PointerType JoinHandle] "h")))) #()));;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Unlock #() (![go.PointerType sync.Mutex] (struct.field_ref JoinHandle #"mu"%go (![go.PointerType JoinHandle] "h")))) #());;;
     return: #()).
 
 Definition Multipar : go_string := "github.com/goose-lang/std.Multipar"%go.
@@ -229,39 +225,39 @@ Definition Multipar : go_string := "github.com/goose-lang/std.Multipar"%go.
    go: goose_std.go:136:6 *)
 Definition Multiparⁱᵐᵖˡ : val :=
   λ: "num" "op",
-    exception_do (let: "op" := (mem.alloc "op") in
-    let: "num" := (mem.alloc "num") in
-    let: "num_left" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] "num") in
-    do:  ("num_left" <-[#uint64T] "$r0");;;
-    let: "num_left_mu" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("num_left_mu" <-[#ptrT] "$r0");;;
-    let: "num_left_cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make #(ptrT.id sync.Mutex.id) (![#ptrT] "num_left_mu")) in
-    (func_call #sync.NewCond) "$a0") in
-    do:  ("num_left_cond" <-[#ptrT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "op" := (GoAllocValue (go.FunctionType (go.Signature [go.uint64] #false [])) "op") in
+    let: "num" := (GoAllocValue go.uint64 "num") in
+    let: "num_left" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] "num") in
+    do:  ("num_left" <-[go.uint64] "$r0");;;
+    let: "num_left_mu" := (GoAlloc (go.PointerType sync.Mutex) #()) in
+    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    do:  ("num_left_mu" <-[go.PointerType sync.Mutex] "$r0");;;
+    let: "num_left_cond" := (GoAlloc (go.PointerType sync.Cond) #()) in
+    let: "$r0" := (let: "$a0" := (InterfaceMake (go.PointerType sync.Mutex) (![go.PointerType sync.Mutex] "num_left_mu")) in
+    (FuncResolve sync.NewCond #()) "$a0") in
+    do:  ("num_left_cond" <-[go.PointerType sync.Cond] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "num")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (![#uint64T] "i") in
-      do:  ("i" <-[#uint64T] "$r0");;;
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < (![go.uint64] "num")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)))) := λ: <>,
+      let: "i" := (GoAlloc go.uint64 #()) in
+      let: "$r0" := (![go.uint64] "i") in
+      do:  ("i" <-[go.uint64] "$r0");;;
       let: "$go" := (λ: <>,
-        exception_do (do:  (let: "$a0" := (![#uint64T] "i") in
-        (![#funcT] "op") "$a0");;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "num_left_mu")) #());;;
-        do:  ("num_left" <-[#uint64T] ((![#uint64T] "num_left") - #(W64 1)));;;
-        do:  ((method_call #(ptrT.id sync.Cond.id) #"Signal"%go (![#ptrT] "num_left_cond")) #());;;
-        do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "num_left_mu")) #());;;
+        exception_do (do:  (let: "$a0" := (![go.uint64] "i") in
+        (![go.FunctionType (go.Signature [go.uint64] #false [])] "op") "$a0");;;
+        do:  ((MethodResolve (go.PointerType sync.Mutex) Lock #() (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
+        do:  ("num_left" <-[go.uint64] ((![go.uint64] "num_left") - #(W64 1)));;;
+        do:  ((MethodResolve (go.PointerType sync.Cond) Signal #() (![go.PointerType sync.Cond] "num_left_cond")) #());;;
+        do:  ((MethodResolve (go.PointerType sync.Mutex) Unlock #() (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
         return: #())
         ) in
       do:  (Fork ("$go" #()))));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "num_left_mu")) #());;;
-    (for: (λ: <>, (![#uint64T] "num_left") > #(W64 0)); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] "num_left_cond")) #()));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "num_left_mu")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Lock #() (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
+    (for: (λ: <>, (![go.uint64] "num_left") > #(W64 0)); (λ: <>, #()) := λ: <>,
+      do:  ((MethodResolve (go.PointerType sync.Cond) Wait #() (![go.PointerType sync.Cond] "num_left_cond")) #()));;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Unlock #() (![go.PointerType sync.Mutex] "num_left_mu")) #());;;
     return: #()).
 
 Definition Skip : go_string := "github.com/goose-lang/std.Skip"%go.
@@ -290,41 +286,41 @@ Definition WaitTimeout : go_string := "github.com/goose-lang/std.WaitTimeout"%go
    go: goose_std.go:174:6 *)
 Definition WaitTimeoutⁱᵐᵖˡ : val :=
   λ: "cond" "timeoutMs",
-    exception_do (let: "timeoutMs" := (mem.alloc "timeoutMs") in
-    let: "cond" := (mem.alloc "cond") in
-    let: "done" := (mem.alloc (type.zero_val (type.chanT (type.structT [
-    ])))) in
-    let: "$r0" := (chan.make (type.structT [
+    exception_do (let: "timeoutMs" := (GoAllocValue go.uint64 "timeoutMs") in
+    let: "cond" := (GoAllocValue (go.PointerType sync.Cond) "cond") in
+    let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+    ])) #()) in
+    let: "$r0" := (chan.make (go.StructType [
     ]) #(W64 0)) in
-    do:  ("done" <-[type.chanT (type.structT [
+    do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
     ])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #(ptrT.id sync.Cond.id) #"Wait"%go (![#ptrT] "cond")) #());;;
-      do:  ((interface.get #"Unlock"%go (![#sync.Locker] (struct.field_ref #sync.Cond #"L"%go (![#ptrT] "cond")))) #());;;
-      do:  (let: "$a0" := (![type.chanT (type.structT [
+      exception_do (do:  ((MethodResolve (go.PointerType sync.Cond) Wait #() (![go.PointerType sync.Cond] "cond")) #());;;
+      do:  ((interface.get #"Unlock"%go (![sync.Locker] (struct.field_ref sync.Cond #"L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
+      do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
       ])] "done") in
-      (chan.close (type.structT [
+      (chan.close (go.StructType [
       ])) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    chan.select_blocking [chan.select_receive #time.Time (let: "$a0" := ((u_to_w64 (![#uint64T] "timeoutMs")) * time.Millisecond) in
-     (func_call #time.After) "$a0") (λ: "$recvVal",
-       do:  ((interface.get #"Lock"%go (![#sync.Locker] (struct.field_ref #sync.Cond #"L"%go (![#ptrT] "cond")))) #());;;
+    chan.select_blocking [chan.select_receive time.Time (let: "$a0" := ((u_to_w64 (![go.uint64] "timeoutMs")) * time.Millisecond) in
+     (FuncResolve time.After #()) "$a0") (λ: "$recvVal",
+       do:  ((interface.get #"Lock"%go (![sync.Locker] (struct.field_ref sync.Cond #"L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
        return: (#())
-       ); chan.select_receive (type.structT [
-     ]) (![type.chanT (type.structT [
+       ); chan.select_receive (go.StructType [
+     ]) (![go.ChannelType go.sendrecv (go.StructType [
      ])] "done") (λ: "$recvVal",
-       do:  ((interface.get #"Lock"%go (![#sync.Locker] (struct.field_ref #sync.Cond #"L"%go (![#ptrT] "cond")))) #());;;
+       do:  ((interface.get #"Lock"%go (![sync.Locker] (struct.field_ref sync.Cond #"L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
        return: (#())
        )];;;
     return: #()).
 
-Definition vars' : list (go_string * go_type) := [].
+Definition vars' : list (go_string * go.type) := [].
 
 Definition functions' : list (go_string * val) := [(Assert, Assertⁱᵐᵖˡ); (SumNoOverflow, SumNoOverflowⁱᵐᵖˡ); (SumAssumeNoOverflow, SumAssumeNoOverflowⁱᵐᵖˡ); (SignedSumAssumeNoOverflow, SignedSumAssumeNoOverflowⁱᵐᵖˡ); (BytesEqual, BytesEqualⁱᵐᵖˡ); (BytesClone, BytesCloneⁱᵐᵖˡ); (SliceSplit, SliceSplitⁱᵐᵖˡ); (newJoinHandle, newJoinHandleⁱᵐᵖˡ); (Spawn, Spawnⁱᵐᵖˡ); (Multipar, Multiparⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ); (WaitTimeout, WaitTimeoutⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(JoinHandle.id, []); (ptrT.id JoinHandle.id, [("Join"%go, JoinHandle__Joinⁱᵐᵖˡ); ("finish"%go, JoinHandle__finishⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(JoinHandle, []); (go.PointerType JoinHandle, [("Join"%go, JoinHandle__Joinⁱᵐᵖˡ); ("finish"%go, JoinHandle__finishⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo std.std :=
   {|

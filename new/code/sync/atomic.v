@@ -7,18 +7,6 @@ Definition atomic : go_string := "sync/atomic".
 
 Module atomic.
 
-Module Bool. Definition id : go_string := "sync/atomic.Bool"%go. End Bool.
-Module Pointer. Definition id : go_string := "sync/atomic.Pointer"%go. End Pointer.
-Module Int32. Definition id : go_string := "sync/atomic.Int32"%go. End Int32.
-Module Int64. Definition id : go_string := "sync/atomic.Int64"%go. End Int64.
-Module Uint32. Definition id : go_string := "sync/atomic.Uint32"%go. End Uint32.
-Module Uint64. Definition id : go_string := "sync/atomic.Uint64"%go. End Uint64.
-Module Uintptr. Definition id : go_string := "sync/atomic.Uintptr"%go. End Uintptr.
-Module noCopy. Definition id : go_string := "sync/atomic.noCopy"%go. End noCopy.
-Module align64. Definition id : go_string := "sync/atomic.align64"%go. End align64.
-Module Value. Definition id : go_string := "sync/atomic.Value"%go. End Value.
-Module efaceWords. Definition id : go_string := "sync/atomic.efaceWords"%go. End efaceWords.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -101,21 +89,23 @@ Definition StoreInt64 : go_string := "sync/atomic.StoreInt64"%go.
 
 Definition StoreUint64 : go_string := "sync/atomic.StoreUint64"%go.
 
-Definition Bool : go_type := structT [
-  "_0" :: noCopy;
-  "v" :: uint32T
+Definition noCopy : go.type := go.Named "sync/atomic.noCopy"%go [].
+
+Definition Boolⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "v"%go go.uint32)
 ].
-#[global] Typeclasses Opaque Bool.
-#[global] Opaque Bool.
+
+Definition Bool : go.type := go.Named "sync/atomic.Bool"%go [].
 
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:19:16 *)
 Definition Bool__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (mem.alloc "x") in
-    return: ((let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
-     (func_call #LoadUint32) "$a0") ≠ #(W32 0))).
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
+    return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
+     (FuncResolve LoadUint32 [] #()) "$a0") ≠⟨go.uint32⟩ #(W32 0))).
 
 Definition b32 : go_string := "sync/atomic.b32"%go.
 
@@ -124,12 +114,12 @@ Definition b32 : go_string := "sync/atomic.b32"%go.
    go: type.go:22:16 *)
 Definition Bool__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "val" := (mem.alloc "val") in
-    do:  (let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
-    let: "$a1" := (let: "$a0" := (![#boolT] "val") in
-    (func_call #b32) "$a0") in
-    (func_call #StoreUint32) "$a0" "$a1");;;
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
+    let: "val" := (go.AllocValue go.bool "val") in
+    do:  (let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
+    let: "$a1" := (let: "$a0" := (![go.bool] "val") in
+    (FuncResolve b32 [] #()) "$a0") in
+    (FuncResolve StoreUint32 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
@@ -137,67 +127,73 @@ Definition Bool__Storeⁱᵐᵖˡ : val :=
    go: type.go:25:16 *)
 Definition Bool__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    return: ((let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (let: "$a0" := (![#boolT] "new") in
-     (func_call #b32) "$a0") in
-     (func_call #SwapUint32) "$a0" "$a1") ≠ #(W32 0))).
+    exception_do (let: "old" := (GoAlloc go.bool #()) in
+    let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
+    let: "new" := (go.AllocValue go.bool "new") in
+    return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
+     let: "$a1" := (let: "$a0" := (![go.bool] "new") in
+     (FuncResolve b32 [] #()) "$a0") in
+     (FuncResolve SwapUint32 [] #()) "$a0" "$a1") ≠⟨go.uint32⟩ #(W32 0))).
 
 (* CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
    go: type.go:28:16 *)
 Definition Bool__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    let: "old" := (mem.alloc "old") in
-    return: (let: "$a0" := (struct.field_ref #Bool #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (let: "$a0" := (![#boolT] "old") in
-     (func_call #b32) "$a0") in
-     let: "$a2" := (let: "$a0" := (![#boolT] "new") in
-     (func_call #b32) "$a0") in
-     (func_call #CompareAndSwapUint32) "$a0" "$a1" "$a2")).
+    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
+    let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
+    let: "new" := (go.AllocValue go.bool "new") in
+    let: "old" := (go.AllocValue go.bool "old") in
+    return: (let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
+     let: "$a1" := (let: "$a0" := (![go.bool] "old") in
+     (FuncResolve b32 [] #()) "$a0") in
+     let: "$a2" := (let: "$a0" := (![go.bool] "new") in
+     (FuncResolve b32 [] #()) "$a0") in
+     (FuncResolve CompareAndSwapUint32 [] #()) "$a0" "$a1" "$a2")).
 
 (* b32 returns a uint32 0 or 1 representing b.
 
    go: type.go:33:6 *)
 Definition b32ⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (mem.alloc "b") in
-    (if: ![#boolT] "b"
+    exception_do (let: "b" := (go.AllocValue go.bool "b") in
+    (if: ![go.bool] "b"
     then return: (#(W32 1))
     else do:  #());;;
     return: (#(W32 0))).
 
-Definition Int32 : go_type := structT [
-  "_0" :: noCopy;
-  "v" :: int32T
+Definition Pointerⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+  (go.FieldDecl "_0"%go (go.ArrayType 0 (go.PointerType T)));
+  (go.FieldDecl "_1"%go noCopy);
+  (go.FieldDecl "v"%go unsafe.Pointer)
 ].
-#[global] Typeclasses Opaque Int32.
-#[global] Opaque Int32.
+
+Definition Int32ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "v"%go go.int32)
+].
+
+Definition Int32 : go.type := go.Named "sync/atomic.Int32"%go [].
 
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:80:17 *)
 Definition Int32__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (mem.alloc "x") in
-    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-     (func_call #LoadInt32) "$a0")).
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     (FuncResolve LoadInt32 [] #()) "$a0")).
 
 (* Store atomically stores val into x.
 
    go: type.go:83:17 *)
 Definition Int32__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "val" := (mem.alloc "val") in
-    do:  (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-    let: "$a1" := (![#int32T] "val") in
-    (func_call #StoreInt32) "$a0" "$a1");;;
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    let: "val" := (go.AllocValue go.int32 "val") in
+    do:  (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+    let: "$a1" := (![go.int32] "val") in
+    (FuncResolve StoreInt32 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
@@ -205,38 +201,38 @@ Definition Int32__Storeⁱᵐᵖˡ : val :=
    go: type.go:86:17 *)
 Definition Int32__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int32T] "new") in
-     (func_call #SwapInt32) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    let: "new" := (go.AllocValue go.int32 "new") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     let: "$a1" := (![go.int32] "new") in
+     (FuncResolve SwapInt32 [] #()) "$a0" "$a1")).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:89:17 *)
 Definition Int32__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    let: "old" := (mem.alloc "old") in
-    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int32T] "old") in
-     let: "$a2" := (![#int32T] "new") in
-     (func_call #CompareAndSwapInt32) "$a0" "$a1" "$a2")).
+    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    let: "new" := (go.AllocValue go.int32 "new") in
+    let: "old" := (go.AllocValue go.int32 "old") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     let: "$a1" := (![go.int32] "old") in
+     let: "$a2" := (![go.int32] "new") in
+     (FuncResolve CompareAndSwapInt32 [] #()) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:94:17 *)
 Definition Int32__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (mem.alloc (type.zero_val #int32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "delta" := (mem.alloc "delta") in
-    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int32T] "delta") in
-     (func_call #AddInt32) "$a0" "$a1")).
+    exception_do (let: "new" := (GoAlloc go.int32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    let: "delta" := (go.AllocValue go.int32 "delta") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     let: "$a1" := (![go.int32] "delta") in
+     (FuncResolve AddInt32 [] #()) "$a0" "$a1")).
 
 (* And atomically performs a bitwise AND operation on x using the bitmask
    provided as mask and returns the old value.
@@ -244,12 +240,12 @@ Definition Int32__Addⁱᵐᵖˡ : val :=
    go: type.go:98:17 *)
 Definition Int32__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int32T] "mask") in
-     (func_call #AndInt32) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    let: "mask" := (go.AllocValue go.int32 "mask") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     let: "$a1" := (![go.int32] "mask") in
+     (FuncResolve AndInt32 [] #()) "$a0" "$a1")).
 
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
@@ -257,45 +253,42 @@ Definition Int32__Andⁱᵐᵖˡ : val :=
    go: type.go:102:17 *)
 Definition Int32__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #int32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int32T] "mask") in
-     (func_call #OrInt32) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    let: "mask" := (go.AllocValue go.int32 "mask") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     let: "$a1" := (![go.int32] "mask") in
+     (FuncResolve OrInt32 [] #()) "$a0" "$a1")).
 
-Definition align64 : go_type := structT [
-].
-#[global] Typeclasses Opaque align64.
-#[global] Opaque align64.
+Definition align64 : go.type := go.Named "sync/atomic.align64"%go [].
 
-Definition Int64 : go_type := structT [
-  "_0" :: noCopy;
-  "_1" :: align64;
-  "v" :: int64T
+Definition Int64ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "_1"%go align64);
+  (go.FieldDecl "v"%go go.int64)
 ].
-#[global] Typeclasses Opaque Int64.
-#[global] Opaque Int64.
+
+Definition Int64 : go.type := go.Named "sync/atomic.Int64"%go [].
 
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:114:17 *)
 Definition Int64__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (mem.alloc "x") in
-    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
-     (func_call #LoadInt64) "$a0")).
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     (FuncResolve LoadInt64 [] #()) "$a0")).
 
 (* Store atomically stores val into x.
 
    go: type.go:117:17 *)
 Definition Int64__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "val" := (mem.alloc "val") in
-    do:  (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
-    let: "$a1" := (![#int64T] "val") in
-    (func_call #StoreInt64) "$a0" "$a1");;;
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    let: "val" := (go.AllocValue go.int64 "val") in
+    do:  (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+    let: "$a1" := (![go.int64] "val") in
+    (FuncResolve StoreInt64 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
@@ -303,38 +296,38 @@ Definition Int64__Storeⁱᵐᵖˡ : val :=
    go: type.go:120:17 *)
 Definition Int64__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #int64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int64T] "new") in
-     (func_call #SwapInt64) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    let: "new" := (go.AllocValue go.int64 "new") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     let: "$a1" := (![go.int64] "new") in
+     (FuncResolve SwapInt64 [] #()) "$a0" "$a1")).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:123:17 *)
 Definition Int64__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    let: "old" := (mem.alloc "old") in
-    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int64T] "old") in
-     let: "$a2" := (![#int64T] "new") in
-     (func_call #CompareAndSwapInt64) "$a0" "$a1" "$a2")).
+    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    let: "new" := (go.AllocValue go.int64 "new") in
+    let: "old" := (go.AllocValue go.int64 "old") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     let: "$a1" := (![go.int64] "old") in
+     let: "$a2" := (![go.int64] "new") in
+     (FuncResolve CompareAndSwapInt64 [] #()) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:128:17 *)
 Definition Int64__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (mem.alloc (type.zero_val #int64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "delta" := (mem.alloc "delta") in
-    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int64T] "delta") in
-     (func_call #AddInt64) "$a0" "$a1")).
+    exception_do (let: "new" := (GoAlloc go.int64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    let: "delta" := (go.AllocValue go.int64 "delta") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     let: "$a1" := (![go.int64] "delta") in
+     (FuncResolve AddInt64 [] #()) "$a0" "$a1")).
 
 (* And atomically performs a bitwise AND operation on x using the bitmask
    provided as mask and returns the old value.
@@ -342,12 +335,12 @@ Definition Int64__Addⁱᵐᵖˡ : val :=
    go: type.go:132:17 *)
 Definition Int64__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #int64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int64T] "mask") in
-     (func_call #AndInt64) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    let: "mask" := (go.AllocValue go.int64 "mask") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     let: "$a1" := (![go.int64] "mask") in
+     (FuncResolve AndInt64 [] #()) "$a0" "$a1")).
 
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
@@ -355,39 +348,39 @@ Definition Int64__Andⁱᵐᵖˡ : val :=
    go: type.go:136:17 *)
 Definition Int64__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #int64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Int64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#int64T] "mask") in
-     (func_call #OrInt64) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    let: "mask" := (go.AllocValue go.int64 "mask") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     let: "$a1" := (![go.int64] "mask") in
+     (FuncResolve OrInt64 [] #()) "$a0" "$a1")).
 
-Definition Uint32 : go_type := structT [
-  "_0" :: noCopy;
-  "v" :: uint32T
+Definition Uint32ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "v"%go go.uint32)
 ].
-#[global] Typeclasses Opaque Uint32.
-#[global] Opaque Uint32.
+
+Definition Uint32 : go.type := go.Named "sync/atomic.Uint32"%go [].
 
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:147:18 *)
 Definition Uint32__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (mem.alloc "x") in
-    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
-     (func_call #LoadUint32) "$a0")).
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     (FuncResolve LoadUint32 [] #()) "$a0")).
 
 (* Store atomically stores val into x.
 
    go: type.go:150:18 *)
 Definition Uint32__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "val" := (mem.alloc "val") in
-    do:  (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
-    let: "$a1" := (![#uint32T] "val") in
-    (func_call #StoreUint32) "$a0" "$a1");;;
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    let: "val" := (go.AllocValue go.uint32 "val") in
+    do:  (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+    let: "$a1" := (![go.uint32] "val") in
+    (FuncResolve StoreUint32 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
@@ -395,38 +388,38 @@ Definition Uint32__Storeⁱᵐᵖˡ : val :=
    go: type.go:153:18 *)
 Definition Uint32__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint32T] "new") in
-     (func_call #SwapUint32) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.uint32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    let: "new" := (go.AllocValue go.uint32 "new") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     let: "$a1" := (![go.uint32] "new") in
+     (FuncResolve SwapUint32 [] #()) "$a0" "$a1")).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:156:18 *)
 Definition Uint32__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    let: "old" := (mem.alloc "old") in
-    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint32T] "old") in
-     let: "$a2" := (![#uint32T] "new") in
-     (func_call #CompareAndSwapUint32) "$a0" "$a1" "$a2")).
+    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    let: "new" := (go.AllocValue go.uint32 "new") in
+    let: "old" := (go.AllocValue go.uint32 "old") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     let: "$a1" := (![go.uint32] "old") in
+     let: "$a2" := (![go.uint32] "new") in
+     (FuncResolve CompareAndSwapUint32 [] #()) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:161:18 *)
 Definition Uint32__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (mem.alloc (type.zero_val #uint32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "delta" := (mem.alloc "delta") in
-    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint32T] "delta") in
-     (func_call #AddUint32) "$a0" "$a1")).
+    exception_do (let: "new" := (GoAlloc go.uint32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    let: "delta" := (go.AllocValue go.uint32 "delta") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     let: "$a1" := (![go.uint32] "delta") in
+     (FuncResolve AddUint32 [] #()) "$a0" "$a1")).
 
 (* And atomically performs a bitwise AND operation on x using the bitmask
    provided as mask and returns the old value.
@@ -434,12 +427,12 @@ Definition Uint32__Addⁱᵐᵖˡ : val :=
    go: type.go:165:18 *)
 Definition Uint32__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint32T] "mask") in
-     (func_call #AndUint32) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.uint32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    let: "mask" := (go.AllocValue go.uint32 "mask") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     let: "$a1" := (![go.uint32] "mask") in
+     (FuncResolve AndUint32 [] #()) "$a0" "$a1")).
 
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
@@ -447,40 +440,40 @@ Definition Uint32__Andⁱᵐᵖˡ : val :=
    go: type.go:169:18 *)
 Definition Uint32__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #uint32T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Uint32 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint32T] "mask") in
-     (func_call #OrUint32) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.uint32 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    let: "mask" := (go.AllocValue go.uint32 "mask") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     let: "$a1" := (![go.uint32] "mask") in
+     (FuncResolve OrUint32 [] #()) "$a0" "$a1")).
 
-Definition Uint64 : go_type := structT [
-  "_0" :: noCopy;
-  "_1" :: align64;
-  "v" :: uint64T
+Definition Uint64ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "_1"%go align64);
+  (go.FieldDecl "v"%go go.uint64)
 ].
-#[global] Typeclasses Opaque Uint64.
-#[global] Opaque Uint64.
+
+Definition Uint64 : go.type := go.Named "sync/atomic.Uint64"%go [].
 
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:181:18 *)
 Definition Uint64__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (mem.alloc "x") in
-    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-     (func_call #LoadUint64) "$a0")).
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     (FuncResolve LoadUint64 [] #()) "$a0")).
 
 (* Store atomically stores val into x.
 
    go: type.go:184:18 *)
 Definition Uint64__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "val" := (mem.alloc "val") in
-    do:  (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-    let: "$a1" := (![#uint64T] "val") in
-    (func_call #StoreUint64) "$a0" "$a1");;;
+    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    let: "val" := (go.AllocValue go.uint64 "val") in
+    do:  (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+    let: "$a1" := (![go.uint64] "val") in
+    (FuncResolve StoreUint64 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
@@ -488,38 +481,38 @@ Definition Uint64__Storeⁱᵐᵖˡ : val :=
    go: type.go:187:18 *)
 Definition Uint64__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint64T] "new") in
-     (func_call #SwapUint64) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.uint64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    let: "new" := (go.AllocValue go.uint64 "new") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     let: "$a1" := (![go.uint64] "new") in
+     (FuncResolve SwapUint64 [] #()) "$a0" "$a1")).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:190:18 *)
 Definition Uint64__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc "x") in
-    let: "new" := (mem.alloc "new") in
-    let: "old" := (mem.alloc "old") in
-    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint64T] "old") in
-     let: "$a2" := (![#uint64T] "new") in
-     (func_call #CompareAndSwapUint64) "$a0" "$a1" "$a2")).
+    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    let: "new" := (go.AllocValue go.uint64 "new") in
+    let: "old" := (go.AllocValue go.uint64 "old") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     let: "$a1" := (![go.uint64] "old") in
+     let: "$a2" := (![go.uint64] "new") in
+     (FuncResolve CompareAndSwapUint64 [] #()) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:195:18 *)
 Definition Uint64__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "delta" := (mem.alloc "delta") in
-    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint64T] "delta") in
-     (func_call #AddUint64) "$a0" "$a1")).
+    exception_do (let: "new" := (GoAlloc go.uint64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    let: "delta" := (go.AllocValue go.uint64 "delta") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     let: "$a1" := (![go.uint64] "delta") in
+     (FuncResolve AddUint64 [] #()) "$a0" "$a1")).
 
 (* And atomically performs a bitwise AND operation on x using the bitmask
    provided as mask and returns the old value.
@@ -527,12 +520,12 @@ Definition Uint64__Addⁱᵐᵖˡ : val :=
    go: type.go:199:18 *)
 Definition Uint64__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint64T] "mask") in
-     (func_call #AndUint64) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.uint64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    let: "mask" := (go.AllocValue go.uint64 "mask") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     let: "$a1" := (![go.uint64] "mask") in
+     (FuncResolve AndUint64 [] #()) "$a0" "$a1")).
 
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
@@ -540,29 +533,35 @@ Definition Uint64__Andⁱᵐᵖˡ : val :=
    go: type.go:203:18 *)
 Definition Uint64__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "x" := (mem.alloc "x") in
-    let: "mask" := (mem.alloc "mask") in
-    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-     let: "$a1" := (![#uint64T] "mask") in
-     (func_call #OrUint64) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.uint64 #()) in
+    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    let: "mask" := (go.AllocValue go.uint64 "mask") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     let: "$a1" := (![go.uint64] "mask") in
+     (FuncResolve OrUint64 [] #()) "$a0" "$a1")).
 
-Axiom Uintptr : go_type.
+Axiom Uintptrⁱᵐᵖˡ : go.type.
 
-Definition Value : go_type := structT [
-  "v" :: interfaceT
+Definition noCopyⁱᵐᵖˡ : go.type := go.StructType [
 ].
-#[global] Typeclasses Opaque Value.
-#[global] Opaque Value.
 
-Definition efaceWords : go_type := structT [
-  "typ" :: ptrT;
-  "data" :: ptrT
+Definition align64ⁱᵐᵖˡ : go.type := go.StructType [
 ].
-#[global] Typeclasses Opaque efaceWords.
-#[global] Opaque efaceWords.
+
+Definition Valueⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "v"%go (go.InterfaceType []))
+].
+
+Definition efaceWordsⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "typ"%go unsafe.Pointer);
+  (go.FieldDecl "data"%go unsafe.Pointer)
+].
+
+Definition efaceWords : go.type := go.Named "sync/atomic.efaceWords"%go [].
 
 Definition firstStoreInProgress : go_string := "sync/atomic.firstStoreInProgress"%go.
+
+Definition Value : go.type := go.Named "sync/atomic.Value"%go [].
 
 (* Load returns the value set by the most recent Store.
    It returns nil if there has been no call to Store for this Value.
@@ -570,30 +569,30 @@ Definition firstStoreInProgress : go_string := "sync/atomic.firstStoreInProgress
    go: value.go:28:17 *)
 Definition Value__Loadⁱᵐᵖˡ : val :=
   λ: "v" <>,
-    exception_do (let: "val" := (mem.alloc (type.zero_val #interfaceT)) in
-    let: "v" := (mem.alloc "v") in
-    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] "v") in
-    do:  ("vp" <-[#ptrT] "$r0");;;
-    let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
-    (func_call #LoadPointer) "$a0") in
-    do:  ("typ" <-[#ptrT] "$r0");;;
-    (if: ((![#ptrT] "typ") = #null) || ((![#ptrT] "typ") = (globals.get #firstStoreInProgress))
+    exception_do (let: "val" := (GoAlloc (go.InterfaceType []) #()) in
+    let: "v" := (go.AllocValue (go.PointerType Value) "v") in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "$r0" := (![go.PointerType Value] "v") in
+    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "typ" := (GoAlloc unsafe.Pointer #()) in
+    let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+    (FuncResolve LoadPointer [] #()) "$a0") in
+    do:  ("typ" <-[unsafe.Pointer] "$r0");;;
+    (if: ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null) || ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #()))
     then return: (#interface.nil)
     else do:  #());;;
-    let: "data" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-    (func_call #LoadPointer) "$a0") in
-    do:  ("data" <-[#ptrT] "$r0");;;
-    let: "vlp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "data" := (GoAlloc unsafe.Pointer #()) in
+    let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+    (FuncResolve LoadPointer [] #()) "$a0") in
+    do:  ("data" <-[unsafe.Pointer] "$r0");;;
+    let: "vlp" := (GoAlloc (go.PointerType efaceWords) #()) in
     let: "$r0" := "val" in
-    do:  ("vlp" <-[#ptrT] "$r0");;;
-    let: "$r0" := (![#ptrT] "typ") in
-    do:  ((struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vlp")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (![#ptrT] "data") in
-    do:  ((struct.field_ref #efaceWords #"data"%go (![#ptrT] "vlp")) <-[#ptrT] "$r0");;;
-    return: (![#interfaceT] "val")).
+    do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "$r0" := (![unsafe.Pointer] "typ") in
+    do:  ((StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")) <-[unsafe.Pointer] "$r0");;;
+    let: "$r0" := (![unsafe.Pointer] "data") in
+    do:  ((StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp")) <-[unsafe.Pointer] "$r0");;;
+    return: (![go.InterfaceType []] "val")).
 
 Definition runtime_procUnpin : go_string := "sync/atomic.runtime_procUnpin"%go.
 
@@ -606,55 +605,55 @@ Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
    go: value.go:47:17 *)
 Definition Value__Storeⁱᵐᵖˡ : val :=
   λ: "v" "val",
-    exception_do (let: "v" := (mem.alloc "v") in
-    let: "val" := (mem.alloc "val") in
-    (if: interface.eq (![#interfaceT] "val") #interface.nil
+    exception_do (let: "v" := (go.AllocValue (go.PointerType Value) "v") in
+    let: "val" := (go.AllocValue (go.InterfaceType []) "val") in
+    (if: (![go.InterfaceType []] "val") =⟨go.InterfaceType []⟩ #interface.nil
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"sync/atomic: store of nil value into Value"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of nil value into Value"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] "v") in
-    do:  ("vp" <-[#ptrT] "$r0");;;
-    let: "vlp" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "$r0" := (![go.PointerType Value] "v") in
+    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "vlp" := (GoAlloc (go.PointerType efaceWords) #()) in
     let: "$r0" := "val" in
-    do:  ("vlp" <-[#ptrT] "$r0");;;
+    do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
-      (func_call #LoadPointer) "$a0") in
-      do:  ("typ" <-[#ptrT] "$r0");;;
-      (if: (![#ptrT] "typ") = #null
+      let: "typ" := (GoAlloc unsafe.Pointer #()) in
+      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+      (FuncResolve LoadPointer [] #()) "$a0") in
+      do:  ("typ" <-[unsafe.Pointer] "$r0");;;
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
       then
-        do:  ((func_call #runtime_procPin) #());;;
-        (if: (~ (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        do:  ((FuncResolve runtime_procPin [] #()) #());;;
+        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
         let: "$a1" := #null in
-        let: "$a2" := (globals.get #firstStoreInProgress) in
-        (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))
+        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
         then
-          do:  ((func_call #runtime_procUnpin) #());;;
+          do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
           continue: #()
         else do:  #());;;
-        do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vlp"))) in
-        (func_call #StorePointer) "$a0" "$a1");;;
-        do:  (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
-        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vlp"))) in
-        (func_call #StorePointer) "$a0" "$a1");;;
-        do:  ((func_call #runtime_procUnpin) #());;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
         return: (#())
       else do:  #());;;
-      (if: (![#ptrT] "typ") = (globals.get #firstStoreInProgress)
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
       then continue: #()
       else do:  #());;;
-      (if: (![#ptrT] "typ") ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vlp")))
+      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")))
       then
-        do:  (let: "$a0" := (interface.make #stringT.id #"sync/atomic: store of inconsistently typed value into Value"%go) in
-        Panic "$a0")
+        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of inconsistently typed value into Value"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
-      do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-      let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vlp"))) in
-      (func_call #StorePointer) "$a0" "$a1");;;
+      do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+      let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp"))) in
+      (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
       return: (#()));;;
     return: #()).
 
@@ -667,63 +666,63 @@ Definition Value__Storeⁱᵐᵖˡ : val :=
    go: value.go:90:17 *)
 Definition Value__Swapⁱᵐᵖˡ : val :=
   λ: "v" "new",
-    exception_do (let: "old" := (mem.alloc (type.zero_val #interfaceT)) in
-    let: "v" := (mem.alloc "v") in
-    let: "new" := (mem.alloc "new") in
-    (if: interface.eq (![#interfaceT] "new") #interface.nil
+    exception_do (let: "old" := (GoAlloc (go.InterfaceType []) #()) in
+    let: "v" := (go.AllocValue (go.PointerType Value) "v") in
+    let: "new" := (go.AllocValue (go.InterfaceType []) "new") in
+    (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"sync/atomic: swap of nil value into Value"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of nil value into Value"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] "v") in
-    do:  ("vp" <-[#ptrT] "$r0");;;
-    let: "np" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "$r0" := (![go.PointerType Value] "v") in
+    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "np" := (GoAlloc (go.PointerType efaceWords) #()) in
     let: "$r0" := "new" in
-    do:  ("np" <-[#ptrT] "$r0");;;
+    do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
-      (func_call #LoadPointer) "$a0") in
-      do:  ("typ" <-[#ptrT] "$r0");;;
-      (if: (![#ptrT] "typ") = #null
+      let: "typ" := (GoAlloc unsafe.Pointer #()) in
+      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+      (FuncResolve LoadPointer [] #()) "$a0") in
+      do:  ("typ" <-[unsafe.Pointer] "$r0");;;
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
       then
-        do:  ((func_call #runtime_procPin) #());;;
-        (if: (~ (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        do:  ((FuncResolve runtime_procPin [] #()) #());;;
+        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
         let: "$a1" := #null in
-        let: "$a2" := (globals.get #firstStoreInProgress) in
-        (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))
+        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
         then
-          do:  ((func_call #runtime_procUnpin) #());;;
+          do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
           continue: #()
         else do:  #());;;
-        do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
-        (func_call #StorePointer) "$a0" "$a1");;;
-        do:  (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
-        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) in
-        (func_call #StorePointer) "$a0" "$a1");;;
-        do:  ((func_call #runtime_procUnpin) #());;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
         return: (#interface.nil)
       else do:  #());;;
-      (if: (![#ptrT] "typ") = (globals.get #firstStoreInProgress)
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
       then continue: #()
       else do:  #());;;
-      (if: (![#ptrT] "typ") ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np")))
+      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np")))
       then
-        do:  (let: "$a0" := (interface.make #stringT.id #"sync/atomic: swap of inconsistently typed value into Value"%go) in
-        Panic "$a0")
+        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of inconsistently typed value into Value"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
-      let: "op" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "op" := (GoAlloc (go.PointerType efaceWords) #()) in
       let: "$r0" := "old" in
-      do:  ("op" <-[#ptrT] "$r0");;;
-      let: "$r0" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) in
-      let: "$r1" := (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-      let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
-      (func_call #SwapPointer) "$a0" "$a1") in
-      do:  ((struct.field_ref #efaceWords #"typ"%go (![#ptrT] "op")) <-[#ptrT] "$r0");;;
-      do:  ((struct.field_ref #efaceWords #"data"%go (![#ptrT] "op")) <-[#ptrT] "$r1");;;
-      return: (![#interfaceT] "old"))).
+      do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
+      let: "$r0" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
+      let: "$r1" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+      let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
+      (FuncResolve SwapPointer [] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op")) <-[unsafe.Pointer] "$r0");;;
+      do:  ((StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "op")) <-[unsafe.Pointer] "$r1");;;
+      return: (![go.InterfaceType []] "old"))).
 
 (* CompareAndSwap executes the compare-and-swap operation for the [Value].
 
@@ -734,83 +733,85 @@ Definition Value__Swapⁱᵐᵖˡ : val :=
    go: value.go:135:17 *)
 Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "v" "old" "new",
-    exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
-    let: "v" := (mem.alloc "v") in
-    let: "new" := (mem.alloc "new") in
-    let: "old" := (mem.alloc "old") in
-    (if: interface.eq (![#interfaceT] "new") #interface.nil
+    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
+    let: "v" := (go.AllocValue (go.PointerType Value) "v") in
+    let: "new" := (go.AllocValue (go.InterfaceType []) "new") in
+    let: "old" := (go.AllocValue (go.InterfaceType []) "old") in
+    (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"sync/atomic: compare and swap of nil value into Value"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of nil value into Value"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "vp" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (![#ptrT] "v") in
-    do:  ("vp" <-[#ptrT] "$r0");;;
-    let: "np" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "$r0" := (![go.PointerType Value] "v") in
+    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "np" := (GoAlloc (go.PointerType efaceWords) #()) in
     let: "$r0" := "new" in
-    do:  ("np" <-[#ptrT] "$r0");;;
-    let: "op" := (mem.alloc (type.zero_val #ptrT)) in
+    do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
+    let: "op" := (GoAlloc (go.PointerType efaceWords) #()) in
     let: "$r0" := "old" in
-    do:  ("op" <-[#ptrT] "$r0");;;
-    (if: ((![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "op"))) ≠ #null) && ((![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "op"))))
+    do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
+    (if: ((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op"))) ≠⟨unsafe.Pointer⟩ #null) && ((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op"))))
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"sync/atomic: compare and swap of inconsistently typed values"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of inconsistently typed values"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
-      (func_call #LoadPointer) "$a0") in
-      do:  ("typ" <-[#ptrT] "$r0");;;
-      (if: (![#ptrT] "typ") = #null
+      let: "typ" := (GoAlloc unsafe.Pointer #()) in
+      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+      (FuncResolve LoadPointer [] #()) "$a0") in
+      do:  ("typ" <-[unsafe.Pointer] "$r0");;;
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
       then
-        (if: (~ (interface.eq (![#interfaceT] "old") #interface.nil))
+        (if: (![go.InterfaceType []] "old") ≠⟨go.InterfaceType []⟩ #interface.nil
         then return: (#false)
         else do:  #());;;
-        do:  ((func_call #runtime_procPin) #());;;
-        (if: (~ (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
+        do:  ((FuncResolve runtime_procPin [] #()) #());;;
+        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
         let: "$a1" := #null in
-        let: "$a2" := (globals.get #firstStoreInProgress) in
-        (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))
+        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
         then
-          do:  ((func_call #runtime_procUnpin) #());;;
+          do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
           continue: #()
         else do:  #());;;
-        do:  (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
-        (func_call #StorePointer) "$a0" "$a1");;;
-        do:  (let: "$a0" := (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "vp")) in
-        let: "$a1" := (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np"))) in
-        (func_call #StorePointer) "$a0" "$a1");;;
-        do:  ((func_call #runtime_procUnpin) #());;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
         return: (#true)
       else do:  #());;;
-      (if: (![#ptrT] "typ") = (globals.get #firstStoreInProgress)
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
       then continue: #()
       else do:  #());;;
-      (if: (![#ptrT] "typ") ≠ (![#ptrT] (struct.field_ref #efaceWords #"typ"%go (![#ptrT] "np")))
+      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np")))
       then
-        do:  (let: "$a0" := (interface.make #stringT.id #"sync/atomic: compare and swap of inconsistently typed value into Value"%go) in
-        Panic "$a0")
+        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of inconsistently typed value into Value"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
-      let: "data" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-      (func_call #LoadPointer) "$a0") in
-      do:  ("data" <-[#ptrT] "$r0");;;
-      let: "i" := (mem.alloc (type.zero_val #interfaceT)) in
-      let: "$r0" := (![#ptrT] "typ") in
-      do:  ((struct.field_ref #efaceWords #"typ"%go "i") <-[#ptrT] "$r0");;;
-      let: "$r0" := (![#ptrT] "data") in
-      do:  ((struct.field_ref #efaceWords #"data"%go "i") <-[#ptrT] "$r0");;;
-      (if: (~ (interface.eq (![#interfaceT] "i") (![#interfaceT] "old")))
+      let: "data" := (GoAlloc unsafe.Pointer #()) in
+      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+      (FuncResolve LoadPointer [] #()) "$a0") in
+      do:  ("data" <-[unsafe.Pointer] "$r0");;;
+      let: "i" := (GoAlloc (go.InterfaceType []) #()) in
+      let: "$r0" := (![unsafe.Pointer] "typ") in
+      do:  ((StructFieldRef efaceWords "typ"%go "i") <-[unsafe.Pointer] "$r0");;;
+      let: "$r0" := (![unsafe.Pointer] "data") in
+      do:  ((StructFieldRef efaceWords "data"%go "i") <-[unsafe.Pointer] "$r0");;;
+      (if: (![go.InterfaceType []] "i") ≠⟨go.InterfaceType []⟩ (![go.InterfaceType []] "old")
       then return: (#false)
       else do:  #());;;
-      return: (let: "$a0" := (struct.field_ref #efaceWords #"data"%go (![#ptrT] "vp")) in
-       let: "$a1" := (![#ptrT] "data") in
-       let: "$a2" := (![#ptrT] (struct.field_ref #efaceWords #"data"%go (![#ptrT] "np"))) in
-       (func_call #CompareAndSwapPointer) "$a0" "$a1" "$a2"))).
+      return: (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+       let: "$a1" := (![unsafe.Pointer] "data") in
+       let: "$a2" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
+       (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))).
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Pointer(T : go.type)  : go.type := go.Named "sync/atomic.Pointer"%go [T].
+
+Definition Uintptr : go.type := go.Named "sync/atomic.Uintptr"%go [].
 
 Axiom SwapInt32ⁱᵐᵖˡ : val.
 
@@ -864,43 +865,21 @@ Axiom runtime_procUnpinⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(SwapInt32, SwapInt32ⁱᵐᵖˡ); (SwapUint32, SwapUint32ⁱᵐᵖˡ); (SwapUintptr, SwapUintptrⁱᵐᵖˡ); (SwapPointer, SwapPointerⁱᵐᵖˡ); (CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (CompareAndSwapUint32, CompareAndSwapUint32ⁱᵐᵖˡ); (CompareAndSwapUintptr, CompareAndSwapUintptrⁱᵐᵖˡ); (CompareAndSwapPointer, CompareAndSwapPointerⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (AddUint32, AddUint32ⁱᵐᵖˡ); (AddUintptr, AddUintptrⁱᵐᵖˡ); (AndInt32, AndInt32ⁱᵐᵖˡ); (AndUint32, AndUint32ⁱᵐᵖˡ); (AndUintptr, AndUintptrⁱᵐᵖˡ); (OrInt32, OrInt32ⁱᵐᵖˡ); (OrUint32, OrUint32ⁱᵐᵖˡ); (OrUintptr, OrUintptrⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (LoadUint32, LoadUint32ⁱᵐᵖˡ); (LoadUintptr, LoadUintptrⁱᵐᵖˡ); (LoadPointer, LoadPointerⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (StoreUint32, StoreUint32ⁱᵐᵖˡ); (StoreUintptr, StoreUintptrⁱᵐᵖˡ); (StorePointer, StorePointerⁱᵐᵖˡ); (SwapInt64, SwapInt64ⁱᵐᵖˡ); (SwapUint64, SwapUint64ⁱᵐᵖˡ); (CompareAndSwapInt64, CompareAndSwapInt64ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddInt64, AddInt64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (AndInt64, AndInt64ⁱᵐᵖˡ); (AndUint64, AndUint64ⁱᵐᵖˡ); (OrInt64, OrInt64ⁱᵐᵖˡ); (OrUint64, OrUint64ⁱᵐᵖˡ); (LoadInt64, LoadInt64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreInt64, StoreInt64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ); (b32, b32ⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ)].
 
-Axiom Uintptr__Addⁱᵐᵖˡ : val.
-
-Axiom Uintptr__Andⁱᵐᵖˡ : val.
-
-Axiom Uintptr__CompareAndSwapⁱᵐᵖˡ : val.
-
-Axiom Uintptr__Loadⁱᵐᵖˡ : val.
-
-Axiom Uintptr__Orⁱᵐᵖˡ : val.
-
-Axiom Uintptr__Storeⁱᵐᵖˡ : val.
-
-Axiom Uintptr__Swapⁱᵐᵖˡ : val.
-
-Axiom noCopy__Lockⁱᵐᵖˡ : val.
-
-Axiom noCopy__Unlockⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Bool.id, []); (ptrT.id Bool.id, [("CompareAndSwap"%go, Bool__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Bool__Loadⁱᵐᵖˡ); ("Store"%go, Bool__Storeⁱᵐᵖˡ); ("Swap"%go, Bool__Swapⁱᵐᵖˡ)]); (Pointer.id, []); (ptrT.id Pointer.id, [("CompareAndSwap"%go, Pointer__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Pointer__Loadⁱᵐᵖˡ); ("Store"%go, Pointer__Storeⁱᵐᵖˡ); ("Swap"%go, Pointer__Swapⁱᵐᵖˡ)]); (Int32.id, []); (ptrT.id Int32.id, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("And"%go, Int32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Or"%go, Int32__Orⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ); ("Swap"%go, Int32__Swapⁱᵐᵖˡ)]); (Int64.id, []); (ptrT.id Int64.id, [("Add"%go, Int64__Addⁱᵐᵖˡ); ("And"%go, Int64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Int64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int64__Loadⁱᵐᵖˡ); ("Or"%go, Int64__Orⁱᵐᵖˡ); ("Store"%go, Int64__Storeⁱᵐᵖˡ); ("Swap"%go, Int64__Swapⁱᵐᵖˡ)]); (Uint32.id, []); (ptrT.id Uint32.id, [("Add"%go, Uint32__Addⁱᵐᵖˡ); ("And"%go, Uint32__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint32__Loadⁱᵐᵖˡ); ("Or"%go, Uint32__Orⁱᵐᵖˡ); ("Store"%go, Uint32__Storeⁱᵐᵖˡ); ("Swap"%go, Uint32__Swapⁱᵐᵖˡ)]); (Uint64.id, []); (ptrT.id Uint64.id, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("And"%go, Uint64__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Or"%go, Uint64__Orⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ); ("Swap"%go, Uint64__Swapⁱᵐᵖˡ)]); (Uintptr.id, []); (ptrT.id Uintptr.id, [("Add"%go, Uintptr__Addⁱᵐᵖˡ); ("And"%go, Uintptr__Andⁱᵐᵖˡ); ("CompareAndSwap"%go, Uintptr__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uintptr__Loadⁱᵐᵖˡ); ("Or"%go, Uintptr__Orⁱᵐᵖˡ); ("Store"%go, Uintptr__Storeⁱᵐᵖˡ); ("Swap"%go, Uintptr__Swapⁱᵐᵖˡ)]); (noCopy.id, []); (ptrT.id noCopy.id, [("Lock"%go, noCopy__Lockⁱᵐᵖˡ); ("Unlock"%go, noCopy__Unlockⁱᵐᵖˡ)]); (align64.id, []); (ptrT.id align64.id, []); (Value.id, []); (ptrT.id Value.id, [("CompareAndSwap"%go, Value__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Value__Loadⁱᵐᵖˡ); ("Store"%go, Value__Storeⁱᵐᵖˡ); ("Swap"%go, Value__Swapⁱᵐᵖˡ)]); (efaceWords.id, []); (ptrT.id efaceWords.id, [])].
-
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #atomic.atomic (λ: <>,
-      exception_do (do:  (package.alloc atomic.atomic #());;;
-      let: "$r0" := (mem.alloc (struct.make (Pointer #intT) [{
-        "_0" ::= type.zero_val (type.arrayT #(W64 0) #ptrT);
-        "_1" ::= type.zero_val #noCopy;
-        "v" ::= type.zero_val #ptrT
-      }])) in
+    package.init atomic.atomic (λ: <>,
+      exception_do (let: "$r0" := (go.AllocValue (Pointer go.int) (CompositeLiteral (Pointer go.int) (
+        let: "$$vs" := go.StructElementListNil #() in 
+        let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal (go.ArrayType 0 (go.PointerType go.int)) #()) in
+        let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal noCopy #()) in
+        let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal unsafe.Pointer #()) in
+        "$$vs"
+      ))) in
       do:  #())
       ).
 

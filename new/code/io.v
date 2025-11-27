@@ -7,43 +7,6 @@ Definition io : go_string := "io".
 
 Module io.
 
-Module Reader. Definition id : go_string := "io.Reader"%go. End Reader.
-Module Writer. Definition id : go_string := "io.Writer"%go. End Writer.
-Module Closer. Definition id : go_string := "io.Closer"%go. End Closer.
-Module Seeker. Definition id : go_string := "io.Seeker"%go. End Seeker.
-Module ReadWriter. Definition id : go_string := "io.ReadWriter"%go. End ReadWriter.
-Module ReadCloser. Definition id : go_string := "io.ReadCloser"%go. End ReadCloser.
-Module WriteCloser. Definition id : go_string := "io.WriteCloser"%go. End WriteCloser.
-Module ReadWriteCloser. Definition id : go_string := "io.ReadWriteCloser"%go. End ReadWriteCloser.
-Module ReadSeeker. Definition id : go_string := "io.ReadSeeker"%go. End ReadSeeker.
-Module ReadSeekCloser. Definition id : go_string := "io.ReadSeekCloser"%go. End ReadSeekCloser.
-Module WriteSeeker. Definition id : go_string := "io.WriteSeeker"%go. End WriteSeeker.
-Module ReadWriteSeeker. Definition id : go_string := "io.ReadWriteSeeker"%go. End ReadWriteSeeker.
-Module ReaderFrom. Definition id : go_string := "io.ReaderFrom"%go. End ReaderFrom.
-Module WriterTo. Definition id : go_string := "io.WriterTo"%go. End WriterTo.
-Module ReaderAt. Definition id : go_string := "io.ReaderAt"%go. End ReaderAt.
-Module WriterAt. Definition id : go_string := "io.WriterAt"%go. End WriterAt.
-Module ByteReader. Definition id : go_string := "io.ByteReader"%go. End ByteReader.
-Module ByteScanner. Definition id : go_string := "io.ByteScanner"%go. End ByteScanner.
-Module ByteWriter. Definition id : go_string := "io.ByteWriter"%go. End ByteWriter.
-Module RuneReader. Definition id : go_string := "io.RuneReader"%go. End RuneReader.
-Module RuneScanner. Definition id : go_string := "io.RuneScanner"%go. End RuneScanner.
-Module StringWriter. Definition id : go_string := "io.StringWriter"%go. End StringWriter.
-Module LimitedReader. Definition id : go_string := "io.LimitedReader"%go. End LimitedReader.
-Module SectionReader. Definition id : go_string := "io.SectionReader"%go. End SectionReader.
-Module OffsetWriter. Definition id : go_string := "io.OffsetWriter"%go. End OffsetWriter.
-Module teeReader. Definition id : go_string := "io.teeReader"%go. End teeReader.
-Module discard. Definition id : go_string := "io.discard"%go. End discard.
-Module nopCloser. Definition id : go_string := "io.nopCloser"%go. End nopCloser.
-Module nopCloserWriterTo. Definition id : go_string := "io.nopCloserWriterTo"%go. End nopCloserWriterTo.
-Module eofReader. Definition id : go_string := "io.eofReader"%go. End eofReader.
-Module multiReader. Definition id : go_string := "io.multiReader"%go. End multiReader.
-Module multiWriter. Definition id : go_string := "io.multiWriter"%go. End multiWriter.
-Module onceError. Definition id : go_string := "io.onceError"%go. End onceError.
-Module pipe. Definition id : go_string := "io.pipe"%go. End pipe.
-Module PipeReader. Definition id : go_string := "io.PipeReader"%go. End PipeReader.
-Module PipeWriter. Definition id : go_string := "io.PipeWriter"%go. End PipeWriter.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -78,53 +41,49 @@ Definition ErrNoProgress : go_string := "io.ErrNoProgress"%go.
 
 Axiom ErrNoProgress'init : val.
 
-Definition Reader : go_type := interfaceT.
-#[global] Typeclasses Opaque Reader.
-#[global] Opaque Reader.
+Definition Readerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Read"%go (go.Signature [go.SliceType go.byte] #false [go.int; go.error])].
 
-Definition Writer : go_type := interfaceT.
-#[global] Typeclasses Opaque Writer.
-#[global] Opaque Writer.
+Definition Writerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Write"%go (go.Signature [go.SliceType go.byte] #false [go.int; go.error])].
 
-Axiom Closer : go_type.
+Axiom Closerⁱᵐᵖˡ : go.type.
 
-Axiom Seeker : go_type.
+Axiom Seekerⁱᵐᵖˡ : go.type.
 
-Axiom ReadWriter : go_type.
+Axiom ReadWriterⁱᵐᵖˡ : go.type.
 
-Axiom ReadCloser : go_type.
+Axiom ReadCloserⁱᵐᵖˡ : go.type.
 
-Axiom WriteCloser : go_type.
+Axiom WriteCloserⁱᵐᵖˡ : go.type.
 
-Axiom ReadWriteCloser : go_type.
+Axiom ReadWriteCloserⁱᵐᵖˡ : go.type.
 
-Axiom ReadSeeker : go_type.
+Axiom ReadSeekerⁱᵐᵖˡ : go.type.
 
-Axiom ReadSeekCloser : go_type.
+Axiom ReadSeekCloserⁱᵐᵖˡ : go.type.
 
-Axiom WriteSeeker : go_type.
+Axiom WriteSeekerⁱᵐᵖˡ : go.type.
 
-Axiom ReadWriteSeeker : go_type.
+Axiom ReadWriteSeekerⁱᵐᵖˡ : go.type.
 
-Axiom ReaderFrom : go_type.
+Axiom ReaderFromⁱᵐᵖˡ : go.type.
 
-Axiom WriterTo : go_type.
+Axiom WriterToⁱᵐᵖˡ : go.type.
 
-Axiom ReaderAt : go_type.
+Axiom ReaderAtⁱᵐᵖˡ : go.type.
 
-Axiom WriterAt : go_type.
+Axiom WriterAtⁱᵐᵖˡ : go.type.
 
-Axiom ByteReader : go_type.
+Axiom ByteReaderⁱᵐᵖˡ : go.type.
 
-Axiom ByteScanner : go_type.
+Axiom ByteScannerⁱᵐᵖˡ : go.type.
 
-Axiom ByteWriter : go_type.
+Axiom ByteWriterⁱᵐᵖˡ : go.type.
 
-Axiom RuneReader : go_type.
+Axiom RuneReaderⁱᵐᵖˡ : go.type.
 
-Axiom RuneScanner : go_type.
+Axiom RuneScannerⁱᵐᵖˡ : go.type.
 
-Axiom StringWriter : go_type.
+Axiom StringWriterⁱᵐᵖˡ : go.type.
 
 Definition WriteString : go_string := "io.WriteString"%go.
 
@@ -142,11 +101,11 @@ Definition copyBuffer : go_string := "io.copyBuffer"%go.
 
 Definition LimitReader : go_string := "io.LimitReader"%go.
 
-Axiom LimitedReader : go_type.
+Axiom LimitedReaderⁱᵐᵖˡ : go.type.
 
 Definition NewSectionReader : go_string := "io.NewSectionReader"%go.
 
-Axiom SectionReader : go_type.
+Axiom SectionReaderⁱᵐᵖˡ : go.type.
 
 Definition errWhence : go_string := "io.errWhence"%go.
 
@@ -156,19 +115,19 @@ Definition errOffset : go_string := "io.errOffset"%go.
 
 Axiom errOffset'init : val.
 
-Axiom OffsetWriter : go_type.
+Axiom OffsetWriterⁱᵐᵖˡ : go.type.
 
 Definition NewOffsetWriter : go_string := "io.NewOffsetWriter"%go.
 
 Definition TeeReader : go_string := "io.TeeReader"%go.
 
-Axiom teeReader : go_type.
+Axiom teeReaderⁱᵐᵖˡ : go.type.
 
 Definition Discard : go_string := "io.Discard"%go.
 
 Axiom Discard'init : val.
 
-Axiom discard : go_type.
+Axiom discardⁱᵐᵖˡ : go.type.
 
 Definition blackHolePool : go_string := "io.blackHolePool"%go.
 
@@ -176,37 +135,107 @@ Axiom blackHolePool'init : val.
 
 Definition NopCloser : go_string := "io.NopCloser"%go.
 
-Axiom nopCloser : go_type.
+Axiom nopCloserⁱᵐᵖˡ : go.type.
 
-Axiom nopCloserWriterTo : go_type.
+Axiom nopCloserWriterToⁱᵐᵖˡ : go.type.
 
 Definition ReadAll : go_string := "io.ReadAll"%go.
 
-Axiom eofReader : go_type.
+Axiom eofReaderⁱᵐᵖˡ : go.type.
 
-Axiom multiReader : go_type.
+Axiom multiReaderⁱᵐᵖˡ : go.type.
 
 Definition MultiReader : go_string := "io.MultiReader"%go.
 
-Axiom multiWriter : go_type.
+Axiom multiWriterⁱᵐᵖˡ : go.type.
 
 Definition MultiWriter : go_string := "io.MultiWriter"%go.
 
-Axiom onceError : go_type.
+Axiom onceErrorⁱᵐᵖˡ : go.type.
 
 Definition ErrClosedPipe : go_string := "io.ErrClosedPipe"%go.
 
 Axiom ErrClosedPipe'init : val.
 
-Axiom pipe : go_type.
+Axiom pipeⁱᵐᵖˡ : go.type.
 
-Axiom PipeReader : go_type.
+Axiom PipeReaderⁱᵐᵖˡ : go.type.
 
-Axiom PipeWriter : go_type.
+Axiom PipeWriterⁱᵐᵖˡ : go.type.
 
 Definition Pipe : go_string := "io.Pipe"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Reader : go.type := go.Named "io.Reader"%go [].
+
+Definition Writer : go.type := go.Named "io.Writer"%go [].
+
+Definition Closer : go.type := go.Named "io.Closer"%go [].
+
+Definition Seeker : go.type := go.Named "io.Seeker"%go [].
+
+Definition ReadWriter : go.type := go.Named "io.ReadWriter"%go [].
+
+Definition ReadCloser : go.type := go.Named "io.ReadCloser"%go [].
+
+Definition WriteCloser : go.type := go.Named "io.WriteCloser"%go [].
+
+Definition ReadWriteCloser : go.type := go.Named "io.ReadWriteCloser"%go [].
+
+Definition ReadSeeker : go.type := go.Named "io.ReadSeeker"%go [].
+
+Definition ReadSeekCloser : go.type := go.Named "io.ReadSeekCloser"%go [].
+
+Definition WriteSeeker : go.type := go.Named "io.WriteSeeker"%go [].
+
+Definition ReadWriteSeeker : go.type := go.Named "io.ReadWriteSeeker"%go [].
+
+Definition ReaderFrom : go.type := go.Named "io.ReaderFrom"%go [].
+
+Definition WriterTo : go.type := go.Named "io.WriterTo"%go [].
+
+Definition ReaderAt : go.type := go.Named "io.ReaderAt"%go [].
+
+Definition WriterAt : go.type := go.Named "io.WriterAt"%go [].
+
+Definition ByteReader : go.type := go.Named "io.ByteReader"%go [].
+
+Definition ByteScanner : go.type := go.Named "io.ByteScanner"%go [].
+
+Definition ByteWriter : go.type := go.Named "io.ByteWriter"%go [].
+
+Definition RuneReader : go.type := go.Named "io.RuneReader"%go [].
+
+Definition RuneScanner : go.type := go.Named "io.RuneScanner"%go [].
+
+Definition StringWriter : go.type := go.Named "io.StringWriter"%go [].
+
+Definition LimitedReader : go.type := go.Named "io.LimitedReader"%go [].
+
+Definition SectionReader : go.type := go.Named "io.SectionReader"%go [].
+
+Definition OffsetWriter : go.type := go.Named "io.OffsetWriter"%go [].
+
+Definition teeReader : go.type := go.Named "io.teeReader"%go [].
+
+Definition discard : go.type := go.Named "io.discard"%go [].
+
+Definition nopCloser : go.type := go.Named "io.nopCloser"%go [].
+
+Definition nopCloserWriterTo : go.type := go.Named "io.nopCloserWriterTo"%go [].
+
+Definition eofReader : go.type := go.Named "io.eofReader"%go [].
+
+Definition multiReader : go.type := go.Named "io.multiReader"%go [].
+
+Definition multiWriter : go.type := go.Named "io.multiWriter"%go [].
+
+Definition onceError : go.type := go.Named "io.onceError"%go [].
+
+Definition pipe : go.type := go.Named "io.pipe"%go [].
+
+Definition PipeReader : go.type := go.Named "io.PipeReader"%go [].
+
+Definition PipeWriter : go.type := go.Named "io.PipeWriter"%go [].
 
 Axiom WriteStringⁱᵐᵖˡ : val.
 
@@ -242,107 +271,8 @@ Axiom Pipeⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(WriteString, WriteStringⁱᵐᵖˡ); (ReadAtLeast, ReadAtLeastⁱᵐᵖˡ); (ReadFull, ReadFullⁱᵐᵖˡ); (CopyN, CopyNⁱᵐᵖˡ); (Copy, Copyⁱᵐᵖˡ); (CopyBuffer, CopyBufferⁱᵐᵖˡ); (copyBuffer, copyBufferⁱᵐᵖˡ); (LimitReader, LimitReaderⁱᵐᵖˡ); (NewSectionReader, NewSectionReaderⁱᵐᵖˡ); (NewOffsetWriter, NewOffsetWriterⁱᵐᵖˡ); (TeeReader, TeeReaderⁱᵐᵖˡ); (NopCloser, NopCloserⁱᵐᵖˡ); (ReadAll, ReadAllⁱᵐᵖˡ); (MultiReader, MultiReaderⁱᵐᵖˡ); (MultiWriter, MultiWriterⁱᵐᵖˡ); (Pipe, Pipeⁱᵐᵖˡ)].
 
-Axiom LimitedReader__Readⁱᵐᵖˡ : val.
-
-Axiom SectionReader__Outerⁱᵐᵖˡ : val.
-
-Axiom SectionReader__Readⁱᵐᵖˡ : val.
-
-Axiom SectionReader__ReadAtⁱᵐᵖˡ : val.
-
-Axiom SectionReader__Seekⁱᵐᵖˡ : val.
-
-Axiom SectionReader__Sizeⁱᵐᵖˡ : val.
-
-Axiom OffsetWriter__Seekⁱᵐᵖˡ : val.
-
-Axiom OffsetWriter__Writeⁱᵐᵖˡ : val.
-
-Axiom OffsetWriter__WriteAtⁱᵐᵖˡ : val.
-
-Axiom teeReader__Readⁱᵐᵖˡ : val.
-
-Axiom discard__ReadFromⁱᵐᵖˡ : val.
-
-Axiom discard__Writeⁱᵐᵖˡ : val.
-
-Axiom discard__WriteStringⁱᵐᵖˡ : val.
-
-Axiom nopCloser__Closeⁱᵐᵖˡ : val.
-
-Axiom nopCloser__Readⁱᵐᵖˡ : val.
-
-Axiom nopCloserWriterTo__Closeⁱᵐᵖˡ : val.
-
-Axiom nopCloserWriterTo__Readⁱᵐᵖˡ : val.
-
-Axiom nopCloserWriterTo__WriteToⁱᵐᵖˡ : val.
-
-Axiom eofReader__Readⁱᵐᵖˡ : val.
-
-Axiom multiReader__Readⁱᵐᵖˡ : val.
-
-Axiom multiReader__WriteToⁱᵐᵖˡ : val.
-
-Axiom multiReader__writeToWithBufferⁱᵐᵖˡ : val.
-
-Axiom multiWriter__Writeⁱᵐᵖˡ : val.
-
-Axiom multiWriter__WriteStringⁱᵐᵖˡ : val.
-
-Axiom onceError__Loadⁱᵐᵖˡ : val.
-
-Axiom onceError__Lockⁱᵐᵖˡ : val.
-
-Axiom onceError__Storeⁱᵐᵖˡ : val.
-
-Axiom onceError__TryLockⁱᵐᵖˡ : val.
-
-Axiom onceError__Unlockⁱᵐᵖˡ : val.
-
-Axiom pipe__closeReadⁱᵐᵖˡ : val.
-
-Axiom pipe__closeWriteⁱᵐᵖˡ : val.
-
-Axiom pipe__readⁱᵐᵖˡ : val.
-
-Axiom pipe__readCloseErrorⁱᵐᵖˡ : val.
-
-Axiom pipe__writeⁱᵐᵖˡ : val.
-
-Axiom pipe__writeCloseErrorⁱᵐᵖˡ : val.
-
-Axiom PipeReader__Closeⁱᵐᵖˡ : val.
-
-Axiom PipeReader__CloseWithErrorⁱᵐᵖˡ : val.
-
-Axiom PipeReader__Readⁱᵐᵖˡ : val.
-
-Axiom PipeReader__closeReadⁱᵐᵖˡ : val.
-
-Axiom PipeReader__closeWriteⁱᵐᵖˡ : val.
-
-Axiom PipeReader__readⁱᵐᵖˡ : val.
-
-Axiom PipeReader__readCloseErrorⁱᵐᵖˡ : val.
-
-Axiom PipeReader__writeⁱᵐᵖˡ : val.
-
-Axiom PipeReader__writeCloseErrorⁱᵐᵖˡ : val.
-
-Axiom PipeWriter__Closeⁱᵐᵖˡ : val.
-
-Axiom PipeWriter__CloseWithErrorⁱᵐᵖˡ : val.
-
-Axiom PipeWriter__Writeⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(LimitedReader.id, []); (ptrT.id LimitedReader.id, [("Read"%go, LimitedReader__Readⁱᵐᵖˡ)]); (SectionReader.id, []); (ptrT.id SectionReader.id, [("Outer"%go, SectionReader__Outerⁱᵐᵖˡ); ("Read"%go, SectionReader__Readⁱᵐᵖˡ); ("ReadAt"%go, SectionReader__ReadAtⁱᵐᵖˡ); ("Seek"%go, SectionReader__Seekⁱᵐᵖˡ); ("Size"%go, SectionReader__Sizeⁱᵐᵖˡ)]); (OffsetWriter.id, []); (ptrT.id OffsetWriter.id, [("Seek"%go, OffsetWriter__Seekⁱᵐᵖˡ); ("Write"%go, OffsetWriter__Writeⁱᵐᵖˡ); ("WriteAt"%go, OffsetWriter__WriteAtⁱᵐᵖˡ)]); (teeReader.id, []); (ptrT.id teeReader.id, [("Read"%go, teeReader__Readⁱᵐᵖˡ)]); (discard.id, [("ReadFrom"%go, discard__ReadFromⁱᵐᵖˡ); ("Write"%go, discard__Writeⁱᵐᵖˡ); ("WriteString"%go, discard__WriteStringⁱᵐᵖˡ)]); (ptrT.id discard.id, [("ReadFrom"%go, discard__ReadFromⁱᵐᵖˡ); ("Write"%go, discard__Writeⁱᵐᵖˡ); ("WriteString"%go, discard__WriteStringⁱᵐᵖˡ)]); (nopCloser.id, [("Close"%go, nopCloser__Closeⁱᵐᵖˡ); ("Read"%go, nopCloser__Readⁱᵐᵖˡ)]); (ptrT.id nopCloser.id, [("Close"%go, nopCloser__Closeⁱᵐᵖˡ); ("Read"%go, nopCloser__Readⁱᵐᵖˡ)]); (nopCloserWriterTo.id, [("Close"%go, nopCloserWriterTo__Closeⁱᵐᵖˡ); ("Read"%go, nopCloserWriterTo__Readⁱᵐᵖˡ); ("WriteTo"%go, nopCloserWriterTo__WriteToⁱᵐᵖˡ)]); (ptrT.id nopCloserWriterTo.id, [("Close"%go, nopCloserWriterTo__Closeⁱᵐᵖˡ); ("Read"%go, nopCloserWriterTo__Readⁱᵐᵖˡ); ("WriteTo"%go, nopCloserWriterTo__WriteToⁱᵐᵖˡ)]); (eofReader.id, [("Read"%go, eofReader__Readⁱᵐᵖˡ)]); (ptrT.id eofReader.id, [("Read"%go, eofReader__Readⁱᵐᵖˡ)]); (multiReader.id, []); (ptrT.id multiReader.id, [("Read"%go, multiReader__Readⁱᵐᵖˡ); ("WriteTo"%go, multiReader__WriteToⁱᵐᵖˡ); ("writeToWithBuffer"%go, multiReader__writeToWithBufferⁱᵐᵖˡ)]); (multiWriter.id, []); (ptrT.id multiWriter.id, [("Write"%go, multiWriter__Writeⁱᵐᵖˡ); ("WriteString"%go, multiWriter__WriteStringⁱᵐᵖˡ)]); (onceError.id, []); (ptrT.id onceError.id, [("Load"%go, onceError__Loadⁱᵐᵖˡ); ("Lock"%go, onceError__Lockⁱᵐᵖˡ); ("Store"%go, onceError__Storeⁱᵐᵖˡ); ("TryLock"%go, onceError__TryLockⁱᵐᵖˡ); ("Unlock"%go, onceError__Unlockⁱᵐᵖˡ)]); (pipe.id, []); (ptrT.id pipe.id, [("closeRead"%go, pipe__closeReadⁱᵐᵖˡ); ("closeWrite"%go, pipe__closeWriteⁱᵐᵖˡ); ("read"%go, pipe__readⁱᵐᵖˡ); ("readCloseError"%go, pipe__readCloseErrorⁱᵐᵖˡ); ("write"%go, pipe__writeⁱᵐᵖˡ); ("writeCloseError"%go, pipe__writeCloseErrorⁱᵐᵖˡ)]); (PipeReader.id, []); (ptrT.id PipeReader.id, [("Close"%go, PipeReader__Closeⁱᵐᵖˡ); ("CloseWithError"%go, PipeReader__CloseWithErrorⁱᵐᵖˡ); ("Read"%go, PipeReader__Readⁱᵐᵖˡ); ("closeRead"%go, PipeReader__closeReadⁱᵐᵖˡ); ("closeWrite"%go, PipeReader__closeWriteⁱᵐᵖˡ); ("read"%go, PipeReader__readⁱᵐᵖˡ); ("readCloseError"%go, PipeReader__readCloseErrorⁱᵐᵖˡ); ("write"%go, PipeReader__writeⁱᵐᵖˡ); ("writeCloseError"%go, PipeReader__writeCloseErrorⁱᵐᵖˡ)]); (PipeWriter.id, []); (ptrT.id PipeWriter.id, [("Close"%go, PipeWriter__Closeⁱᵐᵖˡ); ("CloseWithError"%go, PipeWriter__CloseWithErrorⁱᵐᵖˡ); ("Write"%go, PipeWriter__Writeⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo io.io :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.errors.errors; code.sync.sync];
   |}.
 
@@ -350,10 +280,9 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #io.io (λ: <>,
+    package.init io.io (λ: <>,
       exception_do (do:  (sync.initialize' #());;;
       do:  (errors.initialize' #());;;
-      do:  (package.alloc io.io #());;;
       do:  (ErrShortWrite'init #());;;
       do:  (errInvalidWrite'init #());;;
       do:  (ErrShortBuffer'init #());;;

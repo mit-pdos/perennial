@@ -5,10 +5,6 @@ Definition ed25519 : go_string := "crypto/ed25519".
 
 Module ed25519.
 
-Module PublicKey. Definition id : go_string := "crypto/ed25519.PublicKey"%go. End PublicKey.
-Module PrivateKey. Definition id : go_string := "crypto/ed25519.PrivateKey"%go. End PrivateKey.
-Module Options. Definition id : go_string := "crypto/ed25519.Options"%go. End Options.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -21,15 +17,13 @@ Axiom SignatureSize : Z.
 
 Axiom SeedSize : Z.
 
-Definition PublicKey : go_type := sliceT.
-#[global] Typeclasses Opaque PublicKey.
-#[global] Opaque PublicKey.
+Definition PublicKeyⁱᵐᵖˡ : go.type := go.SliceType go.byte.
 
-Axiom PrivateKey : go_type.
+Axiom PrivateKeyⁱᵐᵖˡ : go.type.
 
 Definition privateKeyCache : go_string := "crypto/ed25519.privateKeyCache"%go.
 
-Axiom Options : go_type.
+Axiom Optionsⁱᵐᵖˡ : go.type.
 
 Definition GenerateKey : go_string := "crypto/ed25519.GenerateKey"%go.
 
@@ -45,7 +39,11 @@ Definition Verify : go_string := "crypto/ed25519.Verify"%go.
 
 Definition VerifyWithOptions : go_string := "crypto/ed25519.VerifyWithOptions"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition PublicKey : go.type := go.Named "crypto/ed25519.PublicKey"%go [].
+
+Definition PrivateKey : go.type := go.Named "crypto/ed25519.PrivateKey"%go [].
+
+Definition Options : go.type := go.Named "crypto/ed25519.Options"%go [].
 
 Axiom GenerateKeyⁱᵐᵖˡ : val.
 
@@ -63,25 +61,8 @@ Axiom VerifyWithOptionsⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(GenerateKey, GenerateKeyⁱᵐᵖˡ); (NewKeyFromSeed, NewKeyFromSeedⁱᵐᵖˡ); (newKeyFromSeed, newKeyFromSeedⁱᵐᵖˡ); (Sign, Signⁱᵐᵖˡ); (sign, signⁱᵐᵖˡ); (Verify, Verifyⁱᵐᵖˡ); (VerifyWithOptions, VerifyWithOptionsⁱᵐᵖˡ)].
 
-Axiom PublicKey__Equalⁱᵐᵖˡ : val.
-
-Axiom PrivateKey__Equalⁱᵐᵖˡ : val.
-
-Axiom PrivateKey__Publicⁱᵐᵖˡ : val.
-
-Axiom PrivateKey__Seedⁱᵐᵖˡ : val.
-
-Axiom PrivateKey__Signⁱᵐᵖˡ : val.
-
-Axiom Options__HashFuncⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(PublicKey.id, [("Equal"%go, PublicKey__Equalⁱᵐᵖˡ)]); (ptrT.id PublicKey.id, [("Equal"%go, PublicKey__Equalⁱᵐᵖˡ)]); (PrivateKey.id, [("Equal"%go, PrivateKey__Equalⁱᵐᵖˡ); ("Public"%go, PrivateKey__Publicⁱᵐᵖˡ); ("Seed"%go, PrivateKey__Seedⁱᵐᵖˡ); ("Sign"%go, PrivateKey__Signⁱᵐᵖˡ)]); (ptrT.id PrivateKey.id, [("Equal"%go, PrivateKey__Equalⁱᵐᵖˡ); ("Public"%go, PrivateKey__Publicⁱᵐᵖˡ); ("Seed"%go, PrivateKey__Seedⁱᵐᵖˡ); ("Sign"%go, PrivateKey__Signⁱᵐᵖˡ)]); (Options.id, []); (ptrT.id Options.id, [("HashFunc"%go, Options__HashFuncⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo ed25519.ed25519 :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -89,8 +70,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #ed25519.ed25519 (λ: <>,
-      exception_do (do:  (package.alloc ed25519.ed25519 #()))
+    package.init ed25519.ed25519 (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

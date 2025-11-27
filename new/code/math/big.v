@@ -5,20 +5,6 @@ Definition big : go_string := "math/big".
 
 Module big.
 
-Module Word. Definition id : go_string := "math/big.Word"%go. End Word.
-Module decimal. Definition id : go_string := "math/big.decimal"%go. End decimal.
-Module Float. Definition id : go_string := "math/big.Float"%go. End Float.
-Module ErrNaN. Definition id : go_string := "math/big.ErrNaN"%go. End ErrNaN.
-Module form. Definition id : go_string := "math/big.form"%go. End form.
-Module RoundingMode. Definition id : go_string := "math/big.RoundingMode"%go. End RoundingMode.
-Module Accuracy. Definition id : go_string := "math/big.Accuracy"%go. End Accuracy.
-Module Int. Definition id : go_string := "math/big.Int"%go. End Int.
-Module byteReader. Definition id : go_string := "math/big.byteReader"%go. End byteReader.
-Module nat. Definition id : go_string := "math/big.nat"%go. End nat.
-Module stack. Definition id : go_string := "math/big.stack"%go. End stack.
-Module divisor. Definition id : go_string := "math/big.divisor"%go. End divisor.
-Module Rat. Definition id : go_string := "math/big.Rat"%go. End Rat.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -29,7 +15,7 @@ Definition _Accuracy_index : go_string := "math/big._Accuracy_index"%go.
 
 Axiom _Accuracy_index'init : val.
 
-Axiom Word : go_type.
+Axiom Wordⁱᵐᵖˡ : go.type.
 
 Axiom _S : Z.
 
@@ -89,7 +75,7 @@ Definition addMulVVW : go_string := "math/big.addMulVVW"%go.
 
 Definition addMulVVWW : go_string := "math/big.addMulVVWW"%go.
 
-Axiom decimal : go_type.
+Axiom decimalⁱᵐᵖˡ : go.type.
 
 Axiom maxShift : Z.
 
@@ -103,9 +89,9 @@ Definition trim : go_string := "math/big.trim"%go.
 
 Axiom debugFloat : val.
 
-Axiom Float : go_type.
+Axiom Floatⁱᵐᵖˡ : go.type.
 
-Axiom ErrNaN : go_type.
+Axiom ErrNaNⁱᵐᵖˡ : go.type.
 
 Definition NewFloat : go_string := "math/big.NewFloat"%go.
 
@@ -115,7 +101,7 @@ Axiom MinExp : Z.
 
 Axiom MaxPrec : Z.
 
-Axiom form : go_type.
+Axiom formⁱᵐᵖˡ : go.type.
 
 Axiom zero : val.
 
@@ -123,7 +109,7 @@ Axiom finite : val.
 
 Axiom inf : val.
 
-Axiom RoundingMode : go_type.
+Axiom RoundingModeⁱᵐᵖˡ : go.type.
 
 Axiom ToNearestEven : val.
 
@@ -137,7 +123,7 @@ Axiom ToNegativeInf : val.
 
 Axiom ToPositiveInf : val.
 
-Axiom Accuracy : go_type.
+Axiom Accuracyⁱᵐᵖˡ : go.type.
 
 Axiom Below : val.
 
@@ -171,7 +157,7 @@ Definition fmtE : go_string := "math/big.fmtE"%go.
 
 Definition fmtF : go_string := "math/big.fmtF"%go.
 
-Axiom Int : go_type.
+Axiom Intⁱᵐᵖˡ : go.type.
 
 Definition intOne : go_string := "math/big.intOne"%go.
 
@@ -197,11 +183,11 @@ Definition writeMultiple : go_string := "math/big.writeMultiple"%go.
 
 Definition scanSign : go_string := "math/big.scanSign"%go.
 
-Axiom byteReader : go_type.
+Axiom byteReaderⁱᵐᵖˡ : go.type.
 
 Axiom intGobVersion : val.
 
-Axiom nat : go_type.
+Axiom natⁱᵐᵖˡ : go.type.
 
 Definition natOne : go_string := "math/big.natOne"%go.
 
@@ -223,7 +209,7 @@ Definition alias : go_string := "math/big.alias"%go.
 
 Definition addTo : go_string := "math/big.addTo"%go.
 
-Axiom stack : go_type.
+Axiom stackⁱᵐᵖˡ : go.type.
 
 Definition stackPool : go_string := "math/big.stackPool"%go.
 
@@ -255,7 +241,7 @@ Definition leafSize : go_string := "math/big.leafSize"%go.
 
 Axiom leafSize'init : val.
 
-Axiom divisor : go_type.
+Axiom divisorⁱᵐᵖˡ : go.type.
 
 Definition cacheBase10 : go_string := "math/big.cacheBase10"%go.
 
@@ -293,7 +279,7 @@ Definition ifmt : go_string := "math/big.ifmt"%go.
 
 Definition trace : go_string := "math/big.trace"%go.
 
-Axiom Rat : go_type.
+Axiom Ratⁱᵐᵖˡ : go.type.
 
 Definition NewRat : go_string := "math/big.NewRat"%go.
 
@@ -323,7 +309,31 @@ Definition three : go_string := "math/big.three"%go.
 
 Definition newFloat : go_string := "math/big.newFloat"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Word : go.type := go.Named "math/big.Word"%go [].
+
+Definition decimal : go.type := go.Named "math/big.decimal"%go [].
+
+Definition Float : go.type := go.Named "math/big.Float"%go [].
+
+Definition ErrNaN : go.type := go.Named "math/big.ErrNaN"%go [].
+
+Definition form : go.type := go.Named "math/big.form"%go [].
+
+Definition RoundingMode : go.type := go.Named "math/big.RoundingMode"%go [].
+
+Definition Accuracy : go.type := go.Named "math/big.Accuracy"%go [].
+
+Definition Int : go.type := go.Named "math/big.Int"%go [].
+
+Definition byteReader : go.type := go.Named "math/big.byteReader"%go [].
+
+Definition nat : go.type := go.Named "math/big.nat"%go [].
+
+Definition stack : go.type := go.Named "math/big.stack"%go [].
+
+Definition divisor : go.type := go.Named "math/big.divisor"%go [].
+
+Definition Rat : go.type := go.Named "math/big.Rat"%go [].
 
 Axiom mulWWⁱᵐᵖˡ : val.
 
@@ -469,493 +479,8 @@ Axiom newFloatⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(mulWW, mulWWⁱᵐᵖˡ); (mulAddWWW_g, mulAddWWW_gⁱᵐᵖˡ); (nlz, nlzⁱᵐᵖˡ); (addVV_g, addVV_gⁱᵐᵖˡ); (subVV_g, subVV_gⁱᵐᵖˡ); (addVW, addVWⁱᵐᵖˡ); (addVW_ref, addVW_refⁱᵐᵖˡ); (subVW, subVWⁱᵐᵖˡ); (subVW_ref, subVW_refⁱᵐᵖˡ); (lshVU_g, lshVU_gⁱᵐᵖˡ); (rshVU_g, rshVU_gⁱᵐᵖˡ); (mulAddVWW_g, mulAddVWW_gⁱᵐᵖˡ); (addMulVVWW_g, addMulVVWW_gⁱᵐᵖˡ); (divWW, divWWⁱᵐᵖˡ); (reciprocalWord, reciprocalWordⁱᵐᵖˡ); (addVV, addVVⁱᵐᵖˡ); (subVV, subVVⁱᵐᵖˡ); (shlVU, shlVUⁱᵐᵖˡ); (lshVU, lshVUⁱᵐᵖˡ); (rshVU, rshVUⁱᵐᵖˡ); (mulAddVWW, mulAddVWWⁱᵐᵖˡ); (addMulVVW, addMulVVWⁱᵐᵖˡ); (addMulVVWW, addMulVVWWⁱᵐᵖˡ); (rsh, rshⁱᵐᵖˡ); (appendZeros, appendZerosⁱᵐᵖˡ); (shouldRoundUp, shouldRoundUpⁱᵐᵖˡ); (trim, trimⁱᵐᵖˡ); (NewFloat, NewFloatⁱᵐᵖˡ); (makeAcc, makeAccⁱᵐᵖˡ); (fnorm, fnormⁱᵐᵖˡ); (msb32, msb32ⁱᵐᵖˡ); (msb64, msb64ⁱᵐᵖˡ); (validateBinaryOperands, validateBinaryOperandsⁱᵐᵖˡ); (ParseFloat, ParseFloatⁱᵐᵖˡ); (roundShortest, roundShortestⁱᵐᵖˡ); (fmtE, fmtEⁱᵐᵖˡ); (fmtF, fmtFⁱᵐᵖˡ); (NewInt, NewIntⁱᵐᵖˡ); (low32, low32ⁱᵐᵖˡ); (low64, low64ⁱᵐᵖˡ); (lehmerSimulate, lehmerSimulateⁱᵐᵖˡ); (lehmerUpdate, lehmerUpdateⁱᵐᵖˡ); (mulW, mulWⁱᵐᵖˡ); (euclidUpdate, euclidUpdateⁱᵐᵖˡ); (Jacobi, Jacobiⁱᵐᵖˡ); (writeMultiple, writeMultipleⁱᵐᵖˡ); (scanSign, scanSignⁱᵐᵖˡ); (alias, aliasⁱᵐᵖˡ); (addTo, addToⁱᵐᵖˡ); (getStack, getStackⁱᵐᵖˡ); (same, sameⁱᵐᵖˡ); (bigEndianWord, bigEndianWordⁱᵐᵖˡ); (maxPow, maxPowⁱᵐᵖˡ); (pow, powⁱᵐᵖˡ); (divisors, divisorsⁱᵐᵖˡ); (divWVW, divWVWⁱᵐᵖˡ); (greaterThan, greaterThanⁱᵐᵖˡ); (basicSqr, basicSqrⁱᵐᵖˡ); (basicMul, basicMulⁱᵐᵖˡ); (karatsuba, karatsubaⁱᵐᵖˡ); (karatsubaSqr, karatsubaSqrⁱᵐᵖˡ); (ifmt, ifmtⁱᵐᵖˡ); (trace, traceⁱᵐᵖˡ); (NewRat, NewRatⁱᵐᵖˡ); (quotToFloat32, quotToFloat32ⁱᵐᵖˡ); (quotToFloat64, quotToFloat64ⁱᵐᵖˡ); (mulDenom, mulDenomⁱᵐᵖˡ); (ratTok, ratTokⁱᵐᵖˡ); (scanExponent, scanExponentⁱᵐᵖˡ); (three, threeⁱᵐᵖˡ); (newFloat, newFloatⁱᵐᵖˡ)].
 
-Axiom decimal__Stringⁱᵐᵖˡ : val.
-
-Axiom decimal__atⁱᵐᵖˡ : val.
-
-Axiom decimal__initⁱᵐᵖˡ : val.
-
-Axiom decimal__roundⁱᵐᵖˡ : val.
-
-Axiom decimal__roundDownⁱᵐᵖˡ : val.
-
-Axiom decimal__roundUpⁱᵐᵖˡ : val.
-
-Axiom Float__Absⁱᵐᵖˡ : val.
-
-Axiom Float__Accⁱᵐᵖˡ : val.
-
-Axiom Float__Addⁱᵐᵖˡ : val.
-
-Axiom Float__Appendⁱᵐᵖˡ : val.
-
-Axiom Float__AppendTextⁱᵐᵖˡ : val.
-
-Axiom Float__Cmpⁱᵐᵖˡ : val.
-
-Axiom Float__Copyⁱᵐᵖˡ : val.
-
-Axiom Float__Float32ⁱᵐᵖˡ : val.
-
-Axiom Float__Float64ⁱᵐᵖˡ : val.
-
-Axiom Float__Formatⁱᵐᵖˡ : val.
-
-Axiom Float__GobDecodeⁱᵐᵖˡ : val.
-
-Axiom Float__GobEncodeⁱᵐᵖˡ : val.
-
-Axiom Float__Intⁱᵐᵖˡ : val.
-
-Axiom Float__Int64ⁱᵐᵖˡ : val.
-
-Axiom Float__IsInfⁱᵐᵖˡ : val.
-
-Axiom Float__IsIntⁱᵐᵖˡ : val.
-
-Axiom Float__MantExpⁱᵐᵖˡ : val.
-
-Axiom Float__MarshalTextⁱᵐᵖˡ : val.
-
-Axiom Float__MinPrecⁱᵐᵖˡ : val.
-
-Axiom Float__Modeⁱᵐᵖˡ : val.
-
-Axiom Float__Mulⁱᵐᵖˡ : val.
-
-Axiom Float__Negⁱᵐᵖˡ : val.
-
-Axiom Float__Parseⁱᵐᵖˡ : val.
-
-Axiom Float__Precⁱᵐᵖˡ : val.
-
-Axiom Float__Quoⁱᵐᵖˡ : val.
-
-Axiom Float__Ratⁱᵐᵖˡ : val.
-
-Axiom Float__Scanⁱᵐᵖˡ : val.
-
-Axiom Float__Setⁱᵐᵖˡ : val.
-
-Axiom Float__SetFloat64ⁱᵐᵖˡ : val.
-
-Axiom Float__SetInfⁱᵐᵖˡ : val.
-
-Axiom Float__SetIntⁱᵐᵖˡ : val.
-
-Axiom Float__SetInt64ⁱᵐᵖˡ : val.
-
-Axiom Float__SetMantExpⁱᵐᵖˡ : val.
-
-Axiom Float__SetModeⁱᵐᵖˡ : val.
-
-Axiom Float__SetPrecⁱᵐᵖˡ : val.
-
-Axiom Float__SetRatⁱᵐᵖˡ : val.
-
-Axiom Float__SetStringⁱᵐᵖˡ : val.
-
-Axiom Float__SetUint64ⁱᵐᵖˡ : val.
-
-Axiom Float__Signⁱᵐᵖˡ : val.
-
-Axiom Float__Signbitⁱᵐᵖˡ : val.
-
-Axiom Float__Sqrtⁱᵐᵖˡ : val.
-
-Axiom Float__Stringⁱᵐᵖˡ : val.
-
-Axiom Float__Subⁱᵐᵖˡ : val.
-
-Axiom Float__Textⁱᵐᵖˡ : val.
-
-Axiom Float__Uint64ⁱᵐᵖˡ : val.
-
-Axiom Float__UnmarshalTextⁱᵐᵖˡ : val.
-
-Axiom Float__fmtBⁱᵐᵖˡ : val.
-
-Axiom Float__fmtPⁱᵐᵖˡ : val.
-
-Axiom Float__fmtXⁱᵐᵖˡ : val.
-
-Axiom Float__ordⁱᵐᵖˡ : val.
-
-Axiom Float__pow5ⁱᵐᵖˡ : val.
-
-Axiom Float__roundⁱᵐᵖˡ : val.
-
-Axiom Float__scanⁱᵐᵖˡ : val.
-
-Axiom Float__setBits64ⁱᵐᵖˡ : val.
-
-Axiom Float__setExpAndRoundⁱᵐᵖˡ : val.
-
-Axiom Float__sqrtInverseⁱᵐᵖˡ : val.
-
-Axiom Float__uaddⁱᵐᵖˡ : val.
-
-Axiom Float__ucmpⁱᵐᵖˡ : val.
-
-Axiom Float__umulⁱᵐᵖˡ : val.
-
-Axiom Float__uquoⁱᵐᵖˡ : val.
-
-Axiom Float__usubⁱᵐᵖˡ : val.
-
-Axiom Float__validateⁱᵐᵖˡ : val.
-
-Axiom Float__validate0ⁱᵐᵖˡ : val.
-
-Axiom ErrNaN__Errorⁱᵐᵖˡ : val.
-
-Axiom RoundingMode__Stringⁱᵐᵖˡ : val.
-
-Axiom Accuracy__Stringⁱᵐᵖˡ : val.
-
-Axiom Int__Absⁱᵐᵖˡ : val.
-
-Axiom Int__Addⁱᵐᵖˡ : val.
-
-Axiom Int__Andⁱᵐᵖˡ : val.
-
-Axiom Int__AndNotⁱᵐᵖˡ : val.
-
-Axiom Int__Appendⁱᵐᵖˡ : val.
-
-Axiom Int__AppendTextⁱᵐᵖˡ : val.
-
-Axiom Int__Binomialⁱᵐᵖˡ : val.
-
-Axiom Int__Bitⁱᵐᵖˡ : val.
-
-Axiom Int__BitLenⁱᵐᵖˡ : val.
-
-Axiom Int__Bitsⁱᵐᵖˡ : val.
-
-Axiom Int__Bytesⁱᵐᵖˡ : val.
-
-Axiom Int__Cmpⁱᵐᵖˡ : val.
-
-Axiom Int__CmpAbsⁱᵐᵖˡ : val.
-
-Axiom Int__Divⁱᵐᵖˡ : val.
-
-Axiom Int__DivModⁱᵐᵖˡ : val.
-
-Axiom Int__Expⁱᵐᵖˡ : val.
-
-Axiom Int__FillBytesⁱᵐᵖˡ : val.
-
-Axiom Int__Float64ⁱᵐᵖˡ : val.
-
-Axiom Int__Formatⁱᵐᵖˡ : val.
-
-Axiom Int__GCDⁱᵐᵖˡ : val.
-
-Axiom Int__GobDecodeⁱᵐᵖˡ : val.
-
-Axiom Int__GobEncodeⁱᵐᵖˡ : val.
-
-Axiom Int__Int64ⁱᵐᵖˡ : val.
-
-Axiom Int__IsInt64ⁱᵐᵖˡ : val.
-
-Axiom Int__IsUint64ⁱᵐᵖˡ : val.
-
-Axiom Int__Lshⁱᵐᵖˡ : val.
-
-Axiom Int__MarshalJSONⁱᵐᵖˡ : val.
-
-Axiom Int__MarshalTextⁱᵐᵖˡ : val.
-
-Axiom Int__Modⁱᵐᵖˡ : val.
-
-Axiom Int__ModInverseⁱᵐᵖˡ : val.
-
-Axiom Int__ModSqrtⁱᵐᵖˡ : val.
-
-Axiom Int__Mulⁱᵐᵖˡ : val.
-
-Axiom Int__MulRangeⁱᵐᵖˡ : val.
-
-Axiom Int__Negⁱᵐᵖˡ : val.
-
-Axiom Int__Notⁱᵐᵖˡ : val.
-
-Axiom Int__Orⁱᵐᵖˡ : val.
-
-Axiom Int__ProbablyPrimeⁱᵐᵖˡ : val.
-
-Axiom Int__Quoⁱᵐᵖˡ : val.
-
-Axiom Int__QuoRemⁱᵐᵖˡ : val.
-
-Axiom Int__Randⁱᵐᵖˡ : val.
-
-Axiom Int__Remⁱᵐᵖˡ : val.
-
-Axiom Int__Rshⁱᵐᵖˡ : val.
-
-Axiom Int__Scanⁱᵐᵖˡ : val.
-
-Axiom Int__Setⁱᵐᵖˡ : val.
-
-Axiom Int__SetBitⁱᵐᵖˡ : val.
-
-Axiom Int__SetBitsⁱᵐᵖˡ : val.
-
-Axiom Int__SetBytesⁱᵐᵖˡ : val.
-
-Axiom Int__SetInt64ⁱᵐᵖˡ : val.
-
-Axiom Int__SetStringⁱᵐᵖˡ : val.
-
-Axiom Int__SetUint64ⁱᵐᵖˡ : val.
-
-Axiom Int__Signⁱᵐᵖˡ : val.
-
-Axiom Int__Sqrtⁱᵐᵖˡ : val.
-
-Axiom Int__Stringⁱᵐᵖˡ : val.
-
-Axiom Int__Subⁱᵐᵖˡ : val.
-
-Axiom Int__Textⁱᵐᵖˡ : val.
-
-Axiom Int__TrailingZeroBitsⁱᵐᵖˡ : val.
-
-Axiom Int__Uint64ⁱᵐᵖˡ : val.
-
-Axiom Int__UnmarshalJSONⁱᵐᵖˡ : val.
-
-Axiom Int__UnmarshalTextⁱᵐᵖˡ : val.
-
-Axiom Int__Xorⁱᵐᵖˡ : val.
-
-Axiom Int__expⁱᵐᵖˡ : val.
-
-Axiom Int__expSlowⁱᵐᵖˡ : val.
-
-Axiom Int__lehmerGCDⁱᵐᵖˡ : val.
-
-Axiom Int__modSqrt3Mod4Primeⁱᵐᵖˡ : val.
-
-Axiom Int__modSqrt5Mod8Primeⁱᵐᵖˡ : val.
-
-Axiom Int__modSqrtTonelliShanksⁱᵐᵖˡ : val.
-
-Axiom Int__mulⁱᵐᵖˡ : val.
-
-Axiom Int__scaleDenomⁱᵐᵖˡ : val.
-
-Axiom Int__scanⁱᵐᵖˡ : val.
-
-Axiom Int__setFromScannerⁱᵐᵖˡ : val.
-
-Axiom byteReader__Readⁱᵐᵖˡ : val.
-
-Axiom byteReader__ReadByteⁱᵐᵖˡ : val.
-
-Axiom byteReader__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom byteReader__SkipSpaceⁱᵐᵖˡ : val.
-
-Axiom byteReader__Tokenⁱᵐᵖˡ : val.
-
-Axiom byteReader__UnreadByteⁱᵐᵖˡ : val.
-
-Axiom byteReader__UnreadRuneⁱᵐᵖˡ : val.
-
-Axiom byteReader__Widthⁱᵐᵖˡ : val.
-
-Axiom nat__Stringⁱᵐᵖˡ : val.
-
-Axiom nat__addⁱᵐᵖˡ : val.
-
-Axiom nat__andⁱᵐᵖˡ : val.
-
-Axiom nat__andNotⁱᵐᵖˡ : val.
-
-Axiom nat__bitⁱᵐᵖˡ : val.
-
-Axiom nat__bitLenⁱᵐᵖˡ : val.
-
-Axiom nat__bytesⁱᵐᵖˡ : val.
-
-Axiom nat__cmpⁱᵐᵖˡ : val.
-
-Axiom nat__convertWordsⁱᵐᵖˡ : val.
-
-Axiom nat__divⁱᵐᵖˡ : val.
-
-Axiom nat__divBasicⁱᵐᵖˡ : val.
-
-Axiom nat__divLargeⁱᵐᵖˡ : val.
-
-Axiom nat__divRecursiveⁱᵐᵖˡ : val.
-
-Axiom nat__divRecursiveStepⁱᵐᵖˡ : val.
-
-Axiom nat__divWⁱᵐᵖˡ : val.
-
-Axiom nat__expNNⁱᵐᵖˡ : val.
-
-Axiom nat__expNNMontgomeryⁱᵐᵖˡ : val.
-
-Axiom nat__expNNMontgomeryEvenⁱᵐᵖˡ : val.
-
-Axiom nat__expNNWindowedⁱᵐᵖˡ : val.
-
-Axiom nat__expWWⁱᵐᵖˡ : val.
-
-Axiom nat__isPow2ⁱᵐᵖˡ : val.
-
-Axiom nat__itoaⁱᵐᵖˡ : val.
-
-Axiom nat__lshⁱᵐᵖˡ : val.
-
-Axiom nat__makeⁱᵐᵖˡ : val.
-
-Axiom nat__modInverseⁱᵐᵖˡ : val.
-
-Axiom nat__modWⁱᵐᵖˡ : val.
-
-Axiom nat__montgomeryⁱᵐᵖˡ : val.
-
-Axiom nat__mulⁱᵐᵖˡ : val.
-
-Axiom nat__mulAddWWⁱᵐᵖˡ : val.
-
-Axiom nat__mulRangeⁱᵐᵖˡ : val.
-
-Axiom nat__normⁱᵐᵖˡ : val.
-
-Axiom nat__orⁱᵐᵖˡ : val.
-
-Axiom nat__probablyPrimeLucasⁱᵐᵖˡ : val.
-
-Axiom nat__probablyPrimeMillerRabinⁱᵐᵖˡ : val.
-
-Axiom nat__randomⁱᵐᵖˡ : val.
-
-Axiom nat__remⁱᵐᵖˡ : val.
-
-Axiom nat__rshⁱᵐᵖˡ : val.
-
-Axiom nat__scanⁱᵐᵖˡ : val.
-
-Axiom nat__setⁱᵐᵖˡ : val.
-
-Axiom nat__setBitⁱᵐᵖˡ : val.
-
-Axiom nat__setBytesⁱᵐᵖˡ : val.
-
-Axiom nat__setUint64ⁱᵐᵖˡ : val.
-
-Axiom nat__setWordⁱᵐᵖˡ : val.
-
-Axiom nat__sqrⁱᵐᵖˡ : val.
-
-Axiom nat__sqrtⁱᵐᵖˡ : val.
-
-Axiom nat__stickyⁱᵐᵖˡ : val.
-
-Axiom nat__subⁱᵐᵖˡ : val.
-
-Axiom nat__subMod2Nⁱᵐᵖˡ : val.
-
-Axiom nat__trailingZeroBitsⁱᵐᵖˡ : val.
-
-Axiom nat__truncⁱᵐᵖˡ : val.
-
-Axiom nat__utoaⁱᵐᵖˡ : val.
-
-Axiom nat__xorⁱᵐᵖˡ : val.
-
-Axiom stack__freeⁱᵐᵖˡ : val.
-
-Axiom stack__natⁱᵐᵖˡ : val.
-
-Axiom stack__restoreⁱᵐᵖˡ : val.
-
-Axiom stack__saveⁱᵐᵖˡ : val.
-
-Axiom Rat__Absⁱᵐᵖˡ : val.
-
-Axiom Rat__Addⁱᵐᵖˡ : val.
-
-Axiom Rat__AppendTextⁱᵐᵖˡ : val.
-
-Axiom Rat__Cmpⁱᵐᵖˡ : val.
-
-Axiom Rat__Denomⁱᵐᵖˡ : val.
-
-Axiom Rat__Float32ⁱᵐᵖˡ : val.
-
-Axiom Rat__Float64ⁱᵐᵖˡ : val.
-
-Axiom Rat__FloatPrecⁱᵐᵖˡ : val.
-
-Axiom Rat__FloatStringⁱᵐᵖˡ : val.
-
-Axiom Rat__GobDecodeⁱᵐᵖˡ : val.
-
-Axiom Rat__GobEncodeⁱᵐᵖˡ : val.
-
-Axiom Rat__Invⁱᵐᵖˡ : val.
-
-Axiom Rat__IsIntⁱᵐᵖˡ : val.
-
-Axiom Rat__MarshalTextⁱᵐᵖˡ : val.
-
-Axiom Rat__Mulⁱᵐᵖˡ : val.
-
-Axiom Rat__Negⁱᵐᵖˡ : val.
-
-Axiom Rat__Numⁱᵐᵖˡ : val.
-
-Axiom Rat__Quoⁱᵐᵖˡ : val.
-
-Axiom Rat__RatStringⁱᵐᵖˡ : val.
-
-Axiom Rat__Scanⁱᵐᵖˡ : val.
-
-Axiom Rat__Setⁱᵐᵖˡ : val.
-
-Axiom Rat__SetFloat64ⁱᵐᵖˡ : val.
-
-Axiom Rat__SetFracⁱᵐᵖˡ : val.
-
-Axiom Rat__SetFrac64ⁱᵐᵖˡ : val.
-
-Axiom Rat__SetIntⁱᵐᵖˡ : val.
-
-Axiom Rat__SetInt64ⁱᵐᵖˡ : val.
-
-Axiom Rat__SetStringⁱᵐᵖˡ : val.
-
-Axiom Rat__SetUint64ⁱᵐᵖˡ : val.
-
-Axiom Rat__Signⁱᵐᵖˡ : val.
-
-Axiom Rat__Stringⁱᵐᵖˡ : val.
-
-Axiom Rat__Subⁱᵐᵖˡ : val.
-
-Axiom Rat__UnmarshalTextⁱᵐᵖˡ : val.
-
-Axiom Rat__marshalⁱᵐᵖˡ : val.
-
-Axiom Rat__normⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Word.id, []); (ptrT.id Word.id, []); (decimal.id, []); (ptrT.id decimal.id, [("String"%go, decimal__Stringⁱᵐᵖˡ); ("at"%go, decimal__atⁱᵐᵖˡ); ("init"%go, decimal__initⁱᵐᵖˡ); ("round"%go, decimal__roundⁱᵐᵖˡ); ("roundDown"%go, decimal__roundDownⁱᵐᵖˡ); ("roundUp"%go, decimal__roundUpⁱᵐᵖˡ)]); (Float.id, []); (ptrT.id Float.id, [("Abs"%go, Float__Absⁱᵐᵖˡ); ("Acc"%go, Float__Accⁱᵐᵖˡ); ("Add"%go, Float__Addⁱᵐᵖˡ); ("Append"%go, Float__Appendⁱᵐᵖˡ); ("AppendText"%go, Float__AppendTextⁱᵐᵖˡ); ("Cmp"%go, Float__Cmpⁱᵐᵖˡ); ("Copy"%go, Float__Copyⁱᵐᵖˡ); ("Float32"%go, Float__Float32ⁱᵐᵖˡ); ("Float64"%go, Float__Float64ⁱᵐᵖˡ); ("Format"%go, Float__Formatⁱᵐᵖˡ); ("GobDecode"%go, Float__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Float__GobEncodeⁱᵐᵖˡ); ("Int"%go, Float__Intⁱᵐᵖˡ); ("Int64"%go, Float__Int64ⁱᵐᵖˡ); ("IsInf"%go, Float__IsInfⁱᵐᵖˡ); ("IsInt"%go, Float__IsIntⁱᵐᵖˡ); ("MantExp"%go, Float__MantExpⁱᵐᵖˡ); ("MarshalText"%go, Float__MarshalTextⁱᵐᵖˡ); ("MinPrec"%go, Float__MinPrecⁱᵐᵖˡ); ("Mode"%go, Float__Modeⁱᵐᵖˡ); ("Mul"%go, Float__Mulⁱᵐᵖˡ); ("Neg"%go, Float__Negⁱᵐᵖˡ); ("Parse"%go, Float__Parseⁱᵐᵖˡ); ("Prec"%go, Float__Precⁱᵐᵖˡ); ("Quo"%go, Float__Quoⁱᵐᵖˡ); ("Rat"%go, Float__Ratⁱᵐᵖˡ); ("Scan"%go, Float__Scanⁱᵐᵖˡ); ("Set"%go, Float__Setⁱᵐᵖˡ); ("SetFloat64"%go, Float__SetFloat64ⁱᵐᵖˡ); ("SetInf"%go, Float__SetInfⁱᵐᵖˡ); ("SetInt"%go, Float__SetIntⁱᵐᵖˡ); ("SetInt64"%go, Float__SetInt64ⁱᵐᵖˡ); ("SetMantExp"%go, Float__SetMantExpⁱᵐᵖˡ); ("SetMode"%go, Float__SetModeⁱᵐᵖˡ); ("SetPrec"%go, Float__SetPrecⁱᵐᵖˡ); ("SetRat"%go, Float__SetRatⁱᵐᵖˡ); ("SetString"%go, Float__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Float__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Float__Signⁱᵐᵖˡ); ("Signbit"%go, Float__Signbitⁱᵐᵖˡ); ("Sqrt"%go, Float__Sqrtⁱᵐᵖˡ); ("String"%go, Float__Stringⁱᵐᵖˡ); ("Sub"%go, Float__Subⁱᵐᵖˡ); ("Text"%go, Float__Textⁱᵐᵖˡ); ("Uint64"%go, Float__Uint64ⁱᵐᵖˡ); ("UnmarshalText"%go, Float__UnmarshalTextⁱᵐᵖˡ); ("fmtB"%go, Float__fmtBⁱᵐᵖˡ); ("fmtP"%go, Float__fmtPⁱᵐᵖˡ); ("fmtX"%go, Float__fmtXⁱᵐᵖˡ); ("ord"%go, Float__ordⁱᵐᵖˡ); ("pow5"%go, Float__pow5ⁱᵐᵖˡ); ("round"%go, Float__roundⁱᵐᵖˡ); ("scan"%go, Float__scanⁱᵐᵖˡ); ("setBits64"%go, Float__setBits64ⁱᵐᵖˡ); ("setExpAndRound"%go, Float__setExpAndRoundⁱᵐᵖˡ); ("sqrtInverse"%go, Float__sqrtInverseⁱᵐᵖˡ); ("uadd"%go, Float__uaddⁱᵐᵖˡ); ("ucmp"%go, Float__ucmpⁱᵐᵖˡ); ("umul"%go, Float__umulⁱᵐᵖˡ); ("uquo"%go, Float__uquoⁱᵐᵖˡ); ("usub"%go, Float__usubⁱᵐᵖˡ); ("validate"%go, Float__validateⁱᵐᵖˡ); ("validate0"%go, Float__validate0ⁱᵐᵖˡ)]); (ErrNaN.id, [("Error"%go, ErrNaN__Errorⁱᵐᵖˡ)]); (ptrT.id ErrNaN.id, [("Error"%go, ErrNaN__Errorⁱᵐᵖˡ)]); (form.id, []); (ptrT.id form.id, []); (RoundingMode.id, [("String"%go, RoundingMode__Stringⁱᵐᵖˡ)]); (ptrT.id RoundingMode.id, [("String"%go, RoundingMode__Stringⁱᵐᵖˡ)]); (Accuracy.id, [("String"%go, Accuracy__Stringⁱᵐᵖˡ)]); (ptrT.id Accuracy.id, [("String"%go, Accuracy__Stringⁱᵐᵖˡ)]); (Int.id, []); (ptrT.id Int.id, [("Abs"%go, Int__Absⁱᵐᵖˡ); ("Add"%go, Int__Addⁱᵐᵖˡ); ("And"%go, Int__Andⁱᵐᵖˡ); ("AndNot"%go, Int__AndNotⁱᵐᵖˡ); ("Append"%go, Int__Appendⁱᵐᵖˡ); ("AppendText"%go, Int__AppendTextⁱᵐᵖˡ); ("Binomial"%go, Int__Binomialⁱᵐᵖˡ); ("Bit"%go, Int__Bitⁱᵐᵖˡ); ("BitLen"%go, Int__BitLenⁱᵐᵖˡ); ("Bits"%go, Int__Bitsⁱᵐᵖˡ); ("Bytes"%go, Int__Bytesⁱᵐᵖˡ); ("Cmp"%go, Int__Cmpⁱᵐᵖˡ); ("CmpAbs"%go, Int__CmpAbsⁱᵐᵖˡ); ("Div"%go, Int__Divⁱᵐᵖˡ); ("DivMod"%go, Int__DivModⁱᵐᵖˡ); ("Exp"%go, Int__Expⁱᵐᵖˡ); ("FillBytes"%go, Int__FillBytesⁱᵐᵖˡ); ("Float64"%go, Int__Float64ⁱᵐᵖˡ); ("Format"%go, Int__Formatⁱᵐᵖˡ); ("GCD"%go, Int__GCDⁱᵐᵖˡ); ("GobDecode"%go, Int__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Int__GobEncodeⁱᵐᵖˡ); ("Int64"%go, Int__Int64ⁱᵐᵖˡ); ("IsInt64"%go, Int__IsInt64ⁱᵐᵖˡ); ("IsUint64"%go, Int__IsUint64ⁱᵐᵖˡ); ("Lsh"%go, Int__Lshⁱᵐᵖˡ); ("MarshalJSON"%go, Int__MarshalJSONⁱᵐᵖˡ); ("MarshalText"%go, Int__MarshalTextⁱᵐᵖˡ); ("Mod"%go, Int__Modⁱᵐᵖˡ); ("ModInverse"%go, Int__ModInverseⁱᵐᵖˡ); ("ModSqrt"%go, Int__ModSqrtⁱᵐᵖˡ); ("Mul"%go, Int__Mulⁱᵐᵖˡ); ("MulRange"%go, Int__MulRangeⁱᵐᵖˡ); ("Neg"%go, Int__Negⁱᵐᵖˡ); ("Not"%go, Int__Notⁱᵐᵖˡ); ("Or"%go, Int__Orⁱᵐᵖˡ); ("ProbablyPrime"%go, Int__ProbablyPrimeⁱᵐᵖˡ); ("Quo"%go, Int__Quoⁱᵐᵖˡ); ("QuoRem"%go, Int__QuoRemⁱᵐᵖˡ); ("Rand"%go, Int__Randⁱᵐᵖˡ); ("Rem"%go, Int__Remⁱᵐᵖˡ); ("Rsh"%go, Int__Rshⁱᵐᵖˡ); ("Scan"%go, Int__Scanⁱᵐᵖˡ); ("Set"%go, Int__Setⁱᵐᵖˡ); ("SetBit"%go, Int__SetBitⁱᵐᵖˡ); ("SetBits"%go, Int__SetBitsⁱᵐᵖˡ); ("SetBytes"%go, Int__SetBytesⁱᵐᵖˡ); ("SetInt64"%go, Int__SetInt64ⁱᵐᵖˡ); ("SetString"%go, Int__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Int__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Int__Signⁱᵐᵖˡ); ("Sqrt"%go, Int__Sqrtⁱᵐᵖˡ); ("String"%go, Int__Stringⁱᵐᵖˡ); ("Sub"%go, Int__Subⁱᵐᵖˡ); ("Text"%go, Int__Textⁱᵐᵖˡ); ("TrailingZeroBits"%go, Int__TrailingZeroBitsⁱᵐᵖˡ); ("Uint64"%go, Int__Uint64ⁱᵐᵖˡ); ("UnmarshalJSON"%go, Int__UnmarshalJSONⁱᵐᵖˡ); ("UnmarshalText"%go, Int__UnmarshalTextⁱᵐᵖˡ); ("Xor"%go, Int__Xorⁱᵐᵖˡ); ("exp"%go, Int__expⁱᵐᵖˡ); ("expSlow"%go, Int__expSlowⁱᵐᵖˡ); ("lehmerGCD"%go, Int__lehmerGCDⁱᵐᵖˡ); ("modSqrt3Mod4Prime"%go, Int__modSqrt3Mod4Primeⁱᵐᵖˡ); ("modSqrt5Mod8Prime"%go, Int__modSqrt5Mod8Primeⁱᵐᵖˡ); ("modSqrtTonelliShanks"%go, Int__modSqrtTonelliShanksⁱᵐᵖˡ); ("mul"%go, Int__mulⁱᵐᵖˡ); ("scaleDenom"%go, Int__scaleDenomⁱᵐᵖˡ); ("scan"%go, Int__scanⁱᵐᵖˡ); ("setFromScanner"%go, Int__setFromScannerⁱᵐᵖˡ)]); (byteReader.id, [("Read"%go, byteReader__Readⁱᵐᵖˡ); ("ReadByte"%go, byteReader__ReadByteⁱᵐᵖˡ); ("ReadRune"%go, byteReader__ReadRuneⁱᵐᵖˡ); ("SkipSpace"%go, byteReader__SkipSpaceⁱᵐᵖˡ); ("Token"%go, byteReader__Tokenⁱᵐᵖˡ); ("UnreadByte"%go, byteReader__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, byteReader__UnreadRuneⁱᵐᵖˡ); ("Width"%go, byteReader__Widthⁱᵐᵖˡ)]); (ptrT.id byteReader.id, [("Read"%go, byteReader__Readⁱᵐᵖˡ); ("ReadByte"%go, byteReader__ReadByteⁱᵐᵖˡ); ("ReadRune"%go, byteReader__ReadRuneⁱᵐᵖˡ); ("SkipSpace"%go, byteReader__SkipSpaceⁱᵐᵖˡ); ("Token"%go, byteReader__Tokenⁱᵐᵖˡ); ("UnreadByte"%go, byteReader__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, byteReader__UnreadRuneⁱᵐᵖˡ); ("Width"%go, byteReader__Widthⁱᵐᵖˡ)]); (nat.id, [("String"%go, nat__Stringⁱᵐᵖˡ); ("add"%go, nat__addⁱᵐᵖˡ); ("and"%go, nat__andⁱᵐᵖˡ); ("andNot"%go, nat__andNotⁱᵐᵖˡ); ("bit"%go, nat__bitⁱᵐᵖˡ); ("bitLen"%go, nat__bitLenⁱᵐᵖˡ); ("bytes"%go, nat__bytesⁱᵐᵖˡ); ("cmp"%go, nat__cmpⁱᵐᵖˡ); ("convertWords"%go, nat__convertWordsⁱᵐᵖˡ); ("div"%go, nat__divⁱᵐᵖˡ); ("divBasic"%go, nat__divBasicⁱᵐᵖˡ); ("divLarge"%go, nat__divLargeⁱᵐᵖˡ); ("divRecursive"%go, nat__divRecursiveⁱᵐᵖˡ); ("divRecursiveStep"%go, nat__divRecursiveStepⁱᵐᵖˡ); ("divW"%go, nat__divWⁱᵐᵖˡ); ("expNN"%go, nat__expNNⁱᵐᵖˡ); ("expNNMontgomery"%go, nat__expNNMontgomeryⁱᵐᵖˡ); ("expNNMontgomeryEven"%go, nat__expNNMontgomeryEvenⁱᵐᵖˡ); ("expNNWindowed"%go, nat__expNNWindowedⁱᵐᵖˡ); ("expWW"%go, nat__expWWⁱᵐᵖˡ); ("isPow2"%go, nat__isPow2ⁱᵐᵖˡ); ("itoa"%go, nat__itoaⁱᵐᵖˡ); ("lsh"%go, nat__lshⁱᵐᵖˡ); ("make"%go, nat__makeⁱᵐᵖˡ); ("modInverse"%go, nat__modInverseⁱᵐᵖˡ); ("modW"%go, nat__modWⁱᵐᵖˡ); ("montgomery"%go, nat__montgomeryⁱᵐᵖˡ); ("mul"%go, nat__mulⁱᵐᵖˡ); ("mulAddWW"%go, nat__mulAddWWⁱᵐᵖˡ); ("mulRange"%go, nat__mulRangeⁱᵐᵖˡ); ("norm"%go, nat__normⁱᵐᵖˡ); ("or"%go, nat__orⁱᵐᵖˡ); ("probablyPrimeLucas"%go, nat__probablyPrimeLucasⁱᵐᵖˡ); ("probablyPrimeMillerRabin"%go, nat__probablyPrimeMillerRabinⁱᵐᵖˡ); ("random"%go, nat__randomⁱᵐᵖˡ); ("rem"%go, nat__remⁱᵐᵖˡ); ("rsh"%go, nat__rshⁱᵐᵖˡ); ("scan"%go, nat__scanⁱᵐᵖˡ); ("set"%go, nat__setⁱᵐᵖˡ); ("setBit"%go, nat__setBitⁱᵐᵖˡ); ("setBytes"%go, nat__setBytesⁱᵐᵖˡ); ("setUint64"%go, nat__setUint64ⁱᵐᵖˡ); ("setWord"%go, nat__setWordⁱᵐᵖˡ); ("sqr"%go, nat__sqrⁱᵐᵖˡ); ("sqrt"%go, nat__sqrtⁱᵐᵖˡ); ("sticky"%go, nat__stickyⁱᵐᵖˡ); ("sub"%go, nat__subⁱᵐᵖˡ); ("subMod2N"%go, nat__subMod2Nⁱᵐᵖˡ); ("trailingZeroBits"%go, nat__trailingZeroBitsⁱᵐᵖˡ); ("trunc"%go, nat__truncⁱᵐᵖˡ); ("utoa"%go, nat__utoaⁱᵐᵖˡ); ("xor"%go, nat__xorⁱᵐᵖˡ)]); (ptrT.id nat.id, [("String"%go, nat__Stringⁱᵐᵖˡ); ("add"%go, nat__addⁱᵐᵖˡ); ("and"%go, nat__andⁱᵐᵖˡ); ("andNot"%go, nat__andNotⁱᵐᵖˡ); ("bit"%go, nat__bitⁱᵐᵖˡ); ("bitLen"%go, nat__bitLenⁱᵐᵖˡ); ("bytes"%go, nat__bytesⁱᵐᵖˡ); ("cmp"%go, nat__cmpⁱᵐᵖˡ); ("convertWords"%go, nat__convertWordsⁱᵐᵖˡ); ("div"%go, nat__divⁱᵐᵖˡ); ("divBasic"%go, nat__divBasicⁱᵐᵖˡ); ("divLarge"%go, nat__divLargeⁱᵐᵖˡ); ("divRecursive"%go, nat__divRecursiveⁱᵐᵖˡ); ("divRecursiveStep"%go, nat__divRecursiveStepⁱᵐᵖˡ); ("divW"%go, nat__divWⁱᵐᵖˡ); ("expNN"%go, nat__expNNⁱᵐᵖˡ); ("expNNMontgomery"%go, nat__expNNMontgomeryⁱᵐᵖˡ); ("expNNMontgomeryEven"%go, nat__expNNMontgomeryEvenⁱᵐᵖˡ); ("expNNWindowed"%go, nat__expNNWindowedⁱᵐᵖˡ); ("expWW"%go, nat__expWWⁱᵐᵖˡ); ("isPow2"%go, nat__isPow2ⁱᵐᵖˡ); ("itoa"%go, nat__itoaⁱᵐᵖˡ); ("lsh"%go, nat__lshⁱᵐᵖˡ); ("make"%go, nat__makeⁱᵐᵖˡ); ("modInverse"%go, nat__modInverseⁱᵐᵖˡ); ("modW"%go, nat__modWⁱᵐᵖˡ); ("montgomery"%go, nat__montgomeryⁱᵐᵖˡ); ("mul"%go, nat__mulⁱᵐᵖˡ); ("mulAddWW"%go, nat__mulAddWWⁱᵐᵖˡ); ("mulRange"%go, nat__mulRangeⁱᵐᵖˡ); ("norm"%go, nat__normⁱᵐᵖˡ); ("or"%go, nat__orⁱᵐᵖˡ); ("probablyPrimeLucas"%go, nat__probablyPrimeLucasⁱᵐᵖˡ); ("probablyPrimeMillerRabin"%go, nat__probablyPrimeMillerRabinⁱᵐᵖˡ); ("random"%go, nat__randomⁱᵐᵖˡ); ("rem"%go, nat__remⁱᵐᵖˡ); ("rsh"%go, nat__rshⁱᵐᵖˡ); ("scan"%go, nat__scanⁱᵐᵖˡ); ("set"%go, nat__setⁱᵐᵖˡ); ("setBit"%go, nat__setBitⁱᵐᵖˡ); ("setBytes"%go, nat__setBytesⁱᵐᵖˡ); ("setUint64"%go, nat__setUint64ⁱᵐᵖˡ); ("setWord"%go, nat__setWordⁱᵐᵖˡ); ("sqr"%go, nat__sqrⁱᵐᵖˡ); ("sqrt"%go, nat__sqrtⁱᵐᵖˡ); ("sticky"%go, nat__stickyⁱᵐᵖˡ); ("sub"%go, nat__subⁱᵐᵖˡ); ("subMod2N"%go, nat__subMod2Nⁱᵐᵖˡ); ("trailingZeroBits"%go, nat__trailingZeroBitsⁱᵐᵖˡ); ("trunc"%go, nat__truncⁱᵐᵖˡ); ("utoa"%go, nat__utoaⁱᵐᵖˡ); ("xor"%go, nat__xorⁱᵐᵖˡ)]); (stack.id, []); (ptrT.id stack.id, [("free"%go, stack__freeⁱᵐᵖˡ); ("nat"%go, stack__natⁱᵐᵖˡ); ("restore"%go, stack__restoreⁱᵐᵖˡ); ("save"%go, stack__saveⁱᵐᵖˡ)]); (divisor.id, []); (ptrT.id divisor.id, []); (Rat.id, []); (ptrT.id Rat.id, [("Abs"%go, Rat__Absⁱᵐᵖˡ); ("Add"%go, Rat__Addⁱᵐᵖˡ); ("AppendText"%go, Rat__AppendTextⁱᵐᵖˡ); ("Cmp"%go, Rat__Cmpⁱᵐᵖˡ); ("Denom"%go, Rat__Denomⁱᵐᵖˡ); ("Float32"%go, Rat__Float32ⁱᵐᵖˡ); ("Float64"%go, Rat__Float64ⁱᵐᵖˡ); ("FloatPrec"%go, Rat__FloatPrecⁱᵐᵖˡ); ("FloatString"%go, Rat__FloatStringⁱᵐᵖˡ); ("GobDecode"%go, Rat__GobDecodeⁱᵐᵖˡ); ("GobEncode"%go, Rat__GobEncodeⁱᵐᵖˡ); ("Inv"%go, Rat__Invⁱᵐᵖˡ); ("IsInt"%go, Rat__IsIntⁱᵐᵖˡ); ("MarshalText"%go, Rat__MarshalTextⁱᵐᵖˡ); ("Mul"%go, Rat__Mulⁱᵐᵖˡ); ("Neg"%go, Rat__Negⁱᵐᵖˡ); ("Num"%go, Rat__Numⁱᵐᵖˡ); ("Quo"%go, Rat__Quoⁱᵐᵖˡ); ("RatString"%go, Rat__RatStringⁱᵐᵖˡ); ("Scan"%go, Rat__Scanⁱᵐᵖˡ); ("Set"%go, Rat__Setⁱᵐᵖˡ); ("SetFloat64"%go, Rat__SetFloat64ⁱᵐᵖˡ); ("SetFrac"%go, Rat__SetFracⁱᵐᵖˡ); ("SetFrac64"%go, Rat__SetFrac64ⁱᵐᵖˡ); ("SetInt"%go, Rat__SetIntⁱᵐᵖˡ); ("SetInt64"%go, Rat__SetInt64ⁱᵐᵖˡ); ("SetString"%go, Rat__SetStringⁱᵐᵖˡ); ("SetUint64"%go, Rat__SetUint64ⁱᵐᵖˡ); ("Sign"%go, Rat__Signⁱᵐᵖˡ); ("String"%go, Rat__Stringⁱᵐᵖˡ); ("Sub"%go, Rat__Subⁱᵐᵖˡ); ("UnmarshalText"%go, Rat__UnmarshalTextⁱᵐᵖˡ); ("marshal"%go, Rat__marshalⁱᵐᵖˡ); ("norm"%go, Rat__normⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo big.big :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -963,9 +488,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #big.big (λ: <>,
-      exception_do (do:  (package.alloc big.big #());;;
-      do:  (_Accuracy_index'init #());;;
+    package.init big.big (λ: <>,
+      exception_do (do:  (_Accuracy_index'init #());;;
       do:  (hasADX'init #());;;
       do:  (pow5tab'init #());;;
       do:  (_'init #());;;

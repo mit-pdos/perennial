@@ -1,6 +1,6 @@
 [bootstrap]
 enabled = true
 prelude = [
-  "From New.golang.defn Require Export slice string defer.",
+  "From New.golang.defn Require Export slice defer.",
 ]
 direct_calls = true

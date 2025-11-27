@@ -6,30 +6,12 @@ Definition context : go_string := "context".
 
 Module context.
 
-Module Context. Definition id : go_string := "context.Context"%go. End Context.
-Module deadlineExceededError. Definition id : go_string := "context.deadlineExceededError"%go. End deadlineExceededError.
-Module emptyCtx. Definition id : go_string := "context.emptyCtx"%go. End emptyCtx.
-Module backgroundCtx. Definition id : go_string := "context.backgroundCtx"%go. End backgroundCtx.
-Module todoCtx. Definition id : go_string := "context.todoCtx"%go. End todoCtx.
-Module CancelFunc. Definition id : go_string := "context.CancelFunc"%go. End CancelFunc.
-Module CancelCauseFunc. Definition id : go_string := "context.CancelCauseFunc"%go. End CancelCauseFunc.
-Module afterFuncer. Definition id : go_string := "context.afterFuncer"%go. End afterFuncer.
-Module afterFuncCtx. Definition id : go_string := "context.afterFuncCtx"%go. End afterFuncCtx.
-Module stopCtx. Definition id : go_string := "context.stopCtx"%go. End stopCtx.
-Module canceler. Definition id : go_string := "context.canceler"%go. End canceler.
-Module cancelCtx. Definition id : go_string := "context.cancelCtx"%go. End cancelCtx.
-Module stringer. Definition id : go_string := "context.stringer"%go. End stringer.
-Module withoutCancelCtx. Definition id : go_string := "context.withoutCancelCtx"%go. End withoutCancelCtx.
-Module timerCtx. Definition id : go_string := "context.timerCtx"%go. End timerCtx.
-Module valueCtx. Definition id : go_string := "context.valueCtx"%go. End valueCtx.
-
 Section code.
 Context `{ffi_syntax}.
 
 
-Definition Context : go_type := interfaceT.
-#[global] Typeclasses Opaque Context.
-#[global] Opaque Context.
+Definition Contextⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Deadline"%go (go.Signature [] #false [time.Time; go.bool]); go.MethodElem #"Done"%go (go.Signature [] #false [go.ChannelType go.recvonly (go.StructType [
+  ])]); go.MethodElem #"Err"%go (go.Signature [] #false [go.error]); go.MethodElem #"Value"%go (go.Signature [go.InterfaceType []] #false [go.InterfaceType []])].
 
 Definition Canceled : go_string := "context.Canceled"%go.
 
@@ -39,23 +21,23 @@ Definition DeadlineExceeded : go_string := "context.DeadlineExceeded"%go.
 
 Axiom DeadlineExceeded'init : val.
 
-Axiom deadlineExceededError : go_type.
+Axiom deadlineExceededErrorⁱᵐᵖˡ : go.type.
 
-Axiom emptyCtx : go_type.
+Axiom emptyCtxⁱᵐᵖˡ : go.type.
 
-Axiom backgroundCtx : go_type.
+Axiom backgroundCtxⁱᵐᵖˡ : go.type.
 
-Axiom todoCtx : go_type.
+Axiom todoCtxⁱᵐᵖˡ : go.type.
 
 Definition Background : go_string := "context.Background"%go.
 
 Definition TODO : go_string := "context.TODO"%go.
 
-Axiom CancelFunc : go_type.
+Axiom CancelFuncⁱᵐᵖˡ : go.type.
 
 Definition WithCancel : go_string := "context.WithCancel"%go.
 
-Axiom CancelCauseFunc : go_type.
+Axiom CancelCauseFuncⁱᵐᵖˡ : go.type.
 
 Definition WithCancelCause : go_string := "context.WithCancelCause"%go.
 
@@ -65,11 +47,11 @@ Definition Cause : go_string := "context.Cause"%go.
 
 Definition AfterFunc : go_string := "context.AfterFunc"%go.
 
-Axiom afterFuncer : go_type.
+Axiom afterFuncerⁱᵐᵖˡ : go.type.
 
-Axiom afterFuncCtx : go_type.
+Axiom afterFuncCtxⁱᵐᵖˡ : go.type.
 
-Axiom stopCtx : go_type.
+Axiom stopCtxⁱᵐᵖˡ : go.type.
 
 Definition goroutines : go_string := "context.goroutines"%go.
 
@@ -79,7 +61,7 @@ Definition parentCancelCtx : go_string := "context.parentCancelCtx"%go.
 
 Definition removeChild : go_string := "context.removeChild"%go.
 
-Axiom canceler : go_type.
+Axiom cancelerⁱᵐᵖˡ : go.type.
 
 Definition closedchan : go_string := "context.closedchan"%go.
 
@@ -87,21 +69,21 @@ Axiom closedchan'init : val.
 
 Definition init : go_string := "context.init"%go.
 
-Axiom cancelCtx : go_type.
+Axiom cancelCtxⁱᵐᵖˡ : go.type.
 
-Axiom stringer : go_type.
+Axiom stringerⁱᵐᵖˡ : go.type.
 
 Definition contextName : go_string := "context.contextName"%go.
 
 Definition WithoutCancel : go_string := "context.WithoutCancel"%go.
 
-Axiom withoutCancelCtx : go_type.
+Axiom withoutCancelCtxⁱᵐᵖˡ : go.type.
 
 Definition WithDeadline : go_string := "context.WithDeadline"%go.
 
 Definition WithDeadlineCause : go_string := "context.WithDeadlineCause"%go.
 
-Axiom timerCtx : go_type.
+Axiom timerCtxⁱᵐᵖˡ : go.type.
 
 Definition WithTimeout : go_string := "context.WithTimeout"%go.
 
@@ -109,13 +91,43 @@ Definition WithTimeoutCause : go_string := "context.WithTimeoutCause"%go.
 
 Definition WithValue : go_string := "context.WithValue"%go.
 
-Axiom valueCtx : go_type.
+Axiom valueCtxⁱᵐᵖˡ : go.type.
 
 Definition stringify : go_string := "context.stringify"%go.
 
 Definition value : go_string := "context.value"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Context : go.type := go.Named "context.Context"%go [].
+
+Definition deadlineExceededError : go.type := go.Named "context.deadlineExceededError"%go [].
+
+Definition emptyCtx : go.type := go.Named "context.emptyCtx"%go [].
+
+Definition backgroundCtx : go.type := go.Named "context.backgroundCtx"%go [].
+
+Definition todoCtx : go.type := go.Named "context.todoCtx"%go [].
+
+Definition CancelFunc : go.type := go.Named "context.CancelFunc"%go [].
+
+Definition CancelCauseFunc : go.type := go.Named "context.CancelCauseFunc"%go [].
+
+Definition afterFuncer : go.type := go.Named "context.afterFuncer"%go [].
+
+Definition afterFuncCtx : go.type := go.Named "context.afterFuncCtx"%go [].
+
+Definition stopCtx : go.type := go.Named "context.stopCtx"%go [].
+
+Definition canceler : go.type := go.Named "context.canceler"%go [].
+
+Definition cancelCtx : go.type := go.Named "context.cancelCtx"%go [].
+
+Definition stringer : go.type := go.Named "context.stringer"%go [].
+
+Definition withoutCancelCtx : go.type := go.Named "context.withoutCancelCtx"%go [].
+
+Definition timerCtx : go.type := go.Named "context.timerCtx"%go [].
+
+Definition valueCtx : go.type := go.Named "context.valueCtx"%go [].
 
 Axiom Backgroundⁱᵐᵖˡ : val.
 
@@ -155,117 +167,8 @@ Axiom valueⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Background, Backgroundⁱᵐᵖˡ); (TODO, TODOⁱᵐᵖˡ); (WithCancel, WithCancelⁱᵐᵖˡ); (WithCancelCause, WithCancelCauseⁱᵐᵖˡ); (withCancel, withCancelⁱᵐᵖˡ); (Cause, Causeⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (parentCancelCtx, parentCancelCtxⁱᵐᵖˡ); (removeChild, removeChildⁱᵐᵖˡ); (contextName, contextNameⁱᵐᵖˡ); (WithoutCancel, WithoutCancelⁱᵐᵖˡ); (WithDeadline, WithDeadlineⁱᵐᵖˡ); (WithDeadlineCause, WithDeadlineCauseⁱᵐᵖˡ); (WithTimeout, WithTimeoutⁱᵐᵖˡ); (WithTimeoutCause, WithTimeoutCauseⁱᵐᵖˡ); (WithValue, WithValueⁱᵐᵖˡ); (stringify, stringifyⁱᵐᵖˡ); (value, valueⁱᵐᵖˡ)].
 
-Axiom deadlineExceededError__Errorⁱᵐᵖˡ : val.
-
-Axiom deadlineExceededError__Temporaryⁱᵐᵖˡ : val.
-
-Axiom deadlineExceededError__Timeoutⁱᵐᵖˡ : val.
-
-Axiom emptyCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom emptyCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom emptyCtx__Errⁱᵐᵖˡ : val.
-
-Axiom emptyCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom backgroundCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom backgroundCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom backgroundCtx__Errⁱᵐᵖˡ : val.
-
-Axiom backgroundCtx__Stringⁱᵐᵖˡ : val.
-
-Axiom backgroundCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom todoCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom todoCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom todoCtx__Errⁱᵐᵖˡ : val.
-
-Axiom todoCtx__Stringⁱᵐᵖˡ : val.
-
-Axiom todoCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom afterFuncCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom afterFuncCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom afterFuncCtx__Errⁱᵐᵖˡ : val.
-
-Axiom afterFuncCtx__Stringⁱᵐᵖˡ : val.
-
-Axiom afterFuncCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom afterFuncCtx__cancelⁱᵐᵖˡ : val.
-
-Axiom afterFuncCtx__propagateCancelⁱᵐᵖˡ : val.
-
-Axiom stopCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom stopCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom stopCtx__Errⁱᵐᵖˡ : val.
-
-Axiom stopCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom cancelCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom cancelCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom cancelCtx__Errⁱᵐᵖˡ : val.
-
-Axiom cancelCtx__Stringⁱᵐᵖˡ : val.
-
-Axiom cancelCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom cancelCtx__cancelⁱᵐᵖˡ : val.
-
-Axiom cancelCtx__propagateCancelⁱᵐᵖˡ : val.
-
-Axiom withoutCancelCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom withoutCancelCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom withoutCancelCtx__Errⁱᵐᵖˡ : val.
-
-Axiom withoutCancelCtx__Stringⁱᵐᵖˡ : val.
-
-Axiom withoutCancelCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom timerCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom timerCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom timerCtx__Errⁱᵐᵖˡ : val.
-
-Axiom timerCtx__Stringⁱᵐᵖˡ : val.
-
-Axiom timerCtx__Valueⁱᵐᵖˡ : val.
-
-Axiom timerCtx__cancelⁱᵐᵖˡ : val.
-
-Axiom timerCtx__propagateCancelⁱᵐᵖˡ : val.
-
-Axiom valueCtx__Deadlineⁱᵐᵖˡ : val.
-
-Axiom valueCtx__Doneⁱᵐᵖˡ : val.
-
-Axiom valueCtx__Errⁱᵐᵖˡ : val.
-
-Axiom valueCtx__Stringⁱᵐᵖˡ : val.
-
-Axiom valueCtx__Valueⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(deadlineExceededError.id, [("Error"%go, deadlineExceededError__Errorⁱᵐᵖˡ); ("Temporary"%go, deadlineExceededError__Temporaryⁱᵐᵖˡ); ("Timeout"%go, deadlineExceededError__Timeoutⁱᵐᵖˡ)]); (ptrT.id deadlineExceededError.id, [("Error"%go, deadlineExceededError__Errorⁱᵐᵖˡ); ("Temporary"%go, deadlineExceededError__Temporaryⁱᵐᵖˡ); ("Timeout"%go, deadlineExceededError__Timeoutⁱᵐᵖˡ)]); (emptyCtx.id, [("Deadline"%go, emptyCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, emptyCtx__Doneⁱᵐᵖˡ); ("Err"%go, emptyCtx__Errⁱᵐᵖˡ); ("Value"%go, emptyCtx__Valueⁱᵐᵖˡ)]); (ptrT.id emptyCtx.id, [("Deadline"%go, emptyCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, emptyCtx__Doneⁱᵐᵖˡ); ("Err"%go, emptyCtx__Errⁱᵐᵖˡ); ("Value"%go, emptyCtx__Valueⁱᵐᵖˡ)]); (backgroundCtx.id, [("Deadline"%go, backgroundCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, backgroundCtx__Doneⁱᵐᵖˡ); ("Err"%go, backgroundCtx__Errⁱᵐᵖˡ); ("String"%go, backgroundCtx__Stringⁱᵐᵖˡ); ("Value"%go, backgroundCtx__Valueⁱᵐᵖˡ)]); (ptrT.id backgroundCtx.id, [("Deadline"%go, backgroundCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, backgroundCtx__Doneⁱᵐᵖˡ); ("Err"%go, backgroundCtx__Errⁱᵐᵖˡ); ("String"%go, backgroundCtx__Stringⁱᵐᵖˡ); ("Value"%go, backgroundCtx__Valueⁱᵐᵖˡ)]); (todoCtx.id, [("Deadline"%go, todoCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, todoCtx__Doneⁱᵐᵖˡ); ("Err"%go, todoCtx__Errⁱᵐᵖˡ); ("String"%go, todoCtx__Stringⁱᵐᵖˡ); ("Value"%go, todoCtx__Valueⁱᵐᵖˡ)]); (ptrT.id todoCtx.id, [("Deadline"%go, todoCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, todoCtx__Doneⁱᵐᵖˡ); ("Err"%go, todoCtx__Errⁱᵐᵖˡ); ("String"%go, todoCtx__Stringⁱᵐᵖˡ); ("Value"%go, todoCtx__Valueⁱᵐᵖˡ)]); (CancelFunc.id, []); (ptrT.id CancelFunc.id, []); (CancelCauseFunc.id, []); (ptrT.id CancelCauseFunc.id, []); (afterFuncCtx.id, [("Deadline"%go, afterFuncCtx__Deadlineⁱᵐᵖˡ)]); (ptrT.id afterFuncCtx.id, [("Deadline"%go, afterFuncCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, afterFuncCtx__Doneⁱᵐᵖˡ); ("Err"%go, afterFuncCtx__Errⁱᵐᵖˡ); ("String"%go, afterFuncCtx__Stringⁱᵐᵖˡ); ("Value"%go, afterFuncCtx__Valueⁱᵐᵖˡ); ("cancel"%go, afterFuncCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, afterFuncCtx__propagateCancelⁱᵐᵖˡ)]); (stopCtx.id, [("Deadline"%go, stopCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, stopCtx__Doneⁱᵐᵖˡ); ("Err"%go, stopCtx__Errⁱᵐᵖˡ); ("Value"%go, stopCtx__Valueⁱᵐᵖˡ)]); (ptrT.id stopCtx.id, [("Deadline"%go, stopCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, stopCtx__Doneⁱᵐᵖˡ); ("Err"%go, stopCtx__Errⁱᵐᵖˡ); ("Value"%go, stopCtx__Valueⁱᵐᵖˡ)]); (cancelCtx.id, [("Deadline"%go, cancelCtx__Deadlineⁱᵐᵖˡ)]); (ptrT.id cancelCtx.id, [("Deadline"%go, cancelCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, cancelCtx__Doneⁱᵐᵖˡ); ("Err"%go, cancelCtx__Errⁱᵐᵖˡ); ("String"%go, cancelCtx__Stringⁱᵐᵖˡ); ("Value"%go, cancelCtx__Valueⁱᵐᵖˡ); ("cancel"%go, cancelCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, cancelCtx__propagateCancelⁱᵐᵖˡ)]); (withoutCancelCtx.id, [("Deadline"%go, withoutCancelCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, withoutCancelCtx__Doneⁱᵐᵖˡ); ("Err"%go, withoutCancelCtx__Errⁱᵐᵖˡ); ("String"%go, withoutCancelCtx__Stringⁱᵐᵖˡ); ("Value"%go, withoutCancelCtx__Valueⁱᵐᵖˡ)]); (ptrT.id withoutCancelCtx.id, [("Deadline"%go, withoutCancelCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, withoutCancelCtx__Doneⁱᵐᵖˡ); ("Err"%go, withoutCancelCtx__Errⁱᵐᵖˡ); ("String"%go, withoutCancelCtx__Stringⁱᵐᵖˡ); ("Value"%go, withoutCancelCtx__Valueⁱᵐᵖˡ)]); (timerCtx.id, []); (ptrT.id timerCtx.id, [("Deadline"%go, timerCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, timerCtx__Doneⁱᵐᵖˡ); ("Err"%go, timerCtx__Errⁱᵐᵖˡ); ("String"%go, timerCtx__Stringⁱᵐᵖˡ); ("Value"%go, timerCtx__Valueⁱᵐᵖˡ); ("cancel"%go, timerCtx__cancelⁱᵐᵖˡ); ("propagateCancel"%go, timerCtx__propagateCancelⁱᵐᵖˡ)]); (valueCtx.id, [("Deadline"%go, valueCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, valueCtx__Doneⁱᵐᵖˡ); ("Err"%go, valueCtx__Errⁱᵐᵖˡ)]); (ptrT.id valueCtx.id, [("Deadline"%go, valueCtx__Deadlineⁱᵐᵖˡ); ("Done"%go, valueCtx__Doneⁱᵐᵖˡ); ("Err"%go, valueCtx__Errⁱᵐᵖˡ); ("String"%go, valueCtx__Stringⁱᵐᵖˡ); ("Value"%go, valueCtx__Valueⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo context.context :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.time.time];
   |}.
 
@@ -273,9 +176,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #context.context (λ: <>,
+    package.init context.context (λ: <>,
       exception_do (do:  (time.initialize' #());;;
-      do:  (package.alloc context.context #());;;
       do:  (Canceled'init #());;;
       do:  (DeadlineExceeded'init #());;;
       do:  (closedchan'init #()))

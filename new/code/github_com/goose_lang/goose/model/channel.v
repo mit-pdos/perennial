@@ -2,22 +2,16 @@
 Require Export New.code.github_com.goose_lang.primitive.
 
 From New.golang Require Import defn.core.
-From New.golang.defn Require Export slice string defer.
+From New.golang.defn Require Export slice defer.
 Definition channel : go_string := "github.com/goose-lang/goose/model/channel".
 
 Module channel.
-
-Module offerState. Definition id : go_string := "github.com/goose-lang/goose/model/channel.offerState"%go. End offerState.
-Module Channel. Definition id : go_string := "github.com/goose-lang/goose/model/channel.Channel"%go. End Channel.
-Module SelectDir. Definition id : go_string := "github.com/goose-lang/goose/model/channel.SelectDir"%go. End SelectDir.
 
 Section code.
 Context `{ffi_syntax}.
 
 
-Definition offerState : go_type := uint64T.
-#[global] Typeclasses Opaque offerState.
-#[global] Opaque offerState.
+Definition offerStateⁱᵐᵖˡ : go.type := go.uint64.
 
 Definition buffered : val := #(W64 0).
 
@@ -33,116 +27,119 @@ Definition rcvDone : val := #(W64 5).
 
 Definition closed : val := #(W64 6).
 
-Definition Channel : val :=
-  λ: "T", type.structT [
-    (#"cap"%go, #intT);
-    (#"mu"%go, #ptrT);
-    (#"state"%go, #offerState);
-    (#"buffer"%go, #sliceT);
-    (#"v"%go, "T")
-  ].
-  #[global] Typeclasses Opaque Channel.
-  #[global] Opaque Channel.
+Definition offerState : go.type := go.Named "github.com/goose-lang/goose/model/channel.offerState"%go [].
+
+Definition Channelⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+  (go.FieldDecl "cap"%go go.int);
+  (go.FieldDecl "mu"%go (go.PointerType primitive.Mutex));
+  (go.FieldDecl "state"%go offerState);
+  (go.FieldDecl "buffer"%go (go.SliceType T));
+  (go.FieldDecl "v"%go T)
+].
 
 Definition NewChannel : go_string := "github.com/goose-lang/goose/model/channel.NewChannel"%go.
 
+Definition Channel(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/model/channel.Channel"%go [T].
+
 (* go: channel.go:31:6 *)
-Definition NewChannelⁱᵐᵖˡ : val :=
-  λ: "T" "cap",
-    exception_do (let: "cap" := (mem.alloc "cap") in
-    let: "local_state" := (mem.alloc (type.zero_val #offerState)) in
+Definition NewChannelⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "cap",
+    exception_do (let: "cap" := (go.AllocValue go.int "cap") in
+    let: "local_state" := (GoAlloc offerState #()) in
     let: "$r0" := idle in
-    do:  ("local_state" <-[#offerState] "$r0");;;
-    (if: int_gt (![#intT] "cap") #(W64 0)
+    do:  ("local_state" <-[offerState] "$r0");;;
+    (if: (![go.int] "cap") >⟨go.int⟩ #(W64 0)
     then
       let: "$r0" := buffered in
-      do:  ("local_state" <-[#offerState] "$r0")
+      do:  ("local_state" <-[offerState] "$r0")
     else do:  #());;;
-    return: (mem.alloc (let: "$cap" := (![#intT] "cap") in
-     let: "$mu" := (mem.alloc (type.zero_val #primitive.Mutex)) in
-     let: "$buffer" := (slice.make2 "T" #(W64 0)) in
-     let: "$state" := (![#offerState] "local_state") in
-     struct.make (Channel "T") [{
-       "cap" ::= "$cap";
-       "mu" ::= "$mu";
-       "state" ::= "$state";
-       "buffer" ::= "$buffer";
-       "v" ::= type.zero_val "T"
-     }]))).
+    return: (go.AllocValue (Channel T) (let: "$cap" := (![go.int] "cap") in
+     let: "$mu" := (GoAlloc primitive.Mutex #()) in
+     let: "$buffer" := ((FuncResolve go.make2 [go.SliceType T] #()) #(W64 0)) in
+     let: "$state" := (![offerState] "local_state") in
+     CompositeLiteral (Channel T) (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$cap" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$mu" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$state" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$buffer" in
+       let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal T #()) in
+       "$$vs"
+     )))).
 
 (* Non-Blocking send operation for select statements. Blocking send and blocking select
    statements simply call this in a for loop until it returns true.
 
    go: channel.go:46:22 *)
-Definition Channel__TrySendⁱᵐᵖˡ : val :=
-  λ: "c" "T" "val" "blocking",
-    exception_do (let: "c" := (mem.alloc "c") in
-    let: "blocking" := (mem.alloc "blocking") in
-    let: "val" := (mem.alloc "val") in
-    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-    let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-    (if: "$sw" = closed
+Definition Channel__TrySendⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" "val" "blocking",
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    let: "blocking" := (go.AllocValue go.bool "blocking") in
+    let: "val" := (go.AllocValue T "val") in
+    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+    let: "$sw" := (![offerState] (StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c"))) in
+    (if: "$sw" =⟨offerState⟩ closed
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"send on closed channel"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (InterfaceMake go.string #"send on closed channel"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else
-      (if: "$sw" = buffered
+      (if: "$sw" =⟨offerState⟩ buffered
       then
-        (if: int_lt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-        slice.len "$a0") (![#intT] (struct.field_ref (Channel "T") #"cap"%go (![#ptrT] "c")))
+        (if: (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+        (FuncResolve go.len [go.SliceType T] #()) "$a0") <⟨go.int⟩ (![go.int] (StructFieldRef (Channel T) "cap"%go (![go.PointerType (Channel T)] "c")))
         then
-          let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-          let: "$a1" := ((let: "$sl0" := (!["T"] "val") in
-          slice.literal "T" ["$sl0"])) in
-          (slice.append "T") "$a0" "$a1") in
-          do:  ((struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c")) <-[#sliceT] "$r0");;;
-          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+          let: "$r0" := (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+          let: "$a1" := ((let: "$sl0" := (![T] "val") in
+          CompositeLiteral T T ["$sl0"])) in
+          (FuncResolve go.append [go.SliceType T] #()) "$a0" "$a1") in
+          do:  ((StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")) <-[go.SliceType T] "$r0");;;
+          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
           return: (#true)
         else do:  #());;;
-        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
         return: (#false)
       else
-        (if: "$sw" = rcvPending
+        (if: "$sw" =⟨offerState⟩ rcvPending
         then
           let: "$r0" := sndCommit in
-          do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-          let: "$r0" := (!["T"] "val") in
-          do:  ((struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c")) <-["T"] "$r0");;;
-          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+          do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+          let: "$r0" := (![T] "val") in
+          do:  ((StructFieldRef (Channel T) "v"%go (![go.PointerType (Channel T)] "c")) <-[T] "$r0");;;
+          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
           return: (#true)
         else
-          (if: "$sw" = idle
+          (if: "$sw" =⟨offerState⟩ idle
           then
-            (if: ![#boolT] "blocking"
+            (if: ![go.bool] "blocking"
             then
               let: "$r0" := sndPending in
-              do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-              let: "$r0" := (!["T"] "val") in
-              do:  ((struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c")) <-["T"] "$r0");;;
-              do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-              do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-              let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-              (if: "$sw" = rcvDone
+              do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+              let: "$r0" := (![T] "val") in
+              do:  ((StructFieldRef (Channel T) "v"%go (![go.PointerType (Channel T)] "c")) <-[T] "$r0");;;
+              do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+              do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+              let: "$sw" := (![offerState] (StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c"))) in
+              (if: "$sw" =⟨offerState⟩ rcvDone
               then
                 let: "$r0" := idle in
-                do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-                do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+                do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+                do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
                 return: (#true)
               else
-                (if: "$sw" = sndPending
+                (if: "$sw" =⟨offerState⟩ sndPending
                 then
                   let: "$r0" := idle in
-                  do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-                  do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+                  do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+                  do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
                   return: (#false)
                 else
-                  do:  (let: "$a0" := (interface.make #stringT.id #"Invalid state transition with open receive offer"%go) in
-                  Panic "$a0")))
+                  do:  (let: "$a0" := (InterfaceMake go.string #"Invalid state transition with open receive offer"%go) in
+                  (FuncResolve go.panic [] #()) "$a0")))
             else do:  #());;;
-            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
             return: (#false)
           else
-            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
             return: (#false)))))).
 
 (* c.Send(val)
@@ -152,18 +149,18 @@ Definition Channel__TrySendⁱᵐᵖˡ : val :=
    c <- val
 
    go: channel.go:105:22 *)
-Definition Channel__Sendⁱᵐᵖˡ : val :=
-  λ: "c" "T" "v",
-    exception_do (let: "c" := (mem.alloc "c") in
-    let: "v" := (mem.alloc "v") in
-    (if: (![#ptrT] "c") = #null
+Definition Channel__Sendⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" "v",
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    let: "v" := (go.AllocValue T "v") in
+    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
     then
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
     else do:  #());;;
-    (for: (λ: <>, (~ (let: "$a0" := (!["T"] "v") in
+    (for: (λ: <>, (~ (let: "$a0" := (![T] "v") in
     let: "$a1" := #true in
-    (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "c") "T") "$a0" "$a1"))); (λ: <>, #()) := λ: <>,
+    (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T)] "c")) "$a0" "$a1"))); (λ: <>, #()) := λ: <>,
       do:  #());;;
     return: #()).
 
@@ -174,114 +171,114 @@ Definition Channel__Sendⁱᵐᵖˡ : val :=
    with another non-blocking send.
 
    go: channel.go:120:22 *)
-Definition Channel__TryReceiveⁱᵐᵖˡ : val :=
-  λ: "c" "T" "blocking",
-    exception_do (let: "c" := (mem.alloc "c") in
-    let: "blocking" := (mem.alloc "blocking") in
-    let: "local_val" := (mem.alloc (type.zero_val "T")) in
-    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-    let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-    (if: "$sw" = buffered
+Definition Channel__TryReceiveⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" "blocking",
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    let: "blocking" := (go.AllocValue go.bool "blocking") in
+    let: "local_val" := (GoAlloc T #()) in
+    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+    let: "$sw" := (![offerState] (StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c"))) in
+    (if: "$sw" =⟨offerState⟩ buffered
     then
-      let: "v" := (mem.alloc (type.zero_val "T")) in
-      (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-      slice.len "$a0") #(W64 0)
+      let: "v" := (GoAlloc T #()) in
+      (if: (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+      (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
       then
-        let: "val_copy" := (mem.alloc (type.zero_val "T")) in
-        let: "$r0" := (!["T"] (slice.elem_ref "T" (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) #(W64 0))) in
-        do:  ("val_copy" <-["T"] "$r0");;;
-        let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-        slice.slice "T" "$s" #(W64 1) (slice.len "$s")) in
-        do:  ((struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c")) <-[#sliceT] "$r0");;;
-        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-        return: (#true, !["T"] "val_copy", #true)
+        let: "val_copy" := (GoAlloc T #()) in
+        let: "$r0" := (![T] (slice.elem_ref T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) #(W64 0))) in
+        do:  ("val_copy" <-[T] "$r0");;;
+        let: "$r0" := (let: "$s" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+        slice.slice T "$s" #(W64 1) (slice.len "$s")) in
+        do:  ((StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")) <-[go.SliceType T] "$r0");;;
+        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+        return: (#true, ![T] "val_copy", #true)
       else do:  #());;;
-      do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-      return: (#false, !["T"] "v", #true)
+      do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+      return: (#false, ![T] "v", #true)
     else
-      (if: "$sw" = closed
+      (if: "$sw" =⟨offerState⟩ closed
       then
-        (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-        slice.len "$a0") #(W64 0)
+        (if: (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+        (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
         then
-          let: "val_copy" := (mem.alloc (type.zero_val "T")) in
-          let: "$r0" := (!["T"] (slice.elem_ref "T" (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) #(W64 0))) in
-          do:  ("val_copy" <-["T"] "$r0");;;
-          let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-          slice.slice "T" "$s" #(W64 1) (slice.len "$s")) in
-          do:  ((struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c")) <-[#sliceT] "$r0");;;
-          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-          return: (#true, !["T"] "val_copy", #true)
+          let: "val_copy" := (GoAlloc T #()) in
+          let: "$r0" := (![T] (slice.elem_ref T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) #(W64 0))) in
+          do:  ("val_copy" <-[T] "$r0");;;
+          let: "$r0" := (let: "$s" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+          slice.slice T "$s" #(W64 1) (slice.len "$s")) in
+          do:  ((StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")) <-[go.SliceType T] "$r0");;;
+          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+          return: (#true, ![T] "val_copy", #true)
         else do:  #());;;
-        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-        return: (#true, !["T"] "local_val", #false)
+        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+        return: (#true, ![T] "local_val", #false)
       else
-        (if: "$sw" = sndPending
+        (if: "$sw" =⟨offerState⟩ sndPending
         then
-          let: "$r0" := (!["T"] (struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c"))) in
-          do:  ("local_val" <-["T"] "$r0");;;
+          let: "$r0" := (![T] (StructFieldRef (Channel T) "v"%go (![go.PointerType (Channel T)] "c"))) in
+          do:  ("local_val" <-[T] "$r0");;;
           let: "$r0" := rcvDone in
-          do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-          return: (#true, !["T"] "local_val", #true)
+          do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+          do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+          return: (#true, ![T] "local_val", #true)
         else
-          (if: "$sw" = idle
+          (if: "$sw" =⟨offerState⟩ idle
           then
-            (if: ![#boolT] "blocking"
+            (if: ![go.bool] "blocking"
             then
               let: "$r0" := rcvPending in
-              do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-              do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-              do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-              let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-              (if: "$sw" = rcvPending
+              do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+              do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+              do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+              let: "$sw" := (![offerState] (StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c"))) in
+              (if: "$sw" =⟨offerState⟩ rcvPending
               then
                 let: "$r0" := idle in
-                do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-                do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-                return: (#false, !["T"] "local_val", #true)
+                do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+                do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+                return: (#false, ![T] "local_val", #true)
               else
-                (if: "$sw" = sndCommit
+                (if: "$sw" =⟨offerState⟩ sndCommit
                 then
                   let: "$r0" := idle in
-                  do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-                  let: "$r0" := (!["T"] (struct.field_ref (Channel "T") #"v"%go (![#ptrT] "c"))) in
-                  do:  ("local_val" <-["T"] "$r0");;;
-                  do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-                  return: (#true, !["T"] "local_val", #true)
+                  do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+                  let: "$r0" := (![T] (StructFieldRef (Channel T) "v"%go (![go.PointerType (Channel T)] "c"))) in
+                  do:  ("local_val" <-[T] "$r0");;;
+                  do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+                  return: (#true, ![T] "local_val", #true)
                 else
-                  do:  (let: "$a0" := (interface.make #stringT.id #"not supposed to be here!"%go) in
-                  Panic "$a0")))
+                  do:  (let: "$a0" := (InterfaceMake go.string #"not supposed to be here!"%go) in
+                  (FuncResolve go.panic [] #()) "$a0")))
             else do:  #());;;
-            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-            return: (#false, !["T"] "local_val", #true)
+            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+            return: (#false, ![T] "local_val", #true)
           else
-            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-            return: (#false, !["T"] "local_val", #true)))))).
+            do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+            return: (#false, ![T] "local_val", #true)))))).
 
 (* go: channel.go:189:22 *)
-Definition Channel__Receiveⁱᵐᵖˡ : val :=
-  λ: "c" "T" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+Definition Channel__Receiveⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
     then
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "v" := (mem.alloc (type.zero_val "T")) in
-      let: "success" := (mem.alloc (type.zero_val #boolT)) in
+      let: "ok" := (GoAlloc go.bool #()) in
+      let: "v" := (GoAlloc T #()) in
+      let: "success" := (GoAlloc go.bool #()) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-      (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "c") "T") "$a0") in
+      (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T)] "c")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("success" <-[#boolT] "$r0");;;
-      do:  ("v" <-["T"] "$r1");;;
-      do:  ("ok" <-[#boolT] "$r2");;;
-      (if: ![#boolT] "success"
-      then return: (!["T"] "v", ![#boolT] "ok")
+      do:  ("success" <-[go.bool] "$r0");;;
+      do:  ("v" <-[T] "$r1");;;
+      do:  ("ok" <-[go.bool] "$r2");;;
+      (if: ![go.bool] "success"
+      then return: (![T] "v", ![go.bool] "ok")
       else do:  #()))).
 
 (* This is a non-blocking attempt at closing. The only reason close blocks ever is because there
@@ -289,24 +286,24 @@ Definition Channel__Receiveⁱᵐᵖˡ : val :=
    the closer must still obtain the channel's lock
 
    go: channel.go:206:22 *)
-Definition Channel__tryCloseⁱᵐᵖˡ : val :=
-  λ: "c" "T" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
-    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-    let: "$sw" := (![#offerState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) in
-    (if: "$sw" = closed
+Definition Channel__tryCloseⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+    let: "$sw" := (![offerState] (StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c"))) in
+    (if: "$sw" =⟨offerState⟩ closed
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"close of closed channel"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (InterfaceMake go.string #"close of closed channel"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else
-      (if: ("$sw" = buffered) || ("$sw" = idle)
+      (if: ("$sw" =⟨offerState⟩ buffered) || ("$sw" =⟨offerState⟩ idle)
       then
         let: "$r0" := closed in
-        do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#offerState] "$r0");;;
-        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+        do:  ((StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c")) <-[offerState] "$r0");;;
+        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
         return: (#true)
       else
-        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
+        do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
         return: (#false)))).
 
 (* c.Close()
@@ -316,15 +313,15 @@ Definition Channel__tryCloseⁱᵐᵖˡ : val :=
    close(c)
 
    go: channel.go:228:22 *)
-Definition Channel__Closeⁱᵐᵖˡ : val :=
-  λ: "c" "T" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+Definition Channel__Closeⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"close of nil channel"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (InterfaceMake go.string #"close of nil channel"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    (for: (λ: <>, (~ ((Channel__tryCloseⁱᵐᵖˡ (![#ptrT] "c") "T") #()))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (~ ((Channel__tryCloseⁱᵐᵖˡ (![go.PointerType (Channel T)] "c")) #()))); (λ: <>, #()) := λ: <>,
       do:  #());;;
     return: #()).
 
@@ -334,16 +331,16 @@ Definition Channel__Closeⁱᵐᵖˡ : val :=
    v := c<-
 
    go: channel.go:240:22 *)
-Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ : val :=
-  λ: "c" "T" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
-    let: "return_val" := (mem.alloc (type.zero_val "T")) in
-    let: ("$ret0", "$ret1") := ((Channel__Receiveⁱᵐᵖˡ (![#ptrT] "c") "T") #()) in
+Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    let: "return_val" := (GoAlloc T #()) in
+    let: ("$ret0", "$ret1") := ((Channel__Receiveⁱᵐᵖˡ (![go.PointerType (Channel T)] "c")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("return_val" <-["T"] "$r0");;;
+    do:  ("return_val" <-[T] "$r0");;;
     do:  "$r1";;;
-    return: (!["T"] "return_val")).
+    return: (![T] "return_val")).
 
 (* c.Len()
 
@@ -354,19 +351,19 @@ Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ : val :=
    semantics.
 
    go: channel.go:252:22 *)
-Definition Channel__Lenⁱᵐᵖˡ : val :=
-  λ: "c" "T" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+Definition Channel__Lenⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
     then return: (#(W64 0))
     else do:  #());;;
-    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-    let: "chan_len" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
-    slice.len "$a0") in
-    do:  ("chan_len" <-[#intT] "$r0");;;
-    do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![#ptrT] (struct.field_ref (Channel "T") #"mu"%go (![#ptrT] "c")))) #());;;
-    return: (![#intT] "chan_len")).
+    do:  ((primitive.Mutex__Lockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+    let: "chan_len" := (GoAlloc go.int #()) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+    (FuncResolve go.len [go.SliceType T] #()) "$a0") in
+    do:  ("chan_len" <-[go.int] "$r0");;;
+    do:  ((primitive.Mutex__Unlockⁱᵐᵖˡ (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
+    return: (![go.int] "chan_len")).
 
 (* c.Cap()
 
@@ -374,50 +371,48 @@ Definition Channel__Lenⁱᵐᵖˡ : val :=
    cap(c)
 
    go: channel.go:266:22 *)
-Definition Channel__Capⁱᵐᵖˡ : val :=
-  λ: "c" "T" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
-    (if: (![#ptrT] "c") = #null
+Definition Channel__Capⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
+    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
     then return: (#(W64 0))
     else do:  #());;;
-    return: (![#intT] (struct.field_ref (Channel "T") #"cap"%go (![#ptrT] "c")))).
+    return: (![go.int] (StructFieldRef (Channel T) "cap"%go (![go.PointerType (Channel T)] "c")))).
 
 (* c.Iter() returns an iterator that models a for range loop over the channel.
 
    go: channel.go:274:22 *)
-Definition Channel__Iterⁱᵐᵖˡ : val :=
-  λ: "c" "T" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
+Definition Channel__Iterⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (go.AllocValue (go.PointerType (Channel T)) "c") in
     return: ((λ: "yield",
-       exception_do (let: "yield" := (mem.alloc "yield") in
+       exception_do (let: "yield" := (go.AllocValue (go.FunctionType (go.Signature [T] #false [go.bool])) "yield") in
        (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-         let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-         let: "v" := (mem.alloc (type.zero_val "T")) in
-         let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+         let: "ok" := (GoAlloc go.bool #()) in
+         let: "v" := (GoAlloc T #()) in
+         let: "selected" := (GoAlloc go.bool #()) in
          let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-         (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "c") "T") "$a0") in
+         (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T)] "c")) "$a0") in
          let: "$r0" := "$ret0" in
          let: "$r1" := "$ret1" in
          let: "$r2" := "$ret2" in
-         do:  ("selected" <-[#boolT] "$r0");;;
-         do:  ("v" <-["T"] "$r1");;;
-         do:  ("ok" <-[#boolT] "$r2");;;
-         (if: (~ (![#boolT] "selected"))
+         do:  ("selected" <-[go.bool] "$r0");;;
+         do:  ("v" <-[T] "$r1");;;
+         do:  ("ok" <-[go.bool] "$r2");;;
+         (if: (~ (![go.bool] "selected"))
          then continue: #()
          else do:  #());;;
-         (if: (~ (![#boolT] "ok"))
+         (if: (~ (![go.bool] "ok"))
          then return: (#())
          else do:  #());;;
-         (if: (~ (let: "$a0" := (!["T"] "v") in
-         (![#funcT] "yield") "$a0"))
+         (if: (~ (let: "$a0" := (![T] "v") in
+         (![go.FunctionType (go.Signature [T] #false [go.bool])] "yield") "$a0"))
          then return: (#())
          else do:  #()));;;
        return: #())
        ))).
 
-Definition SelectDir : go_type := uint64T.
-#[global] Typeclasses Opaque SelectDir.
-#[global] Opaque SelectDir.
+Definition SelectDirⁱᵐᵖˡ : go.type := go.uint64.
 
 (* case ch <- Send *)
 Definition SelectSend : val := #(W64 0).
@@ -427,38 +422,40 @@ Definition SelectRecv : val := #(W64 1).
 
 Definition NonBlockingSelect1 : go_string := "github.com/goose-lang/goose/model/channel.NonBlockingSelect1"%go.
 
+Definition SelectDir : go.type := go.Named "github.com/goose-lang/goose/model/channel.SelectDir"%go [].
+
 (* Non-blocking select with 1 case (send or receive)
    For receive: value parameter is ignored
    Returns (selected, received_value, ok)
 
    go: select.go:19:6 *)
-Definition NonBlockingSelect1ⁱᵐᵖˡ : val :=
-  λ: "T" "ch" "dir" "value",
-    exception_do (let: "value" := (mem.alloc "value") in
-    let: "dir" := (mem.alloc "dir") in
-    let: "ch" := (mem.alloc "ch") in
-    let: "zero" := (mem.alloc (type.zero_val "T")) in
-    (if: (![#SelectDir] "dir") = SelectSend
+Definition NonBlockingSelect1ⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "ch" "dir" "value",
+    exception_do (let: "value" := (go.AllocValue T "value") in
+    let: "dir" := (go.AllocValue SelectDir "dir") in
+    let: "ch" := (go.AllocValue (go.PointerType (Channel T)) "ch") in
+    let: "zero" := (GoAlloc T #()) in
+    (if: (![SelectDir] "dir") =⟨go.uint64⟩ SelectSend
     then
-      let: "selected" := (mem.alloc (type.zero_val #boolT)) in
-      let: "$r0" := (let: "$a0" := (!["T"] "value") in
+      let: "selected" := (GoAlloc go.bool #()) in
+      let: "$r0" := (let: "$a0" := (![T] "value") in
       let: "$a1" := #false in
-      (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch") "T") "$a0" "$a1") in
-      do:  ("selected" <-[#boolT] "$r0");;;
-      return: (![#boolT] "selected", !["T"] "zero", #false)
+      (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T)] "ch")) "$a0" "$a1") in
+      do:  ("selected" <-[go.bool] "$r0");;;
+      return: (![go.bool] "selected", ![T] "zero", #false)
     else
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "recv_val" := (mem.alloc (type.zero_val "T")) in
-      let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+      let: "ok" := (GoAlloc go.bool #()) in
+      let: "recv_val" := (GoAlloc T #()) in
+      let: "selected" := (GoAlloc go.bool #()) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-      (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch") "T") "$a0") in
+      (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T)] "ch")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("selected" <-[#boolT] "$r0");;;
-      do:  ("recv_val" <-["T"] "$r1");;;
-      do:  ("ok" <-[#boolT] "$r2");;;
-      return: (![#boolT] "selected", !["T"] "recv_val", ![#boolT] "ok"))).
+      do:  ("selected" <-[go.bool] "$r0");;;
+      do:  ("recv_val" <-[T] "$r1");;;
+      do:  ("ok" <-[go.bool] "$r2");;;
+      return: (![go.bool] "selected", ![T] "recv_val", ![go.bool] "ok"))).
 
 Definition BlockingSelect2 : go_string := "github.com/goose-lang/goose/model/channel.BlockingSelect2"%go.
 
@@ -466,63 +463,63 @@ Definition BlockingSelect2 : go_string := "github.com/goose-lang/goose/model/cha
    Returns (caseIndex, received_value1, received_value2, ok)
 
    go: select.go:33:6 *)
-Definition BlockingSelect2ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
-    exception_do (let: "val2" := (mem.alloc "val2") in
-    let: "dir2" := (mem.alloc "dir2") in
-    let: "ch2" := (mem.alloc "ch2") in
-    let: "val1" := (mem.alloc "val1") in
-    let: "dir1" := (mem.alloc "dir1") in
-    let: "ch1" := (mem.alloc "ch1") in
-    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
-    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
+Definition BlockingSelect2ⁱᵐᵖˡ (T1 T2 : go.type) : val :=
+  λ: "ch1" "dir1" "val1" "ch2" "dir2" "val2",
+    exception_do (let: "val2" := (go.AllocValue T2 "val2") in
+    let: "dir2" := (go.AllocValue SelectDir "dir2") in
+    let: "ch2" := (go.AllocValue (go.PointerType (Channel T2)) "ch2") in
+    let: "val1" := (go.AllocValue T1 "val1") in
+    let: "dir1" := (go.AllocValue SelectDir "dir1") in
+    let: "ch1" := (go.AllocValue (go.PointerType (Channel T1)) "ch1") in
+    let: "zero1" := (GoAlloc T1 #()) in
+    let: "zero2" := (GoAlloc T2 #()) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 2)) = #(W64 0)
+      (if: (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
       then
-        (if: (![#SelectDir] "dir1") = SelectSend
+        (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
         then
-          (if: let: "$a0" := (!["T1"] "val1") in
+          (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #true in
-          (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0" "$a1"
-          then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", #false)
+          (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0" "$a1"
+          then return: (#(W64 0), ![T1] "zero1", ![T2] "zero2", #false)
           else do:  #())
         else
-          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-          let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
-          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: "ok" := (GoAlloc go.bool #()) in
+          let: "recv_val" := (GoAlloc T1 #()) in
+          let: "selected" := (GoAlloc go.bool #()) in
           let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-          (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0") in
+          (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           let: "$r2" := "$ret2" in
-          do:  ("selected" <-[#boolT] "$r0");;;
-          do:  ("recv_val" <-["T1"] "$r1");;;
-          do:  ("ok" <-[#boolT] "$r2");;;
-          (if: ![#boolT] "selected"
-          then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", ![#boolT] "ok")
+          do:  ("selected" <-[go.bool] "$r0");;;
+          do:  ("recv_val" <-[T1] "$r1");;;
+          do:  ("ok" <-[go.bool] "$r2");;;
+          (if: ![go.bool] "selected"
+          then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![go.bool] "ok")
           else do:  #()))
       else
-        (if: (![#SelectDir] "dir2") = SelectSend
+        (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
         then
-          (if: let: "$a0" := (!["T2"] "val2") in
+          (if: let: "$a0" := (![T2] "val2") in
           let: "$a1" := #true in
-          (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0" "$a1"
-          then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", #false)
+          (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0" "$a1"
+          then return: (#(W64 1), ![T1] "zero1", ![T2] "zero2", #false)
           else do:  #())
         else
-          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-          let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
-          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: "ok" := (GoAlloc go.bool #()) in
+          let: "recv_val" := (GoAlloc T2 #()) in
+          let: "selected" := (GoAlloc go.bool #()) in
           let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-          (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0") in
+          (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           let: "$r2" := "$ret2" in
-          do:  ("selected" <-[#boolT] "$r0");;;
-          do:  ("recv_val" <-["T2"] "$r1");;;
-          do:  ("ok" <-[#boolT] "$r2");;;
-          (if: ![#boolT] "selected"
-          then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", ![#boolT] "ok")
+          do:  ("selected" <-[go.bool] "$r0");;;
+          do:  ("recv_val" <-[T2] "$r1");;;
+          do:  ("ok" <-[go.bool] "$r2");;;
+          (if: ![go.bool] "selected"
+          then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![go.bool] "ok")
           else do:  #()))))).
 
 Definition NonBlockingSelect2 : go_string := "github.com/goose-lang/goose/model/channel.NonBlockingSelect2"%go.
@@ -532,202 +529,202 @@ Definition NonBlockingSelect2 : go_string := "github.com/goose-lang/goose/model/
    caseIndex = 2 means no selection
 
    go: select.go:73:6 *)
-Definition NonBlockingSelect2ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "ch1" "dir1" "val1" "ch2" "dir2" "val2",
-    exception_do (let: "val2" := (mem.alloc "val2") in
-    let: "dir2" := (mem.alloc "dir2") in
-    let: "ch2" := (mem.alloc "ch2") in
-    let: "val1" := (mem.alloc "val1") in
-    let: "dir1" := (mem.alloc "dir1") in
-    let: "ch1" := (mem.alloc "ch1") in
-    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
-    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
-    (if: (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 2)) = #(W64 0)
+Definition NonBlockingSelect2ⁱᵐᵖˡ (T1 T2 : go.type) : val :=
+  λ: "ch1" "dir1" "val1" "ch2" "dir2" "val2",
+    exception_do (let: "val2" := (go.AllocValue T2 "val2") in
+    let: "dir2" := (go.AllocValue SelectDir "dir2") in
+    let: "ch2" := (go.AllocValue (go.PointerType (Channel T2)) "ch2") in
+    let: "val1" := (go.AllocValue T1 "val1") in
+    let: "dir1" := (go.AllocValue SelectDir "dir1") in
+    let: "ch1" := (go.AllocValue (go.PointerType (Channel T1)) "ch1") in
+    let: "zero1" := (GoAlloc T1 #()) in
+    let: "zero2" := (GoAlloc T2 #()) in
+    (if: (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
     then
-      (if: (![#SelectDir] "dir1") = SelectSend
+      (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
       then
-        (if: let: "$a0" := (!["T1"] "val1") in
+        (if: let: "$a0" := (![T1] "val1") in
         let: "$a1" := #false in
-        (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0" "$a1"
-        then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", #false)
+        (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0" "$a1"
+        then return: (#(W64 0), ![T1] "zero1", ![T2] "zero2", #false)
         else do:  #())
       else
-        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-        let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
-        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: "ok" := (GoAlloc go.bool #()) in
+        let: "recv_val" := (GoAlloc T1 #()) in
+        let: "selected" := (GoAlloc go.bool #()) in
         let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-        (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0") in
+        (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         let: "$r2" := "$ret2" in
-        do:  ("selected" <-[#boolT] "$r0");;;
-        do:  ("recv_val" <-["T1"] "$r1");;;
-        do:  ("ok" <-[#boolT] "$r2");;;
-        (if: ![#boolT] "selected"
-        then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", ![#boolT] "ok")
+        do:  ("selected" <-[go.bool] "$r0");;;
+        do:  ("recv_val" <-[T1] "$r1");;;
+        do:  ("ok" <-[go.bool] "$r2");;;
+        (if: ![go.bool] "selected"
+        then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![go.bool] "ok")
         else do:  #()));;;
-      (if: (![#SelectDir] "dir2") = SelectSend
+      (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
       then
-        (if: let: "$a0" := (!["T2"] "val2") in
+        (if: let: "$a0" := (![T2] "val2") in
         let: "$a1" := #false in
-        (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0" "$a1"
-        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", #false)
+        (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0" "$a1"
+        then return: (#(W64 1), ![T1] "zero1", ![T2] "zero2", #false)
         else do:  #())
       else
-        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-        let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
-        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: "ok" := (GoAlloc go.bool #()) in
+        let: "recv_val" := (GoAlloc T2 #()) in
+        let: "selected" := (GoAlloc go.bool #()) in
         let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-        (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0") in
+        (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         let: "$r2" := "$ret2" in
-        do:  ("selected" <-[#boolT] "$r0");;;
-        do:  ("recv_val" <-["T2"] "$r1");;;
-        do:  ("ok" <-[#boolT] "$r2");;;
-        (if: ![#boolT] "selected"
-        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", ![#boolT] "ok")
+        do:  ("selected" <-[go.bool] "$r0");;;
+        do:  ("recv_val" <-[T2] "$r1");;;
+        do:  ("ok" <-[go.bool] "$r2");;;
+        (if: ![go.bool] "selected"
+        then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![go.bool] "ok")
         else do:  #()))
     else
-      (if: (![#SelectDir] "dir2") = SelectSend
+      (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
       then
-        (if: let: "$a0" := (!["T2"] "val2") in
+        (if: let: "$a0" := (![T2] "val2") in
         let: "$a1" := #false in
-        (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0" "$a1"
-        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", #false)
+        (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0" "$a1"
+        then return: (#(W64 1), ![T1] "zero1", ![T2] "zero2", #false)
         else do:  #())
       else
-        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-        let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
-        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: "ok" := (GoAlloc go.bool #()) in
+        let: "recv_val" := (GoAlloc T2 #()) in
+        let: "selected" := (GoAlloc go.bool #()) in
         let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-        (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0") in
+        (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         let: "$r2" := "$ret2" in
-        do:  ("selected" <-[#boolT] "$r0");;;
-        do:  ("recv_val" <-["T2"] "$r1");;;
-        do:  ("ok" <-[#boolT] "$r2");;;
-        (if: ![#boolT] "selected"
-        then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", ![#boolT] "ok")
+        do:  ("selected" <-[go.bool] "$r0");;;
+        do:  ("recv_val" <-[T2] "$r1");;;
+        do:  ("ok" <-[go.bool] "$r2");;;
+        (if: ![go.bool] "selected"
+        then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![go.bool] "ok")
         else do:  #()));;;
-      (if: (![#SelectDir] "dir1") = SelectSend
+      (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
       then
-        (if: let: "$a0" := (!["T1"] "val1") in
+        (if: let: "$a0" := (![T1] "val1") in
         let: "$a1" := #false in
-        (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0" "$a1"
-        then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", #false)
+        (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0" "$a1"
+        then return: (#(W64 0), ![T1] "zero1", ![T2] "zero2", #false)
         else do:  #())
       else
-        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-        let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
-        let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+        let: "ok" := (GoAlloc go.bool #()) in
+        let: "recv_val" := (GoAlloc T1 #()) in
+        let: "selected" := (GoAlloc go.bool #()) in
         let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-        (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0") in
+        (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         let: "$r2" := "$ret2" in
-        do:  ("selected" <-[#boolT] "$r0");;;
-        do:  ("recv_val" <-["T1"] "$r1");;;
-        do:  ("ok" <-[#boolT] "$r2");;;
-        (if: ![#boolT] "selected"
-        then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", ![#boolT] "ok")
+        do:  ("selected" <-[go.bool] "$r0");;;
+        do:  ("recv_val" <-[T1] "$r1");;;
+        do:  ("ok" <-[go.bool] "$r2");;;
+        (if: ![go.bool] "selected"
+        then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![go.bool] "ok")
         else do:  #())));;;
-    return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", #false)).
+    return: (#(W64 2), ![T1] "zero1", ![T2] "zero2", #false)).
 
 Definition BlockingSelect3 : go_string := "github.com/goose-lang/goose/model/channel.BlockingSelect3"%go.
 
 (* go: select.go:135:6 *)
-Definition BlockingSelect3ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
-    exception_do (let: "val3" := (mem.alloc "val3") in
-    let: "dir3" := (mem.alloc "dir3") in
-    let: "ch3" := (mem.alloc "ch3") in
-    let: "val2" := (mem.alloc "val2") in
-    let: "dir2" := (mem.alloc "dir2") in
-    let: "ch2" := (mem.alloc "ch2") in
-    let: "val1" := (mem.alloc "val1") in
-    let: "dir1" := (mem.alloc "dir1") in
-    let: "ch1" := (mem.alloc "ch1") in
-    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
-    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
-    let: "zero3" := (mem.alloc (type.zero_val "T3")) in
+Definition BlockingSelect3ⁱᵐᵖˡ (T1 T2 T3 : go.type) : val :=
+  λ: "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
+    exception_do (let: "val3" := (go.AllocValue T3 "val3") in
+    let: "dir3" := (go.AllocValue SelectDir "dir3") in
+    let: "ch3" := (go.AllocValue (go.PointerType (Channel T3)) "ch3") in
+    let: "val2" := (go.AllocValue T2 "val2") in
+    let: "dir2" := (go.AllocValue SelectDir "dir2") in
+    let: "ch2" := (go.AllocValue (go.PointerType (Channel T2)) "ch2") in
+    let: "val1" := (go.AllocValue T1 "val1") in
+    let: "dir1" := (go.AllocValue SelectDir "dir1") in
+    let: "ch1" := (go.AllocValue (go.PointerType (Channel T1)) "ch1") in
+    let: "zero1" := (GoAlloc T1 #()) in
+    let: "zero2" := (GoAlloc T2 #()) in
+    let: "zero3" := (GoAlloc T3 #()) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "r" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 3)) in
-      do:  ("r" <-[#uint64T] "$r0");;;
-      let: "$sw" := (![#uint64T] "r") in
-      (if: "$sw" = #(W64 0)
+      let: "r" := (GoAlloc go.uint64 #()) in
+      let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 3)) in
+      do:  ("r" <-[go.uint64] "$r0");;;
+      let: "$sw" := (![go.uint64] "r") in
+      (if: "$sw" =⟨go.uint64⟩ #(W64 0)
       then
-        (if: (![#SelectDir] "dir1") = SelectSend
+        (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
         then
-          (if: let: "$a0" := (!["T1"] "val1") in
+          (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #true in
-          (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0" "$a1"
-          then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+          (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0" "$a1"
+          then return: (#(W64 0), ![T1] "zero1", ![T2] "zero2", ![T3] "zero3", #false)
           else do:  #())
         else
-          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-          let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
-          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: "ok" := (GoAlloc go.bool #()) in
+          let: "recv_val" := (GoAlloc T1 #()) in
+          let: "selected" := (GoAlloc go.bool #()) in
           let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-          (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0") in
+          (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           let: "$r2" := "$ret2" in
-          do:  ("selected" <-[#boolT] "$r0");;;
-          do:  ("recv_val" <-["T1"] "$r1");;;
-          do:  ("ok" <-[#boolT] "$r2");;;
-          (if: ![#boolT] "selected"
-          then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", !["T3"] "zero3", ![#boolT] "ok")
+          do:  ("selected" <-[go.bool] "$r0");;;
+          do:  ("recv_val" <-[T1] "$r1");;;
+          do:  ("ok" <-[go.bool] "$r2");;;
+          (if: ![go.bool] "selected"
+          then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![T3] "zero3", ![go.bool] "ok")
           else do:  #()))
       else
-        (if: "$sw" = #(W64 1)
+        (if: "$sw" =⟨go.uint64⟩ #(W64 1)
         then
-          (if: (![#SelectDir] "dir2") = SelectSend
+          (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
           then
-            (if: let: "$a0" := (!["T2"] "val2") in
+            (if: let: "$a0" := (![T2] "val2") in
             let: "$a1" := #true in
-            (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0" "$a1"
-            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0" "$a1"
+            then return: (#(W64 1), ![T1] "zero1", ![T2] "zero2", ![T3] "zero3", #false)
             else do:  #())
           else
-            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-            let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
-            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: "ok" := (GoAlloc go.bool #()) in
+            let: "recv_val" := (GoAlloc T2 #()) in
+            let: "selected" := (GoAlloc go.bool #()) in
             let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-            (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0") in
+            (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0") in
             let: "$r0" := "$ret0" in
             let: "$r1" := "$ret1" in
             let: "$r2" := "$ret2" in
-            do:  ("selected" <-[#boolT] "$r0");;;
-            do:  ("recv_val" <-["T2"] "$r1");;;
-            do:  ("ok" <-[#boolT] "$r2");;;
-            (if: ![#boolT] "selected"
-            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", !["T3"] "zero3", ![#boolT] "ok")
+            do:  ("selected" <-[go.bool] "$r0");;;
+            do:  ("recv_val" <-[T2] "$r1");;;
+            do:  ("ok" <-[go.bool] "$r2");;;
+            (if: ![go.bool] "selected"
+            then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![T3] "zero3", ![go.bool] "ok")
             else do:  #()))
         else
-          (if: (![#SelectDir] "dir3") = SelectSend
+          (if: (![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend
           then
-            (if: let: "$a0" := (!["T3"] "val3") in
+            (if: let: "$a0" := (![T3] "val3") in
             let: "$a1" := #true in
-            (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch3") "T3") "$a0" "$a1"
-            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T3)] "ch3")) "$a0" "$a1"
+            then return: (#(W64 2), ![T1] "zero1", ![T2] "zero2", ![T3] "zero3", #false)
             else do:  #())
           else
-            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-            let: "recv_val" := (mem.alloc (type.zero_val "T3")) in
-            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: "ok" := (GoAlloc go.bool #()) in
+            let: "recv_val" := (GoAlloc T3 #()) in
+            let: "selected" := (GoAlloc go.bool #()) in
             let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #true in
-            (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch3") "T3") "$a0") in
+            (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T3)] "ch3")) "$a0") in
             let: "$r0" := "$ret0" in
             let: "$r1" := "$ret1" in
             let: "$r2" := "$ret2" in
-            do:  ("selected" <-[#boolT] "$r0");;;
-            do:  ("recv_val" <-["T3"] "$r1");;;
-            do:  ("ok" <-[#boolT] "$r2");;;
-            (if: ![#boolT] "selected"
-            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "recv_val", ![#boolT] "ok")
+            do:  ("selected" <-[go.bool] "$r0");;;
+            do:  ("recv_val" <-[T3] "$r1");;;
+            do:  ("ok" <-[go.bool] "$r2");;;
+            (if: ![go.bool] "selected"
+            then return: (#(W64 2), ![T1] "zero1", ![T2] "zero2", ![T3] "recv_val", ![go.bool] "ok")
             else do:  #())))))).
 
 Definition NonBlockingSelect3 : go_string := "github.com/goose-lang/goose/model/channel.NonBlockingSelect3"%go.
@@ -737,123 +734,115 @@ Definition NonBlockingSelect3 : go_string := "github.com/goose-lang/goose/model/
    caseIndex = 3 means no selection
 
    go: select.go:189:6 *)
-Definition NonBlockingSelect3ⁱᵐᵖˡ : val :=
-  λ: "T1" "T2" "T3" "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
-    exception_do (let: "val3" := (mem.alloc "val3") in
-    let: "dir3" := (mem.alloc "dir3") in
-    let: "ch3" := (mem.alloc "ch3") in
-    let: "val2" := (mem.alloc "val2") in
-    let: "dir2" := (mem.alloc "dir2") in
-    let: "ch2" := (mem.alloc "ch2") in
-    let: "val1" := (mem.alloc "val1") in
-    let: "dir1" := (mem.alloc "dir1") in
-    let: "ch1" := (mem.alloc "ch1") in
-    let: "zero1" := (mem.alloc (type.zero_val "T1")) in
-    let: "zero2" := (mem.alloc (type.zero_val "T2")) in
-    let: "zero3" := (mem.alloc (type.zero_val "T3")) in
-    let: "start" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ #()) #()) `rem` #(W64 3)) in
-    do:  ("start" <-[#uint64T] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+Definition NonBlockingSelect3ⁱᵐᵖˡ (T1 T2 T3 : go.type) : val :=
+  λ: "ch1" "dir1" "val1" "ch2" "dir2" "val2" "ch3" "dir3" "val3",
+    exception_do (let: "val3" := (go.AllocValue T3 "val3") in
+    let: "dir3" := (go.AllocValue SelectDir "dir3") in
+    let: "ch3" := (go.AllocValue (go.PointerType (Channel T3)) "ch3") in
+    let: "val2" := (go.AllocValue T2 "val2") in
+    let: "dir2" := (go.AllocValue SelectDir "dir2") in
+    let: "ch2" := (go.AllocValue (go.PointerType (Channel T2)) "ch2") in
+    let: "val1" := (go.AllocValue T1 "val1") in
+    let: "dir1" := (go.AllocValue SelectDir "dir1") in
+    let: "ch1" := (go.AllocValue (go.PointerType (Channel T1)) "ch1") in
+    let: "zero1" := (GoAlloc T1 #()) in
+    let: "zero2" := (GoAlloc T2 #()) in
+    let: "zero3" := (GoAlloc T3 #()) in
+    let: "start" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 3)) in
+    do:  ("start" <-[go.uint64] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "caseIdx" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (((![#uint64T] "start") + (![#uint64T] "i")) `rem` #(W64 3)) in
-      do:  ("caseIdx" <-[#uint64T] "$r0");;;
-      (if: (![#uint64T] "caseIdx") = #(W64 0)
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+      let: "caseIdx" := (GoAlloc go.uint64 #()) in
+      let: "$r0" := (((![go.uint64] "start") +⟨go.uint64⟩ (![go.uint64] "i")) `rem`⟨go.uint64⟩ #(W64 3)) in
+      do:  ("caseIdx" <-[go.uint64] "$r0");;;
+      (if: (![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 0)
       then
-        (if: (![#SelectDir] "dir1") = SelectSend
+        (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
         then
-          (if: let: "$a0" := (!["T1"] "val1") in
+          (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #false in
-          (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0" "$a1"
-          then return: (#(W64 0), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+          (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0" "$a1"
+          then return: (#(W64 0), ![T1] "zero1", ![T2] "zero2", ![T3] "zero3", #false)
           else do:  #())
         else
-          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-          let: "recv_val" := (mem.alloc (type.zero_val "T1")) in
-          let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+          let: "ok" := (GoAlloc go.bool #()) in
+          let: "recv_val" := (GoAlloc T1 #()) in
+          let: "selected" := (GoAlloc go.bool #()) in
           let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-          (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch1") "T1") "$a0") in
+          (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T1)] "ch1")) "$a0") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           let: "$r2" := "$ret2" in
-          do:  ("selected" <-[#boolT] "$r0");;;
-          do:  ("recv_val" <-["T1"] "$r1");;;
-          do:  ("ok" <-[#boolT] "$r2");;;
-          (if: ![#boolT] "selected"
-          then return: (#(W64 0), !["T1"] "recv_val", !["T2"] "zero2", !["T3"] "zero3", ![#boolT] "ok")
+          do:  ("selected" <-[go.bool] "$r0");;;
+          do:  ("recv_val" <-[T1] "$r1");;;
+          do:  ("ok" <-[go.bool] "$r2");;;
+          (if: ![go.bool] "selected"
+          then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![T3] "zero3", ![go.bool] "ok")
           else do:  #()))
       else
-        (if: (![#uint64T] "caseIdx") = #(W64 1)
+        (if: (![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 1)
         then
-          (if: (![#SelectDir] "dir2") = SelectSend
+          (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
           then
-            (if: let: "$a0" := (!["T2"] "val2") in
+            (if: let: "$a0" := (![T2] "val2") in
             let: "$a1" := #false in
-            (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0" "$a1"
-            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0" "$a1"
+            then return: (#(W64 1), ![T1] "zero1", ![T2] "zero2", ![T3] "zero3", #false)
             else do:  #())
           else
-            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-            let: "recv_val" := (mem.alloc (type.zero_val "T2")) in
-            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: "ok" := (GoAlloc go.bool #()) in
+            let: "recv_val" := (GoAlloc T2 #()) in
+            let: "selected" := (GoAlloc go.bool #()) in
             let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-            (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch2") "T2") "$a0") in
+            (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T2)] "ch2")) "$a0") in
             let: "$r0" := "$ret0" in
             let: "$r1" := "$ret1" in
             let: "$r2" := "$ret2" in
-            do:  ("selected" <-[#boolT] "$r0");;;
-            do:  ("recv_val" <-["T2"] "$r1");;;
-            do:  ("ok" <-[#boolT] "$r2");;;
-            (if: ![#boolT] "selected"
-            then return: (#(W64 1), !["T1"] "zero1", !["T2"] "recv_val", !["T3"] "zero3", ![#boolT] "ok")
+            do:  ("selected" <-[go.bool] "$r0");;;
+            do:  ("recv_val" <-[T2] "$r1");;;
+            do:  ("ok" <-[go.bool] "$r2");;;
+            (if: ![go.bool] "selected"
+            then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![T3] "zero3", ![go.bool] "ok")
             else do:  #()))
         else
-          (if: (![#SelectDir] "dir3") = SelectSend
+          (if: (![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend
           then
-            (if: let: "$a0" := (!["T3"] "val3") in
+            (if: let: "$a0" := (![T3] "val3") in
             let: "$a1" := #false in
-            (Channel__TrySendⁱᵐᵖˡ (![#ptrT] "ch3") "T3") "$a0" "$a1"
-            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)
+            (Channel__TrySendⁱᵐᵖˡ (![go.PointerType (Channel T3)] "ch3")) "$a0" "$a1"
+            then return: (#(W64 2), ![T1] "zero1", ![T2] "zero2", ![T3] "zero3", #false)
             else do:  #())
           else
-            let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-            let: "recv_val" := (mem.alloc (type.zero_val "T3")) in
-            let: "selected" := (mem.alloc (type.zero_val #boolT)) in
+            let: "ok" := (GoAlloc go.bool #()) in
+            let: "recv_val" := (GoAlloc T3 #()) in
+            let: "selected" := (GoAlloc go.bool #()) in
             let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := #false in
-            (Channel__TryReceiveⁱᵐᵖˡ (![#ptrT] "ch3") "T3") "$a0") in
+            (Channel__TryReceiveⁱᵐᵖˡ (![go.PointerType (Channel T3)] "ch3")) "$a0") in
             let: "$r0" := "$ret0" in
             let: "$r1" := "$ret1" in
             let: "$r2" := "$ret2" in
-            do:  ("selected" <-[#boolT] "$r0");;;
-            do:  ("recv_val" <-["T3"] "$r1");;;
-            do:  ("ok" <-[#boolT] "$r2");;;
-            (if: ![#boolT] "selected"
-            then return: (#(W64 2), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "recv_val", ![#boolT] "ok")
+            do:  ("selected" <-[go.bool] "$r0");;;
+            do:  ("recv_val" <-[T3] "$r1");;;
+            do:  ("ok" <-[go.bool] "$r2");;;
+            (if: ![go.bool] "selected"
+            then return: (#(W64 2), ![T1] "zero1", ![T2] "zero2", ![T3] "recv_val", ![go.bool] "ok")
             else do:  #()))))));;;
-    return: (#(W64 3), !["T1"] "zero1", !["T2"] "zero2", !["T3"] "zero3", #false)).
-
-Definition vars' : list (go_string * go_type) := [].
+    return: (#(W64 3), ![T1] "zero1", ![T2] "zero2", ![T3] "zero3", #false)).
 
 Definition functions' : list (go_string * val) := [(NewChannel, NewChannelⁱᵐᵖˡ); (NonBlockingSelect1, NonBlockingSelect1ⁱᵐᵖˡ); (BlockingSelect2, BlockingSelect2ⁱᵐᵖˡ); (NonBlockingSelect2, NonBlockingSelect2ⁱᵐᵖˡ); (BlockingSelect3, BlockingSelect3ⁱᵐᵖˡ); (NonBlockingSelect3, NonBlockingSelect3ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(offerState.id, []); (ptrT.id offerState.id, []); (Channel.id, []); (ptrT.id Channel.id, [("Cap"%go, Channel__Capⁱᵐᵖˡ); ("Close"%go, Channel__Closeⁱᵐᵖˡ); ("Iter"%go, Channel__Iterⁱᵐᵖˡ); ("Len"%go, Channel__Lenⁱᵐᵖˡ); ("Receive"%go, Channel__Receiveⁱᵐᵖˡ); ("ReceiveDiscardOk"%go, Channel__ReceiveDiscardOkⁱᵐᵖˡ); ("Send"%go, Channel__Sendⁱᵐᵖˡ); ("TryReceive"%go, Channel__TryReceiveⁱᵐᵖˡ); ("TrySend"%go, Channel__TrySendⁱᵐᵖˡ); ("tryClose"%go, Channel__tryCloseⁱᵐᵖˡ)]); (SelectDir.id, []); (ptrT.id SelectDir.id, [])].
-
 #[global] Instance info' : PkgInfo channel.channel :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #channel.channel (λ: <>,
-      exception_do (do:  (primitive.initialize' #());;;
-      do:  (package.alloc channel.channel #()))
+    package.init channel.channel (λ: <>,
+      exception_do (do:  (primitive.initialize' #()))
       ).
 
 End code.

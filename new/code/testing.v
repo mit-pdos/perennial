@@ -5,42 +5,6 @@ Definition testing : go_string := "testing".
 
 Module testing.
 
-Module durationOrCountFlag. Definition id : go_string := "testing.durationOrCountFlag"%go. End durationOrCountFlag.
-Module InternalBenchmark. Definition id : go_string := "testing.InternalBenchmark"%go. End InternalBenchmark.
-Module B. Definition id : go_string := "testing.B"%go. End B.
-Module BenchmarkResult. Definition id : go_string := "testing.BenchmarkResult"%go. End BenchmarkResult.
-Module benchState. Definition id : go_string := "testing.benchState"%go. End benchState.
-Module PB. Definition id : go_string := "testing.PB"%go. End PB.
-Module discard. Definition id : go_string := "testing.discard"%go. End discard.
-Module CoverBlock. Definition id : go_string := "testing.CoverBlock"%go. End CoverBlock.
-Module Cover. Definition id : go_string := "testing.Cover"%go. End Cover.
-Module InternalExample. Definition id : go_string := "testing.InternalExample"%go. End InternalExample.
-Module InternalFuzzTarget. Definition id : go_string := "testing.InternalFuzzTarget"%go. End InternalFuzzTarget.
-Module F. Definition id : go_string := "testing.F"%go. End F.
-Module corpusEntry. Axiom id : go_string. End corpusEntry.
-Module fuzzResult. Definition id : go_string := "testing.fuzzResult"%go. End fuzzResult.
-Module fuzzCrashError. Definition id : go_string := "testing.fuzzCrashError"%go. End fuzzCrashError.
-Module fuzzState. Definition id : go_string := "testing.fuzzState"%go. End fuzzState.
-Module fuzzMode. Definition id : go_string := "testing.fuzzMode"%go. End fuzzMode.
-Module matcher. Definition id : go_string := "testing.matcher"%go. End matcher.
-Module filterMatch. Definition id : go_string := "testing.filterMatch"%go. End filterMatch.
-Module simpleMatch. Definition id : go_string := "testing.simpleMatch"%go. End simpleMatch.
-Module alternationMatch. Definition id : go_string := "testing.alternationMatch"%go. End alternationMatch.
-Module chattyFlag. Definition id : go_string := "testing.chattyFlag"%go. End chattyFlag.
-Module chattyPrinter. Definition id : go_string := "testing.chattyPrinter"%go. End chattyPrinter.
-Module common. Definition id : go_string := "testing.common"%go. End common.
-Module indenter. Definition id : go_string := "testing.indenter"%go. End indenter.
-Module TB. Definition id : go_string := "testing.TB"%go. End TB.
-Module T. Definition id : go_string := "testing.T"%go. End T.
-Module outputWriter. Definition id : go_string := "testing.outputWriter"%go. End outputWriter.
-Module panicHandling. Definition id : go_string := "testing.panicHandling"%go. End panicHandling.
-Module InternalTest. Definition id : go_string := "testing.InternalTest"%go. End InternalTest.
-Module testState. Definition id : go_string := "testing.testState"%go. End testState.
-Module matchStringOnly. Definition id : go_string := "testing.matchStringOnly"%go. End matchStringOnly.
-Module M. Definition id : go_string := "testing.M"%go. End M.
-Module testDeps. Definition id : go_string := "testing.testDeps"%go. End testDeps.
-Module highPrecisionTime. Definition id : go_string := "testing.highPrecisionTime"%go. End highPrecisionTime.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -57,15 +21,15 @@ Definition benchTime : go_string := "testing.benchTime"%go.
 
 Axiom benchTime'init : val.
 
-Axiom durationOrCountFlag : go_type.
+Axiom durationOrCountFlagⁱᵐᵖˡ : go.type.
 
 Definition benchmarkLock : go_string := "testing.benchmarkLock"%go.
 
 Definition memStats : go_string := "testing.memStats"%go.
 
-Axiom InternalBenchmark : go_type.
+Axiom InternalBenchmarkⁱᵐᵖˡ : go.type.
 
-Axiom B : go_type.
+Axiom Bⁱᵐᵖˡ : go.type.
 
 Definition labelsOnce : go_string := "testing.labelsOnce"%go.
 
@@ -75,13 +39,13 @@ Axiom loopPoisonTimer : val.
 
 Axiom loopPoisonMask : val.
 
-Axiom BenchmarkResult : go_type.
+Axiom BenchmarkResultⁱᵐᵖˡ : go.type.
 
 Definition prettyPrint : go_string := "testing.prettyPrint"%go.
 
 Definition benchmarkName : go_string := "testing.benchmarkName"%go.
 
-Axiom benchState : go_type.
+Axiom benchStateⁱᵐᵖˡ : go.type.
 
 Definition RunBenchmarks : go_string := "testing.RunBenchmarks"%go.
 
@@ -91,19 +55,19 @@ Definition hideStdoutForTesting : go_string := "testing.hideStdoutForTesting"%go
 
 Axiom hideStdoutForTesting'init : val.
 
-Axiom PB : go_type.
+Axiom PBⁱᵐᵖˡ : go.type.
 
 Definition Benchmark : go_string := "testing.Benchmark"%go.
 
-Axiom discard : go_type.
+Axiom discardⁱᵐᵖˡ : go.type.
 
-Axiom CoverBlock : go_type.
+Axiom CoverBlockⁱᵐᵖˡ : go.type.
 
-Axiom Cover : go_type.
+Axiom Coverⁱᵐᵖˡ : go.type.
 
 Definition RegisterCover : go_string := "testing.RegisterCover"%go.
 
-Axiom InternalExample : go_type.
+Axiom InternalExampleⁱᵐᵖˡ : go.type.
 
 Definition RunExamples : go_string := "testing.RunExamples"%go.
 
@@ -129,23 +93,23 @@ Axiom corpusDir'init : val.
 
 Axiom fuzzWorkerExitCode : Z.
 
-Axiom InternalFuzzTarget : go_type.
+Axiom InternalFuzzTargetⁱᵐᵖˡ : go.type.
 
-Axiom F : go_type.
+Axiom Fⁱᵐᵖˡ : go.type.
 
-Axiom corpusEntry : go_type.
+Axiom corpusEntry : go.type.
 
 Definition supportedTypes : go_string := "testing.supportedTypes"%go.
 
 Axiom supportedTypes'init : val.
 
-Axiom fuzzResult : go_type.
+Axiom fuzzResultⁱᵐᵖˡ : go.type.
 
-Axiom fuzzCrashError : go_type.
+Axiom fuzzCrashErrorⁱᵐᵖˡ : go.type.
 
-Axiom fuzzState : go_type.
+Axiom fuzzStateⁱᵐᵖˡ : go.type.
 
-Axiom fuzzMode : go_type.
+Axiom fuzzModeⁱᵐᵖˡ : go.type.
 
 Axiom seedCorpusOnly : val.
 
@@ -159,13 +123,13 @@ Definition runFuzzing : go_string := "testing.runFuzzing"%go.
 
 Definition fRunner : go_string := "testing.fRunner"%go.
 
-Axiom matcher : go_type.
+Axiom matcherⁱᵐᵖˡ : go.type.
 
-Axiom filterMatch : go_type.
+Axiom filterMatchⁱᵐᵖˡ : go.type.
 
-Axiom simpleMatch : go_type.
+Axiom simpleMatchⁱᵐᵖˡ : go.type.
 
-Axiom alternationMatch : go_type.
+Axiom alternationMatchⁱᵐᵖˡ : go.type.
 
 Definition matchMutex : go_string := "testing.matchMutex"%go.
 
@@ -259,17 +223,17 @@ Definition numFailed : go_string := "testing.numFailed"%go.
 
 Definition running : go_string := "testing.running"%go.
 
-Axiom chattyFlag : go_type.
+Axiom chattyFlagⁱᵐᵖˡ : go.type.
 
 Axiom marker : val.
 
-Axiom chattyPrinter : go_type.
+Axiom chattyPrinterⁱᵐᵖˡ : go.type.
 
 Definition newChattyPrinter : go_string := "testing.newChattyPrinter"%go.
 
 Axiom maxStackLen : Z.
 
-Axiom common : go_type.
+Axiom commonⁱᵐᵖˡ : go.type.
 
 Definition Short : go_string := "testing.Short"%go.
 
@@ -283,21 +247,21 @@ Definition CoverMode : go_string := "testing.CoverMode"%go.
 
 Definition Verbose : go_string := "testing.Verbose"%go.
 
-Axiom indenter : go_type.
+Axiom indenterⁱᵐᵖˡ : go.type.
 
 Axiom indent : go_string.
 
 Definition fmtDuration : go_string := "testing.fmtDuration"%go.
 
-Axiom TB : go_type.
+Axiom TBⁱᵐᵖˡ : go.type.
 
-Axiom T : go_type.
+Axiom Tⁱᵐᵖˡ : go.type.
 
-Axiom outputWriter : go_type.
+Axiom outputWriterⁱᵐᵖˡ : go.type.
 
 Definition removeAll : go_string := "testing.removeAll"%go.
 
-Axiom panicHandling : go_type.
+Axiom panicHandlingⁱᵐᵖˡ : go.type.
 
 Axiom normalPanic : val.
 
@@ -309,7 +273,7 @@ Definition pcToName : go_string := "testing.pcToName"%go.
 
 Axiom parallelConflict : go_string.
 
-Axiom InternalTest : go_type.
+Axiom InternalTestⁱᵐᵖˡ : go.type.
 
 Definition errNilPanicOrGoexit : go_string := "testing.errNilPanicOrGoexit"%go.
 
@@ -319,7 +283,7 @@ Definition tRunner : go_string := "testing.tRunner"%go.
 
 Definition testingSynctestTest : go_string := "testing.testingSynctestTest"%go.
 
-Axiom testState : go_type.
+Axiom testStateⁱᵐᵖˡ : go.type.
 
 Definition newTestState : go_string := "testing.newTestState"%go.
 
@@ -327,13 +291,13 @@ Definition errMain : go_string := "testing.errMain"%go.
 
 Axiom errMain'init : val.
 
-Axiom matchStringOnly : go_type.
+Axiom matchStringOnlyⁱᵐᵖˡ : go.type.
 
 Definition Main : go_string := "testing.Main"%go.
 
-Axiom M : go_type.
+Axiom Mⁱᵐᵖˡ : go.type.
 
-Axiom testDeps : go_type.
+Axiom testDepsⁱᵐᵖˡ : go.type.
 
 Definition MainStart : go_string := "testing.MainStart"%go.
 
@@ -357,13 +321,79 @@ Definition shouldFailFast : go_string := "testing.shouldFailFast"%go.
 
 Definition isWindowsRetryable : go_string := "testing.isWindowsRetryable"%go.
 
-Axiom highPrecisionTime : go_type.
+Axiom highPrecisionTimeⁱᵐᵖˡ : go.type.
 
 Definition highPrecisionTimeNow : go_string := "testing.highPrecisionTimeNow"%go.
 
 Definition highPrecisionTimeSince : go_string := "testing.highPrecisionTimeSince"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition durationOrCountFlag : go.type := go.Named "testing.durationOrCountFlag"%go [].
+
+Definition InternalBenchmark : go.type := go.Named "testing.InternalBenchmark"%go [].
+
+Definition B : go.type := go.Named "testing.B"%go [].
+
+Definition BenchmarkResult : go.type := go.Named "testing.BenchmarkResult"%go [].
+
+Definition benchState : go.type := go.Named "testing.benchState"%go [].
+
+Definition PB : go.type := go.Named "testing.PB"%go [].
+
+Definition discard : go.type := go.Named "testing.discard"%go [].
+
+Definition CoverBlock : go.type := go.Named "testing.CoverBlock"%go [].
+
+Definition Cover : go.type := go.Named "testing.Cover"%go [].
+
+Definition InternalExample : go.type := go.Named "testing.InternalExample"%go [].
+
+Definition InternalFuzzTarget : go.type := go.Named "testing.InternalFuzzTarget"%go [].
+
+Definition F : go.type := go.Named "testing.F"%go [].
+
+Definition fuzzResult : go.type := go.Named "testing.fuzzResult"%go [].
+
+Definition fuzzCrashError : go.type := go.Named "testing.fuzzCrashError"%go [].
+
+Definition fuzzState : go.type := go.Named "testing.fuzzState"%go [].
+
+Definition fuzzMode : go.type := go.Named "testing.fuzzMode"%go [].
+
+Definition matcher : go.type := go.Named "testing.matcher"%go [].
+
+Definition filterMatch : go.type := go.Named "testing.filterMatch"%go [].
+
+Definition simpleMatch : go.type := go.Named "testing.simpleMatch"%go [].
+
+Definition alternationMatch : go.type := go.Named "testing.alternationMatch"%go [].
+
+Definition chattyFlag : go.type := go.Named "testing.chattyFlag"%go [].
+
+Definition chattyPrinter : go.type := go.Named "testing.chattyPrinter"%go [].
+
+Definition common : go.type := go.Named "testing.common"%go [].
+
+Definition indenter : go.type := go.Named "testing.indenter"%go [].
+
+Definition TB : go.type := go.Named "testing.TB"%go [].
+
+Definition T : go.type := go.Named "testing.T"%go [].
+
+Definition outputWriter : go.type := go.Named "testing.outputWriter"%go [].
+
+Definition panicHandling : go.type := go.Named "testing.panicHandling"%go [].
+
+Definition InternalTest : go.type := go.Named "testing.InternalTest"%go [].
+
+Definition testState : go.type := go.Named "testing.testState"%go [].
+
+Definition matchStringOnly : go.type := go.Named "testing.matchStringOnly"%go [].
+
+Definition M : go.type := go.Named "testing.M"%go [].
+
+Definition testDeps : go.type := go.Named "testing.testDeps"%go [].
+
+Definition highPrecisionTime : go.type := go.Named "testing.highPrecisionTime"%go [].
 
 Axiom AllocsPerRunⁱᵐᵖˡ : val.
 
@@ -467,457 +497,8 @@ Axiom highPrecisionTimeSinceⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(AllocsPerRun, AllocsPerRunⁱᵐᵖˡ); (initBenchmarkFlags, initBenchmarkFlagsⁱᵐᵖˡ); (predictN, predictNⁱᵐᵖˡ); (prettyPrint, prettyPrintⁱᵐᵖˡ); (benchmarkName, benchmarkNameⁱᵐᵖˡ); (RunBenchmarks, RunBenchmarksⁱᵐᵖˡ); (runBenchmarks, runBenchmarksⁱᵐᵖˡ); (Benchmark, Benchmarkⁱᵐᵖˡ); (RegisterCover, RegisterCoverⁱᵐᵖˡ); (RunExamples, RunExamplesⁱᵐᵖˡ); (runExamples, runExamplesⁱᵐᵖˡ); (initFuzzFlags, initFuzzFlagsⁱᵐᵖˡ); (runFuzzTests, runFuzzTestsⁱᵐᵖˡ); (runFuzzing, runFuzzingⁱᵐᵖˡ); (fRunner, fRunnerⁱᵐᵖˡ); (allMatcher, allMatcherⁱᵐᵖˡ); (newMatcher, newMatcherⁱᵐᵖˡ); (splitRegexp, splitRegexpⁱᵐᵖˡ); (parseSubtestNumber, parseSubtestNumberⁱᵐᵖˡ); (rewrite, rewriteⁱᵐᵖˡ); (isSpace, isSpaceⁱᵐᵖˡ); (registerCover, registerCoverⁱᵐᵖˡ); (coverReport, coverReportⁱᵐᵖˡ); (Coverage, Coverageⁱᵐᵖˡ); (runExample, runExampleⁱᵐᵖˡ); (Init, Initⁱᵐᵖˡ); (newChattyPrinter, newChattyPrinterⁱᵐᵖˡ); (Short, Shortⁱᵐᵖˡ); (Testing, Testingⁱᵐᵖˡ); (CoverMode, CoverModeⁱᵐᵖˡ); (Verbose, Verboseⁱᵐᵖˡ); (fmtDuration, fmtDurationⁱᵐᵖˡ); (removeAll, removeAllⁱᵐᵖˡ); (callerName, callerNameⁱᵐᵖˡ); (pcToName, pcToNameⁱᵐᵖˡ); (tRunner, tRunnerⁱᵐᵖˡ); (testingSynctestTest, testingSynctestTestⁱᵐᵖˡ); (newTestState, newTestStateⁱᵐᵖˡ); (Main, Mainⁱᵐᵖˡ); (MainStart, MainStartⁱᵐᵖˡ); (listTests, listTestsⁱᵐᵖˡ); (RunTests, RunTestsⁱᵐᵖˡ); (runTests, runTestsⁱᵐᵖˡ); (toOutputDir, toOutputDirⁱᵐᵖˡ); (runningList, runningListⁱᵐᵖˡ); (parseCpuList, parseCpuListⁱᵐᵖˡ); (shouldFailFast, shouldFailFastⁱᵐᵖˡ); (isWindowsRetryable, isWindowsRetryableⁱᵐᵖˡ); (highPrecisionTimeNow, highPrecisionTimeNowⁱᵐᵖˡ); (highPrecisionTimeSince, highPrecisionTimeSinceⁱᵐᵖˡ)].
 
-Axiom durationOrCountFlag__Setⁱᵐᵖˡ : val.
-
-Axiom durationOrCountFlag__Stringⁱᵐᵖˡ : val.
-
-Axiom B__Attrⁱᵐᵖˡ : val.
-
-Axiom B__Chdirⁱᵐᵖˡ : val.
-
-Axiom B__Cleanupⁱᵐᵖˡ : val.
-
-Axiom B__Contextⁱᵐᵖˡ : val.
-
-Axiom B__Elapsedⁱᵐᵖˡ : val.
-
-Axiom B__Errorⁱᵐᵖˡ : val.
-
-Axiom B__Errorfⁱᵐᵖˡ : val.
-
-Axiom B__Failⁱᵐᵖˡ : val.
-
-Axiom B__FailNowⁱᵐᵖˡ : val.
-
-Axiom B__Failedⁱᵐᵖˡ : val.
-
-Axiom B__Fatalⁱᵐᵖˡ : val.
-
-Axiom B__Fatalfⁱᵐᵖˡ : val.
-
-Axiom B__Helperⁱᵐᵖˡ : val.
-
-Axiom B__Logⁱᵐᵖˡ : val.
-
-Axiom B__Logfⁱᵐᵖˡ : val.
-
-Axiom B__Loopⁱᵐᵖˡ : val.
-
-Axiom B__Nameⁱᵐᵖˡ : val.
-
-Axiom B__Outputⁱᵐᵖˡ : val.
-
-Axiom B__ReportAllocsⁱᵐᵖˡ : val.
-
-Axiom B__ReportMetricⁱᵐᵖˡ : val.
-
-Axiom B__ResetTimerⁱᵐᵖˡ : val.
-
-Axiom B__Runⁱᵐᵖˡ : val.
-
-Axiom B__RunParallelⁱᵐᵖˡ : val.
-
-Axiom B__SetBytesⁱᵐᵖˡ : val.
-
-Axiom B__SetParallelismⁱᵐᵖˡ : val.
-
-Axiom B__Setenvⁱᵐᵖˡ : val.
-
-Axiom B__Skipⁱᵐᵖˡ : val.
-
-Axiom B__SkipNowⁱᵐᵖˡ : val.
-
-Axiom B__Skipfⁱᵐᵖˡ : val.
-
-Axiom B__Skippedⁱᵐᵖˡ : val.
-
-Axiom B__StartTimerⁱᵐᵖˡ : val.
-
-Axiom B__StopTimerⁱᵐᵖˡ : val.
-
-Axiom B__TempDirⁱᵐᵖˡ : val.
-
-Axiom B__addⁱᵐᵖˡ : val.
-
-Axiom B__callSiteⁱᵐᵖˡ : val.
-
-Axiom B__checkFuzzFnⁱᵐᵖˡ : val.
-
-Axiom B__checkRacesⁱᵐᵖˡ : val.
-
-Axiom B__destinationⁱᵐᵖˡ : val.
-
-Axiom B__doBenchⁱᵐᵖˡ : val.
-
-Axiom B__flushPartialⁱᵐᵖˡ : val.
-
-Axiom B__flushToParentⁱᵐᵖˡ : val.
-
-Axiom B__frameSkipⁱᵐᵖˡ : val.
-
-Axiom B__launchⁱᵐᵖˡ : val.
-
-Axiom B__logⁱᵐᵖˡ : val.
-
-Axiom B__loopSlowPathⁱᵐᵖˡ : val.
-
-Axiom B__privateⁱᵐᵖˡ : val.
-
-Axiom B__resetRacesⁱᵐᵖˡ : val.
-
-Axiom B__runⁱᵐᵖˡ : val.
-
-Axiom B__run1ⁱᵐᵖˡ : val.
-
-Axiom B__runCleanupⁱᵐᵖˡ : val.
-
-Axiom B__runNⁱᵐᵖˡ : val.
-
-Axiom B__setOutputWriterⁱᵐᵖˡ : val.
-
-Axiom B__setRanⁱᵐᵖˡ : val.
-
-Axiom B__stopOrScaleBLoopⁱᵐᵖˡ : val.
-
-Axiom B__trimOutputⁱᵐᵖˡ : val.
-
-Axiom BenchmarkResult__AllocedBytesPerOpⁱᵐᵖˡ : val.
-
-Axiom BenchmarkResult__AllocsPerOpⁱᵐᵖˡ : val.
-
-Axiom BenchmarkResult__MemStringⁱᵐᵖˡ : val.
-
-Axiom BenchmarkResult__NsPerOpⁱᵐᵖˡ : val.
-
-Axiom BenchmarkResult__Stringⁱᵐᵖˡ : val.
-
-Axiom BenchmarkResult__mbPerSecⁱᵐᵖˡ : val.
-
-Axiom benchState__processBenchⁱᵐᵖˡ : val.
-
-Axiom PB__Nextⁱᵐᵖˡ : val.
-
-Axiom discard__Writeⁱᵐᵖˡ : val.
-
-Axiom InternalExample__processRunResultⁱᵐᵖˡ : val.
-
-Axiom F__Addⁱᵐᵖˡ : val.
-
-Axiom F__Attrⁱᵐᵖˡ : val.
-
-Axiom F__Chdirⁱᵐᵖˡ : val.
-
-Axiom F__Cleanupⁱᵐᵖˡ : val.
-
-Axiom F__Contextⁱᵐᵖˡ : val.
-
-Axiom F__Errorⁱᵐᵖˡ : val.
-
-Axiom F__Errorfⁱᵐᵖˡ : val.
-
-Axiom F__Failⁱᵐᵖˡ : val.
-
-Axiom F__FailNowⁱᵐᵖˡ : val.
-
-Axiom F__Failedⁱᵐᵖˡ : val.
-
-Axiom F__Fatalⁱᵐᵖˡ : val.
-
-Axiom F__Fatalfⁱᵐᵖˡ : val.
-
-Axiom F__Fuzzⁱᵐᵖˡ : val.
-
-Axiom F__Helperⁱᵐᵖˡ : val.
-
-Axiom F__Logⁱᵐᵖˡ : val.
-
-Axiom F__Logfⁱᵐᵖˡ : val.
-
-Axiom F__Nameⁱᵐᵖˡ : val.
-
-Axiom F__Outputⁱᵐᵖˡ : val.
-
-Axiom F__Setenvⁱᵐᵖˡ : val.
-
-Axiom F__Skipⁱᵐᵖˡ : val.
-
-Axiom F__SkipNowⁱᵐᵖˡ : val.
-
-Axiom F__Skipfⁱᵐᵖˡ : val.
-
-Axiom F__Skippedⁱᵐᵖˡ : val.
-
-Axiom F__TempDirⁱᵐᵖˡ : val.
-
-Axiom F__callSiteⁱᵐᵖˡ : val.
-
-Axiom F__checkFuzzFnⁱᵐᵖˡ : val.
-
-Axiom F__checkRacesⁱᵐᵖˡ : val.
-
-Axiom F__destinationⁱᵐᵖˡ : val.
-
-Axiom F__flushPartialⁱᵐᵖˡ : val.
-
-Axiom F__flushToParentⁱᵐᵖˡ : val.
-
-Axiom F__frameSkipⁱᵐᵖˡ : val.
-
-Axiom F__logⁱᵐᵖˡ : val.
-
-Axiom F__privateⁱᵐᵖˡ : val.
-
-Axiom F__reportⁱᵐᵖˡ : val.
-
-Axiom F__resetRacesⁱᵐᵖˡ : val.
-
-Axiom F__runCleanupⁱᵐᵖˡ : val.
-
-Axiom F__setOutputWriterⁱᵐᵖˡ : val.
-
-Axiom F__setRanⁱᵐᵖˡ : val.
-
-Axiom fuzzResult__Stringⁱᵐᵖˡ : val.
-
-Axiom matcher__clearSubNamesⁱᵐᵖˡ : val.
-
-Axiom matcher__fullNameⁱᵐᵖˡ : val.
-
-Axiom matcher__uniqueⁱᵐᵖˡ : val.
-
-Axiom simpleMatch__matchesⁱᵐᵖˡ : val.
-
-Axiom simpleMatch__verifyⁱᵐᵖˡ : val.
-
-Axiom alternationMatch__matchesⁱᵐᵖˡ : val.
-
-Axiom alternationMatch__verifyⁱᵐᵖˡ : val.
-
-Axiom chattyFlag__Getⁱᵐᵖˡ : val.
-
-Axiom chattyFlag__IsBoolFlagⁱᵐᵖˡ : val.
-
-Axiom chattyFlag__Setⁱᵐᵖˡ : val.
-
-Axiom chattyFlag__Stringⁱᵐᵖˡ : val.
-
-Axiom chattyFlag__prefixⁱᵐᵖˡ : val.
-
-Axiom chattyPrinter__Printfⁱᵐᵖˡ : val.
-
-Axiom chattyPrinter__Updatefⁱᵐᵖˡ : val.
-
-Axiom chattyPrinter__prefixⁱᵐᵖˡ : val.
-
-Axiom common__Attrⁱᵐᵖˡ : val.
-
-Axiom common__Chdirⁱᵐᵖˡ : val.
-
-Axiom common__Cleanupⁱᵐᵖˡ : val.
-
-Axiom common__Contextⁱᵐᵖˡ : val.
-
-Axiom common__Errorⁱᵐᵖˡ : val.
-
-Axiom common__Errorfⁱᵐᵖˡ : val.
-
-Axiom common__Failⁱᵐᵖˡ : val.
-
-Axiom common__FailNowⁱᵐᵖˡ : val.
-
-Axiom common__Failedⁱᵐᵖˡ : val.
-
-Axiom common__Fatalⁱᵐᵖˡ : val.
-
-Axiom common__Fatalfⁱᵐᵖˡ : val.
-
-Axiom common__Helperⁱᵐᵖˡ : val.
-
-Axiom common__Logⁱᵐᵖˡ : val.
-
-Axiom common__Logfⁱᵐᵖˡ : val.
-
-Axiom common__Nameⁱᵐᵖˡ : val.
-
-Axiom common__Outputⁱᵐᵖˡ : val.
-
-Axiom common__Setenvⁱᵐᵖˡ : val.
-
-Axiom common__Skipⁱᵐᵖˡ : val.
-
-Axiom common__SkipNowⁱᵐᵖˡ : val.
-
-Axiom common__Skipfⁱᵐᵖˡ : val.
-
-Axiom common__Skippedⁱᵐᵖˡ : val.
-
-Axiom common__TempDirⁱᵐᵖˡ : val.
-
-Axiom common__callSiteⁱᵐᵖˡ : val.
-
-Axiom common__checkFuzzFnⁱᵐᵖˡ : val.
-
-Axiom common__checkRacesⁱᵐᵖˡ : val.
-
-Axiom common__destinationⁱᵐᵖˡ : val.
-
-Axiom common__flushPartialⁱᵐᵖˡ : val.
-
-Axiom common__flushToParentⁱᵐᵖˡ : val.
-
-Axiom common__frameSkipⁱᵐᵖˡ : val.
-
-Axiom common__logⁱᵐᵖˡ : val.
-
-Axiom common__privateⁱᵐᵖˡ : val.
-
-Axiom common__resetRacesⁱᵐᵖˡ : val.
-
-Axiom common__runCleanupⁱᵐᵖˡ : val.
-
-Axiom common__setOutputWriterⁱᵐᵖˡ : val.
-
-Axiom common__setRanⁱᵐᵖˡ : val.
-
-Axiom indenter__Writeⁱᵐᵖˡ : val.
-
-Axiom T__Attrⁱᵐᵖˡ : val.
-
-Axiom T__Chdirⁱᵐᵖˡ : val.
-
-Axiom T__Cleanupⁱᵐᵖˡ : val.
-
-Axiom T__Contextⁱᵐᵖˡ : val.
-
-Axiom T__Deadlineⁱᵐᵖˡ : val.
-
-Axiom T__Errorⁱᵐᵖˡ : val.
-
-Axiom T__Errorfⁱᵐᵖˡ : val.
-
-Axiom T__Failⁱᵐᵖˡ : val.
-
-Axiom T__FailNowⁱᵐᵖˡ : val.
-
-Axiom T__Failedⁱᵐᵖˡ : val.
-
-Axiom T__Fatalⁱᵐᵖˡ : val.
-
-Axiom T__Fatalfⁱᵐᵖˡ : val.
-
-Axiom T__Helperⁱᵐᵖˡ : val.
-
-Axiom T__Logⁱᵐᵖˡ : val.
-
-Axiom T__Logfⁱᵐᵖˡ : val.
-
-Axiom T__Nameⁱᵐᵖˡ : val.
-
-Axiom T__Outputⁱᵐᵖˡ : val.
-
-Axiom T__Parallelⁱᵐᵖˡ : val.
-
-Axiom T__Runⁱᵐᵖˡ : val.
-
-Axiom T__Setenvⁱᵐᵖˡ : val.
-
-Axiom T__Skipⁱᵐᵖˡ : val.
-
-Axiom T__SkipNowⁱᵐᵖˡ : val.
-
-Axiom T__Skipfⁱᵐᵖˡ : val.
-
-Axiom T__Skippedⁱᵐᵖˡ : val.
-
-Axiom T__TempDirⁱᵐᵖˡ : val.
-
-Axiom T__callSiteⁱᵐᵖˡ : val.
-
-Axiom T__checkFuzzFnⁱᵐᵖˡ : val.
-
-Axiom T__checkParallelⁱᵐᵖˡ : val.
-
-Axiom T__checkRacesⁱᵐᵖˡ : val.
-
-Axiom T__destinationⁱᵐᵖˡ : val.
-
-Axiom T__flushPartialⁱᵐᵖˡ : val.
-
-Axiom T__flushToParentⁱᵐᵖˡ : val.
-
-Axiom T__frameSkipⁱᵐᵖˡ : val.
-
-Axiom T__logⁱᵐᵖˡ : val.
-
-Axiom T__privateⁱᵐᵖˡ : val.
-
-Axiom T__reportⁱᵐᵖˡ : val.
-
-Axiom T__resetRacesⁱᵐᵖˡ : val.
-
-Axiom T__runCleanupⁱᵐᵖˡ : val.
-
-Axiom T__setOutputWriterⁱᵐᵖˡ : val.
-
-Axiom T__setRanⁱᵐᵖˡ : val.
-
-Axiom outputWriter__Writeⁱᵐᵖˡ : val.
-
-Axiom outputWriter__writeLineⁱᵐᵖˡ : val.
-
-Axiom testState__releaseⁱᵐᵖˡ : val.
-
-Axiom testState__waitParallelⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__CheckCorpusⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__CoordinateFuzzingⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__ImportPathⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__InitRuntimeCoverageⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__MatchStringⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__ReadCorpusⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__ResetCoverageⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__RunFuzzWorkerⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__SetPanicOnExit0ⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__SnapshotCoverageⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__StartCPUProfileⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__StartTestLogⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__StopCPUProfileⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__StopTestLogⁱᵐᵖˡ : val.
-
-Axiom matchStringOnly__WriteProfileToⁱᵐᵖˡ : val.
-
-Axiom M__Runⁱᵐᵖˡ : val.
-
-Axiom M__afterⁱᵐᵖˡ : val.
-
-Axiom M__beforeⁱᵐᵖˡ : val.
-
-Axiom M__startAlarmⁱᵐᵖˡ : val.
-
-Axiom M__stopAlarmⁱᵐᵖˡ : val.
-
-Axiom M__writeProfilesⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(durationOrCountFlag.id, []); (ptrT.id durationOrCountFlag.id, [("Set"%go, durationOrCountFlag__Setⁱᵐᵖˡ); ("String"%go, durationOrCountFlag__Stringⁱᵐᵖˡ)]); (InternalBenchmark.id, []); (ptrT.id InternalBenchmark.id, []); (B.id, []); (ptrT.id B.id, [("Attr"%go, B__Attrⁱᵐᵖˡ); ("Chdir"%go, B__Chdirⁱᵐᵖˡ); ("Cleanup"%go, B__Cleanupⁱᵐᵖˡ); ("Context"%go, B__Contextⁱᵐᵖˡ); ("Elapsed"%go, B__Elapsedⁱᵐᵖˡ); ("Error"%go, B__Errorⁱᵐᵖˡ); ("Errorf"%go, B__Errorfⁱᵐᵖˡ); ("Fail"%go, B__Failⁱᵐᵖˡ); ("FailNow"%go, B__FailNowⁱᵐᵖˡ); ("Failed"%go, B__Failedⁱᵐᵖˡ); ("Fatal"%go, B__Fatalⁱᵐᵖˡ); ("Fatalf"%go, B__Fatalfⁱᵐᵖˡ); ("Helper"%go, B__Helperⁱᵐᵖˡ); ("Log"%go, B__Logⁱᵐᵖˡ); ("Logf"%go, B__Logfⁱᵐᵖˡ); ("Loop"%go, B__Loopⁱᵐᵖˡ); ("Name"%go, B__Nameⁱᵐᵖˡ); ("Output"%go, B__Outputⁱᵐᵖˡ); ("ReportAllocs"%go, B__ReportAllocsⁱᵐᵖˡ); ("ReportMetric"%go, B__ReportMetricⁱᵐᵖˡ); ("ResetTimer"%go, B__ResetTimerⁱᵐᵖˡ); ("Run"%go, B__Runⁱᵐᵖˡ); ("RunParallel"%go, B__RunParallelⁱᵐᵖˡ); ("SetBytes"%go, B__SetBytesⁱᵐᵖˡ); ("SetParallelism"%go, B__SetParallelismⁱᵐᵖˡ); ("Setenv"%go, B__Setenvⁱᵐᵖˡ); ("Skip"%go, B__Skipⁱᵐᵖˡ); ("SkipNow"%go, B__SkipNowⁱᵐᵖˡ); ("Skipf"%go, B__Skipfⁱᵐᵖˡ); ("Skipped"%go, B__Skippedⁱᵐᵖˡ); ("StartTimer"%go, B__StartTimerⁱᵐᵖˡ); ("StopTimer"%go, B__StopTimerⁱᵐᵖˡ); ("TempDir"%go, B__TempDirⁱᵐᵖˡ); ("add"%go, B__addⁱᵐᵖˡ); ("callSite"%go, B__callSiteⁱᵐᵖˡ); ("checkFuzzFn"%go, B__checkFuzzFnⁱᵐᵖˡ); ("checkRaces"%go, B__checkRacesⁱᵐᵖˡ); ("destination"%go, B__destinationⁱᵐᵖˡ); ("doBench"%go, B__doBenchⁱᵐᵖˡ); ("flushPartial"%go, B__flushPartialⁱᵐᵖˡ); ("flushToParent"%go, B__flushToParentⁱᵐᵖˡ); ("frameSkip"%go, B__frameSkipⁱᵐᵖˡ); ("launch"%go, B__launchⁱᵐᵖˡ); ("log"%go, B__logⁱᵐᵖˡ); ("loopSlowPath"%go, B__loopSlowPathⁱᵐᵖˡ); ("private"%go, B__privateⁱᵐᵖˡ); ("resetRaces"%go, B__resetRacesⁱᵐᵖˡ); ("run"%go, B__runⁱᵐᵖˡ); ("run1"%go, B__run1ⁱᵐᵖˡ); ("runCleanup"%go, B__runCleanupⁱᵐᵖˡ); ("runN"%go, B__runNⁱᵐᵖˡ); ("setOutputWriter"%go, B__setOutputWriterⁱᵐᵖˡ); ("setRan"%go, B__setRanⁱᵐᵖˡ); ("stopOrScaleBLoop"%go, B__stopOrScaleBLoopⁱᵐᵖˡ); ("trimOutput"%go, B__trimOutputⁱᵐᵖˡ)]); (BenchmarkResult.id, [("AllocedBytesPerOp"%go, BenchmarkResult__AllocedBytesPerOpⁱᵐᵖˡ); ("AllocsPerOp"%go, BenchmarkResult__AllocsPerOpⁱᵐᵖˡ); ("MemString"%go, BenchmarkResult__MemStringⁱᵐᵖˡ); ("NsPerOp"%go, BenchmarkResult__NsPerOpⁱᵐᵖˡ); ("String"%go, BenchmarkResult__Stringⁱᵐᵖˡ); ("mbPerSec"%go, BenchmarkResult__mbPerSecⁱᵐᵖˡ)]); (ptrT.id BenchmarkResult.id, [("AllocedBytesPerOp"%go, BenchmarkResult__AllocedBytesPerOpⁱᵐᵖˡ); ("AllocsPerOp"%go, BenchmarkResult__AllocsPerOpⁱᵐᵖˡ); ("MemString"%go, BenchmarkResult__MemStringⁱᵐᵖˡ); ("NsPerOp"%go, BenchmarkResult__NsPerOpⁱᵐᵖˡ); ("String"%go, BenchmarkResult__Stringⁱᵐᵖˡ); ("mbPerSec"%go, BenchmarkResult__mbPerSecⁱᵐᵖˡ)]); (benchState.id, []); (ptrT.id benchState.id, [("processBench"%go, benchState__processBenchⁱᵐᵖˡ)]); (PB.id, []); (ptrT.id PB.id, [("Next"%go, PB__Nextⁱᵐᵖˡ)]); (discard.id, [("Write"%go, discard__Writeⁱᵐᵖˡ)]); (ptrT.id discard.id, [("Write"%go, discard__Writeⁱᵐᵖˡ)]); (CoverBlock.id, []); (ptrT.id CoverBlock.id, []); (Cover.id, []); (ptrT.id Cover.id, []); (InternalExample.id, []); (ptrT.id InternalExample.id, [("processRunResult"%go, InternalExample__processRunResultⁱᵐᵖˡ)]); (InternalFuzzTarget.id, []); (ptrT.id InternalFuzzTarget.id, []); (F.id, []); (ptrT.id F.id, [("Add"%go, F__Addⁱᵐᵖˡ); ("Attr"%go, F__Attrⁱᵐᵖˡ); ("Chdir"%go, F__Chdirⁱᵐᵖˡ); ("Cleanup"%go, F__Cleanupⁱᵐᵖˡ); ("Context"%go, F__Contextⁱᵐᵖˡ); ("Error"%go, F__Errorⁱᵐᵖˡ); ("Errorf"%go, F__Errorfⁱᵐᵖˡ); ("Fail"%go, F__Failⁱᵐᵖˡ); ("FailNow"%go, F__FailNowⁱᵐᵖˡ); ("Failed"%go, F__Failedⁱᵐᵖˡ); ("Fatal"%go, F__Fatalⁱᵐᵖˡ); ("Fatalf"%go, F__Fatalfⁱᵐᵖˡ); ("Fuzz"%go, F__Fuzzⁱᵐᵖˡ); ("Helper"%go, F__Helperⁱᵐᵖˡ); ("Log"%go, F__Logⁱᵐᵖˡ); ("Logf"%go, F__Logfⁱᵐᵖˡ); ("Name"%go, F__Nameⁱᵐᵖˡ); ("Output"%go, F__Outputⁱᵐᵖˡ); ("Setenv"%go, F__Setenvⁱᵐᵖˡ); ("Skip"%go, F__Skipⁱᵐᵖˡ); ("SkipNow"%go, F__SkipNowⁱᵐᵖˡ); ("Skipf"%go, F__Skipfⁱᵐᵖˡ); ("Skipped"%go, F__Skippedⁱᵐᵖˡ); ("TempDir"%go, F__TempDirⁱᵐᵖˡ); ("callSite"%go, F__callSiteⁱᵐᵖˡ); ("checkFuzzFn"%go, F__checkFuzzFnⁱᵐᵖˡ); ("checkRaces"%go, F__checkRacesⁱᵐᵖˡ); ("destination"%go, F__destinationⁱᵐᵖˡ); ("flushPartial"%go, F__flushPartialⁱᵐᵖˡ); ("flushToParent"%go, F__flushToParentⁱᵐᵖˡ); ("frameSkip"%go, F__frameSkipⁱᵐᵖˡ); ("log"%go, F__logⁱᵐᵖˡ); ("private"%go, F__privateⁱᵐᵖˡ); ("report"%go, F__reportⁱᵐᵖˡ); ("resetRaces"%go, F__resetRacesⁱᵐᵖˡ); ("runCleanup"%go, F__runCleanupⁱᵐᵖˡ); ("setOutputWriter"%go, F__setOutputWriterⁱᵐᵖˡ); ("setRan"%go, F__setRanⁱᵐᵖˡ)]); (fuzzResult.id, [("String"%go, fuzzResult__Stringⁱᵐᵖˡ)]); (ptrT.id fuzzResult.id, [("String"%go, fuzzResult__Stringⁱᵐᵖˡ)]); (fuzzState.id, []); (ptrT.id fuzzState.id, []); (fuzzMode.id, []); (ptrT.id fuzzMode.id, []); (matcher.id, []); (ptrT.id matcher.id, [("clearSubNames"%go, matcher__clearSubNamesⁱᵐᵖˡ); ("fullName"%go, matcher__fullNameⁱᵐᵖˡ); ("unique"%go, matcher__uniqueⁱᵐᵖˡ)]); (simpleMatch.id, [("matches"%go, simpleMatch__matchesⁱᵐᵖˡ); ("verify"%go, simpleMatch__verifyⁱᵐᵖˡ)]); (ptrT.id simpleMatch.id, [("matches"%go, simpleMatch__matchesⁱᵐᵖˡ); ("verify"%go, simpleMatch__verifyⁱᵐᵖˡ)]); (alternationMatch.id, [("matches"%go, alternationMatch__matchesⁱᵐᵖˡ); ("verify"%go, alternationMatch__verifyⁱᵐᵖˡ)]); (ptrT.id alternationMatch.id, [("matches"%go, alternationMatch__matchesⁱᵐᵖˡ); ("verify"%go, alternationMatch__verifyⁱᵐᵖˡ)]); (chattyFlag.id, []); (ptrT.id chattyFlag.id, [("Get"%go, chattyFlag__Getⁱᵐᵖˡ); ("IsBoolFlag"%go, chattyFlag__IsBoolFlagⁱᵐᵖˡ); ("Set"%go, chattyFlag__Setⁱᵐᵖˡ); ("String"%go, chattyFlag__Stringⁱᵐᵖˡ); ("prefix"%go, chattyFlag__prefixⁱᵐᵖˡ)]); (chattyPrinter.id, []); (ptrT.id chattyPrinter.id, [("Printf"%go, chattyPrinter__Printfⁱᵐᵖˡ); ("Updatef"%go, chattyPrinter__Updatefⁱᵐᵖˡ); ("prefix"%go, chattyPrinter__prefixⁱᵐᵖˡ)]); (common.id, []); (ptrT.id common.id, [("Attr"%go, common__Attrⁱᵐᵖˡ); ("Chdir"%go, common__Chdirⁱᵐᵖˡ); ("Cleanup"%go, common__Cleanupⁱᵐᵖˡ); ("Context"%go, common__Contextⁱᵐᵖˡ); ("Error"%go, common__Errorⁱᵐᵖˡ); ("Errorf"%go, common__Errorfⁱᵐᵖˡ); ("Fail"%go, common__Failⁱᵐᵖˡ); ("FailNow"%go, common__FailNowⁱᵐᵖˡ); ("Failed"%go, common__Failedⁱᵐᵖˡ); ("Fatal"%go, common__Fatalⁱᵐᵖˡ); ("Fatalf"%go, common__Fatalfⁱᵐᵖˡ); ("Helper"%go, common__Helperⁱᵐᵖˡ); ("Log"%go, common__Logⁱᵐᵖˡ); ("Logf"%go, common__Logfⁱᵐᵖˡ); ("Name"%go, common__Nameⁱᵐᵖˡ); ("Output"%go, common__Outputⁱᵐᵖˡ); ("Setenv"%go, common__Setenvⁱᵐᵖˡ); ("Skip"%go, common__Skipⁱᵐᵖˡ); ("SkipNow"%go, common__SkipNowⁱᵐᵖˡ); ("Skipf"%go, common__Skipfⁱᵐᵖˡ); ("Skipped"%go, common__Skippedⁱᵐᵖˡ); ("TempDir"%go, common__TempDirⁱᵐᵖˡ); ("callSite"%go, common__callSiteⁱᵐᵖˡ); ("checkFuzzFn"%go, common__checkFuzzFnⁱᵐᵖˡ); ("checkRaces"%go, common__checkRacesⁱᵐᵖˡ); ("destination"%go, common__destinationⁱᵐᵖˡ); ("flushPartial"%go, common__flushPartialⁱᵐᵖˡ); ("flushToParent"%go, common__flushToParentⁱᵐᵖˡ); ("frameSkip"%go, common__frameSkipⁱᵐᵖˡ); ("log"%go, common__logⁱᵐᵖˡ); ("private"%go, common__privateⁱᵐᵖˡ); ("resetRaces"%go, common__resetRacesⁱᵐᵖˡ); ("runCleanup"%go, common__runCleanupⁱᵐᵖˡ); ("setOutputWriter"%go, common__setOutputWriterⁱᵐᵖˡ); ("setRan"%go, common__setRanⁱᵐᵖˡ)]); (indenter.id, [("Write"%go, indenter__Writeⁱᵐᵖˡ)]); (ptrT.id indenter.id, [("Write"%go, indenter__Writeⁱᵐᵖˡ)]); (T.id, []); (ptrT.id T.id, [("Attr"%go, T__Attrⁱᵐᵖˡ); ("Chdir"%go, T__Chdirⁱᵐᵖˡ); ("Cleanup"%go, T__Cleanupⁱᵐᵖˡ); ("Context"%go, T__Contextⁱᵐᵖˡ); ("Deadline"%go, T__Deadlineⁱᵐᵖˡ); ("Error"%go, T__Errorⁱᵐᵖˡ); ("Errorf"%go, T__Errorfⁱᵐᵖˡ); ("Fail"%go, T__Failⁱᵐᵖˡ); ("FailNow"%go, T__FailNowⁱᵐᵖˡ); ("Failed"%go, T__Failedⁱᵐᵖˡ); ("Fatal"%go, T__Fatalⁱᵐᵖˡ); ("Fatalf"%go, T__Fatalfⁱᵐᵖˡ); ("Helper"%go, T__Helperⁱᵐᵖˡ); ("Log"%go, T__Logⁱᵐᵖˡ); ("Logf"%go, T__Logfⁱᵐᵖˡ); ("Name"%go, T__Nameⁱᵐᵖˡ); ("Output"%go, T__Outputⁱᵐᵖˡ); ("Parallel"%go, T__Parallelⁱᵐᵖˡ); ("Run"%go, T__Runⁱᵐᵖˡ); ("Setenv"%go, T__Setenvⁱᵐᵖˡ); ("Skip"%go, T__Skipⁱᵐᵖˡ); ("SkipNow"%go, T__SkipNowⁱᵐᵖˡ); ("Skipf"%go, T__Skipfⁱᵐᵖˡ); ("Skipped"%go, T__Skippedⁱᵐᵖˡ); ("TempDir"%go, T__TempDirⁱᵐᵖˡ); ("callSite"%go, T__callSiteⁱᵐᵖˡ); ("checkFuzzFn"%go, T__checkFuzzFnⁱᵐᵖˡ); ("checkParallel"%go, T__checkParallelⁱᵐᵖˡ); ("checkRaces"%go, T__checkRacesⁱᵐᵖˡ); ("destination"%go, T__destinationⁱᵐᵖˡ); ("flushPartial"%go, T__flushPartialⁱᵐᵖˡ); ("flushToParent"%go, T__flushToParentⁱᵐᵖˡ); ("frameSkip"%go, T__frameSkipⁱᵐᵖˡ); ("log"%go, T__logⁱᵐᵖˡ); ("private"%go, T__privateⁱᵐᵖˡ); ("report"%go, T__reportⁱᵐᵖˡ); ("resetRaces"%go, T__resetRacesⁱᵐᵖˡ); ("runCleanup"%go, T__runCleanupⁱᵐᵖˡ); ("setOutputWriter"%go, T__setOutputWriterⁱᵐᵖˡ); ("setRan"%go, T__setRanⁱᵐᵖˡ)]); (outputWriter.id, []); (ptrT.id outputWriter.id, [("Write"%go, outputWriter__Writeⁱᵐᵖˡ); ("writeLine"%go, outputWriter__writeLineⁱᵐᵖˡ)]); (panicHandling.id, []); (ptrT.id panicHandling.id, []); (InternalTest.id, []); (ptrT.id InternalTest.id, []); (testState.id, []); (ptrT.id testState.id, [("release"%go, testState__releaseⁱᵐᵖˡ); ("waitParallel"%go, testState__waitParallelⁱᵐᵖˡ)]); (matchStringOnly.id, [("CheckCorpus"%go, matchStringOnly__CheckCorpusⁱᵐᵖˡ); ("CoordinateFuzzing"%go, matchStringOnly__CoordinateFuzzingⁱᵐᵖˡ); ("ImportPath"%go, matchStringOnly__ImportPathⁱᵐᵖˡ); ("InitRuntimeCoverage"%go, matchStringOnly__InitRuntimeCoverageⁱᵐᵖˡ); ("MatchString"%go, matchStringOnly__MatchStringⁱᵐᵖˡ); ("ReadCorpus"%go, matchStringOnly__ReadCorpusⁱᵐᵖˡ); ("ResetCoverage"%go, matchStringOnly__ResetCoverageⁱᵐᵖˡ); ("RunFuzzWorker"%go, matchStringOnly__RunFuzzWorkerⁱᵐᵖˡ); ("SetPanicOnExit0"%go, matchStringOnly__SetPanicOnExit0ⁱᵐᵖˡ); ("SnapshotCoverage"%go, matchStringOnly__SnapshotCoverageⁱᵐᵖˡ); ("StartCPUProfile"%go, matchStringOnly__StartCPUProfileⁱᵐᵖˡ); ("StartTestLog"%go, matchStringOnly__StartTestLogⁱᵐᵖˡ); ("StopCPUProfile"%go, matchStringOnly__StopCPUProfileⁱᵐᵖˡ); ("StopTestLog"%go, matchStringOnly__StopTestLogⁱᵐᵖˡ); ("WriteProfileTo"%go, matchStringOnly__WriteProfileToⁱᵐᵖˡ)]); (ptrT.id matchStringOnly.id, [("CheckCorpus"%go, matchStringOnly__CheckCorpusⁱᵐᵖˡ); ("CoordinateFuzzing"%go, matchStringOnly__CoordinateFuzzingⁱᵐᵖˡ); ("ImportPath"%go, matchStringOnly__ImportPathⁱᵐᵖˡ); ("InitRuntimeCoverage"%go, matchStringOnly__InitRuntimeCoverageⁱᵐᵖˡ); ("MatchString"%go, matchStringOnly__MatchStringⁱᵐᵖˡ); ("ReadCorpus"%go, matchStringOnly__ReadCorpusⁱᵐᵖˡ); ("ResetCoverage"%go, matchStringOnly__ResetCoverageⁱᵐᵖˡ); ("RunFuzzWorker"%go, matchStringOnly__RunFuzzWorkerⁱᵐᵖˡ); ("SetPanicOnExit0"%go, matchStringOnly__SetPanicOnExit0ⁱᵐᵖˡ); ("SnapshotCoverage"%go, matchStringOnly__SnapshotCoverageⁱᵐᵖˡ); ("StartCPUProfile"%go, matchStringOnly__StartCPUProfileⁱᵐᵖˡ); ("StartTestLog"%go, matchStringOnly__StartTestLogⁱᵐᵖˡ); ("StopCPUProfile"%go, matchStringOnly__StopCPUProfileⁱᵐᵖˡ); ("StopTestLog"%go, matchStringOnly__StopTestLogⁱᵐᵖˡ); ("WriteProfileTo"%go, matchStringOnly__WriteProfileToⁱᵐᵖˡ)]); (M.id, []); (ptrT.id M.id, [("Run"%go, M__Runⁱᵐᵖˡ); ("after"%go, M__afterⁱᵐᵖˡ); ("before"%go, M__beforeⁱᵐᵖˡ); ("startAlarm"%go, M__startAlarmⁱᵐᵖˡ); ("stopAlarm"%go, M__stopAlarmⁱᵐᵖˡ); ("writeProfiles"%go, M__writeProfilesⁱᵐᵖˡ)]); (highPrecisionTime.id, []); (ptrT.id highPrecisionTime.id, [])].
-
 #[global] Instance info' : PkgInfo testing.testing :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -925,9 +506,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #testing.testing (λ: <>,
-      exception_do (do:  (package.alloc testing.testing #());;;
-      do:  (benchTime'init #());;;
+    package.init testing.testing (λ: <>,
+      exception_do (do:  (benchTime'init #());;;
       do:  (hideStdoutForTesting'init #());;;
       do:  (minimizeDuration'init #());;;
       do:  (corpusDir'init #());;;

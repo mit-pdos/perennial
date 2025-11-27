@@ -903,8 +903,6 @@ Definition Float64bits : go_string := "math.Float64bits"%go.
 
 Definition Float64frombits : go_string := "math.Float64frombits"%go.
 
-Definition vars' : list (go_string * go_type) := [].
-
 Axiom Absⁱᵐᵖˡ : val.
 
 Axiom Acoshⁱᵐᵖˡ : val.
@@ -1225,13 +1223,8 @@ Axiom Float64frombitsⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Abs, Absⁱᵐᵖˡ); (Acosh, Acoshⁱᵐᵖˡ); (acosh, acoshⁱᵐᵖˡ); (Asin, Asinⁱᵐᵖˡ); (asin, asinⁱᵐᵖˡ); (Acos, Acosⁱᵐᵖˡ); (acos, acosⁱᵐᵖˡ); (Asinh, Asinhⁱᵐᵖˡ); (asinh, asinhⁱᵐᵖˡ); (xatan, xatanⁱᵐᵖˡ); (satan, satanⁱᵐᵖˡ); (Atan, Atanⁱᵐᵖˡ); (atan, atanⁱᵐᵖˡ); (Atan2, Atan2ⁱᵐᵖˡ); (atan2, atan2ⁱᵐᵖˡ); (Atanh, Atanhⁱᵐᵖˡ); (atanh, atanhⁱᵐᵖˡ); (Inf, Infⁱᵐᵖˡ); (NaN, NaNⁱᵐᵖˡ); (IsNaN, IsNaNⁱᵐᵖˡ); (IsInf, IsInfⁱᵐᵖˡ); (normalize, normalizeⁱᵐᵖˡ); (Cbrt, Cbrtⁱᵐᵖˡ); (cbrt, cbrtⁱᵐᵖˡ); (Copysign, Copysignⁱᵐᵖˡ); (Dim, Dimⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (max, maxⁱᵐᵖˡ); (Min, Minⁱᵐᵖˡ); (min, minⁱᵐᵖˡ); (archMax, archMaxⁱᵐᵖˡ); (archMin, archMinⁱᵐᵖˡ); (Erf, Erfⁱᵐᵖˡ); (erf, erfⁱᵐᵖˡ); (Erfc, Erfcⁱᵐᵖˡ); (erfc, erfcⁱᵐᵖˡ); (Erfinv, Erfinvⁱᵐᵖˡ); (Erfcinv, Erfcinvⁱᵐᵖˡ); (Exp, Expⁱᵐᵖˡ); (exp, expⁱᵐᵖˡ); (Exp2, Exp2ⁱᵐᵖˡ); (exp2, exp2ⁱᵐᵖˡ); (expmulti, expmultiⁱᵐᵖˡ); (archExp2, archExp2ⁱᵐᵖˡ); (archExp, archExpⁱᵐᵖˡ); (Expm1, Expm1ⁱᵐᵖˡ); (expm1, expm1ⁱᵐᵖˡ); (Floor, Floorⁱᵐᵖˡ); (floor, floorⁱᵐᵖˡ); (Ceil, Ceilⁱᵐᵖˡ); (ceil, ceilⁱᵐᵖˡ); (Trunc, Truncⁱᵐᵖˡ); (trunc, truncⁱᵐᵖˡ); (Round, Roundⁱᵐᵖˡ); (RoundToEven, RoundToEvenⁱᵐᵖˡ); (archFloor, archFloorⁱᵐᵖˡ); (archCeil, archCeilⁱᵐᵖˡ); (archTrunc, archTruncⁱᵐᵖˡ); (zero, zeroⁱᵐᵖˡ); (nonzero, nonzeroⁱᵐᵖˡ); (shl, shlⁱᵐᵖˡ); (shr, shrⁱᵐᵖˡ); (shrcompress, shrcompressⁱᵐᵖˡ); (lz, lzⁱᵐᵖˡ); (split, splitⁱᵐᵖˡ); (FMA, FMAⁱᵐᵖˡ); (Frexp, Frexpⁱᵐᵖˡ); (frexp, frexpⁱᵐᵖˡ); (stirling, stirlingⁱᵐᵖˡ); (Gamma, Gammaⁱᵐᵖˡ); (isNegInt, isNegIntⁱᵐᵖˡ); (Hypot, Hypotⁱᵐᵖˡ); (hypot, hypotⁱᵐᵖˡ); (archHypot, archHypotⁱᵐᵖˡ); (J0, J0ⁱᵐᵖˡ); (Y0, Y0ⁱᵐᵖˡ); (pzero, pzeroⁱᵐᵖˡ); (qzero, qzeroⁱᵐᵖˡ); (J1, J1ⁱᵐᵖˡ); (Y1, Y1ⁱᵐᵖˡ); (pone, poneⁱᵐᵖˡ); (qone, qoneⁱᵐᵖˡ); (Jn, Jnⁱᵐᵖˡ); (Yn, Ynⁱᵐᵖˡ); (Ldexp, Ldexpⁱᵐᵖˡ); (ldexp, ldexpⁱᵐᵖˡ); (Lgamma, Lgammaⁱᵐᵖˡ); (sinPi, sinPiⁱᵐᵖˡ); (Log, Logⁱᵐᵖˡ); (log, logⁱᵐᵖˡ); (Log10, Log10ⁱᵐᵖˡ); (log10, log10ⁱᵐᵖˡ); (Log2, Log2ⁱᵐᵖˡ); (log2, log2ⁱᵐᵖˡ); (Log1p, Log1pⁱᵐᵖˡ); (log1p, log1pⁱᵐᵖˡ); (archLog, archLogⁱᵐᵖˡ); (Logb, Logbⁱᵐᵖˡ); (Ilogb, Ilogbⁱᵐᵖˡ); (ilogb, ilogbⁱᵐᵖˡ); (Mod, Modⁱᵐᵖˡ); (mod', modⁱᵐᵖˡ); (Modf, Modfⁱᵐᵖˡ); (modf, modfⁱᵐᵖˡ); (archModf, archModfⁱᵐᵖˡ); (Nextafter32, Nextafter32ⁱᵐᵖˡ); (Nextafter, Nextafterⁱᵐᵖˡ); (isOddInt, isOddIntⁱᵐᵖˡ); (Pow, Powⁱᵐᵖˡ); (pow, powⁱᵐᵖˡ); (Pow10, Pow10ⁱᵐᵖˡ); (Remainder, Remainderⁱᵐᵖˡ); (remainder, remainderⁱᵐᵖˡ); (Signbit, Signbitⁱᵐᵖˡ); (Cos, Cosⁱᵐᵖˡ); (cos, cosⁱᵐᵖˡ); (Sin, Sinⁱᵐᵖˡ); (sin, sinⁱᵐᵖˡ); (Sincos, Sincosⁱᵐᵖˡ); (Sinh, Sinhⁱᵐᵖˡ); (sinh, sinhⁱᵐᵖˡ); (Cosh, Coshⁱᵐᵖˡ); (cosh, coshⁱᵐᵖˡ); (Sqrt, Sqrtⁱᵐᵖˡ); (sqrt, sqrtⁱᵐᵖˡ); (archAcos, archAcosⁱᵐᵖˡ); (archAcosh, archAcoshⁱᵐᵖˡ); (archAsin, archAsinⁱᵐᵖˡ); (archAsinh, archAsinhⁱᵐᵖˡ); (archAtan, archAtanⁱᵐᵖˡ); (archAtan2, archAtan2ⁱᵐᵖˡ); (archAtanh, archAtanhⁱᵐᵖˡ); (archCbrt, archCbrtⁱᵐᵖˡ); (archCos, archCosⁱᵐᵖˡ); (archCosh, archCoshⁱᵐᵖˡ); (archErf, archErfⁱᵐᵖˡ); (archErfc, archErfcⁱᵐᵖˡ); (archExpm1, archExpm1ⁱᵐᵖˡ); (archFrexp, archFrexpⁱᵐᵖˡ); (archLdexp, archLdexpⁱᵐᵖˡ); (archLog10, archLog10ⁱᵐᵖˡ); (archLog2, archLog2ⁱᵐᵖˡ); (archLog1p, archLog1pⁱᵐᵖˡ); (archMod, archModⁱᵐᵖˡ); (archPow, archPowⁱᵐᵖˡ); (archRemainder, archRemainderⁱᵐᵖˡ); (archSin, archSinⁱᵐᵖˡ); (archSinh, archSinhⁱᵐᵖˡ); (archTan, archTanⁱᵐᵖˡ); (archTanh, archTanhⁱᵐᵖˡ); (Tan, Tanⁱᵐᵖˡ); (tan, tanⁱᵐᵖˡ); (Tanh, Tanhⁱᵐᵖˡ); (tanh, tanhⁱᵐᵖˡ); (trigReduce, trigReduceⁱᵐᵖˡ); (Float32bits, Float32bitsⁱᵐᵖˡ); (Float32frombits, Float32frombitsⁱᵐᵖˡ); (Float64bits, Float64bitsⁱᵐᵖˡ); (Float64frombits, Float64frombitsⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
-
 #[global] Instance info' : PkgInfo math.math :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -1239,9 +1232,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #math.math (λ: <>,
-      exception_do (do:  (package.alloc math.math #());;;
-      do:  (useFMA'init #());;;
+    package.init math.math (λ: <>,
+      exception_do (do:  (useFMA'init #());;;
       do:  (_gamP'init #());;;
       do:  (_gamQ'init #());;;
       do:  (_gamS'init #());;;

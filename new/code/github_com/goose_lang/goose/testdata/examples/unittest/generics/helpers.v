@@ -14,10 +14,10 @@ Definition AnyPointer : go_string := "github.com/goose-lang/goose/testdata/examp
 (* go: helpers.go:3:6 *)
 Definition AnyPointerⁱᵐᵖˡ : val :=
   λ: "T" "x",
-    exception_do (let: "x" := (mem.alloc "x") in
+    exception_do (let: "x" := (GoAllocValue (go.PointerType T) "x") in
     do:  #()).
 
-Definition vars' : list (go_string * go_type) := [].
+Definition vars' : list (go_string * go.type) := [].
 
 Definition functions' : list (go_string * val) := [(AnyPointer, AnyPointerⁱᵐᵖˡ)].
 

@@ -8,10 +8,6 @@ Definition primitive : go_string := "github.com/goose-lang/primitive".
 
 Module primitive.
 
-Module Mutex. Definition id : go_string := "github.com/goose-lang/primitive.Mutex"%go. End Mutex.
-Module prophId. Definition id : go_string := "github.com/goose-lang/primitive.prophId"%go. End prophId.
-Module ProphId. Axiom id : go_string. End ProphId.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -36,21 +32,21 @@ Definition Assert : go_string := "github.com/goose-lang/primitive.Assert"%go.
 
 Definition Exit : go_string := "github.com/goose-lang/primitive.Exit"%go.
 
-Definition WaitTimeout : go_string := "github.com/goose-lang/primitive.WaitTimeout"%go.
-
 Definition TimeNow : go_string := "github.com/goose-lang/primitive.TimeNow"%go.
 
 Definition Sleep : go_string := "github.com/goose-lang/primitive.Sleep"%go.
 
 Definition AssumeNoStringOverflow : go_string := "github.com/goose-lang/primitive.AssumeNoStringOverflow"%go.
 
-Axiom prophId : go_type.
+Axiom prophIdⁱᵐᵖˡ : go.type.
 
-Axiom ProphId : go_type.
+Axiom ProphId : go.type.
 
 Definition NewProph : go_string := "github.com/goose-lang/primitive.NewProph"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Mutex : go.type := go.Named "github.com/goose-lang/primitive.Mutex"%go [].
+
+Definition prophId : go.type := go.Named "github.com/goose-lang/primitive.prophId"%go [].
 
 Axiom UInt64Getⁱᵐᵖˡ : val.
 
@@ -66,27 +62,16 @@ Axiom Assertⁱᵐᵖˡ : val.
 
 Axiom Exitⁱᵐᵖˡ : val.
 
-Axiom WaitTimeoutⁱᵐᵖˡ : val.
-
 Axiom TimeNowⁱᵐᵖˡ : val.
 
 Axiom Sleepⁱᵐᵖˡ : val.
 
 Axiom NewProphⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(UInt64Get, UInt64Getⁱᵐᵖˡ); (UInt32Get, UInt32Getⁱᵐᵖˡ); (UInt64Put, UInt64Putⁱᵐᵖˡ); (UInt32Put, UInt32Putⁱᵐᵖˡ); (RandomUint64, RandomUint64ⁱᵐᵖˡ); (UInt64ToString, UInt64ToStringⁱᵐᵖˡ); (Linearize, Linearizeⁱᵐᵖˡ); (Assume, Assumeⁱᵐᵖˡ); (Assert, Assertⁱᵐᵖˡ); (Exit, Exitⁱᵐᵖˡ); (WaitTimeout, WaitTimeoutⁱᵐᵖˡ); (TimeNow, TimeNowⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (AssumeNoStringOverflow, AssumeNoStringOverflowⁱᵐᵖˡ); (NewProph, NewProphⁱᵐᵖˡ)].
-
-Axiom prophId__ResolveBoolⁱᵐᵖˡ : val.
-
-Axiom prophId__ResolveU64ⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Mutex.id, []); (ptrT.id Mutex.id, [("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ)]); (prophId.id, []); (ptrT.id prophId.id, [("ResolveBool"%go, prophId__ResolveBoolⁱᵐᵖˡ); ("ResolveU64"%go, prophId__ResolveU64ⁱᵐᵖˡ)])].
+Definition functions' : list (go_string * val) := [(UInt64Get, UInt64Getⁱᵐᵖˡ); (UInt32Get, UInt32Getⁱᵐᵖˡ); (UInt64Put, UInt64Putⁱᵐᵖˡ); (UInt32Put, UInt32Putⁱᵐᵖˡ); (RandomUint64, RandomUint64ⁱᵐᵖˡ); (UInt64ToString, UInt64ToStringⁱᵐᵖˡ); (Linearize, Linearizeⁱᵐᵖˡ); (Assume, Assumeⁱᵐᵖˡ); (Assert, Assertⁱᵐᵖˡ); (Exit, Exitⁱᵐᵖˡ); (TimeNow, TimeNowⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (AssumeNoStringOverflow, AssumeNoStringOverflowⁱᵐᵖˡ); (NewProph, NewProphⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo primitive.primitive :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -94,8 +79,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #primitive.primitive (λ: <>,
-      exception_do (do:  (package.alloc primitive.primitive #()))
+    package.init primitive.primitive (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

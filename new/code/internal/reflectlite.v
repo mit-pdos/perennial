@@ -5,34 +5,15 @@ Definition reflectlite : go_string := "internal/reflectlite".
 
 Module reflectlite.
 
-Module Type'. Definition id : go_string := "internal/reflectlite.Type"%go. End Type'.
-Module Kind. Axiom id : go_string. End Kind.
-Module nameOff. Axiom id : go_string. End nameOff.
-Module typeOff. Axiom id : go_string. End typeOff.
-Module textOff. Axiom id : go_string. End textOff.
-Module rtype. Definition id : go_string := "internal/reflectlite.rtype"%go. End rtype.
-Module uncommonType. Axiom id : go_string. End uncommonType.
-Module arrayType. Axiom id : go_string. End arrayType.
-Module chanType. Axiom id : go_string. End chanType.
-Module funcType. Axiom id : go_string. End funcType.
-Module interfaceType. Axiom id : go_string. End interfaceType.
-Module ptrType. Axiom id : go_string. End ptrType.
-Module sliceType. Axiom id : go_string. End sliceType.
-Module structType. Axiom id : go_string. End structType.
-Module name. Definition id : go_string := "internal/reflectlite.name"%go. End name.
-Module Value. Definition id : go_string := "internal/reflectlite.Value"%go. End Value.
-Module flag. Definition id : go_string := "internal/reflectlite.flag"%go. End flag.
-Module ValueError. Definition id : go_string := "internal/reflectlite.ValueError"%go. End ValueError.
-
 Section code.
 Context `{ffi_syntax}.
 
 
 Definition Swapper : go_string := "internal/reflectlite.Swapper"%go.
 
-Axiom Type' : go_type.
+Axiom Typeⁱᵐᵖˡ : go.type.
 
-Axiom Kind : go_type.
+Axiom Kind : go.type.
 
 Axiom Ptr : val.
 
@@ -44,31 +25,31 @@ Axiom String : val.
 
 Axiom Struct : val.
 
-Axiom nameOff : go_type.
+Axiom nameOff : go.type.
 
-Axiom typeOff : go_type.
+Axiom typeOff : go.type.
 
-Axiom textOff : go_type.
+Axiom textOff : go.type.
 
-Axiom rtype : go_type.
+Axiom rtypeⁱᵐᵖˡ : go.type.
 
-Axiom uncommonType : go_type.
+Axiom uncommonType : go.type.
 
-Axiom arrayType : go_type.
+Axiom arrayType : go.type.
 
-Axiom chanType : go_type.
+Axiom chanType : go.type.
 
-Axiom funcType : go_type.
+Axiom funcType : go.type.
 
-Axiom interfaceType : go_type.
+Axiom interfaceType : go.type.
 
-Axiom ptrType : go_type.
+Axiom ptrType : go.type.
 
-Axiom sliceType : go_type.
+Axiom sliceType : go.type.
 
-Axiom structType : go_type.
+Axiom structType : go.type.
 
-Axiom name : go_type.
+Axiom nameⁱᵐᵖˡ : go.type.
 
 Definition pkgPath : go_string := "internal/reflectlite.pkgPath"%go.
 
@@ -94,9 +75,9 @@ Definition haveIdenticalUnderlyingType : go_string := "internal/reflectlite.have
 
 Definition toType : go_string := "internal/reflectlite.toType"%go.
 
-Axiom Value : go_type.
+Axiom Valueⁱᵐᵖˡ : go.type.
 
-Axiom flag : go_type.
+Axiom flagⁱᵐᵖˡ : go.type.
 
 Axiom flagKindWidth : Z.
 
@@ -120,7 +101,7 @@ Definition packEface : go_string := "internal/reflectlite.packEface"%go.
 
 Definition unpackEface : go_string := "internal/reflectlite.unpackEface"%go.
 
-Axiom ValueError : go_type.
+Axiom ValueErrorⁱᵐᵖˡ : go.type.
 
 Definition methodName : go_string := "internal/reflectlite.methodName"%go.
 
@@ -144,7 +125,17 @@ Definition escapes : go_string := "internal/reflectlite.escapes"%go.
 
 Definition dummy : go_string := "internal/reflectlite.dummy"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Type' : go.type := go.Named "internal/reflectlite.Type"%go [].
+
+Definition rtype : go.type := go.Named "internal/reflectlite.rtype"%go [].
+
+Definition name : go.type := go.Named "internal/reflectlite.name"%go [].
+
+Definition Value : go.type := go.Named "internal/reflectlite.Value"%go [].
+
+Definition flag : go.type := go.Named "internal/reflectlite.flag"%go [].
+
+Definition ValueError : go.type := go.Named "internal/reflectlite.ValueError"%go [].
 
 Axiom Swapperⁱᵐᵖˡ : val.
 
@@ -198,145 +189,8 @@ Axiom escapesⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Swapper, Swapperⁱᵐᵖˡ); (pkgPath, pkgPathⁱᵐᵖˡ); (resolveNameOff, resolveNameOffⁱᵐᵖˡ); (resolveTypeOff, resolveTypeOffⁱᵐᵖˡ); (toRType, toRTypeⁱᵐᵖˡ); (elem, elemⁱᵐᵖˡ); (add, addⁱᵐᵖˡ); (TypeOf, TypeOfⁱᵐᵖˡ); (implements, implementsⁱᵐᵖˡ); (directlyAssignable, directlyAssignableⁱᵐᵖˡ); (haveIdenticalType, haveIdenticalTypeⁱᵐᵖˡ); (haveIdenticalUnderlyingType, haveIdenticalUnderlyingTypeⁱᵐᵖˡ); (toType, toTypeⁱᵐᵖˡ); (packEface, packEfaceⁱᵐᵖˡ); (unpackEface, unpackEfaceⁱᵐᵖˡ); (methodName, methodNameⁱᵐᵖˡ); (valueInterface, valueInterfaceⁱᵐᵖˡ); (chanlen, chanlenⁱᵐᵖˡ); (maplen, maplenⁱᵐᵖˡ); (unsafe_New, unsafe_Newⁱᵐᵖˡ); (ValueOf, ValueOfⁱᵐᵖˡ); (arrayAt, arrayAtⁱᵐᵖˡ); (ifaceE2I, ifaceE2Iⁱᵐᵖˡ); (typedmemmove, typedmemmoveⁱᵐᵖˡ); (escapes, escapesⁱᵐᵖˡ)].
 
-Axiom rtype__Alignⁱᵐᵖˡ : val.
-
-Axiom rtype__ArrayTypeⁱᵐᵖˡ : val.
-
-Axiom rtype__AssignableToⁱᵐᵖˡ : val.
-
-Axiom rtype__ChanDirⁱᵐᵖˡ : val.
-
-Axiom rtype__Commonⁱᵐᵖˡ : val.
-
-Axiom rtype__Comparableⁱᵐᵖˡ : val.
-
-Axiom rtype__Elemⁱᵐᵖˡ : val.
-
-Axiom rtype__ExportedMethodsⁱᵐᵖˡ : val.
-
-Axiom rtype__FieldAlignⁱᵐᵖˡ : val.
-
-Axiom rtype__FuncTypeⁱᵐᵖˡ : val.
-
-Axiom rtype__GcSliceⁱᵐᵖˡ : val.
-
-Axiom rtype__HasNameⁱᵐᵖˡ : val.
-
-Axiom rtype__IfaceIndirⁱᵐᵖˡ : val.
-
-Axiom rtype__Implementsⁱᵐᵖˡ : val.
-
-Axiom rtype__Inⁱᵐᵖˡ : val.
-
-Axiom rtype__InterfaceTypeⁱᵐᵖˡ : val.
-
-Axiom rtype__IsDirectIfaceⁱᵐᵖˡ : val.
-
-Axiom rtype__Keyⁱᵐᵖˡ : val.
-
-Axiom rtype__Kindⁱᵐᵖˡ : val.
-
-Axiom rtype__Lenⁱᵐᵖˡ : val.
-
-Axiom rtype__MapTypeⁱᵐᵖˡ : val.
-
-Axiom rtype__Nameⁱᵐᵖˡ : val.
-
-Axiom rtype__NumFieldⁱᵐᵖˡ : val.
-
-Axiom rtype__NumInⁱᵐᵖˡ : val.
-
-Axiom rtype__NumMethodⁱᵐᵖˡ : val.
-
-Axiom rtype__NumOutⁱᵐᵖˡ : val.
-
-Axiom rtype__Outⁱᵐᵖˡ : val.
-
-Axiom rtype__PkgPathⁱᵐᵖˡ : val.
-
-Axiom rtype__Pointersⁱᵐᵖˡ : val.
-
-Axiom rtype__Sizeⁱᵐᵖˡ : val.
-
-Axiom rtype__Stringⁱᵐᵖˡ : val.
-
-Axiom rtype__StructTypeⁱᵐᵖˡ : val.
-
-Axiom rtype__Uncommonⁱᵐᵖˡ : val.
-
-Axiom rtype__commonⁱᵐᵖˡ : val.
-
-Axiom rtype__exportedMethodsⁱᵐᵖˡ : val.
-
-Axiom rtype__nameOffⁱᵐᵖˡ : val.
-
-Axiom rtype__typeOffⁱᵐᵖˡ : val.
-
-Axiom rtype__uncommonⁱᵐᵖˡ : val.
-
-Axiom name__dataⁱᵐᵖˡ : val.
-
-Axiom name__embeddedⁱᵐᵖˡ : val.
-
-Axiom name__hasTagⁱᵐᵖˡ : val.
-
-Axiom name__isExportedⁱᵐᵖˡ : val.
-
-Axiom name__nameⁱᵐᵖˡ : val.
-
-Axiom name__readVarintⁱᵐᵖˡ : val.
-
-Axiom name__tagⁱᵐᵖˡ : val.
-
-Axiom Value__CanSetⁱᵐᵖˡ : val.
-
-Axiom Value__Elemⁱᵐᵖˡ : val.
-
-Axiom Value__IsNilⁱᵐᵖˡ : val.
-
-Axiom Value__IsValidⁱᵐᵖˡ : val.
-
-Axiom Value__Kindⁱᵐᵖˡ : val.
-
-Axiom Value__Lenⁱᵐᵖˡ : val.
-
-Axiom Value__Setⁱᵐᵖˡ : val.
-
-Axiom Value__Typeⁱᵐᵖˡ : val.
-
-Axiom Value__assignToⁱᵐᵖˡ : val.
-
-Axiom Value__kindⁱᵐᵖˡ : val.
-
-Axiom Value__mustBeAssignableⁱᵐᵖˡ : val.
-
-Axiom Value__mustBeExportedⁱᵐᵖˡ : val.
-
-Axiom Value__numMethodⁱᵐᵖˡ : val.
-
-Axiom Value__pointerⁱᵐᵖˡ : val.
-
-Axiom Value__roⁱᵐᵖˡ : val.
-
-Axiom Value__typⁱᵐᵖˡ : val.
-
-Axiom flag__kindⁱᵐᵖˡ : val.
-
-Axiom flag__mustBeAssignableⁱᵐᵖˡ : val.
-
-Axiom flag__mustBeExportedⁱᵐᵖˡ : val.
-
-Axiom flag__roⁱᵐᵖˡ : val.
-
-Axiom ValueError__Errorⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(rtype.id, [("Align"%go, rtype__Alignⁱᵐᵖˡ); ("ArrayType"%go, rtype__ArrayTypeⁱᵐᵖˡ); ("AssignableTo"%go, rtype__AssignableToⁱᵐᵖˡ); ("ChanDir"%go, rtype__ChanDirⁱᵐᵖˡ); ("Common"%go, rtype__Commonⁱᵐᵖˡ); ("Comparable"%go, rtype__Comparableⁱᵐᵖˡ); ("Elem"%go, rtype__Elemⁱᵐᵖˡ); ("ExportedMethods"%go, rtype__ExportedMethodsⁱᵐᵖˡ); ("FieldAlign"%go, rtype__FieldAlignⁱᵐᵖˡ); ("FuncType"%go, rtype__FuncTypeⁱᵐᵖˡ); ("GcSlice"%go, rtype__GcSliceⁱᵐᵖˡ); ("HasName"%go, rtype__HasNameⁱᵐᵖˡ); ("IfaceIndir"%go, rtype__IfaceIndirⁱᵐᵖˡ); ("Implements"%go, rtype__Implementsⁱᵐᵖˡ); ("In"%go, rtype__Inⁱᵐᵖˡ); ("InterfaceType"%go, rtype__InterfaceTypeⁱᵐᵖˡ); ("IsDirectIface"%go, rtype__IsDirectIfaceⁱᵐᵖˡ); ("Key"%go, rtype__Keyⁱᵐᵖˡ); ("Kind"%go, rtype__Kindⁱᵐᵖˡ); ("Len"%go, rtype__Lenⁱᵐᵖˡ); ("MapType"%go, rtype__MapTypeⁱᵐᵖˡ); ("Name"%go, rtype__Nameⁱᵐᵖˡ); ("NumField"%go, rtype__NumFieldⁱᵐᵖˡ); ("NumIn"%go, rtype__NumInⁱᵐᵖˡ); ("NumMethod"%go, rtype__NumMethodⁱᵐᵖˡ); ("NumOut"%go, rtype__NumOutⁱᵐᵖˡ); ("Out"%go, rtype__Outⁱᵐᵖˡ); ("PkgPath"%go, rtype__PkgPathⁱᵐᵖˡ); ("Pointers"%go, rtype__Pointersⁱᵐᵖˡ); ("Size"%go, rtype__Sizeⁱᵐᵖˡ); ("String"%go, rtype__Stringⁱᵐᵖˡ); ("StructType"%go, rtype__StructTypeⁱᵐᵖˡ); ("Uncommon"%go, rtype__Uncommonⁱᵐᵖˡ); ("common"%go, rtype__commonⁱᵐᵖˡ); ("exportedMethods"%go, rtype__exportedMethodsⁱᵐᵖˡ); ("nameOff"%go, rtype__nameOffⁱᵐᵖˡ); ("typeOff"%go, rtype__typeOffⁱᵐᵖˡ); ("uncommon"%go, rtype__uncommonⁱᵐᵖˡ)]); (ptrT.id rtype.id, [("Align"%go, rtype__Alignⁱᵐᵖˡ); ("ArrayType"%go, rtype__ArrayTypeⁱᵐᵖˡ); ("AssignableTo"%go, rtype__AssignableToⁱᵐᵖˡ); ("ChanDir"%go, rtype__ChanDirⁱᵐᵖˡ); ("Common"%go, rtype__Commonⁱᵐᵖˡ); ("Comparable"%go, rtype__Comparableⁱᵐᵖˡ); ("Elem"%go, rtype__Elemⁱᵐᵖˡ); ("ExportedMethods"%go, rtype__ExportedMethodsⁱᵐᵖˡ); ("FieldAlign"%go, rtype__FieldAlignⁱᵐᵖˡ); ("FuncType"%go, rtype__FuncTypeⁱᵐᵖˡ); ("GcSlice"%go, rtype__GcSliceⁱᵐᵖˡ); ("HasName"%go, rtype__HasNameⁱᵐᵖˡ); ("IfaceIndir"%go, rtype__IfaceIndirⁱᵐᵖˡ); ("Implements"%go, rtype__Implementsⁱᵐᵖˡ); ("In"%go, rtype__Inⁱᵐᵖˡ); ("InterfaceType"%go, rtype__InterfaceTypeⁱᵐᵖˡ); ("IsDirectIface"%go, rtype__IsDirectIfaceⁱᵐᵖˡ); ("Key"%go, rtype__Keyⁱᵐᵖˡ); ("Kind"%go, rtype__Kindⁱᵐᵖˡ); ("Len"%go, rtype__Lenⁱᵐᵖˡ); ("MapType"%go, rtype__MapTypeⁱᵐᵖˡ); ("Name"%go, rtype__Nameⁱᵐᵖˡ); ("NumField"%go, rtype__NumFieldⁱᵐᵖˡ); ("NumIn"%go, rtype__NumInⁱᵐᵖˡ); ("NumMethod"%go, rtype__NumMethodⁱᵐᵖˡ); ("NumOut"%go, rtype__NumOutⁱᵐᵖˡ); ("Out"%go, rtype__Outⁱᵐᵖˡ); ("PkgPath"%go, rtype__PkgPathⁱᵐᵖˡ); ("Pointers"%go, rtype__Pointersⁱᵐᵖˡ); ("Size"%go, rtype__Sizeⁱᵐᵖˡ); ("String"%go, rtype__Stringⁱᵐᵖˡ); ("StructType"%go, rtype__StructTypeⁱᵐᵖˡ); ("Uncommon"%go, rtype__Uncommonⁱᵐᵖˡ); ("common"%go, rtype__commonⁱᵐᵖˡ); ("exportedMethods"%go, rtype__exportedMethodsⁱᵐᵖˡ); ("nameOff"%go, rtype__nameOffⁱᵐᵖˡ); ("typeOff"%go, rtype__typeOffⁱᵐᵖˡ); ("uncommon"%go, rtype__uncommonⁱᵐᵖˡ)]); (name.id, [("data"%go, name__dataⁱᵐᵖˡ); ("embedded"%go, name__embeddedⁱᵐᵖˡ); ("hasTag"%go, name__hasTagⁱᵐᵖˡ); ("isExported"%go, name__isExportedⁱᵐᵖˡ); ("name"%go, name__nameⁱᵐᵖˡ); ("readVarint"%go, name__readVarintⁱᵐᵖˡ); ("tag"%go, name__tagⁱᵐᵖˡ)]); (ptrT.id name.id, [("data"%go, name__dataⁱᵐᵖˡ); ("embedded"%go, name__embeddedⁱᵐᵖˡ); ("hasTag"%go, name__hasTagⁱᵐᵖˡ); ("isExported"%go, name__isExportedⁱᵐᵖˡ); ("name"%go, name__nameⁱᵐᵖˡ); ("readVarint"%go, name__readVarintⁱᵐᵖˡ); ("tag"%go, name__tagⁱᵐᵖˡ)]); (Value.id, [("CanSet"%go, Value__CanSetⁱᵐᵖˡ); ("Elem"%go, Value__Elemⁱᵐᵖˡ); ("IsNil"%go, Value__IsNilⁱᵐᵖˡ); ("IsValid"%go, Value__IsValidⁱᵐᵖˡ); ("Kind"%go, Value__Kindⁱᵐᵖˡ); ("Len"%go, Value__Lenⁱᵐᵖˡ); ("Set"%go, Value__Setⁱᵐᵖˡ); ("Type"%go, Value__Typeⁱᵐᵖˡ); ("assignTo"%go, Value__assignToⁱᵐᵖˡ); ("kind"%go, Value__kindⁱᵐᵖˡ); ("mustBeAssignable"%go, Value__mustBeAssignableⁱᵐᵖˡ); ("mustBeExported"%go, Value__mustBeExportedⁱᵐᵖˡ); ("numMethod"%go, Value__numMethodⁱᵐᵖˡ); ("pointer"%go, Value__pointerⁱᵐᵖˡ); ("ro"%go, Value__roⁱᵐᵖˡ); ("typ"%go, Value__typⁱᵐᵖˡ)]); (ptrT.id Value.id, [("CanSet"%go, Value__CanSetⁱᵐᵖˡ); ("Elem"%go, Value__Elemⁱᵐᵖˡ); ("IsNil"%go, Value__IsNilⁱᵐᵖˡ); ("IsValid"%go, Value__IsValidⁱᵐᵖˡ); ("Kind"%go, Value__Kindⁱᵐᵖˡ); ("Len"%go, Value__Lenⁱᵐᵖˡ); ("Set"%go, Value__Setⁱᵐᵖˡ); ("Type"%go, Value__Typeⁱᵐᵖˡ); ("assignTo"%go, Value__assignToⁱᵐᵖˡ); ("kind"%go, Value__kindⁱᵐᵖˡ); ("mustBeAssignable"%go, Value__mustBeAssignableⁱᵐᵖˡ); ("mustBeExported"%go, Value__mustBeExportedⁱᵐᵖˡ); ("numMethod"%go, Value__numMethodⁱᵐᵖˡ); ("pointer"%go, Value__pointerⁱᵐᵖˡ); ("ro"%go, Value__roⁱᵐᵖˡ); ("typ"%go, Value__typⁱᵐᵖˡ)]); (flag.id, [("kind"%go, flag__kindⁱᵐᵖˡ); ("mustBeAssignable"%go, flag__mustBeAssignableⁱᵐᵖˡ); ("mustBeExported"%go, flag__mustBeExportedⁱᵐᵖˡ); ("ro"%go, flag__roⁱᵐᵖˡ)]); (ptrT.id flag.id, [("kind"%go, flag__kindⁱᵐᵖˡ); ("mustBeAssignable"%go, flag__mustBeAssignableⁱᵐᵖˡ); ("mustBeExported"%go, flag__mustBeExportedⁱᵐᵖˡ); ("ro"%go, flag__roⁱᵐᵖˡ)]); (ValueError.id, []); (ptrT.id ValueError.id, [("Error"%go, ValueError__Errorⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo reflectlite.reflectlite :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -344,8 +198,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #reflectlite.reflectlite (λ: <>,
-      exception_do (do:  (package.alloc reflectlite.reflectlite #()))
+    package.init reflectlite.reflectlite (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

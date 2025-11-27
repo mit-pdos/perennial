@@ -5,9 +5,6 @@ Definition slices : go_string := "slices".
 
 Module slices.
 
-Module sortedHint. Definition id : go_string := "slices.sortedHint"%go. End sortedHint.
-Module xorshift. Definition id : go_string := "slices.xorshift"%go. End xorshift.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -100,7 +97,7 @@ Definition BinarySearch : go_string := "slices.BinarySearch"%go.
 
 Definition BinarySearchFunc : go_string := "slices.BinarySearchFunc"%go.
 
-Axiom sortedHint : go_type.
+Axiom sortedHintⁱᵐᵖˡ : go.type.
 
 Axiom unknownHint : val.
 
@@ -108,7 +105,7 @@ Axiom increasingHint : val.
 
 Axiom decreasingHint : val.
 
-Axiom xorshift : go_type.
+Axiom xorshiftⁱᵐᵖˡ : go.type.
 
 Definition nextPowerOfTwo : go_string := "slices.nextPowerOfTwo"%go.
 
@@ -119,26 +116,26 @@ Definition insertionSortCmpFunc : go_string := "slices.insertionSortCmpFunc"%go.
 (* insertionSortCmpFunc sorts data[a:b] using insertion sort.
 
    go: zsortanyfunc.go:10:6 *)
-Definition insertionSortCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "a") + #(W64 1)) in
-    do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "b")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      (let: "j" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] "i") in
-      do:  ("j" <-[#intT] "$r0");;;
-      (for: (λ: <>, (int_gt (![#intT] "j") (![#intT] "a")) && (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1)))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0))); (λ: <>, do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1)))) := λ: <>,
-        let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1)))) in
-        let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r0");;;
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1))) <-["E"] "$r1")))));;;
+Definition insertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    (let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "a") +⟨go.int⟩ #(W64 1)) in
+    do:  ("i" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "b")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+      (let: "j" := (GoAlloc go.int #()) in
+      let: "$r0" := (![go.int] "i") in
+      do:  ("j" <-[go.int] "$r0");;;
+      (for: (λ: <>, ((![go.int] "j") >⟨go.int⟩ (![go.int] "a")) && ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1)))) := λ: <>,
+        let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
+        let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r0");;;
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1))) <-[E] "$r1")))));;;
     return: #()).
 
 Definition siftDownCmpFunc : go_string := "slices.siftDownCmpFunc"%go.
@@ -147,83 +144,83 @@ Definition siftDownCmpFunc : go_string := "slices.siftDownCmpFunc"%go.
    first is an offset into the array where the root of the heap lies.
 
    go: zsortanyfunc.go:20:6 *)
-Definition siftDownCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "lo" "hi" "first" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "first" := (mem.alloc "first") in
-    let: "hi" := (mem.alloc "hi") in
-    let: "lo" := (mem.alloc "lo") in
-    let: "data" := (mem.alloc "data") in
-    let: "root" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (![#intT] "lo") in
-    do:  ("root" <-[#intT] "$r0");;;
+Definition siftDownCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "lo" "hi" "first" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "first" := (go.AllocValue go.int "first") in
+    let: "hi" := (go.AllocValue go.int "hi") in
+    let: "lo" := (go.AllocValue go.int "lo") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "root" := (GoAlloc go.int #()) in
+    let: "$r0" := (![go.int] "lo") in
+    do:  ("root" <-[go.int] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "child" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := ((#(W64 2) * (![#intT] "root")) + #(W64 1)) in
-      do:  ("child" <-[#intT] "$r0");;;
-      (if: int_geq (![#intT] "child") (![#intT] "hi")
+      let: "child" := (GoAlloc go.int #()) in
+      let: "$r0" := ((#(W64 2) *⟨go.int⟩ (![go.int] "root")) +⟨go.int⟩ #(W64 1)) in
+      do:  ("child" <-[go.int] "$r0");;;
+      (if: (![go.int] "child") ≥⟨go.int⟩ (![go.int] "hi")
       then break: #()
       else do:  #());;;
-      (if: (int_lt ((![#intT] "child") + #(W64 1)) (![#intT] "hi")) && (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "child")))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (((![#intT] "first") + (![#intT] "child")) + #(W64 1)))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0))
-      then do:  ("child" <-[#intT] ((![#intT] "child") + #(W64 1)))
+      (if: (((![go.int] "child") +⟨go.int⟩ #(W64 1)) <⟨go.int⟩ (![go.int] "hi")) && ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "child")))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (((![go.int] "first") +⟨go.int⟩ (![go.int] "child")) +⟨go.int⟩ #(W64 1)))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))
+      then do:  ("child" <-[go.int] ((![go.int] "child") +⟨go.int⟩ #(W8 1)))
       else do:  #());;;
-      (if: (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "root")))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "child")))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))
+      (if: (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "root")))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "child")))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
       then return: (#())
       else do:  #());;;
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "child")))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "root")))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "root"))) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "child"))) <-["E"] "$r1");;;
-      let: "$r0" := (![#intT] "child") in
-      do:  ("root" <-[#intT] "$r0"));;;
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "child")))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "root")))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "root"))) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "child"))) <-[E] "$r1");;;
+      let: "$r0" := (![go.int] "child") in
+      do:  ("root" <-[go.int] "$r0"));;;
     return: #()).
 
 Definition heapSortCmpFunc : go_string := "slices.heapSortCmpFunc"%go.
 
 (* go: zsortanyfunc.go:38:6 *)
-Definition heapSortCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    let: "first" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (![#intT] "a") in
-    do:  ("first" <-[#intT] "$r0");;;
-    let: "lo" := (mem.alloc (type.zero_val #intT)) in
+Definition heapSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "first" := (GoAlloc go.int #()) in
+    let: "$r0" := (![go.int] "a") in
+    do:  ("first" <-[go.int] "$r0");;;
+    let: "lo" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("lo" <-[#intT] "$r0");;;
-    let: "hi" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "b") - (![#intT] "a")) in
-    do:  ("hi" <-[#intT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (((![#intT] "hi") - #(W64 1)) `quots` #(W64 2)) in
-    do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_geq (![#intT] "i") #(W64 0)); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)))) := λ: <>,
-      do:  (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "i") in
-      let: "$a2" := (![#intT] "hi") in
-      let: "$a3" := (![#intT] "first") in
-      let: "$a4" := (![#funcT] "cmp") in
-      ((func_call #siftDownCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4")));;;
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "hi") - #(W64 1)) in
-    do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_geq (![#intT] "i") #(W64 0)); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)))) := λ: <>,
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "i")))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "first"))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "first")) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "first") + (![#intT] "i"))) <-["E"] "$r1");;;
-      do:  (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "lo") in
-      let: "$a2" := (![#intT] "i") in
-      let: "$a3" := (![#intT] "first") in
-      let: "$a4" := (![#funcT] "cmp") in
-      ((func_call #siftDownCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4")));;;
+    do:  ("lo" <-[go.int] "$r0");;;
+    let: "hi" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "b") -⟨go.int⟩ (![go.int] "a")) in
+    do:  ("hi" <-[go.int] "$r0");;;
+    (let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := (((![go.int] "hi") -⟨go.int⟩ #(W64 1)) `quot`⟨go.int⟩ #(W64 2)) in
+    do:  ("i" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") ≥⟨go.int⟩ #(W64 0)); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ #(W8 1)))) := λ: <>,
+      do:  (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "i") in
+      let: "$a2" := (![go.int] "hi") in
+      let: "$a3" := (![go.int] "first") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve siftDownCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")));;;
+    (let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "hi") -⟨go.int⟩ #(W64 1)) in
+    do:  ("i" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") ≥⟨go.int⟩ #(W64 0)); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ #(W8 1)))) := λ: <>,
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "i")))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "first"))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "first")) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "first") +⟨go.int⟩ (![go.int] "i"))) <-[E] "$r1");;;
+      do:  (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "lo") in
+      let: "$a2" := (![go.int] "i") in
+      let: "$a3" := (![go.int] "first") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve siftDownCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")));;;
     return: #()).
 
 Definition pdqsortCmpFunc : go_string := "slices.pdqsortCmpFunc"%go.
@@ -231,6 +228,8 @@ Definition pdqsortCmpFunc : go_string := "slices.pdqsortCmpFunc"%go.
 Definition partitionCmpFunc : go_string := "slices.partitionCmpFunc"%go.
 
 Definition partitionEqualCmpFunc : go_string := "slices.partitionEqualCmpFunc"%go.
+
+Definition sortedHint : go.type := go.Named "slices.sortedHint"%go [].
 
 Definition partialInsertionSortCmpFunc : go_string := "slices.partialInsertionSortCmpFunc"%go.
 
@@ -248,146 +247,146 @@ Definition breakPatternsCmpFunc : go_string := "slices.breakPatternsCmpFunc"%go.
    limit is the number of allowed bad (very unbalanced) pivots before falling back to heapsort.
 
    go: zsortanyfunc.go:61:6 *)
-Definition pdqsortCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "limit" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "limit" := (mem.alloc "limit") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
+Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "limit" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "limit" := (go.AllocValue go.int "limit") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
     let maxInsertion := 12 in
-    let: "wasPartitioned" := (mem.alloc (type.zero_val #boolT)) in
+    let: "wasPartitioned" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("wasPartitioned" <-[#boolT] "$r0");;;
-    let: "wasBalanced" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("wasPartitioned" <-[go.bool] "$r0");;;
+    let: "wasBalanced" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("wasBalanced" <-[#boolT] "$r0");;;
+    do:  ("wasBalanced" <-[go.bool] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "length" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := ((![#intT] "b") - (![#intT] "a")) in
-      do:  ("length" <-[#intT] "$r0");;;
-      (if: int_leq (![#intT] "length") #(W64 maxInsertion)
+      let: "length" := (GoAlloc go.int #()) in
+      let: "$r0" := ((![go.int] "b") -⟨go.int⟩ (![go.int] "a")) in
+      do:  ("length" <-[go.int] "$r0");;;
+      (if: (![go.int] "length") ≤⟨go.int⟩ #(W64 maxInsertion)
       then
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "b") in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #insertionSortCmpFunc) "E") "$a0" "$a1" "$a2" "$a3");;;
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "b") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve insertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
         return: (#())
       else do:  #());;;
-      (if: (![#intT] "limit") = #(W64 0)
+      (if: (![go.int] "limit") =⟨go.int⟩ #(W64 0)
       then
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "b") in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #heapSortCmpFunc) "E") "$a0" "$a1" "$a2" "$a3");;;
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "b") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve heapSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
         return: (#())
       else do:  #());;;
-      (if: (~ (![#boolT] "wasBalanced"))
+      (if: (~ (![go.bool] "wasBalanced"))
       then
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "b") in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #breakPatternsCmpFunc) "E") "$a0" "$a1" "$a2" "$a3");;;
-        do:  ("limit" <-[#intT] ((![#intT] "limit") - #(W64 1)))
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "b") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve breakPatternsCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
+        do:  ("limit" <-[go.int] ((![go.int] "limit") -⟨go.int⟩ #(W8 1)))
       else do:  #());;;
-      let: "hint" := (mem.alloc (type.zero_val #sortedHint)) in
-      let: "pivot" := (mem.alloc (type.zero_val #intT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "a") in
-      let: "$a2" := (![#intT] "b") in
-      let: "$a3" := (![#funcT] "cmp") in
-      ((func_call #choosePivotCmpFunc) "E") "$a0" "$a1" "$a2" "$a3") in
+      let: "hint" := (GoAlloc sortedHint #()) in
+      let: "pivot" := (GoAlloc go.int #()) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "a") in
+      let: "$a2" := (![go.int] "b") in
+      let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve choosePivotCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("pivot" <-[#intT] "$r0");;;
-      do:  ("hint" <-[#sortedHint] "$r1");;;
-      (if: (![#sortedHint] "hint") = decreasingHint
+      do:  ("pivot" <-[go.int] "$r0");;;
+      do:  ("hint" <-[sortedHint] "$r1");;;
+      (if: (![sortedHint] "hint") =⟨go.int⟩ decreasingHint
       then
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "b") in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #reverseRangeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3");;;
-        let: "$r0" := (((![#intT] "b") - #(W64 1)) - ((![#intT] "pivot") - (![#intT] "a"))) in
-        do:  ("pivot" <-[#intT] "$r0");;;
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "b") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve reverseRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
+        let: "$r0" := (((![go.int] "b") -⟨go.int⟩ #(W64 1)) -⟨go.int⟩ ((![go.int] "pivot") -⟨go.int⟩ (![go.int] "a"))) in
+        do:  ("pivot" <-[go.int] "$r0");;;
         let: "$r0" := increasingHint in
-        do:  ("hint" <-[#sortedHint] "$r0")
+        do:  ("hint" <-[sortedHint] "$r0")
       else do:  #());;;
-      (if: ((![#boolT] "wasBalanced") && (![#boolT] "wasPartitioned")) && ((![#sortedHint] "hint") = increasingHint)
+      (if: ((![go.bool] "wasBalanced") && (![go.bool] "wasPartitioned")) && ((![sortedHint] "hint") =⟨go.int⟩ increasingHint)
       then
-        (if: let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "b") in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #partialInsertionSortCmpFunc) "E") "$a0" "$a1" "$a2" "$a3"
+        (if: let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "b") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve partialInsertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3"
         then return: (#())
         else do:  #())
       else do:  #());;;
-      (if: (int_gt (![#intT] "a") #(W64 0)) && (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "a") - #(W64 1)))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "pivot"))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))
+      (if: ((![go.int] "a") >⟨go.int⟩ #(W64 0)) && (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "a") -⟨go.int⟩ #(W64 1)))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "pivot"))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
       then
-        let: "mid" := (mem.alloc (type.zero_val #intT)) in
-        let: "$r0" := (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "b") in
-        let: "$a3" := (![#intT] "pivot") in
-        let: "$a4" := (![#funcT] "cmp") in
-        ((func_call #partitionEqualCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4") in
-        do:  ("mid" <-[#intT] "$r0");;;
-        let: "$r0" := (![#intT] "mid") in
-        do:  ("a" <-[#intT] "$r0");;;
+        let: "mid" := (GoAlloc go.int #()) in
+        let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "b") in
+        let: "$a3" := (![go.int] "pivot") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve partitionEqualCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
+        do:  ("mid" <-[go.int] "$r0");;;
+        let: "$r0" := (![go.int] "mid") in
+        do:  ("a" <-[go.int] "$r0");;;
         continue: #()
       else do:  #());;;
-      let: "alreadyPartitioned" := (mem.alloc (type.zero_val #boolT)) in
-      let: "mid" := (mem.alloc (type.zero_val #intT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "a") in
-      let: "$a2" := (![#intT] "b") in
-      let: "$a3" := (![#intT] "pivot") in
-      let: "$a4" := (![#funcT] "cmp") in
-      ((func_call #partitionCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4") in
+      let: "alreadyPartitioned" := (GoAlloc go.bool #()) in
+      let: "mid" := (GoAlloc go.int #()) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "a") in
+      let: "$a2" := (![go.int] "b") in
+      let: "$a3" := (![go.int] "pivot") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve partitionCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("mid" <-[#intT] "$r0");;;
-      do:  ("alreadyPartitioned" <-[#boolT] "$r1");;;
-      let: "$r0" := (![#boolT] "alreadyPartitioned") in
-      do:  ("wasPartitioned" <-[#boolT] "$r0");;;
-      let: "rightLen" := (mem.alloc (type.zero_val #intT)) in
-      let: "leftLen" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := ((![#intT] "mid") - (![#intT] "a")) in
-      let: "$r1" := ((![#intT] "b") - (![#intT] "mid")) in
-      do:  ("leftLen" <-[#intT] "$r0");;;
-      do:  ("rightLen" <-[#intT] "$r1");;;
-      let: "balanceThreshold" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := ((![#intT] "length") `quots` #(W64 8)) in
-      do:  ("balanceThreshold" <-[#intT] "$r0");;;
-      (if: int_lt (![#intT] "leftLen") (![#intT] "rightLen")
+      do:  ("mid" <-[go.int] "$r0");;;
+      do:  ("alreadyPartitioned" <-[go.bool] "$r1");;;
+      let: "$r0" := (![go.bool] "alreadyPartitioned") in
+      do:  ("wasPartitioned" <-[go.bool] "$r0");;;
+      let: "rightLen" := (GoAlloc go.int #()) in
+      let: "leftLen" := (GoAlloc go.int #()) in
+      let: "$r0" := ((![go.int] "mid") -⟨go.int⟩ (![go.int] "a")) in
+      let: "$r1" := ((![go.int] "b") -⟨go.int⟩ (![go.int] "mid")) in
+      do:  ("leftLen" <-[go.int] "$r0");;;
+      do:  ("rightLen" <-[go.int] "$r1");;;
+      let: "balanceThreshold" := (GoAlloc go.int #()) in
+      let: "$r0" := ((![go.int] "length") `quot`⟨go.int⟩ #(W64 8)) in
+      do:  ("balanceThreshold" <-[go.int] "$r0");;;
+      (if: (![go.int] "leftLen") <⟨go.int⟩ (![go.int] "rightLen")
       then
-        let: "$r0" := (int_geq (![#intT] "leftLen") (![#intT] "balanceThreshold")) in
-        do:  ("wasBalanced" <-[#boolT] "$r0");;;
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "mid") in
-        let: "$a3" := (![#intT] "limit") in
-        let: "$a4" := (![#funcT] "cmp") in
-        ((func_call #pdqsortCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4");;;
-        let: "$r0" := ((![#intT] "mid") + #(W64 1)) in
-        do:  ("a" <-[#intT] "$r0")
+        let: "$r0" := ((![go.int] "leftLen") ≥⟨go.int⟩ (![go.int] "balanceThreshold")) in
+        do:  ("wasBalanced" <-[go.bool] "$r0");;;
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "mid") in
+        let: "$a3" := (![go.int] "limit") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve pdqsortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+        let: "$r0" := ((![go.int] "mid") +⟨go.int⟩ #(W64 1)) in
+        do:  ("a" <-[go.int] "$r0")
       else
-        let: "$r0" := (int_geq (![#intT] "rightLen") (![#intT] "balanceThreshold")) in
-        do:  ("wasBalanced" <-[#boolT] "$r0");;;
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := ((![#intT] "mid") + #(W64 1)) in
-        let: "$a2" := (![#intT] "b") in
-        let: "$a3" := (![#intT] "limit") in
-        let: "$a4" := (![#funcT] "cmp") in
-        ((func_call #pdqsortCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4");;;
-        let: "$r0" := (![#intT] "mid") in
-        do:  ("b" <-[#intT] "$r0")));;;
+        let: "$r0" := ((![go.int] "rightLen") ≥⟨go.int⟩ (![go.int] "balanceThreshold")) in
+        do:  ("wasBalanced" <-[go.bool] "$r0");;;
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := ((![go.int] "mid") +⟨go.int⟩ #(W64 1)) in
+        let: "$a2" := (![go.int] "b") in
+        let: "$a3" := (![go.int] "limit") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve pdqsortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+        let: "$r0" := (![go.int] "mid") in
+        do:  ("b" <-[go.int] "$r0")));;;
     return: #()).
 
 (* partitionCmpFunc does one quicksort partition.
@@ -396,215 +395,217 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ : val :=
    On return, data[newpivot] = p
 
    go: zsortanyfunc.go:135:6 *)
-Definition partitionCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "pivot" "cmp",
-    exception_do (let: "alreadyPartitioned" := (mem.alloc (type.zero_val #boolT)) in
-    let: "newpivot" := (mem.alloc (type.zero_val #intT)) in
-    let: "cmp" := (mem.alloc "cmp") in
-    let: "pivot" := (mem.alloc "pivot") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "pivot"))) in
-    let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a")) <-["E"] "$r0");;;
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "pivot")) <-["E"] "$r1");;;
-    let: "j" := (mem.alloc (type.zero_val #intT)) in
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "a") + #(W64 1)) in
-    let: "$r1" := ((![#intT] "b") - #(W64 1)) in
-    do:  ("i" <-[#intT] "$r0");;;
-    do:  ("j" <-[#intT] "$r1");;;
-    (for: (λ: <>, (int_leq (![#intT] "i") (![#intT] "j")) && (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-    let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-    (![#funcT] "cmp") "$a0" "$a1") #(W64 0))); (λ: <>, #()) := λ: <>,
-      do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1))));;;
-    (for: (λ: <>, (int_leq (![#intT] "i") (![#intT] "j")) && (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-    let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-    (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))); (λ: <>, #()) := λ: <>,
-      do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1))));;;
-    (if: int_gt (![#intT] "i") (![#intT] "j")
+Definition partitionCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "pivot" "cmp",
+    exception_do (let: "alreadyPartitioned" := (GoAlloc go.bool #()) in
+    let: "newpivot" := (GoAlloc go.int #()) in
+    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "pivot" := (go.AllocValue go.int "pivot") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "pivot"))) in
+    let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a")) <-[E] "$r0");;;
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "pivot")) <-[E] "$r1");;;
+    let: "j" := (GoAlloc go.int #()) in
+    let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "a") +⟨go.int⟩ #(W64 1)) in
+    let: "$r1" := ((![go.int] "b") -⟨go.int⟩ #(W64 1)) in
+    do:  ("i" <-[go.int] "$r0");;;
+    do:  ("j" <-[go.int] "$r1");;;
+    (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+    let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+    (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
+      do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
+    (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+    let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+    (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+      do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
+    (if: (![go.int] "i") >⟨go.int⟩ (![go.int] "j")
     then
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a")) <-["E"] "$r1");;;
-      return: (![#intT] "j", #true)
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a")) <-[E] "$r1");;;
+      return: (![go.int] "j", #true)
     else do:  #());;;
-    let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-    let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i")) <-["E"] "$r0");;;
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r1");;;
-    do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)));;;
-    do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1)));;;
+    let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+    let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i")) <-[E] "$r0");;;
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r1");;;
+    do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)));;;
+    do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1)));;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (for: (λ: <>, (int_leq (![#intT] "i") (![#intT] "j")) && (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0))); (λ: <>, #()) := λ: <>,
-        do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1))));;;
-      (for: (λ: <>, (int_leq (![#intT] "i") (![#intT] "j")) && (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))); (λ: <>, #()) := λ: <>,
-        do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1))));;;
-      (if: int_gt (![#intT] "i") (![#intT] "j")
+      (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
+        do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
+      (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+        do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
+      (if: (![go.int] "i") >⟨go.int⟩ (![go.int] "j")
       then break: #()
       else do:  #());;;
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i")) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r1");;;
-      do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)));;;
-      do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1))));;;
-    let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-    let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r0");;;
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a")) <-["E"] "$r1");;;
-    return: (![#intT] "j", #false)).
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i")) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r1");;;
+      do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)));;;
+      do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
+    let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+    let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r0");;;
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a")) <-[E] "$r1");;;
+    return: (![go.int] "j", #false)).
 
 (* partitionEqualCmpFunc partitions data[a:b] into elements equal to data[pivot] followed by elements greater than data[pivot].
    It assumed that data[a:b] does not contain elements smaller than the data[pivot].
 
    go: zsortanyfunc.go:173:6 *)
-Definition partitionEqualCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "pivot" "cmp",
-    exception_do (let: "newpivot" := (mem.alloc (type.zero_val #intT)) in
-    let: "cmp" := (mem.alloc "cmp") in
-    let: "pivot" := (mem.alloc "pivot") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "pivot"))) in
-    let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a")) <-["E"] "$r0");;;
-    do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "pivot")) <-["E"] "$r1");;;
-    let: "j" := (mem.alloc (type.zero_val #intT)) in
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "a") + #(W64 1)) in
-    let: "$r1" := ((![#intT] "b") - #(W64 1)) in
-    do:  ("i" <-[#intT] "$r0");;;
-    do:  ("j" <-[#intT] "$r1");;;
+Definition partitionEqualCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "pivot" "cmp",
+    exception_do (let: "newpivot" := (GoAlloc go.int #()) in
+    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "pivot" := (go.AllocValue go.int "pivot") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "pivot"))) in
+    let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a")) <-[E] "$r0");;;
+    do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "pivot")) <-[E] "$r1");;;
+    let: "j" := (GoAlloc go.int #()) in
+    let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "a") +⟨go.int⟩ #(W64 1)) in
+    let: "$r1" := ((![go.int] "b") -⟨go.int⟩ #(W64 1)) in
+    do:  ("i" <-[go.int] "$r0");;;
+    do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (for: (λ: <>, (int_leq (![#intT] "i") (![#intT] "j")) && (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))); (λ: <>, #()) := λ: <>,
-        do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1))));;;
-      (for: (λ: <>, (int_leq (![#intT] "i") (![#intT] "j")) && (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0))); (λ: <>, #()) := λ: <>,
-        do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1))));;;
-      (if: int_gt (![#intT] "i") (![#intT] "j")
+      (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+        do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
+      (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
+        do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
+      (if: (![go.int] "i") >⟨go.int⟩ (![go.int] "j")
       then break: #()
       else do:  #());;;
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i")) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r1");;;
-      do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)));;;
-      do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1))));;;
-    return: (![#intT] "i")).
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i")) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r1");;;
+      do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)));;;
+      do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
+    return: (![go.int] "i")).
 
 (* partialInsertionSortCmpFunc partially sorts a slice, returns true if the slice is sorted at the end.
 
    go: zsortanyfunc.go:195:6 *)
-Definition partialInsertionSortCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
+Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
     let maxSteps := 5 in
     let shortestShifting := 50 in
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "a") + #(W64 1)) in
-    do:  ("i" <-[#intT] "$r0");;;
-    (let: "j" := (mem.alloc (type.zero_val #intT)) in
+    let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "a") +⟨go.int⟩ #(W64 1)) in
+    do:  ("i" <-[go.int] "$r0");;;
+    (let: "j" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("j" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "j") #(W64 maxSteps)); (λ: <>, do:  ("j" <-[#intT] ((![#intT] "j") + #(W64 1)))) := λ: <>,
-      (for: (λ: <>, (int_lt (![#intT] "i") (![#intT] "b")) && (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "i") - #(W64 1)))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))); (λ: <>, #()) := λ: <>,
-        do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1))));;;
-      (if: (![#intT] "i") = (![#intT] "b")
+    do:  ("j" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "j") <⟨go.int⟩ #(W64 maxSteps)); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+      (for: (λ: <>, ((![go.int] "i") <⟨go.int⟩ (![go.int] "b")) && (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "i") -⟨go.int⟩ #(W64 1)))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+        do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
+      (if: (![go.int] "i") =⟨go.int⟩ (![go.int] "b")
       then return: (#true)
       else do:  #());;;
-      (if: int_lt ((![#intT] "b") - (![#intT] "a")) #(W64 shortestShifting)
+      (if: ((![go.int] "b") -⟨go.int⟩ (![go.int] "a")) <⟨go.int⟩ #(W64 shortestShifting)
       then return: (#false)
       else do:  #());;;
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "i") - #(W64 1)))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i")) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "i") - #(W64 1))) <-["E"] "$r1");;;
-      (if: int_geq ((![#intT] "i") - (![#intT] "a")) #(W64 2)
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "i") -⟨go.int⟩ #(W64 1)))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i")) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "i") -⟨go.int⟩ #(W64 1))) <-[E] "$r1");;;
+      (if: ((![go.int] "i") -⟨go.int⟩ (![go.int] "a")) ≥⟨go.int⟩ #(W64 2)
       then
-        (let: "j" := (mem.alloc (type.zero_val #intT)) in
-        let: "$r0" := ((![#intT] "i") - #(W64 1)) in
-        do:  ("j" <-[#intT] "$r0");;;
-        (for: (λ: <>, int_geq (![#intT] "j") #(W64 1)); (λ: <>, do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1)))) := λ: <>,
-          (if: (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-          let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1)))) in
-          (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))
+        (let: "j" := (GoAlloc go.int #()) in
+        let: "$r0" := ((![go.int] "i") -⟨go.int⟩ #(W64 1)) in
+        do:  ("j" <-[go.int] "$r0");;;
+        (for: (λ: <>, (![go.int] "j") ≥⟨go.int⟩ #(W64 1)); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1)))) := λ: <>,
+          (if: (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+          let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
+          (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
           then break: #()
           else do:  #());;;
-          let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1)))) in
-          let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-          do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r0");;;
-          do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1))) <-["E"] "$r1")))
+          let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
+          let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+          do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r0");;;
+          do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1))) <-[E] "$r1")))
       else do:  #());;;
-      (if: int_geq ((![#intT] "b") - (![#intT] "i")) #(W64 2)
+      (if: ((![go.int] "b") -⟨go.int⟩ (![go.int] "i")) ≥⟨go.int⟩ #(W64 2)
       then
-        (let: "j" := (mem.alloc (type.zero_val #intT)) in
-        let: "$r0" := ((![#intT] "i") + #(W64 1)) in
-        do:  ("j" <-[#intT] "$r0");;;
-        (for: (λ: <>, int_lt (![#intT] "j") (![#intT] "b")); (λ: <>, do:  ("j" <-[#intT] ((![#intT] "j") + #(W64 1)))) := λ: <>,
-          (if: (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-          let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1)))) in
-          (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))
+        (let: "j" := (GoAlloc go.int #()) in
+        let: "$r0" := ((![go.int] "i") +⟨go.int⟩ #(W64 1)) in
+        do:  ("j" <-[go.int] "$r0");;;
+        (for: (λ: <>, (![go.int] "j") <⟨go.int⟩ (![go.int] "b")); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+          (if: (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+          let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
+          (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
           then break: #()
           else do:  #());;;
-          let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1)))) in
-          let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-          do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r0");;;
-          do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "j") - #(W64 1))) <-["E"] "$r1")))
+          let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
+          let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+          do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r0");;;
+          do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1))) <-[E] "$r1")))
       else do:  #())));;;
     return: (#false)).
+
+Definition xorshift : go.type := go.Named "slices.xorshift"%go [].
 
 (* breakPatternsCmpFunc scatters some elements around in an attempt to break some patterns
    that might cause imbalanced partitions in quicksort.
 
    go: zsortanyfunc.go:240:6 *)
-Definition breakPatternsCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    let: "length" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "b") - (![#intT] "a")) in
-    do:  ("length" <-[#intT] "$r0");;;
-    (if: int_geq (![#intT] "length") #(W64 8)
+Definition breakPatternsCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "length" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "b") -⟨go.int⟩ (![go.int] "a")) in
+    do:  ("length" <-[go.int] "$r0");;;
+    (if: (![go.int] "length") ≥⟨go.int⟩ #(W64 8)
     then
-      let: "random" := (mem.alloc (type.zero_val #xorshift)) in
-      let: "$r0" := (s_to_w64 (![#intT] "length")) in
-      do:  ("random" <-[#xorshift] "$r0");;;
-      let: "modulus" := (mem.alloc (type.zero_val #uintT)) in
-      let: "$r0" := (let: "$a0" := (![#intT] "length") in
-      (func_call #nextPowerOfTwo) "$a0") in
-      do:  ("modulus" <-[#uintT] "$r0");;;
-      (let: "idx" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (((![#intT] "a") + (((![#intT] "length") `quots` #(W64 4)) * #(W64 2))) - #(W64 1)) in
-      do:  ("idx" <-[#intT] "$r0");;;
-      (for: (λ: <>, int_leq (![#intT] "idx") (((![#intT] "a") + (((![#intT] "length") `quots` #(W64 4)) * #(W64 2))) + #(W64 1))); (λ: <>, do:  ("idx" <-[#intT] ((![#intT] "idx") + #(W64 1)))) := λ: <>,
-        let: "other" := (mem.alloc (type.zero_val #intT)) in
-        let: "$r0" := (u_to_w64 ((u_to_w64 ((method_call #(ptrT.id xorshift.id) #"Next"%go "random") #())) `and` ((![#uintT] "modulus") - #(W64 1)))) in
-        do:  ("other" <-[#intT] "$r0");;;
-        (if: int_geq (![#intT] "other") (![#intT] "length")
-        then do:  ("other" <-[#intT] ((![#intT] "other") - (![#intT] "length")))
+      let: "random" := (GoAlloc xorshift #()) in
+      let: "$r0" := (s_to_w64 (![go.int] "length")) in
+      do:  ("random" <-[xorshift] "$r0");;;
+      let: "modulus" := (GoAlloc go.uint #()) in
+      let: "$r0" := (let: "$a0" := (![go.int] "length") in
+      (FuncResolve nextPowerOfTwo [] #()) "$a0") in
+      do:  ("modulus" <-[go.uint] "$r0");;;
+      (let: "idx" := (GoAlloc go.int #()) in
+      let: "$r0" := (((![go.int] "a") +⟨go.int⟩ (((![go.int] "length") `quot`⟨go.int⟩ #(W64 4)) *⟨go.int⟩ #(W64 2))) -⟨go.int⟩ #(W64 1)) in
+      do:  ("idx" <-[go.int] "$r0");;;
+      (for: (λ: <>, (![go.int] "idx") ≤⟨go.int⟩ (((![go.int] "a") +⟨go.int⟩ (((![go.int] "length") `quot`⟨go.int⟩ #(W64 4)) *⟨go.int⟩ #(W64 2))) +⟨go.int⟩ #(W64 1))); (λ: <>, do:  ("idx" <-[go.int] ((![go.int] "idx") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+        let: "other" := (GoAlloc go.int #()) in
+        let: "$r0" := (u_to_w64 ((u_to_w64 ((MethodResolve (go.PointerType xorshift) Next #() "random") #())) `and` ((![go.uint] "modulus") -⟨go.uint⟩ #(W64 1)))) in
+        do:  ("other" <-[go.int] "$r0");;;
+        (if: (![go.int] "other") ≥⟨go.int⟩ (![go.int] "length")
+        then do:  ("other" <-[go.int] ((![go.int] "other") -⟨go.int⟩ (![go.int] "length")))
         else do:  #());;;
-        let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "a") + (![#intT] "other")))) in
-        let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "idx"))) in
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "idx")) <-["E"] "$r0");;;
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "a") + (![#intT] "other"))) <-["E"] "$r1")))
+        let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "a") +⟨go.int⟩ (![go.int] "other")))) in
+        let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "idx"))) in
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "idx")) <-[E] "$r0");;;
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "a") +⟨go.int⟩ (![go.int] "other"))) <-[E] "$r1")))
     else do:  #());;;
     return: #()).
 
@@ -619,190 +620,190 @@ Definition medianAdjacentCmpFunc : go_string := "slices.medianAdjacentCmpFunc"%g
    [shortestNinther,∞): uses the Tukey ninther method.
 
    go: zsortanyfunc.go:261:6 *)
-Definition choosePivotCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "cmp",
-    exception_do (let: "hint" := (mem.alloc (type.zero_val #sortedHint)) in
-    let: "pivot" := (mem.alloc (type.zero_val #intT)) in
-    let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
+Definition choosePivotCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "cmp",
+    exception_do (let: "hint" := (GoAlloc sortedHint #()) in
+    let: "pivot" := (GoAlloc go.int #()) in
+    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
     let shortestNinther := 50 in
     let maxSwaps := 12 in
-    let: "l" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "b") - (![#intT] "a")) in
-    do:  ("l" <-[#intT] "$r0");;;
-    let: "k" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "a") + (((![#intT] "l") `quots` #(W64 4)) * #(W64 3))) in
-    do:  ("k" <-[#intT] "$r0");;;
-    let: "j" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "a") + (((![#intT] "l") `quots` #(W64 4)) * #(W64 2))) in
-    do:  ("j" <-[#intT] "$r0");;;
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "a") + (((![#intT] "l") `quots` #(W64 4)) * #(W64 1))) in
-    do:  ("i" <-[#intT] "$r0");;;
-    let: "swaps" := (mem.alloc (type.zero_val #intT)) in
-    (if: int_geq (![#intT] "l") #(W64 8)
+    let: "l" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "b") -⟨go.int⟩ (![go.int] "a")) in
+    do:  ("l" <-[go.int] "$r0");;;
+    let: "k" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "a") +⟨go.int⟩ (((![go.int] "l") `quot`⟨go.int⟩ #(W64 4)) *⟨go.int⟩ #(W64 3))) in
+    do:  ("k" <-[go.int] "$r0");;;
+    let: "j" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "a") +⟨go.int⟩ (((![go.int] "l") `quot`⟨go.int⟩ #(W64 4)) *⟨go.int⟩ #(W64 2))) in
+    do:  ("j" <-[go.int] "$r0");;;
+    let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "a") +⟨go.int⟩ (((![go.int] "l") `quot`⟨go.int⟩ #(W64 4)) *⟨go.int⟩ #(W64 1))) in
+    do:  ("i" <-[go.int] "$r0");;;
+    let: "swaps" := (GoAlloc go.int #()) in
+    (if: (![go.int] "l") ≥⟨go.int⟩ #(W64 8)
     then
-      (if: int_geq (![#intT] "l") #(W64 shortestNinther)
+      (if: (![go.int] "l") ≥⟨go.int⟩ #(W64 shortestNinther)
       then
-        let: "$r0" := (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "i") in
+        let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "i") in
         let: "$a2" := "swaps" in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #medianAdjacentCmpFunc) "E") "$a0" "$a1" "$a2" "$a3") in
-        do:  ("i" <-[#intT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "j") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve medianAdjacentCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
+        do:  ("i" <-[go.int] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "j") in
         let: "$a2" := "swaps" in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #medianAdjacentCmpFunc) "E") "$a0" "$a1" "$a2" "$a3") in
-        do:  ("j" <-[#intT] "$r0");;;
-        let: "$r0" := (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "k") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve medianAdjacentCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
+        do:  ("j" <-[go.int] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "k") in
         let: "$a2" := "swaps" in
-        let: "$a3" := (![#funcT] "cmp") in
-        ((func_call #medianAdjacentCmpFunc) "E") "$a0" "$a1" "$a2" "$a3") in
-        do:  ("k" <-[#intT] "$r0")
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve medianAdjacentCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
+        do:  ("k" <-[go.int] "$r0")
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "i") in
-      let: "$a2" := (![#intT] "j") in
-      let: "$a3" := (![#intT] "k") in
+      let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "i") in
+      let: "$a2" := (![go.int] "j") in
+      let: "$a3" := (![go.int] "k") in
       let: "$a4" := "swaps" in
-      let: "$a5" := (![#funcT] "cmp") in
-      ((func_call #medianCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5") in
-      do:  ("j" <-[#intT] "$r0")
+      let: "$a5" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve medianCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5") in
+      do:  ("j" <-[go.int] "$r0")
     else do:  #());;;
-    let: "$sw" := (![#intT] "swaps") in
-    (if: "$sw" = #(W64 0)
-    then return: (![#intT] "j", increasingHint)
+    let: "$sw" := (![go.int] "swaps") in
+    (if: "$sw" =⟨go.int⟩ #(W64 0)
+    then return: (![go.int] "j", increasingHint)
     else
-      (if: "$sw" = #(W64 maxSwaps)
-      then return: (![#intT] "j", decreasingHint)
-      else return: (![#intT] "j", unknownHint)))).
+      (if: "$sw" =⟨go.int⟩ #(W64 maxSwaps)
+      then return: (![go.int] "j", decreasingHint)
+      else return: (![go.int] "j", unknownHint)))).
 
 Definition order2CmpFunc : go_string := "slices.order2CmpFunc"%go.
 
 (* order2CmpFunc returns x,y where data[x] <= data[y], where x,y=a,b or x,y=b,a.
 
    go: zsortanyfunc.go:298:6 *)
-Definition order2CmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "swaps" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "swaps" := (mem.alloc "swaps") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    (if: int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "b"))) in
-    let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-    (![#funcT] "cmp") "$a0" "$a1") #(W64 0)
+Definition order2CmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "swaps" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "swaps" := (go.AllocValue (go.PointerType go.int) "swaps") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    (if: (let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "b"))) in
+    let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+    (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)
     then
-      do:  ((![#ptrT] "swaps") <-[#intT] ((![#intT] (![#ptrT] "swaps")) + #(W64 1)));;;
-      return: (![#intT] "b", ![#intT] "a")
+      do:  ((![go.PointerType go.int] "swaps") <-[go.int] ((![go.int] (![go.PointerType go.int] "swaps")) +⟨go.int⟩ #(W8 1)));;;
+      return: (![go.int] "b", ![go.int] "a")
     else do:  #());;;
-    return: (![#intT] "a", ![#intT] "b")).
+    return: (![go.int] "a", ![go.int] "b")).
 
 (* medianCmpFunc returns x where data[x] is the median of data[a],data[b],data[c], where x is a, b, or c.
 
    go: zsortanyfunc.go:307:6 *)
-Definition medianCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "c" "swaps" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "swaps" := (mem.alloc "swaps") in
-    let: "c" := (mem.alloc "c") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-    let: "$a1" := (![#intT] "a") in
-    let: "$a2" := (![#intT] "b") in
-    let: "$a3" := (![#ptrT] "swaps") in
-    let: "$a4" := (![#funcT] "cmp") in
-    ((func_call #order2CmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4") in
+Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "c" "swaps" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "swaps" := (go.AllocValue (go.PointerType go.int) "swaps") in
+    let: "c" := (go.AllocValue go.int "c") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType E] "data") in
+    let: "$a1" := (![go.int] "a") in
+    let: "$a2" := (![go.int] "b") in
+    let: "$a3" := (![go.PointerType go.int] "swaps") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    (FuncResolve order2CmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("a" <-[#intT] "$r0");;;
-    do:  ("b" <-[#intT] "$r1");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-    let: "$a1" := (![#intT] "b") in
-    let: "$a2" := (![#intT] "c") in
-    let: "$a3" := (![#ptrT] "swaps") in
-    let: "$a4" := (![#funcT] "cmp") in
-    ((func_call #order2CmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4") in
+    do:  ("a" <-[go.int] "$r0");;;
+    do:  ("b" <-[go.int] "$r1");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType E] "data") in
+    let: "$a1" := (![go.int] "b") in
+    let: "$a2" := (![go.int] "c") in
+    let: "$a3" := (![go.PointerType go.int] "swaps") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    (FuncResolve order2CmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("b" <-[#intT] "$r0");;;
-    do:  ("c" <-[#intT] "$r1");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-    let: "$a1" := (![#intT] "a") in
-    let: "$a2" := (![#intT] "b") in
-    let: "$a3" := (![#ptrT] "swaps") in
-    let: "$a4" := (![#funcT] "cmp") in
-    ((func_call #order2CmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4") in
+    do:  ("b" <-[go.int] "$r0");;;
+    do:  ("c" <-[go.int] "$r1");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType E] "data") in
+    let: "$a1" := (![go.int] "a") in
+    let: "$a2" := (![go.int] "b") in
+    let: "$a3" := (![go.PointerType go.int] "swaps") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    (FuncResolve order2CmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("a" <-[#intT] "$r0");;;
-    do:  ("b" <-[#intT] "$r1");;;
-    return: (![#intT] "b")).
+    do:  ("a" <-[go.int] "$r0");;;
+    do:  ("b" <-[go.int] "$r1");;;
+    return: (![go.int] "b")).
 
 (* medianAdjacentCmpFunc finds the median of data[a - 1], data[a], data[a + 1] and stores the index into a.
 
    go: zsortanyfunc.go:315:6 *)
-Definition medianAdjacentCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "swaps" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "swaps" := (mem.alloc "swaps") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    return: (let: "$a0" := (![#sliceT] "data") in
-     let: "$a1" := ((![#intT] "a") - #(W64 1)) in
-     let: "$a2" := (![#intT] "a") in
-     let: "$a3" := ((![#intT] "a") + #(W64 1)) in
-     let: "$a4" := (![#ptrT] "swaps") in
-     let: "$a5" := (![#funcT] "cmp") in
-     ((func_call #medianCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4" "$a5")).
+Definition medianAdjacentCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "swaps" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "swaps" := (go.AllocValue (go.PointerType go.int) "swaps") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    return: (let: "$a0" := (![go.SliceType E] "data") in
+     let: "$a1" := ((![go.int] "a") -⟨go.int⟩ #(W64 1)) in
+     let: "$a2" := (![go.int] "a") in
+     let: "$a3" := ((![go.int] "a") +⟨go.int⟩ #(W64 1)) in
+     let: "$a4" := (![go.PointerType go.int] "swaps") in
+     let: "$a5" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+     (FuncResolve medianCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5")).
 
 (* go: zsortanyfunc.go:319:6 *)
-Definition reverseRangeCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (![#intT] "a") in
-    do:  ("i" <-[#intT] "$r0");;;
-    let: "j" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "b") - #(W64 1)) in
-    do:  ("j" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "j")); (λ: <>, #()) := λ: <>,
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j"))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i"))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "i")) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "j")) <-["E"] "$r1");;;
-      do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)));;;
-      do:  ("j" <-[#intT] ((![#intT] "j") - #(W64 1))));;;
+Definition reverseRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := (![go.int] "a") in
+    do:  ("i" <-[go.int] "$r0");;;
+    let: "j" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "b") -⟨go.int⟩ #(W64 1)) in
+    do:  ("j" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j"))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i"))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "i")) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "j")) <-[E] "$r1");;;
+      do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)));;;
+      do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
     return: #()).
 
 Definition swapRangeCmpFunc : go_string := "slices.swapRangeCmpFunc"%go.
 
 (* go: zsortanyfunc.go:329:6 *)
-Definition swapRangeCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "b" "n" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "n" := (mem.alloc "n") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    (let: "i" := (mem.alloc (type.zero_val #intT)) in
+Definition swapRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "b" "n" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "n" := (go.AllocValue go.int "n") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    (let: "i" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "n")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "b") + (![#intT] "i")))) in
-      let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "a") + (![#intT] "i")))) in
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "a") + (![#intT] "i"))) <-["E"] "$r0");;;
-      do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "b") + (![#intT] "i"))) <-["E"] "$r1")));;;
+    do:  ("i" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "n")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+      let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "b") +⟨go.int⟩ (![go.int] "i")))) in
+      let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "a") +⟨go.int⟩ (![go.int] "i")))) in
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "a") +⟨go.int⟩ (![go.int] "i"))) <-[E] "$r0");;;
+      do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "b") +⟨go.int⟩ (![go.int] "i"))) <-[E] "$r1")));;;
     return: #()).
 
 Definition stableCmpFunc : go_string := "slices.stableCmpFunc"%go.
@@ -810,62 +811,62 @@ Definition stableCmpFunc : go_string := "slices.stableCmpFunc"%go.
 Definition symMergeCmpFunc : go_string := "slices.symMergeCmpFunc"%go.
 
 (* go: zsortanyfunc.go:335:6 *)
-Definition stableCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "n" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "n" := (mem.alloc "n") in
-    let: "data" := (mem.alloc "data") in
-    let: "blockSize" := (mem.alloc (type.zero_val #intT)) in
+Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "n" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "n" := (go.AllocValue go.int "n") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "blockSize" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 20) in
-    do:  ("blockSize" <-[#intT] "$r0");;;
-    let: "b" := (mem.alloc (type.zero_val #intT)) in
-    let: "a" := (mem.alloc (type.zero_val #intT)) in
+    do:  ("blockSize" <-[go.int] "$r0");;;
+    let: "b" := (GoAlloc go.int #()) in
+    let: "a" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 0) in
-    let: "$r1" := (![#intT] "blockSize") in
-    do:  ("a" <-[#intT] "$r0");;;
-    do:  ("b" <-[#intT] "$r1");;;
-    (for: (λ: <>, int_leq (![#intT] "b") (![#intT] "n")); (λ: <>, #()) := λ: <>,
-      do:  (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "a") in
-      let: "$a2" := (![#intT] "b") in
-      let: "$a3" := (![#funcT] "cmp") in
-      ((func_call #insertionSortCmpFunc) "E") "$a0" "$a1" "$a2" "$a3");;;
-      let: "$r0" := (![#intT] "b") in
-      do:  ("a" <-[#intT] "$r0");;;
-      do:  ("b" <-[#intT] ((![#intT] "b") + (![#intT] "blockSize"))));;;
-    do:  (let: "$a0" := (![#sliceT] "data") in
-    let: "$a1" := (![#intT] "a") in
-    let: "$a2" := (![#intT] "n") in
-    let: "$a3" := (![#funcT] "cmp") in
-    ((func_call #insertionSortCmpFunc) "E") "$a0" "$a1" "$a2" "$a3");;;
-    (for: (λ: <>, int_lt (![#intT] "blockSize") (![#intT] "n")); (λ: <>, #()) := λ: <>,
+    let: "$r1" := (![go.int] "blockSize") in
+    do:  ("a" <-[go.int] "$r0");;;
+    do:  ("b" <-[go.int] "$r1");;;
+    (for: (λ: <>, (![go.int] "b") ≤⟨go.int⟩ (![go.int] "n")); (λ: <>, #()) := λ: <>,
+      do:  (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "a") in
+      let: "$a2" := (![go.int] "b") in
+      let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve insertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
+      let: "$r0" := (![go.int] "b") in
+      do:  ("a" <-[go.int] "$r0");;;
+      do:  ("b" <-[go.int] ((![go.int] "b") +⟨go.int⟩ (![go.int] "blockSize"))));;;
+    do:  (let: "$a0" := (![go.SliceType E] "data") in
+    let: "$a1" := (![go.int] "a") in
+    let: "$a2" := (![go.int] "n") in
+    let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    (FuncResolve insertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
+    (for: (λ: <>, (![go.int] "blockSize") <⟨go.int⟩ (![go.int] "n")); (λ: <>, #()) := λ: <>,
       let: "$r0" := #(W64 0) in
-      let: "$r1" := (#(W64 2) * (![#intT] "blockSize")) in
-      do:  ("a" <-[#intT] "$r0");;;
-      do:  ("b" <-[#intT] "$r1");;;
-      (for: (λ: <>, int_leq (![#intT] "b") (![#intT] "n")); (λ: <>, #()) := λ: <>,
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := ((![#intT] "a") + (![#intT] "blockSize")) in
-        let: "$a3" := (![#intT] "b") in
-        let: "$a4" := (![#funcT] "cmp") in
-        ((func_call #symMergeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4");;;
-        let: "$r0" := (![#intT] "b") in
-        do:  ("a" <-[#intT] "$r0");;;
-        do:  ("b" <-[#intT] ((![#intT] "b") + (#(W64 2) * (![#intT] "blockSize")))));;;
-      (let: "m" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := ((![#intT] "a") + (![#intT] "blockSize")) in
-      do:  ("m" <-[#intT] "$r0");;;
-      (if: int_lt (![#intT] "m") (![#intT] "n")
+      let: "$r1" := (#(W64 2) *⟨go.int⟩ (![go.int] "blockSize")) in
+      do:  ("a" <-[go.int] "$r0");;;
+      do:  ("b" <-[go.int] "$r1");;;
+      (for: (λ: <>, (![go.int] "b") ≤⟨go.int⟩ (![go.int] "n")); (λ: <>, #()) := λ: <>,
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := ((![go.int] "a") +⟨go.int⟩ (![go.int] "blockSize")) in
+        let: "$a3" := (![go.int] "b") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+        let: "$r0" := (![go.int] "b") in
+        do:  ("a" <-[go.int] "$r0");;;
+        do:  ("b" <-[go.int] ((![go.int] "b") +⟨go.int⟩ (#(W64 2) *⟨go.int⟩ (![go.int] "blockSize")))));;;
+      (let: "m" := (GoAlloc go.int #()) in
+      let: "$r0" := ((![go.int] "a") +⟨go.int⟩ (![go.int] "blockSize")) in
+      do:  ("m" <-[go.int] "$r0");;;
+      (if: (![go.int] "m") <⟨go.int⟩ (![go.int] "n")
       then
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := (![#intT] "a") in
-        let: "$a2" := (![#intT] "m") in
-        let: "$a3" := (![#intT] "n") in
-        let: "$a4" := (![#funcT] "cmp") in
-        ((func_call #symMergeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4")
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := (![go.int] "a") in
+        let: "$a2" := (![go.int] "m") in
+        let: "$a3" := (![go.int] "n") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
       else do:  #()));;;
-      do:  ("blockSize" <-[#intT] ((![#intT] "blockSize") * #(W64 2))));;;
+      do:  ("blockSize" <-[go.int] ((![go.int] "blockSize") *⟨go.int⟩ #(W64 2))));;;
     return: #()).
 
 Definition rotateCmpFunc : go_string := "slices.rotateCmpFunc"%go.
@@ -891,139 +892,139 @@ Definition rotateCmpFunc : go_string := "slices.rotateCmpFunc"%go.
    which improves performance.
 
    go: zsortanyfunc.go:378:6 *)
-Definition symMergeCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "m" "b" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "m" := (mem.alloc "m") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    (if: ((![#intT] "m") - (![#intT] "a")) = #(W64 1)
+Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "m" "b" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "m" := (go.AllocValue go.int "m") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    (if: ((![go.int] "m") -⟨go.int⟩ (![go.int] "a")) =⟨go.int⟩ #(W64 1)
     then
-      let: "i" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] "m") in
-      do:  ("i" <-[#intT] "$r0");;;
-      let: "j" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] "b") in
-      do:  ("j" <-[#intT] "$r0");;;
-      (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "j")); (λ: <>, #()) := λ: <>,
-        let: "h" := (mem.alloc (type.zero_val #intT)) in
-        let: "$r0" := (u_to_w64 ((s_to_w64 ((![#intT] "i") + (![#intT] "j"))) ≫ #(W64 1))) in
-        do:  ("h" <-[#intT] "$r0");;;
-        (if: int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "h"))) in
-        let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "a"))) in
-        (![#funcT] "cmp") "$a0" "$a1") #(W64 0)
+      let: "i" := (GoAlloc go.int #()) in
+      let: "$r0" := (![go.int] "m") in
+      do:  ("i" <-[go.int] "$r0");;;
+      let: "j" := (GoAlloc go.int #()) in
+      let: "$r0" := (![go.int] "b") in
+      do:  ("j" <-[go.int] "$r0");;;
+      (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
+        let: "h" := (GoAlloc go.int #()) in
+        let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
+        do:  ("h" <-[go.int] "$r0");;;
+        (if: (let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "h"))) in
+        let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "a"))) in
+        (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)
         then
-          let: "$r0" := ((![#intT] "h") + #(W64 1)) in
-          do:  ("i" <-[#intT] "$r0")
+          let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in
+          do:  ("i" <-[go.int] "$r0")
         else
-          let: "$r0" := (![#intT] "h") in
-          do:  ("j" <-[#intT] "$r0")));;;
-      (let: "k" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] "a") in
-      do:  ("k" <-[#intT] "$r0");;;
-      (for: (λ: <>, int_lt (![#intT] "k") ((![#intT] "i") - #(W64 1))); (λ: <>, do:  ("k" <-[#intT] ((![#intT] "k") + #(W64 1)))) := λ: <>,
-        let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "k") + #(W64 1)))) in
-        let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "k"))) in
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "k")) <-["E"] "$r0");;;
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "k") + #(W64 1))) <-["E"] "$r1")));;;
+          let: "$r0" := (![go.int] "h") in
+          do:  ("j" <-[go.int] "$r0")));;;
+      (let: "k" := (GoAlloc go.int #()) in
+      let: "$r0" := (![go.int] "a") in
+      do:  ("k" <-[go.int] "$r0");;;
+      (for: (λ: <>, (![go.int] "k") <⟨go.int⟩ ((![go.int] "i") -⟨go.int⟩ #(W64 1))); (λ: <>, do:  ("k" <-[go.int] ((![go.int] "k") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+        let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "k") +⟨go.int⟩ #(W64 1)))) in
+        let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "k"))) in
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "k")) <-[E] "$r0");;;
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "k") +⟨go.int⟩ #(W64 1))) <-[E] "$r1")));;;
       return: (#())
     else do:  #());;;
-    (if: ((![#intT] "b") - (![#intT] "m")) = #(W64 1)
+    (if: ((![go.int] "b") -⟨go.int⟩ (![go.int] "m")) =⟨go.int⟩ #(W64 1)
     then
-      let: "i" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] "a") in
-      do:  ("i" <-[#intT] "$r0");;;
-      let: "j" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] "m") in
-      do:  ("j" <-[#intT] "$r0");;;
-      (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "j")); (λ: <>, #()) := λ: <>,
-        let: "h" := (mem.alloc (type.zero_val #intT)) in
-        let: "$r0" := (u_to_w64 ((s_to_w64 ((![#intT] "i") + (![#intT] "j"))) ≫ #(W64 1))) in
-        do:  ("h" <-[#intT] "$r0");;;
-        (if: (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "m"))) in
-        let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "h"))) in
-        (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))
+      let: "i" := (GoAlloc go.int #()) in
+      let: "$r0" := (![go.int] "a") in
+      do:  ("i" <-[go.int] "$r0");;;
+      let: "j" := (GoAlloc go.int #()) in
+      let: "$r0" := (![go.int] "m") in
+      do:  ("j" <-[go.int] "$r0");;;
+      (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
+        let: "h" := (GoAlloc go.int #()) in
+        let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
+        do:  ("h" <-[go.int] "$r0");;;
+        (if: (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "m"))) in
+        let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "h"))) in
+        (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
         then
-          let: "$r0" := ((![#intT] "h") + #(W64 1)) in
-          do:  ("i" <-[#intT] "$r0")
+          let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in
+          do:  ("i" <-[go.int] "$r0")
         else
-          let: "$r0" := (![#intT] "h") in
-          do:  ("j" <-[#intT] "$r0")));;;
-      (let: "k" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] "m") in
-      do:  ("k" <-[#intT] "$r0");;;
-      (for: (λ: <>, int_gt (![#intT] "k") (![#intT] "i")); (λ: <>, do:  ("k" <-[#intT] ((![#intT] "k") - #(W64 1)))) := λ: <>,
-        let: "$r0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "k") - #(W64 1)))) in
-        let: "$r1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "k"))) in
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") (![#intT] "k")) <-["E"] "$r0");;;
-        do:  ((slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "k") - #(W64 1))) <-["E"] "$r1")));;;
+          let: "$r0" := (![go.int] "h") in
+          do:  ("j" <-[go.int] "$r0")));;;
+      (let: "k" := (GoAlloc go.int #()) in
+      let: "$r0" := (![go.int] "m") in
+      do:  ("k" <-[go.int] "$r0");;;
+      (for: (λ: <>, (![go.int] "k") >⟨go.int⟩ (![go.int] "i")); (λ: <>, do:  ("k" <-[go.int] ((![go.int] "k") -⟨go.int⟩ #(W8 1)))) := λ: <>,
+        let: "$r0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "k") -⟨go.int⟩ #(W64 1)))) in
+        let: "$r1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "k"))) in
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") (![go.int] "k")) <-[E] "$r0");;;
+        do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "k") -⟨go.int⟩ #(W64 1))) <-[E] "$r1")));;;
       return: (#())
     else do:  #());;;
-    let: "mid" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := (u_to_w64 ((s_to_w64 ((![#intT] "a") + (![#intT] "b"))) ≫ #(W64 1))) in
-    do:  ("mid" <-[#intT] "$r0");;;
-    let: "n" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "mid") + (![#intT] "m")) in
-    do:  ("n" <-[#intT] "$r0");;;
-    let: "r" := (mem.alloc (type.zero_val #intT)) in
-    let: "start" := (mem.alloc (type.zero_val #intT)) in
-    (if: int_gt (![#intT] "m") (![#intT] "mid")
+    let: "mid" := (GoAlloc go.int #()) in
+    let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "a") +⟨go.int⟩ (![go.int] "b"))) ≫⟨go.uint⟩ #(W64 1))) in
+    do:  ("mid" <-[go.int] "$r0");;;
+    let: "n" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "mid") +⟨go.int⟩ (![go.int] "m")) in
+    do:  ("n" <-[go.int] "$r0");;;
+    let: "r" := (GoAlloc go.int #()) in
+    let: "start" := (GoAlloc go.int #()) in
+    (if: (![go.int] "m") >⟨go.int⟩ (![go.int] "mid")
     then
-      let: "$r0" := ((![#intT] "n") - (![#intT] "b")) in
-      do:  ("start" <-[#intT] "$r0");;;
-      let: "$r0" := (![#intT] "mid") in
-      do:  ("r" <-[#intT] "$r0")
+      let: "$r0" := ((![go.int] "n") -⟨go.int⟩ (![go.int] "b")) in
+      do:  ("start" <-[go.int] "$r0");;;
+      let: "$r0" := (![go.int] "mid") in
+      do:  ("r" <-[go.int] "$r0")
     else
-      let: "$r0" := (![#intT] "a") in
-      do:  ("start" <-[#intT] "$r0");;;
-      let: "$r0" := (![#intT] "m") in
-      do:  ("r" <-[#intT] "$r0"));;;
-    let: "p" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "n") - #(W64 1)) in
-    do:  ("p" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "start") (![#intT] "r")); (λ: <>, #()) := λ: <>,
-      let: "c" := (mem.alloc (type.zero_val #intT)) in
-      let: "$r0" := (u_to_w64 ((s_to_w64 ((![#intT] "start") + (![#intT] "r"))) ≫ #(W64 1))) in
-      do:  ("c" <-[#intT] "$r0");;;
-      (if: (~ (int_lt (let: "$a0" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") ((![#intT] "p") - (![#intT] "c")))) in
-      let: "$a1" := (!["E"] (slice.elem_ref "E" (![#sliceT] "data") (![#intT] "c"))) in
-      (![#funcT] "cmp") "$a0" "$a1") #(W64 0)))
+      let: "$r0" := (![go.int] "a") in
+      do:  ("start" <-[go.int] "$r0");;;
+      let: "$r0" := (![go.int] "m") in
+      do:  ("r" <-[go.int] "$r0"));;;
+    let: "p" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "n") -⟨go.int⟩ #(W64 1)) in
+    do:  ("p" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "start") <⟨go.int⟩ (![go.int] "r")); (λ: <>, #()) := λ: <>,
+      let: "c" := (GoAlloc go.int #()) in
+      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "start") +⟨go.int⟩ (![go.int] "r"))) ≫⟨go.uint⟩ #(W64 1))) in
+      do:  ("c" <-[go.int] "$r0");;;
+      (if: (~ ((let: "$a0" := (![E] (slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "p") -⟨go.int⟩ (![go.int] "c")))) in
+      let: "$a1" := (![E] (slice.elem_ref E (![go.SliceType E] "data") (![go.int] "c"))) in
+      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
       then
-        let: "$r0" := ((![#intT] "c") + #(W64 1)) in
-        do:  ("start" <-[#intT] "$r0")
+        let: "$r0" := ((![go.int] "c") +⟨go.int⟩ #(W64 1)) in
+        do:  ("start" <-[go.int] "$r0")
       else
-        let: "$r0" := (![#intT] "c") in
-        do:  ("r" <-[#intT] "$r0")));;;
-    let: "end" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "n") - (![#intT] "start")) in
-    do:  ("end" <-[#intT] "$r0");;;
-    (if: (int_lt (![#intT] "start") (![#intT] "m")) && (int_lt (![#intT] "m") (![#intT] "end"))
+        let: "$r0" := (![go.int] "c") in
+        do:  ("r" <-[go.int] "$r0")));;;
+    let: "end" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "n") -⟨go.int⟩ (![go.int] "start")) in
+    do:  ("end" <-[go.int] "$r0");;;
+    (if: ((![go.int] "start") <⟨go.int⟩ (![go.int] "m")) && ((![go.int] "m") <⟨go.int⟩ (![go.int] "end"))
     then
-      do:  (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "start") in
-      let: "$a2" := (![#intT] "m") in
-      let: "$a3" := (![#intT] "end") in
-      let: "$a4" := (![#funcT] "cmp") in
-      ((func_call #rotateCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4")
+      do:  (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "start") in
+      let: "$a2" := (![go.int] "m") in
+      let: "$a3" := (![go.int] "end") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve rotateCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
     else do:  #());;;
-    (if: (int_lt (![#intT] "a") (![#intT] "start")) && (int_lt (![#intT] "start") (![#intT] "mid"))
+    (if: ((![go.int] "a") <⟨go.int⟩ (![go.int] "start")) && ((![go.int] "start") <⟨go.int⟩ (![go.int] "mid"))
     then
-      do:  (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "a") in
-      let: "$a2" := (![#intT] "start") in
-      let: "$a3" := (![#intT] "mid") in
-      let: "$a4" := (![#funcT] "cmp") in
-      ((func_call #symMergeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4")
+      do:  (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "a") in
+      let: "$a2" := (![go.int] "start") in
+      let: "$a3" := (![go.int] "mid") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
     else do:  #());;;
-    (if: (int_lt (![#intT] "mid") (![#intT] "end")) && (int_lt (![#intT] "end") (![#intT] "b"))
+    (if: ((![go.int] "mid") <⟨go.int⟩ (![go.int] "end")) && ((![go.int] "end") <⟨go.int⟩ (![go.int] "b"))
     then
-      do:  (let: "$a0" := (![#sliceT] "data") in
-      let: "$a1" := (![#intT] "mid") in
-      let: "$a2" := (![#intT] "end") in
-      let: "$a3" := (![#intT] "b") in
-      let: "$a4" := (![#funcT] "cmp") in
-      ((func_call #symMergeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4")
+      do:  (let: "$a0" := (![go.SliceType E] "data") in
+      let: "$a1" := (![go.int] "mid") in
+      let: "$a2" := (![go.int] "end") in
+      let: "$a3" := (![go.int] "b") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
     else do:  #());;;
     return: #()).
 
@@ -1033,43 +1034,43 @@ Definition symMergeCmpFuncⁱᵐᵖˡ : val :=
    and it assumes non-degenerate arguments: a < m && m < b.
 
    go: zsortanyfunc.go:464:6 *)
-Definition rotateCmpFuncⁱᵐᵖˡ : val :=
-  λ: "E" "data" "a" "m" "b" "cmp",
-    exception_do (let: "cmp" := (mem.alloc "cmp") in
-    let: "b" := (mem.alloc "b") in
-    let: "m" := (mem.alloc "m") in
-    let: "a" := (mem.alloc "a") in
-    let: "data" := (mem.alloc "data") in
-    let: "i" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "m") - (![#intT] "a")) in
-    do:  ("i" <-[#intT] "$r0");;;
-    let: "j" := (mem.alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] "b") - (![#intT] "m")) in
-    do:  ("j" <-[#intT] "$r0");;;
-    (for: (λ: <>, (![#intT] "i") ≠ (![#intT] "j")); (λ: <>, #()) := λ: <>,
-      (if: int_gt (![#intT] "i") (![#intT] "j")
+Definition rotateCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+  λ: "data" "a" "m" "b" "cmp",
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "b" := (go.AllocValue go.int "b") in
+    let: "m" := (go.AllocValue go.int "m") in
+    let: "a" := (go.AllocValue go.int "a") in
+    let: "data" := (go.AllocValue (go.SliceType E) "data") in
+    let: "i" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "m") -⟨go.int⟩ (![go.int] "a")) in
+    do:  ("i" <-[go.int] "$r0");;;
+    let: "j" := (GoAlloc go.int #()) in
+    let: "$r0" := ((![go.int] "b") -⟨go.int⟩ (![go.int] "m")) in
+    do:  ("j" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
+      (if: (![go.int] "i") >⟨go.int⟩ (![go.int] "j")
       then
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := ((![#intT] "m") - (![#intT] "i")) in
-        let: "$a2" := (![#intT] "m") in
-        let: "$a3" := (![#intT] "j") in
-        let: "$a4" := (![#funcT] "cmp") in
-        ((func_call #swapRangeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4");;;
-        do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "j")))
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := ((![go.int] "m") -⟨go.int⟩ (![go.int] "i")) in
+        let: "$a2" := (![go.int] "m") in
+        let: "$a3" := (![go.int] "j") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve swapRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+        do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "j")))
       else
-        do:  (let: "$a0" := (![#sliceT] "data") in
-        let: "$a1" := ((![#intT] "m") - (![#intT] "i")) in
-        let: "$a2" := (((![#intT] "m") + (![#intT] "j")) - (![#intT] "i")) in
-        let: "$a3" := (![#intT] "i") in
-        let: "$a4" := (![#funcT] "cmp") in
-        ((func_call #swapRangeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4");;;
-        do:  ("j" <-[#intT] ((![#intT] "j") - (![#intT] "i")))));;;
-    do:  (let: "$a0" := (![#sliceT] "data") in
-    let: "$a1" := ((![#intT] "m") - (![#intT] "i")) in
-    let: "$a2" := (![#intT] "m") in
-    let: "$a3" := (![#intT] "i") in
-    let: "$a4" := (![#funcT] "cmp") in
-    ((func_call #swapRangeCmpFunc) "E") "$a0" "$a1" "$a2" "$a3" "$a4");;;
+        do:  (let: "$a0" := (![go.SliceType E] "data") in
+        let: "$a1" := ((![go.int] "m") -⟨go.int⟩ (![go.int] "i")) in
+        let: "$a2" := (((![go.int] "m") +⟨go.int⟩ (![go.int] "j")) -⟨go.int⟩ (![go.int] "i")) in
+        let: "$a3" := (![go.int] "i") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        (FuncResolve swapRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+        do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ (![go.int] "i")))));;;
+    do:  (let: "$a0" := (![go.SliceType E] "data") in
+    let: "$a1" := ((![go.int] "m") -⟨go.int⟩ (![go.int] "i")) in
+    let: "$a2" := (![go.int] "m") in
+    let: "$a3" := (![go.int] "i") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    (FuncResolve swapRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
 Definition insertionSortOrdered : go_string := "slices.insertionSortOrdered"%go.
@@ -1105,8 +1106,6 @@ Definition stableOrdered : go_string := "slices.stableOrdered"%go.
 Definition symMergeOrdered : go_string := "slices.symMergeOrdered"%go.
 
 Definition rotateOrdered : go_string := "slices.rotateOrdered"%go.
-
-Definition vars' : list (go_string * go_type) := [].
 
 Axiom Allⁱᵐᵖˡ : val.
 
@@ -1236,15 +1235,8 @@ Axiom rotateOrderedⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(All, Allⁱᵐᵖˡ); (Backward, Backwardⁱᵐᵖˡ); (Values, Valuesⁱᵐᵖˡ); (AppendSeq, AppendSeqⁱᵐᵖˡ); (Collect, Collectⁱᵐᵖˡ); (Sorted, Sortedⁱᵐᵖˡ); (SortedFunc, SortedFuncⁱᵐᵖˡ); (SortedStableFunc, SortedStableFuncⁱᵐᵖˡ); (Chunk, Chunkⁱᵐᵖˡ); (Equal, Equalⁱᵐᵖˡ); (EqualFunc, EqualFuncⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (CompareFunc, CompareFuncⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (Insert, Insertⁱᵐᵖˡ); (Delete, Deleteⁱᵐᵖˡ); (DeleteFunc, DeleteFuncⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (Compact, Compactⁱᵐᵖˡ); (CompactFunc, CompactFuncⁱᵐᵖˡ); (Grow, Growⁱᵐᵖˡ); (Clip, Clipⁱᵐᵖˡ); (rotateLeft, rotateLeftⁱᵐᵖˡ); (rotateRight, rotateRightⁱᵐᵖˡ); (overlaps, overlapsⁱᵐᵖˡ); (startIdx, startIdxⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (Concat, Concatⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (SortFunc, SortFuncⁱᵐᵖˡ); (SortStableFunc, SortStableFuncⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (IsSortedFunc, IsSortedFuncⁱᵐᵖˡ); (Min, Minⁱᵐᵖˡ); (MinFunc, MinFuncⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (MaxFunc, MaxFuncⁱᵐᵖˡ); (BinarySearch, BinarySearchⁱᵐᵖˡ); (BinarySearchFunc, BinarySearchFuncⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (insertionSortCmpFunc, insertionSortCmpFuncⁱᵐᵖˡ); (siftDownCmpFunc, siftDownCmpFuncⁱᵐᵖˡ); (heapSortCmpFunc, heapSortCmpFuncⁱᵐᵖˡ); (pdqsortCmpFunc, pdqsortCmpFuncⁱᵐᵖˡ); (partitionCmpFunc, partitionCmpFuncⁱᵐᵖˡ); (partitionEqualCmpFunc, partitionEqualCmpFuncⁱᵐᵖˡ); (partialInsertionSortCmpFunc, partialInsertionSortCmpFuncⁱᵐᵖˡ); (breakPatternsCmpFunc, breakPatternsCmpFuncⁱᵐᵖˡ); (choosePivotCmpFunc, choosePivotCmpFuncⁱᵐᵖˡ); (order2CmpFunc, order2CmpFuncⁱᵐᵖˡ); (medianCmpFunc, medianCmpFuncⁱᵐᵖˡ); (medianAdjacentCmpFunc, medianAdjacentCmpFuncⁱᵐᵖˡ); (reverseRangeCmpFunc, reverseRangeCmpFuncⁱᵐᵖˡ); (swapRangeCmpFunc, swapRangeCmpFuncⁱᵐᵖˡ); (stableCmpFunc, stableCmpFuncⁱᵐᵖˡ); (symMergeCmpFunc, symMergeCmpFuncⁱᵐᵖˡ); (rotateCmpFunc, rotateCmpFuncⁱᵐᵖˡ); (insertionSortOrdered, insertionSortOrderedⁱᵐᵖˡ); (siftDownOrdered, siftDownOrderedⁱᵐᵖˡ); (heapSortOrdered, heapSortOrderedⁱᵐᵖˡ); (pdqsortOrdered, pdqsortOrderedⁱᵐᵖˡ); (partitionOrdered, partitionOrderedⁱᵐᵖˡ); (partitionEqualOrdered, partitionEqualOrderedⁱᵐᵖˡ); (partialInsertionSortOrdered, partialInsertionSortOrderedⁱᵐᵖˡ); (breakPatternsOrdered, breakPatternsOrderedⁱᵐᵖˡ); (choosePivotOrdered, choosePivotOrderedⁱᵐᵖˡ); (order2Ordered, order2Orderedⁱᵐᵖˡ); (medianOrdered, medianOrderedⁱᵐᵖˡ); (medianAdjacentOrdered, medianAdjacentOrderedⁱᵐᵖˡ); (reverseRangeOrdered, reverseRangeOrderedⁱᵐᵖˡ); (swapRangeOrdered, swapRangeOrderedⁱᵐᵖˡ); (stableOrdered, stableOrderedⁱᵐᵖˡ); (symMergeOrdered, symMergeOrderedⁱᵐᵖˡ); (rotateOrdered, rotateOrderedⁱᵐᵖˡ)].
 
-Axiom xorshift__Nextⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(sortedHint.id, []); (ptrT.id sortedHint.id, []); (xorshift.id, []); (ptrT.id xorshift.id, [("Next"%go, xorshift__Nextⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo slices.slices :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -1252,8 +1244,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #slices.slices (λ: <>,
-      exception_do (do:  (package.alloc slices.slices #()))
+    package.init slices.slices (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

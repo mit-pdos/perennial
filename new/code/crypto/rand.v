@@ -5,8 +5,6 @@ Definition rand : go_string := "crypto/rand".
 
 Module rand.
 
-Module reader. Definition id : go_string := "crypto/rand.reader"%go. End reader.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -15,7 +13,7 @@ Definition Reader : go_string := "crypto/rand.Reader"%go.
 
 Definition init : go_string := "crypto/rand.init"%go.
 
-Axiom reader : go_type.
+Axiom readerⁱᵐᵖˡ : go.type.
 
 Definition fatal : go_string := "crypto/rand.fatal"%go.
 
@@ -29,7 +27,7 @@ Definition Prime : go_string := "crypto/rand.Prime"%go.
 
 Definition Int : go_string := "crypto/rand.Int"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition reader : go.type := go.Named "crypto/rand.reader"%go [].
 
 Axiom fatalⁱᵐᵖˡ : val.
 
@@ -43,17 +41,8 @@ Axiom Intⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(fatal, fatalⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Text, Textⁱᵐᵖˡ); (Prime, Primeⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ)].
 
-Axiom reader__Readⁱᵐᵖˡ : val.
-
-Axiom reader__defaultReaderⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(reader.id, [("defaultReader"%go, reader__defaultReaderⁱᵐᵖˡ)]); (ptrT.id reader.id, [("Read"%go, reader__Readⁱᵐᵖˡ); ("defaultReader"%go, reader__defaultReaderⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo rand.rand :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -61,8 +50,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #rand.rand (λ: <>,
-      exception_do (do:  (package.alloc rand.rand #()))
+    package.init rand.rand (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

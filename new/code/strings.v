@@ -5,30 +5,16 @@ Definition strings : go_string := "strings".
 
 Module strings.
 
-Module Builder. Definition id : go_string := "strings.Builder"%go. End Builder.
-Module Reader. Definition id : go_string := "strings.Reader"%go. End Reader.
-Module Replacer. Definition id : go_string := "strings.Replacer"%go. End Replacer.
-Module replacer. Definition id : go_string := "strings.replacer"%go. End replacer.
-Module trieNode. Definition id : go_string := "strings.trieNode"%go. End trieNode.
-Module genericReplacer. Definition id : go_string := "strings.genericReplacer"%go. End genericReplacer.
-Module appendSliceWriter. Definition id : go_string := "strings.appendSliceWriter"%go. End appendSliceWriter.
-Module stringWriter. Definition id : go_string := "strings.stringWriter"%go. End stringWriter.
-Module singleStringReplacer. Definition id : go_string := "strings.singleStringReplacer"%go. End singleStringReplacer.
-Module byteReplacer. Definition id : go_string := "strings.byteReplacer"%go. End byteReplacer.
-Module byteStringReplacer. Definition id : go_string := "strings.byteStringReplacer"%go. End byteStringReplacer.
-Module stringFinder. Definition id : go_string := "strings.stringFinder"%go. End stringFinder.
-Module asciiSet. Definition id : go_string := "strings.asciiSet"%go. End asciiSet.
-
 Section code.
 Context `{ffi_syntax}.
 
 
-Definition Builder : go_type := structT [
-  "addr" :: ptrT;
-  "buf" :: sliceT
+Definition Builder : go.type := go.Named "strings.Builder"%go [].
+
+Definition Builderⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "addr"%go (go.PointerType Builder));
+  (go.FieldDecl "buf"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque Builder.
-#[global] Opaque Builder.
 
 Definition Clone : go_string := "strings.Clone"%go.
 
@@ -46,39 +32,39 @@ Definition FieldsSeq : go_string := "strings.FieldsSeq"%go.
 
 Definition FieldsFuncSeq : go_string := "strings.FieldsFuncSeq"%go.
 
-Axiom Reader : go_type.
+Axiom Readerⁱᵐᵖˡ : go.type.
 
 Definition NewReader : go_string := "strings.NewReader"%go.
 
-Axiom Replacer : go_type.
+Axiom Replacerⁱᵐᵖˡ : go.type.
 
-Axiom replacer : go_type.
+Axiom replacerⁱᵐᵖˡ : go.type.
 
 Definition NewReplacer : go_string := "strings.NewReplacer"%go.
 
-Axiom trieNode : go_type.
+Axiom trieNodeⁱᵐᵖˡ : go.type.
 
-Axiom genericReplacer : go_type.
+Axiom genericReplacerⁱᵐᵖˡ : go.type.
 
 Definition makeGenericReplacer : go_string := "strings.makeGenericReplacer"%go.
 
-Axiom appendSliceWriter : go_type.
+Axiom appendSliceWriterⁱᵐᵖˡ : go.type.
 
-Axiom stringWriter : go_type.
+Axiom stringWriterⁱᵐᵖˡ : go.type.
 
 Definition getStringWriter : go_string := "strings.getStringWriter"%go.
 
-Axiom singleStringReplacer : go_type.
+Axiom singleStringReplacerⁱᵐᵖˡ : go.type.
 
 Definition makeSingleStringReplacer : go_string := "strings.makeSingleStringReplacer"%go.
 
-Axiom byteReplacer : go_type.
+Axiom byteReplacerⁱᵐᵖˡ : go.type.
 
-Axiom byteStringReplacer : go_type.
+Axiom byteStringReplacerⁱᵐᵖˡ : go.type.
 
 Axiom countCutOff : Z.
 
-Axiom stringFinder : go_type.
+Axiom stringFinderⁱᵐᵖˡ : go.type.
 
 Definition makeStringFinder : go_string := "strings.makeStringFinder"%go.
 
@@ -180,7 +166,7 @@ Definition indexFunc : go_string := "strings.indexFunc"%go.
 
 Definition lastIndexFunc : go_string := "strings.lastIndexFunc"%go.
 
-Axiom asciiSet : go_type.
+Axiom asciiSetⁱᵐᵖˡ : go.type.
 
 Definition makeASCIISet : go_string := "strings.makeASCIISet"%go.
 
@@ -222,7 +208,29 @@ Definition CutPrefix : go_string := "strings.CutPrefix"%go.
 
 Definition CutSuffix : go_string := "strings.CutSuffix"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Reader : go.type := go.Named "strings.Reader"%go [].
+
+Definition Replacer : go.type := go.Named "strings.Replacer"%go [].
+
+Definition replacer : go.type := go.Named "strings.replacer"%go [].
+
+Definition trieNode : go.type := go.Named "strings.trieNode"%go [].
+
+Definition genericReplacer : go.type := go.Named "strings.genericReplacer"%go [].
+
+Definition appendSliceWriter : go.type := go.Named "strings.appendSliceWriter"%go [].
+
+Definition stringWriter : go.type := go.Named "strings.stringWriter"%go [].
+
+Definition singleStringReplacer : go.type := go.Named "strings.singleStringReplacer"%go [].
+
+Definition byteReplacer : go.type := go.Named "strings.byteReplacer"%go [].
+
+Definition byteStringReplacer : go.type := go.Named "strings.byteStringReplacer"%go [].
+
+Definition stringFinder : go.type := go.Named "strings.stringFinder"%go [].
+
+Definition asciiSet : go.type := go.Named "strings.asciiSet"%go [].
 
 Axiom Cloneⁱᵐᵖˡ : val.
 
@@ -376,95 +384,8 @@ Axiom CutSuffixⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Clone, Cloneⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (Lines, Linesⁱᵐᵖˡ); (splitSeq, splitSeqⁱᵐᵖˡ); (SplitSeq, SplitSeqⁱᵐᵖˡ); (SplitAfterSeq, SplitAfterSeqⁱᵐᵖˡ); (FieldsSeq, FieldsSeqⁱᵐᵖˡ); (FieldsFuncSeq, FieldsFuncSeqⁱᵐᵖˡ); (NewReader, NewReaderⁱᵐᵖˡ); (NewReplacer, NewReplacerⁱᵐᵖˡ); (makeGenericReplacer, makeGenericReplacerⁱᵐᵖˡ); (getStringWriter, getStringWriterⁱᵐᵖˡ); (makeSingleStringReplacer, makeSingleStringReplacerⁱᵐᵖˡ); (makeStringFinder, makeStringFinderⁱᵐᵖˡ); (longestCommonSuffix, longestCommonSuffixⁱᵐᵖˡ); (explode, explodeⁱᵐᵖˡ); (Count, Countⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsAny, ContainsAnyⁱᵐᵖˡ); (ContainsRune, ContainsRuneⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (LastIndex, LastIndexⁱᵐᵖˡ); (IndexByte, IndexByteⁱᵐᵖˡ); (IndexRune, IndexRuneⁱᵐᵖˡ); (IndexAny, IndexAnyⁱᵐᵖˡ); (LastIndexAny, LastIndexAnyⁱᵐᵖˡ); (LastIndexByte, LastIndexByteⁱᵐᵖˡ); (genSplit, genSplitⁱᵐᵖˡ); (SplitN, SplitNⁱᵐᵖˡ); (SplitAfterN, SplitAfterNⁱᵐᵖˡ); (Split, Splitⁱᵐᵖˡ); (SplitAfter, SplitAfterⁱᵐᵖˡ); (Fields, Fieldsⁱᵐᵖˡ); (FieldsFunc, FieldsFuncⁱᵐᵖˡ); (Join, Joinⁱᵐᵖˡ); (HasPrefix, HasPrefixⁱᵐᵖˡ); (HasSuffix, HasSuffixⁱᵐᵖˡ); (Map, Mapⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (ToUpper, ToUpperⁱᵐᵖˡ); (ToLower, ToLowerⁱᵐᵖˡ); (ToTitle, ToTitleⁱᵐᵖˡ); (ToUpperSpecial, ToUpperSpecialⁱᵐᵖˡ); (ToLowerSpecial, ToLowerSpecialⁱᵐᵖˡ); (ToTitleSpecial, ToTitleSpecialⁱᵐᵖˡ); (ToValidUTF8, ToValidUTF8ⁱᵐᵖˡ); (isSeparator, isSeparatorⁱᵐᵖˡ); (Title, Titleⁱᵐᵖˡ); (TrimLeftFunc, TrimLeftFuncⁱᵐᵖˡ); (TrimRightFunc, TrimRightFuncⁱᵐᵖˡ); (TrimFunc, TrimFuncⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (LastIndexFunc, LastIndexFuncⁱᵐᵖˡ); (indexFunc, indexFuncⁱᵐᵖˡ); (lastIndexFunc, lastIndexFuncⁱᵐᵖˡ); (makeASCIISet, makeASCIISetⁱᵐᵖˡ); (Trim, Trimⁱᵐᵖˡ); (TrimLeft, TrimLeftⁱᵐᵖˡ); (trimLeftByte, trimLeftByteⁱᵐᵖˡ); (trimLeftASCII, trimLeftASCIIⁱᵐᵖˡ); (trimLeftUnicode, trimLeftUnicodeⁱᵐᵖˡ); (TrimRight, TrimRightⁱᵐᵖˡ); (trimRightByte, trimRightByteⁱᵐᵖˡ); (trimRightASCII, trimRightASCIIⁱᵐᵖˡ); (trimRightUnicode, trimRightUnicodeⁱᵐᵖˡ); (TrimSpace, TrimSpaceⁱᵐᵖˡ); (TrimPrefix, TrimPrefixⁱᵐᵖˡ); (TrimSuffix, TrimSuffixⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (ReplaceAll, ReplaceAllⁱᵐᵖˡ); (EqualFold, EqualFoldⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (Cut, Cutⁱᵐᵖˡ); (CutPrefix, CutPrefixⁱᵐᵖˡ); (CutSuffix, CutSuffixⁱᵐᵖˡ)].
 
-Axiom Builder__Capⁱᵐᵖˡ : val.
-
-Axiom Builder__Growⁱᵐᵖˡ : val.
-
-Axiom Builder__Lenⁱᵐᵖˡ : val.
-
-Axiom Builder__Resetⁱᵐᵖˡ : val.
-
-Axiom Builder__Stringⁱᵐᵖˡ : val.
-
-Axiom Builder__Writeⁱᵐᵖˡ : val.
-
-Axiom Builder__WriteByteⁱᵐᵖˡ : val.
-
-Axiom Builder__WriteRuneⁱᵐᵖˡ : val.
-
-Axiom Builder__WriteStringⁱᵐᵖˡ : val.
-
-Axiom Builder__copyCheckⁱᵐᵖˡ : val.
-
-Axiom Builder__growⁱᵐᵖˡ : val.
-
-Axiom Reader__Lenⁱᵐᵖˡ : val.
-
-Axiom Reader__Readⁱᵐᵖˡ : val.
-
-Axiom Reader__ReadAtⁱᵐᵖˡ : val.
-
-Axiom Reader__ReadByteⁱᵐᵖˡ : val.
-
-Axiom Reader__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom Reader__Resetⁱᵐᵖˡ : val.
-
-Axiom Reader__Seekⁱᵐᵖˡ : val.
-
-Axiom Reader__Sizeⁱᵐᵖˡ : val.
-
-Axiom Reader__UnreadByteⁱᵐᵖˡ : val.
-
-Axiom Reader__UnreadRuneⁱᵐᵖˡ : val.
-
-Axiom Reader__WriteToⁱᵐᵖˡ : val.
-
-Axiom Replacer__Replaceⁱᵐᵖˡ : val.
-
-Axiom Replacer__WriteStringⁱᵐᵖˡ : val.
-
-Axiom Replacer__buildⁱᵐᵖˡ : val.
-
-Axiom Replacer__buildOnceⁱᵐᵖˡ : val.
-
-Axiom trieNode__addⁱᵐᵖˡ : val.
-
-Axiom genericReplacer__Replaceⁱᵐᵖˡ : val.
-
-Axiom genericReplacer__WriteStringⁱᵐᵖˡ : val.
-
-Axiom genericReplacer__lookupⁱᵐᵖˡ : val.
-
-Axiom appendSliceWriter__Writeⁱᵐᵖˡ : val.
-
-Axiom appendSliceWriter__WriteStringⁱᵐᵖˡ : val.
-
-Axiom stringWriter__WriteStringⁱᵐᵖˡ : val.
-
-Axiom singleStringReplacer__Replaceⁱᵐᵖˡ : val.
-
-Axiom singleStringReplacer__WriteStringⁱᵐᵖˡ : val.
-
-Axiom byteReplacer__Replaceⁱᵐᵖˡ : val.
-
-Axiom byteReplacer__WriteStringⁱᵐᵖˡ : val.
-
-Axiom byteStringReplacer__Replaceⁱᵐᵖˡ : val.
-
-Axiom byteStringReplacer__WriteStringⁱᵐᵖˡ : val.
-
-Axiom stringFinder__nextⁱᵐᵖˡ : val.
-
-Axiom asciiSet__containsⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Builder.id, []); (ptrT.id Builder.id, [("Cap"%go, Builder__Capⁱᵐᵖˡ); ("Grow"%go, Builder__Growⁱᵐᵖˡ); ("Len"%go, Builder__Lenⁱᵐᵖˡ); ("Reset"%go, Builder__Resetⁱᵐᵖˡ); ("String"%go, Builder__Stringⁱᵐᵖˡ); ("Write"%go, Builder__Writeⁱᵐᵖˡ); ("WriteByte"%go, Builder__WriteByteⁱᵐᵖˡ); ("WriteRune"%go, Builder__WriteRuneⁱᵐᵖˡ); ("WriteString"%go, Builder__WriteStringⁱᵐᵖˡ); ("copyCheck"%go, Builder__copyCheckⁱᵐᵖˡ); ("grow"%go, Builder__growⁱᵐᵖˡ)]); (Reader.id, []); (ptrT.id Reader.id, [("Len"%go, Reader__Lenⁱᵐᵖˡ); ("Read"%go, Reader__Readⁱᵐᵖˡ); ("ReadAt"%go, Reader__ReadAtⁱᵐᵖˡ); ("ReadByte"%go, Reader__ReadByteⁱᵐᵖˡ); ("ReadRune"%go, Reader__ReadRuneⁱᵐᵖˡ); ("Reset"%go, Reader__Resetⁱᵐᵖˡ); ("Seek"%go, Reader__Seekⁱᵐᵖˡ); ("Size"%go, Reader__Sizeⁱᵐᵖˡ); ("UnreadByte"%go, Reader__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, Reader__UnreadRuneⁱᵐᵖˡ); ("WriteTo"%go, Reader__WriteToⁱᵐᵖˡ)]); (Replacer.id, []); (ptrT.id Replacer.id, [("Replace"%go, Replacer__Replaceⁱᵐᵖˡ); ("WriteString"%go, Replacer__WriteStringⁱᵐᵖˡ); ("build"%go, Replacer__buildⁱᵐᵖˡ); ("buildOnce"%go, Replacer__buildOnceⁱᵐᵖˡ)]); (trieNode.id, []); (ptrT.id trieNode.id, [("add"%go, trieNode__addⁱᵐᵖˡ)]); (genericReplacer.id, []); (ptrT.id genericReplacer.id, [("Replace"%go, genericReplacer__Replaceⁱᵐᵖˡ); ("WriteString"%go, genericReplacer__WriteStringⁱᵐᵖˡ); ("lookup"%go, genericReplacer__lookupⁱᵐᵖˡ)]); (appendSliceWriter.id, []); (ptrT.id appendSliceWriter.id, [("Write"%go, appendSliceWriter__Writeⁱᵐᵖˡ); ("WriteString"%go, appendSliceWriter__WriteStringⁱᵐᵖˡ)]); (stringWriter.id, [("WriteString"%go, stringWriter__WriteStringⁱᵐᵖˡ)]); (ptrT.id stringWriter.id, [("WriteString"%go, stringWriter__WriteStringⁱᵐᵖˡ)]); (singleStringReplacer.id, []); (ptrT.id singleStringReplacer.id, [("Replace"%go, singleStringReplacer__Replaceⁱᵐᵖˡ); ("WriteString"%go, singleStringReplacer__WriteStringⁱᵐᵖˡ)]); (byteReplacer.id, []); (ptrT.id byteReplacer.id, [("Replace"%go, byteReplacer__Replaceⁱᵐᵖˡ); ("WriteString"%go, byteReplacer__WriteStringⁱᵐᵖˡ)]); (byteStringReplacer.id, []); (ptrT.id byteStringReplacer.id, [("Replace"%go, byteStringReplacer__Replaceⁱᵐᵖˡ); ("WriteString"%go, byteStringReplacer__WriteStringⁱᵐᵖˡ)]); (stringFinder.id, []); (ptrT.id stringFinder.id, [("next"%go, stringFinder__nextⁱᵐᵖˡ)]); (asciiSet.id, []); (ptrT.id asciiSet.id, [("contains"%go, asciiSet__containsⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo strings.strings :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -472,9 +393,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #strings.strings (λ: <>,
-      exception_do (do:  (package.alloc strings.strings #());;;
-      do:  (asciiSpace'init #()))
+    package.init strings.strings (λ: <>,
+      exception_do (do:  (asciiSpace'init #()))
       ).
 
 End code.

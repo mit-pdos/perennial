@@ -7,9 +7,6 @@ Definition synctest : go_string := "internal/synctest".
 
 Module synctest.
 
-Module Association. Definition id : go_string := "internal/synctest.Association"%go. End Association.
-Module Bubble. Definition id : go_string := "internal/synctest.Bubble"%go. End Bubble.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -20,7 +17,7 @@ Definition Wait : go_string := "internal/synctest.Wait"%go.
 
 Definition IsInBubble : go_string := "internal/synctest.IsInBubble"%go.
 
-Axiom Association : go_type.
+Axiom Associationⁱᵐᵖˡ : go.type.
 
 Axiom Unbubbled : val.
 
@@ -46,11 +43,13 @@ Definition release : go_string := "internal/synctest.release"%go.
 
 Definition inBubble : go_string := "internal/synctest.inBubble"%go.
 
-Axiom Bubble : go_type.
+Axiom Bubbleⁱᵐᵖˡ : go.type.
 
 Definition Acquire : go_string := "internal/synctest.Acquire"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Association : go.type := go.Named "internal/synctest.Association"%go [].
+
+Definition Bubble : go.type := go.Named "internal/synctest.Bubble"%go [].
 
 Axiom Waitⁱᵐᵖˡ : val.
 
@@ -76,17 +75,8 @@ Axiom Acquireⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Run, Runⁱᵐᵖˡ); (Wait, Waitⁱᵐᵖˡ); (IsInBubble, IsInBubbleⁱᵐᵖˡ); (Associate, Associateⁱᵐᵖˡ); (associate, associateⁱᵐᵖˡ); (Disassociate, Disassociateⁱᵐᵖˡ); (disassociate, disassociateⁱᵐᵖˡ); (IsAssociated, IsAssociatedⁱᵐᵖˡ); (isAssociated, isAssociatedⁱᵐᵖˡ); (acquire, acquireⁱᵐᵖˡ); (release, releaseⁱᵐᵖˡ); (inBubble, inBubbleⁱᵐᵖˡ); (Acquire, Acquireⁱᵐᵖˡ)].
 
-Axiom Bubble__Releaseⁱᵐᵖˡ : val.
-
-Axiom Bubble__Runⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Association.id, []); (ptrT.id Association.id, []); (Bubble.id, []); (ptrT.id Bubble.id, [("Release"%go, Bubble__Releaseⁱᵐᵖˡ); ("Run"%go, Bubble__Runⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo synctest.synctest :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -94,8 +84,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #synctest.synctest (λ: <>,
-      exception_do (do:  (package.alloc synctest.synctest #()))
+    package.init synctest.synctest (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

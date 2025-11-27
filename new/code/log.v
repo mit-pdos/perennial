@@ -7,8 +7,6 @@ Definition log : go_string := "log".
 
 Module log.
 
-Module Logger. Definition id : go_string := "log.Logger"%go. End Logger.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -32,7 +30,7 @@ Axiom Lmsgprefix : Z.
 (* initial values for the standard logger *)
 Definition LstdFlags : Z := 3.
 
-Axiom Logger : go_type.
+Axiom Loggerⁱᵐᵖˡ : go.type.
 
 Definition New : go_string := "log.New"%go.
 
@@ -88,7 +86,7 @@ Definition Panicln : go_string := "log.Panicln"%go.
 
 Definition Output : go_string := "log.Output"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Logger : go.type := go.Named "log.Logger"%go [].
 
 Axiom Newⁱᵐᵖˡ : val.
 
@@ -132,47 +130,8 @@ Axiom Outputⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Default, Defaultⁱᵐᵖˡ); (itoa, itoaⁱᵐᵖˡ); (formatHeader, formatHeaderⁱᵐᵖˡ); (getBuffer, getBufferⁱᵐᵖˡ); (putBuffer, putBufferⁱᵐᵖˡ); (SetOutput, SetOutputⁱᵐᵖˡ); (Flags, Flagsⁱᵐᵖˡ); (SetFlags, SetFlagsⁱᵐᵖˡ); (Prefix, Prefixⁱᵐᵖˡ); (SetPrefix, SetPrefixⁱᵐᵖˡ); (Writer, Writerⁱᵐᵖˡ); (Print, Printⁱᵐᵖˡ); (Printf, Printfⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ); (Fatal, Fatalⁱᵐᵖˡ); (Fatalf, Fatalfⁱᵐᵖˡ); (Fatalln, Fatallnⁱᵐᵖˡ); (Panic, Panicⁱᵐᵖˡ); (Panicf, Panicfⁱᵐᵖˡ); (Panicln, Paniclnⁱᵐᵖˡ); (Output, Outputⁱᵐᵖˡ)].
 
-Axiom Logger__Fatalⁱᵐᵖˡ : val.
-
-Axiom Logger__Fatalfⁱᵐᵖˡ : val.
-
-Axiom Logger__Fatallnⁱᵐᵖˡ : val.
-
-Axiom Logger__Flagsⁱᵐᵖˡ : val.
-
-Axiom Logger__Outputⁱᵐᵖˡ : val.
-
-Axiom Logger__Panicⁱᵐᵖˡ : val.
-
-Axiom Logger__Panicfⁱᵐᵖˡ : val.
-
-Axiom Logger__Paniclnⁱᵐᵖˡ : val.
-
-Axiom Logger__Prefixⁱᵐᵖˡ : val.
-
-Axiom Logger__Printⁱᵐᵖˡ : val.
-
-Axiom Logger__Printfⁱᵐᵖˡ : val.
-
-Axiom Logger__Printlnⁱᵐᵖˡ : val.
-
-Axiom Logger__SetFlagsⁱᵐᵖˡ : val.
-
-Axiom Logger__SetOutputⁱᵐᵖˡ : val.
-
-Axiom Logger__SetPrefixⁱᵐᵖˡ : val.
-
-Axiom Logger__Writerⁱᵐᵖˡ : val.
-
-Axiom Logger__outputⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Logger.id, []); (ptrT.id Logger.id, [("Fatal"%go, Logger__Fatalⁱᵐᵖˡ); ("Fatalf"%go, Logger__Fatalfⁱᵐᵖˡ); ("Fatalln"%go, Logger__Fatallnⁱᵐᵖˡ); ("Flags"%go, Logger__Flagsⁱᵐᵖˡ); ("Output"%go, Logger__Outputⁱᵐᵖˡ); ("Panic"%go, Logger__Panicⁱᵐᵖˡ); ("Panicf"%go, Logger__Panicfⁱᵐᵖˡ); ("Panicln"%go, Logger__Paniclnⁱᵐᵖˡ); ("Prefix"%go, Logger__Prefixⁱᵐᵖˡ); ("Print"%go, Logger__Printⁱᵐᵖˡ); ("Printf"%go, Logger__Printfⁱᵐᵖˡ); ("Println"%go, Logger__Printlnⁱᵐᵖˡ); ("SetFlags"%go, Logger__SetFlagsⁱᵐᵖˡ); ("SetOutput"%go, Logger__SetOutputⁱᵐᵖˡ); ("SetPrefix"%go, Logger__SetPrefixⁱᵐᵖˡ); ("Writer"%go, Logger__Writerⁱᵐᵖˡ); ("output"%go, Logger__outputⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo log.log :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -180,9 +139,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #log.log (λ: <>,
-      exception_do (do:  (package.alloc log.log #());;;
-      do:  (std'init #());;;
+    package.init log.log (λ: <>,
+      exception_do (do:  (std'init #());;;
       do:  (bufferPool'init #()))
       ).
 

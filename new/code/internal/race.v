@@ -39,8 +39,6 @@ Definition WriteRange : go_string := "internal/race.WriteRange"%go.
 
 Definition Errors : go_string := "internal/race.Errors"%go.
 
-Definition vars' : list (go_string * go_type) := [].
-
 Axiom Acquireⁱᵐᵖˡ : val.
 
 Axiom Releaseⁱᵐᵖˡ : val.
@@ -71,13 +69,8 @@ Axiom Errorsⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Acquire, Acquireⁱᵐᵖˡ); (Release, Releaseⁱᵐᵖˡ); (ReleaseMerge, ReleaseMergeⁱᵐᵖˡ); (Disable, Disableⁱᵐᵖˡ); (Enable, Enableⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (ReadPC, ReadPCⁱᵐᵖˡ); (ReadObjectPC, ReadObjectPCⁱᵐᵖˡ); (Write, Writeⁱᵐᵖˡ); (WritePC, WritePCⁱᵐᵖˡ); (WriteObjectPC, WriteObjectPCⁱᵐᵖˡ); (ReadRange, ReadRangeⁱᵐᵖˡ); (WriteRange, WriteRangeⁱᵐᵖˡ); (Errors, Errorsⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
-
 #[global] Instance info' : PkgInfo race.race :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -85,8 +78,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #race.race (λ: <>,
-      exception_do (do:  (package.alloc race.race #()))
+    package.init race.race (λ: <>,
+      exception_do (do:  #())
       ).
 
 End code.

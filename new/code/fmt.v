@@ -7,33 +7,15 @@ Definition fmt : go_string := "fmt".
 
 Module fmt.
 
-Module wrapError. Definition id : go_string := "fmt.wrapError"%go. End wrapError.
-Module wrapErrors. Definition id : go_string := "fmt.wrapErrors"%go. End wrapErrors.
-Module fmtFlags. Definition id : go_string := "fmt.fmtFlags"%go. End fmtFlags.
-Module fmt. Definition id : go_string := "fmt.fmt"%go. End fmt.
-Module State. Definition id : go_string := "fmt.State"%go. End State.
-Module Formatter. Definition id : go_string := "fmt.Formatter"%go. End Formatter.
-Module Stringer. Definition id : go_string := "fmt.Stringer"%go. End Stringer.
-Module GoStringer. Definition id : go_string := "fmt.GoStringer"%go. End GoStringer.
-Module buffer. Definition id : go_string := "fmt.buffer"%go. End buffer.
-Module pp. Definition id : go_string := "fmt.pp"%go. End pp.
-Module ScanState. Definition id : go_string := "fmt.ScanState"%go. End ScanState.
-Module Scanner. Definition id : go_string := "fmt.Scanner"%go. End Scanner.
-Module stringReader. Definition id : go_string := "fmt.stringReader"%go. End stringReader.
-Module scanError. Definition id : go_string := "fmt.scanError"%go. End scanError.
-Module ss. Definition id : go_string := "fmt.ss"%go. End ss.
-Module ssave. Definition id : go_string := "fmt.ssave"%go. End ssave.
-Module readRune. Definition id : go_string := "fmt.readRune"%go. End readRune.
-
 Section code.
 Context `{ffi_syntax}.
 
 
 Definition Errorf : go_string := "fmt.Errorf"%go.
 
-Axiom wrapError : go_type.
+Axiom wrapErrorⁱᵐᵖˡ : go.type.
 
-Axiom wrapErrors : go_type.
+Axiom wrapErrorsⁱᵐᵖˡ : go.type.
 
 Axiom ldigits : go_string.
 
@@ -43,9 +25,9 @@ Axiom signed : val.
 
 Axiom unsigned : val.
 
-Axiom fmtFlags : go_type.
+Axiom fmtFlagsⁱᵐᵖˡ : go.type.
 
-Axiom fmt : go_type.
+Axiom fmtⁱᵐᵖˡ : go.type.
 
 Axiom commaSpaceString : go_string.
 
@@ -75,19 +57,19 @@ Axiom noVerbString : go_string.
 
 Axiom invReflectString : go_string.
 
-Axiom State : go_type.
+Axiom Stateⁱᵐᵖˡ : go.type.
 
-Axiom Formatter : go_type.
+Axiom Formatterⁱᵐᵖˡ : go.type.
 
-Axiom Stringer : go_type.
+Axiom Stringerⁱᵐᵖˡ : go.type.
 
-Axiom GoStringer : go_type.
+Axiom GoStringerⁱᵐᵖˡ : go.type.
 
 Definition FormatString : go_string := "fmt.FormatString"%go.
 
-Axiom buffer : go_type.
+Axiom bufferⁱᵐᵖˡ : go.type.
 
-Axiom pp : go_type.
+Axiom ppⁱᵐᵖˡ : go.type.
 
 Definition ppFree : go_string := "fmt.ppFree"%go.
 
@@ -129,9 +111,9 @@ Definition intFromArg : go_string := "fmt.intFromArg"%go.
 
 Definition parseArgNumber : go_string := "fmt.parseArgNumber"%go.
 
-Axiom ScanState : go_type.
+Axiom ScanStateⁱᵐᵖˡ : go.type.
 
-Axiom Scanner : go_type.
+Axiom Scannerⁱᵐᵖˡ : go.type.
 
 Definition Scan : go_string := "fmt.Scan"%go.
 
@@ -139,7 +121,7 @@ Definition Scanln : go_string := "fmt.Scanln"%go.
 
 Definition Scanf : go_string := "fmt.Scanf"%go.
 
-Axiom stringReader : go_type.
+Axiom stringReaderⁱᵐᵖˡ : go.type.
 
 Definition Sscan : go_string := "fmt.Sscan"%go.
 
@@ -153,13 +135,13 @@ Definition Fscanln : go_string := "fmt.Fscanln"%go.
 
 Definition Fscanf : go_string := "fmt.Fscanf"%go.
 
-Axiom scanError : go_type.
+Axiom scanErrorⁱᵐᵖˡ : go.type.
 
 Axiom eof : Z.
 
-Axiom ss : go_type.
+Axiom ssⁱᵐᵖˡ : go.type.
 
-Axiom ssave : go_type.
+Axiom ssaveⁱᵐᵖˡ : go.type.
 
 Definition space : go_string := "fmt.space"%go.
 
@@ -169,7 +151,7 @@ Definition isSpace : go_string := "fmt.isSpace"%go.
 
 Definition notSpace : go_string := "fmt.notSpace"%go.
 
-Axiom readRune : go_type.
+Axiom readRuneⁱᵐᵖˡ : go.type.
 
 Definition ssFree : go_string := "fmt.ssFree"%go.
 
@@ -215,7 +197,39 @@ Axiom uintptrBits : Z.
 
 Definition errorHandler : go_string := "fmt.errorHandler"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition wrapError : go.type := go.Named "fmt.wrapError"%go [].
+
+Definition wrapErrors : go.type := go.Named "fmt.wrapErrors"%go [].
+
+Definition fmtFlags : go.type := go.Named "fmt.fmtFlags"%go [].
+
+Definition fmt : go.type := go.Named "fmt.fmt"%go [].
+
+Definition State : go.type := go.Named "fmt.State"%go [].
+
+Definition Formatter : go.type := go.Named "fmt.Formatter"%go [].
+
+Definition Stringer : go.type := go.Named "fmt.Stringer"%go [].
+
+Definition GoStringer : go.type := go.Named "fmt.GoStringer"%go [].
+
+Definition buffer : go.type := go.Named "fmt.buffer"%go [].
+
+Definition pp : go.type := go.Named "fmt.pp"%go [].
+
+Definition ScanState : go.type := go.Named "fmt.ScanState"%go [].
+
+Definition Scanner : go.type := go.Named "fmt.Scanner"%go [].
+
+Definition stringReader : go.type := go.Named "fmt.stringReader"%go [].
+
+Definition scanError : go.type := go.Named "fmt.scanError"%go [].
+
+Definition ss : go.type := go.Named "fmt.ss"%go [].
+
+Definition ssave : go.type := go.Named "fmt.ssave"%go [].
+
+Definition readRune : go.type := go.Named "fmt.readRune"%go [].
 
 Axiom Errorfⁱᵐᵖˡ : val.
 
@@ -287,201 +301,8 @@ Axiom errorHandlerⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Errorf, Errorfⁱᵐᵖˡ); (FormatString, FormatStringⁱᵐᵖˡ); (newPrinter, newPrinterⁱᵐᵖˡ); (Fprintf, Fprintfⁱᵐᵖˡ); (Printf, Printfⁱᵐᵖˡ); (Sprintf, Sprintfⁱᵐᵖˡ); (Appendf, Appendfⁱᵐᵖˡ); (Fprint, Fprintⁱᵐᵖˡ); (Print, Printⁱᵐᵖˡ); (Sprint, Sprintⁱᵐᵖˡ); (Append, Appendⁱᵐᵖˡ); (Fprintln, Fprintlnⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ); (Sprintln, Sprintlnⁱᵐᵖˡ); (Appendln, Appendlnⁱᵐᵖˡ); (getField, getFieldⁱᵐᵖˡ); (tooLarge, tooLargeⁱᵐᵖˡ); (parsenum, parsenumⁱᵐᵖˡ); (intFromArg, intFromArgⁱᵐᵖˡ); (parseArgNumber, parseArgNumberⁱᵐᵖˡ); (Scan, Scanⁱᵐᵖˡ); (Scanln, Scanlnⁱᵐᵖˡ); (Scanf, Scanfⁱᵐᵖˡ); (Sscan, Sscanⁱᵐᵖˡ); (Sscanln, Sscanlnⁱᵐᵖˡ); (Sscanf, Sscanfⁱᵐᵖˡ); (Fscan, Fscanⁱᵐᵖˡ); (Fscanln, Fscanlnⁱᵐᵖˡ); (Fscanf, Fscanfⁱᵐᵖˡ); (isSpace, isSpaceⁱᵐᵖˡ); (notSpace, notSpaceⁱᵐᵖˡ); (newScanState, newScanStateⁱᵐᵖˡ); (indexRune, indexRuneⁱᵐᵖˡ); (hasX, hasXⁱᵐᵖˡ); (hexDigit, hexDigitⁱᵐᵖˡ); (errorHandler, errorHandlerⁱᵐᵖˡ)].
 
-Axiom wrapError__Errorⁱᵐᵖˡ : val.
-
-Axiom wrapError__Unwrapⁱᵐᵖˡ : val.
-
-Axiom wrapErrors__Errorⁱᵐᵖˡ : val.
-
-Axiom wrapErrors__Unwrapⁱᵐᵖˡ : val.
-
-Axiom fmt__clearflagsⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtBooleanⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtBsⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtBxⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtCⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtFloatⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtIntegerⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtQⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtQcⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtSⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtSbxⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtSxⁱᵐᵖˡ : val.
-
-Axiom fmt__fmtUnicodeⁱᵐᵖˡ : val.
-
-Axiom fmt__initⁱᵐᵖˡ : val.
-
-Axiom fmt__padⁱᵐᵖˡ : val.
-
-Axiom fmt__padStringⁱᵐᵖˡ : val.
-
-Axiom fmt__truncateⁱᵐᵖˡ : val.
-
-Axiom fmt__truncateStringⁱᵐᵖˡ : val.
-
-Axiom fmt__writePaddingⁱᵐᵖˡ : val.
-
-Axiom buffer__writeⁱᵐᵖˡ : val.
-
-Axiom buffer__writeByteⁱᵐᵖˡ : val.
-
-Axiom buffer__writeRuneⁱᵐᵖˡ : val.
-
-Axiom buffer__writeStringⁱᵐᵖˡ : val.
-
-Axiom pp__Flagⁱᵐᵖˡ : val.
-
-Axiom pp__Precisionⁱᵐᵖˡ : val.
-
-Axiom pp__Widthⁱᵐᵖˡ : val.
-
-Axiom pp__Writeⁱᵐᵖˡ : val.
-
-Axiom pp__WriteStringⁱᵐᵖˡ : val.
-
-Axiom pp__argNumberⁱᵐᵖˡ : val.
-
-Axiom pp__badArgNumⁱᵐᵖˡ : val.
-
-Axiom pp__badVerbⁱᵐᵖˡ : val.
-
-Axiom pp__catchPanicⁱᵐᵖˡ : val.
-
-Axiom pp__doPrintⁱᵐᵖˡ : val.
-
-Axiom pp__doPrintfⁱᵐᵖˡ : val.
-
-Axiom pp__doPrintlnⁱᵐᵖˡ : val.
-
-Axiom pp__fmt0x64ⁱᵐᵖˡ : val.
-
-Axiom pp__fmtBoolⁱᵐᵖˡ : val.
-
-Axiom pp__fmtBytesⁱᵐᵖˡ : val.
-
-Axiom pp__fmtComplexⁱᵐᵖˡ : val.
-
-Axiom pp__fmtFloatⁱᵐᵖˡ : val.
-
-Axiom pp__fmtIntegerⁱᵐᵖˡ : val.
-
-Axiom pp__fmtPointerⁱᵐᵖˡ : val.
-
-Axiom pp__fmtStringⁱᵐᵖˡ : val.
-
-Axiom pp__freeⁱᵐᵖˡ : val.
-
-Axiom pp__handleMethodsⁱᵐᵖˡ : val.
-
-Axiom pp__missingArgⁱᵐᵖˡ : val.
-
-Axiom pp__printArgⁱᵐᵖˡ : val.
-
-Axiom pp__printValueⁱᵐᵖˡ : val.
-
-Axiom pp__unknownTypeⁱᵐᵖˡ : val.
-
-Axiom stringReader__Readⁱᵐᵖˡ : val.
-
-Axiom ss__Readⁱᵐᵖˡ : val.
-
-Axiom ss__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom ss__SkipSpaceⁱᵐᵖˡ : val.
-
-Axiom ss__Tokenⁱᵐᵖˡ : val.
-
-Axiom ss__UnreadRuneⁱᵐᵖˡ : val.
-
-Axiom ss__Widthⁱᵐᵖˡ : val.
-
-Axiom ss__acceptⁱᵐᵖˡ : val.
-
-Axiom ss__advanceⁱᵐᵖˡ : val.
-
-Axiom ss__complexTokensⁱᵐᵖˡ : val.
-
-Axiom ss__consumeⁱᵐᵖˡ : val.
-
-Axiom ss__convertFloatⁱᵐᵖˡ : val.
-
-Axiom ss__convertStringⁱᵐᵖˡ : val.
-
-Axiom ss__doScanⁱᵐᵖˡ : val.
-
-Axiom ss__doScanfⁱᵐᵖˡ : val.
-
-Axiom ss__errorⁱᵐᵖˡ : val.
-
-Axiom ss__errorStringⁱᵐᵖˡ : val.
-
-Axiom ss__floatTokenⁱᵐᵖˡ : val.
-
-Axiom ss__freeⁱᵐᵖˡ : val.
-
-Axiom ss__getBaseⁱᵐᵖˡ : val.
-
-Axiom ss__getRuneⁱᵐᵖˡ : val.
-
-Axiom ss__hexByteⁱᵐᵖˡ : val.
-
-Axiom ss__hexStringⁱᵐᵖˡ : val.
-
-Axiom ss__mustReadRuneⁱᵐᵖˡ : val.
-
-Axiom ss__notEOFⁱᵐᵖˡ : val.
-
-Axiom ss__okVerbⁱᵐᵖˡ : val.
-
-Axiom ss__peekⁱᵐᵖˡ : val.
-
-Axiom ss__quotedStringⁱᵐᵖˡ : val.
-
-Axiom ss__scanBasePrefixⁱᵐᵖˡ : val.
-
-Axiom ss__scanBoolⁱᵐᵖˡ : val.
-
-Axiom ss__scanComplexⁱᵐᵖˡ : val.
-
-Axiom ss__scanIntⁱᵐᵖˡ : val.
-
-Axiom ss__scanNumberⁱᵐᵖˡ : val.
-
-Axiom ss__scanOneⁱᵐᵖˡ : val.
-
-Axiom ss__scanPercentⁱᵐᵖˡ : val.
-
-Axiom ss__scanRuneⁱᵐᵖˡ : val.
-
-Axiom ss__scanUintⁱᵐᵖˡ : val.
-
-Axiom ss__tokenⁱᵐᵖˡ : val.
-
-Axiom readRune__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom readRune__UnreadRuneⁱᵐᵖˡ : val.
-
-Axiom readRune__readByteⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(wrapError.id, []); (ptrT.id wrapError.id, [("Error"%go, wrapError__Errorⁱᵐᵖˡ); ("Unwrap"%go, wrapError__Unwrapⁱᵐᵖˡ)]); (wrapErrors.id, []); (ptrT.id wrapErrors.id, [("Error"%go, wrapErrors__Errorⁱᵐᵖˡ); ("Unwrap"%go, wrapErrors__Unwrapⁱᵐᵖˡ)]); (fmtFlags.id, []); (ptrT.id fmtFlags.id, []); (fmt.id, []); (ptrT.id fmt.id, [("clearflags"%go, fmt__clearflagsⁱᵐᵖˡ); ("fmtBoolean"%go, fmt__fmtBooleanⁱᵐᵖˡ); ("fmtBs"%go, fmt__fmtBsⁱᵐᵖˡ); ("fmtBx"%go, fmt__fmtBxⁱᵐᵖˡ); ("fmtC"%go, fmt__fmtCⁱᵐᵖˡ); ("fmtFloat"%go, fmt__fmtFloatⁱᵐᵖˡ); ("fmtInteger"%go, fmt__fmtIntegerⁱᵐᵖˡ); ("fmtQ"%go, fmt__fmtQⁱᵐᵖˡ); ("fmtQc"%go, fmt__fmtQcⁱᵐᵖˡ); ("fmtS"%go, fmt__fmtSⁱᵐᵖˡ); ("fmtSbx"%go, fmt__fmtSbxⁱᵐᵖˡ); ("fmtSx"%go, fmt__fmtSxⁱᵐᵖˡ); ("fmtUnicode"%go, fmt__fmtUnicodeⁱᵐᵖˡ); ("init"%go, fmt__initⁱᵐᵖˡ); ("pad"%go, fmt__padⁱᵐᵖˡ); ("padString"%go, fmt__padStringⁱᵐᵖˡ); ("truncate"%go, fmt__truncateⁱᵐᵖˡ); ("truncateString"%go, fmt__truncateStringⁱᵐᵖˡ); ("writePadding"%go, fmt__writePaddingⁱᵐᵖˡ)]); (buffer.id, []); (ptrT.id buffer.id, [("write"%go, buffer__writeⁱᵐᵖˡ); ("writeByte"%go, buffer__writeByteⁱᵐᵖˡ); ("writeRune"%go, buffer__writeRuneⁱᵐᵖˡ); ("writeString"%go, buffer__writeStringⁱᵐᵖˡ)]); (pp.id, []); (ptrT.id pp.id, [("Flag"%go, pp__Flagⁱᵐᵖˡ); ("Precision"%go, pp__Precisionⁱᵐᵖˡ); ("Width"%go, pp__Widthⁱᵐᵖˡ); ("Write"%go, pp__Writeⁱᵐᵖˡ); ("WriteString"%go, pp__WriteStringⁱᵐᵖˡ); ("argNumber"%go, pp__argNumberⁱᵐᵖˡ); ("badArgNum"%go, pp__badArgNumⁱᵐᵖˡ); ("badVerb"%go, pp__badVerbⁱᵐᵖˡ); ("catchPanic"%go, pp__catchPanicⁱᵐᵖˡ); ("doPrint"%go, pp__doPrintⁱᵐᵖˡ); ("doPrintf"%go, pp__doPrintfⁱᵐᵖˡ); ("doPrintln"%go, pp__doPrintlnⁱᵐᵖˡ); ("fmt0x64"%go, pp__fmt0x64ⁱᵐᵖˡ); ("fmtBool"%go, pp__fmtBoolⁱᵐᵖˡ); ("fmtBytes"%go, pp__fmtBytesⁱᵐᵖˡ); ("fmtComplex"%go, pp__fmtComplexⁱᵐᵖˡ); ("fmtFloat"%go, pp__fmtFloatⁱᵐᵖˡ); ("fmtInteger"%go, pp__fmtIntegerⁱᵐᵖˡ); ("fmtPointer"%go, pp__fmtPointerⁱᵐᵖˡ); ("fmtString"%go, pp__fmtStringⁱᵐᵖˡ); ("free"%go, pp__freeⁱᵐᵖˡ); ("handleMethods"%go, pp__handleMethodsⁱᵐᵖˡ); ("missingArg"%go, pp__missingArgⁱᵐᵖˡ); ("printArg"%go, pp__printArgⁱᵐᵖˡ); ("printValue"%go, pp__printValueⁱᵐᵖˡ); ("unknownType"%go, pp__unknownTypeⁱᵐᵖˡ)]); (stringReader.id, []); (ptrT.id stringReader.id, [("Read"%go, stringReader__Readⁱᵐᵖˡ)]); (scanError.id, []); (ptrT.id scanError.id, []); (ss.id, []); (ptrT.id ss.id, [("Read"%go, ss__Readⁱᵐᵖˡ); ("ReadRune"%go, ss__ReadRuneⁱᵐᵖˡ); ("SkipSpace"%go, ss__SkipSpaceⁱᵐᵖˡ); ("Token"%go, ss__Tokenⁱᵐᵖˡ); ("UnreadRune"%go, ss__UnreadRuneⁱᵐᵖˡ); ("Width"%go, ss__Widthⁱᵐᵖˡ); ("accept"%go, ss__acceptⁱᵐᵖˡ); ("advance"%go, ss__advanceⁱᵐᵖˡ); ("complexTokens"%go, ss__complexTokensⁱᵐᵖˡ); ("consume"%go, ss__consumeⁱᵐᵖˡ); ("convertFloat"%go, ss__convertFloatⁱᵐᵖˡ); ("convertString"%go, ss__convertStringⁱᵐᵖˡ); ("doScan"%go, ss__doScanⁱᵐᵖˡ); ("doScanf"%go, ss__doScanfⁱᵐᵖˡ); ("error"%go, ss__errorⁱᵐᵖˡ); ("errorString"%go, ss__errorStringⁱᵐᵖˡ); ("floatToken"%go, ss__floatTokenⁱᵐᵖˡ); ("free"%go, ss__freeⁱᵐᵖˡ); ("getBase"%go, ss__getBaseⁱᵐᵖˡ); ("getRune"%go, ss__getRuneⁱᵐᵖˡ); ("hexByte"%go, ss__hexByteⁱᵐᵖˡ); ("hexString"%go, ss__hexStringⁱᵐᵖˡ); ("mustReadRune"%go, ss__mustReadRuneⁱᵐᵖˡ); ("notEOF"%go, ss__notEOFⁱᵐᵖˡ); ("okVerb"%go, ss__okVerbⁱᵐᵖˡ); ("peek"%go, ss__peekⁱᵐᵖˡ); ("quotedString"%go, ss__quotedStringⁱᵐᵖˡ); ("scanBasePrefix"%go, ss__scanBasePrefixⁱᵐᵖˡ); ("scanBool"%go, ss__scanBoolⁱᵐᵖˡ); ("scanComplex"%go, ss__scanComplexⁱᵐᵖˡ); ("scanInt"%go, ss__scanIntⁱᵐᵖˡ); ("scanNumber"%go, ss__scanNumberⁱᵐᵖˡ); ("scanOne"%go, ss__scanOneⁱᵐᵖˡ); ("scanPercent"%go, ss__scanPercentⁱᵐᵖˡ); ("scanRune"%go, ss__scanRuneⁱᵐᵖˡ); ("scanUint"%go, ss__scanUintⁱᵐᵖˡ); ("token"%go, ss__tokenⁱᵐᵖˡ)]); (ssave.id, []); (ptrT.id ssave.id, []); (readRune.id, []); (ptrT.id readRune.id, [("ReadRune"%go, readRune__ReadRuneⁱᵐᵖˡ); ("UnreadRune"%go, readRune__UnreadRuneⁱᵐᵖˡ); ("readByte"%go, readRune__readByteⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo fmt.fmt :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -489,9 +310,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #fmt.fmt (λ: <>,
-      exception_do (do:  (package.alloc fmt.fmt #());;;
-      do:  (ppFree'init #());;;
+    package.init fmt.fmt (λ: <>,
+      exception_do (do:  (ppFree'init #());;;
       do:  (space'init #());;;
       do:  (ssFree'init #());;;
       do:  (errComplex'init #());;;

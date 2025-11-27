@@ -9,179 +9,154 @@ Definition semantics : go_string := "github.com/goose-lang/goose/testdata/exampl
 From New Require Import disk_prelude.
 Module semantics.
 
-Module unit. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.unit"%go. End unit.
-Module AdderType. Definition id : go_string := funcT.id [uint64T.id] [uint64T.id] false. End AdderType.
-Module MultipleArgsType. Definition id : go_string := funcT.id [uint64T.id; boolT.id] [uint64T.id] false. End MultipleArgsType.
-Module Enc. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Enc"%go. End Enc.
-Module Dec. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Dec"%go. End Dec.
-Module Editor. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Editor"%go. End Editor.
-Module Pair. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Pair"%go. End Pair.
-Module Uint32. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Uint32"%go. End Uint32.
-Module geometryInterface. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.geometryInterface"%go. End geometryInterface.
-Module SquareStruct. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.SquareStruct"%go. End SquareStruct.
-Module LoopStruct. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.LoopStruct"%go. End LoopStruct.
-Module BoolTest. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.BoolTest"%go. End BoolTest.
-Module ArrayEditor. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.ArrayEditor"%go. End ArrayEditor.
-Module Bar. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Bar"%go. End Bar.
-Module Foo. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Foo"%go. End Foo.
-Module TwoInts. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.TwoInts"%go. End TwoInts.
-Module S. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.S"%go. End S.
-Module StructWrap. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.StructWrap"%go. End StructWrap.
-Module StructWithFunc. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.StructWithFunc"%go. End StructWithFunc.
-Module switchConcrete. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.switchConcrete"%go. End switchConcrete.
-Module switchInterface. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.switchInterface"%go. End switchInterface.
-Module Log. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Log"%go. End Log.
-
 Section code.
 
 
-Definition unit : go_type := structT [
+Definition unitⁱᵐᵖˡ  : go.type := go.StructType [
 ].
-#[global] Typeclasses Opaque unit.
-#[global] Opaque unit.
 
 Definition findKey : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.findKey"%go.
 
 (* go: allocator.go:7:6 *)
 Definition findKeyⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (mem.alloc "m") in
-    let: "found" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "m" := (GoAllocValue (go.MapType go.uint64 unit) "m") in
+    let: "found" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("found" <-[#uint64T] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("found" <-[go.uint64] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$range" := (![type.mapT #uint64T #unit] "m") in
-    (let: "k" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$range" := (![go.MapType go.uint64 unit] "m") in
+    (let: "k" := (GoAlloc go.uint64 #()) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("k" <-[#uint64T] "$key");;;
-      (if: (~ (![#boolT] "ok"))
+      do:  ("k" <-[go.uint64] "$key");;;
+      (if: (~ (![go.bool] "ok"))
       then
-        let: "$r0" := (![#uint64T] "k") in
-        do:  ("found" <-[#uint64T] "$r0");;;
+        let: "$r0" := (![go.uint64] "k") in
+        do:  ("found" <-[go.uint64] "$r0");;;
         let: "$r0" := #true in
-        do:  ("ok" <-[#boolT] "$r0")
+        do:  ("ok" <-[go.bool] "$r0")
       else do:  #())));;;
-    return: (![#uint64T] "found", ![#boolT] "ok")).
+    return: (![go.uint64] "found", ![go.bool] "ok")).
 
 Definition allocate : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.allocate"%go.
 
 (* go: allocator.go:20:6 *)
 Definition allocateⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (mem.alloc "m") in
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "k" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "m") in
-    (func_call #findKey) "$a0") in
+    exception_do (let: "m" := (GoAllocValue (go.MapType go.uint64 unit) "m") in
+    let: "ok" := (GoAlloc go.bool #()) in
+    let: "k" := (GoAlloc go.uint64 #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "m") in
+    (FuncResolve findKey #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("k" <-[#uint64T] "$r0");;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    do:  (let: "$a0" := (![type.mapT #uint64T #unit] "m") in
-    let: "$a1" := (![#uint64T] "k") in
+    do:  ("k" <-[go.uint64] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r1");;;
+    do:  (let: "$a0" := (![go.MapType go.uint64 unit] "m") in
+    let: "$a1" := (![go.uint64] "k") in
     map.delete "$a0" "$a1");;;
-    return: (![#uint64T] "k", ![#boolT] "ok")).
+    return: (![go.uint64] "k", ![go.bool] "ok")).
 
 Definition freeRange : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.freeRange"%go.
 
 (* go: allocator.go:26:6 *)
 Definition freeRangeⁱᵐᵖˡ : val :=
   λ: "sz",
-    exception_do (let: "sz" := (mem.alloc "sz") in
-    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #unit))) in
-    let: "$r0" := (map.make #uint64T #unit) in
-    do:  ("m" <-[type.mapT #uint64T #unit] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "sz" := (GoAllocValue go.uint64 "sz") in
+    let: "m" := (GoAlloc (go.MapType go.uint64 unit) #()) in
+    let: "$r0" := (map.make go.uint64 unit) in
+    do:  ("m" <-[go.MapType go.uint64 unit] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "sz")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (struct.make #unit [{
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < (![go.uint64] "sz")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (struct.make unit [{
       }]) in
-      do:  (map.insert (![type.mapT #uint64T #unit] "m") (![#uint64T] "i") "$r0")));;;
-    return: (![type.mapT #uint64T #unit] "m")).
+      do:  (map.insert (![go.MapType go.uint64 unit] "m") (![go.uint64] "i") "$r0")));;;
+    return: (![go.MapType go.uint64 unit] "m")).
 
 Definition testAllocateDistinct : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAllocateDistinct"%go.
 
 (* go: allocator.go:34:6 *)
 Definition testAllocateDistinctⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "free" := (mem.alloc (type.zero_val (type.mapT #uint64T #unit))) in
+    exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) #()) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (func_call #freeRange) "$a0") in
-    do:  ("free" <-[type.mapT #uint64T #unit] "$r0");;;
-    let: "a1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
-    (func_call #allocate) "$a0") in
+    (FuncResolve freeRange #()) "$a0") in
+    do:  ("free" <-[go.MapType go.uint64 unit] "$r0");;;
+    let: "a1" := (GoAlloc go.uint64 #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
+    (FuncResolve allocate #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("a1" <-[#uint64T] "$r0");;;
+    do:  ("a1" <-[go.uint64] "$r0");;;
     do:  "$r1";;;
-    let: "a2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
-    (func_call #allocate) "$a0") in
+    let: "a2" := (GoAlloc go.uint64 #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
+    (FuncResolve allocate #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("a2" <-[#uint64T] "$r0");;;
+    do:  ("a2" <-[go.uint64] "$r0");;;
     do:  "$r1";;;
-    return: ((![#uint64T] "a1") ≠ (![#uint64T] "a2"))).
+    return: ((![go.uint64] "a1") ≠ (![go.uint64] "a2"))).
 
 Definition testAllocateFull : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAllocateFull"%go.
 
 (* go: allocator.go:41:6 *)
 Definition testAllocateFullⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "free" := (mem.alloc (type.zero_val (type.mapT #uint64T #unit))) in
+    exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) #()) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
-    (func_call #freeRange) "$a0") in
-    do:  ("free" <-[type.mapT #uint64T #unit] "$r0");;;
-    let: "ok1" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
-    (func_call #allocate) "$a0") in
+    (FuncResolve freeRange #()) "$a0") in
+    do:  ("free" <-[go.MapType go.uint64 unit] "$r0");;;
+    let: "ok1" := (GoAlloc go.bool #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
+    (FuncResolve allocate #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok1" <-[#boolT] "$r1");;;
-    let: "ok2" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
-    (func_call #allocate) "$a0") in
+    do:  ("ok1" <-[go.bool] "$r1");;;
+    let: "ok2" := (GoAlloc go.bool #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
+    (FuncResolve allocate #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok2" <-[#boolT] "$r1");;;
-    let: "ok3" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
-    (func_call #allocate) "$a0") in
+    do:  ("ok2" <-[go.bool] "$r1");;;
+    let: "ok3" := (GoAlloc go.bool #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
+    (FuncResolve allocate #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok3" <-[#boolT] "$r1");;;
-    return: (((![#boolT] "ok1") && (![#boolT] "ok2")) && (~ (![#boolT] "ok3")))).
+    do:  ("ok3" <-[go.bool] "$r1");;;
+    return: (((![go.bool] "ok1") && (![go.bool] "ok2")) && (~ (![go.bool] "ok3")))).
 
 Definition testExplicitBlockStmt : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testExplicitBlockStmt"%go.
 
 (* go: block.go:3:6 *)
 Definition testExplicitBlockStmtⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #intT)) in
+    exception_do (let: "x" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[#intT] "$r0");;;
-    let: "x" := (mem.alloc (type.zero_val #intT)) in
+    do:  ("x" <-[go.int] "$r0");;;
+    let: "x" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 11) in
-    do:  ("x" <-[#intT] "$r0");;;
-    do:  ("x" <-[#intT] ((![#intT] "x") + #(W64 1)));;;
-    return: ((![#intT] "x") = #(W64 10))).
+    do:  ("x" <-[go.int] "$r0");;;
+    do:  ("x" <-[go.int] ((![go.int] "x") + #(W64 1)));;;
+    return: ((![go.int] "x") = #(W64 10))).
 
 Definition testMinUint64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMinUint64"%go.
 
 (* go: builtin.go:3:6 *)
 Definition testMinUint64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    return: ((let: "$a0" := (![#uint64T] "x") in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    return: ((let: "$a0" := (![go.uint64] "x") in
      let: "$a1" := #(W64 1) in
      (minUint64 2) "$a0" "$a1") = #(W64 1))).
 
@@ -190,33 +165,29 @@ Definition testMaxUint64 : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: builtin.go:8:6 *)
 Definition testMaxUint64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    return: ((let: "$a0" := (![#uint64T] "x") in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    return: ((let: "$a0" := (![go.uint64] "x") in
      let: "$a1" := #(W64 1) in
      (maxUint64 2) "$a0" "$a1") = #(W64 10))).
 
-Definition AdderType : go_type := funcT.
-#[global] Typeclasses Opaque AdderType.
-#[global] Opaque AdderType.
+Definition AdderType  : go.type := go.FunctionType (go.Signature [go.uint64] #false [go.uint64]).
 
-Definition MultipleArgsType : go_type := funcT.
-#[global] Typeclasses Opaque MultipleArgsType.
-#[global] Opaque MultipleArgsType.
+Definition MultipleArgsType  : go.type := go.FunctionType (go.Signature [go.uint64; go.bool] #false [go.uint64]).
 
 Definition adder : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.adder"%go.
 
 (* go: closures.go:6:6 *)
 Definition adderⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "sum" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("sum" <-[#uint64T] "$r0");;;
+    do:  ("sum" <-[go.uint64] "$r0");;;
     return: ((λ: "x",
-       exception_do (let: "x" := (mem.alloc "x") in
-       do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (![#uint64T] "x")));;;
-       return: (![#uint64T] "sum"))
+       exception_do (let: "x" := (GoAllocValue go.uint64 "x") in
+       do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") + (![go.uint64] "x")));;;
+       return: (![go.uint64] "sum"))
        ))).
 
 Definition testClosureBasic : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testClosureBasic"%go.
@@ -224,23 +195,23 @@ Definition testClosureBasic : go_string := "github.com/goose-lang/goose/testdata
 (* go: closures.go:14:6 *)
 Definition testClosureBasicⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "pos" := (mem.alloc (type.zero_val #funcT)) in
-    let: "$r0" := ((func_call #adder) #()) in
-    do:  ("pos" <-[#funcT] "$r0");;;
-    let: "doub" := (mem.alloc (type.zero_val #funcT)) in
-    let: "$r0" := ((func_call #adder) #()) in
-    do:  ("doub" <-[#funcT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "pos" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] #false [go.uint64])) #()) in
+    let: "$r0" := ((FuncResolve adder #()) #()) in
+    do:  ("pos" <-[go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "$r0");;;
+    let: "doub" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] #false [go.uint64])) #()) in
+    let: "$r0" := ((FuncResolve adder #()) #()) in
+    do:  ("doub" <-[go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      do:  (let: "$a0" := (![#uint64T] "i") in
-      (![#funcT] "pos") "$a0");;;
-      do:  (let: "$a0" := (#(W64 2) * (![#uint64T] "i")) in
-      (![#funcT] "doub") "$a0")));;;
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)))) := λ: <>,
+      do:  (let: "$a0" := (![go.uint64] "i") in
+      (![go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "pos") "$a0");;;
+      do:  (let: "$a0" := (#(W64 2) * (![go.uint64] "i")) in
+      (![go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "doub") "$a0")));;;
     (if: ((let: "$a0" := #(W64 0) in
-    (![#funcT] "pos") "$a0") = #(W64 45)) && ((let: "$a0" := #(W64 0) in
-    (![#funcT] "doub") "$a0") = #(W64 90))
+    (![go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "pos") "$a0") = #(W64 45)) && ((let: "$a0" := #(W64 0) in
+    (![go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "doub") "$a0") = #(W64 90))
     then return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -250,145 +221,145 @@ Definition testCompareAll : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: comparisons.go:3:6 *)
 Definition testCompareAllⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "nok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "nok" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("nok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(1 <? 2)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(2 <? 1)) in
-    do:  ("nok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(1 <=? 2)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(2 <=? 2)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(2 <=? 1)) in
-    do:  ("nok" <-[#boolT] "$r0");;;
-    (if: ![#boolT] "nok"
+    do:  ("nok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(1 <? 2)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(2 <? 1)) in
+    do:  ("nok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(1 <=? 2)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(2 <=? 2)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(2 <=? 1)) in
+    do:  ("nok" <-[go.bool] "$r0");;;
+    (if: ![go.bool] "nok"
     then return: (#false)
     else do:  #());;;
-    return: (![#boolT] "ok")).
+    return: (![go.bool] "ok")).
 
 Definition testCompareGT : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareGT"%go.
 
 (* go: comparisons.go:20:6 *)
 Definition testCompareGTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "y" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[#uint64T] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("y" <-[go.uint64] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") > #(W64 4))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") > (![#uint64T] "x"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") > #(W64 4))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") > (![go.uint64] "x"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testCompareGE : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareGE"%go.
 
 (* go: comparisons.go:31:6 *)
 Definition testCompareGEⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "y" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[#uint64T] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("y" <-[go.uint64] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≥ #(W64 4))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≥ #(W64 5))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≥ (![#uint64T] "x"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    (if: (![#uint64T] "y") > #(W64 5)
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≥ #(W64 4))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≥ #(W64 5))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≥ (![go.uint64] "x"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    (if: (![go.uint64] "y") > #(W64 5)
     then return: (#false)
     else do:  #());;;
-    return: (![#boolT] "ok")).
+    return: (![go.bool] "ok")).
 
 Definition testCompareLT : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareLT"%go.
 
 (* go: comparisons.go:47:6 *)
 Definition testCompareLTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "y" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[#uint64T] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("y" <-[go.uint64] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") < #(W64 6))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "x") < (![#uint64T] "y"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") < #(W64 6))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "x") < (![go.uint64] "y"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testCompareLE : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareLE"%go.
 
 (* go: comparisons.go:58:6 *)
 Definition testCompareLEⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "y" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[#uint64T] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("y" <-[go.uint64] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≤ #(W64 6))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≤ #(W64 5))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "x") ≤ (![#uint64T] "y"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    (if: (![#uint64T] "y") < #(W64 5)
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≤ #(W64 6))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≤ #(W64 5))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "x") ≤ (![go.uint64] "y"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    (if: (![go.uint64] "y") < #(W64 5)
     then return: (#false)
     else do:  #());;;
-    return: (![#boolT] "ok")).
+    return: (![go.bool] "ok")).
 
 Definition literalCast : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.literalCast"%go.
 
 (* go: conversions.go:5:6 *)
 Definition literalCastⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 2) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] "x") + #(W64 2))).
+    do:  ("x" <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] "x") + #(W64 2))).
 
 Definition stringToByteSlice : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.stringToByteSlice"%go.
 
 (* go: conversions.go:11:6 *)
 Definition stringToByteSliceⁱᵐᵖˡ : val :=
   λ: "s",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "p" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (string.to_bytes (![#stringT] "s")) in
-    do:  ("p" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "p")).
+    exception_do (let: "s" := (GoAllocValue go.string "s") in
+    let: "p" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (string.to_bytes (![go.string] "s")) in
+    do:  ("p" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "p")).
 
 Definition byteSliceToString : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.byteSliceToString"%go.
 
 (* go: conversions.go:17:6 *)
 Definition byteSliceToStringⁱᵐᵖˡ : val :=
   λ: "p",
-    exception_do (let: "p" := (mem.alloc "p") in
-    return: (string.from_bytes (![#sliceT] "p"))).
+    exception_do (let: "p" := (GoAllocValue (go.SliceType go.byte) "p") in
+    return: (string.from_bytes (![go.SliceType go.byte] "p"))).
 
 Definition testByteSliceToString : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testByteSliceToString"%go.
 
@@ -397,232 +368,228 @@ Definition testByteSliceToString : go_string := "github.com/goose-lang/goose/tes
    go: conversions.go:23:6 *)
 Definition testByteSliceToStringⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 3)) in
-    do:  ("x" <-[#sliceT] "$r0");;;
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 3)) in
+    do:  ("x" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 65) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 0)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "x") #(W64 0)) <-[go.byte] "$r0");;;
     let: "$r0" := #(W8 66) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 1)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "x") #(W64 1)) <-[go.byte] "$r0");;;
     let: "$r0" := #(W8 67) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 2)) <-[#byteT] "$r0");;;
-    return: ((let: "$a0" := (![#sliceT] "x") in
-     (func_call #byteSliceToString) "$a0") = #"ABC"%go)).
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "x") #(W64 2)) <-[go.byte] "$r0");;;
+    return: ((let: "$a0" := (![go.SliceType go.byte] "x") in
+     (FuncResolve byteSliceToString #()) "$a0") = #"ABC"%go)).
 
 Definition testCopySimple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopySimple"%go.
 
 (* go: copy.go:3:6 *)
 Definition testCopySimpleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
-    do:  ("x" <-[#sliceT] "$r0");;;
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 10)) in
+    do:  ("x" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
-    do:  ("y" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "y") in
-    let: "$a1" := (![#sliceT] "x") in
-    (slice.copy #byteT) "$a0" "$a1");;;
-    return: ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))).
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "x") #(W64 3)) <-[go.byte] "$r0");;;
+    let: "y" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 10)) in
+    do:  ("y" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "y") in
+    let: "$a1" := (![go.SliceType go.byte] "x") in
+    (slice.copy go.byte) "$a0" "$a1");;;
+    return: ((![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "y") #(W64 3))) = #(W8 1))).
 
 Definition testCopyShorterDst : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopyShorterDst"%go.
 
 (* go: copy.go:11:6 *)
 Definition testCopyShorterDstⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 15)) in
-    do:  ("x" <-[#sliceT] "$r0");;;
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 15)) in
+    do:  ("x" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "x") #(W64 3)) <-[go.byte] "$r0");;;
     let: "$r0" := #(W8 2) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 12)) <-[#byteT] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
-    do:  ("y" <-[#sliceT] "$r0");;;
-    let: "n" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "y") in
-    let: "$a1" := (![#sliceT] "x") in
-    (slice.copy #byteT) "$a0" "$a1")) in
-    do:  ("n" <-[#uint64T] "$r0");;;
-    return: (((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1)))).
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "x") #(W64 12)) <-[go.byte] "$r0");;;
+    let: "y" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 10)) in
+    do:  ("y" <-[go.SliceType go.byte] "$r0");;;
+    let: "n" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "y") in
+    let: "$a1" := (![go.SliceType go.byte] "x") in
+    (slice.copy go.byte) "$a0" "$a1")) in
+    do:  ("n" <-[go.uint64] "$r0");;;
+    return: (((![go.uint64] "n") = #(W64 10)) && ((![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "y") #(W64 3))) = #(W8 1)))).
 
 Definition testCopyShorterSrc : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopyShorterSrc"%go.
 
 (* go: copy.go:20:6 *)
 Definition testCopyShorterSrcⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
-    do:  ("x" <-[#sliceT] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 15)) in
-    do:  ("y" <-[#sliceT] "$r0");;;
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 10)) in
+    do:  ("x" <-[go.SliceType go.byte] "$r0");;;
+    let: "y" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 15)) in
+    do:  ("y" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "x") #(W64 3)) <-[go.byte] "$r0");;;
     let: "$r0" := #(W8 2) in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "y") #(W64 12)) <-[#byteT] "$r0");;;
-    let: "n" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "y") in
-    let: "$a1" := (![#sliceT] "x") in
-    (slice.copy #byteT) "$a0" "$a1")) in
-    do:  ("n" <-[#uint64T] "$r0");;;
-    return: ((((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 12))) = #(W8 2)))).
+    do:  ((slice.elem_ref go.byte (![go.SliceType go.byte] "y") #(W64 12)) <-[go.byte] "$r0");;;
+    let: "n" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "y") in
+    let: "$a1" := (![go.SliceType go.byte] "x") in
+    (slice.copy go.byte) "$a0" "$a1")) in
+    do:  ("n" <-[go.uint64] "$r0");;;
+    return: ((((![go.uint64] "n") = #(W64 10)) && ((![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "y") #(W64 3))) = #(W8 1))) && ((![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "y") #(W64 12))) = #(W8 2)))).
 
 Definition deferSimple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.deferSimple"%go.
 
 (* go: defer.go:3:6 *)
 Definition deferSimpleⁱᵐᵖˡ : val :=
   λ: <>,
-    with_defer: (let: "x" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ("x" <-[#ptrT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    with_defer: (let: "x" := (GoAlloc (go.PointerType go.uint64) #()) in
+    let: "$r0" := (GoAlloc go.uint64 #()) in
+    do:  ("x" <-[go.PointerType go.uint64] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)))) := λ: <>,
       do:  (let: "$f" := (λ: <>,
-        exception_do (do:  ((![#ptrT] "x") <-[#uint64T] ((![#uint64T] (![#ptrT] "x")) + #(W64 1)));;;
+        exception_do (do:  ((![go.PointerType go.uint64] "x") <-[go.uint64] ((![go.uint64] (![go.PointerType go.uint64] "x")) + #(W64 1)));;;
         return: #())
         ) in
-      "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+      "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
       (λ: <>,
         "$f" #();;
         "$oldf" #()
         )))));;;
-    return: (![#ptrT] "x")).
+    return: (![go.PointerType go.uint64] "x")).
 
 Definition testDefer : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDefer"%go.
 
 (* go: defer.go:13:6 *)
 Definition testDeferⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: ((![#uint64T] ((func_call #deferSimple) #())) = #(W64 10))).
+    exception_do (return: ((![go.uint64] ((FuncResolve deferSimple #()) #())) = #(W64 10))).
 
 Definition testDeferFuncLit : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDeferFuncLit"%go.
 
 (* go: defer.go:17:6 *)
 Definition testDeferFuncLitⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #intT)) in
+    exception_do (let: "x" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[#intT] "$r0");;;
-    let: "f" := (mem.alloc (type.zero_val #funcT)) in
+    do:  ("x" <-[go.int] "$r0");;;
+    let: "f" := (GoAlloc (go.FunctionType (go.Signature [] #false [])) #()) in
     let: "$r0" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
-        exception_do (do:  ("x" <-[#intT] ((![#intT] "x") + #(W64 1)));;;
+        exception_do (do:  ("x" <-[go.int] ((![go.int] "x") + #(W64 1)));;;
         return: #())
         ) in
-      "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
+      "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
       (λ: <>,
         "$f" #();;
         "$oldf" #()
         )));;;
       return: #())
       ) in
-    do:  ("f" <-[#funcT] "$r0");;;
-    do:  ((![#funcT] "f") #());;;
-    return: ((![#intT] "x") = #(W64 11))).
+    do:  ("f" <-[go.FunctionType (go.Signature [] #false [])] "$r0");;;
+    do:  ((![go.FunctionType (go.Signature [] #false [])] "f") #());;;
+    return: ((![go.int] "x") = #(W64 11))).
 
-Definition Enc : go_type := structT [
-  "p" :: sliceT
+Definition Encⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "p"%go go.SliceType go.byte)
 ].
-#[global] Typeclasses Opaque Enc.
-#[global] Opaque Enc.
 
 (* go: encoding.go:10:15 *)
 Definition Enc__consumeⁱᵐᵖˡ : val :=
   λ: "e" "n",
-    exception_do (let: "e" := (mem.alloc "e") in
-    let: "n" := (mem.alloc "n") in
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Enc #"p"%go (![#ptrT] "e"))) in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Enc #"p"%go (![#ptrT] "e"))) in
-    slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
-    do:  ((struct.field_ref #Enc #"p"%go (![#ptrT] "e")) <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "b")).
+    exception_do (let: "e" := (GoAllocValue (go.PointerType Enc) "e") in
+    let: "n" := (GoAllocValue go.uint64 "n") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (struct.field_ref Enc #"p"%go (![go.PointerType Enc] "e"))) in
+    slice.slice go.byte "$s" #(W64 0) (![go.uint64] "n")) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (struct.field_ref Enc #"p"%go (![go.PointerType Enc] "e"))) in
+    slice.slice go.byte "$s" (![go.uint64] "n") (slice.len "$s")) in
+    do:  ((struct.field_ref Enc #"p"%go (![go.PointerType Enc] "e")) <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
-Definition Dec : go_type := structT [
-  "p" :: sliceT
+Definition Decⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "p"%go go.SliceType go.byte)
 ].
-#[global] Typeclasses Opaque Dec.
-#[global] Opaque Dec.
 
 (* go: encoding.go:20:15 *)
 Definition Dec__consumeⁱᵐᵖˡ : val :=
   λ: "d" "n",
-    exception_do (let: "d" := (mem.alloc "d") in
-    let: "n" := (mem.alloc "n") in
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Dec #"p"%go (![#ptrT] "d"))) in
-    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Dec #"p"%go (![#ptrT] "d"))) in
-    slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
-    do:  ((struct.field_ref #Dec #"p"%go (![#ptrT] "d")) <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "b")).
+    exception_do (let: "d" := (GoAllocValue (go.PointerType Dec) "d") in
+    let: "n" := (GoAllocValue go.uint64 "n") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (struct.field_ref Dec #"p"%go (![go.PointerType Dec] "d"))) in
+    slice.slice go.byte "$s" #(W64 0) (![go.uint64] "n")) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (struct.field_ref Dec #"p"%go (![go.PointerType Dec] "d"))) in
+    slice.slice go.byte "$s" (![go.uint64] "n") (slice.len "$s")) in
+    do:  ((struct.field_ref Dec #"p"%go (![go.PointerType Dec] "d")) <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition roundtripEncDec32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.roundtripEncDec32"%go.
 
 (* go: encoding.go:26:6 *)
 Definition roundtripEncDec32ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "r" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 4)) in
-    do:  ("r" <-[#sliceT] "$r0");;;
-    let: "e" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make #Enc [{
+    exception_do (let: "x" := (GoAllocValue go.uint32 "x") in
+    let: "r" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 4)) in
+    do:  ("r" <-[go.SliceType go.byte] "$r0");;;
+    let: "e" := (GoAlloc (go.PointerType Enc) #()) in
+    let: "$r0" := (GoAllocValue Enc (let: "$p" := (![go.SliceType go.byte] "r") in
+    struct.make Enc [{
       "p" ::= "$p"
     }])) in
-    do:  ("e" <-[#ptrT] "$r0");;;
-    let: "d" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make #Dec [{
+    do:  ("e" <-[go.PointerType Enc] "$r0");;;
+    let: "d" := (GoAlloc (go.PointerType Dec) #()) in
+    let: "$r0" := (GoAllocValue Dec (let: "$p" := (![go.SliceType go.byte] "r") in
+    struct.make Dec [{
       "p" ::= "$p"
     }])) in
-    do:  ("d" <-[#ptrT] "$r0");;;
+    do:  ("d" <-[go.PointerType Dec] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (method_call #(ptrT.id Enc.id) #"consume"%go (![#ptrT] "e")) "$a0") in
-    let: "$a1" := (![#uint32T] "x") in
-    (func_call #primitive.UInt32Put) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType Enc) consume #() (![go.PointerType Enc] "e")) "$a0") in
+    let: "$a1" := (![go.uint32] "x") in
+    (FuncResolve primitive.UInt32Put #()) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (method_call #(ptrT.id Dec.id) #"consume"%go (![#ptrT] "d")) "$a0") in
-     (func_call #primitive.UInt32Get) "$a0")).
+     (MethodResolve (go.PointerType Dec) consume #() (![go.PointerType Dec] "d")) "$a0") in
+     (FuncResolve primitive.UInt32Get #()) "$a0")).
 
 Definition roundtripEncDec64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.roundtripEncDec64"%go.
 
 (* go: encoding.go:34:6 *)
 Definition roundtripEncDec64ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "r" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 8)) in
-    do:  ("r" <-[#sliceT] "$r0");;;
-    let: "e" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make #Enc [{
+    exception_do (let: "x" := (GoAllocValue go.uint64 "x") in
+    let: "r" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 8)) in
+    do:  ("r" <-[go.SliceType go.byte] "$r0");;;
+    let: "e" := (GoAlloc (go.PointerType Enc) #()) in
+    let: "$r0" := (GoAllocValue Enc (let: "$p" := (![go.SliceType go.byte] "r") in
+    struct.make Enc [{
       "p" ::= "$p"
     }])) in
-    do:  ("e" <-[#ptrT] "$r0");;;
-    let: "d" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make #Dec [{
+    do:  ("e" <-[go.PointerType Enc] "$r0");;;
+    let: "d" := (GoAlloc (go.PointerType Dec) #()) in
+    let: "$r0" := (GoAllocValue Dec (let: "$p" := (![go.SliceType go.byte] "r") in
+    struct.make Dec [{
       "p" ::= "$p"
     }])) in
-    do:  ("d" <-[#ptrT] "$r0");;;
+    do:  ("d" <-[go.PointerType Dec] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (method_call #(ptrT.id Enc.id) #"consume"%go (![#ptrT] "e")) "$a0") in
-    let: "$a1" := (![#uint64T] "x") in
-    (func_call #primitive.UInt64Put) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType Enc) consume #() (![go.PointerType Enc] "e")) "$a0") in
+    let: "$a1" := (![go.uint64] "x") in
+    (FuncResolve primitive.UInt64Put #()) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (method_call #(ptrT.id Dec.id) #"consume"%go (![#ptrT] "d")) "$a0") in
-     (func_call #primitive.UInt64Get) "$a0")).
+     (MethodResolve (go.PointerType Dec) consume #() (![go.PointerType Dec] "d")) "$a0") in
+     (FuncResolve primitive.UInt64Get #()) "$a0")).
 
 Definition testEncDec32Simple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec32Simple"%go.
 
@@ -631,118 +598,118 @@ Definition testEncDec32Simple : go_string := "github.com/goose-lang/goose/testda
    go: encoding.go:43:6 *)
 Definition testEncDec32Simpleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 0) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 1231234))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 0) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1231234) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 1231234))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition failing_testEncDec32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testEncDec32"%go.
 
 (* go: encoding.go:51:6 *)
 Definition failing_testEncDec32ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 3434807466))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 1048576))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 262144) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 262144))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1024) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 1024))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
-    (func_call #roundtripEncDec32) "$a0") = #(W32 (4294967296 - 1)))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 3434807466) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 3434807466))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1048576) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 1048576))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 262144) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 262144))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1024) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 1024))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
+    (FuncResolve roundtripEncDec32 #()) "$a0") = #(W32 (4294967296 - 1)))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testEncDec64Simple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec64Simple"%go.
 
 (* go: encoding.go:62:6 *)
 Definition testEncDec64Simpleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 0) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 1231234))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 0) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1231234) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 1231234))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testEncDec64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec64"%go.
 
 (* go: encoding.go:70:6 *)
 Definition testEncDec64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 62206846038638762))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 9223372036854775808))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 140737488355328))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 1048576))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 262144) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 262144))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1024) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 1024))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
-    (func_call #roundtripEncDec64) "$a0") = #(W64 (18446744073709551616 - 1)))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 62206846038638762))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 9223372036854775808))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 140737488355328) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 140737488355328))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1048576) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 1048576))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 262144) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 262144))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1024) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 1024))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    (FuncResolve roundtripEncDec64 #()) "$a0") = #(W64 (18446744073709551616 - 1)))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition FirstClassFunction : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.FirstClassFunction"%go.
 
 (* go: first_class_function.go:3:6 *)
 Definition FirstClassFunctionⁱᵐᵖˡ : val :=
   λ: "a",
-    exception_do (let: "a" := (mem.alloc "a") in
-    return: ((![#uint64T] "a") + #(W64 10))).
+    exception_do (let: "a" := (GoAllocValue go.uint64 "a") in
+    return: ((![go.uint64] "a") + #(W64 10))).
 
 Definition ApplyF : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.ApplyF"%go.
 
 (* go: first_class_function.go:7:6 *)
 Definition ApplyFⁱᵐᵖˡ : val :=
   λ: "a" "f",
-    exception_do (let: "f" := (mem.alloc "f") in
-    let: "a" := (mem.alloc "a") in
-    return: (let: "$a0" := (![#uint64T] "a") in
-     (![#funcT] "f") "$a0")).
+    exception_do (let: "f" := (GoAllocValue (go.FunctionType (go.Signature [go.uint64] #false [go.uint64])) "f") in
+    let: "a" := (GoAllocValue go.uint64 "a") in
+    return: (let: "$a0" := (![go.uint64] "a") in
+     (![go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "f") "$a0")).
 
 Definition testFirstClassFunction : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFirstClassFunction"%go.
 
@@ -750,15 +717,13 @@ Definition testFirstClassFunction : go_string := "github.com/goose-lang/goose/te
 Definition testFirstClassFunctionⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: ((let: "$a0" := #(W64 1) in
-     let: "$a1" := (func_call #FirstClassFunction) in
-     (func_call #ApplyF) "$a0" "$a1") = #(W64 11))).
+     let: "$a1" := (FuncResolve FirstClassFunction #()) in
+     (FuncResolve ApplyF #()) "$a0" "$a1") = #(W64 11))).
 
-Definition Editor : go_type := structT [
-  "s" :: sliceT;
-  "next_val" :: uint64T
+Definition Editorⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "s"%go go.SliceType go.uint64);
+  (go.FieldDecl "next_val"%go go.uint64)
 ].
-#[global] Typeclasses Opaque Editor.
-#[global] Opaque Editor.
 
 (* advances the array editor, and returns the value it wrote, storing
    "next" in next_val
@@ -766,19 +731,19 @@ Definition Editor : go_type := structT [
    go: function_ordering.go:11:18 *)
 Definition Editor__AdvanceReturnⁱᵐᵖˡ : val :=
   λ: "e" "next",
-    exception_do (let: "e" := (mem.alloc "e") in
-    let: "next" := (mem.alloc "next") in
-    let: "tmp" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (struct.field_ref #Editor #"next_val"%go (![#ptrT] "e"))) in
-    do:  ("tmp" <-[#uint64T] "$r0");;;
-    let: "$r0" := (![#uint64T] "tmp") in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #Editor #"s"%go (![#ptrT] "e"))) #(W64 0)) <-[#uint64T] "$r0");;;
-    let: "$r0" := (![#uint64T] "next") in
-    do:  ((struct.field_ref #Editor #"next_val"%go (![#ptrT] "e")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Editor #"s"%go (![#ptrT] "e"))) in
-    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
-    do:  ((struct.field_ref #Editor #"s"%go (![#ptrT] "e")) <-[#sliceT] "$r0");;;
-    return: (![#uint64T] "tmp")).
+    exception_do (let: "e" := (GoAllocValue (go.PointerType Editor) "e") in
+    let: "next" := (GoAllocValue go.uint64 "next") in
+    let: "tmp" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] (struct.field_ref Editor #"next_val"%go (![go.PointerType Editor] "e"))) in
+    do:  ("tmp" <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.uint64] "tmp") in
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] (struct.field_ref Editor #"s"%go (![go.PointerType Editor] "e"))) #(W64 0)) <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.uint64] "next") in
+    do:  ((struct.field_ref Editor #"next_val"%go (![go.PointerType Editor] "e")) <-[go.uint64] "$r0");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] (struct.field_ref Editor #"s"%go (![go.PointerType Editor] "e"))) in
+    slice.slice go.uint64 "$s" #(W64 1) (slice.len "$s")) in
+    do:  ((struct.field_ref Editor #"s"%go (![go.PointerType Editor] "e")) <-[go.SliceType go.uint64] "$r0");;;
+    return: (![go.uint64] "tmp")).
 
 Definition addFour64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.addFour64"%go.
 
@@ -788,18 +753,16 @@ Definition addFour64 : go_string := "github.com/goose-lang/goose/testdata/exampl
    go: function_ordering.go:21:6 *)
 Definition addFour64ⁱᵐᵖˡ : val :=
   λ: "a" "b" "c" "d",
-    exception_do (let: "d" := (mem.alloc "d") in
-    let: "c" := (mem.alloc "c") in
-    let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    return: ((((![#uint64T] "a") + (![#uint64T] "b")) + (![#uint64T] "c")) + (![#uint64T] "d"))).
+    exception_do (let: "d" := (GoAllocValue go.uint64 "d") in
+    let: "c" := (GoAllocValue go.uint64 "c") in
+    let: "b" := (GoAllocValue go.uint64 "b") in
+    let: "a" := (GoAllocValue go.uint64 "a") in
+    return: ((((![go.uint64] "a") + (![go.uint64] "b")) + (![go.uint64] "c")) + (![go.uint64] "d"))).
 
-Definition Pair : go_type := structT [
-  "x" :: uint64T;
-  "y" :: uint64T
+Definition Pairⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "x"%go go.uint64);
+  (go.FieldDecl "y"%go go.uint64)
 ].
-#[global] Typeclasses Opaque Pair.
-#[global] Opaque Pair.
 
 Definition failing_testFunctionOrdering : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testFunctionOrdering"%go.
 
@@ -808,90 +771,90 @@ Definition failing_testFunctionOrdering : go_string := "github.com/goose-lang/go
    go: function_ordering.go:31:6 *)
 Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "arr" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 5)) in
-    do:  ("arr" <-[#sliceT] "$r0");;;
-    let: "e1" := (mem.alloc (type.zero_val #Editor)) in
-    let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
+    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (slice.make2 go.uint64 #(W64 5)) in
+    do:  ("arr" <-[go.SliceType go.uint64] "$r0");;;
+    let: "e1" := (GoAlloc Editor #()) in
+    let: "$r0" := (let: "$s" := (let: "$s" := (![go.SliceType go.uint64] "arr") in
+    slice.slice go.uint64 "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
-    struct.make #Editor [{
+    struct.make Editor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }]) in
-    do:  ("e1" <-[#Editor] "$r0");;;
-    let: "e2" := (mem.alloc (type.zero_val #Editor)) in
-    let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
+    do:  ("e1" <-[Editor] "$r0");;;
+    let: "e2" := (GoAlloc Editor #()) in
+    let: "$r0" := (let: "$s" := (let: "$s" := (![go.SliceType go.uint64] "arr") in
+    slice.slice go.uint64 "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 101) in
-    struct.make #Editor [{
+    struct.make Editor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }]) in
-    do:  ("e2" <-[#Editor] "$r0");;;
+    do:  ("e2" <-[Editor] "$r0");;;
     (if: ((let: "$a0" := #(W64 2) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e1") "$a0") + (let: "$a0" := #(W64 102) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e2") "$a0")) ≠ #(W64 102)
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e1") "$a0") + (let: "$a0" := #(W64 102) in
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e2") "$a0")) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
-    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) ≠ #(W64 101)
+    (if: (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 0))) ≠ #(W64 101)
     then return: (#false)
     else do:  #());;;
     (if: (let: "$a0" := (let: "$a0" := #(W64 3) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e1") "$a0") in
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e1") "$a0") in
     let: "$a1" := (let: "$a0" := #(W64 103) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e2") "$a0") in
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e2") "$a0") in
     let: "$a2" := (let: "$a0" := #(W64 104) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e2") "$a0") in
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e2") "$a0") in
     let: "$a3" := (let: "$a0" := #(W64 4) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e1") "$a0") in
-    (func_call #addFour64) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e1") "$a0") in
+    (FuncResolve addFour64 #()) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
     then return: (#false)
     else do:  #());;;
-    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1))) ≠ #(W64 102)
+    (if: (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 1))) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
-    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2))) ≠ #(W64 3)
+    (if: (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 2))) ≠ #(W64 3)
     then return: (#false)
     else do:  #());;;
-    let: "p" := (mem.alloc (type.zero_val #Pair)) in
+    let: "p" := (GoAlloc Pair #()) in
     let: "$r0" := (let: "$x" := (let: "$a0" := #(W64 5) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e1") "$a0") in
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e1") "$a0") in
     let: "$y" := (let: "$a0" := #(W64 105) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e2") "$a0") in
-    struct.make #Pair [{
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e2") "$a0") in
+    struct.make Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("p" <-[#Pair] "$r0");;;
-    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) ≠ #(W64 104)
+    do:  ("p" <-[Pair] "$r0");;;
+    (if: (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 3))) ≠ #(W64 104)
     then return: (#false)
     else do:  #());;;
-    let: "q" := (mem.alloc (type.zero_val #Pair)) in
+    let: "q" := (GoAlloc Pair #()) in
     let: "$r0" := (let: "$y" := (let: "$a0" := #(W64 6) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e1") "$a0") in
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e1") "$a0") in
     let: "$x" := (let: "$a0" := #(W64 106) in
-    (method_call #(ptrT.id Editor.id) #"AdvanceReturn"%go "e2") "$a0") in
-    struct.make #Pair [{
+    (MethodResolve (go.PointerType Editor) AdvanceReturn #() "e2") "$a0") in
+    struct.make Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("q" <-[#Pair] "$r0");;;
-    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 4))) ≠ #(W64 105)
+    do:  ("q" <-[Pair] "$r0");;;
+    (if: (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 4))) ≠ #(W64 105)
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (struct.field_ref #Pair #"x"%go "p")) + (![#uint64T] (struct.field_ref #Pair #"x"%go "q"))) = #(W64 109))).
+    return: (((![go.uint64] (struct.field_ref Pair #"x"%go "p")) + (![go.uint64] (struct.field_ref Pair #"x"%go "q"))) = #(W64 109))).
 
 Definition storeAndReturn : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.storeAndReturn"%go.
 
 (* go: function_ordering.go:74:6 *)
 Definition storeAndReturnⁱᵐᵖˡ : val :=
   λ: "x" "v",
-    exception_do (let: "v" := (mem.alloc "v") in
-    let: "x" := (mem.alloc "x") in
-    let: "$r0" := (![#uint64T] "v") in
-    do:  ((![#ptrT] "x") <-[#uint64T] "$r0");;;
-    return: (![#uint64T] "v")).
+    exception_do (let: "v" := (GoAllocValue go.uint64 "v") in
+    let: "x" := (GoAllocValue (go.PointerType go.uint64) "x") in
+    let: "$r0" := (![go.uint64] "v") in
+    do:  ((![go.PointerType go.uint64] "x") <-[go.uint64] "$r0");;;
+    return: (![go.uint64] "v")).
 
 Definition failing_testArgumentOrder : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testArgumentOrder"%go.
 
@@ -901,61 +864,59 @@ Definition failing_testArgumentOrder : go_string := "github.com/goose-lang/goose
    go: function_ordering.go:81:6 *)
 Definition failing_testArgumentOrderⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  ("x" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 1) in
-    (func_call #storeAndReturn) "$a0" "$a1") in
+    (FuncResolve storeAndReturn #()) "$a0" "$a1") in
     let: "$a1" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 2) in
-    (func_call #storeAndReturn) "$a0" "$a1") in
+    (FuncResolve storeAndReturn #()) "$a0" "$a1") in
     let: "$a2" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 3) in
-    (func_call #storeAndReturn) "$a0" "$a1") in
+    (FuncResolve storeAndReturn #()) "$a0" "$a1") in
     let: "$a3" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 4) in
-    (func_call #storeAndReturn) "$a0" "$a1") in
-    (func_call #addFour64) "$a0" "$a1" "$a2" "$a3");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "$r0" := ((![#uint64T] "x") = #(W64 4)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    (FuncResolve storeAndReturn #()) "$a0" "$a1") in
+    (FuncResolve addFour64 #()) "$a0" "$a1" "$a2" "$a3");;;
+    let: "ok" := (GoAlloc go.bool #()) in
+    let: "$r0" := ((![go.uint64] "x") = #(W64 4)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testU64ToU32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU64ToU32"%go.
 
 (* go: int_conversions.go:3:6 *)
 Definition testU64ToU32ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 1230) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #uint32T)) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "y" := (GoAlloc go.uint32 #()) in
     let: "$r0" := #(W32 1230) in
-    do:  ("y" <-[#uint32T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((u_to_w32 (![#uint64T] "x")) = (![#uint32T] "y"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((u_to_w64 (![#uint32T] "y")) = (![#uint64T] "x"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("y" <-[go.uint32] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((u_to_w32 (![go.uint64] "x")) = (![go.uint32] "y"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((u_to_w64 (![go.uint32] "y")) = (![go.uint64] "x"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testU32Len : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU32Len"%go.
 
 (* go: int_conversions.go:12:6 *)
 Definition testU32Lenⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 100)) in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    return: ((s_to_w32 (let: "$a0" := (![#sliceT] "s") in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 100)) in
+    do:  ("s" <-[go.SliceType go.byte] "$r0");;;
+    return: ((s_to_w32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      slice.len "$a0")) = #(W32 100))).
 
-Definition Uint32 : go_type := uint32T.
-#[global] Typeclasses Opaque Uint32.
-#[global] Opaque Uint32.
+Definition Uint32ⁱᵐᵖˡ  : go.type := go.uint32.
 
 Definition failing_testU32NewtypeLen : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testU32NewtypeLen"%go.
 
@@ -964,148 +925,144 @@ Definition failing_testU32NewtypeLen : go_string := "github.com/goose-lang/goose
    go: int_conversions.go:20:6 *)
 Definition failing_testU32NewtypeLenⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 20)) in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    return: ((s_to_w32 (let: "$a0" := (![#sliceT] "s") in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 20)) in
+    do:  ("s" <-[go.SliceType go.byte] "$r0");;;
+    return: ((s_to_w32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      slice.len "$a0")) = #(W32 20))).
 
-Definition geometryInterface : go_type := interfaceT.
-#[global] Typeclasses Opaque geometryInterface.
-#[global] Opaque geometryInterface.
+Definition geometryInterfaceⁱᵐᵖˡ  : go.type := go.InterfaceType [go.MethodElem #"Square"%go (go.Signature [] #false [go.uint64]); go.MethodElem #"Volume"%go (go.Signature [] #false [go.uint64])].
 
 Definition measureArea : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureArea"%go.
 
 (* go: interfaces.go:12:6 *)
 Definition measureAreaⁱᵐᵖˡ : val :=
   λ: "t",
-    exception_do (let: "t" := (mem.alloc "t") in
-    return: ((interface.get #"Square"%go (![#geometryInterface] "t")) #())).
+    exception_do (let: "t" := (GoAllocValue geometryInterface "t") in
+    return: ((interface.get #"Square"%go (![geometryInterface] "t")) #())).
 
 Definition measureVolumePlusNM : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolumePlusNM"%go.
 
 (* go: interfaces.go:16:6 *)
 Definition measureVolumePlusNMⁱᵐᵖˡ : val :=
   λ: "t" "n" "m",
-    exception_do (let: "m" := (mem.alloc "m") in
-    let: "n" := (mem.alloc "n") in
-    let: "t" := (mem.alloc "t") in
-    return: ((((interface.get #"Volume"%go (![#geometryInterface] "t")) #()) + (![#uint64T] "n")) + (![#uint64T] "m"))).
+    exception_do (let: "m" := (GoAllocValue go.uint64 "m") in
+    let: "n" := (GoAllocValue go.uint64 "n") in
+    let: "t" := (GoAllocValue geometryInterface "t") in
+    return: ((((interface.get #"Volume"%go (![geometryInterface] "t")) #()) + (![go.uint64] "n")) + (![go.uint64] "m"))).
 
 Definition measureVolume : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolume"%go.
 
 (* go: interfaces.go:20:6 *)
 Definition measureVolumeⁱᵐᵖˡ : val :=
   λ: "t",
-    exception_do (let: "t" := (mem.alloc "t") in
-    return: ((interface.get #"Volume"%go (![#geometryInterface] "t")) #())).
+    exception_do (let: "t" := (GoAllocValue geometryInterface "t") in
+    return: ((interface.get #"Volume"%go (![geometryInterface] "t")) #())).
 
-Definition SquareStruct : go_type := structT [
-  "Side" :: uint64T
+Definition SquareStructⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "Side"%go go.uint64)
 ].
-#[global] Typeclasses Opaque SquareStruct.
-#[global] Opaque SquareStruct.
 
 (* go: interfaces.go:28:23 *)
 Definition SquareStruct__Squareⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (mem.alloc "t") in
-    return: ((![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")))).
+    exception_do (let: "t" := (GoAllocValue SquareStruct "t") in
+    return: ((![go.uint64] (struct.field_ref SquareStruct #"Side"%go "t")) * (![go.uint64] (struct.field_ref SquareStruct #"Side"%go "t")))).
 
 (* go: interfaces.go:32:23 *)
 Definition SquareStruct__Volumeⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (mem.alloc "t") in
-    return: (((![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t"))) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")))).
+    exception_do (let: "t" := (GoAllocValue SquareStruct "t") in
+    return: (((![go.uint64] (struct.field_ref SquareStruct #"Side"%go "t")) * (![go.uint64] (struct.field_ref SquareStruct #"Side"%go "t"))) * (![go.uint64] (struct.field_ref SquareStruct #"Side"%go "t")))).
 
 Definition testBasicInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBasicInterface"%go.
 
 (* go: interfaces.go:40:6 *)
 Definition testBasicInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #SquareStruct)) in
+    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
     let: "$r0" := (let: "$Side" := #(W64 2) in
-    struct.make #SquareStruct [{
+    struct.make SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[#SquareStruct] "$r0");;;
-    return: ((let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-     (func_call #measureArea) "$a0") = #(W64 4))).
+    do:  ("s" <-[SquareStruct] "$r0");;;
+    return: ((let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+     (FuncResolve measureArea #()) "$a0") = #(W64 4))).
 
 Definition testAssignInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignInterface"%go.
 
 (* go: interfaces.go:47:6 *)
 Definition testAssignInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #SquareStruct)) in
+    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make #SquareStruct [{
+    struct.make SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[#SquareStruct] "$r0");;;
-    let: "area" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-    (func_call #measureArea) "$a0") in
-    do:  ("area" <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] "area") = #(W64 9))).
+    do:  ("s" <-[SquareStruct] "$r0");;;
+    let: "area" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    (FuncResolve measureArea #()) "$a0") in
+    do:  ("area" <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] "area") = #(W64 9))).
 
 Definition testMultipleInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMultipleInterface"%go.
 
 (* go: interfaces.go:55:6 *)
 Definition testMultipleInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #SquareStruct)) in
+    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make #SquareStruct [{
+    struct.make SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[#SquareStruct] "$r0");;;
-    let: "square1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-    (func_call #measureArea) "$a0") in
-    do:  ("square1" <-[#uint64T] "$r0");;;
-    let: "square2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-    (func_call #measureArea) "$a0") in
-    do:  ("square2" <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] "square1") = (![#uint64T] "square2"))).
+    do:  ("s" <-[SquareStruct] "$r0");;;
+    let: "square1" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    (FuncResolve measureArea #()) "$a0") in
+    do:  ("square1" <-[go.uint64] "$r0");;;
+    let: "square2" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    (FuncResolve measureArea #()) "$a0") in
+    do:  ("square2" <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] "square1") = (![go.uint64] "square2"))).
 
 Definition testBinaryExprInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBinaryExprInterface"%go.
 
 (* go: interfaces.go:64:6 *)
 Definition testBinaryExprInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #SquareStruct)) in
+    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make #SquareStruct [{
+    struct.make SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[#SquareStruct] "$r0");;;
-    let: "square1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-    (func_call #measureArea) "$a0") in
-    do:  ("square1" <-[#uint64T] "$r0");;;
-    let: "square2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-    (func_call #measureVolume) "$a0") in
-    do:  ("square2" <-[#uint64T] "$r0");;;
-    return: (((![#uint64T] "square1") = (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-     (func_call #measureArea) "$a0")) && ((![#uint64T] "square2") = (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-     (func_call #measureVolume) "$a0")))).
+    do:  ("s" <-[SquareStruct] "$r0");;;
+    let: "square1" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    (FuncResolve measureArea #()) "$a0") in
+    do:  ("square1" <-[go.uint64] "$r0");;;
+    let: "square2" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    (FuncResolve measureVolume #()) "$a0") in
+    do:  ("square2" <-[go.uint64] "$r0");;;
+    return: (((![go.uint64] "square1") = (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+     (FuncResolve measureArea #()) "$a0")) && ((![go.uint64] "square2") = (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+     (FuncResolve measureVolume #()) "$a0")))).
 
 Definition testIfStmtInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIfStmtInterface"%go.
 
 (* go: interfaces.go:73:6 *)
 Definition testIfStmtInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #SquareStruct)) in
+    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make #SquareStruct [{
+    struct.make SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[#SquareStruct] "$r0");;;
-    (if: (let: "$a0" := (interface.make #SquareStruct.id (![#SquareStruct] "s")) in
-    (func_call #measureArea) "$a0") = #(W64 9)
+    do:  ("s" <-[SquareStruct] "$r0");;;
+    (if: (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    (FuncResolve measureArea #()) "$a0") = #(W64 9)
     then return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -1118,11 +1075,11 @@ Definition testsUseLocks : go_string := "github.com/goose-lang/goose/testdata/ex
    go: lock.go:7:6 *)
 Definition testsUseLocksⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "m" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("m" <-[#ptrT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "m")) #());;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "m")) #());;;
+    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) #()) in
+    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    do:  ("m" <-[go.PointerType sync.Mutex] "$r0");;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Lock #() (![go.PointerType sync.Mutex] "m")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Unlock #() (![go.PointerType sync.Mutex] "m")) #());;;
     return: (#true)).
 
 Definition standardForLoop : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.standardForLoop"%go.
@@ -1132,55 +1089,53 @@ Definition standardForLoop : go_string := "github.com/goose-lang/goose/testdata/
    go: loops.go:4:6 *)
 Definition standardForLoopⁱᵐᵖˡ : val :=
   λ: "s",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "sumPtr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ("sumPtr" <-[#ptrT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "s" := (GoAllocValue (go.SliceType go.uint64) "s") in
+    let: "sumPtr" := (GoAlloc (go.PointerType go.uint64) #()) in
+    let: "$r0" := (GoAlloc go.uint64 #()) in
+    do:  ("sumPtr" <-[go.PointerType go.uint64] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
+    do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "s") in
+      (if: (![go.uint64] "i") < (s_to_w64 (let: "$a0" := (![go.SliceType go.uint64] "s") in
       slice.len "$a0"))
       then
-        let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
-        let: "$r0" := (![#uint64T] (![#ptrT] "sumPtr")) in
-        do:  ("sum" <-[#uint64T] "$r0");;;
-        let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-        let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "s") (![#uint64T] "i"))) in
-        do:  ("x" <-[#uint64T] "$r0");;;
-        let: "$r0" := ((![#uint64T] "sum") + (![#uint64T] "x")) in
-        do:  ((![#ptrT] "sumPtr") <-[#uint64T] "$r0");;;
-        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[#uint64T] "$r0");;;
+        let: "sum" := (GoAlloc go.uint64 #()) in
+        let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "sumPtr")) in
+        do:  ("sum" <-[go.uint64] "$r0");;;
+        let: "x" := (GoAlloc go.uint64 #()) in
+        let: "$r0" := (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "s") (![go.uint64] "i"))) in
+        do:  ("x" <-[go.uint64] "$r0");;;
+        let: "$r0" := ((![go.uint64] "sum") + (![go.uint64] "x")) in
+        do:  ((![go.PointerType go.uint64] "sumPtr") <-[go.uint64] "$r0");;;
+        let: "$r0" := ((![go.uint64] "i") + #(W64 1)) in
+        do:  ("i" <-[go.uint64] "$r0");;;
         continue: #()
       else do:  #());;;
       break: #()));;;
-    let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] "sumPtr")) in
-    do:  ("sum" <-[#uint64T] "$r0");;;
-    return: (![#uint64T] "sum")).
+    let: "sum" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "sumPtr")) in
+    do:  ("sum" <-[go.uint64] "$r0");;;
+    return: (![go.uint64] "sum")).
 
-Definition LoopStruct : go_type := structT [
-  "loopNext" :: ptrT
+Definition LoopStructⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "loopNext"%go go.PointerType go.uint64)
 ].
-#[global] Typeclasses Opaque LoopStruct.
-#[global] Opaque LoopStruct.
 
 (* go: loops.go:28:22 *)
 Definition LoopStruct__forLoopWaitⁱᵐᵖˡ : val :=
   λ: "ls" "i",
-    exception_do (let: "ls" := (mem.alloc "ls") in
-    let: "i" := (mem.alloc "i") in
+    exception_do (let: "ls" := (GoAllocValue LoopStruct "ls") in
+    let: "i" := (GoAllocValue go.uint64 "i") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "nxt" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) in
-      do:  ("nxt" <-[#ptrT] "$r0");;;
-      (if: (![#uint64T] "i") < (![#uint64T] (![#ptrT] "nxt"))
+      let: "nxt" := (GoAlloc (go.PointerType go.uint64) #()) in
+      let: "$r0" := (![go.PointerType go.uint64] (struct.field_ref LoopStruct #"loopNext"%go "ls")) in
+      do:  ("nxt" <-[go.PointerType go.uint64] "$r0");;;
+      (if: (![go.uint64] "i") < (![go.uint64] (![go.PointerType go.uint64] "nxt"))
       then break: #()
       else do:  #());;;
-      let: "$r0" := ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) + #(W64 1)) in
-      do:  ((![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) <-[#uint64T] "$r0");;;
+      let: "$r0" := ((![go.uint64] (![go.PointerType go.uint64] (struct.field_ref LoopStruct #"loopNext"%go "ls"))) + #(W64 1)) in
+      do:  ((![go.PointerType go.uint64] (struct.field_ref LoopStruct #"loopNext"%go "ls")) <-[go.uint64] "$r0");;;
       continue: #());;;
     return: #()).
 
@@ -1191,284 +1146,284 @@ Definition testStandardForLoop : go_string := "github.com/goose-lang/goose/testd
    go: loops.go:40:6 *)
 Definition testStandardForLoopⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "arr" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 4)) in
-    do:  ("arr" <-[#sliceT] "$r0");;;
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1))) + #(W64 3)));;;
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2))) + #(W64 5)));;;
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) + #(W64 7)));;;
-    return: ((let: "$a0" := (![#sliceT] "arr") in
-     (func_call #standardForLoop) "$a0") = #(W64 16))).
+    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (slice.make2 go.uint64 #(W64 4)) in
+    do:  ("arr" <-[go.SliceType go.uint64] "$r0");;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 0)) <-[go.uint64] ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 0))) + #(W64 1)));;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 1)) <-[go.uint64] ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 1))) + #(W64 3)));;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 2)) <-[go.uint64] ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 2))) + #(W64 5)));;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 3)) <-[go.uint64] ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 3))) + #(W64 7)));;;
+    return: ((let: "$a0" := (![go.SliceType go.uint64] "arr") in
+     (FuncResolve standardForLoop #()) "$a0") = #(W64 16))).
 
 Definition testForLoopWait : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testForLoopWait"%go.
 
 (* go: loops.go:49:6 *)
 Definition testForLoopWaitⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ls" := (mem.alloc (type.zero_val #LoopStruct)) in
-    let: "$r0" := (let: "$loopNext" := (mem.alloc (type.zero_val #uint64T)) in
-    struct.make #LoopStruct [{
+    exception_do (let: "ls" := (GoAlloc LoopStruct #()) in
+    let: "$r0" := (let: "$loopNext" := (GoAlloc go.uint64 #()) in
+    struct.make LoopStruct [{
       "loopNext" ::= "$loopNext"
     }]) in
-    do:  ("ls" <-[#LoopStruct] "$r0");;;
+    do:  ("ls" <-[LoopStruct] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
-    (method_call #LoopStruct.id #"forLoopWait"%go (![#LoopStruct] "ls")) "$a0");;;
-    return: ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) = #(W64 4))).
+    (MethodResolve LoopStruct forLoopWait #() (![LoopStruct] "ls")) "$a0");;;
+    return: ((![go.uint64] (![go.PointerType go.uint64] (struct.field_ref LoopStruct #"loopNext"%go "ls"))) = #(W64 4))).
 
 Definition testBreakFromLoopWithContinue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopWithContinue"%go.
 
 (* go: loops.go:59:6 *)
 Definition testBreakFromLoopWithContinueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
+    do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: #true
       then
-        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[#uint64T] "$r0");;;
+        let: "$r0" := ((![go.uint64] "i") + #(W64 1)) in
+        do:  ("i" <-[go.uint64] "$r0");;;
         break: #()
       else do:  #());;;
       continue: #());;;
-    return: ((![#uint64T] "i") = #(W64 1))).
+    return: ((![go.uint64] "i") = #(W64 1))).
 
 Definition testBreakFromLoopNoContinue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopNoContinue"%go.
 
 (* go: loops.go:71:6 *)
 Definition testBreakFromLoopNoContinueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
       (if: #true
       then
-        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[#uint64T] "$r0");;;
+        let: "$r0" := ((![go.uint64] "i") + #(W64 1)) in
+        do:  ("i" <-[go.uint64] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[#uint64T] "$r0"));;;
-    return: ((![#uint64T] "i") = #(W64 1))).
+      let: "$r0" := ((![go.uint64] "i") + #(W64 2)) in
+      do:  ("i" <-[go.uint64] "$r0"));;;
+    return: ((![go.uint64] "i") = #(W64 1))).
 
 Definition testBreakFromLoopNoContinueDouble : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopNoContinueDouble"%go.
 
 (* go: loops.go:83:6 *)
 Definition testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
-      (if: (![#uint64T] "i") = #(W64 1)
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
+      (if: (![go.uint64] "i") = #(W64 1)
       then
-        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[#uint64T] "$r0");;;
+        let: "$r0" := ((![go.uint64] "i") + #(W64 1)) in
+        do:  ("i" <-[go.uint64] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[#uint64T] "$r0");;;
-      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[#uint64T] "$r0"));;;
-    return: ((![#uint64T] "i") = #(W64 4))).
+      let: "$r0" := ((![go.uint64] "i") + #(W64 2)) in
+      do:  ("i" <-[go.uint64] "$r0");;;
+      let: "$r0" := ((![go.uint64] "i") + #(W64 2)) in
+      do:  ("i" <-[go.uint64] "$r0"));;;
+    return: ((![go.uint64] "i") = #(W64 4))).
 
 Definition testBreakFromLoopForOnly : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopForOnly"%go.
 
 (* go: loops.go:96:6 *)
 Definition testBreakFromLoopForOnlyⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
-      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[#uint64T] "$r0"));;;
-    return: ((![#uint64T] "i") = #(W64 4))).
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
+      let: "$r0" := ((![go.uint64] "i") + #(W64 2)) in
+      do:  ("i" <-[go.uint64] "$r0"));;;
+    return: ((![go.uint64] "i") = #(W64 4))).
 
 Definition testBreakFromLoopAssignAndContinue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopAssignAndContinue"%go.
 
 (* go: loops.go:104:6 *)
 Definition testBreakFromLoopAssignAndContinueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 3)); (λ: <>, #()) := λ: <>,
       (if: #true
       then
-        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[#uint64T] "$r0");;;
+        let: "$r0" := ((![go.uint64] "i") + #(W64 1)) in
+        do:  ("i" <-[go.uint64] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[#uint64T] "$r0");;;
+      let: "$r0" := ((![go.uint64] "i") + #(W64 2)) in
+      do:  ("i" <-[go.uint64] "$r0");;;
       continue: #());;;
-    return: ((![#uint64T] "i") = #(W64 1))).
+    return: ((![go.uint64] "i") = #(W64 1))).
 
 Definition testNestedLoops : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedLoops"%go.
 
 (* go: loops.go:117:6 *)
 Definition testNestedLoopsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok1" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok1" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("ok1" <-[#boolT] "$r0");;;
-    let: "ok2" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("ok1" <-[go.bool] "$r0");;;
+    let: "ok2" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("ok2" <-[#boolT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("ok2" <-[go.bool] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
+    do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (let: "j" := (mem.alloc (type.zero_val #uint64T)) in
+      (let: "j" := (GoAlloc go.uint64 #()) in
       let: "$r0" := #(W64 0) in
-      do:  ("j" <-[#uint64T] "$r0");;;
+      do:  ("j" <-[go.uint64] "$r0");;;
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-        (if: (![#uint64T] "j") > #(W64 5)
+        (if: (![go.uint64] "j") > #(W64 5)
         then break: #()
         else do:  #());;;
-        let: "$r0" := ((![#uint64T] "j") + #(W64 1)) in
-        do:  ("j" <-[#uint64T] "$r0");;;
-        let: "$r0" := ((![#uint64T] "j") = #(W64 6)) in
-        do:  ("ok1" <-[#boolT] "$r0");;;
+        let: "$r0" := ((![go.uint64] "j") + #(W64 1)) in
+        do:  ("j" <-[go.uint64] "$r0");;;
+        let: "$r0" := ((![go.uint64] "j") = #(W64 6)) in
+        do:  ("ok1" <-[go.bool] "$r0");;;
         continue: #()));;;
-      let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
-      do:  ("i" <-[#uint64T] "$r0");;;
-      let: "$r0" := ((![#uint64T] "i") = #(W64 1)) in
-      do:  ("ok2" <-[#boolT] "$r0");;;
+      let: "$r0" := ((![go.uint64] "i") + #(W64 1)) in
+      do:  ("i" <-[go.uint64] "$r0");;;
+      let: "$r0" := ((![go.uint64] "i") = #(W64 1)) in
+      do:  ("ok2" <-[go.bool] "$r0");;;
       break: #()));;;
-    return: ((![#boolT] "ok1") && (![#boolT] "ok2"))).
+    return: ((![go.bool] "ok1") && (![go.bool] "ok2"))).
 
 Definition testNestedGoStyleLoops : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedGoStyleLoops"%go.
 
 (* go: loops.go:136:6 *)
 Definition testNestedGoStyleLoopsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      (let: "j" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)))) := λ: <>,
+      (let: "j" := (GoAlloc go.uint64 #()) in
       let: "$r0" := #(W64 0) in
-      do:  ("j" <-[#uint64T] "$r0");;;
-      (for: (λ: <>, (![#uint64T] "j") < (![#uint64T] "i")); (λ: <>, do:  ("j" <-[#uint64T] ((![#uint64T] "j") + #(W64 1)))) := λ: <>,
+      do:  ("j" <-[go.uint64] "$r0");;;
+      (for: (λ: <>, (![go.uint64] "j") < (![go.uint64] "i")); (λ: <>, do:  ("j" <-[go.uint64] ((![go.uint64] "j") + #(W64 1)))) := λ: <>,
         (if: #true
         then break: #()
         else do:  #());;;
         continue: #()));;;
-      let: "$r0" := ((![#uint64T] "i") = #(W64 9)) in
-      do:  ("ok" <-[#boolT] "$r0")));;;
-    return: (![#boolT] "ok")).
+      let: "$r0" := ((![go.uint64] "i") = #(W64 9)) in
+      do:  ("ok" <-[go.bool] "$r0")));;;
+    return: (![go.bool] "ok")).
 
 Definition testNestedGoStyleLoopsNoComparison : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedGoStyleLoopsNoComparison"%go.
 
 (* go: loops.go:150:6 *)
 Definition testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      (let: "j" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)))) := λ: <>,
+      (let: "j" := (GoAlloc go.uint64 #()) in
       let: "$r0" := #(W64 0) in
-      do:  ("j" <-[#uint64T] "$r0");;;
-      (for: (λ: <>, (![#uint64T] "j") < (![#uint64T] "i")); (λ: <>, do:  ("j" <-[#uint64T] ((![#uint64T] "j") + #(W64 1)))) := λ: <>,
+      do:  ("j" <-[go.uint64] "$r0");;;
+      (for: (λ: <>, (![go.uint64] "j") < (![go.uint64] "i")); (λ: <>, do:  ("j" <-[go.uint64] ((![go.uint64] "j") + #(W64 1)))) := λ: <>,
         (if: #true
         then break: #()
         else do:  #());;;
         continue: #()));;;
-      let: "$r0" := ((![#uint64T] "i") = #(W64 9)) in
-      do:  ("ok" <-[#boolT] "$r0")));;;
-    return: (![#boolT] "ok")).
+      let: "$r0" := ((![go.uint64] "i") = #(W64 9)) in
+      do:  ("ok" <-[go.bool] "$r0")));;;
+    return: (![go.bool] "ok")).
 
 Definition IterateMapKeys : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.IterateMapKeys"%go.
 
 (* go: maps.go:3:6 *)
 Definition IterateMapKeysⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (mem.alloc "m") in
-    let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$range" := (![type.mapT #uint64T #uint64T] "m") in
-    (let: "k" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "m" := (GoAllocValue (go.MapType go.uint64 go.uint64) "m") in
+    let: "sum" := (GoAlloc go.uint64 #()) in
+    let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
+    (let: "k" := (GoAlloc go.uint64 #()) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("k" <-[#uint64T] "$key");;;
-      let: "$r0" := ((![#uint64T] "sum") + (![#uint64T] "k")) in
-      do:  ("sum" <-[#uint64T] "$r0")));;;
-    return: (![#uint64T] "sum")).
+      do:  ("k" <-[go.uint64] "$key");;;
+      let: "$r0" := ((![go.uint64] "sum") + (![go.uint64] "k")) in
+      do:  ("sum" <-[go.uint64] "$r0")));;;
+    return: (![go.uint64] "sum")).
 
 Definition IterateMapValues : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.IterateMapValues"%go.
 
 (* go: maps.go:11:6 *)
 Definition IterateMapValuesⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (mem.alloc "m") in
-    let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$range" := (![type.mapT #uint64T #uint64T] "m") in
-    (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "m" := (GoAllocValue (go.MapType go.uint64 go.uint64) "m") in
+    let: "sum" := (GoAlloc go.uint64 #()) in
+    let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
+    (let: "v" := (GoAlloc go.uint64 #()) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("v" <-[#uint64T] "$value");;;
+      do:  ("v" <-[go.uint64] "$value");;;
       do:  "$key";;;
-      let: "$r0" := ((![#uint64T] "sum") + (![#uint64T] "v")) in
-      do:  ("sum" <-[#uint64T] "$r0")));;;
-    return: (![#uint64T] "sum")).
+      let: "$r0" := ((![go.uint64] "sum") + (![go.uint64] "v")) in
+      do:  ("sum" <-[go.uint64] "$r0")));;;
+    return: (![go.uint64] "sum")).
 
 Definition testIterateMap : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIterateMap"%go.
 
 (* go: maps.go:19:6 *)
 Definition testIterateMapⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #uint64T))) in
-    let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ("m" <-[type.mapT #uint64T #uint64T] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) #()) in
+    let: "$r0" := (map.make go.uint64 go.uint64) in
+    do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 0) "$r0");;;
+    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 1) "$r0");;;
+    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
-    (func_call #IterateMapKeys) "$a0") = #(W64 4))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
-    (func_call #IterateMapValues) "$a0") = #(W64 7))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 3) "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
+    (FuncResolve IterateMapKeys #()) "$a0") = #(W64 4))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
+    (FuncResolve IterateMapValues #()) "$a0") = #(W64 7))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testMapSize : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMapSize"%go.
 
 (* go: maps.go:37:6 *)
 Definition testMapSizeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #uint64T))) in
-    let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ("m" <-[type.mapT #uint64T #uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) #()) in
+    let: "$r0" := (map.make go.uint64 go.uint64) in
+    do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
     map.len "$a0")) = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 0) "$r0");;;
+    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 1) "$r0");;;
+    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
+    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 3) "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
     map.len "$a0")) = #(W64 3))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition multReturnTwo : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.multReturnTwo"%go.
 
@@ -1482,18 +1437,18 @@ Definition testAssignTwo : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: multiple_assign.go:7:6 *)
 Definition testAssignTwoⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "y" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 15) in
-    do:  ("y" <-[#uint64T] "$r0");;;
-    let: ("$ret0", "$ret1") := ((func_call #multReturnTwo) #()) in
+    do:  ("y" <-[go.uint64] "$r0");;;
+    let: ("$ret0", "$ret1") := ((FuncResolve multReturnTwo #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    do:  ("y" <-[#uint64T] "$r1");;;
-    return: (((![#uint64T] "x") = #(W64 2)) && ((![#uint64T] "y") = #(W64 3)))).
+    do:  ("x" <-[go.uint64] "$r0");;;
+    do:  ("y" <-[go.uint64] "$r1");;;
+    return: (((![go.uint64] "x") = #(W64 2)) && ((![go.uint64] "y") = #(W64 3)))).
 
 Definition multReturnThree : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.multReturnThree"%go.
 
@@ -1507,41 +1462,41 @@ Definition testAssignThree : go_string := "github.com/goose-lang/goose/testdata/
 (* go: multiple_assign.go:18:6 *)
 Definition testAssignThreeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "y" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "y" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("y" <-[#boolT] "$r0");;;
-    let: "z" := (mem.alloc (type.zero_val #uint32T)) in
+    do:  ("y" <-[go.bool] "$r0");;;
+    let: "z" := (GoAlloc go.uint32 #()) in
     let: "$r0" := #(W32 15) in
-    do:  ("z" <-[#uint32T] "$r0");;;
-    let: (("$ret0", "$ret1"), "$ret2") := ((func_call #multReturnThree) #()) in
+    do:  ("z" <-[go.uint32] "$r0");;;
+    let: (("$ret0", "$ret1"), "$ret2") := ((FuncResolve multReturnThree #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    do:  ("y" <-[#boolT] "$r1");;;
-    do:  ("z" <-[#uint32T] "$r2");;;
-    return: ((((![#uint64T] "x") = #(W64 2)) && ((![#boolT] "y") = #true)) && ((![#uint32T] "z") = #(W32 1)))).
+    do:  ("x" <-[go.uint64] "$r0");;;
+    do:  ("y" <-[go.bool] "$r1");;;
+    do:  ("z" <-[go.uint32] "$r2");;;
+    return: ((((![go.uint64] "x") = #(W64 2)) && ((![go.bool] "y") = #true)) && ((![go.uint32] "z") = #(W32 1)))).
 
 Definition testMultipleAssignToMap : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMultipleAssignToMap"%go.
 
 (* go: multiple_assign.go:26:6 *)
 Definition testMultipleAssignToMapⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #uint64T))) in
-    let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ("m" <-[type.mapT #uint64T #uint64T] "$r0");;;
-    let: ("$ret0", "$ret1") := ((func_call #multReturnTwo) #()) in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) #()) in
+    let: "$r0" := (map.make go.uint64 go.uint64) in
+    do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
+    let: ("$ret0", "$ret1") := ((FuncResolve multReturnTwo #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 0) "$r1");;;
-    return: (((![#uint64T] "x") = #(W64 2)) && ((Fst (map.get (![type.mapT #uint64T #uint64T] "m") #(W64 0))) = #(W64 3)))).
+    do:  ("x" <-[go.uint64] "$r0");;;
+    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r1");;;
+    return: (((![go.uint64] "x") = #(W64 2)) && ((Fst (map.get (![go.MapType go.uint64 go.uint64] "m") #(W64 0))) = #(W64 3)))).
 
 Definition returnTwo : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnTwo"%go.
 
@@ -1555,27 +1510,27 @@ Definition testReturnTwo : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: multiple_return.go:7:6 *)
 Definition testReturnTwoⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "y" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call #returnTwo) #()) in
+    exception_do (let: "y" := (GoAlloc go.uint64 #()) in
+    let: "x" := (GoAlloc go.uint64 #()) in
+    let: ("$ret0", "$ret1") := ((FuncResolve returnTwo #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    do:  ("y" <-[#uint64T] "$r1");;;
-    return: (((![#uint64T] "x") = #(W64 2)) && ((![#uint64T] "y") = #(W64 3)))).
+    do:  ("x" <-[go.uint64] "$r0");;;
+    do:  ("y" <-[go.uint64] "$r1");;;
+    return: (((![go.uint64] "x") = #(W64 2)) && ((![go.uint64] "y") = #(W64 3)))).
 
 Definition testAnonymousBinding : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAnonymousBinding"%go.
 
 (* go: multiple_return.go:12:6 *)
 Definition testAnonymousBindingⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "y" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call #returnTwo) #()) in
+    exception_do (let: "y" := (GoAlloc go.uint64 #()) in
+    let: ("$ret0", "$ret1") := ((FuncResolve returnTwo #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("y" <-[#uint64T] "$r1");;;
-    return: ((![#uint64T] "y") = #(W64 3))).
+    do:  ("y" <-[go.uint64] "$r1");;;
+    return: ((![go.uint64] "y") = #(W64 3))).
 
 Definition returnThree : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnThree"%go.
 
@@ -1589,17 +1544,17 @@ Definition testReturnThree : go_string := "github.com/goose-lang/goose/testdata/
 (* go: multiple_return.go:21:6 *)
 Definition testReturnThreeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "z" := (mem.alloc (type.zero_val #uint32T)) in
-    let: "y" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := ((func_call #returnThree) #()) in
+    exception_do (let: "z" := (GoAlloc go.uint32 #()) in
+    let: "y" := (GoAlloc go.bool #()) in
+    let: "x" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := ((FuncResolve returnThree #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    do:  ("y" <-[#boolT] "$r1");;;
-    do:  ("z" <-[#uint32T] "$r2");;;
-    return: ((((![#uint64T] "x") = #(W64 2)) && ((![#boolT] "y") = #true)) && ((![#uint32T] "z") = #(W32 1)))).
+    do:  ("x" <-[go.uint64] "$r0");;;
+    do:  ("y" <-[go.bool] "$r1");;;
+    do:  ("z" <-[go.uint32] "$r2");;;
+    return: ((((![go.uint64] "x") = #(W64 2)) && ((![go.bool] "y") = #true)) && ((![go.uint32] "z") = #(W32 1)))).
 
 Definition returnFour : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnFour"%go.
 
@@ -1613,68 +1568,68 @@ Definition testReturnFour : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: multiple_return.go:30:6 *)
 Definition testReturnFourⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "w" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "z" := (mem.alloc (type.zero_val #uint32T)) in
-    let: "y" := (mem.alloc (type.zero_val #boolT)) in
-    let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := ((func_call #returnFour) #()) in
+    exception_do (let: "w" := (GoAlloc go.uint64 #()) in
+    let: "z" := (GoAlloc go.uint32 #()) in
+    let: "y" := (GoAlloc go.bool #()) in
+    let: "x" := (GoAlloc go.uint64 #()) in
+    let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := ((FuncResolve returnFour #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
     let: "$r3" := "$ret3" in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    do:  ("y" <-[#boolT] "$r1");;;
-    do:  ("z" <-[#uint32T] "$r2");;;
-    do:  ("w" <-[#uint64T] "$r3");;;
-    return: (((((![#uint64T] "x") = #(W64 2)) && ((![#boolT] "y") = #true)) && ((![#uint32T] "z") = #(W32 1))) && ((![#uint64T] "w") = #(W64 7)))).
+    do:  ("x" <-[go.uint64] "$r0");;;
+    do:  ("y" <-[go.bool] "$r1");;;
+    do:  ("z" <-[go.uint32] "$r2");;;
+    do:  ("w" <-[go.uint64] "$r3");;;
+    return: (((((![go.uint64] "x") = #(W64 2)) && ((![go.bool] "y") = #true)) && ((![go.uint32] "z") = #(W32 1))) && ((![go.uint64] "w") = #(W64 7)))).
 
 Definition failing_testCompareSliceToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testCompareSliceToNil"%go.
 
 (* go: nil.go:3:6 *)
 Definition failing_testCompareSliceToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    return: ((![#sliceT] "s") ≠ #slice.nil)).
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 0)) in
+    do:  ("s" <-[go.SliceType go.byte] "$r0");;;
+    return: ((![go.SliceType go.byte] "s") ≠ #slice.nil)).
 
 Definition testComparePointerToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerToNil"%go.
 
 (* go: nil.go:8:6 *)
 Definition testComparePointerToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ("s" <-[#ptrT] "$r0");;;
-    return: ((![#ptrT] "s") ≠ #null)).
+    exception_do (let: "s" := (GoAlloc (go.PointerType go.uint64) #()) in
+    let: "$r0" := (GoAlloc go.uint64 #()) in
+    do:  ("s" <-[go.PointerType go.uint64] "$r0");;;
+    return: ((![go.PointerType go.uint64] "s") ≠ #null)).
 
 Definition testCompareNilToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareNilToNil"%go.
 
 (* go: nil.go:13:6 *)
 Definition testCompareNilToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #ptrT)) in
-    do:  ("s" <-[#ptrT] "$r0");;;
-    return: ((![#ptrT] (![#ptrT] "s")) = #null)).
+    exception_do (let: "s" := (GoAlloc (go.PointerType (go.PointerType go.uint64)) #()) in
+    let: "$r0" := (GoAlloc (go.PointerType go.uint64) #()) in
+    do:  ("s" <-[go.PointerType (go.PointerType go.uint64)] "$r0");;;
+    return: ((![go.PointerType go.uint64] (![go.PointerType (go.PointerType go.uint64)] "s")) = #null)).
 
 Definition testComparePointerWrappedToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedToNil"%go.
 
 (* go: nil.go:18:6 *)
 Definition testComparePointerWrappedToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 1)) in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    return: ((![#sliceT] "s") ≠ #slice.nil)).
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 1)) in
+    do:  ("s" <-[go.SliceType go.byte] "$r0");;;
+    return: ((![go.SliceType go.byte] "s") ≠ #slice.nil)).
 
 Definition testComparePointerWrappedDefaultToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedDefaultToNil"%go.
 
 (* go: nil.go:24:6 *)
 Definition testComparePointerWrappedDefaultToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    return: ((![#sliceT] "s") = #slice.nil)).
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    return: ((![go.SliceType go.byte] "s") = #slice.nil)).
 
 Definition reverseAssignOps64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps64"%go.
 
@@ -1683,46 +1638,46 @@ Definition reverseAssignOps64 : go_string := "github.com/goose-lang/goose/testda
    go: operations.go:4:6 *)
 Definition reverseAssignOps64ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "y" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ("y" <-[#uint64T] ((![#uint64T] "y") + (![#uint64T] "x")));;;
-    do:  ("y" <-[#uint64T] ((![#uint64T] "y") - (![#uint64T] "x")));;;
-    do:  ("y" <-[#uint64T] ((![#uint64T] "y") + #(W64 1)));;;
-    do:  ("y" <-[#uint64T] ((![#uint64T] "y") - #(W64 1)));;;
-    return: (![#uint64T] "y")).
+    exception_do (let: "x" := (GoAllocValue go.uint64 "x") in
+    let: "y" := (GoAlloc go.uint64 #()) in
+    do:  ("y" <-[go.uint64] ((![go.uint64] "y") + (![go.uint64] "x")));;;
+    do:  ("y" <-[go.uint64] ((![go.uint64] "y") - (![go.uint64] "x")));;;
+    do:  ("y" <-[go.uint64] ((![go.uint64] "y") + #(W64 1)));;;
+    do:  ("y" <-[go.uint64] ((![go.uint64] "y") - #(W64 1)));;;
+    return: (![go.uint64] "y")).
 
 Definition reverseAssignOps32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps32"%go.
 
 (* go: operations.go:13:6 *)
 Definition reverseAssignOps32ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (mem.alloc "x") in
-    let: "y" := (mem.alloc (type.zero_val #uint32T)) in
-    do:  ("y" <-[#uint32T] ((![#uint32T] "y") + (![#uint32T] "x")));;;
-    do:  ("y" <-[#uint32T] ((![#uint32T] "y") - (![#uint32T] "x")));;;
-    do:  ("y" <-[#uint32T] ((![#uint32T] "y") + #(W32 1)));;;
-    do:  ("y" <-[#uint32T] ((![#uint32T] "y") - #(W32 1)));;;
-    return: (![#uint32T] "y")).
+    exception_do (let: "x" := (GoAllocValue go.uint32 "x") in
+    let: "y" := (GoAlloc go.uint32 #()) in
+    do:  ("y" <-[go.uint32] ((![go.uint32] "y") + (![go.uint32] "x")));;;
+    do:  ("y" <-[go.uint32] ((![go.uint32] "y") - (![go.uint32] "x")));;;
+    do:  ("y" <-[go.uint32] ((![go.uint32] "y") + #(W32 1)));;;
+    do:  ("y" <-[go.uint32] ((![go.uint32] "y") - #(W32 1)));;;
+    return: (![go.uint32] "y")).
 
 Definition add64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.add64Equals"%go.
 
 (* go: operations.go:22:6 *)
 Definition add64Equalsⁱᵐᵖˡ : val :=
   λ: "x" "y" "z",
-    exception_do (let: "z" := (mem.alloc "z") in
-    let: "y" := (mem.alloc "y") in
-    let: "x" := (mem.alloc "x") in
-    return: (((![#uint64T] "x") + (![#uint64T] "y")) = (![#uint64T] "z"))).
+    exception_do (let: "z" := (GoAllocValue go.uint64 "z") in
+    let: "y" := (GoAllocValue go.uint64 "y") in
+    let: "x" := (GoAllocValue go.uint64 "x") in
+    return: (((![go.uint64] "x") + (![go.uint64] "y")) = (![go.uint64] "z"))).
 
 Definition sub64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.sub64Equals"%go.
 
 (* go: operations.go:26:6 *)
 Definition sub64Equalsⁱᵐᵖˡ : val :=
   λ: "x" "y" "z",
-    exception_do (let: "z" := (mem.alloc "z") in
-    let: "y" := (mem.alloc "y") in
-    let: "x" := (mem.alloc "x") in
-    return: (((![#uint64T] "x") - (![#uint64T] "y")) = (![#uint64T] "z"))).
+    exception_do (let: "z" := (GoAllocValue go.uint64 "z") in
+    let: "y" := (GoAllocValue go.uint64 "y") in
+    let: "x" := (GoAllocValue go.uint64 "x") in
+    return: (((![go.uint64] "x") - (![go.uint64] "y")) = (![go.uint64] "z"))).
 
 Definition testReverseAssignOps64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReverseAssignOps64"%go.
 
@@ -1731,209 +1686,209 @@ Definition testReverseAssignOps64 : go_string := "github.com/goose-lang/goose/te
    go: operations.go:31:6 *)
 Definition testReverseAssignOps64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 0) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 262144) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1024) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
-    (func_call #reverseAssignOps64) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 0) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1231234) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 140737488355328) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1048576) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 262144) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1024) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 1) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    (FuncResolve reverseAssignOps64 #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition failing_testReverseAssignOps32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testReverseAssignOps32"%go.
 
 (* go: operations.go:47:6 *)
 Definition failing_testReverseAssignOps32ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 0) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 262144) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1024) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
-    (func_call #reverseAssignOps32) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 0) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1231234) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 3434807466) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1048576) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 262144) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1024) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 1) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
+    (FuncResolve reverseAssignOps32 #()) "$a0") = #(W32 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testAdd64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAdd64Equals"%go.
 
 (* go: operations.go:61:6 *)
 Definition testAdd64Equalsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 2) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 3) in
     let: "$a2" := #(W64 5) in
-    (func_call #add64Equals) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    (FuncResolve add64Equals #()) "$a0" "$a1" "$a2")) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     let: "$a1" := #(W64 1) in
     let: "$a2" := #(W64 0) in
-    (func_call #add64Equals) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    (FuncResolve add64Equals #()) "$a0" "$a1" "$a2")) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testSub64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSub64Equals"%go.
 
 (* go: operations.go:68:6 *)
 Definition testSub64Equalsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 2) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 1) in
     let: "$a2" := #(W64 1) in
-    (func_call #sub64Equals) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    (FuncResolve sub64Equals #()) "$a0" "$a1" "$a2")) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     let: "$a1" := #(W64 9223372036854775808) in
     let: "$a2" := #(W64 (9223372036854775808 - 1)) in
-    (func_call #sub64Equals) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 2) in
+    (FuncResolve sub64Equals #()) "$a0" "$a1" "$a2")) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 8) in
     let: "$a2" := #(W64 (18446744073709551616 - 6)) in
-    (func_call #sub64Equals) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    (FuncResolve sub64Equals #()) "$a0" "$a1" "$a2")) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testDivisionPrecedence : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDivisionPrecedence"%go.
 
 (* go: operations.go:76:6 *)
 Definition testDivisionPrecedenceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "blockSize" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "blockSize" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 4096) in
-    do:  ("blockSize" <-[#uint64T] "$r0");;;
-    let: "hdrmeta" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("blockSize" <-[go.uint64] "$r0");;;
+    let: "hdrmeta" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 8) in
-    do:  ("hdrmeta" <-[#uint64T] "$r0");;;
-    let: "hdraddrs" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (((![#uint64T] "blockSize") - (![#uint64T] "hdrmeta")) `quot` #(W64 8)) in
-    do:  ("hdraddrs" <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] "hdraddrs") = #(W64 511))).
+    do:  ("hdrmeta" <-[go.uint64] "$r0");;;
+    let: "hdraddrs" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (((![go.uint64] "blockSize") - (![go.uint64] "hdrmeta")) `quot` #(W64 8)) in
+    do:  ("hdraddrs" <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] "hdraddrs") = #(W64 511))).
 
 Definition testModPrecedence : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testModPrecedence"%go.
 
 (* go: operations.go:83:6 *)
 Definition testModPrecedenceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x1" := (mem.alloc (type.zero_val #intT)) in
+    exception_do (let: "x1" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 (513 + (12 `rem` 8))) in
-    do:  ("x1" <-[#intT] "$r0");;;
-    let: "x2" := (mem.alloc (type.zero_val #intT)) in
+    do:  ("x1" <-[go.int] "$r0");;;
+    let: "x2" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 ((513 + 12) `rem` 8)) in
-    do:  ("x2" <-[#intT] "$r0");;;
-    return: (((![#intT] "x1") = #(W64 517)) && ((![#intT] "x2") = #(W64 5)))).
+    do:  ("x2" <-[go.int] "$r0");;;
+    return: (((![go.int] "x1") = #(W64 517)) && ((![go.int] "x2") = #(W64 5)))).
 
 Definition testBitwiseOpsPrecedence : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBitwiseOpsPrecedence"%go.
 
 (* go: operations.go:89:6 *)
 Definition testBitwiseOpsPrecedenceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(479 =? 479)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(132 =? 132)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(828 =? 828)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(893 =? 893)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(461 =? 461)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(negb (479 =? 389))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(479 =? 479)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(132 =? 132)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(828 =? 828)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(893 =? 893)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(461 =? 461)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(negb (479 =? 389))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testArithmeticShifts : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testArithmeticShifts"%go.
 
 (* go: operations.go:102:6 *)
 Definition testArithmeticShiftsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(5376 =? 5376)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(1513209474796486656 =? 1513209474796486656)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(42 =? 42)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(0 =? 0)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && #(672 =? 672)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(5376 =? 5376)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(1513209474796486656 =? 1513209474796486656)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(42 =? 42)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(0 =? 0)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && #(672 =? 672)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testBitAddAnd : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBitAddAnd"%go.
 
 (* go: operations.go:114:6 *)
 Definition testBitAddAndⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "tid" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "tid" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 17) in
-    do:  ("tid" <-[#uint64T] "$r0");;;
-    let: "n" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ("tid" <-[go.uint64] "$r0");;;
+    let: "n" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 16) in
-    do:  ("n" <-[#uint64T] "$r0");;;
-    return: ((((![#uint64T] "tid") + (![#uint64T] "n")) `and` (~ ((![#uint64T] "n") - #(W64 1)))) = #(W64 32))).
+    do:  ("n" <-[go.uint64] "$r0");;;
+    return: ((((![go.uint64] "tid") + (![go.uint64] "n")) `and` (~ ((![go.uint64] "n") - #(W64 1)))) = #(W64 32))).
 
 Definition testManyParentheses : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testManyParentheses"%go.
 
@@ -1964,40 +1919,40 @@ Definition testOrCompare : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: precedence.go:10:6 *)
 Definition testOrCompareⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r0");;;
     (if: (~ (#(3 >? 4) || #(4 >? 3)))
     then
       let: "$r0" := #false in
-      do:  ("ok" <-[#boolT] "$r0")
+      do:  ("ok" <-[go.bool] "$r0")
     else do:  #());;;
     (if: #(4 <? 3) || #(2 >? 3)
     then
       let: "$r0" := #false in
-      do:  ("ok" <-[#boolT] "$r0")
+      do:  ("ok" <-[go.bool] "$r0")
     else do:  #());;;
-    return: (![#boolT] "ok")).
+    return: (![go.bool] "ok")).
 
 Definition testAndCompare : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAndCompare"%go.
 
 (* go: precedence.go:22:6 *)
 Definition testAndCompareⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r0");;;
     (if: #(3 >? 4) && #(4 >? 3)
     then
       let: "$r0" := #false in
-      do:  ("ok" <-[#boolT] "$r0")
+      do:  ("ok" <-[go.bool] "$r0")
     else do:  #());;;
     (if: #(4 >? 3) || #(2 <? 3)
     then do:  #()
     else
       let: "$r0" := #false in
-      do:  ("ok" <-[#boolT] "$r0"));;;
-    return: (![#boolT] "ok")).
+      do:  ("ok" <-[go.bool] "$r0"));;;
+    return: (![go.bool] "ok")).
 
 Definition testShiftMod : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShiftMod"%go.
 
@@ -2011,40 +1966,38 @@ Definition testLinearize : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: prims.go:9:6 *)
 Definition testLinearizeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "m" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("m" <-[#ptrT] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "m")) #());;;
-    do:  ((func_call #primitive.Linearize) #());;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "m")) #());;;
+    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) #()) in
+    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    do:  ("m" <-[go.PointerType sync.Mutex] "$r0");;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Lock #() (![go.PointerType sync.Mutex] "m")) #());;;
+    do:  ((FuncResolve primitive.Linearize #()) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Unlock #() (![go.PointerType sync.Mutex] "m")) #());;;
     return: (#true)).
 
-Definition BoolTest : go_type := structT [
-  "t" :: boolT;
-  "f" :: boolT;
-  "tc" :: uint64T;
-  "fc" :: uint64T
+Definition BoolTestⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "t"%go go.bool);
+  (go.FieldDecl "f"%go go.bool);
+  (go.FieldDecl "tc"%go go.uint64);
+  (go.FieldDecl "fc"%go go.uint64)
 ].
-#[global] Typeclasses Opaque BoolTest.
-#[global] Opaque BoolTest.
 
 Definition CheckTrue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckTrue"%go.
 
 (* go: shortcircuiting.go:11:6 *)
 Definition CheckTrueⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (mem.alloc "b") in
-    do:  ((struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) + #(W64 1)));;;
-    return: (![#boolT] (struct.field_ref #BoolTest #"t"%go (![#ptrT] "b")))).
+    exception_do (let: "b" := (GoAllocValue (go.PointerType BoolTest) "b") in
+    do:  ((struct.field_ref BoolTest #"tc"%go (![go.PointerType BoolTest] "b")) <-[go.uint64] ((![go.uint64] (struct.field_ref BoolTest #"tc"%go (![go.PointerType BoolTest] "b"))) + #(W64 1)));;;
+    return: (![go.bool] (struct.field_ref BoolTest #"t"%go (![go.PointerType BoolTest] "b")))).
 
 Definition CheckFalse : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckFalse"%go.
 
 (* go: shortcircuiting.go:16:6 *)
 Definition CheckFalseⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (mem.alloc "b") in
-    do:  ((struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) + #(W64 1)));;;
-    return: (![#boolT] (struct.field_ref #BoolTest #"f"%go (![#ptrT] "b")))).
+    exception_do (let: "b" := (GoAllocValue (go.PointerType BoolTest) "b") in
+    do:  ((struct.field_ref BoolTest #"fc"%go (![go.PointerType BoolTest] "b")) <-[go.uint64] ((![go.uint64] (struct.field_ref BoolTest #"fc"%go (![go.PointerType BoolTest] "b"))) + #(W64 1)));;;
+    return: (![go.bool] (struct.field_ref BoolTest #"f"%go (![go.PointerType BoolTest] "b")))).
 
 Definition testShortcircuitAndTF : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitAndTF"%go.
 
@@ -2053,70 +2006,70 @@ Definition testShortcircuitAndTF : go_string := "github.com/goose-lang/goose/tes
    go: shortcircuiting.go:22:6 *)
 Definition testShortcircuitAndTFⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$t" := #true in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
+    let: "$r0" := (GoAllocValue BoolTest (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make #BoolTest [{
+    struct.make BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    (if: (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckTrue) "$a0") && (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckFalse) "$a0")
+    do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
+    (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckTrue #()) "$a0") && (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckFalse #()) "$a0")
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))).
+    return: (((![go.uint64] (struct.field_ref BoolTest #"tc"%go (![go.PointerType BoolTest] "b"))) = #(W64 1)) && ((![go.uint64] (struct.field_ref BoolTest #"fc"%go (![go.PointerType BoolTest] "b"))) = #(W64 1)))).
 
 Definition testShortcircuitAndFT : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitAndFT"%go.
 
 (* go: shortcircuiting.go:31:6 *)
 Definition testShortcircuitAndFTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$t" := #true in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
+    let: "$r0" := (GoAllocValue BoolTest (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make #BoolTest [{
+    struct.make BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    (if: (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckFalse) "$a0") && (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckTrue) "$a0")
+    do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
+    (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckFalse #()) "$a0") && (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckTrue #()) "$a0")
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 0)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))).
+    return: (((![go.uint64] (struct.field_ref BoolTest #"tc"%go (![go.PointerType BoolTest] "b"))) = #(W64 0)) && ((![go.uint64] (struct.field_ref BoolTest #"fc"%go (![go.PointerType BoolTest] "b"))) = #(W64 1)))).
 
 Definition testShortcircuitOrTF : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitOrTF"%go.
 
 (* go: shortcircuiting.go:40:6 *)
 Definition testShortcircuitOrTFⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$t" := #true in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
+    let: "$r0" := (GoAllocValue BoolTest (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make #BoolTest [{
+    struct.make BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    (if: (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckTrue) "$a0") || (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckFalse) "$a0")
-    then return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 0)))
+    do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
+    (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckTrue #()) "$a0") || (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckFalse #()) "$a0")
+    then return: (((![go.uint64] (struct.field_ref BoolTest #"tc"%go (![go.PointerType BoolTest] "b"))) = #(W64 1)) && ((![go.uint64] (struct.field_ref BoolTest #"fc"%go (![go.PointerType BoolTest] "b"))) = #(W64 0)))
     else do:  #());;;
     return: (#false)).
 
@@ -2125,46 +2078,44 @@ Definition testShortcircuitOrFT : go_string := "github.com/goose-lang/goose/test
 (* go: shortcircuiting.go:48:6 *)
 Definition testShortcircuitOrFTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$t" := #true in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
+    let: "$r0" := (GoAllocValue BoolTest (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make #BoolTest [{
+    struct.make BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    (if: (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckFalse) "$a0") || (let: "$a0" := (![#ptrT] "b") in
-    (func_call #CheckTrue) "$a0")
-    then return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))
+    do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
+    (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckFalse #()) "$a0") || (let: "$a0" := (![go.PointerType BoolTest] "b") in
+    (FuncResolve CheckTrue #()) "$a0")
+    then return: (((![go.uint64] (struct.field_ref BoolTest #"tc"%go (![go.PointerType BoolTest] "b"))) = #(W64 1)) && ((![go.uint64] (struct.field_ref BoolTest #"fc"%go (![go.PointerType BoolTest] "b"))) = #(W64 1)))
     else do:  #());;;
     return: (#false)).
 
-Definition ArrayEditor : go_type := structT [
-  "s" :: sliceT;
-  "next_val" :: uint64T
+Definition ArrayEditorⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "s"%go go.SliceType go.uint64);
+  (go.FieldDecl "next_val"%go go.uint64)
 ].
-#[global] Typeclasses Opaque ArrayEditor.
-#[global] Opaque ArrayEditor.
 
 (* go: slices.go:9:24 *)
 Definition ArrayEditor__Advanceⁱᵐᵖˡ : val :=
   λ: "ae" "arr" "next",
-    exception_do (let: "ae" := (mem.alloc "ae") in
-    let: "next" := (mem.alloc "next") in
-    let: "arr" := (mem.alloc "arr") in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
-    let: "$r0" := (![#uint64T] (struct.field_ref #ArrayEditor #"next_val"%go (![#ptrT] "ae"))) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae"))) #(W64 0)) <-[#uint64T] "$r0");;;
-    let: "$r0" := (![#uint64T] "next") in
-    do:  ((struct.field_ref #ArrayEditor #"next_val"%go (![#ptrT] "ae")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae"))) in
-    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
-    do:  ((struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae")) <-[#sliceT] "$r0");;;
+    exception_do (let: "ae" := (GoAllocValue (go.PointerType ArrayEditor) "ae") in
+    let: "next" := (GoAllocValue go.uint64 "next") in
+    let: "arr" := (GoAllocValue (go.SliceType go.uint64) "arr") in
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 0)) <-[go.uint64] ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 0))) + #(W64 1)));;;
+    let: "$r0" := (![go.uint64] (struct.field_ref ArrayEditor #"next_val"%go (![go.PointerType ArrayEditor] "ae"))) in
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] (struct.field_ref ArrayEditor #"s"%go (![go.PointerType ArrayEditor] "ae"))) #(W64 0)) <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.uint64] "next") in
+    do:  ((struct.field_ref ArrayEditor #"next_val"%go (![go.PointerType ArrayEditor] "ae")) <-[go.uint64] "$r0");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] (struct.field_ref ArrayEditor #"s"%go (![go.PointerType ArrayEditor] "ae"))) in
+    slice.slice go.uint64 "$s" #(W64 1) (slice.len "$s")) in
+    do:  ((struct.field_ref ArrayEditor #"s"%go (![go.PointerType ArrayEditor] "ae")) <-[go.SliceType go.uint64] "$r0");;;
     return: #()).
 
 Definition testSliceOps : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceOps"%go.
@@ -2174,232 +2125,228 @@ Definition testSliceOps : go_string := "github.com/goose-lang/goose/testdata/exa
    go: slices.go:17:6 *)
 Definition testSliceOpsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 10)) in
-    do:  ("x" <-[#sliceT] "$r0");;;
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (slice.make2 go.uint64 #(W64 10)) in
+    do:  ("x" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 1)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "x") #(W64 1)) <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 10) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "x") #(W64 2)) <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 15) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 3)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "x") #(W64 3)) <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 20) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 4)) <-[#uint64T] "$r0");;;
-    let: "v1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2))) in
-    do:  ("v1" <-[#uint64T] "$r0");;;
-    let: "v2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice #uint64T "$s" #(W64 2) #(W64 3)) in
-    do:  ("v2" <-[#sliceT] "$r0");;;
-    let: "v3" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice #uint64T "$s" #(W64 0) #(W64 3)) in
-    do:  ("v3" <-[#sliceT] "$r0");;;
-    let: "v4" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2)) in
-    do:  ("v4" <-[#ptrT] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "x") #(W64 4)) <-[go.uint64] "$r0");;;
+    let: "v1" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "x") #(W64 2))) in
+    do:  ("v1" <-[go.uint64] "$r0");;;
+    let: "v2" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
+    slice.slice go.uint64 "$s" #(W64 2) #(W64 3)) in
+    do:  ("v2" <-[go.SliceType go.uint64] "$r0");;;
+    let: "v3" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
+    slice.slice go.uint64 "$s" #(W64 0) #(W64 3)) in
+    do:  ("v3" <-[go.SliceType go.uint64] "$r0");;;
+    let: "v4" := (GoAlloc (go.PointerType go.uint64) #()) in
+    let: "$r0" := (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "x") #(W64 2)) in
+    do:  ("v4" <-[go.PointerType go.uint64] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "v1") = #(W64 10))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v2") #(W64 0))) = #(W64 10))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "v2") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "v1") = #(W64 10))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "v2") #(W64 0))) = #(W64 10))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.SliceType go.uint64] "v2") in
     slice.len "$a0") = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v3") #(W64 1))) = #(W64 5))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v3") #(W64 2))) = #(W64 10))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "v3") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "v3") #(W64 1))) = #(W64 5))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "v3") #(W64 2))) = #(W64 10))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.SliceType go.uint64] "v3") in
     slice.len "$a0") = #(W64 3))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (![#ptrT] "v4")) = #(W64 10))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (![go.PointerType go.uint64] "v4")) = #(W64 10))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testSliceCapacityOps : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceCapacityOps"%go.
 
 (* go: slices.go:40:6 *)
 Definition testSliceCapacityOpsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #uint64T #(W64 0) #(W64 10)) in
-    do:  ("x" <-[#sliceT] "$r0");;;
-    let: "sub1" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice #uint64T "$s" #(W64 0) #(W64 6)) in
-    do:  ("sub1" <-[#sliceT] "$r0");;;
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (slice.make3 go.uint64 #(W64 0) #(W64 10)) in
+    do:  ("x" <-[go.SliceType go.uint64] "$r0");;;
+    let: "sub1" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
+    slice.slice go.uint64 "$s" #(W64 0) #(W64 6)) in
+    do:  ("sub1" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "sub1") #(W64 0)) <-[#uint64T] "$r0");;;
-    let: "sub2" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice #uint64T "$s" #(W64 2) #(W64 4)) in
-    do:  ("sub2" <-[#sliceT] "$r0");;;
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "sub1") #(W64 0)) <-[go.uint64] "$r0");;;
+    let: "sub2" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
+    slice.slice go.uint64 "$s" #(W64 2) #(W64 4)) in
+    do:  ("sub2" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] "sub2") #(W64 0)) <-[#uint64T] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "sub2") #(W64 0)) <-[go.uint64] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub1") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.SliceType go.uint64] "sub1") in
     slice.len "$a0") = #(W64 6))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub1") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.SliceType go.uint64] "sub1") in
     slice.cap "$a0") = #(W64 10))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (let: "$s" := (![#sliceT] "x") in
-    slice.slice #uint64T "$s" #(W64 0) #(W64 10)) #(W64 0))) = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub2") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (slice.elem_ref go.uint64 (let: "$s" := (![go.SliceType go.uint64] "x") in
+    slice.slice go.uint64 "$s" #(W64 0) #(W64 10)) #(W64 0))) = #(W64 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.SliceType go.uint64] "sub2") in
     slice.len "$a0") = #(W64 2))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub2") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.SliceType go.uint64] "sub2") in
     slice.cap "$a0") = #(W64 8))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (let: "$s" := (![#sliceT] "x") in
-    slice.slice #uint64T "$s" #(W64 0) #(W64 10)) #(W64 2))) = #(W64 2))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (slice.elem_ref go.uint64 (let: "$s" := (![go.SliceType go.uint64] "x") in
+    slice.slice go.uint64 "$s" #(W64 0) #(W64 10)) #(W64 2))) = #(W64 2))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testOverwriteArray : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOverwriteArray"%go.
 
 (* go: slices.go:59:6 *)
 Definition testOverwriteArrayⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "arr" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 4)) in
-    do:  ("arr" <-[#sliceT] "$r0");;;
-    let: "ae1" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
+    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (slice.make2 go.uint64 #(W64 4)) in
+    do:  ("arr" <-[go.SliceType go.uint64] "$r0");;;
+    let: "ae1" := (GoAlloc (go.PointerType ArrayEditor) #()) in
+    let: "$r0" := (GoAllocValue ArrayEditor (let: "$s" := (let: "$s" := (![go.SliceType go.uint64] "arr") in
+    slice.slice go.uint64 "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
-    struct.make #ArrayEditor [{
+    struct.make ArrayEditor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }])) in
-    do:  ("ae1" <-[#ptrT] "$r0");;;
-    let: "ae2" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
+    do:  ("ae1" <-[go.PointerType ArrayEditor] "$r0");;;
+    let: "ae2" := (GoAlloc (go.PointerType ArrayEditor) #()) in
+    let: "$r0" := (GoAllocValue ArrayEditor (let: "$s" := (let: "$s" := (![go.SliceType go.uint64] "arr") in
+    slice.slice go.uint64 "$s" #(W64 1) (slice.len "$s")) in
     let: "$next_val" := #(W64 102) in
-    struct.make #ArrayEditor [{
+    struct.make ArrayEditor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }])) in
-    do:  ("ae2" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "arr") in
+    do:  ("ae2" <-[go.PointerType ArrayEditor] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 103) in
-    (method_call #(ptrT.id ArrayEditor.id) #"Advance"%go (![#ptrT] "ae2")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#sliceT] "arr") in
+    (MethodResolve (go.PointerType ArrayEditor) Advance #() (![go.PointerType ArrayEditor] "ae2")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 104) in
-    (method_call #(ptrT.id ArrayEditor.id) #"Advance"%go (![#ptrT] "ae2")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#sliceT] "arr") in
+    (MethodResolve (go.PointerType ArrayEditor) Advance #() (![go.PointerType ArrayEditor] "ae2")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 105) in
-    (method_call #(ptrT.id ArrayEditor.id) #"Advance"%go (![#ptrT] "ae2")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#sliceT] "arr") in
+    (MethodResolve (go.PointerType ArrayEditor) Advance #() (![go.PointerType ArrayEditor] "ae2")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 2) in
-    (method_call #(ptrT.id ArrayEditor.id) #"Advance"%go (![#ptrT] "ae1")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#sliceT] "arr") in
+    (MethodResolve (go.PointerType ArrayEditor) Advance #() (![go.PointerType ArrayEditor] "ae1")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 3) in
-    (method_call #(ptrT.id ArrayEditor.id) #"Advance"%go (![#ptrT] "ae1")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#sliceT] "arr") in
+    (MethodResolve (go.PointerType ArrayEditor) Advance #() (![go.PointerType ArrayEditor] "ae1")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 4) in
-    (method_call #(ptrT.id ArrayEditor.id) #"Advance"%go (![#ptrT] "ae1")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#sliceT] "arr") in
+    (MethodResolve (go.PointerType ArrayEditor) Advance #() (![go.PointerType ArrayEditor] "ae1")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 5) in
-    (method_call #(ptrT.id ArrayEditor.id) #"Advance"%go (![#ptrT] "ae1")) "$a0" "$a1");;;
-    (if: ((((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1)))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2)))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3)))) ≥ #(W64 100)
+    (MethodResolve (go.PointerType ArrayEditor) Advance #() (![go.PointerType ArrayEditor] "ae1")) "$a0" "$a1");;;
+    (if: ((((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 0))) + (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 1)))) + (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 2)))) + (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 3)))) ≥ #(W64 100)
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) = #(W64 4)) && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) = #(W64 4)))).
+    return: (((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 3))) = #(W64 4)) && ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "arr") #(W64 0))) = #(W64 4)))).
 
 Definition testSliceLiteral : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceLiteral"%go.
 
 (* go: slices.go:80:6 *)
 Definition testSliceLiteralⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "bytes" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "bytes" := (GoAlloc (go.SliceType go.byte) #()) in
     let: "$r0" := ((let: "$sl0" := #(W8 1) in
     let: "$sl1" := #(W8 2) in
-    slice.literal #byteT ["$sl0"; "$sl1"])) in
-    do:  ("bytes" <-[#sliceT] "$r0");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    slice.literal go.byte ["$sl0"; "$sl1"])) in
+    do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
+    let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "bytes") #(W64 0))) = #(W8 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "ints" := (mem.alloc (type.zero_val #sliceT)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "bytes") #(W64 0))) = #(W8 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "ints" := (GoAlloc (go.SliceType go.uint64) #()) in
     let: "$r0" := ((let: "$sl0" := #(W64 1) in
     let: "$sl1" := #(W64 2) in
     let: "$sl2" := #(W64 3) in
-    slice.literal #uint64T ["$sl0"; "$sl1"; "$sl2"])) in
-    do:  ("ints" <-[#sliceT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "ints") #(W64 1))) = #(W64 2))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    slice.literal go.uint64 ["$sl0"; "$sl1"; "$sl2"])) in
+    do:  ("ints" <-[go.SliceType go.uint64] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "ints") #(W64 1))) = #(W64 2))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testSliceAppend : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceAppend"%go.
 
 (* go: slices.go:89:6 *)
 Definition testSliceAppendⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "bytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
-    do:  ("bytes" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "bytes") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "bytes" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte #(W64 0)) in
+    do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "bytes") in
     let: "$a1" := ((let: "$sl0" := #(W8 1) in
-    slice.literal #byteT ["$sl0"])) in
-    (slice.append #byteT) "$a0" "$a1") in
-    do:  ("bytes" <-[#sliceT] "$r0");;;
-    let: "newBytes" := (mem.alloc (type.zero_val #sliceT)) in
+    slice.literal go.byte ["$sl0"])) in
+    (slice.append go.byte) "$a0" "$a1") in
+    do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
+    let: "newBytes" := (GoAlloc (go.SliceType go.byte) #()) in
     let: "$r0" := ((let: "$sl0" := #(W8 2) in
     let: "$sl1" := #(W8 3) in
-    slice.literal #byteT ["$sl0"; "$sl1"])) in
-    do:  ("newBytes" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "bytes") in
-    let: "$a1" := (![#sliceT] "newBytes") in
-    (slice.append #byteT) "$a0" "$a1") in
-    do:  ("bytes" <-[#sliceT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#sliceT] "bytes") in
+    slice.literal go.byte ["$sl0"; "$sl1"])) in
+    do:  ("newBytes" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "bytes") in
+    let: "$a1" := (![go.SliceType go.byte] "newBytes") in
+    (slice.append go.byte) "$a0" "$a1") in
+    do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "bytes") in
     slice.len "$a0")) = #(W64 3))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "bytes") #(W64 2))) = #(W8 3))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "bytes") #(W64 2))) = #(W8 3))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
-Definition Bar : go_type := structT [
-  "a" :: uint64T;
-  "b" :: uint64T
+Definition Barⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "a"%go go.uint64);
+  (go.FieldDecl "b"%go go.uint64)
 ].
-#[global] Typeclasses Opaque Bar.
-#[global] Opaque Bar.
 
-Definition Foo : go_type := structT [
-  "bar" :: Bar
+Definition Fooⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "bar"%go Bar)
 ].
-#[global] Typeclasses Opaque Foo.
-#[global] Opaque Foo.
 
 (* go: struct_pointers.go:14:17 *)
 Definition Bar__mutateⁱᵐᵖˡ : val :=
   λ: "bar" <>,
-    exception_do (let: "bar" := (mem.alloc "bar") in
+    exception_do (let: "bar" := (GoAllocValue (go.PointerType Bar) "bar") in
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref #Bar #"a"%go (![#ptrT] "bar")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref Bar #"a"%go (![go.PointerType Bar] "bar")) <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  ((struct.field_ref #Bar #"b"%go (![#ptrT] "bar")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref Bar #"b"%go (![go.PointerType Bar] "bar")) <-[go.uint64] "$r0");;;
     return: #()).
 
 (* go: struct_pointers.go:19:17 *)
 Definition Foo__mutateBarⁱᵐᵖˡ : val :=
   λ: "foo" <>,
-    exception_do (let: "foo" := (mem.alloc "foo") in
-    do:  ((method_call #(ptrT.id Bar.id) #"mutate"%go (struct.field_ref #Foo #"bar"%go (![#ptrT] "foo"))) #());;;
+    exception_do (let: "foo" := (GoAllocValue (go.PointerType Foo) "foo") in
+    do:  ((MethodResolve (go.PointerType Bar) mutate #() (struct.field_ref Foo #"bar"%go (![go.PointerType Foo] "foo"))) #());;;
     return: #()).
 
 Definition testFooBarMutation : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFooBarMutation"%go.
@@ -2407,49 +2354,45 @@ Definition testFooBarMutation : go_string := "github.com/goose-lang/goose/testda
 (* go: struct_pointers.go:23:6 *)
 Definition testFooBarMutationⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #Foo)) in
+    exception_do (let: "x" := (GoAlloc Foo #()) in
     let: "$r0" := (let: "$bar" := (let: "$a" := #(W64 0) in
     let: "$b" := #(W64 0) in
-    struct.make #Bar [{
+    struct.make Bar [{
       "a" ::= "$a";
       "b" ::= "$b"
     }]) in
-    struct.make #Foo [{
+    struct.make Foo [{
       "bar" ::= "$bar"
     }]) in
-    do:  ("x" <-[#Foo] "$r0");;;
-    do:  ((method_call #(ptrT.id Foo.id) #"mutateBar"%go "x") #());;;
-    return: ((![#uint64T] (struct.field_ref #Bar #"a"%go (struct.field_ref #Foo #"bar"%go "x"))) = #(W64 2))).
+    do:  ("x" <-[Foo] "$r0");;;
+    do:  ((MethodResolve (go.PointerType Foo) mutateBar #() "x") #());;;
+    return: ((![go.uint64] (struct.field_ref Bar #"a"%go (struct.field_ref Foo #"bar"%go "x"))) = #(W64 2))).
 
-Definition TwoInts : go_type := structT [
-  "x" :: uint64T;
-  "y" :: uint64T
+Definition TwoIntsⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "x"%go go.uint64);
+  (go.FieldDecl "y"%go go.uint64)
 ].
-#[global] Typeclasses Opaque TwoInts.
-#[global] Opaque TwoInts.
 
-Definition S : go_type := structT [
-  "a" :: uint64T;
-  "b" :: TwoInts;
-  "c" :: boolT
+Definition Sⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "a"%go go.uint64);
+  (go.FieldDecl "b"%go TwoInts);
+  (go.FieldDecl "c"%go go.bool)
 ].
-#[global] Typeclasses Opaque S.
-#[global] Opaque S.
 
 Definition NewS : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.NewS"%go.
 
 (* go: structs.go:14:6 *)
 Definition NewSⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (mem.alloc (let: "$a" := #(W64 2) in
+    exception_do (return: (GoAllocValue S (let: "$a" := #(W64 2) in
      let: "$b" := (let: "$x" := #(W64 1) in
      let: "$y" := #(W64 2) in
-     struct.make #TwoInts [{
+     struct.make TwoInts [{
        "x" ::= "$x";
        "y" ::= "$y"
      }]) in
      let: "$c" := #true in
-     struct.make #S [{
+     struct.make S [{
        "a" ::= "$a";
        "b" ::= "$b";
        "c" ::= "$c"
@@ -2458,36 +2401,36 @@ Definition NewSⁱᵐᵖˡ : val :=
 (* go: structs.go:22:13 *)
 Definition S__readAⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (mem.alloc "s") in
-    return: (![#uint64T] (struct.field_ref #S #"a"%go (![#ptrT] "s")))).
+    exception_do (let: "s" := (GoAllocValue (go.PointerType S) "s") in
+    return: (![go.uint64] (struct.field_ref S #"a"%go (![go.PointerType S] "s")))).
 
 (* go: structs.go:26:13 *)
 Definition S__readBⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (mem.alloc "s") in
-    return: (![#TwoInts] (struct.field_ref #S #"b"%go (![#ptrT] "s")))).
+    exception_do (let: "s" := (GoAllocValue (go.PointerType S) "s") in
+    return: (![TwoInts] (struct.field_ref S #"b"%go (![go.PointerType S] "s")))).
 
 (* go: structs.go:30:12 *)
 Definition S__readBValⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (mem.alloc "s") in
-    return: (![#TwoInts] (struct.field_ref #S #"b"%go "s"))).
+    exception_do (let: "s" := (GoAllocValue S "s") in
+    return: (![TwoInts] (struct.field_ref S #"b"%go "s"))).
 
 (* go: structs.go:34:13 *)
 Definition S__updateBValXⁱᵐᵖˡ : val :=
   λ: "s" "i",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "i" := (mem.alloc "i") in
-    let: "$r0" := (![#uint64T] "i") in
-    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "s"))) <-[#uint64T] "$r0");;;
+    exception_do (let: "s" := (GoAllocValue (go.PointerType S) "s") in
+    let: "i" := (GoAllocValue go.uint64 "i") in
+    let: "$r0" := (![go.uint64] "i") in
+    do:  ((struct.field_ref TwoInts #"x"%go (struct.field_ref S #"b"%go (![go.PointerType S] "s"))) <-[go.uint64] "$r0");;;
     return: #()).
 
 (* go: structs.go:38:13 *)
 Definition S__negateCⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "$r0" := (~ (![#boolT] (struct.field_ref #S #"c"%go (![#ptrT] "s")))) in
-    do:  ((struct.field_ref #S #"c"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
+    exception_do (let: "s" := (GoAllocValue (go.PointerType S) "s") in
+    let: "$r0" := (~ (![go.bool] (struct.field_ref S #"c"%go (![go.PointerType S] "s")))) in
+    do:  ((struct.field_ref S #"c"%go (![go.PointerType S] "s")) <-[go.bool] "$r0");;;
     return: #()).
 
 Definition testStructUpdates : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructUpdates"%go.
@@ -2495,250 +2438,246 @@ Definition testStructUpdates : go_string := "github.com/goose-lang/goose/testdat
 (* go: structs.go:42:6 *)
 Definition testStructUpdatesⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "ns" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #NewS) #()) in
-    do:  ("ns" <-[#ptrT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && (((method_call #(ptrT.id S.id) #"readA"%go (![#ptrT] "ns")) #()) = #(W64 2))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "b1" := (mem.alloc (type.zero_val #TwoInts)) in
-    let: "$r0" := ((method_call #(ptrT.id S.id) #"readB"%go (![#ptrT] "ns")) #()) in
-    do:  ("b1" <-[#TwoInts] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go "b1")) = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrT.id S.id) #"negateC"%go (![#ptrT] "ns")) #());;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref #S #"c"%go (![#ptrT] "ns"))) = #false)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "ns" := (GoAlloc (go.PointerType S) #()) in
+    let: "$r0" := ((FuncResolve NewS #()) #()) in
+    do:  ("ns" <-[go.PointerType S] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && (((MethodResolve (go.PointerType S) readA #() (![go.PointerType S] "ns")) #()) = #(W64 2))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "b1" := (GoAlloc TwoInts #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType S) readB #() (![go.PointerType S] "ns")) #()) in
+    do:  ("b1" <-[TwoInts] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go "b1")) = #(W64 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    do:  ((MethodResolve (go.PointerType S) negateC #() (![go.PointerType S] "ns")) #());;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.bool] (struct.field_ref S #"c"%go (![go.PointerType S] "ns"))) = #false)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  ((struct.field_ref #TwoInts #"x"%go "b1") <-[#uint64T] "$r0");;;
-    let: "b2" := (mem.alloc (type.zero_val #TwoInts)) in
-    let: "$r0" := ((method_call #(ptrT.id S.id) #"readB"%go (![#ptrT] "ns")) #()) in
-    do:  ("b2" <-[#TwoInts] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go "b2")) = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "b3" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
-    do:  ("b3" <-[#ptrT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "b3"))) = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ((struct.field_ref TwoInts #"x"%go "b1") <-[go.uint64] "$r0");;;
+    let: "b2" := (GoAlloc TwoInts #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType S) readB #() (![go.PointerType S] "ns")) #()) in
+    do:  ("b2" <-[TwoInts] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go "b2")) = #(W64 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "b3" := (GoAlloc (go.PointerType TwoInts) #()) in
+    let: "$r0" := (struct.field_ref S #"b"%go (![go.PointerType S] "ns")) in
+    do:  ("b3" <-[go.PointerType TwoInts] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go (![go.PointerType TwoInts] "b3"))) = #(W64 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
     do:  (let: "$a0" := #(W64 4) in
-    (method_call #(ptrT.id S.id) #"updateBValX"%go (![#ptrT] "ns")) "$a0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((struct.field_get #TwoInts "x" ((method_call #(ptrT.id S.id) #"readBVal"%go (![#ptrT] "ns")) #())) = #(W64 4))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    (MethodResolve (go.PointerType S) updateBValX #() (![go.PointerType S] "ns")) "$a0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((struct.field_get TwoInts "x" ((MethodResolve (go.PointerType S) readBVal #() (![go.PointerType S] "ns")) #())) = #(W64 4))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testNestedStructUpdates : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedStructUpdates"%go.
 
 (* go: structs.go:65:6 *)
 Definition testNestedStructUpdatesⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "ns" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #NewS) #()) in
-    do:  ("ns" <-[#ptrT] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "ns" := (GoAlloc (go.PointerType S) #()) in
+    let: "$r0" := ((FuncResolve NewS #()) #()) in
+    do:  ("ns" <-[go.PointerType S] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns")))) = #(W64 5))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((func_call #NewS) #()) in
-    do:  ("ns" <-[#ptrT] "$r0");;;
-    let: "p" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
-    do:  ("p" <-[#ptrT] "$r0");;;
+    do:  ((struct.field_ref TwoInts #"x"%go (struct.field_ref S #"b"%go (![go.PointerType S] "ns"))) <-[go.uint64] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go (struct.field_ref S #"b"%go (![go.PointerType S] "ns")))) = #(W64 5))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((FuncResolve NewS #()) #()) in
+    do:  ("ns" <-[go.PointerType S] "$r0");;;
+    let: "p" := (GoAlloc (go.PointerType TwoInts) #()) in
+    let: "$r0" := (struct.field_ref S #"b"%go (![go.PointerType S] "ns")) in
+    do:  ("p" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref #TwoInts #"x"%go (![#ptrT] "p")) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns")))) = #(W64 5))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((func_call #NewS) #()) in
-    do:  ("ns" <-[#ptrT] "$r0");;;
-    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
-    do:  ("p" <-[#ptrT] "$r0");;;
+    do:  ((struct.field_ref TwoInts #"x"%go (![go.PointerType TwoInts] "p")) <-[go.uint64] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go (struct.field_ref S #"b"%go (![go.PointerType S] "ns")))) = #(W64 5))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((FuncResolve NewS #()) #()) in
+    do:  ("ns" <-[go.PointerType S] "$r0");;;
+    let: "$r0" := (struct.field_ref S #"b"%go (![go.PointerType S] "ns")) in
+    do:  ("p" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "p"))) = #(W64 5))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((func_call #NewS) #()) in
-    do:  ("ns" <-[#ptrT] "$r0");;;
-    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
-    do:  ("p" <-[#ptrT] "$r0");;;
+    do:  ((struct.field_ref TwoInts #"x"%go (struct.field_ref S #"b"%go (![go.PointerType S] "ns"))) <-[go.uint64] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go (![go.PointerType TwoInts] "p"))) = #(W64 5))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((FuncResolve NewS #()) #()) in
+    do:  ("ns" <-[go.PointerType S] "$r0");;;
+    let: "$r0" := (struct.field_ref S #"b"%go (![go.PointerType S] "ns")) in
+    do:  ("p" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "p"))) = #(W64 5))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ((struct.field_ref TwoInts #"x"%go (struct.field_ref S #"b"%go (![go.PointerType S] "ns"))) <-[go.uint64] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go (![go.PointerType TwoInts] "p"))) = #(W64 5))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testStructConstructions : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructConstructions"%go.
 
 (* go: structs.go:90:6 *)
 Definition testStructConstructionsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "p1" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "p2" := (mem.alloc (type.zero_val #TwoInts)) in
-    let: "p3" := (mem.alloc (type.zero_val #TwoInts)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "p1" := (GoAlloc (go.PointerType TwoInts) #()) in
+    let: "p2" := (GoAlloc TwoInts #()) in
+    let: "p3" := (GoAlloc TwoInts #()) in
     let: "$r0" := (let: "$y" := #(W64 0) in
     let: "$x" := #(W64 0) in
-    struct.make #TwoInts [{
+    struct.make TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("p3" <-[#TwoInts] "$r0");;;
-    let: "p4" := (mem.alloc (type.zero_val #TwoInts)) in
+    do:  ("p3" <-[TwoInts] "$r0");;;
+    let: "p4" := (GoAlloc TwoInts #()) in
     let: "$r0" := (let: "$x" := #(W64 0) in
     let: "$y" := #(W64 0) in
-    struct.make #TwoInts [{
+    struct.make TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("p4" <-[#TwoInts] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#ptrT] "p1") = #null)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := (mem.alloc (type.zero_val #TwoInts)) in
-    do:  ("p1" <-[#ptrT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#TwoInts] "p2") = (![#TwoInts] "p3"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#TwoInts] "p3") = (![#TwoInts] "p4"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#TwoInts] "p4") = (![#TwoInts] (![#ptrT] "p1")))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ("p4" ≠ (![#ptrT] "p1"))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("p4" <-[TwoInts] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.PointerType TwoInts] "p1") = #null)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := (GoAlloc TwoInts #()) in
+    do:  ("p1" <-[go.PointerType TwoInts] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![TwoInts] "p2") = (![TwoInts] "p3"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![TwoInts] "p3") = (![TwoInts] "p4"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![TwoInts] "p4") = (![TwoInts] (![go.PointerType TwoInts] "p1")))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ("p4" ≠ (![go.PointerType TwoInts] "p1"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
 Definition testIncompleteStruct : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIncompleteStruct"%go.
 
 (* go: structs.go:109:6 *)
 Definition testIncompleteStructⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "p1" := (mem.alloc (type.zero_val #TwoInts)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "p1" := (GoAlloc TwoInts #()) in
     let: "$r0" := (let: "$x" := #(W64 0) in
-    struct.make #TwoInts [{
+    struct.make TwoInts [{
       "x" ::= "$x";
-      "y" ::= type.zero_val #uint64T
+      "y" ::= GoZeroVal go.uint64 #()
     }]) in
-    do:  ("p1" <-[#TwoInts] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"y"%go "p1")) = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "p2" := (mem.alloc (type.zero_val #S)) in
+    do:  ("p1" <-[TwoInts] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"y"%go "p1")) = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "p2" := (GoAlloc S #()) in
     let: "$r0" := (let: "$a" := #(W64 2) in
-    struct.make #S [{
+    struct.make S [{
       "a" ::= "$a";
-      "b" ::= type.zero_val #TwoInts;
-      "c" ::= type.zero_val #boolT
+      "b" ::= GoZeroVal TwoInts #();
+      "c" ::= GoZeroVal go.bool #()
     }]) in
-    do:  ("p2" <-[#S] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go "p2"))) = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref #S #"c"%go "p2")) = #false)) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    do:  ("p2" <-[S] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (struct.field_ref TwoInts #"x"%go (struct.field_ref S #"b"%go "p2"))) = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.bool] (struct.field_ref S #"c"%go "p2")) = #false)) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
-Definition StructWrap : go_type := structT [
-  "i" :: uint64T
+Definition StructWrapⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "i"%go go.uint64)
 ].
-#[global] Typeclasses Opaque StructWrap.
-#[global] Opaque StructWrap.
 
 Definition testStoreInStructVar : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructVar"%go.
 
 (* go: structs.go:126:6 *)
 Definition testStoreInStructVarⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (mem.alloc (type.zero_val #StructWrap)) in
+    exception_do (let: "p" := (GoAlloc StructWrap #()) in
     let: "$r0" := (let: "$i" := #(W64 0) in
-    struct.make #StructWrap [{
+    struct.make StructWrap [{
       "i" ::= "$i"
     }]) in
-    do:  ("p" <-[#StructWrap] "$r0");;;
+    do:  ("p" <-[StructWrap] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref #StructWrap #"i"%go "p") <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] (struct.field_ref #StructWrap #"i"%go "p")) = #(W64 5))).
+    do:  ((struct.field_ref StructWrap #"i"%go "p") <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] (struct.field_ref StructWrap #"i"%go "p")) = #(W64 5))).
 
 Definition testStoreInStructPointerVar : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructPointerVar"%go.
 
 (* go: structs.go:132:6 *)
 Definition testStoreInStructPointerVarⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #StructWrap)) in
-    do:  ("p" <-[#ptrT] "$r0");;;
+    exception_do (let: "p" := (GoAlloc (go.PointerType StructWrap) #()) in
+    let: "$r0" := (GoAlloc StructWrap #()) in
+    do:  ("p" <-[go.PointerType StructWrap] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref #StructWrap #"i"%go (![#ptrT] "p")) <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] (struct.field_ref #StructWrap #"i"%go (![#ptrT] "p"))) = #(W64 5))).
+    do:  ((struct.field_ref StructWrap #"i"%go (![go.PointerType StructWrap] "p")) <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] (struct.field_ref StructWrap #"i"%go (![go.PointerType StructWrap] "p"))) = #(W64 5))).
 
 Definition testStoreComposite : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreComposite"%go.
 
 (* go: structs.go:138:6 *)
 Definition testStoreCompositeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #TwoInts)) in
-    do:  ("p" <-[#ptrT] "$r0");;;
+    exception_do (let: "p" := (GoAlloc (go.PointerType TwoInts) #()) in
+    let: "$r0" := (GoAlloc TwoInts #()) in
+    do:  ("p" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := (let: "$x" := #(W64 3) in
     let: "$y" := #(W64 4) in
-    struct.make #TwoInts [{
+    struct.make TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ((![#ptrT] "p") <-[#TwoInts] "$r0");;;
-    return: ((![#uint64T] (struct.field_ref #TwoInts #"y"%go (![#ptrT] "p"))) = #(W64 4))).
+    do:  ((![go.PointerType TwoInts] "p") <-[TwoInts] "$r0");;;
+    return: ((![go.uint64] (struct.field_ref TwoInts #"y"%go (![go.PointerType TwoInts] "p"))) = #(W64 4))).
 
 Definition testStoreSlice : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreSlice"%go.
 
 (* go: structs.go:144:6 *)
 Definition testStoreSliceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
-    do:  ("p" <-[#ptrT] "$r0");;;
-    let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #uint64T #(W64 3)) in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    let: "$r0" := (![#sliceT] "s") in
-    do:  ((![#ptrT] "p") <-[#sliceT] "$r0");;;
-    return: ((s_to_w64 (let: "$a0" := (![#sliceT] (![#ptrT] "p")) in
+    exception_do (let: "p" := (GoAlloc (go.PointerType (go.SliceType go.uint64)) #()) in
+    let: "$r0" := (GoAlloc (go.SliceType go.uint64) #()) in
+    do:  ("p" <-[go.PointerType (go.SliceType go.uint64)] "$r0");;;
+    let: "s" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "$r0" := (slice.make2 go.uint64 #(W64 3)) in
+    do:  ("s" <-[go.SliceType go.uint64] "$r0");;;
+    let: "$r0" := (![go.SliceType go.uint64] "s") in
+    do:  ((![go.PointerType (go.SliceType go.uint64)] "p") <-[go.SliceType go.uint64] "$r0");;;
+    return: ((s_to_w64 (let: "$a0" := (![go.SliceType go.uint64] (![go.PointerType (go.SliceType go.uint64)] "p")) in
      slice.len "$a0")) = #(W64 3))).
 
-Definition StructWithFunc : go_type := structT [
-  "fn" :: funcT
+Definition StructWithFuncⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "fn"%go go.FunctionType (go.Signature [go.uint64] #false [go.uint64]))
 ].
-#[global] Typeclasses Opaque StructWithFunc.
-#[global] Opaque StructWithFunc.
 
 Definition testStructFieldFunc : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructFieldFunc"%go.
 
 (* go: structs.go:155:6 *)
 Definition testStructFieldFuncⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "a" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #StructWithFunc)) in
-    do:  ("a" <-[#ptrT] "$r0");;;
+    exception_do (let: "a" := (GoAlloc (go.PointerType StructWithFunc) #()) in
+    let: "$r0" := (GoAlloc StructWithFunc #()) in
+    do:  ("a" <-[go.PointerType StructWithFunc] "$r0");;;
     let: "$r0" := (λ: "arg",
-      exception_do (let: "arg" := (mem.alloc "arg") in
-      return: ((![#uint64T] "arg") * #(W64 2)))
+      exception_do (let: "arg" := (GoAllocValue go.uint64 "arg") in
+      return: ((![go.uint64] "arg") * #(W64 2)))
       ) in
-    do:  ((struct.field_ref #StructWithFunc #"fn"%go (![#ptrT] "a")) <-[#funcT] "$r0");;;
+    do:  ((struct.field_ref StructWithFunc #"fn"%go (![go.PointerType StructWithFunc] "a")) <-[go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] "$r0");;;
     return: ((let: "$a0" := #(W64 10) in
-     (![#funcT] (struct.field_ref #StructWithFunc #"fn"%go (![#ptrT] "a"))) "$a0") = #(W64 20))).
+     (![go.FunctionType (go.Signature [go.uint64] #false [go.uint64])] (struct.field_ref StructWithFunc #"fn"%go (![go.PointerType StructWithFunc] "a"))) "$a0") = #(W64 20))).
 
 Definition testSwitchVal : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchVal"%go.
 
 (* go: switch.go:3:6 *)
 Definition testSwitchValⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "$sw" := (![#uint64T] "x") in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "$sw" := (![go.uint64] "x") in
     (if: "$sw" = #(W64 0)
     then return: (#true)
     else
@@ -2751,10 +2690,10 @@ Definition testSwitchMultiple : go_string := "github.com/goose-lang/goose/testda
 (* go: switch.go:15:6 *)
 Definition testSwitchMultipleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("x" <-[#uint64T] "$r0");;;
-    let: "$sw" := (![#uint64T] "x") in
+    do:  ("x" <-[go.uint64] "$r0");;;
+    let: "$sw" := (![go.uint64] "x") in
     (if: ("$sw" = #(W64 1)) || ("$sw" = #(W64 10))
     then return: (#false)
     else
@@ -2768,30 +2707,26 @@ Definition testSwitchDefaultTrue : go_string := "github.com/goose-lang/goose/tes
 (* go: switch.go:26:6 *)
 Definition testSwitchDefaultTrueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 1) in
-    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  ("x" <-[go.uint64] "$r0");;;
     let: "$sw" := #true in
     (if: "$sw" = #false
     then return: (#false)
     else
-      (if: "$sw" = ((![#uint64T] "x") = #(W64 2))
+      (if: "$sw" = ((![go.uint64] "x") = #(W64 2))
       then return: (#false)
       else return: (#true)))).
 
-Definition switchConcrete : go_type := structT [
+Definition switchConcreteⁱᵐᵖˡ  : go.type := go.StructType [
 ].
-#[global] Typeclasses Opaque switchConcrete.
-#[global] Opaque switchConcrete.
 
-Definition switchInterface : go_type := interfaceT.
-#[global] Typeclasses Opaque switchInterface.
-#[global] Opaque switchInterface.
+Definition switchInterfaceⁱᵐᵖˡ  : go.type := go.InterfaceType [go.MethodElem #"marker"%go (go.Signature [] #false [])].
 
 (* go: switch.go:45:26 *)
 Definition switchConcrete__markerⁱᵐᵖˡ : val :=
   λ: "c" <>,
-    exception_do (let: "c" := (mem.alloc "c") in
+    exception_do (let: "c" := (GoAllocValue (go.PointerType switchConcrete) "c") in
     do:  #()).
 
 Definition testSwitchConversion : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchConversion"%go.
@@ -2799,19 +2734,19 @@ Definition testSwitchConversion : go_string := "github.com/goose-lang/goose/test
 (* go: switch.go:48:6 *)
 Definition testSwitchConversionⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "v" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (struct.make #switchConcrete [{
+    exception_do (let: "v" := (GoAlloc (go.PointerType switchConcrete) #()) in
+    let: "$r0" := (GoAllocValue switchConcrete (struct.make switchConcrete [{
     }])) in
-    do:  ("v" <-[#ptrT] "$r0");;;
-    let: "x" := (mem.alloc (type.zero_val #switchInterface)) in
-    let: "$r0" := (interface.make #(ptrT.id switchConcrete.id) (![#ptrT] "v")) in
-    do:  ("x" <-[#switchInterface] "$r0");;;
-    let: "$sw" := (![#switchInterface] "x") in
-    (if: "$sw" = (interface.make #(ptrT.id switchConcrete.id) (![#ptrT] "v"))
+    do:  ("v" <-[go.PointerType switchConcrete] "$r0");;;
+    let: "x" := (GoAlloc switchInterface #()) in
+    let: "$r0" := (InterfaceMake (go.PointerType switchConcrete) (![go.PointerType switchConcrete] "v")) in
+    do:  ("x" <-[switchInterface] "$r0");;;
+    let: "$sw" := (![switchInterface] "x") in
+    (if: "$sw" = (InterfaceMake (go.PointerType switchConcrete) (![go.PointerType switchConcrete] "v"))
     then do:  #()
     else return: (#false));;;
-    let: "$sw" := (![#ptrT] "v") in
-    (if: (interface.make #(ptrT.id switchConcrete.id) "$sw") = (![#switchInterface] "x")
+    let: "$sw" := (![go.PointerType switchConcrete] "v") in
+    (if: (InterfaceMake (go.PointerType switchConcrete) "$sw") = (![switchInterface] "x")
     then do:  #()
     else return: (#false));;;
     return: (#true)).
@@ -2821,25 +2756,25 @@ Definition testPointerAssignment : go_string := "github.com/goose-lang/goose/tes
 (* go: vars.go:3:6 *)
 Definition testPointerAssignmentⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "x" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("x" <-[#boolT] "$r0");;;
-    return: (![#boolT] "x")).
+    do:  ("x" <-[go.bool] "$r0");;;
+    return: (![go.bool] "x")).
 
 Definition testAddressOfLocal : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAddressOfLocal"%go.
 
 (* go: vars.go:9:6 *)
 Definition testAddressOfLocalⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "x" := (GoAlloc go.bool #()) in
     let: "$r0" := #false in
-    do:  ("x" <-[#boolT] "$r0");;;
-    let: "xptr" := (mem.alloc (type.zero_val #ptrT)) in
+    do:  ("x" <-[go.bool] "$r0");;;
+    let: "xptr" := (GoAlloc (go.PointerType go.bool) #()) in
     let: "$r0" := "x" in
-    do:  ("xptr" <-[#ptrT] "$r0");;;
+    do:  ("xptr" <-[go.PointerType go.bool] "$r0");;;
     let: "$r0" := #true in
-    do:  ((![#ptrT] "xptr") <-[#boolT] "$r0");;;
-    return: ((![#boolT] "x") && (![#boolT] (![#ptrT] "xptr")))).
+    do:  ((![go.PointerType go.bool] "xptr") <-[go.bool] "$r0");;;
+    return: ((![go.bool] "x") && (![go.bool] (![go.PointerType go.bool] "xptr")))).
 
 Definition testAnonymousAssign : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAnonymousAssign"%go.
 
@@ -2855,40 +2790,38 @@ Definition MaxTxnWrites : val := #(W64 10).
 
 Definition logLength : val := #(W64 21).
 
-Definition Log : go_type := structT [
-  "d" :: disk.Disk;
-  "l" :: ptrT;
-  "cache" :: mapT uint64T sliceT;
-  "length" :: ptrT
+Definition Logⁱᵐᵖˡ  : go.type := go.StructType [
+  (go.FieldDecl "d"%go disk.Disk);
+  (go.FieldDecl "l"%go go.PointerType sync.Mutex);
+  (go.FieldDecl "cache"%go go.MapType go.uint64 (go.SliceType go.byte));
+  (go.FieldDecl "length"%go go.PointerType go.uint64)
 ].
-#[global] Typeclasses Opaque Log.
-#[global] Opaque Log.
 
 Definition intToBlock : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.intToBlock"%go.
 
 (* go: wal.go:25:6 *)
 Definition intToBlockⁱᵐᵖˡ : val :=
   λ: "a",
-    exception_do (let: "a" := (mem.alloc "a") in
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT disk.BlockSize) in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (![#uint64T] "a") in
-    (func_call #primitive.UInt64Put) "$a0" "$a1");;;
-    return: (![#sliceT] "b")).
+    exception_do (let: "a" := (GoAllocValue go.uint64 "a") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (slice.make2 go.byte disk.BlockSize) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.uint64] "a") in
+    (FuncResolve primitive.UInt64Put #()) "$a0" "$a1");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition blockToInt : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.blockToInt"%go.
 
 (* go: wal.go:31:6 *)
 Definition blockToIntⁱᵐᵖˡ : val :=
   λ: "v",
-    exception_do (let: "v" := (mem.alloc "v") in
-    let: "a" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "v") in
-    (func_call #primitive.UInt64Get) "$a0") in
-    do:  ("a" <-[#uint64T] "$r0");;;
-    return: (![#uint64T] "a")).
+    exception_do (let: "v" := (GoAllocValue (go.SliceType go.byte) "v") in
+    let: "a" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "v") in
+    (FuncResolve primitive.UInt64Get #()) "$a0") in
+    do:  ("a" <-[go.uint64] "$r0");;;
+    return: (![go.uint64] "a")).
 
 Definition New : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.New"%go.
 
@@ -2897,40 +2830,40 @@ Definition New : go_string := "github.com/goose-lang/goose/testdata/examples/sem
    go: wal.go:37:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "d" := (mem.alloc (type.zero_val #disk.Disk)) in
-    let: "$r0" := ((func_call #disk.Get) #()) in
-    do:  ("d" <-[#disk.Disk] "$r0");;;
-    let: "diskSize" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((interface.get #"Size"%go (![#disk.Disk] "d")) #()) in
-    do:  ("diskSize" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "diskSize") ≤ logLength
+    exception_do (let: "d" := (GoAlloc disk.Disk #()) in
+    let: "$r0" := ((FuncResolve disk.Get #()) #()) in
+    do:  ("d" <-[disk.Disk] "$r0");;;
+    let: "diskSize" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := ((interface.get #"Size"%go (![disk.Disk] "d")) #()) in
+    do:  ("diskSize" <-[go.uint64] "$r0");;;
+    (if: (![go.uint64] "diskSize") ≤ logLength
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"disk is too small to host log"%go) in
+      do:  (let: "$a0" := (InterfaceMake go.string #"disk is too small to host log"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "cache" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
-    let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("cache" <-[type.mapT #uint64T #sliceT] "$r0");;;
-    let: "header" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) #()) in
+    let: "$r0" := (map.make go.uint64 (go.SliceType go.byte)) in
+    do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
+    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #intToBlock) "$a0") in
-    do:  ("header" <-[#sliceT] "$r0");;;
+    (FuncResolve intToBlock #()) "$a0") in
+    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![#sliceT] "header") in
-    (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
-    let: "lengthPtr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ("lengthPtr" <-[#ptrT] "$r0");;;
+    let: "$a1" := (![go.SliceType go.byte] "header") in
+    (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
+    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) #()) in
+    let: "$r0" := (GoAlloc go.uint64 #()) in
+    do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![#ptrT] "lengthPtr") <-[#uint64T] "$r0");;;
-    let: "l" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("l" <-[#ptrT] "$r0");;;
-    return: (let: "$d" := (![#disk.Disk] "d") in
-     let: "$cache" := (![type.mapT #uint64T #sliceT] "cache") in
-     let: "$length" := (![#ptrT] "lengthPtr") in
-     let: "$l" := (![#ptrT] "l") in
-     struct.make #Log [{
+    do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
+    let: "l" := (GoAlloc (go.PointerType sync.Mutex) #()) in
+    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
+    return: (let: "$d" := (![disk.Disk] "d") in
+     let: "$cache" := (![go.MapType go.uint64 (go.SliceType go.byte)] "cache") in
+     let: "$length" := (![go.PointerType go.uint64] "lengthPtr") in
+     let: "$l" := (![go.PointerType sync.Mutex] "l") in
+     struct.make Log [{
        "d" ::= "$d";
        "l" ::= "$l";
        "cache" ::= "$cache";
@@ -2940,15 +2873,15 @@ Definition Newⁱᵐᵖˡ : val :=
 (* go: wal.go:52:14 *)
 Definition Log__lockⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #());;;
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Lock #() (![go.PointerType sync.Mutex] (struct.field_ref Log #"l"%go "l"))) #());;;
     return: #()).
 
 (* go: wal.go:56:14 *)
 Definition Log__unlockⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #());;;
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) Unlock #() (![go.PointerType sync.Mutex] (struct.field_ref Log #"l"%go "l"))) #());;;
     return: #()).
 
 (* BeginTxn allocates space for a new transaction in the log.
@@ -2958,17 +2891,17 @@ Definition Log__unlockⁱᵐᵖˡ : val :=
    go: wal.go:63:14 *)
 Definition Log__BeginTxnⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
-    let: "length" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
-    do:  ("length" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "length") = #(W64 0)
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    do:  ((MethodResolve Log lock #() (![Log] "l")) #());;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (struct.field_ref Log #"length"%go "l"))) in
+    do:  ("length" <-[go.uint64] "$r0");;;
+    (if: (![go.uint64] "length") = #(W64 0)
     then
-      do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+      do:  ((MethodResolve Log unlock #() (![Log] "l")) #());;;
       return: (#true)
     else do:  #());;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    do:  ((MethodResolve Log unlock #() (![Log] "l")) #());;;
     return: (#false)).
 
 (* Read from the logical disk.
@@ -2978,72 +2911,72 @@ Definition Log__BeginTxnⁱᵐᵖˡ : val :=
    go: wal.go:77:14 *)
 Definition Log__Readⁱᵐᵖˡ : val :=
   λ: "l" "a",
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "a" := (mem.alloc "a") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "v" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a")) in
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    let: "a" := (GoAllocValue go.uint64 "a") in
+    do:  ((MethodResolve Log lock #() (![Log] "l")) #());;;
+    let: "ok" := (GoAlloc go.bool #()) in
+    let: "v" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: ("$ret0", "$ret1") := (map.get (![go.MapType go.uint64 (go.SliceType go.byte)] (struct.field_ref Log #"cache"%go "l")) (![go.uint64] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[#sliceT] "$r0");;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    (if: ![#boolT] "ok"
+    do:  ("v" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r1");;;
+    (if: ![go.bool] "ok"
     then
-      do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
-      return: (![#sliceT] "v")
+      do:  ((MethodResolve Log unlock #() (![Log] "l")) #());;;
+      return: (![go.SliceType go.byte] "v")
     else do:  #());;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
-    let: "dv" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (logLength + (![#uint64T] "a")) in
-    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0") in
-    do:  ("dv" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "dv")).
+    do:  ((MethodResolve Log unlock #() (![Log] "l")) #());;;
+    let: "dv" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$a0" := (logLength + (![go.uint64] "a")) in
+    (interface.get #"Read"%go (![disk.Disk] (struct.field_ref Log #"d"%go "l"))) "$a0") in
+    do:  ("dv" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "dv")).
 
 (* go: wal.go:90:14 *)
 Definition Log__Sizeⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "sz" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((interface.get #"Size"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) #()) in
-    do:  ("sz" <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] "sz") - logLength)).
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    let: "sz" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := ((interface.get #"Size"%go (![disk.Disk] (struct.field_ref Log #"d"%go "l"))) #()) in
+    do:  ("sz" <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] "sz") - logLength)).
 
 (* Write to the disk through the log.
 
    go: wal.go:97:14 *)
 Definition Log__Writeⁱᵐᵖˡ : val :=
   λ: "l" "a" "v",
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "v" := (mem.alloc "v") in
-    let: "a" := (mem.alloc "a") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
-    let: "length" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
-    do:  ("length" <-[#uint64T] "$r0");;;
-    (if: (![#uint64T] "length") ≥ MaxTxnWrites
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    let: "v" := (GoAllocValue (go.SliceType go.byte) "v") in
+    let: "a" := (GoAllocValue go.uint64 "a") in
+    do:  ((MethodResolve Log lock #() (![Log] "l")) #());;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (struct.field_ref Log #"length"%go "l"))) in
+    do:  ("length" <-[go.uint64] "$r0");;;
+    (if: (![go.uint64] "length") ≥ MaxTxnWrites
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"transaction is at capacity"%go) in
+      do:  (let: "$a0" := (InterfaceMake go.string #"transaction is at capacity"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "aBlock" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "a") in
-    (func_call #intToBlock) "$a0") in
-    do:  ("aBlock" <-[#sliceT] "$r0");;;
-    let: "nextAddr" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (#(W64 1) + (#(W64 2) * (![#uint64T] "length"))) in
-    do:  ("nextAddr" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "nextAddr") in
-    let: "$a1" := (![#sliceT] "aBlock") in
-    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
-    do:  (let: "$a0" := ((![#uint64T] "nextAddr") + #(W64 1)) in
-    let: "$a1" := (![#sliceT] "v") in
-    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
-    let: "$r0" := (![#sliceT] "v") in
-    do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a") "$r0");;;
-    let: "$r0" := ((![#uint64T] "length") + #(W64 1)) in
-    do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    let: "aBlock" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] "a") in
+    (FuncResolve intToBlock #()) "$a0") in
+    do:  ("aBlock" <-[go.SliceType go.byte] "$r0");;;
+    let: "nextAddr" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (#(W64 1) + (#(W64 2) * (![go.uint64] "length"))) in
+    do:  ("nextAddr" <-[go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![go.uint64] "nextAddr") in
+    let: "$a1" := (![go.SliceType go.byte] "aBlock") in
+    (interface.get #"Write"%go (![disk.Disk] (struct.field_ref Log #"d"%go "l"))) "$a0" "$a1");;;
+    do:  (let: "$a0" := ((![go.uint64] "nextAddr") + #(W64 1)) in
+    let: "$a1" := (![go.SliceType go.byte] "v") in
+    (interface.get #"Write"%go (![disk.Disk] (struct.field_ref Log #"d"%go "l"))) "$a0" "$a1");;;
+    let: "$r0" := (![go.SliceType go.byte] "v") in
+    do:  (map.insert (![go.MapType go.uint64 (go.SliceType go.byte)] (struct.field_ref Log #"cache"%go "l")) (![go.uint64] "a") "$r0");;;
+    let: "$r0" := ((![go.uint64] "length") + #(W64 1)) in
+    do:  ((![go.PointerType go.uint64] (struct.field_ref Log #"length"%go "l")) <-[go.uint64] "$r0");;;
+    do:  ((MethodResolve Log unlock #() (![Log] "l")) #());;;
     return: #()).
 
 (* Commit the current transaction.
@@ -3051,19 +2984,19 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
    go: wal.go:113:14 *)
 Definition Log__Commitⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
-    let: "length" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
-    do:  ("length" <-[#uint64T] "$r0");;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
-    let: "header" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "length") in
-    (func_call #intToBlock) "$a0") in
-    do:  ("header" <-[#sliceT] "$r0");;;
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    do:  ((MethodResolve Log lock #() (![Log] "l")) #());;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (struct.field_ref Log #"length"%go "l"))) in
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ((MethodResolve Log unlock #() (![Log] "l")) #());;;
+    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] "length") in
+    (FuncResolve intToBlock #()) "$a0") in
+    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![#sliceT] "header") in
-    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
+    let: "$a1" := (![go.SliceType go.byte] "header") in
+    (interface.get #"Write"%go (![disk.Disk] (struct.field_ref Log #"d"%go "l"))) "$a0" "$a1");;;
     return: #()).
 
 Definition getLogEntry : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.getLogEntry"%go.
@@ -3071,24 +3004,24 @@ Definition getLogEntry : go_string := "github.com/goose-lang/goose/testdata/exam
 (* go: wal.go:122:6 *)
 Definition getLogEntryⁱᵐᵖˡ : val :=
   λ: "d" "logOffset",
-    exception_do (let: "logOffset" := (mem.alloc "logOffset") in
-    let: "d" := (mem.alloc "d") in
-    let: "diskAddr" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (#(W64 1) + (#(W64 2) * (![#uint64T] "logOffset"))) in
-    do:  ("diskAddr" <-[#uint64T] "$r0");;;
-    let: "aBlock" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "diskAddr") in
-    (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
-    do:  ("aBlock" <-[#sliceT] "$r0");;;
-    let: "a" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "aBlock") in
-    (func_call #blockToInt) "$a0") in
-    do:  ("a" <-[#uint64T] "$r0");;;
-    let: "v" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := ((![#uint64T] "diskAddr") + #(W64 1)) in
-    (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
-    do:  ("v" <-[#sliceT] "$r0");;;
-    return: (![#uint64T] "a", ![#sliceT] "v")).
+    exception_do (let: "logOffset" := (GoAllocValue go.uint64 "logOffset") in
+    let: "d" := (GoAllocValue disk.Disk "d") in
+    let: "diskAddr" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (#(W64 1) + (#(W64 2) * (![go.uint64] "logOffset"))) in
+    do:  ("diskAddr" <-[go.uint64] "$r0");;;
+    let: "aBlock" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] "diskAddr") in
+    (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
+    do:  ("aBlock" <-[go.SliceType go.byte] "$r0");;;
+    let: "a" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "aBlock") in
+    (FuncResolve blockToInt #()) "$a0") in
+    do:  ("a" <-[go.uint64] "$r0");;;
+    let: "v" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$a0" := ((![go.uint64] "diskAddr") + #(W64 1)) in
+    (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
+    do:  ("v" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.uint64] "a", ![go.SliceType go.byte] "v")).
 
 Definition applyLog : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.applyLog"%go.
 
@@ -3097,28 +3030,28 @@ Definition applyLog : go_string := "github.com/goose-lang/goose/testdata/example
    go: wal.go:131:6 *)
 Definition applyLogⁱᵐᵖˡ : val :=
   λ: "d" "length",
-    exception_do (let: "length" := (mem.alloc "length") in
-    let: "d" := (mem.alloc "d") in
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    exception_do (let: "length" := (GoAllocValue go.uint64 "length") in
+    let: "d" := (GoAllocValue disk.Disk "d") in
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
+    do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (![#uint64T] "i") < (![#uint64T] "length")
+      (if: (![go.uint64] "i") < (![go.uint64] "length")
       then
-        let: "v" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "a" := (mem.alloc (type.zero_val #uint64T)) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![#disk.Disk] "d") in
-        let: "$a1" := (![#uint64T] "i") in
-        (func_call #getLogEntry) "$a0" "$a1") in
+        let: "v" := (GoAlloc (go.SliceType go.byte) #()) in
+        let: "a" := (GoAlloc go.uint64 #()) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![disk.Disk] "d") in
+        let: "$a1" := (![go.uint64] "i") in
+        (FuncResolve getLogEntry #()) "$a0" "$a1") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("a" <-[#uint64T] "$r0");;;
-        do:  ("v" <-[#sliceT] "$r1");;;
-        do:  (let: "$a0" := (logLength + (![#uint64T] "a")) in
-        let: "$a1" := (![#sliceT] "v") in
-        (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
-        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[#uint64T] "$r0");;;
+        do:  ("a" <-[go.uint64] "$r0");;;
+        do:  ("v" <-[go.SliceType go.byte] "$r1");;;
+        do:  (let: "$a0" := (logLength + (![go.uint64] "a")) in
+        let: "$a1" := (![go.SliceType go.byte] "v") in
+        (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
+        let: "$r0" := ((![go.uint64] "i") + #(W64 1)) in
+        do:  ("i" <-[go.uint64] "$r0");;;
         continue: #()
       else do:  #());;;
       break: #()));;;
@@ -3129,14 +3062,14 @@ Definition clearLog : go_string := "github.com/goose-lang/goose/testdata/example
 (* go: wal.go:142:6 *)
 Definition clearLogⁱᵐᵖˡ : val :=
   λ: "d",
-    exception_do (let: "d" := (mem.alloc "d") in
-    let: "header" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "d" := (GoAllocValue disk.Disk "d") in
+    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #intToBlock) "$a0") in
-    do:  ("header" <-[#sliceT] "$r0");;;
+    (FuncResolve intToBlock #()) "$a0") in
+    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![#sliceT] "header") in
-    (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
+    let: "$a1" := (![go.SliceType go.byte] "header") in
+    (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
     return: #()).
 
 (* Apply all the committed transactions.
@@ -3146,19 +3079,19 @@ Definition clearLogⁱᵐᵖˡ : val :=
    go: wal.go:150:14 *)
 Definition Log__Applyⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #Log.id #"lock"%go (![#Log] "l")) #());;;
-    let: "length" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
-    do:  ("length" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref #Log #"d"%go "l")) in
-    let: "$a1" := (![#uint64T] "length") in
-    (func_call #applyLog) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref #Log #"d"%go "l")) in
-    (func_call #clearLog) "$a0");;;
+    exception_do (let: "l" := (GoAllocValue Log "l") in
+    do:  ((MethodResolve Log lock #() (![Log] "l")) #());;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (struct.field_ref Log #"length"%go "l"))) in
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![disk.Disk] (struct.field_ref Log #"d"%go "l")) in
+    let: "$a1" := (![go.uint64] "length") in
+    (FuncResolve applyLog #()) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![disk.Disk] (struct.field_ref Log #"d"%go "l")) in
+    (FuncResolve clearLog #()) "$a0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #Log.id #"unlock"%go (![#Log] "l")) #());;;
+    do:  ((![go.PointerType go.uint64] (struct.field_ref Log #"length"%go "l")) <-[go.uint64] "$r0");;;
+    do:  ((MethodResolve Log unlock #() (![Log] "l")) #());;;
     return: #()).
 
 Definition Open : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Open"%go.
@@ -3168,38 +3101,38 @@ Definition Open : go_string := "github.com/goose-lang/goose/testdata/examples/se
    go: wal.go:163:6 *)
 Definition Openⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "d" := (mem.alloc (type.zero_val #disk.Disk)) in
-    let: "$r0" := ((func_call #disk.Get) #()) in
-    do:  ("d" <-[#disk.Disk] "$r0");;;
-    let: "header" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "d" := (GoAlloc disk.Disk #()) in
+    let: "$r0" := ((FuncResolve disk.Get #()) #()) in
+    do:  ("d" <-[disk.Disk] "$r0");;;
+    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
-    do:  ("header" <-[#sliceT] "$r0");;;
-    let: "length" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "header") in
-    (func_call #blockToInt) "$a0") in
-    do:  ("length" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (![#disk.Disk] "d") in
-    let: "$a1" := (![#uint64T] "length") in
-    (func_call #applyLog) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#disk.Disk] "d") in
-    (func_call #clearLog) "$a0");;;
-    let: "cache" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
-    let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("cache" <-[type.mapT #uint64T #sliceT] "$r0");;;
-    let: "lengthPtr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
-    do:  ("lengthPtr" <-[#ptrT] "$r0");;;
+    (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
+    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "header") in
+    (FuncResolve blockToInt #()) "$a0") in
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![disk.Disk] "d") in
+    let: "$a1" := (![go.uint64] "length") in
+    (FuncResolve applyLog #()) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![disk.Disk] "d") in
+    (FuncResolve clearLog #()) "$a0");;;
+    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) #()) in
+    let: "$r0" := (map.make go.uint64 (go.SliceType go.byte)) in
+    do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
+    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) #()) in
+    let: "$r0" := (GoAlloc go.uint64 #()) in
+    do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![#ptrT] "lengthPtr") <-[#uint64T] "$r0");;;
-    let: "l" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("l" <-[#ptrT] "$r0");;;
-    return: (let: "$d" := (![#disk.Disk] "d") in
-     let: "$cache" := (![type.mapT #uint64T #sliceT] "cache") in
-     let: "$length" := (![#ptrT] "lengthPtr") in
-     let: "$l" := (![#ptrT] "l") in
-     struct.make #Log [{
+    do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
+    let: "l" := (GoAlloc (go.PointerType sync.Mutex) #()) in
+    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
+    return: (let: "$d" := (![disk.Disk] "d") in
+     let: "$cache" := (![go.MapType go.uint64 (go.SliceType go.byte)] "cache") in
+     let: "$length" := (![go.PointerType go.uint64] "lengthPtr") in
+     let: "$l" := (![go.PointerType sync.Mutex] "l") in
+     struct.make Log [{
        "d" ::= "$d";
        "l" ::= "$l";
        "cache" ::= "$cache";
@@ -3213,65 +3146,65 @@ Definition disabled_testWal : go_string := "github.com/goose-lang/goose/testdata
    go: wal.go:178:6 *)
 Definition disabled_testWalⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "ok" := (GoAlloc go.bool #()) in
     let: "$r0" := #true in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "lg" := (mem.alloc (type.zero_val #Log)) in
-    let: "$r0" := ((func_call #New) #()) in
-    do:  ("lg" <-[#Log] "$r0");;;
-    (if: (method_call #Log.id #"BeginTxn"%go (![#Log] "lg")) #()
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "lg" := (GoAlloc Log #()) in
+    let: "$r0" := ((FuncResolve New #()) #()) in
+    do:  ("lg" <-[Log] "$r0");;;
+    (if: (MethodResolve Log BeginTxn #() (![Log] "lg")) #()
     then
       do:  (let: "$a0" := #(W64 2) in
       let: "$a1" := (let: "$a0" := #(W64 11) in
-      (func_call #intToBlock) "$a0") in
-      (method_call #Log.id #"Write"%go (![#Log] "lg")) "$a0" "$a1")
+      (FuncResolve intToBlock #()) "$a0") in
+      (MethodResolve Log Write #() (![Log] "lg")) "$a0" "$a1")
     else do:  #());;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 2) in
-    (method_call #Log.id #"Read"%go (![#Log] "lg")) "$a0") in
-    (func_call #blockToInt) "$a0") = #(W64 11))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
-    (func_call #blockToInt) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #Log.id #"Commit"%go (![#Log] "lg")) #());;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
-    (func_call #blockToInt) "$a0") = #(W64 1))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #Log.id #"Apply"%go (![#Log] "lg")) #());;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "lg"))) = #(W64 0))) in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    return: (![#boolT] "ok")).
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 2) in
+    (MethodResolve Log Read #() (![Log] "lg")) "$a0") in
+    (FuncResolve blockToInt #()) "$a0") = #(W64 11))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
+    (interface.get #"Read"%go (![disk.Disk] (struct.field_ref Log #"d"%go "lg"))) "$a0") in
+    (FuncResolve blockToInt #()) "$a0") = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    do:  ((MethodResolve Log Commit #() (![Log] "lg")) #());;;
+    let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
+    (interface.get #"Read"%go (![disk.Disk] (struct.field_ref Log #"d"%go "lg"))) "$a0") in
+    (FuncResolve blockToInt #()) "$a0") = #(W64 1))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    do:  ((MethodResolve Log Apply #() (![Log] "lg")) #());;;
+    let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (![go.PointerType go.uint64] (struct.field_ref Log #"length"%go "lg"))) = #(W64 0))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
-Definition vars' : list (go_string * go_type) := [].
+Definition vars' : list (go_string * go.type) := [].
 
 Definition functions' : list (go_string * val) := [(findKey, findKeyⁱᵐᵖˡ); (allocate, allocateⁱᵐᵖˡ); (freeRange, freeRangeⁱᵐᵖˡ); (testAllocateDistinct, testAllocateDistinctⁱᵐᵖˡ); (testAllocateFull, testAllocateFullⁱᵐᵖˡ); (testExplicitBlockStmt, testExplicitBlockStmtⁱᵐᵖˡ); (testMinUint64, testMinUint64ⁱᵐᵖˡ); (testMaxUint64, testMaxUint64ⁱᵐᵖˡ); (adder, adderⁱᵐᵖˡ); (testClosureBasic, testClosureBasicⁱᵐᵖˡ); (testCompareAll, testCompareAllⁱᵐᵖˡ); (testCompareGT, testCompareGTⁱᵐᵖˡ); (testCompareGE, testCompareGEⁱᵐᵖˡ); (testCompareLT, testCompareLTⁱᵐᵖˡ); (testCompareLE, testCompareLEⁱᵐᵖˡ); (literalCast, literalCastⁱᵐᵖˡ); (stringToByteSlice, stringToByteSliceⁱᵐᵖˡ); (byteSliceToString, byteSliceToStringⁱᵐᵖˡ); (testByteSliceToString, testByteSliceToStringⁱᵐᵖˡ); (testCopySimple, testCopySimpleⁱᵐᵖˡ); (testCopyShorterDst, testCopyShorterDstⁱᵐᵖˡ); (testCopyShorterSrc, testCopyShorterSrcⁱᵐᵖˡ); (deferSimple, deferSimpleⁱᵐᵖˡ); (testDefer, testDeferⁱᵐᵖˡ); (testDeferFuncLit, testDeferFuncLitⁱᵐᵖˡ); (roundtripEncDec32, roundtripEncDec32ⁱᵐᵖˡ); (roundtripEncDec64, roundtripEncDec64ⁱᵐᵖˡ); (testEncDec32Simple, testEncDec32Simpleⁱᵐᵖˡ); (failing_testEncDec32, failing_testEncDec32ⁱᵐᵖˡ); (testEncDec64Simple, testEncDec64Simpleⁱᵐᵖˡ); (testEncDec64, testEncDec64ⁱᵐᵖˡ); (FirstClassFunction, FirstClassFunctionⁱᵐᵖˡ); (ApplyF, ApplyFⁱᵐᵖˡ); (testFirstClassFunction, testFirstClassFunctionⁱᵐᵖˡ); (addFour64, addFour64ⁱᵐᵖˡ); (failing_testFunctionOrdering, failing_testFunctionOrderingⁱᵐᵖˡ); (storeAndReturn, storeAndReturnⁱᵐᵖˡ); (failing_testArgumentOrder, failing_testArgumentOrderⁱᵐᵖˡ); (testU64ToU32, testU64ToU32ⁱᵐᵖˡ); (testU32Len, testU32Lenⁱᵐᵖˡ); (failing_testU32NewtypeLen, failing_testU32NewtypeLenⁱᵐᵖˡ); (measureArea, measureAreaⁱᵐᵖˡ); (measureVolumePlusNM, measureVolumePlusNMⁱᵐᵖˡ); (measureVolume, measureVolumeⁱᵐᵖˡ); (testBasicInterface, testBasicInterfaceⁱᵐᵖˡ); (testAssignInterface, testAssignInterfaceⁱᵐᵖˡ); (testMultipleInterface, testMultipleInterfaceⁱᵐᵖˡ); (testBinaryExprInterface, testBinaryExprInterfaceⁱᵐᵖˡ); (testIfStmtInterface, testIfStmtInterfaceⁱᵐᵖˡ); (testsUseLocks, testsUseLocksⁱᵐᵖˡ); (standardForLoop, standardForLoopⁱᵐᵖˡ); (testStandardForLoop, testStandardForLoopⁱᵐᵖˡ); (testForLoopWait, testForLoopWaitⁱᵐᵖˡ); (testBreakFromLoopWithContinue, testBreakFromLoopWithContinueⁱᵐᵖˡ); (testBreakFromLoopNoContinue, testBreakFromLoopNoContinueⁱᵐᵖˡ); (testBreakFromLoopNoContinueDouble, testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ); (testBreakFromLoopForOnly, testBreakFromLoopForOnlyⁱᵐᵖˡ); (testBreakFromLoopAssignAndContinue, testBreakFromLoopAssignAndContinueⁱᵐᵖˡ); (testNestedLoops, testNestedLoopsⁱᵐᵖˡ); (testNestedGoStyleLoops, testNestedGoStyleLoopsⁱᵐᵖˡ); (testNestedGoStyleLoopsNoComparison, testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ); (IterateMapKeys, IterateMapKeysⁱᵐᵖˡ); (IterateMapValues, IterateMapValuesⁱᵐᵖˡ); (testIterateMap, testIterateMapⁱᵐᵖˡ); (testMapSize, testMapSizeⁱᵐᵖˡ); (multReturnTwo, multReturnTwoⁱᵐᵖˡ); (testAssignTwo, testAssignTwoⁱᵐᵖˡ); (multReturnThree, multReturnThreeⁱᵐᵖˡ); (testAssignThree, testAssignThreeⁱᵐᵖˡ); (testMultipleAssignToMap, testMultipleAssignToMapⁱᵐᵖˡ); (returnTwo, returnTwoⁱᵐᵖˡ); (testReturnTwo, testReturnTwoⁱᵐᵖˡ); (testAnonymousBinding, testAnonymousBindingⁱᵐᵖˡ); (returnThree, returnThreeⁱᵐᵖˡ); (testReturnThree, testReturnThreeⁱᵐᵖˡ); (returnFour, returnFourⁱᵐᵖˡ); (testReturnFour, testReturnFourⁱᵐᵖˡ); (failing_testCompareSliceToNil, failing_testCompareSliceToNilⁱᵐᵖˡ); (testComparePointerToNil, testComparePointerToNilⁱᵐᵖˡ); (testCompareNilToNil, testCompareNilToNilⁱᵐᵖˡ); (testComparePointerWrappedToNil, testComparePointerWrappedToNilⁱᵐᵖˡ); (testComparePointerWrappedDefaultToNil, testComparePointerWrappedDefaultToNilⁱᵐᵖˡ); (reverseAssignOps64, reverseAssignOps64ⁱᵐᵖˡ); (reverseAssignOps32, reverseAssignOps32ⁱᵐᵖˡ); (add64Equals, add64Equalsⁱᵐᵖˡ); (sub64Equals, sub64Equalsⁱᵐᵖˡ); (testReverseAssignOps64, testReverseAssignOps64ⁱᵐᵖˡ); (failing_testReverseAssignOps32, failing_testReverseAssignOps32ⁱᵐᵖˡ); (testAdd64Equals, testAdd64Equalsⁱᵐᵖˡ); (testSub64Equals, testSub64Equalsⁱᵐᵖˡ); (testDivisionPrecedence, testDivisionPrecedenceⁱᵐᵖˡ); (testModPrecedence, testModPrecedenceⁱᵐᵖˡ); (testBitwiseOpsPrecedence, testBitwiseOpsPrecedenceⁱᵐᵖˡ); (testArithmeticShifts, testArithmeticShiftsⁱᵐᵖˡ); (testBitAddAnd, testBitAddAndⁱᵐᵖˡ); (testManyParentheses, testManyParenthesesⁱᵐᵖˡ); (testPlusTimes, testPlusTimesⁱᵐᵖˡ); (testOrCompareSimple, testOrCompareSimpleⁱᵐᵖˡ); (testOrCompare, testOrCompareⁱᵐᵖˡ); (testAndCompare, testAndCompareⁱᵐᵖˡ); (testShiftMod, testShiftModⁱᵐᵖˡ); (testLinearize, testLinearizeⁱᵐᵖˡ); (CheckTrue, CheckTrueⁱᵐᵖˡ); (CheckFalse, CheckFalseⁱᵐᵖˡ); (testShortcircuitAndTF, testShortcircuitAndTFⁱᵐᵖˡ); (testShortcircuitAndFT, testShortcircuitAndFTⁱᵐᵖˡ); (testShortcircuitOrTF, testShortcircuitOrTFⁱᵐᵖˡ); (testShortcircuitOrFT, testShortcircuitOrFTⁱᵐᵖˡ); (testSliceOps, testSliceOpsⁱᵐᵖˡ); (testSliceCapacityOps, testSliceCapacityOpsⁱᵐᵖˡ); (testOverwriteArray, testOverwriteArrayⁱᵐᵖˡ); (testSliceLiteral, testSliceLiteralⁱᵐᵖˡ); (testSliceAppend, testSliceAppendⁱᵐᵖˡ); (testFooBarMutation, testFooBarMutationⁱᵐᵖˡ); (NewS, NewSⁱᵐᵖˡ); (testStructUpdates, testStructUpdatesⁱᵐᵖˡ); (testNestedStructUpdates, testNestedStructUpdatesⁱᵐᵖˡ); (testStructConstructions, testStructConstructionsⁱᵐᵖˡ); (testIncompleteStruct, testIncompleteStructⁱᵐᵖˡ); (testStoreInStructVar, testStoreInStructVarⁱᵐᵖˡ); (testStoreInStructPointerVar, testStoreInStructPointerVarⁱᵐᵖˡ); (testStoreComposite, testStoreCompositeⁱᵐᵖˡ); (testStoreSlice, testStoreSliceⁱᵐᵖˡ); (testStructFieldFunc, testStructFieldFuncⁱᵐᵖˡ); (testSwitchVal, testSwitchValⁱᵐᵖˡ); (testSwitchMultiple, testSwitchMultipleⁱᵐᵖˡ); (testSwitchDefaultTrue, testSwitchDefaultTrueⁱᵐᵖˡ); (testSwitchConversion, testSwitchConversionⁱᵐᵖˡ); (testPointerAssignment, testPointerAssignmentⁱᵐᵖˡ); (testAddressOfLocal, testAddressOfLocalⁱᵐᵖˡ); (testAnonymousAssign, testAnonymousAssignⁱᵐᵖˡ); (intToBlock, intToBlockⁱᵐᵖˡ); (blockToInt, blockToIntⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (getLogEntry, getLogEntryⁱᵐᵖˡ); (applyLog, applyLogⁱᵐᵖˡ); (clearLog, clearLogⁱᵐᵖˡ); (Open, Openⁱᵐᵖˡ); (disabled_testWal, disabled_testWalⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(unit.id, []); (ptrT.id unit.id, []); (Enc.id, []); (ptrT.id Enc.id, [("consume"%go, Enc__consumeⁱᵐᵖˡ)]); (Dec.id, []); (ptrT.id Dec.id, [("consume"%go, Dec__consumeⁱᵐᵖˡ)]); (Editor.id, []); (ptrT.id Editor.id, [("AdvanceReturn"%go, Editor__AdvanceReturnⁱᵐᵖˡ)]); (Pair.id, []); (ptrT.id Pair.id, []); (Uint32.id, []); (ptrT.id Uint32.id, []); (SquareStruct.id, [("Square"%go, SquareStruct__Squareⁱᵐᵖˡ); ("Volume"%go, SquareStruct__Volumeⁱᵐᵖˡ)]); (ptrT.id SquareStruct.id, [("Square"%go, (λ: "$r",
-                 method_call #SquareStruct.id #"Square"%go (![#SquareStruct] "$r")
+Definition msets' : list (go_string * (list (go_string * val))) := [(unit, []); (go.PointerType unit, []); (Enc, []); (go.PointerType Enc, [("consume"%go, Enc__consumeⁱᵐᵖˡ)]); (Dec, []); (go.PointerType Dec, [("consume"%go, Dec__consumeⁱᵐᵖˡ)]); (Editor, []); (go.PointerType Editor, [("AdvanceReturn"%go, Editor__AdvanceReturnⁱᵐᵖˡ)]); (Pair, []); (go.PointerType Pair, []); (Uint32, []); (go.PointerType Uint32, []); (SquareStruct, [("Square"%go, SquareStruct__Squareⁱᵐᵖˡ); ("Volume"%go, SquareStruct__Volumeⁱᵐᵖˡ)]); (go.PointerType SquareStruct, [("Square"%go, (λ: "$r",
+                 MethodResolve SquareStruct Square #() (![SquareStruct] "$r")
                  )%V); ("Volume"%go, (λ: "$r",
-                 method_call #SquareStruct.id #"Volume"%go (![#SquareStruct] "$r")
-                 )%V)]); (LoopStruct.id, [("forLoopWait"%go, LoopStruct__forLoopWaitⁱᵐᵖˡ)]); (ptrT.id LoopStruct.id, [("forLoopWait"%go, (λ: "$r",
-                 method_call #LoopStruct.id #"forLoopWait"%go (![#LoopStruct] "$r")
-                 )%V)]); (BoolTest.id, []); (ptrT.id BoolTest.id, []); (ArrayEditor.id, []); (ptrT.id ArrayEditor.id, [("Advance"%go, ArrayEditor__Advanceⁱᵐᵖˡ)]); (Bar.id, []); (ptrT.id Bar.id, [("mutate"%go, Bar__mutateⁱᵐᵖˡ)]); (Foo.id, []); (ptrT.id Foo.id, [("mutateBar"%go, Foo__mutateBarⁱᵐᵖˡ)]); (TwoInts.id, []); (ptrT.id TwoInts.id, []); (S.id, [("readBVal"%go, S__readBValⁱᵐᵖˡ)]); (ptrT.id S.id, [("negateC"%go, S__negateCⁱᵐᵖˡ); ("readA"%go, S__readAⁱᵐᵖˡ); ("readB"%go, S__readBⁱᵐᵖˡ); ("readBVal"%go, (λ: "$r",
-                 method_call #S.id #"readBVal"%go (![#S] "$r")
-                 )%V); ("updateBValX"%go, S__updateBValXⁱᵐᵖˡ)]); (StructWrap.id, []); (ptrT.id StructWrap.id, []); (StructWithFunc.id, []); (ptrT.id StructWithFunc.id, []); (switchConcrete.id, []); (ptrT.id switchConcrete.id, [("marker"%go, switchConcrete__markerⁱᵐᵖˡ)]); (Log.id, [("Apply"%go, Log__Applyⁱᵐᵖˡ); ("BeginTxn"%go, Log__BeginTxnⁱᵐᵖˡ); ("Commit"%go, Log__Commitⁱᵐᵖˡ); ("Read"%go, Log__Readⁱᵐᵖˡ); ("Size"%go, Log__Sizeⁱᵐᵖˡ); ("Write"%go, Log__Writeⁱᵐᵖˡ); ("lock"%go, Log__lockⁱᵐᵖˡ); ("unlock"%go, Log__unlockⁱᵐᵖˡ)]); (ptrT.id Log.id, [("Apply"%go, (λ: "$r",
-                 method_call #Log.id #"Apply"%go (![#Log] "$r")
+                 MethodResolve SquareStruct Volume #() (![SquareStruct] "$r")
+                 )%V)]); (LoopStruct, [("forLoopWait"%go, LoopStruct__forLoopWaitⁱᵐᵖˡ)]); (go.PointerType LoopStruct, [("forLoopWait"%go, (λ: "$r",
+                 MethodResolve LoopStruct forLoopWait #() (![LoopStruct] "$r")
+                 )%V)]); (BoolTest, []); (go.PointerType BoolTest, []); (ArrayEditor, []); (go.PointerType ArrayEditor, [("Advance"%go, ArrayEditor__Advanceⁱᵐᵖˡ)]); (Bar, []); (go.PointerType Bar, [("mutate"%go, Bar__mutateⁱᵐᵖˡ)]); (Foo, []); (go.PointerType Foo, [("mutateBar"%go, Foo__mutateBarⁱᵐᵖˡ)]); (TwoInts, []); (go.PointerType TwoInts, []); (S, [("readBVal"%go, S__readBValⁱᵐᵖˡ)]); (go.PointerType S, [("negateC"%go, S__negateCⁱᵐᵖˡ); ("readA"%go, S__readAⁱᵐᵖˡ); ("readB"%go, S__readBⁱᵐᵖˡ); ("readBVal"%go, (λ: "$r",
+                 MethodResolve S readBVal #() (![S] "$r")
+                 )%V); ("updateBValX"%go, S__updateBValXⁱᵐᵖˡ)]); (StructWrap, []); (go.PointerType StructWrap, []); (StructWithFunc, []); (go.PointerType StructWithFunc, []); (switchConcrete, []); (go.PointerType switchConcrete, [("marker"%go, switchConcrete__markerⁱᵐᵖˡ)]); (Log, [("Apply"%go, Log__Applyⁱᵐᵖˡ); ("BeginTxn"%go, Log__BeginTxnⁱᵐᵖˡ); ("Commit"%go, Log__Commitⁱᵐᵖˡ); ("Read"%go, Log__Readⁱᵐᵖˡ); ("Size"%go, Log__Sizeⁱᵐᵖˡ); ("Write"%go, Log__Writeⁱᵐᵖˡ); ("lock"%go, Log__lockⁱᵐᵖˡ); ("unlock"%go, Log__unlockⁱᵐᵖˡ)]); (go.PointerType Log, [("Apply"%go, (λ: "$r",
+                 MethodResolve Log Apply #() (![Log] "$r")
                  )%V); ("BeginTxn"%go, (λ: "$r",
-                 method_call #Log.id #"BeginTxn"%go (![#Log] "$r")
+                 MethodResolve Log BeginTxn #() (![Log] "$r")
                  )%V); ("Commit"%go, (λ: "$r",
-                 method_call #Log.id #"Commit"%go (![#Log] "$r")
+                 MethodResolve Log Commit #() (![Log] "$r")
                  )%V); ("Read"%go, (λ: "$r",
-                 method_call #Log.id #"Read"%go (![#Log] "$r")
+                 MethodResolve Log Read #() (![Log] "$r")
                  )%V); ("Size"%go, (λ: "$r",
-                 method_call #Log.id #"Size"%go (![#Log] "$r")
+                 MethodResolve Log Size #() (![Log] "$r")
                  )%V); ("Write"%go, (λ: "$r",
-                 method_call #Log.id #"Write"%go (![#Log] "$r")
+                 MethodResolve Log Write #() (![Log] "$r")
                  )%V); ("lock"%go, (λ: "$r",
-                 method_call #Log.id #"lock"%go (![#Log] "$r")
+                 MethodResolve Log lock #() (![Log] "$r")
                  )%V); ("unlock"%go, (λ: "$r",
-                 method_call #Log.id #"unlock"%go (![#Log] "$r")
+                 MethodResolve Log unlock #() (![Log] "$r")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo semantics.semantics :=

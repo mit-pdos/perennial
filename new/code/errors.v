@@ -5,16 +5,13 @@ Definition errors : go_string := "errors".
 
 Module errors.
 
-Module errorString. Definition id : go_string := "errors.errorString"%go. End errorString.
-Module joinError. Definition id : go_string := "errors.joinError"%go. End joinError.
-
 Section code.
 Context `{ffi_syntax}.
 
 
 Definition New : go_string := "errors.New"%go.
 
-Axiom errorString : go_type.
+Axiom errorStringⁱᵐᵖˡ : go.type.
 
 Definition ErrUnsupported : go_string := "errors.ErrUnsupported"%go.
 
@@ -22,7 +19,7 @@ Axiom ErrUnsupported'init : val.
 
 Definition Join : go_string := "errors.Join"%go.
 
-Axiom joinError : go_type.
+Axiom joinErrorⁱᵐᵖˡ : go.type.
 
 Definition Unwrap : go_string := "errors.Unwrap"%go.
 
@@ -38,7 +35,9 @@ Definition errorType : go_string := "errors.errorType"%go.
 
 Axiom errorType'init : val.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition errorString : go.type := go.Named "errors.errorString"%go [].
+
+Definition joinError : go.type := go.Named "errors.joinError"%go [].
 
 Axiom Newⁱᵐᵖˡ : val.
 
@@ -56,19 +55,8 @@ Axiom asⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Join, Joinⁱᵐᵖˡ); (Unwrap, Unwrapⁱᵐᵖˡ); (Is, Isⁱᵐᵖˡ); (is', isⁱᵐᵖˡ); (As, Asⁱᵐᵖˡ); (as', asⁱᵐᵖˡ)].
 
-Axiom errorString__Errorⁱᵐᵖˡ : val.
-
-Axiom joinError__Errorⁱᵐᵖˡ : val.
-
-Axiom joinError__Unwrapⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(errorString.id, []); (ptrT.id errorString.id, [("Error"%go, errorString__Errorⁱᵐᵖˡ)]); (joinError.id, []); (ptrT.id joinError.id, [("Error"%go, joinError__Errorⁱᵐᵖˡ); ("Unwrap"%go, joinError__Unwrapⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo errors.errors :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -76,9 +64,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #errors.errors (λ: <>,
-      exception_do (do:  (package.alloc errors.errors #());;;
-      do:  (ErrUnsupported'init #());;;
+    package.init errors.errors (λ: <>,
+      exception_do (do:  (ErrUnsupported'init #());;;
       do:  (errorType'init #()))
       ).
 

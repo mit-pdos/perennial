@@ -183,8 +183,8 @@ Inductive go_instruction : Type :=
 | GlobalVarAddr (var_name : go_string)
 
 | StructFieldRef (t : go.type) (f : go_string)
-| StructFieldGet (f : go_string)
-| StructFieldSet (f : go_string)
+| StructFieldGet (t : go.type) (f : go_string)
+| StructFieldSet (t : go.type) (f : go_string)
 
 (* can do slice, array, string, map, etc. for these ops; the internal ones
    should not be directly called by GooseLang. *)
@@ -208,8 +208,7 @@ Inductive go_instruction : Type :=
 | InternalMapDomain
 | InternalMapMake
 
-| CompositeLiteral (t : go.type)
-.
+| CompositeLiteral (t : go.type).
 
 Inductive expr :=
   (* Values *)
@@ -259,9 +258,21 @@ with val :=
   | ExtV (ev : ffi_val)
   (* Go stuff *)
   | GoInstruction (o : go_instruction)
-  | StructV (fvs : gmap go_string val)
   | ArrayV (vs : list val)
-  | InterfaceV (t : option (go.type * val)).
+  | InterfaceV (t : option (go.type * val))
+  | LiteralValue (l : list keyed_element)
+
+(* https://go.dev/ref/spec#Composite_literals *)
+with keyed_element :=
+| KeyedElement (k : option key) (v : element)
+with key :=
+| KeyField (f : go_string)
+| KeyExpression (e : expr)
+| KeyLiteralValue (l : list keyed_element)
+with element :=
+| ElementExpression (e : expr)
+| ElementLiteralValue (l : list keyed_element)
+.
 
 End external.
 End goose_lang.
@@ -564,6 +575,8 @@ Class GoContext {ext : ffi_syntax} : Type :=
     store : go.type → val;
 
     struct_field_ref : go.type → go_string → loc → loc;
+    struct_field_get : go.type → go_string → val → expr;
+    struct_field_set : go.type → go_string → val → val → expr;
 
     (* map index expressions have their own implementation that does not use the
        `Index` primitive. It's statically (even with type parameters) known
@@ -818,10 +831,10 @@ Inductive is_go_step_pure `{!GoContext} :
      end)
 | global_var_addr_step v : is_go_step_pure (GlobalVarAddr v) #() #(global_addr v)
 | struct_field_ref_step t f l : is_go_step_pure (StructFieldRef t f) #l #(struct_field_ref t f l)
-| struct_field_get_step f m v (Hf : m !! f = Some v) :
-  is_go_step_pure (StructFieldGet f) (StructV m) (Val v)
-| struct_field_set_step f m v :
-  is_go_step_pure (StructFieldSet f) (StructV m, v)%V (StructV $ <[ f := v ]> m)
+| struct_field_get_step t f v :
+  is_go_step_pure (StructFieldGet t f) v (struct_field_get t f v)
+| struct_field_set_step t f v vf :
+  is_go_step_pure (StructFieldSet t f) (v, vf) (struct_field_set t f v vf)
 
 | internal_len_slice_step_pure elem_type s :
   is_go_step_pure (InternalLen (go.SliceType elem_type)) #s #(s.(slice.len))
@@ -983,94 +996,92 @@ Global Instance prim_op_eq_dec ar : EqDecision (prim_op ar).
 Proof. destruct ar; simpl; apply _. Defined.
 Global Instance go_instruction_eq_dec : EqDecision go_instruction.
 Proof. solve_decision. Qed.
-Global Instance expr_eq_dec : EqDecision expr.
-Proof using ext.
-  clear ffi_semantics ffi.
-  refine (
-      fix go (e1 e2 : expr) {struct e1} : Decision (e1 = e2) :=
-      match e1, e2 with
-      | Val v, Val v' => cast_if (decide (v = v'))
-      | Var x, Var x' => cast_if (decide (x = x'))
-      | Rec f x e, Rec f' x' e' =>
-        cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
-      | App e1 e2, App e1' e2' => cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | Primitive0 op, Primitive0 op' => cast_if (decide (op = op'))
-      | Primitive1 op e, Primitive1 op' e' =>
-        cast_if_and (decide (op = op')) (decide (e = e'))
-      | Primitive2 op e1 e2, Primitive2 op' e1' e2' =>
-        cast_if_and3 (decide (op = op')) (decide (e1 = e1')) (decide (e2 = e2'))
-      (* | Primitive3 op e0 e1 e2, Primitive3 op' e0' e1' e2' =>
-        cast_if_and4 (decide (op = op')) (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2')) *)
-      | UnOp o e, UnOp o' e' => cast_if_and (decide (o = o')) (decide (e = e'))
-      | BinOp o e1 e2, BinOp o' e1' e2' =>
-        cast_if_and3 (decide (o = o')) (decide (e1 = e1')) (decide (e2 = e2'))
-      | If e0 e1 e2, If e0' e1' e2' =>
-        cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-      | Pair e1 e2, Pair e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | Fst e, Fst e' => cast_if (decide (e = e'))
-      | Snd e, Snd e' => cast_if (decide (e = e'))
-      | InjL e, InjL e' => cast_if (decide (e = e'))
-      | InjR e, InjR e' => cast_if (decide (e = e'))
-      | Case e0 e1 e2, Case e0' e1' e2' =>
-        cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-      | Fork e, Fork e' => cast_if (decide (e = e'))
-      | Atomically el e, Atomically el' e' => cast_if_and (decide (el = el')) (decide (e = e'))
-      | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
-      | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
-        cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-      | NewProph, NewProph => left _
-      | ResolveProph e1 e2, ResolveProph e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | _, _ => right _
-      end
-          with gov (v1 v2 : val) {struct v1} : Decision (v1 = v2) :=
-      match v1, v2 with
-      | LitV l, LitV l' => cast_if (decide (l = l'))
-      | RecV f x e, RecV f' x' e' =>
-        cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
-      | PairV e1 e2, PairV e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-      | InjLV e, InjLV e' => cast_if (decide (e = e'))
-      | InjRV e, InjRV e' => cast_if (decide (e = e'))
-      | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
-      | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
-      | StructV op, StructV op' => cast_if (decide (op = op'))
-      | ArrayV op, ArrayV op' => cast_if (decide (op = op'))
-      | InterfaceV (Some (a, b)), InterfaceV (Some (a', b')) =>
-          cast_if_and (decide (a = a')) (decide (b = b'))
-      | InterfaceV None, InterfaceV None => left _
-      | _, _ => right _
-      end
-        for go); try by (clear go gov; abstract intuition congruence).
-  { apply gmap_eq_dec. assumption. }
-  { solve_decision. }
-Defined.
-Global Instance val_eq_dec : EqDecision val.
-Proof using ext.
-  clear ffi_semantics ffi.
-  refine
-    (fix go (v1 v2:val) : Decision (v1 = v2) :=
-     match v1, v2 with
-     | LitV l, LitV l' => cast_if (decide (l = l'))
-     | RecV f x e, RecV f' x' e' =>
-       cast_if_and3 (decide (f = f')) (decide (x = x')) (decide (e = e'))
-     | PairV e1 e2, PairV e1' e2' =>
-       cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
-     | InjLV e, InjLV e' => cast_if (decide (e = e'))
-     | InjRV e, InjRV e' => cast_if (decide (e = e'))
-     | ExtV ev, ExtV ev' => cast_if (decide (ev = ev'))
-     | GoInstruction op, GoInstruction op' => cast_if (decide (op = op'))
-     | StructV m, StructV m' => cast_if (decide (m = m'))
-     | ArrayV v, ArrayV v' => cast_if (decide (v = v'))
-      | InterfaceV (Some (a, b)), InterfaceV (Some (a', b')) =>
-          cast_if_and (decide (a = a')) (decide (b = b'))
-      | InterfaceV None, InterfaceV None => left _
-     | _, _ => right _
-     end); try abstract intuition congruence.
-  { apply gmap_eq_dec. assumption. }
-  { solve_decision. }
-Defined.
+
+(** For the proof of [Countable expr], we encode [expr] as a [genTree] with some
+    countable type at the leaves. [basic_type] is what we use as that leaf type. *)
+Definition GenNode {T : Type} (s : string) :=
+  GenNode (T := T) (Pos.to_nat (encode s)).
+
+Inductive leaf_type : Type :=
+  | BaseLitLeaf (val : base_lit)
+  | BinOpLeaf (val : bin_op)
+  | BinderLeaf (val : binder)
+  | FfiOpcodeLeaf (val : ffi_opcode)
+  | FfiValLeaf (val : ffi_val)
+  | GoInstructionLeaf (val : go_instruction)
+  | GoStringLeaf (val : go_string)
+  | ListValLeaf (val : list val)
+  | PrimOpArgs0Leaf (val : prim_op args0)
+  | PrimOpArgs1Leaf (val : prim_op args1)
+  | PrimOpArgs2Leaf (val : prim_op args2)
+  | StringLeaf (val : string)
+  | UnOpLeaf (val : un_op)
+  | GoTypeLeaf (t : go.type)
+.
+
+Fixpoint gen_tree_expr (v : expr) : gen_tree leaf_type :=
+  match v with
+  | Val arg1 => GenNode "Val" [gen_tree_val arg1]
+  | Var arg1 => GenNode "Var" [GenLeaf $ StringLeaf arg1]
+  | Rec arg1 arg2 arg3 => GenNode "Rec" [GenLeaf $ BinderLeaf arg1; GenLeaf $ BinderLeaf arg2; gen_tree_expr arg3]
+  | App arg1 arg2 => GenNode "App" [gen_tree_expr arg1; gen_tree_expr arg2]
+  | UnOp arg1 arg2 => GenNode "UnOp" [GenLeaf $ UnOpLeaf arg1; gen_tree_expr arg2]
+  | BinOp arg1 arg2 arg3 => GenNode "BinOp" [GenLeaf $ BinOpLeaf arg1; gen_tree_expr arg2; gen_tree_expr arg3]
+  | If arg1 arg2 arg3 => GenNode "If" [gen_tree_expr arg1; gen_tree_expr arg2; gen_tree_expr arg3]
+  | Pair arg1 arg2 => GenNode "Pair" [gen_tree_expr arg1; gen_tree_expr arg2]
+  | Fst arg1 => GenNode "Fst" [gen_tree_expr arg1]
+  | Snd arg1 => GenNode "Snd" [gen_tree_expr arg1]
+  | InjL arg1 => GenNode "InjL" [gen_tree_expr arg1]
+  | InjR arg1 => GenNode "InjR" [gen_tree_expr arg1]
+  | Case arg1 arg2 arg3 => GenNode "Case" [gen_tree_expr arg1; gen_tree_expr arg2; gen_tree_expr arg3]
+  | Fork arg1 => GenNode "Fork" [gen_tree_expr arg1]
+  | Atomically arg1 arg2 => GenNode "Atomically" [gen_tree_expr arg1; gen_tree_expr arg2]
+  | Primitive0 arg1 => GenNode "Primitive0" [GenLeaf $ PrimOpArgs0Leaf arg1]
+  | Primitive1 arg1 arg2 => GenNode "Primitive1" [GenLeaf $ PrimOpArgs1Leaf arg1; gen_tree_expr arg2]
+  | Primitive2 arg1 arg2 arg3 => GenNode "Primitive2" [GenLeaf $ PrimOpArgs2Leaf arg1; gen_tree_expr arg2; gen_tree_expr arg3]
+  | CmpXchg arg1 arg2 arg3 => GenNode "CmpXchg" [gen_tree_expr arg1; gen_tree_expr arg2; gen_tree_expr arg3]
+  | ExternalOp arg1 arg2 => GenNode "ExternalOp" [GenLeaf $ FfiOpcodeLeaf arg1; gen_tree_expr arg2]
+  | NewProph  => GenNode "NewProph" []
+  | ResolveProph arg1 arg2 => GenNode "ResolveProph" [gen_tree_expr arg1; gen_tree_expr arg2]
+  end
+with gen_tree_val (v : val) : gen_tree leaf_type :=
+  match v with
+  | LitV arg1 => GenNode "LitV" [GenLeaf $ BaseLitLeaf arg1]
+  | RecV arg1 arg2 arg3 => GenNode "RecV" [GenLeaf $ BinderLeaf arg1; GenLeaf $ BinderLeaf arg2; gen_tree_expr arg3]
+  | PairV arg1 arg2 => GenNode "PairV" [gen_tree_val arg1; gen_tree_val arg2]
+  | InjLV arg1 => GenNode "InjLV" [gen_tree_val arg1]
+  | InjRV arg1 => GenNode "InjRV" [gen_tree_val arg1]
+  | ExtV arg1 => GenNode "ExtV" [GenLeaf $ FfiValLeaf arg1]
+  | GoInstruction arg1 => GenNode "GoInstruction" [GenLeaf $ GoInstructionLeaf arg1]
+  | ArrayV arg1 => GenNode "ArrayV" [GenLeaf $ ListValLeaf arg1]
+  | InterfaceV arg1 =>
+      GenNode "InterfaceV"
+        (match arg1 with
+         | Some (t, v) => [GenLeaf $ GoTypeLeaf t; gen_tree_val v]
+         | None => []
+         end)
+  | LiteralValue arg1 => GenNode "LiteralValue" (gen_tree_keyed_element <$> arg1)
+  end
+with gen_tree_keyed_element (v : keyed_element) : gen_tree leaf_type :=
+  match v with
+  | KeyedElement k v =>
+      GenNode "KeyedElement"
+              (match k with
+               | Some k => [gen_tree_key k; gen_tree_element v]
+               | None => [gen_tree_element v]
+               end)
+  end
+with gen_tree_key (v : key) : gen_tree leaf_type :=
+  match v with
+  | KeyField arg1 => GenNode "KeyField" [GenLeaf $ GoStringLeaf arg1]
+  | KeyExpression arg1 => GenNode "KeyExpression" [gen_tree_expr arg1]
+  | KeyLiteralValue arg1 => GenNode "KeyLiteralValue" (gen_tree_keyed_element <$> arg1)
+  end
+with gen_tree_element (v : element) : gen_tree leaf_type :=
+  match v with
+  | ElementExpression arg1 => GenNode "ElementExpression" [gen_tree_expr arg1]
+  | ElementLiteralValue arg1 => GenNode "ElementLiteralValue" (gen_tree_keyed_element <$> arg1)
+  end.
 
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).

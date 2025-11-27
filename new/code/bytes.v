@@ -5,20 +5,15 @@ Definition bytes : go_string := "bytes".
 
 Module bytes.
 
-Module Buffer. Definition id : go_string := "bytes.Buffer"%go. End Buffer.
-Module readOp. Definition id : go_string := "bytes.readOp"%go. End readOp.
-Module asciiSet. Definition id : go_string := "bytes.asciiSet"%go. End asciiSet.
-Module Reader. Definition id : go_string := "bytes.Reader"%go. End Reader.
-
 Section code.
 Context `{ffi_syntax}.
 
 
 Axiom smallBufferSize : Z.
 
-Axiom Buffer : go_type.
+Axiom Bufferⁱᵐᵖˡ : go.type.
 
-Axiom readOp : go_type.
+Axiom readOpⁱᵐᵖˡ : go.type.
 
 Axiom opRead : val.
 
@@ -63,9 +58,9 @@ Definition Equal : go_string := "bytes.Equal"%go.
    go: bytes.go:20:6 *)
 Definition Equalⁱᵐᵖˡ : val :=
   λ: "a" "b",
-    exception_do (let: "b" := (mem.alloc "b") in
-    let: "a" := (mem.alloc "a") in
-    return: ((string.from_bytes (![#sliceT] "a")) = (string.from_bytes (![#sliceT] "b")))).
+    exception_do (let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "a" := (go.AllocValue (go.SliceType go.byte) "a") in
+    return: ((string.from_bytes (![go.SliceType go.byte] "a")) =⟨go.string⟩ (string.from_bytes (![go.SliceType go.byte] "b")))).
 
 Definition Compare : go_string := "bytes.Compare"%go.
 
@@ -159,7 +154,7 @@ Definition indexFunc : go_string := "bytes.indexFunc"%go.
 
 Definition lastIndexFunc : go_string := "bytes.lastIndexFunc"%go.
 
-Axiom asciiSet : go_type.
+Axiom asciiSetⁱᵐᵖˡ : go.type.
 
 Definition makeASCIISet : go_string := "bytes.makeASCIISet"%go.
 
@@ -206,13 +201,13 @@ Definition Clone : go_string := "bytes.Clone"%go.
    go: bytes.go:1415:6 *)
 Definition Cloneⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (mem.alloc "b") in
-    (if: (![#sliceT] "b") = #slice.nil
+    exception_do (let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    (if: (![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ #slice.nil
     then return: (#slice.nil)
     else do:  #());;;
     return: (let: "$a0" := #slice.nil in
-     let: "$a1" := (![#sliceT] "b") in
-     (slice.append #byteT) "$a0" "$a1")).
+     let: "$a1" := (![go.SliceType go.byte] "b") in
+     (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1")).
 
 Definition CutPrefix : go_string := "bytes.CutPrefix"%go.
 
@@ -230,11 +225,17 @@ Definition FieldsSeq : go_string := "bytes.FieldsSeq"%go.
 
 Definition FieldsFuncSeq : go_string := "bytes.FieldsFuncSeq"%go.
 
-Axiom Reader : go_type.
+Axiom Readerⁱᵐᵖˡ : go.type.
 
 Definition NewReader : go_string := "bytes.NewReader"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Buffer : go.type := go.Named "bytes.Buffer"%go [].
+
+Definition readOp : go.type := go.Named "bytes.readOp"%go [].
+
+Definition asciiSet : go.type := go.Named "bytes.asciiSet"%go [].
+
+Definition Reader : go.type := go.Named "bytes.Reader"%go [].
 
 Axiom growSliceⁱᵐᵖˡ : val.
 
@@ -386,91 +387,8 @@ Axiom NewReaderⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(growSlice, growSliceⁱᵐᵖˡ); (NewBuffer, NewBufferⁱᵐᵖˡ); (NewBufferString, NewBufferStringⁱᵐᵖˡ); (Equal, Equalⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (explode, explodeⁱᵐᵖˡ); (Count, Countⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsAny, ContainsAnyⁱᵐᵖˡ); (ContainsRune, ContainsRuneⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (IndexByte, IndexByteⁱᵐᵖˡ); (indexBytePortable, indexBytePortableⁱᵐᵖˡ); (LastIndex, LastIndexⁱᵐᵖˡ); (LastIndexByte, LastIndexByteⁱᵐᵖˡ); (IndexRune, IndexRuneⁱᵐᵖˡ); (IndexAny, IndexAnyⁱᵐᵖˡ); (LastIndexAny, LastIndexAnyⁱᵐᵖˡ); (genSplit, genSplitⁱᵐᵖˡ); (SplitN, SplitNⁱᵐᵖˡ); (SplitAfterN, SplitAfterNⁱᵐᵖˡ); (Split, Splitⁱᵐᵖˡ); (SplitAfter, SplitAfterⁱᵐᵖˡ); (Fields, Fieldsⁱᵐᵖˡ); (FieldsFunc, FieldsFuncⁱᵐᵖˡ); (Join, Joinⁱᵐᵖˡ); (HasPrefix, HasPrefixⁱᵐᵖˡ); (HasSuffix, HasSuffixⁱᵐᵖˡ); (Map, Mapⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (ToUpper, ToUpperⁱᵐᵖˡ); (ToLower, ToLowerⁱᵐᵖˡ); (ToTitle, ToTitleⁱᵐᵖˡ); (ToUpperSpecial, ToUpperSpecialⁱᵐᵖˡ); (ToLowerSpecial, ToLowerSpecialⁱᵐᵖˡ); (ToTitleSpecial, ToTitleSpecialⁱᵐᵖˡ); (ToValidUTF8, ToValidUTF8ⁱᵐᵖˡ); (isSeparator, isSeparatorⁱᵐᵖˡ); (Title, Titleⁱᵐᵖˡ); (TrimLeftFunc, TrimLeftFuncⁱᵐᵖˡ); (TrimRightFunc, TrimRightFuncⁱᵐᵖˡ); (TrimFunc, TrimFuncⁱᵐᵖˡ); (TrimPrefix, TrimPrefixⁱᵐᵖˡ); (TrimSuffix, TrimSuffixⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (LastIndexFunc, LastIndexFuncⁱᵐᵖˡ); (indexFunc, indexFuncⁱᵐᵖˡ); (lastIndexFunc, lastIndexFuncⁱᵐᵖˡ); (makeASCIISet, makeASCIISetⁱᵐᵖˡ); (containsRune, containsRuneⁱᵐᵖˡ); (Trim, Trimⁱᵐᵖˡ); (TrimLeft, TrimLeftⁱᵐᵖˡ); (trimLeftByte, trimLeftByteⁱᵐᵖˡ); (trimLeftASCII, trimLeftASCIIⁱᵐᵖˡ); (trimLeftUnicode, trimLeftUnicodeⁱᵐᵖˡ); (TrimRight, TrimRightⁱᵐᵖˡ); (trimRightByte, trimRightByteⁱᵐᵖˡ); (trimRightASCII, trimRightASCIIⁱᵐᵖˡ); (trimRightUnicode, trimRightUnicodeⁱᵐᵖˡ); (TrimSpace, TrimSpaceⁱᵐᵖˡ); (Runes, Runesⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (ReplaceAll, ReplaceAllⁱᵐᵖˡ); (EqualFold, EqualFoldⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (Cut, Cutⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (CutPrefix, CutPrefixⁱᵐᵖˡ); (CutSuffix, CutSuffixⁱᵐᵖˡ); (Lines, Linesⁱᵐᵖˡ); (splitSeq, splitSeqⁱᵐᵖˡ); (SplitSeq, SplitSeqⁱᵐᵖˡ); (SplitAfterSeq, SplitAfterSeqⁱᵐᵖˡ); (FieldsSeq, FieldsSeqⁱᵐᵖˡ); (FieldsFuncSeq, FieldsFuncSeqⁱᵐᵖˡ); (NewReader, NewReaderⁱᵐᵖˡ)].
 
-Axiom Buffer__Availableⁱᵐᵖˡ : val.
-
-Axiom Buffer__AvailableBufferⁱᵐᵖˡ : val.
-
-Axiom Buffer__Bytesⁱᵐᵖˡ : val.
-
-Axiom Buffer__Capⁱᵐᵖˡ : val.
-
-Axiom Buffer__Growⁱᵐᵖˡ : val.
-
-Axiom Buffer__Lenⁱᵐᵖˡ : val.
-
-Axiom Buffer__Nextⁱᵐᵖˡ : val.
-
-Axiom Buffer__Readⁱᵐᵖˡ : val.
-
-Axiom Buffer__ReadByteⁱᵐᵖˡ : val.
-
-Axiom Buffer__ReadBytesⁱᵐᵖˡ : val.
-
-Axiom Buffer__ReadFromⁱᵐᵖˡ : val.
-
-Axiom Buffer__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom Buffer__ReadStringⁱᵐᵖˡ : val.
-
-Axiom Buffer__Resetⁱᵐᵖˡ : val.
-
-Axiom Buffer__Stringⁱᵐᵖˡ : val.
-
-Axiom Buffer__Truncateⁱᵐᵖˡ : val.
-
-Axiom Buffer__UnreadByteⁱᵐᵖˡ : val.
-
-Axiom Buffer__UnreadRuneⁱᵐᵖˡ : val.
-
-Axiom Buffer__Writeⁱᵐᵖˡ : val.
-
-Axiom Buffer__WriteByteⁱᵐᵖˡ : val.
-
-Axiom Buffer__WriteRuneⁱᵐᵖˡ : val.
-
-Axiom Buffer__WriteStringⁱᵐᵖˡ : val.
-
-Axiom Buffer__WriteToⁱᵐᵖˡ : val.
-
-Axiom Buffer__emptyⁱᵐᵖˡ : val.
-
-Axiom Buffer__growⁱᵐᵖˡ : val.
-
-Axiom Buffer__readSliceⁱᵐᵖˡ : val.
-
-Axiom Buffer__tryGrowByResliceⁱᵐᵖˡ : val.
-
-Axiom asciiSet__containsⁱᵐᵖˡ : val.
-
-Axiom Reader__Lenⁱᵐᵖˡ : val.
-
-Axiom Reader__Readⁱᵐᵖˡ : val.
-
-Axiom Reader__ReadAtⁱᵐᵖˡ : val.
-
-Axiom Reader__ReadByteⁱᵐᵖˡ : val.
-
-Axiom Reader__ReadRuneⁱᵐᵖˡ : val.
-
-Axiom Reader__Resetⁱᵐᵖˡ : val.
-
-Axiom Reader__Seekⁱᵐᵖˡ : val.
-
-Axiom Reader__Sizeⁱᵐᵖˡ : val.
-
-Axiom Reader__UnreadByteⁱᵐᵖˡ : val.
-
-Axiom Reader__UnreadRuneⁱᵐᵖˡ : val.
-
-Axiom Reader__WriteToⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Buffer.id, []); (ptrT.id Buffer.id, [("Available"%go, Buffer__Availableⁱᵐᵖˡ); ("AvailableBuffer"%go, Buffer__AvailableBufferⁱᵐᵖˡ); ("Bytes"%go, Buffer__Bytesⁱᵐᵖˡ); ("Cap"%go, Buffer__Capⁱᵐᵖˡ); ("Grow"%go, Buffer__Growⁱᵐᵖˡ); ("Len"%go, Buffer__Lenⁱᵐᵖˡ); ("Next"%go, Buffer__Nextⁱᵐᵖˡ); ("Read"%go, Buffer__Readⁱᵐᵖˡ); ("ReadByte"%go, Buffer__ReadByteⁱᵐᵖˡ); ("ReadBytes"%go, Buffer__ReadBytesⁱᵐᵖˡ); ("ReadFrom"%go, Buffer__ReadFromⁱᵐᵖˡ); ("ReadRune"%go, Buffer__ReadRuneⁱᵐᵖˡ); ("ReadString"%go, Buffer__ReadStringⁱᵐᵖˡ); ("Reset"%go, Buffer__Resetⁱᵐᵖˡ); ("String"%go, Buffer__Stringⁱᵐᵖˡ); ("Truncate"%go, Buffer__Truncateⁱᵐᵖˡ); ("UnreadByte"%go, Buffer__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, Buffer__UnreadRuneⁱᵐᵖˡ); ("Write"%go, Buffer__Writeⁱᵐᵖˡ); ("WriteByte"%go, Buffer__WriteByteⁱᵐᵖˡ); ("WriteRune"%go, Buffer__WriteRuneⁱᵐᵖˡ); ("WriteString"%go, Buffer__WriteStringⁱᵐᵖˡ); ("WriteTo"%go, Buffer__WriteToⁱᵐᵖˡ); ("empty"%go, Buffer__emptyⁱᵐᵖˡ); ("grow"%go, Buffer__growⁱᵐᵖˡ); ("readSlice"%go, Buffer__readSliceⁱᵐᵖˡ); ("tryGrowByReslice"%go, Buffer__tryGrowByResliceⁱᵐᵖˡ)]); (readOp.id, []); (ptrT.id readOp.id, []); (asciiSet.id, []); (ptrT.id asciiSet.id, [("contains"%go, asciiSet__containsⁱᵐᵖˡ)]); (Reader.id, []); (ptrT.id Reader.id, [("Len"%go, Reader__Lenⁱᵐᵖˡ); ("Read"%go, Reader__Readⁱᵐᵖˡ); ("ReadAt"%go, Reader__ReadAtⁱᵐᵖˡ); ("ReadByte"%go, Reader__ReadByteⁱᵐᵖˡ); ("ReadRune"%go, Reader__ReadRuneⁱᵐᵖˡ); ("Reset"%go, Reader__Resetⁱᵐᵖˡ); ("Seek"%go, Reader__Seekⁱᵐᵖˡ); ("Size"%go, Reader__Sizeⁱᵐᵖˡ); ("UnreadByte"%go, Reader__UnreadByteⁱᵐᵖˡ); ("UnreadRune"%go, Reader__UnreadRuneⁱᵐᵖˡ); ("WriteTo"%go, Reader__WriteToⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo bytes.bytes :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
 
@@ -478,9 +396,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #bytes.bytes (λ: <>,
-      exception_do (do:  (package.alloc bytes.bytes #());;;
-      do:  (ErrTooLarge'init #());;;
+    package.init bytes.bytes (λ: <>,
+      exception_do (do:  (ErrTooLarge'init #());;;
       do:  (errNegativeRead'init #());;;
       do:  (errUnreadByte'init #());;;
       do:  (asciiSpace'init #()))

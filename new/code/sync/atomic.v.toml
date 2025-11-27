@@ -11,6 +11,10 @@ translate = [
   "Value*",
   "efaceWords",
 
+  "noCopy",
+  "Pointer",
+  "Pointer.*",
+
   "_",
 ]
 
@@ -34,10 +38,6 @@ trusted = [
   "StoreInt32",
   "AddInt32",
   "CompareAndSwapInt32",
-
-  "noCopy",
-  "Pointer",
-  "Pointer.*",
 ]
 
 imports = ["!*"]
