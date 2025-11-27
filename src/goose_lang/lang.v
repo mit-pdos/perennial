@@ -1260,11 +1260,7 @@ Proof.
   induction v; simpl; auto; solve_decision.
 Defined.
 
-End external.
-
-Module expr_instances.
 Section instances.
-Context {ext : ffi_syntax}.
 Inductive tree (T : Type) : Type :=
     Leaf : T → tree T | Node : string → list (tree T) → tree T.
 Global Arguments Leaf {_} _ : assert.
@@ -1324,156 +1320,156 @@ Proof. solve_decision. Qed.
 Global Instance countable_leaf_type : Countable leaf_type.
 Proof. Admitted.
 
-Fixpoint of_expr (v : expr) : tree leaf_type :=
+Fixpoint enc_expr (v : expr) : tree leaf_type :=
   match v with
-  | Val arg1 => Node "Val" [of_val arg1]
+  | Val arg1 => Node "Val" [enc_val arg1]
   | Var arg1 => Node "Var" [Leaf $ StringLeaf arg1]
-  | Rec arg1 arg2 arg3 => Node "Rec" [Leaf $ BinderLeaf arg1; Leaf $ BinderLeaf arg2; of_expr arg3]
-  | App arg1 arg2 => Node "App" [of_expr arg1; of_expr arg2]
-  | UnOp arg1 arg2 => Node "UnOp" [Leaf $ UnOpLeaf arg1; of_expr arg2]
-  | BinOp arg1 arg2 arg3 => Node "BinOp" [Leaf $ BinOpLeaf arg1; of_expr arg2; of_expr arg3]
-  | If arg1 arg2 arg3 => Node "If" [of_expr arg1; of_expr arg2; of_expr arg3]
-  | Pair arg1 arg2 => Node "Pair" [of_expr arg1; of_expr arg2]
-  | Fst arg1 => Node "Fst" [of_expr arg1]
-  | Snd arg1 => Node "Snd" [of_expr arg1]
-  | InjL arg1 => Node "InjL" [of_expr arg1]
-  | InjR arg1 => Node "InjR" [of_expr arg1]
-  | Case arg1 arg2 arg3 => Node "Case" [of_expr arg1; of_expr arg2; of_expr arg3]
-  | Fork arg1 => Node "Fork" [of_expr arg1]
-  | Atomically arg1 arg2 => Node "Atomically" [of_expr arg1; of_expr arg2]
+  | Rec arg1 arg2 arg3 => Node "Rec" [Leaf $ BinderLeaf arg1; Leaf $ BinderLeaf arg2; enc_expr arg3]
+  | App arg1 arg2 => Node "App" [enc_expr arg1; enc_expr arg2]
+  | UnOp arg1 arg2 => Node "UnOp" [Leaf $ UnOpLeaf arg1; enc_expr arg2]
+  | BinOp arg1 arg2 arg3 => Node "BinOp" [Leaf $ BinOpLeaf arg1; enc_expr arg2; enc_expr arg3]
+  | If arg1 arg2 arg3 => Node "If" [enc_expr arg1; enc_expr arg2; enc_expr arg3]
+  | Pair arg1 arg2 => Node "Pair" [enc_expr arg1; enc_expr arg2]
+  | Fst arg1 => Node "Fst" [enc_expr arg1]
+  | Snd arg1 => Node "Snd" [enc_expr arg1]
+  | InjL arg1 => Node "InjL" [enc_expr arg1]
+  | InjR arg1 => Node "InjR" [enc_expr arg1]
+  | Case arg1 arg2 arg3 => Node "Case" [enc_expr arg1; enc_expr arg2; enc_expr arg3]
+  | Fork arg1 => Node "Fork" [enc_expr arg1]
+  | Atomically arg1 arg2 => Node "Atomically" [enc_expr arg1; enc_expr arg2]
   | Primitive0 arg1 => Node "Primitive0" [Leaf $ PrimOpArgs0Leaf arg1]
-  | Primitive1 arg1 arg2 => Node "Primitive1" [Leaf $ PrimOpArgs1Leaf arg1; of_expr arg2]
-  | Primitive2 arg1 arg2 arg3 => Node "Primitive2" [Leaf $ PrimOpArgs2Leaf arg1; of_expr arg2; of_expr arg3]
-  | CmpXchg arg1 arg2 arg3 => Node "CmpXchg" [of_expr arg1; of_expr arg2; of_expr arg3]
-  | ExternalOp arg1 arg2 => Node "ExternalOp" [Leaf $ FfiOpcodeLeaf arg1; of_expr arg2]
+  | Primitive1 arg1 arg2 => Node "Primitive1" [Leaf $ PrimOpArgs1Leaf arg1; enc_expr arg2]
+  | Primitive2 arg1 arg2 arg3 => Node "Primitive2" [Leaf $ PrimOpArgs2Leaf arg1; enc_expr arg2; enc_expr arg3]
+  | CmpXchg arg1 arg2 arg3 => Node "CmpXchg" [enc_expr arg1; enc_expr arg2; enc_expr arg3]
+  | ExternalOp arg1 arg2 => Node "ExternalOp" [Leaf $ FfiOpcodeLeaf arg1; enc_expr arg2]
   | NewProph  => Node "NewProph" []
-  | ResolveProph arg1 arg2 => Node "ResolveProph" [of_expr arg1; of_expr arg2]
+  | ResolveProph arg1 arg2 => Node "ResolveProph" [enc_expr arg1; enc_expr arg2]
   end
-with of_val (v : val) : tree leaf_type :=
+with enc_val (v : val) : tree leaf_type :=
   match v with
   | LitV arg1 => Node "LitV" [Leaf $ BaseLitLeaf arg1]
-  | RecV arg1 arg2 arg3 => Node "RecV" [Leaf $ BinderLeaf arg1; Leaf $ BinderLeaf arg2; of_expr arg3]
-  | PairV arg1 arg2 => Node "PairV" [of_val arg1; of_val arg2]
-  | InjLV arg1 => Node "InjLV" [of_val arg1]
-  | InjRV arg1 => Node "InjRV" [of_val arg1]
+  | RecV arg1 arg2 arg3 => Node "RecV" [Leaf $ BinderLeaf arg1; Leaf $ BinderLeaf arg2; enc_expr arg3]
+  | PairV arg1 arg2 => Node "PairV" [enc_val arg1; enc_val arg2]
+  | InjLV arg1 => Node "InjLV" [enc_val arg1]
+  | InjRV arg1 => Node "InjRV" [enc_val arg1]
   | ExtV arg1 => Node "ExtV" [Leaf $ FfiValLeaf arg1]
   | GoInstruction arg1 => Node "GoInstruction" [Leaf $ GoInstructionLeaf arg1]
-  | ArrayV arg1 => Node "ArrayV" (of_val <$> arg1)
+  | ArrayV arg1 => Node "ArrayV" (enc_val <$> arg1)
   | InterfaceV arg1 =>
       Node "InterfaceV"
         (match arg1 with
-         | Some (t, v) => [Leaf $ GoTypeLeaf t; of_val v]
+         | Some (t, v) => [Leaf $ GoTypeLeaf t; enc_val v]
          | None => []
          end)
-  | LiteralValue arg1 => Node "LiteralValue" (of_keyed_element <$> arg1)
+  | LiteralValue arg1 => Node "LiteralValue" (enc_keyed_element <$> arg1)
   end
-with of_keyed_element (v : keyed_element) : tree leaf_type :=
+with enc_keyed_element (v : keyed_element) : tree leaf_type :=
   match v with
   | KeyedElement k v =>
       Node "KeyedElement"
               (match k with
-               | Some k => [of_key k; of_element v]
-               | None => [of_element v]
+               | Some k => [enc_key k; enc_element v]
+               | None => [enc_element v]
                end)
   end
-with of_key (v : key) : tree leaf_type :=
+with enc_key (v : key) : tree leaf_type :=
   match v with
   | KeyField arg1 => Node "KeyField" [Leaf $ GoStringLeaf arg1]
-  | KeyExpression arg1 => Node "KeyExpression" [of_expr arg1]
-  | KeyLiteralValue arg1 => Node "KeyLiteralValue" (of_keyed_element <$> arg1)
+  | KeyExpression arg1 => Node "KeyExpression" [enc_expr arg1]
+  | KeyLiteralValue arg1 => Node "KeyLiteralValue" (enc_keyed_element <$> arg1)
   end
-with of_element (v : element) : tree leaf_type :=
+with enc_element (v : element) : tree leaf_type :=
   match v with
-  | ElementExpression arg1 => Node "ElementExpression" [of_expr arg1]
-  | ElementLiteralValue arg1 => Node "ElementLiteralValue" (of_keyed_element <$> arg1)
+  | ElementExpression arg1 => Node "ElementExpression" [enc_expr arg1]
+  | ElementLiteralValue arg1 => Node "ElementLiteralValue" (enc_keyed_element <$> arg1)
   end.
 
-Fixpoint to_expr (v : tree leaf_type) : expr :=
+Fixpoint dec_expr (v : tree leaf_type) : expr :=
   match v with
-  | Node "Val" [arg1] => Val (to_val arg1)
+  | Node "Val" [arg1] => Val (dec_val arg1)
   | Node "Var" [Leaf (StringLeaf arg1)] => Var arg1
   | Node "Rec" [Leaf (BinderLeaf arg1); Leaf (BinderLeaf arg2); arg3] =>
-       Rec arg1 arg2 (to_expr arg3)
-  | Node "App" [arg1; arg2] => App (to_expr arg1) (to_expr arg2)
-  | Node "UnOp" [Leaf (UnOpLeaf arg1); arg2] => UnOp arg1 (to_expr arg2)
+       Rec arg1 arg2 (dec_expr arg3)
+  | Node "App" [arg1; arg2] => App (dec_expr arg1) (dec_expr arg2)
+  | Node "UnOp" [Leaf (UnOpLeaf arg1); arg2] => UnOp arg1 (dec_expr arg2)
   | Node "BinOp" [Leaf (BinOpLeaf arg1); arg2; arg3] =>
-      BinOp arg1 (to_expr arg2) (to_expr arg3)
-  | Node "If" [arg1; arg2; arg3] => If (to_expr arg1) (to_expr arg2) (to_expr arg3)
-  | Node "Pair" [arg1; arg2] => Pair (to_expr arg1) (to_expr arg2)
-  | Node "Fst" [arg1] => Fst (to_expr arg1)
-  | Node "Snd" [arg1] => Snd (to_expr arg1)
-  | Node "InjL" [arg1] => InjL (to_expr arg1)
-  | Node "InjR" [arg1] => InjR (to_expr arg1)
-  | Node "Case" [arg1; arg2; arg3] => Case (to_expr arg1) (to_expr arg2) (to_expr arg3)
-  | Node "Fork" [arg1] => Fork (to_expr arg1)
-  | Node "Atomically" [arg1; arg2] => Atomically (to_expr arg1) (to_expr arg2)
+      BinOp arg1 (dec_expr arg2) (dec_expr arg3)
+  | Node "If" [arg1; arg2; arg3] => If (dec_expr arg1) (dec_expr arg2) (dec_expr arg3)
+  | Node "Pair" [arg1; arg2] => Pair (dec_expr arg1) (dec_expr arg2)
+  | Node "Fst" [arg1] => Fst (dec_expr arg1)
+  | Node "Snd" [arg1] => Snd (dec_expr arg1)
+  | Node "InjL" [arg1] => InjL (dec_expr arg1)
+  | Node "InjR" [arg1] => InjR (dec_expr arg1)
+  | Node "Case" [arg1; arg2; arg3] => Case (dec_expr arg1) (dec_expr arg2) (dec_expr arg3)
+  | Node "Fork" [arg1] => Fork (dec_expr arg1)
+  | Node "Atomically" [arg1; arg2] => Atomically (dec_expr arg1) (dec_expr arg2)
   | Node "Primitive0" [Leaf (PrimOpArgs0Leaf arg1)] => Primitive0 arg1
   | Node "Primitive1" [Leaf (PrimOpArgs1Leaf arg1); arg2] =>
-       Primitive1 arg1 (to_expr arg2)
+       Primitive1 arg1 (dec_expr arg2)
   | Node "Primitive2" [Leaf (PrimOpArgs2Leaf arg1); arg2; arg3] =>
-       Primitive2 arg1 (to_expr arg2) (to_expr arg3)
+       Primitive2 arg1 (dec_expr arg2) (dec_expr arg3)
   | Node "CmpXchg" [arg1; arg2; arg3] =>
-       CmpXchg (to_expr arg1) (to_expr arg2) (to_expr arg3)
+       CmpXchg (dec_expr arg1) (dec_expr arg2) (dec_expr arg3)
   | Node "ExternalOp" [Leaf (FfiOpcodeLeaf arg1); arg2] =>
-       ExternalOp arg1 (to_expr arg2)
+       ExternalOp arg1 (dec_expr arg2)
   | Node "NewProph" [] => NewProph
   | Node "ResolveProph" [arg1; arg2] =>
-       ResolveProph (to_expr arg1) (to_expr arg2)
+       ResolveProph (dec_expr arg1) (dec_expr arg2)
   | _ => inhabitant
   end
-with to_val (v : tree leaf_type) : val :=
+with dec_val (v : tree leaf_type) : val :=
   match v with
   | Node "LitV" [Leaf (BaseLitLeaf arg1)] => LitV arg1
   | Node "RecV" [Leaf (BinderLeaf arg1); Leaf (BinderLeaf arg2); arg3] =>
-       RecV arg1 arg2 (to_expr arg3)
-  | Node "PairV" [arg1; arg2] => PairV (to_val arg1) (to_val arg2)
-  | Node "InjLV" [arg1] => InjLV (to_val arg1)
-  | Node "InjRV" [arg1] => InjRV (to_val arg1)
+       RecV arg1 arg2 (dec_expr arg3)
+  | Node "PairV" [arg1; arg2] => PairV (dec_val arg1) (dec_val arg2)
+  | Node "InjLV" [arg1] => InjLV (dec_val arg1)
+  | Node "InjRV" [arg1] => InjRV (dec_val arg1)
   | Node "ExtV" [Leaf (FfiValLeaf arg1)] => ExtV arg1
   | Node "GoInstruction" [Leaf (GoInstructionLeaf arg1)] => GoInstruction arg1
-  | Node "ArrayV" arg1 => ArrayV (to_val <$> arg1)
+  | Node "ArrayV" arg1 => ArrayV (dec_val <$> arg1)
   | Node "InterfaceV" l =>
         (match l with
-         | [Leaf (GoTypeLeaf t); v] => InterfaceV $ Some (t, to_val v)
+         | [Leaf (GoTypeLeaf t); v] => InterfaceV $ Some (t, dec_val v)
          | [] => InterfaceV None
          | _ => inhabitant
          end)
-  | Node "LiteralValue" arg1 => LiteralValue (to_keyed_element <$> arg1)
+  | Node "LiteralValue" arg1 => LiteralValue (dec_keyed_element <$> arg1)
   | _ => inhabitant
   end
-with to_keyed_element (v : tree leaf_type) : keyed_element :=
+with dec_keyed_element (v : tree leaf_type) : keyed_element :=
   match v with
   | Node "KeyedElement" l =>
       (match l with
        | [k; v] =>
-            KeyedElement (Some $ to_key k) (to_element v)
+            KeyedElement (Some $ dec_key k) (dec_element v)
        | [v] =>
-            KeyedElement None (to_element v)
+            KeyedElement None (dec_element v)
        | _ => inhabitant
        end)
   | _ => inhabitant
   end
-with to_key (v : tree leaf_type) : key :=
+with dec_key (v : tree leaf_type) : key :=
   match v with
   | Node "KeyField" [Leaf (GoStringLeaf arg1)] => KeyField arg1
-  | Node "KeyExpression" [arg1] => KeyExpression (to_expr arg1)
-  | Node "KeyLiteralValue" arg1 => KeyLiteralValue (to_keyed_element <$> arg1)
+  | Node "KeyExpression" [arg1] => KeyExpression (dec_expr arg1)
+  | Node "KeyLiteralValue" arg1 => KeyLiteralValue (dec_keyed_element <$> arg1)
   | _ => inhabitant
   end
-with to_element (v : tree leaf_type) : element :=
+with dec_element (v : tree leaf_type) : element :=
   match v with
-  | Node "ElementExpression" [arg1] => ElementExpression (to_expr arg1)
-  | Node "ElementLiteralValue" arg1 => ElementLiteralValue (to_keyed_element <$> arg1)
+  | Node "ElementExpression" [arg1] => ElementExpression (dec_expr arg1)
+  | Node "ElementLiteralValue" arg1 => ElementLiteralValue (dec_keyed_element <$> arg1)
   | _ => inhabitant
   end.
 
 Local Ltac prove :=
   fix I 1 with
-    (pf_expr e : to_expr $ of_expr e = e)
-    (pf_val v : to_val $ of_val v = v)
-    (pf_keyed_element v : to_keyed_element $ of_keyed_element v = v)
-    (pf_key v : to_key $ of_key v = v)
-    (pf_element v : to_element $ of_element v = v); clear I; intros [];
+    (pf_expr e : dec_expr $ enc_expr e = e)
+    (pf_val v : dec_val $ enc_val v = v)
+    (pf_keyed_element v : dec_keyed_element $ enc_keyed_element v = v)
+    (pf_key v : dec_key $ enc_key v = v)
+    (pf_element v : dec_element $ enc_element v = v); clear I; intros [];
   repeat match goal with
     | |- _ => progress simpl
     | |- _ => progress f_equal
@@ -1483,79 +1479,75 @@ Local Ltac prove :=
     | x : prod _ _ |- _ => induction x
     end.
 
-Lemma to_expr_of_expr :
-  (∀ e, to_expr $ of_expr e = e).
+Lemma dec_expr_enc_expr :
+  (∀ e, dec_expr $ enc_expr e = e).
 Proof. prove. Qed.
-Lemma to_val_of_val :
-  (∀ e, to_val $ of_val e = e).
+Lemma dec_val_enc_val :
+  (∀ e, dec_val $ enc_val e = e).
 Proof. prove. Qed.
-Lemma to_keyed_element_of_keyed_element :
-  (∀ e, to_keyed_element $ of_keyed_element e = e).
+Lemma dec_keyed_element_enc_keyed_element :
+  (∀ e, dec_keyed_element $ enc_keyed_element e = e).
 Proof. prove. Qed.
-Lemma to_key_of_key :
-  (∀ e, to_key $ of_key e = e).
+Lemma dec_key_enc_key :
+  (∀ e, dec_key $ enc_key e = e).
 Proof. prove. Qed.
-Lemma to_element_of_element :
-  (∀ e, to_element $ of_element e = e).
+Lemma dec_element_enc_element :
+  (∀ e, dec_element $ enc_element e = e).
 Proof. prove. Qed.
 
 Global Instance eq_decision_expr : EqDecision expr.
 Proof.
-  intros x y. pose proof to_expr_of_expr.
-  destruct (decide (of_expr x = of_expr y)); [left|right]; congruence.
+  intros x y. pose proof dec_expr_enc_expr.
+  destruct (decide (enc_expr x = enc_expr y)); [left|right]; congruence.
 Qed.
 Global Instance eq_decision_val : EqDecision val.
 Proof.
-  intros x y. pose proof to_val_of_val.
-  destruct (decide (of_val x = of_val y)); [left|right]; congruence.
+  intros x y. pose proof dec_val_enc_val.
+  destruct (decide (enc_val x = enc_val y)); [left|right]; congruence.
 Qed.
 Global Instance eq_decision_keyed_element : EqDecision keyed_element.
 Proof.
-  intros x y. pose proof to_keyed_element_of_keyed_element.
-  destruct (decide (of_keyed_element x = of_keyed_element y)); [left|right]; congruence.
+  intros x y. pose proof dec_keyed_element_enc_keyed_element.
+  destruct (decide (enc_keyed_element x = enc_keyed_element y)); [left|right]; congruence.
 Qed.
 Global Instance eq_decision_key : EqDecision key.
 Proof.
-  intros x y. pose proof to_key_of_key.
-  destruct (decide (of_key x = of_key y)); [left|right]; congruence.
+  intros x y. pose proof dec_key_enc_key.
+  destruct (decide (enc_key x = enc_key y)); [left|right]; congruence.
 Qed.
 Global Instance eq_decision_element : EqDecision element.
 Proof.
-  intros x y. pose proof to_element_of_element.
-  destruct (decide (of_element x = of_element y)); [left|right]; congruence.
+  intros x y. pose proof dec_element_enc_element.
+  destruct (decide (enc_element x = enc_element y)); [left|right]; congruence.
 Qed.
 
 Global Instance countable_expr : Countable expr.
 Proof.
-  apply (inj_countable of_expr (Some ∘ to_expr)).
-  intros ?. rewrite /= to_expr_of_expr //.
+  apply (inj_countable' enc_expr dec_expr).
+  intros ?. apply dec_expr_enc_expr.
 Qed.
 Global Instance countable_val : Countable val.
 Proof.
-  apply (inj_countable of_val (Some ∘ to_val)).
-  intros ?. rewrite /= to_val_of_val //.
+  apply (inj_countable' enc_val dec_val).
+  intros ?. apply dec_val_enc_val.
 Qed.
 Global Instance countable_keyed_element : Countable keyed_element.
 Proof.
-  apply (inj_countable of_keyed_element (Some ∘ to_keyed_element)).
-  intros ?. rewrite /= to_keyed_element_of_keyed_element //.
+  apply (inj_countable' enc_keyed_element dec_keyed_element).
+  intros ?. apply dec_keyed_element_enc_keyed_element.
 Qed.
 Global Instance countable_key : Countable key.
 Proof.
-  apply (inj_countable of_key (Some ∘ to_key)).
-  intros ?. rewrite /= to_key_of_key //.
+  apply (inj_countable' enc_key dec_key).
+  intros ?. rewrite /= dec_key_enc_key //.
 Qed.
 Global Instance countable_element : Countable element.
 Proof.
-  apply (inj_countable of_element (Some ∘ to_element)).
-  intros ?. rewrite /= to_element_of_element //.
+  apply (inj_countable' enc_element dec_element).
+  intros ?. apply dec_element_enc_element.
 Qed.
 
 End instances.
-End expr_instances.
-
-Section external.
-Context `{ffi_syntax}.
 
 Definition bin_op_eval_eq (v1 v2 : val) : option base_lit :=
   if decide (is_comparable v1 ∧ is_comparable v2) then
