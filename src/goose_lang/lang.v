@@ -1270,6 +1270,39 @@ Inductive tree (T : Type) : Type :=
 Global Arguments Leaf {_} _ : assert.
 Global Arguments Node {_} _ _ : assert.
 
+Global Instance eq_decision_tree `{EqDecision T} : EqDecision (tree T).
+Proof.
+  refine (
+      fix go x y :=
+        match x, y with
+        | Leaf x, Leaf x' => cast_if (decide (x = x'))
+        | Node x ts, Node x' ts' => cast_if_and (decide (ts = ts')) (decide (x = x'))
+        | _, _ => right _
+        end
+    ); try congruence.
+  unshelve eapply list.list_eq_dec; done.
+Qed.
+
+Global Instance countable_tree `{Countable T} : Countable (tree T).
+Proof.
+  apply (inj_countable'
+           (fix enc t :=
+              match t with
+              | Leaf x => GenLeaf x
+              | Node x ts => GenNode (Pos.to_nat $ encode x) (enc <$> ts)
+              end)
+           (fix dec t :=
+              match t with
+              | GenLeaf x => Leaf x
+              | GenNode x ts => Node (default "" $ decode (Pos.of_nat x)) (dec <$> ts)
+              end
+           )
+        ).
+  fix IH 1. intros []; try done.
+  rewrite Pos2Nat.id. rewrite decode_encode /=. f_equal.
+  induction l; first done. rewrite !fmap_cons. rewrite IH IHl //.
+Qed.
+
 Inductive leaf_type : Type :=
   | BaseLitLeaf (val : base_lit)
   | BinOpLeaf (val : bin_op)
@@ -1283,8 +1316,13 @@ Inductive leaf_type : Type :=
   | PrimOpArgs2Leaf (val : prim_op args2)
   | StringLeaf (val : string)
   | UnOpLeaf (val : un_op)
-  | GoTypeLeaf (t : go.type)
-.
+  | GoTypeLeaf (t : go.type).
+
+Global Instance eq_decision_leaf_type : EqDecision leaf_type.
+Proof. solve_decision. Qed.
+
+Global Instance countable_leaf_type : Countable leaf_type.
+Proof. Admitted.
 
 Fixpoint of_expr (v : expr) : tree leaf_type :=
   match v with
@@ -1461,7 +1499,60 @@ Lemma to_element_of_element :
   (∀ e, to_element $ of_element e = e).
 Proof. prove. Qed.
 
-End gen_tree.
+Global Instance eq_decision_expr : EqDecision expr.
+Proof.
+  intros x y. pose proof to_expr_of_expr.
+  destruct (decide (of_expr x = of_expr y)); [left|right]; congruence.
+Qed.
+Global Instance eq_decision_val : EqDecision val.
+Proof.
+  intros x y. pose proof to_val_of_val.
+  destruct (decide (of_val x = of_val y)); [left|right]; congruence.
+Qed.
+Global Instance eq_decision_keyed_element : EqDecision keyed_element.
+Proof.
+  intros x y. pose proof to_keyed_element_of_keyed_element.
+  destruct (decide (of_keyed_element x = of_keyed_element y)); [left|right]; congruence.
+Qed.
+Global Instance eq_decision_key : EqDecision key.
+Proof.
+  intros x y. pose proof to_key_of_key.
+  destruct (decide (of_key x = of_key y)); [left|right]; congruence.
+Qed.
+Global Instance eq_decision_element : EqDecision element.
+Proof.
+  intros x y. pose proof to_element_of_element.
+  destruct (decide (of_element x = of_element y)); [left|right]; congruence.
+Qed.
+
+Global Instance countable_expr : Countable expr.
+Proof.
+  apply (inj_countable of_expr (Some ∘ to_expr)).
+  intros ?. rewrite /= to_expr_of_expr //.
+Qed.
+Global Instance countable_val : Countable val.
+Proof.
+  apply (inj_countable of_val (Some ∘ to_val)).
+  intros ?. rewrite /= to_val_of_val //.
+Qed.
+Global Instance countable_keyed_element : Countable keyed_element.
+Proof.
+  apply (inj_countable of_keyed_element (Some ∘ to_keyed_element)).
+  intros ?. rewrite /= to_keyed_element_of_keyed_element //.
+Qed.
+Global Instance countable_key : Countable key.
+Proof.
+  apply (inj_countable of_key (Some ∘ to_key)).
+  intros ?. rewrite /= to_key_of_key //.
+Qed.
+Global Instance countable_element : Countable element.
+Proof.
+  apply (inj_countable of_element (Some ∘ to_element)).
+  intros ?. rewrite /= to_element_of_element //.
+Qed.
+
+End instances.
+End expr_instances.
 
 Section external.
 Context `{ffi_syntax}.
