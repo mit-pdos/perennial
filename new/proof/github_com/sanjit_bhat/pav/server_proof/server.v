@@ -229,35 +229,34 @@ Qed.
 
 (** specs. *)
 
-(* RPC spec needs □ in front of atomic update. *)
-Lemma wp_Server_Put s γ uid pk sl_pk ver :
-  ∀ Φ,
-  is_pkg_init server -∗
-  is_Server s γ -∗
-  sl_pk ↦*□ pk -∗
-  (* writable. *)
-  (* True postcond. caller doesn't need anything from Put. *)
-  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
-    (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)) -∗
-  (* fupd might be used after Put returns, so Φ goes separately. *)
-  ▷ Φ #() -∗
-  WP s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver {{ Φ }}.
-Proof.
-Admitted.
+Lemma wp_Server_Put s γ uid sl_pk pk ver :
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server s γ ∗
+    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
+    (* caller doesn't need anything from Put. *)
+    "#Hfupd" ∷ □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+      let σ' := set state.pending (pure_put uid pk ver) σ in
+      (own_Server γ σ' ={∅,⊤}=∗ True))
+  }}}
+  s @ (ptrT.id server.Server.id) @ "Put" #uid #sl_pk #ver
+  {{{ RET #(); True }}}.
+Proof. Admitted.
 
-Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
-  ∀ Φ Q,
-  is_pkg_init server -∗
-  is_Server s γ -∗
-  (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
-  (* TODO: change to ∃ sigma. *)
-  (∀ σ,
-    Q σ -∗
-    ∃ sl_chainProof sl_linkSig sl_hist ptr_bound err
-      lastDig lastKeys lastLink,
+Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) Q :
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server s γ ∗
+    "#Hfupd" ∷ □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+      (own_Server γ σ ={∅,⊤}=∗ Q σ))
+  }}}
+  s @ (ptrT.id server.Server.id) @ "History" #uid #prevEpoch #prevVerLen
+  {{{
+    sl_chainProof sl_linkSig sl_hist ptr_bound err lastDig lastKeys lastLink σ,
+    RET (#sl_chainProof, #sl_linkSig, #sl_hist, #ptr_bound, #err);
     let numEps := length σ.(state.hist) in
     let pks := lastKeys !!! uid in
+    "#HQ" ∷ Q σ ∗
     "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
     "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
     "#Hgenie" ∷
@@ -286,20 +285,21 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) :
           (drop (uint.nat prevVerLen) pks) hist⌝ ∗
         "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(cfg.vrf_pk) uid
           (W64 $ length pks) lastDig bound
-      end -∗
-    Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
-  WP s @ (ptrT.id server.Server.id) @ "History" #uid #prevEpoch #prevVerLen {{ Φ }}.
+      end
+  }}}.
 Proof. Admitted.
 
-Lemma wp_Server_Audit s γ (prevEpoch : w64) :
-  ∀ Φ Q,
-  is_pkg_init server -∗
-  is_Server s γ -∗
-  (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
-  (∀ σ,
-    Q σ -∗
-    ∃ sl_proof err,
+Lemma wp_Server_Audit s γ (prevEpoch : w64) Q :
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server s γ ∗
+    "#Hfupd" ∷ □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+      (own_Server γ σ ={∅,⊤}=∗ Q σ))
+  }}}
+  s @ (ptrT.id server.Server.id) @ "Audit" #prevEpoch
+  {{{
+    sl_proof err σ, RET (#sl_proof, #err);
+    "#HQ" ∷ Q σ ∗
     "#Hgenie" ∷
       match err with
       | true =>
@@ -324,21 +324,21 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) :
         those are tied down by UpdateProof, which is tied into server's digs.
         dig only commits to one map, which lets auditor know it shares
         same maps as server. *)
-      end -∗
-    Φ #(sl_proof, err)) -∗
-  WP s @ (ptrT.id server.Server.id) @ "Audit" #prevEpoch {{ Φ }}.
-Proof.
-Admitted.
+      end
+  }}}.
+Proof. Admitted.
 
-Lemma wp_Server_Start s γ :
-  ∀ Φ Q,
-  is_pkg_init server -∗
-  is_Server s γ -∗
-  (* read-only. *)
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
-  (∀ σ,
-    Q σ -∗
-    ∃ ptr_chain chain ptr_vrf vrf last_link,
+Lemma wp_Server_Start s γ Q :
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server s γ ∗
+    "#Hfupd" ∷ □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
+      (own_Server γ σ ={∅,⊤}=∗ Q σ))
+  }}}
+  s @ (ptrT.id server.Server.id) @ "Start" #()
+  {{{
+    ptr_chain chain ptr_vrf vrf last_link σ, RET (#ptr_chain, #ptr_vrf);
+    "#HQ" ∷ Q σ ∗
     "#Hptr_chain" ∷ StartChain.own ptr_chain chain (□) ∗
     "#Hptr_vrf" ∷ StartVrf.own ptr_vrf vrf (□) ∗
 
@@ -355,11 +355,9 @@ Lemma wp_Server_Start s γ :
 
     "%Heq_VrfPk" ∷ ⌜γ.(cfg.vrf_pk) = vrf.(StartVrf.VrfPk)⌝ ∗
     "#His_VrfSig" ∷ ktcore.wish_VrfSig γ.(cfg.sig_pk) γ.(cfg.vrf_pk)
-      vrf.(StartVrf.VrfSig) -∗
-    Φ #(ptr_chain, ptr_vrf)) -∗
-  WP s @ (ptrT.id server.Server.id) @ "Start" #() {{ Φ }}.
-Proof.
-Admitted.
+      vrf.(StartVrf.VrfSig)
+  }}}.
+Proof. Admitted.
 
 End proof.
 End server.
