@@ -185,7 +185,8 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
              let (field_name, field_type) :=
                match fd with go.FieldDecl n t => (n, t) | go.EmbeddedField n t => (n, t) end in
              (if: cmp_so_far then
-                GoEquals field_type (StructFieldGet field_name v1, StructFieldGet field_name v2)
+                (StructFieldGet (go.StructType fds) field_name v1) =⟨field_type⟩
+                (StructFieldGet (go.StructType fds) field_name v2)
               else #false)%E
       ) #true fds
 }.
@@ -231,8 +232,8 @@ Class CoreSemantics {go_ctx : GoContext} :=
                                                 end in
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
                 let field_val := GoLoad field_type field_addr in
-                StructFieldSet field_name (struct_so_far, field_val)
-         ) (StructV ∅) fds)%V;
+                StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val)
+         ) (go_zero_val (go.StructType fds)) fds)%V;
 
   store_underlying t : store t = store (to_underlying t);
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
@@ -246,9 +247,9 @@ Class CoreSemantics {go_ctx : GoContext} :=
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
-                let field_val := StructFieldGet field_name "v" in
+                let field_val := StructFieldGet (go.StructType fds) field_name "v" in
                 GoStore field_type (field_addr, field_val)
-         ) (StructV ∅) fds)%V;
+         ) (go_zero_val (go.StructType fds)) fds)%V;
 
   struct_field_ref_underlying t : struct_field_ref t = struct_field_ref (to_underlying t);
   index_ref_underlying t : index_ref t = index_ref (to_underlying t);
@@ -260,18 +261,31 @@ Class CoreSemantics {go_ctx : GoContext} :=
   composite_literal_underlying t :
     composite_literal t = composite_literal (to_underlying t);
 
-  composite_literal_struct fds (fvs : list val) (* in-order *)
-                           (Hlen : length fvs = length fds) :
-    composite_literal (go.StructType fds) (ArrayV fvs) =
-    StructV (
-        foldl (λ m '(fd, v),
-                 let field_name := match fd with
-                                   | go.FieldDecl n t => n
-                                   | go.EmbeddedField n t => n
-                                   end in
-                <[ field_name := v ]> m
-          ) ∅ (zip fds fvs)
-      )
+  composite_literal_struct fds l :
+    composite_literal (go.StructType fds) (LiteralValue l)  =
+    match l with
+    | [] => go_zero_val $ go.StructType fds
+    | (KeyedElement None _) :: _ =>
+        (* unkeyed struct literal *)
+        foldl (λ v '(fd, ke),
+                 let (field_name, field_type) :=
+                   match fd with
+                   | go.FieldDecl n t | go.EmbeddedField n t => pair n t
+                   end in
+                 match ke with
+                 | KeyedElement _ (ElementExpression e) =>
+                     StructFieldSet (go.StructType fds) field_name (v, e)%E
+                 | KeyedElement _ (ElementLiteralValue el) =>
+                     StructFieldSet (go.StructType fds) field_name
+                       (v, (CompositeLiteral field_type (LiteralValue el)))%E
+                       (* NOTE: if field_type is `*A`, then this will be
+                           *A {...}, which the semantics can interpret as &A{...} *)
+                 end
+          ) (Val $ go_zero_val $ go.StructType fds) (zip fds l)
+    | (KeyedElement (Some _) _) :: _ =>
+        (* keyed struct literal *)
+        #()
+    end
 }.
 
 End defs.

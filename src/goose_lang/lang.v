@@ -573,6 +573,7 @@ Class GoContext {ext : ffi_syntax} : Type :=
     alloc : go.type → val;
     load : go.type → val;
     store : go.type → val;
+    go_zero_val : go.type → val;
 
     struct_field_ref : go.type → go_string → loc → loc;
     struct_field_get : go.type → go_string → val → expr;
@@ -1022,6 +1023,7 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     alloc := inhabitant;
     load := inhabitant;
     store := inhabitant;
+    go_zero_val := inhabitant;
     struct_field_ref := inhabitant;
     struct_field_get := inhabitant;
     struct_field_set := inhabitant;
