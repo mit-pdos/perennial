@@ -47,7 +47,7 @@ Definition for_range (key_type elem_type : go.type) : val :=
       do: #()
     else
       let: "mv" := StartRead "m" in
-      let: "key_sl" := slice.literal key_type (InternalMapDomain "mv") in
+      let: "key_sl" := CompositeLiteral (go.SliceType key_type) (InternalMapDomainLiteral "mv") in
       let: "v" :=
         (slice.for_range key_type
            (λ: <> "k", "body" "k" (lookup1 key_type elem_type "m" "k"))
@@ -110,17 +110,28 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0))%V;
   len_map key_type elem_type :
     #(functions go.len [go.MapType key_type elem_type]) =
-    (λ: "m", ArrayLength (InternalMapDomain (Read "m")))%V;
+    (λ: "m", InternalMapLength (Read "m"))%V;
 
-  composite_literal_map key_type elem_type (kvs : list val) :
-    composite_literal (go.MapType key_type elem_type) (ArrayV kvs) =
+  composite_literal_map key_type elem_type (l : list keyed_element) :
+    composite_literal (go.MapType key_type elem_type) (LiteralValue l) =
     (let: "m" := FuncResolve go.make1 [go.MapType key_type elem_type] #() #() in
-     (* insert everything  *)
-     (foldl (λ expr_so_far kv,
-               expr_so_far;;
-               (map.insert key_type "m" (Fst (Val kv)) (Snd (Val kv))))
+     (foldl (λ expr_so_far ke,
+               match ke with
+               | KeyedElement (Some k) v =>
+                   let k_expr := (match k with
+                                  | KeyExpression e => e
+                                  | KeyLiteralValue l => CompositeLiteral key_type (LiteralValue l)
+                                  | _ => Panic "invalid map literal"
+                                  end) in
+                   let v_expr := (match v with
+                                  | ElementExpression e => e
+                                  | ElementLiteralValue l => CompositeLiteral elem_type (LiteralValue l)
+                                  end) in
+                   expr_so_far;; (map.insert key_type "m" k_expr v_expr)
+               | _ => Panic "invalid map literal"
+               end)
         (#() : expr)
-        kvs
+        l
      ) ;;
      "m"
     )%E

@@ -238,9 +238,23 @@ Global Instance wp_StructFieldRef t f (l : loc) :
   PureWp True (StructFieldRef t f #l) #(struct_field_ref t f l).
 Proof. solve_pure. Qed.
 
-Global Instance wp_StructFieldSet_untyped f m v :
-  PureWp True (StructFieldSet f (StructV m, v)%V) (StructV (<[f := v]> m)).
-Proof. solve_pure. Qed.
+Class IsStructFieldGet t f (v v' : val) :=
+  {
+    struct_field_get_eq : struct_field_get t f v = v';
+  }.
+
+Class IsStructFieldSet t f v vf v' :=
+  {
+    struct_field_set_eq : struct_field_set t f v vf = v';
+  }.
+
+Global Instance wp_StructFieldGet `{!IsStructFieldGet t f v v'} :
+  PureWp True (StructFieldGet t f v) v'.
+Proof. rewrite -struct_field_get_eq. solve_pure. Qed.
+
+Global Instance wp_StructFieldSet t f v vf v' `{Heq : IsStructFieldSet t f v vf v'} :
+  PureWp True (StructFieldSet t f (v, vf)%V) v'.
+Proof. rewrite -(struct_field_set_eq (v':=v')). solve_pure. Qed.
 
 Global Instance wp_InternalLen et s :
   PureWp True (InternalLen (go.SliceType et) #s) #(s.(slice.len)).
@@ -276,18 +290,6 @@ Global Instance wp_ArrayLength vs :
   PureWp True (ArrayLength (ArrayV vs))
       (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ())).
 Proof. solve_pure. Qed.
-
-Lemma wp_StructFieldGet_untyped {stk E} f m v :
-  m !! f = Some v →
-  {{{ True }}}
-    StructFieldGet f (StructV m) @ stk; E
-  {{{ RET v; £ 1 }}}.
-Proof.
-  iIntros "% * _ HΦ". iApply (wp_GoInstruction []).
-  { intros. repeat econstructor. done. }
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "? $ !>". simpl. wp_pures. by iApply "HΦ".
-Qed.
 
 Local Lemma bool_decide_inj `(f : A → B) `{!Inj eq eq f} a a' `{!EqDecision A}
   `{!EqDecision B}
@@ -588,13 +590,5 @@ Proof. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
 Proof. solve_into_val_typed. Qed.
-
-Lemma seqZ_succ start n :
-  0 ≤ n →
-  seqZ start (Z.succ n) = seqZ start n ++ [start + n].
-Proof.
-  intros H. rewrite /seqZ Z2Nat.inj_succ; last lia.
-  rewrite seq_S fmap_app /=. f_equal. f_equal. lia.
-Qed.
 
 End typed_pointsto_instances.

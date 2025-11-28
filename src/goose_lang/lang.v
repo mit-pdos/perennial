@@ -205,7 +205,8 @@ Inductive go_instruction : Type :=
 | InternalMapLookup
 | InternalMapInsert
 | InternalMapDelete
-| InternalMapDomain
+| InternalMapLength
+| InternalMapDomainLiteral
 | InternalMapMake
 
 | CompositeLiteral (t : go.type).
@@ -891,8 +892,11 @@ Inductive is_go_step_pure `{!GoContext} :
   is_go_step_pure InternalMapInsert (m, k, v) (map_insert m k v)
 | internal_map_delete_step_pure m k :
   is_go_step_pure InternalMapDelete (m, k) (map_delete m k)
-| internal_map_domain_step_pure m ks (H : is_map_domain m ks) :
-  is_go_step_pure InternalMapDomain m (ArrayV ks)
+| internal_map_length_step_pure m ks (H : is_map_domain m ks) :
+  is_go_step_pure InternalMapLength m #(W64 (length ks))
+| internal_map_domain_literal_step_pure m ks (H : is_map_domain m ks) :
+  is_go_step_pure InternalMapDomainLiteral m
+    (LiteralValue ((λ v, KeyedElement None $ ElementExpression $ Val v) <$> ks))
 | internal_map_make_step_pure v :
   is_go_step_pure InternalMapMake v (map_empty v)
 | composite_literal_step t v :
