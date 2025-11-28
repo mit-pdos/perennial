@@ -191,6 +191,14 @@ Class CoreComparisonSemantics {go_ctx : GoContext} :=
       ) #true fds
 }.
 
+Fixpoint struct_field_type (f : go_string) (fds : list go.field_decl) : go.type :=
+  match fds with
+  | [] => go.Named "field not found"%go []
+  | go.FieldDecl f' t :: fds
+  | go.EmbeddedField f' t :: fds =>
+      if (ByteString.eqb f f') then t
+      else struct_field_type f fds
+  end.
 
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
@@ -261,11 +269,15 @@ Class CoreSemantics {go_ctx : GoContext} :=
   composite_literal_underlying t :
     composite_literal t = composite_literal (to_underlying t);
 
+  composite_literal_pointer elem_type l :
+    composite_literal (go.PointerType elem_type) l  =
+    AllocValue elem_type (CompositeLiteral elem_type l);
+
   composite_literal_struct fds l :
     composite_literal (go.StructType fds) (LiteralValue l)  =
     match l with
     | [] => go_zero_val $ go.StructType fds
-    | (KeyedElement None _) :: _ =>
+    | KeyedElement None _ :: _ =>
         (* unkeyed struct literal *)
         foldl (λ v '(fd, ke),
                  let (field_name, field_type) :=
@@ -273,18 +285,28 @@ Class CoreSemantics {go_ctx : GoContext} :=
                    | go.FieldDecl n t | go.EmbeddedField n t => pair n t
                    end in
                  match ke with
-                 | KeyedElement _ (ElementExpression e) =>
+                 | KeyedElement None (ElementExpression e) =>
                      StructFieldSet (go.StructType fds) field_name (v, e)%E
-                 | KeyedElement _ (ElementLiteralValue el) =>
+                 | KeyedElement None (ElementLiteralValue el) =>
                      StructFieldSet (go.StructType fds) field_name
                        (v, (CompositeLiteral field_type (LiteralValue el)))%E
                        (* NOTE: if field_type is `*A`, then this will be
                            *A {...}, which the semantics can interpret as &A{...} *)
+                 | _ => Panic "invalid Go code"
                  end
           ) (Val $ go_zero_val $ go.StructType fds) (zip fds l)
-    | (KeyedElement (Some _) _) :: _ =>
+    | KeyedElement (Some _) _ :: _ =>
         (* keyed struct literal *)
-        #()
+        foldl (λ v ke,
+                 match ke with
+                 | KeyedElement (Some (KeyField field_name)) (ElementExpression e) =>
+                     StructFieldSet (go.StructType fds) field_name (v, e)%E
+                 | KeyedElement (Some (KeyField field_name)) (ElementLiteralValue el) =>
+                     StructFieldSet (go.StructType fds) field_name
+                       (v, (CompositeLiteral (struct_field_type field_name fds) (LiteralValue el)))%E
+                 | _ => Panic "invalid Go code"
+                 end
+          ) (Val $ go_zero_val $ go.StructType fds) l
     end
 }.
 
