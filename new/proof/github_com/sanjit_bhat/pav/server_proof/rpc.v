@@ -34,64 +34,73 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
-Lemma wp_CallPut s γ uid pk sl_pk ver :
-  ∀ Φ,
-  is_pkg_init server -∗
-  is_Server s γ -∗
-  sl_pk ↦*□ pk -∗
-  □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
-    (own_Server γ (set state.pending (pure_put uid pk ver) σ) ={∅,⊤}=∗ True)) -∗
-  ▷ Φ #() -∗
-  WP @! server.CallPut #s #uid #sl_pk #ver {{ Φ }}.
-Proof.
-Admitted.
+Definition is_Server_rpc (s : loc) (γ : option cfg.t) : iProp Σ :=
+  match γ with None => True | Some cfg => inv nroot (serv_inv cfg) end.
+
+#[global] Instance is_Server_rpc_pers s γ : Persistent (is_Server_rpc s γ).
+Proof. apply _. Qed.
+
+Lemma wp_CallPut s γ uid sl_pk pk ver :
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server_rpc s γ ∗
+    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
+    "#His_put" ∷ match γ with None => True | Some cfg =>
+      ∃ i uidγ,
+      "%Hlook_uidγ" ∷ ⌜cfg.(cfg.uidγ) !! uid = Some uidγ⌝ ∗
+      "#Hidx" ∷ mono_list_idx_own uidγ i (ver, pk) end
+  }}}
+  @! server.CallPut #s #uid #sl_pk #ver
+  {{{ RET #(); True }}}.
+Proof. Admitted.
+
+Definition option_bool {A} (mx : option A) :=
+  match mx with None => false | _ => true end.
 
 Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
-  ∀ Φ Q,
-  is_pkg_init server -∗
-  is_Server s γ -∗
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q σ)) -∗
-  (∀ σ sl_chainProof sl_linkSig sl_hist ptr_bound (err : ktcore.Blame),
-    Q σ -∗
-    ∃ lastDig lastKeys lastLink,
-    let numEps := length σ.(state.hist) in
-    let pks := lastKeys !!! uid in
-    "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
-    "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
-    (
-      "%Herr" ∷ ⌜err = {[ ktcore.BlameServFull ]}⌝ ∗
-      "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
-        uint.nat prevVerLen > length pks⌝
-      ∨
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server_rpc s γ ∗
+    "#His_prevHist" ∷ match γ with None => True | Some cfg =>
+      ∃ entry,
+      let pks := entry.2 !!! uid in
+      "#Hidx" ∷ mono_list_idx_own cfg.(cfg.histγ) (uint.nat prevEpoch) entry ∗
+      "%Hver" ∷ ⌜length pks = uint.nat prevVerLen⌝ end
+  }}}
+  @! server.CallHistory #s #uid #prevEpoch #prevVerLen
+  {{{
+    sl_chainProof sl_linkSig sl_hist ptr_bound err,
+    RET (#sl_chainProof, #sl_linkSig, #sl_hist, #ptr_bound, #err);
+    "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServFull:=option_bool γ]}⌝ ∗
+    "Herr" ∷ (if decide (err ≠ ∅) then True else
       ∃ chainProof linkSig hist bound,
-      "%Herr" ∷ ⌜err = ∅⌝ ∗
-      "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
-        uint.nat prevVerLen ≤ length pks⌝ ∗
-
       "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
       "#Hsl_linkSig" ∷ sl_linkSig ↦*□ linkSig ∗
       "#Hsl_hist" ∷ ktcore.MembSlice1D.own sl_hist hist (□) ∗
       "#Hptr_bound" ∷ ktcore.NonMemb.own ptr_bound bound (□) ∗
 
-      "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
-        (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
-      "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
-        (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
-      "#Hwish_hist" ∷ ktcore.wish_ListMemb γ.(cfg.vrf_pk) uid prevVerLen
-        lastDig hist ∗
-      "%Heq_hist" ∷ ⌜Forall2
-        (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
-        (drop (uint.nat prevVerLen) pks) hist⌝ ∗
-      "#Hwish_bound" ∷ ktcore.wish_NonMemb γ.(cfg.vrf_pk) uid
-        (W64 $ length pks) lastDig bound
-    ) -∗
-    Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
-  (* TODO: unify into a disjunct with three branches. *)
-  (* TODO: unify with isGood=false spec, which just gives decoding heap resources. *)
-  (∀ (sl_chainProof sl_linkSig sl_hist : slice.t) (ptr_bound : loc) (err : ktcore.Blame),
-    ⌜err = {[ ktcore.BlameUnknown ]}⌝ -∗
-    Φ #(sl_chainProof, sl_linkSig, sl_hist, ptr_bound, err)) -∗
-  WP @! server.CallHistory #s #uid #prevEpoch #prevVerLen {{ Φ }}.
+      "Hgood" ∷ match γ with None => True | Some cfg =>
+        ∃ servHist lastDig lastKeys lastLink,
+        let numEps := length servHist in
+        let pks := lastKeys !!! uid in
+        "#Hlb_servHist" ∷ mono_list_lb_own cfg.(cfg.histγ) servHist ∗
+        "%Hlen_epochs" ∷ ⌜uint.nat prevEpoch < numEps⌝ ∗
+        "%Hlen_vers" ∷ ⌜uint.nat prevVerLen ≤ length pks⌝ ∗
+        "%Hlast_servHist" ∷ ⌜last servHist = Some (lastDig, lastKeys)⌝ ∗
+        "#His_lastLink" ∷ hashchain.is_chain servHist.*1 None lastLink numEps ∗
+
+        "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
+          (drop (S (uint.nat prevEpoch)) servHist.*1)⌝ ∗
+        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig cfg.(cfg.sig_pk)
+          (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
+        "#Hwish_hist" ∷ ktcore.wish_ListMemb cfg.(cfg.vrf_pk) uid prevVerLen
+          lastDig hist ∗
+        "%Heq_hist" ∷ ⌜Forall2
+          (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
+          (drop (uint.nat prevVerLen) pks) hist⌝ ∗
+        "#Hwish_bound" ∷ ktcore.wish_NonMemb cfg.(cfg.vrf_pk) uid
+          (W64 $ length pks) lastDig bound end)
+  }}}.
 Proof. Admitted.
 
 Lemma wp_CallAudit s γ (prevEpoch : w64) :

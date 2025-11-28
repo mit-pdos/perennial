@@ -99,9 +99,6 @@ Definition serv_inv γ : iProp Σ :=
 Definition is_Server (s : loc) γ : iProp Σ :=
   inv nroot (serv_inv γ).
 
-#[global] Instance is_Server_pers s γ : Persistent (is_Server s γ).
-Proof. apply _. Qed.
-
 (** state transition ops. *)
 
 Lemma op_read s γ :
