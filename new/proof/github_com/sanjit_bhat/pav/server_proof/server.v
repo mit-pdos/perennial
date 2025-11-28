@@ -256,7 +256,7 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) Q :
     RET (#sl_chainProof, #sl_linkSig, #sl_hist, #ptr_bound, #err);
     let numEps := length σ.(state.hist) in
     let pks := lastKeys !!! uid in
-    "#HQ" ∷ Q σ ∗
+    "HQ" ∷ Q σ ∗
     "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
     "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
     "#Hgenie" ∷
@@ -299,7 +299,7 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) Q :
   s @ (ptrT.id server.Server.id) @ "Audit" #prevEpoch
   {{{
     sl_proof err σ, RET (#sl_proof, #err);
-    "#HQ" ∷ Q σ ∗
+    "HQ" ∷ Q σ ∗
     "#Hgenie" ∷
       match err with
       | true =>
@@ -338,7 +338,7 @@ Lemma wp_Server_Start s γ Q :
   s @ (ptrT.id server.Server.id) @ "Start" #()
   {{{
     ptr_chain chain ptr_vrf vrf last_link σ, RET (#ptr_chain, #ptr_vrf);
-    "#HQ" ∷ Q σ ∗
+    "HQ" ∷ Q σ ∗
     "#Hptr_chain" ∷ StartChain.own ptr_chain chain (□) ∗
     "#Hptr_vrf" ∷ StartVrf.own ptr_vrf vrf (□) ∗
 

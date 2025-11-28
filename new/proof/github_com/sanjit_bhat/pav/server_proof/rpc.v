@@ -34,6 +34,46 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
+(* interp maps parties to is_good flags. reqs for establishing BlameSpec:
+- interp has flags for everyone in err gset.
+- it can't be the case that all err flags are true. *)
+Definition BlameSpec (err : ktcore.Blame) (interp : gmap ktcore.BlameTys bool) :=
+  err = ∅ ∨
+  err = {[ ktcore.BlameUnknown ]} ∨
+  (err ⊆ dom interp ∧ ¬ ∀ p, p ∈ err → interp !! p = Some true).
+
+Lemma blame_none interp : BlameSpec ∅ interp.
+Proof. rewrite /BlameSpec. naive_solver. Qed.
+
+Lemma blame_unknown interp : BlameSpec {[ ktcore.BlameUnknown ]} interp.
+Proof. rewrite /BlameSpec. naive_solver. Qed.
+
+(* iProp form so it can be iApply'd and proven with pers resources. *)
+Lemma blame_one party good interp :
+  (* written as "not good" bc goodness is how to learn contra. *)
+  (¬ ⌜good = true⌝ : iProp Σ) -∗
+  ⌜BlameSpec {[ party ]} (<[party:=good]>interp)⌝.
+Proof.
+  iPureIntro. intros ?. right. right.
+  split; [set_solver|].
+  intros HB.
+  opose proof (HB party _); [set_solver|].
+  simplify_map_eq/=.
+Qed.
+
+Lemma blame_two party0 party1 good0 good1 interp :
+  (⌜party0 ≠ party1⌝ : iProp Σ) ∗
+  ¬ ⌜(good0 = true ∧ good1 = true)⌝ -∗
+  ⌜BlameSpec {[ party0; party1 ]} (<[party0:=good0]>(<[party1:=good1]>interp))⌝.
+Proof.
+  iPureIntro. intros [? Heq%Classical_Prop.not_and_or]. right. right.
+  split; [set_solver|].
+  intros HB.
+  opose proof (HB party0 _) as Hm0; [set_solver|].
+  opose proof (HB party1 _) as Hm1; [set_solver|].
+  destruct Heq as [?|?]; simplify_map_eq/=.
+Qed.
+
 Lemma wp_CallPut s γ uid pk sl_pk ver :
   ∀ Φ,
   is_pkg_init server -∗
