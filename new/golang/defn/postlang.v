@@ -1,6 +1,5 @@
 (* Trusted stuff that's conceptually part of the GooseLang semantics. E.g.
-   assumptions about valid GoContext and definition of zero values via
-   IntoVal. *)
+   assumptions about valid GoContext. *)
 
 From Perennial.goose_lang Require Export lang.
 From Perennial Require Export base.
@@ -41,6 +40,7 @@ End map.
 Module go.
 Section defs.
 Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 (** This semantics considers several Go types to be [primitive] in the sense
     that they are modeled as taking a single heap location. Predeclared types
     and in their own file. *)
@@ -72,7 +72,7 @@ Proof. solve_decision. Qed.
 (* [go_eq_top_level] includes special cases for slice, map, and func comparison.
    [go_eq] does not. This helps define the semantics of comparing interface
    values. *)
-Class CoreComparisonDefinition {go_ctx : GoContext} :=
+Class CoreComparisonDefinition :=
 {
   go_eq : go.type → val → val → expr;
 }.
@@ -83,14 +83,14 @@ Class CoreComparisonDefinition {go_ctx : GoContext} :=
     will run safely for [t]; specifically, interfaces are comparable but
     `==` can still panic. The types for which this holds is specified
     in recursive way in [CoreSemantics]. *)
-Class IsComparable t `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
+Class IsComparable t `{!CoreComparisonDefinition} : Prop :=
   {
     is_comparable : ∀ (v1 v2 : val), go_eq_top_level t v1 v2 = go_eq t v1 v2;
   }.
 
 (* Helper definition to cover types for whom `a == b` always executes safely. *)
-Definition is_always_safe_to_compare t V `{!EqDecision V} `{!IntoVal V}
-  `{!GoContext} `{!CoreComparisonDefinition} : Prop :=
+Definition is_always_safe_to_compare t V `{!EqDecision V}
+  `{!CoreComparisonDefinition} : Prop :=
   ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
 
 Definition AllocValue_def t : val :=
@@ -141,7 +141,7 @@ If the 38 is changed to 37, then the comparison `aa == ba` does not short
 circuit, and it tries to check if the `any` fields are equal, at which point it
 panics because the type is not comparable.
 *)
-Class CoreComparisonSemantics {go_ctx : GoContext} :=
+Class CoreComparisonSemantics :=
 {
   #[global] core_comp_def :: CoreComparisonDefinition;
   go_eq_top_level_underlying t : go_eq_top_level t = go_eq_top_level (to_underlying t);
@@ -200,13 +200,31 @@ Fixpoint struct_field_type (f : go_string) (fds : list go.field_decl) : go.type 
       else struct_field_type f fds
   end.
 
+Class IntoValUnfold V f :=
+  {
+    into_val_unfold : @into_val _ _ V = f;
+  }.
+
+Global Hint Mode IntoValUnfold ! - : typeclass_instances.
+
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
 
     The rules prefixed with [_] should not be used in any program proofs. *)
-Class CoreSemantics {go_ctx : GoContext} :=
+Class CoreSemantics :=
 {
+  #[global] into_val_unfold_func ::
+    IntoValUnfold func.t (λ f, (rec: f.(func.f) f.(func.x) := f.(func.e))%V);
+  #[global] into_val_unfold_bool :: IntoValUnfold _ (λ x, LitV $ LitBool x);
+
+  (* TODO: get rid of these. *)
+  #[global] into_val_unfold_w64 :: IntoValUnfold _ (λ x, LitV $ LitInt x);
+  #[global] into_val_unfold_w32 :: IntoValUnfold _ (λ x, LitV $ LitInt32 x);
+  #[global] into_val_unfold_w16 :: IntoValUnfold _ (λ x, LitV $ LitInt16 x);
+  #[global] into_val_unfold_w8 :: IntoValUnfold _ (λ x, LitV $ LitByte x);
+  #[global] into_val_unfold_string :: IntoValUnfold _ (λ x, LitV $ LitString x);
+
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
   alloc_underlying t : alloc t = alloc (to_underlying t);

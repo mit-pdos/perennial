@@ -557,9 +557,17 @@ Definition nil := mk <> <> (Val $ LitV LitPoison).
 End defn.
 End func.
 
-(** [GoContext] contains several low-level Go functions for typed memory access,
+(** [GoGlobalContext] contains the [into_val] function. This allows for the Go
+    semantics to state constraints on [into_val] (e.g. injectivity for certain
+    types). *)
+Class GoGlobalContext {ext : ffi_syntax} : Type :=
+  {
+    into_val : ∀ {V : Type} (v : V), val;
+  }.
+
+(** [GoLocalContext] contains several low-level Go functions for typed memory access,
     map updates, etc. *)
-Class GoContext {ext : ffi_syntax} : Type :=
+Class GoLocalContext {ext : ffi_syntax} : Type :=
   {
     (* includes special-case handling, such as comparing slices to nil. *)
     go_eq_top_level : go.type → val → val → expr;
@@ -596,19 +604,6 @@ Class GoContext {ext : ffi_syntax} : Type :=
     is_map_domain : val → list val → Prop;
     composite_literal : go.type → val → expr;
   }.
-
-Class IntoVal {ext : ffi_syntax} (V : Type) :=
-  {
-    into_val_def : V → val;
-    zero_val : V;
-  }.
-
-Program Definition into_val := sealed @into_val_def.
-Definition into_val_unseal : into_val = _ := seal_eq _.
-Arguments into_val {_ _ _} v%go.
-Arguments zero_val {_} (V) {_}.
-
-Global Hint Mode IntoVal - ! : typeclass_instances.
 
 Module chan.
 Definition t := loc.
@@ -682,59 +677,52 @@ Definition Oracle := Trace -> forall (sel:u64), u64.
 
 Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0).
 
-Section into_val_instances.
+Class ZeroVal V :=
+  {
+    zero_val : V
+  }.
+Global Arguments zero_val (V) {_}.
+
+Section zero_val_instances.
 Context `{ffi_syntax}.
 
-Global Instance into_val_loc : IntoVal loc :=
-  {| into_val_def v := (LitV $ LitLoc v); zero_val := null |}.
+Global Instance zero_val_loc : ZeroVal loc :=
+  {| zero_val := null |}.
 
-Global Instance into_val_w64 : IntoVal w64 :=
-  {| into_val_def v := (LitV $ LitInt v); zero_val := W64 0 |}.
+Global Instance zero_val_w64 : ZeroVal w64 :=
+  {| zero_val := W64 0 |}.
 
-Global Instance into_val_w32 : IntoVal w32 :=
-  {| into_val_def v := (LitV $ LitInt32 v); zero_val := W32 0 |}.
+Global Instance zero_val_w32 : ZeroVal w32 :=
+  {| zero_val := W32 0 |}.
 
-Global Instance into_val_w16 : IntoVal w16 :=
-  {| into_val_def v := (LitV $ LitInt16 v); zero_val := W16 0 |}.
+Global Instance zero_val_w16 : ZeroVal w16 :=
+  {| zero_val := W16 0 |}.
 
-Global Instance into_val_w8 : IntoVal w8 :=
-  {| into_val_def v := (LitV $ LitByte v); zero_val := W8 0 |}.
+Global Instance zero_val_w8 : ZeroVal w8 :=
+  {| zero_val := W8 0 |}.
 
-Global Instance into_val_unit : IntoVal () :=
-  {| into_val_def _ := (LitV $ LitUnit); zero_val := () |}.
+Global Instance zero_val_unit : ZeroVal () :=
+  {| zero_val := () |}.
 
-Global Instance into_val_bool : IntoVal bool :=
-  {| into_val_def b := (LitV $ LitBool b); zero_val := false |}.
+Global Instance zero_val_bool : ZeroVal bool :=
+  {| zero_val := false |}.
 
-Global Instance into_val_go_string : IntoVal go_string :=
-  {| into_val_def s := (LitV $ LitString s); zero_val := ""%go |}.
+Global Instance zero_val_go_string : ZeroVal go_string :=
+  {| zero_val := ""%go |}.
 
-Global Instance into_val_func : IntoVal func.t :=
-  {| into_val_def f := RecV f.(func.f) f.(func.x) f.(func.e); zero_val := func.nil |}.
+Global Instance zero_val_func : ZeroVal func.t :=
+  {| zero_val := func.nil |}.
 
-Global Instance into_val_array t `{!IntoVal V} n : IntoVal (array.t t V n) :=
-  {|
-    into_val_def v := ArrayV (into_val <$> (array.arr v));
-    zero_val := array.mk t n $ replicate (Z.to_nat n) (zero_val V);
-  |}.
+Global Instance zero_val_array t `{!ZeroVal V} n : ZeroVal (array.t t V n) :=
+  {| zero_val := array.mk t n $ replicate (Z.to_nat n) (zero_val V) |}.
 
-Global Instance into_val_slice : IntoVal slice.t :=
-  {|
-    into_val_def (s: slice.t) := LitV (LitSlice s);
-    zero_val := slice.nil;
-  |}.
+Global Instance zero_val_slice : ZeroVal slice.t :=
+  {| zero_val := slice.nil |}.
 
-Global Instance into_val_interface : IntoVal interface.t :=
-  {|
-    into_val_def (i: interface.t) :=
-      match i with
-      | interface.nil => InterfaceV None
-      | interface.mk ty v => InterfaceV $ Some (ty, v)
-      end;
-    zero_val := interface.nil;
-  |}.
+Global Instance zero_val_interface : ZeroVal interface.t :=
+  {| zero_val := interface.nil |}.
 
-End into_val_instances.
+End zero_val_instances.
 Notation "()" := tt : val_scope.
 #[global] Opaque to_val.
 
@@ -747,40 +735,36 @@ Notation "e1 || e2" :=
 Local Notation "# x" := (into_val x%go).
 Local Notation "#" := into_val (at level 0).
 
-Definition is_interface_type `{!GoContext} (t : go.type) : bool :=
+Definition is_interface_type `{!GoLocalContext} (t : go.type) : bool :=
   match (to_underlying t) with
   | go.InterfaceType _ => true
   | _ => false
   end.
 
-(* Little helper for getting zero val in typeassert2 *)
-Local Definition glang_zero_val (t : go.type) : expr :=
-  GoInstruction (GoLoad t) (GoInstruction (GoAlloc t) #()).
-
 (* Based on: https://go.dev/ref/spec#General_interfaces *)
-Definition type_set_term_contains {go_ctx : GoContext} t (e : go.type_term) : bool :=
+Definition type_set_term_contains {go_ctx : GoLocalContext} t (e : go.type_term) : bool :=
   match e with
   | go.TypeTerm t' => bool_decide (t = t')
   | go.TypeTermUnderlying t' => bool_decide (to_underlying t = t')
   end.
 
-Definition type_set_elem_contains {go_ctx : GoContext} t (e : go.interface_elem) : bool :=
+Definition type_set_elem_contains {go_ctx : GoLocalContext} t (e : go.interface_elem) : bool :=
   match e with
   | go.MethodElem m signature => bool_decide (method_set t !! m = Some signature)
   | go.TypeElem terms => existsb (type_set_term_contains t) terms
   end.
 
-Definition type_set_elems_contains {go_ctx : GoContext} t (elems : list go.interface_elem) : bool :=
+Definition type_set_elems_contains {go_ctx : GoLocalContext} t (elems : list go.interface_elem) : bool :=
   forallb (type_set_elem_contains t) elems.
 
 (** Equals [true] iff t is in the type set of t'. *)
-Definition type_set_contains {go_ctx : GoContext} t t' : bool :=
+Definition type_set_contains {go_ctx : GoLocalContext} t t' : bool :=
   match (to_underlying t') with
   | go.InterfaceType elems => type_set_elems_contains t elems
   | _ => bool_decide (t = t')
   end.
 
-Inductive is_go_step_pure `{!GoContext} :
+Inductive is_go_step_pure `{!GoGlobalContext} `{!GoLocalContext} :
   ∀ (op : go_instruction) (arg : val) (e' : expr), Prop :=
 | angelic_exit_step : is_go_step_pure AngelicExit #() (GoInstruction AngelicExit #())%E
 | equals_step t v1 v2 :
@@ -829,7 +813,7 @@ Inductive is_go_step_pure `{!GoContext} :
          if is_interface_type t then
            (if (type_set_contains dt t) then (#i, #true)%V else (#interface.nil, #false)%V)
          else
-           (if decide (t = dt) then (v, #true)%V else (glang_zero_val t, #false)%E)
+           (if decide (t = dt) then (v, #true)%V else (go_zero_val t, #false)%E)
      end)
 | global_var_addr_step v : is_go_step_pure (GlobalVarAddr v) #() #(global_addr v)
 | struct_field_ref_step t f l : is_go_step_pure (StructFieldRef t f) #l #(struct_field_ref t f l)
@@ -903,7 +887,7 @@ Inductive is_go_step_pure `{!GoContext} :
   is_go_step_pure (CompositeLiteral t) v (composite_literal t v)
 .
 
-Inductive is_go_step `{!GoContext} :
+Inductive is_go_step `{!GoGlobalContext} `{!GoLocalContext} :
   ∀ (op : go_instruction) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
 | package_init_check_step s p :
   is_go_step (PackageInitCheck p) #() #(default false (s !! p)) s s
@@ -913,7 +897,7 @@ Inductive is_go_step `{!GoContext} :
 
 Record GoState : Type :=
   {
-    go_context : GoContext;
+    go_lctx : GoLocalContext;
     package_state : gmap go_string bool;
   }.
 
@@ -927,11 +911,12 @@ Record state : Type := {
 Record global_state : Type := {
   global_world: ffi_global_state;
   used_proph_id: gset proph_id;
+  go_gctx : GoGlobalContext;
 }.
 
-Global Instance eta_go_state : Settable _ := settable! Build_GoState <go_context; package_state>.
+Global Instance eta_go_state : Settable _ := settable! Build_GoState <go_lctx; package_state>.
 Global Instance eta_state : Settable _ := settable! Build_state <heap; go_state; world; trace; oracle>.
-Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
+Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id; go_gctx>.
 
 (* Note that ffi_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
@@ -1014,7 +999,9 @@ Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any
 
 Global Instance func_t_inhabited : Inhabited func.t :=
   populate (func.mk inhabitant inhabitant inhabitant).
-Global Instance GoContext_inhabited : Inhabited GoContext :=
+Global Instance GoGlobalContext_inhabited : Inhabited GoGlobalContext :=
+  populate {| into_val := inhabitant |}.
+Global Instance GoLocalContext_inhabited : Inhabited GoLocalContext :=
   populate
   {|
     go_eq_top_level := inhabitant;
@@ -1043,12 +1030,12 @@ Global Instance GoContext_inhabited : Inhabited GoContext :=
     composite_literal := inhabitant;
   |}.
 Global Instance GoState_inhabited : Inhabited GoState :=
-  populate {| go_context := inhabitant; package_state := inhabitant |}.
+  populate {| go_lctx := inhabitant; package_state := inhabitant |}.
 
 Global Instance state_inhabited : Inhabited state :=
   populate {| heap := inhabitant; go_state := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
 Global Instance global_state_inhabited : Inhabited global_state :=
-  populate {| used_proph_id := inhabitant; global_world := inhabitant; |}.
+  populate {| used_proph_id := inhabitant; global_world := inhabitant; go_gctx := inhabitant |}.
 
 Canonical Structure stateO := leibnizO state.
 Canonical Structure locO := leibnizO loc.
@@ -1786,7 +1773,8 @@ Definition go_instruction_step (op : go_instruction) (arg : val) :
   transition (state * global_state) (list observation * expr * list expr) :=
   '(e', s') ← suchThat
     (λ '(σ,g) '(e', s'),
-       let _ := σ.(go_state).(go_context) in
+       let _ := σ.(go_state).(go_lctx) in
+       let _ := g.(go_gctx) in
        is_go_step op arg e' σ.(go_state).(package_state) s')
     (gen:=fallback_genPred _);
   modifyσ $ set go_state $ set package_state (λ _, s') ;;

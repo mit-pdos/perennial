@@ -28,7 +28,7 @@ the rules above. [exception_do m] is simply [Snd m] to remove the label.
 
 Section defn.
 
-Context `{!ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition execute_val_def : val := (#"execute", #()).
 Program Definition execute_val := sealed @execute_val_def.

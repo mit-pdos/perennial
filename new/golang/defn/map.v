@@ -20,6 +20,7 @@ From New.golang.defn Require Export loop predeclared slice.
 Module map.
 Section defs.
 Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Definition lookup2 (key_type elem_type : go.type) : val :=
   λ: "m" "k",
@@ -59,7 +60,10 @@ End defs.
 End map.
 
 Module go.
-Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
+Section defs.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+Class MapSemantics :=
 {
   go_eq_map_nil_l kt vt m :
     go_eq_top_level (go.MapType kt vt) #m #map.nil = #(bool_decide (m = map.nil));
@@ -136,4 +140,5 @@ Class MapSemantics {ext : ffi_syntax} `{!GoContext} :=
      "m"
     )%E
 }.
+End defs.
 End go.

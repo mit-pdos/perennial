@@ -2,7 +2,7 @@ From New.golang.defn Require Export exception.
 
 Section defn.
 
-Context `{!ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 (** [assume e] goes into an infinite loop if e does not hold *)
 Definition assume : val :=

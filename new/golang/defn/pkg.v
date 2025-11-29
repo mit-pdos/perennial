@@ -8,7 +8,8 @@ Class PkgInfo (pkg_name: go_string) `{ffi_syntax} :=
 
 Module package.
 Section defns.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Definition init_def (pkg_name : go_string) : val :=
   λ: "init",

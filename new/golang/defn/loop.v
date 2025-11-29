@@ -2,7 +2,7 @@ From New.golang.defn Require Export exception.
 From Perennial Require Import base.
 
 Section goose_lang.
-Context {ext: ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition break_val_def : val := (#"break", #()).
 Program Definition break_val := sealed @break_val_def.

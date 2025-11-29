@@ -11,7 +11,8 @@ From Perennial Require Export base.
 Export RecordSetNotations.
 
 Section unfolding_defs.
-Context {ext : ffi_syntax} {go_ctx : GoContext}.
+Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+
 Class FuncUnfold f type_args f_impl : Prop :=
   {
     func_unfold : #(functions f type_args) = f_impl;
@@ -30,7 +31,7 @@ End unfolding_defs.
 Section into_val_defs.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Class TypedPointsto (V : Type) `{!IntoVal V} :=
+Class TypedPointsto (V : Type) :=
 {
   typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
   typed_pointsto_def_dfractional l v : DFractional (λ dq, typed_pointsto_def l dq v);
@@ -43,7 +44,7 @@ Class TypedPointsto (V : Type) `{!IntoVal V} :=
 
 Program Definition typed_pointsto := sealed @typed_pointsto_def.
 Definition typed_pointsto_unseal : typed_pointsto = _ := seal_eq _.
-Global Arguments typed_pointsto {_ _ _} (l dq v).
+Global Arguments typed_pointsto {_ _} (l dq v).
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
@@ -82,7 +83,7 @@ Qed.
     [typed_pointsto_def] is in [IntoValProof] rather than here because `l ↦ v`
     not explicitly mention `t`, and there can be multiple `t`s for a single `V`
     (e.g. int64 and uint64 both have w64). *)
-Class IntoValTyped (V : Type) (t : go.type) `{TypedPointsto V} :=
+Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V} :=
   {
     wp_alloc : (∀ {s E}, {{{ True }}}
                            alloc t #() @ s ; E
@@ -101,7 +102,7 @@ End into_val_defs.
 (* [t] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTyped - - - - - - - ! - - : typeclass_instances.
 
-Global Hint Mode TypedPointsto - - ! - : typeclass_instances.
+Global Hint Mode TypedPointsto - ! : typeclass_instances.
 
 (* Non-maximally insert the arguments related to [t], [IntoVal], etc., so that
    typeclass search won't be invoked until wp_apply actually unifies the [t]. *)

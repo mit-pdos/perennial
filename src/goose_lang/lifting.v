@@ -495,8 +495,9 @@ Proof.
 Qed.
 
 (** Global ghost state for GooseLang. *)
-Class gooseGlobalGS Σ : Set := GooseGlobalGS {
+Class gooseGlobalGS Σ := GooseGlobalGS {
   goose_invGS : invGS Σ;
+  #[global] goose_go_global_context :: GoGlobalContext;
   #[global] goose_prophGS :: proph_mapGS proph_id val Σ;
   #[global] goose_creditGS :: creditGS Σ;
   goose_ffiGlobalGS : ffiGlobalGS Σ;
@@ -508,7 +509,7 @@ Would be good to align terminology. *)
 Class gooseLocalGS Σ := GooseLocalGS {
   goose_crashGS : crashGS Σ;
   goose_ffiLocalGS : ffiLocalGS Σ;
-  #[global] goose_go_context :: GoContext;
+  #[global] goose_go_local_context :: GoLocalContext;
   #[global] goose_na_heapGS :: na_heapGS loc val Σ;
   #[global] goose_traceGS :: traceGS Σ;
   #[global] goose_go_stateGS :: go_stateGS Σ;
@@ -548,7 +549,9 @@ Global Program Instance goose_irisGS `{G: !gooseGlobalGS Σ}:
      @crash_borrow_ginv _ goose_invGS _ ∗
      cred_interp ns ∗
      ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗
-     pinv_tok mj D)%I;
+     pinv_tok mj D ∗
+     ⌜ g.(go_gctx) = goose_go_global_context ⌝
+    )%I;
   fork_post _ := True%I;
 }.
 Next Obligation.
@@ -556,6 +559,11 @@ Next Obligation.
   iFrame. iMod (cred_interp_incr with "Hcred") as "($&_)". eauto.
 Qed.
 Next Obligation. intros => //=. lia. Qed.
+
+Lemma go_gctx_eq `{!gooseGlobalGS Σ} g ns mj D κs :
+  global_state_interp g ns mj D κs -∗
+  ⌜ g.(go_gctx) = goose_go_global_context ⌝.
+Proof. iIntros "(? & ? & ? & ? & ? & ? & $)". Qed.
 
 Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
   generationGS goose_lang Σ := {
@@ -567,7 +575,7 @@ Global Program Instance goose_generationGS `{L: !gooseLocalGS Σ}:
       "Htr_auth" ∷ trace_auth σ.(trace) ∗
       "Hor_auth" ∷ oracle_auth σ.(oracle) ∗
       "Hg_auth" ∷ own_go_state_ctx σ.(go_state).(package_state) ∗
-      "%Hg" ∷ ⌜ σ.(go_state).(go_context) = goose_go_context ⌝
+      "%Hlctx_eq" ∷ ⌜ σ.(go_state).(go_lctx) = goose_go_local_context ⌝
     )%I;
 }.
 
@@ -872,16 +880,16 @@ Lemma wp_GoInstruction K op arg {stk E} Φ :
 Proof.
   iIntros (Hok) "HΦ".
   iApply wp_lift_step; [apply fill_not_val; done|].
-  iIntros (σ1 g1 ns mj D κ κs nt) "H ?".
+  iIntros (σ1 g1 ns mj D κ κs nt) "H Hg".
   iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask".
-  iNamed "H".
+  iNamed "H". iDestruct (go_gctx_eq with "[$]") as %Hgctx_eq.
   assert (Hred : base_reducible (GoInstruction op arg) σ1 g1).
   { epose proof (Hok _) as Hok. destruct Hok as (e' & s' & Hok).
     repeat eexists. simpl. constructor.
     econstructor.
     { simpl. econstructor.
       instantiate (1:=pair _ _). simpl.
-      rewrite Hg. done. }
+      rewrite Hlctx_eq Hgctx_eq. done. }
     simpl. monad_simpl. }
   iSplit.
   { iPureIntro. destruct stk; try done. apply base_prim_fill_reducible. done. }
@@ -897,7 +905,7 @@ Proof.
   iIntros "Hlc". inv_base_step.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
-  rewrite -Hg. iSpecialize ("HΦ" $! _ _ _ ltac:(done)).
+  rewrite -Hlctx_eq -Hgctx_eq. iSpecialize ("HΦ" $! _ _ _ ltac:(done)).
   iDestruct "Hlc" as "[Hlc _]".
   iMod ("HΦ" with "[$] [$]") as "[Hg_auth HΦ]".
   iModIntro. iFrame "∗#%".

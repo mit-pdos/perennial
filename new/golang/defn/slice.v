@@ -1,11 +1,12 @@
 From New.golang.defn Require Export loop assume predeclared.
 
-Definition slice_index_ref `{GoContext} (elem_type : go.type) (i : Z) (s : slice.t) : loc :=
+Definition slice_index_ref `{GoLocalContext} (elem_type : go.type) (i : Z) (s : slice.t) : loc :=
   array_index_ref elem_type i s.(slice.ptr).
 
 Module slice.
 Section goose_lang.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 (* only for internal use, not an external model *)
 Definition _new_cap : val :=
@@ -28,7 +29,10 @@ End slice.
 Global Opaque slice.for_range.
 
 Module go.
-Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
+Section defs.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+Class SliceSemantics :=
 {
   go_eq_slice_nil_l t s :
     go_eq_top_level (go.SliceType t) #s #slice.nil = #(bool_decide (s = slice.nil));
@@ -120,4 +124,5 @@ Class SliceSemantics {ext : ffi_syntax} `{!GoContext} :=
 
   array_index_ref_0 t l : array_index_ref t 0 l = l;
 }.
+End defs.
 End go.

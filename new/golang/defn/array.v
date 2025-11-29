@@ -2,9 +2,10 @@ From New.golang.defn Require Export predeclared.
 
 Module go.
 Section defs.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
-Class ArraySemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} :=
+Class ArraySemantics `{!go.CoreComparisonDefinition} :=
 {
   #[global]
   equals_array n t (H : go.IsComparable t) ::

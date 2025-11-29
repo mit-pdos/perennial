@@ -72,7 +72,8 @@ Definition uint64 : go.type := go.Named "uint64"%go [].
 Definition uintptr : go.type := go.Named "uintptr"%go [].
 
 Section defs.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 (** These are the predeclareds that are modeled as taking up a single heap
     location. *)
@@ -132,7 +133,7 @@ Inductive is_ordered_type : go.type → Prop :=
 Existing Class is_ordered_type.
 Global Existing Instances is_ordered_type_string is_ordered_type_numeric.
 
-Class PredeclaredSemantics {go_ctx : GoContext} `{!go.CoreComparisonDefinition} :=
+Class PredeclaredSemantics `{!go.CoreComparisonDefinition} :=
 {
   alloc_predeclared t v (H : is_predeclared_zero_val t v) : alloc t = (λ: <>, ref v)%V;
   load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
