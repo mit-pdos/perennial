@@ -31,6 +31,48 @@ Section list.
   Context {A : Type}.
   Implicit Types l : (list A).
 
+  Local Lemma list_reln_trans_aux R `{!Transitive R} l :
+    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
+    (∀ i k x y, l !! i = Some x → l !! S (i + k) = Some y → R x y).
+  Proof.
+    intros Hcons ???? Hi Hk.
+    generalize dependent y.
+    induction k.
+    - intros ? Hk.
+      replace (i + 0) with (i) in Hk by lia.
+      by eapply Hcons.
+    - intros ? Hk.
+      apply lookup_lt_Some in Hk as ?.
+      list_elem l (i + S k) as z.
+      trans z.
+      + replace (S (i + k)) with (i + S k) in IHk by lia.
+        by eapply IHk.
+      + by eapply Hcons.
+  Qed.
+
+  Lemma list_reln_trans R `{!Transitive R} l :
+    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
+    (∀ i j x y, l !! i = Some x → l !! j = Some y → i < j → R x y).
+  Proof.
+    intros Hcons.
+    opose proof (list_reln_trans_aux _ _ Hcons) as Hskip.
+    intros ????? Hj ?.
+    replace j with (S (i + (j - i - 1))) in Hj by lia.
+    by eapply Hskip.
+  Qed.
+
+  Lemma list_reln_trans_refl R `{!Transitive R, !Reflexive R} l :
+    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
+    (∀ i j x y, l !! i = Some x → l !! j = Some y → i ≤ j → R x y).
+  Proof.
+    intros Hcons.
+    opose proof (list_reln_trans _ _ Hcons) as Hskip.
+    intros ????? Hj ?.
+    destruct (decide (i = j)).
+    - by simplify_eq/=.
+    - eapply Hskip; [done..|]. lia.
+  Qed.
+
   Lemma snoc_to_cons x l : ∃ x' l', l ++ [x] = x' :: l'.
   Proof. destruct l; naive_solver. Qed.
 
