@@ -336,14 +336,11 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) Q :
   {{{
     sl_proof err σ, RET (#sl_proof, #err);
     "HQ" ∷ Q σ ∗
-    "#Hgenie" ∷
+    "#Herr" ∷
       match err with
-      | true =>
-        "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist)⌝
+      | true => ⌜uint.nat prevEpoch ≥ length σ.(state.hist)⌝
       | false =>
         ∃ proof prevDig,
-        "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist)⌝ ∗
-
         "#Hsl_proof" ∷ ktcore.AuditProofSlice1D.own sl_proof proof (□) ∗
 
         "%Heq_prevDig" ∷ ⌜σ.(state.hist).*1 !! (uint.nat prevEpoch) = Some prevDig⌝ ∗
@@ -378,6 +375,7 @@ Lemma wp_Server_Start s γ Q :
     "#Hptr_chain" ∷ StartChain.own ptr_chain chain (□) ∗
     "#Hptr_vrf" ∷ StartVrf.own ptr_vrf vrf (□) ∗
 
+    "%His_PrevEpochLen" ∷ ⌜uint.nat chain.(StartChain.PrevEpochLen) < length σ.(state.hist)⌝ ∗
     "#His_PrevLink" ∷ hashchain.is_chain
       (take (uint.nat chain.(StartChain.PrevEpochLen)) σ.(state.hist).*1)
       None chain.(StartChain.PrevLink)
