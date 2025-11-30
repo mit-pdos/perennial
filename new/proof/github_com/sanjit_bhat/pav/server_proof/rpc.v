@@ -7,6 +7,8 @@ From New.proof.github_com.sanjit_bhat.pav Require Import
 From New.proof.github_com.sanjit_bhat.pav.server_proof Require Import
   serde server.
 
+Notation HistoryRpc := 2 (only parsing).
+
 (* notes:
 - only change is that some of these specs return Blame (not bool) err.
 - BlameUnknown is like giving up.
@@ -57,6 +59,69 @@ Proof. Admitted.
 Definition option_bool {A} (mx : option A) :=
   match mx with None => false | _ => true end.
 
+Lemma wp_History_cli_call (Q : cfg.t → state.t → iProp Σ)
+    s γ sl_arg d0 arg ptr_reply (x : slice.t) :
+  {{{
+    is_pkg_init server ∗
+    "#His_serv" ∷ is_Server_rpc s γ ∗
+    "Hsl_arg" ∷ sl_arg ↦*{d0} arg ∗
+    "Hptr_reply" ∷ ptr_reply ↦ x ∗
+    "#Hfupd" ∷ match γ with None => True | Some cfg =>
+      □ (|={⊤,∅}=> ∃ σ, own_Server cfg σ ∗ (own_Server cfg σ ={∅,⊤}=∗ Q cfg σ)) end
+  }}}
+  s @ (ptrT.id advrpc.Client.id) @ "Call" #(W64 HistoryRpc) #sl_arg #ptr_reply
+  {{{
+    sl_reply err0, RET #err0;
+    "Hsl_arg" ∷ sl_arg ↦*{d0} arg ∗
+    "Hptr_reply" ∷ ptr_reply ↦ sl_reply ∗
+
+    "Herr0" ∷ match err0 with true => True | false =>
+    ∃ replyB,
+    "Hsl_reply" ∷ sl_reply ↦* replyB ∗
+
+    "Hgood" ∷ match γ with None => True | Some cfg =>
+    ∃ chainProof linkSig hist bound err1,
+    "%His_reply" ∷ ⌜HistoryReply.wish replyB
+      (HistoryReply.mk' chainProof linkSig hist bound err1) []⌝ ∗
+
+    (* align with serv rpc rcvr, which doesn't know encoded args in precond. *)
+    (("%Herr_dec" ∷ ⌜err1 = true⌝ ∗
+      "Hgenie" ∷ ¬ ⌜∃ obj tail, HistoryArg.wish arg obj tail⌝) ∨
+
+    ∃ uid prevEpoch prevVerLen tail lastDig lastKeys lastLink σ,
+    let numEps := length σ.(state.hist) in
+    let pks := lastKeys !!! uid in
+    "%Hdec" ∷ ⌜HistoryArg.wish arg
+      (HistoryArg.mk' uid prevEpoch prevVerLen) tail⌝ ∗
+    "HQ" ∷ Q cfg σ ∗
+    "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
+    "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
+
+    "#Hgenie" ∷
+      match err1 with
+      | true =>
+        "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
+          uint.nat prevVerLen > length pks⌝
+      | false =>
+        ∃ chainProof linkSig hist bound,
+        "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
+          uint.nat prevVerLen ≤ length pks⌝ ∗
+
+        "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
+          (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
+        "#Hwish_linkSig" ∷ ktcore.wish_LinkSig cfg.(cfg.sig_pk)
+          (W64 $ (Z.of_nat numEps - 1)) lastLink linkSig ∗
+        "#Hwish_hist" ∷ ktcore.wish_ListMemb cfg.(cfg.vrf_pk) uid prevVerLen
+          lastDig hist ∗
+        "%Heq_hist" ∷ ⌜Forall2
+          (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
+          (drop (uint.nat prevVerLen) pks) hist⌝ ∗
+        "#Hwish_bound" ∷ ktcore.wish_NonMemb cfg.(cfg.vrf_pk) uid
+          (W64 $ length pks) lastDig bound
+      end) end end
+  }}}.
+Proof. Admitted.
+
 Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
   {{{
     is_pkg_init server ∗
@@ -101,7 +166,76 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
         "#Hwish_bound" ∷ ktcore.wish_NonMemb cfg.(cfg.vrf_pk) uid
           (W64 $ length pks) lastDig bound end)
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@". wp_auto.
+  wp_apply wp_alloc as "* Ha".
+  wp_apply (HistoryArg.wp_enc (HistoryArg.mk' _ _ _) with "[$Ha]") as "* (Hsl_b&_&_&%Hwish)".
+  { iDestruct own_slice_nil as "$".
+    iDestruct own_slice_cap_nil as "$". }
+  simpl in *.
+  wp_apply wp_alloc as "* Hreply".
+  wp_apply (wp_History_cli_call (Q_read (uint.nat prevEpoch))
+    with "[$Hsl_b $Hreply]") as "* @".
+  { iFrame "#". case_match; [|done].
+    iNamed "His_prevHist".
+    iModIntro. by iApply (op_read s). }
+  wp_if_destruct.
+  (* BlameUnknown only from network. *)
+  { rewrite ktcore.rw_BlameUnknown.
+    iApply "HΦ".
+    iSplit; [|by case_decide].
+    iPureIntro. apply ktcore.blame_unknown. }
+  iNamed "Herr0".
+  wp_apply (HistoryReply.wp_dec with "[$Hsl_reply]") as "* Hgenie".
+  wp_if_destruct.
+  (* serv promised well-encoded reply. *)
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit; [|by case_decide].
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iNamed "Hgood".
+    iApply "Hgenie".
+    naive_solver. }
+  iDestruct "Hgenie" as (??) "(Hreply&_&%His_dec)".
+  destruct obj. iNamed "Hreply".
+  wp_auto. simpl.
+  rewrite -wp_fupd.
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+
+    (*
+    case_decide; try done.
+    iApply fupd_sep.
+    iSplitL; [|done].
+    iApply ktcore.blame_one.
+    *)
+
+    (*
+    iSplit; [|by case_decide].
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iNamed "Hgood".
+    opose proof (HistoryReply.wish_det _ _ _ _ His_dec His_reply) as [? _].
+    simplify_eq/=.
+    iDestruct "Hgood" as "[@|@]".
+    (* we gave well-encoded arg. *)
+    - iApply "Hgenie". naive_solver.
+    (* we gave valid decoded args. *)
+    - opose proof (HistoryArg.wish_det _ _ _ _ Hwish Hdec) as [? _].
+      simplify_eq/=.
+      iDestruct "HQ" as "[#Hnew_hist %]".
+      iDestruct "Hgenie" as %[Hgenie|Hgenie].
+      (* good prevEpoch. *)
+      1: lia.
+      (* good prevVerLen. *)
+      iNamed "His_prevHist".
+      iMod (ver_inc with "His_serv Hidx []") as %?.
+    *)
+Admitted.
 
 Lemma wp_CallAudit s γ (prevEpoch : w64) :
   ∀ Φ Q,

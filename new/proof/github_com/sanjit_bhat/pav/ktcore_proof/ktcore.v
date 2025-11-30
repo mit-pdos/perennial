@@ -31,6 +31,34 @@ Definition Blame := gset BlameTys.
 Axiom Blame_IntoVal : IntoVal Blame.
 Global Existing Instance Blame_IntoVal.
 
+Lemma rw_BlameServSig :
+  # (W64 1) = # ({[ BlameServSig ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameServFull :
+  # (W64 2) = # ({[ BlameServFull ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameAdtrSig :
+  # (W64 4) = # ({[ BlameAdtrSig ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameAdtrFull :
+  # (W64 8) = # ({[ BlameAdtrFull ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameClients :
+  # (W64 16) = # ({[ BlameClients ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameUnknown :
+  # (W64 32) = # ({[ BlameUnknown ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameServClients :
+  # (W64 18) = # ({[ BlameServFull; BlameClients ]} : Blame).
+Proof. Admitted.
+
 (* interp maps parties to is_good flags. reqs for establishing BlameSpec:
 - interp has flags for everyone in err gset.
 - it can't be the case that all err flags are true. *)

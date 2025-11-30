@@ -77,13 +77,13 @@ might be able to prove client correctness and serv specs without it.
 note: serv can maintain inv that ties its merkle tree to both
 lastDig and lastKeys. *)
 Definition state_inv σ : iProp Σ :=
-  "%Hpend" ∷ ⌜(∀ lastHist,
-    last σ.(state.hist) = Some lastHist →
-    keys_sub lastHist.2 σ.(state.pending))⌝ ∗
-  "%Hhist" ∷ ⌜(∀ i hist0 hist1,
-    σ.(state.hist) !! i = Some hist0 →
-    σ.(state.hist) !! (S i) = Some hist1 →
-    keys_sub hist0.2 hist1.2)⌝.
+  "%Hpend" ∷ ⌜(∀ entry,
+    last σ.(state.hist) = Some entry →
+    keys_sub entry.2 σ.(state.pending))⌝ ∗
+  "%Hhist" ∷ ⌜(∀ i keys0 keys1,
+    σ.(state.hist).*2 !! i = Some keys0 →
+    σ.(state.hist).*2 !! (S i) = Some keys1 →
+    keys_sub keys0 keys1)⌝.
 
 Axiom own_Server : ∀ γ σ, iProp Σ.
 
@@ -99,14 +99,49 @@ Definition serv_inv γ : iProp Σ :=
 Definition is_Server (s : loc) γ : iProp Σ :=
   inv nroot (serv_inv γ).
 
+Lemma ver_inc s γ (i j : nat) (x y : list w8 * keys_ty) uid :
+  i ≤ j →
+  is_Server s γ -∗
+  mono_list_idx_own γ.(cfg.histγ) i x -∗
+  mono_list_idx_own γ.(cfg.histγ) j y ={⊤}=∗
+  ⌜length (x.2 !!! uid) ≤ length (y.2 !!! uid)⌝.
+Proof.
+  iIntros (?) "#His_serv #Hidx0 #Hidx1".
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iNamed "Hgs".
+  iDestruct (mono_list_auth_idx_lookup with "Hhist Hidx0") as %Hlook0.
+  iDestruct (mono_list_auth_idx_lookup with "Hhist Hidx1") as %Hlook1.
+  iMod ("Hclose" with "[-]") as "_"; [iFrame "∗#"|].
+  iNamed "Hstate".
+  iIntros "!> !%".
+
+  apply (list_lookup_fmap_Some_2 snd) in Hlook0, Hlook1.
+  destruct x as [? keys0], y as [? keys1]. simpl in *.
+  opose proof (list_reln_trans_refl _ _ Hhist
+    _ _ _ _ Hlook0 Hlook1 ltac:(lia)) as Hhist'.
+  rewrite /keys_sub /map_included /map_relation in Hhist'.
+  specialize (Hhist' uid).
+  rewrite !lookup_total_alt.
+  destruct (keys0 !! uid) eqn:Heq0;
+    destruct (keys1 !! uid) eqn:Heq1;
+    rewrite Heq0 Heq1 in Hhist' |-*;
+    simpl in *; try done; [|lia].
+  apply prefix_length in Hhist'. lia.
+Qed.
+
 (** state transition ops. *)
 
-Lemma op_read s γ :
+Definition Q_read i γ σ : iProp Σ :=
+  mono_list_lb_own γ.(cfg.histγ) σ.(state.hist) ∗
+  ⌜i < length σ.(state.hist)⌝.
+
+Lemma op_read s γ i (a : list w8 * keys_ty) :
   is_Server s γ -∗
-  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗
-    (λ σ, mono_list_lb_own γ.(cfg.histγ) σ.(state.hist)) σ)).
+  mono_list_idx_own γ.(cfg.histγ) i a -∗
+  (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q_read i γ σ)).
 Proof.
-  iIntros "#His_serv".
+  iIntros "#His_serv #Hidx".
   rewrite /is_Server.
   iInv "His_serv" as ">@" "Hclose".
   iApply fupd_mask_intro.
@@ -117,7 +152,8 @@ Proof.
   iMod "Hmask" as "_".
   iNamed "Hgs".
   iDestruct (mono_list_lb_own_get with "Hhist") as "#Hlb".
-  iMod ("Hclose" with "[-]") as "_"; by iFrame "∗#".
+  iDestruct (mono_list_auth_idx_lookup with "Hhist Hidx") as %?%lookup_lt_Some.
+  iMod ("Hclose" with "[-]") as "_"; iFrame "∗#". word.
 Qed.
 
 Definition pure_put uid pk (ver : w64) (pend : keys_ty) :=
@@ -211,6 +247,9 @@ Proof.
   - intros ? Hlast. rewrite last_snoc in Hlast.
     by simplify_eq/=.
   - intros i ?? Hlook0 Hlook1.
+    apply list_lookup_fmap_Some_1 in Hlook0 as (?&?&Hlook0).
+    apply list_lookup_fmap_Some_1 in Hlook1 as (?&?&Hlook1).
+    simplify_eq/=.
     apply lookup_lt_Some in Hlook1 as ?.
     autorewrite with len in *.
     destruct (decide (S i = length hist)).
@@ -221,6 +260,7 @@ Proof.
       rewrite -last_lookup in Hlook0.
       naive_solver.
     + rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
+      apply (list_lookup_fmap_Some_2 snd) in Hlook0, Hlook1.
       naive_solver.
 Qed.
 
