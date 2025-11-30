@@ -32,7 +32,7 @@ depends: [
 pin-depends: [
   ["coq-record-update.dev"   "git+https://github.com/tchajed/coq-record-update#7b2645210331c3ec"]
   ["rocq-stdpp.dev"          "git+https://gitlab.mpi-sws.org/iris/stdpp#187909f0c15b7c8"]
-  ["rocq-iris.dev"           "git+https://gitlab.mpi-sws.org/iris/iris#fde0f8699242184"]
+  ["rocq-iris.dev"           "git+https://gitlab.mpi-sws.org/iris/iris#fde0f86992"]
   ["iris-named-props.dev"    "git+https://github.com/tchajed/iris-named-props#c388714a93b1c043"]
 ]
 
