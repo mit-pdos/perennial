@@ -75,7 +75,7 @@ Lemma wp_History_cli_call (Q : cfg.t → state.t → iProp Σ)
     "Hsl_arg" ∷ sl_arg ↦*{d0} arg ∗
     "Hptr_reply" ∷ ptr_reply ↦ sl_reply ∗
 
-    "Herr0" ∷ match err0 with true => True | false =>
+    "Herr_net" ∷ match err0 with true => True | false =>
     ∃ replyB,
     "Hsl_reply" ∷ sl_reply ↦* replyB ∗
 
@@ -85,7 +85,7 @@ Lemma wp_History_cli_call (Q : cfg.t → state.t → iProp Σ)
       (HistoryReply.mk' chainProof linkSig hist bound err1) []⌝ ∗
 
     (* align with serv rpc rcvr, which doesn't know encoded args in precond. *)
-    (("%Herr_dec" ∷ ⌜err1 = true⌝ ∗
+    (("%Herr_serv_dec" ∷ ⌜err1 = true⌝ ∗
       "Hgenie" ∷ ¬ ⌜∃ obj tail, HistoryArg.wish arg obj tail⌝) ∨
 
     ∃ uid prevEpoch prevVerLen tail lastDig lastKeys lastLink σ,
@@ -97,16 +97,11 @@ Lemma wp_History_cli_call (Q : cfg.t → state.t → iProp Σ)
     "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
     "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
 
-    "#Hgenie" ∷
+    "#Herr_serv_args" ∷
       match err1 with
-      | true =>
-        "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
-          uint.nat prevVerLen > length pks⌝
+      | true => ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
+        uint.nat prevVerLen > length pks⌝
       | false =>
-        ∃ chainProof linkSig hist bound,
-        "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
-          uint.nat prevVerLen ≤ length pks⌝ ∗
-
         "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof
           (drop (S (uint.nat prevEpoch)) σ.(state.hist).*1)⌝ ∗
         "#Hwish_linkSig" ∷ ktcore.wish_LinkSig cfg.(cfg.sig_pk)
@@ -185,7 +180,8 @@ Proof.
     iApply "HΦ".
     iSplit; [|by case_decide].
     iPureIntro. apply ktcore.blame_unknown. }
-  iNamed "Herr0".
+  iNamed "Herr_net".
+  iPersist "Hsl_reply".
   wp_apply (HistoryReply.wp_dec with "[$Hsl_reply]") as "* Hgenie".
   wp_if_destruct.
   (* serv promised well-encoded reply. *)
@@ -198,24 +194,19 @@ Proof.
     iNamed "Hgood".
     iApply "Hgenie".
     naive_solver. }
-  iDestruct "Hgenie" as (??) "(Hreply&_&%His_dec)".
+  iDestruct "Hgenie" as (??) "(#Hreply&_&%His_dec)".
   destruct obj. iNamed "Hreply".
   wp_auto. simpl.
+  (* NOTE: another option is to change [BlameSpec] to allow
+  proving contra under fupd. *)
   rewrite -wp_fupd.
   wp_if_destruct.
   { rewrite ktcore.rw_BlameServFull.
     iApply "HΦ".
-
-    (*
-    case_decide; try done.
     iApply fupd_sep.
-    iSplitL; [|done].
+    iSplitL; try done.
     iApply ktcore.blame_one.
-    *)
-
-    (*
-    iSplit; [|by case_decide].
-    iApply ktcore.blame_one.
+    iApply ktcore.fupd_not_prop.
     iIntros (?).
     case_match; try done.
     iNamed "Hgood".
@@ -228,14 +219,48 @@ Proof.
     - opose proof (HistoryArg.wish_det _ _ _ _ Hwish Hdec) as [? _].
       simplify_eq/=.
       iDestruct "HQ" as "[#Hnew_hist %]".
-      iDestruct "Hgenie" as %[Hgenie|Hgenie].
+      iDestruct "Herr_serv_args" as %[?|?].
       (* good prevEpoch. *)
       1: lia.
       (* good prevVerLen. *)
       iNamed "His_prevHist".
-      iMod (ver_inc with "His_serv Hidx []") as %?.
-    *)
-Admitted.
+      iMod (len_pks_mono uid0 s with "His_serv Hidx []") as %Hmono.
+      2: {
+        rewrite last_lookup in Hlast_hist.
+        iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].
+        iFrame "H". }
+      { word. }
+      iPureIntro. simpl in *.
+      rewrite Hver in Hmono. word. }
+
+  rewrite ktcore.rw_BlameNone.
+  iApply "HΦ".
+  iApply fupd_sep.
+  iSplitR. { iPureIntro. apply ktcore.blame_none. }
+  case_decide; try done.
+  iFrame "#".
+  case_match; try done.
+  iNamed "Hgood".
+  opose proof (HistoryReply.wish_det _ _ _ _ His_dec His_reply) as [? _].
+  simplify_eq/=.
+  iDestruct "Hgood" as "[@|@]"; try done.
+  opose proof (HistoryArg.wish_det _ _ _ _ Hwish Hdec) as [? _].
+  simplify_eq/=.
+  iDestruct "HQ" as "[#Hnew_hist %]".
+  iNamed "Herr_serv_args".
+  iFrame "#%".
+  iNamed "His_prevHist".
+  (* TODO: rm positive wish from server.v file. *)
+  (* TODO: change lemma to not take in s. *)
+  iMod (len_pks_mono uid0 s with "His_serv Hidx []") as %Hmono.
+  2: {
+    rewrite last_lookup in Hlast_hist.
+    iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].
+    iFrame "H". }
+  { word. }
+  iPureIntro. simpl in *.
+  by rewrite Hver in Hmono.
+Qed.
 
 Lemma wp_CallAudit s γ (prevEpoch : w64) :
   ∀ Φ Q,

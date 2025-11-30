@@ -9,8 +9,9 @@ From New.proof.github_com.sanjit_bhat.pav.ktcore_proof Require Import
 
 Module ktcore.
 Import serde.ktcore.
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Section blame.
+(* Blame is defined completely outside separation logic. *)
 
 Inductive BlameTys :=
   | BlameServSig
@@ -28,8 +29,38 @@ Global Existing Instance BlameTys_Countable.
 
 Definition Blame := gset BlameTys.
 
+(* interp maps parties to is_good flags. reqs for establishing BlameSpec:
+- interp has flags for everyone in err gset.
+- it can't be the case that all err flags are true. *)
+Definition BlameSpec (err : Blame) (interp : gmap BlameTys bool) :=
+  err = ∅ ∨
+  err = {[ BlameUnknown ]} ∨
+  (err ⊆ dom interp ∧ ¬ ∀ p, p ∈ err → interp !! p = Some true).
+
+End blame.
+
+Section misc.
+Context {PROP : bi} `{!BiFUpd PROP}.
+
+(* this helps proving [BlameSpec] when we need to open invs
+after learning that a party is good. *)
+Lemma fupd_not_prop P `{Decision P} : (⌜P⌝ ={⊤}=∗ False : PROP) ⊢ |={⊤}=> ¬ ⌜P⌝.
+Proof.
+  iIntros "H".
+  destruct (decide P); [|done].
+  by iMod ("H" with "[//]").
+Qed.
+End misc.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
 Axiom Blame_IntoVal : IntoVal Blame.
 Global Existing Instance Blame_IntoVal.
+
+Lemma rw_BlameNone :
+  ktcore.BlameNone = # (∅ : Blame).
+Proof. Admitted.
 
 Lemma rw_BlameServSig :
   # (W64 1) = # ({[ BlameServSig ]} : Blame).
@@ -58,14 +89,6 @@ Proof. Admitted.
 Lemma rw_BlameServClients :
   # (W64 18) = # ({[ BlameServFull; BlameClients ]} : Blame).
 Proof. Admitted.
-
-(* interp maps parties to is_good flags. reqs for establishing BlameSpec:
-- interp has flags for everyone in err gset.
-- it can't be the case that all err flags are true. *)
-Definition BlameSpec (err : Blame) (interp : gmap BlameTys bool) :=
-  err = ∅ ∨
-  err = {[ BlameUnknown ]} ∨
-  (err ⊆ dom interp ∧ ¬ ∀ p, p ∈ err → interp !! p = Some true).
 
 Lemma blame_none interp : BlameSpec ∅ interp.
 Proof. rewrite /BlameSpec. naive_solver. Qed.

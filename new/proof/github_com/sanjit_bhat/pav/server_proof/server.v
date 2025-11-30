@@ -99,7 +99,7 @@ Definition serv_inv γ : iProp Σ :=
 Definition is_Server (s : loc) γ : iProp Σ :=
   inv nroot (serv_inv γ).
 
-Lemma ver_inc s γ (i j : nat) (x y : list w8 * keys_ty) uid :
+Lemma len_pks_mono uid s γ (i j : nat) (x y : list w8 * keys_ty) :
   i ≤ j →
   is_Server s γ -∗
   mono_list_idx_own γ.(cfg.histγ) i x -∗
