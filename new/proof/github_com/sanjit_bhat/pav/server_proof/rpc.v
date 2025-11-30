@@ -24,10 +24,7 @@ under those conditions, the RPC client should encode args correctly,
 the RPC server should decode args correctly,
 the RPC server should encode replies correctly,
 and the RPC client should decode replies correctly.
-the specs capture this by not allowing errors from RPC serde.
-
-TODO:
-- for now, use same [is_Server] w/ same ptr arg. *)
+the specs capture this by not allowing errors from RPC serde. *)
 
 Module server.
 Import serde.server server.server.
@@ -37,7 +34,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Context `{!pavG Σ}.
 
 Definition is_Server_rpc (s : loc) (γ : option cfg.t) : iProp Σ :=
-  match γ with None => True | Some cfg => inv nroot (serv_inv cfg) end.
+  match γ with None => True | Some cfg => is_serv_inv cfg end.
 
 #[global] Instance is_Server_rpc_pers s γ : Persistent (is_Server_rpc s γ).
 Proof. apply _. Qed.
@@ -63,6 +60,7 @@ Lemma wp_History_cli_call (Q : cfg.t → state.t → iProp Σ)
     s γ sl_arg d0 arg ptr_reply (x : slice.t) :
   {{{
     is_pkg_init server ∗
+    (* TODO: overloading is_Server_rpc. *)
     "#His_serv" ∷ is_Server_rpc s γ ∗
     "Hsl_arg" ∷ sl_arg ↦*{d0} arg ∗
     "Hptr_reply" ∷ ptr_reply ↦ x ∗
@@ -173,7 +171,7 @@ Proof.
     with "[$Hsl_b $Hreply]") as "* @".
   { iFrame "#". case_match; [|done].
     iNamed "His_prevHist".
-    iModIntro. by iApply (op_read s). }
+    iModIntro. by iApply op_read. }
   wp_if_destruct.
   (* BlameUnknown only from network. *)
   { rewrite ktcore.rw_BlameUnknown.
@@ -197,8 +195,6 @@ Proof.
   iDestruct "Hgenie" as (??) "(#Hreply&_&%His_dec)".
   destruct obj. iNamed "Hreply".
   wp_auto. simpl.
-  (* NOTE: another option is to change [BlameSpec] to allow
-  proving contra under fupd. *)
   rewrite -wp_fupd.
   wp_if_destruct.
   { rewrite ktcore.rw_BlameServFull.
@@ -206,6 +202,8 @@ Proof.
     iApply fupd_sep.
     iSplitL; try done.
     iApply ktcore.blame_one.
+    (* instead of using [fupd_not_prop], another option is to change
+    [BlameSpec] to allow proving contra under fupd. *)
     iApply ktcore.fupd_not_prop.
     iIntros (?).
     case_match; try done.
@@ -224,7 +222,7 @@ Proof.
       1: lia.
       (* good prevVerLen. *)
       iNamed "His_prevHist".
-      iMod (len_pks_mono uid0 s with "His_serv Hidx []") as %Hmono.
+      iMod (len_pks_mono uid0 with "His_serv Hidx []") as %Hmono.
       2: {
         rewrite last_lookup in Hlast_hist.
         iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].
@@ -250,9 +248,7 @@ Proof.
   iNamed "Herr_serv_args".
   iFrame "#%".
   iNamed "His_prevHist".
-  (* TODO: rm positive wish from server.v file. *)
-  (* TODO: change lemma to not take in s. *)
-  iMod (len_pks_mono uid0 s with "His_serv Hidx []") as %Hmono.
+  iMod (len_pks_mono uid0 with "His_serv Hidx []") as %Hmono.
   2: {
     rewrite last_lookup in Hlast_hist.
     iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].

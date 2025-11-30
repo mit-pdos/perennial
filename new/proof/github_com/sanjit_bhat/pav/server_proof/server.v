@@ -96,12 +96,15 @@ Definition serv_inv γ : iProp Σ :=
   "Hgs" ∷ gs_inv γ σ ∗
   "#Hstate" ∷ state_inv σ.
 
-Definition is_Server (s : loc) γ : iProp Σ :=
-  inv nroot (serv_inv γ).
+Definition is_serv_inv γ := inv nroot (serv_inv γ).
 
-Lemma len_pks_mono uid s γ (i j : nat) (x y : list w8 * keys_ty) :
+(* TODO: serv ptr [s] is unbound. *)
+Definition is_Server (s : loc) γ : iProp Σ :=
+  is_serv_inv γ.
+
+Lemma len_pks_mono uid γ (i j : nat) (x y : list w8 * keys_ty) :
   i ≤ j →
-  is_Server s γ -∗
+  is_serv_inv γ -∗
   mono_list_idx_own γ.(cfg.histγ) i x -∗
   mono_list_idx_own γ.(cfg.histγ) j y ={⊤}=∗
   ⌜length (x.2 !!! uid) ≤ length (y.2 !!! uid)⌝.
@@ -136,8 +139,8 @@ Definition Q_read i γ σ : iProp Σ :=
   mono_list_lb_own γ.(cfg.histγ) σ.(state.hist) ∗
   ⌜i < length σ.(state.hist)⌝.
 
-Lemma op_read s γ i (a : list w8 * keys_ty) :
-  is_Server s γ -∗
+Lemma op_read γ i (a : list w8 * keys_ty) :
+  is_serv_inv γ -∗
   mono_list_idx_own γ.(cfg.histγ) i a -∗
   (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗ (own_Server γ σ ={∅,⊤}=∗ Q_read i γ σ)).
 Proof.
@@ -175,8 +178,8 @@ Proof.
   by apply prefix_app_r.
 Qed.
 
-Lemma op_put s γ uid uidγ i ver pk :
-  is_Server s γ -∗
+Lemma op_put γ uid uidγ i ver pk :
+  is_serv_inv γ -∗
   ⌜γ.(cfg.uidγ) !! uid = Some uidγ⌝ -∗
   mono_list_idx_own uidγ i (ver, pk) -∗
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
@@ -219,8 +222,8 @@ Proof.
     apply sub_over_put.
 Qed.
 
-Lemma op_add_hist s γ dig :
-  is_Server s γ -∗
+Lemma op_add_hist γ dig :
+  is_serv_inv γ -∗
   □ (|={⊤,∅}=> ∃ σ, own_Server γ σ ∗
     let σ' := set (state.hist) (.++ [(dig, σ.(state.pending))]) σ in
     (own_Server γ σ' ={∅,⊤}=∗ True)).
@@ -296,16 +299,12 @@ Lemma wp_Server_History s γ (uid prevEpoch prevVerLen : w64) Q :
     "HQ" ∷ Q σ ∗
     "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
     "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
-    "#Hgenie" ∷
+    "#Herr" ∷
       match err with
-      | true =>
-        "%Hwish" ∷ ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
-          uint.nat prevVerLen > length pks⌝
+      | true => ⌜uint.nat prevEpoch ≥ length σ.(state.hist) ∨
+        uint.nat prevVerLen > length pks⌝
       | false =>
         ∃ chainProof linkSig hist bound,
-        "%Hwish" ∷ ⌜uint.nat prevEpoch < length σ.(state.hist) ∧
-          uint.nat prevVerLen ≤ length pks⌝ ∗
-
         "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
         "#Hsl_linkSig" ∷ sl_linkSig ↦*□ linkSig ∗
         "#Hsl_hist" ∷ ktcore.MembSlice1D.own sl_hist hist (□) ∗
