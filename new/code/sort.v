@@ -183,15 +183,19 @@ Axiom Interface : go_type.
 
 Definition Sort : go_string := "sort.Sort"%go.
 
-Axiom sortedHint : go_type.
+Definition sortedHint : go_type := intT.
+#[global] Typeclasses Opaque sortedHint.
+#[global] Opaque sortedHint.
 
-Axiom unknownHint : val.
+Definition unknownHint : val := #(W64 0).
 
-Axiom increasingHint : val.
+Definition increasingHint : val := #(W64 1).
 
-Axiom decreasingHint : val.
+Definition decreasingHint : val := #(W64 2).
 
-Axiom xorshift : go_type.
+Definition xorshift : go_type := uint64T.
+#[global] Typeclasses Opaque xorshift.
+#[global] Opaque xorshift.
 
 Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
 
