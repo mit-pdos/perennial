@@ -14,10 +14,8 @@ Section blame.
 (* Blame is defined completely outside separation logic. *)
 
 Inductive BlameTys :=
-  | BlameServSig
-  | BlameServFull
-  | BlameAdtrSig
-  | BlameAdtrFull
+  | BlameServ
+  | BlameAdtr
   | BlameClients
   | BlameUnknown.
 
@@ -49,32 +47,24 @@ Lemma rw_BlameNone :
   ktcore.BlameNone = # (∅ : Blame).
 Proof. Admitted.
 
-Lemma rw_BlameServSig :
-  # (W64 1) = # ({[ BlameServSig ]} : Blame).
+Lemma rw_BlameServ :
+  # (W64 1) = # ({[ BlameServ ]} : Blame).
 Proof. Admitted.
 
-Lemma rw_BlameServFull :
-  # (W64 2) = # ({[ BlameServFull ]} : Blame).
-Proof. Admitted.
-
-Lemma rw_BlameAdtrSig :
-  # (W64 4) = # ({[ BlameAdtrSig ]} : Blame).
-Proof. Admitted.
-
-Lemma rw_BlameAdtrFull :
-  # (W64 8) = # ({[ BlameAdtrFull ]} : Blame).
+Lemma rw_BlameAdtr :
+  # (W64 2) = # ({[ BlameAdtr ]} : Blame).
 Proof. Admitted.
 
 Lemma rw_BlameClients :
-  # (W64 16) = # ({[ BlameClients ]} : Blame).
+  # (W64 4) = # ({[ BlameClients ]} : Blame).
 Proof. Admitted.
 
 Lemma rw_BlameUnknown :
-  # (W64 32) = # ({[ BlameUnknown ]} : Blame).
+  # (W64 8) = # ({[ BlameUnknown ]} : Blame).
 Proof. Admitted.
 
 Lemma rw_BlameServClients :
-  # (W64 18) = # ({[ BlameServFull; BlameClients ]} : Blame).
+  # (W64 5) = # ({[ BlameServ; BlameClients ]} : Blame).
 Proof. Admitted.
 
 Lemma blame_none interp : BlameSpec ∅ interp.

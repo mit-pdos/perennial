@@ -216,14 +216,10 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     let: "alicePk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "aliceHist") (![#uint64T] "bobEp"))) in
     do:  ("alicePk" <-[#ptrT] "$r0");;;
-    (if: (~ (let: "$a0" := (![#ptrT] "alicePk") in
+    do:  (let: "$a0" := (let: "$a0" := (![#ptrT] "alicePk") in
     let: "$a1" := (![#ptrT] "bobAlicePk") in
-    (func_call #equal) "$a0" "$a1"))
-    then
-      let: "$r0" := ktcore.BlameAdtrSig in
-      do:  ("err" <-[#ktcore.Blame] "$r0");;;
-      return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
-    else do:  #());;;
+    (func_call #equal) "$a0" "$a1") in
+    (func_call #std.Assert) "$a0");;;
     return: (![#ptrT] "evid", ![#ktcore.Blame] "err")).
 
 Definition histEntry : go_type := structT [
@@ -233,7 +229,7 @@ Definition histEntry : go_type := structT [
 #[global] Typeclasses Opaque histEntry.
 #[global] Opaque histEntry.
 
-(* go: alicebob.go:124:6 *)
+(* go: alicebob.go:121:6 *)
 Definition equalⁱᵐᵖˡ : val :=
   λ: "o0" "o1",
     exception_do (let: "o1" := (mem.alloc "o1") in
@@ -253,7 +249,7 @@ Definition loopPending : go_string := "github.com/sanjit-bhat/pav/alicebob.loopP
 
 (* runAlice does a bunch of puts.
 
-   go: alicebob.go:135:6 *)
+   go: alicebob.go:132:6 *)
 Definition runAliceⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -315,7 +311,7 @@ Definition runAliceⁱᵐᵖˡ : val :=
       do:  ("hist" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "hist", ![#ktcore.Blame] "err")).
 
-(* go: alicebob.go:165:6 *)
+(* go: alicebob.go:162:6 *)
 Definition loopPendingⁱᵐᵖˡ : val :=
   λ: "cli" "ep",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -344,7 +340,7 @@ Definition loopPendingⁱᵐᵖˡ : val :=
 
 (* runBob does a get at some time in the middle of alice's puts.
 
-   go: alicebob.go:182:6 *)
+   go: alicebob.go:179:6 *)
 Definition runBobⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in

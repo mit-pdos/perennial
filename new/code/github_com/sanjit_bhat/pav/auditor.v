@@ -124,7 +124,7 @@ Definition Auditor__Updateⁱᵐᵖˡ : val :=
       do:  ("errb" <-[#boolT] "$r3");;;
       (if: ![#boolT] "errb"
       then
-        let: "$r0" := ktcore.BlameServFull in
+        let: "$r0" := ktcore.BlameServ in
         do:  ("err" <-[#ktcore.Blame] "$r0");;;
         return: (![#ktcore.Blame] "err")
       else do:  #());;;
@@ -274,7 +274,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r3");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServFull in
+      let: "$r0" := ktcore.BlameServ in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "a", ![#cryptoffi.SigPublicKey] "sigPk", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -287,7 +287,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r1");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServFull in
+      let: "$r0" := ktcore.BlameServ in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "a", ![#cryptoffi.SigPublicKey] "sigPk", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -680,7 +680,7 @@ Definition CallGetⁱᵐᵖˡ : val :=
     do:  ("vrf" <-[#ptrT] "$r0");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameAdtrFull in
+      let: "$r0" := ktcore.BlameAdtr in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "link", ![#ptrT] "vrf", ![#ktcore.Blame] "err")
     else do:  #());;;
