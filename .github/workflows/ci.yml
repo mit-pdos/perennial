@@ -44,7 +44,7 @@ jobs:
             startGroup Install dependencies
               sudo apt-get update -y
               sudo apt-get install -y sqlite3
-              opam pin add -n -y -k path $PACKAGE $WORKDIR
+              opam pin add -vv -n -y -k path $PACKAGE $WORKDIR
               opam install -j 4 -y --deps-only $PACKAGE
             endGroup
           script: |
