@@ -1,2 +1,2 @@
-translate = ["Search", "SearchInts", "Find", "*Hint", "xorshift.*"]
+translate = ["Search", "SearchInts", "Find", "*Hint", "xorshift", "xorshift.*"]
 imports = ["!*"]

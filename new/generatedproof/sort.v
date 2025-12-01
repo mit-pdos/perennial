@@ -166,5 +166,9 @@ Global Instance wp_func_call_SearchInts :
   WpFuncCall sort.SearchInts _ (is_pkg_defined sort) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_method_call_xorshift'ptr_Next :
+  WpMethodCall (ptrT.id sort.xorshift.id) "Next" _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_method_call).
+
 End names.
 End sort.
