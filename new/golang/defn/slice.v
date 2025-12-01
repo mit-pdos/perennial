@@ -34,6 +34,7 @@ Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class SliceSemantics :=
 {
+  #[global] go_zero_val_eq_slice elem_type :: go.GoZeroValEq (go.SliceType elem_type) slice.t;
   go_eq_slice_nil_l t s :
     go_eq_top_level (go.SliceType t) #s #slice.nil = #(bool_decide (s = slice.nil));
   go_eq_slice_nil_r t s :

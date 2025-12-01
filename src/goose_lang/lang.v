@@ -681,6 +681,7 @@ Class ZeroVal V :=
   {
     zero_val : V
   }.
+Global Hint Mode ZeroVal ! : typeclass_instances.
 Global Arguments zero_val (V) {_}.
 
 Section zero_val_instances.

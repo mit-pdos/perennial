@@ -93,15 +93,13 @@ Definition is_always_safe_to_compare t V `{!EqDecision V}
   `{!CoreComparisonDefinition} : Prop :=
   ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
 
+Definition ref_one : val :=
+  λ: "v", let: "l" := ref (LitV $ LitString "") in "l" <- "v";; "l".
+
 Definition AllocValue_def t : val :=
   λ: "v", let: "l" := GoAlloc t #() in GoStore t ("l", "v");; "l".
 Program Definition AllocValue := sealed AllocValue_def.
 Definition AllocValue_unseal : AllocValue = _ := seal_eq _.
-
-Definition ZeroVal_def t : val :=
-  λ: <>, let: "l" := GoAlloc t #() in GoLoad t "l".
-Program Definition ZeroVal := sealed ZeroVal_def.
-Definition ZeroVal_unseal : ZeroVal = _ := seal_eq _.
 
 Definition ElementListNil_def (key_type : option go.type) (elem_type : go.type) : val :=
   λ: <>, ArrayV [].
@@ -207,6 +205,26 @@ Class IntoValUnfold V f :=
 
 Global Hint Mode IntoValUnfold ! - : typeclass_instances.
 
+Class GoZeroValEq t V `{!ZeroVal V} :=
+  {
+    go_zero_val_eq : go_zero_val t = #(zero_val V);
+  }.
+
+Arguments go_zero_val_eq (t) V {_ _}.
+
+Class BasicIntoValInj :=
+  {
+    #[global] into_val_loc_inj :: Inj eq eq (into_val (V:=loc));
+    #[global] into_val_slice_inj :: Inj eq eq (into_val (V:=slice.t));
+    #[global] into_val_w64_inj :: Inj eq eq (into_val (V:=w64));
+    #[global] into_val_w32_inj :: Inj eq eq (into_val (V:=w32));
+    #[global] into_val_w16_inj :: Inj eq eq (into_val (V:=w16));
+    #[global] into_val_w8_inj :: Inj eq eq (into_val (V:=w8));
+    #[global] into_val_bool_inj :: Inj eq eq (into_val (V:=bool));
+    #[global] into_val_string_inj :: Inj eq eq (into_val (V:=go_string));
+    #[global] interface_into_val_inj :: Inj eq eq (into_val (V:=interface.t));
+  }.
+
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
@@ -217,6 +235,7 @@ Class CoreSemantics :=
   #[global] into_val_unfold_func ::
     IntoValUnfold func.t (λ f, (rec: f.(func.f) f.(func.x) := f.(func.e))%V);
   #[global] into_val_unfold_bool :: IntoValUnfold _ (λ x, LitV $ LitBool x);
+  #[global] basic_into_val_inj :: BasicIntoValInj;
 
   (* TODO: get rid of these. *)
   #[global] into_val_unfold_w64 :: IntoValUnfold _ (λ x, LitV $ LitInt x);
@@ -224,11 +243,17 @@ Class CoreSemantics :=
   #[global] into_val_unfold_w16 :: IntoValUnfold _ (λ x, LitV $ LitInt16 x);
   #[global] into_val_unfold_w8 :: IntoValUnfold _ (λ x, LitV $ LitByte x);
   #[global] into_val_unfold_string :: IntoValUnfold _ (λ x, LitV $ LitString x);
+  #[global] into_val_unfold_loc :: IntoValUnfold _ (λ x, LitV $ LitLoc x);
+  #[global] into_val_unfold_unit :: IntoValUnfold unit (λ _, LitV LitUnit);
+
+  #[global] go_zero_val_underlying t :: go_zero_val t = go_zero_val (to_underlying t);
+  #[global] go_zero_val_eq_pointer t :: GoZeroValEq (go.PointerType t) loc;
+  #[global] go_zero_val_eq_function sig :: GoZeroValEq (go.FunctionType sig) func.t;
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
   alloc_underlying t : alloc t = alloc (to_underlying t);
-  alloc_primitive t v (H : is_primitive_zero_val t v) : alloc t = (λ: <>, ref v)%V;
+  alloc_primitive t v (H : is_primitive_zero_val t v) : alloc t = (λ: <>, ref_one v)%V;
   alloc_struct fds :
     alloc (go.StructType fds) =
     (λ: <>,
@@ -338,3 +363,5 @@ Notation "![ t ] e" := (GoInstruction (GoLoad t) e%E)
                          (at level 9, right associativity, format "![ t ]  e") : expr_scope.
 Notation "e1 <-[ t ] e2" := (GoInstruction (GoStore t) (Pair e1%E e2%E))
                              (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
+
+Global Hint Mode go.GoZeroValEq - - - ! - - : typeclass_instances.

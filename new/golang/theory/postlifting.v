@@ -114,39 +114,6 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
 
-
-Section into_val_comparable_instances.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
-
-Global Instance into_val_loc_inj : Inj eq eq (into_val (V:=loc)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_slice_inj : Inj eq eq (into_val (V:=slice.t)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_w64_inj : Inj eq eq (into_val (V:=w64)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_w32_inj : Inj eq eq (into_val (V:=w32)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_w16_inj : Inj eq eq (into_val (V:=w16)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_w8_inj : Inj eq eq (into_val (V:=w8)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_bool_inj : Inj eq eq (into_val (V:=bool)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance into_val_string_inj : Inj eq eq (into_val (V:=go_string)).
-Proof. rewrite into_val_unseal; intros ? ?. by inversion 1. Qed.
-
-Global Instance interface_into_val_inj : Inj eq eq (into_val (V:=interface.t)).
-Proof. rewrite into_val_unseal; intros ? ?. inversion 1. destruct x, y; naive_solver. Qed.
-
-End into_val_comparable_instances.
-
 Section go_wps.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
 
@@ -201,8 +168,8 @@ Proof.
   simpl. destruct Heq as [-> Hcontains]. rewrite Hcontains. by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_TypeAssert2_non_interface t t' `{!IntoVal V}
-  `{!TypedPointsto V} `{!IntoValTyped V t} (v : V) :
+Global Instance pure_wp_TypeAssert2_non_interface t t' `{!ZeroVal V}
+                `{!go.GoZeroValEq t V} `{!TypedPointsto V} `{!IntoValTyped V t} (v : V) :
   PureWp (is_interface_type t = false)
     (TypeAssert2 t #(interface.mk t' #v))
     (if decide (t = t') then (#v, #true)%V else (#(zero_val V), #false)%V).
@@ -211,8 +178,7 @@ Proof.
   iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
   simpl. rewrite Heq. destruct decide.
   - by iApply "HΦ".
-  - unfold lang.glang_zero_val. wp_pures. wp_apply wp_alloc. iIntros "* Hl".
-    wp_pures. wp_apply (wp_load with "[$Hl]"). iIntros "_". wp_pures. by iApply "HΦ".
+  - rewrite go.go_zero_val_eq. wp_pures. by iApply "HΦ".
 Qed.
 
 Global Instance pure_wp_TypeAssert2_interface t i :
@@ -433,7 +399,7 @@ Proof.
   wp_apply (lifting.wp_fork with "[$Hwp]").
   replace (LitV LitUnit) with #().
   { iFrame "HΦ". }
-  rewrite into_val_unseal //.
+  rewrite go.into_val_unfold //.
 Qed.
 
 (* use new goose's to_val for the return value *)
@@ -447,19 +413,31 @@ Proof.
   iIntros (x) "_".
   replace (LitV x) with #x.
   { by iApply "HΦ". }
-  rewrite into_val_unseal //.
+  rewrite go.into_val_unfold //.
 Qed.
 
 End go_wps.
 
 Section mem_lemmas.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
 (* Helper lemmas for establishing [IntoValTyped] *)
+
+Lemma _internal_wp_alloc_untyped stk E v :
+  {{{ True }}} go.ref_one (Val v) @ stk; E {{{ l, RET #l; heap_pointsto l (DfracOwn 1) v }}}.
+Proof.
+  iIntros "% _ HΦ". wp_call. wp_apply wp_alloc_untyped; first done.
+  iIntros (?) "Hl". wp_pures.
+  wp_call.
+  wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
+  wp_pures. wp_apply (wp_finish_store with "[$Hl $Hl']"). iIntros "Hl".
+  wp_pures. rewrite !go.into_val_unfold. iApply "HΦ". iFrame.
+Qed.
+
 Lemma _internal_wp_untyped_atomic_load l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}
     ! #l @ s; E
   {{{ RET v; heap_pointsto l dq v }}}.
-Proof. rewrite into_val_unseal. apply lifting.wp_load. Qed.
+Proof. rewrite !go.into_val_unfold. apply lifting.wp_load. Qed.
 
 Lemma _internal_wp_untyped_start_read l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}
@@ -468,7 +446,7 @@ Lemma _internal_wp_untyped_start_read l dq v s E :
       (∀ Ψ, (heap_pointsto l dq v -∗ Ψ #()) -∗ WP FinishRead #l @ s ; E {{ Ψ }})
     }}}.
 Proof.
-  rewrite into_val_unseal.
+  rewrite !go.into_val_unfold.
   iIntros "% Hl HΦ".
   wp_apply (wp_start_read with "Hl"). iIntros "[? ?]".
   iApply "HΦ".
@@ -482,7 +460,7 @@ Lemma _internal_wp_untyped_read l dq v s E :
     Read #l @ s; E
   {{{ RET v; heap_pointsto l dq v }}}.
 Proof.
-  rewrite into_val_unseal.
+  rewrite !go.into_val_unfold.
   iIntros "% Hl HΦ".
   wp_call.
   wp_apply (wp_start_read with "Hl"). iIntros "[? ?]".
@@ -496,7 +474,7 @@ Lemma _internal_wp_untyped_store l v v' s E :
     #l <- v' @ s; E
   {{{ RET #(); heap_pointsto l (DfracOwn 1) v' }}}.
 Proof.
-  rewrite into_val_unseal. iIntros "% Hl HΦ". wp_call.
+  rewrite !go.into_val_unfold. iIntros "% Hl HΦ". wp_call.
   wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
   wp_pures. by iApply (wp_finish_store with "[$Hl $Hl']").
 Qed.
@@ -550,7 +528,7 @@ Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
 Final Obligation.
 Proof.
   iIntros "* H1 H2". iCombine "H1 H2" gives %Heq.
-  iPureIntro. rewrite into_val_unseal /= in Heq.
+  iPureIntro. rewrite !go.into_val_unfold /= in Heq.
   destruct v1, v2. naive_solver.
 Qed.
 
@@ -561,8 +539,8 @@ Existing Class go.is_primitive_zero_val.
 
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
-  rewrite go.alloc_primitive typed_pointsto_unseal /= into_val_unseal;
-  wp_pures; by wp_apply wp_alloc_untyped.
+  rewrite go.alloc_primitive typed_pointsto_unseal /=;
+  wp_pures; by wp_apply _internal_wp_alloc_untyped.
 
 Ltac solve_wp_load :=
   iIntros "* Hl HΦ";
