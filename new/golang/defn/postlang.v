@@ -202,15 +202,15 @@ Class IntoValUnfold V f :=
   {
     into_val_unfold : @into_val _ _ V = f;
   }.
-
 Global Hint Mode IntoValUnfold ! - : typeclass_instances.
+Global Arguments into_val_unfold (V) {_}.
 
 Class GoZeroValEq t V `{!ZeroVal V} :=
   {
     go_zero_val_eq : go_zero_val t = #(zero_val V);
   }.
-
-Arguments go_zero_val_eq (t) V {_ _}.
+Global Hint Mode GoZeroValEq ! - - : typeclass_instances.
+Global Arguments go_zero_val_eq (t) V {_ _}.
 
 Class BasicIntoValInj :=
   {
@@ -363,5 +363,3 @@ Notation "![ t ] e" := (GoInstruction (GoLoad t) e%E)
                          (at level 9, right associativity, format "![ t ]  e") : expr_scope.
 Notation "e1 <-[ t ] e2" := (GoInstruction (GoStore t) (Pair e1%E e2%E))
                              (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
-
-Global Hint Mode go.GoZeroValEq - - - ! - - : typeclass_instances.

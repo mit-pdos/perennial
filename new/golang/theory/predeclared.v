@@ -14,8 +14,8 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
 
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
-  rewrite go.alloc_predeclared typed_pointsto_unseal /= into_val_unseal;
-  wp_pures; by wp_apply wp_alloc_untyped.
+  rewrite go.alloc_predeclared typed_pointsto_unseal /=;
+  wp_pures; by wp_apply _internal_wp_alloc_untyped.
 
 Ltac solve_wp_load :=
   iIntros "* Hl HΦ";

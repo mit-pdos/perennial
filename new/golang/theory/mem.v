@@ -11,94 +11,74 @@ Set Default Proof Using "Type".
 
 Section goose_lang.
 
-  Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+  Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}
+    {pre_sem : go.PredeclaredSemantics}.
 
-  Inductive is_cmpxchg_type : ∀ (t : go.type) (V : Type) `{!IntoVal V} `{!TypedPointsto V}, Prop :=
-  | is_cmpxchg_type_uint64 : is_cmpxchg_type go.uint64 w64
-  | is_cmpxchg_type_uint32 : is_cmpxchg_type go.uint32 w32
-  | is_cmpxchg_type_uint16 : is_cmpxchg_type go.uint16 w16
-  | is_cmpxchg_type_uint8 : is_cmpxchg_type go.uint8 w8
-  | is_cmpxchg_type_int64 : is_cmpxchg_type go.int64 w64
-  | is_cmpxchg_type_int32 : is_cmpxchg_type go.int32 w32
-  | is_cmpxchg_type_int16 : is_cmpxchg_type go.int16 w16
-  | is_cmpxchg_type_int8 : is_cmpxchg_type go.int8 w8
-  | is_cmpxchg_type_bool : is_cmpxchg_type go.bool bool.
+  Class AtomicWps V `{!TypedPointsto (Σ:=Σ) V} `{!ZeroVal V} :=
+    {
+      wp_cmpxchg_fail l (v' v1 v2 : V) dq stk E :
+      (v' ≠ v1 →
+       {{{ ▷ l ↦{dq} v' }}} CmpXchg #l #v1 #v2 @ stk; E {{{ RET (#v', #false); l ↦{dq} v' }}});
 
-  Ltac2 is_cmpxchg_inv () :=
-    match! goal with
-    | [ |- _ ] => progress subst
-    | [ h : is_cmpxchg_type _ _ |- _] =>
-        (Std.inversion Std.FullInversion (Std.ElimOnIdent h) None None;
-        Std.clear [h])
-    | [ h : existT _ _ = existT _ _ |- _ ] =>
-        Std.apply false false [(fun () => (constr:(Eqdep.EqdepTheory.inj_pair2), Std.ImplicitBindings []))]
-          (Some (h, None))
-    end.
+      wp_cmpxchg_suc l (v' v1 v2 : V) stk E :
+        (v' = v1 →
+        {{{ ▷ l ↦ v' }}} CmpXchg #l #v1 #v2 @ stk; E {{{ RET (#v', #true); l ↦ v2 }}});
 
-  Ltac is_cmpxchg_inv := repeat ltac2:(is_cmpxchg_inv ()).
+      wp_atomic_load stk E l dq (v : V) :
+        ({{{ ▷ l ↦{dq} v }}} ! #l @ stk ; E {{{ RET #v; l ↦{dq} v }}});
 
-  Lemma wp_typed_cmpxchg_fail `{!IntoVal V} `{!TypedPointsto V} t s E l dq (v' v1 v2 : V) :
-    is_cmpxchg_type t V →
-    #v' ≠ #v1 →
-    {{{ ▷ l ↦{dq} v' }}}
-      CmpXchg (Val # l) #v1 #v2 @ s; E
-    {{{ RET (#v', #false); l ↦{dq} v' }}}.
-  Proof using Type*.
-    iIntros "%Hty %Hne % Hl HΦ". is_cmpxchg_inv.
-    all: rewrite typed_pointsto_unseal /=  into_val_unseal /= in Hne |- *;
-      iApply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
-      iFrame.
-  Qed.
+      wp_atomic_store stk E l (v v' : V) :
+      ({{{ ▷ l ↦ v }}} AtomicStore #l #v' @ stk ; E {{{ RET #(); l ↦ v' }}});
+    }.
 
-  Lemma wp_typed_cmpxchg_suc `{!IntoVal V} `{!TypedPointsto V} t s E l (v' v1 v2 : V) :
-    is_cmpxchg_type t V →
-    #v' = #v1 →
-    {{{ ▷ l ↦ v' }}} CmpXchg #l #v1 #v2 @ s; E
-    {{{ RET (#v', #true); l ↦ v2 }}}.
-  Proof using Type*.
-    iIntros "%Hty %Hne % Hl HΦ". is_cmpxchg_inv.
-    all: rewrite typed_pointsto_unseal /=  into_val_unseal /= in Hne |- *;
-      iApply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
-      iFrame.
-  Qed.
+  Ltac solve_cmpxchg_fail :=
+    iIntros "* %Hne % Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
+      iApply (lifting.wp_cmpxchg_fail with "[$]"); [naive_solver|done|done].
 
-  Lemma wp_typed_Load s E `{!IntoVal V} `{!TypedPointsto V} t l dq (v : V) :
-    is_cmpxchg_type t V →
-    {{{ ▷ l ↦{dq} v }}}
-      ! #l @ s ; E
-    {{{ RET #v; l ↦{dq} v }}}.
-  Proof using Type*.
-    intros Hty. is_cmpxchg_inv.
-    all: rewrite typed_pointsto_unseal /=  into_val_unseal /=; eapply lifting.wp_load.
-  Qed.
+  Ltac solve_cmpxchg_suc :=
+    iIntros "* %Heq % Hl HΦ"; subst; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
+      iApply (lifting.wp_cmpxchg_suc with "[$]"); done.
 
-  Lemma wp_typed_AtomicStore s E `{!IntoVal V} `{!TypedPointsto V} t l (v v' : V) :
-    is_cmpxchg_type t V →
-    {{{ ▷ l ↦ v }}}
-      AtomicStore #l #v' @ s ; E
-    {{{ RET #(); l ↦ v' }}}.
-  Proof using Type*.
-    intros Hty. is_cmpxchg_inv.
-    all: rewrite typed_pointsto_unseal /=  into_val_unseal /=; eapply wp_atomic_store.
-  Qed.
+  Ltac solve_wp_atomic_load :=
+    iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
+    iApply (lifting.wp_load with "[$]"); done.
+
+  Ltac solve_wp_atomic_store :=
+    iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
+    iApply (lifting.wp_atomic_store with "[$]"); done.
+
+  Ltac solve_atomic_wps :=
+    split; rewrite !go.into_val_unfold;
+    [solve_cmpxchg_fail | solve_cmpxchg_suc | solve_wp_atomic_load | solve_wp_atomic_store ].
+
+  Instance atomic_wps_uint64 : AtomicWps w64.
+  Proof. solve_atomic_wps. Qed.
+  Instance atomic_wps_uint32 : AtomicWps w32.
+  Proof. solve_atomic_wps. Qed.
+  Instance atomic_wps_uint16 : AtomicWps w16.
+  Proof. solve_atomic_wps. Qed.
+  Instance atomic_wps_uint8 : AtomicWps w8.
+  Proof. solve_atomic_wps. Qed.
+  Instance atomic_wps_bool : AtomicWps bool.
+  Proof. solve_atomic_wps. Qed.
 
 End goose_lang.
 
 Section tac_lemmas.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-  Class PointsToAccess {V} `{!IntoVal V} `{!TypedPointsto V}
+  Class PointsToAccess {V} `{!TypedPointsto V}
     (l : loc) (v : V) dq (P : iProp Σ) (P' : V → iProp Σ) : Prop :=
     {
       points_to_acc : P -∗ l ↦{dq} v ∗ (∀ v', l ↦{dq} v' -∗ P' v');
       points_to_update_eq : P' v ⊣⊢ P;
     }.
 
-  Global Instance points_to_access_trivial {V} l (v : V) `{!IntoVal V} `{!TypedPointsto V} dq
+  Global Instance points_to_access_trivial {V} l (v : V) `{!TypedPointsto V} dq
     : PointsToAccess l v dq (l ↦{dq} v)%I (λ v', l ↦{dq} v')%I.
   Proof. constructor; [eauto with iFrame|done]. Qed.
 
-  Lemma tac_wp_load {V t} `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
+  Lemma tac_wp_load {V t} `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
     K (l : loc) (v : V) Δ s E i dq Φ is_pers
     `{!PointsToAccess l v dq P P'} :
     envs_lookup i Δ = Some (is_pers, P)%I →
@@ -120,7 +100,7 @@ Section tac_lemmas.
       rewrite points_to_update_eq. iFrame.
   Qed.
 
-  Lemma tac_wp_store {V t} `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
+  Lemma tac_wp_store {V t} `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
     K (l : loc) (v v' : V) Δ Δ' s E i Φ
     `{!PointsToAccess l v (DfracOwn 1) P P'} :
     envs_lookup i Δ = Some (false, P)%I →
@@ -138,7 +118,7 @@ Section tac_lemmas.
   Qed.
 
   Lemma tac_wp_alloc
-    `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t} K Δ stk E Φ :
+    `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t} K Δ stk E Φ :
     (∀ l, envs_entails Δ (l ↦ (zero_val V) -∗ WP (fill K (Val #l)) @ stk; E {{ Φ }})) →
     envs_entails Δ (WP fill K (alloc t #()) @ stk; E {{ Φ }}).
   Proof.

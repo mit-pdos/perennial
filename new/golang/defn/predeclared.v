@@ -135,7 +135,7 @@ Global Existing Instances is_ordered_type_string is_ordered_type_numeric.
 
 Class PredeclaredSemantics `{!go.CoreComparisonDefinition} :=
 {
-  alloc_predeclared t v (H : is_predeclared_zero_val t v) : alloc t = (λ: <>, ref v)%V;
+  alloc_predeclared t v (H : is_predeclared_zero_val t v) : alloc t = (λ: <>, go.ref_one v)%V;
   load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
   store_predeclared t (H : is_predeclared t) : store t = (λ: "l" "v", "l" <- "v")%V;
 
