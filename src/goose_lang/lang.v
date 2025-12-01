@@ -197,7 +197,7 @@ Inductive go_instruction : Type :=
 | Slice (t : go.type)
 | FullSlice (t : go.type)
 
-| ArrayAppend
+| ArraySet
 | ArrayLength
 
 (* these are internal steps; the Go map lookup has to be implemented as multiple
@@ -268,6 +268,7 @@ with keyed_element :=
 | KeyedElement (k : option key) (v : element)
 with key :=
 | KeyField (f : go_string)
+| KeyInteger (s : Z)
 | KeyExpression (e : expr)
 | KeyLiteralValue (l : list keyed_element)
 with element :=
@@ -865,7 +866,8 @@ Inductive is_go_step_pure `{!GoGlobalContext} `{!GoLocalContext} :
      else Panic "slice bounds out of range")
 | index_ref_step t v (j : w64) : is_go_step_pure (IndexRef t) (v, #j) (index_ref t (sint.Z j) v)
 | index_step t v (j : w64) : is_go_step_pure (Index t) (v, #j) (index t (sint.Z j) v)
-| array_append_step_pure l v : is_go_step_pure ArrayAppend (ArrayV l, v) (ArrayV $ l ++ [v])
+| array_set_step_pure ty V n (l : array.t ty V n) (v : V) (i : w64) :
+  is_go_step_pure ArraySet (#l, (#i, #v))%V #(array.mk ty n (<[sint.nat i := v ]> (array.arr l)))
 | array_length_step_pure l :
   is_go_step_pure ArrayLength (ArrayV l)
     (if decide (length l < 2^63) then
@@ -1301,6 +1303,7 @@ Inductive leaf_type : Type :=
   | FfiValLeaf (val : ffi_val)
   | GoInstructionLeaf (val : go_instruction)
   | GoStringLeaf (val : go_string)
+  | ZLeaf (val : Z)
   | PrimOpArgs0Leaf (val : prim_op args0)
   | PrimOpArgs1Leaf (val : prim_op args1)
   | PrimOpArgs2Leaf (val : prim_op args2)
@@ -1369,6 +1372,7 @@ with enc_keyed_element (v : keyed_element) : tree leaf_type :=
 with enc_key (v : key) : tree leaf_type :=
   match v with
   | KeyField arg1 => Node "KeyField" [Leaf $ GoStringLeaf arg1]
+  | KeyInteger arg1 => Node "KeyInteger" [Leaf $ ZLeaf arg1]
   | KeyExpression arg1 => Node "KeyExpression" [enc_expr arg1]
   | KeyLiteralValue arg1 => Node "KeyLiteralValue" (enc_keyed_element <$> arg1)
   end
@@ -1446,6 +1450,7 @@ with dec_keyed_element (v : tree leaf_type) : keyed_element :=
 with dec_key (v : tree leaf_type) : key :=
   match v with
   | Node "KeyField" [Leaf (GoStringLeaf arg1)] => KeyField arg1
+  | Node "KeyInteger" [Leaf (ZLeaf arg1)] => KeyInteger arg1
   | Node "KeyExpression" [arg1] => KeyExpression (dec_expr arg1)
   | Node "KeyLiteralValue" arg1 => KeyLiteralValue (dec_keyed_element <$> arg1)
   | _ => inhabitant
