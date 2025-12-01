@@ -773,7 +773,7 @@ Definition checkAuditVrfⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: evidence.go:31:19 *)
+(* go: evidence.go:32:19 *)
 Definition evidVrf__checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -795,7 +795,7 @@ Definition evidVrf__checkⁱᵐᵖˡ : val :=
      let: "$a1" := (![#sliceT] (struct.field_ref #evidVrf #"vrfPk1"%go (![#ptrT] "e"))) in
      (func_call #bytes.Equal) "$a0" "$a1")).
 
-(* go: evidence.go:41:20 *)
+(* go: evidence.go:42:20 *)
 Definition evidLink__checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -822,7 +822,7 @@ Definition evidLink__checkⁱᵐᵖˡ : val :=
 (* Check returns an error if the evidence does not check out.
    otherwise, it proves that the server was dishonest.
 
-   go: evidence.go:53:16 *)
+   go: evidence.go:54:16 *)
 Definition Evid__Checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "e" := (mem.alloc "e") in
