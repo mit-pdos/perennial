@@ -55,7 +55,17 @@ Definition own ptr obj : iProp Σ :=
     "#His_hist" ∷ mono_list_lb_own c.(server.cfg.histγ) hist ∗
     "%His_digs" ∷ ⌜hist.*1 = digs⌝ ∗
     "%Hcut" ∷ ⌜cut = None⌝
-    end.
+    end ∗
+  True.
+
+(*
+  (* TODO: treat ServFull and ServSig separately? *)
+  "#Hgs_chain" ∷ (match obj.(servGood) with None => True | Some cfg =>
+    ∃ m,
+    mono_list_idx_own obj.(serv).(servInfo.sigpredγ).(sigpred.cfg.chain)
+      (uint.nat obj.(epoch))
+      (sigpred.entry.mk obj.(dig) obj.(link) m)).
+*)
 
 End proof.
 End epoch.

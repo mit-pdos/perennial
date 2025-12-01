@@ -323,7 +323,7 @@ Definition CallStartⁱᵐᵖˡ : val :=
     do:  ("vrf" <-[#ptrT] "$r0");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "chain", ![#ptrT] "vrf", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -421,13 +421,13 @@ Definition CallHistoryⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r2");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "chainProof", ![#sliceT] "linkSig", ![#sliceT] "hist", ![#ptrT] "bound", ![#ktcore.Blame] "err")
     else do:  #());;;
     (if: ![#boolT] (struct.field_ref #HistoryReply #"Err"%go (![#ptrT] "r"))
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "chainProof", ![#sliceT] "linkSig", ![#sliceT] "hist", ![#ptrT] "bound", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -481,13 +481,13 @@ Definition CallAuditⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r2");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "p", ![#ktcore.Blame] "err")
     else do:  #());;;
     (if: ![#boolT] (struct.field_ref #AuditReply #"Err"%go (![#ptrT] "r"))
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "p", ![#ktcore.Blame] "err")
     else do:  #());;;
