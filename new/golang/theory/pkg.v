@@ -7,7 +7,7 @@ Set Default Proof Mode "Classic".
 Set Default Proof Using "Type".
 
 Section init_defns.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoContext}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Definition is_init (σ : lang.state) : Prop :=
   σ.(go_state).(package_state) = ∅.
@@ -40,7 +40,7 @@ Qed.
 End init_defns.
 
 Section package_init_and_defined.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {go_ctx : GoContext}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 (** [IsPkgInit] connects pkg names (really the full package path) to their
     post-initialization predicate. There should only be one instance for each
@@ -212,8 +212,9 @@ Ltac iPkgInit :=
 
 Section package_init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-Context `{!GoContext}.
+Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+
+Local Set Default Proof Using "Type core_sem pre_sem".
 
 #[local] Transparent own_initializing.
 Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init is_pkg_init :

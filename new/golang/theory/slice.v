@@ -6,7 +6,7 @@ Transparent slice.for_range.
 
 Module slice.
 Section def.
-Context `{GoContext}.
+Context `{GoLocalContext}.
 Definition slice (sl : slice.t) (et : go.type) (n1 n2 : u64) : slice.t :=
   slice.mk (slice_index_ref et (sint.Z n1) sl) (word.sub n2 n1) (word.sub sl.(slice.cap) n1).
 
@@ -22,7 +22,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {array_sem : go.ArraySemantics}
   {slice_sem : go.SliceSemantics}.
 
-Definition own_slice_def {V} t `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
+Definition own_slice_def {V} t `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   (s : slice.t) (dq : dfrac) (vs : list V)
   : iProp Σ :=
   (s.(slice.ptr) ↦{dq} (array.mk t (sint.Z s.(slice.len)) vs)) ∗
@@ -35,7 +35,7 @@ Global Arguments own_slice {_} (t) {_ _ _} (s dq vs).
 Notation "s ↦[ t ]* dq vs" := (own_slice t s dq vs)
                             (at level 20, dq custom dfrac at level 50, format "s  ↦[ t ]* dq  vs").
 
-Context `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 Implicit Type (vs : list V).
 
 Definition own_slice_cap_def (s : slice.t) (dq : dfrac) : iProp Σ :=
@@ -307,7 +307,7 @@ Proof.
   iIntros (?????) "HΦ". rewrite go.cap_slice. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
-Context `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 Local Instance make3_unfold t : FuncUnfold go.make3 [go.SliceType t] _ :=
   ltac:(constructor; apply go.make3_slice).

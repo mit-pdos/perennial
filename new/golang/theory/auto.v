@@ -203,16 +203,17 @@ Tactic Notation "wp_auto_lc" int(x) :=
   let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
   f x.
 
-Lemma true_neq_false `{ffi: ffi_syntax} :
-  #true ≠ #false.
+Section bool_lemmas.
+Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+Lemma true_neq_false : #true ≠ #false.
 Proof. intros ?%(inj into_val); congruence. Qed.
-Lemma false_neq_true `{ffi: ffi_syntax} :
-  #false ≠ #true.
+Lemma false_neq_true : #false ≠ #true.
 Proof. intros ?%(inj into_val); congruence. Qed.
 
 Hint Resolve true_neq_false false_neq_true : core.
 
-Lemma if_decide_bool_eq_true `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
+Lemma if_decide_bool_eq_true {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #true) then x
   else y) = (if bool_decide P then x else y).
 Proof.
@@ -221,7 +222,7 @@ Proof.
   - rewrite decide_False //.
 Qed.
 
-Lemma if_decide_bool_eq_false `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
+Lemma if_decide_bool_eq_false {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #false) then x
   else y) = (if bool_decide P then y else x).
 Proof.
@@ -234,7 +235,7 @@ Qed.
 the common case where the value produced is a [bool_decide] expression (which is
 how GooseLang should work). I'm not sure how to integrate this into automation,
 since this only comes up after reasoning about the loop condition. *)
-Lemma if_decide_bool_eq `{!ffi_syntax} {A} `{!Decision P} (x y z: A) :
+Lemma if_decide_bool_eq {A} `{!Decision P} (x y z: A) :
   (if decide (#(bool_decide P) = #true) then x
   else if decide (#(bool_decide P) = #false) then y
       else z) = (if bool_decide P then x else y).
@@ -246,24 +247,28 @@ Qed.
 
 (* This pattern comes up in the postcondition from [wp_for] if the condition is
 the constant [#true] (for infinite loops using [break] for example) *)
-Lemma if_decide_eq `{!ffi_syntax} {A} (b: bool) (x y: A) :
+Lemma if_decide_eq {A} (b: bool) (x y: A) :
   (if decide (#b = #b) then x else y) = x.
 Proof. rewrite decide_True //. Qed.
 
 (* TODO: is there a systematic way to avoid seeing these? *)
-Lemma if_decide_true_eq_false `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_true_eq_false {A} (x y: A) :
   (if decide (#true = #false) then x else y) = y.
 Proof. rewrite decide_False //. Qed.
-Lemma if_decide_false_eq_true `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_false_eq_true {A} (x y: A) :
   (if decide (#false = #true) then x else y) = y.
 Proof. rewrite decide_False //. Qed.
 
-Lemma if_decide_true_neq_false `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_true_neq_false {A} (x y: A) :
   (if decide (#true ≠ #false) then x else y) = x.
 Proof. rewrite decide_True //. Qed.
-Lemma if_decide_false_neq_true `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_false_neq_true {A} (x y: A) :
   (if decide (#false ≠ #true) then x else y) = x.
 Proof. rewrite decide_True //. Qed.
+
+End bool_lemmas.
+
+Global Hint Resolve true_neq_false false_neq_true : core.
 
 Ltac cleanup_bool_decide :=
   rewrite ?if_decide_bool_eq_true ?if_decide_bool_eq_false
@@ -331,8 +336,8 @@ Global Instance settable_foo : Settable foo_t :=
 
 Definition foo_impl : go.type := go.StructType [(go.FieldDecl "a"%go go.uint64); (go.EmbeddedField "b"%go go.string)].
 Definition foo : go.type := go.Named "foo"%go [].
-Axiom into_val_foo : IntoVal foo_t.
-Global Existing Instance into_val_foo.
+Axiom zero_val_foo : ZeroVal foo_t.
+Global Existing Instance zero_val_foo.
 
 Class foo_type_assumptions : Prop :=
   {

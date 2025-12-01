@@ -7,9 +7,14 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Class ArraySemantics `{!go.CoreComparisonDefinition} :=
 {
-  #[global]
-  equals_array n t (H : go.IsComparable t) ::
-    go.IsComparable (go.ArrayType n t);
+  #[global] equals_array n t (H : go.IsComparable t) :: go.IsComparable (go.ArrayType n t);
+  array_set_eq ty ty' V V' n n' (a : array.t ty V n) (a' : array.t ty' V' n')
+     v v' (i : nat) :
+     #a = #a' → #v = #v' →
+     #(array.mk ty n $ <[i:=v]> (array.arr a)) = #(array.mk ty' n' $ <[i:=v']> (array.arr a'));
+
+  #[global] go_zero_val_eq_array ty V n `{!ZeroVal V} `{!go.GoZeroValEq ty V} ::
+    go.GoZeroValEq (go.ArrayType n ty) (array.t ty V n);
 
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
   load_array n elem_type :
@@ -20,11 +25,11 @@ Class ArraySemantics `{!go.CoreComparisonDefinition} :=
     else
       (λ: "l",
          (rec: "recur" "n" :=
-            if: "n" =⟨go.int⟩ #(W64 0) then (ArrayV [])
+            if: "n" =⟨go.int⟩ #(W64 0) then go_zero_val (go.ArrayType n elem_type)
             else let: "array_so_far" := "recur" ("n" - #(W64 1)) in
                  let: "elem_addr" := IndexRef (go.ArrayType n elem_type) ("l", "n" - #(W64 1)) in
                  let: "elem_val" := GoLoad elem_type "elem_addr" in
-                 ArrayAppend ("array_so_far", "elem_val")
+                 ArraySet ("array_so_far", ("n" - #(W64 1), "elem_val"))
          ) #(W64 n))%V;
   store_array n elem_type :
     store (go.ArrayType n elem_type) =
@@ -34,19 +39,33 @@ Class ArraySemantics `{!go.CoreComparisonDefinition} :=
                 let elem_addr := IndexRef (go.ArrayType n elem_type) ("l", #(W64 j)) in
                 let elem_val := Index (go.ArrayType n elem_type) ("v", #(W64 n)) in
                 GoStore elem_type (elem_addr, elem_val))
-             (ArrayV []) (seqZ 0 n)
+             (#()) (seqZ 0 n)
     )%V;
 
   index_ref_array n elem_type i l :
     index_ref (go.ArrayType n elem_type) i #l = #(array_index_ref elem_type i l);
-  index_array n elem_type i l v (Hinrange : l !! (Z.to_nat i) = Some v):
-    index (go.ArrayType n elem_type) i (ArrayV l) = (Val v);
+  index_array n elem_type i V (a : array.t elem_type V n) v
+    (Hinrange : (array.arr a) !! (Z.to_nat i) = Some v):
+    index (go.ArrayType n elem_type) i #a = #v;
 
   (* this only supports unkeyed array literals; goose will unfold them for now. *)
-  composite_literal_array n elem_type (vs : list val) :
-    composite_literal (go.ArrayType n elem_type) (ArrayV vs) =
-    (#();; ArrayV vs)%E;
-
+  composite_literal_array n elem_type kvs :
+    composite_literal (go.ArrayType n elem_type) (LiteralValue kvs) =
+    (foldl (λ '(cur_index, expr_so_far) ke,
+             match ke with
+             | KeyedElement None (ElementExpression e) =>
+                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), e))%E)
+             | KeyedElement None (ElementLiteralValue l) =>
+                 (cur_index + 1,
+                    ArraySet (expr_so_far, (#(W64 cur_index), CompositeLiteral elem_type $ LiteralValue l))%E)
+             | KeyedElement (Some (KeyInteger cur_index)) (ElementExpression e) =>
+                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), e))%E)
+             | KeyedElement (Some (KeyInteger cur_index)) (ElementLiteralValue l) =>
+                 (cur_index + 1,
+                    ArraySet (expr_so_far, (#(W64 cur_index), CompositeLiteral elem_type $ LiteralValue l))%E)
+             | _ => (0, Panic "invalid array literal")
+             end
+      ) (0, Val (go_zero_val (go.ArrayType n elem_type))) kvs).2;
   array_index_ref_add t i j l :
     array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);
 }.

@@ -249,15 +249,6 @@ Global Instance wp_Index t (j : w64) (v : val) :
   PureWp True (Index t (v, #j)%V) (index t (sint.Z j) v).
 Proof. solve_pure. Qed.
 
-Global Instance wp_ArrayAppend vs v :
-  PureWp True (ArrayAppend (ArrayV vs, v)%V) (ArrayV (vs ++ [v])).
-Proof. solve_pure. Qed.
-
-Global Instance wp_ArrayLength vs :
-  PureWp True (ArrayLength (ArrayV vs))
-      (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ())).
-Proof. solve_pure. Qed.
-
 Local Lemma bool_decide_inj `(f : A → B) `{!Inj eq eq f} a a' `{!EqDecision A}
   `{!EqDecision B}
   : bool_decide (f a = f a') = bool_decide (a = a').

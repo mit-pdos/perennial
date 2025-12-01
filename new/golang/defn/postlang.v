@@ -101,21 +101,6 @@ Definition AllocValue_def t : val :=
 Program Definition AllocValue := sealed AllocValue_def.
 Definition AllocValue_unseal : AllocValue = _ := seal_eq _.
 
-Definition ElementListNil_def (key_type : option go.type) (elem_type : go.type) : val :=
-  λ: <>, ArrayV [].
-Program Definition ElementListNil := sealed ElementListNil_def.
-Definition ElementListNil_unseal : ElementListNil = _ := seal_eq _.
-
-Definition ElementListApp_def : val :=
-  λ: "v" "l", ArrayAppend ("l", "v").
-Program Definition ElementListApp := sealed ElementListApp_def.
-Definition ElementListApp_unseal : ElementListApp = _ := seal_eq _.
-
-Definition StructElementListNil_def : val :=
-  λ: <>, ArrayV [].
-Program Definition StructElementListNil := sealed StructElementListNil_def.
-Definition StructElementListNil_unseal : StructElementListNil = _ := seal_eq _.
-
 (* Here's an example exhibiting struct comparison subtleties:
 
 ```

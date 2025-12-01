@@ -1,101 +1,39 @@
 From New.golang.defn Require Export array.
 From New.golang.theory Require Export predeclared.
 
-Section element_list_proof.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics}.
-
-Definition unkeyed_element_list V := list V.
-Global Instance unkeyed_element_list_into_val V
-  `{!IntoVal V} : IntoVal (unkeyed_element_list V) :=
-  {|
-    into_val_def vs := ArrayV ((λ v, #v) <$> vs ) ;
-    zero_val := [];
-  |}.
-
-Global Instance pure_wp_unkeyed_ElementListNil elem_type
-           `{!IntoVal V} `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
-  PureWp True (go.ElementListNil None elem_type #())
-    #([] : unkeyed_element_list V).
-Proof.
-  pure_wp_start. rewrite go.ElementListNil_unseal. wp_call_lc "?". rewrite into_val_unseal.
-  by iApply "HΦ".
-Qed.
-
-Global Instance pure_wp_unkeyed_ElementListApp `{!IntoVal V} (v : V)
-  (l : unkeyed_element_list V) :
-  PureWp True (go.ElementListApp #v #l) #(l ++ [v]).
-Proof.
-  pure_wp_start. rewrite go.ElementListApp_unseal. wp_call_lc "?".
-  rewrite [in (into_val (V:=unkeyed_element_list _))]into_val_unseal. simpl.
-  wp_pures. rewrite fmap_app /=. by iApply "HΦ".
-Qed.
-
-Definition element_list K V := list (K * V).
-Global Instance element_list_into_val K V
-  `{!IntoVal K} `{!IntoVal V} : IntoVal (element_list K V) :=
-  {|
-    into_val_def kvs := ArrayV ((λ '(k,v), (#k,#v)%V) <$> kvs ) ;
-    zero_val := [];
-  |}.
-
-Global Instance pure_wp_ElementListNil key_type elem_type
-          `{!IntoVal K} `{!IntoVal V}
-          `{!TypedPointsto K} `{!TypedPointsto V}
-          `{!IntoValTyped K key_type} `{!IntoValTyped V elem_type} :
-  PureWp True (go.ElementListNil (Some key_type) elem_type #())
-    #([] : element_list K V).
-Proof.
-  pure_wp_start. rewrite go.ElementListNil_unseal. wp_call_lc "?". rewrite into_val_unseal.
-  by iApply "HΦ".
-Qed.
-
-Global Instance pure_wp_ElementListApp `{!IntoVal K} `{!IntoVal V} (k : K) (v : V)
-  (l : element_list K V) :
-  PureWp True (go.ElementListApp (#k, #v)%V #l)
-      #(l ++ [(k,v)]).
-Proof.
-  pure_wp_start. rewrite go.ElementListApp_unseal. wp_call_lc "?".
-  rewrite [in (into_val (V:=element_list _ _))]into_val_unseal. simpl.
-  wp_pures. rewrite fmap_app /=. by iApply "HΦ".
-Qed.
-
-Definition struct_element_list := list val.
-Global Instance struct_element_list_into_val :
-  IntoVal (struct_element_list) :=
-  {|
-    into_val_def vs := ArrayV (vs ) ;
-    zero_val := [];
-  |}.
-
-Global Instance pure_wp_StructElementListNil  :
-  PureWp True (go.StructElementListNil #())
-    #([] : struct_element_list).
-Proof.
-  pure_wp_start. rewrite go.StructElementListNil_unseal. wp_call_lc "?". rewrite into_val_unseal.
-  by iApply "HΦ".
-Qed.
-
-Global Instance pure_wp_StructElementListApp (v : val)
-  (l : struct_element_list) :
-  PureWp True (go.ElementListApp v #l) #(l ++ [v]).
-Proof.
-  pure_wp_start. rewrite go.ElementListApp_unseal. wp_call_lc "?".
-  rewrite [in (into_val (V:=struct_element_list))]into_val_unseal. simpl.
-  wp_pures. by iApply "HΦ".
-Qed.
-
-End element_list_proof.
-
 Section lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {core_sem : go.CoreSemantics}
   {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics}.
 
-Context `{!IntoVal V}.
+Context `{!ZeroVal V} `{!go.GoZeroValEq t V}.
 Context `{!TypedPointsto (Σ:=Σ) V}.
 Context `{!IntoValTyped V t}.
+Context `{!Inj eq eq (into_val (V:=V))}.
+
+Local Ltac solve_pure :=
+  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
+  [ intros; repeat econstructor | ];
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
+  iIntros "H"; iIntros "$ !>"; by iApply "HΦ".
+
+Global Instance wp_ArraySet n (vs : array.t t V n) (i : w64) (v : V) :
+  PureWp True (ArraySet (#vs, (#i, #v))%V)
+    (# (array.mk t n (<[Z.to_nat (word.signed i):=v]> (array.arr vs)))).
+Proof.
+  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
+  [ intros; repeat econstructor | ].
+  iNext; iIntros "* %Hstep".
+  inv Hstep. inv Hpure.
+  iIntros "H"; iIntros "$ !>".
+  erewrite go.array_set_eq; first (by iApply "HΦ"); done.
+Qed.
+
+Global Instance wp_ArrayLength vs :
+  PureWp True (ArrayLength (ArrayV vs))
+      (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ())).
+Proof. solve_pure. Qed.
 
 Program Global Instance typed_pointsto_array n :
   TypedPointsto (array.t t V n) :=
@@ -126,6 +64,20 @@ Proof.
   by simplify_eq.
 Qed.
 
+Lemma array_len ptr dq n vs :
+  ptr ↦{dq} (array.mk t n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
+Proof.
+  rewrite typed_pointsto_unseal. simpl. iIntros "[% _] !%". done.
+Qed.
+
+Lemma seqZ_succ start n :
+  0 ≤ n →
+  seqZ start (Z.succ n) = seqZ start n ++ [start + n].
+Proof.
+  intros Hle. rewrite /seqZ Z2Nat.inj_succ; last lia.
+  rewrite seq_S fmap_app /=. f_equal. f_equal. lia.
+Qed.
+
 Global Instance into_val_typed_array n : IntoValTyped (array.t t V n) (go.ArrayType n t).
 Proof.
   split.
@@ -133,54 +85,58 @@ Proof.
   - iIntros "* Hl HΦ".
     rewrite go.load_array. case_decide.
     { wp_pures. wp_apply wp_AngelicExit. }
-    wp_pure. wp_pure. rewrite typed_pointsto_unseal /=.
-    iDestruct "Hl" as "[%Hlen Hl]".
-
+    wp_pure. wp_pure.
     assert (∃ m, n = m ∧ 0 ≤ m ≤ n) as (m & Heq & Hm) by (exists n; lia).
     rewrite [in #(W64 n)]Heq.
-    iEval (rewrite <- Heq, into_val_unseal) in "HΦ".
-    simpl. destruct v as [v]. simpl in *.
-    replace (v) with (take (Z.to_nat m) v).
-    2:{ rewrite take_ge //. lia. }
-    clear Heq.
+    simpl. destruct v as [vs]. simpl in *.
+    iDestruct (array_len with "Hl") as "%Hlen".
+    iApply (wp_wand _ _ _
+                    (λ v, ∃ vs' ,
+                        "Hl" ∷ l ↦{dq} array.mk t n vs ∗
+                        "->" ∷ ⌜ v = #(array.mk t n vs') ⌝ ∗
+                        "%Hagree" ∷ ⌜ take (Z.to_nat m) vs = take (Z.to_nat m) vs' ⌝ ∗
+                        "%Hlen'" ∷ ⌜ length vs = length vs' ⌝
+                    )%I
+             with "[-HΦ] [HΦ]").
+    2:{ iIntros "% H". iNamed "H". subst.
+        rewrite !take_ge in Hagree; [|len..]. subst.
+        by iApply "HΦ". }
+    clear Heq Φ.
     set (f := #(func.mk _ _ _)).
-    iLöb as "IH" forall (m Hm Φ).
+    iLöb as "IH" forall (m Hm).
     wp_pures.
     case_bool_decide as Heq.
-    { wp_pures. replace m with 0 by word. rewrite into_val_unseal /=. by iApply "HΦ". }
+    { wp_pures. rewrite go.go_zero_val_eq. simpl. iFrame. iPureIntro.
+      replace m with 0 by word. setoid_rewrite take_0. eexists _; split; first done.
+      split; [done|len]. }
     wp_pure. wp_pure. set (m':=m-1).
     replace (word.sub _ _) with (W64 m') by word.
-    replace (Z.to_nat m) with (S (Z.to_nat m'))%nat by word.
-    pose proof (list_lookup_lt v (Z.to_nat m')) as [ve Hlookup]; first word.
+    progress replace (Z.to_nat m) with (S (Z.to_nat m'))%nat by word.
+    pose proof (list_lookup_lt vs (Z.to_nat m')) as [ve Hlookup]; first word.
     erewrite take_S_r; last done.
-    rewrite big_sepL_app /=. iDestruct "Hl" as "(Hl & Hlast & _)".
-    wp_apply ("IH" with "[] Hl"); first word. iIntros "[_ Hl]".
-    wp_pures. rewrite go.index_ref_array. wp_pures. wp_apply (wp_load with "[Hlast]").
-    { iExactEq "Hlast". f_equal. f_equal. rewrite length_take. word. }
-    iIntros "Hlast". rewrite length_app length_take. wp_pures. rewrite fmap_app /=.
-    iApply "HΦ". iFrame. iSplitR; first word.
-    iSplitL; last done. iExactEq "Hlast". f_equal. f_equal. word.
+    iSpecialize ("IH" with "[] Hl"); last wp_apply (wp_wand with "IH"); first word.
+    iIntros "% H". iNamed "H". wp_pures. rewrite go.index_ref_array. wp_pures.
+    rewrite typed_pointsto_unseal.
+    iDestruct "Hl" as "[% Hl]".
+    iDestruct (big_sepL_lookup_acc with "Hl") as "[H Hl]"; first done.
+    replace (sint.Z (word.sub _ _)) with m' by word.
+    replace (Z.of_nat (Z.to_nat m')) with m' by word.
+    wp_apply (wp_load with "H"). iIntros "H". iSpecialize ("Hl" with "H").
+    wp_pures. iExists _. iFrame. iPureIntro.
+    split_and!; try done; last len.
+    erewrite take_S_r.
+    2:{ replace (sint.nat _) with (Z.to_nat m') by word.
+        rewrite list_lookup_insert_eq //.
+        word. }
+    f_equal. rewrite take_insert_ge; last len. done.
   - admit.
+    Unshelve. Fail idtac.
 Admitted.
-
-Lemma seqZ_succ start n :
-  0 ≤ n →
-  seqZ start (Z.succ n) = seqZ start n ++ [start + n].
-Proof.
-  intros H. rewrite /seqZ Z2Nat.inj_succ; last lia.
-  rewrite seq_S fmap_app /=. f_equal. f_equal. lia.
-Qed.
 
 Lemma array_empty ptr dq :
   ⊢ ptr ↦{dq} (array.mk t 0 []).
 Proof.
   rewrite typed_pointsto_unseal. simpl. iPureIntro. done.
-Qed.
-
-Lemma array_len ptr dq n vs :
-  ptr ↦{dq} (array.mk t n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
-Proof.
-  rewrite typed_pointsto_unseal. simpl. iIntros "[% _] !%". done.
 Qed.
 
 Lemma array_acc p (i : Z) dq n (a : array.t t V n) (v: V) :
@@ -227,13 +183,32 @@ Proof.
     f_equal. len.
 Qed.
 
-Global Instance pure_wp_array_composite_literal `{!IntoVal V} elem_type n
-  (el : unkeyed_element_list V) :
-  PureWp True (composite_literal (go.ArrayType n elem_type) #el)
-         #(array.mk elem_type n el).
+Global Instance pure_wp_array_composite_literal elem_type n (kvs : list keyed_element) :
+  PureWp True (CompositeLiteral (go.ArrayType n elem_type) (LiteralValue kvs))
+    (foldl (λ '(cur_index, expr_so_far) (ke : keyed_element),
+              match ke with
+              | KeyedElement (Some (KeyInteger cur_index)) (ElementExpression e) =>
+                  (cur_index + 1, ArraySet (expr_so_far, (# (W64 cur_index), e))%E)
+              | KeyedElement (Some (KeyInteger cur_index)) (ElementLiteralValue l) =>
+                  (cur_index + 1,
+                     ArraySet
+                       (expr_so_far, (# (W64 cur_index), CompositeLiteral elem_type (LiteralValue l)))%E)
+              | KeyedElement None (ElementExpression e) =>
+                  (cur_index + 1, ArraySet (expr_so_far, (# (W64 cur_index), e))%E)
+              | KeyedElement None (ElementLiteralValue l) =>
+                  (cur_index + 1,
+                     ArraySet
+                       (expr_so_far, (# (W64 cur_index), CompositeLiteral elem_type (LiteralValue l)))%E)
+              | _ => (0, Panic "invalid array literal")
+              end)
+       (0, Val $ go_zero_val (go.ArrayType n elem_type)) kvs).2.
 Proof.
-  pure_wp_start. rewrite into_val_unseal. simpl.
-  rewrite go.composite_literal_array. wp_pure_lc "?". wp_pures. by iApply "HΦ".
+  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
+  [ intros; repeat econstructor | ].
+  iNext; iIntros "* %Hstep".
+  inv Hstep. inv Hpure.
+  iIntros "H"; iIntros "$ !>".
+  rewrite go.composite_literal_array. by iApply "HΦ".
 Qed.
 
 Global Instance pure_wp_slice_array elem_type n p low high :
