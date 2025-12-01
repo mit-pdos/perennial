@@ -9,14 +9,13 @@ From New.proof.github_com.sanjit_bhat.pav.ktcore_proof Require Import
 
 Module ktcore.
 Import serde.ktcore.
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Section blame.
+(* Blame is defined completely outside separation logic. *)
 
 Inductive BlameTys :=
-  | BlameServSig
-  | BlameServFull
-  | BlameAdtrSig
-  | BlameAdtrFull
+  | BlameServ
+  | BlameAdtr
   | BlameClients
   | BlameUnknown.
 
@@ -28,9 +27,6 @@ Global Existing Instance BlameTys_Countable.
 
 Definition Blame := gset BlameTys.
 
-Axiom Blame_IntoVal : IntoVal Blame.
-Global Existing Instance Blame_IntoVal.
-
 (* interp maps parties to is_good flags. reqs for establishing BlameSpec:
 - interp has flags for everyone in err gset.
 - it can't be the case that all err flags are true. *)
@@ -38,6 +34,38 @@ Definition BlameSpec (err : Blame) (interp : gmap BlameTys bool) :=
   err = ∅ ∨
   err = {[ BlameUnknown ]} ∨
   (err ⊆ dom interp ∧ ¬ ∀ p, p ∈ err → interp !! p = Some true).
+
+End blame.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Axiom Blame_IntoVal : IntoVal Blame.
+Global Existing Instance Blame_IntoVal.
+
+Lemma rw_BlameNone :
+  ktcore.BlameNone = # (∅ : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameServ :
+  # (W64 1) = # ({[ BlameServ ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameAdtr :
+  # (W64 2) = # ({[ BlameAdtr ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameClients :
+  # (W64 4) = # ({[ BlameClients ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameUnknown :
+  # (W64 8) = # ({[ BlameUnknown ]} : Blame).
+Proof. Admitted.
+
+Lemma rw_BlameServClients :
+  # (W64 5) = # ({[ BlameServ; BlameClients ]} : Blame).
+Proof. Admitted.
 
 Lemma blame_none interp : BlameSpec ∅ interp.
 Proof. rewrite /BlameSpec. naive_solver. Qed.
