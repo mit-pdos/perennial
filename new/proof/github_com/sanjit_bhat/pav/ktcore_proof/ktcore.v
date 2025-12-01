@@ -39,19 +39,6 @@ Definition BlameSpec (err : Blame) (interp : gmap BlameTys bool) :=
 
 End blame.
 
-Section misc.
-Context {PROP : bi} `{!BiFUpd PROP}.
-
-(* this helps proving [BlameSpec] when we need to open invs
-after learning that a party is good. *)
-Lemma fupd_not_prop P `{Decision P} : (⌜P⌝ ={⊤}=∗ False : PROP) ⊢ |={⊤}=> ¬ ⌜P⌝.
-Proof.
-  iIntros "H".
-  destruct (decide P); [|done].
-  by iMod ("H" with "[//]").
-Qed.
-End misc.
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 

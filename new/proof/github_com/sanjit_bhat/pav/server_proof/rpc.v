@@ -10,15 +10,9 @@ From New.proof.github_com.sanjit_bhat.pav.server_proof Require Import
 Notation HistoryRpc := 2 (only parsing).
 
 (* notes:
-- only change is that some of these specs return Blame (not bool) err.
 - BlameUnknown is like giving up.
 it gives the caller a trivial postcond.
-since the req might not have even hit the serv, it's not in front of a Q.
-- the postcond form with BlameUnknown is:
-(∀ σ, Q σ -∗ err = other ∗ normal postcond -∗ Φ) ∗
-(err = BlameUnknown -∗ Φ).
-the client must prove both postconds.
-the function can decide which postcond to use.
+since the request might not have even hit the serv, it's not in front of a Q.
 - the specs implicitly assume a good network pipeline to good serv.
 under those conditions, the RPC client should encode args correctly,
 the RPC server should decode args correctly,
@@ -52,9 +46,6 @@ Lemma wp_CallPut s γ uid sl_pk pk ver :
   @! server.CallPut #s #uid #sl_pk #ver
   {{{ RET #(); True }}}.
 Proof. Admitted.
-
-Definition option_bool {A} (mx : option A) :=
-  match mx with None => false | _ => true end.
 
 Lemma wp_History_cli_call (Q : cfg.t → state.t → iProp Σ)
     s γ sl_arg d0 arg ptr_reply (x : slice.t) :
@@ -204,7 +195,7 @@ Proof.
     iApply ktcore.blame_one.
     (* instead of using [fupd_not_prop], another option is to change
     [BlameSpec] to allow proving contra under fupd. *)
-    iApply ktcore.fupd_not_prop.
+    iApply fupd_not_prop.
     iIntros (?).
     case_match; try done.
     iNamed "Hgood".
