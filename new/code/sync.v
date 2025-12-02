@@ -301,7 +301,7 @@ Definition RWMutex : go_type := structT [
 #[global] Typeclasses Opaque RWMutex.
 #[global] Opaque RWMutex.
 
-Definition rwmutexMaxReaders : Z := 1073741824.
+Definition rwmutexMaxReaders : Z := 2147483647.
 
 (* RLock locks rw for reading.
 
