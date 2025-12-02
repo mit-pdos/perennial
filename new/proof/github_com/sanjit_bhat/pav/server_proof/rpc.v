@@ -114,9 +114,7 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
       ∃ entry,
       let pks := entry.2 !!! uid in
       "#Hidx" ∷ mono_list_idx_own cfg.(cfg.histγ) (uint.nat prevEpoch) entry ∗
-      (* TODO: weaken. Get caller passes prevVerLen=0,
-      which should trivially satisfy this precond. *)
-      "%Hver" ∷ ⌜length pks = uint.nat prevVerLen⌝ end
+      "%Hver" ∷ ⌜uint.nat prevVerLen ≤ length pks⌝ end
   }}}
   @! server.CallHistory #s #uid #prevEpoch #prevVerLen
   {{{
@@ -222,7 +220,9 @@ Proof.
         iFrame "H". }
       { word. }
       iPureIntro. simpl in *.
-      rewrite Hver in Hmono. word. }
+      remember (length (entry.2 !!! _)) as w.
+      rewrite -Heqw in Hmono.
+      word. }
 
   rewrite ktcore.rw_BlameNone.
   iApply "HΦ".
@@ -248,7 +248,11 @@ Proof.
     iFrame "H". }
   { word. }
   iPureIntro. simpl in *.
-  by rewrite Hver in Hmono.
+  remember (length (entry.2 !!! _)) as w0.
+  rewrite -Heqw0 in Hmono.
+  remember (length (lastKeys !!! _)) as w1.
+  rewrite -Heqw1.
+  word.
 Qed.
 
 Lemma wp_CallAudit s γ (prevEpoch : w64) :
