@@ -56,7 +56,8 @@ Definition correct obj γ : iProp Σ :=
   ∃ hist,
   "#His_hist" ∷ mono_list_lb_own γ.(server.cfg.histγ) hist ∗
   "%Heq_digs" ∷ ⌜obj.(digs) = hist.*1⌝ ∗
-  "%Heq_cut" ∷ ⌜obj.(cut) = None⌝.
+  "%Heq_cut" ∷ ⌜obj.(cut) = None⌝ ∗
+  "%Heq_ep" ∷ ⌜length hist = S $ uint.nat obj.(epoch)⌝.
 
 End proof.
 End epoch.
@@ -611,7 +612,7 @@ Lemma wp_Client_Get ptr_c c (uid : w64) :
   ptr_c @ (ptrT.id client.Client.id) @ "Get" #uid
   {{{
     (ep : w64) (isReg : bool) (sl_pk : slice.t) err,
-    RET (#ep, #isReg, #sl_pk, #err);
+    RET (#ep, #isReg, #sl_pk, #(ktcore.blame_to_u64 err));
     "%Hblame" ∷ ⌜ktcore.BlameSpec err
       {[ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good)]}⌝ ∗
     "Herr" ∷
@@ -625,7 +626,20 @@ Lemma wp_Client_Get ptr_c c (uid : w64) :
         "Hclient" ∷ Client.own ptr_c c' ∗
         "%Heq_ep" ∷ ⌜uint.Z ep = (uint.Z c.(Client.last).(epoch.epoch) + length new_digs)%Z⌝)
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@".
+  iNamed "Hclient".
+  iNamed "Hown_serv".
+  iNamed "Hown_last".
+  wp_auto.
+  wp_apply server.wp_CallHistory as "* @".
+  { iFrame "#".
+    case_match; try done.
+    iNamed "Hgood_last".
+    list_elem hist (uint.nat c.(Client.last).(epoch.epoch)) as e.
+    iDestruct (mono_list_idx_own_get with "His_hist") as "$"; [done|].
+    word. }
+Admitted.
 
 End proof.
 End client.

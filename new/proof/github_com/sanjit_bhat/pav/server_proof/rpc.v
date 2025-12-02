@@ -119,7 +119,7 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
   @! server.CallHistory #s #uid #prevEpoch #prevVerLen
   {{{
     sl_chainProof sl_linkSig sl_hist ptr_bound err,
-    RET (#sl_chainProof, #sl_linkSig, #sl_hist, #ptr_bound, #err);
+    RET (#sl_chainProof, #sl_linkSig, #sl_hist, #ptr_bound, #(ktcore.blame_to_u64 err));
     "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServFull:=option_bool γ]}⌝ ∗
     "Herr" ∷ (if decide (err ≠ ∅) then True else
       ∃ chainProof linkSig hist bound,
@@ -265,7 +265,7 @@ Lemma wp_CallAudit s γ (prevEpoch : w64) :
   }}}
   @! server.CallAudit #s #prevEpoch
   {{{
-    sl_proof err, RET (#sl_proof, #err);
+    sl_proof err, RET (#sl_proof, #(ktcore.blame_to_u64 err));
     "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServFull:=option_bool γ]}⌝ ∗
     "Herr" ∷ (if decide (err ≠ ∅) then True else
       ∃ proof,
@@ -296,7 +296,7 @@ Lemma wp_CallStart s γ :
   }}}
   @! server.CallStart #s
   {{{
-    ptr_chain ptr_vrf err, RET (#ptr_chain, #ptr_vrf, #err);
+    ptr_chain ptr_vrf err, RET (#ptr_chain, #ptr_vrf, #(ktcore.blame_to_u64 err));
     "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServFull:=option_bool γ]}⌝ ∗
     "Herr" ∷ (if decide (err ≠ ∅) then True else
       ∃ chain vrf,

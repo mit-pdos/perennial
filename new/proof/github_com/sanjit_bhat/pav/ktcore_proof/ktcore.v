@@ -29,6 +29,8 @@ Global Existing Instance BlameTys_Countable.
 
 Definition Blame := gset BlameTys.
 
+Definition blame_to_u64 (err : Blame) : w64. Admitted.
+
 (* interp maps parties to is_good flags. reqs for establishing BlameSpec:
 - interp has flags for everyone in err gset.
 - it can't be the case that all err flags are true. *)
@@ -42,39 +44,36 @@ End blame.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
-Axiom Blame_IntoVal : IntoVal Blame.
-Global Existing Instance Blame_IntoVal.
-
 Lemma rw_BlameNone :
-  ktcore.BlameNone = # (∅ : Blame).
+  ktcore.BlameNone = # (blame_to_u64 ∅).
 Proof. Admitted.
 
 Lemma rw_BlameServSig :
-  # (W64 1) = # ({[ BlameServSig ]} : Blame).
+  # (W64 1) = # (blame_to_u64 {[ BlameServSig ]}).
 Proof. Admitted.
 
 Lemma rw_BlameServFull :
-  # (W64 2) = # ({[ BlameServFull ]} : Blame).
+  # (W64 2) = # (blame_to_u64 {[ BlameServFull ]}).
 Proof. Admitted.
 
 Lemma rw_BlameAdtrSig :
-  # (W64 4) = # ({[ BlameAdtrSig ]} : Blame).
+  # (W64 4) = # (blame_to_u64 {[ BlameAdtrSig ]}).
 Proof. Admitted.
 
 Lemma rw_BlameAdtrFull :
-  # (W64 8) = # ({[ BlameAdtrFull ]} : Blame).
+  # (W64 8) = # (blame_to_u64 {[ BlameAdtrFull ]}).
 Proof. Admitted.
 
 Lemma rw_BlameClients :
-  # (W64 16) = # ({[ BlameClients ]} : Blame).
+  # (W64 16) = # (blame_to_u64 {[ BlameClients ]}).
 Proof. Admitted.
 
 Lemma rw_BlameUnknown :
-  # (W64 32) = # ({[ BlameUnknown ]} : Blame).
+  # (W64 32) = # (blame_to_u64 {[ BlameUnknown ]}).
 Proof. Admitted.
 
 Lemma rw_BlameServClients :
-  # (W64 18) = # ({[ BlameServFull; BlameClients ]} : Blame).
+  # (W64 18) = # (blame_to_u64 {[ BlameServFull; BlameClients ]}).
 Proof. Admitted.
 
 Lemma blame_none interp : BlameSpec ∅ interp.
