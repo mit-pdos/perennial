@@ -40,7 +40,7 @@ Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
   ∃ sl_dig sl_link sl_sig digs cut,
-  "#Hstruct" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
+  "#Hstruct_epoch" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
   "#Hsl_dig" ∷ sl_dig ↦*□ obj.(dig) ∗
   "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
   "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig) ∗
@@ -55,17 +55,7 @@ Definition own ptr obj : iProp Σ :=
     "#His_hist" ∷ mono_list_lb_own c.(server.cfg.histγ) hist ∗
     "%His_digs" ∷ ⌜hist.*1 = digs⌝ ∗
     "%Hcut" ∷ ⌜cut = None⌝
-    end ∗
-  True.
-
-(*
-  (* TODO: treat ServFull and ServSig separately? *)
-  "#Hgs_chain" ∷ (match obj.(servGood) with None => True | Some cfg =>
-    ∃ m,
-    mono_list_idx_own obj.(serv).(servInfo.sigpredγ).(sigpred.cfg.chain)
-      (uint.nat obj.(epoch))
-      (sigpred.entry.mk obj.(dig) obj.(link) m)).
-*)
+    end.
 
 End proof.
 End epoch.
@@ -85,9 +75,14 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
+Definition uid_inv γ : iProp Σ :=
+  ∃ puts,
+  "Hputs" ∷ mono_list_auth_own γ 1 puts.
+Definition is_uid_inv γ := inv nroot (uid_inv γ).
+
 Definition own ptr obj : iProp Σ :=
   ∃ isPending sl_pendingPk,
-  "Hstruct" ∷ ptr ↦ (client.nextVer.mk obj.(ver) isPending sl_pendingPk) ∗
+  "Hstruct_nextVer" ∷ ptr ↦ (client.nextVer.mk obj.(ver) isPending sl_pendingPk) ∗
   "#Hsl_pendingPk" ∷
     match obj.(pendingPk) with
     | None =>
@@ -97,17 +92,18 @@ Definition own ptr obj : iProp Σ :=
       "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ pk
     end ∗
 
-  "Hown_uid" ∷
-    match obj.(isGoodClis), obj.(servGood) with
-    | true, Some cfg =>
-      ∃ uidγ puts,
-      "%Hlook_uidγ" ∷ ⌜cfg.(server.cfg.uidγ) !! obj.(uid) = Some uidγ⌝ ∗
-      "Hputs" ∷ mono_list_auth_own uidγ 1 puts ∗
-
-      "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
-      "%Hpending" ∷ ⌜∀ pk, (obj.(ver), pk) ∈ puts → obj.(pendingPk) = Some pk⌝
-    | _, _ => True
-    end.
+  "Hown_uid" ∷ match obj.(servGood) with None => True | Some cfg =>
+    ∃ uidγ,
+    "%Hlook_uidγ" ∷ ⌜cfg.(server.cfg.uidγ) !! obj.(uid) = Some uidγ⌝ ∗
+    "HgoodCli" ∷
+      if obj.(isGoodClis)
+      then
+        ∃ puts,
+        "Hputs" ∷ mono_list_auth_own uidγ 1 puts ∗
+        "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
+        "%Heq_pend" ∷ ⌜∀ pk, (obj.(ver), pk) ∈ puts → obj.(pendingPk) = Some pk⌝
+      else
+        "#Huid_inv" ∷ is_uid_inv uidγ end.
 
 End proof.
 End nextVer.
@@ -115,7 +111,6 @@ End nextVer.
 Module serv.
 Record t :=
   mk' {
-    cli: loc;
     vrfSig: list w8;
 
     info: servInfo.t;
@@ -127,8 +122,9 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
-  ∃ sl_sigPk ptr_vrfPk sl_vrfSig,
-  "#Hstruct" ∷ ptr ↦□ (client.serv.mk obj.(cli) sl_sigPk ptr_vrfPk sl_vrfSig) ∗
+  ∃ ptr_cli sl_sigPk ptr_vrfPk sl_vrfSig,
+  "#Hstruct_serv" ∷ ptr ↦□ (client.serv.mk ptr_cli sl_sigPk ptr_vrfPk sl_vrfSig) ∗
+  "#His_rpc" ∷ server.is_Server_rpc ptr_cli obj.(good) ∗
   "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(info).(servInfo.sig_pk) ∗
   "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(info).(servInfo.vrf_pk) ∗
   "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig) ∗
@@ -158,7 +154,7 @@ Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
   ∃ ptr_pend ptr_last ptr_serv,
-  "Hstruct" ∷ ptr ↦ (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
+  "Hstruct_client" ∷ ptr ↦ (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
   "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) ∗
   "#Hown_last" ∷ epoch.own ptr_last obj.(last) ∗
   "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) ∗
@@ -173,6 +169,94 @@ End Client.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
+
+Lemma wp_Client_Put ptr_c c sl_pk pk :
+  {{{
+    is_pkg_init client ∗
+    "Hclient" ∷ Client.own ptr_c c ∗
+    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
+    "%Heq_pend" ∷ ⌜match c.(Client.pend).(nextVer.pendingPk) with None => True
+      | Some pk' => pk = pk' end⌝
+  }}}
+  ptr_c @ (ptrT.id client.Client.id) @ "Put" #sl_pk
+  {{{
+    RET #();
+    let c' := set Client.pend (λ p, set nextVer.pendingPk (λ _, Some pk) p) c in
+    "Hclient" ∷ Client.own ptr_c c'
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hclient".
+  destruct c.
+  iNamed "Hown_pend".
+  destruct pend.
+  iNamed "Hown_serv".
+  destruct serv.
+  destruct last0.
+  simplify_eq/=.
+  wp_auto. simpl.
+  iPersist "c pk".
+  wp_bind (If _ _ _).
+  wp_apply (wp_wand _ _ _
+    (λ v,
+    ∃ sl_pendingPk',
+    "->" ∷ ⌜v = execute_val⌝ ∗
+    "Hstruct_client" ∷ ptr_c ↦ {|
+                                 client.Client.uid' := uid0;
+                                 client.Client.pend' := ptr_pend;
+                                 client.Client.last' := ptr_last;
+                                 client.Client.serv' := ptr_serv
+                               |} ∗
+    "Hstruct_nextVer" ∷ ptr_pend ↦ {|
+                                     client.nextVer.ver' := ver;
+                                     client.nextVer.isPending' := true;
+                                     client.nextVer.pendingPk' := sl_pendingPk'
+                                   |} ∗
+    "#Hsl_pendingPk'" ∷ sl_pendingPk' ↦*□ pk
+    )%I
+    with "[Hstruct_client Hstruct_nextVer]"
+  ) as "* @".
+  { wp_if_destruct.
+    - destruct pendingPk; iNamed "Hsl_pendingPk"; try done.
+      simplify_eq/=.
+      wp_apply bytes.wp_Equal as "_".
+      { iFrame "#". }
+      wp_apply std.wp_Assert.
+      { by case_bool_decide. }
+      by iFrame "∗#".
+    - by iFrame "∗#". }
+
+  destruct servGood; iNamed "Hown_uid".
+  2: {
+    wp_apply (server.wp_CallPut _ None).
+    { iFrame "#". }
+    iApply "HΦ". by iFrame "∗ Hown_last #". }
+  destruct isGoodClis; iNamed "HgoodCli".
+  + iMod (mono_list_auth_own_update_app [(ver, pk)] with "Hputs") as "[Hputs #Hlb]".
+    iDestruct (mono_list_idx_own_get (length puts) with "Hlb") as "#Hidx".
+    { by rewrite lookup_snoc. }
+    wp_apply (server.wp_CallPut _ (Some _)).
+    { iFrame "#%". }
+    iApply "HΦ".
+    iFrame "∗ Hown_last #%". simpl in *.
+    iPureIntro. repeat split; try done.
+    * intros. decompose_list_elem_of; [naive_solver|].
+      by simplify_eq/=.
+    * intros. decompose_list_elem_of; [naive_solver|].
+      by simplify_eq/=.
+  + iApply fupd_wp.
+    iInv "Huid_inv" as ">@" "Hclose".
+    iMod (mono_list_auth_own_update_app [(ver, pk)] with "Hputs") as "[Hputs #Hlb]".
+    iMod ("Hclose" with "[Hputs]") as "_"; [iFrame|].
+    iModIntro.
+    iDestruct (mono_list_idx_own_get (length puts) with "Hlb") as "#Hidx".
+    { by rewrite lookup_snoc. }
+    wp_apply (server.wp_CallPut _ (Some _)).
+    { iFrame "#%". }
+    iApply "HΦ".
+    by iFrame "∗ Hown_last #%".
+Qed.
 
 Lemma wp_checkMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_memb memb :
   {{{
