@@ -301,7 +301,7 @@ Definition RWMutex : go_type := structT [
 #[global] Typeclasses Opaque RWMutex.
 #[global] Opaque RWMutex.
 
-Definition rwmutexMaxReaders : Z := 1073741824.
+Definition rwmutexMaxReaders : Z := -2147483648.
 
 (* RLock locks rw for reading.
 
@@ -411,7 +411,7 @@ Definition RWMutex__rUnlockSlowⁱᵐᵖˡ : val :=
   λ: "rw" "r",
     exception_do (let: "rw" := (mem.alloc "rw") in
     let: "r" := (mem.alloc "r") in
-    (if: (((![#int32T] "r") + #(W32 1)) = #(W32 0)) || (((![#int32T] "r") + #(W32 1)) = #(W32 (- rwmutexMaxReaders)))
+    (if: (((![#int32T] "r") + #(W32 1)) = #(W32 0)) || (((![#int32T] "r") + #(W32 1)) = #(W32 rwmutexMaxReaders))
     then
       do:  ((func_call #race.Enable) #());;;
       do:  (let: "$a0" := #"sync: RUnlock of unlocked RWMutex"%go in
@@ -443,7 +443,7 @@ Definition RWMutex__Lockⁱᵐᵖˡ : val :=
     else do:  #());;;
     do:  ((method_call #(ptrT.id Mutex.id) #"Lock"%go (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
     let: "r" := (mem.alloc (type.zero_val #int32T)) in
-    let: "$r0" := ((let: "$a0" := #(W32 (- rwmutexMaxReaders)) in
+    let: "$r0" := ((let: "$a0" := #(W32 rwmutexMaxReaders) in
     (method_call #(ptrT.id atomic.Int32.id) #"Add"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") + #(W32 rwmutexMaxReaders)) in
     do:  ("r" <-[#int32T] "$r0");;;
     (if: ((![#int32T] "r") ≠ #(W32 0)) && ((let: "$a0" := (![#int32T] "r") in
@@ -488,7 +488,7 @@ Definition RWMutex__TryLockⁱᵐᵖˡ : val :=
       return: (#false)
     else do:  #());;;
     (if: (~ (let: "$a0" := #(W32 0) in
-    let: "$a1" := #(W32 (- rwmutexMaxReaders)) in
+    let: "$a1" := #(W32 rwmutexMaxReaders) in
     (method_call #(ptrT.id atomic.Int32.id) #"CompareAndSwap"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0" "$a1"))
     then
       do:  ((method_call #(ptrT.id Mutex.id) #"Unlock"%go (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
@@ -530,7 +530,7 @@ Definition RWMutex__Unlockⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := #(W32 rwmutexMaxReaders) in
     (method_call #(ptrT.id atomic.Int32.id) #"Add"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") in
     do:  ("r" <-[#int32T] "$r0");;;
-    (if: int_geq (![#int32T] "r") #(W32 rwmutexMaxReaders)
+    (if: int_lt (![#int32T] "r") #(W32 0)
     then
       do:  ((func_call #race.Enable) #());;;
       do:  (let: "$a0" := #"sync: Unlock of unlocked RWMutex"%go in
