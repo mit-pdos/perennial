@@ -341,7 +341,8 @@ Proof.
   iModIntro.
   iApply "HΦ".
   (* TODO[word]: w/o explicitly providing w64,
-  something unfolds w64 to Naive.wrap and Naive.unsigned. *)
+  something unfolds w64 to Naive.wrap and Naive.unsigned,
+  which fails word tactic. *)
   iExists (epoch.mk' (word.add prev.(epoch.epoch) extLen) _ _ _ _ _ _).
   iFrame "Hptr_next #%". simpl in *.
   case_decide as Heq.
