@@ -114,6 +114,8 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
       ∃ entry,
       let pks := entry.2 !!! uid in
       "#Hidx" ∷ mono_list_idx_own cfg.(cfg.histγ) (uint.nat prevEpoch) entry ∗
+      (* TODO: weaken. Get caller passes prevVerLen=0,
+      which should trivially satisfy this precond. *)
       "%Hver" ∷ ⌜length pks = uint.nat prevVerLen⌝ end
   }}}
   @! server.CallHistory #s #uid #prevEpoch #prevVerLen
