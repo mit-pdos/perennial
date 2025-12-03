@@ -10,24 +10,6 @@ From RecordUpdate Require Export RecordSet.
 From Perennial Require Export base.
 Export RecordSetNotations.
 
-Section unfolding_defs.
-Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
-
-Class FuncUnfold f type_args f_impl : Prop :=
-  {
-    func_unfold : #(functions f type_args) = f_impl;
-  }.
-
-Hint Mode FuncUnfold ! ! - : typeclass_instances.
-
-Class MethodUnfold t m m_impl : Prop :=
-  {
-    method_unfold : #(methods t m) = m_impl;
-  }.
-
-Hint Mode MethodUnfold ! ! - : typeclass_instances.
-End unfolding_defs.
-
 Section into_val_defs.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 

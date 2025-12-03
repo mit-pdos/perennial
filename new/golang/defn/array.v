@@ -5,7 +5,7 @@ Section defs.
 Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
-Class ArraySemantics `{!go.CoreComparisonDefinition} :=
+Class ArraySemantics `{!GoSemanticsFunctions} :=
 {
   #[global] equals_array n t (H : go.IsComparable t) :: go.IsComparable (go.ArrayType n t);
   array_set_eq ty ty' V V' n n' (a : array.t ty V n) (a' : array.t ty' V' n')

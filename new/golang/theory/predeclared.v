@@ -90,6 +90,9 @@ Ltac solve_ineq lem :=
   iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
   iIntros "? $ !>"; rewrite lem; iApply "HΦ"; iFrame.
 
+
+TODO: Typeclass for other ops.
+
 Global Instance is_go_eq_uint (v1 v2 : w64) :
   IsGoEq go.uint #v1 #v2 (bool_decide (v1 = v2)).
 Proof. solve_eq go.go_eq_uint. Qed.
@@ -98,7 +101,12 @@ Global Instance wp_le_uint (v1 v2 : w64) :
 Proof. solve_ineq go.le_uint. Qed.
 Global Instance wp_lt_uint (v1 v2 : w64) :
   PureWp True (GoLt go.uint (#v1, #v2)%V) #(bool_decide (uint.Z v1 < uint.Z v2)).
-Proof. solve_ineq go.lt_uint. Qed.
+Proof.
+  iIntros (?) "* _ * HΦ";
+  iApply wp_GoInstruction; [intros; repeat econstructor|];
+  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
+  iIntros "? $ !>"; rewrite go.lt_uint. iApply "HΦ"; iFrame.
+  solve_eq go.lt_uint. Qed.
 Global Instance wp_ge_uint (v1 v2 : w64) :
   PureWp True (GoGe go.uint (#v1, #v2)%V) #(bool_decide (uint.Z v2 ≤ uint.Z v1)).
 Proof. solve_ineq go.le_uint. Qed.

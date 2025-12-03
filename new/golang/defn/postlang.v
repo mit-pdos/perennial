@@ -1,5 +1,5 @@
 (* Trusted stuff that's conceptually part of the GooseLang semantics. E.g.
-   assumptions about valid GoContext. *)
+   assumptions about valid GoLocalContext. *)
 
 From Perennial.goose_lang Require Export lang.
 From Perennial Require Export base.
@@ -19,23 +19,102 @@ Global Notation "e1 && e2" :=
 Global Notation "e1 || e2" :=
   (If e1%E #true e2%E) (only parsing) : expr_scope.
 
-Notation "e1 ≤⟨ t ⟩ e2" := (GoInstruction (GoLe t) (e1%E, e2%E)%E)
+Notation "e1 ≤⟨ t ⟩ e2" := (GoInstruction (GoOp GoLe t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  ≤⟨ t ⟩  e2") : expr_scope.
-Notation "e1 <⟨ t ⟩ e2" := (GoInstruction (GoLt t) (e1%E, e2%E)%E)
+Notation "e1 <⟨ t ⟩ e2" := (GoInstruction (GoOp GoLt t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  <⟨ t ⟩  e2") : expr_scope.
-Notation "e1 ≥⟨ t ⟩ e2" := (GoInstruction (GoGe t) (e1%E, e2%E)%E)
+Notation "e1 ≥⟨ t ⟩ e2" := (GoInstruction (GoOp GoGe t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  ≥⟨ t ⟩  e2") : expr_scope.
-Notation "e1 >⟨ t ⟩ e2" := (GoInstruction (GoGt t) (e1%E, e2%E)%E)
+Notation "e1 >⟨ t ⟩ e2" := (GoInstruction (GoOp GoGt t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  >⟨ t ⟩  e2") : expr_scope.
-Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoEquals t) (e1%E, e2%E)%E)
+Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoOp GoEquals t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  =⟨ t ⟩  e2") : expr_scope.
 Notation "e1 ≠⟨ t ⟩ e2" := (UnOp NegOp (e1%E =⟨t⟩ e2%E))
                              (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
+
+Notation "e1 +⟨ t ⟩ e2" := (GoInstruction (GoOp GoPlus t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  +⟨ t ⟩  e2") : expr_scope.
+Notation "e1 -⟨ t ⟩ e2" := (GoInstruction (GoOp GoSub t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  -⟨ t ⟩  e2") : expr_scope.
+Notation "e1 *⟨ t ⟩ e2" := (GoInstruction (GoOp GoMul t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  *⟨ t ⟩  e2") : expr_scope.
+Notation "e1 /⟨ t ⟩ e2" := (GoInstruction (GoOp GoDiv t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  /⟨ t ⟩  e2") : expr_scope.
+Notation "e1 %⟨ t ⟩ e2" := (GoInstruction (GoOp GoRemainder t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  %⟨ t ⟩  e2") : expr_scope.
+
+Notation "e1 &⟨ t ⟩ e2" := (GoInstruction (GoOp GoAnd t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  &⟨ t ⟩  e2") : expr_scope.
+Notation "e1 |⟨ t ⟩ e2" := (GoInstruction (GoOp GoOr t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  |⟨ t ⟩  e2") : expr_scope.
+Notation "e1 ^⟨ t ⟩ e2" := (GoInstruction (GoOp GoXor t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  ^⟨ t ⟩  e2") : expr_scope.
+Notation "e1 &^⟨ t ⟩ e2" := (GoInstruction (GoOp GoBitClear t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  &^⟨ t ⟩  e2") : expr_scope.
+Notation "e1 <<⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftl t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  <<⟨ t ⟩  e2") : expr_scope.
+Notation "e1 >>⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftr t) (e1%E, e2%E)%E)
+                             (at level 70, format "e1  >>⟨ t ⟩  e2") : expr_scope.
 
 Module map.
 Definition t := loc.
 Definition nil : t := null.
 End map.
+
+Class GoSemanticsFunctions {ext : ffi_syntax} :=
+  {
+    to_underlying : go.type → go.type;
+    global_addr : go_string → loc;
+    functions : go_string → list go.type → func.t;
+    methods : go.type → go_string → func.t;
+    go_op : go_operator → go.type → val → expr;
+    go_zero_val : go.type → val;
+
+    (* Go equality function without special cases; e.g. any slice comparison will
+       panic here. *)
+    go_eq : go.type → val → val → expr;
+
+    method_set : go.type → gmap go_string go.signature;
+
+    alloc : go.type → val;
+    load : go.type → val;
+    store : go.type → val;
+
+    struct_field_ref : go.type → go_string → loc → loc;
+    struct_field_get : go.type → go_string → val → expr;
+    struct_field_set : go.type → go_string → val → val → expr;
+
+    (* map index expressions have their own implementation that does not use the
+       `Index` primitive. It's statically (even with type parameters) known
+       whether an index expression is a map index expression or not a map index
+       expression. https://go.dev/ref/spec#Index_expressions *)
+    index (container_type : go.type) (i : Z) (v : val) : expr;
+    index_ref (container_type : go.type) (i : Z) (v : val) : expr;
+    array_index_ref (elem_type : go.type) (i : Z) (l : loc) : loc;
+
+    map_empty : val → val;
+    map_lookup : val → val → bool * val;
+    map_insert : val → val → val → val;
+    map_delete : val → val → val;
+    is_map_domain : val → list val → Prop;
+    composite_literal : go.type → val → expr;
+  }.
+
+Section unfolding_defs.
+Context {ext : ffi_syntax} `{!GoSemanticsFunctions} {go_gctx : GoGlobalContext}.
+
+Class FuncUnfold f type_args f_impl : Prop :=
+  {
+    func_unfold : #(functions f type_args) = f_impl;
+  }.
+Global Hint Mode FuncUnfold ! ! - : typeclass_instances.
+
+Class MethodUnfold t m m_impl : Prop :=
+  {
+    method_unfold : #(methods t m) = m_impl;
+  }.
+Global Hint Mode MethodUnfold ! ! - : typeclass_instances.
+End unfolding_defs.
 
 Module go.
 Section defs.
@@ -69,30 +148,6 @@ Proof. solve_decision. Qed.
 Global Instance func_eq_dec : EqDecision func.t.
 Proof. solve_decision. Qed.
 
-(* [go_eq_top_level] includes special cases for slice, map, and func comparison.
-   [go_eq] does not. This helps define the semantics of comparing interface
-   values. *)
-Class CoreComparisonDefinition :=
-{
-  go_eq : go.type → val → val → expr;
-}.
-
-(** [IsComparable t] means that semantics for `==` is defined for the type [t].
-    Corresponds to _comparable_ as defined in
-    https://go.dev/ref/spec#Comparison_operators. This does not mean that `==`
-    will run safely for [t]; specifically, interfaces are comparable but
-    `==` can still panic. The types for which this holds is specified
-    in recursive way in [CoreSemantics]. *)
-Class IsComparable t `{!CoreComparisonDefinition} : Prop :=
-  {
-    is_comparable : ∀ (v1 v2 : val), go_eq_top_level t v1 v2 = go_eq t v1 v2;
-  }.
-
-(* Helper definition to cover types for whom `a == b` always executes safely. *)
-Definition is_always_safe_to_compare t V `{!EqDecision V}
-  `{!CoreComparisonDefinition} : Prop :=
-  ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
-
 Definition ref_one : val :=
   λ: "v", let: "l" := ref (LitV $ LitString "") in "l" <- "v";; "l".
 
@@ -124,17 +179,39 @@ If the 38 is changed to 37, then the comparison `aa == ba` does not short
 circuit, and it tries to check if the `any` fields are equal, at which point it
 panics because the type is not comparable.
 *)
-Class CoreComparisonSemantics :=
+
+
+Definition is_go_step_det op args e : Prop :=
+  is_go_step_pure op args = eq e.
+
+Class IsGoOp op t args v `{!GoSemanticsFunctions} : Prop :=
+  {
+    is_go_op : go_op op t args = v;
+  }.
+
+Class IsComparable t `{!GoSemanticsFunctions} : Prop :=
+  {
+    is_comparable v1 v2  :: IsGoOp GoEquals t (v1, v2)%V (go_eq t v1 v2)
+  }.
+
+(* Helper definition to cover types for which `a == b` always executes safely. *)
+Definition is_always_safe_to_compare t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
+  ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
+
+Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] core_comp_def :: CoreComparisonDefinition;
-  go_eq_top_level_underlying t : go_eq_top_level t = go_eq_top_level (to_underlying t);
+  go_op_step o t args :
+    is_go_step_pure (GoOp o t) args = (eq $ go_op o t args);
+
+  go_op_underlying o t args : go_op o t args = go_op o (to_underlying t) args;
   go_eq_underlying t : go_eq t = go_eq (to_underlying t);
 
   (* special cases *)
-  go_eq_func_nil_l sig f :
-    go_eq_top_level (go.FunctionType sig) #f #func.nil = #(bool_decide (f = func.nil));
-  go_eq_func_nil_r sig f :
-    go_eq_top_level (go.FunctionType sig) #func.nil #f = #(bool_decide (f = func.nil));
+  #[global] is_go_op_go_equals_func_nil_l sig f ::
+    IsGoOp GoEquals (go.FunctionType sig) (#f, #func.nil)%V #(bool_decide (f = func.nil));
+
+  #[global] is_go_op_go_equals_func_nil_r sig f ::
+    IsGoOp GoEquals (go.FunctionType sig) (#func.nil, #f)%V #(bool_decide (f = func.nil));
 
   #[global]
   is_comparable_pointer t :: IsComparable (go.PointerType t);
@@ -190,12 +267,12 @@ Class IntoValUnfold V f :=
 Global Hint Mode IntoValUnfold ! - : typeclass_instances.
 Global Arguments into_val_unfold (V) {_}.
 
-Class GoZeroValEq t V `{!ZeroVal V} :=
+Class GoZeroValEq t V `{!ZeroVal V} `{!GoSemanticsFunctions} :=
   {
     go_zero_val_eq : go_zero_val t = #(zero_val V);
   }.
-Global Hint Mode GoZeroValEq ! - - : typeclass_instances.
-Global Arguments go_zero_val_eq (t) V {_ _}.
+Global Hint Mode GoZeroValEq ! - - - : typeclass_instances.
+Global Arguments go_zero_val_eq (t) V {_ _ _}.
 
 Class BasicIntoValInj :=
   {
@@ -217,6 +294,7 @@ Class BasicIntoValInj :=
     The rules prefixed with [_] should not be used in any program proofs. *)
 Class CoreSemantics :=
 {
+  #[global] core_semantics_data :: GoSemanticsFunctions;
   #[global] into_val_unfold_func ::
     IntoValUnfold func.t (λ f, (rec: f.(func.f) f.(func.x) := f.(func.e))%V);
   #[global] into_val_unfold_bool :: IntoValUnfold _ (λ x, LitV $ LitBool x);
@@ -231,7 +309,7 @@ Class CoreSemantics :=
   #[global] into_val_unfold_loc :: IntoValUnfold _ (λ x, LitV $ LitLoc x);
   #[global] into_val_unfold_unit :: IntoValUnfold unit (λ _, LitV LitUnit);
 
-  #[global] go_zero_val_underlying t :: go_zero_val t = go_zero_val (to_underlying t);
+  go_zero_val_underlying t : go_zero_val t = go_zero_val (to_underlying t);
   #[global] go_zero_val_eq_pointer t :: GoZeroValEq (go.PointerType t) loc;
   #[global] go_zero_val_eq_function sig :: GoZeroValEq (go.FunctionType sig) func.t;
 
@@ -291,8 +369,6 @@ Class CoreSemantics :=
   index_ref_underlying t : index_ref t = index_ref (to_underlying t);
   index_underlying t : index t = index (to_underlying t);
 
-  method_interface t m (H : is_interface_type t = true) :
-    #(methods t m) = (InterfaceGet m);
 
   composite_literal_underlying t :
     composite_literal t = composite_literal (to_underlying t);

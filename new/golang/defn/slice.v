@@ -12,7 +12,7 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Definition _new_cap : val :=
   λ: "len",
     let: "extra" := ArbitraryInt in
-    if: "len" <⟨go.int⟩ ("len" + "extra") then "len" + "extra"
+    if: "len" <⟨go.int⟩ ("len" +⟨go.PointerType ⟩ "extra") then "len" + "extra"
     else "len".
 
 Definition for_range (elem_type : go.type) : val :=
@@ -85,8 +85,8 @@ Class SliceSemantics :=
   index_slice elem_type i (s : slice.t) :
     index (go.SliceType elem_type) i #s =
     GoLoad elem_type $ (Index $ go.SliceType elem_type) (#(W64 i), #s)%V;
-  len_slice elem_type :
-    #(functions go.len [go.SliceType elem_type]) =
+  #[global] len_slice elem_type :
+    FuncUnfold go.len [go.SliceType elem_type])
     (λ: "s", InternalLen (go.SliceType elem_type) "s")%V;
 
   cap_slice elem_type :

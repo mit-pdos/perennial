@@ -133,7 +133,7 @@ Inductive is_ordered_type : go.type → Prop :=
 Existing Class is_ordered_type.
 Global Existing Instances is_ordered_type_string is_ordered_type_numeric.
 
-Class PredeclaredSemantics `{!go.CoreComparisonDefinition} :=
+Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 {
   alloc_predeclared t v (H : is_predeclared_zero_val t v) : alloc t = (λ: <>, go.ref_one v)%V;
   load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
@@ -157,8 +157,7 @@ Class PredeclaredSemantics `{!go.CoreComparisonDefinition} :=
   comparable_bool :: go.IsComparable go.bool;
   go_eq_bool : go.is_always_safe_to_compare go.bool Datatypes.bool;
 
-  #[global]
-  comparable_ordered t (H : is_ordered_type t) :: go.IsComparable t;
+  #[global] comparable_ordered t (H : is_ordered_type t) :: go.IsComparable t | 10;
 
   go_eq_int : go.is_always_safe_to_compare go.int w64;
   go_eq_int64 : go.is_always_safe_to_compare go.int64 w64;
@@ -171,27 +170,49 @@ Class PredeclaredSemantics `{!go.CoreComparisonDefinition} :=
   go_eq_uint16 : go.is_always_safe_to_compare go.uint16 w16;
   go_eq_uint8 : go.is_always_safe_to_compare go.uint8 w8;
 
-  le_int (v1 v2 : w64) : go_le go.int #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
-  le_int64 (v1 v2 : w64) : go_le go.int64 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
-  le_int32 (v1 v2 : w32) : go_le go.int32 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
-  le_int16 (v1 v2 : w16) : go_le go.int16 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
-  le_int8 (v1 v2 : w8) : go_le go.int8 #v1 #v2 = Some $ bool_decide (sint.Z v1 ≤ sint.Z v2);
-  le_uint (v1 v2 : w64) : go_le go.uint #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
-  le_uint64 (v1 v2 : w64) : go_le go.uint64 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
-  le_uint32 (v1 v2 : w32) : go_le go.uint32 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
-  le_uint16 (v1 v2 : w16) : go_le go.uint16 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
-  le_uint8 (v1 v2 : w8) : go_le go.uint8 #v1 #v2 = Some $ bool_decide (uint.Z v1 ≤ uint.Z v2);
+  #[global] le_int (v1 v2 : w64) :: go.IsGoOp GoLe go.int (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] le_int64 (v1 v2 : w64) :: go.IsGoOp GoLe go.int64 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] le_int32 (v1 v2 : w32) :: go.IsGoOp GoLe go.int32 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] le_int16 (v1 v2 : w16) :: go.IsGoOp GoLe go.int16 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] le_int8 (v1 v2 : w8) :: go.IsGoOp GoLe go.int8 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] le_uint (v1 v2 : w64) :: go.IsGoOp GoLe go.uint (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] le_uint64 (v1 v2 : w64) :: go.IsGoOp GoLe go.uint64 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] le_uint32 (v1 v2 : w32) :: go.IsGoOp GoLe go.uint32 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] le_uint16 (v1 v2 : w16) :: go.IsGoOp GoLe go.uint16 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] le_uint8 (v1 v2 : w8) :: go.IsGoOp GoLe go.uint8 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
 
-  lt_int (v1 v2 : w64) : go_lt go.int #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
-  lt_int64 (v1 v2 : w64) : go_lt go.int64 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
-  lt_int32 (v1 v2 : w32) : go_lt go.int32 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
-  lt_int16 (v1 v2 : w16) : go_lt go.int16 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
-  lt_int8 (v1 v2 : w8) : go_lt go.int8 #v1 #v2 = Some $ bool_decide (sint.Z v1 < sint.Z v2);
-  lt_uint (v1 v2 : w64) : go_lt go.uint #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
-  lt_uint64 (v1 v2 : w64) : go_lt go.uint64 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
-  lt_uint32 (v1 v2 : w32) : go_lt go.uint32 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
-  lt_uint16 (v1 v2 : w16) : go_lt go.uint16 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
-  lt_uint8 (v1 v2 : w8) : go_lt go.uint8 #v1 #v2 = Some $ bool_decide (uint.Z v1 < uint.Z v2);
+  #[global] lt_int (v1 v2 : w64) :: go.IsGoOp GoLt go.int (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] lt_int64 (v1 v2 : w64) :: go.IsGoOp GoLt go.int64 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] lt_int32 (v1 v2 : w32) :: go.IsGoOp GoLt go.int32 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] lt_int16 (v1 v2 : w16) :: go.IsGoOp GoLt go.int16 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] lt_int8 (v1 v2 : w8) :: go.IsGoOp GoLt go.int8 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] lt_uint (v1 v2 : w64) :: go.IsGoOp GoLt go.uint (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] lt_uint64 (v1 v2 : w64) :: go.IsGoOp GoLt go.uint64 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] lt_uint32 (v1 v2 : w32) :: go.IsGoOp GoLt go.uint32 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] lt_uint16 (v1 v2 : w16) :: go.IsGoOp GoLt go.uint16 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] lt_uint8 (v1 v2 : w8) :: go.IsGoOp GoLt go.uint8 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
+
+  #[global] ge_int (v1 v2 : w64) :: go.IsGoOp GoGe go.int (#v1, #v2) #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] ge_int64 (v1 v2 : w64) :: go.IsGoOp GoGe go.int64 (#v1, #v2) #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] ge_int32 (v1 v2 : w32) :: go.IsGoOp GoGe go.int32 (#v1, #v2) #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] ge_int16 (v1 v2 : w16) :: go.IsGoOp GoGe go.int16 (#v1, #v2) #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] ge_int8 (v1 v2 : w8) :: go.IsGoOp GoGe go.int8 (#v1, #v2) #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] ge_uint (v1 v2 : w64) :: go.IsGoOp GoGe go.uint (#v1, #v2) #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] ge_uint64 (v1 v2 : w64) :: go.IsGoOp GoGe go.uint64 (#v1, #v2) #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] ge_uint32 (v1 v2 : w32) :: go.IsGoOp GoGe go.uint32 (#v1, #v2) #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] ge_uint16 (v1 v2 : w16) :: go.IsGoOp GoGe go.uint16 (#v1, #v2) #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] ge_uint8 (v1 v2 : w8) :: go.IsGoOp GoGe go.uint8 (#v1, #v2) #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+
+  #[global] gt_int (v1 v2 : w64) :: go.IsGoOp GoGt go.int (#v1, #v2) #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] gt_int64 (v1 v2 : w64) :: go.IsGoOp GoGt go.int64 (#v1, #v2) #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] gt_int32 (v1 v2 : w32) :: go.IsGoOp GoGt go.int32 (#v1, #v2) #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] gt_int16 (v1 v2 : w16) :: go.IsGoOp GoGt go.int16 (#v1, #v2) #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] gt_int8 (v1 v2 : w8) :: go.IsGoOp GoGt go.int8 (#v1, #v2) #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] gt_uint (v1 v2 : w64) :: go.IsGoOp GoGt go.uint (#v1, #v2) #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] gt_uint64 (v1 v2 : w64) :: go.IsGoOp GoGt go.uint64 (#v1, #v2) #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] gt_uint32 (v1 v2 : w32) :: go.IsGoOp GoGt go.uint32 (#v1, #v2) #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] gt_uint16 (v1 v2 : w16) :: go.IsGoOp GoGt go.uint16 (#v1, #v2) #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] gt_uint8 (v1 v2 : w8) :: go.IsGoOp GoGt go.uint8 (#v1, #v2) #(bool_decide (uint.Z v2 < uint.Z v1));
 
   go_eq_string : go.is_always_safe_to_compare go.string go_string;
   index_string i (s : go_string) b (Hinrange : s !! (Z.to_nat i) = Some b) :
