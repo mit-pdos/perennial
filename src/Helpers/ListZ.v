@@ -39,7 +39,7 @@ Lemma length_singleton x : length [x] = 1.
 Proof. reflexivity. Qed.
 
 Lemma length_app l1 l2 : length (l1 ++ l2) = length l1 + length l2.
-Proof. rewrite /length list.length_app. lia.  Qed.
+Proof. rewrite /length length_app. lia.  Qed.
 
 Lemma length_cons x l : length (x :: l) = 1 + length l.
 Proof. rewrite /length /=. lia. Qed.

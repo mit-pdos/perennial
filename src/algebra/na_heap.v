@@ -317,7 +317,7 @@ Section na_heap.
     na_heap_pointsto_st st l dq v -∗ ⌜✓dq⌝.
   Proof.
     rewrite /na_heap_pointsto_st.
-    rewrite own_valid discrete_valid.
+    rewrite own_valid internal_cmra_valid_discrete.
     rewrite gmap_view_frag_valid dfrac_valid.
     iPureIntro. naive_solver.
   Qed.
@@ -341,7 +341,7 @@ Section na_heap.
     ⌜(q ⋅ q' ≤ 1)%Qp⌝.
   Proof.
     iIntros "Hown1 Hown2". iCombine "Hown1 Hown2" as "Hown".
-    rewrite own_valid discrete_valid.
+    rewrite own_valid internal_cmra_valid_discrete.
     rewrite gmap_view_frag_valid dfrac_valid.
     iDestruct "Hown" as %Hpure.
     iPureIntro. naive_solver.

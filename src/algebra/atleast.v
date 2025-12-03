@@ -271,7 +271,7 @@ Abort.
 Import base_logic.bi.uPred.
 Global Instance valid_abs_timeless {A : cmra} `{!CmraDiscrete A} (a : A) :
   AbsolutelyTimeless (✓ a : uPred M)%I.
-Proof. rewrite /AbsolutelyTimeless => k. rewrite !uPred.discrete_valid. apply (abs_timeless _). Qed.
+Proof. rewrite /AbsolutelyTimeless => k. rewrite !internal_cmra_valid_discrete. apply (abs_timeless _). Qed.
 
 
 Global Instance ownM_abs_timeless (a : M) : Discrete a → AbsolutelyTimeless (uPred_ownM a).
@@ -282,6 +282,7 @@ Proof.
   apply atleast_mono. rewrite internal_eq_sym.
   apply (internal_eq_rewrite' b a (uPred_ownM) _);
     auto using and_elim_l, and_elim_r.
+  apply _.
 Qed.
 End uPred_laws.
 
