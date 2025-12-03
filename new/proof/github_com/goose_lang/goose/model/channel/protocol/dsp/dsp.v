@@ -231,7 +231,7 @@ Proof.
   - done.
   - done.
   - iDestruct (iProto_own_excl with "Hp Hclosel") as "[]".
-Admitted.
+Qed.
 
 Lemma wp_dsp_send (lr_chan rl_chan : loc) γ (v : V) (p : iProto Σ V) :
   {{{ #(lr_chan,rl_chan) ↣{γ} <!> MSG v; p }}}

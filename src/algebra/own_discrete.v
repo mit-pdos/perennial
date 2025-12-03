@@ -6,19 +6,7 @@ Set Default Proof Using "Type".
 
 Lemma uPred_cmra_valid_elim_alt {M: ucmra} (A: cmra) (a: A):
   (✓ a : uPred M) ⊢ ⌜ ✓{0} a ⌝.
-Proof.
-  split.
-  intros n x Hvalx Hvala.
-  move: Hvala. rewrite /bi_pure//=. uPred.unseal. red. simpl => Hval.
-  (*
-  assert (uPred_holds (uPred_cmra_valid_def a) O x).
-  { eapply uPred_mono; try eassumption.
-    { reflexivity. }
-    { lia. }
-  }
-  eauto.
-  *)
-Admitted.
+Proof. apply internal_cmra_valid_elim. Qed.
 
 Lemma cmra_op_discrete_internal {M: ucmra} {A: ucmra} (x1 x2: A) :
   Discrete x1 → Discrete x2 → (✓ (x1 ⋅ x2) ⊢ ⌜ Discrete (x1 ⋅ x2) ⌝ : uPred M).
