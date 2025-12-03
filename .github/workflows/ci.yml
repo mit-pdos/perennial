@@ -19,8 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        coq_version:
+        rocq-version:
           - dev
+          # note: the actual version here is ignored for pinning (the latest
+          # release will be installed)
           - "9.1"
       max-parallel: 4
       fail-fast: false
@@ -31,33 +33,47 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.UV_VERSION }}
-      - uses: rocq-community/docker-coq-action@v1
+      - name: Install OCaml
+        uses: ocaml/setup-ocaml@v3
         with:
-          coq_version: ${{ matrix.coq_version }}
-          ocaml_version: "default"
-          opam_file: "perennial.opam"
-          # for permissions issue, see:
-          # https://github.com/coq-community/docker-coq-action#permissions.
-          before_install: |
-            sudo chown -R 1000:1000 .
-          install: |
-            startGroup Install dependencies
-              sudo apt-get update -y
-              sudo apt-get install -y sqlite3
-              opam pin add -vv -n -y -k path $PACKAGE $WORKDIR
-              opam install -j 4 -y --deps-only $PACKAGE
-            endGroup
-          script: |
-            startGroup Build
-              make -j4 -k ci
-            endGroup
-          uninstall:
-      - name: Revert permissions
-        if: ${{ always() }}
-        run: sudo chown -R 1001:116 .
-      - name: Report timing statistics
+          ocaml-compiler: "4.14.x"
+          cache-prefix: "v1-rocq-${{ matrix.rocq-version }}"
+          dune-cache: false
+          opam-disable-sandboxing: true
+          opam-pin: false
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+            rocq-released: https://rocq-prover.github.io/opam/released
+            rocq-core-dev: https://rocq-prover.github.io/opam/core-dev
+      - name: Cache opam
+        uses: actions/cache@v4
+        with:
+          path: "_opam"
+          key: opam-${{ runner.os }}-${{ matrix.rocq-version }}-${{ hashFiles('*.opam') }}
+      - name: Build opam dependencies
         run: |
-          ./etc/timing-report.py --max-files 50
+          opam update
+          if [ "${{ matrix.rocq-version }}" = "dev" ]; then
+            opam pin add -n -y rocq-runtime.dev git+https://github.com/rocq-prover/rocq.git --yes
+            opam pin add -n -y rocq-core.dev git+https://github.com/rocq-prover/rocq.git --yes
+            opam pin add -n -y coq-core.dev git+https://github.com/rocq-prover/rocq.git --yes
+            opam pin add -n -y coq-stdlib.dev git+https://github.com/rocq-prover/stdlib.git --yes
+            opam pin add -n -y coq.dev --dev-repo
+          fi
+          opam pin add -n -y .
+          # TODO: is this reliable? without it caching doesn't work
+          opam reinstall --forget-pending
+          opam install -y . --deps-only
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y sqlite3
+      - name: Rocq build
+        run: |
+          eval $(opam env)
+          make -j4 -k ci
+      - name: Report timing statistics
+        run: ./etc/timing-report.py --max-files 50
 
   check-goose:
     runs-on: ubuntu-latest
